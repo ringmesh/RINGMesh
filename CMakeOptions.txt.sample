@@ -1,0 +1,4 @@
+# Activate paranoid assert
+# SET(PARANOID_DEGUG)
+
+
