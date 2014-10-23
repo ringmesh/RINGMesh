@@ -15,8 +15,8 @@
 #ifndef __GRGMESH_MIXED_MESH__
 #define __GRGMESH_MIXED_MESH__
 
-#include <common.h>
-#include <mesh.h>
+#include <grgmeshlib/common.h>
+#include <grgmeshlib/mesh.h>
 
 #include <vector> 
 

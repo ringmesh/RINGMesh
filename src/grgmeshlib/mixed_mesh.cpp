@@ -12,7 +12,7 @@
  * including partial copies or modified versions thereof.
  ]*/
 
-#include <mixed_mesh.h>
+#include <grgmeshlib/mixed_mesh.h>
 
 namespace GRGMesh {
 

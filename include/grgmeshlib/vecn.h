@@ -15,8 +15,11 @@
 #ifndef __GRGMESH_VECN__
 #define __GRGMESH_VECN__
 
-#include <common.h>
+#include <grgmeshlib/common.h>
+
 #include <cstring>
+#include <cmath>
+#include <iostream>
 
 namespace GRGMesh {
 
@@ -113,6 +116,20 @@ namespace GRGMesh {
                 data_[i] += v.data_[i] ;
             }
             return *this ;
+        }
+
+        inline bool operator==( const thisclass& p ) const {
+            for( unsigned int i = 0; i < DIM; i++ ) {
+                if( data_[i] != p.data_[i] ) return false ;
+            }
+            return true ;
+        }
+
+        inline bool operator!=( const thisclass& p ) const {
+            for( unsigned int i = 0; i < DIM; i++ ) {
+                if( data_[i] != p.data_[i] ) return true ;
+            }
+            return false ;
         }
 
         inline thisclass& operator-=( const thisclass& v )
@@ -297,6 +314,180 @@ namespace GRGMesh {
     }
 
     typedef vecn< 3 > vec3 ;
+
+    template< > class vecn< 3 > {
+    public:
+        typedef vecn< 3 > thisclass ;
+
+        vecn()
+            : x( 0 ), y( 0 ), z( 0 )
+        {
+        }
+        vecn( float64 x_in, float64 y_in, float64 z_in )
+            : x( x_in ), y( y_in ), z( z_in )
+        {
+        }
+        vecn( const thisclass& v )
+            : x( v.x ), y( v.y ), z( v.z )
+        {
+        }
+        explicit vecn( const float64* v )
+            : x( v[0] ), y( v[1] ), z( v[2] )
+        {
+        }
+
+        inline float64 length2() const
+        {
+            return x * x + y * y + z * z ;
+        }
+        inline float64 length() const
+        {
+            return ::sqrt( x * x + y * y + z * z ) ;
+        }
+        inline float64 distance2( const thisclass& rhs ) const
+        {
+            float64 dx = rhs.x - x ;
+            float64 dy = rhs.y - y ;
+            float64 dz = rhs.z - z ;
+            return dx * dx + dy * dy + dz * dz ;
+        }
+
+        // operators
+        inline thisclass& operator+=( const thisclass& v )
+        {
+            x += v.x ;
+            y += v.y ;
+            z += v.z ;
+            return *this ;
+        }
+        inline thisclass& operator-=( const thisclass& v )
+        {
+            x -= v.x ;
+            y -= v.y ;
+            z -= v.z ;
+            return *this ;
+        }
+        inline thisclass& operator*=( const thisclass& v )
+        {
+            x *= v.x ;
+            y *= v.y ;
+            z *= v.z ;
+            return *this ;
+        }
+        inline thisclass& operator/=( const thisclass& v )
+        {
+            x /= v.x ;
+            y /= v.y ;
+            z /= v.z ;
+            return *this ;
+        }
+        inline thisclass& operator*=( float64 s )
+        {
+            x *= float64( s ) ;
+            y *= float64( s ) ;
+            z *= float64( s ) ;
+            return *this ;
+        }
+        inline thisclass& operator/=( float64 s )
+        {
+            x /= float64( s ) ;
+            y /= float64( s ) ;
+            z /= float64( s ) ;
+            return *this ;
+        }
+        inline bool operator==( const thisclass& p ) const
+        {
+            for( unsigned int i = 0; i < 3; i++ ) {
+                if( (*this)[i] != p[i] ) return false ;
+            }
+            return true ;
+        }
+
+        inline bool operator!=( const thisclass& p ) const
+        {
+            for( unsigned int i = 0; i < 3; i++ ) {
+                if( (*this)[i] != p[i] ) return true ;
+            }
+            return false ;
+        }
+        inline thisclass operator+( const thisclass& v ) const
+        {
+            return thisclass( x + v.x, y + v.y, z + v.z ) ;
+        }
+        inline thisclass operator-( const thisclass& v ) const
+        {
+            return thisclass( x - v.x, y - v.y, z - v.z ) ;
+        }
+        inline thisclass operator*( float64 s ) const
+        {
+            return thisclass( x * float64( s ), y * float64( s ), z * float64( s ) ) ;
+        }
+        inline thisclass operator/( float64 s ) const
+        {
+            return thisclass( x / float64( s ), y / float64( s ), z / float64( s ) ) ;
+        }
+
+        inline thisclass operator-() const
+        {
+            return thisclass( -x, -y, -z ) ;
+        }
+
+        unsigned int dimension() const
+        {
+            return (unsigned int) 3 ;
+        }
+
+        float64* data()
+        {
+            return &x ;
+        }
+        const float64* data() const
+        {
+            return &x ;
+        }
+
+        inline float64& operator[]( unsigned int idx )
+        {
+            grgmesh_debug_assert( idx < 3 ) ;
+            return data()[idx] ;
+        }
+
+        inline const float64& operator[]( unsigned int idx ) const
+        {
+            grgmesh_debug_assert( idx < 3 ) ;
+            return data()[idx] ;
+        }
+
+        float64 x ;
+        float64 y ;
+        float64 z ;
+    } ;
+
+    inline float64 dot( const vec3& v1, const vec3& v2 )
+    {
+        return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z ;
+    }
+    inline float64 length( const vec3& v1, const vec3& v2 )
+    {
+        return (v2 - v1).length() ;
+    }
+
+    inline vec3 cross( const vec3& v1, const vec3& v2 )
+    {
+        return vec3( v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
+            v1.x * v2.y - v1.y * v2.x ) ;
+    }
+    inline std::ostream& operator<<( std::ostream& out, const vec3& v )
+    {
+        return out << v.x << "  " << v.y << "  " << v.z ;
+    }
+    inline std::istream& operator>>( std::istream& in, vec3& v )
+    {
+        for( uint8 i = 0; i < 3; i++ ) {
+            in >> v[i] ;
+        }
+        return in ;
+    }
 }
 
 #endif
