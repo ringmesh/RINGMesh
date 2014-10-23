@@ -15,12 +15,16 @@
 #ifndef __GRGMESH_TYPES__
 #define __GRGMESH_TYPES__
 
+#include <grgmeshlib/common.h>
 #include <stdint.h>
 
 namespace GRGMesh {
 
     /** Generic pointer type */
     typedef void* pointer ;
+
+    /** Null pointer type */
+    #define nil 0
 
     /** Integer type with a width of 8 bits */
     typedef int8_t int8 ;
@@ -51,6 +55,12 @@ namespace GRGMesh {
 
     /** Floating point type with a width of 64 bits */
     typedef double float64 ;
+
+    const float32 big_float = 1e10f ;
+    const float32 small_float = 1e-10f ;
+    const float64 big_double = 1e20 ;
+    const float64 small_double = 1e-20 ;
+    const float64 epsilon = 1E-8 ;
 
     enum CellType {
         LINE    = 0,

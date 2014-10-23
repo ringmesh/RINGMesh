@@ -43,8 +43,8 @@
 #   pragma warning( disable: 4267 )
 #endif
 
-#include <types.h>
-#include <grgmesh_assert.h>
+#include <grgmeshlib/types.h>
+#include <grgmeshlib/grgmesh_assert.h>
 
 #endif
 

@@ -15,8 +15,8 @@
 #ifndef __GRGMESH_MESH__
 #define __GRGMESH_MESH__
 
-#include <common.h>
-#include <vecn.h>
+#include <grgmeshlib/common.h>
+#include <grgmeshlib/vecn.h>
 
 #include <vector>
 
