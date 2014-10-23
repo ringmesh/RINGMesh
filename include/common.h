@@ -44,7 +44,7 @@
 #endif
 
 #include <types.h>
-#include <grg_assert.h>
+#include <grgmesh_assert.h>
 
 #endif
 
