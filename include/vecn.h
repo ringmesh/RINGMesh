@@ -16,6 +16,7 @@
 #define __GRGMESH_VECN__
 
 #include <common.h>
+#include <cstring>
 
 namespace GRGMesh {
 
@@ -295,6 +296,7 @@ namespace GRGMesh {
         return ( float64( 1 ) - s ) * v1 + s * v2 ;
     }
 
+    typedef vecn< 3 > vec3 ;
 }
 
 #endif

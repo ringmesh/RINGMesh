@@ -71,6 +71,55 @@ namespace GRGMesh {
         uint8 edge[12][2] ;
         uint8 edges_in_facet[6][4] ;
     } ;
+
+
+    static CellDescriptor tet_descriptor = {
+        4,              // nb_vertices
+        4,              // nb_facets
+        { 3, 3, 3, 3 }, // nb_vertices in facet
+        { { 3, 1, 2 }, { 3, 2, 0 }, { 0, 1, 3 }, { 1, 0, 2 } },  // facets
+        6,              // nb_edges
+        { { 1, 3 }, { 3, 2 }, { 2, 1 }, { 0, 2 }, { 3, 0 }, { 1, 0 } } , // edges
+        { { 2, 0, 1 }, { 1, 4, 3 }, { 4, 0, 5 }, { 3, 2, 5 } } //edges_in_facet
+    } ;
+
+    static CellDescriptor hex_descriptor = {
+        8,                      // nb_vertices
+        6,                      // nb_facets
+        { 4, 4, 4, 4, 4, 4 },   // nb_vertices in facet
+        { { 0, 2, 6, 4 }, { 3, 1, 5, 7 }, { 1, 0, 4, 5 }, { 2, 3, 7, 6 },
+          { 1, 3, 2, 0 }, { 4, 6, 7, 5 } },  // facets
+        12,                     // nb_edges
+        { { 0, 2 }, { 2, 6 }, { 6, 4 }, { 4, 0 }, { 3, 1 }, { 1, 5 }, { 5, 7 },
+          { 7, 3 }, { 1, 0 }, { 4, 5 }, { 2, 3 }, { 7, 6 } },   // edges
+        { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 3, 8, 5, 9 },
+          { 1, 11, 7, 10 }, { 0, 10, 4, 8 }, { 2, 9, 6, 11 } }  //edges_in_facet
+    } ;
+
+    static CellDescriptor prism_descriptor = {
+        6,                  // nb_vertices
+        5,                  // nb_facets
+        { 3, 3, 4, 4, 4 },  // nb_vertices in facet
+        { { 0, 1, 2 }, { 3, 5, 4 }, { 0, 3, 4, 1 }, { 0, 2, 5, 3 }, { 1, 4, 5, 2 } },  // facets
+        9,                  // nb_edges
+        { { 0, 1 }, { 1, 2 }, { 2, 0 }, { 3, 5 }, { 5, 4 },
+          { 4, 3 }, { 0, 3 }, { 4, 1 }, { 2, 5 } },  // edges
+        { { 0, 1, 2 }, { 5, 4, 3 }, { 6, 5, 7, 0 },
+          { 2, 8, 3, 6 }, { 7, 4, 8, 1 } }  //edges_in_facet
+    } ;
+
+    static CellDescriptor pyramid_descriptor = {
+        5,                  // nb_vertices
+        5,                  // nb_facets
+        { 4, 3, 3, 3, 3 },  // nb_vertices in facet
+        { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } },    // facets
+        8,                  // nb_edges
+        { { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
+          { 0, 4 }, { 4, 1 }, { 3, 4 }, { 2, 4 } },  // edges
+        { { 0, 1, 2, 3 }, { 4, 5, 0 }, { 3, 6, 4 },
+          { 6, 7, 2 }, { 1, 5, 7 } }  //edges_in_facet
+    } ;
+
 }
 
 #endif
