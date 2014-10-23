@@ -22,11 +22,9 @@
 
 namespace GRGMesh {
 
-    template< int DIM = 3 > class GRGMESH_API Mesh {
+    class GRGMESH_API Mesh {
 
     public:
-        typedef vecn< DIM > vec ;
-
         void clear()
         {
             vertices_.clear() ;
@@ -58,7 +56,7 @@ namespace GRGMesh {
             grgmesh_debug_assert( v < nb_vertices_in_cell( c ) ) ;
             return vertex_indices_[cell_begin( c ) + v] ;
         }
-        const vec& cell_vertex( uint64 c, uint64 v ) const
+        const vec3& cell_vertex( uint64 c, uint64 v ) const
         {
             grgmesh_debug_assert( v < nb_vertices_in_cell( c ) ) ;
             return vertices_[vertex_indices_[cell_begin( c ) + v]] ;
@@ -72,19 +70,19 @@ namespace GRGMesh {
             CellDescriptor* desc = cell_descriptor( c ) ;
             grgmesh_debug_assert( f < desc->nb_facets ) ;
             grgmesh_debug_assert( v < desc->nb_vertices_in_facet[f] ) ;
-            return cell_vertex( c, desc->facet[f][v] ) ;
+            return cell_vertex_index( c, desc->facet[f][v] ) ;
         }
 
-        vec cell_centroid( uint64 c ) const
+        vec3 cell_centroid( uint64 c ) const
         {
-            vec result ;
+            vec3 result ;
             for( uint64 i = cell_begin( c ); i < cell_end( c ); i++ ) {
                 result += cell_vertex( c, i ) ;
             }
             return result / nb_vertices_in_cell( c );
         }
 
-    private:
+    protected:
         Mesh()
         {
         }
@@ -97,7 +95,7 @@ namespace GRGMesh {
 
     private:
         ///List of the vertices
-        std::vector< vec > vertices_ ;
+        std::vector< vec3 > vertices_ ;
         ///Mapping between the list of the vertices in a cell and the actual vertices
         std::vector< uint64 > vertex_indices_ ;
 
