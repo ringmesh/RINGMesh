@@ -142,15 +142,15 @@ namespace GRGMesh {
     } ;
 
 #ifdef USE_MG_TETRA
-    class VORTEX_API TetraGen_MG_Tetra: public TetraGen {
+    class GRGMESH_API TetraGen_MG_Tetra: public TetraGen {
     public:
         TetraGen_MG_Tetra(
-            TetraMesh& tetmesh,
+            MixedMesh& tetmesh,
             const BoundaryModelElement* region,
             bool add_steiner_points,
             const std::vector< vec3 >& internal_vertices,
             const std::vector< std::vector< Edge > >& well_vertices,
-            TetraMesh* background ) ;
+            MixedMesh* background ) ;
         virtual ~TetraGen_MG_Tetra() ;
 
         virtual bool tetrahedralize() ;
@@ -159,13 +159,10 @@ namespace GRGMesh {
         static status_t get_size_value(
             meshgems_integer i,
             meshgems_real* size,
-            void *user_data ) {
-            *size = static_cast< TetraGen_MG_Tetra* >( user_data )->get_resolution_value( i ) ;
-            return STATUS_OK ;
-        }
+            void *user_data ) ;
 
     private:
-        double get_resolution_value( int i ) { return background_->resolution( i ) ; }
+        double get_resolution_value( int i ) ;
 
     private:
         bool add_steiner_points_ ;

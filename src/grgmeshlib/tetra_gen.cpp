@@ -461,81 +461,84 @@ tetgenio::init( P ) ;
         context_ = context_new() ;
         mesh_input_ = mesh_new_in_memory( context_ ) ;
         status_t ret = context_set_message_callback(context_, my_message_cb, 0);
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
 
         ret = mesh_set_vertex_count( mesh_input_, nb_total_points() ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         for( unsigned int p = 0; p < nb_points(); p++ ) {
             ret = mesh_set_vertex_coordinates( mesh_input_, p + 1,
                 points_[p].data() ) ;
-            ogf_debug_assert( ret == STATUS_OK ) ;
+            grgmesh_debug_assert( ret == STATUS_OK ) ;
         }
 
         ret = mesh_set_edge_count( mesh_input_, well_edges_.size() ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         for( unsigned int e = 0; e < well_edges_.size(); e++ ) {
             ret = mesh_set_edge_vertices( mesh_input_, e + 1,
                 &well_indices_[2 * e] ) ;
-            ogf_debug_assert( ret == STATUS_OK ) ;
+            grgmesh_debug_assert( ret == STATUS_OK ) ;
         }
 
         for( unsigned int p = 0; p < nb_internal_points(); p++ ) {
             ret = mesh_set_vertex_coordinates( mesh_input_, nb_points() + p + 1,
                 internal_points_[p].data() ) ;
-            ogf_debug_assert( ret == STATUS_OK ) ;
+            grgmesh_debug_assert( ret == STATUS_OK ) ;
         }
 
         ret = mesh_set_triangle_count( mesh_input_, nb_triangles() ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         for( unsigned int t = 0; t < nb_triangles(); t++ ) {
             ret = mesh_set_triangle_vertices( mesh_input_, t + 1,
                 &triangles_[3 * t] ) ;
-            ogf_debug_assert( ret == STATUS_OK ) ;
+            grgmesh_debug_assert( ret == STATUS_OK ) ;
             mesh_set_triangle_tag( mesh_input_, t+1, surface_id_ptr( t ) ) ;
         }
 
         if( background_ ) {
+            grgmesh_assert_not_reached ;
+            /*
             mesh_background_ = mesh_new_in_memory( context_ ) ;
             ret = mesh_set_vertex_count( mesh_background_,
                 background_->nb_points() ) ;
-            ogf_debug_assert( ret == STATUS_OK ) ;
+            grgmesh_debug_assert( ret == STATUS_OK ) ;
             for( unsigned int p = 0; p < background_->nb_points(); p++ ) {
                 vec3 point = background_->vertex( p ) ;
                 ret = mesh_set_vertex_coordinates( mesh_background_, p + 1,
                     background_->ref_vertex( p ).data() ) ;
-                ogf_debug_assert( ret == STATUS_OK ) ;
+                grgmesh_debug_assert( ret == STATUS_OK ) ;
             }
 
             ret = mesh_set_tetrahedron_count( mesh_background_, background_->nb_tetra() ) ;
-            ogf_debug_assert( ret == STATUS_OK ) ;
+            grgmesh_debug_assert( ret == STATUS_OK ) ;
             for( unsigned int t = 0; t < background_->nb_tetra(); t++ ) {
                 ret = mesh_set_tetrahedron_vertices( mesh_background_, t + 1,
                     background_->vertex_index_ptr( t ) ) ;
-                ogf_debug_assert( ret == STATUS_OK ) ;
+                grgmesh_debug_assert( ret == STATUS_OK ) ;
             }
 
             sizemap_ = meshgems_sizemap_new( mesh_background_,
                 meshgems_sizemap_type_iso_mesh_vertex,
                 reinterpret_cast< void* >( get_size_value ), this ) ;
+                */
         }
 
         tms_ = tetra_session_new( context_ ) ;
         ret = tetra_set_surface_mesh( tms_, mesh_input_ ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         ret = tetra_set_param( tms_, "verbose", "4" ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         ret = tetra_set_param( tms_, "components", "all" ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         ret = tetra_set_param( tms_, "optimisation_level", "standard" ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         ret = tetra_set_param( tms_, "gradation", "1.1" ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         ret = tetra_set_param( tms_, "pthreads_mode", "aggressive" ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         ret = tetra_set_param( tms_, "max_number_of_threads", "8" ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         ret = tetra_set_param( tms_, "max_error_count", "5" ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
     }
 
     TetraGen_MG_Tetra::~TetraGen_MG_Tetra()
@@ -550,35 +553,35 @@ tetgenio::init( P ) ;
     {
         status_t ret = tetra_mesh_boundary( tms_ ) ;
         if( ret != STATUS_OK ) {
-            Logger::err( "MG_Tetra" ) << "Encountered a problem while meshing boundary..."
+            std::cout << "Encountered a problem while meshing boundary..."
                 << std::endl ;
             return false ;
         }
         if( add_steiner_points_ ) {
             ret = tetra_insert_volume_vertices( tms_ ) ;
             if( ret != STATUS_OK ) {
-                Logger::err( "MG_Tetra" ) << "Encountered a problem while meshing inside..."
+                std::cout << "Encountered a problem while meshing inside..."
                     << std::endl ;
                 return false ;
             }
             ret = tetra_optimise_volume_regular( tms_ ) ;
             if( ret != STATUS_OK ) {
-                Logger::err( "MG_Tetra" ) << "Encountered a problem while meshing inside..."
+                std::cout << "Encountered a problem while meshing inside..."
                     << std::endl ;
                 return false ;
             }
         }
         ret = tetra_get_mesh( tms_, &mesh_output_ ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         int nb_points = 0 ;
         ret = mesh_get_vertex_count( mesh_output_, &nb_points ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         int nb_tets = 0 ;
         ret = mesh_get_tetrahedron_count( mesh_output_, &nb_tets ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
         int nb_triangles = 0 ;
         ret = mesh_get_triangle_count( mesh_output_, &nb_triangles ) ;
-        ogf_debug_assert( ret == STATUS_OK ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
 
         initialize_sorage( nb_points, nb_tets ) ;
         std::vector< unsigned int > temp ;
@@ -587,7 +590,7 @@ tetgenio::init( P ) ;
         for( unsigned int t = 0; t < nb_tets; t++ ) {
             int tet[4] ;
             ret = mesh_get_tetrahedron_vertices( mesh_output_, t+1, tet ) ;
-            ogf_debug_assert( ret == STATUS_OK ) ;
+            grgmesh_debug_assert( ret == STATUS_OK ) ;
             set_tetra( t, tet ) ;
             for( unsigned int i = 0; i < 4; i++ ) {
                 star[tet[i] - 1].push_back( t ) ;
@@ -598,7 +601,7 @@ tetgenio::init( P ) ;
         for( unsigned int p = 0; p < nb_points; p++ ) {
             double point[3] ;
             ret = mesh_get_vertex_coordinates( mesh_output_, p+1, point ) ;
-            ogf_debug_assert( ret == STATUS_OK ) ;
+            grgmesh_debug_assert( ret == STATUS_OK ) ;
             set_point( p, point ) ;
             std::sort( star[p].begin(), star[p].end() ) ;
         }
@@ -607,10 +610,10 @@ tetgenio::init( P ) ;
         for( unsigned int t = 0; t < nb_triangles; t++ ) {
             int tag = -1 ;
             ret = mesh_get_triangle_tag( mesh_output_, t+1, &tag ) ;
-            ogf_debug_assert( ret == STATUS_OK ) ;
+            grgmesh_debug_assert( ret == STATUS_OK ) ;
             int vertices[3] ;
             ret = mesh_get_triangle_vertices( mesh_output_, t+1, vertices ) ;
-            ogf_debug_assert( ret == STATUS_OK ) ;
+            grgmesh_debug_assert( ret == STATUS_OK ) ;
 
             const std::vector< unsigned int >& tetra0 = star[ vertices[0]-1 ] ;
             const std::vector< unsigned int >& tetra1 = star[ vertices[1]-1 ] ;
@@ -638,15 +641,15 @@ tetgenio::init( P ) ;
                     ++cur_tetra2 ;
                 }
             }
-            ogf_debug_assert( count != 0 ) ;
+            grgmesh_debug_assert( count != 0 ) ;
             if( count == 1 ) {
                 unsigned int tet = results[0] ;
                 bool found = false ;
                 for( unsigned int ff = 0; ff < 4; ff++ ) {
-                    if( VorteXUtils::triple_equal(
-                        tetmesh_.vertex_index( tet, ff, 0 ),
-                        tetmesh_.vertex_index( tet, ff, 1 ),
-                        tetmesh_.vertex_index( tet, ff, 2 ),
+                    if( Utils::triple_equal(
+                        tetmesh_.tetra_vertex_index( tet, ff, 0 ),
+                        tetmesh_.tetra_vertex_index( tet, ff, 1 ),
+                        tetmesh_.tetra_vertex_index( tet, ff, 2 ),
                         vertices[0] - 1,
                         vertices[1] - 1,
                         vertices[2] - 1 ) ) {
@@ -655,7 +658,7 @@ tetgenio::init( P ) ;
                         break ;
                     }
                 }
-                ogf_debug_assert( found ) ;
+                grgmesh_debug_assert( found ) ;
             } else if( count == 2 ) {
                 unsigned int tet1 = results[0] ;
                 unsigned int tet2 = results[1] ;
@@ -723,7 +726,18 @@ tetgenio::init( P ) ;
         }
         return STATUS_OK ;
     }
-
+    status_t TetraGen_MG_Tetra::get_size_value(
+        meshgems_integer i,
+        meshgems_real* size,
+        void *user_data ) {
+        *size = static_cast< TetraGen_MG_Tetra* >( user_data )->get_resolution_value( i ) ;
+        return STATUS_OK ;
+    }
+    double TetraGen_MG_Tetra::get_resolution_value( int i )
+    {
+        grgmesh_assert_not_reached ;
+        return 0 ; //background_->resolution( i ) ;
+    }
 #endif
 
 }
