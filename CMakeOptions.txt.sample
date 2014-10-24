@@ -1,5 +1,13 @@
+#   Rename this file as CMakeOptions.txt and re-run CMake to
+# take changes into account.
+
 # Activate paranoid assert
 # SET(PARANOID_DEGUG TRUE)
 
 # Compile static library (default is shared)
 # SET(GRGMESH_STATIC TRUE)
+
+# To use MG-Tetra uncomment the next line
+#SET(USE_MG_TETRA TRUE)
+# To speficy the path of MG-Tetra, uncomment the next line or add the environment variable MG_TETRA
+#SET(MG_TETRA /home/botella/app/DISTENE/MeshGems-1.1/Products)
