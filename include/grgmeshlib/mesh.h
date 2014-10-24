@@ -23,6 +23,7 @@
 namespace GRGMesh {
 
     class GRGMESH_API Mesh {
+        friend class MeshMutator ;
 
     public:
         void clear()
@@ -31,7 +32,7 @@ namespace GRGMesh {
             vertex_indices_.clear() ;
         }
 
-        uint64 nb_v() const
+        uint64 nb_vertices() const
         {
             return vertices_.size() ;
         }
@@ -61,7 +62,8 @@ namespace GRGMesh {
             grgmesh_debug_assert( v < nb_vertices_in_cell( c ) ) ;
             return vertices_[vertex_indices_[cell_begin( c ) + v]] ;
         }
-
+        const vec3& vertex( uint64 v ) const { return vertices_[v] ; }
+        uint64 vertex_index( uint64 i ) const { return vertex_indices_[i] ; }
 
         virtual CellType cell_type( uint64 c ) const = 0 ;
         virtual CellDescriptor* cell_descriptor( uint64 c ) const = 0 ;
@@ -86,19 +88,38 @@ namespace GRGMesh {
         Mesh()
         {
         }
-        ~Mesh()
+        virtual ~Mesh()
         {
         }
         void copy( const Mesh& rhs )
         {
         }
 
-    private:
+    protected:
         ///List of the vertices
         std::vector< vec3 > vertices_ ;
         ///Mapping between the list of the vertices in a cell and the actual vertices
         std::vector< uint64 > vertex_indices_ ;
 
+    } ;
+
+    class GRGMESH_API MeshMutator {
+    public:
+        MeshMutator( Mesh& mesh )
+            : mesh_( mesh )
+        {
+        }
+        MeshMutator( const Mesh& mesh )
+            : mesh_( const_cast< Mesh& >( mesh ) )
+        {
+        }
+        virtual ~MeshMutator() {}
+
+        std::vector< vec3 >& vertices() { return mesh_.vertices_ ; }
+        std::vector< uint64 >& vertex_indices() { return mesh_.vertex_indices_ ; }
+
+    protected:
+        Mesh& mesh_ ;
     } ;
 
 }

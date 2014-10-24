@@ -25,6 +25,15 @@
 
 namespace GRGMesh {
 
+    class Edge ;
+    class SurfacePart ;
+    class ContactPart ;
+    class MixedMesh ;
+}
+
+
+namespace GRGMesh {
+
     class Box3d {
     public:
         Box3d()
@@ -150,6 +159,57 @@ namespace GRGMesh {
         {
             return 0.5 * length( cross( p2 - p1, p3 - p1 ) ) ;
         }
+        template< class T > static bool contains(
+            const std::vector< T >& v,
+            const T& t )
+        {
+            return find( v, t ) != -1 ;
+        }
+        template< class T > static int find( const std::vector< T >& v, const T& t )
+        {
+            for( unsigned int i = 0; i < v.size(); i++ ) {
+                if( v[i] == t ) return i ;
+            }
+            return -1 ;
+        }
+        template< class T1, class T2 > static bool inexact_equal( const T1& v1, const T2& v2 ) {
+            for( unsigned int i = 0; i < 3; i++ ) {
+                double diff( v1[i]-v2[i] ) ;
+                if( diff > epsilon || diff < -epsilon ) {
+                    return false ;
+                }
+            }
+            return true ;
+        }
+        template< class T1, class T2 > static bool triple_equal(
+            const T1& rhs1,
+            const T1& rhs2,
+            const T1& rhs3,
+            const T2& lhs1,
+            const T2& lhs2,
+            const T2& lhs3 )
+        {
+            if( rhs1 == lhs1 ) {
+                if( rhs2 == lhs2 && rhs3 == lhs3 ) {
+                    return true ;
+                } else if( rhs2 == lhs3 && rhs3 == lhs2 ) {
+                    return true ;
+                }
+            } else if( rhs1 == lhs2 ) {
+                if( rhs2 == lhs1 && rhs3 == lhs3 ) {
+                    return true ;
+                } else if( rhs2 == lhs3 && rhs3 == lhs1 ) {
+                    return true ;
+                }
+            } else if( rhs1 == lhs3 ) {
+                if( rhs2 == lhs1 && rhs3 == lhs2 ) {
+                    return true ;
+                } else if( rhs2 == lhs2 && rhs3 == lhs1 ) {
+                    return true ;
+                }
+            }
+            return false ;
+        }
     }
 
     class InputStream {
@@ -216,6 +276,41 @@ namespace GRGMesh {
     class GRGMESH_API MakeUnique {
     public:
         MakeUnique( const std::vector< vec3 >& data ) ;
+        template< class T > MakeUnique( const std::vector< T >& data )
+        {
+            int nb_points = 0 ;
+            for( unsigned int i = 0; i < data.size(); i++ ) {
+                nb_points += data[i].points().size() ;
+            }
+            points_.resize( nb_points ) ;
+            indices_.resize( nb_points ) ;
+            int cur_id = 0 ;
+            for( unsigned int i = 0; i < data.size(); i++ ) {
+                for( unsigned int p = 0; p < data[i].points().size(); p++, cur_id++ ) {
+                    points_[cur_id] = data[i].points()[p] ;
+                    indices_[cur_id] = cur_id ;
+                }
+            }
+        }
+        template< class T > MakeUnique( const std::vector< T >& data, bool T_is_a_pointer )
+        {
+            int nb_points = 0 ;
+            for( unsigned int i = 0; i < data.size(); i++ ) {
+                nb_points += data[i]->nb_points() ;
+            }
+            points_.resize( nb_points ) ;
+            indices_.resize( nb_points ) ;
+            int cur_id = 0 ;
+            for( unsigned int i = 0; i < data.size(); i++ ) {
+                for( unsigned int p = 0; p < data[i]->nb_points(); p++, cur_id++ ) {
+                    points_[cur_id] = data[i]->point( p ) ;
+                    indices_[cur_id] = cur_id ;
+                }
+            }
+        }
+
+        void add_edges( const std::vector< Edge >& points ) ;
+        void add_points( const std::vector< vec3 >& points ) ;
 
         void unique( int nb_neighbors = 5 ) ;
 
@@ -224,17 +319,120 @@ namespace GRGMesh {
         const std::vector< int >& indices() const { return indices_ ; }
 
     private:
+        std::vector< vec3 > points_ ;
+        std::vector< int > indices_ ;
+    } ;
+
+    class GRGMESH_API ColocaterANN {
+    public:
+        ColocaterANN( const SurfacePart& mesh ) ;
+        ColocaterANN( const ContactPart& mesh ) ;
+        ColocaterANN( const MixedMesh& mesh ) ;
+        ColocaterANN( const MixedMesh& mesh, bool use_surface_id ) ;
+        ColocaterANN( const std::vector< vec3 >& vertices ) ;
+        ColocaterANN( const std::vector< Edge >& edges ) ;
+
+        ~ColocaterANN() {
+            annDeallocPts( ann_points_ ) ;
+            delete ann_tree_;
+            annClose() ;
+        }
+
+        void get_mapped_colocated(
+            vec3& v,
+            std::vector< unsigned int >& result,
+            int nb_neighbors = 2 ) const ;
+
+        bool get_colocated(
+            const vec3& v,
+            std::vector< unsigned int >& result,
+            int nb_neighbors = 2 ) const {
+            return get_colocated( const_cast< vec3& >( v ), result, nb_neighbors ) ;
+        }
         bool get_colocated(
             vec3& v,
             std::vector< unsigned int >& result,
-            int nb_neighbors ) const ;
+            int nb_neighbors = 2 ) const ;
+        void get_neighbors(
+            const vec3& v,
+            std::vector< int >& result,
+            int nb_neighbors = 2 ) const {
+            return get_neighbors( const_cast< vec3& >( v ), result, nb_neighbors ) ;
+        }
+        void get_neighbors(
+            vec3& v,
+            std::vector< int >& result,
+            int nb_neighbors = 2 ) const ;
+
+        vec3 point( int i ) const {
+            return vec3( ann_points_[i] ) ;
+        }
 
     private:
+        std::vector< int > mapped_indices_ ;
         ANNpointArray ann_points_ ;
         ANNkd_tree* ann_tree_ ;
+    } ;
 
-        std::vector< vec3 > points_ ;
-        std::vector< int > indices_ ;
+
+    template< class T, int n >
+    class GRGMESH_API Array {
+    public:
+        void assign( const std::vector< T >& values ) {
+            grgmesh_debug_assert( values.size() < n+1 ) ;
+            for( unsigned int i = 0; i < values.size(); i++ ) {
+                values_[i] = values[i] ;
+            }
+        }
+
+        T value( int i ) const { return values_[i] ; }
+        T& value( int i ) { return values_[i] ; }
+
+        double normalized_value( int i, double max, double min, double scale ) const {
+            double s = values_[i] ;
+            s = (s - min) / (max - min) ;
+            s = std::min(s, 1.0) ;
+            s = std::max(s, 0.0) ;
+            s *= scale ;
+        return s ;
+        }
+
+    protected:
+        T values_[n] ;
+    } ;
+
+    template< int n >
+    class GRGMESH_API intArrayTmpl: public Array< int, n > {
+    public:
+        intArrayTmpl() {
+            for( unsigned int i = 0; i < n; i++ ) {
+                this->values_[i] = -1 ;
+            }
+        }
+    } ;
+    typedef intArrayTmpl< 6 > intArray ;
+    typedef intArrayTmpl< 12 > edgeArray ;
+
+    template< int n >
+    class GRGMESH_API boolArrayTmpl: public Array< bool, n > {
+    public:
+        boolArrayTmpl() {
+            for( unsigned int i = 0; i < n; i++ ) {
+                this->values_[i] = false ;
+            }
+        }
+    } ;
+    typedef boolArrayTmpl< 6 > boolArray ;
+
+    class GRGMESH_API Edge: public Array< vec3, 2 > {
+    public:
+        Edge( const vec3& v0, const vec3& v1 ) {
+            values_[0] = v0 ;
+            values_[1] = v1 ;
+        }
+        vec3 barycenter() const {
+            return (values_[0]+values_[1]) / static_cast< double >( 2 ) ;
+        }
     } ;
 
 }

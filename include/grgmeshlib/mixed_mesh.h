@@ -26,6 +26,7 @@ namespace GRGMesh {
      * Mesh which can handle different type of elements.
      */
     class GRGMESH_API MixedMesh: public Mesh {
+        friend class MixedMeshMutator ;
 
     public:
         MixedMesh()
@@ -55,20 +56,23 @@ namespace GRGMesh {
             return cell_descriptor( c )->nb_facets ;
         }
 
-        uint64 nb_vertices_in_cell_facet( uint64 c, uint64 f ) const
+        uint64 nb_vertices_in_cell_facet( uint64 c, uint8 f ) const
         {
             CellDescriptor* desc = cell_descriptor( c ) ;
             grgmesh_debug_assert( f < desc->nb_facets ) ;
             return desc->nb_vertices_in_facet[f] ;
         }
 
-        uint64 cell_facet_vertex( uint64 c, uint64 f, uint64 v ) const
+        uint64 cell_facet_vertex( uint64 c, uint8 f, uint8 v ) const
         {
             CellDescriptor* desc = cell_descriptor( c ) ;
             grgmesh_debug_assert( f < desc->nb_facets ) ; grgmesh_debug_assert( v < desc->nb_vertices_in_facet[f] ) ;
             return cell_vertex_index( c, desc->facet[f][v] ) ;
         }
 
+        uint64 tetra_vertex_index( uint64 c, uint8 f, uint8 v ) const {
+            return vertex_index( cells_[TETRA][4*c + cell_descriptor_[TETRA]->facet[f][v]] ) ;
+        }
     private:
         void copy( const MixedMesh& rhs )
         {
@@ -80,6 +84,34 @@ namespace GRGMesh {
 
         std::vector< uint64 > cells_[7] ;
         std::vector< CellDescriptor* > cell_descriptor_ ;
+    } ;
+
+
+    class GRGMESH_API MixedMeshMutator: public MeshMutator {
+    public:
+        MixedMeshMutator( MixedMesh& mixed_mesh )
+            : MeshMutator( mixed_mesh ), mixed_mesh_( mixed_mesh )
+        {
+        }
+        MixedMeshMutator( const MixedMesh& mixed_mesh )
+            :
+                MeshMutator( const_cast< MixedMesh& >( mixed_mesh ) ),
+                mixed_mesh_( const_cast< MixedMesh& >( mixed_mesh ) )
+        {
+        }
+        virtual ~MixedMeshMutator() {}
+
+        std::vector< uint64 >* cells() { return mixed_mesh_.cells_ ; }
+        std::vector< uint64 >& lines() { return mixed_mesh_.cells_[LINE] ; }
+        std::vector< uint64 >& triangles() { return mixed_mesh_.cells_[TRGL] ; }
+        std::vector< uint64 >& quad() { return mixed_mesh_.cells_[QUAD] ; }
+        std::vector< uint64 >& tetra() { return mixed_mesh_.cells_[TETRA] ; }
+        std::vector< uint64 >& pyramids() { return mixed_mesh_.cells_[PYRAMID] ; }
+        std::vector< uint64 >& prisms() { return mixed_mesh_.cells_[PRISM] ; }
+        std::vector< uint64 >& hexa() { return mixed_mesh_.cells_[HEXA] ; }
+
+    private:
+        MixedMesh& mixed_mesh_ ;
     } ;
 
 }

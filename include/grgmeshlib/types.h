@@ -62,6 +62,10 @@ namespace GRGMesh {
     const float64 small_double = 1e-20 ;
     const float64 epsilon = 1E-8 ;
 
+    enum Tetra_method {
+        TetGen, MG_Tetra
+    } ;
+
     enum CellType {
         LINE    = 0,
         TRGL    = 1,
