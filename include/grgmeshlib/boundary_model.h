@@ -77,19 +77,19 @@ namespace GRGMesh {
         int nb_surface_with_free_boundary() const ;
 
         //Accessors
-        unsigned int nb_points() const { return points_.size() ; }
-        unsigned int nb_corners() const { return corners_.size() ; }
-        unsigned int nb_contact_parts() const { return contact_parts_.size() ; }
-        unsigned int nb_surface_parts() const { return surface_parts_.size() ; }
-        unsigned int nb_contacts() const { return contacts_.size() ; }
-        unsigned int nb_surfaces() const { return surfaces_.size() ; }
-        unsigned int nb_regions() const { return regions_.size() ; }
-        unsigned int nb_layers() const { return layers_.size() ; }
-        unsigned int nb_surface_part_inside() const ;
-        unsigned int nb_contact_part_inside() const ;
-        unsigned int nb_real_corners_inside() const ;
+        uint64 nb_points() const { return points_.size() ; }
+        uint64 nb_corners() const { return corners_.size() ; }
+        uint64 nb_contact_parts() const { return contact_parts_.size() ; }
+        uint64 nb_surface_parts() const { return surface_parts_.size() ; }
+        uint64 nb_contacts() const { return contacts_.size() ; }
+        uint64 nb_surfaces() const { return surfaces_.size() ; }
+        uint64 nb_regions() const { return regions_.size() ; }
+        uint64 nb_layers() const { return layers_.size() ; }
+        uint64 nb_surface_part_inside() const ;
+        uint64 nb_contact_part_inside() const ;
+        uint64 nb_real_corners_inside() const ;
 
-        const vec3& point( unsigned int p ) const { return points_[p] ; }
+        const vec3& point( uint64 p ) const { return points_[p] ; }
         const Corner& corner( int index ) const { return corners_[index] ; }
         const ContactPart& contact_part( int index ) const { return contact_parts_[index] ; }
         const SurfacePart& surface_part( int index ) const { return surface_parts_[index] ; }
@@ -98,37 +98,37 @@ namespace GRGMesh {
         const BoundaryModelElement& region( int index ) const { return regions_[index] ; }
         const BoundaryModelElement& layer( int index ) const { return layers_[index] ; }
         bool is_triangulated_model() const {
-            for( unsigned int s = 0; s < nb_surface_parts(); s++ ) {
+            for( uint64 s = 0; s < nb_surface_parts(); s++ ) {
                 if( !surface_parts_[s].is_triangulated() ) return false ;
             }
             return true ;
         }
         bool is_resolution_set() const {
-            for( unsigned int s = 0; s < nb_surface_parts(); s++ ) {
+            for( uint64 s = 0; s < nb_surface_parts(); s++ ) {
                 if( !surface_parts_[s].is_resolution_set() ) return false ;
             }
             return true ;
         }
         bool is_U_set() const {
-            for( unsigned int s = 0; s < nb_surface_parts(); s++ ) {
+            for( uint64 s = 0; s < nb_surface_parts(); s++ ) {
                 if( !surface_parts_[s].is_U_set() ) return false ;
             }
             return true ;
         }
         bool is_V_set() const {
-            for( unsigned int s = 0; s < nb_surface_parts(); s++ ) {
+            for( uint64 s = 0; s < nb_surface_parts(); s++ ) {
                 if( !surface_parts_[s].is_V_set() ) return false ;
             }
             return true ;
         }
         bool is_W_set() const {
-            for( unsigned int s = 0; s < nb_surface_parts(); s++ ) {
+            for( uint64 s = 0; s < nb_surface_parts(); s++ ) {
                 if( !surface_parts_[s].is_W_set() ) return false ;
             }
             return true ;
         }
         bool is_UVW_set() const {
-            for( unsigned int s = 0; s < nb_surface_parts(); s++ ) {
+            for( uint64 s = 0; s < nb_surface_parts(); s++ ) {
                 if( !surface_parts_[s].is_UVW_set() ) return false ;
             }
             return true ;
@@ -174,22 +174,22 @@ namespace GRGMesh {
         void load_file( std::istream& in ) ;
         bool rebuild() ;
         void copy_macro_topology( const BoundaryModel* from ) ;
-        void reserve_nb_corners( unsigned int size ) {
+        void reserve_nb_corners( uint64 size ) {
             model_->corners_.reserve( size ) ;
         }
-        void reserve_nb_contact_parts( unsigned int size ) {
+        void reserve_nb_contact_parts( uint64 size ) {
             model_->contact_parts_.reserve( size ) ;
         }
-        void reserve_nb_surface_parts( unsigned int size ) {
+        void reserve_nb_surface_parts( uint64 size ) {
             model_->surface_parts_.reserve( size ) ;
         }
-        void reserve_nb_surfaces( unsigned int size ) {
+        void reserve_nb_surfaces( uint64 size ) {
             model_->surfaces_.reserve( size ) ;
         }
-        void reserve_nb_contacts( unsigned int size ) {
+        void reserve_nb_contacts( uint64 size ) {
             model_->contacts_.reserve( size ) ;
         }
-        void reserve_nb_regions( unsigned int size ) {
+        void reserve_nb_regions( uint64 size ) {
             model_->regions_.reserve( size ) ;
         }
         void set_universe( const std::vector< std::pair< int, bool > >& boundaries ) ;
@@ -201,42 +201,42 @@ namespace GRGMesh {
             model_->points_.push_back( point ) ;
         }
 
-        void set_corner( unsigned int id, const vec3& p ) {
+        void set_corner( uint64 id, const vec3& p ) {
             grgmesh_debug_assert( id < model_->nb_corners() ) ;
             model_->corners_[id].set_corner( model_->nb_points() ) ;
             add_point( p ) ;
         }
-        void add_corner_boundary( unsigned int id, unsigned int b ) {
+        void add_corner_boundary( uint64 id, uint64 b ) {
             model_->corners_[id].add_boundary( b ) ;
         }
-        void add_corner_in_boundary( unsigned int id, unsigned int b ) {
+        void add_corner_in_boundary( uint64 id, uint64 b ) {
             model_->corners_[id].add_in_boundary( b ) ;
         }
 
-        unsigned int create_contact_part(
+        uint64 create_contact_part(
             int id = -1,
-            const std::vector< unsigned int >& points = empty_uint_vector )
+            const std::vector< uint64 >& points = empty_uint_vector )
         {
             if( id == -1 ) id = model_->nb_contact_parts() ;
             grgmesh_debug_assert( id == model_->nb_contact_parts() ) ;
             model_->contact_parts_.push_back( ContactPart( model_, id, points ) ) ;
             return id ;
         }
-        void set_contact_part( unsigned int id, const std::vector< vec3 >& vertices ) {
+        void set_contact_part( uint64 id, const std::vector< vec3 >& vertices ) {
             grgmesh_debug_assert( id < model_->nb_contact_parts() ) ;
-            for( unsigned int p = 0; p < vertices.size(); p++ ) {
+            for( uint64 p = 0; p < vertices.size(); p++ ) {
                 model_->contact_parts_[id].vertices_.push_back( model_->nb_points() ) ;
                 add_point( vertices[p] ) ;
             }
         }
-        void add_contact_part_boundary( unsigned int id, unsigned int b ) {
+        void add_contact_part_boundary( uint64 id, uint64 b ) {
             model_->contact_parts_[id].add_boundary( b ) ;
         }
-        void add_contact_part_in_boundary( unsigned int id, unsigned int b ) {
+        void add_contact_part_in_boundary( uint64 id, uint64 b ) {
             model_->contact_parts_[id].add_in_boundary( b ) ;
         }
 
-        unsigned int create_surface_part(
+        uint64 create_surface_part(
             int id = -1,
             int parent = -1,
             GEOL_FEATURE type = default_type )
@@ -250,25 +250,25 @@ namespace GRGMesh {
             const std::string& interface_name,
             const std::string& type,
             const KeyFacet& key ) ;
-//        void set_surface_part_map( unsigned int id, Map* map ) ;
-        void add_surface_part_boundary( unsigned int id, unsigned int b ) {
+//        void set_surface_part_map( uint64 id, Map* map ) ;
+        void add_surface_part_boundary( uint64 id, uint64 b ) {
             model_->surface_parts_[id].add_boundary( b ) ;
         }
-        void add_surface_part_in_boundary( unsigned int id, unsigned int b ) {
+        void add_surface_part_in_boundary( uint64 id, uint64 b ) {
             model_->surface_parts_[id].add_in_boundary( b ) ;
         }
         bool set_surface_part_points_and_facets(
-            unsigned int sp_id,
-            const std::vector< unsigned int >& points,
-            const std::vector< unsigned int >& facets,
-            const std::vector< unsigned int >& facet_ptr,
+            uint64 sp_id,
+            const std::vector< uint64 >& points,
+            const std::vector< uint64 >& facets,
+            const std::vector< uint64 >& facet_ptr,
             bool compute_adjacent = true )
         {
             return model_->surface_parts_[sp_id].set_points_and_facets( points,
                 facets, facet_ptr, compute_adjacent ) ;
         }
         void set_surface_part_adjacent_facets(
-            unsigned int sp_id,
+            uint64 sp_id,
             const std::vector< int >& in
 
             )
@@ -276,7 +276,7 @@ namespace GRGMesh {
             model_->surface_parts_[sp_id].set_adjacent_facets( in ) ;
         }
 
-        unsigned int create_surface(
+        uint64 create_surface(
             const std::string& name,
             int id = -1,
             GEOL_FEATURE type = default_type )
@@ -287,44 +287,44 @@ namespace GRGMesh {
             model_->surfaces_[id].set_name( name ) ;
             return id ;
         }
-        void add_surface_child( unsigned int id, unsigned int child ) {
+        void add_surface_child( uint64 id, uint64 child ) {
             model_->surfaces_[id].add_child( child ) ;
         }
-        void add_surface_boundary( unsigned int id, unsigned int b ) {
+        void add_surface_boundary( uint64 id, uint64 b ) {
             model_->surfaces_[id].add_boundary( b ) ;
         }
 
-        void add_contact_child( unsigned int id, unsigned int child ) {
+        void add_contact_child( uint64 id, uint64 child ) {
             model_->contacts_[id].add_child( child ) ;
         }
-        void add_contact_boundary( unsigned int id, unsigned int b ) {
+        void add_contact_boundary( uint64 id, uint64 b ) {
             model_->contacts_[id].add_boundary( b ) ;
         }
-        void add_contact_in_boundary( unsigned int id, unsigned int b ) {
+        void add_contact_in_boundary( uint64 id, uint64 b ) {
             model_->contacts_[id].add_in_boundary( b ) ;
         }
 
-        unsigned int create_region( int id = -1 ) {
+        uint64 create_region( int id = -1 ) {
             if( id == -1 ) id = model_->regions_.size() ;
             grgmesh_debug_assert( id == model_->regions_.size() ) ;
             model_->regions_.push_back( BoundaryModelElement( model_, 3, id ) ) ;
             return id ;
         }
-        unsigned int create_region(
+        uint64 create_region(
             const std::string& name,
             const std::vector< std::pair< int, bool > >& boundaries,
             int id = -1 ) ;
         void add_region_oriented_boundary(
-            unsigned int id,
-            unsigned int b,
+            uint64 id,
+            uint64 b,
             bool side )
         {
             model_->regions_[id].add_oriented_boundary( b, side ) ;
         }
-        void add_region_in_boundary( unsigned int id, unsigned int b ) {
+        void add_region_in_boundary( uint64 id, uint64 b ) {
             model_->regions_[id].add_in_boundary( b ) ;
         }
-        void remove_univers_from_regions( unsigned int id ) {
+        void remove_univers_from_regions( uint64 id ) {
             for( int i = 0; i < model_->nb_regions(); ++i ) {
                 int cur_id = model_->region(i).id() ;
                 grgmesh_assert( i == cur_id ) ;
@@ -333,20 +333,20 @@ namespace GRGMesh {
             model_->regions_.erase( model_->regions_.begin() + id ) ;
         }
 
-        unsigned int create_layer( const std::string& name, int id = -1 ) {
+        uint64 create_layer( const std::string& name, int id = -1 ) {
             if( id == -1 ) id = model_->layers_.size() ;
             grgmesh_debug_assert( id == model_->layers_.size() ) ;
             model_->layers_.push_back( BoundaryModelElement( model_, 3, id ) ) ;
             model_->layers_[id].set_name( name ) ;
             return id ;
         }
-        void add_layer_child( unsigned int id, unsigned int child ) {
+        void add_layer_child( uint64 id, uint64 child ) {
             model_->layers_[id].add_child( child ) ;
         }
 
         /* Functions to help building the BoundaryModel */
 
-        int find_or_create_corner( unsigned int index ) ;
+        int find_or_create_corner( uint64 index ) ;
         int find_or_create_contact_part(
             int corner0,
             int corner1,

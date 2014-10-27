@@ -22,6 +22,8 @@ namespace GRGMesh {
 
     /** Generic pointer type */
     typedef void* pointer ;
+    /** Small pointer type */
+    typedef uint8_t* small_pointer ;
 
     /** Null pointer type */
     #define nil 0
@@ -66,10 +68,10 @@ namespace GRGMesh {
     typedef double float64 ;
     static float64 dummy_float64 ;
 
-    const float32 big_float = 1e10f ;
-    const float32 small_float = 1e-10f ;
-    const float64 big_double = 1e20 ;
-    const float64 small_double = 1e-20 ;
+    const float32 big_float32 = 1e10f ;
+    const float32 small_float32 = 1e-10f ;
+    const float64 big_float64 = 1e20 ;
+    const float64 small_float64 = 1e-20 ;
     const float64 epsilon = 1E-8 ;
 
     enum Tetra_method {
