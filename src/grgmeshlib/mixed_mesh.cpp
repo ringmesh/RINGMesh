@@ -16,7 +16,7 @@
 
 namespace GRGMesh {
 
-    CellType MixedMesh::cell_type( uint64 c ) const
+    CellType MixedMesh::cell_type( uint64 c, uint64& c_index ) const
     {
         uint8 result = 0 ;
         uint64 size = 0 ;
@@ -24,6 +24,7 @@ namespace GRGMesh {
             size += cells_[result].size() ;
             if( c > size ) break ;
         }
+        c_index = c - size ;
         return CellType( result ) ;
     }
 

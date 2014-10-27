@@ -83,12 +83,12 @@ namespace GRGMesh {
 
         T* operator->() const
         {
-            ogf_assert( pointer_ != nil ) ;
+            grgmesh_assert( pointer_ != nil ) ;
             return pointer_ ;
         }
         T& operator*() const
         {
-            ogf_assert( pointer_ != nil ) ;
+            grgmesh_assert( pointer_ != nil ) ;
             return *pointer_ ;
         }
         operator T*() const
