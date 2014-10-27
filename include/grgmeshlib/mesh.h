@@ -19,6 +19,7 @@
 #include <grgmeshlib/vecn.h>
 
 #include <vector>
+#include <map>
 
 namespace GRGMesh {
 
@@ -36,21 +37,13 @@ namespace GRGMesh {
         {
             return vertices_.size() ;
         }
-        virtual uint64 nb_c() const = 0 ;
+        virtual uint64 nb_cells() const = 0 ;
 
-        /*!
-         * Get the vertex first index of a cell
-         * @param c Cell index
-         */
         virtual uint64 cell_begin( uint64 c ) const = 0 ;
-        /*!
-         * Get the vertex last index of a cell (the first of the next cell)
-         * @param c Cell index
-         */
         virtual uint64 cell_end( uint64 c ) const = 0 ;
-        virtual uint64 nb_vertices_in_cell( uint64 c ) const = 0 ;
-        virtual uint64 nb_facets_in_cell( uint64 c ) const = 0 ;
-        virtual uint64 nb_vertices_in_cell_facet( uint64 c, uint64 f ) const = 0 ;
+        virtual uint8 nb_vertices_in_cell( uint64 c ) const = 0 ;
+        virtual uint8 nb_facets_in_cell( uint64 c ) const = 0 ;
+        virtual uint8 nb_vertices_in_cell_facet( uint64 c, uint8 f ) const = 0 ;
 
         uint64 cell_vertex_index( uint64 c, uint64 v ) const
         {
@@ -65,7 +58,7 @@ namespace GRGMesh {
         const vec3& vertex( uint64 v ) const { return vertices_[v] ; }
         uint64 vertex_index( uint64 i ) const { return vertex_indices_[i] ; }
 
-        virtual CellType cell_type( uint64 c ) const = 0 ;
+        virtual CellType cell_type( uint64 c, uint64& c_index = dummy_uint64  ) const = 0 ;
         virtual CellDescriptor* cell_descriptor( uint64 c ) const = 0 ;
         uint64 cell_facet_vertex( uint64 c, uint64 f, uint64 v ) const
         {
