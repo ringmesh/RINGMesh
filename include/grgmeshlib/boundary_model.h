@@ -25,7 +25,6 @@
 #include <string>
 
 namespace GRGMesh {
-    class ContactPart ;
     struct Border ;
     class BoundaryModelBuilder ;
 }
@@ -140,14 +139,14 @@ namespace GRGMesh {
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
         static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) ;
 
-    private:
+    protected:
         bool load_gocad_model3d( std::istream& in ) ;
         bool save_gocad_model3d( std::ostream& out ) ;
 
         bool check_model3d_compatibility() ;
 
-    private:
-        std::string name_ ;
+    protected:
+        std::string gocad_name_ ;
 
         // Basic elements
         std::vector< vec3 >                 points_ ;
@@ -195,6 +194,9 @@ namespace GRGMesh {
         }
         void set_universe( const std::vector< std::pair< int, bool > >& boundaries ) ;
 
+        void add_point( float64* point ) {
+            add_point( vec3( point ) ) ;
+        }
         void add_point( const vec3& point ) {
             model_->points_.push_back( point ) ;
         }
