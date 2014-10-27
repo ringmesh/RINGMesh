@@ -140,7 +140,7 @@ namespace GRGMesh {
     void BoundaryModel::print_topology( std::ofstream& out ) const
     {
 
-        out << "Topological information of model" << SEP << name_ << SEP
+        out << "Topological information of model" << SEP << gocad_name_ << SEP
             << std::endl ;
 
         out << "Numbers of" << SEP << "Regions" << SEP << "Surfaces Parts Inside"
@@ -197,7 +197,7 @@ namespace GRGMesh {
 
     void BoundaryModel::print_element_info( std::ofstream& out ) const
     {
-        out << name_ << std::endl ;
+        out << gocad_name_ << std::endl ;
 
         BoundaryModelElement::print_complexity_categories( out ) ;
 
@@ -655,7 +655,7 @@ namespace GRGMesh {
     {
         out.precision( 16 ) ;
         if( !check_model3d_compatibility() ) {
-            std::cout << "The BoundaryModel " << name_
+            std::cout << "The BoundaryModel " << gocad_name_
                 << " cannot be saved in .ml format " << std::endl ;
             return false ;
         }

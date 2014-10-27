@@ -8,8 +8,15 @@ ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
 
 IF(WIN32)
   ADD_DEFINITIONS(-DGRGMESH_EXPORTS)
+ELSE(WIN32)
+	IF(CMAKE_BUILD_TYPE MATCHES "Debug")
+        # commented-out for now, since it causes problems when linking with
+        # C++ libraries that are not compiled with this flag (changes the
+        # size/definition of STL objects)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_DEBUG")
+	ENDIF(CMAKE_BUILD_TYPE MATCHES "Debug")
 ENDIF(WIN32)
-#add_definitions(-Wfatal-errors)
+
 IF(PARANOID_DEGUG)
   ADD_DEFINITIONS(-DPARANOID_DEGUG)
 ENDIF(PARANOID_DEGUG)

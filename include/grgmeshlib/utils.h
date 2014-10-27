@@ -17,7 +17,7 @@
 
 #include <grgmeshlib/common.h>
 #include <grgmeshlib/vecn.h>
-#include <ANN/ANN.h>
+#include <third_party/ANN/ANN.h>
 
 #include <iostream>
 #include <sstream>
