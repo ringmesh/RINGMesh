@@ -76,16 +76,16 @@ namespace GRGMesh {
 
         CellType cell_type( uint64 c, uint64& c_index = dummy_uint64 ) const ;
 
-        CellDescriptor* cell_descriptor( uint64 c ) const
+        const CellDescriptor* cell_descriptor( uint64 c ) const
         {
-            CellDescriptor* result = cell_descriptor_[cell_type( c )] ;
+            const CellDescriptor* result = cell_descriptor_[cell_type( c )] ;
             grgmesh_debug_assert( result != 0 ) ;
             return result ;
         }
 
         uint64 cell_facet_vertex( uint64 c, uint8 f, uint8 v ) const
         {
-            CellDescriptor* desc = cell_descriptor( c ) ;
+            const CellDescriptor* desc = cell_descriptor( c ) ;
             grgmesh_debug_assert( f < desc->nb_facets ) ; grgmesh_debug_assert( v < desc->nb_vertices_in_facet[f] ) ;
             return cell_vertex_index( c, desc->facet[f][v] ) ;
         }
@@ -102,7 +102,7 @@ namespace GRGMesh {
 
     private:
         std::vector< uint64 > cells_[7] ;
-        static std::vector< CellDescriptor* > cell_descriptor_ ;
+        static const CellDescriptor* cell_descriptor_[7] ;
     } ;
 
 

@@ -59,10 +59,10 @@ namespace GRGMesh {
         uint64 vertex_index( uint64 i ) const { return vertex_indices_[i] ; }
 
         virtual CellType cell_type( uint64 c, uint64& c_index = dummy_uint64  ) const = 0 ;
-        virtual CellDescriptor* cell_descriptor( uint64 c ) const = 0 ;
+        virtual const CellDescriptor* cell_descriptor( uint64 c ) const = 0 ;
         uint64 cell_facet_vertex( uint64 c, uint64 f, uint64 v ) const
         {
-            CellDescriptor* desc = cell_descriptor( c ) ;
+            const CellDescriptor* desc = cell_descriptor( c ) ;
             grgmesh_debug_assert( f < desc->nb_facets ) ;
             grgmesh_debug_assert( v < desc->nb_vertices_in_facet[f] ) ;
             return cell_vertex_index( c, desc->facet[f][v] ) ;

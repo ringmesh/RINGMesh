@@ -97,7 +97,34 @@ namespace GRGMesh {
     } ;
 
 
-    static CellDescriptor tet_descriptor = {
+    static CellDescriptor line_descriptor = {
+        2,              // nb_vertices
+        1,              // nb_facets
+        { 2 }, // nb_vertices in facet
+        { { 0, 1 } },  // facets
+        1,              // nb_edges
+        { { 0, 1 } } , // edges
+        { { 0 } } //edges_in_facet
+    } ;
+    static CellDescriptor trgl_descriptor = {
+        3,              // nb_vertices
+        1,              // nb_facets
+        { 3 }, // nb_vertices in facet
+        { { 0, 1, 2 } },  // facets
+        3,              // nb_edges
+        { { 0, 1 }, { 1, 2 }, { 2, 0 } } , // edges
+        { { 0, 1, 2 } } //edges_in_facet
+    } ;
+    static CellDescriptor quad_descriptor = {
+        4,              // nb_vertices
+        1,              // nb_facets
+        { 4 }, // nb_vertices in facet
+        { { 0, 1, 2, 3 } },  // facets
+        4,              // nb_edges
+        { { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0} } , // edges
+        { { 0, 1, 2, 3 } } //edges_in_facet
+    } ;
+    static CellDescriptor tetra_descriptor = {
         4,              // nb_vertices
         4,              // nb_facets
         { 3, 3, 3, 3 }, // nb_vertices in facet
@@ -106,8 +133,7 @@ namespace GRGMesh {
         { { 1, 3 }, { 3, 2 }, { 2, 1 }, { 0, 2 }, { 3, 0 }, { 1, 0 } } , // edges
         { { 2, 0, 1 }, { 1, 4, 3 }, { 4, 0, 5 }, { 3, 2, 5 } } //edges_in_facet
     } ;
-
-    static CellDescriptor hex_descriptor = {
+    static CellDescriptor hexa_descriptor = {
         8,                      // nb_vertices
         6,                      // nb_facets
         { 4, 4, 4, 4, 4, 4 },   // nb_vertices in facet
@@ -119,7 +145,6 @@ namespace GRGMesh {
         { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 3, 8, 5, 9 },
           { 1, 11, 7, 10 }, { 0, 10, 4, 8 }, { 2, 9, 6, 11 } }  //edges_in_facet
     } ;
-
     static CellDescriptor prism_descriptor = {
         6,                  // nb_vertices
         5,                  // nb_facets
@@ -131,7 +156,6 @@ namespace GRGMesh {
         { { 0, 1, 2 }, { 5, 4, 3 }, { 6, 5, 7, 0 },
           { 2, 8, 3, 6 }, { 7, 4, 8, 1 } }  //edges_in_facet
     } ;
-
     static CellDescriptor pyramid_descriptor = {
         5,                  // nb_vertices
         5,                  // nb_facets

@@ -16,6 +16,10 @@
 
 namespace GRGMesh {
 
+    const CellDescriptor* MixedMesh::cell_descriptor_[7] = {
+        &line_descriptor, &trgl_descriptor, &quad_descriptor, &tetra_descriptor,
+        &pyramid_descriptor, &prism_descriptor, &hexa_descriptor } ;
+
     CellType MixedMesh::cell_type( uint64 c, uint64& c_index ) const
     {
         uint8 result = 0 ;
