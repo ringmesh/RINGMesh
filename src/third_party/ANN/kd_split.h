@@ -22,10 +22,12 @@
 //		Initial release
 //----------------------------------------------------------------------
 
-#ifndef ANN_KD_SPLIT_H
-#define ANN_KD_SPLIT_H
+#ifndef GRGMESH_ANN_KD_SPLIT_H
+#define GRGMESH_ANN_KD_SPLIT_H
 
 #include "kd_tree.h"					// kd-tree definitions
+
+namespace GRGMesh {
 
 //----------------------------------------------------------------------
 //	External entry points
@@ -82,4 +84,5 @@ void sl_fair_split(						// sliding fair-split kd-splitter
 	ANNcoord			&cut_val,		// cutting value (returned)
 	int					&n_lo);			// num of points on low side (returned)
 
+}
 #endif

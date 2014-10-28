@@ -36,6 +36,8 @@
 
 using namespace std;					// make std:: available
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 //		Constants
 //----------------------------------------------------------------------
@@ -441,4 +443,5 @@ static ANNkd_ptr annReadTree(
 		annError("Illegal node type in dump file", ANNabort);
 		exit(0);								// to keep the compiler happy
 	}
+}
 }

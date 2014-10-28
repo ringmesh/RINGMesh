@@ -24,7 +24,9 @@
 
 #include "kd_fix_rad_search.h"			// kd fixed-radius search decls
 
-//----------------------------------------------------------------------
+namespace GRGMesh {
+
+
 //	Approximate fixed-radius k nearest neighbor search
 //		The squared radius is provided, and this procedure finds the
 //		k nearest neighbors within the radius, and returns the total
@@ -180,4 +182,5 @@ void ANNkd_leaf::ann_FR_search(ANNdist box_dist)
 	ANN_LEAF(1)							// one more leaf node visited
 	ANN_PTS(n_pts)						// increment points visited
 	ANNkdFRPtsVisited += n_pts;			// increment number of points visited
+}
 }

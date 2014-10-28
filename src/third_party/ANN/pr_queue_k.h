@@ -22,11 +22,13 @@
 //		Initial release
 //----------------------------------------------------------------------
 
-#ifndef PR_QUEUE_K_H
-#define PR_QUEUE_K_H
+#ifndef GRGMESH_PR_QUEUE_K_H
+#define GRGMESH_PR_QUEUE_K_H
 
 #include <ANN/ANNx.h>					// all ANN includes
 #include <ANN/ANNperf.h>				// performance evaluation
+
+namespace GRGMesh {
 
 //----------------------------------------------------------------------
 //	Basic types
@@ -114,5 +116,5 @@ public:
 			ANN_FLOP(k-i+1)				// increment floating ops
 		}
 };
-
+}
 #endif

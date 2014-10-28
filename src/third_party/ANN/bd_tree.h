@@ -24,11 +24,13 @@
 //		Changed IN, OUT to ANN_IN, ANN_OUT
 //----------------------------------------------------------------------
 
-#ifndef ANN_bd_tree_H
-#define ANN_bd_tree_H
+#ifndef GRGMESH_ANN_bd_tree_H
+#define GRGMESH_ANN_bd_tree_H
 
 #include <ANN/ANNx.h>					// all ANN includes
 #include "kd_tree.h"					// kd-tree includes
+
+namespace GRGMesh {
 
 //----------------------------------------------------------------------
 //	bd-tree shrinking node.
@@ -96,5 +98,7 @@ public:
 	virtual void ann_pri_search(ANNdist);		// priority search
 	virtual void ann_FR_search(ANNdist); 		// fixed-radius search
 };
+
+}
 
 #endif

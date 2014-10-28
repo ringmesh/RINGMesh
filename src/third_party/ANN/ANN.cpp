@@ -32,6 +32,8 @@
 
 using namespace std;					// make std:: accessible
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 //	Point methods
 //----------------------------------------------------------------------
@@ -198,4 +200,5 @@ void annMaxPtsVisit(			// set limit on max. pts to visit in search
 	int					maxPts)			// the limit
 {
 	ANNmaxPtsVisited = maxPts;
+}
 }

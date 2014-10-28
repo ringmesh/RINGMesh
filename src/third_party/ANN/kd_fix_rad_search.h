@@ -22,14 +22,16 @@
 //		Initial release
 //----------------------------------------------------------------------
 
-#ifndef ANN_kd_fix_rad_search_H
-#define ANN_kd_fix_rad_search_H
+#ifndef GRGMESH_ANN_kd_fix_rad_search_H
+#define GRGMESH_ANN_kd_fix_rad_search_H
 
 #include "kd_tree.h"					// kd-tree declarations
 #include "kd_util.h"					// kd-tree utilities
 #include "pr_queue_k.h"					// k-element priority queue
 
 #include <ANN/ANNperf.h>				// performance evaluation
+
+namespace GRGMesh {
 
 //----------------------------------------------------------------------
 //	Global variables
@@ -40,5 +42,5 @@
 //----------------------------------------------------------------------
 
 extern ANNpoint			ANNkdFRQ;			// query point (static copy)
-
+}
 #endif

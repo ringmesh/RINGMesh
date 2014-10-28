@@ -24,12 +24,14 @@
 //		Added fixed radius kNN search
 //----------------------------------------------------------------------
 
-#ifndef ANN_kd_tree_H
-#define ANN_kd_tree_H
+#ifndef GRGMESH_ANN_kd_tree_H
+#define GRGMESH_ANN_kd_tree_H
 
 #include <ANN/ANNx.h>					// all ANN includes
 
 using namespace std;					// make std:: available
+
+namespace GRGMesh {
 
 //----------------------------------------------------------------------
 //	Generic kd-tree node
@@ -194,4 +196,5 @@ ANNkd_ptr rkd_tree(				// recursive construction of kd-tree
 	ANNorthRect			&bnd_box,		// bounding box for current node
 	ANNkd_splitter		splitter);		// splitting routine
 
+}
 #endif

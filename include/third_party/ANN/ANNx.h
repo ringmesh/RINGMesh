@@ -33,11 +33,13 @@
 //		Fixed minor compilation bugs for new versions of gcc
 //----------------------------------------------------------------------
 
-#ifndef ANNx_H
-#define ANNx_H
+#ifndef GRGMESH_ANNx_H
+#define GRGMESH_ANNx_H
 
 #include <iomanip>				// I/O manipulators
 #include <ANN/ANN.h>			// ANN includes
+
+namespace GRGMesh {
 
 //----------------------------------------------------------------------
 //	Global constants and types
@@ -165,5 +167,7 @@ public:
 
 								// array of halfspaces
 typedef ANNorthHalfSpace *ANNorthHSArray;
+
+}
 
 #endif

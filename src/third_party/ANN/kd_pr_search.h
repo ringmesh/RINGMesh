@@ -22,8 +22,8 @@
 //		Initial release
 //----------------------------------------------------------------------
 
-#ifndef ANN_kd_pr_search_H
-#define ANN_kd_pr_search_H
+#ifndef GRGMESH_ANN_kd_pr_search_H
+#define GRGMESH_ANN_kd_pr_search_H
 
 #include "kd_tree.h"					// kd-tree declarations
 #include "kd_util.h"					// kd-tree utilities
@@ -32,6 +32,7 @@
 
 #include <ANN/ANNperf.h>				// performance evaluation
 
+namespace GRGMesh {
 //----------------------------------------------------------------------
 //	Global variables
 //		Active for the life of each call to Appx_Near_Neigh() or
@@ -45,5 +46,5 @@ extern double			ANNprMaxErr;	// max tolerable squared error
 extern ANNpointArray	ANNprPts;		// the points
 extern ANNpr_queue		*ANNprBoxPQ;	// priority queue for boxes
 extern ANNmin_k			*ANNprPointMK;	// set of k closest points
-
+}
 #endif

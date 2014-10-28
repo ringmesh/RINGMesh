@@ -26,6 +26,8 @@
 
 #include <ANN/ANNperf.h>				// performance evaluation
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 // The following routines are utility functions for manipulating
 // points sets, used in determining splitting planes for kd-tree
@@ -436,4 +438,5 @@ void annBnds2Box(
 		bnds[i].project(inner_box.lo);			// project each endpoint
 		bnds[i].project(inner_box.hi);
 	}
+}
 }

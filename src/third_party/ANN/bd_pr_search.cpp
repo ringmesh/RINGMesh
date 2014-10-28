@@ -25,6 +25,8 @@
 #include "bd_tree.h"					// bd-tree declarations
 #include "kd_pr_search.h"				// kd priority search declarations
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 //	Approximate priority searching for bd-trees.
 //		See the file kd_pr_search.cc for general information on the
@@ -59,4 +61,5 @@ void ANNbd_shrink::ann_pri_search(ANNdist box_dist)
 	}
 	ANN_FLOP(3*n_bnds)							// increment floating ops
 	ANN_SHR(1)									// one more shrinking node
+}
 }

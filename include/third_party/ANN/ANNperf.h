@@ -27,14 +27,16 @@
 //          Added ANN_ prefix to avoid name conflicts.
 //----------------------------------------------------------------------
 
-#ifndef ANNperf_H
-#define ANNperf_H
+#ifndef GRGMESH_ANNperf_H
+#define GRGMESH_ANNperf_H
 
 //----------------------------------------------------------------------
 //	basic includes
 //----------------------------------------------------------------------
 
 #include <ANN/ANN.h>					// basic ANN includes
+
+namespace GRGMesh {
 
 //----------------------------------------------------------------------
 // kd-tree stats object
@@ -82,7 +84,7 @@ public:
 //		min()		Return minimum of samples.
 //		max()		Return maximum of samples.
 //----------------------------------------------------------------------
-class DLL_API ANNsampStat {
+class ANN_API ANNsampStat {
 	int				n;				// number of samples
 	double			sum;			// sum
 	double			sum2;			// sum of squares
@@ -205,19 +207,21 @@ extern ANNsampStat	ann_float_ops;	// stats on floating ops
 //  The following need to be part of the public interface, because
 //  they are accessed outside the DLL in ann_test.cpp.
 //----------------------------------------------------------------------
-DLL_API extern ANNsampStat ann_average_err;	// average error
-DLL_API extern ANNsampStat ann_rank_err;	// rank error
+ANN_API extern ANNsampStat ann_average_err;	// average error
+ANN_API extern ANNsampStat ann_rank_err;	// rank error
 
 //----------------------------------------------------------------------
 //	Declaration of externally accessible routines for statistics
 //----------------------------------------------------------------------
 
-DLL_API void annResetStats(int data_size);	// reset stats for a set of queries
+ANN_API void annResetStats(int data_size);	// reset stats for a set of queries
 
-DLL_API void annResetCounts();				// reset counts for one queries
+ANN_API void annResetCounts();				// reset counts for one queries
 
-DLL_API void annUpdateStats();				// update stats with current counts
+ANN_API void annUpdateStats();				// update stats with current counts
 
-DLL_API void annPrintStats(ANNbool validate); // print statistics for a run
+ANN_API void annPrintStats(ANNbool validate); // print statistics for a run
+
+}
 
 #endif

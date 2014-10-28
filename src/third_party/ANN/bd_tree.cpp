@@ -32,6 +32,8 @@
 
 #include <ANN/ANNperf.h>				// performance evaluation
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 //	Printing a bd-tree 
 //		These routines print a bd-tree.   See the analogous procedure
@@ -415,3 +417,4 @@ ANNkd_ptr rbd_tree(				// recursive construction of bd-tree
 		return new ANNbd_shrink(n_bnds, bnds, in, out);
 	}
 } 
+}

@@ -245,6 +245,17 @@ namespace GRGMesh {
          * @param [out] sq_dist squared distance between p and the surface.
          */
         uint64 nearest_facet(
+            const float64* p,
+            float64* nearest_point,
+            float64& sq_dist ) const
+        {
+            vec3 nearest( nearest_point ) ;
+            uint64 nearest_t = nearest_facet( vec3( p ), nearest, sq_dist ) ;
+            nearest_point = nearest.data() ;
+            return nearest_t ;
+
+        }
+        uint64 nearest_facet(
             const vec3& p,
             vec3& nearest_point,
             float64& sq_dist ) const
@@ -261,6 +272,13 @@ namespace GRGMesh {
             vec3 nearest_point ;
             float64 dist ;
             return nearest_facet( p, nearest_point, dist ) ;
+        }
+
+        uint64 nearest_facet( const float64* p ) const
+        {
+            vec3 nearest_point ;
+            float64 dist ;
+            return nearest_facet( vec3( p ), nearest_point, dist ) ;
         }
 
         /**

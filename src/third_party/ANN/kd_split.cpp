@@ -27,6 +27,8 @@
 #include "kd_util.h"					// kd-tree utilities
 #include "kd_split.h"					// splitting functions
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 //	Constants
 //----------------------------------------------------------------------
@@ -425,4 +427,6 @@ void sl_fair_split(
 		n_lo = n/2;						// split about median
 		annMedianSplit(pa, pidx, n, cut_dim, cut_val, n_lo);
 	}
+}
+
 }
