@@ -88,6 +88,7 @@ namespace GRGMesh {
         uint64 nb_surface_part_inside() const ;
         uint64 nb_contact_part_inside() const ;
         uint64 nb_real_corners_inside() const ;
+        const std::string& gocad_name() const { return gocad_name_ ; }
 
         const vec3& point( uint64 p ) const { return points_[p] ; }
         const Corner& corner( int index ) const { return corners_[index] ; }
@@ -201,6 +202,9 @@ namespace GRGMesh {
             model_->points_.push_back( point ) ;
         }
 
+        void set_corner( uint64 id, const float64* p ) {
+            set_corner( id, vec3( p ) ) ;
+        }
         void set_corner( uint64 id, const vec3& p ) {
             grgmesh_debug_assert( id < model_->nb_corners() ) ;
             model_->corners_[id].set_corner( model_->nb_points() ) ;

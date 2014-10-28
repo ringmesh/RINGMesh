@@ -25,6 +25,8 @@
 #include "bd_tree.h"					// bd-tree declarations
 #include "kd_search.h"					// kd-tree search declarations
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 //	Approximate searching for bd-trees.
 //		See the file kd_search.cpp for general information on the
@@ -58,4 +60,5 @@ void ANNbd_shrink::ann_search(ANNdist box_dist)
 	}
 	ANN_FLOP(3*n_bnds)							// increment floating ops
 	ANN_SHR(1)									// one more shrinking node
+}
 }

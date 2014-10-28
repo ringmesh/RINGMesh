@@ -33,6 +33,8 @@
 #include "kd_util.h"					// kd-tree utilities
 #include <ANN/ANNperf.h>				// performance evaluation
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 //	Global data
 //
@@ -402,4 +404,5 @@ ANNkd_tree::ANNkd_tree(					// construct from point array
 	default:
 		annError("Illegal splitting method", ANNabort);
 	}
+}
 }

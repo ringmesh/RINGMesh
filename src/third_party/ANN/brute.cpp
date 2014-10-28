@@ -27,6 +27,8 @@
 #include <ANN/ANNx.h>					// all ANN includes
 #include "pr_queue_k.h"					// k element priority queue
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 //		Brute-force search simply stores a pointer to the list of
 //		data points and searches linearly for the nearest neighbor.
@@ -106,4 +108,5 @@ int ANNbruteForce::annkFRSearch(		// approx fixed-radius kNN search
 	}
 
 	return pts_in_range;
+}
 }

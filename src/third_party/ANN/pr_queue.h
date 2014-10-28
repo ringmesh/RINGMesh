@@ -23,11 +23,13 @@
 //		Initial release
 //----------------------------------------------------------------------
 
-#ifndef PR_QUEUE_H
-#define PR_QUEUE_H
+#ifndef GRGMESH_PR_QUEUE_H
+#define GRGMESH_PR_QUEUE_H
 
 #include <ANN/ANNx.h>					// all ANN includes
 #include <ANN/ANNperf.h>				// performance evaluation
+
+namespace GRGMesh {
 
 //----------------------------------------------------------------------
 //	Basic types.
@@ -121,5 +123,5 @@ public:
 			pq[p] = pq[n+1];			// insert last item in proper place
 		}
 };
-
+}
 #endif

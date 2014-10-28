@@ -24,6 +24,8 @@
 
 #include "kd_pr_search.h"				// kd priority search declarations
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 //	Approximate nearest neighbor searching by priority search.
 //		The kd-tree is searched for an approximate nearest neighbor.
@@ -216,4 +218,5 @@ void ANNkd_leaf::ann_pri_search(ANNdist box_dist)
 	ANN_LEAF(1)							// one more leaf node visited
 	ANN_PTS(n_pts)						// increment points visited
 	ANNptsVisited += n_pts;				// increment number of points visited
+}
 }

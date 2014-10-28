@@ -398,8 +398,11 @@ namespace GRGMesh {
             : M_( const_cast< ContactPart& >( M ) )
         {
         }
-        void set_point( uint64 id, const vec3& p ) ;
         vec3& point( uint64 p ) const ;
+        void set_point( uint64 id, const float64* p ) {
+            set_point( id, vec3( p ) ) ;
+        }
+        void set_point( uint64 id, const vec3& p ) ;
         std::vector< uint64 >& points() const { return M_.vertices_ ; }
         std::vector< float64 >& resolution() const { return M_.resolution_ ; }
 
@@ -532,6 +535,9 @@ namespace GRGMesh {
             std::vector< int >& result,
             bool border_only,
             int triangle_hint ) const ;
+        uint64 closest_point_in_facet( uint64 f, const float64* point ) const {
+            return closest_point_in_facet( f, vec3( point ) ) ;
+        }
         uint64 closest_point_in_facet( uint64 f, const vec3& point ) const ;
 
         float64 resolution( int p ) const { return resolution_[p] ; }
@@ -608,6 +614,9 @@ namespace GRGMesh {
         SurfacePartMutator( const SurfacePart& M )
             : M_( const_cast< SurfacePart& >( M ) )
         {
+        }
+        void set_point( uint64 id, const float64* p ) {
+            set_point( id, vec3( p ) ) ;
         }
         void set_point( uint64 id, const vec3& p ) ;
         vec3& point( uint64 p ) const ;

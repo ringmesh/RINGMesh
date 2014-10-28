@@ -131,6 +131,9 @@ namespace GRGMesh {
                     ::sqrt( x_max() - x_min() ) + ::sqrt( y_max() - y_min() )
                         + ::sqrt( z_max() - z_min() ) ) ;
         }
+        void add_point( const float64* p ) {
+            add_point( vec3( p ) ) ;
+        }
         void add_point( const vec3& p )
         {
             if( !initialized_ ) {
@@ -242,10 +245,25 @@ namespace GRGMesh {
         float64 z_max_ ;
     } ;
 
-    namespace Utils {
-        inline double triangle_area( const vec3& p1, const vec3& p2, const vec3& p3 )
+    class GRGMESH_API Utils {
+    public:
+        static double triangle_area( const vec3& p1, const vec3& p2, const vec3& p3 )
         {
             return 0.5 * length( cross( p2 - p1, p3 - p1 ) ) ;
+        }
+        template< class VEC > static  VEC random_point_in_triangle(
+            const VEC& p1,
+            const VEC& p2,
+            const VEC& p3 )
+        {
+            double l1 = std::rand() ;
+            double l2 = std::rand() ;
+            if( l1 + l2 > 1.0 ) {
+                l1 = 1.0 - l1 ;
+                l2 = 1.0 - l2 ;
+            }
+            double l3 = 1.0 - l1 - l2 ;
+            return l1 * p1 + l2 * p2 + l3 * p3 ;
         }
         template< class T > static bool contains(
             const std::vector< T >& v,
@@ -302,7 +320,7 @@ namespace GRGMesh {
             return false ;
         }
         // See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
-        template< class VEC > inline float64 point_triangle_squared_distance(
+        template< class VEC > static float64 point_triangle_squared_distance(
             const VEC& point,
             const VEC& V0,
             const VEC& V1,
@@ -517,7 +535,7 @@ namespace GRGMesh {
             const vec3& trgl1,
             const vec3& trgl2,
             vec3& result ) ;
-    }
+    } ;
 
     class InputStream {
     public:
@@ -688,6 +706,13 @@ namespace GRGMesh {
             vec3& v,
             std::vector< unsigned int >& result,
             int nb_neighbors = 2 ) const ;
+        void get_neighbors(
+            const float64* v,
+            std::vector< int >& result,
+            int nb_neighbors = 2 ) const
+        {
+            return get_neighbors( vec3( v ), result, nb_neighbors ) ;
+        }
         void get_neighbors(
             const vec3& v,
             std::vector< int >& result,

@@ -26,6 +26,8 @@
 
 #include "kd_search.h"					// kd-search declarations
 
+namespace GRGMesh {
+
 //----------------------------------------------------------------------
 //	Approximate nearest neighbor searching by kd-tree search
 //		The kd-tree is searched for an approximate nearest neighbor.
@@ -207,4 +209,5 @@ void ANNkd_leaf::ann_search(ANNdist box_dist)
 	ANN_LEAF(1)							// one more leaf node visited
 	ANN_PTS(n_pts)						// increment points visited
 	ANNptsVisited += n_pts;				// increment number of points visited
+}
 }
