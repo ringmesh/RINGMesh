@@ -20,7 +20,7 @@ namespace GRGMesh {
         &line_descriptor, &trgl_descriptor, &quad_descriptor, &tetra_descriptor,
         &pyramid_descriptor, &prism_descriptor, &hexa_descriptor } ;
 
-    CellType MixedMesh::cell_type( uint32 c, uint32& c_index ) const
+    ElementType MixedMesh::cell_type( uint32 c, uint32& c_index ) const
     {
         uint8 result = 0 ;
         uint32 size = 0 ;
@@ -29,7 +29,7 @@ namespace GRGMesh {
             if( c > size ) break ;
         }
         c_index = c - size ;
-        return CellType( result ) ;
+        return ElementType( result ) ;
     }
 
 }
