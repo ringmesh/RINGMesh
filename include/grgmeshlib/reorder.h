@@ -26,7 +26,7 @@ namespace GRGMesh {
         unsigned int to )
     {
 #pragma omp parallel for
-        for( uint64 i = from; i < to; i++ ) {
+        for( uint32 i = from; i < to; i++ ) {
             f( i ) ;
         }
     }
@@ -132,8 +132,8 @@ namespace GRGMesh {
 
         HilbertSort(
             const MESH& M,
-            std::vector< int64 >& sorted_indices,
-            uint64 limit = 1 )
+            std::vector< int32 >& sorted_indices,
+            uint32 limit = 1 )
             : M_( M )
         {
             if( sorted_indices.size() <= limit ) return ;
@@ -200,15 +200,15 @@ namespace GRGMesh {
 
     private:
         const MESH& M_ ;
-        std::vector< int64 >::iterator m0_, m1_, m2_, m3_, m4_, m5_, m6_, m7_, m8_ ;
+        std::vector< int32 >::iterator m0_, m1_, m2_, m3_, m4_, m5_, m6_, m7_, m8_ ;
     } ;
 /*
     inline void morton_vertex_sort(
         const TetraMesh& M,
-        std::vector< int64 >& sorted_indices )
+        std::vector< int32 >& sorted_indices )
     {
         sorted_indices.resize( M.nb_points() ) ;
-        for( uint64 i = 0; i < M.nb_points(); i++ ) {
+        for( uint32 i = 0; i < M.nb_points(); i++ ) {
             sorted_indices[i] = i ;
         }
         HilbertSort< TetraMesh, Morton_vertex_cmp >( M, sorted_indices ) ;
@@ -216,10 +216,10 @@ namespace GRGMesh {
 
     inline void morton_tet_sort(
         const TetraMesh& M,
-        std::vector< int64 >& sorted_indices )
+        std::vector< int32 >& sorted_indices )
     {
         sorted_indices.resize( M.nb_tetra() ) ;
-        for( uint64 i = 0; i < M.nb_tetra(); i++ ) {
+        for( uint32 i = 0; i < M.nb_tetra(); i++ ) {
             sorted_indices[i] = i ;
         }
         HilbertSort< TetraMesh, Morton_tet_cmp >( M, sorted_indices ) ;
@@ -227,10 +227,10 @@ namespace GRGMesh {
 */
     inline void morton_facet_vertex_sort(
         const GRGMesh::SurfacePart& M,
-        std::vector< int64 >& sorted_indices )
+        std::vector< int32 >& sorted_indices )
     {
         sorted_indices.resize( M.nb_points() ) ;
-        for( uint64 i = 0; i < M.nb_points(); i++ ) {
+        for( uint32 i = 0; i < M.nb_points(); i++ ) {
             sorted_indices[i] = i ;
         }
         HilbertSort< SurfacePart, Morton_facet_vertex_cmp >( M,
@@ -239,10 +239,10 @@ namespace GRGMesh {
 
     inline void morton_facet_sort(
         const GRGMesh::SurfacePart& M,
-        std::vector< int64 >& sorted_indices )
+        std::vector< int32 >& sorted_indices )
     {
         sorted_indices.resize( M.nb_simplices() ) ;
-        for( uint64 i = 0; i < M.nb_simplices(); i++ ) {
+        for( int32 i = 0; i < M.nb_simplices(); i++ ) {
             sorted_indices[i] = i ;
         }
         HilbertSort< SurfacePart, Morton_facet_cmp >( M, sorted_indices ) ;

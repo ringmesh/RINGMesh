@@ -38,59 +38,59 @@ namespace GRGMesh {
         MixedMesh( const MixedMesh& rhs ) { copy( rhs ) ; }
         MixedMesh& operator=( const MixedMesh& rhs ) { copy( rhs ) ; return *this ; }
 
-        virtual uint64 nb_cells() const
+        virtual uint32 nb_cells() const
         {
             return nb_lines() + nb_triangles() + nb_quad() + nb_tetra()
                 + nb_pyramids() + nb_prisms() + nb_hexa() ;
         }
-        uint64 nb_lines() const { return std::max( uint64(0), cells_[LINE].size()-1 ) ; }
-        uint64 nb_triangles() const { return std::max( uint64(0), cells_[TRGL].size()-1 ) ; }
-        uint64 nb_quad() const { return std::max( uint64(0), cells_[QUAD].size()-1 ) ; }
-        uint64 nb_tetra() const { return std::max( uint64(0), cells_[TETRA].size()-1 ) ; }
-        uint64 nb_pyramids() const { return std::max( uint64(0), cells_[PYRAMID].size()-1 ) ; }
-        uint64 nb_prisms() const { return std::max( uint64(0), cells_[PRISM].size()-1 ) ; }
-        uint64 nb_hexa() const { return std::max( uint64(0), cells_[HEXA].size()-1 ) ; }
-        virtual uint8 nb_vertices_in_cell( uint64 c ) const
+        uint32 nb_lines() const { return std::max( uint64(0), cells_[LINE].size()-1 ) ; }
+        uint32 nb_triangles() const { return std::max( uint64(0), cells_[TRGL].size()-1 ) ; }
+        uint32 nb_quad() const { return std::max( uint64(0), cells_[QUAD].size()-1 ) ; }
+        uint32 nb_tetra() const { return std::max( uint64(0), cells_[TETRA].size()-1 ) ; }
+        uint32 nb_pyramids() const { return std::max( uint64(0), cells_[PYRAMID].size()-1 ) ; }
+        uint32 nb_prisms() const { return std::max( uint64(0), cells_[PRISM].size()-1 ) ; }
+        uint32 nb_hexa() const { return std::max( uint64(0), cells_[HEXA].size()-1 ) ; }
+        virtual uint8 nb_vertices_in_cell( uint32 c ) const
         {
             grgmesh_debug_assert( c < nb_cells() ) ;
             return cell_descriptor( c )->nb_vertices ;
         }
-        virtual uint8 nb_facets_in_cell( uint64 c ) const
+        virtual uint8 nb_facets_in_cell( uint32 c ) const
         {
             grgmesh_debug_assert( c < nb_cells() ) ;
             return cell_descriptor( c )->nb_facets ;
         }
-        virtual uint8 nb_vertices_in_cell_facet( uint64 c, uint8 f ) const
+        virtual uint8 nb_vertices_in_cell_facet( uint32 c, uint8 f ) const
         {
             grgmesh_debug_assert( c < nb_cells() ) ;
             return cell_descriptor( c )->nb_vertices_in_facet[f] ;
         }
-        virtual uint64 cell_begin( uint64 c ) const {
-            uint64 real_index ;
+        virtual uint32 cell_begin( uint32 c ) const {
+            uint32 real_index ;
             return cells_[cell_type( c, real_index)][real_index] ;
         }
-        virtual uint64 cell_end( uint64 c ) const {
-            uint64 real_index ;
+        virtual uint32 cell_end( uint32 c ) const {
+            uint32 real_index ;
             return cells_[cell_type( c+1, real_index)][real_index] ;
         }
 
-        CellType cell_type( uint64 c, uint64& c_index = dummy_uint64 ) const ;
+        CellType cell_type( uint32 c, uint32& c_index = dummy_uint32 ) const ;
 
-        const CellDescriptor* cell_descriptor( uint64 c ) const
+        const CellDescriptor* cell_descriptor( uint32 c ) const
         {
             const CellDescriptor* result = cell_descriptor_[cell_type( c )] ;
             grgmesh_debug_assert( result != 0 ) ;
             return result ;
         }
 
-        uint64 cell_facet_vertex( uint64 c, uint8 f, uint8 v ) const
+        uint32 cell_facet_vertex( uint32 c, uint8 f, uint8 v ) const
         {
             const CellDescriptor* desc = cell_descriptor( c ) ;
             grgmesh_debug_assert( f < desc->nb_facets ) ; grgmesh_debug_assert( v < desc->nb_vertices_in_facet[f] ) ;
             return cell_vertex_index( c, desc->facet[f][v] ) ;
         }
 
-        uint64 tetra_vertex_index( uint64 c, uint8 f, uint8 v ) const {
+        uint32 tetra_vertex_index( uint32 c, uint8 f, uint8 v ) const {
             return vertex_index( cells_[TETRA][4*c + cell_descriptor_[TETRA]->facet[f][v]] ) ;
         }
 
@@ -101,7 +101,7 @@ namespace GRGMesh {
         }
 
     private:
-        std::vector< uint64 > cells_[7] ;
+        std::vector< uint32 > cells_[7] ;
         static const CellDescriptor* cell_descriptor_[7] ;
     } ;
 
@@ -120,14 +120,14 @@ namespace GRGMesh {
         }
         virtual ~MixedMeshMutator() {}
 
-        std::vector< uint64 >* cells() { return mixed_mesh_.cells_ ; }
-        std::vector< uint64 >& lines() { return mixed_mesh_.cells_[LINE] ; }
-        std::vector< uint64 >& triangles() { return mixed_mesh_.cells_[TRGL] ; }
-        std::vector< uint64 >& quad() { return mixed_mesh_.cells_[QUAD] ; }
-        std::vector< uint64 >& tetra() { return mixed_mesh_.cells_[TETRA] ; }
-        std::vector< uint64 >& pyramids() { return mixed_mesh_.cells_[PYRAMID] ; }
-        std::vector< uint64 >& prisms() { return mixed_mesh_.cells_[PRISM] ; }
-        std::vector< uint64 >& hexa() { return mixed_mesh_.cells_[HEXA] ; }
+        std::vector< uint32 >* cells() { return mixed_mesh_.cells_ ; }
+        std::vector< uint32 >& lines() { return mixed_mesh_.cells_[LINE] ; }
+        std::vector< uint32 >& triangles() { return mixed_mesh_.cells_[TRGL] ; }
+        std::vector< uint32 >& quad() { return mixed_mesh_.cells_[QUAD] ; }
+        std::vector< uint32 >& tetra() { return mixed_mesh_.cells_[TETRA] ; }
+        std::vector< uint32 >& pyramids() { return mixed_mesh_.cells_[PYRAMID] ; }
+        std::vector< uint32 >& prisms() { return mixed_mesh_.cells_[PRISM] ; }
+        std::vector< uint32 >& hexa() { return mixed_mesh_.cells_[HEXA] ; }
 
     private:
         MixedMesh& mixed_mesh_ ;

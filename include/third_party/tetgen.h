@@ -65,8 +65,8 @@
 
 #ifdef _MSC_VER // Microsoft Visual C++
 #  ifdef _WIN64
-     typedef __int64 intptr_t;
-     typedef unsigned __int64 uintptr_t;
+     typedef __int32 intptr_t;
+     typedef unsigned __int32 uintptr_t;
 #  else // not _WIN64
      typedef int intptr_t;
      typedef unsigned int uintptr_t;

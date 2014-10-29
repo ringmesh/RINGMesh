@@ -27,15 +27,15 @@ namespace GRGMesh {
     MakeUnique::MakeUnique( const std::vector< vec3 >& points )
         : points_( points )
     {
-        int nb_points = points_.size() ;
+        int32 nb_points = points_.size() ;
         indices_.resize( nb_points ) ;
-        for( unsigned int i = 0; i < nb_points; i++ ) {
+        for( uint32 i = 0; i < nb_points; i++ ) {
             indices_[i] = i ;
         }
     }
 
     static bool inexact_equal( const vec3& v1, const vec3& v2 ) {
-        for( unsigned int i = 0; i < 3; i++ ) {
+        for( uint32 i = 0; i < 3; i++ ) {
             double diff( v1[i]-v2[i] ) ;
             if( diff > epsilon || diff < -epsilon ) {
                 return false ;
@@ -134,7 +134,7 @@ namespace GRGMesh {
         std::vector< vec3 > inter_circle_plane ;
         if( circle_plane_intersection( barycenter, N_triangle, O_circle, N_circle, r,
             inter_circle_plane ) ) {
-            for( unsigned int i = 0; i < inter_circle_plane.size(); i++ ) {
+            for( uint32 i = 0; i < inter_circle_plane.size(); i++ ) {
                 const vec3& p = inter_circle_plane[i] ;
                 if( point_inside_triangle( p, p0, p1, p2 ) ) {
                     result.push_back( p ) ;
@@ -184,7 +184,7 @@ namespace GRGMesh {
         //   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
         vec3 D = normalize( seg1-seg0 ) ;
         float64 DdN = dot( D, normal ) ;
-        int sign ;
+        int32 sign ;
         if( DdN > epsilon ) {
             sign = 1 ;
         } else if( DdN < -epsilon ) {
@@ -262,8 +262,8 @@ namespace GRGMesh {
     void MakeUnique::unique_points( std::vector< vec3 >& results ) const
     {
         results.reserve( indices_.size() ) ;
-        int offset = 0, cur_id = 0 ;
-        for( unsigned int p = 0; p < indices_.size(); p++ ) {
+        int32 offset = 0, cur_id = 0 ;
+        for( uint32 p = 0; p < indices_.size(); p++ ) {
             if( cur_id == indices_[p] ) {
                 cur_id++ ;
                 results.push_back( points_[indices_[p] + offset] ) ;
@@ -273,23 +273,23 @@ namespace GRGMesh {
         }
     }
 
-    void MakeUnique::unique( int nb_neighbors )
+    void MakeUnique::unique( int32 nb_neighbors )
     {
         ColocaterANN ann( points_ ) ;
-        for( unsigned int i = 0; i < indices_.size(); i++ ) {
+        for( uint32 i = 0; i < indices_.size(); i++ ) {
             if( indices_[i] != i ) continue ;
-            std::vector< unsigned int > results ;
+            std::vector< uint32 > results ;
             if( ann.get_colocated( points_[i], results, nb_neighbors ) ) {
-                unsigned int id = *std::min_element( results.begin(),
+                uint32 id = *std::min_element( results.begin(),
                     results.end() ) ;
-                for( unsigned int j = 0; j < results.size(); j++ ) {
+                for( uint32 j = 0; j < results.size(); j++ ) {
                     if( id == results[j] ) continue ;
                     indices_[results[j]] = id ;
                 }
             }
         }
-        int offset = 0 ;
-        for( unsigned int i = 0; i < indices_.size(); i++ ) {
+        int32 offset = 0 ;
+        for( uint32 i = 0; i < indices_.size(); i++ ) {
             if( indices_[i] != i ) {
                 indices_[i] = indices_[indices_[i]] ;
                 offset++ ;
@@ -299,10 +299,10 @@ namespace GRGMesh {
         }
     }
     void MakeUnique::add_edges( const std::vector< Edge >& points ) {
-        int offset = points_.size() ;
+        int32 offset = points_.size() ;
         points_.resize( offset+(points.size()*2) ) ;
         indices_.resize( offset+(points.size()*2) ) ;
-        for( unsigned int p = 0; p < points.size(); p++ ) {
+        for( uint32 p = 0; p < points.size(); p++ ) {
             points_[offset] = points[p].value( 0 ) ;
             indices_[offset] = offset ;
             offset++ ;
@@ -312,10 +312,10 @@ namespace GRGMesh {
         }
     }
     void MakeUnique::add_points( const std::vector< vec3 >& points ) {
-        int offset = points_.size() ;
+        int32 offset = points_.size() ;
         points_.resize( offset+points.size() ) ;
         indices_.resize( offset+points.size() ) ;
-        for( unsigned int p = 0; p < points.size(); p++, offset++ ) {
+        for( uint32 p = 0; p < points.size(); p++, offset++ ) {
             points_[offset] = points[p] ;
             indices_[offset] = offset ;
         }
@@ -323,9 +323,9 @@ namespace GRGMesh {
 
     ColocaterANN::ColocaterANN( const SurfacePart& mesh )
     {
-        int nb_vertices = mesh.nb_points() ;
+        int32 nb_vertices = mesh.nb_points() ;
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( unsigned int i = 0; i < mesh.nb_points(); i++ ) {
+        for( uint32 i = 0; i < mesh.nb_points(); i++ ) {
             std::copy( mesh.point( i ).data(), mesh.point( i ).data() + 3,
                 &ann_points_[i][0] ) ;
         }
@@ -334,9 +334,9 @@ namespace GRGMesh {
 
     ColocaterANN::ColocaterANN( const ContactPart& mesh )
     {
-        int nb_vertices = mesh.nb_points() ;
+        int32 nb_vertices = mesh.nb_points() ;
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( unsigned int i = 0; i < mesh.nb_points(); i++ ) {
+        for( uint32 i = 0; i < mesh.nb_points(); i++ ) {
             std::copy( mesh.point( i ).data(), mesh.point( i ).data() + 3,
                 &ann_points_[i][0] ) ;
         }
@@ -345,9 +345,9 @@ namespace GRGMesh {
 
     ColocaterANN::ColocaterANN( const MixedMesh& mesh )
     {
-        int nb_vertices = mesh.nb_vertices() ;
+        int32 nb_vertices = mesh.nb_vertices() ;
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( unsigned int i = 0; i < nb_vertices; i++ ) {
+        for( uint32 i = 0; i < nb_vertices; i++ ) {
             vec3 vertex = mesh.vertex( i ) ;
             std::copy( vertex.data(), vertex.data() + 3, &ann_points_[i][0] ) ;
         }
@@ -361,8 +361,8 @@ namespace GRGMesh {
         /*
         std::vector< vec3 > barycenters ;
         barycenters.reserve( 4*mesh.nb_tetra() ) ;
-        for( unsigned int i = 0; i < mesh.nb_tetra(); i++ ) {
-            for( unsigned int f = 0; f < 4; f++ ) {
+        for( uint32 i = 0; i < mesh.nb_tetra(); i++ ) {
+            for( uint32 f = 0; f < 4; f++ ) {
                 if( mesh.surface_id( i, f ) != -1 ) {
                     barycenters.push_back(
                         VorteXUtils::barycenter( mesh.vertex( i, f2e[f][0] ),
@@ -373,7 +373,7 @@ namespace GRGMesh {
             }
         }
         ann_points_ = annAllocPts( barycenters.size(), 3 ) ;
-        for( unsigned int i = 0; i < barycenters.size(); i++ ) {
+        for( uint32 i = 0; i < barycenters.size(); i++ ) {
             std::copy( barycenters[i].data(), barycenters[i].data() + 3, &ann_points_[i][0] ) ;
         }
         ann_tree_ = new ANNkd_tree( &ann_points_[0], barycenters.size(), 3 ) ;
@@ -382,9 +382,9 @@ namespace GRGMesh {
 
     ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices )
     {
-        int nb_vertices = vertices.size() ;
+        int32 nb_vertices = vertices.size() ;
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( unsigned int i = 0; i < nb_vertices; i++ ) {
+        for( uint32 i = 0; i < nb_vertices; i++ ) {
             std::copy( vertices[i].data(), vertices[i].data() + 3, &ann_points_[i][0] ) ;
         }
         ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
@@ -392,9 +392,9 @@ namespace GRGMesh {
 
     ColocaterANN::ColocaterANN( const std::vector< Edge >& edges )
     {
-        int nb_vertices = edges.size() ;
+        int32 nb_vertices = edges.size() ;
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( unsigned int i = 0; i < nb_vertices; i++ ) {
+        for( uint32 i = 0; i < nb_vertices; i++ ) {
             vec3 barycenter( ( edges[i].value( 0 ) + edges[i].value( 1 ) ) / 2.0 ) ;
             std::copy( barycenter.data(), barycenter.data() + 3, &ann_points_[i][0] ) ;
         }
@@ -403,25 +403,25 @@ namespace GRGMesh {
 
     void ColocaterANN::get_mapped_colocated(
         vec3& v,
-        std::vector< unsigned int >& result,
-        int nb_neighbors ) const
+        std::vector< uint32 >& result,
+        int32 nb_neighbors ) const
     {
         grgmesh_debug_assert( !mapped_indices_.empty() ) ;
         get_colocated( v, result, nb_neighbors ) ;
-        for( unsigned int i = 0; i < result.size(); i++ ) {
+        for( uint32 i = 0; i < result.size(); i++ ) {
             result[i] = mapped_indices_[result[i]] ;
         }
     }
 
     bool ColocaterANN::get_colocated(
         vec3& v,
-        std::vector< unsigned int >& result,
-        int nb_neighbors ) const
+        std::vector< uint32 >& result,
+        int32 nb_neighbors ) const
     {
         result.clear() ;
-        std::vector< int > neighbors(nb_neighbors) ;
+        std::vector< int32 > neighbors(nb_neighbors) ;
         get_neighbors( v, neighbors, nb_neighbors ) ;
-        for( int i = 0; i < neighbors.size(); ++i ) {
+        for( int32 i = 0; i < neighbors.size(); ++i ) {
             if( Utils::inexact_equal( v, ann_points_[neighbors[i]] ) ) {
                 result.push_back( neighbors[i] ) ;
             }

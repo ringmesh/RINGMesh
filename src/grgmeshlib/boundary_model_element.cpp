@@ -215,10 +215,10 @@ namespace GRGMesh {
         }
     }
 
-    const BoundaryModelElement* BoundaryModelElement::boundary( uint64 x ) const
+    const BoundaryModelElement* BoundaryModelElement::boundary( uint32 x ) const
     {
         if( x >= nb_boundaries() ) return nil ;
-        uint64 id = boundaries_[x] ;
+        uint32 id = boundaries_[x] ;
         switch( dim() ) {
             case 1:
                 return &model_->corner( id ) ;
@@ -233,10 +233,10 @@ namespace GRGMesh {
         }
     }
 
-    const BoundaryModelElement* BoundaryModelElement::in_boundary( uint64 x ) const
+    const BoundaryModelElement* BoundaryModelElement::in_boundary( uint32 x ) const
     {
         if( x >= nb_in_boundary() ) return nil ;
-        uint64 id = in_boundary_[x] ;
+        uint32 id = in_boundary_[x] ;
         switch( dim() ) {
             case 0:
                 return &model_->contact_part( id ) ;
@@ -251,10 +251,10 @@ namespace GRGMesh {
         }
     }
 
-    const BoundaryModelElement* BoundaryModelElement::child( uint64 x ) const
+    const BoundaryModelElement* BoundaryModelElement::child( uint32 x ) const
     {
         if( has_parent() || x >= nb_children() ) return nil ;
-        uint64 id = children_[x] ;
+        uint32 id = children_[x] ;
         switch( dim() ) {
             case 1:
                 return &model_->contact_part( id ) ;
@@ -294,11 +294,11 @@ namespace GRGMesh {
     ) const {
         std::vector< const BoundaryModelElement* > result ;
      
-        for( int i = 0; i < boundaries_.size(); ++i ){
+        for( int32 i = 0; i < boundaries_.size(); ++i ){
             const BoundaryModelElement* b = boundary( i ) ;
             if( through != ALL && b->type() != through ) continue ;
 
-            for( int j = 0; j < b->nb_in_boundary(); ++j ){
+            for( int32 j = 0; j < b->nb_in_boundary(); ++j ){
                 const BoundaryModelElement* bb = b->in_boundary( j ) ;
                 if( bb == this ) continue ;
                 if( exclude_voi && bb->is_on_voi() ) continue ;
@@ -306,7 +306,7 @@ namespace GRGMesh {
             }            
         }
         std::sort( result.begin(), result.end() ) ;
-        int size = std::unique(result.begin(), result.end()) - result.begin() ;
+        int32 size = std::unique(result.begin(), result.end()) - result.begin() ;
         result.resize( size ) ;
 
         return result ;
@@ -315,16 +315,16 @@ namespace GRGMesh {
     float64 BoundaryModelElement::size() const {
         float64 result = 0. ;
         // If this element has children sum up their sizes
-        for( uint64 i = 0; i < nb_children(); ++i ){
+        for( uint32 i = 0; i < nb_children(); ++i ){
             result += child(i)->size() ;
         }
 
         if( result == 0 ){
             if( dim_ == 3 ) {
                 // Compute the volume if this is a region
-                for( uint64 i = 0; i < nb_boundaries(); i++ ) {
+                for( uint32 i = 0; i < nb_boundaries(); i++ ) {
                     const SurfacePart* surface = dynamic_cast< const SurfacePart* >( boundary( i ) ) ;
-                    for( uint64 t = 0; t < surface->nb_simplices(); t++ ) {
+                    for( uint32 t = 0; t < surface->nb_simplices(); t++ ) {
                         float64 cur_volume = ( dot( surface->point( t, 0 ),
                             cross( surface->point( t, 1 ), surface->point( t, 2 ) ) ) )
                             / static_cast< float64 >( 6 ) ;
@@ -336,8 +336,8 @@ namespace GRGMesh {
         return fabs( result ) ;
     }
 
-    void BoundaryModelElement::change_boundary_side( int id ) {
-        for( uint64 i = 0; i < boundaries_.size(); ++i ){
+    void BoundaryModelElement::change_boundary_side( int32 id ) {
+        for( uint32 i = 0; i < boundaries_.size(); ++i ){
             if( boundaries_[i] == id ){
                 sides_[i] = !sides_[i] ;
             }
@@ -348,7 +348,7 @@ namespace GRGMesh {
         if( nb_children() == 0 ) return big_float64 ;
         else {
             float64 result = big_float64 ;
-            for( uint64 i = 0; i < nb_children(); ++i ){
+            for( uint32 i = 0; i < nb_children(); ++i ){
                 result = std::min( result, child( i )->distance(p) ) ;
             }
             return result ;
@@ -358,7 +358,7 @@ namespace GRGMesh {
         if( nb_children() == 0 ) return big_float64 ;
         else {
             float64 result = big_float64 ;
-            for( uint64 i = 0; i < nb_children(); ++i ){
+            for( uint32 i = 0; i < nb_children(); ++i ){
                 result = std::min( result, child( i )->distance(e) ) ;
             }
             return result ;
@@ -370,15 +370,15 @@ namespace GRGMesh {
         if( dim_ == 1 || dim_ == 2 ) return 999 ;
 
         float64 result = 180. ;
-        for( uint64 i=0; i < nb_children(); ++i ){
+        for( uint32 i=0; i < nb_children(); ++i ){
             result = std::min( result, child( i )->min_angle( e ) ) ;
         }
         return result ;        
     }
 
-    uint64 BoundaryModelElement::nb_simplices() const {
-        uint64 result = 0 ;
-         for( uint64 i=0; i < nb_children(); ++i ){
+    uint32 BoundaryModelElement::nb_simplices() const {
+        uint32 result = 0 ;
+         for( uint32 i=0; i < nb_children(); ++i ){
             result += child( i )->nb_simplices() ;
         }
         return result ;
@@ -393,7 +393,7 @@ namespace GRGMesh {
     
         vec3 result (0,0,0) ;
         float64 total_size = 0 ;
-        for( uint64 i=0; i < nb_children(); ++i ){
+        for( uint32 i=0; i < nb_children(); ++i ){
             float64 s = child( i )->size() ;
             result += s * child( i )->average_orientation() ;
             total_size += s ;
@@ -512,7 +512,7 @@ namespace GRGMesh {
         float64 r2 = 0. ;
         float64 r3 = 0. ;
         
-        for( uint64 i = 0 ; i < values.size();  ++i ){
+        for( uint32 i = 0 ; i < values.size();  ++i ){
             V += values[i].second * values[i].first ;
             W += values[i].second ;
 
@@ -542,7 +542,7 @@ namespace GRGMesh {
         float64 mean = V/W ;
 
         float64 SD = 0 ;
-        for( uint64 i = 0 ; i < values.size();  ++i ){
+        for( uint32 i = 0 ; i < values.size();  ++i ){
             SD += values[i].second * (values[i].first-mean)*(values[i].first-mean) ;
         }
         SD = sqrt( SD / W ) ;           
@@ -637,7 +637,7 @@ namespace GRGMesh {
     bool BoundaryModelElement::is_on_voi() const
     {
         if( type_ == ALL ) {
-            for( int j = 0; j < nb_in_boundary(); ++j ) {
+            for( int32 j = 0; j < nb_in_boundary(); ++j ) {
                 GEOL_FEATURE t = in_boundary( j )->type() ;
                 if( t == VOI || t == STRATI_VOI || t == FAULT_VOI ) return true ;
             }
@@ -653,10 +653,10 @@ namespace GRGMesh {
     {
         result.clear() ;
         std::set< const BoundaryModelElement* > b1 ;
-        for( int i = 0; i < e->nb_boundaries(); ++i ) {
+        for( int32 i = 0; i < e->nb_boundaries(); ++i ) {
             const BoundaryModelElement* b = e->boundary( i ) ;
             result.push_back( b ) ;
-            for( uint64 j = 0; j < b->nb_boundaries(); b++ ) {
+            for( uint32 j = 0; j < b->nb_boundaries(); b++ ) {
                 b1.insert( b->boundary( j ) ) ;
             }
         }
@@ -664,7 +664,7 @@ namespace GRGMesh {
         std::set< const BoundaryModelElement* > b2 ;
         for( std::set< const BoundaryModelElement* >::const_iterator it( b1.begin() );
             it != b1.end(); ++it ) {
-            for( uint64 i = 0; i < ( *it )->nb_boundaries(); i++ ) {
+            for( uint32 i = 0; i < ( *it )->nb_boundaries(); i++ ) {
                 b2.insert( ( *it )->boundary( i ) ) ;
             }
         }        
@@ -684,9 +684,9 @@ namespace GRGMesh {
 
         if( !check_all ) {
             // Check only if the elements share a boundary
-            for( int i = 0; i < e1->nb_boundaries(); ++i ) {
+            for( int32 i = 0; i < e1->nb_boundaries(); ++i ) {
                 const BoundaryModelElement* b1 = e1->boundary( i ) ;
-                for( int j = 0; j < e2->nb_boundaries(); ++j ) {
+                for( int32 j = 0; j < e2->nb_boundaries(); ++j ) {
                     if( e2->boundary( i ) == b1 ) return true ;
                 }
             }
@@ -698,7 +698,7 @@ namespace GRGMesh {
             get_all_boundary_elements( e1, b1 ) ;
             get_all_boundary_elements( e2, b2 ) ;
            
-            for( int i = 0; i < b1.size(); ++i ){
+            for( int32 i = 0; i < b1.size(); ++i ){
                 if( std::count( b2.begin(), b2.end(), b1[i] ) > 0 ) return true ;
             }
         }
@@ -725,10 +725,10 @@ namespace GRGMesh {
         }
 
         // Allocate room for the values vector
-        int values_size = 0 ;
-        std::vector< int > nb_simplex ;
+        int32 values_size = 0 ;
+        std::vector< int32 > nb_simplex ;
         std::vector< const BoundaryModelElement* > from ;
-        for( int i = 0; i < nb_boundaries(); ++i ){
+        for( int32 i = 0; i < nb_boundaries(); ++i ){
             const BoundaryModelElement* b = boundary( i ) ;
 
             // Skip surfaces that are not horizons( unconf. )  when 
@@ -743,15 +743,15 @@ namespace GRGMesh {
      
         values.resize( values_size ) ;
 
-        int count = 0 ;
+        int32 count = 0 ;
 
         std::vector< const BoundaryModelElement* > to ;
-        for( int i = 0; i < from.size(); ++i ){
+        for( int32 i = 0; i < from.size(); ++i ){
             const BoundaryModelElement* b = from[i] ;
             
             to.clear() ;
         
-            for( int j = 0; j < nb_boundaries(); ++j ){
+            for( int32 j = 0; j < nb_boundaries(); ++j ){
                 const BoundaryModelElement* b1 = boundary( j ) ;
 
                 if( b == b1
@@ -761,9 +761,9 @@ namespace GRGMesh {
                 else to.push_back( b1 ) ;            
             }
 
-            for( int j = 0; j < nb_simplex[i]; ++j ) {
+            for( int32 j = 0; j < nb_simplex[i]; ++j ) {
                 float64 min = big_float64 ;
-                for( int k = 0; k < to.size(); ++k ) {
+                for( int32 k = 0; k < to.size(); ++k ) {
                     min = std::min( min, b->distance(j, to[k]) );
                 }
                 values[count+j].first = min ;
@@ -794,9 +794,9 @@ namespace GRGMesh {
         }
 
         values.clear() ;
-        for( int i = 0; i < nb_boundaries(); ++i ){
+        for( int32 i = 0; i < nb_boundaries(); ++i ){
             const BoundaryModelElement* b = boundary( i ) ;
-            for( int j = i + 1; j < nb_boundaries(); ++j ) {
+            for( int32 j = i + 1; j < nb_boundaries(); ++j ) {
                 const BoundaryModelElement* b1 = boundary( j ) ;
                 bool same_side = false ;
                 if( dim_ == 3 && sides_[i] == sides_[j] ) same_side = true ;
@@ -810,11 +810,11 @@ namespace GRGMesh {
         }                      
     }
 
-    int BoundaryModelElement::nb_boundary_elements( bool exclude_voi ) const
+    int32 BoundaryModelElement::nb_boundary_elements( bool exclude_voi ) const
     {
-        int result = 0 ;
+        int32 result = 0 ;
         std::set< const BoundaryModelElement* > b2 ;
-        for( int i = 0; i < nb_boundaries(); ++i ){
+        for( int32 i = 0; i < nb_boundaries(); ++i ){
             const BoundaryModelElement* b = boundary( i ) ;
             if( exclude_voi && b->is_on_voi() ) continue ;
             if( b->dim() == 0 ){
@@ -825,7 +825,7 @@ namespace GRGMesh {
             // Otherwise add an element and check its boundaries
             result++ ;
 
-            for( int j = 0; j < b->nb_boundaries(); ++j ) {
+            for( int32 j = 0; j < b->nb_boundaries(); ++j ) {
                 const BoundaryModelElement* bb = b->boundary( j ) ;
                 if( exclude_voi && bb->is_on_voi() ) continue ;
                 if( bb->dim() == 0 ){
@@ -841,7 +841,7 @@ namespace GRGMesh {
         std::set< const BoundaryModelElement* > b3 ;
         for( std::set< const BoundaryModelElement* >::iterator it( b2.begin() );
             it != b2.end(); ++it ) {
-            for( int j = 0; j < ( *it )->nb_boundaries(); ++j ) {
+            for( int32 j = 0; j < ( *it )->nb_boundaries(); ++j ) {
                 const BoundaryModelElement* bb = ( *it )->boundary( j ) ;
                 if( exclude_voi && bb->is_on_voi() ) continue ;
                 if( bb->dim() == 0 ) {
@@ -856,17 +856,17 @@ namespace GRGMesh {
         return result ;
     }
 
-    int BoundaryModelElement::nb_incident_elements( bool exclude_voi ) const
+    int32 BoundaryModelElement::nb_incident_elements( bool exclude_voi ) const
     {
-        int result = 0 ;
+        int32 result = 0 ;
                
         std::set< const BoundaryModelElement* > b2 ;
-        for( int i = 0; i < nb_in_boundary(); ++i ) {
+        for( int32 i = 0; i < nb_in_boundary(); ++i ) {
             const BoundaryModelElement* b = in_boundary( i ) ;
             if( exclude_voi && b->is_on_voi() ) continue ;
             else {
                 result++ ;
-                for( int j = 0; j < b->nb_in_boundary(); ++j ) {
+                for( int32 j = 0; j < b->nb_in_boundary(); ++j ) {
                     const BoundaryModelElement* bb = b->in_boundary( j ) ;
                     if( exclude_voi && bb->is_on_voi() ) continue ;
                     else b2.insert( bb ) ;
@@ -878,7 +878,7 @@ namespace GRGMesh {
         std::set< const BoundaryModelElement* > b3 ;
         for( std::set< const BoundaryModelElement* >::iterator it( b2.begin() );
             it != b2.end(); ++it ) {
-            for( int j = 0; j < ( *it )->nb_in_boundary(); ++j ) {
+            for( int32 j = 0; j < ( *it )->nb_in_boundary(); ++j ) {
                 const BoundaryModelElement* bb = ( *it )->in_boundary( j ) ;
                 if( exclude_voi && bb->is_on_voi() ) continue ;
                 else b3.insert( bb ) ;
@@ -890,7 +890,7 @@ namespace GRGMesh {
 
 /***********************************************************************************************/
 
-    const vec3& Corner::point( uint64 p ) const
+    const vec3& Corner::point( uint32 p ) const
     {
         return model_->point( p_ ) ;
     }
@@ -920,7 +920,7 @@ namespace GRGMesh {
 /******             ContactPart implementation            ***********************************/
 /********************************************************************************************/
 
-    ContactPart::ContactPart( BoundaryModel* model, int id ):
+    ContactPart::ContactPart( BoundaryModel* model, int32 id ):
         BoundaryModelElement( model, 1, id )
     { 
         boundaries_.resize( 2, nil) ; 
@@ -928,18 +928,18 @@ namespace GRGMesh {
 
     ContactPart::ContactPart(
         BoundaryModel* model,
-        int id,
-        const std::vector< uint64 >& points )
+        int32 id,
+        const std::vector< uint32 >& points )
         : BoundaryModelElement( model, 1, id ), vertices_( points )
     {
     }
 
     ContactPart::ContactPart(
         BoundaryModel* model,
-        int id,
-        uint64 corner0,
-        uint64 corner1,
-        const std::vector< uint64 >& points
+        int32 id,
+        uint32 corner0,
+        uint32 corner1,
+        const std::vector< uint32 >& points
     ):  BoundaryModelElement( model, 1, id ),
         vertices_( points )
     {
@@ -947,7 +947,7 @@ namespace GRGMesh {
         boundaries_.push_back( corner1 ) ;
     } ;
 
-    const vec3& ContactPart::point( uint64 p ) const
+    const vec3& ContactPart::point( uint32 p ) const
     {
         return model_->point( vertices_[p] ) ;
     }
@@ -959,9 +959,9 @@ namespace GRGMesh {
         BoundaryModelElement::copy_macro_topology( rhs, model ) ;
         is_inside_border_ = rhs.is_inside_border_ ;
     }
-    void ContactPart::add_in_boundary( uint64 e )
+    void ContactPart::add_in_boundary( uint32 e )
     {
-        for( uint64 i = 0; i < nb_in_boundary(); i++ ) {
+        for( uint32 i = 0; i < nb_in_boundary(); i++ ) {
             if( in_boundary_[i] == e ) {
                 grgmesh_debug_assert( !is_inside_border_[i] ) ;
                 is_inside_border_[i] = true ;
@@ -975,9 +975,9 @@ namespace GRGMesh {
     bool ContactPart::contains( const vec3& p ) const {
         return find( p ) != -1 ;
     }
-    int ContactPart::find( const vec3& p ) const
+    int32 ContactPart::find( const vec3& p ) const
     {
-        for( uint64 i = 0; i < vertices_.size(); ++i ) {
+        for( uint32 i = 0; i < vertices_.size(); ++i ) {
             if( point( i ) == p ) return i ;
         }
         return -1 ;
@@ -985,14 +985,14 @@ namespace GRGMesh {
 
     float64 ContactPart::size() const {
         float64 result = 0. ;
-        for( uint64 i = 1; i < vertices_.size(); ++i ){
+        for( uint32 i = 1; i < vertices_.size(); ++i ){
             result += length( point( i )-point( i-1 ) ) ;
         }
         if( is_closed() ) result += length( model_->point( vertices_.back() )-point( 0 ) );
         return result ;
     }
 
-    float64 ContactPart::simplex_size( int i ) const {
+    float64 ContactPart::simplex_size( int32 i ) const {
         if( i < vertices_.size()-1 ) return length(point( i+1 ) - point( i)) ;
         else {
             grgmesh_debug_assert( i < vertices_.size() ) ;
@@ -1005,7 +1005,7 @@ namespace GRGMesh {
      */
     float64 ContactPart::distance( const vec3& p ) const {
         float64 result = big_float64 ;
-        for( uint64 i = 1; i < vertices_.size(); ++i ){
+        for( uint32 i = 1; i < vertices_.size(); ++i ){
             // Distance betweena a point and a segment COPY from smwh else
             const vec3& p0 = point( i-1 ) ;
             const vec3& p1 = point( i ) ;
@@ -1045,7 +1045,7 @@ namespace GRGMesh {
     }
     vec3 ContactPart::average_orientation() const {
         vec3 s(0., 0., 0. ) ;
-        for( uint64 i = 1; i < vertices_.size(); ++i ){
+        for( uint32 i = 1; i < vertices_.size(); ++i ){
             s += point( i-1 ) - point( i );
         }
         if( is_closed() ) {
@@ -1061,7 +1061,7 @@ namespace GRGMesh {
      */
     float64 ContactPart::distance( BoundaryModelElement* e ) const {
         float64 result = big_float64 ;
-        for( uint64 i = 0; i < vertices_.size(); ++i ) {
+        for( uint32 i = 0; i < vertices_.size(); ++i ) {
             result = std::min( result, e->distance( point( i ) ) ) ;
         }
         return result ;
@@ -1069,7 +1069,7 @@ namespace GRGMesh {
 
     /*! Min distance fron the i-th simplex barycenter to the given elements
      */
-    float64 ContactPart::distance( int s, BoundaryModelElement* to ) const {
+    float64 ContactPart::distance( int32 s, BoundaryModelElement* to ) const {
         vec3 centroid ;
         if( s < vertices_.size()-1 ) {
             centroid = ( point( s+1 )+point( s )) * 0.5 ;
@@ -1094,15 +1094,15 @@ namespace GRGMesh {
 
 
         std::vector< const BoundaryModelElement* > shared ;
-        for( int i = 0; i < nb_boundaries(); ++i ){
-            for( int j = 0; j < cp->nb_boundaries(); ++j ){
+        for( int32 i = 0; i < nb_boundaries(); ++i ){
+            for( int32 j = 0; j < cp->nb_boundaries(); ++j ){
                 if( cp->boundaries_[j] == boundaries_[i] ) {
                     shared.push_back( cp->boundary( j ) ) ;
                 }
             }
         }
 
-        for( int i = 0; i < shared.size(); ++i ){
+        for( int32 i = 0; i < shared.size(); ++i ){
             const Corner* c = dynamic_cast< const Corner* >( shared[i] ) ;
             grgmesh_debug_assert( c != nil ) ;
 
@@ -1134,15 +1134,15 @@ namespace GRGMesh {
         if( cp != nil ) {
 
             std::vector< const BoundaryModelElement* > shared ;
-            for( int i = 0; i < nb_boundaries(); ++i ){
-                for( int j = 0; j < cp->nb_boundaries(); ++j ){
+            for( int32 i = 0; i < nb_boundaries(); ++i ){
+                for( int32 j = 0; j < cp->nb_boundaries(); ++j ){
                     if( cp->boundaries_[j] == boundaries_[i] ) {
                         shared.push_back( cp->boundary( j ) ) ;
                     }
                 }
             }
             
-            for( int i = 0; i < shared.size(); ++i ){
+            for( int32 i = 0; i < shared.size(); ++i ){
                 const Corner* c = dynamic_cast< const Corner* >( shared[i] ) ;
                 grgmesh_debug_assert( c != nil ) ;
 
@@ -1185,8 +1185,8 @@ namespace GRGMesh {
         }
         else {
             // Compute the max distance between 2 point divided by two
-            for( uint64 i = 0; i < vertices_.size() ; ++i ) {
-                for( uint64 j = 0; j < vertices_.size() ; ++j ) {
+            for( uint32 i = 0; i < vertices_.size() ; ++i ) {
+                for( uint32 j = 0; j < vertices_.size() ; ++j ) {
                     d = std::max( d, length2(point(i)- point(j) )) ;
                 }
             }
@@ -1205,11 +1205,11 @@ namespace GRGMesh {
             << std::endl ;
     }
 
-    void ContactPartMutator::set_point( uint64 id, const vec3& p ) {
+    void ContactPartMutator::set_point( uint32 id, const vec3& p ) {
         M_.model_->points_[M_.vertices_[id]] = p ;
     }
 
-    vec3& ContactPartMutator::point( uint64 p ) const
+    vec3& ContactPartMutator::point( uint32 p ) const
     {
         return M_.model_->points_[ M_.vertices_[p] ] ;
     }
@@ -1218,11 +1218,11 @@ namespace GRGMesh {
 /******             SurfacePart implementation            ***********************************/
 /********************************************************************************************/
 
-    const vec3& SurfacePart::point( int f, int v ) const
+    const vec3& SurfacePart::point( int32 f, int32 v ) const
     {
         return model_->point( points_[facets_[facet_begin( f ) + v]] ) ;
     }
-    const vec3& SurfacePart::point( uint64 v ) const
+    const vec3& SurfacePart::point( uint32 v ) const
     {
         return model_->point( points_[v] ) ;
     }
@@ -1234,12 +1234,12 @@ namespace GRGMesh {
             model_->point( points_[facets_[2]] ) ) ;
     }
 
-    int SurfacePart::adjcent_in_neighbor( uint64 f, uint64 e ) const
+    int32 SurfacePart::adjcent_in_neighbor( uint32 f, uint32 e ) const
     {
-        int adj = adjacent( f, e ) ;
+        int32 adj = adjacent( f, e ) ;
         if( adj == -1 ) return -1 ;
 
-        for( uint64 i = 0; i < nb_points_in_facet( adj ); i++ ) {
+        for( uint32 i = 0; i < nb_points_in_facet( adj ); i++ ) {
             if( adjacent( adj, i ) == f ) return i ;
         }
         return -1 ;
@@ -1252,17 +1252,17 @@ namespace GRGMesh {
         grgmesh_debug_assert( te.edge_ != -1 ) ;
         grgmesh_debug_assert( te.edge_ < 4 ) ;
         grgmesh_debug_assert( is_on_border( te.facet_, te.edge_ ) ) ;
-        uint64 ref_index = point_index( te.facet_,
+        uint32 ref_index = point_index( te.facet_,
             edge_vertex( te.facet_, te.edge_, 1 ) ) ;
-        std::set< int > used_triangles ;
-        std::stack< int > S ;
+        std::set< int32 > used_triangles ;
+        std::stack< int32 > S ;
         S.push( te.facet_ ) ;
         while( !S.empty() ) {
-            int cur_t = S.top() ;
+            int32 cur_t = S.top() ;
             S.pop() ;
             if( used_triangles.find( cur_t ) != used_triangles.end() ) { continue ; }
             used_triangles.insert( cur_t ) ;
-            for( uint64 e = 0; e < 3 ; e++ ) {
+            for( uint32 e = 0; e < 3 ; e++ ) {
                 if( point_index( cur_t, edge_vertex( cur_t, e, 0 ) ) == ref_index ) {
                     if( is_on_border( cur_t, e ) ) {
                         return FacetEdge( cur_t, e ) ;
@@ -1277,10 +1277,10 @@ namespace GRGMesh {
         return FacetEdge() ;
     }
 
-    int SurfacePart::has_edge( int facet, int in0, int in1 ) const {
-        int p0 = point_index( facet, 0 ) ;
-        int p1 = point_index( facet, 1 ) ;
-        int p2 = point_index( facet, 2 ) ;
+    int32 SurfacePart::has_edge( int32 facet, int32 in0, int32 in1 ) const {
+        int32 p0 = point_index( facet, 0 ) ;
+        int32 p1 = point_index( facet, 1 ) ;
+        int32 p2 = point_index( facet, 2 ) ;
 
         if( is_triangle( facet ) ) {
 
@@ -1297,7 +1297,7 @@ namespace GRGMesh {
                 if( in1 == p1 ) return 0 ;
             }
         } else {
-            int p3 = point_index( facet, 3 ) ;
+            int32 p3 = point_index( facet, 3 ) ;
 
             if( in0 == p0 ) {
                 if( in1 == p1 ) return 0 ;
@@ -1319,8 +1319,8 @@ namespace GRGMesh {
         return -1 ;               
     }
 
-    int SurfacePart::find_triangle ( int in0, int in1 ) const {
-        for( uint64 f = 0; f < nb_simplices(); ++f ) {
+    int32 SurfacePart::find_triangle ( int32 in0, int32 in1 ) const {
+        for( uint32 f = 0; f < nb_simplices(); ++f ) {
             if( has_edge( f, in0, in1 ) != -1 ) {
                 return f ;
             }
@@ -1331,9 +1331,9 @@ namespace GRGMesh {
     bool SurfacePart::contains( const vec3& p ) const {
         return find( p ) != -1 ;
     }
-    int SurfacePart::find( const vec3& p ) const
+    int32 SurfacePart::find( const vec3& p ) const
     {
-        for( uint64 i = 0; i < points_.size(); ++i ) {
+        for( uint32 i = 0; i < points_.size(); ++i ) {
             if( model_->point( points_[i] ) == p ) return i ;
         }
         return -1 ;
@@ -1343,20 +1343,20 @@ namespace GRGMesh {
      *  
      *  WARNING There might TWO such triangles
      */
-    int SurfacePart::find_triangle( const vec3& p0, const vec3& p1 ) const {
+    int32 SurfacePart::find_triangle( const vec3& p0, const vec3& p1 ) const {
         // There might be several points with the same coordinates
         // Test all possible pairs
         
-        std::vector< int > i0 ;
-        std::vector< int > i1 ;
+        std::vector< int32 > i0 ;
+        std::vector< int32 > i1 ;
 
-        for( uint64 v = 0; v < points_.size(); ++v ) {
+        for( uint32 v = 0; v < points_.size(); ++v ) {
             if( model_->point( points_[v] ) == p0 ) i0.push_back( v ) ;
             if( model_->point( points_[v] ) == p1 ) i1.push_back( v ) ;
         }
-        int t = -1 ;
-        for( int i = 0; i < i0.size(); ++i ){
-            for( int j = 0; j < i1.size(); ++j ){
+        int32 t = -1 ;
+        for( int32 i = 0; i < i0.size(); ++i ){
+            for( int32 j = 0; j < i1.size(); ++j ){
                 t = find_triangle( i0[i], i1[j] ) ; 
                 if( t != -1 ) return t ;
             }
@@ -1368,39 +1368,39 @@ namespace GRGMesh {
      */
     void SurfacePart::compute_adjacent_facets() {
         adjacent_.resize( facets_.size(), -1 ) ;
-        std::vector< int > facets ;
+        std::vector< int32 > facets ;
         facets.reserve( 6 ) ;
-        std::vector< std::vector< int > > facet_points( nb_points(), facets ) ;
+        std::vector< std::vector< int32 > > facet_points( nb_points(), facets ) ;
 
-        for( uint64 f = 0; f < nb_simplices(); ++f ){
-            for( uint64 v = 0; v < nb_points_in_facet( f ); v++ ) {
+        for( uint32 f = 0; f < nb_simplices(); ++f ){
+            for( uint32 v = 0; v < nb_points_in_facet( f ); v++ ) {
                 facet_points[point_index( f, v )].push_back( f ) ;
             }
         }
-        for( uint64 p = 0; p < nb_points(); ++p ){
+        for( uint32 p = 0; p < nb_points(); ++p ){
             std::sort( facet_points[p].begin(), facet_points[p].end() ) ;
         }
 
-        for( uint64 f = 0; f < nb_simplices(); ++f ){
-            uint64 nb_edges = is_triangle( f ) ? 3 : 4 ;
-            for( uint64 e = 0; e < nb_edges; ++e ){
+        for( uint32 f = 0; f < nb_simplices(); ++f ){
+            uint32 nb_edges = is_triangle( f ) ? 3 : 4 ;
+            for( uint32 e = 0; e < nb_edges; ++e ){
                 if( !is_on_border( f, e ) ) continue ;
 
-                int v0 = point_index( f, edge_vertex( f, e, 0 ) ) ;
-                int v1 = point_index( f, edge_vertex( f, e, 1 ) ) ;
+                int32 v0 = point_index( f, edge_vertex( f, e, 0 ) ) ;
+                int32 v1 = point_index( f, edge_vertex( f, e, 1 ) ) ;
 
-                const std::vector< int >& facets0 = facet_points[v0] ;
-                const std::vector< int >& facets1 = facet_points[v1] ;
+                const std::vector< int32 >& facets0 = facet_points[v0] ;
+                const std::vector< int32 >& facets1 = facet_points[v1] ;
 
-                std::vector< int > inter(
+                std::vector< int32 > inter(
                     std::min( facets0.size(), facets1.size() ) ) ;
-                std::vector< int >::iterator end = std::set_intersection(
+                std::vector< int32 >::iterator end = std::set_intersection(
                     facets0.begin(), facets0.end(), facets1.begin(), facets1.end(),
                     inter.begin() ) ;
-                int nb_intersections = end - inter.begin() ;
+                int32 nb_intersections = end - inter.begin() ;
                 if( nb_intersections == 2 ) {
-                    int f2 = inter[0] == f ? inter[1] : inter[0] ;
-                    int e2 = has_edge( f2, v0, v1 ) ;
+                    int32 f2 = inter[0] == f ? inter[1] : inter[0] ;
+                    int32 e2 = has_edge( f2, v0, v1 ) ;
                     adjacent( f, e ) = f2 ;
                     adjacent( f2, e2 ) = f ;
                 } else {
@@ -1423,7 +1423,7 @@ namespace GRGMesh {
         vec3& p0 = key_facet_.p0_ ;
         vec3& p1 = key_facet_.p1_ ;
         vec3& p2 = key_facet_.p2_ ;
-        int t = find_triangle( p0,p1,p2 ) ;
+        int32 t = find_triangle( p0,p1,p2 ) ;
         if( t == -1 ) {
             // It is because of the sign of Z that is not the same 
             p0.z *= -1 ;
@@ -1433,9 +1433,9 @@ namespace GRGMesh {
         }
         grgmesh_debug_assert( t > -1 ) ;
 
-        int i0 = point_id( t, p0 ) ;
-        int i1 = point_id( t, p1 ) ;
-        int i2 = point_id( t, p2 ) ;
+        int32 i0 = point_id( t, p0 ) ;
+        int32 i1 = point_id( t, p1 ) ;
+        int32 i2 = point_id( t, p2 ) ;
 
         bool same_sign = true ;
         if( i0 == 0 && i1 == 2 ) same_sign = false ;      
@@ -1445,15 +1445,15 @@ namespace GRGMesh {
         return same_sign ;
    }
 
-    int SurfacePart::point_id( int t, int p0 ) const {
-        for( uint64 v = 0; v < nb_points_in_facet(t); v++ ) {
+    int32 SurfacePart::point_id( int32 t, int32 p0 ) const {
+        for( uint32 v = 0; v < nb_points_in_facet(t); v++ ) {
             if( same_point( point_index( t, v ), p0) ) return v ;
         }
         return -1 ;
     }
 
-    int SurfacePart::point_id( int t, const vec3& p ) const {
-        for( uint64 v = 0; v < nb_points_in_facet(t); v++ ) {
+    int32 SurfacePart::point_id( int32 t, const vec3& p ) const {
+        for( uint32 v = 0; v < nb_points_in_facet(t); v++ ) {
             if( point( t, v ) == p ) return v ;
         }
         return -1 ;
@@ -1468,8 +1468,8 @@ namespace GRGMesh {
         }
     } ;
 
-    int SurfacePart::find_triangle( const vec3& p0, const vec3& p1, const vec3& p2 ) const {
-        for( uint64 t = 0; t < nb_simplices(); ++t ){
+    int32 SurfacePart::find_triangle( const vec3& p0, const vec3& p1, const vec3& p2 ) const {
+        for( uint32 t = 0; t < nb_simplices(); ++t ){
             const vec3& pp0 = point( t, 0 )   ;
             const vec3& pp1 = point( t, 1 )   ;
             const vec3& pp2 = point( t, 2 )   ;
@@ -1491,11 +1491,11 @@ namespace GRGMesh {
     }
 
 
-    int SurfacePart::edge_id( int t, int p0, int p1 ) const {        
-        int t_0 = point_id( t, p0 ) ;
-        int t_1 = point_id( t, p1 ) ;
+    int32 SurfacePart::edge_id( int32 t, int32 p0, int32 p1 ) const {
+        int32 t_0 = point_id( t, p0 ) ;
+        int32 t_1 = point_id( t, p1 ) ;
        
-        if( t_0 > t_1 ) { int tmp = t_0 ; t_0 = t_1 ; t_1 = tmp ; }
+        if( t_0 > t_1 ) { int32 tmp = t_0 ; t_0 = t_1 ; t_1 = tmp ; }
         
         if     ( t_0 == 0 && t_1 == 1 ) return 2 ;
         else if( t_0 == 0 && t_1 == 2 ) return 1 ;
@@ -1503,15 +1503,15 @@ namespace GRGMesh {
         else return -1 ;
     }
 
-    int SurfacePart::triangles_around_point(
-        int shared_point,
-        std::vector< int >& result,
+    int32 SurfacePart::triangles_around_point(
+        int32 shared_point,
+        std::vector< int32 >& result,
         bool border_only ) const
     {
         result.resize(0) ;
-        std::stack< int > S ;
-        for( uint64 t = 0; t < nb_simplices(); ++t ) {
-            for( uint64 v = 0; v < nb_points_in_facet(t); v++ ) {
+        std::stack< int32 > S ;
+        for( uint32 t = 0; t < nb_simplices(); ++t ) {
+            for( uint32 v = 0; v < nb_points_in_facet(t); v++ ) {
                 if( point_index( t, v ) == shared_point ) {
                     return triangles_around_point_with_hint( shared_point, result,
                         border_only, t ) ;
@@ -1522,27 +1522,27 @@ namespace GRGMesh {
         return -1 ;
     }
 
-    int SurfacePart::triangles_around_point_with_hint(
-        int shared_point,
-        std::vector< int >& result,
+    int32 SurfacePart::triangles_around_point_with_hint(
+        int32 shared_point,
+        std::vector< int32 >& result,
         bool border_only,
-        int triangle_hint ) const
+        int32 triangle_hint ) const
     {
         result.resize( 0 ) ;
-        std::stack< int > S ;
+        std::stack< int32 > S ;
         S.push( triangle_hint ) ;
 
-        std::vector< int > visited ;
+        std::vector< int32 > visited ;
         visited.reserve( 20 ) ;
         do {
-            int t = S.top() ;
+            int32 t = S.top() ;
             S.pop() ;
             if( vector_contains( visited, t ) ) continue ;
             visited.push_back( t ) ;
-            for( uint64 v = 0; v < nb_points_in_facet(t); ++v ) {
+            for( uint32 v = 0; v < nb_points_in_facet(t); ++v ) {
                 if( point_index( t, v ) == shared_point ) {
 
-                    for( uint64 adj = 0; adj < 3; adj++ ) {
+                    for( uint32 adj = 0; adj < 3; adj++ ) {
                         if( !is_on_border( t, adj ) ) {
                             S.push( adjacent( t, adj ) ) ;
                         }
@@ -1564,21 +1564,21 @@ namespace GRGMesh {
         return result.size() ;
     }
 
-    vec3 SurfacePart::barycenter( int f ) const {
+    vec3 SurfacePart::barycenter( int32 f ) const {
         vec3 barycenter ;
-        for( uint64 i = 0; i < nb_points_in_facet( f ); i++ ) {
+        for( uint32 i = 0; i < nb_points_in_facet( f ); i++ ) {
             barycenter += point( f, i ) ;
         }
         return barycenter / nb_points_in_facet( f ) ;
     }
 
-    uint64 SurfacePart::closest_point_in_facet(
-        uint64 f,
+    uint32 SurfacePart::closest_point_in_facet(
+        uint32 f,
         const vec3& v ) const
     {
-       uint64 result = 0 ;
+       uint32 result = 0 ;
        float64 dist = big_float64 ;
-       for( uint64 p = 0; p < nb_points_in_facet( f ); p++ ) {
+       for( uint32 p = 0; p < nb_points_in_facet( f ); p++ ) {
            float64 distance = length2( v - point( f, p ) ) ;
            if( dist > distance ) {
                dist = distance ;
@@ -1588,10 +1588,10 @@ namespace GRGMesh {
        return result ;
     }
 
-    float64 SurfacePart::facet_resolution( uint64 f ) const
+    float64 SurfacePart::facet_resolution( uint32 f ) const
     {
         float64 result = 0.0 ;
-        for( uint64 p = 0; p < nb_points_in_facet( f ); p++ ) {
+        for( uint32 p = 0; p < nb_points_in_facet( f ); p++ ) {
             result += resolution( f, p )  ;
         }
         return result / (float64)nb_points_in_facet( f ) ;
@@ -1599,7 +1599,7 @@ namespace GRGMesh {
 
     float64 SurfacePart::size() const {
         float64 result = 0. ;
-        for( uint64 i = 0; i < nb_simplices(); i++ ) {
+        for( uint32 i = 0; i < nb_simplices(); i++ ) {
             result += Utils::triangle_area( point( i, 0 ), point( i, 1 ),
                 point( i, 2 ) ) ;
             if( !is_triangle( i ) ) {
@@ -1610,7 +1610,7 @@ namespace GRGMesh {
         return result ;
     }
 
-    float64 SurfacePart::simplex_size( int t ) const
+    float64 SurfacePart::simplex_size( int32 t ) const
     {
         grgmesh_debug_assert( t < nb_simplices() ) ;
         float64 result = Utils::triangle_area( point( t, 0 ), point( t, 1 ),
@@ -1625,7 +1625,7 @@ namespace GRGMesh {
     float64 SurfacePart::distance( const vec3& p ) const {
         float64 result = big_float64 ;
 
-        for( uint64 i = 0; i < nb_simplices(); i++ ) {
+        for( uint32 i = 0; i < nb_simplices(); i++ ) {
             float64 cur_result = point_triangle_squared_distance( p, point( i, 0 ),
                     point( i, 1 ), point( i, 2 ) ) ;
             if( !is_triangle( i ) ) {
@@ -1647,13 +1647,13 @@ namespace GRGMesh {
     float64 SurfacePart::distance( BoundaryModelElement* e ) const {
         float64 result = big_float64 ;
 
-        for( uint64 i = 0; i < points_.size(); ++i ) {
+        for( uint32 i = 0; i < points_.size(); ++i ) {
             result = std::min( result, e->distance( model_->point( points_[i] ) ) ) ;
         }
         return result ;
     }
 
-    float64 SurfacePart::distance( int t, BoundaryModelElement* to ) const {
+    float64 SurfacePart::distance( int32 t, BoundaryModelElement* to ) const {
         grgmesh_debug_assert( t < nb_simplices() ) ;
         if( is_triangle( t ) ) {
             return to->distance( point( t, 0 ) + point( t, 1 ) + point( t, 2 ) ) / 3. ;
@@ -1663,7 +1663,7 @@ namespace GRGMesh {
         }
     }
 
-    vec3 SurfacePart::facet_normal( int t ) const {
+    vec3 SurfacePart::facet_normal( int32 t ) const {
         const vec3& p0 = point( t, 0 )  ;
         const vec3& p1 = point( t, 1 )  ;
         const vec3& p2 = point( t, 2 )  ;
@@ -1679,7 +1679,7 @@ namespace GRGMesh {
     vec3 SurfacePart::average_orientation() const {
         float64 total_a = 0 ;
         vec3 result (0,0,0) ;
-        for( uint64 t = 0; t < nb_simplices() ; ++t){
+        for( uint32 t = 0; t < nb_simplices() ; ++t){
             vec3 n = facet_normal( t ) ;
             float64 a = simplex_size( t ) ;
 
@@ -1700,25 +1700,25 @@ namespace GRGMesh {
         if( sp == nil ) return ;
 
         std::vector< const BoundaryModelElement* > shared ;
-        for( int i = 0; i < nb_boundaries(); ++i ) {
-            for( int j = 0; j < sp->nb_boundaries(); ++j ) {
+        for( int32 i = 0; i < nb_boundaries(); ++i ) {
+            for( int32 j = 0; j < sp->nb_boundaries(); ++j ) {
                 if( sp->boundaries_[j] == boundaries_[i] ) {
                     shared.push_back( sp->boundary( j ) ) ;
                 }
             }
         }
 
-        for( int i = 0; i < shared.size(); ++i ){
+        for( int32 i = 0; i < shared.size(); ++i ){
             const ContactPart* cp = dynamic_cast< const ContactPart* >( shared[i] ) ;
             grgmesh_debug_assert( cp != nil ) ;
 
             // Find the triangles sharing each segment 
-            for( uint64 j = 1; j < cp->nb_points(); ++j ){
+            for( uint32 j = 1; j < cp->nb_points(); ++j ){
                 const vec3& p0 = cp->point( j-1 ) ;
                 const vec3& p1 = cp->point( j ) ;
 
-                int t1 = find_triangle( p0, p1 ) ;
-                int t2 = sp->find_triangle( p0, p1 ) ;
+                int32 t1 = find_triangle( p0, p1 ) ;
+                int32 t2 = sp->find_triangle( p0, p1 ) ;
                 if( t1 == -1 || t2 == -1 ) {
                     // Should not happen
                     continue ;
@@ -1735,8 +1735,8 @@ namespace GRGMesh {
                 const vec3& p0 = cp->point( 0 ) ;
                 const vec3& p1 = cp->point( cp->nb_points()-2 ) ;
 
-                int t1 = find_triangle( p0, p1 ) ;
-                int t2 = sp->find_triangle( p0, p1 ) ;
+                int32 t1 = find_triangle( p0, p1 ) ;
+                int32 t2 = sp->find_triangle( p0, p1 ) ;
                 if( t1 == -1 || t2 == -1 ) {
                     // Should not happen
                     continue ;
@@ -1763,25 +1763,25 @@ namespace GRGMesh {
         if( sp != nil ) {
             // Find the contact shared by the two
             std::vector< const BoundaryModelElement* > shared ;
-            for( int i = 0; i < nb_boundaries(); ++i ) {
-                for( int j = 0; j < sp->nb_boundaries(); ++j ) {
+            for( int32 i = 0; i < nb_boundaries(); ++i ) {
+                for( int32 j = 0; j < sp->nb_boundaries(); ++j ) {
                     if( sp->boundaries_[j] == boundaries_[i] ) {
                         shared.push_back( sp->boundary( j ) ) ;
                     }
                 }
             }
             
-            for( int i = 0; i < shared.size(); ++i ){
+            for( int32 i = 0; i < shared.size(); ++i ){
                 const ContactPart* cp = dynamic_cast< const ContactPart* >( shared[i] ) ;
                 grgmesh_debug_assert( cp != nil ) ;
                 
                 // Find the triangle sharing each segment 
-                 for( uint64 j = 1; j < cp->nb_points(); ++j ){
+                 for( uint32 j = 1; j < cp->nb_points(); ++j ){
                     const vec3& p0 = cp->point( j-1 ) ;
                     const vec3& p1 = cp->point( j ) ;
 
-                    int t1 = find_triangle( p0, p1 ) ;
-                    int t2 = sp->find_triangle( p0, p1 ) ;
+                    int32 t1 = find_triangle( p0, p1 ) ;
+                    int32 t2 = sp->find_triangle( p0, p1 ) ;
                     if( t1 == -1 || t2 == -1 ) {
                         // Should not happen
                         continue ;
@@ -1798,8 +1798,8 @@ namespace GRGMesh {
                     const vec3& p0 = cp->point( 0 ) ;
                     const vec3& p1 = cp->point( cp->nb_points()-2 ) ;
 
-                    int t1 = find_triangle( p0, p1 ) ;
-                    int t2 = sp->find_triangle( p0, p1 ) ;
+                    int32 t1 = find_triangle( p0, p1 ) ;
+                    int32 t2 = sp->find_triangle( p0, p1 ) ;
                     if( t1 == -1 || t2 == -1 ) {
                         // Should not happen
                         continue ;
@@ -1849,25 +1849,25 @@ namespace GRGMesh {
         std::ofstream file( filename.c_str(), std::ios::trunc | std::ios::out ) ;
         file << "Surface : " << id() << std::endl ;
         file << "========== Points =========" << std::endl ;
-        for( uint64 p = 0; p < nb_points(); p++ ) {
+        for( uint32 p = 0; p < nb_points(); p++ ) {
             file << p << " -> " << point( p ) << std::endl ;
         }
         file << "========== Facets =========" << std::endl ;
-        for( uint64 p = 0; p < nb_simplices(); p++ ) {
+        for( uint32 p = 0; p < nb_simplices(); p++ ) {
             file << p << " ->" ;
-            for( uint64 v = 0; v < nb_points_in_facet(p); v++ ) {
+            for( uint32 v = 0; v < nb_points_in_facet(p); v++ ) {
                 file << " " << point_index( p, v ) ;
             }
             file << std::endl ;
         }
         file << "========== Facet ptr =========" << std::endl ;
-        for( uint64 p = 0; p < nb_simplices(); p++ ) {
+        for( uint32 p = 0; p < nb_simplices(); p++ ) {
             file << p << " -> " << facet_begin(p) << " " << facet_end(p) << std::endl ;
         }
         file << "========== Adjacents =========" << std::endl ;
-        for( uint64 p = 0; p < nb_simplices(); p++ ) {
+        for( uint32 p = 0; p < nb_simplices(); p++ ) {
             file << p << " ->" ;
-            for( uint64 v = 0; v < nb_points_in_facet(p); v++ ) {
+            for( uint32 v = 0; v < nb_points_in_facet(p); v++ ) {
                 file << " " << adjacent( p, v ) ;
             }
             file << std::endl ;
@@ -1878,14 +1878,14 @@ namespace GRGMesh {
     void SurfacePart::point_normal( std::vector< vec3 >& normals ) const
     {
         normals.resize( nb_points() ) ;
-        for( uint64 f = 0; f < nb_simplices(); f++ ) {
+        for( uint32 f = 0; f < nb_simplices(); f++ ) {
             vec3 normal = facet_normal( f ) ;
-            for( uint64 p = 0; p < nb_points_in_facet( f ); p++ ) {
-                uint64 id = point_index( f, p ) ;
+            for( uint32 p = 0; p < nb_points_in_facet( f ); p++ ) {
+                uint32 id = point_index( f, p ) ;
                 normals[id] += normal ;
             }
         }
-        for( uint64 p = 0; p < nb_points(); p++ ) {
+        for( uint32 p = 0; p < nb_points(); p++ ) {
             normals[p] = normalize( normals[p] ) ;
         }
     }
@@ -1893,17 +1893,17 @@ namespace GRGMesh {
     Box3d SurfacePart::bbox() const
     {
         Box3d result ;
-        for( uint64 p = 0; p < nb_points(); p++ ) {
+        for( uint32 p = 0; p < nb_points(); p++ ) {
             result.add_point( point( p ) ) ;
         }
         return result ;
     }
 
-    void SurfacePartMutator::set_point( uint64 id, const vec3& p ) {
+    void SurfacePartMutator::set_point( uint32 id, const vec3& p ) {
         M_.model_->points_[M_.points_[id]] = p ;
     }
 
-    vec3& SurfacePartMutator::point( uint64 p ) const
+    vec3& SurfacePartMutator::point( uint32 p ) const
     {
         return M_.model_->points_[ M_.points_[p] ] ;
     }
