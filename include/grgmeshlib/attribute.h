@@ -58,7 +58,7 @@ namespace GRGMesh {
     } ;
 
 
-    template< CellType LOCATION >
+    template< ElementType LOCATION >
     class AttributeManager {
     public:
         enum Mode {
@@ -90,7 +90,7 @@ namespace GRGMesh {
             attributes_.erase( it ) ;
         }
 
-        const CellType& record_type_id() const  { return LOCATION ; }
+        const ElementType& record_type_id() const  { return LOCATION ; }
 
     protected:
         void bind_named_attribute_store(
@@ -116,7 +116,7 @@ namespace GRGMesh {
 
 
 
-    template< CellType LOCATION, class ATTRIBUTE >
+    template< ElementType LOCATION, class ATTRIBUTE >
     class Attribute {
     public:
         typedef Attribute< LOCATION, ATTRIBUTE > thisclass ;

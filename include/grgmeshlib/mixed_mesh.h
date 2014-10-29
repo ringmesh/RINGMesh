@@ -27,6 +27,13 @@ namespace GRGMesh {
      */
     class GRGMESH_API MixedMesh: public Mesh {
         friend class MixedMeshMutator ;
+        typedef AttributeManager< LINE > LineAttributeManager ;
+        typedef AttributeManager< TRGL > TrianlgeAttributeManager ;
+        typedef AttributeManager< QUAD > QuadAttributeManager ;
+        typedef AttributeManager< TETRA > TetraAttributeManager ;
+        typedef AttributeManager< PYRAMID > PyramidAttributeManager ;
+        typedef AttributeManager< PRISM > PrismAttributeManager ;
+        typedef AttributeManager< HEXA > HexaAttributeManager ;
 
     public:
         MixedMesh()
@@ -74,7 +81,7 @@ namespace GRGMesh {
             return cells_[cell_type( c+1, real_index)][real_index] ;
         }
 
-        CellType cell_type( uint32 c, uint32& c_index = dummy_uint32 ) const ;
+        ElementType cell_type( uint32 c, uint32& c_index = dummy_uint32 ) const ;
 
         const CellDescriptor* cell_descriptor( uint32 c ) const
         {
@@ -94,6 +101,35 @@ namespace GRGMesh {
             return vertex_index( cells_[TETRA][4*c + cell_descriptor_[TETRA]->facet[f][v]] ) ;
         }
 
+
+        LineAttributeManager* line_attribute_manager() const
+        {
+            return const_cast< LineAttributeManager* >( &line_attribute_manager_ ) ;
+        }
+        TrianlgeAttributeManager* triangle_attribute_manager() const
+        {
+            return const_cast< TrianlgeAttributeManager* >( &triangle_attribute_manager_ ) ;
+        }
+        QuadAttributeManager* quad_attribute_manager() const
+        {
+            return const_cast< QuadAttributeManager* >( &quad_attribute_manager_ ) ;
+        }
+        TetraAttributeManager* tetra_attribute_manager() const
+        {
+            return const_cast< TetraAttributeManager* >( &tetra_attribute_manager_ ) ;
+        }
+        PyramidAttributeManager* pyramid_attribute_manager() const
+        {
+            return const_cast< PyramidAttributeManager* >( &pyramid_attribute_manager_ ) ;
+        }
+        PrismAttributeManager* prism_attribute_manager() const
+        {
+            return const_cast< PrismAttributeManager* >( &prism_attribute_manager_ ) ;
+        }
+        HexaAttributeManager* hexa_attribute_manager() const
+        {
+            return const_cast< HexaAttributeManager* >( &hexa_attribute_manager_ ) ;
+        }
     private:
         void copy( const MixedMesh& rhs )
         {
@@ -103,8 +139,275 @@ namespace GRGMesh {
     private:
         std::vector< uint32 > cells_[7] ;
         static const CellDescriptor* cell_descriptor_[7] ;
+
+
+        LineAttributeManager line_attribute_manager_ ;
+        TrianlgeAttributeManager triangle_attribute_manager_ ;
+        QuadAttributeManager quad_attribute_manager_ ;
+        TetraAttributeManager tetra_attribute_manager_ ;
+        PyramidAttributeManager pyramid_attribute_manager_ ;
+        PrismAttributeManager prism_attribute_manager_ ;
+        HexaAttributeManager hexa_attribute_manager_ ;
     } ;
 
+    template< class ATTRIBUTE >
+    class LineAttribute: public Attribute< LINE, ATTRIBUTE > {
+    public:
+        typedef Attribute< LINE, ATTRIBUTE > superclass ;
+
+        void bind( MixedMesh* mesh, const std::string& name )
+        {
+            superclass::bind( mesh->line_attribute_manager(), mesh->nb_lines(),
+                name ) ;
+        }
+
+        void bind( MixedMesh* mesh )
+        {
+            superclass::bind( mesh->line_attribute_manager(),
+                mesh->nb_lines() ) ;
+        }
+
+        LineAttribute()
+        {
+        }
+
+        LineAttribute( MixedMesh* mesh )
+        {
+            bind( mesh, mesh->nb_lines() ) ;
+        }
+
+        LineAttribute( MixedMesh* mesh, const std::string& name )
+        {
+            bind( mesh, mesh->nb_lines(), name ) ;
+        }
+
+        static bool is_defined( MixedMesh* mesh, const std::string& name )
+        {
+            return superclass::is_defined( mesh->line_attribute_manager(), name ) ;
+        }
+    } ;
+
+    template< class ATTRIBUTE >
+    class TriangleAttribute: public Attribute< TRGL, ATTRIBUTE > {
+    public:
+        typedef Attribute< TRGL, ATTRIBUTE > superclass ;
+
+        void bind( MixedMesh* mesh, const std::string& name )
+        {
+            superclass::bind( mesh->triangle_attribute_manager(), mesh->nb_triangles(),
+                name ) ;
+        }
+
+        void bind( MixedMesh* mesh )
+        {
+            superclass::bind( mesh->triangle_attribute_manager(),
+                mesh->nb_triangles() ) ;
+        }
+
+        TriangleAttribute()
+        {
+        }
+
+        TriangleAttribute( MixedMesh* mesh )
+        {
+            bind( mesh, mesh->nb_triangles() ) ;
+        }
+
+        TriangleAttribute( MixedMesh* mesh, const std::string& name )
+        {
+            bind( mesh, mesh->nb_triangles(), name ) ;
+        }
+
+        static bool is_defined( MixedMesh* mesh, const std::string& name )
+        {
+            return superclass::is_defined( mesh->triangle_attribute_manager(), name ) ;
+        }
+    } ;
+
+    template< class ATTRIBUTE >
+    class QuadAttribute: public Attribute< QUAD, ATTRIBUTE > {
+    public:
+        typedef Attribute< QUAD, ATTRIBUTE > superclass ;
+
+        void bind( MixedMesh* mesh, const std::string& name )
+        {
+            superclass::bind( mesh->quad_attribute_manager(), mesh->nb_quad(),
+                name ) ;
+        }
+
+        void bind( MixedMesh* mesh )
+        {
+            superclass::bind( mesh->quad_attribute_manager(),
+                mesh->nb_quad() ) ;
+        }
+
+        QuadAttribute()
+        {
+        }
+
+        QuadAttribute( MixedMesh* mesh )
+        {
+            bind( mesh, mesh->nb_quad() ) ;
+        }
+
+        QuadAttribute( MixedMesh* mesh, const std::string& name )
+        {
+            bind( mesh, mesh->nb_quad(), name ) ;
+        }
+
+        static bool is_defined( MixedMesh* mesh, const std::string& name )
+        {
+            return superclass::is_defined( mesh->quad_attribute_manager(), name ) ;
+        }
+    } ;
+
+    template< class ATTRIBUTE >
+    class TetraAttribute: public Attribute< TETRA, ATTRIBUTE > {
+    public:
+        typedef Attribute< TETRA, ATTRIBUTE > superclass ;
+
+        void bind( MixedMesh* mesh, const std::string& name )
+        {
+            superclass::bind( mesh->tetra_attribute_manager(), mesh->nb_tetra(),
+                name ) ;
+        }
+
+        void bind( MixedMesh* mesh )
+        {
+            superclass::bind( mesh->tetra_attribute_manager(),
+                mesh->nb_tetra() ) ;
+        }
+
+        TetraAttribute()
+        {
+        }
+
+        TetraAttribute( MixedMesh* mesh )
+        {
+            bind( mesh, mesh->nb_tetra() ) ;
+        }
+
+        TetraAttribute( MixedMesh* mesh, const std::string& name )
+        {
+            bind( mesh, mesh->nb_tetra(), name ) ;
+        }
+
+        static bool is_defined( MixedMesh* mesh, const std::string& name )
+        {
+            return superclass::is_defined( mesh->tetra_attribute_manager(), name ) ;
+        }
+    } ;
+
+    template< class ATTRIBUTE >
+    class PyramidAttribute: public Attribute< PYRAMID, ATTRIBUTE > {
+    public:
+        typedef Attribute< PYRAMID, ATTRIBUTE > superclass ;
+
+        void bind( MixedMesh* mesh, const std::string& name )
+        {
+            superclass::bind( mesh->pyramid_attribute_manager(), mesh->nb_pyramids(),
+                name ) ;
+        }
+
+        void bind( MixedMesh* mesh )
+        {
+            superclass::bind( mesh->pyramid_attribute_manager(),
+                mesh->nb_pyramids() ) ;
+        }
+
+        PyramidAttribute()
+        {
+        }
+
+        PyramidAttribute( MixedMesh* mesh )
+        {
+            bind( mesh, mesh->nb_pyramids() ) ;
+        }
+
+        PyramidAttribute( MixedMesh* mesh, const std::string& name )
+        {
+            bind( mesh, mesh->nb_pyramids(), name ) ;
+        }
+
+        static bool is_defined( MixedMesh* mesh, const std::string& name )
+        {
+            return superclass::is_defined( mesh->pyramid_attribute_manager(), name ) ;
+        }
+    } ;
+
+    template< class ATTRIBUTE >
+    class PrismAttribute: public Attribute< PRISM, ATTRIBUTE > {
+    public:
+        typedef Attribute< PRISM, ATTRIBUTE > superclass ;
+
+        void bind( MixedMesh* mesh, const std::string& name )
+        {
+            superclass::bind( mesh->prism_attribute_manager(), mesh->nb_prisms(),
+                name ) ;
+        }
+
+        void bind( MixedMesh* mesh )
+        {
+            superclass::bind( mesh->prism_attribute_manager(),
+                mesh->nb_prisms() ) ;
+        }
+
+        PrismAttribute()
+        {
+        }
+
+        PrismAttribute( MixedMesh* mesh )
+        {
+            bind( mesh, mesh->nb_prisms() ) ;
+        }
+
+        PrismAttribute( MixedMesh* mesh, const std::string& name )
+        {
+            bind( mesh, mesh->nb_prisms(), name ) ;
+        }
+
+        static bool is_defined( MixedMesh* mesh, const std::string& name )
+        {
+            return superclass::is_defined( mesh->prism_attribute_manager(), name ) ;
+        }
+    } ;
+
+    template< class ATTRIBUTE >
+    class HexaAttribute: public Attribute< HEXA, ATTRIBUTE > {
+    public:
+        typedef Attribute< HEXA, ATTRIBUTE > superclass ;
+
+        void bind( MixedMesh* mesh, const std::string& name )
+        {
+            superclass::bind( mesh->hexa_attribute_manager(), mesh->nb_hexa(),
+                name ) ;
+        }
+
+        void bind( MixedMesh* mesh )
+        {
+            superclass::bind( mesh->hexa_attribute_manager(),
+                mesh->nb_hexa() ) ;
+        }
+
+        HexaAttribute()
+        {
+        }
+
+        HexaAttribute( MixedMesh* mesh )
+        {
+            bind( mesh, mesh->nb_hexa() ) ;
+        }
+
+        HexaAttribute( MixedMesh* mesh, const std::string& name )
+        {
+            bind( mesh, mesh->nb_hexa(), name ) ;
+        }
+
+        static bool is_defined( MixedMesh* mesh, const std::string& name )
+        {
+            return superclass::is_defined( mesh->hexa_attribute_manager(), name ) ;
+        }
+    } ;
 
     class GRGMESH_API MixedMeshMutator: public MeshMutator {
     public:
