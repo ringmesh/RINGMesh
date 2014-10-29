@@ -17,6 +17,7 @@
 
 #include <grgmeshlib/common.h>
 #include <grgmeshlib/vecn.h>
+#include <grgmeshlib/attribute.h>
 
 #include <vector>
 #include <map>
@@ -25,6 +26,7 @@ namespace GRGMesh {
 
     class GRGMESH_API Mesh {
         friend class MeshMutator ;
+        typedef AttributeManager< VERTEX > VertexAttributeManager ;
 
     public:
         void clear()
@@ -77,6 +79,11 @@ namespace GRGMesh {
             return result / nb_vertices_in_cell( c );
         }
 
+        VertexAttributeManager* vertex_attribute_manager() const
+        {
+            return const_cast< VertexAttributeManager* >( &vertex_attribute_manager_ ) ;
+        }
+
     protected:
         Mesh()
         {
@@ -94,6 +101,46 @@ namespace GRGMesh {
         ///Mapping between the list of the vertices in a cell and the actual vertices
         std::vector< uint32 > vertex_indices_ ;
 
+        VertexAttributeManager vertex_attribute_manager_ ;
+
+
+    } ;
+
+    template< class ATTRIBUTE >
+    class VertexAttribute: public Attribute< VERTEX, ATTRIBUTE > {
+    public:
+        typedef Attribute< VERTEX, ATTRIBUTE > superclass ;
+
+        void bind( Mesh* mesh, const std::string& name )
+        {
+            superclass::bind( mesh->vertex_attribute_manager(), mesh->nb_vertices(),
+                name ) ;
+        }
+
+        void bind( Mesh* mesh )
+        {
+            superclass::bind( mesh->vertex_attribute_manager(),
+                mesh->nb_vertices() ) ;
+        }
+
+        VertexAttribute()
+        {
+        }
+
+        VertexAttribute( Mesh* mesh )
+        {
+            bind( mesh, mesh->nb_vertices() ) ;
+        }
+
+        VertexAttribute( Mesh* mesh, const std::string& name )
+        {
+            bind( mesh, mesh->nb_vertices(), name ) ;
+        }
+
+        static bool is_defined( Mesh* mesh, const std::string& name )
+        {
+            return superclass::is_defined( mesh->vertex_attribute_manager(), name ) ;
+        }
     } ;
 
     class GRGMESH_API MeshMutator {
