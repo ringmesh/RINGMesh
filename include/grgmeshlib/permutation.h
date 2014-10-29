@@ -89,11 +89,11 @@ namespace GRGMesh {
             std::vector< int32 >& permutation_in,
             uint32 elemsize )
         {
-            small_pointer data = (small_pointer) ( data_in ) ;
+            pointer data = (pointer) ( data_in ) ;
             std::vector< int32 >& permutation =
                 const_cast< std::vector< int32 >& >( permutation_in ) ;
             grgmesh_debug_assert( is_valid( permutation ) ) ;
-            small_pointer temp = static_cast< small_pointer >( alloca( elemsize ) ) ;
+            pointer temp = static_cast< pointer >( alloca( elemsize ) ) ;
             for( uint32 k = 0; k < permutation.size(); k++ ) {
                 if( is_marked( permutation, k ) ) {
                     continue ;

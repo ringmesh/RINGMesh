@@ -20,10 +20,9 @@
 
 namespace GRGMesh {
 
+    typedef unsigned char  byte ;
     /** Generic pointer type */
-    typedef void* pointer ;
-    /** Small pointer type */
-    typedef uint8_t* small_pointer ;
+    typedef byte* pointer ;
 
     /** Null pointer type */
     #define nil 0
@@ -79,13 +78,14 @@ namespace GRGMesh {
     } ;
 
     enum CellType {
-        LINE    = 0,
-        TRGL    = 1,
-        QUAD    = 2,
-        TETRA   = 3,
-        PYRAMID = 4,
-        PRISM   = 5,
-        HEXA    = 6
+        VERTEX  = -1,
+        LINE    =  0,
+        TRGL    =  1,
+        QUAD    =  2,
+        TETRA   =  3,
+        PYRAMID =  4,
+        PRISM   =  5,
+        HEXA    =  6
     } ;
 
     struct CellDescriptor {
