@@ -28,7 +28,7 @@ namespace GRGMesh {
 //        TetAABBTree( TetraMesh& M ) ;
 //        /**
 //         * @brief computes all the pairs of intersecting tets.
-//         * @param action ACTION::operator(uint64,uint64) is
+//         * @param action ACTION::operator(uint32,uint32) is
 //         *   invoked of all pairs of tets that have overlapping
 //         *   bounding boxes. triangles_intersection() needs to be
 //         *   called to detect the actual intersections.
@@ -45,19 +45,19 @@ namespace GRGMesh {
 //         * @param [out] nearest_point nearest point on the surface
 //         * @param [out] sq_dist squared distance between p and the surface.
 //         */
-//        uint64 nearest_tet(
+//        uint32 nearest_tet(
 //            const vec3& p,
 //            vec3& nearest_point,
 //            float64& sq_dist ) const
 //        {
-//            uint64 nearest_t ;
+//            uint32 nearest_t ;
 //            get_nearest_tet_hint( p, nearest_t, nearest_point, sq_dist ) ;
 //            nearest_tet_recursive( p, nearest_t, nearest_point, sq_dist, 1, 0,
 //                mesh_.nb_tetra() ) ;
 //            return nearest_t ;
 //        }
 //
-//        uint64 nearest_tet( const vec3& p ) const
+//        uint32 nearest_tet( const vec3& p ) const
 //        {
 //            vec3 nearest_point ;
 //            float64 dist ;
@@ -81,7 +81,7 @@ namespace GRGMesh {
 //         */
 //        void nearest_tet_with_hint(
 //            const vec3& p,
-//            uint64& nearest_t,
+//            uint32& nearest_t,
 //            vec3& nearest_point,
 //            float64& sq_dist ) const
 //        {
@@ -111,7 +111,7 @@ namespace GRGMesh {
 //         *  sequences that correspond to the tets contained
 //         *  in the two nodes are sent as well as the node indices.
 //         *
-//         * @param action ACTION::operator(uint64,uint64) is
+//         * @param action ACTION::operator(uint32,uint32) is
 //         *   invoked of all pairs of tets that have overlapping
 //         *   bounding boxes.
 //         * @param node1 index of the first node of the AABB tree
@@ -123,12 +123,12 @@ namespace GRGMesh {
 //         */
 //        template< class ACTION > void intersect_recursive(
 //            ACTION& action,
-//            uint64 node1,
-//            uint64 b1,
-//            uint64 e1,
-//            uint64 node2,
-//            uint64 b2,
-//            uint64 e2 ) const
+//            uint32 node1,
+//            uint32 b1,
+//            uint32 e1,
+//            uint32 node2,
+//            uint32 b2,
+//            uint32 e2 ) const
 //        {
 //            grgmesh_debug_assert( e1 != b1 ) ;
 //            grgmesh_debug_assert( e2 != b2 ) ;
@@ -157,15 +157,15 @@ namespace GRGMesh {
 //            // else
 //            //   intersect node1's two children with node2
 //            if( e2 - b2 > e1 - b1 ) {
-//                uint64 m2 = b2 + ( e2 - b2 ) / 2 ;
-//                uint64 node2_l = 2 * node2 ;
-//                uint64 node2_r = 2 * node2 + 1 ;
+//                uint32 m2 = b2 + ( e2 - b2 ) / 2 ;
+//                uint32 node2_l = 2 * node2 ;
+//                uint32 node2_r = 2 * node2 + 1 ;
 //                intersect_recursive( action, node1, b1, e1, node2_l, b2, m2 ) ;
 //                intersect_recursive( action, node1, b1, e1, node2_r, m2, e2 ) ;
 //            } else {
-//                uint64 m1 = b1 + ( e1 - b1 ) / 2 ;
-//                uint64 node1_l = 2 * node1 ;
-//                uint64 node1_r = 2 * node1 + 1 ;
+//                uint32 m1 = b1 + ( e1 - b1 ) / 2 ;
+//                uint32 node1_l = 2 * node1 ;
+//                uint32 node1_r = 2 * node1 + 1 ;
 //                intersect_recursive( action, node1_l, b1, m1, node2, b2, e2 ) ;
 //                intersect_recursive( action, node1_r, m1, e1, node2, b2, e2 ) ;
 //            }
@@ -186,7 +186,7 @@ namespace GRGMesh {
 //         */
 //        void get_nearest_tet_hint(
 //            const vec3& p,
-//            uint64& nearest_t,
+//            uint32& nearest_t,
 //            vec3& nearest_p,
 //            float64& sq_dist ) const ;
 //
@@ -204,12 +204,12 @@ namespace GRGMesh {
 //         */
 //        void nearest_tet_recursive(
 //            const vec3& p,
-//            uint64& nearest_t,
+//            uint32& nearest_t,
 //            vec3& nearest_point,
 //            float64& sq_dist,
-//            uint64 n,
-//            uint64 b,
-//            uint64 e ) const ;
+//            uint32 n,
+//            uint32 b,
+//            uint32 e ) const ;
 //
 //    private:
 //        std::vector< BBox > bboxes_ ;
@@ -221,7 +221,7 @@ namespace GRGMesh {
         FacetAABBTree( SurfacePart& M ) ;
         /**
          * @brief computes all the pairs of intersecting facets.
-         * @param action ACTION::operator(uint64,uint64) is
+         * @param action ACTION::operator(uint32,uint32) is
          *   invoked of all pairs of facets that have overlapping
          *   bounding boxes. triangles_intersection() needs to be
          *   called to detect the actual intersections.
@@ -233,7 +233,7 @@ namespace GRGMesh {
         }
 
         void compute_bbox_intersections(
-            const Box3d& box, std::vector< uint64 >& results ) const
+            const Box3d& box, std::vector< uint32 >& results ) const
     {
             intersect_recursive( results, box, 1, 0, mesh_.nb_simplices() ) ;
         }
@@ -244,37 +244,37 @@ namespace GRGMesh {
          * @param [out] nearest_point nearest point on the surface
          * @param [out] sq_dist squared distance between p and the surface.
          */
-        uint64 nearest_facet(
+        uint32 nearest_facet(
             const float64* p,
             float64* nearest_point,
             float64& sq_dist ) const
         {
             vec3 nearest( nearest_point ) ;
-            uint64 nearest_t = nearest_facet( vec3( p ), nearest, sq_dist ) ;
+            uint32 nearest_t = nearest_facet( vec3( p ), nearest, sq_dist ) ;
             nearest_point = nearest.data() ;
             return nearest_t ;
 
         }
-        uint64 nearest_facet(
+        uint32 nearest_facet(
             const vec3& p,
             vec3& nearest_point,
             float64& sq_dist ) const
         {
-            uint64 nearest_t ;
+            uint32 nearest_t ;
             get_nearest_facet_hint( p, nearest_t, nearest_point, sq_dist ) ;
             nearest_facet_recursive( p, nearest_t, nearest_point, sq_dist, 1, 0,
                 mesh_.nb_simplices() ) ;
             return nearest_t ;
         }
 
-        uint64 nearest_facet( const vec3& p ) const
+        uint32 nearest_facet( const vec3& p ) const
         {
             vec3 nearest_point ;
             float64 dist ;
             return nearest_facet( p, nearest_point, dist ) ;
         }
 
-        uint64 nearest_facet( const float64* p ) const
+        uint32 nearest_facet( const float64* p ) const
         {
             vec3 nearest_point ;
             float64 dist ;
@@ -298,7 +298,7 @@ namespace GRGMesh {
          */
         void nearest_facet_with_hint(
             const vec3& p,
-            uint64& nearest_t,
+            uint32& nearest_t,
             vec3& nearest_point,
             float64& sq_dist ) const
         {
@@ -328,7 +328,7 @@ namespace GRGMesh {
          *  sequences that correspond to the facets contained
          *  in the two nodes are sent as well as the node indices.
          *
-         * @param action ACTION::operator(uint64,uint64) is
+         * @param action ACTION::operator(uint32,uint32) is
          *   invoked of all pairs of facets that have overlapping
          *   bounding boxes.
          * @param node1 index of the first node of the AABB tree
@@ -340,12 +340,12 @@ namespace GRGMesh {
          */
         template< class ACTION > void intersect_recursive(
             ACTION& action,
-            uint64 node1,
-            uint64 b1,
-            uint64 e1,
-            uint64 node2,
-            uint64 b2,
-            uint64 e2 ) const
+            uint32 node1,
+            uint32 b1,
+            uint32 e1,
+            uint32 node2,
+            uint32 b2,
+            uint32 e2 ) const
         {
             grgmesh_debug_assert( e1 != b1 ) ;
             grgmesh_debug_assert( e2 != b2 ) ;
@@ -374,15 +374,15 @@ namespace GRGMesh {
             // else
             //   intersect node1's two children with node2
             if( e2 - b2 > e1 - b1 ) {
-                uint64 m2 = b2 + ( e2 - b2 ) / 2 ;
-                uint64 node2_l = 2 * node2 ;
-                uint64 node2_r = 2 * node2 + 1 ;
+                uint32 m2 = b2 + ( e2 - b2 ) / 2 ;
+                uint32 node2_l = 2 * node2 ;
+                uint32 node2_r = 2 * node2 + 1 ;
                 intersect_recursive( action, node1, b1, e1, node2_l, b2, m2 ) ;
                 intersect_recursive( action, node1, b1, e1, node2_r, m2, e2 ) ;
             } else {
-                uint64 m1 = b1 + ( e1 - b1 ) / 2 ;
-                uint64 node1_l = 2 * node1 ;
-                uint64 node1_r = 2 * node1 + 1 ;
+                uint32 m1 = b1 + ( e1 - b1 ) / 2 ;
+                uint32 node1_l = 2 * node1 ;
+                uint32 node1_r = 2 * node1 + 1 ;
                 intersect_recursive( action, node1_l, b1, m1, node2, b2, e2 ) ;
                 intersect_recursive( action, node1_r, m1, e1, node2, b2, e2 ) ;
             }
@@ -397,7 +397,7 @@ namespace GRGMesh {
          *  sequences that correspond to the facets contained
          *  in the two nodes are sent as well as the node indices.
          *
-         * @param action ACTION::operator(uint64) is
+         * @param action ACTION::operator(uint32) is
          *   invoked of all pairs of facets that have overlapping
          *   bounding boxes.
          * @param box   input box to test
@@ -406,11 +406,11 @@ namespace GRGMesh {
          * @param e     one position past the index of the last facet in node1
          */
         void intersect_recursive(
-            std::vector< uint64 >& results,
+            std::vector< uint32 >& results,
             const Box3d& box,
-            uint64 node,
-            uint64 b,
-            uint64 e ) const
+            uint32 node,
+            uint32 b,
+            uint32 e ) const
         {
             grgmesh_debug_assert( e != b ) ;
 
@@ -430,9 +430,9 @@ namespace GRGMesh {
             // else
             //   intersect node1's two children with node2
 
-            uint64 m = b + ( e - b ) / 2 ;
-            uint64 node_l = 2 * node ;
-            uint64 node_r = 2 * node + 1 ;
+            uint32 m = b + ( e - b ) / 2 ;
+            uint32 node_l = 2 * node ;
+            uint32 node_r = 2 * node + 1 ;
             intersect_recursive( results, box, node_l, b, m ) ;
             intersect_recursive( results, box, node_r, m, e ) ;
 
@@ -453,7 +453,7 @@ namespace GRGMesh {
          */
         void get_nearest_facet_hint(
             const vec3& p,
-            uint64& nearest_t,
+            uint32& nearest_t,
             vec3& nearest_p,
             float64& sq_dist ) const ;
 
@@ -471,12 +471,12 @@ namespace GRGMesh {
          */
         void nearest_facet_recursive(
             const vec3& p,
-            uint64& nearest_t,
+            uint32& nearest_t,
             vec3& nearest_point,
             float64& sq_dist,
-            uint64 n,
-            uint64 b,
-            uint64 e ) const ;
+            uint32 n,
+            uint32 b,
+            uint32 e ) const ;
 
     private:
         std::vector< Box3d > bboxes_ ;

@@ -20,10 +20,10 @@ namespace GRGMesh {
         &line_descriptor, &trgl_descriptor, &quad_descriptor, &tetra_descriptor,
         &pyramid_descriptor, &prism_descriptor, &hexa_descriptor } ;
 
-    CellType MixedMesh::cell_type( uint64 c, uint64& c_index ) const
+    CellType MixedMesh::cell_type( uint32 c, uint32& c_index ) const
     {
         uint8 result = 0 ;
-        uint64 size = 0 ;
+        uint32 size = 0 ;
         for( ; result < 7; result++ ) {
             size += cells_[result].size() ;
             if( c > size ) break ;

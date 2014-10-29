@@ -16,19 +16,21 @@
 #include <grgmeshlib/reorder.h>
 #include <grgmeshlib/permutation.h>
 
+#include <fstream>
+
 namespace GRGMesh {
-    static uint64 max_node_index(
-        uint64 node_index,
-        uint64 b,
-        uint64 e )
+    static uint32 max_node_index(
+        uint32 node_index,
+        uint32 b,
+        uint32 e )
     {
         grgmesh_debug_assert( e > b ) ;
         if( b + 1 == e ) {
             return node_index ;
         }
-        uint64 m = b + ( e - b ) / 2 ;
-        uint64 childl = 2 * node_index ;
-        uint64 childr = 2 * node_index + 1 ;
+        uint32 m = b + ( e - b ) / 2 ;
+        uint32 childl = 2 * node_index ;
+        uint32 childr = 2 * node_index + 1 ;
         return std::max( max_node_index( childl, b, m ),
             max_node_index( childr, m, e ) ) ;
     }
@@ -36,9 +38,9 @@ namespace GRGMesh {
     static void init_bboxes_recursive(
         const TetraMesh& M,
         std::vector< Box3d >& bboxes,
-        uint64 node_index,
-        uint64 b,
-        uint64 e )
+        uint32 node_index,
+        uint32 b,
+        uint32 e )
     {
         grgmesh_debug_assert( node_index < bboxes.size() ) ;
         grgmesh_debug_assert( b != e ) ;
@@ -51,9 +53,9 @@ namespace GRGMesh {
             bboxes[node_index] = bbox ;
             return ;
         }
-        uint64 m = b + ( e - b ) / 2 ;
-        uint64 childl = 2 * node_index ;
-        uint64 childr = 2 * node_index + 1 ;
+        uint32 m = b + ( e - b ) / 2 ;
+        uint32 childl = 2 * node_index ;
+        uint32 childr = 2 * node_index + 1 ;
         grgmesh_debug_assert( childl < bboxes.size() ) ;
         grgmesh_debug_assert( childr < bboxes.size() ) ;
         init_bboxes_recursive( M, bboxes, childl, b, m ) ;
@@ -66,9 +68,9 @@ namespace GRGMesh {
     static void init_bboxes_recursive(
         const GRGMesh::SurfacePart& M,
         std::vector< Box3d >& bboxes,
-        uint64 node_index,
-        uint64 b,
-        uint64 e )
+        uint32 node_index,
+        uint32 b,
+        uint32 e )
     {
         grgmesh_debug_assert( node_index < bboxes.size() ) ;
         grgmesh_debug_assert( b != e ) ;
@@ -80,9 +82,9 @@ namespace GRGMesh {
             bboxes[node_index] = bbox ;
             return ;
         }
-        uint64 m = b + ( e - b ) / 2 ;
-        uint64 childl = 2 * node_index ;
-        uint64 childr = 2 * node_index + 1 ;
+        uint32 m = b + ( e - b ) / 2 ;
+        uint32 childl = 2 * node_index ;
+        uint32 childr = 2 * node_index + 1 ;
         grgmesh_debug_assert( childl < bboxes.size() ) ;
         grgmesh_debug_assert( childr < bboxes.size() ) ;
         init_bboxes_recursive( M, bboxes, childl, b, m ) ;
@@ -103,7 +105,7 @@ namespace GRGMesh {
 
     void TetAABBTree::get_nearest_tet_hint(
         const vec3& p,
-        uint64& nearest_t,
+        uint32& nearest_t,
         vec3& nearest_point,
         float64& sq_dist ) const
     {
@@ -113,13 +115,13 @@ namespace GRGMesh {
         // of its bounding box is nearer to the query point.
         // For a large mesh (20M facets) this gains up to 10%
         // performance as compared to picking nearest_f randomly.
-        uint64 b = 0 ;
-        uint64 e = mesh_.nb_tetra() - 1 ;
-        uint64 n = 1 ;
+        uint32 b = 0 ;
+        uint32 e = mesh_.nb_tetra() - 1 ;
+        uint32 n = 1 ;
         while( e != b + 1 ) {
-            uint64 m = b + ( e - b ) / 2 ;
-            uint64 childl = 2 * n ;
-            uint64 childr = 2 * n + 1 ;
+            uint32 m = b + ( e - b ) / 2 ;
+            uint32 childl = 2 * n ;
+            uint32 childr = 2 * n + 1 ;
             if( bboxes_[childl].distance_to_center( p )
                 < bboxes_[childr].distance_to_center( p ) ) {
                 e = m ;
@@ -137,12 +139,12 @@ namespace GRGMesh {
 
     void TetAABBTree::nearest_tet_recursive(
         const vec3& p,
-        uint64& nearest_t,
+        uint32& nearest_t,
         vec3& nearest_point,
         float64& sq_dist,
-        uint64 n,
-        uint64 b,
-        uint64 e ) const
+        uint32 n,
+        uint32 b,
+        uint32 e ) const
     {
         ogf_debug_assert( e > b ) ;
 
@@ -158,9 +160,9 @@ namespace GRGMesh {
             }
             return ;
         }
-        uint64 m = b + ( e - b ) / 2 ;
-        uint64 childl = 2 * n ;
-        uint64 childr = 2 * n + 1 ;
+        uint32 m = b + ( e - b ) / 2 ;
+        uint32 childl = 2 * n ;
+        uint32 childr = 2 * n + 1 ;
 
         float64 dl = bboxes_[childl].signed_distance( p ) ;
         float64 dr = bboxes_[childr].signed_distance( p ) ;
@@ -191,7 +193,7 @@ namespace GRGMesh {
 
     static void reorder_morton( SurfacePart& M )
     {
-        std::vector< int64 > sorted_indices ;
+        std::vector< int32 > sorted_indices ;
         SurfacePartMutator mutator( M ) ;
 
         // Step 1: reorder vertices
@@ -203,9 +205,9 @@ namespace GRGMesh {
         }
 
         Permutation::invert(sorted_indices) ;
-        std::vector< uint64 >& facets = mutator.facets() ;
-        for( uint64 t = 0; t < M.nb_simplices(); t++ ) {
-            for( uint64 p = 0; p < 3; p++ ) {
+        std::vector< uint32 >& facets = mutator.facets() ;
+        for( uint32 t = 0; t < M.nb_simplices(); t++ ) {
+            for( uint32 p = 0; p < 3; p++ ) {
                 facets[3*t+p] = sorted_indices[facets[3*t+p]] ;
             }
         }
@@ -215,8 +217,16 @@ namespace GRGMesh {
         // Step 2: reorder facets
         morton_facet_sort( M, sorted_indices ) ;
 
-        Permutation::apply( &mutator.facets()[0], sorted_indices, sizeof(uint64) * 3 ) ;
-        Permutation::apply( &mutator.adjacents()[0], sorted_indices, sizeof(uint64) * 3 ) ;
+        Permutation::apply( &mutator.facets()[0], sorted_indices, sizeof(uint32) * 3 ) ;
+        std::ofstream out( "out") ;
+        for( unsigned int i = 0 ; i < mutator.adjacents().size(); i++ )
+            out << mutator.adjacents()[i] << std::endl ;
+
+        Permutation::apply( &mutator.adjacents()[0], sorted_indices, sizeof(int32) * 3 ) ;
+
+        std::ofstream out2( "out2") ;
+        for( unsigned int i = 0 ; i < mutator.adjacents().size(); i++ )
+            out2 << mutator.adjacents()[i] << std::endl ;
 
         if( M.is_U_set() ) {
             Permutation::apply( mutator.U(), sorted_indices ) ;
@@ -229,9 +239,9 @@ namespace GRGMesh {
         }
 
         Permutation::invert(sorted_indices) ;
-        std::vector< int >& adjacents = mutator.adjacents() ;
-        for( uint64 t = 0; t < M.nb_simplices(); t++ ) {
-            for( uint64 p = 0; p < 3; p++ ) {
+        std::vector< int32 >& adjacents = mutator.adjacents() ;
+        for( uint32 t = 0; t < M.nb_simplices(); t++ ) {
+            for( uint32 p = 0; p < 3; p++ ) {
                 if( !M.is_on_border(t,p) ) {
                     adjacents[3*t+p] = sorted_indices[adjacents[3*t+p]] ;
                 }
@@ -268,7 +278,7 @@ namespace GRGMesh {
 
     void FacetAABBTree::get_nearest_facet_hint(
         const vec3& p,
-        uint64& nearest_t,
+        uint32& nearest_t,
         vec3& nearest_point,
         float64& sq_dist ) const
     {
@@ -278,14 +288,14 @@ namespace GRGMesh {
         // of its bounding box is nearer to the query point.
         // For a large mesh (20M facets) this gains up to 10%
         // performance as compared to picking nearest_f randomly.
-        uint64 b = 0 ;
-        uint64 e = mesh_.nb_simplices() - 1 ;
+        uint32 b = 0 ;
+        uint32 e = mesh_.nb_simplices() - 1 ;
         if( e > 0 ) {
-            uint64 n = 1 ;
+            uint32 n = 1 ;
             while( e != b + 1 ) {
-                uint64 m = b + ( e - b ) / 2 ;
-                uint64 childl = 2 * n ;
-                uint64 childr = 2 * n + 1 ;
+                uint32 m = b + ( e - b ) / 2 ;
+                uint32 childl = 2 * n ;
+                uint32 childr = 2 * n + 1 ;
                 if( bboxes_[childl].distance_to_center( p )
                     < bboxes_[childr].distance_to_center( p ) ) {
                     e = m ;
@@ -304,12 +314,12 @@ namespace GRGMesh {
 
     void FacetAABBTree::nearest_facet_recursive(
         const vec3& p,
-        uint64& nearest_t,
+        uint32& nearest_t,
         vec3& nearest_point,
         float64& sq_dist,
-        uint64 n,
-        uint64 b,
-        uint64 e ) const
+        uint32 n,
+        uint32 b,
+        uint32 e ) const
     {
         grgmesh_debug_assert( e > b ) ;
 
@@ -325,9 +335,9 @@ namespace GRGMesh {
             }
             return ;
         }
-        uint64 m = b + ( e - b ) / 2 ;
-        uint64 childl = 2 * n ;
-        uint64 childr = 2 * n + 1 ;
+        uint32 m = b + ( e - b ) / 2 ;
+        uint32 childl = 2 * n ;
+        uint32 childr = 2 * n + 1 ;
 
         float64 dl = bboxes_[childl].signed_distance( p ) ;
         float64 dr = bboxes_[childr].signed_distance( p ) ;

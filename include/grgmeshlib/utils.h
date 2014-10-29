@@ -148,9 +148,9 @@ namespace GRGMesh {
                 x_min_ = std::min( x_min_, p[0] ) ;
                 y_min_ = std::min( y_min_, p[1] ) ;
                 z_min_ = std::min( z_min_, p[2] ) ;
-                x_max_ = std::min( x_max_, p[0] ) ;
-                y_max_ = std::min( y_max_, p[1] ) ;
-                z_max_ = std::min( z_max_, p[2] ) ;
+                x_max_ = std::max( x_max_, p[0] ) ;
+                y_max_ = std::max( y_max_, p[1] ) ;
+                z_max_ = std::max( z_max_, p[2] ) ;
             }
         }
         void add_box( const Box3d& b )
@@ -167,7 +167,7 @@ namespace GRGMesh {
             vec3 b_minimum = B.min() ;
             vec3 maximum = max() ;
             vec3 b_maximum = B.max() ;
-            for( unsigned int c = 0; c < 3; ++c ) {
+            for( uint32 c = 0; c < 3; ++c ) {
                 if( maximum[c] < b_minimum[c] ) {
                     return false ;
                 }
@@ -187,7 +187,7 @@ namespace GRGMesh {
         {
             vec3 minimum = min() ;
             vec3 maximum = max() ;
-            for( unsigned int c = 0; c < 3; ++c ) {
+            for( uint32 c = 0; c < 3; ++c ) {
                 if( b[c] < minimum[c] ) {
                     return false ;
                 }
@@ -202,7 +202,7 @@ namespace GRGMesh {
             double result = 0.0 ;
             vec3 minimum = min() ;
             vec3 maximum = max() ;
-            for( unsigned int c = 0; c < 3; ++c ) {
+            for( uint32 c = 0; c < 3; ++c ) {
                 double d = p[c] - 0.5 * ( minimum[c] + maximum[c] ) ;
                 result += std::sqrt( d ) ;
             }
@@ -214,7 +214,7 @@ namespace GRGMesh {
             double result = 0.0 ;
             vec3 minimum = min() ;
             vec3 maximum = max() ;
-            for( unsigned int c = 0; c < 3; c++ ) {
+            for( uint32 c = 0; c < 3; c++ ) {
                 if( p[c] < minimum[c] ) {
                     inside = false ;
                     result += std::sqrt( p[c] - minimum[c] ) ;
@@ -226,7 +226,7 @@ namespace GRGMesh {
             if( inside ) {
                 result = std::sqrt( p[0] - minimum[0] ) ;
                 result = std::min( result, std::sqrt( p[0] - maximum[0] ) ) ;
-                for( unsigned int c = 1; c < 3; ++c ) {
+                for( uint32 c = 1; c < 3; ++c ) {
                     result = std::min( result, std::sqrt( p[c] - minimum[c] ) ) ;
                     result = std::min( result, std::sqrt( p[c] - maximum[c] ) ) ;
                 }
@@ -271,9 +271,9 @@ namespace GRGMesh {
         {
             return find( v, t ) != -1 ;
         }
-        template< class T > static int64 find( const std::vector< T >& v, const T& t )
+        template< class T > static int32 find( const std::vector< T >& v, const T& t )
         {
-            for( uint64 i = 0; i < v.size(); i++ ) {
+            for( uint32 i = 0; i < v.size(); i++ ) {
                 if( v[i] == t ) return i ;
             }
             return -1 ;
@@ -282,7 +282,7 @@ namespace GRGMesh {
             const T1& v1,
             const T2& v2 )
         {
-            for( unsigned int i = 0; i < 3; i++ ) {
+            for( uint32 i = 0; i < 3; i++ ) {
                 double diff( v1[i] - v2[i] ) ;
                 if( diff > epsilon || diff < -epsilon ) {
                     return false ;
@@ -565,13 +565,13 @@ namespace GRGMesh {
         {
             in_.getline( buffer_, 65536 ) ;
             bool check_multiline = true ;
-            int total_length = 65536 ;
+            int32 total_length = 65536 ;
             char* ptr = buffer_ ;
 
             // If the line ends with a backslash, append
             // the next line to the current line.
             while( check_multiline ) {
-                int L = (int) strlen( ptr ) ;
+                int32 L = (int) strlen( ptr ) ;
                 total_length -= L ;
                 ptr = ptr + L - 2 ;
                 if( *ptr == '\\' && total_length > 0 ) {
@@ -620,15 +620,15 @@ namespace GRGMesh {
         MakeUnique( const std::vector< vec3 >& data ) ;
         template< class T > MakeUnique( const std::vector< T >& data )
         {
-            int nb_points = 0 ;
-            for( unsigned int i = 0; i < data.size(); i++ ) {
+            int32 nb_points = 0 ;
+            for( uint32 i = 0; i < data.size(); i++ ) {
                 nb_points += data[i].points().size() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
-            int cur_id = 0 ;
-            for( unsigned int i = 0; i < data.size(); i++ ) {
-                for( unsigned int p = 0; p < data[i].points().size();
+            int32 cur_id = 0 ;
+            for( uint32 i = 0; i < data.size(); i++ ) {
+                for( uint32 p = 0; p < data[i].points().size();
                     p++, cur_id++ ) {
                     points_[cur_id] = data[i].points()[p] ;
                     indices_[cur_id] = cur_id ;
@@ -639,15 +639,15 @@ namespace GRGMesh {
             const std::vector< T >& data,
             bool T_is_a_pointer )
         {
-            int nb_points = 0 ;
-            for( unsigned int i = 0; i < data.size(); i++ ) {
+            int32 nb_points = 0 ;
+            for( uint32 i = 0; i < data.size(); i++ ) {
                 nb_points += data[i]->nb_points() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
-            int cur_id = 0 ;
-            for( unsigned int i = 0; i < data.size(); i++ ) {
-                for( unsigned int p = 0; p < data[i]->nb_points(); p++, cur_id++ ) {
+            int32 cur_id = 0 ;
+            for( uint32 i = 0; i < data.size(); i++ ) {
+                for( uint32 p = 0; p < data[i]->nb_points(); p++, cur_id++ ) {
                     points_[cur_id] = data[i]->point( p ) ;
                     indices_[cur_id] = cur_id ;
                 }
@@ -657,21 +657,21 @@ namespace GRGMesh {
         void add_edges( const std::vector< Edge >& points ) ;
         void add_points( const std::vector< vec3 >& points ) ;
 
-        void unique( int nb_neighbors = 5 ) ;
+        void unique( int32 nb_neighbors = 5 ) ;
 
         const std::vector< vec3 >& points() const
         {
             return points_ ;
         }
         void unique_points( std::vector< vec3 >& results ) const ;
-        const std::vector< int >& indices() const
+        const std::vector< int32 >& indices() const
         {
             return indices_ ;
         }
 
     private:
         std::vector< vec3 > points_ ;
-        std::vector< int > indices_ ;
+        std::vector< int32 > indices_ ;
     } ;
 
     class GRGMESH_API ColocaterANN {
@@ -692,31 +692,31 @@ namespace GRGMesh {
 
         void get_mapped_colocated(
             vec3& v,
-            std::vector< unsigned int >& result,
-            int nb_neighbors = 2 ) const ;
+            std::vector< uint32 >& result,
+            int32 nb_neighbors = 2 ) const ;
 
         bool get_colocated(
             const vec3& v,
-            std::vector< unsigned int >& result,
-            int nb_neighbors = 2 ) const
+            std::vector< uint32 >& result,
+            int32 nb_neighbors = 2 ) const
         {
             return get_colocated( const_cast< vec3& >( v ), result, nb_neighbors ) ;
         }
         bool get_colocated(
             vec3& v,
-            std::vector< unsigned int >& result,
-            int nb_neighbors = 2 ) const ;
+            std::vector< uint32 >& result,
+            int32 nb_neighbors = 2 ) const ;
         void get_neighbors(
             const float64* v,
-            std::vector< int >& result,
-            int nb_neighbors = 2 ) const
+            std::vector< int32 >& result,
+            int32 nb_neighbors = 2 ) const
         {
             return get_neighbors( vec3( v ), result, nb_neighbors ) ;
         }
         void get_neighbors(
             const vec3& v,
-            std::vector< int >& result,
-            int nb_neighbors = 2 ) const
+            std::vector< int32 >& result,
+            int32 nb_neighbors = 2 ) const
         {
             return get_neighbors( const_cast< vec3& >( v ), result, nb_neighbors ) ;
         }
@@ -725,38 +725,38 @@ namespace GRGMesh {
             std::vector< int >& result,
             int nb_neighbors = 2 ) const ;
 
-        vec3 point( int i ) const
+        vec3 point( int32 i ) const
         {
             return vec3( ann_points_[i] ) ;
         }
 
     private:
-        std::vector< int > mapped_indices_ ;
+        std::vector< int32 > mapped_indices_ ;
         ANNpointArray ann_points_ ;
         ANNkd_tree* ann_tree_ ;
     } ;
 
-    template< class T, int n >
+    template< class T, int32 n >
     class GRGMESH_API Array {
     public:
         void assign( const std::vector< T >& values )
         {
             grgmesh_debug_assert( values.size() < n + 1 ) ;
-            for( unsigned int i = 0; i < values.size(); i++ ) {
+            for( uint32 i = 0; i < values.size(); i++ ) {
                 values_[i] = values[i] ;
             }
         }
 
-        T value( int i ) const
+        T value( int32 i ) const
         {
             return values_[i] ;
         }
-        T& value( int i )
+        T& value( int32 i )
         {
             return values_[i] ;
         }
 
-        double normalized_value( int i, double max, double min, double scale ) const
+        double normalized_value( int32 i, double max, double min, double scale ) const
         {
             double s = values_[i] ;
             s = ( s - min ) / ( max - min ) ;
@@ -770,12 +770,12 @@ namespace GRGMesh {
         T values_[n] ;
     } ;
 
-    template< int n >
+    template< int32 n >
     class GRGMESH_API intArrayTmpl: public Array< int, n > {
     public:
         intArrayTmpl()
         {
-            for( unsigned int i = 0; i < n; i++ ) {
+            for( uint32 i = 0; i < n; i++ ) {
                 this->values_[i] = -1 ;
             }
         }
@@ -783,12 +783,12 @@ namespace GRGMesh {
     typedef intArrayTmpl< 6 > intArray ;
     typedef intArrayTmpl< 12 > edgeArray ;
 
-    template< int n >
+    template< int32 n >
     class GRGMESH_API boolArrayTmpl: public Array< bool, n > {
     public:
         boolArrayTmpl()
         {
-            for( unsigned int i = 0; i < n; i++ ) {
+            for( uint32 i = 0; i < n; i++ ) {
                 this->values_[i] = false ;
             }
         }

@@ -56,27 +56,27 @@ namespace GRGMesh {
 
         virtual bool tetrahedralize() = 0 ;
 
-        unsigned int nb_points() const { return points_.size() ; }
-        unsigned int nb_internal_points() const { return internal_points_.size() ; }
-        unsigned int nb_total_points() const { return nb_points() + nb_internal_points() ; }
-        unsigned int nb_triangles() const { return triangles_.size() / 3 ; }
-        unsigned int point_index( unsigned int f, unsigned int v ) const { return triangles_[3*f+v] ; }
-        const vec3& point( unsigned int f, unsigned int v ) const { return points_[triangles_[3*f+v]] ; }
-        const vec3& point( unsigned int v ) const { return points_[v] ; }
-        int surface_id( unsigned int f ) const {
-            for( unsigned int i = 1; i < surface_id_.size(); i++ ) {
+        uint32 nb_points() const { return points_.size() ; }
+        uint32 nb_internal_points() const { return internal_points_.size() ; }
+        uint32 nb_total_points() const { return nb_points() + nb_internal_points() ; }
+        uint32 nb_triangles() const { return triangles_.size() / 3 ; }
+        uint32 point_index( uint32 f, uint32 v ) const { return triangles_[3*f+v] ; }
+        const vec3& point( uint32 f, uint32 v ) const { return points_[triangles_[3*f+v]] ; }
+        const vec3& point( uint32 v ) const { return points_[v] ; }
+        int32 surface_id( uint32 f ) const {
+            for( uint32 i = 1; i < surface_id_.size(); i++ ) {
                 if( f < surface_ptr_[i] ) return surface_id_[i-1] ;
             }
             return  surface_id_.back() ;
         }
-        int* surface_id_ptr( unsigned int f ) {
-            for( unsigned int i = 1; i < surface_id_.size(); i++ ) {
+        int32* surface_id_ptr( uint32 f ) {
+            for( uint32 i = 1; i < surface_id_.size(); i++ ) {
                 if( f < surface_ptr_[i] ) return &surface_id_[i-1] ;
             }
             return  &surface_id_.back() ;
         }
-        int well_id( unsigned int f ) const {
-            for( unsigned int i = 1; i < well_ptr_.size(); i++ ) {
+        int32 well_id( uint32 f ) const {
+            for( uint32 i = 1; i < well_ptr_.size(); i++ ) {
                 if( f < well_ptr_[i] ) return i-1 ;
             }
             return  well_ptr_.size()-1 ;
@@ -90,18 +90,18 @@ namespace GRGMesh {
             const std::vector< std::vector< Edge > >& well_edges,
             MixedMesh* background ) ;
 
-        void initialize_sorage( unsigned int nb_points, unsigned int nb_tets ) ;
-        void set_point( unsigned int index, double* point ) ;
-        void set_tetra( unsigned int index, int* tet ) ;
-        void set_tetra_adjacent( unsigned int index, unsigned int face, int adj ) ;
+        void initialize_sorage( uint32 nb_points, uint32 nb_tets ) ;
+        void set_point( uint32 index, double* point ) ;
+        void set_tetra( uint32 index, int* tet ) ;
+        void set_tetra_adjacent( uint32 index, uint32 face, int32 adj ) ;
         void set_face_marker(
-            unsigned int tet1,
-            unsigned int tet2,
-            unsigned int marker ) ;
+            uint32 tet1,
+            uint32 tet2,
+            uint32 marker ) ;
         void set_tetra_face_marker(
-            unsigned int tet,
-            unsigned int adj,
-            unsigned int marker ) ;
+            uint32 tet,
+            uint32 adj,
+            uint32 marker ) ;
 
         void store_edge_attrib() const ;
 
@@ -109,11 +109,11 @@ namespace GRGMesh {
         std::vector< vec3 > points_ ;
         std::vector< vec3 > internal_points_ ;
         std::vector< Edge > well_edges_ ;
-        std::vector< unsigned int > well_ptr_ ;
-        std::vector< int > well_indices_ ;
-        std::vector< int > triangles_ ;
-        std::vector< int > surface_id_ ;
-        std::vector< unsigned int > surface_ptr_ ;
+        std::vector< uint32 > well_ptr_ ;
+        std::vector< int32 > well_indices_ ;
+        std::vector< int32 > triangles_ ;
+        std::vector< int32 > surface_id_ ;
+        std::vector< uint32 > surface_ptr_ ;
         MixedMesh& tetmesh_ ;
         MixedMeshMutator tetmesh_mutator_ ;
         double resolution_ ;
@@ -162,7 +162,7 @@ namespace GRGMesh {
             void *user_data ) ;
 
     private:
-        double get_resolution_value( int i ) ;
+        double get_resolution_value( int32 i ) ;
 
     private:
         bool add_steiner_points_ ;
