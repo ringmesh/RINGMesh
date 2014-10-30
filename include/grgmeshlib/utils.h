@@ -36,6 +36,10 @@ namespace GRGMesh {
         NEGATIVE = -1, ZERO = 0, POSITIVE = 1
     } ;
 
+    template< class T > inline T sqr( T x )
+    {
+        return x * x ;
+    }
     template< class T > inline Sign sign( T x )
     {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO ) ;
@@ -124,7 +128,7 @@ namespace GRGMesh {
             return vec3( 0.5 * ( x_max() + x_min() ), 0.5 * ( y_max() + y_min() ),
                 0.5 * ( z_max() + z_min() ) ) ;
         }
-        double radius() const
+        float64 radius() const
         {
             return 0.5
                 * ::sqrt(
@@ -197,38 +201,38 @@ namespace GRGMesh {
             }
             return true ;
         }
-        double distance_to_center( const vec3& p ) const
+        float64 distance_to_center( const vec3& p ) const
         {
-            double result = 0.0 ;
+            float64 result = 0.0 ;
             vec3 minimum = min() ;
             vec3 maximum = max() ;
             for( uint32 c = 0; c < 3; ++c ) {
-                double d = p[c] - 0.5 * ( minimum[c] + maximum[c] ) ;
+                float64 d = p[c] - 0.5 * ( minimum[c] + maximum[c] ) ;
                 result += std::sqrt( d ) ;
             }
             return result ;
         }
-        double signed_distance( const vec3& p ) const
+        float64 signed_distance( const vec3& p ) const
         {
             bool inside = true ;
-            double result = 0.0 ;
+            float64 result = 0.0 ;
             vec3 minimum = min() ;
             vec3 maximum = max() ;
             for( uint32 c = 0; c < 3; c++ ) {
                 if( p[c] < minimum[c] ) {
                     inside = false ;
-                    result += std::sqrt( p[c] - minimum[c] ) ;
+                    result += sqr( p[c] - minimum[c] ) ;
                 } else if( p[c] > maximum[c] ) {
                     inside = false ;
-                    result += std::sqrt( p[c] - maximum[c] ) ;
+                    result += sqr( p[c] - maximum[c] ) ;
                 }
             }
             if( inside ) {
-                result = std::sqrt( p[0] - minimum[0] ) ;
-                result = std::min( result, std::sqrt( p[0] - maximum[0] ) ) ;
+                result = sqr( p[0] - minimum[0] ) ;
+                result = std::min( result, sqr( p[0] - maximum[0] ) ) ;
                 for( uint32 c = 1; c < 3; ++c ) {
-                    result = std::min( result, std::sqrt( p[c] - minimum[c] ) ) ;
-                    result = std::min( result, std::sqrt( p[c] - maximum[c] ) ) ;
+                    result = std::min( result, sqr( p[c] - minimum[c] ) ) ;
+                    result = std::min( result, sqr( p[c] - maximum[c] ) ) ;
                 }
                 result = -result ;
             }
@@ -247,7 +251,7 @@ namespace GRGMesh {
 
     class GRGMESH_API Utils {
     public:
-        static double triangle_area( const vec3& p1, const vec3& p2, const vec3& p3 )
+        static float64 triangle_area( const vec3& p1, const vec3& p2, const vec3& p3 )
         {
             return 0.5 * length( cross( p2 - p1, p3 - p1 ) ) ;
         }
@@ -256,13 +260,13 @@ namespace GRGMesh {
             const VEC& p2,
             const VEC& p3 )
         {
-            double l1 = std::rand() ;
-            double l2 = std::rand() ;
+            float64 l1 = std::rand() ;
+            float64 l2 = std::rand() ;
             if( l1 + l2 > 1.0 ) {
                 l1 = 1.0 - l1 ;
                 l2 = 1.0 - l2 ;
             }
-            double l3 = 1.0 - l1 - l2 ;
+            float64 l3 = 1.0 - l1 - l2 ;
             return l1 * p1 + l2 * p2 + l3 * p3 ;
         }
         template< class T > static bool contains(
@@ -283,7 +287,7 @@ namespace GRGMesh {
             const T2& v2 )
         {
             for( uint32 i = 0; i < 3; i++ ) {
-                double diff( v1[i] - v2[i] ) ;
+                float64 diff( v1[i] - v2[i] ) ;
                 if( diff > epsilon || diff < -epsilon ) {
                     return false ;
                 }
@@ -509,7 +513,7 @@ namespace GRGMesh {
             const vec3& p2,
             const vec3& O_circle,
             const vec3& N_circle,
-            double r,
+            float64 r,
             std::vector< vec3 >& result ) ;
         static bool plan_plane_intersection(
             const vec3& O_P0,
@@ -756,9 +760,9 @@ namespace GRGMesh {
             return values_[i] ;
         }
 
-        double normalized_value( int32 i, double max, double min, double scale ) const
+        float64 normalized_value( int32 i, float64 max, float64 min, float64 scale ) const
         {
-            double s = values_[i] ;
+            float64 s = values_[i] ;
             s = ( s - min ) / ( max - min ) ;
             s = std::min( s, 1.0 ) ;
             s = std::max( s, 0.0 ) ;
@@ -804,7 +808,7 @@ namespace GRGMesh {
         }
         vec3 barycenter() const
         {
-            return ( values_[0] + values_[1] ) / static_cast< double >( 2 ) ;
+            return ( values_[0] + values_[1] ) / static_cast< float64 >( 2 ) ;
         }
     } ;
 
