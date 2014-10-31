@@ -10,4 +10,4 @@
 # To use MG-Tetra uncomment the next line
 #SET(USE_MG_TETRA TRUE)
 # To speficy the path of MG-Tetra, uncomment the next line or add the environment variable MG_TETRA
-#SET(MG_TETRA /home/botella/app/DISTENE/MeshGems-1.1/Products)
+#SET(MG_TETRA /home/antoine/app/DISTENE/MeshGems-1.1/Products)

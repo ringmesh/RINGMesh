@@ -90,9 +90,12 @@ namespace GRGMesh {
             const std::vector< std::vector< Edge > >& well_edges,
             MixedMesh* background ) ;
 
-        void initialize_sorage( uint32 nb_points, uint32 nb_tets ) ;
+        void initialize_storage( uint32 nb_points, uint32 nb_tets, uint32 nb_triangles, uint32 nb_lines ) ;
         void set_point( uint32 index, double* point ) ;
-        void set_tetra( uint32 index, int* tet ) ;
+        void set_tetra( uint32 index, int* tet, uint32 nb_lines, uint32 nb_triangles ) ;
+        void set_triangle( uint32 index, int * triangle, uint32 nb_lines ) ;
+        void set_line( uint32 index, int * line ) ;
+
         void set_tetra_adjacent( uint32 index, uint32 face, int32 adj ) ;
         void set_face_marker(
             uint32 tet1,
@@ -118,6 +121,10 @@ namespace GRGMesh {
         MixedMeshMutator tetmesh_mutator_ ;
         double resolution_ ;
         MixedMesh* background_ ;
+    private:
+        uint32 nb_triangles_ = 0 ;
+        uint32 nb_tets_ = 0 ;
+        uint32 nb_lines_ = 0 ;
     } ;
 
 
