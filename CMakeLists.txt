@@ -1,0 +1,93 @@
+cmake_minimum_required(VERSION 2.8)
+project(GRGMesh)
+
+IF (EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
+   MESSAGE(INFO: "Using local options file: " .${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
+   INCLUDE(${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
+ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
+
+IF(WIN32)
+  ADD_DEFINITIONS(-DGRGMESH_EXPORTS)
+ELSE(WIN32)
+	IF(CMAKE_BUILD_TYPE MATCHES "Debug")
+        # commented-out for now, since it causes problems when linking with
+        # C++ libraries that are not compiled with this flag (changes the
+        # size/definition of STL objects)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_DEBUG")
+	ENDIF(CMAKE_BUILD_TYPE MATCHES "Debug")
+ENDIF(WIN32)
+
+IF(PARANOID_DEGUG)
+  ADD_DEFINITIONS(-DPARANOID_DEGUG)
+ENDIF(PARANOID_DEGUG)
+
+AUX_SOURCE_DIRECTORY(src/grgmeshlib SOURCES)
+AUX_SOURCE_DIRECTORY(src/third_party SOURCES)
+AUX_SOURCE_DIRECTORY(src/third_party/ANN SOURCES)
+
+INCLUDE_DIRECTORIES(include)
+INCLUDE_DIRECTORIES(include/third_party)
+
+IF(NOT DEFINED USE_MG_TETRA)
+  SET(USE_MG_TETRA FALSE)
+ENDIF(NOT DEFINED USE_MG_TETRA)
+IF(USE_MG_TETRA)	
+  add_definitions(-DUSE_MG_TETRA)
+  IF(${MG_TETRA} MATCHES .+)
+    MESSAGE(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
+    SET(MG_TETRA_DIR  ${MG_TETRA})
+  ELSEIF( $ENV{MG_TETRA} MATCHES .+)
+    MESSAGE(STATUS "Using MG-Tetra directory =  $ENV{MG_TETRA}")
+    SET(MG_TETRA_DIR  $ENV{MG_TETRA})
+  ELSE(${MG_TETRA} MATCHES .+)
+    MESSAGE(STATUS "No MG-Tetra directory found")
+  ENDIF(${MG_TETRA} MATCHES .+)
+
+
+  INCLUDE_DIRECTORIES(${MG_TETRA_DIR}/include)
+  
+  if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    SET(PLATFORM _64)
+  ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    SET(PLATFORM)
+  ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 8 )
+  
+  IF(WIN32)
+    LINK_DIRECTORIES(${MG_TETRA_DIR}/lib/WIN7${PLATFORM}_VC10)
+  ELSE(WIN32)
+    LINK_DIRECTORIES(${MG_TETRA_DIR}/lib/Linux${PLATFORM})
+  ENDIF(WIN32)
+ENDIF(USE_MG_TETRA)
+
+
+#To use OpenMP 
+IF(WIN32) 
+       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4996 /MP")
+       SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4996 /MP")
+ELSE(WIN32)
+       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+       SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+ENDIF(WIN32)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+SET(LIBRARY_OUTPUT_PATH lib)
+IF(WIN32)
+    GatherProjectFiles(VorteX . HeaderFiles)
+    IF(GRGMESH_STATIC)
+        add_library(GRGMesh STATIC ${SOURCES} ${HeaderFiles})
+    ELSE(GRGMESH_STATIC)
+        add_library(GRGMesh SHARED ${SOURCES} ${HeaderFiles})
+    ENDIF(GRGMESH_STATIC)
+ELSE(WIN32)
+    IF(GRGMESH_STATIC)
+        add_library(GRGMesh STATIC ${SOURCES})
+    ELSE(GRGMESH_STATIC)
+        add_library(GRGMesh SHARED ${SOURCES})
+    ENDIF(GRGMESH_STATIC)
+ENDIF(WIN32)
+
+IF(USE_MG_TETRA)
+  TARGET_LINK_LIBRARIES(GRGMesh meshgems mg-tetra)
+ENDIF(USE_MG_TETRA)
