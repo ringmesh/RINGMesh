@@ -60,7 +60,7 @@ namespace GRGMesh {
         const vec3& vertex( uint32 v ) const { return vertices_[v] ; }
         uint32 vertex_index( uint32 i ) const { return vertex_indices_[i] ; }
 
-        virtual CellType cell_type( uint32 c, uint32& c_index = dummy_uint32  ) const = 0 ;
+        virtual ElementType cell_type( uint32 c, uint32& c_index = dummy_uint32  ) const = 0 ;
         virtual const CellDescriptor* cell_descriptor( uint32 c ) const = 0 ;
         uint32 cell_facet_vertex( uint32 c, uint32 f, uint32 v ) const
         {
@@ -101,6 +101,7 @@ namespace GRGMesh {
         ///Mapping between the list of the vertices in a cell and the actual vertices
         std::vector< uint32 > vertex_indices_ ;
 
+    private:
         VertexAttributeManager vertex_attribute_manager_ ;
 
 
@@ -142,6 +143,8 @@ namespace GRGMesh {
             return superclass::is_defined( mesh->vertex_attribute_manager(), name ) ;
         }
     } ;
+
+
 
     class GRGMESH_API MeshMutator {
     public:

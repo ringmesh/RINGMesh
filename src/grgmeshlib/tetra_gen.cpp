@@ -204,7 +204,7 @@ namespace GRGMesh {
         uint32 face,
         int32 adj )
     {
-        grgmesh_assert_not_reached ;
+//        grgmesh_assert_not_reached ;
        //tetmesh_.tetra_adjacents_[4 * index + face] = adj ;
     }
 

@@ -77,7 +77,7 @@ namespace GRGMesh {
         TetGen, MG_Tetra
     } ;
 
-    enum CellType {
+    enum ElementType {
         VERTEX  = -1,
         LINE    =  0,
         TRGL    =  1,
