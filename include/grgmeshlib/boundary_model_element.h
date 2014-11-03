@@ -178,11 +178,11 @@ namespace GRGMesh {
         bool contains( const BoundaryModelElement* in ) const {
             return this == in || std::count( children_.begin(), children_.end(), in->id() ) > 0 ; }
         virtual uint32 nb_simplices() const ;
-        virtual const vec3& point( uint32 p = 0 ) const {
+        virtual const vec3& vertex( uint32 p = 0 ) const {
             grgmesh_assert_not_reached ;
             return dummy ;
         }
-        virtual uint32 nb_points() const {
+        virtual uint32 nb_vertices() const {
             grgmesh_assert_not_reached ;
             return 0 ;
         }
@@ -289,11 +289,11 @@ namespace GRGMesh {
         }
         bool is_real() const { return in_boundary_.size() > 1 ; }
 
-        virtual const vec3& point( uint32 p = 0 ) const ;
-        virtual uint32 nb_point() const { return 1 ; }
+        virtual const vec3& vertex( uint32 p = 0 ) const ;
+        virtual uint32 nb_vertices() const { return 1 ; }
         virtual float64 size() const { return 0. ; }
-        virtual float64 distance( const vec3& p ) const { return (point() - p).length() ; }
-        virtual float64 distance( BoundaryModelElement* e ) const { return e->distance( point() ) ; }
+        virtual float64 distance( const vec3& p ) const { return (vertex() - p).length() ; }
+        virtual float64 distance( BoundaryModelElement* e ) const { return e->distance( vertex() ) ; }
         virtual uint32 nb_simplices() const { return 1 ; }
 
         virtual void print_complexity( std::ostream& out ) const ;
@@ -340,8 +340,8 @@ namespace GRGMesh {
             return false ;
         }
 
-        virtual const vec3& point( uint32 p ) const ;
-        virtual uint32 nb_points() const { return vertices_.size() ; }
+        virtual const vec3& vertex( uint32 p ) const ;
+        virtual uint32 nb_vertices() const { return vertices_.size() ; }
         
         float64 resolution( uint32 p ) const { return resolution_[p] ; }
         void set_resolutions( const std::vector< float64 >& resolutions ) {
@@ -483,7 +483,7 @@ namespace GRGMesh {
         void print_mesh( const std::string& filename ) const ;
         
         virtual bool is_triangulated() const { return is_triangulated_ ; }
-        virtual uint32 nb_points() const { return points_.size() ; }
+        virtual uint32 nb_vertices() const { return points_.size() ; }
         uint32 size_of_facets() const { return facets_.size() ; }
         uint32 facet_begin( int32 f ) const { return facet_ptr_[f] ; }
         uint32 facet_end( int32 f ) const { return facet_ptr_[f+1] ; }
@@ -491,7 +491,7 @@ namespace GRGMesh {
             return facet_end( f ) - facet_begin( f ) ; }
         const vec3& point( int32 f, int32 v ) const ;
         uint32 point_index( int32 f, int32 v ) const { return facets_[facet_begin(f)+v] ; }
-        virtual const vec3& point( uint32 v ) const ;
+        virtual const vec3& vertex( uint32 v ) const ;
         int32 adjacent( int32 f, int32 e ) const { return adjacent_[facet_begin(f)+e] ; }
         int32 adjcent_in_neighbor( uint32 f, uint32 e ) const ;
         bool is_on_border( int32 t, int32 e ) const { return adjacent( t, e ) == -1 ; }
@@ -507,7 +507,7 @@ namespace GRGMesh {
             }
         }
         bool is_triangle( int32 f ) const { return nb_points_in_facet( f ) == 3 ; }
-        bool is_resolution_set() const { return resolution_.size() == nb_points() ; }
+        bool is_resolution_set() const { return resolution_.size() == nb_vertices() ; }
         bool is_U_set() const { return U_.size() == nb_simplices() ; }
         bool is_V_set() const { return V_.size() == nb_simplices() ; }
         bool is_W_set() const { return W_.size() == nb_simplices() ; }

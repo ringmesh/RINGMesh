@@ -101,6 +101,58 @@ namespace GRGMesh {
             return vertex_index( cells_[TETRA][4*c + cell_descriptor_[TETRA]->facet[f][v]] ) ;
         }
 
+        uint32 line_vertex_index( uint32 l, uint8 v ) const {
+            return vertex_index( cells_[LINE][l] + v ) ;
+        }
+        uint32 triangle_vertex_index( uint32 t, uint8 v ) const {
+            return vertex_index( cells_[TRGL][t] + v ) ;
+        }
+        uint32 quad_vertex_index( uint32 q, uint8 v ) const {
+            return vertex_index( cells_[QUAD][q] + v ) ;
+        }
+        uint32 tetra_vertex_index( uint32 t, uint8 v ) const {
+            return vertex_index( cells_[TETRA][t] + v ) ;
+        }
+        uint32 pyramid_vertex_index( uint32 p, uint8 v ) const {
+            return vertex_index( cells_[PYRAMID][p] + v ) ;
+        }
+        uint32 prism_vertex_index( uint32 p, uint8 v ) const {
+            return vertex_index( cells_[PRISM][p] + v ) ;
+        }
+        uint32 hexa_vertex_index( uint32 h, uint8 v ) const {
+            return vertex_index( cells_[HEXA][h] + v ) ;
+        }
+
+        const vec3& line_vertex( uint32 l, uint8 v ) const {
+            return vertex( line_vertex_index( l, v ) ) ;
+        }
+        const vec3& triangle_vertex( uint32 t, uint8 v ) const {
+            return vertex( triangle_vertex_index( t, v ) ) ;
+        }
+        const vec3& quad_vertex( uint32 q, uint8 v ) const {
+            return vertex( quad_vertex_index( q, v ) ) ;
+        }
+        const vec3& tetra_vertex( uint32 t, uint8 v ) const {
+            return vertex( tetra_vertex_index( t, v ) ) ;
+        }
+        const vec3& pyramid_vertex( uint32 p, uint8 v ) const {
+            return vertex( pyramid_vertex_index( p, v ) ) ;
+        }
+        const vec3& prism_vertex( uint32 p, uint8 v ) const {
+            return vertex( prism_vertex_index( p, v ) ) ;
+        }
+        const vec3& hexa_vertex( uint32 h, uint8 v ) const {
+            return vertex( hexa_vertex_index( h, v ) ) ;
+        }
+
+        float64 get_nearest_point_in_cell( const vec3& p, uint32 c, vec3& nearest_p ) const ;
+        float64 get_nearest_point_in_line( const vec3& p, uint32 c, vec3& nearest_p ) const ;
+        float64 get_nearest_point_in_triangle( const vec3& p, uint32 c, vec3& nearest_p ) const ;
+        float64 get_nearest_point_in_quad( const vec3& p, uint32 c, vec3& nearest_p ) const ;
+        float64 get_nearest_point_in_tetra( const vec3& p, uint32 c, vec3& nearest_p ) const ;
+        float64 get_nearest_point_in_pyramid( const vec3& p, uint32 c, vec3& nearest_p ) const ;
+        float64 get_nearest_point_in_prism( const vec3& p, uint32 c, vec3& nearest_p ) const ;
+        float64 get_nearest_point_in_hexa( const vec3& p, uint32 c, vec3& nearest_p ) const ;
 
         LineAttributeManager* line_attribute_manager() const
         {

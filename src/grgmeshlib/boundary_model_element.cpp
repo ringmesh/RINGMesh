@@ -890,7 +890,7 @@ namespace GRGMesh {
 
 /***********************************************************************************************/
 
-    const vec3& Corner::point( uint32 p ) const
+    const vec3& Corner::vertex( uint32 p ) const
     {
         return model_->point( p_ ) ;
     }
@@ -947,7 +947,7 @@ namespace GRGMesh {
         boundaries_.push_back( corner1 ) ;
     } ;
 
-    const vec3& ContactPart::point( uint32 p ) const
+    const vec3& ContactPart::vertex( uint32 p ) const
     {
         return model_->point( vertices_[p] ) ;
     }
@@ -978,7 +978,7 @@ namespace GRGMesh {
     int32 ContactPart::find( const vec3& p ) const
     {
         for( uint32 i = 0; i < vertices_.size(); ++i ) {
-            if( point( i ) == p ) return i ;
+            if( vertex( i ) == p ) return i ;
         }
         return -1 ;
     }
@@ -986,17 +986,17 @@ namespace GRGMesh {
     float64 ContactPart::size() const {
         float64 result = 0. ;
         for( uint32 i = 1; i < vertices_.size(); ++i ){
-            result += length( point( i )-point( i-1 ) ) ;
+            result += length( vertex( i )-vertex( i-1 ) ) ;
         }
-        if( is_closed() ) result += length( model_->point( vertices_.back() )-point( 0 ) );
+        if( is_closed() ) result += length( model_->point( vertices_.back() )-vertex( 0 ) );
         return result ;
     }
 
     float64 ContactPart::simplex_size( int32 i ) const {
-        if( i < vertices_.size()-1 ) return length(point( i+1 ) - point( i)) ;
+        if( i < vertices_.size()-1 ) return length(vertex( i+1 ) - vertex( i)) ;
         else {
             grgmesh_debug_assert( i < vertices_.size() ) ;
-            return length( model_->point( vertices_.back() )-point( 0 ) );
+            return length( model_->point( vertices_.back() )-vertex( 0 ) );
         }
     }
 
@@ -1007,8 +1007,8 @@ namespace GRGMesh {
         float64 result = big_float64 ;
         for( uint32 i = 1; i < vertices_.size(); ++i ){
             // Distance betweena a point and a segment COPY from smwh else
-            const vec3& p0 = point( i-1 ) ;
-            const vec3& p1 = point( i ) ;
+            const vec3& p0 = vertex( i-1 ) ;
+            const vec3& p1 = vertex( i ) ;
 
             float64 distance_pt_2_segment  = big_float64 ;
             vec3 c = (p1-p0)/2 ;        
@@ -1026,7 +1026,7 @@ namespace GRGMesh {
         if( is_closed() ) {
             // COPY BEUUURKKK !!
             const vec3& p0 = model_->point( vertices_.back() ) ;
-            const vec3& p1 = point( 0 ) ;
+            const vec3& p1 = vertex( 0 ) ;
 
             float64 distance_pt_2_segment  = big_float64 ;
             vec3 c = (p1-p0)/2 ;        
@@ -1046,10 +1046,10 @@ namespace GRGMesh {
     vec3 ContactPart::average_orientation() const {
         vec3 s(0., 0., 0. ) ;
         for( uint32 i = 1; i < vertices_.size(); ++i ){
-            s += point( i-1 ) - point( i );
+            s += vertex( i-1 ) - vertex( i );
         }
         if( is_closed() ) {
-            s += point( 0 )-model_->point( vertices_.back() ) ;
+            s += vertex( 0 )-model_->point( vertices_.back() ) ;
         }
         return normalize( s ) ;
     }
@@ -1062,7 +1062,7 @@ namespace GRGMesh {
     float64 ContactPart::distance( BoundaryModelElement* e ) const {
         float64 result = big_float64 ;
         for( uint32 i = 0; i < vertices_.size(); ++i ) {
-            result = std::min( result, e->distance( point( i ) ) ) ;
+            result = std::min( result, e->distance( vertex( i ) ) ) ;
         }
         return result ;
     }
@@ -1072,11 +1072,11 @@ namespace GRGMesh {
     float64 ContactPart::distance( int32 s, BoundaryModelElement* to ) const {
         vec3 centroid ;
         if( s < vertices_.size()-1 ) {
-            centroid = ( point( s+1 )+point( s )) * 0.5 ;
+            centroid = ( vertex( s+1 )+vertex( s )) * 0.5 ;
         }
         else {
             grgmesh_debug_assert( s == vertices_.size()-1 ) ;
-            centroid = (point( 0 )+model_->point( vertices_.back())) * 0.5 ;
+            centroid = (vertex( 0 )+model_->point( vertices_.back())) * 0.5 ;
         }        
         return to->distance( centroid ) ;        
     }
@@ -1106,17 +1106,17 @@ namespace GRGMesh {
             const Corner* c = dynamic_cast< const Corner* >( shared[i] ) ;
             grgmesh_debug_assert( c != nil ) ;
 
-            const vec3& p = c->point() ; 
+            const vec3& p = c->vertex() ; 
 
-            vec3 e1 = point( 1 ) - point( 0 ) ;
-            if( p != point( 0 ) ){
+            vec3 e1 = vertex( 1 ) - vertex( 0 ) ;
+            if( p != vertex( 0 ) ){
                 grgmesh_debug_assert( p == model_->point( vertices_.back() ) ) ;
-                e1 =  point( vertices_.size()-2 )- model_->point( vertices_.back() ) ;
+                e1 =  vertex( vertices_.size()-2 )- model_->point( vertices_.back() ) ;
             }
-            vec3 e2 = cp->point( 1 ) - cp->point( 0 ) ;
-            if( p != cp->point( 0 ) ) {
-                grgmesh_debug_assert( p == cp->point( cp->nb_points()-1 ) ) ;
-                e2 = cp->point( cp->nb_points()-2 ) - cp->point( cp->nb_points()-1 ) ;
+            vec3 e2 = cp->vertex( 1 ) - cp->vertex( 0 ) ;
+            if( p != cp->vertex( 0 ) ) {
+                grgmesh_debug_assert( p == cp->vertex( cp->nb_vertices()-1 ) ) ;
+                e2 = cp->vertex( cp->nb_vertices()-2 ) - cp->vertex( cp->nb_vertices()-1 ) ;
             }
             e1 = normalize( e1 ) ;
             e2 = normalize( e2 ) ;
@@ -1146,17 +1146,17 @@ namespace GRGMesh {
                 const Corner* c = dynamic_cast< const Corner* >( shared[i] ) ;
                 grgmesh_debug_assert( c != nil ) ;
 
-                const vec3& p = c->point() ; 
+                const vec3& p = c->vertex() ; 
 
-                vec3 e1 = point( 1 ) - point( 0 ) ;
-                if( p != point( 0 ) ){
+                vec3 e1 = vertex( 1 ) - vertex( 0 ) ;
+                if( p != vertex( 0 ) ){
                     grgmesh_debug_assert( p == model_->point( vertices_.back() ) ) ;
-                    e1 =  point( vertices_.size()-2 )- model_->point( vertices_.back() ) ;
+                    e1 =  vertex( vertices_.size()-2 )- model_->point( vertices_.back() ) ;
                 }
-                vec3 e2 = cp->point( 1 ) - cp->point( 0 ) ;
-                if( p != cp->point( 0 ) ) {
-                    grgmesh_debug_assert( p == cp->point( cp->nb_points()-1 ) ) ;
-                    e2 = cp->point( cp->nb_points()-2 ) - cp->point( cp->nb_points()-1 ) ;
+                vec3 e2 = cp->vertex( 1 ) - cp->vertex( 0 ) ;
+                if( p != cp->vertex( 0 ) ) {
+                    grgmesh_debug_assert( p == cp->vertex( cp->nb_vertices()-1 ) ) ;
+                    e2 = cp->vertex( cp->nb_vertices()-2 ) - cp->vertex( cp->nb_vertices()-1 ) ;
                 }
                 e1 = normalize( e1 ) ;
                 e2 = normalize( e2 ) ;
@@ -1181,13 +1181,13 @@ namespace GRGMesh {
 
         float64 d = 0. ;
         if( !is_closed() ){
-            d = length(point(0) - model_->point( vertices_.back())) ;
+            d = length(vertex(0) - model_->point( vertices_.back())) ;
         }
         else {
             // Compute the max distance between 2 point divided by two
             for( uint32 i = 0; i < vertices_.size() ; ++i ) {
                 for( uint32 j = 0; j < vertices_.size() ; ++j ) {
-                    d = std::max( d, length2(point(i)- point(j) )) ;
+                    d = std::max( d, length2(vertex(i)- vertex(j) )) ;
                 }
             }
             d = sqrt(d)/2. ;
@@ -1222,7 +1222,7 @@ namespace GRGMesh {
     {
         return model_->point( points_[facets_[facet_begin( f ) + v]] ) ;
     }
-    const vec3& SurfacePart::point( uint32 v ) const
+    const vec3& SurfacePart::vertex( uint32 v ) const
     {
         return model_->point( points_[v] ) ;
     }
@@ -1370,14 +1370,14 @@ namespace GRGMesh {
         adjacent_.resize( facets_.size(), -1 ) ;
         std::vector< int32 > facets ;
         facets.reserve( 6 ) ;
-        std::vector< std::vector< int32 > > facet_points( nb_points(), facets ) ;
+        std::vector< std::vector< int32 > > facet_points( nb_vertices(), facets ) ;
 
         for( uint32 f = 0; f < nb_simplices(); ++f ){
             for( uint32 v = 0; v < nb_points_in_facet( f ); v++ ) {
                 facet_points[point_index( f, v )].push_back( f ) ;
             }
         }
-        for( uint32 p = 0; p < nb_points(); ++p ){
+        for( uint32 p = 0; p < nb_vertices(); ++p ){
             std::sort( facet_points[p].begin(), facet_points[p].end() ) ;
         }
 
@@ -1713,9 +1713,9 @@ namespace GRGMesh {
             grgmesh_debug_assert( cp != nil ) ;
 
             // Find the triangles sharing each segment 
-            for( uint32 j = 1; j < cp->nb_points(); ++j ){
-                const vec3& p0 = cp->point( j-1 ) ;
-                const vec3& p1 = cp->point( j ) ;
+            for( uint32 j = 1; j < cp->nb_vertices(); ++j ){
+                const vec3& p0 = cp->vertex( j-1 ) ;
+                const vec3& p1 = cp->vertex( j ) ;
 
                 int32 t1 = find_triangle( p0, p1 ) ;
                 int32 t2 = sp->find_triangle( p0, p1 ) ;
@@ -1732,8 +1732,8 @@ namespace GRGMesh {
             }
             // If the line is closed check the closing segment (Copy)
             if( cp->is_closed() ) {
-                const vec3& p0 = cp->point( 0 ) ;
-                const vec3& p1 = cp->point( cp->nb_points()-2 ) ;
+                const vec3& p0 = cp->vertex( 0 ) ;
+                const vec3& p1 = cp->vertex( cp->nb_vertices()-2 ) ;
 
                 int32 t1 = find_triangle( p0, p1 ) ;
                 int32 t2 = sp->find_triangle( p0, p1 ) ;
@@ -1776,9 +1776,9 @@ namespace GRGMesh {
                 grgmesh_debug_assert( cp != nil ) ;
                 
                 // Find the triangle sharing each segment 
-                 for( uint32 j = 1; j < cp->nb_points(); ++j ){
-                    const vec3& p0 = cp->point( j-1 ) ;
-                    const vec3& p1 = cp->point( j ) ;
+                 for( uint32 j = 1; j < cp->nb_vertices(); ++j ){
+                    const vec3& p0 = cp->vertex( j-1 ) ;
+                    const vec3& p1 = cp->vertex( j ) ;
 
                     int32 t1 = find_triangle( p0, p1 ) ;
                     int32 t2 = sp->find_triangle( p0, p1 ) ;
@@ -1795,8 +1795,8 @@ namespace GRGMesh {
                  }
                  // If the line is closed check the closing segment (Copy)
                  if( cp->is_closed() ) {
-                    const vec3& p0 = cp->point( 0 ) ;
-                    const vec3& p1 = cp->point( cp->nb_points()-2 ) ;
+                    const vec3& p0 = cp->vertex( 0 ) ;
+                    const vec3& p1 = cp->vertex( cp->nb_vertices()-2 ) ;
 
                     int32 t1 = find_triangle( p0, p1 ) ;
                     int32 t2 = sp->find_triangle( p0, p1 ) ;
@@ -1849,8 +1849,8 @@ namespace GRGMesh {
         std::ofstream file( filename.c_str(), std::ios::trunc | std::ios::out ) ;
         file << "Surface : " << id() << std::endl ;
         file << "========== Points =========" << std::endl ;
-        for( uint32 p = 0; p < nb_points(); p++ ) {
-            file << p << " -> " << point( p ) << std::endl ;
+        for( uint32 p = 0; p < nb_vertices(); p++ ) {
+            file << p << " -> " << vertex( p ) << std::endl ;
         }
         file << "========== Facets =========" << std::endl ;
         for( uint32 p = 0; p < nb_simplices(); p++ ) {
@@ -1877,7 +1877,7 @@ namespace GRGMesh {
 
     void SurfacePart::point_normal( std::vector< vec3 >& normals ) const
     {
-        normals.resize( nb_points() ) ;
+        normals.resize( nb_vertices() ) ;
         for( uint32 f = 0; f < nb_simplices(); f++ ) {
             vec3 normal = facet_normal( f ) ;
             for( uint32 p = 0; p < nb_points_in_facet( f ); p++ ) {
@@ -1885,7 +1885,7 @@ namespace GRGMesh {
                 normals[id] += normal ;
             }
         }
-        for( uint32 p = 0; p < nb_points(); p++ ) {
+        for( uint32 p = 0; p < nb_vertices(); p++ ) {
             normals[p] = normalize( normals[p] ) ;
         }
     }
@@ -1893,8 +1893,8 @@ namespace GRGMesh {
     Box3d SurfacePart::bbox() const
     {
         Box3d result ;
-        for( uint32 p = 0; p < nb_points(); p++ ) {
-            result.add_point( point( p ) ) ;
+        for( uint32 p = 0; p < nb_vertices(); p++ ) {
+            result.add_point( vertex( p ) ) ;
         }
         return result ;
     }

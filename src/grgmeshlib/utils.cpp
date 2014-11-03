@@ -164,6 +164,58 @@ namespace GRGMesh {
         return false ;
     }
 
+    float64 Utils::point_quad_distance(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        vec3& nearest_p )
+    {
+        const vec3 center( ( p0 + p1 + p2 + p3 ) / 4. ) ;
+        vec3 edge0( p1 - p0 ) ;
+        vec3 edge1( p3 - p0 ) ;
+        const vec3 axis[2] ;
+        axis[0] = normalize( edge0 ) ;
+        axis[1] = normalize( edge1 ) ;
+        const float64 extent[2] ;
+        extent[0] = edge0.length() / 2. ;
+        extent[1] = edge1.length() / 2. ;
+
+        vec3 diff = center - p ;
+        float64 b0 = dot( diff, axis[0] ) ;
+        float64 b1 = dot( diff, axis[1] ) ;
+        float64 s0 = -b0 ;
+        float64 s1 = -b1 ;
+        float64 sqrDistance = dot( diff, diff ) ;
+
+        if( s0 < -extent[0] ) {
+            s0 = -extent[0] ;
+        } else if( s0 > extent[0] ) {
+            s0 = extent[0] ;
+        }
+        sqrDistance += s0 * ( s0 + 2. * b0 ) ;
+
+        if( s1 < -extent[1] ) {
+            s1 = -extent[1] ;
+        } else if( s1 > extent[1] ) {
+            s1 = extent[1] ;
+        }
+        sqrDistance += s1 * ( s1 +  2. * b1 ) ;
+
+        // Account for numerical round-off error.
+        if( sqrDistance < 0 ) {
+            sqrDistance = 0 ;
+        }
+
+        float64 distance = sqrt( sqrDistance ) ;
+        nearest_p = center ;
+        nearest_p += s0 * axis[0] ;
+        nearest_p += s1 * axis[1] ;
+
+        return distance ;
+    }
+
     bool Utils::segment_triangle_intersection(
         const vec3& seg0, const vec3& seg1,
         const vec3& trgl0, const vec3& trgl1, const vec3& trgl2,
@@ -257,6 +309,387 @@ namespace GRGMesh {
         return s1 == s2 && s2 == s3 ;
     }
 
+    bool Utils::point_inside_quad(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3 )
+    {
+        vec3& P = const_cast< vec3& >( p ) ;
+        vec3& P0 = const_cast< vec3& >( p0 ) ;
+        vec3& P1 = const_cast< vec3& >( p1 ) ;
+        vec3& P2 = const_cast< vec3& >( p2 ) ;
+        vec3& P3 = const_cast< vec3& >( p3 ) ;
+
+        // calculer la normale au quad
+        vec3 n = cross( P2 - P0, P1 - P0 ) ;
+
+        // calculer un deuxieme point un peu au dessus du quad
+        vec3 q = P + n ;
+
+        // calculer le signe du volume signé des quatre tétraèdres qui
+        // s'appuient sur [p,q] et sur les quatre aretes du quad.
+        Sign s1 = sign( orient3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
+        Sign s2 = sign( orient3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
+        Sign s3 = sign( orient3d( P.data(), q.data(), P2.data(), P3.data() ) ) ;
+        Sign s4 = sign( orient3d( P.data(), q.data(), P3.data(), P0.data() ) ) ;
+
+        if( s1 == ZERO || s2 == ZERO || s3 == ZERO || s4 == ZERO ) {
+            if( inexact_equal( P, P0 ) || inexact_equal( P, P1 )
+                || inexact_equal( P, P2 ) || inexact_equal( P, P3 ) ) {
+                return true ;
+            }
+//            std::cerr << "Point on edge... :(" << std::endl ;
+            return false ; // Arbitrary choice !!!!
+        }
+
+        return s1 == s2 && s2 == s3 && s3 == s4 ;
+    }
+
+    float64 Utils::point_tetra_distance(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        vec3& nearest_p )
+    {
+        const vec3 vertices[4] ;
+        vertices[0] = p0 ;
+        vertices[1] = p1 ;
+        vertices[2] = p2 ;
+        vertices[3] = p3 ;
+        float64 dist = big_float64 ;
+        for( uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
+            vec3 cur_p ;
+            float64 distance = point_triangle_distance( p,
+                vertices[tetra_descriptor.facet[f][0]],
+                vertices[tetra_descriptor.facet[f][1]],
+                vertices[tetra_descriptor.facet[f][2]], cur_p ) ;
+            if( distance < dist ) {
+                dist = distance ;
+                nearest_p = cur_p ;
+            }
+        }
+        return dist ;
+    }
+
+    float64 Utils::point_pyramid_distance(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        const vec3& p4,
+        vec3& nearest_p )
+    {
+        const vec3 vertices[5] ;
+        vertices[0] = p0 ;
+        vertices[1] = p1 ;
+        vertices[2] = p2 ;
+        vertices[3] = p3 ;
+        vertices[4] = p4 ;
+        float64 dist = big_float64 ;
+        for( uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
+            vec3 cur_p ;
+            uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[f] ;
+            if( nb_vertices == 3 ) {
+                float64 distance = point_triangle_distance( p,
+                    vertices[pyramid_descriptor.facet[f][0]],
+                    vertices[pyramid_descriptor.facet[f][1]],
+                    vertices[pyramid_descriptor.facet[f][2]], cur_p ) ;
+            } else if( nb_vertices == 4 ) {
+                float64 distance = point_quad_distance( p,
+                    vertices[pyramid_descriptor.facet[f][0]],
+                    vertices[pyramid_descriptor.facet[f][1]],
+                    vertices[pyramid_descriptor.facet[f][2]],
+                    vertices[pyramid_descriptor.facet[f][3]], cur_p ) ;
+            } else {
+                grgmesh_assert_not_reached ;
+            }
+            if( distance < dist ) {
+                dist = distance ;
+                nearest_p = cur_p ;
+            }
+        }
+        return dist ;
+    }
+
+    float64 Utils::point_prism_distance(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        const vec3& p4,
+        const vec3& p5,
+        vec3& nearest_p )
+    {
+        const vec3 vertices[6] ;
+        vertices[0] = p0 ;
+        vertices[1] = p1 ;
+        vertices[2] = p2 ;
+        vertices[3] = p3 ;
+        vertices[4] = p4 ;
+        vertices[5] = p5 ;
+        float64 dist = big_float64 ;
+        for( uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
+            vec3 cur_p ;
+            uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[f] ;
+            if( nb_vertices == 3 ) {
+                float64 distance = point_triangle_distance( p,
+                    vertices[prism_descriptor.facet[f][0]],
+                    vertices[prism_descriptor.facet[f][1]],
+                    vertices[prism_descriptor.facet[f][2]], cur_p ) ;
+            } else if( nb_vertices == 4 ) {
+                float64 distance = point_quad_distance( p,
+                    vertices[prism_descriptor.facet[f][0]],
+                    vertices[prism_descriptor.facet[f][1]],
+                    vertices[prism_descriptor.facet[f][2]],
+                    vertices[prism_descriptor.facet[f][3]], cur_p ) ;
+            } else {
+                grgmesh_assert_not_reached ;
+            }
+            if( distance < dist ) {
+                dist = distance ;
+                nearest_p = cur_p ;
+            }
+        }
+        return dist ;
+    }
+
+    float64 Utils::point_hexa_distance(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        const vec3& p4,
+        const vec3& p5,
+        const vec3& p6,
+        const vec3& p7,
+        vec3& nearest_p )
+    {
+        const vec3 vertices[8] ;
+        vertices[0] = p0 ;
+        vertices[1] = p1 ;
+        vertices[2] = p2 ;
+        vertices[3] = p3 ;
+        vertices[4] = p4 ;
+        vertices[5] = p5 ;
+        vertices[6] = p6 ;
+        vertices[7] = p7 ;
+        float64 dist = big_float64 ;
+        for( uint8 f = 0; f < hexa_descriptor.nb_facets; f++ ) {
+            vec3 cur_p ;
+            float64 distance = point_quad_distance( p,
+                vertices[hexa_descriptor.facet[f][0]],
+                vertices[hexa_descriptor.facet[f][1]],
+                vertices[hexa_descriptor.facet[f][2]],
+                vertices[hexa_descriptor.facet[f][3]], cur_p ) ;
+            if( distance < dist ) {
+                dist = distance ;
+                nearest_p = cur_p ;
+            }
+        }
+        return dist ;
+    }
+
+    float64 Utils::point_pyramid_distance(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        const vec3& p4,
+        vec3& nearest_p )
+    {
+        const vec3 vertices[5] ;
+        vertices[0] = p0 ;
+        vertices[1] = p1 ;
+        vertices[2] = p2 ;
+        vertices[3] = p3 ;
+        vertices[4] = p4 ;
+        float64 dist = big_float64 ;
+        for( uint8 f = 0; f < 5; f++ ) {
+            vec3 cur_p ;
+            uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[f] ;
+            if( nb_vertices == 3 ) {
+                float64 distance = point_triangle_distance( p,
+                    vertices[pyramid_descriptor.facet[f][0]],
+                    vertices[pyramid_descriptor.facet[f][1]],
+                    vertices[pyramid_descriptor.facet[f][2]], cur_p ) ;
+            } else if( nb_vertices == 4 ) {
+                float64 distance = point_quad_distance( p,
+                    vertices[pyramid_descriptor.facet[f][0]],
+                    vertices[pyramid_descriptor.facet[f][1]],
+                    vertices[pyramid_descriptor.facet[f][2]],
+                    vertices[pyramid_descriptor.facet[f][3]], cur_p ) ;
+            } else {
+                grgmesh_assert_not_reached ;
+            }
+            if( distance < dist ) {
+                dist = distance ;
+                nearest_p = cur_p ;
+            }
+        }
+        return dist ;
+    }
+
+    bool Utils::point_inside_tetra(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3 )
+    {
+        const vec3 vertices[4] ;
+        vertices[0] = p0 ;
+        vertices[1] = p1 ;
+        vertices[2] = p2 ;
+        vertices[3] = p3 ;
+        for( uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
+            vec3 N = cross(
+                vertices[tetra_descriptor.facet[f][1]]
+                    - vertices[tetra_descriptor.facet[f][0]],
+                vertices[tetra_descriptor.facet[f][2]]
+                    - vertices[tetra_descriptor.facet[f][0]] ) ;
+            vec3 n = p
+                - ( ( vertices[tetra_descriptor.facet[f][0]]
+                    + vertices[tetra_descriptor.facet[f][1]]
+                    + vertices[tetra_descriptor.facet[f][2]] ) / 3. ) ;
+            if( dot( N, n ) > 0 ) return false ;
+        }
+        return true ;
+    }
+
+    bool Utils::point_inside_pyramid(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        const vec3& p4 )
+    {
+        const vec3 vertices[5] ;
+        vertices[0] = p0 ;
+        vertices[1] = p1 ;
+        vertices[2] = p2 ;
+        vertices[3] = p3 ;
+        vertices[4] = p4 ;
+        for( uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
+            vec3 N = cross(
+                vertices[pyramid_descriptor.facet[f][1]]
+                    - vertices[pyramid_descriptor.facet[f][0]],
+                vertices[pyramid_descriptor.facet[f][2]]
+                    - vertices[pyramid_descriptor.facet[f][0]] ) ;
+            uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[f] ;
+            vec3 barycenter ;
+            if( nb_vertices == 3 )
+                barycenter = ( ( vertices[pyramid_descriptor.facet[f][0]]
+                    + vertices[pyramid_descriptor.facet[f][1]]
+                    + vertices[pyramid_descriptor.facet[f][2]] ) / 3. ) ;
+            else if( nb_vertices == 4 )
+                barycenter = ( ( vertices[pyramid_descriptor.facet[f][0]]
+                    + vertices[pyramid_descriptor.facet[f][1]]
+                    + vertices[pyramid_descriptor.facet[f][2]]
+                    + vertices[pyramid_descriptor.facet[f][3]] ) / 4. ) ;
+            else
+                grgmesh_assert_not_reached;
+            vec3 n = p - barycenter ;
+            if( dot( N, n ) > 0 ) return false ;
+        }
+        return true ;
+    }
+
+    bool Utils::point_inside_prism(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        const vec3& p4,
+        const vec3& p5 )
+    {
+        const vec3 vertices[6] ;
+        vertices[0] = p0 ;
+        vertices[1] = p1 ;
+        vertices[2] = p2 ;
+        vertices[3] = p3 ;
+        vertices[4] = p4 ;
+        vertices[5] = p5 ;
+        for( uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
+            vec3 N = cross(
+                vertices[prism_descriptor.facet[f][1]]
+                    - vertices[prism_descriptor.facet[f][0]],
+                vertices[prism_descriptor.facet[f][2]]
+                    - vertices[prism_descriptor.facet[f][0]] ) ;
+            uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[f] ;
+            vec3 barycenter ;
+            if( nb_vertices == 3 )
+                barycenter = ( ( vertices[prism_descriptor.facet[f][0]]
+                    + vertices[prism_descriptor.facet[f][1]]
+                    + vertices[prism_descriptor.facet[f][2]] ) / 3. ) ;
+            else if( nb_vertices == 4 )
+                barycenter = ( ( vertices[prism_descriptor.facet[f][0]]
+                    + vertices[prism_descriptor.facet[f][1]]
+                    + vertices[prism_descriptor.facet[f][2]]
+                    + vertices[prism_descriptor.facet[f][3]] ) / 4. ) ;
+            else
+                grgmesh_assert_not_reached;
+            vec3 n = p - barycenter ;
+            if( dot( N, n ) > 0 ) return false ;
+        }
+        return true ;
+    }
+
+    bool Utils::point_inside_hexa(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        const vec3& p4,
+        const vec3& p5,
+        const vec3& p6,
+        const vec3& p7 )
+    {
+        const vec3 vertices[7] ;
+        vertices[0] = p0 ;
+        vertices[1] = p1 ;
+        vertices[2] = p2 ;
+        vertices[3] = p3 ;
+        vertices[4] = p4 ;
+        vertices[5] = p5 ;
+        vertices[6] = p6 ;
+        vertices[7] = p7 ;
+        for( uint8 f = 0; f < hexa_descriptor.nb_facets; f++ ) {
+            vec3 N = cross(
+                vertices[hexa_descriptor.facet[f][1]]
+                    - vertices[hexa_descriptor.facet[f][0]],
+                vertices[hexa_descriptor.facet[f][2]]
+                    - vertices[hexa_descriptor.facet[f][0]] ) ;
+            vec3 barycenter = ( ( vertices[hexa_descriptor.facet[f][0]]
+                + vertices[hexa_descriptor.facet[f][1]]
+                + vertices[hexa_descriptor.facet[f][2]]
+                + vertices[hexa_descriptor.facet[f][3]] ) / 4. ) ;
+            vec3 n = p - barycenter ;
+            if( dot( N, n ) > 0 ) return false ;
+        }
+        return true ;
+    }
+
+    float64 Utils::nearest_point_segment(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        vec3& nearest_p )
+    {
+        bool inside = point_segment_projection( p, p0, p1, nearest_p ) ;
+        float64 distance = length( p, nearest_p ) ;
+        return inside ? -distance : distance ;
+    }
 
 
     void MakeUnique::unique_points( std::vector< vec3 >& results ) const
@@ -323,10 +756,10 @@ namespace GRGMesh {
 
     ColocaterANN::ColocaterANN( const SurfacePart& mesh )
     {
-        int32 nb_vertices = mesh.nb_points() ;
+        int32 nb_vertices = mesh.nb_vertices() ;
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( uint32 i = 0; i < mesh.nb_points(); i++ ) {
-            std::copy( mesh.point( i ).data(), mesh.point( i ).data() + 3,
+        for( uint32 i = 0; i < mesh.nb_vertices(); i++ ) {
+            std::copy( mesh.vertex( i ).data(), mesh.vertex( i ).data() + 3,
                 &ann_points_[i][0] ) ;
         }
         ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
@@ -334,10 +767,10 @@ namespace GRGMesh {
 
     ColocaterANN::ColocaterANN( const ContactPart& mesh )
     {
-        int32 nb_vertices = mesh.nb_points() ;
+        int32 nb_vertices = mesh.nb_vertices() ;
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( uint32 i = 0; i < mesh.nb_points(); i++ ) {
-            std::copy( mesh.point( i ).data(), mesh.point( i ).data() + 3,
+        for( uint32 i = 0; i < mesh.nb_vertices(); i++ ) {
+            std::copy( mesh.vertex( i ).data(), mesh.vertex( i ).data() + 3,
                 &ann_points_[i][0] ) ;
         }
         ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
