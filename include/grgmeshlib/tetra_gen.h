@@ -121,10 +121,6 @@ namespace GRGMesh {
         MixedMeshMutator tetmesh_mutator_ ;
         double resolution_ ;
         MixedMesh* background_ ;
-    private:
-        uint32 nb_triangles_ = 0 ;
-        uint32 nb_tets_ = 0 ;
-        uint32 nb_lines_ = 0 ;
     } ;
 
 
