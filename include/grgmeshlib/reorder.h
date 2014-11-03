@@ -22,8 +22,8 @@ namespace GRGMesh {
 
     template< class F > inline void parallel_for(
         F& f,
-        unsigned int from,
-        unsigned int to )
+        uint32 from,
+        uint32 to )
     {
 #pragma omp parallel for
         for( uint32 i = from; i < to; i++ ) {
@@ -40,78 +40,78 @@ namespace GRGMesh {
     }
 
     /*
-    template< int COORD, bool UP > struct Morton_vertex_cmp {
+    template< int32 COORD, bool UP > struct Morton_vertex_cmp {
         Morton_vertex_cmp( const TetraMesh& mesh )
             : mesh_( mesh )
         {
         }
-        bool operator()( int i1, int i2 )
+        bool operator()( int32 i1, int32 i2 )
         {
             return mesh_.vertex( i1 )[COORD] < mesh_.vertex( i2 )[COORD] ;
         }
         const TetraMesh& mesh_ ;
     } ;
     */
-    template< int COORD, bool UP > struct Morton_facet_vertex_cmp {
-        Morton_facet_vertex_cmp( const GRGMesh::SurfacePart& mesh )
+    template< int32 COORD, bool UP > struct Morton_facet_vertex_cmp {
+        Morton_facet_vertex_cmp( const SurfacePart& mesh )
             : mesh_( mesh )
         {
         }
-        bool operator()( int i1, int i2 )
+        bool operator()( int32 i1, int32 i2 )
         {
             return mesh_.point( i1 )[COORD] < mesh_.point( i2 )[COORD] ;
         }
-        const GRGMesh::SurfacePart& mesh_ ;
+        const SurfacePart& mesh_ ;
     } ;
 /*
-    template< int COORD, bool UP > struct Morton_tet_cmp {
+    template< int32 COORD, bool UP > struct Morton_tet_cmp {
     public:
         Morton_tet_cmp( const TetraMesh& mesh )
             : mesh_( mesh )
         {
         }
-        double center( int t ) const
+        float64 center( int32 t ) const
         {
-            double result = 0.0 ;
-            for( unsigned int p = 0; p < 4; p++ ) {
+            float64 result = 0.0 ;
+            for( uint32 p = 0; p < 4; p++ ) {
                 result += mesh_.vertex( t, p )[COORD] ;
             }
             return result ;
         }
-        bool operator()( int t1, int t2 )
+        bool operator()( int32 t1, int32 t2 )
         {
             return ( center( t1 ) < center( t2 ) ) ;
         }
         const TetraMesh& mesh_ ;
     } ;
 */
-    template< int COORD, bool UP > struct Morton_facet_cmp {
+    template< int32 COORD, bool UP > struct Morton_facet_cmp {
     public:
-        Morton_facet_cmp( const GRGMesh::SurfacePart& mesh )
+        Morton_facet_cmp( const SurfacePart& mesh )
             : mesh_( mesh )
         {
         }
-        double center( int t ) const
+        float64 center( int32 t ) const
         {
-            double result = 0.0 ;
-            for( unsigned int p = 0; p < 3; p++ ) {
+            float64 result = 0.0 ;
+            for( uint32 p = 0; p < 3; p++ ) {
                 result += mesh_.point( t, p )[COORD] ;
             }
             return result ;
         }
-        bool operator()( int t1, int t2 )
+        bool operator()( int32 t1, int32 t2 )
         {
             return ( center( t1 ) < center( t2 ) ) ;
         }
-        const GRGMesh::SurfacePart& mesh_ ;
+        const SurfacePart& mesh_ ;
     } ;
 
-    template< class MESH, template< int COORD, bool UP > class CMP > struct HilbertSort {
-        template< int COORDX, bool UPX, bool UPY, bool UPZ, class IT >
-        static void sort( const MESH& M, IT begin, IT end, unsigned int limit = 1 )
+    template< class MESH, template< int32 COORD, bool UP > class CMP > struct HilbertSort {
+        template< int32 COORDX, bool UPX, bool UPY, bool UPZ, class IT >
+        static void sort( const MESH& M, IT begin, IT end, uint32 limit = 1 )
         {
-            const int COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3 ;
-            if( end - begin <= int( limit ) ) return ;
+            const int32 COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3 ;
+            if( end - begin <= int32( limit ) ) return ;
             IT m0 = begin, m8 = end ;
             IT m4 = split( m0, m8, CMP< COORDX, UPX >( M ) ) ;
             IT m2 = split( m0, m4, CMP< COORDY, UPY >( M ) ) ;
@@ -145,9 +145,9 @@ namespace GRGMesh {
             parallel_for( *this, 20, 28 ) ; // sorts the 8 subsets in parallel
         }
 
-        void operator()( int i )
+        void operator()( int32 i )
         {
-            const int COORDX = 0, COORDY = 1, COORDZ = 2 ;
+            const int32 COORDX = 0, COORDY = 1, COORDZ = 2 ;
             const bool UPX = false, UPY = false, UPZ = false ;
             switch( i ) {
                 case 0:
@@ -226,7 +226,7 @@ namespace GRGMesh {
     }
 */
     inline void morton_facet_vertex_sort(
-        const GRGMesh::SurfacePart& M,
+        const SurfacePart& M,
         std::vector< int32 >& sorted_indices )
     {
         sorted_indices.resize( M.nb_points() ) ;
@@ -238,11 +238,11 @@ namespace GRGMesh {
     }
 
     inline void morton_facet_sort(
-        const GRGMesh::SurfacePart& M,
+        const SurfacePart& M,
         std::vector< int32 >& sorted_indices )
     {
         sorted_indices.resize( M.nb_simplices() ) ;
-        for( int32 i = 0; i < M.nb_simplices(); i++ ) {
+        for( uint32 i = 0; i < M.nb_simplices(); i++ ) {
             sorted_indices[i] = i ;
         }
         HilbertSort< SurfacePart, Morton_facet_cmp >( M, sorted_indices ) ;

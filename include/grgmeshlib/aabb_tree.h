@@ -250,7 +250,8 @@ namespace GRGMesh {
             float64& sq_dist ) const
         {
             vec3 nearest( nearest_point ) ;
-            uint32 nearest_t = nearest_facet( vec3( p ), nearest, sq_dist ) ;
+            vec3 query( p ) ;
+            uint32 nearest_t = nearest_facet( query, nearest, sq_dist ) ;
             nearest_point = nearest.data() ;
             return nearest_t ;
 
@@ -266,6 +267,12 @@ namespace GRGMesh {
                 mesh_.nb_simplices() ) ;
             return nearest_t ;
         }
+
+        static float64 get_nearest_point(
+            const SurfacePart& M,
+            const vec3& p,
+            int t,
+            vec3& nearest_p ) ;
 
         uint32 nearest_facet( const vec3& p ) const
         {

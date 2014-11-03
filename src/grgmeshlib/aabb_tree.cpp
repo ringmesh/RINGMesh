@@ -66,7 +66,7 @@ namespace GRGMesh {
     }
 */
     static void init_bboxes_recursive(
-        const GRGMesh::SurfacePart& M,
+        const SurfacePart& M,
         std::vector< Box3d >& bboxes,
         uint32 node_index,
         uint32 b,
@@ -212,21 +212,27 @@ namespace GRGMesh {
             }
         }
 
-        sorted_indices.resize( 0 ) ;
+        sorted_indices.clear() ;
 
         // Step 2: reorder facets
         morton_facet_sort( M, sorted_indices ) ;
 
+        std::ofstream out("out") ;
+        for( uint32 i = 0; i < sorted_indices.size(); i++ ) {
+            out << sorted_indices[i] << std::endl ;
+        }
+
+        std::ofstream fin("fin") ;
+        for( uint32 i = 0; i < mutator.facets().size(); i++ ) {
+            fin << mutator.facets()[i] << std::endl ;
+        }
         Permutation::apply( &mutator.facets()[0], sorted_indices, sizeof(uint32) * 3 ) ;
-        std::ofstream out( "out") ;
-        for( unsigned int i = 0 ; i < mutator.adjacents().size(); i++ )
-            out << mutator.adjacents()[i] << std::endl ;
 
+        std::ofstream fout("fout") ;
+        for( uint32 i = 0; i < mutator.facets().size(); i++ ) {
+            fout << mutator.facets()[i] << std::endl ;
+        }
         Permutation::apply( &mutator.adjacents()[0], sorted_indices, sizeof(int32) * 3 ) ;
-
-        std::ofstream out2( "out2") ;
-        for( unsigned int i = 0 ; i < mutator.adjacents().size(); i++ )
-            out2 << mutator.adjacents()[i] << std::endl ;
 
         if( M.is_U_set() ) {
             Permutation::apply( mutator.U(), sorted_indices ) ;
@@ -249,7 +255,7 @@ namespace GRGMesh {
         }
     }
 
-    static float64 get_nearest_point(
+    float64 FacetAABBTree::get_nearest_point(
         const SurfacePart& M,
         const vec3& p,
         int t,
