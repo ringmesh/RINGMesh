@@ -324,7 +324,7 @@ namespace GRGMesh {
             return false ;
         }
         // See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
-        template< class VEC > static float64 point_triangle_squared_distance(
+        template< class VEC > static float64 point_triangle_distance(
             const VEC& point,
             const VEC& V0,
             const VEC& V1,
@@ -498,8 +498,55 @@ namespace GRGMesh {
             lambda0 = 1.0 - s - t ;
             lambda1 = s ;
             lambda2 = t ;
-            return sqrDistance ;
+            return sqrt( sqrDistance ) ;
         }
+        static float64 point_quad_distance(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            vec3& nearest_p ) ;
+        static float64 point_tetra_distance(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            vec3& nearest_p ) ;
+        static float64 point_pyramid_distance(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            const vec3& p4,
+            vec3& nearest_p ) ;
+        static float64 point_prism_distance(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            const vec3& p4,
+            const vec3& p5,
+            vec3& nearest_p ) ;
+        static float64 point_hexa_distance(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            const vec3& p4,
+            const vec3& p5,
+            const vec3& p6,
+            const vec3& p7,
+            vec3& nearest_p ) ;
+        static float64 nearest_point_segment(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            vec3& nearest_p ) ;
         static bool circle_plane_intersection(
             const vec3& O_plane,
             const vec3& N_plane,
@@ -527,6 +574,43 @@ namespace GRGMesh {
             const vec3& p0,
             const vec3& p1,
             const vec3& p2 ) ;
+        static bool point_inside_quad(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3 ) ;
+        static bool point_inside_tetra(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3 ) ;
+        static bool point_inside_pyramid(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            const vec3& p4 ) ;
+        static bool point_inside_prism(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            const vec3& p4,
+            const vec3& p5 ) ;
+        static bool point_inside_hexa(
+            const vec3& p,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            const vec3& p3,
+            const vec3& p4,
+            const vec3& p5,
+            const vec3& p6,
+            const vec3& p7 ) ;
         static bool point_segment_projection(
             const vec3& p,
             const vec3& p0,
@@ -645,14 +729,14 @@ namespace GRGMesh {
         {
             int32 nb_points = 0 ;
             for( uint32 i = 0; i < data.size(); i++ ) {
-                nb_points += data[i]->nb_points() ;
+                nb_points += data[i]->nb_vertices() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
             int32 cur_id = 0 ;
             for( uint32 i = 0; i < data.size(); i++ ) {
-                for( uint32 p = 0; p < data[i]->nb_points(); p++, cur_id++ ) {
-                    points_[cur_id] = data[i]->point( p ) ;
+                for( uint32 p = 0; p < data[i]->nb_vertices(); p++, cur_id++ ) {
+                    points_[cur_id] = data[i]->vertex( p ) ;
                     indices_[cur_id] = cur_id ;
                 }
             }

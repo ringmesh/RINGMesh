@@ -42,8 +42,8 @@ namespace GRGMesh {
     {
         Box3d result ;
         for( uint32 i = 0; i < surface_parts_.size(); ++i ) {
-            for( uint32 j = 0; j < surface_parts_[i].nb_points(); ++j ) {
-                result.add_point( surface_parts_[i].point( j ) ) ;
+            for( uint32 j = 0; j < surface_parts_[i].nb_vertices(); ++j ) {
+                result.add_point( surface_parts_[i].vertex( j ) ) ;
             }
         }
         return result ;
@@ -232,7 +232,7 @@ namespace GRGMesh {
     int32 BoundaryModel::find_corner( const vec3& p ) const
     {
         for( int32 i = 0; i < corners_.size(); ++i ) {
-            if( corners_[i].point() == p ) return i ;
+            if( corners_[i].vertex() == p ) return i ;
         }
         return -1 ;
     }
@@ -268,10 +268,10 @@ namespace GRGMesh {
             if( corner0 == cp.boundary_id( 0 )
                 &&    // same corners
                 corner1 == cp.boundary_id( 1 )
-                && cp.nb_points() == points.size() ) {         // same points
+                && cp.nb_vertices() == points.size() ) {         // same points
                 bool equal = true ;
-                for( uint32 p = 0; p < cp.nb_points(); p++ ) {
-                    if( cp.point( p ) != points[p] ) {
+                for( uint32 p = 0; p < cp.nb_vertices(); p++ ) {
+                    if( cp.vertex( p ) != points[p] ) {
                         equal = false ; break ;
                     }
                 }
@@ -280,10 +280,10 @@ namespace GRGMesh {
 
             if( corner1 == cp.boundary_id( 0 )
                 && corner0 == cp.boundary_id( 1 )
-                && cp.nb_points() == points.size() ) {         // same points
+                && cp.nb_vertices() == points.size() ) {         // same points
                 bool equal = true ;
-                for( uint32 p = 0; p < cp.nb_points(); p++ ) {
-                    if( cp.point( cp.nb_points() - p - 1 ) != points[p] ) {
+                for( uint32 p = 0; p < cp.nb_vertices(); p++ ) {
+                    if( cp.vertex( cp.nb_vertices() - p - 1 ) != points[p] ) {
                         equal = false ; break ;
                     }
                 }
@@ -559,7 +559,7 @@ namespace GRGMesh {
 
         for( uint32 i = 0; i < surface_parts_.size(); ++i ) {
             SurfacePart& sp = surface_parts_[i] ;
-            if( sp.nb_points() == 0 ) continue ;
+            if( sp.nb_vertices() == 0 ) continue ;
             if( sp.key_facet().is_default() ) {
                 sp.set_first_triangle_as_key() ;
             }
@@ -735,8 +735,8 @@ namespace GRGMesh {
                 const SurfacePart* sp = dynamic_cast< const SurfacePart* >( tsurf.child( j ) ) ;
 
                 out << "TFACE" << std::endl ;
-                for( int32 k = 0; k < sp->nb_points(); ++k ) {
-                    out << "VRTX " << vertex_count << " " << sp->point( k ) << std::endl ;
+                for( int32 k = 0; k < sp->nb_vertices(); ++k ) {
+                    out << "VRTX " << vertex_count << " " << sp->vertex( k ) << std::endl ;
                     vertex_count++ ;
                 }
 
@@ -751,8 +751,8 @@ namespace GRGMesh {
                 for( int32 k = 0; k < sp->nb_boundaries(); ++k ) {
                     const ContactPart* cp = dynamic_cast< const ContactPart* >( sp->boundary( k ) ) ;
 
-                    const vec3& c = cp->point( 0 ) ;
-                    const vec3& next = cp->point( 1 ) ;
+                    const vec3& c = cp->vertex( 0 ) ;
+                    const vec3& next = cp->vertex( 1 ) ;
 
                     int32 t = sp->find_triangle( c, next ) ;
                     grgmesh_debug_assert( t != -1 ) ;
@@ -761,9 +761,9 @@ namespace GRGMesh {
                     int32 i1 = sp->point_index( t, 1 ) ;
                     int32 i2 = sp->point_index( t, 2 ) ;
 
-                    const vec3& p0 = sp->point( i0 ) ;
-                    const vec3& p1 = sp->point( i1 ) ;
-                    const vec3& p2 = sp->point( i2 ) ;
+                    const vec3& p0 = sp->vertex( i0 ) ;
+                    const vec3& p1 = sp->vertex( i1 ) ;
+                    const vec3& p2 = sp->vertex( i2 ) ;
 
                     int32 c_id = -1 ;
                     int32 next_id = -1 ;
@@ -1163,13 +1163,13 @@ namespace GRGMesh {
         const std::vector< int32 >& indices = mu.indices() ;
         for( uint32 s = 0; s < model_->nb_surface_parts(); s++ ) {
             SurfacePart& surface = model_->surface_parts_[s] ;
-            for( uint32 p = 0; p < surface.nb_points(); p++ ) {
+            for( uint32 p = 0; p < surface.nb_vertices(); p++ ) {
                 surface.points_[p] = indices[surface.points_[p]] ;
             }
         }
         for( uint32 c = 0; c < model_->nb_contact_parts(); c++ ) {
             ContactPart& contact = model_->contact_parts_[c] ;
-            for( uint32 p = 0; p < contact.nb_points(); p++ ) {
+            for( uint32 p = 0; p < contact.nb_vertices(); p++ ) {
                 contact.vertices_[p] = indices[contact.vertices_[p]] ;
             }
         }
@@ -1233,10 +1233,10 @@ namespace GRGMesh {
             // Stuff used in while loop
             int32 id0 = b.p0_ ;
             int32 id1 = b.p1_ ;
-            grgmesh_debug_assert( id0 < part.nb_points() && id1 < part.nb_points() ) ;
+            grgmesh_debug_assert( id0 < part.nb_vertices() && id1 < part.nb_vertices() ) ;
 
-            vec3 p0 = part.point( id0 ) ;
-            vec3 p1 = part.point( id1 ) ;
+            vec3 p0 = part.vertex( id0 ) ;
+            vec3 p1 = part.vertex( id1 ) ;
 
             int32 t = part.find_triangle( id0, id1 ) ;
             grgmesh_debug_assert( t != -1 ) ;
@@ -1301,7 +1301,7 @@ namespace GRGMesh {
                 t = other_t ;
                 id0 = id1 ;
                 id1 = new_id1 ;
-                p1 = part.point( new_id1 ) ;
+                p1 = part.vertex( new_id1 ) ;
                 p1_corner = model_->find_corner( p1 ) ;
                 border_vertices.push_back( p1 ) ;
             }

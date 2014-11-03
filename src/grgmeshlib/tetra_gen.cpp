@@ -83,7 +83,7 @@ namespace GRGMesh {
             const BoundaryModelElement* surface = region->boundary( s ) ;
             if( Utils::contains( surface_id_,
                 static_cast< int32 >( surface->id() ) ) ) continue ;
-            nb_points += surface->nb_points() ;
+            nb_points += surface->nb_vertices() ;
             nb_facets += surface->nb_simplices() ;
 
             surface_id_.push_back( surface->id() ) ;
@@ -160,7 +160,7 @@ namespace GRGMesh {
 
                 }
             }
-            offset += surface.nb_points() ;
+            offset += surface.nb_vertices() ;
             surface_ptr_.push_back( nb_triangles() ) ;
             area /= static_cast< double >( surface.nb_simplices() ) ;
             double r = sqrt( (double)(4 * area / sqrt( (double)3 )) ) ;
