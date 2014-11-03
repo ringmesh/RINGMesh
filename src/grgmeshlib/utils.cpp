@@ -175,10 +175,10 @@ namespace GRGMesh {
         const vec3 center( ( p0 + p1 + p2 + p3 ) / 4. ) ;
         vec3 edge0( p1 - p0 ) ;
         vec3 edge1( p3 - p0 ) ;
-        const vec3 axis[2] ;
+        vec3 axis[2] ;
         axis[0] = normalize( edge0 ) ;
         axis[1] = normalize( edge1 ) ;
-        const float64 extent[2] ;
+        float64 extent[2] ;
         extent[0] = edge0.length() / 2. ;
         extent[1] = edge1.length() / 2. ;
 
@@ -355,7 +355,7 @@ namespace GRGMesh {
         const vec3& p3,
         vec3& nearest_p )
     {
-        const vec3 vertices[4] ;
+        vec3 vertices[4] ;
         vertices[0] = p0 ;
         vertices[1] = p1 ;
         vertices[2] = p2 ;
@@ -384,7 +384,7 @@ namespace GRGMesh {
         const vec3& p4,
         vec3& nearest_p )
     {
-        const vec3 vertices[5] ;
+        vec3 vertices[5] ;
         vertices[0] = p0 ;
         vertices[1] = p1 ;
         vertices[2] = p2 ;
@@ -393,14 +393,15 @@ namespace GRGMesh {
         float64 dist = big_float64 ;
         for( uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
+            float64 distance ;
             uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
-                float64 distance = point_triangle_distance( p,
+                distance = point_triangle_distance( p,
                     vertices[pyramid_descriptor.facet[f][0]],
                     vertices[pyramid_descriptor.facet[f][1]],
                     vertices[pyramid_descriptor.facet[f][2]], cur_p ) ;
             } else if( nb_vertices == 4 ) {
-                float64 distance = point_quad_distance( p,
+                distance = point_quad_distance( p,
                     vertices[pyramid_descriptor.facet[f][0]],
                     vertices[pyramid_descriptor.facet[f][1]],
                     vertices[pyramid_descriptor.facet[f][2]],
@@ -426,7 +427,7 @@ namespace GRGMesh {
         const vec3& p5,
         vec3& nearest_p )
     {
-        const vec3 vertices[6] ;
+        vec3 vertices[6] ;
         vertices[0] = p0 ;
         vertices[1] = p1 ;
         vertices[2] = p2 ;
@@ -436,14 +437,15 @@ namespace GRGMesh {
         float64 dist = big_float64 ;
         for( uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
+            float64 distance ;
             uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
-                float64 distance = point_triangle_distance( p,
+                distance = point_triangle_distance( p,
                     vertices[prism_descriptor.facet[f][0]],
                     vertices[prism_descriptor.facet[f][1]],
                     vertices[prism_descriptor.facet[f][2]], cur_p ) ;
             } else if( nb_vertices == 4 ) {
-                float64 distance = point_quad_distance( p,
+                distance = point_quad_distance( p,
                     vertices[prism_descriptor.facet[f][0]],
                     vertices[prism_descriptor.facet[f][1]],
                     vertices[prism_descriptor.facet[f][2]],
@@ -471,7 +473,7 @@ namespace GRGMesh {
         const vec3& p7,
         vec3& nearest_p )
     {
-        const vec3 vertices[8] ;
+        vec3 vertices[8] ;
         vertices[0] = p0 ;
         vertices[1] = p1 ;
         vertices[2] = p2 ;
@@ -496,47 +498,6 @@ namespace GRGMesh {
         return dist ;
     }
 
-    float64 Utils::point_pyramid_distance(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        vec3& nearest_p )
-    {
-        const vec3 vertices[5] ;
-        vertices[0] = p0 ;
-        vertices[1] = p1 ;
-        vertices[2] = p2 ;
-        vertices[3] = p3 ;
-        vertices[4] = p4 ;
-        float64 dist = big_float64 ;
-        for( uint8 f = 0; f < 5; f++ ) {
-            vec3 cur_p ;
-            uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[f] ;
-            if( nb_vertices == 3 ) {
-                float64 distance = point_triangle_distance( p,
-                    vertices[pyramid_descriptor.facet[f][0]],
-                    vertices[pyramid_descriptor.facet[f][1]],
-                    vertices[pyramid_descriptor.facet[f][2]], cur_p ) ;
-            } else if( nb_vertices == 4 ) {
-                float64 distance = point_quad_distance( p,
-                    vertices[pyramid_descriptor.facet[f][0]],
-                    vertices[pyramid_descriptor.facet[f][1]],
-                    vertices[pyramid_descriptor.facet[f][2]],
-                    vertices[pyramid_descriptor.facet[f][3]], cur_p ) ;
-            } else {
-                grgmesh_assert_not_reached ;
-            }
-            if( distance < dist ) {
-                dist = distance ;
-                nearest_p = cur_p ;
-            }
-        }
-        return dist ;
-    }
-
     bool Utils::point_inside_tetra(
         const vec3& p,
         const vec3& p0,
@@ -544,7 +505,7 @@ namespace GRGMesh {
         const vec3& p2,
         const vec3& p3 )
     {
-        const vec3 vertices[4] ;
+        vec3 vertices[4] ;
         vertices[0] = p0 ;
         vertices[1] = p1 ;
         vertices[2] = p2 ;
@@ -572,7 +533,7 @@ namespace GRGMesh {
         const vec3& p3,
         const vec3& p4 )
     {
-        const vec3 vertices[5] ;
+        vec3 vertices[5] ;
         vertices[0] = p0 ;
         vertices[1] = p1 ;
         vertices[2] = p2 ;
@@ -612,7 +573,7 @@ namespace GRGMesh {
         const vec3& p4,
         const vec3& p5 )
     {
-        const vec3 vertices[6] ;
+        vec3 vertices[6] ;
         vertices[0] = p0 ;
         vertices[1] = p1 ;
         vertices[2] = p2 ;
@@ -655,7 +616,7 @@ namespace GRGMesh {
         const vec3& p6,
         const vec3& p7 )
     {
-        const vec3 vertices[7] ;
+        vec3 vertices[7] ;
         vertices[0] = p0 ;
         vertices[1] = p1 ;
         vertices[2] = p2 ;

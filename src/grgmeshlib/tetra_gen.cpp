@@ -638,8 +638,11 @@ tetgenio::init( P ) ;
         int32 nb_triangles = 0 ;
         ret = mesh_get_triangle_count( mesh_output_, &nb_triangles ) ;
         grgmesh_debug_assert( ret == STATUS_OK ) ;
+        int32 nb_lines = 0 ;
+        ret = mesh_get_edge_count( mesh_output_, &nb_lines ) ;
+        grgmesh_debug_assert( ret == STATUS_OK ) ;
 
-        initialize_storage( nb_points, nb_tets ) ;
+        initialize_storage( nb_points, nb_tets, nb_triangles, nb_lines ) ;
         std::vector< uint32 > temp ;
         temp.reserve( 15 ) ;
         std::vector< std::vector< uint32 > > star( nb_points, temp ) ;
@@ -647,7 +650,7 @@ tetgenio::init( P ) ;
             int32 tet[4] ;
             ret = mesh_get_tetrahedron_vertices( mesh_output_, t+1, tet ) ;
             grgmesh_debug_assert( ret == STATUS_OK ) ;
-            set_tetra( t, tet ) ;
+            set_tetra( t, tet, nb_lines, nb_triangles ) ;
             for( uint32 i = 0; i < 4; i++ ) {
                 star[tet[i] - 1].push_back( t ) ;
             }
