@@ -664,7 +664,7 @@ tetgenio::init( P ) ;
             set_point( p, point ) ;
             std::sort( star[p].begin(), star[p].end() ) ;
         }
-
+        int32 cur_index_triangle = 0 ;
 #pragma omp parallel for
         for( uint32 t = 0; t < nb_triangles; t++ ) {
             int32 tag = -1 ;
@@ -685,6 +685,7 @@ tetgenio::init( P ) ;
             std::vector< uint32 >::const_iterator end_tetra2 = tetra2.end() ;
             uint32 results[2] ;
             uint32 count = 0 ;
+            //intersection
             while( cur_tetra0 != end_tetra0 && cur_tetra1 != end_tetra1
                 && cur_tetra2 != end_tetra2 && count < 2 ) {
                 if( *cur_tetra0 < *cur_tetra1 || *cur_tetra0 < *cur_tetra2 ) {
@@ -712,6 +713,13 @@ tetgenio::init( P ) ;
                         vertices[0] - 1,
                         vertices[1] - 1,
                         vertices[2] - 1 ) ) {
+                        int32 tri[3] ;
+                        ret = mesh_get_triangle_vertices( mesh_output_, t+1, tri ) ;
+                        grgmesh_debug_assert( ret == STATUS_OK ) ;
+                        if ( tag != -1 ) {
+                        	set_triangle(cur_index_triangle, tri, nb_lines) ;
+                        	cur_index_triangle ++ ;
+                        }
                         set_tetra_face_marker( tet, ff, tag ) ;
                         found = true ;
                         break ;
@@ -725,6 +733,20 @@ tetgenio::init( P ) ;
                 set_face_marker( tet2, tet1, tag ) ;
             }
         }
+
+        uint32 cur_index_line = 0 ;
+#pragma omp parallel for
+        for( uint32 l = 0; l < well_edges_.size(); l++ ) {
+            int32 tag = -1 ;
+            ret = mesh_get_edge_tag( mesh_output_, l+1, &tag ) ;
+            int32 lin[2] ;
+            ret = mesh_get_edge_vertices( mesh_output_, l+1, lin ) ;
+            if( tag != -1 ) {
+				set_line(cur_index_line, lin) ;
+				cur_index_line ++ ;
+            }
+        }
+
 
         store_edge_attrib() ;
 
