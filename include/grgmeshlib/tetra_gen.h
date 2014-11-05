@@ -118,7 +118,7 @@ namespace GRGMesh {
         std::vector< int32 > surface_id_ ;
         std::vector< uint32 > surface_ptr_ ;
         MixedMesh& tetmesh_ ;
-        MixedMeshMutator tetmesh_mutator_ ;
+        MixedMeshBuilder tetmesh_builder_ ;
         double resolution_ ;
         MixedMesh* background_ ;
     } ;

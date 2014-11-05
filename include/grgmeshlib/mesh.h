@@ -26,6 +26,7 @@ namespace GRGMesh {
 
     class GRGMESH_API Mesh {
         friend class MeshMutator ;
+        friend class MeshBuilder ;
         typedef AttributeManager< VERTEX > VertexAttributeManager ;
 
     public:
@@ -104,7 +105,6 @@ namespace GRGMesh {
     private:
         VertexAttributeManager vertex_attribute_manager_ ;
 
-
     } ;
 
     template< class ATTRIBUTE >
@@ -158,8 +158,66 @@ namespace GRGMesh {
         }
         virtual ~MeshMutator() {}
 
-        std::vector< vec3 >& vertices() { return mesh_.vertices_ ; }
-        std::vector< uint32 >& vertex_indices() { return mesh_.vertex_indices_ ; }
+        void set_vertex( uint32 id, const vec3& v )
+        {
+            mesh_.vertices_[id] = v ;
+        }
+        void set_vertex_index( uint32 id, uint32 v )
+        {
+            mesh_.vertex_indices_[id] = v ;
+        }
+
+    protected:
+        Mesh& mesh_ ;
+    } ;
+
+    class GRGMESH_API MeshBuilder {
+    public:
+        MeshBuilder( Mesh& mesh )
+            : mesh_( mesh )
+        {
+        }
+        MeshBuilder( const Mesh& mesh )
+            : mesh_( const_cast< Mesh& >( mesh ) )
+        {
+        }
+        virtual ~MeshBuilder()
+        {
+        }
+
+        void reserve_vertices( uint32 nb )
+        {
+            mesh_.vertices_.reserve( nb ) ;
+        }
+        void resize_vertices( uint32 nb, const vec3& v = dummy_vec3 )
+        {
+            mesh_.vertices_.resize( nb, v ) ;
+        }
+        void add_vertex( const vec3& v )
+        {
+            mesh_.vertices_.push_back( v ) ;
+        }
+        void add_vertex( uint32 id, const vec3& v )
+        {
+            mesh_.vertices_[id] = v ;
+        }
+
+        void reserve_vertex_indices( uint32 nb )
+        {
+            mesh_.vertex_indices_.reserve( nb ) ;
+        }
+        void resize_vertex_indices( uint32 nb, uint32 id = dummy_uint32 )
+        {
+            mesh_.vertex_indices_.resize( nb, id ) ;
+        }
+        void add_vertex_index( uint32 v )
+        {
+            mesh_.vertex_indices_.push_back( v ) ;
+        }
+        void add_vertex_index( uint32 id, uint32 v )
+        {
+            mesh_.vertex_indices_[id] = v ;
+        }
 
     protected:
         Mesh& mesh_ ;

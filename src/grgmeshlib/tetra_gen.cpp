@@ -53,7 +53,7 @@ namespace GRGMesh {
             internal_points_( internal_vertices ),
             resolution_( 0 ),
             background_( background ),
-            tetmesh_mutator_( tetmesh )
+            tetmesh_builder_( tetmesh )
     {
         if( !well_edges.empty() ) {
             uint32 nb_well_edges = 0 ;
@@ -174,11 +174,11 @@ namespace GRGMesh {
         uint32 nb_triangles,
         uint32 nb_lines)
     {
-        tetmesh_mutator_.vertices().resize( nb_points ) ;
-        tetmesh_mutator_.vertex_indices().resize( nb_tets * 4 +  nb_triangles * 3 + nb_lines * 2) ;
-        tetmesh_mutator_.tetra().resize( nb_tets ) ;
-        tetmesh_mutator_.triangles().resize( nb_triangles ) ;
-        tetmesh_mutator_.lines().resize( nb_lines ) ;
+        tetmesh_builder_.resize_vertices( nb_points ) ;
+        tetmesh_builder_.resize_vertex_indices( nb_tets * 4 +  nb_triangles * 3 + nb_lines * 2) ;
+        tetmesh_builder_.resize_tetra( nb_tets ) ;
+        tetmesh_builder_.resize_triangles( nb_triangles ) ;
+        tetmesh_builder_.resize_lines( nb_lines ) ;
         /*
         tetmesh_.tetra_adjacents_.resize( nb_tets * 4, -1 ) ;
         tetmesh_.triangle_surface_id_.resize( 4 * nb_tets, -1 ) ;
@@ -187,15 +187,14 @@ namespace GRGMesh {
 
     void TetraGen::set_point( uint32 index, double* point )
     {
-        std::copy( point, point + 3, tetmesh_mutator_.vertices()[index].data() ) ;
+        tetmesh_builder_.add_vertex( index, vec3( point ) ) ;
     }
 
     void TetraGen::set_tetra( uint32 index, int* tet, uint32 nb_lines, uint32 nb_triangles )
     {
-        tetmesh_mutator_.tetra()[index] = 4 * index ;
-        std::vector< uint32 >& vertex_indices = tetmesh_mutator_.vertex_indices() ;
+        tetmesh_builder_.add_tetra( index, 4 * index ) ;
         for( uint32 i = 0; i < 4; i++ ) {
-            vertex_indices[4 * index + i + nb_triangles + nb_lines] = tet[i] - 1 ;
+            tetmesh_builder_.add_vertex_index( 4 * index + i + nb_triangles + nb_lines, tet[i] - 1 ) ;
         }
     }
 
@@ -213,10 +212,9 @@ namespace GRGMesh {
         int * triangle,
         uint32 nb_lines )
     {
-    	tetmesh_mutator_.triangles()[index] = 3 * index ;
-    	std::vector< uint32 >& vertex_indices = tetmesh_mutator_.vertex_indices() ;
+        tetmesh_builder_.add_triangle( index, 3 * index ) ;
         for( uint32 i = 0; i < 3; i++ ) {
-            vertex_indices[3 * index + i + nb_lines ] = triangle[i] - 1 ;
+            tetmesh_builder_.add_vertex_index( 3 * index + i + nb_lines, triangle[i] - 1 ) ;
         }
     }
 
@@ -224,12 +222,12 @@ namespace GRGMesh {
         uint32 index,
         int * line )
     {
-    	tetmesh_mutator_.lines()[index] = 2 * index ;
-    	std::vector< uint32 >& vertex_indices = tetmesh_mutator_.vertex_indices() ;
+        tetmesh_builder_.add_line( index, 2 * index ) ;
         for( uint32 i = 0; i < 3; i++ ) {
-            vertex_indices[2 * index + i ] = line[i] - 1 ;
+            tetmesh_builder_.add_vertex_index( 2 * index + i, line[i] - 1 ) ;
         }
     }
+
     void TetraGen::set_face_marker(
         uint32 tet1,
         uint32 tet2,

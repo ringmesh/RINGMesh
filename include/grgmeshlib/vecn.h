@@ -488,6 +488,9 @@ namespace GRGMesh {
         }
         return in ;
     }
+
+
+    static vec3 dummy_vec3 ;
 }
 
 #endif
