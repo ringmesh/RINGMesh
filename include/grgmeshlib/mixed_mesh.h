@@ -28,7 +28,7 @@ namespace GRGMesh {
     class GRGMESH_API MixedMesh: public Mesh {
         friend class MixedMeshMutator ;
         typedef AttributeManager< LINE > LineAttributeManager ;
-        typedef AttributeManager< TRGL > TrianlgeAttributeManager ;
+        typedef AttributeManager< TRGL > TriangleAttributeManager ;
         typedef AttributeManager< QUAD > QuadAttributeManager ;
         typedef AttributeManager< TETRA > TetraAttributeManager ;
         typedef AttributeManager< PYRAMID > PyramidAttributeManager ;
@@ -158,9 +158,9 @@ namespace GRGMesh {
         {
             return const_cast< LineAttributeManager* >( &line_attribute_manager_ ) ;
         }
-        TrianlgeAttributeManager* triangle_attribute_manager() const
+        TriangleAttributeManager* triangle_attribute_manager() const
         {
-            return const_cast< TrianlgeAttributeManager* >( &triangle_attribute_manager_ ) ;
+            return const_cast< TriangleAttributeManager* >( &triangle_attribute_manager_ ) ;
         }
         QuadAttributeManager* quad_attribute_manager() const
         {
@@ -194,7 +194,7 @@ namespace GRGMesh {
 
 
         LineAttributeManager line_attribute_manager_ ;
-        TrianlgeAttributeManager triangle_attribute_manager_ ;
+        TriangleAttributeManager triangle_attribute_manager_ ;
         QuadAttributeManager quad_attribute_manager_ ;
         TetraAttributeManager tetra_attribute_manager_ ;
         PyramidAttributeManager pyramid_attribute_manager_ ;
@@ -225,12 +225,12 @@ namespace GRGMesh {
 
         LineAttribute( MixedMesh* mesh )
         {
-            bind( mesh, mesh->nb_lines() ) ;
+            bind( mesh ) ;
         }
 
         LineAttribute( MixedMesh* mesh, const std::string& name )
         {
-            bind( mesh, mesh->nb_lines(), name ) ;
+            bind( mesh, name ) ;
         }
 
         static bool is_defined( MixedMesh* mesh, const std::string& name )
@@ -262,12 +262,12 @@ namespace GRGMesh {
 
         TriangleAttribute( MixedMesh* mesh )
         {
-            bind( mesh, mesh->nb_triangles() ) ;
+            bind( mesh ) ;
         }
 
         TriangleAttribute( MixedMesh* mesh, const std::string& name )
         {
-            bind( mesh, mesh->nb_triangles(), name ) ;
+            bind( mesh, name ) ;
         }
 
         static bool is_defined( MixedMesh* mesh, const std::string& name )
@@ -299,12 +299,12 @@ namespace GRGMesh {
 
         QuadAttribute( MixedMesh* mesh )
         {
-            bind( mesh, mesh->nb_quad() ) ;
+            bind( mesh ) ;
         }
 
         QuadAttribute( MixedMesh* mesh, const std::string& name )
         {
-            bind( mesh, mesh->nb_quad(), name ) ;
+            bind( mesh, name ) ;
         }
 
         static bool is_defined( MixedMesh* mesh, const std::string& name )
@@ -336,13 +336,14 @@ namespace GRGMesh {
 
         TetraAttribute( MixedMesh* mesh )
         {
-            bind( mesh, mesh->nb_tetra() ) ;
+        	bind( mesh ) ;
         }
 
         TetraAttribute( MixedMesh* mesh, const std::string& name )
         {
-            bind( mesh, mesh->nb_tetra(), name ) ;
+        	bind( mesh, name ) ;
         }
+
 
         static bool is_defined( MixedMesh* mesh, const std::string& name )
         {
@@ -373,12 +374,12 @@ namespace GRGMesh {
 
         PyramidAttribute( MixedMesh* mesh )
         {
-            bind( mesh, mesh->nb_pyramids() ) ;
+            bind( mesh ) ;
         }
 
         PyramidAttribute( MixedMesh* mesh, const std::string& name )
         {
-            bind( mesh, mesh->nb_pyramids(), name ) ;
+            bind( mesh, name ) ;
         }
 
         static bool is_defined( MixedMesh* mesh, const std::string& name )
@@ -410,12 +411,12 @@ namespace GRGMesh {
 
         PrismAttribute( MixedMesh* mesh )
         {
-            bind( mesh, mesh->nb_prisms() ) ;
+            bind( mesh ) ;
         }
 
         PrismAttribute( MixedMesh* mesh, const std::string& name )
         {
-            bind( mesh, mesh->nb_prisms(), name ) ;
+            bind( mesh, name ) ;
         }
 
         static bool is_defined( MixedMesh* mesh, const std::string& name )
@@ -447,12 +448,12 @@ namespace GRGMesh {
 
         HexaAttribute( MixedMesh* mesh )
         {
-            bind( mesh, mesh->nb_hexa() ) ;
+            bind( mesh  ) ;
         }
 
         HexaAttribute( MixedMesh* mesh, const std::string& name )
         {
-            bind( mesh, mesh->nb_hexa(), name ) ;
+            bind( mesh, name ) ;
         }
 
         static bool is_defined( MixedMesh* mesh, const std::string& name )

@@ -92,7 +92,6 @@ namespace GRGMesh {
 
         const ElementType& record_type_id() const  { return LOCATION ; }
 
-    protected:
         void bind_named_attribute_store(
             const std::string& name,
             AttributeStore* as )
@@ -159,9 +158,9 @@ namespace GRGMesh {
                 store_ = resolve_named_attribute_store( manager, name ) ;
                 grgmesh_debug_assert( store_ != nil ) ;
                 // Sanity check, checks the attribute type.
-                Store* check_type = store_ ;
+                AttributeStore* check_type = store_ ;
                 grgmesh_debug_assert(
-                    dynamic_cast< Store* >( check_type ) != nil ) ;
+                    dynamic_cast< AttributeStore* >( check_type ) != nil ) ;
             } else {
                 store_ = new Store( size ) ;
                 bind_named_attribute_store( manager, name, store_ ) ;
@@ -200,7 +199,7 @@ namespace GRGMesh {
             return reinterpret_cast< ATTRIBUTE* >( store_->data( id ) ) ;
         }
 
-        Store* resolve_named_attribute_store(
+        AttributeStore* resolve_named_attribute_store(
             Manager* manager,
             const std::string& name )
         {
@@ -210,7 +209,7 @@ namespace GRGMesh {
         void bind_named_attribute_store(
             Manager* manager,
             const std::string& name,
-            Store* as )
+            AttributeStore* as )
         {
             manager->bind_named_attribute_store( name, as ) ;
         }

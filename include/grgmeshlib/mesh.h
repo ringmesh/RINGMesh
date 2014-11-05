@@ -130,12 +130,12 @@ namespace GRGMesh {
 
         VertexAttribute( Mesh* mesh )
         {
-            bind( mesh, mesh->nb_vertices() ) ;
+            bind( mesh ) ;
         }
 
         VertexAttribute( Mesh* mesh, const std::string& name )
         {
-            bind( mesh, mesh->nb_vertices(), name ) ;
+            bind( mesh, name ) ;
         }
 
         static bool is_defined( Mesh* mesh, const std::string& name )
