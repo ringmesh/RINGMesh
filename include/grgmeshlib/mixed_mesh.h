@@ -27,6 +27,7 @@ namespace GRGMesh {
      */
     class GRGMESH_API MixedMesh: public Mesh {
         friend class MixedMeshMutator ;
+        friend class MixedMeshBuilder ;
         typedef AttributeManager< LINE > LineAttributeManager ;
         typedef AttributeManager< TRGL > TriangleAttributeManager ;
         typedef AttributeManager< QUAD > QuadAttributeManager ;
@@ -476,14 +477,190 @@ namespace GRGMesh {
         }
         virtual ~MixedMeshMutator() {}
 
-        std::vector< uint32 >* cells() { return mixed_mesh_.cells_ ; }
-        std::vector< uint32 >& lines() { return mixed_mesh_.cells_[LINE] ; }
-        std::vector< uint32 >& triangles() { return mixed_mesh_.cells_[TRGL] ; }
-        std::vector< uint32 >& quad() { return mixed_mesh_.cells_[QUAD] ; }
-        std::vector< uint32 >& tetra() { return mixed_mesh_.cells_[TETRA] ; }
-        std::vector< uint32 >& pyramids() { return mixed_mesh_.cells_[PYRAMID] ; }
-        std::vector< uint32 >& prisms() { return mixed_mesh_.cells_[PRISM] ; }
-        std::vector< uint32 >& hexa() { return mixed_mesh_.cells_[HEXA] ; }
+        void set_cell( const ElementType& type, uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[type][id] = index ;
+        }
+        void set_line( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[LINE][id] = index ;
+        }
+        void set_triangle( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[TRGL][id] = index ;
+        }
+        void set_quad( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[QUAD][id] = index ;
+        }
+        void set_tetra( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[TETRA][id] = index ;
+        }
+        void set_pyramid( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[PYRAMID][id] = index ;
+        }
+        void set_prism( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[PRISM][id] = index ;
+        }
+        void set_hexa( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[HEXA][id] = index ;
+        }
+
+
+    private:
+        MixedMesh& mixed_mesh_ ;
+    } ;
+
+    class GRGMESH_API MixedMeshBuilder: public MeshBuilder {
+    public:
+        MixedMeshBuilder( MixedMesh& mixed_mesh )
+            : MeshBuilder( mixed_mesh ), mixed_mesh_( mixed_mesh )
+        {
+        }
+        MixedMeshBuilder( const MixedMesh& mixed_mesh )
+            :
+                MeshBuilder( mixed_mesh ),
+                mixed_mesh_( const_cast< MixedMesh& >( mixed_mesh ) )
+        {
+        }
+        virtual ~MixedMeshBuilder() {}
+
+        void reserve_cells( const ElementType& type, uint32 nb ) {
+            mixed_mesh_.cells_[type].reserve( nb ) ;
+        }
+        void reserve_lines( uint32 nb ) {
+            mixed_mesh_.cells_[LINE].reserve( nb ) ;
+        }
+        void reserve_triangles( uint32 nb ) {
+            mixed_mesh_.cells_[TRGL].reserve( nb ) ;
+        }
+        void reserve_quad( uint32 nb ) {
+            mixed_mesh_.cells_[QUAD].reserve( nb ) ;
+        }
+        void reserve_tetra( uint32 nb ) {
+            mixed_mesh_.cells_[TETRA].reserve( nb ) ;
+        }
+        void reserve_pyramids( uint32 nb ) {
+            mixed_mesh_.cells_[PYRAMID].reserve( nb ) ;
+        }
+        void reserve_prisms( uint32 nb ) {
+            mixed_mesh_.cells_[PRISM].reserve( nb ) ;
+        }
+        void reserve_hexa( uint32 nb ) {
+            mixed_mesh_.cells_[HEXA].reserve( nb ) ;
+        }
+
+        void resize_cells( const ElementType& type, uint32 nb, uint32 id = dummy_uint32 ) {
+            mixed_mesh_.cells_[type].resize( nb, id ) ;
+        }
+        void resize_lines( uint32 nb, uint32 id = dummy_uint32 ) {
+            mixed_mesh_.cells_[LINE].resize( nb, id ) ;
+        }
+        void resize_triangles( uint32 nb, uint32 id = dummy_uint32 ) {
+            mixed_mesh_.cells_[TRGL].resize( nb ) ;
+        }
+        void resize_quad( uint32 nb, uint32 id = dummy_uint32 ) {
+            mixed_mesh_.cells_[QUAD].resize( nb, id ) ;
+        }
+        void resize_tetra( uint32 nb, uint32 id = dummy_uint32 ) {
+            mixed_mesh_.cells_[TETRA].resize( nb, id ) ;
+        }
+        void resize_pyramids( uint32 nb, uint32 id = dummy_uint32 ) {
+            mixed_mesh_.cells_[PYRAMID].resize( nb, id ) ;
+        }
+        void resize_prisms( uint32 nb, uint32 id = dummy_uint32 ) {
+            mixed_mesh_.cells_[PRISM].resize( nb, id ) ;
+        }
+        void resize_hexa( uint32 nb, uint32 id = dummy_uint32 ) {
+            mixed_mesh_.cells_[HEXA].resize( nb, id ) ;
+        }
+
+        void add_cell( const ElementType& type, uint32 index ) {
+            mixed_mesh_.cells_[type].push_back( index ) ;
+        }
+        void add_line( uint32 index ) {
+            mixed_mesh_.cells_[LINE].push_back( index ) ;
+        }
+        void add_triangle( uint32 index ) {
+            mixed_mesh_.cells_[TRGL].push_back( index ) ;
+        }
+        void add_quad( uint32 index ) {
+            mixed_mesh_.cells_[QUAD].push_back( index ) ;
+        }
+        void add_tetra( uint32 index ) {
+            mixed_mesh_.cells_[TETRA].push_back( index ) ;
+        }
+        void add_pyramid( uint32 index ) {
+            mixed_mesh_.cells_[PYRAMID].push_back( index ) ;
+        }
+        void add_prism( uint32 index ) {
+            mixed_mesh_.cells_[PRISM].push_back( index ) ;
+        }
+        void add_hexa( uint32 index ) {
+            mixed_mesh_.cells_[HEXA].push_back( index ) ;
+        }
+
+        uint32 add_cell( const ElementType& type ) {
+            uint32 index = mixed_mesh_.vertex_indices_.size() ;
+            mixed_mesh_.cells_[type].push_back( index ) ;
+            return index ;
+        }
+        uint32 add_line() {
+            uint32 index = mixed_mesh_.vertex_indices_.size() ;
+            mixed_mesh_.cells_[LINE].push_back( index ) ;
+            return index ;
+        }
+        uint32 add_triangle() {
+            uint32 index = mixed_mesh_.vertex_indices_.size() ;
+            mixed_mesh_.cells_[TRGL].push_back( index ) ;
+            return index ;
+        }
+        uint32 add_quad() {
+            uint32 index = mixed_mesh_.vertex_indices_.size() ;
+            mixed_mesh_.cells_[QUAD].push_back( index ) ;
+            return index ;
+        }
+        uint32 add_tetra() {
+            uint32 index = mixed_mesh_.vertex_indices_.size() ;
+            mixed_mesh_.cells_[TETRA].push_back( index ) ;
+            return index ;
+        }
+        uint32 add_pyramid() {
+            uint32 index = mixed_mesh_.vertex_indices_.size() ;
+            mixed_mesh_.cells_[PYRAMID].push_back( index ) ;
+            return index ;
+        }
+        uint32 add_prism() {
+            uint32 index = mixed_mesh_.vertex_indices_.size() ;
+            mixed_mesh_.cells_[PRISM].push_back( index ) ;
+            return index ;
+        }
+        uint32 add_hexa() {
+            uint32 index = mixed_mesh_.vertex_indices_.size() ;
+            mixed_mesh_.cells_[HEXA].push_back( index ) ;
+            return index ;
+        }
+
+        void add_cell( const ElementType& type, uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[type][id] = index ;
+        }
+        void add_line( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[LINE][id] = index ;
+        }
+        void add_triangle( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[TRGL][id] = index ;
+        }
+        void add_quad( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[QUAD][id] = index ;
+        }
+        void add_tetra( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[TETRA][id] = index ;
+        }
+        void add_pyramid( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[PYRAMID][id] = index ;
+        }
+        void add_prism( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[PRISM][id] = index ;
+        }
+        void add_hexa( uint32 id, uint32 index ) {
+            mixed_mesh_.cells_[HEXA][id] = index ;
+        }
 
     private:
         MixedMesh& mixed_mesh_ ;

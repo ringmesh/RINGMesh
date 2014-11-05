@@ -32,6 +32,7 @@ namespace GRGMesh {
             return data_[id * item_size_] ;
         }
         virtual const std::type_info& attribute_type_id() const = 0 ;
+        uint32 size() const { return data_.size() / item_size_ ; }
     protected:
         AttributeStore( uint32 item_size, uint32 size )
             :
@@ -142,6 +143,7 @@ namespace GRGMesh {
             return *this ;
         }
 
+        uint32 size() const { return store_->size() ; }
         bool is_bound() const
         {
             return !store_.is_nil() ;
