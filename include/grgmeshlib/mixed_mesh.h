@@ -51,13 +51,13 @@ namespace GRGMesh {
             return nb_lines() + nb_triangles() + nb_quad() + nb_tetra()
                 + nb_pyramids() + nb_prisms() + nb_hexa() ;
         }
-        uint32 nb_lines() const { return std::max( uint64(0), cells_[LINE].size()-1 ) ; }
-        uint32 nb_triangles() const { return std::max( uint64(0), cells_[TRGL].size()-1 ) ; }
-        uint32 nb_quad() const { return std::max( uint64(0), cells_[QUAD].size()-1 ) ; }
-        uint32 nb_tetra() const { return std::max( uint64(0), cells_[TETRA].size()-1 ) ; }
-        uint32 nb_pyramids() const { return std::max( uint64(0), cells_[PYRAMID].size()-1 ) ; }
-        uint32 nb_prisms() const { return std::max( uint64(0), cells_[PRISM].size()-1 ) ; }
-        uint32 nb_hexa() const { return std::max( uint64(0), cells_[HEXA].size()-1 ) ; }
+        uint32 nb_lines() const { return std::max( uint64(0), cells_[LINE].size() ) ; }
+        uint32 nb_triangles() const { return std::max( uint64(0), cells_[TRGL].size() ) ; }
+        uint32 nb_quad() const { return std::max( uint64(0), cells_[QUAD].size() ) ; }
+        uint32 nb_tetra() const { return std::max( uint64(0), cells_[TETRA].size() ) ; }
+        uint32 nb_pyramids() const { return std::max( uint64(0), cells_[PYRAMID].size() ) ; }
+        uint32 nb_prisms() const { return std::max( uint64(0), cells_[PRISM].size() ) ; }
+        uint32 nb_hexa() const { return std::max( uint64(0), cells_[HEXA].size() ) ; }
         virtual uint8 nb_vertices_in_cell( uint32 c ) const
         {
             grgmesh_debug_assert( c < nb_cells() ) ;
@@ -73,35 +73,74 @@ namespace GRGMesh {
             grgmesh_debug_assert( c < nb_cells() ) ;
             return cell_descriptor( c )->nb_vertices_in_facet[f] ;
         }
-        virtual uint32 cell_begin( uint32 c ) const {
-            uint32 real_index ;
-            return cells_[cell_type( c, real_index)][real_index] ;
-        }
-        virtual uint32 cell_end( uint32 c ) const {
-            uint32 real_index ;
-            return cells_[cell_type( c+1, real_index)][real_index] ;
-        }
 
-        ElementType cell_type( uint32 c, uint32& c_index = dummy_uint32 ) const ;
 
-        const CellDescriptor* cell_descriptor( uint32 c ) const
-        {
+        const CellDescriptor* cell_descriptor( uint32 c ) const {
             const CellDescriptor* result = cell_descriptor_[cell_type( c )] ;
-            grgmesh_debug_assert( result != 0 ) ;
             return result ;
         }
+        ElementType cell_type( uint32 c, uint32& c_index = dummy_uint32 ) const ;
+        uint32 global_index( const ElementType& type, const uint32 index ) const ;
 
-        uint32 cell_facet_vertex( uint32 c, uint8 f, uint8 v ) const
-        {
-            const CellDescriptor* desc = cell_descriptor( c ) ;
-            grgmesh_debug_assert( f < desc->nb_facets ) ; grgmesh_debug_assert( v < desc->nb_vertices_in_facet[f] ) ;
-            return cell_vertex_index( c, desc->facet[f][v] ) ;
+
+        uint32 cell_vertex_index( uint32 c, uint8 f, uint8 v ) const {
+            uint32 c_index ;
+            const ElementType& type = cell_type( c, c_index ) ;
+            return vertex_index( cells_[type][c_index] + cell_descriptor_[type]->facet[f][v] ) ;
         }
-
+        uint32 line_vertex_index( uint32 c, uint8 f, uint8 v ) const {
+            return vertex_index( cells_[LINE][c] + cell_descriptor_[LINE]->facet[f][v] ) ;
+        }
+        uint32 triangle_vertex_index( uint32 c, uint8 f, uint8 v ) const {
+            return vertex_index( cells_[TRGL][c] + cell_descriptor_[TRGL]->facet[f][v] ) ;
+        }
+        uint32 quad_vertex_index( uint32 c, uint8 f, uint8 v ) const {
+            return vertex_index( cells_[QUAD][c] + cell_descriptor_[QUAD]->facet[f][v] ) ;
+        }
         uint32 tetra_vertex_index( uint32 c, uint8 f, uint8 v ) const {
-            return vertex_index( cells_[TETRA][4*c + cell_descriptor_[TETRA]->facet[f][v]] ) ;
+            return vertex_index( cells_[TETRA][c] + cell_descriptor_[TETRA]->facet[f][v] ) ;
+        }
+        uint32 pyramid_vertex_index( uint32 c, uint8 f, uint8 v ) const {
+            return vertex_index( cells_[PYRAMID][c] + cell_descriptor_[PYRAMID]->facet[f][v] ) ;
+        }
+        uint32 prism_vertex_index( uint32 c, uint8 f, uint8 v ) const {
+            return vertex_index( cells_[PRISM][c] + cell_descriptor_[PRISM]->facet[f][v] ) ;
+        }
+        uint32 hexa_vertex_index( uint32 c, uint8 f, uint8 v ) const {
+            return vertex_index( cells_[HEXA][c] + cell_descriptor_[HEXA]->facet[f][v] ) ;
         }
 
+        const vec3& cell_vertex( uint32 c, uint8 f, uint8 v ) const {
+            return vertex( cell_vertex_index( c, f, v ) ) ;
+        }
+        const vec3& line_vertex( uint32 l, uint8 f, uint8 v ) const {
+            return vertex( line_vertex_index( l, f, v ) ) ;
+        }
+        const vec3& triangle_vertex( uint32 t, uint8 f, uint8 v ) const {
+            return vertex( triangle_vertex_index( t, f, v ) ) ;
+        }
+        const vec3& quad_vertex( uint32 q, uint8 f, uint8 v ) const {
+            return vertex( quad_vertex_index( q, f, v ) ) ;
+        }
+        const vec3& tetra_vertex( uint32 t, uint8 f, uint8 v ) const {
+            return vertex( tetra_vertex_index( t, f, v ) ) ;
+        }
+        const vec3& pyramid_vertex( uint32 p, uint8 f, uint8 v ) const {
+            return vertex( pyramid_vertex_index( p, f, v ) ) ;
+        }
+        const vec3& prism_vertex( uint32 p, uint8 f, uint8 v ) const {
+            return vertex( prism_vertex_index( p, f, v ) ) ;
+        }
+        const vec3& hexa_vertex( uint32 h, uint8 f, uint8 v ) const {
+            return vertex( hexa_vertex_index( h, f, v ) ) ;
+        }
+
+        uint32 cell_vertex_index( uint32 c, uint8 v ) const
+        {
+            uint32 c_index ;
+            const ElementType& type = cell_type( c, c_index ) ;
+            return vertex_index( cells_[type][c_index] + v ) ;
+        }
         uint32 line_vertex_index( uint32 l, uint8 v ) const {
             return vertex_index( cells_[LINE][l] + v ) ;
         }
@@ -124,6 +163,9 @@ namespace GRGMesh {
             return vertex_index( cells_[HEXA][h] + v ) ;
         }
 
+        const vec3& cell_vertex( uint32 c, uint8 v ) const {
+            return vertex( cell_vertex_index( c, v ) ) ;
+        }
         const vec3& line_vertex( uint32 l, uint8 v ) const {
             return vertex( line_vertex_index( l, v ) ) ;
         }

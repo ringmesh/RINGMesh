@@ -33,6 +33,18 @@ namespace GRGMesh {
         return ElementType( result ) ;
     }
 
+    uint32 MixedMesh::global_index(
+        const ElementType& type,
+        const uint32 index ) const
+    {
+        uint32 result = 0 ;
+        for( uint8 i = 0; i < type; i++ ) {
+            result += cells_[i].size() ;
+        }
+        result += index ;
+        return result ;
+    }
+
     float64 MixedMesh::get_nearest_point_in_cell(
         const vec3& p,
         uint32 c,

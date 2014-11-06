@@ -42,43 +42,16 @@ namespace GRGMesh {
         }
         virtual uint32 nb_cells() const = 0 ;
 
-        virtual uint32 cell_begin( uint32 c ) const = 0 ;
-        virtual uint32 cell_end( uint32 c ) const = 0 ;
         virtual uint8 nb_vertices_in_cell( uint32 c ) const = 0 ;
         virtual uint8 nb_facets_in_cell( uint32 c ) const = 0 ;
         virtual uint8 nb_vertices_in_cell_facet( uint32 c, uint8 f ) const = 0 ;
 
-        uint32 cell_vertex_index( uint32 c, uint32 v ) const
-        {
-            grgmesh_debug_assert( v < nb_vertices_in_cell( c ) ) ;
-            return vertex_indices_[cell_begin( c ) + v] ;
-        }
-        const vec3& cell_vertex( uint32 c, uint32 v ) const
-        {
-            grgmesh_debug_assert( v < nb_vertices_in_cell( c ) ) ;
-            return vertices_[vertex_indices_[cell_begin( c ) + v]] ;
-        }
         const vec3& vertex( uint32 v ) const { return vertices_[v] ; }
         uint32 vertex_index( uint32 i ) const { return vertex_indices_[i] ; }
 
         virtual ElementType cell_type( uint32 c, uint32& c_index = dummy_uint32  ) const = 0 ;
         virtual const CellDescriptor* cell_descriptor( uint32 c ) const = 0 ;
-        uint32 cell_facet_vertex( uint32 c, uint32 f, uint32 v ) const
-        {
-            const CellDescriptor* desc = cell_descriptor( c ) ;
-            grgmesh_debug_assert( f < desc->nb_facets ) ;
-            grgmesh_debug_assert( v < desc->nb_vertices_in_facet[f] ) ;
-            return cell_vertex_index( c, desc->facet[f][v] ) ;
-        }
 
-        vec3 cell_centroid( uint32 c ) const
-        {
-            vec3 result ;
-            for( uint32 i = cell_begin( c ); i < cell_end( c ); i++ ) {
-                result += cell_vertex( c, i ) ;
-            }
-            return result / nb_vertices_in_cell( c );
-        }
 
         VertexAttributeManager* vertex_attribute_manager() const
         {
