@@ -74,14 +74,12 @@ namespace GRGMesh {
             return cell_descriptor( c )->nb_vertices_in_facet[f] ;
         }
 
-
         const CellDescriptor* cell_descriptor( uint32 c ) const {
             const CellDescriptor* result = cell_descriptor_[cell_type( c )] ;
             return result ;
         }
         ElementType cell_type( uint32 c, uint32& c_index = dummy_uint32 ) const ;
         uint32 global_index( const ElementType& type, const uint32 index ) const ;
-
 
         uint32 cell_vertex_index( uint32 c, uint8 f, uint8 v ) const {
             uint32 c_index ;
@@ -188,6 +186,22 @@ namespace GRGMesh {
             return vertex( hexa_vertex_index( h, v ) ) ;
         }
 
+        vec3 cell_facet_barycenter( uint32 c, uint8 f ) const ;
+        vec3 triangle_facet_barycenter( uint32 c, uint8 f ) const ;
+        vec3 quad_facet_barycenter( uint32 c, uint8 f ) const ;
+        vec3 tetra_facet_barycenter( uint32 c, uint8 f ) const ;
+        vec3 pyramid_facet_barycenter( uint32 c, uint8 f ) const ;
+        vec3 prism_facet_barycenter( uint32 c, uint8 f ) const ;
+        vec3 hexa_facet_barycenter( uint32 c, uint8 f ) const ;
+
+        vec3 cell_barycenter( uint32 c ) const ;
+        vec3 triangle_barycenter( uint32 c ) const ;
+        vec3 quad_barycenter( uint32 c ) const ;
+        vec3 tetra_barycenter( uint32 c ) const ;
+        vec3 pyramid_barycenter( uint32 c ) const ;
+        vec3 prism_barycenter( uint32 c ) const ;
+        vec3 hexa_barycenter( uint32 c ) const ;
+
         float64 get_nearest_point_in_cell( const vec3& p, uint32 c, vec3& nearest_p ) const ;
         float64 get_nearest_point_in_line( const vec3& p, uint32 c, vec3& nearest_p ) const ;
         float64 get_nearest_point_in_triangle( const vec3& p, uint32 c, vec3& nearest_p ) const ;
@@ -225,6 +239,7 @@ namespace GRGMesh {
         {
             return const_cast< HexaAttributeManager* >( &hexa_attribute_manager_ ) ;
         }
+
     private:
         void copy( const MixedMesh& rhs )
         {
@@ -234,7 +249,6 @@ namespace GRGMesh {
     private:
         std::vector< uint32 > cells_[7] ;
         static const CellDescriptor* cell_descriptor_[7] ;
-
 
         LineAttributeManager line_attribute_manager_ ;
         TriangleAttributeManager triangle_attribute_manager_ ;
@@ -246,7 +260,7 @@ namespace GRGMesh {
     } ;
 
     template< class ATTRIBUTE >
-    class LineAttribute: public Attribute< LINE, ATTRIBUTE > {
+    class GRGMESH_API LineAttribute: public Attribute< LINE, ATTRIBUTE > {
     public:
         typedef Attribute< LINE, ATTRIBUTE > superclass ;
 
@@ -283,7 +297,7 @@ namespace GRGMesh {
     } ;
 
     template< class ATTRIBUTE >
-    class TriangleAttribute: public Attribute< TRGL, ATTRIBUTE > {
+    class GRGMESH_API TriangleAttribute: public Attribute< TRGL, ATTRIBUTE > {
     public:
         typedef Attribute< TRGL, ATTRIBUTE > superclass ;
 
@@ -320,7 +334,7 @@ namespace GRGMesh {
     } ;
 
     template< class ATTRIBUTE >
-    class QuadAttribute: public Attribute< QUAD, ATTRIBUTE > {
+    class GRGMESH_API QuadAttribute: public Attribute< QUAD, ATTRIBUTE > {
     public:
         typedef Attribute< QUAD, ATTRIBUTE > superclass ;
 
@@ -357,7 +371,7 @@ namespace GRGMesh {
     } ;
 
     template< class ATTRIBUTE >
-    class TetraAttribute: public Attribute< TETRA, ATTRIBUTE > {
+    class GRGMESH_API TetraAttribute: public Attribute< TETRA, ATTRIBUTE > {
     public:
         typedef Attribute< TETRA, ATTRIBUTE > superclass ;
 
@@ -395,7 +409,7 @@ namespace GRGMesh {
     } ;
 
     template< class ATTRIBUTE >
-    class PyramidAttribute: public Attribute< PYRAMID, ATTRIBUTE > {
+    class GRGMESH_API PyramidAttribute: public Attribute< PYRAMID, ATTRIBUTE > {
     public:
         typedef Attribute< PYRAMID, ATTRIBUTE > superclass ;
 
@@ -432,7 +446,7 @@ namespace GRGMesh {
     } ;
 
     template< class ATTRIBUTE >
-    class PrismAttribute: public Attribute< PRISM, ATTRIBUTE > {
+    class GRGMESH_API PrismAttribute: public Attribute< PRISM, ATTRIBUTE > {
     public:
         typedef Attribute< PRISM, ATTRIBUTE > superclass ;
 
@@ -469,7 +483,7 @@ namespace GRGMesh {
     } ;
 
     template< class ATTRIBUTE >
-    class HexaAttribute: public Attribute< HEXA, ATTRIBUTE > {
+    class GRGMESH_API HexaAttribute: public Attribute< HEXA, ATTRIBUTE > {
     public:
         typedef Attribute< HEXA, ATTRIBUTE > superclass ;
 
