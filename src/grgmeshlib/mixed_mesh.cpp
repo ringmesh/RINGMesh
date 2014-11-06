@@ -32,7 +32,6 @@ namespace GRGMesh {
         c_index = c - size ;
         return ElementType( result ) ;
     }
-
     uint32 MixedMesh::global_index(
         const ElementType& type,
         const uint32 index ) const
@@ -43,6 +42,158 @@ namespace GRGMesh {
         }
         result += index ;
         return result ;
+    }
+
+    vec3 MixedMesh::cell_facet_barycenter( uint32 c, uint8 f ) const
+    {
+        uint32 c_index ;
+        switch( cell_type( c, c_index ) ) {
+            case TRGL:
+                return triangle_facet_barycenter( c_index, f ) ;
+            case QUAD:
+                return quad_facet_barycenter( c_index, f ) ;
+            case TETRA:
+                return tetra_facet_barycenter( c_index, f ) ;
+            case PYRAMID:
+                return pyramid_facet_barycenter( c_index, f ) ;
+            case PRISM:
+                return prism_facet_barycenter( c_index, f ) ;
+            case HEXA:
+                return hexa_facet_barycenter( c_index, f ) ;
+            default:
+                grgmesh_assert_not_reached;
+                return dummy_vec3 ;
+        }
+    }
+    vec3 MixedMesh::triangle_facet_barycenter( uint32 c, uint8 f ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < trgl_descriptor.nb_vertices_in_facet[f]; v++ ) {
+            result += triangle_vertex( c, f, v ) ;
+        }
+        return result
+            / static_cast< float64 >( trgl_descriptor.nb_vertices_in_facet[f] ) ;
+    }
+    vec3 MixedMesh::quad_facet_barycenter( uint32 c, uint8 f ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < quad_descriptor.nb_vertices_in_facet[f]; v++ ) {
+            result += quad_vertex( c, f, v ) ;
+        }
+        return result
+            / static_cast< float64 >( quad_descriptor.nb_vertices_in_facet[f] ) ;
+    }
+    vec3 MixedMesh::tetra_facet_barycenter( uint32 c, uint8 f ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < tetra_descriptor.nb_vertices_in_facet[f]; v++ ) {
+            result += tetra_vertex( c, f, v ) ;
+        }
+        return result
+            / static_cast< float64 >( tetra_descriptor.nb_vertices_in_facet[f] ) ;
+    }
+    vec3 MixedMesh::pyramid_facet_barycenter( uint32 c, uint8 f ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < pyramid_descriptor.nb_vertices_in_facet[f]; v++ ) {
+            result += pyramid_vertex( c, f, v ) ;
+        }
+        return result
+            / static_cast< float64 >( pyramid_descriptor.nb_vertices_in_facet[f] ) ;
+    }
+    vec3 MixedMesh::prism_facet_barycenter( uint32 c, uint8 f ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < prism_descriptor.nb_vertices_in_facet[f]; v++ ) {
+            result += prism_vertex( c, f, v ) ;
+        }
+        return result
+            / static_cast< float64 >( prism_descriptor.nb_vertices_in_facet[f] ) ;
+    }
+    vec3 MixedMesh::hexa_facet_barycenter( uint32 c, uint8 f ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < hexa_descriptor.nb_vertices_in_facet[f]; v++ ) {
+            result += hexa_vertex( c, f, v ) ;
+        }
+        return result
+            / static_cast< float64 >( hexa_descriptor.nb_vertices_in_facet[f] ) ;
+    }
+
+    vec3 MixedMesh::cell_barycenter( uint32 c ) const
+    {
+        uint32 c_index ;
+        switch( cell_type( c, c_index ) ) {
+            case TRGL:
+                return triangle_barycenter( c_index ) ;
+            case QUAD:
+                return quad_barycenter( c_index ) ;
+            case TETRA:
+                return tetra_barycenter( c_index ) ;
+            case PYRAMID:
+                return pyramid_barycenter( c_index ) ;
+            case PRISM:
+                return prism_barycenter( c_index ) ;
+            case HEXA:
+                return hexa_barycenter( c_index ) ;
+            default:
+                grgmesh_assert_not_reached;
+                return dummy_vec3 ;
+        }
+    }
+    vec3 MixedMesh::triangle_barycenter( uint32 c ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < trgl_descriptor.nb_vertices; v++ ) {
+            result += triangle_vertex( c, v ) ;
+        }
+        return result
+            / static_cast< float64 >( trgl_descriptor.nb_vertices ) ;
+    }
+    vec3 MixedMesh::quad_barycenter( uint32 c ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < quad_descriptor.nb_vertices; v++ ) {
+            result += quad_vertex( c, v ) ;
+        }
+        return result
+            / static_cast< float64 >( quad_descriptor.nb_vertices ) ;
+    }
+    vec3 MixedMesh::tetra_barycenter( uint32 c ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < tetra_descriptor.nb_vertices; v++ ) {
+            result += tetra_vertex( c, v ) ;
+        }
+        return result
+            / static_cast< float64 >( tetra_descriptor.nb_vertices ) ;
+    }
+    vec3 MixedMesh::pyramid_barycenter( uint32 c ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < pyramid_descriptor.nb_vertices; v++ ) {
+            result += pyramid_vertex( c, v ) ;
+        }
+        return result
+            / static_cast< float64 >( pyramid_descriptor.nb_vertices ) ;
+    }
+    vec3 MixedMesh::prism_barycenter( uint32 c ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < prism_descriptor.nb_vertices; v++ ) {
+            result += prism_vertex( c, v ) ;
+        }
+        return result
+            / static_cast< float64 >( prism_descriptor.nb_vertices ) ;
+    }
+    vec3 MixedMesh::hexa_barycenter( uint32 c ) const
+    {
+        vec3 result ;
+        for( uint8 v = 0; v < hexa_descriptor.nb_vertices; v++ ) {
+            result += hexa_vertex( c, v ) ;
+        }
+        return result
+            / static_cast< float64 >( hexa_descriptor.nb_vertices ) ;
     }
 
     float64 MixedMesh::get_nearest_point_in_cell(
@@ -69,9 +220,8 @@ namespace GRGMesh {
             default:
                 grgmesh_assert_not_reached;
                 return 0 ;
-            }
         }
-
+    }
     float64 MixedMesh::get_nearest_point_in_line(
         const vec3& p,
         uint32 c,
@@ -80,7 +230,6 @@ namespace GRGMesh {
         return Utils::nearest_point_segment( p, line_vertex( c, 0 ),
             line_vertex( c, 1 ), nearest_p ) ;
     }
-
     float64 MixedMesh::get_nearest_point_in_triangle(
         const vec3& p,
         uint32 c,
@@ -98,7 +247,6 @@ namespace GRGMesh {
 
         return distance ;
     }
-
     float64 MixedMesh::get_nearest_point_in_quad(
         const vec3& p,
         uint32 c,
@@ -117,7 +265,6 @@ namespace GRGMesh {
 
         return distance ;
     }
-
     float64 MixedMesh::get_nearest_point_in_tetra(
         const vec3& p,
         uint32 c,
@@ -136,7 +283,6 @@ namespace GRGMesh {
 
         return distance ;
     }
-
     float64 MixedMesh::get_nearest_point_in_pyramid(
         const vec3& p,
         uint32 c,
@@ -156,7 +302,6 @@ namespace GRGMesh {
 
         return distance ;
     }
-
     float64 MixedMesh::get_nearest_point_in_prism(
         const vec3& p,
         uint32 c,
@@ -177,7 +322,6 @@ namespace GRGMesh {
 
         return distance ;
     }
-
     float64 MixedMesh::get_nearest_point_in_hexa(
         const vec3& p,
         uint32 c,
