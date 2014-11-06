@@ -3,3 +3,5 @@ syntax: regexp
 ^build$
 syntax: regexp
 ^CMakeOptions\.txt$
+syntax: regexp
+^doc/html$
