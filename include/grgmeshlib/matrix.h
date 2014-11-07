@@ -43,6 +43,9 @@ namespace GRGMesh {
         {
             reallocate( capacity_ ) ;
         }
+        ~RowImpl() {
+            delete[] elements_ ;
+        }
 
         void set_element( uint32 j, const T& value ) {
             int32 index = find( j ) ;
@@ -101,6 +104,8 @@ namespace GRGMesh {
         {
              rows_.resize( n ) ;
         }
+
+        uint32 n() const { return rows_.size() ; }
         const Row& row( uint32 i ) const { return rows_[i] ; }
         void set_element( uint32 i, uint32 j, const T& value ) {
             rows_[i].set_element( j, value ) ;

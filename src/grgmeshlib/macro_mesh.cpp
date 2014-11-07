@@ -35,7 +35,7 @@ namespace GRGMesh {
      * to improve the mesh quality
      */
     void MacroMixedMesh::compute_tetmesh(
-        const Tetra_method& method,
+        const TetraMethod& method,
         int region_id,
         bool add_steiner_points )
     {

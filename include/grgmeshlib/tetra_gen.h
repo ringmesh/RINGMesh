@@ -46,7 +46,7 @@ namespace GRGMesh {
     public:
         virtual ~TetraGen() {} ;
         static TetraGen_var instantiate(
-            const Tetra_method& method,
+            const TetraMethod& method,
             MixedMesh& tetmesh,
             const BoundaryModelElement* region,
             bool add_steiner_points = true,

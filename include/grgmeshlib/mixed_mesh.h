@@ -17,10 +17,15 @@
 
 #include <grgmeshlib/common.h>
 #include <grgmeshlib/mesh.h>
+#include <grgmeshlib/matrix.h>
 
 #include <vector> 
 
 namespace GRGMesh {
+
+    struct AdjInfo {
+
+    } ;
 
     /*!
      * Mesh which can handle different type of elements.
@@ -35,6 +40,7 @@ namespace GRGMesh {
         typedef AttributeManager< PYRAMID > PyramidAttributeManager ;
         typedef AttributeManager< PRISM > PrismAttributeManager ;
         typedef AttributeManager< HEXA > HexaAttributeManager ;
+        typedef SparseMatrix< AdjInfo > AdjMatrix ;
 
     public:
         MixedMesh()
@@ -290,6 +296,15 @@ namespace GRGMesh {
             return const_cast< HexaAttributeManager* >( &hexa_attribute_manager_ ) ;
         }
 
+        //      _      _  _
+        //     /_\  __| |(_)__ _ __ ___ _ _  __ _  _
+        //    / _ \/ _` || / _` / _/ -_) ' \/ _| || |
+        //   /_/ \_\__,_|/ \__,_\__\___|_||_\__|\_, |
+        //             |__/                     |__/
+        void compute_adjacencies() {
+            //todo
+        }
+
     private:
         void copy( const MixedMesh& rhs )
         {
@@ -307,6 +322,8 @@ namespace GRGMesh {
         PyramidAttributeManager pyramid_attribute_manager_ ;
         PrismAttributeManager prism_attribute_manager_ ;
         HexaAttributeManager hexa_attribute_manager_ ;
+
+        AdjMatrix adjacencies_ ;
     } ;
 
     template< class ATTRIBUTE >
