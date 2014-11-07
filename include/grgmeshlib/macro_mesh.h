@@ -58,7 +58,7 @@ namespace GRGMesh {
     class GRGMESH_API MacroMixedMesh: public MacroMesh< MixedMesh > {
     public:
         MacroMixedMesh( const BoundaryModel* model )
-            : MacroMesh( model )
+            : MacroMesh< MixedMesh >( model )
         {
         }
 
