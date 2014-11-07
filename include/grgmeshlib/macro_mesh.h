@@ -63,7 +63,7 @@ namespace GRGMesh {
         }
 
         void compute_tetmesh(
-            const Tetra_method& method,
+            const TetraMethod& method,
             int region_id = -1,
             bool add_steiner_points = true ) ;
 

@@ -72,7 +72,7 @@ namespace GRGMesh {
     const float64 small_float64 = 1e-20 ;
     const float64 epsilon = 1E-8 ;
 
-    enum Tetra_method {
+    enum TetraMethod {
         TetGen, MG_Tetra
     } ;
 
@@ -96,7 +96,6 @@ namespace GRGMesh {
         uint8 edge[12][2] ;
         uint8 edges_in_facet[6][4] ;
     } ;
-
 
     static CellDescriptor line_descriptor = {
         2,              // nb_vertices

@@ -20,7 +20,7 @@
 namespace GRGMesh {
 
     TetraGen_var TetraGen::instantiate(
-        const Tetra_method& method,
+        const TetraMethod& method,
         MixedMesh& tetmesh,
         const BoundaryModelElement* region,
         bool add_steiner_points,
