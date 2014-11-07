@@ -19,6 +19,11 @@
 
 namespace GRGMesh {
 
+    //    _____
+    //   |_   _|  _ _ __  ___ ___
+    //     | || || | '_ \/ -_|_-<
+    //     |_| \_, | .__/\___/__/
+    //         |__/|_|
     typedef unsigned char byte ;
     /** Generic pointer type */
     typedef byte* pointer ;
@@ -72,6 +77,11 @@ namespace GRGMesh {
     const float64 small_float64 = 1e-20 ;
     const float64 epsilon = 1E-8 ;
 
+    //    ___
+    //   | __|_ _ _  _ _ __  ___
+    //   | _|| ' \ || | '  \(_-<
+    //   |___|_||_\_,_|_|_|_/__/
+    //
     enum TetraMethod {
         TetGen, MG_Tetra
     } ;
@@ -87,6 +97,11 @@ namespace GRGMesh {
         HEXA    =  6
     } ;
 
+    //     ___     _ _      _               _      _
+    //    / __|___| | |  __| |___ _____ _ _(_)_ __| |_ ___ _ _ ___
+    //   | (__/ -_) | | / _` / -_|_-< _| '_| | '_ \  _/ _ \ '_(_-<
+    //    \___\___|_|_| \__,_\___/__|__|_| |_| .__/\__\___/_| /__/
+    //                                       |_|
     struct CellDescriptor {
         uint8 nb_vertices ;
         uint8 nb_facets ;
