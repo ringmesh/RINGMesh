@@ -46,6 +46,11 @@ namespace GRGMesh {
         MixedMesh( const MixedMesh& rhs ) { copy( rhs ) ; }
         MixedMesh& operator=( const MixedMesh& rhs ) { copy( rhs ) ; return *this ; }
 
+        //    _  _            _                    __
+        //   | \| |_  _ _ __ | |__  ___ _ _   ___ / _|
+        //   | .` | || | '  \| '_ \/ -_) '_| / _ \  _|
+        //   |_|\_|\_,_|_|_|_|_.__/\___|_|   \___/_|
+        //
         virtual uint32 nb_cells() const
         {
             return nb_lines() + nb_triangles() + nb_quad() + nb_tetra()
@@ -74,6 +79,11 @@ namespace GRGMesh {
             return cell_descriptor( c )->nb_vertices_in_facet[f] ;
         }
 
+        //     ___     _ _   _
+        //    / __|___| | | | |_ _  _ _ __  ___
+        //   | (__/ -_) | | |  _| || | '_ \/ -_)
+        //    \___\___|_|_|  \__|\_, | .__/\___|
+        //                       |__/|_|
         const CellDescriptor* cell_descriptor( uint32 c ) const {
             const CellDescriptor* result = cell_descriptor_[cell_type( c )] ;
             return result ;
@@ -81,6 +91,11 @@ namespace GRGMesh {
         ElementType cell_type( uint32 c, uint32& c_index = dummy_uint32 ) const ;
         uint32 global_index( const ElementType& type, const uint32 index ) const ;
 
+        //     ___     _ _    __             _                 _             _         _
+        //    / __|___| | |  / _|__ _ __ ___| |_  __ _____ _ _| |_ _____ __ (_)_ _  __| |_____ __
+        //   | (__/ -_) | | |  _/ _` / _/ -_)  _| \ V / -_) '_|  _/ -_) \ / | | ' \/ _` / -_) \ /
+        //    \___\___|_|_| |_| \__,_\__\___|\__|  \_/\___|_|  \__\___/_\_\ |_|_||_\__,_\___/_\_\
+        //
         uint32 cell_vertex_index( uint32 c, uint8 f, uint8 v ) const {
             uint32 c_index ;
             const ElementType& type = cell_type( c, c_index ) ;
@@ -108,6 +123,11 @@ namespace GRGMesh {
             return vertex_index( cells_[HEXA][c] + cell_descriptor_[HEXA]->facet[f][v] ) ;
         }
 
+        //     ___     _ _    __             _                 _
+        //    / __|___| | |  / _|__ _ __ ___| |_  __ _____ _ _| |_ _____ __
+        //   | (__/ -_) | | |  _/ _` / _/ -_)  _| \ V / -_) '_|  _/ -_) \ /
+        //    \___\___|_|_| |_| \__,_\__\___|\__|  \_/\___|_|  \__\___/_\_\
+        //
         const vec3& cell_vertex( uint32 c, uint8 f, uint8 v ) const {
             return vertex( cell_vertex_index( c, f, v ) ) ;
         }
@@ -133,6 +153,11 @@ namespace GRGMesh {
             return vertex( hexa_vertex_index( h, f, v ) ) ;
         }
 
+        //     ___     _ _               _             _         _
+        //    / __|___| | | __ _____ _ _| |_ _____ __ (_)_ _  __| |_____ __
+        //   | (__/ -_) | | \ V / -_) '_|  _/ -_) \ / | | ' \/ _` / -_) \ /
+        //    \___\___|_|_|  \_/\___|_|  \__\___/_\_\ |_|_||_\__,_\___/_\_\
+        //
         uint32 cell_vertex_index( uint32 c, uint8 v ) const
         {
             uint32 c_index ;
@@ -161,6 +186,11 @@ namespace GRGMesh {
             return vertex_index( cells_[HEXA][h] + v ) ;
         }
 
+        //     ___     _ _               _
+        //    / __|___| | | __ _____ _ _| |_ _____ __
+        //   | (__/ -_) | | \ V / -_) '_|  _/ -_) \ /
+        //    \___\___|_|_|  \_/\___|_|  \__\___/_\_\
+        //
         const vec3& cell_vertex( uint32 c, uint8 v ) const {
             return vertex( cell_vertex_index( c, v ) ) ;
         }
@@ -186,6 +216,11 @@ namespace GRGMesh {
             return vertex( hexa_vertex_index( h, v ) ) ;
         }
 
+        //     ___     _ _    __             _     _                              _
+        //    / __|___| | |  / _|__ _ __ ___| |_  | |__  __ _ _ _ _  _ __ ___ _ _| |_ ___ _ _
+        //   | (__/ -_) | | |  _/ _` / _/ -_)  _| | '_ \/ _` | '_| || / _/ -_) ' \  _/ -_) '_|
+        //    \___\___|_|_| |_| \__,_\__\___|\__| |_.__/\__,_|_|  \_, \__\___|_||_\__\___|_|
+        //                                                        |__/
         vec3 cell_facet_barycenter( uint32 c, uint8 f ) const ;
         vec3 triangle_facet_barycenter( uint32 c, uint8 f ) const ;
         vec3 quad_facet_barycenter( uint32 c, uint8 f ) const ;
@@ -194,6 +229,11 @@ namespace GRGMesh {
         vec3 prism_facet_barycenter( uint32 c, uint8 f ) const ;
         vec3 hexa_facet_barycenter( uint32 c, uint8 f ) const ;
 
+        //     ___     _ _   _                              _
+        //    / __|___| | | | |__  __ _ _ _ _  _ __ ___ _ _| |_ ___ _ _
+        //   | (__/ -_) | | | '_ \/ _` | '_| || / _/ -_) ' \  _/ -_) '_|
+        //    \___\___|_|_| |_.__/\__,_|_|  \_, \__\___|_||_\__\___|_|
+        //                                  |__/
         vec3 cell_barycenter( uint32 c ) const ;
         vec3 triangle_barycenter( uint32 c ) const ;
         vec3 quad_barycenter( uint32 c ) const ;
@@ -202,6 +242,11 @@ namespace GRGMesh {
         vec3 prism_barycenter( uint32 c ) const ;
         vec3 hexa_barycenter( uint32 c ) const ;
 
+        //    _  _                     _               _     _
+        //   | \| |___ __ _ _ _ ___ __| |_   _ __  ___(_)_ _| |_
+        //   | .` / -_) _` | '_/ -_|_-<  _| | '_ \/ _ \ | ' \  _|
+        //   |_|\_\___\__,_|_| \___/__/\__| | .__/\___/_|_||_\__|
+        //                                  |_|
         float64 get_nearest_point_in_cell( const vec3& p, uint32 c, vec3& nearest_p ) const ;
         float64 get_nearest_point_in_line( const vec3& p, uint32 c, vec3& nearest_p ) const ;
         float64 get_nearest_point_in_triangle( const vec3& p, uint32 c, vec3& nearest_p ) const ;
@@ -211,6 +256,11 @@ namespace GRGMesh {
         float64 get_nearest_point_in_prism( const vec3& p, uint32 c, vec3& nearest_p ) const ;
         float64 get_nearest_point_in_hexa( const vec3& p, uint32 c, vec3& nearest_p ) const ;
 
+        //      _  _   _       _ _         _
+        //     /_\| |_| |_ _ _(_) |__ _  _| |_ ___   _ __  __ _ _ _  __ _ __ _ ___ _ _
+        //    / _ \  _|  _| '_| | '_ \ || |  _/ -_) | '  \/ _` | ' \/ _` / _` / -_) '_|
+        //   /_/ \_\__|\__|_| |_|_.__/\_,_|\__\___| |_|_|_\__,_|_||_\__,_\__, \___|_|
+        //                                                               |___/
         LineAttributeManager* line_attribute_manager() const
         {
             return const_cast< LineAttributeManager* >( &line_attribute_manager_ ) ;
@@ -533,6 +583,11 @@ namespace GRGMesh {
         }
         virtual ~MixedMeshMutator() {}
 
+        //    ___      _   _
+        //   / __| ___| |_| |_ ___ _ _ ___
+        //   \__ \/ -_)  _|  _/ -_) '_(_-<
+        //   |___/\___|\__|\__\___|_| /__/
+        //
         void set_cell( const ElementType& type, uint32 id, uint32 index ) {
             mixed_mesh_.cells_[type][id] = index ;
         }
@@ -577,6 +632,11 @@ namespace GRGMesh {
         }
         virtual ~MixedMeshBuilder() {}
 
+        //    ___
+        //   | _ \___ ______ _ ___ _____
+        //   |   / -_|_-< -_) '_\ V / -_)
+        //   |_|_\___/__|___|_|  \_/\___|
+        //
         void reserve_cells( const ElementType& type, uint32 nb ) {
             mixed_mesh_.cells_[type].reserve( nb ) ;
         }
@@ -602,6 +662,11 @@ namespace GRGMesh {
             mixed_mesh_.cells_[HEXA].reserve( nb ) ;
         }
 
+        //    ___        _
+        //   | _ \___ __(_)______
+        //   |   / -_|_-< |_ / -_)
+        //   |_|_\___/__/_/__\___|
+        //
         void resize_cells( const ElementType& type, uint32 nb, uint32 id = dummy_uint32 ) {
             mixed_mesh_.cells_[type].resize( nb, id ) ;
         }
@@ -627,6 +692,11 @@ namespace GRGMesh {
             mixed_mesh_.cells_[HEXA].resize( nb, id ) ;
         }
 
+        //      _      _    _          _ _   _         _
+        //     /_\  __| |__| |  __ ___| | | (_)_ _  __| |_____ __
+        //    / _ \/ _` / _` | / _/ -_) | | | | ' \/ _` / -_) \ /
+        //   /_/ \_\__,_\__,_| \__\___|_|_| |_|_||_\__,_\___/_\_\
+        //
         void add_cell( const ElementType& type, uint32 index ) {
             mixed_mesh_.cells_[type].push_back( index ) ;
         }
@@ -652,6 +722,11 @@ namespace GRGMesh {
             mixed_mesh_.cells_[HEXA].push_back( index ) ;
         }
 
+        //      _      _    _          _ _
+        //     /_\  __| |__| |  __ ___| | |
+        //    / _ \/ _` / _` | / _/ -_) | |
+        //   /_/ \_\__,_\__,_| \__\___|_|_|
+        //
         uint32 add_cell( const ElementType& type ) {
             uint32 index = mixed_mesh_.vertex_indices_.size() ;
             mixed_mesh_.cells_[type].push_back( index ) ;
@@ -693,6 +768,11 @@ namespace GRGMesh {
             return index ;
         }
 
+        //    ___      _            _ _   _         _
+        //   / __| ___| |_   __ ___| | | (_)_ _  __| |_____ __
+        //   \__ \/ -_)  _| / _/ -_) | | | | ' \/ _` / -_) \ /
+        //   |___/\___|\__| \__\___|_|_| |_|_||_\__,_\___/_\_\
+        //
         void add_cell( const ElementType& type, uint32 id, uint32 index ) {
             mixed_mesh_.cells_[type][id] = index ;
         }
