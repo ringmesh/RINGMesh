@@ -36,23 +36,41 @@ namespace GRGMesh {
             vertex_indices_.clear() ;
         }
 
+        //    _  _            _                    __
+        //   | \| |_  _ _ __ | |__  ___ _ _   ___ / _|
+        //   | .` | || | '  \| '_ \/ -_) '_| / _ \  _|
+        //   |_|\_|\_,_|_|_|_|_.__/\___|_|   \___/_|
+        //
         uint32 nb_vertices() const
         {
             return vertices_.size() ;
         }
         virtual uint32 nb_cells() const = 0 ;
-
         virtual uint8 nb_vertices_in_cell( uint32 c ) const = 0 ;
         virtual uint8 nb_facets_in_cell( uint32 c ) const = 0 ;
         virtual uint8 nb_vertices_in_cell_facet( uint32 c, uint8 f ) const = 0 ;
 
+        //    ___      _            _ _   _         _
+        //   / __| ___| |_   __ ___| | | (_)_ _  __| |_____ __
+        //   \__ \/ -_)  _| / _/ -_) | | | | ' \/ _` / -_) \ /
+        //   |___/\___|\__| \__\___|_|_| |_|_||_\__,_\___/_\_\
+        //
         const vec3& vertex( uint32 v ) const { return vertices_[v] ; }
         uint32 vertex_index( uint32 i ) const { return vertex_indices_[i] ; }
 
+        //     ___     _ _   _
+        //    / __|___| | | | |_ _  _ _ __  ___
+        //   | (__/ -_) | | |  _| || | '_ \/ -_)
+        //    \___\___|_|_|  \__|\_, | .__/\___|
+        //                       |__/|_|
         virtual ElementType cell_type( uint32 c, uint32& c_index = dummy_uint32  ) const = 0 ;
         virtual const CellDescriptor* cell_descriptor( uint32 c ) const = 0 ;
 
-
+        //      _  _   _       _ _         _
+        //     /_\| |_| |_ _ _(_) |__ _  _| |_ ___   _ __  __ _ _ _  __ _ __ _ ___ _ _
+        //    / _ \  _|  _| '_| | '_ \ || |  _/ -_) | '  \/ _` | ' \/ _` / _` / -_) '_|
+        //   /_/ \_\__|\__|_| |_|_.__/\_,_|\__\___| |_|_|_\__,_|_||_\__,_\__, \___|_|
+        //                                                               |___/
         VertexAttributeManager* vertex_attribute_manager() const
         {
             return const_cast< VertexAttributeManager* >( &vertex_attribute_manager_ ) ;
@@ -131,6 +149,11 @@ namespace GRGMesh {
         }
         virtual ~MeshMutator() {}
 
+        //    ___      _   _
+        //   / __| ___| |_| |_ ___ _ _ ___
+        //   \__ \/ -_)  _|  _/ -_) '_(_-<
+        //   |___/\___|\__|\__\___|_| /__/
+        //
         void set_vertex( uint32 id, const vec3& v )
         {
             mesh_.vertices_[id] = v ;
@@ -158,34 +181,56 @@ namespace GRGMesh {
         {
         }
 
+        //    ___
+        //   | _ \___ ______ _ ___ _____
+        //   |   / -_|_-< -_) '_\ V / -_)
+        //   |_|_\___/__|___|_|  \_/\___|
+        //
         void reserve_vertices( uint32 nb )
         {
             mesh_.vertices_.reserve( nb ) ;
         }
-        void resize_vertices( uint32 nb, const vec3& v = dummy_vec3 )
-        {
-            mesh_.vertices_.resize( nb, v ) ;
-        }
-        void add_vertex( const vec3& v )
-        {
-            mesh_.vertices_.push_back( v ) ;
-        }
-        void add_vertex( uint32 id, const vec3& v )
-        {
-            mesh_.vertices_[id] = v ;
-        }
-
         void reserve_vertex_indices( uint32 nb )
         {
             mesh_.vertex_indices_.reserve( nb ) ;
+        }
+
+        //    ___        _
+        //   | _ \___ __(_)______
+        //   |   / -_|_-< |_ / -_)
+        //   |_|_\___/__/_/__\___|
+        //
+        void resize_vertices( uint32 nb, const vec3& v = dummy_vec3 )
+        {
+            mesh_.vertices_.resize( nb, v ) ;
         }
         void resize_vertex_indices( uint32 nb, uint32 id = dummy_uint32 )
         {
             mesh_.vertex_indices_.resize( nb, id ) ;
         }
+
+        //      _      _    _               _
+        //     /_\  __| |__| | __ _____ _ _| |_ _____ __
+        //    / _ \/ _` / _` | \ V / -_) '_|  _/ -_) \ /
+        //   /_/ \_\__,_\__,_|  \_/\___|_|  \__\___/_\_\
+        //
+        void add_vertex( const vec3& v )
+        {
+            mesh_.vertices_.push_back( v ) ;
+        }
         void add_vertex_index( uint32 v )
         {
             mesh_.vertex_indices_.push_back( v ) ;
+        }
+
+        //    ___      _                 _
+        //   / __| ___| |_  __ _____ _ _| |_ _____ __
+        //   \__ \/ -_)  _| \ V / -_) '_|  _/ -_) \ /
+        //   |___/\___|\__|  \_/\___|_|  \__\___/_\_\
+        //
+        void add_vertex( uint32 id, const vec3& v )
+        {
+            mesh_.vertices_[id] = v ;
         }
         void add_vertex_index( uint32 id, uint32 v )
         {
