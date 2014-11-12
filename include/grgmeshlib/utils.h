@@ -18,6 +18,7 @@
 #include <grgmeshlib/common.h>
 #include <grgmeshlib/vecn.h>
 #include <third_party/ANN/ANN.h>
+#include <algorithm>
 
 #include <iostream>
 #include <sstream>
@@ -269,7 +270,31 @@ namespace GRGMesh {
             float64 l3 = 1.0 - l1 - l2 ;
             return l1 * p1 + l2 * p2 + l3 * p3 ;
         }
-        template< class T > static bool contains(
+        template< class T >static bool check_order( std::vector< T > v1, T p1, T p2 ) {
+        	v1.resize( v1.size()+ 1 ) ;
+        	v1[ v1.size() -1 ] = v1[0] ;
+        	for( uint32 i = 0 ; i < v1.size()-1 ; i++ ){
+        		if( v1[ i ] == p1 && v1[ i + 1 ] == p2 )
+        		{
+        			return true ;
+        		}
+        		return false ;
+
+        	}
+        return false ;
+        } ;
+        template< class T > static std::vector< T > intersect(
+            const std::vector< T >& v1,
+            const  std::vector< T >& v2 )
+        {
+			std::vector< T > intersect ( v1.size() + v2.size() ) ;
+			std::vector< uint32 >::iterator it ;
+			it = std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(), intersect.begin()) ;
+			intersect.resize( it - intersect.begin() ) ;
+			return intersect ;
+        }
+
+template< class T > static bool contains(
             const std::vector< T >& v,
             const T& t )
         {

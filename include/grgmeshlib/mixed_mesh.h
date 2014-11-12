@@ -128,6 +128,15 @@ namespace GRGMesh {
         uint32 hexa_vertex_index( uint32 c, uint8 f, uint8 v ) const {
             return vertex_index( cells_[HEXA][c] + cell_descriptor_[HEXA]->facet[f][v] ) ;
         }
+        void flip_vertex( uint32 c, uint8 v1, uint8 v2 ) {
+            uint32 c_index ;
+            const ElementType& type = cell_type( c, c_index ) ;
+            uint32 new_v1 = vertex_indices_[ cells_[TRGL][c] + v2 ] ;
+            uint32 new_v2 = vertex_indices_[ cells_[TRGL][c] + v1 ] ;
+            vertex_indices_[ cells_[TRGL][c] + v1 ] = new_v1 ;
+            vertex_indices_[ cells_[TRGL][c] + v2 ] = new_v2 ;
+
+        }
 
         //     ___     _ _    __             _                 _
         //    / __|___| | |  / _|__ _ __ ___| |_  __ _____ _ _| |_ _____ __

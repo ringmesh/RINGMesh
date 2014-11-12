@@ -16,6 +16,7 @@
 #include <grgmeshlib/boundary_model_element.h>
 
 #include <iomanip>
+#include <stack>
 
 namespace GRGMesh {
 
@@ -227,21 +228,13 @@ namespace GRGMesh {
             tetmesh_builder_.add_vertex_index( 2 * index + i, line[i] - 1 ) ;
         }
     }
-
+    
     void TetraGen::set_face_marker(
-        uint32 tet1,
-        uint32 tet2,
+        uint32 tri,
         uint32 marker )
     {
-        /*
-        for( uint32 adj = 0; adj < 4; adj++ ) {
-            if( tetmesh_.adjacent( tet1, adj ) == tet2 ) {
-                tetmesh_.triangle_surface_id_[4 * tet1 + adj] = marker ;
-                return ;
-            }
-        }
-        */
-        grgmesh_assert_not_reached ;
+    	TetraAttribute< int32 > surface_id_tri( &tetmesh_, "surface_id" ) ;
+    	surface_id_tri[tri] = marker ;
     }
 
     void TetraGen::set_tetra_face_marker(
@@ -249,6 +242,8 @@ namespace GRGMesh {
         uint32 adj,
         uint32 marker )
     {
+    	TetraAttribute< intArrayTmpl < 4 > > surface_id_tet( &tetmesh_, "surface_id" ) ;
+    	surface_id_tet[tet].value(adj) = marker ;
         grgmesh_assert_not_reached
         //tetmesh_.triangle_surface_id_[4 * tet + adj] = marker ;
 
@@ -403,6 +398,7 @@ tetgenio::init( P ) ;
         if( tetgen_output_.numberofpoints == 0 ) return false ;
         uint32 nb_triangles = 0;
         uint32 nb_lines = 0;
+
 #pragma omp parallel for
         for( uint32 f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
             int32 face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
@@ -433,10 +429,16 @@ tetgenio::init( P ) ;
             }
         }
         uint32 cur_index_triangle = 0 ;
+        std::vector< uint32 > temp ;
+        temp.reserve( 8 ) ;
+        std::vector< std::vector< uint32 > > star( tetgen_output_.numberofpoints, temp ) ;
+        std::vector< uint32 > count_triangles( 10 , 0 ) ;
+
 #pragma omp parallel for
         for( uint32 f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
             int32 face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
             if( face_marker == -1 ) continue ;
+            count_triangles[face_marker*2] ++ ;
             int32 tet1 = tetgen_output_.adjtetlist[2 * f] - 1 ;
             int32 tet2 = tetgen_output_.adjtetlist[2 * f + 1] - 1 ;
             if( tet1 < 0 ){
@@ -450,7 +452,11 @@ tetgenio::init( P ) ;
                         tetgen_output_.trifacelist[3 * f + 1] - 1,
                         tetgen_output_.trifacelist[3 * f + 2] - 1 ) ) {
                     	set_triangle(cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines) ;
+                        for( uint32 i = 0; i < 3; i++ ) {
+                            star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
+                        }
                         set_tetra_face_marker( tet2, ff, face_marker ) ;
+                        set_face_marker(cur_index_triangle, face_marker) ;
                         cur_index_triangle ++ ;
                         found = true ;
                         break ;
@@ -467,8 +473,12 @@ tetgenio::init( P ) ;
                         tetgen_output_.trifacelist[3 * f] - 1,
                         tetgen_output_.trifacelist[3 * f + 1] - 1,
                         tetgen_output_.trifacelist[3 * f + 2] - 1 ) ) {
-                    	set_triangle(cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines) ;
+                    	set_triangle( cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines ) ;
+                        for( uint32 i = 0; i < 3; i++ ) {
+                            star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
+                        }
                         set_tetra_face_marker( tet1, ff, face_marker ) ;
+                        set_face_marker(cur_index_triangle, face_marker) ;
                         cur_index_triangle ++ ;
                         found = true ;
                         break ;
@@ -476,13 +486,59 @@ tetgenio::init( P ) ;
                 }
                 grgmesh_debug_assert( found ) ;
             } else {
-            	set_triangle(cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines) ;
-
-                set_face_marker( tet1, tet2, face_marker ) ;
-                set_face_marker( tet2, tet1, face_marker ) ;
+            	set_triangle( cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines ) ;
+                for( uint32 i = 0; i < 3; i++ ) {
+                    star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
+                }
+                set_face_marker( tet1, face_marker ) ;
+                set_face_marker( tet2, face_marker ) ;
                 cur_index_triangle ++ ;
             }
         }
+
+        std::vector< bool > is_triangle_visited ( false, nb_triangles ) ;
+        std::vector< uint32 > surfaces_id ;
+    	TetraAttribute< int32 > surface_id_tri( &tetmesh_, "surface_id" ) ;
+
+        for( uint32 i = 0; i < nb_triangles ;i++ ) {
+        	if ( Utils::contains( surfaces_id, static_cast< uint32 > (surface_id_tri[i] )) ) {
+        		surfaces_id.push_back( surface_id_tri[i] ) ;
+        		uint32 cur_suface_id = surface_id_tri[ i ] ;
+        		std::stack < uint32 > S ;
+        		S.push( i ) ;
+        		do {
+        			uint32 cur_triangle = S.top() ;
+        			is_triangle_visited[ cur_triangle ] = true ;
+        			S.pop() ;
+        			std::vector < uint32 > vertices_on_cur_triangle( 4, -1 ) ;
+        			for( uint8 j = 0; j < 3 ; j++ ) {
+        				vertices_on_cur_triangle[ j ] = tetmesh_.triangle_vertex_index( cur_triangle, j) ;
+        			}
+    				vertices_on_cur_triangle[ 3 ] = tetmesh_.triangle_vertex_index( cur_triangle, 3) ;
+
+    				for( uint8 j = 0 ; j < 3 ; j++) {
+    					std::vector< uint32 > intersect = Utils::intersect( star[ vertices_on_cur_triangle[ j ]], star[vertices_on_cur_triangle[ j + 1 ]] ) ;
+    					for( uint8 k = 0; k < intersect.size(); k++ ) {
+    						if ( surface_id_tri[ intersect[k] ] == cur_suface_id && !is_triangle_visited[ intersect[k] ] ) {
+    							S.push(intersect[k]) ;
+    		        			std::vector < uint32 > vertices_on_neighbor_triangle( 4, -1 ) ;
+    		        			for( uint8 l = 0; l < 3 ; l++ ) {
+    		        				vertices_on_neighbor_triangle[ l ] = tetmesh_.triangle_vertex_index( intersect[ k ], j) ;
+    		        			}
+    		        			vertices_on_neighbor_triangle[ 3 ] = tetmesh_.triangle_vertex_index( intersect[ k ], 3) ;
+
+    							if(Utils::check_order(vertices_on_neighbor_triangle, vertices_on_cur_triangle[ j ], vertices_on_cur_triangle[ j + 1 ])) {
+    								tetmesh_.flip_vertex( intersect[ k ] , 0, 1 ) ;
+    							}
+    						}
+    					}
+    				}
+        		} while(!S.empty()) ;
+
+
+        	}
+        }
+
         uint32 cur_index_line = 0 ;
 #pragma omp parallel for
         for( uint32 l = 0; l < tetgen_output_.numberofedges; l++ ) {
@@ -727,8 +783,8 @@ tetgenio::init( P ) ;
             } else if( count == 2 ) {
                 uint32 tet1 = results[0] ;
                 uint32 tet2 = results[1] ;
-                set_face_marker( tet1, tet2, tag ) ;
-                set_face_marker( tet2, tet1, tag ) ;
+                set_face_marker( tet1, tag ) ;
+                set_face_marker( tet2, tag ) ;
             }
         }
 

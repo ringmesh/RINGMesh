@@ -95,11 +95,10 @@ namespace GRGMesh {
         void set_tetra( uint32 index, int* tet, uint32 nb_lines, uint32 nb_triangles ) ;
         void set_triangle( uint32 index, int * triangle, uint32 nb_lines ) ;
         void set_line( uint32 index, int * line ) ;
-
+        void flip_vertex( uint32 tri ) { tetmesh_.flip_vertex(tri, 0, 1) ; } ;
         void set_tetra_adjacent( uint32 index, uint32 face, int32 adj ) ;
         void set_face_marker(
-            uint32 tet1,
-            uint32 tet2,
+            uint32 tri,
             uint32 marker ) ;
         void set_tetra_face_marker(
             uint32 tet,
