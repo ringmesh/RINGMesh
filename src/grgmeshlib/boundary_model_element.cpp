@@ -22,6 +22,9 @@
 #include <stack>
 #include <fstream>
 
+#define _USE_MATH_DEFINES // Otherwise M_PI not defined interfere with other math stuff ? Jeanne
+#include <math.h>
+
 namespace GRGMesh {
 
     // See http://www.geometrictools.com/LibMathematics/Distance/Distance.html

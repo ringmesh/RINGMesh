@@ -61,14 +61,15 @@ namespace GRGMesh {
         {
             return nb_lines() + nb_triangles() + nb_quad() + nb_tetra()
                 + nb_pyramids() + nb_prisms() + nb_hexa() ;
-        }
-        uint32 nb_lines() const { return std::max( uint64(0), cells_[LINE].size() ) ; }
-        uint32 nb_triangles() const { return std::max( uint64(0), cells_[TRGL].size() ) ; }
-        uint32 nb_quad() const { return std::max( uint64(0), cells_[QUAD].size() ) ; }
-        uint32 nb_tetra() const { return std::max( uint64(0), cells_[TETRA].size() ) ; }
-        uint32 nb_pyramids() const { return std::max( uint64(0), cells_[PYRAMID].size() ) ; }
-        uint32 nb_prisms() const { return std::max( uint64(0), cells_[PRISM].size() ) ; }
-        uint32 nb_hexa() const { return std::max( uint64(0), cells_[HEXA].size() ) ; }
+        } 
+        // Sans les cast ça passe pas a la compile dans VS
+        uint32 nb_lines() const { return std::max( uint64(0), (uint64) cells_[LINE].size() ) ; }
+        uint32 nb_triangles() const { return std::max( uint64(0),  (uint64) cells_[TRGL].size() ) ; }
+        uint32 nb_quad() const { return std::max( uint64(0),  (uint64) cells_[QUAD].size() ) ; }
+        uint32 nb_tetra() const { return std::max( uint64(0),  (uint64) cells_[TETRA].size() ) ; }
+        uint32 nb_pyramids() const { return std::max( uint64(0),  (uint64) cells_[PYRAMID].size() ) ; }
+        uint32 nb_prisms() const { return std::max( uint64(0),  (uint64) cells_[PRISM].size() ) ; }
+        uint32 nb_hexa() const { return std::max( uint64(0),  (uint64) cells_[HEXA].size() ) ; }
         virtual uint8 nb_vertices_in_cell( uint32 c ) const
         {
             grgmesh_debug_assert( c < nb_cells() ) ;
