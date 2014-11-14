@@ -201,7 +201,8 @@ namespace GRGMesh {
             return reinterpret_cast< ATTRIBUTE* >( store_->data( id ) ) ;
         }
 
-        AttributeStore* resolve_named_attribute_store(
+        // must be static because used in static function is_definedline 191
+        static AttributeStore* resolve_named_attribute_store(
             Manager* manager,
             const std::string& name )
         {

@@ -33,7 +33,7 @@
 
 #include <third_party/shewchuk.h>
 
-#ifdef OGF_OS_WINDOWS
+#ifdef WIN32  // OGF_WINDOWS existe pas Jeanne
 #define random rand // Ben Fix
 #endif
 
@@ -122,7 +122,7 @@
 /*****************************************************************************/
 
 // TODO: For the moment, we do it like that...
-#ifdef OGF_OS_WINDOWS
+#ifdef WIN32
 #define CPU86
 #elif !defined(OGF_OS_APPLE)
 #define LINUX

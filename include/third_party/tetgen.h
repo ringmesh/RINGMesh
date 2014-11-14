@@ -63,17 +63,22 @@
 //   symbol _MSC_VER if you are using Microsoft Visual C++. Moreover, define 
 //   the _WIN64 symbol if you are running TetGen on Win64 systems.
 
-#ifdef _MSC_VER // Microsoft Visual C++
-#  ifdef _WIN64
-     typedef __int32 intptr_t;
-     typedef unsigned __int32 uintptr_t;
-#  else // not _WIN64
-     typedef int intptr_t;
-     typedef unsigned int uintptr_t;
-#  endif
-#else // not Visual C++
-#  include <stdint.h>
-#endif
+
+// Jeanne ça je m'en fous on a stdint.h dans VS2010
+
+//#ifdef _MSC_VER // Microsoft Visual C++
+//#  ifdef _WIN64
+//     typedef __int32 intptr_t;
+//     typedef unsigned __int32 uintptr_t;
+//#  else // not _WIN64
+//     typedef int intptr_t;
+//     typedef unsigned int uintptr_t;
+//#  endif
+//#else // not Visual C++
+//#  include <stdint.h>
+//#endif
+
+# include <stdint.h>
 
 namespace GRGMesh {
 
@@ -800,12 +805,13 @@ public:
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-void exactinit(int, int, int, REAL, REAL, REAL);
-REAL orient3d(REAL *pa, REAL *pb, REAL *pc, REAL *pd);
+// void exactinit(int, int, int, REAL, REAL, REAL);
+// already declared in shewchuck.h
+/*REAL orient3d(REAL *pa, REAL *pb, REAL *pc, REAL *pd);
 REAL insphere(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe);
 REAL orient4d(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe,
               REAL ah, REAL bh, REAL ch, REAL dh, REAL eh);
-
+              */
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // tetgenmesh                                                                //

@@ -1,6 +1,31 @@
 cmake_minimum_required(VERSION 2.8)
 project(GRGMesh)
 
+
+# Macro GatherProjectFiles definition
+IF(WIN32)
+	# visual studio specific section
+	# controls inclusion of header files in solution
+	# not really pretty but working COPIED FROM GRAPHITE
+	SET(VISUAL_STUDIO_INCLUDE_HEADERS_IN_SOLUTION TRUE)
+	# list of extensions added to the header folder
+	SET(VISUAL_STUDIO_INCLUDE_HEADERS_EXTENSIONS_LIST *.h *.hpp *.hxx *.inl)	
+	IF(VISUAL_STUDIO_INCLUDE_HEADERS_IN_SOLUTION)
+		MACRO ( GatherProjectFiles ProjectName ProjectDir ProjectSources )		 
+			# get the file lists
+			SET ( Dir ${CMAKE_HOME_DIRECTORY}/${ProjectDir} )			
+			FOREACH(var ${VISUAL_STUDIO_INCLUDE_HEADERS_EXTENSIONS_LIST})
+				LIST(APPEND VS_EXTLIST_INCLUSION ${Dir}/${var})
+			ENDFOREACH(var)
+			FILE ( GLOB_RECURSE DirSources ${VS_EXTLIST_INCLUSION})			
+		   SET ( "${ProjectSources}" ${DirSources} )
+		ENDMACRO ( GatherProjectFiles )		
+	ELSE(VISUAL_STUDIO_INCLUDE_HEADERS_IN_SOLUTION)	
+		MACRO ( GatherProjectFiles ProjectName ProjectDir ProjectSources )
+		ENDMACRO ( GatherProjectFiles )		
+	ENDIF(VISUAL_STUDIO_INCLUDE_HEADERS_IN_SOLUTION)
+ENDIF(WIN32)
+
 IF (EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
    MESSAGE(INFO: "Using local options file: " .${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
    INCLUDE(${CMAKE_SOURCE_DIR}/CMakeOptions.txt)

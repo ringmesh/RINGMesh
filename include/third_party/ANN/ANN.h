@@ -73,7 +73,7 @@
   // being imported from a DLL, wheras this DLL sees symbols defined with
   // this macro as being exported.
   //----------------------------------------------------------------------
-  #ifdef DLL_EXPORTS
+  #ifndef  GRGMESH_STATIC // DLL_EXPORTS // Jeanne // Parce que DLL_EXPORTS pas défini
 	 #define ANN_API __declspec(dllexport)
   #else
 	#define ANN_API __declspec(dllimport)
