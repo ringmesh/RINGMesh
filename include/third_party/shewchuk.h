@@ -2,7 +2,7 @@
 #ifndef __GRGMESH_SHEWCHUK__
 #define __GRGMESH_SHEWCHUK__
 
-#include <grgmeshlib/common.h>
+#include <grgmesh/common.h>
 
 #ifdef SINGLE
 #define REAL float

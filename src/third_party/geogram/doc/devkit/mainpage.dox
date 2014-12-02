@@ -1,0 +1,193 @@
+/*
+ *  Copyright (c) 2012-2014, Bruno Levy
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *  this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *  this list of conditions and the following disclaimer in the documentation
+ *  and/or other materials provided with the distribution.
+ *  * Neither the name of the ALICE Project-Team nor the names of its
+ *  contributors may be used to endorse or promote products derived from this
+ *  software without specific prior written permission.
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  If you modify this software, you should include a notice giving the
+ *  name of the person performing the modification, the date of modification,
+ *  and the reason for such modification.
+ *
+ *  Contact: Bruno Levy
+ *
+ *     Bruno.Levy@inria.fr
+ *     http://www.loria.fr/~levy
+ *
+ *     ALICE Project
+ *     LORIA, INRIA Lorraine, 
+ *     Campus Scientifique, BP 239
+ *     54506 VANDOEUVRE LES NANCY CEDEX 
+ *     FRANCE
+ *
+ */
+
+namespace GEO {
+
+/**
+
+\mainpage
+
+Geogram is a programming library of geometric algorithms. It includes
+a simple yet efficient Mesh data structure (for surfacic and
+volumetric meshes), exact computer arithmetics (a-la Shewchuck,
+implemented in GEO::expansion), a predicate code generator (PCK: Predicate Construction Kit),
+standard geometric
+predicates (orient/insphere), Delaunay triangulation, Voronoi diagram,
+spatial search data structures, spatial sorting) and less standard
+ones (more general geometric predicates, intersection between a 
+Voronoi diagram and a triangular 
+or tetrahedral mesh embedded in n dimensions).  The latter is used by
+FWD/WarpDrive, the first algorithm that computes semi-discrete Optimal
+Transport in 3d that scales up to 1 million Dirac masses.
+
+
+Compiling
+=========
+
+Geogram is tested under Linux (32 and 64 bits) and Windows (32 and 64 bits).
+You will need CMake (version >= 2.8.11). There is no other dependancy (everything
+that you need is shipped with Geogram). Follow the Linux or Windows instructions below.
+This will generate example files in the bin/ directory. Some parameters can be fine-tuned
+by renaming CMakeOptions.txt.sample as CMakeOptions.txt, modifying it and re-running CMake.
+
+Linux
+-----
+- run configure.sh
+- cd build/Linux64-gcc-Release
+- make
+
+Windows
+-------
+- run configure.bat
+- open the DSW file in the build/ directory
+
+Example programs
+----------------
+The options for all example programs can be queried using <program_name> -h or <program_name> /?
+
+- vorpaview: a simple mesh viewer
+- medit (by Pascal Frey, LJLL): another mesh viewer, included in the Geogram distribution
+- vorpastat: measures the Hausdorff distance between two meshes 
+- compute_delaunay: computes 3D Delaunay triangulation
+- compute_RVD: computes the intersection between a Voronoi diagram and
+    a surfacic or volumetric simplicial set
+
+- compute_OTM: computes semi-discrete optimal transport map in 3D,
+   The algorithm is described in the following references:
+   1. 3D algorithm: http://arxiv.org/abs/1409.1279
+   2. Earlier 2D version by Quentin M\'erigot: 
+    Q. Merigot. A multiscale approach to optimal transport.
+    Computer Graphics Forum 30 (5) 1583--1592, 2011 (Proc SGP 2011).
+   3. Earlier theoretical article on OT and power diagrams: 
+    F. Aurenhammer, F. Hoffmann, and B. Aronov. Minkowski-type theorems 
+    and least-squares clustering. Algorithmica, 20:61-76, 1998.
+
+Third-Party
+-----------
+
+Geogram uses the following softwares:
+- ANN: KdTree (David Mount)
+- Exact predicates (Jonathan Shewchuk)
+- FPG: Predicate filter generator (Andreas Meyer and Sylvain Pion)
+- HLBFGS:  Numerical optimization (Yang Liu)
+- LM6: .mesh file format I/O (Loic Marechal)
+- RPLY: .ply file format I/O (Diego Nehab)
+- TETGEN: constrained Delaunay triangulation (Hang Si)
+
+
+Design
+------
+
+Geogram is designed with the following principles in mind (some of them
+borrowed from the "Futurist Programmer" manifesto and programming notes, 
+see http://www.graficaobscura.com/future/index.html and 
+http://www.graficaobscura.com/future/futnotes.html):
+- Make it as simple as possible (but not simpler)
+- Make it as easy to use as possible
+- Make it as easy to compile as possible
+- Maximize speed
+- Minimize memory consumption
+- Minimize number of lines of code
+- Minimize number of C++ classes
+- Systematically document all classes, all functions and all parameters
+- Systematically document the implementation of all algorithms, with
+ relevant bibliographic references when applicable
+- Assertion checks everywhere
+- Zero warnings with all compilers / platforms / maximum level of
+ warnings activated
+- Perform systematic non-regression testing and memory checking, using
+ a continuous integration platform (Jenkins)
+
+The algorithms implemented in Geogram are specialized and tuned for most common
+uses. Users interested in  generic / extensible / configurable 
+implementations of these algorithms may use CGAL instead (http://www.cgal.org).
+
+
+Main Classes
+============
+
+- Mesh
+  - GEO::Mesh 
+  - GEO::MeshBuilder
+  - GEO::mesh_load()
+  - GEO::mesh_save()
+- Geometry processing
+  - GEO::compute_normals()
+  - GEO::simple_Laplacian_smooth()
+  - GEO::get_bbox()
+  - GEO::mesh_repair()
+  - GEO::remove_degree3_vertices()
+  - GEO::remove_small_facets()
+  - GEO::remove_small_connected_components()
+  - GEO::orient_normals()
+  - GEO::expand_border()
+  - GEO::get_connected_components()
+- Computational geometry
+  - GEO::Delaunay, GEO::Delaunay3d
+  - GEO::CentroidalVoronoiTesselation
+  - GEO::RestrictedVoronoiDiagram
+  - GEO::NearestNeighborSearch, GEO::KdTree
+  - GEO::MeshFacetsAABB
+
+Internals
+=========
+
+- Numerics
+  - Numerical analysis: GEO::Optimizer
+  - Computer arithmetics: GEO::expansion, GEO::expansion_nt
+- System
+  - Processes: GEO::Process, GEO::parallel_for()
+  - Command line and logging: GEO::Logger, GEO::CmdLine, GEO::ProgressTask
+  - Types: GEO::Memory
+  - Files: GEO::FileSystem, GEO::LineInput  
+  - Time: GEO::Stopwatch
+- Generic internal implementation of geometric algorithms 
+  - Implementation of Restricted Voronoi Diagram: GEOGen::RestrictedVoronoiDiagram
+  - Implementation of volumetric convex clipping: GEOGen::ConvexCell  
+  - Implementation of surfacic convex clipping: GEOGen::Polygon
+
+*/
+
+}
