@@ -13,7 +13,9 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "tetgen.h"
+#include <third_party/tetgen.h>
+#include <third_party/shewchuk.h>
+
 
 namespace GRGMesh {
 
@@ -30859,9 +30861,9 @@ void tetrahedralize(tetgenbehavior *b, tetgenio *in, tetgenio *out,
   m.initializepools();
   m.transfernodes();
 
-  exactinit(b->verbose, b->noexact, b->nostaticfilter,
-            m.xmax - m.xmin, m.ymax - m.ymin, m.zmax - m.zmin);
-
+  //exactinit(b->verbose, b->noexact, b->nostaticfilter,
+    //        m.xmax - m.xmin, m.ymax - m.ymin, m.zmax - m.zmin);
+  exactinit() ;
   tv[1] = clock();
 
   if (b->refine) { // -r
