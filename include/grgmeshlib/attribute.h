@@ -27,9 +27,9 @@ namespace GRGMesh {
 
     class AttributeStore: public Counted {
     public:
-        pointer data( uint32 id) const
+        byte* data( uint32 id)
         {
-            return data_[id * item_size_] ;
+            return &data_[id * item_size_] ;
         }
         virtual const std::type_info& attribute_type_id() const = 0 ;
         uint32 size() const { return data_.size() / item_size_ ; }
@@ -41,7 +41,8 @@ namespace GRGMesh {
         }
     protected:
         uint32 item_size_ ;
-        std::vector< pointer > data_ ;
+        std::vector< byte > data_ ;
+
     } ;
 
     typedef SmartPointer< AttributeStore > AttributeStore_var ;

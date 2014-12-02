@@ -665,6 +665,11 @@ namespace GRGMesh {
                 offset++ ;
             }
         }
+
+        std::ofstream ind2( "ind3" ) ;
+        for( unsigned int p = 0; p < indices_.size(); p++ ) {
+            ind2 << indices_[p] << std::endl ;
+        }
     }
 
     void MakeUnique::unique( int32 nb_neighbors )
@@ -673,13 +678,15 @@ namespace GRGMesh {
         for( uint32 i = 0; i < indices_.size(); i++ ) {
             if( indices_[i] != i ) continue ;
             std::vector< uint32 > results ;
-            if( ann.get_colocated( points_[i], results, nb_neighbors ) ) {
-                uint32 id = *std::min_element( results.begin(),
-                    results.end() ) ;
-                for( uint32 j = 0; j < results.size(); j++ ) {
-                    if( id == results[j] ) continue ;
-                    indices_[results[j]] = id ;
-                }
+            int32 cur_neighbor = 0 ;
+            do {
+                cur_neighbor += nb_neighbors ;
+                ann.get_colocated( points_[i], results, cur_neighbor ) ;
+            } while( results.size() == cur_neighbor ) ;
+            uint32 id = *std::min_element( results.begin(), results.end() ) ;
+            for( uint32 j = 0; j < results.size(); j++ ) {
+                if( id == results[j] ) continue ;
+                indices_[results[j]] = id ;
             }
         }
         int32 offset = 0 ;
@@ -690,6 +697,11 @@ namespace GRGMesh {
             } else {
                 indices_[i] -= offset ;
             }
+        }
+
+        std::ofstream ind2( "ind2" ) ;
+        for( unsigned int p = 0; p < indices_.size(); p++ ) {
+            ind2 << indices_[p] << std::endl ;
         }
     }
     void MakeUnique::add_edges( const std::vector< Edge >& points ) {
@@ -780,6 +792,17 @@ namespace GRGMesh {
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
         for( uint32 i = 0; i < nb_vertices; i++ ) {
             std::copy( vertices[i].data(), vertices[i].data() + 3, &ann_points_[i][0] ) ;
+        }
+        ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
+    }
+
+    ColocaterANN::ColocaterANN( float64* vertices, uint32 nb_vertices )
+    {
+        ann_points_ = annAllocPts( nb_vertices, 3 ) ;
+        for( uint32 i = 0; i < nb_vertices; i++ ) {
+            ann_points_[i][0] = vertices[3*i  ] ;
+            ann_points_[i][1] = vertices[3*i+1] ;
+            ann_points_[i][2] = vertices[3*i+2] ;
         }
         ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
     }
