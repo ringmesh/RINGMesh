@@ -7,16 +7,66 @@ else
    echo "cmake not found, please install it (see http://www.cmake.org/)" 
    exit
 fi
-os=`uname`
+
+
+os="$1"
+if [ -z "$os" ]; then
+    os=`uname -a`
+    case "$os" in
+        Linux*x86_64*)
+            os=Linux64-gcc
+            ;;
+        Linux*amd64*)
+            os=Linux64-gcc
+            ;;
+        Linux*i586*|Linux*i686*)
+            os=Linux32-gcc
+            ;;
+        *)
+            echo "Error: OS not supported: $os"
+            exit 1
+            ;;
+    esac
+fi
+
+#  Import plaform specific environment
+
+. src/third_party/geogram/cmake/platforms/$os/setvars.sh || exit 1
+
+# Generate the Makefiles
+
+echo ================== GeoGram ====================
+
 for config in Release Debug
 do
+   platform=$os-$config
    echo
-   echo ============= Creating makefiles for $config mode ============
-   mkdir -p build/$os-$config
-   (cd build/$os-$config; cmake ../../ -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config)
+   echo ============= Creating makefiles for $platform ============
+   build_dir=build/geogram/$platform
+
+   mkdir -p $build_dir
+   (cd $build_dir; cmake -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; cmake --build .)
+done
+echo
+echo ============== GeoGram build configured ==================
+
+
+
+echo ================== GRGMesh ====================
+
+for config in Release Debug
+do
+   platform=$os-$config
+   echo
+   echo ============= Creating makefiles for $platform ============
+   build_dir=build/grgmesh/$platform
+
+   mkdir -p $build_dir
+   (cd $build_dir; cmake -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config ../../../)
 done
 echo
 echo ============== GRGMesh build configured ==================
+
 cat << EOF
 to build:
   go to build/$os-Release or build/$os-Debug
