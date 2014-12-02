@@ -295,10 +295,10 @@ namespace GRGMesh {
             float64* nearest_point,
             float64& sq_dist ) const
         {
-            vec3 nearest( nearest_point ) ;
+            vec3 nearest ;
             vec3 query( p ) ;
             uint32 nearest_t = nearest_facet( query, nearest, sq_dist ) ;
-            nearest_point = nearest.data() ;
+            std::copy( nearest.data(), nearest.data() + 3, nearest_point ) ;
             return nearest_t ;
 
         }
