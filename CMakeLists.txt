@@ -38,7 +38,7 @@ ELSE(WIN32)
         # commented-out for now, since it causes problems when linking with
         # C++ libraries that are not compiled with this flag (changes the
         # size/definition of STL objects)
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_DEBUG")
+       # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_DEBUG")
 	ENDIF(CMAKE_BUILD_TYPE MATCHES "Debug")
 ENDIF(WIN32)
 
