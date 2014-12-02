@@ -1165,6 +1165,7 @@ namespace GRGMesh {
             SurfacePart& surface = model_->surface_parts_[s] ;
             for( uint32 p = 0; p < surface.nb_vertices(); p++ ) {
                 surface.points_[p] = indices[surface.points_[p]] ;
+
             }
         }
         for( uint32 c = 0; c < model_->nb_contact_parts(); c++ ) {

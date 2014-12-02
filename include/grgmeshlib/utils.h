@@ -23,6 +23,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <fstream>
 
 namespace GRGMesh {
 
@@ -209,7 +210,7 @@ namespace GRGMesh {
             vec3 maximum = max() ;
             for( uint32 c = 0; c < 3; ++c ) {
                 float64 d = p[c] - 0.5 * ( minimum[c] + maximum[c] ) ;
-                result += std::sqrt( d ) ;
+                result += sqr( d ) ;
             }
             return result ;
         }
@@ -794,6 +795,7 @@ template< class T > static bool contains(
         ColocaterANN( const MixedMesh& mesh ) ;
         ColocaterANN( const MixedMesh& mesh, bool use_surface_id ) ;
         ColocaterANN( const std::vector< vec3 >& vertices ) ;
+        ColocaterANN( float64* vertices, uint32 nb_vertices ) ;
         ColocaterANN( const std::vector< Edge >& edges ) ;
 
         ~ColocaterANN()
