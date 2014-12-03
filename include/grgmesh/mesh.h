@@ -17,7 +17,7 @@
 
 #include <grgmesh/attribute.h>
 #include <grgmesh/common.h>
-#include <grgmesh/vecn.h>
+
 #include <vector>
 #include <map>
 

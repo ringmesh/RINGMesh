@@ -27,13 +27,6 @@ namespace GRGMesh {
         const std::string& file,
         int line ) ;
 
-    void GRGMESH_API grgmesh_range_assertion_failed(
-        double value,
-        double min_value,
-        double max_value,
-        const std::string& file,
-        int line ) ;
-
     void GRGMESH_API grgmesh_should_not_have_reached(
         const std::string& file,
         int line ) ;
@@ -41,24 +34,12 @@ namespace GRGMesh {
 }
 
 
-// Three levels of assert:
-// use grgmesh_assert() and grgmesh_range_assert()               for non-expensive asserts
-// use grgmesh_debug_assert() and grgmesh_debug_range_assert()   for expensive asserts
-// use grgmesh_parano_assert() and grgmesh_parano_range_assert() for very exensive asserts
-
 #define grgmesh_assert(x) {                                        \
     if(!(x)) {                                                 \
         ::GRGMesh::grgmesh_assertion_failed(#x,__FILE__, __LINE__) ;   \
     }                                                          \
 } 
 
-#define grgmesh_range_assert(x,min_val,max_val) {                  \
-    if(((x) < (min_val)) || ((x) > (max_val))) {               \
-        ::GRGMesh::grgmesh_range_assertion_failed(x, min_val, max_val, \
-            __FILE__, __LINE__                                 \
-        ) ;                                                    \
-    }                                                          \
-}
 
 #define grgmesh_assert_not_reached {                               \
     ::GRGMesh::grgmesh_should_not_have_reached(__FILE__, __LINE__) ;   \
@@ -66,18 +47,8 @@ namespace GRGMesh {
 
 #ifdef GRGMESH_DEBUG
 #define grgmesh_debug_assert(x) grgmesh_assert(x)
-#define grgmesh_debug_range_assert(x,min_val,max_val) grgmesh_range_assert(x,min_val,max_val)
 #else
 #define grgmesh_debug_assert(x)
-#define grgmesh_debug_range_assert(x,min_val,max_val)
-#endif
-
-#ifdef GRGMESH_PARANOID
-#define grgmesh_parano_assert(x) grgmesh_assert(x)
-#define grgmesh_parano_range_assert(x,min_val,max_val) grgmesh_range_assert(x,min_val,max_val)
-#else
-#define grgmesh_parano_assert(x)
-#define grgmesh_parano_range_assert(x,min_val,max_val)
 #endif
 
 #endif

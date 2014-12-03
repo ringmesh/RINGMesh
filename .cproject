@@ -26,6 +26,7 @@
 								<option id="gnu.cpp.compiler.option.include.paths.791559926" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-1.1/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.195942933" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -78,6 +79,7 @@
 								<option id="gnu.cpp.compiler.option.include.paths.532620665" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-1.1/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.689726032" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

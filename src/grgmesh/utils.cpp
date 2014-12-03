@@ -647,10 +647,9 @@ namespace GRGMesh {
         vec3& nearest_p )
     {
         bool inside = point_segment_projection( p, p0, p1, nearest_p ) ;
-        float64 distance = length( p, nearest_p ) ;
+        float64 distance = length( p - nearest_p ) ;
         return inside ? -distance : distance ;
     }
-
 
     void MakeUnique::unique_points( std::vector< vec3 >& results ) const
     {

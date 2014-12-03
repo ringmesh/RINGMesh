@@ -45,7 +45,7 @@ do
    build_dir=build/geogram/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; cmake -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; cmake --build .)
+   (cd $build_dir; cmake -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; cmake --build .)
 done
 echo
 echo ============== GeoGram build configured ==================
@@ -62,7 +62,7 @@ do
    build_dir=build/grgmesh/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; cmake -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config ../../../)
+   (cd $build_dir; cmake -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DGEOGRAM_PLATFORM:STRING=$platform ../../../)
 done
 echo
 echo ============== GRGMesh build configured ==================

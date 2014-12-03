@@ -18,7 +18,8 @@
 #define __GRGMESH_BOUNDARY_MODEL_ELEMENT__
 
 #include <grgmesh/common.h>
-#include <grgmesh/vecn.h>
+#include <grgmesh/utils.h>
+
 #include <vector> 
 #include <map>
 #include <string>
