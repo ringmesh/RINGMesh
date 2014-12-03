@@ -5,3 +5,5 @@ syntax: regexp
 ^CMakeOptions\.txt$
 syntax: regexp
 ^doc/html$
+syntax: regexp
+^src/third_party/geogram/CMakeOptions\.txt$
