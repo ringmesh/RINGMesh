@@ -20,7 +20,7 @@
 #include <grgmesh/smart_pointer.h>
 #include <grgmesh/utils.h>
 
-#include <third_party/tetgen.h>
+#include <geogram/third_party/tetgen/tetgen.h>
 
 #include <vector>
 
