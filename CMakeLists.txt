@@ -51,7 +51,11 @@ INCLUDE_DIRECTORIES(include/third_party)
 
 # Geogram
 INCLUDE_DIRECTORIES(src/third_party/geogram/src/lib)
-link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}/lib)
+IF(WIN32)
+    link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}/lib/${CMAKE_BUILD_TYPE})
+ELSE(WIN32)
+    link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
+ENDIF(WIN32)
 
 # MG-Tetra
 IF(NOT DEFINED USE_MG_TETRA)
