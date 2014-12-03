@@ -124,4 +124,11 @@ IF(USE_MG_TETRA)
   TARGET_LINK_LIBRARIES(GRGMesh meshgems mg-tetra)
 ENDIF(USE_MG_TETRA)
 
-target_link_libraries(GRGMesh geogram)
+SET(LIB_GeoGram geogram)
+if(UNIX)
+    SET(LIB_GeoGram -Wl,-whole-archive -lgeogram -Wl,-no-whole-archive)
+ENDIF(UNIX)
+target_link_libraries(GRGMesh ${LIB_GeoGram})
+
+#add_executable(test src/main.cpp)
+#target_link_libraries(test ${CMAKE_SOURCE_DIR}/build/geogram/Linux64-gcc-Debug/lib/libgeogram.a)

@@ -14,7 +14,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <third_party/tetgen.h>
-#include <third_party/shewchuk.h>
+#include <geogram/third_party/shewchuk/shewchuk.h>
 
 
 namespace GRGMesh {
