@@ -386,7 +386,7 @@ tetgenio::init( P ) ;
     {
         tetgen_output_.deinitialize() ;
         try {
-            GRGMesh::tetrahedralize( &tetgen_args_, &tetgen_input_, &tetgen_output_,
+            ::tetrahedralize( &tetgen_args_, &tetgen_input_, &tetgen_output_,
                 nil, &tetgen_background_ ) ;
         } catch( ... ) {
             std::cerr << "Encountered a problem..."
