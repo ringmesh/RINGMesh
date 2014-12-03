@@ -71,11 +71,11 @@ echo.
 echo ============= Checking for Visual Studio ============
 echo.
 
-call "src\third_party\geogram\cmake\platforms\%opsys%\setvars.bat" || exit /B 1
 
+call "src\third_party\geogram\cmake\platforms\%opsys%\setvars.bat" 
 
-echo Using cmake generator %CMAKE_VS_GENERATOR%
-set cmake_generator_options=-G "%CMAKE_VS_GENERATOR%"
+echo Using cmake generator %GENERATOR%
+set cmake_generator_options=-G %GENERATOR%
 
 if "%CMAKE_VS_GENERATOR_TOOLSET%" neq "" (
     echo Using cmake generator toolset %CMAKE_VS_GENERATOR_TOOLSET%
@@ -100,12 +100,12 @@ if not exist build\geogram\%opsys% (
     mkdir build\geogram\%opsys%
 )
 
-pushd build\geogram\%opsys%
-%CMAKE_EXECUTABLE% ..\..\..\src\third_party\geogram %cmake_debug_options% %cmake_generator_options% -DVORPALINE_PLATFORM:STRING=%opsys% || exit /B 1
-%CMAKE_EXECUTABLE% --build . --config=Release
-%CMAKE_EXECUTABLE% --build . --config=Debug
-popd
+cd build\geogram\%opsys%
+%CMAKE_EXECUTABLE% ..\..\..\src\third_party\geogram %cmake_debug_options% %cmake_generator_options% -DVORPALINE_PLATFORM:STRING=%opsys%
+%CMAKE_EXECUTABLE% --build . --config Release
+%CMAKE_EXECUTABLE% --build . --config Debug
 
+cd %~dp0
 
 :: Generate build tree
 
@@ -123,9 +123,10 @@ if not exist build\grgmesh\%opsys% (
     mkdir build\grgmesh\%opsys%
 )
 
-pushd build\grgmesh\%opsys%
-%CMAKE_EXECUTABLE% ..\..\.. %cmake_debug_options% %cmake_generator_options% || exit /B 1
-popd
+cd build\grgmesh\%opsys%
+%CMAKE_EXECUTABLE% ..\..\.. %cmake_debug_options% %cmake_generator_options%
+
+cd %~dp0
 
 
 
@@ -144,6 +145,5 @@ echo.
 :: Clear globals
 
 set opsys=
-exit /B 0
 
 pause
