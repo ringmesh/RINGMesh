@@ -17,6 +17,8 @@
 
 #include <grgmesh/common.h>
 
+#include <geogram/basic/geometry.h>
+
 namespace GRGMesh {
 
     //    _____
@@ -76,6 +78,9 @@ namespace GRGMesh {
     const float64 big_float64 = 1e20 ;
     const float64 small_float64 = 1e-20 ;
     const float64 epsilon = 1E-8 ;
+
+    typedef GEO::vec3 vec3 ;
+    static vec3 dummy_vec3 ;
 
     //    ___
     //   | __|_ _ _  _ _ __  ___

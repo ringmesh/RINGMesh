@@ -1,9 +1,6 @@
 #   Rename this file as CMakeOptions.txt and re-run CMake to
 # take changes into account.
 
-# Activate paranoid assert
-# SET(PARANOID_DEGUG TRUE)
-
 # Compile static library (default is shared)
 # SET(GRGMESH_STATIC TRUE)
 

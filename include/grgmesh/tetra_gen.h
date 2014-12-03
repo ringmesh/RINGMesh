@@ -19,7 +19,7 @@
 #include <grgmesh/mixed_mesh.h>
 #include <grgmesh/smart_pointer.h>
 #include <grgmesh/utils.h>
-#include <grgmesh/vecn.h>
+
 #include <third_party/tetgen.h>
 
 #include <vector>

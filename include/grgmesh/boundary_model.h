@@ -19,7 +19,7 @@
 
 #include <grgmesh/boundary_model_element.h>
 #include <grgmesh/common.h>
-#include <grgmesh/vecn.h>
+
 #include <vector> 
 #include <string>
 

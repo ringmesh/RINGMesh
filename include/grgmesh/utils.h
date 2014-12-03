@@ -16,7 +16,7 @@
 #define __GRGMESH_UTILS__
 
 #include <grgmesh/common.h>
-#include <grgmesh/vecn.h>
+
 #include <third_party/ANN/ANN.h>
 #include <algorithm>
 
@@ -34,6 +34,15 @@ namespace GRGMesh {
 }
 
 namespace GRGMesh {
+
+    static bool operator==( const vec3& u, const vec3& v ) {
+        return u.x == v.x && u.y == v.y && u.z == v.z ;
+    }
+
+    static bool operator!=( const vec3& u, const vec3& v ) {
+        return u.x != v.x || u.y != v.y || u.z != v.z ;
+    }
+
     enum Sign {
         NEGATIVE = -1, ZERO = 0, POSITIVE = 1
     } ;

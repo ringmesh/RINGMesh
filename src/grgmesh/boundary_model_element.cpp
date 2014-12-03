@@ -1014,14 +1014,14 @@ namespace GRGMesh {
 
             float64 distance_pt_2_segment  = big_float64 ;
             vec3 c = (p1-p0)/2 ;        
-            float64 half = length( p1, c ) ;
+            float64 half = length( c - p1 ) ;
             float64 cp_dot_p0p1 = dot( p-c, p1-p0 ) ;
 
-            if( cp_dot_p0p1 < -half ) distance_pt_2_segment =  length( p0, p ) ;
-            else if( cp_dot_p0p1 > half ) distance_pt_2_segment = length( p1, p ) ;
+            if( cp_dot_p0p1 < -half ) distance_pt_2_segment =  length( p - p0 ) ;
+            else if( cp_dot_p0p1 > half ) distance_pt_2_segment = length( p - p1 ) ;
             else {
                 vec3 projection = c + cp_dot_p0p1*(p1-p0) ;
-                distance_pt_2_segment = length( projection, p ) ;
+                distance_pt_2_segment = length( p - projection ) ;
             }    
             result = std::min( distance_pt_2_segment, result ) ;
         }
@@ -1032,14 +1032,14 @@ namespace GRGMesh {
 
             float64 distance_pt_2_segment  = big_float64 ;
             vec3 c = (p1-p0)/2 ;        
-            float64 half = length( p1, c ) ;
+            float64 half = length( c - p1 ) ;
             float64 cp_dot_p0p1 = dot( p-c, p1-p0 ) ;
 
-            if( cp_dot_p0p1 < -half ) distance_pt_2_segment =  length( p0, p ) ;
-            else if( cp_dot_p0p1 > half ) distance_pt_2_segment = length( p1, p ) ;
+            if( cp_dot_p0p1 < -half ) distance_pt_2_segment =  length( p - p0 ) ;
+            else if( cp_dot_p0p1 > half ) distance_pt_2_segment = length( p - p1 ) ;
             else {
                 vec3 projection = c + cp_dot_p0p1*(p1-p0) ;
-                distance_pt_2_segment = length( projection, p ) ;
+                distance_pt_2_segment = length( p - projection ) ;
             }    
             result = std::min( distance_pt_2_segment, result ) ;
         }
