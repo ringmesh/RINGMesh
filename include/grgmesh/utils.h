@@ -17,10 +17,9 @@
 
 #include <grgmesh/common.h>
 
-//#include <third_party/ANN/ANN.h>
 #include <geogram/third_party/ANN/ANN.h>
-#include <algorithm>
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <vector>
