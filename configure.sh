@@ -35,6 +35,7 @@ fi
 
 # Generate the Makefiles
 
+echo
 echo ================== GeoGram ====================
 
 for config in Release Debug
@@ -49,9 +50,10 @@ do
 done
 echo
 echo ============== GeoGram build configured ==================
+echo
 
 
-
+echo
 echo ================== GRGMesh ====================
 
 for config in Release Debug
@@ -62,7 +64,7 @@ do
    build_dir=build/grgmesh/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; cmake -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DGEOGRAM_PLATFORM:STRING=$platform ../../../)
+   (cd $build_dir; cmake -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DGEOGRAM_PLATFORM:STRING=$os ../../../)
 done
 echo
 echo ============== GRGMesh build configured ==================

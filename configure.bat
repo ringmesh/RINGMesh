@@ -124,7 +124,8 @@ if not exist build\grgmesh\%opsys% (
 )
 
 cd build\grgmesh\%opsys%
-%CMAKE_EXECUTABLE% ..\..\.. %cmake_debug_options% %cmake_generator_options%
+%CMAKE_EXECUTABLE% ..\..\.. %cmake_debug_options% %cmake_generator_options% -DGEOGRAM_PLATFORM:STRING=%opsys%
+
 
 cd %~dp0
 
