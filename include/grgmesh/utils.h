@@ -17,7 +17,8 @@
 
 #include <grgmesh/common.h>
 
-#include <third_party/ANN/ANN.h>
+//#include <third_party/ANN/ANN.h>
+#include <geogram/third_party/ANN/ANN.h>
 #include <algorithm>
 
 #include <iostream>
@@ -817,19 +818,19 @@ template< class T > static bool contains(
         void get_mapped_colocated(
             vec3& v,
             std::vector< uint32 >& result,
-            int32 nb_neighbors = 2 ) const ;
+            int32 nb_neighbors = 2 ) ;
 
         bool get_colocated(
             const vec3& v,
             std::vector< uint32 >& result,
-            int32 nb_neighbors = 2 ) const
+            int32 nb_neighbors = 2 )
         {
             return get_colocated( const_cast< vec3& >( v ), result, nb_neighbors ) ;
         }
         bool get_colocated(
             vec3& v,
             std::vector< uint32 >& result,
-            int32 nb_neighbors = 2 ) const ;
+            int32 nb_neighbors = 2 ) ;
         void get_neighbors(
             const float64* v,
             std::vector< int32 >& result,
@@ -849,7 +850,7 @@ template< class T > static bool contains(
             std::vector< int >& result,
             int nb_neighbors = 2 ) const ;
 
-        vec3 point( int32 i ) const
+        vec3 point( int32 i )
         {
             return vec3( ann_points_[i] ) ;
         }

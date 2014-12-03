@@ -15,7 +15,8 @@
 #include <grgmesh/boundary_model_element.h>
 #include <grgmesh/mixed_mesh.h>
 #include <grgmesh/utils.h>
-#include <third_party/shewchuk.h>
+
+#include <geogram/third_party/shewchuk/shewchuk.h>
 
 #include <iostream>
 #include <sstream>
@@ -733,7 +734,7 @@ namespace GRGMesh {
             std::copy( mesh.vertex( i ).data(), mesh.vertex( i ).data() + 3,
                 &ann_points_[i][0] ) ;
         }
-        ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
+        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
     }
 
     ColocaterANN::ColocaterANN( const ContactPart& mesh )
@@ -744,7 +745,7 @@ namespace GRGMesh {
             std::copy( mesh.vertex( i ).data(), mesh.vertex( i ).data() + 3,
                 &ann_points_[i][0] ) ;
         }
-        ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
+        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
     }
 
     ColocaterANN::ColocaterANN( const MixedMesh& mesh )
@@ -755,7 +756,7 @@ namespace GRGMesh {
             vec3 vertex = mesh.vertex( i ) ;
             std::copy( vertex.data(), vertex.data() + 3, &ann_points_[i][0] ) ;
         }
-        ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
+        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
     }
 
     ColocaterANN::ColocaterANN( const MixedMesh& mesh, bool use_surface_id )
@@ -791,7 +792,7 @@ namespace GRGMesh {
         for( uint32 i = 0; i < nb_vertices; i++ ) {
             std::copy( vertices[i].data(), vertices[i].data() + 3, &ann_points_[i][0] ) ;
         }
-        ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
+        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
     }
 
     ColocaterANN::ColocaterANN( float64* vertices, uint32 nb_vertices )
@@ -802,7 +803,7 @@ namespace GRGMesh {
             ann_points_[i][1] = vertices[3*i+1] ;
             ann_points_[i][2] = vertices[3*i+2] ;
         }
-        ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
+        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
     }
 
     ColocaterANN::ColocaterANN( const std::vector< Edge >& edges )
@@ -813,13 +814,13 @@ namespace GRGMesh {
             vec3 barycenter( ( edges[i].value( 0 ) + edges[i].value( 1 ) ) / 2.0 ) ;
             std::copy( barycenter.data(), barycenter.data() + 3, &ann_points_[i][0] ) ;
         }
-        ann_tree_ = new ANNkd_tree( &ann_points_[0], nb_vertices, 3 ) ;
+        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
     }
 
     void ColocaterANN::get_mapped_colocated(
         vec3& v,
         std::vector< uint32 >& result,
-        int32 nb_neighbors ) const
+        int32 nb_neighbors )
     {
         grgmesh_debug_assert( !mapped_indices_.empty() ) ;
         get_colocated( v, result, nb_neighbors ) ;
@@ -831,7 +832,7 @@ namespace GRGMesh {
     bool ColocaterANN::get_colocated(
         vec3& v,
         std::vector< uint32 >& result,
-        int32 nb_neighbors ) const
+        int32 nb_neighbors )
     {
         result.clear() ;
         std::vector< int32 > neighbors(nb_neighbors) ;
