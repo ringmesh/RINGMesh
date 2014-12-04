@@ -16,7 +16,10 @@
 #define __GRGMESH_ATTRIBUTE__
 
 #include <grgmesh/common.h>
-#include <grgmesh/smart_pointer.h>
+
+#include <geogram/basic/counted.h>
+#include <geogram/basic/smart_pointer.h>
+
 #include <vector>
 #include <map>
 #include <typeinfo>
@@ -24,7 +27,7 @@
 namespace GRGMesh {
 
 
-    class AttributeStore: public Counted {
+    class AttributeStore: public GEO::Counted {
     public:
         byte* data( uint32 id)
         {
@@ -44,7 +47,7 @@ namespace GRGMesh {
 
     } ;
 
-    typedef SmartPointer< AttributeStore > AttributeStore_var ;
+    typedef GEO::SmartPointer< AttributeStore > AttributeStore_var ;
 
     template< class ATTRIBUTE >
     class AttributeStoreImpl: public AttributeStore {
@@ -171,7 +174,7 @@ namespace GRGMesh {
         }
 
         void unbind() {
-            store_.forget() ;
+            store_.reset() ;
         }
 
         ATTRIBUTE& operator[]( const uint32& id )

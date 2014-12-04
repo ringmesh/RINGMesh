@@ -17,9 +17,10 @@
 
 #include <grgmesh/common.h>
 #include <grgmesh/mixed_mesh.h>
-#include <grgmesh/smart_pointer.h>
 #include <grgmesh/utils.h>
 
+#include <geogram/basic/counted.h>
+#include <geogram/basic/smart_pointer.h>
 #include <geogram/third_party/tetgen/tetgen.h>
 
 #include <vector>
@@ -37,11 +38,11 @@ namespace GRGMesh {
     class MixedMesh ;
     class TetraGen ;
 
-    typedef SmartPointer< TetraGen > TetraGen_var ;
+    typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
 
     static const std::vector< vec3 > vector_vec3 ;
     static const std::vector< std::vector< Edge > > vector_edge ;
-    class GRGMESH_API TetraGen : public Counted {
+    class GRGMESH_API TetraGen : public GEO::Counted {
     public:
         virtual ~TetraGen() {} ;
         static TetraGen_var instantiate(
