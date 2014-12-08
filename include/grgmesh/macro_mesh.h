@@ -45,27 +45,45 @@ namespace GRGMesh {
         //    / _ \/ _/ _/ -_|_-<_-< _ \ '_(_-<
         //   /_/ \_\__\__\___/__/__|___/_| /__/
         //
-        GEO::Mesh& mesh( int x )
+        GEO::Mesh& mesh( uint32 region )
         {
-            return *meshes_[x] ;
+            return *meshes_[region] ;
         }
-        const GEO::Mesh& mesh( int x ) const
+        const GEO::Mesh& mesh( uint32 region ) const
         {
-            return *meshes_[x] ;
+            return *meshes_[region] ;
         }
-        GEO::Mesh* background_mesh( int x )
+        GEO::Mesh* background_mesh( uint32 region )
         {
-            return background_meshes_[x] ;
+            return background_meshes_[region] ;
         }
-        const GEO::Mesh* background_mesh( int x ) const
+        const GEO::Mesh* background_mesh( uint32 region ) const
         {
-            return background_meshes_[x] ;
+            return background_meshes_[region] ;
         }
         unsigned int nb_meshes() const
         {
             return meshes_.size() ;
         }
-        const BoundaryModel* model() const { return model_ ; }
+        std::vector< vec3 >& vertices( uint32 region ) {
+            return vertices_[region] ;
+        }
+        const std::vector< vec3 >& vertices( uint32 region ) const {
+            return vertices_[region] ;
+        }
+        std::vector< std::vector< Edge > >& well_vertices( uint32 region )
+        {
+            return well_vertices_[region] ;
+        }
+        const std::vector< std::vector< Edge > >& well_vertices( uint32 region ) const
+        {
+            return well_vertices_[region] ;
+        }
+        const BoundaryModel* model() const
+        {
+            return model_ ;
+        }
+        inline uint32 nb_regions() const ;
     protected:
         /// BoundaryModel representing the structural information of the mesh
         const BoundaryModel* model_ ;

@@ -119,6 +119,7 @@ namespace GRGMesh {
         GEO::MeshBuilder tetmesh_builder_ ;
         double resolution_ ;
         GEO::Mesh* background_ ;
+        const BoundaryModelElement* region_ ;
     } ;
 
 

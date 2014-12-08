@@ -22,7 +22,9 @@ namespace GRGMesh {
         :
             model_( model ),
             meshes_( model->nb_regions(), nil ),
-            background_meshes_( model->nb_regions(), nil )
+            background_meshes_( model->nb_regions(), nil ),
+            vertices_( model->nb_regions() ),
+            well_vertices_( model->nb_regions() )
     {
         for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;
@@ -35,6 +37,11 @@ namespace GRGMesh {
             delete meshes_[r] ;
             if( background_meshes_[r] ) delete background_meshes_[r] ;
         }
+    }
+
+    uint32 MacroMesh::nb_regions() const
+    {
+        return model_->nb_regions() ;
     }
 
     void MacroMesh::initialize_background_meshes( uint8 dim )
@@ -59,14 +66,14 @@ namespace GRGMesh {
         if( region_id == -1 ) {
             for( unsigned int i = 0; i < nb_meshes(); i++ ) {
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
-                    &model_->region( i ), add_steiner_points, vertices_[i],
-                    well_vertices_[i], background_mesh( i ) ) ;
+                    &model_->region( i ), add_steiner_points, vertices( i ),
+                    well_vertices( i ), background_mesh( i ) ) ;
                 tetragen->tetrahedralize() ;
             }
         } else {
             TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
                 &model_->region( region_id ), add_steiner_points,
-                vertices_[region_id], well_vertices_[region_id],
+                vertices( region_id ), well_vertices( region_id ),
                 background_mesh( region_id ) ) ;
             tetragen->tetrahedralize() ;
         }

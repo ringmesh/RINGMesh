@@ -56,7 +56,8 @@ namespace GRGMesh {
             internal_points_( internal_vertices ),
             resolution_( 0 ),
             background_( background ),
-            tetmesh_builder_( &tetmesh )
+            tetmesh_builder_( &tetmesh ),
+            region_( region )
     {
         tetmesh_builder_.begin_mesh() ;
         if( !well_edges.empty() ) {
@@ -174,7 +175,6 @@ namespace GRGMesh {
 
     TetraGen::~TetraGen()
     {
-        tetmesh_builder_.end_mesh() ;
     }
 
     void TetraGen::initialize_storage(
@@ -516,6 +516,11 @@ tetgenio::init( P ) ;
             cur_index_triangle ++ ;
         }
 
+
+        tetmesh_builder_.end_mesh() ;
+        Utils::check_mesh( *region_, tetmesh_ ) ;
+
+        /*
         std::vector< bool > is_triangle_visited ( false, nb_triangles ) ;
         std::vector< uint32 > surfaces_id ;
 
@@ -833,6 +838,10 @@ tetgenio::init( P ) ;
             }
             */
         }
+
+
+        tetmesh_builder_.end_mesh() ;
+        Utils::check_mesh( *region_, tetmesh_ ) ;
 
             /*
         uint32 cur_index_line = 0 ;
