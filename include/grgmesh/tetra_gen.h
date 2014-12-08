@@ -16,9 +16,10 @@
 #define __GRGMESH_TETRA_GEN__
 
 #include <grgmesh/common.h>
-#include <grgmesh/mixed_mesh.h>
 #include <grgmesh/utils.h>
 
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_builder.h>
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
 #include <geogram/third_party/tetgen/tetgen.h>
@@ -35,7 +36,6 @@
 namespace GRGMesh {
 
     class BoundaryModelElement ;
-    class MixedMesh ;
     class TetraGen ;
 
     typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
@@ -44,15 +44,15 @@ namespace GRGMesh {
     static const std::vector< std::vector< Edge > > vector_edge ;
     class GRGMESH_API TetraGen : public GEO::Counted {
     public:
-        virtual ~TetraGen() {} ;
+        virtual ~TetraGen() ;
         static TetraGen_var instantiate(
             const TetraMethod& method,
-            MixedMesh& tetmesh,
+            GEO::Mesh& tetmesh,
             const BoundaryModelElement* region,
             bool add_steiner_points = true,
             const std::vector< vec3 >& internal_vertices = vector_vec3,
             const std::vector< std::vector< Edge > >& well_vertices = vector_edge,
-            MixedMesh* background = nil ) ;
+            GEO::Mesh* background = nil ) ;
 
         virtual bool tetrahedralize() = 0 ;
 
@@ -84,18 +84,17 @@ namespace GRGMesh {
 
     protected:
         TetraGen(
-            MixedMesh& tetmesh,
+            GEO::Mesh& tetmesh,
             const BoundaryModelElement* region,
             const std::vector< vec3 >& internal_vertices,
             const std::vector< std::vector< Edge > >& well_edges,
-            MixedMesh* background ) ;
+            GEO::Mesh* background ) ;
 
         void initialize_storage( uint32 nb_points, uint32 nb_tets, uint32 nb_triangles, uint32 nb_lines ) ;
         void set_point( uint32 index, double* point ) ;
         void set_tetra( uint32 index, int* tet, uint32 nb_lines, uint32 nb_triangles ) ;
         void set_triangle( uint32 index, int * triangle, uint32 nb_lines ) ;
         void set_line( uint32 index, int * line ) ;
-        void flip_vertex( uint32 tri ) { tetmesh_.flip_vertex(tri, 0, 1) ; } ;
         void set_tetra_adjacent( uint32 index, uint32 face, int32 adj ) ;
         void set_face_marker(
             uint32 tri,
@@ -116,22 +115,22 @@ namespace GRGMesh {
         std::vector< int32 > triangles_ ;
         std::vector< int32 > surface_id_ ;
         std::vector< uint32 > surface_ptr_ ;
-        MixedMesh& tetmesh_ ;
-        MixedMeshBuilder tetmesh_builder_ ;
+        GEO::Mesh& tetmesh_ ;
+        GEO::MeshBuilder tetmesh_builder_ ;
         double resolution_ ;
-        MixedMesh* background_ ;
+        GEO::Mesh* background_ ;
     } ;
 
 
     class GRGMESH_API TetraGen_TetGen: public TetraGen {
     public:
         TetraGen_TetGen(
-            MixedMesh& tetmesh,
+            GEO::Mesh& tetmesh,
             const BoundaryModelElement* region,
             bool add_steiner_points,
             const std::vector< vec3 >& internal_vertices,
             const std::vector< std::vector< Edge > >& well_vertices,
-            MixedMesh* background ) ;
+            GEO::Mesh* background ) ;
         virtual ~TetraGen_TetGen() {} ;
 
         virtual bool tetrahedralize() ;
@@ -147,12 +146,12 @@ namespace GRGMesh {
     class GRGMESH_API TetraGen_MG_Tetra: public TetraGen {
     public:
         TetraGen_MG_Tetra(
-            MixedMesh& tetmesh,
+            GEO::Mesh& tetmesh,
             const BoundaryModelElement* region,
             bool add_steiner_points,
             const std::vector< vec3 >& internal_vertices,
             const std::vector< std::vector< Edge > >& well_vertices,
-            MixedMesh* background ) ;
+            GEO::Mesh* background ) ;
         virtual ~TetraGen_MG_Tetra() ;
 
         virtual bool tetrahedralize() ;

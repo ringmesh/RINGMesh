@@ -12,10 +12,10 @@
 * including partial copies or modified versions thereof.
 ]*/
 
-#include <grgmesh/boundary_model_element.h>
-#include <grgmesh/mixed_mesh.h>
 #include <grgmesh/utils.h>
+#include <grgmesh/boundary_model_element.h>
 
+#include <geogram/mesh/mesh.h>
 #include <geogram/third_party/shewchuk/shewchuk.h>
 
 #include <iostream>
@@ -748,41 +748,14 @@ namespace GRGMesh {
         ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
     }
 
-    ColocaterANN::ColocaterANN( const MixedMesh& mesh )
+    ColocaterANN::ColocaterANN( const GEO::Mesh& mesh )
     {
         int32 nb_vertices = mesh.nb_vertices() ;
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
         for( uint32 i = 0; i < nb_vertices; i++ ) {
-            vec3 vertex = mesh.vertex( i ) ;
-            std::copy( vertex.data(), vertex.data() + 3, &ann_points_[i][0] ) ;
+            std::copy( mesh.vertex_ptr( i ), mesh.vertex_ptr( i ) + 3, &ann_points_[i][0] ) ;
         }
         ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
-    }
-
-    ColocaterANN::ColocaterANN( const MixedMesh& mesh, bool use_surface_id )
-    {
-        grgmesh_assert_not_reached ;
-        //todo
-        /*
-        std::vector< vec3 > barycenters ;
-        barycenters.reserve( 4*mesh.nb_tetra() ) ;
-        for( uint32 i = 0; i < mesh.nb_tetra(); i++ ) {
-            for( uint32 f = 0; f < 4; f++ ) {
-                if( mesh.surface_id( i, f ) != -1 ) {
-                    barycenters.push_back(
-                        VorteXUtils::barycenter( mesh.vertex( i, f2e[f][0] ),
-                            mesh.vertex( i, f2e[f][1] ),
-                            mesh.vertex( i, f2e[f][2] ) ) ) ;
-                    mapped_indices_.push_back( 4*i + f ) ;
-                }
-            }
-        }
-        ann_points_ = annAllocPts( barycenters.size(), 3 ) ;
-        for( uint32 i = 0; i < barycenters.size(); i++ ) {
-            std::copy( barycenters[i].data(), barycenters[i].data() + 3, &ann_points_[i][0] ) ;
-        }
-        ann_tree_ = new ANNkd_tree( &ann_points_[0], barycenters.size(), 3 ) ;
-        */
     }
 
     ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices )

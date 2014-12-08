@@ -16,57 +16,67 @@
 #define __GRGMESH_MACRO_MESH__
 
 #include <grgmesh/common.h>
-#include <grgmesh/mixed_mesh.h>
 #include <grgmesh/utils.h>
+
+#include <geogram/mesh/mesh.h>
 
 namespace GRGMesh {
 
     class BoundaryModel ;
 
-    template< class T >
     class GRGMESH_API MacroMesh {
     public:
-        MacroMesh( const BoundaryModel* model ) ;
-        virtual ~MacroMesh() {}
+        MacroMesh( const BoundaryModel* model, uint8 dim = 3 ) ;
+        virtual ~MacroMesh() ;
+        void initialize_background_meshes( uint8 dim = 3 ) ;
 
-        T& mesh( int x )
-        {
-            return meshes_[x] ;
-        }
-        const T& mesh( int x ) const
-        {
-            return meshes_[x] ;
-        }
-        unsigned int nb_meshes() const
-        {
-            return meshes_.size() ;
-        }
-
-    protected:
-        /// BoundaryModel representing the structural information of the mesh
-        const BoundaryModel* model_ ;
-        /// Vector of meshes, one by region
-        std::vector< T > meshes_ ;
-        /// Vector of background meshes, one by region
-        std::vector< T* > background_meshes_ ;
-        /// Vector of constrained vertices, one vector by region
-        std::vector< std::vector< vec3 > > vertices_ ;
-        /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
-        std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
-    } ;
-
-    class GRGMESH_API MacroMixedMesh: public MacroMesh< MixedMesh > {
-    public:
-        MacroMixedMesh( const BoundaryModel* model )
-            : MacroMesh< MixedMesh >( model )
-        {
-        }
-
+        //    __  __     _   _            _
+        //   |  \/  |___| |_| |_  ___  __| |___
+        //   | |\/| / -_)  _| ' \/ _ \/ _` (_-<
+        //   |_|  |_\___|\__|_||_\___/\__,_/__/
+        //
         void compute_tetmesh(
             const TetraMethod& method,
             int region_id = -1,
             bool add_steiner_points = true ) ;
 
+        //      _
+        //     /_\  __ __ ___ _________ _ _ ___
+        //    / _ \/ _/ _/ -_|_-<_-< _ \ '_(_-<
+        //   /_/ \_\__\__\___/__/__|___/_| /__/
+        //
+        GEO::Mesh& mesh( int x )
+        {
+            return *meshes_[x] ;
+        }
+        const GEO::Mesh& mesh( int x ) const
+        {
+            return *meshes_[x] ;
+        }
+        GEO::Mesh* background_mesh( int x )
+        {
+            return background_meshes_[x] ;
+        }
+        const GEO::Mesh* background_mesh( int x ) const
+        {
+            return background_meshes_[x] ;
+        }
+        unsigned int nb_meshes() const
+        {
+            return meshes_.size() ;
+        }
+        const BoundaryModel* model() const { return model_ ; }
+    protected:
+        /// BoundaryModel representing the structural information of the mesh
+        const BoundaryModel* model_ ;
+        /// Vector of meshes, one by region
+        std::vector< GEO::Mesh* > meshes_ ;
+        /// Vector of background meshes, one by region
+        std::vector< GEO::Mesh* > background_meshes_ ;
+        /// Vector of constrained vertices, one vector by region
+        std::vector< std::vector< vec3 > > vertices_ ;
+        /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
+        std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
     } ;
 
 }

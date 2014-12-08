@@ -12,19 +12,36 @@
  * including partial copies or modified versions thereof.
  ]*/
 
-#include <grgmesh/boundary_model.h>
 #include <grgmesh/macro_mesh.h>
+#include <grgmesh/boundary_model.h>
 #include <grgmesh/tetra_gen.h>
 
 namespace GRGMesh {
 
-    template< class T >
-    MacroMesh< T >::MacroMesh( const BoundaryModel* model )
+    MacroMesh::MacroMesh( const BoundaryModel* model, uint8 dim )
         :
             model_( model ),
-            meshes_( model->nb_regions() ),
+            meshes_( model->nb_regions(), nil ),
             background_meshes_( model->nb_regions(), nil )
     {
+        for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
+            meshes_[r] = new GEO::Mesh( dim ) ;
+        }
+    }
+
+    MacroMesh::~MacroMesh()
+    {
+        for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
+            delete meshes_[r] ;
+            if( background_meshes_[r] ) delete background_meshes_[r] ;
+        }
+    }
+
+    void MacroMesh::initialize_background_meshes( uint8 dim )
+    {
+        for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
+            background_meshes_[r] = new GEO::Mesh( dim ) ;
+        }
     }
 
     /*!
@@ -34,23 +51,23 @@ namespace GRGMesh {
      * @param add_steiner_points if true, the mesher will add some points inside the region
      * to improve the mesh quality
      */
-    void MacroMixedMesh::compute_tetmesh(
+    void MacroMesh::compute_tetmesh(
         const TetraMethod& method,
         int region_id,
         bool add_steiner_points )
     {
         if( region_id == -1 ) {
             for( unsigned int i = 0; i < nb_meshes(); i++ ) {
-                TetraGen_var tetragen = TetraGen::instantiate( method, meshes_[i],
+                TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
                     &model_->region( i ), add_steiner_points, vertices_[i],
-                    well_vertices_[i], background_meshes_[i] ) ;
+                    well_vertices_[i], background_mesh( i ) ) ;
                 tetragen->tetrahedralize() ;
             }
         } else {
-            TetraGen_var tetragen = TetraGen::instantiate( method, meshes_[region_id],
+            TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
                 &model_->region( region_id ), add_steiner_points,
                 vertices_[region_id], well_vertices_[region_id],
-                background_meshes_[region_id] ) ;
+                background_mesh( region_id ) ) ;
             tetragen->tetrahedralize() ;
         }
     }
