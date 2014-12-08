@@ -13,13 +13,18 @@
 ]*/
 
 #include <grgmesh/utils.h>
+#include <grgmesh/boundary_model.h>
 #include <grgmesh/boundary_model_element.h>
 
 #include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_private.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_AABB.h>
 #include <geogram/third_party/shewchuk/shewchuk.h>
 
 #include <iostream>
 #include <sstream>
+#include <stack>
 #include <algorithm>
 
 namespace GRGMesh {
@@ -44,6 +49,125 @@ namespace GRGMesh {
         return true ;
     }
 
+    bool Utils::facets_have_same_orientation(
+        const GEO::Mesh& mesh,
+        uint32 f1,
+        uint32 c11,
+        uint32 f2 )
+    {
+        uint32 c12 = mesh.next_around_facet(f1, c11);
+        uint32 v11 = mesh.corner_vertex_index( c11 ) ;
+        uint32 v12 = mesh.corner_vertex_index( c12 ) ;
+        for( uint32 c21 = mesh.facet_begin( f2 ); c21 < mesh.facet_end( f2 ); c21++ ) {
+            uint32 c22 = mesh.next_around_facet( f2, c21 ) ;
+            uint32 v21 = mesh.corner_vertex_index( c21 ) ;
+            uint32 v22 = mesh.corner_vertex_index( c22 ) ;
+            if( v11 == v21 && v12 == v22 ) {
+                return false ;
+            }
+            if( v11 == v22 && v12 == v21 ) {
+                return true ;
+            }
+        }
+        return true ;
+    }
+
+    void Utils::check_mesh(
+        const BoundaryModelElement& region,
+        GEO::Mesh& mesh,
+        bool check_duplicated_facet )
+    {
+        /// 1 - Remove duplicated facets (optionnal)
+        if( check_duplicated_facet ) {
+            std::vector< vec3 > barycenters( mesh.nb_facets(), vec3( 0, 0, 0 ) ) ;
+            for( uint32 f = 0; f < mesh.nb_facets(); f++ ) {
+                barycenters[f] = GEO::Geom::mesh_facet_center( mesh, f ) ;
+            }
+
+            MakeUnique unique( barycenters ) ;
+            unique.unique() ;
+            const std::vector< int32 > indices = unique.indices() ;
+            GEO::vector< uint32 > facet_to_remove( mesh.nb_facets(), 0 ) ;
+            int32 cur_id = 0 ;
+            for( uint32 f = 0; f < mesh.nb_facets(); f++ ) {
+                if( cur_id == indices[f] ) {
+                    cur_id++ ;
+                } else {
+                    facet_to_remove[f] = 1 ;
+                }
+            }
+            mesh.remove_facets( facet_to_remove ) ;
+
+            if( mesh.has_attribute( GEO::MESH_FACET_REGION ) ) {
+                GEO::vector< int32 >& attribute = GEO::MeshMutator::facet_regions( mesh ) ;
+                int32 offset = 0 ;
+                cur_id = 0 ;
+                for( uint32 f = 0; f < mesh.nb_facets(); f++ ) {
+                    if( cur_id == indices[f] ) {
+                        cur_id++ ;
+                        attribute[f-offset] = attribute[f] ;
+                    } else {
+                        offset++ ;
+                    }
+                }
+                attribute.erase( attribute.end()-offset, attribute.end() ) ;
+            }
+            mesh.update_cached_variables() ;
+            mesh.connect_facets() ;
+        }
+
+        /// 2 - Reorient in the same direction using propagation
+        std::vector< bool > facet_visited( mesh.nb_facets(), false ) ;
+        for( uint32 f = 0; f < mesh.nb_facets(); f++ ) {
+            if( facet_visited[f] ) continue ;
+            uint32 surface_id = mesh.facet_region( f ) ;
+            std::stack< uint32 > S ;
+            S.push( f ) ;
+            do {
+                uint32 cur_f = S.top() ;
+                S.pop() ;
+                for( unsigned int c = mesh.facet_begin( cur_f );
+                    c < mesh.facet_end( cur_f ); c++ ) {
+                    int32 f_adj = mesh.corner_adjacent_facet( c ) ;
+                    if( f_adj == -1 || mesh.facet_region( f_adj ) != surface_id
+                        || facet_visited[f_adj] ) continue ;
+                    if( !facets_have_same_orientation( mesh, cur_f, c, f_adj ) ) {
+                        GEO::MeshMutator::flip_facet( mesh, f_adj ) ;
+                    }
+                    S.push( f_adj ) ;
+                }
+            } while( !S.empty() ) ;
+        }
+
+        /// 3 - Check for consistent orientation with BoundaryModel
+        GEO::MeshFacetsAABB aabb( mesh ) ;
+        std::vector< bool > flip_surface( region.model()->nb_surface_parts(), false ) ;
+        bool flip_sthg = false ;
+        for( uint32 s = 0; s < region.nb_boundaries(); s++ ) {
+            const SurfacePart& surface =
+                dynamic_cast< const SurfacePart& >( *region.boundary( s ) ) ;
+            vec3 barycenter = surface.barycenter( 0 ) ;
+            vec3 nearest_point ;
+            float64 distance ;
+            uint32 f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
+            grgmesh_debug_assert( surface.id() == mesh.facet_region( f ) ) ;
+
+            vec3 ori_normal = surface.facet_normal( 0 ) ;
+            vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
+            if( dot( ori_normal, test_normal ) < 0 ) {
+                flip_surface[surface.id()] = true ;
+                flip_sthg = true ;
+            }
+        }
+        if( flip_sthg ) {
+            for( uint32 f = 0; f < mesh.nb_facets(); f++ ) {
+                uint32 surface_id = mesh.facet_region( f ) ;
+                if( flip_surface[surface_id] ) {
+                    GEO::MeshMutator::flip_facet( mesh, f ) ;
+                }
+            }
+        }
+    }
 
     bool Utils::circle_plane_intersection(
         const vec3& O_plane,
@@ -696,11 +820,6 @@ namespace GRGMesh {
             } else {
                 indices_[i] -= offset ;
             }
-        }
-
-        std::ofstream ind2( "ind2" ) ;
-        for( unsigned int p = 0; p < indices_.size(); p++ ) {
-            ind2 << indices_[p] << std::endl ;
         }
     }
     void MakeUnique::add_edges( const std::vector< Edge >& points ) {

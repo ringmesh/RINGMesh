@@ -30,7 +30,7 @@ namespace GEO {
 }
 
 namespace GRGMesh {
-
+    class BoundaryModelElement ;
     class Edge ;
     class SurfacePart ;
     class ContactPart ;
@@ -265,6 +265,15 @@ namespace GRGMesh {
 
     class GRGMESH_API Utils {
     public:
+        static bool facets_have_same_orientation(
+            const GEO::Mesh& mesh,
+            uint32 f1,
+            uint32 c11,
+            uint32 f2 ) ;
+        static void check_mesh(
+            const BoundaryModelElement& region,
+            GEO::Mesh& mesh,
+            bool check_duplicated_facet = false ) ;
         static float64 triangle_area( const vec3& p1, const vec3& p2, const vec3& p3 )
         {
             return 0.5 * length( cross( p2 - p1, p3 - p1 ) ) ;
