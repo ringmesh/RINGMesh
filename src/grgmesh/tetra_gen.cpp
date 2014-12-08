@@ -12,8 +12,11 @@
 * including partial copies or modified versions thereof.
 ]*/
 
-#include <grgmesh/boundary_model_element.h>
 #include <grgmesh/tetra_gen.h>
+#include <grgmesh/boundary_model_element.h>
+
+#include <geogram/mesh/mesh_private.h>
+
 #include <iomanip>
 #include <stack>
 
@@ -21,12 +24,12 @@ namespace GRGMesh {
 
     TetraGen_var TetraGen::instantiate(
         const TetraMethod& method,
-        MixedMesh& tetmesh,
+        GEO::Mesh& tetmesh,
         const BoundaryModelElement* region,
         bool add_steiner_points,
         const std::vector< vec3 >& internal_vertices,
         const std::vector< std::vector< Edge > >& well_vertices,
-        MixedMesh* background )
+        GEO::Mesh* background )
     {
         switch( method ) {
             case TetGen:
@@ -43,18 +46,19 @@ namespace GRGMesh {
     }
 
     TetraGen::TetraGen(
-        MixedMesh& tetmesh,
+        GEO::Mesh& tetmesh,
         const BoundaryModelElement* region,
         const std::vector< vec3 >& internal_vertices,
         const std::vector< std::vector< Edge > >& well_edges,
-        MixedMesh* background )
+        GEO::Mesh* background )
         :
             tetmesh_( tetmesh ),
             internal_points_( internal_vertices ),
             resolution_( 0 ),
             background_( background ),
-            tetmesh_builder_( tetmesh )
+            tetmesh_builder_( &tetmesh )
     {
+        tetmesh_builder_.begin_mesh() ;
         if( !well_edges.empty() ) {
             uint32 nb_well_edges = 0 ;
             for( uint32 w = 0; w < well_edges.size(); w++ ) {
@@ -168,17 +172,23 @@ namespace GRGMesh {
         }
     }
 
+    TetraGen::~TetraGen()
+    {
+        tetmesh_builder_.end_mesh() ;
+    }
+
     void TetraGen::initialize_storage(
         uint32 nb_points,
         uint32 nb_tets,
         uint32 nb_triangles,
         uint32 nb_lines)
     {
-        tetmesh_builder_.resize_vertices( nb_points ) ;
-        tetmesh_builder_.resize_vertex_indices( nb_tets * 4 +  nb_triangles * 3 + nb_lines * 2) ;
-        tetmesh_builder_.resize_tetra( nb_tets ) ;
-        tetmesh_builder_.resize_triangles( nb_triangles ) ;
-        tetmesh_builder_.resize_lines( nb_lines ) ;
+        tetmesh_.reserve_vertices( nb_points ) ;
+        tetmesh_.reserve_facets_and_corners( nb_triangles,
+            nb_tets * 4 + nb_triangles * 3 + nb_lines * 2 ) ;
+        GEO::MeshMutator::set_attributes( tetmesh_, GEO::MESH_FACET_REGION ) ;
+        GEO::MeshMutator::facet_regions( tetmesh_ ).resize( nb_triangles ) ;
+
         /*
         tetmesh_.tetra_adjacents_.resize( nb_tets * 4, -1 ) ;
         tetmesh_.triangle_surface_id_.resize( 4 * nb_tets, -1 ) ;
@@ -187,15 +197,12 @@ namespace GRGMesh {
 
     void TetraGen::set_point( uint32 index, double* point )
     {
-        tetmesh_builder_.add_vertex( index, vec3( point ) ) ;
+        tetmesh_builder_.add_vertex_by_ptr( point ) ;
     }
 
     void TetraGen::set_tetra( uint32 index, int* tet, uint32 nb_lines, uint32 nb_triangles )
     {
-        tetmesh_builder_.add_tetra( index, 4 * index ) ;
-        for( uint32 i = 0; i < 4; i++ ) {
-            tetmesh_builder_.add_vertex_index( 4 * index + i + nb_triangles + nb_lines, tet[i] - 1 ) ;
-        }
+        tetmesh_.add_tet( tet[0] - 1, tet[1] - 1, tet[2] - 1, tet[3] - 1 ) ;
     }
 
     void TetraGen::set_tetra_adjacent(
@@ -212,28 +219,31 @@ namespace GRGMesh {
         int * triangle,
         uint32 nb_lines )
     {
-        tetmesh_builder_.add_triangle( index, 3 * index ) ;
-        for( uint32 i = 0; i < 3; i++ ) {
-            tetmesh_builder_.add_vertex_index( 3 * index + i + nb_lines, triangle[i] - 1 ) ;
+        tetmesh_builder_.begin_facet() ;
+        for( uint8 i = 0; i < 3; i++ ) {
+            tetmesh_builder_.add_vertex_to_facet( triangle[i] - 1 ) ;
         }
+        tetmesh_builder_.end_facet() ;
     }
 
     void TetraGen::set_line(
         uint32 index,
         int * line )
     {
+        grgmesh_assert_not_reached ;
+        /*
         tetmesh_builder_.add_line( index, 2 * index ) ;
         for( uint32 i = 0; i < 3; i++ ) {
             tetmesh_builder_.add_vertex_index( 2 * index + i, line[i] - 1 ) ;
         }
+        */
     }
     
     void TetraGen::set_face_marker(
         uint32 tri,
         uint32 marker )
     {
-    	TetraAttribute< int32 > surface_id_tri( &tetmesh_, "surface_id" ) ;
-    	surface_id_tri[tri] = marker ;
+        tetmesh_.set_facet_region( tri, marker ) ;
     }
 
     void TetraGen::set_tetra_face_marker(
@@ -241,10 +251,14 @@ namespace GRGMesh {
         uint32 adj,
         uint32 marker )
     {
+        grgmesh_assert_not_reached ;
+        /*
     	TetraAttribute< intArrayTmpl < 4 > > surface_id_tet( &tetmesh_, "surface_id" ) ;
     	surface_id_tet[tet].value(adj) = marker ;
         grgmesh_assert_not_reached
         //tetmesh_.triangle_surface_id_[4 * tet + adj] = marker ;
+         *
+         */
 
     }
 
@@ -256,8 +270,8 @@ namespace GRGMesh {
         if( well_edges_.empty() ) return ;
         ColocaterANN ann( well_edges_ ) ;
 
-        const MixedMesh::CellDescriptor* tet_descr =
-            MixedMesh::nb_v_to_cell_descriptor[4] ;
+        const GEO::Mesh::CellDescriptor* tet_descr =
+            GEO::Mesh::nb_v_to_cell_descriptor[4] ;
 #pragma omp parallel for
         for( uint32 t = 0; t < tetmesh_.nb_tetra(); t++ ) {
             for( uint32 e = 0; e < 6; e++ ) {
@@ -275,12 +289,12 @@ namespace GRGMesh {
     }
 
     TetraGen_TetGen::TetraGen_TetGen(
-        MixedMesh& tetmesh,
+        GEO::Mesh& tetmesh,
         const BoundaryModelElement* region,
         bool add_steiner_points,
         const std::vector< vec3 >& internal_vertices,
         const std::vector< std::vector< Edge > >& well_edges,
-        MixedMesh* background )
+        GEO::Mesh* background )
         :
             TetraGen( tetmesh, region, internal_vertices, well_edges, background )
     {
@@ -431,13 +445,12 @@ tetgenio::init( P ) ;
         std::vector< uint32 > temp ;
         temp.reserve( 8 ) ;
         std::vector< std::vector< uint32 > > star( tetgen_output_.numberofpoints, temp ) ;
-        std::vector< uint32 > count_triangles( 10 , 0 ) ;
 
 #pragma omp parallel for
         for( uint32 f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
             int32 face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
             if( face_marker == -1 ) continue ;
-            count_triangles[face_marker*2] ++ ;
+            /*
             int32 tet1 = tetgen_output_.adjtetlist[2 * f] - 1 ;
             int32 tet2 = tetgen_output_.adjtetlist[2 * f + 1] - 1 ;
             if( tet1 < 0 ){
@@ -454,7 +467,7 @@ tetgenio::init( P ) ;
                         for( uint32 i = 0; i < 3; i++ ) {
                             star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
                         }
-                        set_tetra_face_marker( tet2, ff, face_marker ) ;
+                        // set_tetra_face_marker( tet2, ff, face_marker ) ;
                         set_face_marker(cur_index_triangle, face_marker) ;
                         cur_index_triangle ++ ;
                         found = true ;
@@ -476,7 +489,7 @@ tetgenio::init( P ) ;
                         for( uint32 i = 0; i < 3; i++ ) {
                             star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
                         }
-                        set_tetra_face_marker( tet1, ff, face_marker ) ;
+                        // set_tetra_face_marker( tet1, ff, face_marker ) ;
                         set_face_marker(cur_index_triangle, face_marker) ;
                         cur_index_triangle ++ ;
                         found = true ;
@@ -493,51 +506,77 @@ tetgenio::init( P ) ;
                 set_face_marker( tet2, face_marker ) ;
                 cur_index_triangle ++ ;
             }
+            */
+
+            set_triangle( cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines ) ;
+            for( uint32 i = 0; i < 3; i++ ) {
+                star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
+            }
+            set_face_marker( cur_index_triangle, face_marker ) ;
+            cur_index_triangle ++ ;
         }
 
         std::vector< bool > is_triangle_visited ( false, nb_triangles ) ;
         std::vector< uint32 > surfaces_id ;
-    	TetraAttribute< int32 > surface_id_tri( &tetmesh_, "surface_id" ) ;
 
-        for( uint32 i = 0; i < nb_triangles ;i++ ) {
-        	if ( Utils::contains( surfaces_id, static_cast< uint32 > (surface_id_tri[i] )) ) {
-        		surfaces_id.push_back( surface_id_tri[i] ) ;
-        		uint32 cur_suface_id = surface_id_tri[ i ] ;
-        		std::stack < uint32 > S ;
-        		S.push( i ) ;
-        		do {
-        			uint32 cur_triangle = S.top() ;
-        			is_triangle_visited[ cur_triangle ] = true ;
-        			S.pop() ;
-        			std::vector < uint32 > vertices_on_cur_triangle( 4, -1 ) ;
-        			for( uint8 j = 0; j < 3 ; j++ ) {
-        				vertices_on_cur_triangle[ j ] = tetmesh_.triangle_vertex_index( cur_triangle, j) ;
-        			}
-    				vertices_on_cur_triangle[ 3 ] = tetmesh_.triangle_vertex_index( cur_triangle, 3) ;
+        for( uint32 i = 0; i < nb_triangles; i++ ) {
+            uint32 cur_suface_id = tetmesh_.facet_region( i ) ;
+            if( Utils::contains( surfaces_id, cur_suface_id ) ) {
+                surfaces_id.push_back( cur_suface_id ) ;
+                std::stack< uint32 > S ;
+                S.push( i ) ;
+                do {
+                    uint32 cur_triangle = S.top() ;
+                    is_triangle_visited[cur_triangle] = true ;
+                    S.pop() ;
+                    std::vector< uint32 > vertices_on_cur_triangle( 4, -1 ) ;
+                    for( uint32 j = tetmesh_.facet_begin( cur_triangle );
+                        j < tetmesh_.facet_end( cur_triangle ); j++ ) {
+                        vertices_on_cur_triangle[j] = tetmesh_.corner_vertex_index(
+                            j ) ;
+                    }
+                    vertices_on_cur_triangle[3] = tetmesh_.corner_vertex_index(
+                        tetmesh_.facet_begin( cur_triangle ) ) ;
 
-    				for( uint8 j = 0 ; j < 3 ; j++) {
-    					std::vector< uint32 > intersect = Utils::intersect( star[ vertices_on_cur_triangle[ j ]], star[vertices_on_cur_triangle[ j + 1 ]] ) ;
-    					for( uint8 k = 0; k < intersect.size(); k++ ) {
-    						if ( surface_id_tri[ intersect[k] ] == cur_suface_id && !is_triangle_visited[ intersect[k] ] ) {
-    							S.push(intersect[k]) ;
-    		        			std::vector < uint32 > vertices_on_neighbor_triangle( 4, -1 ) ;
-    		        			for( uint8 l = 0; l < 3 ; l++ ) {
-    		        				vertices_on_neighbor_triangle[ l ] = tetmesh_.triangle_vertex_index( intersect[ k ], j) ;
-    		        			}
-    		        			vertices_on_neighbor_triangle[ 3 ] = tetmesh_.triangle_vertex_index( intersect[ k ], 3) ;
+                    for( uint8 j = 0; j < 3; j++ ) {
+                        std::vector< uint32 > intersect = Utils::intersect(
+                            star[vertices_on_cur_triangle[j]],
+                            star[vertices_on_cur_triangle[j + 1]] ) ;
+                        for( uint8 k = 0; k < intersect.size(); k++ ) {
+                            uint32 intersect_triangle = intersect[k] ;
+                            if( tetmesh_.facet_region( intersect_triangle )
+                                == cur_suface_id
+                                && !is_triangle_visited[intersect_triangle] ) {
+                                S.push( intersect_triangle ) ;
+                                std::vector< uint32 > vertices_on_neighbor_triangle(
+                                    4, -1 ) ;
+                                for( uint32 l = tetmesh_.facet_begin(
+                                    intersect_triangle );
+                                    l < tetmesh_.facet_end( intersect_triangle );
+                                    l++ ) {
+                                    vertices_on_neighbor_triangle[l] =
+                                        tetmesh_.corner_vertex_index( l ) ;
+                                }
+                                vertices_on_neighbor_triangle[3] =
+                                    tetmesh_.corner_vertex_index(
+                                        tetmesh_.facet_begin(
+                                            intersect_triangle ) ) ;
 
-    							if(Utils::check_order(vertices_on_neighbor_triangle, vertices_on_cur_triangle[ j ], vertices_on_cur_triangle[ j + 1 ])) {
-    								tetmesh_.flip_vertex( intersect[ k ] , 0, 1 ) ;
-    							}
-    						}
-    					}
-    				}
-        		} while(!S.empty()) ;
-
-
+                                if( Utils::check_order(
+                                    vertices_on_neighbor_triangle,
+                                    vertices_on_cur_triangle[j],
+                                    vertices_on_cur_triangle[j + 1] ) ) {
+                                    GEO::MeshMutator::flip_facet( tetmesh_,
+                                        intersect_triangle ) ;
+                                }
+                            }
+                        }
+                    }
+                } while( !S.empty() ) ;
         	}
         }
 
+        /*
         uint32 cur_index_line = 0 ;
 #pragma omp parallel for
         for( uint32 l = 0; l < tetgen_output_.numberofedges; l++ ) {
@@ -546,20 +585,21 @@ tetgenio::init( P ) ;
         	set_line(cur_index_line, &tetgen_output_.edgelist[2 *l ]) ;
         	cur_index_line ++ ;
         }
+        */
 
-        store_edge_attrib() ;
+        // store_edge_attrib() ;
         return true ;
     }
 
 #ifdef USE_MG_TETRA
 
     TetraGen_MG_Tetra::TetraGen_MG_Tetra(
-        MixedMesh& tetmesh,
+        GEO::Mesh& tetmesh,
         const BoundaryModelElement* region,
         bool add_steiner_points,
         const std::vector< vec3 >& internal_vertices,
         const std::vector< std::vector< Edge > >& well_vertices,
-        MixedMesh* background )
+        GEO::Mesh* background )
         :
             TetraGen( tetmesh, region, internal_vertices, well_vertices, background ),
             mesh_output_( nil ),
@@ -723,10 +763,15 @@ tetgenio::init( P ) ;
             int32 tag = -1 ;
             ret = mesh_get_triangle_tag( mesh_output_, t+1, &tag ) ;
             grgmesh_debug_assert( ret == STATUS_OK ) ;
-            int32 vertices[3] ;
-            ret = mesh_get_triangle_vertices( mesh_output_, t+1, vertices ) ;
-            grgmesh_debug_assert( ret == STATUS_OK ) ;
+            if ( tag != -1 ) {
+                int32 vertices[3] ;
+                ret = mesh_get_triangle_vertices( mesh_output_, t+1, vertices ) ;
+                grgmesh_debug_assert( ret == STATUS_OK ) ;
+                set_triangle(cur_index_triangle, vertices, nb_lines) ;
+                cur_index_triangle ++ ;
+            }
 
+            /*
             const std::vector< uint32 >& tetra0 = star[ vertices[0]-1 ] ;
             const std::vector< uint32 >& tetra1 = star[ vertices[1]-1 ] ;
             const std::vector< uint32 >& tetra2 = star[ vertices[2]-1 ] ;
@@ -754,6 +799,7 @@ tetgenio::init( P ) ;
                     ++cur_tetra2 ;
                 }
             }
+
             grgmesh_debug_assert( count != 0 ) ;
             if( count == 1 ) {
                 uint32 tet = results[0] ;
@@ -785,8 +831,10 @@ tetgenio::init( P ) ;
                 set_face_marker( tet1, tag ) ;
                 set_face_marker( tet2, tag ) ;
             }
+            */
         }
 
+            /*
         uint32 cur_index_line = 0 ;
 #pragma omp parallel for
         for( uint32 l = 0; l < well_edges_.size(); l++ ) {
@@ -802,6 +850,7 @@ tetgenio::init( P ) ;
 
 
         store_edge_attrib() ;
+        */
 
         return true ;
     }

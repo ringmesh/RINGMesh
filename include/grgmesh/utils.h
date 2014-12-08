@@ -25,12 +25,15 @@
 #include <vector>
 #include <fstream>
 
+namespace GEO {
+    class Mesh ;
+}
+
 namespace GRGMesh {
 
     class Edge ;
     class SurfacePart ;
     class ContactPart ;
-    class MixedMesh ;
 }
 
 namespace GRGMesh {
@@ -801,8 +804,7 @@ template< class T > static bool contains(
     public:
         ColocaterANN( const SurfacePart& mesh ) ;
         ColocaterANN( const ContactPart& mesh ) ;
-        ColocaterANN( const MixedMesh& mesh ) ;
-        ColocaterANN( const MixedMesh& mesh, bool use_surface_id ) ;
+        ColocaterANN( const GEO::Mesh& mesh ) ;
         ColocaterANN( const std::vector< vec3 >& vertices ) ;
         ColocaterANN( float64* vertices, uint32 nb_vertices ) ;
         ColocaterANN( const std::vector< Edge >& edges ) ;
