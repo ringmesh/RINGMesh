@@ -14,7 +14,7 @@ else
    exit
 fi
 
-os="$1"
+os="$2"
 if [ -z "$os" ]; then
     os=`uname -a`
     case "$os" in
