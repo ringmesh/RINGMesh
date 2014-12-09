@@ -40,11 +40,6 @@ namespace GRGMesh {
         }
     }
 
-    uint32 MacroMesh::nb_regions() const
-    {
-        return model_->nb_regions() ;
-    }
-
     void MacroMesh::initialize_background_meshes( uint8 dim )
     {
         for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
