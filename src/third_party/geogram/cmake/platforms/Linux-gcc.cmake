@@ -6,15 +6,29 @@ include(${CMAKE_SOURCE_DIR}/cmake/platforms/Linux.cmake)
 
 # Warning flags
 set(NORMAL_WARNINGS -Wall -Wextra)
-set(FULL_WARNINGS
-    ${NORMAL_WARNINGS}
-    -pedantic
-    -Wno-long-long
-    # Detect conversion problems (lot of warnings)
-    -Wconversion
-    -Wsign-conversion
-    -Wdouble-promotion
-)
+execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
+                OUTPUT_VARIABLE GCC_VERSION)
+if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
+    message(STATUS "Version >= 4.3")
+    set(FULL_WARNINGS
+        ${NORMAL_WARNINGS}
+        -pedantic
+        -Wno-long-long
+        # Detect conversion problems (lot of warnings)
+        -Wconversion
+        -Wsign-conversion
+        -Wdouble-promotion
+    )
+else (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
+    message(STATUS "Version < 4.3")
+    set(FULL_WARNINGS
+        ${NORMAL_WARNINGS}
+        -pedantic
+        -Wno-long-long
+        # Detect conversion problems (lot of warnings)
+        -Wconversion
+    )
+endif()
 
 # Compile with full warnings by default
 add_definitions(${FULL_WARNINGS})
