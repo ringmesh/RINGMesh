@@ -24,7 +24,8 @@ namespace GRGMesh {
             meshes_( model->nb_regions(), nil ),
             background_meshes_( model->nb_regions(), nil ),
             vertices_( model->nb_regions() ),
-            well_vertices_( model->nb_regions() )
+            well_vertices_( model->nb_regions()),
+            nb_vertices_( -1 )
     {
         for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;
