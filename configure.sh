@@ -1,13 +1,18 @@
 #!/bin/sh
+if [ $# -eq 0 ]; then
+    CMAKE=cmake
+else
+    CMAKE=$1
+fi
+
 echo ============= Checking for cmake ============
-if (cmake --version)
+if ($CMAKE --version)
 then
    echo "found CMake"
 else
    echo "cmake not found, please install it (see http://www.cmake.org/)" 
    exit
 fi
-
 
 os="$1"
 if [ -z "$os" ]; then
@@ -46,7 +51,7 @@ do
    build_dir=build/geogram/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; cmake -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DGEOGRAM_WITH_TETGEN:BOOL=TRUE -DCMAKE_C_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; cmake --build .)
+   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DGEOGRAM_WITH_TETGEN:BOOL=TRUE -DCMAKE_C_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; $CMAKE --build .)
 done
 echo
 echo ============== GeoGram build configured ==================
@@ -64,7 +69,7 @@ do
    build_dir=build/grgmesh/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; cmake -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DGEOGRAM_PLATFORM:STRING=$os ../../../)
+   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DGEOGRAM_PLATFORM:STRING=$os ../../../)
 done
 echo
 echo ============== GRGMesh build configured ==================
