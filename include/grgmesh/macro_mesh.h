@@ -84,6 +84,30 @@ namespace GRGMesh {
             return model_ ;
         }
         inline uint32 nb_regions() const ;
+      
+        uint32 nb_vertices() {
+        	if( nb_vertices_ != -1) {
+        		return nb_vertices_ ;
+        	}
+        	uint32 nb_non_unique_vertices = 0;
+        	for(uint32 i = 0; i < meshes_.size() ;i++) {
+        		nb_non_unique_vertices += meshes_[i]->nb_vertices() ;
+        	}
+        	std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
+        	uint32 index = 0 ;
+        	for(uint32 i = 0; i < meshes_.size() ;i++) {
+        		for(uint32 j = 0; j < meshes_[i]->nb_vertices(); j++) {
+        		all_vertices[index]= vec3( meshes_[i]->vertex_ptr(j)[0], meshes_[i]->vertex_ptr(j)[1], meshes_[i]->vertex_ptr(j)[2] );
+        		index++ ;
+        		}
+        	}
+        	std::vector< vec3 > unique_vertices ;
+        	MakeUnique mu(all_vertices) ;
+        	mu.unique_points(unique_vertices) ;
+        	nb_vertices_ = unique_vertices.size() ;
+        	return nb_vertices_ ;
+        }
+
     protected:
         /// BoundaryModel representing the structural information of the mesh
         const BoundaryModel* model_ ;
@@ -95,6 +119,8 @@ namespace GRGMesh {
         std::vector< std::vector< vec3 > > vertices_ ;
         /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
         std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
+    private:
+        uint32 nb_vertices_ ;
     } ;
 
 }
