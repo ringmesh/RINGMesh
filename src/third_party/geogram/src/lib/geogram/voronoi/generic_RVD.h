@@ -567,7 +567,7 @@ namespace GEOGen {
             ) const {
                 GEO::geo_argused(f);
                 for(index_t i = 0; i < P.nb_vertices(); i++) {
-                    const RestrictedVoronoiDiagram::Vertex& ve = P.vertex(i);
+                    const Vertex& ve = P.vertex(i);
                     // Primal triangles correspond to vertices of
                     // the RVD that are on two bisectors.
                     if(ve.sym().nb_bisectors() == 2) {

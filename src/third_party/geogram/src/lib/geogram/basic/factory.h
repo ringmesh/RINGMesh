@@ -232,7 +232,7 @@ namespace GEO {
              * \see Factory::register_creator()
              */
             RegisterCreator(const std::string& name) {
-                Factory::register_creator<ConcreteType>(name);
+                Factory::template register_creator<ConcreteType>(name);
             }
         };
 
@@ -383,6 +383,13 @@ namespace GEO {
 #define geo_register_creator(FactoryType, ConcreteType, name) \
     static FactoryType::RegisterCreator<ConcreteType> \
     CPP_CONCAT(Factory_register_creator_, __LINE__) (name)
+
+
+//template< class F >
+//template< class C >
+//Factory<F>::RegisterCreator<C>::RegisterCreator(const std::string& name) {
+//                Factory<F>::template register_creator<C>(name);
+//            }
 }
 
 #endif
