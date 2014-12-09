@@ -1,8 +1,17 @@
 @echo OFF
 setlocal ENABLEDELAYEDEXPANSION 
 
-set GENERATOR="Visual Studio 10 Win64"
-set CMAKE_PATH="C:\Program Files (x86)\CMake 2.8"
+IF [%1] == [] (
+    set GENERATOR="Visual Studio 10 Win64"
+) else (
+    set GENERATOR=%1
+)
+
+IF [%2] == [] (
+    set CMAKE_PATH="C:\Program Files (x86)\CMake 2.8"
+) else (
+    set CMAKE_PATH=%2
+)
 set CMAKE_EXECUTABLE=%CMAKE_PATH%\bin\cmake
 
 rem Possible values for the generator (-G) are as follow. Ues the one suitable for you
@@ -30,7 +39,7 @@ rem ****************************************************************************
 
 
 
-set opsys=%1
+set opsys=%3
 
 :: Checking for CMake
 
