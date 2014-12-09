@@ -673,7 +673,25 @@ namespace GEO {
             }
         }
         geo_assert((centers_.size()/3)*3 == centers_.size());
-        geo_assert((frames_.size()/9)*9 == frames_.size());        
+        geo_assert((frames_.size()/9)*9 == frames_.size());
+
+        index_t nb_vectors = frames_.size()/3;
+        for(index_t i=0; i<nb_vectors; ++i) {
+            double s = 0.0;
+            for(index_t c=0; c<3; ++c) {
+                s += frames_[3*i+c]*frames_[3*i+c];
+            }
+            s = ::sqrt(s);
+            if(s == 0.0) {
+                Logger::warn("Frames") << "Zero-length vector in frame" << std::endl;
+            } else {
+                for(index_t c=0; c<3; ++c) {
+                    frames_[3*i+c] /= s;
+                }
+            }
+        }
+
+        
         Logger::out("Frames") << "Loaded " << centers_.size()/3
                               << " frames" << std::endl;
         Logger::out("Frames") << "Creating NN search" << std::endl;

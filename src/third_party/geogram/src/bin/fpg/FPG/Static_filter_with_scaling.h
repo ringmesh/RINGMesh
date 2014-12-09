@@ -129,6 +129,6 @@ protected:
     std::set< Variable *> function_parameters;
 };
 
-};
+}
 
 #endif

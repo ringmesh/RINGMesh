@@ -31,7 +31,7 @@ struct Group_item_has_same_degree {
         return a->degree() == b->degree();
     }
 };
-};
+}
 
 unsigned int Group_item::indent_level = 0;
 
@@ -438,7 +438,8 @@ Leaf_item::collect_groups( Group_varset &groups ) {
 
 void
 Array_item::add_to_group( Variable *var ) {
-   CGAL_error_msg("can only add to leaf_items!");
+    argused(var);
+    CGAL_error_msg("can only add to leaf_items!");
 }
 
 void
@@ -448,4 +449,4 @@ Array_item::collect_groups( Group_varset &groups ) {
         (*it)->collect_groups( groups );
 }
 
-};
+}

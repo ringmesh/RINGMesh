@@ -59,6 +59,7 @@
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_AABB.h>
 #include <geogram/voronoi/CVT.h>
 #include <geogram/voronoi/RVD.h>
 #include <geogram/voronoi/generic_RVD_vertex.h>
@@ -69,17 +70,25 @@
 #include <stack>
 #include <iterator>
 
+//#define GEOGRAM_WITH_VORPALINE
+#ifdef GEOGRAM_WITH_VORPALINE
+#include <vorpalib/voronoi/LpCVT.h>
+#define CentroidalVoronoiTesselation LpCentroidalVoronoiTesselation
+#endif
+
 namespace {
     using namespace GEO;
 
-const char* banner[] = {
-" _______        ______    ____        __               ____       _           \n",
-"|  ___\\ \\      / /  _ \\  / /\\ \\      / /_ _ _ __ _ __ |  _ \\ _ __(_)_   _____ \n",
-"| |_   \\ \\ /\\ / /| | | |/ /  \\ \\ /\\ / / _` | '__| '_ \\| | | | '__| \\ \\ / / _ \\\n",
-"|  _|   \\ V  V / | |_| / /    \\ V  V / (_| | |  | |_) | |_| | |  | |\\ V /  __/\n",
-"|_|      \\_/\\_/  |____/_/      \\_/\\_/ \\__,_|_|  | .__/|____/|_|  |_| \\_/ \\___|\n",
-"                                                |_|                           \n"
-};
+    const char* banner[] = {
+        " __        __                   _      _           \n",
+        " \\ \\      / /_ _ _ __ _ __   __| |_ __(_)_   _____ \n",
+        "  \\ \\ /\\ / / _` | '__| '_ \\ / _` | '__| \\ \\ / / _ \\\n", 
+        "   \\ V  V / (_| | |  | |_) | (_| | |  | |\\ V /  __/\n",
+        "    \\_/\\_/ \\__,_|_|  | .__/ \\__,_|_|  |_| \\_/ \\___|\n",
+        "                     |_|                           \n",
+        "\n",
+        nil
+    };
 
     /**
      * \brief Computes the linear least squares
@@ -295,6 +304,9 @@ const char* banner[] = {
                 fT += Uc * Uc + Vc * Vc + Wc * Wc + Uc * Vc + Vc * Wc + Wc * Uc;
             }
             fT = m * (fT / 10.0 - w_[center_vertex_index]);
+            
+            //  Spinlocks are used in multithreading mode, to avoid
+            // that two threads update g_[center_vertex_index] simultaneously.
             if(spinlocks_ != nil) {
                 spinlocks_->acquire_spinlock(center_vertex_index);
             }
@@ -558,7 +570,7 @@ const char* banner[] = {
         /**
          * \brief Gets a point.
          * \param[in] i index of the point
-         * \return a const pointer to the point \p i
+         * \return a const pointer to the coordinates of the 4d point \p i
          */
         const double* point_ptr(index_t i) const {
             geo_debug_assert(i < nb_points());
@@ -755,94 +767,7 @@ const char* banner[] = {
     };
 
     OptimalTransportMap* OptimalTransportMap::instance_ = nil;
-
-    /**
-     * \brief Gets the triangles of the restricted Delaunay triangulation.
-     * \param[in] RVD the restricted Voronoi diagram
-     * \param[out] RDT all the facets of the restricted Delaunay triangulation
-     * \param[in] volumetric if true, the facets of the (volumetric) Delaunay
-     *   tetrahedralization are returned, else the facets of the (surfacic)
-     *   restricted Delaunay triangulation are returned
-     * \param[in] insert_flipped_triangles if true, in surfacic mode, for each
-     *  pair of adjacent triangles, the corresponding pair of flipped triangles
-     *  is inserted as well
-     */
-    void get_RDT(
-        RestrictedVoronoiDiagram* RVD,
-        std::set<trindex>& RDT,
-        bool volumetric = true,
-        bool insert_flipped_triangles = false
-    ) {
-        RDT.clear();
-        if(volumetric) {
-            vector<index_t> simplices;
-            vector<double> embedding;
-            RVD->compute_RDT(
-                simplices,
-                embedding,
-                RestrictedVoronoiDiagram::RDT_SEEDS_ALWAYS
-            );
-            for(index_t i = 0; i < simplices.size(); i += 4) {
-                index_t a = simplices[i];
-                index_t b = simplices[i + 1];
-                index_t c = simplices[i + 2];
-                index_t d = simplices[i + 3];
-                RDT.insert(trindex(a, b, c));
-                RDT.insert(trindex(a, b, d));
-                RDT.insert(trindex(a, c, d));
-                RDT.insert(trindex(b, c, d));
-            }
-        }
-        if(!volumetric || insert_flipped_triangles) {
-            RVD->set_volumetric(false);
-            vector<index_t> simplices;
-            vector<double> embedding;
-            RVD->compute_RDT(
-                simplices,
-                embedding,
-                RestrictedVoronoiDiagram::RDT_SEEDS_ALWAYS
-            );
-            RVD->set_volumetric(true);
-
-            for(index_t i = 0; i < simplices.size(); i += 3) {
-                index_t a = simplices[i];
-                index_t b = simplices[i + 1];
-                index_t c = simplices[i + 2];
-                RDT.insert(trindex(a, b, c));
-            }
-
-            if(insert_flipped_triangles) {
-                // Terribly unefficient implementation (for now)
-                //   Determine for each edge the list of triangle vertices
-                // opposite to the edge.
-                typedef std::map<bindex, std::vector<index_t> > E2T;
-                E2T e2t;
-                for(index_t i = 0; i < simplices.size(); i += 3) {
-                    index_t a = simplices[i];
-                    index_t b = simplices[i + 1];
-                    index_t c = simplices[i + 2];
-                    e2t[bindex(a, b)].push_back(c);
-                    e2t[bindex(b, c)].push_back(a);
-                    e2t[bindex(c, a)].push_back(b);
-                }
-
-                //  Insert the flipped edges into the list of triangles
-                for(
-                    E2T::const_iterator it = e2t.begin(); it != e2t.end(); ++it
-                ) {
-                    index_t a = it->first.indices[0];
-                    index_t b = it->first.indices[1];
-                    if(it->second.size() == 2) {
-                        index_t c1 = it->second[0];
-                        index_t c2 = it->second[1];
-                        RDT.insert(trindex(a, c1, c2));
-                        RDT.insert(trindex(b, c1, c2));
-                    }
-                }
-            }
-        }
-    }
-
+    
     /**
      * \brief Gets the number of connected components
      *  of each tetrahedra regions in a mesh.
@@ -887,56 +812,36 @@ const char* banner[] = {
         }
     }
 
+
     /**
-     * \brief Computes a shape that interpolates the two input tet
-     *  meshes.
-     * \param [in] CVT the Centroidal Voronoi Tesselation
-     *   used to sample the second shape
-     * \param [in] OTM the Optimal Transport Map
-     * \param [in] filenalme where to store the morphing shape
-     *  (Graphite .eobj file format)
-     * \param [in] volumetric if true, internal triangles are also saved
+     * \brief Computes the original and final vertices of
+     *  the optimal transport.
+     * \param[in] CVT the Centroidal Voronoi Tesselation that
+     *  samples the target mesh M2
+     * \param[in] OTM the Optimal Transport Map that back-projects
+     *  the samples of the target mesh M2 onto the source mesh M1
+     * \param[out] M1_vertices the source vertices, computed from
+     *  the centroids of the power cells restricted to M1
+     * \param[out] M2_vertices the destination vertices, copied
+     *  from the sampling of M2
+     * \param[out] nb_cnx_comps gives for each vertex the number of
+     *  connected components of the power cell restricted to M1
      */
-    void compute_morph(
+    void get_vertices(
         CentroidalVoronoiTesselation& CVT,
         OptimalTransportMap& OTM,
-        const std::string& filename,
-        bool volumetric = true
+        vector<vec3>& M1_vertices,
+        vector<vec3>& M2_vertices,
+        vector<index_t>& nb_cnx_comps
     ) {
-        std::ofstream out(filename.c_str());
-
-        std::set<trindex> A,A1,A2;
-        get_RDT(CVT.RVD(), A1, volumetric, true);
-        get_RDT(OTM.RVD(), A2, true, false);
-        std::set_intersection(
-            A1.begin(), A1.end(), A2.begin(), A2.end(),
-            std::inserter(A, A.begin())
-        );
-
-        std::set<trindex> B,B1,B2;
-        get_RDT(OTM.RVD(), B1, volumetric, true);
-        get_RDT(CVT.RVD(), B2, true, false);
-        std::set_intersection(
-            B1.begin(), B1.end(), B2.begin(), B2.end(),
-            std::inserter(B, B.begin())
-        );
-
-        std::set<trindex> AUB;
-        std::set_union(
-            A.begin(), A.end(), B.begin(), B.end(),
-            std::inserter(AUB, AUB.begin())
-        );
-
         index_t nb_vertices = OTM.RVD()->delaunay()->nb_vertices();
-        vector<vec3> M1_vertices(nb_vertices);
-        vector<vec3> M2_vertices(nb_vertices);
-        vector<index_t> nb_cnx_comps(nb_vertices, 0);
-        vector<index_t> nb_cnx_comps2(nb_vertices, 0);
-
+        M1_vertices.resize(nb_vertices);
+        M2_vertices.resize(nb_vertices);
+        nb_cnx_comps.assign(nb_vertices, 0);
         {
             for(index_t v = 0; v < nb_vertices; ++v) {
                 const double* p = CVT.RVD()->delaunay()->vertex_ptr(v);
-                M1_vertices[v] = vec3(p[0], p[1], p[2]);
+                M2_vertices[v] = vec3(p[0], p[1], p[2]);
             }
         }
 
@@ -979,51 +884,213 @@ const char* banner[] = {
                 if(s != 0.0) {
                     s = 1.0 / s;
                 }
-                M2_vertices[v] = s * mg[v];
+                M1_vertices[v] = s * mg[v];
             }
             get_nb_connected_components(RVD, nb_cnx_comps);
         }
+    }
 
-        out << "# attribute geom2 vertex vec3" << std::endl;
-        out << "# attribute potential vertex real" << std::endl;
+    /**
+     * \brief Tests whether a tetrahedron is included inside
+     *  a given tetrahedral mesh.
+     * \details Implemented by sampling the tetrahedron and
+     *  testing whether each sample is inside the mesh.
+     * \param[in] AABB a const reference to a MeshTetsAABB
+     * \param[in] p1 a const reference to the first vertex 
+     *  of the tetrahedron
+     * \param[in] p2 a const reference to the second vertex 
+     *  of the tetrahedron
+     * \param[in] p3 a const reference to the third vertex 
+     *  of the tetrahedron
+     * \param[in] p4 a const reference to the fourth vertex 
+     *  of the tetrahedron
+     */
+    bool mesh_contains_tet(
+        const MeshTetsAABB& AABB,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        const vec3& p4
+    ) {
+        const index_t NB = 5;
+        for(index_t u1=0; u1<=NB; ++u1) {
+            double s1 = double(u1)/double(NB);            
+            for(index_t u2=0; u1+u2<=NB; ++u2) {
+                double s2 = double(u2)/double(NB);                
+                for(index_t u3=0; u1+u2+u3<=NB; ++u3) {
+                    double s3 = double(u3)/double(NB);                    
+                    index_t u4=NB-u1-u2-u3;
+                    double s4 = double(u4)/double(NB);
 
-        index_t cur = 1;
-        for(
-            std::set<trindex>::iterator it = AUB.begin();
-            it != AUB.end(); ++it
-        ) {
-            const trindex& T = *it;
-            
-            if( 
-                nb_cnx_comps[T.indices[0]] != 1 ||
-                nb_cnx_comps[T.indices[1]] != 1 ||
-                nb_cnx_comps[T.indices[2]] != 1 
-            ) {
-                continue;
+                    // Skip the four vertices of the tetrahedron
+                    if(
+                        (u1 == NB) || (u2 == NB) ||
+                        (u3 == NB) || (u4 == NB)
+                    ) {
+                        continue;
+                    }
+                    
+                    vec3 g = s1*p1+s2*p2+s3*p3+s4*p4;
+                    if(AABB.containing_tet(g) == -1) {
+                        return false;
+                    }
+                }
             }
-
-            const vec3& p1 = M1_vertices[T.indices[0]];
-            const vec3& p2 = M1_vertices[T.indices[1]];
-            const vec3& p3 = M1_vertices[T.indices[2]];
-            const vec3& q1 = M2_vertices[T.indices[0]];
-            const vec3& q2 = M2_vertices[T.indices[1]];
-            const vec3& q3 = M2_vertices[T.indices[2]];
-            double phi1 = OTM.potential(T.indices[0]);
-            double phi2 = OTM.potential(T.indices[1]);
-            double phi3 = OTM.potential(T.indices[2]);
-            out << "v " << p1 << std::endl;
-            out << "v " << p2 << std::endl;
-            out << "v " << p3 << std::endl;
-            out << "# attrs v "
-                << cur << " " << q1 << " " << phi1 << std::endl;
-            out << "# attrs v "
-                << cur + 1 << " " << q2 << " " << phi2 << std::endl;
-            out << "# attrs v "
-                << cur + 2 << " " << q3 << " " << phi3 << std::endl;
-            out << "f " << cur + 0 << " " << cur + 1 << " " << cur + 2
-                << std::endl;
-            cur += 3;
         }
+        return true;
+    }
+    
+    /**
+     * \brief Computes a shape that interpolates the two input tet
+     *  meshes.
+     * \details The shape is composed of tetrahedra
+     * \param [in] CVT the Centroidal Voronoi Tesselation
+     *   used to sample the second shape
+     * \param [in] OTM the Optimal Transport Map
+     * \param [in] filename where to store the morphing shape
+     *  (.tet6 tet mesh 6d coordinates)
+     */
+    void compute_morph(
+        CentroidalVoronoiTesselation& CVT,
+        OptimalTransportMap& OTM,
+        const std::string& filename
+    ) {
+        Logger::out("OTM")
+            << "Computing coherent tet mesh and saving result to:"
+            << filename << std::endl;
+        std::ofstream out(filename.c_str());
+
+        // Step 1: Compute the candidate tets from the Delaunay triangulation
+        // of the samples restricted to M2.
+        vector<index_t> morph_tets;
+        morph_tets.clear();
+        {
+            vector<double> embedding;
+            CVT.RVD()->compute_RDT(
+                morph_tets,
+                embedding,
+                RestrictedVoronoiDiagram::RDT_SEEDS_ALWAYS
+            );
+        }
+
+        // Step 2: Compute the original vertices location (centroids
+        //  of power cells restricted to M1) and get the final vertices
+        //  locations (sampling of M2).
+        vector<vec3> M1_vertices;
+        vector<vec3> M2_vertices;
+        vector<index_t> nb_cnx_comps;
+        get_vertices(CVT, OTM, M1_vertices, M2_vertices, nb_cnx_comps);
+        index_t nb_vertices = M1_vertices.size();
+        Mesh morph;
+
+        //  Gather all the points coordinates in a vector of
+        // 6d points.
+        vector<double> morph_vertices(nb_vertices*6);
+        for(index_t v=0; v<nb_vertices; ++v) {
+            morph_vertices[v*6  ] = M2_vertices[v].x;
+            morph_vertices[v*6+1] = M2_vertices[v].y;
+            morph_vertices[v*6+2] = M2_vertices[v].z;
+            morph_vertices[v*6+3] = M1_vertices[v].x;
+            morph_vertices[v*6+4] = M1_vertices[v].y;
+            morph_vertices[v*6+5] = M1_vertices[v].z;            
+        }
+
+        // Step 3: Filter-out the tets incident to a vertex
+        // that splits during transport.
+        index_t nb_tets = morph_tets.size()/4;
+        vector<bool> tet_to_remove(nb_tets, false);
+        for(index_t t=0; t<nb_tets; ++t) {
+            for(index_t lv=0; lv<4; ++lv) {
+                index_t v = morph_tets[4*t+lv];
+                if(nb_cnx_comps[v] > 1) {
+                    tet_to_remove[t] = true;
+                    break;
+                }
+            }
+        }
+
+        // Step 4: Filter-out the tets that are not contained by
+        // the initial mesh M1.
+        MeshTetsAABB AABB(*OTM.RVD()->mesh());
+        try {
+            ProgressTask progress("Classifying", 100);        
+            for(index_t t=0; t<nb_tets; ++t) {
+                progress.progress(t * 100 / nb_tets);
+                if(!tet_to_remove[t]) {
+                    vec3 p[4];
+                    for(index_t lv=0; lv<4; ++lv) {
+                        for(coord_index_t c=0; c<3; ++c) {
+                            index_t v = morph_tets[4*t+lv];
+                            p[lv][c] = morph_vertices[v*6+3+c];
+                        }
+                    }
+                    if(!mesh_contains_tet(AABB, p[0], p[1], p[2], p[3])) {
+                        tet_to_remove[t] = true;
+                    }
+                }
+            }
+        } catch(...) {
+        }
+
+        // Step 5: create the output mesh.
+        vector<index_t> filtered_morph_tets;
+        for(index_t t=0; t<nb_tets; ++t) {
+            if(!tet_to_remove[t]) {
+                filtered_morph_tets.push_back(morph_tets[4*t]);
+                filtered_morph_tets.push_back(morph_tets[4*t+1]);
+                filtered_morph_tets.push_back(morph_tets[4*t+2]);
+                filtered_morph_tets.push_back(morph_tets[4*t+3]);
+            }
+        }
+        
+        morph.assign_tet_mesh(6, morph_vertices, filtered_morph_tets, true);
+        morph.connect_cells();
+        morph.compute_cells_boundaries();
+        
+        std::string extension = FileSystem::extension(filename);
+        if(extension == "obj6") {
+            mesh_save(morph, filename);            
+        } else if(extension == "tet6") {
+            MeshIOFlags flags;
+            flags.set_element(MESH_CELLS);
+            mesh_save(morph, filename, flags);
+        } else if(extension == "eobj") {
+            mesh_repair(morph);
+            std::ofstream out(filename.c_str());
+            if(!out) {
+                Logger::err("OTM")
+                    << filename
+                    << ": cannot create file"
+                    << std::endl;
+                return;
+            }
+            out << "# attribute geom2 vertex vec3" << std::endl;
+            out << "# attribute potential vertex real" << std::endl;
+            for(index_t v=0; v<morph.nb_vertices(); ++v) {
+                out << "v " << M2_vertices[v] << std::endl;
+                out << "# attrs v " << v+1 << " " << M1_vertices[v] << " "
+                    << OTM.potential(v)
+                    << std::endl;
+            }
+            for(index_t f=0; f<morph.nb_facets(); ++f) {
+                out << "f ";
+                for(
+                    index_t c=morph.facet_begin(f);
+                    c<morph.facet_end(f); ++c) {
+                    out << morph.corner_vertex_index(c)+1 << " ";
+                }
+                out << std::endl;
+            }
+        } else {
+            Logger::warn("OTM")
+                << filename
+                << "Unknown extension for transport"
+                << std::endl;
+            MeshIOFlags flags;
+            flags.set_element(MESH_CELLS);
+            mesh_save(morph, filename, flags);
+        }
+        
     }
 
     /**
@@ -1283,9 +1350,7 @@ const char* banner[] = {
 
         if(CmdLine::get_arg_bool("feature_sensitive")) {
 
-  // Note: deactivated for now, since LpCVT is in vorpaline
-  // and not in geogram...
-  /*            
+#ifdef GEOGRAM_WITH_VORPALINE            
             try {
                 ProgressTask progress("LpCVT", 100);
                 CVT.set_progress_logger(&progress);
@@ -1295,7 +1360,7 @@ const char* banner[] = {
             catch(const TaskCanceled&) {
             }
             CVT.set_normal_anisotropy(1.0);
-  */
+#endif
         }
 
         vector<double> mg(3 * CVT.nb_points());
@@ -1365,7 +1430,8 @@ const char* banner[] = {
         get_bbox(M1, xyzmin1, xyzmax1);
         get_bbox(M2, xyzmin2, xyzmax2);
         for(coord_index_t c=0; c<3; ++c) {
-            xlat[c] = 0.5* ((xyzmin1[c] + xyzmax1[c]) - (xyzmin2[c] + xyzmax2[c]));
+            xlat[c] = 0.5*
+                ((xyzmin1[c] + xyzmax1[c]) - (xyzmin2[c] + xyzmax2[c]));
         }
         for(index_t v=0; v<M2.nb_vertices(); ++v) {
             for(coord_index_t c=0; c<3; ++c) {
@@ -1430,7 +1496,6 @@ int main(int argc, char** argv) {
         CmdLine::declare_arg("nb_iter", 1000, "number of iterations for OTM");
         CmdLine::declare_arg("RDT", false, "save regular triangulation");
         CmdLine::declare_arg("RVD", false, "save restricted Voronoi diagram");
-        CmdLine::declare_arg("volumetric", true, "show internal triangles");
         CmdLine::declare_arg("multilevel", true, "use multilevel algorithm");
         CmdLine::declare_arg("BRIO", true, 
                              "use BRIO reordering to compute the levels"
@@ -1461,10 +1526,15 @@ int main(int argc, char** argv) {
         CmdLine::declare_arg(
             "rescale", false, "rescale target to match source volume"
         );
+        CmdLine::declare_arg(
+            "out", "morph.tet6", "output filename"
+        );
         
-        Logger::div("Fast Wasserstein Distance / WarpDrive");
-        for(index_t i=0; i<6; ++i) {
-            CmdLine::ui_message(banner[i]);
+        Logger::div("Warpdrive - Optimal Transport");
+        const char** banner_line = banner;
+        while(*banner_line) {
+            CmdLine::ui_message(*banner_line);
+            banner_line++;
         }
         
         if(
@@ -1477,7 +1547,11 @@ int main(int argc, char** argv) {
 
         std::string mesh1_filename = filenames[0];
         std::string mesh2_filename = filenames[1];
-
+        std::string output_filename = CmdLine::get_arg("out");
+        if(filenames.size() == 3) {
+            output_filename = filenames[2];
+        }
+        
         Logger::div("Loading data");
 
         Mesh M1;
@@ -1583,10 +1657,11 @@ int main(int argc, char** argv) {
 
         Logger::div("Morphing");
         Logger::out("OTM") <<  "Time-coherent triangulation." << std::endl;
+
         compute_morph(
-            CVT, OTM, "morph.eobj",
-            CmdLine::get_arg_bool("volumetric")
+            CVT, OTM, output_filename
         );
+        
 
         if(CmdLine::get_arg_bool("singular")) {
             Logger::out("OTM") << "Computing singular set." << std::endl;

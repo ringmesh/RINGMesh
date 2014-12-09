@@ -51,7 +51,7 @@ struct Node {
     virtual Type* computeType() = 0;
 
     // print out a tree representation of the AST
-    virtual void dump( int level = 0 ) {}
+    virtual void dump( int level = 0 ) { argused(level); }
     void dumpPrefix( int level );
 
     virtual bool hasToplevelVariableDeclaration() { return false; }
@@ -447,11 +447,11 @@ struct Is_equal_to_expression {
 extern Expression *uncertain_return_value;
 
 
-}; // end namespace
+} // end namespace
 
 struct Expression_filter {
     virtual ~Expression_filter() {}
-    virtual bool operator()( AST::Expression *e ) { return false; }
+    virtual bool operator()( AST::Expression *e ) { argused(e); return false; }
 };
 
 AST::Expression* make_fe_condition();

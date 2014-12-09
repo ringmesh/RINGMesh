@@ -46,6 +46,7 @@
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/numerics/predicates.h>
 
 namespace {
 
@@ -75,6 +76,31 @@ namespace {
         }
     }
 
+
+    /**
+     * \brief Computes the axis-aligned bounding box of a mesh tetrahedron.
+     * \param[in] M the mesh
+     * \param[out] B the bounding box of the facet
+     * \param[in] t the index of the tetrahedron in mesh \p M
+     */
+    void get_tet_bbox(
+        const Mesh& M, Box& B, index_t t
+    ) {
+        const double* p = M.vertex_ptr(M.tet_vertex_index(t,0));
+        for(coord_index_t coord = 0; coord < 3; ++coord) {
+            B.xyz_min[coord] = p[coord];
+            B.xyz_max[coord] = p[coord];
+        }
+        for(index_t lv=1; lv<4; ++lv) {
+            p = M.vertex_ptr(M.tet_vertex_index(t,lv));
+            for(coord_index_t coord = 0; coord < 3; ++coord) {
+                B.xyz_min[coord] = geo_min(B.xyz_min[coord], p[coord]);
+                B.xyz_max[coord] = geo_max(B.xyz_max[coord], p[coord]);
+            }
+        }
+    }
+
+    
     /**
      * \brief Computes the maximum node index in a subtree
      * \param[in] node_index node index of the root of the subtree
@@ -98,21 +124,31 @@ namespace {
 
     /**
      * \brief Computes the hiearchy of bounding boxes recursively.
+     * \details This function is generic and can be used to compute
+     *  a bbox hierarchy of arbitrary elements.
      * \param[in] M the mesh
      * \param[in] bboxes the array of bounding boxes
      * \param[in] node_index the index of the root of the subtree
-     * \param[in] b first facet index in the subtree
-     * \param[in] e one position past the last facet index in the subtree
+     * \param[in] b first element index in the subtree
+     * \param[in] e one position past the last element index in the subtree
+     * \param[in] get_bbox a function that computes the bbox of an element
+     * \tparam GET_BBOX a function (or a functor) with the following arguments:
+     *  - mesh: a const reference to the mesh
+     *  - box: a reference where the computed bounding box of the element 
+     *   will be stored
+     *  - element: the index of the element
      */
+    template <class GET_BBOX>
     void init_bboxes_recursive(
         const Mesh& M, vector<Box>& bboxes,
         index_t node_index,
-        index_t b, index_t e
+        index_t b, index_t e,
+        const GET_BBOX& get_bbox
     ) {
         geo_debug_assert(node_index < bboxes.size());
         geo_debug_assert(b != e);
         if(b + 1 == e) {
-            get_facet_bbox(M, bboxes[node_index], b);
+            get_bbox(M, bboxes[node_index], b);
             return;
         }
         index_t m = b + (e - b) / 2;
@@ -120,8 +156,8 @@ namespace {
         index_t childr = 2 * node_index + 1;
         geo_debug_assert(childl < bboxes.size());
         geo_debug_assert(childr < bboxes.size());
-        init_bboxes_recursive(M, bboxes, childl, b, m);
-        init_bboxes_recursive(M, bboxes, childr, m, e);
+        init_bboxes_recursive(M, bboxes, childl, b, m, get_bbox);
+        init_bboxes_recursive(M, bboxes, childr, m, e, get_bbox);
         geo_debug_assert(childl < bboxes.size());
         geo_debug_assert(childr < bboxes.size());
         bbox_union(bboxes[node_index], bboxes[childl], bboxes[childr]);
@@ -223,6 +259,39 @@ namespace {
         }
         return result;
     }
+
+    /**
+     * \brief Tests whether a mesh tetrahedron contains a given point
+     * \param[in] M a const reference to the mesh
+     * \param[in] t the index of the tetrahedron in \p M
+     * \param[in] p a const reference to the point
+     * \param[in] exact specifies whether exact predicates should be used
+     * \retval true if the tetrahedron \p t or its boundary contains 
+     *  the point \p p
+     * \retval false otherwise
+     */
+    bool mesh_tet_contains_point(
+        const Mesh& M, index_t t, const vec3& p, bool exact = true
+    ) {
+        // Inexact mode is not implemented yet.
+        geo_argused(exact);
+
+        const vec3& p0 = Geom::mesh_vertex(M, M.tet_vertex_index(t,0));
+        const vec3& p1 = Geom::mesh_vertex(M, M.tet_vertex_index(t,0));
+        const vec3& p2 = Geom::mesh_vertex(M, M.tet_vertex_index(t,0));
+        const vec3& p3 = Geom::mesh_vertex(M, M.tet_vertex_index(t,0));
+
+        Sign s[4];
+        s[0] = PCK::orient_3d(p, p1, p2, p3);
+        s[1] = PCK::orient_3d(p0, p, p2, p3);
+        s[2] = PCK::orient_3d(p0, p1, p, p3);
+        s[3] = PCK::orient_3d(p0, p1, p2, p);
+
+        return (
+            (s[0] >= 0 && s[1] >= 0 && s[2] >= 0 && s[3] >= 0) ||
+            (s[0] <= 0 && s[1] <= 0 && s[2] <= 0 && s[3] <= 0)
+        );
+    }
 }
 
 /****************************************************************************/
@@ -243,7 +312,7 @@ namespace GEO {
             ) + 1 // <-- this is because size == max_index + 1 !!!
         );
         init_bboxes_recursive(
-            mesh_, bboxes_, 1, 0, mesh_.nb_facets()
+            mesh_, bboxes_, 1, 0, mesh_.nb_facets(), get_facet_bbox
         );
     }
 
@@ -345,5 +414,55 @@ namespace GEO {
             }
         }
     }
+
+/****************************************************************************/
+
+    MeshTetsAABB::MeshTetsAABB(Mesh& M, bool reorder) : mesh_(M) {
+        geo_assert(mesh_.is_tetrahedralized());
+        if(reorder) {
+            mesh_reorder(mesh_, MESH_ORDER_MORTON);
+        }
+        bboxes_.resize(
+            max_node_index(
+                1, 0, mesh_.nb_tets()
+            ) + 1 // <-- this is because size == max_index + 1 !!!
+        );
+        init_bboxes_recursive(
+            mesh_, bboxes_, 1, 0, mesh_.nb_tets(), get_tet_bbox
+        );
+    }
+
+    signed_index_t MeshTetsAABB::containing_tet_recursive(
+        const vec3& p, bool exact,
+        index_t n, index_t b, index_t e        
+    ) const {
+
+        if(!bboxes_[n].contains(p)) {
+            return -1;
+        }
+        
+        if(e==b+1) {
+            if(mesh_tet_contains_point(mesh_, b, p, exact)) {
+                return signed_index_t(b);
+            } else {
+                return -1;
+            }
+        }
+        
+        index_t m = b + (e - b) / 2;
+        index_t childl = 2 * n;
+        index_t childr = 2 * n + 1;
+
+        signed_index_t result = containing_tet_recursive(
+            p, exact, childl, b, m
+        );
+        if(result == -1) {
+            result = containing_tet_recursive(p, exact, childr, m, e);
+        }
+        return result;
+    }
+    
+/****************************************************************************/
+        
 }
 

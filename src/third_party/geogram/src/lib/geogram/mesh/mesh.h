@@ -800,6 +800,20 @@ namespace GEOGen {
             geo_debug_assert(lv < cell_nb_vertices(c));
             return cell_vertices_[cell_vertices_begin(c) + lv];
         }
+
+
+        /**
+         * \brief Gets a pointer to the vertex index associated
+         *  with the first vertex of a given cell.
+         * \param[in] c the index of the cell
+         * \return a pointer to the vertex index associated with 
+         *  the first vertex of cell \p c
+         */
+        index_t* cell_vertex_index_ptr(index_t c) {
+            geo_debug_assert(c < nb_cells());
+            return &(cell_vertices_[cell_vertices_begin(c)]);
+        }
+
         
         /**
          * \brief Gets the number of facets of a cell.
@@ -1227,9 +1241,10 @@ namespace GEOGen {
         }
 
 
-        /** @} */
-
-    protected:
+        /** @}          
+         * \name Low-level cell access and modification.
+         * @{
+         */
 
         /**
          * \brief Lookup tables that describe the combinatorics
@@ -1293,7 +1308,25 @@ namespace GEOGen {
             return tetrahedralized_ ? (c*4) : cell_ptr_[c];
         }
         
+        /**
+         * \brief Gets a cell descriptor by cell index.
+         * \param[in] c index of the cell
+         * \return a const reference to the descriptor of cell \p c
+         */
+        static CellDescriptor& cell_type_to_cell_descriptor(
+            GEO::MeshCellType t
+        ) {
+            geo_debug_assert(index_t(t) < GEO::MESH_NB_CELL_TYPES);
+            return *cell_type_to_cell_descriptor_[t];
+        }
         
+
+        /**
+         * @}
+         */
+
+    protected:
+
         /**
          * \brief Tests whether a vector contains a non-zero value.
          * \details This function is used internally by remove_vertices() and
@@ -1311,31 +1344,19 @@ namespace GEOGen {
             return false;
         }
         
-
+        /**
+         * \brief Maps a cell type to the associated cell descriptor.
+         */
+        static CellDescriptor*
+        cell_type_to_cell_descriptor_[GEO::MESH_NB_CELL_TYPES];
+        
         static CellDescriptor tet_descriptor_;
         static CellDescriptor hex_descriptor_;
         static CellDescriptor prism_descriptor_;
         static CellDescriptor pyramid_descriptor_;
         static CellDescriptor connector_descriptor_;        
 
-        /**
-         * \brief Gets a cell descriptor by cell index.
-         * \param[in] c index of the cell
-         * \return a const reference to the descriptor of cell \p c
-         */
-        static CellDescriptor& cell_type_to_cell_descriptor(
-            GEO::MeshCellType t
-        ) {
-            geo_debug_assert(index_t(t) < GEO::MESH_NB_CELL_TYPES);
-            return *cell_type_to_cell_descriptor_[t];
-        }
         
-        /**
-         * \brief Maps a cell type to the associated cell descriptor.
-         */
-        static CellDescriptor*
-        cell_type_to_cell_descriptor_[GEO::MESH_NB_CELL_TYPES];
-
         GEO::vector<index_t> corner_vertices_;
         GEO::vector<signed_index_t> corner_adjacent_facets_;
         GEO::vector<index_t> facet_ptr_;
@@ -1702,12 +1723,18 @@ namespace GEOGen {
         }
 
         /**
-         * \brief Removes all the vertices that have no incident facet.
+         * \brief Removes all the vertices that have no incident facet
+         *   and no incident cell.
          */
         void remove_isolated_vertices() {
             GEO::vector<index_t> to_remove(nb_vertices(), 1);
             for(index_t c = 0; c < nb_corners(); c++) {
                 to_remove[corner_vertex_index(c)] = 0;
+            }
+            for(index_t c=0; c<nb_cells(); ++c) {
+                for(index_t lv=0; lv<cell_nb_vertices(c); ++lv) {
+                    to_remove[cell_vertex_index(c,lv)] = 0;
+                }
             }
             remove_vertices(to_remove);
         }
@@ -1715,7 +1742,7 @@ namespace GEOGen {
         /**
          * \brief Removes facets using a vector of flags
          * \details Removes all facets \c f for which the flag \c to_remove[f]
-         * is non null.
+         * is non-zero.
          * \param[in,out] to_remove vector of flags specifying which facet 
          *  to remove. The number of flags in the vector must be the same 
          *  as the number of facets.
@@ -1729,6 +1756,7 @@ namespace GEOGen {
             GEO::vector<index_t>& to_remove,
             bool do_remove_isolated_vertices=true
         ) {
+            // TODO: attributes management
             geo_assert(to_remove.size() == nb_facets());
             if(!has_non_zero_value(to_remove)) {
                 return;

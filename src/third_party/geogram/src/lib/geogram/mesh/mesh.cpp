@@ -162,7 +162,7 @@ namespace GEOGen {
     MeshBase::CellDescriptor MeshBase::connector_descriptor_ = {
         4,             // nb_vertices
         3,             // nb_facets
-        {4,3,3},   // nb_vertices in facet
+        {4,3,3},       // nb_vertices in facet
         {              // facets
             {0,1,2,3},
             {2,1,0},

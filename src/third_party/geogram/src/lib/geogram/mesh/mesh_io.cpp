@@ -594,10 +594,15 @@ namespace {
                     
                     for(index_t i = 0; i < index_t(NmbHex); i++) {
                         int v[8], ref;
+
+                        // Swapping vertices 1<->0 and 4<->5 to
+                        // account for differences in the indexing
+                        // convetions in .mesh/.meshb files w.r.t.
+                        // geogram internal conventions.
                         int res = GmfGetLin(
                             InpMsh, GmfHexahedra,
-                            &v[0], &v[1], &v[2], &v[3],
-                            &v[4], &v[5], &v[6], &v[7],                            
+                            &v[1], &v[0], &v[2], &v[3],
+                            &v[5], &v[4], &v[6], &v[7],                            
                             &ref
                         );
                         if(!res) {
@@ -711,7 +716,7 @@ namespace {
                         builder.target()->add_pyramid(
                             index_t(v[0]-1), index_t(v[1]-1), index_t(v[2]-1), 
                             index_t(v[3]-1), index_t(v[4]-1),
-                            -1,-1,-1,-1,-1, // faces adjacencies                                                        
+                            -1,-1,-1,-1,-1, // faces adjacencies  
                             ref
                        );
                     }
@@ -871,14 +876,18 @@ namespace {
                         GmfSetKwd(OutMsh, GmfHexahedra, nb_hexes);
                         for(index_t c=0; c<M.nb_cells(); ++c) {
                             if(M.cell_type(c) == MESH_HEX) {
+                                // Swapping vertices 1<->0 and 4<->5 to
+                                // account for differences in the indexing
+                                // convetions in .mesh/.meshb files w.r.t.
+                                // geogram internal conventions.
                                 GmfSetLin(
                                     OutMsh, GmfHexahedra,
-                                    M.cell_vertex_index(c, 0) + 1,
                                     M.cell_vertex_index(c, 1) + 1,
+                                    M.cell_vertex_index(c, 0) + 1,
                                     M.cell_vertex_index(c, 2) + 1,
                                     M.cell_vertex_index(c, 3) + 1,
-                                    M.cell_vertex_index(c, 4) + 1,
                                     M.cell_vertex_index(c, 5) + 1,
+                                    M.cell_vertex_index(c, 4) + 1,
                                     M.cell_vertex_index(c, 6) + 1,
                                     M.cell_vertex_index(c, 7) + 1,
                                     save_cell_regions ? M.cell_region(c) : 0

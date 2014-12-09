@@ -83,7 +83,6 @@ namespace GRGMesh {
         {
             return model_ ;
         }
-        inline uint32 nb_regions() const ;
       
         uint32 nb_vertices() {
         	if( nb_vertices_ != -1) {

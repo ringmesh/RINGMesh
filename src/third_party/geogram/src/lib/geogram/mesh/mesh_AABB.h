@@ -131,7 +131,7 @@ namespace GEO {
          *  re-ordered (using Morton's order, see mesh_reorder()).
          * \param[in] reorder if not set, Morton re-ordering is
          *  skipped (but it means that mesh_reorder() was previously
-         *  called).
+         *  called else the algorithm will be pretty unefficient).
          */
         MeshFacetsAABB(Mesh& M, bool reorder = true);
 
@@ -328,6 +328,64 @@ namespace GEO {
         vector<Box> bboxes_;
         Mesh& mesh_;
     };
+
+    /***********************************************************************/
+
+    /**
+     * \brief Axis Aligned Bounding Box tree of mesh tetrahedra.
+     * \details Used to quickly find the tetrahedron that contains
+     *  a given 3d point.
+     */
+    class GEOGRAM_API MeshTetsAABB {
+    public:
+        /**
+         * \brief Creates the Axis Aligned Bounding Boxes tree.
+         * \param[in] M the input mesh. It can be modified,
+         *  and will be triangulated (if
+         *  not already a triangular mesh). The facets are
+         *  re-ordered (using Morton's order, see mesh_reorder()).
+         * \param[in] reorder if not set, Morton re-ordering is
+         *  skipped (but it means that mesh_reorder() was previously
+         *  called else the algorithm will be pretty unefficient).
+         */
+        MeshTetsAABB(Mesh& M, bool reorder = true);
+
+        /**
+         * \brief Finds the index of a tetrahedron that contains a query point
+         * \param[in] p a const reference to the query point
+         * \param[in] exact specifies whether exact predicates should be used
+         * \return the index of one of the tetrahedra that contains \p p or
+         *  -1 if \p p is outside the mesh.
+         */
+        signed_index_t containing_tet(const vec3& p, bool exact =true) const {
+            return containing_tet_recursive(
+                p, exact, 1, 0, mesh_.nb_tets()
+            );
+        }
+        
+    protected:
+
+        /**
+         * \brief The recursive function used by the implementation
+         *  of containing_tet().
+         * \param[in] p a const reference to the query point
+         * \param[in] exact specifies whether exact predicates should be used
+         * \param[in] n index of the current node in the AABB tree
+         * \param[in] b index of the first tet in the subtree under node \p n
+         * \param[in] e one position past the index of the last tet in the
+         *  subtree under node \p n
+         * \return the index of one of the tetrahedra that contains \p p, or
+         *  -1 if \p p is outside the mesh.
+         */
+        signed_index_t containing_tet_recursive(
+            const vec3& p, bool exact, 
+            index_t n, index_t b, index_t e
+        ) const;
+        
+        vector<Box> bboxes_;
+        Mesh& mesh_;
+    };
+    
 }
 
 #endif

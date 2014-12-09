@@ -72,7 +72,7 @@ namespace GRGMesh {
         return true ;
     }
 
-    void Utils::check_mesh(
+    void Utils::check_and_repair_mesh_consistency(
         const BoundaryModelElement& region,
         GEO::Mesh& mesh,
         bool check_duplicated_facet )

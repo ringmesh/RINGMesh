@@ -132,7 +132,7 @@ for config in Release Debug; do
 
    build_dir=build/$platform
    mkdir -p $build_dir
-   (cd $build_dir; cmake -DCMAKE_BUILD_TYPE:STRING=$config -DVORPALINE_PLATFORM:STRING=$os $cmake_options ../../; cmake --build .)
+   (cd $build_dir; cmake -DCMAKE_BUILD_TYPE:STRING=$config -DVORPALINE_PLATFORM:STRING=$os $cmake_options ../../)
 done
 
 echo

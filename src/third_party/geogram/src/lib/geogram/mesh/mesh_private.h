@@ -184,6 +184,16 @@ namespace GEOGen {
         }
 
         /**
+         * \brief Gets the internal cell vertices vector of a mesh.
+         * \param[in] M the mesh
+         * \return a reference to the internal cell vertices vector of
+         *  mesh \p M
+         */
+        static GEO::vector<index_t>& cell_vertices(MESH& M) {
+            return M.cell_vertices_;
+        }
+        
+        /**
          * \brief Gets the internal tetrahedra adjacency vector of a mesh.
          * \param[in] M the mesh
          * \return a reference to the internal tetrahedra adjacency vector

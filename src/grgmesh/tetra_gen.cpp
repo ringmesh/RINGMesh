@@ -518,7 +518,7 @@ tetgenio::init( P ) ;
 
 
         tetmesh_builder_.end_mesh() ;
-        Utils::check_mesh( *region_, tetmesh_ ) ;
+        Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
 
         /*
         std::vector< bool > is_triangle_visited ( false, nb_triangles ) ;
@@ -841,7 +841,7 @@ tetgenio::init( P ) ;
 
 
         tetmesh_builder_.end_mesh() ;
-        Utils::check_mesh( *region_, tetmesh_ ) ;
+        Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
 
             /*
         uint32 cur_index_line = 0 ;

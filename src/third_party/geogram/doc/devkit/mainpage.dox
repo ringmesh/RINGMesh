@@ -74,14 +74,20 @@ by renaming CMakeOptions.txt.sample as CMakeOptions.txt, modifying it and re-run
 
 Linux
 -----
-- run configure.sh
+- sh -f configure.sh
 - cd build/Linux64-gcc-Release
 - make
 
 Windows
 -------
-- run configure.bat
-- open the DSW file in the build/ directory
+- start CMake (cmake-gui)
+- Where is the source code: the_directory_where_geogram_is_installed
+- Where to build the binaries: the_directory_where_geogram_is_installed/build/windows
+- Push the 'configure' button (and ignore the warning about Doxygen)
+- Push the 'generate' button
+- Open the_directory_where_geogram_is_installed/build/windows/Vorpaline.sln in Visual studio
+- Select the 'Release' or 'Debug' (default) configuration (pulldown menu)
+- Build the solution (F7)
 
 Example programs
 ----------------

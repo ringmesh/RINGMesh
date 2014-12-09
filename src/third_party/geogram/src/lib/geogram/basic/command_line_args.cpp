@@ -502,6 +502,13 @@ namespace {
         set_arg("remesh", false);
         set_arg("co3ne", true);
     }
+
+    /**
+     * \brief Sets the hex-dominant meshing profile
+     */
+    void set_profile_hex() {
+        set_arg("hex", true);
+    }
 }
 
 namespace GEO {
@@ -562,6 +569,8 @@ namespace GEO {
                 set_profile_heal();
             } else if(name == "reconstruct") {
                 set_profile_reconstruct();
+            } else if(name == "hex") {
+                set_profile_hex();
             } else {
                 Logger::instance()->set_quiet(false);
                 Logger::err("CmdLine")

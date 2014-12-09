@@ -270,7 +270,7 @@ namespace GRGMesh {
             uint32 f1,
             uint32 c11,
             uint32 f2 ) ;
-        static void check_mesh(
+        static void check_and_repair_mesh_consistency(
             const BoundaryModelElement& region,
             GEO::Mesh& mesh,
             bool check_duplicated_facet = false ) ;
