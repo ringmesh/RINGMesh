@@ -35,7 +35,32 @@ namespace GRGMesh {
         return std::max( max_node_index( childl, b, m ),
             max_node_index( childr, m, e ) ) ;
     }
-
+    void FacetAABBTree::init_bboxes_recursive(
+        uint32 node_index,
+        uint32 b,
+        uint32 e )
+    {
+        grgmesh_debug_assert( node_index < bboxes_.size() ) ;
+        grgmesh_debug_assert( b != e ) ;
+        if( b + 1 == e ) {
+            Box3d bbox ;
+            bbox.add_point( mesh_.point( b, 0 ) ) ;
+            bbox.add_point( mesh_.point( b, 1 ) ) ;
+            bbox.add_point( mesh_.point( b, 2 ) ) ;
+            bboxes_[node_index] = bbox ;
+            return ;
+        }
+        uint32 m = b + ( e - b ) / 2 ;
+        uint32 childl = 2 * node_index ;
+        uint32 childr = 2 * node_index + 1 ;
+        grgmesh_debug_assert( childl < bboxes_.size() ) ;
+        grgmesh_debug_assert( childr < bboxes_.size() ) ;
+        init_bboxes_recursive( childl, b, m ) ;
+        init_bboxes_recursive( childr, m, e ) ;
+        grgmesh_debug_assert( childl < bboxes_.size() ) ;
+        grgmesh_debug_assert( childr < bboxes_.size() ) ;
+        bboxes_[node_index] = bboxes_[childl].bbox_union( bboxes_[childr] ) ;
+    }
     void FacetAABBTree::reorder_morton()
     {
         std::vector< int32 > sorted_indices ;
