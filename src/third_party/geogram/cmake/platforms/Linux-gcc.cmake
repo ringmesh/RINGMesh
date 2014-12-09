@@ -12,8 +12,6 @@ set(FULL_WARNINGS
     -Wno-long-long
     # Detect conversion problems (lot of warnings)
     -Wconversion
-    -Wsign-conversion
-    -Wdouble-promotion
 )
 
 # Determine gcc version and activate additional warnings available in latest versions
