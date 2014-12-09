@@ -48,7 +48,7 @@
 
 #include <geogram/basic/common.h>
 
-#if defined(GEO_OS_LINUX) && defined(GEO_OPENMP)
+#if defined(GEO_OS_LINUX) && defined(GEO_OPENMP) &&  __GNUC__ >= 4 && __GNUC_MINOR__ >= 4
 #include <parallel/algorithm>
 #elif defined(GEO_OS_WINDOWS)
 #if (_MSC_VER >= 1700)
@@ -92,7 +92,7 @@ namespace GEO {
         const ITERATOR& begin, const ITERATOR& end
     ) {
         if(uses_parallel_algorithm()) {
-#if defined(GEO_OS_LINUX) && defined(GEO_OPENMP)
+#if defined(GEO_OS_LINUX) && defined(GEO_OPENMP) &&  __GNUC__ >= 4 && __GNUC_MINOR__ >= 4
             __gnu_parallel::sort(begin, end);
 #elif defined(GEO_OS_WINDOWS) && (_MSC_VER >= 1700)
             concurrency::parallel_sort(begin, end);
@@ -128,7 +128,7 @@ namespace GEO {
         const ITERATOR& begin, const ITERATOR& end, const CMP& cmp
     ) {
         if(uses_parallel_algorithm()) {
-#if defined(GEO_OS_LINUX) && defined(GEO_OPENMP)
+#if defined(GEO_OS_LINUX) && defined(GEO_OPENMP) &&  __GNUC__ >= 4 && __GNUC_MINOR__ >= 4
             __gnu_parallel::sort(begin, end, cmp);
 #elif defined(GEO_OS_WINDOWS) && (_MSC_VER >= 1700)
             concurrency::parallel_sort(begin, end, cmp);
