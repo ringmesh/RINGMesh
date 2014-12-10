@@ -1,383 +1,540 @@
 /*[
-* Association Scientifique pour la Geologie et ses Applications (ASGA)
-* Copyright (c) 1993-2013 ASGA. All Rights Reserved.
-*
-* This program is a Trade Secret of the ASGA and it is not to be:
-* - reproduced, published, or disclosed to other,
-* - distributed or displayed,
-* - used for purposes or on Sites other than described
-*   in the GOCAD Advancement Agreement,
-* without the prior written authorization of the ASGA. Licencee
-* agrees to attach or embed this Notice on all copies of the program,
-* including partial copies or modified versions thereof.
-]*/ 
+* NOT ONLY ASGA 
+*/
+/*! \author Jeanne Pellerin and Arnaud Botella */
 
-/*! \author Jeanne Pellerin */
 
 #ifndef __GRGMESH_BOUNDARY_MODEL__
 #define __GRGMESH_BOUNDARY_MODEL__
 
 #include <grgmesh/boundary_model_element.h>
 #include <grgmesh/common.h>
+#include <grgmesh/attribute.h>
 
 #include <vector> 
 #include <string>
 
-namespace GRGMesh {
-    struct Border ;
+#include <vector> 
+#include <map>
+#include <string>
+#include <algorithm> 
+
+
+namespace GRGMesh {    
     class BoundaryModelBuilder ;
 }
 
 namespace GRGMesh {
-    
-/********************************************************************************************/
-/***********             BoundaryModel class declaration              ************************/
-/********************************************************************************************/
 
-    class GRGMESH_API BoundaryModel {
+    // To move somewhere else
+    static std::vector< vec3 > empty_vector ;
+    static std::vector< unsigned int > empty_uint_vector ;
+    static vec3 dummy = vec3( 0, 0, 0 ) ;
+
+    /**
+     * \brief The class to describe a volumetric model represented by its boundary surfaces
+     *     
+     */
+    class GRGMESH_API BoundaryModel {       
         friend class BoundaryModelBuilder ;
-        friend class ContactPartMutator ;
-        friend class SurfacePartMutator ;
+        friend class LineMutator ;
+        friend class SurfaceMutator ;
+
     public:
-        BoundaryModel() ;
-        ~BoundaryModel() ;
-
-        Box3d bbox() const ;
-
-        /* To print global information on the Model 
-         * and for each one of its components in this stream 
+         enum AttributeLocation {
+            POINT,
+            EDGE,
+            FACET
+        } ;       
+        typedef AttributeManager< POINT > PointAttributeManager ;
+        typedef AttributeManager< EDGE >  EdgeAttributeManager ; // Edges of what ?? lines
+        typedef AttributeManager< FACET > FacetAttributeManager ;
+        
+        /**
+         * \brief Construct an empty BoundaryModel
          */
-        void print_topology( std::ofstream& out ) const ;
-        void print_element_info( std::ofstream& out ) const ;
+        BoundaryModel() ;
+        /**
+         * \brief Destroy a BoundaryModel
+         */
+        virtual ~BoundaryModel() ;
 
-        /* Accessors, counters */
-        int32 surface_id( const std::string& name ) const ;
-        int32 find_corner( const vec3& ) const ;
-        int32 find_contact( const std::vector< int32 >& interfaces ) const ;
-        int32 find_contact_part(
-            int32 corner0,
-            int32 corner1,
-            const std::vector< vec3 >& points ) const ;
-        int32 find_contact_part( vec3 point0, vec3 point1 ) const ;
+        // Accessors to model points - edges - facets
+        unsigned int nb_points() const { return points_.size() ; }
+        const vec3& point( unsigned int p ) const { return points_.at(p) ; }
+        unsigned int point_index( const vec3& p ) const ;
 
-        std::vector< BoundaryModelElement* > find_interface_parts(
-            const std::vector< const BoundaryModelElement* >& contact_parts,
-            bool consider_free_contacts = false ) const ;
+        inline uint32 nb_facets() const ;
+        void surface_facet( uint32 model_facet_id, uint32& surface_id, uint32& surf_facet_id ) const ;     
+        uint32 model_facet( uint32 surface_id, uint32 surf_facet_id ) const ;
 
-        std::vector< BoundaryModelElement* > find_contacts(
-            const BoundaryModelElement* corner0,
-            const BoundaryModelElement* corner1 ) const ;
+        // Accessors to model elements
+        const std::string& name() const { return name_ ; }
 
-        std::vector< BoundaryModelElement* > get_closed_contacts() const ;
-        int32 find_region( int32 surface_part_id, bool side ) const ;
+        unsigned int nb_corners() const { return corners_.size() ; }
+        unsigned int nb_lines() const { return lines_.size() ; }
+        unsigned int nb_surfaces() const { return surfaces_.size() ; }
+        unsigned int nb_regions() const { return regions_.size() ; }
+        
+        unsigned int nb_contacts() const { return contacts_.size() ; }        
+        unsigned int nb_interfaces() const { return interfaces_.size() ; }
+        unsigned int nb_layers() const { return layers_.size() ; }       
+        
+        const Corner& corner( int index ) const { return corners_.at(index) ; }
+        const Line& line( int index ) const { return lines_.at(index) ; }
+        const Surface& surface( int index ) const { return surfaces_.at(index) ; }
+        const BoundaryModelElement& region( int index ) const { return regions_.at(index) ; }
 
-        int32 nb_real_corners() const ;
-        int32 nb_non_manifold_contact_parts() const ;
-        int32 nb_surface_with_free_boundary() const ;
-
-        //Accessors
-        uint32 nb_points() const { return points_.size() ; }
-        uint32 nb_corners() const { return corners_.size() ; }
-        uint32 nb_contact_parts() const { return contact_parts_.size() ; }
-        uint32 nb_surface_parts() const { return surface_parts_.size() ; }
-        uint32 nb_contacts() const { return contacts_.size() ; }
-        uint32 nb_surfaces() const { return surfaces_.size() ; }
-        uint32 nb_regions() const { return regions_.size() ; }
-        uint32 nb_layers() const { return layers_.size() ; }
-        uint32 nb_surface_part_inside() const ;
-        uint32 nb_contact_part_inside() const ;
-        uint32 nb_real_corners_inside() const ;
-        const std::string& gocad_name() const { return gocad_name_ ; }
-
-        const vec3& point( uint32 p ) const { return points_[p] ; }
-        const Corner& corner( int32 index ) const { return corners_[index] ; }
-        const ContactPart& contact_part( int32 index ) const { return contact_parts_[index] ; }
-        const SurfacePart& surface_part( int32 index ) const { return surface_parts_[index] ; }
-        const BoundaryModelElement& contact( int32 index ) const { return contacts_[index] ; }
-        const BoundaryModelElement& surface( int32 index ) const { return surfaces_[index] ; }
-        const BoundaryModelElement& region( int32 index ) const { return regions_[index] ; }
-        const BoundaryModelElement& layer( int32 index ) const { return layers_[index] ; }
-        bool is_triangulated_model() const {
-            for( uint32 s = 0; s < nb_surface_parts(); s++ ) {
-                if( !surface_parts_[s].is_triangulated() ) return false ;
+        const BoundaryModelElement& element( int dim, int index ) const 
+        {
+            switch( dim ){
+                case 0: return corner( index ) ;
+                case 1: return line( index ) ;
+                case 2: return surface( index ) ;
+                case 3: return region( index ) ;
+                default: grgmesh_assert_not_reached ;
             }
-            return true ;
+         }
+
+        const BoundaryModelElement& contact( int index ) const { return contacts_.at(index) ; }
+        const BoundaryModelElement& one_interface( int index ) const { return interfaces_.at(index) ; }
+        const BoundaryModelElement& layer( int index ) const { return layers_.at(index) ; }                      
+        /// \todo Write a proper IO class for Boundary models
+        bool save_gocad_model3d( std::ostream& out ) ;        
+        void save_as_eobj_file( const std::string& file_name ) ;
+
+
+        // Accessors to attribute managers
+        PointAttributeManager* point_attribute_manager() const
+        {
+            return const_cast< PointAttributeManager* >( &point_attribute_manager_ ) ;
         }
-        bool is_resolution_set() const {
-            for( uint32 s = 0; s < nb_surface_parts(); s++ ) {
-                if( !surface_parts_[s].is_resolution_set() ) return false ;
-            }
-            return true ;
+        EdgeAttributeManager* edge_attribute_manager() const
+        {
+            return const_cast< EdgeAttributeManager* >( &edge_attribute_manager_ ) ;
         }
-        bool is_U_set() const {
-            for( uint32 s = 0; s < nb_surface_parts(); s++ ) {
-                if( !surface_parts_[s].is_U_set() ) return false ;
-            }
-            return true ;
-        }
-        bool is_V_set() const {
-            for( uint32 s = 0; s < nb_surface_parts(); s++ ) {
-                if( !surface_parts_[s].is_V_set() ) return false ;
-            }
-            return true ;
-        }
-        bool is_W_set() const {
-            for( uint32 s = 0; s < nb_surface_parts(); s++ ) {
-                if( !surface_parts_[s].is_W_set() ) return false ;
-            }
-            return true ;
-        }
-        bool is_UVW_set() const {
-            for( uint32 s = 0; s < nb_surface_parts(); s++ ) {
-                if( !surface_parts_[s].is_UVW_set() ) return false ;
-            }
-            return true ;
+        FacetAttributeManager* facet_attribute_manager() const
+        {
+            return const_cast< FacetAttributeManager* >( &facet_attribute_manager_ ) ;
         }
 
-        static void print_type( std::ostream& out, GEOL_FEATURE t, int32 dim ) ;
-        static void save_type( std::ostream& out, GEOL_FEATURE t ) ;
-        static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
-        static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) ;
-
-    protected:
+    private:
         bool load_gocad_model3d( std::istream& in ) ;
-        bool save_gocad_model3d( std::ostream& out ) ;
 
         bool check_model3d_compatibility() ;
+        static void save_type( std::ostream& out, GEOL_FEATURE t ) ;
 
-    protected:
-        std::string gocad_name_ ;
+    private:
+        std::string name_ ;
 
-        // Basic elements
+        /** 
+         * \brief Coordinates of the vertices of the model elements
+         * Storage of points is unique for the whole model.
+         */
         std::vector< vec3 >                 points_ ;
+
+        // Base manifold elements of a model
         std::vector< Corner >               corners_ ;     
-        std::vector< ContactPart >          contact_parts_ ;
-        std::vector< SurfacePart >          surface_parts_ ; 
+        std::vector< Line >                 lines_ ; 
+        std::vector< Surface >              surfaces_ ; 
         std::vector< BoundaryModelElement > regions_ ;
-        
+
+        /// The biggest volumetric region, defined by Box surfaces
         BoundaryModelElement universe_ ;
 
-        /// \todo Borders and In Boundary of Contact and Surfaces are not properly built
-
-        // Geological interfaces and contact between them
+        // Number of facets in all previous surfaces
+        // This has to be updated when a surface is modified !!
+        // How can this be guaranteed ? Which class can modify a surface ?
+        // Size = nb_surface()+1
+        std::vector< uint32 > nb_facets_ ;
+    
+        /** 
+         * \brief Contacts between Intefaces
+         * Parent of a set of Line
+         */
         std::vector< BoundaryModelElement >  contacts_ ;
-        std::vector< BoundaryModelElement >  surfaces_ ;
-        std::vector< BoundaryModelElement >  layers_ ;
-    } ;    
+        /** 
+         * \brief Interfaces between layers 
+         * Parent of a set of Surface
+         */
+        std::vector< BoundaryModelElement >  interfaces_ ;
 
-    class GRGMESH_API BoundaryModelBuilder {
+        /** 
+         * \brief Rock layers 
+         * Parent of a set of Region
+         */
+        std::vector< BoundaryModelElement >  layers_ ;
+
+        // Attribute managers 
+        PointAttributeManager point_attribute_manager_ ;
+        EdgeAttributeManager  edge_attribute_manager_ ;
+        FacetAttributeManager facet_attribute_manager_ ;
+
+    } ;   
+
+    template< class ATTRIBUTE >
+    class GRGMESH_API BoundaryModelPointAttribute: public Attribute< BoundaryModel::POINT, ATTRIBUTE > {
     public:
-        BoundaryModelBuilder( BoundaryModel* model )
-            : model_( model )
+        typedef Attribute< BoundaryModel::POINT, ATTRIBUTE > superclass ;
+
+        void bind( BoundaryModel* model, const std::string& name )
+        {
+            superclass::bind( model->point_attribute_manager(), model->nb_points(),
+                name ) ;
+        }
+
+        void bind( BoundaryModel* model )
+        {
+            superclass::bind( model->point_attribute_manager(),
+                m->nb_points() ) ;
+        }
+
+        BoundaryModelPointAttribute()
         {
         }
+
+        BoundaryModelPointAttribute( BoundaryModel* model )
+        {
+            bind( model ) ;
+        }
+
+        BoundaryModelPointAttribute( BoundaryModel* model, const std::string& name )
+        {
+            bind( model, name ) ;
+        }
+
+        static bool is_defined( BoundaryModel* model, const std::string& name )
+        {
+            return superclass::is_defined( model->point_attribute_manager(), name ) ;
+        }
+    } ;
+
+    template< class ATTRIBUTE >
+    class GRGMESH_API BoundaryModelEdgeAttribute: public Attribute< BoundaryModel::EDGE, ATTRIBUTE > {
+    public:
+        typedef Attribute< BoundaryModel::EDGE, ATTRIBUTE > superclass ;
+
+        void bind( BoundaryModel* model, const std::string& name )
+        {
+            superclass::bind( model->edge_attribute_manager(), model->nb_edges(),
+                name ) ;
+        }
+
+        void bind( BoundaryModel* model )
+        {
+            superclass::bind( model->edge_attribute_manager(),
+                m->nb_edges() ) ;
+        }
+
+        BoundaryModelEdgeAttribute()
+        {
+        }
+
+        BoundaryModelEdgeAttribute( BoundaryModel* model )
+        {
+            bind( model ) ;
+        }
+
+        BoundaryModelEdgeAttribute( BoundaryModel* model, const std::string& name )
+        {
+            bind( model, name ) ;
+        }
+
+        static bool is_defined( BoundaryModel* model, const std::string& name )
+        {
+            return superclass::is_defined( model->edge_attribute_manager(), name ) ;
+        }
+    } ;
+
+    
+    template< class ATTRIBUTE >
+    class GRGMESH_API BoundaryModelFacetAttribute: public Attribute< BoundaryModel::FACET, ATTRIBUTE > {
+    public:
+        typedef Attribute< BoundaryModel::FACET, ATTRIBUTE > superclass ;
+
+        void bind( BoundaryModel* model, const std::string& name )
+        {
+            superclass::bind( model->facet_attribute_manager(), model->nb_facets(),
+                name ) ;
+        }
+
+        void bind( BoundaryModel* model )
+        {
+            superclass::bind( model->facet_attribute_manager(),
+                model->nb_facets() ) ;
+        }
+
+        BoundaryModelFacetAttribute()
+        {
+        }
+
+        BoundaryModelFacetAttribute( BoundaryModel* model )
+        {
+            bind( model ) ;
+        }
+
+        BoundaryModelFacetAttribute( BoundaryModel* model, const std::string& name )
+        {
+            bind( model, name ) ;
+        }
+
+        static bool is_defined( BoundaryModel* model, const std::string& name )
+        {
+            return superclass::is_defined( model->facet_attribute_manager(), name ) ;
+        }
+    } ;
+
+
+
+    /**
+     * \brief Structure used to build contact when loading a BoundaryModel from .ml file 
+     */
+    struct Border {
+        Border( int part, int corner, int p0, int p1):
+        part_id_(part), corner_id_(corner), p0_(p0), p1_(p1) {};
+
+        // Id of the Surface owning this Border
+        int part_id_ ; 
+        // Id of p0 in the BoundaryModel corner vector
+        int corner_id_ ;
+
+        // Ids of the starting corner and second point on the border in the Surface
+        // to which this Border belong
+        int p0_ ; 
+        int p1_ ; 
+    } ;
+
+    /**
+     * \brief Build a BoundaryModel
+     */ 
+    class GRGMESH_API BoundaryModelBuilder {
+    public:
+        BoundaryModelBuilder( BoundaryModel& model )
+            : model_( model ){}
+        virtual ~BoundaryModelBuilder(){} ;
         void load_file( std::istream& in ) ;
         bool rebuild() ;
         void copy_macro_topology( const BoundaryModel* from ) ;
-        void reserve_nb_corners( uint32 size ) {
-            model_->corners_.reserve( size ) ;
-        }
-        void reserve_nb_contact_parts( uint32 size ) {
-            model_->contact_parts_.reserve( size ) ;
-        }
-        void reserve_nb_surface_parts( uint32 size ) {
-            model_->surface_parts_.reserve( size ) ;
-        }
-        void reserve_nb_surfaces( uint32 size ) {
-            model_->surfaces_.reserve( size ) ;
-        }
-        void reserve_nb_contacts( uint32 size ) {
-            model_->contacts_.reserve( size ) ;
-        }
-        void reserve_nb_regions( uint32 size ) {
-            model_->regions_.reserve( size ) ;
-        }
-        void set_universe( const std::vector< std::pair< int, bool > >& boundaries ) ;
 
-        void add_point( float64* point ) {
-            add_point( vec3( point ) ) ;
-        }
-        void add_point( const vec3& point ) {
-            model_->points_.push_back( point ) ;
+        unsigned int create_interface(
+            const std::string& name,
+            int id = -1,
+            GEOL_FEATURE type = default_type ) ;
+
+        void add_interface_child( unsigned int id, unsigned int child ) {
+            model_.interfaces_[id].add_child( child ) ;
         }
 
-        void set_corner( uint32 id, const float64* p ) {
-            set_corner( id, vec3( p ) ) ;
+        /** A VOIR SI ion garde tout public là dedans
+         * Pas sur que ce soit passionnant et hyper intéressant 
+         */
+    public:
+        void reserve_nb_points( unsigned int size ) {
+            model_.points_.reserve( size ) ; 
         }
-        void set_corner( uint32 id, const vec3& p ) {
-            grgmesh_debug_assert( id < model_->nb_corners() ) ;
-            model_->corners_[id].set_corner( model_->nb_points() ) ;
-            add_point( p ) ;
+        void reserve_nb_corners( unsigned int size ) {
+            model_.corners_.reserve( size ) ;
         }
-        void add_corner_boundary( uint32 id, uint32 b ) {
-            model_->corners_[id].add_boundary( b ) ;
+        void reserve_nb_lines( unsigned int size ) {
+            model_.lines_.reserve( size ) ;
         }
-        void add_corner_in_boundary( uint32 id, uint32 b ) {
-            model_->corners_[id].add_in_boundary( b ) ;
+        void reserve_nb_surfaces( unsigned int size ) {
+            model_.surfaces_.reserve( size ) ;
         }
-
-        uint32 create_contact_part(
-            int32 id = -1,
-            const std::vector< uint32 >& points = empty_uint_vector )
-        {
-            if( id == -1 ) id = model_->nb_contact_parts() ;
-            grgmesh_debug_assert( id == model_->nb_contact_parts() ) ;
-            model_->contact_parts_.push_back( ContactPart( model_, id, points ) ) ;
-            return id ;
+        void reserve_nb_interfaces( unsigned int size ) {
+            model_.interfaces_.reserve( size ) ;
         }
-        void set_contact_part( uint32 id, const std::vector< vec3 >& vertices ) {
-            grgmesh_debug_assert( id < model_->nb_contact_parts() ) ;
-            for( uint32 p = 0; p < vertices.size(); p++ ) {
-                model_->contact_parts_[id].vertices_.push_back( model_->nb_points() ) ;
-                add_point( vertices[p] ) ;
-            }
+        void reserve_nb_contacts( unsigned int size ) {
+            model_.contacts_.reserve( size ) ;
         }
-        void add_contact_part_boundary( uint32 id, uint32 b ) {
-            model_->contact_parts_[id].add_boundary( b ) ;
-        }
-        void add_contact_part_in_boundary( uint32 id, uint32 b ) {
-            model_->contact_parts_[id].add_in_boundary( b ) ;
+        void reserve_nb_regions( unsigned int size ) {
+            model_.regions_.reserve( size ) ;
         }
 
-        uint32 create_surface_part(
-            int32 id = -1,
-            int32 parent = -1,
-            GEOL_FEATURE type = default_type )
-        {
-            if( id == -1 ) id = model_->nb_surface_parts() ;
-            grgmesh_debug_assert( id == model_->nb_surface_parts() ) ;
-            model_->surface_parts_.push_back( SurfacePart( model_, id, parent, type ) ) ;
-            return id ;
+        int interface_id( const std::string& name ) const ;
+
+        int find_or_create_corner( unsigned int index ) ;
+        int find_or_create_line( int corner0, int corner1, std::vector< uint32 >& points ) ;
+        int find_or_create_contact( std::vector< int >& interfaces, GEOL_FEATURE type ) ;
+        
+        int find_corner( const vec3& ) const ;
+        int find_corner( uint32 ) const ;
+        int find_contact( const std::vector< int >& interfaces ) const ;
+        int find_line( int corner0, int corner1, const std::vector< uint32 >& points ) const ;        
+
+        int find_key_facet( uint32 surface_id, const vec3& p0, const vec3& p1, const vec3& p2, 
+            bool& same_orientation ) const ;  
+         
+        /**
+         * \brief Check if the surface triangle orientations match the one of the key facet 
+         */
+        bool check_key_facet_orientation( uint32 surface ) const ;
+     
+        unsigned int add_point( const vec3& point ) {            
+            model_.points_.push_back( point ) ;
+            return model_.nb_points()-1 ;
+        }       
+        void add_corner_boundary( unsigned int id, unsigned int b ) {
+            model_.corners_[id].add_boundary( b ) ;
         }
-        void create_surface_part(
+        void add_corner_in_boundary( unsigned int id, unsigned int b ) {
+            model_.corners_[id].add_in_boundary( b ) ;
+        }
+        void add_line_boundary( unsigned int id, unsigned int b ) {
+            model_.lines_[id].add_boundary( b ) ;
+        }
+        void add_line_in_boundary( unsigned int id, unsigned int b ) {
+            model_.lines_[id].add_in_boundary( b ) ;
+        }        
+        void add_surface_boundary( unsigned int id, unsigned int b ) {
+            model_.surfaces_[id].add_boundary( b ) ;
+        }
+        void add_surface_in_boundary( unsigned int id, unsigned int b ) {
+            model_.surfaces_[id].add_in_boundary( b ) ;
+        }
+        
+        void add_interface_boundary( unsigned int id, unsigned int b ) {
+            model_.interfaces_[id].add_boundary( b ) ;
+        }
+         void add_region_in_boundary( unsigned int id, unsigned int b ) {
+            model_.regions_[id].add_in_boundary( b ) ;
+        }
+        void add_region_oriented_boundary( unsigned int id, unsigned int b, bool side ) {
+            model_.regions_[id].add_boundary( b, side ) ;
+        }
+
+        void add_contact_child( unsigned int id, unsigned int child ) {
+            model_.contacts_[id].add_child( child ) ;
+        }
+        void add_contact_boundary( unsigned int id, unsigned int b ) {
+            model_.contacts_[id].add_boundary( b ) ;
+        }
+        void add_contact_in_boundary( unsigned int id, unsigned int b ) {
+            model_.contacts_[id].add_in_boundary( b ) ;
+        }                     
+        
+        void add_layer_child( unsigned int id, unsigned int child ) {
+            model_.layers_[id].add_child( child ) ;
+        }
+
+        void set_surface_first_triangle_as_key( uint32 id ) {
+            model_.surfaces_[id].set_first_triangle_as_key() ;
+        }
+        
+        void set_name( BoundaryModelElement& e, const std::string& name ) {
+            e.set_name( name ) ;
+        }
+        void set_name( const std::string& name ) {
+            model_.name_ = name ;
+        }
+
+        void set_parent( BoundaryModelElement& e, uint32 id ) {
+            e.set_parent( id ) ;
+        }
+            
+        unsigned int create_line( 
+            int id = -1, 
+            const std::vector< unsigned int >& points = empty_uint_vector ) ;
+        
+        unsigned int create_surface(
+            int id = -1,
+            int parent = -1,
+            GEOL_FEATURE type = default_type ) ;
+
+        void create_surface(
             const std::string& interface_name,
             const std::string& type,
             const KeyFacet& key ) ;
+        
+        unsigned int create_region( int id = -1 ) ;
 
-        void add_surface_part_boundary( uint32 id, uint32 b ) {
-            model_->surface_parts_[id].add_boundary( b ) ;
-        }
-        void add_surface_part_in_boundary( uint32 id, uint32 b ) {
-            model_->surface_parts_[id].add_in_boundary( b ) ;
-        }
-        bool set_surface_part_points_and_facets(
-            uint32 sp_id,
-            const std::vector< uint32 >& points,
-            const std::vector< uint32 >& facets,
-            const std::vector< uint32 >& facet_ptr,
-            bool compute_adjacent = true )
-        {
-            return model_->surface_parts_[sp_id].set_points_and_facets( points,
-                facets, facet_ptr, compute_adjacent ) ;
-        }
-        void set_surface_part_adjacent_facets(
-            uint32 sp_id,
-            const std::vector< int32 >& in )
-        {
-            model_->surface_parts_[sp_id].set_adjacent_facets( in ) ;
-        }
-        void end_surface( uint32 id ) {
-            SurfacePart& surface = model_->surface_parts_[id] ;
-            if( surface.nb_simplices() > 0 )
-                surface.set_first_triangle_as_key() ;
-            surface.compute_is_triangulated() ;
-        }
-
-        uint32 create_surface(
-            const std::string& name,
-            int32 id = -1,
-            GEOL_FEATURE type = default_type )
-        {
-            if( id == -1 ) id = model_->nb_surfaces() ;
-            grgmesh_debug_assert( id == model_->nb_surfaces() ) ;
-            model_->surfaces_.push_back( BoundaryModelElement( model_, 2, id, -1, type ) ) ;
-            model_->surfaces_[id].set_name( name ) ;
-            return id ;
-        }
-        void add_surface_child( uint32 id, uint32 child ) {
-            model_->surfaces_[id].add_child( child ) ;
-        }
-        void add_surface_boundary( uint32 id, uint32 b ) {
-            model_->surfaces_[id].add_boundary( b ) ;
-        }
-        void reserve_surface_points( uint32 id, uint32 nb ) {
-            model_->surface_parts_[id].points_.reserve( nb ) ;
-        }
-
-        void add_contact_child( uint32 id, uint32 child ) {
-            model_->contacts_[id].add_child( child ) ;
-        }
-        void add_contact_boundary( uint32 id, uint32 b ) {
-            model_->contacts_[id].add_boundary( b ) ;
-        }
-        void add_contact_in_boundary( uint32 id, uint32 b ) {
-            model_->contacts_[id].add_in_boundary( b ) ;
-        }
-
-        uint32 create_region( int32 id = -1 ) {
-            if( id == -1 ) id = model_->regions_.size() ;
-            grgmesh_debug_assert( id == model_->regions_.size() ) ;
-            model_->regions_.push_back( BoundaryModelElement( model_, 3, id ) ) ;
-            return id ;
-        }
-        uint32 create_region(
+        unsigned int create_region(
             const std::string& name,
             const std::vector< std::pair< int, bool > >& boundaries,
-            int32 id = -1 ) ;
-        void add_region_oriented_boundary(
-            uint32 id,
-            uint32 b,
-            bool side )
-        {
-            model_->regions_[id].add_oriented_boundary( b, side ) ;
-        }
-        void add_region_in_boundary( uint32 id, uint32 b ) {
-            model_->regions_[id].add_in_boundary( b ) ;
-        }
-        void remove_univers_from_regions( uint32 id ) {
-            for( int32 i = 0; i < model_->nb_regions(); ++i ) {
-                int32 cur_id = model_->region(i).id() ;
-                grgmesh_assert( i == cur_id ) ;
-                if( i > id ) model_->regions_[i].set_id( cur_id-1 ) ;
-            }
-            model_->regions_.erase( model_->regions_.begin() + id ) ;
-        }
+            int id = -1 ) ;   
 
-        uint32 create_layer( const std::string& name, int32 id = -1 ) {
-            if( id == -1 ) id = model_->layers_.size() ;
-            grgmesh_debug_assert( id == model_->layers_.size() ) ;
-            model_->layers_.push_back( BoundaryModelElement( model_, 3, id ) ) ;
-            model_->layers_[id].set_name( name ) ;
-            return id ;
-        }
-        void add_layer_child( uint32 id, uint32 child ) {
-            model_->layers_[id].add_child( child ) ;
-        }
+        unsigned int create_layer( const std::string& name, int id = -1 ) ;
+      
+        void set_corner( unsigned int  corner_id, unsigned int point_id ) ;
+        void set_line( unsigned int id, const std::vector< uint32 >& vertices ) ;
+        void set_line_geometry( unsigned int id, const std::vector< unsigned int >& line_points ) ;
+        
+        unsigned int determine_line_vertices( 
+            const Surface& S, 
+            unsigned int first_point, 
+            unsigned int second_point,            
+            std::vector< unsigned int >& border_point_model_ids ) const ;
 
-        /* Functions to help building the BoundaryModel */
+        void set_surface_geometry(
+            unsigned int surface_id,
+            const std::vector< unsigned int >& surface_points,
+            const std::vector< unsigned int >& surface_facets,
+            const std::vector< unsigned int >& surface_facet_ptr ) ;
+        void set_surface_adjacencies( unsigned int surface_id ) ;
 
-        int32 find_or_create_corner( uint32 index ) ;
-        int32 find_or_create_contact_part(
-            int32 corner0,
-            int32 corner1,
-            std::vector< vec3 >& points ) ;
-        int32 find_or_create_contact(
-            std::vector< int32 >& interfaces,
-            GEOL_FEATURE type ) ;
+        void cut_surface_by_line( uint32 surface_id, uint32 line_id ) ;
+             
+        void set_universe( const std::vector< std::pair< int, bool > >& boundaries ) ;        
+        void remove_universe_from_regions( unsigned int id ) ;
 
-        void build_contact_parts( const std::vector< Border >& borders) ;
+        // This is a big mess  !!!!
+        /// \todo Trade the end_something functions in the BoundaryModelBuilder
+        /// functions for a smart end_model function
+        /// that checks model validity and complete all missing parts
+        void make_points_unique() ;
+        void build_lines( const std::vector< Border >& borders ) ;
         void build_contacts() ;
         void end_contacts() ;
-        void end_contact_parts() ;
+        void end_lines() ;
+        void end_interfaces() ;
         void end_surfaces() ;
-        void end_surface_parts() ;
-        void end_surface_parts( const std::vector< int32 >& change_orientation ) ;
+        void end_surfaces( const std::vector< int >& change_orientation ) ;
         void end_corners() ;
-        void end_layers() ;
+        void end_layers() ; 
         void end_model() ;
+
+
         void update_all_ids() ;
+
+        static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
+        static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) ;
+       
     protected:
-        BoundaryModel* model_ ;
+        BoundaryModel& model_ ;
     } ;
 }
+
+
+
+#ifdef TOTOTO
+    /**
+     * \brief Measure things on a BoundaryModel
+     * Output topological measures - and geometrical measures 
+     */
+    class BoundaryModelMeasure {
+    public :
+        BoundaryModelMeasure( const BoundaryModel& model ):model_(model){} ;
+        ~BoundaryModelMeasure() ;
+
+        /*! Output global information on the model and its elements */
+        void print_topology( std::ofstream& out ) const ;
+        void print_element_info( std::ofstream& out ) const ;
+
+        static void print_type( std::ostream& out, GEOL_FEATURE t, int dim ) ;
+
+    private:        
+        unsigned int nb_surface_inside() const ;
+        unsigned int nb_line_inside() const ;
+        unsigned int nb_real_corners_inside() const ;
+    
+        int nb_real_corners() const ;
+        int nb_non_manifold_lines() const ;
+        int nb_surface_with_free_boundary() const ;    
+
+    private:
+        const BoundaryModel& model_ ;
+    } ;
+
+#endif     
+
 #endif

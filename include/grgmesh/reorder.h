@@ -46,13 +46,13 @@ namespace GRGMesh {
         }
         bool operator()( int32 i1, int32 i2 )
         {
-            return mesh_.vertex( i1 )[COORD] < mesh_.vertex( i2 )[COORD] ;
+            return mesh_.point( i1 )[COORD] < mesh_.point( i2 )[COORD] ;
         }
         const MESH& mesh_ ;
     } ;
 
     template< int32 COORD, bool UP > struct Morton_facet_vertex_cmp {
-        Morton_facet_vertex_cmp( const SurfacePart& mesh )
+        Morton_facet_vertex_cmp( const Surface& mesh )
             : mesh_( mesh )
         {
         }
@@ -60,7 +60,7 @@ namespace GRGMesh {
         {
             return mesh_.vertex( i1 )[COORD] < mesh_.vertex( i2 )[COORD] ;
         }
-        const SurfacePart& mesh_ ;
+        const Surface& mesh_ ;
     } ;
 
     template< int32 COORD, bool UP, class MESH > struct Morton_cell_cmp {
@@ -204,26 +204,26 @@ namespace GRGMesh {
 
 
     inline void morton_vertex_sort(
-        const SurfacePart& M,
+        const Surface& M,
         std::vector< int32 >& sorted_indices )
     {
-        sorted_indices.resize( M.nb_vertices() ) ;
-        for( uint32 i = 0; i < M.nb_vertices(); i++ ) {
+        sorted_indices.resize( M.nb_points() ) ;
+        for( uint32 i = 0; i < M.nb_points(); i++ ) {
             sorted_indices[i] = i ;
         }
-        HilbertSort< SurfacePart, Morton_vertex_cmp >( M,
+        HilbertSort< Surface, Morton_vertex_cmp >( M,
             sorted_indices ) ;
     }
 
     inline void morton_cell_sort(
-        const SurfacePart& M,
+        const Surface& M,
         std::vector< int32 >& sorted_indices )
     {
-        sorted_indices.resize( M.nb_simplices() ) ;
-        for( uint32 i = 0; i < M.nb_simplices(); i++ ) {
+        sorted_indices.resize( M.nb_cells() ) ;
+        for( uint32 i = 0; i < M.nb_cells(); i++ ) {
             sorted_indices[i] = i ;
         }
-        HilbertSort< SurfacePart, Morton_facet_cmp >( M, sorted_indices ) ;
+        HilbertSort< Surface, Morton_facet_cmp >( M, sorted_indices ) ;
     }
 }
 

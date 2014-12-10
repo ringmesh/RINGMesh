@@ -141,12 +141,12 @@ namespace GRGMesh {
 
         /// 3 - Check for consistent orientation with BoundaryModel
         GEO::MeshFacetsAABB aabb( mesh ) ;
-        std::vector< bool > flip_surface( region.model()->nb_surface_parts(), false ) ;
+        std::vector< bool > flip_surface( region.model().nb_surfaces(), false ) ;
         bool flip_sthg = false ;
         for( uint32 s = 0; s < region.nb_boundaries(); s++ ) {
-            const SurfacePart& surface =
-                dynamic_cast< const SurfacePart& >( *region.boundary( s ) ) ;
-            vec3 barycenter = surface.barycenter( 0 ) ;
+            const Surface& surface =
+                dynamic_cast< const Surface& >( region.boundary( s ) ) ;
+            vec3 barycenter = surface.facet_barycenter( 0 ) ;
             vec3 nearest_point ;
             float64 distance ;
             uint32 f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
@@ -845,23 +845,23 @@ namespace GRGMesh {
         }
     }
 
-    ColocaterANN::ColocaterANN( const SurfacePart& mesh )
+    ColocaterANN::ColocaterANN( const Surface& mesh )
     {
-        int32 nb_vertices = mesh.nb_vertices() ;
+        int32 nb_vertices = mesh.nb_points() ;
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( uint32 i = 0; i < mesh.nb_vertices(); i++ ) {
-            std::copy( mesh.vertex( i ).data(), mesh.vertex( i ).data() + 3,
+        for( uint32 i = 0; i < mesh.nb_points(); i++ ) {
+            std::copy( mesh.point( i ).data(), mesh.point( i ).data() + 3,
                 &ann_points_[i][0] ) ;
         }
         ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
     }
 
-    ColocaterANN::ColocaterANN( const ContactPart& mesh )
+    ColocaterANN::ColocaterANN( const Line& mesh )
     {
-        int32 nb_vertices = mesh.nb_vertices() ;
+        int32 nb_vertices = mesh.nb_points() ;
         ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( uint32 i = 0; i < mesh.nb_vertices(); i++ ) {
-            std::copy( mesh.vertex( i ).data(), mesh.vertex( i ).data() + 3,
+        for( uint32 i = 0; i < mesh.nb_points(); i++ ) {
+            std::copy( mesh.point( i ).data(), mesh.point( i ).data() + 3,
                 &ann_points_[i][0] ) ;
         }
         ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;

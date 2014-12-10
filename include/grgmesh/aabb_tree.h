@@ -24,7 +24,7 @@ namespace GRGMesh {
 
     class GRGMESH_API FacetAABBTree {
     public:
-        FacetAABBTree( SurfacePart& M ) ;
+        FacetAABBTree( Surface& M ) ;
         /**
          * @brief computes all the pairs of intersecting facets.
          * @param action ACTION::operator(uint32,uint32) is
@@ -41,7 +41,7 @@ namespace GRGMesh {
         void compute_bbox_intersections(
             const Box3d& box, std::vector< uint32 >& results ) const
     {
-            intersect_recursive( results, box, 1, 0, mesh_.nb_simplices() ) ;
+            intersect_recursive( results, box, 1, 0, mesh_.nb_cells() ) ;
         }
 
         /**
@@ -70,12 +70,12 @@ namespace GRGMesh {
             uint32 nearest_t ;
             get_nearest_facet_hint( p, nearest_t, nearest_point, sq_dist ) ;
             nearest_facet_recursive( p, nearest_t, nearest_point, sq_dist, 1, 0,
-                mesh_.nb_simplices() ) ;
+                mesh_.nb_cells() ) ;
             return nearest_t ;
         }
 
         static float64 get_nearest_point(
-            const SurfacePart& M,
+            const Surface& M,
             const vec3& p,
             int t,
             vec3& nearest_p ) ;
@@ -116,7 +116,7 @@ namespace GRGMesh {
             float64& sq_dist ) const
         {
             nearest_facet_recursive( p, nearest_t, nearest_point, sq_dist, 1, 0,
-                mesh_.nb_simplices() ) ;
+                mesh_.nb_cells() ) ;
         }
 
         /**
@@ -297,7 +297,7 @@ namespace GRGMesh {
 
     private:
         std::vector< Box3d > bboxes_ ;
-        SurfacePart& mesh_ ;
+        Surface& mesh_ ;
     } ;
 }
 

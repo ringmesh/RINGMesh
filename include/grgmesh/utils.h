@@ -16,8 +16,10 @@
 #define __GRGMESH_UTILS__
 
 #include <grgmesh/common.h>
+#include <grgmesh/types.h>
 
 #include <geogram/third_party/ANN/ANN.h>
+#include <geogram/points/kd_tree.h>
 
 #include <algorithm>
 #include <iostream>
@@ -32,8 +34,8 @@ namespace GEO {
 namespace GRGMesh {
     class BoundaryModelElement ;
     class Edge ;
-    class SurfacePart ;
-    class ContactPart ;
+    class Surface ;
+    class Line ;
 }
 
 namespace GRGMesh {
@@ -316,12 +318,12 @@ namespace GRGMesh {
 			return intersect ;
         }
 
-template< class T > static bool contains(
+        template< class T > static bool contains(
             const std::vector< T >& v,
             const T& t )
         {
             return find( v, t ) != -1 ;
-        }
+        }      
         template< class T > static int32 find( const std::vector< T >& v, const T& t )
         {
             for( uint32 i = 0; i < v.size(); i++ ) {
@@ -776,14 +778,14 @@ template< class T > static bool contains(
         {
             int32 nb_points = 0 ;
             for( uint32 i = 0; i < data.size(); i++ ) {
-                nb_points += data[i]->nb_vertices() ;
+                nb_points += data[i]->nb_points() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
             int32 cur_id = 0 ;
             for( uint32 i = 0; i < data.size(); i++ ) {
-                for( uint32 p = 0; p < data[i]->nb_vertices(); p++, cur_id++ ) {
-                    points_[cur_id] = data[i]->vertex( p ) ;
+                for( uint32 p = 0; p < data[i]->nb_points(); p++, cur_id++ ) {
+                    points_[cur_id] = data[i]->point( p ) ;
                     indices_[cur_id] = cur_id ;
                 }
             }
@@ -809,10 +811,91 @@ template< class T > static bool contains(
         std::vector< int32 > indices_ ;
     } ;
 
+
+    /**
+     * \brief Identify and merge colocated points
+     * It uses a KDtree for neighbor search 
+     * 
+     * \todo Change compute unique points to manage the case when there are more colocated points \
+     *  than the given number of neighbors
+     * \todo Put it somewhere else ? in a class or other namespace
+     */
+    static void compute_unique_kdtree(
+        const std::vector< vec3 >& points,
+        uint32 nb_neighbors, 
+        std::vector< uint32 >& old_2_unique,
+        std::vector< vec3 >& unique_points )
+    {
+        old_2_unique.resize( points.size() ) ;
+        for( uint32 i = 0; i < points.size(); i++ ) {
+            old_2_unique[i] = i ;
+        }
+        
+        GEO::NearestNeighborSearch_var kdtree = GEO::NearestNeighborSearch::create(
+           3, "BNN"
+        );
+      
+        kdtree->set_points( points.size(), &points[0].x ) ;                
+        nb_neighbors = std::min< uint32 >( nb_neighbors, points.size() ) ;
+
+        // Vectors filled and emptied in the loop 
+        std::vector< uint32 > neighbors( nb_neighbors ) ;
+        std::vector< double > distances( nb_neighbors ) ;
+        std::vector< uint32 > colocated ;
+
+        for( uint32 i = 0; i < old_2_unique.size(); i++ ) {
+            if( old_2_unique[i] != i ) continue ;
+
+            // Get among the closest points those which are colocated
+            // with an epsilon tolerance on each coordinate
+            kdtree->get_nearest_neighbors( nb_neighbors, i, &neighbors[0], &distances[0] ) ;
+
+            colocated.resize( 0 ) ;
+            for( uint32 j = 0; j < nb_neighbors; ++j ){          
+                if( distances[j] < epsilon_sq ) {
+                    colocated.push_back( neighbors[j] ) ;
+                }
+            }
+            // If some other points are colocated
+            // Change the indices of all colocated points to the 
+            // the one with the lowest index.
+            if( colocated.size() > 0 ) {
+                uint32 min_id = *std::min_element( colocated.begin(), colocated.end() ) ;
+                for( uint32 j = 0; j < colocated.size(); j++ ) {
+                    old_2_unique[ colocated[j] ] = min_id ;
+                }
+            }
+        }
+        ////////////////////////////////////////////////////////
+        
+        // Counter of the number of duplicated points
+        uint32 offset = 0 ;
+        for( uint32 i = 0; i < old_2_unique.size(); i++ ) {
+            if( old_2_unique[i] != i ) {
+                old_2_unique[i] = old_2_unique[old_2_unique[i]] ; // This is the offset for this "unique" point
+                offset++ ;
+            } else {
+                old_2_unique[i] -= offset ;
+            }
+        }
+
+        unique_points.reserve( old_2_unique.size() ) ;
+        offset = 0 ;
+        uint32 cur_id = 0 ;
+        for( uint32 p = 0; p < old_2_unique.size(); p++ ) {
+            if( cur_id == old_2_unique[p] ) {
+                cur_id++ ;
+                unique_points.push_back( points[old_2_unique[p] + offset] ) ;
+            } else {
+                offset++ ;
+            }
+        }
+    }
+
     class GRGMESH_API ColocaterANN {
     public:
-        ColocaterANN( const SurfacePart& mesh ) ;
-        ColocaterANN( const ContactPart& mesh ) ;
+        ColocaterANN( const Surface& mesh ) ;
+        ColocaterANN( const Line& mesh ) ;
         ColocaterANN( const GEO::Mesh& mesh ) ;
         ColocaterANN( const std::vector< vec3 >& vertices ) ;
         ColocaterANN( float64* vertices, uint32 nb_vertices ) ;
