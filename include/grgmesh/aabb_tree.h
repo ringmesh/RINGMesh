@@ -35,7 +35,7 @@ namespace GRGMesh {
         template< class ACTION > void compute_facet_bbox_intersections(
             ACTION& action ) const
         {
-            intersect_recursive( action, 1, 0, mesh_.nb_simplices(), 1, 0, mesh_.nb_simplices() ) ;
+            intersect_recursive( action, 1, 0, mesh_.nb_cells(), 1, 0, mesh_.nb_cells() ) ;
         }
 
         void compute_bbox_intersections(
