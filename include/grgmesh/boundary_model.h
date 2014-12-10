@@ -186,7 +186,7 @@ namespace GRGMesh {
         void bind( BoundaryModel* model )
         {
             superclass::bind( model->point_attribute_manager(),
-                m->nb_points() ) ;
+                model->nb_points() ) ;
         }
 
         BoundaryModelPointAttribute()
@@ -209,42 +209,42 @@ namespace GRGMesh {
         }
     } ;
 
-    template< class ATTRIBUTE >
-    class GRGMESH_API BoundaryModelEdgeAttribute: public Attribute< BoundaryModel::EDGE, ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModel::EDGE, ATTRIBUTE > superclass ;
-
-        void bind( BoundaryModel* model, const std::string& name )
-        {
-            superclass::bind( model->edge_attribute_manager(), model->nb_edges(),
-                name ) ;
-        }
-
-        void bind( BoundaryModel* model )
-        {
-            superclass::bind( model->edge_attribute_manager(),
-                m->nb_edges() ) ;
-        }
-
-        BoundaryModelEdgeAttribute()
-        {
-        }
-
-        BoundaryModelEdgeAttribute( BoundaryModel* model )
-        {
-            bind( model ) ;
-        }
-
-        BoundaryModelEdgeAttribute( BoundaryModel* model, const std::string& name )
-        {
-            bind( model, name ) ;
-        }
-
-        static bool is_defined( BoundaryModel* model, const std::string& name )
-        {
-            return superclass::is_defined( model->edge_attribute_manager(), name ) ;
-        }
-    } ;
+//    template< class ATTRIBUTE >
+//    class GRGMESH_API BoundaryModelEdgeAttribute: public Attribute< BoundaryModel::EDGE, ATTRIBUTE > {
+//    public:
+//        typedef Attribute< BoundaryModel::EDGE, ATTRIBUTE > superclass ;
+//
+//        void bind( BoundaryModel* model, const std::string& name )
+//        {
+//            superclass::bind( model->edge_attribute_manager(), model->nb_edges(),
+//                name ) ;
+//        }
+//
+//        void bind( BoundaryModel* model )
+//        {
+//            superclass::bind( model->edge_attribute_manager(),
+//                model->nb_edges() ) ;
+//        }
+//
+//        BoundaryModelEdgeAttribute()
+//        {
+//        }
+//
+//        BoundaryModelEdgeAttribute( BoundaryModel* model )
+//        {
+//            bind( model ) ;
+//        }
+//
+//        BoundaryModelEdgeAttribute( BoundaryModel* model, const std::string& name )
+//        {
+//            bind( model, name ) ;
+//        }
+//
+//        static bool is_defined( BoundaryModel* model, const std::string& name )
+//        {
+//            return superclass::is_defined( model->edge_attribute_manager(), name ) ;
+//        }
+//    } ;
 
     
     template< class ATTRIBUTE >
@@ -325,8 +325,8 @@ namespace GRGMesh {
             model_.interfaces_[id].add_child( child ) ;
         }
 
-        /** A VOIR SI ion garde tout public là dedans
-         * Pas sur que ce soit passionnant et hyper intéressant 
+        /** A VOIR SI ion garde tout public lï¿½ dedans
+         * Pas sur que ce soit passionnant et hyper intï¿½ressant 
          */
     public:
         void reserve_nb_points( unsigned int size ) {
