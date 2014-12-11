@@ -84,6 +84,7 @@ namespace GRGMesh {
         const Line& line( int index ) const { return lines_.at(index) ; }
         const Surface& surface( int index ) const { return surfaces_.at(index) ; }
         const BoundaryModelElement& region( int index ) const { return regions_.at(index) ; }
+        const BoundaryModelElement& universe() const { return universe_ ; }
 
         const BoundaryModelElement& element( int dim, int index ) const 
         {
@@ -99,10 +100,10 @@ namespace GRGMesh {
         const BoundaryModelElement& contact( int index ) const { return contacts_.at(index) ; }
         const BoundaryModelElement& one_interface( int index ) const { return interfaces_.at(index) ; }
         const BoundaryModelElement& layer( int index ) const { return layers_.at(index) ; }                      
+        
         /// \todo Write a proper IO class for Boundary models
         bool save_gocad_model3d( std::ostream& out ) ;        
         void save_as_eobj_file( const std::string& file_name ) ;
-
 
         // Accessors to attribute managers
         PointAttributeManager* point_attribute_manager() const
@@ -373,7 +374,11 @@ namespace GRGMesh {
         unsigned int add_point( const vec3& point ) {            
             model_.points_.push_back( point ) ;
             return model_.nb_points()-1 ;
-        }       
+        }
+        unsigned int add_point( double* point) {
+            return add_point( vec3( point[0], point[1], point[2] ) ) ;
+        }
+
         void add_corner_boundary( unsigned int id, unsigned int b ) {
             model_.corners_[id].add_boundary( b ) ;
         }

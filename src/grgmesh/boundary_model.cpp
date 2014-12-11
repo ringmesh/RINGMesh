@@ -807,7 +807,7 @@ namespace GRGMesh {
 
     void BoundaryModelBuilder::remove_universe_from_regions( unsigned int id ) 
     {
-        for( int i = 0; i < model_.nb_regions(); ++i ) {
+        for( uint32 i = 0; i < model_.nb_regions(); ++i ) {
             int cur_id = model_.region(i).id() ;
             assert( i == cur_id ) ;
             if( i > id ) model_.regions_[i].set_id( cur_id-1 ) ;
@@ -900,6 +900,18 @@ namespace GRGMesh {
      */
     void BoundaryModelBuilder::load_file( std::istream& in )
     {
+        // Clear the model_ //  Not sure this is actually useful
+        model_.name_.clear() ;
+        model_.points_.clear() ;
+        model_.corners_.clear() ; 
+        model_.lines_.clear() ; 
+        model_.surfaces_.clear() ;
+        model_.regions_.clear() ;
+        model_.nb_facets_.clear() ;
+        model_.interfaces_.clear() ;
+        model_.contacts_.clear() ;
+        model_.layers_.clear() ;
+
         time_t start_load, end_load ;
         time( &start_load ) ;        
 

@@ -9,6 +9,8 @@
 #include <grgmesh/boundary_model.h>
 #include <grgmesh/boundary_model_element.h>
 #include <grgmesh/utils.h>
+
+#include <geogram/basic/geometry_nd.h>
 #include <set>
 #include <stack>
 #include <fstream>
@@ -115,6 +117,26 @@ namespace GRGMesh {
         return result ;
     }
   
+     /*! Returns true if this element or one of the element containing it
+     *  is on the Volume Of Interest
+     *  This info is strored in the type of the element
+     */
+    bool BoundaryModelElement::is_on_voi() const
+    {
+        if( type_ == ALL ) 
+        {
+            for( int j = 0; j < nb_in_boundary(); ++j ) {
+                GEOL_FEATURE t = in_boundary( j ).type() ;
+                if( t == VOI || t == STRATI_VOI || t == FAULT_VOI ){
+                    return true ;
+                }
+            }
+        } else if( type_ == VOI || type_ == STRATI_VOI || type_ == FAULT_VOI )
+        {
+            return true ;
+        }
+        return false ;
+    }
     
 
 /***********************************************************************************************/
@@ -686,6 +708,19 @@ namespace GRGMesh {
         return normalize( c0 ) ;
     }
 
+    void Surface::point_normals( std::vector< vec3 >& normals ) const {
+        normals.resize( nb_points() ) ;
+        for( unsigned int f = 0; f < nb_cells(); f++ ) {
+            vec3 normal = facet_normal( f ) ;
+            for( unsigned int p = 0; p < nb_points_in_facet( f ); p++ ) {
+                unsigned int id = surf_point_id( f, p ) ;
+                normals[id] += normal ;
+            }
+        }
+        for( unsigned int p = 0; p < nb_points(); p++ ) {
+            normals[p] = normalize( normals[p] ) ;
+        }
+    }
 
     unsigned int Surface::closest_point_in_facet(
         unsigned int f,
@@ -725,12 +760,58 @@ namespace GRGMesh {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
- 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+    double BoundaryModelElementMeasure::size( const BoundaryModelElement* E ) {        
+        double result = 0. ;
 
+        // If this element has children sum up their sizes
+        for( unsigned int i = 0; i < E->nb_children(); ++i ){
+            result += BoundaryModelElementMeasure::size( &E->child(i) )  ;
+        }
+        if( result != 0 ) return result ;
+
+        // Else it is a base element
+        
+        // If this is a region 
+        if( E->dim() == 3 ) {
+            // Compute the volume if this is a region
+            for( unsigned int i = 0; i < E->nb_boundaries(); i++ ) {
+                const Surface& surface = dynamic_cast< const Surface& >( E->boundary( i ) ) ;
+                   
+                for( unsigned int t = 0; t < surface.nb_cells(); t++ ) {
+                    const vec3& p0 = surface.point(t, 0 ) ;
+                    for( unsigned int v = 1; v+1 < surface.nb_points_in_facet(t); ++v ){
+                        double cur_volume = ( dot( p0,
+                            cross( surface.point( t, v ), surface.point( t, v+1 ) ) ) )
+                            / static_cast< double >( 6 ) ;
+                        E->side(i) ? result -= cur_volume : result += cur_volume ;
+                    }
+                }
+            }
+            return fabs( result ) ;
+        }
+        else if( E->dim() == 0 ) {
+            return 0 ; 
+        }
+        else if( E->dim() == 1 ) {
+            const Line* L = dynamic_cast< const Line* >( E ) ;
+            grgmesh_assert( L != nil ) ;           
+            for( unsigned int i = 1; i < E->nb_points(); ++i ){
+                result += GEO::Geom::distance( E->point( i ), E->point( i-1 ) ) ;
+            }
+            return result ;
+        }
+        else if( E->dim() == 2 ) {
+            const Surface* S = dynamic_cast< const Surface* >( E ) ;
+            grgmesh_assert( S != nil ) ;
+
+            for( unsigned int i = 0; i < S->nb_cells(); i++ ) {
+                result += S->facet_area( i ) ;
+            }
+            return result ;
+        }
+        grgmesh_assert_not_reached ;
+    }        
 
     vec3 BoundaryModelElementMeasure::barycenter ( 
         const BoundaryModelElement* E, const std::vector< uint32 >& cells ) 
@@ -757,6 +838,66 @@ namespace GRGMesh {
         
         grgmesh_assert_not_reached ;
         return result ;
+    }           
+
+
+    double BoundaryModelElementMeasure::distance( 
+        const BoundaryModelElement* E,
+        const vec3& p ) 
+    {
+        double result = FLT_MAX ;   
+        const Line* L = dynamic_cast< const Line* >( E ) ;
+        if( L != nil ) {                    
+            for( unsigned int i = 1; i < L->nb_points(); ++i ){
+                // Distance between a point and a segment
+                const vec3& p0 = L->point( i-1 ) ;
+                const vec3& p1 = L->point( i ) ;
+
+                double distance_pt_2_segment  = FLT_MAX ;
+                vec3 c = (p1-p0)/2 ;        
+                double half = GEO::distance( p1, c ) ;
+                double cp_dot_p0p1 = dot( p-c, p1-p0 ) ;
+
+                if( cp_dot_p0p1 < -half ) distance_pt_2_segment =  GEO::distance( p0, p ) ;
+                else if( cp_dot_p0p1 > half ) distance_pt_2_segment = GEO::distance( p1, p ) ;
+                else {
+                    vec3 projection = c + cp_dot_p0p1*(p1-p0) ;
+                    distance_pt_2_segment = GEO::distance( projection, p ) ;
+                }    
+                result = distance_pt_2_segment < result ? distance_pt_2_segment : result ;
+            }        
+            return result ;
+        }
+        const Surface* S = dynamic_cast< const Surface* >( E ) ;
+        if( S != nil ) {
+            for( unsigned int i = 0; i < S->nb_cells(); i++ ) {
+                for( unsigned int j = 1; j+1 < S->nb_points_in_facet( i ); ++j ) {
+                    double cur = GEO::Geom::point_triangle_squared_distance( 
+                        p, S->point( i, 0 ), S->point( i, j ), S->point( i, j+1 ) ) ;
+                    if( cur < result ) result = cur ;                               
+                }
+            }
+            if( result != FLT_MAX ) result = sqrt( result ) ;
+            return result ;           
+        }
+
+        const Corner* C = dynamic_cast < const Corner* >( E ) ;
+        if( C != nil ) {
+            return GEO::distance( C->point(), p ) ;
+        }
+
+        // If it is not one of the basic types - compute it for the children
+        // if any 
+        if( E->nb_children() == 0 ) {
+            grgmesh_assert_not_reached ;
+        }
+        else {
+            for( unsigned int i = 0; i < E->nb_children(); ++i ){
+                double dist = distance( &E->child(i), p ) ;
+                result = ( dist < result ) ? dist : result ;
+            }
+            return result ;
+        }       
     }
 
 
@@ -1103,28 +1244,7 @@ namespace GRGMesh {
         print_stats( out, values, 10., -DBL_MAX, -DBL_MAX, 170. ) ;
            
         out << std::endl ;
-    }
-
-    /*! Returns true if this element or one of the element containing it
-     *  is on the Volume Of Interest
-     *  This info is strored in the type of the element
-     */
-    bool BoundaryModelElement::is_on_voi() const
-    {
-        if( type_ == ALL ) 
-        {
-            for( int j = 0; j < nb_in_boundary(); ++j ) {
-                GEOL_FEATURE t = in_boundary( j )->type() ;
-                if( t == VOI || t == STRATI_VOI || t == FAULT_VOI ){
-                    return true ;
-                }
-            }
-        } else if( type_ == VOI || type_ == STRATI_VOI || type_ == FAULT_VOI )
-        {
-            return true ;
-        }
-        return false ;
-    }
+    }   
 
     void get_all_boundary_elements(
         const BoundaryModelElement* e,
