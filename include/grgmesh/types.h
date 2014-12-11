@@ -31,7 +31,7 @@ namespace GRGMesh {
     typedef byte* pointer ;
 
     /** Null pointer type */
-    #define nil 0
+    //#define nil NULL // already in Geogram
 
     /** Integer type with a width of 8 bits */
     typedef char int8 ;

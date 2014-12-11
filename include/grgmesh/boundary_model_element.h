@@ -459,7 +459,7 @@ namespace GRGMesh {
         inline vec3 facet_barycenter( int f ) const ;  
         inline double facet_area( int f ) const ;
         inline vec3 facet_normal( int f ) const ;
-
+        void point_normals( std::vector< vec3 >& normals ) const ;
         
         int facets_around_point(
             uint32 surf_point_id,

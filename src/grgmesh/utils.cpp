@@ -32,7 +32,7 @@ namespace GRGMesh {
     MakeUnique::MakeUnique( const std::vector< vec3 >& points )
         : points_( points )
     {
-        int32 nb_points = points_.size() ;
+        uint32 nb_points = points_.size() ;
         indices_.resize( nb_points ) ;
         for( uint32 i = 0; i < nb_points; i++ ) {
             indices_[i] = i ;
