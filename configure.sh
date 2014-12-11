@@ -14,25 +14,7 @@ else
    exit
 fi
 
-os="$2"
-if [ -z "$os" ]; then
-    os=`uname -a`
-    case "$os" in
-        Linux*x86_64*)
-            os=Linux64-gcc
-            ;;
-        Linux*amd64*)
-            os=Linux64-gcc
-            ;;
-        Linux*i586*|Linux*i686*)
-            os=Linux32-gcc
-            ;;
-        *)
-            echo "Error: OS not supported: $os"
-            exit 1
-            ;;
-    esac
-fi
+os="Linux64-gcc"
 
 #  Import plaform specific environment
 
@@ -51,7 +33,7 @@ do
    build_dir=build/geogram/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DGEOGRAM_WITH_TETGEN:BOOL=TRUE -DCMAKE_C_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; $CMAKE --build .)
+   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DGEOGRAM_WITH_TETGEN:BOOL=TRUE -DVORPALINE_BUILD_DYNAMIC:BOOL=TRUE -DCMAKE_C_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; $CMAKE --build .)
 done
 echo
 echo ============== GeoGram build configured ==================
