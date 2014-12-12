@@ -265,6 +265,10 @@ namespace GRGMesh {
 
     class GRGMESH_API Utils {
     public:
+        static uint32 get_nearest_vertex_index(
+            const GEO::Mesh& mesh,
+            const vec3& p,
+            int32 t ) ;
         static bool facets_have_same_orientation(
             const GEO::Mesh& mesh,
             uint32 f1,
@@ -811,9 +815,13 @@ template< class T > static bool contains(
 
     class GRGMESH_API ColocaterANN {
     public:
+        enum MeshLocation {
+            VERTICES, FACETS, CELLS
+        };
+
         ColocaterANN( const SurfacePart& mesh ) ;
         ColocaterANN( const ContactPart& mesh ) ;
-        ColocaterANN( const GEO::Mesh& mesh ) ;
+        ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location ) ;
         ColocaterANN( const std::vector< vec3 >& vertices ) ;
         ColocaterANN( float64* vertices, uint32 nb_vertices ) ;
         ColocaterANN( const std::vector< Edge >& edges ) ;

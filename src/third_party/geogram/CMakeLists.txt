@@ -101,6 +101,7 @@ if(VORPALINE_BUILD_DYNAMIC)
     # BUILD_SHARED_LIBS is true! We must set CMAKE_POSITION_INDEPENDENT_CODE
     # to force compilation in dynamic mode.
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+    add_definitions(-DGEO_DYNAMIC)
 else()
     set(BUILD_SHARED_LIBS FALSE)
 endif()

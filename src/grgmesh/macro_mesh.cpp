@@ -16,6 +16,8 @@
 #include <grgmesh/boundary_model.h>
 #include <grgmesh/tetra_gen.h>
 
+#include <geogram/mesh/mesh_AABB.h>
+
 namespace GRGMesh {
 
     MacroMesh::MacroMesh( const BoundaryModel* model, uint8 dim )
@@ -24,8 +26,10 @@ namespace GRGMesh {
             meshes_( model->nb_regions(), nil ),
             background_meshes_( model->nb_regions(), nil ),
             vertices_( model->nb_regions() ),
-            well_vertices_( model->nb_regions()),
-            nb_vertices_( -1 )
+            well_vertices_( model->nb_regions() ),
+            nb_vertices_( -1 ),
+            facet_aabb_( model->nb_regions(), nil ),
+            tet_aabb_( model->nb_regions(), nil )
     {
         for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;
@@ -37,6 +41,8 @@ namespace GRGMesh {
         for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
             delete meshes_[r] ;
             if( background_meshes_[r] ) delete background_meshes_[r] ;
+            if( facet_aabb_[r] ) delete facet_aabb_[r] ;
+            if( tet_aabb_[r] ) delete tet_aabb_[r] ;
         }
     }
 
@@ -44,6 +50,39 @@ namespace GRGMesh {
     {
         for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
             background_meshes_[r] = new GEO::Mesh( dim ) ;
+        }
+    }
+
+    const GEO::MeshFacetsAABB& MacroMesh::facet_aabb( uint32 region )
+    {
+        init_facet_aabb( region ) ;
+        return *facet_aabb_[region] ;
+    }
+    void MacroMesh::init_facet_aabb( uint32 region )
+    {
+        if( facet_aabb_[region] ) return ;
+        facet_aabb_[region] = new GEO::MeshFacetsAABB( mesh( region ) ) ;
+    }
+    void MacroMesh::init_all_facet_aabb()
+    {
+        for( uint32 region = 0; region < nb_meshes(); region++ ) {
+            init_facet_aabb( region ) ;
+        }
+    }
+    const GEO::MeshTetsAABB& MacroMesh::tet_aabb( uint32 region )
+    {
+        init_tet_aabb( region ) ;
+        return *tet_aabb_[region] ;
+    }
+    void MacroMesh::init_tet_aabb( uint32 region )
+    {
+        if( tet_aabb_[region] ) return ;
+        tet_aabb_[region] = new GEO::MeshTetsAABB( mesh( region ) ) ;
+    }
+    void MacroMesh::init_all_tet_aabb()
+    {
+        for( uint32 region = 0; region < nb_meshes(); region++ ) {
+            init_tet_aabb( region ) ;
         }
     }
 
@@ -75,5 +114,38 @@ namespace GRGMesh {
         }
     }
 
+    void MacroMesh::unique_points(
+        std::vector< vec3 >& unique_vertices,
+        std::vector< int >& indices ) const
+    {
+        uint32 nb_non_unique_vertices = 0 ;
+        for( uint32 i = 0; i < meshes_.size(); i++ ) {
+            nb_non_unique_vertices += meshes_[i]->nb_vertices() ;
+        }
+        std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
+        uint32 index = 0 ;
+        for( uint32 i = 0; i < meshes_.size(); i++ ) {
+            for( uint32 j = 0; j < meshes_[i]->nb_vertices(); j++ ) {
+                all_vertices[index] = vec3( meshes_[i]->vertex_ptr( j )[0],
+                    meshes_[i]->vertex_ptr( j )[1],
+                    meshes_[i]->vertex_ptr( j )[2] ) ;
+                index++ ;
+            }
+        }
+        MakeUnique mu( all_vertices ) ;
+        mu.unique_points( unique_vertices ) ;
+        indices = mu.indices() ;
+    }
+
+    uint32 MacroMesh::nb_vertices() {
+        if( nb_vertices_ != -1) {
+            return nb_vertices_ ;
+        }
+        std::vector< vec3 > unique_vertices ;
+        std::vector< int > indices ;
+        unique_points( unique_vertices, indices ) ;
+        nb_vertices_ = unique_vertices.size() ;
+        return nb_vertices_ ;
+    }
 }
 

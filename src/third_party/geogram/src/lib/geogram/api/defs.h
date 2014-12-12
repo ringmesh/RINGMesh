@@ -54,7 +54,16 @@
 /**
  * \brief Linkage declaration for geogram symbols.
  */
+
+#if defined(_MSC_VER) && defined(GEO_DYNAMIC)
+#ifdef geogram_EXPORTS
+#define GEOGRAM_API __declspec(dllexport) 
+#else
+#define GEOGRAM_API __declspec(dllimport) 
+#endif
+#else
 #define GEOGRAM_API
+#endif
 
 /**
  * \brief Opaque identifier of a mesh.
