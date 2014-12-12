@@ -20,6 +20,11 @@
 
 #include <geogram/mesh/mesh.h>
 
+namespace GEO {
+    class MeshTetsAABB ;
+    class MeshFacetsAABB ;
+}
+
 namespace GRGMesh {
 
     class BoundaryModel ;
@@ -39,6 +44,18 @@ namespace GRGMesh {
             const TetraMethod& method,
             int region_id = -1,
             bool add_steiner_points = true ) ;
+
+        void unique_points(
+            std::vector< vec3 >& unique_vertices,
+            std::vector< int >& indices ) const ;
+
+
+        const GEO::MeshFacetsAABB& facet_aabb( uint32 region ) ;
+        void init_facet_aabb( uint32 region ) ;
+        void init_all_facet_aabb() ;
+        const GEO::MeshTetsAABB& tet_aabb( uint32 region ) ;
+        void init_tet_aabb( uint32 region ) ;
+        void init_all_tet_aabb() ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
@@ -84,28 +101,7 @@ namespace GRGMesh {
             return model_ ;
         }
       
-        uint32 nb_vertices() {
-        	if( nb_vertices_ != -1) {
-        		return nb_vertices_ ;
-        	}
-        	uint32 nb_non_unique_vertices = 0;
-        	for(uint32 i = 0; i < meshes_.size() ;i++) {
-        		nb_non_unique_vertices += meshes_[i]->nb_vertices() ;
-        	}
-        	std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
-        	uint32 index = 0 ;
-        	for(uint32 i = 0; i < meshes_.size() ;i++) {
-        		for(uint32 j = 0; j < meshes_[i]->nb_vertices(); j++) {
-        		all_vertices[index]= vec3( meshes_[i]->vertex_ptr(j)[0], meshes_[i]->vertex_ptr(j)[1], meshes_[i]->vertex_ptr(j)[2] );
-        		index++ ;
-        		}
-        	}
-        	std::vector< vec3 > unique_vertices ;
-        	MakeUnique mu(all_vertices) ;
-        	mu.unique_points(unique_vertices) ;
-        	nb_vertices_ = unique_vertices.size() ;
-        	return nb_vertices_ ;
-        }
+        uint32 nb_vertices() ;
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
@@ -119,6 +115,8 @@ namespace GRGMesh {
         /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
         std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
     private:
+        std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
+        std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
         uint32 nb_vertices_ ;
     } ;
 

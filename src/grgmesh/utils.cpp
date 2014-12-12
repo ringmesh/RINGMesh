@@ -49,6 +49,23 @@ namespace GRGMesh {
         return true ;
     }
 
+    uint32 Utils::get_nearest_vertex_index(
+        const GEO::Mesh& mesh,
+        const vec3& p,
+        int32 t )
+    {
+        float64 dist = GEO::Numeric::max_float64() ;
+        uint32 result = 0 ;
+        for( uint32 v = 0; v < mesh.cell_nb_vertices( t ); v++ ) {
+            float64 distance = length2(
+                vec3( mesh.vertex_ptr( mesh.cell_vertex_index( t, v ) ) ) - p ) ;
+            if( distance < dist ) {
+                result = v ;
+            }
+        }
+        return result ;
+    }
+
     bool Utils::facets_have_same_orientation(
         const GEO::Mesh& mesh,
         uint32 f1,
@@ -867,14 +884,50 @@ namespace GRGMesh {
         ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
     }
 
-    ColocaterANN::ColocaterANN( const GEO::Mesh& mesh )
-    {
-        int32 nb_vertices = mesh.nb_vertices() ;
-        ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( uint32 i = 0; i < nb_vertices; i++ ) {
-            std::copy( mesh.vertex_ptr( i ), mesh.vertex_ptr( i ) + 3, &ann_points_[i][0] ) ;
+    vec3 mesh_cell_center( const GEO::Mesh& M, uint32 cell ) {
+        vec3 result(0.0, 0.0, 0.0);
+        double count = 0.0;
+        for( uint32 v = 0; v < M.cell_nb_vertices( cell ); v++ ) {
+            result += vec3( M.vertex_ptr( M.cell_vertex_index( cell, v ) ) ) ;
+            count += 1.0;
         }
-        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+        return (1.0 / count) * result;
+    }
+
+    ColocaterANN::ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location )
+    {
+        switch( location ) {
+            case VERTICES: {
+                int32 nb_vertices = mesh.nb_vertices() ;
+                ann_points_ = annAllocPts( nb_vertices, 3 ) ;
+                for( uint32 i = 0; i < nb_vertices; i++ ) {
+                    std::copy( mesh.vertex_ptr( i ), mesh.vertex_ptr( i ) + 3,
+                        &ann_points_[i][0] ) ;
+                }
+                ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+                break ;
+            } case FACETS: {
+                int32 nb_vertices = mesh.nb_facets() ;
+                ann_points_ = annAllocPts( nb_vertices, 3 ) ;
+                for( uint32 i = 0; i < mesh.nb_facets(); i++ ) {
+                    vec3 center = GEO::Geom::mesh_facet_center( mesh, i )  ;
+                    std::copy( center.data(), center.data() + 3,
+                        &ann_points_[i][0] ) ;
+                }
+                ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+                break ;
+            } case CELLS: {
+                int32 nb_vertices = mesh.nb_cells() ;
+                ann_points_ = annAllocPts( nb_vertices, 3 ) ;
+                for( uint32 i = 0; i < mesh.nb_cells(); i++ ) {
+                    vec3 center = mesh_cell_center( mesh, i )  ;
+                    std::copy( center.data(), center.data() + 3,
+                        &ann_points_[i][0] ) ;
+                }
+                ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+                break ;
+            }
+        }
     }
 
     ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices )
