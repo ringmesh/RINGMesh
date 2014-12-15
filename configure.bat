@@ -110,7 +110,7 @@ if not exist build\geogram\%opsys% (
 )
 
 cd build\geogram\%opsys%
-%CMAKE_EXECUTABLE% ..\..\..\src\third_party\geogram %cmake_debug_options% %cmake_generator_options% -DVORPALINE_PLATFORM:STRING=geoplatform -DGEOGRAM_WITH_TETGEN:BOOL=TRUE -DVORPALINE_BUILD_DYNAMIC:BOOL=TRUE 
+%CMAKE_EXECUTABLE% ..\..\..\src\third_party\geogram %cmake_debug_options% %cmake_generator_options% -DVORPALINE_PLATFORM:STRING=%geoplatform% -DGEOGRAM_WITH_TETGEN:BOOL=TRUE -DVORPALINE_BUILD_DYNAMIC:BOOL=TRUE 
 %CMAKE_EXECUTABLE% --build . --config Release
 %CMAKE_EXECUTABLE% --build . --config Debug
 
