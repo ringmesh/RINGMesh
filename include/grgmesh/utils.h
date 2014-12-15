@@ -265,6 +265,24 @@ namespace GRGMesh {
 
     class GRGMESH_API Utils {
     public:
+        static bool has_edge(
+            GEO::Mesh& mesh,
+            uint32 t,
+            uint32 p0,
+            uint32 p1,
+            uint32& edge ) ;
+        static int32 next_arround_edge(
+            GEO::Mesh& mesh,
+            uint32 t,
+            uint32 prev,
+            uint32 p0,
+            uint32 p1 ) ;
+        static void edges_arround_edge(
+            GEO::Mesh& mesh,
+            uint32 t,
+            uint32 p0,
+            uint32 p1,
+            std::vector< uint32 >& result ) ;
         static uint32 get_nearest_vertex_index(
             const GEO::Mesh& mesh,
             const vec3& p,
