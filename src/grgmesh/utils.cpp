@@ -49,6 +49,84 @@ namespace GRGMesh {
         return true ;
     }
 
+    /*!
+     * Test if a tetrahedron has an egde between two given points
+     * @param t Tetrahedron index
+     * @param p0 First vertex index
+     * @param p1 Second vertex index
+     * @param edge Output edge index
+     * @return The result of the test
+     */
+    bool Utils::has_edge(
+        GEO::Mesh& mesh,
+        uint32 t,
+        uint32 p0,
+        uint32 p1,
+        uint32& edge )
+    {
+        for( uint8 e = 0; e < 6; e++ ) {
+            uint32 v0 = mesh.cell_edge_vertex_index( t, e, 0 ) ;
+            uint32 v1 = mesh.cell_edge_vertex_index( t, e, 1 ) ;
+            if( ( p0 == v0 && p1 == v1 ) || ( p0 == v1 && p1 == v0 ) ) {
+                edge = e ;
+                return true ;
+            }
+        }
+        return false ;
+    }
+
+    /*!
+     * Get all the next adjacent tetrahedra sharing an edge
+     * @param t Starting tetrahedron index to test, should contain the edge
+     * @param prev Previous tetrahedron index
+     * (if propagation arround the edge, prevent to go back were we came from)
+     * @param p0 First vertex index of the edge
+     * @param p1 Second vertex index of the edge
+     * @return The edge index
+     */
+    int32 Utils::next_arround_edge(
+        GEO::Mesh& mesh,
+        uint32 t,
+        uint32 prev,
+        uint32 p0,
+        uint32 p1 )
+    {
+        for( uint8 adj = 0; adj < 4; adj++ ) {
+            int32 t_adj = mesh.cell_adjacent( t, adj ) ;
+            if( t_adj == -1 || t_adj == prev ) continue ;
+            uint32 edge ;
+            if( has_edge( mesh, t_adj, p0, p1, edge ) ) {
+                return 6 * t_adj + edge ;
+            }
+        }
+        return -1 ;
+    }
+
+    /*!
+     * Get all the edge indices arround one edge
+     * @param t First tetrahderon index to test, should include the edge
+     * @param p0 First vertex index of the edge
+     * @param p1 Second vertex index of the edge
+     * @param result Output list of edge indices
+     */
+    void Utils::edges_arround_edge(
+        GEO::Mesh& mesh,
+        uint32 t,
+        uint32 p0,
+        uint32 p1,
+        std::vector< uint32 >& result )
+    {
+        uint32 prev = t ;
+        int cur = t ;
+        do {
+            int info = next_arround_edge( mesh, cur, prev, p0, p1 ) ;
+            if( info == -1 ) return ;
+            result.push_back( info ) ;
+            prev = cur ;
+            cur = info / 6 ;
+        } while( cur != t ) ;
+    }
+
     uint32 Utils::get_nearest_vertex_index(
         const GEO::Mesh& mesh,
         const vec3& p,
