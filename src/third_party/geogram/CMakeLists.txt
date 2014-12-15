@@ -7,15 +7,15 @@
 if(NOT DEFINED VORPALINE_PLATFORM)
      if(WIN32) 
         message( 
-	   STATUS
-   	   " Using Win-vs-generic (default),\n"
+           STATUS
+           " Using Win-vs-generic (default),\n"
            " (if need be, use CMake variable VORPALINE_PLATFORM to override)."
         )
         set(VORPALINE_PLATFORM Win-vs-generic)
      else()
         message(FATAL_ERROR
-  	   " CMake variable VORPALINE_PLATFORM is not defined.\n"
-	   " Please run configure.{sh,bat} to setup the build tree."
+           " CMake variable VORPALINE_PLATFORM is not defined.\n"
+           " Please run configure.{sh,bat} to setup the build tree."
         )
      endif()
 endif()
@@ -101,7 +101,7 @@ if(VORPALINE_BUILD_DYNAMIC)
     # BUILD_SHARED_LIBS is true! We must set CMAKE_POSITION_INDEPENDENT_CODE
     # to force compilation in dynamic mode.
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-    add_definitions(-DGEO_DYNAMIC)
+    add_definitions(-DGEO_DYNAMIC_LIBS)
 else()
     set(BUILD_SHARED_LIBS FALSE)
 endif()

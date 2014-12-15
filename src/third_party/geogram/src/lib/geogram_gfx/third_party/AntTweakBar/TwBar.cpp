@@ -13,7 +13,8 @@
 #include "TwMgr.h"
 #include "TwBar.h"
 #include "TwColors.h"
-  
+#include <algorithm> //[Bruno Levy] added missing include (for min() and max())
+
 using namespace std;
 
 extern const char *g_ErrNotFound;

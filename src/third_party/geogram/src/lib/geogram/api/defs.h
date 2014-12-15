@@ -55,7 +55,7 @@
  * \brief Linkage declaration for geogram symbols.
  */
 
-#if defined(_MSC_VER) && defined(GEO_DYNAMIC)
+#if defined(_MSC_VER) && defined(GEO_DYNAMIC_LIBS)
 #ifdef geogram_EXPORTS
 #define GEOGRAM_API __declspec(dllexport) 
 #else

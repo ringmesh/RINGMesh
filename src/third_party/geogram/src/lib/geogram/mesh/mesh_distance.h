@@ -46,6 +46,8 @@
 #ifndef __GEOGRAM_MESH_MESH_DISTANCE__
 #define __GEOGRAM_MESH_MESH_DISTANCE__
 
+#include <geogram/basic/common.h>
+
 /**
  * \file mesh_distance.h
  * \brief Distance computations between meshes
@@ -75,7 +77,7 @@ namespace GEO {
      *  are added until sampling density is reached,
      *  i.e. nb_samples >= area(m1) / sampling_dist^2
      */
-    double mesh_one_sided_Hausdorff_distance(
+    double GEOGRAM_API mesh_one_sided_Hausdorff_distance(
         Mesh& m1, Mesh& m2, double sampling_dist
     );
 
@@ -99,7 +101,7 @@ namespace GEO {
      *
      * \see mesh_one_sided_Hausdorff_distance()
      */
-    double mesh_symmetric_Hausdorff_distance(
+    double GEOGRAM_API mesh_symmetric_Hausdorff_distance(
         Mesh& m1, Mesh& m2, double sampling_dist
     );
 }

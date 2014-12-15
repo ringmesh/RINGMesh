@@ -294,7 +294,7 @@ namespace GEO {
          * \param[out] M the loaded mesh
          * \param[in] ioflags specifies which attributes and elements should be loaded
          */
-        virtual bool GEOGRAM_API load(
+        virtual bool load(
             const std::string& filename, Mesh& M,
             const MeshIOFlags& ioflags = MeshIOFlags()
         ) = 0;
@@ -306,7 +306,7 @@ namespace GEO {
          * \param[in] ioflags specifies which attributes and elements should be loaded
          * \return true on success, false otherwise.
          */
-        virtual bool GEOGRAM_API load(
+        virtual bool load(
             const std::string& filename, SinglePrecisionMesh& M,
             const MeshIOFlags& ioflags = MeshIOFlags()
         ) = 0;
@@ -318,7 +318,7 @@ namespace GEO {
          * \param[in] ioflags specifies which attributes and elements should be saved
          * \return true on success, false otherwise.
          */
-        virtual bool GEOGRAM_API save(
+        virtual bool save(
             const Mesh& M, const std::string& filename,
             const MeshIOFlags& ioflags = MeshIOFlags()
         ) = 0;

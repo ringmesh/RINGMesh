@@ -490,7 +490,7 @@ namespace GEO {
          * \param[in] name the argument name
          * \param[in] value the new value as an integer
          */
-        void set_arg(const std::string& name, int value);
+        void GEOGRAM_API set_arg(const std::string& name, int value);
 
         /**
          * \brief Sets an argument value from an unsigned integer
@@ -503,7 +503,7 @@ namespace GEO {
          * \param[in] name the argument name
          * \param[in] value the new value as an unsigned integer
          */
-        void set_arg(const std::string& name, unsigned int value);
+        void GEOGRAM_API set_arg(const std::string& name, unsigned int value);
 
         /**
          * \brief Sets an argument value from a floating point
@@ -515,7 +515,7 @@ namespace GEO {
          * \param[in] name the argument name
          * \param[in] value the new value as a floating point
          */
-        void set_arg(const std::string& name, double value);
+        void GEOGRAM_API set_arg(const std::string& name, double value);
 
         /**
          * \brief Sets an argument value from a boolean
@@ -527,7 +527,7 @@ namespace GEO {
          * \param[in] name the argument name
          * \param[in] value the new value as a floating point
          */
-        void set_arg(const std::string& name, bool value);
+        void GEOGRAM_API set_arg(const std::string& name, bool value);
 
         /**
          * \brief Sets an argument value from a percentage
@@ -541,7 +541,7 @@ namespace GEO {
          * \param[in] name the argument name
          * \param[in] value the new value as a floating point
          */
-        void set_arg_percent(const std::string& name, double value);
+        void GEOGRAM_API set_arg_percent(const std::string& name, double value);
 
         /********************************************************************/
 

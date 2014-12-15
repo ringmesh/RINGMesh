@@ -203,8 +203,13 @@ namespace {
     protected:
         /** \brief WindowsThreadPoolManager destructor */
         virtual ~WindowsThreadPoolManager() {
+// It makes it crash on exit when calling these functions
+// with dynamic libs, I do not know why...            
+// TODO: investigate...
+#ifndef GEO_DYNAMIC_LIBS            
             CloseThreadpool(pool_);
             CloseThreadpoolCleanupGroup(cleanupGroup_);
+#endif            
         }
 
         /** \copydoc GEO::ThreadManager::run_concurrent_threads() */

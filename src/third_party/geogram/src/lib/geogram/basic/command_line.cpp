@@ -397,7 +397,7 @@ namespace {
             line.desc = arg.desc;
             lines.push_back(line);
 
-            max_left_width = std::max(
+            max_left_width = geo_max(
                 index_t(line.name.length() + line.value.length()),
                 max_left_width
             );

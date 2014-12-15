@@ -67,7 +67,7 @@ namespace GEO {
      * templated singleton instances in a central repository guarantees the
      * instances uniqueness.
      */
-    class InstanceRepo {
+    class GEOGRAM_API InstanceRepo {
     public:
         /**
          * \brief Type of the Instances stored in the repository

@@ -130,7 +130,7 @@ namespace GEO {
      * \see Geom::mesh_area()
      * \see meshes_have_same_topology()
      */
-    MeshCompareFlags mesh_compare(
+    MeshCompareFlags GEOGRAM_API mesh_compare(
         const Mesh& M1, const Mesh& M2,
         MeshCompareFlags flags = MESH_COMPARE_SURFACE_PROPS,
         double tolerance = 0.0,

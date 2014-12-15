@@ -58,6 +58,7 @@
 #include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_intersection.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/voronoi/CVT.h>
@@ -1478,6 +1479,90 @@ namespace {
         }
     }
 
+
+    /**
+     * \brief Loads a volumetric mesh.
+     * \details If the specified file contains a surface, try to
+     *  tesselate it. If the surface has self-intersections, try to
+     *  remove them.
+     * \param[in] filename the name of the file
+     * \param[out] M the mesh
+     * \retval true if the file was successfully loaded
+     * \retval false otherwise
+     */
+    bool load_volume_mesh(const std::string& filename, Mesh& M) {
+        MeshIOFlags flags;
+        flags.set_element(MESH_CELLS);
+        flags.set_attribute(MESH_CELL_REGION);
+
+        if(!mesh_load(filename, M, flags)) {
+            return 1;
+        }
+        if(!M.is_tetrahedralized()) {
+            Logger::err("I/O") << "File "
+                               << filename
+                               << " should only have tetrahedra" << std::endl;
+            return false;
+        }
+        if(M.nb_tets() == 0) {
+            Logger::out("I/O") << "File "
+                               << filename
+                               << " does not contain a volume" << std::endl;
+            Logger::out("I/O") << "Trying to tesselate..." << std::endl;
+
+            Delaunay_var delaunay = Delaunay::create(3,"tetgen");
+            if(delaunay.is_nil()) {
+                Logger::err("I/O") << "Cannot tesselate (does not have tetgen)"
+                                   << std::endl;
+                Logger::err("I/O") << "(see CMakeOptions.txt.sample)"
+                                   << std::endl;
+            }
+
+            Logger::out("I/O") << "Pre-processing file" << std::endl;            
+            mesh_repair(M);
+            mesh_remove_intersections(M);            
+
+            index_t nb_border_edges=0;
+            for(index_t f=0; f<M.nb_facets(); ++f) {
+                for(index_t c=M.facet_begin(f); c<M.facet_end(f); ++c) {
+                    if(M.corner_adjacent_facet(f) == -1) {
+                        ++nb_border_edges;
+                    }
+                }
+            }
+            
+            if(nb_border_edges != 0) {
+                Logger::err("I/O") << "Mesh has " << nb_border_edges << " edge(s) on the border"
+                                   << std::endl;
+                Logger::err("I/O") << "Cannot tesselate (needs a closed mesh)"
+                                   << std::endl;
+                return false;
+            }
+
+            delaunay->set_constraints(&M);
+            
+            // No additional vertices, just use the vertices of the input surface.
+            delaunay->set_vertices(0,nil);
+
+            vector<double> pts(delaunay->nb_vertices() * 3);
+            vector<index_t> tet2v(delaunay->nb_cells() * 4);
+            for(index_t v = 0; v < delaunay->nb_vertices(); ++v) {
+                pts[3 * v] = delaunay->vertex_ptr(v)[0];
+                pts[3 * v + 1] = delaunay->vertex_ptr(v)[1];
+                pts[3 * v + 2] = delaunay->vertex_ptr(v)[2];
+            }
+            for(index_t t = 0; t < delaunay->nb_cells(); ++t) {
+                tet2v[4 * t] = index_t(delaunay->cell_vertex(t, 0));
+                tet2v[4 * t + 1] = index_t(delaunay->cell_vertex(t, 1));
+                tet2v[4 * t + 2] = index_t(delaunay->cell_vertex(t, 2));
+                tet2v[4 * t + 3] = index_t(delaunay->cell_vertex(t, 3));
+            }
+            M.assign_tet_mesh(3, pts, tet2v, true);
+            M.connect_tets();
+            M.show_stats();
+        }
+        return true;
+    }
 }
 
 int main(int argc, char** argv) {
@@ -1557,13 +1642,10 @@ int main(int argc, char** argv) {
         Mesh M1;
         Mesh M2;
         Mesh M2_samples;
-        MeshIOFlags flags;
-        flags.set_element(MESH_CELLS);
-        flags.set_attribute(MESH_CELL_REGION);
-        if(!mesh_load(mesh1_filename, M1, flags)) {
+        if(!load_volume_mesh(mesh1_filename, M1)) {
             return 1;
         }
-        if(!mesh_load(mesh2_filename, M2, flags)) {
+        if(!load_volume_mesh(mesh2_filename, M2)) {
             return 1;
         }
 
