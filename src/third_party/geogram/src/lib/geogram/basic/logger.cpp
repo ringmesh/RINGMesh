@@ -344,27 +344,27 @@ namespace GEO {
         return instance_;
     }
 
-    LoggerStream& Logger::div(const std::string& title) {
+    std::ostream& Logger::div(const std::string& title) {
         return instance()->div_stream(title);
     }
 
-    LoggerStream& Logger::out(const std::string& feature) {
+    std::ostream& Logger::out(const std::string& feature) {
         return instance()->out_stream(feature);
     }
 
-    LoggerStream& Logger::err(const std::string& feature) {
+    std::ostream& Logger::err(const std::string& feature) {
         return instance()->err_stream(feature);
     }
 
-    LoggerStream& Logger::warn(const std::string& feature) {
+    std::ostream& Logger::warn(const std::string& feature) {
         return instance()->warn_stream(feature);
     }
 
-    LoggerStream& Logger::status() {
+    std::ostream& Logger::status() {
         return instance()->status_stream();
     }
 
-    LoggerStream& Logger::div_stream(const std::string& title) {
+    std::ostream& Logger::div_stream(const std::string& title) {
         if(!quiet_) {
             current_feature_changed_ = true;
             current_feature_.clear();
@@ -377,7 +377,7 @@ namespace GEO {
         return out_;
     }
 
-    LoggerStream& Logger::out_stream(const std::string& feature) {
+    std::ostream& Logger::out_stream(const std::string& feature) {
         if(!quiet_ && current_feature_ != feature) {
             current_feature_changed_ = true;
             current_feature_ = feature;
@@ -385,7 +385,7 @@ namespace GEO {
         return out_;
     }
 
-    LoggerStream& Logger::err_stream(const std::string& feature) {
+    std::ostream& Logger::err_stream(const std::string& feature) {
         if(!quiet_ && current_feature_ != feature) {
             current_feature_changed_ = true;
             current_feature_ = feature;
@@ -393,7 +393,7 @@ namespace GEO {
         return err_;
     }
 
-    LoggerStream& Logger::warn_stream(const std::string& feature) {
+    std::ostream& Logger::warn_stream(const std::string& feature) {
         if(!quiet_ && current_feature_ != feature) {
             current_feature_changed_ = true;
             current_feature_ = feature;
@@ -401,7 +401,7 @@ namespace GEO {
         return warn_;
     }
 
-    LoggerStream& Logger::status_stream() {
+    std::ostream& Logger::status_stream() {
         return status_;
     }
 

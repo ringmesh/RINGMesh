@@ -14,8 +14,6 @@
 
 /*! \author Jeanne Pellerin */
 
-#include <geogram\basic\logger.h>
-
 #include <grgmesh/boundary_model.h>
 #include <grgmesh/utils.h>
 

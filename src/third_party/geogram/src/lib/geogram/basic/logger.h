@@ -72,7 +72,7 @@ namespace GEO {
      * \details This class is used internally to implement the logger
      * mechanism.
      */
-    class GEOGRAM_API LoggerStreamBuf : public std::stringbuf {
+    class LoggerStreamBuf : public std::stringbuf {
     public:
         /**
          * \brief Creates a Logger stream buffer
@@ -106,7 +106,7 @@ namespace GEO {
      * \details This class is used used internally to implement logger
      * mechanism.
      */
-    class GEOGRAM_API LoggerStream : public std::ostream {
+    class LoggerStream : public std::ostream {
     public:
         /**
          * \brief Creates a Logger stream
@@ -397,7 +397,7 @@ namespace GEO {
          * \endcode
          * \param[in] title title of the division
          */
-        static LoggerStream& div(const std::string& title);
+        static std::ostream& div(const std::string& title);
 
         /**
          * \brief Gets the stream to send information messages.
@@ -409,7 +409,7 @@ namespace GEO {
          * information messages
          * \return a reference to the information stream
          */
-        static LoggerStream& out(const std::string& feature);
+        static std::ostream& out(const std::string& feature);
 
         /**
          * \brief Gets the stream to send error messages
@@ -421,7 +421,7 @@ namespace GEO {
          * warning messages
          * \return a reference to the warning stream
          */
-        static LoggerStream& err(const std::string& feature);
+        static std::ostream& err(const std::string& feature);
 
         /**
          * \brief Gets the stream to send warning messages
@@ -433,7 +433,7 @@ namespace GEO {
          * error messages
          * \return a reference to the error stream
          */
-        static LoggerStream& warn(const std::string& feature);
+        static std::ostream& warn(const std::string& feature);
 
         /**
          * \brief Gets the stream to send status messages
@@ -443,7 +443,7 @@ namespace GEO {
          * \endcode
          * \return a reference to the status stream
          */
-        static LoggerStream& status();
+        static std::ostream& status();
 
         /**
          * \brief Adds a client to the Logger
@@ -531,19 +531,19 @@ namespace GEO {
         virtual ~Logger();
 
         /** \copydoc div() */
-        LoggerStream& div_stream(const std::string& title);
+        std::ostream& div_stream(const std::string& title);
 
         /** \copydoc out() */
-        LoggerStream& out_stream(const std::string& feature);
+        std::ostream& out_stream(const std::string& feature);
 
         /** \copydoc err() */
-        LoggerStream& err_stream(const std::string& feature);
+        std::ostream& err_stream(const std::string& feature);
 
         /** \copydoc warn() */
-        LoggerStream& warn_stream(const std::string& feature);
+        std::ostream& warn_stream(const std::string& feature);
 
         /** \copydoc status() */
-        LoggerStream& status_stream();
+        std::ostream& status_stream();
 
         /**
          * \brief Receives a message from a logger stream
@@ -640,7 +640,7 @@ namespace GEO {
 
     private:
         static SmartPointer<Logger> instance_;
-
+		
         LoggerStream out_;
         LoggerStream warn_;
         LoggerStream err_;
