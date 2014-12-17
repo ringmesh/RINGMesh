@@ -1,58 +1,33 @@
 cmake_minimum_required(VERSION 2.8)
 project(GRGMesh)
 
+function(aux_source_directories var folder)
+    set(sources)
+    foreach(dir ${ARGN})
+        file(GLOB _sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.[ch]" "${dir}/*.[ch]pp")
+        list(APPEND sources ${_sources})
+    endforeach()
+    source_group(${folder} FILES ${sources})
+    set(${var} ${${var}} ${sources} PARENT_SCOPE)
+endfunction()
 
-# Macro GatherProjectFiles definition
-IF(WIN32)
-	# visual studio specific section
-	# controls inclusion of header files in solution
-	# not really pretty but working COPIED FROM GRAPHITE
-	SET(VISUAL_STUDIO_INCLUDE_HEADERS_IN_SOLUTION TRUE)
-	# list of extensions added to the header folder
-	SET(VISUAL_STUDIO_INCLUDE_HEADERS_EXTENSIONS_LIST *.h *.hpp *.hxx *.inl)	
-	IF(VISUAL_STUDIO_INCLUDE_HEADERS_IN_SOLUTION)
-		MACRO ( GatherProjectFiles ProjectName ProjectDir ProjectSources )		 
-			# get the file lists
-			SET ( Dir ${CMAKE_HOME_DIRECTORY}/${ProjectDir} )			
-			FOREACH(var ${VISUAL_STUDIO_INCLUDE_HEADERS_EXTENSIONS_LIST})
-				LIST(APPEND VS_EXTLIST_INCLUSION ${Dir}/${var})
-			ENDFOREACH(var)
-			FILE ( GLOB_RECURSE DirSources ${VS_EXTLIST_INCLUSION})			
-		   SET ( "${ProjectSources}" ${DirSources} )
-		ENDMACRO ( GatherProjectFiles )		
-	ELSE(VISUAL_STUDIO_INCLUDE_HEADERS_IN_SOLUTION)	
-		MACRO ( GatherProjectFiles ProjectName ProjectDir ProjectSources )
-		ENDMACRO ( GatherProjectFiles )		
-	ENDIF(VISUAL_STUDIO_INCLUDE_HEADERS_IN_SOLUTION)
-ENDIF(WIN32)
-
-IF (EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
+# Options
+IF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
    MESSAGE(INFO: "Using local options file: " .${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
    INCLUDE(${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
 ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
 
-IF(WIN32)
-  ADD_DEFINITIONS(-DGRGMESH_EXPORTS)
-ELSE(WIN32)
-	IF(CMAKE_BUILD_TYPE MATCHES "Debug")
-        # commented-out for now, since it causes problems when linking with
-        # C++ libraries that are not compiled with this flag (changes the
-        # size/definition of STL objects)
-       # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_DEBUG")
-	ENDIF(CMAKE_BUILD_TYPE MATCHES "Debug")
-ENDIF(WIN32)
-
+# Files
 AUX_SOURCE_DIRECTORY(src/grgmesh SOURCES)
-AUX_SOURCE_DIRECTORY(src/third_party SOURCES)
-AUX_SOURCE_DIRECTORY(src/third_party/ANN SOURCES)
-
 INCLUDE_DIRECTORIES(include)
 INCLUDE_DIRECTORIES(include/third_party)
 
 # Geogram
 INCLUDE_DIRECTORIES(src/third_party/geogram/src/lib)
 IF(WIN32)
+    ADD_DEFINITIONS(-DGRGMESH_EXPORTS)
 	ADD_DEFINITIONS(-DGEO_DYNAMIC_LIBS)
+    aux_source_directories(SOURCES "Header Files" include/grgmesh)
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}/lib/${CMAKE_BUILD_TYPE})
 ELSE(WIN32)
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
@@ -95,12 +70,6 @@ ENDIF(USE_MG_TETRA)
 IF(WIN32) 
        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4996 /MP")
        SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4996 /MP")
-	   
-	   foreach(config ${CMAKE_CONFIGURATION_TYPES})
-		string(TOUPPER ${config} config)
-		string(REPLACE /MD /MT CMAKE_C_FLAGS_${config} "${CMAKE_C_FLAGS_${config}}")
-		string(REPLACE /MD /MT CMAKE_CXX_FLAGS_${config} "${CMAKE_CXX_FLAGS_${config}}")
-	   endforeach()
 ELSE(WIN32)
        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
        SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
@@ -111,19 +80,15 @@ IF(UNIX)
     SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 ENDIF(UNIX)
 
+# Output library
 SET(LIBRARY_OUTPUT_PATH lib)
-IF(WIN32)
-    GatherProjectFiles(GRGMesh . HeaderFiles)
-    add_library(GRGMesh SHARED ${SOURCES} ${HeaderFiles})
-ELSE(WIN32)
-    add_library(GRGMesh SHARED ${SOURCES})
-ENDIF(WIN32)
+add_library(GRGMesh SHARED ${SOURCES})
+target_link_libraries(GRGMesh geogram)
 
+# Additional link libraries
 IF(USE_MG_TETRA)
   TARGET_LINK_LIBRARIES(GRGMesh meshgems mg-tetra)
 ENDIF(USE_MG_TETRA)
-
-target_link_libraries(GRGMesh geogram)
 
 IF(WIN32)
     target_link_libraries(GRGMesh psapi)
