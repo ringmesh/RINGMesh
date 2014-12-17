@@ -73,12 +73,12 @@
   // being imported from a DLL, wheras this DLL sees symbols defined with
   // this macro as being exported.
   //----------------------------------------------------------------------
-  //#ifdef DLL_EXPORTS
-  //	 #define DLL_API __declspec(dllexport)
-  //#else
-  //	#define DLL_API __declspec(dllimport)
-  //#endif
-  #define DLL_API
+  #ifdef geogram_EXPORTS
+  	 #define DLL_API __declspec(dllexport)
+  #else
+  	#define DLL_API __declspec(dllimport)
+  #endif
+  //#define DLL_API
   //----------------------------------------------------------------------
   // DLL_API is ignored for all other systems
   //----------------------------------------------------------------------
@@ -405,7 +405,7 @@ class ANNpointArray {
        return data_ + i*stride_ ;
    }
  private:
-   friend void annDeallocPts(ANNpointArray &pa) ;
+   DLL_API friend void annDeallocPts(ANNpointArray &pa) ;
    ANNcoord* data_ ;
    size_t stride_ ;
 } ;

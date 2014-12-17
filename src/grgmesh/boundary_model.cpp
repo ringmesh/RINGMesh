@@ -14,13 +14,18 @@
 
 /*! \author Jeanne Pellerin */
 
+#include <geogram\basic\logger.h>
+
 #include <grgmesh/boundary_model.h>
 #include <grgmesh/utils.h>
+
+
 #include <fstream>
 #include <sstream>
 #include <cmath>
-#include <time.h>
+#include <ctime>
 #include <set>
+
 
 namespace GRGMesh {
 
@@ -536,16 +541,17 @@ namespace GRGMesh {
      */
     bool BoundaryModel::check_model3d_compatibility()
     {
+		
         // Check that the Surfaces exist
         if( nb_surfaces() == 0 && nb_surface_parts() > 0 ) {
             BoundaryModelBuilder builder( this ) ;
             // Creates one Surface per SurfacePart
             for( uint32 i = 0; i < surface_parts_.size(); ++i ) {
                 // set name, type, links
-                std::ostringstream name ;
-                name << "surface_" << i ;
-                uint32 id = builder.create_surface( name.str() ) ;
-                builder.add_surface_child( id, i ) ;
+                //std::ostringstream name ;
+                //name << "surface_" << i ;
+                //uint32 id = builder.create_surface( name.str() ) ;
+                //builder.add_surface_child( id, i ) ;
             }
 
             // Set links surface parts toward surfaces
@@ -578,9 +584,9 @@ namespace GRGMesh {
             BoundaryModelElement& region = regions_[i] ;
 
             if( region.name() == "" ) {
-                std::ostringstream name ;
-                name << "region_" << i ;
-                region.set_name( name.str() ) ;
+				std::ostringstream name ;
+                //name << "region_" << i ;
+                //region.set_name( name.str() ) ;
             }
             if( region.nb_boundaries() == 0 ) {
                 std::cout << " The region " << region.name()
@@ -593,7 +599,7 @@ namespace GRGMesh {
             std::cout << "The model contains quads " << std::endl ;
             return false ;
         }
-
+		
         return true ;
     }
 
@@ -846,7 +852,7 @@ namespace GRGMesh {
     void BoundaryModelBuilder::load_file( std::istream& in )
     {
         time_t start_load, end_load ;
-        time( &start_load ) ;
+        //time( &start_load ) ;
         InputStream lis( in ) ;
 
         // Intermediate for contact parts building
@@ -855,7 +861,7 @@ namespace GRGMesh {
         /******* Counters, parameters and vectors used in the loop reading the file *********/
         int32 nb_tsurf = 0 ;
         int32 nb_tface = 0 ;
-
+		
         int32 tsurf_count = 0 ;
         int32 tface_count = 0 ;
 
@@ -885,7 +891,8 @@ namespace GRGMesh {
         std::vector< int32 > change_key_facet ;
 
         /****** File reading **********************************/
-        while( !lis.eof() ) {
+        /*
+		while( !lis.eof() ) {
 
             lis.get_line() ;
             std::string keyword ;
@@ -1150,6 +1157,7 @@ namespace GRGMesh {
         time( &end_load ) ;
         std::cout << " Boundary model loading time"
             << difftime( end_load, start_load ) << " sec" << std::endl ;
+			*/
     }
 
     void BoundaryModelBuilder::end_model()

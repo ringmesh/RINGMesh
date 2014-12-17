@@ -14,8 +14,8 @@
 
 /*! \author Jeanne Pellerin */
 
-#include <grgmesh/boundary_model.h>
 #include <grgmesh/boundary_model_element.h>
+#include <grgmesh/boundary_model.h>
 #include <grgmesh/utils.h>
 #include <set>
 #include <stack>
