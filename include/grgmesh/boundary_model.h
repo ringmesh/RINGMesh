@@ -17,8 +17,8 @@
 #ifndef __GRGMESH_BOUNDARY_MODEL__
 #define __GRGMESH_BOUNDARY_MODEL__
 
-#include <grgmesh/boundary_model_element.h>
 #include <grgmesh/common.h>
+#include <grgmesh/boundary_model_element.h>
 
 #include <vector> 
 #include <string>
