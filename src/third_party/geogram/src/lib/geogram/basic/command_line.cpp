@@ -667,7 +667,6 @@ namespace GEO {
         void show_usage(const std::string& additional_args, bool advanced) {
             std::string program_name = FileSystem::base_name(desc_->argv0);
             Logger::instance()->set_quiet(false);
-
             Logger::out("")
                 << "Usage: " << program_name << " "
                 << additional_args

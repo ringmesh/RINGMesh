@@ -75,8 +75,8 @@ namespace {
     GLfloat   shrink = 0.0;
     GLboolean colored_cells = GL_FALSE;
     
-    /** \brief true if shaders are deactivated. */
-    bool plain_mode = false;
+    /** \brief true if shaders are used. */
+    bool GLSL_mode = true;
 
     /** \brief true if surface mesh has only triangles and quads. */
     bool triangles_and_quads = false;
@@ -88,10 +88,10 @@ namespace {
     float OTM_time = 0.0;
     
     /** 
-     * \brief true if tessellation shaders are supported 
+     * \brief true if tesselation shaders are supported 
      *  (OpenGL/GLSL ver. >= 4.0). 
      */
-    bool has_tessellation_shaders = false;
+    bool GLSL_tesselation = false;
     
     /**
      * \brief Symbolic constants referring to a GPU program in the
@@ -367,7 +367,7 @@ namespace {
      * \brief The geometry shader for hexes.
      * \details Uses vshader_hex and gshader_utils 
      */
-    const char* gshader_hex_source = 
+    const char* gshader_hex_source =
         "layout(points) in;                                                 \n"
         "layout(triangle_strip, max_vertices = 24) out;                     \n"
         " in Data {                                                         \n"
@@ -776,39 +776,53 @@ namespace {
      *  triangles and one program for displaying tetrahedra.
      */
     void setup_shaders() {
-        if(GEO::CmdLine::get_arg_bool("plain")) {
-            GEO::Logger::out("Shaders")
-                << "Deactivated (plain mode specified on command line)"
+        if(GEO::CmdLine::get_arg_bool("use_GLSL")) {
+            GEO::Logger::out("GLSL")
+                << "Trying to use OpenGL shaders. To deactivate, specify use_GLSL=false on the command line"
                 << std::endl;
-            plain_mode = true;
+            GEO::Logger::out("GLSL") << "or rename executable as vorpaview0"
+                                     << std::endl;
+        } else {
+            GEO::Logger::out("GLSL") << "OpenGL shaders deactivated"
+                                     << std::endl;
+            GLSL_mode = false;
             return;
         }
         const char* shading_language_ver_str = (const char*)glGetString(
             GL_SHADING_LANGUAGE_VERSION
         );
-        GEO::Logger::out("Shaders") << "GLSL version = "
-                                    << shading_language_ver_str << std::endl;
+        GEO::Logger::out("GLSL") << "version = "
+            << shading_language_ver_str << std::endl;
         double shading_language_ver = atof(shading_language_ver_str);
         if(shading_language_ver < 1.5) {
-            GEO::Logger::out("Shaders")
+            GEO::Logger::out("GLSL")
                 << "Deactivated (requires GLSL version >= 1.50)"
                 << std::endl;
-            plain_mode = true;
+            GLSL_mode = false;
             return;
         } else {
-            GEO::Logger::out("Shaders") << "Using GLSL shaders" << std::endl;
+            GEO::Logger::out("GLSL") << "Using GLSL shaders" << std::endl;
         }
 
-        has_tessellation_shaders =
-            GEO::CmdLine::get_arg_bool("tessellation") &&
+        GLSL_tesselation =
+            GEO::CmdLine::get_arg_bool("use_tesselation") &&
             (shading_language_ver >= 4.0);
 
-        if(has_tessellation_shaders) {
-            GEO::Logger::out("Shaders")
-                << "Using Tessellation shaders" << std::endl;
+        if(GLSL_tesselation) {
+            GEO::Logger::out("GLSL")
+                << "Using Tesselation shaders" << std::endl;
         } else {
-            GEO::Logger::out("Shaders")
-                << "Deactivated Tessellation shaders" << std::endl;            
+            GEO::Logger::out("GLSL")
+                << "Deactivated Tesselation shaders" << std::endl;
+            if(GEO::CmdLine::get_arg_bool("use_tesselation")) {
+                GEO::Logger::out("GLSL")
+                    << "  (unsupported, requires GLSL language ver. >= 4.0)"
+                    << std::endl;
+            } else {
+                GEO::Logger::out("GLSL")
+                    << "  (specify use_tesselation=true on command line to activate)"
+                    << std::endl;
+            }
         }
         
         GLuint vshader_pass_through = compile_shader(
@@ -854,7 +868,7 @@ namespace {
             vshader_pass_through, gshader_prism, fshader, 0
         );
         
-        if(has_tessellation_shaders) {
+        if(GLSL_tesselation) {
             GLuint teshader_hex = compile_shader(
                 GL_TESS_EVALUATION_SHADER, teshader_hex_source
             );
@@ -1030,7 +1044,7 @@ namespace {
         
         // In plain mode, there is no shading, therefore we need the mesh
         // in order to see something...
-        if(plain_mode) {
+        if(!GLSL_mode) {
             show_mesh = GL_TRUE;
         }
         
@@ -1165,8 +1179,63 @@ namespace {
         glUseProgram(0);                
     }
 
+
     /**
-     * \brief Draws the volumetric cells of a mesh using the shaders.
+     * \brief Sends the cells of a mesh to OpenGL using glDrawElements().
+     * \details The element arrays and GLSL program are not setup by this
+     *  function, it is callers responsibility. This function issues a
+     *  single glDrawElements() call for each contiguous chunk of cells in
+     *  the mesh. The calls are cached so that the whole mesh is traversed
+     *  once only.
+     * \param [in] cell_type the type of the cells to draw (one of
+     *  GEO::MESH_TET, GEO::MESH_HEX, GEO::MESH_PRISM, GEO::MESH_PYRAMID).
+     * \param [in] mode the type of OpenGL primitives, typically one of 
+     *  GL_LINES_ADJACENCY (4 vertices per primitive), GL_TRIANGLES_ADJACENCY
+     *  (6 vertices per primitive) or GL_PATCH (configurable number of vertices
+     *  per primitive, if tesselation shaders are supported).
+     */
+    void draw_mesh_cells_as_opengl_elements(GEO::MeshCellType cell_type, GLenum mode) {
+        static bool cached[GEO::MESH_NB_CELL_TYPES] = {false, false, false, false};
+        static GEO::vector<GLsizei> nb_vertices[GEO::MESH_NB_CELL_TYPES];
+        static GEO::vector<void*>   start_index[GEO::MESH_NB_CELL_TYPES];
+
+        // Determine the chunks of contiguous cell indices. Each chunk
+        // can be drawn using a single glDrawElements() call.
+        if(!cached[cell_type]) {
+            GLsizei vertices_per_cell = GLsizei(
+                GEO::Mesh::cell_type_to_cell_descriptor(cell_type).nb_vertices
+            );
+            for(GEO::index_t c=0; c<M.nb_cells(); ++c) {
+                GEO::index_t first_c = c;
+                GLsizei nb_v = 0;
+                while(M.cell_type(c) == cell_type) {
+                    nb_v += vertices_per_cell;
+                    ++c;
+                }
+                if(nb_v != 0) {
+                    nb_vertices[cell_type].push_back(nb_v);
+                    start_index[cell_type].push_back(
+                        (void*)(M.cell_vertices_begin(first_c) * sizeof(int))                        
+                    );
+                }
+            }
+            cached[cell_type] = true;
+            GEO::Logger::out("GLSL cells")
+                << "nb chunks for cell type "
+                << cell_type << ":" << nb_vertices[cell_type].size() << std::endl;
+        }
+
+        // Issue calls to glDrawElements() using the cached chunks.
+        for(GEO::index_t chunk=0; chunk<nb_vertices[cell_type].size(); ++chunk) {
+            GLsizei nb_v  = nb_vertices[cell_type][chunk];
+            void* start = start_index[cell_type][chunk];
+            glDrawElements(mode, nb_v, GL_UNSIGNED_INT, start);
+        }
+    }
+    
+    
+    /**
+     * \Brief Draws the volumetric cells of a mesh using the shaders.
      */
     
     void draw_cells_with_shaders() {
@@ -1178,66 +1247,56 @@ namespace {
         // 4 vertices per primitive)
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colors[PRG_TET]);        
         glUseProgram(programs[PRG_TET]);
-        for(GEO::index_t c=0; c<M.nb_cells(); ++c) {
-            if(M.cell_type(c) == GEO::MESH_TET) {
-                glDrawElements(
-                    GL_LINES_ADJACENCY, 4, GL_UNSIGNED_INT,
-                    (void*)(M.cell_vertices_begin(c) * sizeof(int))
-                );
-            }
-        }
+        draw_mesh_cells_as_opengl_elements(GEO::MESH_TET,GL_LINES_ADJACENCY);
 
         // Draw the prisms, using GL_TRIANGLES_ADJACENCY (sends
         // 6 vertices per primitive)
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colors[PRG_PRISM]);
         glUseProgram(programs[PRG_PRISM]);
-        for(GEO::index_t c=0; c<M.nb_cells(); ++c) {
-            if(M.cell_type(c) == GEO::MESH_PRISM) {
-                glDrawElements(
-                    GL_TRIANGLES_ADJACENCY, 6, GL_UNSIGNED_INT,
-                    (void*)(M.cell_vertices_begin(c) * sizeof(int))
-                );
-            }
-        }
+        draw_mesh_cells_as_opengl_elements(GEO::MESH_PRISM,GL_TRIANGLES_ADJACENCY);
 
         // Draw the hexes and pyramids using a tesselation shader
         // to lookup the vertices. No standard OpenGL primitive has
         // 8 or 5 vertices, but GL_PATCH (used by tesselation shader)
-        // has a configurable number of vertices !!
+        // has a configurable number of vertices !
 
-        if(has_tessellation_shaders) {
+        if(GLSL_tesselation) {
+
+            // The tesselation shader is just used to lookup
+            // hex and pyramid vertices, and group them into
+            // a single vertex passed to the geometry shader.
+            // This is a way of emulating OpenGL primitives
+            // with 8 and 5 vertices (hex and pyramids), since
+            // GL_PATCHES has a configurable number of vertices.
+            
+            // We generate an isoline for each patch, with the
+            // minimum tesselation level. This generates two
+            // vertices (we discard one of them in the geometry
+            // shader).
             static float levels[4] = {1.0, 1.0, 0.0, 0.0};
             glPatchParameterfv(GL_PATCH_DEFAULT_OUTER_LEVEL, levels);
 
+            // Draw the hexes
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colors[PRG_HEX]);                    
             glPatchParameteri(GL_PATCH_VERTICES,8);            
             glUseProgram(programs[PRG_HEX]);
-            for(GEO::index_t c=0; c<M.nb_cells(); ++c) {
-                if(M.cell_type(c) == GEO::MESH_HEX) {
-                    glDrawElements(
-                        GL_PATCHES, 8, GL_UNSIGNED_INT,
-                        (void*)(M.cell_vertices_begin(c) * sizeof(int))
-                    );
-                }
-            }
+            draw_mesh_cells_as_opengl_elements(GEO::MESH_HEX, GL_PATCHES);
 
+            // Draw the pyramids
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colors[PRG_PYRAMID]);                                
             glPatchParameteri(GL_PATCH_VERTICES,5);            
             glUseProgram(programs[PRG_PYRAMID]);
-            for(GEO::index_t c=0; c<M.nb_cells(); ++c) {
-                if(M.cell_type(c) == GEO::MESH_PYRAMID) {
-                    glDrawElements(
-                        GL_PATCHES, 5, GL_UNSIGNED_INT,
-                        (void*)(M.cell_vertices_begin(c) * sizeof(int))
-                    );
-                }
-            }
+            draw_mesh_cells_as_opengl_elements(GEO::MESH_PYRAMID, GL_PATCHES);
             
         } else {
 
-            // If tessellation shaders are not available,
+            // If tesselation shaders are not available,
             // use GL_POINT primitives with 8 vec3's for hexes
-            // and 5 vec3's for pyramids.
+            // and 5 vec3's for pyramids. It is probably much
+            // much slower, for two reasons:
+            // This uses one OpenGL call per point
+            // The vertex puller, i.e. the indexing into vertices array performed
+            // by glDrawElements(), cannot be used.
             
             // Draw the hexes, using GL_POINTS
             // with 8 generic attributes (unfortunately,
@@ -1480,7 +1539,7 @@ namespace {
         bind_facets_VBO();
         if(M.is_triangulated()) {
             draw_triangles_VBOs();
-        } else if(!plain_mode && triangles_and_quads) {
+        } else if(GLSL_mode && triangles_and_quads) {
             draw_triangles_and_quads_VBOs();
         } else {
             draw_polygons_VBOs();
@@ -1501,7 +1560,7 @@ namespace {
         glGetIntegerv(GL_POLYGON_MODE, polymode);
         bool surface_mode = (polymode[0] == GL_FILL);
         
-        if(plain_mode && surface_mode) {
+        if(!GLSL_mode && surface_mode) {
             if(lighting) {
                 glEnable(GL_LIGHTING);
                 glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
@@ -1520,7 +1579,7 @@ namespace {
                     p[i][c] = OTM_time * p_t1[c] + (1.0f - OTM_time) * p_t0[c];
                 }
             }
-            if(plain_mode) {
+            if(!GLSL_mode) {
                 glTriangleNormal(p[2],p[1],p[0]);
             }
             glVertex3fv(p[2]);
@@ -1529,7 +1588,7 @@ namespace {
         }
         glEnd();
 
-        if(plain_mode && surface_mode) {
+        if(!GLSL_mode && surface_mode) {
             if(lighting) {
                 glDisable(GL_LIGHTING);
                 glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
@@ -1608,7 +1667,7 @@ namespace {
             draw_volume_OTM();
             return;
         }
-        if(plain_mode) {
+        if(!GLSL_mode) {
             glEnable(GL_LIGHTING);
             draw_cells();
             glDisable(GL_LIGHTING);
@@ -1635,9 +1694,8 @@ namespace {
     void draw_volume_OTM() {
         geo_assert(M.is_tetrahedralized());
         
-        if(plain_mode) {
-        } else {
-            
+        if(GLSL_mode) {
+           
             glUseProgram(programs[PRG_TET]);
             
             float p[4][3];
@@ -1736,7 +1794,7 @@ namespace {
         }
 
         // If the surface is triangulated and
-        //   and shaders are used (!plain_mode), 
+        //   shaders are used (GLSL_mode), 
         //   then the mesh is drawn by the fragment shader (that
         //  changes the color of the fragments near
         //  the edges of the triangles),
@@ -1744,7 +1802,7 @@ namespace {
         //  is drawn "the standard way" below:
         if(
             show_mesh &&
-            (plain_mode || (!M.is_triangulated() && !triangles_and_quads))
+            (!GLSL_mode || (!M.is_triangulated() && !triangles_and_quads))
         ) {
             glDisable(GL_LIGHTING);
             glLineWidth(1);
@@ -1759,7 +1817,7 @@ namespace {
         }
 
 
-        if(plain_mode && show_mesh && show_volume && !M.is_tetrahedralized()) {
+        if(!GLSL_mode && show_mesh && show_volume && !M.is_tetrahedralized()) {
             glDisable(GL_LIGHTING);
             glLineWidth(1);
             if(white_bg) {
@@ -1900,12 +1958,27 @@ int main(int argc, char** argv) {
     GEO::initialize();
     GEO::Logger::instance()->set_quiet(false);
 
+   
+    const std::string& program_name = GEO::FileSystem::base_name(argv[0]);
+   
     GEO::CmdLine::import_arg_group("standard");
     GEO::CmdLine::import_arg_group("algo");
     GEO::CmdLine::declare_arg("full_screen",false,"full screen mode");
-    GEO::CmdLine::declare_arg("plain",false,"plain mode (no shaders)");
+
+    // Default value for activating GLSL is determined by the
+    // name of the executable, so that Windows users can
+    // determine defaut behavior simply by changing the name
+    // of the executable.
+    bool use_GLSL_default = (program_name != "vorpaview0");
+    
     GEO::CmdLine::declare_arg(
-        "tessellation",true,"use tessellation shaders (if possible)"
+        "use_GLSL",
+        use_GLSL_default,
+        "use advanced GLSL shaders (requires recent gfx board)"
+    );
+    GEO::CmdLine::declare_arg(
+        "use_tesselation", false,
+        "use tesselation shaders (if supported and GLSL enabled)"
     );
     
     std::vector<std::string> filenames;
@@ -1927,7 +2000,7 @@ int main(int argc, char** argv) {
     }
 
     glut_viewer_set_window_title(
-        (char*) "[ \\V (O |R |P /A |L |I |N |E ]-[ viewer ]"
+        (char*) "||||||(G)||E||(O)|(G)||R||/A\\|M|||||||"
     );
     glut_viewer_set_init_func(init);
     glut_viewer_set_display_func(display);
@@ -1955,4 +2028,3 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-

@@ -27,7 +27,22 @@ endif()
 
 cmake_minimum_required(VERSION 2.8.11)
 
-project(Vorpaline)
+##############################################################################
+
+# Determine whether Geogram is built with Vorpaline
+if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/src/lib/vorpalib)
+   message(STATUS "Configuring build for Geogram + Vorpaline")
+   set(GEOGRAM_WITH_VORPALINE TRUE)
+else()
+   message(STATUS "Configuring build for standalone Geogram (without Vorpaline)")
+   set(GEOGRAM_WITH_VORPALINE FALSE)   
+endif()
+
+if(GEOGRAM_WITH_VORPALINE)
+   project(Vorpaline)
+else()
+   project(Geogram)
+endif()
 
 set(VORPALINE_VERSION_MAJOR 0)
 set(VORPALINE_VERSION_MINOR 9)
@@ -49,16 +64,6 @@ string(TIMESTAMP YEAR "%Y")
 # This is set by Jenkins in environment variable BUILD_NUMBER
 set(VORPALINE_BUILD_NUMBER $ENV{BUILD_NUMBER})
 
-##############################################################################
-# Determine whether Geogram is built with Vorpaline
-
-if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/src/lib/vorpalib)
-   message(STATUS "Configuring build for Geogram + Vorpaline")
-   set(GEOGRAM_WITH_VORPALINE TRUE)
-else()
-   message(STATUS "Configuring build for standalone Geogram (without Vorpaline)")
-   set(GEOGRAM_WITH_VORPALINE FALSE)   
-endif()
 
 ##############################################################################
 # Get SVN revision info
