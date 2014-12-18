@@ -20,7 +20,7 @@
 #include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
-#include <geogram/third_party/shewchuk/shewchuk.h>
+#include <geogram/numerics/predicates.h>
 
 #include <iostream>
 #include <sstream>
@@ -512,9 +512,9 @@ namespace GRGMesh {
 
         // calculer le signe du volume signé des trois tétraèdres qui
         // s'appuient sur [p,q] et sur les trois aretes du triangle.
-        Sign s1 = sign( orient3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
-        Sign s2 = sign( orient3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
-        Sign s3 = sign( orient3d( P.data(), q.data(), P2.data(), P0.data() ) ) ;
+        Sign s1 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
+        Sign s2 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
+        Sign s3 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P2.data(), P0.data() ) ) ;
 
         if( s1 == ZERO || s2 == ZERO || s3 == ZERO ) {
             if( inexact_equal( P, P0 ) || inexact_equal( P, P1 )
@@ -549,10 +549,10 @@ namespace GRGMesh {
 
         // calculer le signe du volume signé des quatre tétraèdres qui
         // s'appuient sur [p,q] et sur les quatre aretes du quad.
-        Sign s1 = sign( orient3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
-        Sign s2 = sign( orient3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
-        Sign s3 = sign( orient3d( P.data(), q.data(), P2.data(), P3.data() ) ) ;
-        Sign s4 = sign( orient3d( P.data(), q.data(), P3.data(), P0.data() ) ) ;
+        Sign s1 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
+        Sign s2 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
+        Sign s3 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P2.data(), P3.data() ) ) ;
+        Sign s4 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P3.data(), P0.data() ) ) ;
 
         if( s1 == ZERO || s2 == ZERO || s3 == ZERO || s4 == ZERO ) {
             if( inexact_equal( P, P0 ) || inexact_equal( P, P1 )

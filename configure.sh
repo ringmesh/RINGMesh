@@ -15,10 +15,11 @@ else
 fi
 
 os="Linux64-gcc"
+os_dynamic=$os-dynamic
 
 #  Import plaform specific environment
 
-. src/third_party/geogram/cmake/platforms/$os/setvars.sh || exit 1
+. src/third_party/geogram/cmake/platforms/$os_dynamic/setvars.sh || exit 1
 
 # Generate the Makefiles
 
@@ -39,7 +40,7 @@ do
    build_dir=build/geogram/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DCMAKE_C_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; $CMAKE --build . -- -j4)
+   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DCMAKE_C_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os_dynamic ../../../src/third_party/geogram/; $CMAKE --build . -- -j4)
 done
 echo
 echo ============== GeoGram build configured ==================
