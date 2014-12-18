@@ -70,9 +70,12 @@ namespace GEO {
     /**
      * \brief Stream buffer used by the LoggerStream%s
      * \details This class is used internally to implement the logger
-     * mechanism.
+     * mechanism. Since it inherits a STL class, it is declared as 
+     * NO_GEOGRAM_API so that it is not exported when Windows DLLs
+     * are generated (doing otherwise would generate multiply defined
+     * symbols).
      */
-    class LoggerStreamBuf : public std::stringbuf {
+    class NO_GEOGRAM_API LoggerStreamBuf : public std::stringbuf {
     public:
         /**
          * \brief Creates a Logger stream buffer
@@ -104,9 +107,12 @@ namespace GEO {
     /**
      * \brief Stream used by the Logger
      * \details This class is used used internally to implement logger
-     * mechanism.
+     * mechanism. Since it inherits a STL class, it is declared as 
+     * NO_GEOGRAM_API so that it is not exported when Windows DLLs
+     * are generated (doing otherwise would generate multiply defined
+     * symbols).
      */
-    class LoggerStream : public std::ostream {
+    class NO_GEOGRAM_API LoggerStream : public std::ostream {
     public:
         /**
          * \brief Creates a Logger stream
@@ -386,6 +392,19 @@ namespace GEO {
          */
         static Logger* instance();
 
+
+        /**
+         * \brief Tests whether the Logger is initialized.
+         * \details Certain error-reporting functions may be triggered
+         *  before the Logger is initialized or after it is terminated.
+         *  This function is meant to help them determine whether the
+         *  logger can be used.
+         * \retval true if the Logger can be used
+         * \retval false otherwise
+         */
+        static bool is_initialized();
+        
+       
         /**
          * \brief Creates a division in the log output
          * \details This is used to start a new "block" of output log with
@@ -640,7 +659,7 @@ namespace GEO {
 
     private:
         static SmartPointer<Logger> instance_;
-		
+
         LoggerStream out_;
         LoggerStream warn_;
         LoggerStream err_;
