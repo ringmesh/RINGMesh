@@ -192,6 +192,10 @@ namespace GEO {
         instance_.reset();
     }
 
+    bool Logger::is_initialized() {
+        return (instance_ != nil);
+    }
+    
     bool Logger::set_local_value(const std::string& name, const std::string& value) {
 
         if(name == "log:quiet") {
@@ -345,23 +349,33 @@ namespace GEO {
     }
 
     std::ostream& Logger::div(const std::string& title) {
-        return instance()->div_stream(title);
+        return is_initialized() ?
+            instance()->div_stream(title) :
+            (std::cerr << "=====" << title << std::endl);
     }
 
     std::ostream& Logger::out(const std::string& feature) {
-        return instance()->out_stream(feature);
+        return is_initialized() ?
+            instance()->out_stream(feature) :
+            (std::cerr << "[" << feature << "] ");
     }
 
     std::ostream& Logger::err(const std::string& feature) {
-        return instance()->err_stream(feature);
+        return is_initialized() ?
+            instance()->err_stream(feature) :
+            (std::cerr << "[" << feature << "] ");
     }
 
     std::ostream& Logger::warn(const std::string& feature) {
-        return instance()->warn_stream(feature);
+        return is_initialized() ?
+            instance()->warn_stream(feature) :
+            (std::cerr << "[" << feature << "] ");
     }
 
     std::ostream& Logger::status() {
-        return instance()->status_stream();
+        return is_initialized() ?
+            instance()->status_stream() :
+            (std::cerr << "[status] ");
     }
 
     std::ostream& Logger::div_stream(const std::string& title) {

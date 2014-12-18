@@ -65,6 +65,16 @@
 #define GEOGRAM_API
 #endif
 
+
+/**
+ * \brief A place-holder linkage declaration to indicate
+ *  that the symbol should not be exported by Windows DLLs.
+ * \details For instance, classes that inherit templates from
+ *  the STL should not be exported, else it generates multiply
+ *  defined symbols.
+ */
+#define NO_GEOGRAM_API
+
 /**
  * \brief Opaque identifier of a mesh.
  * \details Used by the C API.
