@@ -1,0 +1,319 @@
+/*
+ *  Copyright (c) 2012-2014, Bruno Levy
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *  this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *  this list of conditions and the following disclaimer in the documentation
+ *  and/or other materials provided with the distribution.
+ *  * Neither the name of the ALICE Project-Team nor the names of its
+ *  contributors may be used to endorse or promote products derived from this
+ *  software without specific prior written permission.
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  If you modify this software, you should include a notice giving the
+ *  name of the person performing the modification, the date of modification,
+ *  and the reason for such modification.
+ *
+ *  Contact: Bruno Levy
+ *
+ *     Bruno.Levy@inria.fr
+ *     http://www.loria.fr/~levy
+ *
+ *     ALICE Project
+ *     LORIA, INRIA Lorraine, 
+ *     Campus Scientifique, BP 239
+ *     54506 VANDOEUVRE LES NANCY CEDEX 
+ *     FRANCE
+ *
+ */
+
+#ifndef __GEOGRAM_MESH_MESH_GEOMETRY__
+#define __GEOGRAM_MESH_MESH_GEOMETRY__
+
+#include <geogram/basic/common.h>
+#include <geogram/mesh/mesh.h>
+
+/**
+ * \file geogram/mesh/mesh_geometry.h
+ * \brief Functions for accessing the geometry in a mesh
+ */
+
+namespace GEO {
+
+    namespace Geom {
+
+        /**
+         * \brief Gets a mesh vertex by its index.
+         * \param[in] M the mesh
+         * \param[in] v the index of the vertex
+         * \return a const reference to the \p v%th vertex of a mesh
+         * \pre M.dimension() >= 3
+         */
+        inline const vec3& mesh_vertex(const Mesh& M, index_t v) {
+            geo_debug_assert(M.dimension() >= 3);
+            return *(const vec3*) (M.vertex_ptr(v));
+        }
+
+        /**
+         * \brief Gets a mesh vertex by its index.
+         * \param[in] M the mesh
+         * \param[in] v the index of the vertex
+         * \return a reference to the \p v%th vertex of a mesh
+         * \pre M.dimension() >= 3
+         */
+        inline vec3& mesh_vertex_ref(const Mesh& M, index_t v) {
+            geo_debug_assert(M.dimension() >= 3);
+            return *(vec3*) (M.vertex_ptr(v));
+        }
+
+        /**
+         * \brief Gets a mesh vertex by an incident corner index.
+         * \param[in] M the mesh
+         * \param[in] c the index of a corner incident to the vertex
+         * \return a reference to the \p v%th vertex of a mesh
+         * \pre M.dimension() >= 3
+         */
+        inline const vec3& mesh_corner_vertex(const Mesh& M, index_t c) {
+            return mesh_vertex(M, M.corner_vertex_index(c));
+        }
+
+        /**
+         * \brief Gets a mesh vertex by an incident corner index.
+         * \param[in] M the mesh
+         * \param[in] c the index of a corner incident to the vertex
+         * \return a const reference to the \p v%th vertex of a mesh
+         * \pre M.dimension() >= 3
+         */
+        inline vec3& mesh_corner_vertex_ref(Mesh& M, index_t c) {
+            return mesh_vertex_ref(M, M.corner_vertex_index(c));
+        }
+
+        /**
+         * \brief Gets a mesh vertex normal by vertex index.
+         * \param[in] M the mesh
+         * \param[in] v the index of the vertex
+         * \return a const reference to the stored normal of vertex \p v
+         * \pre M.dimension() >= 6
+         */
+        inline const vec3& mesh_vertex_normal(const Mesh& M, index_t v) {
+            geo_debug_assert(M.dimension() >= 6);
+            return *(const vec3*) (M.vertex_ptr(v) + 3);
+        }
+
+        /**
+         * \brief Gets a mesh vertex normal by vertex index.
+         * \param[in] M the mesh
+         * \param[in] v the index of the vertex
+         * \return a reference to the stored normal of vertex \p v
+         * \pre M.dimension() >= 6
+         */
+        inline vec3& mesh_vertex_normal_ref(const Mesh& M, index_t v) {
+            geo_debug_assert(M.dimension() >= 6);
+            return *(vec3*) (M.vertex_ptr(v) + 3);
+        }
+
+        /**
+         * \brief Computes the normal to a mesh facet.
+         * \param[in] M the mesh
+         * \param[in] f the facet index in \p M
+         * \return the normal to facet \p f
+         * \pre dimension >= 3
+         */
+        inline vec3 mesh_facet_normal(const Mesh& M, index_t f) {
+            index_t v1 = M.corner_vertex_index(M.facet_begin(f));
+            index_t v2 = M.corner_vertex_index(M.facet_begin(f) + 1);
+            index_t v3 = M.corner_vertex_index(M.facet_begin(f) + 2);
+            const vec3& p1 = mesh_vertex(M, v1);
+            const vec3& p2 = mesh_vertex(M, v2);
+            const vec3& p3 = mesh_vertex(M, v3);
+            return cross(p2 - p1, p3 - p1);
+        }
+
+
+        /**
+         * \brief Gets the centroid of a facet in a mesh.
+         * \param[in] M the mesh
+         * \param[in] f the index of the facet
+         * \return the 3d centroid of tetrahedron \p f in \p M
+         */
+        inline vec3 mesh_facet_center(const Mesh& M, index_t f) {
+            vec3 result(0.0, 0.0, 0.0);
+            double count = 0.0;
+            for(index_t c = M.facet_begin(f); c < M.facet_end(f); ++c) {
+                result += Geom::mesh_corner_vertex(M, c);
+                count += 1.0;
+            }
+            return (1.0 / count) * result;
+        }
+
+
+        /**
+         * \brief Gets the centroid of a tetrahedron in a mesh.
+         * \param[in] M the mesh
+         * \param[in] t the index of the tetrahedron
+         * \return the 3d centroid of tetrahedron \p t in \p M
+         */
+        inline vec3 mesh_tet_center(const Mesh& M, index_t t) {
+            index_t iv1 = M.tet_vertex_index(t, 0);
+            index_t iv2 = M.tet_vertex_index(t, 1);
+            index_t iv3 = M.tet_vertex_index(t, 2);
+            index_t iv4 = M.tet_vertex_index(t, 3);
+            const vec3& v1 = Geom::mesh_vertex(M, iv1);
+            const vec3& v2 = Geom::mesh_vertex(M, iv2);
+            const vec3& v3 = Geom::mesh_vertex(M, iv3);
+            const vec3& v4 = Geom::mesh_vertex(M, iv4);
+            return 0.25 * (v1 + v2 + v3 + v4);
+        }
+
+        /**
+         * \brief Gets a vector by a mesh corner.
+         * \param[in] M a const reference to the mesh
+         * \param[in] c1 a corner index in \p M
+         * \return a vector originating at \p c1 and 
+         *  pointing at the next corner around the facet
+         *  incident to \p c1
+         * \pre M.is_triangulated()
+         */
+        inline vec3 mesh_corner_vector(const Mesh& M, index_t c1) {
+            geo_debug_assert(M.is_triangulated());
+            index_t c2 = M.next_around_facet(c1/3, c1);
+            index_t v1 = M.corner_vertex_index(c1);
+            index_t v2 = M.corner_vertex_index(c2);
+            return mesh_vertex(M,v2) - mesh_vertex(M,v1);
+        }
+
+        /**
+         * \brief Computes the dihedral angle between two
+         *  mesh facets sharing an edge.
+         * \param[in] M a const reference to the mesh
+         * \param[in] c a corner index in \p M
+         * \return the angle between the facet that contains c and
+         *  the facet adjacent to c
+         * \pre M.is_triangulated() && M.corner_adjacent_facet(c) != -1
+         */
+        double GEOGRAM_API mesh_dihedral_angle(const Mesh& M, index_t c);
+
+
+        /**
+         * \brief Computes the total surface area of a mesh in arbitrary
+         *  dimension.
+         * \param[in] M the mesh
+         * \param[in] dim the dimension to be used for the computation
+         * \return the area of the mesh \p M computed in dim \p d.
+         * \pre dim <= M.dimension()
+         */
+        double GEOGRAM_API mesh_area(const Mesh& M, coord_index_t dim);
+
+        /**
+         * \brief Computes the total surface area of a mesh.
+         * \param[in] M the mesh
+         * \return the area of the mesh computed in M.dimension() dim.
+         */
+        inline double mesh_area(const Mesh& M) {
+            return mesh_area(M, M.dimension());
+        }
+    }
+
+    /**
+     * \brief Computes the normals to the vertices, and stores
+     *  them as additional coordinates.
+     * \param[in,out] M the mesh
+     */
+    void GEOGRAM_API compute_normals(Mesh& M);
+
+    /**
+     * \brief Smoothes a mesh.
+     * \details Moves each point of mesh \p M to the barycenter of its
+     * neighbors. This operation is repeated the specified number of times \p
+     * nb_iter.
+     * \param[in,out] M the mesh to smooth
+     * \param[in] nb_iter number of smoothing iterations
+     * \param[in] normals_only if set, only stored normals are smoothed.
+     */
+    void GEOGRAM_API simple_Laplacian_smooth(
+        Mesh& M, index_t nb_iter, bool normals_only
+    );
+
+    /**
+     * \brief Gets the bounding box of a mesh.
+     * \param[in] M The mesh
+     * \param[out] xyzmin the lower corner of the bounding box
+     * \param[out] xyzmax the upper corner of the bounding box
+     */
+    void GEOGRAM_API get_bbox(const Mesh& M, double* xyzmin, double* xyzmax);
+
+    /**
+     * \brief Computes the length of the bounding box diagonal of a mesh.
+     * \param[in] M the mesh
+     * \return The length of \p M%'s bounding box diagonal
+     */
+    double GEOGRAM_API bbox_diagonal(const Mesh& M);
+
+    /**
+     * \brief Computes the bounding box of a single precision mesh.
+     * \param[in] M the mesh
+     * \param[out] xyzmin the lower corner of the bounding box
+     * \param[out] xyzmax the upper corner of the bounding box
+     */
+    void GEOGRAM_API get_bbox(
+        const SinglePrecisionMesh& M, double* xyzmin, double* xyzmax
+    );
+
+    /**
+     * \brief Normalizes and scales the stored vertex normals by a factor.
+     * \details If no normal are stored, then they are created and
+     *  computed. Normals are stored in coordinates 3,4,5 of the vertices.
+     * \param[in,out] M the mesh
+     * \param[in] s the factor used to scale the normals
+     */
+    void GEOGRAM_API set_anisotropy(Mesh& M, double s);
+
+    /**
+     * \brief Normalizes the stored vertex normals.
+     * \param[in,out] M the mesh
+     */
+    void GEOGRAM_API unset_anisotropy(Mesh& M);
+
+    /**
+     * \brief Computes a sizing field using an estimate of lfs
+     *  (local feature size).
+     * \details The sizing field is stored in \p M%'s vertices weights.
+     * \param[in,out] M the mesh
+     * \param[in] gradation the exponent to be applied to the sizing field
+     * \param[in] nb_lfs_samples if set to 0, the vertices of \p M are used,
+     *  else \p M is resampled (needed if \p M's facets density is
+     *  highly irregular).
+     */
+    void GEOGRAM_API compute_sizing_field(
+        Mesh& M, double gradation = 1.0, index_t nb_lfs_samples = 0
+    );
+
+    /**
+     * \brief Computes vertices weights in such a way that triangle
+     *  areas are normalized.
+     * \details If this function is used, then
+     *  CentroidalVoronoiTesselation generates Voronoi cells of
+     *  equal areas.
+     * \param[in,out] M the mesh
+     */
+    void GEOGRAM_API normalize_embedding_area(Mesh& M);
+}
+
+#endif
+
