@@ -99,18 +99,18 @@ namespace GRGMesh {
                     continue ;
                 }
                 int32 i = k ;
-                std::memcpy( temp, data + i * elemsize, elemsize ) ;
+                ::memcpy( temp, data + i * elemsize, elemsize ) ;
                 int32 j = permutation[k] ;
                 mark( permutation, k ) ;
                 while( j != int32( k ) ) {
-                    std::memcpy( data + i * elemsize, data + j * elemsize,
+                    ::memcpy( data + i * elemsize, data + j * elemsize,
                         elemsize ) ;
                     int32 nj = permutation[j] ;
                     mark( permutation, j ) ;
                     i = j ;
                     j = nj ;
                 }
-                std::memcpy( data + i * elemsize, temp, elemsize ) ;
+                ::memcpy( data + i * elemsize, temp, elemsize ) ;
             }
             for( uint32 k = 0; k < permutation.size(); k++ ) {
                 unmark( permutation, k ) ;
