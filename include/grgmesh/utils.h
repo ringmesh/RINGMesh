@@ -856,29 +856,13 @@ template< class T > static bool contains(
         bool get_colocated(
             const vec3& v,
             index_t nb_neighbors,
-            std::vector< uint32 >& result )
-        {
-            return get_colocated( const_cast< vec3& >( v ), nb_neighbors, result ) ;
-        }
-        bool get_colocated(
-            vec3& v,
-            index_t nb_neighbors,
-            std::vector< uint32 >& result) ;
-        void get_neighbors(
-            const float64* v,
-            index_t nb_neighbors,
-            index_t* result,
-            double * dist
-             ) const
-        {
-            return get_neighbors( vec3( v ), nb_neighbors, result, dist ) ;
-        }
+            std::vector< uint32 >& result ) const ;
 
         void get_neighbors(
             const vec3& v,
             index_t nb_neighbors,
             index_t* result,
-            double * dist) const ;
+            double * dist = nil ) const ;
 
         vec3 point( int32 i )
         {
