@@ -1075,21 +1075,21 @@ namespace GRGMesh {
     }
 
     bool ColocaterANN::get_colocated(
-        vec3& v,
+        const vec3& v,
         index_t nb_neighbors,
-        std::vector< uint32 >& result )
+        std::vector< uint32 >& result ) const
     {
         result.clear() ;
         index_t * neighbors = new index_t[nb_neighbors] ;
-        double * dist = new double[nb_neighbors] ;
 
-        get_neighbors( v, nb_neighbors, neighbors, dist ) ;
+        get_neighbors( v, nb_neighbors, neighbors ) ;
         for( int32 i = 0; i < nb_neighbors; ++i ) {
             if( Utils::inexact_equal( v.data(), ann_tree_->point_ptr(neighbors[i])  )) {
                 result.push_back( neighbors[i] ) ;
             }
         }
 
+        delete[] neighbors ;
         return !result.empty() ;
     }
 
@@ -1099,7 +1099,16 @@ namespace GRGMesh {
         index_t* result,
         double* dist ) const
     {
+        bool to_delete = false ;
+        if( !dist ) {
+            dist = new double[nb_neighbors] ;
+            to_delete = true ;
+        }
         ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), result, dist ) ;
+        if( to_delete ) {
+            delete[] dist ;
+            dist = nil ;
+        }
     }
 
 }
