@@ -25,6 +25,12 @@ os="Linux64-gcc"
 echo
 echo ================== GeoGram ====================
 
+cat << EOF > src/third_party/geogram/CMakeOptions.txt
+set(GEOGRAM_WITH_TETGEN TRUE)
+set(GEOGRAM_WITH_MEDIT FALSE)
+set(GEOGRAM_WITH_GRAPHICS FALSE)
+EOF
+
 for config in Release Debug
 do
    platform=$os-$config
@@ -33,7 +39,7 @@ do
    build_dir=build/geogram/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DGEOGRAM_WITH_TETGEN:BOOL=TRUE -DVORPALINE_BUILD_DYNAMIC:BOOL=TRUE -DCMAKE_C_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; $CMAKE --build . -- -j4)
+   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DCMAKE_C_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; $CMAKE --build . -- -j4)
 done
 echo
 echo ============== GeoGram build configured ==================
