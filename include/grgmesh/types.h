@@ -80,6 +80,8 @@ namespace GRGMesh {
     const float64 epsilon = 1E-8 ;
 
     typedef GEO::vec3 vec3 ;
+    typedef GEO::index_t index_t ;
+
     static vec3 dummy_vec3 ;
 
     //    ___

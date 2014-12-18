@@ -20,7 +20,7 @@
 #include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
-#include <geogram/numerics/predicates.h>
+#include <geogram/third_party/shewchuk/shewchuk.h>
 
 #include <iostream>
 #include <sstream>
@@ -512,9 +512,9 @@ namespace GRGMesh {
 
         // calculer le signe du volume signé des trois tétraèdres qui
         // s'appuient sur [p,q] et sur les trois aretes du triangle.
-		Sign s1 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
-        Sign s2 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
-        Sign s3 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P2.data(), P0.data() ) ) ;
+        Sign s1 = sign( orient3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
+        Sign s2 = sign( orient3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
+        Sign s3 = sign( orient3d( P.data(), q.data(), P2.data(), P0.data() ) ) ;
 
         if( s1 == ZERO || s2 == ZERO || s3 == ZERO ) {
             if( inexact_equal( P, P0 ) || inexact_equal( P, P1 )
@@ -549,10 +549,10 @@ namespace GRGMesh {
 
         // calculer le signe du volume signé des quatre tétraèdres qui
         // s'appuient sur [p,q] et sur les quatre aretes du quad.
-        Sign s1 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
-        Sign s2 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
-        Sign s3 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P2.data(), P3.data() ) ) ;
-        Sign s4 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P3.data(), P0.data() ) ) ;
+        Sign s1 = sign( orient3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
+        Sign s2 = sign( orient3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
+        Sign s3 = sign( orient3d( P.data(), q.data(), P2.data(), P3.data() ) ) ;
+        Sign s4 = sign( orient3d( P.data(), q.data(), P3.data(), P0.data() ) ) ;
 
         if( s1 == ZERO || s2 == ZERO || s3 == ZERO || s4 == ZERO ) {
             if( inexact_equal( P, P0 ) || inexact_equal( P, P1 )
@@ -899,7 +899,7 @@ namespace GRGMesh {
             int32 cur_neighbor = 0 ;
             do {
                 cur_neighbor += nb_neighbors ;
-                ann.get_colocated( points_[i], results, cur_neighbor ) ;
+                ann.get_colocated( points_[i], cur_neighbor, results ) ;
             } while( results.size() == cur_neighbor ) ;
             uint32 id = *std::min_element( results.begin(), results.end() ) ;
             for( uint32 j = 0; j < results.size(); j++ ) {
@@ -943,23 +943,29 @@ namespace GRGMesh {
     ColocaterANN::ColocaterANN( const SurfacePart& mesh )
     {
         int32 nb_vertices = mesh.nb_vertices() ;
-        ann_points_ = annAllocPts( nb_vertices, 3 ) ;
+        ann_tree_->create(3);
+        double* ann_points = new double[nb_vertices*3] ;
         for( uint32 i = 0; i < mesh.nb_vertices(); i++ ) {
-            std::copy( mesh.vertex( i ).data(), mesh.vertex( i ).data() + 3,
-                &ann_points_[i][0] ) ;
+            uint32 index_in_ann = 3*i ;
+            ann_points[index_in_ann] = mesh.vertex(i).x ;
+            ann_points[index_in_ann+1] = mesh.vertex(i).y ;
+            ann_points[index_in_ann+2] = mesh.vertex(i).z ;
         }
-        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+        ann_tree_->set_points(nb_vertices, ann_points) ;
     }
 
     ColocaterANN::ColocaterANN( const ContactPart& mesh )
     {
         int32 nb_vertices = mesh.nb_vertices() ;
-        ann_points_ = annAllocPts( nb_vertices, 3 ) ;
+        ann_tree_->create(3);
+        double* ann_points = new double[nb_vertices*3] ;
         for( uint32 i = 0; i < mesh.nb_vertices(); i++ ) {
-            std::copy( mesh.vertex( i ).data(), mesh.vertex( i ).data() + 3,
-                &ann_points_[i][0] ) ;
+            uint32 index_in_ann = 3*i ;
+            ann_points[index_in_ann] = mesh.vertex(i).x ;
+            ann_points[index_in_ann+1] = mesh.vertex(i).y ;
+            ann_points[index_in_ann+2] = mesh.vertex(i).z ;
         }
-        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+        ann_tree_->set_points(nb_vertices, ann_points) ;
     }
 
     vec3 mesh_cell_center( const GEO::Mesh& M, uint32 cell ) {
@@ -977,32 +983,41 @@ namespace GRGMesh {
         switch( location ) {
             case VERTICES: {
                 int32 nb_vertices = mesh.nb_vertices() ;
-                ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-                for( uint32 i = 0; i < nb_vertices; i++ ) {
-                    std::copy( mesh.vertex_ptr( i ), mesh.vertex_ptr( i ) + 3,
-                        &ann_points_[i][0] ) ;
+                ann_tree_->create(3);
+                double* ann_points = new double[nb_vertices*3] ;
+                for( uint32 i = 0; i < mesh.nb_vertices()*3; i++ ) {
+                    uint32 index_in_ann = 3*i ;
+                    ann_points[index_in_ann] = mesh.vertex_ptr(i)[0];
+                    ann_points[index_in_ann+1] = mesh.vertex_ptr(i)[1];
+                    ann_points[index_in_ann+2] = mesh.vertex_ptr(i)[2] ;
                 }
-                ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+                ann_tree_->set_points(nb_vertices, ann_points) ;
                 break ;
             } case FACETS: {
                 int32 nb_vertices = mesh.nb_facets() ;
-                ann_points_ = annAllocPts( nb_vertices, 3 ) ;
+                ann_tree_->create(3);
+                double* ann_points = new double[nb_vertices*3] ;
                 for( uint32 i = 0; i < mesh.nb_facets(); i++ ) {
                     vec3 center = GEO::Geom::mesh_facet_center( mesh, i )  ;
-                    std::copy( center.data(), center.data() + 3,
-                        &ann_points_[i][0] ) ;
+                    uint32 index_in_ann = 3*i ;
+                    ann_points[index_in_ann] = center.x;
+                    ann_points[index_in_ann+1] = center.y;
+                    ann_points[index_in_ann+2] = center.z ;
                 }
-                ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+                ann_tree_->set_points(nb_vertices, ann_points) ;
                 break ;
             } case CELLS: {
                 int32 nb_vertices = mesh.nb_cells() ;
-                ann_points_ = annAllocPts( nb_vertices, 3 ) ;
+                ann_tree_->create(3);
+                double* ann_points = new double[nb_vertices*3] ;
                 for( uint32 i = 0; i < mesh.nb_cells(); i++ ) {
-                    vec3 center = mesh_cell_center( mesh, i )  ;
-                    std::copy( center.data(), center.data() + 3,
-                        &ann_points_[i][0] ) ;
+                    vec3 center = GEO::Geom::mesh_facet_center( mesh, i )  ;
+                    uint32 index_in_ann = 3*i ;
+                    ann_points[index_in_ann] = center.x;
+                    ann_points[index_in_ann+1] = center.y;
+                    ann_points[index_in_ann+2] = center.z ;
                 }
-                ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+                ann_tree_->set_points(nb_vertices, ann_points) ;
                 break ;
             }
         }
@@ -1011,42 +1026,49 @@ namespace GRGMesh {
     ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices )
     {
         int32 nb_vertices = vertices.size() ;
-        ann_points_ = annAllocPts( nb_vertices, 3 ) ;
+        ann_tree_->create(3);
+        double* ann_points = new double[nb_vertices*3] ;
         for( uint32 i = 0; i < nb_vertices; i++ ) {
-            std::copy( vertices[i].data(), vertices[i].data() + 3, &ann_points_[i][0] ) ;
-        }
-        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+            uint32 index_in_ann = 3*i ;
+            ann_points[index_in_ann] = vertices[i].x;
+            ann_points[index_in_ann+1] = vertices[i].y;
+            ann_points[index_in_ann+2] = vertices[i].z ;        }
+        ann_tree_->set_points(nb_vertices, ann_points) ;
     }
 
     ColocaterANN::ColocaterANN( float64* vertices, uint32 nb_vertices )
     {
-        ann_points_ = annAllocPts( nb_vertices, 3 ) ;
-        for( uint32 i = 0; i < nb_vertices; i++ ) {
-            ann_points_[i][0] = vertices[3*i  ] ;
-            ann_points_[i][1] = vertices[3*i+1] ;
-            ann_points_[i][2] = vertices[3*i+2] ;
+        ann_tree_->create(3);
+        double* ann_points = new double[nb_vertices*3] ;
+        for( uint32 i = 0; i < nb_vertices*3; i++ ) {
+            ann_points[i] = vertices[i] ;
+
         }
-        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+        ann_tree_->set_points(nb_vertices, ann_points) ;
     }
 
     ColocaterANN::ColocaterANN( const std::vector< Edge >& edges )
     {
         int32 nb_vertices = edges.size() ;
-        ann_points_ = annAllocPts( nb_vertices, 3 ) ;
+        ann_tree_->create(3);
+        double* ann_points = new double[nb_vertices*3] ;
         for( uint32 i = 0; i < nb_vertices; i++ ) {
             vec3 barycenter( ( edges[i].value( 0 ) + edges[i].value( 1 ) ) / 2.0 ) ;
-            std::copy( barycenter.data(), barycenter.data() + 3, &ann_points_[i][0] ) ;
+            uint32 index_in_ann = 3*i ;
+            ann_points[index_in_ann] = barycenter.x;
+            ann_points[index_in_ann+1] = barycenter.y;
+            ann_points[index_in_ann+2] = barycenter.z ;
         }
-        ann_tree_ = new ANNkd_tree( ann_points_, nb_vertices, 3 ) ;
+        ann_tree_->set_points(nb_vertices, ann_points) ;
     }
 
     void ColocaterANN::get_mapped_colocated(
         vec3& v,
-        std::vector< uint32 >& result,
-        int32 nb_neighbors )
+        std::vector< index_t >& result,
+        index_t nb_neighbors )
     {
         grgmesh_debug_assert( !mapped_indices_.empty() ) ;
-        get_colocated( v, result, nb_neighbors ) ;
+        get_colocated( v, nb_neighbors , result ) ;
         for( uint32 i = 0; i < result.size(); i++ ) {
             result[i] = mapped_indices_[result[i]] ;
         }
@@ -1054,14 +1076,16 @@ namespace GRGMesh {
 
     bool ColocaterANN::get_colocated(
         vec3& v,
-        std::vector< uint32 >& result,
-        int32 nb_neighbors )
+        index_t nb_neighbors,
+        std::vector< uint32 >& result )
     {
         result.clear() ;
-        std::vector< int32 > neighbors(nb_neighbors) ;
-        get_neighbors( v, neighbors, nb_neighbors ) ;
-        for( int32 i = 0; i < neighbors.size(); ++i ) {
-            if( Utils::inexact_equal( v, ann_points_[neighbors[i]] ) ) {
+        index_t * neighbors = new index_t[nb_neighbors] ;
+        double * dist = new double[nb_neighbors] ;
+
+        get_neighbors( v, nb_neighbors, neighbors, dist ) ;
+        for( int32 i = 0; i < nb_neighbors; ++i ) {
+            if( Utils::inexact_equal( v.data(), ann_tree_->point_ptr(neighbors[i])  )) {
                 result.push_back( neighbors[i] ) ;
             }
         }
@@ -1070,16 +1094,12 @@ namespace GRGMesh {
     }
 
     void ColocaterANN::get_neighbors(
-        vec3& v,
-        std::vector< int >& result,
-        int nb_neighbors ) const
+        const vec3& v,
+        index_t nb_neighbors,
+        index_t* result,
+        double* dist ) const
     {
-        nb_neighbors = std::min( nb_neighbors, ann_tree_->nPoints() ) ;
-        result.resize( nb_neighbors ) ;
-        ANNdistArray dist = new ANNdist[nb_neighbors] ;
-        ann_tree_->annkSearch( v.data(), nb_neighbors, &result[0], dist ) ;
-        delete[] dist ;
+        ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), result, dist ) ;
     }
 
 }
-

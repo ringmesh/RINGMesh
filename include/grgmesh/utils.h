@@ -17,7 +17,7 @@
 
 #include <grgmesh/common.h>
 
-#include <geogram/third_party/ANN/ANN.h>
+#include <geogram/points/nn_search.h>
 
 #include <algorithm>
 #include <iostream>
@@ -846,55 +846,53 @@ template< class T > static bool contains(
 
         ~ColocaterANN()
         {
-            annDeallocPts( ann_points_ ) ;
-            delete ann_tree_ ;
-            annClose() ;
         }
 
         void get_mapped_colocated(
             vec3& v,
             std::vector< uint32 >& result,
-            int32 nb_neighbors = 2 ) ;
+            index_t nb_neighbors = 2 ) ;
 
         bool get_colocated(
             const vec3& v,
-            std::vector< uint32 >& result,
-            int32 nb_neighbors = 2 )
+            index_t nb_neighbors,
+            std::vector< uint32 >& result )
         {
-            return get_colocated( const_cast< vec3& >( v ), result, nb_neighbors ) ;
+            return get_colocated( const_cast< vec3& >( v ), nb_neighbors, result ) ;
         }
         bool get_colocated(
             vec3& v,
-            std::vector< uint32 >& result,
-            int32 nb_neighbors = 2 ) ;
+            index_t nb_neighbors,
+            std::vector< uint32 >& result) ;
         void get_neighbors(
             const float64* v,
-            std::vector< int32 >& result,
-            int32 nb_neighbors = 2 ) const
+            index_t nb_neighbors,
+            index_t* result,
+            double * dist
+             ) const
         {
-            return get_neighbors( vec3( v ), result, nb_neighbors ) ;
+            return get_neighbors( vec3( v ), nb_neighbors, result, dist ) ;
         }
+
         void get_neighbors(
             const vec3& v,
-            std::vector< int32 >& result,
-            int32 nb_neighbors = 2 ) const
-        {
-            return get_neighbors( const_cast< vec3& >( v ), result, nb_neighbors ) ;
-        }
-        void get_neighbors(
-            vec3& v,
-            std::vector< int >& result,
-            int nb_neighbors = 2 ) const ;
+            index_t nb_neighbors,
+            index_t* result,
+            double * dist) const ;
 
         vec3 point( int32 i )
         {
-            return vec3( ann_points_[i] ) ;
+            vec3 p ;
+            p.x = ann_tree_->point_ptr(i)[0] ;
+            p.y = ann_tree_->point_ptr(i)[1] ;
+            p.z = ann_tree_->point_ptr(i)[2] ;
+            return p ;
         }
 
     private:
         std::vector< int32 > mapped_indices_ ;
-        ANNpointArray ann_points_ ;
-        ANNkd_tree* ann_tree_ ;
+        GEO::NearestNeighborSearch_var ann_tree_ ;
+        //ANNkd_tree* ann_tree_ ;
     } ;
 
     template< class T, int32 n >
