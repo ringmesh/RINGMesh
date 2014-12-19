@@ -96,15 +96,19 @@ namespace GRGMesh {
         typedef RowImpl< T > Row ;
         typedef SparseMatrix< T > thisclass ;
 
-        SparseMatrix()
+        SparseMatrix() : rows_( nil ), nb_rows_( 0 )
         {
+        }
+        ~SparseMatrix() {
+            if( rows_ ) delete[] rows_ ;
         }
         void build_matrix( uint32 n )
         {
-             rows_.resize( n ) ;
+            nb_rows_= n ;
+            rows_ = new Row[n] ;
         }
 
-        uint32 n() const { return rows_.size() ; }
+        uint32 n() const { return nb_rows_ ; }
         const Row& row( uint32 i ) const { return rows_[i] ; }
         void set_element( uint32 i, uint32 j, const T& value ) {
             rows_[i].set_element( j, value ) ;
@@ -117,7 +121,8 @@ namespace GRGMesh {
         thisclass& operator=( const thisclass &rhs ) ;
 
     private:
-        std::vector< Row > rows_ ;
+        Row* rows_ ;
+        uint32 nb_rows_ ;
     } ;
 }
 
