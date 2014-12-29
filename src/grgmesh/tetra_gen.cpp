@@ -188,6 +188,10 @@ namespace GRGMesh {
             nb_tets * 4 + nb_triangles * 3 + nb_lines * 2 ) ;
         GEO::MeshMutator::set_attributes( tetmesh_, GEO::MESH_FACET_REGION ) ;
         GEO::MeshMutator::facet_regions( tetmesh_ ).resize( nb_triangles ) ;
+        GEO::MeshMutator::tet_vertices( tetmesh_ ).reserve( nb_tets * 4 ) ;
+        GEO::MeshMutator::set_nb_vertices( tetmesh_, nb_points ) ;
+//        GEO::MeshMutator::set_nb_facets( tetmesh_, nb_triangles ) ;
+//        GEO::MeshMutator::set_nb_cells( tetmesh_, nb_tets ) ;
 
         /*
         tetmesh_.tetra_adjacents_.resize( nb_tets * 4, -1 ) ;
@@ -238,7 +242,7 @@ namespace GRGMesh {
         }
         */
     }
-    
+
     void TetraGen::set_face_marker(
         uint32 tri,
         uint32 marker )
@@ -412,29 +416,29 @@ tetgenio::init( P ) ;
         uint32 nb_triangles = 0;
         uint32 nb_lines = 0;
 
-#pragma omp parallel for
+//#pragma omp parallel for
         for( uint32 f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
             int32 face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
             if( face_marker == -1 ) continue ;
             nb_triangles++ ;
         }
-#pragma omp parallel for
-        for( uint32 l = 0; l < tetgen_output_.numberofedges; l++ ) {
-            int32 line_marker = tetgen_output_.edgemarkerlist[l] - 1 ;
-            if( line_marker == -1 ) continue ;
-            nb_lines++ ;
-        }
+//#pragma omp parallel for
+//        for( uint32 l = 0; l < tetgen_output_.numberofedges; l++ ) {
+//            int32 line_marker = tetgen_output_.edgemarkerlist[l] - 1 ;
+//            if( line_marker == -1 ) continue ;
+//            nb_lines++ ;
+//        }
         initialize_storage( tetgen_output_.numberofpoints,
             tetgen_output_.numberoftetrahedra, nb_triangles, nb_lines ) ;
-#pragma omp parallel for
+//#pragma omp parallel for
         for( uint32 p = 0; p < tetgen_output_.numberofpoints; p++ ) {
             set_point( p, &tetgen_output_.pointlist[3 * p] ) ;
         }
-#pragma omp parallel for
+//#pragma omp parallel for
         for( uint32 p = 0; p < tetgen_output_.numberoftetrahedra; p++ ) {
             set_tetra( p, &tetgen_output_.tetrahedronlist[4 * p], nb_lines, nb_triangles ) ;
         }
-#pragma omp parallel for
+//#pragma omp parallel for
         for( uint32 p = 0; p < tetgen_output_.numberoftetrahedra; p++ ) {
             for( uint32 f = 0; f < 4; f++ ) {
                 int32 adj = std::max( tetgen_output_.neighborlist[4 * p + f]-1 , -1 ) ;
@@ -446,7 +450,7 @@ tetgenio::init( P ) ;
         temp.reserve( 8 ) ;
         std::vector< std::vector< uint32 > > star( tetgen_output_.numberofpoints, temp ) ;
 
-#pragma omp parallel for
+//#pragma omp parallel for
         for( uint32 f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
             int32 face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
             if( face_marker == -1 ) continue ;

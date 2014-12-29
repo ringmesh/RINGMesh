@@ -89,9 +89,6 @@ namespace GRGMesh {
     //   | _|| ' \ || | '  \(_-<
     //   |___|_||_\_,_|_|_|_/__/
     //
-    enum TetraMethod {
-        TetGen, MG_Tetra
-    } ;
 
     enum ElementType {
         VERTEX  = -1,
@@ -102,6 +99,11 @@ namespace GRGMesh {
         PYRAMID =  4,
         PRISM   =  5,
         HEXA    =  6
+    } ;
+
+
+    enum TetraMethod {
+        TetGen, MG_Tetra
     } ;
 
     //     ___     _ _      _               _      _
@@ -188,6 +190,28 @@ namespace GRGMesh {
           { 0, 4 }, { 4, 1 }, { 3, 4 }, { 2, 4 } },  // edges
         { { 0, 1, 2, 3 }, { 4, 5, 0 }, { 3, 6, 4 },
           { 6, 7, 2 }, { 1, 5, 7 } }  //edges_in_facet
+    } ;
+
+    static ElementType cell_types[9] = {
+        VERTEX,
+        VERTEX,
+        VERTEX,
+        VERTEX,
+        TETRA,
+        PYRAMID,
+        PRISM,
+        VERTEX,
+        HEXA
+    } ;
+
+    static CellDescriptor* cell_descriptors[7] = {
+       &line_descriptor,
+       &trgl_descriptor,
+       &quad_descriptor,
+       &tetra_descriptor,
+       &pyramid_descriptor,
+       &prism_descriptor,
+       &hexa_descriptor
     } ;
 
 }

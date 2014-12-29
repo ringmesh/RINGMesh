@@ -45,6 +45,7 @@ namespace GRGMesh {
             int region_id = -1,
             bool add_steiner_points = true ) ;
 
+
         void unique_points(
             std::vector< vec3 >& unique_vertices,
             std::vector< int >& indices ) const ;

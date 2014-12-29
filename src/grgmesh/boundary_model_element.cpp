@@ -1889,6 +1889,9 @@ namespace GRGMesh {
         }
         for( uint32 p = 0; p < nb_vertices(); p++ ) {
             normals[p] = normalize( normals[p] ) ;
+            if( std::fabs( normals[p].x ) < small_float64 ) normals[p].x = 0 ;
+            if( std::fabs( normals[p].y ) < small_float64 ) normals[p].y = 0 ;
+            if( std::fabs( normals[p].z ) < small_float64 ) normals[p].z = 0 ;
         }
     }
 

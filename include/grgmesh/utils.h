@@ -38,6 +38,8 @@ namespace GRGMesh {
 
 namespace GRGMesh {
 
+    inline vec3 mesh_cell_center(const GEO::Mesh& M, index_t cell) ;
+
     static bool operator==( const vec3& u, const vec3& v ) {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
     }
@@ -858,10 +860,10 @@ template< class T > static bool contains(
             index_t nb_neighbors,
             std::vector< uint32 >& result ) const ;
 
-        void get_neighbors(
+        index_t get_neighbors(
             const vec3& v,
             index_t nb_neighbors,
-            index_t* result,
+            std::vector< uint32 >& result,
             double * dist = nil ) const ;
 
         vec3 point( int32 i )
@@ -876,7 +878,6 @@ template< class T > static bool contains(
     private:
         std::vector< int32 > mapped_indices_ ;
         GEO::NearestNeighborSearch_var ann_tree_ ;
-        //ANNkd_tree* ann_tree_ ;
     } ;
 
     template< class T, int32 n >
