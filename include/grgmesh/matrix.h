@@ -16,8 +16,6 @@
 #define __GRGMESH_MATRIX__
 
 #include <grgmesh/common.h>
-#include <vector>
-#include <algorithm>
 
 namespace GRGMesh {
 

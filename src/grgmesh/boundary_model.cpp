@@ -889,7 +889,6 @@ namespace GRGMesh {
         std::vector< int32 > change_key_facet ;
 
         /****** File reading **********************************/
-        /*
 		while( !lis.eof() ) {
 
             lis.get_line() ;
@@ -1155,7 +1154,6 @@ namespace GRGMesh {
         time( &end_load ) ;
         std::cout << " Boundary model loading time"
             << difftime( end_load, start_load ) << " sec" << std::endl ;
-			*/
     }
 
     void BoundaryModelBuilder::end_model()

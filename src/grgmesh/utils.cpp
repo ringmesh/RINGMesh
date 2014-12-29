@@ -29,6 +29,16 @@
 
 namespace GRGMesh {
 
+    vec3 mesh_cell_center(const GEO::Mesh& M, index_t cell) {
+        vec3 result(0.0, 0.0, 0.0);
+        double count = 0.0;
+        for(index_t c = M.cell_vertices_begin(cell); c < M.cell_vertices_begin(cell+1); ++c) {
+            result += GEO::Geom::mesh_corner_vertex(M, c);
+            count += 1.0;
+        }
+        return (1.0 / count) * result;
+    }
+
     MakeUnique::MakeUnique( const std::vector< vec3 >& points )
         : points_( points )
     {
@@ -221,6 +231,8 @@ namespace GRGMesh {
             do {
                 uint32 cur_f = S.top() ;
                 S.pop() ;
+                if( facet_visited[cur_f] ) continue ;
+                facet_visited[cur_f] = true ;
                 for( unsigned int c = mesh.facet_begin( cur_f );
                     c < mesh.facet_end( cur_f ); c++ ) {
                     int32 f_adj = mesh.corner_adjacent_facet( c ) ;
@@ -943,7 +955,7 @@ namespace GRGMesh {
     ColocaterANN::ColocaterANN( const SurfacePart& mesh )
     {
         int32 nb_vertices = mesh.nb_vertices() ;
-        ann_tree_->create(3);
+        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         double* ann_points = new double[nb_vertices*3] ;
         for( uint32 i = 0; i < mesh.nb_vertices(); i++ ) {
             uint32 index_in_ann = 3*i ;
@@ -957,7 +969,7 @@ namespace GRGMesh {
     ColocaterANN::ColocaterANN( const ContactPart& mesh )
     {
         int32 nb_vertices = mesh.nb_vertices() ;
-        ann_tree_->create(3);
+        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         double* ann_points = new double[nb_vertices*3] ;
         for( uint32 i = 0; i < mesh.nb_vertices(); i++ ) {
             uint32 index_in_ann = 3*i ;
@@ -968,24 +980,14 @@ namespace GRGMesh {
         ann_tree_->set_points(nb_vertices, ann_points) ;
     }
 
-    vec3 mesh_cell_center( const GEO::Mesh& M, uint32 cell ) {
-        vec3 result(0.0, 0.0, 0.0);
-        double count = 0.0;
-        for( uint32 v = 0; v < M.cell_nb_vertices( cell ); v++ ) {
-            result += vec3( M.vertex_ptr( M.cell_vertex_index( cell, v ) ) ) ;
-            count += 1.0;
-        }
-        return (1.0 / count) * result;
-    }
-
     ColocaterANN::ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location )
     {
+        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {
             case VERTICES: {
                 int32 nb_vertices = mesh.nb_vertices() ;
-                ann_tree_->create(3);
                 double* ann_points = new double[nb_vertices*3] ;
-                for( uint32 i = 0; i < mesh.nb_vertices()*3; i++ ) {
+                for( uint32 i = 0; i < mesh.nb_vertices(); i++ ) {
                     uint32 index_in_ann = 3*i ;
                     ann_points[index_in_ann] = mesh.vertex_ptr(i)[0];
                     ann_points[index_in_ann+1] = mesh.vertex_ptr(i)[1];
@@ -995,7 +997,6 @@ namespace GRGMesh {
                 break ;
             } case FACETS: {
                 int32 nb_vertices = mesh.nb_facets() ;
-                ann_tree_->create(3);
                 double* ann_points = new double[nb_vertices*3] ;
                 for( uint32 i = 0; i < mesh.nb_facets(); i++ ) {
                     vec3 center = GEO::Geom::mesh_facet_center( mesh, i )  ;
@@ -1008,10 +1009,9 @@ namespace GRGMesh {
                 break ;
             } case CELLS: {
                 int32 nb_vertices = mesh.nb_cells() ;
-                ann_tree_->create(3);
                 double* ann_points = new double[nb_vertices*3] ;
                 for( uint32 i = 0; i < mesh.nb_cells(); i++ ) {
-                    vec3 center = GEO::Geom::mesh_facet_center( mesh, i )  ;
+                    vec3 center = mesh_cell_center( mesh, i )  ;
                     uint32 index_in_ann = 3*i ;
                     ann_points[index_in_ann] = center.x;
                     ann_points[index_in_ann+1] = center.y;
@@ -1026,7 +1026,7 @@ namespace GRGMesh {
     ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices )
     {
         int32 nb_vertices = vertices.size() ;
-        ann_tree_->create(3);
+        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         double* ann_points = new double[nb_vertices*3] ;
         for( uint32 i = 0; i < nb_vertices; i++ ) {
             uint32 index_in_ann = 3*i ;
@@ -1038,7 +1038,7 @@ namespace GRGMesh {
 
     ColocaterANN::ColocaterANN( float64* vertices, uint32 nb_vertices )
     {
-        ann_tree_->create(3);
+        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         double* ann_points = new double[nb_vertices*3] ;
         for( uint32 i = 0; i < nb_vertices*3; i++ ) {
             ann_points[i] = vertices[i] ;
@@ -1050,7 +1050,7 @@ namespace GRGMesh {
     ColocaterANN::ColocaterANN( const std::vector< Edge >& edges )
     {
         int32 nb_vertices = edges.size() ;
-        ann_tree_->create(3);
+        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         double* ann_points = new double[nb_vertices*3] ;
         for( uint32 i = 0; i < nb_vertices; i++ ) {
             vec3 barycenter( ( edges[i].value( 0 ) + edges[i].value( 1 ) ) / 2.0 ) ;
@@ -1080,35 +1080,38 @@ namespace GRGMesh {
         std::vector< uint32 >& result ) const
     {
         result.clear() ;
-        index_t * neighbors = new index_t[nb_neighbors] ;
+        std::vector< uint32 > neighbors( nb_neighbors ) ;
 
-        get_neighbors( v, nb_neighbors, neighbors ) ;
+        nb_neighbors = get_neighbors( v, nb_neighbors, neighbors ) ;
         for( int32 i = 0; i < nb_neighbors; ++i ) {
             if( Utils::inexact_equal( v.data(), ann_tree_->point_ptr(neighbors[i])  )) {
                 result.push_back( neighbors[i] ) ;
             }
         }
 
-        delete[] neighbors ;
         return !result.empty() ;
     }
 
-    void ColocaterANN::get_neighbors(
+    index_t ColocaterANN::get_neighbors(
         const vec3& v,
         index_t nb_neighbors,
-        index_t* result,
+        std::vector< uint32 >& result,
         double* dist ) const
     {
+        if( ann_tree_->nb_points() == 0 ) return 0 ;
         bool to_delete = false ;
         if( !dist ) {
             dist = new double[nb_neighbors] ;
             to_delete = true ;
         }
-        ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), result, dist ) ;
+        nb_neighbors = std::min( nb_neighbors, ann_tree_->nb_points() ) ;
+        result.resize( nb_neighbors ) ;
+        ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0], dist ) ;
         if( to_delete ) {
             delete[] dist ;
             dist = nil ;
         }
+         return nb_neighbors ;
     }
 
 }
