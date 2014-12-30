@@ -22,11 +22,11 @@
 #    endif
 #endif
 
-#ifdef GRGMESH_EXPORTS
-#   ifdef GRGMESH_STATIC
-#        define GRGMESH_API
-#    else
+#ifdef WIN32
+#   ifdef GRGMESH_EXPORTS
 #        define GRGMESH_API __declspec( dllexport )
+#    else
+#        define GRGMESH_API __declspec( dllimport )
 #    endif
 #else
 #   define GRGMESH_API
@@ -34,9 +34,6 @@
 
 #ifndef NDEBUG
 #   define GRGMESH_DEBUG
-#   ifdef PARANOID_DEBUG
-#       define GRGMESH_PARANOID
-#   endif
 #endif
 
 #ifdef WIN32

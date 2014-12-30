@@ -51,11 +51,11 @@ namespace GRGMesh {
             std::vector< int >& indices ) const ;
 
 
-        const GEO::MeshFacetsAABB& facet_aabb( uint32 region ) ;
-        void init_facet_aabb( uint32 region ) ;
+        const GEO::MeshFacetsAABB& facet_aabb( index_t region ) ;
+        void init_facet_aabb( index_t region ) ;
         void init_all_facet_aabb() ;
-        const GEO::MeshTetsAABB& tet_aabb( uint32 region ) ;
-        void init_tet_aabb( uint32 region ) ;
+        const GEO::MeshTetsAABB& tet_aabb( index_t region ) ;
+        void init_tet_aabb( index_t region ) ;
         void init_all_tet_aabb() ;
 
         //      _
@@ -63,19 +63,19 @@ namespace GRGMesh {
         //    / _ \/ _/ _/ -_|_-<_-< _ \ '_(_-<
         //   /_/ \_\__\__\___/__/__|___/_| /__/
         //
-        GEO::Mesh& mesh( uint32 region )
+        GEO::Mesh& mesh( index_t region )
         {
             return *meshes_[region] ;
         }
-        const GEO::Mesh& mesh( uint32 region ) const
+        const GEO::Mesh& mesh( index_t region ) const
         {
             return *meshes_[region] ;
         }
-        GEO::Mesh* background_mesh( uint32 region )
+        GEO::Mesh* background_mesh( index_t region )
         {
             return background_meshes_[region] ;
         }
-        const GEO::Mesh* background_mesh( uint32 region ) const
+        const GEO::Mesh* background_mesh( index_t region ) const
         {
             return background_meshes_[region] ;
         }
@@ -83,17 +83,17 @@ namespace GRGMesh {
         {
             return meshes_.size() ;
         }
-        std::vector< vec3 >& vertices( uint32 region ) {
+        std::vector< vec3 >& vertices( index_t region ) {
             return vertices_[region] ;
         }
-        const std::vector< vec3 >& vertices( uint32 region ) const {
+        const std::vector< vec3 >& vertices( index_t region ) const {
             return vertices_[region] ;
         }
-        std::vector< std::vector< Edge > >& well_vertices( uint32 region )
+        std::vector< std::vector< Edge > >& well_vertices( index_t region )
         {
             return well_vertices_[region] ;
         }
-        const std::vector< std::vector< Edge > >& well_vertices( uint32 region ) const
+        const std::vector< std::vector< Edge > >& well_vertices( index_t region ) const
         {
             return well_vertices_[region] ;
         }
@@ -102,7 +102,7 @@ namespace GRGMesh {
             return model_ ;
         }
       
-        uint32 nb_vertices() ;
+        index_t nb_vertices() ;
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
@@ -118,7 +118,7 @@ namespace GRGMesh {
     private:
         std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
         std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
-        uint32 nb_vertices_ ;
+        index_t nb_vertices_ ;
     } ;
 
 }

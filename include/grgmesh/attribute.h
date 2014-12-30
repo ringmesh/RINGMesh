@@ -29,20 +29,20 @@ namespace GRGMesh {
 
     class AttributeStore: public GEO::Counted {
     public:
-        byte* data( uint32 id)
+        byte* data( index_t id)
         {
             return &data_[id * item_size_] ;
         }
         virtual const std::type_info& attribute_type_id() const = 0 ;
-        uint32 size() const { return data_.size() / item_size_ ; }
+        index_t size() const { return data_.size() / item_size_ ; }
     protected:
-        AttributeStore( uint32 item_size, uint32 size )
+        AttributeStore( index_t item_size, index_t size )
             :
                 item_size_( item_size ), data_( item_size * size )
         {
         }
     protected:
-        uint32 item_size_ ;
+        index_t item_size_ ;
         std::vector< byte > data_ ;
 
     } ;
@@ -52,7 +52,7 @@ namespace GRGMesh {
     template< class ATTRIBUTE >
     class AttributeStoreImpl: public AttributeStore {
     public:
-        AttributeStoreImpl( uint32 size )
+        AttributeStoreImpl( index_t size )
             : AttributeStore( sizeof(ATTRIBUTE), size )
         {
         }
@@ -129,10 +129,10 @@ namespace GRGMesh {
         Attribute()
         {
         }
-        Attribute( Manager* manager, uint32 size ) {
+        Attribute( Manager* manager, index_t size ) {
             bind( manager, size ) ;
         }
-        Attribute( Manager* manager, uint32 size, const std::string& name )
+        Attribute( Manager* manager, index_t size, const std::string& name )
         {
             bind( manager, size, name ) ;
         }
@@ -146,18 +146,18 @@ namespace GRGMesh {
             return *this ;
         }
 
-        uint32 size() const { return store_->size() ; }
+        index_t size() const { return store_->size() ; }
         bool is_bound() const
         {
             return !store_.is_nil() ;
         }
 
-        void bind( Manager* manager, uint32 size )
+        void bind( Manager* manager, index_t size )
         {
             store_ = new Store( size ) ;
         }
 
-        void bind( Manager* manager, uint32 size, const std::string& name )
+        void bind( Manager* manager, index_t size, const std::string& name )
         {
             if( manager->named_attribute_is_bound( name ) ) {
                 store_ = resolve_named_attribute_store( manager, name ) ;
@@ -177,12 +177,12 @@ namespace GRGMesh {
             store_.reset() ;
         }
 
-        ATTRIBUTE& operator[]( const uint32& id )
+        ATTRIBUTE& operator[]( const index_t& id )
         {
             return *data( id ) ;
         }
 
-        const ATTRIBUTE& operator[]( const uint32& id ) const
+        const ATTRIBUTE& operator[]( const index_t& id ) const
         {
             return *data( id ) ;
         }
@@ -199,7 +199,7 @@ namespace GRGMesh {
         }
 
     protected:
-        ATTRIBUTE* data( const uint32& id ) const
+        ATTRIBUTE* data( const index_t& id ) const
         {
             return reinterpret_cast< ATTRIBUTE* >( store_->data( id ) ) ;
         }

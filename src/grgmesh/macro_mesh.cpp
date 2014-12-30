@@ -53,35 +53,35 @@ namespace GRGMesh {
         }
     }
 
-    const GEO::MeshFacetsAABB& MacroMesh::facet_aabb( uint32 region )
+    const GEO::MeshFacetsAABB& MacroMesh::facet_aabb( index_t region )
     {
         init_facet_aabb( region ) ;
         return *facet_aabb_[region] ;
     }
-    void MacroMesh::init_facet_aabb( uint32 region )
+    void MacroMesh::init_facet_aabb( index_t region )
     {
         if( facet_aabb_[region] ) return ;
         facet_aabb_[region] = new GEO::MeshFacetsAABB( mesh( region ) ) ;
     }
     void MacroMesh::init_all_facet_aabb()
     {
-        for( uint32 region = 0; region < nb_meshes(); region++ ) {
+        for( index_t region = 0; region < nb_meshes(); region++ ) {
             init_facet_aabb( region ) ;
         }
     }
-    const GEO::MeshTetsAABB& MacroMesh::tet_aabb( uint32 region )
+    const GEO::MeshTetsAABB& MacroMesh::tet_aabb( index_t region )
     {
         init_tet_aabb( region ) ;
         return *tet_aabb_[region] ;
     }
-    void MacroMesh::init_tet_aabb( uint32 region )
+    void MacroMesh::init_tet_aabb( index_t region )
     {
         if( tet_aabb_[region] ) return ;
         tet_aabb_[region] = new GEO::MeshTetsAABB( mesh( region ) ) ;
     }
     void MacroMesh::init_all_tet_aabb()
     {
-        for( uint32 region = 0; region < nb_meshes(); region++ ) {
+        for( index_t region = 0; region < nb_meshes(); region++ ) {
             init_tet_aabb( region ) ;
         }
     }
@@ -118,14 +118,14 @@ namespace GRGMesh {
         std::vector< vec3 >& unique_vertices,
         std::vector< int >& indices ) const
     {
-        uint32 nb_non_unique_vertices = 0 ;
-        for( uint32 i = 0; i < meshes_.size(); i++ ) {
+        index_t nb_non_unique_vertices = 0 ;
+        for( index_t i = 0; i < meshes_.size(); i++ ) {
             nb_non_unique_vertices += meshes_[i]->nb_vertices() ;
         }
         std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
-        uint32 index = 0 ;
-        for( uint32 i = 0; i < meshes_.size(); i++ ) {
-            for( uint32 j = 0; j < meshes_[i]->nb_vertices(); j++ ) {
+        index_t index = 0 ;
+        for( index_t i = 0; i < meshes_.size(); i++ ) {
+            for( index_t j = 0; j < meshes_[i]->nb_vertices(); j++ ) {
                 all_vertices[index] = vec3( meshes_[i]->vertex_ptr( j )[0],
                     meshes_[i]->vertex_ptr( j )[1],
                     meshes_[i]->vertex_ptr( j )[2] ) ;
@@ -137,7 +137,7 @@ namespace GRGMesh {
         indices = mu.indices() ;
     }
 
-    uint32 MacroMesh::nb_vertices() {
+    index_t MacroMesh::nb_vertices() {
         if( nb_vertices_ != -1) {
             return nb_vertices_ ;
         }

@@ -26,7 +26,7 @@ namespace GRGMesh {
         {
         }
         T value ;
-        int32 index ;
+        signed_index_t index ;
 
     } ;
 
@@ -44,8 +44,8 @@ namespace GRGMesh {
             delete[] elements_ ;
         }
 
-        void set_element( uint32 j, const T& value ) {
-            int32 index = find( j ) ;
+        void set_element( index_t j, const T& value ) {
+            signed_index_t index = find( j ) ;
             if( index == -1 ) {
                 if( nb_elements_ == capacity_ ) grow() ;
                 Element& elt = elements_[nb_elements_++] ;
@@ -56,22 +56,27 @@ namespace GRGMesh {
             }
         }
 
-        int32 find( uint32 j ) const {
-            for( uint32 i = 0; i < nb_elements_; i++ ) {
+        signed_index_t find( index_t j ) const {
+            for( index_t i = 0; i < nb_elements_; i++ ) {
                 if( elements_[i].index == j ) return i ;
             }
             return -1 ;
         }
 
-        bool get_element( uint32 j, T& value ) const {
-            int32 index = find( j ) ;
+        bool get_element( index_t j, T& value ) const {
+            signed_index_t index = find( j ) ;
             if( index == -1 ) return false ;
             value = elements_[index].value ;
             return true ;
         }
+        void element( index_t i, T& value ) const {
+            grgmesh_debug_assert( i < nb_elements_ ) ;
+            value = elements_[i] ;
+        }
+
 
     private:
-        void reallocate( uint32 new_capacity ) {
+        void reallocate( index_t new_capacity ) {
             Element* new_elements = new Element[new_capacity] ;
             std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
             delete[] elements_ ;
@@ -84,8 +89,8 @@ namespace GRGMesh {
 
     private:
         Element* elements_ ;
-        uint32 nb_elements_ ;
-        uint32 capacity_ ;
+        index_t nb_elements_ ;
+        index_t capacity_ ;
     } ;
 
     template< class T >
@@ -100,18 +105,18 @@ namespace GRGMesh {
         ~SparseMatrix() {
             if( rows_ ) delete[] rows_ ;
         }
-        void build_matrix( uint32 n )
+        void build_matrix( index_t n )
         {
             nb_rows_= n ;
             rows_ = new Row[n] ;
         }
 
-        uint32 n() const { return nb_rows_ ; }
-        const Row& row( uint32 i ) const { return rows_[i] ; }
-        void set_element( uint32 i, uint32 j, const T& value ) {
+        index_t n() const { return nb_rows_ ; }
+        const Row& row( index_t i ) const { return rows_[i] ; }
+        void set_element( index_t i, index_t j, const T& value ) {
             rows_[i].set_element( j, value ) ;
         }
-        bool get_element( uint32 i, uint32 j, T& value ) const {
+        bool get_element( index_t i, index_t j, T& value ) const {
             return rows_[i].get_element( j, value ) ;
         }
     private:
@@ -120,7 +125,7 @@ namespace GRGMesh {
 
     private:
         Row* rows_ ;
-        uint32 nb_rows_ ;
+        index_t nb_rows_ ;
     } ;
 }
 
