@@ -22,11 +22,11 @@ namespace GRGMesh {
 
     template< class F > inline void parallel_for(
         F& f,
-        uint32 from,
-        uint32 to )
+        index_t from,
+        index_t to )
     {
 #pragma omp parallel for
-        for( uint32 i = from; i < to; i++ ) {
+        for( index_t i = from; i < to; i++ ) {
             f( i ) ;
         }
     }
@@ -39,78 +39,78 @@ namespace GRGMesh {
         return middle ;
     }
 
-    template< int32 COORD, bool UP, class MESH > struct Morton_vertex_cmp {
+    template< signed_index_t COORD, bool UP, class MESH > struct Morton_vertex_cmp {
         Morton_vertex_cmp( const MESH& mesh )
             : mesh_( mesh )
         {
         }
-        bool operator()( int32 i1, int32 i2 )
+        bool operator()( signed_index_t i1, signed_index_t i2 )
         {
             return mesh_.vertex( i1 )[COORD] < mesh_.vertex( i2 )[COORD] ;
         }
         const MESH& mesh_ ;
     } ;
 
-    template< int32 COORD, bool UP > struct Morton_facet_vertex_cmp {
+    template< signed_index_t COORD, bool UP > struct Morton_facet_vertex_cmp {
         Morton_facet_vertex_cmp( const SurfacePart& mesh )
             : mesh_( mesh )
         {
         }
-        bool operator()( int32 i1, int32 i2 )
+        bool operator()( signed_index_t i1, signed_index_t i2 )
         {
             return mesh_.vertex( i1 )[COORD] < mesh_.vertex( i2 )[COORD] ;
         }
         const SurfacePart& mesh_ ;
     } ;
 
-    template< int32 COORD, bool UP, class MESH > struct Morton_cell_cmp {
+    template< signed_index_t COORD, bool UP, class MESH > struct Morton_cell_cmp {
     public:
         Morton_cell_cmp( const MESH& mesh )
             : mesh_( mesh )
         {
         }
-        float64 center( int32 t ) const
+        float64 center( signed_index_t t ) const
         {
             float64 result = 0.0 ;
-            for( uint32 p = 0; p < mesh_.nb_vertices_in_cell( t ); p++ ) {
+            for( index_t p = 0; p < mesh_.nb_vertices_in_cell( t ); p++ ) {
                 result += mesh_.cell_vertex( t, p )[COORD] ;
             }
             return result ;
         }
-        bool operator()( int32 t1, int32 t2 )
+        bool operator()( signed_index_t t1, signed_index_t t2 )
         {
             return ( center( t1 ) < center( t2 ) ) ;
         }
         const MESH& mesh_ ;
     } ;
 
-    template< int32 COORD, bool UP, class MESH > struct Morton_facet_cmp {
+    template< signed_index_t COORD, bool UP, class MESH > struct Morton_facet_cmp {
     public:
         Morton_facet_cmp( const MESH& mesh )
             : mesh_( mesh )
         {
         }
-        float64 center( int32 t ) const
+        float64 center( signed_index_t t ) const
         {
             float64 result = 0.0 ;
-            for( uint32 p = 0; p < 3; p++ ) {
+            for( index_t p = 0; p < 3; p++ ) {
                 result += mesh_.point( t, p )[COORD] ;
             }
             return result ;
         }
-        bool operator()( int32 t1, int32 t2 )
+        bool operator()( signed_index_t t1, signed_index_t t2 )
         {
             return ( center( t1 ) < center( t2 ) ) ;
         }
         const MESH& mesh_ ;
     } ;
 
-    template< class MESH, template< int32 COORD, bool UP, class MESH > class CMP > struct HilbertSort {
-        template< int32 COORDX, bool UPX, bool UPY, bool UPZ, class IT >
-        static void sort( const MESH& M, IT begin, IT end, uint32 limit = 1 )
+    template< class MESH, template< signed_index_t COORD, bool UP, class MESH > class CMP > struct HilbertSort {
+        template< signed_index_t COORDX, bool UPX, bool UPY, bool UPZ, class IT >
+        static void sort( const MESH& M, IT begin, IT end, index_t limit = 1 )
         {
-            const int32 COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3 ;
-            if( end - begin <= int32( limit ) ) return ;
+            const signed_index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3 ;
+            if( end - begin <= signed_index_t( limit ) ) return ;
             IT m0 = begin, m8 = end ;
             IT m4 = split( m0, m8, CMP< COORDX, UPX, MESH >( M ) ) ;
             IT m2 = split( m0, m4, CMP< COORDY, UPY, MESH >( M ) ) ;
@@ -131,8 +131,8 @@ namespace GRGMesh {
 
         HilbertSort(
             const MESH& M,
-            std::vector< int32 >& sorted_indices,
-            uint32 limit = 1 )
+            std::vector< signed_index_t >& sorted_indices,
+            index_t limit = 1 )
             : M_( M )
         {
             if( sorted_indices.size() <= limit ) return ;
@@ -144,9 +144,9 @@ namespace GRGMesh {
             parallel_for( *this, 20, 28 ) ; // sorts the 8 subsets in parallel
         }
 
-        void operator()( int32 i )
+        void operator()( signed_index_t i )
         {
-            const int32 COORDX = 0, COORDY = 1, COORDZ = 2 ;
+            const signed_index_t COORDX = 0, COORDY = 1, COORDZ = 2 ;
             const bool UPX = false, UPY = false, UPZ = false ;
             switch( i ) {
                 case 0:
@@ -199,16 +199,16 @@ namespace GRGMesh {
 
     private:
         const MESH& M_ ;
-        std::vector< int32 >::iterator m0_, m1_, m2_, m3_, m4_, m5_, m6_, m7_, m8_ ;
+        std::vector< signed_index_t >::iterator m0_, m1_, m2_, m3_, m4_, m5_, m6_, m7_, m8_ ;
     } ;
 
 
     inline void morton_vertex_sort(
         const SurfacePart& M,
-        std::vector< int32 >& sorted_indices )
+        std::vector< signed_index_t >& sorted_indices )
     {
         sorted_indices.resize( M.nb_vertices() ) ;
-        for( uint32 i = 0; i < M.nb_vertices(); i++ ) {
+        for( index_t i = 0; i < M.nb_vertices(); i++ ) {
             sorted_indices[i] = i ;
         }
         HilbertSort< SurfacePart, Morton_vertex_cmp >( M,
@@ -217,10 +217,10 @@ namespace GRGMesh {
 
     inline void morton_cell_sort(
         const SurfacePart& M,
-        std::vector< int32 >& sorted_indices )
+        std::vector< signed_index_t >& sorted_indices )
     {
         sorted_indices.resize( M.nb_simplices() ) ;
-        for( uint32 i = 0; i < M.nb_simplices(); i++ ) {
+        for( index_t i = 0; i < M.nb_simplices(); i++ ) {
             sorted_indices[i] = i ;
         }
         HilbertSort< SurfacePart, Morton_facet_cmp >( M, sorted_indices ) ;
