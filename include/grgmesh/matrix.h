@@ -21,12 +21,13 @@ namespace GRGMesh {
 
     template< class T >
     struct ElementImpl {
+        const static index_t NOT_USED = index_t( -1 ) ;
         ElementImpl()
-            : index( -1 )
+            : index( NOT_USED )
         {
         }
         T value ;
-        signed_index_t index ;
+        index_t index ;
 
     } ;
 
@@ -56,30 +57,43 @@ namespace GRGMesh {
             }
         }
 
-        signed_index_t find( index_t j ) const {
+        bool find( index_t j, signed_index_t& index = dummy_signed_index_t ) const {
             for( index_t i = 0; i < nb_elements_; i++ ) {
-                if( elements_[i].index == j ) return i ;
+                if( elements_[i].index == j ) {
+                    index = i ;
+                    return true ;
+                }
             }
-            return -1 ;
+            return false ;
         }
 
         bool get_element( index_t j, T& value ) const {
-            signed_index_t index = find( j ) ;
-            if( index == -1 ) return false ;
+            signed_index_t index ;
+            if( !find( j, index ) ) return false ;
             value = elements_[index].value ;
             return true ;
         }
         void element( index_t i, T& value ) const {
             grgmesh_debug_assert( i < nb_elements_ ) ;
-            value = elements_[i] ;
+            value = elements_[i].value ;
         }
-
+        index_t index( index_t i ) const {
+            grgmesh_debug_assert( i < nb_elements_ ) ;
+            return elements_[i].index ;
+        }
+        T& operator[]( index_t i ) const {
+            grgmesh_debug_assert( i < nb_elements_ ) ;
+            return elements_[i].value ;
+        }
+        index_t nb_elements() const {
+            return nb_elements_ ;
+        }
 
     private:
         void reallocate( index_t new_capacity ) {
             Element* new_elements = new Element[new_capacity] ;
             std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
-            delete[] elements_ ;
+            if( elements_ ) delete[] elements_ ;
             elements_ = new_elements ;
         }
         void grow() {
@@ -95,6 +109,7 @@ namespace GRGMesh {
 
     template< class T >
     class GRGMESH_API SparseMatrix {
+        //todo need to handle symmetric matrix
     public:
         typedef RowImpl< T > Row ;
         typedef SparseMatrix< T > thisclass ;
@@ -114,10 +129,16 @@ namespace GRGMesh {
         index_t n() const { return nb_rows_ ; }
         const Row& row( index_t i ) const { return rows_[i] ; }
         void set_element( index_t i, index_t j, const T& value ) {
+            grgmesh_debug_assert( i < nb_rows_ ) ;
             rows_[i].set_element( j, value ) ;
         }
         bool get_element( index_t i, index_t j, T& value ) const {
+            grgmesh_debug_assert( i < nb_rows_ ) ;
             return rows_[i].get_element( j, value ) ;
+        }
+        bool find_element( index_t i, index_t j ) const{
+            grgmesh_debug_assert( i < nb_rows_ ) ;
+            return rows_[i].find( j ) ;
         }
     private:
         SparseMatrix( const thisclass &rhs ) ;

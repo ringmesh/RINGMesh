@@ -83,7 +83,9 @@ namespace GRGMesh {
     static vec3 dummy_vec3 ;
 
     typedef GEO::index_t index_t ;
+    static index_t dummy_index_t ;
     typedef GEO::signed_index_t signed_index_t ;
+    static signed_index_t dummy_signed_index_t ;
     //    ___
     //   | __|_ _ _  _ _ __  ___
     //   | _|| ' \ || | '  \(_-<
