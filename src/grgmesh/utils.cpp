@@ -182,6 +182,8 @@ namespace GRGMesh {
         GEO::Mesh& mesh,
         bool check_duplicated_facet )
     {
+        if( mesh.nb_facets() == 0 ) return ;
+
         /// 1 - Remove duplicated facets (optionnal)
         if( check_duplicated_facet ) {
             std::vector< vec3 > barycenters( mesh.nb_facets(), vec3( 0, 0, 0 ) ) ;
