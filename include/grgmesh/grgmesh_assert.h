@@ -20,7 +20,7 @@
 
 namespace GRGMesh {
 
-    static void grgmesh_abort() ;
+    void GRGMESH_API grgmesh_abort() ;
 
     void GRGMESH_API grgmesh_assertion_failed(
         const std::string& condition_string,
