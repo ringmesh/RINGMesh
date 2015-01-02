@@ -39,15 +39,15 @@ namespace GRGMesh {
         RowImpl()
             : nb_elements_( 0 ), capacity_( 4 )
         {
-            reallocate( capacity_ ) ;
+            elements_ = new Element[capacity_] ;
         }
         ~RowImpl() {
             delete[] elements_ ;
         }
 
         void set_element( index_t j, const T& value ) {
-            signed_index_t index = find( j ) ;
-            if( index == -1 ) {
+            index_t index ;
+            if( !find( j, index ) ) {
                 if( nb_elements_ == capacity_ ) grow() ;
                 Element& elt = elements_[nb_elements_++] ;
                 elt.index = j ;
@@ -57,7 +57,7 @@ namespace GRGMesh {
             }
         }
 
-        bool find( index_t j, signed_index_t& index = dummy_signed_index_t ) const {
+        bool find( index_t j, index_t& index = dummy_index_t ) const {
             for( index_t i = 0; i < nb_elements_; i++ ) {
                 if( elements_[i].index == j ) {
                     index = i ;
@@ -68,7 +68,7 @@ namespace GRGMesh {
         }
 
         bool get_element( index_t j, T& value ) const {
-            signed_index_t index ;
+            index_t index ;
             if( !find( j, index ) ) return false ;
             value = elements_[index].value ;
             return true ;
@@ -93,7 +93,7 @@ namespace GRGMesh {
         void reallocate( index_t new_capacity ) {
             Element* new_elements = new Element[new_capacity] ;
             std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
-            if( elements_ ) delete[] elements_ ;
+            delete[] elements_ ;
             elements_ = new_elements ;
         }
         void grow() {
