@@ -15,8 +15,6 @@
 #ifndef __GRGMESH_TYPES__
 #define __GRGMESH_TYPES__
 
-#include <grgmesh/common.h>
-
 #include <geogram/basic/geometry.h>
 
 namespace GRGMesh {
