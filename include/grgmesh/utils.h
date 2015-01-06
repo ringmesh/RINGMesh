@@ -808,8 +808,8 @@ namespace GRGMesh {
             indices_.resize( nb_points ) ;
             signed_index_t cur_id = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
-                for( index_t p = 0; p < data[i]->nb_vertices(); p++, cur_id++ ) {
-                    points_[cur_id] = data[i]->vertex( p ) ;
+                for( index_t p = 0; p < data[i]->nb_points(); p++, cur_id++ ) {
+                    points_[cur_id] = data[i]->point( p ) ;
                     indices_[cur_id] = cur_id ;
                 }
             }
