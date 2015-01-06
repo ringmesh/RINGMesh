@@ -63,8 +63,11 @@ namespace GRGMesh {
     }
     void FacetAABBTree::reorder_morton()
     {
-        std::vector< signed_index_t > sorted_indices ;
-        SurfacePartMutator mutator( mesh_ ) ;
+        /// \todo PORTING TODO
+        grgmesh_assert_not_reached ;
+
+ /*       std::vector< int32 > sorted_indices ;
+        SurfaceMutator mutator( mesh_ ) ;
 
         // Step 1: reorder vertices
         morton_vertex_sort( mesh_, sorted_indices ) ;
@@ -108,11 +111,11 @@ namespace GRGMesh {
                     adjacents[3*t+p] = sorted_indices[adjacents[3*t+p]] ;
                 }
             }
-        }
+        } */
     }
 
     float64 FacetAABBTree::get_nearest_point(
-        const SurfacePart& M,
+        const Surface& M,
         const vec3& p,
         int t,
         vec3& nearest_p )
@@ -130,12 +133,12 @@ namespace GRGMesh {
         return distance ;
     }
 
-    FacetAABBTree::FacetAABBTree( SurfacePart& M )
+    FacetAABBTree::FacetAABBTree( Surface& M )
         : mesh_( M )
     {
         reorder_morton() ;
-        bboxes_.resize( max_node_index( 1, 0, mesh_.nb_simplices() ) + 1 ) ; // <-- this is because size == max_index + 1 !!!
-        init_bboxes_recursive( 1, 0, mesh_.nb_simplices() ) ;
+        bboxes_.resize( max_node_index( 1, 0, mesh_.nb_cells() ) + 1 ) ; // <-- this is because size == max_index + 1 !!!
+        init_bboxes_recursive( 1, 0, mesh_.nb_cells() ) ;
     }
 
     void FacetAABBTree::get_nearest_facet_hint(
@@ -150,8 +153,8 @@ namespace GRGMesh {
         // of its bounding box is nearer to the query point.
         // For a large mesh (20M facets) this gains up to 10%
         // performance as compared to picking nearest_f randomly.
-        index_t b = 0 ;
-        index_t e = mesh_.nb_simplices() - 1 ;
+        uint32 b = 0 ;
+        uint32 e = mesh_.nb_cells() - 1 ;
         if( e > 0 ) {
             index_t n = 1 ;
             while( e != b + 1 ) {

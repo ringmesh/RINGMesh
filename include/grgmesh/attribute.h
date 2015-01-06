@@ -26,7 +26,12 @@
 
 namespace GRGMesh {
 
-
+     /** 
+     * \brief Abstract base class to store an attribute as a vector of bytes.
+     * 
+     * Vector size depends on the size of the items stored.
+     * Derives of Counted so that SmartPointers of this class may be used
+     */
     class AttributeStore: public GEO::Counted {
     public:
         byte* data( index_t id)
@@ -62,7 +67,14 @@ namespace GRGMesh {
     } ;
 
 
-    template< ElementType LOCATION >
+    /**
+     * \brief Generic manager of the attributes stored for one location
+     *
+     * Template by an integer instead of an enum specific to a class
+     * Each object on which attributes will be created object should 
+     * define possible locations with an enum. Jeanne.
+     */
+    template< int32 LOCATION >
     class AttributeManager {
     public:
         enum Mode {
@@ -118,8 +130,12 @@ namespace GRGMesh {
 
 
 
-
-    template< ElementType LOCATION, class ATTRIBUTE >
+  /** 
+     * \brief Generic attribute class - Storage on given elements of a given object 
+     * The elements on which is defined the attribute are of the given ElementType.
+     * Access to attribute value only using the index of the element in the object. Jeanne
+     */ 
+    template< int32 LOCATION, class ATTRIBUTE >
     class Attribute {
     public:
         typedef Attribute< LOCATION, ATTRIBUTE > thisclass ;

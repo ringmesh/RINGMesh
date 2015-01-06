@@ -29,7 +29,7 @@ namespace GRGMesh {
             return false ;
         }
 
-        BoundaryModelBuilder builder( &model ) ;
+        BoundaryModelBuilder builder( model ) ;
         builder.load_file( input ) ;
         return true ;
     }
