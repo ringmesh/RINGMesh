@@ -332,21 +332,21 @@ namespace GEO {
         }
 
         std::string base_name(const std::string& path, bool remove_extension) {
-            size_t len = path.length();
+            long int len = (long int)(path.length());
             if(len == 0) {
                 return std::string();
             }
-            size_t dot_pos = len;
-            size_t i;
-            for(i = len - 1; i != 0; i--) {
-                if(path[i] == '/' || path[i] == '\\') {
+            long int dot_pos = len;
+            long int i;
+            for(i = len - 1; i >= 0; i--) {
+                if(path[size_t(i)] == '/' || path[size_t(i)] == '\\') {
                     break;
                 }
-                if(remove_extension && path[i] == '.') {
+                if(remove_extension && path[size_t(i)] == '.') {
                     dot_pos = i;
                 }
             }
-            return path.substr(i + 1, dot_pos - i - 1);
+            return path.substr(size_t(i + 1), size_t(dot_pos - i - 1));
         }
 
         std::string dir_name(const std::string& path) {

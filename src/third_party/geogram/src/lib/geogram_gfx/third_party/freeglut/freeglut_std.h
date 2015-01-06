@@ -32,8 +32,35 @@
     extern "C" {
 #endif
 
-#define FREEGLUT_LIB_PRAGMAS 0 /* [Bruno] */
-#define FREEGLUT_STATIC      1 /* [Bruno] */
+/* [Bruno]
+ * Do not let freeglut automatically link the lib
+ * when its header file is included (I prefer to
+ * do that expicitly).
+ */       
+#define FREEGLUT_LIB_PRAGMAS 0 
+
+/* [Bruno]
+ * Definitions for compiling Windows DLLs
+ * geogram build system defines 
+ *  GEO_DYNAMIC_LIBS and geogram_gfx_EXPORTS 
+ *   when compiling geogram_gfx as a DLL
+ * freeglut works as follows:
+ * if FREEGLUT_EXPORTS is defined, then declspec(DllExport)
+ *  qualifiers will be generated, else declspec(DllImport)
+ *  qualifiers will be generated.
+ * if FREEGLUT_STATIC is defined, then no DllExport/DllImport
+ *  qualifiers are generated.
+ * FREEGLUT_BUILDING_LIB seems also to make sense (but I do
+ *  not know exactly what it does...)
+ */
+#ifdef GEO_DYNAMIC_LIBS
+#ifdef geogram_gfx_EXPORTS
+#define FREEGLUT_BUILDING_LIB
+#define FREEGLUT_EXPORTS       
+#endif
+#else
+#define FREEGLUT_STATIC 1
+#endif
        
 /*
  * Under windows, we have to differentiate between static and dynamic libraries

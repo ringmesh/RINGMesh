@@ -62,7 +62,7 @@ namespace GEO {
      * \brief Exposes a half-edge like API for
      * traversing a Mesh.
      */
-    class MeshHalfedges {
+    class GEOGRAM_API MeshHalfedges {
     public:
         /**
          * \brief Stores a reference to a mesh corner and facet, and

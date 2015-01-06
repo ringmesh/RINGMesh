@@ -203,8 +203,13 @@ namespace {
     protected:
         /** \brief WindowsThreadPoolManager destructor */
         virtual ~WindowsThreadPoolManager() {
+// It makes it crash on exit when calling these functions
+// with dynamic libs, I do not know why...            
+// TODO: investigate...
+#ifndef GEO_DYNAMIC_LIBS            
             CloseThreadpool(pool_);
             CloseThreadpoolCleanupGroup(cleanupGroup_);
+#endif            
         }
 
         /** \copydoc GEO::ThreadManager::run_concurrent_threads() */
@@ -468,9 +473,16 @@ namespace {
             abnormal_program_termination(message);
         }
 
-        // Runtime warning messages
-        Logger::err("SignalHandler") << message << std::endl;
-        Process::show_stack_trace();
+        // Runtime warning messages        
+        if(Logger::is_initialized()) {
+            Logger::err("SignalHandler") << message << std::endl;
+            Process::show_stack_trace();
+        } else {
+            fprintf(stderr, "SignalHandler: %s\n", message);
+            // Note: Process::show_stack_trace() uses std::string's,
+            // that do not seem to work during the termination of the
+            // program, therefore I do not call it here.
+        }
 
         // Tell _CrtDbgReport to continue processing
         if(returnValue != 0) {

@@ -247,10 +247,29 @@ namespace {
 #endif
 }
 
+
+namespace {
+    /**
+     * \brief The (thread-local) variable that stores a
+     *  pointer to the current thread.
+     * \details It cannot be a static member of class
+     *  Thread, because Visual C++ does not accept
+     *  to export thread local storage variables in 
+     *  DLLs.
+     */
+    GEO_THREAD_LOCAL Thread* geo_current_thread_ = nil;
+}
+
 namespace GEO {
 
-    GEO_THREAD_LOCAL Thread* Thread::current_ = nil;
+    void Thread::set_current(Thread* thread) {
+        geo_current_thread_ = thread;
+    }
 
+    Thread* Thread::current() {
+        return geo_current_thread_;
+    }
+    
     Thread::~Thread() {
     }
 

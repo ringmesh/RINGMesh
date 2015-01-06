@@ -397,7 +397,7 @@ namespace {
             line.desc = arg.desc;
             lines.push_back(line);
 
-            max_left_width = std::max(
+            max_left_width = geo_max(
                 index_t(line.name.length() + line.value.length()),
                 max_left_width
             );
@@ -667,7 +667,6 @@ namespace GEO {
         void show_usage(const std::string& additional_args, bool advanced) {
             std::string program_name = FileSystem::base_name(desc_->argv0);
             Logger::instance()->set_quiet(false);
-
             Logger::out("")
                 << "Usage: " << program_name << " "
                 << additional_args

@@ -9,8 +9,9 @@
 #include <iomanip>
 #include <fstream>
 #include <cmath>
-#include <time.h>
+#include <ctime>
 #include <set>
+
 
 namespace GRGMesh {
 
@@ -453,7 +454,7 @@ namespace GRGMesh {
               
                 // Output global information on the attribute
                 out << "# attribute "<< names[i] << " facet "
-                    << "integer" // dans graphite map à la noix entre vrai type et nom dans fichier
+                    << "integer" // dans graphite map ï¿½ la noix entre vrai type et nom dans fichier
                     //<< attribute_stores[i]->attribute_type_id().name() 
                     << std::endl ;  
             }
@@ -960,7 +961,7 @@ namespace GRGMesh {
 
         /****** File reading **********************************/
         InputStream lis( in ) ;        
-        while( !lis.eof() ) {
+		while( !lis.eof() ) {
 
             lis.get_line() ;
             std::string keyword ;
@@ -1441,7 +1442,7 @@ namespace GRGMesh {
         // Stopping criterion
         uint32 last_point = L.model_point_id( L.nb_points()-1 ) ;
         int count = 0 ;
-        // On espère qu'on les récupère bien tous les points sur la ligne... A VERIFIER
+        // On espï¿½re qu'on les rï¿½cupï¿½re bien tous les points sur la ligne... A VERIFIER
         while( S.model_point_id( id1 ) != last_point ) {
 
             // Get the next point on the border 
@@ -1460,8 +1461,8 @@ namespace GRGMesh {
             
 
             // Duplicate the point at id1 
-            // Après avoir récupéré le suivant 1 .. on doit pouvoir les deux en même 
-            // temps mais là j'ai la flemme de réfléchir, faut pas que ça casse le next_on_border (jeanne)
+            // Aprï¿½s avoir rï¿½cupï¿½rï¿½ le suivant 1 .. on doit pouvoir les deux en mï¿½me 
+            // temps mais lï¿½ j'ai la flemme de rï¿½flï¿½chir, faut pas que ï¿½a casse le next_on_border (jeanne)
             std::vector< uint32 > facets_around_id1 ;
             S.facets_around_point( id1, facets_around_id1, false, f ) ;
 

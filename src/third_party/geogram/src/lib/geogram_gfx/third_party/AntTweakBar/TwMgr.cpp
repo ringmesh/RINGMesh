@@ -15,6 +15,7 @@
 #include "TwFonts.h"
 #include "TwOpenGL.h"
 #include "TwOpenGLCore.h"
+#include <algorithm> //[Bruno Levy] added missing include (for min() and max())
 #ifdef ANT_WINDOWS
 // [Bruno] removed DirectX stuff
 #   include "resource.h"
@@ -4870,7 +4871,7 @@ void ANT_CALL CTwMgr::CStruct::DefaultSummary(char *_SummaryString, size_t _Summ
     size_t structIndex = (size_t)(_ClientData);
     if(    g_TwMgr && _SummaryString && _SummaryMaxLength>2
         && varGroup && static_cast<const CTwVar *>(varGroup)->IsGroup()
-	   /*  && structIndex>=0 */ && structIndex<=g_TwMgr->m_Structs.size() )
+           /*  && structIndex>=0 */ && structIndex<=g_TwMgr->m_Structs.size() )
     {
         // return g_TwMgr->m_Structs[structIndex].m_Name.c_str();
         CTwMgr::CStruct& s = g_TwMgr->m_Structs[structIndex];
@@ -5511,13 +5512,13 @@ static int TranslateKey(int _Key, int _Modifiers)
         //_Modifiers &= ~TW_KMOD_SHIFT; // remove shift modifier
         bool Num = (!(_Modifiers&TW_KMOD_SHIFT) && (_Modifiers&0x1000)); // 0x1000 is SDL's KMOD_NUM
         if( _Key==266 )          // SDLK_KP_PERIOD
-	     {
-		 if(Num) { 
-		     _Key = '.' ; 
-		 } else { 
-		     _Key = TW_KEY_DELETE ; 
-		 }
-  	     }
+             {
+                 if(Num) { 
+                     _Key = '.' ; 
+                 } else { 
+                     _Key = TW_KEY_DELETE ; 
+                 }
+             }
         else if( _Key==267 )     // SDLK_KP_DIVIDE
             _Key = '/';
         else if( _Key==268 )     // SDLK_KP_MULTIPLY

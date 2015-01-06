@@ -25,12 +25,12 @@ namespace GRGMesh {
          * @brief checks whether a specified vector encodes
          *  a valid permutation.
          */
-        inline bool is_valid( const std::vector< int32 >& permutation )
+        inline bool is_valid( const std::vector< signed_index_t >& permutation )
         {
             std::vector< bool > visited( permutation.size(), false ) ;
-            for( uint32 i = 0; i < permutation.size(); i++ ) {
+            for( index_t i = 0; i < permutation.size(); i++ ) {
                 if( permutation[i] < 0
-                    || permutation[i] >= int32( permutation.size() ) ) {
+                    || permutation[i] >= signed_index_t( permutation.size() ) ) {
                     return false ;
                 }
                 if( visited[i] ) {
@@ -44,18 +44,18 @@ namespace GRGMesh {
         /**
          * @brief used internally by apply_permutation()
          */
-        inline bool is_marked( const std::vector< int32 >& permutation, int32 i )
+        inline bool is_marked( const std::vector< signed_index_t >& permutation, signed_index_t i )
         {
-            grgmesh_debug_assert( i >= 0 && i < int32( permutation.size() ) ) ;
+            grgmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
             return ( permutation[i] < 0 ) ;
         }
 
         /**
          * @brief used internally by apply_permutation()
          */
-        inline void mark( std::vector< int32 >& permutation, int32 i )
+        inline void mark( std::vector< signed_index_t >& permutation, signed_index_t i )
         {
-            grgmesh_debug_assert( i >= 0 && i < int32( permutation.size() ) ) ;
+            grgmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
             grgmesh_debug_assert( !is_marked( permutation, i ) ) ;
             permutation[i] = -permutation[i] - 1 ;
         }
@@ -63,9 +63,9 @@ namespace GRGMesh {
         /**
          * @brief used internally by apply_permutation()
          */
-        inline void unmark( std::vector< int32 >& permutation, int32 i )
+        inline void unmark( std::vector< signed_index_t >& permutation, signed_index_t i )
         {
-            grgmesh_debug_assert( i >= 0 && i < int32( permutation.size() ) ) ;
+            grgmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
             grgmesh_debug_assert( is_marked( permutation, i ) ) ;
             permutation[i] = -permutation[i] - 1 ;
         }
@@ -86,33 +86,33 @@ namespace GRGMesh {
          */
         inline void apply(
             void* data_in,
-            std::vector< int32 >& permutation_in,
-            uint32 elemsize )
+            std::vector< signed_index_t >& permutation_in,
+            index_t elemsize )
         {
             pointer data = (pointer) ( data_in ) ;
-            std::vector< int32 >& permutation =
-                const_cast< std::vector< int32 >& >( permutation_in ) ;
+            std::vector< signed_index_t >& permutation =
+                const_cast< std::vector< signed_index_t >& >( permutation_in ) ;
             grgmesh_debug_assert( is_valid( permutation ) ) ;
             pointer temp = static_cast< pointer >( alloca( elemsize ) ) ;
-            for( uint32 k = 0; k < permutation.size(); k++ ) {
+            for( index_t k = 0; k < permutation.size(); k++ ) {
                 if( is_marked( permutation, k ) ) {
                     continue ;
                 }
-                int32 i = k ;
-                std::memcpy( temp, data + i * elemsize, elemsize ) ;
-                int32 j = permutation[k] ;
+                signed_index_t i = k ;
+                ::memcpy( temp, data + i * elemsize, elemsize ) ;
+                signed_index_t j = permutation[k] ;
                 mark( permutation, k ) ;
-                while( j != int32( k ) ) {
-                    std::memcpy( data + i * elemsize, data + j * elemsize,
+                while( j != signed_index_t( k ) ) {
+                    ::memcpy( data + i * elemsize, data + j * elemsize,
                         elemsize ) ;
-                    int32 nj = permutation[j] ;
+                    signed_index_t nj = permutation[j] ;
                     mark( permutation, j ) ;
                     i = j ;
                     j = nj ;
                 }
-                std::memcpy( data + i * elemsize, temp, elemsize ) ;
+                ::memcpy( data + i * elemsize, temp, elemsize ) ;
             }
-            for( uint32 k = 0; k < permutation.size(); k++ ) {
+            for( index_t k = 0; k < permutation.size(); k++ ) {
                 unmark( permutation, k ) ;
             }
         }
@@ -133,30 +133,30 @@ namespace GRGMesh {
          */
         template< class T > inline void apply(
             std::vector< T >& data,
-            std::vector< int32 >& permutation_in )
+            std::vector< signed_index_t >& permutation_in )
         {
-            std::vector< int32 >& permutation =
-                const_cast< std::vector< int32 >& >( permutation_in ) ;
+            std::vector< signed_index_t >& permutation =
+                const_cast< std::vector< signed_index_t >& >( permutation_in ) ;
             grgmesh_debug_assert( is_valid( permutation ) ) ;
             T temp ;
-            for( uint32 k = 0; k < permutation.size(); k++ ) {
+            for( index_t k = 0; k < permutation.size(); k++ ) {
                 if( is_marked( permutation, k ) ) {
                     continue ;
                 }
-                int32 i = k ;
+                signed_index_t i = k ;
                 temp = data[i] ;
-                int32 j = permutation[k] ;
+                signed_index_t j = permutation[k] ;
                 mark( permutation, k ) ;
-                while( j != int32( k ) ) {
+                while( j != signed_index_t( k ) ) {
                     data[i] = data[j] ;
-                    int32 nj = permutation[j] ;
+                    signed_index_t nj = permutation[j] ;
                     mark( permutation, j ) ;
                     i = j ;
                     j = nj ;
                 }
                 data[i] = temp ;
             }
-            for( uint32 k = 0; k < permutation.size(); k++ ) {
+            for( index_t k = 0; k < permutation.size(); k++ ) {
                 unmark( permutation, k ) ;
             }
         }
@@ -171,17 +171,17 @@ namespace GRGMesh {
          * permutation = perminv ;
          * @endcode
          */
-        inline void invert( std::vector< int32 >& permutation )
+        inline void invert( std::vector< signed_index_t >& permutation )
         {
             grgmesh_debug_assert( is_valid( permutation ) ) ;
-            for( uint32 k = 0; k < permutation.size(); k++ ) {
+            for( index_t k = 0; k < permutation.size(); k++ ) {
                 if( is_marked( permutation, k ) ) {
                     continue ;
                 }
-                int32 i = k ;
-                int32 j = permutation[i] ;
-                while( j != int32( k ) ) {
-                    int32 temp = permutation[j] ;
+                signed_index_t i = k ;
+                signed_index_t j = permutation[i] ;
+                while( j != signed_index_t( k ) ) {
+                    signed_index_t temp = permutation[j] ;
                     permutation[j] = i ;
                     mark( permutation, j ) ;
                     i = j ;
@@ -190,7 +190,7 @@ namespace GRGMesh {
                 permutation[j] = i ;
                 mark( permutation, j ) ;
             }
-            for( uint32 k = 0; k < permutation.size(); k++ ) {
+            for( index_t k = 0; k < permutation.size(); k++ ) {
                 unmark( permutation, k ) ;
             }
         }

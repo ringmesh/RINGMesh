@@ -18,7 +18,7 @@
 #include <grgmesh/common.h>
 #include <grgmesh/types.h>
 
-#include <geogram/third_party/ANN/ANN.h>
+#include <geogram/points/nn_search.h>
 #include <geogram/points/kd_tree.h>
 
 #include <algorithm>
@@ -39,6 +39,8 @@ namespace GRGMesh {
 }
 
 namespace GRGMesh {
+
+    inline vec3 mesh_cell_center(const GEO::Mesh& M, index_t cell) ;
 
     static bool operator==( const vec3& u, const vec3& v ) {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
@@ -187,7 +189,7 @@ namespace GRGMesh {
             vec3 b_minimum = B.min() ;
             vec3 maximum = max() ;
             vec3 b_maximum = B.max() ;
-            for( uint32 c = 0; c < 3; ++c ) {
+            for( index_t c = 0; c < 3; ++c ) {
                 if( maximum[c] < b_minimum[c] ) {
                     return false ;
                 }
@@ -207,7 +209,7 @@ namespace GRGMesh {
         {
             vec3 minimum = min() ;
             vec3 maximum = max() ;
-            for( uint32 c = 0; c < 3; ++c ) {
+            for( index_t c = 0; c < 3; ++c ) {
                 if( b[c] < minimum[c] ) {
                     return false ;
                 }
@@ -222,7 +224,7 @@ namespace GRGMesh {
             float64 result = 0.0 ;
             vec3 minimum = min() ;
             vec3 maximum = max() ;
-            for( uint32 c = 0; c < 3; ++c ) {
+            for( index_t c = 0; c < 3; ++c ) {
                 float64 d = p[c] - 0.5 * ( minimum[c] + maximum[c] ) ;
                 result += sqr( d ) ;
             }
@@ -234,7 +236,7 @@ namespace GRGMesh {
             float64 result = 0.0 ;
             vec3 minimum = min() ;
             vec3 maximum = max() ;
-            for( uint32 c = 0; c < 3; c++ ) {
+            for( index_t c = 0; c < 3; c++ ) {
                 if( p[c] < minimum[c] ) {
                     inside = false ;
                     result += sqr( p[c] - minimum[c] ) ;
@@ -246,7 +248,7 @@ namespace GRGMesh {
             if( inside ) {
                 result = sqr( p[0] - minimum[0] ) ;
                 result = std::min( result, sqr( p[0] - maximum[0] ) ) ;
-                for( uint32 c = 1; c < 3; ++c ) {
+                for( index_t c = 1; c < 3; ++c ) {
                     result = std::min( result, sqr( p[c] - minimum[c] ) ) ;
                     result = std::min( result, sqr( p[c] - maximum[c] ) ) ;
                 }
@@ -267,11 +269,33 @@ namespace GRGMesh {
 
     class GRGMESH_API Utils {
     public:
+        static bool has_edge(
+            GEO::Mesh& mesh,
+            index_t t,
+            index_t p0,
+            index_t p1,
+            index_t& edge ) ;
+        static signed_index_t next_arround_edge(
+            GEO::Mesh& mesh,
+            index_t t,
+            index_t prev,
+            index_t p0,
+            index_t p1 ) ;
+        static void edges_arround_edge(
+            GEO::Mesh& mesh,
+            index_t t,
+            index_t p0,
+            index_t p1,
+            std::vector< index_t >& result ) ;
+        static index_t get_nearest_vertex_index(
+            const GEO::Mesh& mesh,
+            const vec3& p,
+            signed_index_t t ) ;
         static bool facets_have_same_orientation(
             const GEO::Mesh& mesh,
-            uint32 f1,
-            uint32 c11,
-            uint32 f2 ) ;
+            index_t f1,
+            index_t c11,
+            index_t f2 ) ;
         static void check_and_repair_mesh_consistency(
             const BoundaryModelElement& region,
             GEO::Mesh& mesh,
@@ -297,7 +321,7 @@ namespace GRGMesh {
         template< class T >static bool check_order( std::vector< T > v1, T p1, T p2 ) {
         	v1.resize( v1.size()+ 1 ) ;
         	v1[ v1.size() -1 ] = v1[0] ;
-        	for( uint32 i = 0 ; i < v1.size()-1 ; i++ ){
+        	for( index_t i = 0 ; i < v1.size()-1 ; i++ ){
         		if( v1[ i ] == p1 && v1[ i + 1 ] == p2 )
         		{
         			return true ;
@@ -312,7 +336,7 @@ namespace GRGMesh {
             const  std::vector< T >& v2 )
         {
 			std::vector< T > intersect ( v1.size() + v2.size() ) ;
-			std::vector< uint32 >::iterator it ;
+			std::vector< index_t >::iterator it ;
 			it = std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(), intersect.begin()) ;
 			intersect.resize( it - intersect.begin() ) ;
 			return intersect ;
@@ -324,9 +348,9 @@ namespace GRGMesh {
         {
             return find( v, t ) != -1 ;
         }      
-        template< class T > static int32 find( const std::vector< T >& v, const T& t )
+        template< class T > static signed_index_t find( const std::vector< T >& v, const T& t )
         {
-            for( uint32 i = 0; i < v.size(); i++ ) {
+            for( index_t i = 0; i < v.size(); i++ ) {
                 if( v[i] == t ) return i ;
             }
             return -1 ;
@@ -335,7 +359,7 @@ namespace GRGMesh {
             const T1& v1,
             const T2& v2 )
         {
-            for( uint32 i = 0; i < 3; i++ ) {
+            for( index_t i = 0; i < 3; i++ ) {
                 float64 diff( v1[i] - v2[i] ) ;
                 if( diff > epsilon || diff < -epsilon ) {
                     return false ;
@@ -702,13 +726,13 @@ namespace GRGMesh {
         {
             in_.getline( buffer_, 65536 ) ;
             bool check_multiline = true ;
-            int32 total_length = 65536 ;
+            signed_index_t total_length = 65536 ;
             char* ptr = buffer_ ;
 
             // If the line ends with a backslash, append
             // the next line to the current line.
             while( check_multiline ) {
-                int32 L = (int) strlen( ptr ) ;
+                signed_index_t L = (int) strlen( ptr ) ;
                 total_length -= L ;
                 ptr = ptr + L - 2 ;
                 if( *ptr == '\\' && total_length > 0 ) {
@@ -757,15 +781,15 @@ namespace GRGMesh {
         MakeUnique( const std::vector< vec3 >& data ) ;
         template< class T > MakeUnique( const std::vector< T >& data )
         {
-            int32 nb_points = 0 ;
-            for( uint32 i = 0; i < data.size(); i++ ) {
+            signed_index_t nb_points = 0 ;
+            for( index_t i = 0; i < data.size(); i++ ) {
                 nb_points += data[i].points().size() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
-            int32 cur_id = 0 ;
-            for( uint32 i = 0; i < data.size(); i++ ) {
-                for( uint32 p = 0; p < data[i].points().size();
+            signed_index_t cur_id = 0 ;
+            for( index_t i = 0; i < data.size(); i++ ) {
+                for( index_t p = 0; p < data[i].points().size();
                     p++, cur_id++ ) {
                     points_[cur_id] = data[i].points()[p] ;
                     indices_[cur_id] = cur_id ;
@@ -776,16 +800,16 @@ namespace GRGMesh {
             const std::vector< T >& data,
             bool T_is_a_pointer )
         {
-            int32 nb_points = 0 ;
-            for( uint32 i = 0; i < data.size(); i++ ) {
+            signed_index_t nb_points = 0 ;
+            for( index_t i = 0; i < data.size(); i++ ) {
                 nb_points += data[i]->nb_points() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
-            int32 cur_id = 0 ;
-            for( uint32 i = 0; i < data.size(); i++ ) {
-                for( uint32 p = 0; p < data[i]->nb_points(); p++, cur_id++ ) {
-                    points_[cur_id] = data[i]->point( p ) ;
+            signed_index_t cur_id = 0 ;
+            for( index_t i = 0; i < data.size(); i++ ) {
+                for( index_t p = 0; p < data[i]->nb_vertices(); p++, cur_id++ ) {
+                    points_[cur_id] = data[i]->vertex( p ) ;
                     indices_[cur_id] = cur_id ;
                 }
             }
@@ -794,21 +818,21 @@ namespace GRGMesh {
         void add_edges( const std::vector< Edge >& points ) ;
         void add_points( const std::vector< vec3 >& points ) ;
 
-        void unique( int32 nb_neighbors = 5 ) ;
+        void unique( index_t nb_neighbors = 5 ) ;
 
         const std::vector< vec3 >& points() const
         {
             return points_ ;
         }
         void unique_points( std::vector< vec3 >& results ) const ;
-        const std::vector< int32 >& indices() const
+        const std::vector< signed_index_t >& indices() const
         {
             return indices_ ;
         }
 
     private:
         std::vector< vec3 > points_ ;
-        std::vector< int32 > indices_ ;
+        std::vector< signed_index_t > indices_ ;
     } ;
 
 
@@ -894,87 +918,72 @@ namespace GRGMesh {
 
     class GRGMESH_API ColocaterANN {
     public:
+        enum MeshLocation {
+            VERTICES, FACETS, CELLS
+        };
+
         ColocaterANN( const Surface& mesh ) ;
         ColocaterANN( const Line& mesh ) ;
-        ColocaterANN( const GEO::Mesh& mesh ) ;
+        ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location ) ;
         ColocaterANN( const std::vector< vec3 >& vertices ) ;
-        ColocaterANN( float64* vertices, uint32 nb_vertices ) ;
+        ColocaterANN( float64* vertices, index_t nb_vertices ) ;
         ColocaterANN( const std::vector< Edge >& edges ) ;
 
         ~ColocaterANN()
         {
-            annDeallocPts( ann_points_ ) ;
-            delete ann_tree_ ;
-            annClose() ;
         }
 
         void get_mapped_colocated(
             vec3& v,
-            std::vector< uint32 >& result,
-            int32 nb_neighbors = 2 ) ;
+            std::vector< index_t >& result,
+            index_t nb_neighbors = 2 ) ;
 
         bool get_colocated(
             const vec3& v,
-            std::vector< uint32 >& result,
-            int32 nb_neighbors = 2 )
-        {
-            return get_colocated( const_cast< vec3& >( v ), result, nb_neighbors ) ;
-        }
-        bool get_colocated(
-            vec3& v,
-            std::vector< uint32 >& result,
-            int32 nb_neighbors = 2 ) ;
-        void get_neighbors(
-            const float64* v,
-            std::vector< int32 >& result,
-            int32 nb_neighbors = 2 ) const
-        {
-            return get_neighbors( vec3( v ), result, nb_neighbors ) ;
-        }
-        void get_neighbors(
-            const vec3& v,
-            std::vector< int32 >& result,
-            int32 nb_neighbors = 2 ) const
-        {
-            return get_neighbors( const_cast< vec3& >( v ), result, nb_neighbors ) ;
-        }
-        void get_neighbors(
-            vec3& v,
-            std::vector< int >& result,
-            int nb_neighbors = 2 ) const ;
+            index_t nb_neighbors,
+            std::vector< index_t >& result ) const ;
 
-        vec3 point( int32 i )
+        index_t get_neighbors(
+            const vec3& v,
+            index_t nb_neighbors,
+            std::vector< index_t >& result,
+            double * dist = nil ) const ;
+
+        vec3 point( signed_index_t i )
         {
-            return vec3( ann_points_[i] ) ;
+            vec3 p ;
+            p.x = ann_tree_->point_ptr(i)[0] ;
+            p.y = ann_tree_->point_ptr(i)[1] ;
+            p.z = ann_tree_->point_ptr(i)[2] ;
+            return p ;
         }
 
     private:
-        std::vector< int32 > mapped_indices_ ;
-        ANNpointArray ann_points_ ;
-        ANNkd_tree* ann_tree_ ;
+        std::vector< signed_index_t > mapped_indices_ ;
+        GEO::NearestNeighborSearch_var ann_tree_ ;
     } ;
 
-    template< class T, int32 n >
+    template< class T, signed_index_t n >
     class GRGMESH_API Array {
     public:
         void assign( const std::vector< T >& values )
         {
             grgmesh_debug_assert( values.size() < n + 1 ) ;
-            for( uint32 i = 0; i < values.size(); i++ ) {
+            for( index_t i = 0; i < values.size(); i++ ) {
                 values_[i] = values[i] ;
             }
         }
 
-        T value( int32 i ) const
+        T value( signed_index_t i ) const
         {
             return values_[i] ;
         }
-        T& value( int32 i )
+        T& value( signed_index_t i )
         {
             return values_[i] ;
         }
 
-        float64 normalized_value( int32 i, float64 max, float64 min, float64 scale ) const
+        float64 normalized_value( signed_index_t i, float64 max, float64 min, float64 scale ) const
         {
             float64 s = values_[i] ;
             s = ( s - min ) / ( max - min ) ;
@@ -988,12 +997,12 @@ namespace GRGMesh {
         T values_[n] ;
     } ;
 
-    template< int32 n >
+    template< signed_index_t n >
     class GRGMESH_API intArrayTmpl: public Array< int, n > {
     public:
         intArrayTmpl()
         {
-            for( uint32 i = 0; i < n; i++ ) {
+            for( index_t i = 0; i < n; i++ ) {
                 this->values_[i] = -1 ;
             }
         }
@@ -1001,12 +1010,12 @@ namespace GRGMesh {
     typedef intArrayTmpl< 6 > intArray ;
     typedef intArrayTmpl< 12 > edgeArray ;
 
-    template< int32 n >
+    template< signed_index_t n >
     class GRGMESH_API boolArrayTmpl: public Array< bool, n > {
     public:
         boolArrayTmpl()
         {
-            for( uint32 i = 0; i < n; i++ ) {
+            for( index_t i = 0; i < n; i++ ) {
                 this->values_[i] = false ;
             }
         }

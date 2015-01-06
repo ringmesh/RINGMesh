@@ -21,7 +21,17 @@
 /* #define WITH_GEEX */
 
 #include <geogram_gfx/third_party/glew/glew.h>
+
+
+#if defined(_MSC_VER) && defined(GEO_DYNAMIC_LIBS)
+#ifdef geogram_gfx_EXPORTS
+#define GLUT_VIEWER_API __declspec(dllexport) 
+#else
+#define GLUT_VIEWER_API __declspec(dllimport) 
+#endif
+#else
 #define GLUT_VIEWER_API
+#endif
 
 #ifdef WITH_HDR
 #include "glut_viewer_hdr.h"

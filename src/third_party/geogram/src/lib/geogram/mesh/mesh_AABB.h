@@ -121,7 +121,7 @@ namespace GEO {
      * \details Used to quickly compute facet intersection and
      *  to locate the nearest facet from 3d query points.
      */
-    class MeshFacetsAABB {
+    class GEOGRAM_API MeshFacetsAABB {
     public:
         /**
          * \brief Creates the Axis Aligned Bounding Boxes tree.

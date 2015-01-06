@@ -126,7 +126,7 @@ namespace GEOGen {
      *  is a template, parameterized by the representation of
      *  coordinates.
      */
-    class MeshBase {
+    class GEOGRAM_API MeshBase {
     public:
 
         //   The following two lines are here for debugging

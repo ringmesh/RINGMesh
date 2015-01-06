@@ -757,15 +757,18 @@ namespace GEOGen {
         index_t nb_found=0;
         for(index_t i=0; i<index_t(matches.size()); ++i) {
             for(index_t j=i+1; j<index_t(matches.size()); ++j) {
+                index_t temp_e1, temp_e2 ;
                 if(M.triangular_facets_have_common_edge(
                        matches[i].first, matches[i].second,
                        matches[j].first, matches[j].second,
-                       e1, e2
+                       temp_e1, temp_e2
                 )) {
                     adj_c1 = matches[i].first;
                     adj_lf1 = matches[i].second;
                     adj_c2 = matches[j].first;
                     adj_lf2 = matches[j].second;
+                    e1 = temp_e1 ;
+                    e2 = temp_e2 ;
                     ++nb_found;
                 }
             }

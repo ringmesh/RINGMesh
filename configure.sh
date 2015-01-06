@@ -14,34 +14,23 @@ else
    exit
 fi
 
-os="$2"
-if [ -z "$os" ]; then
-    os=`uname -a`
-    case "$os" in
-        Linux*x86_64*)
-            os=Linux64-gcc
-            ;;
-        Linux*amd64*)
-            os=Linux64-gcc
-            ;;
-        Linux*i586*|Linux*i686*)
-            os=Linux32-gcc
-            ;;
-        *)
-            echo "Error: OS not supported: $os"
-            exit 1
-            ;;
-    esac
-fi
+os="Linux64-gcc"
+os_dynamic=$os-dynamic
 
 #  Import plaform specific environment
 
-. src/third_party/geogram/cmake/platforms/$os/setvars.sh || exit 1
+. src/third_party/geogram/cmake/platforms/$os_dynamic/setvars.sh || exit 1
 
 # Generate the Makefiles
 
 echo
 echo ================== GeoGram ====================
+
+cat << EOF > src/third_party/geogram/CMakeOptions.txt
+set(GEOGRAM_WITH_TETGEN TRUE)
+set(GEOGRAM_WITH_MEDIT FALSE)
+set(GEOGRAM_WITH_GRAPHICS FALSE)
+EOF
 
 for config in Release Debug
 do
@@ -51,7 +40,7 @@ do
    build_dir=build/geogram/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DGEOGRAM_WITH_TETGEN:BOOL=TRUE -DCMAKE_C_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os ../../../src/third_party/geogram/; $CMAKE --build .)
+   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DCMAKE_CXX_FLAGS:STRING="-fPIC" -DCMAKE_C_FLAGS:STRING="-fPIC" -DVORPALINE_PLATFORM:STRING=$os_dynamic ../../../src/third_party/geogram/; $CMAKE --build . -- -j4)
 done
 echo
 echo ============== GeoGram build configured ==================

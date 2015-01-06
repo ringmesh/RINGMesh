@@ -53,12 +53,18 @@ remove_flags(CMAKE_C_FLAGS_DEBUG /GZ)
 # GX is deprecated (replaced by EHsc)
 remove_flags(CMAKE_CXX_FLAGS /GX)
 
-# Link statically to reduce dependencies
-foreach(config ${CMAKE_CONFIGURATION_TYPES})
+# Change flags for static link
+if(VORPALINE_BUILD_DYNAMIC)
+# remove warning for multiply defined symbols (caused by multiple
+# instanciations of STL templates)
+  add_definitions(/wd4251)
+else()
+  foreach(config ${CMAKE_CONFIGURATION_TYPES})
     string(TOUPPER ${config} config)
     string(REPLACE /MD /MT CMAKE_C_FLAGS_${config} "${CMAKE_C_FLAGS_${config}}")
     string(REPLACE /MD /MT CMAKE_CXX_FLAGS_${config} "${CMAKE_CXX_FLAGS_${config}}")
-endforeach()
+  endforeach()
+endif()
 
 # Additional release flags
 foreach(config RELEASE RELWITHDEBINFO MINSIZEREL)

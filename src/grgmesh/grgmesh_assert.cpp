@@ -18,12 +18,12 @@
 
 namespace GRGMesh {
 
-    static void grgmesh_abort()
+    void grgmesh_abort()
     {
         GEO::geo_abort() ;
     }
 
-    void GRGMESH_API grgmesh_assertion_failed(
+    void grgmesh_assertion_failed(
         const std::string& condition_string,
         const std::string& file,
         int line )
@@ -31,7 +31,7 @@ namespace GRGMesh {
         GEO::geo_assertion_failed( condition_string, file, line ) ;
     }
 
-    void GRGMESH_API grgmesh_should_not_have_reached(
+    void grgmesh_should_not_have_reached(
         const std::string& file,
         int line )
     {

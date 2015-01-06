@@ -21,8 +21,34 @@
 #if !defined TW_INCLUDED
 #define TW_INCLUDED
 
-#define TW_STATIC         /* [Bruno] */
-#define TW_NO_LIB_PRAGMA  /* [Bruno] */
+/* [Bruno]
+ * Do not let AntTweakBar automatically link the lib
+ * when its header file is included (I prefer to
+ * do that expicitly).
+ */       
+#define TW_NO_LIB_PRAGMA  
+
+/* [Bruno]
+ * Definitions for compiling Windows DLLs
+ * geogram build system defines 
+ *  GEO_DYNAMIC_LIBS and geogram_gfx_EXPORTS 
+ *   when compiling geogram_gfx as a DLL
+ * AntTweakBar works as follows:
+ * if TW_EXPORTS is defined, then declspec(DllExport)
+ *  qualifiers will be generated, else declspec(DllImport)
+ *  qualifiers will be generated.
+ * if TW_STATIC is defined, then no DllExport/DllImport
+ *  qualifiers are generated.
+ */
+#ifdef GEO_DYNAMIC_LIBS
+#ifdef geogram_gfx_EXPORTS
+#define TW_EXPORTS
+#endif
+#else
+#define TW_STATIC 
+#endif
+
+
 
 #include <stddef.h>
 

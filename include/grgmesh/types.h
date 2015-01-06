@@ -15,8 +15,6 @@
 #ifndef __GRGMESH_TYPES__
 #define __GRGMESH_TYPES__
 
-#include <grgmesh/common.h>
-
 #include <geogram/basic/geometry.h>
 
 namespace GRGMesh {
@@ -83,14 +81,15 @@ namespace GRGMesh {
     typedef GEO::vec3 vec3 ;
     static vec3 dummy_vec3 ;
 
+    typedef GEO::index_t index_t ;
+    static index_t dummy_index_t ;
+    typedef GEO::signed_index_t signed_index_t ;
+    static signed_index_t dummy_signed_index_t ;
     //    ___
     //   | __|_ _ _  _ _ __  ___
     //   | _|| ' \ || | '  \(_-<
     //   |___|_||_\_,_|_|_|_/__/
     //
-    enum TetraMethod {
-        TetGen, MG_Tetra
-    } ;
 
     enum ElementType {
         VERTEX  = -1,
@@ -101,6 +100,11 @@ namespace GRGMesh {
         PYRAMID =  4,
         PRISM   =  5,
         HEXA    =  6
+    } ;
+
+
+    enum TetraMethod {
+        TetGen, MG_Tetra
     } ;
 
     //     ___     _ _      _               _      _
@@ -187,6 +191,28 @@ namespace GRGMesh {
           { 0, 4 }, { 4, 1 }, { 3, 4 }, { 2, 4 } },  // edges
         { { 0, 1, 2, 3 }, { 4, 5, 0 }, { 3, 6, 4 },
           { 6, 7, 2 }, { 1, 5, 7 } }  //edges_in_facet
+    } ;
+
+    static ElementType cell_types[9] = {
+        VERTEX,
+        VERTEX,
+        VERTEX,
+        VERTEX,
+        TETRA,
+        PYRAMID,
+        PRISM,
+        VERTEX,
+        HEXA
+    } ;
+
+    static CellDescriptor* cell_descriptors[7] = {
+       &line_descriptor,
+       &trgl_descriptor,
+       &quad_descriptor,
+       &tetra_descriptor,
+       &pyramid_descriptor,
+       &prism_descriptor,
+       &hexa_descriptor
     } ;
 
 }

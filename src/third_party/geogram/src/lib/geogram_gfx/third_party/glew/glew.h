@@ -80,8 +80,25 @@
 #define __glew_h__
 #define __GLEW_H__
 
-
-#define GLEW_STATIC /* [Bruno] */
+/* [Bruno]
+ * Definitions for compiling Windows DLLs
+ * geogram build system defines 
+ *  GEO_DYNAMIC_LIBS and geogram_gfx_EXPORTS 
+ *   when compiling geogram_gfx as a DLL
+ * Glew works as follows:
+ * if GLEW_BUILD is defined, then declspec(DllExport)
+ *  qualifiers will be generated, else declspec(DllImport)
+ *  qualifiers will be generated.
+ * if GLEW_STATIC is defined, then no DllExport/DllImport
+ *  qualifiers are generated.
+ */
+#ifdef GEO_DYNAMIC_LIBS
+#ifdef geogram_gfx_EXPORTS
+#define GLEW_BUILD
+#endif
+#else
+#define GLEW_STATIC 
+#endif
 
 #if defined(__gl_h_) || defined(__GL_H__) || defined(__X_GL_H)
 #error gl.h included before glew.h

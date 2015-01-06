@@ -267,8 +267,10 @@ namespace GEO {
     }
 
     void ProgressTask::progress(index_t step) {
-        step_ = step;
-        update();
+        if(step_ != step) {
+            step_ = step;
+            update();
+        }
     }
 
     bool ProgressTask::is_canceled() const {

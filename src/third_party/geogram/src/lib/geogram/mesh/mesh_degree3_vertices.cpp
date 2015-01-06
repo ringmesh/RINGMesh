@@ -189,6 +189,23 @@ namespace {
     struct Degree3Vertex {
 
         /**
+         * \brief Default constructor.
+         */
+        Degree3Vertex() {
+            dist = 0.0;
+            v[0] = index_t(-1);
+            v[1] = index_t(-1);
+            v[2] = index_t(-1);
+            v[3] = index_t(-1);
+            t[0] = index_t(-1);
+            t[1] = index_t(-1);
+            t[2] = index_t(-1);
+            adj[0] = -1;
+            adj[1] = -1;
+            adj[2] = -1;
+        }
+        
+        /**
          * \brief Constructs a new Degree3Vertex
          * \param[in] M the mesh
          * \param[in] v_in the index of the degree 3 vertex in \p M

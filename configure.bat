@@ -40,7 +40,7 @@ rem ****************************************************************************
 
 
 set opsys=%3
-
+set geoplatform=Win-vs-dynamic-generic
 :: Checking for CMake
 
 echo.
@@ -99,6 +99,9 @@ echo.
 echo ============= GeoGram ============
 echo.
 
+echo set(GEOGRAM_WITH_TETGEN TRUE) > src/third_party/geogram/CMakeOptions.txt
+echo set(GEOGRAM_WITH_MEDIT FALSE) >> src/third_party/geogram/CMakeOptions.txt
+echo set(GEOGRAM_WITH_GRAPHICS FALSE) >> src/third_party/geogram/CMakeOptions.txt
 
 echo.
 echo ============= Creating build system for %opsys% ============
@@ -110,7 +113,7 @@ if not exist build\geogram\%opsys% (
 )
 
 cd build\geogram\%opsys%
-%CMAKE_EXECUTABLE% ..\..\..\src\third_party\geogram %cmake_debug_options% %cmake_generator_options% -DVORPALINE_PLATFORM:STRING=%opsys% -DGEOGRAM_WITH_TETGEN:BOOL=TRUE 
+%CMAKE_EXECUTABLE% ..\..\..\src\third_party\geogram %cmake_debug_options% %cmake_generator_options% -DVORPALINE_PLATFORM:STRING=%geoplatform% 
 %CMAKE_EXECUTABLE% --build . --config Release
 %CMAKE_EXECUTABLE% --build . --config Debug
 

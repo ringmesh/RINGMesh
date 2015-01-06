@@ -7,15 +7,15 @@
 if(NOT DEFINED VORPALINE_PLATFORM)
      if(WIN32) 
         message( 
-	   STATUS
-   	   " Using Win-vs-generic (default),\n"
+           STATUS
+           " Using Win-vs-generic (default),\n"
            " (if need be, use CMake variable VORPALINE_PLATFORM to override)."
         )
         set(VORPALINE_PLATFORM Win-vs-generic)
      else()
         message(FATAL_ERROR
-  	   " CMake variable VORPALINE_PLATFORM is not defined.\n"
-	   " Please run configure.{sh,bat} to setup the build tree."
+           " CMake variable VORPALINE_PLATFORM is not defined.\n"
+           " Please run configure.{sh,bat} to setup the build tree."
         )
      endif()
 endif()
@@ -27,7 +27,22 @@ endif()
 
 cmake_minimum_required(VERSION 2.8.11)
 
-project(Vorpaline)
+##############################################################################
+
+# Determine whether Geogram is built with Vorpaline
+if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/src/lib/vorpalib)
+   message(STATUS "Configuring build for Geogram + Vorpaline")
+   set(GEOGRAM_WITH_VORPALINE TRUE)
+else()
+   message(STATUS "Configuring build for standalone Geogram (without Vorpaline)")
+   set(GEOGRAM_WITH_VORPALINE FALSE)   
+endif()
+
+if(GEOGRAM_WITH_VORPALINE)
+   project(Vorpaline)
+else()
+   project(Geogram)
+endif()
 
 set(VORPALINE_VERSION_MAJOR 0)
 set(VORPALINE_VERSION_MINOR 9)
@@ -49,16 +64,6 @@ string(TIMESTAMP YEAR "%Y")
 # This is set by Jenkins in environment variable BUILD_NUMBER
 set(VORPALINE_BUILD_NUMBER $ENV{BUILD_NUMBER})
 
-##############################################################################
-# Determine whether Geogram is built with Vorpaline
-
-if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/src/lib/vorpalib)
-   message(STATUS "Configuring build for Geogram + Vorpaline")
-   set(GEOGRAM_WITH_VORPALINE TRUE)
-else()
-   message(STATUS "Configuring build for standalone Geogram (without Vorpaline)")
-   set(GEOGRAM_WITH_VORPALINE FALSE)   
-endif()
 
 ##############################################################################
 # Get SVN revision info
@@ -101,6 +106,7 @@ if(VORPALINE_BUILD_DYNAMIC)
     # BUILD_SHARED_LIBS is true! We must set CMAKE_POSITION_INDEPENDENT_CODE
     # to force compilation in dynamic mode.
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+    add_definitions(-DGEO_DYNAMIC_LIBS)
 else()
     set(BUILD_SHARED_LIBS FALSE)
 endif()

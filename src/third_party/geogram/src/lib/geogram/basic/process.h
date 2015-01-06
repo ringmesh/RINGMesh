@@ -119,9 +119,7 @@ namespace GEO {
          * \return A pointer to the instance of the
          *  currently running thread.
          */
-        static Thread* current() {
-            return current_;
-        }
+        static Thread* current();
 
     protected:
         /** Thread destructor */
@@ -147,13 +145,9 @@ namespace GEO {
          *   the threads.
          * \param[in] thread a pointer to the thread currently executed
          */   
-        static void set_current(Thread* thread) {
-            current_ = thread;
-        }
+        static void set_current(Thread* thread);
 
         index_t id_;
-
-        static GEO_THREAD_LOCAL Thread* current_;
 
         // ThreadManager needs to access set_current() and 
         // set_id().

@@ -115,12 +115,18 @@ namespace GEO {
         index_t nb_vertices, const double* vertices
     ) {
 
+        index_t nb_borders = 0;
         for(index_t c=0; c<constraints_->nb_corners(); ++c) {
             if(constraints_->corner_adjacent_facet(c) == -1) {
-                Logger::warn("DelaunayTetgen") 
-                    << "Constraints have a border" 
-                    << std::endl;
+                ++nb_borders;
             }
+        }
+
+        if(nb_borders != 0) {
+            Logger::warn("DelaunayTetgen") 
+                << "Constraints have " << nb_borders
+                << "edge(s) on the border" 
+                << std::endl;
         }
 
 

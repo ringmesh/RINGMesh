@@ -10,7 +10,6 @@ set(FULL_WARNINGS
     ${NORMAL_WARNINGS}
     -pedantic
     -Wno-long-long
-    # Detect conversion problems (lot of warnings)
     -Wconversion
 )
 

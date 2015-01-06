@@ -54,7 +54,26 @@
 /**
  * \brief Linkage declaration for geogram symbols.
  */
+
+#if defined(_MSC_VER) && defined(GEO_DYNAMIC_LIBS)
+#ifdef geogram_EXPORTS
+#define GEOGRAM_API __declspec(dllexport) 
+#else
+#define GEOGRAM_API __declspec(dllimport) 
+#endif
+#else
 #define GEOGRAM_API
+#endif
+
+
+/**
+ * \brief A place-holder linkage declaration to indicate
+ *  that the symbol should not be exported by Windows DLLs.
+ * \details For instance, classes that inherit templates from
+ *  the STL should not be exported, else it generates multiply
+ *  defined symbols.
+ */
+#define NO_GEOGRAM_API
 
 /**
  * \brief Opaque identifier of a mesh.

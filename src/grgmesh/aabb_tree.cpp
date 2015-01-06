@@ -20,25 +20,25 @@
 
 namespace GRGMesh {
 
-    static uint32 max_node_index(
-        uint32 node_index,
-        uint32 b,
-        uint32 e )
+    static index_t max_node_index(
+        index_t node_index,
+        index_t b,
+        index_t e )
     {
         grgmesh_debug_assert( e > b ) ;
         if( b + 1 == e ) {
             return node_index ;
         }
-        uint32 m = b + ( e - b ) / 2 ;
-        uint32 childl = 2 * node_index ;
-        uint32 childr = 2 * node_index + 1 ;
+        index_t m = b + ( e - b ) / 2 ;
+        index_t childl = 2 * node_index ;
+        index_t childr = 2 * node_index + 1 ;
         return std::max( max_node_index( childl, b, m ),
             max_node_index( childr, m, e ) ) ;
     }
     void FacetAABBTree::init_bboxes_recursive(
-        uint32 node_index,
-        uint32 b,
-        uint32 e )
+        index_t node_index,
+        index_t b,
+        index_t e )
     {
         grgmesh_debug_assert( node_index < bboxes_.size() ) ;
         grgmesh_debug_assert( b != e ) ;
@@ -50,9 +50,9 @@ namespace GRGMesh {
             bboxes_[node_index] = bbox ;
             return ;
         }
-        uint32 m = b + ( e - b ) / 2 ;
-        uint32 childl = 2 * node_index ;
-        uint32 childr = 2 * node_index + 1 ;
+        index_t m = b + ( e - b ) / 2 ;
+        index_t childl = 2 * node_index ;
+        index_t childr = 2 * node_index + 1 ;
         grgmesh_debug_assert( childl < bboxes_.size() ) ;
         grgmesh_debug_assert( childr < bboxes_.size() ) ;
         init_bboxes_recursive( childl, b, m ) ;
@@ -78,9 +78,9 @@ namespace GRGMesh {
         }
 
         Permutation::invert(sorted_indices) ;
-        std::vector< uint32 >& facets = mutator.facets() ;
-        for( uint32 t = 0; t < mesh_.nb_simplices(); t++ ) {
-            for( uint32 p = 0; p < 3; p++ ) {
+        std::vector< index_t >& facets = mutator.facets() ;
+        for( index_t t = 0; t < mesh_.nb_simplices(); t++ ) {
+            for( index_t p = 0; p < 3; p++ ) {
                 facets[3*t+p] = sorted_indices[facets[3*t+p]] ;
             }
         }
@@ -90,8 +90,8 @@ namespace GRGMesh {
         // Step 2: reorder facets
         morton_cell_sort( mesh_, sorted_indices ) ;
 
-        Permutation::apply( &mutator.facets()[0], sorted_indices, sizeof(uint32) * 3 ) ;
-        Permutation::apply( &mutator.adjacents()[0], sorted_indices, sizeof(int32) * 3 ) ;
+        Permutation::apply( &mutator.facets()[0], sorted_indices, sizeof(index_t) * 3 ) ;
+        Permutation::apply( &mutator.adjacents()[0], sorted_indices, sizeof(signed_index_t) * 3 ) ;
 
         if( mesh_.is_U_set() ) {
             Permutation::apply( mutator.U(), sorted_indices ) ;
@@ -104,9 +104,9 @@ namespace GRGMesh {
         }
 
         Permutation::invert(sorted_indices) ;
-        std::vector< int32 >& adjacents = mutator.adjacents() ;
-        for( uint32 t = 0; t < mesh_.nb_simplices(); t++ ) {
-            for( uint32 p = 0; p < 3; p++ ) {
+        std::vector< signed_index_t >& adjacents = mutator.adjacents() ;
+        for( index_t t = 0; t < mesh_.nb_simplices(); t++ ) {
+            for( index_t p = 0; p < 3; p++ ) {
                 if( !mesh_.is_on_border(t,p) ) {
                     adjacents[3*t+p] = sorted_indices[adjacents[3*t+p]] ;
                 }
@@ -143,7 +143,7 @@ namespace GRGMesh {
 
     void FacetAABBTree::get_nearest_facet_hint(
         const vec3& p,
-        uint32& nearest_t,
+        index_t& nearest_t,
         vec3& nearest_point,
         float64& sq_dist ) const
     {
@@ -156,11 +156,11 @@ namespace GRGMesh {
         uint32 b = 0 ;
         uint32 e = mesh_.nb_cells() - 1 ;
         if( e > 0 ) {
-            uint32 n = 1 ;
+            index_t n = 1 ;
             while( e != b + 1 ) {
-                uint32 m = b + ( e - b ) / 2 ;
-                uint32 childl = 2 * n ;
-                uint32 childr = 2 * n + 1 ;
+                index_t m = b + ( e - b ) / 2 ;
+                index_t childl = 2 * n ;
+                index_t childr = 2 * n + 1 ;
                 if( bboxes_[childl].distance_to_center( p )
                     < bboxes_[childr].distance_to_center( p ) ) {
                     e = m ;
@@ -179,12 +179,12 @@ namespace GRGMesh {
 
     void FacetAABBTree::nearest_facet_recursive(
         const vec3& p,
-        uint32& nearest_t,
+        index_t& nearest_t,
         vec3& nearest_point,
         float64& sq_dist,
-        uint32 n,
-        uint32 b,
-        uint32 e ) const
+        index_t n,
+        index_t b,
+        index_t e ) const
     {
         grgmesh_debug_assert( e > b ) ;
 
@@ -200,9 +200,9 @@ namespace GRGMesh {
             }
             return ;
         }
-        uint32 m = b + ( e - b ) / 2 ;
-        uint32 childl = 2 * n ;
-        uint32 childr = 2 * n + 1 ;
+        index_t m = b + ( e - b ) / 2 ;
+        index_t childl = 2 * n ;
+        index_t childr = 2 * n + 1 ;
 
         float64 dl = bboxes_[childl].signed_distance( p ) ;
         float64 dr = bboxes_[childr].signed_distance( p ) ;

@@ -6,8 +6,8 @@
 
 /*! \author Jeanne Pellerin */
 
-#include <grgmesh/boundary_model.h>
 #include <grgmesh/boundary_model_element.h>
+#include <grgmesh/boundary_model.h>
 #include <grgmesh/utils.h>
 
 #include <geogram/basic/geometry_nd.h>
@@ -287,7 +287,7 @@ namespace GRGMesh {
     /**
       * Parcours d'un bord dans une surface - dans un sens ou dans l'autre
       *
-      * Arnaud- je dirai que la fonction d'avant était buggée
+      * Arnaud- je dirai que la fonction d'avant ï¿½tait buggï¿½e
       * 
       * Need of two indices in input - so that we are able to go to the next 
       * edge on border in any direction and avoid going back when the next edge on boundary 
@@ -403,7 +403,7 @@ namespace GRGMesh {
         // Check for all the facets 
 
         // Sans doute un truc plus rapide - regarder si les deux indices se suivent
-        // dans facets_ et ensuite vérifier si c'est bien la même facette
+        // dans facets_ et ensuite vï¿½rifier si c'est bien la mï¿½me facette
 
         for( unsigned int f = 0; f < nb_cells(); ++f ) {
             int found = -1 ;
@@ -460,7 +460,7 @@ namespace GRGMesh {
                 if( edge != -1 ) return ;
             }
         }
-        // Si on arrive là on a rien trouvé put facet to -1
+        // Si on arrive lï¿½ on a rien trouvï¿½ put facet to -1
         facet = -1 ; 
             
     }
@@ -493,7 +493,7 @@ namespace GRGMesh {
                 if( edge != -1 ) return ;
             }
         }
-        // Si on arrive là on a rien trouvé put facet to -1
+        // Si on arrive lï¿½ on a rien trouvï¿½ put facet to -1
         facet = -1 ; 
             
     }
@@ -1506,7 +1506,7 @@ namespace GRGMesh {
         for( unsigned int i = 1; i < vertices_.size(); ++i ){
             result += length( point( i )-point( i-1 ) ) ;
         }
-        // Ca a changé ça
+        // Ca a changï¿½ ï¿½a
         if( is_closed() ) result += length( model_->point( vertices_.back() )-point( 0 ) );
         return result ;
     }
@@ -1542,7 +1542,7 @@ namespace GRGMesh {
             }    
             result = distance_pt_2_segment < result ? distance_pt_2_segment : result ;
         }
-        if( is_closed() ) { // Plus code ligne changé bon 
+        if( is_closed() ) { // Plus code ligne changï¿½ bon 
             // COPY BEUUURKKK !!
             const vec3& p0 = model_->point( vertices_.back() ) ;
             const vec3& p1 = point( 0 ) ;
@@ -2050,6 +2050,9 @@ namespace GRGMesh {
         }
         for( unsigned int p = 0; p < nb_points(); p++ ) {
             normals[p] = normalize( normals[p] ) ;
+            if( std::fabs( normals[p].x ) < small_float64 ) normals[p].x = 0 ;
+            if( std::fabs( normals[p].y ) < small_float64 ) normals[p].y = 0 ;
+            if( std::fabs( normals[p].z ) < small_float64 ) normals[p].z = 0 ;
         }
     }
 #endif

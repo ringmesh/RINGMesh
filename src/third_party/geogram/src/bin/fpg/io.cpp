@@ -10,7 +10,7 @@ namespace Flags {
     bool prettyprint = false; // pretty print the (desugared) program
     bool dumpAST = false;     // print the AST
     bool xstdin = false;       // read from stdin
-};
+}
 
 
 inline

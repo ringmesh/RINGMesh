@@ -16,19 +16,18 @@
 #define __GRGMESH_MATRIX__
 
 #include <grgmesh/common.h>
-#include <vector>
-#include <algorithm>
 
 namespace GRGMesh {
 
     template< class T >
     struct ElementImpl {
+        const static index_t NOT_USED = index_t( -1 ) ;
         ElementImpl()
-            : index( -1 )
+            : index( NOT_USED )
         {
         }
         T value ;
-        int32 index ;
+        index_t index ;
 
     } ;
 
@@ -40,15 +39,15 @@ namespace GRGMesh {
         RowImpl()
             : nb_elements_( 0 ), capacity_( 4 )
         {
-            reallocate( capacity_ ) ;
+            elements_ = new Element[capacity_] ;
         }
         ~RowImpl() {
             delete[] elements_ ;
         }
 
-        void set_element( uint32 j, const T& value ) {
-            int32 index = find( j ) ;
-            if( index == -1 ) {
+        void set_element( index_t j, const T& value ) {
+            index_t index ;
+            if( !find( j, index ) ) {
                 if( nb_elements_ == capacity_ ) grow() ;
                 Element& elt = elements_[nb_elements_++] ;
                 elt.index = j ;
@@ -58,22 +57,40 @@ namespace GRGMesh {
             }
         }
 
-        int32 find( uint32 j ) const {
-            for( uint32 i = 0; i < nb_elements_; i++ ) {
-                if( elements_[i].index == j ) return i ;
+        bool find( index_t j, index_t& index = dummy_index_t ) const {
+            for( index_t i = 0; i < nb_elements_; i++ ) {
+                if( elements_[i].index == j ) {
+                    index = i ;
+                    return true ;
+                }
             }
-            return -1 ;
+            return false ;
         }
 
-        bool get_element( uint32 j, T& value ) const {
-            int32 index = find( j ) ;
-            if( index == -1 ) return false ;
+        bool get_element( index_t j, T& value ) const {
+            index_t index ;
+            if( !find( j, index ) ) return false ;
             value = elements_[index].value ;
             return true ;
         }
+        void element( index_t i, T& value ) const {
+            grgmesh_debug_assert( i < nb_elements_ ) ;
+            value = elements_[i].value ;
+        }
+        index_t index( index_t i ) const {
+            grgmesh_debug_assert( i < nb_elements_ ) ;
+            return elements_[i].index ;
+        }
+        T& operator[]( index_t i ) const {
+            grgmesh_debug_assert( i < nb_elements_ ) ;
+            return elements_[i].value ;
+        }
+        index_t nb_elements() const {
+            return nb_elements_ ;
+        }
 
     private:
-        void reallocate( uint32 new_capacity ) {
+        void reallocate( index_t new_capacity ) {
             Element* new_elements = new Element[new_capacity] ;
             std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
             delete[] elements_ ;
@@ -86,38 +103,50 @@ namespace GRGMesh {
 
     private:
         Element* elements_ ;
-        uint32 nb_elements_ ;
-        uint32 capacity_ ;
+        index_t nb_elements_ ;
+        index_t capacity_ ;
     } ;
 
     template< class T >
     class GRGMESH_API SparseMatrix {
+        //todo need to handle symmetric matrix
     public:
         typedef RowImpl< T > Row ;
         typedef SparseMatrix< T > thisclass ;
 
-        SparseMatrix()
+        SparseMatrix() : rows_( nil ), nb_rows_( 0 )
         {
         }
-        void build_matrix( uint32 n )
+        ~SparseMatrix() {
+            if( rows_ ) delete[] rows_ ;
+        }
+        void build_matrix( index_t n )
         {
-             rows_.resize( n ) ;
+            nb_rows_= n ;
+            rows_ = new Row[n] ;
         }
 
-        uint32 n() const { return rows_.size() ; }
-        const Row& row( uint32 i ) const { return rows_[i] ; }
-        void set_element( uint32 i, uint32 j, const T& value ) {
+        index_t n() const { return nb_rows_ ; }
+        const Row& row( index_t i ) const { return rows_[i] ; }
+        void set_element( index_t i, index_t j, const T& value ) {
+            grgmesh_debug_assert( i < nb_rows_ ) ;
             rows_[i].set_element( j, value ) ;
         }
-        bool get_element( uint32 i, uint32 j, T& value ) const {
+        bool get_element( index_t i, index_t j, T& value ) const {
+            grgmesh_debug_assert( i < nb_rows_ ) ;
             return rows_[i].get_element( j, value ) ;
+        }
+        bool find_element( index_t i, index_t j ) const{
+            grgmesh_debug_assert( i < nb_rows_ ) ;
+            return rows_[i].find( j ) ;
         }
     private:
         SparseMatrix( const thisclass &rhs ) ;
         thisclass& operator=( const thisclass &rhs ) ;
 
     private:
-        std::vector< Row > rows_ ;
+        Row* rows_ ;
+        index_t nb_rows_ ;
     } ;
 }
 
