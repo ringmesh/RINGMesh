@@ -46,6 +46,18 @@
 #ifndef __LIBNL_LINKAGE__
 #define __LIBNL_LINKAGE__
 
+/*
+ *  Specify linkage for OpenNL integrated into
+ * Geogram (uses Geogram defines to select the
+ * right linkage modes for OpenNL symbols).
+ */
+#ifdef GEO_DYNAMIC_LIBS
+#define NL_SHARED_LIBS
+#ifdef geogram_EXPORTS
+#define NL_EXPORTS
+#endif
+#endif
+
 #ifdef WIN32
     #ifdef NL_SHARED_LIBS
         #ifdef NL_EXPORTS
