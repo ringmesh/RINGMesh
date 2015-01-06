@@ -904,13 +904,13 @@ namespace GRGMesh {
         }
     }
 
-    void MakeUnique::unique( signed_index_t nb_neighbors )
+    void MakeUnique::unique( index_t nb_neighbors )
     {
         ColocaterANN ann( points_ ) ;
         for( index_t i = 0; i < indices_.size(); i++ ) {
             if( indices_[i] != i ) continue ;
             std::vector< index_t > results ;
-            signed_index_t cur_neighbor = 0 ;
+            index_t cur_neighbor = 0 ;
             do {
                 cur_neighbor += nb_neighbors ;
                 ann.get_colocated( points_[i], cur_neighbor, results ) ;
@@ -921,7 +921,7 @@ namespace GRGMesh {
                 indices_[results[j]] = id ;
             }
         }
-        signed_index_t offset = 0 ;
+        index_t offset = 0 ;
         for( index_t i = 0; i < indices_.size(); i++ ) {
             if( indices_[i] != i ) {
                 indices_[i] = indices_[indices_[i]] ;

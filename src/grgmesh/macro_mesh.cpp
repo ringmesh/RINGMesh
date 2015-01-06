@@ -133,6 +133,7 @@ namespace GRGMesh {
             }
         }
         MakeUnique mu( all_vertices ) ;
+        mu.unique() ;
         mu.unique_points( unique_vertices ) ;
         indices = mu.indices() ;
     }
