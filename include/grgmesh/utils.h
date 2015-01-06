@@ -816,7 +816,7 @@ template< class T > static bool contains(
         void add_edges( const std::vector< Edge >& points ) ;
         void add_points( const std::vector< vec3 >& points ) ;
 
-        void unique( signed_index_t nb_neighbors = 5 ) ;
+        void unique( index_t nb_neighbors = 5 ) ;
 
         const std::vector< vec3 >& points() const
         {
