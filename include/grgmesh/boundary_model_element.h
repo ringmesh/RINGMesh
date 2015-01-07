@@ -85,7 +85,6 @@ namespace GRGMesh {
         friend class BoundaryModelBuilder ;
 
     public:
-        const static BoundaryModelElement dummy_element = BoundaryModelElement( nil, 0 ) ;
         const static index_t NO_ID = index_t( -1 ) ;
 
         BoundaryModelElement(
@@ -198,6 +197,7 @@ namespace GRGMesh {
         /// The group elements making up this one, empty for basic elements
         std::vector< index_t > children_ ;
     } ;
+    const static BoundaryModelElement dummy_element = BoundaryModelElement( nil, 0 ) ;
 
     /*-----------------------------------------------------------------------------------------*/
     /*! Corners of the model
