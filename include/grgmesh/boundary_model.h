@@ -95,7 +95,7 @@ namespace GRGMesh {
                 case 3: return region( index ) ;
                 default:
                     grgmesh_assert_not_reached ;
-                    return BoundaryModelElement::dummy_element ;
+                    return dummy_element ;
             }
          }
 
