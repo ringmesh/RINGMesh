@@ -4,14 +4,10 @@ cmake_minimum_required(VERSION 2.8)
 message("CMAKE_BUILD_TYPE is equal to " ${CMAKE_BUILD_TYPE})
 # debug suffix for libraries
 
-if (UNIX)
-	if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-	    set(SUFF "_d")
-	    MESSAGE("DEBUG! SUFFIX = ${SUFF}")
-	endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-else(UNIX)
-    set(SUFF "")
-endif(UNIX)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(SUFF "_d")
+    MESSAGE("DEBUG! SUFFIX = ${SUFF}")
+endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 set(GRGMESH_PROJECT GRGMesh${SUFF})
 project(${GRGMESH_PROJECT})
@@ -113,10 +109,10 @@ ENDIF(WIN32)
 
 if(UNIX) 
 	install(DIRECTORY include/grgmesh DESTINATION include)
+	install(DIRECTORY include/geogram DESTINATION include)
 		
 	install(TARGETS ${GRGMESH_PROJECT}
 		LIBRARY DESTINATION lib
 		RUNTIME DESTINATION lib 
-		CONFIGURATIONS All)
-	
+		CONFIGURATIONS All)	
 endif(UNIX)
