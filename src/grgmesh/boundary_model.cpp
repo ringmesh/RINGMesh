@@ -49,10 +49,10 @@ namespace GRGMesh {
     }
 
     /** 
-     * Returns the index of the given point in the model
-     * \todo Add a KdTree for geometrical request on model points
+     * Returns the index of the given vertex in the model
+     * \todo Add a KdTree for geometrical request on model vertices
      */ 
-    index_t BoundaryModel::point_index( const vec3& p ) const {
+    index_t BoundaryModel::vertex_index( const vec3& p ) const {
        
         grgmesh_assert_not_reached ;
         return -1 ;
@@ -130,7 +130,7 @@ namespace GRGMesh {
 
         for( index_t i = 0; i < surfaces_.size(); ++i ) {
             Surface& sp = surfaces_[i] ;
-            if( sp.nb_points() == 0 ) continue ;
+            if( sp.nb_vertices() == 0 ) continue ;
             if( sp.key_facet().is_default() ) {
                 builder.set_surface_first_triangle_as_key( sp.id() ) ;
             }
@@ -302,7 +302,7 @@ namespace GRGMesh {
             index_t offset = vertex_count ;
 
             std::vector< index_t > bstones ;
-            std::vector< index_t > next_point ;
+            std::vector< index_t > next_vertex ;
             std::set< index_t > set_end_corners ;
             
             for( index_t j = 0; j < tsurf.nb_children(); ++j ) {
@@ -311,41 +311,41 @@ namespace GRGMesh {
                 const Surface& sp = dynamic_cast< const Surface& >( tsurf.child( j ) ) ;
 
                 out << "TFACE" << std::endl ;
-                for( index_t k = 0; k < sp.nb_points(); ++k ) {
-                    out << "VRTX " << vertex_count << " " << sp.point( k ) << std::endl ;
+                for( index_t k = 0; k < sp.nb_vertices(); ++k ) {
+                    out << "VRTX " << vertex_count << " " << sp.vertex( k ) << std::endl ;
                     vertex_count++ ;
                 }
 
                 for( index_t k = 0; k < sp.nb_cells(); ++k ) {
-                    out << "TRGL " << sp.surf_point_id( k, 0 ) + offset << " "
-                        << sp.surf_point_id( k, 1 ) + offset << " "
-                        << sp.surf_point_id( k, 2 ) + offset << std::endl ;
+                    out << "TRGL " << sp.surf_vertex_id( k, 0 ) + offset << " "
+                        << sp.surf_vertex_id( k, 1 ) + offset << " "
+                        << sp.surf_vertex_id( k, 2 ) + offset << std::endl ;
                 }
 
                 // Info on corners and contacts
                 for( index_t k = 0; k < sp.nb_boundaries(); ++k ) {
                     const Line& cp = dynamic_cast< const Line& >( sp.boundary( k ) ) ;                  
       
-                    index_t c = cp.model_point_id( 0 ) ;
-                    index_t next = cp.model_point_id( 1 ) ;
+                    index_t c = cp.model_vertex_id( 0 ) ;
+                    index_t next = cp.model_vertex_id( 1 ) ;
 
                     // To be sure that we have all corners we need to ensure
                     // that all corners at the end of lines are saved too
                     set_end_corners.insert( 
-                        sp.surf_point_id( cp.model_point_id( cp.nb_points()-1 ) ) + offset ) ;                    
+                        sp.surf_vertex_id( cp.model_vertex_id( cp.nb_vertices()-1 ) ) + offset ) ;                    
 
                     /// \todo Check that this works, I am not sure for inside_border that we get both sides
 
-                    index_t t = sp.facet_from_model_point_ids( c, next ) ;
+                    index_t t = sp.facet_from_model_vertex_ids( c, next ) ;
                     assert( t != Surface::NO_ID ) ;
 
-                    index_t i0 = sp.surf_point_id( t, 0 ) ;
-                    index_t i1 = sp.surf_point_id( t, 1 ) ;
-                    index_t i2 = sp.surf_point_id( t, 2 ) ;
+                    index_t i0 = sp.surf_vertex_id( t, 0 ) ;
+                    index_t i1 = sp.surf_vertex_id( t, 1 ) ;
+                    index_t i2 = sp.surf_vertex_id( t, 2 ) ;
 
-                    index_t p0 = sp.model_point_id( i0 ) ;
-                    index_t p1 = sp.model_point_id( i1 ) ;
-                    index_t p2 = sp.model_point_id( i2 ) ;
+                    index_t p0 = sp.model_vertex_id( i0 ) ;
+                    index_t p1 = sp.model_vertex_id( i1 ) ;
+                    index_t p2 = sp.model_vertex_id( i2 ) ;
 
                     index_t c_id = Surface::NO_ID ;
                     index_t next_id = Surface::NO_ID ;
@@ -362,7 +362,7 @@ namespace GRGMesh {
                     grgmesh_assert( c_id != Surface::NO_ID && next_id != Surface::NO_ID ) ;
 
                     bstones.push_back( c_id + offset ) ;
-                    next_point.push_back( next_id + offset ) ;
+                    next_vertex.push_back( next_id + offset ) ;
                 }
             }
 
@@ -390,10 +390,10 @@ namespace GRGMesh {
                 }
             }
             // Print the the information to build the lines :
-            // index of the point at the corner and index of the second point on the line
+            // index of the vertex at the corner and index of the second vertex on the line
             for( index_t j = 0; j < bstones.size(); ++j ) {
                 out << "BORDER " << vertex_count << " " << bstones[j] << " "
-                    << next_point[j] << std::endl ;
+                    << next_vertex[j] << std::endl ;
                 vertex_count++ ;
             }
             out << "END" << std::endl ;
@@ -414,19 +414,19 @@ namespace GRGMesh {
         out.precision( 16 ) ;
         std::vector< index_t > offset( nb_surfaces(), 0 ) ;
         index_t cur_offset = 0 ; 
-        // Write the points once for each surface - remove non-manifold vertices
+        // Write the vertices once for each surface - remove non-manifold vertices
         for( index_t s = 0; s < nb_surfaces() ; s++ ) {
             const Surface& S = surface(s) ;
             offset[s] = cur_offset ;
-            for( index_t p = 0; p < S.nb_points(); p++ ){
-                const vec3& V = S.point(p) ;
+            for( index_t p = 0; p < S.nb_vertices(); p++ ){
+                const vec3& V = S.vertex(p) ;
                 out << "v" 
                     << " " << V.x 
                     << " " << V.y 
                     << " " << V.z 
                     << std::endl ;
             }
-            cur_offset += S.nb_points() ;
+            cur_offset += S.nb_vertices() ;
         }
 
         // Write the facets for a each surface 
@@ -434,8 +434,8 @@ namespace GRGMesh {
             const Surface& S = surface(s) ;
             for( index_t f = 0; f < S.nb_cells(); f++ ){
                 out << "f" << " " ;
-                for( index_t v = 0; v < S.nb_points_in_facet(f); v++ ){                    
-                    out << offset[s] + S.surf_point_id( f, v )+1 << " " ;            
+                for( index_t v = 0; v < S.nb_vertices_in_facet(f); v++ ){                    
+                    out << offset[s] + S.surf_vertex_id( f, v )+1 << " " ;            
                 }
                 out << std::endl ;
             }         
@@ -522,7 +522,7 @@ namespace GRGMesh {
             } else if( in[0] == FAULT ) {
                 if( in[1] == VOI ) return FAULT_VOI ;
             }
-            // Other cases ? for corners ? what is the point ?
+            // Other cases ? for corners ? what is the vertex ?
             return ALL ;
         }
         return ALL ;
@@ -533,7 +533,7 @@ namespace GRGMesh {
         const std::vector< index_t >& vertices )
     {
         assert( id < model_.nb_lines() ) ;
-        model_.lines_[id].points_ = vertices ;
+        model_.lines_[id].vertices_ = vertices ;
     }
 
     void BoundaryModelBuilder::set_line(
@@ -543,18 +543,18 @@ namespace GRGMesh {
         assert( id < model_.nb_lines() ) ;
 
         for( index_t p = 0; p < vertices.size(); p++ ) {
-            model_.lines_[id].points_.push_back( add_point( vertices[p] ) ) ;
+            model_.lines_[id].vertices_.push_back( add_vertex( vertices[p] ) ) ;
         }
     }
 
 
     index_t BoundaryModelBuilder::create_line(
         signed_index_t id ,
-        const std::vector< index_t >& points )
+        const std::vector< index_t >& vertices )
     {
         if( id == -1 ) id = model_.nb_lines() ;
         assert( id == model_.nb_lines() ) ;
-        model_.lines_.push_back( Line( &model_, id, points ) ) ;
+        model_.lines_.push_back( Line( &model_, id, vertices ) ) ;
         return id ;
     }
 
@@ -599,19 +599,19 @@ namespace GRGMesh {
         return id ;
     }
     
-    void BoundaryModelBuilder::set_corner( index_t corner_id,  index_t point_id ) 
+    void BoundaryModelBuilder::set_corner( index_t corner_id,  index_t vertex_id ) 
     {
         grgmesh_debug_assert( corner_id < model_.nb_corners() ) ;
-        grgmesh_debug_assert( point_id < model_.nb_points() ) ;
+        grgmesh_debug_assert( vertex_id < model_.nb_vertices() ) ;
 
-        model_.corners_[corner_id].set_point( point_id ) ;
+        model_.corners_[corner_id].set_vertex( vertex_id ) ;
     }
 
-    void BoundaryModelBuilder::set_corner( index_t corner_id, const vec3& point )
+    void BoundaryModelBuilder::set_corner( index_t corner_id, const vec3& vertex )
     {
         grgmesh_debug_assert( corner_id < model_.nb_corners() ) ;
 
-        model_.corners_[corner_id].set_point( add_point( point ) ) ;
+        model_.corners_[corner_id].set_vertex( add_vertex( vertex ) ) ;
     }
 
 
@@ -684,7 +684,7 @@ namespace GRGMesh {
     {
         // Clear the model_ //  Not sure this is actually useful
         model_.name_.clear() ;
-        model_.points_.clear() ;
+        model_.vertices_.clear() ;
         model_.corners_.clear() ; 
         model_.lines_.clear() ; 
         model_.surfaces_.clear() ;
@@ -721,12 +721,12 @@ namespace GRGMesh {
         // In the .ml file - vertices are indexed TSurf by Tsurf
         // They can be duplicated inside one TSurf and betweeen TSurfs\
         
-        // Indices of the points of the currently built TSurf in the model
-        std::vector< index_t > tsurf_point_ptr ;        
-        // Where the points of a TFace start in the points of the TSurf (offest)
-        std::vector< index_t > tface_point_start ;
+        // Indices of the vertices of the currently built TSurf in the model
+        std::vector< index_t > tsurf_vertex_ptr ;        
+        // Where the vertices of a TFace start in the vertices of the TSurf (offest)
+        std::vector< index_t > tface_vertex_start ;
 
-        // Indices of points in facets (triangles) of the currently built TFace
+        // Indices of vertices in facets (triangles) of the currently built TFace
         std::vector< index_t > tface_facets ;
         // Starting and ending indices of each facet triangle in the tface_facets vector
         std::vector< index_t > tface_facets_ptr ;
@@ -882,8 +882,8 @@ namespace GRGMesh {
                         set_surface_geometry( 
                             tface_count-1,
                             std::vector< index_t >(
-                                tsurf_point_ptr.begin() + tface_point_start.back(),
-                                tsurf_point_ptr.end() ),
+                                tsurf_vertex_ptr.begin() + tface_vertex_start.back(),
+                                tsurf_vertex_ptr.end() ),
                             tface_facets,
                             tface_facets_ptr ) ;
 
@@ -896,19 +896,19 @@ namespace GRGMesh {
                         tface_facets_ptr.push_back( 0 ) ;
 
                         // End this TSurf - Interface
-                        nb_tface_in_prev_tsurf += tface_point_start.size() ;
-                        tsurf_point_ptr.clear() ;
-                        tface_point_start.clear() ;
+                        nb_tface_in_prev_tsurf += tface_vertex_start.size() ;
+                        tsurf_vertex_ptr.clear() ;
+                        tface_vertex_start.clear() ;
                     }
                 } else if( keyword == "TFACE" ) {
                     // Beginning of a new TFace - Surface
-                    if( tface_point_start.size() > 0 ) {
+                    if( tface_vertex_start.size() > 0 ) {
                         // End the previous TFace - Surface
                         set_surface_geometry( 
                             tface_count-1,
                             std::vector< index_t >(
-                                tsurf_point_ptr.begin() + tface_point_start.back(),
-                                tsurf_point_ptr.end() ),
+                                tsurf_vertex_ptr.begin() + tface_vertex_start.back(),
+                                tsurf_vertex_ptr.end() ),
                             tface_facets,
                             tface_facets_ptr ) ;
 
@@ -921,11 +921,11 @@ namespace GRGMesh {
                         tface_facets_ptr.push_back( 0 ) ;
                     }
                     // Register where begin the new TFace vertices
-                    tface_point_start.push_back( tsurf_point_ptr.size() ) ;
+                    tface_vertex_start.push_back( tsurf_vertex_ptr.size() ) ;
 
                     tface_count++ ;
                 }
-                /// 4. Read the surface points and facets (only triangles in Gocad Model3d files)
+                /// 4. Read the surface vertices and facets (only triangles in Gocad Model3d files)
                 else if( keyword == "VRTX" || keyword == "PVRTX" ) {
                     index_t id = lis.field_as_int( field++ ) ;
                     vec3 p ;
@@ -933,22 +933,22 @@ namespace GRGMesh {
                         p[coord] = lis.field_as_double( field++ ) ;
                     }
                     p.z *= z_sign ;
-                    tsurf_point_ptr.push_back( add_point( p ) ) ;
+                    tsurf_vertex_ptr.push_back( add_vertex( p ) ) ;
                 } else if( keyword == "PATOM" || keyword == "ATOM" ) {
                     // This keyword is used to refer to a previous VERTEX in the
                     // same TSurf
                     index_t id = lis.field_as_int( field++ ) ;
                     index_t v_id = lis.field_as_int( field++ ) ;
-                    tsurf_point_ptr.push_back( tsurf_point_ptr[v_id - 1] ) ;
+                    tsurf_vertex_ptr.push_back( tsurf_vertex_ptr[v_id - 1] ) ;
                 } else if( keyword == "TRGL" ) {
                     // Ids of the vertices of each triangle in the TSurf
                     index_t p1 = lis.field_as_int( field++ ) ;
                     index_t p2 = lis.field_as_int( field++ ) ;
                     index_t p3 = lis.field_as_int( field++ ) ;
                     // Change to ids in the TFace
-                    p1 += -tface_point_start.back()-1 ;
-                    p2 += -tface_point_start.back()-1 ;
-                    p3 += -tface_point_start.back()-1 ;
+                    p1 += -tface_vertex_start.back()-1 ;
+                    p2 += -tface_vertex_start.back()-1 ;
+                    p3 += -tface_vertex_start.back()-1 ;
 
                     tface_facets.push_back( p1 ) ;
                     tface_facets.push_back( p2 ) ;
@@ -963,16 +963,16 @@ namespace GRGMesh {
                     v_id-- ;
 
                     // Get the TFace
-                    index_t part_id = tface_point_start.size() - 1 ;
-                    for( index_t i = 0; i < tface_point_start.size(); ++i ) {
-                        if( v_id < tface_point_start[i] ) {
+                    index_t part_id = tface_vertex_start.size() - 1 ;
+                    for( index_t i = 0; i < tface_vertex_start.size(); ++i ) {
+                        if( v_id < tface_vertex_start[i] ) {
                             part_id = i - 1 ;
                             break ;
                         }
                     }
                     part_id += nb_tface_in_prev_tsurf ;
 
-                    index_t new_c = find_or_create_corner( tsurf_point_ptr[v_id] ) ;
+                    index_t new_c = find_or_create_corner( tsurf_vertex_ptr[v_id] ) ;
                 }
                 /// 6. Read the Border information and store it
                 else if( keyword == "BORDER" ) {
@@ -983,18 +983,18 @@ namespace GRGMesh {
                     p2-- ;
 
                     // Get the global corner id
-                    index_t corner_id = find_corner( model_.point( tsurf_point_ptr[p1] ) ) ;
+                    index_t corner_id = find_corner( model_.vertex( tsurf_vertex_ptr[p1] ) ) ;
                     grgmesh_assert( corner_id > -1 ) ;
 
                     // Get the surface
                     signed_index_t part_id = -1 ;
-                    for( index_t i = 0; i < tface_point_start.size(); ++i ) {
-                        if( p1 < tface_point_start[i] ) {
-                            grgmesh_assert( p2 < tface_point_start[i] ) ;
+                    for( index_t i = 0; i < tface_vertex_start.size(); ++i ) {
+                        if( p1 < tface_vertex_start[i] ) {
+                            grgmesh_assert( p2 < tface_vertex_start[i] ) ;
 
-                            // Get points ids in the surface
-                            p1 += -tface_point_start[i - 1] ;
-                            p2 += -tface_point_start[i - 1] ;
+                            // Get vertices ids in the surface
+                            p1 += -tface_vertex_start[i - 1] ;
+                            p2 += -tface_vertex_start[i - 1] ;
 
                             // i-1 is the id of the TFace in this TSurf
                             part_id = i - 1 ;
@@ -1004,9 +1004,9 @@ namespace GRGMesh {
                     }
                     if( part_id == -1 ) {
                         // It is in the last built Tface
-                        p1 += -tface_point_start[tface_point_start.size() - 1] ;
-                        p2 += -tface_point_start[tface_point_start.size() - 1] ;
-                        part_id = tface_point_start.size() - 1 ;
+                        p1 += -tface_vertex_start[tface_vertex_start.size() - 1] ;
+                        p2 += -tface_vertex_start[tface_vertex_start.size() - 1] ;
+                        part_id = tface_vertex_start.size() - 1 ;
                     }
                     // The number of tfaces in previous tsurf is also to add
                     part_id += nb_tface_in_prev_tsurf ;
@@ -1017,7 +1017,7 @@ namespace GRGMesh {
             }
         }
 
-        make_points_unique() ;
+        make_vertices_unique() ;
 
         /// 7. Build the contact parts
         build_lines( borders_to_build ) ;
@@ -1041,14 +1041,14 @@ namespace GRGMesh {
 
     void BoundaryModelBuilder::set_surface_geometry(
         index_t surface_id,
-        const std::vector< index_t >& points,
+        const std::vector< index_t >& vertices,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr,
         const std::vector< index_t >& surface_adjacencies )
     {        
         if( facets.size() == 0 ) return ;
 
-        model_.surfaces_[surface_id].set_geometry( points, facets, facet_ptr ) ;
+        model_.surfaces_[surface_id].set_geometry( vertices, facets, facet_ptr ) ;
 
         if( surface_adjacencies.empty() )
             set_surface_adjacencies( surface_id ) ;
@@ -1057,7 +1057,7 @@ namespace GRGMesh {
     }
 
 
-     /** Returns the id of the facet which first three points are those given */
+     /** Returns the id of the facet which first three vertices are those given */
     signed_index_t BoundaryModelBuilder::find_key_facet( 
         index_t surface_id, const vec3& p0, const vec3& p1,
         const vec3& p2, bool& same_sign ) const 
@@ -1066,9 +1066,9 @@ namespace GRGMesh {
         same_sign = false ;
     
         for( index_t t = 0; t < surface.nb_cells(); ++t ){            
-            const vec3& pp0 = model_.point( surface.model_point_id( t, 0 ) ) ;
-            const vec3& pp1 = model_.point( surface.model_point_id( t, 1 ) ) ;
-            const vec3& pp2 = model_.point( surface.model_point_id( t, 2 ) ) ;
+            const vec3& pp0 = model_.vertex( surface.model_vertex_id( t, 0 ) ) ;
+            const vec3& pp1 = model_.vertex( surface.model_vertex_id( t, 1 ) ) ;
+            const vec3& pp2 = model_.vertex( surface.model_vertex_id( t, 2 ) ) ;
             
             if( p0 == pp0 ) {
                 if( p1 == pp1 && p2 == pp2 ) {
@@ -1149,33 +1149,33 @@ namespace GRGMesh {
         grgmesh_assert( S.facets_.size() > 0  ) ;
 
         index_t nb_facets = S.nb_cells() ;
-        index_t nb_points = S.nb_points() ;        
+        index_t nb_vertices = S.nb_vertices() ;        
     
-        // Allocate some space to store the ids of facets around each point
+        // Allocate some space to store the ids of facets around each vertex
         std::vector< index_t > toto ;
         toto.reserve( 10 ) ;
         std::vector< std::vector< index_t > > 
-            point_to_facets( nb_points, toto ) ;              
+            vertex_to_facets( nb_vertices, toto ) ;              
 
         for( index_t f = 0; f < nb_facets; ++f )
         {
-            for( index_t v = 0; v < S.nb_points_in_facet( f ); v++ ) {
-                point_to_facets[S.surf_point_id( f, v )].push_back( f ) ;
+            for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
+                vertex_to_facets[S.surf_vertex_id( f, v )].push_back( f ) ;
             }
         }
-        for( index_t p = 0; p < nb_points; ++p ){
-            std::sort( point_to_facets[p].begin(), point_to_facets[p].end() ) ;
+        for( index_t p = 0; p < nb_vertices; ++p ){
+            std::sort( vertex_to_facets[p].begin(), vertex_to_facets[p].end() ) ;
         }
 
         for( index_t f = 0; f < nb_facets; ++f )
         {
-            for( index_t v = 0; v < S.nb_points_in_facet(f); v++ )
+            for( index_t v = 0; v < S.nb_vertices_in_facet(f); v++ )
             {                
-                index_t cur = S.surf_point_id(f, v) ;
-                index_t prev = S.surf_point_id(f, S.prev_in_facet(f,v)) ;
+                index_t cur = S.surf_vertex_id(f, v) ;
+                index_t prev = S.surf_vertex_id(f, S.prev_in_facet(f,v)) ;
 
-                const std::vector< index_t >& f_prev = point_to_facets[prev] ;
-                const std::vector< index_t >& f_cur = point_to_facets[cur] ;
+                const std::vector< index_t >& f_prev = vertex_to_facets[prev] ;
+                const std::vector< index_t >& f_cur = vertex_to_facets[cur] ;
 
                 std::vector< index_t > inter(
                     std::min( f_prev.size(), f_cur.size() ) ) ;
@@ -1201,19 +1201,19 @@ namespace GRGMesh {
 
 
         //Number of segments = nb_cells 
-        for( index_t i= 0; i+1 < L.nb_points(); ++i ) {
-            index_t p0 = L.model_point_id( i ) ;
-            index_t p1 =  (i == L.nb_points()-1) ? L.model_point_id(0) : L.model_point_id( i+1 ) ;
+        for( index_t i= 0; i+1 < L.nb_vertices(); ++i ) {
+            index_t p0 = L.model_vertex_id( i ) ;
+            index_t p1 =  (i == L.nb_vertices()-1) ? L.model_vertex_id(0) : L.model_vertex_id( i+1 ) ;
 
             index_t f = Surface::NO_ID ;
             index_t v = Surface::NO_ID ;
-            S.edge_from_model_point_ids(p0, p1, f, v) ;
+            S.edge_from_model_vertex_ids(p0, p1, f, v) ;
             grgmesh_debug_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
 
             index_t f2 = S.adjacent( f, v ) ;
             index_t v2 = Surface::NO_ID ;
             grgmesh_debug_assert( f2 != Surface::NO_ADJACENT ) ;
-            S.edge_from_model_point_ids( p0, p1, f2, v2 ) ;
+            S.edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
             grgmesh_debug_assert( v2 != Surface::NO_ID ) ;
 
             // Virtual cut - set adjacencies to -1 
@@ -1222,27 +1222,27 @@ namespace GRGMesh {
         }
         
         // Now travel on one side of the "faked" boudnary and actually duplicate
-        // the point in the surface
+        // the vertex in the surface
         // Corners are not duplicated - maybe theu should be in some cases but not in general..
 
 
         // Get started in the surface - find (again) one of the edge that contains 
-        // the first two points of the line
+        // the first two vertices of the line
         index_t f = Surface::NO_ID ;
         index_t v = Surface::NO_ID ;
-        S.oriented_edge_from_model_point_ids( L.model_point_id( 0 ), L.model_point_id( 1 ), f, v ) ;
+        S.oriented_edge_from_model_vertex_ids( L.model_vertex_id( 0 ), L.model_vertex_id( 1 ), f, v ) ;
         grgmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
 
-        index_t id0 = S.surf_point_id( f, v ) ;
-        index_t id1 = S.surf_point_id( f, S.next_in_facet(f,v) ) ;
+        index_t id0 = S.surf_vertex_id( f, v ) ;
+        index_t id1 = S.surf_vertex_id( f, S.next_in_facet(f,v) ) ;
         
         // Stopping criterion
-        index_t last_point = L.model_point_id( L.nb_points()-1 ) ;
+        index_t last_vertex = L.model_vertex_id( L.nb_vertices()-1 ) ;
         index_t count = 0 ;
-        // On esp�re qu'on les r�cup�re bien tous les points sur la ligne... A VERIFIER
-        while( S.model_point_id( id1 ) != last_point ) {
+        // On esp�re qu'on les r�cup�re bien tous les vertices sur la ligne... A VERIFIER
+        while( S.model_vertex_id( id1 ) != last_vertex ) {
 
-            // Get the next point on the border 
+            // Get the next vertex on the border 
 
             // Same algorithm than in determine_line_vertices function
             index_t next_f = Surface::NO_ID ;
@@ -1250,29 +1250,29 @@ namespace GRGMesh {
             index_t next_id1_in_next = Surface::NO_ID ;
 
             // Get the next facet and next triangle on this boundary
-            S.next_on_border( f, S.facet_point_id(f, id0), S.facet_point_id(f,id1), 
+            S.next_on_border( f, S.facet_vertex_id(f, id0), S.facet_vertex_id(f,id1), 
                 next_f, id1_in_next, next_id1_in_next ) ;
             grgmesh_assert(
                 next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
                     && next_id1_in_next != Surface::NO_ID ) ;
             
-            signed_index_t next_id1 = S.surf_point_id( next_f, next_id1_in_next ) ;
+            signed_index_t next_id1 = S.surf_vertex_id( next_f, next_id1_in_next ) ;
             
 
-            // Duplicate the point at id1 
+            // Duplicate the vertex at id1 
             // Apr�s avoir r�cup�r� le suivant 1 .. on doit pouvoir les deux en m�me 
             // temps mais l� j'ai la flemme de r�fl�chir, faut pas que �a casse le next_on_border (jeanne)
             std::vector< index_t > facets_around_id1 ;
-            S.facets_around_point( id1, facets_around_id1, false, f ) ;
+            S.facets_around_vertex( id1, facets_around_id1, false, f ) ;
 
-            S.points_.push_back( S.model_point_id(id1) ) ;
-            signed_index_t new_id1 = S.nb_points()-1 ;
+            S.vertices_.push_back( S.model_vertex_id(id1) ) ;
+            signed_index_t new_id1 = S.nb_vertices()-1 ;
             
             for( index_t i = 0; i < facets_around_id1.size(); ++i ){
                 index_t cur_f = facets_around_id1[i] ;
-                for( index_t cur_v = 0; cur_v < S.nb_points_in_facet( cur_f ) ; cur_v++ )
+                for( index_t cur_v = 0; cur_v < S.nb_vertices_in_facet( cur_f ) ; cur_v++ )
                 {
-                    if( S.surf_point_id( cur_f, cur_v ) == id1 ) {
+                    if( S.surf_vertex_id( cur_f, cur_v ) == id1 ) {
                         S.facets_[ S.facet_begin( cur_f ) + cur_v ] = new_id1 ;
                         break ;
                     }
@@ -1292,26 +1292,26 @@ namespace GRGMesh {
 
 
     /**
-     * When reading the file the points are duplicated between the different Surfaces
-     * plus new points are added for Corners too 
+     * When reading the file the vertices are duplicated between the different Surfaces
+     * plus new vertices are added for Corners too 
      *
-     * Compute the duplicates inside the points_ vector - Update the point vector - 
-     * and Update the reference to points for all Corner and Surface plus for the input 
+     * Compute the duplicates inside the vertices_ vector - Update the vertex vector - 
+     * and Update the reference to vertices for all Corner and Surface plus for the input 
      * borders that are later used to build the model lines 
      */
-    void BoundaryModelBuilder::make_points_unique()
+    void BoundaryModelBuilder::make_vertices_unique()
     {
-        std::vector< vec3 > new_points ;
+        std::vector< vec3 > new_vertices ;
         std::vector< index_t > old2new ;
-        compute_unique_kdtree( model_.points_, 10, old2new, new_points ) ;
+        compute_unique_kdtree( model_.vertices_, 10, old2new, new_vertices ) ;
        
-        model_.points_.resize(0) ;
-        model_.points_ = new_points ;
+        model_.vertices_.resize(0) ;
+        model_.vertices_ = new_vertices ;
 
         for( index_t s = 0; s < model_.nb_surfaces(); s++ ) {
             Surface& surface = model_.surfaces_[s] ;
-            for( index_t p = 0; p < surface.nb_points(); p++ ) {
-                surface.points_[p] = old2new[surface.points_[p]] ;
+            for( index_t p = 0; p < surface.nb_vertices(); p++ ) {
+                surface.vertices_[p] = old2new[surface.vertices_[p]] ;
             }
         }
         for( index_t co = 0; co < model_.nb_corners(); co++ ) {
@@ -1354,13 +1354,13 @@ namespace GRGMesh {
 
 
     /**
-     * Get the points that are on the border of the given surface, starting from 
-     * point id0 in the surface towards the direction given by point id1
+     * Get the vertices that are on the border of the given surface, starting from 
+     * vertex id0 in the surface towards the direction given by vertex id1
      *
      * WE ASSUME THAT THE STORAGE OF THE POINTS IS UNIQUE IN THE MODEL AND THAT 
      * SURFACES DO SHARE POINTS ON THEIR CONTACT LINES
      * 
-     * Empties and fills the boder_vertex_model_ids with the global ids of these points
+     * Empties and fills the boder_vertex_model_ids with the global ids of these vertices
      * Returns the id of the corner at which this boundary stops
      */
     index_t BoundaryModelBuilder::determine_line_vertices( 
@@ -1370,17 +1370,17 @@ namespace GRGMesh {
         std::vector< index_t >& border_vertex_model_ids 
         ) const 
     {
-        grgmesh_debug_assert( id0 < S.nb_points() && id1 < S.nb_points() ) ;
+        grgmesh_debug_assert( id0 < S.nb_vertices() && id1 < S.nb_vertices() ) ;
 
         border_vertex_model_ids.resize( 0 ) ;
                  
-        // Starting facet that contains the two given points
-        index_t f = S.facet_from_surface_point_ids( id0, id1 ) ;
+        // Starting facet that contains the two given vertices
+        index_t f = S.facet_from_surface_vertex_ids( id0, id1 ) ;
         grgmesh_assert( f != Surface::NO_ID ) ;
 
         // Global ids at the model level 
-        index_t p0 = S.model_point_id( id0 ) ;
-        index_t p1 = S.model_point_id( id1 ) ;
+        index_t p0 = S.model_vertex_id( id0 ) ;
+        index_t p1 = S.model_vertex_id( id1 ) ;
 
         border_vertex_model_ids.push_back( p0 ) ;
         border_vertex_model_ids.push_back( p1 ) ;
@@ -1393,29 +1393,29 @@ namespace GRGMesh {
             index_t next_id1_in_next = Surface::NO_ID ;
 
             // We want the next triangle that is on the boundary and share p1
-            // If there is no such triangle, the third point of the current triangle is to add
-            S.next_on_border( f, S.facet_point_id(f, id0), S.facet_point_id(f,id1), 
+            // If there is no such triangle, the third vertex of the current triangle is to add
+            S.next_on_border( f, S.facet_vertex_id(f, id0), S.facet_vertex_id(f,id1), 
                 next_f, id1_in_next, next_id1_in_next ) ;
 
             grgmesh_assert(
                 next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
                     && next_id1_in_next != Surface::NO_ID ) ;
             
-            signed_index_t next_id1 =  S.surf_point_id( next_f, next_id1_in_next ) ;
+            signed_index_t next_id1 =  S.surf_vertex_id( next_f, next_id1_in_next ) ;
 
             // Update
             f = next_f ;
             id0 = id1 ;
             id1 = next_id1 ;
 
-            p1 = S.model_point_id( next_id1 ) ;
+            p1 = S.model_vertex_id( next_id1 ) ;
             border_vertex_model_ids.push_back( p1 ) ;         
             p1_corner = find_corner( p1 ) ;
         }
         return p1_corner ; 
     }
 
-    /*! Build the Lines once the storage of the points in the Model as been make unique
+    /*! Build the Lines once the storage of the vertices in the Model as been make unique
      * So that POINTS on lines are shared by the surfaces in contact there.
      *  from the information collected in the Border structures
      *
@@ -1592,7 +1592,7 @@ namespace GRGMesh {
         }
 
         std::cout << "Model " << model_.name() <<" has " << std::endl 
-            << std::setw(10) << std::left << model_.nb_points()   << " points "   << std::endl 
+            << std::setw(10) << std::left << model_.nb_vertices()   << " vertices "   << std::endl 
             << std::setw(10) << std::left << model_.nb_facets()   << " facets "   << std::endl  
             << std::setw(10) << std::left << model_.nb_regions()  << " regions "  << std::endl
             << std::setw(10) << std::left << model_.nb_surfaces() << " surfaces " << std::endl
@@ -1660,7 +1660,7 @@ namespace GRGMesh {
 
     index_t BoundaryModelBuilder::find_or_create_corner( index_t index )
     {
-        signed_index_t result = find_corner( model_.point( index ) ) ;
+        signed_index_t result = find_corner( model_.vertex( index ) ) ;
         if( result == -1 ) {
             // Create the corner
             result = model_.nb_corners() ;
@@ -1672,9 +1672,9 @@ namespace GRGMesh {
     index_t BoundaryModelBuilder::find_or_create_line(
         index_t corner0,
         index_t corner1,
-        std::vector< index_t >& points )
+        std::vector< index_t >& vertices )
     {
-        signed_index_t result = find_line( corner0, corner1, points ) ;
+        signed_index_t result = find_line( corner0, corner1, vertices ) ;
 
         if( result == -1 ) {
             result = model_.nb_lines() ;
@@ -1684,19 +1684,19 @@ namespace GRGMesh {
         /*    if( corner1 == corner0 ) {
                 // Closed contact part
                 //corner1 = corner0 ;
-                // Remove the last point
-                grgmesh_assert( points[0] == points.back() ) ;
-                points.pop_back() ;
+                // Remove the last vertex
+                grgmesh_assert( vertices[0] == vertices.back() ) ;
+                vertices.pop_back() ;
             }*/
 
-            /*std::vector< index_t > indices( points.size() ) ;
-            for( index_t p = 0; p < points.size(); p++ ) {
-                indices[p] = model_.nb_points() ;
-                add_point( points[p] ) ;
+            /*std::vector< index_t > indices( vertices.size() ) ;
+            for( index_t p = 0; p < vertices.size(); p++ ) {
+                indices[p] = model_.nb_vertices() ;
+                add_vertex( vertices[p] ) ;
             }*/
 
             model_.lines_.push_back(
-                Line( &model_, result, corner0, corner1, points ) ) ;
+                Line( &model_, result, corner0, corner1, vertices ) ) ;
         }
         return result ;
     }
@@ -1715,7 +1715,7 @@ namespace GRGMesh {
     signed_index_t BoundaryModelBuilder::find_corner( const vec3& p ) const
     {
         for( index_t i = 0; i < model_.nb_corners(); ++i ) {
-            if( model_.corner(i).point() == p ) return i ;
+            if( model_.corner(i).vertex() == p ) return i ;
         }
         return -1 ;
     }
@@ -1731,23 +1731,23 @@ namespace GRGMesh {
     signed_index_t BoundaryModelBuilder::find_line(
         index_t corner0,
         index_t corner1,
-        const std::vector< index_t >& points ) const
+        const std::vector< index_t >& vertices ) const
     {
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             const Line& cp = model_.line(i) ;
 
-            // If the number of points are not the same,
+            // If the number of vertices are not the same,
             // it is not the same Line
-            if( cp.nb_points() != points.size() ) continue ; 
+            if( cp.nb_vertices() != vertices.size() ) continue ; 
 
             if( corner0 == cp.boundary_id( 0 )
                 && corner1 == cp.boundary_id( 1 ) ) {
                // bool equal = true ;
-                if( std::equal( points.begin(), points.end(), cp.points_.begin() ) ){
+                if( std::equal( vertices.begin(), vertices.end(), cp.vertices_.begin() ) ){
                     return i ;
                 }
-                /*for( index_t p = 0; p < cp.nb_points(); p++ ) {
-                    if( cp.point( p ) != points[p] ) {
+                /*for( index_t p = 0; p < cp.nb_vertices(); p++ ) {
+                    if( cp.vertex( p ) != vertices[p] ) {
                         equal = false ; break ;
                     }
                 }
@@ -1757,11 +1757,11 @@ namespace GRGMesh {
             if( corner1 == cp.boundary_id( 0 )
                 && corner0 == cp.boundary_id( 1 ) ) {
                 //bool equal = true ;
-                if( std::equal( points.begin(), points.end(), cp.points_.rbegin() ) ){
+                if( std::equal( vertices.begin(), vertices.end(), cp.vertices_.rbegin() ) ){
                     return i ;
                 }
-                /*for( index_t p = 0; p < cp.nb_points(); p++ ) {
-                    if( cp.point( cp.nb_points() - p - 1 ) != points[p] ) {
+                /*for( index_t p = 0; p < cp.nb_vertices(); p++ ) {
+                    if( cp.vertex( cp.nb_vertices() - p - 1 ) != vertices[p] ) {
                         equal = false ; break ;
                     }
                 }

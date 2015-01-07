@@ -46,7 +46,7 @@ namespace GRGMesh {
         }
         bool operator()( int32 i1, int32 i2 )
         {
-            return mesh_.point( i1 )[COORD] < mesh_.point( i2 )[COORD] ;
+            return mesh_.vertex( i1 )[COORD] < mesh_.vertex( i2 )[COORD] ;
         }
         const MESH& mesh_ ;
     } ;
@@ -94,7 +94,7 @@ namespace GRGMesh {
         {
             float64 result = 0.0 ;
             for( uint32 p = 0; p < 3; p++ ) {
-                result += mesh_.point( t, p )[COORD] ;
+                result += mesh_.vertex( t, p )[COORD] ;
             }
             return result ;
         }
@@ -207,8 +207,8 @@ namespace GRGMesh {
         const Surface& M,
         std::vector< int32 >& sorted_indices )
     {
-        sorted_indices.resize( M.nb_points() ) ;
-        for( uint32 i = 0; i < M.nb_points(); i++ ) {
+        sorted_indices.resize( M.nb_vertices() ) ;
+        for( uint32 i = 0; i < M.nb_vertices(); i++ ) {
             sorted_indices[i] = i ;
         }
         HilbertSort< Surface, Morton_vertex_cmp >( M,
