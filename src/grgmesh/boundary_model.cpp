@@ -534,16 +534,17 @@ namespace GRGMesh {
     {
         assert( id < model_.nb_lines() ) ;
         model_.lines_[id].points_ = vertices ;
-
-        /*for( index_t p = 0; p < vertices.size(); p++ ) {
-            model_.lines_[id].vertices_.push_back( model_.nb_points() ) ;
-            add_point( vertices[p] ) ;
-        }*/
     }
-    void BoundaryModelBuilder::set_line_geometry( 
-        index_t id, const std::vector< index_t >& line_points ) 
+
+    void BoundaryModelBuilder::set_line(
+        index_t id,
+        const std::vector< vec3 >& vertices )
     {
-        model_.lines_[id].set_vertices( line_points ) ;
+        assert( id < model_.nb_lines() ) ;
+
+        for( index_t p = 0; p < vertices.size(); p++ ) {
+            model_.lines_[id].points_.push_back( add_point( vertices[p] ) ) ;
+        }
     }
 
 
@@ -604,6 +605,13 @@ namespace GRGMesh {
         grgmesh_debug_assert( point_id < model_.nb_points() ) ;
 
         model_.corners_[corner_id].set_point( point_id ) ;
+    }
+
+    void BoundaryModelBuilder::set_corner( index_t corner_id, const vec3& point )
+    {
+        grgmesh_debug_assert( corner_id < model_.nb_corners() ) ;
+
+        model_.corners_[corner_id].set_point( add_point( point ) ) ;
     }
 
 
@@ -1035,13 +1043,17 @@ namespace GRGMesh {
         index_t surface_id,
         const std::vector< index_t >& points,
         const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr ) 
+        const std::vector< index_t >& facet_ptr,
+        const std::vector< index_t >& surface_adjacencies )
     {        
         if( facets.size() == 0 ) return ;
 
         model_.surfaces_[surface_id].set_geometry( points, facets, facet_ptr ) ;
 
-        set_surface_adjacencies( surface_id ) ;         
+        if( surface_adjacencies.empty() )
+            set_surface_adjacencies( surface_id ) ;
+        else
+            model_.surfaces_[surface_id].adjacent_ = surface_adjacencies ;
     }
 
 

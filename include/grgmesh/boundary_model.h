@@ -28,8 +28,7 @@ namespace GRGMesh {
 
     // To move somewhere else
     static std::vector< vec3 > empty_vector ;
-    static std::vector< index_t > empty_uint_vector ;
-    static vec3 dummy = vec3( 0, 0, 0 ) ;
+    static std::vector< index_t > empty_index_vector ;
 
     /**
      * \brief The class to describe a volumetric model represented by its boundary surfaces
@@ -441,7 +440,7 @@ namespace GRGMesh {
             
         index_t create_line( 
             signed_index_t id = -1, 
-            const std::vector< index_t >& points = empty_uint_vector ) ;
+            const std::vector< index_t >& points = empty_index_vector ) ;
         
         index_t create_surface(
             signed_index_t id = -1,
@@ -463,8 +462,9 @@ namespace GRGMesh {
         index_t create_layer( const std::string& name, signed_index_t id = -1 ) ;
       
         void set_corner( index_t  corner_id, index_t point_id ) ;
+        void set_corner( index_t  corner_id, const vec3& point ) ;
         void set_line( index_t id, const std::vector< index_t >& vertices ) ;
-        void set_line_geometry( index_t id, const std::vector< index_t >& line_points ) ;
+        void set_line( index_t id, const std::vector< vec3 >& vertices ) ;
         
         index_t determine_line_vertices( 
             const Surface& S, 
@@ -476,7 +476,8 @@ namespace GRGMesh {
             index_t surface_id,
             const std::vector< index_t >& surface_points,
             const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr ) ;
+            const std::vector< index_t >& surface_facet_ptr,
+            const std::vector< index_t >& surface_adjacencies = empty_index_vector ) ;
         void set_surface_adjacencies( index_t surface_id ) ;
 
         void cut_surface_by_line( index_t surface_id, index_t line_id ) ;

@@ -217,6 +217,13 @@ namespace GRGMesh {
     double Line::segment_length( index_t s ) const {
         return length( point(s+1)-point(s) ) ;
     }
+    double Line::total_length() const {
+        double result = 0 ;
+        for( index_t s = 0; s < nb_cells(); s++ ) {
+            result += segment_length( s ) ;
+        }
+        return result ;
+    }
 
    /* bool Line::contains( const vec3& p ) const {
         return find( p ) != -1 ;
