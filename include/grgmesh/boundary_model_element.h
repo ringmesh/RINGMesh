@@ -85,7 +85,7 @@ namespace GRGMesh {
         friend class BoundaryModelBuilder ;
 
     public:
-        const static BoundaryModelElement dummy_element ;
+        const static BoundaryModelElement dummy_element = BoundaryModelElement( nil, 0 ) ;
         const static index_t NO_ID = index_t( -1 ) ;
 
         BoundaryModelElement(
@@ -125,7 +125,9 @@ namespace GRGMesh {
         const BoundaryModelElement& child( index_t x ) const ;
         
 
-        virtual index_t nb_cells() const ;
+        virtual index_t nb_cells() const {
+            grgmesh_assert_not_reached ;  return 0 ;
+        }
         virtual index_t nb_points() const {
             grgmesh_assert_not_reached ;  return 0 ;
         }
