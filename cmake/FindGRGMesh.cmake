@@ -30,14 +30,14 @@ find_path(GRGMesh_INCLUDE_DIR
 
 find_library(GRGMesh_LIBRARY_REL 
 	NAMES "GRGMesh"
-	PATH_SUFFIXES "lib"
+	PATH_SUFFIXES "lib" "build/grgmesh/Linux64-gcc-Release/lib" "build/grgmesh/Win64-vs2012/lib/Release"
 	PATHS ${GRGMesh_PREFIX_PATH}
 )
 
 
 find_library(GRGMesh_LIBRARY_DBG  
 	NAMES "GRGMesh_d"
-	PATH_SUFFIXES "lib"
+	PATH_SUFFIXES "lib" "build/grgmesh/Linux64-gcc-Debug/lib" "build/grgmesh/Win64-vs2012/lib/Debug"
 	PATHS ${GRGMesh_PREFIX_PATH}
 )
 
