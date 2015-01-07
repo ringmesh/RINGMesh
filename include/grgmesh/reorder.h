@@ -58,7 +58,7 @@ namespace GRGMesh {
         }
         bool operator()( int32 i1, int32 i2 )
         {
-            return mesh_.point( i1 )[COORD] < mesh_.point( i2 )[COORD] ;
+            return mesh_.vertex( i1 )[COORD] < mesh_.vertex( i2 )[COORD] ;
         }
         const Surface& mesh_ ;
     } ;
