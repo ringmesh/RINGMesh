@@ -457,7 +457,7 @@ namespace GRGMesh {
 
         index_t create_region(
             const std::string& name,
-            const std::vector< std::pair< int, bool > >& boundaries,
+            const std::vector< std::pair< index_t, bool > >& boundaries,
             signed_index_t id = -1 ) ;   
 
         index_t create_layer( const std::string& name, signed_index_t id = -1 ) ;
@@ -481,7 +481,7 @@ namespace GRGMesh {
 
         void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
              
-        void set_universe( const std::vector< std::pair< int, bool > >& boundaries ) ;        
+        void set_universe( const std::vector< std::pair< index_t, bool > >& boundaries ) ;        
         void remove_universe_from_regions( index_t id ) ;
 
         // This is a big mess  !!!!

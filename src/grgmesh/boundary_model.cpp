@@ -791,7 +791,7 @@ namespace GRGMesh {
                     std::string name ;
                     lis >> id >> name ;
 
-                    std::vector< std::pair< int, bool > > region_boundaries ;
+                    std::vector< std::pair< index_t, bool > > region_boundaries ;
                     bool end_region = false ;
 
                     while( !end_region ) {
@@ -806,7 +806,7 @@ namespace GRGMesh {
                                 // Correction because ids begin at 1 in the file
                                 tface_id = tface_id > 0 ? tface_id-1 : -tface_id-1 ;                                            
                                 region_boundaries.push_back(
-                                    std::pair< int, bool >( tface_id, false ) ) ;
+                                    std::pair< index_t, bool >( tface_id, false ) ) ;
                             }
                         }
                     }
@@ -1296,7 +1296,7 @@ namespace GRGMesh {
     }
 
     void BoundaryModelBuilder::set_universe(
-        const std::vector< std::pair< int, bool > >& boundaries )
+        const std::vector< std::pair< index_t, bool > >& boundaries )
     {
         model_.universe_.set_name( "Universe" ) ;
         model_.universe_.set_dim( 3 ) ;
@@ -1313,7 +1313,7 @@ namespace GRGMesh {
 
     index_t BoundaryModelBuilder::create_region(
         const std::string& name,
-        const std::vector< std::pair< int, bool > >& boundaries,
+        const std::vector< std::pair< index_t, bool > >& boundaries,
         signed_index_t id )
     {
         id = create_region( id ) ;
