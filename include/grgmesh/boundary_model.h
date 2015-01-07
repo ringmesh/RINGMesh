@@ -58,10 +58,10 @@ namespace GRGMesh {
          */
         virtual ~BoundaryModel() ;
 
-        // Accessors to model points - edges - facets
-        index_t nb_points() const { return points_.size() ; }
-        const vec3& point( index_t p ) const { return points_.at(p) ; }
-        index_t point_index( const vec3& p ) const ;
+        // Accessors to model vertices - edges - facets
+        index_t nb_vertices() const { return vertices_.size() ; }
+        const vec3& vertex( index_t p ) const { return vertices_.at(p) ; }
+        index_t vertex_index( const vec3& p ) const ;
 
         inline index_t nb_facets() const ;
         void surface_facet( index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id ) const ;     
@@ -107,9 +107,9 @@ namespace GRGMesh {
         void save_as_eobj_file( const std::string& file_name ) ;
 
         // Accessors to attribute managers
-        PointAttributeManager* point_attribute_manager() const
+        PointAttributeManager* vertex_attribute_manager() const
         {
-            return const_cast< PointAttributeManager* >( &point_attribute_manager_ ) ;
+            return const_cast< PointAttributeManager* >( &vertex_attribute_manager_ ) ;
         }
         EdgeAttributeManager* edge_attribute_manager() const
         {
@@ -131,9 +131,9 @@ namespace GRGMesh {
 
         /** 
          * \brief Coordinates of the vertices of the model elements
-         * Storage of points is unique for the whole model.
+         * Storage of vertices is unique for the whole model.
          */
-        std::vector< vec3 >                 points_ ;
+        std::vector< vec3 >                 vertices_ ;
 
         // Base manifold elements of a model
         std::vector< Corner >               corners_ ;
@@ -168,7 +168,7 @@ namespace GRGMesh {
         std::vector< BoundaryModelElement >  layers_ ;
 
         // Attribute managers 
-        PointAttributeManager point_attribute_manager_ ;
+        PointAttributeManager vertex_attribute_manager_ ;
         EdgeAttributeManager  edge_attribute_manager_ ;
         FacetAttributeManager facet_attribute_manager_ ;
 
@@ -181,14 +181,14 @@ namespace GRGMesh {
 
         void bind( BoundaryModel* model, const std::string& name )
         {
-            superclass::bind( model->point_attribute_manager(), model->nb_points(),
+            superclass::bind( model->vertex_attribute_manager(), model->nb_vertices(),
                 name ) ;
         }
 
         void bind( BoundaryModel* model )
         {
-            superclass::bind( model->point_attribute_manager(),
-                model->nb_points() ) ;
+            superclass::bind( model->vertex_attribute_manager(),
+                model->nb_vertices() ) ;
         }
 
         BoundaryModelPointAttribute()
@@ -207,7 +207,7 @@ namespace GRGMesh {
 
         static bool is_defined( BoundaryModel* model, const std::string& name )
         {
-            return superclass::is_defined( model->point_attribute_manager(), name ) ;
+            return superclass::is_defined( model->vertex_attribute_manager(), name ) ;
         }
     } ;
 
@@ -300,7 +300,7 @@ namespace GRGMesh {
         // Id of p0 in the BoundaryModel corner vector
         index_t corner_id_ ;
 
-        // Ids of the starting corner and second point on the border in the Surface
+        // Ids of the starting corner and second vertex on the border in the Surface
         // to which this Border belong
         index_t p0_ ;
         index_t p1_ ;
@@ -331,8 +331,8 @@ namespace GRGMesh {
          * Pas sur que ce soit passionnant et hyper int�ressant 
          */
     public:
-        void reserve_nb_points( index_t size ) {
-            model_.points_.reserve( size ) ; 
+        void reserve_nb_vertices( index_t size ) {
+            model_.vertices_.reserve( size ) ; 
         }
         void reserve_nb_corners( index_t size ) {
             model_.corners_.reserve( size ) ;
@@ -356,13 +356,13 @@ namespace GRGMesh {
         signed_index_t interface_id( const std::string& name ) const ;
 
         index_t find_or_create_corner( index_t index ) ;
-        index_t find_or_create_line( index_t corner0, index_t corner1, std::vector< index_t >& points ) ;
+        index_t find_or_create_line( index_t corner0, index_t corner1, std::vector< index_t >& vertices ) ;
         index_t find_or_create_contact( std::vector< index_t >& interfaces, GEOL_FEATURE type ) ;
         
         signed_index_t find_corner( const vec3& ) const ;
         signed_index_t find_corner( index_t ) const ;
         signed_index_t find_contact( const std::vector< index_t >& interfaces ) const ;
-        signed_index_t find_line( index_t corner0, index_t corner1, const std::vector< index_t >& points ) const ;
+        signed_index_t find_line( index_t corner0, index_t corner1, const std::vector< index_t >& vertices ) const ;
 
         signed_index_t find_key_facet( index_t surface_id, const vec3& p0, const vec3& p1, const vec3& p2, 
             bool& same_orientation ) const ;  
@@ -372,12 +372,12 @@ namespace GRGMesh {
          */
         bool check_key_facet_orientation( index_t surface ) const ;
      
-        index_t add_point( const vec3& point ) {            
-            model_.points_.push_back( point ) ;
-            return model_.nb_points()-1 ;
+        index_t add_vertex( const vec3& vertex ) {            
+            model_.vertices_.push_back( vertex ) ;
+            return model_.nb_vertices()-1 ;
         }
-        index_t add_point( double* point) {
-            return add_point( vec3( point[0], point[1], point[2] ) ) ;
+        index_t add_vertex( double* vertex) {
+            return add_vertex( vec3( vertex[0], vertex[1], vertex[2] ) ) ;
         }
 
         void add_corner_boundary( index_t id, index_t b ) {
@@ -440,7 +440,7 @@ namespace GRGMesh {
             
         index_t create_line( 
             signed_index_t id = -1, 
-            const std::vector< index_t >& points = empty_index_vector ) ;
+            const std::vector< index_t >& vertices = empty_index_vector ) ;
         
         index_t create_surface(
             signed_index_t id = -1,
@@ -461,20 +461,20 @@ namespace GRGMesh {
 
         index_t create_layer( const std::string& name, signed_index_t id = -1 ) ;
       
-        void set_corner( index_t  corner_id, index_t point_id ) ;
-        void set_corner( index_t  corner_id, const vec3& point ) ;
+        void set_corner( index_t  corner_id, index_t vertex_id ) ;
+        void set_corner( index_t  corner_id, const vec3& vertex ) ;
         void set_line( index_t id, const std::vector< index_t >& vertices ) ;
         void set_line( index_t id, const std::vector< vec3 >& vertices ) ;
         
         index_t determine_line_vertices( 
             const Surface& S, 
-            index_t first_point, 
-            index_t second_point,            
-            std::vector< index_t >& border_point_model_ids ) const ;
+            index_t first_vertex, 
+            index_t second_vertex,            
+            std::vector< index_t >& border_vertex_model_ids ) const ;
 
         void set_surface_geometry(
             index_t surface_id,
-            const std::vector< index_t >& surface_points,
+            const std::vector< index_t >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr,
             const std::vector< index_t >& surface_adjacencies = empty_index_vector ) ;
@@ -489,7 +489,7 @@ namespace GRGMesh {
         /// \todo Trade the end_something functions in the BoundaryModelBuilder
         /// functions for a smart end_model function
         /// that checks model validity and complete all missing parts
-        void make_points_unique() ;
+        void make_vertices_unique() ;
         void build_lines( const std::vector< Border >& borders ) ;
         void build_contacts() ;
         void end_contacts() ;

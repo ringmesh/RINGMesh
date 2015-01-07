@@ -127,14 +127,14 @@ namespace GRGMesh {
         virtual index_t nb_cells() const {
             grgmesh_assert_not_reached ;  return 0 ;
         }
-        virtual index_t nb_points() const {
+        virtual index_t nb_vertices() const {
             grgmesh_assert_not_reached ;  return 0 ;
         }
-        virtual index_t model_point_id( index_t p = 0 ) const {
+        virtual index_t model_vertex_id( index_t p = 0 ) const {
             grgmesh_assert_not_reached ; return 0 ;
         }
   
-        virtual const vec3& point( index_t p = 0 ) const {
+        virtual const vec3& vertex( index_t p = 0 ) const {
             grgmesh_assert_not_reached ; return dummy_vec3 ;
         }
   
@@ -218,16 +218,16 @@ namespace GRGMesh {
         }
         bool is_real() const { return in_boundary_.size() > 1 ; }
 
-        virtual const vec3& point( index_t p = 0 ) const ;
+        virtual const vec3& vertex( index_t p = 0 ) const ;
         
         virtual index_t nb_cells() const { return 1 ; }
-        virtual index_t nb_points() const { return 1 ; }
-        virtual index_t model_point_id( index_t p = 0 ) const { return p_ ; } 
+        virtual index_t nb_vertices() const { return 1 ; }
+        virtual index_t model_vertex_id( index_t p = 0 ) const { return p_ ; } 
         
     private:
         //void copy_macro_topology( const Corner& rhs, BoundaryModel& model ) ;
 
-        void set_point( index_t p ) { p_ = p ; }
+        void set_vertex( index_t p ) { p_ = p ; }
     private:
         index_t p_ ;
     };
@@ -245,30 +245,30 @@ namespace GRGMesh {
         Line(
             BoundaryModel* model,
             index_t id,
-            const std::vector< index_t >& points ) ;
+            const std::vector< index_t >& vertices ) ;
         Line(
             BoundaryModel* model,
             index_t id,
             index_t corner0,
             index_t corner1,
-            const std::vector< index_t >& points ) ;
+            const std::vector< index_t >& vertices ) ;
         virtual ~Line(){} ;
 
    
         virtual index_t nb_cells() const {            
-            return points_.size()-1 ; 
+            return vertices_.size()-1 ; 
         }
-        // If the line is closed the last point is equal to the first one
-        virtual index_t nb_points() const {             
-            return points_.size() ; 
+        // If the line is closed the last vertex is equal to the first one
+        virtual index_t nb_vertices() const {             
+            return vertices_.size() ; 
         }
-        virtual index_t model_point_id( index_t p ) const {
-            return points_.at(p) ;
+        virtual index_t model_vertex_id( index_t p ) const {
+            return vertices_.at(p) ;
         }
 
         //bool contains( const vec3& p ) const ;
         //int find( const vec3& p ) const ;
-        //int facet_point_id( const vec3& p ) const ;
+        //int facet_vertex_id( const vec3& p ) const ;
         bool is_closed () const { 
             return (boundaries_[0]!= nil ) && (boundaries_[0] == boundaries_[1]) ; 
         }  
@@ -276,7 +276,7 @@ namespace GRGMesh {
         // Returns true if this line is twice in the boundary of the surface e
         bool is_inside_border( const BoundaryModelElement& e ) const ;
             
-        virtual const vec3& point( index_t line_point_id ) const ;
+        virtual const vec3& vertex( index_t line_vertex_id ) const ;
         vec3 segment_barycenter( index_t s ) const ;
 
         double segment_length( index_t s ) const ;
@@ -292,7 +292,7 @@ namespace GRGMesh {
     private:
         /// In case of a closed line, the last vertex (equal to the first) is not stored.
         /// ATTENTION �A A CHANG� SINON C'EST TROP CHIANT, et en fait c'�tait pas bon
-        std::vector< index_t > points_ ;
+        std::vector< index_t > vertices_ ;
                  
         //std::vector< bool > is_inside_border_ ;
     } ;
@@ -307,13 +307,13 @@ namespace GRGMesh {
             : M_( const_cast< Line& >( M ) )
         {
         }
-        void set_point( index_t id, const vec3& p ) ;
-        vec3& point( index_t p ) const ;
-        std::vector< index_t >& points() const { return M_.points_ ; }
+        void set_vertex( index_t id, const vec3& p ) ;
+        vec3& vertex( index_t p ) const ;
+        std::vector< index_t >& vertices() const { return M_.vertices_ ; }
 
         void clear()
         {
-            M_.points_.clear() ;
+            M_.vertices_.clear() ;
         }
 
     private:
@@ -346,9 +346,9 @@ namespace GRGMesh {
         virtual ~Surface(){} ;
        
         virtual index_t nb_cells() const { return facets_.empty() ? 0 : facet_ptr_.size() - 1 ; }
-        virtual index_t nb_points() const { return points_.size() ; }               
-        virtual index_t model_point_id( index_t p ) const {
-            return points_[p] ;
+        virtual index_t nb_vertices() const { return vertices_.size() ; }               
+        virtual index_t model_vertex_id( index_t p ) const {
+            return vertices_[p] ;
         }
         
         //bool key_facet_orientation() ;
@@ -358,60 +358,60 @@ namespace GRGMesh {
         
         index_t facet_begin( index_t f ) const { return facet_ptr_.at(f) ; }
         index_t facet_end( index_t f ) const { return facet_ptr_.at(f+1) ; }
-        index_t nb_points_in_facet( index_t f ) const { return facet_end( f ) - facet_begin( f ) ; }
+        index_t nb_vertices_in_facet( index_t f ) const { return facet_end( f ) - facet_begin( f ) ; }
         index_t next_in_facet( index_t f, index_t v ) const { 
-            grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
-            if( v != nb_points_in_facet(f)-1 ) return v+1 ;
+            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
+            if( v != nb_vertices_in_facet(f)-1 ) return v+1 ;
             else return 0 ;
         }
         index_t prev_in_facet( index_t f, index_t v ) const {
-            grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
+            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             if( v > 0 ) return v-1 ;
-            else return nb_points_in_facet(f)-1 ;
+            else return nb_vertices_in_facet(f)-1 ;
         }            
         
-        const vec3& point( index_t f, index_t v ) const ;
+        const vec3& vertex( index_t f, index_t v ) const ;
 
         /** 
-         * Access to the ids of the points in the model
-         * The same point can appear several times - boundaries inside 
+         * Access to the ids of the vertices in the model
+         * The same vertex can appear several times - boundaries inside 
          * Necessary for export
          * Should be inline - but linking fails because implementation is in cpp
          * and cannot be there because including boundary_model.h results in circular includes
          */        
-        virtual const vec3& point( index_t surf_point_id ) const ;
+        virtual const vec3& vertex( index_t surf_vertex_id ) const ;
         
-        /** Returns the id of point \param v in facet \param f in this surface */
-        index_t surf_point_id( index_t f, index_t v ) const {
-            grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
+        /** Returns the id of vertex \param v in facet \param f in this surface */
+        index_t surf_vertex_id( index_t f, index_t v ) const {
+            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             return facets_[facet_begin(f)+v] ; 
         }
-        /** Returns the id of point  \param v, in facet \param f in the parent BoundaryModel */ 
-        index_t model_point_id( index_t f, index_t v ) const { 
-            grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
-            return points_[ surf_point_id( f, v ) ] ;
+        /** Returns the id of vertex  \param v, in facet \param f in the parent BoundaryModel */ 
+        index_t model_vertex_id( index_t f, index_t v ) const { 
+            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
+            return vertices_[ surf_vertex_id( f, v ) ] ;
         }     
 
-        index_t surf_point_id( index_t model_point_id ) const {
-            for( index_t i = 0; i < points_.size() ; ++i ){
-                if ( points_[i] == model_point_id ) return i ;
+        index_t surf_vertex_id( index_t model_vertex_id ) const {
+            for( index_t i = 0; i < vertices_.size() ; ++i ){
+                if ( vertices_[i] == model_vertex_id ) return i ;
             }
             return NO_ID ;
         }
         
         /** Returns the id of the adjacent facet of \param f in this surface along the edge starting at \param v */
         index_t adjacent( index_t f, index_t v ) const {
-            grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
+            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             return adjacent_[facet_begin(f)+v] ; 
         }
         //int adjacent_in_neighbor( index_t f, index_t e ) const ;
         
         bool is_on_border( index_t f, index_t v ) const {
-            grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
+            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             return adjacent( f, v ) == -1 ; 
         }
         bool is_on_border( index_t f ) const {
-            for( index_t adj = 0; adj < nb_points_in_facet(f); adj++ ) {
+            for( index_t adj = 0; adj < nb_vertices_in_facet(f); adj++ ) {
                 if( is_on_border( f, adj ) ) return true ;
             }
             return false ;
@@ -419,8 +419,8 @@ namespace GRGMesh {
         
         /**
          * For a bidirectional border traversal 
-         * From the input facet f, get the facet that share point v and 
-         * get the ids of point v and of the following point in this next facet
+         * From the input facet f, get the facet that share vertex v and 
+         * get the ids of vertex v and of the following vertex in this next facet
          * next facet may be the same, from is required to avoid going back 
          */
         void next_on_border(
@@ -438,16 +438,16 @@ namespace GRGMesh {
 
         //FacetEdge next_on_border( const FacetEdge& te ) const ;
        
-        bool is_triangle( index_t f ) const { return nb_points_in_facet( f ) == 3 ; }
+        bool is_triangle( index_t f ) const { return nb_vertices_in_facet( f ) == 3 ; }
 
 //        signed_index_t find_facet( signed_index_t id0, signed_index_t id1 ) const ;
-        index_t facet_from_model_point_ids( index_t i0, index_t i1 ) const ;
-        void edge_from_model_point_ids(
+        index_t facet_from_model_vertex_ids( index_t i0, index_t i1 ) const ;
+        void edge_from_model_vertex_ids(
             index_t i0,
             index_t i1,
             index_t& f,
             index_t& e ) const ;
-        void oriented_edge_from_model_point_ids(
+        void oriented_edge_from_model_vertex_ids(
             index_t i0,
             index_t i1,
             index_t& facet,
@@ -457,43 +457,43 @@ namespace GRGMesh {
         //int find_facet( const vec3& p0, const vec3& p1 ) const ; // TO DO A VIRER !!
         //int find_edge( signed_index_t id0, signed_index_t id1 ) const ;
 
-        /** Returns the id of the point with surface id p0 in the given facet */
-        index_t facet_point_id( index_t t, index_t surf_point_id ) const ;
-        /** Returns the id of the points with the given coordinates in the given facet */
-     //   signed_index_t facet_point_id( signed_index_t t, const vec3& p ) const ;
+        /** Returns the id of the vertex with surface id p0 in the given facet */
+        index_t facet_vertex_id( index_t t, index_t surf_vertex_id ) const ;
+        /** Returns the id of the vertices with the given coordinates in the given facet */
+     //   signed_index_t facet_vertex_id( signed_index_t t, const vec3& p ) const ;
         //int edge_id( signed_index_t t, signed_index_t p0, signed_index_t p1 ) const ;
 
         //Box3d bbox() const ;
         //bool contains( const vec3& p ) const ;
         //int find( const vec3& p ) const ;
 
-        index_t facets_around_point(
-            index_t surf_point_id, 
+        index_t facets_around_vertex(
+            index_t surf_vertex_id, 
             std::vector< index_t >& result, 
             bool border_only ) const ;
         
         vec3 facet_barycenter( index_t f ) const ;
         double facet_area( index_t f ) const ;
         vec3 facet_normal( index_t f ) const ;
-        void point_normals( std::vector< vec3 >& normals ) const ;
+        void vertex_normals( std::vector< vec3 >& normals ) const ;
         
-        index_t facets_around_point(
-            index_t surf_point_id,
+        index_t facets_around_vertex(
+            index_t surf_vertex_id,
             std::vector< index_t >& result,
             bool border_only,
             index_t first_facet ) const ;
 
-        index_t closest_point_in_facet( index_t f, const vec3& point ) const ;
+        index_t closest_vertex_in_facet( index_t f, const vec3& vertex ) const ;
 
     private:
         void set_key_facet( const KeyFacet& key ) { key_facet_ = key ; }
         void set_first_triangle_as_key() ;
         
         // On en a besoin � la construction
-        // On ne peut pas utiliser model_point ids - car on ne diff�rencie pas
-        // alors les arr�tes sur des bords internes = 1 bord - mais points identiques sur
+        // On ne peut pas utiliser model_vertex ids - car on ne diff�rencie pas
+        // alors les arr�tes sur des bords internes = 1 bord - mais vertices identiques sur
         // triangles en face dans la m�me surfaace
-        index_t facet_from_surface_point_ids( index_t i0, index_t i1 ) const ;
+        index_t facet_from_surface_vertex_ids( index_t i0, index_t i1 ) const ;
 
 
         void set_adjacent( index_t f, index_t e, index_t adjacent ) {
@@ -512,20 +512,20 @@ namespace GRGMesh {
         //int has_edge( signed_index_t f, signed_index_t v0, signed_index_t v1 ) const ;
         //int has_oriented_edge( signed_index_t f, signed_index_t v0, signed_index_t v1 ) const ;
 
-        /*bool same_point( signed_index_t i, signed_index_t j ) const {
+        /*bool same_vertex( signed_index_t i, signed_index_t j ) const {
             if( i == j ) return true ;
-            else if( points_[i] == points_[j] ) return true ;
+            else if( vertices_[i] == vertices_[j] ) return true ;
             else return false ;
         }*/
 
 
         void set_geometry(
-            const std::vector< index_t >& points,
+            const std::vector< index_t >& vertices,
             const std::vector< index_t >& facets,
             const std::vector< index_t >& facet_ptr )
         {
             // Are these copies parallelized ?
-            points_ = points ;
+            vertices_ = vertices ;
             facets_ = facets ;
             facet_ptr_ = facet_ptr ;
 
@@ -541,7 +541,7 @@ namespace GRGMesh {
     private:
         KeyFacet key_facet_ ;
 
-        std::vector< index_t > points_ ;
+        std::vector< index_t > vertices_ ;
         std::vector< index_t > facets_ ;
         std::vector< index_t > facet_ptr_ ;
 
@@ -566,16 +566,16 @@ namespace GRGMesh {
             : M_( const_cast< Surface& >( M ) )
         {
         }
-        void set_point( index_t id, const vec3& p ) ;
-        vec3& point( index_t p ) const ;
-        std::vector< index_t >& points() const { return M_.points_ ; }
+        void set_vertex( index_t id, const vec3& p ) ;
+        vec3& vertex( index_t p ) const ;
+        std::vector< index_t >& vertices() const { return M_.vertices_ ; }
         std::vector< index_t >& facets() const { return M_.facets_ ; }
         std::vector< index_t >& facet_ptr() const { return M_.facet_ptr_ ; }
         std::vector< index_t >& adjacents() const { return M_.adjacent_ ; }
 
         void clear()
         {
-            M_.points_.clear() ;
+            M_.vertices_.clear() ;
             M_.facets_.clear() ;
             M_.facet_ptr_.clear() ;
             M_.adjacent_.clear() ;

@@ -88,7 +88,7 @@ namespace GRGMesh {
             const BoundaryModelElement& surface = region->boundary( s ) ;
             if( Utils::contains( surface_id_,
                 static_cast< signed_index_t >( surface.id() ) ) ) continue ;
-            nb_points += surface.nb_points() ;
+            nb_points += surface.nb_vertices() ;
             nb_facets += surface.nb_cells() ;
 
             surface_id_.push_back( surface.id() ) ;
@@ -130,42 +130,42 @@ namespace GRGMesh {
                 if( surface.is_triangle( t ) ) {
                     for( index_t v = 0; v < 3; v++ ) {
                         triangles_.push_back(
-                            unique_indices[offset + surface.surf_point_id( t, v )]+first_index  ) ;
+                            unique_indices[offset + surface.surf_vertex_id( t, v )]+first_index  ) ;
                     }
                 } else {
                     double diag0 = length(
-                        surface.point( t, 0 ) - surface.point( t, 2 ) ) ;
+                        surface.vertex( t, 0 ) - surface.vertex( t, 2 ) ) ;
                     double diag1 = length(
-                        surface.point( t, 1 ) - surface.point( t, 3 ) ) ;
+                        surface.vertex( t, 1 ) - surface.vertex( t, 3 ) ) ;
                     if( diag0 < diag1 ) {
                         for( index_t v = 0; v < 3; v++ ) {
                             triangles_.push_back(
-                                unique_indices[offset + surface.surf_point_id( t, v )]+first_index ) ;
+                                unique_indices[offset + surface.surf_vertex_id( t, v )]+first_index ) ;
                         }
 
                         triangles_.push_back(
-                            unique_indices[offset + surface.surf_point_id( t, 0 )]+first_index ) ;
+                            unique_indices[offset + surface.surf_vertex_id( t, 0 )]+first_index ) ;
                         for( index_t v = 2; v < 4; v++ ) {
                             triangles_.push_back(
-                                unique_indices[offset + surface.surf_point_id( t, v )]+first_index ) ;
+                                unique_indices[offset + surface.surf_vertex_id( t, v )]+first_index ) ;
                         }
                     } else {
                         for( index_t v = 1; v < 4; v++ ) {
                             triangles_.push_back(
-                                unique_indices[offset + surface.surf_point_id( t, v )]+first_index ) ;
+                                unique_indices[offset + surface.surf_vertex_id( t, v )]+first_index ) ;
                         }
 
                         for( index_t v = 0; v < 2; v++ ) {
                             triangles_.push_back(
-                                unique_indices[offset + surface.surf_point_id( t, v )]+first_index ) ;
+                                unique_indices[offset + surface.surf_vertex_id( t, v )]+first_index ) ;
                         }
                         triangles_.push_back(
-                            unique_indices[offset + surface.surf_point_id( t, 3 )]+first_index ) ;
+                            unique_indices[offset + surface.surf_vertex_id( t, 3 )]+first_index ) ;
                     }
 
                 }
             }
-            offset += surface.nb_points() ;
+            offset += surface.nb_vertices() ;
             surface_ptr_.push_back( nb_triangles() ) ;
             area /= static_cast< double >( surface.nb_cells() ) ;
             double r = sqrt( (double)(4 * area / sqrt( (double)3 )) ) ;

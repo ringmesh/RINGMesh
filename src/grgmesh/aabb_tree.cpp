@@ -44,9 +44,9 @@ namespace GRGMesh {
         grgmesh_debug_assert( b != e ) ;
         if( b + 1 == e ) {
             Box3d bbox ;
-            bbox.add_point( mesh_.point( b, 0 ) ) ;
-            bbox.add_point( mesh_.point( b, 1 ) ) ;
-            bbox.add_point( mesh_.point( b, 2 ) ) ;
+            bbox.add_point( mesh_.vertex( b, 0 ) ) ;
+            bbox.add_point( mesh_.vertex( b, 1 ) ) ;
+            bbox.add_point( mesh_.vertex( b, 2 ) ) ;
             bboxes_[node_index] = bbox ;
             return ;
         }
@@ -120,9 +120,9 @@ namespace GRGMesh {
         int t,
         vec3& nearest_p )
     {
-        const vec3& p1 = M.point( t, 0 ) ;
-        const vec3& p2 = M.point( t, 1 ) ;
-        const vec3& p3 = M.point( t, 2 ) ;
+        const vec3& p1 = M.vertex( t, 0 ) ;
+        const vec3& p2 = M.vertex( t, 1 ) ;
+        const vec3& p3 = M.vertex( t, 2 ) ;
         float64 distance = Utils::point_triangle_distance( p, p1, p2, p3,
             nearest_p ) ;
         if( Utils::point_inside_triangle( p, p1, p2, p3 ) ) {
@@ -173,7 +173,7 @@ namespace GRGMesh {
         }
         nearest_t = b ;
 
-        nearest_point = mesh_.point( nearest_t, 0 ) ;
+        nearest_point = mesh_.vertex( nearest_t, 0 ) ;
         sq_dist = length2( p - nearest_point ) ;
     }
 
