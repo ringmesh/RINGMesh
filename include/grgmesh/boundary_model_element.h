@@ -46,7 +46,7 @@ namespace GRGMesh {
                 p1_.x == 1 && p1_.y == -1 && p1_.z == -1  && 
                 p2_.x == 1 && p2_.y == -1 && p2_.z == -1  ) return true ;
             else {
-                // la compilation ne passe pas ça m'énerve
+                // la compilation ne passe pas ï¿½a m'ï¿½nerve
                 /// \todo put this assert back
                 //assert( !(p0_==p1_) && !(p0_==p2_) && !(p1_==p2_) ) ;
                 return false ;
@@ -85,8 +85,11 @@ namespace GRGMesh {
         friend class BoundaryModelBuilder ;
 
     public:
+        const static BoundaryModelElement dummy_element ;
+        const static index_t NO_ID = index_t( -1 ) ;
+
         BoundaryModelElement(
-            BoundaryModel* model = nil, int dim = -1, int id = -1, int parent = -1,
+            BoundaryModel* model, index_t dim, index_t id = NO_ID, index_t parent = NO_ID,
             GEOL_FEATURE type = default_type )
             : model_( model ),  name_( "" ), id_( id ), dim_( dim ), type_( type ),
             parent_( parent )
@@ -98,47 +101,47 @@ namespace GRGMesh {
         const BoundaryModel& model() const { return *model_ ; }
         
         const std::string& name() const { return name_ ; }
-        int id() const { return id_ ; }
-        uint8 dim() const { return dim_ ; }  
+        index_t id() const { return id_ ; }
+        index_t dim() const { return dim_ ; }
         GEOL_FEATURE type() const { return type_ ; }
 
         bool is_on_voi() const ;
-        bool side( int i ) const { return sides_[i] ; }
+        bool side( index_t i ) const { return sides_[i] ; }
 
-        bool has_parent() const { return parent_ != -1 ; }
+        bool has_parent() const { return parent_ != NO_ID ; }
         const BoundaryModelElement& parent() const ;
-        int parent_id() const { return parent_ ; }
+        index_t parent_id() const { return parent_ ; }
         
-        unsigned int nb_boundaries() const { return boundaries_.size() ; }
-        unsigned int boundary_id( unsigned int x ) const { return boundaries_[x] ; }
-        const BoundaryModelElement& boundary( unsigned int x ) const ;
+        index_t nb_boundaries() const { return boundaries_.size() ; }
+        index_t boundary_id( index_t x ) const { return boundaries_[x] ; }
+        const BoundaryModelElement& boundary( index_t x ) const ;
         
-        unsigned int nb_in_boundary() const { return in_boundary_.size() ; }
-        unsigned int in_boundary_id( unsigned int x ) const { return in_boundary_[x] ; }
-        const BoundaryModelElement& in_boundary( unsigned int x ) const ;
+        index_t nb_in_boundary() const { return in_boundary_.size() ; }
+        index_t in_boundary_id( index_t x ) const { return in_boundary_[x] ; }
+        const BoundaryModelElement& in_boundary( index_t x ) const ;
         
-        unsigned int nb_children() const { return children_.size() ; }
-        unsigned int child_id( unsigned int x ) const { return children_[x] ; }
-        const BoundaryModelElement& child( unsigned int x ) const ;
+        index_t nb_children() const { return children_.size() ; }
+        index_t child_id( index_t x ) const { return children_[x] ; }
+        const BoundaryModelElement& child( index_t x ) const ;
         
 
-        virtual unsigned int nb_cells() const ;
-        virtual unsigned int nb_points() const {
+        virtual index_t nb_cells() const ;
+        virtual index_t nb_points() const {
             grgmesh_assert_not_reached ;  return 0 ;
         }
-        virtual unsigned int model_point_id( unsigned int p = 0 ) const {
+        virtual index_t model_point_id( index_t p = 0 ) const {
             grgmesh_assert_not_reached ; return 0 ;
         }
   
-        virtual const vec3& point( unsigned int p = 0 ) const {
-            grgmesh_assert_not_reached ; return vec3( 0, 0, 0 ) ;
+        virtual const vec3& point( index_t p = 0 ) const {
+            grgmesh_assert_not_reached ; return dummy_vec3 ;
         }
   
         
         
         /*virtual bool is_triangulated() const {
             grgmesh_assert( dim_ == 3 ) ;
-            for( unsigned int s = 0; s < nb_boundaries(); s++ ) {
+            for( index_t s = 0; s < nb_boundaries(); s++ ) {
                 if( !boundary( s ).is_triangulated() ) return false ;
             }
             return true ;
@@ -148,16 +151,16 @@ namespace GRGMesh {
         void copy_macro_topology(
             const BoundaryModelElement& rhs, BoundaryModel& model ) ;
         
-        void set_parent( int p ){ parent_ = p ; }
+        void set_parent( index_t p ){ parent_ = p ; }
         void set_name( const std::string& name ) { name_ = name ; }
         void set_type( GEOL_FEATURE type ) { type_ = type ; } 
-        void set_dim( int dim ) { dim_ = dim ; }
-        void set_id( int id ) { id_ = id ; }
+        void set_dim( index_t dim ) { dim_ = dim ; }
+        void set_id( index_t id ) { id_ = id ; }
         
-        void add_boundary( unsigned int b ) { boundaries_.push_back( b ) ; }
-        void add_boundary( unsigned int b, bool side ) { boundaries_.push_back(b) ; sides_.push_back(side) ; }
-        virtual void add_in_boundary( unsigned int e ) { in_boundary_.push_back(e) ; }
-        void add_child( unsigned int e ){ children_.push_back( e ) ; }
+        void add_boundary( index_t b ) { boundaries_.push_back( b ) ; }
+        void add_boundary( index_t b, bool side ) { boundaries_.push_back(b) ; sides_.push_back(side) ; }
+        virtual void add_in_boundary( index_t e ) { in_boundary_.push_back(e) ; }
+        void add_child( index_t e ){ children_.push_back( e ) ; }
        
 
     protected :
@@ -168,30 +171,30 @@ namespace GRGMesh {
         std::string name_ ;
 
         /// Id of this element in the appropriate vector of the BoundaryModel owning it
-        int id_ ;
+        index_t id_ ;
         
         /// Dimension of the element 0 corner; 1 line; 2 surface; 3 region
-        uint8 dim_ ;
+        index_t dim_ ;
         
         /// Geological type for this object, default is ALL 
         GEOL_FEATURE type_ ;
 
         /// Elements on the boundary of this element - their dimension is dim_-1
-        std::vector< unsigned int > boundaries_ ;
+        std::vector< index_t > boundaries_ ;
 
         /// Flag on which side of the boundary is this element 
         /// Filled for volumetric regions only + (true) or - (false)
         std::vector< bool > sides_ ; 
         
         /// Elements in which boundary this element is - their dimension is dim_+1
-        std::vector< unsigned int > in_boundary_ ;
+        std::vector< index_t > in_boundary_ ;
 
         /// Index of the parent (group of elements to which belong this).
-        /// Default value is -1 - no parent.
-        int parent_ ;
+        /// Default value is NO_ID.
+        index_t parent_ ;
 
         /// The group elements making up this one, empty for basic elements
-        std::vector< unsigned int > children_ ;
+        std::vector< index_t > children_ ;
     } ;
 
     /*-----------------------------------------------------------------------------------------*/
@@ -203,8 +206,8 @@ namespace GRGMesh {
     public:
         Corner(
             BoundaryModel* model,
-            int id = -1,
-            unsigned int p = 0 )
+            signed_index_t id = -1,
+            index_t p = 0 )
             : BoundaryModelElement( model, 0, id ), p_( p )
         {
         }
@@ -213,18 +216,18 @@ namespace GRGMesh {
         }
         bool is_real() const { return in_boundary_.size() > 1 ; }
 
-        virtual const vec3& point( unsigned int p = 0 ) const ;
+        virtual const vec3& point( index_t p = 0 ) const ;
         
-        virtual unsigned int nb_cells() const { return 1 ; }
-        virtual unsigned int nb_points() const { return 1 ; }
-        virtual unsigned int model_point_id( unsigned int p = 0 ) const { return p_ ; } 
+        virtual index_t nb_cells() const { return 1 ; }
+        virtual index_t nb_points() const { return 1 ; }
+        virtual index_t model_point_id( index_t p = 0 ) const { return p_ ; } 
         
     private:
         //void copy_macro_topology( const Corner& rhs, BoundaryModel& model ) ;
 
-        void set_point( unsigned int p ) { p_ = p ; }
+        void set_point( index_t p ) { p_ = p ; }
     private:
-        unsigned int p_ ;
+        index_t p_ ;
     };
     /*-----------------------------------------------------------------------------------------*/        
     /*! A part of the contact between 2 interfaces
@@ -236,28 +239,28 @@ namespace GRGMesh {
         friend class BoundaryModelBuilder ;
         friend class LineMutator ;
     public:
-        Line( BoundaryModel* model, int id = -1 ) ;
+        Line( BoundaryModel* model, index_t id = NO_ID ) ;
         Line(
             BoundaryModel* model,
-            int id,
-            const std::vector< unsigned int >& points ) ;
+            index_t id,
+            const std::vector< index_t >& points ) ;
         Line(
             BoundaryModel* model,
-            int id,
-            unsigned int corner0,
-            unsigned int corner1,
-            const std::vector< unsigned int >& points ) ;
+            index_t id,
+            index_t corner0,
+            index_t corner1,
+            const std::vector< index_t >& points ) ;
         virtual ~Line(){} ;
 
    
-        virtual unsigned int nb_cells() const {            
+        virtual index_t nb_cells() const {            
             return points_.size()-1 ; 
         }
         // If the line is closed the last point is equal to the first one
-        virtual unsigned int nb_points() const {             
+        virtual index_t nb_points() const {             
             return points_.size() ; 
         }
-        virtual unsigned int model_point_id( unsigned int p ) const {
+        virtual index_t model_point_id( index_t p ) const {
             return points_.at(p) ;
         }
 
@@ -271,25 +274,25 @@ namespace GRGMesh {
         // Returns true if this line is twice in the boundary of the surface e
         bool is_inside_border( const BoundaryModelElement& e ) const ;
             
-        virtual const vec3& point( unsigned int line_point_id ) const ;
-        inline vec3 segment_barycenter( uint32 s ) const ;
+        virtual const vec3& point( index_t line_point_id ) const ;
+        inline vec3 segment_barycenter( index_t s ) const ;
 
-        inline double segment_length( uint32 s ) const ;
+        inline double segment_length( index_t s ) const ;
             
 
     private:
         /*void copy_macro_topology(
             const Line& rhs,
             BoundaryModel& model ) ;*/
-        void set_vertices( const std::vector< unsigned int >& vertices ) {
+        void set_vertices( const std::vector< index_t >& vertices ) {
             points_ = vertices ;
         }
-        //virtual void add_in_boundary( unsigned int e ) ;
+        //virtual void add_in_boundary( index_t e ) ;
         //void set_is_inside_border( bool x ) { is_inside_border_.push_back(x) ; }
     private:
         /// In case of a closed line, the last vertex (equal to the first) is not stored.
-        /// ATTENTION ÇA A CHANGÉ SINON C'EST TROP CHIANT, et en fait c'était pas bon
-        std::vector< unsigned int > points_ ;
+        /// ATTENTION ï¿½A A CHANGï¿½ SINON C'EST TROP CHIANT, et en fait c'ï¿½tait pas bon
+        std::vector< index_t > points_ ;
                  
         //std::vector< bool > is_inside_border_ ;
     } ;
@@ -304,9 +307,9 @@ namespace GRGMesh {
             : M_( const_cast< Line& >( M ) )
         {
         }
-        void set_point( unsigned int id, const vec3& p ) ;
-        vec3& point( unsigned int p ) const ;
-        std::vector< unsigned int >& points() const { return M_.points_ ; }
+        void set_point( index_t id, const vec3& p ) ;
+        vec3& point( index_t p ) const ;
+        std::vector< index_t >& points() const { return M_.points_ ; }
 
         void clear()
         {
@@ -329,10 +332,11 @@ namespace GRGMesh {
         friend class BoundaryModelBuilder ;
         friend class SurfaceMutator ;
     public:
+        const static index_t NO_ADJACENT = index_t( -1 ) ;
         Surface(
             BoundaryModel* model,
-            int id = -1,
-            int parent = -1,
+            index_t id = NO_ID,
+            index_t parent = NO_ID,
             const GEOL_FEATURE& type = default_type )
             :
             BoundaryModelElement( model, 2, id, parent, type ),
@@ -341,9 +345,9 @@ namespace GRGMesh {
         }
         virtual ~Surface(){} ;
        
-        virtual uint32 nb_cells() const { return facets_.empty() ? 0 : facet_ptr_.size() - 1 ; }
-        virtual uint32 nb_points() const { return points_.size() ; }               
-        virtual uint32 model_point_id( unsigned int p ) const {
+        virtual index_t nb_cells() const { return facets_.empty() ? 0 : facet_ptr_.size() - 1 ; }
+        virtual index_t nb_points() const { return points_.size() ; }               
+        virtual index_t model_point_id( index_t p ) const {
             return points_[p] ;
         }
         
@@ -352,21 +356,21 @@ namespace GRGMesh {
 
         bool is_triangulated() const { return is_triangulated_ ; }
         
-        unsigned int facet_begin( uint32 f ) const { return facet_ptr_.at(f) ; }
-        unsigned int facet_end( uint32 f ) const { return facet_ptr_.at(f+1) ; }
-        unsigned int nb_points_in_facet( uint32 f ) const { return facet_end( f ) - facet_begin( f ) ; }
-        unsigned int next_in_facet( uint32 f, uint32 v ) const { 
+        index_t facet_begin( index_t f ) const { return facet_ptr_.at(f) ; }
+        index_t facet_end( index_t f ) const { return facet_ptr_.at(f+1) ; }
+        index_t nb_points_in_facet( index_t f ) const { return facet_end( f ) - facet_begin( f ) ; }
+        index_t next_in_facet( index_t f, index_t v ) const { 
             grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
             if( v != nb_points_in_facet(f)-1 ) return v+1 ;
             else return 0 ;
         }
-        unsigned int prev_in_facet( uint32 f, uint32 v ) const {
+        index_t prev_in_facet( index_t f, index_t v ) const {
             grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
             if( v > 0 ) return v-1 ;
             else return nb_points_in_facet(f)-1 ;
         }            
         
-        inline const vec3& point( uint32 f, uint32 v ) const ;
+        const vec3& point( index_t f, index_t v ) const ;
 
         /** 
          * Access to the ids of the points in the model
@@ -375,39 +379,39 @@ namespace GRGMesh {
          * Should be inline - but linking fails because implementation is in cpp
          * and cannot be there because including boundary_model.h results in circular includes
          */        
-        const vec3& point( uint32 surf_point_id ) const ;
+        virtual const vec3& point( index_t surf_point_id ) const ;
         
         /** Returns the id of point \param v in facet \param f in this surface */
-        unsigned int surf_point_id( uint32 f, uint32 v ) const {
+        index_t surf_point_id( index_t f, index_t v ) const {
             grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
             return facets_[facet_begin(f)+v] ; 
         }
         /** Returns the id of point  \param v, in facet \param f in the parent BoundaryModel */ 
-        unsigned int model_point_id( uint32 f, uint32 v ) const { 
+        index_t model_point_id( index_t f, index_t v ) const { 
             grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
-            return points_[ facets_[facet_begin(f)+v] ] ; 
+            return points_[ surf_point_id( f, v ) ] ;
         }     
 
-        int surf_point_id( uint32 model_point_id ) const {
-            for( uint32 i = 0; i < points_.size() ; ++i ){
+        index_t surf_point_id( index_t model_point_id ) const {
+            for( index_t i = 0; i < points_.size() ; ++i ){
                 if ( points_[i] == model_point_id ) return i ;
             }
-            return -1 ;
+            return NO_ID ;
         }
         
         /** Returns the id of the adjacent facet of \param f in this surface along the edge starting at \param v */
-        int adjacent( uint32 f, uint32 v ) const { 
+        index_t adjacent( index_t f, index_t v ) const {
             grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
             return adjacent_[facet_begin(f)+v] ; 
         }
-        //int adjacent_in_neighbor( unsigned int f, unsigned int e ) const ;
+        //int adjacent_in_neighbor( index_t f, index_t e ) const ;
         
-        bool is_on_border( uint32 f, uint32 v ) const {
+        bool is_on_border( index_t f, index_t v ) const {
             grgmesh_debug_assert( v < nb_points_in_facet(f) ) ;
             return adjacent( f, v ) == -1 ; 
         }
-        bool is_on_border( uint32 f ) const {
-            for( unsigned int adj = 0; adj < nb_points_in_facet(f); adj++ ) {
+        bool is_on_border( index_t f ) const {
+            for( index_t adj = 0; adj < nb_points_in_facet(f); adj++ ) {
                 if( is_on_border( f, adj ) ) return true ;
             }
             return false ;
@@ -420,70 +424,84 @@ namespace GRGMesh {
          * next facet may be the same, from is required to avoid going back 
          */
         void next_on_border(
-            uint32 f, uint32 from, uint32 v,
-            int32& next_f, int32& v_in_next, int32& to  ) const ;
+            index_t f, index_t from, index_t v,
+            index_t& next_f, index_t& v_in_next, index_t& to  ) const ;
         
         /**
          * One directional border traversal
          */
-        void next_on_border( uint32 f, uint32 e, int32& next_f, int32& next_e ) const ;
+        void next_on_border(
+            index_t f,
+            index_t e,
+            index_t& next_f,
+            index_t& next_e ) const ;
 
         //FacetEdge next_on_border( const FacetEdge& te ) const ;
        
-        bool is_triangle( uint32 f ) const { return nb_points_in_facet( f ) == 3 ; }
+        bool is_triangle( index_t f ) const { return nb_points_in_facet( f ) == 3 ; }
 
-//        int find_facet( int id0, int id1 ) const ;
-        int facet_from_model_point_ids( uint32 i0, uint32 i1 ) const ;
-        void edge_from_model_point_ids( uint32 i0, uint32 i1, int32& f, int32& e ) const ;
-        void oriented_edge_from_model_point_ids( uint32 i0, uint32 i1, int32& facet, int32& edge ) const ;
+//        signed_index_t find_facet( signed_index_t id0, signed_index_t id1 ) const ;
+        index_t facet_from_model_point_ids( index_t i0, index_t i1 ) const ;
+        void edge_from_model_point_ids(
+            index_t i0,
+            index_t i1,
+            index_t& f,
+            index_t& e ) const ;
+        void oriented_edge_from_model_point_ids(
+            index_t i0,
+            index_t i1,
+            index_t& facet,
+            index_t& edge ) const ;
 
         
         //int find_facet( const vec3& p0, const vec3& p1 ) const ; // TO DO A VIRER !!
-        //int find_edge( int id0, int id1 ) const ;
+        //int find_edge( signed_index_t id0, signed_index_t id1 ) const ;
 
         /** Returns the id of the point with surface id p0 in the given facet */
-        int facet_point_id( uint32 t, uint32 surf_point_id ) const ;
+        index_t facet_point_id( index_t t, index_t surf_point_id ) const ;
         /** Returns the id of the points with the given coordinates in the given facet */
-     //   int facet_point_id( int t, const vec3& p ) const ;
-        //int edge_id( int t, int p0, int p1 ) const ;
+     //   signed_index_t facet_point_id( signed_index_t t, const vec3& p ) const ;
+        //int edge_id( signed_index_t t, signed_index_t p0, signed_index_t p1 ) const ;
 
         //Box3d bbox() const ;
         //bool contains( const vec3& p ) const ;
         //int find( const vec3& p ) const ;
 
-        int facets_around_point( 
-            uint32 surf_point_id, 
-            std::vector< uint32 >& result, 
+        index_t facets_around_point(
+            index_t surf_point_id, 
+            std::vector< index_t >& result, 
             bool border_only ) const ;
         
-        inline vec3 facet_barycenter( int f ) const ;  
-        inline double facet_area( int f ) const ;
-        inline vec3 facet_normal( int f ) const ;
+        vec3 facet_barycenter( index_t f ) const ;
+        double facet_area( index_t f ) const ;
+        vec3 facet_normal( index_t f ) const ;
         void point_normals( std::vector< vec3 >& normals ) const ;
         
-        int facets_around_point(
-            uint32 surf_point_id,
-            std::vector< uint32 >& result,
+        index_t facets_around_point(
+            index_t surf_point_id,
+            std::vector< index_t >& result,
             bool border_only,
-            uint32 first_facet ) const ;
+            index_t first_facet ) const ;
 
-        unsigned int closest_point_in_facet( uint32 f, const vec3& point ) const ;
+        index_t closest_point_in_facet( index_t f, const vec3& point ) const ;
 
     private:
         void set_key_facet( const KeyFacet& key ) { key_facet_ = key ; }
         void set_first_triangle_as_key() ;
         
-        // On en a besoin à la construction
-        // On ne peut pas utiliser model_point ids - car on ne différencie pas
-        // alors les arrêtes sur des bords internes = 1 bord - mais points identiques sur
-        // triangles en face dans la même surfaace
-        int facet_from_surface_point_ids( uint32 i0, uint32 i1 ) const ;
+        // On en a besoin ï¿½ la construction
+        // On ne peut pas utiliser model_point ids - car on ne diffï¿½rencie pas
+        // alors les arrï¿½tes sur des bords internes = 1 bord - mais points identiques sur
+        // triangles en face dans la mï¿½me surfaace
+        index_t facet_from_surface_point_ids( index_t i0, index_t i1 ) const ;
 
 
-        void set_adjacent( int f, int e, int adjacent ) { adjacent_[facet_begin(f)+e] = adjacent ; }
+        void set_adjacent( index_t f, index_t e, index_t adjacent ) {
+            adjacent_[facet_begin(f)+e] = adjacent ;
+        }
 
         void compute_is_triangulated() {
-            for( unsigned int f = 0; f < nb_cells(); f++ ) {
+            for( index_t f = 0; f < nb_cells(); f++ ) {
                 if( !is_triangle( f ) ) {
                     is_triangulated_ = false ;
                     return ;
@@ -491,10 +509,10 @@ namespace GRGMesh {
             }
             is_triangulated_ = true ;
         }       
-        //int has_edge( int f, int v0, int v1 ) const ;
-        //int has_oriented_edge( int f, int v0, int v1 ) const ;
+        //int has_edge( signed_index_t f, signed_index_t v0, signed_index_t v1 ) const ;
+        //int has_oriented_edge( signed_index_t f, signed_index_t v0, signed_index_t v1 ) const ;
 
-        /*bool same_point( int i, int j ) const {
+        /*bool same_point( signed_index_t i, signed_index_t j ) const {
             if( i == j ) return true ;
             else if( points_[i] == points_[j] ) return true ;
             else return false ;
@@ -502,9 +520,9 @@ namespace GRGMesh {
 
 
         void set_geometry(
-            const std::vector< uint32 >& points,
-            const std::vector< uint32 >& facets,
-            const std::vector< uint32 >& facet_ptr )
+            const std::vector< index_t >& points,
+            const std::vector< index_t >& facets,
+            const std::vector< index_t >& facet_ptr )
         {
             // Are these copies parallelized ?
             points_ = points ;
@@ -514,7 +532,7 @@ namespace GRGMesh {
             compute_is_triangulated() ;
         }
 
-        void set_adjacent( const std::vector< int >& adjacent ){
+        void set_adjacent( const std::vector< index_t >& adjacent ){
             grgmesh_assert( adjacent.size() == facets_.size() ) ;
             adjacent_ = adjacent ;
         }
@@ -523,15 +541,15 @@ namespace GRGMesh {
     private:
         KeyFacet key_facet_ ;
 
-        std::vector< uint32 > points_ ;
-        std::vector< uint32 > facets_ ;
-        std::vector< uint32 > facet_ptr_ ;
+        std::vector< index_t > points_ ;
+        std::vector< index_t > facets_ ;
+        std::vector< index_t > facet_ptr_ ;
 
     
         // The adjacent facet is given for each vertex of each facet for the edge
         // starting at this vertex.
-        // -1 if the edge is along a Line (Surface boundary)    
-        std::vector< int > adjacent_ ;
+        // NO_ADJACENT if the edge is along a Line (Surface boundary)
+        std::vector< index_t > adjacent_ ;
 
         bool is_triangulated_ ;
         
@@ -548,12 +566,12 @@ namespace GRGMesh {
             : M_( const_cast< Surface& >( M ) )
         {
         }
-        void set_point( unsigned int id, const vec3& p ) ;
-        vec3& point( unsigned int p ) const ;
-        std::vector< unsigned int >& points() const { return M_.points_ ; }
-        std::vector< unsigned int >& facets() const { return M_.facets_ ; }
-        std::vector< unsigned int >& facet_ptr() const { return M_.facet_ptr_ ; }
-        std::vector< int >& adjacents() const { return M_.adjacent_ ; }
+        void set_point( index_t id, const vec3& p ) ;
+        vec3& point( index_t p ) const ;
+        std::vector< index_t >& points() const { return M_.points_ ; }
+        std::vector< index_t >& facets() const { return M_.facets_ ; }
+        std::vector< index_t >& facet_ptr() const { return M_.facet_ptr_ ; }
+        std::vector< index_t >& adjacents() const { return M_.adjacent_ ; }
 
         void clear()
         {
@@ -575,106 +593,12 @@ namespace GRGMesh {
     class GRGMESH_API BoundaryModelElementMeasure {
     public:
         static double size( const BoundaryModelElement* E ) ;
-        static double cell_size( const BoundaryModelElement* E, uint32 cell ) ;
+        static double cell_size( const BoundaryModelElement* E, index_t cell ) ;
         static double distance( const BoundaryModelElement* from,  const vec3& p ) ;
         static double distance( const BoundaryModelElement* from, const BoundaryModelElement* to ) ;
         static vec3 barycenter ( const BoundaryModelElement* E ) ;
-        static vec3 barycenter ( const BoundaryModelElement* E, const std::vector< uint32 >& cells ) ;
+        static vec3 barycenter ( const BoundaryModelElement* E, const std::vector< index_t >& cells ) ;
     } ;
-
-
-
-# ifdef TOTOTO
-    class BoundaryModelElementMeasure {
-    public:
-        BoundaryModelElementMeasure( const BoundaryModelElement& in ) :
-          element_ ( in ) {};
-
-        // Connectivity measures
-        std::vector< const BoundaryModelElement* > compute_neighbors(
-            GEOL_FEATURE through, bool exclude_boundaries = true ) const ;
-        
-        
-
-        // Geometrical measures
-        virtual double size () const ;
-        virtual double cell_size( int /*i*/ ) const { return 0. ; }
-
-        virtual double distance( const vec3& p ) const ;
-        virtual double distance( const BoundaryModelElement& e ) const ;
-        virtual double distance( int /*simplex*/, const BoundaryModelElement& /*to*/ ) const { return -1 ; }
-        
-        virtual double min_angle( const BoundaryModelElement& e ) const ;
-        virtual void angles(
-            const BoundaryModelElement& /*with*/,
-            std::vector< std::pair< double, double > >& /*values*/,
-            bool /*same_side*/ ) const {} ;
-        
-        virtual vec3 average_orientation() const ;      
-        double average_angle_to_y() const ;
-        double average_dip() const ;
-
-        static void print_categories( std::ostream& out ) ;
-        void print( std::ostream& out ) const ;      
-
-        static void print_complexity_categories( std::ostream& out ) ;
-        virtual void print_complexity( std::ostream& out ) const ;
-
-        void compute_distances( std::vector< std::pair< double, double > >& values ) const ;
-        void compute_angles( std::vector< std::pair< double, double > >& values ) const ;
-        int nb_incident_elements( bool exclude_voi = true ) const ;
-        int nb_boundary_elements( bool exclude_voi = true ) const ;
-
-    protected:
-        const BoundaryModelElement& element_ ;
-
-
-    } ;
-
-    // In corners 
-
-    virtual void print_complexity( std::ostream& out ) const ;
-        virtual double size() const { return 0. ; }
-        virtual double distance( const vec3& p ) const { return ::Geomesh::distance( p, point() ) ; }
-        virtual double distance( BoundaryModelElement* e ) const { return e->distance( point() ) ; }
-
-        // In Lines
-           virtual double size() const ;
-        virtual double cell_size( int i ) const ;
-        virtual double distance( const vec3& p ) const ;
-        virtual double distance( BoundaryModelElement* e ) const ;
-        virtual double distance( int simplex, BoundaryModelElement* to ) const ;        
-        virtual double min_angle( BoundaryModelElement* e ) const ;
-        virtual vec3 average_orientation() const ;      
-        
-        virtual void angles(
-            BoundaryModelElement* with,
-            std::vector< std::pair< double, double > >& values,
-            bool same_side = false ) const ;
-
-        virtual void print_complexity( std::ostream& out ) const ;
-
-        // On facets
-           vec3 closest_normal( const vec3& p, vec3& b ) const ;
-            virtual double size() const ;
-        virtual double cell_size( int i ) const ;
-        virtual double distance( const vec3& p ) const ;
-        virtual double distance( BoundaryModelElement* e ) const ;
-        virtual double distance( int facet, BoundaryModelElement* to ) const ;
-        virtual double min_angle( BoundaryModelElement* e ) const ;
-        virtual void angles( 
-            BoundaryModelElement* with,
-            std::vector< std::pair< double, double > >& values,
-            bool same_side = false ) const ;
-        virtual vec3 average_orientation() const ;
-          virtual void print_complexity( std::ostream& out ) const ;
-        void print_mesh( const std::string& filename ) const ;
-
-                vec3 facet_normal( int t ) const ;
-        void point_normal( std::vector< vec3 >& normals ) const ;
-#endif // Code à porter
-
-
 
 } // namespace
 
