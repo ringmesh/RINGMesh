@@ -277,18 +277,16 @@ namespace GRGMesh {
         bool is_inside_border( const BoundaryModelElement& e ) const ;
             
         virtual const vec3& point( index_t line_point_id ) const ;
-        inline vec3 segment_barycenter( index_t s ) const ;
+        vec3 segment_barycenter( index_t s ) const ;
 
-        inline double segment_length( index_t s ) const ;
+        double segment_length( index_t s ) const ;
+        double total_length() const ;
             
 
     private:
         /*void copy_macro_topology(
             const Line& rhs,
             BoundaryModel& model ) ;*/
-        void set_vertices( const std::vector< index_t >& vertices ) {
-            points_ = vertices ;
-        }
         //virtual void add_in_boundary( index_t e ) ;
         //void set_is_inside_border( bool x ) { is_inside_border_.push_back(x) ; }
     private:
