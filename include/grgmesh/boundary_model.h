@@ -122,7 +122,7 @@ namespace GRGMesh {
         }
 
     private:
-        bool load_gocad_model3d( std::istream& in ) ;
+        bool load_gocad_model3d( const std::string& in ) ;
 
         bool check_model3d_compatibility() ;
         static void save_type( std::ostream& out, GEOL_FEATURE t ) ;
@@ -315,7 +315,7 @@ namespace GRGMesh {
         BoundaryModelBuilder( BoundaryModel& model )
             : model_( model ){}
         virtual ~BoundaryModelBuilder(){} ;
-        void load_file( std::istream& in ) ;
+        void load_file( const std::string& in ) ;
         bool rebuild() ;
         void copy_macro_topology( const BoundaryModel* from ) ;
 
