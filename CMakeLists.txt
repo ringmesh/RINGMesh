@@ -3,10 +3,15 @@ cmake_minimum_required(VERSION 2.8)
 
 message("CMAKE_BUILD_TYPE is equal to " ${CMAKE_BUILD_TYPE})
 # debug suffix for libraries
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(SUFF "_d")
-    MESSAGE("DEBUG! SUFFIX = ${SUFF}")
-endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+
+if (UNIX)
+	if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+	    set(SUFF "_d")
+	    MESSAGE("DEBUG! SUFFIX = ${SUFF}")
+	endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+else(UNIX)
+    set(SUFF "")
+endif(UNIX)
 
 set(GRGMESH_PROJECT GRGMesh${SUFF})
 project(${GRGMESH_PROJECT})
