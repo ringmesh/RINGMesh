@@ -318,7 +318,7 @@ namespace GRGMesh {
         BoundaryModelBuilder( BoundaryModel& model )
             : model_( model ){}
         virtual ~BoundaryModelBuilder(){} ;
-        void load_file( const std::string& in ) ;
+        void load_file( std::istream& in ) ;
         bool rebuild() ;
         void copy_macro_topology( const BoundaryModel* from ) ;
 

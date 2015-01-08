@@ -23,8 +23,14 @@ namespace GRGMesh {
         const std::string& filename,
         BoundaryModel& model )
     {
+        std::ifstream input( filename.c_str() ) ;
+        if( !input ) {
+            std::cout << "cannot open file:" << filename << std::endl ;
+            return false ;
+        }
+
         BoundaryModelBuilder builder( model ) ;
-        builder.load_file( filename ) ;
+        builder.load_file( input ) ;
         return true ;
     }
 
