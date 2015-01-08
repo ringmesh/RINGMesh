@@ -261,6 +261,10 @@ namespace GRGMesh {
         return model_->vertex( vertices_.at(surf_vertex_id) ) ;
     }
 
+    index_t Surface::model_facet_id( index_t f ) const {
+        return model_->model_facet( id_, f ) ;
+    }
+
     void Surface::set_first_triangle_as_key()
     {
         // I guess it should'nt be a problem if the first facet is not a triangle

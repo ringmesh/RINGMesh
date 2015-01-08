@@ -398,6 +398,8 @@ namespace GRGMesh {
             }
             return NO_ID ;
         }
+
+        index_t model_facet_id( index_t f ) const ;
         
         /** Returns the id of the adjacent facet of \param f in this surface along the edge starting at \param v */
         index_t adjacent( index_t f, index_t v ) const {
