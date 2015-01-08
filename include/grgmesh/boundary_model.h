@@ -49,6 +49,8 @@ namespace GRGMesh {
         typedef AttributeManager< EDGE >  EdgeAttributeManager ; // Edges of what ?? lines
         typedef AttributeManager< FACET > FacetAttributeManager ;
         
+        const static index_t NO_ID = index_t( -1 ) ;
+
         /**
          * \brief Construct an empty BoundaryModel
          */
@@ -315,6 +317,8 @@ namespace GRGMesh {
      */ 
     class GRGMESH_API BoundaryModelBuilder {
     public:
+        const static index_t NO_ID = index_t( -1 ) ;
+
         BoundaryModelBuilder( BoundaryModel& model )
             : model_( model ){}
         virtual ~BoundaryModelBuilder(){} ;
@@ -324,7 +328,7 @@ namespace GRGMesh {
 
         index_t create_interface(
             const std::string& name,
-            signed_index_t id = -1,
+            index_t id = NO_ID,
             GEOL_FEATURE type = default_type ) ;
 
         void add_interface_child( index_t id, index_t child ) {
@@ -357,18 +361,18 @@ namespace GRGMesh {
             model_.regions_.reserve( size ) ;
         }
 
-        signed_index_t interface_id( const std::string& name ) const ;
+        index_t interface_id( const std::string& name ) const ;
 
         index_t find_or_create_corner( index_t index ) ;
         index_t find_or_create_line( index_t corner0, index_t corner1, std::vector< index_t >& vertices ) ;
         index_t find_or_create_contact( std::vector< index_t >& interfaces, GEOL_FEATURE type ) ;
         
-        signed_index_t find_corner( const vec3& ) const ;
-        signed_index_t find_corner( index_t ) const ;
-        signed_index_t find_contact( const std::vector< index_t >& interfaces ) const ;
-        signed_index_t find_line( index_t corner0, index_t corner1, const std::vector< index_t >& vertices ) const ;
+        index_t find_corner( const vec3& ) const ;
+        index_t find_corner( index_t ) const ;
+        index_t find_contact( const std::vector< index_t >& interfaces ) const ;
+        index_t find_line( index_t corner0, index_t corner1, const std::vector< index_t >& vertices ) const ;
 
-        signed_index_t find_key_facet( index_t surface_id, const vec3& p0, const vec3& p1, const vec3& p2, 
+        index_t find_key_facet( index_t surface_id, const vec3& p0, const vec3& p1, const vec3& p2, 
             bool& same_orientation ) const ;  
          
         /**
@@ -443,12 +447,12 @@ namespace GRGMesh {
         }
             
         index_t create_line( 
-            signed_index_t id = -1, 
+            index_t id = NO_ID, 
             const std::vector< index_t >& vertices = empty_index_vector ) ;
         
         index_t create_surface(
-            signed_index_t id = -1,
-            signed_index_t parent = -1,
+            index_t id = NO_ID,
+            index_t parent = NO_ID,
             GEOL_FEATURE type = default_type ) ;
 
         void create_surface(
@@ -456,14 +460,14 @@ namespace GRGMesh {
             const std::string& type,
             const KeyFacet& key ) ;
         
-        index_t create_region( signed_index_t id = -1 ) ;
+        index_t create_region( index_t id = NO_ID ) ;
 
         index_t create_region(
             const std::string& name,
             const std::vector< std::pair< index_t, bool > >& boundaries,
-            signed_index_t id = -1 ) ;   
+            index_t id = NO_ID ) ;   
 
-        index_t create_layer( const std::string& name, signed_index_t id = -1 ) ;
+        index_t create_layer( const std::string& name, index_t id = NO_ID ) ;
       
         void set_corner( index_t  corner_id, index_t vertex_id ) ;
         void set_corner( index_t  corner_id, const vec3& vertex ) ;

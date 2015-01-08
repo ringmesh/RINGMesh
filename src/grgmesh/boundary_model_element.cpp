@@ -320,11 +320,11 @@ namespace GRGMesh {
 
         if( nb_around == 2 ) {
             if( next_f == f ) next_f = facets[1] ;
-            grgmesh_debug_assert( next_f != f ) ;
+            grgmesh_debug_assert( next_f != NO_ID ) ;
 
             // Now get the other vertex that is on the boundary opposite to p1
             v_in_next = facet_vertex_id( next_f, V ) ;
-            grgmesh_assert( v_in_next != -1 ) ;
+            grgmesh_assert( v_in_next != NO_ID ) ;
 
             // The edges containing V in next_f are
             // the edge starting at v_in_next and the one ending there

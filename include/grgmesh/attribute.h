@@ -32,7 +32,7 @@ namespace GRGMesh {
      * Vector size depends on the size of the items stored.
      * Derives of Counted so that SmartPointers of this class may be used
      */
-    class AttributeStore: public GEO::Counted {
+    class GRGMESH_API AttributeStore: public GEO::Counted {
     public:
         byte* data( index_t id)
         {
@@ -52,10 +52,10 @@ namespace GRGMesh {
 
     } ;
 
-    typedef GEO::SmartPointer< AttributeStore > AttributeStore_var ;
+    typedef GRGMESH_API GEO::SmartPointer< AttributeStore > AttributeStore_var ;
 
     template< class ATTRIBUTE >
-    class AttributeStoreImpl: public AttributeStore {
+    class GRGMESH_API AttributeStoreImpl: public AttributeStore {
     public:
         AttributeStoreImpl( index_t size )
             : AttributeStore( sizeof(ATTRIBUTE), size )
@@ -75,7 +75,7 @@ namespace GRGMesh {
      * define possible locations with an enum. Jeanne.
      */
     template< int32 LOCATION >
-    class AttributeManager {
+    class GRGMESH_API AttributeManager {
     public:
         enum Mode {
             FIND, CREATE, FIND_OR_CREATE
@@ -136,7 +136,7 @@ namespace GRGMesh {
      * Access to attribute value only using the index of the element in the object. Jeanne
      */ 
     template< int32 LOCATION, class ATTRIBUTE >
-    class Attribute {
+    class GRGMESH_API Attribute {
     public:
         typedef Attribute< LOCATION, ATTRIBUTE > thisclass ;
         typedef AttributeManager< LOCATION > Manager ;
