@@ -175,7 +175,7 @@ namespace GRGMesh {
     } ;   
 
     template< class ATTRIBUTE >
-    class GRGMESH_API BoundaryModelPointAttribute: public Attribute< BoundaryModel::POINT, ATTRIBUTE > {
+    class GRGMESH_API BoundaryModelVertexAttribute: public Attribute< BoundaryModel::POINT, ATTRIBUTE > {
     public:
         typedef Attribute< BoundaryModel::POINT, ATTRIBUTE > superclass ;
 
@@ -191,16 +191,16 @@ namespace GRGMesh {
                 model->nb_vertices() ) ;
         }
 
-        BoundaryModelPointAttribute()
+        BoundaryModelVertexAttribute()
         {
         }
 
-        BoundaryModelPointAttribute( const BoundaryModel* model )
+        BoundaryModelVertexAttribute( const BoundaryModel* model )
         {
             bind( model ) ;
         }
 
-        BoundaryModelPointAttribute( const BoundaryModel* model, const std::string& name )
+        BoundaryModelVertexAttribute( const BoundaryModel* model, const std::string& name )
         {
             bind( model, name ) ;
         }
