@@ -58,6 +58,21 @@ namespace GRGMesh {
         return -1 ;
     }
 
+    index_t BoundaryModel::find_region( index_t surface_part_id, bool side ) const
+    {
+        grgmesh_debug_assert( surface_part_id < nb_surfaces() ) ;
+        for( index_t r = 0; r < nb_regions(); r++ ) {
+            const BoundaryModelElement& cur_region = region( r ) ;
+            for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
+                if( cur_region.side( s ) == side
+                    && cur_region.boundary_id( s ) == surface_part_id ) {
+                    return r ;
+                }
+            }
+        }
+        return BoundaryModelElement::NO_ID ;
+    }
+
     void BoundaryModel::surface_facet(
         index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id 
     ) const {
@@ -746,7 +761,7 @@ namespace GRGMesh {
 		while( !lis.eof() ) {
 
 		    index_t field = 0 ;
-            lis.get_line() ;
+            lis.get_line() ; lis.get_fields() ;
             std::string keyword( lis.field( field++ ) ) ;
 
             if( read_model ) {
@@ -784,17 +799,17 @@ namespace GRGMesh {
                     // Get the key facet that give the orientation of the surface part
                     // Triangles in Gocad clockwise
                     vec3 p0, p1, p2 ;
-                    lis.get_line() ;
+                    lis.get_line() ; lis.get_fields() ;
                     field = 0 ;
                     for( index_t coord = 0; coord < 3; coord++ ) {
                         p0[coord] = lis.field_as_double( field++ ) ;
                     }
-                    lis.get_line() ;
+                    lis.get_line() ; lis.get_fields() ;
                     field = 0 ;
                     for( index_t coord = 0; coord < 3; coord++ ) {
                         p1[coord] = lis.field_as_double( field++ ) ;
                     }
-                    lis.get_line() ;
+                    lis.get_line() ; lis.get_fields() ;
                     field = 0 ;
                     for( index_t coord = 0; coord < 3; coord++ ) {
                         p2[coord] = lis.field_as_double( field++ ) ;
@@ -812,7 +827,7 @@ namespace GRGMesh {
                     bool end_region = false ;
 
                     while( !end_region ) {
-                        lis.get_line() ;
+                        lis.get_line() ; lis.get_fields() ;
                         field = 0 ;
                         for( index_t i = 0; i < 5; ++i ) {
                             index_t tface_id = lis.field_as_int( field++ ) ;
@@ -842,7 +857,7 @@ namespace GRGMesh {
                     index_t layer_id = create_layer( name ) ;
                     bool end_layer = false ;
                     while( !end_layer ) {
-                        lis.get_line() ;
+                        lis.get_line() ; lis.get_fields() ;
                         field = 0 ;
                         for( index_t i = 0; i < 5; ++i ) {
                             index_t region_id = lis.field_as_int( field++ ) ;

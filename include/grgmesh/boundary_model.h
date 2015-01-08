@@ -104,6 +104,8 @@ namespace GRGMesh {
         const BoundaryModelElement& one_interface( index_t index ) const { return interfaces_.at(index) ; }
         const BoundaryModelElement& layer( index_t index ) const { return layers_.at(index) ; }
         
+        index_t find_region( index_t surface_part_id, bool side ) const ;
+
         /// \todo Write a proper IO class for Boundary models
         bool save_gocad_model3d( std::ostream& out ) ;        
         void save_as_eobj_file( const std::string& file_name ) ;
