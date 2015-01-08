@@ -63,7 +63,9 @@ namespace GRGMesh {
         const vec3& vertex( index_t p ) const { return vertices_.at(p) ; }
         index_t vertex_index( const vec3& p ) const ;
 
-        inline index_t nb_facets() const ;
+        index_t nb_facets() const  {
+            return nb_facets_.back() ;
+        }
         void surface_facet( index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id ) const ;     
         index_t model_facet( index_t surface_id, index_t surf_facet_id ) const ;
 
@@ -99,7 +101,7 @@ namespace GRGMesh {
          }
 
         const BoundaryModelElement& contact( index_t index ) const { return contacts_.at(index) ; }
-        const BoundaryModelElement& interface( index_t index ) const { return interfaces_.at(index) ; }
+        const BoundaryModelElement& one_interface( index_t index ) const { return interfaces_.at(index) ; }
         const BoundaryModelElement& layer( index_t index ) const { return layers_.at(index) ; }
         
         /// \todo Write a proper IO class for Boundary models

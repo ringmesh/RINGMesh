@@ -58,10 +58,6 @@ namespace GRGMesh {
         return -1 ;
     }
 
-    index_t BoundaryModel::nb_facets() const {
-        return nb_facets_.back() ;    
-    }
-
     void BoundaryModel::surface_facet(
         index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id 
     ) const {
@@ -662,7 +658,7 @@ namespace GRGMesh {
         }
 #pragma omp parallel for
         for( index_t i = 0; i < model_.nb_interfaces(); i++ ) {
-            model_.interfaces_[i].copy_macro_topology( from->interface( i ), model_ ) ;
+            model_.interfaces_[i].copy_macro_topology( from->one_interface( i ), model_ ) ;
         }
         model_.universe_.copy_macro_topology( from->universe_, model_ ) ;
     }
@@ -1704,7 +1700,7 @@ namespace GRGMesh {
     signed_index_t BoundaryModelBuilder::interface_id( const std::string& name ) const
     {
         for( index_t i = 0; i < model_.nb_interfaces(); ++i ) {
-            if( model_.interface(i).name() == name ) {
+            if( model_.one_interface(i).name() == name ) {
                 return i ;
             }
         }
@@ -1775,7 +1771,7 @@ namespace GRGMesh {
     {
         std::vector< const BoundaryModelElement* > comp( interfaces.size() ) ;
         for( index_t i = 0; i < interfaces.size(); ++i ) {
-            comp[i] = &model_.interface(interfaces[i]) ;
+            comp[i] = &model_.one_interface(interfaces[i]) ;
         }
 
         for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
