@@ -32,7 +32,7 @@ namespace GRGMesh {
             case 1:
                 return model_->contact( parent_ ) ;
             case 2:
-                return model_->interface( parent_ ) ;
+                return model_->one_interface( parent_ ) ;
             default:
                 grgmesh_assert_not_reached ;
                 return dummy_element ;
@@ -66,7 +66,7 @@ namespace GRGMesh {
                 return model_->line( id ) ;
             case 1:
                 if( has_parent() ) return model_->surface( id ) ;
-                return model_->interface( id ) ;
+                return model_->one_interface( id ) ;
             case 2:
                 return model_->region( id ) ;
             default:
