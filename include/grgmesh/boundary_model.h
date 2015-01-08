@@ -99,7 +99,7 @@ namespace GRGMesh {
          }
 
         const BoundaryModelElement& contact( index_t index ) const { return contacts_.at(index) ; }
-        const BoundaryModelElement& one_interface( index_t index ) const { return interfaces_.at(index) ; }
+        const BoundaryModelElement& interface( index_t index ) const { return interfaces_.at(index) ; }
         const BoundaryModelElement& layer( index_t index ) const { return layers_.at(index) ; }
         
         /// \todo Write a proper IO class for Boundary models
@@ -179,13 +179,13 @@ namespace GRGMesh {
     public:
         typedef Attribute< BoundaryModel::POINT, ATTRIBUTE > superclass ;
 
-        void bind( BoundaryModel* model, const std::string& name )
+        void bind( const BoundaryModel* model, const std::string& name )
         {
             superclass::bind( model->vertex_attribute_manager(), model->nb_vertices(),
                 name ) ;
         }
 
-        void bind( BoundaryModel* model )
+        void bind( const BoundaryModel* model )
         {
             superclass::bind( model->vertex_attribute_manager(),
                 model->nb_vertices() ) ;
@@ -195,17 +195,17 @@ namespace GRGMesh {
         {
         }
 
-        BoundaryModelPointAttribute( BoundaryModel* model )
+        BoundaryModelPointAttribute( const BoundaryModel* model )
         {
             bind( model ) ;
         }
 
-        BoundaryModelPointAttribute( BoundaryModel* model, const std::string& name )
+        BoundaryModelPointAttribute( const BoundaryModel* model, const std::string& name )
         {
             bind( model, name ) ;
         }
 
-        static bool is_defined( BoundaryModel* model, const std::string& name )
+        static bool is_defined( const BoundaryModel* model, const std::string& name )
         {
             return superclass::is_defined( model->vertex_attribute_manager(), name ) ;
         }
@@ -254,13 +254,13 @@ namespace GRGMesh {
     public:
         typedef Attribute< BoundaryModel::FACET, ATTRIBUTE > superclass ;
 
-        void bind( BoundaryModel* model, const std::string& name )
+        void bind( const BoundaryModel* model, const std::string& name )
         {
             superclass::bind( model->facet_attribute_manager(), model->nb_facets(),
                 name ) ;
         }
 
-        void bind( BoundaryModel* model )
+        void bind( const BoundaryModel* model )
         {
             superclass::bind( model->facet_attribute_manager(),
                 model->nb_facets() ) ;
@@ -270,17 +270,17 @@ namespace GRGMesh {
         {
         }
 
-        BoundaryModelFacetAttribute( BoundaryModel* model )
+        BoundaryModelFacetAttribute( const BoundaryModel* model )
         {
             bind( model ) ;
         }
 
-        BoundaryModelFacetAttribute( BoundaryModel* model, const std::string& name )
+        BoundaryModelFacetAttribute( const BoundaryModel* model, const std::string& name )
         {
             bind( model, name ) ;
         }
 
-        static bool is_defined( BoundaryModel* model, const std::string& name )
+        static bool is_defined( const BoundaryModel* model, const std::string& name )
         {
             return superclass::is_defined( model->facet_attribute_manager(), name ) ;
         }
