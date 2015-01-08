@@ -108,8 +108,14 @@ namespace GRGMesh {
      */
     bool BoundaryModel::load_gocad_model3d( const std::string& in )
     {
+        std::ifstream input( in.c_str() ) ;
+        if( !input ) {
+            std::cout << "cannot open file:" << in << std::endl ;
+            return false ;
+        }
+
         BoundaryModelBuilder builder( *this ) ;
-        builder.load_file( in ) ;
+        builder.load_file( input ) ;
         return true ;
     }
 
@@ -691,7 +697,7 @@ namespace GRGMesh {
      * Gocad Layer  <-> BoundaryModel Layer
      *
      */
-    void BoundaryModelBuilder::load_file( const std::string& in )
+    void BoundaryModelBuilder::load_file( std::istream& in )
     {
         // Clear the model_ //  Not sure this is actually useful
         model_.name_.clear() ;
@@ -752,17 +758,13 @@ namespace GRGMesh {
         std::vector< index_t > change_key_facet ;
 
         /****** File reading **********************************/
-        GEO::LineInput lis( in ) ;
-        if( !lis.OK() ) {
-            std::cout << "cannot open file:" << in << std::endl ;
-            return ;
-        }
+        InputStream lis( in ) ;
 
 		while( !lis.eof() ) {
 
-		    index_t field = 0 ;
-            lis.get_line() ; lis.get_fields() ;
-            std::string keyword( lis.field( field++ ) ) ;
+            lis.get_line() ;
+            std::string keyword ;
+            lis >> keyword ;
 
             if( read_model ) {
                 if( std::string( keyword, 0, 5 ) == "name:" ) {                    
@@ -773,10 +775,10 @@ namespace GRGMesh {
                     /// the corresponding Interface from its name
                     std::string temp_str ;
                     std::stringstream tsurf_name ;
-                    temp_str = std::string( lis.field( field++ ) ) ;
+                    lis >> temp_str ;
                     tsurf_name << temp_str ;
-                    while( field < lis.nb_fields() ) {
-                        temp_str = std::string( lis.field( field++ ) ) ;
+                    while( !lis.eol() ) {
+                        lis >> temp_str ;
                         tsurf_name << "_" << temp_str ;
                     }
                     create_interface( tsurf_name.str() ) ;
@@ -785,52 +787,47 @@ namespace GRGMesh {
                     /// 2. Read the TFace info and build the 
                     /// corresponding Surface from its parent Interface, its type, and 
                     /// its key facet - from which + and - side are determined
-                    index_t id( lis.field_as_uint( field++ ) ) ;
-                    std::string type( lis.field( field++ ) ) ;
+                    index_t id ;
+                    lis >> id ;
+                    std::string type ;
+                    lis >> type ;
 
                     std::string temp_str ;
                     std::stringstream tsurf_name ;
-                    temp_str = std::string( lis.field( field++ ) ) ;
+                    lis >> temp_str ;
                     tsurf_name << temp_str ;
-                    while( field < lis.nb_fields() ) {
-                        temp_str = std::string( lis.field( field++ ) ) ;
+                    while( !lis.eol() ) {
+                        lis >> temp_str ;
                         tsurf_name << "_" << temp_str ;
                     }
                     // Get the key facet that give the orientation of the surface part
                     // Triangles in Gocad clockwise
                     vec3 p0, p1, p2 ;
-                    lis.get_line() ; lis.get_fields() ;
-                    field = 0 ;
-                    for( index_t coord = 0; coord < 3; coord++ ) {
-                        p0[coord] = lis.field_as_double( field++ ) ;
-                    }
-                    lis.get_line() ; lis.get_fields() ;
-                    field = 0 ;
-                    for( index_t coord = 0; coord < 3; coord++ ) {
-                        p1[coord] = lis.field_as_double( field++ ) ;
-                    }
-                    lis.get_line() ; lis.get_fields() ;
-                    field = 0 ;
-                    for( index_t coord = 0; coord < 3; coord++ ) {
-                        p2[coord] = lis.field_as_double( field++ ) ;
-                    }
+                    lis.get_line() ;
+                    lis >> p0 ;
+                    lis.get_line() ;
+                    lis >> p1 ;
+                    lis.get_line() ;
+                    lis >> p2 ;
+
                     create_surface( tsurf_name.str(), type,
                         KeyFacet( p0, p1, p2 ) ) ;
                     nb_tface++ ;
                 } else if( keyword == "REGION" ) {
                     /// 3. Read Region information and create them from their name,
                     /// the surfaces on their boundary                    
-                    index_t id = lis.field_as_int( field++ ) ;
-                    std::string name( lis.field( field++ ) ) ;
+                    index_t id ;
+                    std::string name ;
+                    lis >> id >> name ;
 
                     std::vector< std::pair< index_t, bool > > region_boundaries ;
                     bool end_region = false ;
 
                     while( !end_region ) {
-                        lis.get_line() ; lis.get_fields() ;
-                        field = 0 ;
+                        lis.get_line() ;
                         for( index_t i = 0; i < 5; ++i ) {
-                            index_t tface_id = lis.field_as_int( field++ ) ;
+                            signed_index_t tface_id ;
+                            lis >> tface_id ;
                             if( tface_id == 0 ) {
                                 end_region = true ;
                                 break ;
@@ -853,14 +850,15 @@ namespace GRGMesh {
                 } else if( keyword == "LAYER" ) {
                     /// 4. Build the volumetric layers from their name and 
                     /// the regions in them
-                    std::string name( lis.field( field++ ) ) ;
+                    std::string name ;
+                    lis >> name ;
                     index_t layer_id = create_layer( name ) ;
                     bool end_layer = false ;
                     while( !end_layer ) {
-                        lis.get_line() ; lis.get_fields() ;
-                        field = 0 ;
+                        lis.get_line() ;
                         for( index_t i = 0; i < 5; ++i ) {
-                            index_t region_id = lis.field_as_int( field++ ) ;
+                            index_t region_id ;
+                            lis >> region_id ;
                             if( region_id == 0 ) {
                                 end_layer = true ;
                                 break ;
@@ -883,7 +881,8 @@ namespace GRGMesh {
                     tsurf_count++ ;
                 }
                 if( keyword == "ZPOSITIVE" ) {
-                    std::string positive( lis.field( field++ ) ) ;
+                    std::string positive ;
+                    lis >> positive ;
                     if( positive == "Elevation" ) z_sign = 1 ;
                     else if( positive == "Depth" ) z_sign = -1 ;
                 } else if( keyword == "END" ) {
@@ -938,24 +937,20 @@ namespace GRGMesh {
                 }
                 /// 4. Read the surface vertices and facets (only triangles in Gocad Model3d files)
                 else if( keyword == "VRTX" || keyword == "PVRTX" ) {
-                    index_t id = lis.field_as_int( field++ ) ;
+                    index_t id ;
                     vec3 p ;
-                    for( index_t coord = 0; coord < 3; coord++ ) {
-                        p[coord] = lis.field_as_double( field++ ) ;
-                    }
+                    lis >> id >> p ;
                     p.z *= z_sign ;
                     tsurf_vertex_ptr.push_back( add_vertex( p ) ) ;
                 } else if( keyword == "PATOM" || keyword == "ATOM" ) {
-                    // This keyword is used to refer to a previous VERTEX in the
-                    // same TSurf
-                    index_t id = lis.field_as_int( field++ ) ;
-                    index_t v_id = lis.field_as_int( field++ ) ;
+                    index_t id ;
+                    index_t v_id ;
+                    lis >> id >> v_id ;
                     tsurf_vertex_ptr.push_back( tsurf_vertex_ptr[v_id - 1] ) ;
                 } else if( keyword == "TRGL" ) {
                     // Ids of the vertices of each triangle in the TSurf
-                    index_t p1 = lis.field_as_int( field++ ) ;
-                    index_t p2 = lis.field_as_int( field++ ) ;
-                    index_t p3 = lis.field_as_int( field++ ) ;
+                    index_t p1, p2, p3 ;
+                    lis >> p1 >> p2 >> p3 ;
                     // Change to ids in the TFace
                     p1 += -tface_vertex_start.back()-1 ;
                     p2 += -tface_vertex_start.back()-1 ;
@@ -969,7 +964,8 @@ namespace GRGMesh {
                 /// 5. Build the corners from their position and the surface parts
                 ///    containing them
                 else if( keyword == "BSTONE" ) {
-                    index_t v_id = lis.field_as_int( field++ ) ;
+                    index_t v_id ;
+                    lis >> v_id ;
                     // correction to start at 0
                     v_id-- ;
 
@@ -987,18 +983,17 @@ namespace GRGMesh {
                 }
                 /// 6. Read the Border information and store it
                 else if( keyword == "BORDER" ) {
-                    index_t id = lis.field_as_int( field++ ) ;
-                    index_t p1 = lis.field_as_int( field++ ) ;
-                    index_t p2 = lis.field_as_int( field++ ) ;
+                    signed_index_t id, p1, p2 ;
+                    lis >> id >> p1 >> p2 ;
                     p1-- ;
                     p2-- ;
 
                     // Get the global corner id
                     index_t corner_id = find_corner( model_.vertex( tsurf_vertex_ptr[p1] ) ) ;
-                    grgmesh_assert( corner_id > -1 ) ;
+                    grgmesh_assert( corner_id != Corner::NO_ID ) ;
 
                     // Get the surface
-                    signed_index_t part_id = -1 ;
+                    index_t part_id = Surface::NO_ID ;
                     for( index_t i = 0; i < tface_vertex_start.size(); ++i ) {
                         if( p1 < tface_vertex_start[i] ) {
                             grgmesh_assert( p2 < tface_vertex_start[i] ) ;
