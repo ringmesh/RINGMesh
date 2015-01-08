@@ -55,7 +55,7 @@ namespace GRGMesh {
     index_t BoundaryModel::vertex_index( const vec3& p ) const {
        
         grgmesh_assert_not_reached ;
-        return -1 ;
+        return NO_ID ;
     }
 
     index_t BoundaryModel::find_region( index_t surface_part_id, bool side ) const
@@ -566,29 +566,29 @@ namespace GRGMesh {
 
 
     index_t BoundaryModelBuilder::create_line(
-        signed_index_t id ,
+        index_t id ,
         const std::vector< index_t >& vertices )
     {
-        if( id == -1 ) id = model_.nb_lines() ;
+        if( id == NO_ID ) id = model_.nb_lines() ;
         assert( id == model_.nb_lines() ) ;
         model_.lines_.push_back( Line( &model_, id, vertices ) ) ;
         return id ;
     }
 
     index_t BoundaryModelBuilder::create_surface(
-        signed_index_t id,
-        signed_index_t parent,
+        index_t id,
+        index_t parent,
         GEOL_FEATURE type )
     {
-        if( id == -1 ) id = model_.nb_surfaces() ;
+        if( id == NO_ID ) id = model_.nb_surfaces() ;
         assert( id == model_.nb_surfaces() ) ;
         model_.surfaces_.push_back( Surface( &model_, id, parent, type ) ) ;
         return id ;
     }
 
-     index_t BoundaryModelBuilder::create_region( signed_index_t id ) 
+     index_t BoundaryModelBuilder::create_region( index_t id ) 
      {
-        if( id == -1 ) id = model_.regions_.size() ;
+        if( id == NO_ID ) id = model_.regions_.size() ;
         assert( id == model_.regions_.size() ) ;
         model_.regions_.push_back( BoundaryModelElement( &model_, 3, id ) ) ;
         return id ;
@@ -607,9 +607,9 @@ namespace GRGMesh {
 
     index_t BoundaryModelBuilder::create_layer(
         const std::string& name,
-        signed_index_t id )
+        index_t id )
     {
-        if( id == -1 ) id = model_.layers_.size() ;
+        if( id == NO_ID ) id = model_.layers_.size() ;
         assert( id == model_.layers_.size() ) ;
         model_.layers_.push_back( BoundaryModelElement( &model_, 3, id ) ) ;
         model_.layers_[id].set_name( name ) ;
@@ -634,12 +634,12 @@ namespace GRGMesh {
 
     index_t BoundaryModelBuilder::create_interface(
         const std::string& name,
-        signed_index_t id,
+        index_t id,
         GEOL_FEATURE type )
     {
-        if( id == -1 ) id = model_.nb_interfaces() ;
+        if( id == NO_ID ) id = model_.nb_interfaces() ;
         assert( id == model_.nb_interfaces() ) ;
-        model_.interfaces_.push_back( BoundaryModelElement( &model_, 2, id, -1, type ) ) ;
+        model_.interfaces_.push_back( BoundaryModelElement( &model_, 2, id, NO_ID, type ) ) ;
         model_.interfaces_[id].set_name( name ) ;
         return id ;
     }
@@ -733,7 +733,7 @@ namespace GRGMesh {
 
         // The orientation of positive Z
         // can change for each TSurf and need to be read
-        signed_index_t z_sign = 1 ;
+        int z_sign = 1 ;
 
         // In the .ml file - vertices are indexed TSurf by Tsurf
         // They can be duplicated inside one TSurf and betweeen TSurfs\
@@ -990,10 +990,10 @@ namespace GRGMesh {
 
                     // Get the global corner id
                     index_t corner_id = find_corner( model_.vertex( tsurf_vertex_ptr[p1] ) ) ;
-                    grgmesh_assert( corner_id != Corner::NO_ID ) ;
+                    grgmesh_assert( corner_id != NO_ID ) ;
 
                     // Get the surface
-                    index_t part_id = Surface::NO_ID ;
+                    index_t part_id = NO_ID ;
                     for( index_t i = 0; i < tface_vertex_start.size(); ++i ) {
                         if( p1 < tface_vertex_start[i] ) {
                             grgmesh_assert( p2 < tface_vertex_start[i] ) ;
@@ -1008,7 +1008,7 @@ namespace GRGMesh {
                             break ;
                         }
                     }
-                    if( part_id == -1 ) {
+                    if( part_id == NO_ID ) {
                         // It is in the last built Tface
                         p1 += -tface_vertex_start[tface_vertex_start.size() - 1] ;
                         p2 += -tface_vertex_start[tface_vertex_start.size() - 1] ;
@@ -1064,7 +1064,7 @@ namespace GRGMesh {
 
 
      /** Returns the id of the facet which first three vertices are those given */
-    signed_index_t BoundaryModelBuilder::find_key_facet( 
+    index_t BoundaryModelBuilder::find_key_facet( 
         index_t surface_id, const vec3& p0, const vec3& p1,
         const vec3& p2, bool& same_sign ) const 
     {
@@ -1107,7 +1107,7 @@ namespace GRGMesh {
                 }
             }
         }
-        return -1 ;
+        return NO_ID ;
     }
 
 
@@ -1126,15 +1126,15 @@ namespace GRGMesh {
         vec3& p2 = key_facet.p2_ ;
         bool same_sign = false ;
 
-        signed_index_t t = find_key_facet( surface_id, p0,p1,p2, same_sign ) ;
-        if( t == -1 ) {
+        index_t t = find_key_facet( surface_id, p0,p1,p2, same_sign ) ;
+        if( t == NO_ID ) {
             // It is because of the sign of Z that is not the same 
             p0.z *= -1 ;
             p1.z *= -1 ;
             p2.z *= -1 ;
             t = find_key_facet( surface_id, p0, p1, p2, same_sign ) ; 
         }
-        grgmesh_assert( t > -1 ) ;
+        grgmesh_assert( t != NO_ID ) ;
 
         return same_sign ;
    }
@@ -1222,7 +1222,7 @@ namespace GRGMesh {
             S.edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
             grgmesh_debug_assert( v2 != Surface::NO_ID ) ;
 
-            // Virtual cut - set adjacencies to -1 
+            // Virtual cut - set adjacencies to NO_ADJACENT
             S.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
             S.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
         }
@@ -1262,7 +1262,7 @@ namespace GRGMesh {
                 next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
                     && next_id1_in_next != Surface::NO_ID ) ;
             
-            signed_index_t next_id1 = S.surf_vertex_id( next_f, next_id1_in_next ) ;
+            index_t next_id1 = S.surf_vertex_id( next_f, next_id1_in_next ) ;
             
 
             // Duplicate the vertex at id1 
@@ -1272,7 +1272,8 @@ namespace GRGMesh {
             S.facets_around_vertex( id1, facets_around_id1, false, f ) ;
 
             S.vertices_.push_back( S.model_vertex_id(id1) ) ;
-            signed_index_t new_id1 = S.nb_vertices()-1 ;
+            grgmesh_debug_assert( S.nb_vertices() > 0 ) ;
+            index_t new_id1 = S.nb_vertices()-1 ;
             
             for( index_t i = 0; i < facets_around_id1.size(); ++i ){
                 index_t cur_f = facets_around_id1[i] ;
@@ -1345,7 +1346,7 @@ namespace GRGMesh {
     index_t BoundaryModelBuilder::create_region(
         const std::string& name,
         const std::vector< std::pair< index_t, bool > >& boundaries,
-        signed_index_t id )
+        index_t id )
     {
         id = create_region( id ) ;
         model_.regions_[id].set_name( name ) ;
@@ -1391,8 +1392,8 @@ namespace GRGMesh {
         border_vertex_model_ids.push_back( p0 ) ;
         border_vertex_model_ids.push_back( p1 ) ;
             
-        signed_index_t p1_corner = find_corner( p1 ) ;
-        while( p1_corner == -1 ) {
+        index_t p1_corner = find_corner( p1 ) ;
+        while( p1_corner == NO_ID ) {
 
             index_t next_f = Surface::NO_ID ;
             index_t id1_in_next = Surface::NO_ID ;
@@ -1407,7 +1408,7 @@ namespace GRGMesh {
                 next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
                     && next_id1_in_next != Surface::NO_ID ) ;
             
-            signed_index_t next_id1 =  S.surf_vertex_id( next_f, next_id1_in_next ) ;
+            index_t next_id1 =  S.surf_vertex_id( next_f, next_id1_in_next ) ;
 
             // Update
             f = next_f ;
@@ -1442,7 +1443,7 @@ namespace GRGMesh {
                 S, b.p0_, b.p1_, global_ids ) ;           
 
             /// 2 - Check if this border already exists
-            signed_index_t line_id = find_or_create_line( b.corner_id_,
+            index_t line_id = find_or_create_line( b.corner_id_,
                 end_corner_id, global_ids ) ;
 
             // Add the surface in which this line is
@@ -1458,7 +1459,7 @@ namespace GRGMesh {
     {
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             // The surface part in whose boundary is the part
-            std::set< signed_index_t > interfaces ;
+            std::set< index_t > interfaces ;
             std::vector< GEOL_FEATURE > types ;
             for( index_t j = 0; j < model_.lines_[i].nb_in_boundary(); ++j ) {
                 index_t sp_id = model_.lines_[i].in_boundary_id( j ) ;
@@ -1510,7 +1511,7 @@ namespace GRGMesh {
     void BoundaryModelBuilder::end_interfaces()
     {
         for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
-            signed_index_t parent = model_.surfaces_[i].parent_id() ;
+            index_t parent = model_.surfaces_[i].parent_id() ;
             add_interface_child( parent, i ) ;
         }
 
@@ -1625,8 +1626,8 @@ namespace GRGMesh {
         std::vector< index_t >& interfaces,
         GEOL_FEATURE type )
     {
-        signed_index_t result = find_contact( interfaces ) ;
-        if( result == -1 ) {
+        index_t result = find_contact( interfaces ) ;
+        if( result == NO_ID ) {
             // Create a name for this contact
             std::string name = "contact_" ;
             for( index_t i = 0; i < interfaces.size(); ++i ) {
@@ -1653,8 +1654,8 @@ namespace GRGMesh {
         const std::string& type,
         const KeyFacet& key )
     {
-        signed_index_t parent = interface_id( interface_name ) ;
-        assert( parent != -1 ) ;
+        index_t parent = interface_id( interface_name ) ;
+        assert( parent != NO_ID ) ;
 
         index_t id = model_.nb_surfaces() ;
         GEOL_FEATURE t = determine_geological_type( type ) ;
@@ -1666,8 +1667,8 @@ namespace GRGMesh {
 
     index_t BoundaryModelBuilder::find_or_create_corner( index_t index )
     {
-        signed_index_t result = find_corner( model_.vertex( index ) ) ;
-        if( result == -1 ) {
+        index_t result = find_corner( model_.vertex( index ) ) ;
+        if( result == NO_ID ) {
             // Create the corner
             result = model_.nb_corners() ;
             model_.corners_.push_back( Corner( &model_, result, index ) ) ;
@@ -1680,12 +1681,12 @@ namespace GRGMesh {
         index_t corner1,
         std::vector< index_t >& vertices )
     {
-        signed_index_t result = find_line( corner0, corner1, vertices ) ;
+        index_t result = find_line( corner0, corner1, vertices ) ;
 
-        if( result == -1 ) {
+        if( result == NO_ID ) {
             result = model_.nb_lines() ;
-            grgmesh_assert( corner0 != -1 ) ;
-            grgmesh_assert( corner1 != -1 ) ; 
+            grgmesh_assert( corner0 != NO_ID ) ;
+            grgmesh_assert( corner1 != NO_ID ) ; 
 
         /*    if( corner1 == corner0 ) {
                 // Closed contact part
@@ -1707,34 +1708,34 @@ namespace GRGMesh {
         return result ;
     }
   
-    signed_index_t BoundaryModelBuilder::interface_id( const std::string& name ) const
+    index_t BoundaryModelBuilder::interface_id( const std::string& name ) const
     {
         for( index_t i = 0; i < model_.nb_interfaces(); ++i ) {
             if( model_.one_interface(i).name() == name ) {
                 return i ;
             }
         }
-        return -1 ;
+        return NO_ID ;
     }
 
 
-    signed_index_t BoundaryModelBuilder::find_corner( const vec3& p ) const
+    index_t BoundaryModelBuilder::find_corner( const vec3& p ) const
     {
         for( index_t i = 0; i < model_.nb_corners(); ++i ) {
             if( model_.corner(i).vertex() == p ) return i ;
         }
-        return -1 ;
+        return NO_ID ;
     }
 
-    signed_index_t BoundaryModelBuilder::find_corner( index_t p_id ) const 
+    index_t BoundaryModelBuilder::find_corner( index_t p_id ) const 
     {
         for( index_t i = 0; i < model_.nb_corners(); ++i ) {
             if( model_.corner(i).p_ == p_id ) return i ;
         }
-        return -1 ;
+        return NO_ID ;
     }
 
-    signed_index_t BoundaryModelBuilder::find_line(
+    index_t BoundaryModelBuilder::find_line(
         index_t corner0,
         index_t corner1,
         const std::vector< index_t >& vertices ) const
@@ -1774,10 +1775,10 @@ namespace GRGMesh {
                 if( equal ) return i ;*/
             }
         }
-        return -1 ;
+        return NO_ID ;
     }
 
-    signed_index_t BoundaryModelBuilder::find_contact( const std::vector< index_t >& interfaces ) const
+    index_t BoundaryModelBuilder::find_contact( const std::vector< index_t >& interfaces ) const
     {
         std::vector< const BoundaryModelElement* > comp( interfaces.size() ) ;
         for( index_t i = 0; i < interfaces.size(); ++i ) {
@@ -1797,7 +1798,7 @@ namespace GRGMesh {
                 }
             }
         }
-        return -1 ;
+        return NO_ID ;
     }
 
 

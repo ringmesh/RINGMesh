@@ -208,7 +208,7 @@ namespace GRGMesh {
     public:
         Corner(
             BoundaryModel* model,
-            signed_index_t id = -1,
+            index_t id = NO_ID,
             index_t p = 0 )
             : BoundaryModelElement( model, 0, id ), p_( p )
         {
@@ -410,7 +410,7 @@ namespace GRGMesh {
         
         bool is_on_border( index_t f, index_t v ) const {
             grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
-            return adjacent( f, v ) == -1 ; 
+            return adjacent( f, v ) == NO_ADJACENT ; 
         }
         bool is_on_border( index_t f ) const {
             for( index_t adj = 0; adj < nb_vertices_in_facet(f); adj++ ) {
