@@ -72,7 +72,7 @@ namespace GRGMesh {
         /**
          * \brief Construct an empty BoundaryModel
          */
-        BoundaryModel(): universe_( this, 3 ) {} ;
+        BoundaryModel() { } ;
         /**
          * \brief Destroy a BoundaryModel
          */

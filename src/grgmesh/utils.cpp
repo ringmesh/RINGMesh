@@ -1027,7 +1027,7 @@ namespace GRGMesh {
 
     ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices )
     {
-        signed_index_t nb_vertices = vertices.size() ;
+        index_t nb_vertices = vertices.size() ;
         ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         double* ann_points = new double[nb_vertices*3] ;
         for( index_t i = 0; i < nb_vertices; i++ ) {
@@ -1051,7 +1051,7 @@ namespace GRGMesh {
 
     ColocaterANN::ColocaterANN( const std::vector< Edge >& edges )
     {
-        signed_index_t nb_vertices = edges.size() ;
+        index_t nb_vertices = edges.size() ;
         ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         double* ann_points = new double[nb_vertices*3] ;
         for( index_t i = 0; i < nb_vertices; i++ ) {
@@ -1085,7 +1085,7 @@ namespace GRGMesh {
         std::vector< index_t > neighbors( nb_neighbors ) ;
 
         nb_neighbors = get_neighbors( v, nb_neighbors, neighbors ) ;
-        for( signed_index_t i = 0; i < nb_neighbors; ++i ) {
+        for( index_t i = 0; i < nb_neighbors; ++i ) {
             if( Utils::inexact_equal( v.data(), ann_tree_->point_ptr(neighbors[i])  )) {
                 result.push_back( neighbors[i] ) ;
             }
