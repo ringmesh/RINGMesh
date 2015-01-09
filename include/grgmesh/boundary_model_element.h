@@ -10,7 +10,7 @@
 #define __GRGMESH_BOUNDARY_MODEL_ELEMENT__
 
 #include <grgmesh/common.h>
-#include <grgmesh/grgmesh_assert.h>
+#include <grgmesh/attribute.h>
 
 #include <vector> 
 #include <map>
@@ -85,6 +85,11 @@ namespace GRGMesh {
         friend class BoundaryModelBuilder ;
 
     public:
+        enum AttributeLocation {
+            VERTEX, FACET
+        } ;
+        typedef AttributeManager< VERTEX > PointAttributeManager ;
+        typedef AttributeManager< FACET > FacetAttributeManager ;
         const static index_t NO_ID = index_t( -1 ) ;
 
         BoundaryModelElement(
@@ -138,7 +143,16 @@ namespace GRGMesh {
             grgmesh_assert_not_reached ; return dummy_vec3 ;
         }
   
-        
+        // Accessors to attribute managers
+        PointAttributeManager* vertex_attribute_manager() const
+        {
+            return const_cast< PointAttributeManager* >( &vertex_attribute_manager_ ) ;
+        }
+        FacetAttributeManager* facet_attribute_manager() const
+        {
+            return const_cast< FacetAttributeManager* >( &facet_attribute_manager_ ) ;
+        }
+
         
         /*virtual bool is_triangulated() const {
             grgmesh_assert( dim_ == 3 ) ;
@@ -196,6 +210,10 @@ namespace GRGMesh {
 
         /// The group elements making up this one, empty for basic elements
         std::vector< index_t > children_ ;
+
+        // Attribute managers
+        PointAttributeManager vertex_attribute_manager_ ;
+        FacetAttributeManager facet_attribute_manager_ ;
     } ;
     const static BoundaryModelElement dummy_element = BoundaryModelElement( nil, 0 ) ;
 
@@ -297,6 +315,84 @@ namespace GRGMesh {
         //std::vector< bool > is_inside_border_ ;
     } ;
 
+
+    template< class ATTRIBUTE >
+    class GRGMESH_API LineVertexAttribute: public Attribute< Line::VERTEX, ATTRIBUTE > {
+    public:
+        typedef Attribute< Line::VERTEX, ATTRIBUTE > superclass ;
+
+        void bind( const Line* line, const std::string& name )
+        {
+            superclass::bind( line->vertex_attribute_manager(), line->nb_vertices(),
+                name ) ;
+        }
+
+        void bind( const Line* line )
+        {
+            superclass::bind( line->vertex_attribute_manager(),
+                line->nb_vertices() ) ;
+        }
+
+        LineVertexAttribute()
+        {
+        }
+
+        LineVertexAttribute( const Line* line )
+        {
+            bind( line ) ;
+        }
+
+        LineVertexAttribute( const Line* line, const std::string& name )
+        {
+            bind( line, name ) ;
+        }
+
+        static bool is_defined( const Line* line, const std::string& name )
+        {
+            return superclass::is_defined( line->vertex_attribute_manager(), name ) ;
+        }
+    } ;
+
+
+    template< class ATTRIBUTE >
+    class GRGMESH_API LineFacetAttribute: public Attribute< Line::FACET, ATTRIBUTE > {
+    public:
+        typedef Attribute< Line::FACET, ATTRIBUTE > superclass ;
+
+        void bind( const Line* line, const std::string& name )
+        {
+            superclass::bind( line->facet_attribute_manager(), line->nb_vertices(),
+                name ) ;
+        }
+
+        void bind( const Line* line )
+        {
+            superclass::bind( line->facet_attribute_manager(),
+                line->nb_vertices() ) ;
+        }
+
+        LineFacetAttribute()
+        {
+        }
+
+        LineFacetAttribute( const Line* line )
+        {
+            bind( line ) ;
+        }
+
+        LineFacetAttribute( const Line* line, const std::string& name )
+        {
+            bind( line, name ) ;
+        }
+
+        static bool is_defined( const Line* line, const std::string& name )
+        {
+            return superclass::is_defined( line->facet_attribute_manager(), name ) ;
+        }
+    } ;
+
+
+
     class GRGMESH_API LineMutator {
     public:
         LineMutator( Line& M )
@@ -332,6 +428,7 @@ namespace GRGMesh {
         friend class BoundaryModelBuilder ;
         friend class SurfaceMutator ;
     public:
+
         const static index_t NO_ADJACENT = index_t( -1 ) ;
         Surface(
             BoundaryModel* model,
@@ -487,6 +584,7 @@ namespace GRGMesh {
 
         index_t closest_vertex_in_facet( index_t f, const vec3& vertex ) const ;
 
+
     private:
         void set_key_facet( const KeyFacet& key ) { key_facet_ = key ; }
         void set_first_triangle_as_key() ;
@@ -554,8 +652,85 @@ namespace GRGMesh {
         std::vector< index_t > adjacent_ ;
 
         bool is_triangulated_ ;
-        
+
     };  
+
+
+    template< class ATTRIBUTE >
+    class GRGMESH_API SurfaceVertexAttribute: public Attribute< Surface::VERTEX, ATTRIBUTE > {
+    public:
+        typedef Attribute< Surface::VERTEX, ATTRIBUTE > superclass ;
+
+        void bind( const Surface* surface, const std::string& name )
+        {
+            superclass::bind( surface->vertex_attribute_manager(), surface->nb_vertices(),
+                name ) ;
+        }
+
+        void bind( const Surface* surface )
+        {
+            superclass::bind( surface->vertex_attribute_manager(),
+                surface->nb_vertices() ) ;
+        }
+
+        SurfaceVertexAttribute()
+        {
+        }
+
+        SurfaceVertexAttribute( const Surface* surface )
+        {
+            bind( surface ) ;
+        }
+
+        SurfaceVertexAttribute( const Surface* surface, const std::string& name )
+        {
+            bind( surface, name ) ;
+        }
+
+        static bool is_defined( const Surface* surface, const std::string& name )
+        {
+            return superclass::is_defined( surface->vertex_attribute_manager(), name ) ;
+        }
+    } ;
+
+
+    template< class ATTRIBUTE >
+    class GRGMESH_API SurfaceFacetAttribute: public Attribute< Surface::FACET, ATTRIBUTE > {
+    public:
+        typedef Attribute< Surface::FACET, ATTRIBUTE > superclass ;
+
+        void bind( const Surface* surface, const std::string& name )
+        {
+            superclass::bind( surface->facet_attribute_manager(), surface->nb_vertices(),
+                name ) ;
+        }
+
+        void bind( const Surface* surface )
+        {
+            superclass::bind( surface->facet_attribute_manager(),
+                surface->nb_vertices() ) ;
+        }
+
+        SurfaceFacetAttribute()
+        {
+        }
+
+        SurfaceFacetAttribute( const Surface* surface )
+        {
+            bind( surface ) ;
+        }
+
+        SurfaceFacetAttribute( const Surface* surface, const std::string& name )
+        {
+            bind( surface, name ) ;
+        }
+
+        static bool is_defined( const Surface* surface, const std::string& name )
+        {
+            return superclass::is_defined( surface->facet_attribute_manager(), name ) ;
+        }
+    } ;
+
 
 
     class GRGMESH_API SurfaceMutator {

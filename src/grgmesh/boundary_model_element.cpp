@@ -25,6 +25,10 @@ namespace GRGMesh {
 /******             BoundaryModelElement implementation     ***********************************/
 /********************************************************************************************/
 
+    /*!
+     *
+     * @return
+     */
     const BoundaryModelElement& BoundaryModelElement::parent() const
     {
         grgmesh_debug_assert( has_parent() ) ;
@@ -39,6 +43,11 @@ namespace GRGMesh {
         }
     }
 
+    /*!
+     *
+     * @param x
+     * @return
+     */
     const BoundaryModelElement& BoundaryModelElement::boundary( index_t x ) const
     {
         grgmesh_debug_assert( x < nb_boundaries() ) ;
@@ -57,6 +66,11 @@ namespace GRGMesh {
         }
     }
 
+    /*!
+     *
+     * @param x
+     * @return
+     */
     const BoundaryModelElement& BoundaryModelElement::in_boundary( index_t x ) const
     {
         grgmesh_debug_assert( x < nb_in_boundary() ) ;
@@ -75,6 +89,11 @@ namespace GRGMesh {
         }
     }
 
+    /*!
+     *
+     * @param x
+     * @return
+     */
     const BoundaryModelElement& BoundaryModelElement::child( index_t x ) const
     {
         grgmesh_debug_assert( !has_parent() && x < nb_children() ) ;
@@ -92,6 +111,11 @@ namespace GRGMesh {
         }
     }
 
+    /*!
+     *
+     * @param rhs
+     * @param model
+     */
     void BoundaryModelElement::copy_macro_topology(
         const BoundaryModelElement& rhs,
         BoundaryModel& model )
@@ -132,6 +156,11 @@ namespace GRGMesh {
 
 /***********************************************************************************************/
 
+    /*!
+     *
+     * @param p
+     * @return
+     */
     const vec3& Corner::vertex( index_t p ) const
     {
         return model_->vertex( p_ ) ;
@@ -151,12 +180,23 @@ namespace GRGMesh {
 /******             Line implementation            ***********************************/
 /********************************************************************************************/
 
+    /*!
+     *
+     * @param model
+     * @param id
+     */
     Line::Line( BoundaryModel* model, index_t id ):
         BoundaryModelElement( model, 1, id )
     { 
         boundaries_.resize( 2, nil) ; 
     }
 
+    /*!
+     *
+     * @param model
+     * @param id
+     * @param vertices
+     */
     Line::Line(
         BoundaryModel* model,
         index_t id,
@@ -165,6 +205,14 @@ namespace GRGMesh {
     {
     }
 
+    /*!
+     *
+     * @param model
+     * @param id
+     * @param corner0
+     * @param corner1
+     * @param vertices
+     */
     Line::Line(
         BoundaryModel* model,
         index_t id,
@@ -199,6 +247,11 @@ namespace GRGMesh {
         is_inside_border_.push_back( false ) ;
     }*/
     
+    /*!
+     *
+     * @param surface
+     * @return
+     */
     bool Line::is_inside_border(
         const BoundaryModelElement& surface ) const
     {
@@ -206,17 +259,36 @@ namespace GRGMesh {
         return std::count( in_boundary_.begin(), in_boundary_.end(), surface.id() ) > 1 ;
     }
 
+    /*!
+     *
+     * @param line_vertex_id
+     * @return
+     */
     const vec3& Line::vertex( index_t line_vertex_id ) const {
         return model_->vertex( vertices_.at( line_vertex_id ) ) ;
     }
 
+    /*!
+     *
+     * @param s
+     * @return
+     */
     vec3 Line::segment_barycenter( index_t s ) const {
         return 0.5*( vertex(s) + vertex(s+1) ) ;
     }
     
+    /*!
+     *
+     * @param s
+     * @return
+     */
     double Line::segment_length( index_t s ) const {
         return length( vertex(s+1)-vertex(s) ) ;
     }
+    /*!
+     *
+     * @return
+     */
     double Line::total_length() const {
         double result = 0 ;
         for( index_t s = 0; s < nb_cells(); s++ ) {
@@ -236,11 +308,20 @@ namespace GRGMesh {
         return -1 ;
     } */
 
-    
+    /*!
+     *
+     * @param id
+     * @param p
+     */
     void LineMutator::set_vertex( index_t id, const vec3& p ) {
         M_.model_->vertices_[M_.vertices_[id]] = p ;
     }
 
+    /*!
+     *
+     * @param p
+     * @return
+     */
     vec3& LineMutator::vertex( index_t p ) const
     {
         return M_.model_->vertices_[ M_.vertices_[p] ] ;
@@ -250,21 +331,39 @@ namespace GRGMesh {
 /******             Surface implementation            ***********************************/
 /********************************************************************************************/
 
+    /*!
+     *
+     * @param f
+     * @param v
+     * @return
+     */
     const vec3& Surface::vertex( index_t f, index_t v ) const
     {
         grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
         return vertex( surf_vertex_id( f, v) ) ;
     }
 
-
+    /*!
+     *
+     * @param surf_vertex_id
+     * @return
+     */
     const vec3& Surface::vertex( index_t surf_vertex_id ) const {
         return model_->vertex( vertices_.at(surf_vertex_id) ) ;
     }
 
+    /*!
+     *
+     * @param f
+     * @return
+     */
     index_t Surface::model_facet_id( index_t f ) const {
         return model_->model_facet( id_, f ) ;
     }
 
+    /*!
+     *
+     */
     void Surface::set_first_triangle_as_key()
     {
         // I guess it should'nt be a problem if the first facet is not a triangle
@@ -295,6 +394,15 @@ namespace GRGMesh {
       * edge on border in any direction and avoid going back when the next edge on boundary 
       * is in the same facet
       */
+    /*!
+     *
+     * @param f
+     * @param from
+     * @param v
+     * @param next_f
+     * @param v_in_next
+     * @param next_in_next
+     */
     void Surface::next_on_border( 
         index_t f, index_t from, index_t v, 
         index_t& next_f, index_t& v_in_next, index_t& next_in_next ) const
@@ -356,6 +464,13 @@ namespace GRGMesh {
         }
     }
 
+    /*!
+     *
+     * @param f
+     * @param e
+     * @param next_f
+     * @param next_e
+     */
     void Surface::next_on_border( index_t f, index_t e, index_t& next_f, index_t& next_e ) const {
         index_t v = next_in_facet( f, e ) ;
         index_t next_in_next = NO_ID ;
@@ -399,6 +514,12 @@ namespace GRGMesh {
      * Find the first facet of the surface that has an edge 
      * linking the two vertices (ids in the surface)
      */ 
+    /*!
+     *
+     * @param in0
+     * @param in1
+     * @return
+     */
     index_t Surface::facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const {
         grgmesh_debug_assert( in0 < vertices_.size() && in1 < vertices_.size() ) ;
         
@@ -427,6 +548,12 @@ namespace GRGMesh {
         return NO_ID ;
     }
 
+    /*!
+     *
+     * @param i0
+     * @param i1
+     * @return
+     */
     index_t Surface::facet_from_model_vertex_ids( index_t i0, index_t i1 ) const {
         index_t facet = NO_ID ;
         index_t edge = NO_ID ;
@@ -437,6 +564,13 @@ namespace GRGMesh {
     /**
      * Get the id of one facet and the corresponding edge 
      * There might be two !! Get only the first
+     */
+    /*!
+     *
+     * @param i0
+     * @param i1
+     * @param facet
+     * @param edge
      */
     void Surface::edge_from_model_vertex_ids(
         index_t i0,
@@ -475,6 +609,13 @@ namespace GRGMesh {
      /**
      * Get the id of one facet and the corresponding edge 
      * There might be two !! Get only the first
+     */
+    /*!
+     *
+     * @param i0
+     * @param i1
+     * @param facet
+     * @param edge
      */
     void Surface::oriented_edge_from_model_vertex_ids(
         index_t i0,
@@ -566,6 +707,12 @@ namespace GRGMesh {
     /**
      * Returns the vertex of the facet which id in the surface is the given one
      */
+    /*!
+     *
+     * @param t
+     * @param surf_vertex_id_in
+     * @return
+     */
     index_t Surface::facet_vertex_id( index_t t, index_t surf_vertex_id_in ) const {
         for( index_t v = 0; v < nb_vertices_in_facet(t); v++ ) {
             if( surf_vertex_id( t, v ) == surf_vertex_id_in ) return v ;
@@ -608,6 +755,13 @@ namespace GRGMesh {
      * \todo Find a way to make this faster !! It is not that bad actually
      * How ? 
      */
+    /*!
+     *
+     * @param shared_vertex
+     * @param result
+     * @param border_only
+     * @return
+     */
     index_t Surface::facets_around_vertex(
         index_t shared_vertex,
         std::vector< index_t >& result,
@@ -628,6 +782,14 @@ namespace GRGMesh {
 
     /** Determine the facets sharing the given vertex (id in the surface)
      * 
+     */
+    /*!
+     *
+     * @param P
+     * @param result
+     * @param border_only
+     * @param f0
+     * @return
      */
     index_t Surface::facets_around_vertex(
         index_t P,
@@ -688,6 +850,11 @@ namespace GRGMesh {
         return result.size() ;
     }
 
+    /*!
+     *
+     * @param f
+     * @return
+     */
     vec3 Surface::facet_barycenter( index_t f ) const {
         vec3 barycenter( 0., 0., 0. ) ;
         for( index_t i = 0; i < nb_vertices_in_facet( f ); i++ ) {
@@ -696,6 +863,11 @@ namespace GRGMesh {
         return barycenter / nb_vertices_in_facet( f ) ;
     }
      
+    /*!
+     *
+     * @param f
+     * @return
+     */
     double Surface::facet_area( index_t f ) const {
         double result = 0 ;
         for( index_t i = 1; i+1 < nb_vertices_in_facet( f ); i++ ) 
@@ -711,6 +883,11 @@ namespace GRGMesh {
      * of the facet
      * WARNING : if the facet is not planar calling this has no meaning
      */
+    /*!
+     *
+     * @param f
+     * @return
+     */
     vec3 Surface::facet_normal( index_t f ) const {
         const vec3& p0 = vertex( f, 0 )  ;
         const vec3& p1 = vertex( f, 1 )  ;
@@ -719,6 +896,10 @@ namespace GRGMesh {
         return normalize( c0 ) ;
     }
 
+    /*!
+     *
+     * @param normals
+     */
     void Surface::vertex_normals( std::vector< vec3 >& normals ) const {
         normals.resize( nb_vertices() ) ;
         for( index_t f = 0; f < nb_cells(); f++ ) {
@@ -733,6 +914,12 @@ namespace GRGMesh {
         }
     }
 
+    /*!
+     *
+     * @param f
+     * @param v
+     * @return
+     */
     index_t Surface::closest_vertex_in_facet(
         index_t f,
         const vec3& v ) const
@@ -760,10 +947,20 @@ namespace GRGMesh {
         return result ;
     }*/
 
+    /*!
+     *
+     * @param id
+     * @param p
+     */
     void SurfaceMutator::set_vertex( index_t id, const vec3& p ) {
         M_.model_->vertices_[M_.vertices_[id]] = p ;
     }
 
+    /*!
+     *
+     * @param p
+     * @return
+     */
     vec3& SurfaceMutator::vertex( index_t p ) const
     {
         return M_.model_->vertices_[ M_.vertices_[p] ] ;
@@ -772,6 +969,11 @@ namespace GRGMesh {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /*!
+     *
+     * @param E
+     * @return
+     */
     double BoundaryModelElementMeasure::size( const BoundaryModelElement* E ) {        
         double result = 0. ;
 
@@ -824,6 +1026,12 @@ namespace GRGMesh {
         grgmesh_assert_not_reached ;
     }        
 
+    /*!
+     *
+     * @param E
+     * @param cells
+     * @return
+     */
     vec3 BoundaryModelElementMeasure::barycenter ( 
         const BoundaryModelElement* E, const std::vector< index_t >& cells ) 
     {
@@ -852,6 +1060,12 @@ namespace GRGMesh {
     }           
 
 
+    /*!
+     *
+     * @param E
+     * @param p
+     * @return
+     */
     double BoundaryModelElementMeasure::distance( 
         const BoundaryModelElement* E,
         const vec3& p ) 
