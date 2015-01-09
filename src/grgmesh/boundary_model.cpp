@@ -1,12 +1,36 @@
-/*! This file is originally part of the Geomodeling plugin of Graphite */
-/*! \author Jeanne Pellerin */
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+*/
+
+/*! \author Jeanne Pellerin and Arnaud Botella */
 
 
 #include <grgmesh/boundary_model.h>
-#include <grgmesh/boundary_model_element.h>
 #include <grgmesh/utils.h>
-
-#include <geogram/basic/line_stream.h>
 
 #include <iostream>
 #include <iomanip>
@@ -18,19 +42,10 @@
 
 namespace GRGMesh {
 
-    BoundaryModel::BoundaryModel()
-        : universe_( this, 3 )
-    {
-    }
-
-    BoundaryModel::~BoundaryModel()
-    {
-    }  
-
     /*!
-     *
-     * @param out
-     * @param t
+     * @brief Write in the stream the geological feature name
+     * @param[in,out] out stream in which the name is written
+     * @param[in] t geological feature
      */
     void BoundaryModel::save_type( std::ostream& out, GEOL_FEATURE t )
     {
@@ -53,14 +68,12 @@ namespace GRGMesh {
         }
     }
 
-    /** 
-     * Returns the index of the given vertex in the model
-     * \todo Add a KdTree for geometrical request on model vertices
-     */ 
     /*!
+     * \brief Returns the index of the given vertex in the model
+     * \todo Implement the function - Add a KdTree for geometrical request on model vertices
      *
-     * @param p
-     * @return
+     * @param[in] p input point coordinates
+     * @return NO_ID
      */
     index_t BoundaryModel::vertex_index( const vec3& p ) const {
        
@@ -68,11 +81,32 @@ namespace GRGMesh {
         return NO_ID ;
     }
 
-    /*!
+     /*!
+     * \brief Returns a reference the identified BoundaryModelElement     
      *
-     * @param surface_part_id
-     * @param side
-     * @return
+     * @param[in] dim Dimension of the element 0 - Corners, 1 - Lines, 2 - Surfaces, 3 - Regions
+     * @param[in] index Index of the element
+     * @return A reference to the BoundaryModelElement .
+     *
+     */
+    const BoundaryModelElement& BoundaryModel::element( index_t dim, index_t index ) const {
+        switch( dim ){
+            case 0: return corner( index ) ;
+            case 1: return line( index ) ;
+            case 2: return surface( index ) ;
+            case 3: return region( index ) ;
+            default:
+                grgmesh_assert_not_reached ;
+                return dummy_element ;
+        }
+    }
+
+
+    /*!
+     * \brief Returns the index of the region neighboring the surface.
+     * @param[in] surface_part_id Index of the Surface
+     * @param[in] side Side of the Surface
+     * @return The region index or NO_ID if none found.
      */
     index_t BoundaryModel::find_region( index_t surface_part_id, bool side ) const
     {
@@ -90,18 +124,19 @@ namespace GRGMesh {
     }
 
     /*!
+     * @brief Convert a global facet index to an index in a Surface
      *
-     * @param model_facet_id
-     * @param surface_id
-     * @param surf_facet_id
+     * @param[in] model_facet_id Facet index in the BoundaryModel
+     * @param[out] surface_id Surface containing the facet
+     * @param[out] surf_facet_id Index of the facet in this Surface
      */
     void BoundaryModel::surface_facet(
         index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id 
     ) const {
         index_t s = Surface::NO_ID ;
-        for( index_t i = 1; i < nb_facets_.size(); i++ ) {
-            if( model_facet_id > nb_facets_[i-1] && 
-                model_facet_id < nb_facets_[i] )
+        for( index_t i = 1; i < nb_facets_in_surfaces_.size(); i++ ) {
+            if( model_facet_id > nb_facets_in_surfaces_[i-1] && 
+                model_facet_id < nb_facets_in_surfaces_[i] )
             {
                 s = i-1 ;
             }
@@ -109,35 +144,35 @@ namespace GRGMesh {
         grgmesh_debug_assert( s != Surface::NO_ID ) ;
             
         surface_id = s ;
-        surf_facet_id = model_facet_id - nb_facets_[s] ;
+        surf_facet_id = model_facet_id - nb_facets_in_surfaces_[s] ;
     }
 
     /*!
-     *
-     * @param surf_id
-     * @param facet_id
-     * @return
+     * @brief Convert a facet index in a surface to its index in the BoundaryModel
+     * @param[in] surf_id Surface index
+     * @param[in] facet_id Facet index in surf_id
+     * @return The global facet index
      */
     index_t BoundaryModel::model_facet( index_t surf_id, index_t facet_id ) const 
     {
         grgmesh_debug_assert( surf_id < nb_surfaces() && 
             facet_id < surface(surf_id).nb_cells() )  ;
 
-        return nb_facets_[surf_id] + facet_id ;
+        return nb_facets_in_surfaces_[surf_id] + facet_id ;
     }
 
-    /*! Load a .ml file, gocad model3d (b-rep file) 
-     *  Works correctly only if there is a UNIQUE Model3d in the file
-     * 
+    /*! 
      *  No support for properties right now
      *  no advance check of coordinate system
      *
      *  Build all the elements of the structural model and their relationships
      */
     /*!
-     *
-     * @param in
-     * @return
+     * @brief Load a .ml file, Gocad Model3d (b-rep file) and fill the model      
+     * @details The BoundaryModelBuilder does the job
+     * 
+     * @param[in] in Name of the file
+     * @return false if file opening failed
      */
     bool BoundaryModel::load_gocad_model3d( const std::string& in )
     {
@@ -152,36 +187,35 @@ namespace GRGMesh {
         return true ;
     }
 
-    /*! Check that the BoundaryModel can be saved as a .ml 
-     */
     /*!
-     *
-     * @return
+     * @brief Modify the model so that it is compatible with a Gocad Model3d
+     *   and can be saved in .ml format
+     * 
+     * @return True if this was a success, False if modifications could not be done.
      */
     bool BoundaryModel::check_model3d_compatibility()
     {
          BoundaryModelBuilder builder( *this ) ;
 
-        // Check that the Surfaces exist
+        /// 1. Check that the Interfaces exist
         if( nb_interfaces() == 0 && nb_surfaces() > 0 ) {
           
-            // Creates one Surface per Surface
+            /// If not create one Interface per Surface
             for( index_t i = 0; i < surfaces_.size(); ++i ) {
-                // set name, type, links
+                // Set name, type, links with other elements
                 std::ostringstream name ;
                 name << "surface_" << i ;
                 index_t id = builder.create_interface( name.str() ) ;
                 builder.add_interface_child( id, i ) ;
             }
 
-            // Set links surface parts toward surfaces
+            // Set links from surfaces_ toward interfaces_
             for( index_t i = 0; i < interfaces_.size(); ++i ) {
                 builder.set_parent( surfaces_[interfaces_[i].child( 0 ).id()],  i ) ;
             }
-
             // Is it really useful to have contacts, let's hope not... I am not doing it
         }
-
+        /// 2. Set KeyFacet for Surfaces 
         for( index_t i = 0; i < surfaces_.size(); ++i ) {
             Surface& sp = surfaces_[i] ;
             if( sp.nb_vertices() == 0 ) continue ;
@@ -190,8 +224,8 @@ namespace GRGMesh {
             }
         }
 
-        // the universe should exist, perhaps create a function copying the lines 
-        // 805 to 834 de s2_b_model.cpp
+        /// 3. Check that the Universe region exists 
+        /// \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
         if( universe_.name() != "Universe" ) {
             std::cout <<  "Error"
                 << "The region universe is not defined for the model. IMPLEMENTATION TO DO"
@@ -199,7 +233,7 @@ namespace GRGMesh {
             return false ;
         }
 
-        // Check that each region has a name and valid surfaces
+        /// 4. Check that each region has a name and valid surfaces
         for( index_t i = 0; i < regions_.size(); ++i ) {
             BoundaryModelElement& region = regions_[i] ;
 
@@ -215,23 +249,24 @@ namespace GRGMesh {
             }
         }
 
-        // Check that all surfaces_ of the model are trinagulated
+        /// 5. Check that all the surfaces_ of the model are triangulated
         /// \todo Implement a triangulation function in SurfaceMutator         
         for( index_t s = 0; s < nb_surfaces(); s++ ) {
             if( !surfaces_[s].is_triangulated() ) {
                 std::cout<< "Error" << "Surface "<< s << " is not triangulated" << std::endl ;
                 return false ;
             }
-        }       
-        
+        }               
         return true ;
     }
 
     /*!
-     *
-     * @param count
-     * @param region
-     * @param out
+     * @brief Write a region information in a stream
+     * @details Used by function to save the Model in a .ml file
+     * 
+     * @param[in] count Region index in the file
+     * @param[in] region The region to save
+     * @param[in,out] out The file output stream
      */
     void save_region(
         index_t count,
@@ -259,11 +294,13 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param count
-     * @param offset
-     * @param layer
-     * @param out
+     * @brief Write information for on layer in a stream
+     * @details Used by function to save the Model in a .ml file
+     * 
+     * @param[in] count Index of the layer in the file
+     * @param[in] offset Offset of region indices in the file
+     * @param[in] layer The layer to write
+     * @param[in,out] out The output file stream
      */
     void save_layer(
         index_t count,
@@ -286,8 +323,8 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param out
+     * @brief Write basic header for Gocad coordinate system.
+     * @param[in,out] out Output .ml file stream
      */
     void save_coordinate_system( std::ostream& out )
     {
@@ -298,9 +335,10 @@ namespace GRGMesh {
     }
 
     /*!
+     * @brief Save the model in a .ml file if it compatible
      *
-     * @param out
-     * @return
+     * @param[in,out] out Output file stream
+     * @return false if the model is not compatible with a Gocad model
      */
     bool BoundaryModel::save_gocad_model3d( std::ostream& out )
     {
@@ -311,26 +349,26 @@ namespace GRGMesh {
             return false ;
         }
 
-        // Print Model3d headers
+        // Print Gocad Model3d headers
         out << "GOCAD Model3d 1" << std::endl << "HEADER {" << std::endl << "name:"
             << "model_from_graphite" << std::endl << "}" << std::endl ;
 
         save_coordinate_system( out ) ;
 
-        // Print the TSurf = Surfaces info
+        // Print the TSurf = Interface information
         for( index_t i = 0; i < interfaces_.size(); ++i ) {
             out << "TSURF " << interfaces_[i].name() << std::endl ;
         }
 
         index_t count = 1 ;
-        // Print the TFace info
+        // Print the TFace = Surface information
         for( index_t i = 0; i < surfaces_.size(); ++i ) {
             const Surface& s = surfaces_[i] ;
             out << "TFACE " << count << "  " ;
             save_type( out, s.type() ) ;
             out << " " << s.parent().name() << std::endl ;
 
-            const KeyFacet kf = s.key_facet() ;
+            const Surface::KeyFacet kf = s.key_facet() ;
             out << "  " << kf.p0_ << std::endl ;
             out << "  " << kf.p1_ << std::endl ;
             out << "  " << kf.p2_ << std::endl ;
@@ -339,7 +377,7 @@ namespace GRGMesh {
         }
 
         index_t offset_layer = count ;
-        // Region info + universe
+        // Print universe, region, and layer information 
         save_region( count, universe_, out ) ;
         ++count ;
 
@@ -352,10 +390,9 @@ namespace GRGMesh {
             save_layer( count, offset_layer, layers_[i], out ) ;
             ++count ;
         }
-
         out << "END" << std::endl ;
 
-        // Now save each one of the surfaces
+        // Save the geometry of the Surfaces (TFace), Interface (TSurf) by Interface
         for( index_t i = 0; i < interfaces_.size(); ++i ) {
             const BoundaryModelElement& tsurf = interfaces_[i] ;
 
@@ -373,7 +410,7 @@ namespace GRGMesh {
             out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" << std::endl
                 << "}" << std::endl ;
 
-            // On entre les TFACES
+            // Save surfaces_ geometry
             index_t vertex_count = 1 ;
             index_t offset = vertex_count ;
 
@@ -381,6 +418,9 @@ namespace GRGMesh {
             std::vector< index_t > next_vertex ;
             std::set< index_t > set_end_corners ;
             
+            bstones.reserve( tsurf.nb_boundaries() ) ;
+            next_vertex.reserve( tsurf.nb_boundaries() ) ;
+
             for( index_t j = 0; j < tsurf.nb_children(); ++j ) {
                 offset = vertex_count ;
 
@@ -398,7 +438,7 @@ namespace GRGMesh {
                         << sp.surf_vertex_id( k, 2 ) + offset << std::endl ;
                 }
 
-                // Info on corners and contacts
+                // Gather information on Corners (BStones) and Lines (getting the next point on the line)
                 for( index_t k = 0; k < sp.nb_boundaries(); ++k ) {
                     const Line& cp = dynamic_cast< const Line& >( sp.boundary( k ) ) ;                  
       
@@ -410,10 +450,8 @@ namespace GRGMesh {
                     set_end_corners.insert( 
                         sp.surf_vertex_id( cp.model_vertex_id( cp.nb_vertices()-1 ) ) + offset ) ;                    
 
-                    /// \todo Check that this works, I am not sure for inside_border that we get both sides
-
                     index_t t = sp.facet_from_model_vertex_ids( c, next ) ;
-                    assert( t != Surface::NO_ID ) ;
+                    grgmesh_assert( t != NO_ID ) ;
 
                     index_t i0 = sp.surf_vertex_id( t, 0 ) ;
                     index_t i1 = sp.surf_vertex_id( t, 1 ) ;
@@ -423,8 +461,8 @@ namespace GRGMesh {
                     index_t p1 = sp.model_vertex_id( i1 ) ;
                     index_t p2 = sp.model_vertex_id( i2 ) ;
 
-                    index_t c_id = Surface::NO_ID ;
-                    index_t next_id = Surface::NO_ID ;
+                    index_t c_id = NO_ID ;
+                    index_t next_id = NO_ID ;
 
                     if( p0 == c ) c_id = i0 ;
                     else if( p0 == next ) next_id = i0 ;
@@ -435,22 +473,21 @@ namespace GRGMesh {
                     if( p2 == c ) c_id = i2 ;
                     else if( p2 == next ) next_id = i2 ;
 
-                    grgmesh_assert( c_id != Surface::NO_ID && next_id != Surface::NO_ID ) ;
+                    grgmesh_assert( c_id != NO_ID && next_id != NO_ID ) ;
 
                     bstones.push_back( c_id + offset ) ;
                     next_vertex.push_back( next_id + offset ) ;
                 }
             }
 
-            // Print corners and contact
+            // Print Corners and Lines
             std::vector< index_t > end_corners( 
                 set_end_corners.begin(), set_end_corners.end() ) ;
             std::vector< bool > end_corner_to_print( end_corners.size(), true ) ;
             
             for( index_t j = 0; j < bstones.size(); ++j ) {
                 out << "BSTONE " << bstones[j] << std::endl ;
-
-                // Determine the corners at the end of the lines that are not saved
+                // Determine the corners at the end of the lines that are not saved                
                 for( index_t k = 0; k < end_corners.size(); k++ ) {
                     if( bstones[j] == end_corners[k] ) {
                         end_corner_to_print[k] = false ;
@@ -477,12 +514,13 @@ namespace GRGMesh {
         return true ;
     }    
 
-    /**
-     *  \brief Save the surfaces of the model into an .eobj file.     
-     */
     /*!
+     * @brief Save the surfaces of the model with their facet attributes into an .eobj file.         
+     * @details  WARNING It is supposed that these attributes are integer
+     * 
+     * @param[in] file_name Name of the file
      *
-     * @param file_name
+     * \todo Write generic I/O for attributes on a BoundaryModel
      */
     void BoundaryModel::save_as_eobj_file( const std::string& file_name ) {
         std::ofstream out ;
@@ -494,7 +532,8 @@ namespace GRGMesh {
         out.precision( 16 ) ;
         std::vector< index_t > offset( nb_surfaces(), 0 ) ;
         index_t cur_offset = 0 ; 
-        // Write the vertices once for each surface - remove non-manifold vertices
+
+        // Write vertices once for each surface
         for( index_t s = 0; s < nb_surfaces() ; s++ ) {
             const Surface& S = surface(s) ;
             offset[s] = cur_offset ;
@@ -521,9 +560,7 @@ namespace GRGMesh {
             }         
         }
 
-
-        // Write facet attributes -- WARNING ON SUPPOSE QU'ON STOCKE DES ENTIERS
-        /// \todo  Generic IO for attributes on a BoundaryModel
+        // Write facet attributes -- WARNING It is supposed that these attributes are integer       
         {
             std::vector< std::string > names ;        
             facet_attribute_manager_.list_named_attributes(names) ;
@@ -536,8 +573,10 @@ namespace GRGMesh {
               
                 // Output global information on the attribute
                 out << "# attribute "<< names[i] << " facet "
-                    << "integer" // dans graphite map � la noix entre vrai type et nom dans fichier
-                    //<< attribute_stores[i]->attribute_type_id().name() 
+                    // In Graphite - which will read this file - there is a stupid map 
+                    // betwen the type name and the name in the file 
+                    << "integer" 
+                    //<< attribute_stores[i]->attribute_type_id().name() // real attribute type
                     << std::endl ;  
             }
             if( names.size() > 0 ) {
@@ -559,13 +598,13 @@ namespace GRGMesh {
     }
 
 
-/*************************************************************************************************/
-/********  BoundarymodelBuilder implementation      ******************************************/
-/*************************************************************************************************/
     /*!
+     * @brief Map a read geological type with the Geological feature enum
      *
-     * @param in
-     * @return
+     * @param[in] in Name of the feature
+     * @return The geological feature index
+     *
+     * \todo Keep all the information ( add new GEOL_FEATURE) instead of simplfying it.
      */
     GEOL_FEATURE BoundaryModelBuilder::determine_geological_type( const std::string& in )
     {
@@ -583,13 +622,11 @@ namespace GRGMesh {
         return ALL ;
     }
 
-    /*! Determine the type of a geological feature that is at the intersection
-     *  of the input features
-     */
     /*!
+     * @brief Compute an intersection type
      *
-     * @param types
-     * @return
+     * @param[in] types Type that intersect
+     * @return Intersection type
      */
     GEOL_FEATURE BoundaryModelBuilder::determine_type(
         const std::vector< GEOL_FEATURE >& types )
@@ -619,162 +656,114 @@ namespace GRGMesh {
     }
 
     /*!
+     * @brief Set one Line vertices
      *
-     * @param id
-     * @param vertices
+     * @param[in] id Line index 
+     * @param[in] vertices Indices of the vertices on the line
      */
     void BoundaryModelBuilder::set_line( 
         index_t id, 
         const std::vector< index_t >& vertices )
     {
-        assert( id < model_.nb_lines() ) ;
+        grgmesh_assert( id < model_.nb_lines() ) ;
         model_.lines_[id].vertices_ = vertices ;
     }
 
-    /*!
+     /*!
+     * @brief Add the vertices to the model and set them as the Line vertices
      *
-     * @param id
-     * @param vertices
+     * @param[in] id Line index 
+     * @param[in] vertices Coordinates of the vertices on the line
+     * 
+     * \todo Check when it is called ! Verify that it is before make_vertices_unique()
      */
     void BoundaryModelBuilder::set_line(
         index_t id,
         const std::vector< vec3 >& vertices )
     {
-        assert( id < model_.nb_lines() ) ;
+        grgmesh_assert( id < model_.nb_lines() ) ;
 
         for( index_t p = 0; p < vertices.size(); p++ ) {
             model_.lines_[id].vertices_.push_back( add_vertex( vertices[p] ) ) ;
         }
     }
-
-
+   
     /*!
+     * @brief Remove the universe from the vector of regions and update their indices
      *
-     * @param id
-     * @param vertices
-     * @return
-     */
-    index_t BoundaryModelBuilder::create_line(
-        index_t id ,
-        const std::vector< index_t >& vertices )
-    {
-        if( id == NO_ID ) id = model_.nb_lines() ;
-        assert( id == model_.nb_lines() ) ;
-        model_.lines_.push_back( Line( &model_, id, vertices ) ) ;
-        return id ;
-    }
-
-    /*!
-     *
-     * @param id
-     * @param parent
-     * @param type
-     * @return
-     */
-    index_t BoundaryModelBuilder::create_surface(
-        index_t id,
-        index_t parent,
-        GEOL_FEATURE type )
-    {
-        if( id == NO_ID ) id = model_.nb_surfaces() ;
-        assert( id == model_.nb_surfaces() ) ;
-        model_.surfaces_.push_back( Surface( &model_, id, parent, type ) ) ;
-        return id ;
-    }
-
-    /*!
-     *
-     * @param id
-     * @return
-     */
-    index_t BoundaryModelBuilder::create_region( index_t id )
-     {
-        if( id == NO_ID ) id = model_.regions_.size() ;
-        assert( id == model_.regions_.size() ) ;
-        model_.regions_.push_back( BoundaryModelElement( &model_, 3, id ) ) ;
-        return id ;
-    }
-
-
-    /*!
-     *
-     * @param id
+     * @param[in] id Index of the Universe region in the regions_ vector
      */
     void BoundaryModelBuilder::remove_universe_from_regions( index_t id ) 
     {
         for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-            index_t cur_id = model_.region(i).id() ;
-            assert( i == cur_id ) ;
+            index_t cur_id = model_.region(i).id() ;            
             if( i > id ) model_.regions_[i].set_id( cur_id-1 ) ;
         }
         model_.regions_.erase( model_.regions_.begin() + id ) ;
     }
 
     /*!
+     * @brief Creates a new empty Layer with the given name 
      *
-     * @param name
-     * @param id
-     * @return
+     * @param[in] name Name of the layer
+     * @return The layer index
      */
     index_t BoundaryModelBuilder::create_layer(
-        const std::string& name,
-        index_t id )
+        const std::string& name )
     {
-        if( id == NO_ID ) id = model_.layers_.size() ;
-        assert( id == model_.layers_.size() ) ;
+        index_t id = model_.layers_.size() ;
         model_.layers_.push_back( BoundaryModelElement( &model_, 3, id ) ) ;
         model_.layers_[id].set_name( name ) ;
         return id ;
     }
     
     /*!
+     * @brief Set the vertex for a Corner
      *
-     * @param corner_id
-     * @param vertex_id
+     * @param[in] corner_id Index of the corner
+     * @param[in] vertex_id Index of the vertex in the model
      */
     void BoundaryModelBuilder::set_corner( index_t corner_id,  index_t vertex_id ) 
     {
-        grgmesh_debug_assert( corner_id < model_.nb_corners() ) ;
         grgmesh_debug_assert( vertex_id < model_.nb_vertices() ) ;
-
-        model_.corners_[corner_id].set_vertex( vertex_id ) ;
+        model_.corners_.at(corner_id).set_vertex( vertex_id ) ;
     }
 
     /*!
+     * @brief Add a point to the model and set it as the corner vertex
      *
-     * @param corner_id
-     * @param vertex
+     * @param[in] corner_id Index of the corner
+     * @param[in] vertex Coordinates of the vertex
      */
     void BoundaryModelBuilder::set_corner( index_t corner_id, const vec3& vertex )
     {
         grgmesh_debug_assert( corner_id < model_.nb_corners() ) ;
-
         model_.corners_[corner_id].set_vertex( add_vertex( vertex ) ) ;
     }
 
 
     /*!
-     *
-     * @param name
-     * @param id
-     * @param type
-     * @return
+     * @brief Create a new Interface 
+     * 
+     * @param[in] name Name of the interface     
+     * @param[in] type Type of the interface
+     * @return The Interface index.
      */
     index_t BoundaryModelBuilder::create_interface(
         const std::string& name,
-        index_t id,
         GEOL_FEATURE type )
     {
-        if( id == NO_ID ) id = model_.nb_interfaces() ;
-        assert( id == model_.nb_interfaces() ) ;
+        index_t id = model_.nb_interfaces() ;
         model_.interfaces_.push_back( BoundaryModelElement( &model_, 2, id, NO_ID, type ) ) ;
         model_.interfaces_[id].set_name( name ) ;
         return id ;
     }
 
     /*!
-     *
-     * @param from
+     * @brief Copy macro information from a model
+     * @details Copy the all the model elements and their relationship ignoring their geometry
+     * 
+     * @param[in] from Model to copy the information from
      */
     void BoundaryModelBuilder::copy_macro_topology( const BoundaryModel* from )
     {
@@ -816,34 +805,29 @@ namespace GRGMesh {
         model_.universe_.copy_macro_topology( from->universe_, model_ ) ;
     }
 
-    /**
-     * \brief Load and build a BoundaryModel from a Gocad .ml file
+    /*!
+     * @brief Load and build a BoundaryModel from a Gocad .ml file
      * 
-     * This is pretty tricky because of the annoying not well adapted file format.
-     * 
-     * The correspondance between Gocad::Model3D elements and BoundaryModel
-     * elements is :
+     *  @details This is pretty tricky because of the annoying not well adapted file format. 
+     * The correspondance between Gocad::Model3D elements and BoundaryModel elements is :
      * Gocad TSurf  <-> BoundaryModel Interface
      * Gocad TFace  <-> BoundaryModel Surface
      * Gocad Region <-> BoundaryModel Region
      * Gocad Layer  <-> BoundaryModel Layer
      *
-     */
-
-    /*!
-     *
-     * @param in
+     * @param[in] in Input .ml file stream
      */
     void BoundaryModelBuilder::load_file( std::istream& in )
     {
-        // Clear the model_ //  Not sure this is actually useful
+        // Clear the model_ 
+        //  Not sure this is actually useful
         model_.name_.clear() ;
         model_.vertices_.clear() ;
         model_.corners_.clear() ; 
         model_.lines_.clear() ; 
         model_.surfaces_.clear() ;
         model_.regions_.clear() ;
-        model_.nb_facets_.clear() ;
+        model_.nb_facets_in_surfaces_.clear() ;
         model_.interfaces_.clear() ;
         model_.contacts_.clear() ;
         model_.layers_.clear() ;
@@ -873,7 +857,7 @@ namespace GRGMesh {
         int z_sign = 1 ;
 
         // In the .ml file - vertices are indexed TSurf by Tsurf
-        // They can be duplicated inside one TSurf and betweeen TSurfs\
+        // They can be duplicated inside one TSurf and betweeen TSurfs
         
         // Indices of the vertices of the currently built TSurf in the model
         std::vector< index_t > tsurf_vertex_ptr ;        
@@ -885,7 +869,6 @@ namespace GRGMesh {
         // Starting and ending indices of each facet triangle in the tface_facets vector
         std::vector< index_t > tface_facets_ptr ;
         tface_facets_ptr.push_back( 0 ) ;
-
         
         // Intermediate information for contact parts building
         std::vector< Border > borders_to_build ;
@@ -894,11 +877,10 @@ namespace GRGMesh {
         // because it does not match triangle orientations.
         std::vector< index_t > change_key_facet ;
 
-        /****** File reading **********************************/
+        // Begin reading the file 
         InputStream lis( in ) ;
 
-		while( !lis.eof() ) {
-
+        while( !lis.eof() ) {
             lis.get_line() ;
             std::string keyword ;
             lis >> keyword ;
@@ -948,7 +930,7 @@ namespace GRGMesh {
                     lis >> p2 ;
 
                     create_surface( tsurf_name.str(), type,
-                        KeyFacet( p0, p1, p2 ) ) ;
+                        Surface::KeyFacet( p0, p1, p2 ) ) ;
                     nb_tface++ ;
                 } else if( keyword == "REGION" ) {
                     /// 3. Read Region information and create them from their name,
@@ -1120,7 +1102,7 @@ namespace GRGMesh {
                 }
                 /// 6. Read the Border information and store it
                 else if( keyword == "BORDER" ) {
-                    signed_index_t id, p1, p2 ;
+                    index_t id, p1, p2 ;
                     lis >> id >> p1 >> p2 ;
                     p1-- ;
                     p2-- ;
@@ -1141,7 +1123,6 @@ namespace GRGMesh {
 
                             // i-1 is the id of the TFace in this TSurf
                             part_id = i - 1 ;
-
                             break ;
                         }
                     }
@@ -1162,10 +1143,10 @@ namespace GRGMesh {
 
         make_vertices_unique() ;
 
-        /// 7. Build the contact parts
+        /// 7. Build the Lines
         build_lines( borders_to_build ) ;
 
-        /// 8. Build the contacts
+        /// 8. Build the Contacts
         build_contacts() ;
 
         // Then finish the job (the order matters)
@@ -1183,12 +1164,14 @@ namespace GRGMesh {
     }
 
     /*!
+     * @brief Set the vertices and facets for a surface
+     * @details Facet adjencies can be set too.
      *
-     * @param surface_id
-     * @param vertices
-     * @param facets
-     * @param facet_ptr
-     * @param surface_adjacencies
+     * @param[in] surface_id Index of the surface
+     * @param[in] vertices Model indices of the vertices 
+     * @param[in] facets Indices in the vertices vector to build facets
+     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+     * @param[in] surface_adjacencies Adjacent facet (size of facet_ptr)
      */
     void BoundaryModelBuilder::set_surface_geometry(
         index_t surface_id,
@@ -1207,16 +1190,14 @@ namespace GRGMesh {
             model_.surfaces_[surface_id].adjacent_ = surface_adjacencies ;
     }
 
-
-     /** Returns the id of the facet which first three vertices are those given */
     /*!
-     *
-     * @param surface_id
-     * @param p0
-     * @param p1
-     * @param p2
-     * @param same_sign
-     * @return
+     * @brief Find the facet which first 3 vertices are given 
+     * @param[in] surface_id Index of the surface
+     * @param[in] p0 First point coordinates
+     * @param[in] p1 Second point coordinates
+     * @param[in] p2 Third point coordinates
+     * @param[out] same_sign Is true if the found facet has the same orientation than triangle p0p1p2
+     * @return Index of the found facet, NO_ID if none found
      */
     index_t BoundaryModelBuilder::find_key_facet( 
         index_t surface_id, const vec3& p0, const vec3& p1,
@@ -1266,14 +1247,14 @@ namespace GRGMesh {
 
 
     /*!
-     *
-     * @param surface_id
-     * @return
+     * @brief Verify that a surface key facet has an orientation consistent with the surface facets.
+     * @param[in] surface_id Index of the surface
+     * @return False if the key_facet orientation is not the same than the surface facets, else true.
      */
-    bool BoundaryModelBuilder::check_key_facet_orientation( index_t surface_id ) const {
-
+    bool BoundaryModelBuilder::check_key_facet_orientation( index_t surface_id ) const 
+    {
         Surface& surface = model_.surfaces_[surface_id] ;
-        KeyFacet& key_facet = surface.key_facet_ ;
+        Surface::KeyFacet& key_facet = surface.key_facet_ ;
 
         if( key_facet.is_default() ) {
             surface.set_first_triangle_as_key() ;
@@ -1299,18 +1280,16 @@ namespace GRGMesh {
    }
 
 
-    /** 
-     *  Compute and set the adjacencies between the facets 
-     *   The adjacent facet is given for each vertex of each facet for the edge
-     *   starting at this vertex.
-     *   If no neighbor inside the same Surface adjacent is -1
-     */
     /*!
+     * @brief Compute and set the adjacencies between the facets 
+     * @details The adjacent facet is given for each vertex of each facet for the edge
+     * starting at this vertex.
+     * If there is no neighbor inside the same Surface adjacent is set to NO_ADJACENT
      *
-     * @param surface_id
+     * @param[in] surface_id Index of the surface
      */
-    void BoundaryModelBuilder::set_surface_adjacencies( index_t surface_id ) { 
-
+    void BoundaryModelBuilder::set_surface_adjacencies( index_t surface_id ) 
+    { 
         Surface& S = model_.surfaces_[surface_id] ;
         std::vector< index_t >& adjacent = S.adjacent_ ;
         adjacent.resize( S.facets_.size(), Surface::NO_ADJACENT ) ;
@@ -1364,17 +1343,18 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param surface_id
-     * @param line_id
+     * @brief Cut the Surface along the line 
+     * @details First modify to NO_ADJACENT the neighbors the edges that are along the line 
+     * and then duplicate the points along this new boundary
+     * Corners are not duplicated - maybe they should be in some cases but not in general..
+     * 
+     * @param[in] surface_id Surface index
+     * @param[in] line_id Line index
      */
     void BoundaryModelBuilder::cut_surface_by_line( index_t surface_id, index_t line_id ) {
-
         Surface& S = model_.surfaces_[surface_id] ;
         const Line& L = model_.line( line_id ) ;
 
-
-        //Number of segments = nb_cells 
         for( index_t i= 0; i+1 < L.nb_vertices(); ++i ) {
             index_t p0 = L.model_vertex_id( i ) ;
             index_t p1 =  (i == L.nb_vertices()-1) ? L.model_vertex_id(0) : L.model_vertex_id( i+1 ) ;
@@ -1395,11 +1375,8 @@ namespace GRGMesh {
             S.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
         }
         
-        // Now travel on one side of the "faked" boudnary and actually duplicate
-        // the vertex in the surface
-        // Corners are not duplicated - maybe theu should be in some cases but not in general..
-
-
+        // Now travel on one side of the "faked" boundary and actually duplicate
+        // the vertices in the surface      
         // Get started in the surface - find (again) one of the edge that contains 
         // the first two vertices of the line
         index_t f = Surface::NO_ID ;
@@ -1412,12 +1389,10 @@ namespace GRGMesh {
         
         // Stopping criterion
         index_t last_vertex = L.model_vertex_id( L.nb_vertices()-1 ) ;
-        index_t count = 0 ;
-        // On esp�re qu'on les r�cup�re bien tous les vertices sur la ligne... A VERIFIER
+        // Hopefully we have all the vertices on the Line.. 
+        /// \todo Check that all vertices on the line are recovered
         while( S.model_vertex_id( id1 ) != last_vertex ) {
-
             // Get the next vertex on the border 
-
             // Same algorithm than in determine_line_vertices function
             index_t next_f = Surface::NO_ID ;
             index_t id1_in_next = Surface::NO_ID ;
@@ -1432,10 +1407,9 @@ namespace GRGMesh {
             
             index_t next_id1 = S.surf_vertex_id( next_f, next_id1_in_next ) ;
             
-
             // Duplicate the vertex at id1 
-            // Apr�s avoir r�cup�r� le suivant 1 .. on doit pouvoir les deux en m�me 
-            // temps mais l� j'ai la flemme de r�fl�chir, faut pas que �a casse le next_on_border (jeanne)
+            // After having determined the next 1 we can probably get both at the same time 
+            // but I am lazy, and we must be careful not to break next_on_border function (Jeanne)
             std::vector< index_t > facets_around_id1 ;
             S.facets_around_vertex( id1, facets_around_id1, false, f ) ;
 
@@ -1453,26 +1427,22 @@ namespace GRGMesh {
                     }
                 }
             }
-
             // Update
             f = next_f ;
             id0 = new_id1 ;
             id1 = next_id1 ;
-
-            ++count ; // debug
         }
-
-
     }
 
-
     /*!
-     * When reading the file the vertices are duplicated between the different Surfaces
-     * plus new vertices are added for Corners too 
-     *
+     * @brief Remove duplicates in the model vertices 
+     * @details When reading the file the vertices are duplicated between the different Surfaces,
+     * and new vertices are added for Corners. 
      * Compute the duplicates inside the vertices_ vector - Update the vertex vector - 
-     * and Update the reference to vertices for all Corner and Surface plus for the input 
-     * borders that are later used to build the model lines 
+     * and update the reference to vertices for all model Corners and Surfaces
+     * 
+     * \todo Check the compute_unique_kdtree function - It is not correct the number of neighbors 
+     * is predefined 
      */
     void BoundaryModelBuilder::make_vertices_unique()
     {
@@ -1491,13 +1461,15 @@ namespace GRGMesh {
         }
         for( index_t co = 0; co < model_.nb_corners(); co++ ) {
             Corner& corner = model_.corners_[co] ;
-            corner.p_ = old2new[corner.p_] ;
+            corner.vertex_ = old2new[corner.vertex_] ;
         }       
     }
 
     /*!
+     * @brief Fill the model universe_
      *
-     * @param boundaries
+     * @param[in] boundaries Indices of the surfaces on the model boundary
+     * plus indication on which side of the surface is universe_ ( outside of the model )
      */
     void BoundaryModelBuilder::set_universe(
         const std::vector< std::pair< index_t, bool > >& boundaries )
@@ -1506,32 +1478,32 @@ namespace GRGMesh {
         model_.universe_.set_dim( 3 ) ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
-            assert( boundaries[i].first < model_.nb_surfaces() ) ;
+            grgmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
             model_.universe_.add_boundary( boundaries[i].first,
                 boundaries[i].second ) ;
-
             // If this surface have no type, set it at VOI
             model_.surfaces_[boundaries[i].first].set_type( VOI ) ;
         }
     }
 
     /*!
+     * @brief Adds a new region to the model
      *
-     * @param name
-     * @param boundaries
-     * @param id
-     * @return
+     * @param[in] name Name of the region
+     * @param[in] boundaries Indices of the surfaces on the region boundary, plus indication on which
+     *            side of the surface is the region
+     * @return Index of the created region
      */
     index_t BoundaryModelBuilder::create_region(
         const std::string& name,
-        const std::vector< std::pair< index_t, bool > >& boundaries,
-        index_t id )
+        const std::vector< std::pair< index_t, bool > >& boundaries )
     {
-        id = create_region( id ) ;
+        index_t id = model_.regions_.size() ;
+        model_.regions_.push_back( BoundaryModelElement( &model_, 3, id ) ) ;
         model_.regions_[id].set_name( name ) ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
-            assert( boundaries[i].first < model_.nb_surfaces() ) ;
+            grgmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
             add_region_oriented_boundary( id, boundaries[i].first,
                 boundaries[i].second ) ;
         }
@@ -1539,23 +1511,18 @@ namespace GRGMesh {
     }
 
 
-    /**
-     * Get the vertices that are on the border of the given surface, starting from 
-     * vertex id0 in the surface towards the direction given by vertex id1
-     *
+    /*!
+     * @brief Get the points of a Line between two corners on a Surface
+     *   
      * WE ASSUME THAT THE STORAGE OF THE POINTS IS UNIQUE IN THE MODEL AND THAT 
      * SURFACES DO SHARE POINTS ON THEIR CONTACT LINES
-     * 
-     * Empties and fills the boder_vertex_model_ids with the global ids of these vertices
-     * Returns the id of the corner at which this boundary stops
-     */
-    /*!
+     * make_vertices_unique() must have been called first
      *
-     * @param S
-     * @param id0
-     * @param id1
-     * @param border_vertex_model_ids
-     * @return
+     * @param[in] S Index of the surface
+     * @param[in] id0 Index of the starting point( a corner ) in S
+     * @param[in] id1 Index of the second point on the Line in S
+     * @param[out] border_vertex_model_ids Indices of vertices on the Line (resized at 0 at the beginning)
+     * @return Index of the Corner at which the Line ends
      */
     index_t BoundaryModelBuilder::determine_line_vertices( 
         const Surface& S, 
@@ -1582,9 +1549,9 @@ namespace GRGMesh {
         index_t p1_corner = find_corner( p1 ) ;
         while( p1_corner == NO_ID ) {
 
-            index_t next_f = Surface::NO_ID ;
-            index_t id1_in_next = Surface::NO_ID ;
-            index_t next_id1_in_next = Surface::NO_ID ;
+            index_t next_f = NO_ID ;
+            index_t id1_in_next = NO_ID ;
+            index_t next_id1_in_next = NO_ID ;
 
             // We want the next triangle that is on the boundary and share p1
             // If there is no such triangle, the third vertex of the current triangle is to add
@@ -1592,8 +1559,8 @@ namespace GRGMesh {
                 next_f, id1_in_next, next_id1_in_next ) ;
 
             grgmesh_assert(
-                next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
-                    && next_id1_in_next != Surface::NO_ID ) ;
+                next_f != NO_ID && id1_in_next != NO_ID
+                    && next_id1_in_next != NO_ID ) ;
             
             index_t next_id1 =  S.surf_vertex_id( next_f, next_id1_in_next ) ;
 
@@ -1608,16 +1575,11 @@ namespace GRGMesh {
         }
         return p1_corner ; 
     }
-
-    /*! Build the Lines once the storage of the vertices in the Model as been make unique
-     * So that POINTS on lines are shared by the surfaces in contact there.
-     *  from the information collected in the Border structures
-     *
-     *  fill their in_boundary_ vector
-     */
+    
     /*!
+     * @brief Creates all Lines for the model
      *
-     * @param borders
+     * @param[in] borders Information on Surface boundaries gathered at .ml file reading
      */
     void BoundaryModelBuilder::build_lines( const std::vector< Border >& borders )
     {      
@@ -1643,8 +1605,8 @@ namespace GRGMesh {
     }
 
     /*!
-     * \brief Build the contacts - group of lines shared by the same interfaces
-     *
+     * @brief Build the Contacts
+     * @details One contact is a group of lines shared by the same Interfaces     
      */
     void BoundaryModelBuilder::build_contacts()
     {
@@ -1664,8 +1626,9 @@ namespace GRGMesh {
         }
     }
 
-    /*! Set the surfaces delimited by each contact
-     *  Warning the surfaces must be finished first
+    /*! 
+     * @brief Set the Interfaces delimited by each Contact     
+     * @details Warning the Interfaces must be finished first.
      */
     void BoundaryModelBuilder::end_contacts()
     {
@@ -1683,7 +1646,8 @@ namespace GRGMesh {
         }
     }
 
-    /*! Set the parent contact for all the contact parts
+    /*! 
+     * @brief Set the parent Contact for all the Lines
      */
     void BoundaryModelBuilder::end_lines()
     {
@@ -1696,8 +1660,10 @@ namespace GRGMesh {
         }
     }
 
-    /**
-     * \todo End interface function not correct, in_buondary not set
+    /*!
+     * @brief Fills the children and the in_boundary information for Interfaces 
+     *
+     * \todo End interface function not correct, in_boundary not well set
      */
     void BoundaryModelBuilder::end_interfaces()
     {
@@ -1705,7 +1671,6 @@ namespace GRGMesh {
             index_t parent = model_.surfaces_[i].parent_id() ;
             add_interface_child( parent, i ) ;
         }
-
         for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
             for( index_t j = 0; j < model_.contacts_[i].nb_in_boundary(); ++j ) {
                 index_t b = model_.contacts_[i].in_boundary_id( j ) ;
@@ -1713,7 +1678,9 @@ namespace GRGMesh {
             }
         }       
     }
-    /**
+
+    /*!
+     * @brief Finishes up layers
      * \todo What do we want to have in the boundaries of layers ? surfaces or interfaces ?
      */
     void BoundaryModelBuilder::end_layers()
@@ -1737,7 +1704,8 @@ namespace GRGMesh {
         }
     }
 
-    /*! Set the parent of surfaces
+    /*!
+     * @brief Sets boundary and in_boundary information on surfaces
      */
     void BoundaryModelBuilder::end_surfaces()
     {
@@ -1757,8 +1725,12 @@ namespace GRGMesh {
     }
 
     /*!
+     * @brief Finish up Surface 
+     * @details Calls the end_surfaces() function and switch KeyFacet orientation of the required
+     * surfaces.
      *
-     * @param change_orientation
+     * @param[in] change_orientation Indices of the surfaces in which KeyFacet orientation is not
+     * consistent with the its facet orientation
      */
     void BoundaryModelBuilder::end_surfaces(
         const std::vector< index_t >& change_orientation )
@@ -1783,17 +1755,20 @@ namespace GRGMesh {
         }
     }
 
+
     /*!
-     *
+     * @brief Last function to call when building a model
+     * @details Output information on the model and initialise the
+     * nb_facets_in_surfaces_ vector
+     * 
      */
     void BoundaryModelBuilder::end_model()
     {
-        model_.nb_facets_.resize( model_.nb_surfaces()+1, 0 ) ;
-
+        model_.nb_facets_in_surfaces_.resize( model_.nb_surfaces()+1, 0 ) ;
         index_t count = 0 ;
-        for( index_t i = 1; i < model_.nb_facets_.size(); ++i ) {
+        for( index_t i = 1; i < model_.nb_facets_in_surfaces_.size(); ++i ) {
             count += model_.surface( i-1 ).nb_cells() ;
-            model_.nb_facets_[i] = count ;
+            model_.nb_facets_in_surfaces_[i] = count ;
         }
 
         std::cout << "Model " << model_.name() <<" has " << std::endl 
@@ -1807,7 +1782,8 @@ namespace GRGMesh {
     }                                                                          
 
 
-    /*! Set in what surface parts are the corners
+    /*!
+     * @brief Set on the boundary of which lines are corners
      */
     void BoundaryModelBuilder::end_corners()
     {
@@ -1821,10 +1797,11 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param interfaces
-     * @param type
-     * @return
+     * @brief Find or create a contact between given Interfaces
+     * 
+     * @param[in] interfaces Indices of the intersecting interfaces
+     * @param[in] type Type of the intersection
+     * @return Index of the Contact
      */
     index_t BoundaryModelBuilder::find_or_create_contact(
         std::vector< index_t >& interfaces,
@@ -1850,22 +1827,20 @@ namespace GRGMesh {
         return result ;
     }
 
-    /*! Add a surface part to the model
-     *  The parent with the given name (one_interface name) MUST exist
-     */
     /*!
+     * @brief Add a Surface to the model
      *
-     * @param interface_name
-     * @param type
-     * @param key
+     * @param[in] interface_name Name of the parent. The parent MUST exist.
+     * @param[in] type Type of the Surface
+     * @param[in] key KeyFacet for this Surface
      */
     void BoundaryModelBuilder::create_surface(
         const std::string& interface_name,
         const std::string& type,
-        const KeyFacet& key )
+        const Surface::KeyFacet& key )
     {
         index_t parent = interface_id( interface_name ) ;
-        assert( parent != NO_ID ) ;
+        grgmesh_assert( parent != NO_ID ) ;
 
         index_t id = model_.nb_surfaces() ;
         GEOL_FEATURE t = determine_geological_type( type ) ;
@@ -1876,9 +1851,10 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param index
-     * @return
+     * @brief Find or create a corner at a vertex.
+     * 
+     * @param[in] index Index of the vertex in the model
+     * @return Index of the Corner
      */
     index_t BoundaryModelBuilder::find_or_create_corner( index_t index )
     {
@@ -1892,38 +1868,25 @@ namespace GRGMesh {
     }
     
     /*!
-     *
-     * @param corner0
-     * @param corner1
-     * @param vertices
-     * @return
+     * @brief Find or create a line 
+     * 
+     * @param[in] corner0 Starting corner index
+     * @param[in] corner1 Ending corner index
+     * @param[in] vertices Indices of the vertices on this Line
+     * @return Index of the Line
      */
     index_t BoundaryModelBuilder::find_or_create_line(
         index_t corner0,
         index_t corner1,
         std::vector< index_t >& vertices )
     {
+        grgmesh_assert( corner0 != NO_ID ) ;
+        grgmesh_assert( corner1 != NO_ID ) ; 
+        
         index_t result = find_line( corner0, corner1, vertices ) ;
 
         if( result == NO_ID ) {
             result = model_.nb_lines() ;
-            grgmesh_assert( corner0 != NO_ID ) ;
-            grgmesh_assert( corner1 != NO_ID ) ; 
-
-        /*    if( corner1 == corner0 ) {
-                // Closed contact part
-                //corner1 = corner0 ;
-                // Remove the last vertex
-                grgmesh_assert( vertices[0] == vertices.back() ) ;
-                vertices.pop_back() ;
-            }*/
-
-            /*std::vector< index_t > indices( vertices.size() ) ;
-            for( index_t p = 0; p < vertices.size(); p++ ) {
-                indices[p] = model_.nb_vertices() ;
-                add_vertex( vertices[p] ) ;
-            }*/
-
             model_.lines_.push_back(
                 Line( &model_, result, corner0, corner1, vertices ) ) ;
         }
@@ -1931,9 +1894,10 @@ namespace GRGMesh {
     }
   
     /*!
-     *
-     * @param name
-     * @return
+     * @brief Get the index of an Interface from its name
+     * 
+     * @param[in] name Name of the Interface
+     * @return Index of the interface in the model, NO_ID if not found.
      */
     index_t BoundaryModelBuilder::interface_id( const std::string& name ) const
     {
@@ -1947,9 +1911,9 @@ namespace GRGMesh {
 
 
     /*!
-     *
-     * @param p
-     * @return
+     * @brief Get the index of the Corner at given coordinates
+     * @param[in] p Coordinates of the vertex
+     * @return NO_ID or the index of the Corner
      */
     index_t BoundaryModelBuilder::find_corner( const vec3& p ) const
     {
@@ -1960,24 +1924,25 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param p_id
-     * @return
+     * @brief Get the index of the Corner at a given model point
+     * @param[in] p_id Index of the point
+     * @return NO_ID or the index of the Corner
      */
     index_t BoundaryModelBuilder::find_corner( index_t p_id ) const 
     {
         for( index_t i = 0; i < model_.nb_corners(); ++i ) {
-            if( model_.corner(i).p_ == p_id ) return i ;
+            if( model_.corner(i).vertex_ == p_id ) return i ;
         }
         return NO_ID ;
     }
 
     /*!
-     *
-     * @param corner0
-     * @param corner1
-     * @param vertices
-     * @return
+     * @brief Looks for a line in the model
+     * 
+     * @param[in] corner0 Starting corner index
+     * @param[in] corner1 Ending corner index
+     * @param[in] vertices Indices of the vertices on the line
+     * @return NO_ID or the index of the Line
      */
     index_t BoundaryModelBuilder::find_line(
         index_t corner0,
@@ -1987,45 +1952,28 @@ namespace GRGMesh {
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             const Line& cp = model_.line(i) ;
 
-            // If the number of vertices are not the same,
-            // it is not the same Line
+            // Not the same number of vertices  = not the same Line
             if( cp.nb_vertices() != vertices.size() ) continue ; 
 
-            if( corner0 == cp.boundary_id( 0 )
-                && corner1 == cp.boundary_id( 1 ) ) {
-               // bool equal = true ;
+            if( corner0 == cp.boundary_id( 0 ) && corner1 == cp.boundary_id( 1 ) ) {
                 if( std::equal( vertices.begin(), vertices.end(), cp.vertices_.begin() ) ){
                     return i ;
                 }
-                /*for( index_t p = 0; p < cp.nb_vertices(); p++ ) {
-                    if( cp.vertex( p ) != vertices[p] ) {
-                        equal = false ; break ;
-                    }
-                }
-                if( equal ) return i ;*/
             }
 
-            if( corner1 == cp.boundary_id( 0 )
-                && corner0 == cp.boundary_id( 1 ) ) {
-                //bool equal = true ;
+            if( corner1 == cp.boundary_id( 0 ) && corner0 == cp.boundary_id( 1 ) ) {
                 if( std::equal( vertices.begin(), vertices.end(), cp.vertices_.rbegin() ) ){
                     return i ;
-                }
-                /*for( index_t p = 0; p < cp.nb_vertices(); p++ ) {
-                    if( cp.vertex( cp.nb_vertices() - p - 1 ) != vertices[p] ) {
-                        equal = false ; break ;
-                    }
-                }
-                if( equal ) return i ;*/
+                }               
             }
         }
         return NO_ID ;
     }
 
     /*!
-     *
-     * @param interfaces
-     * @return
+     * @brief Find a Contact
+     * @param[in] interfaces Indices of the Interfaces determining the contact
+     * @return NO_ID or index of the contact
      */
     index_t BoundaryModelBuilder::find_contact( const std::vector< index_t >& interfaces ) const
     {
@@ -2052,12 +2000,13 @@ namespace GRGMesh {
 
 
     /*!
-     *
-     * @return
+     * @brief Rebuild a model ???
+     * \todo Comment rebuild()... 
+     * \todo Valgrind finds errors !!!!!!!
+     * @return 
      */
     bool BoundaryModelBuilder::rebuild()
     {
-        /*! \todo Valgrind finds errors !!!!!!! */
         std::vector< index_t > sp_to_remove ;
         std::vector< index_t > new_sp_id( model_.nb_surfaces() ) ;
         index_t offset = 0 ;
@@ -2277,7 +2226,8 @@ namespace GRGMesh {
     }
 
     /*!
-     *
+     * @brief Update the indices stored by each element of the model \
+     * according to its actual position in the corresponding vector in the model
      */
     void BoundaryModelBuilder::update_all_ids()
     {
@@ -2303,9 +2253,5 @@ namespace GRGMesh {
             model_.layers_[l].id_ = l ;
         }
     }
-/*************************************************************************************************/
-/********  End BoundarymodelBuilder implementation      ******************************************/
-/*************************************************************************************************/
 
-
-} // namespace 0
+} 

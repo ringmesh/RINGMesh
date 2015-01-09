@@ -1,33 +1,49 @@
-/*! This file is originally part of the Geomodeling plugin of Graphite 
- *  The initial version was developed by Jeanne Pellerin and modified by Arnaud Botella
- *  
- *  This version is modified by Jeanne Pellerin - WIAS
- */
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+*/
 
-/*! \author Jeanne Pellerin */
+/*! \author Jeanne Pellerin and Arnaud Botella */
 
 #include <grgmesh/boundary_model_element.h>
 #include <grgmesh/boundary_model.h>
 #include <grgmesh/utils.h>
 
 #include <geogram/basic/geometry_nd.h>
+
 #include <set>
 #include <stack>
 #include <fstream>
 
-//#define _USE_MATH_DEFINES // Otherwise M_PI not defined interfere with other math stuff ? Jeanne
-//#include <math.h>
 
 namespace GRGMesh {
 
-
-/********************************************************************************************/
-/******             BoundaryModelElement implementation     ***********************************/
-/********************************************************************************************/
-
     /*!
      *
-     * @return
+     * @return Assert that the parent exist and returns it.
      */
     const BoundaryModelElement& BoundaryModelElement::parent() const
     {
@@ -45,8 +61,8 @@ namespace GRGMesh {
 
     /*!
      *
-     * @param x
-     * @return
+     * @param[in] x Index of the boudnary element
+     * @return Assert that is exits and return the element on the boundary
      */
     const BoundaryModelElement& BoundaryModelElement::boundary( index_t x ) const
     {
@@ -68,8 +84,8 @@ namespace GRGMesh {
 
     /*!
      *
-     * @param x
-     * @return
+     * @param[in] x Index of the in_boundary element
+     * @return Assert that it exist and return the element in in_boundary.
      */
     const BoundaryModelElement& BoundaryModelElement::in_boundary( index_t x ) const
     {
@@ -91,8 +107,8 @@ namespace GRGMesh {
 
     /*!
      *
-     * @param x
-     * @return
+     * @param[in] x Index of the child
+     * @return Assert that the chil exist and return it.
      */
     const BoundaryModelElement& BoundaryModelElement::child( index_t x ) const
     {
@@ -112,9 +128,9 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param rhs
-     * @param model
+     * @brief Copy all attributes (except the model_) from \param rhs to this element
+     * @param[in] rhs To copy from
+     * @param[in] model Model to associate to this element
      */
     void BoundaryModelElement::copy_macro_topology(
         const BoundaryModelElement& rhs,
@@ -132,9 +148,10 @@ namespace GRGMesh {
         children_ = rhs.children_ ;
     }
   
-     /*! Returns true if this element or one of the element containing it
-     *  is on the Volume Of Interest
-     *  This info is strored in the type of the element
+    /*!
+     * @brief Checks if this element or one of the element containing it 
+     * determines the model Volume Of Interest
+     * @details This is known with the type of an element
      */
     bool BoundaryModelElement::is_on_voi() const
     {
@@ -153,37 +170,21 @@ namespace GRGMesh {
         return false ;
     }
     
-
-/***********************************************************************************************/
-
     /*!
      *
-     * @param p
-     * @return
+     * @return The coordinates of the point at this corner.
      */
     const vec3& Corner::vertex( index_t p ) const
     {
-        return model_->vertex( p_ ) ;
+        return model_->vertex( vertex_ ) ;
     }
 
-    /*void Corner::copy_macro_topology(
-        const Corner& rhs,
-        BoundaryModel& model )
-    {
-        BoundaryModelElement::copy_macro_topology( rhs, model ) ;
-    }*/
-    
-    
-                
-
-/********************************************************************************************/
-/******             Line implementation            ***********************************/
-/********************************************************************************************/
 
     /*!
-     *
-     * @param model
-     * @param id
+     * @brief Construct a Line
+     * 
+     * @param[in] model The parent model
+     * @param[in] id The index of the line in the lines_ vector of the parent model
      */
     Line::Line( BoundaryModel* model, index_t id ):
         BoundaryModelElement( model, 1, id )
@@ -192,10 +193,11 @@ namespace GRGMesh {
     }
 
     /*!
+     * @brief Construct a Line knowing its vertices
      *
-     * @param model
-     * @param id
-     * @param vertices
+     * @param[in] model  The parent model
+     * @param[in] id The index of the line in the lines_ vector of the parent model
+     * @param[in] vertices Indices (in the model) of the vertices defining this Line
      */
     Line::Line(
         BoundaryModel* model,
@@ -206,12 +208,13 @@ namespace GRGMesh {
     }
 
     /*!
+     * @brief Construct a Line knowing its vertices
      *
-     * @param model
-     * @param id
-     * @param corner0
-     * @param corner1
-     * @param vertices
+     * @param[in] model  The parent model
+     * @param[in] id The index of the line in the lines_ vector of the parent model
+     * @param[in] vertices Indices (in the model) of the vertices defining this Line
+     * @param[in] corner0 Index of the starting corner
+     * @param[in] corner1 Index of the ending corner
      */
     Line::Line(
         BoundaryModel* model,
@@ -225,32 +228,11 @@ namespace GRGMesh {
         boundaries_.push_back( corner0 ) ;
         boundaries_.push_back( corner1 ) ;
     } ;
-
-   /* void Line::copy_macro_topology(
-        const Line& rhs,
-        BoundaryModel& model )
-    {
-        BoundaryModelElement::copy_macro_topology( rhs, model ) ;
-       // is_inside_border_ = rhs.is_inside_border_ ;
-    }*/
- 
-    /*void Line::add_in_boundary( index_t e )
-    {
-        for( index_t i = 0; i < nb_in_boundary(); i++ ) {
-            if( in_boundary_[i] == e ) {
-                assert( !is_inside_border_[i] ) ;
-                is_inside_border_[i] = true ;
-                return ;
-            }
-        }
-        BoundaryModelElement::add_in_boundary( e ) ;
-        is_inside_border_.push_back( false ) ;
-    }*/
     
     /*!
+     * @brief Check is the Line is twice on the boundary of a surface
      *
-     * @param surface
-     * @return
+     * @param[in] surface The surface to test
      */
     bool Line::is_inside_border(
         const BoundaryModelElement& surface ) const
@@ -260,18 +242,16 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param line_vertex_id
-     * @return
+     * @return The coordinates of the \param line_vertex_id th vertex on the Line
      */
     const vec3& Line::vertex( index_t line_vertex_id ) const {
         return model_->vertex( vertices_.at( line_vertex_id ) ) ;
     }
 
     /*!
-     *
-     * @param s
-     * @return
+     * 
+     * @param[in] s Segment index
+     * @return The coordinates of the barycenter of the segment
      */
     vec3 Line::segment_barycenter( index_t s ) const {
         return 0.5*( vertex(s) + vertex(s+1) ) ;
@@ -279,15 +259,16 @@ namespace GRGMesh {
     
     /*!
      *
-     * @param s
-     * @return
+     * @param[in] s Segment index
+     * @return The length of the segment
      */
     double Line::segment_length( index_t s ) const {
         return length( vertex(s+1)-vertex(s) ) ;
     }
+
     /*!
      *
-     * @return
+     * @return The lenght of the Line
      */
     double Line::total_length() const {
         double result = 0 ;
@@ -297,19 +278,9 @@ namespace GRGMesh {
         return result ;
     }
 
-   /* bool Line::contains( const vec3& p ) const {
-        return find( p ) != -1 ;
-    }
-    signed_index_t Line::find( const vec3& p ) const
-    {
-        for( index_t i = 0; i < vertices_.size(); ++i ) {
-            if( vertex( i ) == p ) return i ;
-        }
-        return -1 ;
-    } */
-
+   
     /*!
-     *
+     * \todo Check LineMutato function implementation and comment them
      * @param id
      * @param p
      */
@@ -327,15 +298,11 @@ namespace GRGMesh {
         return M_.model_->vertices_[ M_.vertices_[p] ] ;
     }
 
-/********************************************************************************************/
-/******             Surface implementation            ***********************************/
-/********************************************************************************************/
 
     /*!
-     *
-     * @param f
-     * @param v
-     * @return
+     * @param[in] f Facet index
+     * @param[in] v Vertex index in the facet
+     * @return The coordinates of the vertex
      */
     const vec3& Surface::vertex( index_t f, index_t v ) const
     {
@@ -344,64 +311,46 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param surf_vertex_id
-     * @return
+     * @param[in] surf_vertex_id Index of the vertex in the surface
+     * @return The coordinates of the vertex
      */
     const vec3& Surface::vertex( index_t surf_vertex_id ) const {
         return model_->vertex( vertices_.at(surf_vertex_id) ) ;
     }
 
     /*!
-     *
-     * @param f
-     * @return
+     * @param[in] f Facet index in the surface
+     * @return Facet index in the parent model
      */
     index_t Surface::model_facet_id( index_t f ) const {
         return model_->model_facet( id_, f ) ;
     }
 
     /*!
-     *
+     * @brief Initialize the KeyFacet to be the first 3 vertices of the surface
      */
     void Surface::set_first_triangle_as_key()
     {
         // I guess it should'nt be a problem if the first facet is not a triangle
-        // that's only a guess (Jeanne)
+        // that's only a guess (Jeanne)        
         key_facet_ = KeyFacet( model_->vertex( vertices_[facets_[0]] ),
             model_->vertex( vertices_[facets_[1]] ),
             model_->vertex( vertices_[facets_[2]] ) ) ;
     }
 
-    /*int Surface::adjcent_in_neighbor( index_t f, index_t e ) const
-    {
-        signed_index_t adj = adjacent( f, e ) ;
-        if( adj == -1 ) return -1 ;
-
-        for( index_t i = 0; i < nb_vertices_in_facet( adj ); i++ ) {
-            if( adjacent( adj, i ) == f ) return i ;
-        }
-        return -1 ;
-    }*/
-
-
-    /**
-      * Parcours d'un bord dans une surface - dans un sens ou dans l'autre
-      *
-      * Arnaud- je dirai que la fonction d'avant �tait bugg�e
-      * 
-      * Need of two indices in input - so that we are able to go to the next 
-      * edge on border in any direction and avoid going back when the next edge on boundary 
-      * is in the same facet
-      */
+         
     /*!
+     * @brief Traversal of a surface border
+     * @details From the input facet @param f, get the facet that share vertex @param v and 
+     * get the indices of vertex @param v and of the following vertex in this new facet.
+     * The next facet @param next_f may be the same, and @param is required to avoid going back.
      *
-     * @param f
-     * @param from
-     * @param v
-     * @param next_f
-     * @param v_in_next
-     * @param next_in_next
+     * @param[in] f Index of the facet
+     * @param[in] from Index in the facet of the previous point on the border - gives the direction
+     * @param[in] v Index in the facet of the point for which we want the next point on border
+     * @param[out] next_f Index of the facet containing the next point on border
+     * @param[out] v_in_next Index of vertex @param v in facet @param next_f
+     * @param[out] next_in_next Index of the next vertex on border in facet @param v_in_next
      */
     void Surface::next_on_border( 
         index_t f, index_t from, index_t v, 
@@ -414,8 +363,7 @@ namespace GRGMesh {
 
         // We want the next triangle that is on the boundary and share V
         // If there is no such triangle, the next vertex on the boundary 
-        // is the vertex of F neighbor of V that is not from 
-        
+        // is the vertex of F neighbor of V that is not from         
 
         // Get the facets around the shared vertex that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)        
@@ -424,8 +372,7 @@ namespace GRGMesh {
         grgmesh_assert( nb_around < 3 && nb_around > 0 ) ;
 
         next_f = facets[0] ;
-        //int next_id1 = -1 ;
-
+        
         if( nb_around == 2 ) {
             if( next_f == f ) next_f = facets[1] ;
             grgmesh_debug_assert( next_f != NO_ID ) ;
@@ -465,11 +412,11 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param f
-     * @param e
-     * @param next_f
-     * @param next_e
+     * @brief Get the next edge on the border
+     * @param[in] f Input facet index
+     * @param[in] e Edge index in the facet
+     * @param[out] next_f Next facet index
+     * @param[out] next_e Next edge index in the facet
      */
     void Surface::next_on_border( index_t f, index_t e, index_t& next_f, index_t& next_e ) const {
         index_t v = next_in_facet( f, e ) ;
@@ -477,57 +424,22 @@ namespace GRGMesh {
         return next_on_border( f, e, v, next_f, next_e, next_in_next ) ;
     }
 
-
-    /**
-     * Check if the facet has an edge with the given ids in the Surface
-     * Returns the id of the vertex in the facet at which start the edge
-     * Returns -1 if no edge is found
-     *
-    signed_index_t Surface::has_edge( signed_index_t f, signed_index_t v0, signed_index_t v1 ) const {
-
-        index_t prev = surf_vertex_id( f, nb_vertices_in_facet(f)-1 ) ; 
-        for( index_t v = 0; v < nb_vertices_in_facet( f ); ++v ) {
-            index_t p = vertex_index( f, v ) ;
-            if( (prev == v0 && p == v1) ||
-                (prev == v1 && p == v0) ) return prev ;
-            prev = p ;
-        }
-        return -1 ;                               
-    }*/
-
-    /** 
-     * Check if the surface has an edge starting at v0 and ending at v1
-     * Returns the id in the facet at which starts the edge
-     * Returns -1 if this edge is not found
-     *
-    signed_index_t Surface::has_oriented_edge( signed_index_t f, signed_index_t v0, signed_index_t v1 ) const {
-        index_t prev = surf_vertex_id( f, nb_vertices_in_facet(f)-1 ) ; 
-        for( index_t v = 0; v < nb_vertices_in_facet( f ); ++v ) {
-            index_t p = surf_vertex_id( f, v ) ;
-            if( prev == v0 && p == v1 ) return v ;
-            prev = p ;
-        }
-        return -1 ;
-    }*/
-
-    /** 
-     * Find the first facet of the surface that has an edge 
-     * linking the two vertices (ids in the surface)
-     */ 
     /*!
+     * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
      *
-     * @param in0
-     * @param in1
-     * @return
+     * @param[in] in0 Index of the first vertex in the surface
+     * @param[in] in1 Index of the second vertex in the surface
+     * @return NO_ID or the index of the facet
      */
-    index_t Surface::facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const {
+    index_t Surface::facet_from_surface_vertex_ids(
+        index_t in0, index_t in1 ) const 
+    {
         grgmesh_debug_assert( in0 < vertices_.size() && in1 < vertices_.size() ) ;
         
-        // Check for all the facets 
+        // Another possible, probably faster, algorith is to check if the 2 indices 
+        // are neighbors in facets_ and check that they are in the same facet
 
-        // Sans doute un truc plus rapide - regarder si les deux indices se suivent
-        // dans facets_ et ensuite v�rifier si c'est bien la m�me facette
-
+        // Check if the edge is in one of the facet
         for( index_t f = 0; f < nb_cells(); ++f ) {
             bool found = false ;
             index_t prev = surf_vertex_id( f, nb_vertices_in_facet(f)-1 ) ; 
@@ -548,11 +460,13 @@ namespace GRGMesh {
         return NO_ID ;
     }
 
-    /*!
+   /*!
+     * @brief Get the first facet of the surface that has an edge linking the 
+     * two vertices (ids in the model)
      *
-     * @param i0
-     * @param i1
-     * @return
+     * @param[in] in0 Index of the first vertex in the model
+     * @param[in] in1 Index of the second vertex in the model
+     * @return NO_ID or the index of the facet
      */
     index_t Surface::facet_from_model_vertex_ids( index_t i0, index_t i1 ) const {
         index_t facet = NO_ID ;
@@ -561,16 +475,14 @@ namespace GRGMesh {
         return facet ;
     }
 
-    /**
-     * Get the id of one facet and the corresponding edge 
-     * There might be two !! Get only the first
-     */
     /*!
+     * @brief Determine the facet and the edge in this facet linking the 2 vertices 
+     * @details There might be two pairs facet-edge. This only gets the first.
      *
-     * @param i0
-     * @param i1
-     * @param facet
-     * @param edge
+     * @param[in] i0 First vertex index in the model
+     * @param[in] i1 Second vertex index in the model
+     * @param[out] facet NO_ID or facet index in the surface
+     * @param[out] edge NO_ID or edge index in the facet
      */
     void Surface::edge_from_model_vertex_ids(
         index_t i0,
@@ -578,7 +490,6 @@ namespace GRGMesh {
         index_t& facet,
         index_t& edge ) const
     {
-         // Copy from above .. tant pis
         edge = NO_ID ;
         
         // If a facet is given, look for the edge in this facet only
@@ -601,21 +512,20 @@ namespace GRGMesh {
                 if( edge != NO_ID ) return ;
             }
         }
-        // Si on arrive l� on a rien trouv� put facet to -1
+        // If we get here, no facet was found get out
         facet = NO_ID ;
-            
+        edge = NO_ID ;            
     }
 
-     /**
-     * Get the id of one facet and the corresponding edge 
-     * There might be two !! Get only the first
-     */
+
     /*!
+     * @brief Determine the facet and the edge linking the 2 vertices with the same orientation 
+     * @details There might be two pairs facet-edge. This only gets the first.
      *
-     * @param i0
-     * @param i1
-     * @param facet
-     * @param edge
+     * @param[in] i0 First vertex index in the model
+     * @param[in] i1 Second vertex index in the model
+     * @param[out] facet NO_ID or facet index in the surface
+     * @param[out] edge NO_ID or edge index in the facet
      */
     void Surface::oriented_edge_from_model_vertex_ids(
         index_t i0,
@@ -646,88 +556,28 @@ namespace GRGMesh {
                 if( edge != NO_ID ) return ;
             }
         }
-        // Si on arrive l� on a rien trouv� put facet to -1
-        facet = NO_ID ;
-            
+        facet = NO_ID ;            
     }
 
 
-
-   /* bool Surface::contains( const vec3& p ) const {
-        return find( p ) != -1 ;
-    }
-
-    signed_index_t Surface::find( const vec3& p ) const
-    {
-        for( index_t i = 0; i < vertices_.size(); ++i ) {
-            if( model_->vertex( vertices_[i] ) == p ) return i ;
-        }
-        return -1 ;
-    }*/
-
-    /*! Returns the id of a facet that has these two vertices 
-     *  if any else returns -1 
-     *  
-     *  WARNING There might TWO such facets in the surface
-     */
-    /*int Surface::find_facet( const vec3& p0, const vec3& p1 ) const {
-        // There might be several vertices with the same coordinates
-        // Test all possible pairs
-        
-        std::vector< signed_index_t > i0 ;
-        std::vector< signed_index_t > i1 ;
-
-        for( index_t v = 0; v < vertices_.size(); ++v ) {
-            if( model_->vertex( vertices_[v] ) == p0 ) i0.push_back( v ) ;
-            if( model_->vertex( vertices_[v] ) == p1 ) i1.push_back( v ) ;
-        }
-        signed_index_t t = -1 ;
-        for( signed_index_t i = 0; i < i0.size(); ++i ){
-            for( signed_index_t j = 0; j < i1.size(); ++j ){
-                t = facet_from_surface_vertex_ids( i0[i], i1[j] ) ; 
-                if( t != -1 ) return t ;
-            }
-        }
-        return -1 ;
-    }*/
-
-    /** 
-     * Find the first edge that contains the 2 given vertices (ids in the surface)
-     * Return the id of the vertex at which start the edge or -1 if no edge is found
-     *
-    signed_index_t Surface::find_edge( signed_index_t id0, signed_index_t id1 ) const {
-        for( index_t f = 0; f < nb_cells(); ++f ) {
-             signed_index_t p = has_edge( f, id0, id1 ) ;
-             if( p!= -1 ) return p ;
-        }
-        return -1 ; 
-    }*/
-    
-
-    /**
-     * Returns the vertex of the facet which id in the surface is the given one
-     */
     /*!
-     *
-     * @param t
-     * @param surf_vertex_id_in
-     * @return
+     * @brief Convert vertex surface index to an index in a facet
+     * @param[in] f Index of the facet
+     * @param[in] surf_vertex_id_in Index of the vertex in the surface
+     * @return NO_ID or index of the vertex in the facet
      */
-    index_t Surface::facet_vertex_id( index_t t, index_t surf_vertex_id_in ) const {
-        for( index_t v = 0; v < nb_vertices_in_facet(t); v++ ) {
-            if( surf_vertex_id( t, v ) == surf_vertex_id_in ) return v ;
+    index_t Surface::facet_vertex_id( index_t f, index_t surf_vertex_id_in ) const {
+        for( index_t v = 0; v < nb_vertices_in_facet(f); v++ ) {
+            if( surf_vertex_id( f, v ) == surf_vertex_id_in ) return v ;
         }
         return NO_ID ;
     }
 
-/*    signed_index_t Surface::facet_vertex_id( signed_index_t t, const vec3& p ) const {
-        for( index_t v = 0; v < nb_vertices_in_facet(t); v++ ) {
-            if( vertex( t, v ) == p ) return v ;
-        }
-        return -1 ;
-    }*/
-
-    // this is a copy
+    /*!
+     * @brief Comparator of two vec3
+     * 
+     * This is a copy, but from where ?
+     */
     struct comp_vec3bis {
         bool operator()( const vec3& l, const vec3& r ) const {
             if( l.x != r.x ) return l.x < r.x ;
@@ -736,31 +586,16 @@ namespace GRGMesh {
         }
     } ;
 
-   
 
-    /*int Surface::edge_id( signed_index_t t, signed_index_t p0, signed_index_t p1 ) const {        
-        signed_index_t t_0 = facet_vertex_id( t, p0 ) ;
-        signed_index_t t_1 = facet_vertex_id( t, p1 ) ;
-       
-        if( t_0 > t_1 ) { signed_index_t tmp = t_0 ; t_0 = t_1 ; t_1 = tmp ; }
-        
-        if     ( t_0 == 0 && t_1 == 1 ) return 2 ;
-        else if( t_0 == 0 && t_1 == 2 ) return 1 ;
-        else if( t_0 == 1 && t_1 == 2 ) return 0 ;
-        else return -1 ;
-    }*/
-
-
-    /**
-     * \todo Find a way to make this faster !! It is not that bad actually
-     * How ? 
-     */
     /*!
+     * @brief Determines the facets around a vertex
      *
-     * @param shared_vertex
-     * @param result
-     * @param border_only
-     * @return
+     * @param[in] shared_vertex Index ot the vertex in the surface
+     * @param[in] result Indices of the facets containing @param shared_vertex
+     * @param[in] border_only If true only facets on the border are considered
+     * @return The number of facet found
+     *
+     * \todo Evaluate if this is fast enough !!
      */
     index_t Surface::facets_around_vertex(
         index_t shared_vertex,
@@ -780,17 +615,17 @@ namespace GRGMesh {
         return dummy_index_t ;
     }
 
-    /** Determine the facets sharing the given vertex (id in the surface)
-     * 
-     */
-    /*!
+     /*!
+     * @brief Determines the facets around a vertex
      *
-     * @param P
-     * @param result
-     * @param border_only
-     * @param f0
-     * @return
-     */
+     * @param[in] P Index ot the vertex in the surface
+     * @param[in] result Indices of the facets containing @param P
+     * @param[in] border_only If true only facets on the border are considered
+     * @param[in] f0 Index of one facet containing the vertex @param P
+     * @return The number of facet found
+     *
+     * \todo Evaluate if this is fast enough !!
+     */   
     index_t Surface::facets_around_vertex(
         index_t P,
         std::vector< index_t >& result,
@@ -851,9 +686,9 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param f
-     * @return
+     * @brief Compute the barycenter of a facet
+     * @param[in] f Facet index in the surface
+     * @return The coordinates of the facet barycenter
      */
     vec3 Surface::facet_barycenter( index_t f ) const {
         vec3 barycenter( 0., 0., 0. ) ;
@@ -864,9 +699,9 @@ namespace GRGMesh {
     }
      
     /*!
-     *
-     * @param f
-     * @return
+     * @brief Compute the area of a facet
+     * @param[in] f Facet index in the surface
+     * @return The area of the facet
      */
     double Surface::facet_area( index_t f ) const {
         double result = 0 ;
@@ -878,15 +713,13 @@ namespace GRGMesh {
         return result ;
     }
 
-    /**
-     * \brief Returns the normal to the triangle made by the first 3 vertices
-     * of the facet
-     * WARNING : if the facet is not planar calling this has no meaning
-     */
     /*!
      *
-     * @param f
-     * @return
+     * @param[in] f Facet index
+     * @return Normal to the triangle made by the first 3 vertices
+     * of the facet
+     * 
+     * WARNING : if the facet is not planar calling this has no meaning
      */
     vec3 Surface::facet_normal( index_t f ) const {
         const vec3& p0 = vertex( f, 0 )  ;
@@ -897,8 +730,11 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param normals
+     * @brief Compute the normal to the surface vertices
+     * @details The normal at a point is computed as the mean of the normal
+     * to its adjacent facets.
+     * 
+     * @param[out] normals Coordinates of the normal vectors to the vertices
      */
     void Surface::vertex_normals( std::vector< vec3 >& normals ) const {
         normals.resize( nb_vertices() ) ;
@@ -915,10 +751,10 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @param f
-     * @param v
-     * @return
+     * @brief Compute closest vertex in a facet to a point 
+     * @param[in] f Facet index
+     * @param[in] v Coordinates of the point to which distance is measured
+     * @return Index of the vertex of @param f closest to @param v 
      */
     index_t Surface::closest_vertex_in_facet(
         index_t f,
@@ -937,18 +773,8 @@ namespace GRGMesh {
     }
 
 
-   
-  /*  Box3d Surface::bbox() const
-    {
-        Box3d result ;
-        for( index_t p = 0; p < nb_vertices(); p++ ) {
-            result.add_vertex( vertex( p ) ) ;
-        }
-        return result ;
-    }*/
-
     /*!
-     *
+     * \todo Check the SurfaceMutator code and comment it 
      * @param id
      * @param p
      */
@@ -965,25 +791,24 @@ namespace GRGMesh {
     {
         return M_.model_->vertices_[ M_.vertices_[p] ] ;
     }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
     /*!
-     *
-     * @param E
-     * @return
+     * @brief Compute the size (volume, area, length) of an Element
+     * 
+     * @param[in] E Element to evaluate
      */
     double BoundaryModelElementMeasure::size( const BoundaryModelElement* E ) {        
         double result = 0. ;
 
-        // If this element has children sum up their sizes
+        /// If this element has children sum up their sizes
         for( index_t i = 0; i < E->nb_children(); ++i ){
             result += BoundaryModelElementMeasure::size( &E->child(i) )  ;
         }
         if( result != 0 ) return result ;
 
-        // Else it is a base element
+        /// Else it is a base element and its size is computed
         
         // If this is a region 
         if( E->dim() == 3 ) {
@@ -1027,10 +852,12 @@ namespace GRGMesh {
     }        
 
     /*!
-     *
-     * @param E
-     * @param cells
-     * @return
+     * @brief Compute the barycenter of a part of a BoundaryModelElement
+     * Only implemented for Surface and Line 
+     * 
+     * @param[in] E Pointer to the element
+     * @param[in] cells Indices of the segments/facets to consider
+     * @return The coordinates of the barycenter of the @param cells
      */
     vec3 BoundaryModelElementMeasure::barycenter ( 
         const BoundaryModelElement* E, const std::vector< index_t >& cells ) 
@@ -1053,18 +880,18 @@ namespace GRGMesh {
                 size   += S->facet_area( cells[i] ) ;
             }
             return size > epsilon ? result/size : result ;
-        }
-        
+        }        
         grgmesh_assert_not_reached ;
         return result ;
     }           
 
 
     /*!
-     *
-     * @param E
-     * @param p
-     * @return
+     * @brief Measures the minimal distance between an element and a point
+     * Implement only for Surface, Line and Corner
+     * 
+     * @param[in] E Pointer to the element
+     * @param[in] p Coordinates of the point to which distance is measured
      */
     double BoundaryModelElementMeasure::distance( 
         const BoundaryModelElement* E,

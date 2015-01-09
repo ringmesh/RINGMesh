@@ -1,16 +1,30 @@
-/*[
-* Association Scientifique pour la Geologie et ses Applications (ASGA)
-* Copyright (c) 1993-2013 ASGA. All Rights Reserved.
-*
-* This program is a Trade Secret of the ASGA and it is not to be:
-* - reproduced, published, or disclosed to other,
-* - distributed or displayed,
-* - used for purposes or on Sites other than described
-*   in the GOCAD Advancement Agreement,
-* without the prior written authorization of the ASGA. Licencee
-* agrees to attach or embed this Notice on all copies of the program,
-* including partial copies or modified versions thereof.
-]*/
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+*/
 
 #ifndef __GRGMESH_ATTRIBUTE__
 #define __GRGMESH_ATTRIBUTE__
@@ -42,20 +56,18 @@ namespace GRGMesh {
         index_t size() const { return data_.size() / item_size_ ; }
     protected:
         AttributeStore( index_t item_size, index_t size )
-            :
-                item_size_( item_size ), data_( item_size * size )
+            : item_size_( item_size ), data_( item_size * size )
         {
         }
     protected:
         index_t item_size_ ;
         std::vector< byte > data_ ;
-
     } ;
 
-    typedef GRGMESH_API GEO::SmartPointer< AttributeStore > AttributeStore_var ;
+    typedef GEO::SmartPointer< AttributeStore > AttributeStore_var ;
 
     template< class ATTRIBUTE >
-    class GRGMESH_API AttributeStoreImpl: public AttributeStore {
+    class AttributeStoreImpl: public AttributeStore {
     public:
         AttributeStoreImpl( index_t size )
             : AttributeStore( sizeof(ATTRIBUTE), size )
@@ -75,7 +87,7 @@ namespace GRGMesh {
      * define possible locations with an enum. Jeanne.
      */
     template< int32 LOCATION >
-    class GRGMESH_API AttributeManager {
+    class AttributeManager {
     public:
         enum Mode {
             FIND, CREATE, FIND_OR_CREATE
@@ -128,15 +140,13 @@ namespace GRGMesh {
     } ;
 
 
-
-
-  /** 
+    /** 
      * \brief Generic attribute class - Storage on given elements of a given object 
      * The elements on which is defined the attribute are of the given ElementType.
      * Access to attribute value only using the index of the element in the object. Jeanne
      */ 
     template< int32 LOCATION, class ATTRIBUTE >
-    class GRGMESH_API Attribute {
+    class Attribute {
     public:
         typedef Attribute< LOCATION, ATTRIBUTE > thisclass ;
         typedef AttributeManager< LOCATION > Manager ;
@@ -235,7 +245,6 @@ namespace GRGMesh {
         {
             manager->bind_named_attribute_store( name, as ) ;
         }
-
 
     private:
         AttributeStore_var store_ ;
