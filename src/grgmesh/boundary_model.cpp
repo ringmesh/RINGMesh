@@ -1511,6 +1511,17 @@ namespace GRGMesh {
         return id ;
     }
 
+    /*
+    * @brief Adds an empty region to the model
+    *
+    *  Used in Geomodeling to convert a surface to a model
+    */
+    index_t BoundaryModelBuilder::create_region() {
+        index_t id = model_.regions_.size() ;
+        model_.regions_.push_back( BoundaryModelElement( &model_, 3, id ) ) ;
+        return id ;
+    }
+
 
     /*!
      * @brief Get the points of a Line between two corners on a Surface
@@ -1828,6 +1839,16 @@ namespace GRGMesh {
         return result ;
     }
 
+    /*! 
+     * @brief Add a Line knowing only the indices of its points
+     *
+     * Used in Geomodeling to convert a surface to a model
+     */
+    void BoundaryModelBuilder::create_line( const std::vector< index_t > points ) {
+        index_t id = model_.lines_.size() ;
+        model_.lines_.push_back( Line( &model_, id, points ) ) ;
+    }
+
     /*!
      * @brief Add a Surface to the model
      *
@@ -1841,7 +1862,7 @@ namespace GRGMesh {
         const Surface::KeyFacet& key )
     {
         index_t parent = interface_id( interface_name ) ;
-        grgmesh_assert( parent != NO_ID ) ;
+        if( interface_name != "" ) grgmesh_assert( parent != NO_ID ) ;
 
         index_t id = model_.nb_surfaces() ;
         GEOL_FEATURE t = determine_geological_type( type ) ;
