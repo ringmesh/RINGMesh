@@ -1,6 +1,31 @@
-/*[
-* NOT ONLY ASGA 
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
 */
+
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
 
@@ -13,12 +38,6 @@
 
 #include <vector> 
 #include <string>
-
-#include <vector> 
-#include <map>
-#include <string>
-#include <algorithm> 
-
 
 namespace GRGMesh {    
     class BoundaryModelBuilder ;
@@ -46,7 +65,6 @@ namespace GRGMesh {
             FACET
         } ;       
         typedef AttributeManager< VERTEX > PointAttributeManager ;
-        typedef AttributeManager< EDGE >  EdgeAttributeManager ; // Edges of what ?? lines
         typedef AttributeManager< FACET > FacetAttributeManager ;
         
         const static index_t NO_ID = index_t( -1 ) ;
@@ -54,20 +72,19 @@ namespace GRGMesh {
         /**
          * \brief Construct an empty BoundaryModel
          */
-        BoundaryModel() ;
+        BoundaryModel(): universe_( this, 3 ) {} ;
         /**
          * \brief Destroy a BoundaryModel
          */
-        virtual ~BoundaryModel() ;
+        virtual ~BoundaryModel(){} ;
 
-        // Accessors to model vertices - edges - facets
-        index_t nb_vertices() const { return vertices_.size() ; }
+        // Accessors to model vertices
+        index_t nb_vertices() const { return vertices_.size() ; }        
         const vec3& vertex( index_t p ) const { return vertices_.at(p) ; }
         index_t vertex_index( const vec3& p ) const ;
 
-        index_t nb_facets() const  {
-            return nb_facets_.back() ;
-        }
+        // Accessors to model facets
+        index_t nb_facets() const { return nb_facets_in_surfaces_.back() ; }
         void surface_facet( index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id ) const ;     
         index_t model_facet( index_t surface_id, index_t surf_facet_id ) const ;
 
@@ -87,44 +104,27 @@ namespace GRGMesh {
         const Line& line( index_t index ) const { return lines_.at(index) ; }
         const Surface& surface( index_t index ) const { return surfaces_.at(index) ; }
         const BoundaryModelElement& region( index_t index ) const { return regions_.at(index) ; }
-        const BoundaryModelElement& universe() const { return universe_ ; }
-
-        const BoundaryModelElement& element( index_t dim, index_t index ) const
-        {
-            switch( dim ){
-                case 0: return corner( index ) ;
-                case 1: return line( index ) ;
-                case 2: return surface( index ) ;
-                case 3: return region( index ) ;
-                default:
-                    grgmesh_assert_not_reached ;
-                    return dummy_element ;
-            }
-         }
-
+        const BoundaryModelElement& universe() const { return universe_ ; }        
+        const BoundaryModelElement& element( index_t dim, index_t index ) const ;       
         const BoundaryModelElement& contact( index_t index ) const { return contacts_.at(index) ; }
         const BoundaryModelElement& one_interface( index_t index ) const { return interfaces_.at(index) ; }
         const BoundaryModelElement& layer( index_t index ) const { return layers_.at(index) ; }
         
         index_t find_region( index_t surface_part_id, bool side ) const ;
 
-        /// \todo Write a proper IO class for Boundary models
-        bool save_gocad_model3d( std::ostream& out ) ;        
-        void save_as_eobj_file( const std::string& file_name ) ;
-
         // Accessors to attribute managers
         PointAttributeManager* vertex_attribute_manager() const
         {
             return const_cast< PointAttributeManager* >( &vertex_attribute_manager_ ) ;
         }
-        EdgeAttributeManager* edge_attribute_manager() const
-        {
-            return const_cast< EdgeAttributeManager* >( &edge_attribute_manager_ ) ;
-        }
         FacetAttributeManager* facet_attribute_manager() const
         {
             return const_cast< FacetAttributeManager* >( &facet_attribute_manager_ ) ;
         }
+
+        /// \todo Write a proper IO class for Boundary models
+        bool save_gocad_model3d( std::ostream& out ) ;        
+        void save_as_eobj_file( const std::string& file_name ) ;
 
     private:
         bool load_gocad_model3d( const std::string& in ) ;
@@ -147,14 +147,13 @@ namespace GRGMesh {
         std::vector< Surface >              surfaces_ ;
         std::vector< BoundaryModelElement > regions_ ;
 
-        /// The biggest volumetric region, defined by Box surfaces
+        /// The region including all the other regions
         BoundaryModelElement universe_ ;
 
-        // Number of facets in all previous surfaces
-        // This has to be updated when a surface is modified !!
-        // How can this be guaranteed ? Which class can modify a surface ?
+        /// Sum of the number of facets in all previous surfaces
+        /// Must be updated when a Surface is modified !!
         // Size = nb_surface()+1
-        std::vector< index_t > nb_facets_ ;
+        std::vector< index_t > nb_facets_in_surfaces_ ;
     
         /** 
          * \brief Contacts between Intefaces
@@ -175,13 +174,11 @@ namespace GRGMesh {
 
         // Attribute managers 
         PointAttributeManager vertex_attribute_manager_ ;
-        EdgeAttributeManager  edge_attribute_manager_ ;
         FacetAttributeManager facet_attribute_manager_ ;
-
     } ;   
 
     template< class ATTRIBUTE >
-    class GRGMESH_API BoundaryModelVertexAttribute: public Attribute< BoundaryModel::VERTEX, ATTRIBUTE > {
+    class BoundaryModelVertexAttribute: public Attribute< BoundaryModel::VERTEX, ATTRIBUTE > {
     public:
         typedef Attribute< BoundaryModel::VERTEX, ATTRIBUTE > superclass ;
 
@@ -217,46 +214,8 @@ namespace GRGMesh {
         }
     } ;
 
-//    template< class ATTRIBUTE >
-//    class GRGMESH_API BoundaryModelEdgeAttribute: public Attribute< BoundaryModel::EDGE, ATTRIBUTE > {
-//    public:
-//        typedef Attribute< BoundaryModel::EDGE, ATTRIBUTE > superclass ;
-//
-//        void bind( BoundaryModel* model, const std::string& name )
-//        {
-//            superclass::bind( model->edge_attribute_manager(), model->nb_edges(),
-//                name ) ;
-//        }
-//
-//        void bind( BoundaryModel* model )
-//        {
-//            superclass::bind( model->edge_attribute_manager(),
-//                model->nb_edges() ) ;
-//        }
-//
-//        BoundaryModelEdgeAttribute()
-//        {
-//        }
-//
-//        BoundaryModelEdgeAttribute( BoundaryModel* model )
-//        {
-//            bind( model ) ;
-//        }
-//
-//        BoundaryModelEdgeAttribute( BoundaryModel* model, const std::string& name )
-//        {
-//            bind( model, name ) ;
-//        }
-//
-//        static bool is_defined( BoundaryModel* model, const std::string& name )
-//        {
-//            return superclass::is_defined( model->edge_attribute_manager(), name ) ;
-//        }
-//    } ;
-
-    
     template< class ATTRIBUTE >
-    class GRGMESH_API BoundaryModelFacetAttribute: public Attribute< BoundaryModel::FACET, ATTRIBUTE > {
+    class BoundaryModelFacetAttribute: public Attribute< BoundaryModel::FACET, ATTRIBUTE > {
     public:
         typedef Attribute< BoundaryModel::FACET, ATTRIBUTE > superclass ;
 
@@ -293,9 +252,8 @@ namespace GRGMesh {
     } ;
 
 
-
     /**
-     * \brief Structure used to build contact when loading a BoundaryModel from .ml file 
+     * \brief Structure used to build contacts when loading a BoundaryModel from .ml file 
      */
     struct Border {
         Border( index_t part, index_t corner, index_t p0, index_t p1):
@@ -328,16 +286,12 @@ namespace GRGMesh {
 
         index_t create_interface(
             const std::string& name,
-            index_t id = NO_ID,
             GEOL_FEATURE type = default_type ) ;
 
         void add_interface_child( index_t id, index_t child ) {
             model_.interfaces_[id].add_child( child ) ;
         }
-
-        /** A VOIR SI ion garde tout public l� dedans
-         * Pas sur que ce soit passionnant et hyper int�ressant 
-         */
+        
     public:
         void reserve_nb_vertices( index_t size ) {
             model_.vertices_.reserve( size ) ; 
@@ -445,29 +399,17 @@ namespace GRGMesh {
         void set_parent( BoundaryModelElement& e, index_t id ) {
             e.set_parent( id ) ;
         }
-            
-        index_t create_line( 
-            index_t id = NO_ID, 
-            const std::vector< index_t >& vertices = empty_index_vector ) ;
-        
-        index_t create_surface(
-            index_t id = NO_ID,
-            index_t parent = NO_ID,
-            GEOL_FEATURE type = default_type ) ;
-
+                   
         void create_surface(
             const std::string& interface_name,
             const std::string& type,
-            const KeyFacet& key ) ;
-        
-        index_t create_region( index_t id = NO_ID ) ;
-
+            const Surface::KeyFacet& key ) ;
+            
         index_t create_region(
             const std::string& name,
-            const std::vector< std::pair< index_t, bool > >& boundaries,
-            index_t id = NO_ID ) ;   
+            const std::vector< std::pair< index_t, bool > >& boundaries ) ;   
 
-        index_t create_layer( const std::string& name, index_t id = NO_ID ) ;
+        index_t create_layer( const std::string& name ) ;
       
         void set_corner( index_t  corner_id, index_t vertex_id ) ;
         void set_corner( index_t  corner_id, const vec3& vertex ) ;
@@ -508,7 +450,6 @@ namespace GRGMesh {
         void end_corners() ;
         void end_layers() ; 
         void end_model() ;
-
 
         void update_all_ids() ;
 
