@@ -41,11 +41,11 @@ namespace GRGMesh {
 
     public:
          enum AttributeLocation {
-            POINT,
+            VERTEX,
             EDGE,
             FACET
         } ;       
-        typedef AttributeManager< POINT > PointAttributeManager ;
+        typedef AttributeManager< VERTEX > PointAttributeManager ;
         typedef AttributeManager< EDGE >  EdgeAttributeManager ; // Edges of what ?? lines
         typedef AttributeManager< FACET > FacetAttributeManager ;
         
@@ -181,9 +181,9 @@ namespace GRGMesh {
     } ;   
 
     template< class ATTRIBUTE >
-    class GRGMESH_API BoundaryModelVertexAttribute: public Attribute< BoundaryModel::POINT, ATTRIBUTE > {
+    class GRGMESH_API BoundaryModelVertexAttribute: public Attribute< BoundaryModel::VERTEX, ATTRIBUTE > {
     public:
-        typedef Attribute< BoundaryModel::POINT, ATTRIBUTE > superclass ;
+        typedef Attribute< BoundaryModel::VERTEX, ATTRIBUTE > superclass ;
 
         void bind( const BoundaryModel* model, const std::string& name )
         {
