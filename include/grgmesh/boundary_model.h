@@ -399,15 +399,19 @@ namespace GRGMesh {
         void set_parent( BoundaryModelElement& e, index_t id ) {
             e.set_parent( id ) ;
         }
-                   
+              
+        void create_line( const std::vector< index_t > points ) ;
+
         void create_surface(
-            const std::string& interface_name,
-            const std::string& type,
-            const Surface::KeyFacet& key ) ;
+            const std::string& interface_name = "",
+            const std::string& type = "",
+            const Surface::KeyFacet& key = Surface::KeyFacet() ) ;
             
         index_t create_region(
             const std::string& name,
             const std::vector< std::pair< index_t, bool > >& boundaries ) ;   
+        
+        index_t create_region() ;
 
         index_t create_layer( const std::string& name ) ;
       
