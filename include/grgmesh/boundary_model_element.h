@@ -87,8 +87,8 @@ namespace GRGMesh {
          * @param[in] type Geological type of the element
          */
         BoundaryModelElement(
-            BoundaryModel* model, 
-            index_t dim, 
+            BoundaryModel* model = NULL, 
+            index_t dim = NO_ID, 
             index_t id = NO_ID, 
             index_t parent = NO_ID,
             GEOL_FEATURE type = default_type )

@@ -849,6 +849,7 @@ namespace GRGMesh {
             return result ;
         }
         grgmesh_assert_not_reached ;
+        return result ;
     }        
 
     /*!
@@ -942,6 +943,7 @@ namespace GRGMesh {
         // if any 
         if( E->nb_children() == 0 ) {
             grgmesh_assert_not_reached ;
+            return result ;
         }
         else {
             for( index_t i = 0; i < E->nb_children(); ++i ){

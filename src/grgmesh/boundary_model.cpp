@@ -1476,6 +1476,7 @@ namespace GRGMesh {
     {
         model_.universe_.set_name( "Universe" ) ;
         model_.universe_.set_dim( 3 ) ;
+        model_.universe_.model_ = &model_ ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
             grgmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
