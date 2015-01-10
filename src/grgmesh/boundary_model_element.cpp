@@ -420,8 +420,7 @@ namespace GRGMesh {
      */
     void Surface::next_on_border( index_t f, index_t e, index_t& next_f, index_t& next_e ) const {
         index_t v = next_in_facet( f, e ) ;
-        index_t next_in_next = NO_ID ;
-        return next_on_border( f, e, v, next_f, next_e, next_in_next ) ;
+        return next_on_border( f, e, v, next_f, next_e ) ;
     }
 
     /*!

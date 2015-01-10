@@ -63,23 +63,29 @@ namespace GRGMesh {
     }
     void FacetAABBTree::reorder_morton()
     {
-        /// \todo PORTING TODO
-        grgmesh_assert_not_reached ;
-
- /*       std::vector< int32 > sorted_indices ;
+        std::vector< int32 > sorted_indices ;
         SurfaceMutator mutator( mesh_ ) ;
 
         // Step 1: reorder vertices
         morton_vertex_sort( mesh_, sorted_indices ) ;
 
-        Permutation::apply( mutator.points(), sorted_indices ) ;
-        if( mesh_.is_resolution_set() ) {
-            Permutation::apply( mutator.resolution(), sorted_indices ) ;
+        Permutation::apply( mutator.vertices(), sorted_indices ) ;
+
+        Surface::VertexAttributeManager* vertex_manager =
+            mesh_.vertex_attribute_manager() ;
+        std::vector< std::string > vertex_attribute_names ;
+        vertex_manager->list_named_attributes( vertex_attribute_names ) ;
+        for( index_t i = 0; i < vertex_attribute_names.size(); i++ ) {
+            AttributeStore_var attribute =
+                vertex_manager->resolve_named_attribute_store(
+                    vertex_attribute_names[i] ) ;
+            Permutation::apply( attribute->data( 0 ), sorted_indices,
+                attribute->item_size() ) ;
         }
 
         Permutation::invert(sorted_indices) ;
         std::vector< index_t >& facets = mutator.facets() ;
-        for( index_t t = 0; t < mesh_.nb_simplices(); t++ ) {
+        for( index_t t = 0; t < mesh_.nb_cells(); t++ ) {
             for( index_t p = 0; p < 3; p++ ) {
                 facets[3*t+p] = sorted_indices[facets[3*t+p]] ;
             }
@@ -92,26 +98,27 @@ namespace GRGMesh {
 
         Permutation::apply( &mutator.facets()[0], sorted_indices, sizeof(index_t) * 3 ) ;
         Permutation::apply( &mutator.adjacents()[0], sorted_indices, sizeof(signed_index_t) * 3 ) ;
-
-        if( mesh_.is_U_set() ) {
-            Permutation::apply( mutator.U(), sorted_indices ) ;
-        }
-        if( mesh_.is_V_set() ) {
-            Permutation::apply( mutator.V(), sorted_indices ) ;
-        }
-        if( mesh_.is_W_set() ) {
-            Permutation::apply( mutator.W(), sorted_indices ) ;
+        Surface::FacetAttributeManager* facet_manager =
+            mesh_.facet_attribute_manager() ;
+        std::vector< std::string > facet_attribute_names ;
+        facet_manager->list_named_attributes( facet_attribute_names ) ;
+        for( index_t i = 0; i < facet_attribute_names.size(); i++ ) {
+            AttributeStore_var attribute =
+                facet_manager->resolve_named_attribute_store(
+                    facet_attribute_names[i] ) ;
+            Permutation::apply( attribute->data( 0 ), sorted_indices,
+                attribute->item_size() ) ;
         }
 
         Permutation::invert(sorted_indices) ;
-        std::vector< signed_index_t >& adjacents = mutator.adjacents() ;
-        for( index_t t = 0; t < mesh_.nb_simplices(); t++ ) {
+        std::vector< index_t >& adjacents = mutator.adjacents() ;
+        for( index_t t = 0; t < mesh_.nb_cells(); t++ ) {
             for( index_t p = 0; p < 3; p++ ) {
                 if( !mesh_.is_on_border(t,p) ) {
                     adjacents[3*t+p] = sorted_indices[adjacents[3*t+p]] ;
                 }
             }
-        } */
+        }
     }
 
     float64 FacetAABBTree::get_nearest_point(

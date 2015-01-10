@@ -71,7 +71,7 @@ namespace GRGMesh {
         enum AttributeLocation {
             VERTEX, FACET
         } ;
-        typedef AttributeManager< VERTEX > PointAttributeManager ;
+        typedef AttributeManager< VERTEX > VertexAttributeManager ;
         typedef AttributeManager< FACET > FacetAttributeManager ;
         
         const static index_t NO_ID = index_t( -1 ) ;
@@ -146,9 +146,9 @@ namespace GRGMesh {
         }
                      
         // Accessors to attribute managers
-        PointAttributeManager* vertex_attribute_manager() const
+        VertexAttributeManager* vertex_attribute_manager() const
         {
-            return const_cast< PointAttributeManager* >( &vertex_attribute_manager_ ) ;
+            return const_cast< VertexAttributeManager* >( &vertex_attribute_manager_ ) ;
         }
         FacetAttributeManager* facet_attribute_manager() const
         {
@@ -205,7 +205,7 @@ namespace GRGMesh {
         std::vector< index_t > children_ ;
 
         // Attribute managers
-        PointAttributeManager vertex_attribute_manager_ ;
+        VertexAttributeManager vertex_attribute_manager_ ;
         FacetAttributeManager facet_attribute_manager_ ;
     } ;
 
@@ -543,7 +543,7 @@ namespace GRGMesh {
                
         void next_on_border(
             index_t f, index_t from, index_t v,
-            index_t& next_f, index_t& v_in_next, index_t& to  ) const ;
+            index_t& next_f, index_t& v_in_next, index_t& to = dummy_index_t ) const ;
         
         void next_on_border(
             index_t f, index_t e,
