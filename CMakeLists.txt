@@ -1,5 +1,17 @@
 cmake_minimum_required(VERSION 2.8)
-project(GRGMesh)
+
+
+message("CMAKE_BUILD_TYPE is equal to " ${CMAKE_BUILD_TYPE})
+# debug suffix for libraries
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(SUFF "_d")
+    MESSAGE("DEBUG! SUFFIX = ${SUFF}")
+endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+
+set(GRGMESH_PROJECT GRGMesh${SUFF})
+project(${GRGMESH_PROJECT})
+
 
 function(aux_source_directories var folder)
     set(sources)
@@ -16,6 +28,8 @@ IF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
    MESSAGE(INFO: "Using local options file: " .${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
    INCLUDE(${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
 ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
+
+
 
 # Files
 AUX_SOURCE_DIRECTORY(src/grgmesh SOURCES)
@@ -37,7 +51,7 @@ ENDIF(WIN32)
 IF(NOT DEFINED USE_MG_TETRA)
   SET(USE_MG_TETRA FALSE)
 ENDIF(NOT DEFINED USE_MG_TETRA)
-IF(USE_MG_TETRA)	
+IF(${USE_MG_TETRA})	
   add_definitions(-DUSE_MG_TETRA)
   IF(${MG_TETRA} MATCHES .+)
     MESSAGE(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
@@ -48,10 +62,8 @@ IF(USE_MG_TETRA)
   ELSE(${MG_TETRA} MATCHES .+)
     MESSAGE(STATUS "No MG-Tetra directory found")
   ENDIF(${MG_TETRA} MATCHES .+)
-
-
   INCLUDE_DIRECTORIES(${MG_TETRA_DIR}/include)
-  
+ 
   if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
     SET(PLATFORM _64)
   ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8 )
@@ -63,7 +75,7 @@ IF(USE_MG_TETRA)
   ELSE(WIN32)
     LINK_DIRECTORIES(${MG_TETRA_DIR}/lib/Linux${PLATFORM})
   ENDIF(WIN32)
-ENDIF(USE_MG_TETRA)
+ENDIF(${USE_MG_TETRA})
 
 
 #To use OpenMP 
@@ -82,14 +94,25 @@ ENDIF(UNIX)
 
 # Output library
 SET(LIBRARY_OUTPUT_PATH lib)
-add_library(GRGMesh SHARED ${SOURCES})
-target_link_libraries(GRGMesh geogram)
+add_library(${GRGMESH_PROJECT} SHARED ${SOURCES})
+target_link_libraries(${GRGMESH_PROJECT} geogram)
 
 # Additional link libraries
-IF(USE_MG_TETRA)
-  TARGET_LINK_LIBRARIES(GRGMesh meshgems mg-tetra)
-ENDIF(USE_MG_TETRA)
+IF(${USE_MG_TETRA})
+  TARGET_LINK_LIBRARIES(${GRGMESH_PROJECT} meshgems mg-tetra)
+ENDIF(${USE_MG_TETRA})
 
 IF(WIN32)
-    target_link_libraries(GRGMesh psapi)
+    target_link_libraries(${GRGMESH_PROJECT} psapi)
 ENDIF(WIN32)
+
+
+if(UNIX) 
+	install(DIRECTORY include/grgmesh DESTINATION include)
+	install(DIRECTORY include/geogram DESTINATION include)
+		
+	install(TARGETS ${GRGMESH_PROJECT}
+		LIBRARY DESTINATION lib
+		RUNTIME DESTINATION lib 
+		CONFIGURATIONS All)	
+endif(UNIX)
