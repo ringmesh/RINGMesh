@@ -54,6 +54,7 @@ namespace GRGMesh {
         }
         virtual const std::type_info& attribute_type_id() const = 0 ;
         index_t size() const { return data_.size() / item_size_ ; }
+        index_t item_size() const { return item_size_ ; }
     protected:
         AttributeStore( index_t item_size, index_t size )
             : item_size_( item_size ), data_( item_size * size )

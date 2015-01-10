@@ -177,6 +177,7 @@ namespace GRGMesh {
         FacetAttributeManager facet_attribute_manager_ ;
     } ;   
 
+    /*
     template< class ATTRIBUTE >
     class BoundaryModelVertexAttribute: public Attribute< BoundaryModel::VERTEX, ATTRIBUTE > {
     public:
@@ -250,7 +251,7 @@ namespace GRGMesh {
             return superclass::is_defined( model->facet_attribute_manager(), name ) ;
         }
     } ;
-
+*/
 
     /**
      * \brief Structure used to build contacts when loading a BoundaryModel from .ml file 
