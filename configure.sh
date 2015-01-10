@@ -58,7 +58,7 @@ do
    build_dir=build/grgmesh/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DGEOGRAM_PLATFORM:STRING=$os ../../../)
+   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DGEOGRAM_PLATFORM:STRING=$os -DCMAKE_INSTALL_PREFIX=/opt/software/grgmesh  ../../../)
 done
 echo
 echo ============== GRGMesh build configured ==================
