@@ -897,11 +897,6 @@ namespace GRGMesh {
                 offset++ ;
             }
         }
-
-        std::ofstream ind2( "ind3" ) ;
-        for( unsigned int p = 0; p < indices_.size(); p++ ) {
-            ind2 << indices_[p] << std::endl ;
-        }
     }
 
     void MakeUnique::unique( index_t nb_neighbors )
