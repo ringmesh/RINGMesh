@@ -46,7 +46,7 @@
 #include <geogram/mesh/mesh_frame_field.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
-#include <geogram/numerics/nl.h>
+#include <geogram/NL/nl.h>
 #include <geogram/numerics/matrix_util.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/line_stream.h>

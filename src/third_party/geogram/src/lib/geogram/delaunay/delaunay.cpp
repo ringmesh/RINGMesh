@@ -159,6 +159,8 @@ namespace GEO {
         default_nb_neighbors_ = 30;
         constraints_ = nil;
         do_reorder_ = true;
+        refine_ = false;
+        quality_ = 2.0;
     }
 
     Delaunay::~Delaunay() {

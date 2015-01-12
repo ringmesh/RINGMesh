@@ -193,9 +193,6 @@ namespace GEOGen {
         facets_reserve_(0),
         attributes_(GEO::MESH_NO_ATTRIBUTES)
     {
-        // Following two lines for debugging purposes
-        debug_coords_float_ = nil; // TODO remove it
-        debug_coords_double_ = nil; // TODO remove it        
     }
 
     void MeshBase::clear(bool keep_memory) {
@@ -691,8 +688,6 @@ namespace GEOGen {
     ) const {
         geo_debug_assert(cell_facet_nb_vertices(c1,f1) == 3);
         geo_debug_assert(cell_facet_nb_vertices(c2,f2) == 3);
-        e1 = index_t(-1);
-        e2 = index_t(-1);
         for(e1=0; e1<3; ++e1) {
             for(e2=0; e2<3; ++e2) {
                 if(
@@ -705,6 +700,8 @@ namespace GEOGen {
                 }
             }
         }
+        e1 = index_t(-1);
+        e2 = index_t(-1);
         return false;
     }
 
@@ -757,18 +754,19 @@ namespace GEOGen {
         index_t nb_found=0;
         for(index_t i=0; i<index_t(matches.size()); ++i) {
             for(index_t j=i+1; j<index_t(matches.size()); ++j) {
-                index_t temp_e1, temp_e2 ;
+                index_t cur_e1 = index_t(-1);
+                index_t cur_e2 = index_t(-1);
                 if(M.triangular_facets_have_common_edge(
                        matches[i].first, matches[i].second,
                        matches[j].first, matches[j].second,
-                       temp_e1, temp_e2
+                       cur_e1, cur_e2
                 )) {
                     adj_c1 = matches[i].first;
                     adj_lf1 = matches[i].second;
                     adj_c2 = matches[j].first;
                     adj_lf2 = matches[j].second;
-                    e1 = temp_e1 ;
-                    e2 = temp_e2 ;
+                    e1 = cur_e1;
+                    e2 = cur_e2;
                     ++nb_found;
                 }
             }
@@ -956,26 +954,13 @@ namespace GEOGen {
                     matches.end()
                 );
 
+                // This should not happen, but we keep this
+                // sanity check and notify the user if some
+                // connectors could not be created.
                 if(
                     matches.size() != 0 &&
                     !create_connector(*this,c1,lf1,matches)
                 ) {
-                    if(debug_coords_float_ != nil) {
-                        std::string filename =
-                            "debug_cell_" +
-                            GEO::String::to_string(weird) + ".obj";
-                        std::ofstream out(filename.c_str());
-                        index_t index_base = 1;
-                        GEO::save_cell(
-                            *this, c1, index_base, debug_coords_float_, out
-                        );
-                        for(index_t i=0; i<matches.size(); ++i) {
-                            GEO::save_cell(
-                                *this, matches[i].first,
-                                index_base, debug_coords_float_, out
-                            );
-                        }
-                    }
                     ++weird;
                 }
             }

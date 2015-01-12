@@ -79,6 +79,29 @@ namespace GEO {
      */
     typedef vecng<4, Numeric::float64> vec4;
 
+   
+    /**
+     * \brief Represents points and vectors in 2d with
+     *  integer coordinates.
+     * \details Syntax is (mostly) compatible with GLSL.
+     */
+    typedef vecng<2, Numeric::int32> vec2i;
+
+    /**
+     * \brief Represents points and vectors in 3d with
+     *  integer coordinates.
+     * \details Syntax is (mostly) compatible with GLSL.
+     */
+    typedef vecng<3, Numeric::int32> vec3i;
+
+    /**
+     * \brief Represents points and vectors in 4d with
+     *  integer coordinates.
+     * \details Syntax is (mostly) compatible with GLSL.
+     */
+    typedef vecng<4, Numeric::int32> vec4i;
+   
+   
     /**
      * \brief Represents a 2x2 matrix.
      * \details Syntax is (mostly) compatible with GLSL.
@@ -437,8 +460,9 @@ namespace GEO {
 
         /**
          * \brief Generates a random point in a 3d triangle.
-         * \details Uses Greg Turk's second method
-         *  (see article in Graphic Gems).
+         * \details Uses Greg Turk's second method.
+         *  Reference: Greg Turk, Generating Random Points 
+         *  in Triangles, Graphics Gems, p. 24-28, code: p. 649-650.
          * \param[in] p1 first vertex of the triangle
          * \param[in] p2 second vertex of the triangle
          * \param[in] p3 third vertex of the triangle

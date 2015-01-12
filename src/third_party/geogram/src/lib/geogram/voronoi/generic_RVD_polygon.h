@@ -52,6 +52,9 @@
 /**
  * \file geogram/voronoi/generic_RVD_polygon.h
  * \brief Internal representation of polygons for GenericVoronoiDiagram.
+ * \note This file contains functions and classes used by the internal implementation
+ *  of GEO::GenericVoronoiDiagram. They are not meant to be used directly by client 
+ *  code.
  */
 
 namespace GEOGen {
@@ -59,6 +62,9 @@ namespace GEOGen {
     /**
      * \brief Internal representation of polygons for GenericVoronoiDiagram.
      * \details Stores both geometrical and symbolic representations.
+     * \note This is an internal implementation class used by
+     *  GEO::RestrictedVoronoiDiagram. It is not meant to be 
+     *  used directly by client code.
      */
     class Polygon {
     public:

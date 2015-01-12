@@ -60,6 +60,9 @@
 /**
  * \file geogram/voronoi/RVD_mesh_builder.h
  * \brief Utilities to build meshes derived from restricted Voronoi diagrams.
+ * \note This file contains functions and classes used by the internal implementation
+ *  of GEO::GenericVoronoiDiagram. They are not meant to be used directly by client 
+ *  code.
  */
 
 namespace GEO {
@@ -70,6 +73,8 @@ namespace GEO {
      *  GEOGen::RestrictedVoronoiDiagram. This class is
      *  used for instance in the implementation of
      *  RVDMeshBuilder.
+     * \note This is an internal implementation class, not meant to
+     *  be used directly, use GEO::RestrictedVoronoiDiagram instead.
      */
     class GEOGRAM_API RVDVertexMap {
     public:
@@ -151,9 +156,10 @@ namespace GEO {
     /**
      * \brief Builds a Mesh using the symbolic information
      *  in the vertices computed by a RestrictedVoronoiDiagram.
-     *
      * \details The vertices with the same symbolic information are
      *  merged.
+     * \note This is an internal implementation class, not meant to
+     *  be used directly, use GEO::RestrictedVoronoiDiagram instead.
      */
     class RVDMeshBuilder {
     public:

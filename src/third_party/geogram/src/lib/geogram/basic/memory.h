@@ -567,8 +567,8 @@ namespace GEO {
         };
 
         /**
-         * \brief Tests if two aligned_allocator%s are equal
-         * \return Always true
+         * \brief Tests whether two aligned_allocator%s are equal.
+         * \return Always true.
          */
         template <typename T1, int A1, typename T2, int A2>
         inline bool operator== (
@@ -578,8 +578,8 @@ namespace GEO {
         }
 
         /**
-         * \brief Tests if two aligned_allocator%s are different
-         * \return Always true
+         * \brief Tests whether two aligned_allocator%s are different.
+         * \return Always false.
          */
         template <typename T1, int A1, typename T2, int A2>
         inline bool operator!= (
@@ -601,7 +601,9 @@ namespace GEO {
      */
     template <class T>
     class vector : public ::std::vector<T, Memory::aligned_allocator<T> > {
-        /** Shortcut to the base class type */
+        /** 
+         * \brief Shortcut to the base class type 
+         */
         typedef ::std::vector<T, Memory::aligned_allocator<T> > baseclass;
 
     public:

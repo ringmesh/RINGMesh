@@ -246,7 +246,7 @@ namespace {
             "Number of iterations for Newton-CVT"
         );
         declare_arg(
-            "opt:nb_LpCVT_iter", 10,
+            "opt:nb_LpCVT_iter", 30,
             "Number of iterations for LpCVT"
         );
         declare_arg(
@@ -401,12 +401,16 @@ namespace {
             "Save points to points.meshb"
         );
         declare_arg(
-            "hex:save_RDT", true,
-            "Save RDT to RDT.meshb"
+            "hex:save_tets", true,
+            "Save tetrahedra (before primitive merging) to tets.meshb"
         );
         declare_arg(
             "hex:save_surface", true,
             "Save surface to surface.meshb"
+        );
+        declare_arg(
+            "hex:save_frames", true,
+            "Save frames and surface to frames_surface.eobj"
         );
         declare_arg(
             "hex:prefer_seeds", true,
@@ -421,8 +425,8 @@ namespace {
             "Load points from a file"
         );
         declare_arg(
-            "hex:RDT_file", "",
-            "Load RDT from a file"
+            "hex:tets_file", "",
+            "Load tetrahedra from a file"
         );
         declare_arg(
             "hex:frames_file", "",
@@ -436,7 +440,35 @@ namespace {
             "hex:pyramids", true,
             "generate pyramids"
         );
+        declare_arg(
+            "hex:algo", "PGP3d",
+            "one of (PGP3d, LpCVT)"
+        );
     }
+
+    /**
+     * \brief Imports the tetrahedral meshing option group
+     */
+    void import_arg_group_tet() {
+        declare_arg_group("tet", "Tetrahedral meshing", ARG_ADVANCED);
+        declare_arg(
+            "tet", false,
+            "Toggles tetrahedral meshing"
+        );
+        declare_arg(
+            "tet:refine", true,
+            "Generates additional points to improve mesh quality"
+        );
+        declare_arg(
+            "tet:preprocess", true,
+            "Pre-processes surface before meshing"
+        );
+        declare_arg(
+            "tet:quality", 2.0,
+            "desired element quality (1.0 means best, 2.0 means reasonable)"
+        );
+    }
+
     
     /************************************************************************/
 
@@ -509,6 +541,13 @@ namespace {
     void set_profile_hex() {
         set_arg("hex", true);
     }
+
+    /**
+     * \brief Sets the tetrahedral meshing profile
+     */
+    void set_profile_tet() {
+        set_arg("tet", true);
+    }
 }
 
 namespace GEO {
@@ -544,6 +583,8 @@ namespace GEO {
                 import_arg_group_stat();
             } else if(name == "hex") {
                 import_arg_group_hex();
+            } else if(name == "tet") {
+                import_arg_group_tet();
             } else {
                 Logger::instance()->set_quiet(false);
                 Logger::err("CmdLine")
@@ -569,6 +610,8 @@ namespace GEO {
                 set_profile_heal();
             } else if(name == "reconstruct") {
                 set_profile_reconstruct();
+            } else if(name == "tet") {
+                set_profile_tet();
             } else if(name == "hex") {
                 set_profile_hex();
             } else {

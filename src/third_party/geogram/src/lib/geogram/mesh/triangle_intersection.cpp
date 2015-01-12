@@ -46,13 +46,52 @@
 #include <geogram/mesh/triangle_intersection.h>
 #include <geogram/basic/geometry.h>
 #include <geogram/basic/argused.h>
+#include <geogram/basic/logger.h>
 #include <geogram/numerics/predicates.h>
 
 namespace {
 
     using namespace GEO;
 
+    index_t nb_ET2 = 0;
+    index_t nb_TT2 = 0;
+
+    /**
+     * \brief Displays some statistics at program exit.
+     * \details Used to display number of calls to functions
+     *  that are not implemented yet.
+     */
+    struct Stats {
+        /**
+         * \brief Stats destructor.
+         * \details Displays the number of calls to functions
+         *  that are not implemented yet.
+         */
+        ~Stats() {
+            if(nb_ET2 > 0) {
+                Logger::warn("Isect")
+                    << nb_ET2 << " calls to ET2() (not implemented yet)"
+                    << std::endl;
+            }
+            if(nb_TT2 > 0) {
+                Logger::warn("Isect")
+                    << nb_TT2 << " calls to TT2() (not implemented yet)"
+                    << std::endl;
+            }
+        }
+    } stats;
+    
+    /**
+     * \brief Number of possible values of TriangleRegion
+     */
     const index_t trgl_rgn_dim_size = 7;
+
+    /**
+     * \brief For each possible value of TriangleRergion
+     *  gives the dimension of the corresponding triangle
+     *  subset.
+     * \details Used to implement region_dim()
+     */
     coord_index_t trgl_rgn_dim[trgl_rgn_dim_size] = {
         0, 0, 0, 1, 1, 1, 2
     };
@@ -305,7 +344,8 @@ namespace {
      * \details Input points are in 3d. The two most varying
      * coordinates are used.
      * \param[in] p0 the point
-     * \param[in] P the TriangleRegion encoding of p0
+     * \param[in] P the TriangleRegion encoding of p0 within the
+     *  triangle it comes from, should be one of (T_RGN_P0, T_RGN_P1, T_RGN_P2)
      * \param[in] q0,q1,q2 the triangle
      * \param[out] out where to append the result (in symbolic form)
      * \param[in] swp if set, the TriangleRegion codes of the
@@ -395,13 +435,15 @@ namespace {
      * \brief Edge-triangle intersection in 2d
      * \details Input points are in 3d. The two most varying
      *  coordinates are used.
-     * \param[in] p0,p1 the point
-     * \param[in] E the TriangleRegion encoding of (p0,p1)
+     * \param[in] p0,p1 the edge
+     * \param[in] E the TriangleRegion encoding of (p0,p1) within the triangle
+     *  it comes from, should be one of (T_RGN_E0, T_RGN_E1, T_RGN_E2)
      * \param[in] q0,q1,q2 the triangle
      * \param[out] out where to append the result (in symbolic form)
      * \param[in] swp if set, the TriangleRegion codes of the
      *  intersection are swapped in the result.
-     * \return true if an intersection point was detected, false otherwise
+     * \retval true if one or two intersection points were detected
+     * \retval false otherwise
      * \pre p0,p1,q0,q1,q2 are in the same 3d plane.
      */
     bool ET2(
@@ -413,35 +455,35 @@ namespace {
         geo_debug_assert(PCK::orient_3d(q0, q1, q2, p1) == ZERO);
         geo_debug_assert(region_dim(E) == 1);
 
-        TriangleRegion P0 = T_RGN_T;
-        TriangleRegion P1 = T_RGN_T;
+        TriangleRegion P0_rgn = T_RGN_T;
+        TriangleRegion P1_rgn = T_RGN_T;
         switch(E) {
             case T_RGN_E0:
-                P0 = T_RGN_P1;
-                P1 = T_RGN_P2;
+                P0_rgn = T_RGN_P1;
+                P1_rgn = T_RGN_P2;
                 break;
             case T_RGN_E1:
-                P0 = T_RGN_P2;
-                P1 = T_RGN_P0;
+                P0_rgn = T_RGN_P2;
+                P1_rgn = T_RGN_P0;
                 break;
             case T_RGN_E2:
-                P0 = T_RGN_P0;
-                P1 = T_RGN_P1;
+                P0_rgn = T_RGN_P0;
+                P1_rgn = T_RGN_P1;
                 break;
             default:
                 geo_assert_not_reached;
         }
 
         if(
-            PT2(p0, P0, q0, q1, q2, out, swp) &&
-            PT2(p1, P1, q0, q1, q2, out, swp)
+            PT2(p0, P0_rgn, q0, q1, q2, out, swp) &&
+            PT2(p1, P1_rgn, q0, q1, q2, out, swp)
         ) {
             return true;
         }
 
         // TODO: NOT IMPLEMENTED YET
         // geo_assert_not_reached ;
-        std::cerr << "Edge triangle 2D needed" << std::endl;
+        ++nb_ET2;
         return false;
     }
 
@@ -580,7 +622,7 @@ namespace {
         geo_argused(result);
         // TODO: NOT IMPLEMENTED YET
         //      geo_assert_not_reached;
-        std::cerr << "Isect 2D needed !" << std::endl;
+        ++nb_TT2;
         return false;
     }
 }

@@ -439,7 +439,9 @@ namespace GEO {
             /**
              * \brief If set, the seeds are used whenever possible,
              *  i.e. whenever a restricted Voronoi cell has a single
-             *  connected component.
+             *  connected component. Important: before using this
+             *  mode, the surface mesh needs to be reordered with 
+             *  Morton order (see GEO::mesh_reorder).
              */
             RDT_PREFER_SEEDS=4
         };

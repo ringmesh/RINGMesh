@@ -150,7 +150,7 @@ namespace GEO {
          * \brief Gets the centroid of a facet in a mesh.
          * \param[in] M the mesh
          * \param[in] f the index of the facet
-         * \return the 3d centroid of tetrahedron \p f in \p M
+         * \return the 3d centroid of facet \p f in \p M
          */
         inline vec3 mesh_facet_center(const Mesh& M, index_t f) {
             vec3 result(0.0, 0.0, 0.0);
@@ -313,6 +313,24 @@ namespace GEO {
      * \param[in,out] M the mesh
      */
     void GEOGRAM_API normalize_embedding_area(Mesh& M);
+
+    /**
+     * \brief Computes the volume of a cell in a mesh.
+     * \note only implemented for tetrahedra for now
+     * \param[in] M a const reference to the mesh
+     * \param[in] c the index of the cell
+     * \return the volume of the cell 
+     */
+    double GEOGRAM_API mesh_cell_volume(
+        const Mesh& M, index_t c
+    );
+    
+    /**
+     * \brief Computes the volume of the cells of a mesh.
+     * \param[in] M a const reference to the mesh
+     * \return the volume of the cells of the mesh
+     */
+    double GEOGRAM_API mesh_cells_volume(const Mesh& M);
 }
 
 #endif

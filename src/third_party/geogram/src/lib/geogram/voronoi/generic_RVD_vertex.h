@@ -56,6 +56,9 @@
  * \file geogram/voronoi/generic_RVD_vertex.h
  * \brief Types and utilities for manipulating vertices in geometric
  *  and symbolic forms in restricted Voronoi diagrams.
+ * \note This file contains functions and classes used by the internal implementation
+ *  of GEO::GenericVoronoiDiagram. Except some special uses, e.g. subclassing 
+ *  GEO::IntegrationSimplex, they are not meant to be used directly by client code.
  */
 
 namespace GEOGen {
@@ -69,9 +72,10 @@ namespace GEOGen {
     /**
      * \brief Small_set is similar to std::set, but with fixed
      * maximum size (and no dynamic memory allocation).
-     *
      * \details Used by GenericVoronoiDiagram to store vertices equations
      * (represented as plane indices triplets).
+     * \note This is an internal implementation class, not meant to be
+     *  used by client code.
      */
     template <class T, int DIM>
     class small_set {
@@ -399,6 +403,9 @@ namespace GEOGen {
      *  (and avoids numerical problems when the boundary surface has
      *  coplanar (or nearly coplanar) facets).
      *  It also allows using exact predicates (not implemented yet).
+     *
+     * \note This is an internal implementation class, not meant to be
+     *  used by client code.
      */
     class SymbolicVertex : public small_set<GEO::signed_index_t, 3> {
 
@@ -660,10 +667,13 @@ namespace GEOGen {
      * would probably slow down the Windows version a lot, there
      * seems to be a global multithreading lock on malloc()).
      *
-     * \note In most cases, only the first chunk is used
+     * In most cases, only the first chunk is used
      * (but some degenerate cases may use more). There seems
      * to be no measurable overhead as compared to a contiguous
      * array in our scenario.
+     *
+     * \note This is an internal implementation class, not meant to be
+     *  used by client code.
      */
 
     class PointAllocator {
@@ -785,6 +795,9 @@ namespace GEOGen {
      *  in GenericVoronoiDiagram.
      * \details Vertex has both
      *  geometrical and symbolic representations.
+     * \note This is an internal implementation class, not meant to be
+     *  used by client code (except in some particular case, such as
+     *  subclassing GEO::IntegrationSimplex).
      */
     class Vertex {
 

@@ -75,7 +75,8 @@ namespace GEO {
      *  over a restricted Voronoi diagram.
      * \details This function can be used by CentroidalVoronoiTesselation
      *  and its variants to optimize the placement of points by minimizing
-     *  an objective function.
+     *  an objective function. Sub-classing this class makes it possible
+     *  to define new objective functions.
      */
     class GEOGRAM_API IntegrationSimplex : public Counted {
 

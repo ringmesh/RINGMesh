@@ -43,6 +43,7 @@
  *
  */
 
+#include "nn_search_ANN.h"
 #include <geogram/basic/common.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/process.h>
@@ -58,7 +59,10 @@ int main(int argc, char** argv) {
     using namespace GEO;
 
     GEO::initialize();
-
+    geo_register_NearestNeighborSearch_creator(
+        NearestNeighborSearch_ANN, "ANN"
+    );
+    
     try {
 
         Stopwatch W("Total time");
@@ -178,6 +182,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    annClose();
+    
     return 0;
 }
 

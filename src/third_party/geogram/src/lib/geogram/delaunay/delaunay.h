@@ -233,6 +233,34 @@ namespace GEO {
         }
 
         /**
+         * \brief Specifies whether the mesh should be refined.
+         * \details If set, then the mesh elements are improved
+         *  by inserting additional vertices in the mesh.
+         *  It is not taken into account by all implementations.
+         *  This function should be called before set_vertices().
+         * \param[in] x true if the mesh should be refined, false 
+         *  otherwise.
+         */
+        void set_refine(bool x) {
+            refine_ = x;
+        }
+
+        /**
+         * \brief Specifies the desired quality for mesh elements
+         *  when refinement is enabled (\see set_refine).
+         * \details
+         *  Only taken into account after set_refine(true) is called.
+         *  It is not taken into account by all implementations.
+         *  This function should be called before set_vertices().
+         * \param[in] quality, typically in [1.0, 2.0], specifies
+         *  the desired quality of mesh elements (1.0 means maximum
+         *  quality, and generates a higher number of elements).
+         */
+        void set_quality(double x) {
+            quality_ = x;
+        }
+        
+        /**
          * \brief Gets the constraints.
          * \return the constraints or nil if no constraints
          *  were definied.
@@ -583,6 +611,9 @@ namespace GEO {
                           // (in some implementations)
 
         const Mesh* constraints_;
+
+        bool refine_;
+        double quality_;
     };
 
     /**

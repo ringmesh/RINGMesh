@@ -65,13 +65,13 @@ namespace GEO {
      * of a triangle.
      */
     enum TriangleRegion {
-        T_RGN_P0 = 0,
-        T_RGN_P1 = 1,
-        T_RGN_P2 = 2,
-        T_RGN_E0 = 3,
-        T_RGN_E1 = 4,
-        T_RGN_E2 = 5,
-        T_RGN_T = 6
+        T_RGN_P0 = 0, /**< The point is on p0 */
+        T_RGN_P1 = 1, /**< The point is on p1 */
+        T_RGN_P2 = 2, /**< The point is on p2 */
+        T_RGN_E0 = 3, /**< The point is on edge E0 */
+        T_RGN_E1 = 4, /**< The point is on edge E1 */
+        T_RGN_E2 = 5, /**< The point is on edge E2 */
+        T_RGN_T = 6   /**< The point is in the interior of the triangle */
     };
 
     /**
@@ -87,8 +87,8 @@ namespace GEO {
      * \param[out] result the intersection in symbolic
      *  form, as TriangleRegion pairs. There can be
      *  between 0 and 6 intersection pairs in the result.
-     * \return true if there is a non-degenerate intersection
-     *  false otherwise. Degenerate intersection cases are:
+     * \retval true if there is a non-degenerate intersection
+     * \retval false otherwise. Degenerate intersection cases are:
      *  - one vertex in common
      *  - two vertices (an edge) in common
      *  - or duplicated triangles.

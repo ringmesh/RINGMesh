@@ -384,8 +384,8 @@ namespace GEO {
          * \brief Returns the Logger single instance
          * \details This function does \b not create the Logger instance.
          * Calling instance() before initialize() has been called returns a \c
-         * null pointer. Similarly, calling instance() after terminate() has been
-         * called returns a \c null pointer.
+         * null pointer. Similarly, calling instance() after terminate() 
+         * has been called returns a \c null pointer.
          * \return A pointer to the Logger if initialized, null otherwise
          * \see initialize()
          * \see terminate()

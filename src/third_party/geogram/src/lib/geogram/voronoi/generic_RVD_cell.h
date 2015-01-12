@@ -54,13 +54,19 @@
 
 /**
  * \file geogram/voronoi/generic_RVD_cell.h
- * \brief Internal representation of polyhedra for GenericVoronoiDiagram.
+ * \brief Internal representation of polyhedra for GEO::GenericVoronoiDiagram.
+ * \note This file contains functions and classes used by the internal implementation
+ *  of GEO::GenericVoronoiDiagram. They are not meant to be used directly by client 
+ *  code.
  */
 
 namespace GEOGen {
 
     /**
      * \brief Computes the intersection between a set of halfspaces.
+     * \note This is an internal implementation class used by
+     *  GEO::RestrictedVoronoiDiagram. It is not meant to be 
+     *  used directly by client code.
      */
     class GEOGRAM_API ConvexCell {
 

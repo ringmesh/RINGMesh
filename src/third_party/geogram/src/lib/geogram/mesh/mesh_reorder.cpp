@@ -1062,6 +1062,21 @@ namespace GEO {
         );
     }
 
+
+    void GEOGRAM_API compute_Hilbert_order(
+        index_t nb_vertices, const double* vertices,
+        vector<index_t>& sorted_indices,
+        index_t first,
+        index_t last,
+        index_t stride
+    ) {
+        VertexArray M(nb_vertices, vertices, stride);
+        HilbertSort<Hilbert_vcmp, VertexArray>(
+            M, sorted_indices.begin() + first,
+            sorted_indices.begin() + last
+        );
+    }
+    
     void compute_BRIO_order(
         index_t nb_vertices, const double* vertices,
         vector<index_t>& sorted_indices,
