@@ -221,7 +221,7 @@ namespace GRGMesh {
         static bool is_defined( Manager* manager, const std::string& name )
         {
             return ( manager->named_attribute_is_bound( name )
-                && dynamic_cast< Store* >( resolve_named_attribute_store(
+                && dynamic_cast< AttributeStore* >( resolve_named_attribute_store(
                     manager, name ) ) != nil ) ;
         }
 
