@@ -12,11 +12,12 @@
  * including partial copies or modified versions thereof.
  ]*/
 
-#include <grgmesh/boundary_model.h>
 #include <grgmesh/io.h>
+#include <grgmesh/boundary_model.h>
 
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/basic/string.h>
+#include <geogram/basic/file_system.h>
 
 #include <third_party/zip/zip.h>
 #include <third_party/zip/unzip.h>
@@ -46,25 +47,31 @@ namespace GRGMesh {
         /// determined by the extension given in \param[in] filename
         bool save_macro_mesh( const MacroMesh& mm, const std::string& filename )
         {
+            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
+            GEO::FileSystem::set_current_working_directory( GEO::FileSystem::dir_name( filename ) ) ;
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
-            zip_fileinfo zfi = { 0 };
+            zip_fileinfo zfi = { 0 } ;
             for( index_t i = 0; i < mm.nb_meshes(); i++ ) {
                 GEO::MeshIOFlags flags ;
                 flags.set_element( GEO::MESH_CELLS ) ;
                 const GEO::Mesh& m = mm.mesh( i ) ;
                 std::string name = GEO::String::to_string( i ) + ".meshb" ;
-                GEO::mesh_save( m, name.c_str(), flags ) ;
-                std::fstream file(name.c_str(), std::ios::binary | std::ios::in);
-                file.seekg(0, std::ios::beg);
-                index_t size = file.tellg();
-                std::vector<char> buffer(size);
-                zipOpenNewFileInZip( zf, GEO::String::to_string( i ).c_str(), &zfi,
-                    NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION) ;
-                zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size) ;
-                zipCloseFileInZip(file) ;
+                GEO::mesh_save( m, name, flags ) ;
+                std::fstream file( name.c_str(), std::ios::in ) ;
+                file.seekg( 0, std::ios::end ) ;
+                long size = file.tellg() ;
+                file.seekg( 0, std::ios::beg ) ;
+                std::vector< char > buffer( size ) ;
+                file.read( &buffer[0], size ) ;
+                zipOpenNewFileInZip( zf, name.c_str(), &zfi,
+                NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
+                zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size ) ;
+                zipCloseFileInZip( file ) ;
                 file.close() ;
+                GEO::FileSystem::delete_file( name ) ;
             }
             zipClose(zf, NULL) ;
+            GEO::FileSystem::set_current_working_directory( pwd ) ;
             return true ;
         }
     }

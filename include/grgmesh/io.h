@@ -28,7 +28,7 @@ namespace GRGMesh {
         bool GRGMESH_API load_BoundaryModel_from_Model3D(
             const std::string& filename,
             BoundaryModel& model ) ;
-        bool GRGMESH_API save_macro_mesh( const MacroMesh& mm ) ;
+        bool GRGMESH_API save_macro_mesh( const MacroMesh& mm, const std::string& filename ) ;
 
     }
 }
