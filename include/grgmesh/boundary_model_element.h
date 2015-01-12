@@ -669,14 +669,14 @@ namespace GRGMesh {
 
         void bind( const Surface* surface, const std::string& name )
         {
-            superclass::bind( surface->facet_attribute_manager(), surface->nb_vertices(),
+            superclass::bind( surface->facet_attribute_manager(), surface->nb_cells(),
                 name ) ;
         }
 
         void bind( const Surface* surface )
         {
             superclass::bind( surface->facet_attribute_manager(),
-                surface->nb_vertices() ) ;
+                surface->nb_cells() ) ;
         }
 
         SurfaceFacetAttribute()

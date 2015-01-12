@@ -41,7 +41,7 @@ INITIALIZER(initialize)
         GEO::initialize() ;
         GEO::CmdLine::import_arg_group( "standard" ) ;
         GEO::CmdLine::import_arg_group( "algo" ) ;
-        GEO::CmdLine::import_arg_group( "opt" ) ;
+        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
         GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
         GEO::CmdLine::set_arg( "sys:FPE", false ) ;
     }

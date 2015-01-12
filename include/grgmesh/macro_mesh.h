@@ -115,6 +115,7 @@ namespace GRGMesh {
         std::vector< std::vector< vec3 > > vertices_ ;
         /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
         std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
+
     private:
         std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
         std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
