@@ -50,6 +50,7 @@
 #include <geogram/mesh/mesh_partition.h>
 #include <geogram/mesh/mesh_sampling.h>
 #include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_AABB.h>
 #include <geogram/delaunay/delaunay.h>
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/basic/process.h>
@@ -1786,8 +1787,8 @@ namespace {
                 cur_vertex_(0),
                 use_RVC_centroids_((mode & RDT_RVC_CENTROIDS) != 0),
                 seed_is_locked_(seed_is_locked),
-                keep_original_seeds_((mode & RDT_PREFER_SEEDS) != 0) {
-                if(keep_original_seeds_) {
+                prefer_seeds_((mode & RDT_PREFER_SEEDS) != 0) {
+                if(prefer_seeds_) {
                     seed_to_vertex_.assign(
                         RVD.delaunay()->nb_vertices(),index_t(UNINITIALIZED)
                     );
@@ -1864,18 +1865,34 @@ namespace {
                 if(cur_seed_ != -1) {
                     end_connected_component();
                 }
-                if(keep_original_seeds_) {                
+                if(prefer_seeds_) {
+                    
+                    // Construct an axis-aligned bounding box tree,
+                    // do not reorder the mesh (needs to be pre-reordered)
+                    MeshFacetsAABB AABB(*const_cast<Mesh*>(RVD_.mesh()),false);
+                    
                     for(index_t s=0; s<seed_to_vertex_.size(); ++s) {
                         if(
                            seed_to_vertex_[s] != MULTI_COMP && 
                            seed_to_vertex_[s] != UNINITIALIZED
                         ) {
-                            // Copy seed
                             index_t vbase = seed_to_vertex_[s] * dimension_;
+
                             const double* seed_ptr = 
                                 RVD_.delaunay()->vertex_ptr(s);
-                            for(coord_index_t c = 0; c < dimension_; ++c) {
-                                vertices_[vbase + c] = seed_ptr[c];
+
+                            const double* vertex_ptr = &(vertices_[vbase]);
+
+                            //  If the seed is nearer to the surface than the
+                            // centroid of the connected component of the
+                            // restricted Voronoi cell, then use the seed.
+                            if(
+                                AABB.squared_distance(vec3(seed_ptr)) <
+                                AABB.squared_distance(vec3(vertex_ptr))
+                            ) {
+                                for(coord_index_t c = 0; c < dimension_; ++c) {
+                                    vertices_[vbase + c] = seed_ptr[c];
+                                }
                             }
                         }
                     }
@@ -1930,7 +1947,7 @@ namespace {
                         vertices_[vbase + c] *= scal;
                     }
                 }
-                if(keep_original_seeds_) {
+                if(prefer_seeds_) {
                     if(seed_to_vertex_[index_t(cur_seed_)] == UNINITIALIZED) {
                         seed_to_vertex_[index_t(cur_seed_)] = cur_vertex_;
                     } else {
@@ -1951,7 +1968,7 @@ namespace {
             bool project_;   // TODO: not implemented yet.
             bool use_RVC_centroids_;
             const std::vector<bool>& seed_is_locked_;
-            bool keep_original_seeds_;
+            bool prefer_seeds_;
             vector<index_t> seed_to_vertex_;
         };
 

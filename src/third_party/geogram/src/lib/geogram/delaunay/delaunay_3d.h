@@ -67,7 +67,7 @@ namespace GEO {
      *  it traverses less tetrahedra than when traversing from outside.
      *  - Jean-Daniel Boissonnat, Olivier Devillers, Monique Teillaud, 
      *   and Mariette Yvinec. Triangulations in CGAL. 
-     *   In Proc. 16th Annu. ACM Sympos. Comput. Geom., pages 11–18, 2000.
+     *   In Proc. 16th Annu. ACM Sympos. Comput. Geom., pages 11-18, 2000.
      *  - Hang Si, Constrained Delaunay tetrahedral mesh generation and 
      *   refinement. Finite elements in Analysis and Design, 
      *   46 (1-2):33--46, 2010.
@@ -79,7 +79,7 @@ namespace GEO {
      *  The core algorithm used in this code, CGAL and tetgen was
      *  independently and simultaneously discovered by Bowyer and Watson:
      *  - Adrian Bowyer, "Computing Dirichlet tessellations", 
-     *   Comput. J., vol. 24, no 2,‎ 1981, p. 162-166 
+     *   Comput. J., vol. 24, no 2, 1981, p. 162-166 
      *  - David F. Watson, "Computing the n-dimensional Delaunay tessellation 
      *   with application to Voronoi polytopes", Comput. J., vol. 24, 
      *   no 2, 1981, p. 167-172

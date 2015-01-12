@@ -128,12 +128,6 @@ namespace GEOGen {
      */
     class GEOGRAM_API MeshBase {
     public:
-
-        //   The following two lines are here for debugging
-        // purposes, will be removed soon...
-        float* debug_coords_float_;   // TODO remove it
-        double* debug_coords_double_; // TODO remove it
-        
         /**
          * \brief Gives the local index of a vertex in a
          *  tetrahedron from its facet and vertex local indices.

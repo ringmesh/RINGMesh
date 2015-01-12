@@ -293,8 +293,9 @@ namespace GEO {
     /**
      * \brief Gets the absolute value of a value
      * \details The function uses operator< to compare the value againts 0
-     * (zero). The integer constant zero must make senses for the type of the
-     * value, or T must be constructible from integer constant zero.
+     * (zero). The integer constant zero and unary minus operator must 
+     * both make sense for the type of the value, or T must be 
+     * constructible from integer constant zero.
      * \param[in] x a value of type \p T
      * \tparam T the type of the value
      * \return -x if the value is negative, x otherwise
@@ -308,7 +309,7 @@ namespace GEO {
      * \brief Gets the square value of a value
      * \param[in] x a value of type \p T
      * \tparam T the type of the value
-     * \return the sqre value of \p x
+     * \return the square value of \p x
      */
     template <class T>
     inline T geo_sqr(T x) {
@@ -335,8 +336,8 @@ namespace GEO {
     /**
      * \brief Swaps two variables
      * \details This exchanges the values of \p x and \p y.
-     * \param[in] x the first variable
-     * \param[in] y the second variable
+     * \param[in,out] x the first variable
+     * \param[in,out] y the second variable
      */
     template <class T>
     inline void geo_swap(T& x, T& y) {

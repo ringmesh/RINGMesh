@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <algorithm>
 
 //#define DEBUG 0
 #include <FPG/MSG.h>

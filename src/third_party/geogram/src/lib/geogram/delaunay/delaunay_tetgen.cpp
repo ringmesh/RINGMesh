@@ -114,7 +114,6 @@ namespace GEO {
     void DelaunayTetgen::set_vertices_constrained(
         index_t nb_vertices, const double* vertices
     ) {
-
         index_t nb_borders = 0;
         for(index_t c=0; c<constraints_->nb_corners(); ++c) {
             if(constraints_->corner_adjacent_facet(c) == -1) {
@@ -137,12 +136,20 @@ namespace GEO {
         // p: input data is surfacic
         // n: output tet neighbors
         // q: desired quality
+        // O0: do not optimize mesh
         // V: verbose
         // YY: prohibit steiner points on boundaries
         // (first Y for exterior boundary, second Y for the
         // other ones).
         // AA: generate region tags for each shell.
-        tetgen_args_.parse_commandline((char*)"QpnO0YYAA");
+
+        if(refine_) {
+            char cmdline[500];
+            sprintf(cmdline, "Qpnq%fYYAA", quality_);
+            tetgen_args_.parse_commandline(cmdline);            
+        } else {
+            tetgen_args_.parse_commandline((char*)"QpnO0YYAA");
+        }
 
         tetgen_in_.deinitialize();
         tetgen_in_.initialize();
@@ -206,10 +213,26 @@ namespace GEO {
         tetgen_in_.numberoffacets = 0;
         delete[] polygons;
 
-
-        // Remove the tets that are not in region 1.
+        // Determine which region is the one incident to
+        // the 'exterior' (neighbor = -1 or tet is adjacent to
+        // a tet in region 0).
         // The region Id of tet t is determined by:
         //  tetgen_out_.tetrahedronattributelist[t] 
+        double good_region = 0.0;
+        for(
+            index_t t = 0; 
+            t < index_t(tetgen_out_.numberoftetrahedra); ++t
+        ) {
+            for(index_t f=0; f<4; ++f) {
+                signed_index_t n = (tetgen_out_.neighborlist[t*4+f]);
+                if(n == -1 || tetgen_out_.tetrahedronattributelist[n] == 0.0) {
+                    good_region = tetgen_out_.tetrahedronattributelist[t];
+                    break;
+                }
+            }
+        }
+
+        // Remove the tets that are not in good_region.
         vector<index_t> old2new(
             index_t(tetgen_out_.numberoftetrahedra),index_t(-1)
         );
@@ -218,7 +241,7 @@ namespace GEO {
             index_t t = 0; 
             t < index_t(tetgen_out_.numberoftetrahedra); ++t
         ) {        
-            if(tetgen_out_.tetrahedronattributelist[t] == 1) {
+            if(tetgen_out_.tetrahedronattributelist[t] == good_region) {
                 if(t != nb_tets) {
                     Memory::copy(
                         &tetgen_out_.tetrahedronlist[nb_tets * 4],

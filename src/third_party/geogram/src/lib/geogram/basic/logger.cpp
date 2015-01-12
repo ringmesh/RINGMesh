@@ -357,19 +357,19 @@ namespace GEO {
     std::ostream& Logger::out(const std::string& feature) {
         return is_initialized() ?
             instance()->out_stream(feature) :
-            (std::cerr << "[" << feature << "] ");
+            (std::cerr << "    [" << feature << "] ");
     }
 
     std::ostream& Logger::err(const std::string& feature) {
         return is_initialized() ?
             instance()->err_stream(feature) :
-            (std::cerr << "[" << feature << "] ");
+            (std::cerr << "(E)-[" << feature << "] ");
     }
 
     std::ostream& Logger::warn(const std::string& feature) {
         return is_initialized() ?
             instance()->warn_stream(feature) :
-            (std::cerr << "[" << feature << "] ");
+            (std::cerr << "(W)-[" << feature << "] ");
     }
 
     std::ostream& Logger::status() {

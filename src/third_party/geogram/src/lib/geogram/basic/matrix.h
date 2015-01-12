@@ -338,9 +338,23 @@ namespace GEO {
          * \return the inverse matrix
          */
         matrix_type inverse() const {
+            matrix_type result;
+            bool invertible = compute_inverse(result);
+            geo_assert(invertible);
+            return result;
+        }
+
+
+        /**
+         * \brief Computes the inverse matrix
+         * \details Computes matrix \p M such that (\p this * \p M) = identity
+         * \param[out] result the inverse matrix
+         * \return true if the matrix is inversible
+         * \retval false otherwise
+         */
+        bool compute_inverse(matrix_type& result) const {
             FT val, val2;
             matrix_type tmp = (*this);
-            matrix_type result;
 
             result.load_identity();
 
@@ -365,7 +379,9 @@ namespace GEO {
                     }
                 }
 
-                geo_assert(val != 0.0);
+                if(val == 0.0) {
+                    return false;
+                }
 
                 for(index_t j = 0; j != DIM; j++) {
                     tmp(i, j) /= val;
@@ -383,8 +399,8 @@ namespace GEO {
                     }
                 }
             }
-
-            return result;
+            
+            return true;
         }
 
         /**

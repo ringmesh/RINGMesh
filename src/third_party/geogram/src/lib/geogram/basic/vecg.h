@@ -193,7 +193,7 @@ namespace GEO {
         }
 
         /**
-         * \brief Gets the vector square norm
+         * \brief Gets the squared length of the vector
          */
         inline T length2() const {
             T result = T(0);
@@ -204,14 +204,14 @@ namespace GEO {
         }
 
         /**
-         * \brief Gets the vector norm
+         * \brief Gets the length of the vector
          */
         inline T length() const {
             return sqrt(length2());
         }
 
         /**
-         * \brief Gets the square distance to a vector
+         * \brief Gets the squared distance to a vector
          * \param[in] v another vector
          * \return (\p v - \p this).length2()
          */

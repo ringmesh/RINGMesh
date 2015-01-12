@@ -293,5 +293,29 @@ namespace GEO {
             M.set_weight(v, w);
         }
     }
+
+    double mesh_cell_volume(
+        const Mesh& M, index_t c
+    ) {
+        // Only implemented for tetrahedra
+        // TODO: other cell types
+        geo_assert(M.cell_type(c) == MESH_TET);
+        geo_assert(M.dimension() >= 3);
+        const double* p0 = M.vertex_ptr(M.tet_vertex_index(c,0));
+        const double* p1 = M.vertex_ptr(M.tet_vertex_index(c,1));
+        const double* p2 = M.vertex_ptr(M.tet_vertex_index(c,2));
+        const double* p3 = M.vertex_ptr(M.tet_vertex_index(c,3));
+        return ::fabs(Geom::tetra_signed_volume(p0,p1,p2,p3));
+    }
+
+    
+    double mesh_cells_volume(const Mesh& M) {
+        double result = 0.0;
+        for(index_t c=0; c<M.nb_cells(); ++c) {
+            result += mesh_cell_volume(M,c);
+        }
+        return result;
+    }
+    
 }
 

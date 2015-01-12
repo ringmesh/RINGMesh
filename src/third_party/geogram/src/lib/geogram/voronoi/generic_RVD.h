@@ -62,6 +62,9 @@
 /**
  * \file geogram/voronoi/generic_RVD.h
  * \brief Generic implementation of restricted Voronoi diagrams.
+ * \note This file contains functions and classes used by the internal implementation
+ *  of GEO::GenericVoronoiDiagram. They are not meant to be used directly by client 
+ *  code.
  */
 
 namespace GEOGen {
@@ -71,6 +74,8 @@ namespace GEOGen {
      *  Voronoi diagram (dual of a Delaunay).
      * \details The surface may be embedded in nD
      * (the Voronoi diagram is then of dimension n).
+     * \note This is an internal implementation class, not meant to
+     *  be used directly, use GEO::RestrictedVoronoiDiagram instead.
      */
     template <int DIM>
     class RestrictedVoronoiDiagram {

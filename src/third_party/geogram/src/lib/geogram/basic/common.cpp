@@ -53,7 +53,6 @@
 #include <geogram/numerics/predicates.h>
 #include <geogram/delaunay/delaunay.h>
 #include <geogram/third_party/shewchuk/shewchuk.h>
-#include <geogram/third_party/ANN/ANN.h>
 #include <sstream>
 #include <iomanip>
 
@@ -91,7 +90,6 @@ namespace GEO {
             Process::show_stats();
         }
 
-        annClose();
         PCK::terminate();
         Progress::terminate();
         Process::terminate();

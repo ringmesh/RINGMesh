@@ -82,7 +82,7 @@ namespace GEO {
 
     /**
      * \brief Aborts the program
-     * \details On Linux, this calls ths system function abort(). On Windows,
+     * \details On Linux, this calls the system function abort(). On Windows,
      * abort() is more difficult to see under debugger, so this creates a
      * segmentation fault by deferencing a null pointer.
      */

@@ -252,10 +252,9 @@ namespace GEO {
          *
          * The inversion is equivalent to:
          * \code
-         * for(index_t i=0; i<permutation.size()(); i++) {
-         *      perminv[permutation[i]] = i ;
-         * }
-         * permutation = perminv ;
+         * vector<index_t> inverse;
+         * compute_inverse(permutation, inverse);
+         * permutation = inverse;
          * \endcode
          * \param[in,out] permutation to inverse.
          */
@@ -281,6 +280,25 @@ namespace GEO {
                 unmark(permutation, k);
             }
         }
+
+        /**
+         * \brief Inverts a permutation in-place.
+         * \details Inverses the given \p permutation in place, the
+         * result of the inversion is left in \p permutation.
+         *
+         * \param[in] permutation the permutation to invert
+         * \param[out] inverse the computed inverse of \p permutation
+         */
+        inline void invert(
+            const vector<index_t>& permutation, vector<index_t>& invert
+        ) {
+            geo_debug_assert(is_valid(permutation));
+            invert.resize(permutation.size());
+            for(index_t i=0; i<permutation.size(); ++i) {
+                invert[permutation[i]] = i;
+            }
+        }
+
     }
 }
 

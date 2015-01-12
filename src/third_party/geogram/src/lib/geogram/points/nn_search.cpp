@@ -47,95 +47,6 @@
 #include <geogram/points/kd_tree.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/logger.h>
-#include <geogram/third_party/ANN/ANN.h>
-
-namespace {
-
-    using namespace GEO;
-
-    /**
-     * \brief Implementation of NearestNeighborSearch using the ANN library.
-     */
-    class NearestNeighborSearch_ANN : public NearestNeighborSearch {
-    public:
-        /**
-         * \brief Constructs a new NearestNeighborSearch_ANN.
-         * \param[in] dim dimension of the points
-         */
-        NearestNeighborSearch_ANN(
-            coord_index_t dim
-        ) :
-            NearestNeighborSearch(dim),
-            ann_tree_(nil) {
-        }
-
-        virtual void set_points(index_t nb_points, const double* points) {
-            set_points(nb_points, points, dimension());
-        }
-
-        virtual bool stride_supported() const {
-            return true;
-        }
-
-        virtual void set_points(
-            index_t nb_points, const double* points, index_t stride
-        ) {
-            nb_points_ = nb_points;
-            points_ = points;
-            stride_ = stride;
-
-            // Patched ANN so that we no longer need
-            // to generate an array of pointers to
-            // the points, See ANN.h
-#ifdef ANN_CONTIGUOUS_POINT_ARRAY
-            delete ann_tree_;
-            ann_tree_ = new ANNkd_tree(
-                ANNpointArray(points_, stride_),
-                int(nb_points), 
-                int(dimension())
-            );
-#else
-            delete ann_tree_;
-            ann_tree_ = nil;
-            ann_points_.resize(nb_points);
-            for(index_t i = 0; i < nb_points; i++) {
-                ann_points_[i] = const_cast<double*>(points) + stride_ * i;
-            }
-            ann_tree_ = new ANNkd_tree(
-                &ann_points_[0], int(nb_points), int(dimension())
-            );
-#endif
-        }
-
-        virtual void get_nearest_neighbors(
-            index_t nb_neighbors,
-            const double* query_point,
-            index_t* neighbors,
-            double* neighbors_sq_dist
-        ) const {
-            ann_tree_->annkSearch(
-                const_cast<double*>(query_point),
-                int(nb_neighbors), (ANNidxArray) neighbors, neighbors_sq_dist,
-                (exact_ ? 0.0 : 0.1)
-            );
-        }
-
-    protected:
-        /**
-         * \brief NearestNeighborSearch_ANN destructor
-         */
-        virtual ~NearestNeighborSearch_ANN() {
-            delete ann_tree_;
-            ann_tree_ = nil;
-        }
-
-    private:
-#ifndef ANN_CONTIGUOUS_POINT_ARRAY
-        std::vector<ANNcoord*> ann_points_;
-#endif
-        ANNkd_tree * ann_tree_;
-    };
-}
 
 /****************************************************************************/
 
@@ -201,9 +112,6 @@ namespace GEO {
         coord_index_t dimension, const std::string& name_in
     ) {
         geo_register_NearestNeighborSearch_creator(
-            NearestNeighborSearch_ANN, "ANN"
-        );
-        geo_register_NearestNeighborSearch_creator(
             KdTree, "BNN"
         );
 
@@ -221,10 +129,10 @@ namespace GEO {
         Logger::warn("NNSearch")
             << "Could not create NNSearch algorithm: " << name
             << std::endl
-            << "Falling back to ANN"
+            << "Falling back to BNN"
             << std::endl;
 
-        return new NearestNeighborSearch_ANN(dimension);
+        return new KdTree(dimension);
     }
 }
 

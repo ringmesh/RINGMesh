@@ -1311,6 +1311,8 @@ namespace {
                             i, M.vertex_ptr(M.cell_vertex_index(c,i))
                         );
                     }
+                    // Vertex attrib 0 needs to come last, since it is the
+                    // one that triggers vertex emit.
                     glVertexAttrib3fv(
                         0, M.vertex_ptr(M.cell_vertex_index(c,0))
                     );
@@ -1331,6 +1333,8 @@ namespace {
                             i, M.vertex_ptr(M.cell_vertex_index(c,i))
                         );
                     }
+                    // Vertex attrib 0 needs to come last, since it is the
+                    // one that triggers vertex emit.
                     glVertexAttrib3fv(
                         0, M.vertex_ptr(M.cell_vertex_index(c,0))
                     );
@@ -1941,7 +1945,7 @@ namespace {
         colored_cells = !colored_cells;
         if(colored_cells) {
             set_color(PRG_TET,     1.0f, 0.0f, 0.0f);
-            set_color(PRG_HEX,     1.0f, 1.0f, 0.0f);
+            set_color(PRG_HEX,     0.9f, 0.9f, 0.9f);
             set_color(PRG_PRISM,   0.0f, 1.0f, 0.0f);
             set_color(PRG_PYRAMID, 0.0f, 0.0f, 1.0f);            
         } else {

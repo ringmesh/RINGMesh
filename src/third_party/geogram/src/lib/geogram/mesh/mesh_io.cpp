@@ -395,14 +395,6 @@ namespace {
             builder.begin_mesh();
 
             builder.create_vertices(index_t(NmbVer), 3);
-            if(sizeof(coord_t) == 4) {
-                builder.target()->debug_coords_float_ =
-                    (float*)builder.target()->vertex_ptr(0); // TODO remove it
-            }
-            if(sizeof(coord_t) == 8) {
-                builder.target()->debug_coords_double_ =
-                    (double*)builder.target()->vertex_ptr(0); // TODO remove it
-            }
             
             // Read vertices
             if(!GmfGotoKwd(InpMsh, GmfVertices)) {
@@ -781,8 +773,8 @@ namespace {
                 for(index_t f = 0; f < M.nb_facets(); f++) {
                     if(M.facet_size(f) == 3) {
                         index_t v1 = M.corner_vertex_index(M.facet_begin(f));
-                        index_t v2 = M.corner_vertex_index(M.facet_begin(f) + 1);
-                        index_t v3 = M.corner_vertex_index(M.facet_begin(f) + 2);
+                        index_t v2 = M.corner_vertex_index(M.facet_begin(f)+1);
+                        index_t v3 = M.corner_vertex_index(M.facet_begin(f)+2);
                         GmfSetLin(
                             OutMsh, GmfTriangles,
                             int(v1 + 1), int(v2 + 1), int(v3 + 1),
@@ -797,9 +789,9 @@ namespace {
                 for(index_t f = 0; f < M.nb_facets(); f++) {
                     if(M.facet_size(f) == 4) {
                         index_t v1 = M.corner_vertex_index(M.facet_begin(f));
-                        index_t v2 = M.corner_vertex_index(M.facet_begin(f) + 1);
-                        index_t v3 = M.corner_vertex_index(M.facet_begin(f) + 2);
-                        index_t v4 = M.corner_vertex_index(M.facet_begin(f) + 3);
+                        index_t v2 = M.corner_vertex_index(M.facet_begin(f)+1);
+                        index_t v3 = M.corner_vertex_index(M.facet_begin(f)+2);
+                        index_t v4 = M.corner_vertex_index(M.facet_begin(f)+3);
                         GmfSetLin(
                             OutMsh, GmfQuadrilaterals,
                             int(v1 + 1), int(v2 + 1), int(v3 + 1), int(v4 + 1),
@@ -816,7 +808,7 @@ namespace {
                     << std::endl;
             }
 
-            if(M.nb_tets() > 0 && ioflags.has_element(MESH_CELLS)) {
+            if(M.nb_cells() > 0 && ioflags.has_element(MESH_CELLS)) {
                 
                 bool save_cell_regions =
                     ioflags.has_attribute(MESH_CELL_REGION) &&

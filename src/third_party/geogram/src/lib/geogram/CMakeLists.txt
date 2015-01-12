@@ -8,6 +8,7 @@ aux_source_directories(SOURCES "Source Files\\delaunay"  delaunay)
 aux_source_directories(SOURCES "Source Files\\voronoi"   voronoi)
 aux_source_directories(SOURCES "Source Files\\points"    points)
 aux_source_directories(SOURCES "Source Files\\api"       api)
+aux_source_directories(SOURCES "Source Files\\NL"        NL)
 
 if(GEOGRAM_WITH_TETGEN)
     add_definitions(-DGEOGRAM_WITH_TETGEN)
