@@ -386,7 +386,7 @@ tetgenio::init( P ) ;
 
 
         std::ostringstream cmd_line ;
-        cmd_line << "pYfnn" ;
+        cmd_line << "QpYfnn" ;
         if( add_steiner_points ) {
             cmd_line << "q" ;
             if( use_background_mesh ) {
@@ -451,7 +451,6 @@ tetgenio::init( P ) ;
         std::vector< std::vector< index_t > > star( tetgen_output_.numberofpoints, temp ) ;
 
 //#pragma omp parallel for
-        std::cerr << "REGION -> " << region_->id() << std::endl ;
         for( index_t f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
             signed_index_t face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
             if( face_marker == -1 ) continue ;
@@ -518,7 +517,6 @@ tetgenio::init( P ) ;
                 star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
             }
             set_face_marker( cur_index_triangle, face_marker ) ;
-            std::cerr << face_marker << std::endl ;
             cur_index_triangle ++ ;
         }
 
