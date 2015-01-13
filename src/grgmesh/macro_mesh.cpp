@@ -16,8 +16,6 @@
 #include <grgmesh/boundary_model.h>
 #include <grgmesh/tetra_gen.h>
 
-#include <grgmesh/io.h>
-
 #include <geogram/mesh/mesh_AABB.h>
 
 namespace GRGMesh {
@@ -114,7 +112,6 @@ namespace GRGMesh {
                 background_mesh( region_id ) ) ;
             tetragen->tetrahedralize() ;
         }
-        GRGMeshIO::save_macro_mesh( *this, "/home/botella/temp/mesh.zip" ) ;
     }
 
     void MacroMesh::unique_points(

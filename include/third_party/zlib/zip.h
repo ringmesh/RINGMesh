@@ -113,7 +113,7 @@ typedef const char* zipcharpc;
 #define APPEND_STATUS_CREATEAFTER   (1)
 #define APPEND_STATUS_ADDINZIP      (2)
 
-extern zipFile ZEXPORT zipOpen OF((const char *pathname, int append));
+extern zipFile __declspec(dllexport) zipOpen OF((const char *pathname, int append));
 extern zipFile ZEXPORT zipOpen64 OF((const void *pathname, int append));
 /*
   Create a zipfile.
