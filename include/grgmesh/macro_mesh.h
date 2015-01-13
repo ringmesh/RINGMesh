@@ -48,7 +48,7 @@ namespace GRGMesh {
 
         void unique_points(
             std::vector< vec3 >& unique_vertices,
-            std::vector< int >& indices ) const ;
+            std::vector< index_t >& indices ) const ;
 
 
         const GEO::MeshFacetsAABB& facet_aabb( index_t region ) ;
@@ -79,7 +79,7 @@ namespace GRGMesh {
         {
             return background_meshes_[region] ;
         }
-        unsigned int nb_meshes() const
+        index_t nb_meshes() const
         {
             return meshes_.size() ;
         }
