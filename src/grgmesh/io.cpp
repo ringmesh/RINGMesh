@@ -128,6 +128,7 @@ namespace GRGMesh {
                 flags.set_element( GEO::MESH_CELLS ) ;
                 GEO::Mesh& m = mm.mesh( i ) ;
                 GEO::mesh_load( GEO::String::to_string( filename ), m, flags ) ;
+                GEO::FileSystem::delete_file( filename ) ;
 
                 if( ( i + 1 ) < global_info.number_entry ) {
                     if( unzGoToNextFile( uz ) != UNZ_OK ) {
