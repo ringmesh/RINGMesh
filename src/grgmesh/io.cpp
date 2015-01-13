@@ -38,6 +38,7 @@ namespace GRGMesh {
             std::fstream file( name.c_str(), std::ios::in ) ;
             file.seekg( 0, std::ios::end ) ;
             long size = file.tellg() ;
+            std::cerr << "SIZE " << size << " - " << name << std::endl ;
             file.seekg( 0, std::ios::beg ) ;
             std::vector< char > buffer( size ) ;
             file.read( &buffer[0], size ) ;
@@ -110,20 +111,20 @@ namespace GRGMesh {
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
-            for( index_t i = 0; i < mm.nb_meshes(); i++ ) {
+            for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
                 GEO::MeshIOFlags flags ;
                 flags.set_element( GEO::MESH_CELLS ) ;
-                const GEO::Mesh& m = mm.mesh( i ) ;
-                std::string name_mesh_file = GEO::String::to_string( i ) + ".meshb" ;
-                std::string name_facet_file = GEO::String::to_string( i )
+                const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
+                std::string name_mesh_file = GEO::String::to_string( m ) + ".meshb" ;
+                std::string name_facet_file = GEO::String::to_string( m )
                     + ".facets" ;
 
-                GEO::mesh_save( m, name_mesh_file, flags ) ;
-                std::ofstream out( name_facet_file.c_str() ) ;
+                GEO::mesh_save( cur_mesh, name_mesh_file, flags ) ;
+                std::ofstream out( name_facet_file.c_str(), std::ios::out ) ;
 
-                out << m.nb_facets() << std::endl ;
-                for( index_t j; j < m.nb_facets(); j++ ) {
-                    out << m.facet_region( j ) << std::endl ;
+                out << cur_mesh.nb_facets() << std::endl ;
+                for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
+                    out << cur_mesh.facet_region( f ) << std::endl ;
                 }
                 out.close() ;
 
@@ -148,24 +149,29 @@ namespace GRGMesh {
                 unzClose( uz ) ;
                 return false ;
             }
-            for( index_t i = 0; i < mm.model()->nb_regions(); i++ ) {
+            for( index_t r = 0; r < mm.model()->nb_regions(); r++ ) {
                 char filename[MAX_FILENAME] ;
-                unzip_file(uz, filename) ;
+                unzip_file( uz, filename ) ;
                 GEO::MeshIOFlags flags ;
                 flags.set_element( GEO::MESH_CELLS ) ;
-                GEO::Mesh& m = mm.mesh( i ) ;
-                if (!GEO::mesh_load( GEO::String::to_string( filename ), m, flags ) ) {
-                    GEO::LineInput line(GEO::String::to_string(filename)) ;
-                    GEO::MeshMutator::facet_regions(m).resize(line.field_as_int(0)) ;
-
-                    for(index_t j = 1; j <  line.field_as_int(0) +1 ; j++) {
-                        GEO::MeshMutator::facet_regions(m)[j-1] = line.field_as_int(j) ;
+                GEO::Mesh& m = mm.mesh( r ) ;
+                if( !GEO::mesh_load( GEO::String::to_string( filename ), m,
+                    flags ) ) {
+                    GEO::LineInput line( GEO::String::to_string( filename ) ) ;
+                    line.get_line() ; line.get_fields() ;
+                    index_t nb_facets = line.field_as_uint( 0 ) ;
+                    GEO::vector< signed_index_t >& facet_regions =
+                        GEO::MeshMutator::facet_regions( m ) ;
+                    facet_regions.resize( nb_facets ) ;
+                    for( index_t f = 0; f < nb_facets; f++ ) {
+                        line.get_line() ; line.get_fields() ;
+                        facet_regions[f] = line.field_as_int( 0 ) ;
                     }
-                    line.eof() ;
+                    GEO::MeshMutator::set_attributes( m, GEO::MESH_FACET_REGION ) ;
                 }
                 GEO::FileSystem::delete_file( filename ) ;
 
-                if( ( i + 1 ) < global_info.number_entry ) {
+                if( ( r + 1 ) < global_info.number_entry ) {
                     if( unzGoToNextFile( uz ) != UNZ_OK ) {
                         GEO::Logger::err( "Could not read next file" ) ;
                         unzClose( uz ) ;
