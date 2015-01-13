@@ -17,6 +17,11 @@
 
 #include <grgmesh/common.h>
 #include <grgmesh/macro_mesh.h>
+#include <grgmesh/boundary_model.h>
+
+
+#define MAX_FILENAME 512
+#define READ_SIZE 8192
 class string ;
 
 namespace GRGMesh {
@@ -28,8 +33,12 @@ namespace GRGMesh {
         bool GRGMESH_API load_BoundaryModel_from_Model3D(
             const std::string& filename,
             BoundaryModel& model ) ;
-        bool GRGMESH_API save_macro_mesh( const MacroMesh& mm, const std::string& filename ) ;
-
+        bool GRGMESH_API save_macro_mesh(
+            const MacroMesh& mm,
+            const std::string& filename ) ;
+        bool GRGMESH_API load_macro_mesh(
+            MacroMesh& mm,
+            const std::string& mesh_file) ;
     }
 }
 #endif
