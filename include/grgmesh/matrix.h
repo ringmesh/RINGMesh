@@ -32,7 +32,7 @@ namespace GRGMesh {
     } ;
 
     template< class T >
-    class GRGMESH_API RowImpl {
+    class RowImpl {
     public:
         typedef ElementImpl< T > Element ;
 
@@ -108,7 +108,7 @@ namespace GRGMesh {
     } ;
 
     template< class T >
-    class GRGMESH_API SparseMatrix {
+    class SparseMatrix {
         //todo need to handle symmetric matrix
     public:
         typedef RowImpl< T > Row ;
