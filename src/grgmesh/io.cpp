@@ -19,8 +19,8 @@
 #include <geogram/basic/string.h>
 #include <geogram/basic/file_system.h>
 
-#include <third_party/zip/zip.h>
-#include <third_party/zip/unzip.h>
+#include <third_party/zlib/zip.h>
+#include <third_party/zlib/unzip.h>
 
 #include <iostream>
 #include <fstream>
