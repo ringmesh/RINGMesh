@@ -18,6 +18,10 @@
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/basic/string.h>
 #include <geogram/basic/file_system.h>
+#include <geogram/basic/line_stream.h>
+
+#include <geogram/mesh/mesh_private.h>
+
 
 #include <third_party/zlib/zip.h>
 #include <third_party/zlib/unzip.h>
@@ -28,7 +32,62 @@
 
 namespace GRGMesh {
     namespace GRGMeshIO {
+        void zip_file( zipFile zf, const std::string& name )
+        {
+            zip_fileinfo zfi = { 0 } ;
+            std::fstream file( name.c_str(), std::ios::in ) ;
+            file.seekg( 0, std::ios::end ) ;
+            long size = file.tellg() ;
+            file.seekg( 0, std::ios::beg ) ;
+            std::vector< char > buffer( size ) ;
+            file.read( &buffer[0], size ) ;
+            zipOpenNewFileInZip( zf, name.c_str(), &zfi,
+            NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
+            zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size ) ;
+            zipCloseFileInZip( file ) ;
+            file.close() ;
+        }
 
+        bool unzip_file( unzFile uz, char filename[MAX_FILENAME] )
+        {
+            char read_buffer[ READ_SIZE] ;
+            unz_file_info file_info ;
+            if( unzGetCurrentFileInfo( uz, &file_info, filename,
+            MAX_FILENAME,
+            NULL, 0, NULL, 0 ) != UNZ_OK ) {
+                GEO::Logger::err( "could not read file global info" ) ;
+                unzClose( uz ) ;
+                return false ;
+            }
+            if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
+                GEO::Logger::err( "could not open file" ) ;
+                unzClose( uz ) ;
+                return false ;
+            }
+            FILE *out = fopen( filename, "wb" ) ;
+            if( out == NULL ) {
+                GEO::Logger::err( "could not open destination file" ) ;
+                unzCloseCurrentFile( uz ) ;
+                unzClose( uz ) ;
+                return false ;
+            }
+            int error = UNZ_OK ;
+            do {
+                error = unzReadCurrentFile( uz, read_buffer, READ_SIZE ) ;
+                if( error < 0 ) {
+                    GEO::Logger::err(
+                        "Invalid error: " + GEO::String::to_string( error ) ) ;
+                    unzCloseCurrentFile( uz ) ;
+                    unzClose( uz ) ;
+                    return false ;
+                }
+                if( error > 0 ) {
+                    fwrite( read_buffer, error, 1, out ) ;
+                }
+            } while( error > 0 ) ;
+            fclose( out ) ;
+            unzCloseCurrentFile( uz ) ;
+        }
         bool load_BoundaryModel_from_Model3D(
             const std::string& filename,
             BoundaryModel& model )
@@ -51,25 +110,29 @@ namespace GRGMesh {
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
-            zip_fileinfo zfi = { 0 } ;
             for( index_t i = 0; i < mm.nb_meshes(); i++ ) {
                 GEO::MeshIOFlags flags ;
                 flags.set_element( GEO::MESH_CELLS ) ;
                 const GEO::Mesh& m = mm.mesh( i ) ;
-                std::string name = GEO::String::to_string( i ) + ".meshb" ;
-                GEO::mesh_save( m, name, flags ) ;
-                std::fstream file( name.c_str(), std::ios::in ) ;
-                file.seekg( 0, std::ios::end ) ;
-                long size = file.tellg() ;
-                file.seekg( 0, std::ios::beg ) ;
-                std::vector< char > buffer( size ) ;
-                file.read( &buffer[0], size ) ;
-                zipOpenNewFileInZip( zf, name.c_str(), &zfi,
-                NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
-                zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size ) ;
-                zipCloseFileInZip( file ) ;
-                file.close() ;
-                GEO::FileSystem::delete_file( name ) ;
+                std::string name_mesh_file = GEO::String::to_string( i ) + ".meshb" ;
+                std::string name_facet_file = GEO::String::to_string( i )
+                    + ".facets" ;
+
+                GEO::mesh_save( m, name_mesh_file, flags ) ;
+                std::ofstream out( name_facet_file.c_str() ) ;
+
+                out << m.nb_facets() << std::endl ;
+                for( index_t j; j < m.nb_facets(); j++ ) {
+                    out << m.facet_region( j ) << std::endl ;
+                }
+                out.close() ;
+
+                zip_file( zf, name_mesh_file ) ;
+                zip_file( zf, name_facet_file ) ;
+
+                GEO::FileSystem::delete_file( name_mesh_file ) ;
+                GEO::FileSystem::delete_file( name_facet_file ) ;
+
             }
             zipClose( zf, NULL ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
@@ -85,49 +148,21 @@ namespace GRGMesh {
                 unzClose( uz ) ;
                 return false ;
             }
-            char read_buffer[ READ_SIZE] ;
             for( index_t i = 0; i < mm.model()->nb_regions(); i++ ) {
-                unz_file_info file_info ;
                 char filename[MAX_FILENAME] ;
-                if( unzGetCurrentFileInfo( uz, &file_info, filename,
-                MAX_FILENAME,
-                NULL, 0, NULL, 0 ) != UNZ_OK ) {
-                    GEO::Logger::err( "could not read file global info" ) ;
-                    unzClose( uz ) ;
-                    return false ;
-                }
-                if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
-                    GEO::Logger::err( "could not open file" ) ;
-                    unzClose( uz ) ;
-                    return false ;
-                }
-                FILE *out = fopen( filename, "wb" ) ;
-                if( out == NULL ) {
-                    GEO::Logger::err( "could not open destination file" ) ;
-                    unzCloseCurrentFile( uz ) ;
-                    unzClose( uz ) ;
-                    return false ;
-                }
-                int error = UNZ_OK ;
-                do {
-                    error = unzReadCurrentFile( uz, read_buffer, READ_SIZE ) ;
-                    if( error < 0 ) {
-                        GEO::Logger::err(
-                            "Invalid error: " + GEO::String::to_string( error ) ) ;
-                        unzCloseCurrentFile( uz ) ;
-                        unzClose( uz ) ;
-                        return false ;
-                    }
-                    if( error > 0 ) {
-                        fwrite( read_buffer, error, 1, out ) ;
-                    }
-                } while( error > 0 ) ;
-                fclose( out ) ;
-                unzCloseCurrentFile( uz ) ;
+                unzip_file(uz, filename) ;
                 GEO::MeshIOFlags flags ;
                 flags.set_element( GEO::MESH_CELLS ) ;
                 GEO::Mesh& m = mm.mesh( i ) ;
-                GEO::mesh_load( GEO::String::to_string( filename ), m, flags ) ;
+                if (!GEO::mesh_load( GEO::String::to_string( filename ), m, flags ) ) {
+                    GEO::LineInput line(GEO::String::to_string(filename)) ;
+                    GEO::MeshMutator::facet_regions(m).resize(line.field_as_int(0)) ;
+
+                    for(index_t j = 1; j <  line.field_as_int(0) +1 ; j++) {
+                        GEO::MeshMutator::facet_regions(m)[j-1] = line.field_as_int(j) ;
+                    }
+                    line.eof() ;
+                }
                 GEO::FileSystem::delete_file( filename ) ;
 
                 if( ( i + 1 ) < global_info.number_entry ) {
@@ -141,5 +176,7 @@ namespace GRGMesh {
             unzClose( uz ) ;
 
         }
+
     }
+
 }
