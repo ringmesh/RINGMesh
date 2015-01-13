@@ -1446,17 +1446,22 @@ namespace GRGMesh {
      */
     void BoundaryModelBuilder::make_vertices_unique()
     {
-        std::vector< vec3 > new_vertices ;
-        std::vector< index_t > old2new ;
-        compute_unique_kdtree( model_.vertices_, 10, old2new, new_vertices ) ;
-       
+        MakeUnique unique(  model_.vertices_ ) ;
+        unique.unique( 5 ) ;
         model_.vertices_.resize(0) ;
-        model_.vertices_ = new_vertices ;
+        unique.unique_points( model_.vertices_ ) ;
+        const std::vector< index_t >& old2new = unique.indices() ;
 
         for( index_t s = 0; s < model_.nb_surfaces(); s++ ) {
             Surface& surface = model_.surfaces_[s] ;
             for( index_t p = 0; p < surface.nb_vertices(); p++ ) {
                 surface.vertices_[p] = old2new[surface.vertices_[p]] ;
+            }
+        }
+        for( index_t l = 0; l < model_.nb_lines(); l++ ) {
+            Line& line = model_.lines_[l] ;
+            for( index_t p = 0; p < line.nb_vertices(); p++ ) {
+                line.vertices_[p] = old2new[line.vertices_[p]] ;
             }
         }
         for( index_t co = 0; co < model_.nb_corners(); co++ ) {

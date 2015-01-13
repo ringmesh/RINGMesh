@@ -193,7 +193,7 @@ namespace GRGMesh {
 
             MakeUnique unique( barycenters ) ;
             unique.unique() ;
-            const std::vector< signed_index_t > indices = unique.indices() ;
+            const std::vector< index_t > indices = unique.indices() ;
             GEO::vector< index_t > facet_to_remove( mesh.nb_facets(), 0 ) ;
             signed_index_t cur_id = 0 ;
             for( index_t f = 0; f < mesh.nb_facets(); f++ ) {

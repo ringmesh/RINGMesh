@@ -116,7 +116,7 @@ namespace GRGMesh {
 
     void MacroMesh::unique_points(
         std::vector< vec3 >& unique_vertices,
-        std::vector< int >& indices ) const
+        std::vector< index_t >& indices ) const
     {
         index_t nb_non_unique_vertices = 0 ;
         for( index_t i = 0; i < meshes_.size(); i++ ) {
@@ -143,7 +143,7 @@ namespace GRGMesh {
             return nb_vertices_ ;
         }
         std::vector< vec3 > unique_vertices ;
-        std::vector< int > indices ;
+        std::vector< index_t > indices ;
         unique_points( unique_vertices, indices ) ;
         nb_vertices_ = unique_vertices.size() ;
         return nb_vertices_ ;
