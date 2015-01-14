@@ -13,7 +13,7 @@
 ]*/
  
 
-#ifdef _MSC_VER
+#ifdef WIN32
 
 #pragma section(".CRT$XCU",read)
 #define INITIALIZER(f) \
@@ -30,6 +30,8 @@
 #endif
 
 #include <geogram/basic/common.h>
+#include <geogram/basic/command_line.h>
+#include <geogram/basic/command_line_args.h>
 
 static bool inited = false ;
 INITIALIZER(initialize)
