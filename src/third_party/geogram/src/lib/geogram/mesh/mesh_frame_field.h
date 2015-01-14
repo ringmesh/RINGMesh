@@ -62,7 +62,7 @@ namespace GEO {
      * \brief Represents a 3D frame field, i.e. a function that
      *  associates a 3d orthonormal basis to each point in 3D space.
      */
-    class FrameField {
+    class GEOGRAM_API FrameField {
     public:
         /**
          * \brief Constructs a new uninitialized FrameField.
