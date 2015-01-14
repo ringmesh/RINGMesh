@@ -884,8 +884,8 @@ namespace GRGMesh {
         GEO::NearestNeighborSearch_var ann_tree_ ;
     } ;
 
-    template< class T, signed_index_t n >
-    class GRGMESH_API Array {
+    template< class T, index_t n >
+    class Array {
     public:
         void assign( const std::vector< T >& values )
         {
@@ -918,8 +918,8 @@ namespace GRGMesh {
         T values_[n] ;
     } ;
 
-    template< signed_index_t n >
-    class GRGMESH_API intArrayTmpl: public Array< int, n > {
+    template< index_t n >
+    class intArrayTmpl: public Array< int, n > {
     public:
         intArrayTmpl()
         {
@@ -931,8 +931,8 @@ namespace GRGMesh {
     typedef intArrayTmpl< 6 > intArray ;
     typedef intArrayTmpl< 12 > edgeArray ;
 
-    template< signed_index_t n >
-    class GRGMESH_API boolArrayTmpl: public Array< bool, n > {
+    template< index_t n >
+    class boolArrayTmpl: public Array< bool, n > {
     public:
         boolArrayTmpl()
         {
@@ -943,7 +943,7 @@ namespace GRGMesh {
     } ;
     typedef boolArrayTmpl< 6 > boolArray ;
 
-    class GRGMESH_API Edge: public Array< vec3, 2 > {
+    class Edge: public Array< vec3, 2 > {
     public:
         Edge( const vec3& v0, const vec3& v1 )
         {
