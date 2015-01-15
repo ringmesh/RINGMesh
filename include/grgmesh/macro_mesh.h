@@ -31,9 +31,9 @@ namespace GRGMesh {
 
     class GRGMESH_API MacroMesh {
     public:
-        MacroMesh( const BoundaryModel* model, uint8 dim = 3 ) ;
+        MacroMesh( const BoundaryModel* model, index_t dim = 3 ) ;
         virtual ~MacroMesh() ;
-        void initialize_background_meshes( uint8 dim = 3 ) ;
+        void initialize_background_meshes( index_t dim = 3 ) ;
 
         //    __  __     _   _            _
         //   |  \/  |___| |_| |_  ___  __| |___

@@ -20,7 +20,7 @@
 
 namespace GRGMesh {
 
-    MacroMesh::MacroMesh( const BoundaryModel* model, uint8 dim )
+    MacroMesh::MacroMesh( const BoundaryModel* model, index_t dim )
         :
             model_( model ),
             meshes_( model->nb_regions(), nil ),
@@ -46,7 +46,7 @@ namespace GRGMesh {
         }
     }
 
-    void MacroMesh::initialize_background_meshes( uint8 dim )
+    void MacroMesh::initialize_background_meshes( index_t dim )
     {
         for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
             background_meshes_[r] = new GEO::Mesh( dim ) ;
