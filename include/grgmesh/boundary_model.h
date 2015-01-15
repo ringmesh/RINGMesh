@@ -123,7 +123,7 @@ namespace GRGMesh {
         }
 
         /// \todo Write a proper IO class for Boundary models
-        bool save_gocad_model3d( std::ostream& out ) ;        
+        bool save_gocad_model3d( std::ostream& out ) ;
         void save_as_eobj_file( const std::string& file_name ) ;
 
     private:

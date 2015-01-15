@@ -95,7 +95,8 @@ namespace GRGMesh {
         {
             std::ifstream input( filename.c_str() ) ;
             if( !input ) {
-                std::cout << "cannot open file:" << filename << std::endl ;
+                GEO::Logger::err( "I/O" ) << "Cannot open file : " << filename
+                    << std::endl ;
                 return false ;
             }
 
@@ -103,6 +104,16 @@ namespace GRGMesh {
             builder.load_file( input ) ;
             return true ;
         }
+
+
+        bool save_BoundaryModel(
+            BoundaryModel& model,
+            const std::string& filename )
+        {
+            std::ofstream out( filename.c_str() ) ;
+           return model.save_gocad_model3d( out ) ;
+        }
+
         /// Save a \param[in] macro mesh in a .zip file which contains all the mesh file. Type of the export is
         /// determined by the extension given in \param[in] filename
         bool save_macro_mesh( const MacroMesh& mm, const std::string& filename )
