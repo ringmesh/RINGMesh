@@ -130,7 +130,7 @@ namespace GRGMesh {
                 flags.set_attribute( GEO::MESH_FACET_REGION ) ;
 
                 const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
-                std::string name_mesh_file = GEO::String::to_string( m ) + ".meshb" ;
+                std::string name_mesh_file = "region_" +GEO::String::to_string( m ) + ".meshb" ;
                 GEO::mesh_save( cur_mesh, name_mesh_file, flags ) ;
                 zip_file( zf, name_mesh_file ) ;
 
