@@ -22,7 +22,6 @@
 
 #include <geogram/mesh/mesh_private.h>
 
-
 #include <third_party/zlib/zip.h>
 #include <third_party/zlib/unzip.h>
 
@@ -38,7 +37,6 @@ namespace GRGMesh {
             std::fstream file( name.c_str(), std::ios::in ) ;
             file.seekg( 0, std::ios::end ) ;
             long size = file.tellg() ;
-            std::cerr << "SIZE " << size << " - " << name << std::endl ;
             file.seekg( 0, std::ios::beg ) ;
             std::vector< char > buffer( size ) ;
             file.read( &buffer[0], size ) ;
@@ -93,6 +91,13 @@ namespace GRGMesh {
             const std::string& filename,
             BoundaryModel& model )
         {
+            if( filename.empty() ) {
+                GEO::Logger::err( "I/O" )
+                    << "No filename provided for structural model, use in:model"
+                    << std::endl ;
+                return false ;
+            }
+
             std::ifstream input( filename.c_str() ) ;
             if( !input ) {
                 GEO::Logger::err( "I/O" ) << "Cannot open file : " << filename
@@ -105,13 +110,10 @@ namespace GRGMesh {
             return true ;
         }
 
-
-        bool save_BoundaryModel(
-            BoundaryModel& model,
-            const std::string& filename )
+        bool save_BoundaryModel( BoundaryModel& model, const std::string& filename )
         {
             std::ofstream out( filename.c_str() ) ;
-           return model.save_gocad_model3d( out ) ;
+            return model.save_gocad_model3d( out ) ;
         }
 
         /// Save a \param[in] macro mesh in a .zip file which contains all the mesh file. Type of the export is
@@ -124,27 +126,15 @@ namespace GRGMesh {
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
             for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
                 GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MeshElements( GEO::MESH_CELLS | GEO::MESH_FACETS ) ) ;
+                flags.set_element( GEO::MESH_CELLS ) ;
+                flags.set_attribute( GEO::MESH_FACET_REGION ) ;
 
                 const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
                 std::string name_mesh_file = GEO::String::to_string( m ) + ".meshb" ;
-                std::string name_facet_file = GEO::String::to_string( m )
-                    + ".facets" ;
-
                 GEO::mesh_save( cur_mesh, name_mesh_file, flags ) ;
-                std::ofstream out( name_facet_file.c_str(), std::ios::out ) ;
-
-                out << cur_mesh.nb_facets() << std::endl ;
-                for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
-                    out << cur_mesh.facet_region( f ) << std::endl ;
-                }
-                out.close() ;
-
                 zip_file( zf, name_mesh_file ) ;
-                zip_file( zf, name_facet_file ) ;
 
                 GEO::FileSystem::delete_file( name_mesh_file ) ;
-                GEO::FileSystem::delete_file( name_facet_file ) ;
 
             }
             zipClose( zf, NULL ) ;
@@ -165,32 +155,14 @@ namespace GRGMesh {
                 char filename[MAX_FILENAME] ;
                 unzip_file( uz, filename ) ;
                 GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MeshElements( GEO::MESH_CELLS | GEO::MESH_FACETS ) ) ;
+                flags.set_element( GEO::MESH_CELLS ) ;
+                flags.set_attribute( GEO::MESH_FACET_REGION ) ;
                 GEO::Mesh& m = mm.mesh( r ) ;
-                GEO::MeshMutator::set_attributes( m, GEO::MESH_FACET_REGION ) ;
-                std::string ext = GEO::FileSystem::extension(filename) ;
-                if( ext == "meshb") {
-                    GEO::mesh_load( GEO::String::to_string( filename ), m,
-                                        flags) ;
-                }
-                else if(ext == "facets") {
-                    /*
-                    GEO::LineInput line( GEO::String::to_string( filename ) ) ;
-                    line.get_line() ; line.get_fields() ;
-                    index_t nb_facets = line.field_as_uint( 0 ) ;
-                    GEO::vector< signed_index_t >& facet_regions =
-                        GEO::MeshMutator::facet_regions( m ) ;
-                    facet_regions.resize( nb_facets ) ;
-                    for( index_t f = 0; f < nb_facets; f++ ) {
-                        line.get_line() ; line.get_fields() ;
-                        facet_regions[f] = line.field_as_int( 0 ) ;
-                    }
-                    GEO::MeshMutator::set_attributes( m, GEO::MESH_FACET_REGION ) ;
-                    */
-                }
-                else {
-                    std::cout << ext << std::endl ;
-                    grgmesh_assert_not_reached ;
+                std::string ext = GEO::FileSystem::extension( filename ) ;
+                if( ext == "meshb" ) {
+                    GEO::mesh_load( GEO::String::to_string( filename ), m, flags ) ;
+                } else {
+                    grgmesh_assert_not_reached;
                 }
                 GEO::FileSystem::delete_file( filename ) ;
 
