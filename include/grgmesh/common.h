@@ -34,6 +34,8 @@
 
 #ifndef NDEBUG
 #   define GRGMESH_DEBUG
+#else
+#   undef GRGMESH_DEBUG
 #endif
 
 #ifdef WIN32
