@@ -124,7 +124,8 @@ namespace GRGMesh {
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
             for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
                 GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MESH_CELLS ) ;
+                flags.set_element( GEO::MeshElements( GEO::MESH_CELLS | GEO::MESH_FACETS ) ) ;
+
                 const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
                 std::string name_mesh_file = GEO::String::to_string( m ) + ".meshb" ;
                 std::string name_facet_file = GEO::String::to_string( m )
@@ -164,10 +165,16 @@ namespace GRGMesh {
                 char filename[MAX_FILENAME] ;
                 unzip_file( uz, filename ) ;
                 GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MESH_CELLS ) ;
+                flags.set_element( GEO::MeshElements( GEO::MESH_CELLS | GEO::MESH_FACETS ) ) ;
                 GEO::Mesh& m = mm.mesh( r ) ;
-                if( !GEO::mesh_load( GEO::String::to_string( filename ), m,
-                    flags ) ) {
+                GEO::MeshMutator::set_attributes( m, GEO::MESH_FACET_REGION ) ;
+                std::string ext = GEO::FileSystem::extension(filename) ;
+                if( ext == "meshb") {
+                    GEO::mesh_load( GEO::String::to_string( filename ), m,
+                                        flags) ;
+                }
+                else if(ext == "facets") {
+                    /*
                     GEO::LineInput line( GEO::String::to_string( filename ) ) ;
                     line.get_line() ; line.get_fields() ;
                     index_t nb_facets = line.field_as_uint( 0 ) ;
@@ -179,6 +186,11 @@ namespace GRGMesh {
                         facet_regions[f] = line.field_as_int( 0 ) ;
                     }
                     GEO::MeshMutator::set_attributes( m, GEO::MESH_FACET_REGION ) ;
+                    */
+                }
+                else {
+                    std::cout << ext << std::endl ;
+                    grgmesh_assert_not_reached ;
                 }
                 GEO::FileSystem::delete_file( filename ) ;
 
