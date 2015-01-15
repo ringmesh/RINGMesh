@@ -39,11 +39,12 @@ INITIALIZER(initialize)
     if( !inited ) {
         inited = true ;
         GEO::initialize() ;
-        GEO::CmdLine::import_arg_group( "standard" ) ;
-        GEO::CmdLine::import_arg_group( "algo" ) ;
-        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
+        GEO::CmdLine::import_arg_group( "sys" ) ;
         GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
         GEO::CmdLine::set_arg( "sys:FPE", false ) ;
+        GEO::CmdLine::import_arg_group( "algo" ) ;
+        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
+        GEO::CmdLine::import_arg_group( "log" ) ;
     }
 }
 
