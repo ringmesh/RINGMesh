@@ -36,10 +36,7 @@
 static bool inited = false ;
 INITIALIZER(initialize)
 {
-    std::cout << "cc" << std::endl ;
     if( !inited ) {
-        std::cout << "cc" << std::endl ;
-
         inited = true ;
         GEO::initialize() ;
         GEO::CmdLine::import_arg_group( "sys" ) ;
