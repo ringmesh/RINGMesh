@@ -32,6 +32,8 @@
 #include <grgmesh/boundary_model.h>
 #include <grgmesh/utils.h>
 
+#include <geogram/basic/logger.h>
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -227,7 +229,7 @@ namespace GRGMesh {
         /// 3. Check that the Universe region exists 
         /// \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
         if( universe_.name() != "Universe" ) {
-            std::cout <<  "Error"
+            GEO::Logger::err( "" )
                 << "The region universe is not defined for the model. IMPLEMENTATION TO DO"
                 << std::endl ;
             return false ;
@@ -243,7 +245,7 @@ namespace GRGMesh {
                 builder.set_name( region, name.str() ) ;
             }
             if( region.nb_boundaries() == 0 ) {
-                std::cout << "Error"  << " The region " << region.name()
+                GEO::Logger::err("") << "The region " << region.name()
                     << " has no Surfaces on its boundary" << std::endl ;
                 return false ;
             }
@@ -253,7 +255,7 @@ namespace GRGMesh {
         /// \todo Implement a triangulation function in SurfaceMutator         
         for( index_t s = 0; s < nb_surfaces(); s++ ) {
             if( !surfaces_[s].is_triangulated() ) {
-                std::cout<< "Error" << "Surface "<< s << " is not triangulated" << std::endl ;
+                GEO::Logger::err("") << "Surface "<< s << " is not triangulated" << std::endl ;
                 return false ;
             }
         }               
@@ -344,7 +346,7 @@ namespace GRGMesh {
     {
         out.precision( 16 ) ;
         if( !check_model3d_compatibility() ) {
-            std::cout << "Error"  << "The BoundaryModel " << name_
+            GEO::Logger::err("") << "The BoundaryModel " << name_
                 << " cannot be saved in .ml format " << std::endl ;
             return false ;
         }
@@ -767,6 +769,9 @@ namespace GRGMesh {
      */
     void BoundaryModelBuilder::copy_macro_topology( const BoundaryModel* from )
     {
+        model_.name_ = from->name_ ;
+        model_.vertex_attribute_manager_ = from->vertex_attribute_manager_ ;
+        model_.facet_attribute_manager_ = from->facet_attribute_manager_ ;
         model_.corners_.resize( from->nb_corners(), Corner( &model_ ) ) ;
         model_.lines_.resize( from->nb_lines(), Line( &model_ ) ) ;
         model_.surfaces_.resize( from->nb_surfaces(), Surface( &model_ ) ) ;
@@ -1159,8 +1164,10 @@ namespace GRGMesh {
         end_model() ;
         
         time( &end_load ) ;
+#ifdef GRGMESH_DEBUG
         std::cout << "Info" << " Boundary model loading time"
-            << difftime( end_load, start_load ) << " sec" << std::endl ;        
+            << difftime( end_load, start_load ) << " sec" << std::endl ;
+#endif
     }
 
     /*!
@@ -1788,6 +1795,7 @@ namespace GRGMesh {
             model_.nb_facets_in_surfaces_[i] = count ;
         }
 
+#ifdef GRGMESH_DEBUG
         std::cout << "Model " << model_.name() <<" has " << std::endl 
             << std::setw(10) << std::left << model_.nb_vertices()   << " vertices "   << std::endl 
             << std::setw(10) << std::left << model_.nb_facets()   << " facets "   << std::endl  
@@ -1796,6 +1804,7 @@ namespace GRGMesh {
             << std::setw(10) << std::left << model_.nb_lines()    << " lines "    << std::endl 
             << std::setw(10) << std::left << model_.nb_corners()  << " corners "  << std::endl
             << std::endl ;
+#endif
     }                                                                          
 
 
