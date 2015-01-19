@@ -145,7 +145,7 @@ namespace GRGMesh {
         std::vector< vec3 >& unique_vertices )
     {
         const Surface& surface = model_->surface( surface_id ) ;
-        vec3 vertices_on_surfaces[surface.nb_vertices()] ;
+        vec3* vertices_on_surfaces = new vec3[surface.nb_vertices()] ;
         for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
             vertices_on_surfaces[v] = model_->surface( surface_id ).vertex( v ) ;
             bool spy = false ;
