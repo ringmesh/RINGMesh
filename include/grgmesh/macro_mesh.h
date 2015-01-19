@@ -45,11 +45,9 @@ namespace GRGMesh {
             int region_id = -1,
             bool add_steiner_points = true ) ;
 
-
         void unique_points(
             std::vector< vec3 >& unique_vertices,
             std::vector< index_t >& indices ) const ;
-
 
         const GEO::MeshFacetsAABB& facet_aabb( index_t region ) ;
         void init_facet_aabb( index_t region ) ;
@@ -83,17 +81,20 @@ namespace GRGMesh {
         {
             return meshes_.size() ;
         }
-        std::vector< vec3 >& vertices( index_t region ) {
+        std::vector< vec3 >& vertices( index_t region )
+        {
             return vertices_[region] ;
         }
-        const std::vector< vec3 >& vertices( index_t region ) const {
+        const std::vector< vec3 >& vertices( index_t region ) const
+        {
             return vertices_[region] ;
         }
         std::vector< std::vector< Edge > >& well_vertices( index_t region )
         {
             return well_vertices_[region] ;
         }
-        const std::vector< std::vector< Edge > >& well_vertices( index_t region ) const
+        const std::vector< std::vector< Edge > >& well_vertices(
+            index_t region ) const
         {
             return well_vertices_[region] ;
         }
@@ -101,7 +102,10 @@ namespace GRGMesh {
         {
             return model_ ;
         }
-      
+        void surface_vertices_global_id(
+            index_t surface_id,
+            index_t* indices,
+            std::vector< vec3 >& unique_vertices ) ;
         index_t nb_vertices() ;
 
     protected:
