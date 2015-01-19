@@ -146,8 +146,6 @@ namespace GRGMesh {
         sides_ = rhs.sides_ ;
         in_boundary_ = rhs.in_boundary_ ;
         children_ = rhs.children_ ;
-        vertex_attribute_manager_ = rhs.vertex_attribute_manager_ ;
-        facet_attribute_manager_ = rhs.facet_attribute_manager_ ;
     }
   
     /*!

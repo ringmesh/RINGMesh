@@ -37,6 +37,7 @@
 #include <vector>
 #include <map>
 #include <typeinfo>
+#include <fstream>
 
 namespace GRGMesh {
 
@@ -50,19 +51,25 @@ namespace GRGMesh {
     public:
         byte* data( index_t id)
         {
+            grgmesh_debug_assert( id < nb_elements_ ) ;
             return &data_[id * item_size_] ;
         }
         virtual const std::type_info& attribute_type_id() const = 0 ;
-        index_t size() const { return data_.size() / item_size_ ; }
+        index_t size() const { return nb_elements_ ; }
         index_t item_size() const { return item_size_ ; }
     protected:
         AttributeStore( index_t item_size, index_t size )
-            : item_size_( item_size ), data_( item_size * size )
+            : item_size_( item_size ), nb_elements_( size ), data_( nil )
         {
+            data_ = new byte[item_size * size] ;
+        }
+        virtual ~AttributeStore() {
+            delete[] data_ ;
         }
     protected:
         index_t item_size_ ;
-        std::vector< byte > data_ ;
+        byte* data_ ;
+        index_t nb_elements_ ;
     } ;
 
     typedef GEO::SmartPointer< AttributeStore > AttributeStore_var ;
@@ -188,11 +195,11 @@ namespace GRGMesh {
         {
             if( manager->named_attribute_is_bound( name ) ) {
                 store_ = resolve_named_attribute_store( manager, name ) ;
-                grgmesh_debug_assert( store_ != nil ) ;
+                grgmesh_assert( store_ != nil ) ;
                 // Sanity check, checks the attribute type.
                 AttributeStore* check_type = store_ ;
-                grgmesh_debug_assert(
-                    dynamic_cast< AttributeStore* >( check_type ) != nil ) ;
+                grgmesh_assert(
+                    dynamic_cast< Store* >( check_type ) != nil ) ;
             } else {
                 store_ = new Store( size ) ;
                 bind_named_attribute_store( manager, name, store_ ) ;
@@ -221,7 +228,7 @@ namespace GRGMesh {
         static bool is_defined( Manager* manager, const std::string& name )
         {
             return ( manager->named_attribute_is_bound( name )
-                && dynamic_cast< AttributeStore* >( resolve_named_attribute_store(
+                && dynamic_cast< Store* >( resolve_named_attribute_store(
                     manager, name ) ) != nil ) ;
         }
 
