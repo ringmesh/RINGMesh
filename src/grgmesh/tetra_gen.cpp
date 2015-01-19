@@ -388,7 +388,7 @@ tetgenio::init( P ) ;
         std::ostringstream cmd_line ;
         cmd_line << "QpYfnn" ;
         if( add_steiner_points ) {
-            cmd_line << "q" ;
+            cmd_line << "q1" ;
             if( use_background_mesh ) {
                 cmd_line << "m" ;
             } else {
@@ -521,7 +521,7 @@ tetgenio::init( P ) ;
         }
 
 
-        tetmesh_builder_.end_mesh() ;
+        tetmesh_builder_.end_mesh( false, true ) ;
         Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
 
         /*

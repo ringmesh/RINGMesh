@@ -300,9 +300,9 @@ namespace GRGMesh {
      * @brief Attribute on the vertices of a Line
      */
     template< class ATTRIBUTE >
-    class LineVertexAttribute: public Attribute< Line::VERTEX, ATTRIBUTE > {
+    class LineVertexAttribute: public Attribute< BoundaryModelElement::VERTEX, ATTRIBUTE > {
     public:
-        typedef Attribute< Line::VERTEX, ATTRIBUTE > superclass ;
+        typedef Attribute< BoundaryModelElement::VERTEX, ATTRIBUTE > superclass ;
 
         void bind( const Line* line, const std::string& name )
         {
@@ -340,9 +340,9 @@ namespace GRGMesh {
      * @brief Attribute on the segments of a Line
      */
     template< class ATTRIBUTE >
-    class LineFacetAttribute: public Attribute< Line::FACET, ATTRIBUTE > {
+    class LineFacetAttribute: public Attribute< BoundaryModelElement::FACET, ATTRIBUTE > {
     public:
-        typedef Attribute< Line::FACET, ATTRIBUTE > superclass ;
+        typedef Attribute< BoundaryModelElement::FACET, ATTRIBUTE > superclass ;
 
         void bind( const Line* line, const std::string& name )
         {
@@ -623,9 +623,9 @@ namespace GRGMesh {
      * @brief Attribute on the vertices of a Surface
      */
     template< class ATTRIBUTE >
-    class SurfaceVertexAttribute: public Attribute< Surface::VERTEX, ATTRIBUTE > {
+    class SurfaceVertexAttribute: public Attribute< BoundaryModelElement::VERTEX, ATTRIBUTE > {
     public:
-        typedef Attribute< Surface::VERTEX, ATTRIBUTE > superclass ;
+        typedef Attribute< BoundaryModelElement::VERTEX, ATTRIBUTE > superclass ;
 
         void bind( const Surface* surface, const std::string& name )
         {
@@ -663,9 +663,9 @@ namespace GRGMesh {
      * @brief Attribute on the facets of a Surface
      */
     template< class ATTRIBUTE >
-    class SurfaceFacetAttribute: public Attribute< Surface::FACET, ATTRIBUTE > {
+    class SurfaceFacetAttribute: public Attribute< BoundaryModelElement::FACET, ATTRIBUTE > {
     public:
-        typedef Attribute< Surface::FACET, ATTRIBUTE > superclass ;
+        typedef Attribute< BoundaryModelElement::FACET, ATTRIBUTE > superclass ;
 
         void bind( const Surface* surface, const std::string& name )
         {

@@ -16,6 +16,7 @@
 #include <grgmesh/boundary_model.h>
 #include <grgmesh/tetra_gen.h>
 
+#include <geogram/basic/progress.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
 
@@ -25,8 +26,6 @@ namespace GRGMesh {
         :
             model_( model ),
             meshes_( model->nb_regions(), nil ),
-            background_meshes_( model->nb_regions(), nil ),
-            vertices_( model->nb_regions() ),
             well_vertices_( model->nb_regions() ),
             nb_vertices_( -1 ),
             facet_aabb_( model->nb_regions(), nil ),
@@ -41,16 +40,8 @@ namespace GRGMesh {
     {
         for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
             delete meshes_[r] ;
-            if( background_meshes_[r] ) delete background_meshes_[r] ;
             if( facet_aabb_[r] ) delete facet_aabb_[r] ;
             if( tet_aabb_[r] ) delete tet_aabb_[r] ;
-        }
-    }
-
-    void MacroMesh::initialize_background_meshes( index_t dim )
-    {
-        for( unsigned int r = 0; r < model_->nb_regions(); r++ ) {
-            background_meshes_[r] = new GEO::Mesh( dim ) ;
         }
     }
 
@@ -97,20 +88,32 @@ namespace GRGMesh {
     void MacroMesh::compute_tetmesh(
         const TetraMethod& method,
         int region_id,
-        bool add_steiner_points )
+        bool add_steiner_points,
+        MacroMesh* background,
+        std::vector< std::vector< vec3 > >& internal_vertices )
     {
         if( region_id == -1 ) {
+            GEO::ProgressTask progress( "Compute", nb_meshes() ) ;
             for( unsigned int i = 0; i < nb_meshes(); i++ ) {
+                GEO::Mesh* background_mesh =
+                    background ? &background->mesh( i ) : nil ;
+                const std::vector< vec3 >& vertices =
+                    internal_vertices.empty() ? empty_vector : internal_vertices[i] ;
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
-                    &model_->region( i ), add_steiner_points, vertices( i ),
-                    well_vertices( i ), background_mesh( i ) ) ;
+                    &model_->region( i ), add_steiner_points, vertices,
+                    well_vertices( i ), background_mesh ) ;
                 tetragen->tetrahedralize() ;
+                progress.next() ;
             }
         } else {
+            GEO::Mesh* background_mesh =
+                background ? &background->mesh( region_id ) : nil ;
+            const std::vector< vec3 >& vertices =
+                internal_vertices.empty() ?
+                    empty_vector : internal_vertices[region_id] ;
             TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
-                &model_->region( region_id ), add_steiner_points,
-                vertices( region_id ), well_vertices( region_id ),
-                background_mesh( region_id ) ) ;
+                &model_->region( region_id ), add_steiner_points, vertices,
+                well_vertices( region_id ), background_mesh ) ;
             tetragen->tetrahedralize() ;
         }
     }

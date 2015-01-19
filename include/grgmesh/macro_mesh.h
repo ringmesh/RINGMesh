@@ -29,11 +29,11 @@ namespace GRGMesh {
 
     class BoundaryModel ;
 
+    static std::vector< std::vector< vec3 > > empty_vertices ;
     class GRGMESH_API MacroMesh {
     public:
         MacroMesh( const BoundaryModel* model, index_t dim = 3 ) ;
         virtual ~MacroMesh() ;
-        void initialize_background_meshes( index_t dim = 3 ) ;
 
         //    __  __     _   _            _
         //   |  \/  |___| |_| |_  ___  __| |___
@@ -43,7 +43,10 @@ namespace GRGMesh {
         void compute_tetmesh(
             const TetraMethod& method,
             int region_id = -1,
-            bool add_steiner_points = true ) ;
+            bool add_steiner_points = true,
+            MacroMesh* background = nil,
+            std::vector< std::vector< vec3 > >& internal_vertices =
+                empty_vertices ) ;
 
         void unique_points(
             std::vector< vec3 >& unique_vertices,
@@ -69,32 +72,15 @@ namespace GRGMesh {
         {
             return *meshes_[region] ;
         }
-        GEO::Mesh* background_mesh( index_t region )
-        {
-            return background_meshes_[region] ;
-        }
-        const GEO::Mesh* background_mesh( index_t region ) const
-        {
-            return background_meshes_[region] ;
-        }
         index_t nb_meshes() const
         {
             return meshes_.size() ;
-        }
-        std::vector< vec3 >& vertices( index_t region )
-        {
-            return vertices_[region] ;
-        }
-        const std::vector< vec3 >& vertices( index_t region ) const
-        {
-            return vertices_[region] ;
         }
         std::vector< std::vector< Edge > >& well_vertices( index_t region )
         {
             return well_vertices_[region] ;
         }
-        const std::vector< std::vector< Edge > >& well_vertices(
-            index_t region ) const
+        const std::vector< std::vector< Edge > >& well_vertices( index_t region ) const
         {
             return well_vertices_[region] ;
         }
@@ -113,10 +99,6 @@ namespace GRGMesh {
         const BoundaryModel* model_ ;
         /// Vector of meshes, one by region
         std::vector< GEO::Mesh* > meshes_ ;
-        /// Vector of background meshes, one by region
-        std::vector< GEO::Mesh* > background_meshes_ ;
-        /// Vector of constrained vertices, one vector by region
-        std::vector< std::vector< vec3 > > vertices_ ;
         /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
         std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
 

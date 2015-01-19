@@ -770,8 +770,6 @@ namespace GRGMesh {
     void BoundaryModelBuilder::copy_macro_topology( const BoundaryModel* from )
     {
         model_.name_ = from->name_ ;
-        model_.vertex_attribute_manager_ = from->vertex_attribute_manager_ ;
-        model_.facet_attribute_manager_ = from->facet_attribute_manager_ ;
         model_.corners_.resize( from->nb_corners(), Corner( &model_ ) ) ;
         model_.lines_.resize( from->nb_lines(), Line( &model_ ) ) ;
         model_.surfaces_.resize( from->nb_surfaces(), Surface( &model_ ) ) ;
