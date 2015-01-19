@@ -141,27 +141,18 @@ namespace GRGMesh {
 
     void MacroMesh::surface_vertices_global_id(
         index_t surface_id,
-        index_t* indices,
+        std::vector<index_t>& indices,
         std::vector< vec3 >& unique_vertices )
     {
-        const Surface& surface = model_->surface( surface_id ) ;
-        vec3* vertices_on_surfaces = new vec3[surface.nb_vertices()] ;
-        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-            vertices_on_surfaces[v] = model_->surface( surface_id ).vertex( v ) ;
-            bool spy = false ;
-            for( index_t abs_v = 0; abs_v < unique_vertices.size(); abs_v++ ) {
-                if( vertices_on_surfaces[v].distance(unique_vertices[abs_v]) < 1e-3) {
-                    indices[v] = abs_v ;
-                    spy = true ;
-                    break ;
-                }
-            }
-            if( !spy) {
-                GEO::Logger::err("error") << "Vertex is not in the global vector" << std::endl ;
-                grgmesh_assert_not_reached ;
-            }
-        }
+        ColocaterANN ann(unique_vertices) ;
 
+        const Surface& surface = model_->surface( surface_id ) ;
+        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+            vec3 cur_v = surface.vertex(v) ;
+                std::vector<index_t> results ;
+                ann.get_colocated( cur_v, 1, results ) ;
+                indices.push_back(results[0]) ;
+        }
     }
     index_t MacroMesh::nb_vertices()
     {

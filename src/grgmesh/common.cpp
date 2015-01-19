@@ -45,6 +45,7 @@ INITIALIZER(initialize)
         GEO::CmdLine::import_arg_group( "algo" ) ;
         GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
         GEO::CmdLine::import_arg_group( "log" ) ;
+        GEO::CmdLine::set_arg("sys:use_doubles",true) ;
     }
 }
 

@@ -104,7 +104,7 @@ namespace GRGMesh {
         }
         void surface_vertices_global_id(
             index_t surface_id,
-            index_t* indices,
+            std::vector<index_t>& indices,
             std::vector< vec3 >& unique_vertices ) ;
         index_t nb_vertices() ;
 

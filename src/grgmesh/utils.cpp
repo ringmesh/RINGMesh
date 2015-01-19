@@ -1059,18 +1059,6 @@ namespace GRGMesh {
         ann_tree_->set_points(nb_vertices, ann_points) ;
     }
 
-    void ColocaterANN::get_mapped_colocated(
-        vec3& v,
-        std::vector< index_t >& result,
-        index_t nb_neighbors )
-    {
-        grgmesh_debug_assert( !mapped_indices_.empty() ) ;
-        get_colocated( v, nb_neighbors , result ) ;
-        for( index_t i = 0; i < result.size(); i++ ) {
-            result[i] = mapped_indices_[result[i]] ;
-        }
-    }
-
     bool ColocaterANN::get_colocated(
         const vec3& v,
         index_t nb_neighbors,
