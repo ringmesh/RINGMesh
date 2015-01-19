@@ -854,11 +854,6 @@ namespace GRGMesh {
         {
         }
 
-        void get_mapped_colocated(
-            vec3& v,
-            std::vector< index_t >& result,
-            index_t nb_neighbors = 2 ) ;
-
         bool get_colocated(
             const vec3& v,
             index_t nb_neighbors,
@@ -880,7 +875,6 @@ namespace GRGMesh {
         }
 
     private:
-        std::vector< signed_index_t > mapped_indices_ ;
         GEO::NearestNeighborSearch_var ann_tree_ ;
     } ;
 
