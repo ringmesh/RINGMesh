@@ -34,7 +34,6 @@
 
 #include "shewchuk.h"
 
-namespace GEO_3rdParty { // [Bruno]
 
 #ifdef WIN32
 #define random rand // [Bruno]
@@ -152,6 +151,8 @@ So we don't do anything */
 #endif
 #endif 
 
+
+namespace GEO_3rdParty { // [Bruno]
 
 /* On some machines, the exact arithmetic routines might be defeated by the  */
 /*   use of internal extended precision floating-point registers.  Sometimes */
