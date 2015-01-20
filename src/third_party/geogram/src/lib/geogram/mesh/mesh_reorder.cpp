@@ -1070,6 +1070,10 @@ namespace GEO {
         index_t last,
         index_t stride
     ) {
+        geo_debug_assert(last > first);
+        if(last - first <= 1) {
+            return;
+        }
         VertexArray M(nb_vertices, vertices, stride);
         HilbertSort<Hilbert_vcmp, VertexArray>(
             M, sorted_indices.begin() + first,

@@ -34,6 +34,8 @@
 
 #include "shewchuk.h"
 
+namespace GEO_3rdParty { // [Bruno]
+
 #ifdef WIN32
 #define random rand // [Bruno]
 #endif
@@ -4750,3 +4752,6 @@ REAL orient4d(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe,
                       aheight, bheight, cheight, dheight, eheight, permanent);
 }
 
+
+} // namespace GEO_3rdParty [Bruno]
+    

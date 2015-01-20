@@ -322,7 +322,7 @@ void nlSparseMatrixCompress( NLSparseMatrix* M) {
     nl_assert(M->storage & NL_MATRIX_STORE_ROWS);
     nl_assert(!(M->storage & NL_MATRIX_STORE_SYMMETRIC));
     nl_assert(!(M->storage & NL_MATRIX_STORE_COMPRESSED));
-    
+
     nlSparseMatrixSort(M);
 
     /* Copy dynamic sparse matrix into compressed row storage */

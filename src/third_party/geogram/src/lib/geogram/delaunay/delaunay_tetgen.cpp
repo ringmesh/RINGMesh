@@ -97,7 +97,7 @@ namespace GEO {
         tetgen_in_.numberofpoints = (int)nb_vertices;
         tetgen_in_.pointlist = (double*)vertices;
         try {
-            ::tetrahedralize(&tetgen_args_, &tetgen_in_, &tetgen_out_);
+            GEO_3rdParty::tetrahedralize(&tetgen_args_, &tetgen_in_, &tetgen_out_);
         }
         catch(...) {
             Logger::err("DelaunayTetgen")
@@ -177,17 +177,17 @@ namespace GEO {
         //
 
         // All the polygons are allocated in one go, in a contiguous array.
-        tetgenio::polygon* polygons = 
-            new tetgenio::polygon[constraints_->nb_facets()];
+        GEO_3rdParty::tetgenio::polygon* polygons = 
+            new GEO_3rdParty::tetgenio::polygon[constraints_->nb_facets()];
         tetgen_in_.numberoffacets = int(constraints_->nb_facets()) ;
-        tetgen_in_.facetlist = new tetgenio::facet[tetgen_in_.numberoffacets];
+        tetgen_in_.facetlist = new GEO_3rdParty::tetgenio::facet[tetgen_in_.numberoffacets];
         for(index_t f=0; f<constraints_->nb_facets(); ++f) {
-            tetgenio::facet& F = tetgen_in_.facetlist[f];
-            tetgenio::init(&F);
+            GEO_3rdParty::tetgenio::facet& F = tetgen_in_.facetlist[f];
+            GEO_3rdParty::tetgenio::init(&F);
             F.numberofpolygons = 1;
             F.polygonlist = &polygons[f];
-            tetgenio::polygon& P = F.polygonlist[0];
-            tetgenio::init(&P) ;
+            GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[0];
+            GEO_3rdParty::tetgenio::init(&P) ;
             P.numberofvertices = int(constraints_->facet_size(f));
             P.vertexlist = reinterpret_cast<int*>(
                 const_cast<Mesh*>(constraints_)->corner_vertex_index_ptr(
@@ -198,7 +198,7 @@ namespace GEO {
             F.holelist = nil ;
         }
         try {
-            ::tetrahedralize(&tetgen_args_, &tetgen_in_, &tetgen_out_);
+            GEO_3rdParty::tetrahedralize(&tetgen_args_, &tetgen_in_, &tetgen_out_);
         } catch(std::exception& e) {
             Logger::err("DelaunayTetgen")
                 << "Encountered a problem..." << e.what() << std::endl;

@@ -72,6 +72,7 @@ namespace {
     GLboolean show_volume = GL_FALSE;
     GLboolean show_vertices = GL_FALSE;
     GLboolean lighting = GL_TRUE;
+    GLboolean hexes = GL_TRUE;
     GLfloat   shrink = 0.0;
     GLboolean colored_cells = GL_FALSE;
     
@@ -1063,6 +1064,7 @@ namespace {
         glut_viewer_disable(GLUT_VIEWER_TWEAKBARS);
         glut_viewer_disable(GLUT_VIEWER_BACKGROUND);
         glut_viewer_add_key_func('m', toggle_mesh, "mesh");
+        glut_viewer_add_toggle('j', &hexes, "hexes");
     }
 
     /**
@@ -1277,10 +1279,12 @@ namespace {
             glPatchParameterfv(GL_PATCH_DEFAULT_OUTER_LEVEL, levels);
 
             // Draw the hexes
-            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colors[PRG_HEX]);                    
-            glPatchParameteri(GL_PATCH_VERTICES,8);            
-            glUseProgram(programs[PRG_HEX]);
-            draw_mesh_cells_as_opengl_elements(GEO::MESH_HEX, GL_PATCHES);
+            if(hexes) {
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colors[PRG_HEX]);                    
+                glPatchParameteri(GL_PATCH_VERTICES,8);            
+                glUseProgram(programs[PRG_HEX]);
+                draw_mesh_cells_as_opengl_elements(GEO::MESH_HEX, GL_PATCHES);
+            }
 
             // Draw the pyramids
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colors[PRG_PYRAMID]);                                
@@ -1297,28 +1301,30 @@ namespace {
             // This uses one OpenGL call per point
             // The vertex puller, i.e. the indexing into vertices array performed
             // by glDrawElements(), cannot be used.
-            
-            // Draw the hexes, using GL_POINTS
-            // with 8 generic attributes (unfortunately,
-            // there is no standard OpenGL primitive with 8 vertices).
-            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colors[PRG_HEX]);                                            
-            glUseProgram(programs[PRG_HEX]);
-            glBegin(GL_POINTS);
-            for(GEO::index_t c=0; c<M.nb_cells(); ++c) {
-                if(M.cell_type(c) == GEO::MESH_HEX) {
-                    for(GEO::index_t i=1; i<8; ++i) {
+
+            if(hexes) {
+                // Draw the hexes, using GL_POINTS
+                // with 8 generic attributes (unfortunately,
+                // there is no standard OpenGL primitive with 8 vertices).
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colors[PRG_HEX]);                                            
+                glUseProgram(programs[PRG_HEX]);
+                glBegin(GL_POINTS);
+                for(GEO::index_t c=0; c<M.nb_cells(); ++c) {
+                    if(M.cell_type(c) == GEO::MESH_HEX) {
+                        for(GEO::index_t i=1; i<8; ++i) {
+                            glVertexAttrib3fv(
+                                i, M.vertex_ptr(M.cell_vertex_index(c,i))
+                                );
+                        }
+                        // Vertex attrib 0 needs to come last, since it is the
+                        // one that triggers vertex emit.
                         glVertexAttrib3fv(
-                            i, M.vertex_ptr(M.cell_vertex_index(c,i))
-                        );
+                            0, M.vertex_ptr(M.cell_vertex_index(c,0))
+                            );
                     }
-                    // Vertex attrib 0 needs to come last, since it is the
-                    // one that triggers vertex emit.
-                    glVertexAttrib3fv(
-                        0, M.vertex_ptr(M.cell_vertex_index(c,0))
-                    );
                 }
+                glEnd();
             }
-            glEnd();
 
             // Draw the pyramids, using GL_POINTS
             // with 5 generic attributes (unfortunately,

@@ -2,6 +2,8 @@
 #ifndef __SHEWCHUK_PREDICATES__
 #define __SHEWCHUK_PREDICATES__
 
+namespace GEO_3rdParty { // [Bruno]
+
 #define MATH_API 
 
 #ifdef SINGLE
@@ -67,5 +69,7 @@ REAL MATH_API orient4d(
   REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe,
   REAL ah, REAL bh, REAL ch, REAL dh, REAL eh
 );
+
+} // namespace GEO_3rdParty [Bruno]
 
 #endif

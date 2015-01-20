@@ -65,6 +65,11 @@ add_flags(CMAKE_C_FLAGS -msse3)
 add_flags(CMAKE_CXX_FLAGS -fopenmp)
 add_flags(CMAKE_C_FLAGS -fopenmp)
 
+# Alaways generate position independant code
+# (to allow linking geogram/vorlalib with DLLs)
+add_flags(CMAKE_CXX_FLAGS -fPIC)
+add_flags(CMAKE_C_FLAGS -fPIC)
+
 
 # Profiler compilation flags
 if(VORPALINE_WITH_GPROF)

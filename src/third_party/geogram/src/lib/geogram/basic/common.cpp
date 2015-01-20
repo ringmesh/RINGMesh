@@ -69,7 +69,7 @@ namespace GEO {
         Progress::initialize();
         CmdLine::initialize();
 
-        exactinit();
+        GEO_3rdParty::exactinit();
         PCK::initialize();
 
         Delaunay::initialize();

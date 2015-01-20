@@ -101,7 +101,6 @@ namespace GEO {
         }
         M.assign_tet_mesh(3, pts, tet2v, true);
         M.connect_tets();
-
         M.show_stats("TetMeshing");
         return true;
     }

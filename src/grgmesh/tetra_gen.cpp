@@ -315,17 +315,17 @@ namespace GRGMesh {
         }
 
         tetgen_input_.numberoffacets = nb_triangles() ;
-        tetgen_input_.facetlist = new tetgenio::facet[tetgen_input_.numberoffacets] ;
+        tetgen_input_.facetlist = new GEO_3rdParty::tetgenio::facet[tetgen_input_.numberoffacets] ;
         tetgen_input_.facetmarkerlist = new int[tetgen_input_.numberoffacets] ;
 
 #pragma omp parallel for
         for( index_t f = 0; f < nb_triangles(); f++ ) {
-            tetgenio::facet* F = &( tetgen_input_.facetlist[f] ) ;
-            tetgenio::init( F ) ;
+            GEO_3rdParty::tetgenio::facet* F = &( tetgen_input_.facetlist[f] ) ;
+            GEO_3rdParty::tetgenio::init( F ) ;
             F->numberofpolygons = 1 ;
-            F->polygonlist = new tetgenio::polygon[F->numberofpolygons] ;
-            tetgenio::polygon* P = F->polygonlist ;
-tetgenio::init( P ) ;
+            F->polygonlist = new GEO_3rdParty::tetgenio::polygon[F->numberofpolygons] ;
+            GEO_3rdParty::tetgenio::polygon* P = F->polygonlist ;
+            GEO_3rdParty::tetgenio::init( P ) ;
             P->numberofvertices = 3 ;
             P->vertexlist = new int[P->numberofvertices] ;
             for( index_t v = 0; v < 3; v++ ) {
@@ -404,7 +404,7 @@ tetgenio::init( P ) ;
     {
         tetgen_output_.deinitialize() ;
         try {
-            ::tetrahedralize( &tetgen_args_, &tetgen_input_, &tetgen_output_,
+            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_input_, &tetgen_output_,
                 nil, &tetgen_background_ ) ;
         } catch( ... ) {
             std::cerr << "Encountered a problem..."
