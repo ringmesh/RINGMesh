@@ -45,7 +45,7 @@
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/string.h>
-#include <algorithm>
+#include <geogram/basic/algorithm.h>
 
 namespace GEO {
 
@@ -447,8 +447,8 @@ namespace GEOGen {
         adjacent[1]=adj2;
         adjacent[2]=adj3;
         adjacent[3]=adj4;
-        adjacent[2]=adj5;
-        adjacent[3]=adj6;
+        adjacent[4]=adj5;
+        adjacent[5]=adj6;
         return add_cell(GEO::MESH_HEX, vertices, adjacent, region);
     }
 
@@ -471,7 +471,7 @@ namespace GEOGen {
         adjacent[1]=adj2;
         adjacent[2]=adj3;
         adjacent[3]=adj4;
-        adjacent[2]=adj5;
+        adjacent[4]=adj5;
         return add_cell(GEO::MESH_PRISM, vertices, adjacent, region);
     }
 
@@ -493,7 +493,7 @@ namespace GEOGen {
         adjacent[1]=adj2;
         adjacent[2]=adj3;
         adjacent[3]=adj4;
-        adjacent[2]=adj5;
+        adjacent[4]=adj5;
         return add_cell(GEO::MESH_PYRAMID, vertices, adjacent, region);
     }
 
@@ -586,20 +586,19 @@ namespace GEOGen {
         if(nb_tets() == 0) {
             return;
         }
-
         cell_adjacents_.assign(nb_tets() * 4, -1);
-        
-        GEO::vector<signed_index_t> next_tet_around_vertex(
-            nb_tets() * 4, -1
+        const index_t NO_CORNER=index_t(-1);
+        GEO::vector<index_t> next_tet_corner_around_vertex(
+            nb_tets() * 4, NO_CORNER
         );
-        GEO::vector<signed_index_t> v2t(nb_vertices(), -1);
+        GEO::vector<index_t> v2c(nb_vertices(), NO_CORNER);
         
-        // Step 1: chain tets around vertices and compute v2t
+        // Step 1: chain tets around vertices and compute v2c
         for(index_t t = 0; t < nb_tets(); ++t) {
             for(index_t lv = 0; lv < 4; ++lv) {
                 index_t v = tet_vertex_index(t, lv);
-                next_tet_around_vertex[4 * t + lv] = v2t[v];
-                v2t[v] = signed_index_t(t);
+                next_tet_corner_around_vertex[4 * t + lv] = v2c[v];
+                v2c[v] = 4 * t + lv;
             }
         }
         
@@ -611,16 +610,15 @@ namespace GEOGen {
                     index_t v2 = tet_facet_vertex_index(t1, lf1, 1);
                     index_t v3 = tet_facet_vertex_index(t1, lf1, 2);
                     for(
-                        signed_index_t t2 = v2t[v1]; t2 != -1;
-                        t2 = next_tet_around_vertex[
-                            4 * t2 + find_tet_vertex(index_t(t2), v1)
-                        ]
+                        index_t c2 = v2c[v1]; c2 != NO_CORNER;
+                        c2 = next_tet_corner_around_vertex[c2]
                     ) {
+                        index_t t2 = c2/4;
                         signed_index_t lf2 =
-                            find_tet_facet(index_t(t2), v3, v2, v1);
+                            find_tet_facet(t2, v3, v2, v1);
                         if(lf2 != -1) {
                             set_tet_adjacent(t1, lf1, t2);
-                            set_tet_adjacent(index_t(t2), index_t(lf2), t1);
+                            set_tet_adjacent(t2, index_t(lf2), t1);
                             break;
                         }
                     }
@@ -948,11 +946,7 @@ namespace GEOGen {
                 }
 
                 // Make sure we get each match once only
-                std::sort(matches.begin(), matches.end());
-                matches.erase(
-                    std::unique(matches.begin(),matches.end()),
-                    matches.end()
-                );
+                GEO::sort_unique(matches);
 
                 // This should not happen, but we keep this
                 // sanity check and notify the user if some

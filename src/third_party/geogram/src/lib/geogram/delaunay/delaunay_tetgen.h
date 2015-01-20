@@ -116,9 +116,9 @@ namespace GEO {
          */
         virtual ~DelaunayTetgen();
 
-        tetgenio tetgen_out_;
-        tetgenio tetgen_in_;
-        tetgenbehavior tetgen_args_;
+        GEO_3rdParty::tetgenio tetgen_out_;
+        GEO_3rdParty::tetgenio tetgen_in_;
+        GEO_3rdParty::tetgenbehavior tetgen_args_;
     };
 }
 

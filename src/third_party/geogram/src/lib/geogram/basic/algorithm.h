@@ -143,6 +143,23 @@ namespace GEO {
             std::sort(begin, end, cmp);
         }
     }
+
+
+    /**
+     * \brief Sorts a vector and suppresses all duplicated elements.
+     * \param[in,out] v the vector
+     */
+    template <typename VECTOR> inline void sort_unique(VECTOR& v) {
+        std::sort(v.begin(), v.end());
+        // Note that std::unique leaves a 'queue' of duplicated elemens
+        // at the end of the vector, and returns an iterator that
+        // indicates where to stop. 
+        v.erase(
+            std::unique(v.begin(), v.end()), v.end()
+        );
+    }
+
+    
 }
 
 #endif

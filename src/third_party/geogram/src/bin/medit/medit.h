@@ -25,6 +25,13 @@
 
 #include <geogram_gfx/third_party/freeglut/glut.h>
 
+// [Bruno] I got too many complaints in medit so I "close my eyes" and pray !!
+#ifdef __GNUC__
+#ifndef __ICC
+#pragma GCC diagnostic ignored "-Wunused-result"
+#endif
+#endif
+
 #include "chrono.h"
 #include "memory.h"
 #include "mesh.h"
@@ -87,6 +94,7 @@ typedef struct canvas {
   int        nbm,nbs;
 } Canvas;
 typedef Canvas * pCanvas;
+
 
 
 

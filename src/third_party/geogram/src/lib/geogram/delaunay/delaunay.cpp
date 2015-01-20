@@ -59,8 +59,8 @@
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/process.h>
 #include <geogram/basic/geometry_nd.h>
+#include <geogram/basic/algorithm.h>
 
-#include <algorithm>
 #include <fstream>
 #include <sstream>
 
@@ -262,10 +262,7 @@ namespace GEO {
         }
 
         // Step 2: Sort the neighbors and remove all duplicates
-        std::sort(neighbors.begin(), neighbors.end());
-        neighbors.erase(
-            std::unique(neighbors.begin(), neighbors.end()), neighbors.end()
-        );
+        sort_unique(neighbors);
     }
 
     void Delaunay::store_neighbors_CB(index_t i) {

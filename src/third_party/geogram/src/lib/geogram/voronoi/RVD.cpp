@@ -56,6 +56,7 @@
 #include <geogram/basic/process.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/argused.h>
+#include <geogram/basic/algorithm.h>
 
 /*
  * There are three levels of implementation:
@@ -1491,17 +1492,6 @@ namespace {
             }
         }
 
-        /**
-         * \brief Removes the duplicated items in a vector.
-         * \details In addition, this function sorts the vector.
-         * \param[in] V the vector from which duplicates should be removed
-         */
-        template <class T>
-        inline void remove_duplicates(vector<T>& V) {
-            std::sort(V.begin(), V.end());
-            V.erase(std::unique(V.begin(), V.end()), V.end());
-        }
-
         virtual bool compute_initial_sampling_on_surface(
             double* p, index_t nb_points
         ) {
@@ -1587,14 +1577,14 @@ namespace {
                         }
                     }
                 }
-                remove_duplicates(Ni);
+                sort_unique(Ni);
                 for(index_t j = 0; j < Ni.size(); j++) {
                     index_t k = Ni[j];
                     stars_[i].insert(
                         stars_[i].end(), stars2[k].begin(), stars2[k].end()
                     );
                 }
-                remove_duplicates(stars_[i]);
+                sort_unique(stars_[i]);
             }
 
             // Step 3: create search structure
@@ -2038,7 +2028,7 @@ namespace {
                     double* p4 = const_cast<double*>(
                         delaunay()->vertex_ptr(simplices[4 * t + 3])
                     );
-                    if(orient3d(p1, p2, p3, p4) > 0) {
+                    if(GEO_3rdParty::orient3d(p1, p2, p3, p4) > 0) {
                         geo_swap(simplices[4 * t], simplices[4 * t + 1]);
                     }
                 }

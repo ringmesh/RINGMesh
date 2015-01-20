@@ -137,10 +137,10 @@ namespace GRGMesh {
         virtual bool tetrahedralize() ;
 
     private:
-        tetgenio tetgen_input_ ;
-        tetgenio tetgen_output_ ;
-        tetgenio tetgen_background_ ;
-        tetgenbehavior tetgen_args_ ;
+        GEO_3rdParty::tetgenio tetgen_input_ ;
+        GEO_3rdParty::tetgenio tetgen_output_ ;
+        GEO_3rdParty::tetgenio tetgen_background_ ;
+        GEO_3rdParty::tetgenbehavior tetgen_args_ ;
     } ;
 
 #ifdef USE_MG_TETRA

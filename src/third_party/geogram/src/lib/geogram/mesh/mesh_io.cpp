@@ -244,7 +244,7 @@ namespace {
                     << filename << "\'" << std::endl;
                 return false;
             }
-
+            
             std::vector<std::string> args;
             CmdLine::get_args(args);
             for(index_t i = 0; i < args.size(); i++) {
@@ -1640,7 +1640,7 @@ namespace {
         }
 
         /**
-         * \brief Saves a mesh into a file in LM5/gamma mesh or meshb format.
+         * \brief Saves a mesh into a file in OFF format.
          * \param[in] M The mesh to save
          * \param[in] filename name of the file
          * \param[in] ioflags specifies which attributes and elements should be saved

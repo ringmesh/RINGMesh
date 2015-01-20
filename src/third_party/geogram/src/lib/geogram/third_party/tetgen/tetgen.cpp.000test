@@ -27,9 +27,7 @@
 #define printf vorpaline_printf
 
 // [Bruno] using PCK predicates
-// #define USE_PCK
-
-namespace GEO_3rdParty { // [Bruno]
+#define USE_PCK
 
 //// io_cxx ///////////////////////////////////////////////////////////////////
 ////                                                                       ////
@@ -4808,6 +4806,12 @@ REAL tetgenmesh::PI = 3.14159265358979323846264338327950288419716939937510582;
 
 
 #ifdef USE_PCK //[Bruno]
+#define ASSERT_SAME_SIGN(a,b) assert((a==0.0 && b==0.0) || (a*b) > 0.0)
+#else
+#define ASSERT_SAME_SIGN(a,b)
+#endif
+
+#ifdef USE_PCK //[Bruno]
 
 // Prototypes for PCK predicates
 namespace GEO {
@@ -4845,26 +4849,45 @@ namespace GEO {
     }
 }
 
+// Prototypes for Shewchuk's predicates
+REAL exactinit() ;
+REAL orient3d(REAL *pa, REAL *pb, REAL *pc, REAL *pd);
+REAL insphere(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe);
+REAL orient4d(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe,
+              REAL ah, REAL bh, REAL ch, REAL dh, REAL eh);
+
+
 // Wrapper around PCK predicates to make them sourcelevel
 // compatible with Shewchuk's predicates.
+
+
 namespace {
 
-    REAL orient3d(REAL* pa, REAL *pb, REAL *pc, REAL *pd) {
+    REAL orient3d_pck(REAL* pa, REAL *pb, REAL *pc, REAL *pd) {
         // Warning: PCK seems to have a convention 
         // different from Shewchuk's, to be checked
         // (and also for other predicates...)
         // If I do not change the sign, I do not obtain
         // the same number of tets in BDEL and tetgen.
-        return -REAL(GEO::PCK::orient_3d(pa,pb,pc,pd));
+        REAL res1= -REAL(GEO::PCK::orient_3d(pa,pb,pc,pd));
+        REAL res2 = orient3d(pa,pb,pc,pd);
+        ASSERT_SAME_SIGN(res1,res2);
+        return res2;
     }
     
-    REAL insphere(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe) {
-        return REAL(GEO::PCK::side4_3d(pa,pb,pc,pd,pe));
+    REAL insphere_pck(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe) {
+        REAL res1=REAL(GEO::PCK::side4_3d(pa,pb,pc,pd,pe));
+        REAL res2=insphere(pa,pb,pc,pd,pe);
+        ASSERT_SAME_SIGN(res1,res2);
+        return res2;
     }
 
-    REAL orient4d(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe,
+    REAL orient4d_pck(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe,
                   REAL ah, REAL bh, REAL ch, REAL dh, REAL eh) {
-        return REAL(GEO::PCK::orient_4d(pa,pb,pc,pd,pe,ah,bh,ch,dh,eh));
+         REAL res1=REAL(GEO::PCK::orient_4d(pa,pb,pc,pd,pe,ah,bh,ch,dh,eh));
+         REAL res2=orient4d(pa,pb,pc,pd,pe,ah,bh,ch,dh,eh);
+         ASSERT_SAME_SIGN(res1,res2);
+         return res2;
     }
 
     /**
@@ -4932,11 +4955,16 @@ namespace {
         return Delta;
     }    
     
-
+/*
     void exactinit() {
         GEO::PCK::initialize();
     }
+*/
 }
+
+// #define insphere insphere_pck
+// #define orient3d orient3d_pck
+// #define orient4d orient4d_pck
 
 #else 
 
@@ -5000,9 +5028,9 @@ inline REAL orient4d_numeric(
 
 REAL tetgenmesh::insphere_s(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe)
 {
-#ifdef USE_PCK // [Bruno]
-    return REAL(GEO::PCK::side4_3d_SOS(pa,pb,pc,pd,pe));
-#else
+#ifdef USE_PCKxxx // [Bruno]
+  REAL res1 =  REAL(GEO::PCK::side4_3d_SOS(pa,pb,pc,pd,pe));
+#endif
   REAL sign;
 
   sign = insphere(pa, pb, pc, pd, pe);
@@ -5043,6 +5071,7 @@ REAL tetgenmesh::insphere_s(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe)
   if (oriA != 0.0) {
     // Flip the sign if there are odd number of swaps.
     if ((swaps % 2) != 0) oriA = -oriA;
+//    ASSERT_SAME_SIGN(res1,oriA);
     return oriA;
   }
   
@@ -5050,8 +5079,8 @@ REAL tetgenmesh::insphere_s(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe)
   assert(oriB != 0.0); // SELF_CHECK
   // Flip the sign if there are odd number of swaps.
   if ((swaps % 2) != 0) oriB = -oriB;
+//  ASSERT_SAME_SIGN(res1,oriB);
   return oriB;
-#endif
 }
 
 
@@ -5075,13 +5104,11 @@ REAL tetgenmesh::insphere_s(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe)
 REAL tetgenmesh::orient4d_s(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe,
                             REAL aheight, REAL bheight, REAL cheight, 
                             REAL dheight, REAL eheight) {
-#ifdef USE_PCK // [Bruno]
-
-    return REAL(GEO::PCK::orient_4d_SOS(
+#ifdef xxxUSE_PCK // [Bruno]
+    REAL res1=REAL(GEO::PCK::orient_4d_SOS(
                     pa,pb,pc,pd,pe,aheight,bheight,cheight,dheight,eheight
     ));
-
-#else
+#endif
 
   REAL sign;
 
@@ -5124,6 +5151,7 @@ REAL tetgenmesh::orient4d_s(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe,
   if (oriA != 0.0) {
     // Flip the sign if there are odd number of swaps.
     if ((swaps % 2) != 0) oriA = -oriA;
+ //   ASSERT_SAME_SIGN(res1,oriA);
     return oriA;
   }
   
@@ -5131,9 +5159,8 @@ REAL tetgenmesh::orient4d_s(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe,
   assert(oriB != 0.0); // SELF_CHECK
   // Flip the sign if there are odd number of swaps.
   if ((swaps % 2) != 0) oriB = -oriB;
+//  ASSERT_SAME_SIGN(res1,oriB);
   return oriB;
-
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31127,4 +31154,3 @@ void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,
 ////                                                                       ////
 //// main_cxx /////////////////////////////////////////////////////////////////
 
-} // [Bruno] namespace GEO_3rdParty    

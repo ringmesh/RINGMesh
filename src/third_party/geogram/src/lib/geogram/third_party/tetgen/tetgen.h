@@ -29,6 +29,7 @@
 
 #define TETLIBRARY // [Bruno] 
 
+
 // Uncomment the following line to disable assert macros. These macros were
 //   inserted in the code where I hoped to catch bugs. They may slow down the
 //   speed of TetGen.
@@ -74,6 +75,8 @@
 #endif
 #endif
 
+
+
 // The types 'intptr_t' and 'uintptr_t' are signed and unsigned integer types,
 //   respectively. They are guaranteed to be the same width as a pointer.
 //   They are defined in <stdint.h> by the C99 Standard. However, Microsoft 
@@ -98,6 +101,10 @@
 #  include <stdint.h>
 #endif
 
+
+
+namespace GEO_3rdParty { // [Bruno]
+    
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // tetgenio                                                                  //
@@ -3346,6 +3353,9 @@ inline REAL tetgenmesh::norm2(REAL x, REAL y, REAL z)
   return (x) * (x) + (y) * (y) + (z) * (z);
 }
 
+
+    
+} // [Bruno] namespace GEO_3rdParty    
 
 #endif // #ifndef tetgenH
 

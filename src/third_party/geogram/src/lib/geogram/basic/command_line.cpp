@@ -1007,15 +1007,25 @@ namespace GEO {
             working_index++;
 
             std::ostringstream os;
-            os << ui_feature(task_name)
-                << "("
-                << working[(working_index % sizeof(working))]
-                << ")-["
-                << std::setw(3) << percent
-                << "%]-["
-                << std::setw(3) << val
-                << "]--[";
 
+            if(percent != val) {
+                os << ui_feature(task_name)
+                   << "("
+                   << working[(working_index % sizeof(working))]
+                   << ")-["
+                   << std::setw(3) << percent
+                   << "%]-["
+                   << std::setw(3) << val
+                   << "]--[";
+            } else {
+                os << ui_feature(task_name)
+                   << "("
+                   << working[(working_index % sizeof(working))]
+                   << ")-["
+                   << std::setw(3) << percent
+                   << "%]--------[";
+            }
+                
             size_t max_L =
                 sub(ui_terminal_width(), 43 + ui_left_margin + ui_right_margin);
 

@@ -992,16 +992,16 @@ extern void NL_FORTRAN_WRAP(dgemv)(
 #ifdef NEEDS_DTPSV
 
 /* DECK DTPSV */
-/* Subroutine */ int NL_FORTRAN_WRAP(dtpsv)(uplo, trans, diag, n, ap, x, incx, uplo_len, 
-        trans_len, diag_len)
-char *uplo, *trans, *diag;
-integer *n;
-doublereal *ap, *x;
-integer *incx;
-ftnlen uplo_len;
-ftnlen trans_len;
-ftnlen diag_len;
-{
+/* Subroutine */ 
+int NL_FORTRAN_WRAP(dtpsv)(
+   char* uplo, 
+   char* trans, 
+   char* diag, 
+   integer* n, 
+   doublereal* ap, 
+   doublereal* x, 
+   integer* incx
+) {
     /* System generated locals */
     integer i__1, i__2;
 
@@ -1013,11 +1013,6 @@ ftnlen diag_len;
     static integer kk, ix, jx, kx;
 /*    extern int xerbla_(); */
     static logical nounit;
-
-    nl_arg_used(uplo_len);
-    nl_arg_used(trans_len);
-    nl_arg_used(diag_len);
-
 
 /* ***BEGIN PROLOGUE  DTPSV */
 /* ***PURPOSE  Solve one of the systems of equations. */
