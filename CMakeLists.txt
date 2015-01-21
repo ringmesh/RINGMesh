@@ -33,8 +33,8 @@ ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
 
 # Files
 AUX_SOURCE_DIRECTORY(src/grgmesh SOURCES)
+AUX_SOURCE_DIRECTORY(src/third_party/zlib SOURCES)
 INCLUDE_DIRECTORIES(include)
-INCLUDE_DIRECTORIES(include/third_party)
 
 # Geogram
 INCLUDE_DIRECTORIES(src/third_party/geogram/src/lib)

@@ -29,7 +29,7 @@ namespace GRGMesh {
     typedef byte* pointer ;
 
     /** Null pointer type */
-    #define nil 0
+    //#define nil NULL // already in Geogram
 
     /** Integer type with a width of 8 bits */
     typedef char int8 ;
@@ -76,6 +76,7 @@ namespace GRGMesh {
     const float64 big_float64 = 1e20 ;
     const float64 small_float64 = 1e-20 ;
     const float64 epsilon = 1E-8 ;
+    const float64 epsilon_sq = epsilon*epsilon ;
 
     typedef GEO::vec3 vec3 ;
     static vec3 dummy_vec3 ;

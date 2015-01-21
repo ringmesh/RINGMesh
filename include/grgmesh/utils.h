@@ -16,8 +16,10 @@
 #define __GRGMESH_UTILS__
 
 #include <grgmesh/common.h>
+#include <grgmesh/types.h>
 
 #include <geogram/points/nn_search.h>
+#include <geogram/points/kd_tree.h>
 
 #include <algorithm>
 #include <iostream>
@@ -32,8 +34,8 @@ namespace GEO {
 namespace GRGMesh {
     class BoundaryModelElement ;
     class Edge ;
-    class SurfacePart ;
-    class ContactPart ;
+    class Surface ;
+    class Line ;
 }
 
 namespace GRGMesh {
@@ -340,12 +342,12 @@ namespace GRGMesh {
 			return intersect ;
         }
 
-template< class T > static bool contains(
+        template< class T > static bool contains(
             const std::vector< T >& v,
             const T& t )
         {
             return find( v, t ) != -1 ;
-        }
+        }      
         template< class T > static signed_index_t find( const std::vector< T >& v, const T& t )
         {
             for( index_t i = 0; i < v.size(); i++ ) {
@@ -823,15 +825,17 @@ template< class T > static bool contains(
             return points_ ;
         }
         void unique_points( std::vector< vec3 >& results ) const ;
-        const std::vector< signed_index_t >& indices() const
+        const std::vector< index_t >& indices() const
         {
             return indices_ ;
         }
 
     private:
         std::vector< vec3 > points_ ;
-        std::vector< signed_index_t > indices_ ;
+        std::vector< index_t > indices_ ;
     } ;
+
+
 
     class GRGMESH_API ColocaterANN {
     public:
@@ -839,8 +843,8 @@ template< class T > static bool contains(
             VERTICES, FACETS, CELLS
         };
 
-        ColocaterANN( const SurfacePart& mesh ) ;
-        ColocaterANN( const ContactPart& mesh ) ;
+        ColocaterANN( const Surface& mesh ) ;
+        ColocaterANN( const Line& mesh ) ;
         ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location ) ;
         ColocaterANN( const std::vector< vec3 >& vertices ) ;
         ColocaterANN( float64* vertices, index_t nb_vertices ) ;
@@ -880,8 +884,8 @@ template< class T > static bool contains(
         GEO::NearestNeighborSearch_var ann_tree_ ;
     } ;
 
-    template< class T, signed_index_t n >
-    class GRGMESH_API Array {
+    template< class T, index_t n >
+    class Array {
     public:
         void assign( const std::vector< T >& values )
         {
@@ -914,8 +918,8 @@ template< class T > static bool contains(
         T values_[n] ;
     } ;
 
-    template< signed_index_t n >
-    class GRGMESH_API intArrayTmpl: public Array< int, n > {
+    template< index_t n >
+    class intArrayTmpl: public Array< int, n > {
     public:
         intArrayTmpl()
         {
@@ -927,8 +931,8 @@ template< class T > static bool contains(
     typedef intArrayTmpl< 6 > intArray ;
     typedef intArrayTmpl< 12 > edgeArray ;
 
-    template< signed_index_t n >
-    class GRGMESH_API boolArrayTmpl: public Array< bool, n > {
+    template< index_t n >
+    class boolArrayTmpl: public Array< bool, n > {
     public:
         boolArrayTmpl()
         {
@@ -939,7 +943,7 @@ template< class T > static bool contains(
     } ;
     typedef boolArrayTmpl< 6 > boolArray ;
 
-    class GRGMESH_API Edge: public Array< vec3, 2 > {
+    class Edge: public Array< vec3, 2 > {
     public:
         Edge( const vec3& v0, const vec3& v1 )
         {
