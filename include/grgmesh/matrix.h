@@ -241,7 +241,7 @@ namespace GRGMesh {
     /*!
      * declaration of a template class SparseMatrix, it will be specialazed for the different MatrixType
      * */
-    template< class T, MatrixType Light = MatrixType( 2 * sizeof(T) < 2 * sizeof(index_t) + sizeof(T) ) >
+    template< class T, MatrixType Light = MatrixType( 2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
     class SparseMatrix: public SparseMatrixImpl< T, T > {
     } ;
 
@@ -322,9 +322,15 @@ namespace GRGMesh {
         bool set_element( index_t i, index_t j, const T& value )
         {
             // small difference with light type: we fill a deque
-            // todo, smart way to erase the content of values_ if a new element replaces the old one
-            values_.push_back( value ) ;
-            index_t value_id = values_.size() - 1 ;
+            index_t value_id;
+        	if (this->exist(i,j)){
+        		value_id = get_value_id(i,j);
+        		values_[value_id] = value;
+        	}
+        	else{
+				values_.push_back( value ) ;
+				value_id = values_.size() - 1 ;
+        	}
             this->rows_[i].set_element( j, value_id ) ;
             if( this->is_symmetrical_ ) {
                 this->rows_[j].set_element( i, value_id ) ;
@@ -359,8 +365,14 @@ namespace GRGMesh {
             value = values_[value_id] ;
             return ;
         }
+        void print_matrix(void){
+        	std::cout << "deque size = " << values_.size() << std::endl;
+        }
 
     private:
+        index_t get_value_id(index_t i, index_t j){
+        	return this->rows_[i].find(j);
+        }
         SparseMatrix( const thisclass &rhs ) ;
         thisclass& operator=( const thisclass &rhs ) ;
     private:
