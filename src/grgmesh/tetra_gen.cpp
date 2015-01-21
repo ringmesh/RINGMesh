@@ -22,6 +22,33 @@
 
 namespace GRGMesh {
 
+    void start_redirect( fpos_t& pos, FILE* out, int fd )
+    {
+#ifndef GRGMESH_DEBUG
+        //Save position of current standard output
+        fgetpos( out, &pos ) ;
+        fd = dup( fileno( out ) ) ;
+#ifdef WIN32
+        freopen( "nul", "w", out ) ;
+#else
+        freopen( "/dev/null", "w", out ) ;
+#endif
+#endif
+    }
+
+    void stop_redirect( fpos_t& pos, FILE* out, int fd )
+    {
+#ifndef GRGMESH_DEBUG
+        //Flush stdout so any buffered messages are delivered
+        fflush( out ) ;
+        //Close file and restore standard output to stdout - which should be the terminal
+        dup2( fd, fileno( out ) ) ;
+        close( fd ) ;
+        clearerr( out ) ;
+        fsetpos( out, &pos ) ;
+#endif
+    }
+
     TetraGen_var TetraGen::instantiate(
         const TetraMethod& method,
         GEO::Mesh& tetmesh,
@@ -388,7 +415,7 @@ namespace GRGMesh {
         std::ostringstream cmd_line ;
         cmd_line << "QpYfnn" ;
         if( add_steiner_points ) {
-            cmd_line << "q1" ;
+            cmd_line << "q0.9" ;
             if( use_background_mesh ) {
                 cmd_line << "m" ;
             } else {
@@ -616,6 +643,13 @@ namespace GRGMesh {
             mesh_background_( nil ),
             sizemap_( nil )
     {
+        fpos_t pos ;
+        int fd ;
+        start_redirect( pos, stdout, fd ) ;
+        fpos_t pos_err ;
+        int fd_err ;
+        start_redirect( pos_err, stderr, fd_err ) ;
+
         context_ = context_new() ;
         mesh_input_ = mesh_new_in_memory( context_ ) ;
         status_t ret = context_set_message_callback(context_, my_message_cb, 0);
@@ -652,9 +686,8 @@ namespace GRGMesh {
             mesh_set_triangle_tag( mesh_input_, t+1, surface_id_ptr( t ) ) ;
         }
 
-        if( background_ ) {
-            grgmesh_assert_not_reached ;
             /*
+        if( background_ ) {
             mesh_background_ = mesh_new_in_memory( context_ ) ;
             ret = mesh_set_vertex_count( mesh_background_,
                 background_->nb_points() ) ;
@@ -677,8 +710,8 @@ namespace GRGMesh {
             sizemap_ = meshgems_sizemap_new( mesh_background_,
                 meshgems_sizemap_type_iso_mesh_vertex,
                 reinterpret_cast< void* >( get_size_value ), this ) ;
-                */
         }
+                */
 
         tms_ = tetra_session_new( context_ ) ;
         ret = tetra_set_surface_mesh( tms_, mesh_input_ ) ;
@@ -697,18 +730,38 @@ namespace GRGMesh {
         grgmesh_debug_assert( ret == STATUS_OK ) ;
         ret = tetra_set_param( tms_, "max_error_count", "5" ) ;
         grgmesh_debug_assert( ret == STATUS_OK ) ;
+
+        stop_redirect( pos, stdout, fd ) ;
+        stop_redirect( pos_err, stderr, fd_err ) ;
     }
 
     TetraGen_MG_Tetra::~TetraGen_MG_Tetra()
     {
+        fpos_t pos ;
+        int fd ;
+        start_redirect( pos, stdout, fd ) ;
+        fpos_t pos_err ;
+        int fd_err ;
+        start_redirect( pos_err, stderr, fd_err ) ;
+
         tetra_regain_mesh( tms_, mesh_output_ ) ;
         tetra_session_delete( tms_ ) ;
         mesh_delete( mesh_input_ ) ;
         context_delete( context_ ) ;
+
+        stop_redirect( pos, stdout, fd ) ;
+        stop_redirect( pos_err, stderr, fd_err ) ;
     }
 
     bool TetraGen_MG_Tetra::tetrahedralize()
     {
+        fpos_t pos ;
+        int fd ;
+        start_redirect( pos, stdout, fd ) ;
+        fpos_t pos_err ;
+        int fd_err ;
+        start_redirect( pos_err, stderr, fd_err ) ;
+
         status_t ret = tetra_mesh_boundary( tms_ ) ;
         if( ret != STATUS_OK ) {
             std::cout << "Encountered a problem while meshing boundary..."
@@ -758,7 +811,7 @@ namespace GRGMesh {
             }
         }
 
-#pragma omp parallel for
+//#pragma omp parallel for
         for( index_t p = 0; p < nb_points; p++ ) {
             double point[3] ;
             ret = mesh_get_vertex_coordinates( mesh_output_, p+1, point ) ;
@@ -767,7 +820,7 @@ namespace GRGMesh {
             std::sort( star[p].begin(), star[p].end() ) ;
         }
         signed_index_t cur_index_triangle = 0 ;
-#pragma omp parallel for
+//#pragma omp parallel for
         for( index_t t = 0; t < nb_triangles; t++ ) {
             signed_index_t tag = -1 ;
             ret = mesh_get_triangle_tag( mesh_output_, t+1, &tag ) ;
@@ -864,6 +917,9 @@ namespace GRGMesh {
 
         store_edge_attrib() ;
         */
+
+        stop_redirect( pos, stdout, fd ) ;
+        stop_redirect( pos_err, stderr, fd_err ) ;
 
         return true ;
     }
