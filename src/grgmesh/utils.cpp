@@ -953,28 +953,28 @@ namespace GRGMesh {
     {
         index_t nb_vertices = mesh.nb_vertices() ;
         ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        double* ann_points = new double[nb_vertices*3] ;
+        ann_points_ = new double[nb_vertices*3] ;
         for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
             index_t index_in_ann = 3*i ;
-            ann_points[index_in_ann] = mesh.vertex( i ).x ;
-            ann_points[index_in_ann+1] = mesh.vertex(i).y ;
-            ann_points[index_in_ann+2] = mesh.vertex(i).z ;
+            ann_points_[index_in_ann] = mesh.vertex( i ).x ;
+            ann_points_[index_in_ann+1] = mesh.vertex(i).y ;
+            ann_points_[index_in_ann+2] = mesh.vertex(i).z ;
         }
-        ann_tree_->set_points(nb_vertices, ann_points) ;
+        ann_tree_->set_points(nb_vertices, ann_points_) ;
     }
 
     ColocaterANN::ColocaterANN( const Line& mesh )
     {
         index_t nb_vertices = mesh.nb_vertices() ;
         ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        double* ann_points = new double[nb_vertices*3] ;
+        ann_points_ = new double[nb_vertices*3] ;
         for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
             index_t index_in_ann = 3*i ;
-            ann_points[index_in_ann] = mesh.vertex( i ).x ;
-            ann_points[index_in_ann+1] = mesh.vertex(i).y ;
-            ann_points[index_in_ann+2] = mesh.vertex(i).z ;
+            ann_points_[index_in_ann] = mesh.vertex( i ).x ;
+            ann_points_[index_in_ann+1] = mesh.vertex(i).y ;
+            ann_points_[index_in_ann+2] = mesh.vertex(i).z ;
         }
-        ann_tree_->set_points(nb_vertices, ann_points) ;
+        ann_tree_->set_points(nb_vertices, ann_points_) ;
     }
 
     ColocaterANN::ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location )
@@ -983,38 +983,38 @@ namespace GRGMesh {
         switch( location ) {
             case VERTICES: {
                 signed_index_t nb_vertices = mesh.nb_vertices() ;
-                double* ann_points = new double[nb_vertices*3] ;
+                ann_points_ = new double[nb_vertices*3] ;
                 for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
                     index_t index_in_ann = 3*i ;
-                    ann_points[index_in_ann] = mesh.vertex_ptr(i)[0];
-                    ann_points[index_in_ann+1] = mesh.vertex_ptr(i)[1];
-                    ann_points[index_in_ann+2] = mesh.vertex_ptr(i)[2] ;
+                    ann_points_[index_in_ann] = mesh.vertex_ptr(i)[0];
+                    ann_points_[index_in_ann+1] = mesh.vertex_ptr(i)[1];
+                    ann_points_[index_in_ann+2] = mesh.vertex_ptr(i)[2] ;
                 }
-                ann_tree_->set_points(nb_vertices, ann_points) ;
+                ann_tree_->set_points(nb_vertices, ann_points_) ;
                 break ;
             } case FACETS: {
                 signed_index_t nb_vertices = mesh.nb_facets() ;
-                double* ann_points = new double[nb_vertices*3] ;
+                ann_points_ = new double[nb_vertices*3] ;
                 for( index_t i = 0; i < mesh.nb_facets(); i++ ) {
                     vec3 center = GEO::Geom::mesh_facet_center( mesh, i )  ;
                     index_t index_in_ann = 3*i ;
-                    ann_points[index_in_ann] = center.x;
-                    ann_points[index_in_ann+1] = center.y;
-                    ann_points[index_in_ann+2] = center.z ;
+                    ann_points_[index_in_ann] = center.x;
+                    ann_points_[index_in_ann+1] = center.y;
+                    ann_points_[index_in_ann+2] = center.z ;
                 }
-                ann_tree_->set_points(nb_vertices, ann_points) ;
+                ann_tree_->set_points(nb_vertices, ann_points_) ;
                 break ;
             } case CELLS: {
                 signed_index_t nb_vertices = mesh.nb_cells() ;
-                double* ann_points = new double[nb_vertices*3] ;
+                ann_points_ = new double[nb_vertices*3] ;
                 for( index_t i = 0; i < mesh.nb_cells(); i++ ) {
                     vec3 center = mesh_cell_center( mesh, i )  ;
                     index_t index_in_ann = 3*i ;
-                    ann_points[index_in_ann] = center.x;
-                    ann_points[index_in_ann+1] = center.y;
-                    ann_points[index_in_ann+2] = center.z ;
+                    ann_points_[index_in_ann] = center.x;
+                    ann_points_[index_in_ann+1] = center.y;
+                    ann_points_[index_in_ann+2] = center.z ;
                 }
-                ann_tree_->set_points(nb_vertices, ann_points) ;
+                ann_tree_->set_points(nb_vertices, ann_points_) ;
                 break ;
             }
         }
@@ -1024,39 +1024,40 @@ namespace GRGMesh {
     {
         index_t nb_vertices = vertices.size() ;
         ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        double* ann_points = new double[nb_vertices*3] ;
+        ann_points_ = new double[nb_vertices*3] ;
         for( index_t i = 0; i < nb_vertices; i++ ) {
             index_t index_in_ann = 3*i ;
-            ann_points[index_in_ann] = vertices[i].x;
-            ann_points[index_in_ann+1] = vertices[i].y;
-            ann_points[index_in_ann+2] = vertices[i].z ;        }
-        ann_tree_->set_points(nb_vertices, ann_points) ;
+            ann_points_[index_in_ann] = vertices[i].x;
+            ann_points_[index_in_ann+1] = vertices[i].y;
+            ann_points_[index_in_ann+2] = vertices[i].z ;
+        }
+        ann_tree_->set_points(nb_vertices, ann_points_) ;
     }
 
     ColocaterANN::ColocaterANN( float64* vertices, index_t nb_vertices )
     {
         ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        double* ann_points = new double[nb_vertices*3] ;
+        ann_points_ = new double[nb_vertices*3] ;
         for( index_t i = 0; i < nb_vertices*3; i++ ) {
-            ann_points[i] = vertices[i] ;
+            ann_points_[i] = vertices[i] ;
 
         }
-        ann_tree_->set_points(nb_vertices, ann_points) ;
+        ann_tree_->set_points(nb_vertices, ann_points_) ;
     }
 
     ColocaterANN::ColocaterANN( const std::vector< Edge >& edges )
     {
         index_t nb_vertices = edges.size() ;
         ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        double* ann_points = new double[nb_vertices*3] ;
+        ann_points_ = new double[nb_vertices*3] ;
         for( index_t i = 0; i < nb_vertices; i++ ) {
             vec3 barycenter( ( edges[i].value( 0 ) + edges[i].value( 1 ) ) / 2.0 ) ;
             index_t index_in_ann = 3*i ;
-            ann_points[index_in_ann] = barycenter.x;
-            ann_points[index_in_ann+1] = barycenter.y;
-            ann_points[index_in_ann+2] = barycenter.z ;
+            ann_points_[index_in_ann] = barycenter.x;
+            ann_points_[index_in_ann+1] = barycenter.y;
+            ann_points_[index_in_ann+2] = barycenter.z ;
         }
-        ann_tree_->set_points(nb_vertices, ann_points) ;
+        ann_tree_->set_points(nb_vertices, ann_points_) ;
     }
 
     bool ColocaterANN::get_colocated(
