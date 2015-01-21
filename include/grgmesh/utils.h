@@ -852,6 +852,7 @@ namespace GRGMesh {
 
         ~ColocaterANN()
         {
+            delete[] ann_points_ ;
         }
 
         bool get_colocated(
@@ -876,6 +877,7 @@ namespace GRGMesh {
 
     private:
         GEO::NearestNeighborSearch_var ann_tree_ ;
+        double* ann_points_ ;
     } ;
 
     template< class T, index_t n >
