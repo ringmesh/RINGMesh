@@ -20,6 +20,11 @@
 #include <iomanip>
 #include <stack>
 
+#ifdef WIN32
+    #include <io.h>
+#endif 
+
+
 namespace GRGMesh {
 
     void start_redirect( fpos_t& pos, FILE* out, int fd )
