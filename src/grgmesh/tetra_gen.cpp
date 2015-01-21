@@ -27,10 +27,11 @@ namespace GRGMesh {
 #ifndef GRGMESH_DEBUG
         //Save position of current standard output
         fgetpos( out, &pos ) ;
-        fd = dup( fileno( out ) ) ;
 #ifdef WIN32
+        fd = _dup( fileno( out ) ) ;
         freopen( "nul", "w", out ) ;
 #else
+        fd = dup( fileno( out ) ) ;
         freopen( "/dev/null", "w", out ) ;
 #endif
 #endif
@@ -42,7 +43,11 @@ namespace GRGMesh {
         //Flush stdout so any buffered messages are delivered
         fflush( out ) ;
         //Close file and restore standard output to stdout - which should be the terminal
+#ifdef WIN32
+        _dup2( fd, fileno( out ) ) ;
+#else
         dup2( fd, fileno( out ) ) ;
+#endif
         close( fd ) ;
         clearerr( out ) ;
         fsetpos( out, &pos ) ;
