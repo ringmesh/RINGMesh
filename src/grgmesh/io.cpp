@@ -126,12 +126,17 @@ namespace GRGMesh {
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
             for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
                 GEO::MeshIOFlags flags ;
+                flags.set_element( GEO::MESH_FACETS ) ;
                 flags.set_element( GEO::MESH_CELLS ) ;
                 flags.set_attribute( GEO::MESH_FACET_REGION ) ;
 
                 const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
                 std::string name_mesh_file = "region_" +GEO::String::to_string( m ) + ".meshb" ;
+
+                GEO::Logger::instance()->set_quiet( true ) ;
                 GEO::mesh_save( cur_mesh, name_mesh_file, flags ) ;
+                GEO::Logger::instance()->set_quiet( false ) ;
+
                 zip_file( zf, name_mesh_file ) ;
 
                 GEO::FileSystem::delete_file( name_mesh_file ) ;
@@ -155,12 +160,15 @@ namespace GRGMesh {
                 char filename[MAX_FILENAME] ;
                 unzip_file( uz, filename ) ;
                 GEO::MeshIOFlags flags ;
+                flags.set_element( GEO::MESH_FACETS ) ;
                 flags.set_element( GEO::MESH_CELLS ) ;
                 flags.set_attribute( GEO::MESH_FACET_REGION ) ;
                 GEO::Mesh& m = mm.mesh( r ) ;
                 std::string ext = GEO::FileSystem::extension( filename ) ;
                 if( ext == "meshb" ) {
+                    GEO::Logger::instance()->set_quiet( true ) ;
                     GEO::mesh_load( GEO::String::to_string( filename ), m, flags ) ;
+                    GEO::Logger::instance()->set_quiet( false ) ;
                 } else {
                     grgmesh_assert_not_reached;
                 }
