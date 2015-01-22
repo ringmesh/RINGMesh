@@ -91,7 +91,7 @@ namespace GRGMesh {
      * @return A reference to the BoundaryModelElement .
      *
      */
-    const BoundaryModelElement& BoundaryModel::element( ElementType t, index_t index ) const {
+    const BoundaryModelElement& BoundaryModel::element( BM_TYPE t, index_t index ) const {
         switch( t ){
             case BM_CORNER    : return corner       ( index ) ;
             case BM_LINE      : return line         ( index ) ;
