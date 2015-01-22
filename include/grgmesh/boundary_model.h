@@ -58,8 +58,8 @@ namespace GRGMesh {
         friend class LineMutator ;
         friend class SurfaceMutator ;
 
-    public:
-         enum AttributeLocation {
+    public:           
+        enum AttributeLocation {
             VERTEX,
             EDGE,
             FACET
@@ -105,7 +105,7 @@ namespace GRGMesh {
         const Surface& surface( index_t index ) const { return surfaces_.at(index) ; }
         const BoundaryModelElement& region( index_t index ) const { return regions_.at(index) ; }
         const BoundaryModelElement& universe() const { return universe_ ; }        
-        const BoundaryModelElement& element( index_t dim, index_t index ) const ;       
+        const BoundaryModelElement& element( ElementType dim, index_t index ) const ;       
         const BoundaryModelElement& contact( index_t index ) const { return contacts_.at(index) ; }
         const BoundaryModelElement& one_interface( index_t index ) const { return interfaces_.at(index) ; }
         const BoundaryModelElement& layer( index_t index ) const { return layers_.at(index) ; }

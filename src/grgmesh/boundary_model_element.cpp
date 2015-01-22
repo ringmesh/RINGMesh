@@ -48,10 +48,10 @@ namespace GRGMesh {
     const BoundaryModelElement& BoundaryModelElement::parent() const
     {
         grgmesh_debug_assert( has_parent() ) ;
-        switch( dim() ) {
-            case 1:
+        switch( element_type() ) {
+            case BM_LINE :
                 return model_->contact( parent_ ) ;
-            case 2:
+            case BM_SURFACE :
                 return model_->one_interface( parent_ ) ;
             default:
                 grgmesh_assert_not_reached ;
@@ -68,14 +68,11 @@ namespace GRGMesh {
     {
         grgmesh_debug_assert( x < nb_boundaries() ) ;
         index_t id = boundaries_.at(x) ;
-        switch( dim() ) {
-            case 1:
-                return model_->corner( id ) ;
-            case 2:
-                if( has_parent() ) return model_->line( id ) ;
-                return model_->contact( id ) ;
-            case 3:
-                return model_->surface( id ) ;
+        switch( element_type() ) {
+            case BM_LINE     : return model_->corner( id ) ;
+            case BM_SURFACE  : return model_->line( id ) ;
+            case BM_INTERFACE: return model_->contact( id ) ;
+            case BM_REGION   : return model_->surface( id ) ;
             default:
                 grgmesh_assert_not_reached ;
                 return dummy_element ;
@@ -91,14 +88,12 @@ namespace GRGMesh {
     {
         grgmesh_debug_assert( x < nb_in_boundary() ) ;
         index_t id = in_boundary_.at(x) ;
-        switch( dim() ) {
-            case 0:
-                return model_->line( id ) ;
-            case 1:
-                if( has_parent() ) return model_->surface( id ) ;
-                return model_->one_interface( id ) ;
-            case 2:
-                return model_->region( id ) ;
+        switch( element_type() ) {
+            case BM_CORNER      : return model_->line( id ) ;
+            case BM_LINE        : return model_->surface( id ) ;
+            case BM_CONTACT     : return model_->one_interface( id ) ;
+            case BM_SURFACE     : return model_->region( id ) ;
+            case BM_INTERFACE   : return model_->layer( id ) ;
             default:
                 grgmesh_assert_not_reached ;
                 return dummy_element ;
@@ -112,15 +107,12 @@ namespace GRGMesh {
      */
     const BoundaryModelElement& BoundaryModelElement::child( index_t x ) const
     {
-        grgmesh_debug_assert( !has_parent() && x < nb_children() ) ;
+        grgmesh_debug_assert( x < nb_children() ) ;
         index_t id = children_.at(x) ;
-        switch( dim() ) {
-            case 1:
-                return model_->line( id ) ;
-            case 2:
-                return model_->surface( id ) ;
-            case 3:
-                return model_->region( id ) ;
+        switch( element_type() ) {
+            case BM_CONTACT     : return model_->line( id ) ;
+            case BM_INTERFACE   : return model_->surface( id ) ;
+            case BM_LAYER       : return model_->region( id ) ;
             default:
                 grgmesh_assert_not_reached ;
                 return dummy_element ;
@@ -136,16 +128,16 @@ namespace GRGMesh {
         const BoundaryModelElement& rhs,
         BoundaryModel& model )
     {
-        model_ = &model ;
-        name_ = rhs.name_ ;
-        id_ = rhs.id_ ;
-        dim_ = rhs.dim_ ;
-        type_ = rhs.type_ ;
-        parent_ = rhs.parent_ ;
-        boundaries_ = rhs.boundaries_ ;
-        sides_ = rhs.sides_ ;
-        in_boundary_ = rhs.in_boundary_ ;
-        children_ = rhs.children_ ;
+        model_        = &model ;
+        name_         = rhs.name_ ;
+        id_           = rhs.id_ ;
+        type_         = rhs.type_;
+        geol_feature_ = rhs.geol_feature_;
+        parent_       = rhs.parent_ ;
+        boundaries_   = rhs.boundaries_ ;
+        sides_        = rhs.sides_ ;
+        in_boundary_  = rhs.in_boundary_ ;
+        children_     = rhs.children_ ;
     }
   
     /*!
@@ -155,15 +147,17 @@ namespace GRGMesh {
      */
     bool BoundaryModelElement::is_on_voi() const
     {
-        if( type_ == ALL ) 
+        if( geol_feature_ == ALL ) 
         {
             for( index_t j = 0; j < nb_in_boundary(); ++j ) {
-                GEOL_FEATURE t = in_boundary( j ).type() ;
+                GEOL_FEATURE t = in_boundary( j ).geological_feature() ;
                 if( t == VOI || t == STRATI_VOI || t == FAULT_VOI ){
                     return true ;
                 }
             }
-        } else if( type_ == VOI || type_ == STRATI_VOI || type_ == FAULT_VOI )
+        } else if( geol_feature_ == VOI        ||
+                   geol_feature_ == STRATI_VOI || 
+                   geol_feature_ == FAULT_VOI )
         {
             return true ;
         }
@@ -187,7 +181,7 @@ namespace GRGMesh {
      * @param[in] id The index of the line in the lines_ vector of the parent model
      */
     Line::Line( BoundaryModel* model, index_t id ):
-        BoundaryModelElement( model, 1, id )
+        BoundaryModelElement( model, BM_LINE, id )
     { 
         boundaries_.resize( 2, nil) ; 
     }
@@ -203,7 +197,7 @@ namespace GRGMesh {
         BoundaryModel* model,
         index_t id,
         const std::vector< index_t >& vertices )
-        : BoundaryModelElement( model, 1, id ), vertices_( vertices )
+        : BoundaryModelElement( model, BM_LINE, id ), vertices_( vertices )
     {
     }
 
@@ -222,7 +216,7 @@ namespace GRGMesh {
         index_t corner0,
         index_t corner1,
         const std::vector< index_t >& vertices
-    ):  BoundaryModelElement( model, 1, id ),
+    ):  BoundaryModelElement( model, BM_LINE, id ),
         vertices_( vertices )
     {
         boundaries_.push_back( corner0 ) ;
@@ -810,7 +804,7 @@ namespace GRGMesh {
         /// Else it is a base element and its size is computed
         
         // If this is a region 
-        if( E->dim() == 3 ) {
+        if( E->element_type() == BM_REGION ) {
             // Compute the volume if this is a region
             for( index_t i = 0; i < E->nb_boundaries(); i++ ) {
                 const Surface& surface = dynamic_cast< const Surface& >( E->boundary( i ) ) ;
@@ -827,10 +821,10 @@ namespace GRGMesh {
             }
             return fabs( result ) ;
         }
-        else if( E->dim() == 0 ) {
+        else if( E->element_type() == BM_CORNER ) {
             return 0 ; 
         }
-        else if( E->dim() == 1 ) {
+        else if( E->element_type() == BM_LINE ) {
             const Line* L = dynamic_cast< const Line* >( E ) ;
             grgmesh_assert( L != nil ) ;           
             for( index_t i = 1; i < E->nb_vertices(); ++i ){
@@ -838,7 +832,7 @@ namespace GRGMesh {
             }
             return result ;
         }
-        else if( E->dim() == 2 ) {
+        else if( E->element_type() == BM_SURFACE ) {
             const Surface* S = dynamic_cast< const Surface* >( E ) ;
             grgmesh_assert( S != nil ) ;
 

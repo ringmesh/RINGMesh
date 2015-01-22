@@ -59,7 +59,19 @@ namespace GRGMesh {
         FAULT_VOI
     } ;
     /// Default type is all
-    static GEOL_FEATURE default_type = ALL ;
+    static GEOL_FEATURE default_type = ALL ;   
+
+    /// Types for the elements (BoundaryModelElement) of a BoundaryModel
+    enum BM_TYPE {
+        BM_CORNER = 0,
+        BM_LINE,
+        BM_SURFACE,
+        BM_REGION, 
+        BM_CONTACT,
+        BM_INTERFACE,
+        BM_LAYER,
+        BM_NO_TYPE
+    } ;
 
     /*!
      * \brief Generic class describing one element of a BoundaryModel
@@ -88,12 +100,12 @@ namespace GRGMesh {
          */
         BoundaryModelElement(
             BoundaryModel* model = NULL, 
-            index_t dim = NO_ID, 
+            BM_TYPE element_type = BM_NO_TYPE, 
             index_t id = NO_ID, 
             index_t parent = NO_ID,
-            GEOL_FEATURE type = default_type )
+            GEOL_FEATURE geol = default_type )
             : model_( model ),  name_( "" ), id_( id ),
-            dim_( dim ), type_( type ), parent_( parent )
+            type_( element_type ), geol_feature_( geol ), parent_( parent )
         {
         }
         
@@ -104,8 +116,21 @@ namespace GRGMesh {
         // Access to fundamental information
         const std::string& name() const { return name_ ; }
         index_t id() const { return id_ ; }
-        index_t dim() const { return dim_ ; }
-        GEOL_FEATURE type() const { return type_ ; }
+        index_t dimension() const { 
+            switch( element_type() ) {
+                case BM_CORNER    : return 0 ;
+                case BM_LINE      : return 1 ;
+                case BM_SURFACE   : return 2 ;
+                case BM_REGION    : return 3 ;
+                case BM_CONTACT   : return 1 ;
+                case BM_INTERFACE : return 2 ;
+                case BM_LAYER     : return 3 ;
+                default:            return NO_ID ;
+            }
+        }
+                                   
+        BM_TYPE element_type() const { return type_ ; } 
+        GEOL_FEATURE geological_feature() const { return geol_feature_ ; }
         bool is_on_voi() const ;
 
         // Parent - only for Line, Surface, and Region
@@ -161,8 +186,8 @@ namespace GRGMesh {
         
         void set_parent( index_t p ){ parent_ = p ; }
         void set_name( const std::string& name ) { name_ = name ; }
-        void set_type( GEOL_FEATURE type ) { type_ = type ; } 
-        void set_dim( index_t dim ) { dim_ = dim ; }
+        void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; } 
+        void set_element_type( BM_TYPE t ) { type_ = t ; }
         void set_id( index_t id ) { id_ = id ; }
         
         void add_boundary( index_t b ) { boundaries_.push_back( b ) ; }
@@ -181,11 +206,11 @@ namespace GRGMesh {
         /// Id of this element in the appropriate vector of the BoundaryModel owning it
         index_t id_ ;
         
-        /// Dimension of the element 0 corner; 1 line; 2 surface; 3 region
-        index_t dim_ ;
+        /// Type of the element
+        BM_TYPE type_ ;
         
         /// Geological type for this object, default is ALL 
-        GEOL_FEATURE type_ ;
+        GEOL_FEATURE geol_feature_ ;
 
         /// Elements on the boundary of this element - their dimension is dim_-1
         std::vector< index_t > boundaries_ ;
@@ -209,7 +234,7 @@ namespace GRGMesh {
         FacetAttributeManager facet_attribute_manager_ ;
     } ;
 
-    const static BoundaryModelElement dummy_element = BoundaryModelElement( nil, 0 ) ;
+    const static BoundaryModelElement dummy_element = BoundaryModelElement( nil, BM_NO_TYPE ) ;
 
     /*! 
     * @brief A Corner - point at the intersection of at least 2 Lines 
@@ -223,7 +248,7 @@ namespace GRGMesh {
             BoundaryModel* model,
             index_t id = NO_ID,
             index_t p_id = 0 )
-            : BoundaryModelElement( model, 0, id ), vertex_( p_id )
+            : BoundaryModelElement( model, BM_CORNER, id ), vertex_( p_id )
         {
         }
         virtual ~Corner() { } ;
@@ -448,7 +473,7 @@ namespace GRGMesh {
             index_t parent = NO_ID,
             const GEOL_FEATURE& type = default_type )
             :
-            BoundaryModelElement( model, 2, id, parent, type ),
+            BoundaryModelElement( model, BM_SURFACE, id, parent, type ),
             is_triangulated_( false )
         {
         }
