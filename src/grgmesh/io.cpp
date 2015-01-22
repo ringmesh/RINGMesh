@@ -265,6 +265,7 @@ namespace GRGMesh {
                     }
                 }
                 unzClose( uz ) ;
+                return true ;
             }
 
             /// Save a \param[in] macro mesh in a .zip file which contains all the mesh file. Type of the export is
