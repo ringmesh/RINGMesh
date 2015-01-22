@@ -849,7 +849,7 @@ namespace GRGMesh {
         const vec3& p6,
         const vec3& p7 )
     {
-        vec3 vertices[7] ;
+        vec3 vertices[8] ;
         vertices[0] = p0 ;
         vertices[1] = p1 ;
         vertices[2] = p2 ;
