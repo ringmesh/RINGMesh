@@ -29,7 +29,7 @@ echo ================== GeoGram ====================
 cat << EOF > src/third_party/geogram/CMakeOptions.txt
 set(GEOGRAM_WITH_TETGEN TRUE)
 set(GEOGRAM_WITH_MEDIT FALSE)
-set(GEOGRAM_WITH_GRAPHICS FALSE)
+set(GEOGRAM_WITH_GRAPHICS TRUE)
 EOF
 
 for config in Release Debug
