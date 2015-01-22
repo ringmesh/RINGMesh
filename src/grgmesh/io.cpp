@@ -103,9 +103,6 @@ namespace GRGMesh {
             BoundaryModelIOHandler_var handler = BoundaryModelIOHandler::get_handler(
                 filename ) ;
             if( handler && handler->load( filename, model ) ) {
-                GEO::CmdLine::ui_clear_line() ;
-                GEO::Logger::out( "I/O" ) << "Structural model loaded from: "
-                    << filename << std::endl ;
                 return true ;
             }
 
@@ -122,9 +119,6 @@ namespace GRGMesh {
             BoundaryModelIOHandler_var handler = BoundaryModelIOHandler::get_handler(
                 filename ) ;
             if( handler && handler->save( model, filename ) ) {
-                GEO::CmdLine::ui_clear_line() ;
-                GEO::Logger::out( "I/O" ) << "Structural model saved in: "
-                    << filename << std::endl ;
                 return true ;
             }
 
@@ -204,9 +198,6 @@ namespace GRGMesh {
             MacroMeshIOHandler_var handler = MacroMeshIOHandler::get_handler(
                 filename ) ;
             if( handler && handler->load( filename, model ) ) {
-                GEO::CmdLine::ui_clear_line() ;
-                GEO::Logger::out( "I/O" ) << "Mesh loaded from: "
-                    << filename << std::endl ;
                 return true ;
             }
 
@@ -223,9 +214,6 @@ namespace GRGMesh {
             MacroMeshIOHandler_var handler = MacroMeshIOHandler::get_handler(
                 filename ) ;
             if( handler && handler->save( model, filename ) ) {
-                GEO::CmdLine::ui_clear_line() ;
-                GEO::Logger::out( "I/O" ) << "Mesh saved in: "
-                    << filename << std::endl ;
                 return true ;
             }
 
