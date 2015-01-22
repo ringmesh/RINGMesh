@@ -36,24 +36,16 @@ namespace GRGMesh {
         //   | _ \/ _ \ || | ' \/ _` / _` | '_| || | |\/| / _ \/ _` / -_) |
         //   |___/\___/\_,_|_||_\__,_\__,_|_|  \_, |_|  |_\___/\__,_\___|_|
         //                                     |__/
-        bool GRGMESH_API load(
-            const std::string& filename,
-            BoundaryModel& model ) ;
-        bool GRGMESH_API save(
-            BoundaryModel& model,
-            const std::string& filename ) ;
+        bool GRGMESH_API load( const std::string& filename, BoundaryModel& model ) ;
+        bool GRGMESH_API save( BoundaryModel& model, const std::string& filename ) ;
 
         //    __  __                 __  __        _
         //   |  \/  |__ _ __ _ _ ___|  \/  |___ __| |_
         //   | |\/| / _` / _| '_/ _ \ |\/| / -_|_-< ' \
         //   |_|  |_\__,_\__|_| \___/_|  |_\___/__/_||_|
         //
-        bool GRGMESH_API load(
-            MacroMesh& mm,
-            const std::string& mesh_file) ;
-        bool GRGMESH_API save(
-            const MacroMesh& mm,
-            const std::string& filename ) ;
+        bool GRGMESH_API load( const std::string& mesh_file, MacroMesh& mm ) ;
+        bool GRGMESH_API save( const MacroMesh& mm, const std::string& filename ) ;
 
 
         class GRGMESH_API BoundaryModelIOHandler: public GEO::Counted {
