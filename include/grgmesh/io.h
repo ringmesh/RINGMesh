@@ -30,20 +30,83 @@ namespace GRGMesh {
 
 namespace GRGMesh {
     namespace GRGMeshIO {
-        bool GRGMESH_API load_BoundaryModel_from_Model3D(
+
+        //    ___                   _               __  __         _     _
+        //   | _ ) ___ _  _ _ _  __| |__ _ _ _ _  _|  \/  |___  __| |___| |
+        //   | _ \/ _ \ || | ' \/ _` / _` | '_| || | |\/| / _ \/ _` / -_) |
+        //   |___/\___/\_,_|_||_\__,_\__,_|_|  \_, |_|  |_\___/\__,_\___|_|
+        //                                     |__/
+        bool GRGMESH_API load(
             const std::string& filename,
             BoundaryModel& model ) ;
-        bool GRGMESH_API save_BoundaryModel(
+        bool GRGMESH_API save(
             BoundaryModel& model,
             const std::string& filename ) ;
 
-
-        bool GRGMESH_API save_macro_mesh(
-            const MacroMesh& mm,
-            const std::string& filename ) ;
-        bool GRGMESH_API load_macro_mesh(
+        //    __  __                 __  __        _
+        //   |  \/  |__ _ __ _ _ ___|  \/  |___ __| |_
+        //   | |\/| / _` / _| '_/ _ \ |\/| / -_|_-< ' \
+        //   |_|  |_\__,_\__|_| \___/_|  |_\___/__/_||_|
+        //
+        bool GRGMESH_API load(
             MacroMesh& mm,
             const std::string& mesh_file) ;
+        bool GRGMESH_API save(
+            const MacroMesh& mm,
+            const std::string& filename ) ;
+
+
+        class GRGMESH_API BoundaryModelIOHandler: public GEO::Counted {
+        public:
+            static BoundaryModelIOHandler* create( const std::string& format ) ;
+            static BoundaryModelIOHandler* get_handler( const std::string& filename ) ;
+
+            virtual bool load(
+                const std::string& filename,
+                BoundaryModel& model ) = 0 ;
+            virtual bool save(
+                BoundaryModel& model,
+                const std::string& filename ) = 0 ;
+
+        protected:
+            BoundaryModelIOHandler()
+            {
+            }
+            virtual ~BoundaryModelIOHandler()
+            {
+            }
+        } ;
+        typedef GEO::SmartPointer< BoundaryModelIOHandler > BoundaryModelIOHandler_var ;
+        typedef GEO::Factory0< BoundaryModelIOHandler > BoundaryModelIOHandlerFactory;
+#define grgmesh_register_BoundaryModelIOHandler_creator(type, name) \
+    geo_register_creator(BoundaryModelIOHandlerFactory, type, name)
+
+
+        class GRGMESH_API MacroMeshIOHandler: public GEO::Counted {
+        public:
+            static MacroMeshIOHandler* create( const std::string& format ) ;
+            static MacroMeshIOHandler* get_handler( const std::string& filename ) ;
+
+            virtual bool load(
+                const std::string& filename,
+                MacroMesh& mesh ) = 0 ;
+            virtual bool save(
+                const MacroMesh& mesh,
+                const std::string& filename ) = 0 ;
+
+        protected:
+            MacroMeshIOHandler()
+            {
+            }
+            virtual ~MacroMeshIOHandler()
+            {
+            }
+        } ;
+        typedef GEO::SmartPointer< MacroMeshIOHandler > MacroMeshIOHandler_var ;
+        typedef GEO::Factory0< MacroMeshIOHandler > MacroMeshIOHandlerFactory ;
+#define grgmesh_register_MacroMeshIOHandler_creator(type, name) \
+    geo_register_creator(MacroMeshIOHandlerFactory, type, name)
+
     }
 }
 #endif
