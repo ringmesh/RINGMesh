@@ -101,7 +101,7 @@ echo.
 
 echo set(GEOGRAM_WITH_TETGEN TRUE) > src/third_party/geogram/CMakeOptions.txt
 echo set(GEOGRAM_WITH_MEDIT FALSE) >> src/third_party/geogram/CMakeOptions.txt
-echo set(GEOGRAM_WITH_GRAPHICS FALSE) >> src/third_party/geogram/CMakeOptions.txt
+echo set(GEOGRAM_WITH_GRAPHICS TRUE) >> src/third_party/geogram/CMakeOptions.txt
 
 echo.
 echo ============= Creating build system for %opsys% ============

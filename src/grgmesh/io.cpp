@@ -20,6 +20,7 @@
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/string.h>
 #include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh_builder.h>
 
 #include <geogram/mesh/mesh_private.h>
 
@@ -302,10 +303,80 @@ namespace GRGMesh {
 
         /************************************************************************/
 
+        class MESHBIOHandler: public MacroMeshIOHandler {
+        public:
+            virtual bool load( const std::string& filename, MacroMesh& mesh )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a MacroMesh from a meshb not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+            virtual bool save( const MacroMesh& mm, const std::string& filename )
+            {
+                GEO::Mesh mesh( 3 ) ;
+                GEO::MeshBuilder builder( &mesh ) ;
+                builder.begin_mesh() ;
+
+                std::vector< vec3 > unique_vertices ;
+                std::vector< index_t > indices ;
+                mm.unique_points( unique_vertices, indices ) ;
+                for( index_t p = 0; p < unique_vertices.size(); p++ ) {
+                    builder.add_vertex( unique_vertices[p] ) ;
+                }
+
+                index_t vertex_offset = 0 ;
+                index_t cell_offset = 0 ;
+                for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+                    const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
+                    for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
+                        builder.begin_facet() ;
+                        for( index_t v = cur_mesh.facet_begin( f );
+                            v < cur_mesh.facet_end( f ); v++ ) {
+                            builder.add_vertex_to_facet(
+                                indices[vertex_offset + cur_mesh.corner_vertex_index( v )] ) ;
+                        }
+                        builder.end_facet() ;
+                    }
+
+                    for( index_t c = 0; c < cur_mesh.nb_cells(); c++ ) {
+                        index_t vertex_indices[8] ;
+                        for( unsigned int v = 0; v < cur_mesh.cell_nb_vertices( c );
+                            v++ ) {
+                            vertex_indices[v] = indices[vertex_offset
+                                +cur_mesh.cell_vertex_index( c, v )] ;
+                        }
+                        signed_index_t adj_indices[6] ;
+                        for( index_t f = 0; f < cur_mesh.cell_nb_facets( c ); f++ ) {
+                            signed_index_t adj = cur_mesh.cell_adjacent( c, f )  ;
+                            adj_indices[f] = adj == -1 ? adj : cell_offset + adj ;
+                        }
+                        mesh.add_cell( cur_mesh.cell_type( c ), vertex_indices, adj_indices ) ;
+                    }
+                    vertex_offset += cur_mesh.nb_vertices() ;
+                    cell_offset += cur_mesh.nb_cells() ;
+                }
+
+                builder.end_mesh( false ) ;
+
+                GEO::MeshIOFlags flags ;
+                flags.set_element( GEO::MESH_FACETS ) ;
+                flags.set_element( GEO::MESH_CELLS ) ;
+                GEO::Logger::instance()->set_quiet( true ) ;
+                GEO::mesh_save( mesh, filename, flags ) ;
+                GEO::Logger::instance()->set_quiet( false ) ;
+
+                return true ;
+            }
+        } ;
+
+        /************************************************************************/
+
         MacroMeshIOHandler* MacroMeshIOHandler::create(
             const std::string& format )
         {
             grgmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" ) ;
+            grgmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" ) ;
 
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(format) ;
             if( handler ) {
