@@ -19,6 +19,7 @@
 #include <geogram/basic/progress.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/basic/algorithm.h>
 
 namespace GRGMesh {
 
@@ -159,7 +160,7 @@ namespace GRGMesh {
             for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                 vec3 cur_v = surface.vertex( v ) ;
                 std::vector< index_t > results ;
-                if(!ann.get_colocated( cur_v, 1, results ) ) {
+                if(!ann.get_colocated( cur_v, results, 1 ) ) {
                     GEO::Logger::err("") << "Impossible to find colocated point mesh/model" << std::endl ;
                     return false ;
                 }
