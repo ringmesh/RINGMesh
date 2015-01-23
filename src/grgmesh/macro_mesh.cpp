@@ -153,7 +153,7 @@ namespace GRGMesh {
         for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
             vec3 cur_v = surface.vertex(v) ;
                 std::vector<index_t> results ;
-                ann.get_colocated( cur_v, 1, results ) ;
+                ann.get_colocated( cur_v, results ) ;
                 indices.push_back(results[0]) ;
         }
     }
