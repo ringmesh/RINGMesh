@@ -857,8 +857,16 @@ namespace GRGMesh {
 
         bool get_colocated(
             const vec3& v,
-            index_t nb_neighbors,
-            std::vector< index_t >& result ) const ;
+            std::vector< index_t >& result,
+            index_t nb_neighbors = 5 ) const ;
+
+        index_t get_closest_neighbor(
+            const vec3& v,
+            double& dist = dummy_float64 ) const {
+            std::vector< index_t > result ;
+            get_neighbors( v, 1, result, &dist ) ;
+            return result[0] ;
+        }
 
         index_t get_neighbors(
             const vec3& v,

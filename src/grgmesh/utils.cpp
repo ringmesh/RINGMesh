@@ -905,11 +905,7 @@ namespace GRGMesh {
         for( index_t i = 0; i < indices_.size(); i++ ) {
             if( indices_[i] != i ) continue ;
             std::vector< index_t > results ;
-            index_t cur_neighbor = 0 ;
-            do {
-                cur_neighbor += nb_neighbors ;
-                ann.get_colocated( points_[i], cur_neighbor, results ) ;
-            } while( results.size() == cur_neighbor ) ;
+            ann.get_colocated( points_[i], results, nb_neighbors ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             for( index_t j = 0; j < results.size(); j++ ) {
                 if( id == results[j] ) continue ;
@@ -1062,18 +1058,23 @@ namespace GRGMesh {
 
     bool ColocaterANN::get_colocated(
         const vec3& v,
-        index_t nb_neighbors,
-        std::vector< index_t >& result ) const
+        std::vector< index_t >& result,
+        index_t nb_neighbors ) const
     {
         result.clear() ;
-        std::vector< index_t > neighbors( nb_neighbors ) ;
-
-        nb_neighbors = get_neighbors( v, nb_neighbors, neighbors ) ;
-        for( index_t i = 0; i < nb_neighbors; ++i ) {
-            if( Utils::inexact_equal( v.data(), ann_tree_->point_ptr(neighbors[i])  )) {
-                result.push_back( neighbors[i] ) ;
+        std::vector< index_t > neighbors ;
+        index_t cur_neighbor = 0 ;
+        do {
+            cur_neighbor += nb_neighbors ;
+            neighbors.resize( cur_neighbor ) ;
+            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors ) ;
+            for( index_t i = 0; i < nb_neighbors; ++i ) {
+                if( Utils::inexact_equal( v.data(),
+                    ann_tree_->point_ptr( neighbors[i] ) ) ) {
+                    result.push_back( neighbors[i] ) ;
+                }
             }
-        }
+        } while( result.size() == cur_neighbor ) ;
 
         return !result.empty() ;
     }
