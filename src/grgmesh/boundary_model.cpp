@@ -45,6 +45,24 @@
 namespace GRGMesh {
 
     /*!
+     * @brief Clear memory (useful to reduce memory impact)
+     */
+    void BoundaryModel::clear()
+    {
+        vertices_.clear() ;
+
+        corners_.clear() ;
+        lines_.clear() ;
+        surfaces_.clear() ;
+        regions_.clear() ;
+
+        nb_facets_in_surfaces_.clear() ;
+        contacts_.clear() ;
+        interfaces_.clear() ;
+        layers_.clear() ;
+    }
+
+    /*!
      * @brief Write in the stream the geological feature name
      * @param[in,out] out stream in which the name is written
      * @param[in] t geological feature

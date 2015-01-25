@@ -77,6 +77,7 @@ namespace GRGMesh {
          * \brief Destroy a BoundaryModel
          */
         virtual ~BoundaryModel(){} ;
+        void clear() ;
 
         // Accessors to model vertices
         index_t nb_vertices() const { return vertices_.size() ; }        
