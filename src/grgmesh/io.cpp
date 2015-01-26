@@ -316,9 +316,9 @@ namespace GRGMesh {
             virtual bool save( const MacroMesh& mm, const std::string& filename )
             {
                 GEO::Mesh mesh( 3 ) ;
-                GEO::MeshMutator::set_attributes( mesh, GEO::MESH_FACET_REGION ) ;
                 GEO::MeshBuilder builder( &mesh ) ;
                 builder.begin_mesh() ;
+                GEO::MeshMutator::set_attributes( mesh, GEO::MESH_FACET_REGION ) ;
 
                 std::vector< vec3 > unique_vertices ;
                 std::vector< index_t > indices ;
