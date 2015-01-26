@@ -19,6 +19,7 @@
 #include <geogram/basic/progress.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/basic/algorithm.h>
 
 namespace GRGMesh {
 
@@ -142,20 +143,32 @@ namespace GRGMesh {
         indices = mu.indices() ;
     }
 
-    void MacroMesh::surface_vertices_global_id(
-        index_t surface_id,
-        std::vector<index_t>& indices,
+    bool MacroMesh::surface_vertices_global_id(
+        std::vector< index_t > surface_id,
+        std::vector< index_t >& indices,
         std::vector< vec3 >& unique_vertices )
     {
-        ColocaterANN ann(unique_vertices) ;
-
-        const Surface& surface = model_->surface( surface_id ) ;
-        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-            vec3 cur_v = surface.vertex(v) ;
-                std::vector<index_t> results ;
-                ann.get_colocated( cur_v, results ) ;
-                indices.push_back(results[0]) ;
+        index_t nb_total_nodes ;
+        for( index_t s = 0; s < surface_id.size(); s++ ) {
+            nb_total_nodes += model_->surface(surface_id[s]).nb_vertices() ;
         }
+        indices.clear() ;
+        indices.reserve(nb_total_nodes) ;
+        ColocaterANN ann( unique_vertices ) ;
+        for( index_t s = 0; s < surface_id.size(); s++ ) {
+            const Surface& surface = model_->surface( surface_id[s] ) ;
+            for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+                vec3 cur_v = surface.vertex( v ) ;
+                std::vector< index_t > results ;
+                if(!ann.get_colocated( cur_v, results, 1 ) ) {
+                    GEO::Logger::err("") << "Impossible to find colocated point mesh/model" << std::endl ;
+                    return false ;
+                }
+                indices.push_back(results[0]) ;
+            }
+        }
+        GEO::sort_unique(indices) ;
+        return true ;
     }
     index_t MacroMesh::nb_vertices()
     {
