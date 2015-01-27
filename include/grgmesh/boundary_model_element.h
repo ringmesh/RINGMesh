@@ -61,6 +61,62 @@ namespace GRGMesh {
     /// Default type is all
     static GEOL_FEATURE default_type = ALL ;   
 
+    /*!
+     * @brief Map the name of a geological type with a value of GEOL_FEATURE
+     *
+     * @param[in] in Name of the feature
+     * @return The geological feature index
+     *
+     * \todo Keep all the information ( add new GEOL_FEATURE) instead of simplfying it.
+     */
+    static GEOL_FEATURE determine_geological_type( const std::string& in ) 
+    {
+        if( in == "" ) return ALL ;
+        if( in == "reverse_fault" ) return FAULT ;
+        if( in == "normal_fault" ) return FAULT ;
+        if( in == "fault" ) return FAULT ;
+        if( in == "top" ) return STRATI ;
+        if( in == "none" ) return STRATI ;
+        if( in == "unconformity" ) return STRATI ;
+        if( in == "boundary" ) return VOI ;
+
+        std::cout<< "ERROR" << "Unexpected type in the model file " << in
+            << std::endl ;
+        return ALL ;
+    }
+    
+    /*!
+     * @brief Compute an intersection type
+     *
+     * @param[in] types Type that intersect
+     * @return Intersection type
+     */
+    static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) 
+    {
+        if( types.size() == 0 ) return ALL ;
+
+        // Sort and remove duplicates form the in types
+        std::vector< GEOL_FEATURE > in = types ;
+        std::sort( in.begin(), in.end() ) ;
+        index_t new_size = std::unique( in.begin(), in.end() ) - in.begin() ;
+        in.resize( new_size ) ;
+
+        if( in.size() == 1 ) return in[0] ;
+
+        if( in.size() == 2 ) {
+            if( in[0] == ALL ) return ALL ;
+            if( in[0] == STRATI ) {
+                if( in[1] == FAULT ) return STRATI_FAULT ;
+                if( in[1] == VOI ) return STRATI_VOI ;
+            } else if( in[0] == FAULT ) {
+                if( in[1] == VOI ) return FAULT_VOI ;
+            }
+            // Other cases ? for corners ? what is the vertex ?
+            return ALL ;
+        }
+        return ALL ;
+    }
+
     /// Types for the elements (BoundaryModelElement) of a BoundaryModel
     enum BM_TYPE {
         BM_CORNER = 0,
@@ -77,7 +133,6 @@ namespace GRGMesh {
      * \brief Generic class describing one element of a BoundaryModel
      */
     class GRGMESH_API BoundaryModelElement {
-        friend class BoundaryModelBuilder ;
 
     public:
         enum AttributeLocation {
@@ -180,21 +235,25 @@ namespace GRGMesh {
             return const_cast< FacetAttributeManager* >( &facet_attribute_manager_ ) ;
         }
 
-    protected:        
+    public:
+        // Modification of the BoundaryModelElement
         void copy_macro_topology(
             const BoundaryModelElement& rhs, BoundaryModel& model ) ;
         
-        void set_parent( index_t p ){ parent_ = p ; }
+        void set_model( BoundaryModel* m ){ model_ = m  ; } 
         void set_name( const std::string& name ) { name_ = name ; }
-        void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; } 
-        void set_element_type( BM_TYPE t ) { type_ = t ; }
         void set_id( index_t id ) { id_ = id ; }
-        
+        void set_element_type( BM_TYPE t ) { type_ = t ; }
+        void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; } 
         void add_boundary( index_t b ) { boundaries_.push_back( b ) ; }
         void add_boundary( index_t b, bool side ) { boundaries_.push_back(b) ; sides_.push_back(side) ; }
-        virtual void add_in_boundary( index_t e ) { in_boundary_.push_back(e) ; }
+        void add_in_boundary( index_t e ) { in_boundary_.push_back(e) ; }
+        void set_parent( index_t p ){ parent_ = p ; }       
         void add_child( index_t e ){ children_.push_back( e ) ; }
-       
+
+        void set_boundary( index_t id, index_t b ) { boundaries_[id] = b ; }
+        void set_boundary( index_t id, index_t b, bool side ) { boundaries_[id] = b ; sides_[id] = side ; }
+        void set_in_boundary( index_t id, index_t in_b ) { in_boundary_[id] = in_b ; }
 
     protected :
         /// \todo Can we have something else than a POINTER ?? default constructor is needed...
@@ -241,13 +300,12 @@ namespace GRGMesh {
     * 
     * Element of dimension 0. Its geometry is determined by one vertex.
     */
-    class GRGMESH_API Corner : public BoundaryModelElement {
-        friend class BoundaryModelBuilder ;
+    class GRGMESH_API Corner : public BoundaryModelElement {       
     public:
         Corner(
             BoundaryModel* model,
             index_t id = NO_ID,
-            index_t p_id = 0 )
+            index_t p_id = NO_ID )
             : BoundaryModelElement( model, BM_CORNER, id ), vertex_( p_id )
         {
         }
@@ -262,7 +320,6 @@ namespace GRGMesh {
         virtual index_t model_vertex_id( index_t id = 0 ) const { return vertex_ ; } 
         virtual const vec3& vertex( index_t p = 0 ) const ;
         
-    private:
         void set_vertex( index_t vertex ) { vertex_ = vertex ; }
 
     private:
@@ -277,7 +334,6 @@ namespace GRGMesh {
      * It is in the boundary of several Surface
      */
     class GRGMESH_API Line: public BoundaryModelElement {
-        friend class BoundaryModelBuilder ;
         friend class LineMutator ;
     public:
         Line( BoundaryModel* model, index_t id = NO_ID ) ;
@@ -314,6 +370,16 @@ namespace GRGMesh {
         double segment_length( index_t s ) const ;
         double total_length() const ;
             
+        void set_vertices( const std::vector< index_t > v ) { 
+            vertices_.resize(0) ;
+            vertices_.insert( vertices_.begin(), v.begin(), v.end() ) ;
+        }
+        void set_vertex( index_t index, index_t new_model_index ) {
+            vertices_[index] = new_model_index ;
+        }
+
+        bool equal( const std::vector< index_t >& rhs_vertices ) const ;
+
     private:
         /// Indices of the model vertices in the line
         /// If the line is closed, the last vertex is equal to the first.
@@ -401,17 +467,17 @@ namespace GRGMesh {
         }
     } ;
 
-    /*! 
-     * @brief Class to perform modifications of a Line
-     */
-    class GRGMESH_API LineMutator {
+    // Is it really possible to do operations on one Line without modifying the model ??
+    // What is the point of such a class ?
+    // Just to modify the vertices of a Line ??
+    /*class GRGMESH_API LineMutator {
     public:
-        LineMutator( Line& M )
-            : M_( M )
+        LineMutator( Line& L )
+            : L_( L )
         {
         }
-        LineMutator( const Line& M )
-            : M_( const_cast< Line& >( M ) )
+        LineMutator( const Line& L )
+            : L_( const_cast< Line& >( L ) )
         {
         }
         void set_vertex( index_t id, const vec3& p ) ;
@@ -425,7 +491,7 @@ namespace GRGMesh {
 
     private:
         Line& M_ ;
-    };
+    };*/
 
 
     /*!
@@ -435,7 +501,6 @@ namespace GRGMesh {
     * Its boundaries are several Lines and it is on the boundary of 1 or 2 Region
     */
     class GRGMESH_API Surface : public BoundaryModelElement {
-        friend class BoundaryModelBuilder ;
         friend class SurfaceMutator ;
     public:
         const static index_t NO_ADJACENT = index_t( -1 ) ;
@@ -586,13 +651,10 @@ namespace GRGMesh {
             index_t first_facet ) const ;      
 
 
-    private:
+        // Set things
         void set_key_facet( const KeyFacet& key ) { key_facet_ = key ; }
         void set_first_triangle_as_key() ;
-        
-        // Needed at model building
-        index_t facet_from_surface_vertex_ids( index_t i0, index_t i1 ) const ;
-
+             
         void set_adjacent( index_t f, index_t e, index_t adjacent ) {
             adjacent_[facet_begin(f)+e] = adjacent ;
         }
@@ -623,6 +685,11 @@ namespace GRGMesh {
         void set_adjacent( const std::vector< index_t >& adjacent ){
             grgmesh_assert( adjacent.size() == facets_.size() ) ;
             adjacent_ = adjacent ;
+        }
+        index_t facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const ;
+        
+        void set_vertex( index_t index, index_t new_model_index ) {
+            vertices_[index] = new_model_index ;
         }
        
     private:
@@ -729,31 +796,35 @@ namespace GRGMesh {
      */
     class GRGMESH_API SurfaceMutator {
     public:
-        SurfaceMutator( Surface& M )
-            : M_( M )
+        SurfaceMutator( Surface& S )
+            : S_( S )
         {
         }
-        SurfaceMutator( const Surface& M )
-            : M_( const_cast< Surface& >( M ) )
+        SurfaceMutator( const Surface& S )
+            : S_( const_cast< Surface& >( S ) )
         {
         }
-        void set_vertex( index_t id, const vec3& p ) ;
-        vec3& vertex( index_t p ) const ;
-        std::vector< index_t >& vertices() const { return M_.vertices_ ; }
-        std::vector< index_t >& facets() const { return M_.facets_ ; }
-        std::vector< index_t >& facet_ptr() const { return M_.facet_ptr_ ; }
-        std::vector< index_t >& adjacents() const { return M_.adjacent_ ; }
+       // void set_vertex( index_t id, const vec3& p ) ;
+       // vec3& vertex( index_t p ) const ;
 
-        void clear()
+        std::vector< index_t >& vertices() const  { return S_.vertices_  ; }
+        std::vector< index_t >& facets() const    { return S_.facets_    ; }
+        std::vector< index_t >& facet_ptr() const { return S_.facet_ptr_ ; }
+        std::vector< index_t >& adjacents() const { return S_.adjacent_  ; }
+
+       /* void clear()
         {
-            M_.vertices_.clear() ;
-            M_.facets_.clear() ;
-            M_.facet_ptr_.clear() ;
-            M_.adjacent_.clear() ;
-        }
+            S_.vertices_.clear() ;
+            S_.facets_.clear() ;
+            S_.facet_ptr_.clear() ;
+            S_.adjacent_.clear() ;
+        }*/
+        
+        void cut_by_line( const Line& L ) ;
+
 
     private:
-        Surface& M_ ;
+        Surface& S_ ;
     };
 
 
