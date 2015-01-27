@@ -29,7 +29,7 @@
 
 namespace GRGMesh {
 
-    vec3 mesh_cell_center(const GEO::Mesh& M, index_t cell) {
+    vec3 Utils::mesh_cell_center(const GEO::Mesh& M, index_t cell) {
         vec3 result(0.0, 0.0, 0.0);
         double count = 0.0;
         for(index_t c = M.cell_vertices_begin(cell); c < M.cell_vertices_begin(cell+1); ++c) {
@@ -1004,7 +1004,7 @@ namespace GRGMesh {
                 signed_index_t nb_vertices = mesh.nb_cells() ;
                 ann_points_ = new double[nb_vertices*3] ;
                 for( index_t i = 0; i < mesh.nb_cells(); i++ ) {
-                    vec3 center = mesh_cell_center( mesh, i )  ;
+                    vec3 center = Utils::mesh_cell_center( mesh, i )  ;
                     index_t index_in_ann = 3*i ;
                     ann_points_[index_in_ann] = center.x;
                     ann_points_[index_in_ann+1] = center.y;
