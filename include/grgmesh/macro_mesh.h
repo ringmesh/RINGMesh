@@ -59,6 +59,11 @@ namespace GRGMesh {
         void init_tet_aabb( index_t region ) ;
         void init_all_tet_aabb() ;
 
+        void init_surfaces() ;
+        index_t surface_begin( index_t s )  ;
+        index_t surface_end( index_t s )  ;
+        index_t surface_mesh( index_t s ) ;
+
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
         //    / _ \/ _/ _/ -_|_-<_-< _ \ '_(_-<
@@ -106,6 +111,10 @@ namespace GRGMesh {
         std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
         std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
         index_t nb_vertices_ ;
+
+        std::vector< index_t > surface_facets_ ;
+        std::vector< index_t > surface_ptr_ ;
+        std::vector< index_t > surface_mesh_ ;
     } ;
 
 }
