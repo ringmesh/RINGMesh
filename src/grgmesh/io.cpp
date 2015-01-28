@@ -148,8 +148,8 @@ namespace GRGMesh {
                     return false ;
                 }
 
-                BoundaryModelBuilder builder( model ) ;
-                builder.load_file( input ) ;
+                BoundaryModelBuilderGocad builder( model ) ;
+                builder.load_ml_file( input ) ;
                 return true ;
             }
 

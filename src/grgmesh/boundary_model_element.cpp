@@ -41,6 +41,28 @@
 
 namespace GRGMesh {
 
+
+    bool BoundaryModelElement::operator==( const BoundaryModelElement& rhs ) const
+    {
+        if( model_ != rhs.model_ ) return false ;
+        if( name_ != rhs.name_ ) return false ;
+        if( id_ != rhs.id_ ) return false ;
+        if( type_ != rhs.type_ ) return false ;               
+        if( geol_feature_ != rhs.geol_feature_ ) return false ;        
+        if( nb_boundaries() != rhs.nb_boundaries() ) return false ;
+        if( !std::equal( boundaries_.begin(), boundaries_.end(), rhs.boundaries_.begin() ) ) return false ;
+        if( !std::equal( sides_.begin(), sides_.end(), rhs.sides_.begin() ) ) return false ;
+        if( nb_in_boundary() != rhs.nb_in_boundary() ) return false ;
+        if( !std::equal( in_boundary_.begin(), in_boundary_.end(), rhs.in_boundary_.begin() ) ) return false ;        
+        if( parent_ != rhs.parent_ ) return false ;        
+        if( nb_children() != rhs.nb_children() ) return false ;
+        if( !std::equal( children_.begin(), children_.end(), rhs.children_.begin() ) ) return false ;
+        
+        return true ;
+    }
+
+
+
     /*!
      *
      * @return Assert that the parent exist and returns it.
@@ -262,7 +284,7 @@ namespace GRGMesh {
 
     /*!
      *
-     * @return The lenght of the Line
+     * @return The length of the Line
      */
     double Line::total_length() const {
         double result = 0 ;
@@ -272,12 +294,29 @@ namespace GRGMesh {
         return result ;
     }
 
+
+    /*!
+     * @brief Returns true if the Line has exaclty the given vertices 
+     *
+     * @param[in] rhs_vertices Vertices to compare to
+     */
+    bool Line::equal( const std::vector< index_t >& rhs_vertices ) const {        
+        if( nb_vertices() != rhs_vertices.size() ) return false ; 
+        
+        if( std::equal( rhs_vertices.begin(), rhs_vertices.end(), vertices_.begin() ) )
+            return true ;
+            
+        if( std::equal( rhs_vertices.begin(), rhs_vertices.end(), vertices_.rbegin() ) )
+            return true ;
+            
+        return false ;
+    }
    
     /*!
      * \todo Check LineMutato function implementation and comment them
      * @param id
      * @param p
-     */
+     *
     void LineMutator::set_vertex( index_t id, const vec3& p ) {
         M_.model_->vertices_[M_.vertices_[id]] = p ;
     }
@@ -286,7 +325,7 @@ namespace GRGMesh {
      *
      * @param p
      * @return
-     */
+     *
     vec3& LineMutator::vertex( index_t p ) const
     {
         return M_.model_->vertices_[ M_.vertices_[p] ] ;
@@ -770,7 +809,7 @@ namespace GRGMesh {
      * \todo Check the SurfaceMutator code and comment it 
      * @param id
      * @param p
-     */
+     *
     void SurfaceMutator::set_vertex( index_t id, const vec3& p ) {
         M_.model_->vertices_[M_.vertices_[id]] = p ;
     }
@@ -779,11 +818,102 @@ namespace GRGMesh {
      *
      * @param p
      * @return
-     */
+     *
     vec3& SurfaceMutator::vertex( index_t p ) const
     {
         return M_.model_->vertices_[ M_.vertices_[p] ] ;
     }
+
+
+    /*!
+     * @brief Cut the Surface along the line 
+     * @details First modify to NO_ADJACENT the neighbors the edges that are along the line 
+     * and then duplicate the points along this new boundary
+     * Corners are not duplicated - maybe they should be in some cases but not in general..
+     * 
+     * @param[in] L The Line
+     */
+    void SurfaceMutator::cut_by_line( const Line& L ) {        
+        for( index_t i= 0; i+1 < L.nb_vertices(); ++i ) {
+            index_t p0 = L.model_vertex_id( i ) ;
+            index_t p1 =  (i == L.nb_vertices()-1) ? L.model_vertex_id(0) : L.model_vertex_id( i+1 ) ;
+
+            index_t f = Surface::NO_ID ;
+            index_t v = Surface::NO_ID ;
+            S_.edge_from_model_vertex_ids(p0, p1, f, v) ;
+            grgmesh_debug_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
+
+            index_t f2 = S_.adjacent( f, v ) ;
+            index_t v2 = Surface::NO_ID ;
+            grgmesh_debug_assert( f2 != Surface::NO_ADJACENT ) ;
+            S_.edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
+            grgmesh_debug_assert( v2 != Surface::NO_ID ) ;
+
+            // Virtual cut - set adjacencies to NO_ADJACENT
+            S_.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
+            S_.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
+        }
+        
+        // Now travel on one side of the "faked" boundary and actually duplicate
+        // the vertices in the surface      
+        // Get started in the surface - find (again) one of the edge that contains 
+        // the first two vertices of the line
+        index_t f = Surface::NO_ID ;
+        index_t v = Surface::NO_ID ;
+        S_.oriented_edge_from_model_vertex_ids( L.model_vertex_id( 0 ), L.model_vertex_id( 1 ), f, v ) ;
+        grgmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
+
+        index_t id0 = S_.surf_vertex_id( f, v ) ;
+        index_t id1 = S_.surf_vertex_id( f, S_.next_in_facet(f,v) ) ;
+        
+        // Stopping criterion
+        index_t last_vertex = L.model_vertex_id( L.nb_vertices()-1 ) ;
+        // Hopefully we have all the vertices on the Line.. 
+        /// \todo Check that all vertices on the line are recovered
+        while( S_.model_vertex_id( id1 ) != last_vertex ) {
+            // Get the next vertex on the border 
+            // Same algorithm than in determine_line_vertices function
+            index_t next_f = Surface::NO_ID ;
+            index_t id1_in_next = Surface::NO_ID ;
+            index_t next_id1_in_next = Surface::NO_ID ;
+
+            // Get the next facet and next triangle on this boundary
+            S_.next_on_border( f, S_.facet_vertex_id(f, id0), S_.facet_vertex_id(f,id1), 
+                next_f, id1_in_next, next_id1_in_next ) ;
+            grgmesh_assert(
+                next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
+                    && next_id1_in_next != Surface::NO_ID ) ;
+            
+            index_t next_id1 = S_.surf_vertex_id( next_f, next_id1_in_next ) ;
+            
+            // Duplicate the vertex at id1 
+            // After having determined the next 1 we can probably get both at the same time 
+            // but I am lazy, and we must be careful not to break next_on_border function (Jeanne)
+            std::vector< index_t > facets_around_id1 ;
+            S_.facets_around_vertex( id1, facets_around_id1, false, f ) ;
+
+            S_.vertices_.push_back( S_.model_vertex_id(id1) ) ;
+            grgmesh_debug_assert( S_.nb_vertices() > 0 ) ;
+            index_t new_id1 = S_.nb_vertices()-1 ;
+            
+            for( index_t i = 0; i < facets_around_id1.size(); ++i ){
+                index_t cur_f = facets_around_id1[i] ;
+                for( index_t cur_v = 0; cur_v < S_.nb_vertices_in_facet( cur_f ) ; cur_v++ )
+                {
+                    if( S_.surf_vertex_id( cur_f, cur_v ) == id1 ) {
+                        S_.facets_[ S_.facet_begin( cur_f ) + cur_v ] = new_id1 ;
+                        break ;
+                    }
+                }
+            }
+            // Update
+            f = next_f ;
+            id0 = new_id1 ;
+            id1 = next_id1 ;
+        }
+        /// \todo Check qu'on ne coupe pas complètement la surface, si on a 2 surfaces à la fin c'est la merde
+    }
+
 
 
 
