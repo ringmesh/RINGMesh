@@ -187,7 +187,7 @@ namespace GRGMesh {
     void MacroMesh::init_surfaces()
     {
         if( !surface_facets_.empty() ) return ;
-        surface_mesh_.resize( model_.nb_surfaces(), Surface::NO_ID ) ;
+        surface2mesh_.resize( model_.nb_surfaces(), Surface::NO_ID ) ;
         surface_ptr_.resize( model_.nb_surfaces() + 1, 0 ) ;
 
         for( index_t m = 0; m < nb_meshes(); m++ ) {
@@ -195,14 +195,14 @@ namespace GRGMesh {
             std::vector< signed_index_t > surface_proccessed ;
             for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
                 signed_index_t surface_id = cur_mesh.facet_region( f ) ;
-                if( surface_mesh_[surface_id] != Surface::NO_ID ) continue ;
+                if( surface2mesh_[surface_id] != Surface::NO_ID ) continue ;
                 if( !Utils::contains( surface_proccessed, surface_id ) ) {
                     surface_proccessed.push_back( surface_id ) ;
                 }
                 surface_ptr_[surface_id+1]++ ;
             }
             for( index_t s = 0; s < surface_proccessed.size(); s++ ) {
-                surface_mesh_[surface_proccessed[s]] = m ;
+                surface2mesh_[surface_proccessed[s]] = m ;
             }
         }
 
@@ -217,7 +217,7 @@ namespace GRGMesh {
             const GEO::Mesh& cur_mesh = mesh( m ) ;
             for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
                 signed_index_t surface_id = cur_mesh.facet_region( f ) ;
-                if( surface_mesh_[surface_id] != m ) continue ;
+                if( surface2mesh_[surface_id] != m ) continue ;
                 surface_facets_[surface_ptr_[surface_id]
                     + surface_facet_index[surface_id]++ ] = f ;
             }
@@ -237,7 +237,7 @@ namespace GRGMesh {
     index_t MacroMesh::surface_mesh( index_t s )
     {
         init_surfaces() ;
-        return surface_mesh_[s] ;
+        return surface2mesh_[s] ;
     }
 }
 

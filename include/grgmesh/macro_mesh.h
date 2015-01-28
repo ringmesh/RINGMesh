@@ -93,6 +93,9 @@ namespace GRGMesh {
         {
             return model_ ;
         }
+        const index_t surface_facet( index_t f ) const  {
+            return surface_facets_[f] ;
+        }
         bool surface_vertices_global_id(
             std::vector<index_t> surface_id,
             std::vector<index_t>& indices,
@@ -114,7 +117,7 @@ namespace GRGMesh {
 
         std::vector< index_t > surface_facets_ ;
         std::vector< index_t > surface_ptr_ ;
-        std::vector< index_t > surface_mesh_ ;
+        std::vector< index_t > surface2mesh_ ;
     } ;
 
 }
