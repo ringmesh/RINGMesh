@@ -318,16 +318,12 @@ namespace GRGMesh {
                 GEO::Mesh mesh( 3 ) ;
                 GEO::MeshBuilder builder( &mesh ) ;
                 builder.begin_mesh() ;
+                MacroMesh& MM = const_cast <MacroMesh&> (mm) ;
                 GEO::MeshMutator::set_attributes( mesh, GEO::MESH_FACET_REGION ) ;
-
-                std::vector< vec3 > unique_vertices ;
-                std::vector< index_t > indices ;
-                mm.unique_points( unique_vertices, indices ) ;
-                for( index_t p = 0; p < unique_vertices.size(); p++ ) {
-                    builder.add_vertex( unique_vertices[p] ) ;
+                for( index_t p = 0; p < MM.nb_vertices(); p++ ) {
+                    builder.add_vertex( MM.vertex(p) ) ;
                 }
 
-                index_t vertex_offset = 0 ;
                 index_t cell_offset = 0 ;
                 for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
                     const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
@@ -335,8 +331,7 @@ namespace GRGMesh {
                         builder.begin_facet() ;
                         for( index_t v = cur_mesh.facet_begin( f );
                             v < cur_mesh.facet_end( f ); v++ ) {
-                            builder.add_vertex_to_facet(
-                                indices[vertex_offset + cur_mesh.corner_vertex_index( v )] ) ;
+                            builder.add_vertex_to_facet(MM.global_vertex_id(m,cur_mesh.corner_vertex_index( v )));
                         }
                         builder.end_facet( cur_mesh.facet_region( f ) ) ;
                     }
@@ -345,8 +340,8 @@ namespace GRGMesh {
                         index_t vertex_indices[8] ;
                         for( unsigned int v = 0; v < cur_mesh.cell_nb_vertices( c );
                             v++ ) {
-                            vertex_indices[v] = indices[vertex_offset
-                                +cur_mesh.cell_vertex_index( c, v )] ;
+                            vertex_indices[v] = MM.global_vertex_id(m,
+                                cur_mesh.cell_vertex_index( c, v )) ;
                         }
                         signed_index_t adj_indices[6] ;
                         for( index_t f = 0; f < cur_mesh.cell_nb_facets( c ); f++ ) {
@@ -355,7 +350,6 @@ namespace GRGMesh {
                         }
                         mesh.add_cell( cur_mesh.cell_type( c ), vertex_indices, adj_indices ) ;
                     }
-                    vertex_offset += cur_mesh.nb_vertices() ;
                     cell_offset += cur_mesh.nb_cells() ;
                 }
 

@@ -48,9 +48,6 @@ namespace GRGMesh {
             std::vector< std::vector< vec3 > >& internal_vertices =
                 empty_vertices ) ;
 
-        void unique_points(
-            std::vector< vec3 >& unique_vertices,
-            std::vector< index_t >& indices ) const ;
 
         const GEO::MeshFacetsAABB& facet_aabb( index_t region ) ;
         void init_facet_aabb( index_t region ) ;
@@ -63,6 +60,10 @@ namespace GRGMesh {
         index_t surface_begin( index_t s )  ;
         index_t surface_end( index_t s )  ;
         index_t surface_mesh( index_t s ) ;
+
+        void init_vertices() ;
+        index_t global_vertex_id( index_t mesh, index_t v ) ;
+        const vec3& vertex(index_t global_v) const ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
@@ -102,6 +103,11 @@ namespace GRGMesh {
             std::vector< vec3 >& unique_vertices ) ;
         index_t nb_vertices() ;
 
+    private:
+        void unique_points(
+            std::vector< vec3 >& unique_vertices,
+            std::vector< index_t >& indices )  ;
+
     protected:
         /// BoundaryModel representing the structural information of the mesh
         const BoundaryModel& model_ ;
@@ -118,6 +124,13 @@ namespace GRGMesh {
         std::vector< index_t > surface_facets_ ;
         std::vector< index_t > surface_ptr_ ;
         std::vector< index_t > surface2mesh_ ;
+
+        std::vector< vec3 > unique_vertices_ ;
+        std::vector< index_t > global_vertex_indices_ ;
+        std::vector< index_t > vertex2mesh_ ;
+;
+
+
     } ;
 
 }

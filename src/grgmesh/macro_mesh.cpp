@@ -121,16 +121,22 @@ namespace GRGMesh {
 
     void MacroMesh::unique_points(
         std::vector< vec3 >& unique_vertices,
-        std::vector< index_t >& indices ) const
+        std::vector< index_t >& indices )
     {
+        vertex2mesh_.resize(meshes_.size(),0) ;
+
         index_t nb_non_unique_vertices = 0 ;
         for( index_t i = 0; i < meshes_.size(); i++ ) {
+            vertex2mesh_[i] = nb_non_unique_vertices ;
             nb_non_unique_vertices += meshes_[i]->nb_vertices() ;
+
         }
         std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
         index_t index = 0 ;
         for( index_t i = 0; i < meshes_.size(); i++ ) {
-            for( index_t j = 0; j < meshes_[i]->nb_vertices(); j++ ) {
+            index_t nb_vertices =  meshes_[i]->nb_vertices() ;
+            vertex2mesh_[i+1] = nb_vertices ;
+            for( index_t j = 0; j < nb_vertices; j++ ) {
                 all_vertices[index] = vec3( meshes_[i]->vertex_ptr( j )[0],
                     meshes_[i]->vertex_ptr( j )[1],
                     meshes_[i]->vertex_ptr( j )[2] ) ;
@@ -174,15 +180,10 @@ namespace GRGMesh {
     }
     index_t MacroMesh::nb_vertices()
     {
-        if( nb_vertices_ != -1 ) {
-            return nb_vertices_ ;
-        }
-        std::vector< vec3 > unique_vertices ;
-        std::vector< index_t > indices ;
-        unique_points( unique_vertices, indices ) ;
-        nb_vertices_ = unique_vertices.size() ;
-        return nb_vertices_ ;
+        init_vertices() ;
+        return unique_vertices_.size() ;
     }
+
 
     void MacroMesh::init_surfaces()
     {
@@ -239,5 +240,20 @@ namespace GRGMesh {
         init_surfaces() ;
         return surface2mesh_[s] ;
     }
+
+    void MacroMesh::init_vertices() {
+        if( !unique_vertices_.empty() ) return ;
+        unique_points( unique_vertices_, global_vertex_indices_ ) ;
+    }
+
+    index_t MacroMesh::global_vertex_id(index_t mesh, index_t v) {
+        init_vertices() ;
+        return global_vertex_indices_[vertex2mesh_[mesh] + v] ;
+    }
+
+    const vec3& MacroMesh::vertex( index_t global_v) const {
+        return unique_vertices_[global_v] ;
+    }
+
 }
 
