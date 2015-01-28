@@ -804,7 +804,7 @@ namespace GRGMesh {
         /// Else it is a base element and its size is computed
         
         // If this is a region 
-        if( E->element_type() == BM_REGION ) {
+        if( E->element_type() == BoundaryModelElement::BM_REGION ) {
             // Compute the volume if this is a region
             for( index_t i = 0; i < E->nb_boundaries(); i++ ) {
                 const Surface& surface = dynamic_cast< const Surface& >( E->boundary( i ) ) ;
@@ -821,10 +821,10 @@ namespace GRGMesh {
             }
             return fabs( result ) ;
         }
-        else if( E->element_type() == BM_CORNER ) {
+        else if( E->element_type() == BoundaryModelElement::BM_CORNER ) {
             return 0 ; 
         }
-        else if( E->element_type() == BM_LINE ) {
+        else if( E->element_type() == BoundaryModelElement::BM_LINE ) {
             const Line* L = dynamic_cast< const Line* >( E ) ;
             grgmesh_assert( L != nil ) ;           
             for( index_t i = 1; i < E->nb_vertices(); ++i ){
@@ -832,7 +832,7 @@ namespace GRGMesh {
             }
             return result ;
         }
-        else if( E->element_type() == BM_SURFACE ) {
+        else if( E->element_type() == BoundaryModelElement::BM_SURFACE ) {
             const Surface* S = dynamic_cast< const Surface* >( E ) ;
             grgmesh_assert( S != nil ) ;
 

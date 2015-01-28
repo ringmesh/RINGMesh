@@ -106,7 +106,8 @@ namespace GRGMesh {
         const Surface& surface( index_t index ) const { return surfaces_.at(index) ; }
         const BoundaryModelElement& region( index_t index ) const { return regions_.at(index) ; }
         const BoundaryModelElement& universe() const { return universe_ ; }        
-        const BoundaryModelElement& element( BM_TYPE element_type, index_t index ) const ;       
+        const BoundaryModelElement& element(
+            BoundaryModelElement::BM_TYPE element_type, index_t index ) const ;
         const BoundaryModelElement& contact( index_t index ) const { return contacts_.at(index) ; }
         const BoundaryModelElement& one_interface( index_t index ) const { return interfaces_.at(index) ; }
         const BoundaryModelElement& layer( index_t index ) const { return layers_.at(index) ; }
@@ -131,7 +132,9 @@ namespace GRGMesh {
         bool load_gocad_model3d( const std::string& in ) ;
 
         bool check_model3d_compatibility() ;
-        static void save_type( std::ostream& out, GEOL_FEATURE t ) ;
+        static void save_type(
+            std::ostream& out,
+            BoundaryModelElement::GEOL_FEATURE t ) ;
 
     private:
         std::string name_ ;
@@ -286,7 +289,8 @@ namespace GRGMesh {
 
         index_t create_interface(
             const std::string& name,
-            GEOL_FEATURE type = default_type ) ;
+            BoundaryModelElement::GEOL_FEATURE type =
+                BoundaryModelElement::default_type ) ;
 
         void add_interface_child( index_t id, index_t child ) {
             model_.interfaces_[id].add_child( child ) ;
@@ -318,8 +322,13 @@ namespace GRGMesh {
         index_t interface_id( const std::string& name ) const ;
 
         index_t find_or_create_corner( index_t index ) ;
-        index_t find_or_create_line( index_t corner0, index_t corner1, std::vector< index_t >& vertices ) ;
-        index_t find_or_create_contact( std::vector< index_t >& interfaces, GEOL_FEATURE type ) ;
+        index_t find_or_create_line(
+            index_t corner0,
+            index_t corner1,
+            std::vector< index_t >& vertices ) ;
+        index_t find_or_create_contact(
+            std::vector< index_t >& interfaces,
+            BoundaryModelElement::GEOL_FEATURE type ) ;
         
         index_t find_corner( const vec3& ) const ;
         index_t find_corner( index_t ) const ;
@@ -457,8 +466,10 @@ namespace GRGMesh {
 
         void update_all_ids() ;
 
-        static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
-        static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) ;
+        static BoundaryModelElement::GEOL_FEATURE determine_geological_type(
+            const std::string& in ) ;
+        static BoundaryModelElement::GEOL_FEATURE determine_type(
+            const std::vector< BoundaryModelElement::GEOL_FEATURE >& types ) ;
        
     protected:
         BoundaryModel& model_ ;
