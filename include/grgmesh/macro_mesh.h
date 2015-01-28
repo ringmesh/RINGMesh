@@ -32,7 +32,7 @@ namespace GRGMesh {
     static std::vector< std::vector< vec3 > > empty_vertices ;
     class GRGMESH_API MacroMesh {
     public:
-        MacroMesh( const BoundaryModel* model, index_t dim = 3 ) ;
+        MacroMesh( const BoundaryModel& model, index_t dim = 3 ) ;
         virtual ~MacroMesh() ;
 
         //    __  __     _   _            _
@@ -84,7 +84,7 @@ namespace GRGMesh {
         {
             return well_vertices_[region] ;
         }
-        const BoundaryModel* model() const
+        const BoundaryModel& model() const
         {
             return model_ ;
         }
@@ -96,7 +96,7 @@ namespace GRGMesh {
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
-        const BoundaryModel* model_ ;
+        const BoundaryModel& model_ ;
         /// Vector of meshes, one by region
         std::vector< GEO::Mesh* > meshes_ ;
         /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
