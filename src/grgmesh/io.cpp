@@ -237,7 +237,7 @@ namespace GRGMesh {
                     unzClose( uz ) ;
                     return false ;
                 }
-                for( index_t r = 0; r < mm.model()->nb_regions(); r++ ) {
+                for( index_t r = 0; r < mm.model().nb_regions(); r++ ) {
                     char filename[MAX_FILENAME] ;
                     unzip_file( uz, filename ) ;
                     GEO::MeshIOFlags flags ;
@@ -397,6 +397,11 @@ namespace GRGMesh {
         {
             std::string ext = GEO::FileSystem::extension( filename ) ;
             return create( ext ) ;
+        }
+
+        MacroMeshExport::MacroMeshExport( const MacroMesh& mm )
+            : mm_( mm )
+        {
         }
 
     }

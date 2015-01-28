@@ -29,6 +29,18 @@
 
 namespace GRGMesh {
 
+    vec3 Utils::mesh_cell_facet_center( const GEO::Mesh& M, index_t cell, index_t f )
+    {
+        vec3 result( 0.0, 0.0, 0.0 ) ;
+        double count = 0.0 ;
+        for( index_t c = 0; c < 3; ++c ) {
+            result += GEO::Geom::mesh_vertex( M,
+                M.tet_facet_vertex_index( cell, f, c ) ) ;
+            count += 1.0 ;
+        }
+        return ( 1.0 / count ) * result ;
+    }
+
     vec3 Utils::mesh_cell_center(const GEO::Mesh& M, index_t cell) {
         vec3 result(0.0, 0.0, 0.0);
         double count = 0.0;
