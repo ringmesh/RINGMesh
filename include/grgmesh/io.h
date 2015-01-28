@@ -99,6 +99,35 @@ namespace GRGMesh {
 #define grgmesh_register_MacroMeshIOHandler_creator(type, name) \
     geo_register_creator(MacroMeshIOHandlerFactory, type, name)
 
+        class GRGMESH_API MacroMeshExport {
+        private:
+            const static index_t NB_FACET_TYPES = 2 ;
+            const static index_t NB_CELL_TYPES = 4 ;
+
+        public:
+            enum DuplicateMode {
+                NONE = 0, FAULT = 1, HORIZON = 2
+            } ;
+
+            MacroMeshExport( const MacroMesh& mm ) ;
+
+
+
+
+
+        private:
+            const MacroMesh& mm_ ;
+
+            std::vector< index_t > facets_ ;
+            std::vector< index_t > facet_ptr_ ;
+            std::vector< index_t > mesh_facet_ptr_ ;
+
+            std::vector< index_t > cells_ ;
+            std::vector< index_t > cell_ptr_ ;
+            std::vector< index_t > mesh_cell_ptr_ ;
+
+            std::vector< index_t > cell_corners_ ;
+        } ;
     }
 }
 #endif
