@@ -67,19 +67,21 @@ namespace GRGMesh {
      * @param[in,out] out stream in which the name is written
      * @param[in] t geological feature
      */
-    void BoundaryModel::save_type( std::ostream& out, GEOL_FEATURE t )
+    void BoundaryModel::save_type(
+        std::ostream& out,
+        BoundaryModelElement::GEOL_FEATURE t )
     {
         switch( t ) {
-            case STRATI:
+            case BoundaryModelElement::STRATI:
                 out << "top" ;
                 break ;
-            case FAULT:
+            case BoundaryModelElement::FAULT:
                 out << "fault" ;
                 break ;
-            case VOI:
+            case BoundaryModelElement::VOI:
                 out << "boundary" ;
                 break ;
-            case ALL:
+            case BoundaryModelElement::ALL:
                 out << "none" ;
                 break ;
             default:
@@ -109,15 +111,18 @@ namespace GRGMesh {
      * @return A reference to the BoundaryModelElement .
      *
      */
-    const BoundaryModelElement& BoundaryModel::element( BM_TYPE t, index_t index ) const {
+    const BoundaryModelElement& BoundaryModel::element(
+        BoundaryModelElement::BM_TYPE t,
+        index_t index ) const
+    {
         switch( t ){
-            case BM_CORNER    : return corner       ( index ) ;
-            case BM_LINE      : return line         ( index ) ;
-            case BM_SURFACE   : return surface      ( index ) ;
-            case BM_REGION    : return region       ( index ) ;
-            case BM_CONTACT   : return contact      ( index ) ;
-            case BM_INTERFACE : return one_interface( index ) ;
-            case BM_LAYER     : return layer        ( index ) ;
+            case BoundaryModelElement::BM_CORNER    : return corner       ( index ) ;
+            case BoundaryModelElement::BM_LINE      : return line         ( index ) ;
+            case BoundaryModelElement::BM_SURFACE   : return surface      ( index ) ;
+            case BoundaryModelElement::BM_REGION    : return region       ( index ) ;
+            case BoundaryModelElement::BM_CONTACT   : return contact      ( index ) ;
+            case BoundaryModelElement::BM_INTERFACE : return one_interface( index ) ;
+            case BoundaryModelElement::BM_LAYER     : return layer        ( index ) ;
             default:
                 grgmesh_assert_not_reached ;
                 return dummy_element ;
@@ -629,20 +634,21 @@ namespace GRGMesh {
      *
      * \todo Keep all the information ( add new GEOL_FEATURE) instead of simplfying it.
      */
-    GEOL_FEATURE BoundaryModelBuilder::determine_geological_type( const std::string& in )
+    BoundaryModelElement::GEOL_FEATURE BoundaryModelBuilder::determine_geological_type(
+        const std::string& in )
     {
-        if( in == "" ) return ALL ;
-        if( in == "reverse_fault" ) return FAULT ;
-        if( in == "normal_fault" ) return FAULT ;
-        if( in == "fault" ) return FAULT ;
-        if( in == "top" ) return STRATI ;
-        if( in == "none" ) return STRATI ;
-        if( in == "unconformity" ) return STRATI ;
-        if( in == "boundary" ) return VOI ;
+        if( in == "" ) return BoundaryModelElement::ALL ;
+        if( in == "reverse_fault" ) return BoundaryModelElement::FAULT ;
+        if( in == "normal_fault" ) return BoundaryModelElement::FAULT ;
+        if( in == "fault" ) return BoundaryModelElement::FAULT ;
+        if( in == "top" ) return BoundaryModelElement::STRATI ;
+        if( in == "none" ) return BoundaryModelElement::STRATI ;
+        if( in == "unconformity" ) return BoundaryModelElement::STRATI ;
+        if( in == "boundary" ) return BoundaryModelElement::VOI ;
 
         std::cout<< "ERROR" << "Unexpected type in the model file " << in
             << std::endl ;
-        return ALL ;
+        return BoundaryModelElement::ALL ;
     }
 
     /*!
@@ -651,13 +657,13 @@ namespace GRGMesh {
      * @param[in] types Type that intersect
      * @return Intersection type
      */
-    GEOL_FEATURE BoundaryModelBuilder::determine_type(
-        const std::vector< GEOL_FEATURE >& types )
+    BoundaryModelElement::GEOL_FEATURE BoundaryModelBuilder::determine_type(
+        const std::vector< BoundaryModelElement::GEOL_FEATURE >& types )
     {
-        if( types.size() == 0 ) return ALL ;
+        if( types.size() == 0 ) return BoundaryModelElement::ALL ;
 
         // Sort and remove duplicates form the in types
-        std::vector< GEOL_FEATURE > in = types ;
+        std::vector< BoundaryModelElement::GEOL_FEATURE > in = types ;
         std::sort( in.begin(), in.end() ) ;
         index_t new_size = std::unique( in.begin(), in.end() ) - in.begin() ;
         in.resize( new_size ) ;
@@ -665,17 +671,17 @@ namespace GRGMesh {
         if( in.size() == 1 ) return in[0] ;
 
         if( in.size() == 2 ) {
-            if( in[0] == ALL ) return ALL ;
-            if( in[0] == STRATI ) {
-                if( in[1] == FAULT ) return STRATI_FAULT ;
-                if( in[1] == VOI ) return STRATI_VOI ;
-            } else if( in[0] == FAULT ) {
-                if( in[1] == VOI ) return FAULT_VOI ;
+            if( in[0] == BoundaryModelElement::ALL ) return BoundaryModelElement::ALL ;
+            if( in[0] == BoundaryModelElement::STRATI ) {
+                if( in[1] == BoundaryModelElement::FAULT ) return BoundaryModelElement::STRATI_FAULT ;
+                if( in[1] == BoundaryModelElement::VOI ) return BoundaryModelElement::STRATI_VOI ;
+            } else if( in[0] == BoundaryModelElement::FAULT ) {
+                if( in[1] == BoundaryModelElement::VOI ) return BoundaryModelElement::FAULT_VOI ;
             }
             // Other cases ? for corners ? what is the vertex ?
-            return ALL ;
+            return BoundaryModelElement::ALL ;
         }
-        return ALL ;
+        return BoundaryModelElement::ALL ;
     }
 
     /*!
@@ -735,7 +741,8 @@ namespace GRGMesh {
         const std::string& name )
     {
         index_t id = model_.layers_.size() ;
-        model_.layers_.push_back( BoundaryModelElement( &model_, BM_LAYER, id ) ) ;
+        model_.layers_.push_back(
+            BoundaryModelElement( &model_, BoundaryModelElement::BM_LAYER, id ) ) ;
         model_.layers_[id].set_name( name ) ;
         return id ;
     }
@@ -774,10 +781,10 @@ namespace GRGMesh {
      */
     index_t BoundaryModelBuilder::create_interface(
         const std::string& name,
-        GEOL_FEATURE type )
+        BoundaryModelElement::GEOL_FEATURE type )
     {
         index_t id = model_.nb_interfaces() ;
-        model_.interfaces_.push_back( BoundaryModelElement( &model_, BM_INTERFACE, id, NO_ID, type ) ) ;
+        model_.interfaces_.push_back( BoundaryModelElement( &model_, BoundaryModelElement::BM_INTERFACE, id, NO_ID, type ) ) ;
         model_.interfaces_[id].set_name( name ) ;
         return id ;
     }
@@ -794,10 +801,14 @@ namespace GRGMesh {
         model_.corners_.resize( from->nb_corners(), Corner( &model_ ) ) ;
         model_.lines_.resize( from->nb_lines(), Line( &model_ ) ) ;
         model_.surfaces_.resize( from->nb_surfaces(), Surface( &model_ ) ) ;
-        model_.regions_.resize( from->nb_regions(), BoundaryModelElement( &model_, BM_REGION ) ) ;
-        model_.layers_.resize( from->nb_layers(), BoundaryModelElement( &model_, BM_LAYER ) ) ;
-        model_.contacts_.resize( from->nb_contacts(), BoundaryModelElement( &model_, BM_CONTACT ) ) ;
-        model_.interfaces_.resize( from->nb_interfaces(), BoundaryModelElement( &model_, BM_INTERFACE ) ) ;
+        model_.regions_.resize( from->nb_regions(),
+            BoundaryModelElement( &model_, BoundaryModelElement::BM_REGION ) ) ;
+        model_.layers_.resize( from->nb_layers(),
+            BoundaryModelElement( &model_, BoundaryModelElement::BM_LAYER ) ) ;
+        model_.contacts_.resize( from->nb_contacts(),
+            BoundaryModelElement( &model_, BoundaryModelElement::BM_CONTACT ) ) ;
+        model_.interfaces_.resize( from->nb_interfaces(),
+            BoundaryModelElement( &model_, BoundaryModelElement::BM_INTERFACE ) ) ;
 #pragma omp parallel for
         for( index_t i = 0; i < model_.nb_corners(); i++ ) {
             model_.corners_[i].copy_macro_topology( from->corner( i ), model_ ) ;
@@ -956,6 +967,7 @@ namespace GRGMesh {
                     create_surface( tsurf_name.str(), type,
                         Surface::KeyFacet( p0, p1, p2 ) ) ;
                     nb_tface++ ;
+
                 } else if( keyword == "REGION" ) {
                     /// 3. Read Region information and create them from their name,
                     /// the surfaces on their boundary                    
@@ -1057,9 +1069,9 @@ namespace GRGMesh {
                     // Beginning of a new TFace - Surface
                     if( tface_vertex_start.size() > 0 ) {
                         // End the previous TFace - Surface
+
                         set_surface_geometry( 
-                            tface_count-1,
-                            std::vector< index_t >(
+                            tface_count-1,std::vector< index_t >(
                                 tsurf_vertex_ptr.begin() + tface_vertex_start.back(),
                                 tsurf_vertex_ptr.end() ),
                             tface_facets,
@@ -1506,7 +1518,7 @@ namespace GRGMesh {
         const std::vector< std::pair< index_t, bool > >& boundaries )
     {
         model_.universe_.set_name( "Universe" ) ;
-        model_.universe_.set_element_type( BM_REGION ) ;
+        model_.universe_.set_element_type( BoundaryModelElement::BM_REGION ) ;
         model_.universe_.model_ = &model_ ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
@@ -1514,7 +1526,8 @@ namespace GRGMesh {
             model_.universe_.add_boundary( boundaries[i].first,
                 boundaries[i].second ) ;
             // If this surface have no type, set it at VOI
-            model_.surfaces_[boundaries[i].first].set_geological_feature( VOI ) ;
+            model_.surfaces_[boundaries[i].first].set_geological_feature(
+                BoundaryModelElement::VOI ) ;
         }
     }
 
@@ -1531,7 +1544,8 @@ namespace GRGMesh {
         const std::vector< std::pair< index_t, bool > >& boundaries )
     {
         index_t id = model_.regions_.size() ;
-        model_.regions_.push_back( BoundaryModelElement( &model_, BM_REGION, id ) ) ;
+        model_.regions_.push_back(
+            BoundaryModelElement( &model_, BoundaryModelElement::BM_REGION, id ) ) ;
         model_.regions_[id].set_name( name ) ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
@@ -1550,7 +1564,7 @@ namespace GRGMesh {
     index_t BoundaryModelBuilder::create_region() {
         index_t id = model_.regions_.size() ;
         model_.regions_.push_back( 
-            BoundaryModelElement( &model_, BM_REGION, id ) ) ;
+            BoundaryModelElement( &model_, BoundaryModelElement::BM_REGION, id ) ) ;
         return id ;
     }
 
@@ -1657,7 +1671,7 @@ namespace GRGMesh {
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             // The surface part in whose boundary is the part
             std::set< index_t > interfaces ;
-            std::vector< GEOL_FEATURE > types ;
+            std::vector< BoundaryModelElement::GEOL_FEATURE > types ;
             for( index_t j = 0; j < model_.lines_[i].nb_in_boundary(); ++j ) {
                 index_t sp_id = model_.lines_[i].in_boundary_id( j ) ;
                 const BoundaryModelElement& p = model_.surfaces_[sp_id].parent() ;
@@ -1852,7 +1866,7 @@ namespace GRGMesh {
      */
     index_t BoundaryModelBuilder::find_or_create_contact(
         std::vector< index_t >& interfaces,
-        GEOL_FEATURE type )
+        BoundaryModelElement::GEOL_FEATURE type )
     {
         index_t result = find_contact( interfaces ) ;
         if( result == NO_ID ) {
@@ -1863,7 +1877,9 @@ namespace GRGMesh {
                 name += "_" ;
             }
             result = model_.nb_contacts() ;
-            model_.contacts_.push_back( BoundaryModelElement( &model_, BM_CONTACT, result ) ) ;
+            model_.contacts_.push_back(
+                BoundaryModelElement( &model_, BoundaryModelElement::BM_CONTACT,
+                    result ) ) ;
             model_.contacts_[result].set_name( name ) ;
             model_.contacts_[result].set_geological_feature( type ) ;
 
@@ -1900,7 +1916,7 @@ namespace GRGMesh {
         if( interface_name != "" ) grgmesh_assert( parent != NO_ID ) ;
 
         index_t id = model_.nb_surfaces() ;
-        GEOL_FEATURE t = determine_geological_type( type ) ;
+        BoundaryModelElement::GEOL_FEATURE t = determine_geological_type( type ) ;
         model_.surfaces_.push_back( Surface( &model_, id, parent, t ) ) ;
         model_.surfaces_[id].set_key_facet( key ) ;
 

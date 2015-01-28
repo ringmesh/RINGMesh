@@ -45,33 +45,6 @@ namespace GRGMesh {
 
 namespace GRGMesh {     
 
-    /*!
-     * @brief Types for BoundaryModelElement 
-     * \todo Read all types, this is not sufficient
-     */
-    enum GEOL_FEATURE {
-        ALL,
-        STRATI,
-        FAULT,
-        VOI,
-        STRATI_FAULT,
-        STRATI_VOI,
-        FAULT_VOI
-    } ;
-    /// Default type is all
-    static GEOL_FEATURE default_type = ALL ;   
-
-    /// Types for the elements (BoundaryModelElement) of a BoundaryModel
-    enum BM_TYPE {
-        BM_CORNER = 0,
-        BM_LINE,
-        BM_SURFACE,
-        BM_REGION, 
-        BM_CONTACT,
-        BM_INTERFACE,
-        BM_LAYER,
-        BM_NO_TYPE
-    } ;
 
     /*!
      * \brief Generic class describing one element of a BoundaryModel
@@ -80,6 +53,34 @@ namespace GRGMesh {
         friend class BoundaryModelBuilder ;
 
     public:
+        /*!
+         * @brief Types for BoundaryModelElement
+         * \todo Read all types, this is not sufficient
+         */
+        enum GEOL_FEATURE {
+            ALL,
+            STRATI,
+            FAULT,
+            VOI,
+            STRATI_FAULT,
+            STRATI_VOI,
+            FAULT_VOI
+        } ;
+        /// Default type is all
+        const static GEOL_FEATURE default_type = ALL ;
+
+        /// Types for the elements (BoundaryModelElement) of a BoundaryModel
+        enum BM_TYPE {
+            BM_CORNER = 0,
+            BM_LINE,
+            BM_SURFACE,
+            BM_REGION,
+            BM_CONTACT,
+            BM_INTERFACE,
+            BM_LAYER,
+            BM_NO_TYPE
+        } ;
+
         enum AttributeLocation {
             VERTEX, FACET
         } ;
@@ -234,7 +235,8 @@ namespace GRGMesh {
         FacetAttributeManager facet_attribute_manager_ ;
     } ;
 
-    const static BoundaryModelElement dummy_element = BoundaryModelElement( nil, BM_NO_TYPE ) ;
+    const static BoundaryModelElement dummy_element = BoundaryModelElement( nil,
+        BoundaryModelElement::BM_NO_TYPE ) ;
 
     /*! 
     * @brief A Corner - point at the intersection of at least 2 Lines 
@@ -477,7 +479,7 @@ namespace GRGMesh {
             is_triangulated_( false )
         {
         }
-        virtual ~Surface(){} ;
+        virtual ~Surface(){}
         
         const KeyFacet& key_facet() const { return key_facet_ ; }       
         bool is_triangulated() const { return is_triangulated_ ; }
