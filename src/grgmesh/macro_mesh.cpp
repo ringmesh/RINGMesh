@@ -150,24 +150,26 @@ namespace GRGMesh {
     {
         index_t nb_total_nodes ;
         for( index_t s = 0; s < surface_id.size(); s++ ) {
-            nb_total_nodes += model_.surface(surface_id[s]).nb_vertices() ;
+            nb_total_nodes += model_.surface( surface_id[s] ).nb_vertices() ;
         }
         indices.clear() ;
-        indices.reserve(nb_total_nodes) ;
+        indices.reserve( nb_total_nodes ) ;
         ColocaterANN ann( unique_vertices ) ;
         for( index_t s = 0; s < surface_id.size(); s++ ) {
             const Surface& surface = model_.surface( surface_id[s] ) ;
             for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                 vec3 cur_v = surface.vertex( v ) ;
                 std::vector< index_t > results ;
-                if(!ann.get_colocated( cur_v, results, 1 ) ) {
-                    GEO::Logger::err("") << "Impossible to find colocated point mesh/model" << std::endl ;
+                if( !ann.get_colocated( cur_v, results, 1 ) ) {
+                    GEO::Logger::err( "" )
+                        << "Impossible to find colocated point mesh/model"
+                        << std::endl ;
                     return false ;
                 }
-                indices.push_back(results[0]) ;
+                indices.push_back( results[0] ) ;
             }
         }
-        GEO::sort_unique(indices) ;
+        GEO::sort_unique( indices ) ;
         return true ;
     }
     index_t MacroMesh::nb_vertices()
@@ -180,6 +182,62 @@ namespace GRGMesh {
         unique_points( unique_vertices, indices ) ;
         nb_vertices_ = unique_vertices.size() ;
         return nb_vertices_ ;
+    }
+
+    void MacroMesh::init_surfaces()
+    {
+        if( !surface_facets_.empty() ) return ;
+        surface_mesh_.resize( model_.nb_surfaces(), Surface::NO_ID ) ;
+        surface_ptr_.resize( model_.nb_surfaces() + 1, 0 ) ;
+
+        for( index_t m = 0; m < nb_meshes(); m++ ) {
+            const GEO::Mesh& cur_mesh = mesh( m ) ;
+            std::vector< signed_index_t > surface_proccessed ;
+            for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
+                signed_index_t surface_id = cur_mesh.facet_region( f ) ;
+                if( surface_mesh_[surface_id] != Surface::NO_ID ) continue ;
+                if( !Utils::contains( surface_proccessed, surface_id ) ) {
+                    surface_proccessed.push_back( surface_id ) ;
+                }
+                surface_ptr_[surface_id+1]++ ;
+            }
+            for( index_t s = 0; s < surface_proccessed.size(); s++ ) {
+                surface_mesh_[surface_proccessed[s]] = m ;
+            }
+        }
+
+        for( index_t s = 0; s < model_.nb_surfaces(); s++ ) {
+            surface_ptr_[s+1] += surface_ptr_[s] ;
+        }
+
+        surface_facets_.resize( surface_ptr_.back() ) ;
+
+        std::vector< index_t > surface_facet_index( model_.nb_surfaces(), 0 ) ;
+        for( index_t m = 0; m < nb_meshes(); m++ ) {
+            const GEO::Mesh& cur_mesh = mesh( m ) ;
+            for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
+                signed_index_t surface_id = cur_mesh.facet_region( f ) ;
+                if( surface_mesh_[surface_id] != m ) continue ;
+                surface_facets_[surface_ptr_[surface_id]
+                    + surface_facet_index[surface_id]++ ] = f ;
+            }
+        }
+    }
+
+    index_t MacroMesh::surface_begin( index_t s )
+    {
+        init_surfaces() ;
+        return surface_ptr_[s] ;
+    }
+    index_t MacroMesh::surface_end( index_t s )
+    {
+        init_surfaces() ;
+        return surface_ptr_[s+1] ;
+    }
+    index_t MacroMesh::surface_mesh( index_t s )
+    {
+        init_surfaces() ;
+        return surface_mesh_[s] ;
     }
 }
 
