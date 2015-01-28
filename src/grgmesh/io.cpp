@@ -237,7 +237,7 @@ namespace GRGMesh {
                     unzClose( uz ) ;
                     return false ;
                 }
-                for( index_t r = 0; r < mm.model()->nb_regions(); r++ ) {
+                for( index_t r = 0; r < mm.model().nb_regions(); r++ ) {
                     char filename[MAX_FILENAME] ;
                     unzip_file( uz, filename ) ;
                     GEO::MeshIOFlags flags ;
@@ -318,6 +318,7 @@ namespace GRGMesh {
                 GEO::Mesh mesh( 3 ) ;
                 GEO::MeshBuilder builder( &mesh ) ;
                 builder.begin_mesh() ;
+                GEO::MeshMutator::set_attributes( mesh, GEO::MESH_FACET_REGION ) ;
 
                 std::vector< vec3 > unique_vertices ;
                 std::vector< index_t > indices ;
@@ -337,7 +338,7 @@ namespace GRGMesh {
                             builder.add_vertex_to_facet(
                                 indices[vertex_offset + cur_mesh.corner_vertex_index( v )] ) ;
                         }
-                        builder.end_facet() ;
+                        builder.end_facet( cur_mesh.facet_region( f ) ) ;
                     }
 
                     for( index_t c = 0; c < cur_mesh.nb_cells(); c++ ) {
@@ -363,6 +364,7 @@ namespace GRGMesh {
                 GEO::MeshIOFlags flags ;
                 flags.set_element( GEO::MESH_FACETS ) ;
                 flags.set_element( GEO::MESH_CELLS ) ;
+                flags.set_attribute( GEO::MESH_FACET_REGION ) ;
                 GEO::Logger::instance()->set_quiet( true ) ;
                 GEO::mesh_save( mesh, filename, flags ) ;
                 GEO::Logger::instance()->set_quiet( false ) ;
@@ -395,6 +397,11 @@ namespace GRGMesh {
         {
             std::string ext = GEO::FileSystem::extension( filename ) ;
             return create( ext ) ;
+        }
+
+        MacroMeshExport::MacroMeshExport( const MacroMesh& mm )
+            : mm_( mm )
+        {
         }
 
     }

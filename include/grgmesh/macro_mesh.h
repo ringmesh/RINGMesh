@@ -32,7 +32,7 @@ namespace GRGMesh {
     static std::vector< std::vector< vec3 > > empty_vertices ;
     class GRGMESH_API MacroMesh {
     public:
-        MacroMesh( const BoundaryModel* model, index_t dim = 3 ) ;
+        MacroMesh( const BoundaryModel& model, index_t dim = 3 ) ;
         virtual ~MacroMesh() ;
 
         //    __  __     _   _            _
@@ -59,6 +59,11 @@ namespace GRGMesh {
         void init_tet_aabb( index_t region ) ;
         void init_all_tet_aabb() ;
 
+        void init_surfaces() ;
+        index_t surface_begin( index_t s )  ;
+        index_t surface_end( index_t s )  ;
+        index_t surface_mesh( index_t s ) ;
+
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
         //    / _ \/ _/ _/ -_|_-<_-< _ \ '_(_-<
@@ -84,9 +89,12 @@ namespace GRGMesh {
         {
             return well_vertices_[region] ;
         }
-        const BoundaryModel* model() const
+        const BoundaryModel& model() const
         {
             return model_ ;
+        }
+        const index_t surface_facet( index_t f ) const  {
+            return surface_facets_[f] ;
         }
         bool surface_vertices_global_id(
             std::vector<index_t> surface_id,
@@ -96,7 +104,7 @@ namespace GRGMesh {
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
-        const BoundaryModel* model_ ;
+        const BoundaryModel& model_ ;
         /// Vector of meshes, one by region
         std::vector< GEO::Mesh* > meshes_ ;
         /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
@@ -106,6 +114,10 @@ namespace GRGMesh {
         std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
         std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
         index_t nb_vertices_ ;
+
+        std::vector< index_t > surface_facets_ ;
+        std::vector< index_t > surface_ptr_ ;
+        std::vector< index_t > surface2mesh_ ;
     } ;
 
 }

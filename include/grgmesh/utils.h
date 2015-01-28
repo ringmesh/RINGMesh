@@ -40,8 +40,6 @@ namespace GRGMesh {
 
 namespace GRGMesh {
 
-    inline vec3 mesh_cell_center(const GEO::Mesh& M, index_t cell) ;
-
     static bool operator==( const vec3& u, const vec3& v ) {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
     }
@@ -269,6 +267,11 @@ namespace GRGMesh {
 
     class GRGMESH_API Utils {
     public:
+        static vec3 mesh_cell_facet_center(
+            const GEO::Mesh& M,
+            index_t cell,
+            index_t f ) ;
+        static vec3 mesh_cell_center(const GEO::Mesh& M, index_t cell) ;
         static bool has_edge(
             GEO::Mesh& mesh,
             index_t t,
