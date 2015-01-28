@@ -41,6 +41,28 @@
 
 namespace GRGMesh {
 
+
+    bool BoundaryModelElement::operator==( const BoundaryModelElement& rhs ) const
+    {
+        if( model_ != rhs.model_ ) return false ;
+        if( name_ != rhs.name_ ) return false ;
+        if( id_ != rhs.id_ ) return false ;
+        if( type_ != rhs.type_ ) return false ;               
+        if( geol_feature_ != rhs.geol_feature_ ) return false ;        
+        if( nb_boundaries() != rhs.nb_boundaries() ) return false ;
+        if( !std::equal( boundaries_.begin(), boundaries_.end(), rhs.boundaries_.begin() ) ) return false ;
+        if( !std::equal( sides_.begin(), sides_.end(), rhs.sides_.begin() ) ) return false ;
+        if( nb_in_boundary() != rhs.nb_in_boundary() ) return false ;
+        if( !std::equal( in_boundary_.begin(), in_boundary_.end(), rhs.in_boundary_.begin() ) ) return false ;        
+        if( parent_ != rhs.parent_ ) return false ;        
+        if( nb_children() != rhs.nb_children() ) return false ;
+        if( !std::equal( children_.begin(), children_.end(), rhs.children_.begin() ) ) return false ;
+        
+        return true ;
+    }
+
+
+
     /*!
      *
      * @return Assert that the parent exist and returns it.

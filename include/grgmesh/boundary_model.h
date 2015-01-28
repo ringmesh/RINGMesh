@@ -274,10 +274,7 @@ namespace GRGMesh {
         bool rebuild() ;
         void copy_macro_topology( const BoundaryModel& from ) ;        
         void update_all_ids() ;
-        void make_vertices_unique() ;
-
-        void end_model() ;     
-        
+        void make_vertices_unique() ;        
         
         // Set model attributes
         void set_model_name( const std::string& name ) {
@@ -303,13 +300,7 @@ namespace GRGMesh {
         }
         void set_element_name( BM_TYPE e_type, index_t e_index, const std::string& name ) {
             model_.element_private( e_type, e_index ).set_name( name ) ;
-        }
-        void set_element_index( BoundaryModelElement& e, index_t index ) {
-            e.set_id( index ) ;
-        }
-        void set_element_type( BoundaryModelElement& e, BM_TYPE e_type ) {
-            e.set_element_type( e_type ) ;
-        }
+        }      
         void set_element_geol_feature( BM_TYPE e_type, index_t e_index, GEOL_FEATURE geol ) {
             model_.element_private( e_type, e_index ).set_geological_feature( geol ) ; 
         }
@@ -345,7 +336,7 @@ namespace GRGMesh {
         index_t find_or_create_line( const std::vector< index_t >& vertices ) ;
         
         // Surface
-
+        index_t create_surface() ;
         
         // Contact
         index_t find_contact( const std::vector< index_t >& interfaces ) const ;
@@ -390,7 +381,21 @@ namespace GRGMesh {
         void set_surface_key_facet( index_t id, const Surface::KeyFacet& key ) {
             model_.surfaces_[id].set_key_facet( key ) ;
         } 
-           
+        
+         /**
+         * \name Fix model - Check validity und fill missing stuff
+         * @{
+         */
+         bool end_model() ;
+
+         bool complete_element_connectivity() ;
+         bool check_basic_element_validity( const BoundaryModelElement& E ) const ;
+
+         void fill_elements_boundaries( BM_TYPE type ) ;
+         void fill_elements_in_boundaries( BM_TYPE type ) ;
+         void fill_elements_parent( BM_TYPE ) ;
+         void fill_elements_children( BM_TYPE ) ;      
+                      
        
     protected:
         BoundaryModel& model_ ;
@@ -400,7 +405,7 @@ namespace GRGMesh {
     /*!
      * \brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
      */ 
-    class BoundaryModelBuilderGocad : public BoundaryModelBuilder {
+    class GRGMESH_API BoundaryModelBuilderGocad : public BoundaryModelBuilder {
     public :
         /**
          * \brief Structure used to build contacts when loading a BoundaryModel from .ml file 
