@@ -135,7 +135,6 @@ namespace GRGMesh {
         index_t index = 0 ;
         for( index_t i = 0; i < meshes_.size(); i++ ) {
             index_t nb_vertices =  meshes_[i]->nb_vertices() ;
-            vertex2mesh_[i+1] = nb_vertices ;
             for( index_t j = 0; j < nb_vertices; j++ ) {
                 all_vertices[index] = vec3( meshes_[i]->vertex_ptr( j )[0],
                     meshes_[i]->vertex_ptr( j )[1],
@@ -150,17 +149,15 @@ namespace GRGMesh {
     }
 
     bool MacroMesh::surface_vertices_global_id(
-        std::vector< index_t > surface_id,
-        std::vector< index_t >& indices,
-        std::vector< vec3 >& unique_vertices )
-    {
-        index_t nb_total_nodes ;
+        std::vector<index_t> surface_id,
+        std::vector<index_t>& indices) {
+        index_t nb_total_nodes = 0 ;
         for( index_t s = 0; s < surface_id.size(); s++ ) {
             nb_total_nodes += model_.surface( surface_id[s] ).nb_vertices() ;
         }
         indices.clear() ;
         indices.reserve( nb_total_nodes ) ;
-        ColocaterANN ann( unique_vertices ) ;
+        ColocaterANN ann( unique_vertices_ ) ;
         for( index_t s = 0; s < surface_id.size(); s++ ) {
             const Surface& surface = model_.surface( surface_id[s] ) ;
             for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
