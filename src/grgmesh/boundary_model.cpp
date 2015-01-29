@@ -133,7 +133,7 @@ namespace GRGMesh {
      * @return A reference to the BoundaryModelElement .
      *
      */
-    BoundaryModelElement& BoundaryModel::element_private( BM_TYPE element_type, index_t index ) 
+    BoundaryModelElement& BoundaryModel::element( BM_TYPE element_type, index_t index ) 
     {
         switch( element_type ){
             case BM_CORNER    : return corners_   .at( index ) ;
@@ -1664,7 +1664,7 @@ namespace GRGMesh {
         ///    and that required connectivity relationships are filled
 
         // CORNERS
-        for( index_t i = 0; i < model_.nb_corners(), ++i ){            
+        for( index_t i = 0; i < model_.nb_corners(); ++i ){            
             Corner& C = model_.corners_[i] ;
             if( !check_basic_element_validity( C ) ) return false ;
 
