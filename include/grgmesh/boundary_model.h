@@ -79,12 +79,14 @@ namespace GRGMesh {
         virtual ~BoundaryModel(){} ;
         void clear() ;
 
-        // Accessors to model vertices
+        /**
+         * \name Global access to model vertices and facets
+         * @{
+         */
         index_t nb_vertices() const { return vertices_.size() ; }        
         const vec3& vertex( index_t p ) const { return vertices_.at(p) ; }
         index_t vertex_index( const vec3& p ) const ;
 
-        // Accessors to model facets
         index_t nb_facets() const { return nb_facets_in_surfaces_.back() ; }
         void surface_facet( index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id ) const ;     
         index_t model_facet( index_t surface_id, index_t surf_facet_id ) const ;
@@ -92,7 +94,15 @@ namespace GRGMesh {
         // Accessors to model elements
         const std::string& name() const { return name_ ; }
 
+        /**
+         * \name Generic accessor to elements
+         * @{
+         */
         index_t nb_elements( BM_TYPE type = BM_NO_TYPE ) const ;
+        const BoundaryModelElement& element( BM_TYPE element_type, index_t index ) const ;
+
+
+
         index_t nb_corners() const { return corners_.size() ; }
         index_t nb_lines() const { return lines_.size() ; }
         index_t nb_surfaces() const { return surfaces_.size() ; }
@@ -107,7 +117,6 @@ namespace GRGMesh {
         const Surface& surface( index_t index ) const { return surfaces_.at(index) ; }
         const BoundaryModelElement& region( index_t index ) const { return regions_.at(index) ; }
         const BoundaryModelElement& universe() const { return universe_ ; }        
-        const BoundaryModelElement& element( BM_TYPE element_type, index_t index ) const ;       
         const BoundaryModelElement& contact( index_t index ) const { return contacts_.at(index) ; }
         const BoundaryModelElement& one_interface( index_t index ) const { return interfaces_.at(index) ; }
         const BoundaryModelElement& layer( index_t index ) const { return layers_.at(index) ; }
@@ -135,7 +144,8 @@ namespace GRGMesh {
         static void save_type( std::ostream& out, GEOL_FEATURE t ) ;
 
 
-        BoundaryModelElement& element_private( BM_TYPE element_type, index_t index ) ;
+        BoundaryModelElement& element( BM_TYPE element_type, index_t index ) ;
+        
 
     private:
         std::string name_ ;
@@ -296,27 +306,27 @@ namespace GRGMesh {
          * @{
          */
         void set_model( BM_TYPE e_type, index_t e_index, BoundaryModel* m ) {
-            model_.element_private( e_type, e_index ).set_model( m ) ;
+            model_.element( e_type, e_index ).set_model( m ) ;
         }
         void set_element_name( BM_TYPE e_type, index_t e_index, const std::string& name ) {
-            model_.element_private( e_type, e_index ).set_name( name ) ;
+            model_.element( e_type, e_index ).set_name( name ) ;
         }      
         void set_element_geol_feature( BM_TYPE e_type, index_t e_index, GEOL_FEATURE geol ) {
-            model_.element_private( e_type, e_index ).set_geological_feature( geol ) ; 
+            model_.element( e_type, e_index ).set_geological_feature( geol ) ; 
         }
         void add_element_boundary( BM_TYPE e_type, index_t e_index, index_t boundary, bool side = false ){
             if( e_type == BM_REGION || e_type == BM_LAYER ) 
-                model_.element_private( e_type, e_index ).add_boundary( boundary, side ) ;
-            else model_.element_private( e_type, e_index ).add_boundary( boundary ) ;
+                model_.element( e_type, e_index ).add_boundary( boundary, side ) ;
+            else model_.element( e_type, e_index ).add_boundary( boundary ) ;
         }
         void add_element_in_boundary( BM_TYPE e_type, index_t e_index, index_t in_boundary ) {
-            model_.element_private( e_type, e_index ).add_in_boundary( in_boundary ) ;
+            model_.element( e_type, e_index ).add_in_boundary( in_boundary ) ;
         }
         void set_parent( BM_TYPE e_type, index_t e_index, index_t parent_index ) {
-            model_.element_private( e_type, e_index ).set_parent( parent_index ) ;
+            model_.element( e_type, e_index ).set_parent( parent_index ) ;
         }
         void add_child( BM_TYPE e_type, index_t e_index, index_t child_index ) {
-            model_.element_private( e_type, e_index ).add_child( child_index ) ;
+            model_.element( e_type, e_index ).add_child( child_index ) ;
         }
                        
          /**

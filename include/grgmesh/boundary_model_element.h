@@ -269,7 +269,6 @@ namespace GRGMesh {
         }
         void set_parent( index_t p ){
             grgmesh_assert( type_ == BM_LINE || type_ == BM_SURFACE || type_ == BM_REGION ) ;
-            grgmesh_assert( p != NO_ID ) ;
             parent_ = p ; 
         }       
         void add_child( index_t e ){ 
@@ -370,7 +369,7 @@ namespace GRGMesh {
      * It is in the boundary of several Surface
      */
     class GRGMESH_API Line: public BoundaryModelElement {
-        friend class LineMutator ;
+        //friend class LineMutator ;
     public:
         Line( BoundaryModel* model, index_t id = NO_ID ) ;
         Line(
