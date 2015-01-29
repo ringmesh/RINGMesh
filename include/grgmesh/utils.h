@@ -267,6 +267,10 @@ namespace GRGMesh {
 
     class GRGMESH_API Utils {
     public:
+        static vec3 mesh_cell_facet_normal(
+            const GEO::Mesh& M,
+            index_t c,
+            index_t f ) ;
         static vec3 mesh_cell_facet_center(
             const GEO::Mesh& M,
             index_t cell,

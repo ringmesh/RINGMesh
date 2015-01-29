@@ -111,22 +111,34 @@ namespace GRGMesh {
 
             MacroMeshExport( const MacroMesh& mm ) ;
 
-
-
-
+            void compute_database( const DuplicateMode& mode = NONE ) ;
 
         private:
-            const MacroMesh& mm_ ;
+            void fill_with_geometry() ;
+            void duplicate_vertices( const DuplicateMode& mode ) ;
+            bool is_surface_to_duplicate(
+                index_t s,
+                const DuplicateMode& mode ) const ;
+
+        private:
+            MacroMesh& mm_ ;
 
             std::vector< index_t > facets_ ;
+            // [TRGL/QUAD]
             std::vector< index_t > facet_ptr_ ;
             std::vector< index_t > mesh_facet_ptr_ ;
+            std::vector< index_t > surface2mesh_ ;
 
             std::vector< index_t > cells_ ;
+            // [TET/PY/PRISM/HEX]
             std::vector< index_t > cell_ptr_ ;
             std::vector< index_t > mesh_cell_ptr_ ;
 
-            std::vector< index_t > cell_corners_ ;
+            std::vector< index_t > corners_ ;
+            std::vector< index_t > mesh_corner_ptr_ ;
+
+            std::vector< index_t > duplicated_vertex_indices_ ;
+            index_t first_duplicated_vertex_id_ ;
         } ;
     }
 }

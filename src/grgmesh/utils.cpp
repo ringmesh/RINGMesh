@@ -41,6 +41,17 @@ namespace GRGMesh {
         return ( 1.0 / count ) * result ;
     }
 
+    vec3 mesh_cell_facet_normal( const GEO::Mesh& M, index_t c, index_t f )
+    {
+        const vec3& p1 = GEO::Geom::mesh_vertex( M,
+            M.cell_facet_vertex_index( c, f, 0 ) ) ;
+        const vec3& p2 = GEO::Geom::mesh_vertex( M,
+            M.cell_facet_vertex_index( c, f, 1 ) ) ;
+        const vec3& p3 = GEO::Geom::mesh_vertex( M,
+            M.cell_facet_vertex_index( c, f, 2 ) ) ;
+        return cross( p2 - p1, p3 - p1 ) ;
+    }
+
     vec3 Utils::mesh_cell_center(const GEO::Mesh& M, index_t cell) {
         vec3 result(0.0, 0.0, 0.0);
         double count = 0.0;
