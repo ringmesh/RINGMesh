@@ -135,7 +135,6 @@ namespace GRGMesh {
         index_t index = 0 ;
         for( index_t i = 0; i < meshes_.size(); i++ ) {
             index_t nb_vertices =  meshes_[i]->nb_vertices() ;
-            vertex2mesh_[i+1] = nb_vertices ;
             for( index_t j = 0; j < nb_vertices; j++ ) {
                 all_vertices[index] = vec3( meshes_[i]->vertex_ptr( j )[0],
                     meshes_[i]->vertex_ptr( j )[1],
@@ -150,17 +149,15 @@ namespace GRGMesh {
     }
 
     bool MacroMesh::surface_vertices_global_id(
-        std::vector< index_t > surface_id,
-        std::vector< index_t >& indices,
-        std::vector< vec3 >& unique_vertices )
-    {
-        index_t nb_total_nodes ;
+        std::vector<index_t> surface_id,
+        std::vector<index_t>& indices) {
+        index_t nb_total_nodes = 0 ;
         for( index_t s = 0; s < surface_id.size(); s++ ) {
             nb_total_nodes += model_.surface( surface_id[s] ).nb_vertices() ;
         }
         indices.clear() ;
         indices.reserve( nb_total_nodes ) ;
-        ColocaterANN ann( unique_vertices ) ;
+        ColocaterANN ann( unique_vertices_ ) ;
         for( index_t s = 0; s < surface_id.size(); s++ ) {
             const Surface& surface = model_.surface( surface_id[s] ) ;
             for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
@@ -178,7 +175,7 @@ namespace GRGMesh {
         GEO::sort_unique( indices ) ;
         return true ;
     }
-    index_t MacroMesh::nb_vertices()
+    index_t MacroMesh::nb_vertices() const
     {
         init_vertices() ;
         return unique_vertices_.size() ;
@@ -225,28 +222,36 @@ namespace GRGMesh {
         }
     }
 
-    index_t MacroMesh::surface_begin( index_t s )
+    index_t MacroMesh::surface_begin( index_t s ) const
     {
-        init_surfaces() ;
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMesh* >( this )->init_surfaces() ;
+        }
         return surface_ptr_[s] ;
     }
-    index_t MacroMesh::surface_end( index_t s )
+    index_t MacroMesh::surface_end( index_t s ) const
     {
-        init_surfaces() ;
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMesh* >( this )->init_surfaces() ;
+        }
         return surface_ptr_[s+1] ;
     }
-    index_t MacroMesh::surface_mesh( index_t s )
+    index_t MacroMesh::surface_mesh( index_t s ) const
     {
-        init_surfaces() ;
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMesh* >( this )->init_surfaces() ;
+        }
         return surface2mesh_[s] ;
     }
 
-    void MacroMesh::init_vertices() {
+    void MacroMesh::init_vertices() const {
         if( !unique_vertices_.empty() ) return ;
-        unique_points( unique_vertices_, global_vertex_indices_ ) ;
+        MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
+        not_const->unique_points( not_const->unique_vertices_,
+            not_const->global_vertex_indices_ ) ;
     }
 
-    index_t MacroMesh::global_vertex_id(index_t mesh, index_t v) {
+    index_t MacroMesh::global_vertex_id(index_t mesh, index_t v) const {
         init_vertices() ;
         return global_vertex_indices_[vertex2mesh_[mesh] + v] ;
     }
