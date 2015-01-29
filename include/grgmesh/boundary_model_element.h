@@ -45,27 +45,21 @@ namespace GRGMesh {
 
 namespace GRGMesh {     
 
-
     /*!
-     * \brief Generic class describing one element of a BoundaryModel
+     * @brief Types for BoundaryModelElement 
+     * \todo Read all types, this is not sufficient
      */
-    class GRGMESH_API BoundaryModelElement {
-        friend class BoundaryModelBuilder ;
-
-    public:
-        /*!
-         * @brief Types for BoundaryModelElement
-         * \todo Read all types, this is not sufficient
-         */
-        enum GEOL_FEATURE {
-            ALL,
-            STRATI,
-            FAULT,
-            VOI,
-            STRATI_FAULT,
-            STRATI_VOI,
-            FAULT_VOI
-        } ;
+    enum GEOL_FEATURE {
+        ALL,
+        STRATI,
+        FAULT,
+        VOI,
+        STRATI_FAULT,
+        STRATI_VOI,
+        FAULT_VOI
+    } ;
+    /// Default type is all
+    static GEOL_FEATURE default_type = ALL ;   
 
     /*!
      * @brief Map the name of a geological type with a value of GEOL_FEATURE
@@ -123,18 +117,24 @@ namespace GRGMesh {
         return ALL ;
     }
 
-        /// Types for the elements (BoundaryModelElement) of a BoundaryModel
-        enum BM_TYPE {
-            BM_CORNER = 0,
-            BM_LINE,
-            BM_SURFACE,
-            BM_REGION,
-            BM_CONTACT,
-            BM_INTERFACE,
-            BM_LAYER,
-            BM_NO_TYPE
-        } ;
+    /// Types for the elements (BoundaryModelElement) of a BoundaryModel
+    enum BM_TYPE {
+        BM_CORNER = 0,
+        BM_LINE,
+        BM_SURFACE,
+        BM_REGION, 
+        BM_CONTACT,
+        BM_INTERFACE,
+        BM_LAYER,
+        BM_NO_TYPE
+    } ;
 
+    /*!
+     * \brief Generic class describing one element of a BoundaryModel
+     */
+    class GRGMESH_API BoundaryModelElement {
+
+    public:
         enum AttributeLocation {
             VERTEX, FACET
         } ;
@@ -158,13 +158,15 @@ namespace GRGMesh {
             BM_TYPE element_type = BM_NO_TYPE, 
             index_t id = NO_ID, 
             index_t parent = NO_ID,
-            GEOL_FEATURE geol = ALL )
+            GEOL_FEATURE geol = default_type )
             : model_( model ),  name_( "" ), id_( id ),
             type_( element_type ), geol_feature_( geol ), parent_( parent )
         {
         }
         
         virtual ~BoundaryModelElement() { }
+
+        bool operator==( const BoundaryModelElement& rhs ) const ;
 
         const BoundaryModel& model() const { return *model_ ; }
         
@@ -211,21 +213,24 @@ namespace GRGMesh {
         const BoundaryModelElement& child( index_t x ) const ;
         
         // Accessors to the vertices (indices and coordinates) and cells
-        // Only valid for Corner, Line, Surface
+        // Reimplemented valid for Corner, Line, Surface
         virtual index_t nb_cells() const {
-            grgmesh_assert_not_reached ;  return 0 ;
+            return 0 ;
         }
         virtual index_t nb_vertices() const {
-            grgmesh_assert_not_reached ;  return 0 ;
+            return 0 ;
         }      
         virtual index_t model_vertex_id( index_t p = 0 ) const {
-            grgmesh_assert_not_reached ; return 0 ;
+            return NO_ID ;
         }  
         virtual const vec3& vertex( index_t p = 0 ) const {
             grgmesh_assert_not_reached ; return dummy_vec3 ;
         }
                      
-        // Accessors to attribute managers
+         /**
+         * \name Accessors to attribute managers
+         * @{
+         */
         VertexAttributeManager* vertex_attribute_manager() const
         {
             return const_cast< VertexAttributeManager* >( &vertex_attribute_manager_ ) ;
@@ -236,7 +241,10 @@ namespace GRGMesh {
         }
 
     public:
-        // Modification of the BoundaryModelElement
+        /**
+         * \name Methods to modify the element
+         * @{
+         */
         void copy_macro_topology(
             const BoundaryModelElement& rhs, BoundaryModel& model ) ;
         
@@ -245,15 +253,42 @@ namespace GRGMesh {
         void set_id( index_t id ) { id_ = id ; }
         void set_element_type( BM_TYPE t ) { type_ = t ; }
         void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; } 
-        void add_boundary( index_t b ) { boundaries_.push_back( b ) ; }
-        void add_boundary( index_t b, bool side ) { boundaries_.push_back(b) ; sides_.push_back(side) ; }
-        void add_in_boundary( index_t e ) { in_boundary_.push_back(e) ; }
-        void set_parent( index_t p ){ parent_ = p ; }       
-        void add_child( index_t e ){ children_.push_back( e ) ; }
 
-        void set_boundary( index_t id, index_t b ) { boundaries_[id] = b ; }
-        void set_boundary( index_t id, index_t b, bool side ) { boundaries_[id] = b ; sides_[id] = side ; }
-        void set_in_boundary( index_t id, index_t in_b ) { in_boundary_[id] = in_b ; }
+        void add_boundary( index_t b ) { 
+            grgmesh_assert( type_ != BM_CORNER ) ;
+            boundaries_.push_back( b ) ; 
+        }
+        void add_boundary( index_t b, bool side ) {
+            grgmesh_assert( type_ == BM_REGION || type_ == BM_LAYER ) ;
+            boundaries_.push_back(b) ;
+            sides_.push_back(side) ; 
+        }
+        void add_in_boundary( index_t e ) { 
+            grgmesh_assert( type_ != BM_REGION && type_ != BM_LAYER ) ;
+            in_boundary_.push_back(e) ; 
+        }
+        void set_parent( index_t p ){
+            grgmesh_assert( type_ == BM_LINE || type_ == BM_SURFACE || type_ == BM_REGION ) ;
+            parent_ = p ; 
+        }       
+        void add_child( index_t e ){ 
+            grgmesh_assert( type_ == BM_CONTACT || type_ == BM_INTERFACE || type_ == BM_LAYER ) ;
+            children_.push_back( e ) ; 
+        }
+
+        void set_boundary( index_t id, index_t b ) { 
+            grgmesh_assert( id < nb_boundaries() ) ;
+            boundaries_[id] = b ; 
+        }
+        void set_boundary( index_t id, index_t b, bool side ) {
+            grgmesh_assert( id < nb_boundaries() && id < sides_.size() ) ;
+            boundaries_[id] = b ; 
+            sides_[id] = side ; 
+        }
+        void set_in_boundary( index_t id, index_t in_b ) { 
+            grgmesh_assert( id < nb_in_boundary() ) ;
+            in_boundary_[id] = in_b ; 
+        }
 
     protected :
         /// \todo Can we have something else than a POINTER ?? default constructor is needed...
@@ -293,8 +328,7 @@ namespace GRGMesh {
         FacetAttributeManager facet_attribute_manager_ ;
     } ;
 
-    const static BoundaryModelElement dummy_element = BoundaryModelElement( nil,
-        BoundaryModelElement::BM_NO_TYPE ) ;
+    const static BoundaryModelElement dummy_element = BoundaryModelElement( nil, BM_NO_TYPE ) ;
 
     /*! 
     * @brief A Corner - point at the intersection of at least 2 Lines 
@@ -335,7 +369,7 @@ namespace GRGMesh {
      * It is in the boundary of several Surface
      */
     class GRGMESH_API Line: public BoundaryModelElement {
-        friend class LineMutator ;
+        //friend class LineMutator ;
     public:
         Line( BoundaryModel* model, index_t id = NO_ID ) ;
         Line(
@@ -537,13 +571,13 @@ namespace GRGMesh {
             BoundaryModel* model,
             index_t id = NO_ID,
             index_t parent = NO_ID,
-            const GEOL_FEATURE& type = ALL )
+            const GEOL_FEATURE& type = default_type )
             :
             BoundaryModelElement( model, BM_SURFACE, id, parent, type ),
             is_triangulated_( false )
         {
         }
-        virtual ~Surface(){}
+        virtual ~Surface(){} ;
         
         const KeyFacet& key_facet() const { return key_facet_ ; }       
         bool is_triangulated() const { return is_triangulated_ ; }
@@ -813,13 +847,13 @@ namespace GRGMesh {
         std::vector< index_t >& facet_ptr() const { return S_.facet_ptr_ ; }
         std::vector< index_t >& adjacents() const { return S_.adjacent_  ; }
 
-       /* void clear()
+        void clear()
         {
             S_.vertices_.clear() ;
             S_.facets_.clear() ;
             S_.facet_ptr_.clear() ;
             S_.adjacent_.clear() ;
-        }*/
+        }
         
         void cut_by_line( const Line& L ) ;
 

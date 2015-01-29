@@ -138,7 +138,7 @@ namespace GRGMesh {
      * @return A reference to the BoundaryModelElement .
      *
      */
-    BoundaryModelElement& BoundaryModel::element_private( BM_TYPE element_type, index_t index ) 
+    BoundaryModelElement& BoundaryModel::element( BM_TYPE element_type, index_t index ) 
     {
         switch( element_type ){
             case BM_CORNER    : return corners_   .at( index ) ;
@@ -1149,6 +1149,43 @@ namespace GRGMesh {
     }
 
     /*!
+     * @brief Create an empty Surfaceand add it to the Model surfaces_
+     * @param[in] interfaces Indices of the Interfaces determining the contact
+     * @return NO_ID or index of the contact
+     */
+    index_t BoundaryModelBuilder::find_contact( const std::vector< index_t >& interfaces ) const
+    {
+        std::vector< const BoundaryModelElement* > comp( interfaces.size() ) ;
+        for( index_t i = 0; i < interfaces.size(); ++i ) {
+            comp[i] = &model_.one_interface(interfaces[i]) ;
+        }
+
+        for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
+            if( comp.size() == model_.contact(i).nb_in_boundary() ) {
+                bool equal = true ;
+                for( index_t j = 0; j < model_.contact(i).nb_in_boundary(); j++ ) {
+                    if( comp[j] != &model_.contact(i).in_boundary( j ) ) {
+                        equal = false ; break ;
+                    }
+                }
+                if( equal ) return i ;
+            }
+        }
+        return NO_ID ;
+    }
+
+    /*!
+     * @brief Create a contact between the given Interfaces
+     * The name of the contact is determined from the names of the interfaces.
+     * 
+     * @return Index of the Surface in the surfaces_ vector 
+     */
+    index_t BoundaryModelBuilder::create_surface()
+    {      
+        return create_element( BM_SURFACE ) ; 
+    }
+
+    /*!
      * @brief Find a Contact
      * @param[in] interfaces Indices of the Interfaces determining the contact
      * @return NO_ID or index of the contact
@@ -1225,9 +1262,12 @@ namespace GRGMesh {
             if( model_.one_interface(i).name() == name ) {
                 return i ;
             }
+            }
+        return NO_ID ;
         }
         return NO_ID ;
     }
+
 
     
     /*!
@@ -1288,7 +1328,6 @@ namespace GRGMesh {
     {
         index_t id = create_element( BM_LAYER ) ;
         set_element_name( BM_LAYER, id, name ) ;
-            BoundaryModelElement( &model_, BoundaryModelElement::BM_LAYER, id ) ) ;
         return id ;
     }
     
@@ -1448,89 +1487,181 @@ namespace GRGMesh {
         S.set_adjacent( adjacent ) ;
     }
 
-     /*!
-     * @brief Last function to call when building a model
-     * @details Output information on the model and initialise the
-     * nb_facets_in_surfaces_ vector
+    /*! 
+     * @brief Basic check of the validity of a BoundaryModelElement     
      * 
-     *  \todo FULL CHECK AND FIX OF THE MODEL CORRECTNESS !!
-        \todo Trade the end_something functions in the BoundaryModelBuilder
-        functions for a smart end_model function
-        that checks model validity and complete all missing parts
+     * \todo Write meaningful message when the test fails ? 
      */
-    void BoundaryModelBuilder::end_model()
+    bool BoundaryModelBuilder::check_basic_element_validity( const BoundaryModelElement& E ) const 
     {
+        /// Verify that E points to the right BoundaryModel
+        /// that its index and type are the right one.
+        if( &E.model() != &model_ ) return false ;
+        if( E.element_type() == BM_NO_TYPE ) return false ;
+        if( E.id() == NO_ID ) return false ;
+        if( E.id() >= model_.nb_elements( E.element_type() ) ) return false ;
+        if( !(model_.element(E.element_type(), E.id()) == E) ) return false ;
 
-        /*
-        // End surfaces 
-        for( index_t i = 0; i < model_.nb_lines(); ++i ) {
-            for( index_t j = 0; j < model_.lines_[i].nb_in_boundary();
-                ++j ) {
-                index_t s_id = model_.lines_[i].in_boundary_id( j ) ;
-                add_surface_boundary( s_id, i ) ;
+
+        /// Verify that the stored model vertex indices are in a valid range
+        for( index_t i = 0; i < E.nb_vertices(); ++i ){            
+            if( E.model_vertex_id(i) == NO_ID && 
+                E.model_vertex_id(i) >= model_.nb_vertices() ) return false ;
+        }
+        return true ;
+    }
+
+    /*!
+     * @brief Complete missing information in BoundaryModelElements
+     * boundaries - in_boundary - parent - children 
+     *
+     * WARNING : Une certaine cohérence est supposée exister pour le remplissage des éléments
+     * tous les éléments d'un même type ont été initialisé avec les mêmes informations.
+     */
+    bool BoundaryModelBuilder::complete_element_connectivity() {             
+        // Lines
+        if( model_.nb_lines() > 0 ) {
+            if( model_.line(0).nb_boundaries() == 0 ){
+                fill_elements_boundaries( BM_LINE ) ;
+            }
+            if( model_.line(0).nb_in_boundary() == 0 ){
+                fill_elements_in_boundaries( BM_LINE ) ;    
+            }
+            if( model_.line(0).parent_id() == NO_ID && model_.nb_contacts() > 0 ){
+                fill_elements_parent( BM_LINE ) ;
             }
         }
-        for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-            for( index_t j = 0; j < model_.regions_[i].nb_boundaries(); ++j ) {
-                index_t s_id = model_.regions_[i].boundary_id( j ) ;
-                add_surface_in_boundary( s_id, i ) ;
+        // Corners
+        if( model_.nb_corners() > 0 && model_.corner(0).nb_in_boundary() == 0 ) {
+            // Info from line boundaries is used here and should be available
+            fill_elements_in_boundaries( BM_CORNER ) ;
+        }    
+        // Surfaces - There MUST be at least one
+        if( model_.surface(0).nb_boundaries() == 0 ) {            
+            fill_elements_boundaries( BM_SURFACE ) ;
+        }        
+        if( model_.surface(0).nb_in_boundary() == 0 ) {            
+            fill_elements_in_boundaries( BM_SURFACE ) ;    
+        }
+        if( model_.surface(0).parent_id() == NO_ID ) {            
+            fill_elements_parent( BM_SURFACE ) ;    
+        }
+        // Regions
+        if( model_.nb_regions() > 0 ) {
+            if( model_.region(0).nb_boundaries() == 0 ) {
+                fill_elements_boundaries( BM_REGION ) ;
+            }
+            if( model_.region(0).parent_id() == NO_ID && model_.nb_layers() > 0 ){
+                fill_elements_parent( BM_REGION ) ;
             }
         }
-        //End interfaces
-         for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
-            index_t parent = model_.surfaces_[i].parent_id() ;
-            add_interface_child( parent, i ) ;
+        // Contacts
+        if( model_.nb_contacts() > 0 &&
+            model_.contact(0).nb_children() == 0 ) {
+            fill_elements_children( BM_CONTACT ) ;
         }
-        for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
-            for( index_t j = 0; j < model_.contacts_[i].nb_in_boundary(); ++j ) {
-                index_t b = model_.contacts_[i].in_boundary_id( j ) ;
-                add_interface_boundary( b, i ) ;
+        // Interfaces
+        if( model_.nb_interfaces() > 0 &&
+            model_.one_interface(0).nb_children() == 0 ) {
+            fill_elements_children( BM_INTERFACE ) ;
+        }
+        // Layers
+        if( model_.nb_layers() > 0 &&
+            model_.layer(0).nb_children() == 0 ) {
+                fill_elements_children( BM_LAYER ) ;
+        }
+    }
+
+
+    void BoundaryModelBuilder::fill_elements_boundaries( BM_TYPE type ) 
+    {
+        if( type == BM_LINE ) {
+            // Find the indices of the corner at both extremities
+            for( index_t i = 0; i < model_.nb_lines(); ++i ) {
+                // Find the indices of the corner at both extremities
+                index_t c0 = find_corner( model_.line(i).model_vertex_id(0) ) ;
+                index_t c1 = find_corner( model_.line(i).model_vertex_id( model_.line(i).nb_vertices()-1 ) ) ;
+
+                grgmesh_assert( c0 != NO_ID && c1 != NO_ID ) ;
+                add_element_boundary( BM_LINE, i, c0 ) ;
+                if( c1 != c0 ) add_element_boundary( BM_LINE, i, c1 ) ;         
             }
-        }       
+        }
+        else if( type == BM_SURFACE ) {
+            for( index_t i = 0; i < model_.nb_lines(); ++i ) {
+                for( index_t j = 0; j < model_.lines_[i].nb_in_boundary(); ++j ) {
+                    index_t s_id = model_.lines_[i].in_boundary_id( j ) ;
+                    add_element_boundary( BM_SURFACE, s_id, i ) ;
+                }
+            }       
+        }
+
+        else if( type == BM_REGION ) {
+            // Mouais comment on a l'orientation dans ce cas ???
+
+        }
+    }
+
+    void BoundaryModelBuilder::fill_elements_in_boundaries( BM_TYPE type ) 
+    {
+        if( type == BM_CORNER ) {
+            for( index_t i = 0; i < model_.nb_lines(); ++i ) {
+                for( index_t j = 0; j < model_.line(i).nb_boundaries() ) {
+                    add_element_in_boundary( BM_CORNER, model_.line(i).boundary_id(j), i ) ;
+                }
+            }
+        }
+        else if( type == BM_LINE ) {
+        }
+
+        else if( type == BM_SURFACE ) {
+            for( index_t i = 0; i < model_.nb_regions(); ++i ) {
+                for( index_t j = 0; j < model_.regions_[i].nb_boundaries(); ++j ) {
+                    index_t s_id = model_.regions_[i].boundary_id( j ) ;
+                    add_element_in_boundary( BM_SURFACE, s_id, i ) ;
+                }
+            }
+        }
+    }
+
+    void BoundaryModelBuilder::fill_elements_parent( BM_TYPE type ) 
+    {
+        if( type == BM_LINE ) {
+            for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
+                for( index_t j = 0; j < model_.contacts_[i].nb_children(); ++j ) {
+                    index_t child = model_.contacts_[i].child_id( j ) ;
+                    set_parent( BM_LINE, child, i ) ;
+                }
+            }
+        }      
         
-        // End lines
-        for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
-            for( index_t j = 0; j < model_.contacts_[i].nb_children(); ++j ) {
-                index_t child = model_.contacts_[i].child_id( j ) ;
-                model_.lines_[child].set_parent( i ) ;
-                model_.lines_[child].set_geological_feature(
-                    model_.contacts_[i].geological_feature() ) ;
-            }
+        else if( type == BM_SURFACE ) {
         }
 
-        // End contacts 
-        for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
-            std::set< const BoundaryModelElement* > corners ;
-            for( index_t j = 0; j < model_.contacts_[i].nb_children(); ++j ) {
-                const BoundaryModelElement& child = model_.contacts_[i].child( j ) ;
-                corners.insert( &child.boundary( 0 ) ) ;
-                corners.insert( &child.boundary( 1 ) ) ;
-            }
-            for( std::set< const BoundaryModelElement* >::iterator it( corners.begin() );
-                it != corners.end(); ++it ) {
-                add_contact_boundary( i, ( *it )->id() ) ;
+        else if( type == BM_REGION ) {
+
+        }
+    }
+    void BoundaryModelBuilder::fill_elements_children( BM_TYPE type ) 
+    {
+        if( type == BM_CONTACT ){          
+            for( index_t i = 0; i < model_.nb_lines(); ++i ) {
+                index_t parent = model_.line(i).parent_id() ;
+                if( parent != NO_ID ) add_child( BM_CONTACT, parent, i ) ;
             }
         }
-        
-        // End corners
-        for( index_t i = 0; i < model_.nb_lines(); ++i ) {
-            index_t c0_id = model_.lines_[i].boundary_id( 0 ) ;
-            index_t c1_id = model_.lines_[i].boundary_id( 1 ) ;
-
-            add_corner_in_boundary( c0_id, i ) ;
-            if( c1_id != c0_id ) add_corner_in_boundary( c1_id, i ) ;
+        else if( type == BM_INTERFACE ) {
+            for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
+                index_t parent = model_.surface(i).parent_id() ;
+                if( parent != NO_ID ) add_child( BM_INTERFACE, parent, i ) ;
+            }
         }
+        else if ( type == BM_LAYER ) {
+            for( index_t i = 0; i < model_.nb_regions(); ++i ) {
+                index_t parent = model_.region(i).parent_id() ;
+                if( parent != NO_ID ) add_child( BM_REGION, parent, i ) ;
+            }
 
-        // End layer 
-        for( index_t i = 0; i < model_.nb_layers(); ++i ) {
-            BoundaryModelElement& layer = model_.layers_[i] ;
-            std::set< index_t > boundaries ;
-
-            for( index_t r = 0; r < layer.nb_children(); r++ ) {
-                const BoundaryModelElement& region = layer.child( r ) ;
-                model_.regions_[region.id()].parent_ = i ;
-                for( index_t sp = 0; sp < region.nb_boundaries(); sp++ ) {
-                    boundaries.insert( region.boundary_id( sp ) ) ;
                 }
             }
 
@@ -1560,6 +1691,124 @@ namespace GRGMesh {
             << std::endl ;
 #endif
     }                                                                          
+
+
+     /*!
+     * @brief Last function to call when building a model
+     *
+     * 
+     * @details Output information on the model and initialise the
+     * nb_facets_in_surfaces_ vector
+     * 
+     * @return False if the model is not valid and cannot be fixed
+     * otherwise returns true.
+     *
+     *  \todo FULL CHECK AND FIX OF THE MODEL CORRECTNESS !!
+        \todo Trade the end_something functions in the BoundaryModelBuilder
+        functions for a smart end_model function
+        that checks model validity and complete all missing parts
+     */
+    bool BoundaryModelBuilder::end_model()
+    {
+        // The name should exist
+        if( model_.name() == "" ) set_model_name("model_default_name") ;
+        // There must be at least 3 vertices
+        if( model_.nb_vertices() == 0 ) return false ;
+        // And at least one surface
+        if( model_.nb_surfaces() == 0 ) return false ;
+        
+        // The Universe
+
+        
+
+        complete_element_connectivity() ;
+        
+
+        /// 1. Check that the basics to have a valid element
+        ///    and that required connectivity relationships are filled
+
+        // CORNERS
+        for( index_t i = 0; i < model_.nb_corners(); ++i ){            
+            Corner& C = model_.corners_[i] ;
+            if( !check_basic_element_validity( C ) ) return false ;
+
+            // Required : in_boundary_ 
+            if( C.nb_in_boundary() == 0 )  return false ; 
+        }
+        // LINES
+        for( index_t i = 0; i < model_.nb_lines(); ++i ) {
+            Line& L = model_.lines_[i] ;
+            if( !check_basic_element_validity( L ) ) return false ;
+
+            // Required : boundaries_ - in_boundary_
+            if( L.nb_boundaries() == 0 ) return false ;            
+            if( L.nb_in_boundary() == 0 ) return false ;
+            
+            // If the model has contacts the line should have a parent
+            if( L.parent_id() == NO_ID && model_.nb_contacts() > 0 ) return false ;
+        }
+        // SURFACES
+        for( index_t i = 0; i < model_.nb_surfaces(); ++i ){
+            Surface& S = model_.surfaces_[i] ;
+
+            if( !check_basic_element_validity( S ) ) return false ;
+
+            // Required boundaries - in_boundary
+
+            // If the model has interfaces, the surface should have a parent
+
+
+            
+        }
+        // REGIONS
+        for( index_t i = 0; i < model_.nb_regions(); ++i ) 
+        {
+
+        }
+        // CONTACTS
+        for( index_t i = 0; i < model_.nb_contacts(); ++i ) 
+        {
+
+        }
+        // INTERFACES
+        for( index_t i = 0; i < model_.nb_interfaces(); ++i ) 
+        {
+
+        }
+        // LAYERS
+        for( index_t i = 0; i < model_.nb_layers(); ++i ) 
+        {
+
+        }
+            
+
+        /// 2. Check the consistency of connectivity relationships between the elements
+
+
+
+        /// 3. Check the geometrical consistency of the topological relationships
+        
+
+
+        /// 4. Finally fill the nb_facets_in_surfaces_ vector
+        model_.nb_facets_in_surfaces_.resize( model_.nb_surfaces()+1, 0 ) ;
+        index_t count = 0 ;
+        for( index_t i = 1; i < model_.nb_facets_in_surfaces_.size(); ++i ) {
+            count += model_.surface( i-1 ).nb_cells() ;
+            model_.nb_facets_in_surfaces_[i] = count ;
+        }
+
+#ifdef GRGMESH_DEBUG
+        std::cout << "Model " << model_.name() <<" has " << std::endl 
+            << std::setw(10) << std::left << model_.nb_vertices()   << " vertices "   << std::endl 
+            << std::setw(10) << std::left << model_.nb_facets()   << " facets "   << std::endl  
+            << std::setw(10) << std::left << model_.nb_regions()  << " regions "  << std::endl
+            << std::setw(10) << std::left << model_.nb_surfaces() << " surfaces " << std::endl
+            << std::setw(10) << std::left << model_.nb_lines()    << " lines "    << std::endl 
+            << std::setw(10) << std::left << model_.nb_corners()  << " corners "  << std::endl
+            << std::endl ;
+#endif
+    }
 
 
     /*!
@@ -1992,14 +2241,15 @@ namespace GRGMesh {
 
             index_t t = find_key_facet( surface_id, p0, p1, p2, same_sign ) ;
             if( t == NO_ID ) {
+                vec3 p00 = -1*p0 ;
+                vec3 p10 = -1*p1 ;
+                vec3 p20 = -1*p2 ;
                 // It is because of the sign of Z that is not the same 
-                t = find_key_facet( surface_id, -p0, -p1, -p2, same_sign ) ;
+                t = find_key_facet( surface_id, p00, p10, p20, same_sign ) ;
             }
             grgmesh_assert( t != NO_ID ) ;
             return same_sign ;
         }
-                BoundaryModelElement::VOI ) ;
-            BoundaryModelElement( &model_, BoundaryModelElement::BM_REGION, id ) ) ;
     }
        
 
@@ -2148,8 +2398,6 @@ namespace GRGMesh {
                         R.set_boundary( b, R.boundary_id(b), !old_side ) ;
                     }
                 }
-                BoundaryModelElement( &model_, BoundaryModelElement::BM_CONTACT,
-                    result ) ) ;
             }
         }
     }
@@ -2170,7 +2418,7 @@ namespace GRGMesh {
         index_t parent = find_interface( interface_name ) ;
         if( interface_name != "" ) grgmesh_assert( parent != NO_ID ) ;
 
-        BoundaryModelElement::GEOL_FEATURE t = determine_geological_type( type ) ;
+        index_t id = create_element( BM_SURFACE ) ;
         index_t id = create_element( BM_SURFACE ) ;
         set_parent( BM_SURFACE, id, parent ) ;
         set_element_geol_feature( BM_SURFACE, id, t ) ;
@@ -2191,37 +2439,9 @@ namespace GRGMesh {
         return NO_ID ;
     }
 
-    /*!
-     * @brief Add a point to the model and set it as the corner vertex
-     *
-     * @param[in] corner_id Index of the corner
-     * @param[in] vertex Coordinates of the vertex
-     *
-    void BoundaryModelBuilderGocad::set_corner( index_t corner_id, const vec3& vertex )
-    {
-        grgmesh_debug_assert( corner_id < model_.nb_corners() ) ;
-        model_.corners_[corner_id].set_vertex( add_vertex( vertex ) ) ;
-    }*/
-
-    
-
-      /*!
-     * @brief Add the vertices to the model and set them as the Line vertices
-     *
-     * @param[in] id Line index 
-     * @param[in] vertices Coordinates of the vertices on the line
-     * 
-     * \todo Check when it is called ! Verify that it is before make_vertices_unique()
      *
     void BoundaryModelBuilder::set_line(
         index_t id,
         const std::vector< vec3 >& vertices )
-    {
-        grgmesh_assert( id < model_.nb_lines() ) ;
-
-        for( index_t p = 0; p < vertices.size(); p++ ) {
-            model_.lines_[id].vertices_.push_back( add_vertex( vertices[p] ) ) ;
-        }
     }*/
-
 } 
