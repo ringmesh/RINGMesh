@@ -45,89 +45,6 @@ namespace GRGMesh {
 
 namespace GRGMesh {     
 
-    /*!
-     * @brief Types for BoundaryModelElement 
-     * \todo Read all types, this is not sufficient
-     */
-    enum GEOL_FEATURE {
-        ALL,
-        STRATI,
-        FAULT,
-        VOI,
-        STRATI_FAULT,
-        STRATI_VOI,
-        FAULT_VOI
-    } ;
-    /// Default type is all
-    static GEOL_FEATURE default_type = ALL ;   
-
-    /*!
-     * @brief Map the name of a geological type with a value of GEOL_FEATURE
-     *
-     * @param[in] in Name of the feature
-     * @return The geological feature index
-     *
-     * \todo Keep all the information ( add new GEOL_FEATURE) instead of simplfying it.
-     */
-    static GEOL_FEATURE determine_geological_type( const std::string& in ) 
-    {
-        if( in == "" ) return ALL ;
-        if( in == "reverse_fault" ) return FAULT ;
-        if( in == "normal_fault" ) return FAULT ;
-        if( in == "fault" ) return FAULT ;
-        if( in == "top" ) return STRATI ;
-        if( in == "none" ) return STRATI ;
-        if( in == "unconformity" ) return STRATI ;
-        if( in == "boundary" ) return VOI ;
-
-        std::cout<< "ERROR" << "Unexpected type in the model file " << in
-            << std::endl ;
-        return ALL ;
-    }
-    
-    /*!
-     * @brief Compute an intersection type
-     *
-     * @param[in] types Type that intersect
-     * @return Intersection type
-     */
-    static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) 
-    {
-        if( types.size() == 0 ) return ALL ;
-
-        // Sort and remove duplicates form the in types
-        std::vector< GEOL_FEATURE > in = types ;
-        std::sort( in.begin(), in.end() ) ;
-        index_t new_size = std::unique( in.begin(), in.end() ) - in.begin() ;
-        in.resize( new_size ) ;
-
-        if( in.size() == 1 ) return in[0] ;
-
-        if( in.size() == 2 ) {
-            if( in[0] == ALL ) return ALL ;
-            if( in[0] == STRATI ) {
-                if( in[1] == FAULT ) return STRATI_FAULT ;
-                if( in[1] == VOI ) return STRATI_VOI ;
-            } else if( in[0] == FAULT ) {
-                if( in[1] == VOI ) return FAULT_VOI ;
-            }
-            // Other cases ? for corners ? what is the vertex ?
-            return ALL ;
-        }
-        return ALL ;
-    }
-
-    /// Types for the elements (BoundaryModelElement) of a BoundaryModel
-    enum BM_TYPE {
-        BM_CORNER = 0,
-        BM_LINE,
-        BM_SURFACE,
-        BM_REGION, 
-        BM_CONTACT,
-        BM_INTERFACE,
-        BM_LAYER,
-        BM_NO_TYPE
-    } ;
 
     /*!
      * \brief Generic class describing one element of a BoundaryModel
@@ -140,8 +57,92 @@ namespace GRGMesh {
         } ;
         typedef AttributeManager< VERTEX > VertexAttributeManager ;
         typedef AttributeManager< FACET > FacetAttributeManager ;
-        
+
         const static index_t NO_ID = index_t( -1 ) ;
+
+        /*!
+        * @brief Types for BoundaryModelElement 
+        * \todo Read all types, this is not sufficient
+        */
+        enum GEOL_FEATURE {
+            ALL,
+            STRATI,
+            FAULT,
+            VOI,
+            STRATI_FAULT,
+            STRATI_VOI,
+            FAULT_VOI
+        } ;
+        /// Default type is all
+        const static GEOL_FEATURE default_type = ALL ;   
+
+        /// Types for the elements (BoundaryModelElement) of a BoundaryModel
+        enum BM_TYPE {
+            BM_CORNER = 0,
+            BM_LINE,
+            BM_SURFACE,
+            BM_REGION, 
+            BM_CONTACT,
+            BM_INTERFACE,
+            BM_LAYER,
+            BM_NO_TYPE
+        } ;
+
+        /*!
+        * @brief Map the name of a geological type with a value of GEOL_FEATURE
+        *
+        * @param[in] in Name of the feature
+        * @return The geological feature index
+        *
+        * \todo Keep all the information ( add new GEOL_FEATURE) instead of simplfying it.
+        */
+        static GEOL_FEATURE determine_geological_type( const std::string& in ) 
+        {
+            if( in == "" ) return ALL ;
+            if( in == "reverse_fault" ) return FAULT ;
+            if( in == "normal_fault" ) return FAULT ;
+            if( in == "fault" ) return FAULT ;
+            if( in == "top" ) return STRATI ;
+            if( in == "none" ) return STRATI ;
+            if( in == "unconformity" ) return STRATI ;
+            if( in == "boundary" ) return VOI ;
+
+            std::cout<< "ERROR" << "Unexpected type in the model file " << in
+                << std::endl ;
+            return ALL ;
+        }
+
+        /*!
+        * @brief Compute an intersection type
+        *
+        * @param[in] types Type that intersect
+        * @return Intersection type
+        */
+        static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) 
+        {
+            if( types.size() == 0 ) return ALL ;
+
+            // Sort and remove duplicates form the in types
+            std::vector< GEOL_FEATURE > in = types ;
+            std::sort( in.begin(), in.end() ) ;
+            index_t new_size = std::unique( in.begin(), in.end() ) - in.begin() ;
+            in.resize( new_size ) ;
+
+            if( in.size() == 1 ) return in[0] ;
+
+            if( in.size() == 2 ) {
+                if( in[0] == ALL ) return ALL ;
+                if( in[0] == STRATI ) {
+                    if( in[1] == FAULT ) return STRATI_FAULT ;
+                    if( in[1] == VOI ) return STRATI_VOI ;
+                } else if( in[0] == FAULT ) {
+                    if( in[1] == VOI ) return FAULT_VOI ;
+                }
+                // Other cases ? for corners ? what is the vertex ?
+                return ALL ;
+            }
+            return ALL ;
+        }
 
         /*!
          * @brief Constructs a BoundaryModelElement
@@ -328,7 +329,7 @@ namespace GRGMesh {
         FacetAttributeManager facet_attribute_manager_ ;
     } ;
 
-    const static BoundaryModelElement dummy_element = BoundaryModelElement( nil, BM_NO_TYPE ) ;
+    const static BoundaryModelElement dummy_element = BoundaryModelElement( nil, BoundaryModelElement::BM_NO_TYPE ) ;
 
     /*! 
     * @brief A Corner - point at the intersection of at least 2 Lines 
