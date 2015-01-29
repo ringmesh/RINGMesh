@@ -56,13 +56,11 @@ namespace GRGMesh {
         void init_tet_aabb( index_t region ) ;
         void init_all_tet_aabb() ;
 
-        void init_surfaces() ;
-        index_t surface_begin( index_t s )  ;
-        index_t surface_end( index_t s )  ;
-        index_t surface_mesh( index_t s ) ;
+        index_t surface_begin( index_t s ) const ;
+        index_t surface_end( index_t s ) const ;
+        index_t surface_mesh( index_t s ) const ;
 
-        void init_vertices() ;
-        index_t global_vertex_id( index_t mesh, index_t v ) ;
+        index_t global_vertex_id( index_t mesh, index_t v ) const ;
         const vec3& vertex(index_t global_v) const ;
 
         //      _
@@ -99,11 +97,13 @@ namespace GRGMesh {
         }
         bool surface_vertices_global_id(
             std::vector<index_t> surface_id,
-            std::vector<index_t>& indices,
-            std::vector< vec3 >& unique_vertices ) ;
-        index_t nb_vertices() ;
+            std::vector<index_t>& indices) ;
+        index_t nb_vertices() const ;
+        index_t nb_vertex_indices() const ;
 
     private:
+        void init_surfaces() ;
+        void init_vertices() const ;
         void unique_points(
             std::vector< vec3 >& unique_vertices,
             std::vector< index_t >& indices )  ;
