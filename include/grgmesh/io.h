@@ -113,6 +113,61 @@ namespace GRGMesh {
 
             void compute_database( const DuplicateMode& mode = NONE ) ;
 
+            index_t nb_triangle() const { return nb_triangle_ ; }
+            index_t nb_triangle( index_t r ) const {
+                return facet_ptr_[NB_FACET_TYPES * r + 1] - facet_ptr_[NB_FACET_TYPES * r] ;
+            }
+            index_t nb_quad() const { return nb_quad_ ; }
+            index_t nb_quad( index_t r ) const {
+                return facet_ptr_[NB_FACET_TYPES * r + 2] - facet_ptr_[NB_FACET_TYPES * r + 1] ;
+            }
+            index_t nb_facets() const { return facets_.size() ; }
+            index_t nb_facets( index_t r ) const {
+                return mesh_facet_end( r ) -  mesh_facet_begin( r ) ;
+            }
+
+            index_t nb_tet() const { return nb_tet_ ; }
+            index_t nb_tet( index_t r ) const {
+                return cell_ptr_[NB_CELL_TYPES * r + 1] - cell_ptr_[NB_CELL_TYPES * r] ;
+            }
+            index_t nb_pyramid() const { return nb_pyramid_ ; }
+            index_t nb_pyramid( index_t r ) const {
+                return cell_ptr_[NB_CELL_TYPES * r + 2] - cell_ptr_[NB_CELL_TYPES * r + 1] ;
+            }
+            index_t nb_prism() const { return nb_prism_ ; }
+            index_t nb_prism( index_t r ) const {
+                return cell_ptr_[NB_CELL_TYPES * r + 3] - cell_ptr_[NB_CELL_TYPES * r + 2] ;
+            }
+            index_t nb_hex() const { return nb_hex_ ; }
+            index_t nb_hex( index_t r ) const {
+                return cell_ptr_[NB_CELL_TYPES * r + 4] - cell_ptr_[NB_CELL_TYPES * r + 3] ;
+            }
+            index_t nb_cells() const { return cells_.size() ; }
+            index_t nb_cells( index_t r ) const {
+                return mesh_cell_end( r ) -  mesh_cell_begin( r ) ;
+            }
+
+
+            index_t local_triangle_id( index_t r, index_t t ) const {
+                return facet( mesh_facet_begin( r ) + facet_ptr_[NB_FACET_TYPES * r] + t ) ;
+            }
+            index_t local_quad_id( index_t r, index_t q ) const {
+                return facet( mesh_facet_begin( r ) + facet_ptr_[NB_FACET_TYPES * r + 1] + q ) ;
+            }
+
+            index_t local_tet_id( index_t r, index_t t ) const {
+                return cell( mesh_facet_begin( r ) + cell_ptr_[NB_CELL_TYPES * r] + t ) ;
+            }
+            index_t local_pyramid_id( index_t r, index_t p ) const {
+                return cell( mesh_facet_begin( r ) + cell_ptr_[NB_CELL_TYPES * r + 1] + p ) ;
+            }
+            index_t local_prism_id( index_t r, index_t p ) const {
+                return cell( mesh_facet_begin( r ) + cell_ptr_[NB_CELL_TYPES * r + 2] + p ) ;
+            }
+            index_t local_hex_id( index_t r, index_t h ) const {
+                return cell( mesh_facet_begin( r ) + cell_ptr_[NB_CELL_TYPES * r + 3] + h ) ;
+            }
+
         private:
             void fill_with_geometry() ;
             void duplicate_vertices( const DuplicateMode& mode ) ;
@@ -120,8 +175,16 @@ namespace GRGMesh {
                 index_t s,
                 const DuplicateMode& mode ) const ;
 
+            index_t mesh_facet_begin( index_t r ) const { return mesh_facet_ptr_[r] ; }
+            index_t mesh_facet_end( index_t r ) const { return mesh_facet_ptr_[r+1] ; }
+            index_t facet( index_t f ) const { return facets_[f] ; }
+
+            index_t mesh_cell_begin( index_t r ) const { return mesh_cell_ptr_[r] ; }
+            index_t mesh_cell_end( index_t r ) const { return mesh_cell_ptr_[r+1] ; }
+            index_t cell( index_t c ) const { return cells_[c] ; }
+
         private:
-            MacroMesh& mm_ ;
+            const MacroMesh& mm_ ;
 
             std::vector< index_t > facets_ ;
             // [TRGL/QUAD]
@@ -139,6 +202,13 @@ namespace GRGMesh {
 
             std::vector< index_t > duplicated_vertex_indices_ ;
             index_t first_duplicated_vertex_id_ ;
+
+            index_t nb_triangle_ ;
+            index_t nb_quad_ ;
+            index_t nb_tet_ ;
+            index_t nb_pyramid_ ;
+            index_t nb_prism_ ;
+            index_t nb_hex_ ;
         } ;
     }
 }

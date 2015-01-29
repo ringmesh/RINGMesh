@@ -34,6 +34,10 @@
 
 namespace GRGMesh {
     namespace GRGMeshIO {
+
+        static std::string TAB = "\t" ;
+        static std::string SPACE = " " ;
+
         void zip_file( zipFile zf, const std::string& name )
         {
             zip_fileinfo zfi = { 0 } ;
@@ -322,7 +326,7 @@ namespace GRGMesh {
                 MacroMesh& MM = const_cast <MacroMesh&> (mm) ;
                 GEO::MeshMutator::set_attributes( mesh, GEO::MESH_FACET_REGION ) ;
                 for( index_t p = 0; p < MM.nb_vertices(); p++ ) {
-                    builder.add_vertex( MM.vertex(p) ) ;
+                    builder.add_vertex( MM.global_vertex(p) ) ;
                 }
 
                 index_t cell_offset = 0 ;
@@ -368,7 +372,68 @@ namespace GRGMesh {
             }
         } ;
 
+        /************************************************************************/
 
+        class TetGenIOHandler: public MacroMeshIOHandler {
+        public:
+            virtual bool load( const std::string& filename, MacroMesh& mesh )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a MacroMesh from TetGen not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+            virtual bool save( const MacroMesh& mm, const std::string& filename )
+            {
+                MacroMeshExport db( mm ) ;
+                db.compute_database() ;
+
+                std::string directory = GEO::FileSystem::dir_name( filename ) ;
+                std::string file = GEO::FileSystem::base_name( filename ) ;
+
+                std::ostringstream oss_node ;
+                oss_node << directory << "/" << file << ".node" ;
+                std::ofstream node( oss_node.str().c_str() ) ;
+                node.precision( 16 ) ;
+                node << mm.nb_vertices() << " 3 0 0" << std::endl ;
+                for( index_t v = 0; v < mm.nb_vertices(); v++ ) {
+                    const vec3& point = mm.global_vertex( v ) ;
+                    node << v << SPACE << point.x << SPACE << point.y << SPACE
+                        << point.z << std::endl ;
+                }
+
+                std::ostringstream oss_ele ;
+                oss_ele << directory << "/" << file << ".ele" ;
+                std::ofstream ele( oss_ele.str().c_str() ) ;
+                std::ostringstream oss_neigh ;
+                oss_neigh << directory << "/" << file << ".neigh" ;
+                std::ofstream neigh( oss_neigh.str().c_str() ) ;
+
+                ele << db.nb_cells() << " 4 1" << std::endl ;
+                grgmesh_debug_assert( db.nb_cells() == db.nb_tet() ) ;
+                index_t nb_tet_exported = 0 ;
+                for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+                    const GEO::Mesh& mesh = mm.mesh( m ) ;
+                    for( index_t t = 0; t < db.nb_tet( m ); t++ ) {
+                        index_t tet = db.local_tet_id( m, t ) ;
+                        ele << nb_tet_exported + tet << SPACE
+                            << mm.global_vertex_id( m,
+                                mesh.cell_vertex_index( tet, 0 ) ) << SPACE
+                            << mm.global_vertex_id( m,
+                                mesh.cell_vertex_index( tet, 1 ) ) << SPACE
+                            << mm.global_vertex_id( m,
+                                mesh.cell_vertex_index( tet, 2 ) ) << SPACE
+                            << mm.global_vertex_id( m,
+                                mesh.cell_vertex_index( tet, 3 ) ) << SPACE << m + 1
+                            << std::endl ;
+                        for( index_t f = 0; f < mesh.cell_nb_facets( tet ); f++ ) {
+
+                        }
+                    }
+                }
+                return true ;
+            }
+        } ;
 
         /************************************************************************/
 
@@ -399,14 +464,21 @@ namespace GRGMesh {
         /************************************************************************/
 
         MacroMeshExport::MacroMeshExport( const MacroMesh& mm )
-            : mm_( const_cast< MacroMesh& >( mm ) ),
-              facet_ptr_( NB_FACET_TYPES * ( mm.model().nb_surfaces() + 1 ), 0 ),
-              mesh_facet_ptr_( mm.model().nb_surfaces() + 1, 0 ),
-              cell_ptr_( NB_CELL_TYPES * ( mm.model().nb_regions() + 1 ), 0 ),
-              mesh_cell_ptr_( mm.model().nb_regions() + 1, 0 ),
-              mesh_corner_ptr_( mm.model().nb_regions() + 1, 0 ),
-              surface2mesh_( mm.model().nb_surfaces(), Surface::NO_ID ),
-              first_duplicated_vertex_id_( 0 )
+            :
+                mm_( mm ),
+                facet_ptr_( NB_FACET_TYPES * ( mm.model().nb_surfaces() + 1 ), 0 ),
+                mesh_facet_ptr_( mm.model().nb_surfaces() + 1, 0 ),
+                cell_ptr_( NB_CELL_TYPES * ( mm.model().nb_regions() + 1 ), 0 ),
+                mesh_cell_ptr_( mm.model().nb_regions() + 1, 0 ),
+                mesh_corner_ptr_( mm.model().nb_regions() + 1, 0 ),
+                surface2mesh_( mm.model().nb_surfaces(), Surface::NO_ID ),
+                first_duplicated_vertex_id_( 0 ),
+                nb_triangle_( 0 ),
+                nb_quad_( 0 ),
+                nb_tet_( 0 ),
+                nb_pyramid_( 0 ),
+                nb_prism_( 0 ),
+                nb_hex_( 0 )
         {
         }
 
@@ -431,7 +503,7 @@ namespace GRGMesh {
                     if( !Utils::contains( surface_proccessed, surface_id ) ) {
                         surface_proccessed.push_back( surface_id ) ;
                     }
-                    facet_ptr_[2*surface_id
+                    facet_ptr_[NB_FACET_TYPES*surface_id
                         + facet_access[cur_mesh.facet_size( f )] + 1]++ ;
                 }
                 for( index_t s = 0; s < surface_proccessed.size(); s++ ) {
@@ -451,7 +523,7 @@ namespace GRGMesh {
                     signed_index_t surface_id = cur_mesh.facet_region( f ) ;
                     if( surface2mesh_[surface_id] != m ) continue ;
                     index_t type_access = facet_access[cur_mesh.facet_size( f )] ;
-                    facets_[mesh_facet_ptr_[surface_id] + facet_ptr_[2*surface_id + type_access]
+                    facets_[mesh_facet_ptr_[surface_id] + facet_ptr_[NB_FACET_TYPES*surface_id + type_access]
                         + cur_index_type[type_access]++ ] = f ;
                 }
             }
@@ -462,10 +534,10 @@ namespace GRGMesh {
             for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
                 const GEO::Mesh& mesh = mm_.mesh( m ) ;
                 for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
-                    cell_ptr_[4 * m + cell_access[mesh.cell_nb_vertices( c )] + 1]++ ;
+                    cell_ptr_[NB_CELL_TYPES * m + cell_access[mesh.cell_nb_vertices( c )] + 1]++ ;
                 }
                 for( index_t type = 1; type < NB_CELL_TYPES; type++ ) {
-                    cell_ptr_[4 * m + type] += cell_ptr_[4 * m + type - 1] ;
+                    cell_ptr_[NB_CELL_TYPES * m + type] += cell_ptr_[NB_CELL_TYPES * m + type - 1] ;
                 }
             }
 
@@ -481,7 +553,7 @@ namespace GRGMesh {
                 GEO::Mesh& mesh = const_cast< GEO::Mesh& >( mm_.mesh( m ) ) ;
                 for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
                     index_t type_access = cell_access[mesh.cell_nb_vertices( c )] ;
-                    cells_[mesh_cell_ptr_[m] + cell_ptr_[4 * m + type_access]
+                    cells_[mesh_cell_ptr_[m] + cell_ptr_[NB_CELL_TYPES * m + type_access]
                         + cur_index_type[type_access]++ ] = c ;
                 }
                 std::copy( mesh.corner_vertex_index_ptr( 0 ),
@@ -491,6 +563,17 @@ namespace GRGMesh {
 
             /// 3 - fill vertex information
             first_duplicated_vertex_id_ = mm_.nb_vertex_indices() ;
+
+            /// 4 - update cached values
+            for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+                nb_triangle_ += nb_triangle( m ) ;
+                nb_quad_ += nb_quad( m ) ;
+                nb_tet_ += nb_tet( m ) ;
+                nb_pyramid_ += nb_pyramid( m ) ;
+                nb_prism_ += nb_prism( m ) ;
+                nb_hex_ += nb_hex( m ) ;
+            }
+
         }
 
         void MacroMeshExport::duplicate_vertices( const DuplicateMode& mode )

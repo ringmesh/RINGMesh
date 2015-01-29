@@ -28,8 +28,88 @@ namespace GEO {
 namespace GRGMesh {
 
     class BoundaryModel ;
+    class MacroMesh ;
 
     static std::vector< std::vector< vec3 > > empty_vertices ;
+
+    class GRGMESH_API MacroMeshVertices {
+    public:
+        MacroMeshVertices( const MacroMesh& mm )
+            : mm_( mm ), initialized_( false )
+        {
+        }
+
+        index_t nb_vertices() const ;
+        index_t nb_vertex_indices() const ;
+        index_t global_vertex_id( index_t mesh, index_t v ) const ;
+        const vec3& global_vertex( index_t global_v ) const ;
+
+    private:
+        void initialize() ;
+
+    private:
+        const MacroMesh& mm_ ;
+        bool initialized_ ;
+
+        std::vector< vec3 > unique_vertices_ ;
+        std::vector< index_t > global_vertex_indices_ ;
+        std::vector< index_t > vertex2mesh_ ;
+    } ;
+
+    class GRGMESH_API MacroMeshFacets {
+    public:
+        MacroMeshFacets( const MacroMesh& mm )
+            : mm_( mm ), initialized_( false )
+        {
+        }
+        index_t surface_facet( index_t s, index_t f ) const ;
+        index_t surface_mesh( index_t s ) const ;
+        index_t nb_surface_facets( index_t s ) const ;
+
+    private:
+        index_t surface_begin( index_t s ) const {
+            return surface_ptr_[s] ;
+        }
+        index_t surface_end( index_t s ) const {
+            return surface_ptr_[s + 1] ;
+        }
+        index_t surface_facet( index_t f ) const {
+            return surface_facets_[f] ;
+        }
+        void initialize() ;
+
+    private:
+        const MacroMesh& mm_ ;
+        bool initialized_ ;
+
+        std::vector< index_t > surface_facets_ ;
+        std::vector< index_t > surface_ptr_ ;
+        std::vector< index_t > surface2mesh_ ;
+    } ;
+
+
+    class GRGMESH_API MacroMeshCells {
+    public:
+        MacroMeshCells( const MacroMesh& mm )
+            : mm_( mm ), initialized_( false )
+        {
+        }
+
+        signed_index_t global_cell_adjacent( index_t mesh, index_t c, index_t f ) const ;
+        index_t get_local_cell_index( index_t global_index ) const ;
+        index_t get_mesh( index_t global_index ) const ;
+
+    private:
+        void initialize() ;
+
+    private:
+        const MacroMesh& mm_ ;
+        bool initialized_ ;
+
+        std::vector< signed_index_t > global_cell_adjacents_ ;
+        std::vector< index_t > cell2mesh_ ;
+    } ;
+
     class GRGMESH_API MacroMesh {
     public:
         MacroMesh( const BoundaryModel& model, index_t dim = 3 ) ;
@@ -56,12 +136,6 @@ namespace GRGMesh {
         void init_tet_aabb( index_t region ) ;
         void init_all_tet_aabb() ;
 
-        index_t surface_begin( index_t s ) const ;
-        index_t surface_end( index_t s ) const ;
-        index_t surface_mesh( index_t s ) const ;
-
-        index_t global_vertex_id( index_t mesh, index_t v ) const ;
-        const vec3& vertex(index_t global_v) const ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
@@ -92,21 +166,29 @@ namespace GRGMesh {
         {
             return model_ ;
         }
-        const index_t surface_facet( index_t f ) const  {
-            return surface_facets_[f] ;
-        }
-        bool surface_vertices_global_id(
-            std::vector<index_t> surface_id,
-            std::vector<index_t>& indices) ;
-        index_t nb_vertices() const ;
-        index_t nb_vertex_indices() const ;
 
-    private:
-        void init_surfaces() ;
-        void init_vertices() const ;
-        void unique_points(
-            std::vector< vec3 >& unique_vertices,
-            std::vector< index_t >& indices )  ;
+        index_t surface_facet( index_t s, index_t f ) const  {
+            return mm_facets_.surface_facet( s, f ) ;
+        }
+        index_t surface_mesh( index_t s ) const {
+            return mm_facets_.surface_mesh( s ) ;
+        }
+        index_t nb_surface_facets( index_t s ) const {
+            return mm_facets_.nb_surface_facets( s ) ;
+        }
+
+        index_t global_vertex_id( index_t mesh, index_t v ) const {
+            return mm_vertices_.global_vertex_id( mesh, v ) ;
+        }
+        const vec3& global_vertex( index_t global_v) const {
+            return mm_vertices_.global_vertex( global_v ) ;
+        }
+        index_t nb_vertices() const {
+            return mm_vertices_.nb_vertices() ;
+        }
+        index_t nb_vertex_indices() const {
+            return mm_vertices_.nb_vertex_indices() ;
+        }
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
@@ -119,17 +201,9 @@ namespace GRGMesh {
     private:
         std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
         std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
-        index_t nb_vertices_ ;
 
-        std::vector< index_t > surface_facets_ ;
-        std::vector< index_t > surface_ptr_ ;
-        std::vector< index_t > surface2mesh_ ;
-
-        std::vector< vec3 > unique_vertices_ ;
-        std::vector< index_t > global_vertex_indices_ ;
-        std::vector< index_t > vertex2mesh_ ;
-;
-
+        MacroMeshVertices mm_vertices_ ;
+        MacroMeshFacets mm_facets_ ;
 
     } ;
 
