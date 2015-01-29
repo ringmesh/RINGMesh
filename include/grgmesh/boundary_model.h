@@ -290,7 +290,7 @@ namespace GRGMesh {
         index_t create_interface(
             const std::string& name,
             BoundaryModelElement::GEOL_FEATURE type =
-                BoundaryModelElement::default_type ) ;
+                BoundaryModelElement::ALL ) ;
 
         void add_interface_child( index_t id, index_t child ) {
             model_.interfaces_[id].add_child( child ) ;
