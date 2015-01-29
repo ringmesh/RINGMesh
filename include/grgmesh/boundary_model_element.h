@@ -66,8 +66,6 @@ namespace GRGMesh {
             STRATI_VOI,
             FAULT_VOI
         } ;
-        /// Default type is all
-        const static GEOL_FEATURE default_type = ALL ;
 
         /// Types for the elements (BoundaryModelElement) of a BoundaryModel
         enum BM_TYPE {
@@ -104,7 +102,7 @@ namespace GRGMesh {
             BM_TYPE element_type = BM_NO_TYPE, 
             index_t id = NO_ID, 
             index_t parent = NO_ID,
-            GEOL_FEATURE geol = default_type )
+            GEOL_FEATURE geol = ALL )
             : model_( model ),  name_( "" ), id_( id ),
             type_( element_type ), geol_feature_( geol ), parent_( parent )
         {
@@ -473,7 +471,7 @@ namespace GRGMesh {
             BoundaryModel* model,
             index_t id = NO_ID,
             index_t parent = NO_ID,
-            const GEOL_FEATURE& type = default_type )
+            const GEOL_FEATURE& type = ALL )
             :
             BoundaryModelElement( model, BM_SURFACE, id, parent, type ),
             is_triangulated_( false )
