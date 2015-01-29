@@ -23,14 +23,178 @@
 
 namespace GRGMesh {
 
+    void MacroMeshVertices::initialize()
+    {
+        vertex2mesh_.resize( mm_.nb_meshes(), 0 ) ;
+
+        index_t nb_non_unique_vertices = 0 ;
+        for( index_t i = 0; i < mm_.nb_meshes(); i++ ) {
+            vertex2mesh_[i] = nb_non_unique_vertices ;
+            nb_non_unique_vertices += mm_.mesh( i ).nb_vertices() ;
+
+        }
+        std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
+        index_t index = 0 ;
+        for( index_t i = 0; i < mm_.nb_meshes(); i++ ) {
+            index_t nb_vertices = mm_.mesh( i ).nb_vertices() ;
+            vertex2mesh_[i + 1] = nb_vertices ;
+            for( index_t j = 0; j < nb_vertices; j++ ) {
+                all_vertices[index] = GEO::Geom::mesh_vertex( mm_.mesh( i ), j ) ;
+                index++ ;
+            }
+        }
+        MakeUnique mu( all_vertices ) ;
+        mu.unique() ;
+        mu.unique_points( unique_vertices_ ) ;
+        global_vertex_indices_ = mu.indices() ;
+
+        initialized_ = true ;
+    }
+
+    index_t MacroMeshVertices::nb_vertices() const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshVertices* >( this )->initialize() ;
+        }
+        return unique_vertices_.size() ;
+    }
+
+    index_t MacroMeshVertices::nb_vertex_indices() const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshVertices* >( this )->initialize() ;
+        }
+        return global_vertex_indices_.size() ;
+    }
+
+    index_t MacroMeshVertices::global_vertex_id( index_t mesh, index_t v ) const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshVertices* >( this )->initialize() ;
+        }
+        return global_vertex_indices_[vertex2mesh_[mesh] + v] ;
+    }
+
+    const vec3& MacroMeshVertices::global_vertex( index_t global_v ) const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshVertices* >( this )->initialize() ;
+        }
+        return unique_vertices_[global_v] ;
+    }
+
+
+    void MacroMeshFacets::initialize()
+    {
+        surface2mesh_.resize( mm_.model().nb_surfaces(), Surface::NO_ID ) ;
+        surface_ptr_.resize( mm_.model().nb_surfaces() + 1, 0 ) ;
+
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
+            std::vector< signed_index_t > surface_proccessed ;
+            for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
+                signed_index_t surface_id = cur_mesh.facet_region( f ) ;
+                if( surface2mesh_[surface_id] != Surface::NO_ID ) continue ;
+                if( !Utils::contains( surface_proccessed, surface_id ) ) {
+                    surface_proccessed.push_back( surface_id ) ;
+                }
+                surface_ptr_[surface_id+1]++ ;
+            }
+            for( index_t s = 0; s < surface_proccessed.size(); s++ ) {
+                surface2mesh_[surface_proccessed[s]] = m ;
+            }
+        }
+
+        for( index_t s = 0; s < mm_.model().nb_surfaces(); s++ ) {
+            surface_ptr_[s+1] += surface_ptr_[s] ;
+        }
+
+        surface_facets_.resize( surface_ptr_.back() ) ;
+
+        std::vector< index_t > surface_facet_index( mm_.model().nb_surfaces(), 0 ) ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
+            for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
+                signed_index_t surface_id = cur_mesh.facet_region( f ) ;
+                if( surface2mesh_[surface_id] != m ) continue ;
+                surface_facets_[surface_ptr_[surface_id]
+                    + surface_facet_index[surface_id]++ ] = f ;
+            }
+        }
+
+        initialized_ = true ;
+    }
+
+    index_t MacroMeshFacets::surface_mesh( index_t s ) const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
+        }
+        return surface2mesh_[s] ;
+    }
+
+    index_t MacroMeshFacets::surface_facet( index_t s, index_t f ) const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
+        }
+        return surface_facet( surface_begin( s ) + f ) ;
+    }
+
+    index_t MacroMeshFacets::nb_surface_facets( index_t s ) const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
+        }
+        return surface_end( s ) - surface_begin( s ) ;
+    }
+
+
+    void MacroMeshCells::initialize()
+    {
+        //todo
+        grgmesh_assert_not_reached ;
+    }
+
+    signed_index_t MacroMeshCells::global_cell_adjacent( index_t m, index_t c, index_t f ) const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshCells* >( this )->initialize() ;
+        }
+        return global_cell_adjacents_[cell2mesh_[m]
+            + mm_.mesh( m ).cell_adjacents_begin( c ) + f] ;
+    }
+    index_t MacroMeshCells::get_local_cell_index( index_t global_index ) const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshCells* >( this )->initialize() ;
+        }
+        index_t m = get_mesh( global_index ) ;
+        return global_index - cell2mesh_[m] ;
+    }
+    index_t MacroMeshCells::get_mesh( index_t global_index ) const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshCells* >( this )->initialize() ;
+        }
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            if( global_index < cell2mesh_[m+1] ) return m ;
+        }
+        grgmesh_assert_not_reached ;
+        return dummy_index_t ;
+    }
+
+
+
     MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
         :
             model_( model ),
             meshes_( model.nb_regions(), nil ),
             well_vertices_( model.nb_regions() ),
-            nb_vertices_( -1 ),
             facet_aabb_( model.nb_regions(), nil ),
-            tet_aabb_( model.nb_regions(), nil )
+            tet_aabb_( model.nb_regions(), nil ),
+            mm_vertices_( *this ),
+            mm_facets_( *this )
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;
@@ -117,147 +281,6 @@ namespace GRGMesh {
                 well_vertices( region_id ), background_mesh ) ;
             tetragen->tetrahedralize() ;
         }
-    }
-
-    void MacroMesh::unique_points(
-        std::vector< vec3 >& unique_vertices,
-        std::vector< index_t >& indices )
-    {
-        vertex2mesh_.resize(meshes_.size(),0) ;
-
-        index_t nb_non_unique_vertices = 0 ;
-        for( index_t i = 0; i < meshes_.size(); i++ ) {
-            vertex2mesh_[i] = nb_non_unique_vertices ;
-            nb_non_unique_vertices += meshes_[i]->nb_vertices() ;
-
-        }
-        std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
-        index_t index = 0 ;
-        for( index_t i = 0; i < meshes_.size(); i++ ) {
-            index_t nb_vertices =  meshes_[i]->nb_vertices() ;
-            for( index_t j = 0; j < nb_vertices; j++ ) {
-                all_vertices[index] = vec3( meshes_[i]->vertex_ptr( j )[0],
-                    meshes_[i]->vertex_ptr( j )[1],
-                    meshes_[i]->vertex_ptr( j )[2] ) ;
-                index++ ;
-            }
-        }
-        MakeUnique mu( all_vertices ) ;
-        mu.unique() ;
-        mu.unique_points( unique_vertices ) ;
-        indices = mu.indices() ;
-    }
-
-    bool MacroMesh::surface_vertices_global_id(
-        std::vector<index_t> surface_id,
-        std::vector<index_t>& indices) {
-        index_t nb_total_nodes = 0 ;
-        for( index_t s = 0; s < surface_id.size(); s++ ) {
-            nb_total_nodes += model_.surface( surface_id[s] ).nb_vertices() ;
-        }
-        indices.clear() ;
-        indices.reserve( nb_total_nodes ) ;
-        ColocaterANN ann( unique_vertices_ ) ;
-        for( index_t s = 0; s < surface_id.size(); s++ ) {
-            const Surface& surface = model_.surface( surface_id[s] ) ;
-            for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-                vec3 cur_v = surface.vertex( v ) ;
-                std::vector< index_t > results ;
-                if( !ann.get_colocated( cur_v, results, 1 ) ) {
-                    GEO::Logger::err( "" )
-                        << "Impossible to find colocated point mesh/model"
-                        << std::endl ;
-                    return false ;
-                }
-                indices.push_back( results[0] ) ;
-            }
-        }
-        GEO::sort_unique( indices ) ;
-        return true ;
-    }
-    index_t MacroMesh::nb_vertices() const
-    {
-        init_vertices() ;
-        return unique_vertices_.size() ;
-    }
-
-
-    void MacroMesh::init_surfaces()
-    {
-        if( !surface_facets_.empty() ) return ;
-        surface2mesh_.resize( model_.nb_surfaces(), Surface::NO_ID ) ;
-        surface_ptr_.resize( model_.nb_surfaces() + 1, 0 ) ;
-
-        for( index_t m = 0; m < nb_meshes(); m++ ) {
-            const GEO::Mesh& cur_mesh = mesh( m ) ;
-            std::vector< signed_index_t > surface_proccessed ;
-            for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
-                signed_index_t surface_id = cur_mesh.facet_region( f ) ;
-                if( surface2mesh_[surface_id] != Surface::NO_ID ) continue ;
-                if( !Utils::contains( surface_proccessed, surface_id ) ) {
-                    surface_proccessed.push_back( surface_id ) ;
-                }
-                surface_ptr_[surface_id+1]++ ;
-            }
-            for( index_t s = 0; s < surface_proccessed.size(); s++ ) {
-                surface2mesh_[surface_proccessed[s]] = m ;
-            }
-        }
-
-        for( index_t s = 0; s < model_.nb_surfaces(); s++ ) {
-            surface_ptr_[s+1] += surface_ptr_[s] ;
-        }
-
-        surface_facets_.resize( surface_ptr_.back() ) ;
-
-        std::vector< index_t > surface_facet_index( model_.nb_surfaces(), 0 ) ;
-        for( index_t m = 0; m < nb_meshes(); m++ ) {
-            const GEO::Mesh& cur_mesh = mesh( m ) ;
-            for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
-                signed_index_t surface_id = cur_mesh.facet_region( f ) ;
-                if( surface2mesh_[surface_id] != m ) continue ;
-                surface_facets_[surface_ptr_[surface_id]
-                    + surface_facet_index[surface_id]++ ] = f ;
-            }
-        }
-    }
-
-    index_t MacroMesh::surface_begin( index_t s ) const
-    {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMesh* >( this )->init_surfaces() ;
-        }
-        return surface_ptr_[s] ;
-    }
-    index_t MacroMesh::surface_end( index_t s ) const
-    {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMesh* >( this )->init_surfaces() ;
-        }
-        return surface_ptr_[s+1] ;
-    }
-    index_t MacroMesh::surface_mesh( index_t s ) const
-    {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMesh* >( this )->init_surfaces() ;
-        }
-        return surface2mesh_[s] ;
-    }
-
-    void MacroMesh::init_vertices() const {
-        if( !unique_vertices_.empty() ) return ;
-        MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
-        not_const->unique_points( not_const->unique_vertices_,
-            not_const->global_vertex_indices_ ) ;
-    }
-
-    index_t MacroMesh::global_vertex_id(index_t mesh, index_t v) const {
-        init_vertices() ;
-        return global_vertex_indices_[vertex2mesh_[mesh] + v] ;
-    }
-
-    const vec3& MacroMesh::vertex( index_t global_v) const {
-        return unique_vertices_[global_v] ;
     }
 
 }
