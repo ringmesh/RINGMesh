@@ -178,15 +178,10 @@ namespace GRGMesh {
         GEO::sort_unique( indices ) ;
         return true ;
     }
-    index_t MacroMesh::nb_vertices()
+    index_t MacroMesh::nb_vertices() const
     {
         init_vertices() ;
         return unique_vertices_.size() ;
-    }
-    index_t MacroMesh::nb_vertex_indices()
-    {
-        init_vertices() ;
-        return global_vertex_indices_.size() ;
     }
 
 
@@ -230,28 +225,36 @@ namespace GRGMesh {
         }
     }
 
-    index_t MacroMesh::surface_begin( index_t s )
+    index_t MacroMesh::surface_begin( index_t s ) const
     {
-        init_surfaces() ;
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMesh* >( this )->init_surfaces() ;
+        }
         return surface_ptr_[s] ;
     }
-    index_t MacroMesh::surface_end( index_t s )
+    index_t MacroMesh::surface_end( index_t s ) const
     {
-        init_surfaces() ;
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMesh* >( this )->init_surfaces() ;
+        }
         return surface_ptr_[s+1] ;
     }
-    index_t MacroMesh::surface_mesh( index_t s )
+    index_t MacroMesh::surface_mesh( index_t s ) const
     {
-        init_surfaces() ;
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMesh* >( this )->init_surfaces() ;
+        }
         return surface2mesh_[s] ;
     }
 
-    void MacroMesh::init_vertices() {
+    void MacroMesh::init_vertices() const {
         if( !unique_vertices_.empty() ) return ;
-        unique_points( unique_vertices_, global_vertex_indices_ ) ;
+        MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
+        not_const->unique_points( not_const->unique_vertices_,
+            not_const->global_vertex_indices_ ) ;
     }
 
-    index_t MacroMesh::global_vertex_id(index_t mesh, index_t v) {
+    index_t MacroMesh::global_vertex_id(index_t mesh, index_t v) const {
         init_vertices() ;
         return global_vertex_indices_[vertex2mesh_[mesh] + v] ;
     }

@@ -368,6 +368,8 @@ namespace GRGMesh {
             }
         } ;
 
+
+
         /************************************************************************/
 
         MacroMeshIOHandler* MacroMeshIOHandler::create(
@@ -393,6 +395,8 @@ namespace GRGMesh {
             std::string ext = GEO::FileSystem::extension( filename ) ;
             return create( ext ) ;
         }
+
+        /************************************************************************/
 
         MacroMeshExport::MacroMeshExport( const MacroMesh& mm )
             : mm_( const_cast< MacroMesh& >( mm ) ),
@@ -486,7 +490,6 @@ namespace GRGMesh {
             }
 
             /// 3 - fill vertex information
-            mm_.init_vertices() ;
             first_duplicated_vertex_id_ = mm_.nb_vertex_indices() ;
         }
 
