@@ -55,8 +55,6 @@ namespace GRGMesh {
      */
     class GRGMESH_API BoundaryModel {       
         friend class BoundaryModelBuilder ;
-       // friend class LineMutator ; // pourquoi onn aurait besoin d'être amis ?
-       // friend class SurfaceMutator ;
 
     public:           
         enum AttributeLocation {
@@ -66,7 +64,8 @@ namespace GRGMesh {
         } ;       
         typedef AttributeManager< VERTEX > PointAttributeManager ;
         typedef AttributeManager< FACET > FacetAttributeManager ;
-        
+        typedef BoundaryModelElement BME ;
+               
         const static index_t NO_ID = index_t( -1 ) ;
 
         /**
@@ -89,20 +88,16 @@ namespace GRGMesh {
 
         index_t nb_facets() const { return nb_facets_in_surfaces_.back() ; }
         void surface_facet( index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id ) const ;     
-        index_t model_facet( index_t surface_id, index_t surf_facet_id ) const ;
-
-        // Accessors to model elements
-        const std::string& name() const { return name_ ; }
+        index_t model_facet( index_t surface_id, index_t surf_facet_id ) const ;      
 
         /**
-         * \name Generic accessor to elements
+         * \name Accessor to elements
          * @{
          */
-        index_t nb_elements( BoundaryModelElement::BM_TYPE type = BoundaryModelElement::BM_NO_TYPE ) const ;
+        index_t nb_elements( BoundaryModelElement::BM_TYPE type ) const ;
         const BoundaryModelElement& element( BoundaryModelElement::BM_TYPE element_type, index_t index ) const ;
 
-
-
+        // Remove all these functions ????
         index_t nb_corners() const { return corners_.size() ; }
         index_t nb_lines() const { return lines_.size() ; }
         index_t nb_surfaces() const { return surfaces_.size() ; }
@@ -122,7 +117,9 @@ namespace GRGMesh {
         const BoundaryModelElement& layer( index_t index ) const { return layers_.at(index) ; }
         
         index_t find_region( index_t surface_part_id, bool side ) const ;
-
+        
+        // Accessors to model elements
+        const std::string& name() const { return name_ ; }
         // Accessors to attribute managers
         PointAttributeManager* vertex_attribute_manager() const
         {
@@ -141,12 +138,8 @@ namespace GRGMesh {
         bool load_gocad_model3d( const std::string& in ) ;
 
         bool check_model3d_compatibility() ;
-        static void save_type( std::ostream& out, BoundaryModelElement::GEOL_FEATURE t ) ;
-
-
-        BoundaryModelElement& element( BoundaryModelElement::BM_TYPE element_type, index_t index ) ;
+        static void save_type( std::ostream& out, BoundaryModelElement::GEOL_FEATURE t ) ;   
         
-
     private:
         std::string name_ ;
 
@@ -186,6 +179,11 @@ namespace GRGMesh {
          * Parent of a set of Region
          */
         std::vector< BoundaryModelElement >  layers_ ;
+
+        // For a global access to any of the BME
+        // MUST be updated if one element is added !!!
+        std::vector< index_t > nb_elements_per_type_ ;
+
 
         // Attribute managers 
         PointAttributeManager vertex_attribute_manager_ ;
@@ -274,6 +272,8 @@ namespace GRGMesh {
      */ 
     class GRGMESH_API BoundaryModelBuilder {        
     public:
+        typedef BoundaryModelElement BME ;
+
         const static index_t NO_ID = index_t( -1 ) ;
 
         BoundaryModelBuilder( BoundaryModel& model )
@@ -299,34 +299,38 @@ namespace GRGMesh {
         }
         index_t add_vertex( double* vertex ) {
             return add_vertex( vec3( vertex[0], vertex[1], vertex[2] ) ) ;
-        }        
+        }  
+             
+        BoundaryModelElement& element( BoundaryModelElement::BM_TYPE t, index_t index ) {
+            return const_cast< BoundaryModelElement& >( model_.element( t, index ) ) ;
+        }
            
         /**
          * \name Filling BoundaryModelElement attributes.
          * @{
          */
         void set_model( BoundaryModelElement::BM_TYPE e_type, index_t e_index, BoundaryModel* m ) {
-            model_.element( e_type, e_index ).set_model( m ) ;
+            element( e_type, e_index ).set_model( m ) ;
         }
         void set_element_name( BoundaryModelElement::BM_TYPE e_type, index_t e_index, const std::string& name ) {
-            model_.element( e_type, e_index ).set_name( name ) ;
+            element( e_type, e_index ).set_name( name ) ;
         }      
         void set_element_geol_feature( BoundaryModelElement::BM_TYPE e_type, index_t e_index, BoundaryModelElement::GEOL_FEATURE geol ) {
-            model_.element( e_type, e_index ).set_geological_feature( geol ) ; 
+            element( e_type, e_index ).set_geological_feature( geol ) ; 
         }
         void add_element_boundary( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t boundary, bool side = false ){
             if( e_type == BoundaryModelElement::BM_REGION || e_type == BoundaryModelElement::BM_LAYER ) 
-                model_.element( e_type, e_index ).add_boundary( boundary, side ) ;
-            else model_.element( e_type, e_index ).add_boundary( boundary ) ;
+                element( e_type, e_index ).add_boundary( boundary, side ) ;
+            else element( e_type, e_index ).add_boundary( boundary ) ;
         }
         void add_element_in_boundary( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t in_boundary ) {
-            model_.element( e_type, e_index ).add_in_boundary( in_boundary ) ;
+            element( e_type, e_index ).add_in_boundary( in_boundary ) ;
         }
         void set_parent( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t parent_index ) {
-            model_.element( e_type, e_index ).set_parent( parent_index ) ;
+            element( e_type, e_index ).set_parent( parent_index ) ;
         }
         void add_child( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t child_index ) {
-            model_.element( e_type, e_index ).add_child( child_index ) ;
+            element( e_type, e_index ).add_child( child_index ) ;
         }
                        
          /**
@@ -440,18 +444,20 @@ namespace GRGMesh {
         BoundaryModelBuilderGocad( BoundaryModel& model )
             : BoundaryModelBuilder( model ){}
 
-        void load_ml_file( std::istream& in ) ;      
+        void load_ml_file( std::istream& in ) ;   
+        
+        index_t determine_line_vertices( 
+            const Surface& S, 
+            index_t first_vertex, 
+            index_t second_vertex,            
+            std::vector< index_t >& border_vertex_model_ids ) const ;
 
     private:
         // Geometrical research of points
         index_t find_corner( const vec3& ) const ;
 
         void build_lines( const std::vector< Border >& borders ) ;
-        index_t determine_line_vertices( 
-            const Surface& S, 
-            index_t first_vertex, 
-            index_t second_vertex,            
-            std::vector< index_t >& border_vertex_model_ids ) const ;
+        
 
         void create_surface(
             const std::string& interface_name = "",

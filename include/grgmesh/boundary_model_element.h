@@ -45,7 +45,6 @@ namespace GRGMesh {
 
 namespace GRGMesh {     
 
-
     /*!
      * \brief Generic class describing one element of a BoundaryModel
      */
@@ -74,8 +73,10 @@ namespace GRGMesh {
             FAULT_VOI
         } ;
         /// Default type is all
-        const static GEOL_FEATURE default_type = ALL ;   
-
+        const static GEOL_FEATURE default_type = ALL ;           
+        static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
+        static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) ;
+        
         /// Types for the elements (BoundaryModelElement) of a BoundaryModel
         enum BM_TYPE {
             BM_CORNER = 0,
@@ -85,64 +86,16 @@ namespace GRGMesh {
             BM_CONTACT,
             BM_INTERFACE,
             BM_LAYER,
-            BM_NO_TYPE
+            BM_NO_TYPE, 
+            BM_ALL_TYPES
         } ;
 
-        /*!
-        * @brief Map the name of a geological type with a value of GEOL_FEATURE
-        *
-        * @param[in] in Name of the feature
-        * @return The geological feature index
-        *
-        * \todo Keep all the information ( add new GEOL_FEATURE) instead of simplfying it.
-        */
-        static GEOL_FEATURE determine_geological_type( const std::string& in ) 
-        {
-            if( in == "" ) return ALL ;
-            if( in == "reverse_fault" ) return FAULT ;
-            if( in == "normal_fault" ) return FAULT ;
-            if( in == "fault" ) return FAULT ;
-            if( in == "top" ) return STRATI ;
-            if( in == "none" ) return STRATI ;
-            if( in == "unconformity" ) return STRATI ;
-            if( in == "boundary" ) return VOI ;
+        static BM_TYPE parent_type      ( BM_TYPE t ) ;
+        static BM_TYPE child_type       ( BM_TYPE t ) ;
+        static BM_TYPE boundary_type    ( BM_TYPE t ) ;
+        static BM_TYPE in_boundary_type ( BM_TYPE t ) ;
+        
 
-            std::cout<< "ERROR" << "Unexpected type in the model file " << in
-                << std::endl ;
-            return ALL ;
-        }
-
-        /*!
-        * @brief Compute an intersection type
-        *
-        * @param[in] types Type that intersect
-        * @return Intersection type
-        */
-        static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) 
-        {
-            if( types.size() == 0 ) return ALL ;
-
-            // Sort and remove duplicates form the in types
-            std::vector< GEOL_FEATURE > in = types ;
-            std::sort( in.begin(), in.end() ) ;
-            index_t new_size = std::unique( in.begin(), in.end() ) - in.begin() ;
-            in.resize( new_size ) ;
-
-            if( in.size() == 1 ) return in[0] ;
-
-            if( in.size() == 2 ) {
-                if( in[0] == ALL ) return ALL ;
-                if( in[0] == STRATI ) {
-                    if( in[1] == FAULT ) return STRATI_FAULT ;
-                    if( in[1] == VOI ) return STRATI_VOI ;
-                } else if( in[0] == FAULT ) {
-                    if( in[1] == VOI ) return FAULT_VOI ;
-                }
-                // Other cases ? for corners ? what is the vertex ?
-                return ALL ;
-            }
-            return ALL ;
-        }
 
         /*!
          * @brief Constructs a BoundaryModelElement
@@ -256,24 +209,24 @@ namespace GRGMesh {
         void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; } 
 
         void add_boundary( index_t b ) { 
-            grgmesh_assert( type_ != BM_CORNER ) ;
+            grgmesh_assert( boundary_type( type_ ) != BM_NO_TYPE ) ;
             boundaries_.push_back( b ) ; 
         }
         void add_boundary( index_t b, bool side ) {
-            grgmesh_assert( type_ == BM_REGION || type_ == BM_LAYER ) ;
+            grgmesh_assert( boundary_type( type_ ) == BM_SURFACE ) ;
             boundaries_.push_back(b) ;
             sides_.push_back(side) ; 
         }
         void add_in_boundary( index_t e ) { 
-            grgmesh_assert( type_ != BM_REGION && type_ != BM_LAYER ) ;
+            grgmesh_assert( in_boundary_type( type_ ) != BM_NO_TYPE ) ;
             in_boundary_.push_back(e) ; 
         }
         void set_parent( index_t p ){
-            grgmesh_assert( type_ == BM_LINE || type_ == BM_SURFACE || type_ == BM_REGION ) ;
+            grgmesh_assert( parent_type( type_ ) != BM_NO_TYPE ) ;
             parent_ = p ; 
         }       
         void add_child( index_t e ){ 
-            grgmesh_assert( type_ == BM_CONTACT || type_ == BM_INTERFACE || type_ == BM_LAYER ) ;
+            grgmesh_assert( child_type( type_ ) != BM_NO_TYPE ) ;
             children_.push_back( e ) ; 
         }
 
@@ -370,7 +323,6 @@ namespace GRGMesh {
      * It is in the boundary of several Surface
      */
     class GRGMESH_API Line: public BoundaryModelElement {
-        //friend class LineMutator ;
     public:
         Line( BoundaryModel* model, index_t id = NO_ID ) ;
         Line(
