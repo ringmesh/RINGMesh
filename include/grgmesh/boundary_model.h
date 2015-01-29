@@ -98,8 +98,8 @@ namespace GRGMesh {
          * \name Generic accessor to elements
          * @{
          */
-        index_t nb_elements( BM_TYPE type = BM_NO_TYPE ) const ;
-        const BoundaryModelElement& element( BM_TYPE element_type, index_t index ) const ;
+        index_t nb_elements( BoundaryModelElement::BM_TYPE type = BoundaryModelElement::BM_NO_TYPE ) const ;
+        const BoundaryModelElement& element( BoundaryModelElement::BM_TYPE element_type, index_t index ) const ;
 
 
 
@@ -141,10 +141,10 @@ namespace GRGMesh {
         bool load_gocad_model3d( const std::string& in ) ;
 
         bool check_model3d_compatibility() ;
-        static void save_type( std::ostream& out, GEOL_FEATURE t ) ;
+        static void save_type( std::ostream& out, BoundaryModelElement::GEOL_FEATURE t ) ;
 
 
-        BoundaryModelElement& element( BM_TYPE element_type, index_t index ) ;
+        BoundaryModelElement& element( BoundaryModelElement::BM_TYPE element_type, index_t index ) ;
         
 
     private:
@@ -272,17 +272,14 @@ namespace GRGMesh {
     /**
      * \brief Build a BoundaryModel
      */ 
-    class GRGMESH_API BoundaryModelBuilder {
+    class GRGMESH_API BoundaryModelBuilder {        
     public:
         const static index_t NO_ID = index_t( -1 ) ;
 
         BoundaryModelBuilder( BoundaryModel& model )
             : model_( model ){}
         virtual ~BoundaryModelBuilder(){} ;
-        // High level functions
-        void update_all_ids() ;
-        void make_vertices_unique() ;
-        
+  
         // High level functions
         bool rebuild() ;
         void copy_macro_topology( const BoundaryModel& from ) ;        
@@ -308,28 +305,27 @@ namespace GRGMesh {
          * \name Filling BoundaryModelElement attributes.
          * @{
          */
-        void set_model( BM_TYPE e_type, index_t e_index, BoundaryModel* m ) {
+        void set_model( BoundaryModelElement::BM_TYPE e_type, index_t e_index, BoundaryModel* m ) {
             model_.element( e_type, e_index ).set_model( m ) ;
         }
-        void set_element_name( BM_TYPE e_type, index_t e_index, const std::string& name ) {
+        void set_element_name( BoundaryModelElement::BM_TYPE e_type, index_t e_index, const std::string& name ) {
             model_.element( e_type, e_index ).set_name( name ) ;
         }      
-        void set_element_geol_feature( BM_TYPE e_type, index_t e_index, GEOL_FEATURE geol ) {
+        void set_element_geol_feature( BoundaryModelElement::BM_TYPE e_type, index_t e_index, BoundaryModelElement::GEOL_FEATURE geol ) {
             model_.element( e_type, e_index ).set_geological_feature( geol ) ; 
         }
-        void add_element_boundary( BM_TYPE e_type, index_t e_index, index_t boundary, bool side = false ){
-            if( e_type == BM_REGION || e_type == BM_LAYER ) 
+        void add_element_boundary( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t boundary, bool side = false ){
+            if( e_type == BoundaryModelElement::BM_REGION || e_type == BoundaryModelElement::BM_LAYER ) 
                 model_.element( e_type, e_index ).add_boundary( boundary, side ) ;
             else model_.element( e_type, e_index ).add_boundary( boundary ) ;
-                model_.element_private( e_type, e_index ).add_boundary( boundary, side ) ;
-            else model_.element_private( e_type, e_index ).add_boundary( boundary ) ;
         }
-        void add_element_in_boundary( BM_TYPE e_type, index_t e_index, index_t in_boundary ) {
+        void add_element_in_boundary( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t in_boundary ) {
             model_.element( e_type, e_index ).add_in_boundary( in_boundary ) ;
-         * @{
-        void set_parent( BM_TYPE e_type, index_t e_index, index_t parent_index ) {
+        }
+        void set_parent( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t parent_index ) {
             model_.element( e_type, e_index ).set_parent( parent_index ) ;
-        void add_child( BM_TYPE e_type, index_t e_index, index_t child_index ) {
+        }
+        void add_child( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t child_index ) {
             model_.element( e_type, e_index ).add_child( child_index ) ;
         }
                        
@@ -337,7 +333,7 @@ namespace GRGMesh {
          * \name Find and/or create one BoundaryModelElement.
          * @{
          */                     
-        index_t create_element( BM_TYPE e_type ) ;
+        index_t create_element( BoundaryModelElement::BM_TYPE e_type ) ;
                 
         // Corner 
         index_t find_corner( index_t ) const ;
@@ -359,7 +355,7 @@ namespace GRGMesh {
         
         // Interface 
         index_t find_interface( const std::string& name ) const ;
-        index_t create_interface( const std::string& name, GEOL_FEATURE type = default_type ) ;
+        index_t create_interface( const std::string& name, BoundaryModelElement::GEOL_FEATURE type = BoundaryModelElement::ALL ) ;
 
         // Region           
         index_t create_region() ;        
@@ -404,60 +400,19 @@ namespace GRGMesh {
        
          bool complete_element_connectivity() ;
          bool check_basic_element_validity( const BoundaryModelElement& E ) const ;
-    /*!
-     * \brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
-     */ 
-    class BoundaryModelBuilderGocad : public BoundaryModelBuilder {
-    public :
-        /**
-         * \brief Structure used to build contacts when loading a BoundaryModel from .ml file 
-         */
-        struct Border {
-            Border( index_t part, index_t corner, index_t p0, index_t p1):
-            part_id_(part), corner_id_(corner), p0_(p0), p1_(p1) {};
-
-            // Id of the Surface owning this Border
-            index_t part_id_ ;
-            // Id of p0 in the BoundaryModel corner vector
-            index_t corner_id_ ;
-
-            // Ids of the starting corner and second vertex on the border in the Surface
-            // to which this Border belong
-            index_t p0_ ;
-            index_t p1_ ;
-        } ;
-
-
-        BoundaryModelBuilderGocad( BoundaryModel& model )
-            : BoundaryModelBuilder( model ){}
-
-        void load_ml_file( std::istream& in ) ;      
-
-    private:
-        // Geometrical research of points
-        index_t find_corner( const vec3& ) const ;
-
-
-        void create_surface(
-            const std::string& interface_name = "",
-            const std::string& type = "",
-            const Surface::KeyFacet& key = Surface::KeyFacet() ) ;
+        
+         void fill_elements_boundaries( BoundaryModelElement::BM_TYPE type ) ;
+         void fill_elements_in_boundaries( BoundaryModelElement::BM_TYPE type ) ;
+         void fill_elements_parent( BoundaryModelElement::BM_TYPE ) ;
+         void fill_elements_children( BoundaryModelElement::BM_TYPE ) ;      
+    
+    protected:
+            BoundaryModel& model_ ;
+    };
         
 
 
-         void fill_elements_boundaries( BM_TYPE type ) ;
-         void fill_elements_in_boundaries( BM_TYPE type ) ;
-         void fill_elements_parent( BM_TYPE ) ;
-         void fill_elements_children( BM_TYPE ) ;      
-        bool check_key_facet_orientation( index_t surface ) ;
-
-        index_t find_key_facet( index_t surface_id, const vec3& p0, const vec3& p1, const vec3& p2, 
-            bool& same_orientation ) const ;  
-                      
-
-    } ;
-
-
+    
     /*!
      * \brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
      */ 
