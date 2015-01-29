@@ -183,6 +183,11 @@ namespace GRGMesh {
         init_vertices() ;
         return unique_vertices_.size() ;
     }
+    index_t MacroMesh::nb_vertex_indices()
+    {
+        init_vertices() ;
+        return global_vertex_indices_.size() ;
+    }
 
 
     void MacroMesh::init_surfaces()

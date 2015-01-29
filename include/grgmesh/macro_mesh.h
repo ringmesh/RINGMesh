@@ -102,6 +102,7 @@ namespace GRGMesh {
             std::vector<index_t>& indices,
             std::vector< vec3 >& unique_vertices ) ;
         index_t nb_vertices() ;
+        index_t nb_vertex_indices() ;
 
     private:
         void unique_points(
