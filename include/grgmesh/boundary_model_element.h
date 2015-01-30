@@ -104,6 +104,10 @@ namespace GRGMesh {
         static TYPE in_boundary_type ( TYPE t ) ;      
         static index_t dimension     ( TYPE t ) ;       
 
+        static bool parent_allowed      ( TYPE t ) { return parent_type(t)     != NO_ID ; }
+        static bool child_allowed       ( TYPE t ) { return child_type(t)      != NO_ID ; }
+        static bool boundary_allowed    ( TYPE t ) { return boundary_type(t)   != NO_ID ; }
+        static bool in_boundary_allowed ( TYPE t ) { return in_boundary_type(t)!= NO_ID ; } 
         /*!
          * @brief Constructs a BoundaryModelElement
          * 
@@ -129,10 +133,15 @@ namespace GRGMesh {
          * \name Accessors to basic information
          * @{
          */
-        const BoundaryModel& model() const { return *model_ ; }       
+        bool has_model() const { return model_ != NULL ; }
+        const BoundaryModel& model() const { return *model_ ; } 
+        bool has_name() const { return name_ != "" ; }
         const std::string& name() const { return name_ ; }
+        bool has_id() const { return id_ != NO_ID ; } 
         index_t id() const { return id_ ; }
+        bool has_type() const { return type_ != NO_TYPE ; }
         TYPE element_type() const { return type_ ; } 
+        bool has_geological_feature() const { return geol_feature_ != NO_GEOL ; }
         GEOL_FEATURE geological_feature() const { return geol_feature_ ; }
         bool is_on_voi() const ;
 
@@ -204,7 +213,7 @@ namespace GRGMesh {
         void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; } 
       
         void add_boundary( index_t b ) { 
-            grgmesh_assert( boundary_type( type_ ) != NO_TYPE ) ;
+            grgmesh_assert( boundary_allowed( type_ ) ) ;
             boundaries_.push_back( b ) ; 
         }
         void set_boundary( index_t id, index_t b ) { 
@@ -212,7 +221,7 @@ namespace GRGMesh {
             boundaries_[id] = b ; 
         }
         void add_boundary( index_t b, bool side ) {
-            grgmesh_assert( boundary_type( type_ ) == SURFACE ) ;
+            grgmesh_assert( boundary_allowed( type_ ) ) ;
             boundaries_.push_back(b) ;
             sides_.push_back(side) ; 
         }
@@ -222,7 +231,7 @@ namespace GRGMesh {
             sides_[id] = side ; 
         }        
         void add_in_boundary( index_t e ) { 
-            grgmesh_assert( in_boundary_type( type_ ) != NO_TYPE ) ;
+            grgmesh_assert( in_boundary_allowed( type_ ) ) ;
             in_boundary_.push_back(e) ; 
         }
         void set_in_boundary( index_t id, index_t in_b ) { 
@@ -230,11 +239,11 @@ namespace GRGMesh {
             in_boundary_[id] = in_b ; 
         }
         void set_parent( index_t p ){
-            grgmesh_assert( parent_type( type_ ) != NO_TYPE ) ;
+            grgmesh_assert( parent_allowed( type_ ) ) ;
             parent_ = p ; 
         }       
         void add_child( index_t e ){ 
-            grgmesh_assert( child_type( type_ ) != NO_TYPE ) ;
+            grgmesh_assert( child_allowed( type_ ) ) ;
             children_.push_back( e ) ; 
         }
         void set_child( index_t id, index_t c ) {
@@ -357,8 +366,7 @@ namespace GRGMesh {
         }  
         bool is_inside_border( const BoundaryModelElement& e ) const ;
         bool equal( const std::vector< index_t >& rhs_vertices ) const ;
-        
-        
+                
         void set_vertices( const std::vector< index_t >& model_vertex_ids ) { 
             vertices_.resize(0) ;
             vertices_.insert( vertices_.begin(), model_vertex_ids.begin(), model_vertex_ids.end() ) ;
@@ -780,7 +788,7 @@ namespace GRGMesh {
     } ;
 
     /*! 
-     * @brief Class to perform modification of a Surface
+     * @brief Class to perform modifications of a Surface
      */
     class GRGMESH_API SurfaceMutator {
     public:
