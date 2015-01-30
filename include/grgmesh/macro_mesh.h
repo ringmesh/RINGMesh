@@ -190,6 +190,16 @@ namespace GRGMesh {
             return mm_vertices_.nb_vertex_indices() ;
         }
 
+        signed_index_t global_cell_adjacent( index_t mesh, index_t c, index_t f ) const {
+            return mm_cells_.global_cell_adjacent( mesh, c, f ) ;
+        }
+        index_t get_local_cell_index( index_t global_index ) const {
+            return mm_cells_.get_local_cell_index( global_index ) ;
+        }
+        index_t get_mesh( index_t global_index ) const {
+            return mm_cells_.get_mesh( global_index ) ;
+        }
+
     protected:
         /// BoundaryModel representing the structural information of the mesh
         const BoundaryModel& model_ ;
@@ -204,6 +214,7 @@ namespace GRGMesh {
 
         MacroMeshVertices mm_vertices_ ;
         MacroMeshFacets mm_facets_ ;
+        MacroMeshCells mm_cells_ ;
 
     } ;
 

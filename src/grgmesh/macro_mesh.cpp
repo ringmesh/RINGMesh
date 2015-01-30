@@ -267,8 +267,9 @@ namespace GRGMesh {
             well_vertices_( model.nb_regions() ),
             facet_aabb_( model.nb_regions(), nil ),
             tet_aabb_( model.nb_regions(), nil ),
-            mm_vertices_( *this ), // The "this" pointer shouldn't be used in the initialization list
-            mm_facets_( *this )    // Undefined behavior if the class is derived - Windows Warning C4355 
+            mm_vertices_( *this ),
+            mm_facets_( *this ),
+            mm_cells_( *this )
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;
