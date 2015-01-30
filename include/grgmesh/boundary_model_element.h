@@ -153,6 +153,7 @@ namespace GRGMesh {
          * \name Parent - children relationships
          * @{
          */
+        bool has_parent() const { return parent_ != NO_ID ; }
         const BoundaryModelElement& parent() const ;
         index_t parent_id() const { return parent_ ; }
 
