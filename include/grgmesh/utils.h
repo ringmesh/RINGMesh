@@ -967,6 +967,272 @@ namespace GRGMesh {
         }
     } ;
 
+    
+    /*!
+     * @brief Utility class to compute the rotation around an axis
+     * Used to order surface around an axis
+     */
+    class Rot {
+    public:
+        Rot( const vec3& axis, double radians ) 
+        {
+            vec3 q = axis ;
+            double l = q.length() ;
+            if( l > 0  ) {
+                double s = 1.0 / l ;
+                q[0] *= s ;
+                q[1] *= s ;
+                q[2] *= s ;
+            }
+            q *= sinf( radians / 2.0 ) ;
+
+            quat[0] = q[0];
+            quat[1] = q[1];
+            quat[2] = q[2];
+
+            quat[3] = cosf(radians / 2.0);
+        }
+        vec3 rotate( const vec3& src )
+        {
+            double m[4][4] ;
+
+            m[0][0] = 1 - 2.0 * ( quat[1] * quat[1] + quat[2] * quat[2] ) ;
+            m[0][1] = 2.0 * ( quat[0] * quat[1] + quat[2] * quat[3] ) ;
+            m[0][2] = 2.0 * ( quat[2] * quat[0] - quat[1] * quat[3] ) ;
+            m[0][3] = 0.0 ;
+
+            m[1][0] = 2.0 * ( quat[0] * quat[1] - quat[2] * quat[3] ) ;
+            m[1][1] = 1 - 2.0 * ( quat[2] * quat[2] + quat[0] * quat[0] ) ;
+            m[1][2] = 2.0 * ( quat[1] * quat[2] + quat[0] * quat[3] ) ;
+            m[1][3] = 0.0 ;
+
+            m[2][0] = 2.0 * ( quat[2] * quat[0] + quat[1] * quat[3] ) ;
+            m[2][1] = 2.0 * ( quat[1] * quat[2] - quat[0] * quat[3] ) ;
+            m[2][2] = 1 - 2.0 * ( quat[1] * quat[1] + quat[0] * quat[0] ) ;
+            m[2][3] = 0.0 ;
+
+            m[3][0] = 0.0 ;
+            m[3][1] = 0.0 ;
+            m[3][2] = 0.0 ;
+            m[3][3] = 1.0 ;
+
+            double x = src[0] * m[0][0] + src[1] * m[1][0] + src[2] * m[2][0] + m[3][0] ;
+            double y = src[0] * m[0][1] + src[1] * m[1][1] + src[2] * m[2][1] + m[3][1] ;
+            double z = src[0] * m[0][2] + src[1] * m[1][2] + src[2] * m[2][2] + m[3][2] ;
+            double w = src[0] * m[0][3] + src[1] * m[1][3] + src[2] * m[2][3] + m[3][3] ;
+            return vec3( x/w, y/w, z/w ) ;
+        }
+        float quat[4];
+    };
+
+    /*! 
+     * @brief  Utility class to represent a Surface to sort around an axis
+     * 
+     * \todo Rewrite this - this is Triangle sorting around an segment and nothing more
+     */
+    struct SurfaceToSort {
+        /*!
+         * @param id_s2s Index of this SurfaceToSort
+         * @param id_surface Index of the Surface
+         */
+        SurfaceToSort( 
+            index_t id_s2s,
+            index_t id_surface, 
+            const vec3& p0, 
+            const vec3& p1, 
+            const vec3& p2 
+        ): id_s2s_( id_s2s ),
+           id_( id_surface ), 
+           B_A_(),
+           N_(),
+           angle_(-99999), 
+           side_(false)
+        {
+            grgmesh_assert( p0 != p1 ) ;
+            grgmesh_assert( p0 != p2 ) ;
+            grgmesh_assert( p1 != p2 ) ;
+
+            vec3 e1 = normalize(p1-p0) ;
+            vec3 e2 = normalize(p2-p0) ;
+
+            N_ = normalize( cross( e1, e2 ) ) ;
+
+            double d = dot( N_, e1 ) ;
+            grgmesh_assert( dot( N_, e1 ) < epsilon ) ;
+            
+            // Component of the vector linking the mid point of p0p1 
+            // in the plane orthogonal to p0p1
+            vec3 B = 0.5*p1 + 0.5*p0 ;
+            vec3 B_A_0 = p2-B ;
+            double d_BA_e1 = B_A_0.x * e1.x + B_A_0.y * e1.y + B_A_0.z * e1.z ; 
+            
+            vec3 proj = d_BA_e1 * e1 ;
+            
+            vec3 another_intermediate = B_A_0 - proj ;
+            B_A_ = normalize( another_intermediate ) ;
+            
+            double dd = dot( B_A_, e1 ) ;
+            double l = B_A_.length() ;
+            grgmesh_assert( dot( B_A_, e1 ) < epsilon ) ;
+            grgmesh_assert( B_A_.length() > epsilon ) ;
+        }        
+
+        bool operator<( const SurfaceToSort& r ) const {
+            return angle_ < r.angle_ ;
+        }
+
+        index_t id_ ;     // Index of the Surface a BoundaryModelElement
+        vec3 N_ ;
+        vec3 B_A_ ;
+        index_t id_s2s_ ; // Index of the SurfaceToSort
+        
+        // Values filled by sorting function in ContactSort
+        double angle_ ;
+        bool side_ ; 
+
+    } ;
+
+    /*! 
+     * @brief Sort a set of triangles around a common edge
+     */
+    class ContactSort {
+    public:
+        ContactSort( index_t id ): id_(id) {} ;
+
+        // Add a surface in contact on the edge p0p1
+        void add_surface( 
+            index_t id, 
+            const vec3& p0, 
+            const vec3& p1, 
+            const vec3& p2 
+        ) {
+            s_.push_back( SurfaceToSort( s_.size(), id, p0, p1, p2 ) ) ;                               
+        }
+
+        void sort() {
+            grgmesh_assert( s_.size() > 0 ) ;
+
+            std::pair<index_t,bool> default_pair ( index_t(-1), false) ;
+            sorted_surfaces_.resize( 2*s_.size(), default_pair ) ;
+
+            if( s_.size() == 1 ) {
+                sorted_surfaces_[0] = std::pair<index_t, bool> ( s_[0].id_, true ) ;
+                sorted_surfaces_[1] = std::pair<index_t, bool> ( s_[0].id_, false ) ;
+                return ;
+            }
+            // Start on the plus side of the first surface
+            // Logger::out("info") << "Sort contact " << id_ << std::endl ;
+
+            index_t start_id  = 0 ;
+            index_t start_s2s = s_[start_id].id_s2s_ ;
+            sorted_surfaces_[0] = std::pair<index_t, bool> ( s_[start_id].id_ , true ) ;
+
+            vec3 N_ref = s_[start_id].N_ ;
+            vec3 B_A_ref = s_[start_id].B_A_ ;
+            vec3 Ax_ref = normalize( cross( B_A_ref, N_ref ) ) ;
+
+            // The minus side of the start will be the end
+            s_[start_id].angle_ = 2 * M_PI ;
+            s_[start_id].side_ = false ;
+
+            // For each SurfaceToSort
+            for( index_t i = 0 ; i < s_.size(); ++i ) {
+                if( i == start_id ) continue ;
+
+                SurfaceToSort& cur = s_[i] ;
+
+                // Compute the angle ( 0-2*Pi) between the two surfaces
+                double d =  dot( B_A_ref, cur.B_A_ ) ;
+                if ( d < -1 ) d = -1 ;
+                else if ( d > 1 ) d = 1 ;
+
+                cur.angle_ = std::acos( d )  ;
+                double check = dot( cross( B_A_ref, cur.B_A_ ), Ax_ref ) ;
+                if( check < 0. ){
+                    cur.angle_ = 2 * M_PI - cur.angle_ ;
+                }
+
+                // Compute the side of the surface first encountered
+                // when rotating in the N_ref direction
+                Rot R( Ax_ref, -cur.angle_ ) ;
+                vec3 N_rotate = R.rotate( cur.N_ ) ;
+
+                double test = dot( N_rotate, N_ref ) ;
+                cur.side_ = test > 0 ? false : true ;
+            }
+
+            // Sort the Surfaces according to the angle
+            std::sort( s_.begin(), s_.end() ) ;
+
+            // Fill the sorted surfaces adding the side
+            index_t it = 1 ;
+            for( index_t i = 0; i < s_.size(); ++i ) {
+                SurfaceToSort& cur = s_[i] ;
+                if( s_[i].id_s2s_ == start_s2s ) {
+                    sorted_surfaces_[it].first = cur.id_ ;
+                    sorted_surfaces_[it].second = cur.side_ ;
+
+                    grgmesh_assert( i == s_.size() - 1 ) ;
+
+                } else {
+                    sorted_surfaces_[it].first = cur.id_ ;
+                    sorted_surfaces_[it].second = cur.side_ ;
+                    sorted_surfaces_[it + 1].first = cur.id_ ;
+                    sorted_surfaces_[it + 1].second = !cur.side_ ;
+                    it += 2 ;
+                }
+            }
+            // All the surfaces must have been sorted
+            grgmesh_assert(
+                std::count( sorted_surfaces_.begin(), sorted_surfaces_.end(),
+                    default_pair ) == 0 ) ;         
+        }
+
+        /*! Returns the next GRGMesh::Surface id + side that is in the same
+         *  region that the input one
+         */
+        const std::pair< index_t, bool >& next( const std::pair< index_t, bool >& in ) {
+            for( index_t i =0 ; i < sorted_surfaces_.size() ; ++i ) {
+                if( sorted_surfaces_[i] == in ) {                    
+                    if( i == sorted_surfaces_.size()-1 ) 
+                        return sorted_surfaces_[sorted_surfaces_.size()-2 ];
+                    if( i == 0 ) 
+                        return sorted_surfaces_[1] ;                   
+                    
+                    if( sorted_surfaces_[i+1].first == sorted_surfaces_[i].first ) {
+                        // The next has the same surface id, check its sign
+                        if( sorted_surfaces_[i+1].second != sorted_surfaces_[i].second ) {
+                            return sorted_surfaces_[i-1] ;
+                        }
+                        else {
+                            // Sign is the same, case where there is a non-crossing surface part at this contact
+                            return sorted_surfaces_[i+1] ;
+                        }
+                    }
+                    else {
+                        grgmesh_assert( sorted_surfaces_[i-1].first == sorted_surfaces_[i].first ) ;
+                        
+                        if( sorted_surfaces_[i-1].second != sorted_surfaces_[i].second ) {
+                            return sorted_surfaces_[i+1] ;
+                        }
+                        else {
+                            return sorted_surfaces_[i-1] ;
+                        }                        
+                    }
+                }
+            }
+            grgmesh_assert_not_reached ;
+        }
+            
+    private:
+        index_t id_ ; // Index of Line
+        std::vector< SurfaceToSort > s_ ;
+        std::vector< std::pair < index_t, bool > > sorted_surfaces_ ;        
+    } ;
+
+
+
+
 }
 
 #endif
