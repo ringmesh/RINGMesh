@@ -93,6 +93,7 @@ namespace GRGMesh {
             } while( error > 0 ) ;
             fclose( out ) ;
             unzCloseCurrentFile( uz ) ;
+            return true ;
         }
 
         //    ___                   _               __  __         _     _

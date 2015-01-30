@@ -73,7 +73,7 @@
 /* I've found an old Unix (a SunOS 4.1.3_U1) without all SEEK_* defined.... */
 
 
-// NOT sure that this work on ALL platform
+// NOT sure that this work on NO_GEOL platform
 #define MAKEULONG64(a, b) ((ZPOS64_T)(((unsigned long)(a)) | ((ZPOS64_T)((unsigned long)(b))) << 32))
 
 #ifndef SEEK_CUR
