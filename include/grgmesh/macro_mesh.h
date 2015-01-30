@@ -34,21 +34,23 @@ namespace GRGMesh {
 
     class GRGMESH_API MacroMeshVertices {
     public:
-        MacroMeshVertices( const MacroMesh& mm )
-            : mm_( mm ), initialized_( false )
+        MacroMeshVertices()
+            : initialized_( false )
         {
         }
 
-        index_t nb_vertices() const ;
-        index_t nb_vertex_indices() const ;
-        index_t global_vertex_id( index_t mesh, index_t v ) const ;
-        const vec3& global_vertex( index_t global_v ) const ;
+        index_t nb_vertices( const MacroMesh& mm ) const ;
+        index_t nb_vertex_indices( const MacroMesh& mm ) const ;
+        index_t global_vertex_id(
+            const MacroMesh& mm,
+            index_t mesh,
+            index_t v ) const ;
+        const vec3& global_vertex( const MacroMesh& mm, index_t global_v ) const ;
 
     private:
-        void initialize() ;
+        void initialize( const MacroMesh& mm ) ;
 
     private:
-        const MacroMesh& mm_ ;
         bool initialized_ ;
 
         std::vector< vec3 > unique_vertices_ ;
@@ -58,28 +60,30 @@ namespace GRGMesh {
 
     class GRGMESH_API MacroMeshFacets {
     public:
-        MacroMeshFacets( const MacroMesh& mm )
-            : mm_( mm ), initialized_( false )
+        MacroMeshFacets()
+            : initialized_( false )
         {
         }
-        index_t surface_facet( index_t s, index_t f ) const ;
-        index_t surface_mesh( index_t s ) const ;
-        index_t nb_surface_facets( index_t s ) const ;
+        index_t surface_facet( const MacroMesh& mm, index_t s, index_t f ) const ;
+        index_t surface_mesh( const MacroMesh& mm, index_t s ) const ;
+        index_t nb_surface_facets( const MacroMesh& mm, index_t s ) const ;
 
     private:
-        index_t surface_begin( index_t s ) const {
+        index_t surface_begin( index_t s ) const
+        {
             return surface_ptr_[s] ;
         }
-        index_t surface_end( index_t s ) const {
+        index_t surface_end( index_t s ) const
+        {
             return surface_ptr_[s + 1] ;
         }
-        index_t surface_facet( index_t f ) const {
+        index_t surface_facet( index_t f ) const
+        {
             return surface_facets_[f] ;
         }
-        void initialize() ;
+        void initialize( const MacroMesh& mm ) ;
 
     private:
-        const MacroMesh& mm_ ;
         bool initialized_ ;
 
         std::vector< index_t > surface_facets_ ;
@@ -89,20 +93,26 @@ namespace GRGMesh {
 
     class GRGMESH_API MacroMeshCells {
     public:
-        MacroMeshCells( const MacroMesh& mm )
-            : mm_( mm ), initialized_( false )
+        MacroMeshCells()
+            : mm_( nil ), initialized_( false )
         {
         }
 
-        signed_index_t global_cell_adjacent( index_t mesh, index_t c, index_t f ) const ;
-        index_t get_local_cell_index( index_t global_index ) const ;
-        index_t get_mesh( index_t global_index ) const ;
+        signed_index_t global_cell_adjacent(
+            const MacroMesh* mm,
+            index_t mesh,
+            index_t c,
+            index_t f ) const ;
+        index_t get_local_cell_index(
+            const MacroMesh* mm,
+            index_t global_index ) const ;
+        index_t get_mesh( const MacroMesh* mm, index_t global_index ) const ;
 
     private:
-        void initialize() ;
+        void initialize( const MacroMesh* mm ) ;
 
     private:
-        const MacroMesh& mm_ ;
+        const MacroMesh* mm_ ;
         bool initialized_ ;
 
         std::vector< signed_index_t > global_cell_adjacents_ ;
@@ -168,36 +178,36 @@ namespace GRGMesh {
         }
 
         index_t surface_facet( index_t s, index_t f ) const  {
-            return mm_facets_.surface_facet( s, f ) ;
+            return mm_facets_.surface_facet( *this, s, f ) ;
         }
         index_t surface_mesh( index_t s ) const {
-            return mm_facets_.surface_mesh( s ) ;
+            return mm_facets_.surface_mesh( *this, s ) ;
         }
         index_t nb_surface_facets( index_t s ) const {
-            return mm_facets_.nb_surface_facets( s ) ;
+            return mm_facets_.nb_surface_facets( *this, s ) ;
         }
 
         index_t global_vertex_id( index_t mesh, index_t v ) const {
-            return mm_vertices_.global_vertex_id( mesh, v ) ;
+            return mm_vertices_.global_vertex_id( *this, mesh, v ) ;
         }
         const vec3& global_vertex( index_t global_v) const {
-            return mm_vertices_.global_vertex( global_v ) ;
+            return mm_vertices_.global_vertex( *this, global_v ) ;
         }
         index_t nb_vertices() const {
-            return mm_vertices_.nb_vertices() ;
+            return mm_vertices_.nb_vertices( *this ) ;
         }
         index_t nb_vertex_indices() const {
-            return mm_vertices_.nb_vertex_indices() ;
+            return mm_vertices_.nb_vertex_indices( *this ) ;
         }
 
         signed_index_t global_cell_adjacent( index_t mesh, index_t c, index_t f ) const {
-            return mm_cells_.global_cell_adjacent( mesh, c, f ) ;
+            return mm_cells_.global_cell_adjacent( this, mesh, c, f ) ;
         }
         index_t get_local_cell_index( index_t global_index ) const {
-            return mm_cells_.get_local_cell_index( global_index ) ;
+            return mm_cells_.get_local_cell_index( this, global_index ) ;
         }
         index_t get_mesh( index_t global_index ) const {
-            return mm_cells_.get_mesh( global_index ) ;
+            return mm_cells_.get_mesh( this, global_index ) ;
         }
 
     protected:
