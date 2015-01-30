@@ -463,8 +463,11 @@ namespace GRGMesh {
         */
         bool end_model() ;
 
+        void init_global_model_element_access() ;
+        void init_global_model_facet_access() ;
         bool complete_element_connectivity() ;
-        bool check_basic_element_validity( const BoundaryModelElement& E ) const ;        
+        bool check_basic_element_validity( const BoundaryModelElement& E ) const ; 
+        bool check_element_connectivity( const BoundaryModelElement& E ) const ; 
         void fill_elements_boundaries   ( BME::TYPE type ) ;
         void fill_elements_in_boundaries( BME::TYPE type ) ;
         void fill_elements_parent       ( BME::TYPE type ) ;
