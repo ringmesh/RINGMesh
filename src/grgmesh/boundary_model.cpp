@@ -2121,9 +2121,12 @@ namespace GRGMesh {
 
             index_t t = find_key_facet( surface_id, p0, p1, p2, same_sign ) ;
             if( t == NO_ID ) {
-                vec3 p00 = -1*p0 ;
-                vec3 p10 = -1*p1 ;
-                vec3 p20 = -1*p2 ;
+                vec3 p00( p0 ); 
+                p00.z *= -1 ;
+                vec3 p10( p1 ) ;
+                p10.z *= -1 ;
+                vec3 p20( p2 ) ;
+                p20.z *= -1 ;
                 // It is because of the sign of Z that is not the same 
                 t = find_key_facet( surface_id, p00, p10, p20, same_sign ) ;
             }
@@ -2318,4 +2321,5 @@ namespace GRGMesh {
         return NO_ID ;
     }
 
-} 
+
+} // namespace
