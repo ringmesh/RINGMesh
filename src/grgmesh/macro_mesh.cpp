@@ -23,22 +23,22 @@
 
 namespace GRGMesh {
 
-    void MacroMeshVertices::initialize()
+    void MacroMeshVertices::initialize( const MacroMesh& mm )
     {
-        vertex2mesh_.resize( mm_.nb_meshes(), 0 ) ;
+        vertex2mesh_.resize( mm.nb_meshes(), 0 ) ;
 
         index_t nb_non_unique_vertices = 0 ;
-        for( index_t i = 0; i < mm_.nb_meshes(); i++ ) {
+        for( index_t i = 0; i < mm.nb_meshes(); i++ ) {
             vertex2mesh_[i] = nb_non_unique_vertices ;
-            nb_non_unique_vertices += mm_.mesh( i ).nb_vertices() ;
+            nb_non_unique_vertices += mm.mesh( i ).nb_vertices() ;
 
         }
         std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
         index_t index = 0 ;
-        for( index_t i = 0; i < mm_.nb_meshes(); i++ ) {
-            index_t nb_vertices = mm_.mesh( i ).nb_vertices() ;
+        for( index_t i = 0; i < mm.nb_meshes(); i++ ) {
+            index_t nb_vertices = mm.mesh( i ).nb_vertices() ;
             for( index_t j = 0; j < nb_vertices; j++ ) {
-                all_vertices[index] = GEO::Geom::mesh_vertex( mm_.mesh( i ), j ) ;
+                all_vertices[index] = GEO::Geom::mesh_vertex( mm.mesh( i ), j ) ;
                 index++ ;
             }
         }
@@ -50,46 +50,46 @@ namespace GRGMesh {
         initialized_ = true ;
     }
 
-    index_t MacroMeshVertices::nb_vertices() const
+    index_t MacroMeshVertices::nb_vertices( const MacroMesh& mm ) const
     {
         if( !initialized_ ) {
-            const_cast< MacroMeshVertices* >( this )->initialize() ;
+            const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
         }
         return unique_vertices_.size() ;
     }
 
-    index_t MacroMeshVertices::nb_vertex_indices() const
+    index_t MacroMeshVertices::nb_vertex_indices( const MacroMesh& mm ) const
     {
         if( !initialized_ ) {
-            const_cast< MacroMeshVertices* >( this )->initialize() ;
+            const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
         }
         return global_vertex_indices_.size() ;
     }
 
-    index_t MacroMeshVertices::global_vertex_id( index_t mesh, index_t v ) const
+    index_t MacroMeshVertices::global_vertex_id( const MacroMesh& mm, index_t mesh, index_t v ) const
     {
         if( !initialized_ ) {
-            const_cast< MacroMeshVertices* >( this )->initialize() ;
+            const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
         }
         return global_vertex_indices_[vertex2mesh_[mesh] + v] ;
     }
 
-    const vec3& MacroMeshVertices::global_vertex( index_t global_v ) const
+    const vec3& MacroMeshVertices::global_vertex( const MacroMesh& mm, index_t global_v ) const
     {
         if( !initialized_ ) {
-            const_cast< MacroMeshVertices* >( this )->initialize() ;
+            const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
         }
         return unique_vertices_[global_v] ;
     }
 
 
-    void MacroMeshFacets::initialize()
+    void MacroMeshFacets::initialize( const MacroMesh& mm )
     {
-        surface2mesh_.resize( mm_.model().nb_surfaces(), Surface::NO_ID ) ;
-        surface_ptr_.resize( mm_.model().nb_surfaces() + 1, 0 ) ;
+        surface2mesh_.resize( mm.model().nb_surfaces(), Surface::NO_ID ) ;
+        surface_ptr_.resize( mm.model().nb_surfaces() + 1, 0 ) ;
 
-        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
-            const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
+        for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+            const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
             std::vector< signed_index_t > surface_proccessed ;
             for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
                 signed_index_t surface_id = cur_mesh.facet_region( f ) ;
@@ -104,15 +104,15 @@ namespace GRGMesh {
             }
         }
 
-        for( index_t s = 0; s < mm_.model().nb_surfaces(); s++ ) {
+        for( index_t s = 0; s < mm.model().nb_surfaces(); s++ ) {
             surface_ptr_[s+1] += surface_ptr_[s] ;
         }
 
         surface_facets_.resize( surface_ptr_.back() ) ;
 
-        std::vector< index_t > surface_facet_index( mm_.model().nb_surfaces(), 0 ) ;
-        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
-            const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
+        std::vector< index_t > surface_facet_index( mm.model().nb_surfaces(), 0 ) ;
+        for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+            const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
             for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
                 signed_index_t surface_id = cur_mesh.facet_region( f ) ;
                 if( surface2mesh_[surface_id] != m ) continue ;
@@ -124,48 +124,48 @@ namespace GRGMesh {
         initialized_ = true ;
     }
 
-    index_t MacroMeshFacets::surface_mesh( index_t s ) const
+    index_t MacroMeshFacets::surface_mesh( const MacroMesh& mm, index_t s ) const
     {
         if( !initialized_ ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
+            const_cast< MacroMeshFacets* >( this )->initialize( mm ) ;
         }
         return surface2mesh_[s] ;
     }
 
-    index_t MacroMeshFacets::surface_facet( index_t s, index_t f ) const
+    index_t MacroMeshFacets::surface_facet( const MacroMesh& mm, index_t s, index_t f ) const
     {
         if( !initialized_ ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
+            const_cast< MacroMeshFacets* >( this )->initialize( mm ) ;
         }
         return surface_facet( surface_begin( s ) + f ) ;
     }
 
-    index_t MacroMeshFacets::nb_surface_facets( index_t s ) const
+    index_t MacroMeshFacets::nb_surface_facets( const MacroMesh& mm, index_t s ) const
     {
         if( !initialized_ ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
+            const_cast< MacroMeshFacets* >( this )->initialize( mm ) ;
         }
         return surface_end( s ) - surface_begin( s ) ;
     }
 
-
-    void MacroMeshCells::initialize()
+    void MacroMeshCells::initialize( const MacroMesh* mm )
     {
-        cell2mesh_.reserve( mm_.nb_meshes()+1 ) ;
+        mm_ = mm ;
+        cell2mesh_.reserve( mm_->nb_meshes()+1 ) ;
         cell2mesh_.push_back( 0 ) ;
         index_t total_size = 0 ;
-        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
-            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+        for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_->mesh( m ) ;
             for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
                 total_size += mesh.cell_nb_facets( c ) ;
             }
             cell2mesh_.push_back( total_size ) ;
         }
 
-        std::vector< std::vector< index_t > > cells_around_vertex( mm_.nb_vertices() ) ;
+        std::vector< std::vector< index_t > > cells_around_vertex( mm_->nb_vertices() ) ;
         global_cell_adjacents_.reserve( total_size ) ;
-        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
-            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+        for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_->mesh( m ) ;
             for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
                 for( index_t f = 0; f < mesh.cell_nb_facets( c ); f++ ) {
                     signed_index_t adj = mesh.cell_adjacent( c, f ) ;
@@ -174,7 +174,7 @@ namespace GRGMesh {
                     } else {
                         for( index_t v = 0; v < mesh.cell_facet_nb_vertices( c, f );
                             v++ ) {
-                            index_t vertex_id = mm_.global_vertex_id( m,
+                            index_t vertex_id = mm_->global_vertex_id( m,
                                 mesh.cell_facet_vertex_index( c, f, v ) ) ;
                             cells_around_vertex[vertex_id].push_back( cell2mesh_[m] + c ) ;
                         }
@@ -188,13 +188,13 @@ namespace GRGMesh {
             GEO::sort_unique( cells_around_vertex[v] ) ;
         }
 
-        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
-            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+        for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_->mesh( m ) ;
             for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
                 for( index_t f = 0; f < mesh.cell_nb_facets( c ); f++ ) {
                     signed_index_t adj = mesh.cell_adjacent( c, f ) ;
                     if( adj == -1 ) {
-                        index_t prev_vertex_id = mm_.global_vertex_id(
+                        index_t prev_vertex_id = mm_->global_vertex_id(
                             m,
                             mesh.cell_facet_vertex_index( c, f, 0 ) ) ;
                         std::vector< index_t >& prev_cells =
@@ -203,7 +203,7 @@ namespace GRGMesh {
                         std::vector< index_t > intersection( size_hint ) ;
                         for( index_t v = 1; v < mesh.cell_facet_nb_vertices( c, f );
                             v++ ) {
-                            index_t vertex_id = mm_.global_vertex_id( m,
+                            index_t vertex_id = mm_->global_vertex_id( m,
                                 mesh.cell_facet_vertex_index( c, f, v ) ) ;
                             std::vector< index_t >& cells =
                                 cells_around_vertex[vertex_id] ;
@@ -230,28 +230,36 @@ namespace GRGMesh {
         initialized_ = true ;
     }
 
-    signed_index_t MacroMeshCells::global_cell_adjacent( index_t m, index_t c, index_t f ) const
+    signed_index_t MacroMeshCells::global_cell_adjacent(
+        const MacroMesh* mm,
+        index_t m,
+        index_t c,
+        index_t f ) const
     {
         if( !initialized_ ) {
-            const_cast< MacroMeshCells* >( this )->initialize() ;
+            const_cast< MacroMeshCells* >( this )->initialize( mm ) ;
         }
         return global_cell_adjacents_[cell2mesh_[m]
-            + mm_.mesh( m ).cell_adjacents_begin( c ) + f] ;
+            + mm_->mesh( m ).cell_adjacents_begin( c ) + f] ;
     }
-    index_t MacroMeshCells::get_local_cell_index( index_t global_index ) const
+    index_t MacroMeshCells::get_local_cell_index(
+        const MacroMesh* mm,
+        index_t global_index ) const
     {
         if( !initialized_ ) {
-            const_cast< MacroMeshCells* >( this )->initialize() ;
+            const_cast< MacroMeshCells* >( this )->initialize( mm ) ;
         }
-        index_t m = get_mesh( global_index ) ;
+        index_t m = get_mesh( mm, global_index ) ;
         return global_index - cell2mesh_[m] ;
     }
-    index_t MacroMeshCells::get_mesh( index_t global_index ) const
+    index_t MacroMeshCells::get_mesh(
+        const MacroMesh* mm,
+        index_t global_index ) const
     {
         if( !initialized_ ) {
-            const_cast< MacroMeshCells* >( this )->initialize() ;
+            const_cast< MacroMeshCells* >( this )->initialize( mm ) ;
         }
-        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+        for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
             if( global_index < cell2mesh_[m+1] ) return m ;
         }
         grgmesh_assert_not_reached ;
@@ -266,10 +274,7 @@ namespace GRGMesh {
             meshes_( model.nb_regions(), nil ),
             well_vertices_( model.nb_regions() ),
             facet_aabb_( model.nb_regions(), nil ),
-            tet_aabb_( model.nb_regions(), nil ),
-            mm_vertices_( *this ),
-            mm_facets_( *this ),
-            mm_cells_( *this )
+            tet_aabb_( model.nb_regions(), nil )
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;
