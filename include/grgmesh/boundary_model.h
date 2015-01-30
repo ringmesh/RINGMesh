@@ -77,6 +77,7 @@ namespace GRGMesh {
          */
         virtual ~BoundaryModel(){} ;
         void clear() ;
+        const std::string& name() const { return name_ ; }
 
         /**
          * \name Global access to model vertices and facets
@@ -94,33 +95,87 @@ namespace GRGMesh {
          * \name Accessor to elements
          * @{
          */
-        index_t nb_elements( BoundaryModelElement::TYPE type ) const ;
-        const BoundaryModelElement& element( BoundaryModelElement::TYPE element_type, index_t index ) const ;
 
-        // Remove all these functions ????
-        index_t nb_corners() const { return corners_.size() ; }
-        index_t nb_lines() const { return lines_.size() ; }
-        index_t nb_surfaces() const { return surfaces_.size() ; }
-        index_t nb_regions() const { return regions_.size() ; }
-        
-        index_t nb_contacts() const { return contacts_.size() ; }        
-        index_t nb_interfaces() const { return interfaces_.size() ; }
-        index_t nb_layers() const { return layers_.size() ; }       
-        
+        /*!
+        * @brief Returns the number of elements of the given type
+        * By default returns 0.
+        */ 
+        inline index_t nb_elements( BME::TYPE type ) const 
+        {
+             switch( type ){
+                case BoundaryModelElement::CORNER    : return corners_.size() ;
+                case BoundaryModelElement::LINE      : return lines_.size() ;
+                case BoundaryModelElement::SURFACE   : return surfaces_.size() ;
+                case BoundaryModelElement::REGION    : return regions_.size() ;
+                case BoundaryModelElement::CONTACT   : return contacts_.size() ;
+                case BoundaryModelElement::INTERFACE : return interfaces_.size() ;
+                case BoundaryModelElement::LAYER     : return layers_.size() ;            
+                case BoundaryModelElement::ALL_TYPES : 
+                    grgmesh_assert( nb_elements_per_type_.size() > 0 ) ;
+                    grgmesh_debug_assert( nb_elements_per_type_.back() == 
+                            corners_.size() + lines_.size() + surfaces_.size() + regions_.size() +
+                            contacts_.size() + interfaces_.size() + layers_.size() ) ;
+                    return nb_elements_per_type_.back() ;                
+                default:                
+                    return 0 ;
+            }
+        }
+        /*!
+         * \brief Returns a const reference the identified BoundaryModelElement   
+         *
+         * @param[in] t Type of the element 
+         * @param[in] index Index of the element
+         */
+        inline const BoundaryModelElement& 
+            element( BME::TYPE type, index_t index ) const 
+        {
+            grgmesh_assert( index < nb_elements( type ) ) ;
+            switch( type ){
+                case BoundaryModelElement::CORNER    : return corners_   [ index ] ;
+                case BoundaryModelElement::LINE      : return lines_     [ index ] ;
+                case BoundaryModelElement::SURFACE   : return surfaces_  [ index ] ;
+                case BoundaryModelElement::REGION    : return regions_   [ index ] ;
+                case BoundaryModelElement::CONTACT   : return contacts_  [ index ] ;
+                case BoundaryModelElement::INTERFACE : return interfaces_[ index ] ;
+                case BoundaryModelElement::LAYER     : return layers_    [ index ] ;
+                case BoundaryModelElement::ALL_TYPES :
+                    {
+                        // This must synchro with what is done in the builder
+                        index_t t = NO_ID ;
+                        for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
+                            if( index >= nb_elements_per_type_[i-1] && index < nb_elements_per_type_[i] ) {
+                                t = i-1 ; break ;
+                            }
+                        }
+                        grgmesh_assert( t < BME::NO_TYPE ) ;
+                        return element( (BME::TYPE) t, index - nb_elements_per_type_[t] ) ;
+                    }
+                default:
+                    grgmesh_assert_not_reached ;
+                    return dummy_element ;
+            }
+        }
+
+        /// Remove these functions ? 
+        index_t nb_corners()    const { return nb_elements( BME::CORNER    ) ; }
+        index_t nb_lines()      const { return nb_elements( BME::LINE      ) ; }
+        index_t nb_surfaces()   const { return nb_elements( BME::SURFACE   ) ; }
+        index_t nb_regions()    const { return nb_elements( BME::REGION    ) ; }
+        index_t nb_contacts()   const { return nb_elements( BME::CONTACT   ) ; }
+        index_t nb_interfaces() const { return nb_elements( BME::INTERFACE ) ; }
+        index_t nb_layers()     const { return nb_elements( BME::LAYER     ) ; }
+
         const Corner& corner( index_t index ) const { return corners_.at(index) ; }
         const Line& line( index_t index ) const { return lines_.at(index) ; }
         const Surface& surface( index_t index ) const { return surfaces_.at(index) ; }
-        const BoundaryModelElement& region( index_t index ) const { return regions_.at(index) ; }
+
+        const BoundaryModelElement& region       ( index_t index ) const { return element( BME::REGION   , index ) ; }
+        const BoundaryModelElement& contact      ( index_t index ) const { return element( BME::CONTACT  , index ) ; }
+        const BoundaryModelElement& one_interface( index_t index ) const { return element( BME::INTERFACE, index ) ; }
+        const BoundaryModelElement& layer        ( index_t index ) const { return element( BME::LAYER    , index ) ; }
+
         const BoundaryModelElement& universe() const { return universe_ ; }        
-        const BoundaryModelElement& contact( index_t index ) const { return contacts_.at(index) ; }
-        const BoundaryModelElement& one_interface( index_t index ) const { return interfaces_.at(index) ; }
-        const BoundaryModelElement& layer( index_t index ) const { return layers_.at(index) ; }
-        
-        index_t find_region( index_t surface_part_id, bool side ) const ;
-        
-        // Accessors to model elements
-        const std::string& name() const { return name_ ; }
-        // Accessors to attribute managers
+       
         PointAttributeManager* vertex_attribute_manager() const
         {
             return const_cast< PointAttributeManager* >( &vertex_attribute_manager_ ) ;
@@ -129,7 +184,9 @@ namespace GRGMesh {
         {
             return const_cast< FacetAttributeManager* >( &facet_attribute_manager_ ) ;
         }
-
+         
+        index_t find_region( index_t surface_part_id, bool side ) const ;
+                
         /// \todo Write a proper IO class for Boundary models
         bool save_gocad_model3d( std::ostream& out ) ;
         void save_as_eobj_file( const std::string& file_name ) ;
@@ -138,7 +195,6 @@ namespace GRGMesh {
             grgmesh_assert( id < nb_vertices() ) ;
             vertices_[id] = p ;
         }
-
 
     private:        
         bool load_gocad_model3d( const std::string& in ) ;
@@ -195,6 +251,7 @@ namespace GRGMesh {
         PointAttributeManager vertex_attribute_manager_ ;
         FacetAttributeManager facet_attribute_manager_ ;
     } ;   
+
 
     template< class ATTRIBUTE >
     class BoundaryModelVertexAttribute: public Attribute< BoundaryModel::VERTEX, ATTRIBUTE > {
@@ -270,12 +327,10 @@ namespace GRGMesh {
         }
     } ;
 
-  
-
 
     /**
-     * \brief Build a BoundaryModel
-     */ 
+    * \brief Build a BoundaryModel
+    */ 
     class GRGMESH_API BoundaryModelBuilder {        
     public:
         typedef BoundaryModelElement BME ;
@@ -285,13 +340,13 @@ namespace GRGMesh {
         BoundaryModelBuilder( BoundaryModel& model )
             : model_( model ){}
         virtual ~BoundaryModelBuilder(){} ;
-  
+
         // High level functions
         bool rebuild() ;
         void copy_macro_topology( const BoundaryModel& from ) ;        
         void update_all_ids() ;
         void make_vertices_unique() ;        
-        
+
         // Set model attributes
         void set_model_name( const std::string& name ) {
             model_.name_ = name ;
@@ -306,66 +361,66 @@ namespace GRGMesh {
         index_t add_vertex( double* vertex ) {
             return add_vertex( vec3( vertex[0], vertex[1], vertex[2] ) ) ;
         }  
-             
-        BoundaryModelElement& element( BoundaryModelElement::TYPE t, index_t index ) {
+
+        BoundaryModelElement& element( BME::TYPE t, index_t index ) {
             return const_cast< BoundaryModelElement& >( model_.element( t, index ) ) ;
         }
-           
+
         /**
-         * \name Filling BoundaryModelElement attributes.
-         * @{
-         */
-        void set_model( BoundaryModelElement::TYPE e_type, index_t e_index, BoundaryModel* m ) {
+        * \name Filling BoundaryModelElement attributes.
+        * @{
+        */
+        void set_model( BME::TYPE e_type, index_t e_index, BoundaryModel* m ) {
             element( e_type, e_index ).set_model( m ) ;
         }
-        void set_element_name( BoundaryModelElement::TYPE e_type, index_t e_index, const std::string& name ) {
+        void set_element_name( BME::TYPE e_type, index_t e_index, const std::string& name ) {
             element( e_type, e_index ).set_name( name ) ;
         }      
-        void set_element_geol_feature( BoundaryModelElement::TYPE e_type, index_t e_index, BoundaryModelElement::GEOL_FEATURE geol ) {
+        void set_element_geol_feature( BME::TYPE e_type, index_t e_index, BME::GEOL_FEATURE geol ) {
             element( e_type, e_index ).set_geological_feature( geol ) ; 
         }
-        void add_element_boundary( BoundaryModelElement::TYPE e_type, index_t e_index, index_t boundary, bool side = false ){
+        void add_element_boundary( BME::TYPE e_type, index_t e_index, index_t boundary, bool side = false ){
             if( e_type == BoundaryModelElement::REGION || e_type == BoundaryModelElement::LAYER ) 
                 element( e_type, e_index ).add_boundary( boundary, side ) ;
             else element( e_type, e_index ).add_boundary( boundary ) ;
         }
-        void add_element_in_boundary( BoundaryModelElement::TYPE e_type, index_t e_index, index_t in_boundary ) {
+        void add_element_in_boundary( BME::TYPE e_type, index_t e_index, index_t in_boundary ) {
             element( e_type, e_index ).add_in_boundary( in_boundary ) ;
         }
-        void set_parent( BoundaryModelElement::TYPE e_type, index_t e_index, index_t parent_index ) {
+        void set_parent( BME::TYPE e_type, index_t e_index, index_t parent_index ) {
             element( e_type, e_index ).set_parent( parent_index ) ;
         }
-        void add_child( BoundaryModelElement::TYPE e_type, index_t e_index, index_t child_index ) {
+        void add_child( BME::TYPE e_type, index_t e_index, index_t child_index ) {
             element( e_type, e_index ).add_child( child_index ) ;
         }
-                       
-         /**
-         * \name Find and/or create one BoundaryModelElement.
-         * @{
-         */                     
-        index_t create_element( BoundaryModelElement::TYPE e_type ) ;
-                
+
+        /**
+        * \name Find and/or create one BoundaryModelElement.
+        * @{
+        */                     
+        index_t create_element( BME::TYPE e_type ) ;
+
         // Corner 
         index_t find_corner( index_t ) const ;
         index_t create_corner( index_t ) ;
         index_t find_or_create_corner( index_t ) ;
-                
+
         // Line
         index_t find_line( const std::vector< index_t >& vertices ) const ;
         index_t create_line( const std::vector< index_t >& vertices ) ;
         index_t find_or_create_line( const std::vector< index_t >& vertices ) ;
-        
+
         // Surface
         index_t create_surface() ;
-        
+
         // Contact
         index_t find_contact( const std::vector< index_t >& interfaces ) const ;
         index_t create_contact( const std::vector< index_t >& interfaces ) ;
         index_t find_or_create_contact( const std::vector< index_t >& interfaces ) ;
-        
+
         // Interface 
         index_t find_interface( const std::string& name ) const ;
-        index_t create_interface( const std::string& name, BoundaryModelElement::GEOL_FEATURE type = BoundaryModelElement::NO_GEOL ) ;
+        index_t create_interface( const std::string& name, BME::GEOL_FEATURE type = BME::NO_GEOL ) ;
 
         // Region           
         index_t create_region() ;        
@@ -375,15 +430,15 @@ namespace GRGMesh {
 
         // Layers
         index_t create_layer( const std::string& name ) ;
-              
+
         // Universe
         void set_universe( const std::vector< std::pair< index_t, bool > >& boundaries ) ;        
         void remove_universe_from_regions( index_t id ) ;
 
-         /**
-         * \name Set element geometry 
-         * @{
-         */
+        /**
+        * \name Set element geometry 
+        * @{
+        */
         void set_corner( index_t corner_id, index_t vertex_id ) ;
         void set_line( index_t id, const std::vector< index_t >& vertices ) ;
         void set_surface_geometry(
@@ -394,32 +449,31 @@ namespace GRGMesh {
             const std::vector< index_t >& surface_adjacencies = empty_index_vector ) ;
 
         void set_surface_adjacencies( index_t surface_id ) ;
-                
+
         void set_surface_first_triangle_as_key( index_t id ) {
             model_.surfaces_[id].set_first_triangle_as_key() ;
         }
         void set_surface_key_facet( index_t id, const Surface::KeyFacet& key ) {
             model_.surfaces_[id].set_key_facet( key ) ;
         } 
-        
-         /**
-         * \name Fix model - Check validity und fill missing stuff
-         * @{
-         */
-         bool end_model() ;
-       
-         bool complete_element_connectivity() ;
-         bool check_basic_element_validity( const BoundaryModelElement& E ) const ;
-        
-         void fill_elements_boundaries( BoundaryModelElement::TYPE type ) ;
-         void fill_elements_in_boundaries( BoundaryModelElement::TYPE type ) ;
-         void fill_elements_parent( BoundaryModelElement::TYPE ) ;
-         void fill_elements_children( BoundaryModelElement::TYPE ) ;      
-    
+
+        /**
+        * \name Fix model - Check validity und fill missing stuff
+        * @{
+        */
+        bool end_model() ;
+
+        bool complete_element_connectivity() ;
+        bool check_basic_element_validity( const BoundaryModelElement& E ) const ;        
+        void fill_elements_boundaries   ( BME::TYPE type ) ;
+        void fill_elements_in_boundaries( BME::TYPE type ) ;
+        void fill_elements_parent       ( BME::TYPE type ) ;
+        void fill_elements_children     ( BME::TYPE type ) ;      
+
     protected:
-            BoundaryModel& model_ ;
+        BoundaryModel& model_ ;
     };
-        
+
 
 
     
