@@ -268,7 +268,8 @@ namespace GRGMesh {
             facet_aabb_( model.nb_regions(), nil ),
             tet_aabb_( model.nb_regions(), nil ),
             mm_vertices_( *this ),
-            mm_facets_( *this )
+            mm_facets_( *this ),
+            mm_cells_( *this )
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;

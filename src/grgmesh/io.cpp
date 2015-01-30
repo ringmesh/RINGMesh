@@ -410,6 +410,7 @@ namespace GRGMesh {
                 std::ofstream neigh( oss_neigh.str().c_str() ) ;
 
                 ele << db.nb_cells() << " 4 1" << std::endl ;
+                neigh << db.nb_cells() << " 4" << std::endl ;
                 grgmesh_debug_assert( db.nb_cells() == db.nb_tet() ) ;
                 index_t nb_tet_exported = 0 ;
                 for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
@@ -426,9 +427,11 @@ namespace GRGMesh {
                             << mm.global_vertex_id( m,
                                 mesh.cell_vertex_index( tet, 3 ) ) << SPACE << m + 1
                             << std::endl ;
+                        neigh << nb_tet_exported + tet ;
                         for( index_t f = 0; f < mesh.cell_nb_facets( tet ); f++ ) {
-
+                            neigh << SPACE << mm.global_cell_adjacent( m, t, f ) ;
                         }
+                        neigh << std::endl ;
                     }
                 }
                 return true ;
@@ -442,6 +445,7 @@ namespace GRGMesh {
         {
             grgmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" ) ;
             grgmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" ) ;
+            grgmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
 
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(format) ;
             if( handler ) {
