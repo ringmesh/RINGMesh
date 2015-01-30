@@ -228,7 +228,7 @@ namespace GRGMesh {
     /*!
      *
      * @param[in] x Index of the child
-     * @return Assert that the chil exist and return it.
+     * @return Assert that the child exists and returns it.
      */
     const BoundaryModelElement& BoundaryModelElement::child( index_t x ) const
     {
@@ -282,7 +282,6 @@ namespace GRGMesh {
     }
     
     /*!
-     *
      * @return The coordinates of the point at this corner.
      */
     const vec3& Corner::vertex( index_t p ) const
@@ -405,26 +404,6 @@ namespace GRGMesh {
             
         return false ;
     }
-   
-    /*!
-     * \todo Check LineMutato function implementation and comment them
-     * @param id
-     * @param p
-     *
-    void LineMutator::set_vertex( index_t id, const vec3& p ) {
-        M_.model_->vertices_[M_.vertices_[id]] = p ;
-    }
-
-    /*!
-     *
-     * @param p
-     * @return
-     *
-    vec3& LineMutator::vertex( index_t p ) const
-    {
-        return M_.model_->vertices_[ M_.vertices_[p] ] ;
-    }
-
 
     /*!
      * @param[in] f Facet index
@@ -458,8 +437,7 @@ namespace GRGMesh {
      */
     void Surface::set_first_triangle_as_key()
     {
-        // I guess it should'nt be a problem if the first facet is not a triangle
-        // that's only a guess (Jeanne)        
+        // I guess it shouldn't be a problem if the first facet is not a triangle - Jeanne
         key_facet_ = KeyFacet( model_->vertex( vertices_[facets_[0]] ),
             model_->vertex( vertices_[facets_[1]] ),
             model_->vertex( vertices_[facets_[2]] ) ) ;
@@ -562,7 +540,7 @@ namespace GRGMesh {
     {
         grgmesh_debug_assert( in0 < vertices_.size() && in1 < vertices_.size() ) ;
         
-        // Another possible, probably faster, algorith is to check if the 2 indices 
+        // Another possible, probably faster, algorithm is to check if the 2 indices 
         // are neighbors in facets_ and check that they are in the same facet
 
         // Check if the edge is in one of the facet
@@ -701,8 +679,6 @@ namespace GRGMesh {
 
     /*!
      * @brief Comparator of two vec3
-     * 
-     * This is a copy, but from where ?
      */
     struct comp_vec3bis {
         bool operator()( const vec3& l, const vec3& r ) const {
@@ -897,27 +873,6 @@ namespace GRGMesh {
        }
        return result ;
     }
-
-
-    /*!
-     * \todo Check the SurfaceMutator code and comment it 
-     * @param id
-     * @param p
-     *
-    void SurfaceMutator::set_vertex( index_t id, const vec3& p ) {
-        M_.model_->vertices_[M_.vertices_[id]] = p ;
-    }
-
-    /*!
-     *
-     * @param p
-     * @return
-     *
-    vec3& SurfaceMutator::vertex( index_t p ) const
-    {
-        return M_.model_->vertices_[ M_.vertices_[p] ] ;
-    }
-
 
     /*!
      * @brief Cut the Surface along the line 
