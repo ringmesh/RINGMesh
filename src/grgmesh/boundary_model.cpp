@@ -1065,7 +1065,7 @@ namespace GRGMesh {
         // Find the indices of the corner at both extremities
         index_t c0 = find_corner( points.front() ) ;
         index_t c1 = find_corner( points.back() ) ;
-        grgmesh_assert( c0 != NO_ID && c1 != NO_ID ) ; // Mouais on pourrait peut être le virer celui là
+        grgmesh_assert( c0 != NO_ID && c1 != NO_ID ) ; // Mouais on pourrait peut ï¿½tre le virer celui lï¿½
         add_element_boundary( BoundaryModelElement::LINE, id, c0 ) ;
         if( c1 != c0 ) add_element_boundary( BoundaryModelElement::LINE, id, c1 ) ;         
 
@@ -1460,6 +1460,7 @@ namespace GRGMesh {
                 return false ;
             }
         }
+        return true ;
     }
 
 
@@ -1977,7 +1978,7 @@ namespace GRGMesh {
                     }
                     part_id += nb_tface_in_prev_tsurf ;
 
-                    // c'est plus bon ça -compare geometry
+                    // c'est plus bon ï¿½a -compare geometry
                     index_t new_c = find_or_create_corner( tsurf_vertex_ptr[v_id] ) ;
                 }
                 /// 6. Read the Border information and store it
