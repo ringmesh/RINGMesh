@@ -49,9 +49,10 @@ namespace GRGMesh {
     *
     * \todo Keep all the information ( add new GEOL_FEATURE) instead of simplfying it.
     */
-    BoundaryModelElement::GEOL_FEATURE BoundaryModelElement::determine_geological_type( const std::string& in ) 
+    BoundaryModelElement::GEOL_FEATURE 
+        BoundaryModelElement::determine_geological_type( const std::string& in ) 
     {
-        if( in == "" ) return ALL ;
+        if( in == "" ) return NO_GEOL ;
         if( in == "reverse_fault" ) return FAULT ;
         if( in == "normal_fault" ) return FAULT ;
         if( in == "fault" ) return FAULT ;
@@ -62,7 +63,7 @@ namespace GRGMesh {
 
         std::cout<< "ERROR" << "Unexpected type in the model file " << in
             << std::endl ;
-        return ALL ;
+        return NO_GEOL ;
     }
 
     /*!
@@ -73,7 +74,7 @@ namespace GRGMesh {
     */
     BoundaryModelElement::GEOL_FEATURE BoundaryModelElement::determine_type( const std::vector< GEOL_FEATURE >& types ) 
     {
-        if( types.size() == 0 ) return ALL ;
+        if( types.size() == 0 ) return NO_GEOL ;
 
         // Sort and remove duplicates form the in types
         std::vector< GEOL_FEATURE > in = types ;
@@ -84,7 +85,7 @@ namespace GRGMesh {
         if( in.size() == 1 ) return in[0] ;
 
         if( in.size() == 2 ) {
-            if( in[0] == ALL ) return ALL ;
+            if( in[0] == NO_GEOL ) return NO_GEOL ;
             if( in[0] == STRATI ) {
                 if( in[1] == FAULT ) return STRATI_FAULT ;
                 if( in[1] == VOI ) return STRATI_VOI ;
@@ -92,60 +93,94 @@ namespace GRGMesh {
                 if( in[1] == VOI ) return FAULT_VOI ;
             }
             // Other cases ? for corners ? what is the vertex ?
-            return ALL ;
+            return NO_GEOL ;
         }
-        return ALL ;
+        return NO_GEOL ;
     }
 
-    BoundaryModelElement::BM_TYPE BoundaryModelElement::parent_type( BoundaryModelElement::BM_TYPE t ) {
+    /*!
+     * @brief Define the type of the parent of an element of type @param t
+     *        If no parent is allowed returns NO_TYPE
+     * @details The elements that can have a parent are LINE, SURFACE, and REGION
+     */
+    BoundaryModelElement::TYPE BoundaryModelElement::parent_type( BoundaryModelElement::TYPE t ) {
         switch( t ) {
-            case BM_LINE      : return BM_CONTACT ;
-            case BM_SURFACE   : return BM_INTERFACE ;
-            case BM_REGION    : return BM_LAYER ;
+            case LINE      : return CONTACT ;
+            case SURFACE   : return INTERFACE ;
+            case REGION    : return LAYER ;
             default:
                 // The others have no parent
-                return BM_NO_TYPE ;
+                return NO_TYPE ;
         }
     }
-    BoundaryModelElement::BM_TYPE BoundaryModelElement::child_type ( BoundaryModelElement::BM_TYPE t ) {
+     /*!
+     * @brief Define the type of a child of an element of type @param t
+     *        If no child is allowed returns NO_TYPE
+     * @details The elements that can have a parent are CONTACT, INTERFACE, and LAYER
+     */
+    BoundaryModelElement::TYPE BoundaryModelElement::child_type( BoundaryModelElement::TYPE t ) {
         switch( t ) {            
-            case BM_CONTACT   : return BM_LINE  ;
-            case BM_INTERFACE : return BM_SURFACE ;
-            case BM_LAYER     : return BM_REGION ;
+            case CONTACT   : return LINE  ;
+            case INTERFACE : return SURFACE ;
+            case LAYER     : return REGION ;
             default:
-                return BM_NO_TYPE ;                
+                return NO_TYPE ;                
         }
 
     }
-
-    BoundaryModelElement::BM_TYPE BoundaryModelElement::boundary_type ( BoundaryModelElement::BM_TYPE t ) 
+    /*!
+     * @brief Define the type of an element on the boundary of an element of type @param t
+     *        If no boundary is allowed returns NO_TYPE
+     * @details The elements that can have a boundary are LINE, SURFACE, and REGION
+     */
+    BoundaryModelElement::TYPE BoundaryModelElement::boundary_type ( BoundaryModelElement::TYPE t ) 
     {
         switch( t ) {                        
-            case BM_LINE      : return BM_CORNER ;
-            case BM_SURFACE   : return BM_LINE ;
-            case BM_REGION    : return BM_SURFACE ;
+            case LINE      : return CORNER ;
+            case SURFACE   : return LINE ;
+            case REGION    : return SURFACE ;
             default:
-                return BM_NO_TYPE ;
+                return NO_TYPE ;
+        }
+    }
+    /*!
+     * @brief Define the type of an element into which boundary an element of type @param t can be
+     *        If no in_boundary is allowed returns NO_TYPE
+     * @details The elements that can be in the boudanry of another are CORNER, LINE, and SURFACE
+     */
+    BoundaryModelElement::TYPE BoundaryModelElement::in_boundary_type ( BoundaryModelElement::TYPE t ) 
+    {
+         switch( t ) {            
+            case CORNER    : return LINE ;
+            case LINE      : return SURFACE ;
+            case SURFACE   : return REGION ;            
+            default:
+                return NO_TYPE ;
         }
     }
 
-    BoundaryModelElement::BM_TYPE BoundaryModelElement::in_boundary_type ( BoundaryModelElement::BM_TYPE t ) 
-    {
-         switch( t ) {            
-            case BM_CORNER    : return BM_LINE ;
-            case BM_LINE      : return BM_SURFACE ;
-            case BM_SURFACE   : return BM_REGION ;            
-            default:
-                return BM_NO_TYPE ;
+     /*!
+     * @brief Dimension 0, 1, 2, or 3 of anelement of type @param t
+     */
+    index_t BoundaryModelElement::dimension( BoundaryModelElement::TYPE t ) {
+        switch( t ) {
+            case CORNER    : return 0 ;
+            case LINE      : return 1 ;
+            case SURFACE   : return 2 ;
+            case REGION    : return 3 ;
+            case CONTACT   : return 1 ;
+            case INTERFACE : return 2 ;
+            case LAYER     : return 3 ;
+            default        : return NO_ID ;
         }
     }
 
     bool BoundaryModelElement::operator==( const BoundaryModelElement& rhs ) const
     {
         if( model_ != rhs.model_ ) return false ;
-        if( name_ != rhs.name_ ) return false ;
-        if( id_ != rhs.id_ ) return false ;
         if( type_ != rhs.type_ ) return false ;               
+        if( id_ != rhs.id_ ) return false ;
+        if( name_ != rhs.name_ ) return false ;
         if( geol_feature_ != rhs.geol_feature_ ) return false ;        
         if( nb_boundaries() != rhs.nb_boundaries() ) return false ;
         if( !std::equal( boundaries_.begin(), boundaries_.end(), rhs.boundaries_.begin() ) ) return false ;
@@ -160,26 +195,23 @@ namespace GRGMesh {
     }
 
     /*!
-     *
-     * @return Assert that the parent exist and returns it.
+     * @return Assert that the parent exists and returns it.
      */
     const BoundaryModelElement& BoundaryModelElement::parent() const
     {
         grgmesh_assert( parent_id() != NO_ID ) ;
-        return const_cast< const BoundaryModel* >( model_)
-            ->element( parent_type( type_), parent_id() ) ;
+        return model_->element( parent_type( type_), parent_id() ) ;
     }
 
     /*!
      *
-     * @param[in] x Index of the boudnary element
+     * @param[in] x Index of the boundary element
      * @return Assert that is exits and return the element on the boundary
      */
     const BoundaryModelElement& BoundaryModelElement::boundary( index_t x ) const
     {
         grgmesh_assert( x < nb_boundaries() ) ;
-        return const_cast< const BoundaryModel* >( model_)
-            ->element( boundary_type( type_ ), boundary_id( x ) ) ;
+        return model_->element( boundary_type( type_ ), boundary_id( x ) ) ;
     }
 
     /*!
@@ -190,8 +222,7 @@ namespace GRGMesh {
     const BoundaryModelElement& BoundaryModelElement::in_boundary( index_t x ) const
     {
         grgmesh_assert( x < nb_in_boundary() ) ;
-        return const_cast< const BoundaryModel* >( model_)
-            ->element( in_boundary_type( type_ ), in_boundary_id( x ) ) ;
+        return  model_->element( in_boundary_type( type_ ), in_boundary_id( x ) ) ;
     }
 
     /*!
@@ -202,12 +233,11 @@ namespace GRGMesh {
     const BoundaryModelElement& BoundaryModelElement::child( index_t x ) const
     {
         grgmesh_assert( x < nb_children() ) ;
-        return const_cast< const BoundaryModel* >( model_)
-            ->element( child_type( type_ ), child_id( x ) ) ;
+        return model_->element( child_type( type_ ), child_id( x ) ) ;
     }
 
     /*!
-     * @brief Copy all attributes (except the model_) from \param rhs to this element
+     * @brief Copy all attribute except model_ from @param rhs to this element
      * @param[in] rhs To copy from
      * @param[in] model Model to associate to this element
      */
@@ -216,14 +246,14 @@ namespace GRGMesh {
         BoundaryModel& model )
     {
         model_        = &model ;
-        name_         = rhs.name_ ;
-        id_           = rhs.id_ ;
         type_         = rhs.type_;
+        id_           = rhs.id_ ;
+        name_         = rhs.name_ ;
         geol_feature_ = rhs.geol_feature_;
-        parent_       = rhs.parent_ ;
         boundaries_   = rhs.boundaries_ ;
         sides_        = rhs.sides_ ;
         in_boundary_  = rhs.in_boundary_ ;
+        parent_       = rhs.parent_ ;
         children_     = rhs.children_ ;
     }
   
@@ -234,7 +264,7 @@ namespace GRGMesh {
      */
     bool BoundaryModelElement::is_on_voi() const
     {
-        if( geol_feature_ == ALL ) 
+        if( geol_feature_ == NO_GEOL ) 
         {
             for( index_t j = 0; j < nb_in_boundary(); ++j ) {
                 GEOL_FEATURE t = in_boundary( j ).geological_feature() ;
@@ -268,7 +298,7 @@ namespace GRGMesh {
      * @param[in] id The index of the line in the lines_ vector of the parent model
      */
     Line::Line( BoundaryModel* model, index_t id ):
-        BoundaryModelElement( model, BM_LINE, id )
+        BoundaryModelElement( model, LINE, id )
     { 
     }
 
@@ -283,7 +313,7 @@ namespace GRGMesh {
         BoundaryModel* model,
         index_t id,
         const std::vector< index_t >& vertices )
-        : BoundaryModelElement( model, BM_LINE, id ), vertices_( vertices )
+        : BoundaryModelElement( model, LINE, id ), vertices_( vertices )
     {
     }
 
@@ -302,7 +332,7 @@ namespace GRGMesh {
         index_t corner0,
         index_t corner1,
         const std::vector< index_t >& vertices
-    ):  BoundaryModelElement( model, BM_LINE, id ),
+    ):  BoundaryModelElement( model, LINE, id ),
         vertices_( vertices )
     {
         boundaries_.push_back( corner0 ) ;
@@ -998,7 +1028,7 @@ namespace GRGMesh {
         /// Else it is a base element and its size is computed
         
         // If this is a region 
-        if( E->element_type() == BoundaryModelElement::BM_REGION ) {
+        if( E->element_type() == BoundaryModelElement::REGION ) {
             // Compute the volume if this is a region
             for( index_t i = 0; i < E->nb_boundaries(); i++ ) {
                 const Surface& surface = dynamic_cast< const Surface& >( E->boundary( i ) ) ;
@@ -1015,10 +1045,10 @@ namespace GRGMesh {
             }
             return fabs( result ) ;
         }
-        else if( E->element_type() == BoundaryModelElement::BM_CORNER ) {
+        else if( E->element_type() == BoundaryModelElement::CORNER ) {
             return 0 ; 
         }
-        else if( E->element_type() == BoundaryModelElement::BM_LINE ) {
+        else if( E->element_type() == BoundaryModelElement::LINE ) {
             const Line* L = dynamic_cast< const Line* >( E ) ;
             grgmesh_assert( L != nil ) ;           
             for( index_t i = 1; i < E->nb_vertices(); ++i ){
@@ -1026,7 +1056,7 @@ namespace GRGMesh {
             }
             return result ;
         }
-        else if( E->element_type() == BoundaryModelElement::BM_SURFACE ) {
+        else if( E->element_type() == BoundaryModelElement::SURFACE ) {
             const Surface* S = dynamic_cast< const Surface* >( E ) ;
             grgmesh_assert( S != nil ) ;
 
