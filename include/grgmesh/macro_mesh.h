@@ -87,7 +87,6 @@ namespace GRGMesh {
         std::vector< index_t > surface2mesh_ ;
     } ;
 
-
     class GRGMESH_API MacroMeshCells {
     public:
         MacroMeshCells( const MacroMesh& mm )
@@ -109,6 +108,7 @@ namespace GRGMesh {
         std::vector< signed_index_t > global_cell_adjacents_ ;
         std::vector< index_t > cell2mesh_ ;
     } ;
+
 
     class GRGMESH_API MacroMesh {
     public:

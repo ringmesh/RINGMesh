@@ -37,7 +37,6 @@ namespace GRGMesh {
         index_t index = 0 ;
         for( index_t i = 0; i < mm_.nb_meshes(); i++ ) {
             index_t nb_vertices = mm_.mesh( i ).nb_vertices() ;
-            vertex2mesh_[i + 1] = nb_vertices ;
             for( index_t j = 0; j < nb_vertices; j++ ) {
                 all_vertices[index] = GEO::Geom::mesh_vertex( mm_.mesh( i ), j ) ;
                 index++ ;
@@ -152,8 +151,83 @@ namespace GRGMesh {
 
     void MacroMeshCells::initialize()
     {
-        //todo
-        grgmesh_assert_not_reached ;
+        cell2mesh_.reserve( mm_.nb_meshes()+1 ) ;
+        cell2mesh_.push_back( 0 ) ;
+        index_t total_size = 0 ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+            for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+                total_size += mesh.cell_nb_facets( c ) ;
+            }
+            cell2mesh_.push_back( total_size ) ;
+        }
+
+        std::vector< std::vector< index_t > > cells_around_vertex( mm_.nb_vertices() ) ;
+        global_cell_adjacents_.reserve( total_size ) ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+            for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+                for( index_t f = 0; f < mesh.cell_nb_facets( c ); f++ ) {
+                    signed_index_t adj = mesh.cell_adjacent( c, f ) ;
+                    if( adj != -1 ) {
+                        adj += cell2mesh_[m] ;
+                    } else {
+                        for( index_t v = 0; v < mesh.cell_facet_nb_vertices( c, f );
+                            v++ ) {
+                            index_t vertex_id = mm_.global_vertex_id( m,
+                                mesh.cell_facet_vertex_index( c, f, v ) ) ;
+                            cells_around_vertex[vertex_id].push_back( cell2mesh_[m] + c ) ;
+                        }
+                    }
+                    global_cell_adjacents_.push_back( adj ) ;
+                }
+            }
+        }
+
+        for( index_t v = 0; v < cells_around_vertex.size(); v++ ) {
+            GEO::sort_unique( cells_around_vertex[v] ) ;
+        }
+
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+            for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+                for( index_t f = 0; f < mesh.cell_nb_facets( c ); f++ ) {
+                    signed_index_t adj = mesh.cell_adjacent( c, f ) ;
+                    if( adj == -1 ) {
+                        index_t prev_vertex_id = mm_.global_vertex_id(
+                            m,
+                            mesh.cell_facet_vertex_index( c, f, 0 ) ) ;
+                        std::vector< index_t >& prev_cells =
+                            cells_around_vertex[prev_vertex_id] ;
+                        index_t size_hint = prev_cells.size() ;
+                        std::vector< index_t > intersection( size_hint ) ;
+                        for( index_t v = 1; v < mesh.cell_facet_nb_vertices( c, f );
+                            v++ ) {
+                            index_t vertex_id = mm_.global_vertex_id( m,
+                                mesh.cell_facet_vertex_index( c, f, v ) ) ;
+                            std::vector< index_t >& cells =
+                                cells_around_vertex[vertex_id] ;
+                            intersection.erase( std::set_intersection( prev_cells.begin(),
+                                prev_cells.end(), cells.begin(), cells.end(),
+                                intersection.begin() ), intersection.end() ) ;
+                            if( intersection.size() < 2 ) break ;
+                            prev_cells = intersection ;
+                        }
+
+                        if( intersection.size() > 1 ) {
+                            grgmesh_debug_assert( intersection.size() == 2 ) ;
+                            signed_index_t new_adj =
+                                intersection[0] == cell2mesh_[m] + c ?
+                                    intersection[1] : intersection[0] ;
+                            global_cell_adjacents_[cell2mesh_[m]
+                                + mesh.cell_adjacents_begin( c ) + f] = new_adj ;
+                        }
+                    }
+                }
+            }
+        }
+
+        initialized_ = true ;
     }
 
     signed_index_t MacroMeshCells::global_cell_adjacent( index_t m, index_t c, index_t f ) const
