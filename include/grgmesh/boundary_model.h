@@ -94,8 +94,8 @@ namespace GRGMesh {
          * \name Accessor to elements
          * @{
          */
-        index_t nb_elements( BoundaryModelElement::BM_TYPE type ) const ;
-        const BoundaryModelElement& element( BoundaryModelElement::BM_TYPE element_type, index_t index ) const ;
+        index_t nb_elements( BoundaryModelElement::TYPE type ) const ;
+        const BoundaryModelElement& element( BoundaryModelElement::TYPE element_type, index_t index ) const ;
 
         // Remove all these functions ????
         index_t nb_corners() const { return corners_.size() ; }
@@ -133,6 +133,12 @@ namespace GRGMesh {
         /// \todo Write a proper IO class for Boundary models
         bool save_gocad_model3d( std::ostream& out ) ;
         void save_as_eobj_file( const std::string& file_name ) ;
+
+        void set_vertex_coordinates( index_t id, const vec3& p ) {
+            grgmesh_assert( id < nb_vertices() ) ;
+            vertices_[id] = p ;
+        }
+
 
     private:        
         bool load_gocad_model3d( const std::string& in ) ;
@@ -301,7 +307,7 @@ namespace GRGMesh {
             return add_vertex( vec3( vertex[0], vertex[1], vertex[2] ) ) ;
         }  
              
-        BoundaryModelElement& element( BoundaryModelElement::BM_TYPE t, index_t index ) {
+        BoundaryModelElement& element( BoundaryModelElement::TYPE t, index_t index ) {
             return const_cast< BoundaryModelElement& >( model_.element( t, index ) ) ;
         }
            
@@ -309,27 +315,27 @@ namespace GRGMesh {
          * \name Filling BoundaryModelElement attributes.
          * @{
          */
-        void set_model( BoundaryModelElement::BM_TYPE e_type, index_t e_index, BoundaryModel* m ) {
+        void set_model( BoundaryModelElement::TYPE e_type, index_t e_index, BoundaryModel* m ) {
             element( e_type, e_index ).set_model( m ) ;
         }
-        void set_element_name( BoundaryModelElement::BM_TYPE e_type, index_t e_index, const std::string& name ) {
+        void set_element_name( BoundaryModelElement::TYPE e_type, index_t e_index, const std::string& name ) {
             element( e_type, e_index ).set_name( name ) ;
         }      
-        void set_element_geol_feature( BoundaryModelElement::BM_TYPE e_type, index_t e_index, BoundaryModelElement::GEOL_FEATURE geol ) {
+        void set_element_geol_feature( BoundaryModelElement::TYPE e_type, index_t e_index, BoundaryModelElement::GEOL_FEATURE geol ) {
             element( e_type, e_index ).set_geological_feature( geol ) ; 
         }
-        void add_element_boundary( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t boundary, bool side = false ){
-            if( e_type == BoundaryModelElement::BM_REGION || e_type == BoundaryModelElement::BM_LAYER ) 
+        void add_element_boundary( BoundaryModelElement::TYPE e_type, index_t e_index, index_t boundary, bool side = false ){
+            if( e_type == BoundaryModelElement::REGION || e_type == BoundaryModelElement::LAYER ) 
                 element( e_type, e_index ).add_boundary( boundary, side ) ;
             else element( e_type, e_index ).add_boundary( boundary ) ;
         }
-        void add_element_in_boundary( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t in_boundary ) {
+        void add_element_in_boundary( BoundaryModelElement::TYPE e_type, index_t e_index, index_t in_boundary ) {
             element( e_type, e_index ).add_in_boundary( in_boundary ) ;
         }
-        void set_parent( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t parent_index ) {
+        void set_parent( BoundaryModelElement::TYPE e_type, index_t e_index, index_t parent_index ) {
             element( e_type, e_index ).set_parent( parent_index ) ;
         }
-        void add_child( BoundaryModelElement::BM_TYPE e_type, index_t e_index, index_t child_index ) {
+        void add_child( BoundaryModelElement::TYPE e_type, index_t e_index, index_t child_index ) {
             element( e_type, e_index ).add_child( child_index ) ;
         }
                        
@@ -337,7 +343,7 @@ namespace GRGMesh {
          * \name Find and/or create one BoundaryModelElement.
          * @{
          */                     
-        index_t create_element( BoundaryModelElement::BM_TYPE e_type ) ;
+        index_t create_element( BoundaryModelElement::TYPE e_type ) ;
                 
         // Corner 
         index_t find_corner( index_t ) const ;
@@ -359,7 +365,7 @@ namespace GRGMesh {
         
         // Interface 
         index_t find_interface( const std::string& name ) const ;
-        index_t create_interface( const std::string& name, BoundaryModelElement::GEOL_FEATURE type = BoundaryModelElement::ALL ) ;
+        index_t create_interface( const std::string& name, BoundaryModelElement::GEOL_FEATURE type = BoundaryModelElement::NO_GEOL ) ;
 
         // Region           
         index_t create_region() ;        
@@ -405,10 +411,10 @@ namespace GRGMesh {
          bool complete_element_connectivity() ;
          bool check_basic_element_validity( const BoundaryModelElement& E ) const ;
         
-         void fill_elements_boundaries( BoundaryModelElement::BM_TYPE type ) ;
-         void fill_elements_in_boundaries( BoundaryModelElement::BM_TYPE type ) ;
-         void fill_elements_parent( BoundaryModelElement::BM_TYPE ) ;
-         void fill_elements_children( BoundaryModelElement::BM_TYPE ) ;      
+         void fill_elements_boundaries( BoundaryModelElement::TYPE type ) ;
+         void fill_elements_in_boundaries( BoundaryModelElement::TYPE type ) ;
+         void fill_elements_parent( BoundaryModelElement::TYPE ) ;
+         void fill_elements_children( BoundaryModelElement::TYPE ) ;      
     
     protected:
             BoundaryModel& model_ ;
