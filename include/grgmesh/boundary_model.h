@@ -79,10 +79,6 @@ namespace GRGMesh {
         void clear() ;
         const std::string& name() const { return name_ ; }
 
-        /**
-         * \name Global access to model vertices and facets
-         * @{
-         */
         index_t nb_vertices() const { return vertices_.size() ; }        
         const vec3& vertex( index_t p ) const { return vertices_.at(p) ; }
         index_t vertex_index( const vec3& p ) const ;
@@ -90,11 +86,6 @@ namespace GRGMesh {
         index_t nb_facets() const { return nb_facets_in_surfaces_.back() ; }
         void surface_facet( index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id ) const ;     
         index_t model_facet( index_t surface_id, index_t surf_facet_id ) const ;      
-
-        /**
-         * \name Accessor to elements
-         * @{
-         */
 
         /*!
         * @brief Returns the number of elements of the given type
@@ -366,7 +357,7 @@ namespace GRGMesh {
             return const_cast< BoundaryModelElement& >( model_.element( t, index ) ) ;
         }
 
-        /**
+        /** @}
         * \name Filling BoundaryModelElement attributes.
         * @{
         */
@@ -394,7 +385,7 @@ namespace GRGMesh {
             element( e_type, e_index ).add_child( child_index ) ;
         }
 
-        /**
+        /** @}
         * \name Find and/or create one BoundaryModelElement.
         * @{
         */                     
@@ -435,7 +426,7 @@ namespace GRGMesh {
         void set_universe( const std::vector< std::pair< index_t, bool > >& boundaries ) ;        
         void remove_universe_from_regions( index_t id ) ;
 
-        /**
+        /** @}
         * \name Set element geometry 
         * @{
         */
@@ -457,7 +448,7 @@ namespace GRGMesh {
             model_.surfaces_[id].set_key_facet( key ) ;
         } 
 
-        /**
+        /** @}
         * \name Fix model - Check validity und fill missing stuff
         * @{
         */
@@ -472,8 +463,12 @@ namespace GRGMesh {
         void fill_elements_in_boundaries( BME::TYPE type ) ;
         void fill_elements_parent       ( BME::TYPE type ) ;
         void fill_elements_children     ( BME::TYPE type ) ;      
+        
+        /**
+         * @}
+         */
 
-    protected:
+    protected:      
         BoundaryModel& model_ ;
     };
 
@@ -506,6 +501,7 @@ namespace GRGMesh {
 
         BoundaryModelBuilderGocad( BoundaryModel& model )
             : BoundaryModelBuilder( model ){}
+        virtual ~BoundaryModelBuilderGocad(){}
 
         void load_ml_file( std::istream& in ) ;   
         
@@ -516,31 +512,26 @@ namespace GRGMesh {
             std::vector< index_t >& border_vertex_model_ids ) const ;
 
     private:
-        // Geometrical research of points
         index_t find_corner( const vec3& ) const ;
 
-        void build_lines( const std::vector< Border >& borders ) ;
-        
+        void build_lines( const std::vector< Border >& borders ) ;        
+        void build_contacts() ;
 
         void create_surface(
             const std::string& interface_name = "",
             const std::string& type = "",
-            const Surface::KeyFacet& key = Surface::KeyFacet() ) ;
-        
-
+            const Surface::KeyFacet& key = Surface::KeyFacet() ) ;        
         void end_surfaces( const std::vector< index_t >& change_orientation ) ;
 
-        void build_contacts() ;
         /**
          * \brief Check if the surface triangle orientations match the one of the key facet 
          */
         bool check_key_facet_orientation( index_t surface ) ;
-
         index_t find_key_facet( index_t surface_id, const vec3& p0, const vec3& p1, const vec3& p2, 
             bool& same_orientation ) const ;  
-        
-
     } ;
+
+    
 }
 
 #endif
