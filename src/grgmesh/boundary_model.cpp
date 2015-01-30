@@ -1425,11 +1425,52 @@ namespace GRGMesh {
     }
 
     /*!
+     * @brief Check that one element has the expected connectivity information
+     * @details Requirements depend on the element type
+     * See the static functions   ***_type( TYPE ) in class BME  
+     */
+    bool BoundaryModelBuilder::check_element_connectivity( const BoundaryModelElement& E ) const {
+        BME::TYPE T = E.element_type() ;
+        if( BME::boundary_type( T ) != BME::NO_TYPE ) {
+            if( T != BME::SURFACE ) {
+                // A closed surface - bubble might have no boundary
+                // The others Line - and Region must have one
+                if( E.nb_boundaries() == 0 ){
+                    return false ;
+                }
+            }
+        }
+        // In_boundary
+        if( BME::boundary_type( T ) != BME::NO_TYPE ) {
+            if( E.nb_boundaries() == 0 ){
+                return false ;
+            }
+        }
+        // Parent - High level elements are not mandatory
+        // But if the model has elements of the parent type, the element must have a parent
+        if( BME::parent_type( T ) != BME::NO_TYPE ) {
+            if( E.parent_id() == NO_ID && 
+                model_.nb_elements( BME::parent_type(T) ) > 0 ){
+                    return false ;
+            }
+        }
+        // Children
+        if( BME::child_type( T ) != BME::NO_TYPE ) {
+            if( E.nb_children() == 0 ){
+                return false ;
+            }
+        }
+    }
+
+
+    /*!
      * @brief Complete missing information in BoundaryModelElements
      * boundaries - in_boundary - parent - children 
      *
-     * WARNING : Une certaine cohérence est supposée exister pour le remplissage des éléments
-     * tous les éléments d'un même type ont été initialisé avec les mêmes informations.
+     * @details For all 7 types of elements, check what information is available
+     * for the first one and fill the elements of the same type accordingly
+     * THIS MEANS that the all the elements of the same type have bee initialized with
+     * the the same information.
      */
     bool BoundaryModelBuilder::complete_element_connectivity() {             
         // Lines
@@ -1487,15 +1528,17 @@ namespace GRGMesh {
     }
 
     /*!
-     * @brief
+     * @brief Fill the boundaries of all elements of the given type
      *
-     * We have a problem if this is called for regions - No way yet to know the surface orientation
-     * 
-     * @param type 
-     *
+     * @details If the boundary elements do not have any in_boundary
+     * information, nothing is done, and model construction will eventually fail.
      */
     void BoundaryModelBuilder::fill_elements_boundaries( BoundaryModelElement::TYPE type ) 
     {
+        // We have a problem if this is called for regions
+        // No way yet to know the surface orientation
+        grgmesh_debug_assert( type != BME::REGION ) ;
+
         BME::TYPE b_type = BME::boundary_type( type ) ;
         if( b_type != BME::NO_TYPE ) {            
             for( index_t i = 0; i < model_.nb_elements( b_type ); ++i ) {
@@ -1506,7 +1549,12 @@ namespace GRGMesh {
             }
         }
     }
-
+    /*!
+     * @brief Fill the in_boundary vector of all elements of the given type
+     *
+     * @details If the in_boundary elements do not have any boundary
+     * information, nothing is done, and model construction will eventually fail.
+     */
     void BoundaryModelBuilder::fill_elements_in_boundaries( BoundaryModelElement::TYPE type ) 
     {
         BME::TYPE in_b_type = BME::in_boundary_type( type ) ;
@@ -1519,7 +1567,12 @@ namespace GRGMesh {
             }
         }        
     }
-
+    /*!
+     * @brief Fill the parent of all elements of the given type
+     *
+     * @details If the parents do not have any child 
+     *  nothing is done, and model construction will eventually fail.
+     */
     void BoundaryModelBuilder::fill_elements_parent( BoundaryModelElement::TYPE type ) 
     {
         BME::TYPE p_type = BME::parent_type( type ) ;
@@ -1532,7 +1585,12 @@ namespace GRGMesh {
             }
         }              
     }
-
+    /*!
+     * @brief Fill the children of all elements of the given type
+     *
+     * @details If the children elements do not have any parent information
+     * nothing is done, and model construction will eventually fail.
+     */
     void BoundaryModelBuilder::fill_elements_children( BoundaryModelElement::TYPE type ) 
     {
         BME::TYPE c_type = BME::child_type( type ) ;
@@ -1544,13 +1602,37 @@ namespace GRGMesh {
         }
     }                                                                          
 
+    /*! 
+     * @brief Fills the model nb_elements_per_type_ vector
+     * @details See global element access with BoundaryModel::element( BME::TYPE, index_t )
+     */
+    void BoundaryModelBuilder::init_global_model_element_access() {        
+        index_t count = 0 ;
+        model_.nb_elements_per_type_.push_back( count ) ;
+        for( index_t type = BME::CORNER; type < BME::NO_TYPE; type++ ) {
+            count += model_.nb_elements( (BME::TYPE) type ) ;
+            model_.nb_elements_per_type_.push_back( count ) ;
+        }       
+    }
+    /*!
+    * @brief Fills the model nb_facets_in_surfaces_ vector
+    * @detail See global facet index accessor BoundaryModel::surface_facet
+    */
+    void BoundaryModelBuilder::init_global_model_facet_access() {
+        model_.nb_facets_in_surfaces_.resize( model_.nb_surfaces()+1, 0 ) ;
+        index_t count = 0 ;
+        for( index_t i = 1; i < model_.nb_facets_in_surfaces_.size(); ++i ) {
+            count += model_.surface( i-1 ).nb_cells() ;
+            model_.nb_facets_in_surfaces_[i] = count ;
+        }
+    }
 
      /*!
      * @brief Last function to call when building a model
      *
-     * 
-     * @details Output information on the model and initialise the
-     * nb_facets_in_surfaces_ vector
+     * @details check that the model is correct and has all required information
+     * Calls the complete_element_connectivity function 
+     * Fills nb_elements_per_type_ and nb_facets_in_surfaces_ vectors
      * 
      * @return False if the model is not valid and cannot be fixed
      * otherwise returns true.
@@ -1572,92 +1654,29 @@ namespace GRGMesh {
         // The Universe
         /// \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
 
+        init_global_model_element_access() ;
+        init_global_model_facet_access() ;
 
-
-        // Fill the nb_elements_per_type_
-        // There is 7 different vectors storing the elements        
-        {
-            index_t count = 0 ;
-            model_.nb_elements_per_type_.push_back( count ) ;
-            // UNSAFE - mais tant pis
-            for( index_t type = BME::CORNER; type < BME::NO_TYPE; type++ ) {
-                count += model_.nb_elements( (BME::TYPE) type ) ;
-                model_.nb_elements_per_type_.push_back( count ) ;
-            }
-        }
         complete_element_connectivity() ;
         
-
-        /// 1. Check that the basics to have a valid element
-        ///    and that required connectivity relationships are filled
-
-        /// For all the elements of the BoundaryModel check that they have all 
-        /// the required attributes for the types
-
-        /// See the static functions   ***_type( TYPE ) in class 
-        
-        // Sans doute un peu longuet vu l'implémentation mais en même 
-        // temps beaucoup mois de lignes de code
+        /// 1. Check that all the elements of the BoundaryModel have 
+        ///    the required attributes.       
         for( index_t i = 0; i < model_.nb_elements( BME::ALL_TYPES ); ++i ){
             const BME& E = model_.element( BME::ALL_TYPES, i ) ;
-
             if( !check_basic_element_validity( E ) ){
                 return false ;
             }
-
-            BME::TYPE T = E.element_type() ;
-
-            if( BME::boundary_type( T ) != BME::NO_TYPE ) {
-                if( T != BME::SURFACE ) {
-                    // A closed surface - bubble might have no boundary
-                    // The others Line - and Region must have one
-                    if( E.nb_boundaries() == 0 ){
-                        return false ;
-                    }
-                }
+            if( !check_element_connectivity( E ) ){
+                return false ;
             }
-
-            // In_boundary
-            if( BME::boundary_type( T ) != BME::NO_TYPE ) {
-                if( E.nb_boundaries() == 0 ){
-                    return false ;
-                }
-            }
-
-            // Parent - High level elements are not mandatory
-            // But if the model has elements of the parent type, the element must have a parent
-            if( BME::parent_type( T ) != BME::NO_TYPE ) {
-                if( E.parent_id() == NO_ID && 
-                    model_.nb_elements( BME::parent_type(T) ) > 0 ){
-                        return false ;
-                }
-            }
-
-            // Children
-            if( BME::child_type( T ) != BME::NO_TYPE ) {
-                if( E.nb_children() == 0 ){
-                    return false ;
-                }
-            }
-
         }
-    
-
+   
         /// 2. \todo Check the consistency of connectivity relationships between the elements
-
 
 
         /// 3. \todo Check the geometrical consistency of the topological relationships
         
-
-
-        /// 4. Finally fill the nb_facets_in_surfaces_ vector
-        model_.nb_facets_in_surfaces_.resize( model_.nb_surfaces()+1, 0 ) ;
-        index_t count = 0 ;
-        for( index_t i = 1; i < model_.nb_facets_in_surfaces_.size(); ++i ) {
-            count += model_.surface( i-1 ).nb_cells() ;
-            model_.nb_facets_in_surfaces_[i] = count ;
-        }
+        
 
 #ifdef GRGMESH_DEBUG
         std::cout << "Model " << model_.name() <<" has " << std::endl 
@@ -2009,7 +2028,6 @@ namespace GRGMesh {
 
         /// 8. Build the Contacts
         build_contacts() ;
-
     
         /// Eventual changes of the key facet orientation
         end_surfaces( change_key_facet ) ;
