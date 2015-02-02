@@ -197,7 +197,7 @@ namespace GRGMesh {
             }
             return true ;
         }
-        inline Box3d bbox_union( const Box3d& B )
+        inline Box3d bbox_union( const Box3d& B ) const
         {
             Box3d result = *this ;
             result.add_box( B ) ;

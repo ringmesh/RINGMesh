@@ -1119,7 +1119,6 @@ namespace GRGMesh {
         ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0], dist ) ;
         if( to_delete ) {
             delete[] dist ;
-            dist = nil ;
         }
          return nb_neighbors ;
     }
