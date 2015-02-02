@@ -94,7 +94,7 @@ namespace GRGMesh {
     class GRGMESH_API MacroMeshCells {
     public:
         MacroMeshCells()
-            : mm_( nil ), initialized_( false )
+            : mm_( nil ), nb_cells_( 0 ), initialized_( false )
         {
         }
 
@@ -107,6 +107,7 @@ namespace GRGMesh {
             const MacroMesh* mm,
             index_t global_index ) const ;
         index_t get_mesh( const MacroMesh* mm, index_t global_index ) const ;
+        index_t nb_cells( const MacroMesh* mm ) const ;
 
     private:
         void initialize( const MacroMesh* mm ) ;
@@ -117,6 +118,7 @@ namespace GRGMesh {
 
         std::vector< signed_index_t > global_cell_adjacents_ ;
         std::vector< index_t > cell2mesh_ ;
+        index_t nb_cells_ ;
     } ;
 
 
@@ -208,6 +210,9 @@ namespace GRGMesh {
         }
         index_t get_mesh( index_t global_index ) const {
             return mm_cells_.get_mesh( this, global_index ) ;
+        }
+        index_t nb_cells() const {
+            return mm_cells_.nb_cells( this ) ;
         }
 
     protected:

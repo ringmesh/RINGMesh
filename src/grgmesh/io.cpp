@@ -386,9 +386,6 @@ namespace GRGMesh {
             }
             virtual bool save( const MacroMesh& mm, const std::string& filename )
             {
-                MacroMeshExport db( mm ) ;
-                db.compute_database() ;
-
                 std::string directory = GEO::FileSystem::dir_name( filename ) ;
                 std::string file = GEO::FileSystem::base_name( filename ) ;
 
@@ -410,14 +407,13 @@ namespace GRGMesh {
                 oss_neigh << directory << "/" << file << ".neigh" ;
                 std::ofstream neigh( oss_neigh.str().c_str() ) ;
 
-                ele << db.nb_cells() << " 4 1" << std::endl ;
-                neigh << db.nb_cells() << " 4" << std::endl ;
-                grgmesh_debug_assert( db.nb_cells() == db.nb_tet() ) ;
+
+                ele << mm.nb_cells() << " 4 1" << std::endl ;
+                neigh << mm.nb_cells() << " 4" << std::endl ;
                 index_t nb_tet_exported = 0 ;
                 for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
                     const GEO::Mesh& mesh = mm.mesh( m ) ;
-                    for( index_t t = 0; t < db.nb_tet( m ); t++ ) {
-                        index_t tet = db.local_tet_id( m, t ) ;
+                    for( index_t tet = 0; tet < mesh.nb_cells(); tet++ ) {
                         ele << nb_tet_exported + tet << SPACE
                             << mm.global_vertex_id( m,
                                 mesh.cell_vertex_index( tet, 0 ) ) << SPACE
@@ -430,10 +426,11 @@ namespace GRGMesh {
                             << std::endl ;
                         neigh << nb_tet_exported + tet ;
                         for( index_t f = 0; f < mesh.cell_nb_facets( tet ); f++ ) {
-                            neigh << SPACE << mm.global_cell_adjacent( m, t, f ) ;
+                            neigh << SPACE << mm.global_cell_adjacent( m, tet, f ) ;
                         }
                         neigh << std::endl ;
                     }
+                    nb_tet_exported += mesh.nb_cells() ;
                 }
                 return true ;
             }
