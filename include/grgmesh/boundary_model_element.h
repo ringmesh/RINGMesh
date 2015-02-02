@@ -252,6 +252,10 @@ namespace GRGMesh {
             children_[id] = c ;
         }
 
+        /**
+         * @}
+         */
+
     protected :
         /// Pointer to the BounadyModel owning this element
         BoundaryModel* model_ ;
@@ -527,7 +531,7 @@ namespace GRGMesh {
         /*! 
          * @brief Returns the number of vertices 
          */
-        virtual index_t nb_vertices() const { return vertices_.size() ; }               
+        virtual index_t nb_vertices() const { return vertices_.size() ; }
         /*!
          * @brief Get the vertex in the model from a vertex index in the Surface 
          */
@@ -560,6 +564,8 @@ namespace GRGMesh {
             if( v > 0 ) return v-1 ;
             else return nb_vertices_in_facet(f)-1 ;
         }
+        index_t nb_corners() const { return facets_.size() ; }
+        index_t model_vertex_id( index_t corner ) { return vertices_[ facets_[corner] ]; }
         
         /*!
          * @brief Convert the facet index in the surface to a facet index in the BoundaryModel 
@@ -591,6 +597,7 @@ namespace GRGMesh {
         }
         
         index_t facet_vertex_id( index_t t, index_t surf_vertex_id ) const ;  
+        index_t facet_id_from_model( index_t f, index_t model_vertex_id ) const ;
         index_t facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const ;
         index_t facet_from_model_vertex_ids( index_t i0, index_t i1 ) const ;    
         void edge_from_model_vertex_ids(
@@ -619,6 +626,7 @@ namespace GRGMesh {
         vec3 facet_normal( index_t f ) const ;
         void vertex_normals( std::vector< vec3 >& normals ) const ;
         index_t closest_vertex_in_facet( index_t f, const vec3& vertex ) const ;
+        vec3 edge_barycenter( index_t c ) const ;
 
         /**
          * \name Adjacencies request
@@ -629,6 +637,12 @@ namespace GRGMesh {
         index_t adjacent( index_t f, index_t v ) const {
             grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             return adjacent_[facet_begin(f)+v] ; 
+        }
+        /*! @brief Retruns the index of the adjacent facet at the given corner
+        */
+        index_t adjacent( index_t c ) const {
+            grgmesh_assert( c < adjacent_.size() ) ;
+            return adjacent_[c] ; 
         }
 
         bool is_on_border( index_t f, index_t v ) const {
@@ -679,6 +693,10 @@ namespace GRGMesh {
             facet_ptr_ = facet_ptr ;
             compute_is_triangulated() ;
         }
+        void set_geometry(
+            const std::vector< index_t >& facets,
+            const std::vector< index_t >& facet_ptr ) ;
+
         void set_adjacent( const std::vector< index_t >& adjacent ){
             grgmesh_assert( adjacent.size() == facets_.size() ) ;
             adjacent_ = adjacent ;
@@ -688,6 +706,9 @@ namespace GRGMesh {
             grgmesh_assert( index < nb_vertices() ) ;
             vertices_[index] = new_model_index ;
         }
+        /**
+         * @}
+         */
        
     private:
         KeyFacet key_facet_ ;

@@ -14,6 +14,7 @@
 
 #include <grgmesh/io.h>
 #include <grgmesh/boundary_model.h>
+#include <grgmesh/boundary_model_builder.h>
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
