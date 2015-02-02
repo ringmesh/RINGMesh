@@ -156,13 +156,11 @@ namespace GRGMesh {
         index_t total_size = 0 ;
         for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_->mesh( m ) ;
-            for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
-                total_size += mesh.cell_nb_facets( c ) ;
-            }
-            cell2mesh_.push_back( total_size ) ;
+            cell2mesh_.push_back( mesh.nb_cells() ) ;
         }
 
-        std::vector< std::vector< index_t > > cells_around_vertex( mm_->nb_vertices() ) ;
+        index_t nb_vertices = mm_->nb_vertices() ;
+        std::vector< std::vector< index_t > > cells_around_vertex( nb_vertices ) ;
         global_cell_adjacents_.reserve( total_size ) ;
         for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_->mesh( m ) ;
