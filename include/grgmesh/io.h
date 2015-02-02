@@ -115,11 +115,11 @@ namespace GRGMesh {
 
             index_t nb_triangle() const { return nb_triangle_ ; }
             index_t nb_triangle( index_t r ) const {
-                return facet_ptr_[NB_FACET_TYPES * r + 1] - facet_ptr_[NB_FACET_TYPES * r] ;
+                return facet_ptr_[(NB_FACET_TYPES+1) * r + 1] - facet_ptr_[(NB_FACET_TYPES+1) * r] ;
             }
             index_t nb_quad() const { return nb_quad_ ; }
             index_t nb_quad( index_t r ) const {
-                return facet_ptr_[NB_FACET_TYPES * r + 2] - facet_ptr_[NB_FACET_TYPES * r + 1] ;
+                return facet_ptr_[(NB_FACET_TYPES+1) * r + 2] - facet_ptr_[(NB_FACET_TYPES+1) * r + 1] ;
             }
             index_t nb_facets() const { return facets_.size() ; }
             index_t nb_facets( index_t r ) const {
@@ -128,19 +128,19 @@ namespace GRGMesh {
 
             index_t nb_tet() const { return nb_tet_ ; }
             index_t nb_tet( index_t r ) const {
-                return cell_ptr_[NB_CELL_TYPES * r + 1] - cell_ptr_[NB_CELL_TYPES * r] ;
+                return cell_ptr_[(NB_CELL_TYPES+1) * r + 1] - cell_ptr_[(NB_CELL_TYPES+1) * r] ;
             }
             index_t nb_pyramid() const { return nb_pyramid_ ; }
             index_t nb_pyramid( index_t r ) const {
-                return cell_ptr_[NB_CELL_TYPES * r + 2] - cell_ptr_[NB_CELL_TYPES * r + 1] ;
+                return cell_ptr_[(NB_CELL_TYPES+1) * r + 2] - cell_ptr_[(NB_CELL_TYPES+1) * r + 1] ;
             }
             index_t nb_prism() const { return nb_prism_ ; }
             index_t nb_prism( index_t r ) const {
-                return cell_ptr_[NB_CELL_TYPES * r + 3] - cell_ptr_[NB_CELL_TYPES * r + 2] ;
+                return cell_ptr_[(NB_CELL_TYPES+1) * r + 3] - cell_ptr_[(NB_CELL_TYPES+1) * r + 2] ;
             }
             index_t nb_hex() const { return nb_hex_ ; }
             index_t nb_hex( index_t r ) const {
-                return cell_ptr_[NB_CELL_TYPES * r + 4] - cell_ptr_[NB_CELL_TYPES * r + 3] ;
+                return cell_ptr_[(NB_CELL_TYPES+1) * r + 4] - cell_ptr_[(NB_CELL_TYPES+1) * r + 3] ;
             }
             index_t nb_cells() const { return cells_.size() ; }
             index_t nb_cells( index_t r ) const {
@@ -149,23 +149,23 @@ namespace GRGMesh {
 
 
             index_t local_triangle_id( index_t r, index_t t ) const {
-                return facet( mesh_facet_begin( r ) + facet_ptr_[NB_FACET_TYPES * r] + t ) ;
+                return facet( mesh_facet_begin( r ) + facet_ptr_[(NB_FACET_TYPES+1)* r] + t ) ;
             }
             index_t local_quad_id( index_t r, index_t q ) const {
-                return facet( mesh_facet_begin( r ) + facet_ptr_[NB_FACET_TYPES * r + 1] + q ) ;
+                return facet( mesh_facet_begin( r ) + facet_ptr_[(NB_FACET_TYPES+1) * r + 1] + q ) ;
             }
 
             index_t local_tet_id( index_t r, index_t t ) const {
-                return cell( mesh_facet_begin( r ) + cell_ptr_[NB_CELL_TYPES * r] + t ) ;
+                return cell( mesh_facet_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r] + t ) ;
             }
             index_t local_pyramid_id( index_t r, index_t p ) const {
-                return cell( mesh_facet_begin( r ) + cell_ptr_[NB_CELL_TYPES * r + 1] + p ) ;
+                return cell( mesh_facet_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r + 1] + p ) ;
             }
             index_t local_prism_id( index_t r, index_t p ) const {
-                return cell( mesh_facet_begin( r ) + cell_ptr_[NB_CELL_TYPES * r + 2] + p ) ;
+                return cell( mesh_facet_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r + 2] + p ) ;
             }
             index_t local_hex_id( index_t r, index_t h ) const {
-                return cell( mesh_facet_begin( r ) + cell_ptr_[NB_CELL_TYPES * r + 3] + h ) ;
+                return cell( mesh_facet_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r + 3] + h ) ;
             }
 
         private:

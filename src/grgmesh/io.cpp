@@ -471,9 +471,9 @@ namespace GRGMesh {
         MacroMeshExport::MacroMeshExport( const MacroMesh& mm )
             :
                 mm_( mm ),
-                facet_ptr_( NB_FACET_TYPES * ( mm.model().nb_surfaces() + 1 ), 0 ),
+                facet_ptr_( ( NB_FACET_TYPES + 1 ) * mm.model().nb_surfaces(), 0 ),
                 mesh_facet_ptr_( mm.model().nb_surfaces() + 1, 0 ),
-                cell_ptr_( NB_CELL_TYPES * ( mm.model().nb_regions() + 1 ), 0 ),
+                cell_ptr_( ( NB_CELL_TYPES + 1 ) * mm.model().nb_regions(), 0 ),
                 mesh_cell_ptr_( mm.model().nb_regions() + 1, 0 ),
                 mesh_corner_ptr_( mm.model().nb_regions() + 1, 0 ),
                 surface2mesh_( mm.model().nb_surfaces(), Surface::NO_ID ),
@@ -508,7 +508,7 @@ namespace GRGMesh {
                     if( !Utils::contains( surface_proccessed, surface_id ) ) {
                         surface_proccessed.push_back( surface_id ) ;
                     }
-                    facet_ptr_[NB_FACET_TYPES*surface_id
+                    facet_ptr_[(NB_FACET_TYPES+1)*surface_id
                         + facet_access[cur_mesh.facet_size( f )] + 1]++ ;
                 }
                 for( index_t s = 0; s < surface_proccessed.size(); s++ ) {
@@ -517,49 +517,63 @@ namespace GRGMesh {
             }
 
             for( index_t s = 0; s < mm_.model().nb_surfaces(); s++ ) {
+                for( index_t t = 1; t < NB_FACET_TYPES; t++ ) {
+                    facet_ptr_[( NB_FACET_TYPES + 1 ) * s + t + 1] +=
+                        facet_ptr_[( NB_FACET_TYPES + 1 ) * s + t] ;
+                }
                 mesh_facet_ptr_[s + 1] += mesh_facet_ptr_[s] ;
+                index_t nb_facets_in_surface = facet_ptr_[( NB_FACET_TYPES + 1 ) * s
+                    + NB_FACET_TYPES] - facet_ptr_[( NB_FACET_TYPES + 1 ) * s] ;
+                mesh_facet_ptr_[s + 1] += nb_facets_in_surface ;
             }
             facets_.resize( mesh_facet_ptr_.back() ) ;
 
-            std::vector< index_t > cur_index_type( mm_.model().nb_surfaces(), 0 ) ;
+            std::vector< index_t > cur_facet_index_type( NB_FACET_TYPES*mm_.model().nb_surfaces(), 0 ) ;
             for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
                 for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
                     signed_index_t surface_id = cur_mesh.facet_region( f ) ;
                     if( surface2mesh_[surface_id] != m ) continue ;
                     index_t type_access = facet_access[cur_mesh.facet_size( f )] ;
-                    facets_[mesh_facet_ptr_[surface_id] + facet_ptr_[NB_FACET_TYPES*surface_id + type_access]
-                        + cur_index_type[type_access]++ ] = f ;
+                    facets_[mesh_facet_ptr_[surface_id] + facet_ptr_[(NB_FACET_TYPES+1)*surface_id + type_access]
+                        + cur_facet_index_type[NB_FACET_TYPES*surface_id+type_access]++ ] = f ;
                 }
             }
 
 
             /// 2 - fill cell/corner information
-            index_t cell_access[9] = { -1, -1, -1, -1, 0, 1, 2, -1, 3 } ;
+            index_t cell_access[4] = { 0, 3, 2, 1 } ;
             for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
                 const GEO::Mesh& mesh = mm_.mesh( m ) ;
                 for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
-                    cell_ptr_[NB_CELL_TYPES * m + cell_access[mesh.cell_nb_vertices( c )] + 1]++ ;
+                    cell_ptr_[(NB_CELL_TYPES+1) * m + cell_access[mesh.cell_type( c )] + 1]++ ;
                 }
                 for( index_t type = 1; type < NB_CELL_TYPES; type++ ) {
-                    cell_ptr_[NB_CELL_TYPES * m + type] += cell_ptr_[NB_CELL_TYPES * m + type - 1] ;
+                    cell_ptr_[(NB_CELL_TYPES+1)  * m + type + 1] += cell_ptr_[(NB_CELL_TYPES+1)  * m + type] ;
                 }
             }
 
             for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
-                mesh_cell_ptr_[m + 1] += mesh_cell_ptr_[m] ;
-                mesh_corner_ptr_[m + 1] += mesh_corner_ptr_[m] ;
+                const GEO::Mesh& mesh = mm_.mesh( m ) ;
+                mesh_cell_ptr_[m + 1] += mesh_cell_ptr_[m] + mesh.nb_cells() ;
+                mesh_corner_ptr_[m + 1] += mesh_corner_ptr_[m] + mesh.nb_corners() ;
             }
             cells_.resize( mesh_cell_ptr_.back() ) ;
             corners_.resize( mesh_corner_ptr_.back() ) ;
 
-            cur_index_type.resize( NB_CELL_TYPES, 0 ) ;
+            std::vector< index_t >cur_cell_index_type( NB_CELL_TYPES*mm_.nb_meshes(), 0 ) ;
             for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
                 GEO::Mesh& mesh = const_cast< GEO::Mesh& >( mm_.mesh( m ) ) ;
                 for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
-                    index_t type_access = cell_access[mesh.cell_nb_vertices( c )] ;
-                    cells_[mesh_cell_ptr_[m] + cell_ptr_[NB_CELL_TYPES * m + type_access]
-                        + cur_index_type[type_access]++ ] = c ;
+                    index_t type_access = cell_access[mesh.cell_type( c )] ;
+//                    std::cout << "mesh_cell_ptr_[m] " << mesh_cell_ptr_[m] << std::endl ;
+//                    std::cout << "cell_ptr_[(NB_CELL_TYPES+1) * m + type_access " << cell_ptr_[(NB_CELL_TYPES+1) * m + type_access] <<std::endl ;
+//                    std::cout << "cur_index_type[NB_CELL_TYPES*m+type_access] " << cur_index_type[NB_CELL_TYPES*m+type_access] << std::endl ;
+//                    std::cout << "total " << mesh_cell_ptr_[m] + cell_ptr_[(NB_CELL_TYPES+1) * m + type_access]
+//                                                                           + cur_index_type[NB_CELL_TYPES*m+type_access] << std::endl ;
+//                    std::cout << "size " << cells_.size() << std::endl ;
+                    cells_[mesh_cell_ptr_[m] + cell_ptr_[(NB_CELL_TYPES+1) * m + type_access]
+                        + cur_cell_index_type[NB_CELL_TYPES*m+type_access]++ ] = c ;
                 }
                 std::copy( mesh.corner_vertex_index_ptr( 0 ),
                     mesh.corner_vertex_index_ptr( mesh.nb_corners() - 1 ),
