@@ -59,7 +59,7 @@ namespace GRGMesh {
         index_t item_size() const { return item_size_ ; }
     protected:
         AttributeStore( index_t item_size, index_t size )
-            : item_size_( item_size ), nb_elements_( size ), data_( nil )
+            : item_size_( item_size ), data_( nil ), nb_elements_( size )
         {
             data_ = new byte[item_size * size] ;
         }
@@ -109,7 +109,7 @@ namespace GRGMesh {
         {
             names.clear() ;
             for( std::map< std::string, AttributeStore_var >::iterator it =
-                attributes_.begin(); it != attributes_.end(); it++ ) {
+                attributes_.begin(); it != attributes_.end(); ++it ) {
                 names.push_back( it->first ) ;
             }
         }
@@ -126,7 +126,7 @@ namespace GRGMesh {
             attributes_.erase( it ) ;
         }
 
-        const ElementType& record_type_id() const  { return LOCATION ; }
+        static const ElementType& record_type_id() { return LOCATION ; }
 
         void bind_named_attribute_store(
             const std::string& name,
@@ -246,7 +246,7 @@ namespace GRGMesh {
             return manager->resolve_named_attribute_store( name ) ;
         }
 
-        void bind_named_attribute_store(
+        static void bind_named_attribute_store(
             Manager* manager,
             const std::string& name,
             AttributeStore* as )

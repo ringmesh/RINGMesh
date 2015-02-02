@@ -27,7 +27,7 @@
 
 namespace GRGMesh {
 
-    void start_redirect( fpos_t& pos, FILE* out, int fd )
+    void start_redirect( fpos_t& pos, FILE* out, int& fd )
     {
 #ifndef GRGMESH_DEBUG
         //Save position of current standard output
@@ -42,7 +42,7 @@ namespace GRGMesh {
 #endif
     }
 
-    void stop_redirect( fpos_t& pos, FILE* out, int fd )
+    void stop_redirect( fpos_t& pos, FILE* out, int& fd )
     {
 #ifndef GRGMESH_DEBUG
         //Flush stdout so any buffered messages are delivered
@@ -648,51 +648,43 @@ namespace GRGMesh {
         GEO::Mesh* background )
         :
             TetraGen( tetmesh, region, internal_vertices, well_vertices, background ),
-            mesh_output_( nil ),
             add_steiner_points_( add_steiner_points ),
+            mesh_output_( nil ),
             mesh_background_( nil ),
             sizemap_( nil )
     {
         fpos_t pos ;
-        int fd ;
+        int fd = 0 ;
         start_redirect( pos, stdout, fd ) ;
         fpos_t pos_err ;
-        int fd_err ;
+        int fd_err = 0 ;
         start_redirect( pos_err, stderr, fd_err ) ;
 
         context_ = context_new() ;
         mesh_input_ = mesh_new_in_memory( context_ ) ;
-        status_t ret = context_set_message_callback(context_, my_message_cb, 0);
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
+        context_set_message_callback(context_, my_message_cb, 0);
 
-        ret = mesh_set_vertex_count( mesh_input_, nb_total_points() ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
+        mesh_set_vertex_count( mesh_input_, nb_total_points() ) ;
         for( index_t p = 0; p < nb_points(); p++ ) {
-            ret = mesh_set_vertex_coordinates( mesh_input_, p + 1,
+            mesh_set_vertex_coordinates( mesh_input_, p + 1,
                 points_[p].data() ) ;
-            grgmesh_debug_assert( ret == STATUS_OK ) ;
         }
 
-        ret = mesh_set_edge_count( mesh_input_, well_edges_.size() ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
+        mesh_set_edge_count( mesh_input_, well_edges_.size() ) ;
         for( index_t e = 0; e < well_edges_.size(); e++ ) {
-            ret = mesh_set_edge_vertices( mesh_input_, e + 1,
+            mesh_set_edge_vertices( mesh_input_, e + 1,
                 &well_indices_[2 * e] ) ;
-            grgmesh_debug_assert( ret == STATUS_OK ) ;
         }
 
         for( index_t p = 0; p < nb_internal_points(); p++ ) {
-            ret = mesh_set_vertex_coordinates( mesh_input_, nb_points() + p + 1,
+            mesh_set_vertex_coordinates( mesh_input_, nb_points() + p + 1,
                 internal_points_[p].data() ) ;
-            grgmesh_debug_assert( ret == STATUS_OK ) ;
         }
 
-        ret = mesh_set_triangle_count( mesh_input_, nb_triangles() ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
+        mesh_set_triangle_count( mesh_input_, nb_triangles() ) ;
         for( index_t t = 0; t < nb_triangles(); t++ ) {
-            ret = mesh_set_triangle_vertices( mesh_input_, t + 1,
+            mesh_set_triangle_vertices( mesh_input_, t + 1,
                 &triangles_[3 * t] ) ;
-            grgmesh_debug_assert( ret == STATUS_OK ) ;
             mesh_set_triangle_tag( mesh_input_, t+1, surface_id_ptr( t ) ) ;
         }
 
@@ -724,22 +716,14 @@ namespace GRGMesh {
                 */
 
         tms_ = tetra_session_new( context_ ) ;
-        ret = tetra_set_surface_mesh( tms_, mesh_input_ ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
-        ret = tetra_set_param( tms_, "verbose", "4" ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
-        ret = tetra_set_param( tms_, "components", "all" ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
-        ret = tetra_set_param( tms_, "optimisation_level", "standard" ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
-        ret = tetra_set_param( tms_, "gradation", "1.1" ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
-        ret = tetra_set_param( tms_, "pthreads_mode", "aggressive" ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
-        ret = tetra_set_param( tms_, "max_number_of_threads", "8" ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
-        ret = tetra_set_param( tms_, "max_error_count", "5" ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
+        tetra_set_surface_mesh( tms_, mesh_input_ ) ;
+        tetra_set_param( tms_, "verbose", "4" ) ;
+        tetra_set_param( tms_, "components", "all" ) ;
+        tetra_set_param( tms_, "optimisation_level", "standard" ) ;
+        tetra_set_param( tms_, "gradation", "1.1" ) ;
+        tetra_set_param( tms_, "pthreads_mode", "aggressive" ) ;
+        tetra_set_param( tms_, "max_number_of_threads", "8" ) ;
+        tetra_set_param( tms_, "max_error_count", "5" ) ;
 
         stop_redirect( pos, stdout, fd ) ;
         stop_redirect( pos_err, stderr, fd_err ) ;
@@ -748,10 +732,10 @@ namespace GRGMesh {
     TetraGen_MG_Tetra::~TetraGen_MG_Tetra()
     {
         fpos_t pos ;
-        int fd ;
+        int fd = 0 ;
         start_redirect( pos, stdout, fd ) ;
         fpos_t pos_err ;
-        int fd_err ;
+        int fd_err = 0 ;
         start_redirect( pos_err, stderr, fd_err ) ;
 
         tetra_regain_mesh( tms_, mesh_output_ ) ;
@@ -766,10 +750,10 @@ namespace GRGMesh {
     bool TetraGen_MG_Tetra::tetrahedralize()
     {
         fpos_t pos ;
-        int fd ;
+        int fd = 0 ;
         start_redirect( pos, stdout, fd ) ;
         fpos_t pos_err ;
-        int fd_err ;
+        int fd_err = 0 ;
         start_redirect( pos_err, stderr, fd_err ) ;
 
         status_t ret = tetra_mesh_boundary( tms_ ) ;
@@ -792,20 +776,15 @@ namespace GRGMesh {
                 return false ;
             }
         }
-        ret = tetra_get_mesh( tms_, &mesh_output_ ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
+        tetra_get_mesh( tms_, &mesh_output_ ) ;
         signed_index_t nb_points = 0 ;
-        ret = mesh_get_vertex_count( mesh_output_, &nb_points ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
+        mesh_get_vertex_count( mesh_output_, &nb_points ) ;
         signed_index_t nb_tets = 0 ;
-        ret = mesh_get_tetrahedron_count( mesh_output_, &nb_tets ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
+        mesh_get_tetrahedron_count( mesh_output_, &nb_tets ) ;
         signed_index_t nb_triangles = 0 ;
-        ret = mesh_get_triangle_count( mesh_output_, &nb_triangles ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
+        mesh_get_triangle_count( mesh_output_, &nb_triangles ) ;
         signed_index_t nb_lines = 0 ;
-        ret = mesh_get_edge_count( mesh_output_, &nb_lines ) ;
-        grgmesh_debug_assert( ret == STATUS_OK ) ;
+        mesh_get_edge_count( mesh_output_, &nb_lines ) ;
 
         initialize_storage( nb_points, nb_tets, nb_triangles, nb_lines ) ;
         std::vector< index_t > temp ;
@@ -813,8 +792,7 @@ namespace GRGMesh {
         std::vector< std::vector< index_t > > star( nb_points, temp ) ;
         for( index_t t = 0; t < nb_tets; t++ ) {
             signed_index_t tet[4] ;
-            ret = mesh_get_tetrahedron_vertices( mesh_output_, t+1, tet ) ;
-            grgmesh_debug_assert( ret == STATUS_OK ) ;
+            mesh_get_tetrahedron_vertices( mesh_output_, t+1, tet ) ;
             set_tetra( t, tet, nb_lines, nb_triangles ) ;
             for( index_t i = 0; i < 4; i++ ) {
                 star[tet[i] - 1].push_back( t ) ;
@@ -824,8 +802,7 @@ namespace GRGMesh {
 //#pragma omp parallel for
         for( index_t p = 0; p < nb_points; p++ ) {
             double point[3] ;
-            ret = mesh_get_vertex_coordinates( mesh_output_, p+1, point ) ;
-            grgmesh_debug_assert( ret == STATUS_OK ) ;
+            mesh_get_vertex_coordinates( mesh_output_, p+1, point ) ;
             set_point( p, point ) ;
             std::sort( star[p].begin(), star[p].end() ) ;
         }
@@ -833,12 +810,10 @@ namespace GRGMesh {
 //#pragma omp parallel for
         for( index_t t = 0; t < nb_triangles; t++ ) {
             signed_index_t tag = -1 ;
-            ret = mesh_get_triangle_tag( mesh_output_, t+1, &tag ) ;
-            grgmesh_debug_assert( ret == STATUS_OK ) ;
+            mesh_get_triangle_tag( mesh_output_, t+1, &tag ) ;
             if ( tag != -1 ) {
                 signed_index_t vertices[3] ;
-                ret = mesh_get_triangle_vertices( mesh_output_, t+1, vertices ) ;
-                grgmesh_debug_assert( ret == STATUS_OK ) ;
+                mesh_get_triangle_vertices( mesh_output_, t+1, vertices ) ;
                 set_triangle(cur_index_triangle, vertices, nb_lines) ;
                 cur_index_triangle ++ ;
             }
