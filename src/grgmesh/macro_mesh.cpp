@@ -153,15 +153,19 @@ namespace GRGMesh {
         mm_ = mm ;
         cell2mesh_.reserve( mm_->nb_meshes()+1 ) ;
         cell2mesh_.push_back( 0 ) ;
-        index_t total_size = 0 ;
+        index_t total_adjacents = 0 ;
         for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_->mesh( m ) ;
-            cell2mesh_.push_back( mesh.nb_cells() ) ;
+            nb_cells_ +=  mesh.nb_cells() ;
+            cell2mesh_.push_back( nb_cells_ ) ;
+            for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+                total_adjacents += mesh.cell_nb_facets( c ) ;
+            }
         }
 
         index_t nb_vertices = mm_->nb_vertices() ;
         std::vector< std::vector< index_t > > cells_around_vertex( nb_vertices ) ;
-        global_cell_adjacents_.reserve( total_size ) ;
+        global_cell_adjacents_.reserve( total_adjacents ) ;
         for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_->mesh( m ) ;
             for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
@@ -263,7 +267,13 @@ namespace GRGMesh {
         grgmesh_assert_not_reached ;
         return dummy_index_t ;
     }
-
+    index_t MacroMeshCells::nb_cells( const MacroMesh* mm ) const
+    {
+        if( !initialized_ ) {
+            const_cast< MacroMeshCells* >( this )->initialize( mm ) ;
+        }
+        return nb_cells_ ;
+    }
 
 
     MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
