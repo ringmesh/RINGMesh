@@ -22,12 +22,12 @@
 
 #include "tetgen.h"
 
-// [Bruno] redirected output into Vorpaline terminal
+// [Bruno] redirected output into Geogram terminal
 #include <geogram/basic/logger.h>
-#define printf vorpaline_printf
+#define printf geogram_printf
 
 // [Bruno] using PCK predicates
-// #define USE_PCK
+#define USE_PCK
 
 namespace GEO_3rdParty { // [Bruno]
 
@@ -4809,6 +4809,8 @@ REAL tetgenmesh::PI = 3.14159265358979323846264338327950288419716939937510582;
 
 #ifdef USE_PCK //[Bruno]
 
+} // close namespace GEO_3rdParty
+    
 // Prototypes for PCK predicates
 namespace GEO {
     
@@ -4844,6 +4846,8 @@ namespace GEO {
         void initialize();
     }
 }
+
+namespace GEO_3rdParty { // re-open namespace GEO_3rdParty
 
 // Wrapper around PCK predicates to make them sourcelevel
 // compatible with Shewchuk's predicates.
@@ -4918,9 +4922,9 @@ namespace {
         REAL a33 = p3[2] - p0[2] ;
         REAL a34 = h3 - h0 ;
         
-        REAL a41 = p3[0] - p0[0] ;
-        REAL a42 = p3[1] - p0[1] ;
-        REAL a43 = p3[2] - p0[2] ;
+        REAL a41 = p4[0] - p0[0] ;
+        REAL a42 = p4[1] - p0[1] ;
+        REAL a43 = p4[2] - p0[2] ;
         REAL a44 = h4 - h0 ;
         
         REAL Delta = det4x4(

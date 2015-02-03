@@ -39,12 +39,6 @@
  *     Campus Scientifique, BP 239
  *     54506 VANDOEUVRE LES NANCY CEDEX 
  *     FRANCE
- *
- * The implementation of the solvers is inspired by 
- * the lsolver library, by Christian Badura, available from:
- * http://www.mathematik.uni-freiburg.de
- * /IAM/Research/projectskr/lin_solver/
- *
  */
 
 
@@ -53,10 +47,65 @@
 
 #include "nl_private.h"
 
+/**
+ * \file geogram/NL/nl_iterative_solvers.h
+ * \brief Internal OpenNL functions that implement iterative solvers.
+ */
+
+/**
+ * \brief Solves the system in nlCurrentContext 
+ *  using the Conjugate Gradient solver
+ * \details The implementation is inspired by 
+ * the lsolver library, by Christian Badura, available from:
+ * http://www.mathematik.uni-freiburg.de
+ * /IAM/Research/projectskr/lin_solver/
+ * \return the used number of iterations
+ */
 NLuint nlSolve_CG() ;
+
+/**
+ * \brief Solves the system in nlCurrentContext 
+ *  using the preconditioned Conjugate Gradient solver
+ * \details The implementation is inspired by 
+ * the lsolver library, by Christian Badura, available from:
+ * http://www.mathematik.uni-freiburg.de
+ * /IAM/Research/projectskr/lin_solver/
+ * \return the used number of iterations
+ */
 NLuint nlSolve_CG_precond() ;
+
+/**
+ * \brief Solves the system in nlCurrentContext 
+ *  using the stabilized bi conjugate gradient solver.
+ * \details The implementation is inspired by 
+ * the lsolver library, by Christian Badura, available from:
+ * http://www.mathematik.uni-freiburg.de
+ * /IAM/Research/projectskr/lin_solver/
+ * \return the used number of iterations
+ */
 NLuint nlSolve_BICGSTAB() ;
+
+/**
+ * \brief Solves the system in nlCurrentContext 
+ *  using the preconditioned stabilized 
+ *  bi conjugate gradient solver.
+ * \details The implementation is inspired by 
+ * the lsolver library, by Christian Badura, available from:
+ * http://www.mathematik.uni-freiburg.de
+ * /IAM/Research/projectskr/lin_solver/
+ * \return the used number of iterations
+ */
 NLuint nlSolve_BICGSTAB_precond() ;
+
+/**
+ * \brief Solves the system in nlCurrentContext 
+ *  using the GMRES solver.
+ * \details The implementation is inspired by 
+ * the lsolver library, by Christian Badura, available from:
+ * http://www.mathematik.uni-freiburg.de
+ * /IAM/Research/projectskr/lin_solver/
+ * \return the used number of iterations
+ */
 NLuint nlSolve_GMRES() ;
 
 #endif

@@ -47,6 +47,11 @@
 #ifndef __NL_MATRIX__
 #define __NL_MATRIX__
 
+/**
+ * \file geogram/NL/nl_matrix.h
+ * \brief Internal OpenNL functions to manipulate sparse matrices.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -54,83 +59,360 @@ extern "C" {
 /************************************************************************************/
 /* Dynamic arrays for sparse row/columns */
 
+/**
+ * \brief Represents a coefficient in a sparse matrix
+ */
 typedef struct  {
+    /**
+     * \brief index of the coefficient.
+     */    
     NLuint index ;
-    NLdouble value ;
+
+    /**
+     * \brief value of the coefficient. 
+     */    
+    NLdouble value ; 
 } NLCoeff ;
 
+/**
+ * \brief Represents a row or a column of a sparse matrix
+ */
 typedef struct {
+    /**
+     * \brief number of coefficients. 
+     */    
     NLuint size ;
+    
+    /** 
+     * \brief number of coefficients that can be 
+     * stored without reallocating memory.
+     */    
     NLuint capacity ;
-    NLCoeff* coeff ;
+
+    /**
+     * \brief the array of coefficients, with enough
+     * space to store capacity coefficients.
+     */
+    NLCoeff* coeff ;  
 } NLRowColumn ;
 
+/**
+ * \brief Constructs a new NLRowColumn
+ * \param[in,out] c a pointer to an 
+ *  uninitialized NLRowColumn
+ */
 void nlRowColumnConstruct(NLRowColumn* c) ;
+
+/**
+ * \brief Destroys a NLRowColumn
+ * \details Only the memory allocated by the 
+ *  NLRowColumn is freed. The NLRowColumn structure
+ *  is not freed.
+ * \param[in,out] c a pointer to an NLRowColumn
+ */
 void nlRowColumnDestroy(NLRowColumn* c) ;
+
+/**
+ * \brief Allocates additional storage for
+ *  the coefficients of an NLRowColumn
+ * \details Operates like the class vector of the C++ standard library, 
+ *  by doubling the capacity each time it is needed. This amortizes
+ *  the cost of the growing operations as compared to re-allocating
+ *  at each element insertion
+ * \param[in,out] c a pointer to an NLRowColumn
+ */
 void nlRowColumnGrow(NLRowColumn* c) ;
+
+/**
+ * \brief Adds a coefficient to an NLRowColumn.    
+ * \details Performs the following operation:
+ *  \$ a_i \leftarrow a_i + value \$. If the NLRowColumn
+ *  already has a coefficient with index \p index, then 
+ *  the value is added to that coefficient, else a new
+ *  coefficient is created. Additional storage is allocated
+ *  as need be.
+ * \param[in,out] c a pointer to an NLRowColumn
+ * \param[in] index index of the coefficient
+ * \param[in] value value of the coefficient
+ */
 void nlRowColumnAdd(NLRowColumn* c, NLuint index, NLdouble value) ;
+
+/**
+ * \brief Appends a coefficient to an NLRowColumn    .
+ * \details In contrast with nlRowColumnAdd(), this function does
+ *  not tests whether a coefficient with index \p index already exists
+ *  in the NLRowColumn. A new coefficient is always created.
+ * \param[in,out] c a pointer to an NLRowColumn
+ * \param[in] index index of the coefficient
+ * \param[in] value value of the coefficient
+ */
 void nlRowColumnAppend(NLRowColumn* c, NLuint index, NLdouble value) ;
+
+/**
+ * \brief Zeroes an NLRowColumn.
+ * \details No memory is deallocated, the capacity remains
+ *  the same.
+ * \param[in,out] c a pointer to an NLRowColumn
+ */
 void nlRowColumnZero(NLRowColumn* c) ;
+
+/**
+ * \brief Zeroes an NLRowColumn and deallocates the memory
+ *  used by the NLRowColumn.
+ * \details On exit, capacity is zeroed
+ * \param[in,out] c a pointer to an NLRowColumn
+ */
 void nlRowColumnClear(NLRowColumn* c) ;
+
+/**
+ * \brief Sorts the coefficients of an NLRowColumn
+ *  by increasing index
+ * \param[in,out] c a pointer to an NLRowColumn
+ */
 void nlRowColumnSort(NLRowColumn* c) ;
 
 /************************************************************************************/
 /* Compressed Row Storage */
 
+/**
+ * \brief A compact self-contained storage for 
+ *  sparse matrices.
+ * \details Unlike with NLSparseMatrix, it is not possible
+ *  to add new coefficients in an NLCRSMatrix.
+ */
 typedef struct {
+    /**
+     * \brief number of rows. 
+     */    
     NLuint m;
+    
+    /**
+     * \brief number of columns. 
+     */    
     NLuint n;
-    NLdouble* val;
+
+    /**
+     * \brief array of coefficient values, 
+     * size = NNZ (number of non-zero coefficients)
+     */    
+    NLdouble* val;    
+
+    /**
+     * \brief row pointers, size = m+1 
+     */    
     NLuint* rowptr;
+
+    /**
+     * \brief column indices, size = NNZ 
+     */    
     NLuint* colind;
+
+    /**
+     * \brief number of slices, used by parallel spMv
+     */    
     NLuint nslices;
-    NLuint* sliceptr;
+
+    /** 
+     * \brief slice pointers, size = nslices + 1, 
+     * used by parallel spMv 
+     */    
+    NLuint* sliceptr; 
 } NLCRSMatrix;
 
-void nlCRSMatrixConstruct(NLCRSMatrix* M, NLuint m, NLuint n, NLuint nnz, NLuint nslices);
+/**
+ * \brief Constructs a new NLCRSMatrix
+ * \param[in,out] M pointer to an uninitialized NLCRSMatrix
+ * \param[in] m number of rows
+ * \param[in] n number of columns
+ * \param[in] nnz number of non-zero coefficientsz
+ * \param[in] nslices number of slices, used by parallel spMv
+ *  (typically, nslices = number of cores)
+ */
+void nlCRSMatrixConstruct(
+    NLCRSMatrix* M, NLuint m, NLuint n, NLuint nnz, NLuint nslices
+);
+
+/**
+ * \brief Destroys a NLCRSMatrix
+ * \details Only the memory allocated by the NLCRSMatrix is freed,
+ *  The NLCRSMatrix structure is not freed.
+ * \param[in,out] M pointer to an NLCRSMatrix
+ */
 void nlCRSMatrixDestroy(NLCRSMatrix* M);
-    
+
 /************************************************************************************/
 /* SparseMatrix data structure */
 
-#define NL_MATRIX_STORE_ROWS      1
-#define NL_MATRIX_STORE_COLUMNS   2
-#define NL_MATRIX_STORE_SYMMETRIC 4
-#define NL_MATRIX_STORE_COMPRESSED 8
+/**
+ * for NLSparseMatrix storage: indicates that rows are stored.
+ */
+#define NL_MATRIX_STORE_ROWS          1
+
+/**
+ * for NLSparseMatrix storage: indicates that columns are stored.
+ */
+#define NL_MATRIX_STORE_COLUMNS       2
+
+/**
+ * for NLSparseMatrix storage: indicates that symmetric storage
+ * is used (only the lower triangular part is stored).
+ */
+#define NL_MATRIX_STORE_SYMMETRIC     4
+
+/**
+ * for NLSparseMatrix storage: indicates that the matrix
+ * is compressed into an NLCRSMatrix.
+ */
+#define NL_MATRIX_STORE_COMPRESSED    8
+
+/**
+ * for NLSparseMatrix storage: indicates that the inverse
+ * of the diagonal is stored.
+ */
+#define NL_MATRIX_STORE_DIAG_INV      16
     
 typedef struct {
+    /**
+     * \brief number of rows 
+     */    
     NLuint m ;
+    
+    /**
+     * \brief number of columns 
+     */    
     NLuint n ;
+
+    /**
+     * \brief number of elements in the diagonal 
+     */    
     NLuint diag_size ;
+
+    /**
+     * \brief indicates what is stored in this matrix 
+     */    
     NLenum storage ;
+
+    /**
+     * \brief the rows if (storage & NL_MATRIX_STORE_ROWS), size = m,
+     * NULL otherwise
+     */     
     NLRowColumn* row ;
+
+    /** 
+     * \brief the columns if (storage & NL_MATRIX_STORE_COLUMNS), size = n,
+     * NULL otherwise
+     */     
     NLRowColumn* column ;
+
+    /**
+     * \brief the diagonal elements, size = diag_size 
+     */     
     NLdouble*    diag ;
-    NLCRSMatrix* compressed ;
+
+    /**
+     * \brief the inverse of the diagonal if (storage & NL_MATRIX_STORE_DIAG_INV), 
+     * size = diag_size, NULL otherwise 
+     */    
+    NLdouble*    diag_inv ;
+
+    /**
+     * \brief the compressed CRS representation 
+     * if (storage & NL_MATRIX_STORE_COMPRESSED),
+     * NULL otherwise
+     */    
+    NLCRSMatrix* compressed ;  
 } NLSparseMatrix ;
 
 
+/**
+ * \brief Constructs a new NLSparseMatrix
+ * \param[in,out] M a pointer to an uninitialized NLSparseMatrix
+ * \param[in] m number of rows
+ * \param[in] n number of columns
+ * \param[in] storage a bitwise or combination of flags that
+ *  indicate what needs to be stored in the matrix.
+ */
 void nlSparseMatrixConstruct(
     NLSparseMatrix* M, NLuint m, NLuint n, NLenum storage
 ) ;
 
+/**
+ * \brief Destroys an NLSparseMatrix
+ * \details Only the memory allocated by the NLSparseMatrix
+ *  is freed. The NLSparseMatrix structure is not freed.
+ * \param[in,out] M a pointer to an NLSparseMatrix
+ */
 void nlSparseMatrixDestroy(NLSparseMatrix* M) ;
 
+/**
+ * \brief Adds a coefficient to an NLSparseMatrix
+ * \details Performs the following operation:
+ *  \$ a_{i,j} \leftarrow a_{i,j} + \mbox{value} \$
+ * \param[in,out] M a pointer to an NLSparseMatrix
+ * \param[in] i index of the row
+ * \param[in] j index of the column
+ * \param[in] value the coefficient to be added
+ */
 void nlSparseMatrixAdd(
     NLSparseMatrix* M, NLuint i, NLuint j, NLdouble value
 ) ;
 
+/**
+ * \brief Zeroes an NLSparseMatrix
+ * \details The memory is not freed.
+ * \param[in,out] M a pointer to the NLSparseMatrix to zero
+ */
 void nlSparseMatrixZero( NLSparseMatrix* M) ;
+
+/**
+ * \brief Clears an NLSparseMatrix
+ * \details The memory is freed.
+ * \param[in,out] M a pointer to the NLSparseMatrix to zero
+ */
 void nlSparseMatrixClear( NLSparseMatrix* M) ;
+
+/**
+ * \brief Gets the number of non-zero coefficient
+ *  in an NLSparseMatrix
+ * \param[in] M a pointer to the NLSparseMatrix
+ * \return the number of non-zero coefficients in \p M
+ */
 NLuint nlSparseMatrixNNZ( NLSparseMatrix* M) ;
+
+/**
+ * \brief Sorts the coefficients in an NLSParseMatrix
+ * \param[in,out] M a pointer to the NLSparseMatrix 
+ */
 void nlSparseMatrixSort( NLSparseMatrix* M) ;
 
+/**
+ * \brief Computes the inverse of the diagonal and
+ *  stores it into an NLSparseMatrix.
+ * \details This is used for instance by the Jacobi
+ *  pre-conditioner.
+ * \param[in,out] M a pointer to the NLSparseMatrix 
+ */
+void nlSparseMatrixComputeDiagInv( NLSparseMatrix* M);
+
+/**
+ * \brief Computes a Compressed Row Storage representation
+ *  of a NLSparseMatrix.
+ * \details Once this function is called, nlSparseMatrixMult()
+ *  is faster by an order of magnitude
+ * \param[in,out] M a pointer to the NLSparseMatrix 
+ */
 void nlSparseMatrixCompress( NLSparseMatrix* M);
     
 /************************************************************************************/
 /* SparseMatrix x Vector routine */
 
-void nlSparseMatrixMult(NLSparseMatrix* A, NLdouble* x, NLdouble* y) ;
+/**
+ * \brief Computes a matrix-vector product
+ * \param[in] A a pointer to the matrix
+ * \param[in] x the vector to be multiplied, size = A->n
+ * \param[in] y where to store the result, size = A->m
+ */
+void nlSparseMatrixMult(NLSparseMatrix* A, const NLdouble* x, NLdouble* y) ;
 
 #ifdef __cplusplus
 }

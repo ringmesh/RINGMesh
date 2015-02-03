@@ -65,7 +65,7 @@ namespace GEO {
      * \brief Multithreaded implementation of Delaunay in 3d.
      * \details This class is based on ideas and a prototype
      *   implementation by Alain Filbois. This class also uses 
-     *  concepts inspired by  two triangulation softwares, CGAL and tetgen,
+     *  concepts inspired by two triangulation softwares, CGAL and tetgen,
      *  described in the following references. This package follows the
      *  idea used in CGAL of traversing the cavity from inside, since
      *  it traverses less tetrahedra than when traversing from outside.
@@ -80,7 +80,7 @@ namespace GEO {
      *  degenerate input with all coplanar or all colinear points (use CGAL
      *  instead if you have these requirements).
      *
-     *  The core algorithm used in this code, CGAL and tetgen was
+     *  The core algorithm used in both this code, CGAL and tetgen was
      *  independently and simultaneously discovered by Bowyer and Watson:
      *  - Adrian Bowyer, "Computing Dirichlet tessellations", 
      *   Comput. J., vol. 24, no 2,‎ 1981, p. 162-166 

@@ -65,7 +65,7 @@ echo ============== GRGMesh build configured ==================
 
 cat << EOF
 to build:
-  go to build/$os-Release or build/$os-Debug
+  go to build/grgmesh/$os-Release or build/grgmesh/$os-Debug
   and 'make'
 Note: local configuration can be specified in CMakeOptions.txt
 (see CMakeOptions.txt.sample for an example)

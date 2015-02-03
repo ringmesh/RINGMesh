@@ -208,7 +208,7 @@ namespace GEO {
          * to_bool(), to_int() and to_double() when a string cannot be
          * converted to the desired type.
          */
-        class ConversionError : public std::logic_error {
+        class GEOGRAM_API ConversionError : public std::logic_error {
         public:
             /**
              * \brief Constructs a conversion exception

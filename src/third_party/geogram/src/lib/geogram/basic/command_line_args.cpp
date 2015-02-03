@@ -444,6 +444,18 @@ namespace {
             "hex:algo", "PGP3d",
             "one of (PGP3d, LpCVT)"
         );
+        declare_arg(
+            "hex:PGP_max_corr_prop", 0.35,
+            "maximum correction form (0 to deactivate)"
+        );
+        declare_arg(
+            "hex:PGP_FF_free_topo", 1,
+            "number of free topo. frame field opt. iterations"
+        );
+        declare_arg(
+            "hex:PGP_FF_fixed_topo", 1,
+            "number of fixed topo. frame field opt. iterations"
+        );
     }
 
     /**

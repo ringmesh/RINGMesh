@@ -47,6 +47,29 @@
 
 #include "nl_private.h"
 
-NLboolean nlSolve_SUPERLU()  ;
+/**
+ * \file geogram/NL/nl_superlu.h
+ * \brief Internal OpenNL functions that interfaces SuperLU.
+ */
+
+/**
+ * \brief Solves the system in the current OpenNL 
+ *   context using SUPERLU.
+ * \details This function should not be called directly by client code.
+ *  To use SUPERLU, specify:
+ *    -nlSolverParameteri(NL_SOLVER, NL_SUPERLU_EXT) 
+ *     if no pre-ordering should be used
+ *    -nlSolverParameteri(NL_SOLVER, NL_PERM_SUPERLU_EXT) 
+ *     to use pre-ordering for general matrices
+ *    -nlSolverParameteri(NL_SOLVER, NL_SYMMETRIC_SUPERLU_EXT) 
+ *     to use pre-ordering for symmetric matrices
+ *  Works only if OpenNL was compiled with SUPERLU support, i.e.,
+ *   - SUPERLU needs to be installed in the system, as well as header files
+ *   - NL_USE_SUPERLU needs to be defined on the compilation command
+ *   - the program should be linked with SUPERLU as well as OpenNL
+ * \retval NL_TRUE if solve was successful
+ * \retval NL_FALSE otherwise
+ */
+NLboolean nlSolve_SUPERLU();
 
 #endif

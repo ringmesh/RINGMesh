@@ -446,16 +446,16 @@ namespace GRGMesh {
          
     /*!
      * @brief Traversal of a surface border
-     * @details From the input facet @param f, get the facet that share vertex @param v and 
-     * get the indices of vertex @param v and of the following vertex in this new facet.
-     * The next facet @param next_f may be the same, and @param is required to avoid going back.
+     * @details From the input facet f, get the facet that share vertex v and 
+     * get the indices of vertex v and of the following vertex in this new facet.
+     * The next facet next_f may be the same, and @param is required to avoid going back.
      *
      * @param[in] f Index of the facet
      * @param[in] from Index in the facet of the previous point on the border - gives the direction
      * @param[in] v Index in the facet of the point for which we want the next point on border
      * @param[out] next_f Index of the facet containing the next point on border
-     * @param[out] v_in_next Index of vertex @param v in facet @param next_f
-     * @param[out] next_in_next Index of the next vertex on border in facet @param v_in_next
+     * @param[out] v_in_next Index of vertex v in facet next_f
+     * @param[out] next_in_next Index of the next vertex on border in facet v_in_next
      */
     void Surface::next_on_border( 
         index_t f, index_t from, index_t v, 
@@ -678,6 +678,20 @@ namespace GRGMesh {
     }
 
     /*!
+     * @brief Convert model vertex index to an index in a facet
+     * @param[in] f Index of the facet
+     * @param[in] model_v_id Index of the vertex in the BoundaryModel
+     * @return NO_ID or index of the vertex in the facet
+     */
+    index_t Surface::facet_id_from_model( index_t f, index_t model_v_id ) const {
+        for( index_t v = 0; v < nb_vertices_in_facet(f); v++ ) {
+            if( model_vertex_id( f, v ) == model_v_id ) return v ;
+        }
+        return NO_ID ;
+    }
+    
+
+    /*!
      * @brief Comparator of two vec3
      */
     struct comp_vec3bis {
@@ -787,6 +801,36 @@ namespace GRGMesh {
         return result.size() ;
     }
 
+    void Surface::set_geometry(
+        const std::vector< index_t >& corners,
+        const std::vector< index_t >& facet_ptr )
+    {
+        facets_ = corners ;
+        facet_ptr_ = facet_ptr ;
+        
+        // Compute the vertices from the corners
+        // This is quite stupid !! The real solution would be to remove 
+        // the vertices vector from the Surface       
+        std::map< index_t, index_t > old_2_new ;
+        
+        for( index_t i = 0; i < facets_.size(); ++i ) {
+            index_t c = facets_[i] ;
+            std::map< index_t, index_t >::iterator it = old_2_new.find( c ) ;
+            index_t new_corner_id = NO_ID ;
+
+            if( it == old_2_new.end() ) {
+                new_corner_id = vertices_.size() ;
+                old_2_new[ c ] = new_corner_id ;
+                // Not so great to push back, but whatever
+                vertices_.push_back( c ) ;                
+            }
+            else new_corner_id = old_2_new[ c ] ;
+            facets_[i] = new_corner_id ;
+        }
+
+        compute_is_triangulated() ;
+    }
+
     /*!
      * @brief Compute the barycenter of a facet
      * @param[in] f Facet index in the surface
@@ -872,6 +916,19 @@ namespace GRGMesh {
            }
        }
        return result ;
+    }
+
+
+    vec3 Surface::edge_barycenter( index_t c ) const {
+        vec3 result( 0, 0, 0 );
+        
+        // Get the facet index
+        index_t f = std::lower_bound(
+            facet_ptr_.begin(), facet_ptr_.end(), c )-facet_ptr_.begin() ;
+        index_t v = c - facet_begin( f ) ;
+        result += vertex( f, v ) ;
+        result += vertex( f, next_in_facet(f, v) ) ;
+        return .5*result ;       
     }
 
     /*!
@@ -960,7 +1017,7 @@ namespace GRGMesh {
             id0 = new_id1 ;
             id1 = next_id1 ;
         }
-        /// \todo Check qu'on ne coupe pas complètement la surface, si on a 2 surfaces à la fin c'est la merde
+        /// \todo Check qu'on ne coupe pas complï¿½tement la surface, si on a 2 surfaces ï¿½ la fin c'est la merde
     }
 
 

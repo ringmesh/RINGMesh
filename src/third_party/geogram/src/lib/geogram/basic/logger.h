@@ -694,26 +694,27 @@ extern "C" {
     /**
      * \brief Printf-like wrapper to the Logger
      * \details
-     * By #%defining printf to vorpaline_printf, legacy code can send printf
+     * By #%defining printf to geogram_printf, legacy code can send printf
      * formatted messages directly to Logger::out().
      * \param[in] format printf-like format string
      * \see printf
      */
-    void GEOGRAM_API vorpaline_printf(const char* format, ...);
+    void GEOGRAM_API geogram_printf(const char* format, ...);
 
     /**
      * \brief Fprintf-like wrapper to the Logger
      * \details
-     * By #%defining fprintf to vorpaline_fprintf, legacy code can send fprintf
+     * By #%defining fprintf to geogram_fprintf, legacy code can send fprintf
      * formatted messages directly to the Logger:
      * - formatted text printed to stdout is sent to Logger::out()
      * - formatted text printed to stderr is sent to Logger::err()
-     * - otherwise the formatted text is printed to \p out using the system fprintf.
+     * - otherwise the formatted text is printed to \p out using 
+     *   the system fprintf.
      * \param[in] out output file
      * \param[in] format printf-like format string
      * \see fprintf
      */
-    void GEOGRAM_API vorpaline_fprintf(FILE* out, const char* format, ...);
+    void GEOGRAM_API geogram_fprintf(FILE* out, const char* format, ...);
 }
 
 #else
@@ -727,17 +728,17 @@ extern "C" {
 /**
  * \brief Printf-like wrapper to the Logger
  * \details
- * By #%defining printf to graphite_printf, legacy code can send printf
+ * By #%defining printf to geogram_printf, legacy code can send printf
  * formatted messages directly to Logger::out().
  * \param[in] format printf-like format string
  * \see printf
  */
-extern void GEOGRAM_API graphite_printf(const char* format, ...);
+extern void GEOGRAM_API geogram_printf(const char* format, ...);
 
 /**
  * \brief Fprintf-like wrapper to the Logger
  * \details
- * By #%defining fprintf to graphite_fprintf, legacy code can send fprintf
+ * By #%defining fprintf to geogram_fprintf, legacy code can send fprintf
  * formatted messages directly to the Logger:
  * - formatted text printed to stdout is sent to Logger::out()
  * - formatted text printed to stderr is sent to Logger::err()
@@ -746,7 +747,7 @@ extern void GEOGRAM_API graphite_printf(const char* format, ...);
  * \param[in] format printf-like format string
  * \see fprintf
  */
-extern void GEOGRAM_API graphite_fprintf(FILE* out, const char* format, ...);
+extern void GEOGRAM_API geogram_fprintf(FILE* out, const char* format, ...);
 
 #endif
 
