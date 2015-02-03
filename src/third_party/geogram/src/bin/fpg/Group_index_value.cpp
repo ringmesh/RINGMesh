@@ -22,7 +22,6 @@ Group_index_value::Group_index_value( Expression_filter* filter, Group_algebra::
 Abstract_value *
 Group_index_value::get_initial_value( Variable *var ) {
     MSG( "group index: " << var->group_index )
-    assert( var->group_index >= 0 );
     Group_index_value* giv = new Group_index_value( filter, new Group_algebra::Leaf_item( var->degree, var->group_index ) );
     giv->var = var;
     return giv;

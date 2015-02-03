@@ -51,9 +51,30 @@ extern "C" {
 
 #include "nl_private.h"
 
-
+/**
+ * \file geogram/NL/nl_cnc_gpu_cuda.h
+ * \brief Internal OpenNL functions that implements the Concurrent Number Cruncher.
+ */
+    
+/**
+ * \brief Tests whether a solver is implemented
+ *  in the Concurrent Number Cruncher (on the GPU)
+ * \param[in] solver the symbolic constant that
+ *  specifies the solver.
+ * \retval NL_TRUE if the solver is implemented in the CNC
+ * \retval NL_FALSE otherwise
+ */
 NLboolean nlSolverIsCNC(NLint solver) ;
 
+/**
+ * \brief Solves a linear system using the Concurrent Number 
+ *  Cruncher.
+ * \details This function should not be called directly by client code.
+ *  To use CNC, specify nlSolverParameteri(NL_SOLVER, NL_CNC_XXX) 
+ *   where NL_CNC_XXX is one of the symbolic constant for CNC solvers
+ *   (see nl.h). Works only if OpenNL was compiled with CNC support.
+ * \return the used number of iterations
+ */
 NLuint nlSolve_CNC() ;
 
 #ifdef __cplusplus

@@ -43,6 +43,7 @@
  */
 
 #include "nl_blas.h"
+#include "nl_context.h"
 
 #ifdef NL_USE_ATLAS
 int NL_FORTRAN_WRAP(xerbla)(char *srname, int *info) {
@@ -1366,55 +1367,59 @@ int NL_FORTRAN_WRAP(dtpsv)(
 /* x <- a*x */
 void dscal( int n, double alpha, double *x, int incx ) {
     NL_FORTRAN_WRAP(dscal)(&n,&alpha,x,&incx);
+    nlCurrentContext->flops += (NLulong)(n);
 }
 
 /* y <- x */
 void dcopy( 
-    int n, double *x, int incx, double *y, int incy 
+    int n, const double *x, int incx, double *y, int incy 
 ) {
-    NL_FORTRAN_WRAP(dcopy)(&n,x,&incx,y,&incy);
+    NL_FORTRAN_WRAP(dcopy)(&n,(double*)x,&incx,y,&incy);
 }
 
 /* y <- a*x+y */
 void daxpy( 
-    int n, double alpha, double *x, int incx, double *y,
+    int n, double alpha, const double *x, int incx, double *y,
     int incy 
 ) {
-    NL_FORTRAN_WRAP(daxpy)(&n,&alpha,x,&incx,y,&incy);
+    NL_FORTRAN_WRAP(daxpy)(&n,&alpha,(double*)x,&incx,y,&incy);
+    nlCurrentContext->flops += (NLulong)(2*n);    
 }
 
 /* returns x^T*y */
 double ddot( 
-    int n, double *x, int incx, double *y, int incy 
+    int n, const double *x, int incx, const double *y, int incy 
 ) {
-    return NL_FORTRAN_WRAP(ddot)(&n,x,&incx,y,&incy);
+    return NL_FORTRAN_WRAP(ddot)(&n,(double*)x,&incx,(double*)y,&incy);
+    nlCurrentContext->flops += (NLulong)(2*n);        
 }
 
-/** returns |x|_2 */
-double dnrm2( int n, double *x, int incx ) {
-    return NL_FORTRAN_WRAP(dnrm2)(&n,x,&incx); 
+/* returns |x|_2 */
+double dnrm2( int n, const double *x, int incx ) {
+    return NL_FORTRAN_WRAP(dnrm2)(&n,(double*)x,&incx);
+    nlCurrentContext->flops += (NLulong)(2*n);        
 }
 
-/** x <- A^{-1}*x,  x <- A^{-T}*x */
+/* x <- A^{-1}*x,  x <- A^{-T}*x */
 void dtpsv( 
     MatrixTriangle uplo, MatrixTranspose trans,
-    MatrixUnitTriangular diag, int n, double *AP,
+    MatrixUnitTriangular diag, int n, const double *AP,
     double *x, int incx 
 ) {
     static char *UL[2] = { "U", "L" };
     static char *T[3]  = { "N", "T", 0 };
     static char *D[2]  = { "U", "N" };
-    NL_FORTRAN_WRAP(dtpsv)(UL[(int)uplo],T[(int)trans],D[(int)diag],&n,AP,x,&incx); 
+    NL_FORTRAN_WRAP(dtpsv)(UL[(int)uplo],T[(int)trans],D[(int)diag],&n,(double*)AP,x,&incx); 
 }
 
-/** y <- alpha*A*x + beta*y,  y <- alpha*A^T*x + beta*y,   A-(m,n) */
+/* y <- alpha*A*x + beta*y,  y <- alpha*A^T*x + beta*y,   A-(m,n) */
 void dgemv( 
     MatrixTranspose trans, int m, int n, double alpha,
-    double *A, int ldA, double *x, int incx,
+    const double *A, int ldA, const double *x, int incx,
     double beta, double *y, int incy 
 ) {
     static char *T[3] = { "N", "T", 0 };
-    NL_FORTRAN_WRAP(dgemv)(T[(int)trans],&m,&n,&alpha,A,&ldA,x,&incx,&beta,y,&incy);
+    NL_FORTRAN_WRAP(dgemv)(T[(int)trans],&m,&n,&alpha,(double*)A,&ldA,(double*)x,&incx,&beta,y,&incy);
 }
 
 /************************************************************************/

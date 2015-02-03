@@ -139,7 +139,7 @@ NLuint nlCRSMatrixNNZ(NLCRSMatrix* M) {
 }
 
 void nlCRSMatrixMultSlice(
-    NLCRSMatrix* M, double* x, double* y, NLuint Ibegin, NLuint Iend
+    NLCRSMatrix* M, const double* x, double* y, NLuint Ibegin, NLuint Iend
 ) {
     NLuint i,j;
     for(i=Ibegin; i<Iend; ++i) {
@@ -151,9 +151,11 @@ void nlCRSMatrixMultSlice(
     }
 }
 
+
 void nlCRSMatrixMult(
-    NLCRSMatrix* M, double* x, double* y
+    NLCRSMatrix* M, const double* x, double* y
 ) {
+    
     int slice;
     int nslices = (int)(M->nslices);
 #pragma omp parallel for private(slice) 
@@ -218,6 +220,10 @@ void nlSparseMatrixDestroyRowColumns(NLSparseMatrix* M) {
 void nlSparseMatrixDestroy(NLSparseMatrix* M) {
     nlSparseMatrixDestroyRowColumns(M);
     NL_DELETE_ARRAY(M->diag) ;
+    if(M->storage & NL_MATRIX_STORE_DIAG_INV) {
+        NL_DELETE_ARRAY(M->diag_inv) ;
+        M->storage = (NLenum)((int)(M->storage) & ~NL_MATRIX_STORE_DIAG_INV);                    
+    }    
     if(M->storage & NL_MATRIX_STORE_COMPRESSED) {
         nlCRSMatrixDestroy(M->compressed);
         NL_DELETE(M->compressed);
@@ -258,7 +264,10 @@ void nlSparseMatrixZero( NLSparseMatrix* M) {
             nlRowColumnZero(&(M->column[i])) ;
         }
     }
-    NL_CLEAR_ARRAY(NLdouble, M->diag, M->diag_size) ;    
+    NL_CLEAR_ARRAY(NLdouble, M->diag, M->diag_size) ;
+    if(M->storage & NL_MATRIX_STORE_DIAG_INV) {
+        NL_CLEAR_ARRAY(NLdouble, M->diag_inv, M->diag_size) ;        
+    }
 }
 
 void nlSparseMatrixClear( NLSparseMatrix* M) {
@@ -273,7 +282,10 @@ void nlSparseMatrixClear( NLSparseMatrix* M) {
             nlRowColumnClear(&(M->column[i])) ;
         }
     }
-    NL_CLEAR_ARRAY(NLdouble, M->diag, M->diag_size) ;    
+    NL_CLEAR_ARRAY(NLdouble, M->diag, M->diag_size) ;
+    if(M->storage & NL_MATRIX_STORE_DIAG_INV) {
+        NL_CLEAR_ARRAY(NLdouble, M->diag_inv, M->diag_size) ;        
+    }
 }
 
 /* Returns the number of non-zero coefficients */
@@ -300,14 +312,30 @@ void nlSparseMatrixSort( NLSparseMatrix* M) {
     NLuint i ;
     if(M->storage & NL_MATRIX_STORE_ROWS) {
         for(i = 0; i<M->m; i++) {
-            nlRowColumnSort(&(M->row[i])) ;
+            nlRowColumnSort(&(M->row[i])) ;                
         }
     } 
     if (M->storage & NL_MATRIX_STORE_COLUMNS) {
         for(i = 0; i<M->n; i++) {
-            nlRowColumnSort(&(M->row[i])) ;
+            nlRowColumnSort(&(M->column[i])) ;
         }
     } 
+}
+
+void nlSparseMatrixComputeDiagInv( NLSparseMatrix* M) {
+    NLuint i;
+    NLdouble s;
+    if(!(M->storage & NL_MATRIX_STORE_DIAG_INV)) {
+        M->diag_inv = NL_NEW_ARRAY(double, M->diag_size);
+        M->storage |= NL_MATRIX_STORE_DIAG_INV;
+    }
+    for(i=0; i<M->diag_size; ++i) {
+        s = M->diag[i];
+        if(s != 0.0) {
+            s = 1.0 / s;
+        }
+        M->diag_inv[i] = s;
+    }
 }
 
 void nlSparseMatrixCompress( NLSparseMatrix* M) {
@@ -317,6 +345,7 @@ void nlSparseMatrixCompress( NLSparseMatrix* M) {
     NLuint i,ij,k;
     NLuint slice_size = nnz / nslices;
     NLCRSMatrix* CRS = NL_NEW(NLCRSMatrix);
+    
     nlCRSMatrixConstruct(CRS, M->m, M->n, nnz, nslices);
     
     nl_assert(M->storage & NL_MATRIX_STORE_ROWS);
@@ -359,13 +388,16 @@ void nlSparseMatrixCompress( NLSparseMatrix* M) {
     nlSparseMatrixDestroyRowColumns(M);
 }
 
+
+
 /************************************************************************************/
 /* SparseMatrix x Vector routines, internal helper routines */
 
 static void nlSparseMatrix_mult_rows_symmetric(
         NLSparseMatrix* A,
-        NLdouble* x,
-        NLdouble* y) {
+        const NLdouble* x,
+        NLdouble* y
+) {
     NLuint m = A->m ;
     NLuint i,ij ;
     NLCoeff* c = NULL ;
@@ -384,8 +416,9 @@ static void nlSparseMatrix_mult_rows_symmetric(
 
 static void nlSparseMatrix_mult_rows(
         NLSparseMatrix* A,
-        NLdouble* x,
-        NLdouble* y) {
+        const NLdouble* x,
+        NLdouble* y
+) {
     /* 
      * Note: OpenMP does not like unsigned ints
      * (causes some floating point exceptions),
@@ -410,8 +443,9 @@ static void nlSparseMatrix_mult_rows(
 
 static void nlSparseMatrix_mult_cols_symmetric(
         NLSparseMatrix* A,
-        NLdouble* x,
-        NLdouble* y) {
+        const NLdouble* x,
+        NLdouble* y
+) {
     NLuint n = A->n ;
     NLuint j,ii ;
     NLCoeff* c = NULL ;
@@ -430,8 +464,9 @@ static void nlSparseMatrix_mult_cols_symmetric(
 
 static void nlSparseMatrix_mult_cols(
         NLSparseMatrix* A,
-        NLdouble* x,
-        NLdouble* y) {
+        const NLdouble* x,
+        NLdouble* y
+) {
     NLuint n = A->n ;
     NLuint j,ii ; 
     NLCoeff* c = NULL ;
@@ -448,7 +483,7 @@ static void nlSparseMatrix_mult_cols(
 /************************************************************************************/
 /* SparseMatrix x Vector routines, main driver routine */
 
-void nlSparseMatrixMult(NLSparseMatrix* A, NLdouble* x, NLdouble* y) {
+void nlSparseMatrixMult(NLSparseMatrix* A, const NLdouble* x, NLdouble* y) {
     if(A->storage & NL_MATRIX_STORE_COMPRESSED) {
         nlCRSMatrixMult(A->compressed,x,y);
     } else if(A->storage & NL_MATRIX_STORE_ROWS) {

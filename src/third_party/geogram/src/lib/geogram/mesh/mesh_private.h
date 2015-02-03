@@ -213,6 +213,28 @@ namespace GEOGen {
             return M.cell_regions_;
         }
 
+
+        /**
+         * \brief Gets the internal cell pointers vector of a mesh.
+         * \param[in] M the mesh
+         * \return a reference to the internal cell pointers vector
+         *  of mesh \p M
+         */
+        static GEO::vector<index_t>& cell_ptr(MESH& M) {
+            return M.cell_ptr_;
+        }
+
+
+        /**
+         * \brief Gets the internal cell types vector of a mesh.
+         * \param[in] M the mesh
+         * \return a reference to the internal cell types vector
+         *  of mesh \p M
+         */
+        static GEO::vector<GEO::Numeric::int8>& cell_types(MESH& M) {
+            return M.cell_types_;
+        }
+        
         /**
          * \brief Sets the number of vertices of a mesh
          * \param[out] M the mesh

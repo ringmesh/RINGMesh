@@ -46,14 +46,14 @@
 #include "nl_context.h"
 
 NLboolean nlSolverIsCNC(NLint solver){
-    return solver == NL_CNC_FLOAT_CRS 
-        || solver == NL_CNC_DOUBLE_CRS
-        || solver == NL_CNC_FLOAT_BCRS2
-        || solver == NL_CNC_DOUBLE_BCRS2        
-        || solver == NL_CNC_FLOAT_ELL        
-        || solver == NL_CNC_DOUBLE_ELL        
-        || solver == NL_CNC_FLOAT_HYB        
-        || solver == NL_CNC_DOUBLE_HYB;        
+    return solver == NL_CNC_FLOAT_CRS_EXT 
+        || solver == NL_CNC_DOUBLE_CRS_EXT 
+        || solver == NL_CNC_FLOAT_BCRS2_EXT 
+        || solver == NL_CNC_DOUBLE_BCRS2_EXT         
+        || solver == NL_CNC_FLOAT_ELL_EXT         
+        || solver == NL_CNC_DOUBLE_ELL_EXT         
+        || solver == NL_CNC_FLOAT_HYB_EXT         
+        || solver == NL_CNC_DOUBLE_HYB_EXT ;        
 }
 
 

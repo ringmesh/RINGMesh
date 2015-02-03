@@ -50,24 +50,27 @@
 
 NLContextStruct* nlCurrentContext = NULL ;
 
-void nlMatrixVectorProd_default(NLdouble* x, NLdouble* y) {
-    nlSparseMatrixMult(&(nlCurrentContext->M), x, y) ;
+void nlMatrixVectorProd_default(const NLdouble* x, NLdouble* y) {
+    NLSparseMatrix* M = &(nlCurrentContext->M);
+    nlSparseMatrixMult(M, x, y) ;
+    nlCurrentContext->flops += (NLulong)(nlSparseMatrixNNZ(M)*2);
 }
 
 NLContext nlNewContext() {
-    NLContextStruct* result    = NL_NEW(NLContextStruct) ;
-    result->state              = NL_STATE_INITIAL ;
-    result->solver             = NL_BICGSTAB ;
-    result->max_iterations     = 100 ;
-    result->threshold          = 1e-6 ;
-    result->omega              = 1.5 ;
-    result->row_scaling        = 1.0 ;
-    result->right_hand_side    = 0.0 ;
-    result->inner_iterations   = 5 ;
-    result->matrix_vector_prod = nlMatrixVectorProd_default ;
-    result->solver_func        = nlDefaultSolver ;
-    result->progress_func      = NULL;
-    result->verbose            = NL_FALSE;
+    NLContextStruct* result     = NL_NEW(NLContextStruct) ;
+    result->state               = NL_STATE_INITIAL ;
+    result->solver              = NL_SOLVER_DEFAULT ;
+    result->max_iterations      = 100 ;
+    result->threshold           = 1e-6 ;
+    result->omega               = 1.5 ;
+    result->row_scaling         = 1.0 ;
+    result->right_hand_side     = 0.0 ;
+    result->right_hand_side_set = NL_FALSE ;
+    result->inner_iterations    = 5 ;
+    result->matrix_vector_prod  = nlMatrixVectorProd_default ;
+    result->solver_func         = nlDefaultSolver ;
+    result->progress_func       = NULL;
+    result->verbose             = NL_FALSE;
     nlMakeCurrent(result) ;
     return result ;
 }
@@ -126,7 +129,7 @@ void nlTransition(NLenum from_state, NLenum to_state) {
 }
 
 /************************************************************************/
-/* Default solver */
+/* Preconditioner setup and default solver */
 
 static void nlSetupPreconditioner() {
     switch(nlCurrentContext->preconditioner) {
@@ -210,14 +213,14 @@ NLboolean nlDefaultSolver() {
     case NL_GMRES: {
         nlCurrentContext->used_iterations = nlSolve_GMRES() ;
     } break ;
-    case NL_CNC_FLOAT_CRS:
-    case NL_CNC_DOUBLE_CRS:
-    case NL_CNC_FLOAT_BCRS2:
-    case NL_CNC_DOUBLE_BCRS2:
-    case NL_CNC_FLOAT_ELL:
-    case NL_CNC_DOUBLE_ELL:
-    case NL_CNC_FLOAT_HYB:
-    case NL_CNC_DOUBLE_HYB: {
+    case NL_CNC_FLOAT_CRS_EXT:
+    case NL_CNC_DOUBLE_CRS_EXT:
+    case NL_CNC_FLOAT_BCRS2_EXT:
+    case NL_CNC_DOUBLE_BCRS2_EXT:
+    case NL_CNC_FLOAT_ELL_EXT:
+    case NL_CNC_DOUBLE_ELL_EXT:
+    case NL_CNC_FLOAT_HYB_EXT:
+    case NL_CNC_DOUBLE_HYB_EXT: {
         nlCurrentContext->used_iterations = nlSolve_CNC() ;
     } break ;
     case NL_SUPERLU_EXT: 
