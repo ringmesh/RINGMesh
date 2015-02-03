@@ -526,6 +526,7 @@ namespace GRGMesh {
      * @param[in] file_name Name of the file
      *
      * \todo Write generic I/O for attributes on a BoundaryModel
+     * \todo Make this function const
      */
     void BoundaryModel::save_as_eobj_file( const std::string& file_name ) {
         std::ofstream out ;
@@ -601,6 +602,33 @@ namespace GRGMesh {
         }
 
     }
+
+     void BoundaryModel::save_surface_as_obj_file( index_t s, const std::string& file_name ) const {
+        std::ofstream out ;
+        out.open( file_name.c_str() );
+        if( out.bad() ){
+            std::cout << "Error when opening the file: " << file_name.c_str() <<std::endl ;
+            return ;
+        }
+        out.precision( 16 ) ;
+        const Surface& S = surface(s) ;        
+        for( index_t p = 0; p < S.nb_vertices(); p++ ){
+            const vec3& V = S.vertex(p) ;
+            out << "v" 
+                << " " << V.x 
+                << " " << V.y 
+                << " " << V.z 
+                << std::endl ;
+        }
+        for( index_t f = 0; f < S.nb_cells(); f++ ){
+            out << "f" << " " ;
+            for( index_t v = 0; v < S.nb_vertices_in_facet(f); v++ ){                    
+                out << S.surf_vertex_id( f, v )+1 << " " ;            
+            }
+            out << std::endl ;
+        }                  
+     }
+
 
 
 
