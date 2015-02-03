@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  * 
@@ -2187,3 +2187,4 @@ namespace GRGMesh {
     
 
 } //namespace
+
