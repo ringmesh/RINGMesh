@@ -815,7 +815,7 @@ namespace GRGMesh {
         
         for( index_t i = 0; i < facets_.size(); ++i ) {
             index_t c = facets_[i] ;
-            auto it = old_2_new.find( c ) ;
+            std::map< index_t, index_t >::iterator it = old_2_new.find( c ) ;
             index_t new_corner_id = NO_ID ;
 
             if( it == old_2_new.end() ) {
@@ -1017,7 +1017,7 @@ namespace GRGMesh {
             id0 = new_id1 ;
             id1 = next_id1 ;
         }
-        /// \todo Check qu'on ne coupe pas complètement la surface, si on a 2 surfaces à la fin c'est la merde
+        /// \todo Check qu'on ne coupe pas complï¿½tement la surface, si on a 2 surfaces ï¿½ la fin c'est la merde
     }
 
 
