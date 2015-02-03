@@ -303,7 +303,7 @@ namespace GRGMesh {
        
         std::vector< bool > visited( mesh.nb_facets(), false ) ;
         for( index_t i = 0; i < mesh.nb_facets(); i++ ) {
-            if( visited[i] == NO_ID ) {
+            if( !visited[i] ) {
                 // Index of the Surface to create form this facet
                 index_t cc_index = model_.nb_surfaces() ;
                
@@ -322,7 +322,10 @@ namespace GRGMesh {
                     for( index_t c = mesh.facet_begin(f); c < mesh.facet_end(f); ++c ) {
                         corners.push_back( mesh.corner_vertex_index( c ) ) ; 
                         index_t n = mesh.corner_adjacent_facet( c ) ;
-                        if( n != NO_ID && visited[n] == false ) S.push( n ) ;
+                        if( n != NO_ID && !visited[n] ){
+                            visited[n] = true ;
+                            S.push( n ) ;
+                        }
                     }
                     facets_ptr.push_back( corners.size() ) ;
                 }              
