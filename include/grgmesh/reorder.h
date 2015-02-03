@@ -46,7 +46,7 @@ namespace GRGMesh {
             : mesh_( mesh )
         {
         }
-        bool operator()( int32 i1, int32 i2 )
+        bool operator()( int32 i1, int32 i2 ) const
         {
             return mesh_.vertex( i1 )[COORD] < mesh_.vertex( i2 )[COORD] ;
         }
@@ -59,7 +59,7 @@ namespace GRGMesh {
             : mesh_( mesh )
         {
         }
-        bool operator()( int32 i1, int32 i2 )
+        bool operator()( int32 i1, int32 i2 ) const
         {
             return mesh_.vertex_ptr( i1 )[COORD] < mesh_.vertex_ptr( i2 )[COORD] ;
         }
@@ -71,7 +71,7 @@ namespace GRGMesh {
             : mesh_( mesh )
         {
         }
-        bool operator()( int32 i1, int32 i2 )
+        bool operator()( int32 i1, int32 i2 ) const
         {
             return mesh_.vertex( i1 )[COORD] < mesh_.vertex( i2 )[COORD] ;
         }
@@ -92,7 +92,7 @@ namespace GRGMesh {
             }
             return result ;
         }
-        bool operator()( int32 t1, int32 t2 )
+        bool operator()( int32 t1, int32 t2 ) const
         {
             return ( center( t1 ) < center( t2 ) ) ;
         }
@@ -113,7 +113,7 @@ namespace GRGMesh {
             }
             return result ;
         }
-        bool operator()( int32 t1, int32 t2 )
+        bool operator()( int32 t1, int32 t2 ) const
         {
             return ( center( t1 ) < center( t2 ) ) ;
         }

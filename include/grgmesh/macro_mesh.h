@@ -94,7 +94,7 @@ namespace GRGMesh {
     class GRGMESH_API MacroMeshCells {
     public:
         MacroMeshCells()
-            : mm_( nil ), nb_cells_( 0 ), initialized_( false )
+            : mm_( nil ), initialized_( false ), nb_cells_( 0 )
         {
         }
 
