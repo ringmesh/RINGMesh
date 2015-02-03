@@ -1132,8 +1132,8 @@ namespace GRGMesh {
         const vec3& p2 
         ): index_( index ),
         surface_index_( surface_index ), 
-        B_A_(),
         N_(),
+        B_A_(),
         angle_(-99999), 
         side_(false)
     {
@@ -1270,7 +1270,7 @@ namespace GRGMesh {
             default_pair ) == 0 ) ;         
     }
 
-    const std::pair< index_t, bool >& SortTriangleAroundEdge::next( const std::pair< index_t, bool >& in ) {
+    const std::pair< index_t, bool >& SortTriangleAroundEdge::next( const std::pair< index_t, bool >& in ) const {
         for( index_t i = 0 ; i < sorted_triangles_.size() ; ++i ) 
         {
             if( sorted_triangles_[i] == in ) {                    

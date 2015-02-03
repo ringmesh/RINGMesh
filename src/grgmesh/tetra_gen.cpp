@@ -91,9 +91,9 @@ namespace GRGMesh {
         :
             tetmesh_( tetmesh ),
             internal_points_( internal_vertices ),
+            tetmesh_builder_( &tetmesh ),
             resolution_( 0 ),
             background_( background ),
-            tetmesh_builder_( &tetmesh ),
             region_( region )
     {
         tetmesh_builder_.begin_mesh() ;
@@ -388,7 +388,6 @@ namespace GRGMesh {
         }
 
         //todo
-        bool use_background_mesh = false ;
         /*
         bool use_background_mesh = background_ && background_->is_resolution_set() ;
         if( use_background_mesh ) {
@@ -426,6 +425,7 @@ namespace GRGMesh {
         cmd_line << "QpYfnn" ;
         if( add_steiner_points ) {
             cmd_line << "q0.9" ;
+            bool use_background_mesh = false ;
             if( use_background_mesh ) {
                 cmd_line << "m" ;
             } else {

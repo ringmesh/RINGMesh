@@ -891,6 +891,9 @@ namespace GRGMesh {
         }
 
     private:
+        ColocaterANN( const ColocaterANN& rhs ) ;
+
+    private:
         GEO::NearestNeighborSearch_var ann_tree_ ;
         double* ann_points_ ;
     } ;
@@ -1026,7 +1029,7 @@ namespace GRGMesh {
 
         /*! Returns the next pair Triangle index (surface) + side
          */
-        const std::pair< index_t, bool >& next( const std::pair< index_t, bool >& in ) ;
+        const std::pair< index_t, bool >& next( const std::pair< index_t, bool >& in ) const ;
             
     private:
         std::vector< TriangleToSort > triangles_ ;
