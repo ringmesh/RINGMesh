@@ -352,9 +352,6 @@ namespace GRGMesh {
      * and new vertices are added for Corners. 
      * Compute the duplicates inside the vertices_ vector - Update the vertex vector - 
      * and update the reference to vertices for all model Corners and Surfaces
-     * 
-     * \todo Check the compute_unique_kdtree function - It is not correct the number of neighbors 
-     * is predefined 
      */
     void BoundaryModelBuilder::make_vertices_unique()
     {
