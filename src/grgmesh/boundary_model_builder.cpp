@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  * 
@@ -1950,7 +1950,7 @@ namespace GRGMesh {
         std::sort( border_triangles.begin(), border_triangles.end() ) ;
            
         /// 3. Build the Lines and gather information to build the regions
-        std::vector< ContactSort > regions_info;
+        std::vector< SortTriangleAroundEdge > regions_info;
         {
             // Model indices of the vertices defining the the contact 
             std::vector< index_t > vertices ;
@@ -1973,12 +1973,12 @@ namespace GRGMesh {
                     visit_border_triangle_on_same_edge( border_triangles, i, visited ) ;
                     
                     // Get info to sort Surfaces around the contact
-                    regions_info.push_back( ContactSort( model_.nb_lines() ) ) ;
+                    regions_info.push_back( SortTriangleAroundEdge() ) ;
                     index_t j = i ;
                     while( j < border_triangles.size() &&
                            border_triangles[i].same_edge( border_triangles[j] )) 
                     {                       
-                        regions_info.back().add_surface( 
+                        regions_info.back().add_triangle( 
                             border_triangles[j].s_ ,
                             model_.vertex( border_triangles[j].v0_ ) , 
                             model_.vertex( border_triangles[j].v1_ ) , 
