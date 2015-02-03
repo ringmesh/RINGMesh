@@ -48,8 +48,6 @@ namespace GRGMesh {
     public:
         typedef BoundaryModelElement BME ;
 
-        const static index_t NO_ID = index_t( -1 ) ;
-
         BoundaryModelBuilder( BoundaryModel& model )
             : model_( model ){}
         virtual ~BoundaryModelBuilder(){} ;

@@ -85,6 +85,8 @@ namespace GRGMesh {
     static index_t dummy_index_t ;
     typedef GEO::signed_index_t signed_index_t ;
     static signed_index_t dummy_signed_index_t ;
+
+    const static index_t NO_ID = index_t( -1 ) ;
     //    ___
     //   | __|_ _ _  _ _ __  ___
     //   | _|| ' \ || | '  \(_-<
