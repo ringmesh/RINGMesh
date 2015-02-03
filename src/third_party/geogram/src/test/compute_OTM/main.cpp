@@ -334,7 +334,7 @@ namespace {
      *   - 3D algorithm: http://arxiv.org/abs/1409.1279
      *   - Earlier 2D version by Quentin M\'erigot: 
      *    Q. Merigot. A multiscale approach to optimal transport.
-     *    Computer Graphics Forum 30 (5) 1583–1592, 2011 (Proc SGP 2011).
+     *    Computer Graphics Forum 30 (5) 1583--1592, 2011 (Proc SGP 2011).
      *   - Earlier article on OT and power diagrams: 
      *    F. Aurenhammer, F. Hoffmann, and B. Aronov. Minkowski-type theorems 
      *    and least-squares clustering. Algorithmica, 20:61-76, 1998.

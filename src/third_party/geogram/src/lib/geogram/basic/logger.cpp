@@ -502,7 +502,7 @@ namespace GEO {
 
 extern "C" {
 
-    void vorpaline_printf(const char* format, ...) {
+    void geogram_printf(const char* format, ...) {
         va_list args;
         char buffer[4096];
         va_start(args, format);
@@ -516,7 +516,7 @@ extern "C" {
         GEO::Logger::out("") << buffer << std::endl;
     }
 
-    void vorpaline_fprintf(FILE* out, const char* format, ...) {
+    void geogram_fprintf(FILE* out, const char* format, ...) {
         va_list args;
         char buffer[4096];
         va_start(args, format);

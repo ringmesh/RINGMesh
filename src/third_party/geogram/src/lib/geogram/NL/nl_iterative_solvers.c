@@ -104,18 +104,24 @@ NLuint nlSolve_CG() {
         dscal(N,gam,r,1);
         daxpy(N,1.,g,1,r,1);
         ++its;
-        curr_err = ddot(N,g,1,g,1); 
+        curr_err = ddot(N,g,1,g,1);
     }
     nlCurrentContext->matrix_vector_prod(x,Ax);
-    for(i = 0 ; i < N ; ++i)
+    for(i = 0 ; i < N ; ++i) {
         accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
-    if(nlCurrentContext->verbose) {
-        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",sqrt(accu)/sqrt(b_square));
     }
+    nlCurrentContext->error = sqrt(accu/b_square);
+    if(nlCurrentContext->verbose) {
+        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+    }
+    
     NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(g) ;
     NL_DELETE_ARRAY(r) ;
     NL_DELETE_ARRAY(p) ;
+
+    nlCurrentContext->used_iterations = its;
+    
     return its;
 } 
 
@@ -147,6 +153,7 @@ NLuint nlSolve_CG_precond()  {
     dcopy(N,d,1,h,1);
     rh=ddot(N,r,1,h,1);
     curr_err = ddot(N,r,1,r,1);
+
     while ( curr_err >err && its < max_iter) {
         if(nlCurrentContext->progress_func != NULL) {
             nlCurrentContext->progress_func(its, max_iter, curr_err, err);
@@ -166,15 +173,19 @@ NLuint nlSolve_CG_precond()  {
         curr_err = ddot(N,r,1,r,1);
     }
     nlCurrentContext->matrix_vector_prod(x,Ax);
-    for(i = 0 ; i < N ; ++i)
+    for(i = 0 ; i < N ; ++i) {
         accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
-    if(nlCurrentContext->verbose) {
-        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",sqrt(accu)/sqrt(b_square));
+    }
+    nlCurrentContext->error = sqrt(accu/b_square);
+    if(nlCurrentContext->verbose) {            
+        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
     }
     NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(r) ;
     NL_DELETE_ARRAY(d) ;
     NL_DELETE_ARRAY(h) ;
+
+    nlCurrentContext->used_iterations = its;
     
     return its;
 }
@@ -210,6 +221,7 @@ NLuint nlSolve_BICGSTAB() {
     nl_assert( ddot(N,rT,1,rT,1)>1e-40 );
     rTh=ddot(N,rT,1,h,1);
     rTr=ddot(N,r,1,r,1);
+
     while ( rTr>err && its < max_iter) {
         if(nlCurrentContext->progress_func != NULL) {
             nlCurrentContext->progress_func(its, max_iter, rTr, err);
@@ -251,8 +263,9 @@ NLuint nlSolve_BICGSTAB() {
     for(i = 0 ; i < N ; ++i){
         accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
     }
-    if(nlCurrentContext->verbose) {
-        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",sqrt(accu)/sqrt(b_square));
+    nlCurrentContext->error = sqrt(accu/b_square);
+    if(nlCurrentContext->verbose) {        
+        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
     }
     NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(r) ;
@@ -262,6 +275,8 @@ NLuint nlSolve_BICGSTAB() {
     NL_DELETE_ARRAY(u) ;
     NL_DELETE_ARRAY(Ad) ;
     NL_DELETE_ARRAY(t) ;
+
+    nlCurrentContext->used_iterations = its;
     
     return its;
 }
@@ -300,6 +315,7 @@ NLuint nlSolve_BICGSTAB_precond() {
     nl_assert( ddot(N,rT,1,rT,1)>1e-40 );
     rTh=ddot(N,rT,1,h,1);
     rTr=ddot(N,r,1,r,1);
+
     while ( rTr>err && its < max_iter) {
         if(nlCurrentContext->progress_func != NULL) {
             nlCurrentContext->progress_func(its, max_iter, rTr, err);
@@ -343,8 +359,9 @@ NLuint nlSolve_BICGSTAB_precond() {
     for(i = 0 ; i < N ; ++i){
         accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
     }
-    if(nlCurrentContext->verbose) {
-        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",sqrt(accu)/sqrt(b_square));
+    nlCurrentContext->error=sqrt(accu/b_square);
+    if(nlCurrentContext->verbose) {            
+        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
     }
     NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(r);
@@ -356,6 +373,8 @@ NLuint nlSolve_BICGSTAB_precond() {
     NL_DELETE_ARRAY(t);
     NL_DELETE_ARRAY(aux);
 
+    nlCurrentContext->used_iterations = its;
+        
     return its;
 }
 
@@ -388,6 +407,7 @@ NLuint nlSolve_GMRES() {
     
     nrm2b=dnrm2(n,b,1);
     io=0;
+
     do  { /* outer loop */
         ++io;
         nlCurrentContext->matrix_vector_prod(x,r);
@@ -395,7 +415,7 @@ NLuint nlSolve_GMRES() {
         beta=dnrm2(n,r,1);
         dcopy(n,r,1,v[0],1);
         dscal(n,1./beta,v[0],1);
-        
+
         y[0]=beta;
         j=0;
         uij=0;
@@ -448,10 +468,13 @@ NLuint nlSolve_GMRES() {
     its = m*(io-1)+j;
 
     nlCurrentContext->matrix_vector_prod(x,Ax);
-    for(i = 0 ; i < n ; ++i)
+    for(i = 0 ; i < n ; ++i) {
         accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
-    if(nlCurrentContext->verbose)   
-        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",sqrt(accu)/nrm2b);
+    }
+    nlCurrentContext->error = sqrt(accu)/nrm2b;
+    if(nlCurrentContext->verbose)    {
+        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+    }
     NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(V) ;
     NL_DELETE_ARRAY(U) ;
@@ -460,6 +483,8 @@ NLuint nlSolve_GMRES() {
     NL_DELETE_ARRAY(c) ;
     NL_DELETE_ARRAY(s) ;
     NL_DELETE_ARRAY(v) ;
+
+    nlCurrentContext->used_iterations = (NLuint)its;
     
     return (NLuint)its;
 }

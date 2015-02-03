@@ -75,20 +75,6 @@ NLboolean nlInitExtension(const char* extension) {
 void nlSolverParameterd(NLenum pname, NLdouble param) {
     nlCheckState(NL_STATE_INITIAL) ;
     switch(pname) {
-    case NL_SOLVER: {
-        nlCurrentContext->solver = (NLenum)param ;
-    } break ;
-    case NL_NB_VARIABLES: {
-        nl_assert(param > 0) ;
-        nlCurrentContext->nb_variables = (NLuint)param ;
-    } break ;
-    case NL_LEAST_SQUARES: {
-        nlCurrentContext->least_squares = (NLboolean)param ;
-    } break ;
-    case NL_MAX_ITERATIONS: {
-        nl_assert(param > 0) ;
-        nlCurrentContext->max_iterations = (NLuint)param ;
-    } break ;
     case NL_THRESHOLD: {
         nl_assert(param >= 0) ;
         nlCurrentContext->threshold = (NLdouble)param ;
@@ -97,17 +83,8 @@ void nlSolverParameterd(NLenum pname, NLdouble param) {
         nl_range_assert(param,1.0,2.0) ;
         nlCurrentContext->omega = (NLdouble)param ;
     } break ;
-    case NL_SYMMETRIC: {
-        nlCurrentContext->symmetric = (NLboolean)param ;        
-    }
-    case NL_INNER_ITERATIONS: {
-        nl_assert(param > 0) ;
-        nlCurrentContext->inner_iterations = (NLuint)param ;
-    } break ;
-    case NL_PRECONDITIONER: {
-        nlCurrentContext->preconditioner = (NLuint)param ;        
-    } break ;
     default: {
+        nlError("nlSolverParameterd","Invalid parameter");
         nl_assert_not_reached ;
     } break ;
     }
@@ -130,14 +107,6 @@ void nlSolverParameteri(NLenum pname, NLint param) {
         nl_assert(param > 0) ;
         nlCurrentContext->max_iterations = (NLuint)param ;
     } break ;
-    case NL_THRESHOLD: {
-        nl_assert(param >= 0) ;
-        nlCurrentContext->threshold = (NLdouble)param ;
-    } break ;
-    case NL_OMEGA: {
-        nl_range_assert(param,1,2) ;
-        nlCurrentContext->omega = (NLdouble)param ;
-    } break ;
     case NL_SYMMETRIC: {
         nlCurrentContext->symmetric = (NLboolean)param ;        
     }
@@ -149,32 +118,49 @@ void nlSolverParameteri(NLenum pname, NLint param) {
         nlCurrentContext->preconditioner = (NLuint)param ;        
     } break ;
     default: {
+        nlError("nlSolverParameteri","Invalid parameter");
         nl_assert_not_reached ;
     } break ;
     }
 }
 
+
+static void nlRowParameterd_obsolete() {
+    static NLboolean first_time = NL_TRUE;
+    if(first_time) {
+        fprintf(stderr,"==== OpenNL warning: called an obsolete function nlRowParameterd() ===========\n");
+        fprintf(stderr,"Now use nlRightHandSide() / nlRowScaling() instead\n");
+        fprintf(stderr,"   PLEASE TAKE NOTE THAT THE SIGN OF THE ARGUMENT CHANGED IN nlRightHandSide()\n");
+        fprintf(stderr,"   AS COMPARED TO nlRowParameterd(NL_RIGHT_HAND_SIDE,.)\n");
+        fprintf(stderr,"   (please refer to the documentation and examples in nl.h\n");
+        fprintf(stderr,"==============================================================================\n");
+        first_time = NL_FALSE;
+    }
+}
+
 void nlRowParameterd(NLenum pname, NLdouble param) {
+    nlRowParameterd_obsolete();    
     nlCheckState(NL_STATE_MATRIX) ;
     switch(pname) {
     case NL_RIGHT_HAND_SIDE: {
-        nlCurrentContext->right_hand_side = param ;
+        /*
+         * Argh: -param, because the old API was inversed,
+         * right hand side was b in Ax + b = 0 instead of Ax = b,
+         * it is too stupid.
+         */
+        if(nlCurrentContext->least_squares) {
+            nlCurrentContext->right_hand_side =  param ;            
+        } else {
+            nlCurrentContext->right_hand_side = -param ;
+        }
     } break ;
     case NL_ROW_SCALING: {
         nlCurrentContext->row_scaling = param ;
     } break ;
+    default: {
+        nlError("nlSolverParameterd","Invalid parameter");
+        nl_assert_not_reached ;
     }
-}
-
-void nlRowParameteri(NLenum pname, NLint param) {
-    nlCheckState(NL_STATE_MATRIX) ;
-    switch(pname) {
-    case NL_RIGHT_HAND_SIDE: {
-        nlCurrentContext->right_hand_side = (NLdouble)param ;
-    } break ;
-    case NL_ROW_SCALING: {
-        nlCurrentContext->row_scaling = (NLdouble)param ;
-    } break ;
     }
 }
 
@@ -187,6 +173,7 @@ void nlGetBooleanv(NLenum pname, NLboolean* params) {
         *params = nlCurrentContext->symmetric ;
     } break ;
     default: {
+        nlError("nlGetBooleanv","Invalid parameter");
         nl_assert_not_reached ;
     } break ;
     }
@@ -194,40 +181,28 @@ void nlGetBooleanv(NLenum pname, NLboolean* params) {
 
 void nlGetDoublev(NLenum pname, NLdouble* params) {
     switch(pname) {
-    case NL_SOLVER: {
-        *params = (NLdouble)(nlCurrentContext->solver) ;
-    } break ;
-    case NL_NB_VARIABLES: {
-        *params = (NLdouble)(nlCurrentContext->nb_variables) ;
-    } break ;
-    case NL_LEAST_SQUARES: {
-        *params = (NLdouble)(nlCurrentContext->least_squares) ;
-    } break ;
-    case NL_MAX_ITERATIONS: {
-        *params = (NLdouble)(nlCurrentContext->max_iterations) ;
-    } break ;
     case NL_THRESHOLD: {
-        *params = (NLdouble)(nlCurrentContext->threshold) ;
+        *params = nlCurrentContext->threshold ;
     } break ;
     case NL_OMEGA: {
-        *params = (NLdouble)(nlCurrentContext->omega) ;
-    } break ;
-    case NL_SYMMETRIC: {
-        *params = (NLdouble)(nlCurrentContext->symmetric) ;
-    } break ;
-    case NL_USED_ITERATIONS: {
-        *params = (NLdouble)(nlCurrentContext->used_iterations) ;
+        *params = nlCurrentContext->omega ;
     } break ;
     case NL_ERROR: {
-        *params = (NLdouble)(nlCurrentContext->error) ;
+        *params = nlCurrentContext->error ;
     } break ;
     case NL_ELAPSED_TIME: {
-        *params = (NLdouble)(nlCurrentContext->elapsed_time) ;        
+        *params = nlCurrentContext->elapsed_time ;        
     } break ;
-    case NL_PRECONDITIONER: {
-        *params = (NLdouble)(nlCurrentContext->preconditioner) ;        
-    } break ;
+    case NL_GFLOPS: {
+        if(nlCurrentContext->elapsed_time == 0) {
+            *params = 0.0;
+        } else {
+            *params = (NLdouble)(nlCurrentContext->flops) /
+                (nlCurrentContext->elapsed_time * 1e6) ;
+        }
+    } break;
     default: {
+        nlError("nlGetDoublev","Invalid parameter");
         nl_assert_not_reached ;
     } break ;
     }
@@ -247,12 +222,6 @@ void nlGetIntegerv(NLenum pname, NLint* params) {
     case NL_MAX_ITERATIONS: {
         *params = (NLint)(nlCurrentContext->max_iterations) ;
     } break ;
-    case NL_THRESHOLD: {
-        *params = (NLint)(nlCurrentContext->threshold) ;
-    } break ;
-    case NL_OMEGA: {
-        *params = (NLint)(nlCurrentContext->omega) ;
-    } break ;
     case NL_SYMMETRIC: {
         *params = (NLint)(nlCurrentContext->symmetric) ;
     } break ;
@@ -262,7 +231,11 @@ void nlGetIntegerv(NLenum pname, NLint* params) {
     case NL_PRECONDITIONER: {
         *params = (NLint)(nlCurrentContext->preconditioner) ;        
     } break ;
+    case NL_NNZ: {
+        *params = (NLint)(nlSparseMatrixNNZ(&(nlCurrentContext->M)));
+    } break;
     default: {
+        nlError("nlGetIntegerv","Invalid parameter");
         nl_assert_not_reached ;
     } break ;
     }
@@ -281,6 +254,7 @@ void nlEnable(NLenum pname) {
         nlCurrentContext->verbose = NL_TRUE ;
     } break;
     default: {
+        nlError("nlEnable","Invalid parameter");        
         nl_assert_not_reached ;
     }
     }
@@ -296,6 +270,7 @@ void nlDisable(NLenum pname) {
         nlCurrentContext->verbose = NL_FALSE ;
     } break;
     default: {
+        nlError("nlDisable","Invalid parameter");                
         nl_assert_not_reached ;
     }
     }
@@ -310,6 +285,7 @@ NLboolean nlIsEnabled(NLenum pname) {
         return nlCurrentContext->verbose ;
     } break ;
     default: {
+        nlError("nlIsEnables","Invalid parameter");
         nl_assert_not_reached ;
     }
     }
@@ -319,7 +295,7 @@ NLboolean nlIsEnabled(NLenum pname) {
 /************************************************************************************/
 /* NL functions */
 
-void  nlSetFunction(NLenum pname, void* param) {
+void  nlSetFunction(NLenum pname, NLfunc param) {
     switch(pname) {
     case NL_FUNC_SOLVER:
         nlCurrentContext->solver_func = nl_cast(NLSolverFunc,param);
@@ -336,22 +312,24 @@ void  nlSetFunction(NLenum pname, void* param) {
         nlCurrentContext->progress_func = nl_cast(NLProgressFunc,param) ;
         break ;
     default:
+        nlError("nlSetFunction","Invalid parameter");        
         nl_assert_not_reached ;
     }
 }
 
-void nlGetFunction(NLenum pname, void** param) {
+void nlGetFunction(NLenum pname, NLfunc* param) {
     switch(pname) {
     case NL_FUNC_SOLVER:
-        *param = nl_cast(void*,nlCurrentContext->solver_func) ;
+        *param = nl_cast(NLfunc,nlCurrentContext->solver_func) ;
         break ;
     case NL_FUNC_MATRIX:
-        *param = nl_cast(void*,nlCurrentContext->matrix_vector_prod) ;
+        *param = nl_cast(NLfunc,nlCurrentContext->matrix_vector_prod) ;
         break ;
     case NL_FUNC_PRECONDITIONER:
-        *param = nl_cast(void*,nlCurrentContext->precond_vector_prod) ;
+        *param = nl_cast(NLfunc,nlCurrentContext->precond_vector_prod) ;
         break ;
     default:
+        nlError("nlGetFunction","Invalid parameter");                
         nl_assert_not_reached ;
     }
 }
@@ -437,6 +415,7 @@ void nlBeginMatrix() {
     NLuint n = 0 ;
     NLenum storage = NL_MATRIX_STORE_ROWS ;
 
+    
     nlTransition(NL_STATE_SYSTEM, NL_STATE_MATRIX) ;
 
     for(i=0; i<nlCurrentContext->nb_variables; i++) {
@@ -450,6 +429,22 @@ void nlBeginMatrix() {
 
     nlCurrentContext->n = n ;
 
+    /*
+     * If the user trusts OpenNL and has left solver as NL_SOLVER_DEFAULT,
+     * then we setup reasonable parameters for him.
+     */
+    if(nlCurrentContext->solver == NL_SOLVER_DEFAULT) {
+        if(nlCurrentContext->least_squares || nlCurrentContext->symmetric) {
+            nlCurrentContext->solver = NL_CG;
+            nlCurrentContext->preconditioner = NL_PRECOND_JACOBI;
+        } else {
+            nlCurrentContext->solver = NL_BICGSTAB;
+        }
+        nlCurrentContext->max_iterations = n*5;
+        nlCurrentContext->threshold = 1e-6;
+    }
+
+    
     /* SSOR preconditioner requires rows and columns */
     if(nlCurrentContext->preconditioner == NL_PRECOND_SSOR) {
         storage = (storage | NL_MATRIX_STORE_COLUMNS) ;
@@ -480,7 +475,9 @@ void nlBeginMatrix() {
      * I deactivate symmetric storage, so that the solver
      * can work in parallel mode (see nlSparseMatrix_mult_rows())
      */
-    storage = (storage & (NLenum)(~NL_SYMMETRIC)) ;
+    if(nlCurrentContext->preconditioner != NL_PRECOND_SSOR) {
+        storage = (storage & (NLenum)(~NL_SYMMETRIC)) ;
+    }
     
     nlSparseMatrixConstruct(&nlCurrentContext->M, n, n, storage) ;
     nlCurrentContext->alloc_M = NL_TRUE ;
@@ -520,7 +517,10 @@ void nlEndMatrix() {
         ) ;
     }
 
-    nlSparseMatrixCompress(&nlCurrentContext->M);
+    nlSparseMatrixComputeDiagInv(&nlCurrentContext->M);
+    if(nlCurrentContext->preconditioner != NL_PRECOND_SSOR) {    
+        nlSparseMatrixCompress(&nlCurrentContext->M);
+    }
 }
 
 void nlBeginRow() {
@@ -607,14 +607,15 @@ void nlEndRow() {
                 M, current_row, af->coeff[i].index, af->coeff[i].value
             ) ;
         }
-        b[current_row] = -nlCurrentContext->right_hand_side ;
+        b[current_row] = nlCurrentContext->right_hand_side ;
         for(i=0; i<nl; i++) {
             b[current_row] -= al->coeff[i].value * xl->coeff[i].value ;
         }
     }
     nlCurrentContext->current_row++ ;
-    nlCurrentContext->right_hand_side = 0.0 ;    
-    nlCurrentContext->row_scaling     = 1.0 ;
+    nlCurrentContext->right_hand_side     = 0.0 ;
+    nlCurrentContext->right_hand_side_set = NL_FALSE ;
+    nlCurrentContext->row_scaling         = 1.0 ;
 }
 
 void nlCoefficient(NLuint index, NLdouble value) {
@@ -628,6 +629,17 @@ void nlCoefficient(NLuint index, NLdouble value) {
     } else {
         nlRowColumnAppend(&(nlCurrentContext->af), v->index, value) ;
     }
+}
+
+void nlRightHandSide(NLdouble value) {
+    nl_assert(!nlCurrentContext->right_hand_side_set);
+    nlCurrentContext->right_hand_side = value;
+    nlCurrentContext->right_hand_side_set = NL_TRUE;
+}
+
+void nlRowScaling(NLdouble value) {
+    nlCheckState(NL_STATE_MATRIX);
+    nlCurrentContext->row_scaling = value;
 }
 
 void nlBegin(NLenum prim) {
@@ -671,7 +683,8 @@ NLboolean nlSolve() {
     NLboolean result ;
     NLdouble start_time = nlCurrentTime() ; 
     nlCheckState(NL_STATE_SYSTEM_CONSTRUCTED) ;
-    nlCurrentContext->elapsed_time = 0 ;
+    nlCurrentContext->elapsed_time = 0.0 ;
+    nlCurrentContext->flops = 0 ;    
     result =  nlCurrentContext->solver_func() ;
     nlVectorToVariables() ;
     nlCurrentContext->elapsed_time = nlCurrentTime() - start_time ;

@@ -51,24 +51,84 @@
 #include <stdio.h>
 #include <math.h>
 
+/**
+ * \file geogram/NL/nl_private.h
+ * \brief Some macros and functions used internally by OpenNL.
+ */
+
+
+/**
+ * \brief Suppresses unsused argument warnings
+ * \details Some callbacks do not necessary use all their
+ *  arguments.
+ * \param[in] x the argument to be tagged as used
+ */
 #define nl_arg_used(x) (void)x
+
+/**
+ * \brief A "brute force" cast operator
+ * \note Use only if you know exactly what you are doing
+ * \param[in] T the new type 
+ * \param[in] x the variable to be casted
+ */
 #define nl_cast(T,x)   (*(T*)&(x))
 
-/******************************************************************************/
-/*** Assertion checks ***/
-/******************************************************************************/
+
+/**
+ * \name Assertion checks
+ * @{ 
+ */
+
+/**
+ * \brief Displays an error message and aborts the program when
+ *  an assertion failed.
+ * \details Called by nl_assert() whenever the assertion failed
+ * \param[in] cond the textual representation of the condition
+ * \param[in] file the source filename
+ * \param[in] line the line number
+ */
 void nl_assertion_failed(const char* cond, const char* file, int line) ;
+
+/**
+ * \brief Displays an error message and aborts the program
+ *  when a range assertion failed.
+ * \details Called by nl_range_assert() whenever the assertion failed
+ * \param[in] double the variable
+ * \param[in] double min_val the minimum value
+ * \param[in] double max_val the maximum value
+ * \param[in] file the source filename
+ * \param[in] line the line number
+ */
 void nl_range_assertion_failed(
     double x, double min_val, double max_val, const char* file, int line
 ) ;
+
+/**
+ * \brief Displays an error message and aborts the program
+ *  when the execution flow reached a point it should not
+ *  have reached.
+ * \details called by nl_assert_not_reached
+ * \param[in] file the source filename
+ * \param[in] line the line number
+ */
 void nl_should_not_have_reached(const char* file, int line) ;
 
+/**
+ * \brief Tests an assertion and aborts the program if the test fails
+ * \param[in] x the condition to be tested
+ */
 #define nl_assert(x) {                                          \
     if(!(x)) {                                                  \
         nl_assertion_failed(#x,__FILE__, __LINE__) ;            \
     }                                                           \
 } 
 
+/**
+ * \brief Tests a range assertion and aborts the program if the test fails
+ * \param[in] x the variable to be tested
+ * \param[in] min_val the minimum admissible value for the variable
+ * \param[in] max_val the maximum admissible value for the variable
+ */
 #define nl_range_assert(x,min_val,max_val) {                    \
     if(((x) < (min_val)) || ((x) > (max_val))) {                \
         nl_range_assertion_failed(x, min_val, max_val,          \
@@ -77,6 +137,10 @@ void nl_should_not_have_reached(const char* file, int line) ;
     }                                                           \
 }
 
+/**
+ * \brief Triggers an assertion failure when the execution flow
+ *  reaches a specific location in the code.
+ */
 #define nl_assert_not_reached {                                 \
     nl_should_not_have_reached(__FILE__, __LINE__) ;            \
 }
@@ -99,17 +163,36 @@ void nl_should_not_have_reached(const char* file, int line) ;
     #define nl_parano_range_assert(x,min_val,max_val) 
 #endif
 
-/******************************************************************************/
-/*** Error reporting ***/
-/******************************************************************************/
+/**
+ * @}
+ * \name Error reporting
+ * @{ 
+ */
 
+/**
+ * \brief Displays an error message
+ * \param[in] function name of the function that triggered the error
+ * \param[in] message error message
+ */
 void nlError(const char* function, const char* message) ;
+
+/**
+ * \brief Displays a warning message
+ * \param[in] function name of the function that triggered the error
+ * \param[in] message warning message
+ */
 void nlWarning(const char* function, const char* message) ;
 
-/******************************************************************************/
-/*** OS ***/
-/******************************************************************************/
+/**
+ * @}
+ * \name OS
+ * @{ 
+ */
 
+/**
+ * \brief Gets the current time in seconds
+ * \return the current time in seconds (starting from a given reference time)
+ */
 NLdouble nlCurrentTime()  ;
 
 /******************************************************************************/
@@ -123,17 +206,84 @@ NLdouble nlCurrentTime()  ;
 #define MAX(x,y) (((x) > (y)) ? (x) : (y)) 
 #endif
 
-/******************************************************************************/
-/* Memory management */
-/******************************************************************************/
 
+/**
+ * @}
+ * \name Memory management
+ * @{ 
+ */
+
+/**
+ * \brief Allocates a new element
+ * \details Memory is zeroed after allocation
+ * \param[in] T type of the element to be allocated
+ */
 #define NL_NEW(T)                (T*)(calloc(1, sizeof(T))) 
-#define NL_NEW_ARRAY(T,NB)       (T*)(calloc((size_t)(NB),sizeof(T))) 
+
+/**
+ * \brief Allocates a new array of elements
+ * \details Memory is zeroed after allocation
+ * \param[in] T type of the elements 
+ * \param[in] NB number of elements 
+ */
+#define NL_NEW_ARRAY(T,NB)       (T*)(calloc((size_t)(NB),sizeof(T)))
+
+/**
+ * \brief Changes the size of an already allocated array of elements
+ * \details Memory is zeroed after allocation
+ * \param[in] T type of the elements 
+ * \param[in,out] x a pointer to the array to be resized
+ * \param[in] NB number of elements 
+ */
 #define NL_RENEW_ARRAY(T,x,NB)   (T*)(realloc(x,(size_t)(NB)*sizeof(T))) 
+
+/**
+ * \brief Deallocates an element
+ * \param[in,out] x a pointer to the element to be deallocated
+ */
 #define NL_DELETE(x)             free(x); x = NULL 
+
+/**
+ * \brief Deallocates an array
+ * \param[in,out] x a pointer to the first element of the array to 
+ *  be deallocated
+ */
 #define NL_DELETE_ARRAY(x)       free(x); x = NULL
 
+/**
+ * \brief Clears an element
+ * \param[in] T type of the element to be cleared
+ * \param[in,out] x a pointer to the element
+ */
 #define NL_CLEAR(T, x)           memset(x, 0, sizeof(T)) 
+
+/**
+ * \brief Clears an array of elements
+ * \param[in] T type of the element to be cleared
+ * \param[in,out] x a pointer to the element
+ * \param[in] NB number of elements
+ */
 #define NL_CLEAR_ARRAY(T,x,NB)   memset(x, 0, (size_t)(NB)*sizeof(T)) 
+
+/**
+ * @}
+ * \name Integer bounds
+ * @{ 
+ */
+
+
+/**
+ * \brief Maximum unsigned 32 bits integer
+ */
+#define NL_UINT_MAX 0xffffffff
+
+/**
+ * \brief Maximum unsigned 16 bits integer
+ */
+#define NL_USHORT_MAX 0xffff
+
+/**
+ * @}
+ */
 
 #endif
