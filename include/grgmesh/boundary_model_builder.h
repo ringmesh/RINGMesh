@@ -70,7 +70,7 @@ namespace GRGMesh {
             model_.vertices_.push_back( vertex ) ;
             return model_.nb_vertices()-1 ;
         }
-        index_t add_vertex( double* vertex ) {
+        index_t add_vertex( const double* vertex ) {
             return add_vertex( vec3( vertex[0], vertex[1], vertex[2] ) ) ;
         }
 
@@ -175,7 +175,7 @@ namespace GRGMesh {
         } 
 
         /** @}
-        * \name Fix model - Check validity und fill missing stuff
+        * \name Fix model - Check validity and fill missing stuff
         * @{
         */
         bool end_model() ;
@@ -258,21 +258,19 @@ namespace GRGMesh {
     } ;
 
     /*!
-     * @brief Builder of a BoundaryModel designed to 
-     *
-     *
+     * @brief Builder of a BoundaryModel from a conformal surface meshes
+     *        in which the manifold connected components are disjoints
      */
-
     class GRGMESH_API BoundaryModelBuilderSurface : public BoundaryModelBuilder {
     public:              
-        BoundaryModelBuilderSurface( BoundaryModel& model  ) ;
+        BoundaryModelBuilderSurface( BoundaryModel& model  ):
+          BoundaryModelBuilder( model ){} ;
         virtual ~BoundaryModelBuilderSurface() {};
        
         template< class MESH > void set_surfaces( const MESH& mesh ) ;
 
         void build_model() ;    
     } ;
-
    
 
     /*! 
@@ -301,11 +299,11 @@ namespace GRGMesh {
         std::vector< index_t > corners ;
         std::vector< index_t > facets_ptr ;
 
-        facets.reserve ( mesh.nb_corners() ) ;
+        corners.reserve ( mesh.nb_corners() ) ;
         facets_ptr.reserve ( mesh.nb_facets() ) ;
        
         std::vector< bool > visited( mesh.nb_facets(), false ) ;
-        for( index_t i = 0; i < mesh.nb_facets(), i++ ) {
+        for( index_t i = 0; i < mesh.nb_facets(); i++ ) {
             if( visited[i] == NO_ID ) {
                 // Index of the Surface to create form this facet
                 index_t cc_index = model_.nb_surfaces() ;
@@ -313,7 +311,6 @@ namespace GRGMesh {
                 // Get the facets that are in the same connected component than the current facet                
                 corners.resize( 0 ) ;
                 facets_ptr.resize( 0 ) ;
-                corner_adjacent_facet.resize( 0 ) ;
                 facets_ptr.push_back( 0 ) ;
                  
                 std::stack< index_t > S ;
@@ -331,7 +328,7 @@ namespace GRGMesh {
                     facets_ptr.push_back( corners.size() ) ;
                 }              
                 // Create the surface and set its geometry - adjacencies are computed             
-                builder_.set_surface_geometry_bis( create_surface(), corners, facets_ptr );
+                set_surface_geometry_bis( create_surface(), corners, facets_ptr );
             }
         }
     }
