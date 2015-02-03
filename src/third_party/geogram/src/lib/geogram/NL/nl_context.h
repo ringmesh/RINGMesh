@@ -48,18 +48,55 @@
 #include "nl_private.h"
 #include "nl_matrix.h"
 
+/**
+ * \file geogram/NL/nl_context.h
+ * \brief Internal OpenNL functions to manipulate contexts.
+ */
+
 /******************************************************************************/
 /* NLContext data structure */
 
-typedef void(*NLMatrixFunc)(double* x, double* y);
+/**
+ * \brief The callback type for user-defined matrix vector product
+ *   routines.
+ * \details Used to specify matrix vector product and preconditioners,
+ *  as in:
+ *  - nlSetFunction(NL_FUNC_MATRIX,f)
+ *  - nlSetFunction(NL_FUNC_PRECONDITIONER,f)
+ */
+typedef void(*NLMatrixFunc)(const double* x, double* y);
+
+/**
+ * \brief The callback type for solver routines.
+ * \details Used by nlSetFunction(NL_FUNC_SOLVER,f)
+ */
 typedef NLboolean(*NLSolverFunc)();
+
+/**
+ * \brief The callback type for displaying progress.
+ * \details Used by nlSetFunction(NL_FUNC_PROGRESS,f)
+ */
 typedef void(*NLProgressFunc)(
     NLuint cur_iter, NLuint max_iter, double cur_err, double max_err
 );
 
+/**
+ * \brief The structure that describe the variables
+ *  of the system
+ */
 typedef struct {
+    /** 
+     * \brief The value of the variable.
+     */
     NLdouble  value ;
+    /** 
+     * \brief Each variable can be locked.
+     */
     NLboolean locked ;
+    /**
+     * \brief Each variable that is not locked
+     *  has a unique index.
+     */
     NLuint    index ;
 } NLVariable ;
 
@@ -72,51 +109,259 @@ typedef struct {
 #define NL_STATE_SOLVED                 6
 
 typedef struct {
+    /**
+     * \brief State of the finite-state automaton.
+     * \details Used to check that OpenNL functions
+     *  were called in the correct order.
+     */
     NLenum           state ;
+
+    /**
+     * \brief The array of nb_variables variables.
+     */
     NLVariable*      variable ;
+
+    /**
+     * \brief The number of not locked variables.
+     */
     NLuint           n ;
+
+    /**
+     * \brief The sparse matrix of the system.
+     */
     NLSparseMatrix   M ;
+
+    /**
+     * \brief The coefficients that correspond to the
+     *  free variables in the row being built.
+     */
     NLRowColumn      af ;
+
+    /**
+     * \brief The coefficients that correspond to the
+     *  locked variables in the row being built.
+     */
     NLRowColumn      al ;
+
+    /**
+     * \brief The (constant) vector of locked variables.
+     */
     NLRowColumn      xl ;
+
+    /**
+     * \brief The vector of free variables, solution of
+     *  the system.
+     */
     NLdouble*        x ;
+
+    /**
+     * \brief The vector of right hand sides.
+     */
     NLdouble*        b ;
+
+    /**
+     * \brief The right hand side of the row being 
+     *  build.
+     * \details Specified by nlSetRowParameter(NL_RIGHT_HAND_SIDE, rhs)
+     */
     NLdouble         right_hand_side ;
+
+    /**
+     * \brief Indicates whether the right hand side
+     *  was set in the current row.
+     */
+    NLboolean        right_hand_side_set ;
+    
+    /**
+     * \brief The scaling coefficient for the row being 
+     *  build.
+     * \details Specified by nlSetRowParameter(NL_ROW_SCALING, rhs)
+     */
     NLdouble         row_scaling ;
+
+    /**
+     * \brief The used solver, as a symbolic constant.
+     */
     NLenum           solver ;
+
+    /**
+     * \brief The used preconditioner, as a symbolic constant.
+     */
     NLenum           preconditioner ;
+
+    /**
+     * \brief The number of variables.
+     */
     NLuint           nb_variables ;
+
+    /**
+     * \brief The index of the current row
+     */
     NLuint           current_row ;
+
+    /**
+     * \brief Indicates whether a least squares system
+     *  is constructed.
+     */
     NLboolean        least_squares ;
+
+    /**
+     * \brief Indicates whether the matrix is symmetric.
+     */
     NLboolean        symmetric ;
+
+    /**
+     * \brief Maximum number of iterations.
+     */
     NLuint           max_iterations ;
+
+    /**
+     * \brief Maximum number of inner iterations.
+     * \details used by GMRES.
+     */
     NLuint           inner_iterations ;
+
+    /**
+     * \brief Convergence threshold.
+     * \details Iterations are stopped whenever
+     *  \$ \| A x - b \| / \| b \| < \mbox{threshold} \$
+     */
     NLdouble         threshold ;
+
+    /**
+     * \brief Relaxation parameter for the SSOR 
+     *  preconditioner.
+     */
     NLdouble         omega ;
+
+    /**
+     * \brief If true, all the rows are normalized.
+     */
     NLboolean        normalize_rows ;
+
+    /**
+     * \brief Indicates that M was allocated.
+     */
     NLboolean        alloc_M ;
+
+    /**
+     * \brief Indicates that af was allocated.
+     */
     NLboolean        alloc_af ;
+
+    /**
+     * \brief Indicates that al was allocated.
+     */
     NLboolean        alloc_al ;
+
+    /**
+     * \brief Indicates that xl was allocated.
+     */
     NLboolean        alloc_xl ;
+
+    /**
+     * \brief Indicates that variables were allocated.
+     */
     NLboolean        alloc_variable ;
+
+    /**
+     * \brief Indicates that x was allocated.
+     */
     NLboolean        alloc_x ;
+
+    /**
+     * \brief Indicates that b was allocated.
+     */
     NLboolean        alloc_b ;
+
+    /**
+     * \brief used number of iterations during latest solve.
+     */
     NLuint           used_iterations ;
+
+    /**
+     * \brief error obtained after latest solve.
+     */
     NLdouble         error ;
+
+    /**
+     * \brief elapsed time for latest solve.
+     */
     NLdouble         elapsed_time ;
+
+    /**
+     * \brief the function pointer for matrix vector product.
+     */
     NLMatrixFunc     matrix_vector_prod ;
+
+    /**
+     * \brief the function pointer for preconditioner vector product.
+     */
     NLMatrixFunc     precond_vector_prod ;
+
+    /**
+     * \brief the function pointer for the solver.
+     */
     NLSolverFunc     solver_func ;
+
+    /**
+     * \brief the function pointer for logging progress.
+     */
     NLProgressFunc   progress_func ;
+
+    /**
+     * \brief if true, some logging information is 
+     *  displayed during solve.
+     */
     NLboolean        verbose;
+
+    /**
+     * \brief Total number of floating point operations
+     *  used during latest solve.
+     */
+    NLulong          flops;
 } NLContextStruct ;
 
+/**
+ * \brief Pointer to the current context.
+ */
 extern NLContextStruct* nlCurrentContext ;
 
+/**
+ * \brief Makes sure that the finite state automaton is
+ *  in the expected state.
+ * \details If expected state and current state differ,
+ *  then the program is aborted with an error message.
+ * \param[in] state the expected state.
+ */
 void nlCheckState(NLenum state) ;
+
+/**
+ * \brief Implements a transition of the finite state automaton.
+ * \details If the current state does not match \p state, then
+ *  the program is aborted with an error message. The current 
+ *  state is replaced by \p to_state. 
+ * \param[in] state the expected current state
+ * \param[in] to_state the new state
+ */
 void nlTransition(NLenum from_state, NLenum to_state) ;
 
-void nlMatrixVectorProd_default(NLdouble* x, NLdouble* y) ;
+/**
+ * \brief Implements the default matrix vector product.
+ * \details Uses the sparse matrix stored in the current
+ *  context.
+ * \param[in] x the constant right hand side (size = nlCurrentContext->m)
+ * \param[out] y the result (size = nlCurrentContext->n)
+ */
+void nlMatrixVectorProd_default(const NLdouble* x, NLdouble* y) ;
+
+/**
+ * \brief Implements the default solver
+ * \details Calls the right solver according to 
+ *  nlCurrentContext->solver.
+ * \retval NL_TRUE if solve was successful
+ * \retval NL_FALSE otherwise
+ */
 NLboolean nlDefaultSolver() ;
 
 #endif

@@ -183,12 +183,8 @@ namespace {
 
         // Step 1: Setup the OpenNL solver
         nlNewContext();
-        nlSolverParameteri(NL_SOLVER, NL_CG);
-        nlSolverParameteri(NL_PRECONDITIONER, NL_PRECOND_JACOBI);
         nlSolverParameteri(NL_NB_VARIABLES, NLint(2*M.nb_facets()));
         nlSolverParameteri(NL_LEAST_SQUARES, NL_TRUE);
-        nlSolverParameteri(NL_MAX_ITERATIONS, NLint(5*M.nb_facets()));
-        nlSolverParameterd(NL_THRESHOLD, 1e-6);
 #ifdef GEO_DEBUG        
         nlEnable(NL_VERBOSE);
 #endif        
@@ -256,16 +252,16 @@ namespace {
                     continue;
                 }
 
-                nlRowParameterd(NL_RIGHT_HAND_SIDE,sincos_alpha[2*f]);
-                nlRowParameterd(NL_ROW_SCALING,fitting);
+                nlRowScaling(fitting);
                 nlBegin(NL_ROW);
                 nlCoefficient(2*f,1.0);
+                nlRightHandSide(sincos_alpha[2*f]);
                 nlEnd(NL_ROW);
 
-                nlRowParameterd(NL_RIGHT_HAND_SIDE,sincos_alpha[2*f+1]);
-                nlRowParameterd(NL_ROW_SCALING,fitting);
+                nlRowScaling(fitting);
                 nlBegin(NL_ROW);
                 nlCoefficient(2*f+1,1.0);
+                nlRightHandSide(sincos_alpha[2*f+1]);
                 nlEnd(NL_ROW);
             }
         }

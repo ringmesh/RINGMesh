@@ -59,6 +59,7 @@ void nlMultDiagonal(NLdouble* xy, NLdouble omega) {
     for(i=0; i<N; i++) {
         xy[i] *= (diag[i] / omega) ;
     }
+    nlCurrentContext->flops += (NLulong)(N);
 }
 
 void nlMultDiagonalInverse(NLdouble* xy, NLdouble omega) {
@@ -66,11 +67,12 @@ void nlMultDiagonalInverse(NLdouble* xy, NLdouble omega) {
     NLuint i ;
     NLdouble* diag = nlCurrentContext->M.diag ;
     for(i=0; i<N; i++) {
-            xy[i] *= ((diag[i] != 0) ? (omega / diag[i]) : omega) ;
+        xy[i] *= ((diag[i] != 0) ? (omega / diag[i]) : omega) ;
     }
+    nlCurrentContext->flops += (NLulong)(N);    
 }
 
-void nlMultLowerInverse(NLdouble* x, NLdouble* y, double omega) {
+void nlMultLowerInverse(const NLdouble* x, NLdouble* y, double omega) {
     NLSparseMatrix* A = &(nlCurrentContext->M) ;
     NLuint n       = A->n ;
     NLdouble* diag = A->diag ;
@@ -92,11 +94,13 @@ void nlMultLowerInverse(NLdouble* x, NLdouble* y, double omega) {
                 S += c->value * y[c->index] ; 
             }
         }
+        nlCurrentContext->flops += (NLulong)(2*Ri->size);                    
         y[i] = (x[i] - S) * omega / diag[i] ;
     }
+    nlCurrentContext->flops += (NLulong)(n*3);                
 }
 
-void nlMultUpperInverse(NLdouble* x, NLdouble* y, NLdouble omega) {
+void nlMultUpperInverse(const NLdouble* x, NLdouble* y, NLdouble omega) {
     NLSparseMatrix* A = &(nlCurrentContext->M) ;
     NLuint n       = A->n ;
     NLdouble* diag = A->diag ;
@@ -118,18 +122,28 @@ void nlMultUpperInverse(NLdouble* x, NLdouble* y, NLdouble omega) {
                 S += c->value * y[c->index] ; 
             }
         }
+        nlCurrentContext->flops += (NLulong)(2*Ci->size);                    
         y[i] = (x[i] - S) * omega / diag[i] ;
+    }
+    nlCurrentContext->flops += (NLulong)(n*3);                
+}
+
+
+void nlPreconditioner_Jacobi(const NLdouble* x, NLdouble* y) {
+    if(nlCurrentContext->M.storage & NL_MATRIX_STORE_DIAG_INV) {
+        NLuint i;
+        for(i=0; i<nlCurrentContext->M.diag_size; ++i) {
+            y[i] = x[i]*nlCurrentContext->M.diag_inv[i];
+        }
+        nlCurrentContext->flops += (NLulong)(nlCurrentContext->M.diag_size*3);                        
+    } else {
+        NLint N = (NLint)(nlCurrentContext->n) ;
+        dcopy(N, x, 1, y, 1) ;
+        nlMultDiagonalInverse(y, 1.0) ;
     }
 }
 
-
-void nlPreconditioner_Jacobi(NLdouble* x, NLdouble* y) {
-    NLint N = (NLint)(nlCurrentContext->n) ;
-    dcopy(N, x, 1, y, 1) ;
-    nlMultDiagonalInverse(y, 1.0) ;
-}
-
-void nlPreconditioner_SSOR(NLdouble* x, NLdouble* y) {
+void nlPreconditioner_SSOR(const NLdouble* x, NLdouble* y) {
     NLdouble omega = nlCurrentContext->omega ;
     static double* work = NULL ;
     static NLuint work_size = 0 ;
@@ -144,5 +158,7 @@ void nlPreconditioner_SSOR(NLdouble* x, NLdouble* y) {
     nlMultUpperInverse(work, y, omega) ;
 
     dscal((NLint)n, 2.0 - omega, y, 1) ;
+
+    nlCurrentContext->flops += (NLulong)(n);    
 }
 

@@ -499,9 +499,10 @@ namespace GEO {
                         );
                         if(id() < interfering_thread_) {
                             // If this thread has a higher priority than
-                            // the one that interfered, wait for the interfering
-                            // thread to release the tets that it holds (then
-                            // the loop will retry to insert the same vertex).
+                            // the one that interfered, wait for the
+                            // interfering thread to release the tets that
+                            // it holds (then the loop will retry to insert
+                            // the same vertex).
                             wait_for_event(interfering_thread_);
                         } else {
                             // If this thread has a lower priority than
@@ -765,7 +766,10 @@ namespace GEO {
             // dynamically and we use a fixed pool. If the fixed pool
             // is full, then we exit the thread (and the missing points
             // are inserted after, in sequential mode).
-            if(nb_tets_to_create_ > nb_free_ && Process::is_running_threads()) {
+            if(
+                nb_tets_to_create_ > nb_free_ &&
+                Process::is_running_threads()
+            ) {
                 memory_overflow_ = true;
                 ok = false;
             }
@@ -824,7 +828,8 @@ namespace GEO {
             for(index_t i=0; i<tets_to_delete_.size()-1; ++i) {
                 cell_next_[tets_to_delete_[i]] = tets_to_delete_[i+1];
             }
-            cell_next_[tets_to_delete_[tets_to_delete_.size()-1]] = first_free_;
+            cell_next_[tets_to_delete_[tets_to_delete_.size()-1]] =
+                first_free_;
             first_free_ = tets_to_delete_[0];
             nb_free_ += nb_tets_in_conflict();
 

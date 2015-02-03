@@ -46,6 +46,7 @@
 #include <geogram/delaunay/delaunay_tetgen.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/logger.h>
+#include <geogram/basic/command_line.h>
 
 #ifdef GEOGRAM_WITH_TETGEN
 
@@ -89,7 +90,11 @@ namespace GEO {
         // Q: quiet
         // n: output tet neighbors
         // V: verbose
-        tetgen_args_.parse_commandline((char*) ("Qn"));
+        if(CmdLine::get_arg_bool("dbg:tetgen")) {
+            tetgen_args_.parse_commandline((char*) ("VVn"));
+        } else {
+            tetgen_args_.parse_commandline((char*) ("Qn"));            
+        }
 
         Delaunay::set_vertices(nb_vertices, vertices);
         tetgen_out_.deinitialize();
@@ -145,10 +150,18 @@ namespace GEO {
 
         if(refine_) {
             char cmdline[500];
-            sprintf(cmdline, "Qpnq%fYYAA", quality_);
+            if(CmdLine::get_arg_bool("dbg:tetgen")) {
+                sprintf(cmdline, "VVpnq%fYYAA", quality_);                
+            } else {
+                sprintf(cmdline, "Qpnq%fYYAA", quality_);
+            }
             tetgen_args_.parse_commandline(cmdline);            
         } else {
-            tetgen_args_.parse_commandline((char*)"QpnO0YYAA");
+            if(CmdLine::get_arg_bool("dbg:tetgen")) {            
+                tetgen_args_.parse_commandline((char*)"VVpnO0YYAA");
+            } else {
+                tetgen_args_.parse_commandline((char*)"QpnO0YYAA");                
+            }
         }
 
         tetgen_in_.deinitialize();

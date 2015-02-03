@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2004-2010, Bruno Levy
+ *  Copyright (c) 2004-2014, Bruno Levy
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,8 @@
  *
  *  Contact: Bruno Levy
  *
- *     levy@loria.fr
+ *     Bruno.Levy@inria.fr
+ *     http://www.loria.fr/~levy
  *
  *     ALICE Project
  *     LORIA, INRIA Lorraine, 
@@ -42,35 +43,36 @@
  *
  */
 
-#ifndef __LIBNL_LINKAGE__
-#define __LIBNL_LINKAGE__
+#ifndef __nl_ext_h__
+#define __nl_ext_h__
 
-/*
- * \file geogram/NL/nl_linkage.h
- * \brief Specify linkage for OpenNL integrated into
- * Geogram.
- * \details (uses Geogram defines to select the
- *   right linkage modes for OpenNL symbols).
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * \file geogram/NL/nl_ext.h
+ * \brief Some optional extensions of the 
+ *  OpenNL linear solver library. 
  */
-#ifdef GEO_DYNAMIC_LIBS
-#define NL_SHARED_LIBS
-#ifdef geogram_EXPORTS
-#define NL_EXPORTS
+    
+#define NL_SUPERLU_EXT           0x210
+#define NL_PERM_SUPERLU_EXT      0x211
+#define NL_SYMMETRIC_SUPERLU_EXT 0x212
+#define NL_SOLVER_USER           0x213
+
+#define NL_CNC_FLOAT_CRS_EXT     0x220
+#define NL_CNC_DOUBLE_CRS_EXT    0x222
+#define NL_CNC_FLOAT_BCRS2_EXT   0x221
+#define NL_CNC_DOUBLE_BCRS2_EXT  0x223
+#define NL_CNC_FLOAT_ELL_EXT     0x224
+#define NL_CNC_DOUBLE_ELL_EXT    0x225
+#define NL_CNC_FLOAT_HYB_EXT     0x229
+#define NL_CNC_DOUBLE_HYB_EXT    0x22a
+
+#ifdef __cplusplus
+}
 #endif
+    
 #endif
 
-#ifdef WIN32
-    #ifdef NL_SHARED_LIBS
-        #ifdef NL_EXPORTS
-            #define NLAPIENTRY __declspec( dllexport )
-        #else
-            #define NLAPIENTRY __declspec( dllimport )
-        #endif
-    #else
-        #define NLAPIENTRY
-    #endif
-#else
-    #define NLAPIENTRY
-#endif
-
-#endif
