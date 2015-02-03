@@ -793,7 +793,7 @@ namespace GRGMesh {
         if( corners.size() == 0 ) return ;
 
         model_.surfaces_[surface_id].set_geometry( corners, facet_ptr ) ;
-
+     
         if( corner_adjacent_facets.empty() )
             set_surface_adjacencies( surface_id ) ;
         else
@@ -1801,7 +1801,7 @@ namespace GRGMesh {
          *           the edge v0 - v1 is the one on the boundary
          */
         BorderTriangle( index_t s, index_t f, index_t v0, index_t v1, index_t v2 )                
-            : s_( s ), v0_( v0 ), v1_( v1 ), v2_( v2 ) {};
+            : s_( s ), f_( f ), v0_( v0 ), v1_( v1 ), v2_( v2 ) {};
 
         bool operator<( const BorderTriangle& rhs ) const {
             if( std::min( v0_, v1_ ) != std::min( rhs.v0_, rhs.v1_ ) ) 
@@ -1809,8 +1809,8 @@ namespace GRGMesh {
             if( std::max( v0_, v1_ ) != std::max( rhs.v0_, rhs.v1_ ) ) 
                 return std::max( v0_, v1_ ) < std::max( rhs.v0_, rhs.v1_ ) ;
             if( s_ != rhs.s_ ) return s_ < rhs.s_ ;
-            if( f_ != rhs.f_ ) return f_ != rhs.f_ ;            
-            return v2_ < rhs.v2_ ;
+            if( f_ != rhs.f_ ) return f_ < rhs.f_ ;            
+            return rhs.v2_ == index_t(-1) ? false : v2_ < rhs.v2_ ;
         }
         bool same_edge( const BorderTriangle& rhs ) const {
             return std::min( v0_, v1_ ) == std::min( rhs.v0_, rhs.v1_ ) &&
@@ -1857,8 +1857,12 @@ namespace GRGMesh {
 
         // Find the BorderTriangle that is correspond to this
         // It must exist and there is only one
-        BorderTriangle bait( in.s_, next_f, S.model_vertex_id(next_f, next_f_v0), S.model_vertex_id(next_f, next_f_v1), NO_ID ) ;
-        index_t result = std::lower_bound( BT.begin(), BT.end(), bait )- BT.begin() ;
+        BorderTriangle bait( in.s_, next_f, S.model_vertex_id(next_f, next_f_v0),
+            S.model_vertex_id(next_f, next_f_v1), NO_ID ) ;
+        // lower_bound returns an iterator pointing to the first element in the range [first,last) 
+        // which does not compare less than the given val.
+        // See operator< on BorderTriangle
+        index_t result = std::lower_bound( BT.begin(), BT.end(), bait )-BT.begin() ;
        
         grgmesh_assert( result < BT.size() ) ;
         return result ;
@@ -1867,20 +1871,19 @@ namespace GRGMesh {
     void visit_border_triangle_on_same_edge( 
         const std::vector< BorderTriangle >& border_triangles,
         index_t i, 
-        index_t line_id, 
-        std::vector< index_t >& border_line_ids )
+        std::vector< bool >& visited )
     {        
-        index_t j = i+1 ;        
+        index_t j = i ;        
         while( j < border_triangles.size() && 
               border_triangles[i].same_edge( border_triangles[j] ) ) 
         {    
-            border_line_ids[j] = line_id ;
+            visited[j] = true ;
             j++ ;            
         }       
         signed_index_t k = i -1 ;
         while( k > -1 && border_triangles[i].same_edge( border_triangles[k] ))
         {                             
-            border_line_ids[k] = line_id ;
+            visited[k] = true ;
             k-- ;
         }
     }
@@ -1922,13 +1925,13 @@ namespace GRGMesh {
     void BoundaryModelBuilderSurface::build_model() {
      
         /// 1. Make the storage of the model vertices unique 
-        /// So now we can make index comparison for edges :)
+        /// So now we can make index comparison fto find colocated edges
         make_vertices_unique() ;
 
         /// Store the edges on a boundary from the input mesh
         std::vector< BorderTriangle > border_triangles ;
        
-        /// 1. Get for all Surface the triangles on the boundary      
+        /// 2.1 Get for all Surface the triangles on the boundary       
         for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
             const Surface& S = model_.surface( i ) ;
             for( index_t j= 0; j < S.nb_cells(); ++j ) {
@@ -1943,46 +1946,38 @@ namespace GRGMesh {
                 }
             }                      
         }
-        // Sort them so that the ones sharing the same edges are the following
+        /// 2.2 Sort them so that the triangle around the same edge follow one another
         std::sort( border_triangles.begin(), border_triangles.end() ) ;
-   
-        /// The index of the Line in which is each one of these BorderTriangle
-        std::vector< index_t > border_line_ids( border_triangles.size(), NO_ID ) ;       
-
-        
-        /// 2. Build the contact parts 
-        // For each contact part built keep 
-
-        // Info to build the regions
+           
+        /// 3. Build the Lines and gather information to build the regions
         std::vector< ContactSort > regions_info;
-
         {
             // Model indices of the vertices defining the the contact 
             std::vector< index_t > vertices ;
             
-            // The goal is to put all the edges that are on the border in one of Line
-            index_t cur_line_id = 0 ;
-            for( index_t i = 0; i < border_triangles.size(); ++i ) {
-                if( border_line_ids[i] != NO_ID )
-                {                       
-                    border_line_ids[i] = cur_line_id ;
+            // The goal is to visit all BorderTriangle and put them in one of the 
+            // created line 
+            std::vector< bool > visited ( border_triangles.size(), false ) ;       
 
+            for( index_t i = 0; i < border_triangles.size(); ++i ) {
+                if( !visited[i] ) {                       
                     // Begin the gathering of information to create a new Line                    
                     vertices.clear() ;
                                      
                     // For all colocalized edges - so all the edges that follows
-                    // this one in the vector and have the same edge v0v1
-                    
+                    // this one in the vector and have the same edge v0v1                    
                     // Get the indices of the adjacent surfaces
                     std::vector< index_t > adjacent ;
-
                     get_adjacent_surfaces ( border_triangles, i, adjacent ) ;
-                    visit_border_triangle_on_same_edge( border_triangles, i, cur_line_id, border_line_ids ) ;
+                    // Mark them as visited
+                    visit_border_triangle_on_same_edge( border_triangles, i, visited ) ;
                     
                     // Get info to sort Surfaces around the contact
-                    regions_info.push_back( ContactSort( cur_line_id ) ) ;
-                    index_t j = i+1 ;
-                    while( border_triangles[i].same_edge( border_triangles[j] )) {                       
+                    regions_info.push_back( ContactSort( model_.nb_lines() ) ) ;
+                    index_t j = i ;
+                    while( j < border_triangles.size() &&
+                           border_triangles[i].same_edge( border_triangles[j] )) 
+                    {                       
                         regions_info.back().add_surface( 
                             border_triangles[j].s_ ,
                             model_.vertex( border_triangles[j].v0_ ) , 
@@ -1996,11 +1991,12 @@ namespace GRGMesh {
                     vertices.push_back( border_triangles[i].v1_ ) ;
             
                     // Build the contact propating forward on the border of the Surface
-                    // While the adjacent surfaces are the smae the vertices of the following edges are added
+                    // While the adjacent surfaces are the same the vertices of the following edges are added
                     bool same_surfaces = true ;
                     index_t next_i = get_next_border_triangle( model_, border_triangles, i ) ;
                     do {                         
-                        if( border_line_ids[ next_i ] == NO_ID ){
+                        grgmesh_assert( next_i != NO_ID ) ;
+                        if( !visited[ next_i ] ){
                             std::vector< index_t > adjacent_next ;
                             get_adjacent_surfaces( border_triangles, next_i, adjacent_next ) ;
 
@@ -2010,7 +2006,7 @@ namespace GRGMesh {
                                 // The surfaces in contact are still the same
                                 // Assign the current_line_id to the BorderTriangle sharing the edge
                                 visit_border_triangle_on_same_edge( 
-                                    border_triangles, next_i, cur_line_id, border_line_ids ) ;
+                                    border_triangles, next_i, visited ) ;
                                 
                                 // Fill the Line vertices - Je suis pas dut tou sure que ce soit ça
                                 if( border_triangles[next_i].v0_ == vertices.back() ) 
@@ -2019,12 +2015,15 @@ namespace GRGMesh {
                                     grgmesh_assert( border_triangles[next_i].v1_ == vertices.back() ) ;
                                     vertices.push_back( border_triangles[next_i].v0_ );
                                 }
+                            } 
+                            else {
+                                same_surfaces = false ;                    
                             }
-                            else same_surfaces = false ;                    
                         }
-                        else same_surfaces = false ;            
+                        else { 
+                            same_surfaces = false ;            
+                        }
                         next_i = get_next_border_triangle( model_, border_triangles, next_i ) ;
-
                     } while( same_surfaces && next_i != i ) ;
 
                     if( next_i != i ) {
@@ -2034,32 +2033,30 @@ namespace GRGMesh {
                         // Going backwards
                         index_t prev_i = get_next_border_triangle( model_, border_triangles, i, true ) ;
                         do { 
-                            grgmesh_assert( prev_i != i ) ;
-                            if( border_line_ids[ prev_i ] == NO_ID ){
+                            grgmesh_assert( prev_i != NO_ID && prev_i != i ) ;
+                            if( !visited[ prev_i ] ){
                                 std::vector< index_t > adjacent_prev;
                                 get_adjacent_surfaces( border_triangles, prev_i, adjacent_prev ) ;
 
                                 if( adjacent.size() == adjacent_prev.size() &&
                                     std::equal( adjacent.begin(), adjacent.end(), adjacent_prev.begin() )
-                                    ){
-                                        // The surfaces in contact are still the same
-                                        // Assign the current_line_id to the BorderTriangle sharing the edge
-                                        visit_border_triangle_on_same_edge( 
-                                            border_triangles, prev_i, cur_line_id, border_line_ids ) ;
+                                    )
+                                {
+                                    // The surfaces in contact are still the same
+                                    // Assign the current_line_id to the BorderTriangle sharing the edge
+                                    visit_border_triangle_on_same_edge( 
+                                        border_triangles, prev_i, visited ) ;
 
-                                        // Fill the Line vertices
-                                if( border_triangles[prev_i].v0_ == vertices.front() ) 
-                                    vertices.push_back( border_triangles[prev_i].v1_ ) ;
-                                else {
-                                    grgmesh_assert( border_triangles[prev_i].v1_ == vertices.front() ) ;
-                                    vertices.push_back( border_triangles[prev_i].v0_ ) ;
-                                }
-                                }
-                                else same_surfaces = false ;                    
-                            }                        
-                            else same_surfaces = false ;                   
+                                    // Fill the Line vertices
+                                    if( border_triangles[prev_i].v0_ == vertices.front() ) 
+                                        vertices.insert( vertices.begin(), border_triangles[prev_i].v1_ ) ;
+                                    else {
+                                        grgmesh_assert( border_triangles[prev_i].v1_ == vertices.front() ) ;
+                                        vertices.insert( vertices.begin(), border_triangles[prev_i].v0_ ) ;
+                                    }
+                                }  else same_surfaces = false ;                    
+                            } else same_surfaces = false ;                   
                             prev_i = get_next_border_triangle( model_, border_triangles, prev_i, true ) ;
-
                         } while( same_surfaces ) ;
                     }
 
@@ -2076,21 +2073,21 @@ namespace GRGMesh {
 
                     // Create the current Line - corners must exist
                     index_t created = create_line( vertices ) ; 
-                    grgmesh_assert( created == cur_line_id ) ;
-                    
                    
                     for( index_t j = 0; j < adjacent.size(); ++j ) {
                         add_element_in_boundary( BME::LINE, created, adjacent[j] ) ;
                     }
-                    cur_line_id++ ;
                 }
             }
         }
 
+        // Complete boundary information for surfaces beacuse it is needed to
+        // determine the volumetric regions
+        fill_elements_boundaries( BME::SURFACE ) ;
    
         /// 3. Build the regions 
 
-        // Sort surfaces around the contacts
+        /// 3.1 Sort surfaces around the contacts
         for( index_t i = 0 ; i < regions_info.size(); ++ i) {
             regions_info[i].sort() ;
         }        
@@ -2101,9 +2098,8 @@ namespace GRGMesh {
             grgmesh_assert_not_reached ;            
         }
         else {
-            index_t cur_region_id  = 0 ;
             // For each side of each Surface store the region in it is
-            std::vector< index_t > surf_2_region ( 2*model_.nb_surfaces(), NO_ID ) ;
+            std::vector< index_t > surf_2_region( 2*model_.nb_surfaces(), NO_ID ) ;
 
             // Start with the first Surface on its + side            
             std::stack< std::pair< index_t, bool > > S ;
@@ -2117,7 +2113,7 @@ namespace GRGMesh {
                 if( surf_2_region[ cur.second == true ? 2*cur.first : 2*cur.first+1 ] != NO_ID ) continue ;
                                                 
                 // Create a new region
-                create_region() ;
+                index_t cur_region_id = create_region() ;
 
                 std::stack< std::pair< index_t, bool > > SR ;
                 SR.push( cur ) ;
@@ -2136,27 +2132,26 @@ namespace GRGMesh {
 
                     // Check the other side of the surface and push it in S
                     index_t s_id_opp = !s.second == true ? 2*s.first : 2*s.first+1 ;
-                    if( surf_2_region[ s_id_opp ] == -1 ) 
+                    if( surf_2_region[ s_id_opp ] == NO_ID ) 
                         S.push( std::pair< index_t, bool >(s.first, !s.second ) );                    
 
                     // For each contact, push the next oriented surface in the region
-                    const BoundaryModelElement& surface_part = model_.surface( s.first ) ;
-                    for( index_t i = 0 ; i < surface_part.nb_boundaries(); ++i ){
-                        index_t cp_id = surface_part.boundary( i ).id() ;
-                        grgmesh_assert( cp_id < regions_info.size() ) ;
-                        const std::pair< index_t, bool >& n = regions_info[ cp_id ].next( s ) ;
+                    const BoundaryModelElement& surface = model_.surface( s.first ) ;
+                    for( index_t i = 0 ; i < surface.nb_boundaries(); ++i ){
+                        index_t line_id = surface.boundary( i ).id() ;
+                        grgmesh_assert( line_id < regions_info.size() ) ;
+                        const std::pair< index_t, bool >& n = regions_info[ line_id ].next( s ) ;
                         index_t n_id =  n.second == true ? 2*n.first : 2*n.first+1 ;
                         if( surf_2_region[ n_id ] == -1 )
                             SR.push( n ) ;
                     }                
                 }
-                cur_region_id ++ ;
             }
             
             // Check if all the surfaces were visited
             // If not, this means that there are additionnal regions included in those built
             // TO DO implement the code to take into account included region building
-            grgmesh_assert( std::count( surf_2_region.begin(), surf_2_region.end(), -1 ) == 0 ) ;        
+            grgmesh_assert( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID ) == 0 ) ;        
         }
 
         // We need to remove form the regions_ the one corresponding
