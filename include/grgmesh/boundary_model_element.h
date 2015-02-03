@@ -565,7 +565,7 @@ namespace GRGMesh {
             else return nb_vertices_in_facet(f)-1 ;
         }
         index_t nb_corners() const { return facets_.size() ; }
-        index_t model_vertex_id( index_t corner ) { return vertices_[ facets_[corner] ]; }
+        index_t model_vertex_id_at_corner( index_t corner ) const { return vertices_[ facets_[corner] ]; }
         
         /*!
          * @brief Convert the facet index in the surface to a facet index in the BoundaryModel 

@@ -382,6 +382,7 @@ namespace GRGMesh {
         }       
     }
 
+
     /*!
      * @brief Creates a element of the given type and add it to the correct vector
      * The BoundaryModelElement is created from its type and its index
@@ -493,7 +494,7 @@ namespace GRGMesh {
 
     /*! 
      * @brief Add a Line knowing only the indices of its points and set its boundary corners 
-     * The corners MUST already exist.
+     * The corners are created if they do not exist.
      * Used in Geomodeling to convert a surface to a model
      */
     index_t BoundaryModelBuilder::create_line( const std::vector< index_t >& points ) {
@@ -501,9 +502,8 @@ namespace GRGMesh {
         set_line( id, points ) ;
                
         // Find the indices of the corner at both extremities
-        index_t c0 = find_corner( points.front() ) ;
-        index_t c1 = find_corner( points.back() ) ;
-        grgmesh_assert( c0 != NO_ID && c1 != NO_ID ) ; // Mouais on pourrait peut �tre le virer celui l�
+        index_t c0 = find_or_create_corner( points.front() ) ;
+        index_t c1 = find_or_create_corner( points.back() ) ;       
         add_element_boundary( BoundaryModelElement::LINE, id, c0 ) ;
         if( c1 != c0 ) add_element_boundary( BoundaryModelElement::LINE, id, c1 ) ;         
 
@@ -1443,7 +1443,8 @@ namespace GRGMesh {
                     part_id += nb_tface_in_prev_tsurf ;
 
                     // c'est plus bon �a -compare geometry
-                    index_t new_c = find_or_create_corner( tsurf_vertex_ptr[v_id] ) ;
+                    index_t new_c = find_corner( model_.vertex( tsurf_vertex_ptr[v_id] ) ) ;
+                    if( new_c == NO_ID ) create_corner( tsurf_vertex_ptr[v_id] ) ;
                 }
                 /// 6. Read the Border information and store it
                 else if( keyword == "BORDER" ) {
@@ -1485,7 +1486,7 @@ namespace GRGMesh {
                 }
             }
         }
-
+    
         make_vertices_unique() ;
 
         /// 7. Build the Lines
@@ -1797,7 +1798,7 @@ namespace GRGMesh {
          * @param s Index of the surface 
          * @param f Index of the facet containing the 3 vertices
          * @param vi Indices in the BoundaryModel of the vertices defining the triangle
-         *           the edge @param v0 @param v1 is the one on the boundary
+         *           the edge v0 - v1 is the one on the boundary
          */
         BorderTriangle( index_t s, index_t f, index_t v0, index_t v1, index_t v2 )                
             : s_( s ), v0_( v0 ), v1_( v1 ), v2_( v2 ) {};
@@ -1877,7 +1878,8 @@ namespace GRGMesh {
             j++ ;            
         }       
         signed_index_t k = i -1 ;
-        while( k > -1 && border_triangles[i].same_edge( border_triangles[k] )) {                             
+        while( k > -1 && border_triangles[i].same_edge( border_triangles[k] ))
+        {                             
             border_line_ids[k] = line_id ;
             k-- ;
         }
@@ -1901,7 +1903,8 @@ namespace GRGMesh {
         }
         
         signed_index_t k = i -1 ;
-        while( k > -1 && border_triangles[i].same_edge( border_triangles[k] )) {                       
+        while( k > -1 && border_triangles[i].same_edge( border_triangles[k] )) 
+        {                       
             adjacent_surfaces.push_back( border_triangles[k].s_ ) ;           
             k-- ;
         }
