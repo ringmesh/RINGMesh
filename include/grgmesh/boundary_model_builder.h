@@ -42,7 +42,8 @@
 namespace GRGMesh {
 
     /**
-    * \brief Build a BoundaryModel
+    * @brief Base class for the class building a BoundaryModel.
+    * @details Derive from this class 
     */ 
     class GRGMESH_API BoundaryModelBuilder {        
     public:
@@ -51,7 +52,7 @@ namespace GRGMesh {
         BoundaryModelBuilder( BoundaryModel& model )
             : model_( model ){}
         virtual ~BoundaryModelBuilder(){} ;
-
+    
         // High level functions
         void copy_macro_topology( const BoundaryModel& from ) ;        
         void make_vertices_unique() ;        
@@ -111,6 +112,7 @@ namespace GRGMesh {
         * @{
         */                     
         index_t create_element( BME::TYPE e_type ) ;
+        void erase_element( BME::TYPE type, index_t id ) ;
 
         // Corner 
         index_t find_corner( index_t ) const ;
@@ -145,7 +147,6 @@ namespace GRGMesh {
 
         // Universe
         void set_universe( const std::vector< std::pair< index_t, bool > >& boundaries ) ;        
-        void remove_universe_from_regions( index_t id ) ;
 
         /** @}
         * \name Set element geometry 
