@@ -40,236 +40,6 @@
 
 namespace GRGMesh {
 
-     /*!
-     * @brief Rebuild a model ???
-     * \todo Comment rebuild()... 
-     * \todo Valgrind finds errors !!!!!!!
-     * @return 
-     */
-    bool BoundaryModelBuilder::rebuild()
-    {
-   /*     std::vector< index_t > sp_to_remove ;
-        std::vector< index_t > new_sp_id( model_.nb_surfaces() ) ;
-        index_t offset = 0 ;
-        for( index_t sp = 0; sp < model_.nb_surfaces(); sp++ ) {
-            if( model_.surfaces_[sp].nb_cells() == 0 ) {
-                offset++ ;
-                sp_to_remove.push_back( sp ) ;
-            } else {
-                model_.surfaces_[sp - offset] = model_.surfaces_[sp] ;
-            }
-            new_sp_id[sp] = sp - offset ;
-        }
-        if( offset == 0 ) return false ;
-        model_.surfaces_.erase( model_.surfaces_.end() - offset,
-            model_.surfaces_.end() ) ;
-
-        offset = 0 ;
-        std::vector< index_t > cp_to_remove ;
-        std::vector< index_t > new_cp_id( model_.nb_lines() ) ;
-        for( index_t cp = 0; cp < model_.nb_lines(); cp++ ) {
-            BoundaryModelElement& line = model_.lines_[cp] ;
-            index_t nb_sp_removed = 0 ;
-            for( index_t sp = 0; sp < line.nb_in_boundary(); sp++ ) {
-                if( Utils::contains( sp_to_remove,
-                    line.in_boundary_id( sp ) ) ) {
-                    nb_sp_removed++ ;
-                } else {
-                    line.in_boundary_[sp - nb_sp_removed] =
-                        new_sp_id[line.in_boundary_[sp]] ;
-                }
-            }
-            if( nb_sp_removed > 0 ) {
-                if( nb_sp_removed == line.nb_in_boundary() ) {
-                    offset++ ;
-                    cp_to_remove.push_back( cp ) ;
-                    continue ;
-                } else {
-                    line.in_boundary_.erase(
-                        line.in_boundary_.end() - nb_sp_removed,
-                        line.in_boundary_.end() ) ;
-                }
-            }
-            if( offset > 0 ) {
-                model_.lines_[cp - offset] = model_.lines_[cp] ;
-            }
-            new_cp_id[cp] = cp - offset ;
-        }
-        if( offset > 0 ) {
-            model_.lines_.erase( model_.lines_.end() - offset,
-                model_.lines_.end() ) ;
-        }
-
-        // Build the contacts
-        // Update surfaces
-        offset = 0 ;
-        std::vector< index_t > s_to_remove ;
-        std::vector< index_t > new_s_id( model_.nb_interfaces() ) ;
-        for( index_t s = 0; s < model_.nb_interfaces(); s++ ) {
-            BoundaryModelElement& surface = model_.interfaces_[s] ;
-            surface.boundaries_.clear() ;
-            index_t nb_sp_removed = 0 ;
-            for( index_t sp = 0; sp < surface.nb_children(); sp++ ) {
-                if( Utils::contains( sp_to_remove, surface.child_id( sp ) ) ) {
-                    nb_sp_removed++ ;
-                } else {
-                    surface.children_[sp - nb_sp_removed] =
-                        new_sp_id[surface.children_[sp]] ;
-                }
-            }
-            if( nb_sp_removed > 0 ) {
-                if( nb_sp_removed == surface.nb_children() ) {
-                    offset++ ;
-                    s_to_remove.push_back( s ) ;
-                    continue ;
-                } else {
-                    surface.children_.erase( surface.children_.end() - nb_sp_removed,
-                        surface.children_.end() ) ;
-                }
-            }
-            if( offset > 0 ) {
-                model_.interfaces_[s - offset] = model_.interfaces_[s] ;
-            }
-            new_s_id[s] = s - offset ;
-        }
-        if( offset > 0 ) {
-            model_.interfaces_.erase( model_.interfaces_.end() - offset,
-                model_.interfaces_.end() ) ;
-        }
-        for( index_t sp = 0; sp < model_.nb_surfaces(); sp++ ) {
-            BoundaryModelElement& surface = model_.surfaces_[sp] ;
-            surface.parent_ = new_s_id[surface.parent_] ;
-            for( index_t cp = 0; cp < surface.nb_boundaries(); cp++ ) {
-                surface.boundaries_[cp] =
-                    new_cp_id[surface.boundaries_[cp]] ;
-            }
-        }
-        model_.contacts_.clear() ;
-        build_contacts() ;
-
-        // Then finish the job (the order matters)
-        for( index_t sp = 0; sp < model_.nb_surfaces(); sp++ ) {
-            model_.surfaces_[sp].boundaries_.clear() ;
-        }
-        offset = 0 ;
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
-            BoundaryModelElement& region = model_.regions_[r] ;
-            index_t nb_sp_removed = 0 ;
-            for( index_t sp = 0; sp < region.nb_boundaries(); sp++ ) {
-                if( Utils::contains( sp_to_remove, region.boundary_id( sp ) ) ) {
-                    nb_sp_removed++ ;
-                } else {
-                    region.boundaries_[sp - nb_sp_removed] =
-                        new_sp_id[region.boundaries_[sp]] ;
-                    region.sides_[sp - nb_sp_removed] = region.sides_[sp] ;
-                }
-            }
-            if( nb_sp_removed > 0 ) {
-                if( nb_sp_removed == region.nb_boundaries() ) {
-                    offset++ ;
-                    continue ;
-                } else {
-                    region.sides_.erase( region.sides_.end() - nb_sp_removed,
-                        region.sides_.end() ) ;
-                    region.boundaries_.erase(
-                        region.boundaries_.end() - nb_sp_removed,
-                        region.boundaries_.end() ) ;
-                }
-            }
-            if( offset > 0 ) {
-                model_.regions_[r - offset] = model_.regions_[r] ;
-            }
-        }
-        if( offset > 0 ) {
-            model_.regions_.erase( model_.regions_.end() - offset,
-                model_.regions_.end() ) ;
-        }
-        end_surfaces() ;
-
-        for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
-            for( index_t j = 0; j < model_.contacts_[i].nb_in_boundary();
-                ++j ) {
-                index_t b = model_.contacts_[i].in_boundary_id( j ) ;
-                add_interface_boundary( b, i ) ;
-            }
-        }
-
-        end_lines() ;
-        end_contacts() ;
-
-        offset = 0 ;
-        std::vector< index_t > co_to_remove ;
-        std::vector< index_t > new_co_id( model_.nb_corners() ) ;
-        for( index_t co = 0; co < model_.nb_corners(); co++ ) {
-            BoundaryModelElement& corner = model_.corners_[co] ;
-            index_t nb_cp_removed = 0 ;
-            for( index_t cp = 0; cp < corner.nb_in_boundary(); cp++ ) {
-                if( Utils::contains( cp_to_remove, corner.in_boundary_id( cp ) ) ) {
-                    nb_cp_removed++ ;
-                } else {
-                    corner.in_boundary_[cp - nb_cp_removed] =
-                        new_cp_id[corner.in_boundary_[cp]] ;
-                }
-            }
-            if( nb_cp_removed > 0 ) {
-                if( nb_cp_removed == corner.nb_in_boundary() ) {
-                    offset++ ;
-                    co_to_remove.push_back( co ) ;
-                    continue ;
-                } else {
-                    corner.in_boundary_.erase(
-                        corner.in_boundary_.end() - nb_cp_removed,
-                        corner.in_boundary_.end() ) ;
-                }
-            }
-            if( offset > 0 ) {
-                model_.corners_[co - offset] = model_.corners_[co] ;
-            }
-            new_co_id[co] = co - offset ;
-        }
-        if( offset > 0 ) {
-            model_.corners_.erase( model_.corners_.end() - offset,
-                model_.corners_.end() ) ;
-        }
-
-        for( index_t cp = 0; cp < model_.nb_lines(); cp++ ) {
-            BoundaryModelElement& line = model_.lines_[cp] ;
-            line.boundaries_[0] = new_co_id[line.boundaries_[0]] ;
-            line.boundaries_[1] = new_co_id[line.boundaries_[1]] ;
-        }
-
-        for( index_t c = 0; c < model_.nb_contacts(); c++ ) {
-            BoundaryModelElement& contact = model_.contacts_[c] ;
-            for( index_t co = 0; co < contact.nb_boundaries(); co++ ) {
-                contact.boundaries_[co] = new_co_id[contact.boundaries_[co]] ;
-            }
-        }
-
-        for( index_t l = 0; l < model_.nb_layers(); l++ ) {
-            BoundaryModelElement& layer = model_.layers_[l] ;
-            index_t nb_sp_removed = 0 ;
-            for( index_t sp = 0; sp < layer.nb_boundaries(); sp++ ) {
-                if( Utils::contains( sp_to_remove, layer.boundary_id( sp ) ) ) {
-                    nb_sp_removed++ ;
-                } else {
-                    layer.boundaries_[sp - nb_sp_removed] =
-                        new_sp_id[layer.boundaries_[sp]] ;
-                }
-            }
-            if( nb_sp_removed > 0 ) {
-                layer.boundaries_.erase( layer.boundaries_.end() - nb_sp_removed,
-                    layer.boundaries_.end() ) ;
-            }
-        }
-
-        update_all_ids() ;
-        return true ;*/
-
-        grgmesh_assert_not_reached ;
-        /// \todo Implement the rebuild function for the BoundaryModel
-        return false ;
-    }
-
     /*!
      * @brief Copy macro information from a model
      * @details Copy the all the model elements and their relationship ignoring their geometry
@@ -1157,6 +927,25 @@ namespace GRGMesh {
     }
 
 
+    /**
+    * \brief Structure used to build Line by BoundaryModelBuilderGocad
+    */
+    struct Border {
+        Border( index_t part, index_t corner, index_t p0, index_t p1):
+        part_id_(part), corner_id_(corner), p0_(p0), p1_(p1) {};
+
+        // Id of the Surface owning this Border
+        index_t part_id_ ;
+        // Id of p0 in the BoundaryModel corner vector
+        index_t corner_id_ ;
+
+        // Ids of the starting corner and second vertex on the border in the Surface
+        // to which this Border belong
+        index_t p0_ ;
+        index_t p1_ ;
+    } ;   
+
+
     /*!
      * @brief Load and build a BoundaryModel from a Gocad .ml file
      * 
@@ -1169,10 +958,16 @@ namespace GRGMesh {
      *
      * @param[in] in Input .ml file stream
      */
-    void BoundaryModelBuilderGocad::load_ml_file( std::istream& in )
+    void BoundaryModelBuilderGocad::load_ml_file( const std::string& ml_file_name )
     {
+        std::ifstream in( ml_file_name ) ;        
+        if ( !in.is_open() ) { 
+            std::cout<< "Could not open file " << ml_file_name << std::endl ;
+            std::cin.get() ;
+        }
+
         // Clear the model_ 
-        //  Not sure this is actually useful
+        // Not sure this is actually useful
         model_.clear() ;
 
         time_t start_load, end_load ;
@@ -1215,7 +1010,7 @@ namespace GRGMesh {
         
         // Intermediate information for contact parts building
         std::vector< Border > borders_to_build ;
-
+     
         // Surfaces for which the KeyFacet orientation should be changed
         // because it does not match triangle orientations.
         std::vector< index_t > change_key_facet ;
@@ -1272,8 +1067,7 @@ namespace GRGMesh {
                     lis.get_line() ;
                     lis >> p2 ;
 
-                    create_surface( tsurf_name.str(), type,
-                        Surface::KeyFacet( p0, p1, p2 ) ) ;
+                    create_surface( tsurf_name.str(), type, p0, p1, p2 ) ; 
                     nb_tface++ ;
 
                 } else if( keyword == "REGION" ) {
@@ -1490,13 +1284,44 @@ namespace GRGMesh {
         make_vertices_unique() ;
 
         /// 7. Build the Lines
-        build_lines( borders_to_build ) ;
+        { 
+            std::vector< index_t > global_ids ;
+            for( index_t i = 0; i < borders_to_build.size(); ++i ) {
+                const Border& b = borders_to_build[i] ;
+
+                // 1- Build the boundary : construct the vector
+                // of vertices on the border
+                const Surface& S = model_.surface( b.part_id_) ;
+
+                index_t end_corner_id = determine_line_vertices( 
+                    S, b.p0_, b.p1_, global_ids ) ;           
+
+                // 2 - Check if this border already exists
+                index_t line_id = find_or_create_line( global_ids ) ;
+
+                // Add the surface in which this line is
+                add_element_in_boundary( BoundaryModelElement::LINE, line_id, b.part_id_ ) ;
+            }
+        }
+        
 
         /// 8. Build the Contacts
         build_contacts() ;
-    
-        /// Eventual changes of the key facet orientation
-        end_surfaces( change_key_facet ) ;
+            
+        // Modify in the Region the side of the Surface for which the key facet 
+        // orientation was not the same than their facet orientations        
+        for( index_t i = 0; i < change_key_facet.size(); i++ ) {   
+            const Surface& S = model_.surface( change_key_facet[i] ) ;
+            for( index_t j = 0; j < S.nb_in_boundary(); ++j ) {                
+                BoundaryModelElement& R = element( BME::REGION, S.in_boundary_id(j) ) ;              
+                for( index_t b = 0; b < R.nb_boundaries(); ++b ){
+                    if( R.boundary_id(b) == change_key_facet[i] ){
+                        R.set_boundary( b, R.boundary_id(b), !R.side(b) ) ;
+                    }
+                }
+            }
+        }
+        
      
         // Finish up the model - CRASH if this failed
         grgmesh_assert( end_model() ) ;
@@ -1573,32 +1398,26 @@ namespace GRGMesh {
     bool BoundaryModelBuilderGocad::check_key_facet_orientation( index_t surface_id ) 
     {
         const Surface& S = model_.surface( surface_id ) ;
-        const Surface::KeyFacet& key_facet = S.key_facet() ;
+        const KeyFacet& key_facet = key_facets_[surface_id] ;
+      
+        const vec3& p0 = key_facet.p0_ ;
+        const vec3& p1 = key_facet.p1_ ;
+        const vec3& p2 = key_facet.p2_ ;
+        bool same_sign = false ;
 
-        if( key_facet.is_default() ) {
-            set_surface_first_triangle_as_key( surface_id ) ;
-            return true ;
+        index_t t = find_key_facet( surface_id, p0, p1, p2, same_sign ) ;
+        if( t == NO_ID ) {
+            vec3 p00( p0 ); 
+            p00.z *= -1 ;
+            vec3 p10( p1 ) ;
+            p10.z *= -1 ;
+            vec3 p20( p2 ) ;
+            p20.z *= -1 ;
+            // It is because of the sign of Z that is not the same 
+            t = find_key_facet( surface_id, p00, p10, p20, same_sign ) ;
         }
-        else {
-            const vec3& p0 = key_facet.p0_ ;
-            const vec3& p1 = key_facet.p1_ ;
-            const vec3& p2 = key_facet.p2_ ;
-            bool same_sign = false ;
-
-            index_t t = find_key_facet( surface_id, p0, p1, p2, same_sign ) ;
-            if( t == NO_ID ) {
-                vec3 p00( p0 ); 
-                p00.z *= -1 ;
-                vec3 p10( p1 ) ;
-                p10.z *= -1 ;
-                vec3 p20( p2 ) ;
-                p20.z *= -1 ;
-                // It is because of the sign of Z that is not the same 
-                t = find_key_facet( surface_id, p00, p10, p20, same_sign ) ;
-            }
-            grgmesh_assert( t != NO_ID ) ;
-            return same_sign ;
-        }
+        grgmesh_assert( t != NO_ID ) ;
+        return same_sign ;      
     }
        
 
@@ -1667,32 +1486,6 @@ namespace GRGMesh {
         return p1_corner ; 
     }
     
-    /*!
-     * @brief Creates all Lines for the model
-     *
-     * @param[in] borders Information on Surface boundaries gathered at .ml file reading
-     */
-    void BoundaryModelBuilderGocad::build_lines( const std::vector< Border >& borders )
-    {      
-        std::vector< index_t > global_ids ;
-
-        for( index_t i = 0; i < borders.size(); ++i ) {
-            const Border& b = borders[i] ;
-
-            /// 1- Build the boundary : construct the vector
-            /// of vertices on the border
-            const Surface& S = model_.surface( b.part_id_) ;
-
-            index_t end_corner_id = determine_line_vertices( 
-                S, b.p0_, b.p1_, global_ids ) ;           
-
-            /// 2 - Check if this border already exists
-            index_t line_id = find_or_create_line( global_ids ) ;
-
-            // Add the surface in which this line is
-            add_element_in_boundary( BoundaryModelElement::LINE, line_id, b.part_id_ ) ;
-        }
-    }
 
     /*!
      * @brief Build the Contacts
@@ -1703,55 +1496,17 @@ namespace GRGMesh {
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             // The surface part in whose boundary is the part
             std::set< index_t > interfaces ;
-            //std::vector< GEOL_FEATURE > types ;
             for( index_t j = 0; j < model_.line(i).nb_in_boundary(); ++j ) {
                 index_t sp_id = model_.line(i).in_boundary_id( j ) ;
                 const BoundaryModelElement& p = model_.surface(sp_id).parent() ;
                 interfaces.insert( p.id() ) ;
-                //types.push_back( p.geological_feature() ) ;
             }
             std::vector< index_t > toto( interfaces.begin(), interfaces.end() ) ;
             index_t contact_id = find_or_create_contact( toto ) ;
             add_child( BoundaryModelElement::CONTACT, contact_id, i ) ;
         }
     }
-
-    /*!
-     * @brief Finish up Surface 
-     * @details Calls the end_surfaces() function and switch KeyFacet orientation of the required
-     * surfaces.
-     *
-     * @param[in] change_orientation Indices of the surfaces in which KeyFacet orientation is not
-     * consistent with the its facet orientation
-     */
-    void BoundaryModelBuilderGocad::end_surfaces(
-        const std::vector< index_t >& change_orientation )
-    {
-        //end_surfaces() ;
-
-        for( index_t i = 0; i < change_orientation.size(); i++ ) {
-            index_t s_i = change_orientation[i] ; 
-            
-            // Change the key facet            
-            set_surface_first_triangle_as_key( s_i ) ; 
-            const Surface& S = model_.surface( s_i ) ;
-
-            // Change the sign of this Surface in all the regions containing it
-            for( index_t j = 0; j < S.nb_in_boundary(); ++j ) {                
-                BoundaryModelElement& R =
-                    const_cast< BoundaryModelElement& >( S.in_boundary(j) ) ;              
-
-                for( index_t b = 0; b < R.nb_boundaries(); ++b ){
-                    if( R.boundary_id(b) == s_i ){
-                        bool old_side = R.side( b ) ;
-                        R.set_boundary( b, R.boundary_id(b), !old_side ) ;
-                    }
-                }
-            }
-        }
-    }
-    
-
+   
     /*!
      * @brief Add a Surface to the model
      *
@@ -1762,15 +1517,16 @@ namespace GRGMesh {
     void BoundaryModelBuilderGocad::create_surface(
         const std::string& interface_name,
         const std::string& type,
-        const Surface::KeyFacet& key )
+        const vec3& p0, 
+        const vec3& p1,
+        const vec3& p2 )
     {
         index_t parent = find_interface( interface_name ) ;
         if( interface_name != "" ) grgmesh_assert( parent != NO_ID ) ;
 
         index_t id = create_element( BoundaryModelElement::SURFACE ) ;
         set_parent( BoundaryModelElement::SURFACE, id, parent ) ;
-        //set_element_geol_feature( BoundaryModelElement::SURFACE, id, t ) ;
-        set_surface_key_facet( id, key ) ;
+        key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
 
 
