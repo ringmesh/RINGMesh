@@ -75,36 +75,6 @@ namespace GRGMesh {
     }
 
     /*!
-     * @brief Write in the stream the geological feature name
-     * @param[in,out] out stream in which the name is written
-     * @param[in] t geological feature
-     *
-     *  \todo Implement a real map between these types and the enum - Add more geological types
-     */
-    void BoundaryModel::save_type(
-        std::ostream& out,
-        BoundaryModelElement::GEOL_FEATURE t )
-    {
-        switch( t ) {
-            case BoundaryModelElement::STRATI:
-                out << "top" ;
-                break ;
-            case BoundaryModelElement::FAULT:
-                out << "fault" ;
-                break ;
-            case BoundaryModelElement::VOI:
-                out << "boundary" ;
-                break ;
-            case BoundaryModelElement::NO_GEOL:
-                out << "none" ;
-                break ;
-            default:
-                out << "none" ;
-                break ;
-        }
-    }
-
-    /*!
      * \brief Returns the index of the given vertex in the model
      * \todo Implement the function - Add a KdTree for geometrical request on model vertices
      *
@@ -138,32 +108,6 @@ namespace GRGMesh {
         return BoundaryModelElement::NO_ID ;
     }
 
-
-    /*! 
-     *  No support for properties right now
-     *  no advance check of coordinate system
-     *
-     *  Build all the elements of the structural model and their relationships
-     */
-    /*!
-     * @brief Load a .ml file, Gocad Model3d (b-rep file) and fill the model      
-     * @details The BoundaryModelBuilder does the job
-     * 
-     * @param[in] in Name of the file
-     * @return false if file opening failed
-     */
-    bool BoundaryModel::load_gocad_model3d( const std::string& in )
-    {
-        std::ifstream input( in.c_str() ) ;
-        if( !input ) {
-            std::cout << "cannot open file:" << in << std::endl ;
-            return false ;
-        }
-
-        BoundaryModelBuilderGocad builder( *this ) ;
-        builder.load_ml_file( in ) ;
-        return true ;
-    }
 
     /*!
      * @brief Modify the model so that it is compatible with a Gocad Model3d
@@ -335,7 +279,7 @@ namespace GRGMesh {
         for( index_t i = 0; i < surfaces_.size(); ++i ) {
             const Surface& s = surfaces_[i] ;
             out << "TFACE " << count << "  " ;
-            save_type( out, s.geological_feature() ) ;
+            out << BME::geol_name( s.geological_feature() ) ;
             out << " " << s.parent().name() << std::endl ;
             
             // Print the key facet points, whuich are simply the first three
@@ -375,7 +319,7 @@ namespace GRGMesh {
 
             out << "GEOLOGICAL_FEATURE " << tsurf.name() << std::endl
                 << "GEOLOGICAL_TYPE " ;
-            save_type( out, tsurf.geological_feature() ) ;
+            out << BME::geol_name( tsurf.geological_feature() ) ;
             out << std::endl ;
 
             out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" << std::endl
@@ -602,6 +546,137 @@ namespace GRGMesh {
         }                  
      }
 
+     void BoundaryModel::save_bm_file( const std::string& file_name ) const 
+     {
+        std::ofstream out ;
+        out.open( file_name.c_str() );
+        if( out.bad() ){
+            std::cout << "Error when opening the file: " << file_name.c_str() <<std::endl ;
+            return ;
+        }
+        out.precision( 16 ) ;
+      
+        // Model name 
+        out << "GRGMESH BOUNDARY MODEL"<< std::endl ;
+        out << "NAME " << name() << std::endl ; 
+
+        // High-level elements
+        for( index_t type = BME::CONTACT; type < BME::NO_TYPE; type++ ) {
+            BME::TYPE T = (BME::TYPE) type ;
+            index_t nb = nb_elements( T ) ;
+
+            // Write TYPE and number of elements
+            out <<  "NB_"<< BME::type_name( T ) << " " << nb << std::endl ;
+            for( index_t i = 0; i < nb; ++i ) {
+                const BoundaryModelElement& E = element( T, i ) ;
+                // For each one save - ID - NAME - GEOL        
+                out << BME::type_name( T ) << " " << E.id() << " " ;
+                if( E.has_name() ) out << E.name() ;
+                else out << "no_name" ;
+                out << " " <<  BME::geol_name( E.geological_feature() ) << std::endl ;
+                // nb_children - CHILD_IDS
+                out << "NB_CHILD " <<  E.nb_children() << std::endl ;
+                for( index_t j = 0; j < E.nb_children(); ++j ) {
+                    out << " " << E.child_id(j) ;
+                }
+                out << std::endl ;
+            }
+        }
+        
+        // Regions
+        out <<  "NB_"<< BME::type_name( BME::REGION ) << " "
+            << nb_elements( BME::REGION ) << std::endl ;
+        for( index_t i =0 ; i < nb_regions(); ++i ){
+            const BoundaryModelElement& E = region(i) ;
+            // Save ID - NAME - 
+            out << BME::type_name( BME::REGION ) << " " << E.id() << " " ;
+            if( E.has_name() ) out << E.name() ;
+            else out << "no_name" ;
+            out << std::endl ;
+            // nb_boundaries - Boundary ids with side
+            out << "BOUNDARY " << E.nb_boundaries() << std::endl ;
+            for( index_t j = 0 ; j < E.nb_boundaries(); ++j ){
+                if( E.side(j) ) out << "+" ;
+                else out << "-" ;
+                out << E.boundary_id(j) << " " ;
+            }
+            out << std::endl ;
+        }
+
+        // Universe
+        out << "UNIVERSE "<< std::endl ;
+        out << "BOUNDARY " << universe().nb_boundaries() << std::endl ;
+        for( index_t j = 0 ; j < universe().nb_boundaries(); ++j ){
+            if( universe().side(j) ) out << "+" ;
+            else out << "-" ;
+            out << universe().boundary_id(j) << " " ;
+        }
+        out << std::endl ;
+
+        // Vertices
+        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;
+        for( index_t i = 0; i < nb_vertices(); ++i ) {
+            out << vertex(i) << std::endl ;
+        }
+
+        // Corners
+        out <<  "NB_"<< BME::type_name( BME::CORNER ) << " " 
+            << nb_elements( BME::CORNER ) << std::endl ;
+        for( index_t i = 0; i < nb_corners(); ++i ) {
+            out << BME::type_name( BME::CORNER ) << " " 
+                << corner(i).id() << " " << corner(i).model_vertex_id() << std::endl ;
+        }
+
+        // Lines
+        out << "NB_"<< BME::type_name( BME::LINE ) << " " 
+            << nb_elements( BME::LINE ) << std::endl ;
+        for( index_t i = 0; i < nb_lines(); ++i ) {
+            const Line& L = line(i) ;
+            out << BME::type_name( BME::LINE) << " " << L.id() << std::endl ;
+            out << "LINE_VERTICES " << L.nb_vertices() << std::endl ;
+            int count = 0 ;
+            for( index_t j = 0; j < L.nb_vertices(); ++j ) {
+                out << L.model_vertex_id( j ) << "  " ;
+                count++ ;
+                if( count == 20 ){
+                    count = 0 ;
+                    out << std::endl ;
+                }
+            }
+            out << std::endl ;
+            out << "IN_BOUNDARY " << L.nb_in_boundary() << std::endl ;
+            for( index_t j = 0; j < L.nb_in_boundary(); ++j ){
+                out << L.in_boundary_id( j ) << " " ;
+            }
+            out << std::endl ;
+        }
+        // Surface
+        out << "NB_"<< BME::type_name( BME::SURFACE ) << " " 
+            << nb_elements( BME::SURFACE ) << std::endl ;
+        for( index_t i = 0; i < nb_surfaces(); ++i ) {
+            const Surface& S = surface(i) ;
+            out << BME::type_name( BME::SURFACE ) << " " << S.id() << std::endl ;
+            out << "SURFACE_VERTICES " << S.nb_vertices() << std::endl ;
+            int count = 0 ;
+            for( index_t j = 0; j < S.nb_vertices(); ++j ) {
+                out << S.model_vertex_id( j ) << "  " ;
+                count++ ;
+                if( count == 20 ){
+                    count = 0 ;
+                    out << std::endl ;
+                }
+            }
+            out << std::endl ;
+            out << "SURFACE_FACETS " << S.nb_cells() << std::endl ;
+            for( index_t j =0; j < S.nb_cells(); ++j ) {
+                out << S.nb_vertices_in_facet(j) << " " ;
+                for( index_t v= 0; v < S.nb_vertices_in_facet(j); ++v ){
+                    out << S.model_vertex_id( j, v ) << " ";
+                }
+                out << std::endl ;
+            }
+        }
+    }
 
 
 

@@ -98,6 +98,32 @@ namespace GRGMesh {
         return NO_GEOL ;
     }
 
+    std::string BoundaryModelElement::type_name( BoundaryModelElement::TYPE t ) {
+        switch( t ) {
+            case CORNER    : return "CORNER" ;
+            case LINE      : return "LINE" ;
+            case SURFACE   : return "SURFACE" ;
+            case REGION    : return "REGION" ;
+            case CONTACT   : return "CONTACT" ;
+            case INTERFACE : return "INTERFACE" ;
+            case LAYER     : return "LAYER" ;
+            default        : return "NO_TYPE_NAME" ;
+        }
+    }
+
+    std::string BoundaryModelElement::geol_name( BoundaryModelElement::GEOL_FEATURE t )
+    {
+        switch( t ) {
+            case STRATI  : return "top" ;
+            case FAULT   : return "fault" ;
+            case VOI     : return "boundary" ;
+            case NO_GEOL : return "none" ;
+            default      : return "none" ;
+                break ;
+        }
+    }
+
+
     /*!
      * @brief Define the type of the parent of an element of type @param t
      *        If no parent is allowed returns NO_TYPE
