@@ -563,7 +563,7 @@ namespace GRGMesh {
                     for( index_t f = 0; f < S.nb_cells(); f++ ){            
                         out << "# attrs f " << count+1 ;
                         for( index_t j = 0; j < names.size(); j++ ) {
-                            out << " " << *reinterpret_cast<index_t*>( stores[j]->data(count) ) ;
+                            out << " " << *reinterpret_cast<index_t*>( stores[j]->data(f) ) ;
                         }
                         out << std::endl ;
                         count++ ;
