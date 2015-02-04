@@ -966,7 +966,7 @@ namespace GRGMesh {
      */
     void BoundaryModelBuilderGocad::load_ml_file( const std::string& ml_file_name )
     {
-        std::ifstream in( ml_file_name ) ;        
+        std::ifstream in( ml_file_name.c_str() ) ;
         if ( !in.is_open() ) { 
             std::cout<< "Could not open file " << ml_file_name << std::endl ;
             std::cin.get() ;
