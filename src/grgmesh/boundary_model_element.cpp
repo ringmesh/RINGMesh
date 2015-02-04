@@ -339,7 +339,7 @@ namespace GRGMesh {
     } ;
     
     /*!
-     * @brief Check is the Line is twice on the boundary of a surface
+     * @brief Check if the Line is twice on the boundary of a surface
      *
      * @param[in] surface The surface to test
      */
@@ -423,26 +423,6 @@ namespace GRGMesh {
     const vec3& Surface::vertex( index_t surf_vertex_id ) const {
         return model_->vertex( vertices_.at(surf_vertex_id) ) ;
     }
-
-    /*!
-     * @param[in] f Facet index in the surface
-     * @return Facet index in the parent model
-     */
-    index_t Surface::model_facet_id( index_t f ) const {
-        return model_->model_facet( id_, f ) ;
-    }
-
-    /*!
-     * @brief Initialize the KeyFacet to be the first 3 vertices of the surface
-     */
-    void Surface::set_first_triangle_as_key()
-    {
-        // I guess it shouldn't be a problem if the first facet is not a triangle - Jeanne
-        key_facet_ = KeyFacet( model_->vertex( vertices_[facets_[0]] ),
-            model_->vertex( vertices_[facets_[1]] ),
-            model_->vertex( vertices_[facets_[2]] ) ) ;
-    }
-
          
     /*!
      * @brief Traversal of a surface border

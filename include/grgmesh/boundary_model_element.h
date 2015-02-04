@@ -104,9 +104,9 @@ namespace GRGMesh {
         static TYPE in_boundary_type ( TYPE t ) ;      
         static index_t dimension     ( TYPE t ) ;       
 
-        static bool parent_allowed      ( TYPE t ) { return parent_type(t)     != NO_ID ; }
-        static bool child_allowed       ( TYPE t ) { return child_type(t)      != NO_ID ; }
-        static bool boundary_allowed    ( TYPE t ) { return boundary_type(t)   != NO_ID ; }
+        static bool parent_allowed      ( TYPE t ) { return parent_type     (t)!= NO_ID ; }
+        static bool child_allowed       ( TYPE t ) { return child_type      (t)!= NO_ID ; }
+        static bool boundary_allowed    ( TYPE t ) { return boundary_type   (t)!= NO_ID ; }
         static bool in_boundary_allowed ( TYPE t ) { return in_boundary_type(t)!= NO_ID ; } 
         /*!
          * @brief Constructs a BoundaryModelElement
@@ -145,7 +145,7 @@ namespace GRGMesh {
         GEOL_FEATURE geological_feature() const { return geol_feature_ ; }
         bool is_on_voi() const ;
 
-         /**
+         /**@}
          * \name Connectivity - boundary and in_boundary
          * @{
          */
@@ -158,7 +158,7 @@ namespace GRGMesh {
         index_t in_boundary_id( index_t x ) const { return in_boundary_[x] ; }
         const BoundaryModelElement& in_boundary( index_t x ) const ;
         
-        /**
+        /**@}
          * \name Parent - children relationships
          * @{
          */
@@ -171,7 +171,7 @@ namespace GRGMesh {
         const BoundaryModelElement& child( index_t x ) const ;
         
         
-        /**
+        /**@}
          * \name Accessors to geometry - Reimplemented in Corner, Line, Surface classes
          * @{
          */
@@ -188,7 +188,7 @@ namespace GRGMesh {
             grgmesh_assert_not_reached ; return dummy_vec3 ;
         }
                      
-         /**
+         /**@}
          * \name Accessors to attribute managers
          * @{
          */
@@ -201,7 +201,7 @@ namespace GRGMesh {
             return const_cast< FacetAttributeManager* >( &facet_attribute_manager_ ) ;
         }
 
-        /**
+        /**@}
          * \name Modification of the element
          * @{
          */
@@ -301,6 +301,8 @@ namespace GRGMesh {
     * @brief A Corner
     * 
     * Element of type CORNER. Its geometry is determined by one vertex.
+    * Most corners are at the intersections of at least two Line, but some
+    * are in the boundary of a closed Line. 
     */
     class GRGMESH_API Corner : public BoundaryModelElement {       
     public:
@@ -312,9 +314,7 @@ namespace GRGMesh {
         {
         }
         virtual ~Corner() { } ;
-        /*! @brief A corner on the boundary of one unique closed Line is not real */ 
-        bool is_real() const { return in_boundary_.size() > 1 ; }
-        
+
         virtual index_t nb_cells() const { return 0 ; }
         virtual index_t nb_vertices() const { return 1 ; }
         virtual index_t model_vertex_id( index_t id = 0 ) const { return vertex_ ; } 
@@ -328,10 +328,10 @@ namespace GRGMesh {
 
 
     /*! 
-     * @brief A Line is a boundary of a Surface
+     * @brief A boundary Line of a Surface
      * 
      * It has 1 or 2 Corners on its boundary and is in the boundary of a least one Surface.
-     * It is defined by a set of vertices. Its segments are implictely defined between vertices
+     * It is defined by a set of vertices. Its segments are implicitely defined between vertices
      * vertex(n) and vertex(n+1) for n between 0 and nb_cells()
      *
      * There is no LineMutator since hardly nothing can be performed on a Line without modifying the model
@@ -353,15 +353,9 @@ namespace GRGMesh {
         virtual ~Line(){} ;
    
         /*! @brief Returns the number of segments of the Line */       
-        virtual index_t nb_cells() const {            
-            return vertices_.size()-1 ; 
-        }
-        virtual index_t nb_vertices() const {             
-            return vertices_.size() ; 
-        }
-        virtual index_t model_vertex_id( index_t p ) const {
-            return vertices_.at(p) ;
-        }
+        virtual index_t nb_cells() const { return vertices_.size()-1 ; }
+        virtual index_t nb_vertices() const { return vertices_.size() ; }
+        virtual index_t model_vertex_id( index_t p ) const { return vertices_.at(p) ; }
         virtual const vec3& vertex( index_t line_vertex_id ) const ;
         
         /*! @brief A Line is closed if its two extremities are identitcal */
@@ -484,44 +478,13 @@ namespace GRGMesh {
     public:
         const static index_t NO_ADJACENT = index_t( -1 ) ;
 
-        /*!
-         * @brief The triangle that set the orientation of a Surface's facets
-         */
-        struct KeyFacet {
-            KeyFacet( const vec3& p0, const vec3& p1, const vec3& p2 ):
-                p0_(p0), p1_(p1), p2_(p2){ } ;
-
-            KeyFacet() {  
-                vec3 d( -1, -1, -1) ;
-                p0_ = d ; p1_ = d; p2_ = d ; 
-            } 
-    
-            bool is_default() const {
-                vec3 d( -1, -1, -1) ;
-                if( p0_== d && p1_== d && p2_== d  ) return true ;
-                else {
-                    grgmesh_assert( p0_!=p1_ && p0_!=p2_ && p1_!=p2_ ) ;
-                    return false ;
-                }
-            }
-        public:
-            vec3 p0_ ;
-            vec3 p1_ ;
-            vec3 p2_ ;
-        } ;
-
-        Surface(
-            BoundaryModel* model,
-            index_t id = NO_ID
-            )
-            :
-            BoundaryModelElement( model, SURFACE, id ),
-            is_triangulated_( false )
+        Surface( BoundaryModel* model, index_t id = NO_ID )
+            : BoundaryModelElement( model, SURFACE, id ),
+              is_triangulated_( false )
         {
         }
         virtual ~Surface(){} ;
-        
-        const KeyFacet& key_facet() const { return key_facet_ ; }       
+  
         bool is_triangulated() const { return is_triangulated_ ; }
                
         /*!
@@ -617,7 +580,7 @@ namespace GRGMesh {
             std::vector< index_t >& result,
             bool border_only,
             index_t first_facet ) const ;      
-        /**
+        /** @}
          * \name Geometrical request on facets
          * @{
          */
@@ -628,7 +591,7 @@ namespace GRGMesh {
         index_t closest_vertex_in_facet( index_t f, const vec3& vertex ) const ;
         vec3 edge_barycenter( index_t c ) const ;
 
-        /**
+        /** @}
          * \name Adjacencies request
          * @{
          */
@@ -665,13 +628,10 @@ namespace GRGMesh {
             index_t& next_f, index_t& next_e ) const ;       
 
 
-         /**
+         /** @}
          * \name Modifiers
          * @{
          */
-        void set_key_facet( const KeyFacet& key ) { key_facet_ = key ; }
-        void set_first_triangle_as_key() ;
-             
         void set_adjacent( index_t f, index_t e, index_t adjacent ) {
             adjacent_[facet_begin(f)+e] = adjacent ;
         }
@@ -711,8 +671,6 @@ namespace GRGMesh {
          */
        
     private:
-        KeyFacet key_facet_ ;
-
         /// Indices (in the BoundaryModel) of the vertices defining the surface
         /// The same index can appear several times when there is an Line boundary inside          
         std::vector< index_t > vertices_ ;

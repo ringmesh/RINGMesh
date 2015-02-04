@@ -42,7 +42,8 @@
 namespace GRGMesh {
 
     /**
-    * \brief Build a BoundaryModel
+    * @brief Base class for the class building a BoundaryModel.
+    * @details Derive from this class 
     */ 
     class GRGMESH_API BoundaryModelBuilder {        
     public:
@@ -51,11 +52,9 @@ namespace GRGMesh {
         BoundaryModelBuilder( BoundaryModel& model )
             : model_( model ){}
         virtual ~BoundaryModelBuilder(){} ;
-
+    
         // High level functions
-        bool rebuild() ;
         void copy_macro_topology( const BoundaryModel& from ) ;        
-        void update_all_ids() ;
         void make_vertices_unique() ;        
 
         // Set model attributes
@@ -73,6 +72,9 @@ namespace GRGMesh {
             return add_vertex( vec3( vertex[0], vertex[1], vertex[2] ) ) ;
         }
 
+        /*! 
+         * @brief Generic accessor to a modifiable BoundaryModelElement
+         */
         BoundaryModelElement& element( BME::TYPE t, index_t index ) {
             return const_cast< BoundaryModelElement& >( model_.element( t, index ) ) ;
         }
@@ -110,6 +112,7 @@ namespace GRGMesh {
         * @{
         */                     
         index_t create_element( BME::TYPE e_type ) ;
+        void erase_element( BME::TYPE type, index_t id ) ;
 
         // Corner 
         index_t find_corner( index_t ) const ;
@@ -144,7 +147,6 @@ namespace GRGMesh {
 
         // Universe
         void set_universe( const std::vector< std::pair< index_t, bool > >& boundaries ) ;        
-        void remove_universe_from_regions( index_t id ) ;
 
         /** @}
         * \name Set element geometry 
@@ -166,21 +168,13 @@ namespace GRGMesh {
 
         void set_surface_adjacencies( index_t surface_id ) ;
 
-        void set_surface_first_triangle_as_key( index_t id ) {
-            model_.surfaces_[id].set_first_triangle_as_key() ;
-        }
-        void set_surface_key_facet( index_t id, const Surface::KeyFacet& key ) {
-            model_.surfaces_[id].set_key_facet( key ) ;
-        } 
-
         /** @}
         * \name Fix model - Check validity and fill missing stuff
         * @{
         */
         bool end_model() ;
-
+        void update_all_ids() ;     
         void init_global_model_element_access() ;
-        void init_global_model_facet_access() ;
         bool complete_element_connectivity() ;
         bool check_basic_element_validity( const BoundaryModelElement& E ) const ; 
         bool check_element_connectivity( const BoundaryModelElement& E ) const ; 
@@ -197,38 +191,16 @@ namespace GRGMesh {
         BoundaryModel& model_ ;
     };
 
-
-
-    
     /*!
      * \brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
      */ 
     class GRGMESH_API BoundaryModelBuilderGocad : public BoundaryModelBuilder {
-    public :
-        /**
-         * \brief Structure used to build contacts when loading a BoundaryModel from .ml file 
-         */
-        struct Border {
-            Border( index_t part, index_t corner, index_t p0, index_t p1):
-            part_id_(part), corner_id_(corner), p0_(p0), p1_(p1) {};
-
-            // Id of the Surface owning this Border
-            index_t part_id_ ;
-            // Id of p0 in the BoundaryModel corner vector
-            index_t corner_id_ ;
-
-            // Ids of the starting corner and second vertex on the border in the Surface
-            // to which this Border belong
-            index_t p0_ ;
-            index_t p1_ ;
-        } ;
-
-
+    public:
         BoundaryModelBuilderGocad( BoundaryModel& model )
             : BoundaryModelBuilder( model ){}
         virtual ~BoundaryModelBuilderGocad(){}
 
-        void load_ml_file( std::istream& in ) ;   
+        void load_ml_file( const std::string& ml_file_name ) ;   
         
         index_t determine_line_vertices( 
             const Surface& S, 
@@ -237,23 +209,40 @@ namespace GRGMesh {
             std::vector< index_t >& border_vertex_model_ids ) const ;
 
     private:
+        /*!
+         * @brief Triangle that set the orientation of a TFACE
+         */
+        struct KeyFacet {
+            KeyFacet( const vec3& p0, const vec3& p1, const vec3& p2 ):
+                p0_(p0), p1_(p1), p2_(p2){ } ;            
+        public:
+            vec3 p0_ ;
+            vec3 p1_ ;
+            vec3 p2_ ;
+        } ;
+
         index_t find_corner( const vec3& ) const ;
 
-        void build_lines( const std::vector< Border >& borders ) ;        
         void build_contacts() ;
 
         void create_surface(
-            const std::string& interface_name = "",
-            const std::string& type = "",
-            const Surface::KeyFacet& key = Surface::KeyFacet() ) ;        
-        void end_surfaces( const std::vector< index_t >& change_orientation ) ;
+            const std::string& interface_name,
+            const std::string& type, 
+            const vec3& p0,
+            const vec3& p1, 
+            const vec3& p2 ) ; 
 
         /**
          * \brief Check if the surface triangle orientations match the one of the key facet 
          */
         bool check_key_facet_orientation( index_t surface ) ;
-        index_t find_key_facet( index_t surface_id, const vec3& p0, const vec3& p1, const vec3& p2, 
+        index_t find_key_facet(
+            index_t surface_id, 
+            const vec3& p0, const vec3& p1, const vec3& p2, 
             bool& same_orientation ) const ;  
+
+    private:
+        std::vector< KeyFacet > key_facets_ ;
     } ;
 
     /*!

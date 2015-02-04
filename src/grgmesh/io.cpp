@@ -156,7 +156,7 @@ namespace GRGMesh {
                 }
 
                 BoundaryModelBuilderGocad builder( model ) ;
-                builder.load_ml_file( input ) ;
+                builder.load_ml_file( filename ) ;
                 return true ;
             }
 

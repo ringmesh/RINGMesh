@@ -57,10 +57,21 @@ namespace GRGMesh {
         surfaces_.clear() ;
         regions_.clear() ;
 
-        nb_facets_in_surfaces_.clear() ;
         contacts_.clear() ;
         interfaces_.clear() ;
         layers_.clear() ;
+    }
+
+    /*!
+     * @brief Total number of facets in the model Surface
+     */
+    index_t BoundaryModel::nb_facets() const 
+    {
+        index_t result = 0 ; 
+        for( index_t i = 0; i < nb_surfaces(); ++i ){
+            result += surface(i).nb_cells() ;
+        }
+        return result ;
     }
 
     /*!
@@ -127,44 +138,6 @@ namespace GRGMesh {
         return BoundaryModelElement::NO_ID ;
     }
 
-    /*!
-     * @brief Convert a global facet index to an index in a Surface
-     *
-     * @param[in] model_facet_id Facet index in the BoundaryModel
-     * @param[out] surface_id Surface containing the facet
-     * @param[out] surf_facet_id Index of the facet in this Surface
-     */
-    void BoundaryModel::surface_facet(
-        index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id 
-    ) const {
-        index_t s = Surface::NO_ID ;
-        for( index_t i = 1; i < nb_facets_in_surfaces_.size(); i++ ) {
-            if( model_facet_id >= nb_facets_in_surfaces_[i-1] && 
-                model_facet_id < nb_facets_in_surfaces_[i] )
-            {
-                s = i-1 ;
-                break ;
-            }
-        }       
-        grgmesh_debug_assert( s != Surface::NO_ID ) ;
-            
-        surface_id = s ;
-        surf_facet_id = model_facet_id - nb_facets_in_surfaces_[s] ;
-    }
-
-    /*!
-     * @brief Convert a facet index in a surface to its index in the BoundaryModel
-     * @param[in] surf_id Surface index
-     * @param[in] facet_id Facet index in surf_id
-     * @return The global facet index
-     */
-    index_t BoundaryModel::model_facet( index_t surf_id, index_t facet_id ) const 
-    {
-        grgmesh_debug_assert( surf_id < nb_surfaces() && 
-            facet_id < surface(surf_id).nb_cells() )  ;
-
-        return nb_facets_in_surfaces_[surf_id] + facet_id ;
-    }
 
     /*! 
      *  No support for properties right now
@@ -188,7 +161,7 @@ namespace GRGMesh {
         }
 
         BoundaryModelBuilderGocad builder( *this ) ;
-        builder.load_ml_file( input ) ;
+        builder.load_ml_file( in ) ;
         return true ;
     }
 
@@ -220,16 +193,8 @@ namespace GRGMesh {
             }
             // Is it really useful to have contacts, let's hope not... I am not doing it
         }
-        /// 2. Set KeyFacet for Surfaces 
-        for( index_t i = 0; i < surfaces_.size(); ++i ) {
-            Surface& sp = surfaces_[i] ;
-            if( sp.nb_vertices() == 0 ) continue ;
-            if( sp.key_facet().is_default() ) {
-                builder.set_surface_first_triangle_as_key( sp.id() ) ;
-            }
-        }
-
-        /// 3. Check that the Universe region exists 
+        
+        /// 2. Check that the Universe region exists 
         /// \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
         if( universe_.name() != "Universe" ) {
             GEO::Logger::err( "" )
@@ -238,7 +203,7 @@ namespace GRGMesh {
             return false ;
         }
 
-        /// 4. Check that each region has a name and valid surfaces
+        /// 3. Check that each region has a name and valid surfaces
         for( index_t i = 0; i < regions_.size(); ++i ) {
             BoundaryModelElement& region = regions_[i] ;
 
@@ -254,7 +219,7 @@ namespace GRGMesh {
             }
         }
 
-        /// 5. Check that all the surfaces_ of the model are triangulated
+        /// 4. Check that all the surfaces_ of the model are triangulated
         /// \todo Implement a triangulation function in SurfaceMutator         
         for( index_t s = 0; s < nb_surfaces(); s++ ) {
             if( !surfaces_[s].is_triangulated() ) {
@@ -372,11 +337,12 @@ namespace GRGMesh {
             out << "TFACE " << count << "  " ;
             save_type( out, s.geological_feature() ) ;
             out << " " << s.parent().name() << std::endl ;
-
-            const Surface::KeyFacet kf = s.key_facet() ;
-            out << "  " << kf.p0_ << std::endl ;
-            out << "  " << kf.p1_ << std::endl ;
-            out << "  " << kf.p2_ << std::endl ;
+            
+            // Print the key facet points, whuich are simply the first three
+            // vertices of the first facet
+            out << "  " << s.vertex( 0, 0 ) << std::endl ;
+            out << "  " << s.vertex( 0, 1 ) << std::endl ;
+            out << "  " << s.vertex( 0, 2 ) << std::endl ;
 
             ++count ;
         }
@@ -520,13 +486,15 @@ namespace GRGMesh {
     }    
 
     /*!
-     * @brief Save the surfaces of the model with their facet attributes into an .eobj file.         
-     * @details  WARNING It is supposed that these attributes are integer
+     * @brief DEBUG function - Save the surfaces of the model with their facet attributes into an .eobj file.         
+     * @details WARNING It is supposed that these attributes are integer and that all Surface
+     * have the same attributes
      * 
      * @param[in] file_name Name of the file
      *
      * \todo Write generic I/O for attributes on a BoundaryModel
      * \todo Make this function const
+     *
      */
     void BoundaryModel::save_as_eobj_file( const std::string& file_name ) {
         std::ofstream out ;
@@ -568,15 +536,11 @@ namespace GRGMesh {
 
         // Write facet attributes -- WARNING It is supposed that these attributes are integer       
         {
-            std::vector< std::string > names ;        
-            facet_attribute_manager_.list_named_attributes(names) ;
-            std::vector< AttributeStore* > attribute_stores( names.size(), nil ) ;
+            std::vector< std::string > names ; 
+            // OK NOT NICE WE SUPPOSE ALL SURFACE have the same attributes 
+            surface(0).facet_attribute_manager()->list_named_attributes(names) ;
                     
-            for( index_t i=0; i < names.size(); i++ ) 
-            {
-                // Crash if we cannot get the
-                attribute_stores[i] = facet_attribute_manager_.resolve_named_attribute_store( names[i] ) ;
-              
+            for( index_t i=0; i < names.size(); i++ ) { 
                 // Output global information on the attribute
                 out << "# attribute "<< names[i] << " facet "
                     // In Graphite - which will read this file - there is a stupid map 
@@ -589,10 +553,17 @@ namespace GRGMesh {
                 index_t count = 0 ;
                 for( index_t s = 0; s < nb_surfaces() ; s++ ) {
                     const Surface& S = surface(s) ;
+                    
+                    // Get the Stores for this surface
+                    std::vector< AttributeStore* > stores( names.size() ) ;
+                    for( index_t i = 0 ; i < names.size(); ++i ) {
+                        stores[i] = S.facet_attribute_manager()->resolve_named_attribute_store( names[i] ) ;
+                    }
+                    // Output attributes values
                     for( index_t f = 0; f < S.nb_cells(); f++ ){            
                         out << "# attrs f " << count+1 ;
                         for( index_t j = 0; j < names.size(); j++ ) {
-                            out << " " << *reinterpret_cast<index_t*>( attribute_stores[j]->data(count) ) ;
+                            out << " " << *reinterpret_cast<index_t*>( stores[j]->data(f) ) ;
                         }
                         out << std::endl ;
                         count++ ;
@@ -602,7 +573,9 @@ namespace GRGMesh {
         }
 
     }
-
+    /*!
+     * @brief Debug: Save a Surface of the model in the file OBJ format is used
+     */
      void BoundaryModel::save_surface_as_obj_file( index_t s, const std::string& file_name ) const {
         std::ofstream out ;
         out.open( file_name.c_str() );
