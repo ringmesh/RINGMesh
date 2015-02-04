@@ -874,25 +874,14 @@ namespace GRGMesh {
             model_.nb_elements_per_type_.push_back( count ) ;
         }       
     }
-    /*!
-    * @brief Fills the model nb_facets_in_surfaces_ vector
-    * @detail See global facet index accessor BoundaryModel::surface_facet
-    */
-    void BoundaryModelBuilder::init_global_model_facet_access() {
-        model_.nb_facets_in_surfaces_.resize( model_.nb_surfaces()+1, 0 ) ;
-        index_t count = 0 ;
-        for( index_t i = 1; i < model_.nb_facets_in_surfaces_.size(); ++i ) {
-            count += model_.surface( i-1 ).nb_cells() ;
-            model_.nb_facets_in_surfaces_[i] = count ;
-        }
-    }
+  
 
      /*!
      * @brief Last function to call when building a model
      *
      * @details check that the model is correct and has all required information
      * Calls the complete_element_connectivity function 
-     * Fills nb_elements_per_type_ and nb_facets_in_surfaces_ vectors
+     * Fills nb_elements_per_type_ vector
      * 
      * @return False if the model is not valid and cannot be fixed
      * otherwise returns true.
@@ -911,7 +900,6 @@ namespace GRGMesh {
         /// \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
 
         init_global_model_element_access() ;
-        init_global_model_facet_access() ;
 
         complete_element_connectivity() ;
         

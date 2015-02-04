@@ -57,10 +57,21 @@ namespace GRGMesh {
         surfaces_.clear() ;
         regions_.clear() ;
 
-        nb_facets_in_surfaces_.clear() ;
         contacts_.clear() ;
         interfaces_.clear() ;
         layers_.clear() ;
+    }
+
+    /*!
+     * @brief Total number of facets in the model Surface
+     */
+    index_t BoundaryModel::nb_facets() const 
+    {
+        index_t result = 0 ; 
+        for( index_t i = 0; i < nb_surfaces(); ++i ){
+            result += surface(i).nb_cells() ;
+        }
+        return result ;
     }
 
     /*!
@@ -127,44 +138,6 @@ namespace GRGMesh {
         return BoundaryModelElement::NO_ID ;
     }
 
-    /*!
-     * @brief Convert a global facet index to an index in a Surface
-     *
-     * @param[in] model_facet_id Facet index in the BoundaryModel
-     * @param[out] surface_id Surface containing the facet
-     * @param[out] surf_facet_id Index of the facet in this Surface
-     */
-    void BoundaryModel::surface_facet(
-        index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id 
-    ) const {
-        index_t s = Surface::NO_ID ;
-        for( index_t i = 1; i < nb_facets_in_surfaces_.size(); i++ ) {
-            if( model_facet_id >= nb_facets_in_surfaces_[i-1] && 
-                model_facet_id < nb_facets_in_surfaces_[i] )
-            {
-                s = i-1 ;
-                break ;
-            }
-        }       
-        grgmesh_debug_assert( s != Surface::NO_ID ) ;
-            
-        surface_id = s ;
-        surf_facet_id = model_facet_id - nb_facets_in_surfaces_[s] ;
-    }
-
-    /*!
-     * @brief Convert a facet index in a surface to its index in the BoundaryModel
-     * @param[in] surf_id Surface index
-     * @param[in] facet_id Facet index in surf_id
-     * @return The global facet index
-     */
-    index_t BoundaryModel::model_facet( index_t surf_id, index_t facet_id ) const 
-    {
-        grgmesh_debug_assert( surf_id < nb_surfaces() && 
-            facet_id < surface(surf_id).nb_cells() )  ;
-
-        return nb_facets_in_surfaces_[surf_id] + facet_id ;
-    }
 
     /*! 
      *  No support for properties right now
@@ -513,13 +486,15 @@ namespace GRGMesh {
     }    
 
     /*!
-     * @brief Save the surfaces of the model with their facet attributes into an .eobj file.         
-     * @details  WARNING It is supposed that these attributes are integer
+     * @brief DEBUG function - Save the surfaces of the model with their facet attributes into an .eobj file.         
+     * @details WARNING It is supposed that these attributes are integer and that all Surface
+     * have the same attributes
      * 
      * @param[in] file_name Name of the file
      *
      * \todo Write generic I/O for attributes on a BoundaryModel
      * \todo Make this function const
+     *
      */
     void BoundaryModel::save_as_eobj_file( const std::string& file_name ) {
         std::ofstream out ;
@@ -561,15 +536,11 @@ namespace GRGMesh {
 
         // Write facet attributes -- WARNING It is supposed that these attributes are integer       
         {
-            std::vector< std::string > names ;        
-            facet_attribute_manager_.list_named_attributes(names) ;
-            std::vector< AttributeStore* > attribute_stores( names.size(), nil ) ;
+            std::vector< std::string > names ; 
+            // OK NOT NICE WE SUPPOSE ALL SURFACE have the same attributes 
+            surface(0).facet_attribute_manager()->list_named_attributes(names) ;
                     
-            for( index_t i=0; i < names.size(); i++ ) 
-            {
-                // Crash if we cannot get the
-                attribute_stores[i] = facet_attribute_manager_.resolve_named_attribute_store( names[i] ) ;
-              
+            for( index_t i=0; i < names.size(); i++ ) { 
                 // Output global information on the attribute
                 out << "# attribute "<< names[i] << " facet "
                     // In Graphite - which will read this file - there is a stupid map 
@@ -582,10 +553,17 @@ namespace GRGMesh {
                 index_t count = 0 ;
                 for( index_t s = 0; s < nb_surfaces() ; s++ ) {
                     const Surface& S = surface(s) ;
+                    
+                    // Get the Stores for this surface
+                    std::vector< AttributeStore* > stores( names.size() ) ;
+                    for( index_t i = 0 ; i < names.size(); ++i ) {
+                        stores[i] = S.facet_attribute_manager()->resolve_named_attribute_store( names[i] ) ;
+                    }
+                    // Output attributes values
                     for( index_t f = 0; f < S.nb_cells(); f++ ){            
                         out << "# attrs f " << count+1 ;
                         for( index_t j = 0; j < names.size(); j++ ) {
-                            out << " " << *reinterpret_cast<index_t*>( attribute_stores[j]->data(count) ) ;
+                            out << " " << *reinterpret_cast<index_t*>( stores[j]->data(count) ) ;
                         }
                         out << std::endl ;
                         count++ ;

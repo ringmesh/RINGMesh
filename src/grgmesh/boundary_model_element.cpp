@@ -423,14 +423,6 @@ namespace GRGMesh {
     const vec3& Surface::vertex( index_t surf_vertex_id ) const {
         return model_->vertex( vertices_.at(surf_vertex_id) ) ;
     }
-
-    /*!
-     * @param[in] f Facet index in the surface
-     * @return Facet index in the parent model
-     */
-    index_t Surface::model_facet_id( index_t f ) const {
-        return model_->model_facet( id_, f ) ;
-    }    
          
     /*!
      * @brief Traversal of a surface border

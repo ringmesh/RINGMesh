@@ -59,12 +59,9 @@ namespace GRGMesh {
 
     public:           
         enum AttributeLocation {
-            VERTEX,
-            EDGE,
-            FACET
+            VERTEX
         } ;       
-        typedef AttributeManager< VERTEX > PointAttributeManager ;
-        typedef AttributeManager< FACET > FacetAttributeManager ;
+        typedef AttributeManager< VERTEX > VertexAttributeManager ;
         typedef BoundaryModelElement BME ;
                
         const static index_t NO_ID = index_t( -1 ) ;
@@ -84,9 +81,7 @@ namespace GRGMesh {
         const vec3& vertex( index_t p ) const { return vertices_.at(p) ; }
         index_t vertex_index( const vec3& p ) const ;
 
-        index_t nb_facets() const { return nb_facets_in_surfaces_.back() ; }
-        void surface_facet( index_t model_facet_id, index_t& surface_id, index_t& surf_facet_id ) const ;     
-        index_t model_facet( index_t surface_id, index_t surf_facet_id ) const ;      
+        index_t nb_facets() const ;             
 
         /*!
         * @brief Returns the number of elements of the given type
@@ -168,13 +163,9 @@ namespace GRGMesh {
 
         const BoundaryModelElement& universe() const { return universe_ ; }        
        
-        PointAttributeManager* vertex_attribute_manager() const
+        VertexAttributeManager* vertex_attribute_manager() const
         {
-            return const_cast< PointAttributeManager* >( &vertex_attribute_manager_ ) ;
-        }
-        FacetAttributeManager* facet_attribute_manager() const
-        {
-            return const_cast< FacetAttributeManager* >( &facet_attribute_manager_ ) ;
+            return const_cast< VertexAttributeManager* >( &vertex_attribute_manager_ ) ;
         }
          
         index_t find_region( index_t surface_part_id, bool side ) const ;
@@ -213,11 +204,6 @@ namespace GRGMesh {
 
         /// The region including all the other regions
         BoundaryModelElement universe_ ;
-
-        /// Sum of the number of facets in all previous surfaces
-        /// Must be updated when a Surface is modified !!
-        // Size = nb_surface()+1
-        std::vector< index_t > nb_facets_in_surfaces_ ;
     
         /** 
          * \brief Contacts between Intefaces
@@ -236,14 +222,12 @@ namespace GRGMesh {
          */
         std::vector< BoundaryModelElement >  layers_ ;
 
-        // For a global access to any of the BME
-        // MUST be updated if one element is added !!!
+        /// Allow global access to BME. It MUST be updated if one element is added.
         std::vector< index_t > nb_elements_per_type_ ;
 
 
-        // Attribute managers 
-        PointAttributeManager vertex_attribute_manager_ ;
-        FacetAttributeManager facet_attribute_manager_ ;
+        // Attribute manager 
+        VertexAttributeManager vertex_attribute_manager_ ;     
     } ;   
 
 
@@ -283,45 +267,7 @@ namespace GRGMesh {
             return superclass::is_defined( model->vertex_attribute_manager(), name ) ;
         }
     } ;
-
-    template< class ATTRIBUTE >
-    class BoundaryModelFacetAttribute: public Attribute< BoundaryModel::FACET, ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModel::FACET, ATTRIBUTE > superclass ;
-
-        void bind( const BoundaryModel* model, const std::string& name )
-        {
-            superclass::bind( model->facet_attribute_manager(), model->nb_facets(),
-                name ) ;
-        }
-
-        void bind( const BoundaryModel* model )
-        {
-            superclass::bind( model->facet_attribute_manager(),
-                model->nb_facets() ) ;
-        }
-
-        BoundaryModelFacetAttribute()
-        {
-        }
-
-        BoundaryModelFacetAttribute( const BoundaryModel* model )
-        {
-            bind( model ) ;
-        }
-
-        BoundaryModelFacetAttribute( const BoundaryModel* model, const std::string& name )
-        {
-            bind( model, name ) ;
-        }
-
-        static bool is_defined( const BoundaryModel* model, const std::string& name )
-        {
-            return superclass::is_defined( model->facet_attribute_manager(), name ) ;
-        }
-    } ;
-
-    
+       
 }
 
 #endif
