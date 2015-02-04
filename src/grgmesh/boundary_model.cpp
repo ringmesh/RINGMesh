@@ -188,7 +188,7 @@ namespace GRGMesh {
         }
 
         BoundaryModelBuilderGocad builder( *this ) ;
-        builder.load_ml_file( input ) ;
+        builder.load_ml_file( in ) ;
         return true ;
     }
 
@@ -220,16 +220,8 @@ namespace GRGMesh {
             }
             // Is it really useful to have contacts, let's hope not... I am not doing it
         }
-        /// 2. Set KeyFacet for Surfaces 
-        for( index_t i = 0; i < surfaces_.size(); ++i ) {
-            Surface& sp = surfaces_[i] ;
-            if( sp.nb_vertices() == 0 ) continue ;
-            if( sp.key_facet().is_default() ) {
-                builder.set_surface_first_triangle_as_key( sp.id() ) ;
-            }
-        }
-
-        /// 3. Check that the Universe region exists 
+        
+        /// 2. Check that the Universe region exists 
         /// \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
         if( universe_.name() != "Universe" ) {
             GEO::Logger::err( "" )
@@ -238,7 +230,7 @@ namespace GRGMesh {
             return false ;
         }
 
-        /// 4. Check that each region has a name and valid surfaces
+        /// 3. Check that each region has a name and valid surfaces
         for( index_t i = 0; i < regions_.size(); ++i ) {
             BoundaryModelElement& region = regions_[i] ;
 
@@ -254,7 +246,7 @@ namespace GRGMesh {
             }
         }
 
-        /// 5. Check that all the surfaces_ of the model are triangulated
+        /// 4. Check that all the surfaces_ of the model are triangulated
         /// \todo Implement a triangulation function in SurfaceMutator         
         for( index_t s = 0; s < nb_surfaces(); s++ ) {
             if( !surfaces_[s].is_triangulated() ) {
@@ -372,11 +364,12 @@ namespace GRGMesh {
             out << "TFACE " << count << "  " ;
             save_type( out, s.geological_feature() ) ;
             out << " " << s.parent().name() << std::endl ;
-
-            const Surface::KeyFacet kf = s.key_facet() ;
-            out << "  " << kf.p0_ << std::endl ;
-            out << "  " << kf.p1_ << std::endl ;
-            out << "  " << kf.p2_ << std::endl ;
+            
+            // Print the key facet points, whuich are simply the first three
+            // vertices of the first facet
+            out << "  " << s.vertex( 0, 0 ) << std::endl ;
+            out << "  " << s.vertex( 0, 1 ) << std::endl ;
+            out << "  " << s.vertex( 0, 2 ) << std::endl ;
 
             ++count ;
         }
@@ -602,7 +595,9 @@ namespace GRGMesh {
         }
 
     }
-
+    /*!
+     * @brief Debug: Save a Surface of the model in the file OBJ format is used
+     */
      void BoundaryModel::save_surface_as_obj_file( index_t s, const std::string& file_name ) const {
         std::ofstream out ;
         out.open( file_name.c_str() );
