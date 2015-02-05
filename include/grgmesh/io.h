@@ -106,12 +106,25 @@ namespace GRGMesh {
 
         public:
             enum DuplicateMode {
-                NONE = 0, FAULT = 1, HORIZON = 2
+                NONE = 0, FAULT = 1, HORIZON = 2, ALL = 3
             } ;
 
             MacroMeshExport( const MacroMesh& mm ) ;
 
             void compute_database( const DuplicateMode& mode = NONE ) ;
+
+            bool vertex_id(
+                index_t r,
+                index_t corner,
+                index_t& vertex_id,
+                index_t& duplicated_vertex_id ) const ;
+
+            index_t nb_duplicated_vertices() const {
+                return duplicated_vertex_indices_.size() ;
+            }
+            index_t nb_total_vertices() const {
+                return nb_duplicated_vertices() + mm_.nb_vertices() ;
+            }
 
             index_t nb_triangle() const { return nb_triangle_ ; }
             index_t nb_triangle( index_t r ) const {
@@ -146,7 +159,6 @@ namespace GRGMesh {
             index_t nb_cells( index_t r ) const {
                 return mesh_cell_end( r ) -  mesh_cell_begin( r ) ;
             }
-
 
             index_t local_triangle_id( index_t r, index_t t ) const {
                 return facet( mesh_facet_begin( r ) + facet_ptr_[(NB_FACET_TYPES+1)* r] + t ) ;

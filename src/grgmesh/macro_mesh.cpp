@@ -71,6 +71,7 @@ namespace GRGMesh {
         if( !initialized_ ) {
             const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
         }
+        grgmesh_debug_assert( v < mm.mesh( mesh ).nb_vertices() ) ;
         return global_vertex_indices_[vertex2mesh_[mesh] + v] ;
     }
 
