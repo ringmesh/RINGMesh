@@ -78,10 +78,18 @@ namespace GRGMesh {
         const std::string& name() const { return name_ ; }
 
         index_t nb_vertices() const { return vertices_.size() ; }        
-        const vec3& vertex( index_t p ) const { return vertices_.at(p) ; }
         index_t vertex_index( const vec3& p ) const ;
-
+        const vec3& vertex( index_t p ) const { return vertices_.at(p) ; }
+        void set_vertex_coordinates( index_t id, const vec3& p ) {
+            grgmesh_assert( id < nb_vertices() ) ;
+            vertices_[id] = p ;
+        }
         index_t nb_facets() const ;             
+
+        /** 
+        * \name Generic BoundaryModelElement accessors
+        * @{
+        */
 
         /*!
         * @brief Returns the number of elements of the given type
@@ -143,7 +151,10 @@ namespace GRGMesh {
             }
         }
 
-        /// Remove these functions ? 
+        /** @}
+        * \name Specicalized accessors.
+        * @{
+        */
         index_t nb_corners()    const { return nb_elements( BME::CORNER    ) ; }
         index_t nb_lines()      const { return nb_elements( BME::LINE      ) ; }
         index_t nb_surfaces()   const { return nb_elements( BME::SURFACE   ) ; }
@@ -162,30 +173,28 @@ namespace GRGMesh {
         const BoundaryModelElement& layer        ( index_t index ) const { return element( BME::LAYER    , index ) ; }
 
         const BoundaryModelElement& universe() const { return universe_ ; }        
-       
+
         VertexAttributeManager* vertex_attribute_manager() const
         {
             return const_cast< VertexAttributeManager* >( &vertex_attribute_manager_ ) ;
         }
-         
+
         index_t find_region( index_t surface_part_id, bool side ) const ;
-                
-        /// \todo Write a proper IO class for Boundary models
+
+        /** @}
+        * \name To save the BoundaryModel.
+        * @{
+        */
         bool save_gocad_model3d( std::ostream& out ) ;
         void save_as_eobj_file( const std::string& file_name ) ;
-
         void save_surface_as_obj_file( index_t s, const std::string& file_name ) const ;
+        void save_bm_file( const std::string& file_name ) const ;
 
-        void set_vertex_coordinates( index_t id, const vec3& p ) {
-            grgmesh_assert( id < nb_vertices() ) ;
-            vertices_[id] = p ;
-        }
-
+        /**
+        * @}
+        */
     private:        
-        bool load_gocad_model3d( const std::string& in ) ;
-
         bool check_model3d_compatibility() ;
-        static void save_type( std::ostream& out, BoundaryModelElement::GEOL_FEATURE t ) ;   
         
     private:
         std::string name_ ;
