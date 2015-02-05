@@ -1089,16 +1089,18 @@ namespace GRGMesh {
                     while( !end_region ) {
                         lis.get_line() ;
                         for( index_t i = 0; i < 5; ++i ) {
-                            signed_index_t tface_id ;
+                            int tface_id ;
                             lis >> tface_id ;
                             if( tface_id == 0 ) {
                                 end_region = true ;
                                 break ;
                             } else {
                                 // Correction because ids begin at 1 in the file
-                                tface_id = tface_id > 0 ? tface_id-1 : -tface_id-1 ;                                            
+                                bool side = tface_id > 0 ;
+                                if( side ) tface_id += -1 ;
+                                else tface_id = -tface_id -1 ;
                                 region_boundaries.push_back(
-                                    std::pair< index_t, bool >( tface_id, false ) ) ;
+                                    std::pair< index_t, bool >( tface_id, side ) ) ;
                             }
                         }
                     }
@@ -1310,7 +1312,6 @@ namespace GRGMesh {
             }
         }
         
-
         /// 8. Build the Contacts
         build_contacts() ;
             
@@ -1322,12 +1323,12 @@ namespace GRGMesh {
                 BoundaryModelElement& R = element( BME::REGION, S.in_boundary_id(j) ) ;              
                 for( index_t b = 0; b < R.nb_boundaries(); ++b ){
                     if( R.boundary_id(b) == change_key_facet[i] ){
-                        R.set_boundary( b, R.boundary_id(b), !R.side(b) ) ;
+                        bool old_side = R.side(b) ;
+                        R.set_boundary( b, R.boundary_id(b), !old_side ) ;
                     }
                 }
             }
-        }
-        
+        }        
      
         // Finish up the model - CRASH if this failed
         grgmesh_assert( end_model() ) ;
