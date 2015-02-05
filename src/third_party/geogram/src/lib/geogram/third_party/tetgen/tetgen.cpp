@@ -29676,7 +29676,6 @@ void tetgenmesh::outsubsegments(tetgenio* out)
     fprintf(outfile, "%ld  1\n", subsegs->items);
   } else {
     // Allocate memory for 'edgelist'.
-    out->edgelist = new int[subsegs->items * 2];
     out->edgelist = new int[subsegs->items * (b->order == 1 ? 2 : 3)];
     if (out->edgelist == (int *) NULL) {
       terminatetetgen(1);
