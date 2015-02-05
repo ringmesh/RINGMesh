@@ -86,6 +86,9 @@ namespace GRGMesh {
         void set_model( BME::TYPE e_type, index_t e_index, BoundaryModel* m ) {
             element( e_type, e_index ).set_model( m ) ;
         }
+        void set_element_index( BME::TYPE e_type, index_t e_index ) {
+            element( e_type, e_index ).set_id( e_index ) ;
+        }
         void set_element_name( BME::TYPE e_type, index_t e_index, const std::string& name ) {
             element( e_type, e_index ).set_name( name ) ;
         }      
@@ -106,6 +109,9 @@ namespace GRGMesh {
         void add_child( BME::TYPE e_type, index_t e_index, index_t child_index ) {
             element( e_type, e_index ).add_child( child_index ) ;
         }
+        void set_element_vertex( BME::TYPE e_type, index_t e_index, index_t v, index_t model_v_id ) {
+            element( e_type, e_index ).set_vertex( v, model_v_id ) ;
+        }
 
         /** @}
         * \name Find and/or create one BoundaryModelElement.
@@ -113,6 +119,7 @@ namespace GRGMesh {
         */                     
         index_t create_element( BME::TYPE e_type ) ;
         void erase_element( BME::TYPE type, index_t id ) ;
+        void resize_elements( BME::TYPE e_type, index_t nb ) ;
 
         // Corner 
         index_t find_corner( index_t ) const ;
@@ -244,6 +251,28 @@ namespace GRGMesh {
     private:
         std::vector< KeyFacet > key_facets_ ;
     } ;
+
+
+     /*!
+     * \brief Build a BoundaryModel from a file_model.bm
+     */ 
+    class GRGMESH_API BoundaryModelBuilderBM : public BoundaryModelBuilder {
+    public:
+        BoundaryModelBuilderBM( BoundaryModel& model )
+            : BoundaryModelBuilder( model ) {} ;            
+        virtual ~BoundaryModelBuilderBM(){} ;
+        
+        bool load_file( const std::string& bm_file_name ) ; 
+
+    private:
+        static BME::TYPE match_nb_elements( const char* s ) ;
+        static BME::TYPE match_type( const char* s ) ;
+        static bool match_high_level_type( const char* s ){
+            return BME::child_allowed( match_type( s ) ) ;
+        }
+
+    } ;
+        
 
     /*!
      * @brief Builder of a BoundaryModel from a conformal surface meshes

@@ -147,7 +147,7 @@ namespace {
                         }
                         builder.add_vertex_by_ptr(&P[0]);
                     } else if(in.field_matches(0, "f")) {
-                        if(in.nb_fields() < 3) {
+                        if(in.nb_fields() < 4) {
                             Logger::err("I/O")
                                 << "Line " << in.line_number()
                                 << ": facet only has " << in.nb_fields()

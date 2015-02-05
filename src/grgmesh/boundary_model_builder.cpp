@@ -30,6 +30,9 @@
 
 
 #include <grgmesh/boundary_model_builder.h>
+
+#include <geogram/basic/line_stream.h>
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -238,6 +241,42 @@ namespace GRGMesh {
         default:   
             grgmesh_assert_not_reached ;
         }
+    }
+
+
+    void BoundaryModelBuilder::resize_elements( BME::TYPE type, index_t nb ) 
+    {
+         switch( type ) {
+        case BME::CORNER : 
+            model_.corners_.resize( nb, Corner( &model_) ) ;
+            break ;     
+
+        case BME::LINE:
+            model_.lines_.resize( nb, Line( &model_) ) ;
+            break ;
+
+        case BME::SURFACE:
+            model_.surfaces_.resize( nb, Surface( &model_) ) ;
+            break ;    
+
+        case BME::REGION:
+            model_.regions_.resize( nb, BME( &model_, BME::REGION ) ) ;
+            break ;
+
+        case BME::CONTACT:
+            model_.contacts_.resize( nb, BME( &model_, BME::CONTACT ) ) ;
+            break ;
+
+        case BME::INTERFACE:
+            model_.interfaces_.resize( nb, BME( &model_, BME::INTERFACE ) ) ;
+            break ;
+
+        case BME::LAYER:
+            model_.layers_.resize( nb, BME( &model_, BME::LAYER ) ) ;
+            break ;
+        default:   
+            break ;
+         }      
     }
 
 
@@ -687,31 +726,29 @@ namespace GRGMesh {
      */
     bool BoundaryModelBuilder::check_element_connectivity( const BoundaryModelElement& E ) const {
         BME::TYPE T = E.element_type() ;
-        if( BME::boundary_type( T ) != BME::NO_TYPE ) {
-            if( T != BME::SURFACE ) {
-                // A closed surface - bubble might have no boundary
-                // The others Line - and Region must have one
-                if( E.nb_boundaries() == 0 ){
-                    return false ;
-                }
-            }
+        if( BME::boundary_allowed( T ) && T != BME::SURFACE ) {
+            // A closed surface - bubble might have no boundary
+            // The others Line - and Region must have one
+            if( E.nb_boundaries() == 0 ){
+                return false ;
+            }            
         }
         // In_boundary
-        if( BME::boundary_type( T ) != BME::NO_TYPE ) {
-            if( E.nb_boundaries() == 0 ){
+        if( BME::in_boundary_allowed( T ) ) {
+            if( E.nb_in_boundary() == 0 ){
                 return false ;
             }
         }
         // Parent - High level elements are not mandatory
         // But if the model has elements of the parent type, the element must have a parent
-        if( BME::parent_type( T ) != BME::NO_TYPE ) {
+        if( BME::parent_allowed( T ) ) {
             if( E.parent_id() == NO_ID && 
                 model_.nb_elements( BME::parent_type(T) ) > 0 ){
                     return false ;
             }
         }
         // Children
-        if( BME::child_type( T ) != BME::NO_TYPE ) {
+        if( BME::child_allowed( T ) ) {
             if( E.nb_children() == 0 ){
                 return false ;
             }
@@ -1551,6 +1588,217 @@ namespace GRGMesh {
     }
 
 
+    bool BoundaryModelBuilderBM::load_file( const std::string& bm_file_name ) {
+       GEO::LineInput in( bm_file_name);
+        if(!in.OK()) {
+            return false ;
+        }        
+        while(!in.eof() && in.get_line()) {
+            in.get_fields();
+            if( in.nb_fields() > 0 ) {
+                // Name of the model
+                if( in.field_matches( 0, "NAME" ) ) {
+                    if( in.nb_fields() > 1 ) set_model_name( in.field(1) ) ;
+                }
+                // Number of elements of a given type
+                else if( match_nb_elements( in.field( 0 ) ) != BME::NO_TYPE ) 
+                {
+                    // Allocate the space
+                    if( in.nb_fields() > 1 ) 
+                        resize_elements( match_nb_elements(in.field(0)), in.field_as_uint(1) ) ;
+                }
+                // High-level elements
+                else if( match_high_level_type( in.field(0) ) )
+                {
+                    // Read this element 
+                    // First line id - name - geol_feature
+                    if( in.nb_fields() < 4 ) {
+                        std::cout << "I/O Error File line " << in.line_number() << std::endl;
+                        return false;
+                    }
+                    BME::TYPE t = match_type( in.field(0) ) ;
+                    index_t id = in.field_as_uint(1) ;
+                    set_element_index( t, id ) ;
+                    set_element_name( t, id, in.field(2) ) ;
+                    set_element_geol_feature( t, id, BME::determine_geological_type( in.field(3) ) ) ;
+                    
+                    // Second line - indices of its children
+                    in.get_line() ; in.get_fields() ;
+                    for(index_t c = 0; c < in.nb_fields(); c++) {
+                        add_child( t, id, in.field_as_uint(c) ) ;
+                    }                    
+                }
+                // Regions
+                else if( match_type( in.field(0) ) == BME::REGION )
+                {
+                    // First line id - name
+                    if( in.nb_fields() < 3 ) {
+                        std::cout << "I/O Error File line " << in.line_number() << std::endl;
+                        return false;
+                    }
+                    index_t id = in.field_as_uint(1) ;
+                    set_element_index( BME::REGION, id ) ;
+                    set_element_name( BME::REGION, id, in.field(2) ) ;
+
+                    // Second line - signed indices of boundaries 
+                    in.get_line() ;  in.get_fields() ;
+                    for(index_t c = 0; c < in.nb_fields(); c++) {
+                        bool side = false ;
+                        if( strncmp( in.field(c), "+", 1 ) == 0 ) side = true ;
+                        else {
+                            // to remove after debug
+                            grgmesh_assert( strncmp( in.field(c), "-", 1 ) == 0 ) ;
+                        }
+                       index_t s ;
+                       GEO::String::from_string( &in.field(c)[1], s ) ;
+                        
+                        
+                        add_element_boundary( BME::REGION, id, s, side ) ;
+                    }                    
+                }
+                // Universe
+                else if( in.field_matches(0, "UNIVERSE") )
+                {
+                    std::vector< std::pair< index_t, bool > > b_universe ;
+                    // Second line - signed indices of boundaries 
+                    in.get_line() ;  in.get_fields() ;
+                    for(index_t c = 0; c < in.nb_fields(); c++) {
+                        bool side = false ;
+                        if( strncmp( in.field(c), "+", 1 ) == 0 ) side = true ;  
+                        index_t s ;
+                        GEO::String::from_string( &in.field(c)[1], s ) ;
+                        
+                        b_universe.push_back( std::pair< index_t, bool >( s, side ) ) ;
+                    }
+                    set_universe( b_universe ) ;
+                }
+
+                // Model vertices
+                else if( in.field_matches( 0, "MODEL_VERTICES" ) ) 
+                {
+                    index_t nb_vertices = in.field_as_uint(1) ;
+                    reserve_vertices( nb_vertices ) ;
+                    for( index_t i = 0; i < nb_vertices; ++i ){
+                        in.get_line() ; in.get_fields() ;              
+                        add_vertex( vec3( 
+                            in.field_as_double(0), in.field_as_double(1), in.field_as_double(2) ) ) ;
+                    }
+                }
+                // Corners
+                else if( match_type( in.field(0) ) == BME::CORNER )
+                {
+                    // One line id - vertex id
+                    if( in.nb_fields() < 3 ) {
+                        std::cout << "I/O Error File line " << in.line_number() << std::endl;
+                        return false;
+                    }
+                    index_t id = in.field_as_uint(1) ;                    
+                    set_element_index( BME::CORNER, id ) ;
+                    set_element_vertex( BME::CORNER, id, 0, in.field_as_uint(2) ) ;
+                }
+                // Lines
+                else if( match_type( in.field(0) ) == BME::LINE )
+                {
+                    index_t id = in.field_as_uint(1) ;
+                    Line& L = dynamic_cast< Line& >( element( BME::LINE, id ) ) ;
+                    L.set_id( id ) ;
+                    
+                    // Following information - vertices of the lines
+                    in.get_line() ;  in.get_fields() ;
+                    grgmesh_assert( in.field_matches( 0,"LINE_VERTICES" ) ) ;
+                    index_t nb_vertices = in.field_as_uint(1) ;
+
+                    // Read the vertices indices
+                    in.get_line() ;  in.get_fields() ;                    
+                    std::vector< index_t > vertices( nb_vertices ) ;
+                    int count = 0 ;
+                    for( index_t i = 0; i < nb_vertices; i++ ){
+                        vertices[i] = in.field_as_uint( count ) ;
+                        count++ ;
+                        if( count == 20 && i+1 < nb_vertices ) {
+                            count = 0 ;
+                            in.get_line() ;  in.get_fields() ;
+                        }
+                    }
+                    L.set_vertices( vertices ) ;
+                    // Set the corners
+                    index_t c0 = find_corner( vertices.front() ) ;
+                    index_t c1 = find_corner( vertices.back() ) ;       
+                    add_element_boundary( BME::LINE, id, c0 ) ;
+                    if( c1 != c0 ) add_element_boundary( BME::LINE, id, c1 ) ; 
+                    
+                    // Finally we have the in_boundary information
+                    in.get_line() ; in.get_fields() ;
+                    grgmesh_assert( in.field_matches( 0,"IN_BOUNDARY" ) ) ;
+                    for( index_t b = 1 ; b < in.nb_fields(); b++ ) {
+                        L.add_in_boundary( in.field_as_uint( b ) ) ; 
+                    }   
+                }
+                // Surfaces
+                else if( match_type( in.field(0) ) == BME::SURFACE )
+                {
+                    index_t id = in.field_as_uint(1) ;
+                    Surface& S = dynamic_cast< Surface& >( element( BME::SURFACE, id ) ) ;
+                    S.set_id( id ) ;
+
+                    // Read the surface facets
+                    in.get_line() ; in.get_fields() ;
+                    grgmesh_assert( in.field_matches( 0,"SURFACE_CORNERS" ) ) ;
+                    index_t nb_corners = in.field_as_uint(1) ;
+
+                    in.get_line() ; in.get_fields() ;
+                    grgmesh_assert( in.field_matches( 0,"SURFACE_FACETS" ) ) ;
+                    index_t nb_facets = in.field_as_uint(1) ;
+
+                    std::vector< index_t > corners( nb_corners ) ;
+                    std::vector< index_t > facet_ptr( nb_facets+1, 0 ) ;
+                    index_t count_facets = 0 ;
+                    for( index_t f = 0 ; f < nb_facets ; f++ ) {
+                        in.get_line() ; in.get_fields() ;
+                        
+                        index_t nb_v = in.field_as_uint(0) ;
+                        
+                        for( index_t v = 0; v < nb_v; ++v ) {
+                            corners[ count_facets+v ] = in.field_as_uint(v+1) ; 
+                        }
+                        count_facets += nb_v ;
+                        facet_ptr[ f+1 ] = count_facets ;
+                    }   
+
+                    S.set_geometry( corners, facet_ptr ) ;
+                    set_surface_adjacencies( id ) ;
+                }
+            }
+        }
+        grgmesh_assert( end_model() ) ;                   
+    }  
+
+    BoundaryModelElement::TYPE BoundaryModelBuilderBM::match_nb_elements( const char* s )
+    {
+        // Check that the first 3 characters are NB_
+        if( strncmp( s, "NB_", 3) != 0 ) return BME::NO_TYPE ;
+        else {
+            for( index_t i = BME::CORNER; i < BME::NO_TYPE; i++ ) {
+                BME::TYPE type = (BME::TYPE) i ; 
+                if( strstr( s, BME::type_name( type ).data() ) != NULL ) {
+                    return type ;
+                }
+            }
+            return BME::NO_TYPE ;
+        }
+    }
+
+    BoundaryModelElement::TYPE BoundaryModelBuilderBM::match_type( const char* s ) {
+       for( index_t i = BME::CORNER; i < BME::NO_TYPE; i++ ) {
+            BME::TYPE type = (BME::TYPE) i ; 
+            if( strcmp( s, BME::type_name( type ).data() ) == 0 ) {
+                return type ;
+            }
+        }
+        return BME::NO_TYPE ;
+    }
+
+
     /*!
     * @brief Utility structure to build a BoundaryModel knowing only its surface
     * @details Store the vertices of a triangle that is on the boundary of a surface
@@ -1934,7 +2182,7 @@ namespace GRGMesh {
         // We are not in trouble since the boundaries of surface are not yet set
         // And we have no layer in the model
 
-        end_model() ;
+        grgmesh_assert( end_model() ) ;
     } 
 
     

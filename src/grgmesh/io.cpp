@@ -167,12 +167,43 @@ namespace GRGMesh {
             }
         } ;
 
+        class BMIOHandler: public BoundaryModelIOHandler {
+        public:
+            virtual bool load( const std::string& filename, BoundaryModel& model )
+            {
+                if( filename.empty() ) {
+                    GEO::Logger::err( "I/O" )
+                        << "No filename provided for structural model, use in:model"
+                        << std::endl ;
+                    return false ;
+                }
+
+                std::ifstream input( filename.c_str() ) ;
+                if( !input ) {
+                    GEO::Logger::err( "I/O" ) << "Cannot open file : " << filename
+                        << std::endl ;
+                    return false ;
+                }
+
+                BoundaryModelBuilderBM builder( model ) ;
+                builder.load_file( filename ) ;
+                return true ;
+            }
+
+            virtual bool save( BoundaryModel& model, const std::string& filename )
+            {
+                model.save_bm_file( filename ) ;
+                return true ;
+            }
+        } ;
+
         /************************************************************************/
 
         BoundaryModelIOHandler* BoundaryModelIOHandler::create(
             const std::string& format )
         {
             grgmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" ) ;
+            grgmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" ) ;
 
             BoundaryModelIOHandler* handler = BoundaryModelIOHandlerFactory::create_object(format) ;
             if( handler ) {

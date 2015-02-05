@@ -546,6 +546,26 @@ namespace GRGMesh {
         }                  
      }
 
+     /*! 
+      * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
+      */
+     void save_high_level_bme( std::ofstream& out, const BoundaryModelElement& E ) {
+         /// First line:  TYPE - ID - NAME - GEOL
+         out << BoundaryModelElement::type_name( E.element_type() ) << " " 
+             << E.id() << " " ;
+         if( E.has_name() ) out << E.name() << " ";
+         else out << "no_name " ;
+         out <<  BoundaryModelElement::geol_name( E.geological_feature() ) 
+             << std::endl ;
+
+         /// Second line:  IDS of children
+         for( index_t j = 0; j < E.nb_children(); ++j ) {
+             out << " " << E.child_id(j) ;
+         }
+         out << std::endl ;    
+     }
+
+
      void BoundaryModel::save_bm_file( const std::string& file_name ) const 
      {
         std::ofstream out ;
@@ -556,36 +576,23 @@ namespace GRGMesh {
         }
         out.precision( 16 ) ;
       
-        // Model name 
         out << "GRGMESH BOUNDARY MODEL"<< std::endl ;
         out << "NAME " << name() << std::endl ; 
 
-        // High-level elements
-        for( index_t type = BME::CONTACT; type < BME::NO_TYPE; type++ ) {
-            BME::TYPE T = (BME::TYPE) type ;
-            index_t nb = nb_elements( T ) ;
-
-            // Write TYPE and number of elements
-            out <<  "NB_"<< BME::type_name( T ) << " " << nb << std::endl ;
-            for( index_t i = 0; i < nb; ++i ) {
-                const BoundaryModelElement& E = element( T, i ) ;
-                // For each one save - ID - NAME - GEOL        
-                out << BME::type_name( T ) << " " << E.id() << " " ;
-                if( E.has_name() ) out << E.name() ;
-                else out << "no_name" ;
-                out << " " <<  BME::geol_name( E.geological_feature() ) << std::endl ;
-                // nb_children - CHILD_IDS
-                out << "NB_CHILD " <<  E.nb_children() << std::endl ;
-                for( index_t j = 0; j < E.nb_children(); ++j ) {
-                    out << " " << E.child_id(j) ;
-                }
-                out << std::endl ;
-            }
+        // Number of the different type of elements 
+        for( index_t i = BME::CORNER; i < BME::NO_TYPE; i++ ) {
+             BME::TYPE type = (BME::TYPE) i;             
+             out <<  "NB_"<< BME::type_name( type ) << " " << nb_elements( type ) << std::endl ;
         }
-        
+        // Write high-level elements
+        for( index_t i = BME::CONTACT; i < BME::NO_TYPE; i++ ) {
+             BME::TYPE type = (BME::TYPE) i ;
+             index_t nb = nb_elements( type ) ;
+             for( index_t j = 0; j < nb; ++j ) {
+                save_high_level_bme( out, element( type, j ) ) ;
+             }
+        }        
         // Regions
-        out <<  "NB_"<< BME::type_name( BME::REGION ) << " "
-            << nb_elements( BME::REGION ) << std::endl ;
         for( index_t i =0 ; i < nb_regions(); ++i ){
             const BoundaryModelElement& E = region(i) ;
             // Save ID - NAME - 
@@ -593,8 +600,8 @@ namespace GRGMesh {
             if( E.has_name() ) out << E.name() ;
             else out << "no_name" ;
             out << std::endl ;
-            // nb_boundaries - Boundary ids with side
-            out << "BOUNDARY " << E.nb_boundaries() << std::endl ;
+
+            // Second line Signed ids of boundary surfaces 
             for( index_t j = 0 ; j < E.nb_boundaries(); ++j ){
                 if( E.side(j) ) out << "+" ;
                 else out << "-" ;
@@ -602,10 +609,8 @@ namespace GRGMesh {
             }
             out << std::endl ;
         }
-
         // Universe
         out << "UNIVERSE "<< std::endl ;
-        out << "BOUNDARY " << universe().nb_boundaries() << std::endl ;
         for( index_t j = 0 ; j < universe().nb_boundaries(); ++j ){
             if( universe().side(j) ) out << "+" ;
             else out << "-" ;
@@ -614,22 +619,17 @@ namespace GRGMesh {
         out << std::endl ;
 
         // Vertices
-        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;
+        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;                   
         for( index_t i = 0; i < nb_vertices(); ++i ) {
-            out << vertex(i) << std::endl ;
-        }
-
+            out << vertex(i) 
+                << std::endl ;
+        }        
         // Corners
-        out <<  "NB_"<< BME::type_name( BME::CORNER ) << " " 
-            << nb_elements( BME::CORNER ) << std::endl ;
         for( index_t i = 0; i < nb_corners(); ++i ) {
             out << BME::type_name( BME::CORNER ) << " " 
                 << corner(i).id() << " " << corner(i).model_vertex_id() << std::endl ;
         }
-
         // Lines
-        out << "NB_"<< BME::type_name( BME::LINE ) << " " 
-            << nb_elements( BME::LINE ) << std::endl ;
         for( index_t i = 0; i < nb_lines(); ++i ) {
             const Line& L = line(i) ;
             out << BME::type_name( BME::LINE) << " " << L.id() << std::endl ;
@@ -638,35 +638,23 @@ namespace GRGMesh {
             for( index_t j = 0; j < L.nb_vertices(); ++j ) {
                 out << L.model_vertex_id( j ) << "  " ;
                 count++ ;
-                if( count == 20 ){
+                if( count == 20 && j+1 < L.nb_vertices() ){
                     count = 0 ;
                     out << std::endl ;
                 }
             }
             out << std::endl ;
-            out << "IN_BOUNDARY " << L.nb_in_boundary() << std::endl ;
+            out << "IN_BOUNDARY " ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ){
                 out << L.in_boundary_id( j ) << " " ;
             }
             out << std::endl ;
         }
-        // Surface
-        out << "NB_"<< BME::type_name( BME::SURFACE ) << " " 
-            << nb_elements( BME::SURFACE ) << std::endl ;
+        // Surfaces
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             const Surface& S = surface(i) ;
             out << BME::type_name( BME::SURFACE ) << " " << S.id() << std::endl ;
-            out << "SURFACE_VERTICES " << S.nb_vertices() << std::endl ;
-            int count = 0 ;
-            for( index_t j = 0; j < S.nb_vertices(); ++j ) {
-                out << S.model_vertex_id( j ) << "  " ;
-                count++ ;
-                if( count == 20 ){
-                    count = 0 ;
-                    out << std::endl ;
-                }
-            }
-            out << std::endl ;
+            out << "SURFACE_CORNERS "<< S.nb_corners() << std::endl ;
             out << "SURFACE_FACETS " << S.nb_cells() << std::endl ;
             for( index_t j =0; j < S.nb_cells(); ++j ) {
                 out << S.nb_vertices_in_facet(j) << " " ;

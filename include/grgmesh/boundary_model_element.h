@@ -78,6 +78,8 @@ namespace GRGMesh {
          * There is two main categories of elements
          *   - low-level elements (CORNER, LINE, SURFACE, REGION) have a geometry and connectivity relationships
          *   - high-level elements (CONTACT, INTERFACE, LAYER) that are constuted of low-level elements
+         *
+         * DO NOT MODIFY THIS ENUM 
          */
         enum TYPE {
             CORNER = 0,
@@ -106,10 +108,10 @@ namespace GRGMesh {
         static TYPE in_boundary_type ( TYPE t ) ;      
         static index_t dimension     ( TYPE t ) ;       
 
-        static bool parent_allowed      ( TYPE t ) { return parent_type     (t)!= NO_ID ; }
-        static bool child_allowed       ( TYPE t ) { return child_type      (t)!= NO_ID ; }
-        static bool boundary_allowed    ( TYPE t ) { return boundary_type   (t)!= NO_ID ; }
-        static bool in_boundary_allowed ( TYPE t ) { return in_boundary_type(t)!= NO_ID ; } 
+        static bool parent_allowed      ( TYPE t ) { return parent_type     (t)!= NO_TYPE ; }
+        static bool child_allowed       ( TYPE t ) { return child_type      (t)!= NO_TYPE ; }
+        static bool boundary_allowed    ( TYPE t ) { return boundary_type   (t)!= NO_TYPE ; }
+        static bool in_boundary_allowed ( TYPE t ) { return in_boundary_type(t)!= NO_TYPE ; } 
         /*!
          * @brief Constructs a BoundaryModelElement
          * 
@@ -188,6 +190,9 @@ namespace GRGMesh {
         }  
         virtual const vec3& vertex( index_t p = 0 ) const {
             grgmesh_assert_not_reached ; return dummy_vec3 ;
+        }
+        virtual void set_vertex( index_t index, index_t model_vertex_id ) {
+            return ;
         }
                      
          /**@}
@@ -320,7 +325,8 @@ namespace GRGMesh {
         virtual index_t nb_cells() const { return 0 ; }
         virtual index_t nb_vertices() const { return 1 ; }
         virtual index_t model_vertex_id( index_t id = 0 ) const { return vertex_ ; } 
-        virtual const vec3& vertex( index_t p = 0 ) const ;
+        virtual const vec3& vertex( index_t p = 0 ) const ;        
+        virtual void set_vertex( index_t toto, index_t model_vertex_id ) { vertex_ = model_vertex_id ; }
         
         void set_vertex( index_t model_vertex_id ) { vertex_ = model_vertex_id ; }
 
@@ -359,7 +365,11 @@ namespace GRGMesh {
         virtual index_t nb_vertices() const { return vertices_.size() ; }
         virtual index_t model_vertex_id( index_t p ) const { return vertices_.at(p) ; }
         virtual const vec3& vertex( index_t line_vertex_id ) const ;
-        
+        virtual void set_vertex( index_t index, index_t model_vertex_id ) {
+            grgmesh_assert( index < nb_vertices() ) ;
+            vertices_[index] = model_vertex_id ;
+        }
+
         /*! @brief A Line is closed if its two extremities are identitcal */
         bool is_closed () const {
             grgmesh_assert( nb_boundaries() == 2 ) ;
@@ -372,9 +382,7 @@ namespace GRGMesh {
             vertices_.resize(0) ;
             vertices_.insert( vertices_.begin(), model_vertex_ids.begin(), model_vertex_ids.end() ) ;
         }
-        void set_vertex( index_t index, index_t model_vertex_id ) {
-            vertices_[index] = model_vertex_id ;
-        }
+        
 
         vec3 segment_barycenter( index_t s ) const ;
         double segment_length( index_t s ) const ;
@@ -510,6 +518,11 @@ namespace GRGMesh {
          */
         const vec3& vertex( index_t f, index_t v ) const ;
         
+        virtual void set_vertex( index_t index, index_t new_model_index ) {
+            grgmesh_assert( index < nb_vertices() ) ;
+            vertices_[index] = new_model_index ;
+        }
+
         /**
          * \name Accessors to facet and vertices
          * @{
@@ -664,10 +677,7 @@ namespace GRGMesh {
             adjacent_ = adjacent ;
         }
         
-        void set_vertex( index_t index, index_t new_model_index ) {
-            grgmesh_assert( index < nb_vertices() ) ;
-            vertices_[index] = new_model_index ;
-        }
+      
         /**
          * @}
          */
