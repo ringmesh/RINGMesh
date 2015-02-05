@@ -470,6 +470,46 @@ namespace GRGMesh {
 
         /************************************************************************/
 
+        class TSolidIOHandler: public MacroMeshIOHandler {
+        public:
+            virtual bool load( const std::string& filename, MacroMesh& mesh )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a MacroMesh from TSolid not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+            virtual bool save( const MacroMesh& mm, const std::string& filename )
+            {
+                std::ofstream out( filename.c_str() ) ;
+                out.precision( 16 ) ;
+
+                const BoundaryModel& model = mm.model() ;
+                // Print Model3d headers
+                out << "GOCAD TSolid 1" << std::endl << "HEADER {" << std::endl
+                    << "name:" << model.name() << std::endl << "}" << std::endl ;
+
+                out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
+                    << std::endl << "AXIS_NAME \"X\" \"Y\" \"Z\"" << std::endl
+                    << "AXIS_UNIT \"m\" \"m\" \"m\"" << std::endl << "ZPOSITIVE Elevation"
+                    << std::endl << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
+
+//                save_regions( out ) ;
+
+                for( index_t r = 0; r < model.nb_regions(); r++ ) {
+                    const GRGMesh::BoundaryModelElement& region = model.region( r ) ;
+                    out << "MODEL_REGION " << region.name() << " " ;
+                    region.side( 0 ) ? out << "+" : out << "-" ;
+                    out << region.boundary_id( 0 ) + 1 << std::endl ;
+                }
+
+                out << "END" << std::endl ;
+                return true ;
+            }
+        } ;
+
+        /************************************************************************/
+
         MacroMeshIOHandler* MacroMeshIOHandler::create(
             const std::string& format )
         {
