@@ -67,8 +67,8 @@ namespace GRGMesh {
         enum AttributeLocation {
             VERTEX, FACET
         } ;
-        typedef AttributeManager< VERTEX > VertexAttributeManager ;
-        typedef AttributeManager< FACET > FacetAttributeManager ;       
+        typedef AttributeManagerImpl< VERTEX > VertexAttributeManager ;
+        typedef AttributeManagerImpl< FACET > FacetAttributeManager ;       
 
         /*!
         * @brief Geological feature types for BoundaryModelElement 

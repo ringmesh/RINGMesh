@@ -577,11 +577,14 @@ namespace GRGMesh {
          out << std::endl ;    
      }
 
-
+     /*!
+      * \todo THIS IS BUGGED when a Line does not cut a Surface
+      * \todo Save attributes - could be registered here
+      */
      void BoundaryModel::save_bm_file( const std::string& file_name ) const 
      {
         std::ofstream out ;
-        out.open( file_name.c_str() );
+        out.open( file_name.c_str() ) ;
         if( out.bad() ){
             std::cout << "Error when opening the file: " << file_name.c_str() <<std::endl ;
             return ;

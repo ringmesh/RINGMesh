@@ -1555,7 +1555,7 @@ namespace GRGMesh {
 
 
     bool BoundaryModelBuilderBM::load_file( const std::string& bm_file_name ) {
-       GEO::LineInput in( bm_file_name);
+        GEO::LineInput in( bm_file_name);
         if(!in.OK()) {
             return false ;
         }        
