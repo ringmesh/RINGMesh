@@ -1016,14 +1016,12 @@ namespace GRGMesh {
      */
     void BoundaryModelBuilderGocad::load_ml_file( const std::string& ml_file_name )
     {
-        std::ifstream in( ml_file_name.c_str() ) ;
-        if ( !in.is_open() ) { 
-            std::cout<< "Could not open file " << ml_file_name << std::endl ;
-            std::cin.get() ;
-        }
-
-        // Clear the model_ 
-        // Not sure this is actually useful
+        GEO::LineInput in( ml_file_name);
+        if(!in.OK()) {
+            return ;
+        }        
+        
+        // Clear the model. Not sure this is actually useful
         model_.clear() ;
 
         time_t start_load, end_load ;
@@ -1071,270 +1069,225 @@ namespace GRGMesh {
         // because it does not match triangle orientations.
         std::vector< index_t > change_key_facet ;
 
-        // Begin reading the file 
-        InputStream lis( in ) ;
-
-        while( !lis.eof() ) {
-            lis.get_line() ;
-            std::string keyword ;
-            lis >> keyword ;
-
-            if( read_model ) {
-                if( std::string( keyword, 0, 5 ) == "name:" ) {                    
-                    set_model_name( std::string( keyword, 5 ) );
-                }
-                else if( keyword == "TSURF" ) {
-                    /// 1. Read the TSurf information and create 
-                    /// the corresponding Interface from its name
-                    std::string temp_str ;
-                    std::stringstream tsurf_name ;
-                    lis >> temp_str ;
-                    tsurf_name << temp_str ;
-                    while( !lis.eol() ) {
-                        lis >> temp_str ;
-                        tsurf_name << "_" << temp_str ;
+        while(!in.eof() && in.get_line()) {
+            in.get_fields();
+            if( in.nb_fields() > 0 ) 
+            {
+                if( read_model ) 
+                {
+                    if( strncmp( in.field(0), "name:", 5 )== 0 )
+                    {
+                        set_model_name( &in.field(0)[5] ) ;
                     }
-                    create_interface( tsurf_name.str() ) ;
-                    nb_tsurf++ ;
-                } else if( keyword == "TFACE" ) {
-                    /// 2. Read the TFace info and build the 
-                    /// corresponding Surface from its parent Interface, its type, and 
-                    /// its key facet - from which + and - side are determined
-                    index_t id ;
-                    lis >> id ;
-                    std::string type ;
-                    lis >> type ;
-
-                    std::string temp_str ;
-                    std::stringstream tsurf_name ;
-                    lis >> temp_str ;
-                    tsurf_name << temp_str ;
-                    while( !lis.eol() ) {
-                        lis >> temp_str ;
-                        tsurf_name << "_" << temp_str ;
+                    else if( in.field_matches( 0, "TSURF" ) ) 
+                    {
+                        // 1. Create Interface its name
+                        create_interface( in.field(1) ) ;
+                        nb_tsurf++ ;
                     }
-                    // Get the key facet that give the orientation of the surface part
-                    // Triangles in Gocad clockwise
-                    vec3 p0, p1, p2 ;
-                    lis.get_line() ;
-                    lis >> p0 ;
-                    lis.get_line() ;
-                    lis >> p1 ;
-                    lis.get_line() ;
-                    lis >> p2 ;
-
-                    create_surface( tsurf_name.str(), type, p0, p1, p2 ) ; 
-                    nb_tface++ ;
-
-                } else if( keyword == "REGION" ) {
-                    /// 3. Read Region information and create them from their name,
-                    /// the surfaces on their boundary                    
-                    index_t id ;
-                    std::string name ;
-                    lis >> id >> name ;
-
-                    std::vector< std::pair< index_t, bool > > region_boundaries ;
-                    bool end_region = false ;
-
-                    while( !end_region ) {
-                        lis.get_line() ;
-                        for( index_t i = 0; i < 5; ++i ) {
-                            int tface_id ;
-                            lis >> tface_id ;
-                            if( tface_id == 0 ) {
-                                end_region = true ;
-                                break ;
-                            } else {
-                                // Correction because ids begin at 1 in the file
-                                bool side = tface_id > 0 ;
-                                if( side ) tface_id += -1 ;
-                                else tface_id = -tface_id -1 ;
-                                region_boundaries.push_back(
-                                    std::pair< index_t, bool >( tface_id, side ) ) ;
-                            }
-                        }
+                    else if( in.field_matches( 0, "TFACE" ) ) 
+                    {
+                        // 2. Create the Surface from the name of its parent Interface
+                        // its geological feature
+                        index_t id = in.field_as_uint(1) ;
+                        std::string geol = in.field(2) ;
+                        std::string interface_name = in.field(3) ;
+                        // And its key facet that give the orientation of the surface part
+                        in.get_line() ; in.get_fields() ;              
+                        vec3 p0 ( in.field_as_double(0), in.field_as_double(1), in.field_as_double(2) ) ;
+                        in.get_line() ; in.get_fields() ;              
+                        vec3 p1 ( in.field_as_double(0), in.field_as_double(1), in.field_as_double(2) ) ;
+                        in.get_line() ; in.get_fields() ;              
+                        vec3 p2 ( in.field_as_double(0), in.field_as_double(1), in.field_as_double(2) ) ;
+                    
+                        create_surface( interface_name, geol, p0, p1, p2 ) ; 
+                        nb_tface++ ;
                     }
-                    // The Universe is not a regular region, it is the regions
-                    // outside the volume of interest 
-                    if( name != "Universe" ) {
-                        create_region( name, region_boundaries ) ;
-                    }
-                    else {
-                        set_universe( region_boundaries ) ;
-                    }
-                } else if( keyword == "LAYER" ) {
-                    /// 4. Build the volumetric layers from their name and 
-                    /// the regions in them
-                    std::string name ;
-                    lis >> name ;
-                    index_t layer_id = create_layer( name ) ;
-                    bool end_layer = false ;
-                    while( !end_layer ) {
-                        lis.get_line() ;
-                        for( index_t i = 0; i < 5; ++i ) {
-                            index_t region_id ;
-                            lis >> region_id ;
-                            if( region_id == 0 ) {
-                                end_layer = true ;
-                                break ;
-                            } else {
-                                region_id -= nb_tface+1 ; // Remove Universe region
-                                // Correction because ids begin at 1 in the file
-                                add_child( BME::LAYER, layer_id, region_id-1 ) ;
-                            }
-                        }
-                    }
-                } else if( keyword == "END" ) {
-                    // End of the high level information on the model
-                    // Switch to reading the geometry of the model surfaces
-                    read_model = false ;
-                    continue ;
-                }
-            } else {
-                if( keyword == "GOCAD" ) {
-                    // This is the beginning of a new TSurf = Interface
-                    tsurf_count++ ;
-                }
-                if( keyword == "ZPOSITIVE" ) {
-                    std::string positive ;
-                    lis >> positive ;
-                    if( positive == "Elevation" ) z_sign = 1 ;
-                    else if( positive == "Depth" ) z_sign = -1 ;
-                } else if( keyword == "END" ) {
-                    // This the END of a TSurf
-                    if( tsurf_count > 0 ) {
-                        // End the last TFace - Surface of this TSurf
-                        set_surface_geometry( 
-                            tface_count-1,
-                            std::vector< index_t >(
-                                tsurf_vertex_ptr.begin() + tface_vertex_start.back(),
-                                tsurf_vertex_ptr.end() ),
-                            tface_facets,
-                            tface_facets_ptr ) ;
-
-                        if( !check_key_facet_orientation( tface_count-1 ) ){
-                            change_key_facet.push_back( tface_count-1 ) ;
-                        }
-
-                        tface_facets.clear() ;
-                        tface_facets_ptr.clear() ;
-                        tface_facets_ptr.push_back( 0 ) ;
-
-                        // End this TSurf - Interface
-                        nb_tface_in_prev_tsurf += tface_vertex_start.size() ;
-                        tsurf_vertex_ptr.clear() ;
-                        tface_vertex_start.clear() ;
-                    }
-                } else if( keyword == "TFACE" ) {
-                    // Beginning of a new TFace - Surface
-                    if( tface_vertex_start.size() > 0 ) {
-                        // End the previous TFace - Surface
-
-                        set_surface_geometry( 
-                            tface_count-1,std::vector< index_t >(
-                                tsurf_vertex_ptr.begin() + tface_vertex_start.back(),
-                                tsurf_vertex_ptr.end() ),
-                            tface_facets,
-                            tface_facets_ptr ) ;
-
-                        if( !check_key_facet_orientation( tface_count-1 ) ) {
-                            change_key_facet.push_back( tface_count-1 ) ;
-                        }
+                    else if( in.field_matches( 0, "REGION" ) ) 
+                    {
+                        // 3. Read Region information and create them from their name,
+                        // the surfaces on their boundary                    
+                        index_t id = in.field_as_uint(1) ;
+                        std::string name = in.field(2) ;
                         
-                        tface_facets.clear() ;
-                        tface_facets_ptr.clear() ;
-                        tface_facets_ptr.push_back( 0 ) ;
+                        std::vector< std::pair< index_t, bool > > region_boundaries ;
+                        bool end_region = false ;
+                        while( !end_region ) {
+                            in.get_line() ; in.get_fields() ;              
+                            for( index_t i = 0; i < 5; ++i ) {
+                                int s = in.field_as_int(i) ;                                
+                                if( s == 0 ) {
+                                    end_region = true ;
+                                    break ;
+                                }
+                                bool side = s > 0 ;
+                                if( s > 0 ) s -= 1 ;
+                                else s = -s-1 ;
+                                region_boundaries.push_back(
+                                        std::pair< index_t, bool >( s, side ) ) ;                                
+                            }
+                        }
+                        // The Universe is not a regular region                       
+                        if( name == "Universe" ) set_universe( region_boundaries ) ;
+                        else create_region( name, region_boundaries ) ;
                     }
-                    // Register where begin the new TFace vertices
-                    tface_vertex_start.push_back( tsurf_vertex_ptr.size() ) ;
+                    else if( in.field_matches( 0, "LAYER" ) ) 
+                    {
+                        // 4. Build the volumetric layers from their name and 
+                        // the ids of the regions they contain
+                        index_t layer_id = create_layer( in.field(2) ) ;
+                        bool end_layer = false ;
+                        while( !end_layer ) {
+                            in.get_line() ; in.get_fields() ;              
+                            for( index_t i = 0; i < 5; ++i ) {
+                                index_t region_id = in.field_as_uint(i) ;
+                                if( region_id == 0 ) {
+                                    end_layer = true ;
+                                    break ;
+                                } else {
+                                    region_id -= nb_tface+1 ; // Remove Universe region
+                                    // Correction because ids begin at 1 in the file
+                                    add_child( BME::LAYER, layer_id, region_id-1 ) ;
+                                }
+                            }
+                        }
+                    } 
+                    else if( in.field_matches( 0, "END" ) ) 
+                    {
+                        // End of the high level information on the model
+                        // Switch to reading the geometry of the model surfaces
+                        read_model = false ;
+                        continue ;
+                    }
+                } 
+                else {
+                    if( in.field_matches( 0, "GOCAD") ) 
+                    {
+                        // This is the beginning of a new TSurf = Interface
+                        tsurf_count++ ;
+                    }
+                    if( in.field_matches( 0, "ZPOSITIVE" ) ) 
+                    {
+                        if( in.field_matches( 1, "Elevation" ) ) z_sign = 1 ;
+                        else if( in.field_matches( 1, "Depth" ) ) z_sign = -1 ;
+                        else grgmesh_assert_not_reached ;
+                    } 
+                    else if( in.field_matches( 0, "END" ) ) 
+                    {
+                        // This the END of a TSurf
+                        if( tsurf_count > 0 ) {
+                            // End the last TFace - Surface of this TSurf
+                            set_surface_geometry( 
+                                tface_count-1,
+                                std::vector< index_t >(
+                                    tsurf_vertex_ptr.begin() + tface_vertex_start.back(),
+                                    tsurf_vertex_ptr.end() ),
+                                tface_facets,
+                                tface_facets_ptr ) ;
 
-                    tface_count++ ;
-                }
-                /// 4. Read the surface vertices and facets (only triangles in Gocad Model3d files)
-                else if( keyword == "VRTX" || keyword == "PVRTX" ) {
-                    index_t id ;
-                    vec3 p ;
-                    lis >> id >> p ;
-                    p.z *= z_sign ;
-                    tsurf_vertex_ptr.push_back( add_vertex( p ) ) ;
-                } else if( keyword == "PATOM" || keyword == "ATOM" ) {
-                    index_t id ;
-                    index_t v_id ;
-                    lis >> id >> v_id ;
-                    tsurf_vertex_ptr.push_back( tsurf_vertex_ptr[v_id - 1] ) ;
-                } else if( keyword == "TRGL" ) {
-                    // Ids of the vertices of each triangle in the TSurf
-                    index_t p1, p2, p3 ;
-                    lis >> p1 >> p2 >> p3 ;
-                    // Change to ids in the TFace
-                    p1 += -tface_vertex_start.back()-1 ;
-                    p2 += -tface_vertex_start.back()-1 ;
-                    p3 += -tface_vertex_start.back()-1 ;
+                            if( !check_key_facet_orientation( tface_count-1 ) ){
+                                change_key_facet.push_back( tface_count-1 ) ;
+                            }
 
-                    tface_facets.push_back( p1 ) ;
-                    tface_facets.push_back( p2 ) ;
-                    tface_facets.push_back( p3 ) ;
-                    tface_facets_ptr.push_back( tface_facets.size() ) ;
-                }
-                /// 5. Build the corners from their position and the surface parts
-                ///    containing them
-                else if( keyword == "BSTONE" ) {
-                    index_t v_id ;
-                    lis >> v_id ;
-                    // correction to start at 0
-                    v_id-- ;
+                            tface_facets.clear() ;
+                            tface_facets_ptr.clear() ;
+                            tface_facets_ptr.push_back( 0 ) ;
 
-                    // Get the TFace
-                    index_t part_id = tface_vertex_start.size() - 1 ;
-                    for( index_t i = 0; i < tface_vertex_start.size(); ++i ) {
-                        if( v_id < tface_vertex_start[i] ) {
-                            part_id = i - 1 ;
-                            break ;
+                            // End this TSurf - Interface
+                            nb_tface_in_prev_tsurf += tface_vertex_start.size() ;
+                            tsurf_vertex_ptr.clear() ;
+                            tface_vertex_start.clear() ;
                         }
                     }
-                    part_id += nb_tface_in_prev_tsurf ;
+                    else if( in.field_matches( 0, "TFACE" ) ) 
+                    {
+                        // Beginning of a new TFace - Surface
+                        if( tface_vertex_start.size() > 0 ) {
+                            // End the previous TFace - Surface  (copy from line 1180)
+                            set_surface_geometry( 
+                                tface_count-1,std::vector< index_t >(
+                                    tsurf_vertex_ptr.begin() + tface_vertex_start.back(),
+                                    tsurf_vertex_ptr.end() ),
+                                tface_facets,
+                                tface_facets_ptr ) ;
 
-                    // c'est plus bon �a -compare geometry
-                    index_t new_c = find_corner( model_.vertex( tsurf_vertex_ptr[v_id] ) ) ;
-                    if( new_c == NO_ID ) create_corner( tsurf_vertex_ptr[v_id] ) ;
-                }
-                /// 6. Read the Border information and store it
-                else if( keyword == "BORDER" ) {
-                    index_t id, p1, p2 ;
-                    lis >> id >> p1 >> p2 ;
-                    p1-- ;
-                    p2-- ;
-
-                    // Get the global corner id
-                    index_t corner_id = find_corner( model_.vertex( tsurf_vertex_ptr[p1] ) ) ;
-                    grgmesh_assert( corner_id != NO_ID ) ;
-
-                    // Get the surface
-                    index_t part_id = NO_ID ;
-                    for( index_t i = 0; i < tface_vertex_start.size(); ++i ) {
-                        if( p1 < tface_vertex_start[i] ) {
-                            grgmesh_assert( p2 < tface_vertex_start[i] ) ;
-
-                            // Get vertices ids in the surface
-                            p1 += -tface_vertex_start[i - 1] ;
-                            p2 += -tface_vertex_start[i - 1] ;
-
-                            // i-1 is the id of the TFace in this TSurf
-                            part_id = i - 1 ;
-                            break ;
+                            if( !check_key_facet_orientation( tface_count-1 ) ) {
+                                change_key_facet.push_back( tface_count-1 ) ;
+                            }
+                        
+                            tface_facets.clear() ;
+                            tface_facets_ptr.clear() ;
+                            tface_facets_ptr.push_back( 0 ) ;
                         }
-                    }
-                    if( part_id == NO_ID ) {
-                        // It is in the last built Tface
-                        p1 += -tface_vertex_start[tface_vertex_start.size() - 1] ;
-                        p2 += -tface_vertex_start[tface_vertex_start.size() - 1] ;
-                        part_id = tface_vertex_start.size() - 1 ;
-                    }
-                    // The number of tfaces in previous tsurf is also to add
-                    part_id += nb_tface_in_prev_tsurf ;
+                        // Register where begin the new TFace vertices
+                        tface_vertex_start.push_back( tsurf_vertex_ptr.size() ) ;
 
-                    borders_to_build.push_back(
-                        Border( part_id, corner_id, p1, p2 ) ) ;
+                        tface_count++ ;
+                    }
+                    // 4. Read the surface vertices and facets (only triangles in Gocad Model3d files)
+                    else if( in.field_matches( 0, "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) 
+                    {
+                        const vec3 p(in.field_as_double(2), in.field_as_double(3), z_sign*in.field_as_double(4)) ;
+                        tsurf_vertex_ptr.push_back( add_vertex( p ) ) ;
+                    } 
+                    else if( in.field_matches( 0, "PATOM" ) | in.field_matches( 0, "ATOM" ) ) 
+                    {
+                        tsurf_vertex_ptr.push_back( tsurf_vertex_ptr[in.field_as_uint(2) - 1] ) ;
+                    } 
+                    else if( in.field_matches( 0, "TRGL" ) ) 
+                    {
+                        // Read ids of the vertices of each triangle in the TSurf                        
+                        // and switch to ids in the TFace
+                        tface_facets.push_back( (index_t) in.field_as_uint(1)-tface_vertex_start.back()-1 ) ;
+                        tface_facets.push_back( (index_t) in.field_as_uint(2)-tface_vertex_start.back()-1 ) ;
+                        tface_facets.push_back( (index_t) in.field_as_uint(3)-tface_vertex_start.back()-1 ) ;
+                        tface_facets_ptr.push_back( tface_facets.size() ) ;
+                    }
+                    // 5. Build the corners from their position and the surface parts
+                    //    containing them
+                    else if( in.field_matches( 0, "BSTONE" ) ) 
+                    {
+                        index_t v_id = in.field_as_uint(1)-1 ;                        
+                        if( find_corner( model_.vertex( tsurf_vertex_ptr[v_id] ) ) == NO_ID ) 
+                            create_corner( tsurf_vertex_ptr[v_id] ) ;
+                    }
+                    /// 6. Read the Border information and store it
+                    else if( in.field_matches( 0, "BORDER" ) ) 
+                    {
+                        index_t p1 = in.field_as_uint(2)-1 ;
+                        index_t p2 = in.field_as_uint(3)-1 ;
+
+                        // Get the global corner id
+                        index_t corner_id = find_corner( model_.vertex( tsurf_vertex_ptr[p1] ) ) ;
+                        grgmesh_assert( corner_id != NO_ID ) ;
+
+                        // Get the surface
+                        index_t part_id = NO_ID ;
+                        for( index_t i = 0; i < tface_vertex_start.size(); ++i ) {
+                            if( p1 < tface_vertex_start[i] ) {
+                                grgmesh_assert( p2 < tface_vertex_start[i] ) ;
+
+                                // Get vertices ids in the surface
+                                p1 += -tface_vertex_start[i - 1] ;
+                                p2 += -tface_vertex_start[i - 1] ;
+
+                                // i-1 is the id of the TFace in this TSurf
+                                part_id = i - 1 ;
+                                break ;
+                            }
+                        }
+                        if( part_id == NO_ID ) {
+                            // It is in the last built Tface
+                            p1 += -tface_vertex_start[tface_vertex_start.size() - 1] ;
+                            p2 += -tface_vertex_start[tface_vertex_start.size() - 1] ;
+                            part_id = tface_vertex_start.size() - 1 ;
+                        }
+                        // The number of tfaces in previous tsurf is also to add
+                        part_id += nb_tface_in_prev_tsurf ;
+
+                        borders_to_build.push_back(
+                            Border( part_id, corner_id, p1, p2 ) ) ;
+                    }
                 }
             }
         }
@@ -1783,7 +1736,8 @@ namespace GRGMesh {
                 }
             }
         }
-        grgmesh_assert( end_model() ) ;                   
+        grgmesh_assert( end_model() ) ;       
+        return true ;
     }  
 
     BoundaryModelElement::TYPE BoundaryModelBuilderBM::match_nb_elements( const char* s )
