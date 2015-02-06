@@ -1,16 +1,42 @@
-/*[
- * Association Scientifique pour la Geologie et ses Applications (ASGA)
- * Copyright (c) 1993-2013 ASGA. All Rights Reserved.
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * This program is a Trade Secret of the ASGA and it is not to be:
- * - reproduced, published, or disclosed to other,
- * - distributed or displayed,
- * - used for purposes or on Sites other than described
- *   in the GOCAD Advancement Agreement,
- * without the prior written authorization of the ASGA. Licencee
- * agrees to attach or embed this Notice on all copies of the program,
- * including partial copies or modified versions thereof.
- ]*/
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr 
+ *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.gocad.org
+ *
+ *     GOCAD Project
+ *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY 
+ *     FRANCE
+*/
 
 #ifndef __GRGMESH_UTILS__
 #define __GRGMESH_UTILS__
@@ -703,84 +729,6 @@ namespace GRGMesh {
             const vec3& trgl1,
             const vec3& trgl2,
             vec3& result ) ;
-    } ;
-
-    class InputStream {
-    public:
-        InputStream( std::istream& in )
-            : in_( in ), line_in_( nil )
-        {
-        }
-        ~InputStream()
-        {
-            delete line_in_ ;
-            line_in_ = nil ;
-        }
-        bool eof() const
-        {
-            return in_.eof() ;
-        }
-        bool eol() const
-        {
-            return line_in_ == nil || line_in_->eof() ;
-        }
-        bool ok() const
-        {
-            return in_ != 0 ;
-        }
-
-        void get_line()
-        {
-            in_.getline( buffer_, 65536 ) ;
-            bool check_multiline = true ;
-            signed_index_t total_length = 65536 ;
-            char* ptr = buffer_ ;
-
-            // If the line ends with a backslash, append
-            // the next line to the current line.
-            while( check_multiline ) {
-                signed_index_t L = (int) strlen( ptr ) ;
-                total_length -= L ;
-                ptr = ptr + L - 2 ;
-                if( *ptr == '\\' && total_length > 0 ) {
-                    *ptr = ' ' ;
-                    ptr++ ;
-                    in_.getline( ptr, total_length ) ;
-                } else {
-                    check_multiline = false ;
-                }
-            }
-
-            if( total_length < 0 ) {
-                std::cerr << "MultiLine longer than 65536 bytes" << std::endl ;
-            }
-
-            delete line_in_ ;
-            line_in_ = new std::istringstream( buffer_ ) ;
-        }
-
-        std::istream& line()
-        {
-            grgmesh_assert( line_in_ != nil ) ;
-            return *line_in_ ;
-        }
-
-        const char *current_line() const
-        {
-            return buffer_ ;
-        }
-
-        template< class T > InputStream& operator>>( T& param )
-        {
-            param = T() ; // reset do default value, in case *line_in_ is EOF.
-            *line_in_ >> param ;
-            return *this ;
-        }
-
-    private:
-        std::istream& in_ ;
-        std::istringstream* line_in_ ;
-        char buffer_[65536] ;
     } ;
 
     class GRGMESH_API MakeUnique {
