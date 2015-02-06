@@ -73,7 +73,7 @@ namespace GRGMesh {
         enum AttributeLocation {
             VERTEX
         } ;       
-        typedef AttributeManager< VERTEX > VertexAttributeManager ;
+        typedef AttributeManagerImpl< VERTEX > VertexAttributeManager ;
         typedef BoundaryModelElement BME ;
                
         const static index_t NO_ID = index_t( -1 ) ;
