@@ -581,7 +581,7 @@ namespace GRGMesh {
       * \todo THIS IS BUGGED when a Line does not cut a Surface
       * \todo Save attributes - could be registered here
       */
-     void BoundaryModel::save_bm_file( const std::string& file_name ) const 
+     void BoundaryModel::save_bm_file( const std::string& file_name )  
      {
         std::ofstream out ;
         out.open( file_name.c_str() ) ;
@@ -679,6 +679,10 @@ namespace GRGMesh {
                 out << std::endl ;
             }
         }
+
+        std::vector< SerializedAttribute< VERTEX>  > out_attribs ;
+
+        bool test = get_serializable_attributes( &vertex_attribute_manager_, out_attribs, out ) ; 
     }
 
 

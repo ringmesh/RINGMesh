@@ -161,13 +161,29 @@ namespace GRGMesh {
     } ;
 
 
+   class AttributeBase {
+   protected:
+       static AttributeStore* resolve_named_attribute_store(
+           AttributeManager* manager, const std::string& name
+       ) {
+           return manager->resolve_named_attribute_store(name) ;
+       }
+   
+       static void bind_named_attribute_store(
+           AttributeManager* manager, 
+           const std::string& name, AttributeStore* as
+       ) {
+           manager->bind_named_attribute_store(name,as) ;
+       }
+   } ;
+
     /** 
      * \brief Generic attribute class - Storage on given elements of a given object 
      * The elements on which is defined the attribute are of the given ElementType.
      * Access to attribute value only using the index of the element in the object. Jeanne
      */ 
     template< int32 LOCATION, class ATTRIBUTE >
-    class Attribute {
+    class Attribute : public AttributeBase {
     public:
         typedef Attribute< LOCATION, ATTRIBUTE > thisclass ;
         typedef AttributeManagerImpl< LOCATION > Manager ;
@@ -251,7 +267,7 @@ namespace GRGMesh {
             return reinterpret_cast< ATTRIBUTE* >( store_->data( id ) ) ;
         }
 
-        // must be static because used in static function is_definedline 191
+       /* // must be static because used in static function is_definedline 191
         static AttributeStore* resolve_named_attribute_store(
             Manager* manager,
             const std::string& name )
@@ -266,6 +282,7 @@ namespace GRGMesh {
         {
             manager->bind_named_attribute_store( name, as ) ;
         }
+        */
 
     private:
         AttributeStore_var store_ ;
@@ -339,9 +356,9 @@ namespace GRGMesh {
      * In the common.cpp file of the library, add:
      * ogf_register_attribute_type<MyAttributeType>("MyAttributeType") ;
      */
-    template <int32 T> class ogf_register_attribute_type {
+    template <int32 T> class grgmesh_register_attribute_type {
     public:
-        ogf_register_attribute_type(const std::string& type_name) {
+        grgmesh_register_attribute_type(const std::string& type_name) {
             AttributeSerializer::bind(typeid(T), type_name, new GenericAttributeSerializer<T>()) ;
         }
     } ;
@@ -397,7 +414,7 @@ namespace GRGMesh {
             if(serializer_ != nil) {
                 if(attribute_manager_->named_attribute_is_bound(name)) {
                     attribute_store_ = resolve_named_attribute_store(attribute_manager_,name) ;
-                    ogf_assert(
+                    grgmesh_assert(
                         AttributeSerializer::find_name_by_type(
                             attribute_store_->attribute_type_id()
                         ) == attribute_type_name
@@ -446,7 +463,7 @@ namespace GRGMesh {
         const std::string& name() const { return name_ ; }
 
         std::string type_name() const {
-            ogf_assert(attribute_store_ != nil) ;
+            grgmesh_assert(attribute_store_ != nil) ;
             return AttributeSerializer::find_name_by_type(attribute_store_->attribute_type_id()) ;
         }
 
@@ -464,7 +481,7 @@ namespace GRGMesh {
        
     template< int32 T > inline bool get_serializable_attributes(
         AttributeManagerImpl<T>* manager, std::vector<SerializedAttribute<T> >& attributes,
-        std::ostream& out, const std::string& localisation, const std::string& attribute_kw = "# attribute"
+        std::ostream& out
     ) {
         bool result = false ;
         std::vector<std::string> names ;
@@ -473,13 +490,13 @@ namespace GRGMesh {
             attributes.push_back(SerializedAttribute<T>()) ;
             attributes.rbegin()->bind(manager, names[i]) ;
             if(attributes.rbegin()->is_bound()) {
-                std::cerr << "Attribute " << names[i] << " on " << localisation << " : " 
+                std::cerr << "Attribute " << names[i] // << " on " << localisation << " : " 
                           << attributes.rbegin()->type_name() << std::endl ;
-                out << attribute_kw << " " << names[i] << " " << localisation << " " 
+                out << /*attribute_kw << " " <<*/ names[i] << " " /*<< localisation << " " */
                     << attributes.rbegin()->type_name() << std::endl ;
                 result = true ;
             } else {
-                std::cerr << "Attribute " << names[i] << " on " << localisation 
+                std::cerr << "Attribute " << names[i] /*<< " on " << localisation */
                           << " is not serializable" << std::endl ;
                 attributes.pop_back() ;
             }

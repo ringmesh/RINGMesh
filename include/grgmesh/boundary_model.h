@@ -200,7 +200,7 @@ namespace GRGMesh {
         bool save_gocad_model3d( std::ostream& out ) ;
         void save_as_eobj_file( const std::string& file_name ) ;
         void save_surface_as_obj_file( index_t s, const std::string& file_name ) const ;
-        void save_bm_file( const std::string& file_name ) const ;
+        void save_bm_file( const std::string& file_name ) ;
 
         /**
         * @}
