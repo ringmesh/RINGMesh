@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
@@ -290,7 +290,7 @@ namespace GRGMesh {
 
 
     
-    // What follows come directly from Graphite Copyright Bruno Lévy
+    // What follows come directly from Graphite Copyright Bruno Lï¿½vy
     /**
      * AttributeSerializer is used to save and load attributes attached
      * to an object. This is the base class for serializing the value of 
@@ -356,7 +356,7 @@ namespace GRGMesh {
      * In the common.cpp file of the library, add:
      * ogf_register_attribute_type<MyAttributeType>("MyAttributeType") ;
      */
-    template <int32 T> class grgmesh_register_attribute_type {
+    template <class T> class grgmesh_register_attribute_type {
     public:
         grgmesh_register_attribute_type(const std::string& type_name) {
             AttributeSerializer::bind(typeid(T), type_name, new GenericAttributeSerializer<T>()) ;
@@ -467,8 +467,8 @@ namespace GRGMesh {
             return AttributeSerializer::find_name_by_type(attribute_store_->attribute_type_id()) ;
         }
 
-        SerializedAttributeRef operator[]( const index_t ) {
-            return SerializedAttributeRef(serializer_, attribute_store_->data(*record)) ;
+        SerializedAttributeRef operator[]( const index_t record ) {
+            return SerializedAttributeRef(serializer_, attribute_store_->data(record)) ;
         }
 
     private:
