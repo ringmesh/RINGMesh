@@ -55,6 +55,11 @@
 #include <stack>
 
 namespace GRGMesh {
+    double read_double( GEO::LineInput& in, index_t field ) {
+        double result ;
+        GEO::String::from_string( in.field( field ), result ) ;
+        return result ;
+    }
 
     /*!
      * @brief Copy macro information from a model
@@ -1094,11 +1099,11 @@ namespace GRGMesh {
                         std::string interface_name = in.field(3) ;
                         // And its key facet that give the orientation of the surface part
                         in.get_line() ; in.get_fields() ;              
-                        vec3 p0 ( in.field_as_double(0), in.field_as_double(1), in.field_as_double(2) ) ;
+                        vec3 p0 ( read_double( in, 0 ), read_double( in, 1 ), read_double( in, 2 ) ) ;
                         in.get_line() ; in.get_fields() ;              
-                        vec3 p1 ( in.field_as_double(0), in.field_as_double(1), in.field_as_double(2) ) ;
+                        vec3 p1 ( read_double( in, 0 ), read_double( in, 1 ), read_double( in, 2 ) ) ;
                         in.get_line() ; in.get_fields() ;              
-                        vec3 p2 ( in.field_as_double(0), in.field_as_double(1), in.field_as_double(2) ) ;
+                        vec3 p2 ( read_double( in, 0 ), read_double( in, 1 ), read_double( in, 2 ) ) ;
                     
                         create_surface( interface_name, geol, p0, p1, p2 ) ; 
                         nb_tface++ ;
@@ -1227,7 +1232,7 @@ namespace GRGMesh {
                     // 4. Read the surface vertices and facets (only triangles in Gocad Model3d files)
                     else if( in.field_matches( 0, "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) 
                     {
-                        const vec3 p(in.field_as_double(2), in.field_as_double(3), z_sign*in.field_as_double(4)) ;
+                        const vec3 p( read_double( in, 2 ), read_double( in, 3 ), z_sign*read_double( in, 4 )) ;
                         tsurf_vertex_ptr.push_back( add_vertex( p ) ) ;
                     } 
                     else if( in.field_matches( 0, "PATOM" ) | in.field_matches( 0, "ATOM" ) ) 
@@ -1647,7 +1652,7 @@ namespace GRGMesh {
                     for( index_t i = 0; i < nb_vertices; ++i ){
                         in.get_line() ; in.get_fields() ;              
                         add_vertex( vec3( 
-                            in.field_as_double(0), in.field_as_double(1), in.field_as_double(2) ) ) ;
+                            read_double( in, 0 ), read_double( in, 1 ), read_double( in, 2 ) ) ) ;
                     }
                 }
                 // Corners
