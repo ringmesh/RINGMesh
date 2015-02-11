@@ -1,16 +1,16 @@
 /*[
-* Association Scientifique pour la Geologie et ses Applications (ASGA)
-* Copyright (c) 1993-2013 ASGA. All Rights Reserved.
-*
-* This program is a Trade Secret of the ASGA and it is not to be:
-* - reproduced, published, or disclosed to other,
-* - distributed or displayed,
-* - used for purposes or on Sites other than described
-*   in the GOCAD Advancement Agreement,
-* without the prior written authorization of the ASGA. Licencee
-* agrees to attach or embed this Notice on all copies of the program,
-* including partial copies or modified versions thereof.
-]*/
+ * Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 1993-2013 ASGA. All Rights Reserved.
+ *
+ * This program is a Trade Secret of the ASGA and it is not to be:
+ * - reproduced, published, or disclosed to other,
+ * - distributed or displayed,
+ * - used for purposes or on Sites other than described
+ *   in the GOCAD Advancement Agreement,
+ * without the prior written authorization of the ASGA. Licencee
+ * agrees to attach or embed this Notice on all copies of the program,
+ * including partial copies or modified versions thereof.
+ ]*/
 
 #include <grgmesh/utils.h>
 #include <grgmesh/boundary_model.h>
@@ -41,7 +41,7 @@ namespace GRGMesh {
         return ( 1.0 / count ) * result ;
     }
 
-    vec3 mesh_cell_facet_normal( const GEO::Mesh& M, index_t c, index_t f )
+    vec3 Utils::mesh_cell_facet_normal( const GEO::Mesh& M, index_t c, index_t f )
     {
         const vec3& p1 = GEO::Geom::mesh_vertex( M,
             M.cell_facet_vertex_index( c, f, 0 ) ) ;
@@ -52,14 +52,16 @@ namespace GRGMesh {
         return cross( p2 - p1, p3 - p1 ) ;
     }
 
-    vec3 Utils::mesh_cell_center(const GEO::Mesh& M, index_t cell) {
-        vec3 result(0.0, 0.0, 0.0);
-        double count = 0.0;
-        for(index_t c = M.cell_vertices_begin(cell); c < M.cell_vertices_begin(cell+1); ++c) {
-            result += GEO::Geom::mesh_corner_vertex(M, c);
-            count += 1.0;
+    vec3 Utils::mesh_cell_center( const GEO::Mesh& M, index_t cell )
+    {
+        vec3 result( 0.0, 0.0, 0.0 ) ;
+        double count = 0.0 ;
+        for( index_t c = M.cell_vertices_begin( cell );
+            c < M.cell_vertices_begin( cell + 1 ); ++c ) {
+            result += GEO::Geom::mesh_corner_vertex( M, c ) ;
+            count += 1.0 ;
         }
-        return (1.0 / count) * result;
+        return ( 1.0 / count ) * result ;
     }
 
     MakeUnique::MakeUnique( const std::vector< vec3 >& points )
@@ -72,9 +74,10 @@ namespace GRGMesh {
         }
     }
 
-    static bool inexact_equal( const vec3& v1, const vec3& v2 ) {
+    static bool inexact_equal( const vec3& v1, const vec3& v2 )
+    {
         for( index_t i = 0; i < 3; i++ ) {
-            double diff( v1[i]-v2[i] ) ;
+            double diff( v1[i] - v2[i] ) ;
             if( diff > epsilon || diff < -epsilon ) {
                 return false ;
             }
@@ -183,10 +186,11 @@ namespace GRGMesh {
         index_t c11,
         index_t f2 )
     {
-        index_t c12 = mesh.next_around_facet(f1, c11);
+        index_t c12 = mesh.next_around_facet( f1, c11 ) ;
         index_t v11 = mesh.corner_vertex_index( c11 ) ;
         index_t v12 = mesh.corner_vertex_index( c12 ) ;
-        for( index_t c21 = mesh.facet_begin( f2 ); c21 < mesh.facet_end( f2 ); c21++ ) {
+        for( index_t c21 = mesh.facet_begin( f2 ); c21 < mesh.facet_end( f2 );
+            c21++ ) {
             index_t c22 = mesh.next_around_facet( f2, c21 ) ;
             index_t v21 = mesh.corner_vertex_index( c21 ) ;
             index_t v22 = mesh.corner_vertex_index( c22 ) ;
@@ -207,7 +211,7 @@ namespace GRGMesh {
     {
         if( mesh.nb_facets() == 0 ) return ;
 
-        /// 1 - Remove duplicated facets (optionnal)
+        /// 0 - Remove duplicated facets (optionnal)
         if( check_duplicated_facet ) {
             std::vector< vec3 > barycenters( mesh.nb_facets(), vec3( 0, 0, 0 ) ) ;
             for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
@@ -229,46 +233,97 @@ namespace GRGMesh {
             mesh.remove_facets( facet_to_remove ) ;
 
             if( mesh.has_attribute( GEO::MESH_FACET_REGION ) ) {
-                GEO::vector< signed_index_t >& attribute = GEO::MeshMutator::facet_regions( mesh ) ;
+                GEO::vector< signed_index_t >& attribute =
+                    GEO::MeshMutator::facet_regions( mesh ) ;
                 signed_index_t offset = 0 ;
                 cur_id = 0 ;
                 for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
                     if( cur_id == indices[f] ) {
                         cur_id++ ;
-                        attribute[f-offset] = attribute[f] ;
+                        attribute[f - offset] = attribute[f] ;
                     } else {
                         offset++ ;
                     }
                 }
-                attribute.erase( attribute.end()-offset, attribute.end() ) ;
+                attribute.erase( attribute.end() - offset, attribute.end() ) ;
             }
             mesh.update_cached_variables() ;
             mesh.connect_facets() ;
         }
 
+        /// 1 - Check facet adjacencies for non-manifold surfaces
+        std::vector< index_t > temp ;
+        temp.reserve( 6 ) ;
+        std::vector< std::vector< index_t > > stars( mesh.nb_vertices(), temp ) ;
+        for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
+            for( index_t c = mesh.facet_begin( f ); c < mesh.facet_end( f ); c++ ) {
+                stars[mesh.corner_vertex_index( c )].push_back( f ) ;
+            }
+        }
+        for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
+            index_t surface_id = mesh.facet_region( f ) ;
+            for( index_t c = mesh.facet_begin( f ); c < mesh.facet_end( f ); c++ ) {
+                signed_index_t f_adj = mesh.corner_adjacent_facet( c ) ;
+                if( f_adj != -1 && mesh.facet_region( f_adj ) != surface_id ) {
+                    f_adj = -1 ;
+                }
+                if( f_adj == -1 ) {
+                    const std::vector< index_t >& star0 =
+                        stars[mesh.corner_vertex_index( c )] ;
+                    const std::vector< index_t >& star1 =
+                        stars[mesh.corner_vertex_index(
+                            mesh.next_around_facet( f, c ) )] ;
+                    std::vector< index_t > intersect(
+                        std::min( star0.size(), star1.size() ) ) ;
+                    intersect.erase(
+                        std::set_intersection( star0.begin(), star0.end(),
+                            star1.begin(), star1.end(), intersect.begin() ),
+                        intersect.end() ) ;
+                    if( intersect.size() > 1 ) {
+                        for( index_t i = 0; i < intersect.size(); i++ ) {
+                            index_t cur_f = intersect[i] ;
+                            if( cur_f != f
+                                && mesh.facet_region( cur_f ) == surface_id ) {
+                                f_adj = cur_f ;
+                            }
+                        }
+                    }
+                }
+                mesh.set_corner_adjacent_facet( c, f_adj ) ;
+            }
+        }
+
         /// 2 - Reorient in the same direction using propagation
+        std::ofstream reorient( "/home/botella/test_vortex/reorient.txt" ) ;
         std::vector< bool > facet_visited( mesh.nb_facets(), false ) ;
         for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
             if( facet_visited[f] ) continue ;
             index_t surface_id = mesh.facet_region( f ) ;
+            reorient << "START REORIENT -> " << surface_id << std::endl ;
             std::stack< index_t > S ;
             S.push( f ) ;
             do {
                 index_t cur_f = S.top() ;
+                reorient << "cur_f " << cur_f << " adj" ;
                 S.pop() ;
                 if( facet_visited[cur_f] ) continue ;
                 facet_visited[cur_f] = true ;
-                for( unsigned int c = mesh.facet_begin( cur_f );
+                for( index_t c = mesh.facet_begin( cur_f );
                     c < mesh.facet_end( cur_f ); c++ ) {
                     signed_index_t f_adj = mesh.corner_adjacent_facet( c ) ;
+                    reorient << " " << f_adj ;
                     if( f_adj == -1 || mesh.facet_region( f_adj ) != surface_id
                         || facet_visited[f_adj] ) continue ;
                     if( !facets_have_same_orientation( mesh, cur_f, c, f_adj ) ) {
+                        reorient << " REORIENT " ;
                         GEO::MeshMutator::flip_facet( mesh, f_adj ) ;
                     }
                     S.push( f_adj ) ;
+                    reorient << " PUSH" ;
                 }
+                reorient << std::endl ;
             } while( !S.empty() ) ;
+            reorient << std::endl ;
         }
 
         /// 3 - Check for consistent orientation with BoundaryModel
@@ -276,8 +331,8 @@ namespace GRGMesh {
         std::vector< bool > flip_surface( region.model().nb_surfaces(), false ) ;
         bool flip_sthg = false ;
         for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
-            const Surface& surface =
-                dynamic_cast< const Surface& >( region.boundary( s ) ) ;
+            const Surface& surface = dynamic_cast< const Surface& >( region.boundary(
+                s ) ) ;
             vec3 barycenter = surface.facet_barycenter( 0 ) ;
             vec3 nearest_point ;
             float64 distance ;
@@ -323,19 +378,19 @@ namespace GRGMesh {
         vec3 diff = O_inter - O_circle ;
         float64 a2 = D_inter.length2() ;
         float64 a1 = dot( diff, D_inter ) ;
-        float64 a0 = diff.length2() - r*r ;
+        float64 a0 = diff.length2() - r * r ;
 
-        float64 discr = a1*a1 - a0*a2 ;
+        float64 discr = a1 * a1 - a0 * a2 ;
         if( discr < 0.0 ) return false ;
 
-        if( fabs(a2) < epsilon ) return false ;
-        float64 inv = 1.0/a2 ;
+        if( fabs( a2 ) < epsilon ) return false ;
+        float64 inv = 1.0 / a2 ;
         if( discr < epsilon ) {
-            result.push_back( vec3( O_inter - (a1*inv)*D_inter ) ) ;
+            result.push_back( vec3( O_inter - ( a1 * inv ) * D_inter ) ) ;
         } else {
             float64 root = sqrt( discr ) ;
-            result.push_back( vec3( O_inter - ( (a1 + root)*inv )*D_inter ) ) ;
-            result.push_back( vec3( O_inter - ( (a1 - root)*inv )*D_inter ) ) ;
+            result.push_back( vec3( O_inter - ( ( a1 + root ) * inv ) * D_inter ) ) ;
+            result.push_back( vec3( O_inter - ( ( a1 - root ) * inv ) * D_inter ) ) ;
         }
         return true ;
     }
@@ -364,14 +419,14 @@ namespace GRGMesh {
         // where det = 1 - d^2.
 
         float64 d = dot( N_P0, N_P1 ) ;
-        if( fabs( d - 1  ) < epsilon ) return false ;
+        if( fabs( d - 1 ) < epsilon ) return false ;
 
-        float64 invDet = 1.0 / ( 1.0 - d*d ) ;
+        float64 invDet = 1.0 / ( 1.0 - d * d ) ;
         float64 const_P0 = dot( N_P0, O_P0 ) ;
         float64 const_P1 = dot( N_P1, O_P1 ) ;
-        float64 c0 = ( const_P0 - d*const_P1 ) * invDet ;
-        float64 c1 = ( const_P1 - d*const_P0 ) * invDet ;
-        O_inter = c0*N_P0 + c1*N_P1 ;
+        float64 c0 = ( const_P0 - d * const_P1 ) * invDet ;
+        float64 c1 = ( const_P1 - d * const_P0 ) * invDet ;
+        O_inter = c0 * N_P0 + c1 * N_P1 ;
         D_inter = cross( N_P0, N_P1 ) ;
         return true ;
     }
@@ -406,7 +461,7 @@ namespace GRGMesh {
         const vec3& p1,
         vec3& new_p )
     {
-        vec3 center = (p0+p1) * 0.5 ;
+        vec3 center = ( p0 + p1 ) * 0.5 ;
         vec3 diff = p - center ;
         vec3 edge = p1 - p0 ;
         float64 extent = 0.5 * edge.length() ;
@@ -457,7 +512,7 @@ namespace GRGMesh {
         } else if( s1 > extent[1] ) {
             s1 = extent[1] ;
         }
-        sqrDistance += s1 * ( s1 +  2. * b1 ) ;
+        sqrDistance += s1 * ( s1 + 2. * b1 ) ;
 
         // Account for numerical round-off error.
         if( sqrDistance < 0 ) {
@@ -473,13 +528,16 @@ namespace GRGMesh {
     }
 
     bool Utils::segment_triangle_intersection(
-        const vec3& seg0, const vec3& seg1,
-        const vec3& trgl0, const vec3& trgl1, const vec3& trgl2,
+        const vec3& seg0,
+        const vec3& seg1,
+        const vec3& trgl0,
+        const vec3& trgl1,
+        const vec3& trgl2,
         vec3& result )
     {
         // http://www.geometrictools.com/LibMathematics/Intersection/Intersection.html
         // Compute the offset origin, edges, and normal.
-        vec3 seg_center = (seg0+seg1)/2 ;
+        vec3 seg_center = ( seg0 + seg1 ) / 2 ;
         vec3 diff = seg_center - trgl0 ;
         vec3 edge1 = trgl1 - trgl0 ;
         vec3 edge2 = trgl2 - trgl0 ;
@@ -490,13 +548,13 @@ namespace GRGMesh {
         //   |Dot(D,N)|*b1 = sign(Dot(D,N))*Dot(D,Cross(Q,E2))
         //   |Dot(D,N)|*b2 = sign(Dot(D,N))*Dot(D,Cross(E1,Q))
         //   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
-        vec3 D = normalize( seg1-seg0 ) ;
+        vec3 D = normalize( seg1 - seg0 ) ;
         float64 DdN = dot( D, normal ) ;
         signed_index_t sign ;
         if( DdN > epsilon ) {
             sign = 1 ;
         } else if( DdN < -epsilon ) {
-            sign = - 1 ;
+            sign = -1 ;
             DdN = -DdN ;
         } else {
             // Segment and triangle are parallel, call it a "no intersection"
@@ -511,7 +569,7 @@ namespace GRGMesh {
                 if( DdQxE2 + DdE1xQ <= DdN ) {
                     // Line intersects triangle, check if segment does.
                     float64 QdN = -sign * dot( diff, normal ) ;
-                    float64 extDdN = length( seg1-seg0 ) * DdN / 2. ;
+                    float64 extDdN = length( seg1 - seg0 ) * DdN / 2. ;
                     if( -extDdN <= QdN && QdN <= extDdN ) {
                         // Segment intersects triangle.
                         float64 inv = 1. / DdN ;
@@ -549,9 +607,12 @@ namespace GRGMesh {
 
         // calculer le signe du volume signé des trois tétraèdres qui
         // s'appuient sur [p,q] et sur les trois aretes du triangle.
-        Sign s1 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
-        Sign s2 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
-        Sign s3 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P2.data(), P0.data() ) ) ;
+        Sign s1 = sign(
+            GEO::PCK::orient_3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
+        Sign s2 = sign(
+            GEO::PCK::orient_3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
+        Sign s3 = sign(
+            GEO::PCK::orient_3d( P.data(), q.data(), P2.data(), P0.data() ) ) ;
 
         if( s1 == ZERO || s2 == ZERO || s3 == ZERO ) {
             if( inexact_equal( P, P0 ) || inexact_equal( P, P1 )
@@ -586,10 +647,14 @@ namespace GRGMesh {
 
         // calculer le signe du volume signé des quatre tétraèdres qui
         // s'appuient sur [p,q] et sur les quatre aretes du quad.
-        Sign s1 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
-        Sign s2 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
-        Sign s3 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P2.data(), P3.data() ) ) ;
-        Sign s4 = sign( GEO::PCK::orient_3d( P.data(), q.data(), P3.data(), P0.data() ) ) ;
+        Sign s1 = sign(
+            GEO::PCK::orient_3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
+        Sign s2 = sign(
+            GEO::PCK::orient_3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
+        Sign s3 = sign(
+            GEO::PCK::orient_3d( P.data(), q.data(), P2.data(), P3.data() ) ) ;
+        Sign s4 = sign(
+            GEO::PCK::orient_3d( P.data(), q.data(), P3.data(), P0.data() ) ) ;
 
         if( s1 == ZERO || s2 == ZERO || s3 == ZERO || s4 == ZERO ) {
             if( inexact_equal( P, P0 ) || inexact_equal( P, P1 )
@@ -663,7 +728,7 @@ namespace GRGMesh {
                     vertices[pyramid_descriptor.facet[f][2]],
                     vertices[pyramid_descriptor.facet[f][3]], cur_p ) ;
             } else {
-                grgmesh_assert_not_reached ;
+                grgmesh_assert_not_reached;
             }
             if( distance < dist ) {
                 dist = distance ;
@@ -707,7 +772,7 @@ namespace GRGMesh {
                     vertices[prism_descriptor.facet[f][2]],
                     vertices[prism_descriptor.facet[f][3]], cur_p ) ;
             } else {
-                grgmesh_assert_not_reached ;
+                grgmesh_assert_not_reached;
             }
             if( distance < dist ) {
                 dist = distance ;
@@ -945,10 +1010,11 @@ namespace GRGMesh {
             }
         }
     }
-    void MakeUnique::add_edges( const std::vector< Edge >& points ) {
+    void MakeUnique::add_edges( const std::vector< Edge >& points )
+    {
         signed_index_t offset = points_.size() ;
-        points_.resize( offset+(points.size()*2) ) ;
-        indices_.resize( offset+(points.size()*2) ) ;
+        points_.resize( offset + ( points.size() * 2 ) ) ;
+        indices_.resize( offset + ( points.size() * 2 ) ) ;
         for( index_t p = 0; p < points.size(); p++ ) {
             points_[offset] = points[p].value( 0 ) ;
             indices_[offset] = offset ;
@@ -958,10 +1024,11 @@ namespace GRGMesh {
             offset++ ;
         }
     }
-    void MakeUnique::add_points( const std::vector< vec3 >& points ) {
+    void MakeUnique::add_points( const std::vector< vec3 >& points )
+    {
         signed_index_t offset = points_.size() ;
-        points_.resize( offset+points.size() ) ;
-        indices_.resize( offset+points.size() ) ;
+        points_.resize( offset + points.size() ) ;
+        indices_.resize( offset + points.size() ) ;
         for( index_t p = 0; p < points.size(); p++, offset++ ) {
             points_[offset] = points[p] ;
             indices_[offset] = offset ;
@@ -971,69 +1038,71 @@ namespace GRGMesh {
     ColocaterANN::ColocaterANN( const Surface& mesh )
     {
         index_t nb_vertices = mesh.nb_vertices() ;
-        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices*3] ;
+        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+        ann_points_ = new double[nb_vertices * 3] ;
         for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
-            index_t index_in_ann = 3*i ;
+            index_t index_in_ann = 3 * i ;
             ann_points_[index_in_ann] = mesh.vertex( i ).x ;
-            ann_points_[index_in_ann+1] = mesh.vertex(i).y ;
-            ann_points_[index_in_ann+2] = mesh.vertex(i).z ;
+            ann_points_[index_in_ann + 1] = mesh.vertex( i ).y ;
+            ann_points_[index_in_ann + 2] = mesh.vertex( i ).z ;
         }
-        ann_tree_->set_points(nb_vertices, ann_points_) ;
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
     ColocaterANN::ColocaterANN( const Line& mesh )
     {
         index_t nb_vertices = mesh.nb_vertices() ;
-        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices*3] ;
+        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+        ann_points_ = new double[nb_vertices * 3] ;
         for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
-            index_t index_in_ann = 3*i ;
+            index_t index_in_ann = 3 * i ;
             ann_points_[index_in_ann] = mesh.vertex( i ).x ;
-            ann_points_[index_in_ann+1] = mesh.vertex(i).y ;
-            ann_points_[index_in_ann+2] = mesh.vertex(i).z ;
+            ann_points_[index_in_ann + 1] = mesh.vertex( i ).y ;
+            ann_points_[index_in_ann + 2] = mesh.vertex( i ).z ;
         }
-        ann_tree_->set_points(nb_vertices, ann_points_) ;
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
     ColocaterANN::ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location )
     {
-        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {
             case VERTICES: {
                 signed_index_t nb_vertices = mesh.nb_vertices() ;
-                ann_points_ = new double[nb_vertices*3] ;
+                ann_points_ = new double[nb_vertices * 3] ;
                 for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
-                    index_t index_in_ann = 3*i ;
-                    ann_points_[index_in_ann] = mesh.vertex_ptr(i)[0];
-                    ann_points_[index_in_ann+1] = mesh.vertex_ptr(i)[1];
-                    ann_points_[index_in_ann+2] = mesh.vertex_ptr(i)[2] ;
+                    index_t index_in_ann = 3 * i ;
+                    ann_points_[index_in_ann] = mesh.vertex_ptr( i )[0] ;
+                    ann_points_[index_in_ann + 1] = mesh.vertex_ptr( i )[1] ;
+                    ann_points_[index_in_ann + 2] = mesh.vertex_ptr( i )[2] ;
                 }
-                ann_tree_->set_points(nb_vertices, ann_points_) ;
+                ann_tree_->set_points( nb_vertices, ann_points_ ) ;
                 break ;
-            } case FACETS: {
+            }
+            case FACETS: {
                 signed_index_t nb_vertices = mesh.nb_facets() ;
-                ann_points_ = new double[nb_vertices*3] ;
+                ann_points_ = new double[nb_vertices * 3] ;
                 for( index_t i = 0; i < mesh.nb_facets(); i++ ) {
-                    vec3 center = GEO::Geom::mesh_facet_center( mesh, i )  ;
-                    index_t index_in_ann = 3*i ;
-                    ann_points_[index_in_ann] = center.x;
-                    ann_points_[index_in_ann+1] = center.y;
-                    ann_points_[index_in_ann+2] = center.z ;
+                    vec3 center = GEO::Geom::mesh_facet_center( mesh, i ) ;
+                    index_t index_in_ann = 3 * i ;
+                    ann_points_[index_in_ann] = center.x ;
+                    ann_points_[index_in_ann + 1] = center.y ;
+                    ann_points_[index_in_ann + 2] = center.z ;
                 }
-                ann_tree_->set_points(nb_vertices, ann_points_) ;
+                ann_tree_->set_points( nb_vertices, ann_points_ ) ;
                 break ;
-            } case CELLS: {
+            }
+            case CELLS: {
                 signed_index_t nb_vertices = mesh.nb_cells() ;
-                ann_points_ = new double[nb_vertices*3] ;
+                ann_points_ = new double[nb_vertices * 3] ;
                 for( index_t i = 0; i < mesh.nb_cells(); i++ ) {
-                    vec3 center = Utils::mesh_cell_center( mesh, i )  ;
-                    index_t index_in_ann = 3*i ;
-                    ann_points_[index_in_ann] = center.x;
-                    ann_points_[index_in_ann+1] = center.y;
-                    ann_points_[index_in_ann+2] = center.z ;
+                    vec3 center = Utils::mesh_cell_center( mesh, i ) ;
+                    index_t index_in_ann = 3 * i ;
+                    ann_points_[index_in_ann] = center.x ;
+                    ann_points_[index_in_ann + 1] = center.y ;
+                    ann_points_[index_in_ann + 2] = center.z ;
                 }
-                ann_tree_->set_points(nb_vertices, ann_points_) ;
+                ann_tree_->set_points( nb_vertices, ann_points_ ) ;
                 break ;
             }
         }
@@ -1042,41 +1111,41 @@ namespace GRGMesh {
     ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices )
     {
         index_t nb_vertices = vertices.size() ;
-        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices*3] ;
+        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+        ann_points_ = new double[nb_vertices * 3] ;
         for( index_t i = 0; i < nb_vertices; i++ ) {
-            index_t index_in_ann = 3*i ;
-            ann_points_[index_in_ann] = vertices[i].x;
-            ann_points_[index_in_ann+1] = vertices[i].y;
-            ann_points_[index_in_ann+2] = vertices[i].z ;
+            index_t index_in_ann = 3 * i ;
+            ann_points_[index_in_ann] = vertices[i].x ;
+            ann_points_[index_in_ann + 1] = vertices[i].y ;
+            ann_points_[index_in_ann + 2] = vertices[i].z ;
         }
-        ann_tree_->set_points(nb_vertices, ann_points_) ;
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
     ColocaterANN::ColocaterANN( float64* vertices, index_t nb_vertices )
     {
-        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices*3] ;
-        for( index_t i = 0; i < nb_vertices*3; i++ ) {
+        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+        ann_points_ = new double[nb_vertices * 3] ;
+        for( index_t i = 0; i < nb_vertices * 3; i++ ) {
             ann_points_[i] = vertices[i] ;
 
         }
-        ann_tree_->set_points(nb_vertices, ann_points_) ;
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
     ColocaterANN::ColocaterANN( const std::vector< Edge >& edges )
     {
         index_t nb_vertices = edges.size() ;
-        ann_tree_= GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices*3] ;
+        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+        ann_points_ = new double[nb_vertices * 3] ;
         for( index_t i = 0; i < nb_vertices; i++ ) {
             vec3 barycenter( ( edges[i].value( 0 ) + edges[i].value( 1 ) ) / 2.0 ) ;
-            index_t index_in_ann = 3*i ;
-            ann_points_[index_in_ann] = barycenter.x;
-            ann_points_[index_in_ann+1] = barycenter.y;
-            ann_points_[index_in_ann+2] = barycenter.z ;
+            index_t index_in_ann = 3 * i ;
+            ann_points_[index_in_ann] = barycenter.x ;
+            ann_points_[index_in_ann + 1] = barycenter.y ;
+            ann_points_[index_in_ann + 2] = barycenter.z ;
         }
-        ann_tree_->set_points(nb_vertices, ann_points_) ;
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
     bool ColocaterANN::get_colocated(
@@ -1116,47 +1185,50 @@ namespace GRGMesh {
         }
         nb_neighbors = std::min( nb_neighbors, ann_tree_->nb_points() ) ;
         result.resize( nb_neighbors ) ;
-        ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0], dist ) ;
+        ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
+            dist ) ;
         if( to_delete ) {
             delete[] dist ;
         }
-         return nb_neighbors ;
+        return nb_neighbors ;
     }
 
-
-    SortTriangleAroundEdge::TriangleToSort::TriangleToSort( 
+    SortTriangleAroundEdge::TriangleToSort::TriangleToSort(
         index_t index,
-        index_t surface_index, 
-        const vec3& p0, 
-        const vec3& p1, 
-        const vec3& p2 
-        ): index_( index ),
-        surface_index_( surface_index ), 
-        N_(),
-        B_A_(),
-        angle_(-99999), 
-        side_(false)
+        index_t surface_index,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2 )
+        :
+            index_( index ),
+            surface_index_( surface_index ),
+            N_(),
+            B_A_(),
+            angle_( -99999 ),
+            side_( false )
     {
         grgmesh_assert( p0 != p1 ) ;
         grgmesh_assert( p0 != p2 ) ;
         grgmesh_assert( p1 != p2 ) ;
 
-        vec3 e1 = normalize(p1-p0) ;
-        vec3 e2 = normalize(p2-p0) ;
+        vec3 e1 = normalize( p1 - p0 ) ;
+        vec3 e2 = normalize( p2 - p0 ) ;
 
         N_ = normalize( cross( e1, e2 ) ) ;
         grgmesh_assert( dot( N_, e1 ) < epsilon ) ;
 
-        vec3 B = 0.5*p1 + 0.5*p0 ;
-        vec3 p2B = p2-B ;            
-        B_A_ = normalize( p2B - dot( p2B, e1 )*e1 ) ;
+        vec3 B = 0.5 * p1 + 0.5 * p0 ;
+        vec3 p2B = p2 - B ;
+        B_A_ = normalize( p2B - dot( p2B, e1 ) * e1 ) ;
 
         grgmesh_assert( dot( B_A_, e1 ) < epsilon ) ;
         grgmesh_assert( B_A_.length() > epsilon ) ;
-    }        
+    }
 
- 
-    vec3 SortTriangleAroundEdge::rotate( const vec3& axis, double angle, const vec3& V )
+    vec3 SortTriangleAroundEdge::rotate(
+        const vec3& axis,
+        double angle,
+        const vec3& V )
     {
         vec3 q = axis ;
         if( q.length() > 0 ) {
@@ -1165,24 +1237,24 @@ namespace GRGMesh {
             q[1] *= s ;
             q[2] *= s ;
         }
-        q *= sinf( 0.5*angle ) ;
+        q *= sinf( 0.5 * angle ) ;
 
-        float quat[4] = { q[0], q[1], q[2], cosf( 0.5*angle ) } ;
+        float quat[4] = { q[0], q[1], q[2], cosf( 0.5 * angle ) } ;
 
         double m[4][4] ;
 
         m[0][0] = 1 - 2.0 * ( quat[1] * quat[1] + quat[2] * quat[2] ) ;
-        m[0][1] = 2.0     * ( quat[0] * quat[1] + quat[2] * quat[3] ) ;
-        m[0][2] = 2.0     * ( quat[2] * quat[0] - quat[1] * quat[3] ) ;
+        m[0][1] = 2.0 * ( quat[0] * quat[1] + quat[2] * quat[3] ) ;
+        m[0][2] = 2.0 * ( quat[2] * quat[0] - quat[1] * quat[3] ) ;
         m[0][3] = 0.0 ;
 
-        m[1][0] = 2.0     * ( quat[0] * quat[1] - quat[2] * quat[3] ) ;
+        m[1][0] = 2.0 * ( quat[0] * quat[1] - quat[2] * quat[3] ) ;
         m[1][1] = 1 - 2.0 * ( quat[2] * quat[2] + quat[0] * quat[0] ) ;
-        m[1][2] = 2.0     * ( quat[1] * quat[2] + quat[0] * quat[3] ) ;
+        m[1][2] = 2.0 * ( quat[1] * quat[2] + quat[0] * quat[3] ) ;
         m[1][3] = 0.0 ;
 
-        m[2][0] = 2.0     * ( quat[2] * quat[0] + quat[1] * quat[3] ) ;
-        m[2][1] = 2.0     * ( quat[1] * quat[2] - quat[0] * quat[3] ) ;
+        m[2][0] = 2.0 * ( quat[2] * quat[0] + quat[1] * quat[3] ) ;
+        m[2][1] = 2.0 * ( quat[1] * quat[2] - quat[0] * quat[3] ) ;
         m[2][2] = 1 - 2.0 * ( quat[1] * quat[1] + quat[0] * quat[0] ) ;
         m[2][3] = 0.0 ;
 
@@ -1195,46 +1267,51 @@ namespace GRGMesh {
         double y = V[0] * m[0][1] + V[1] * m[1][1] + V[2] * m[2][1] + m[3][1] ;
         double z = V[0] * m[0][2] + V[1] * m[1][2] + V[2] * m[2][2] + m[3][2] ;
         double w = V[0] * m[0][3] + V[1] * m[1][3] + V[2] * m[2][3] + m[3][3] ;
-        return vec3( x/w, y/w, z/w ) ;
+        return vec3( x / w, y / w, z / w ) ;
     }
 
-    void SortTriangleAroundEdge::sort() {
+    void SortTriangleAroundEdge::sort()
+    {
         grgmesh_assert( triangles_.size() > 0 ) ;
 
-        std::pair< index_t, bool > default_pair ( index_t(-1), false) ;
-        sorted_triangles_.resize( 2*triangles_.size(), default_pair ) ;
+        std::pair< index_t, bool > default_pair( index_t( -1 ), false ) ;
+        sorted_triangles_.resize( 2 * triangles_.size(), default_pair ) ;
 
         // If there is only one Triangle to sort - nothing to do
         if( triangles_.size() == 1 ) {
-            sorted_triangles_[0] = std::pair< index_t, bool >( triangles_[0].surface_index_, true ) ;
-            sorted_triangles_[1] = std::pair< index_t, bool >( triangles_[0].surface_index_, false ) ;
+            sorted_triangles_[0] = std::pair< index_t, bool >(
+                triangles_[0].surface_index_, true ) ;
+            sorted_triangles_[1] = std::pair< index_t, bool >(
+                triangles_[0].surface_index_, false ) ;
             return ;
         }
 
         // Initialization
         // We start on the plus (true) side of the first Triangle            
-        sorted_triangles_[0] = std::pair< index_t, bool >( triangles_[0].surface_index_ , true ) ;
+        sorted_triangles_[0] = std::pair< index_t, bool >(
+            triangles_[0].surface_index_, true ) ;
 
         // Reference vectors with wich angles will be computed
-        vec3 N_ref   = triangles_[0].N_ ;
+        vec3 N_ref = triangles_[0].N_ ;
         vec3 B_A_ref = triangles_[0].B_A_ ;
-        vec3 Ax_ref  = normalize( cross( B_A_ref, N_ref ) ) ;
+        vec3 Ax_ref = normalize( cross( B_A_ref, N_ref ) ) ;
 
         // The minus (false) side of the start triangle will the last one encountered
         triangles_[0].angle_ = 2 * M_PI ;
         triangles_[0].side_ = false ;
 
-        for( index_t i = 1 ; i < triangles_.size(); ++i ) {
+        for( index_t i = 1; i < triangles_.size(); ++i ) {
             TriangleToSort& cur = triangles_[i] ;
             // Compute the angle RADIANS between the reference and the current
             // triangle 
             double cos = dot( B_A_ref, cur.B_A_ ) ;
             // Remove invalid values
-            if ( cos < -1 ) cos = -1 ;
-            else if ( cos > 1 ) cos = 1 ;
+            if( cos < -1 )
+                cos = -1 ;
+            else if( cos > 1 ) cos = 1 ;
             cur.angle_ = std::acos( cos ) ;
             // Put the angle between PI and 2PI if necessary
-            if( dot( cross( B_A_ref, cur.B_A_ ), Ax_ref ) < 0. ){
+            if( dot( cross( B_A_ref, cur.B_A_ ), Ax_ref ) < 0. ) {
                 cur.angle_ = 2 * M_PI - cur.angle_ ;
             }
 
@@ -1253,54 +1330,54 @@ namespace GRGMesh {
             TriangleToSort& cur = triangles_[i] ;
             if( triangles_[i].index_ == 0 ) { // The last to add
                 grgmesh_assert( i == triangles_.size() - 1 ) ;
-                sorted_triangles_[it].first  = cur.surface_index_ ;
+                sorted_triangles_[it].first = cur.surface_index_ ;
                 sorted_triangles_[it].second = cur.side_ ;
-            } 
-            else {
-                sorted_triangles_[it  ].first  = cur.surface_index_ ;
-                sorted_triangles_[it  ].second = cur.side_ ;
-                sorted_triangles_[it+1].first  = cur.surface_index_ ;
-                sorted_triangles_[it+1].second = !cur.side_ ;
+            } else {
+                sorted_triangles_[it].first = cur.surface_index_ ;
+                sorted_triangles_[it].second = cur.side_ ;
+                sorted_triangles_[it + 1].first = cur.surface_index_ ;
+                sorted_triangles_[it + 1].second = !cur.side_ ;
                 it += 2 ;
             }
         }
         // All the surfaces must have been sorted
         grgmesh_assert(
             std::count( sorted_triangles_.begin(), sorted_triangles_.end(),
-            default_pair ) == 0 ) ;         
+                default_pair ) == 0 ) ;
     }
 
-    const std::pair< index_t, bool >& SortTriangleAroundEdge::next( const std::pair< index_t, bool >& in ) const {
-        for( index_t i = 0 ; i < sorted_triangles_.size() ; ++i ) 
-        {
-            if( sorted_triangles_[i] == in ) {                    
-                if( i == sorted_triangles_.size()-1 ) 
-                    return sorted_triangles_[sorted_triangles_.size()-2 ];
-                if( i == 0 ) 
-                    return sorted_triangles_[1] ;                   
+    const std::pair< index_t, bool >& SortTriangleAroundEdge::next(
+        const std::pair< index_t, bool >& in ) const
+    {
+        for( index_t i = 0; i < sorted_triangles_.size(); ++i ) {
+            if( sorted_triangles_[i] == in ) {
+                if( i == sorted_triangles_.size() - 1 )
+                    return sorted_triangles_[sorted_triangles_.size() - 2] ;
+                if( i == 0 ) return sorted_triangles_[1] ;
 
-                if( sorted_triangles_[i+1].first == sorted_triangles_[i].first ) {
+                if( sorted_triangles_[i + 1].first == sorted_triangles_[i].first ) {
                     // The next has the same surface id, check its sign
-                    if( sorted_triangles_[i+1].second != sorted_triangles_[i].second ) {
-                        return sorted_triangles_[i-1] ;
-                    }
-                    else {
+                    if( sorted_triangles_[i + 1].second
+                        != sorted_triangles_[i].second ) {
+                        return sorted_triangles_[i - 1] ;
+                    } else {
                         // Sign is the same
-                        return sorted_triangles_[i+1] ;
+                        return sorted_triangles_[i + 1] ;
                     }
-                }
-                else {
-                    grgmesh_assert( sorted_triangles_[i-1].first == sorted_triangles_[i].first ) ;                        
-                    if( sorted_triangles_[i-1].second != sorted_triangles_[i].second ) {
-                        return sorted_triangles_[i+1] ;
+                } else {
+                    grgmesh_assert(
+                        sorted_triangles_[i - 1].first
+                            == sorted_triangles_[i].first ) ;
+                    if( sorted_triangles_[i - 1].second
+                        != sorted_triangles_[i].second ) {
+                        return sorted_triangles_[i + 1] ;
+                    } else {
+                        return sorted_triangles_[i - 1] ;
                     }
-                    else {
-                        return sorted_triangles_[i-1] ;
-                    }                        
                 }
             }
         }
-        grgmesh_assert_not_reached ;
+        grgmesh_assert_not_reached;
     }
 
 }

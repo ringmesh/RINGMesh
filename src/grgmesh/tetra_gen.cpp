@@ -557,7 +557,6 @@ namespace GRGMesh {
             cur_index_triangle ++ ;
         }
 
-
         tetmesh_builder_.end_mesh( false, true ) ;
         Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
 

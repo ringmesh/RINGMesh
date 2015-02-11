@@ -1,16 +1,43 @@
-/*[
- * Association Scientifique pour la Geologie et ses Applications (ASGA)
- * Copyright (c) 1993-2013 ASGA. All Rights Reserved.
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * This program is a Trade Secret of the ASGA and it is not to be:
- * - reproduced, published, or disclosed to other,
- * - distributed or displayed,
- * - used for purposes or on Sites other than described
- *   in the GOCAD Advancement Agreement,
- * without the prior written authorization of the ASGA. Licencee
- * agrees to attach or embed this Notice on all copies of the program,
- * including partial copies or modified versions thereof.
- ]*/
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr 
+ *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.gocad.org
+ *
+ *     GOCAD Project
+ *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY 
+ *     FRANCE
+*/
+
 
 #ifndef __GRGMESH_IO__
 #define __GRGMESH_IO__
@@ -101,8 +128,12 @@ namespace GRGMesh {
 
         class GRGMESH_API MacroMeshExport {
         private:
+            enum SurfaceAction {
+                SKIP = -2, TO_PROCESS = -1, NEG_SIDE = 0, POS_SIDE = 1
+            } ;
             const static index_t NB_FACET_TYPES = 2 ;
             const static index_t NB_CELL_TYPES = 4 ;
+            typedef std::pair< index_t, SurfaceAction > surface_side ;
 
         public:
             enum DuplicateMode {
@@ -186,6 +217,9 @@ namespace GRGMesh {
             bool is_surface_to_duplicate(
                 index_t s,
                 const DuplicateMode& mode ) const ;
+            bool duplicate_corner(
+                const std::set< surface_side >& surfaces,
+                std::vector< SurfaceAction >& info ) ;
 
             index_t mesh_facet_begin( index_t r ) const { return mesh_facet_ptr_[r] ; }
             index_t mesh_facet_end( index_t r ) const { return mesh_facet_ptr_[r+1] ; }

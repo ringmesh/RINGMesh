@@ -1,16 +1,42 @@
-/*[
- * Association Scientifique pour la Geologie et ses Applications (ASGA)
- * Copyright (c) 1993-2013 ASGA. All Rights Reserved.
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * This program is a Trade Secret of the ASGA and it is not to be:
- * - reproduced, published, or disclosed to other,
- * - distributed or displayed,
- * - used for purposes or on Sites other than described
- *   in the GOCAD Advancement Agreement,
- * without the prior written authorization of the ASGA. Licencee
- * agrees to attach or embed this Notice on all copies of the program,
- * including partial copies or modified versions thereof.
- ]*/
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr 
+ *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.gocad.org
+ *
+ *     GOCAD Project
+ *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY 
+ *     FRANCE
+*/
 
 #include <grgmesh/io.h>
 #include <grgmesh/boundary_model.h>
@@ -499,9 +525,9 @@ namespace GRGMesh {
 
                 std::vector< bool > vertex_exported( mm.nb_vertices(), false ) ;
                 std::vector< bool > atom_exported( db.nb_duplicated_vertices(), false ) ;
-                std::vector< index_t > vertex_exported_id( mm.nb_vertices() ) ;
-                std::vector< index_t > atom_exported_id( db.nb_duplicated_vertices() ) ;
-                index_t nb_vertices_exported = 0 ;
+                std::vector< index_t > vertex_exported_id( mm.nb_vertices(), NO_ID ) ;
+                std::vector< index_t > atom_exported_id( db.nb_duplicated_vertices(), NO_ID ) ;
+                index_t nb_vertices_exported = 1 ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
                     const GRGMesh::BoundaryModelElement& region = model.region( r ) ;
                     out << "TVOLUME " << region.name() << std::endl ;
@@ -519,7 +545,17 @@ namespace GRGMesh {
                                 vertex_exported_id[vertex_id] = nb_vertices_exported ;
                                 out << "VRTX " << nb_vertices_exported++ << " "
                                     << mm.global_vertex( vertex_id ) << std::endl ;
-                            } else {
+                            }
+                        }
+                    }
+
+                    for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+                        for( index_t co = mesh.cell_vertices_begin( c );
+                            co
+                                < mesh.cell_vertices_begin( c )
+                                    + mesh.cell_nb_vertices( c ); co++ ) {
+                            index_t vertex_id, atom_id ;
+                            if( !db.vertex_id( r, co, vertex_id, atom_id ) ) {
                                 if( atom_exported[atom_id] ) continue ;
                                 atom_exported[atom_id] = true ;
                                 atom_exported_id[atom_id] = nb_vertices_exported ;
@@ -530,9 +566,12 @@ namespace GRGMesh {
                     }
 
 
-                    std::map< index_t, bool > sides ;
+                    std::map< index_t, index_t > sides ;
                     for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
-                        sides[region.boundary_id( s )] = region.side( s ) ;
+                        if( sides.count( region.boundary_id( s ) ) > 0 )
+                            sides[region.boundary_id( s )] = 2 ;
+                        else
+                            sides[region.boundary_id( s )] = region.side( s ) ;
                     }
 
                     ColocaterANN ann( mesh, ColocaterANN::FACETS ) ;
@@ -558,8 +597,15 @@ namespace GRGMesh {
                             if( ann.get_colocated( facet_center, result ) ) {
                                 grgmesh_debug_assert( result.size() == 1 ) ;
                                 index_t surface_id = mesh.facet_region( result[0] ) ;
-                                bool side = sides[surface_id] ;
-                                side ? out << "+" : out << "-" ;
+                                index_t side = sides[surface_id] ;
+                                if( side < 2 )
+                                    side ? out << "+" : out << "-" ;
+                                else {
+                                    vec3 cell_facet_normal = Utils::mesh_cell_facet_normal( mesh, c, f ) ;
+                                    vec3 facet_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
+                                    double d = dot( cell_facet_normal, facet_normal ) ;
+                                    d > 0 ? out << "+" : out << "-" ;
+                                }
                                 out << model.surface( surface_id ).parent().name() ;
                             } else {
                                 out << "none" ;
@@ -786,12 +832,14 @@ namespace GRGMesh {
             }
 
             /// 2 - Tag all corners to duplicate
+            const BoundaryModel& model = mm_.model() ;
+            std::vector< SurfaceAction > surface_actions( model.nb_surfaces(), SKIP ) ;
             std::vector< bool > corner_to_duplicate( corner_vertices.size(), false ) ;
             {
                 ColocaterANN ann( corner_vertices ) ;
-                const BoundaryModel& model = mm_.model() ;
                 for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
                     if( !is_surface_to_duplicate( s, mode ) ) continue ;
+                    surface_actions[s] = TO_PROCESS ;
                     const Surface& surface = model.surface( s ) ;
                     for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                         std::vector< index_t > colocated_corners ;
@@ -802,14 +850,10 @@ namespace GRGMesh {
                     }
                 }
             }
-//            corner_vertices.clear() ;
+            corner_vertices.clear() ;
 
             /// 3 - Duplicate the corners
-//            typedef std::pair< index_t, bool > surface_side ;
-//            std::ofstream debug( "/home/botella/test_vortex/debug" ) ;
-            std::vector< bool > is_vertex_to_duplicate( mm_.nb_vertices(), false ) ;
             for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
-//                debug << "-------- REGION " << m << " ------------" << std::endl ;
                 const GEO::Mesh& mesh = mm_.mesh( m ) ;
                 ColocaterANN ann( mesh, ColocaterANN::FACETS ) ;
                 for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
@@ -817,13 +861,11 @@ namespace GRGMesh {
                         index_t co = mesh_corner_ptr_[m]
                             + mesh.cell_vertices_begin( c ) + v ;
                         if( !corner_to_duplicate[co] ) continue ;
-//                        debug << "Cell " << c << " Vertex " << v << std::endl ;
 
                         index_t vertex_id = mesh.cell_vertex_index( c, v ) ;
-//                        debug << "Vertex id " << vertex_id << std::endl ;
                         std::vector< index_t > corner_used ;
                         std::vector< index_t > cell_added ;
-//                        std::set< surface_side > surfaces ;
+                        std::set< surface_side > surfaces ;
                         std::stack< index_t > S ;
                         S.push( c ) ;
                         cell_added.push_back( c ) ;
@@ -841,10 +883,8 @@ namespace GRGMesh {
                                     break ;
                                 }
                             }
-//                            debug << "Cur_c " << cur_c << std::endl ;
                             for( index_t cur_f = 0;
                                 cur_f < mesh.cell_nb_facets( cur_c ); cur_f++ ) {
-//                                debug << "Adj " << mesh.cell_adjacent( cur_c, cur_f ) ;
                                 for( index_t cur_v = 0;
                                     cur_v
                                         < mesh.cell_facet_nb_vertices( cur_c, cur_f );
@@ -852,21 +892,22 @@ namespace GRGMesh {
                                     if( mesh.cell_facet_vertex_index( cur_c, cur_f,
                                         cur_v ) == vertex_id ) {
                                         std::vector< index_t > result ;
-                                        if( !ann.get_colocated(
+                                        if( ann.get_colocated(
                                             Utils::mesh_cell_facet_center( mesh,
                                                 cur_c, cur_f ), result ) ) {
-//                                            index_t surface_id = mesh.facet_region( result[0] ) ;
-//                                            vec3 facet_normal =
-//                                                GEO::Geom::mesh_facet_normal( mesh,
-//                                                    cur_f ) ;
-//                                            vec3 cell_facet_normal =
-//                                                Utils::mesh_cell_facet_normal( mesh,
-//                                                    cur_c, cur_f ) ;
-//                                            bool side = dot( facet_normal,
-//                                                cell_facet_normal ) > 0 ;
-//                                            surfaces.insert(
-//                                                surface_side( surface_id, side ) ) ;
-//                                            debug << " not on surface" ;
+                                            index_t surface_id = mesh.facet_region( result[0] ) ;
+                                            vec3 facet_normal =
+                                                GEO::Geom::mesh_facet_normal( mesh,
+                                                    result[0] ) ;
+                                            vec3 cell_facet_normal =
+                                                Utils::mesh_cell_facet_normal( mesh,
+                                                    cur_c, cur_f ) ;
+                                            SurfaceAction side = SurfaceAction(
+                                                dot( facet_normal,
+                                                    cell_facet_normal ) > 0 ) ;
+                                            surfaces.insert(
+                                                surface_side( surface_id, side ) ) ;
+                                        } else {
                                             signed_index_t cur_adj =
                                                 mesh.cell_adjacent( cur_c, cur_f ) ;
                                             if( cur_adj != -1
@@ -879,29 +920,60 @@ namespace GRGMesh {
                                         break ;
                                     }
                                 }
-//                                debug << std::endl ;
                             }
                         } while( !S.empty() ) ;
 
-                        index_t global_vertex_id = mm_.global_vertex_id( m, vertex_id ) ;
-                        if( is_vertex_to_duplicate[global_vertex_id] ) {
-//                            debug << "DUPLICATION" << std::endl ;
+
+                        if( duplicate_corner( surfaces, surface_actions ) ) {
                             index_t duplicated_vertex_id =
                                 first_duplicated_vertex_id_
                                     + duplicated_vertex_indices_.size() ;
+                        index_t global_vertex_id = mm_.global_vertex_id( m, vertex_id ) ;
                             duplicated_vertex_indices_.push_back( global_vertex_id ) ;
                             for( index_t cur_co = 0; cur_co < corner_used.size();
                                 cur_co++ ) {
                                 corners_[corner_used[cur_co]] =
                                     duplicated_vertex_id ;
                             }
-                        } else {
-                            is_vertex_to_duplicate[global_vertex_id] = true ;
                         }
                     }
                 }
             }
-            std::cout << "Duplicated vertices -> " << duplicated_vertex_indices_.size() << std::endl ;
+        }
+
+        bool MacroMeshExport::duplicate_corner(
+            const std::set< surface_side >& surfaces,
+            std::vector< SurfaceAction >& info )
+        {
+            std::vector< SurfaceAction > temp_info( info.size(), TO_PROCESS ) ;
+            for( std::set< surface_side >::const_iterator it( surfaces.begin() );
+                it != surfaces.end(); it++ ) {
+                index_t surface_id = it->first ;
+                if( info[surface_id] == SKIP || temp_info[surface_id] == SKIP ) continue ;
+                if( temp_info[surface_id] == TO_PROCESS ) {
+                    temp_info[surface_id] = it->second ;
+                } else {
+                    if( temp_info[surface_id] != it->second ) {
+                        // Free border
+                        temp_info[surface_id] = SKIP ;
+                    }
+                }
+            }
+
+            double result = false ;
+            for( index_t s = 0; s < info.size(); s++ ) {
+                if( temp_info[s] < 0 ) continue ;
+                grgmesh_debug_assert( info[s] != SKIP ) ;
+                if( info[s] == TO_PROCESS ) {
+                    info[s] = SurfaceAction( !temp_info[s] ) ;
+                } else {
+                    if( info[s] == temp_info[s] ) {
+                        result = true ;
+                    }
+                }
+            }
+
+            return result ;
         }
 
         bool MacroMeshExport::is_surface_to_duplicate(
