@@ -311,7 +311,7 @@ namespace GRGMesh {
             AttributeSerializer* serializer
         ) ;
 
-        virtual AttributeStore* create_attribute_store(AttributeManager* manager) = 0 ;
+        virtual AttributeStore* create_attribute_store( index_t LOCATION ) = 0 ;
         virtual bool serialize_read(std::istream& in,   byte* addr) = 0 ;
         virtual bool serialize_write(std::ostream& out, byte* addr) = 0 ;
 
@@ -333,10 +333,10 @@ namespace GRGMesh {
      */
     template< class ATTRIBUTE > class GenericAttributeSerializer : public AttributeSerializer {
     public:
-        typedef AttributeStoreImpl< ATTRIBUTE > AttributeStore;
+        //typedef AttributeStoreImpl< ATTRIBUTE > AttributeStore;
         
-        virtual AttributeStore* create_attribute_store(AttributeManager* manager) {
-            return new AttributeStore(manager) ;
+        virtual AttributeStoreImpl< ATTRIBUTE >* create_attribute_store( index_t LOCATION ) {
+            return new AttributeStoreImpl< ATTRIBUTE >( LOCATION ) ;
         }
         virtual bool serialize_read(std::istream& in, byte* addr) {
             ATTRIBUTE& attr = *reinterpret_cast<ATTRIBUTE*>(addr) ;
@@ -354,12 +354,12 @@ namespace GRGMesh {
     /**
      * Use this class to declare a new serializable attribute type.
      * In the common.cpp file of the library, add:
-     * ogf_register_attribute_type<MyAttributeType>("MyAttributeType") ;
+     * grgmesh_register_attribute_type<MyAttributeType>("MyAttributeType") ;
      */
     template <class T> class grgmesh_register_attribute_type {
     public:
         grgmesh_register_attribute_type(const std::string& type_name) {
-            AttributeSerializer::bind(typeid(T), type_name, new GenericAttributeSerializer<T>()) ;
+            AttributeSerializer::bind( typeid(T), type_name, new GenericAttributeSerializer<T>()) ;
         }
     } ;
 
