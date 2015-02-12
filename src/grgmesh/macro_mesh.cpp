@@ -94,7 +94,6 @@ namespace GRGMesh {
             std::vector< signed_index_t > surface_proccessed ;
             for( index_t f = 0; f < cur_mesh.nb_facets(); f++ ) {
                 signed_index_t surface_id = cur_mesh.facet_region( f ) ;
-                if( surface_id == 5 ) std::cout << "YOUHUO C'est la 5 " << std::endl ;
                 if( surface2mesh_[surface_id] != Surface::NO_ID ) continue ;
                 if( !Utils::contains( surface_proccessed, surface_id ) ) {
                     surface_proccessed.push_back( surface_id ) ;
@@ -107,9 +106,6 @@ namespace GRGMesh {
         }
 
         for( index_t s = 0; s < mm.model().nb_surfaces(); s++ ) {
-            if( surface2mesh_[s] == Surface::NO_ID ) {
-                std::cout << "SURFACE ----- " << s << std::endl ;
-            }
             surface_ptr_[s+1] += surface_ptr_[s] ;
         }
 

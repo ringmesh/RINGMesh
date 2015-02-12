@@ -602,7 +602,7 @@ namespace GRGMesh {
                                     side ? out << "+" : out << "-" ;
                                 else {
                                     vec3 cell_facet_normal = Utils::mesh_cell_facet_normal( mesh, c, f ) ;
-                                    vec3 facet_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
+                                    vec3 facet_normal = GEO::Geom::mesh_facet_normal( mesh, result[0] ) ;
                                     double d = dot( cell_facet_normal, facet_normal ) ;
                                     d > 0 ? out << "+" : out << "-" ;
                                 }
@@ -928,7 +928,7 @@ namespace GRGMesh {
                             index_t duplicated_vertex_id =
                                 first_duplicated_vertex_id_
                                     + duplicated_vertex_indices_.size() ;
-                        index_t global_vertex_id = mm_.global_vertex_id( m, vertex_id ) ;
+                            index_t global_vertex_id = mm_.global_vertex_id( m, vertex_id ) ;
                             duplicated_vertex_indices_.push_back( global_vertex_id ) ;
                             for( index_t cur_co = 0; cur_co < corner_used.size();
                                 cur_co++ ) {
