@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
@@ -68,6 +68,11 @@
 #   pragma warning( disable: 4267 )
 #   pragma warning( disable: 4251 )
 #endif
+
+#define grgmesh_disable_copy(Class) \
+private:\
+    Class(const Class &); \
+    Class &operator=(const Class &)
 
 #include <grgmesh/types.h>
 #include <grgmesh/grgmesh_assert.h>
