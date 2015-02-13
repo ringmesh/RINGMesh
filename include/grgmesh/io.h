@@ -148,7 +148,7 @@ namespace GRGMesh {
                 index_t r,
                 index_t corner,
                 index_t& vertex_id,
-                index_t& duplicated_vertex_id ) const ;
+                index_t& duplicated_vertex_id = dummy_index_t) const ;
 
             index_t nb_duplicated_vertices() const {
                 return duplicated_vertex_indices_.size() ;
@@ -158,16 +158,16 @@ namespace GRGMesh {
             }
 
             index_t nb_triangle() const { return nb_triangle_ ; }
-            index_t nb_triangle( index_t r ) const {
-                return facet_ptr_[(NB_FACET_TYPES+1) * r + 1] - facet_ptr_[(NB_FACET_TYPES+1) * r] ;
+            index_t nb_triangle( index_t s ) const {
+                return facet_ptr_[(NB_FACET_TYPES+1) * s + 1] - facet_ptr_[(NB_FACET_TYPES+1) * s] ;
             }
             index_t nb_quad() const { return nb_quad_ ; }
-            index_t nb_quad( index_t r ) const {
-                return facet_ptr_[(NB_FACET_TYPES+1) * r + 2] - facet_ptr_[(NB_FACET_TYPES+1) * r + 1] ;
+            index_t nb_quad( index_t s ) const {
+                return facet_ptr_[(NB_FACET_TYPES+1) * s + 2] - facet_ptr_[(NB_FACET_TYPES+1) * s + 1] ;
             }
             index_t nb_facets() const { return facets_.size() ; }
-            index_t nb_facets( index_t r ) const {
-                return mesh_facet_end( r ) -  mesh_facet_begin( r ) ;
+            index_t nb_facets( index_t s ) const {
+                return mesh_facet_end( s ) -  mesh_facet_begin( s ) ;
             }
 
             index_t nb_tet() const { return nb_tet_ ; }
