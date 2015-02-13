@@ -232,13 +232,13 @@ namespace GRGMesh {
             grgmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" );
             grgmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" ) ;
 
-            BoundaryModelIOHandler* handler = BoundaryModelIOHandlerFactory::create_object(format) ;
+            BoundaryModelIOHandler* handler =
+            BoundaryModelIOHandlerFactory::create_object( format ) ;
             if( handler ) {
                 return handler ;
             }
 
-            GEO::Logger::err("I/O")
-            << "Unsupported file format: " << format
+            GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
             << std::endl ;
             return nil ;
         }
@@ -288,6 +288,21 @@ namespace GRGMesh {
             return false ;
         }
 
+        /************************************************************************/
+        class AsterIOHandler: public MacroMeshIOHandler {
+        public:
+            virtual bool load( const std::string& filename, MacroMesh& mesh )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a MacroMesh from Code_Aster mesh not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+            virtual bool save( const MacroMesh& mm, const std::string& filename )
+            {
+                return true ;
+            }
+        } ;
         /************************************************************************/
 
         class MMIOHandler: public MacroMeshIOHandler {
@@ -705,18 +720,17 @@ namespace GRGMesh {
             5,                      // nb facets
             { 3, 4, 4, 4, 3 },      // nb vertices in facet
             { 0, 2, 4, 3, 1 },      // facets
-            { { 0, 1, 2 }, { 3, 5, 4 }, { 0, 3, 4, 1 }, { 0, 2, 5, 3 }, {
-                1, 4, 5, 2 } } } ;
+            {
+                { 0, 1, 2 }, { 3, 5, 4 }, { 0, 3, 4, 1 }, { 0, 2, 5, 3 }, {
+                    1, 4, 5, 2 } } } ;
 
-        static GRGMesh2CSMP pyramid_descriptor =
-            { 18,                 // type
-                5,                  // nb vertices
-                { 0, 1, 2, 3, 4 },  // vertices
-                5,                  // nb facets
-                { 3, 3, 3, 3, 4 },  // nb vertices in facet
-                { 1, 3, 4, 2, 0 },  // facets
-                { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, {
-                    2, 1, 4 } } } ;
+        static GRGMesh2CSMP pyramid_descriptor = { 18,                 // type
+            5,                  // nb vertices
+            { 0, 1, 2, 3, 4 },  // vertices
+            5,                  // nb facets
+            { 3, 3, 3, 3, 4 },  // nb vertices in facet
+            { 1, 3, 4, 2, 0 },  // facets
+            { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
 
         class CSMPIOHandler: public MacroMeshIOHandler {
         public:
@@ -1038,7 +1052,8 @@ namespace GRGMesh {
                         for( index_t p = 0; p < 4; p++ ) {
                             index_t vertex_id ;
                             index_t csmp_p = tet_descriptor.vertices[p] ;
-                            db.vertex_id( r, mesh.cell_vertices_begin( tet ) + csmp_p,
+                            db.vertex_id( r,
+                                mesh.cell_vertices_begin( tet ) + csmp_p,
                                 vertex_id ) ;
                             data << " " << std::setw( 7 ) << vertex_id ;
                             count++ ;
@@ -1068,7 +1083,8 @@ namespace GRGMesh {
                         for( index_t p = 0; p < 6; p++ ) {
                             index_t vertex_id ;
                             index_t csmp_p = prism_descriptor.vertices[p] ;
-                            db.vertex_id( r, mesh.cell_vertices_begin( prism ) + csmp_p,
+                            db.vertex_id( r,
+                                mesh.cell_vertices_begin( prism ) + csmp_p,
                                 vertex_id ) ;
                             data << " " << std::setw( 7 ) << vertex_id ;
                             count++ ;
@@ -1083,7 +1099,8 @@ namespace GRGMesh {
                         for( index_t p = 0; p < 8; p++ ) {
                             index_t vertex_id ;
                             index_t csmp_p = hex_descriptor.vertices[p] ;
-                            db.vertex_id( r, mesh.cell_vertices_begin( hex ) + csmp_p,
+                            db.vertex_id( r,
+                                mesh.cell_vertices_begin( hex ) + csmp_p,
                                 vertex_id ) ;
                             data << " " << std::setw( 7 ) << vertex_id ;
                             count++ ;
@@ -1144,7 +1161,8 @@ namespace GRGMesh {
                         index_t tet = db.local_tet_id( r, el ) ;
                         for( index_t f = 0; f < 4; f++ ) {
                             index_t csmp_f = tet_descriptor.facet[f] ;
-                            signed_index_t adj = mm.global_cell_adjacent( r, tet, csmp_f ) ;
+                            signed_index_t adj = mm.global_cell_adjacent( r, tet,
+                                csmp_f ) ;
                             if( adj == -1 ) {
                                 data << " " << std::setw( 7 ) << -28 ;
                             } else {
@@ -1161,7 +1179,8 @@ namespace GRGMesh {
                         index_t py = db.local_pyramid_id( r, el ) ;
                         for( index_t f = 0; f < 5; f++ ) {
                             index_t csmp_f = pyramid_descriptor.facet[f] ;
-                            signed_index_t adj = mm.global_cell_adjacent( r, py, csmp_f ) ;
+                            signed_index_t adj = mm.global_cell_adjacent( r, py,
+                                csmp_f ) ;
                             if( adj == -1 ) {
                                 data << " " << std::setw( 7 ) << -28 ;
                             } else {
@@ -1178,7 +1197,8 @@ namespace GRGMesh {
                         index_t prism = db.local_prism_id( r, el ) ;
                         for( index_t f = 0; f < 5; f++ ) {
                             index_t csmp_f = prism_descriptor.facet[f] ;
-                            signed_index_t adj = mm.global_cell_adjacent( r, prism, csmp_f ) ;
+                            signed_index_t adj = mm.global_cell_adjacent( r, prism,
+                                csmp_f ) ;
                             if( adj == -1 ) {
                                 data << " " << std::setw( 7 ) << -28 ;
                             } else {
@@ -1195,7 +1215,8 @@ namespace GRGMesh {
                         index_t hex = db.local_hex_id( r, el ) ;
                         for( index_t f = 0; f < 6; f++ ) {
                             index_t csmp_f = hex_descriptor.facet[f] ;
-                            signed_index_t adj = mm.global_cell_adjacent( r, hex, csmp_f ) ;
+                            signed_index_t adj = mm.global_cell_adjacent( r, hex,
+                                csmp_f ) ;
                             if( adj == -1 ) {
                                 data << " " << std::setw( 7 ) << -28 ;
                             } else {
@@ -1219,7 +1240,8 @@ namespace GRGMesh {
                             index_t tri = db.local_triangle_id( mesh_id, el ) ;
                             for( index_t f = mesh.facet_begin( tri );
                                 f < mesh.facet_end( tri ); f++ ) {
-                                signed_index_t adj = mesh.corner_adjacent_facet( f ) ;
+                                signed_index_t adj = mesh.corner_adjacent_facet(
+                                    f ) ;
                                 if( adj == -1 ) {
                                     data << " " << std::setw( 7 ) << -28 ;
                                 } else {
@@ -1236,7 +1258,8 @@ namespace GRGMesh {
                             index_t quad = db.local_quad_id( mesh_id, el ) ;
                             for( index_t f = mesh.facet_begin( quad );
                                 f < mesh.facet_end( quad ); f++ ) {
-                                signed_index_t adj = mesh.corner_adjacent_facet( f ) ;
+                                signed_index_t adj = mesh.corner_adjacent_facet(
+                                    f ) ;
                                 if( adj == -1 ) {
                                     data << " " << std::setw( 7 ) << -28 ;
                                 } else {
@@ -1526,13 +1549,13 @@ namespace GRGMesh {
             grgmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" ) ;
             grgmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" ) ;
 
-            MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(format) ;
+            MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
+                format ) ;
             if( handler ) {
                 return handler ;
             }
 
-            GEO::Logger::err("I/O")
-            << "Unsupported file format: " << format
+            GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
             << std::endl ;
             return nil ;
         }
