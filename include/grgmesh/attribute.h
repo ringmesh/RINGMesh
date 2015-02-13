@@ -46,12 +46,14 @@
 
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
+#include <geogram/basic/line_stream.h>
 
 #include <vector>
 #include <map>
 #include <typeinfo>
 #include <fstream>
 #include <iostream>
+
 namespace GRGMesh {
 
      /** 
@@ -173,7 +175,7 @@ namespace GRGMesh {
            AttributeManager* manager, 
            const std::string& name, AttributeStore* as
        ) {
-           manager->bind_named_attribute_store(name,as) ;
+           manager->bind_named_attribute_store( name, as ) ;
        }
    } ;
 
@@ -267,30 +269,11 @@ namespace GRGMesh {
             return reinterpret_cast< ATTRIBUTE* >( store_->data( id ) ) ;
         }
 
-       /* // must be static because used in static function is_definedline 191
-        static AttributeStore* resolve_named_attribute_store(
-            Manager* manager,
-            const std::string& name )
-        {
-            return manager->resolve_named_attribute_store( name ) ;
-        }
-
-        static void bind_named_attribute_store(
-            Manager* manager,
-            const std::string& name,
-            AttributeStore* as )
-        {
-            manager->bind_named_attribute_store( name, as ) ;
-        }
-        */
-
     private:
         AttributeStore_var store_ ;
     } ;
-
-
     
-    // What follows come directly from Graphite Copyright Bruno L�vy
+    // What follows come directly from Graphite Copyright Bruno Levy
     /**
      * AttributeSerializer is used to save and load attributes attached
      * to an object. This is the base class for serializing the value of 
@@ -311,7 +294,7 @@ namespace GRGMesh {
             AttributeSerializer* serializer
         ) ;
 
-        virtual AttributeStore* create_attribute_store( index_t LOCATION ) = 0 ;
+        virtual AttributeStore* create_attribute_store( index_t record_size ) = 0 ;
         virtual bool serialize_read(std::istream& in,   byte* addr) = 0 ;
         virtual bool serialize_write(std::ostream& out, byte* addr) = 0 ;
 
@@ -333,10 +316,8 @@ namespace GRGMesh {
      */
     template< class ATTRIBUTE > class GenericAttributeSerializer : public AttributeSerializer {
     public:
-        //typedef AttributeStoreImpl< ATTRIBUTE > AttributeStore;
-        
-        virtual AttributeStoreImpl< ATTRIBUTE >* create_attribute_store( index_t LOCATION ) {
-            return new AttributeStoreImpl< ATTRIBUTE >( LOCATION ) ;
+        virtual AttributeStoreImpl< ATTRIBUTE >* create_attribute_store( index_t record_size ) {
+            return new AttributeStoreImpl< ATTRIBUTE >( record_size ) ;
         }
         virtual bool serialize_read(std::istream& in, byte* addr) {
             ATTRIBUTE& attr = *reinterpret_cast<ATTRIBUTE*>(addr) ;
@@ -348,7 +329,6 @@ namespace GRGMesh {
             out << attr ;
             return true ;
         }
-
     } ;
 
     /**
@@ -399,7 +379,8 @@ namespace GRGMesh {
     public:
         typedef AttributeManagerImpl< LOCATION > AttributeManagerT;
 
-        void bind(AttributeManagerT* manager, const std::string& name) {
+        void bind(AttributeManagerT* manager, const std::string& name) 
+        {
             attribute_manager_ = manager ;
             attribute_store_ = resolve_named_attribute_store(manager, name) ;
             if(attribute_store_ != nil) {
@@ -408,20 +389,25 @@ namespace GRGMesh {
             name_ = name ;
         }
 
-        void bind(AttributeManagerT* manager, const std::string& name, const std::string& attribute_type_name) {
+        void bind( 
+            AttributeManagerT* manager, 
+            const std::string& name, 
+            const std::string& attribute_type_name,
+            index_t record_size) 
+        {
             attribute_manager_ = manager ;
-            serializer_ = AttributeSerializer::resolve_by_name(attribute_type_name) ;
-            if(serializer_ != nil) {
-                if(attribute_manager_->named_attribute_is_bound(name)) {
-                    attribute_store_ = resolve_named_attribute_store(attribute_manager_,name) ;
+            serializer_ = AttributeSerializer::resolve_by_name( attribute_type_name ) ;
+            if( serializer_ != nil ) {
+                if( attribute_manager_->named_attribute_is_bound( name ) ) {
+                    attribute_store_ = resolve_named_attribute_store( attribute_manager_, name ) ;
                     grgmesh_assert(
                         AttributeSerializer::find_name_by_type(
                             attribute_store_->attribute_type_id()
                         ) == attribute_type_name
                     ) ;
                 } else {
-                    attribute_store_ = serializer_->create_attribute_store(attribute_manager_) ;
-                    bind_named_attribute_store(attribute_manager_,name,attribute_store_) ;
+                    attribute_store_ = serializer_->create_attribute_store( record_size ) ;
+                    bind_named_attribute_store( attribute_manager_, name, attribute_store_) ;
                 }
             }
             name_ = name ;
@@ -480,24 +466,24 @@ namespace GRGMesh {
 
        
     template< int32 T > inline bool get_serializable_attributes(
-        AttributeManagerImpl<T>* manager, std::vector<SerializedAttribute<T> >& attributes,
-        std::ostream& out
-    ) {
+        AttributeManagerImpl< T >* manager, 
+        std::vector< SerializedAttribute<T> >& attributes,
+        std::ostream& out ) 
+    {
         bool result = false ;
         std::vector<std::string> names ;
         manager->list_named_attributes(names) ;
-        for(unsigned int i=0; i<names.size(); i++) {
-            attributes.push_back(SerializedAttribute<T>()) ;
-            attributes.rbegin()->bind(manager, names[i]) ;
-            if(attributes.rbegin()->is_bound()) {
-                std::cerr << "Attribute " << names[i] // << " on " << localisation << " : " 
-                          << attributes.rbegin()->type_name() << std::endl ;
-                out << /*attribute_kw << " " <<*/ names[i] << " " /*<< localisation << " " */
-                    << attributes.rbegin()->type_name() << std::endl ;
+     
+        for( unsigned int i=0; i<names.size(); i++ ) {
+            attributes.push_back( SerializedAttribute<T>() ) ;
+            attributes.back().bind( manager, names[i] ) ;
+            if( attributes.back().is_bound() ) {
+                std::cerr << "Attribute " << names[i] << attributes.back().type_name() << std::endl ;
+                out << names[i] << " " 
+                    << attributes.back().type_name() << std::endl ;
                 result = true ;
             } else {
-                std::cerr << "Attribute " << names[i] /*<< " on " << localisation */
-                          << " is not serializable" << std::endl ;
+                std::cerr << "Attribute " << names[i] << " is not serializable" << std::endl ;
                 attributes.pop_back() ;
             }
         }
@@ -505,17 +491,19 @@ namespace GRGMesh {
     }
     
     template< int32 T > inline void serialize_read_attributes(
-        std::istream& in, int32 item, std::vector< SerializedAttribute<T> >& attributes
-    ) {
-        for(unsigned int i=0; i<attributes.size(); i++) {
-            in >> attributes[i][item] ;
+        const GEO::LineInput& in, index_t start_field, int32 item, std::vector< SerializedAttribute<T> >& attributes
+    ) {     
+        grgmesh_assert( start_field + attributes.size()-1 < in.nb_fields()  ) ;
+        for( unsigned int i = 0; i < attributes.size(); i++ ) {
+            std::istringstream is( in.field( start_field + i ) ) ;
+            is >> attributes[i][item] ;
         }
     }
 
     template< int32 T > inline void serialize_write_attributes(
         std::ostream& out, int32 item, std::vector< SerializedAttribute<T> >& attributes
     ) {
-        for(unsigned int i=0; i<attributes.size(); i++) {
+        for( unsigned int i=0; i<attributes.size(); i++ ) {
             out << attributes[i][item] << " " ;
         }
     }
