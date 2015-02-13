@@ -787,7 +787,7 @@ namespace GRGMesh {
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        index_t s_id = interf.boundary_id( s ) ;
+                        index_t s_id = interf.child_id( s ) ;
                         nb_triangle_interface[i] += db.nb_triangle( s_id ) ;
                         nb_quad_interface[i] += db.nb_quad( s_id ) ;
                     }
@@ -1096,11 +1096,11 @@ namespace GRGMesh {
                 }
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
-                    for( index_t s = 0; s < interf.nb_boundaries(); s++ ) {
-                        index_t s_id = interf.boundary_id( s ) ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        index_t s_id = interf.child_id( s ) ;
                         index_t mesh_id = mm.surface_mesh( s_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                        for( index_t el = 0; db.nb_triangle( s_id ); el++ ) {
+                        for( index_t el = 0; el < db.nb_triangle( s_id ); el++ ) {
                             index_t tri = db.local_triangle_id( mesh_id, el ) ;
                             for( index_t p = mesh.facet_begin( tri );
                                 p < mesh.facet_end( tri ); p++ ) {
@@ -1114,7 +1114,7 @@ namespace GRGMesh {
                                 }
                             }
                         }
-                        for( index_t el = 0; db.nb_quad( s_id ); el++ ) {
+                        for( index_t el = 0; el < db.nb_quad( s_id ); el++ ) {
                             index_t quad = db.local_quad_id( mesh_id, el ) ;
                             for( index_t p = mesh.facet_begin( quad );
                                 p < mesh.facet_end( quad ); p++ ) {
@@ -1211,11 +1211,11 @@ namespace GRGMesh {
                 }
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
-                    for( index_t s = 0; s < interf.nb_boundaries(); s++ ) {
-                        index_t s_id = interf.boundary_id( s ) ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        index_t s_id = interf.child_id( s ) ;
                         index_t mesh_id = mm.surface_mesh( s_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                        for( index_t el = 0; db.nb_triangle( s_id ); el++ ) {
+                        for( index_t el = 0; el < db.nb_triangle( s_id ); el++ ) {
                             index_t tri = db.local_triangle_id( mesh_id, el ) ;
                             for( index_t f = mesh.facet_begin( tri );
                                 f < mesh.facet_end( tri ); f++ ) {
@@ -1232,7 +1232,7 @@ namespace GRGMesh {
                                 }
                             }
                         }
-                        for( index_t el = 0; db.nb_quad( s_id ); el++ ) {
+                        for( index_t el = 0; el < db.nb_quad( s_id ); el++ ) {
                             index_t quad = db.local_quad_id( mesh_id, el ) ;
                             for( index_t f = mesh.facet_begin( quad );
                                 f < mesh.facet_end( quad ); f++ ) {
@@ -1275,7 +1275,7 @@ namespace GRGMesh {
             {
                 const BoundaryModel& model = mm.model() ;
                 std::string cmsp_filename = GEO::CmdLine::get_arg( "out:csmp" ) ;
-                box_model_ = cmsp_filename == "" ;
+                box_model_ = cmsp_filename != "" ;
                 if( box_model_ ) {
                     GEO::LineInput parser( cmsp_filename ) ;
                     if( !parser.OK() ) {
@@ -1433,11 +1433,12 @@ namespace GRGMesh {
                     corner_boundary_flags_[front_bottom_right] = -11 ;
                 }
 
+                point_boundaries_.resize( mm.nb_vertices() ) ;
                 for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
                     index_t interface_id = model.surface( s ).parent_id() ;
                     index_t mesh_id = mm.surface_mesh( s ) ;
                     const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                    for( index_t f = 0; mm.nb_surface_facets( s ); f++ ) {
+                    for( index_t f = 0; f < mm.nb_surface_facets( s ); f++ ) {
                         index_t f_id = mm.surface_facet( s, f ) ;
                         for( index_t c = mesh.facet_begin( f_id );
                             c < mesh.facet_end( f_id ); c++ ) {
@@ -1523,6 +1524,7 @@ namespace GRGMesh {
             grgmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" ) ;
             grgmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
             grgmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" ) ;
+            grgmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" ) ;
 
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(format) ;
             if( handler ) {
