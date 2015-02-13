@@ -229,17 +229,17 @@ namespace GRGMesh {
         BoundaryModelIOHandler* BoundaryModelIOHandler::create(
             const std::string& format )
         {
-            grgmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" );
-            grgmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" ) ;
+            grgmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" ) ;
+            grgmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" );
 
             BoundaryModelIOHandler* handler =
-            BoundaryModelIOHandlerFactory::create_object( format ) ;
+                BoundaryModelIOHandlerFactory::create_object( format ) ;
             if( handler ) {
                 return handler ;
             }
 
             GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
-            << std::endl ;
+                << std::endl ;
             return nil ;
         }
 
@@ -300,6 +300,57 @@ namespace GRGMesh {
             }
             virtual bool save( const MacroMesh& mm, const std::string& filename )
             {
+                MacroMeshExport db( mm ) ;
+                db.compute_database( MacroMeshExport::ALL ) ;
+
+                std::ofstream out( filename.c_str() ) ;
+                out.precision( 16 ) ;
+                std::vector< bool > vertex_exported( mm.nb_vertices(), false ) ;
+                std::vector< bool > atom_exported( db.nb_duplicated_vertices(),
+                    false ) ;
+
+                //1. Write the vertices coordinates (with the duplicate ones)
+                out << "COOR_3D" << std::endl ;
+                for( index_t v = 0; v < db.nb_total_vertices(); v++ ) {
+                    const vec3& cur_v = mm.global_vertex(v) ;
+                    out << "V" << v << SPACE << cur_v.x << SPACE << cur_v.y << SPACE << cur_v.z
+                        << std::endl ;
+                }
+
+                out<< "FINSF" << std::endl ;
+
+                //2. Write the cells per type
+                //2.1 Tetraedrons
+                out << "TETRA4" << std::endl ;
+                index_t cell_id = 0 ;
+                for(index_t r = 0 ; r < mm.nb_meshes() ; r++) {
+                    const GEO::Mesh& cur_r= mm.mesh(r) ;
+                    for(index_t tet = 0 ; tet < db.nb_tet(r) ; tet ++) {
+                        index_t local_tet = db.local_tet_id(r,tet) ;
+                        out << "C" << cell_id << SPACE;
+                        for(index_t co = cur_r.cell_vertices_begin(local_tet) ; co < cur_r.cell_vertices_begin( tet )
+                        +4 ; co++) {
+                            index_t global_co ;
+                            index_t orig_co ;
+                            if(db.vertex_id(r,co,orig_co,global_co) ) {
+                            out << "V" << orig_co << SPACE;
+                            }
+                            else {
+                                out << "V" << global_co << SPACE;
+
+                            }
+                        }
+                        out << std::endl ;
+                        cell_id++ ;
+                    }
+                }
+                out << "FINSF" << std::endl ;
+
+
+
+
+                out.close() ;
+
                 return true ;
             }
         } ;
@@ -1543,11 +1594,12 @@ namespace GRGMesh {
 
         MacroMeshIOHandler* MacroMeshIOHandler::create( const std::string& format )
         {
-            grgmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" );
-            grgmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" ) ;
-            grgmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-            grgmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" ) ;
-            grgmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+            grgmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" ) ;
+            grgmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" );
+            grgmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" );
+            grgmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" );
+            grgmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" );
+            grgmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" );
 
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
                 format ) ;
@@ -1556,7 +1608,7 @@ namespace GRGMesh {
             }
 
             GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
-            << std::endl ;
+                << std::endl ;
             return nil ;
         }
 
