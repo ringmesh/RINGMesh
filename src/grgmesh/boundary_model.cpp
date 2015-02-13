@@ -633,13 +633,12 @@ namespace GRGMesh {
         }
         out << std::endl ;
 
-        AttributeSerializer::initialize() ;
-        grgmesh_register_attribute_type< int >("int") ;
         // Vertices
         // Attributes on vertices
+        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;                   
+        out << "MODEL_VERTEX_ATTRIBUTES " ;
         std::vector< SerializedAttribute< VERTEX>  > vertex_attribs ;
         get_serializable_attributes( &vertex_attribute_manager_, vertex_attribs, out ) ;         
-        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;                   
         for( index_t i = 0; i < nb_vertices(); ++i ) {
             out << vertex(i)  << "  " ;
             serialize_write_attributes( out, i, vertex_attribs ) ;

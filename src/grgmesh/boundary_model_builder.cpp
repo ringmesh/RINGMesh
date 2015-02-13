@@ -1649,10 +1649,21 @@ namespace GRGMesh {
                 {
                     index_t nb_vertices = in.field_as_uint(1) ;
                     reserve_vertices( nb_vertices ) ;
+                    
+                    // Get the Attributes to read
+                    in.get_line() ; in.get_fields() ;              
+                    std::vector< SerializedAttribute< BoundaryModel::VERTEX > > vertex_attribs( (in.nb_fields()-1)/2.) ;
+                    for( index_t i = 1 ; i+1 < in.nb_fields(); i+=2 ) {
+                       // vertex_attribs.push_back( SerializedAttribute< BoundaryModel::VERTEX >() ) ;
+                        index_t va = i/2 ;
+                        vertex_attribs[va].bind( model_.vertex_attribute_manager(), in.field(i), in.field(i+1), nb_vertices ) ;
+                    }
                     for( index_t i = 0; i < nb_vertices; ++i ){
                         in.get_line() ; in.get_fields() ;              
                         add_vertex( vec3( 
                             read_double( in, 0 ), read_double( in, 1 ), read_double( in, 2 ) ) ) ;
+                        // read the attributes
+                        serialize_read_attributes( in, 3, i, vertex_attribs ) ;
                     }
                 }
                 // Corners
