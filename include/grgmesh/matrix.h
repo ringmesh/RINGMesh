@@ -32,12 +32,11 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
-*/
-
+ */
 
 #ifndef __GRGMESH_MATRIX__
 #define __GRGMESH_MATRIX__
@@ -77,13 +76,14 @@ namespace GRGMesh {
         typedef ElementImpl< T > Element ;
 
         RowImpl()
-            : nb_elements_( 0 ), capacity_( 4 )
+            : nb_elements_( 0 ), capacity_( 0 ), elements_( nullptr )
         {
-            elements_ = new Element[capacity_] ;
         }
         ~RowImpl()
         {
-            delete[] elements_ ;
+            if( elements_ != nullptr ) {
+                delete[] elements_ ; // Constructor does not allocate elements_
+            }
         }
 
         void set_element( index_t j, const T& value )
@@ -95,7 +95,9 @@ namespace GRGMesh {
                 elt.index = j ;
                 elt.value = value ;
             } else {
+
                 elements_[index].value = value ;
+
             }
         }
 
@@ -146,14 +148,18 @@ namespace GRGMesh {
             return nb_elements_ ;
         }
 
-    private:
         void reallocate( index_t new_capacity )
         {
             Element* new_elements = new Element[new_capacity] ;
-            std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
-            delete[] elements_ ;
+
+            if( elements_ != nullptr ) {
+                std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
+                delete[] elements_ ; // Constructor does not allocate elements_
+            }
             elements_ = new_elements ;
         }
+
+    private:
         void grow()
         {
             capacity_ = capacity_ * 2 ;
@@ -258,7 +264,11 @@ namespace GRGMesh {
             ni_ = ni ;
             nj_ = nj ;
             rows_ = new Row[ni] ;
+            for( index_t i = 0; i < ni; ++i ) {
+                rows_[i].reallocate( nj ) ;
+            }
         }
+
     protected:
         Row* rows_ ;
         index_t ni_, nj_ ; // matrix dimensions
@@ -268,14 +278,16 @@ namespace GRGMesh {
     /*!
      * declaration of a template class SparseMatrix, it will be specialazed for the different MatrixType
      * */
-    template< class T, MatrixType Light = MatrixType( 2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
+    template< class T, MatrixType Light = MatrixType(
+        2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
     class SparseMatrix: public SparseMatrixImpl< T, T > {
     } ;
 
     /*!
      * specialization of SparseMatrix for MatrixType "light"
      * */
-    template< class T > class SparseMatrix< T, light > : public SparseMatrixImpl< T, T > {
+    template< class T > class SparseMatrix< T, light > : public SparseMatrixImpl< T,
+        T > {
     public:
         typedef SparseMatrix< T, light > thisclass ;
         SparseMatrix( bool is_symetrical = false )
@@ -332,7 +344,8 @@ namespace GRGMesh {
      * The data are strored in a std::deque and the rows contains the
      * ids of the values within the deque.
      * */
-    template< class T > class SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t > {
+    template< class T > class SparseMatrix< T, heavy > : public SparseMatrixImpl< T,
+        index_t > {
     public:
         typedef SparseMatrix< T, heavy > thisclass ;
         SparseMatrix( bool is_symetrical = false )
@@ -349,15 +362,14 @@ namespace GRGMesh {
         bool set_element( index_t i, index_t j, const T& value )
         {
             // small difference with light type: we fill a deque
-            index_t value_id;
-        	if (this->exist(i,j)){
-        		value_id = get_value_id(i,j);
-        		values_[value_id] = value;
-        	}
-        	else{
-				values_.push_back( value ) ;
-				value_id = values_.size() - 1 ;
-        	}
+            index_t value_id ;
+            if( this->exist( i, j ) ) {
+                value_id = get_value_id( i, j ) ;
+                values_[value_id] = value ;
+            } else {
+                values_.push_back( value ) ;
+                value_id = values_.size() - 1 ;
+            }
             this->rows_[i].set_element( j, value_id ) ;
             if( this->is_symmetrical_ ) {
                 this->rows_[j].set_element( i, value_id ) ;
@@ -392,18 +404,42 @@ namespace GRGMesh {
             value = values_[value_id] ;
             return ;
         }
-        void print_matrix(void){
-        	std::cout << "deque size = " << values_.size() << std::endl;
+        void print_matrix( void )
+        {
+            std::cout << "deque size = " << values_.size() << std::endl ;
         }
 
     private:
-        index_t get_value_id(index_t i, index_t j){
-        	return this->rows_[i].find(j);
+        index_t get_value_id( index_t i, index_t j )
+        {
+            return this->rows_[i].find( j ) ;
         }
         SparseMatrix( const thisclass &rhs ) ;
         thisclass& operator=( const thisclass &rhs ) ;
     private:
         std::deque< T > values_ ;
     } ;
+
+    template< class T >
+    void product_matrix_by_vector(
+        const SparseMatrix< T >& mat1,
+        const std::vector< T >& mat2,
+        std::vector< T >& result )
+    {
+        grgmesh_assert( mat1.nj() == mat2.size() ) ;
+        result.clear() ;
+        result.resize( mat1.ni(), 0 ) ;
+
+        for( index_t i = 0; i < mat1.ni(); ++i ) {
+            grgmesh_assert( i >= 0 && i < result.size() ) ;
+            for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
+                index_t j = mat1.get_column_in_line( i, e ) ;
+                T i_j_result ;
+                mat1.get_element_in_line( i, e, i_j_result ) ;
+                i_j_result *= mat2[j] ;
+                result[i] += i_j_result ;
+            }
+        }
+    }
 }
 #endif
