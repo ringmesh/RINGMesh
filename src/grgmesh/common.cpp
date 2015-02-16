@@ -77,9 +77,10 @@ INITIALIZER(initialize)
 
         // Initialization for BoundaryModel attribute serialization        
         GRGMesh::AttributeSerializer::initialize() ;       
-        GRGMesh::grgmesh_register_attribute_type< int     > ("int") ;
-        GRGMesh::grgmesh_register_attribute_type< double  > ("double") ;
-        GRGMesh::grgmesh_register_attribute_type< float   > ("float") ;
+        GRGMesh::grgmesh_register_attribute_type< int           > ("int") ;
+        GRGMesh::grgmesh_register_attribute_type< unsigned int  > ("index") ;
+        GRGMesh::grgmesh_register_attribute_type< double        > ("double") ;
+        GRGMesh::grgmesh_register_attribute_type< float         > ("float") ;
     }
 }
 
