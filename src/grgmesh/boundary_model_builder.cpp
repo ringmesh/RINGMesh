@@ -1141,7 +1141,7 @@ namespace GRGMesh {
                     {
                         // 4. Build the volumetric layers from their name and 
                         // the ids of the regions they contain
-                        index_t layer_id = create_layer( in.field(2) ) ;
+                        index_t layer_id = create_layer( in.field(1) ) ;
                         bool end_layer = false ;
                         while( !end_layer ) {
                             in.get_line() ; in.get_fields() ;              
