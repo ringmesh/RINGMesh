@@ -76,14 +76,13 @@ namespace GRGMesh {
         typedef ElementImpl< T > Element ;
 
         RowImpl()
-            : nb_elements_( 0 ), capacity_( 0 ), elements_( nullptr )
+            : nb_elements_( 0 ), capacity_( 4 )
         {
+            elements_ = new Element[capacity_] ;
         }
         ~RowImpl()
         {
-            if( elements_ != nullptr ) {
-                delete[] elements_ ; // Constructor does not allocate elements_
-            }
+            delete[] elements_ ;
         }
 
         void set_element( index_t j, const T& value )
@@ -95,9 +94,7 @@ namespace GRGMesh {
                 elt.index = j ;
                 elt.value = value ;
             } else {
-
                 elements_[index].value = value ;
-
             }
         }
 
@@ -148,20 +145,17 @@ namespace GRGMesh {
             return nb_elements_ ;
         }
 
+    private:
         void reallocate( index_t new_capacity )
         {
             Element* new_elements = new Element[new_capacity] ;
-
-            if( elements_ != nullptr ) {
-                std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
-                delete[] elements_ ; // Constructor does not allocate elements_
-            }
+            std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
+            delete[] elements_ ;
             elements_ = new_elements ;
         }
-
-    private:
         void grow()
         {
+            grgmesh_debug_assert( capacity_ != 0 ) ;
             capacity_ = capacity_ * 2 ;
             reallocate( capacity_ ) ;
         }
@@ -264,11 +258,7 @@ namespace GRGMesh {
             ni_ = ni ;
             nj_ = nj ;
             rows_ = new Row[ni] ;
-            for( index_t i = 0; i < ni; ++i ) {
-                rows_[i].reallocate( nj ) ;
-            }
         }
-
     protected:
         Row* rows_ ;
         index_t ni_, nj_ ; // matrix dimensions
