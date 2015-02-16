@@ -448,7 +448,6 @@ namespace GRGMesh {
      * 
      * @param[in] file_name Name of the file
      *
-     * \todo Write generic I/O for attributes on a BoundaryModel
      * \todo Make this function const
      *
      */
@@ -499,10 +498,7 @@ namespace GRGMesh {
             for( index_t i=0; i < names.size(); i++ ) { 
                 // Output global information on the attribute
                 out << "# attribute "<< names[i] << " facet "
-                    // In Graphite - which will read this file - there is a stupid map 
-                    // betwen the type name and the name in the file 
                     << "integer" 
-                    //<< attribute_stores[i]->attribute_type_id().name() // real attribute type
                     << std::endl ;  
             }
             if( names.size() > 0 ) {
@@ -527,8 +523,8 @@ namespace GRGMesh {
                 }
             }
         }
-
     }
+
     /*!
      * @brief Debug: Save a Surface of the model in the file OBJ format is used
      */
@@ -578,8 +574,7 @@ namespace GRGMesh {
      }
 
      /*!
-      * \todo THIS IS BUGGED when a Line does not cut a Surface
-      * \todo Save attributes - could be registered here
+      * @brief Save the BoundaryModel into a dedicated format bm      
       */
      void BoundaryModel::save_bm_file( const std::string& file_name )  
      {
@@ -633,12 +628,11 @@ namespace GRGMesh {
         }
         out << std::endl ;
 
-        // Vertices
-        // Attributes on vertices
-        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;                   
+        // Vertices and attributes on vertices
+        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;                           
         out << "MODEL_VERTEX_ATTRIBUTES " ;
-        std::vector< SerializedAttribute< VERTEX>  > vertex_attribs ;
-        get_serializable_attributes( &vertex_attribute_manager_, vertex_attribs, out ) ;         
+        std::vector< SerializedAttribute< VERTEX > > vertex_attribs ;
+        get_serializable_attributes( &vertex_attribute_manager_, vertex_attribs, out ) ;                 
         for( index_t i = 0; i < nb_vertices(); ++i ) {
             out << vertex(i)  << "  " ;
             serialize_write_attributes( out, i, vertex_attribs ) ;
@@ -655,16 +649,24 @@ namespace GRGMesh {
             const Line& L = line(i) ;
             out << BME::type_name( BME::LINE) << " " << L.id() << std::endl ;
             out << "LINE_VERTICES " << L.nb_vertices() << std::endl ;
-            int count = 0 ;
+            out << "LINE_VERTEX_ATTRIBUTES " ;
+            std::vector< SerializedAttribute< BME::VERTEX > > line_vertex_attribs ;
+            get_serializable_attributes( L.vertex_attribute_manager(), line_vertex_attribs, out ) ;            
             for( index_t j = 0; j < L.nb_vertices(); ++j ) {
                 out << L.model_vertex_id( j ) << "  " ;
-                count++ ;
-                if( count == 20 && j+1 < L.nb_vertices() ){
-                    count = 0 ;
-                    out << std::endl ;
+                serialize_write_attributes( out, j, line_vertex_attribs ) ;
+                out << std::endl ;                
+            }
+            out << "LINE_SEGMENT_ATTRIBUTES " ; 
+            std::vector< SerializedAttribute< BME::FACET > > line_segments_attribs ;
+            get_serializable_attributes( L.facet_attribute_manager(), line_segments_attribs, out ) ;
+            if( line_segments_attribs.size() > 0 ) {
+                for( index_t j = 0; j < L.nb_cells(); ++j ) {
+                    out << j << "  " ;
+                    serialize_write_attributes( out, j, line_segments_attribs ) ;
+                    out << std::endl ;                
                 }
             }
-            out << std::endl ;
             out << "IN_BOUNDARY " ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ){
                 out << L.in_boundary_id( j ) << " " ;
@@ -675,20 +677,30 @@ namespace GRGMesh {
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             const Surface& S = surface(i) ;
             out << BME::type_name( BME::SURFACE ) << " " << S.id() << std::endl ;
+            out << "SURFACE_VERTICES " << S.nb_vertices() << std::endl ;
+            out << "SURFACE_VERTEX_ATTRIBUTES " ;
+            std::vector< SerializedAttribute< BME::VERTEX > > surface_vertex_attribs ;
+            get_serializable_attributes( S.vertex_attribute_manager(), surface_vertex_attribs, out ) ; 
+            for( index_t j = 0; j < S.nb_vertices(); ++j ) {
+                out << S.model_vertex_id( j ) << "  " ;
+                serialize_write_attributes( out, j, surface_vertex_attribs ) ;
+                out << std::endl ;                
+            }
+
             out << "SURFACE_CORNERS "<< S.nb_corners() << std::endl ;
             out << "SURFACE_FACETS " << S.nb_cells() << std::endl ;
+            out << "SURFACE_FACET_ATTRIBUTES " ;
+            std::vector< SerializedAttribute< BME::FACET > > surface_facet_attribs ;
+            get_serializable_attributes( S.facet_attribute_manager(), surface_facet_attribs, out ) ;      
+            
             for( index_t j =0; j < S.nb_cells(); ++j ) {
                 out << S.nb_vertices_in_facet(j) << " " ;
                 for( index_t v= 0; v < S.nb_vertices_in_facet(j); ++v ){
-                    out << S.model_vertex_id( j, v ) << " ";
+                    out << S.surf_vertex_id ( j, v ) << " ";
                 }
+                serialize_write_attributes( out, j, surface_facet_attribs ) ;
                 out << std::endl ;
             }
         }
-
-
     }
-
-
-
 } // namespace

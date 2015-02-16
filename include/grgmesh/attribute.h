@@ -55,6 +55,9 @@
 #include <iostream>
 
 namespace GRGMesh {
+    /* \file Generic attribute management
+     * Strongly inspired from Graphite - Copyright Bruno Lévy 
+     */
 
      /** 
      * \brief Abstract base class to store an attribute as a vector of bytes.
@@ -379,7 +382,7 @@ namespace GRGMesh {
     public:
         typedef AttributeManagerImpl< LOCATION > AttributeManagerT;
 
-        void bind(AttributeManagerT* manager, const std::string& name) 
+        void bind( AttributeManagerT* manager, const std::string& name ) 
         {
             attribute_manager_ = manager ;
             attribute_store_ = resolve_named_attribute_store(manager, name) ;
@@ -464,34 +467,47 @@ namespace GRGMesh {
         std::string name_ ;
     } ;
 
-       
-    template< int32 T > inline bool get_serializable_attributes(
+    /*!
+     * \brief Get from the manager the attributes that can be saved in a file
+     * Those for which there is a type name has beed registered cf. grgmesh_register_attribute_type
+     * The names and types of the writable attributes are written in the output stream
+     * The corresponding serialized attributes are added to attributes
+     */
+    template< int32 T > inline void get_serializable_attributes(
         AttributeManagerImpl< T >* manager, 
         std::vector< SerializedAttribute<T> >& attributes,
         std::ostream& out ) 
     {
-        bool result = false ;
-        std::vector<std::string> names ;
-        manager->list_named_attributes(names) ;
+        std::vector< std::string > names ;
+        manager->list_named_attributes( names ) ;
      
-        for( unsigned int i=0; i<names.size(); i++ ) {
+        for( unsigned int i = 0; i< names.size(); i++ ) {
             attributes.push_back( SerializedAttribute<T>() ) ;
             attributes.back().bind( manager, names[i] ) ;
             if( attributes.back().is_bound() ) {
-                std::cerr << "Attribute " << names[i] << attributes.back().type_name() << std::endl ;
                 out << names[i] << " " 
                     << attributes.back().type_name() << std::endl ;
-                result = true ;
             } else {
                 std::cerr << "Attribute " << names[i] << " is not serializable" << std::endl ;
                 attributes.pop_back() ;
             }
         }
-        return result ;
+        if( attributes.size() == 0 ) out << std::endl ;
     }
     
+    /*! 
+     * Generic reading of a attribute values in LineStream
+     *
+     * \param[in] in Input GEO::LineStream
+     * \param[in] start_field From which index should the attributes be read in in
+     * \param[in] item Index of the item to which the read values should be linked to
+     * \param[in] attributes The attributes to read
+     */
     template< int32 T > inline void serialize_read_attributes(
-        const GEO::LineInput& in, index_t start_field, int32 item, std::vector< SerializedAttribute<T> >& attributes
+        const GEO::LineInput& in, 
+        index_t start_field, 
+        int32 item, 
+        std::vector< SerializedAttribute<T> >& attributes
     ) {     
         grgmesh_assert( start_field + attributes.size()-1 < in.nb_fields()  ) ;
         for( unsigned int i = 0; i < attributes.size(); i++ ) {
@@ -500,6 +516,9 @@ namespace GRGMesh {
         }
     }
 
+    /*!
+     * Generic writing of attributes in a ostream
+     */ 
     template< int32 T > inline void serialize_write_attributes(
         std::ostream& out, int32 item, std::vector< SerializedAttribute<T> >& attributes
     ) {
