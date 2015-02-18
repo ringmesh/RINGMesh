@@ -1,16 +1,42 @@
-/*[
- * Association Scientifique pour la Geologie et ses Applications (ASGA)
- * Copyright (c) 1993-2013 ASGA. All Rights Reserved.
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * This program is a Trade Secret of the ASGA and it is not to be:
- * - reproduced, published, or disclosed to other,
- * - distributed or displayed,
- * - used for purposes or on Sites other than described
- *   in the GOCAD Advancement Agreement,
- * without the prior written authorization of the ASGA. Licencee
- * agrees to attach or embed this Notice on all copies of the program,
- * including partial copies or modified versions thereof.
- ]*/
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr 
+ *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.gocad.org
+ *
+ *     GOCAD Project
+ *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY 
+ *     FRANCE
+ */
 
 #ifndef __GRGMESH_MATRIX__
 #define __GRGMESH_MATRIX__
@@ -129,6 +155,7 @@ namespace GRGMesh {
         }
         void grow()
         {
+            grgmesh_debug_assert( capacity_ != 0 ) ;
             capacity_ = capacity_ * 2 ;
             reallocate( capacity_ ) ;
         }
@@ -241,14 +268,16 @@ namespace GRGMesh {
     /*!
      * declaration of a template class SparseMatrix, it will be specialazed for the different MatrixType
      * */
-    template< class T, MatrixType Light = MatrixType( 2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
+    template< class T, MatrixType Light = MatrixType(
+        2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
     class SparseMatrix: public SparseMatrixImpl< T, T > {
     } ;
 
     /*!
      * specialization of SparseMatrix for MatrixType "light"
      * */
-    template< class T > class SparseMatrix< T, light > : public SparseMatrixImpl< T, T > {
+    template< class T > class SparseMatrix< T, light > : public SparseMatrixImpl< T,
+        T > {
     public:
         typedef SparseMatrix< T, light > thisclass ;
         SparseMatrix( bool is_symetrical = false )
@@ -305,7 +334,8 @@ namespace GRGMesh {
      * The data are strored in a std::deque and the rows contains the
      * ids of the values within the deque.
      * */
-    template< class T > class SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t > {
+    template< class T > class SparseMatrix< T, heavy > : public SparseMatrixImpl< T,
+        index_t > {
     public:
         typedef SparseMatrix< T, heavy > thisclass ;
         SparseMatrix( bool is_symetrical = false )
@@ -322,15 +352,14 @@ namespace GRGMesh {
         bool set_element( index_t i, index_t j, const T& value )
         {
             // small difference with light type: we fill a deque
-            index_t value_id;
-        	if (this->exist(i,j)){
-        		value_id = get_value_id(i,j);
-        		values_[value_id] = value;
-        	}
-        	else{
-				values_.push_back( value ) ;
-				value_id = values_.size() - 1 ;
-        	}
+            index_t value_id ;
+            if( this->exist( i, j ) ) {
+                value_id = get_value_id( i, j ) ;
+                values_[value_id] = value ;
+            } else {
+                values_.push_back( value ) ;
+                value_id = values_.size() - 1 ;
+            }
             this->rows_[i].set_element( j, value_id ) ;
             if( this->is_symmetrical_ ) {
                 this->rows_[j].set_element( i, value_id ) ;
@@ -365,18 +394,42 @@ namespace GRGMesh {
             value = values_[value_id] ;
             return ;
         }
-        void print_matrix(void){
-        	std::cout << "deque size = " << values_.size() << std::endl;
+        void print_matrix( void )
+        {
+            std::cout << "deque size = " << values_.size() << std::endl ;
         }
 
     private:
-        index_t get_value_id(index_t i, index_t j){
-        	return this->rows_[i].find(j);
+        index_t get_value_id( index_t i, index_t j )
+        {
+            return this->rows_[i].find( j ) ;
         }
         SparseMatrix( const thisclass &rhs ) ;
         thisclass& operator=( const thisclass &rhs ) ;
     private:
         std::deque< T > values_ ;
     } ;
+
+    template< class T >
+    void product_matrix_by_vector(
+        const SparseMatrix< T >& mat1,
+        const std::vector< T >& mat2,
+        std::vector< T >& result )
+    {
+        grgmesh_assert( mat1.nj() == mat2.size() ) ;
+        result.clear() ;
+        result.resize( mat1.ni(), 0 ) ;
+
+        for( index_t i = 0; i < mat1.ni(); ++i ) {
+            grgmesh_assert( i >= 0 && i < result.size() ) ;
+            for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
+                index_t j = mat1.get_column_in_line( i, e ) ;
+                T i_j_result ;
+                mat1.get_element_in_line( i, e, i_j_result ) ;
+                i_j_result *= mat2[j] ;
+                result[i] += i_j_result ;
+            }
+        }
+    }
 }
 #endif

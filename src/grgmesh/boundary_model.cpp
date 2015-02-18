@@ -24,6 +24,18 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr 
+ *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.gocad.org
+ *
+ *     GOCAD Project
+ *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY 
+ *     FRANCE
 */
 
 /*! \author Jeanne Pellerin and Arnaud Botella */
@@ -565,11 +577,14 @@ namespace GRGMesh {
          out << std::endl ;    
      }
 
-
-     void BoundaryModel::save_bm_file( const std::string& file_name ) const 
+     /*!
+      * \todo THIS IS BUGGED when a Line does not cut a Surface
+      * \todo Save attributes - could be registered here
+      */
+     void BoundaryModel::save_bm_file( const std::string& file_name )  
      {
         std::ofstream out ;
-        out.open( file_name.c_str() );
+        out.open( file_name.c_str() ) ;
         if( out.bad() ){
             std::cout << "Error when opening the file: " << file_name.c_str() <<std::endl ;
             return ;
@@ -664,6 +679,10 @@ namespace GRGMesh {
                 out << std::endl ;
             }
         }
+
+        std::vector< SerializedAttribute< VERTEX>  > out_attribs ;
+
+        bool test = get_serializable_attributes( &vertex_attribute_manager_, out_attribs, out ) ; 
     }
 
 
