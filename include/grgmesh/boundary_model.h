@@ -24,6 +24,18 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr 
+ *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.gocad.org
+ *
+ *     GOCAD Project
+ *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY 
+ *     FRANCE
 */
 
 /*! \author Jeanne Pellerin and Arnaud Botella */
@@ -61,7 +73,7 @@ namespace GRGMesh {
         enum AttributeLocation {
             VERTEX
         } ;       
-        typedef AttributeManager< VERTEX > VertexAttributeManager ;
+        typedef AttributeManagerImpl< VERTEX > VertexAttributeManager ;
         typedef BoundaryModelElement BME ;
                
         const static index_t NO_ID = index_t( -1 ) ;
@@ -188,7 +200,7 @@ namespace GRGMesh {
         bool save_gocad_model3d( std::ostream& out ) ;
         void save_as_eobj_file( const std::string& file_name ) ;
         void save_surface_as_obj_file( index_t s, const std::string& file_name ) const ;
-        void save_bm_file( const std::string& file_name ) const ;
+        void save_bm_file( const std::string& file_name ) ;
 
         /**
         * @}

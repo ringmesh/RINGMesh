@@ -229,17 +229,17 @@ namespace GRGMesh {
         BoundaryModelIOHandler* BoundaryModelIOHandler::create(
             const std::string& format )
         {
-            grgmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" ) ;
-            grgmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" );
+            grgmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" );
+            grgmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" ) ;
 
             BoundaryModelIOHandler* handler =
-                BoundaryModelIOHandlerFactory::create_object( format ) ;
+            BoundaryModelIOHandlerFactory::create_object( format ) ;
             if( handler ) {
                 return handler ;
             }
 
             GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
-                << std::endl ;
+            << std::endl ;
             return nil ;
         }
 
@@ -302,7 +302,11 @@ namespace GRGMesh {
             {
                 MacroMeshExport db( mm ) ;
                 db.compute_database( MacroMeshExport::ALL ) ;
-
+                const BoundaryModel& model = mm.model() ;
+                std::vector< index_t > vertex_exported_id( mm.nb_vertices(),
+                    NO_ID ) ;
+                std::vector< index_t > atom_exported_id( db.nb_duplicated_vertices(),
+                    NO_ID ) ;
                 std::ofstream out( filename.c_str() ) ;
                 out.precision( 16 ) ;
                 std::vector< bool > vertex_exported( mm.nb_vertices(), false ) ;
@@ -310,48 +314,165 @@ namespace GRGMesh {
                     false ) ;
 
                 //1. Write the vertices coordinates (with the duplicate ones)
-                out << "COOR_3D" << std::endl ;
-                for( index_t v = 0; v < db.nb_total_vertices(); v++ ) {
-                    const vec3& cur_v = mm.global_vertex(v) ;
-                    out << "V" << v << SPACE << cur_v.x << SPACE << cur_v.y << SPACE << cur_v.z
-                        << std::endl ;
-                }
+//                for( index_t v = 0; v < db.nb_total_vertices(); v++ ) {
+//                    const vec3& cur_v = db. ;
+//                    out << "V" << v << SPACE << cur_v.x << SPACE << cur_v.y << SPACE
+//                        << cur_v.z << std::endl ;
+//
+//                }
+                std::cout << "nb vertices " << mm.nb_vertices() << std::endl ;
+                std::cout << "nb total vertices " << db.nb_total_vertices()
+                    << std::endl ;
 
-                out<< "FINSF" << std::endl ;
-
-                //2. Write the cells per type
-                //2.1 Tetraedrons
-                out << "TETRA4" << std::endl ;
-                index_t cell_id = 0 ;
-                for(index_t r = 0 ; r < mm.nb_meshes() ; r++) {
-                    const GEO::Mesh& cur_r= mm.mesh(r) ;
-                    for(index_t tet = 0 ; tet < db.nb_tet(r) ; tet ++) {
-                        index_t local_tet = db.local_tet_id(r,tet) ;
-                        out << "C" << cell_id << SPACE;
-                        for(index_t co = cur_r.cell_vertices_begin(local_tet) ; co < cur_r.cell_vertices_begin( tet )
-                        +4 ; co++) {
-                            index_t global_co ;
-                            index_t orig_co ;
-                            if(db.vertex_id(r,co,orig_co,global_co) ) {
-                            out << "V" << orig_co << SPACE;
+                index_t nb_vertices_exported = 0 ;
+                index_t cur_cell = 0 ;
+                for( index_t r = 0; r < model.nb_regions(); r++ ) {
+                    const GEO::Mesh& mesh = mm.mesh( r ) ;
+                    out << "COOR_3D" << std::endl ;
+                    for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+                        for( index_t co = mesh.cell_vertices_begin( c );
+                            co
+                                < mesh.cell_vertices_begin( c )
+                                    + mesh.cell_nb_vertices( c ); co++ ) {
+                            index_t vertex_id, atom_id ;
+                            if( db.vertex_id( r, co, vertex_id, atom_id ) ) {
+                                if( vertex_exported[vertex_id] ) continue ;
+                                vertex_exported[vertex_id] = true ;
+                                vertex_exported_id[vertex_id] =
+                                    nb_vertices_exported ;
+                                out << "V" << nb_vertices_exported++ << " "
+                                    << mm.global_vertex( vertex_id ) << std::endl ;
                             }
-                            else {
-                                out << "V" << global_co << SPACE;
+                        }
+                    }
+                    for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+                        for( index_t co = mesh.cell_vertices_begin( c );
+                            co
+                                < mesh.cell_vertices_begin( c )
+                                    + mesh.cell_nb_vertices( c ); co++ ) {
+                            index_t vertex_id, atom_id ;
+                            if( !db.vertex_id( r, co, vertex_id, atom_id ) ) {
+                                if( atom_exported[atom_id] ) continue ;
+                                atom_exported[atom_id] = true ;
+                                atom_exported_id[atom_id] = nb_vertices_exported ;
+                                out << "V" << nb_vertices_exported++ << " "
+                                    << mm.global_vertex( vertex_id ) << std::endl ;
+                            }
+                        }
+                    }
+                    out << "FINSF" << std::endl ;
 
+                    out << "TETRA4" << std::endl ;
+
+                    ColocaterANN ann( mesh, ColocaterANN::FACETS ) ;
+                    for( index_t c = 0; c < db.nb_tet( r ); c++ ) {
+                        index_t cur_tet = db.local_tet_id( r, c ) ;
+                        out << "C" << cur_cell++ << " " ;
+
+                        for( index_t co = mesh.cell_vertices_begin( cur_tet );
+                            co
+                                < mesh.cell_vertices_begin( cur_tet )
+                                    + mesh.cell_nb_vertices( cur_tet ); co++ ) {
+                            index_t vertex_id, atom_id ;
+                            if( db.vertex_id( r, co, vertex_id, atom_id ) ) {
+                                out << "V" << vertex_exported_id[vertex_id] << " " ;
+                            } else {
+                                out << "V" << atom_exported_id[atom_id] << " " ;
                             }
                         }
                         out << std::endl ;
-                        cell_id++ ;
+
+                    }
+                    out << "FINSF" << std::endl ;
+
+                    int triangle_count = 0 ;
+                    out << "TRI3" << std::endl ;
+
+                    for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+                        const GRGMesh::BoundaryModelElement& interf =
+                            model.one_interface( i ) ;
+                        for( index_t s = 0; s < interf.nb_children(); s++ ) {
+
+                            index_t surface_id = interf.child_id( s ) ;
+                            index_t mesh_id = mm.surface_mesh( surface_id ) ;
+                            const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
+                            out << std::endl ;
+                            for( index_t f = 0;
+                                f < mm.nb_surface_facets( surface_id ); f++ ) {
+                                index_t facet_id = mm.surface_facet( surface_id,
+                                    f ) ;
+                                out << "F" << triangle_count++ << " " ;
+                                for( index_t v = mesh.facet_begin( facet_id );
+                                    v < mesh.facet_end( facet_id ); v++ ) {
+                                    out
+                                        << vertex_exported_id[mm.global_vertex_id(
+                                            mesh_id, mesh.corner_vertex_index( v ) )]
+                                        << " " ;
+                                }
+                                out << std::endl ;
+                            }
+                        }
+                    }
+                    out << "FINSF" << std::endl ;
+
+                    triangle_count = 0 ;
+
+                    for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+                        const GRGMesh::BoundaryModelElement& interf =
+                            model.one_interface( i ) ;
+                        for( index_t s = 0; s < interf.nb_children(); s++ ) {
+
+                            index_t surface_id = interf.child_id( s ) ;
+                            index_t mesh_id = mm.surface_mesh( surface_id ) ;
+                            out << "GROUP_MA nom = s" << surface_id << std::endl ;
+                            const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
+                            out << std::endl ;
+                            for( index_t f = 0;
+                                f < mm.nb_surface_facets( surface_id ); f++ ) {
+                                index_t facet_id = mm.surface_facet( surface_id,
+                                    f ) ;
+                                out << "F" << triangle_count++ << " " ;
+                                out << std::endl ;
+                            }
+                            out << "FINSF" << std::endl ;
+
+                        }
                     }
                 }
-                out << "FINSF" << std::endl ;
+                out << "FIN" << std::endl ;
 
+//                    //2. Write the cells per type
+//                    //2.1 Tetraedrons
+//                    out << "TETRA4" << std::endl ;
 
-
+//                    index_t cell_id = 0 ;
+//                    for( index_t r = 0; r < mm.nb_meshes(); r++ ) {
+//                        const GEO::Mesh& cur_r = mm.mesh( r ) ;
+//                        for( index_t tet = 0; tet < db.nb_tet( r ); tet++ ) {
+//                            index_t local_tet = db.local_tet_id( r, tet ) ;
+//                            out << "C" << cell_id << SPACE ;
+//                            for( index_t co = cur_r.cell_vertices_begin( local_tet );
+//                                co < cur_r.cell_vertices_begin( local_tet ) + 4;
+//                                co++ ) {
+//                                index_t global_co ;
+//                                index_t orig_co ;
+//                                if( db.vertex_id( r, co, orig_co, global_co ) ) {
+//                                    out << "V" << orig_co << SPACE ;
+//                                } else {
+//                                    out << "V" << global_co << SPACE ;
+//
+//                                }
+//                            }
+//                            out << std::endl ;
+//                            cell_id++ ;
+//                        }
+//                    }
+//                    out << "FINSF" << std::endl ;
 
                 out.close() ;
 
                 return true ;
+
             }
         } ;
         /************************************************************************/
@@ -1594,12 +1715,12 @@ namespace GRGMesh {
 
         MacroMeshIOHandler* MacroMeshIOHandler::create( const std::string& format )
         {
-            grgmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" ) ;
-            grgmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" );
-            grgmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" );
-            grgmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" );
-            grgmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" );
-            grgmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" );
+            grgmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" );
+            grgmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" ) ;
+            grgmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+            grgmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" ) ;
+            grgmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+            grgmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" ) ;
 
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
                 format ) ;
@@ -1608,7 +1729,7 @@ namespace GRGMesh {
             }
 
             GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
-                << std::endl ;
+            << std::endl ;
             return nil ;
         }
 

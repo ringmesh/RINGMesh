@@ -24,7 +24,20 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr 
+ *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.gocad.org
+ *
+ *     GOCAD Project
+ *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY 
+ *     FRANCE
 */
+
 
 #ifndef __GRGMESH_ATTRIBUTE__
 #define __GRGMESH_ATTRIBUTE__
@@ -38,7 +51,7 @@
 #include <map>
 #include <typeinfo>
 #include <fstream>
-
+#include <iostream>
 namespace GRGMesh {
 
      /** 
@@ -87,21 +100,8 @@ namespace GRGMesh {
     } ;
 
 
-    /**
-     * \brief Generic manager of the attributes stored for one location
-     *
-     * Template by an integer instead of an enum specific to a class
-     * Each object on which attributes will be created object should 
-     * define possible locations with an enum. Jeanne.
-     */
-    template< int32 LOCATION >
     class AttributeManager {
     public:
-        enum Mode {
-            FIND, CREATE, FIND_OR_CREATE
-        } ;
-
-    public :
         AttributeManager() {}
         virtual ~AttributeManager() {}
 
@@ -125,9 +125,6 @@ namespace GRGMesh {
             grgmesh_debug_assert( !it->second->is_shared() ) ;
             attributes_.erase( it ) ;
         }
-
-        static const ElementType& record_type_id() { return LOCATION ; }
-
         void bind_named_attribute_store(
             const std::string& name,
             AttributeStore* as )
@@ -143,10 +140,42 @@ namespace GRGMesh {
             grgmesh_debug_assert( it != attributes_.end() ) ;
             return it->second ;
         }
+
+        virtual int32 record_type_id() const = 0 ;
+    
     private:
         std::map< std::string, AttributeStore_var > attributes_ ;
     } ;
 
+    /**
+     * \brief Generic manager of the attributes stored for one location
+     *
+     * Template by an integer instead of an enum specific to a class
+     * Each object on which attributes will be created object should 
+     * define possible locations with an enum. Jeanne.
+     */
+    template< int32 LOCATION >
+    class AttributeManagerImpl : public AttributeManager {
+    public :
+        virtual int32 record_type_id() const { return LOCATION ; }
+    } ;
+
+
+   class AttributeBase {
+   protected:
+       static AttributeStore* resolve_named_attribute_store(
+           AttributeManager* manager, const std::string& name
+       ) {
+           return manager->resolve_named_attribute_store(name) ;
+       }
+   
+       static void bind_named_attribute_store(
+           AttributeManager* manager, 
+           const std::string& name, AttributeStore* as
+       ) {
+           manager->bind_named_attribute_store(name,as) ;
+       }
+   } ;
 
     /** 
      * \brief Generic attribute class - Storage on given elements of a given object 
@@ -154,10 +183,10 @@ namespace GRGMesh {
      * Access to attribute value only using the index of the element in the object. Jeanne
      */ 
     template< int32 LOCATION, class ATTRIBUTE >
-    class Attribute {
+    class Attribute : public AttributeBase {
     public:
         typedef Attribute< LOCATION, ATTRIBUTE > thisclass ;
-        typedef AttributeManager< LOCATION > Manager ;
+        typedef AttributeManagerImpl< LOCATION > Manager ;
         typedef AttributeStoreImpl< ATTRIBUTE > Store ;
 
         Attribute()
@@ -238,7 +267,7 @@ namespace GRGMesh {
             return reinterpret_cast< ATTRIBUTE* >( store_->data( id ) ) ;
         }
 
-        // must be static because used in static function is_definedline 191
+       /* // must be static because used in static function is_definedline 191
         static AttributeStore* resolve_named_attribute_store(
             Manager* manager,
             const std::string& name )
@@ -253,12 +282,243 @@ namespace GRGMesh {
         {
             manager->bind_named_attribute_store( name, as ) ;
         }
+        */
 
     private:
         AttributeStore_var store_ ;
     } ;
 
 
+    
+    // What follows come directly from Graphite Copyright Bruno L�vy
+    /**
+     * AttributeSerializer is used to save and load attributes attached
+     * to an object. This is the base class for serializing the value of 
+     * an attribute and creating an AttributeStore given its type name.
+     */
+    class AttributeSerializer : public GEO::Counted {
+    public:
+        static void initialize() ;
+        static void terminate() ;
+
+        static AttributeSerializer* resolve_by_type(const std::type_info& attribute_type) ;
+        static AttributeSerializer* resolve_by_name(const std::string& attribute_type_name) ;
+        static std::string find_name_by_type(const std::type_info& attribute_type) ;
+        
+        static void bind(
+            const std::type_info& attribute_type,
+            const std::string& attribute_type_name,
+            AttributeSerializer* serializer
+        ) ;
+
+        virtual AttributeStore* create_attribute_store(AttributeManager* manager) = 0 ;
+        virtual bool serialize_read(std::istream& in,   byte* addr) = 0 ;
+        virtual bool serialize_write(std::ostream& out, byte* addr) = 0 ;
+
+    private:
+        typedef std::map<std::string, GEO::SmartPointer<AttributeSerializer> > SerializerMap ;
+        typedef std::map<std::string, std::string> StringMap ;
+
+        static SerializerMap* type_to_serializer_ ;
+        static SerializerMap* name_to_serializer_ ;
+        static StringMap*     type_to_name_ ;
+    } ;
+
+    typedef GEO::SmartPointer<AttributeSerializer> AttributeSerializer_var ;
+
+    //_________________________________________________________________________________________________________
+
+    /**
+     * Default implementation of AttributeSerializer.
+     */
+    template< class ATTRIBUTE > class GenericAttributeSerializer : public AttributeSerializer {
+    public:
+        typedef AttributeStoreImpl< ATTRIBUTE > AttributeStore;
+        
+        virtual AttributeStore* create_attribute_store(AttributeManager* manager) {
+            return new AttributeStore(manager) ;
+        }
+        virtual bool serialize_read(std::istream& in, byte* addr) {
+            ATTRIBUTE& attr = *reinterpret_cast<ATTRIBUTE*>(addr) ;
+            in >> attr ;
+            return true ;
+        }
+        virtual bool serialize_write(std::ostream& out, byte* addr) {
+            ATTRIBUTE& attr = *reinterpret_cast<ATTRIBUTE*>(addr) ;
+            out << attr ;
+            return true ;
+        }
+
+    } ;
+
+    /**
+     * Use this class to declare a new serializable attribute type.
+     * In the common.cpp file of the library, add:
+     * ogf_register_attribute_type<MyAttributeType>("MyAttributeType") ;
+     */
+    template <class T> class grgmesh_register_attribute_type {
+    public:
+        grgmesh_register_attribute_type(const std::string& type_name) {
+            AttributeSerializer::bind(typeid(T), type_name, new GenericAttributeSerializer<T>()) ;
+        }
+    } ;
+
+    /**
+     * SerializedAttributeRef is what SerializedAttribute::operator[] returns.
+     * It is just meant to overload operator<< and operator>>.
+     */
+    class SerializedAttributeRef {
+    public:
+        SerializedAttributeRef(
+            AttributeSerializer* ser, byte* addr
+        ) : serializer_(ser), addr_(addr) {
+        }
+        AttributeSerializer* serializer() const { return serializer_ ; }
+        byte* addr() const { return addr_ ; }
+    private:
+        AttributeSerializer* serializer_ ;
+        byte* addr_ ;
+    } ;
+    
+    inline std::istream& operator>>(std::istream& in, const SerializedAttributeRef& r) {
+        r.serializer()->serialize_read(in, r.addr()) ;
+        return in ;
+    }
+
+    inline std::ostream& operator<<(std::ostream& out, const SerializedAttributeRef& r) {
+        r.serializer()->serialize_write(out, r.addr()) ;
+        return out ;
+    }
+
+    /**
+     * SerializedAttribute allows writing attribute values into a stream,
+     * reading attribute values from a stream, and creating an attribute
+     * from its type name. 
+     */
+    template< int32 LOCATION > class SerializedAttribute : public AttributeBase {
+    public:
+        typedef AttributeManagerImpl< LOCATION > AttributeManagerT;
+
+        void bind(AttributeManagerT* manager, const std::string& name) {
+            attribute_manager_ = manager ;
+            attribute_store_ = resolve_named_attribute_store(manager, name) ;
+            if(attribute_store_ != nil) {
+                serializer_ = AttributeSerializer::resolve_by_type(attribute_store_->attribute_type_id()) ;
+            }
+            name_ = name ;
+        }
+
+        void bind(AttributeManagerT* manager, const std::string& name, const std::string& attribute_type_name) {
+            attribute_manager_ = manager ;
+            serializer_ = AttributeSerializer::resolve_by_name(attribute_type_name) ;
+            if(serializer_ != nil) {
+                if(attribute_manager_->named_attribute_is_bound(name)) {
+                    attribute_store_ = resolve_named_attribute_store(attribute_manager_,name) ;
+                    grgmesh_assert(
+                        AttributeSerializer::find_name_by_type(
+                            attribute_store_->attribute_type_id()
+                        ) == attribute_type_name
+                    ) ;
+                } else {
+                    attribute_store_ = serializer_->create_attribute_store(attribute_manager_) ;
+                    bind_named_attribute_store(attribute_manager_,name,attribute_store_) ;
+                }
+            }
+            name_ = name ;
+        }
+
+        void unbind() {
+            attribute_manager_ = nil ;
+            attribute_store_ = nil ;
+            serializer_ = nil ;
+        }
+
+        SerializedAttribute() {
+            attribute_manager_ = nil ;
+            attribute_store_ = nil ;
+            serializer_ = nil ;
+        }
+
+        SerializedAttribute(AttributeManagerT* manager, const std::string& name) {
+            bind(manager, name) ;
+        }
+
+        SerializedAttribute(
+            AttributeManagerT* manager, const std::string& name, const std::string& attribute_type_name
+        ) {
+            bind(manager, name, attribute_type_name) ;
+        }
+
+        SerializedAttribute(const SerializedAttribute& rhs) {
+            attribute_manager_ = rhs.attribute_manager_ ;
+            attribute_store_   = rhs.attribute_store_ ;
+            serializer_        = rhs.serializer_ ;
+            name_              = rhs.name_ ;
+        }
+
+        bool is_bound() const {
+            return (attribute_manager_ != nil) && (attribute_store_ != nil) && (serializer_ != nil) ;
+        }
+
+        const std::string& name() const { return name_ ; }
+
+        std::string type_name() const {
+            grgmesh_assert(attribute_store_ != nil) ;
+            return AttributeSerializer::find_name_by_type(attribute_store_->attribute_type_id()) ;
+        }
+
+        SerializedAttributeRef operator[]( const index_t record ) {
+            return SerializedAttributeRef(serializer_, attribute_store_->data(record)) ;
+        }
+
+    private:
+        AttributeManagerT* attribute_manager_ ;
+        AttributeStore* attribute_store_ ;
+        AttributeSerializer* serializer_ ;
+        std::string name_ ;
+    } ;
+
+       
+    template< int32 T > inline bool get_serializable_attributes(
+        AttributeManagerImpl<T>* manager, std::vector<SerializedAttribute<T> >& attributes,
+        std::ostream& out
+    ) {
+        bool result = false ;
+        std::vector<std::string> names ;
+        manager->list_named_attributes(names) ;
+        for(unsigned int i=0; i<names.size(); i++) {
+            attributes.push_back(SerializedAttribute<T>()) ;
+            attributes.rbegin()->bind(manager, names[i]) ;
+            if(attributes.rbegin()->is_bound()) {
+                std::cerr << "Attribute " << names[i] // << " on " << localisation << " : " 
+                          << attributes.rbegin()->type_name() << std::endl ;
+                out << /*attribute_kw << " " <<*/ names[i] << " " /*<< localisation << " " */
+                    << attributes.rbegin()->type_name() << std::endl ;
+                result = true ;
+            } else {
+                std::cerr << "Attribute " << names[i] /*<< " on " << localisation */
+                          << " is not serializable" << std::endl ;
+                attributes.pop_back() ;
+            }
+        }
+        return result ;
+    }
+    
+    template< int32 T > inline void serialize_read_attributes(
+        std::istream& in, int32 item, std::vector< SerializedAttribute<T> >& attributes
+    ) {
+        for(unsigned int i=0; i<attributes.size(); i++) {
+            in >> attributes[i][item] ;
+        }
+    }
+
+    template< int32 T > inline void serialize_write_attributes(
+        std::ostream& out, int32 item, std::vector< SerializedAttribute<T> >& attributes
+    ) {
+        for(unsigned int i=0; i<attributes.size(); i++) {
+            out << attributes[i][item] << " " ;
+        }
+    }
 
 }
 
