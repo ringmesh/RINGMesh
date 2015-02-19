@@ -1542,6 +1542,7 @@ namespace GRGMesh {
 
         index_t id = create_element( BME::SURFACE ) ;
         set_parent( BME::SURFACE, id, parent ) ;
+        set_element_geol_feature( BME::INTERFACE, parent, BME::determine_geological_type( type ) ) ;        
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
 
