@@ -81,6 +81,7 @@ INITIALIZER(initialize)
         GRGMesh::grgmesh_register_attribute_type< unsigned int  > ("index") ;
         GRGMesh::grgmesh_register_attribute_type< double        > ("double") ;
         GRGMesh::grgmesh_register_attribute_type< float         > ("float") ;
+        GRGMesh::grgmesh_register_attribute_type< bool          > ("bool") ;
     }
 }
 
