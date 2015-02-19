@@ -57,7 +57,8 @@
 namespace GRGMesh {
     double read_double( GEO::LineInput& in, index_t field ) {
         double result ;
-        GEO::String::from_string( in.field( field ), result ) ;
+        std::istringstream iss(in.field( field ));
+        iss >> result >> std::ws ;
         return result ;
     }
 
