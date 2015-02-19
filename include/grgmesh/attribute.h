@@ -472,6 +472,8 @@ namespace GRGMesh {
      * Those for which there is a type name has beed registered cf. grgmesh_register_attribute_type
      * The names and types of the writable attributes are written in the output stream
      * The corresponding serialized attributes are added to attributes
+     *
+     *  Remove this function and keep the next one ?? 
      */
     template< int32 T > inline void get_serializable_attributes(
         AttributeManagerImpl< T >* manager, 
@@ -493,6 +495,24 @@ namespace GRGMesh {
             }
         }
         if( attributes.size() == 0 ) out << std::endl ;
+    }
+
+
+    template< int32 T > inline void get_serializable_attributes(
+        AttributeManagerImpl< T >* manager, 
+        std::vector< SerializedAttribute<T> >& attributes ) 
+    {
+        std::vector< std::string > names ;
+        manager->list_named_attributes( names ) ;
+     
+        for( unsigned int i = 0; i< names.size(); i++ ) {
+            attributes.push_back( SerializedAttribute<T>() ) ;
+            attributes.back().bind( manager, names[i] ) ;
+            // If the attribute is no bound remove it
+            if( !attributes.back().is_bound() ) {
+                attributes.pop_back() ;
+            }
+        }
     }
     
     /*! 

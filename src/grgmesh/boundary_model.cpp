@@ -441,10 +441,28 @@ namespace GRGMesh {
         return true ;
     }    
 
+
+    /*! To save the attributes in a Graphite readable file, we need to write the correct
+    * keyword for the attribute type - We restrict ourselves to the 3 types            
+    * int          "integer" 
+    * double       "real" 
+    * float        "real"
+    * bool         "boolean" 
+    */
+    inline std::string alias_name( const std::string& in ) 
+    {
+        if( in == "int") return "integer" ;
+        else if( in == "index") return "integer" ;
+        else if( in == "double") return "real" ;
+        else if( in == "float") return "real";
+        else if( in == "bool") return "boolean" ;
+        grgmesh_assert_not_reached ;
+        return "" ;
+    }
     /*!
      * @brief DEBUG function - Save the surfaces of the model with their facet attributes into an .eobj file.         
-     * @details WARNING It is supposed that these attributes are integer and that all Surface
-     * have the same attributes
+     * @details WARNING We assume that all Surface have the same attributes - if not this function will most
+     *  certainly crash.
      * 
      * @param[in] file_name Name of the file
      *
@@ -489,34 +507,37 @@ namespace GRGMesh {
             }         
         }
 
-        // Write facet attributes -- WARNING It is supposed that these attributes are integer       
+        // Write facet attributes   
         {
-            std::vector< std::string > names ; 
-            // OK NOT NICE WE SUPPOSE ALL SURFACE have the same attributes 
-            surface(0).facet_attribute_manager()->list_named_attributes(names) ;
-                    
-            for( index_t i=0; i < names.size(); i++ ) { 
+            // Get the attributes that can be saved on the first Surface
+            std::vector< SerializedAttribute< BME::FACET > > facet_attribs ;
+            get_serializable_attributes( surface(0).facet_attribute_manager(), facet_attribs ) ;                 
+        
+            for( index_t i=0; i < facet_attribs.size(); i++ ) { 
                 // Output global information on the attribute
-                out << "# attribute "<< names[i] << " facet "
-                    << "integer" 
+                out << "# attribute "<< facet_attribs[i].name() << " facet "
+                    << alias_name( facet_attribs[i].type_name() )  
                     << std::endl ;  
             }
-            if( names.size() > 0 ) {
+            if( facet_attribs.size() > 0 ) {
+                // Global counter for all the facets of all surfaces
                 index_t count = 0 ;
                 for( index_t s = 0; s < nb_surfaces() ; s++ ) {
                     const Surface& S = surface(s) ;
                     
-                    // Get the Stores for this surface
-                    std::vector< AttributeStore* > stores( names.size() ) ;
-                    for( index_t i = 0 ; i < names.size(); ++i ) {
-                        stores[i] = S.facet_attribute_manager()->resolve_named_attribute_store( names[i] ) ;
+                    std::vector< SerializedAttribute< BME::FACET > > cur_attribs ;
+                    get_serializable_attributes( S.facet_attribute_manager(), cur_attribs ) ; 
+                    
+                    grgmesh_assert( cur_attribs.size() == facet_attribs.size() ) ;
+                    for( index_t i = 0; i < facet_attribs.size() ; ++i ) {
+                        grgmesh_assert( facet_attribs[i].type_name() == cur_attribs[i].type_name() &&
+                            facet_attribs[i].name() == cur_attribs[i].name() ) ;
                     }
+                                      
                     // Output attributes values
                     for( index_t f = 0; f < S.nb_cells(); f++ ){            
-                        out << "# attrs f " << count+1 ;
-                        for( index_t j = 0; j < names.size(); j++ ) {
-                            out << " " << *reinterpret_cast<index_t*>( stores[j]->data(f) ) ;
-                        }
+                        out << "# attrs f " << count+1 << " ";
+                        serialize_write_attributes( out, f, cur_attribs ) ;
                         out << std::endl ;
                         count++ ;
                     }
