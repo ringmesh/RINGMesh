@@ -519,7 +519,7 @@ void nlEndMatrix() {
 
     nlSparseMatrixComputeDiagInv(&nlCurrentContext->M);
     if(nlCurrentContext->preconditioner != NL_PRECOND_SSOR) {    
-        nlSparseMatrixCompress(&nlCurrentContext->M);
+        //nlSparseMatrixCompress(&nlCurrentContext->M);
     }
 }
 

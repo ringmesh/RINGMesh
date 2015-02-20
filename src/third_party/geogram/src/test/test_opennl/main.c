@@ -47,27 +47,29 @@
 #include <stdio.h>
 
 /**
- * \brief Tests OpenNL solve with 
+ * \brief Tests OpenNL solve with
  *  a simple linear system.
- * \details 
- *  Solve \f$ \left[ \begin{array}{ll} 1 & 2 \\ 3 & 4 \end{array} \right] 
+ * \details
+ *  Solve \f$ \left[ \begin{array}{ll} 1 & 2 \\ 3 & 4 \end{array} \right]
  *    \left[ \begin{array}{l} x \\ y \end{array} \right]
  *  = \left[ \begin{array}{l} 5 \\ 6 \end{array} \right] \f$
  */
 void test_simple_linear_solve() {
 
-    printf("\n");    
+    printf("\n");
     printf("Testing linear solve\n");
     printf("====================\n");
-    
+
     printf("Creating linear system:\n");
     printf("  1.0*x0 + 2.0*x1 = 5.0\n");
-    printf("  3.0*x0 + 4.0*x1 = 6.0\n");        
-    
+    printf("  3.0*x0 + 4.0*x1 = 6.0\n");
+
     /* Create and initialize OpenNL context */
     nlNewContext();
+    nlSolverParameteri(NL_SOLVER, NL_CG);
+
     nlSolverParameteri(NL_NB_VARIABLES, 2);
-       
+
     /* Build system */
     nlBegin(NL_SYSTEM);
     nlBegin(NL_MATRIX);
@@ -83,11 +85,11 @@ void test_simple_linear_solve() {
     nlEnd(NL_ROW);
     nlEnd(NL_MATRIX);
     nlEnd(NL_SYSTEM);
-  
+
     /* Solve and get solution */
     printf("Solving...\n");
     nlSolve();
-    
+
 
     printf("Solution:   x0=%f   x1=%f\n", nlGetVariable(0), nlGetVariable(1));
     printf("Verifying:\n");
@@ -116,9 +118,9 @@ void test_least_squares_regression(NLboolean origin) {
         printf("============================================\n");
     } else {
         printf("Testing least-squares regression\n");
-        printf("================================\n");        
+        printf("================================\n");
     }
-    
+
     nlNewContext();
     nlSolverParameteri(NL_NB_VARIABLES, 2);
     nlSolverParameteri(NL_LEAST_SQUARES, NL_TRUE);
@@ -150,6 +152,6 @@ void test_least_squares_regression(NLboolean origin) {
 int main() {
     test_simple_linear_solve();
     test_least_squares_regression(NL_FALSE);
-    test_least_squares_regression(NL_TRUE);    
+    test_least_squares_regression(NL_TRUE);
     return 0;
 }

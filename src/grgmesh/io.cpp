@@ -301,7 +301,7 @@ namespace GRGMesh {
             virtual bool save( const MacroMesh& mm, const std::string& filename )
             {
                 MacroMeshExport db( mm ) ;
-                db.compute_database( MacroMeshExport::ALL ) ;
+                db.compute_database( MacroMeshExport::FAULT ) ;
                 const BoundaryModel& model = mm.model() ;
                 std::vector< index_t > vertex_exported_id( mm.nb_vertices(),
                     NO_ID ) ;
@@ -385,59 +385,59 @@ namespace GRGMesh {
                     }
                     out << "FINSF" << std::endl ;
 
-                    int triangle_count = 0 ;
-                    out << "TRI3" << std::endl ;
+//                    int triangle_count = 0 ;
+//                    out << "TRI3" << std::endl ;
+//
+//                    for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+//                        const GRGMesh::BoundaryModelElement& interf =
+//                            model.one_interface( i ) ;
+//                        for( index_t s = 0; s < interf.nb_children(); s++ ) {
+//
+//                            index_t surface_id = interf.child_id( s ) ;
+//                            index_t mesh_id = mm.surface_mesh( surface_id ) ;
+//                            const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
+//                            out << std::endl ;
+//                            for( index_t f = 0;
+//                                f < mm.nb_surface_facets( surface_id ); f++ ) {
+//                                index_t facet_id = mm.surface_facet( surface_id,
+//                                    f ) ;
+//                                out << "F" << triangle_count++ << " " ;
+//                                for( index_t v = mesh.facet_begin( facet_id );
+//                                    v < mesh.facet_end( facet_id ); v++ ) {
+//                                    out
+//                                        << vertex_exported_id[mm.global_vertex_id(
+//                                            mesh_id, mesh.corner_vertex_index( v ) )]
+//                                        << " " ;
+//                                }
+//                                out << std::endl ;
+//                            }
+//                        }
+//                    }
+//                    out << "FINSF" << std::endl ;
+//
+//                    triangle_count = 0 ;
 
-                    for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                        const GRGMesh::BoundaryModelElement& interf =
-                            model.one_interface( i ) ;
-                        for( index_t s = 0; s < interf.nb_children(); s++ ) {
-
-                            index_t surface_id = interf.child_id( s ) ;
-                            index_t mesh_id = mm.surface_mesh( surface_id ) ;
-                            const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                            out << std::endl ;
-                            for( index_t f = 0;
-                                f < mm.nb_surface_facets( surface_id ); f++ ) {
-                                index_t facet_id = mm.surface_facet( surface_id,
-                                    f ) ;
-                                out << "F" << triangle_count++ << " " ;
-                                for( index_t v = mesh.facet_begin( facet_id );
-                                    v < mesh.facet_end( facet_id ); v++ ) {
-                                    out
-                                        << vertex_exported_id[mm.global_vertex_id(
-                                            mesh_id, mesh.corner_vertex_index( v ) )]
-                                        << " " ;
-                                }
-                                out << std::endl ;
-                            }
-                        }
-                    }
-                    out << "FINSF" << std::endl ;
-
-                    triangle_count = 0 ;
-
-                    for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                        const GRGMesh::BoundaryModelElement& interf =
-                            model.one_interface( i ) ;
-                        for( index_t s = 0; s < interf.nb_children(); s++ ) {
-
-                            index_t surface_id = interf.child_id( s ) ;
-                            index_t mesh_id = mm.surface_mesh( surface_id ) ;
-                            out << "GROUP_MA nom = s" << surface_id << std::endl ;
-                            const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                            out << std::endl ;
-                            for( index_t f = 0;
-                                f < mm.nb_surface_facets( surface_id ); f++ ) {
-                                index_t facet_id = mm.surface_facet( surface_id,
-                                    f ) ;
-                                out << "F" << triangle_count++ << " " ;
-                                out << std::endl ;
-                            }
-                            out << "FINSF" << std::endl ;
-
-                        }
-                    }
+//                    for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+//                        const GRGMesh::BoundaryModelElement& interf =
+//                            model.one_interface( i ) ;
+//                        for( index_t s = 0; s < interf.nb_children(); s++ ) {
+//
+//                            index_t surface_id = interf.child_id( s ) ;
+//                            index_t mesh_id = mm.surface_mesh( surface_id ) ;
+//                            out << "GROUP_MA nom = s" << surface_id << std::endl ;
+//                            const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
+//                            out << std::endl ;
+//                            for( index_t f = 0;
+//                                f < mm.nb_surface_facets( surface_id ); f++ ) {
+//                                index_t facet_id = mm.surface_facet( surface_id,
+//                                    f ) ;
+//                                out << "F" << triangle_count++ << " " ;
+//                                out << std::endl ;
+//                            }
+//                            out << "FINSF" << std::endl ;
+//
+//                        }
+//                    }
                 }
                 out << "FIN" << std::endl ;
 

@@ -56,6 +56,7 @@
 
 #endif
 
+#include <grgmesh/attribute.h>
 #include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
@@ -73,6 +74,14 @@ INITIALIZER(initialize)
         GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
         GEO::CmdLine::import_arg_group( "log" ) ;
         GEO::CmdLine::set_arg("sys:use_doubles",true) ;
+
+        // Initialization for BoundaryModel attribute serialization        
+        GRGMesh::AttributeSerializer::initialize() ;       
+        GRGMesh::grgmesh_register_attribute_type< int           > ("int") ;
+        GRGMesh::grgmesh_register_attribute_type< unsigned int  > ("index") ;
+        GRGMesh::grgmesh_register_attribute_type< double        > ("double") ;
+        GRGMesh::grgmesh_register_attribute_type< float         > ("float") ;
+        GRGMesh::grgmesh_register_attribute_type< bool          > ("bool") ;
     }
 }
 

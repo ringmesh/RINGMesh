@@ -170,116 +170,116 @@ namespace {
         double global_fitting,
         const vector<double>& local_fitting = vector<double>() 
     ) {
-        // Step 0: normalize variables
-        for(index_t f=0; f<M.nb_facets(); ++f) {
-            double c = sincos_alpha[2*f];
-            double s = sincos_alpha[2*f+1];
-            double scale = sqrt(s*s+c*c);
-            if(scale > 1e-30) {
-                sincos_alpha[2*f] = c/scale;
-                sincos_alpha[2*f+1] = s/scale;
-            }
-        }
-
-        // Step 1: Setup the OpenNL solver
-        nlNewContext();
-        nlSolverParameteri(NL_NB_VARIABLES, NLint(2*M.nb_facets()));
-        nlSolverParameteri(NL_LEAST_SQUARES, NL_TRUE);
-#ifdef GEO_DEBUG        
-        nlEnable(NL_VERBOSE);
-#endif        
-        nlEnable(NL_NORMALIZE_ROWS);
-
-        // Step 2: setup the variables
-        nlBegin(NL_SYSTEM);
-        for(index_t f=0; f<M.nb_facets(); ++f) {
-            nlSetVariable(2*f, sincos_alpha[2*f]);
-            nlSetVariable(2*f+1, sincos_alpha[2*f+1]);
-            if(locked.size() != 0 && locked[f]) {
-                nlLockVariable(2*f);
-                nlLockVariable(2*f+1);
-            }
-        }
-
-        nlBegin(NL_MATRIX);
-
-        // Step 3: setup the PGP smoothness term
-        for(index_t f1=0; f1<M.nb_facets(); ++f1) {
-            for(index_t c1=M.facet_begin(f1); c1<M.facet_end(f1); ++c1) {
-                signed_index_t sf2 = M.corner_adjacent_facet(c1);
-                if(sf2 == -1) {
-                    continue;
-                }
-
-                index_t f2 = index_t(sf2);
-
-                if(f1 < f2) {
-                    continue;
-                }
-
-                double angle = -symd*
-                    MeshFacetBasis::reference_rotation_accross_edge(
-                        M,c1
-                    );
-
-                double c = cos(angle); 
-                double s = sin(angle);                    
-                
-                nlBegin(NL_ROW);
-                nlCoefficient(2*f1,c);
-                nlCoefficient(2*f1+1,s);
-                nlCoefficient(2*f2,-1.0);                    
-                nlEnd(NL_ROW);
-
-                nlBegin(NL_ROW);
-                nlCoefficient(2*f1,-s);
-                nlCoefficient(2*f1+1,c);
-                nlCoefficient(2*f2+1,-1.0);                    
-                nlEnd(NL_ROW);
-            }
-        }  
-
-        // Step 4: setup the data fitting term
-        if(global_fitting != 0) {
-            for(index_t f=0; f<M.nb_facets(); ++f) {
-
-                double fitting = global_fitting;
-                if(local_fitting.size() != 0) {
-                    fitting *= local_fitting[f];
-                }
-
-                if(fitting == 0.0) {
-                    continue;
-                }
-
-                nlRowScaling(fitting);
-                nlBegin(NL_ROW);
-                nlCoefficient(2*f,1.0);
-                nlRightHandSide(sincos_alpha[2*f]);
-                nlEnd(NL_ROW);
-
-                nlRowScaling(fitting);
-                nlBegin(NL_ROW);
-                nlCoefficient(2*f+1,1.0);
-                nlRightHandSide(sincos_alpha[2*f+1]);
-                nlEnd(NL_ROW);
-            }
-        }
-
-        nlEnd(NL_MATRIX);
-        nlEnd(NL_SYSTEM);
-
-        // Step 5: solve the linear system
-        nlSolve() ;
-
-        // Step 6: read the new values of the variables
-        for(index_t f=0; f<M.nb_facets(); ++f) {
-            sincos_alpha[2*f] = nlGetVariable(2*f);
-            sincos_alpha[2*f+1] = nlGetVariable(2*f+1);
-        }
-
-        // Step 7: cleanup memory allocated by OpenNL 
-        nlDeleteContext(nlGetCurrent());
+//        // Step 0: normalize variables
+//        for(index_t f=0; f<M.nb_facets(); ++f) {
+//            double c = sincos_alpha[2*f];
+//            double s = sincos_alpha[2*f+1];
+//            double scale = sqrt(s*s+c*c);
+//            if(scale > 1e-30) {
+//                sincos_alpha[2*f] = c/scale;
+//                sincos_alpha[2*f+1] = s/scale;
+//            }
+//        }
+//
+//        // Step 1: Setup the OpenNL solver
+//        nlNewContext();
+//        nlSolverParameteri(NL_NB_VARIABLES, NLint(2*M.nb_facets()));
+//        nlSolverParameteri(NL_LEAST_SQUARES, NL_TRUE);
+//#ifdef GEO_DEBUG
+//        nlEnable(NL_VERBOSE);
+//#endif
+//        nlEnable(NL_NORMALIZE_ROWS);
+//
+//        // Step 2: setup the variables
+//        nlBegin(NL_SYSTEM);
+//        for(index_t f=0; f<M.nb_facets(); ++f) {
+//            nlSetVariable(2*f, sincos_alpha[2*f]);
+//            nlSetVariable(2*f+1, sincos_alpha[2*f+1]);
+//            if(locked.size() != 0 && locked[f]) {
+//                nlLockVariable(2*f);
+//                nlLockVariable(2*f+1);
+//            }
+//        }
+//
+//        nlBegin(NL_MATRIX);
+//
+//        // Step 3: setup the PGP smoothness term
+//        for(index_t f1=0; f1<M.nb_facets(); ++f1) {
+//            for(index_t c1=M.facet_begin(f1); c1<M.facet_end(f1); ++c1) {
+//                signed_index_t sf2 = M.corner_adjacent_facet(c1);
+//                if(sf2 == -1) {
+//                    continue;
+//                }
+//
+//                index_t f2 = index_t(sf2);
+//
+//                if(f1 < f2) {
+//                    continue;
+//                }
+//
+//                double angle = -symd*
+//                    MeshFacetBasis::reference_rotation_accross_edge(
+//                        M,c1
+//                    );
+//
+//                double c = cos(angle);
+//                double s = sin(angle);
+//
+//                nlBegin(NL_ROW);
+//                nlCoefficient(2*f1,c);
+//                nlCoefficient(2*f1+1,s);
+//                nlCoefficient(2*f2,-1.0);
+//                nlEnd(NL_ROW);
+//
+//                nlBegin(NL_ROW);
+//                nlCoefficient(2*f1,-s);
+//                nlCoefficient(2*f1+1,c);
+//                nlCoefficient(2*f2+1,-1.0);
+//                nlEnd(NL_ROW);
+//            }
+//        }
+//
+//        // Step 4: setup the data fitting term
+//        if(global_fitting != 0) {
+//            for(index_t f=0; f<M.nb_facets(); ++f) {
+//
+//                double fitting = global_fitting;
+//                if(local_fitting.size() != 0) {
+//                    fitting *= local_fitting[f];
+//                }
+//
+//                if(fitting == 0.0) {
+//                    continue;
+//                }
+//
+//                nlRowScaling(fitting);
+//                nlBegin(NL_ROW);
+//                nlCoefficient(2*f,1.0);
+//                nlRightHandSide(sincos_alpha[2*f]);
+//                nlEnd(NL_ROW);
+//
+//                nlRowScaling(fitting);
+//                nlBegin(NL_ROW);
+//                nlCoefficient(2*f+1,1.0);
+//                nlRightHandSide(sincos_alpha[2*f+1]);
+//                nlEnd(NL_ROW);
+//            }
+//        }
+//
+//        nlEnd(NL_MATRIX);
+//        nlEnd(NL_SYSTEM);
+//
+//        // Step 5: solve the linear system
+//        nlSolve() ;
+//
+//        // Step 6: read the new values of the variables
+//        for(index_t f=0; f<M.nb_facets(); ++f) {
+//            sincos_alpha[2*f] = nlGetVariable(2*f);
+//            sincos_alpha[2*f+1] = nlGetVariable(2*f+1);
+//        }
+//
+//        // Step 7: cleanup memory allocated by OpenNL
+//        nlDeleteContext(nlGetCurrent());
     } 
 
 
