@@ -1542,6 +1542,7 @@ namespace GRGMesh {
 
         index_t id = create_element( BME::SURFACE ) ;
         set_parent( BME::SURFACE, id, parent ) ;
+        set_element_geol_feature( BME::INTERFACE, parent, BME::determine_geological_type( type ) ) ;        
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
 
@@ -1616,11 +1617,7 @@ namespace GRGMesh {
                     in.get_line() ;  in.get_fields() ;
                     for(index_t c = 0; c < in.nb_fields(); c++) {
                         bool side = false ;
-                        if( strncmp( in.field(c), "+", 1 ) == 0 ) side = true ;
-                        else {
-                            // to remove after debug
-                            grgmesh_assert( strncmp( in.field(c), "-", 1 ) == 0 ) ;
-                        }
+                        if( strncmp( in.field(c), "+", 1 ) == 0 ) side = true ;                        
                        index_t s ;
                        GEO::String::from_string( &in.field(c)[1], s ) ;
                         
@@ -1639,7 +1636,7 @@ namespace GRGMesh {
                         if( strncmp( in.field(c), "+", 1 ) == 0 ) side = true ;  
                         index_t s ;
                         GEO::String::from_string( &in.field(c)[1], s ) ;
-                        
+
                         b_universe.push_back( std::pair< index_t, bool >( s, side ) ) ;
                     }
                     set_universe( b_universe ) ;
@@ -1650,10 +1647,21 @@ namespace GRGMesh {
                 {
                     index_t nb_vertices = in.field_as_uint(1) ;
                     reserve_vertices( nb_vertices ) ;
+                    
+                    // Attributes
+                    in.get_line() ; in.get_fields() ; 
+                    grgmesh_assert( in.field_matches( 0, "MODEL_VERTEX_ATTRIBUTES" ) ) ;
+                    index_t nb_attribs = (in.nb_fields()-1) / 2 ;
+                    std::vector< SerializedAttribute< BoundaryModel::VERTEX > > vertex_attribs( nb_attribs ) ;                  
+                    for( index_t i = 0 ; i < nb_attribs ; i++ ) {
+                        vertex_attribs[i].bind( 
+                            model_.vertex_attribute_manager(), in.field(1+2*i), in.field(2+2*i), nb_vertices ) ;
+                    }
                     for( index_t i = 0; i < nb_vertices; ++i ){
                         in.get_line() ; in.get_fields() ;              
                         add_vertex( vec3( 
                             read_double( in, 0 ), read_double( in, 1 ), read_double( in, 2 ) ) ) ;
+                        serialize_read_attributes( in, 3, i, vertex_attribs ) ;
                     }
                 }
                 // Corners
@@ -1680,19 +1688,43 @@ namespace GRGMesh {
                     grgmesh_assert( in.field_matches( 0,"LINE_VERTICES" ) ) ;
                     index_t nb_vertices = in.field_as_uint(1) ;
 
-                    // Read the vertices indices
-                    in.get_line() ;  in.get_fields() ;                    
+                    // Attributes on line vertices
+                    in.get_line() ;  in.get_fields() ;
+                    grgmesh_assert( in.field_matches( 0,"LINE_VERTEX_ATTRIBUTES" ) ) ;
+                    index_t nb_attribs = (in.nb_fields()-1) / 2 ;
+                    std::vector< SerializedAttribute< BME::VERTEX > > vertex_attribs( nb_attribs ) ;                  
+                    for( index_t i = 0 ; i < nb_attribs ; i++ ) {
+                        vertex_attribs[i].bind( 
+                            L.vertex_attribute_manager(), in.field(1+2*i), in.field(2+2*i), nb_vertices ) ;
+                    }
+
+                    // Read the vertices indices and attributes on vertices
                     std::vector< index_t > vertices( nb_vertices ) ;
-                    int count = 0 ;
                     for( index_t i = 0; i < nb_vertices; i++ ){
-                        vertices[i] = in.field_as_uint( count ) ;
-                        count++ ;
-                        if( count == 20 && i+1 < nb_vertices ) {
-                            count = 0 ;
-                            in.get_line() ;  in.get_fields() ;
+                        in.get_line() ;  in.get_fields() ;                    
+                        vertices[i] = in.field_as_uint( 0 ) ;
+                        serialize_read_attributes( in, 1, i, vertex_attribs ) ;                        
+                    }
+
+                    // Set the line points
+                    L.set_vertices( vertices ) ;
+
+                    // Read attributes on line segments 
+                    in.get_line() ;  in.get_fields() ;
+                    grgmesh_assert( in.field_matches( 0,"LINE_SEGMENT_ATTRIBUTES" ) ) ;
+                    index_t nb_segment_attribs = (in.nb_fields()-1) / 2 ;
+                    if( nb_segment_attribs > 0 ) {
+                        std::vector< SerializedAttribute< BME::FACET > > segment_attribs( nb_segment_attribs ) ;                  
+                        for( index_t i = 0 ; i < nb_segment_attribs ; i++ ) {
+                            segment_attribs[i].bind( 
+                                L.facet_attribute_manager(), in.field(1+2*i), in.field(2+2*i), L.nb_cells() ) ;
+                        }                    
+                        for( index_t i = 0; i < L.nb_cells(); i++ ){
+                            in.get_line() ;  in.get_fields() ;                    
+                            serialize_read_attributes( in, 1, in.field_as_uint(0), segment_attribs ) ;   
                         }
                     }
-                    L.set_vertices( vertices ) ;
+                    
                     // Set the corners
                     index_t c0 = find_corner( vertices.front() ) ;
                     index_t c1 = find_corner( vertices.back() ) ;       
@@ -1713,6 +1745,29 @@ namespace GRGMesh {
                     Surface& S = dynamic_cast< Surface& >( element( BME::SURFACE, id ) ) ;
                     S.set_id( id ) ;
 
+                    // Read the surface vertices and their attributes
+                    in.get_line() ; in.get_fields() ;
+                    grgmesh_assert( in.field_matches( 0,"SURFACE_VERTICES" ) ) ;
+                    index_t nb_vertices = in.field_as_uint(1) ;
+
+                    in.get_line() ; in.get_fields() ;
+                    grgmesh_assert( in.field_matches( 0,"SURFACE_VERTEX_ATTRIBUTES" ) ) ;
+                    index_t nb_vertex_attribs = (in.nb_fields()-1) / 2 ;
+
+                    // Bind the vertex attributes
+                    std::vector< SerializedAttribute< BME::VERTEX > > vertex_attribs( nb_vertex_attribs ) ;                  
+                    for( index_t i = 0 ; i < nb_vertex_attribs ; i++ ) {
+                        vertex_attribs[i].bind( 
+                            S.vertex_attribute_manager(), in.field(1+2*i), in.field(2+2*i), nb_vertices ) ;
+                    }
+                    // Read the vertices global ids and attributes
+                    std::vector< index_t > vertices( nb_vertices ) ;
+                    for( index_t i = 0; i < nb_vertices; i++ ){
+                        in.get_line() ;  in.get_fields() ;                    
+                        vertices[i] = in.field_as_uint( 0 ) ;
+                        serialize_read_attributes( in, 1, i, vertex_attribs ) ;                        
+                    }
+
                     // Read the surface facets
                     in.get_line() ; in.get_fields() ;
                     grgmesh_assert( in.field_matches( 0,"SURFACE_CORNERS" ) ) ;
@@ -1722,22 +1777,32 @@ namespace GRGMesh {
                     grgmesh_assert( in.field_matches( 0,"SURFACE_FACETS" ) ) ;
                     index_t nb_facets = in.field_as_uint(1) ;
 
+                    in.get_line() ; in.get_fields() ;
+                    grgmesh_assert( in.field_matches( 0,"SURFACE_FACET_ATTRIBUTES" ) ) ;
+                    index_t nb_facet_attribs = (in.nb_fields()-1) / 2 ;
+
+                    // Bind the facet attributes
+                    std::vector< SerializedAttribute< BME::FACET > > facet_attribs( nb_facet_attribs ) ;                  
+                    for( index_t i = 0 ; i < nb_facet_attribs ; i++ ) {
+                        facet_attribs[i].bind( 
+                            S.facet_attribute_manager(), in.field(1+2*i), in.field(2+2*i), nb_facets ) ;
+                    }
+
                     std::vector< index_t > corners( nb_corners ) ;
                     std::vector< index_t > facet_ptr( nb_facets+1, 0 ) ;
                     index_t count_facets = 0 ;
                     for( index_t f = 0 ; f < nb_facets ; f++ ) {
-                        in.get_line() ; in.get_fields() ;
-                        
-                        index_t nb_v = in.field_as_uint(0) ;
-                        
+                        in.get_line() ; in.get_fields() ;                        
+                        index_t nb_v = in.field_as_uint(0) ;                        
                         for( index_t v = 0; v < nb_v; ++v ) {
                             corners[ count_facets+v ] = in.field_as_uint(v+1) ; 
                         }
                         count_facets += nb_v ;
                         facet_ptr[ f+1 ] = count_facets ;
+                        serialize_read_attributes( in, nb_v+1, f, facet_attribs ) ;
                     }   
 
-                    S.set_geometry( corners, facet_ptr ) ;
+                    S.set_geometry( vertices, corners, facet_ptr ) ;
                     set_surface_adjacencies( id ) ;
                 }
             }

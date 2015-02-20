@@ -115,8 +115,8 @@ NLuint nlSolve_CG() {
         printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
     }
     
-    printf("iteration finale %i", its) ;
-    printf("erreur finale %e", nlCurrentContext->error) ;
+    printf("iteration finale %i\n", its) ;
+    printf("erreur finale %e\n", nlCurrentContext->error) ;
 
     NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(g) ;
