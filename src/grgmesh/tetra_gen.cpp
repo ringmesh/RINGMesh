@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
@@ -130,7 +130,7 @@ namespace GRGMesh {
                 nb_well_edges += well_edges[w].size() ;
             }
             well_edges_.reserve( nb_well_edges ) ;
-            well_ptr_.reserve( nb_well_edges + 1 ) ;
+            well_ptr_.reserve( well_edges.size() + 1 ) ;
             well_ptr_.push_back( 0 ) ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 for( index_t e = 0; e < well_edges[w].size(); e++ ) {
@@ -400,12 +400,9 @@ namespace GRGMesh {
             tetgen_input_.facetmarkerlist[f] = surface_id( f ) + 1 ; // tetgen starts at 0 and not -1
         }
 
-        tetgen_input_.numberofedges = well_edges.size() ;
+        tetgen_input_.numberofedges = well_edges_.size();
         tetgen_input_.edgelist = new int[tetgen_input_.numberofedges*2] ;
-        for( unsigned e = 0; e < well_edges.size(); e++ ) {
-            tetgen_input_.edgelist[2*e]   = well_indices_[2*e] ;
-            tetgen_input_.edgelist[2*e+1] = well_indices_[2*e+1] ;
-        }
+        std::copy(well_indices_.begin(), well_indices_.end(), tetgen_input_.edgelist);
 
 #pragma omp parallel for
         for( index_t p = 0; p < nb_internal_points(); p++ ) {
