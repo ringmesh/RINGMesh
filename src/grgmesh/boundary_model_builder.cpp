@@ -365,11 +365,10 @@ namespace GRGMesh {
         index_t id = create_element( BME::LINE ) ;
         set_line( id, points ) ;
                
-        // Find the indices of the corner at both extremities
-        index_t c0 = find_or_create_corner( points.front() ) ;
-        index_t c1 = find_or_create_corner( points.back() ) ;       
-        add_element_boundary( BME::LINE, id, c0 ) ;
-        if( c1 != c0 ) add_element_boundary( BME::LINE, id, c1 ) ;         
+        // Find the indices of the corner at both extremities 
+        // Both must be defined to have a valid LINE
+        add_element_boundary( BME::LINE, id, find_or_create_corner( points.front() ) ) ;
+        add_element_boundary( BME::LINE, id, find_or_create_corner( points.back() ) ) ;         
 
         return id ;
     }
@@ -748,9 +747,12 @@ namespace GRGMesh {
         if( BME::boundary_allowed( T ) && T != BME::SURFACE ) {
             // A closed surface - bubble might have no boundary
             // The others Line - and Region must have one
-            if( E.nb_boundaries() == 0 ){
+            if( E.nb_boundaries() == 0 )
                 return false ;
-            }            
+            // A Line must have two corners, that can be the same if it is closed
+            if( T == BME::LINE && E.nb_boundaries() != 2 )
+                return false ; 
+
         }
         // In_boundary
         if( BME::in_boundary_allowed( T ) ) {
@@ -1725,11 +1727,9 @@ namespace GRGMesh {
                         }
                     }
                     
-                    // Set the corners
-                    index_t c0 = find_corner( vertices.front() ) ;
-                    index_t c1 = find_corner( vertices.back() ) ;       
-                    add_element_boundary( BME::LINE, id, c0 ) ;
-                    if( c1 != c0 ) add_element_boundary( BME::LINE, id, c1 ) ; 
+                    // Set the corners - they can be the same              
+                    add_element_boundary( BME::LINE, id, find_corner( vertices.front() ) ) ;
+                    add_element_boundary( BME::LINE, id, find_corner( vertices.back()  ) ) ; 
                     
                     // Finally we have the in_boundary information
                     in.get_line() ; in.get_fields() ;
