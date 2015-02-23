@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
@@ -82,6 +82,7 @@ INITIALIZER(initialize)
         GRGMesh::grgmesh_register_attribute_type< double        > ("double") ;
         GRGMesh::grgmesh_register_attribute_type< float         > ("float") ;
         GRGMesh::grgmesh_register_attribute_type< bool          > ("bool") ;
+        atexit(GRGMesh::AttributeSerializer::terminate);
     }
 }
 
