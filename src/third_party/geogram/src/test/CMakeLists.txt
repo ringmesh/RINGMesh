@@ -1,0 +1,13 @@
+add_subdirectory(compute_RVD)
+add_subdirectory(test_nn_search)
+add_subdirectory(test_convex_cell)
+add_subdirectory(test_opennl)
+add_subdirectory(bench_load)
+add_subdirectory(test_locks)
+add_subdirectory(compute_OTM)
+add_subdirectory(compute_delaunay)
+
+if(GEOGRAM_WITH_VORPALINE)
+   add_subdirectory(test_volumetric_CVT)
+   add_subdirectory(test_api)    
+endif()
