@@ -197,11 +197,11 @@ namespace GRGMesh {
         bool complete_element_connectivity() ;
         bool check_basic_element_validity( const BoundaryModelElement& E ) const ; 
         bool check_element_connectivity( const BoundaryModelElement& E ) const ; 
+        void fill_element_geological_feature( BoundaryModelElement& E ) ;
         void fill_elements_boundaries   ( BME::TYPE type ) ;
         void fill_elements_in_boundaries( BME::TYPE type ) ;
         void fill_elements_parent       ( BME::TYPE type ) ;
         void fill_elements_children     ( BME::TYPE type ) ;      
-        
         /**
          * @}
          */
