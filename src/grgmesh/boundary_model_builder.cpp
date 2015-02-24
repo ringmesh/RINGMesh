@@ -813,7 +813,7 @@ namespace GRGMesh {
             fill_elements_in_boundaries( BME::SURFACE ) ;    
         }
         if( model_.surface(0).parent_id() == NO_ID ) {            
-            fill_elements_parent( BME::SURFACE ) ;    
+            fill_elements_parent( BME::SURFACE ) ;   
         }
         // Regions
         if( model_.nb_regions() > 0 ) {
@@ -840,6 +840,26 @@ namespace GRGMesh {
                 fill_elements_children( BME::LAYER ) ;
         }
         return true ;
+    }
+
+    /*! 
+     * @brief Fill the geological info from parent or children
+     * 
+     * @details Set the geological feature of a BME to the one of its parent
+     * if it has a parent that has a geol. feature,
+     * or to the one of its first child if it has one with a geol. feature. 
+     * 
+     * @note The geol feature of \b E whatever its initial value 
+     */
+    void BoundaryModelBuilder::fill_element_geological_feature( BoundaryModelElement& E ) {
+        if( E.has_parent() && E.parent().has_geological_feature() ) 
+            E.set_geological_feature( E.parent().geological_feature() ) ; 
+        
+        else if( E.nb_children() > 0 && E.child(0).has_geological_feature() )
+            E.set_geological_feature( E.child(0).geological_feature() ) ;
+
+        // Paranoia : we should perhaps verify that all children 
+        // have the same geological features
     }
 
     /*!
@@ -959,9 +979,11 @@ namespace GRGMesh {
         complete_element_connectivity() ;
         
         /// 1. Check that all the elements of the BoundaryModel have 
-        ///    the required attributes.       
+        ///    the required attributes - Fill optional attributes       
         for( index_t i = 0; i < model_.nb_elements( BME::ALL_TYPES ); ++i ){
-            const BME& E = model_.element( BME::ALL_TYPES, i ) ;
+            BME& E = element( BME::ALL_TYPES, i ) ;
+            if( !E.has_geological_feature() ) fill_element_geological_feature( E ) ;
+
             if( !check_basic_element_validity( E ) ){
                 return false ;
             }
