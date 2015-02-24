@@ -351,7 +351,8 @@ namespace GRGMesh {
     /*! 
      * @brief A boundary Line of a Surface
      * 
-     * It has 1 or 2 Corners on its boundary and is in the boundary of a least one Surface.
+     * To be valid a Line must have 2 element on its boundary (the 2 Corner might be identical) 
+     * and be in the boundary of a least one Surface.
      * It is defined by a set of vertices. Its segments are implicitely defined between vertices
      * vertex(n) and vertex(n+1) for n between 0 and nb_cells()
      *
@@ -396,7 +397,6 @@ namespace GRGMesh {
             vertices_.insert( vertices_.begin(), model_vertex_ids.begin(), model_vertex_ids.end() ) ;
         }
         
-
         vec3 segment_barycenter( index_t s ) const ;
         double segment_length( index_t s ) const ;
         double total_length() const ;            
