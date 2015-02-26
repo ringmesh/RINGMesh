@@ -38,13 +38,13 @@
  *     FRANCE
  */
 
-#ifndef __GRGMESH_MATRIX__
-#define __GRGMESH_MATRIX__
+#ifndef __RINGMESH_MATRIX__
+#define __RINGMESH_MATRIX__
 
-#include <grgmesh/common.h>
+#include <ringmesh/common.h>
 #include <deque>
 
-namespace GRGMesh {
+namespace RINGMesh {
     /**
      * @brief enum of MatrixType, This is useful to further specialize the template in the future
      * */
@@ -127,17 +127,17 @@ namespace GRGMesh {
         }
         void element( index_t e, T& value ) const
         {
-            grgmesh_debug_assert( e < nb_elements_ ) ;
+            ringmesh_debug_assert( e < nb_elements_ ) ;
             value = elements_[e].value ;
         }
         index_t index( index_t e ) const
         {
-            grgmesh_debug_assert( e < nb_elements_ ) ;
+            ringmesh_debug_assert( e < nb_elements_ ) ;
             return elements_[e].index ;
         }
         T& operator[]( index_t i ) const
         {
-            grgmesh_debug_assert( i < nb_elements_ ) ;
+            ringmesh_debug_assert( i < nb_elements_ ) ;
             return elements_[i].value ;
         }
         index_t nb_elements() const
@@ -155,7 +155,7 @@ namespace GRGMesh {
         }
         void grow()
         {
-            grgmesh_debug_assert( capacity_ != 0 ) ;
+            ringmesh_debug_assert( capacity_ != 0 ) ;
             capacity_ = capacity_ * 2 ;
             reallocate( capacity_ ) ;
         }
@@ -189,7 +189,7 @@ namespace GRGMesh {
          */
         bool exist( index_t i, index_t j ) const
         { // test existence of the i-j element
-            grgmesh_debug_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
+            ringmesh_debug_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
             return rows_[i].exist( j ) ;
         }
         /*!
@@ -199,7 +199,7 @@ namespace GRGMesh {
          */
         index_t get_nb_elements_in_line( index_t i ) const
         {
-            grgmesh_debug_assert( i < ni_ ) ;
+            ringmesh_debug_assert( i < ni_ ) ;
             return rows_[i].nb_elements() ;
         }
         /*!
@@ -221,7 +221,7 @@ namespace GRGMesh {
          */
         bool get_index_in_line( index_t i, index_t j, index_t& index ) const
         {
-            grgmesh_debug_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
+            ringmesh_debug_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
             return rows_[i].find( j, index ) ;
         }
         /*!
@@ -416,12 +416,12 @@ namespace GRGMesh {
         const std::vector< T >& mat2,
         std::vector< T >& result )
     {
-        grgmesh_assert( mat1.nj() == mat2.size() ) ;
+        ringmesh_assert( mat1.nj() == mat2.size() ) ;
         result.clear() ;
         result.resize( mat1.ni(), 0 ) ;
 
         for( index_t i = 0; i < mat1.ni(); ++i ) {
-            grgmesh_assert( i >= 0 && i < result.size() ) ;
+            ringmesh_assert( i >= 0 && i < result.size() ) ;
             for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
                 index_t j = mat1.get_column_in_line( i, e ) ;
                 T i_j_result ;

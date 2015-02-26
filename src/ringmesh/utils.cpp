@@ -12,9 +12,9 @@
  * including partial copies or modified versions thereof.
  ]*/
 
-#include <grgmesh/utils.h>
-#include <grgmesh/boundary_model.h>
-#include <grgmesh/boundary_model_element.h>
+#include <ringmesh/utils.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/boundary_model_element.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_private.h>
@@ -27,7 +27,7 @@
 #include <stack>
 #include <algorithm>
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     vec3 Utils::mesh_cell_facet_center( const GEO::Mesh& M, index_t cell, index_t f )
     {
@@ -329,7 +329,7 @@ namespace GRGMesh {
             vec3 nearest_point ;
             float64 distance ;
             index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
-            grgmesh_debug_assert( surface.id() == mesh.facet_region( f ) ) ;
+            ringmesh_debug_assert( surface.id() == mesh.facet_region( f ) ) ;
 
             vec3 ori_normal = surface.facet_normal( 0 ) ;
             vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
@@ -720,7 +720,7 @@ namespace GRGMesh {
                     vertices[pyramid_descriptor.facet[f][2]],
                     vertices[pyramid_descriptor.facet[f][3]], cur_p ) ;
             } else {
-                grgmesh_assert_not_reached;
+                ringmesh_assert_not_reached;
             }
             if( distance < dist ) {
                 dist = distance ;
@@ -764,7 +764,7 @@ namespace GRGMesh {
                     vertices[prism_descriptor.facet[f][2]],
                     vertices[prism_descriptor.facet[f][3]], cur_p ) ;
             } else {
-                grgmesh_assert_not_reached;
+                ringmesh_assert_not_reached;
             }
             if( distance < dist ) {
                 dist = distance ;
@@ -870,7 +870,7 @@ namespace GRGMesh {
                     + vertices[pyramid_descriptor.facet[f][2]]
                     + vertices[pyramid_descriptor.facet[f][3]] ) / 4. ) ;
             else
-                grgmesh_assert_not_reached;
+                ringmesh_assert_not_reached;
             vec3 n = p - barycenter ;
             if( dot( N, n ) > 0 ) return false ;
         }
@@ -911,7 +911,7 @@ namespace GRGMesh {
                     + vertices[prism_descriptor.facet[f][2]]
                     + vertices[prism_descriptor.facet[f][3]] ) / 4. ) ;
             else
-                grgmesh_assert_not_reached;
+                ringmesh_assert_not_reached;
             vec3 n = p - barycenter ;
             if( dot( N, n ) > 0 ) return false ;
         }
@@ -1199,22 +1199,22 @@ namespace GRGMesh {
             angle_( -99999 ),
             side_( false )
     {
-        grgmesh_assert( p0 != p1 ) ;
-        grgmesh_assert( p0 != p2 ) ;
-        grgmesh_assert( p1 != p2 ) ;
+        ringmesh_assert( p0 != p1 ) ;
+        ringmesh_assert( p0 != p2 ) ;
+        ringmesh_assert( p1 != p2 ) ;
 
         vec3 e1 = normalize( p1 - p0 ) ;
         vec3 e2 = normalize( p2 - p0 ) ;
 
         N_ = normalize( cross( e1, e2 ) ) ;
-        grgmesh_assert( dot( N_, e1 ) < epsilon ) ;
+        ringmesh_assert( dot( N_, e1 ) < epsilon ) ;
 
         vec3 B = 0.5 * p1 + 0.5 * p0 ;
         vec3 p2B = p2 - B ;
         B_A_ = normalize( p2B - dot( p2B, e1 ) * e1 ) ;
 
-        grgmesh_assert( dot( B_A_, e1 ) < epsilon ) ;
-        grgmesh_assert( B_A_.length() > epsilon ) ;
+        ringmesh_assert( dot( B_A_, e1 ) < epsilon ) ;
+        ringmesh_assert( B_A_.length() > epsilon ) ;
     }
 
     vec3 SortTriangleAroundEdge::rotate(
@@ -1264,7 +1264,7 @@ namespace GRGMesh {
 
     void SortTriangleAroundEdge::sort()
     {
-        grgmesh_assert( triangles_.size() > 0 ) ;
+        ringmesh_assert( triangles_.size() > 0 ) ;
 
         std::pair< index_t, bool > default_pair( index_t( -1 ), false ) ;
         sorted_triangles_.resize( 2 * triangles_.size(), default_pair ) ;
@@ -1321,7 +1321,7 @@ namespace GRGMesh {
         for( index_t i = 0; i < triangles_.size(); ++i ) {
             TriangleToSort& cur = triangles_[i] ;
             if( triangles_[i].index_ == 0 ) { // The last to add
-                grgmesh_assert( i == triangles_.size() - 1 ) ;
+                ringmesh_assert( i == triangles_.size() - 1 ) ;
                 sorted_triangles_[it].first = cur.surface_index_ ;
                 sorted_triangles_[it].second = cur.side_ ;
             } else {
@@ -1333,7 +1333,7 @@ namespace GRGMesh {
             }
         }
         // All the surfaces must have been sorted
-        grgmesh_assert(
+        ringmesh_assert(
             std::count( sorted_triangles_.begin(), sorted_triangles_.end(),
                 default_pair ) == 0 ) ;
     }
@@ -1357,7 +1357,7 @@ namespace GRGMesh {
                         return sorted_triangles_[i + 1] ;
                     }
                 } else {
-                    grgmesh_assert(
+                    ringmesh_assert(
                         sorted_triangles_[i - 1].first
                             == sorted_triangles_[i].first ) ;
                     if( sorted_triangles_[i - 1].second
@@ -1369,7 +1369,7 @@ namespace GRGMesh {
                 }
             }
         }
-        grgmesh_assert_not_reached;
+        ringmesh_assert_not_reached;
     }
 
 }

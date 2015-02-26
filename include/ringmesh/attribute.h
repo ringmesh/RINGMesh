@@ -39,10 +39,10 @@
 */
 
 
-#ifndef __GRGMESH_ATTRIBUTE__
-#define __GRGMESH_ATTRIBUTE__
+#ifndef __RINGMESH_ATTRIBUTE__
+#define __RINGMESH_ATTRIBUTE__
 
-#include <grgmesh/common.h>
+#include <ringmesh/common.h>
 
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
@@ -54,7 +54,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace GRGMesh {
+namespace RINGMesh {
     /* \file Generic attribute management
      * Strongly inspired from Graphite - Copyright Bruno Lévy 
      */
@@ -65,11 +65,11 @@ namespace GRGMesh {
      * Vector size depends on the size of the items stored.
      * Derives of Counted so that SmartPointers of this class may be used
      */
-    class GRGMESH_API AttributeStore: public GEO::Counted {
+    class RINGMESH_API AttributeStore: public GEO::Counted {
     public:
         byte* data( index_t id)
         {
-            grgmesh_debug_assert( id < nb_elements_ ) ;
+            ringmesh_debug_assert( id < nb_elements_ ) ;
             return &data_[id * item_size_] ;
         }
         virtual const std::type_info& attribute_type_id() const = 0 ;
@@ -126,15 +126,15 @@ namespace GRGMesh {
         {
             std::map< std::string, AttributeStore_var >::iterator it =
                 attributes_.find( name ) ;
-            grgmesh_debug_assert( it != attributes_.end() ) ;
-            grgmesh_debug_assert( !it->second->is_shared() ) ;
+            ringmesh_debug_assert( it != attributes_.end() ) ;
+            ringmesh_debug_assert( !it->second->is_shared() ) ;
             attributes_.erase( it ) ;
         }
         void bind_named_attribute_store(
             const std::string& name,
             AttributeStore* as )
         {
-            grgmesh_debug_assert( !named_attribute_is_bound( name ) ) ;
+            ringmesh_debug_assert( !named_attribute_is_bound( name ) ) ;
             attributes_[name] = as ;
         }
 
@@ -142,7 +142,7 @@ namespace GRGMesh {
         {
             std::map< std::string, AttributeStore_var >::iterator it =
                 attributes_.find( name ) ;
-            grgmesh_debug_assert( it != attributes_.end() ) ;
+            ringmesh_debug_assert( it != attributes_.end() ) ;
             return it->second ;
         }
 
@@ -229,10 +229,10 @@ namespace GRGMesh {
         {
             if( manager->named_attribute_is_bound( name ) ) {
                 store_ = resolve_named_attribute_store( manager, name ) ;
-                grgmesh_assert( store_ != nil ) ;
+                ringmesh_assert( store_ != nil ) ;
                 // Sanity check, checks the attribute type.
                 AttributeStore* check_type = store_ ;
-                grgmesh_assert(
+                ringmesh_assert(
                     dynamic_cast< Store* >( check_type ) != nil ) ;
             } else {
                 store_ = new Store( size ) ;
@@ -337,11 +337,11 @@ namespace GRGMesh {
     /**
      * Use this class to declare a new serializable attribute type.
      * In the common.cpp file of the library, add:
-     * grgmesh_register_attribute_type<MyAttributeType>("MyAttributeType") ;
+     * ringmesh_register_attribute_type<MyAttributeType>("MyAttributeType") ;
      */
-    template <class T> class grgmesh_register_attribute_type {
+    template <class T> class ringmesh_register_attribute_type {
     public:
-        grgmesh_register_attribute_type(const std::string& type_name) {
+        ringmesh_register_attribute_type(const std::string& type_name) {
             AttributeSerializer::bind( typeid(T), type_name, new GenericAttributeSerializer<T>()) ;
         }
     } ;
@@ -403,7 +403,7 @@ namespace GRGMesh {
             if( serializer_ != nil ) {
                 if( attribute_manager_->named_attribute_is_bound( name ) ) {
                     attribute_store_ = resolve_named_attribute_store( attribute_manager_, name ) ;
-                    grgmesh_assert(
+                    ringmesh_assert(
                         AttributeSerializer::find_name_by_type(
                             attribute_store_->attribute_type_id()
                         ) == attribute_type_name
@@ -452,7 +452,7 @@ namespace GRGMesh {
         const std::string& name() const { return name_ ; }
 
         std::string type_name() const {
-            grgmesh_assert(attribute_store_ != nil) ;
+            ringmesh_assert(attribute_store_ != nil) ;
             return AttributeSerializer::find_name_by_type(attribute_store_->attribute_type_id()) ;
         }
 
@@ -469,7 +469,7 @@ namespace GRGMesh {
 
     /*!
      * \brief Get from the manager the attributes that can be saved in a file
-     * Those for which there is a type name has beed registered cf. grgmesh_register_attribute_type
+     * Those for which there is a type name has beed registered cf. ringmesh_register_attribute_type
      * The names and types of the writable attributes are written in the output stream
      * The corresponding serialized attributes are added to attributes
      *
@@ -529,7 +529,7 @@ namespace GRGMesh {
         int32 item, 
         std::vector< SerializedAttribute<T> >& attributes
     ) {     
-        grgmesh_assert( start_field + attributes.size()-1 < in.nb_fields()  ) ;
+        ringmesh_assert( start_field + attributes.size()-1 < in.nb_fields()  ) ;
         for( unsigned int i = 0; i < attributes.size(); i++ ) {
             std::istringstream is( in.field( start_field + i ) ) ;
             is >> attributes[i][item] ;

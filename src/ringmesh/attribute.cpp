@@ -38,19 +38,19 @@
  *     FRANCE
 */
 
-#include <grgmesh/attribute.h>
-namespace GRGMesh {
+#include <ringmesh/attribute.h>
+namespace RINGMesh {
 
     AttributeSerializer::SerializerMap* AttributeSerializer::type_to_serializer_ = nil ;
     AttributeSerializer::SerializerMap* AttributeSerializer::name_to_serializer_  = nil ;
     AttributeSerializer::StringMap*     AttributeSerializer::type_to_name_        = nil ;    
 
     void AttributeSerializer::initialize() {
-        grgmesh_assert(type_to_serializer_ == nil) ;
+        ringmesh_assert(type_to_serializer_ == nil) ;
         type_to_serializer_ = new SerializerMap ;
-        grgmesh_assert(name_to_serializer_ == nil) ;
+        ringmesh_assert(name_to_serializer_ == nil) ;
         name_to_serializer_ = new SerializerMap ;
-        grgmesh_assert(type_to_name_ == nil) ;
+        ringmesh_assert(type_to_name_ == nil) ;
         type_to_name_ = new StringMap ;
     }
     
@@ -64,7 +64,7 @@ namespace GRGMesh {
     }
     
     AttributeSerializer* AttributeSerializer::resolve_by_type(const std::type_info& attribute_type) {
-        grgmesh_assert(type_to_serializer_ != nil) ;
+        ringmesh_assert(type_to_serializer_ != nil) ;
         SerializerMap::iterator it = type_to_serializer_->find(attribute_type.name()) ;
         if(it == type_to_serializer_->end()) {
             return nil ;
@@ -73,7 +73,7 @@ namespace GRGMesh {
     }
 
     AttributeSerializer* AttributeSerializer::resolve_by_name(const std::string& type_name) {
-        grgmesh_assert(name_to_serializer_ != nil) ;       
+        ringmesh_assert(name_to_serializer_ != nil) ;       
         SerializerMap::iterator it = name_to_serializer_->find(type_name) ;
         if(it == name_to_serializer_->end()) {
             return nil ;
@@ -83,7 +83,7 @@ namespace GRGMesh {
     
 
     std::string AttributeSerializer::find_name_by_type(const std::type_info& attribute_type) {
-        grgmesh_assert(type_to_name_ != nil) ; 
+        ringmesh_assert(type_to_name_ != nil) ; 
         StringMap::iterator it = type_to_name_->find(attribute_type.name()) ;
         if(it == type_to_name_->end()) {
             return "unknown" ;
@@ -95,8 +95,8 @@ namespace GRGMesh {
         const std::type_info& attribute_type, const std::string& attribute_type_name, 
         AttributeSerializer* serializer
     ) {
-        grgmesh_assert(resolve_by_type(attribute_type) == nil) ;
-        grgmesh_assert(resolve_by_name(attribute_type_name) == nil) ;
+        ringmesh_assert(resolve_by_type(attribute_type) == nil) ;
+        ringmesh_assert(resolve_by_name(attribute_type_name) == nil) ;
         (*type_to_serializer_)[attribute_type.name()] = serializer ;
         (*name_to_serializer_)[attribute_type_name] = serializer ;
         (*type_to_name_)[attribute_type.name()] = attribute_type_name ;

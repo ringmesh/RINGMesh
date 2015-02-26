@@ -39,15 +39,15 @@
 */
 
 
-#ifndef __GRGMESH_REORDER__
-#define __GRGMESH_REORDER__
+#ifndef __RINGMESH_REORDER__
+#define __RINGMESH_REORDER__
 
-#include <grgmesh/common.h>
-#include <grgmesh/boundary_model_element.h>
+#include <ringmesh/common.h>
+#include <ringmesh/boundary_model_element.h>
 
 #include <geogram/mesh/mesh.h>
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     template< class F > inline void parallel_for(
         F& f,
@@ -234,7 +234,7 @@ namespace GRGMesh {
                     sort< COORDZ, !UPZ, !UPX, UPY >( M_, m7_, m8_ ) ;
                     break ;
                 default:
-                    grgmesh_assert_not_reached ;
+                    ringmesh_assert_not_reached ;
                     break ;
             }
         }

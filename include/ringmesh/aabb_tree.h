@@ -38,17 +38,17 @@
  *     FRANCE
 */
 
-#ifndef __GRGMESH_AABB_TREE__
-#define __GRGMESH_AABB_TREE__
+#ifndef __RINGMESH_AABB_TREE__
+#define __RINGMESH_AABB_TREE__
 
-#include <grgmesh/boundary_model.h>
-#include <grgmesh/boundary_model_element.h>
-#include <grgmesh/common.h>
-#include <grgmesh/utils.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/boundary_model_element.h>
+#include <ringmesh/common.h>
+#include <ringmesh/utils.h>
 
-namespace GRGMesh {
+namespace RINGMesh {
 
-    class GRGMESH_API FacetAABBTree {
+    class RINGMESH_API FacetAABBTree {
     public:
         FacetAABBTree( Surface& M ) ;
         /**
@@ -190,8 +190,8 @@ namespace GRGMesh {
             index_t b2,
             index_t e2 ) const
         {
-            grgmesh_debug_assert( e1 != b1 ) ;
-            grgmesh_debug_assert( e2 != b2 ) ;
+            ringmesh_debug_assert( e1 != b1 ) ;
+            ringmesh_debug_assert( e2 != b2 ) ;
 
             // Since we are intersecting the AABBTree with *itself*,
             // we can prune half of the cases by skipping the test
@@ -255,7 +255,7 @@ namespace GRGMesh {
             index_t b,
             index_t e ) const
         {
-            grgmesh_debug_assert( e != b ) ;
+            ringmesh_debug_assert( e != b ) ;
 
             // The acceleration is here:
             if( !box.bboxes_overlap( bboxes_[node] ) ) {

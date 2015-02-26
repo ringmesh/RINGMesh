@@ -38,9 +38,9 @@
  *     FRANCE
  */
 
-#include <grgmesh/io.h>
-#include <grgmesh/boundary_model.h>
-#include <grgmesh/boundary_model_builder.h>
+#include <ringmesh/io.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/boundary_model_builder.h>
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
@@ -60,8 +60,8 @@
 #include <string>
 #include <stack>
 
-namespace GRGMesh {
-    namespace GRGMeshIO {
+namespace RINGMesh {
+    namespace RINGMeshIO {
 
         static std::string TAB = "\t" ;
         static std::string SPACE = " " ;
@@ -229,8 +229,8 @@ namespace GRGMesh {
         BoundaryModelIOHandler* BoundaryModelIOHandler::create(
             const std::string& format )
         {
-            grgmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" );
-            grgmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" ) ;
+            ringmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" );
+            ringmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" ) ;
 
             BoundaryModelIOHandler* handler =
             BoundaryModelIOHandlerFactory::create_object( format ) ;
@@ -389,7 +389,7 @@ namespace GRGMesh {
 //                    out << "TRI3" << std::endl ;
 //
 //                    for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-//                        const GRGMesh::BoundaryModelElement& interf =
+//                        const RINGMesh::BoundaryModelElement& interf =
 //                            model.one_interface( i ) ;
 //                        for( index_t s = 0; s < interf.nb_children(); s++ ) {
 //
@@ -418,7 +418,7 @@ namespace GRGMesh {
 //                    triangle_count = 0 ;
 
 //                    for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-//                        const GRGMesh::BoundaryModelElement& interf =
+//                        const RINGMesh::BoundaryModelElement& interf =
 //                            model.one_interface( i ) ;
 //                        for( index_t s = 0; s < interf.nb_children(); s++ ) {
 //
@@ -503,7 +503,7 @@ namespace GRGMesh {
                             flags ) ;
                         GEO::Logger::instance()->set_quiet( false ) ;
                     } else {
-                        grgmesh_assert_not_reached;
+                        ringmesh_assert_not_reached;
                     }
                     GEO::FileSystem::delete_file( filename ) ;
 
@@ -722,7 +722,7 @@ namespace GRGMesh {
                     NO_ID ) ;
                 index_t nb_vertices_exported = 1 ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const GRGMesh::BoundaryModelElement& region = model.region( r ) ;
+                    const RINGMesh::BoundaryModelElement& region = model.region( r ) ;
                     out << "TVOLUME " << region.name() << std::endl ;
 
                     const GEO::Mesh& mesh = mm.mesh( r ) ;
@@ -788,7 +788,7 @@ namespace GRGMesh {
                                 c, f ) ;
                             std::vector< index_t > result ;
                             if( ann.get_colocated( facet_center, result ) ) {
-                                grgmesh_debug_assert( result.size() == 1 ) ;
+                                ringmesh_debug_assert( result.size() == 1 ) ;
                                 index_t surface_id = mesh.facet_region( result[0] ) ;
                                 index_t side = sides[surface_id] ;
                                 if( side < 2 )
@@ -814,7 +814,7 @@ namespace GRGMesh {
                 out << "MODEL" << std::endl ;
                 int tface_count = 1 ;
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const GRGMesh::BoundaryModelElement& interf =
+                    const RINGMesh::BoundaryModelElement& interf =
                         model.one_interface( i ) ;
                     out << "SURFACE " << interf.name() << std::endl ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
@@ -847,7 +847,7 @@ namespace GRGMesh {
                 }
 
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const GRGMesh::BoundaryModelElement& region = model.region( r ) ;
+                    const RINGMesh::BoundaryModelElement& region = model.region( r ) ;
                     out << "MODEL_REGION " << region.name() << " " ;
                     region.side( 0 ) ? out << "+" : out << "-" ;
                     out << region.boundary_id( 0 ) + 1 << std::endl ;
@@ -859,7 +859,7 @@ namespace GRGMesh {
         } ;
 
         /************************************************************************/
-        struct GRGMesh2CSMP {
+        struct RINGMesh2CSMP {
             index_t element_type ;
             index_t nb_vertices ;
             index_t vertices[8] ;
@@ -869,7 +869,7 @@ namespace GRGMesh {
             index_t vertices_in_facet[6][4] ;
         } ;
 
-        static GRGMesh2CSMP tet_descriptor = { 4,                  // type
+        static RINGMesh2CSMP tet_descriptor = { 4,                  // type
             4,                  // nb vertices
             { 0, 1, 2, 3 },     // vertices
             4,                  // nb facets
@@ -877,7 +877,7 @@ namespace GRGMesh {
             { 0, 1, 2, 3 },     // facets
             { { 1, 3, 2 }, { 0, 2, 3 }, { 3, 1, 0 }, { 0, 1, 2 } } } ;
 
-        static GRGMesh2CSMP hex_descriptor = { 6,                         // type
+        static RINGMesh2CSMP hex_descriptor = { 6,                         // type
             8,                              // nb vertices
             { 0, 1, 3, 2, 4, 5, 7, 6 },     // vertices
             6,                              // nb facets
@@ -886,7 +886,7 @@ namespace GRGMesh {
             { { 0, 3, 7, 4 }, { 2, 1, 5, 6 }, { 1, 0, 4, 5 }, { 3, 2, 6, 7 }, {
                 1, 2, 3, 0 }, { 4, 7, 6, 5 } } } ;
 
-        static GRGMesh2CSMP prism_descriptor = { 12,                     // type
+        static RINGMesh2CSMP prism_descriptor = { 12,                     // type
             6,                      // nb vertices
             { 0, 1, 2, 3, 4, 5 },   // vertices
             5,                      // nb facets
@@ -896,7 +896,7 @@ namespace GRGMesh {
                 { 0, 1, 2 }, { 3, 5, 4 }, { 0, 3, 4, 1 }, { 0, 2, 5, 3 }, {
                     1, 4, 5, 2 } } } ;
 
-        static GRGMesh2CSMP pyramid_descriptor = { 18,                 // type
+        static RINGMesh2CSMP pyramid_descriptor = { 18,                 // type
             5,                  // nb vertices
             { 0, 1, 2, 3, 4 },  // vertices
             5,                  // nb facets
@@ -929,7 +929,7 @@ namespace GRGMesh {
 
                 const BoundaryModel& model = mm.model() ;
                 ascii << model.name() << std::endl ;
-                ascii << "Model generated from GRGMesh" << std::endl ;
+                ascii << "Model generated from RINGMesh" << std::endl ;
 
                 std::ostringstream oss_data ;
                 oss_data << directory << "/" << file << ".dat" ;
@@ -991,7 +991,7 @@ namespace GRGMesh {
                 ascii << "# Object name" << TAB << "Element type" << TAB
                     << "Material-ID" << TAB << "Number of elements" << std::endl ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const GRGMesh::BoundaryModelElement& region = model.region( r ) ;
+                    const RINGMesh::BoundaryModelElement& region = model.region( r ) ;
                     if( db.nb_tet( r ) > 0 ) {
                         ascii << region.name() << TAB << "TETRA_4" << TAB << 0 << TAB
                             << db.nb_tet( r ) << std::endl ;
@@ -1112,7 +1112,7 @@ namespace GRGMesh {
                     << std::endl ;
                 index_t cur_cell = 0 ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const GRGMesh::BoundaryModelElement& region = model.region( r ) ;
+                    const RINGMesh::BoundaryModelElement& region = model.region( r ) ;
                     if( db.nb_tet( r ) > 0 ) {
                         ascii << region.name() << " " << "TETRA_4" << " "
                             << db.nb_tet( r ) << std::endl ;
@@ -1667,23 +1667,23 @@ namespace GRGMesh {
             }
             signed_index_t point_boundary( index_t p )
             {
-                grgmesh_debug_assert( p < point_boundaries_.size() ) ;
+                ringmesh_debug_assert( p < point_boundaries_.size() ) ;
                 const std::set< unsigned int >& boundaries = point_boundaries_[p] ;
                 if( box_model_ ) {
                     if( boundaries.size() == 1 ) {
                         std::map< unsigned int, int >::iterator it =
                             surface_boundary_flags_.find( *boundaries.begin() ) ;
-                        grgmesh_debug_assert( it != surface_boundary_flags_.end() ) ;
+                        ringmesh_debug_assert( it != surface_boundary_flags_.end() ) ;
                         return it->second ;
                     } else if( boundaries.size() == 2 ) {
                         std::map< std::set< unsigned int >, int >::iterator it =
                             edge_boundary_flags_.find( boundaries ) ;
-                        grgmesh_debug_assert( it != edge_boundary_flags_.end() ) ;
+                        ringmesh_debug_assert( it != edge_boundary_flags_.end() ) ;
                         return it->second ;
                     } else if( boundaries.size() == 3 ) {
                         std::map< std::set< unsigned int >, int >::iterator it =
                             corner_boundary_flags_.find( boundaries ) ;
-                        grgmesh_debug_assert( it != corner_boundary_flags_.end() ) ;
+                        ringmesh_debug_assert( it != corner_boundary_flags_.end() ) ;
                         return it->second ;
                     } else {
                         return 0 ;
@@ -1715,12 +1715,12 @@ namespace GRGMesh {
 
         MacroMeshIOHandler* MacroMeshIOHandler::create( const std::string& format )
         {
-            grgmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" );
-            grgmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" ) ;
-            grgmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-            grgmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" ) ;
-            grgmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" ) ;
-            grgmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" ) ;
+            ringmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" );
+            ringmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" ) ;
+            ringmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+            ringmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" ) ;
+            ringmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+            ringmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" ) ;
 
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
                 format ) ;
@@ -2027,7 +2027,7 @@ namespace GRGMesh {
             double result = false ;
             for( index_t s = 0; s < info.size(); s++ ) {
                 if( temp_info[s] < 0 ) continue ;
-                grgmesh_debug_assert( info[s] != SKIP ) ;
+                ringmesh_debug_assert( info[s] != SKIP ) ;
                 if( info[s] == TO_PROCESS ) {
                     info[s] = SurfaceAction( !temp_info[s] ) ;
                 } else {

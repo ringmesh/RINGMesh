@@ -39,11 +39,11 @@
 */
 
 
-#ifndef __GRGMESH_MACRO_MESH__
-#define __GRGMESH_MACRO_MESH__
+#ifndef __RINGMESH_MACRO_MESH__
+#define __RINGMESH_MACRO_MESH__
 
-#include <grgmesh/common.h>
-#include <grgmesh/utils.h>
+#include <ringmesh/common.h>
+#include <ringmesh/utils.h>
 
 #include <geogram/mesh/mesh.h>
 
@@ -52,14 +52,14 @@ namespace GEO {
     class MeshFacetsAABB ;
 }
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     class BoundaryModel ;
     class MacroMesh ;
 
     static std::vector< std::vector< vec3 > > empty_vertices ;
 
-    class GRGMESH_API MacroMeshVertices {
+    class RINGMESH_API MacroMeshVertices {
     public:
         MacroMeshVertices()
             : initialized_( false )
@@ -85,7 +85,7 @@ namespace GRGMesh {
         std::vector< index_t > vertex2mesh_ ;
     } ;
 
-    class GRGMESH_API MacroMeshFacets {
+    class RINGMESH_API MacroMeshFacets {
     public:
         MacroMeshFacets()
             : initialized_( false )
@@ -118,7 +118,7 @@ namespace GRGMesh {
         std::vector< index_t > surface2mesh_ ;
     } ;
 
-    class GRGMESH_API MacroMeshCells {
+    class RINGMESH_API MacroMeshCells {
     public:
         MacroMeshCells()
             : mm_( nil ), initialized_( false ), nb_cells_( 0 )
@@ -149,7 +149,7 @@ namespace GRGMesh {
     } ;
 
 
-    class GRGMESH_API MacroMesh {
+    class RINGMESH_API MacroMesh {
     public:
         MacroMesh( const BoundaryModel& model, index_t dim = 3 ) ;
         virtual ~MacroMesh() ;

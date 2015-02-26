@@ -39,20 +39,20 @@
 */
 
 
-#include <grgmesh/well.h>
-#include <grgmesh/utils.h>
+#include <ringmesh/well.h>
+#include <ringmesh/utils.h>
 
 #include <cmath>
 #include <stack>
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     signed_index_t Well::find_or_create_corner( const vec3& p, signed_index_t id )
     {
         for( index_t c = 0; c < nb_corners(); c++ ) {
             if( p == corner( c ).point() ) {
-                grgmesh_debug_assert( id == corner( c ).surface_id() ) ;
-                grgmesh_debug_assert( id != -1 ) ;
+                ringmesh_debug_assert( id == corner( c ).surface_id() ) ;
+                ringmesh_debug_assert( id != -1 ) ;
                 return c ;
             }
         }

@@ -41,27 +41,27 @@
 
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
-#ifndef __GRGMESH_BOUNDARY_MODEL_ELEMENT__
-#define __GRGMESH_BOUNDARY_MODEL_ELEMENT__
+#ifndef __RINGMESH_BOUNDARY_MODEL_ELEMENT__
+#define __RINGMESH_BOUNDARY_MODEL_ELEMENT__
 
-#include <grgmesh/common.h>
-#include <grgmesh/attribute.h>
-#include <grgmesh/utils.h>
+#include <ringmesh/common.h>
+#include <ringmesh/attribute.h>
+#include <ringmesh/utils.h>
 
 #include <vector> 
 #include <string>
 
-namespace GRGMesh {
+namespace RINGMesh {
     class BoundaryModel ;
 }
 
 
-namespace GRGMesh {     
+namespace RINGMesh {     
 
     /*!
      * \brief Generic class describing one element of a BoundaryModel
      */
-    class GRGMESH_API BoundaryModelElement {
+    class RINGMESH_API BoundaryModelElement {
 
     public:
         enum AttributeLocation {
@@ -202,7 +202,7 @@ namespace GRGMesh {
             return NO_ID ;
         }  
         virtual const vec3& vertex( index_t p = 0 ) const {
-            grgmesh_assert_not_reached ; return dummy_vec3 ;
+            ringmesh_assert_not_reached ; return dummy_vec3 ;
         }
         virtual void set_vertex( index_t index, index_t model_vertex_id ) {
             return ;
@@ -234,41 +234,41 @@ namespace GRGMesh {
         void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; } 
       
         void add_boundary( index_t b ) { 
-            grgmesh_assert( boundary_allowed( type_ ) ) ;
+            ringmesh_assert( boundary_allowed( type_ ) ) ;
             boundaries_.push_back( b ) ; 
         }
         void set_boundary( index_t id, index_t b ) { 
-            grgmesh_assert( id < nb_boundaries() ) ;
+            ringmesh_assert( id < nb_boundaries() ) ;
             boundaries_[id] = b ; 
         }
         void add_boundary( index_t b, bool side ) {
-            grgmesh_assert( boundary_allowed( type_ ) ) ;
+            ringmesh_assert( boundary_allowed( type_ ) ) ;
             boundaries_.push_back(b) ;
             sides_.push_back(side) ; 
         }
         void set_boundary( index_t id, index_t b, bool side ) {
-            grgmesh_assert( id < nb_boundaries() && id < sides_.size() ) ;
+            ringmesh_assert( id < nb_boundaries() && id < sides_.size() ) ;
             boundaries_[id] = b ; 
             sides_[id] = side ; 
         }        
         void add_in_boundary( index_t e ) { 
-            grgmesh_assert( in_boundary_allowed( type_ ) ) ;
+            ringmesh_assert( in_boundary_allowed( type_ ) ) ;
             in_boundary_.push_back(e) ; 
         }
         void set_in_boundary( index_t id, index_t in_b ) { 
-            grgmesh_assert( id < nb_in_boundary() ) ;
+            ringmesh_assert( id < nb_in_boundary() ) ;
             in_boundary_[id] = in_b ; 
         }
         void set_parent( index_t p ){
-            grgmesh_assert( parent_allowed( type_ ) ) ;
+            ringmesh_assert( parent_allowed( type_ ) ) ;
             parent_ = p ; 
         }       
         void add_child( index_t e ){ 
-            grgmesh_assert( child_allowed( type_ ) ) ;
+            ringmesh_assert( child_allowed( type_ ) ) ;
             children_.push_back( e ) ; 
         }
         void set_child( index_t id, index_t c ) {
-            grgmesh_assert( id < nb_children() ) ;
+            ringmesh_assert( id < nb_children() ) ;
             children_[id] = c ;
         }
 
@@ -324,7 +324,7 @@ namespace GRGMesh {
     * Most corners are at the intersections of at least two Line, but some
     * are in the boundary of a closed Line. 
     */
-    class GRGMESH_API Corner : public BoundaryModelElement {       
+    class RINGMESH_API Corner : public BoundaryModelElement {       
     public:
         Corner(
             BoundaryModel* model,
@@ -358,7 +358,7 @@ namespace GRGMesh {
      *
      * There is no LineMutator since hardly nothing can be performed on a Line without modifying the model
      */
-    class GRGMESH_API Line: public BoundaryModelElement {
+    class RINGMESH_API Line: public BoundaryModelElement {
     public:
         Line( BoundaryModel* model, index_t id = NO_ID ) ;
         Line(
@@ -380,13 +380,13 @@ namespace GRGMesh {
         virtual index_t model_vertex_id( index_t p ) const { return vertices_.at(p) ; }
         virtual const vec3& vertex( index_t line_vertex_id ) const ;
         virtual void set_vertex( index_t index, index_t model_vertex_id ) {
-            grgmesh_assert( index < nb_vertices() ) ;
+            ringmesh_assert( index < nb_vertices() ) ;
             vertices_[index] = model_vertex_id ;
         }
 
         /*! @brief A Line is closed if its two extremities are identitcal */
         bool is_closed () const {
-            grgmesh_assert( nb_boundaries() == 2 ) ;
+            ringmesh_assert( nb_boundaries() == 2 ) ;
             return ( boundaries_[0] != NO_ID ) && ( boundaries_[0] == boundaries_[1] ) ; 
         }  
         bool is_inside_border( const BoundaryModelElement& e ) const ;
@@ -496,7 +496,7 @@ namespace GRGMesh {
     * It is defined by a set of vertices and a set of polygonal facets.
     * Its boundaries are several Lines and it is on the boundary of 1 or 2 Region
     */
-    class GRGMESH_API Surface : public BoundaryModelElement {
+    class RINGMESH_API Surface : public BoundaryModelElement {
         friend class SurfaceMutator ;
     public:
         const static index_t NO_ADJACENT = index_t( -1 ) ;
@@ -532,7 +532,7 @@ namespace GRGMesh {
         const vec3& vertex( index_t f, index_t v ) const ;
         
         virtual void set_vertex( index_t index, index_t new_model_index ) {
-            grgmesh_assert( index < nb_vertices() ) ;
+            ringmesh_assert( index < nb_vertices() ) ;
             vertices_[index] = new_model_index ;
         }
 
@@ -546,12 +546,12 @@ namespace GRGMesh {
         bool is_triangle( index_t f ) const { return nb_vertices_in_facet( f ) == 3 ; }
 
         index_t next_in_facet( index_t f, index_t v ) const { 
-            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
+            ringmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             if( v != nb_vertices_in_facet(f)-1 ) return v+1 ;
             else return 0 ;
         }
         index_t prev_in_facet( index_t f, index_t v ) const {
-            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
+            ringmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             if( v > 0 ) return v-1 ;
             else return nb_vertices_in_facet(f)-1 ;
         }
@@ -566,14 +566,14 @@ namespace GRGMesh {
          *@brief Returns the surface index of vertex \param v in facet \param f
          */
         index_t surf_vertex_id( index_t f, index_t v ) const {
-            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
+            ringmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             return facets_[facet_begin(f)+v] ; 
         }
         /*! 
          * @brief Returns the index of vertex \param v in facet \param f in the parent BoundaryModel
          */ 
         index_t model_vertex_id( index_t f, index_t v ) const { 
-            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
+            ringmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             return vertices_[ surf_vertex_id( f, v ) ] ;
         }     
         /*! 
@@ -626,18 +626,18 @@ namespace GRGMesh {
         /*! @brief Returns the index of the adjacent facet of \param f in this surface 
          *  along the edge starting at \param v */
         index_t adjacent( index_t f, index_t v ) const {
-            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
+            ringmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             return adjacent_[facet_begin(f)+v] ; 
         }
         /*! @brief Retruns the index of the adjacent facet at the given corner
         */
         index_t adjacent( index_t c ) const {
-            grgmesh_assert( c < adjacent_.size() ) ;
+            ringmesh_assert( c < adjacent_.size() ) ;
             return adjacent_[c] ; 
         }
 
         bool is_on_border( index_t f, index_t v ) const {
-            grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
+            ringmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
             return adjacent( f, v ) == NO_ADJACENT ; 
         }
         bool is_on_border( index_t f ) const {
@@ -686,7 +686,7 @@ namespace GRGMesh {
             const std::vector< index_t >& facet_ptr ) ;
 
         void set_adjacent( const std::vector< index_t >& adjacent ){
-            grgmesh_assert( adjacent.size() == facets_.size() ) ;
+            ringmesh_assert( adjacent.size() == facets_.size() ) ;
             adjacent_ = adjacent ;
         }
         
@@ -795,7 +795,7 @@ namespace GRGMesh {
     /*! 
      * @brief Class to perform modifications of a Surface
      */
-    class GRGMESH_API SurfaceMutator {
+    class RINGMESH_API SurfaceMutator {
     public:
         SurfaceMutator( Surface& S )
             : S_( S )
@@ -829,7 +829,7 @@ namespace GRGMesh {
     /*!
      * @brief Class to answer geometrical requests on BoundaryModelElement
      */
-    class GRGMESH_API BoundaryModelElementMeasure {
+    class RINGMESH_API BoundaryModelElementMeasure {
     public:
         static double size( const BoundaryModelElement* E ) ;
         static double cell_size( const BoundaryModelElement* E, index_t cell ) ;

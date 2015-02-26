@@ -39,16 +39,16 @@
 */
 
 
-#include <grgmesh/macro_mesh.h>
-#include <grgmesh/boundary_model.h>
-#include <grgmesh/tetra_gen.h>
+#include <ringmesh/macro_mesh.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/tetra_gen.h>
 
 #include <geogram/basic/progress.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/basic/algorithm.h>
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     void MacroMeshVertices::initialize( const MacroMesh& mm )
     {
@@ -98,7 +98,7 @@ namespace GRGMesh {
         if( !initialized_ ) {
             const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
         }
-        grgmesh_debug_assert( v < mm.mesh( mesh ).nb_vertices() ) ;
+        ringmesh_debug_assert( v < mm.mesh( mesh ).nb_vertices() ) ;
         return global_vertex_indices_[vertex2mesh_[mesh] + v] ;
     }
 
@@ -245,7 +245,7 @@ namespace GRGMesh {
                         }
 
                         if( intersection.size() > 1 ) {
-                            grgmesh_debug_assert( intersection.size() == 2 ) ;
+                            ringmesh_debug_assert( intersection.size() == 2 ) ;
                             signed_index_t new_adj =
                                 intersection[0] == cell2mesh_[m] + c ?
                                     intersection[1] : intersection[0] ;
@@ -292,7 +292,7 @@ namespace GRGMesh {
         for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
             if( global_index < cell2mesh_[m+1] ) return m ;
         }
-        grgmesh_assert_not_reached ;
+        ringmesh_assert_not_reached ;
         return dummy_index_t ;
     }
     index_t MacroMeshCells::nb_cells( const MacroMesh* mm ) const

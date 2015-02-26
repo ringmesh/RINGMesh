@@ -32,50 +32,37 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
+ *     Ecole Nationale Supérieure de Géologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
 */
 
+#include <ringmesh/ringmesh_assert.h>
 
-#ifndef __GRGMESH_COMMON__
-#define __GRGMESH_COMMON__
+#include <geogram/basic/assert.h>
 
-#if defined(_WIN32)
-#    ifndef WIN32
-#        define WIN32
-#    endif
-#endif
+namespace RINGMesh {
 
-#ifdef WIN32
-#   ifdef GRGMESH_EXPORTS
-#        define GRGMESH_API __declspec( dllexport )
-#    else
-#        define GRGMESH_API __declspec( dllimport )
-#    endif
-#else
-#   define GRGMESH_API
-#endif
+    void ringmesh_abort()
+    {
+        GEO::geo_abort() ;
+    }
 
-#ifndef NDEBUG
-#   define GRGMESH_DEBUG
-#else
-#   undef GRGMESH_DEBUG
-#endif
+    void ringmesh_assertion_failed(
+        const std::string& condition_string,
+        const std::string& file,
+        int line )
+    {
+        GEO::geo_assertion_failed( condition_string, file, line ) ;
+    }
 
-#ifdef WIN32
-#   pragma warning( disable: 4267 )
-#   pragma warning( disable: 4251 )
-#endif
+    void ringmesh_should_not_have_reached(
+        const std::string& file,
+        int line )
+    {
+        GEO::geo_should_not_have_reached( file, line ) ;
+    }
 
-#define grgmesh_disable_copy(Class) \
-private:\
-    Class(const Class &); \
-    Class &operator=(const Class &)
-
-#include <grgmesh/types.h>
-#include <grgmesh/grgmesh_assert.h>
-
-#endif
+}
 

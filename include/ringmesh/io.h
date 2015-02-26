@@ -39,43 +39,43 @@
 */
 
 
-#ifndef __GRGMESH_IO__
-#define __GRGMESH_IO__
+#ifndef __RINGMESH_IO__
+#define __RINGMESH_IO__
 
-#include <grgmesh/common.h>
-#include <grgmesh/macro_mesh.h>
-#include <grgmesh/boundary_model.h>
+#include <ringmesh/common.h>
+#include <ringmesh/macro_mesh.h>
+#include <ringmesh/boundary_model.h>
 
 
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
 class string ;
 
-namespace GRGMesh {
+namespace RINGMesh {
     class BoundaryModel ;
 }
 
-namespace GRGMesh {
-    namespace GRGMeshIO {
+namespace RINGMesh {
+    namespace RINGMeshIO {
 
         //    ___                   _               __  __         _     _
         //   | _ ) ___ _  _ _ _  __| |__ _ _ _ _  _|  \/  |___  __| |___| |
         //   | _ \/ _ \ || | ' \/ _` / _` | '_| || | |\/| / _ \/ _` / -_) |
         //   |___/\___/\_,_|_||_\__,_\__,_|_|  \_, |_|  |_\___/\__,_\___|_|
         //                                     |__/
-        bool GRGMESH_API load( const std::string& filename, BoundaryModel& model ) ;
-        bool GRGMESH_API save( BoundaryModel& model, const std::string& filename ) ;
+        bool RINGMESH_API load( const std::string& filename, BoundaryModel& model ) ;
+        bool RINGMESH_API save( BoundaryModel& model, const std::string& filename ) ;
 
         //    __  __                 __  __        _
         //   |  \/  |__ _ __ _ _ ___|  \/  |___ __| |_
         //   | |\/| / _` / _| '_/ _ \ |\/| / -_|_-< ' \
         //   |_|  |_\__,_\__|_| \___/_|  |_\___/__/_||_|
         //
-        bool GRGMESH_API load( const std::string& mesh_file, MacroMesh& mm ) ;
-        bool GRGMESH_API save( const MacroMesh& mm, const std::string& filename ) ;
+        bool RINGMESH_API load( const std::string& mesh_file, MacroMesh& mm ) ;
+        bool RINGMESH_API save( const MacroMesh& mm, const std::string& filename ) ;
 
 
-        class GRGMESH_API BoundaryModelIOHandler: public GEO::Counted {
+        class RINGMESH_API BoundaryModelIOHandler: public GEO::Counted {
         public:
             static BoundaryModelIOHandler* create( const std::string& format ) ;
             static BoundaryModelIOHandler* get_handler( const std::string& filename ) ;
@@ -97,11 +97,11 @@ namespace GRGMesh {
         } ;
         typedef GEO::SmartPointer< BoundaryModelIOHandler > BoundaryModelIOHandler_var ;
         typedef GEO::Factory0< BoundaryModelIOHandler > BoundaryModelIOHandlerFactory;
-#define grgmesh_register_BoundaryModelIOHandler_creator(type, name) \
+#define ringmesh_register_BoundaryModelIOHandler_creator(type, name) \
     geo_register_creator(BoundaryModelIOHandlerFactory, type, name)
 
 
-        class GRGMESH_API MacroMeshIOHandler: public GEO::Counted {
+        class RINGMESH_API MacroMeshIOHandler: public GEO::Counted {
         public:
             static MacroMeshIOHandler* create( const std::string& format ) ;
             static MacroMeshIOHandler* get_handler( const std::string& filename ) ;
@@ -123,10 +123,10 @@ namespace GRGMesh {
         } ;
         typedef GEO::SmartPointer< MacroMeshIOHandler > MacroMeshIOHandler_var ;
         typedef GEO::Factory0< MacroMeshIOHandler > MacroMeshIOHandlerFactory ;
-#define grgmesh_register_MacroMeshIOHandler_creator(type, name) \
+#define ringmesh_register_MacroMeshIOHandler_creator(type, name) \
     geo_register_creator(MacroMeshIOHandlerFactory, type, name)
 
-        class GRGMESH_API MacroMeshExport {
+        class RINGMESH_API MacroMeshExport {
         private:
             enum SurfaceAction {
                 SKIP = -2, TO_PROCESS = -1, NEG_SIDE = 0, POS_SIDE = 1
