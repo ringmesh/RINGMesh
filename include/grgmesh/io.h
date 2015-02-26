@@ -199,16 +199,16 @@ namespace GRGMesh {
             }
 
             index_t local_tet_id( index_t r, index_t t ) const {
-                return cell( mesh_facet_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r] + t ) ;
+                return cell( mesh_cell_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r] + t ) ;
             }
             index_t local_pyramid_id( index_t r, index_t p ) const {
-                return cell( mesh_facet_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r + 1] + p ) ;
+                return cell( mesh_cell_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r + 1] + p ) ;
             }
             index_t local_prism_id( index_t r, index_t p ) const {
-                return cell( mesh_facet_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r + 2] + p ) ;
+                return cell( mesh_cell_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r + 2] + p ) ;
             }
             index_t local_hex_id( index_t r, index_t h ) const {
-                return cell( mesh_facet_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r + 3] + h ) ;
+                return cell( mesh_cell_begin( r ) + cell_ptr_[(NB_CELL_TYPES+1) * r + 3] + h ) ;
             }
 
         private:
