@@ -43,7 +43,7 @@ grep_result=$(grep hook .hg/hgrc)
 if [ -z "${grep_result}" ]
 then
     echo INFO: Hook not in hgrc.
-    hook_text="\n[hooks]\npre-commit = cd ./Formatter && ./call_uncrustify.sh false ../include/grgfemlib/ ../src/grgfemlib/ && cd .."
+    hook_text="\n[hooks]\npre-commit = cd ./Formatter && ./call_uncrustify.sh false ../include/grgmeshlib/ ../src/grgmeshlib/ && cd .."
     hook_text="${hook_text}\n\nchangegroup = cd ./Formatter && hg pull -u && cd .."
 
     echo ${hook_text} >> .hg/hgrc
