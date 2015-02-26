@@ -1112,7 +1112,12 @@ namespace GRGMesh {
                     else if( in.field_matches( 0, "TSURF" ) ) 
                     {
                         // 1. Create Interface its name
-                        create_interface( in.field(1) ) ;
+                        index_t f = 1 ;
+                        std::ostringstream oss ;
+                        do {
+                            oss << in.field( f++ ) ;
+                        } while( f < in.nb_fields() ) ;
+                        create_interface( oss.str() ) ;
                         nb_tsurf++ ;
                     }
                     else if( in.field_matches( 0, "TFACE" ) ) 
@@ -1121,7 +1126,12 @@ namespace GRGMesh {
                         // its geological feature
                         index_t id = in.field_as_uint(1) ;
                         std::string geol = in.field(2) ;
-                        std::string interface_name = in.field(3) ;
+                        index_t f = 3 ;
+                        std::ostringstream oss ;
+                        do {
+                            oss << in.field( f++ ) ;
+                        } while( f < in.nb_fields() ) ;
+                        std::string interface_name = oss.str() ;
                         // And its key facet that give the orientation of the surface part
                         in.get_line() ; in.get_fields() ;              
                         vec3 p0 ( read_double( in, 0 ), read_double( in, 1 ), read_double( in, 2 ) ) ;
@@ -1138,7 +1148,7 @@ namespace GRGMesh {
                         // 3. Read Region information and create them from their name,
                         // the surfaces on their boundary                    
                         index_t id = in.field_as_uint(1) ;
-                        std::string name = in.field(2) ;
+                        std::string name= in.field(2) ;
                         
                         std::vector< std::pair< index_t, bool > > region_boundaries ;
                         bool end_region = false ;
