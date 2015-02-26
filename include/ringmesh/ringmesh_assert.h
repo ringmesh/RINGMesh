@@ -38,31 +38,44 @@
  *     FRANCE
 */
 
-#include <grgmesh/grgmesh_assert.h>
 
-#include <geogram/basic/assert.h>
+#ifndef __RINGMESH_ASSERT__
+#define __RINGMESH_ASSERT__
 
-namespace GRGMesh {
+#include <ringmesh/common.h>
+#include <string>
 
-    void grgmesh_abort()
-    {
-        GEO::geo_abort() ;
-    }
+namespace RINGMesh {
 
-    void grgmesh_assertion_failed(
+    void RINGMESH_API ringmesh_abort() ;
+
+    void RINGMESH_API ringmesh_assertion_failed(
         const std::string& condition_string,
         const std::string& file,
-        int line )
-    {
-        GEO::geo_assertion_failed( condition_string, file, line ) ;
-    }
+        int line ) ;
 
-    void grgmesh_should_not_have_reached(
+    void RINGMESH_API ringmesh_should_not_have_reached(
         const std::string& file,
-        int line )
-    {
-        GEO::geo_should_not_have_reached( file, line ) ;
-    }
+        int line ) ;
 
 }
 
+
+#define ringmesh_assert(x) {                                        \
+    if(!(x)) {                                                 \
+        ::RINGMesh::ringmesh_assertion_failed(#x,__FILE__, __LINE__) ;   \
+    }                                                          \
+} 
+
+
+#define ringmesh_assert_not_reached {                               \
+    ::RINGMesh::ringmesh_should_not_have_reached(__FILE__, __LINE__) ;   \
+}
+
+#ifdef RINGMESH_DEBUG
+#define ringmesh_debug_assert(x) ringmesh_assert(x)
+#else
+#define ringmesh_debug_assert(x)
+#endif
+
+#endif

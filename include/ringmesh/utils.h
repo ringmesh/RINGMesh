@@ -38,11 +38,11 @@
  *     FRANCE
 */
 
-#ifndef __GRGMESH_UTILS__
-#define __GRGMESH_UTILS__
+#ifndef __RINGMESH_UTILS__
+#define __RINGMESH_UTILS__
 
-#include <grgmesh/common.h>
-#include <grgmesh/types.h>
+#include <ringmesh/common.h>
+#include <ringmesh/types.h>
 
 #include <geogram/points/nn_search.h>
 #include <geogram/points/kd_tree.h>
@@ -57,14 +57,14 @@ namespace GEO {
     class Mesh ;
 }
 
-namespace GRGMesh {
+namespace RINGMesh {
     class BoundaryModelElement ;
     class Edge ;
     class Surface ;
     class Line ;
 }
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     static bool operator==( const vec3& u, const vec3& v ) {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
@@ -109,32 +109,32 @@ namespace GRGMesh {
         }
         float64 x_min() const
         {
-            grgmesh_debug_assert( initialized_ ) ;
+            ringmesh_debug_assert( initialized_ ) ;
             return x_min_ ;
         }
         float64 y_min() const
         {
-            grgmesh_debug_assert( initialized_ ) ;
+            ringmesh_debug_assert( initialized_ ) ;
             return y_min_ ;
         }
         float64 z_min() const
         {
-            grgmesh_debug_assert( initialized_ ) ;
+            ringmesh_debug_assert( initialized_ ) ;
             return z_min_ ;
         }
         float64 x_max() const
         {
-            grgmesh_debug_assert( initialized_ ) ;
+            ringmesh_debug_assert( initialized_ ) ;
             return x_max_ ;
         }
         float64 y_max() const
         {
-            grgmesh_debug_assert( initialized_ ) ;
+            ringmesh_debug_assert( initialized_ ) ;
             return y_max_ ;
         }
         float64 z_max() const
         {
-            grgmesh_debug_assert( initialized_ ) ;
+            ringmesh_debug_assert( initialized_ ) ;
             return z_max_ ;
         }
         float64 min( unsigned axis ) const
@@ -291,7 +291,7 @@ namespace GRGMesh {
         float64 z_max_ ;
     } ;
 
-    class GRGMESH_API Utils {
+    class RINGMESH_API Utils {
     public:
         static vec3 mesh_cell_facet_normal(
             const GEO::Mesh& M,
@@ -731,7 +731,7 @@ namespace GRGMesh {
             vec3& result ) ;
     } ;
 
-    class GRGMESH_API MakeUnique {
+    class RINGMESH_API MakeUnique {
     public:
         MakeUnique( const std::vector< vec3 >& data ) ;
         template< class T > MakeUnique( const std::vector< T >& data )
@@ -792,7 +792,7 @@ namespace GRGMesh {
 
 
 
-    class GRGMESH_API ColocaterANN {
+    class RINGMESH_API ColocaterANN {
     public:
         enum MeshLocation {
             VERTICES, FACETS, CELLS
@@ -851,7 +851,7 @@ namespace GRGMesh {
     public:
         void assign( const std::vector< T >& values )
         {
-            grgmesh_debug_assert( values.size() < n + 1 ) ;
+            ringmesh_debug_assert( values.size() < n + 1 ) ;
             for( index_t i = 0; i < values.size(); i++ ) {
                 values_[i] = values[i] ;
             }

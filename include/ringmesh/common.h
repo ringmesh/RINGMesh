@@ -32,50 +32,50 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
 */
 
 
-#ifndef __GRGMESH_ASSERT__
-#define __GRGMESH_ASSERT__
+#ifndef __RINGMESH_COMMON__
+#define __RINGMESH_COMMON__
 
-#include <grgmesh/common.h>
-#include <string>
+#if defined(_WIN32)
+#    ifndef WIN32
+#        define WIN32
+#    endif
+#endif
 
-namespace GRGMesh {
-
-    void GRGMESH_API grgmesh_abort() ;
-
-    void GRGMESH_API grgmesh_assertion_failed(
-        const std::string& condition_string,
-        const std::string& file,
-        int line ) ;
-
-    void GRGMESH_API grgmesh_should_not_have_reached(
-        const std::string& file,
-        int line ) ;
-
-}
-
-
-#define grgmesh_assert(x) {                                        \
-    if(!(x)) {                                                 \
-        ::GRGMesh::grgmesh_assertion_failed(#x,__FILE__, __LINE__) ;   \
-    }                                                          \
-} 
-
-
-#define grgmesh_assert_not_reached {                               \
-    ::GRGMesh::grgmesh_should_not_have_reached(__FILE__, __LINE__) ;   \
-}
-
-#ifdef GRGMESH_DEBUG
-#define grgmesh_debug_assert(x) grgmesh_assert(x)
+#ifdef WIN32
+#   ifdef RINGMESH_EXPORTS
+#        define RINGMESH_API __declspec( dllexport )
+#    else
+#        define RINGMESH_API __declspec( dllimport )
+#    endif
 #else
-#define grgmesh_debug_assert(x)
+#   define RINGMESH_API
 #endif
 
+#ifndef NDEBUG
+#   define RINGMESH_DEBUG
+#else
+#   undef RINGMESH_DEBUG
 #endif
+
+#ifdef WIN32
+#   pragma warning( disable: 4267 )
+#   pragma warning( disable: 4251 )
+#endif
+
+#define ringmesh_disable_copy(Class) \
+private:\
+    Class(const Class &); \
+    Class &operator=(const Class &)
+
+#include <ringmesh/types.h>
+#include <ringmesh/ringmesh_assert.h>
+
+#endif
+

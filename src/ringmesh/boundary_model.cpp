@@ -41,9 +41,9 @@
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
 
-#include <grgmesh/boundary_model.h>
-#include <grgmesh/boundary_model_builder.h>
-#include <grgmesh/utils.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/boundary_model_builder.h>
+#include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
 
@@ -55,7 +55,7 @@
 #include <set>
 
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     /*!
      * @brief Clear memory (useful to reduce memory impact)
@@ -95,7 +95,7 @@ namespace GRGMesh {
      */
     index_t BoundaryModel::vertex_index( const vec3& p ) const {
        
-        grgmesh_assert_not_reached ;
+        ringmesh_assert_not_reached ;
         return NO_ID ;
     }
 
@@ -107,7 +107,7 @@ namespace GRGMesh {
      */
     index_t BoundaryModel::find_region( index_t surface_part_id, bool side ) const
     {
-        grgmesh_debug_assert( surface_part_id < nb_surfaces() ) ;
+        ringmesh_debug_assert( surface_part_id < nb_surfaces() ) ;
         for( index_t r = 0; r < nb_regions(); r++ ) {
             const BoundaryModelElement& cur_region = region( r ) ;
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
@@ -378,7 +378,7 @@ namespace GRGMesh {
                         sp.surf_vertex_id( cp.model_vertex_id( cp.nb_vertices()-1 ) ) + offset ) ;                    
 
                     index_t t = sp.facet_from_model_vertex_ids( c, next ) ;
-                    grgmesh_assert( t != NO_ID ) ;
+                    ringmesh_assert( t != NO_ID ) ;
 
                     index_t i0 = sp.surf_vertex_id( t, 0 ) ;
                     index_t i1 = sp.surf_vertex_id( t, 1 ) ;
@@ -400,7 +400,7 @@ namespace GRGMesh {
                     if( p2 == c ) c_id = i2 ;
                     else if( p2 == next ) next_id = i2 ;
 
-                    grgmesh_assert( c_id != NO_ID && next_id != NO_ID ) ;
+                    ringmesh_assert( c_id != NO_ID && next_id != NO_ID ) ;
 
                     bstones.push_back( c_id + offset ) ;
                     next_vertex.push_back( next_id + offset ) ;
@@ -456,7 +456,7 @@ namespace GRGMesh {
         else if( in == "double") return "real" ;
         else if( in == "float") return "real";
         else if( in == "bool") return "boolean" ;
-        grgmesh_assert_not_reached ;
+        ringmesh_assert_not_reached ;
         return "" ;
     }
     /*!
@@ -528,9 +528,9 @@ namespace GRGMesh {
                     std::vector< SerializedAttribute< BME::FACET > > cur_attribs ;
                     get_serializable_attributes( S.facet_attribute_manager(), cur_attribs ) ; 
                     
-                    grgmesh_assert( cur_attribs.size() == facet_attribs.size() ) ;
+                    ringmesh_assert( cur_attribs.size() == facet_attribs.size() ) ;
                     for( index_t i = 0; i < facet_attribs.size() ; ++i ) {
-                        grgmesh_assert( facet_attribs[i].type_name() == cur_attribs[i].type_name() &&
+                        ringmesh_assert( facet_attribs[i].type_name() == cur_attribs[i].type_name() &&
                             facet_attribs[i].name() == cur_attribs[i].name() ) ;
                     }
                                       
@@ -607,7 +607,7 @@ namespace GRGMesh {
         }
         out.precision( 16 ) ;
       
-        out << "GRGMESH BOUNDARY MODEL"<< std::endl ;
+        out << "RINGMESH BOUNDARY MODEL"<< std::endl ;
         out << "NAME " << name() << std::endl ; 
 
         // Number of the different type of elements 

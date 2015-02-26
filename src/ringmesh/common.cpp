@@ -56,7 +56,7 @@
 
 #endif
 
-#include <grgmesh/attribute.h>
+#include <ringmesh/attribute.h>
 #include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
@@ -76,13 +76,13 @@ INITIALIZER(initialize)
         GEO::CmdLine::set_arg("sys:use_doubles",true) ;
 
         // Initialization for BoundaryModel attribute serialization        
-        GRGMesh::AttributeSerializer::initialize() ;       
-        GRGMesh::grgmesh_register_attribute_type< int           > ("int") ;
-        GRGMesh::grgmesh_register_attribute_type< unsigned int  > ("index") ;
-        GRGMesh::grgmesh_register_attribute_type< double        > ("double") ;
-        GRGMesh::grgmesh_register_attribute_type< float         > ("float") ;
-        GRGMesh::grgmesh_register_attribute_type< bool          > ("bool") ;
-        atexit(GRGMesh::AttributeSerializer::terminate);
+        RINGMesh::AttributeSerializer::initialize() ;       
+        RINGMesh::ringmesh_register_attribute_type< int           > ("int") ;
+        RINGMesh::ringmesh_register_attribute_type< unsigned int  > ("index") ;
+        RINGMesh::ringmesh_register_attribute_type< double        > ("double") ;
+        RINGMesh::ringmesh_register_attribute_type< float         > ("float") ;
+        RINGMesh::ringmesh_register_attribute_type< bool          > ("bool") ;
+        atexit(RINGMesh::AttributeSerializer::terminate);
     }
 }
 

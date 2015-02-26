@@ -48,24 +48,24 @@ echo
 
 
 echo
-echo ================== GRGMesh ====================
+echo ================== RINGMesh ====================
 
 for config in Release Debug
 do
    platform=$os-$config
    echo
    echo ============= Creating makefiles for $platform ============
-   build_dir=build/grgmesh/$platform
+   build_dir=build/ringmesh/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DGEOGRAM_PLATFORM:STRING=$os -DCMAKE_INSTALL_PREFIX=/opt/software/grgmesh  ../../../)
+   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DGEOGRAM_PLATFORM:STRING=$os -DCMAKE_INSTALL_PREFIX=/opt/software/ringmesh  ../../../)
 done
 echo
-echo ============== GRGMesh build configured ==================
+echo ============== RINGMesh build configured ==================
 
 cat << EOF
 to build:
-  go to build/grgmesh/$os-Release or build/grgmesh/$os-Debug
+  go to build/ringmesh/$os-Release or build/ringmesh/$os-Debug
   and 'make'
 Note: local configuration can be specified in CMakeOptions.txt
 (see CMakeOptions.txt.sample for an example)

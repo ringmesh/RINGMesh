@@ -41,23 +41,23 @@
 /*! \author Jeanne Pellerin */
 
 
-#ifndef __GRGMESH_BOUNDARY_MODEL_FROM_SURFACE__
-#define __GRGMESH_BOUNDARY_MODEL_FROM_SURFACE__
+#ifndef __RINGMESH_BOUNDARY_MODEL_FROM_SURFACE__
+#define __RINGMESH_BOUNDARY_MODEL_FROM_SURFACE__
 
-#include <grgmesh/common.h>
-#include <grgmesh/boundary_model.h>
+#include <ringmesh/common.h>
+#include <ringmesh/boundary_model.h>
 
 #include <vector> 
 #include <string>
 #include <stack>
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     /**
     * @brief Base class for the class building a BoundaryModel.
     * @details Derive from this class 
     */ 
-    class GRGMESH_API BoundaryModelBuilder {        
+    class RINGMESH_API BoundaryModelBuilder {        
     public:
         typedef BoundaryModelElement BME ;
 
@@ -213,7 +213,7 @@ namespace GRGMesh {
     /*!
      * \brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
      */ 
-    class GRGMESH_API BoundaryModelBuilderGocad : public BoundaryModelBuilder {
+    class RINGMESH_API BoundaryModelBuilderGocad : public BoundaryModelBuilder {
     public:
         BoundaryModelBuilderGocad( BoundaryModel& model )
             : BoundaryModelBuilder( model ){}
@@ -268,7 +268,7 @@ namespace GRGMesh {
      /*!
      * \brief Build a BoundaryModel from a file_model.bm
      */ 
-    class GRGMESH_API BoundaryModelBuilderBM : public BoundaryModelBuilder {
+    class RINGMESH_API BoundaryModelBuilderBM : public BoundaryModelBuilder {
     public:
         BoundaryModelBuilderBM( BoundaryModel& model )
             : BoundaryModelBuilder( model ) {} ;            
@@ -290,7 +290,7 @@ namespace GRGMesh {
      * @brief Builder of a BoundaryModel from a conformal surface meshes
      *        in which the manifold connected components are disjoints
      */
-    class GRGMESH_API BoundaryModelBuilderSurface : public BoundaryModelBuilder {
+    class RINGMESH_API BoundaryModelBuilderSurface : public BoundaryModelBuilder {
     public:              
         BoundaryModelBuilderSurface( BoundaryModel& model  ):
           BoundaryModelBuilder( model ){} ;

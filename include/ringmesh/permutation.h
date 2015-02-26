@@ -39,12 +39,12 @@
 */
 
 
-#ifndef __GRGMESH_PERMUTATION__
-#define __GRGMESH_PERMUTATION__
+#ifndef __RINGMESH_PERMUTATION__
+#define __RINGMESH_PERMUTATION__
 
-#include <grgmesh/common.h>
+#include <ringmesh/common.h>
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     namespace Permutation {
 
@@ -73,7 +73,7 @@ namespace GRGMesh {
          */
         inline bool is_marked( const std::vector< signed_index_t >& permutation, signed_index_t i )
         {
-            grgmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
+            ringmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
             return ( permutation[i] < 0 ) ;
         }
 
@@ -82,8 +82,8 @@ namespace GRGMesh {
          */
         inline void mark( std::vector< signed_index_t >& permutation, signed_index_t i )
         {
-            grgmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
-            grgmesh_debug_assert( !is_marked( permutation, i ) ) ;
+            ringmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
+            ringmesh_debug_assert( !is_marked( permutation, i ) ) ;
             permutation[i] = -permutation[i] - 1 ;
         }
 
@@ -92,8 +92,8 @@ namespace GRGMesh {
          */
         inline void unmark( std::vector< signed_index_t >& permutation, signed_index_t i )
         {
-            grgmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
-            grgmesh_debug_assert( is_marked( permutation, i ) ) ;
+            ringmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
+            ringmesh_debug_assert( is_marked( permutation, i ) ) ;
             permutation[i] = -permutation[i] - 1 ;
         }
 
@@ -119,7 +119,7 @@ namespace GRGMesh {
             pointer data = (pointer) ( data_in ) ;
             std::vector< signed_index_t >& permutation =
                 const_cast< std::vector< signed_index_t >& >( permutation_in ) ;
-            grgmesh_debug_assert( is_valid( permutation ) ) ;
+            ringmesh_debug_assert( is_valid( permutation ) ) ;
             pointer temp = static_cast< pointer >( alloca( elemsize ) ) ;
             for( index_t k = 0; k < permutation.size(); k++ ) {
                 if( is_marked( permutation, k ) ) {
@@ -164,7 +164,7 @@ namespace GRGMesh {
         {
             std::vector< signed_index_t >& permutation =
                 const_cast< std::vector< signed_index_t >& >( permutation_in ) ;
-            grgmesh_debug_assert( is_valid( permutation ) ) ;
+            ringmesh_debug_assert( is_valid( permutation ) ) ;
             T temp ;
             for( index_t k = 0; k < permutation.size(); k++ ) {
                 if( is_marked( permutation, k ) ) {
@@ -200,7 +200,7 @@ namespace GRGMesh {
          */
         inline void invert( std::vector< signed_index_t >& permutation )
         {
-            grgmesh_debug_assert( is_valid( permutation ) ) ;
+            ringmesh_debug_assert( is_valid( permutation ) ) ;
             for( index_t k = 0; k < permutation.size(); k++ ) {
                 if( is_marked( permutation, k ) ) {
                     continue ;
