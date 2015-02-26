@@ -294,36 +294,28 @@ namespace GRGMesh {
         }
 
         /// 2 - Reorient in the same direction using propagation
-        std::ofstream reorient( "/home/botella/test_vortex/reorient.txt" ) ;
         std::vector< bool > facet_visited( mesh.nb_facets(), false ) ;
         for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
             if( facet_visited[f] ) continue ;
             index_t surface_id = mesh.facet_region( f ) ;
-            reorient << "START REORIENT -> " << surface_id << std::endl ;
             std::stack< index_t > S ;
             S.push( f ) ;
             do {
                 index_t cur_f = S.top() ;
-                reorient << "cur_f " << cur_f << " adj" ;
                 S.pop() ;
                 if( facet_visited[cur_f] ) continue ;
                 facet_visited[cur_f] = true ;
                 for( index_t c = mesh.facet_begin( cur_f );
                     c < mesh.facet_end( cur_f ); c++ ) {
                     signed_index_t f_adj = mesh.corner_adjacent_facet( c ) ;
-                    reorient << " " << f_adj ;
                     if( f_adj == -1 || mesh.facet_region( f_adj ) != surface_id
                         || facet_visited[f_adj] ) continue ;
                     if( !facets_have_same_orientation( mesh, cur_f, c, f_adj ) ) {
-                        reorient << " REORIENT " ;
                         GEO::MeshMutator::flip_facet( mesh, f_adj ) ;
                     }
                     S.push( f_adj ) ;
-                    reorient << " PUSH" ;
                 }
-                reorient << std::endl ;
             } while( !S.empty() ) ;
-            reorient << std::endl ;
         }
 
         /// 3 - Check for consistent orientation with BoundaryModel
