@@ -39,12 +39,12 @@
 */
 
 
-#ifndef __GRGMESH_TYPES__
-#define __GRGMESH_TYPES__
+#ifndef __RINGMESH_TYPES__
+#define __RINGMESH_TYPES__
 
 #include <geogram/basic/geometry.h>
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     //    _____
     //   |_   _|  _ _ __  ___ ___

@@ -38,11 +38,11 @@
  *     FRANCE
 */
 
-#ifndef __GRGMESH_TETRA_GEN__
-#define __GRGMESH_TETRA_GEN__
+#ifndef __RINGMESH_TETRA_GEN__
+#define __RINGMESH_TETRA_GEN__
 
-#include <grgmesh/common.h>
-#include <grgmesh/utils.h>
+#include <ringmesh/common.h>
+#include <ringmesh/utils.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_builder.h>
@@ -59,7 +59,7 @@
     }
 #endif
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     class BoundaryModelElement ;
     class TetraGen ;
@@ -68,7 +68,7 @@ namespace GRGMesh {
 
     static const std::vector< vec3 > vector_vec3 ;
     static const std::vector< std::vector< Edge > > vector_edge ;
-    class GRGMESH_API TetraGen : public GEO::Counted {
+    class RINGMESH_API TetraGen : public GEO::Counted {
     public:
         virtual ~TetraGen() ;
         static TetraGen_var instantiate(
@@ -149,7 +149,7 @@ namespace GRGMesh {
     } ;
 
 
-    class GRGMESH_API TetraGen_TetGen: public TetraGen {
+    class RINGMESH_API TetraGen_TetGen: public TetraGen {
     public:
         TetraGen_TetGen(
             GEO::Mesh& tetmesh,
@@ -170,7 +170,7 @@ namespace GRGMesh {
     } ;
 
 #ifdef USE_MG_TETRA
-    class GRGMESH_API TetraGen_MG_Tetra: public TetraGen {
+    class RINGMESH_API TetraGen_MG_Tetra: public TetraGen {
     public:
         TetraGen_MG_Tetra(
             GEO::Mesh& tetmesh,

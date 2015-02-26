@@ -39,20 +39,20 @@
 */
 
 
-#ifndef __GRGMESH_WELL_
-#define __GRGMESH_WELL_
+#ifndef __RINGMESH_WELL_
+#define __RINGMESH_WELL_
 
-#include <grgmesh/common.h>
+#include <ringmesh/common.h>
 
-namespace GRGMesh {
+namespace RINGMesh {
     class BoundaryModel ;
     class Edge ;
     class Well ;
 }
 
-namespace GRGMesh {
+namespace RINGMesh {
 
-    class GRGMESH_API WellCorner {
+    class RINGMESH_API WellCorner {
     public:
         WellCorner( const vec3& point, signed_index_t id = -1 )
             : point_( point ), surface_id_( id ), resolution_( -1 )
@@ -71,7 +71,7 @@ namespace GRGMesh {
         double resolution_ ;
     } ;
 
-    class GRGMESH_API WellPart {
+    class RINGMESH_API WellPart {
     public:
         WellPart()
             : well_( nil ), id_( -1 )
@@ -80,18 +80,18 @@ namespace GRGMesh {
         }
         void add_corner( signed_index_t c ) { corners_.push_back( c ) ; }
         signed_index_t corner( signed_index_t c ) const {
-            grgmesh_debug_assert( c < corners_.size() ) ;
+            ringmesh_debug_assert( c < corners_.size() ) ;
             return corners_[c] ;
         }
         void add_points( const std::vector< vec3 >& p ) { points_ = p ; }
         const vec3& point( index_t p ) const {
-            grgmesh_debug_assert( p < points_.size() ) ;
+            ringmesh_debug_assert( p < points_.size() ) ;
             return points_[p] ;
         }
         index_t nb_points() const { return points_.size() ; }
         const std::vector< vec3 >& points() const { return points_ ; }
         double resolution( index_t p ) const {
-            grgmesh_debug_assert( p < resolutions_.size() ) ;
+            ringmesh_debug_assert( p < resolutions_.size() ) ;
             return resolutions_[p] ;
         }
         std::vector< double >& resolutions() { return resolutions_ ; }
@@ -108,7 +108,7 @@ namespace GRGMesh {
         std::vector< double > resolutions_ ;
     } ;
 
-    class GRGMESH_API Well {
+    class RINGMESH_API Well {
     public:
         Well() {}
         void copy_corners_and_informations( Well& well ) const ;
@@ -131,15 +131,15 @@ namespace GRGMesh {
         signed_index_t find_or_create_corner( const vec3& p, signed_index_t id = -1 ) ;
         signed_index_t find_corner( const vec3& p ) const ;
         const WellCorner& corner( index_t c ) const {
-            grgmesh_debug_assert( c < corners_.size() ) ;
+            ringmesh_debug_assert( c < corners_.size() ) ;
             return corners_[c] ;
         }
         const WellPart& part( index_t part ) const {
-            grgmesh_debug_assert( part < parts_.size() ) ;
+            ringmesh_debug_assert( part < parts_.size() ) ;
             return parts_[part] ;
         }
         signed_index_t part_region_id( index_t part ) const {
-            grgmesh_debug_assert( part < nb_parts() ) ;
+            ringmesh_debug_assert( part < nb_parts() ) ;
             return part_region_id_[part] ;
         }
         double part_length( index_t part ) const ;
@@ -166,7 +166,7 @@ namespace GRGMesh {
         std::string name_ ;
     } ;
 
-    class GRGMESH_API WellGroup {
+    class RINGMESH_API WellGroup {
     public:
         WellGroup() ;
         virtual ~WellGroup() ;
@@ -176,7 +176,7 @@ namespace GRGMesh {
             std::vector< Edge >& edges ) const ;
 
         BoundaryModel* model() const { return model_ ; }
-        void set_model( GRGMesh::BoundaryModel* model ) { model_ = model ; }
+        void set_model( RINGMesh::BoundaryModel* model ) { model_ = model ; }
         bool is_well_already_added( const std::string& name ) const ;
         void add_well( const Well& w ) { wells_.push_back( w ) ; }
 

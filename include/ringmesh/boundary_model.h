@@ -41,21 +41,21 @@
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
 
-#ifndef __GRGMESH_BOUNDARY_MODEL__
-#define __GRGMESH_BOUNDARY_MODEL__
+#ifndef __RINGMESH_BOUNDARY_MODEL__
+#define __RINGMESH_BOUNDARY_MODEL__
 
-#include <grgmesh/common.h>
-#include <grgmesh/boundary_model_element.h>
-#include <grgmesh/attribute.h>
+#include <ringmesh/common.h>
+#include <ringmesh/boundary_model_element.h>
+#include <ringmesh/attribute.h>
 
 #include <vector> 
 #include <string>
 
-namespace GRGMesh {    
+namespace RINGMesh {    
     class BoundaryModelBuilder ;
 }
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     // To move somewhere else
     static std::vector< vec3 > empty_vector ;
@@ -66,7 +66,7 @@ namespace GRGMesh {
      *     
      * \todo Implement a BoundaryModelMutator
      */
-    class GRGMESH_API BoundaryModel {       
+    class RINGMESH_API BoundaryModel {       
         friend class BoundaryModelBuilder ;
 
     public:           
@@ -93,7 +93,7 @@ namespace GRGMesh {
         index_t vertex_index( const vec3& p ) const ;
         const vec3& vertex( index_t p ) const { return vertices_.at(p) ; }
         void set_vertex_coordinates( index_t id, const vec3& p ) {
-            grgmesh_assert( id < nb_vertices() ) ;
+            ringmesh_assert( id < nb_vertices() ) ;
             vertices_[id] = p ;
         }
         index_t nb_facets() const ;             
@@ -118,8 +118,8 @@ namespace GRGMesh {
                 case BoundaryModelElement::INTERFACE : return interfaces_.size() ;
                 case BoundaryModelElement::LAYER     : return layers_.size() ;            
                 case BoundaryModelElement::ALL_TYPES : 
-                    grgmesh_assert( nb_elements_per_type_.size() > 0 ) ;
-                    grgmesh_debug_assert( nb_elements_per_type_.back() == 
+                    ringmesh_assert( nb_elements_per_type_.size() > 0 ) ;
+                    ringmesh_debug_assert( nb_elements_per_type_.back() == 
                             corners_.size() + lines_.size() + surfaces_.size() + regions_.size() +
                             contacts_.size() + interfaces_.size() + layers_.size() ) ;
                     return nb_elements_per_type_.back() ;                
@@ -136,7 +136,7 @@ namespace GRGMesh {
         inline const BoundaryModelElement& 
             element( BME::TYPE type, index_t index ) const 
         {
-            grgmesh_assert( index < nb_elements( type ) ) ;
+            ringmesh_assert( index < nb_elements( type ) ) ;
             switch( type ){
                 case BoundaryModelElement::CORNER    : return corners_   [ index ] ;
                 case BoundaryModelElement::LINE      : return lines_     [ index ] ;
@@ -154,11 +154,11 @@ namespace GRGMesh {
                                 t = i-1 ; break ;
                             }
                         }
-                        grgmesh_assert( t < BME::NO_TYPE ) ;
+                        ringmesh_assert( t < BME::NO_TYPE ) ;
                         return element( (BME::TYPE) t, index - nb_elements_per_type_[t] ) ;
                     }
                 default:
-                    grgmesh_assert_not_reached ;
+                    ringmesh_assert_not_reached ;
                     return dummy_element ;
             }
         }

@@ -42,7 +42,7 @@
 /*! \author Jeanne Pellerin */
 
 
-#include <grgmesh/boundary_model_builder.h>
+#include <ringmesh/boundary_model_builder.h>
 
 #include <geogram/basic/line_stream.h>
 
@@ -54,7 +54,7 @@
 #include <set>
 #include <stack>
 
-namespace GRGMesh {
+namespace RINGMesh {
     double read_double( GEO::LineInput& in, index_t field ) {
         double result ;
         std::istringstream iss(in.field( field ));
@@ -181,7 +181,7 @@ namespace GRGMesh {
      */
     index_t BoundaryModelBuilder::create_element( BME::TYPE type ) {
         index_t id = model_.nb_elements( type ) ;
-        grgmesh_assert( id != NO_ID ) ;
+        ringmesh_assert( id != NO_ID ) ;
         switch( type ) {
         case BME::CORNER:             
             model_.corners_.push_back( Corner( &model_, id ) ) ;
@@ -211,7 +211,7 @@ namespace GRGMesh {
             model_.layers_.push_back( BME( &model_, BME::LAYER, id ) ) ;
             break ;            
         default:   
-            grgmesh_assert_not_reached ;
+            ringmesh_assert_not_reached ;
         }
         return id ;
     }
@@ -258,7 +258,7 @@ namespace GRGMesh {
             break ;
 
         default:   
-            grgmesh_assert_not_reached ;
+            ringmesh_assert_not_reached ;
         }
     }
 
@@ -559,7 +559,7 @@ namespace GRGMesh {
         model_.universe_.set_model( &model_ ) ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
-            grgmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
+            ringmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
             model_.universe_.add_boundary( boundaries[i].first,
                 boundaries[i].second ) ;
             // If this surface have no type, set it at BME::VOI
@@ -576,7 +576,7 @@ namespace GRGMesh {
      */
     void BoundaryModelBuilder::set_corner( index_t corner_id,  index_t vertex_id ) 
     {
-        grgmesh_debug_assert( vertex_id < model_.nb_vertices() ) ;
+        ringmesh_debug_assert( vertex_id < model_.nb_vertices() ) ;
         model_.corners_.at(corner_id).set_vertex( vertex_id ) ;
     }
 
@@ -591,7 +591,7 @@ namespace GRGMesh {
         index_t id, 
         const std::vector< index_t >& vertices )
     {
-        grgmesh_assert( id < model_.nb_lines() ) ;
+        ringmesh_assert( id < model_.nb_lines() ) ;
         model_.lines_[id].set_vertices( vertices );
     }
 
@@ -661,7 +661,7 @@ namespace GRGMesh {
     void BoundaryModelBuilder::set_surface_adjacencies( index_t surface_id ) 
     { 
         Surface& S = model_.surfaces_[surface_id] ;
-        grgmesh_assert( S.nb_cells() > 0  ) ;
+        ringmesh_assert( S.nb_cells() > 0  ) ;
 
         std::vector< index_t > adjacent ;
         adjacent.resize( S.facet_end( S.nb_cells()-1 ), Surface::NO_ADJACENT ) ;
@@ -706,7 +706,7 @@ namespace GRGMesh {
                     index_t f2 = inter[0] == f ? inter[1] : inter[0] ;
                     adjacent[ S.facet_begin(f) + S.prev_in_facet(f,v) ] = f2 ;
                 } else {
-                    grgmesh_debug_assert( end == 1 ) ;
+                    ringmesh_debug_assert( end == 1 ) ;
                 }
             }
         }
@@ -872,7 +872,7 @@ namespace GRGMesh {
     {
         // We have a problem if this is called for regions
         // No way yet to know the surface orientation
-        grgmesh_debug_assert( type != BME::REGION ) ;
+        ringmesh_debug_assert( type != BME::REGION ) ;
 
         BME::TYPE b_type = BME::boundary_type( type ) ;
         if( b_type != BME::NO_TYPE ) {            
@@ -999,7 +999,7 @@ namespace GRGMesh {
         
         
 
-#ifdef GRGMESH_DEBUG
+#ifdef RINGMESH_DEBUG
         std::cout << "Model " << model_.name() <<" has " << std::endl 
             << std::setw(10) << std::left << model_.nb_vertices()   << " vertices "   << std::endl 
             << std::setw(10) << std::left << model_.nb_facets()   << " facets "   << std::endl  
@@ -1210,7 +1210,7 @@ namespace GRGMesh {
                     {
                         if( in.field_matches( 1, "Elevation" ) ) z_sign = 1 ;
                         else if( in.field_matches( 1, "Depth" ) ) z_sign = -1 ;
-                        else grgmesh_assert_not_reached ;
+                        else ringmesh_assert_not_reached ;
                     } 
                     else if( in.field_matches( 0, "END" ) ) 
                     {
@@ -1299,13 +1299,13 @@ namespace GRGMesh {
 
                         // Get the global corner id
                         index_t corner_id = find_corner( model_.vertex( tsurf_vertex_ptr[p1] ) ) ;
-                        grgmesh_assert( corner_id != NO_ID ) ;
+                        ringmesh_assert( corner_id != NO_ID ) ;
 
                         // Get the surface
                         index_t part_id = NO_ID ;
                         for( index_t i = 0; i < tface_vertex_start.size(); ++i ) {
                             if( p1 < tface_vertex_start[i] ) {
-                                grgmesh_assert( p2 < tface_vertex_start[i] ) ;
+                                ringmesh_assert( p2 < tface_vertex_start[i] ) ;
 
                                 // Get vertices ids in the surface
                                 p1 += -tface_vertex_start[i - 1] ;
@@ -1374,10 +1374,10 @@ namespace GRGMesh {
         }        
      
         // Finish up the model - CRASH if this failed
-        grgmesh_assert( end_model() ) ;
+        ringmesh_assert( end_model() ) ;
         
         time( &end_load ) ;
-#ifdef GRGMESH_DEBUG
+#ifdef RINGMESH_DEBUG
         std::cout << "Info" << " Boundary model loading time"
             << difftime( end_load, start_load ) << " sec" << std::endl ;
 #endif
@@ -1466,7 +1466,7 @@ namespace GRGMesh {
             // It is because of the sign of Z that is not the same 
             t = find_key_facet( surface_id, p00, p10, p20, same_sign ) ;
         }
-        grgmesh_assert( t != NO_ID ) ;
+        ringmesh_assert( t != NO_ID ) ;
         return same_sign ;      
     }
        
@@ -1491,13 +1491,13 @@ namespace GRGMesh {
         std::vector< index_t >& border_vertex_model_ids 
         ) const 
     {
-        grgmesh_debug_assert( id0 < S.nb_vertices() && id1 < S.nb_vertices() ) ;
+        ringmesh_debug_assert( id0 < S.nb_vertices() && id1 < S.nb_vertices() ) ;
 
         border_vertex_model_ids.resize( 0 ) ;
                  
         // Starting facet that contains the two given vertices
         index_t f = S.facet_from_surface_vertex_ids( id0, id1 ) ;
-        grgmesh_assert( f != Surface::NO_ID ) ;
+        ringmesh_assert( f != Surface::NO_ID ) ;
 
         // Global ids at the model level 
         index_t p0 = S.model_vertex_id( id0 ) ;
@@ -1518,7 +1518,7 @@ namespace GRGMesh {
             S.next_on_border( f, S.facet_vertex_id(f, id0), S.facet_vertex_id(f,id1), 
                 next_f, id1_in_next, next_id1_in_next ) ;
 
-            grgmesh_assert(
+            ringmesh_assert(
                 next_f != NO_ID && id1_in_next != NO_ID
                     && next_id1_in_next != NO_ID ) ;
             
@@ -1572,7 +1572,7 @@ namespace GRGMesh {
         const vec3& p2 )
     {
         index_t parent = find_interface( interface_name ) ;
-        if( interface_name != "" ) grgmesh_assert( parent != NO_ID ) ;
+        if( interface_name != "" ) ringmesh_assert( parent != NO_ID ) ;
 
         index_t id = create_element( BME::SURFACE ) ;
         set_parent( BME::SURFACE, id, parent ) ;
@@ -1684,7 +1684,7 @@ namespace GRGMesh {
                     
                     // Attributes
                     in.get_line() ; in.get_fields() ; 
-                    grgmesh_assert( in.field_matches( 0, "MODEL_VERTEX_ATTRIBUTES" ) ) ;
+                    ringmesh_assert( in.field_matches( 0, "MODEL_VERTEX_ATTRIBUTES" ) ) ;
                     index_t nb_attribs = (in.nb_fields()-1) / 2 ;
                     std::vector< SerializedAttribute< BoundaryModel::VERTEX > > vertex_attribs( nb_attribs ) ;                  
                     for( index_t i = 0 ; i < nb_attribs ; i++ ) {
@@ -1719,12 +1719,12 @@ namespace GRGMesh {
                     
                     // Following information - vertices of the lines
                     in.get_line() ;  in.get_fields() ;
-                    grgmesh_assert( in.field_matches( 0,"LINE_VERTICES" ) ) ;
+                    ringmesh_assert( in.field_matches( 0,"LINE_VERTICES" ) ) ;
                     index_t nb_vertices = in.field_as_uint(1) ;
 
                     // Attributes on line vertices
                     in.get_line() ;  in.get_fields() ;
-                    grgmesh_assert( in.field_matches( 0,"LINE_VERTEX_ATTRIBUTES" ) ) ;
+                    ringmesh_assert( in.field_matches( 0,"LINE_VERTEX_ATTRIBUTES" ) ) ;
                     index_t nb_attribs = (in.nb_fields()-1) / 2 ;
                     std::vector< SerializedAttribute< BME::VERTEX > > vertex_attribs( nb_attribs ) ;                  
                     for( index_t i = 0 ; i < nb_attribs ; i++ ) {
@@ -1745,7 +1745,7 @@ namespace GRGMesh {
 
                     // Read attributes on line segments 
                     in.get_line() ;  in.get_fields() ;
-                    grgmesh_assert( in.field_matches( 0,"LINE_SEGMENT_ATTRIBUTES" ) ) ;
+                    ringmesh_assert( in.field_matches( 0,"LINE_SEGMENT_ATTRIBUTES" ) ) ;
                     index_t nb_segment_attribs = (in.nb_fields()-1) / 2 ;
                     if( nb_segment_attribs > 0 ) {
                         std::vector< SerializedAttribute< BME::FACET > > segment_attribs( nb_segment_attribs ) ;                  
@@ -1765,7 +1765,7 @@ namespace GRGMesh {
                     
                     // Finally we have the in_boundary information
                     in.get_line() ; in.get_fields() ;
-                    grgmesh_assert( in.field_matches( 0,"IN_BOUNDARY" ) ) ;
+                    ringmesh_assert( in.field_matches( 0,"IN_BOUNDARY" ) ) ;
                     for( index_t b = 1 ; b < in.nb_fields(); b++ ) {
                         L.add_in_boundary( in.field_as_uint( b ) ) ; 
                     }   
@@ -1779,11 +1779,11 @@ namespace GRGMesh {
 
                     // Read the surface vertices and their attributes
                     in.get_line() ; in.get_fields() ;
-                    grgmesh_assert( in.field_matches( 0,"SURFACE_VERTICES" ) ) ;
+                    ringmesh_assert( in.field_matches( 0,"SURFACE_VERTICES" ) ) ;
                     index_t nb_vertices = in.field_as_uint(1) ;
 
                     in.get_line() ; in.get_fields() ;
-                    grgmesh_assert( in.field_matches( 0,"SURFACE_VERTEX_ATTRIBUTES" ) ) ;
+                    ringmesh_assert( in.field_matches( 0,"SURFACE_VERTEX_ATTRIBUTES" ) ) ;
                     index_t nb_vertex_attribs = (in.nb_fields()-1) / 2 ;
 
                     // Bind the vertex attributes
@@ -1802,15 +1802,15 @@ namespace GRGMesh {
 
                     // Read the surface facets
                     in.get_line() ; in.get_fields() ;
-                    grgmesh_assert( in.field_matches( 0,"SURFACE_CORNERS" ) ) ;
+                    ringmesh_assert( in.field_matches( 0,"SURFACE_CORNERS" ) ) ;
                     index_t nb_corners = in.field_as_uint(1) ;
 
                     in.get_line() ; in.get_fields() ;
-                    grgmesh_assert( in.field_matches( 0,"SURFACE_FACETS" ) ) ;
+                    ringmesh_assert( in.field_matches( 0,"SURFACE_FACETS" ) ) ;
                     index_t nb_facets = in.field_as_uint(1) ;
 
                     in.get_line() ; in.get_fields() ;
-                    grgmesh_assert( in.field_matches( 0,"SURFACE_FACET_ATTRIBUTES" ) ) ;
+                    ringmesh_assert( in.field_matches( 0,"SURFACE_FACET_ATTRIBUTES" ) ) ;
                     index_t nb_facet_attribs = (in.nb_fields()-1) / 2 ;
 
                     // Bind the facet attributes
@@ -1839,7 +1839,7 @@ namespace GRGMesh {
                 }
             }
         }
-        grgmesh_assert( end_model() ) ;       
+        ringmesh_assert( end_model() ) ;       
         return true ;
     }  
 
@@ -1927,7 +1927,7 @@ namespace GRGMesh {
         index_t f = in.f_ ;
         index_t f_v0 = S.facet_id_from_model(f, in.v0_ ) ;
         index_t f_v1 = S.facet_id_from_model(f, in.v1_ ) ;
-        grgmesh_assert( f_v0 != NO_ID && f_v1 != NO_ID ) ;
+        ringmesh_assert( f_v0 != NO_ID && f_v1 != NO_ID ) ;
 
         index_t next_f = NO_ID ;
         index_t next_f_v0 = NO_ID ;
@@ -1945,7 +1945,7 @@ namespace GRGMesh {
         // See operator< on BorderTriangle
         index_t result = std::lower_bound( BT.begin(), BT.end(), bait )-BT.begin() ;
        
-        grgmesh_assert( result < BT.size() ) ;
+        ringmesh_assert( result < BT.size() ) ;
         return result ;
     }
 
@@ -2023,7 +2023,7 @@ namespace GRGMesh {
      */
     void BoundaryModelBuilderSurface::build_model() {
 
-        grgmesh_assert( model_.nb_surfaces() > 0 ) ;
+        ringmesh_assert( model_.nb_surfaces() > 0 ) ;
      
         /// 1. Make the storage of the model vertices unique 
         /// So now we can make index comparison to find colocated edges
@@ -2088,7 +2088,7 @@ namespace GRGMesh {
                 bool same_surfaces = true ;
                 index_t next_i = get_next_border_triangle( model_, border_triangles, i ) ;
                 do {                         
-                    grgmesh_assert( next_i != NO_ID ) ;
+                    ringmesh_assert( next_i != NO_ID ) ;
                     if( !visited[ next_i ] ){
                         std::vector< index_t > adjacent_next ;
                         get_adjacent_surfaces( border_triangles, next_i, adjacent_next ) ;
@@ -2102,7 +2102,7 @@ namespace GRGMesh {
                             if( border_triangles[next_i].v0_ == vertices.back() ) 
                                 vertices.push_back( border_triangles[next_i].v1_ ) ;
                             else {
-                                grgmesh_assert( border_triangles[next_i].v1_ == vertices.back() ) ;
+                                ringmesh_assert( border_triangles[next_i].v1_ == vertices.back() ) ;
                                 vertices.push_back( border_triangles[next_i].v0_ );
                             }
                         }  else same_surfaces = false ;                    
@@ -2115,7 +2115,7 @@ namespace GRGMesh {
                     same_surfaces = true ;
                     index_t prev_i = get_next_border_triangle( model_, border_triangles, i, true ) ;
                     do { 
-                        grgmesh_assert( prev_i != NO_ID && prev_i != i ) ;
+                        ringmesh_assert( prev_i != NO_ID && prev_i != i ) ;
                         if( !visited[ prev_i ] ){
                             std::vector< index_t > adjacent_prev ;
                             get_adjacent_surfaces( border_triangles, prev_i, adjacent_prev ) ;
@@ -2130,7 +2130,7 @@ namespace GRGMesh {
                                 if( border_triangles[prev_i].v0_ == vertices.front() ) 
                                     vertices.insert( vertices.begin(), border_triangles[prev_i].v1_ ) ;
                                 else {
-                                    grgmesh_assert( border_triangles[prev_i].v1_ == vertices.front() ) ;
+                                    ringmesh_assert( border_triangles[prev_i].v1_ == vertices.front() ) ;
                                     vertices.insert( vertices.begin(), border_triangles[prev_i].v0_ ) ;
                                 }
                             }  else same_surfaces = false ;                    
@@ -2139,7 +2139,7 @@ namespace GRGMesh {
                     } while( same_surfaces ) ;
                 }
 
-                grgmesh_assert( vertices.size() > 1 )
+                ringmesh_assert( vertices.size() > 1 )
                
                 // At last create the Line
                 index_t created = create_line( vertices ) ; 
@@ -2164,7 +2164,7 @@ namespace GRGMesh {
             /// \todo Build a Region when a BoundaryModel has only one Surface 
             // Check that this surface is closed and define an interior
             // and exterior (universe) regions
-            grgmesh_assert_not_reached ;            
+            ringmesh_assert_not_reached ;            
         }
         else {
             // Each side of each Surface is in one Region( +side is first )
@@ -2218,7 +2218,7 @@ namespace GRGMesh {
             // Check if all the surfaces were visited
             // If not, this means that there are additionnal regions included in those built
             /// \todo Implement the code to take into regions included in others (bubbles)
-            grgmesh_assert( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID ) == 0 ) ;        
+            ringmesh_assert( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID ) == 0 ) ;        
         }
 
         // We need to remove from the regions_ the one corresponding
@@ -2252,7 +2252,7 @@ namespace GRGMesh {
         // We are not in trouble since the boundaries of surface are not yet set
         // And we have no layer in the model
 
-        grgmesh_assert( end_model() ) ;
+        ringmesh_assert( end_model() ) ;
     } 
 
     

@@ -39,20 +39,20 @@
 */
 
 
-#include <grgmesh/aabb_tree.h>
-#include <grgmesh/permutation.h>
-#include <grgmesh/reorder.h>
+#include <ringmesh/aabb_tree.h>
+#include <ringmesh/permutation.h>
+#include <ringmesh/reorder.h>
 
 #include <fstream>
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     static index_t max_node_index(
         index_t node_index,
         index_t b,
         index_t e )
     {
-        grgmesh_debug_assert( e > b ) ;
+        ringmesh_debug_assert( e > b ) ;
         if( b + 1 == e ) {
             return node_index ;
         }
@@ -67,8 +67,8 @@ namespace GRGMesh {
         index_t b,
         index_t e )
     {
-        grgmesh_debug_assert( node_index < bboxes_.size() ) ;
-        grgmesh_debug_assert( b != e ) ;
+        ringmesh_debug_assert( node_index < bboxes_.size() ) ;
+        ringmesh_debug_assert( b != e ) ;
         if( b + 1 == e ) {
             Box3d bbox ;
             bbox.add_point( mesh_.vertex( b, 0 ) ) ;
@@ -80,12 +80,12 @@ namespace GRGMesh {
         index_t m = b + ( e - b ) / 2 ;
         index_t childl = 2 * node_index ;
         index_t childr = 2 * node_index + 1 ;
-        grgmesh_debug_assert( childl < bboxes_.size() ) ;
-        grgmesh_debug_assert( childr < bboxes_.size() ) ;
+        ringmesh_debug_assert( childl < bboxes_.size() ) ;
+        ringmesh_debug_assert( childr < bboxes_.size() ) ;
         init_bboxes_recursive( childl, b, m ) ;
         init_bboxes_recursive( childr, m, e ) ;
-        grgmesh_debug_assert( childl < bboxes_.size() ) ;
-        grgmesh_debug_assert( childr < bboxes_.size() ) ;
+        ringmesh_debug_assert( childl < bboxes_.size() ) ;
+        ringmesh_debug_assert( childr < bboxes_.size() ) ;
         bboxes_[node_index] = bboxes_[childl].bbox_union( bboxes_[childr] ) ;
     }
     void FacetAABBTree::reorder_morton()
@@ -220,7 +220,7 @@ namespace GRGMesh {
         index_t b,
         index_t e ) const
     {
-        grgmesh_debug_assert( e > b ) ;
+        ringmesh_debug_assert( e > b ) ;
 
         // If node is a leaf: compute point-facet distance
         // and replace current if nearer

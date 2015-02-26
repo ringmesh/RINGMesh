@@ -39,8 +39,8 @@
 */
 
 
-#include <grgmesh/tetra_gen.h>
-#include <grgmesh/boundary_model_element.h>
+#include <ringmesh/tetra_gen.h>
+#include <ringmesh/boundary_model_element.h>
 
 #include <geogram/mesh/mesh_private.h>
 
@@ -52,11 +52,11 @@
 #endif 
 
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     void start_redirect( fpos_t& pos, FILE* out, int& fd )
     {
-#ifndef GRGMESH_DEBUG
+#ifndef RINGMESH_DEBUG
         //Save position of current standard output
         fgetpos( out, &pos ) ;
 #ifdef WIN32
@@ -71,7 +71,7 @@ namespace GRGMesh {
 
     void stop_redirect( fpos_t& pos, FILE* out, int& fd )
     {
-#ifndef GRGMESH_DEBUG
+#ifndef RINGMESH_DEBUG
         //Flush stdout so any buffered messages are delivered
         fflush( out ) ;
         //Close file and restore standard output to stdout - which should be the terminal
@@ -278,7 +278,7 @@ namespace GRGMesh {
         index_t face,
         signed_index_t adj )
     {
-//        grgmesh_assert_not_reached ;
+//        ringmesh_assert_not_reached ;
        //tetmesh_.tetra_adjacents_[4 * index + face] = adj ;
     }
 
@@ -298,7 +298,7 @@ namespace GRGMesh {
         index_t index,
         int * line )
     {
-        grgmesh_assert_not_reached ;
+        ringmesh_assert_not_reached ;
         /*
         tetmesh_builder_.add_line( index, 2 * index ) ;
         for( index_t i = 0; i < 3; i++ ) {
@@ -319,11 +319,11 @@ namespace GRGMesh {
         index_t adj,
         index_t marker )
     {
-        grgmesh_assert_not_reached ;
+        ringmesh_assert_not_reached ;
         /*
     	TetraAttribute< intArrayTmpl < 4 > > surface_id_tet( &tetmesh_, "surface_id" ) ;
     	surface_id_tet[tet].value(adj) = marker ;
-        grgmesh_assert_not_reached
+        ringmesh_assert_not_reached
         //tetmesh_.triangle_surface_id_[4 * tet + adj] = marker ;
          *
          */
@@ -332,7 +332,7 @@ namespace GRGMesh {
 
     void TetraGen::store_edge_attrib() const
     {
-        grgmesh_assert_not_reached ;
+        ringmesh_assert_not_reached ;
         /*
         tetmesh_.edges_on_well_.resize( 6 * tetmesh_.nb_tetra(), -1 ) ;
         if( well_edges_.empty() ) return ;
@@ -539,7 +539,7 @@ namespace GRGMesh {
                         break ;
                     }
                 }
-                grgmesh_debug_assert( found ) ;
+                ringmesh_debug_assert( found ) ;
             } else if( tet2 < 0 ) {
                 bool found = false ;
                 for( index_t ff = 0; ff < 4; ff++ ) {
@@ -561,7 +561,7 @@ namespace GRGMesh {
                         break ;
                     }
                 }
-                grgmesh_debug_assert( found ) ;
+                ringmesh_debug_assert( found ) ;
             } else {
             	set_triangle( cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines ) ;
                 for( index_t i = 0; i < 3; i++ ) {
@@ -716,20 +716,20 @@ namespace GRGMesh {
             mesh_background_ = mesh_new_in_memory( context_ ) ;
             ret = mesh_set_vertex_count( mesh_background_,
                 background_->nb_points() ) ;
-            grgmesh_debug_assert( ret == STATUS_OK ) ;
+            ringmesh_debug_assert( ret == STATUS_OK ) ;
             for( index_t p = 0; p < background_->nb_points(); p++ ) {
                 vec3 point = background_->vertex( p ) ;
                 ret = mesh_set_vertex_coordinates( mesh_background_, p + 1,
                     background_->ref_vertex( p ).data() ) ;
-                grgmesh_debug_assert( ret == STATUS_OK ) ;
+                ringmesh_debug_assert( ret == STATUS_OK ) ;
             }
 
             ret = mesh_set_tetrahedron_count( mesh_background_, background_->nb_tetra() ) ;
-            grgmesh_debug_assert( ret == STATUS_OK ) ;
+            ringmesh_debug_assert( ret == STATUS_OK ) ;
             for( index_t t = 0; t < background_->nb_tetra(); t++ ) {
                 ret = mesh_set_tetrahedron_vertices( mesh_background_, t + 1,
                     background_->vertex_index_ptr( t ) ) ;
-                grgmesh_debug_assert( ret == STATUS_OK ) ;
+                ringmesh_debug_assert( ret == STATUS_OK ) ;
             }
 
             sizemap_ = meshgems_sizemap_new( mesh_background_,
@@ -870,7 +870,7 @@ namespace GRGMesh {
                 }
             }
 
-            grgmesh_debug_assert( count != 0 ) ;
+            ringmesh_debug_assert( count != 0 ) ;
             if( count == 1 ) {
                 index_t tet = results[0] ;
                 bool found = false ;
@@ -884,7 +884,7 @@ namespace GRGMesh {
                         vertices[2] - 1 ) ) {
                         signed_index_t tri[3] ;
                         ret = mesh_get_triangle_vertices( mesh_output_, t+1, tri ) ;
-                        grgmesh_debug_assert( ret == STATUS_OK ) ;
+                        ringmesh_debug_assert( ret == STATUS_OK ) ;
                         if ( tag != -1 ) {
                         	set_triangle(cur_index_triangle, tri, nb_lines) ;
                         	cur_index_triangle ++ ;
@@ -894,7 +894,7 @@ namespace GRGMesh {
                         break ;
                     }
                 }
-                grgmesh_debug_assert( found ) ;
+                ringmesh_debug_assert( found ) ;
             } else if( count == 2 ) {
                 index_t tet1 = results[0] ;
                 index_t tet2 = results[1] ;
@@ -995,7 +995,7 @@ namespace GRGMesh {
     }
     double TetraGen_MG_Tetra::get_resolution_value( signed_index_t i )
     {
-        grgmesh_assert_not_reached ;
+        ringmesh_assert_not_reached ;
         return 0 ; //background_->resolution( i ) ;
     }
 #endif

@@ -40,9 +40,9 @@
 
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
-#include <grgmesh/boundary_model_element.h>
-#include <grgmesh/boundary_model.h>
-#include <grgmesh/utils.h>
+#include <ringmesh/boundary_model_element.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/utils.h>
 
 #include <geogram/basic/geometry_nd.h>
 
@@ -51,7 +51,7 @@
 #include <fstream>
 
 
-namespace GRGMesh {
+namespace RINGMesh {
 
     /*!
     * @brief Map the name of a geological type with a value of GEOL_FEATURE
@@ -237,7 +237,7 @@ namespace GRGMesh {
      */
     const BoundaryModelElement& BoundaryModelElement::parent() const
     {
-        grgmesh_assert( parent_id() != NO_ID ) ;
+        ringmesh_assert( parent_id() != NO_ID ) ;
         return model_->element( parent_type( type_), parent_id() ) ;
     }
 
@@ -248,7 +248,7 @@ namespace GRGMesh {
      */
     const BoundaryModelElement& BoundaryModelElement::boundary( index_t x ) const
     {
-        grgmesh_assert( x < nb_boundaries() ) ;
+        ringmesh_assert( x < nb_boundaries() ) ;
         return model_->element( boundary_type( type_ ), boundary_id( x ) ) ;
     }
 
@@ -259,7 +259,7 @@ namespace GRGMesh {
      */
     const BoundaryModelElement& BoundaryModelElement::in_boundary( index_t x ) const
     {
-        grgmesh_assert( x < nb_in_boundary() ) ;
+        ringmesh_assert( x < nb_in_boundary() ) ;
         return  model_->element( in_boundary_type( type_ ), in_boundary_id( x ) ) ;
     }
 
@@ -270,7 +270,7 @@ namespace GRGMesh {
      */
     const BoundaryModelElement& BoundaryModelElement::child( index_t x ) const
     {
-        grgmesh_assert( x < nb_children() ) ;
+        ringmesh_assert( x < nb_children() ) ;
         return model_->element( child_type( type_ ), child_id( x ) ) ;
     }
 
@@ -450,7 +450,7 @@ namespace GRGMesh {
      */
     const vec3& Surface::vertex( index_t f, index_t v ) const
     {
-        grgmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
+        ringmesh_debug_assert( v < nb_vertices_in_facet(f) ) ;
         return vertex( surf_vertex_id( f, v) ) ;
     }
 
@@ -479,8 +479,8 @@ namespace GRGMesh {
         index_t f, index_t from, index_t v, 
         index_t& next_f, index_t& v_in_next, index_t& next_in_next ) const
     {
-        grgmesh_assert( v < nb_vertices_in_facet( f ) ) ;
-        grgmesh_assert( is_on_border( f, v ) || is_on_border( f, from ) ) ;
+        ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
+        ringmesh_assert( is_on_border( f, v ) || is_on_border( f, from ) ) ;
 
         index_t V = surf_vertex_id( f, v ) ;
 
@@ -492,17 +492,17 @@ namespace GRGMesh {
         // There must be one (the current one) or two (the next one on boundary)        
         std::vector< index_t > facets ;  
         index_t nb_around = facets_around_vertex( V, facets, true, f ) ;
-        grgmesh_assert( nb_around < 3 && nb_around > 0 ) ;
+        ringmesh_assert( nb_around < 3 && nb_around > 0 ) ;
 
         next_f = facets[0] ;
         
         if( nb_around == 2 ) {
             if( next_f == f ) next_f = facets[1] ;
-            grgmesh_debug_assert( next_f != NO_ID ) ;
+            ringmesh_debug_assert( next_f != NO_ID ) ;
 
             // Now get the other vertex that is on the boundary opposite to p1
             v_in_next = facet_vertex_id( next_f, V ) ;
-            grgmesh_assert( v_in_next != NO_ID ) ;
+            ringmesh_assert( v_in_next != NO_ID ) ;
 
             // The edges containing V in next_f are
             // the edge starting at v_in_next and the one ending there
@@ -512,7 +512,7 @@ namespace GRGMesh {
             bool e1_on_boundary = is_on_border( next_f, prev_v_in_next ) ;
 
             // Only one must be on the boundary otherwise there is a corner missing
-            grgmesh_assert( e0_on_boundary != e1_on_boundary ) ;
+            ringmesh_assert( e0_on_boundary != e1_on_boundary ) ;
 
             // From the edge that is on boundary get the next vertex on this boundary
             // If the edge starting at p_in_next is on boundary, new_vertex is its next
@@ -524,11 +524,11 @@ namespace GRGMesh {
             // Get the id in the facet of the vertex neighbor of v1 that is not v0           
             v_in_next = v ;
             if( prev_in_facet( f, v ) == from  ){
-                grgmesh_debug_assert( is_on_border(f, v) ) ;
+                ringmesh_debug_assert( is_on_border(f, v) ) ;
                 next_in_next = next_in_facet( f, v ) ;
             }
             else {
-                grgmesh_debug_assert( is_on_border( f, prev_in_facet(f,v) ) ) ;
+                ringmesh_debug_assert( is_on_border( f, prev_in_facet(f,v) ) ) ;
                 next_in_next = prev_in_facet( f, v ) ;
             }
         }
@@ -556,7 +556,7 @@ namespace GRGMesh {
     index_t Surface::facet_from_surface_vertex_ids(
         index_t in0, index_t in1 ) const 
     {
-        grgmesh_debug_assert( in0 < vertices_.size() && in1 < vertices_.size() ) ;
+        ringmesh_debug_assert( in0 < vertices_.size() && in1 < vertices_.size() ) ;
         
         // Another possible, probably faster, algorithm is to check if the 2 indices 
         // are neighbors in facets_ and check that they are in the same facet
@@ -745,7 +745,7 @@ namespace GRGMesh {
                 }
             }
         }
-        grgmesh_assert_not_reached ;
+        ringmesh_assert_not_reached ;
         return dummy_index_t ;
     }
 
@@ -965,13 +965,13 @@ namespace GRGMesh {
             index_t f = Surface::NO_ID ;
             index_t v = Surface::NO_ID ;
             S_.edge_from_model_vertex_ids(p0, p1, f, v) ;
-            grgmesh_debug_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
+            ringmesh_debug_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
 
             index_t f2 = S_.adjacent( f, v ) ;
             index_t v2 = Surface::NO_ID ;
-            grgmesh_debug_assert( f2 != Surface::NO_ADJACENT ) ;
+            ringmesh_debug_assert( f2 != Surface::NO_ADJACENT ) ;
             S_.edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
-            grgmesh_debug_assert( v2 != Surface::NO_ID ) ;
+            ringmesh_debug_assert( v2 != Surface::NO_ID ) ;
 
             // Virtual cut - set adjacencies to NO_ADJACENT
             S_.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
@@ -985,7 +985,7 @@ namespace GRGMesh {
         index_t f = Surface::NO_ID ;
         index_t v = Surface::NO_ID ;
         S_.oriented_edge_from_model_vertex_ids( L.model_vertex_id( 0 ), L.model_vertex_id( 1 ), f, v ) ;
-        grgmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
+        ringmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
 
         index_t id0 = S_.surf_vertex_id( f, v ) ;
         index_t id1 = S_.surf_vertex_id( f, S_.next_in_facet(f,v) ) ;
@@ -1004,7 +1004,7 @@ namespace GRGMesh {
             // Get the next facet and next triangle on this boundary
             S_.next_on_border( f, S_.facet_vertex_id(f, id0), S_.facet_vertex_id(f,id1), 
                 next_f, id1_in_next, next_id1_in_next ) ;
-            grgmesh_assert(
+            ringmesh_assert(
                 next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
                     && next_id1_in_next != Surface::NO_ID ) ;
             
@@ -1017,7 +1017,7 @@ namespace GRGMesh {
             S_.facets_around_vertex( id1, facets_around_id1, false, f ) ;
 
             S_.vertices_.push_back( S_.model_vertex_id(id1) ) ;
-            grgmesh_debug_assert( S_.nb_vertices() > 0 ) ;
+            ringmesh_debug_assert( S_.nb_vertices() > 0 ) ;
             index_t new_id1 = S_.nb_vertices()-1 ;
             
             for( index_t i = 0; i < facets_around_id1.size(); ++i ){
@@ -1080,7 +1080,7 @@ namespace GRGMesh {
         }
         else if( E->element_type() == BoundaryModelElement::LINE ) {
             const Line* L = dynamic_cast< const Line* >( E ) ;
-            grgmesh_assert( L != nil ) ;           
+            ringmesh_assert( L != nil ) ;           
             for( index_t i = 1; i < E->nb_vertices(); ++i ){
                 result += GEO::Geom::distance( E->vertex( i ), E->vertex( i-1 ) ) ;
             }
@@ -1088,14 +1088,14 @@ namespace GRGMesh {
         }
         else if( E->element_type() == BoundaryModelElement::SURFACE ) {
             const Surface* S = dynamic_cast< const Surface* >( E ) ;
-            grgmesh_assert( S != nil ) ;
+            ringmesh_assert( S != nil ) ;
 
             for( index_t i = 0; i < S->nb_cells(); i++ ) {
                 result += S->facet_area( i ) ;
             }
             return result ;
         }
-        grgmesh_assert_not_reached ;
+        ringmesh_assert_not_reached ;
         return result ;
     }        
 
@@ -1129,7 +1129,7 @@ namespace GRGMesh {
             }
             return size > epsilon ? result/size : result ;
         }        
-        grgmesh_assert_not_reached ;
+        ringmesh_assert_not_reached ;
         return result ;
     }           
 
@@ -1189,7 +1189,7 @@ namespace GRGMesh {
         // If it is not one of the basic types - compute it for the children
         // if any 
         if( E->nb_children() == 0 ) {
-            grgmesh_assert_not_reached ;
+            ringmesh_assert_not_reached ;
             return result ;
         }
         else {
