@@ -562,8 +562,6 @@ namespace RINGMesh {
             ringmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
             model_.universe_.add_boundary( boundaries[i].first,
                 boundaries[i].second ) ;
-            // If this surface have no type, set it at BME::VOI
-            model_.surfaces_[boundaries[i].first].set_geological_feature( BME::VOI ) ;
         }
     }
 
@@ -697,9 +695,9 @@ namespace RINGMesh {
 
                 std::vector< index_t > inter(
                     std::min( f_prev.size(), f_cur.size() ) ) ;
-                index_t end = std::set_intersection( f_prev.begin(),
+                index_t end = narrow_cast< index_t >( std::set_intersection( f_prev.begin(),
                     f_prev.end(), f_cur.begin(), f_cur.end(), inter.begin() )
-                    - inter.begin() ;
+                    - inter.begin() );
 
                 if( end == 2 ) {
                     // There is one neighbor
@@ -996,7 +994,8 @@ namespace RINGMesh {
         }
    
         /// 2. \todo Check the consistency of connectivity relationships between the elements
-
+        ///          Check that the Surface on the boundary of Universe are of type VOI
+        ///          if it is not the case the Model is probably invalid
 
         /// 3. \todo Check the geometrical consistency of the topological relationships
         
@@ -1311,8 +1310,8 @@ namespace RINGMesh {
                                 ringmesh_assert( p2 < tface_vertex_start[i] ) ;
 
                                 // Get vertices ids in the surface
-                                p1 += -tface_vertex_start[i - 1] ;
-                                p2 += -tface_vertex_start[i - 1] ;
+                                p1 = p1 - tface_vertex_start[i - 1] ;
+                                p2 = p2 - tface_vertex_start[i - 1] ;
 
                                 // i-1 is the id of the TFace in this TSurf
                                 part_id = i - 1 ;
@@ -1321,8 +1320,8 @@ namespace RINGMesh {
                         }
                         if( part_id == NO_ID ) {
                             // It is in the last built Tface
-                            p1 += -tface_vertex_start[tface_vertex_start.size() - 1] ;
-                            p2 += -tface_vertex_start[tface_vertex_start.size() - 1] ;
+                            p1 = p1 - tface_vertex_start[tface_vertex_start.size() - 1] ;
+                            p2 = p2 - tface_vertex_start[tface_vertex_start.size() - 1] ;
                             part_id = tface_vertex_start.size() - 1 ;
                         }
                         // The number of tfaces in previous tsurf is also to add
@@ -1946,7 +1945,7 @@ namespace RINGMesh {
         // lower_bound returns an iterator pointing to the first element in the range [first,last) 
         // which does not compare less than the given val.
         // See operator< on BorderTriangle
-        index_t result = std::lower_bound( BT.begin(), BT.end(), bait )-BT.begin() ;
+        index_t result = narrow_cast< index_t >( std::lower_bound( BT.begin(), BT.end(), bait )-BT.begin() );
        
         ringmesh_assert( result < BT.size() ) ;
         return result ;
