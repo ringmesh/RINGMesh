@@ -756,8 +756,7 @@ namespace RINGMesh {
         if( BME::in_boundary_allowed( T ) ) {
             // Fix for a .ml for which VOI Surface are only on the boundary of Universe
             // Can we keep this ? Or should we compute the Region
-            if( !(T == BME::SURFACE && E.geological_feature() == BME::VOI) &&
-                E.nb_in_boundary() == 0 ){
+            if( E.nb_in_boundary() == 0 ){
                 return false ;
             }
         }
@@ -1376,7 +1375,9 @@ namespace RINGMesh {
         }        
      
         // Finish up the model - CRASH if this failed
-        ringmesh_assert( end_model() ) ;
+        if( !end_model() ) {
+            std::cout << "ERROR : Invalid model " << std::endl ;
+        }
         
         time( &end_load ) ;
 #ifdef RINGMESH_DEBUG
@@ -1841,7 +1842,9 @@ namespace RINGMesh {
                 }
             }
         }
-        ringmesh_assert( end_model() ) ;       
+        if( !end_model() ) {
+            std::cout << "Invalid BoundaryModel loaded" << std::endl ;       
+        }
         return true ;
     }  
 
