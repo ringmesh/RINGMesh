@@ -91,7 +91,7 @@ namespace RINGMesh {
         // Sort and remove duplicates form the in types
         std::vector< GEOL_FEATURE > in = types ;
         std::sort( in.begin(), in.end() ) ;
-        index_t new_size = std::unique( in.begin(), in.end() ) - in.begin() ;
+        index_t new_size = narrow_cast< index_t >(std::unique( in.begin(), in.end() ) - in.begin()) ;
         in.resize( new_size ) ;
 
         if( in.size() == 1 ) return in[0] ;
@@ -941,8 +941,8 @@ namespace RINGMesh {
         vec3 result( 0, 0, 0 );
         
         // Get the facet index
-        index_t f = std::lower_bound(
-            facet_ptr_.begin(), facet_ptr_.end(), c )-facet_ptr_.begin() ;
+        index_t f = narrow_cast< index_t >( std::lower_bound(
+            facet_ptr_.begin(), facet_ptr_.end(), c )-facet_ptr_.begin() );
         index_t v = c - facet_begin( f ) ;
         result += vertex( f, v ) ;
         result += vertex( f, next_in_facet(f, v) ) ;
