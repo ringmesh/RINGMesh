@@ -478,7 +478,7 @@ namespace RINGMesh {
         index_t nb_lines = 0;
 
 //#pragma omp parallel for
-        for( index_t f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
+        for( index_t f = 0; f < static_cast<index_t>( tetgen_output_.numberoftrifaces ); f++ ) {
             signed_index_t face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
             if( face_marker == -1 ) continue ;
             nb_triangles++ ;
@@ -492,15 +492,15 @@ namespace RINGMesh {
         initialize_storage( tetgen_output_.numberofpoints,
             tetgen_output_.numberoftetrahedra, nb_triangles, nb_lines ) ;
 //#pragma omp parallel for
-        for( index_t p = 0; p < tetgen_output_.numberofpoints; p++ ) {
+        for( index_t p = 0; p < static_cast<index_t>( tetgen_output_.numberofpoints ); p++ ) {
             set_point( p, &tetgen_output_.pointlist[3 * p] ) ;
         }
 //#pragma omp parallel for
-        for( index_t p = 0; p < tetgen_output_.numberoftetrahedra; p++ ) {
+        for( index_t p = 0; p < static_cast<index_t>( tetgen_output_.numberoftetrahedra ); p++ ) {
             set_tetra( p, &tetgen_output_.tetrahedronlist[4 * p], nb_lines, nb_triangles ) ;
         }
 //#pragma omp parallel for
-        for( index_t p = 0; p < tetgen_output_.numberoftetrahedra; p++ ) {
+        for( index_t p = 0; p < static_cast<index_t>( tetgen_output_.numberoftetrahedra ); p++ ) {
             for( index_t f = 0; f < 4; f++ ) {
                 signed_index_t adj = std::max( tetgen_output_.neighborlist[4 * p + f]-1 , -1 ) ;
                 set_tetra_adjacent( p, f, adj ) ;
@@ -512,7 +512,7 @@ namespace RINGMesh {
         std::vector< std::vector< index_t > > star( tetgen_output_.numberofpoints, temp ) ;
 
 //#pragma omp parallel for
-        for( index_t f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
+        for( index_t f = 0; f < static_cast<index_t>( tetgen_output_.numberoftrifaces ); f++ ) {
             signed_index_t face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
             if( face_marker == -1 ) continue ;
             /*

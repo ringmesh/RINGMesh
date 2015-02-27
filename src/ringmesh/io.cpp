@@ -71,7 +71,7 @@ namespace RINGMesh {
             zip_fileinfo zfi = { 0 } ;
             std::fstream file( name.c_str(), std::ios::in ) ;
             file.seekg( 0, std::ios::end ) ;
-            long size = file.tellg() ;
+            long size = static_cast<long>( file.tellg() ) ;
             file.seekg( 0, std::ios::beg ) ;
             std::vector< char > buffer( size ) ;
             file.read( &buffer[0], size ) ;
@@ -2024,7 +2024,7 @@ namespace RINGMesh {
                 }
             }
 
-            double result = false ;
+            bool result = false ;
             for( index_t s = 0; s < info.size(); s++ ) {
                 if( temp_info[s] < 0 ) continue ;
                 ringmesh_debug_assert( info[s] != SKIP ) ;
