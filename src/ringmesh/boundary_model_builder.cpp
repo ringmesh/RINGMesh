@@ -756,7 +756,10 @@ namespace RINGMesh {
         }
         // In_boundary
         if( BME::in_boundary_allowed( T ) ) {
-            if( E.nb_in_boundary() == 0 ){
+            // Fix for a .ml for which VOI Surface are only on the boundary of Universe
+            // Can we keep this ? Or should we compute the Region
+            if( !(T == BME::SURFACE && E.geological_feature() == BME::VOI) &&
+                E.nb_in_boundary() == 0 ){
                 return false ;
             }
         }
