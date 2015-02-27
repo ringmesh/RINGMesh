@@ -4816,28 +4816,28 @@ namespace GEO {
     
     namespace PCK {
 
-        int side4_3d(
+        Sign side4_3d(
             const double* p0, const double* p1, 
             const double* p2, const double* p3, const double* p4
         );
 
-        int side4_3d_SOS(
+        Sign side4_3d_SOS(
             const double* p0, const double* p1, 
             const double* p2, const double* p3, const double* p4
         );
 
-        int orient_3d(
+        Sign orient_3d(
             const double* p0, const double* p1,
             const double* p2, const double* p3
         );
 
-        int orient_4d(
+        Sign orient_4d(
             const double* p0, const double* p1,
             const double* p2, const double* p3, const double* p4,
             double h0, double h1, double h2, double h3, double h4
         );
 
-        int orient_4d_SOS(
+        Sign orient_4d_SOS(
             const double* p0, const double* p1,
             const double* p2, const double* p3, const double* p4,
             double h0, double h1, double h2, double h3, double h4
