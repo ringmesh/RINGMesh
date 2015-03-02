@@ -47,8 +47,6 @@
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/string.h>
 #include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_builder.h>
-#include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/mesh_geometry.h>
 
 #include <third_party/zlib/zip.h>

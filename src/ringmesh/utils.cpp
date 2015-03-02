@@ -17,7 +17,6 @@
 #include <ringmesh/boundary_model_element.h>
 
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/numerics/predicates.h>
@@ -35,7 +34,7 @@ namespace RINGMesh {
         double count = 0.0 ;
         for( index_t c = 0; c < 3; ++c ) {
             result += GEO::Geom::mesh_vertex( M,
-                M.tet_facet_vertex_index( cell, f, c ) ) ;
+                M.cells.facet_vertex( cell, f, c ) ) ;
             count += 1.0 ;
         }
         return ( 1.0 / count ) * result ;
@@ -44,11 +43,11 @@ namespace RINGMesh {
     vec3 Utils::mesh_cell_facet_normal( const GEO::Mesh& M, index_t c, index_t f )
     {
         const vec3& p1 = GEO::Geom::mesh_vertex( M,
-            M.cell_facet_vertex_index( c, f, 0 ) ) ;
+            M.cells.facet_vertex( c, f, 0 ) ) ;
         const vec3& p2 = GEO::Geom::mesh_vertex( M,
-            M.cell_facet_vertex_index( c, f, 1 ) ) ;
+            M.cells.facet_vertex( c, f, 1 ) ) ;
         const vec3& p3 = GEO::Geom::mesh_vertex( M,
-            M.cell_facet_vertex_index( c, f, 2 ) ) ;
+            M.cells.facet_vertex( c, f, 2 ) ) ;
         return cross( p2 - p1, p3 - p1 ) ;
     }
 
@@ -56,9 +55,8 @@ namespace RINGMesh {
     {
         vec3 result( 0.0, 0.0, 0.0 ) ;
         double count = 0.0 ;
-        for( index_t c = M.cell_vertices_begin( cell );
-            c < M.cell_vertices_begin( cell + 1 ); ++c ) {
-            result += GEO::Geom::mesh_corner_vertex( M, c ) ;
+        for( index_t v = 0; v < M.cells.nb_vertices( cell ); ++v ) {
+            result += GEO::Geom::mesh_vertex( M, M.cells.vertex( cell, v ) ) ;
             count += 1.0 ;
         }
         return ( 1.0 / count ) * result ;
@@ -101,8 +99,8 @@ namespace RINGMesh {
         index_t& edge )
     {
         for( uint8 e = 0; e < 6; e++ ) {
-            index_t v0 = mesh.cell_edge_vertex_index( t, e, 0 ) ;
-            index_t v1 = mesh.cell_edge_vertex_index( t, e, 1 ) ;
+            index_t v0 = mesh.cells.edge_vertex( t, e, 0 ) ;
+            index_t v1 = mesh.cells.edge_vertex( t, e, 1 ) ;
             if( ( p0 == v0 && p1 == v1 ) || ( p0 == v1 && p1 == v0 ) ) {
                 edge = e ;
                 return true ;
@@ -127,11 +125,12 @@ namespace RINGMesh {
         index_t p0,
         index_t p1 )
     {
-        for( uint8 adj = 0; adj < 4; adj++ ) {
-            signed_index_t t_adj = mesh.cell_adjacent( t, adj ) ;
-            if( t_adj == -1 || t_adj == prev ) continue ;
+        for( index_t adj = 0; adj < mesh.cells.nb_facets( t ); adj++ ) {
+            index_t t_adj = mesh.cells.adjacent( t, adj ) ;
+            if( t_adj == GEO::NO_CELL || t_adj == prev ) continue ;
             index_t edge ;
             if( has_edge( mesh, t_adj, p0, p1, edge ) ) {
+                //todo handles any cell type
                 return 6 * t_adj + edge ;
             }
         }
@@ -170,9 +169,9 @@ namespace RINGMesh {
     {
         float64 dist = GEO::Numeric::max_float64() ;
         index_t result = 0 ;
-        for( index_t v = 0; v < mesh.cell_nb_vertices( t ); v++ ) {
+        for( index_t v = 0; v < mesh.cells.nb_vertices( t ); v++ ) {
             float64 distance = length2(
-                vec3( mesh.vertex_ptr( mesh.cell_vertex_index( t, v ) ) ) - p ) ;
+                GEO::Geom::mesh_vertex( mesh, mesh.cells.vertex( t, v ) ) - p ) ;
             if( distance < dist ) {
                 result = v ;
             }
@@ -186,14 +185,14 @@ namespace RINGMesh {
         index_t c11,
         index_t f2 )
     {
-        index_t c12 = mesh.next_around_facet( f1, c11 ) ;
-        index_t v11 = mesh.corner_vertex_index( c11 ) ;
-        index_t v12 = mesh.corner_vertex_index( c12 ) ;
-        for( index_t c21 = mesh.facet_begin( f2 ); c21 < mesh.facet_end( f2 );
+        index_t c12 = mesh.facets.next_corner_around_facet( f1, c11 ) ;
+        index_t v11 = mesh.facet_corners.vertex( c11 ) ;
+        index_t v12 = mesh.facet_corners.vertex( c12 ) ;
+        for( index_t c21 = mesh.facets.corners_begin( f2 ); c21 < mesh.facets.corners_end( f2 );
             c21++ ) {
-            index_t c22 = mesh.next_around_facet( f2, c21 ) ;
-            index_t v21 = mesh.corner_vertex_index( c21 ) ;
-            index_t v22 = mesh.corner_vertex_index( c22 ) ;
+            index_t c22 = mesh.facets.next_corner_around_facet( f2, c21 ) ;
+            index_t v21 = mesh.facet_corners.vertex( c21 ) ;
+            index_t v22 = mesh.facet_corners.vertex( c22 ) ;
             if( v11 == v21 && v12 == v22 ) {
                 return false ;
             }
@@ -209,35 +208,36 @@ namespace RINGMesh {
         GEO::Mesh& mesh,
         bool check_duplicated_facet )
     {
-        if( mesh.nb_facets() == 0 ) return ;
+        if( mesh.facets.nb() == 0 ) return ;
 
         /// 0 - Remove duplicated facets (optionnal)
         if( check_duplicated_facet ) {
-            std::vector< vec3 > barycenters( mesh.nb_facets(), vec3( 0, 0, 0 ) ) ;
-            for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
+            std::vector< vec3 > barycenters( mesh.facets.nb(), vec3( 0, 0, 0 ) ) ;
+            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
                 barycenters[f] = GEO::Geom::mesh_facet_center( mesh, f ) ;
             }
 
             MakeUnique unique( barycenters ) ;
             unique.unique() ;
             const std::vector< index_t > indices = unique.indices() ;
-            GEO::vector< index_t > facet_to_remove( mesh.nb_facets(), 0 ) ;
+            GEO::vector< index_t > facet_to_remove( mesh.facets.nb(), 0 ) ;
             signed_index_t cur_id = 0 ;
-            for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
+            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
                 if( cur_id == indices[f] ) {
                     cur_id++ ;
                 } else {
                     facet_to_remove[f] = 1 ;
                 }
             }
-            mesh.remove_facets( facet_to_remove ) ;
+            mesh.facets.delete_elements( facet_to_remove ) ;
 
-            if( mesh.has_attribute( GEO::MESH_FACET_REGION ) ) {
-                GEO::vector< signed_index_t >& attribute =
-                    GEO::MeshMutator::facet_regions( mesh ) ;
-                signed_index_t offset = 0 ;
+            if( GEO::Attribute< index_t >::is_defined( mesh.facets.attributes(),
+                surface_att_name ) ) {
+                GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
+                    surface_att_name ) ;
+                index_t offset = 0 ;
                 cur_id = 0 ;
-                for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
+                for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
                     if( cur_id == indices[f] ) {
                         cur_id++ ;
                         attribute[f - offset] = attribute[f] ;
@@ -245,34 +245,35 @@ namespace RINGMesh {
                         offset++ ;
                     }
                 }
-                attribute.erase( attribute.end() - offset, attribute.end() ) ;
+                attribute.redim( attribute.size() - offset ) ;
             }
-            mesh.update_cached_variables() ;
-            mesh.connect_facets() ;
+            mesh.facets.connect() ;
         }
 
+        GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
+            surface_att_name ) ;
         /// 1 - Check facet adjacencies for non-manifold surfaces
         std::vector< index_t > temp ;
         temp.reserve( 6 ) ;
-        std::vector< std::vector< index_t > > stars( mesh.nb_vertices(), temp ) ;
-        for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
-            for( index_t c = mesh.facet_begin( f ); c < mesh.facet_end( f ); c++ ) {
-                stars[mesh.corner_vertex_index( c )].push_back( f ) ;
+        std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            for( index_t c = mesh.facets.corners_begin( f ); c < mesh.facets.corners_end( f ); c++ ) {
+                stars[mesh.facet_corners.vertex( c )].push_back( f ) ;
             }
         }
-        for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
-            index_t surface_id = mesh.facet_region( f ) ;
-            for( index_t c = mesh.facet_begin( f ); c < mesh.facet_end( f ); c++ ) {
-                signed_index_t f_adj = mesh.corner_adjacent_facet( c ) ;
-                if( f_adj != -1 && mesh.facet_region( f_adj ) != surface_id ) {
-                    f_adj = -1 ;
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            index_t surface_id = attribute[f] ;
+            for( index_t c = mesh.facets.corners_begin( f ); c < mesh.facets.corners_end( f ); c++ ) {
+                index_t f_adj = mesh.facet_corners.adjacent_facet( c ) ;
+                if( f_adj != GEO::NO_FACET && attribute[f_adj] != surface_id ) {
+                    f_adj = GEO::NO_FACET ;
                 }
-                if( f_adj == -1 ) {
+                if( f_adj == GEO::NO_FACET ) {
                     const std::vector< index_t >& star0 =
-                        stars[mesh.corner_vertex_index( c )] ;
+                        stars[mesh.facet_corners.vertex( c )] ;
                     const std::vector< index_t >& star1 =
-                        stars[mesh.corner_vertex_index(
-                            mesh.next_around_facet( f, c ) )] ;
+                        stars[mesh.facet_corners.vertex(
+                            mesh.facets.next_corner_around_facet( f, c ) )] ;
                     std::vector< index_t > intersect(
                         std::min( star0.size(), star1.size() ) ) ;
                     intersect.erase(
@@ -283,21 +284,21 @@ namespace RINGMesh {
                         for( index_t i = 0; i < intersect.size(); i++ ) {
                             index_t cur_f = intersect[i] ;
                             if( cur_f != f
-                                && mesh.facet_region( cur_f ) == surface_id ) {
+                                && attribute[cur_f] == surface_id ) {
                                 f_adj = cur_f ;
                             }
                         }
                     }
                 }
-                mesh.set_corner_adjacent_facet( c, f_adj ) ;
+                mesh.facet_corners.set_adjacent_facet( c, f_adj ) ;
             }
         }
 
         /// 2 - Reorient in the same direction using propagation
-        std::vector< bool > facet_visited( mesh.nb_facets(), false ) ;
-        for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
+        std::vector< bool > facet_visited( mesh.facets.nb(), false ) ;
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
             if( facet_visited[f] ) continue ;
-            index_t surface_id = mesh.facet_region( f ) ;
+            index_t surface_id = attribute[f] ;
             std::stack< index_t > S ;
             S.push( f ) ;
             do {
@@ -305,13 +306,13 @@ namespace RINGMesh {
                 S.pop() ;
                 if( facet_visited[cur_f] ) continue ;
                 facet_visited[cur_f] = true ;
-                for( index_t c = mesh.facet_begin( cur_f );
-                    c < mesh.facet_end( cur_f ); c++ ) {
-                    signed_index_t f_adj = mesh.corner_adjacent_facet( c ) ;
-                    if( f_adj == -1 || mesh.facet_region( f_adj ) != surface_id
+                for( index_t c = mesh.facets.corners_begin( cur_f );
+                    c < mesh.facets.corners_end( cur_f ); c++ ) {
+                    index_t f_adj = mesh.facet_corners.adjacent_facet( c ) ;
+                    if( f_adj == GEO::NO_FACET || attribute[f_adj] != surface_id
                         || facet_visited[f_adj] ) continue ;
                     if( !facets_have_same_orientation( mesh, cur_f, c, f_adj ) ) {
-                        GEO::MeshMutator::flip_facet( mesh, f_adj ) ;
+                        mesh.facets.flip( f_adj ) ;
                     }
                     S.push( f_adj ) ;
                 }
@@ -329,7 +330,7 @@ namespace RINGMesh {
             vec3 nearest_point ;
             float64 distance ;
             index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
-            ringmesh_debug_assert( surface.id() == mesh.facet_region( f ) ) ;
+            ringmesh_debug_assert( surface.id() == attribute[f] ) ;
 
             vec3 ori_normal = surface.facet_normal( 0 ) ;
             vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
@@ -339,10 +340,10 @@ namespace RINGMesh {
             }
         }
         if( flip_sthg ) {
-            for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
-                index_t surface_id = mesh.facet_region( f ) ;
+            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+                index_t surface_id = attribute[f] ;
                 if( flip_surface[surface_id] ) {
-                    GEO::MeshMutator::flip_facet( mesh, f ) ;
+                    mesh.facets.flip( f ) ;
                 }
             }
         }
@@ -1060,21 +1061,21 @@ namespace RINGMesh {
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {
             case VERTICES: {
-                signed_index_t nb_vertices = mesh.nb_vertices() ;
+                index_t nb_vertices = mesh.vertices.nb() ;
                 ann_points_ = new double[nb_vertices * 3] ;
-                for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
+                for( index_t i = 0; i < mesh.vertices.nb(); i++ ) {
                     index_t index_in_ann = 3 * i ;
-                    ann_points_[index_in_ann] = mesh.vertex_ptr( i )[0] ;
-                    ann_points_[index_in_ann + 1] = mesh.vertex_ptr( i )[1] ;
-                    ann_points_[index_in_ann + 2] = mesh.vertex_ptr( i )[2] ;
+                    ann_points_[index_in_ann] = mesh.vertices.point_ptr( i )[0] ;
+                    ann_points_[index_in_ann + 1] = mesh.vertices.point_ptr( i )[1] ;
+                    ann_points_[index_in_ann + 2] = mesh.vertices.point_ptr( i )[2] ;
                 }
                 ann_tree_->set_points( nb_vertices, ann_points_ ) ;
                 break ;
             }
             case FACETS: {
-                signed_index_t nb_vertices = mesh.nb_facets() ;
+                index_t nb_vertices = mesh.facets.nb() ;
                 ann_points_ = new double[nb_vertices * 3] ;
-                for( index_t i = 0; i < mesh.nb_facets(); i++ ) {
+                for( index_t i = 0; i < mesh.facets.nb(); i++ ) {
                     vec3 center = GEO::Geom::mesh_facet_center( mesh, i ) ;
                     index_t index_in_ann = 3 * i ;
                     ann_points_[index_in_ann] = center.x ;
@@ -1085,9 +1086,9 @@ namespace RINGMesh {
                 break ;
             }
             case CELLS: {
-                signed_index_t nb_vertices = mesh.nb_cells() ;
+                index_t nb_vertices = mesh.cells.nb() ;
                 ann_points_ = new double[nb_vertices * 3] ;
-                for( index_t i = 0; i < mesh.nb_cells(); i++ ) {
+                for( index_t i = 0; i < mesh.cells.nb(); i++ ) {
                     vec3 center = Utils::mesh_cell_center( mesh, i ) ;
                     index_t index_in_ann = 3 * i ;
                     ann_points_[index_in_ann] = center.x ;

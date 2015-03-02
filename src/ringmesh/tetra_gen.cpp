@@ -42,8 +42,6 @@
 #include <ringmesh/tetra_gen.h>
 #include <ringmesh/boundary_model_element.h>
 
-#include <geogram/mesh/mesh_private.h>
-
 #include <iomanip>
 #include <stack>
 
