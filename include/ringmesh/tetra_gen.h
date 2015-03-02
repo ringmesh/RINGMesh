@@ -116,7 +116,7 @@ namespace RINGMesh {
             GEO::Mesh* background ) ;
 
         void initialize_storage( index_t nb_points, index_t nb_tets, index_t nb_triangles, index_t nb_lines ) ;
-        void set_point( index_t index, double* point ) ;
+        void set_point( index_t index, const double* point ) ;
         void set_tetra( index_t index, int* tet, index_t nb_lines, index_t nb_triangles ) ;
         void set_triangle( index_t index, int * triangle, index_t nb_lines ) ;
         void set_line( index_t index, int * line ) ;
@@ -141,10 +141,10 @@ namespace RINGMesh {
         std::vector< signed_index_t > surface_id_ ;
         std::vector< index_t > surface_ptr_ ;
         GEO::Mesh& tetmesh_ ;
-        GEO::MeshBuilder tetmesh_builder_ ;
         double resolution_ ;
         GEO::Mesh* background_ ;
         const BoundaryModelElement* region_ ;
+        GEO::Attribute< index_t > attribute_ ;
     } ;
 
 
