@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
  *     * Neither the name of the <organization> nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr 
- *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
  *     http://www.gocad.org
@@ -34,25 +34,23 @@
  *     GOCAD Project
  *     Ecole Nationale Sup�rieure de G�ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
- *     54518 VANDOEUVRE-LES-NANCY 
+ *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
-*/
-
- 
+ */
 
 #ifdef WIN32
 
 #pragma section(".CRT$XCU",read)
-#define INITIALIZER(f) \
-   static void __cdecl f(void); \
-   __declspec(allocate(".CRT$XCU")) void (__cdecl*f##_)(void) = f; \
-   static void __cdecl f(void)
+#define INITIALIZER( f ) \
+    static void __cdecl f( void ) ; \
+    __declspec( allocate( ".CRT$XCU" ) ) void( __cdecl * f ## _ ) (void) = f ; \
+    static void __cdecl f( void )
 
-#elif defined(__GNUC__)
+#elif defined( __GNUC__ )
 
-#define INITIALIZER(f) \
-   static void f(void) __attribute__((constructor)); \
-   static void f(void)
+#define INITIALIZER( f ) \
+    static void f( void ) __attribute__( ( constructor ) ) ; \
+    static void f( void )
 
 #endif
 
@@ -62,8 +60,7 @@
 #include <geogram/basic/command_line_args.h>
 
 static bool inited = false ;
-INITIALIZER(initialize)
-{
+INITIALIZER( initialize ) {
     if( !inited ) {
         inited = true ;
         GEO::initialize() ;
@@ -73,17 +70,15 @@ INITIALIZER(initialize)
         GEO::CmdLine::import_arg_group( "algo" ) ;
         GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
         GEO::CmdLine::import_arg_group( "log" ) ;
-        GEO::CmdLine::set_arg("sys:use_doubles",true) ;
+        GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
 
-        // Initialization for BoundaryModel attribute serialization        
-        RINGMesh::AttributeSerializer::initialize() ;       
-        RINGMesh::ringmesh_register_attribute_type< int           > ("int") ;
-        RINGMesh::ringmesh_register_attribute_type< unsigned int  > ("index") ;
-        RINGMesh::ringmesh_register_attribute_type< double        > ("double") ;
-        RINGMesh::ringmesh_register_attribute_type< float         > ("float") ;
-        RINGMesh::ringmesh_register_attribute_type< bool          > ("bool") ;
-        atexit(RINGMesh::AttributeSerializer::terminate);
+        // Initialization for BoundaryModel attribute serialization
+        RINGMesh::AttributeSerializer::initialize() ;
+        RINGMesh::ringmesh_register_attribute_type< int           > ( "int" ) ;
+        RINGMesh::ringmesh_register_attribute_type< unsigned int  > ( "index" ) ;
+        RINGMesh::ringmesh_register_attribute_type< double        > ( "double" ) ;
+        RINGMesh::ringmesh_register_attribute_type< float         > ( "float" ) ;
+        RINGMesh::ringmesh_register_attribute_type< bool          > ( "bool" ) ;
+        atexit( RINGMesh::AttributeSerializer::terminate ) ;
     }
 }
-
-

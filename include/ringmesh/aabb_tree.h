@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
  *     * Neither the name of the <organization> nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr 
- *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
  *     http://www.gocad.org
@@ -34,9 +34,9 @@
  *     GOCAD Project
  *     Ecole Nationale Supérieure de Géologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
- *     54518 VANDOEUVRE-LES-NANCY 
+ *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
-*/
+ */
 
 #ifndef __RINGMESH_AABB_TREE__
 #define __RINGMESH_AABB_TREE__
@@ -47,9 +47,8 @@
 #include <ringmesh/utils.h>
 
 namespace RINGMesh {
-
     class RINGMESH_API FacetAABBTree {
-    public:
+public:
         FacetAABBTree( Surface& M ) ;
         /**
          * @brief computes all the pairs of intersecting facets.
@@ -61,12 +60,14 @@ namespace RINGMesh {
         template< class ACTION > void compute_facet_bbox_intersections(
             ACTION& action ) const
         {
-            intersect_recursive( action, 1, 0, mesh_.nb_cells(), 1, 0, mesh_.nb_cells() ) ;
+            intersect_recursive( action, 1, 0,
+                mesh_.nb_cells(), 1, 0, mesh_.nb_cells() ) ;
         }
 
         void compute_bbox_intersections(
-            const Box3d& box, std::vector< index_t >& results ) const
-    {
+            const Box3d& box,
+            std::vector< index_t >& results ) const
+        {
             intersect_recursive( results, box, 1, 0, mesh_.nb_cells() ) ;
         }
 
@@ -86,8 +87,8 @@ namespace RINGMesh {
             index_t nearest_t = nearest_facet( query, nearest, sq_dist ) ;
             std::copy( nearest.data(), nearest.data() + 3, nearest_point ) ;
             return nearest_t ;
-
         }
+
         index_t nearest_facet(
             const vec3& p,
             vec3& nearest_point,
@@ -157,10 +158,13 @@ namespace RINGMesh {
             return result ;
         }
 
-    private:
+private:
         void reorder_morton() ;
 
-        void init_bboxes_recursive( index_t node, index_t b, index_t e ) ;
+        void init_bboxes_recursive(
+            index_t node,
+            index_t b,
+            index_t e ) ;
 
         /**
          * @brief computes all the pairs of intersecting facets
@@ -202,7 +206,7 @@ namespace RINGMesh {
             }
 
             // The acceleration is here:
-            if( !bboxes_[node1].bboxes_overlap( bboxes_[node2] ) ) {
+            if( !bboxes_[ node1 ].bboxes_overlap( bboxes_[ node2 ] ) ) {
                 return ;
             }
 
@@ -258,7 +262,7 @@ namespace RINGMesh {
             ringmesh_debug_assert( e != b ) ;
 
             // The acceleration is here:
-            if( !box.bboxes_overlap( bboxes_[node] ) ) {
+            if( !box.bboxes_overlap( bboxes_[ node ] ) ) {
                 return ;
             }
 
@@ -278,7 +282,6 @@ namespace RINGMesh {
             index_t node_r = 2 * node + 1 ;
             intersect_recursive( results, box, node_l, b, m ) ;
             intersect_recursive( results, box, node_r, m, e ) ;
-
         }
 
         /**
@@ -321,7 +324,7 @@ namespace RINGMesh {
             index_t b,
             index_t e ) const ;
 
-    private:
+private:
         std::vector< Box3d > bboxes_ ;
         Surface& mesh_ ;
     } ;
