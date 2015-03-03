@@ -27,11 +27,13 @@ fi
 if [ ! -d Formatter ]
 then
     echo You have no formatter.
-    ping -q -c5 192.168.1.4 > /dev/null
-    if [[ $? -eq 0 ]]
+    ping -q -c5 lirac > /dev/null
+    if [ $? -eq 0 ]
     then
         echo INFO: Connection to lirac.
         hg clone http://hg/misc/Formatter
+        echo Formatter = http://hg/misc/Formatter >> .hgsub
+        hg add .hgsub
     else
         echo ERROR: Impossible to connect to lirac. No Formatter installed.
         exit 1
