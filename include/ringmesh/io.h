@@ -303,19 +303,34 @@ private:
                 const std::set< surface_side >& surfaces,
                 std::vector< SurfaceAction >& info ) ;
 
-            index_t mesh_facet_begin( index_t r ) const { return
-                                                              mesh_facet_ptr_[
-                                                                  r ] ;}
-            index_t mesh_facet_end( index_t r ) const { return mesh_facet_ptr_[
-                                                                   r + 1 ] ;}
+            index_t mesh_facet_begin( index_t r ) const
+            {
+                return mesh_facet_ptr_[
+                           r ] ;
+            }
+
+            index_t mesh_facet_end( index_t r ) const
+            {
+                return mesh_facet_ptr_[
+                           r + 1 ] ;
+            }
+
             index_t facet( index_t f ) const { return facets_[ f ] ;}
 
-            index_t mesh_cell_begin( index_t r ) const { return mesh_cell_ptr_[
-                                                                    r ] ;}
-            index_t mesh_cell_end( index_t r ) const { return mesh_cell_ptr_[ r
-                                                                              +
-                                                                              1
-                                                       ] ;}
+            index_t mesh_cell_begin( index_t r ) const
+            {
+                return mesh_cell_ptr_[
+                           r ] ;
+            }
+
+            index_t mesh_cell_end( index_t r ) const
+            {
+                return mesh_cell_ptr_[ r
+                                       +
+                                       1
+                ] ;
+            }
+
             index_t cell( index_t c ) const { return cells_[ c ] ;}
 
 private:

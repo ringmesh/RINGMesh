@@ -143,7 +143,8 @@ public:
             bool side = false )
         {
             if( e_type == BoundaryModelElement::REGION || e_type ==
-                BoundaryModelElement::LAYER ) {
+                BoundaryModelElement::LAYER )
+            {
                 element( e_type, e_index ).add_boundary( boundary, side ) ;
             } else { element( e_type, e_index ).add_boundary( boundary ) ;}
         }
@@ -456,7 +457,8 @@ public:
 
                     for( index_t c = mesh.facet_begin( f );
                          c < mesh.facet_end( f );
-                         ++c ) {
+                         ++c )
+                    {
                         corners.push_back( mesh.corner_vertex_index( c ) ) ;
                         index_t n = mesh.corner_adjacent_facet( c ) ;
 

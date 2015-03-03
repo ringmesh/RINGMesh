@@ -705,7 +705,8 @@ public:
 
                         for( index_t f = 0;
                              f < cur_mesh.cell_nb_facets( c );
-                             f++ ) {
+                             f++ )
+                        {
                             signed_index_t adj = cur_mesh.cell_adjacent( c, f ) ;
                             adj_indices[ f ] = adj == - 1 ? adj : cell_offset +
                                                adj ;
@@ -794,7 +795,8 @@ public:
                         neigh << nb_tet_exported + tet ;
 
                         for( index_t f = 0; f < mesh.cell_nb_facets( tet );
-                             f++ ) {
+                             f++ )
+                        {
                             neigh << SPACE << mm.global_cell_adjacent( m,
                                 tet,
                                 f ) ;
@@ -939,7 +941,8 @@ public:
                         out << "# CTETRA " << region.name() ;
 
                         for( index_t f = 0; f < mesh.cell_nb_facets( c );
-                             f++ ) {
+                             f++ )
+                        {
                             out << " " ;
                             vec3 facet_center = Utils::mesh_cell_facet_center(
                                 mesh,
@@ -1346,7 +1349,8 @@ public:
 
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     for( index_t el = 0; el < nb_triangle_interface[ i ];
-                         el++ ) {
+                         el++ )
+                    {
                         data << " " << std::setw( 3 ) << 8 ;
                         count++ ;
 
@@ -1471,7 +1475,8 @@ public:
 
                         for( index_t el = 0;
                              el < nb_triangle_interface[ i ];
-                             el++ ) {
+                             el++ )
+                        {
                             ascii << cur_cell++ << " " ;
                             count++ ;
 
@@ -1493,7 +1498,8 @@ public:
                               << nb_quad_interface[ i ] << std::endl ;
 
                         for( index_t el = 0; el < nb_quad_interface[ i ];
-                             el++ ) {
+                             el++ )
+                        {
                             ascii << cur_cell++ << " " ;
                             count++ ;
 
@@ -1605,7 +1611,8 @@ public:
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
 
                         for( index_t el = 0; el < db.nb_triangle( s_id );
-                             el++ ) {
+                             el++ )
+                        {
                             index_t tri = db.local_triangle_id( mesh_id, el ) ;
 
                             for( index_t p = mesh.facet_begin( tri );
@@ -1762,7 +1769,8 @@ public:
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
 
                         for( index_t el = 0; el < db.nb_triangle( s_id );
-                             el++ ) {
+                             el++ )
+                        {
                             index_t tri = db.local_triangle_id( mesh_id, el ) ;
 
                             for( index_t f = mesh.facet_begin( tri );
@@ -1863,7 +1871,8 @@ private:
                             std::string name = parser.field( 2 ) ;
 
                             for( index_t i = 0; i < model.nb_interfaces();
-                                 i++ ) {
+                                 i++ )
+                            {
                                 if( model.one_interface( i ).name() == name ) {
                                     interface_id = i ;
                                     break ;
@@ -2361,7 +2370,8 @@ private:
 
                         for( index_t co = 0;
                              co < colocated_corners.size();
-                             co++ ) {
+                             co++ )
+                        {
                             corner_to_duplicate[ colocated_corners[ co ] ] =
                                 true ;
                         }
@@ -2501,7 +2511,8 @@ private:
                 index_t surface_id = it->first ;
 
                 if( info[ surface_id ] == SKIP || temp_info[ surface_id ] ==
-                    SKIP ) {
+                    SKIP )
+                {
                     continue ;
                 }
 
