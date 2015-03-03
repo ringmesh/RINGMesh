@@ -309,8 +309,7 @@ namespace RINGMesh {
         for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
             for( index_t c = mesh.facet_begin( f );
                  c < mesh.facet_end( f );
-                 c++ )
-            {
+                 c++ ) {
                 stars[ mesh.corner_vertex_index( c ) ].push_back( f ) ;
             }
         }
@@ -320,13 +319,11 @@ namespace RINGMesh {
 
             for( index_t c = mesh.facet_begin( f );
                  c < mesh.facet_end( f );
-                 c++ )
-            {
+                 c++ ) {
                 signed_index_t f_adj = mesh.corner_adjacent_facet( c ) ;
 
                 if( f_adj != - 1 && mesh.facet_region( f_adj ) !=
-                    surface_id )
-                {
+                    surface_id ) {
                     f_adj = - 1 ;
                 }
 
@@ -388,8 +385,7 @@ namespace RINGMesh {
                         || facet_visited[ f_adj ] ) {continue ;}
 
                     if( !facets_have_same_orientation( mesh, cur_f, c,
-                            f_adj ) )
-                    {
+                            f_adj ) ) {
                         GEO::MeshMutator::flip_facet( mesh, f_adj ) ;
                     }
 
@@ -1594,8 +1590,7 @@ namespace RINGMesh {
                 if( i == 0 ) {return sorted_triangles_[ 1 ] ;}
 
                 if( sorted_triangles_[ i + 1 ].first ==
-                    sorted_triangles_[ i ].first )
-                {
+                    sorted_triangles_[ i ].first ) {
                     // The next has the same surface id, check its sign
                     if( sorted_triangles_[ i + 1 ].second
                         != sorted_triangles_[ i ].second )

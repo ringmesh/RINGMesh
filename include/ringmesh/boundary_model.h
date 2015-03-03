@@ -160,8 +160,7 @@ public:
 
                 for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
                     if( index >= nb_elements_per_type_[ i - 1 ] && index <
-                        nb_elements_per_type_[ i ] )
-                    {
+                        nb_elements_per_type_[ i ] ) {
                         t = i - 1 ;
                         break ;
                     }
@@ -191,40 +190,26 @@ public:
 
         const Corner& corner( index_t index ) const { return corners_.at( index ) ;}
         const Line& line( index_t index ) const { return lines_.at( index ) ;}
-        const Surface& surface( index_t index ) const
-        {
-            return surfaces_.at(
-                index ) ;
-        }
+        const Surface& surface( index_t index ) const { return surfaces_.at(
+                                                            index ) ;}
 
-        const BoundaryModelElement& region( index_t index ) const
-        {
-            return element(
-                BME::
-                REGION,
-                index ) ;
-        }
-
-        const BoundaryModelElement& contact( index_t index ) const
-        {
-            return element(
-                BME::
-                CONTACT,
-                index ) ;
-        }
-
-        const BoundaryModelElement& one_interface( index_t index ) const
-        {
-            return element( BME::INTERFACE, index ) ;
-        }
-
-        const BoundaryModelElement& layer( index_t index ) const
-        {
-            return element(
-                BME::
-                LAYER,
-                index ) ;
-        }
+        const BoundaryModelElement& region( index_t index ) const { return
+                                                                        element(
+                                                                        BME::
+                                                                        REGION,
+                                                                        index ) ;}
+        const BoundaryModelElement& contact( index_t index ) const { return
+                                                                         element(
+                                                                         BME::
+                                                                         CONTACT,
+                                                                         index ) ;}
+        const BoundaryModelElement& one_interface( index_t index ) const {
+            return element( BME::INTERFACE, index ) ;}
+        const BoundaryModelElement& layer( index_t index ) const { return
+                                                                       element(
+                                                                       BME::
+                                                                       LAYER,
+                                                                       index ) ;}
 
         const BoundaryModelElement& universe() const { return universe_ ;}
 
