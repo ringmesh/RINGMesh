@@ -888,8 +888,7 @@ public:
 
             for( index_t i = 0; i < data.size(); i++ ) {
                 for( index_t p = 0; p < data[ i ]->nb_vertices(); p++,
-                     cur_id++ )
-                {
+                     cur_id++ ) {
                     points_[ cur_id ] = data[ i ]->vertex( p ) ;
                     indices_[ cur_id ] = cur_id ;
                 }
