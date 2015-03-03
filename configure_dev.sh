@@ -35,7 +35,7 @@ then
         echo Formatter = http://hg/misc/Formatter >> .hgsub
         hg add .hgsub
     else
-        echo ERROR: Impossible to connect to lirac. No Formatter installed.
+        echo ERROR: Impossible to connect to lirac. No Formatter installed!
         exit 1
     fi
 fi
