@@ -85,13 +85,15 @@ namespace RINGMesh {
         NEGATIVE = - 1, ZERO = 0, POSITIVE = 1
     } ;
 
-    template< class T > inline T sqr( T x )
+    template< class T >
+    inline T sqr( T x )
     {
         return x * x ;
     }
 
 
-    template< class T > inline Sign sign( T x )
+    template< class T >
+    inline Sign sign( T x )
     {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO ) ;
     }
@@ -388,7 +390,8 @@ namespace RINGMesh {
             return 0.5 * length( cross( p2 - p1, p3 - p1 ) ) ;
         }
 
-        template< class VEC > static VEC random_point_in_triangle(
+        template< class VEC >
+        static VEC random_point_in_triangle(
             const VEC& p1,
             const VEC& p2,
             const VEC& p3 )
@@ -403,7 +406,8 @@ namespace RINGMesh {
             return l1 * p1 + l2 * p2 + l3 * p3 ;
         }
 
-        template< class T >static bool check_order(
+        template< class T >
+        static bool check_order(
             std::vector< T > v1,
             T p1,
             T p2 )
@@ -419,7 +423,8 @@ namespace RINGMesh {
             return false ;
         }
 
-        template< class T > static std::vector< T > intersect(
+        template< class T >
+        static std::vector< T > intersect(
             const std::vector< T >& v1,
             const std::vector< T >& v2 )
         {
@@ -431,14 +436,16 @@ namespace RINGMesh {
             return intersect ;
         }
 
-        template< class T > static bool contains(
+        template< class T >
+        static bool contains(
             const std::vector< T >& v,
             const T& t )
         {
             return find( v, t ) != - 1 ;
         }
 
-        template< class T > static signed_index_t find(
+        template< class T >
+        static signed_index_t find(
             const std::vector< T >& v,
             const T& t )
         {
@@ -448,7 +455,8 @@ namespace RINGMesh {
             return - 1 ;
         }
 
-        template< class T1, class T2 > static bool inexact_equal(
+        template< class T1, class T2 >
+        static bool inexact_equal(
             const T1& v1,
             const T2& v2 )
         {
@@ -461,7 +469,8 @@ namespace RINGMesh {
             return true ;
         }
 
-        template< class T1, class T2 > static bool triple_equal(
+        template< class T1, class T2 >
+        static bool triple_equal(
             const T1& rhs1,
             const T1& rhs2,
             const T1& rhs3,
@@ -492,7 +501,8 @@ namespace RINGMesh {
         }
 
         // See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
-        template< class VEC > static float64 point_triangle_distance(
+        template< class VEC >
+        static float64 point_triangle_distance(
             const VEC& point,
             const VEC& V0,
             const VEC& V1,
@@ -933,7 +943,8 @@ namespace RINGMesh {
         double* ann_points_ ;
     } ;
 
-    template< class T, index_t n >class Array {
+    template< class T, index_t n >
+    class Array {
     public:
         void assign( const std::vector< T >& values )
         {
@@ -971,7 +982,8 @@ namespace RINGMesh {
         T values_[ n ] ;
     } ;
 
-    template< index_t n >class intArrayTmpl : public Array< int, n > {
+    template< index_t n >
+    class intArrayTmpl : public Array< int, n > {
     public:
         intArrayTmpl()
         {
@@ -984,7 +996,8 @@ namespace RINGMesh {
     typedef intArrayTmpl< 6 > intArray ;
     typedef intArrayTmpl< 12 > edgeArray ;
 
-    template< index_t n >class boolArrayTmpl : public Array< bool, n > {
+    template< index_t n >
+    class boolArrayTmpl : public Array< bool, n > {
     public:
         boolArrayTmpl()
         {
@@ -1024,8 +1037,7 @@ namespace RINGMesh {
          * @brief A triangle to sort around an edge, see SortTriangleAroundEdge
          * @details This triangle belongs to a mesh connected component identified by its index.
          */
-        struct TriangleToSort
-        {
+        struct TriangleToSort {
             /*!
              * @param index Index of this TriangleToSort in SortTriangleAroundEdge
              * @param surface_index Index of the Surface

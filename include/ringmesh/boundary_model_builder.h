@@ -321,8 +321,7 @@ namespace RINGMesh {
         /*!
          * @brief Triangle that set the orientation of a TFACE
          */
-        struct KeyFacet
-        {
+        struct KeyFacet {
             KeyFacet(
                 const vec3& p0,
                 const vec3& p1,
@@ -394,7 +393,8 @@ namespace RINGMesh {
             BoundaryModelBuilder( model ) {}
         virtual ~BoundaryModelBuilderSurface() {}
 
-        template< class MESH > void set_surfaces( const MESH& mesh ) ;
+        template< class MESH >
+        void set_surfaces( const MESH& mesh ) ;
 
         void build_model() ;
     } ;
@@ -411,8 +411,8 @@ namespace RINGMesh {
      *  - index_t corner_vertex_index( index_t c )
      *  - signed_index_t corner_adjacent_facet( index_t c )   -1 if no neighbor
      */
-    template< class MESH >void BoundaryModelBuilderSurface::set_surfaces(
-        const MESH& mesh )
+    template< class MESH >
+    void BoundaryModelBuilderSurface::set_surfaces( const MESH& mesh )
     {
         // / 1. Copy the vertices of the input mesh to the model
         reserve_vertices( mesh.nb_vertices() ) ;

@@ -167,7 +167,8 @@ namespace RINGMesh {
          *  It is temporarily changed during execution of the
          *  function, but identical to the input on exit.
          */
-        template< class T > inline void apply(
+        template< class T >
+        inline void apply(
             std::vector< T >& data,
             std::vector< signed_index_t >& permutation_in )
         {

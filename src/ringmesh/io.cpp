@@ -930,8 +930,7 @@ namespace RINGMesh {
         } ;
 
         /************************************************************************/
-        struct RINGMesh2CSMP
-        {
+        struct RINGMesh2CSMP {
             index_t element_type ;
             index_t nb_vertices ;
             index_t vertices[ 8 ] ;

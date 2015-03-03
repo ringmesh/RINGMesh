@@ -789,8 +789,7 @@ namespace RINGMesh {
     /*!
      * @brief Comparator of two vec3
      */
-    struct comp_vec3bis
-    {
+    struct comp_vec3bis {
         bool operator()(
             const vec3& l,
             const vec3& r ) const

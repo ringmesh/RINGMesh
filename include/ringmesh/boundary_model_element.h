@@ -483,10 +483,11 @@ namespace RINGMesh {
     /*!
      * @brief Attribute on the vertices of a Line
      */
-    template< class ATTRIBUTE >class LineVertexAttribute : public Attribute<
-                                                               BoundaryModelElement
-                                                               ::VERTEX,
-                                                               ATTRIBUTE > {
+    template< class ATTRIBUTE >
+    class LineVertexAttribute : public Attribute<
+                                    BoundaryModelElement
+                                    ::VERTEX,
+                                    ATTRIBUTE > {
     public:
         typedef Attribute< BoundaryModelElement::VERTEX, ATTRIBUTE > superclass ;
 
@@ -531,9 +532,10 @@ namespace RINGMesh {
     /*!
      * @brief Attribute on the segments of a Line
      */
-    template< class ATTRIBUTE >class LineFacetAttribute : public Attribute<
-                                                              BoundaryModelElement::
-                                                              FACET, ATTRIBUTE > {
+    template< class ATTRIBUTE >
+    class LineFacetAttribute : public Attribute<
+                                   BoundaryModelElement::
+                                   FACET, ATTRIBUTE > {
     public:
         typedef Attribute< BoundaryModelElement::FACET, ATTRIBUTE > superclass ;
 
@@ -895,10 +897,11 @@ namespace RINGMesh {
     /*!
      * @brief Attribute on the vertices of a Surface
      */
-    template< class ATTRIBUTE >class SurfaceVertexAttribute : public Attribute<
-                                                                  BoundaryModelElement
-                                                                  ::VERTEX,
-                                                                  ATTRIBUTE > {
+    template< class ATTRIBUTE >
+    class SurfaceVertexAttribute : public Attribute<
+                                       BoundaryModelElement
+                                       ::VERTEX,
+                                       ATTRIBUTE > {
     public:
         typedef Attribute< BoundaryModelElement::VERTEX, ATTRIBUTE > superclass ;
 
@@ -944,10 +947,11 @@ namespace RINGMesh {
     /*!
      * @brief Attribute on the facets of a Surface
      */
-    template< class ATTRIBUTE >class SurfaceFacetAttribute : public Attribute<
-                                                                 BoundaryModelElement
-                                                                 ::FACET,
-                                                                 ATTRIBUTE > {
+    template< class ATTRIBUTE >
+    class SurfaceFacetAttribute : public Attribute<
+                                      BoundaryModelElement
+                                      ::FACET,
+                                      ATTRIBUTE > {
     public:
         typedef Attribute< BoundaryModelElement::FACET, ATTRIBUTE > superclass ;
 
