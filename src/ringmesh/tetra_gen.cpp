@@ -167,8 +167,10 @@ namespace RINGMesh {
             const BoundaryModelElement& surface = region->boundary( s ) ;
 
             if( Utils::contains( surface_id_,
-                    static_cast< signed_index_t >( surface.id() ) ) ) {
-                continue ;}
+                    static_cast< signed_index_t >( surface.id() ) ) )
+            {
+                continue ;
+            }
 
             nb_points += surface.nb_vertices() ;
             nb_facets += surface.nb_cells() ;
@@ -203,7 +205,8 @@ namespace RINGMesh {
         well_indices_.reserve( well_edges_.size() * 2 ) ;
 
         for( index_t i = nb_points_without_well; i < unique_indices.size();
-             i++ ) {
+             i++ )
+        {
             well_indices_.push_back( unique_indices[ i ] + first_index ) ;
         }
 

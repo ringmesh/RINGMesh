@@ -509,12 +509,14 @@ namespace RINGMesh {
         if( nb_vertices() != rhs_vertices.size() ) {return false ;}
 
         if( std::equal( rhs_vertices.begin(), rhs_vertices.end(),
-                vertices_.begin() ) ) {
+                vertices_.begin() ) )
+        {
             return true ;
         }
 
         if( std::equal( rhs_vertices.begin(), rhs_vertices.end(),
-                vertices_.rbegin() ) ) {
+                vertices_.rbegin() ) )
+        {
             return true ;
         }
 
@@ -617,7 +619,7 @@ namespace RINGMesh {
             if( prev_in_facet( f, v ) == from  ) {
                 ringmesh_debug_assert( is_on_border( f, v ) ) ;
                 next_in_next = next_in_facet( f, v ) ;
-            } else   {
+            } else {
                 ringmesh_debug_assert( is_on_border( f, prev_in_facet( f, v ) ) ) ;
                 next_in_next = prev_in_facet( f, v ) ;
             }
@@ -735,7 +737,7 @@ namespace RINGMesh {
                     return ;
                 }
             }
-        } else   {
+        } else {
             for( index_t f = 0; f < nb_cells(); ++f ) {
                 facet = f ;
                 edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
@@ -779,7 +781,7 @@ namespace RINGMesh {
                     return ;
                 }
             }
-        } else   {
+        } else {
             for( index_t f = 0; f < nb_cells(); ++f ) {
                 facet = f ;
                 oriented_edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
@@ -1179,7 +1181,8 @@ namespace RINGMesh {
 
                 for( index_t cur_v = 0;
                      cur_v < S_.nb_vertices_in_facet( cur_f );
-                     cur_v++ ) {
+                     cur_v++ )
+                {
                     if( S_.surf_vertex_id( cur_f, cur_v ) == id1 ) {
                         S_.facets_[ S_.facet_begin( cur_f ) + cur_v ] = new_id1 ;
                         break ;
@@ -1227,7 +1230,8 @@ namespace RINGMesh {
 
                     for( index_t v = 1;
                          v + 1 < surface.nb_vertices_in_facet( t );
-                         ++v ) {
+                         ++v )
+                    {
                         double cur_volume = ( dot( p0,
                                                   cross( surface.vertex( t,
                                                           v ),
@@ -1240,9 +1244,9 @@ namespace RINGMesh {
             }
 
             return fabs( result ) ;
-        } else if( E->element_type() == BoundaryModelElement::CORNER )   {
+        } else if( E->element_type() == BoundaryModelElement::CORNER ) {
             return 0 ;
-        } else if( E->element_type() == BoundaryModelElement::LINE )   {
+        } else if( E->element_type() == BoundaryModelElement::LINE ) {
             const Line* L = dynamic_cast< const Line* >( E ) ;
             ringmesh_assert( L != nil ) ;
 
@@ -1251,7 +1255,7 @@ namespace RINGMesh {
             }
 
             return result ;
-        } else if( E->element_type() == BoundaryModelElement::SURFACE )   {
+        } else if( E->element_type() == BoundaryModelElement::SURFACE ) {
             const Surface* S = dynamic_cast< const Surface* >( E ) ;
             ringmesh_assert( S != nil ) ;
 
@@ -1336,12 +1340,12 @@ namespace RINGMesh {
                 double half = GEO::distance( p1, c ) ;
                 double cp_dot_p0p1 = dot( p - c, p1 - p0 ) ;
 
-                if( cp_dot_p0p1 < - half ) {distance_pt_2_segment =
-                                                GEO::distance( p0, p ) ;
+                if( cp_dot_p0p1 < - half ) {
+                    distance_pt_2_segment =
+                        GEO::distance( p0, p ) ;
                 } else if( cp_dot_p0p1 > half ) {
                     distance_pt_2_segment = GEO::distance( p1, p ) ;
-                } else
-                {
+                } else {
                     vec3 projection = c + cp_dot_p0p1 * ( p1 - p0 ) ;
                     distance_pt_2_segment = GEO::distance( projection, p ) ;
                 }
@@ -1358,7 +1362,8 @@ namespace RINGMesh {
         if( S != nil ) {
             for( index_t i = 0; i < S->nb_cells(); i++ ) {
                 for( index_t j = 1; j + 1 < S->nb_vertices_in_facet( i );
-                     ++j ) {
+                     ++j )
+                {
                     double cur = GEO::Geom::point_triangle_squared_distance(
                         p,
                         S->vertex( i,
@@ -1384,7 +1389,7 @@ namespace RINGMesh {
         if( E->nb_children() == 0 ) {
             ringmesh_assert_not_reached ;
             return result ;
-        } else   {
+        } else {
             for( index_t i = 0; i < E->nb_children(); ++i ) {
                 double dist = distance( &E->child( i ), p ) ;
                 result = ( dist < result ) ? dist : result ;

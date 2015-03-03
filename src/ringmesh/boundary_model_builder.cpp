@@ -382,8 +382,10 @@ namespace RINGMesh {
     {
         index_t result = find_corner( index ) ;
 
-        if( result != NO_ID ) {return result ;} else {return create_corner(
-                                                          index ) ;}
+        if( result != NO_ID ) {return result ;} else {
+            return create_corner(
+                index ) ;
+        }
     }
 
 
@@ -442,8 +444,10 @@ namespace RINGMesh {
     {
         index_t result = find_line( vertices ) ;
 
-        if( result != NO_ID ) {return result ;} else {return create_line(
-                                                          vertices ) ;}
+        if( result != NO_ID ) {return result ;} else {
+            return create_line(
+                vertices ) ;
+        }
     }
 
 
@@ -478,7 +482,8 @@ namespace RINGMesh {
 
                 for( index_t j = 0;
                      j < model_.contact( i ).nb_in_boundary();
-                     j++ ) {
+                     j++ )
+                {
                     if( comp[ j ] != &model_.contact( i ).in_boundary( j ) ) {
                         equal = false ;
                         break ;
@@ -532,8 +537,10 @@ namespace RINGMesh {
     {
         index_t result = find_contact( interfaces ) ;
 
-        if( result != NO_ID ) {return result ;} else {return create_contact(
-                                                          interfaces ) ;}
+        if( result != NO_ID ) {return result ;} else {
+            return create_contact(
+                interfaces ) ;
+        }
     }
 
 
@@ -910,14 +917,16 @@ namespace RINGMesh {
             }
 
             if( model_.line( 0 ).parent_id() == NO_ID && model_.nb_contacts() >
-                0 ) {
+                0 )
+            {
                 fill_elements_parent( BME::LINE ) ;
             }
         }
 
         // Corners
         if( model_.nb_corners() > 0 && model_.corner( 0 ).nb_in_boundary() ==
-            0 ) {
+            0 )
+        {
             // Info from line boundaries is used here and should be available
             fill_elements_in_boundaries( BME::CORNER ) ;
         }
@@ -942,7 +951,8 @@ namespace RINGMesh {
             }
 
             if( model_.region( 0 ).parent_id() == NO_ID && model_.nb_layers() >
-                0 ) {
+                0 )
+            {
                 fill_elements_parent( BME::REGION ) ;
             }
         }
@@ -987,7 +997,8 @@ namespace RINGMesh {
         if( E.has_parent() && E.parent().has_geological_feature() ) {
             E.set_geological_feature( E.parent().geological_feature() ) ;
         } else if( E.nb_children() > 0 &&
-                   E.child( 0 ).has_geological_feature() ) {
+                   E.child( 0 ).has_geological_feature() )
+        {
             E.set_geological_feature( E.child( 0 ).geological_feature() ) ;
         }
 
@@ -1136,8 +1147,10 @@ namespace RINGMesh {
         for( index_t i = 0; i < model_.nb_elements( BME::ALL_TYPES ); ++i ) {
             BME& E = element( BME::ALL_TYPES, i ) ;
 
-            if( !E.has_geological_feature() ) {fill_element_geological_feature(
-                                                   E ) ;}
+            if( !E.has_geological_feature() ) {
+                fill_element_geological_feature(
+                    E ) ;
+            }
 
             if( !check_basic_element_validity( E ) ) {
                 return false ;
@@ -1275,7 +1288,7 @@ namespace RINGMesh {
                 if( read_model ) {
                     if( strncmp( in.field( 0 ), "name:", 5 ) == 0 ) {
                         set_model_name( &in.field( 0 )[ 5 ] ) ;
-                    } else if( in.field_matches( 0, "TSURF" ) )   {
+                    } else if( in.field_matches( 0, "TSURF" ) ) {
                         // 1. Create Interface its name
                         index_t f = 1 ;
                         std::ostringstream oss ;
@@ -1286,7 +1299,7 @@ namespace RINGMesh {
 
                         create_interface( oss.str() ) ;
                         nb_tsurf++ ;
-                    } else if( in.field_matches( 0, "TFACE" ) )   {
+                    } else if( in.field_matches( 0, "TFACE" ) ) {
                         // 2. Create the Surface from the name of its parent Interface
                         // its geological feature
                         index_t id = in.field_as_uint( 1 ) ;
@@ -1316,7 +1329,7 @@ namespace RINGMesh {
 
                         create_surface( interface_name, geol, p0, p1, p2 ) ;
                         nb_tface++ ;
-                    } else if( in.field_matches( 0, "REGION" ) )   {
+                    } else if( in.field_matches( 0, "REGION" ) ) {
                         // 3. Read Region information and create them from their name,
                         // the surfaces on their boundary
                         index_t id = in.field_as_uint( 1 ) ;
@@ -1348,11 +1361,14 @@ namespace RINGMesh {
                         }
 
                         // The Universe is not a regular region
-                        if( name == "Universe" ) {set_universe(
-                                                      region_boundaries ) ;
-                        } else { create_region( name,
-                                     region_boundaries ) ;}
-                    } else if( in.field_matches( 0, "LAYER" ) )   {
+                        if( name == "Universe" ) {
+                            set_universe(
+                                region_boundaries ) ;
+                        } else {
+                            create_region( name,
+                                region_boundaries ) ;
+                        }
+                    } else if( in.field_matches( 0, "LAYER" ) ) {
                         // 4. Build the volumetric layers from their name and
                         // the ids of the regions they contain
                         index_t layer_id = create_layer( in.field( 1 ) ) ;
@@ -1377,24 +1393,25 @@ namespace RINGMesh {
                                 }
                             }
                         }
-                    } else if( in.field_matches( 0, "END" ) )   {
+                    } else if( in.field_matches( 0, "END" ) ) {
                         // End of the high level information on the model
                         // Switch to reading the geometry of the model surfaces
                         read_model = false ;
                         continue ;
                     }
-                } else   {
+                } else {
                     if( in.field_matches( 0, "GOCAD" ) ) {
                         // This is the beginning of a new TSurf = Interface
                         tsurf_count++ ;
                     }
 
                     if( in.field_matches( 0, "ZPOSITIVE" ) ) {
-                        if( in.field_matches( 1, "Elevation" ) ) {z_sign = 1 ;
+                        if( in.field_matches( 1, "Elevation" ) ) {
+                            z_sign = 1 ;
                         } else if( in.field_matches( 1, "Depth" ) ) {
                             z_sign = - 1 ;
                         } else { ringmesh_assert_not_reached ;}
-                    } else if( in.field_matches( 0, "END" ) )   {
+                    } else if( in.field_matches( 0, "END" ) ) {
                         // This the END of a TSurf
                         if( tsurf_count > 0 ) {
                             // End the last TFace - Surface of this TSurf
@@ -1408,7 +1425,8 @@ namespace RINGMesh {
                                 tface_facets_ptr ) ;
 
                             if( !check_key_facet_orientation( tface_count -
-                                    1 ) ) {
+                                    1 ) )
+                            {
                                 change_key_facet.push_back( tface_count - 1 ) ;
                             }
 
@@ -1421,7 +1439,7 @@ namespace RINGMesh {
                             tsurf_vertex_ptr.clear() ;
                             tface_vertex_start.clear() ;
                         }
-                    } else if( in.field_matches( 0, "TFACE" ) )   {
+                    } else if( in.field_matches( 0, "TFACE" ) ) {
                         // Beginning of a new TFace - Surface
                         if( tface_vertex_start.size() > 0 ) {
                             // End the previous TFace - Surface  (copy from line 1180)
@@ -1434,7 +1452,8 @@ namespace RINGMesh {
                                 tface_facets_ptr ) ;
 
                             if( !check_key_facet_orientation( tface_count -
-                                    1 ) ) {
+                                    1 ) )
+                            {
                                 change_key_facet.push_back( tface_count - 1 ) ;
                             }
 
@@ -1451,18 +1470,20 @@ namespace RINGMesh {
 
                     // 4. Read the surface vertices and facets (only triangles in Gocad Model3d files)
                     else if( in.field_matches( 0,
-                                 "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
+                                 "VRTX" ) || in.field_matches( 0, "PVRTX" ) )
+                    {
                         const vec3 p( read_double( in, 2 ), read_double( in,
                                           3 ), z_sign * read_double( in, 4 ) ) ;
                         tsurf_vertex_ptr.push_back( add_vertex( p ) ) ;
                     } else if( in.field_matches( 0,
                                    "PATOM" ) |
-                               in.field_matches( 0, "ATOM" ) )   {
+                               in.field_matches( 0, "ATOM" ) )
+                    {
                         tsurf_vertex_ptr.push_back( tsurf_vertex_ptr[ in.
                                                                       field_as_uint(
                                                                           2 ) -
                                                                       1 ] ) ;
-                    } else if( in.field_matches( 0, "TRGL" ) )   {
+                    } else if( in.field_matches( 0, "TRGL" ) ) {
                         // Read ids of the vertices of each triangle in the TSurf
                         // and switch to ids in the TFace
                         tface_facets.push_back( (index_t) in.field_as_uint(
@@ -1480,7 +1501,8 @@ namespace RINGMesh {
                         index_t v_id = in.field_as_uint( 1 ) - 1 ;
 
                         if( find_corner( model_.vertex( tsurf_vertex_ptr[ v_id
-                                    ] ) ) == NO_ID ) {
+                                    ] ) ) == NO_ID )
+                        {
                             create_corner( tsurf_vertex_ptr[ v_id ] ) ;
                         }
                     }
@@ -1499,7 +1521,8 @@ namespace RINGMesh {
                         index_t part_id = NO_ID ;
 
                         for( index_t i = 0; i < tface_vertex_start.size();
-                             ++i ) {
+                             ++i )
+                        {
                             if( p1 < tface_vertex_start[ i ] ) {
                                 ringmesh_assert( p2 < tface_vertex_start[ i ] ) ;
 
@@ -2272,17 +2295,21 @@ namespace RINGMesh {
         index_t next_f_v0 = NO_ID ;
         index_t next_f_v1 = NO_ID ;
 
-        if( !backward ) {S.next_on_border( f,
-                             f_v0,
-                             f_v1,
-                             next_f,
-                             next_f_v0,
-                             next_f_v1 ) ;} else { S.next_on_border( f,
-                                                       f_v1,
-                                                       f_v0,
-                                                       next_f,
-                                                       next_f_v0,
-                                                       next_f_v1 ) ;}
+        if( !backward ) {
+            S.next_on_border( f,
+                f_v0,
+                f_v1,
+                next_f,
+                next_f_v0,
+                next_f_v1 ) ;
+        } else {
+            S.next_on_border( f,
+                f_v1,
+                f_v0,
+                next_f,
+                next_f_v0,
+                next_f_v1 ) ;
+        }
 
         // Find the BorderTriangle that is correspond to this
         // It must exist and there is only one
@@ -2326,7 +2353,8 @@ namespace RINGMesh {
         signed_index_t k = i - 1 ;
 
         while( k > - 1 &&
-               border_triangles[ i ].same_edge( border_triangles[ k ] ) ) {
+               border_triangles[ i ].same_edge( border_triangles[ k ] ) )
+        {
             visited[ k ] = true ;
             k-- ;
         }
@@ -2361,7 +2389,8 @@ namespace RINGMesh {
         signed_index_t k = i - 1 ;
 
         while( k > - 1 &&
-               border_triangles[ i ].same_edge( border_triangles[ k ] ) ) {
+               border_triangles[ i ].same_edge( border_triangles[ k ] ) )
+        {
             adjacent_surfaces.push_back( border_triangles[ k ].s_ ) ;
             k-- ;
         }
@@ -2478,7 +2507,8 @@ namespace RINGMesh {
 
                             // Add the next vertex
                             if( border_triangles[ next_i ].v0_ ==
-                                vertices.back() ) {
+                                vertices.back() )
+                            {
                                 vertices.push_back(
                                     border_triangles[ next_i ].v1_ ) ;
                             } else {
@@ -2523,7 +2553,8 @@ namespace RINGMesh {
 
                                 // Fill the Line vertices
                                 if( border_triangles[ prev_i ].v0_ ==
-                                    vertices.front() ) {
+                                    vertices.front() )
+                                {
                                     vertices.insert(
                                         vertices.begin(),
                                         border_triangles[ prev_i ].v1_ ) ;
@@ -2572,7 +2603,7 @@ namespace RINGMesh {
             // Check that this surface is closed and define an interior
             // and exterior (universe) regions
             ringmesh_assert_not_reached ;
-        } else   {
+        } else {
             // Each side of each Surface is in one Region( +side is first )
             std::vector< index_t > surf_2_region(
                 2 * model_.nb_surfaces(), NO_ID ) ;

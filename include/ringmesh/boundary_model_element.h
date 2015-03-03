@@ -125,13 +125,25 @@ public:
 
         static index_t dimension( TYPE t ) ;
 
-        static bool parent_allowed( TYPE t ) { return parent_type( t ) !=
-                                                      NO_TYPE ;}
+        static bool parent_allowed( TYPE t )
+        {
+            return parent_type( t ) !=
+                   NO_TYPE ;
+        }
+
         static bool child_allowed( TYPE t ) { return child_type( t ) != NO_TYPE ;}
-        static bool boundary_allowed( TYPE t ) { return boundary_type( t ) !=
-                                                        NO_TYPE ;}
-        static bool in_boundary_allowed( TYPE t ) { return in_boundary_type( t )
-                                                           != NO_TYPE ;}
+        static bool boundary_allowed( TYPE t )
+        {
+            return boundary_type( t ) !=
+                   NO_TYPE ;
+        }
+
+        static bool in_boundary_allowed( TYPE t )
+        {
+            return in_boundary_type( t )
+                   != NO_TYPE ;
+        }
+
         /*!
          * @brief Constructs a BoundaryModelElement
          *
@@ -436,8 +448,12 @@ public:
         /*! @brief Returns the number of segments of the Line */
         virtual index_t nb_cells() const { return vertices_.size() - 1 ;}
         virtual index_t nb_vertices() const { return vertices_.size() ;}
-        virtual index_t model_vertex_id( index_t p ) const { return vertices_.
-                                                                    at( p ) ;}
+        virtual index_t model_vertex_id( index_t p ) const
+        {
+            return vertices_.
+                   at( p ) ;
+        }
+
         virtual const vec3& vertex( index_t line_vertex_id ) const ;
 
         virtual void set_vertex(
@@ -603,8 +619,12 @@ public:
         /*!
          * @brief Returns the number of facets
          */
-        virtual index_t nb_cells() const { return facets_.empty() ? 0 :
-                                                  facet_ptr_.size() - 1 ;}
+        virtual index_t nb_cells() const
+        {
+            return facets_.empty() ? 0 :
+                   facet_ptr_.size() - 1 ;
+        }
+
         /*!
          * @brief Returns the number of vertices
          */
@@ -612,8 +632,12 @@ public:
         /*!
          * @brief Get the vertex in the model from a vertex index in the Surface
          */
-        virtual index_t model_vertex_id( index_t p ) const { return vertices_[
-                                                                        p ] ;}
+        virtual index_t model_vertex_id( index_t p ) const
+        {
+            return vertices_[
+                       p ] ;
+        }
+
         /*!
          * @brief Returns the coordinates of the point at the given index in the surface
          */
@@ -640,11 +664,18 @@ public:
          */
         index_t facet_begin( index_t f ) const { return facet_ptr_.at( f ) ;}
         index_t facet_end( index_t f ) const { return facet_ptr_.at( f + 1 ) ;}
-        index_t nb_vertices_in_facet( index_t f ) const { return facet_end( f )
-                                                                 - facet_begin(
-                                                              f ) ;}
-        bool is_triangle( index_t f ) const { return nb_vertices_in_facet( f )
-                                                     == 3 ;}
+        index_t nb_vertices_in_facet( index_t f ) const
+        {
+            return facet_end( f )
+                   - facet_begin(
+                f ) ;
+        }
+
+        bool is_triangle( index_t f ) const
+        {
+            return nb_vertices_in_facet( f )
+                   == 3 ;
+        }
 
         index_t next_in_facet(
             index_t f,
@@ -652,7 +683,8 @@ public:
         {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
 
-            if( v != nb_vertices_in_facet( f ) - 1 ) {return v + 1 ;
+            if( v != nb_vertices_in_facet( f ) - 1 ) {
+                return v + 1 ;
             } else { return 0 ;}
         }
 
@@ -662,16 +694,19 @@ public:
         {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
 
-            if( v > 0 ) {return v - 1 ;
+            if( v > 0 ) {
+                return v - 1 ;
             } else { return nb_vertices_in_facet( f ) - 1 ;}
         }
 
         index_t nb_corners() const { return facets_.size() ;}
-        index_t model_vertex_id_at_corner( index_t corner ) const { return
-                                                                        vertices_
-                                                                        [
-                                                                            facets_
-                                                                            [ corner ] ] ;}
+        index_t model_vertex_id_at_corner( index_t corner ) const
+        {
+            return vertices_
+                   [
+                       facets_
+                       [ corner ] ] ;
+        }
 
         /*!
          * @brief Convert the facet index in the surface to a facet index in the BoundaryModel

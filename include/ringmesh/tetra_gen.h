@@ -84,8 +84,12 @@ public:
 
         index_t nb_points() const { return points_.size() ;}
         index_t nb_internal_points() const { return internal_points_.size() ;}
-        index_t nb_total_points() const { return nb_points() +
-                                                 nb_internal_points() ;}
+        index_t nb_total_points() const
+        {
+            return nb_points() +
+                   nb_internal_points() ;
+        }
+
         index_t nb_triangles() const { return triangles_.size() / 3 ;}
         index_t point_index(
             index_t f,

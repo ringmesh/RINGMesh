@@ -320,8 +320,7 @@ protected:
     template< class T > class SparseMatrix< T,
                                             light > : public SparseMatrixImpl<
             T,
-            T >
-    {
+            T >{
 public:
         typedef SparseMatrix< T, light > thisclass ;
         SparseMatrix( bool is_symetrical = false )
@@ -394,8 +393,7 @@ private:
     template< class T > class SparseMatrix< T,
                                             heavy > : public SparseMatrixImpl<
             T,
-            index_t >
-    {
+            index_t >{
 public:
         typedef SparseMatrix< T, heavy > thisclass ;
         SparseMatrix( bool is_symetrical = false )
