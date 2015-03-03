@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
  *     * Neither the name of the <organization> nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr
- *     Antoine.Mazuyer@univ-lorraine.fr
+ *     Arnaud.Botella@univ-lorraine.fr 
+ *     Antoine.Mazuyer@univ-lorraine.fr 
  *     Jeanne.Pellerin@wias-berlin.de
  *
  *     http://www.gocad.org
@@ -34,9 +34,10 @@
  *     GOCAD Project
  *     Ecole Nationale Supérieure de Géologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
- *     54518 VANDOEUVRE-LES-NANCY
+ *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
- */
+*/
+
 
 #ifndef __RINGMESH_TYPES__
 #define __RINGMESH_TYPES__
@@ -44,6 +45,7 @@
 #include <geogram/basic/geometry.h>
 
 namespace RINGMesh {
+
     //    _____
     //   |_   _|  _ _ __  ___ ___
     //     | || || | '_ \/ -_|_-<
@@ -54,8 +56,7 @@ namespace RINGMesh {
     typedef byte* pointer ;
 
     /** Null pointer type */
-
-    // #define nil NULL // already in Geogram
+    //#define nil NULL // already in Geogram
 
     /** Integer type with a width of 8 bits */
     typedef char int8 ;
@@ -102,7 +103,7 @@ namespace RINGMesh {
     const float64 big_float64 = 1e20 ;
     const float64 small_float64 = 1e-20 ;
     const float64 epsilon = 1E-8 ;
-    const float64 epsilon_sq = epsilon * epsilon ;
+    const float64 epsilon_sq = epsilon*epsilon ;
 
     typedef GEO::vec3 vec3 ;
     static vec3 dummy_vec3 ;
@@ -112,8 +113,7 @@ namespace RINGMesh {
     typedef GEO::signed_index_t signed_index_t ;
     static signed_index_t dummy_signed_index_t ;
 
-    const static index_t NO_ID = index_t( - 1 ) ;
-
+    const static index_t NO_ID = index_t( -1 ) ;
     //    ___
     //   | __|_ _ _  _ _ __  ___
     //   | _|| ' \ || | '  \(_-<
@@ -121,7 +121,7 @@ namespace RINGMesh {
     //
 
     enum ElementType {
-        VERTEX  = - 1,
+        VERTEX  = -1,
         LINE    =  0,
         TRGL    =  1,
         QUAD    =  2,
@@ -130,6 +130,7 @@ namespace RINGMesh {
         PRISM   =  5,
         HEXA    =  6
     } ;
+
 
     enum TetraMethod {
         TetGen, MG_Tetra
@@ -140,132 +141,88 @@ namespace RINGMesh {
     //   | (__/ -_) | | / _` / -_|_-< _| '_| | '_ \  _/ _ \ '_(_-<
     //    \___\___|_|_| \__,_\___/__|__|_| |_| .__/\__\___/_| /__/
     //                                       |_|
-    struct CellDescriptor
-    {
+    struct CellDescriptor {
         uint8 nb_vertices ;
         uint8 nb_facets ;
-        uint8 nb_vertices_in_facet[ 6 ] ;
-        uint8 facet[ 6 ][ 4 ] ;
+        uint8 nb_vertices_in_facet[6] ;
+        uint8 facet[6][4] ;
         uint8 nb_edges ;
-        uint8 edge[ 12 ][ 2 ] ;
-        uint8 edges_in_facet[ 6 ][ 4 ] ;
+        uint8 edge[12][2] ;
+        uint8 edges_in_facet[6][4] ;
     } ;
 
     static CellDescriptor line_descriptor = {
         2,              // nb_vertices
         1,              // nb_facets
         { 2 }, // nb_vertices in facet
-        {
-            { 0, 1 }
-        },             // facets
+        { { 0, 1 } },  // facets
         1,              // nb_edges
-        {
-            { 0, 1 }
-        },             // edges
-        {
-            { 0 }
-        }         // edges_in_facet
+        { { 0, 1 } } , // edges
+        { { 0 } } //edges_in_facet
     } ;
     static CellDescriptor trgl_descriptor = {
         3,              // nb_vertices
         1,              // nb_facets
         { 3 }, // nb_vertices in facet
-        {
-            { 0, 1, 2 }
-        },                // facets
+        { { 0, 1, 2 } },  // facets
         3,              // nb_edges
-        {
-            { 0, 1 }, { 1, 2 }, { 2, 0 }
-        },                                 // edges
-        {
-            { 0, 1, 2 }
-        }               // edges_in_facet
+        { { 0, 1 }, { 1, 2 }, { 2, 0 } } , // edges
+        { { 0, 1, 2 } } //edges_in_facet
     } ;
     static CellDescriptor quad_descriptor = {
         4,              // nb_vertices
         1,              // nb_facets
         { 4 }, // nb_vertices in facet
-        {
-            { 0, 1, 2, 3 }
-        },                   // facets
+        { { 0, 1, 2, 3 } },  // facets
         4,              // nb_edges
-        {
-            { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0}
-        },                                          // edges
-        {
-            { 0, 1, 2, 3 }
-        }                  // edges_in_facet
+        { { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0} } , // edges
+        { { 0, 1, 2, 3 } } //edges_in_facet
     } ;
     static CellDescriptor tetra_descriptor = {
         4,              // nb_vertices
         4,              // nb_facets
         { 3, 3, 3, 3 }, // nb_vertices in facet
-        {
-            { 3, 1, 2 }, { 3, 2, 0 }, { 0, 1, 3 }, { 1, 0, 2 }
-        },                                                       // facets
+        { { 3, 1, 2 }, { 3, 2, 0 }, { 0, 1, 3 }, { 1, 0, 2 } },  // facets
         6,              // nb_edges
-        {
-            { 1, 3 }, { 3, 2 }, { 2, 1 }, { 0, 2 }, { 3, 0 }, { 1, 0 }
-        },                                                               // edges
-        {
-            { 2, 0, 1 }, { 1, 4, 3 }, { 4, 0, 5 }, { 3, 2, 5 }
-        }                                                      // edges_in_facet
+        { { 1, 3 }, { 3, 2 }, { 2, 1 }, { 0, 2 }, { 3, 0 }, { 1, 0 } } , // edges
+        { { 2, 0, 1 }, { 1, 4, 3 }, { 4, 0, 5 }, { 3, 2, 5 } } //edges_in_facet
     } ;
     static CellDescriptor hexa_descriptor = {
         8,                      // nb_vertices
         6,                      // nb_facets
         { 4, 4, 4, 4, 4, 4 },   // nb_vertices in facet
-        {
-            { 0, 2, 6, 4 }, { 3, 1, 5, 7 }, { 1, 0, 4, 5 }, { 2, 3, 7, 6 },
-            { 1, 3, 2, 0 }, { 4, 6, 7, 5 }
-        },                                   // facets
+        { { 0, 2, 6, 4 }, { 3, 1, 5, 7 }, { 1, 0, 4, 5 }, { 2, 3, 7, 6 },
+          { 1, 3, 2, 0 }, { 4, 6, 7, 5 } },  // facets
         12,                     // nb_edges
-        {
-            { 0, 2 }, { 2, 6 }, { 6, 4 }, { 4, 0 }, { 3, 1 }, { 1, 5 }, { 5, 7 },
-            { 7, 3 }, { 1, 0 }, { 4, 5 }, { 2, 3 }, { 7, 6 }
-        },                                                      // edges
-        {
-            { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 3, 8, 5, 9 },
-            { 1, 11, 7, 10 }, { 0, 10, 4, 8 }, { 2, 9, 6, 11 }
-        }                                                       // edges_in_facet
+        { { 0, 2 }, { 2, 6 }, { 6, 4 }, { 4, 0 }, { 3, 1 }, { 1, 5 }, { 5, 7 },
+          { 7, 3 }, { 1, 0 }, { 4, 5 }, { 2, 3 }, { 7, 6 } },   // edges
+        { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 3, 8, 5, 9 },
+          { 1, 11, 7, 10 }, { 0, 10, 4, 8 }, { 2, 9, 6, 11 } }  //edges_in_facet
     } ;
     static CellDescriptor prism_descriptor = {
         6,                  // nb_vertices
         5,                  // nb_facets
         { 3, 3, 4, 4, 4 },  // nb_vertices in facet
-        {
-            { 0, 1,
-              2 }, { 3, 5, 4 }, { 0, 3, 4, 1 }, { 0, 2, 5, 3 }, { 1, 4, 5, 2 }
-        },                                                                             // facets
+        { { 0, 1, 2 }, { 3, 5, 4 }, { 0, 3, 4, 1 }, { 0, 2, 5, 3 }, { 1, 4, 5, 2 } },  // facets
         9,                  // nb_edges
-        {
-            { 0, 1 }, { 1, 2 }, { 2, 0 }, { 3, 5 }, { 5, 4 },
-            { 4, 3 }, { 0, 3 }, { 4, 1 }, { 2, 5 }
-        },                                           // edges
-        {
-            { 0, 1, 2 }, { 5, 4, 3 }, { 6, 5, 7, 0 },
-            { 2, 8, 3, 6 }, { 7, 4, 8, 1 }
-        }                                   // edges_in_facet
+        { { 0, 1 }, { 1, 2 }, { 2, 0 }, { 3, 5 }, { 5, 4 },
+          { 4, 3 }, { 0, 3 }, { 4, 1 }, { 2, 5 } },  // edges
+        { { 0, 1, 2 }, { 5, 4, 3 }, { 6, 5, 7, 0 },
+          { 2, 8, 3, 6 }, { 7, 4, 8, 1 } }  //edges_in_facet
     } ;
     static CellDescriptor pyramid_descriptor = {
         5,                  // nb_vertices
         5,                  // nb_facets
         { 4, 3, 3, 3, 3 },  // nb_vertices in facet
-        {
-            { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 }
-        },                                                                         // facets
+        { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } },    // facets
         8,                  // nb_edges
-        {
-            { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
-            { 0, 4 }, { 4, 1 }, { 3, 4 }, { 2, 4 }
-        },                                           // edges
-        {
-            { 0, 1, 2, 3 }, { 4, 5, 0 }, { 3, 6, 4 },
-            { 6, 7, 2 }, { 1, 5, 7 }
-        }                             // edges_in_facet
+        { { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
+          { 0, 4 }, { 4, 1 }, { 3, 4 }, { 2, 4 } },  // edges
+        { { 0, 1, 2, 3 }, { 4, 5, 0 }, { 3, 6, 4 },
+          { 6, 7, 2 }, { 1, 5, 7 } }  //edges_in_facet
     } ;
 
-    static ElementType cell_types[ 9 ] = {
+    static ElementType cell_types[9] = {
         VERTEX,
         VERTEX,
         VERTEX,
@@ -277,15 +234,16 @@ namespace RINGMesh {
         HEXA
     } ;
 
-    static CellDescriptor* cell_descriptors[ 7 ] = {
-        &line_descriptor,
-        &trgl_descriptor,
-        &quad_descriptor,
-        &tetra_descriptor,
-        &pyramid_descriptor,
-        &prism_descriptor,
-        &hexa_descriptor
+    static CellDescriptor* cell_descriptors[7] = {
+       &line_descriptor,
+       &trgl_descriptor,
+       &quad_descriptor,
+       &tetra_descriptor,
+       &pyramid_descriptor,
+       &prism_descriptor,
+       &hexa_descriptor
     } ;
+
 }
 
 #endif
