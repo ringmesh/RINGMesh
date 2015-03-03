@@ -57,8 +57,8 @@ namespace RINGMesh {
          *   bounding boxes. triangles_intersection() needs to be
          *   called to detect the actual intersections.
          */
-        template< class ACTION > void compute_facet_bbox_intersections(
-            ACTION& action ) const
+        template< class ACTION >
+        void compute_facet_bbox_intersections( ACTION& action ) const
         {
             intersect_recursive( action, 1, 0,
                 mesh_.nb_cells(), 1, 0, mesh_.nb_cells() ) ;
@@ -185,7 +185,8 @@ namespace RINGMesh {
          * @param b1    index of the first facet in node2
          * @param e2    one position past the index of the second facet in node2
          */
-        template< class ACTION > void intersect_recursive(
+        template< class ACTION >
+        void intersect_recursive(
             ACTION& action,
             index_t node1,
             index_t b1,

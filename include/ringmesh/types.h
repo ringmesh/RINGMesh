@@ -140,8 +140,7 @@ namespace RINGMesh {
     //   | (__/ -_) | | / _` / -_|_-< _| '_| | '_ \  _/ _ \ '_(_-<
     //    \___\___|_|_| \__,_\___/__|__|_| |_| .__/\__\___/_| /__/
     //                                       |_|
-    struct CellDescriptor
-    {
+    struct CellDescriptor {
         uint8 nb_vertices ;
         uint8 nb_facets ;
         uint8 nb_vertices_in_facet[ 6 ] ;

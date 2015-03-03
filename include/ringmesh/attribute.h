@@ -99,7 +99,8 @@ namespace RINGMesh {
 
     typedef GEO::SmartPointer< AttributeStore > AttributeStore_var ;
 
-    template< class ATTRIBUTE >class AttributeStoreImpl : public AttributeStore {
+    template< class ATTRIBUTE >
+    class AttributeStoreImpl : public AttributeStore {
     public:
         AttributeStoreImpl( index_t size )
               : AttributeStore( sizeof( ATTRIBUTE ), size )
@@ -170,7 +171,8 @@ namespace RINGMesh {
      * Each object on which attributes will be created object should
      * define possible locations with an enum. Jeanne.
      */
-    template< int32 LOCATION >class AttributeManagerImpl : public AttributeManager {
+    template< int32 LOCATION >
+    class AttributeManagerImpl : public AttributeManager {
     public:
         virtual int32 record_type_id() const { return LOCATION ;}
     } ;
@@ -199,7 +201,8 @@ namespace RINGMesh {
      * Access to attribute value only using the index of the element in the object. Jeanne
      */
     template< int32 LOCATION,
-              class ATTRIBUTE >class Attribute : public AttributeBase {
+              class ATTRIBUTE >
+    class Attribute : public AttributeBase {
     public:
         typedef Attribute< LOCATION, ATTRIBUTE > thisclass ;
         typedef AttributeManagerImpl< LOCATION > Manager ;
@@ -357,9 +360,9 @@ namespace RINGMesh {
     /**
      * Default implementation of AttributeSerializer.
      */
-    template< class ATTRIBUTE > class GenericAttributeSerializer : public
-                                                                   AttributeSerializer
-    {
+    template< class ATTRIBUTE >
+    class GenericAttributeSerializer : public
+                                       AttributeSerializer {
     public:
         virtual AttributeStoreImpl< ATTRIBUTE >* create_attribute_store(
             index_t record_size )
@@ -391,7 +394,8 @@ namespace RINGMesh {
      * In the common.cpp file of the library, add:
      * ringmesh_register_attribute_type<MyAttributeType>("MyAttributeType") ;
      */
-    template< class T > class ringmesh_register_attribute_type {
+    template< class T >
+    class ringmesh_register_attribute_type {
     public:
         ringmesh_register_attribute_type( const std::string& type_name )
         {
@@ -443,7 +447,8 @@ namespace RINGMesh {
      * reading attribute values from a stream, and creating an attribute
      * from its type name.
      */
-    template< int32 LOCATION > class SerializedAttribute : public AttributeBase {
+    template< int32 LOCATION >
+    class SerializedAttribute : public AttributeBase {
     public:
         typedef AttributeManagerImpl< LOCATION > AttributeManagerT ;
 
@@ -560,7 +565,8 @@ namespace RINGMesh {
      *
      *  Remove this function and keep the next one ??
      */
-    template< int32 T > inline void get_serializable_attributes(
+    template< int32 T >
+    inline void get_serializable_attributes(
         AttributeManagerImpl< T >* manager,
         std::vector< SerializedAttribute< T > >& attributes,
         std::ostream& out )
@@ -584,7 +590,8 @@ namespace RINGMesh {
     }
 
 
-    template< int32 T > inline void get_serializable_attributes(
+    template< int32 T >
+    inline void get_serializable_attributes(
         AttributeManagerImpl< T >* manager,
         std::vector< SerializedAttribute< T > >& attributes )
     {
@@ -611,7 +618,8 @@ namespace RINGMesh {
      * \param[in] item Index of the item to which the read values should be linked to
      * \param[in] attributes The attributes to read
      */
-    template< int32 T > inline void serialize_read_attributes(
+    template< int32 T >
+    inline void serialize_read_attributes(
         const GEO::LineInput& in,
         index_t start_field,
         int32 item,
@@ -628,7 +636,8 @@ namespace RINGMesh {
     /*!
      * Generic writing of attributes in a ostream
      */
-    template< int32 T > inline void serialize_write_attributes(
+    template< int32 T >
+    inline void serialize_write_attributes(
         std::ostream& out,
         int32 item,
         std::vector< SerializedAttribute< T > >& attributes )

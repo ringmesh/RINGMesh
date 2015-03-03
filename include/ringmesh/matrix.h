@@ -55,8 +55,8 @@ namespace RINGMesh {
     /**
      * @Brief Basic container for the sparse matrix, i.e. the "elements".
      * */
-    template< class T >struct ElementImpl
-    {
+    template< class T >
+    struct ElementImpl {
         const static index_t NOT_USED = index_t( - 1 ) ;
         ElementImpl()
               : index( NOT_USED )
@@ -70,7 +70,8 @@ namespace RINGMesh {
     /**
      * @brief Basic "Row" of the matrix, this stores the elements of the matrix in a line-oriented way
      * */
-    template< class T >class RowImpl {
+    template< class T >
+    class RowImpl {
     public:
         typedef ElementImpl< T > Element ;
 
@@ -184,7 +185,8 @@ namespace RINGMesh {
      *  @brief This is the parent class for sparse matrices, the main difference between light and heavy type matrices
      * depend on the contents of rows elements: Light will contain type T objects, while heavy an index to access a std::deque.
      * */
-    template< class T, typename RowType > class SparseMatrixImpl {
+    template< class T, typename RowType >
+    class SparseMatrixImpl {
     public:
         typedef RowImpl< RowType > Row ;
         SparseMatrixImpl( bool is_symmetrical = false )
@@ -303,16 +305,17 @@ namespace RINGMesh {
      * */
     template< class T, MatrixType Light = MatrixType(
                   2* sizeof( T ) <= 2* sizeof( index_t ) +
-                  sizeof( T ) ) >class SparseMatrix : public SparseMatrixImpl< T,
-                                                                               T > {
+                  sizeof( T ) ) >
+    class SparseMatrix : public SparseMatrixImpl< T,
+                                                  T > {
     } ;
 
     /*!
      * specialization of SparseMatrix for MatrixType "light"
      * */
-    template< class T > class SparseMatrix< T, light > : public SparseMatrixImpl< T,
-                                                                                  T >
-    {
+    template< class T >
+    class SparseMatrix< T, light > : public SparseMatrixImpl< T,
+                                                              T >{
     public:
         typedef SparseMatrix< T, light > thisclass ;
         SparseMatrix( bool is_symetrical = false )
@@ -380,9 +383,9 @@ namespace RINGMesh {
      * The data are strored in a std::deque and the rows contains the
      * ids of the values within the deque.
      * */
-    template< class T > class SparseMatrix< T, heavy > : public SparseMatrixImpl< T,
-                                                                                  index_t >
-    {
+    template< class T >
+    class SparseMatrix< T, heavy > : public SparseMatrixImpl< T,
+                                                              index_t >{
     public:
         typedef SparseMatrix< T, heavy > thisclass ;
         SparseMatrix( bool is_symetrical = false )
@@ -473,7 +476,8 @@ namespace RINGMesh {
         std::deque< T > values_ ;
     } ;
 
-    template< class T >void product_matrix_by_vector(
+    template< class T >
+    void product_matrix_by_vector(
         const SparseMatrix< T >& mat1,
         const std::vector< T >& mat2,
         std::vector< T >& result )

@@ -1099,8 +1099,7 @@ namespace RINGMesh {
     /**
      * \brief Structure used to build Line by BoundaryModelBuilderGocad
      */
-    struct Border
-    {
+    struct Border {
         Border(
             index_t part,
             index_t corner,
@@ -2021,8 +2020,7 @@ namespace RINGMesh {
      * @brief Utility structure to build a BoundaryModel knowing only its surface
      * @details Store the vertices of a triangle that is on the boundary of a surface
      */
-    struct BorderTriangle
-    {
+    struct BorderTriangle {
         /*!
          * @brief Constructor
          * @param s Index of the surface

@@ -47,7 +47,8 @@
 #include <geogram/mesh/mesh.h>
 
 namespace RINGMesh {
-    template< class F > inline void parallel_for(
+    template< class F >
+    inline void parallel_for(
         F& f,
         uint32 from,
         uint32 to )
@@ -59,7 +60,8 @@ namespace RINGMesh {
     }
 
 
-    template< class IT, class CMP > inline IT split(
+    template< class IT, class CMP >
+    inline IT split(
         IT begin,
         IT end,
         CMP cmp )
@@ -71,8 +73,8 @@ namespace RINGMesh {
     }
 
 
-    template< int32 COORD, bool UP > struct Morton_vertex_cmp
-    {
+    template< int32 COORD, bool UP >
+    struct Morton_vertex_cmp {
         Morton_vertex_cmp( const Surface& mesh )
               : mesh_( mesh )
         {
@@ -88,8 +90,8 @@ namespace RINGMesh {
         const Surface& mesh_ ;
     } ;
 
-    template< int32 COORD, bool UP > struct Morton_mesh_vertex_cmp
-    {
+    template< int32 COORD, bool UP >
+    struct Morton_mesh_vertex_cmp {
         Morton_mesh_vertex_cmp( const GEO::Mesh& mesh )
               : mesh_( mesh )
         {
@@ -105,8 +107,8 @@ namespace RINGMesh {
         const GEO::Mesh& mesh_ ;
     } ;
 
-    template< int32 COORD, bool UP > struct Morton_facet_vertex_cmp
-    {
+    template< int32 COORD, bool UP >
+    struct Morton_facet_vertex_cmp {
         Morton_facet_vertex_cmp( const Surface& mesh )
               : mesh_( mesh )
         {
@@ -122,8 +124,8 @@ namespace RINGMesh {
         const Surface& mesh_ ;
     } ;
 
-    template< int32 COORD, bool UP > struct Morton_cell_cmp
-    {
+    template< int32 COORD, bool UP >
+    struct Morton_cell_cmp {
     public:
         Morton_cell_cmp( const GEO::Mesh& mesh )
               : mesh_( mesh )
@@ -150,8 +152,8 @@ namespace RINGMesh {
         const GEO::Mesh& mesh_ ;
     } ;
 
-    template< int32 COORD, bool UP > struct Morton_facet_cmp
-    {
+    template< int32 COORD, bool UP >
+    struct Morton_facet_cmp {
     public:
         Morton_facet_cmp( const Surface& mesh )
               : mesh_( mesh )
@@ -178,10 +180,11 @@ namespace RINGMesh {
     } ;
 
     template< class MESH,
-              template< int32 COORD, bool UP > class CMP > struct HilbertSort
-    {
+              template< int32 COORD, bool UP > class CMP >
+    struct HilbertSort {
         template< int32 COORDX, bool UPX, bool UPY, bool UPZ,
-                  class IT >static void sort(
+                  class IT >
+        static void sort(
             const MESH& M,
             IT begin,
             IT end,

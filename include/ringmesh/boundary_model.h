@@ -294,10 +294,11 @@ namespace RINGMesh {
         VertexAttributeManager vertex_attribute_manager_ ;
     } ;
 
-    template< class ATTRIBUTE >class BoundaryModelVertexAttribute : public Attribute
-                                                                    < BoundaryModel
-                                                                      ::VERTEX,
-                                                                      ATTRIBUTE > {
+    template< class ATTRIBUTE >
+    class BoundaryModelVertexAttribute : public Attribute
+                                         < BoundaryModel
+                                           ::VERTEX,
+                                           ATTRIBUTE > {
     public:
         typedef Attribute< BoundaryModel::VERTEX, ATTRIBUTE > superclass ;
 
