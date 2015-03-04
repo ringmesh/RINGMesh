@@ -391,7 +391,7 @@ namespace {
      */
     int memory_exhausted_handler(size_t) {
         abnormal_program_termination("memory exhausted");
-        return 0;
+        return 0; 
     }
 
     /**
@@ -419,7 +419,7 @@ namespace {
         wprintf(
             L"Abnormal program termination: Invalid parameter detected.\n"
             L"Function: %s\nFile: %s\nLine: %d\n",
-            function, file, line
+            function, file, int(line)
         );
         wprintf(L"Expression: %s\n", expression);
         abnormal_program_termination();
@@ -453,7 +453,8 @@ namespace {
             moduleName, filename, linenumber
 
         );
-
+        va_end(vl);
+        
         // Must return 1 to force the program to stop with an exception which
         // will be captured by the unhandled exception handler
         return 1;

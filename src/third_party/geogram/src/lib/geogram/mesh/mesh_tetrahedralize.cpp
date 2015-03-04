@@ -48,6 +48,7 @@
 #include <geogram/mesh/mesh_intersection.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/delaunay/delaunay.h>
+#include <geogram/basic/logger.h>
 
 namespace GEO {
 
@@ -66,14 +67,14 @@ namespace GEO {
             mesh_repair(M);
             mesh_remove_intersections(M);
         }
-        if(!M.is_triangulated()) {
+        if(!M.facets.are_simplices()) {
             Logger::err("TetMeshing")
                 << "Mesh is not triangulated"
                 << std::endl;
             return false;
         }
-        for(index_t c=0; c<M.nb_corners(); ++c) {
-            if(M.corner_adjacent_facet(c) == -1) {
+        for(index_t c=0; c<M.facet_corners.nb(); ++c) {
+            if(M.facet_corners.adjacent_facet(c) == NO_FACET) {
                 Logger::err("TetMeshing")
                     << "Mesh is not closed"
                     << std::endl;
@@ -99,8 +100,9 @@ namespace GEO {
             tet2v[4 * t + 2] = index_t(delaunay->cell_vertex(t, 2));
             tet2v[4 * t + 3] = index_t(delaunay->cell_vertex(t, 3));
         }
-        M.assign_tet_mesh(3, pts, tet2v, true);
-        M.connect_tets();
+        
+        M.cells.assign_tet_mesh(3, pts, tet2v, true);
+        M.cells.connect();
         M.show_stats("TetMeshing");
         return true;
     }

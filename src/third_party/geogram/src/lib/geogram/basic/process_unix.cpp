@@ -407,7 +407,7 @@ namespace GEO {
                 int excepts = 0
                     // | FE_INEXACT   // inexact result
                     | FE_DIVBYZERO   // division by zero
-                    | FE_UNDERFLOW // result not representable due to underflow
+                    // | FE_UNDERFLOW // result not representable due to underflow
                     | FE_OVERFLOW    // result not representable due to overflow
                     | FE_INVALID     // invalid operation
                 ;
@@ -459,6 +459,13 @@ namespace GEO {
         }
     }
 }
+
+#else 
+
+// Declare a dummy variable so that
+// MSVC does not complain that it 
+// generated an empty object file.
+int dummy_process_unix_compiled = 1;
 
 #endif
 

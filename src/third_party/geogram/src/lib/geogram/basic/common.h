@@ -66,7 +66,7 @@
 namespace GEO {
 
     /**
-     * \brief Initialize Vorpaline
+     * \brief Initialize Geogram
      * \details This function must be called one at the very beginning of a
      * program to initialize the Vorpaline library. It also installs a exit()
      * handler that calls function terminate() when the program exists
@@ -75,7 +75,7 @@ namespace GEO {
     void GEOGRAM_API initialize();
 
     /**
-     * \brief Cleans up Vorpaline
+     * \brief Cleans up Geogram
      * \details This function is called automatically when the program exists
      * normally.
      * \warning This function should \b not be called directly.

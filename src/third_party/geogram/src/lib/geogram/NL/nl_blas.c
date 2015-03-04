@@ -1390,14 +1390,14 @@ void daxpy(
 double ddot( 
     int n, const double *x, int incx, const double *y, int incy 
 ) {
-    return NL_FORTRAN_WRAP(ddot)(&n,(double*)x,&incx,(double*)y,&incy);
     nlCurrentContext->flops += (NLulong)(2*n);        
+    return NL_FORTRAN_WRAP(ddot)(&n,(double*)x,&incx,(double*)y,&incy);
 }
 
 /* returns |x|_2 */
 double dnrm2( int n, const double *x, int incx ) {
-    return NL_FORTRAN_WRAP(dnrm2)(&n,(double*)x,&incx);
     nlCurrentContext->flops += (NLulong)(2*n);        
+    return NL_FORTRAN_WRAP(dnrm2)(&n,(double*)x,&incx);
 }
 
 /* x <- A^{-1}*x,  x <- A^{-T}*x */
@@ -1409,6 +1409,7 @@ void dtpsv(
     static char *UL[2] = { "U", "L" };
     static char *T[3]  = { "N", "T", 0 };
     static char *D[2]  = { "U", "N" };
+    /* TODO: update flops */
     NL_FORTRAN_WRAP(dtpsv)(UL[(int)uplo],T[(int)trans],D[(int)diag],&n,(double*)AP,x,&incx); 
 }
 
@@ -1419,6 +1420,7 @@ void dgemv(
     double beta, double *y, int incy 
 ) {
     static char *T[3] = { "N", "T", 0 };
+    /* TODO: update flops */    
     NL_FORTRAN_WRAP(dgemv)(T[(int)trans],&m,&n,&alpha,(double*)A,&ldA,(double*)x,&incx,&beta,y,&incy);
 }
 

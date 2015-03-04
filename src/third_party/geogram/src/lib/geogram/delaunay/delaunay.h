@@ -617,7 +617,7 @@ namespace GEO {
     };
 
     /**
-     * \brief Smart pointer that contains a Delaunay object
+     * \brief Smart pointer that refers to a Delaunay object
      * \relates Delaunay
      */
     typedef SmartPointer<Delaunay> Delaunay_var;

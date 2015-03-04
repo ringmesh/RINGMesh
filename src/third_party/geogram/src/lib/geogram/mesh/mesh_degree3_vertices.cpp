@@ -47,6 +47,7 @@
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/index.h>
 #include <geogram/basic/geometry_nd.h>
+#include <geogram/basic/logger.h>
 
 namespace {
 
@@ -94,9 +95,9 @@ namespace {
     inline index_t t_vertex(
         const Mesh& M, index_t t, index_t li
     ) {
-        geo_debug_assert(M.facet_size(t) == 3);
+        geo_debug_assert(M.facets.nb_vertices(t) == 3);
         geo_debug_assert(li < 3);
-        return M.corner_vertex_index(M.facet_begin(t) + li);
+        return M.facet_corners.vertex(M.facets.corners_begin(t) + li);
     }
 
     /**
@@ -111,12 +112,12 @@ namespace {
      *  different from standard triangle numerotation used here.
      */
 
-    inline signed_index_t t_adjacent(const Mesh& M, index_t t, index_t le) {
-        geo_debug_assert(M.facet_size(t) == 3);
+    inline index_t t_adjacent(const Mesh& M, index_t t, index_t le) {
+        geo_debug_assert(M.facets.nb_vertices(t) == 3);
         geo_debug_assert(le < 3);
         le = (le + 1) % 3; // convert corner numerotation
                            // to standard triangle numerotation
-        return M.corner_adjacent_facet(M.facet_begin(t) + le);
+        return M.facet_corners.adjacent_facet(M.facets.corners_begin(t) + le);
     }
 
     /**
@@ -130,9 +131,9 @@ namespace {
      *  different from standard triangle numerotation used here.
      */
     inline index_t t_index(const Mesh& M, index_t t, index_t v) {
-        geo_debug_assert(M.facet_size(t) == 3);
+        geo_debug_assert(M.facets.nb_vertices(t) == 3);
         for(index_t li = 0; li < 3; li++) {
-            if(M.corner_vertex_index(M.facet_begin(t) + li) == v) {
+            if(M.facet_corners.vertex(M.facets.corners_begin(t) + li) == v) {
                 return li;
             }
         }
@@ -160,19 +161,19 @@ namespace {
         index_t v1, index_t v2, index_t v3,
         index_t adj1, index_t adj2, index_t adj3
     ) {
-        geo_debug_assert(M.facet_size(t) == 3);
-        geo_debug_assert(adj1 != index_t(-1));
-        geo_debug_assert(adj2 != index_t(-1));
-        geo_debug_assert(adj3 != index_t(-1));
-        index_t c1 = M.facet_begin(t);
+        geo_debug_assert(M.facets.nb_vertices(t) == 3);
+        geo_debug_assert(adj1 != NO_FACET);
+        geo_debug_assert(adj2 != NO_FACET);
+        geo_debug_assert(adj3 != NO_FACET);
+        index_t c1 = M.facets.corners_begin(t);
         index_t c2 = c1 + 1;
         index_t c3 = c1 + 2;
-        M.set_corner_vertex_index(c1, v1);
-        M.set_corner_vertex_index(c2, v2);
-        M.set_corner_vertex_index(c3, v3);
-        M.set_corner_adjacent_facet(c1, adj3);
-        M.set_corner_adjacent_facet(c2, adj1);
-        M.set_corner_adjacent_facet(c3, adj2);
+        M.facet_corners.set_vertex(c1, v1);
+        M.facet_corners.set_vertex(c2, v2);
+        M.facet_corners.set_vertex(c3, v3);
+        M.facet_corners.set_adjacent_facet(c1, adj3);
+        M.facet_corners.set_adjacent_facet(c2, adj1);
+        M.facet_corners.set_adjacent_facet(c3, adj2);
     }
 
     // TODO: ascii-art needed here !!
@@ -200,9 +201,9 @@ namespace {
             t[0] = index_t(-1);
             t[1] = index_t(-1);
             t[2] = index_t(-1);
-            adj[0] = -1;
-            adj[1] = -1;
-            adj[2] = -1;
+            adj[0] = index_t(-1);
+            adj[1] = index_t(-1);
+            adj[2] = index_t(-1);
         }
         
         /**
@@ -235,12 +236,8 @@ namespace {
                 index_t k = (j + 1) % 3;
                 v[0] = t_vertex(M, t[1], k);
                 geo_debug_assert(t_vertex(M, t[1], j) == v[2]);
-                geo_debug_assert(
-                    t_adjacent(M, t[1], j) == signed_index_t(t[2])
-                );
-                geo_debug_assert(
-                    t_adjacent(M, t[1], k) == signed_index_t(t[0])
-                );
+                geo_debug_assert(t_adjacent(M, t[1], j) == t[2]);
+                geo_debug_assert(t_adjacent(M, t[1], k) == t[0]);
                 adj[1] = t_adjacent(M, t[1], i);
             }
 
@@ -251,12 +248,8 @@ namespace {
                 index_t k = (j + 1) % 3;
                 geo_debug_assert(t_vertex(M, t[2], j) == v[0]);
                 geo_debug_assert(t_vertex(M, t[2], k) == v[1]);
-                geo_debug_assert(
-                    t_adjacent(M, t[2], j) == signed_index_t(t[0])
-                );
-                geo_debug_assert(
-                    t_adjacent(M, t[2], k) == signed_index_t(t[1])
-                );
+                geo_debug_assert(t_adjacent(M, t[2], j) == t[0]);
+                geo_debug_assert(t_adjacent(M, t[2], k) == t[1]);
 #endif
                 adj[2] = t_adjacent(M, t[2], i);
             }
@@ -285,7 +278,7 @@ namespace {
         double dist;
         index_t v[4];
         index_t t[3];
-        signed_index_t adj[3];
+        index_t adj[3];
     };
 }
 
@@ -301,15 +294,21 @@ namespace GEO {
 
         // Step 1: detect degree3 vertices
 
-        vector<signed_index_t> vertex_degree(M.nb_vertices(), 0);
+        vector<signed_index_t> vertex_degree(M.vertices.nb(), 0);
         //   or -1 if v is on border or if v has an incident facet that
         // is not a triangle.
 
-        for(index_t f = 0; f < M.nb_facets(); f++) {
-            bool f_is_triangle = (M.facet_size(f) == 3);
-            for(index_t c = M.facet_begin(f); c < M.facet_end(f); c++) {
-                index_t v = M.corner_vertex_index(c);
-                if(!f_is_triangle || (M.corner_adjacent_facet(c) == -1)) {
+        for(index_t f = 0; f < M.facets.nb(); f++) {
+            bool f_is_triangle = (M.facets.nb_vertices(f) == 3);
+            for(
+                index_t c = M.facets.corners_begin(f);
+                c < M.facets.corners_end(f); c++
+            ) {
+                index_t v = M.facet_corners.vertex(c);
+                if(
+                    !f_is_triangle ||
+                    (M.facet_corners.adjacent_facet(c) == NO_FACET)
+                ) {
                     vertex_degree[v] = -1;
                 } else {
                     if(vertex_degree[v] != -1) {
@@ -322,7 +321,7 @@ namespace GEO {
         // Step 2: count degree3 vertices
 
         index_t nb_degree3_vertices = 0;
-        for(index_t v = 0; v < M.nb_vertices(); v++) {
+        for(index_t v = 0; v < M.vertices.nb(); v++) {
             if(vertex_degree[v] == 3) {
                 nb_degree3_vertices++;
             }
@@ -336,10 +335,13 @@ namespace GEO {
 
         // Step 3: v2f[v] is one of the facets adjacent to v
 
-        vector<index_t> v2f(M.nb_vertices());
-        for(index_t f = 0; f < M.nb_facets(); f++) {
-            for(index_t c = M.facet_begin(f); c < M.facet_end(f); c++) {
-                index_t v = M.corner_vertex_index(c);
+        vector<index_t> v2f(M.vertices.nb());
+        for(index_t f = 0; f < M.facets.nb(); f++) {
+            for(
+                index_t c = M.facets.corners_begin(f);
+                c < M.facets.corners_end(f); c++
+            ) {
+                index_t v = M.facet_corners.vertex(c);
                 v2f[v] = f;
             }
         }
@@ -348,7 +350,7 @@ namespace GEO {
 
         vector<Degree3Vertex> degree3vertices;
         degree3vertices.reserve(nb_degree3_vertices);
-        for(index_t v = 0; v < M.nb_vertices(); v++) {
+        for(index_t v = 0; v < M.vertices.nb(); v++) {
             if(vertex_degree[v] == 3) {
                 Degree3Vertex V(M, v, v2f[v]);
                 if(V.dist < max_dist) {
@@ -373,7 +375,7 @@ namespace GEO {
             F_MODIFIED = 2
         };
 
-        vector<index_t> facet_status(M.nb_facets(), F_UNTOUCHED);
+        vector<index_t> facet_status(M.facets.nb(), F_UNTOUCHED);
         index_t nb_removed = 0;
 
         for(index_t i = 0; i < degree3vertices.size(); i++) {
@@ -394,16 +396,16 @@ namespace GEO {
 
             // Skip vertex if one of its neighboring facet
             // was already modified...
-            signed_index_t adj1 = V.adj[0];
-            signed_index_t adj2 = V.adj[1];
-            signed_index_t adj3 = V.adj[2];
-            if(adj1 != -1 && facet_status[adj1] != F_UNTOUCHED) {
+            index_t adj1 = V.adj[0];
+            index_t adj2 = V.adj[1];
+            index_t adj3 = V.adj[2];
+            if(adj1 != NO_FACET && facet_status[adj1] != F_UNTOUCHED) {
                 continue;
             }
-            if(adj2 != -1 && facet_status[adj2] != F_UNTOUCHED) {
+            if(adj2 != NO_FACET && facet_status[adj2] != F_UNTOUCHED) {
                 continue;
             }
-            if(adj3 != -1 && facet_status[adj3] != F_UNTOUCHED) {
+            if(adj3 != NO_FACET && facet_status[adj3] != F_UNTOUCHED) {
                 continue;
             }
 
@@ -411,20 +413,21 @@ namespace GEO {
             facet_status[t3] = F_TO_REMOVE;  // t3 will be deleted.
             facet_status[t1] = F_MODIFIED;   // t1 is recycled and
                                              // used by the new facet.
-            t_set(M, t1, V.v[0], V.v[1], V.v[2], index_t(V.adj[0]), index_t(V.adj[1]), index_t(V.adj[2]));
+            t_set(
+                M, t1, V.v[0], V.v[1], V.v[2],
+                index_t(V.adj[0]), index_t(V.adj[1]), index_t(V.adj[2])
+            );
 
             // connect the neighbors of t2 and t3 to t1
             for(index_t j = 1; j <= 2; j++) {
-                if(V.adj[j] != -1) {
+                if(V.adj[j] != NO_FACET) {
                     index_t f = index_t(V.adj[j]);
                     for(
-                        index_t c = M.facet_begin(f); c < M.facet_end(f); ++c
+                        index_t c = M.facets.corners_begin(f);
+                        c < M.facets.corners_end(f); ++c
                     ) {
-                        if(
-                            M.corner_adjacent_facet(c) ==
-                            signed_index_t(V.t[j])
-                        ) {
-                            M.set_corner_adjacent_facet(c, V.t[0]);
+                        if(M.facet_corners.adjacent_facet(c) == V.t[j]) {
+                            M.facet_corners.set_adjacent_facet(c, V.t[0]);
                         }
                     }
                 }
@@ -442,7 +445,7 @@ namespace GEO {
         }
 
         // Note: remove_facets() calls remove_isolated_vertices()
-        M.remove_facets(facet_status);
+        M.facets.delete_elements(facet_status);
 
         return nb_removed;
     }
