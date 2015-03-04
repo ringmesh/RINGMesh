@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
  *     * Neither the name of the <organization> nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr 
- *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
  *     http://www.gocad.org
@@ -34,9 +34,9 @@
  *     GOCAD Project
  *     Ecole Nationale Supérieure de Géologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
- *     54518 VANDOEUVRE-LES-NANCY 
+ *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
-*/
+ */
 
 #ifndef __RINGMESH_TETRA_GEN__
 #define __RINGMESH_TETRA_GEN__
@@ -53,14 +53,13 @@
 #include <vector>
 
 #ifdef USE_MG_TETRA
-    extern "C" {
-        #include <meshgems/meshgems.h>
-        #include <meshgems/tetra.h>
-    }
+extern "C" {
+  #include <meshgems/meshgems.h>
+  #include <meshgems/tetra.h>
+}
 #endif
 
 namespace RINGMesh {
-
     class BoundaryModelElement ;
     class TetraGen ;
 
@@ -82,30 +81,39 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize() = 0 ;
 
-        index_t nb_points() const { return points_.size() ; }
-        index_t nb_internal_points() const { return internal_points_.size() ; }
-        index_t nb_total_points() const { return nb_points() + nb_internal_points() ; }
-        index_t nb_triangles() const { return triangles_.size() / 3 ; }
-        index_t point_index( index_t f, index_t v ) const { return triangles_[3*f+v] ; }
-        const vec3& point( index_t f, index_t v ) const { return points_[triangles_[3*f+v]] ; }
-        const vec3& point( index_t v ) const { return points_[v] ; }
-        signed_index_t surface_id( index_t f ) const {
+        index_t nb_points() const { return points_.size() ;}
+        index_t nb_internal_points() const { return internal_points_.size() ;}
+        index_t nb_total_points() const { return nb_points() + nb_internal_points() ;}
+        index_t nb_triangles() const { return triangles_.size() / 3 ;}
+        index_t point_index(
+            index_t f,
+            index_t v ) const { return triangles_[ 3 * f + v ] ;}
+        const vec3& point(
+            index_t f,
+            index_t v ) const { return points_[ triangles_[ 3 * f + v ] ] ;}
+        const vec3& point( index_t v ) const { return points_[ v ] ;}
+        signed_index_t surface_id( index_t f ) const
+        {
             for( index_t i = 1; i < surface_id_.size(); i++ ) {
-                if( f < surface_ptr_[i] ) return surface_id_[i-1] ;
+                if( f < surface_ptr_[ i ] ) {return surface_id_[ i - 1 ] ;}
             }
-            return  surface_id_.back() ;
+            return surface_id_.back() ;
         }
-        signed_index_t* surface_id_ptr( index_t f ) {
+
+        signed_index_t* surface_id_ptr( index_t f )
+        {
             for( index_t i = 1; i < surface_id_.size(); i++ ) {
-                if( f < surface_ptr_[i] ) return &surface_id_[i-1] ;
+                if( f < surface_ptr_[ i ] ) {return &surface_id_[ i - 1 ] ;}
             }
-            return  &surface_id_.back() ;
+            return &surface_id_.back() ;
         }
-        signed_index_t well_id( index_t f ) const {
+
+        signed_index_t well_id( index_t f ) const
+        {
             for( index_t i = 1; i < well_ptr_.size(); i++ ) {
-                if( f < well_ptr_[i] ) return i-1 ;
+                if( f < well_ptr_[ i ] ) {return i - 1 ;}
             }
-            return  well_ptr_.size()-1 ;
+            return well_ptr_.size() - 1 ;
         }
 
     protected:
@@ -116,15 +124,40 @@ namespace RINGMesh {
             const std::vector< std::vector< Edge > >& well_edges,
             GEO::Mesh* background ) ;
 
-        void initialize_storage( index_t nb_points, index_t nb_tets, index_t nb_triangles, index_t nb_lines ) ;
-        void set_point( index_t index, double* point ) ;
-        void set_tetra( index_t index, int* tet, index_t nb_lines, index_t nb_triangles ) ;
-        void set_triangle( index_t index, int * triangle, index_t nb_lines ) ;
-        void set_line( index_t index, int * line ) ;
-        void set_tetra_adjacent( index_t index, index_t face, signed_index_t adj ) ;
+        void initialize_storage(
+            index_t nb_points,
+            index_t nb_tets,
+            index_t nb_triangles,
+            index_t nb_lines ) ;
+
+        void set_point(
+            index_t index,
+            double* point ) ;
+
+        void set_tetra(
+            index_t index,
+            int* tet,
+            index_t nb_lines,
+            index_t nb_triangles ) ;
+
+        void set_triangle(
+            index_t index,
+            int* triangle,
+            index_t nb_lines ) ;
+
+        void set_line(
+            index_t index,
+            int* line ) ;
+
+        void set_tetra_adjacent(
+            index_t index,
+            index_t face,
+            signed_index_t adj ) ;
+
         void set_face_marker(
             index_t tri,
             index_t marker ) ;
+
         void set_tetra_face_marker(
             index_t tet,
             index_t adj,
@@ -148,8 +181,7 @@ namespace RINGMesh {
         const BoundaryModelElement* region_ ;
     } ;
 
-
-    class RINGMESH_API TetraGen_TetGen: public TetraGen {
+    class RINGMESH_API TetraGen_TetGen : public TetraGen {
     public:
         TetraGen_TetGen(
             GEO::Mesh& tetmesh,
@@ -158,7 +190,7 @@ namespace RINGMesh {
             const std::vector< vec3 >& internal_vertices,
             const std::vector< std::vector< Edge > >& well_vertices,
             GEO::Mesh* background ) ;
-        virtual ~TetraGen_TetGen() {} ;
+        virtual ~TetraGen_TetGen() {}
 
         virtual bool tetrahedralize() ;
 
@@ -170,7 +202,7 @@ namespace RINGMesh {
     } ;
 
 #ifdef USE_MG_TETRA
-    class RINGMESH_API TetraGen_MG_Tetra: public TetraGen {
+    class RINGMESH_API TetraGen_MG_Tetra : public TetraGen {
     public:
         TetraGen_MG_Tetra(
             GEO::Mesh& tetmesh,
@@ -183,11 +215,14 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize() ;
 
-        static status_t my_message_cb( message_t * msg, void *user_data ) ;
+        static status_t my_message_cb(
+            message_t* msg,
+            void* user_data ) ;
+
         static status_t get_size_value(
             meshgems_integer i,
             meshgems_real* size,
-            void *user_data ) ;
+            void* user_data ) ;
 
     private:
         double get_resolution_value( signed_index_t i ) ;
@@ -201,8 +236,8 @@ namespace RINGMesh {
         sizemap_t* sizemap_ ;
         tetra_session_t* tms_ ;
     } ;
-#endif
 
+#endif
 }
 
 #endif
