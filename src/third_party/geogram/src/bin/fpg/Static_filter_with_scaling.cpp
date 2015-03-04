@@ -187,7 +187,7 @@ Group_cache::is_intersection_free( Variable *maxvar /*, std::vector< Variable* >
         std::set< Variable* > intersection;
         std::set_intersection( g.begin(), g.end(), h.begin(), h.end(),
                                std::inserter( intersection, intersection.begin() ) );
-        if( intersection.size() == 0 )
+        if( intersection.empty() )
             continue;
         //bool g_includes_h = std::includes( g.begin(), g.end(), h.begin(), h.end() );
         //bool h_includes_g = std::includes( h.begin(), h.end(), g.begin(), g.end() );

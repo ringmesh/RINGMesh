@@ -43,60 +43,37 @@
  *
  */
 
-#include <geogram/basic/common.h>
+#include <geogram_gfx/third_party/glew/glew.h>
+#include <geogram_gfx/glut_viewer/glut_viewer.h>
+#include <geogram/mesh/new_mesh.h>
+#include <geogram/mesh/new_mesh_io.h>
+#include <geogram/basic/logger.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_compare.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/basic/logger.h>
+#include <geogram/basic/file_system.h>
+
+#include <stdarg.h>
 
 int main(int argc, char** argv) {
-    using namespace GEO;
 
     GEO::initialize();
+    GEO::Logger::instance()->set_quiet(false);
+    GEO::CmdLine::import_arg_group("standard");
+    GEO::CmdLine::import_arg_group("algo");
+    GEO::CmdLine::declare_arg("full_screen",false,"full screen mode");
 
-    try {
 
-        CmdLine::import_arg_group("standard");
-        CmdLine::declare_arg(
-            "tolerance", 0.0,
-            "Tolerance for comparing floating points"
-        );
-
-        std::vector<std::string> filenames;
-        if(!CmdLine::parse(argc, argv, filenames, "mesh1 mesh2")) {
-            return 1;
-        }
-
-        std::string mesh1_filename = filenames[0];
-        std::string mesh2_filename = filenames[1];
-
-        Mesh M1;
-        if(!mesh_load(mesh1_filename, M1)) {
-            return 1;
-        }
-
-        Mesh M2;
-        if(!mesh_load(mesh2_filename, M2)) {
-            return 1;
-        }
-
-        MeshCompareFlags status = mesh_compare(
-            M1, M2, MESH_COMPARE_SURFACE_PROPS,
-            CmdLine::get_arg_double("tolerance")
-        );
-
-        if(status != MESH_COMPARE_OK) {
-            Logger::warn("Compare") << "Meshes differ" << std::endl;
-            return 2;
-        }
+    std::vector<std::string> filenames;
+    if(!GEO::CmdLine::parse(argc, argv, filenames, "<filename>")) {
+        return 1;
     }
-    catch(const std::exception& e) {
-        std::cerr << "Received an exception: " << e.what() << std::endl;
+    
+    if(filenames.size() != 1) {
         return 1;
     }
 
+    GEO::NewMesh M;
+    GEO::mesh_load(filenames[0], M);
+    
     return 0;
 }
-

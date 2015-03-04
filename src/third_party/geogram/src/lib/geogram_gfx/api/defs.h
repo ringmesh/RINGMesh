@@ -43,60 +43,37 @@
  *
  */
 
-#include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_compare.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/basic/logger.h>
+#ifndef __GEOGRAM_GFX_API_DEFS__
+#define __GEOGRAM_GFX_API_DEFS__
 
-int main(int argc, char** argv) {
-    using namespace GEO;
+/**
+ * \file geogram_gfx/api/defs.h
+ * \brief Basic definitions for the Geogram C API
+ */
 
-    GEO::initialize();
+/**
+ * \brief Linkage declaration for geogram symbols.
+ */
 
-    try {
+#if defined(_MSC_VER) && defined(GEO_DYNAMIC_LIBS)
+#ifdef geogram__gfx_EXPORTS
+#define GEOGRAM_GFX_API __declspec(dllexport) 
+#else
+#define GEOGRAM_GFX_API __declspec(dllimport) 
+#endif
+#else
+#define GEOGRAM_GFX_API
+#endif
 
-        CmdLine::import_arg_group("standard");
-        CmdLine::declare_arg(
-            "tolerance", 0.0,
-            "Tolerance for comparing floating points"
-        );
 
-        std::vector<std::string> filenames;
-        if(!CmdLine::parse(argc, argv, filenames, "mesh1 mesh2")) {
-            return 1;
-        }
+/**
+ * \brief A place-holder linkage declaration to indicate
+ *  that the symbol should not be exported by Windows DLLs.
+ * \details For instance, classes that inherit templates from
+ *  the STL should not be exported, else it generates multiply
+ *  defined symbols.
+ */
+#define NO_GEOGRAM_GFX_API
 
-        std::string mesh1_filename = filenames[0];
-        std::string mesh2_filename = filenames[1];
-
-        Mesh M1;
-        if(!mesh_load(mesh1_filename, M1)) {
-            return 1;
-        }
-
-        Mesh M2;
-        if(!mesh_load(mesh2_filename, M2)) {
-            return 1;
-        }
-
-        MeshCompareFlags status = mesh_compare(
-            M1, M2, MESH_COMPARE_SURFACE_PROPS,
-            CmdLine::get_arg_double("tolerance")
-        );
-
-        if(status != MESH_COMPARE_OK) {
-            Logger::warn("Compare") << "Meshes differ" << std::endl;
-            return 2;
-        }
-    }
-    catch(const std::exception& e) {
-        std::cerr << "Received an exception: " << e.what() << std::endl;
-        return 1;
-    }
-
-    return 0;
-}
+#endif
 

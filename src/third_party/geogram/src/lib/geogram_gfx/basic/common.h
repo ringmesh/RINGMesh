@@ -43,60 +43,45 @@
  *
  */
 
+#ifndef __GEOGRAM_GFX_BASIC_COMMON__
+#define __GEOGRAM_GFX_BASIC_COMMON__
+
 #include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_compare.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/basic/logger.h>
+#include <geogram_gfx/api/defs.h>
+#include <geogram_gfx/third_party/glew/glew.h>
 
-int main(int argc, char** argv) {
-    using namespace GEO;
+/**
+ * \file geogram_gfx/basic/common.h
+ * \brief Common include file, providing basic definitions. Should be
+ *  included before anything else by all header files in geogram_gfx.
+ */
 
-    GEO::initialize();
+namespace GEO {
 
-    try {
+    namespace Graphics {
 
-        CmdLine::import_arg_group("standard");
-        CmdLine::declare_arg(
-            "tolerance", 0.0,
-            "Tolerance for comparing floating points"
-        );
+        /**
+         * \brief Initialize Geogram graphics subsystem
+         * \details This function must be called once, after a valid OpenGL context
+         *  is created, at the beginning of a program to initialize the geogram_gfx 
+         *  library. It also installs a exit() handler that calls function terminate() 
+         *  when the program exists normally.
+         * \warning This function cannot be called before a valid OpenGL context is
+         *  available. 
+         */
+        void GEOGRAM_GFX_API initialize();
 
-        std::vector<std::string> filenames;
-        if(!CmdLine::parse(argc, argv, filenames, "mesh1 mesh2")) {
-            return 1;
-        }
-
-        std::string mesh1_filename = filenames[0];
-        std::string mesh2_filename = filenames[1];
-
-        Mesh M1;
-        if(!mesh_load(mesh1_filename, M1)) {
-            return 1;
-        }
-
-        Mesh M2;
-        if(!mesh_load(mesh2_filename, M2)) {
-            return 1;
-        }
-
-        MeshCompareFlags status = mesh_compare(
-            M1, M2, MESH_COMPARE_SURFACE_PROPS,
-            CmdLine::get_arg_double("tolerance")
-        );
-
-        if(status != MESH_COMPARE_OK) {
-            Logger::warn("Compare") << "Meshes differ" << std::endl;
-            return 2;
-        }
+        /**
+         * \brief Cleans up Geogram graphics subsystem
+         * \details This function is called automatically when the program exists
+         * normally.
+         * \warning This function should \b not be called directly.
+         * \see initialize()
+         */
+        void GEOGRAM_GFX_API terminate();
     }
-    catch(const std::exception& e) {
-        std::cerr << "Received an exception: " << e.what() << std::endl;
-        return 1;
-    }
-
-    return 0;
+    
 }
+
+#endif
 

@@ -43,60 +43,21 @@
  *
  */
 
-#include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_compare.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/basic/logger.h>
+#include <geogram_gfx/basic/common.h>
+#include <cstdlib>
 
-int main(int argc, char** argv) {
-    using namespace GEO;
+namespace GEO {
 
-    GEO::initialize();
+    namespace Graphics {
 
-    try {
-
-        CmdLine::import_arg_group("standard");
-        CmdLine::declare_arg(
-            "tolerance", 0.0,
-            "Tolerance for comparing floating points"
-        );
-
-        std::vector<std::string> filenames;
-        if(!CmdLine::parse(argc, argv, filenames, "mesh1 mesh2")) {
-            return 1;
+        void initialize() {
+            glewInit();
+            atexit(GEO::Graphics::terminate);            
         }
 
-        std::string mesh1_filename = filenames[0];
-        std::string mesh2_filename = filenames[1];
-
-        Mesh M1;
-        if(!mesh_load(mesh1_filename, M1)) {
-            return 1;
+        void terminate() {
         }
-
-        Mesh M2;
-        if(!mesh_load(mesh2_filename, M2)) {
-            return 1;
-        }
-
-        MeshCompareFlags status = mesh_compare(
-            M1, M2, MESH_COMPARE_SURFACE_PROPS,
-            CmdLine::get_arg_double("tolerance")
-        );
-
-        if(status != MESH_COMPARE_OK) {
-            Logger::warn("Compare") << "Meshes differ" << std::endl;
-            return 2;
-        }
+        
     }
-    catch(const std::exception& e) {
-        std::cerr << "Received an exception: " << e.what() << std::endl;
-        return 1;
-    }
-
-    return 0;
+    
 }
-
