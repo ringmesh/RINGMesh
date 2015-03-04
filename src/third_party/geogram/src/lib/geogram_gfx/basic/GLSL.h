@@ -43,60 +43,38 @@
  *
  */
 
-#include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_compare.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/basic/logger.h>
+#include <geogram_gfx/basic/common.h>
 
-int main(int argc, char** argv) {
-    using namespace GEO;
+namespace GEO {
 
-    GEO::initialize();
+    namespace GLSL {
 
-    try {
-
-        CmdLine::import_arg_group("standard");
-        CmdLine::declare_arg(
-            "tolerance", 0.0,
-            "Tolerance for comparing floating points"
+        /**
+         * \brief Compiles a shader for a specific target.
+         * \details One may use \p source1 for library functions common 
+         *  to different shaders (then the code of the shader is in 
+         *   \p source2). 
+         *  It may seem more natural to generate a shader object with library 
+         *  functions, but OpenGL documentation does not recommend
+         *  to do so (and it did not seem to work). Errors are detected and 
+         *  displayed to std::err.
+         * \param[in] target the OpenGL shader target ()
+         * \param[in] source1 the source of the shader (ASCII string)
+         * \param[in] source2 an optional additional source string or 0 
+         *  if unused
+         * \return the OpenGL opaque Id of the created shader object
+         */
+        GLuint compile_shader(
+            GLenum target, const char* source1, const char* source2=0
         );
 
-        std::vector<std::string> filenames;
-        if(!CmdLine::parse(argc, argv, filenames, "mesh1 mesh2")) {
-            return 1;
-        }
 
-        std::string mesh1_filename = filenames[0];
-        std::string mesh2_filename = filenames[1];
-
-        Mesh M1;
-        if(!mesh_load(mesh1_filename, M1)) {
-            return 1;
-        }
-
-        Mesh M2;
-        if(!mesh_load(mesh2_filename, M2)) {
-            return 1;
-        }
-
-        MeshCompareFlags status = mesh_compare(
-            M1, M2, MESH_COMPARE_SURFACE_PROPS,
-            CmdLine::get_arg_double("tolerance")
-        );
-
-        if(status != MESH_COMPARE_OK) {
-            Logger::warn("Compare") << "Meshes differ" << std::endl;
-            return 2;
-        }
+        /**
+         * \brief Creates a program from a zero-terminated list of shaders
+         * \details Errors are detected and displayed to the Logger.
+         * \param[in] shader the first shader of the list
+         * \return the OpenGL opaque Id of the created program
+         */
+        GLuint setup_program(GLuint shader, ...);
     }
-    catch(const std::exception& e) {
-        std::cerr << "Received an exception: " << e.what() << std::endl;
-        return 1;
-    }
-
-    return 0;
 }
-
