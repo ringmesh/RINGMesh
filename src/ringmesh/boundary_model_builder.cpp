@@ -597,7 +597,6 @@ namespace RINGMesh {
             ringmesh_assert( boundaries[ i ].first < model_.nb_surfaces() ) ;
             model_.universe_.add_boundary( boundaries[ i ].first,
                 boundaries[ i ].second ) ;
-                BME::VOI ) ;
         }
     }
 
@@ -734,7 +733,7 @@ namespace RINGMesh {
                     std::min( f_prev.size(), f_cur.size() ) ) ;
                 index_t end = narrow_cast< index_t >( std::set_intersection( f_prev.begin(),
                     f_prev.end(), f_cur.begin(), f_cur.end(), inter.begin() )
-                              - inter.begin() ;
+                              - inter.begin() ) ;
 
                 if( end == 2 ) {
                     // There is one neighbor
@@ -800,7 +799,7 @@ namespace RINGMesh {
         if( BME::in_boundary_allowed( T ) ) {
             // Fix for a .ml for which VOI Surface are only on the boundary of Universe
             // Can we keep this ? Or should we compute the Region
-            if( E.nb_in_boundary() == 0 ){
+            if( E.nb_in_boundary() == 0 )
             {
                 return false ;
             }
@@ -1410,12 +1409,9 @@ namespace RINGMesh {
                         }
                         if( part_id == NO_ID ) {
                             // It is in the last built Tface
-                            p1 = p1 - tface_vertex_start[tface_vertex_start.size() - 1] ;
-                            p2 = p2 - tface_vertex_start[tface_vertex_start.size() - 1] ;
-                                                      1 ] ;
-                            p2 +=
-                                - tface_vertex_start[ tface_vertex_start.size() -
-                                                      1 ] ;
+                            p1 = p1 - tface_vertex_start[ tface_vertex_start.size() - 1 ] ;
+                            p2 = p2 - tface_vertex_start[ tface_vertex_start.size() - 1 ] ;
+                         
                             part_id = tface_vertex_start.size() - 1 ;
                         }
 
