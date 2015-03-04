@@ -95,6 +95,7 @@ namespace GRGMesh {
             return resolutions_[p] ;
         }
         std::vector< double >& resolutions() { return resolutions_ ; }
+        const std::vector< double >& resolutions() const { return resolutions_ ; }
         void set_well( Well* well ) { well_ = well ; }
         const Well* well() const { return well_ ; }
         void set_id( signed_index_t id ) { id_ = id ; }
