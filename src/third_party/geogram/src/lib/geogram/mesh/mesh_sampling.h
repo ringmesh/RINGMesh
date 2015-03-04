@@ -50,6 +50,7 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/basic/geometry_nd.h>
+#include <geogram/basic/logger.h>
 #include <algorithm>
 
 /**
@@ -66,34 +67,37 @@ namespace GEO {
      *  weights.
      * \param[in] mesh the surface mesh
      * \param[in] f a facet index in \p mesh
-     * \param[in] use_weights if true, vertex weights are taken into account
-     *  in mass computation
+     * \param[in] vertex_weight a reference to a vertex attribute. If
+     *  it is bound, it is used to weight the vertices.
      * \return the mass of facet \p f in \p mesh
      */
     template <int DIM>
     inline double mesh_facet_mass(
         const Mesh& mesh,
         index_t f,
-        bool use_weights = true
+        Attribute<double>& vertex_weight
     ) {
-        geo_debug_assert(mesh.is_triangulated());
-        geo_debug_assert(mesh.dimension() >= DIM);
+        geo_debug_assert(mesh.facets.are_simplices());
+        geo_debug_assert(mesh.vertices.dimension() >= DIM);
         typedef vecng<DIM, double> Point;
-        index_t c = mesh.facet_begin(f);
-        if(use_weights) {
+        index_t v1 = mesh.facets.vertex(f,0);
+        index_t v2 = mesh.facets.vertex(f,1);
+        index_t v3 = mesh.facets.vertex(f,2);        
+        
+        if(vertex_weight.is_bound()) {
             return Geom::triangle_mass(
-                *reinterpret_cast<const Point*>(mesh.corner_vertex_ptr(c)),
-                *reinterpret_cast<const Point*>(mesh.corner_vertex_ptr(c + 1)),
-                *reinterpret_cast<const Point*>(mesh.corner_vertex_ptr(c + 2)),
-                mesh.corner_weight(c),
-                mesh.corner_weight(c + 1),
-                mesh.corner_weight(c + 2)
+                *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v1)),
+                *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v2)),
+                *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v3)),
+                vertex_weight[v1],
+                vertex_weight[v2],
+                vertex_weight[v3]
             );
         }
         return Geom::triangle_area(
-            *reinterpret_cast<const Point*>(mesh.corner_vertex_ptr(c)),
-            *reinterpret_cast<const Point*>(mesh.corner_vertex_ptr(c + 1)),
-            *reinterpret_cast<const Point*>(mesh.corner_vertex_ptr(c + 2))
+            *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v1)),
+            *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v2)),
+            *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v3))
         );
     }
 
@@ -103,7 +107,8 @@ namespace GEO {
      * \param[out] p pointer to an array of generated samples, of size
      *   \p nb_points times DIM. To be allocated by the caller.
      * \param[in] nb_points number of points to generate
-     * \param[in] use_weights if true, vertex weights are taken into account
+     * \param[in] weight a reference to a vertex attribute. If bound, it
+     *  is taken into account.
      * \param[in] facets_begin_in if specified, first index of the facet
      *  sequence in which points should be generated. If left unspecified (-1),
      *  points are generated over all the facets of the mesh.
@@ -122,16 +127,16 @@ namespace GEO {
         const Mesh& mesh,
         double* p,
         index_t nb_points,
-        bool use_weights = true,
+        Attribute<double>& weight,
         signed_index_t facets_begin_in = -1,
         signed_index_t facets_end_in = -1
     ) {
-        geo_assert(mesh.is_triangulated());
-        geo_assert(mesh.dimension() >= DIM);
-        geo_assert(mesh.nb_facets() > 0);
+        geo_assert(mesh.facets.are_simplices());
+        geo_assert(mesh.vertices.dimension() >= DIM);
+        geo_assert(mesh.facets.nb() > 0);
 
         index_t facets_begin = 0;
-        index_t facets_end = mesh.nb_facets();
+        index_t facets_end = mesh.facets.nb();
         if(facets_begin_in != -1) {
             facets_begin = index_t(facets_begin_in);
         }
@@ -153,7 +158,7 @@ namespace GEO {
 
         double Atot = 0.0;
         for(index_t t = facets_begin; t < facets_end; ++t) {
-            double At = mesh_facet_mass<DIM>(mesh, t, use_weights);
+            double At = mesh_facet_mass<DIM>(mesh, t, weight);
             Atot += At;
         }
 
@@ -162,13 +167,13 @@ namespace GEO {
 
         index_t cur_t = facets_begin;
         double cur_s =
-            mesh_facet_mass<DIM>(mesh, facets_begin, use_weights) / Atot;
+            mesh_facet_mass<DIM>(mesh, facets_begin, weight) / Atot;
         for(index_t i = 0; i < nb_points; i++) {
             geo_debug_assert(i < s.size());
             while(s[i] > cur_s && cur_t < facets_end - 1) {
                 cur_t++;
                 geo_debug_assert(cur_t < facets_end);
-                cur_s += mesh_facet_mass<DIM>(mesh, cur_t, use_weights) / Atot;
+                cur_s += mesh_facet_mass<DIM>(mesh, cur_t, weight) / Atot;
             }
             if(first_t == -1) {
                 first_t = signed_index_t(cur_t);
@@ -178,17 +183,19 @@ namespace GEO {
             // TODO: take weights into account
             //  with a new random_point_in_triangle_weighted()
             //  function.
-            index_t c = mesh.facet_begin(cur_t);
+            index_t v1 = mesh.facets.vertex(cur_t,0);
+            index_t v2 = mesh.facets.vertex(cur_t,1);
+            index_t v3 = mesh.facets.vertex(cur_t,2);            
             Point cur_p = Geom::random_point_in_triangle(
-                *reinterpret_cast<const Point*>(mesh.corner_vertex_ptr(c)),
-                *reinterpret_cast<const Point*>(mesh.corner_vertex_ptr(c + 1)),
-                *reinterpret_cast<const Point*>(mesh.corner_vertex_ptr(c + 2))
+                *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v1)),
+                *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v2)),
+                *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v3))
             );
             for(coord_index_t coord = 0; coord < DIM; coord++) {
                 p[i * DIM + coord] = cur_p[coord];
             }
         }
-        if(mesh.nb_facets() > 1 && last_t == first_t) {
+        if(mesh.facets.nb() > 1 && last_t == first_t) {
             Logger::warn("Sampler")
                 << "Did put all the points in the same triangle"
                 << std::endl;
@@ -205,35 +212,35 @@ namespace GEO {
      *  weights.
      * \param[in] mesh the surface mesh
      * \param[in] t a tetrahedron index in \p mesh
-     * \param[in] use_weights if true, vertex weights are taken into account
-     *  in mass computation
+     * \param[in] weights a reference to a vertex weight attribute. If it
+     *  is bound, it is taken into account in mass computation
      * \return the mass of tetrahedron \p t in \p mesh
      */
     template <int DIM>
     inline double mesh_tetra_mass(
         const Mesh& mesh,
         index_t t,
-        bool use_weights = true
+        Attribute<double>& weight = Attribute<double>()
     ) {
-        geo_debug_assert(mesh.dimension() >= DIM);
+        geo_debug_assert(mesh.vertices.dimension() >= DIM);
         typedef vecng<DIM, double> Point;
 
-        index_t v0 = mesh.tet_vertex_index(t, 0);
-        index_t v1 = mesh.tet_vertex_index(t, 1);
-        index_t v2 = mesh.tet_vertex_index(t, 2);
-        index_t v3 = mesh.tet_vertex_index(t, 3);
+        index_t v0 = mesh.cells.vertex(t, 0);
+        index_t v1 = mesh.cells.vertex(t, 1);
+        index_t v2 = mesh.cells.vertex(t, 2);
+        index_t v3 = mesh.cells.vertex(t, 3);
 
         double result = Geom::tetra_volume(
-            *reinterpret_cast<const Point*>(mesh.vertex_ptr(v0)),
-            *reinterpret_cast<const Point*>(mesh.vertex_ptr(v1)),
-            *reinterpret_cast<const Point*>(mesh.vertex_ptr(v2)),
-            *reinterpret_cast<const Point*>(mesh.vertex_ptr(v3))
+            *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v0)),
+            *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v1)),
+            *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v2)),
+            *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v3))
         );
 
-        if(use_weights) {
+        if(weight.is_bound()) {
             result *= (
-                mesh.weight(v0) + mesh.weight(v1) +
-                mesh.weight(v2) + mesh.weight(v3)
+                weight[v0] + weight[v1] +
+                weight[v2] + weight[v3]
             ) / 4.0;
             // TODO: check whether this is the correct formula
             // (I do not think so...)
@@ -267,15 +274,15 @@ namespace GEO {
         const Mesh& mesh,
         double* p,
         index_t nb_points,
-        bool use_weights = true,
+        Attribute<double>& vertex_weight,
         signed_index_t tets_begin_in = -1,
         signed_index_t tets_end_in = -1
     ) {
-        geo_assert(mesh.dimension() >= DIM);
-        geo_assert(mesh.nb_tets() > 0);
+        geo_assert(mesh.vertices.dimension() >= DIM);
+        geo_assert(mesh.cells.nb() > 0);
 
         index_t tets_begin = 0;
-        index_t tets_end = mesh.nb_tets();
+        index_t tets_end = mesh.cells.nb();
         if(tets_begin_in != -1) {
             tets_begin = index_t(tets_begin_in);
         }
@@ -297,7 +304,7 @@ namespace GEO {
 
         double Vtot = 0.0;
         for(index_t t = tets_begin; t < tets_end; ++t) {
-            double Vt = mesh_tetra_mass<DIM>(mesh, t, use_weights);
+            double Vt = mesh_tetra_mass<DIM>(mesh, t, vertex_weight);
             Vtot += Vt;
         }
 
@@ -306,38 +313,40 @@ namespace GEO {
 
         index_t cur_t = tets_begin;
         double cur_s =
-            mesh_tetra_mass<DIM>(mesh, tets_begin, use_weights) / Vtot;
+            mesh_tetra_mass<DIM>(mesh, tets_begin, vertex_weight) / Vtot;
         for(index_t i = 0; i < nb_points; i++) {
             geo_debug_assert(i < s.size());
             while(s[i] > cur_s && cur_t < tets_end - 1) {
                 cur_t++;
                 geo_debug_assert(cur_t < tets_end);
-                cur_s += mesh_tetra_mass<DIM>(mesh, cur_t, use_weights) / Vtot;
+                cur_s += mesh_tetra_mass<DIM>(
+                    mesh, cur_t, vertex_weight
+                ) / Vtot;
             }
             if(first_t == -1) {
                 first_t = signed_index_t(cur_t);
             }
             last_t = geo_max(last_t, signed_index_t(cur_t));
 
-            index_t v0 = mesh.tet_vertex_index(cur_t, 0);
-            index_t v1 = mesh.tet_vertex_index(cur_t, 1);
-            index_t v2 = mesh.tet_vertex_index(cur_t, 2);
-            index_t v3 = mesh.tet_vertex_index(cur_t, 3);
+            index_t v0 = mesh.cells.vertex(cur_t, 0);
+            index_t v1 = mesh.cells.vertex(cur_t, 1);
+            index_t v2 = mesh.cells.vertex(cur_t, 2);
+            index_t v3 = mesh.cells.vertex(cur_t, 3);
 
             // TODO: take weights into account
             //  with a new random_point_in_tetra_weighted()
             //  function.
             Point cur_p = Geom::random_point_in_tetra(
-                *reinterpret_cast<const Point*>(mesh.vertex_ptr(v0)),
-                *reinterpret_cast<const Point*>(mesh.vertex_ptr(v1)),
-                *reinterpret_cast<const Point*>(mesh.vertex_ptr(v2)),
-                *reinterpret_cast<const Point*>(mesh.vertex_ptr(v3))
+                *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v0)),
+                *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v1)),
+                *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v2)),
+                *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v3))
             );
             for(coord_index_t coord = 0; coord < DIM; coord++) {
                 p[i * DIM + coord] = cur_p[coord];
             }
         }
-        if(mesh.nb_tets() > 1 && last_t == first_t) {
+        if(mesh.cells.nb() > 1 && last_t == first_t) {
             Logger::warn("Sampler")
                 << "Did put all the points in the same triangle"
                 << std::endl;

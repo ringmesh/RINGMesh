@@ -52,6 +52,7 @@
 #include <geogram/numerics/multi_precision.h>
 #include <geogram/numerics/predicates.h>
 #include <geogram/delaunay/delaunay.h>
+#include <geogram/mesh/mesh_io.h>
 #include <geogram/third_party/shewchuk/shewchuk.h>
 #include <sstream>
 #include <iomanip>
@@ -76,6 +77,8 @@ namespace GEO {
 
         atexit(GEO::terminate);
 
+        mesh_io_initialize();
+        
         // Clear last system error
         errno = 0;
     }

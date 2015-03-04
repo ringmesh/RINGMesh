@@ -46,7 +46,9 @@
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/delaunay/LFS.h>
 #include <geogram/voronoi/CVT.h>
+#include <geogram/basic/attributes.h>
 #include <geogram/basic/geometry.h>
+#include <geogram/basic/logger.h>
 
 namespace {
 
@@ -64,10 +66,11 @@ namespace {
         Mesh& M, const LocalFeatureSize& LFS, double gradation
     ) {
         Logger::out("LFS") << "Computing sizing field" << std::endl;
-        for(index_t v = 0; v < M.nb_vertices(); v++) {
-            double lfs2 = LFS.squared_lfs(M.vertex_ptr(v));
-            double weight = pow(lfs2, -2.0 * gradation);
-            M.set_weight(v, weight);
+        Attribute<double> weight(M.vertices.attributes(),"weight");
+        for(index_t v = 0; v < M.vertices.nb(); v++) {
+            double lfs2 = LFS.squared_lfs(M.vertices.point_ptr(v));
+            double w = pow(lfs2, -2.0 * gradation);
+            weight[v] = w;
         }
     }
 }
@@ -79,11 +82,10 @@ namespace GEO {
     namespace Geom {
 
         double mesh_dihedral_angle(const Mesh& M, index_t c) {
-            geo_debug_assert(M.is_triangulated());
+            geo_debug_assert(M.facets.are_simplices());
             index_t f1 = c/3;
-            signed_index_t sf2 = M.corner_adjacent_facet(c);
-            geo_debug_assert(sf2 >= 0);
-            index_t f2 = index_t(sf2);
+            index_t f2 = M.facet_corners.adjacent_facet(c);
+            geo_debug_assert(f2 != NO_FACET);
             vec3 n1 = normalize(mesh_facet_normal(M,f1));
             vec3 n2 = normalize(mesh_facet_normal(M,f2));
             double sign = 1.0;
@@ -93,34 +95,34 @@ namespace GEO {
             return sign*acos(dot(n1, n2));
         }
 
-        double mesh_area(const Mesh& M, coord_index_t dim) {
+        double mesh_area(const Mesh& M, index_t dim) {
             double result = 0.0;
-            for(index_t f = 0; f < M.nb_facets(); f++) {
-                result += M.facet_area(f, dim);
+            for(index_t f = 0; f < M.facets.nb(); f++) {
+                result += mesh_facet_area(M, f, dim);
             }
             return result;
         }
     }
 
     void compute_normals(Mesh& M) {
-        if(M.dimension() < 6) {
-            M.set_dimension(6);
+        if(M.vertices.dimension() < 6) {
+            M.vertices.set_dimension(6);
         } else {
-            for(index_t i = 0; i < M.nb_vertices(); i++) {
+            for(index_t i = 0; i < M.vertices.nb(); i++) {
                 Geom::mesh_vertex_normal_ref(M, i) = vec3(0.0, 0.0, 0.0);
             }
         }
-        for(index_t f = 0; f < M.nb_facets(); f++) {
+        for(index_t f = 0; f < M.facets.nb(); f++) {
             vec3 N = Geom::mesh_facet_normal(M, f);
             for(
-                index_t corner = M.facet_begin(f);
-                corner < M.facet_end(f); corner++
+                index_t corner = M.facets.corners_begin(f);
+                corner < M.facets.corners_end(f); corner++
             ) {
-                index_t v = M.corner_vertex_index(corner);
+                index_t v = M.facet_corners.vertex(corner);
                 Geom::mesh_vertex_normal_ref(M, v) += N;
             }
         }
-        for(index_t i = 0; i < M.nb_vertices(); i++) {
+        for(index_t i = 0; i < M.vertices.nb(); i++) {
             Geom::mesh_vertex_normal_ref(M, i) = normalize(
                 Geom::mesh_vertex_normal(M, i)
             );
@@ -128,20 +130,20 @@ namespace GEO {
     }
 
     void simple_Laplacian_smooth(Mesh& M, index_t nb_iter, bool normals_only) {
-        geo_assert(M.dimension() >= 6);
-        std::vector<vec3> p(M.nb_vertices());
-        std::vector<double> c(M.nb_vertices());
+        geo_assert(M.vertices.dimension() >= 6);
+        std::vector<vec3> p(M.vertices.nb());
+        std::vector<double> c(M.vertices.nb());
 
         for(index_t k = 0; k < nb_iter; k++) {
-            p.assign(M.nb_vertices(), vec3(0.0, 0.0, 0.0));
-            c.assign(M.nb_vertices(), 0);
-            for(index_t f = 0; f < M.nb_facets(); f++) {
-                index_t b = M.facet_begin(f);
-                index_t e = M.facet_end(f);
+            p.assign(M.vertices.nb(), vec3(0.0, 0.0, 0.0));
+            c.assign(M.vertices.nb(), 0);
+            for(index_t f = 0; f < M.facets.nb(); f++) {
+                index_t b = M.facets.corners_begin(f);
+                index_t e = M.facets.corners_end(f);
                 for(index_t c1 = b; c1 != e; c1++) {
                     index_t c2 = (c1 == e - 1) ? b : c1 + 1;
-                    index_t v1 = M.corner_vertex_index(c1);
-                    index_t v2 = M.corner_vertex_index(c2);
+                    index_t v1 = M.facet_corners.vertex(c1);
+                    index_t v2 = M.facet_corners.vertex(c2);
                     if(v1 < v2) {
                         double a = 1.0;
                         c[v1] += a;
@@ -156,7 +158,7 @@ namespace GEO {
                     }
                 }
             }
-            for(index_t v = 0; v < M.nb_vertices(); v++) {
+            for(index_t v = 0; v < M.vertices.nb(); v++) {
                 if(normals_only) {
                     double l = length(p[v]);
                     if(l > 1e-30) {
@@ -173,13 +175,13 @@ namespace GEO {
     }
 
     void get_bbox(const Mesh& M, double* xyzmin, double* xyzmax) {
-        geo_assert(M.dimension() >= 3);
+        geo_assert(M.vertices.dimension() >= 3);
         for(index_t c = 0; c < 3; c++) {
             xyzmin[c] = Numeric::max_float64();
             xyzmax[c] = Numeric::min_float64();
         }
-        for(index_t v = 0; v < M.nb_vertices(); v++) {
-            const double* p = M.vertex_ptr(v);
+        for(index_t v = 0; v < M.vertices.nb(); v++) {
+            const double* p = M.vertices.point_ptr(v);
             for(index_t c = 0; c < 3; c++) {
                 xyzmin[c] = geo_min(xyzmin[c], p[c]);
                 xyzmax[c] = geo_max(xyzmax[c], p[c]);
@@ -187,25 +189,8 @@ namespace GEO {
         }
     }
 
-    void get_bbox(
-        const SinglePrecisionMesh& M, double* xyzmin, double* xyzmax
-    ) {
-        geo_assert(M.dimension() >= 3);
-        for(index_t c = 0; c < 3; c++) {
-            xyzmin[c] = Numeric::max_float64();
-            xyzmax[c] = Numeric::min_float64();
-        }
-        for(index_t v = 0; v < M.nb_vertices(); v++) {
-            const float* p = M.vertex_ptr(v);
-            for(index_t c = 0; c < 3; c++) {
-                xyzmin[c] = geo_min(xyzmin[c], double(p[c]));
-                xyzmax[c] = geo_max(xyzmax[c], double(p[c]));
-            }
-        }
-    }
-
     double bbox_diagonal(const Mesh& M) {
-        geo_assert(M.dimension() >= 3);
+        geo_assert(M.vertices.dimension() >= 3);
         double xyzmin[3];
         double xyzmax[3];
         get_bbox(M, xyzmin, xyzmax);
@@ -217,7 +202,7 @@ namespace GEO {
     }
 
     void set_anisotropy(Mesh& M, double s) {
-        if(M.dimension() < 6) {
+        if(M.vertices.dimension() < 6) {
             compute_normals(M);
         }
         if(s == 0.0) {
@@ -225,14 +210,14 @@ namespace GEO {
             return;
         }
         s *= bbox_diagonal(M);
-        for(index_t i = 0; i < M.nb_vertices(); i++) {
+        for(index_t i = 0; i < M.vertices.nb(); i++) {
             Geom::mesh_vertex_normal_ref(M, i) =
                 s * normalize(Geom::mesh_vertex_normal(M, i));
         }
     }
 
     void unset_anisotropy(Mesh& M) {
-        for(index_t i = 0; i < M.nb_vertices(); i++) {
+        for(index_t i = 0; i < M.vertices.nb(); i++) {
             Geom::mesh_vertex_normal_ref(M, i) = normalize(
                 Geom::mesh_vertex_normal(M, i)
             );
@@ -252,45 +237,51 @@ namespace GEO {
             LocalFeatureSize LFS(CVT.nb_points(), CVT.embedding(0));
             compute_sizing_field_lfs(M, LFS, gradation);
         } else {
-            if(M.dimension() == 3) {
-                LocalFeatureSize LFS(M.nb_vertices(), M.vertex_ptr(0));
+            if(M.vertices.dimension() == 3) {
+                LocalFeatureSize LFS(M.vertices.nb(), M.vertices.point_ptr(0));
                 compute_sizing_field_lfs(M, LFS, gradation);
             } else {
                 std::vector<double> pts;
-                pts.reserve(M.nb_vertices() * 3);
-                for(index_t v = 0; v < M.nb_vertices(); v++) {
-                    pts.push_back(M.vertex_ptr(v)[0]);
-                    pts.push_back(M.vertex_ptr(v)[1]);
-                    pts.push_back(M.vertex_ptr(v)[2]);
+                pts.reserve(M.vertices.nb() * 3);
+                for(index_t v = 0; v < M.vertices.nb(); v++) {
+                    pts.push_back(M.vertices.point_ptr(v)[0]);
+                    pts.push_back(M.vertices.point_ptr(v)[1]);
+                    pts.push_back(M.vertices.point_ptr(v)[2]);
                 }
-                LocalFeatureSize LFS(M.nb_vertices(), &pts[0]);
+                LocalFeatureSize LFS(M.vertices.nb(), &pts[0]);
                 compute_sizing_field_lfs(M, LFS, gradation);
             }
         }
     }
 
     void normalize_embedding_area(Mesh& M) {
-        if(M.dimension() == 3) {
-            M.remove_vertices_weights();
+        if(M.vertices.dimension() == 3) {
+            if(M.vertices.attributes().is_defined("weight")) {
+                M.vertices.attributes().delete_attribute_store("weight");
+            }
             return;
         }
-        std::vector<double> area3d(M.nb_vertices(), 0.0);
-        std::vector<double> areaNd(M.nb_vertices(), 0.0);
-        for(index_t f = 0; f < M.nb_facets(); f++) {
-            double A3d = M.facet_area(f, 3);
-            double ANd = M.facet_area(f);
-            for(index_t c = M.facet_begin(f); c < M.facet_end(f); c++) {
-                index_t v = M.corner_vertex_index(c);
+        Attribute<double> weight(M.vertices.attributes(), "weight");
+        std::vector<double> area3d(M.vertices.nb(), 0.0);
+        std::vector<double> areaNd(M.vertices.nb(), 0.0);
+        for(index_t f = 0; f < M.facets.nb(); f++) {
+            double A3d = Geom::mesh_facet_area(M, f, 3);
+            double ANd = Geom::mesh_facet_area(M, f);
+            for(
+                index_t c = M.facets.corners_begin(f);
+                c < M.facets.corners_end(f); c++
+            ) {
+                index_t v = M.facet_corners.vertex(c);
                 area3d[v] += A3d;
                 areaNd[v] += ANd;
             }
         }
-        for(index_t v = 0; v < M.nb_vertices(); v++) {
+        for(index_t v = 0; v < M.vertices.nb(); v++) {
             double A3d = area3d[v];
             double ANd = areaNd[v];
             ANd = geo_max(ANd, 1e-6);
             double w = ::pow(A3d / ANd, 2.0);
-            M.set_weight(v, w);
+            weight[v] = w;
         }
     }
 
@@ -299,19 +290,19 @@ namespace GEO {
     ) {
         // Only implemented for tetrahedra
         // TODO: other cell types
-        geo_assert(M.cell_type(c) == MESH_TET);
-        geo_assert(M.dimension() >= 3);
-        const double* p0 = M.vertex_ptr(M.tet_vertex_index(c,0));
-        const double* p1 = M.vertex_ptr(M.tet_vertex_index(c,1));
-        const double* p2 = M.vertex_ptr(M.tet_vertex_index(c,2));
-        const double* p3 = M.vertex_ptr(M.tet_vertex_index(c,3));
+        geo_assert(M.cells.type(c) == MESH_TET);
+        geo_assert(M.vertices.dimension() >= 3);
+        const double* p0 = M.vertices.point_ptr(M.cells.vertex(c,0));
+        const double* p1 = M.vertices.point_ptr(M.cells.vertex(c,1));
+        const double* p2 = M.vertices.point_ptr(M.cells.vertex(c,2));
+        const double* p3 = M.vertices.point_ptr(M.cells.vertex(c,3));
         return ::fabs(Geom::tetra_signed_volume(p0,p1,p2,p3));
     }
 
     
     double mesh_cells_volume(const Mesh& M) {
         double result = 0.0;
-        for(index_t c=0; c<M.nb_cells(); ++c) {
+        for(index_t c=0; c<M.cells.nb(); ++c) {
             result += mesh_cell_volume(M,c);
         }
         return result;

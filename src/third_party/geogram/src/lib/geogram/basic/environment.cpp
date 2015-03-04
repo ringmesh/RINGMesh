@@ -145,11 +145,12 @@ namespace GEO {
     Environment::Environment_var Environment::instance_;
 
     Environment* Environment::instance() {
-        static bool created = false;
         if(instance_ == nil) {
+            static bool created = false;
             if(created) {
                 std::cerr
-                    << "CRITICAL: Environment::instance() called after the instance was deleted"
+                    << "CRITICAL: Environment::instance() "
+                    << "called after the instance was deleted"
                     << std::endl;
                 geo_abort();
             }

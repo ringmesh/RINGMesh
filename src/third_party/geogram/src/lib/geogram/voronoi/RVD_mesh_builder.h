@@ -47,12 +47,11 @@
 #define __GEOGRAM_VORONOI_RVD_MESH_BUILDER__
 
 #include <geogram/basic/common.h>
-#include <geogram/basic/argused.h>
 #include <geogram/voronoi/generic_RVD.h>
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_builder.h>
-#include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/index.h>
+#include <geogram/basic/attributes.h>
+#include <geogram/basic/argused.h>
 
 #include <vector>
 #include <map>
@@ -60,9 +59,9 @@
 /**
  * \file geogram/voronoi/RVD_mesh_builder.h
  * \brief Utilities to build meshes derived from restricted Voronoi diagrams.
- * \note This file contains functions and classes used by the internal implementation
- *  of GEO::GenericVoronoiDiagram. They are not meant to be used directly by client 
- *  code.
+ * \note This file contains functions and classes used by the internal 
+ *  implementation of GEO::GenericVoronoiDiagram. 
+ *  They are not meant to be used directly by client code.
  */
 
 namespace GEO {
@@ -174,9 +173,9 @@ namespace GEO {
             Delaunay*
         ) :
             target_(target),
-            builder_(target),
-            nb_vertices_(0) {
-            dim_ = reference->dimension();
+            nb_vertices_(0)
+        {
+            dim_ = coord_index_t(reference->vertices.dimension());
             current_seed_ = max_index_t();
         }
 
@@ -184,10 +183,9 @@ namespace GEO {
          * \brief Starts to build a new surface.
          */
         void begin_surface() {
-            builder_.begin_mesh();
-            MeshMutator::set_attributes(
-                *(builder_.target()), MESH_FACET_REGION
-            );
+            target_->clear();
+            target_->vertices.set_dimension(dim_);
+            facet_region_.bind(target_->facets.attributes(),"region");
         }
 
         /**
@@ -208,7 +206,7 @@ namespace GEO {
          */
         void begin_facet(index_t seed) {
             current_seed_ = seed;
-            builder_.begin_facet();
+            facet_vertices_.resize(0);
         }
 
         /**
@@ -223,10 +221,13 @@ namespace GEO {
                 current_seed_, sym
             );
             if(id >= nb_vertices_) {
-                builder_.add_vertex_by_ptr(point, 1.0, dim_);
+                index_t v = target_->vertices.create_vertex();
+                for(index_t c=0; c<dim_; ++c) {
+                    target_->vertices.point_ptr(v)[c] = point[c];
+                }
                 nb_vertices_ = id + 1;
             }
-            builder_.add_vertex_to_facet(id);
+            facet_vertices_.push_back(id);
         }
 
         /**
@@ -235,7 +236,11 @@ namespace GEO {
          *  not used by this implementation.
          */
         void end_facet() {
-            builder_.end_facet(signed_index_t(current_seed_));
+            index_t f = target_->facets.create_polygon(facet_vertices_.size());
+            for(index_t lv=0; lv<facet_vertices_.size(); ++lv) {
+                target_->facets.set_vertex(f,lv,facet_vertices_[lv]);
+            }
+            facet_region_[f] = current_seed_;
         }
 
         /**
@@ -249,7 +254,8 @@ namespace GEO {
          * \brief Terminates the current surface.
          */
         void end_surface() {
-            builder_.end_mesh(false);
+            target_->facets.connect();
+            facet_region_.unbind();
         }
 
         /**
@@ -264,11 +270,12 @@ namespace GEO {
 
     private:
         Mesh* target_;
-        MeshBuilder builder_;
+        Attribute<index_t> facet_region_;
         RVDVertexMap vertex_map_;
         coord_index_t dim_;
         index_t current_seed_;
         index_t nb_vertices_;
+        vector<index_t> facet_vertices_;
     };
 
     /************************************************************************/

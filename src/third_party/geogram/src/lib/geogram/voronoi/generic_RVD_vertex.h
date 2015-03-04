@@ -56,9 +56,10 @@
  * \file geogram/voronoi/generic_RVD_vertex.h
  * \brief Types and utilities for manipulating vertices in geometric
  *  and symbolic forms in restricted Voronoi diagrams.
- * \note This file contains functions and classes used by the internal implementation
- *  of GEO::GenericVoronoiDiagram. Except some special uses, e.g. subclassing 
- *  GEO::IntegrationSimplex, they are not meant to be used directly by client code.
+ * \note This file contains functions and classes used by the 
+ *  internal implementation of GEO::GenericVoronoiDiagram. 
+ *  Except some special uses, e.g. subclassing GEO::IntegrationSimplex, 
+ *  they are not meant to be used directly by client code.
  */
 
 namespace GEOGen {
@@ -69,6 +70,8 @@ namespace GEOGen {
     using GEO::coord_index_t;   /**< \brief type for coordinate indices      */
     using GEO::Sign;  /**< \brief type for signs (POSITIVE,ZERO or NEGATIVE) */
 
+    using GEO::Mesh;
+    
     /**
      * \brief Small_set is similar to std::set, but with fixed
      * maximum size (and no dynamic memory allocation).

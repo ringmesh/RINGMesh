@@ -199,21 +199,23 @@ namespace GEO {
         double result = 0.0;
         MeshFacetsAABB AABB(m2);
         compute_max_distance(
-            result, AABB, m1.nb_vertices(), m1.vertex_ptr(0), m1.dimension()
+            result, AABB, m1.vertices.nb(),
+            m1.vertices.point_ptr(0), m1.vertices.dimension()
         );
 
         index_t nb_samples = index_t(
             Geom::mesh_area(m1, 3) / geo_sqr(sampling_step)
         );
 
-        if(nb_samples > m1.nb_vertices()) {
-            nb_samples -= m1.nb_vertices();
+        if(nb_samples > m1.vertices.nb()) {
+            nb_samples -= m1.vertices.nb();
             Logger::out("Distance") << "Using " << nb_samples
                 << " additional samples"
                 << std::endl;
             vector<double> samples(nb_samples * 3);
+            Attribute<double> weight; // left unbound
             mesh_generate_random_samples_on_surface<3>(
-                m1, &samples[0], nb_samples, false
+                m1, &samples[0], nb_samples, weight
             );
             compute_max_distance(
                 result, AABB, nb_samples, &samples[0], 3
