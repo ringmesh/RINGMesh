@@ -49,7 +49,7 @@ if [ -z "${grep_result}" ]
 then
     echo INFO: Hook not in hgrc.
     plugin_dir=$(pwd)
-    hook_text="\n[hooks]\npre-commit = /bin/bash ${plugin_dir}/Formatter/call_uncrustify.sh false ${plugin_dir}/Formatter/uncrustify.cfg false ${plugin_dir}/include/ringmesh/ ${plugin_dir}/src/ringmesh/"
+    hook_text="\n[hooks]\npre-commit = /bin/bash ${plugin_dir}/Formatter/call_uncrustify.sh ${plugin_dir}/Formatter/uncrustify.cfg false ${plugin_dir}/include/ringmesh/ ${plugin_dir}/src/ringmesh/"
     hook_text="${hook_text}\n\nchangegroup = cd ${plugin_dir}/Formatter && hg pull -u"
 
     echo ${hook_text} >> .hg/hgrc
