@@ -32,6 +32,9 @@ then
     then
         echo INFO: Connection to lirac.
         hg clone http://hg/misc/Formatter
+        cd Formatter
+        hg up
+        cd ..
         echo Formatter = http://hg/misc/Formatter >> .hgsub
         hg add .hgsub
     else
