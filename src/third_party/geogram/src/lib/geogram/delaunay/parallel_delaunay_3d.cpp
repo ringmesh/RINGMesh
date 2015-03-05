@@ -63,11 +63,11 @@ namespace {
      * \details The function is thread-safe, and uses one seed
      *  per thread.
      */
-    index_t thread_safe_random(index_t choices) {
+    index_t thread_safe_random(index_t choices_in) {
+        signed_index_t choices = signed_index_t(choices_in);
         static GEO_THREAD_LOCAL long int randomseed = 1l ;
-        long int newrandom;
         if (choices >= 714025l) {
-            newrandom = (randomseed * 1366l + 150889l) % 714025l;
+            long int newrandom = (randomseed * 1366l + 150889l) % 714025l;
             randomseed = (newrandom * 1366l + 150889l) % 714025l;
             newrandom = newrandom * (choices / 714025l) + randomseed;
             if (newrandom >= choices) {
@@ -2525,8 +2525,8 @@ namespace GEO {
         index_t expected_tetra = nb_vertices * 7;
     
         // Allocate the tetrahedra
-        cell_to_v_store_.assign(expected_tetra * 4,index_t(-1));
-        cell_to_cell_store_.assign(expected_tetra * 4,index_t(-1));
+        cell_to_v_store_.assign(expected_tetra * 4,-1);
+        cell_to_cell_store_.assign(expected_tetra * 4,-1);
         cell_next_.assign(expected_tetra,index_t(-1));
         cell_thread_.assign(expected_tetra,thread_index_t(-1));
 

@@ -51,9 +51,7 @@
 #include <geogram/basic/file_system.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/mesh_reorder.h>
-#include <geogram/mesh/mesh_private.h>
 #include <geogram/delaunay/delaunay.h>
 #include <algorithm>
 
@@ -117,14 +115,17 @@ int main(int argc, char** argv) {
 
         Logger::div("Computing 3D Delaunay triangulation");
 
-        Logger::out("Delaunay") << "Using " << CmdLine::get_arg("algo:delaunay") << std::endl;
+        Logger::out("Delaunay")
+            << "Using " << CmdLine::get_arg("algo:delaunay") << std::endl;
 
 
         Delaunay_var delaunay = Delaunay::create(3);
 
         {
             Stopwatch W("Delaunay");
-            delaunay->set_vertices(M_in.nb_vertices(), M_in.vertex_ptr(0));
+            delaunay->set_vertices(
+                M_in.vertices.nb(), M_in.vertices.point_ptr(0)
+            );
         }
 
         Logger::out("Delaunay") << delaunay->nb_cells() << " tetrahedra"
@@ -144,7 +145,7 @@ int main(int argc, char** argv) {
                 tet2v[4 * t + 2] = index_t(delaunay->cell_vertex(t, 2));
                 tet2v[4 * t + 3] = index_t(delaunay->cell_vertex(t, 3));
             }
-            M_out.assign_tet_mesh(3, pts, tet2v, true);
+            M_out.cells.assign_tet_mesh(3, pts, tet2v, true);
             M_out.show_stats();
 
             //  Reorder the tetrahedra and the vertices indices
@@ -152,13 +153,18 @@ int main(int argc, char** argv) {
             // algorithms.
             if(CmdLine::get_arg_bool("reorder")) {
                 Logger::div("Re-ordering the mesh");
-                vector<index_t>& tet_vertices = MeshMutator::tet_vertices(M_out);
+                // TODO
+                geo_assert_not_reached;
+                /*
+                vector<index_t>& tet_vertices =
+                    MeshMutator::tet_vertices(M_out);
                 for(index_t t = 0; t < M_out.nb_tets(); ++t) {
                     std::sort(
                         tet_vertices.begin() + std::ptrdiff_t(4 * t),
                         tet_vertices.begin() + std::ptrdiff_t(4 * (t + 1))
-                        );
+                    );
                 }
+                */
             }
 
             Logger::div("Saving the result");

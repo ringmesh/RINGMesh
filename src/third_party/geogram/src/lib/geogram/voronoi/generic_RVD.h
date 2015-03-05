@@ -53,6 +53,7 @@
 #include <geogram/mesh/index.h>
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/basic/process.h>
+#include <geogram/basic/attributes.h>
 #include <geogram/basic/argused.h>
 
 #include <deque>
@@ -1312,7 +1313,7 @@ namespace GEOGen {
                facets_end_ == UNSPECIFIED_RANGE
             ) {
                 facets_begin_ = 0;
-                facets_end_ = mesh_->nb_facets();
+                facets_end_ = mesh_->facets.nb();
             }
             current_polygon_ = nil;
             GEO::vector<index_t> seed_stamp(
@@ -1324,6 +1325,10 @@ namespace GEOGen {
             FacetSeedStack adjacent_facets;
             SeedStack adjacent_seeds;
             Polygon F;
+            GEO::Attribute<double> vertex_weight;
+            if(mesh_->vertices.attributes().is_defined("weight")) {
+                vertex_weight.bind(mesh_->vertices.attributes(),"weight");
+            }
 
             // The algorithm propagates along both the facet-graph of
             // the surface and the 1-skeleton of the Delaunay triangulation,
@@ -1345,7 +1350,7 @@ namespace GEOGen {
                         // RestrictedVoronoiDiagram's Polygon data structure
                         // (gathers all the necessary information)
                         F.initialize_from_mesh_facet(
-                            mesh_, current_facet_, symbolic_
+                            mesh_, current_facet_, symbolic_, vertex_weight
                         );
 
                         // Propagate along the Delaunay 1-skeleton
@@ -1448,7 +1453,7 @@ namespace GEOGen {
                tets_end_ == UNSPECIFIED_RANGE
             ) {
                 tets_begin_ = 0;
-                tets_end_ = mesh_->nb_tets();
+                tets_end_ = mesh_->cells.nb();
             }
 
             geo_assert(tets_begin_ != UNSPECIFIED_RANGE);
@@ -1637,7 +1642,7 @@ namespace GEOGen {
                 facets_end_ == UNSPECIFIED_RANGE
             ) {
                 facets_begin_ = 0;
-                facets_end_ = mesh_->nb_facets();
+                facets_end_ = mesh_->facets.nb();
             }
 
             current_polygon_ = nil;
@@ -1660,6 +1665,11 @@ namespace GEOGen {
             current_connected_component_ = 0;
             index_t F_index = facets_end_ + 1;
 
+            GEO::Attribute<double> vertex_weight;
+            if(mesh_->vertices.attributes().is_defined("weight")) {
+                vertex_weight.bind(mesh_->vertices.attributes(),"weight");
+            }
+            
             // The algorithm propagates along both the facet-graph of
             // the surface and the 1-skeleton of the Delaunay triangulation,
             // and computes all the relevant intersections between
@@ -1704,7 +1714,8 @@ namespace GEOGen {
                             // (gathers all the necessary information)
                             if(F_index != current_facet_) {
                                 F.initialize_from_mesh_facet(
-                                    mesh_, current_facet_, symbolic_
+                                    mesh_, current_facet_, symbolic_,
+                                    vertex_weight
                                 );
                                 F_index = current_facet_;
                             }
@@ -1776,8 +1787,9 @@ namespace GEOGen {
          *   of the seed and facet \p f.
          */
         index_t find_seed_near_facet(index_t f) {
-            index_t v = mesh_->facet_begin(f);
-            const double* p = mesh_->corner_vertex_ptr(v);
+            const double* p = mesh_->vertices.point_ptr(
+                mesh_->facets.vertex(f,0)
+            );
             return find_seed_near_point(p);
         }
 
@@ -1789,8 +1801,8 @@ namespace GEOGen {
          *   of the seed and tetrahedron \p t.
          */
         index_t find_seed_near_tet(index_t t) {
-            index_t v = mesh_->tet_vertex_index(t, 0);
-            const double* p = mesh_->vertex_ptr(v);
+            index_t v = mesh_->cells.tet_vertex(t, 0);
+            const double* p = mesh_->vertices.point_ptr(v);
             return find_seed_near_point(p);
         }
 

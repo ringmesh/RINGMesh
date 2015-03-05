@@ -58,7 +58,6 @@
 #include <geogram/mesh/mesh_fill_holes.h>
 #include <geogram/mesh/mesh_preprocessing.h>
 #include <geogram/mesh/mesh_degree3_vertices.h>
-#include <geogram/mesh/mesh_private.h>
 #include <geogram/delaunay/delaunay.h>
 #include <geogram/voronoi/RVD.h>
 #include <geogram/numerics/predicates.h>
@@ -66,18 +65,6 @@
 namespace {
 
     using namespace GEO;
-
-    /**
-     * \brief Removes all facets in a mesh
-     * \param[in] M the input mesh
-     */
-    void remove_all_facets(Mesh& M) {
-        MeshMutator::set_nb_facets(M, 0);
-        MeshMutator::facet_ptr(M).resize(0);
-        MeshMutator::corner_vertices(M).resize(0);
-        MeshMutator::facet_regions(M).resize(0);
-        MeshMutator::set_triangulated(M, true);
-    }
 
     /**
      * \brief Removes zero area facets in a mesh
@@ -89,11 +76,11 @@ namespace {
         vec3 q2(0, 0, 1);
         vec3 q3(0, 1, 0);
         vec3 q4(1, 0, 0);
-        for(index_t f = 0; f < M.nb_facets(); ++f) {
-            index_t c = M.facet_begin(f);
-            index_t v1 = M.corner_vertex_index(c);
-            index_t v2 = M.corner_vertex_index(c + 1);
-            index_t v3 = M.corner_vertex_index(c + 2);
+        for(index_t f = 0; f < M.facets.nb(); ++f) {
+            index_t c = M.facets.corners_begin(f);
+            index_t v1 = M.facet_corners.vertex(c);
+            index_t v2 = M.facet_corners.vertex(c + 1);
+            index_t v3 = M.facet_corners.vertex(c + 2);
             const vec3& p1 = Geom::mesh_vertex(M, v1);
             const vec3& p2 = Geom::mesh_vertex(M, v2);
             const vec3& p3 = Geom::mesh_vertex(M, v3);
@@ -109,14 +96,14 @@ namespace {
             ) {
                 Logger::warn("Validate") << "Found a zero-area facet"
                     << std::endl;
-                remove_f.resize(M.nb_facets(), 0);
+                remove_f.resize(M.facets.nb(), 0);
                 remove_f[f] = 1;
             }
         }
         if(remove_f.size() != 0) {
             Logger::warn("Validate") << "Removing zero-area facet(s)"
                 << std::endl;
-            M.remove_facets(remove_f);
+            M.facets.delete_elements(remove_f);
         }
     }
 }
@@ -208,10 +195,10 @@ int main(int argc, char** argv) {
         double epsilon = CmdLine::get_arg_percent(
             "epsilon",bbox_diagonal(points_in)
         );
-        remove_all_facets(points_in);
+        points_in.facets.clear();
         mesh_repair(points_in, MESH_REPAIR_COLOCATE, epsilon);
 
-        geo_assert(points_in.dimension() == 3);
+        geo_assert(points_in.vertices.dimension() == 3);
 
         if(CmdLine::get_arg_bool("constrained")) {
 
@@ -225,7 +212,7 @@ int main(int argc, char** argv) {
                 RestrictedVoronoiDiagram_var RVD = 
                     RestrictedVoronoiDiagram::create(delaunay,&M_in);
                 delaunay->set_vertices(
-                    points_in.nb_vertices(), points_in.vertex_ptr(0)
+                    points_in.vertices.nb(), points_in.vertices.point_ptr(0)
                 );
 
 
@@ -251,14 +238,20 @@ int main(int argc, char** argv) {
                 remove_degree3_vertices(surface, 0.01*radius);
                 mesh_save(surface,"surface.meshb");
 
-                vector<double> m(points_in.nb_vertices());
-                vector<double> mg(points_in.nb_vertices()*3);
+                vector<double> m(points_in.vertices.nb());
+                vector<double> mg(points_in.vertices.nb()*3);
                 RVD->compute_centroids_on_surface(&mg[0], &m[0]);
-                for(index_t v=0; v<points_in.nb_vertices(); ++v) {
+                for(index_t v=0; v<points_in.vertices.nb(); ++v) {
                     if(m[v] == 0.0) {
-                        inner_points.push_back(points_in.vertex_ptr(v)[0]);
-                        inner_points.push_back(points_in.vertex_ptr(v)[1]);
-                        inner_points.push_back(points_in.vertex_ptr(v)[2]);
+                        inner_points.push_back(
+                            points_in.vertices.point_ptr(v)[0]
+                        );
+                        inner_points.push_back(
+                            points_in.vertices.point_ptr(v)[1]
+                        );
+                        inner_points.push_back(
+                            points_in.vertices.point_ptr(v)[2]
+                        );
                     }
                 }
             }
@@ -281,7 +274,7 @@ int main(int argc, char** argv) {
                 tet2v[4 * t + 2] = index_t(delaunay->cell_vertex(t, 2));
                 tet2v[4 * t + 3] = index_t(delaunay->cell_vertex(t, 3));
             }
-            M_out.assign_tet_mesh(3, pts, tet2v, true);
+            M_out.cells.assign_tet_mesh(3, pts, tet2v, true);
             M_out.show_stats();
 
             Logger::div("Saving the result");
@@ -294,7 +287,7 @@ int main(int argc, char** argv) {
                 delaunay, &M_in
             );
             delaunay->set_vertices(
-                points_in.nb_vertices(), points_in.vertex_ptr(0)
+                points_in.vertices.nb(), points_in.vertices.point_ptr(0)
             );
 
             RVD->set_volumetric(volumetric);
@@ -305,8 +298,8 @@ int main(int argc, char** argv) {
                 
                 RVD->compute_RVD(M_out, 0, cell_borders, integ_smplx);
                 if(integ_smplx && volumetric) {
-                    M_out.connect_tets();
-                    M_out.compute_tets_boundaries();
+                    M_out.cells.connect();
+                    M_out.cells.compute_borders();
                 }
                 Logger::div("Result");
 

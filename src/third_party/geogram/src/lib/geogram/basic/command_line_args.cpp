@@ -481,6 +481,23 @@ namespace {
         );
     }
 
+    /**
+     * \brief Imports the graphics option group
+     */
+    void import_arg_group_gfx() {
+        declare_arg_group("gfx", "OpenGL graphics options", ARG_ADVANCED);
+        declare_arg(
+            "gfx:full_screen", false, "full screen mode"
+        );                
+        declare_arg(
+            "gfx:GLSL", true, "Use GLSL shaders (requires recent gfx board)"
+        );
+        declare_arg(
+            "gfx:GLSL_tesselation", false,
+            "Use tesselation shaders (if supported and GLSL enabled)"
+        );
+    }
+    
     
     /************************************************************************/
 
@@ -597,6 +614,8 @@ namespace GEO {
                 import_arg_group_hex();
             } else if(name == "tet") {
                 import_arg_group_tet();
+            } else if(name == "gfx") {
+                import_arg_group_gfx();
             } else {
                 Logger::instance()->set_quiet(false);
                 Logger::err("CmdLine")

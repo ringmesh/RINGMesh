@@ -4816,34 +4816,34 @@ namespace GEO {
     
     namespace PCK {
 
-        Sign side4_3d(
+        Sign GEOGRAM_API side4_3d(
             const double* p0, const double* p1, 
             const double* p2, const double* p3, const double* p4
         );
 
-        Sign side4_3d_SOS(
+        Sign GEOGRAM_API side4_3d_SOS(
             const double* p0, const double* p1, 
             const double* p2, const double* p3, const double* p4
         );
 
-        Sign orient_3d(
+        Sign GEOGRAM_API orient_3d(
             const double* p0, const double* p1,
             const double* p2, const double* p3
         );
 
-        Sign orient_4d(
+        Sign GEOGRAM_API orient_4d(
             const double* p0, const double* p1,
             const double* p2, const double* p3, const double* p4,
             double h0, double h1, double h2, double h3, double h4
         );
 
-        Sign orient_4d_SOS(
+        Sign GEOGRAM_API orient_4d_SOS(
             const double* p0, const double* p1,
             const double* p2, const double* p3, const double* p4,
             double h0, double h1, double h2, double h3, double h4
         );
 
-        void initialize();
+        void GEOGRAM_API initialize();
     }
 }
 
@@ -4900,7 +4900,7 @@ namespace {
     // has the approximate value of the determinant computed
     // by the predicates (and of course its exact sign).
     // Some parts of tetgen need also to compute the value
-    // of the determinant, so I added this function for these
+    // of the determinant, so I added this function.
     
     REAL orient4d_numeric(
         REAL *p0, REAL *p1, REAL *p2, REAL *p3, REAL *p4,

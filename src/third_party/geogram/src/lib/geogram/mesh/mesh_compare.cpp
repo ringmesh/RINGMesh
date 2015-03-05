@@ -47,6 +47,7 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/basic/logger.h>
 
 namespace {
 
@@ -57,8 +58,8 @@ namespace {
      */
     index_t mesh_nb_facet_borders(const Mesh& M) {
         index_t nb_borders = 0;
-        for(index_t i = 0; i < M.nb_corners(); i++) {
-            if(M.corner_adjacent_facet(i) < 0) {
+        for(index_t i = 0; i < M.facet_corners.nb(); i++) {
+            if(M.facet_corners.adjacent_facet(i) == NO_FACET) {
                 nb_borders++;
             }
         }
@@ -68,11 +69,11 @@ namespace {
     /**
      * \brief Computes the number of tet borders
      */
-    index_t mesh_nb_tet_borders(const Mesh& M) {
+    index_t mesh_nb_cell_borders(const Mesh& M) {
         index_t nb_borders = 0;
-        for(index_t t = 0; t < M.nb_tets(); ++t) {
-            for(index_t lf = 0; lf < 4; ++lf) {
-                if(M.tet_adjacent(t, lf) == -1) {
+        for(index_t c = 0; c < M.cells.nb(); ++c) {
+            for(index_t lf = 0; lf < M.cells.nb_facets(c); ++lf) {
+                if(M.cells.adjacent(c, lf) == NO_CELL) {
                     nb_borders++;
                 }
             }
@@ -102,7 +103,7 @@ namespace GEO {
 
         if(
             (flags & MESH_COMPARE_DIMENSIONS) &&
-            M1.dimension() != M2.dimension()
+            M1.vertices.dimension() != M2.vertices.dimension()
         ) {
             if(verbose) {
                 Logger::err("Compare")
@@ -114,7 +115,7 @@ namespace GEO {
 
         if(
             (flags & MESH_COMPARE_NB_VERTICES) &&
-            M1.nb_vertices() != M2.nb_vertices()
+            M1.vertices.nb() != M2.vertices.nb()
         ) {
             if(verbose) {
                 Logger::err("Compare")
@@ -126,7 +127,7 @@ namespace GEO {
 
         if(
             (flags & MESH_COMPARE_NB_FACETS) &&
-            M1.nb_facets() != M2.nb_facets()
+            M1.facets.nb() != M2.facets.nb()
         ) {
             if(verbose) {
                 Logger::err("Compare")
@@ -176,26 +177,26 @@ namespace GEO {
 
         if(
             (flags & MESH_COMPARE_NB_TETS) &&
-            M1.nb_tets() != M2.nb_tets()
+            M1.cells.nb() != M2.cells.nb()
         ) {
             if(verbose) {
                 Logger::err("Compare")
-                    << "Numbers of tets differ"
+                    << "Numbers of cells differ"
                     << std::endl;
             }
             status |= MESH_COMPARE_NB_TETS;
         }
 
         if(flags & MESH_COMPARE_NB_TET_BORDERS) {
-            index_t M1_nb_tet_borders = mesh_nb_tet_borders(M1);
-            index_t M2_nb_tet_borders = mesh_nb_tet_borders(M2);
+            index_t M1_nb_tet_borders = mesh_nb_cell_borders(M1);
+            index_t M2_nb_tet_borders = mesh_nb_cell_borders(M2);
 
             if(verbose) {
                 Logger::out("Mesh1")
-                    << "nb_tet_borders:" << M1_nb_tet_borders
+                    << "nb_cell_borders:" << M1_nb_tet_borders
                     << std::endl;
                 Logger::out("Mesh2")
-                    << "nb_tet_borders:" << M2_nb_tet_borders
+                    << "nb_cell_borders:" << M2_nb_tet_borders
                     << std::endl;
             }
 

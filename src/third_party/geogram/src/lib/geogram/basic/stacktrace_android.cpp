@@ -71,5 +71,12 @@ namespace GEO {
     }
 }
 
+#else 
+
+// Declare a dummy variable so that
+// MSVC does not complain that it 
+// generated an empty object file.
+int dummy_stacktrace_android_compiled = 1;
+
 #endif
 

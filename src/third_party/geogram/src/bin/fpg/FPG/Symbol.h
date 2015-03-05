@@ -63,6 +63,7 @@ struct Variable : public Symbol {
        : Symbol( id ),
          type( type ),
          is_constant(false),
+         value(0),
          group_index(0),
          degree(1)
     {}

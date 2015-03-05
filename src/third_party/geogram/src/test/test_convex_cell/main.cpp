@@ -53,7 +53,6 @@
 #include <geogram/voronoi/generic_RVD_cell.h>
 #include <geogram/mesh/mesh_halfedges.h>
 #include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_builder.h>
 #include <geogram/mesh/mesh_topology.h>
 
 namespace {
@@ -68,60 +67,26 @@ namespace {
      * \param[out] M the resulting mesh
      */
     void initialize_mesh_with_box(Mesh& M) {
-        MeshBuilder builder(&M);
-        builder.begin_mesh();
-        builder.add_vertex(vec3(-1, -1, -1));
-        builder.add_vertex(vec3(-1, -1, 1));
-        builder.add_vertex(vec3(-1, 1, -1));
-        builder.add_vertex(vec3(-1, 1, 1));
-        builder.add_vertex(vec3(1, -1, -1));
-        builder.add_vertex(vec3(1, -1, 1));
-        builder.add_vertex(vec3(1, 1, -1));
-        builder.add_vertex(vec3(1, 1, 1));
+        M.clear();;;
+        M.vertices.set_dimension(3);
 
-        builder.begin_facet();
-        builder.add_vertex_to_facet(7);
-        builder.add_vertex_to_facet(6);
-        builder.add_vertex_to_facet(2);
-        builder.add_vertex_to_facet(3);
-        builder.end_facet();
+        M.vertices.create_vertex(vec3(-1, -1, -1).data());
+        M.vertices.create_vertex(vec3(-1, -1, 1).data());
+        M.vertices.create_vertex(vec3(-1, 1, -1).data());
+        M.vertices.create_vertex(vec3(-1, 1, 1).data());
+        M.vertices.create_vertex(vec3(1, -1, -1).data());
+        M.vertices.create_vertex(vec3(1, -1, 1).data());
+        M.vertices.create_vertex(vec3(1, 1, -1).data());
+        M.vertices.create_vertex(vec3(1, 1, 1).data());
 
-        builder.begin_facet();
-        builder.add_vertex_to_facet(1);
-        builder.add_vertex_to_facet(3);
-        builder.add_vertex_to_facet(2);
-        builder.add_vertex_to_facet(0);
-        builder.end_facet();
+        M.facets.create_quad(7,6,2,3);
+        M.facets.create_quad(1,3,2,0);
+        M.facets.create_quad(5,7,3,1);
+        M.facets.create_quad(4,6,7,5);
+        M.facets.create_quad(4,5,1,0);
+        M.facets.create_quad(6,4,0,2);
 
-        builder.begin_facet();
-        builder.add_vertex_to_facet(5);
-        builder.add_vertex_to_facet(7);
-        builder.add_vertex_to_facet(3);
-        builder.add_vertex_to_facet(1);
-        builder.end_facet();
-
-        builder.begin_facet();
-        builder.add_vertex_to_facet(4);
-        builder.add_vertex_to_facet(6);
-        builder.add_vertex_to_facet(7);
-        builder.add_vertex_to_facet(5);
-        builder.end_facet();
-
-        builder.begin_facet();
-        builder.add_vertex_to_facet(4);
-        builder.add_vertex_to_facet(5);
-        builder.add_vertex_to_facet(1);
-        builder.add_vertex_to_facet(0);
-        builder.end_facet();
-
-        builder.begin_facet();
-        builder.add_vertex_to_facet(6);
-        builder.add_vertex_to_facet(4);
-        builder.add_vertex_to_facet(0);
-        builder.add_vertex_to_facet(2);
-        builder.end_facet();
-
-        builder.end_mesh();
+        M.facets.connect();
     }
 
     /**
@@ -134,20 +99,22 @@ namespace {
     void initialize_convex_cell_with_mesh(
         ConvexCell& C, Mesh& M
     ) {
-        for(index_t f = 0; f < M.nb_facets(); ++f) {
+        for(index_t f = 0; f < M.facets.nb(); ++f) {
             C.create_vertex();
         }
-        std::vector<MeshHalfedges::Halfedge> v2h(M.nb_vertices());
+        std::vector<MeshHalfedges::Halfedge> v2h(M.vertices.nb());
 
         MeshHalfedges MH(M);
-        for(index_t f = 0; f < M.nb_facets(); ++f) {
-            for(index_t c = M.facet_begin(f); c < M.facet_end(f); ++c) {
-                index_t v = M.corner_vertex_index(c);
+        for(index_t f = 0; f < M.facets.nb(); ++f) {
+            for(index_t c = M.facets.corners_begin(f);
+                c < M.facets.corners_end(f); ++c
+            ) {
+                index_t v = M.facet_corners.vertex(c);
                 v2h[v] = MeshHalfedges::Halfedge(f, c);
             }
         }
 
-        for(index_t v = 0; v < M.nb_vertices(); ++v) {
+        for(index_t v = 0; v < M.vertices.nb(); ++v) {
             index_t fi[3];
             index_t va[3];
             index_t cur = 0;
@@ -155,8 +122,10 @@ namespace {
             do {
                 geo_assert(cur < 3);
                 fi[cur] = H.facet;
-                index_t ca = M.next_around_facet(H.facet, H.corner);
-                va[cur] = M.corner_vertex_index(ca);
+                index_t ca = M.facets.next_corner_around_facet(
+                    H.facet, H.corner
+                );
+                va[cur] = M.facet_corners.vertex(ca);
                 bool ok = MH.move_to_prev_around_vertex(H);
                 geo_assert(ok);
                 ++cur;
@@ -165,7 +134,8 @@ namespace {
             //   Mesh numbering -> Triangulation numering
             // conversion !
             C.create_triangle(
-                M.vertex_ptr(v), fi[0], fi[1], fi[2], va[2], va[0], va[1]
+                M.vertices.point_ptr(v),
+                fi[0], fi[1], fi[2], va[2], va[0], va[1]
             );
             C.triangle_dual(v).sym().add_boundary_facet(fi[0]);
             C.triangle_dual(v).sym().add_boundary_facet(fi[1]);
@@ -185,32 +155,40 @@ namespace {
     void convex_cell_to_mesh(const ConvexCell& C, Mesh& M) {
         std::vector<index_t> tri_to_v(C.max_t());
         M.clear();
-        MeshBuilder builder(&M);
-        builder.begin_mesh();
+        M.vertices.set_dimension(3);
+
         index_t cur_v = 0;
         for(index_t t = 0; t < C.max_t(); ++t) {
             if(C.triangle_is_valid(t)) {
-                builder.add_vertex(vec3(C.triangle_dual(t).point()));
+                M.vertices.create_vertex(C.triangle_dual(t).point());
                 tri_to_v[t] = cur_v;
                 ++cur_v;
             }
         }
+        vector<index_t> facet_vertices;
         for(index_t v = 0; v < C.max_v(); v++) {
+            facet_vertices.resize(0);
             signed_index_t t = C.vertex_triangle(v);
             if(t != -1) {
-                builder.begin_facet();
+                
+
                 ConvexCell::Corner first_c(
                     index_t(t), C.find_triangle_vertex(index_t(t), v)
                 );
                 ConvexCell::Corner c = first_c;
                 do {
-                    builder.add_vertex_to_facet(tri_to_v[c.t]);
+                    facet_vertices.push_back(tri_to_v[c.t]);
                     C.move_to_next_around_vertex(c);
                 } while(c != first_c);
-                builder.end_facet();
+
+                index_t f = M.facets.create_polygon(facet_vertices.size());
+                for(index_t lv=0; lv<facet_vertices.size(); ++lv) {
+                    M.facets.set_vertex(f,lv,facet_vertices[lv]);
+                }
+                
             }
         }
-        builder.end_mesh();
+        M.facets.connect();
     }
 
     /**
@@ -339,7 +317,7 @@ namespace {
      * \param[in] use_random_vertices if true, random angular sampling is used
      */
      void init_cone(
-	vector<double>& vertices, index_t nb_vertices, bool use_random_vertices=true
+        vector<double>& vertices, index_t nb_vertices, bool use_random_vertices=true
      ) {
         vertices.resize((nb_vertices + 1) * 3);
         vertices[0] = 0.0;

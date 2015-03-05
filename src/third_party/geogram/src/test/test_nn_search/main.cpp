@@ -101,27 +101,27 @@ int main(int argc, char** argv) {
             << std::endl;
 
         NearestNeighborSearch_var NN1 = NearestNeighborSearch::create(
-            M.dimension(), NN1_algo
+            M.vertices.dimension(), NN1_algo
         );
 
         NearestNeighborSearch_var NN2 = NearestNeighborSearch::create(
-            M.dimension(), NN2_algo
+            M.vertices.dimension(), NN2_algo
         );
 
-        NN1->set_points(M.nb_vertices(), M.vertex_ptr(0));
-        NN2->set_points(M.nb_vertices(), M.vertex_ptr(0));
+        NN1->set_points(M.vertices.nb(), M.vertices.point_ptr(0));
+        NN2->set_points(M.vertices.nb(), M.vertices.point_ptr(0));
 
         index_t nb_neigh = CmdLine::get_arg_uint("algo:nn_nb");
-        if(nb_neigh > M.nb_vertices()) {
+        if(nb_neigh > M.vertices.nb()) {
             Logger::warn("NN Search")
                 << "We only have "
-                << M.nb_vertices() << " points and "
+                << M.vertices.nb() << " points and "
                 << nb_neigh << " neighbors are queried !"
                 << std::endl;
             Logger::warn("NN Search")
-                << "Using " << M.nb_vertices() << " neighbors."
+                << "Using " << M.vertices.nb() << " neighbors."
                 << std::endl;
-            nb_neigh = M.nb_vertices();
+            nb_neigh = M.vertices.nb();
         }
 
         vector<index_t> neigh1(nb_neigh);
@@ -131,8 +131,8 @@ int main(int argc, char** argv) {
         vector<double> sq_dist2(nb_neigh);
 
         bool match = true;
-        for(index_t i = 0; i < M.nb_vertices(); ++i) {
-            const double* q = M.vertex_ptr(i);
+        for(index_t i = 0; i < M.vertices.nb(); ++i) {
+            const double* q = M.vertices.point_ptr(i);
 
             if(by_index) {
                 NN1->get_nearest_neighbors(

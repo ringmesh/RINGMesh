@@ -76,7 +76,7 @@ namespace GEOGen {
     }
 
     Sign ConvexCell::side_exact(
-        const Mesh<double>* mesh, const Delaunay* delaunay,
+        const Mesh* mesh, const Delaunay* delaunay,
         const GEOGen::Vertex& q,
         const double* pi, const double* pj,
         coord_index_t dim,
@@ -114,10 +114,10 @@ namespace GEOGen {
                         delaunay->vertex_ptr(b1),
                         delaunay->vertex_ptr(b2),
                         pj,
-                        mesh->vertex_ptr(mesh->tet_vertex_index(t, 0)),
-                        mesh->vertex_ptr(mesh->tet_vertex_index(t, 1)),
-                        mesh->vertex_ptr(mesh->tet_vertex_index(t, 2)),
-                        mesh->vertex_ptr(mesh->tet_vertex_index(t, 3)),
+                        mesh->vertices.point_ptr(mesh->cells.tet_vertex(t, 0)),
+                        mesh->vertices.point_ptr(mesh->cells.tet_vertex(t, 1)),
+                        mesh->vertices.point_ptr(mesh->cells.tet_vertex(t, 2)),
+                        mesh->vertices.point_ptr(mesh->cells.tet_vertex(t, 3)),
                         dim
                     );
                 }
@@ -134,10 +134,17 @@ namespace GEOGen {
                 unsigned int f = q.sym().boundary_facet(0);
 
                 if(symbolic_is_surface) {
-                    index_t c = mesh->facet_begin(f);
-                    const double* q0 = mesh->corner_vertex_ptr(c);
-                    const double* q1 = mesh->corner_vertex_ptr(c + 1);
-                    const double* q2 = mesh->corner_vertex_ptr(c + 2);
+                    index_t c = mesh->facets.corners_begin(f);
+                    const double* q0 = mesh->vertices.point_ptr(
+                        mesh->facet_corners.vertex(c)
+                    );
+                    const double* q1 = mesh->vertices.point_ptr(
+                        mesh->facet_corners.vertex(c+1)
+                    );
+                    const double* q2 = mesh->vertices.point_ptr(
+                        mesh->facet_corners.vertex(c+2)
+                    );
+                                                                                
                     return GEO::PCK::side3_SOS(
                         pi,
                         delaunay->vertex_ptr(b0),
@@ -145,26 +152,28 @@ namespace GEOGen {
                         pj,
                         q0, q1, q2, dim
                     );
+                    
                 } else {
                     index_t t = f / 4;
                     index_t lf = f % 4;
-                    index_t j0 = mesh->tet_vertex_index(
-                        t, MeshBase::local_tet_facet_vertex_index(lf, 0)
+                    index_t j0 = mesh->cells.tet_vertex(
+                        t, GEO::MeshCells::local_tet_facet_vertex_index(lf, 0)
                     );
-                    index_t j1 = mesh->tet_vertex_index(
-                        t, MeshBase::local_tet_facet_vertex_index(lf, 1)
+                    index_t j1 = mesh->cells.tet_vertex(
+                        t, GEO::MeshCells::local_tet_facet_vertex_index(lf, 1)
                     );
-                    index_t j2 = mesh->tet_vertex_index(
-                        t, MeshBase::local_tet_facet_vertex_index(lf, 2)
+                    index_t j2 = mesh->cells.tet_vertex(
+                        t, GEO::MeshCells::local_tet_facet_vertex_index(lf, 2)
                     );
+                    
                     return GEO::PCK::side3_SOS(
                         pi,
                         delaunay->vertex_ptr(b0),
                         delaunay->vertex_ptr(b1),
                         pj,
-                        mesh->vertex_ptr(j0),
-                        mesh->vertex_ptr(j1),
-                        mesh->vertex_ptr(j2),
+                        mesh->vertices.point_ptr(j0),
+                        mesh->vertices.point_ptr(j1),
+                        mesh->vertices.point_ptr(j2),
                         dim
                     );
                 }
@@ -181,7 +190,9 @@ namespace GEOGen {
                 q.sym().get_boundary_edge(e0, e1);
                 return GEO::PCK::side2_SOS(
                     pi, delaunay->vertex_ptr(b0), pj,
-                    mesh->vertex_ptr(e0), mesh->vertex_ptr(e1), dim
+                    mesh->vertices.point_ptr(e0),
+                    mesh->vertices.point_ptr(e1),
+                    dim
                 );
             } break;
 
@@ -192,7 +203,7 @@ namespace GEOGen {
                 //   (i.e. a vertex v0 of the surface).
                 unsigned int v0 = q.sym().get_boundary_vertex();
                 return GEO::PCK::side1_SOS(
-                    pi, pj, mesh->vertex_ptr(v0), dim
+                    pi, pj, mesh->vertices.point_ptr(v0), dim
                 );
             } break;
         }
@@ -201,19 +212,19 @@ namespace GEOGen {
     }
 
     void ConvexCell::initialize_from_mesh_tetrahedron(
-        const Mesh<double>* mesh, index_t t, bool symbolic
+        const Mesh* mesh, index_t t, bool symbolic
     ) {
         clear();
 
-        index_t v0 = mesh->tet_vertex_index(t, 0);
-        index_t v1 = mesh->tet_vertex_index(t, 1);
-        index_t v2 = mesh->tet_vertex_index(t, 2);
-        index_t v3 = mesh->tet_vertex_index(t, 3);
+        index_t v0 = mesh->cells.tet_vertex(t, 0);
+        index_t v1 = mesh->cells.tet_vertex(t, 1);
+        index_t v2 = mesh->cells.tet_vertex(t, 2);
+        index_t v3 = mesh->cells.tet_vertex(t, 3);
 
-        signed_index_t t0 = mesh->tet_adjacent(t, 0);
-        signed_index_t t1 = mesh->tet_adjacent(t, 1);
-        signed_index_t t2 = mesh->tet_adjacent(t, 2);
-        signed_index_t t3 = mesh->tet_adjacent(t, 3);
+        signed_index_t t0 = signed_index_t(mesh->cells.tet_adjacent(t, 0));
+        signed_index_t t1 = signed_index_t(mesh->cells.tet_adjacent(t, 1));
+        signed_index_t t2 = signed_index_t(mesh->cells.tet_adjacent(t, 2));
+        signed_index_t t3 = signed_index_t(mesh->cells.tet_adjacent(t, 3));
 
         create_vertex();
         create_vertex();
@@ -222,15 +233,15 @@ namespace GEOGen {
 
         set_cell_id(signed_index_t(t));
 
-        set_vertex_id(0, (t0 == -1) ? 0 : -t0 - 1);
-        set_vertex_id(1, (t1 == -1) ? 0 : -t1 - 1);
-        set_vertex_id(2, (t2 == -1) ? 0 : -t2 - 1);
-        set_vertex_id(3, (t3 == -1) ? 0 : -t3 - 1);
+        set_vertex_id(0, (t0 == signed_index_t(GEO::NO_CELL)) ? 0 : -t0 - 1);
+        set_vertex_id(1, (t1 == signed_index_t(GEO::NO_CELL)) ? 0 : -t1 - 1);
+        set_vertex_id(2, (t2 == signed_index_t(GEO::NO_CELL)) ? 0 : -t2 - 1);
+        set_vertex_id(3, (t3 == signed_index_t(GEO::NO_CELL)) ? 0 : -t3 - 1);
 
-        create_triangle(mesh->vertex_ptr(v0), 2, 1, 3, 2, 1, 3);
-        create_triangle(mesh->vertex_ptr(v1), 3, 0, 2, 3, 0, 2);
-        create_triangle(mesh->vertex_ptr(v2), 0, 3, 1, 0, 3, 1);
-        create_triangle(mesh->vertex_ptr(v3), 2, 0, 1, 2, 0, 1);
+        create_triangle(mesh->vertices.point_ptr(v0), 2, 1, 3, 2, 1, 3);
+        create_triangle(mesh->vertices.point_ptr(v1), 3, 0, 2, 3, 0, 2);
+        create_triangle(mesh->vertices.point_ptr(v2), 0, 3, 1, 0, 3, 1);
+        create_triangle(mesh->vertices.point_ptr(v3), 2, 0, 1, 2, 0, 1);
 
         if(symbolic) {
 

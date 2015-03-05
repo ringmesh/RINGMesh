@@ -49,8 +49,10 @@
 #include <geogram/basic/common.h>
 #include <geogram/mesh/index.h>
 #include <geogram/mesh/mesh.h>
+#include <geogram/basic/geometry.h>
 #include <geogram/basic/smart_pointer.h>
 #include <geogram/basic/counted.h>
+#include <geogram/basic/attributes.h>
 
 #include <vector>
 
@@ -117,7 +119,8 @@ namespace GEO {
             Delaunay* delaunay, Mesh* mesh
         ) {
             return create(
-                delaunay, mesh, mesh->vertex_ptr(0), mesh->dimension()
+                delaunay, mesh,
+                mesh->vertices.point_ptr(0), mesh->vertices.dimension()
             );
         }
 
@@ -565,7 +568,7 @@ namespace GEO {
          * \return a const reference to the mapping in R3 of the point
          */
         const vec3& R3_embedding(index_t v) const {
-            geo_debug_assert(v < mesh_->nb_vertices());
+            geo_debug_assert(v < mesh_->vertices.nb());
             return *(vec3*) (R3_embedding_base_ + v * R3_embedding_stride_);
         }
 
@@ -598,6 +601,7 @@ namespace GEO {
         const double* R3_embedding_base_;
         index_t R3_embedding_stride_;
         bool has_weights_;
+        Attribute<double> vertex_weight_;
         signed_index_t facets_begin_;
         signed_index_t facets_end_;
         signed_index_t tets_begin_;

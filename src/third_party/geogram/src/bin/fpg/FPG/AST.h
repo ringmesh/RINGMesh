@@ -141,7 +141,9 @@ struct BinaryExpression : public Expression {
                 /*COMMA*/ };
 
     BinaryExpression( Expression *e1, Expression *e2, Kind kind )
-      : e1(e1), e2(e2), kind(kind) {}
+        : e1(e1), e2(e2), kind(kind),
+          pointer_arith1(false), pointer_arith2(false) {
+    }
     void dump( int level );
     Type* computeType();
 
