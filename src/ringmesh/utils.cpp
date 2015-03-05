@@ -210,6 +210,9 @@ namespace RINGMesh {
     {
         if( mesh.facets.nb() == 0 ) return ;
 
+        GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
+            surface_att_name ) ;
+
         /// 0 - Remove duplicated facets (optionnal)
         if( check_duplicated_facet ) {
             std::vector< vec3 > barycenters( mesh.facets.nb(), vec3( 0, 0, 0 ) ) ;
@@ -250,8 +253,6 @@ namespace RINGMesh {
             mesh.facets.connect() ;
         }
 
-        GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
-            surface_att_name ) ;
         /// 1 - Check facet adjacencies for non-manifold surfaces
         std::vector< index_t > temp ;
         temp.reserve( 6 ) ;
