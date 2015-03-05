@@ -244,30 +244,25 @@ namespace RINGMesh {
         index_t nb_triangles,
         index_t nb_lines)
     {
-//        tetmesh_.reserve_vertices( nb_points ) ;
-//        tetmesh_.reserve_facets_and_corners( nb_triangles,
-//            nb_tets * 4 + nb_triangles * 3 + nb_lines * 2 ) ;
-//        GEO::MeshMutator::set_attributes( tetmesh_, GEO::MESH_FACET_REGION ) ;
-//        GEO::MeshMutator::facet_regions( tetmesh_ ).resize( nb_triangles ) ;
-//        GEO::MeshMutator::tet_vertices( tetmesh_ ).reserve( nb_tets * 4 ) ;
-//        GEO::MeshMutator::set_nb_vertices( tetmesh_, nb_points ) ;
-//        GEO::MeshMutator::set_nb_facets( tetmesh_, nb_triangles ) ;
-//        GEO::MeshMutator::set_nb_cells( tetmesh_, nb_tets ) ;
-
-        /*
-        tetmesh_.tetra_adjacents_.resize( nb_tets * 4, -1 ) ;
-        tetmesh_.triangle_surface_id_.resize( 4 * nb_tets, -1 ) ;
-        */
+        tetmesh_.vertices.create_vertices( nb_points ) ;
+        tetmesh_.cells.create_tets( nb_tets ) ;
+        tetmesh_.facets.create_triangles( nb_triangles ) ;
     }
 
     void TetraGen::set_point( index_t index, const double* point )
     {
-        tetmesh_.vertices.create_vertex( point ) ;
+        for( index_t i = 0; i < 3; i++ ) {
+            tetmesh_.vertices.point_ptr( index )[i] = point[i] ;
+        }
     }
 
     void TetraGen::set_tetra( index_t index, int* tet, index_t nb_lines, index_t nb_triangles )
     {
-        tetmesh_.cells.create_tet( tet[0] - 1, tet[1] - 1, tet[2] - 1, tet[3] - 1 ) ;
+        index_t corner_begin = tetmesh_.cells.corners_begin( index ) ;
+        for( index_t v = 0; v < 4; v++ ) {
+            tetmesh_.cell_corners.set_vertex( corner_begin++, tet[v] - 1  ) ;
+        }
+//        tetmesh_.cells.create_tet( tet[0] - 1, tet[1] - 1, tet[2] - 1, tet[3] - 1 ) ;
     }
 
     void TetraGen::set_tetra_adjacent(
@@ -276,6 +271,8 @@ namespace RINGMesh {
         signed_index_t adj )
     {
 //        ringmesh_assert_not_reached ;
+        index_t adj_id = adj == -1 ? GEO::NO_CELL : adj ;
+        tetmesh_.cells.set_adjacent( index, face, adj_id ) ;
        //tetmesh_.tetra_adjacents_[4 * index + face] = adj ;
     }
 
@@ -284,8 +281,12 @@ namespace RINGMesh {
         int * triangle,
         index_t nb_lines )
     {
-        tetmesh_.facets.create_triangle( triangle[0] - 1, triangle[1] - 1,
-            triangle[2] - 1 ) ;
+        index_t corner_begin = tetmesh_.facets.corners_begin( index ) ;
+        for( index_t v = 0; v < 3; v++ ) {
+            tetmesh_.facet_corners.set_vertex( corner_begin++, triangle[v] - 1 ) ;
+        }
+//        tetmesh_.facets.create_triangle( triangle[0] - 1, triangle[1] - 1,
+//            triangle[2] - 1 ) ;
     }
 
     void TetraGen::set_line(

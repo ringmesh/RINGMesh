@@ -343,9 +343,9 @@ namespace RINGMesh {
             const GEO::Mesh& copied_mesh = mm.mesh( r ) ;
             //GEO::MeshVertices vertices =  copied_mesh.vertices ;
 
+            copy_mesh.vertices.create_vertices( copied_mesh.vertices.nb() ) ;
             for( index_t v = 0; v < copied_mesh.vertices.nb(); v++ ) {
-                copy_mesh.vertices.create_vertex(
-                    copied_mesh.vertices.point_ptr( v ) ) ;
+                copy_mesh.vertices.point( v ) = copied_mesh.vertices.point( v ) ;
             }
 
             for( index_t f = 0; f < copied_mesh.facets.nb(); f++ ) {
@@ -360,8 +360,6 @@ namespace RINGMesh {
                 }
 
             }
-
-            //for(index_t fc = )
 
             for( index_t c = 0; c < copied_mesh.cells.nb(); c++ ) {
                 if( copied_mesh.cells.type( c ) == GEO::MESH_TET ) {
