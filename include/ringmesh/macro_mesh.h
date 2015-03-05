@@ -300,13 +300,13 @@ namespace RINGMesh {
         }
 
     protected:
-        // / BoundaryModel representing the structural information of the mesh
+        /// BoundaryModel representing the structural information of the mesh
         const BoundaryModel& model_ ;
 
-        // / Vector of meshes, one by region
+        /// Vector of meshes, one by region
         std::vector< GEO::Mesh* > meshes_ ;
 
-        // / Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
+        /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
         std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
 
     private:

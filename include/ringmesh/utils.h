@@ -1071,16 +1071,16 @@ namespace RINGMesh {
                 return angle_ < r.angle_ ;
             }
 
-            // / Index in SortTriangleAroundEdge
+            /// Index in SortTriangleAroundEdge
             index_t index_ ;
 
-            // / Global index of the surface owning this triangle
+            /// Global index of the surface owning this triangle
             index_t surface_index_ ;
 
-            // / Normal to the triangle - normalized vector
+            /// Normal to the triangle - normalized vector
             vec3 N_ ;
 
-            // / Normal to the edge p0p1 in the plane defined by the triangle - normalized
+            /// Normal to the edge p0p1 in the plane defined by the triangle - normalized
             vec3 B_A_ ;
 
             // Values filled by sorting function in SortTriangleAroundEdge
