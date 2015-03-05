@@ -56,7 +56,7 @@
  */
 
 #if defined(_MSC_VER) && defined(GEO_DYNAMIC_LIBS)
-#ifdef geogram__gfx_EXPORTS
+#ifdef geogram_gfx_EXPORTS
 #define GEOGRAM_GFX_API __declspec(dllexport) 
 #else
 #define GEOGRAM_GFX_API __declspec(dllimport) 
