@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -174,6 +174,7 @@ namespace RINGMesh {
         MacroMesh(
             const BoundaryModel& model,
             index_t dim = 3 ) ;
+        MacroMesh( const MacroMesh& mm) ;
         virtual ~MacroMesh() ;
 
         //    __  __     _   _            _
@@ -191,15 +192,7 @@ namespace RINGMesh {
 
         const GEO::MeshFacetsAABB& facet_aabb( index_t region ) ;
 
-        void init_facet_aabb( index_t region ) ;
-
-        void init_all_facet_aabb() ;
-
         const GEO::MeshTetsAABB& tet_aabb( index_t region ) ;
-
-        void init_tet_aabb( index_t region ) ;
-
-        void init_all_tet_aabb() ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
@@ -300,13 +293,18 @@ namespace RINGMesh {
         }
 
     protected:
-        // / BoundaryModel representing the structural information of the mesh
+        void init_facet_aabb( index_t region ) ;
+
+        void init_tet_aabb( index_t region ) ;
+
+    protected:
+        /// BoundaryModel representing the structural information of the mesh
         const BoundaryModel& model_ ;
 
-        // / Vector of meshes, one by region
+        /// Vector of meshes, one by region
         std::vector< GEO::Mesh* > meshes_ ;
 
-        // / Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
+        /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
         std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
 
     private:

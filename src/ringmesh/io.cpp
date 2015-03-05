@@ -565,8 +565,9 @@ namespace RINGMesh {
             {
                 GEO::Mesh mesh( 3 ) ;
                 MacroMesh& MM = const_cast< MacroMesh& >( mm ) ;
+                mesh.vertices.create_vertices( MM.nb_vertices() ) ;
                 for( index_t p = 0; p < MM.nb_vertices(); p++ ) {
-                    mesh.vertices.create_vertex( &MM.global_vertex( p )[0] ) ;
+                    mesh.vertices.point( p ) = MM.global_vertex( p ) ;
                 }
 
                 GEO::Attribute< index_t > attribute( mesh.facets.attributes(), surface_att_name ) ;
