@@ -423,12 +423,6 @@ namespace RINGMesh {
         if( facet_aabb_[region] ) return ;
         facet_aabb_[region] = new GEO::MeshFacetsAABB( mesh( region ) ) ;
     }
-    void MacroMesh::init_all_facet_aabb()
-    {
-        for( index_t region = 0; region < nb_meshes(); region++ ) {
-            init_facet_aabb( region ) ;
-        }
-    }
     const GEO::MeshTetsAABB& MacroMesh::tet_aabb( index_t region )
     {
         init_tet_aabb( region ) ;
@@ -438,12 +432,6 @@ namespace RINGMesh {
     {
         if( tet_aabb_[region] ) return ;
         tet_aabb_[region] = new GEO::MeshTetsAABB( mesh( region ) ) ;
-    }
-    void MacroMesh::init_all_tet_aabb()
-    {
-        for( index_t region = 0; region < nb_meshes(); region++ ) {
-            init_tet_aabb( region ) ;
-        }
     }
 
     /*!

@@ -192,15 +192,7 @@ namespace RINGMesh {
 
         const GEO::MeshFacetsAABB& facet_aabb( index_t region ) ;
 
-        void init_facet_aabb( index_t region ) ;
-
-        void init_all_facet_aabb() ;
-
         const GEO::MeshTetsAABB& tet_aabb( index_t region ) ;
-
-        void init_tet_aabb( index_t region ) ;
-
-        void init_all_tet_aabb() ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
@@ -299,6 +291,11 @@ namespace RINGMesh {
         {
             return mm_cells_.nb_cells( this ) ;
         }
+
+    protected:
+        void init_facet_aabb( index_t region ) ;
+
+        void init_tet_aabb( index_t region ) ;
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
