@@ -678,7 +678,9 @@ REAL exactinit()
 {
 
 #ifdef LINUX
+#ifndef __ANDROID__    
      int cword;
+#endif     
 #endif /* LINUX */
    
 #ifdef CPU86
@@ -703,7 +705,9 @@ REAL exactinit()
      cword = 4210;                 /* set FPU control word for single precision */
 #else /* not SINGLE */
      /*  cword = 4735; */
+#ifndef __ANDROID__     
      cword = 4722;                 /* set FPU control word for double precision */
+#endif     
 #endif /* not SINGLE */
 #ifndef __ANDROID__
      _FPU_SETCW(cword);

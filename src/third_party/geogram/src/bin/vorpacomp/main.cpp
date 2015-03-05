@@ -46,8 +46,10 @@
 #include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
+#include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_compare.h>
 #include <geogram/mesh/mesh_io.h>
+#include <geogram/basic/logger.h>
 
 int main(int argc, char** argv) {
     using namespace GEO;

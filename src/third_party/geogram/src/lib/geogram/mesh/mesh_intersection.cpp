@@ -53,6 +53,7 @@
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_preprocessing.h>
 #include <geogram/mesh/triangle_intersection.h>
+#include <geogram/basic/logger.h>
 
 namespace {
 
@@ -72,16 +73,16 @@ namespace {
         const Mesh& M, index_t f1, index_t f2,
         vector<TriangleIsect>& sym
     ) {
-        geo_debug_assert(M.facet_size(f1) == 3);
-        geo_debug_assert(M.facet_size(f2) == 3);
-        index_t c1 = M.facet_begin(f1);
-        const vec3& p1 = Geom::mesh_vertex(M, M.corner_vertex_index(c1));
-        const vec3& p2 = Geom::mesh_vertex(M, M.corner_vertex_index(c1 + 1));
-        const vec3& p3 = Geom::mesh_vertex(M, M.corner_vertex_index(c1 + 2));
-        index_t c2 = M.facet_begin(f2);
-        const vec3& q1 = Geom::mesh_vertex(M, M.corner_vertex_index(c2));
-        const vec3& q2 = Geom::mesh_vertex(M, M.corner_vertex_index(c2 + 1));
-        const vec3& q3 = Geom::mesh_vertex(M, M.corner_vertex_index(c2 + 2));
+        geo_debug_assert(M.facets.nb_vertices(f1) == 3);
+        geo_debug_assert(M.facets.nb_vertices(f2) == 3);
+        index_t c1 = M.facets.corners_begin(f1);
+        const vec3& p1 = Geom::mesh_vertex(M, M.facet_corners.vertex(c1));
+        const vec3& p2 = Geom::mesh_vertex(M, M.facet_corners.vertex(c1 + 1));
+        const vec3& p3 = Geom::mesh_vertex(M, M.facet_corners.vertex(c1 + 2));
+        index_t c2 = M.facets.corners_begin(f2);
+        const vec3& q1 = Geom::mesh_vertex(M, M.facet_corners.vertex(c2));
+        const vec3& q2 = Geom::mesh_vertex(M, M.facet_corners.vertex(c2 + 1));
+        const vec3& q3 = Geom::mesh_vertex(M, M.facet_corners.vertex(c2 + 2));
         return triangles_intersections(p1, p2, p3, q1, q2, q3, sym);
     }
 
@@ -98,8 +99,9 @@ namespace {
         if(f1 == f2) {
             return true;
         }
-        for(index_t c = M.facet_begin(f1); c != M.facet_end(f1); ++c) {
-            if(M.corner_adjacent_facet(c) == signed_index_t(f2)) {
+        for(index_t c = M.facets.corners_begin(f1);
+            c != M.facets.corners_end(f1); ++c) {
+            if(M.facet_corners.adjacent_facet(c) == f2) {
                 return true;
             }
         }
@@ -123,7 +125,7 @@ namespace {
         ) :
             M_(M),
             has_intersection_(has_isect) {
-            has_intersection_.assign(M_.nb_facets(), 0);
+            has_intersection_.assign(M_.facets.nb(), 0);
         }
 
         /**
@@ -158,7 +160,7 @@ namespace {
      * \return the number of facets that were deleted
      */
     index_t remove_intersecting_facets(Mesh& M, index_t nb_neigh = 0) {
-        geo_assert(M.dimension() >= 3);
+        geo_assert(M.vertices.dimension() >= 3);
         mesh_repair(M, MESH_REPAIR_DEFAULT);  // it repairs and triangulates.
 
         vector<index_t> has_intersection;
@@ -167,11 +169,13 @@ namespace {
         AABB.compute_facet_bbox_intersections(action);
 
         for(index_t i = 1; i <= nb_neigh; i++) {
-            for(index_t f = 0; f < M.nb_facets(); f++) {
+            for(index_t f = 0; f < M.facets.nb(); f++) {
                 if(has_intersection[f] == 0) {
-                    for(index_t c = M.facet_begin(f); c < M.facet_end(f); c++) {
-                        signed_index_t f2 = M.corner_adjacent_facet(c);
-                        if(f2 != -1 && has_intersection[f2] == i) {
+                    for(index_t c = M.facets.corners_begin(f);
+                        c < M.facets.corners_end(f); c++
+                     ) {
+                        index_t f2 = M.facet_corners.adjacent_facet(c);
+                        if(f2 != NO_FACET && has_intersection[f2] == i) {
                             has_intersection[f] = i + 1;
                             break;
                         }
@@ -192,7 +196,7 @@ namespace {
                 << "Mesh does not have self-intersections (good)"
                 << std::endl;
         } else {
-            M.remove_facets(has_intersection);
+            M.facets.delete_elements(has_intersection);
             Logger::out("Intersect")
                 << "Removed " << count << " facets"
                 << std::endl;
@@ -226,8 +230,8 @@ namespace GEO {
                 M, min_component_area, min_component_facets
             );
             fill_holes(M, Numeric::max_float64());
-            // Needs to be done after hole filling (removing bridges may generate
-            // small connected components)
+            // Needs to be done after hole filling
+            // (removing bridges may generate small connected components)
             remove_small_connected_components(
                 M, min_component_area, min_component_facets
             );
@@ -239,13 +243,14 @@ namespace GEO {
                 if(count == 0) {
                     return;
                 }
-                // Needs to be done before hole filling (to have clean hole borders)
+                // Needs to be done before hole filling
+                // (to have clean hole borders)
                 remove_small_connected_components(
                     M, min_component_area, min_component_facets
                 );
                 fill_holes(M, Numeric::max_float64());
-                // Needs to be done after hole filling (removing bridges may generate
-                // small connected components)
+                // Needs to be done after hole filling
+                // (removing bridges may generate small connected components)
                 remove_small_connected_components(
                     M, min_component_area, min_component_facets
                 );

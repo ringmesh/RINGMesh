@@ -136,9 +136,7 @@ namespace GEO {
          * \brief Creates a new MeshHalfedges
          * \param[in] mesh the Mesh
          */
-        MeshHalfedges(Mesh& mesh) :
-            mesh_(mesh),
-            use_facet_region_(false) {
+        MeshHalfedges(Mesh& mesh) : mesh_(mesh) {
         }
 
         /**
@@ -164,7 +162,15 @@ namespace GEO {
          *  border
          */
         void set_use_facet_region(bool x) {
-            use_facet_region_ = x;
+            if(x) {
+                if(!facet_region_.is_bound()) {
+                    facet_region_.bind(mesh_.facets.attributes(),"region");
+                }
+            } else {
+                if(facet_region_.is_bound()) {
+                    facet_region_.unbind();
+                }
+            }
         }
 
         /**
@@ -180,8 +186,8 @@ namespace GEO {
             return
                 H.facet != Halfedge::NO_FACET && 
                 H.corner != Halfedge::NO_CORNER &&
-                H.facet < mesh_.nb_facets() &&
-                H.corner < mesh_.nb_corners()
+                H.facet < mesh_.facets.nb() &&
+                H.corner < mesh_.facet_corners.nb()
             ;
         }
 
@@ -195,15 +201,16 @@ namespace GEO {
          */
         bool halfedge_is_border(const Halfedge& H) const {
             geo_debug_assert(halfedge_is_valid(H));
-            if(use_facet_region_) {
+            if(facet_region_.is_bound()) {
                 index_t f = H.facet;
-                signed_index_t adj_f = mesh_.corner_adjacent_facet(H.corner);
+                index_t adj_f =
+                    mesh_.facet_corners.adjacent_facet(H.corner);
                 return
-                    adj_f == -1 ||
-                    mesh_.facet_region(f) != mesh_.facet_region(index_t(adj_f))
+                    adj_f == NO_FACET ||
+                    facet_region_[f] != facet_region_[adj_f]
                 ;
             } 
-            return mesh_.corner_adjacent_facet(H.corner) == -1;
+            return mesh_.facet_corners.adjacent_facet(H.corner) == NO_FACET;
         }
 
         /**
@@ -212,7 +219,7 @@ namespace GEO {
          */
         void move_to_next_around_facet(Halfedge& H) const {
             geo_debug_assert(halfedge_is_valid(H));
-            H.corner = mesh_.next_around_facet(H.facet, H.corner);
+            H.corner = mesh_.facets.next_corner_around_facet(H.facet, H.corner);
         }
 
         /**
@@ -250,7 +257,7 @@ namespace GEO {
 
     private:
         Mesh& mesh_;
-        bool use_facet_region_;
+        Attribute<index_t> facet_region_;
     };
 
     /**
@@ -276,7 +283,7 @@ namespace GEO {
         inline const vec3& halfedge_vertex_from(
             const Mesh& M, const MeshHalfedges::Halfedge& H
         ) {
-            return mesh_vertex(M, M.corner_vertex_index(H.corner));
+            return mesh_vertex(M, M.facet_corners.vertex(H.corner));
         }
 
         /**
@@ -288,8 +295,8 @@ namespace GEO {
         inline const vec3& halfedge_vertex_to(
             const Mesh& M, const MeshHalfedges::Halfedge& H
         ) {
-            index_t c = M.next_around_facet(H.facet, H.corner);
-            return mesh_vertex(M, M.corner_vertex_index(c));
+            index_t c = M.facets.next_corner_around_facet(H.facet, H.corner);
+            return mesh_vertex(M, M.facet_corners.vertex(c));
         }
 
         /**

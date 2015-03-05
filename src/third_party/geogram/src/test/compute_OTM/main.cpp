@@ -55,7 +55,6 @@
 #include <geogram/basic/permutation.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
@@ -393,12 +392,12 @@ namespace {
             }
             weights_.assign(nb_points, 0);
             total_volume_ = 0.0;
-            for(index_t t = 0; t < mesh_->nb_tets(); ++t) {
+            for(index_t t = 0; t < mesh_->cells.nb(); ++t) {
                 total_volume_ += Geom::tetra_volume<3>(
-                    mesh_->vertex_ptr(mesh_->tet_vertex_index(t, 0)),
-                    mesh_->vertex_ptr(mesh_->tet_vertex_index(t, 1)),
-                    mesh_->vertex_ptr(mesh_->tet_vertex_index(t, 2)),
-                    mesh_->vertex_ptr(mesh_->tet_vertex_index(t, 3))
+                    mesh_->vertices.point_ptr(mesh_->cells.tet_vertex(t, 0)),
+                    mesh_->vertices.point_ptr(mesh_->cells.tet_vertex(t, 1)),
+                    mesh_->vertices.point_ptr(mesh_->cells.tet_vertex(t, 2)),
+                    mesh_->vertices.point_ptr(mesh_->cells.tet_vertex(t, 3))
                 );
             }
             lambda_p_ = total_volume_ / double(nb_points);
@@ -773,30 +772,29 @@ namespace {
      * \brief Gets the number of connected components
      *  of each tetrahedra regions in a mesh.
      * \param[in] RVD a const reference to the mesh
-     * \param[out] nb_cnx_comps nb_cnx_comps[r]
+     * \param[out] nb_cnx_comps on exit, nb_cnx_comps[r]
      *  contains the number of connected components of
      *  region r.
      */
     void get_nb_connected_components(
         const Mesh& RVD, vector<index_t>& nb_cnx_comps
     ) {
-        vector<bool> marked(RVD.nb_tets(), false);
+        Attribute<index_t> tet_region(RVD.cells.attributes(),"region");
+        vector<bool> marked(RVD.cells.nb(), false);
         std::stack<index_t> S;
-        for(index_t t = 0; t < RVD.nb_tets(); ++t) {
+        for(index_t t = 0; t < RVD.cells.nb(); ++t) {
             if(!marked[t]) {
-                index_t cur_v = index_t(RVD.tet_region(t));
+                index_t cur_v = index_t(tet_region[t]);
                 marked[t] = true;
                 S.push(t);
                 while(!S.empty()) {
                     index_t cur_t = S.top();
                     S.pop();
                     for(index_t lf = 0; lf < 4; ++lf) {
-                        signed_index_t sneigh = RVD.tet_adjacent(cur_t, lf);
-                        if(sneigh >= 0.0) {
-                            index_t neigh = index_t(sneigh);
+                        index_t neigh = RVD.cells.tet_adjacent(cur_t, lf);
+                        if(neigh != NO_CELL) {
                             if(
-                                RVD.tet_region(neigh) == 
-                                signed_index_t(cur_v) &&
+                                tet_region[neigh] == cur_v &&
                                 !marked[neigh]
                             ) {
                                 marked[neigh] = true;
@@ -851,31 +849,32 @@ namespace {
             vector<double> m(nb_vertices, 0.0);
 
             Mesh RVD;
-            MeshIOFlags flags;
-            flags.set_element(MESH_CELLS);
-            flags.set_attribute(MESH_CELL_REGION);
+            Attribute<index_t> tet_region(RVD.cells.attributes(),"region");
             OTM.RVD()->compute_RVD(
                 RVD,
                 0,     // dim (0 means use default)
                 false, // cells_borders_only
                 true   // integration_simplices
             );
-            RVD.set_dimension(3);
-            RVD.connect_tets();
+            RVD.vertices.set_dimension(3);
+            RVD.cells.connect();
             if(CmdLine::get_arg_bool("RVD")) {
+                MeshIOFlags flags;
+                flags.set_element(MESH_CELLS);
+                flags.set_attribute(MESH_CELL_REGION);
                 mesh_save(RVD, "RVD.meshb", flags);
             }
 
-            for(index_t t = 0; t < RVD.nb_tets(); ++t) {
-                index_t v =  index_t(RVD.tet_region(t));
-                index_t v0 = RVD.tet_vertex_index(t, 0);
-                index_t v1 = RVD.tet_vertex_index(t, 1);
-                index_t v2 = RVD.tet_vertex_index(t, 2);
-                index_t v3 = RVD.tet_vertex_index(t, 3);
-                vec3 p0(RVD.vertex_ptr(v0));
-                vec3 p1(RVD.vertex_ptr(v1));
-                vec3 p2(RVD.vertex_ptr(v2));
-                vec3 p3(RVD.vertex_ptr(v3));
+            for(index_t t = 0; t < RVD.cells.nb(); ++t) {
+                index_t v =  tet_region[t];
+                index_t v0 = RVD.cells.tet_vertex(t, 0);
+                index_t v1 = RVD.cells.tet_vertex(t, 1);
+                index_t v2 = RVD.cells.tet_vertex(t, 2);
+                index_t v3 = RVD.cells.tet_vertex(t, 3);
+                vec3 p0(RVD.vertices.point_ptr(v0));
+                vec3 p1(RVD.vertices.point_ptr(v1));
+                vec3 p2(RVD.vertices.point_ptr(v2));
+                vec3 p3(RVD.vertices.point_ptr(v3));
                 double mt = Geom::tetra_signed_volume(p0, p1, p2, p3);
                 mg[v] += (mt / 4.0) * (p0 + p1 + p2 + p3);
                 m[v] += mt;
@@ -1044,9 +1043,11 @@ namespace {
             }
         }
         
-        morph.assign_tet_mesh(6, morph_vertices, filtered_morph_tets, true);
-        morph.connect_cells();
-        morph.compute_cells_boundaries();
+        morph.cells.assign_tet_mesh(
+            6, morph_vertices, filtered_morph_tets, true
+        );
+        morph.cells.connect();
+        morph.cells.compute_borders();
         
         std::string extension = FileSystem::extension(filename);
         if(extension == "obj6") {
@@ -1067,18 +1068,18 @@ namespace {
             }
             out << "# attribute geom2 vertex vec3" << std::endl;
             out << "# attribute potential vertex real" << std::endl;
-            for(index_t v=0; v<morph.nb_vertices(); ++v) {
+            for(index_t v=0; v<morph.vertices.nb(); ++v) {
                 out << "v " << M2_vertices[v] << std::endl;
                 out << "# attrs v " << v+1 << " " << M1_vertices[v] << " "
                     << OTM.potential(v)
                     << std::endl;
             }
-            for(index_t f=0; f<morph.nb_facets(); ++f) {
+            for(index_t f=0; f<morph.facets.nb(); ++f) {
                 out << "f ";
                 for(
-                    index_t c=morph.facet_begin(f);
-                    c<morph.facet_end(f); ++c) {
-                    out << morph.corner_vertex_index(c)+1 << " ";
+                    index_t c=morph.facets.corners_begin(f);
+                    c<morph.facets.corners_end(f); ++c) {
+                    out << morph.facet_corners.vertex(c)+1 << " ";
                 }
                 out << std::endl;
             }
@@ -1156,22 +1157,25 @@ namespace {
             false, // cells_borders_only
             true   // integration_simplices
         );
-        RVD.set_dimension(3);
-        RVD.connect_tets();
+        RVD.vertices.set_dimension(3);
+        RVD.cells.connect();
 
         Mesh singular;
         vector<index_t> triangles;
 
-        for(index_t t=0; t<RVD.nb_tets(); ++t) {
-            index_t v1 = index_t(RVD.tet_region(t));
+        Attribute<index_t> tet_region(RVD.cells.attributes(),"region");
+        
+        for(index_t t=0; t<RVD.cells.nb(); ++t) {
+            index_t v1 = tet_region[t];
             for(index_t f=0; f<4; ++f) {
-                signed_index_t nt = RVD.tet_adjacent(t,f);
-                if(nt != -1) {
-                    index_t v2 = index_t(RVD.tet_region(index_t(nt)));
+                index_t nt = RVD.cells.tet_adjacent(t,f);
+                if(nt != NO_CELL) {
+                    index_t v2 = tet_region[nt];
                     if(v1 != v2 && edges.find(bindex(v1,v2)) == edges.end()) {
                         for(index_t i=0; i<3; ++i) {
-                            index_t lv=RVD.local_tet_facet_vertex_index(f,i);
-                            index_t v = RVD.tet_vertex_index(t,lv);
+                            index_t lv =
+                                RVD.cells.local_tet_facet_vertex_index(f,i);
+                            index_t v = RVD.cells.tet_vertex(t,lv);
                             triangles.push_back(v);
                         }
                     }
@@ -1179,13 +1183,13 @@ namespace {
             }
         }
 
-        // Copy RVD vertices
-        vector<double> vertices = MeshMutator::vertices(RVD);
-        singular.assign_triangle_mesh(
-            RVD.dimension(),vertices,triangles,
-            true // steal args
+        singular.vertices.assign_points(
+            RVD.vertices.point_ptr(0),
+            RVD.vertices.dimension(), RVD.vertices.nb()
         );
-
+        singular.facets.assign_triangle_mesh(
+            triangles, true 
+        );
 
         mesh_repair(singular);
 
@@ -1434,9 +1438,9 @@ namespace {
             xlat[c] = 0.5*
                 ((xyzmin1[c] + xyzmax1[c]) - (xyzmin2[c] + xyzmax2[c]));
         }
-        for(index_t v=0; v<M2.nb_vertices(); ++v) {
+        for(index_t v=0; v<M2.vertices.nb(); ++v) {
             for(coord_index_t c=0; c<3; ++c) {
-                M2.vertex_ptr(v)[c] += xlat[c];
+                M2.vertices.point_ptr(v)[c] += xlat[c];
             }
         }
     }
@@ -1449,12 +1453,12 @@ namespace {
      */
     double mesh_tets_volume(const Mesh& M) {
         double result = 0.0;
-        for(index_t t = 0; t < M.nb_tets(); ++t) {
+        for(index_t t = 0; t < M.cells.nb(); ++t) {
             result += Geom::tetra_volume<3>(
-                M.vertex_ptr(M.tet_vertex_index(t, 0)),
-                M.vertex_ptr(M.tet_vertex_index(t, 1)),
-                M.vertex_ptr(M.tet_vertex_index(t, 2)),
-                M.vertex_ptr(M.tet_vertex_index(t, 3))
+                M.vertices.point_ptr(M.cells.tet_vertex(t, 0)),
+                M.vertices.point_ptr(M.cells.tet_vertex(t, 1)),
+                M.vertices.point_ptr(M.cells.tet_vertex(t, 2)),
+                M.vertices.point_ptr(M.cells.tet_vertex(t, 3))
             );
         }
         return result;
@@ -1471,10 +1475,11 @@ namespace {
         double xyzmax[3];
         get_bbox(M2, xyzmin, xyzmax);
         double s = pow(mesh_tets_volume(M1)/mesh_tets_volume(M2), 1.0/3.0);
-        for(unsigned int v=0; v<M2.nb_vertices(); ++v) {
+        for(unsigned int v=0; v<M2.vertices.nb(); ++v) {
             for(index_t c=0; c<3; ++c) {
                 double gc = 0.5*(xyzmin[c]+xyzmax[c]);
-                M2.vertex_ptr(v)[c] = gc + s * (M2.vertex_ptr(v)[c] - gc);
+                M2.vertices.point_ptr(v)[c] =
+                    gc + s * (M2.vertices.point_ptr(v)[c] - gc);
             }
         }
     }
@@ -1498,13 +1503,13 @@ namespace {
         if(!mesh_load(filename, M, flags)) {
             return 1;
         }
-        if(!M.is_tetrahedralized()) {
+        if(!M.cells.are_simplices()) {
             Logger::err("I/O") << "File "
                                << filename
                                << " should only have tetrahedra" << std::endl;
             return false;
         }
-        if(M.nb_tets() == 0) {
+        if(M.cells.nb() == 0) {
             Logger::out("I/O") << "File "
                                << filename
                                << " does not contain a volume" << std::endl;
@@ -1558,10 +1563,10 @@ int main(int argc, char** argv) {
         );
         CmdLine::set_arg("algo:delaunay", "BPOW");
         CmdLine::declare_arg(
-            "recenter", false, "recenter target onto source mesh"
+            "recenter", true, "recenter target onto source mesh"
         );
         CmdLine::declare_arg(
-            "rescale", false, "rescale target to match source volume"
+            "rescale", true, "rescale target to match source volume"
         );
         CmdLine::declare_arg(
             "out", "morph.tet6", "output filename"
@@ -1609,13 +1614,13 @@ int main(int argc, char** argv) {
             rescale_mesh(M1,M2);
         }
 
-        if(M1.nb_tets() == 0) {
+        if(M1.cells.nb() == 0) {
             Logger::err("Mesh") << "M1 does not have any tetrahedron, exiting"
                 << std::endl;
             return 1;
         }
 
-        if(M2.nb_tets() == 0) {
+        if(M2.cells.nb() == 0) {
             Logger::err("Mesh") << "M2 does not have any tetrahedron, exiting"
                 << std::endl;
             return 1;
@@ -1659,24 +1664,19 @@ int main(int argc, char** argv) {
             project_sampling_on_border(CVT);
         }
 
-        M2_samples.set_dimension(CVT.dimension());
-        MeshMutator::vertices(M2_samples).resize(
-            CVT.dimension() * CVT.nb_points()
+        M2_samples.vertices.assign_points(
+            CVT.embedding(0), CVT.dimension(), CVT.nb_points()
         );
-        MeshMutator::set_nb_vertices(M2_samples, CVT.nb_points());
-        M2_samples.update_cached_variables();
-        Memory::copy(
-            M2_samples.vertex_ptr(0), CVT.embedding(0),
-            sizeof(double) * CVT.dimension() * CVT.nb_points()
-        );
-
+        
         Logger::div("Optimal transport");
         // Everything happens in dimension 4 (power diagram is seen
         // as Voronoi diagram in dimension 4), therefore the dimension
         // of M1 needs to be changed as well (even if it is not used).
-        M1.set_dimension(4);
+        M1.vertices.set_dimension(4);
         OptimalTransportMap OTM(&M1);
-        OTM.set_points(M2_samples.nb_vertices(), M2_samples.vertex_ptr(0));
+        OTM.set_points(
+            M2_samples.vertices.nb(), M2_samples.vertices.point_ptr(0)
+        );
         OTM.set_epsilon(CmdLine::get_arg_double("epsilon"));
         index_t nb_iter = CmdLine::get_arg_uint("nb_iter");
 

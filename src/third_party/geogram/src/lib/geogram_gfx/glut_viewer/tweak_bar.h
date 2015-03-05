@@ -100,10 +100,10 @@ inline TwType TwDefineEnum(const char* name, const std::string& in) {
             end = length;
         }
         if(end - start > 0) {
-            while(in[start] == ' ' && start < end) {
+            while(start < end && in[start] == ' ') {
                 start++;
             }
-            while(in[end] == ' ' && end > start) {
+            while(end != length && in[end] == ' ' && end > start) {
                 end--;
             }
             if(end - start > 0) {

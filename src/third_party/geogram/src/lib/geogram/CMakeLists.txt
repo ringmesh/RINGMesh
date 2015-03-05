@@ -58,7 +58,3 @@ install(
     REGEX /license/ EXCLUDE
 )
 
-#Remove linking with superlu !!!! [Arnaud]
-#target_link_libraries(geogram superlu)
-#target_link_libraries(geogram blas)
-

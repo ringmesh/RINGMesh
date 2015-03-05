@@ -54,6 +54,7 @@
 
 #include <geogram/basic/common.h>
 #include <geogram/mesh/mesh.h>
+#include <geogram/basic/geometry.h>
 
 namespace GEO {
 
@@ -142,7 +143,9 @@ namespace GEO {
          *  bounding boxes. triangles_intersection() needs to be
          *  called to detect the actual intersections.
          * \tparam ACTION user action class, that needs to define
-         * operator(index_t,index_t).
+         * operator(index_t,index_t), where the two indices are
+         * the indices each pair of triangles that have intersecting
+         * bounding boxes.
          */
         template <class ACTION>
         void compute_facet_bbox_intersections(
@@ -150,11 +153,33 @@ namespace GEO {
         ) const {
             intersect_recursive(
                 action,
-                1, 0, mesh_.nb_facets(),
-                1, 0, mesh_.nb_facets()
+                1, 0, mesh_.facets.nb(),
+                1, 0, mesh_.facets.nb()
             );
         }
 
+
+        /**
+         * \brief Computes all the intersections between a given
+         *  box and the bounding boxes of all the facets.
+         * \param[in] action ACTION::operator(index_t) is
+         *  invoked for all facets that have a bounding
+         *  box that intersects \p box_in.
+         * \tparam ACTION user action class, that needs to define
+         * operator(index_t), where the parameter is the index
+         * of the triangle that has its bounding box intersecting 
+         * \p box_in.
+         */
+        template< class ACTION >
+        void compute_bbox_facet_bbox_intersections(
+            const Box& box_in,
+            ACTION& action
+        ) const {
+            bbox_intersect_recursive(
+                action, box_in, 1, 0, mesh_.facets.nb()
+            );
+        }
+        
         /**
          * \brief Finds the nearest facet from an arbitrary 3d query point.
          * \param[in] p query point
@@ -170,7 +195,7 @@ namespace GEO {
             nearest_facet_recursive(
                 p,
                 nearest_facet, nearest_point, sq_dist,
-                1, 0, mesh_.nb_facets()
+                1, 0, mesh_.facets.nb()
             );
             return nearest_facet;
         }
@@ -197,7 +222,7 @@ namespace GEO {
             nearest_facet_recursive(
                 p,
                 nearest_facet, nearest_point, sq_dist,
-                1, 0, mesh_.nb_facets()
+                1, 0, mesh_.facets.nb()
             );
         }
 
@@ -215,6 +240,53 @@ namespace GEO {
         }
 
     protected:
+
+
+        /**
+         * \brief Computes all the facets that have a bbox that
+         *  intersects a given bbox in a sub-tree of the AABB tree.
+         *
+         * Note that the tree structure is completely implicit,
+         *  therefore the bounds of the (continuous) facet indices
+         *  sequences that correspond to the facets contained
+         *  in the two nodes are sent as well as the node indices.
+         *
+         * \param[in] action ACTION::operator(index_t) is
+         *  invoked for all facet that has a bounding box that
+         *  overlaps \p box.
+         * \param[in] node index of the first node of the AABB tree
+         * \param[in] b index of the first facet in \p node
+         * \param[in] e one position past the index of the last
+         *  facet in \p node
+         */
+        template <class ACTION>
+        void bbox_intersect_recursive(
+            ACTION& action,
+            const Box& box,
+            index_t node, index_t b, index_t e
+        ) const {
+            geo_debug_assert(e != b);
+
+            // Prune sub-tree that does not have intersection
+            if(!bboxes_overlap(box, bboxes_[node])) {
+                return;
+            }
+
+            // Leaf case
+            if(e == b+1) {
+                action(b);
+                return;
+            }
+
+            // Recursion
+            index_t m = b + (e - b) / 2;
+            index_t node_l = 2 * node;
+            index_t node_r = 2 * node + 1;
+
+            bbox_intersect_recursive(action, box, node_l, b, m);
+            bbox_intersect_recursive(action, box, node_r, m, e);
+        }
+        
         /**
          * \brief Computes all the pairs of intersecting facets
          *  for two sub-trees of the AABB tree.
@@ -359,12 +431,81 @@ namespace GEO {
          */
         signed_index_t containing_tet(const vec3& p, bool exact =true) const {
             return containing_tet_recursive(
-                p, exact, 1, 0, mesh_.nb_tets()
+                p, exact, 1, 0, mesh_.cells.nb()
             );
         }
+
+
+        /**
+         * \brief Computes all the intersections between a given
+         *  box and the bounding boxes of all the cells.
+         * \param[in] action ACTION::operator(index_t) is
+         *  invoked for all cells that have a bounding
+         *  box that intersects \p box_in.
+         * \tparam ACTION user action class, that needs to define
+         * operator(index_t), where the parameter is the index
+         * of the cell that has its bounding box intersecting 
+         * \p box_in.
+         */
+        template< class ACTION >
+        void compute_bbox_cell_bbox_intersections(
+            const Box& box_in,
+            ACTION& action
+        ) const {
+            bbox_intersect_recursive(
+                action, box_in, 1, 0, mesh_.cells.nb()
+            );
+        }
+
         
     protected:
 
+        /**
+         * \brief Computes all the cells that have a bbox that
+         *  intersects a given bbox in a sub-tree of the AABB tree.
+         *
+         * Note that the tree structure is completely implicit,
+         *  therefore the bounds of the (continuous) facet indices
+         *  sequences that correspond to the facets contained
+         *  in the two nodes are sent as well as the node indices.
+         *
+         * \param[in] action ACTION::operator(index_t) is
+         *  invoked for all cells that has a bounding box that
+         *  overlaps \p box.
+         * \param[in] node index of the first node of the AABB tree
+         * \param[in] b index of the first facet in \p node
+         * \param[in] e one position past the index of the last
+         *  facet in \p node
+         */
+        template <class ACTION>
+        void bbox_intersect_recursive(
+            ACTION& action,
+            const Box& box,
+            index_t node, index_t b, index_t e
+        ) const {
+            geo_debug_assert(e != b);
+
+            // Prune sub-tree that does not have intersection
+            if(!bboxes_overlap(box, bboxes_[node])) {
+                return;
+            }
+
+            // Leaf case
+            if(e == b+1) {
+                action(b);
+                return;
+            }
+
+            // Recursion
+            index_t m = b + (e - b) / 2;
+            index_t node_l = 2 * node;
+            index_t node_r = 2 * node + 1;
+
+            bbox_intersect_recursive(action, box, node_l, b, m);
+            bbox_intersect_recursive(action, box, node_r, m, e);
+        }
+
+        
         /**
          * \brief The recursive function used by the implementation
          *  of containing_tet().

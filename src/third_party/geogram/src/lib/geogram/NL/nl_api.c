@@ -198,7 +198,7 @@ void nlGetDoublev(NLenum pname, NLdouble* params) {
             *params = 0.0;
         } else {
             *params = (NLdouble)(nlCurrentContext->flops) /
-                (nlCurrentContext->elapsed_time * 1e6) ;
+                (nlCurrentContext->elapsed_time * 1e9) ;
         }
     } break;
     default: {
@@ -518,8 +518,14 @@ void nlEndMatrix() {
     }
 
     nlSparseMatrixComputeDiagInv(&nlCurrentContext->M);
-    if(nlCurrentContext->preconditioner != NL_PRECOND_SSOR) {    
-        //nlSparseMatrixCompress(&nlCurrentContext->M);
+    if(
+        nlCurrentContext->preconditioner != NL_PRECOND_SSOR &&
+        nlCurrentContext->solver != NL_SUPERLU_EXT       &&
+        nlCurrentContext->solver != NL_PERM_SUPERLU_EXT  &&
+        nlCurrentContext->solver != NL_SYMMETRIC_SUPERLU_EXT 
+       
+    ) {
+        nlSparseMatrixCompress(&nlCurrentContext->M);
     }
 }
 
