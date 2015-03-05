@@ -112,6 +112,7 @@ namespace RINGMesh {
                         "Invalid error: " + GEO::String::to_string( error ) ) ;
                     unzCloseCurrentFile( uz ) ;
                     unzClose( uz ) ;
+                    fclose( out ) ;
                     return false ;
                 }
                 if( error > 0 ) {

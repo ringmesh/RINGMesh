@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
  *     * Neither the name of the <organization> nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr 
- *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
  *     http://www.gocad.org
@@ -34,10 +34,9 @@
  *     GOCAD Project
  *     Ecole Nationale Supérieure de Géologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
- *     54518 VANDOEUVRE-LES-NANCY 
+ *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
-*/
-
+ */
 
 #ifndef __RINGMESH_PERMUTATION__
 #define __RINGMESH_PERMUTATION__
@@ -45,9 +44,7 @@
 #include <ringmesh/common.h>
 
 namespace RINGMesh {
-
     namespace Permutation {
-
         /**
          * @brief checks whether a specified vector encodes
          *  a valid permutation.
@@ -56,46 +53,57 @@ namespace RINGMesh {
         {
             std::vector< bool > visited( permutation.size(), false ) ;
             for( index_t i = 0; i < permutation.size(); i++ ) {
-                if( permutation[i] < 0
-                    || permutation[i] >= signed_index_t( permutation.size() ) ) {
+                if( permutation[ i ] < 0
+                    || permutation[ i ] >= signed_index_t( permutation.size() ) )
+                {
                     return false ;
                 }
-                if( visited[i] ) {
+                if( visited[ i ] ) {
                     return false ;
                 }
-                visited[i] = true ;
+                visited[ i ] = true ;
             }
             return true ;
         }
 
-        /**
-         * @brief used internally by apply_permutation()
-         */
-        inline bool is_marked( const std::vector< signed_index_t >& permutation, signed_index_t i )
-        {
-            ringmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
-            return ( permutation[i] < 0 ) ;
-        }
 
         /**
          * @brief used internally by apply_permutation()
          */
-        inline void mark( std::vector< signed_index_t >& permutation, signed_index_t i )
+        inline bool is_marked(
+            const std::vector< signed_index_t >& permutation,
+            signed_index_t i )
+        {
+            ringmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
+            return ( permutation[ i ] < 0 ) ;
+        }
+
+
+        /**
+         * @brief used internally by apply_permutation()
+         */
+        inline void mark(
+            std::vector< signed_index_t >& permutation,
+            signed_index_t i )
         {
             ringmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
             ringmesh_debug_assert( !is_marked( permutation, i ) ) ;
-            permutation[i] = -permutation[i] - 1 ;
+            permutation[ i ] = - permutation[ i ] - 1 ;
         }
+
 
         /**
          * @brief used internally by apply_permutation()
          */
-        inline void unmark( std::vector< signed_index_t >& permutation, signed_index_t i )
+        inline void unmark(
+            std::vector< signed_index_t >& permutation,
+            signed_index_t i )
         {
             ringmesh_debug_assert( i >= 0 && i < signed_index_t( permutation.size() ) ) ;
             ringmesh_debug_assert( is_marked( permutation, i ) ) ;
-            permutation[i] = -permutation[i] - 1 ;
+            permutation[ i ] = - permutation[ i ] - 1 ;
         }
+
 
         /**
          * @brief applies a permutation in-place.
@@ -107,8 +115,8 @@ namespace RINGMesh {
          * data = data2 ;
          * @endcode
          * @param data the vector to permute
-         * @param [in] permutation_in the permutation. 
-         *  It is temporarily changed during execution of the 
+         * @param [in] permutation_in the permutation.
+         *  It is temporarily changed during execution of the
          *  function, but identical to the input on exit.
          */
         inline void apply(
@@ -127,12 +135,12 @@ namespace RINGMesh {
                 }
                 signed_index_t i = k ;
                 ::memcpy( temp, data + i * elemsize, elemsize ) ;
-                signed_index_t j = permutation[k] ;
+                signed_index_t j = permutation[ k ] ;
                 mark( permutation, k ) ;
                 while( j != signed_index_t( k ) ) {
                     ::memcpy( data + i * elemsize, data + j * elemsize,
                         elemsize ) ;
-                    signed_index_t nj = permutation[j] ;
+                    signed_index_t nj = permutation[ j ] ;
                     mark( permutation, j ) ;
                     i = j ;
                     j = nj ;
@@ -144,6 +152,7 @@ namespace RINGMesh {
             }
         }
 
+
         /**
          * @brief applies a permutation in-place.
          * It is equivalent to:
@@ -154,11 +163,12 @@ namespace RINGMesh {
          * data = data2 ;
          * @endcode
          * @param data the vector to permute
-         * @param [in] permutation_in the permutation. 
-         *  It is temporarily changed during execution of the 
+         * @param [in] permutation_in the permutation.
+         *  It is temporarily changed during execution of the
          *  function, but identical to the input on exit.
          */
-        template< class T > inline void apply(
+        template< class T >
+        inline void apply(
             std::vector< T >& data,
             std::vector< signed_index_t >& permutation_in )
         {
@@ -171,22 +181,23 @@ namespace RINGMesh {
                     continue ;
                 }
                 signed_index_t i = k ;
-                temp = data[i] ;
-                signed_index_t j = permutation[k] ;
+                temp = data[ i ] ;
+                signed_index_t j = permutation[ k ] ;
                 mark( permutation, k ) ;
                 while( j != signed_index_t( k ) ) {
-                    data[i] = data[j] ;
-                    signed_index_t nj = permutation[j] ;
+                    data[ i ] = data[ j ] ;
+                    signed_index_t nj = permutation[ j ] ;
                     mark( permutation, j ) ;
                     i = j ;
                     j = nj ;
                 }
-                data[i] = temp ;
+                data[ i ] = temp ;
             }
             for( index_t k = 0; k < permutation.size(); k++ ) {
                 unmark( permutation, k ) ;
             }
         }
+
 
         /**
          * @brief inverts a permutation in-place.
@@ -206,24 +217,22 @@ namespace RINGMesh {
                     continue ;
                 }
                 signed_index_t i = k ;
-                signed_index_t j = permutation[i] ;
+                signed_index_t j = permutation[ i ] ;
                 while( j != signed_index_t( k ) ) {
-                    signed_index_t temp = permutation[j] ;
-                    permutation[j] = i ;
+                    signed_index_t temp = permutation[ j ] ;
+                    permutation[ j ] = i ;
                     mark( permutation, j ) ;
                     i = j ;
                     j = temp ;
                 }
-                permutation[j] = i ;
+                permutation[ j ] = i ;
                 mark( permutation, j ) ;
             }
             for( index_t k = 0; k < permutation.size(); k++ ) {
                 unmark( permutation, k ) ;
             }
         }
-
     }
-
 }
 
 #endif
