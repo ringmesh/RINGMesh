@@ -719,7 +719,7 @@ namespace GEO {
     /**
      * \brief The facets of a mesh
      */
-    class MeshFacets : public MeshFacetsStore, public MeshElements {
+    class GEOGRAM_API MeshFacets : public MeshFacetsStore, public MeshElements {
     public:
 
         /**
@@ -1425,7 +1425,7 @@ namespace GEO {
     /**
      * \brief The cells of a mesh.
      */
-    class MeshCells : public MeshCellsStore, public MeshElements {
+    class GEOGRAM_API MeshCells : public MeshCellsStore, public MeshElements {
     public:
         /**
          * \brief MeshCells constructor
