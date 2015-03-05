@@ -328,7 +328,7 @@ namespace RINGMesh {
                 const vec3& p2 ) :
                 p0_( p0 ), p1_( p1 ), p2_( p2 ) {}
 
-    public:
+        public:
             vec3 p0_ ;
             vec3 p1_ ;
             vec3 p2_ ;
