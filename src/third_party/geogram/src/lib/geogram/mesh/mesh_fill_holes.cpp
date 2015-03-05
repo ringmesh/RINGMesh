@@ -49,6 +49,7 @@
 #include <geogram/mesh/mesh_halfedges.h>
 #include <geogram/mesh/index.h>
 #include <geogram/basic/command_line.h>
+#include <geogram/basic/logger.h>
 
 #undef geo_debug_assert
 #define geo_debug_assert(x) geo_assert(x)
@@ -91,15 +92,15 @@ namespace {
         index_t c = H.corner;
 
         {
-            index_t cnext = M.next_around_facet(f, c);
-            if(M.corner_vertex_index(cnext) == v) {
+            index_t cnext = M.facets.next_corner_around_facet(f, c);
+            if(M.facet_corners.vertex(cnext) == v) {
                 return true;
             }
         }
 
         {
-            index_t cprev = M.prev_around_facet(f, c);
-            if(M.corner_vertex_index(cprev) == v) {
+            index_t cprev = M.facets.prev_corner_around_facet(f, c);
+            if(M.facet_corners.vertex(cprev) == v) {
                 return true;
             }
         }
@@ -121,7 +122,7 @@ namespace {
         const MeshHalfedges::Halfedge& h1,
         const MeshHalfedges::Halfedge& h2
     ) {
-        index_t v2 = MH.mesh().corner_vertex_index(h2.corner);
+        index_t v2 = MH.mesh().facet_corners.vertex(h2.corner);
         MeshHalfedges::Halfedge H = h1;
         do {
             if(halfedge_has_neighbor(MH, H, v2)) {
@@ -145,7 +146,7 @@ namespace {
         const MeshHalfedges& MH, const MeshHalfedges::Halfedge& H
     ) {
         return Geom::mesh_vertex(
-            MH.mesh(), MH.mesh().corner_vertex_index(H.corner)
+            MH.mesh(), MH.mesh().facet_corners.vertex(H.corner)
         );
     }
 
@@ -171,9 +172,9 @@ namespace {
         const Mesh& M = MH.mesh();
         unsigned int c = H.corner;
         unsigned int f = H.facet;
-        unsigned int v1 = M.corner_vertex_index(c);
-        c = M.next_around_facet(f, c);
-        unsigned int v2 = M.corner_vertex_index(c);
+        unsigned int v1 = M.facet_corners.vertex(c);
+        c = M.facets.next_corner_around_facet(f, c);
+        unsigned int v2 = M.facet_corners.vertex(c);
         vec3 E = Geom::mesh_vertex(M, v2) - Geom::mesh_vertex(M, v1);
         vec3 N = Geom::mesh_facet_normal(M, f);
         return cross(E, N);
@@ -334,9 +335,9 @@ namespace {
         if(hole.size() <= 3) {
             if(hole.size() == 3) {
                 trindex T(
-                    MH.mesh().corner_vertex_index(hole[0].corner),
-                    MH.mesh().corner_vertex_index(hole[1].corner),
-                    MH.mesh().corner_vertex_index(hole[2].corner),
+                    MH.mesh().facet_corners.vertex(hole[0].corner),
+                    MH.mesh().facet_corners.vertex(hole[1].corner),
+                    MH.mesh().facet_corners.vertex(hole[2].corner),
                     trindex::KEEP_ORDER
                 );
                 triangles.push_back(T);
@@ -402,9 +403,9 @@ namespace {
         if(hole_in.size() <= 3) {
             if(hole_in.size() == 3) {
                 trindex T(
-                    MH.mesh().corner_vertex_index(hole_in[0].corner),
-                    MH.mesh().corner_vertex_index(hole_in[1].corner),
-                    MH.mesh().corner_vertex_index(hole_in[2].corner),
+                    MH.mesh().facet_corners.vertex(hole_in[0].corner),
+                    MH.mesh().facet_corners.vertex(hole_in[1].corner),
+                    MH.mesh().facet_corners.vertex(hole_in[2].corner),
                     trindex::KEEP_ORDER
                 );
                 triangles.push_back(T);
@@ -419,11 +420,11 @@ namespace {
                 const MeshHalfedges::Halfedge& H = hole_in[i];
                 geo_debug_assert(H.facet != MeshHalfedges::Halfedge::NO_FACET);
                 index_t c = H.corner;
-                index_t v1 = M.corner_vertex_index(c);
-                c = M.next_around_facet(H.facet, c);
-                index_t v2 = M.corner_vertex_index(c);
-                c = M.next_around_facet(H.facet, c);
-                index_t v3 = M.corner_vertex_index(c);
+                index_t v1 = M.facet_corners.vertex(c);
+                c = M.facets.next_corner_around_facet(H.facet, c);
+                index_t v2 = M.facet_corners.vertex(c);
+                c = M.facets.next_corner_around_facet(H.facet, c);
+                index_t v3 = M.facet_corners.vertex(c);
                 hole.push_back(trindex(v1, v2, v3, trindex::KEEP_ORDER));
             }
 
@@ -517,15 +518,18 @@ namespace {
      */
     void remove_bridges(Mesh& M) {
         MeshHalfedges MH(M);
-        vector<bool> corner_is_visited(M.nb_corners(),false);
-        vector<index_t> f_status(M.nb_facets(),0);
+        vector<bool> corner_is_visited(M.facet_corners.nb(),false);
+        vector<index_t> f_status(M.facets.nb(),0);
         index_t f_stamp=1;
         const index_t BRIDGE = index_t(-1);
         
-        for(index_t f=0; f<M.nb_facets(); ++f) {
-            for(index_t c = M.facet_begin(f); c<M.facet_end(f); ++c) {
+        for(index_t f=0; f<M.facets.nb(); ++f) {
+            for(
+                index_t c = M.facets.corners_begin(f);
+                c<M.facets.corners_end(f); ++c
+            ) {
                 if(
-                    M.corner_adjacent_facet(c) == -1 &&
+                    M.facet_corners.adjacent_facet(c) == NO_FACET &&
                     !corner_is_visited[c]
                 ) {
                     MeshHalfedges::Halfedge first(f, c);
@@ -548,7 +552,7 @@ namespace {
             }
         }
         index_t nb_bridges = 0;
-        for(index_t f=0; f<M.nb_facets(); ++f) {
+        for(index_t f=0; f<M.facets.nb(); ++f) {
             if(f_status[f] == BRIDGE) {
                 ++nb_bridges;
             } else {
@@ -556,7 +560,7 @@ namespace {
             }
         }
         if(nb_bridges != 0) {
-            M.remove_facets(f_status);
+            M.facets.delete_elements(f_status);
             Logger::out("Bridges") 
                 << "Removed " << nb_bridges << " bridge(s)"
                 << std::endl;
@@ -591,11 +595,13 @@ namespace GEO {
 
         // Step 1: detect holes
         {
-            vector<bool> corner_is_visited(M.nb_corners(), false);
-            for(index_t f = 0; f < M.nb_facets(); f++) {
-                for(index_t c = M.facet_begin(f); c < M.facet_end(f); c++) {
+            vector<bool> corner_is_visited(M.facet_corners.nb(), false);
+            for(index_t f = 0; f < M.facets.nb(); f++) {
+                for(index_t c = M.facets.corners_begin(f);
+                    c < M.facets.corners_end(f); c++
+                 ) {
                     if(
-                        M.corner_adjacent_facet(c) == -1 &&
+                        M.facet_corners.adjacent_facet(c) == NO_FACET &&
                         !corner_is_visited[c]
                     ) {
                         holes.push_back(Hole());
@@ -666,11 +672,11 @@ namespace GEO {
             if(ok) {
                 if(hole_area(M, triangles) < max_area) {
                     for(index_t j = 0; j < triangles.size(); j++) {
-                        M.begin_facet();
-                        M.add_corner(triangles[j].indices[2]);
-                        M.add_corner(triangles[j].indices[1]);
-                        M.add_corner(triangles[j].indices[0]);
-                        M.end_facet();
+                        M.facets.create_triangle(
+                            triangles[j].indices[2],
+                            triangles[j].indices[1],
+                            triangles[j].indices[0]
+                        );
                     }
                     ++nb_filled_holes;
                 } else {

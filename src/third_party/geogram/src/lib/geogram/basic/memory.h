@@ -101,7 +101,7 @@ namespace GEO {
          */
         inline void lock() {
 #ifdef GEO_OS_ANDROID
-            lock_mutex_arm(&global_memory_lock_);
+//           lock_mutex_arm(&global_memory_lock_);
 #endif
         }
 
@@ -115,7 +115,7 @@ namespace GEO {
          */
         inline void unlock() {
 #ifdef GEO_OS_ANDROID
-            unlock_mutex_arm(&global_memory_lock_);
+//           unlock_mutex_arm(&global_memory_lock_);
 #endif
         }
 
@@ -658,7 +658,8 @@ namespace GEO {
         /**
          * \brief Gets a vector element
          * \param[in] i index of the element
-         * \return A const reference to the element at position \p i in the vector.
+         * \return A const reference to the element at position 
+         *  \p i in the vector.
          */
         const T& operator[] (index_t i) const {
             geo_debug_assert(i < size());
@@ -678,7 +679,8 @@ namespace GEO {
         /**
          * \brief Gets a vector element
          * \param[in] i index of the element
-         * \return A const reference to the element at position \p i in the vector.
+         * \return A const reference to the element at position \p i 
+         *  in the vector.
          */
         const T& operator[] (signed_index_t i) const {
             geo_debug_assert(i >= 0 && index_t(i) < size());

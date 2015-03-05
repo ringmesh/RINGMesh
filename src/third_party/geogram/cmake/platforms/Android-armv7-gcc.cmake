@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------
-# Flags common to all Linux based platforms with GNU compiler
+# Flags for compiling with Android NDK
 #-------------------------------------------------------------------
 
 include(${CMAKE_SOURCE_DIR}/cmake/platforms/Linux.cmake)
@@ -98,8 +98,10 @@ macro(vor_add_executable)
     if(NOT VORPALINE_BUILD_DYNAMIC)
         # Create a statically linked executable
         # Link with static libraries
-      add_flags(CMAKE_CXX_FLAGS -static-libstdc++ -static-libgcc -static)
-      add_flags(CMAKE_C_FLAGS -static-libgcc -static)
+        # ... does not work with NDK 10.d
+        #   (causes errors / multiply linked symbols)
+#      add_flags(CMAKE_CXX_FLAGS -static-libstdc++ -static-libgcc -static)
+#      add_flags(CMAKE_C_FLAGS -static-libgcc -static)
     endif()
 
     add_executable(${ARGN})

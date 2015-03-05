@@ -42,8 +42,6 @@
 #include <ringmesh/tetra_gen.h>
 #include <ringmesh/boundary_model_element.h>
 
-#include <geogram/mesh/mesh_private.h>
-
 #include <iomanip>
 #include <stack>
 
@@ -118,12 +116,11 @@ namespace RINGMesh {
         :
             tetmesh_( tetmesh ),
             internal_points_( internal_vertices ),
-            tetmesh_builder_( &tetmesh ),
             resolution_( 0 ),
             background_( background ),
-            region_( region )
+            region_( region ),
+            attribute_( tetmesh.facets.attributes(), surface_att_name )
     {
-        tetmesh_builder_.begin_mesh() ;
         if( !well_edges.empty() ) {
             index_t nb_well_edges = 0 ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
@@ -247,13 +244,13 @@ namespace RINGMesh {
         index_t nb_triangles,
         index_t nb_lines)
     {
-        tetmesh_.reserve_vertices( nb_points ) ;
-        tetmesh_.reserve_facets_and_corners( nb_triangles,
-            nb_tets * 4 + nb_triangles * 3 + nb_lines * 2 ) ;
-        GEO::MeshMutator::set_attributes( tetmesh_, GEO::MESH_FACET_REGION ) ;
-        GEO::MeshMutator::facet_regions( tetmesh_ ).resize( nb_triangles ) ;
-        GEO::MeshMutator::tet_vertices( tetmesh_ ).reserve( nb_tets * 4 ) ;
-        GEO::MeshMutator::set_nb_vertices( tetmesh_, nb_points ) ;
+//        tetmesh_.reserve_vertices( nb_points ) ;
+//        tetmesh_.reserve_facets_and_corners( nb_triangles,
+//            nb_tets * 4 + nb_triangles * 3 + nb_lines * 2 ) ;
+//        GEO::MeshMutator::set_attributes( tetmesh_, GEO::MESH_FACET_REGION ) ;
+//        GEO::MeshMutator::facet_regions( tetmesh_ ).resize( nb_triangles ) ;
+//        GEO::MeshMutator::tet_vertices( tetmesh_ ).reserve( nb_tets * 4 ) ;
+//        GEO::MeshMutator::set_nb_vertices( tetmesh_, nb_points ) ;
 //        GEO::MeshMutator::set_nb_facets( tetmesh_, nb_triangles ) ;
 //        GEO::MeshMutator::set_nb_cells( tetmesh_, nb_tets ) ;
 
@@ -263,14 +260,14 @@ namespace RINGMesh {
         */
     }
 
-    void TetraGen::set_point( index_t index, double* point )
+    void TetraGen::set_point( index_t index, const double* point )
     {
-        tetmesh_builder_.add_vertex_by_ptr( point ) ;
+        tetmesh_.vertices.create_vertex( point ) ;
     }
 
     void TetraGen::set_tetra( index_t index, int* tet, index_t nb_lines, index_t nb_triangles )
     {
-        tetmesh_.add_tet( tet[0] - 1, tet[1] - 1, tet[2] - 1, tet[3] - 1 ) ;
+        tetmesh_.cells.create_tet( tet[0] - 1, tet[1] - 1, tet[2] - 1, tet[3] - 1 ) ;
     }
 
     void TetraGen::set_tetra_adjacent(
@@ -287,11 +284,8 @@ namespace RINGMesh {
         int * triangle,
         index_t nb_lines )
     {
-        tetmesh_builder_.begin_facet() ;
-        for( uint8 i = 0; i < 3; i++ ) {
-            tetmesh_builder_.add_vertex_to_facet( triangle[i] - 1 ) ;
-        }
-        tetmesh_builder_.end_facet() ;
+        tetmesh_.facets.create_triangle( triangle[0] - 1, triangle[1] - 1,
+            triangle[2] - 1 ) ;
     }
 
     void TetraGen::set_line(
@@ -311,7 +305,7 @@ namespace RINGMesh {
         index_t tri,
         index_t marker )
     {
-        tetmesh_.set_facet_region( tri, marker ) ;
+        attribute_[tri] = marker ;
     }
 
     void TetraGen::set_tetra_face_marker(
@@ -581,7 +575,8 @@ namespace RINGMesh {
             cur_index_triangle ++ ;
         }
 
-        tetmesh_builder_.end_mesh( false, true ) ;
+        tetmesh_.facets.connect() ;
+        tetmesh_.cells.connect() ;
         Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
 
         /*
@@ -905,7 +900,8 @@ namespace RINGMesh {
         }
 
 
-        tetmesh_builder_.end_mesh() ;
+        tetmesh_.facets.connect() ;
+        tetmesh_.cells.connect() ;
         Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
 
             /*

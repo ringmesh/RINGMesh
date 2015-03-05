@@ -38,6 +38,7 @@
 #endif
 
 #include <malloc.h>
+#include <assert.h>
 
 #ifdef __cplusplus
 #include <string>
@@ -163,6 +164,14 @@ extern GLUT_VIEWER_API void glut_viewer_keyboard_callback(unsigned char c, int x
 inline void glut_viewer_printf(const std::string& s) {
     glut_viewer_printf((char*) s.c_str());
 }
+
+inline void glut_viewer_add_toggle(
+    char key, bool* toggle, const char* description
+) {
+    assert(sizeof(bool) == sizeof(GLboolean));
+    glut_viewer_add_toggle(key, (GLboolean*)(toggle), description);
+}
+
 
 #endif
 

@@ -75,7 +75,9 @@ namespace {
         MeshFacetBasis(
             const Mesh& M, index_t f 
         ) {
-            X = normalize(Geom::mesh_corner_vector(M, M.facet_begin(f)));
+            X = normalize(
+                Geom::mesh_corner_vector(M, M.facets.corners_begin(f))
+            );
             N = normalize(Geom::mesh_facet_normal(M,f));
             Y = cross(N,X); 
         }
@@ -125,11 +127,10 @@ namespace {
         static double reference_rotation_accross_edge(
             const Mesh& M, index_t c
         ) {
-            geo_debug_assert(M.is_triangulated());
+            geo_debug_assert(M.facets.are_simplices());
             index_t f1 = c/3;
-            signed_index_t sf2 = M.corner_adjacent_facet(c);
-            geo_debug_assert(sf2 >= 0);
-            index_t f2 = index_t(sf2);
+            index_t f2 = M.facet_corners.adjacent_facet(c);
+            geo_debug_assert(f2 != NO_FACET);
             vec3 ref = Geom::mesh_corner_vector(M,c);
             MeshFacetBasis B1(M,f1);
             MeshFacetBasis B2(M,f2);
@@ -150,16 +151,16 @@ namespace {
      *  interpolated over the mesh. This angle is relative to the first
      *  edge of the facet, as defined in the MeshFacetBasis class.
      * \param[in] M a const reference to the surface mesh
-     * \param[in,out] sincos_alpha a vector of 2*M.nb_facets() variables,
+     * \param[in,out] sincos_alpha a vector of 2*M.facets.nb() variables,
      *  that correspond to the interpolated variables. The initial value
      *  is taken into account in the fitting term if \p fitting is non-zero
-     * \param[in] locked a vector of M.nb_facets() booleans, indicating
+     * \param[in] locked a vector of M.facets.nb() booleans, indicating
      *  whether each facet is locked. The variables that correspond to 
      *  a locked facet are unchanged.
      * \param[in] global_fitting importance of the fitting term with respect to 
      *  the initial value of \p sincos_alpha. If zero, no fitting term is
      *  installed
-     * \param[in] local_fitting an optional vector of M.nb_facets() doubles 
+     * \param[in] local_fitting an optional vector of M.facets.nb() doubles 
      *  that specifies for each facet an individual factor that scales 
      *  global_fitting
      */
@@ -170,116 +171,113 @@ namespace {
         double global_fitting,
         const vector<double>& local_fitting = vector<double>() 
     ) {
-//        // Step 0: normalize variables
-//        for(index_t f=0; f<M.nb_facets(); ++f) {
-//            double c = sincos_alpha[2*f];
-//            double s = sincos_alpha[2*f+1];
-//            double scale = sqrt(s*s+c*c);
-//            if(scale > 1e-30) {
-//                sincos_alpha[2*f] = c/scale;
-//                sincos_alpha[2*f+1] = s/scale;
-//            }
-//        }
-//
-//        // Step 1: Setup the OpenNL solver
-//        nlNewContext();
-//        nlSolverParameteri(NL_NB_VARIABLES, NLint(2*M.nb_facets()));
-//        nlSolverParameteri(NL_LEAST_SQUARES, NL_TRUE);
-//#ifdef GEO_DEBUG
-//        nlEnable(NL_VERBOSE);
-//#endif
-//        nlEnable(NL_NORMALIZE_ROWS);
-//
-//        // Step 2: setup the variables
-//        nlBegin(NL_SYSTEM);
-//        for(index_t f=0; f<M.nb_facets(); ++f) {
-//            nlSetVariable(2*f, sincos_alpha[2*f]);
-//            nlSetVariable(2*f+1, sincos_alpha[2*f+1]);
-//            if(locked.size() != 0 && locked[f]) {
-//                nlLockVariable(2*f);
-//                nlLockVariable(2*f+1);
-//            }
-//        }
-//
-//        nlBegin(NL_MATRIX);
-//
-//        // Step 3: setup the PGP smoothness term
-//        for(index_t f1=0; f1<M.nb_facets(); ++f1) {
-//            for(index_t c1=M.facet_begin(f1); c1<M.facet_end(f1); ++c1) {
-//                signed_index_t sf2 = M.corner_adjacent_facet(c1);
-//                if(sf2 == -1) {
-//                    continue;
-//                }
-//
-//                index_t f2 = index_t(sf2);
-//
-//                if(f1 < f2) {
-//                    continue;
-//                }
-//
-//                double angle = -symd*
-//                    MeshFacetBasis::reference_rotation_accross_edge(
-//                        M,c1
-//                    );
-//
-//                double c = cos(angle);
-//                double s = sin(angle);
-//
-//                nlBegin(NL_ROW);
-//                nlCoefficient(2*f1,c);
-//                nlCoefficient(2*f1+1,s);
-//                nlCoefficient(2*f2,-1.0);
-//                nlEnd(NL_ROW);
-//
-//                nlBegin(NL_ROW);
-//                nlCoefficient(2*f1,-s);
-//                nlCoefficient(2*f1+1,c);
-//                nlCoefficient(2*f2+1,-1.0);
-//                nlEnd(NL_ROW);
-//            }
-//        }
-//
-//        // Step 4: setup the data fitting term
-//        if(global_fitting != 0) {
-//            for(index_t f=0; f<M.nb_facets(); ++f) {
-//
-//                double fitting = global_fitting;
-//                if(local_fitting.size() != 0) {
-//                    fitting *= local_fitting[f];
-//                }
-//
-//                if(fitting == 0.0) {
-//                    continue;
-//                }
-//
-//                nlRowScaling(fitting);
-//                nlBegin(NL_ROW);
-//                nlCoefficient(2*f,1.0);
-//                nlRightHandSide(sincos_alpha[2*f]);
-//                nlEnd(NL_ROW);
-//
-//                nlRowScaling(fitting);
-//                nlBegin(NL_ROW);
-//                nlCoefficient(2*f+1,1.0);
-//                nlRightHandSide(sincos_alpha[2*f+1]);
-//                nlEnd(NL_ROW);
-//            }
-//        }
-//
-//        nlEnd(NL_MATRIX);
-//        nlEnd(NL_SYSTEM);
-//
-//        // Step 5: solve the linear system
-//        nlSolve() ;
-//
-//        // Step 6: read the new values of the variables
-//        for(index_t f=0; f<M.nb_facets(); ++f) {
-//            sincos_alpha[2*f] = nlGetVariable(2*f);
-//            sincos_alpha[2*f+1] = nlGetVariable(2*f+1);
-//        }
-//
-//        // Step 7: cleanup memory allocated by OpenNL
-//        nlDeleteContext(nlGetCurrent());
+        // Step 0: normalize variables
+        for(index_t f=0; f<M.facets.nb(); ++f) {
+            double c = sincos_alpha[2*f];
+            double s = sincos_alpha[2*f+1];
+            double scale = sqrt(s*s+c*c);
+            if(scale > 1e-30) {
+                sincos_alpha[2*f] = c/scale;
+                sincos_alpha[2*f+1] = s/scale;
+            }
+        }
+
+        // Step 1: Setup the OpenNL solver
+        nlNewContext();
+        nlSolverParameteri(NL_NB_VARIABLES, NLint(2*M.facets.nb()));
+        nlSolverParameteri(NL_LEAST_SQUARES, NL_TRUE);
+#ifdef GEO_DEBUG        
+        nlEnable(NL_VERBOSE);
+#endif        
+        nlEnable(NL_NORMALIZE_ROWS);
+
+        // Step 2: setup the variables
+        nlBegin(NL_SYSTEM);
+        for(index_t f=0; f<M.facets.nb(); ++f) {
+            nlSetVariable(2*f, sincos_alpha[2*f]);
+            nlSetVariable(2*f+1, sincos_alpha[2*f+1]);
+            if(locked.size() != 0 && locked[f]) {
+                nlLockVariable(2*f);
+                nlLockVariable(2*f+1);
+            }
+        }
+
+        nlBegin(NL_MATRIX);
+
+        // Step 3: setup the PGP smoothness term
+        for(index_t f1=0; f1<M.facets.nb(); ++f1) {
+            for(
+                index_t c1=M.facets.corners_begin(f1);
+                c1<M.facets.corners_end(f1); ++c1
+            ) {
+                index_t f2 = M.facet_corners.adjacent_facet(c1);
+                if(f2 == NO_FACET || f1 < f2) {
+                    continue;
+                }
+                
+                double angle = -symd*
+                    MeshFacetBasis::reference_rotation_accross_edge(
+                        M,c1
+                    );
+
+                double c = cos(angle); 
+                double s = sin(angle);                    
+                
+                nlBegin(NL_ROW);
+                nlCoefficient(2*f1,c);
+                nlCoefficient(2*f1+1,s);
+                nlCoefficient(2*f2,-1.0);                    
+                nlEnd(NL_ROW);
+
+                nlBegin(NL_ROW);
+                nlCoefficient(2*f1,-s);
+                nlCoefficient(2*f1+1,c);
+                nlCoefficient(2*f2+1,-1.0);                    
+                nlEnd(NL_ROW);
+            }
+        }  
+
+        // Step 4: setup the data fitting term
+        if(global_fitting != 0) {
+            for(index_t f=0; f<M.facets.nb(); ++f) {
+
+                double fitting = global_fitting;
+                if(local_fitting.size() != 0) {
+                    fitting *= local_fitting[f];
+                }
+
+                if(fitting == 0.0) {
+                    continue;
+                }
+
+                nlRowScaling(fitting);
+                nlBegin(NL_ROW);
+                nlCoefficient(2*f,1.0);
+                nlRightHandSide(sincos_alpha[2*f]);
+                nlEnd(NL_ROW);
+
+                nlRowScaling(fitting);
+                nlBegin(NL_ROW);
+                nlCoefficient(2*f+1,1.0);
+                nlRightHandSide(sincos_alpha[2*f+1]);
+                nlEnd(NL_ROW);
+            }
+        }
+
+        nlEnd(NL_MATRIX);
+        nlEnd(NL_SYSTEM);
+
+        // Step 5: solve the linear system
+        nlSolve() ;
+
+        // Step 6: read the new values of the variables
+        for(index_t f=0; f<M.facets.nb(); ++f) {
+            sincos_alpha[2*f] = nlGetVariable(2*f);
+            sincos_alpha[2*f+1] = nlGetVariable(2*f+1);
+        }
+
+        // Step 7: cleanup memory allocated by OpenNL 
+        nlDeleteContext(nlGetCurrent());
     } 
 
 
@@ -325,7 +323,9 @@ namespace {
             
        
             double eigen_vectors[9] ;
-            MatrixUtil::semi_definite_symmetric_eigen(M_, 3, eigen_vectors, eigen_value_) ;
+            MatrixUtil::semi_definite_symmetric_eigen(
+                M_, 3, eigen_vectors, eigen_value_
+            ) ;
             
             axis_[0] = vec3(
                 eigen_vectors[0], eigen_vectors[1], eigen_vectors[2]
@@ -495,13 +495,13 @@ namespace {
      *  as the cosine and sine of the angle it makes relative to the first
      *  edge of teach triangle, as defined in the MeshFacetBasis class.
      * \param[in] M a const reference to the surface mesh
-     * \param[in,out] sincos_alpha a vector of 2*M.nb_facets() doubles, 
+     * \param[in,out] sincos_alpha a vector of 2*M.facets.nb() doubles, 
      *  that contains the cosines and sines of the angle between the estimated
      *  directions and the first edge of each facet.
-     * \param[in] locked a vector of M.nb_facets() booleans, that indicates
+     * \param[in] locked a vector of M.facets.nb() booleans, that indicates
      *  for each facet whether it is locked. Directions of locked facets are
      *  kept unchanged
-     * \param[out] magnitude a vector of M.nb_facets() doubles that indicates
+     * \param[out] magnitude a vector of M.facets.nb() doubles that indicates
      *  for each facet the magnitude of the principal direction of curvature
      */
     void estimate_max_curvature_direction(
@@ -509,22 +509,21 @@ namespace {
         vector<double>& magnitude
     ) {
         NormalCycle NC;
-        vector<double> matrices(M.nb_vertices()*6,0.0);
+        vector<double> matrices(M.vertices.nb()*6,0.0);
 
         // Compute tensors of vertex neighborhoods
-        for(index_t f1=0; f1<M.nb_facets(); ++f1) {
-            for(index_t c=M.facet_begin(f1); c<M.facet_end(f1); ++c) {
-                signed_index_t sf2 = M.corner_adjacent_facet(c);
-                if(sf2 < 0) {
-                    continue;
-                }
-                index_t f2 = index_t(sf2);
-                if(f2 < f1) {
+        for(index_t f1=0; f1<M.facets.nb(); ++f1) {
+            for(
+                index_t c=M.facets.corners_begin(f1);
+                c<M.facets.corners_end(f1); ++c
+            ) {
+                index_t f2 = M.facet_corners.adjacent_facet(c);
+                if(f2 == NO_FACET || f2 < f1) {
                     continue;
                 }
 
-                index_t v1 = M.corner_vertex_index(c);
-                index_t v2 = M.corner_vertex_index(c+1);
+                index_t v1 = M.facet_corners.vertex(c);
+                index_t v2 = M.facet_corners.vertex(c+1);
 
                 vec3 e = Geom::mesh_corner_vector(M,c);
                 double alpha = Geom::mesh_dihedral_angle(M,c);
@@ -539,13 +538,16 @@ namespace {
 
         //  For each facet, accumulate the tensors of all its
         // vertices.
-        for(index_t f=0; f<M.nb_facets(); ++f) {
+        for(index_t f=0; f<M.facets.nb(); ++f) {
             if(locked.size() != 0 && locked[f]) {
                 continue;
             }
             NC.clear();
-            for(index_t c=M.facet_begin(f); c<M.facet_end(f); ++c) {
-                index_t v=M.corner_vertex_index(c);
+            for(
+                index_t c=M.facets.corners_begin(f);
+                c<M.facets.corners_end(f); ++c
+            ) {
+                index_t v=M.facet_corners.vertex(c);
                 NC.add_matrix(&matrices[6*v]);
             }
             NC.compute();
@@ -575,7 +577,7 @@ namespace GEO {
         Logger::out("Frames") << "Loading frames from "
                               << filename << std::endl;
         frames_.clear();
-        frames_.reserve(M.nb_tets() * 9);
+        frames_.reserve(M.cells.nb() * 9);
         centers_.clear();
         bool result = true;
         bool with_centers = false;
@@ -639,28 +641,28 @@ namespace GEO {
         }
         if(!with_centers) {
             if(volumetric) {
-                if(frames_.size() != M.nb_tets() * 9) {
+                if(frames_.size() != M.cells.nb() * 9) {
                     Logger::err("I/O")
-                        << "Invalid number of elements in frame for: " << filename
-                        << std::endl;
+                        << "Invalid number of elements in frame for: "
+                        << filename << std::endl;
                     return false;
                 }
-                centers_.resize(M.nb_tets() * 3);
-                for(index_t t = 0; t < M.nb_tets(); ++t) {
+                centers_.resize(M.cells.nb() * 3);
+                for(index_t t = 0; t < M.cells.nb(); ++t) {
                     vec3 g = Geom::mesh_tet_center(M, t);
                     centers_[3 * t] = g.x;
                     centers_[3 * t + 1] = g.y;
                     centers_[3 * t + 2] = g.z;
                 }
             } else {
-                if(frames_.size() != M.nb_facets() * 9) {
+                if(frames_.size() != M.facets.nb() * 9) {
                     Logger::err("I/O")
-                        << "Invalid number of elements in frame for: " << filename
-                        << std::endl;
+                        << "Invalid number of elements in frame for: "
+                        << filename << std::endl;
                     return false;
                 }
-                centers_.resize(M.nb_facets() * 3);
-                for(index_t f = 0; f < M.nb_facets(); ++f) {
+                centers_.resize(M.facets.nb() * 3);
+                for(index_t f = 0; f < M.facets.nb(); ++f) {
                     vec3 g = Geom::mesh_facet_center(M, f);
                     centers_[3 * f] = g.x;
                     centers_[3 * f + 1] = g.y;
@@ -679,7 +681,8 @@ namespace GEO {
             }
             s = ::sqrt(s);
             if(s == 0.0) {
-                Logger::warn("Frames") << "Zero-length vector in frame" << std::endl;
+                Logger::warn("Frames")
+                    << "Zero-length vector in frame" << std::endl;
             } else {
                 for(index_t c=0; c<3; ++c) {
                     frames_[3*i+c] /= s;
@@ -702,17 +705,19 @@ namespace GEO {
 
         sharp_angle_threshold *= M_PI/180.0 ;
 
-        vector<double> alpha_sincos(2*M.nb_facets(),0.0);
-        vector<bool> locked(M.nb_facets());
+        vector<double> alpha_sincos(2*M.facets.nb(),0.0);
+        vector<bool> locked(M.facets.nb());
 
         // Step 1: setup the fixed variables
         index_t nb_constrained = 0;
 
-        for(index_t f1=0; f1<M.nb_facets(); ++f1) {
-            for(index_t c1=M.facet_begin(f1); c1<M.facet_end(f1); ++c1) {
-                signed_index_t f2 = M.corner_adjacent_facet(c1);
+        for(index_t f1=0; f1<M.facets.nb(); ++f1) {
+            for(index_t c1=M.facets.corners_begin(f1);
+                c1<M.facets.corners_end(f1); ++c1
+            ) {
+                index_t f2 = M.facet_corners.adjacent_facet(c1);
                 if(
-                    f2 < 0 || (
+                    f2 == NO_FACET || (
                        fabs(Geom::mesh_dihedral_angle(M,c1)) > 
                           sharp_angle_threshold
                     )
@@ -734,13 +739,13 @@ namespace GEO {
         Logger::out("Frames") 
             << nb_constrained << " constrained edges" << std::endl;
 
-        vector<double> certainty(M.nb_facets());
+        vector<double> certainty(M.facets.nb());
         estimate_max_curvature_direction(M,alpha_sincos,locked,certainty);
         double max_certainty = 0.0;
-        for(index_t f=0; f<M.nb_facets(); ++f) {
+        for(index_t f=0; f<M.facets.nb(); ++f) {
             max_certainty = geo_max(max_certainty,certainty[f]);
         }
-        for(index_t f=0; f<M.nb_facets(); ++f) {
+        for(index_t f=0; f<M.facets.nb(); ++f) {
             certainty[f] /= max_certainty;
             if(Numeric::is_nan(certainty[f])) {
                 certainty[f] = 0.0;
@@ -761,9 +766,9 @@ namespace GEO {
 
         // Step 3: deduce the frame field from
         //  the solution of the linear system
-        frames_.resize(M.nb_facets()*9);
-        centers_.resize(M.nb_facets()*3);
-        for(index_t f=0; f<M.nb_facets(); ++f) {
+        frames_.resize(M.facets.nb()*9);
+        centers_.resize(M.facets.nb()*3);
+        for(index_t f=0; f<M.facets.nb(); ++f) {
             double angle = atan2(
                              alpha_sincos[2*f+1],
                              alpha_sincos[2*f]
@@ -794,9 +799,9 @@ namespace GEO {
         // Step 4: In volumetric mode, for each tet we find the nearest
         // facet and lookup the frame field from it.
         if(volumetric) {
-            vector<double> new_frames(9*M.nb_tets());
-            vector<double> new_centers(3*M.nb_tets());
-            for(index_t t=0; t<M.nb_tets(); ++t) {
+            vector<double> new_frames(9*M.cells.nb());
+            vector<double> new_centers(3*M.cells.nb());
+            for(index_t t=0; t<M.cells.nb(); ++t) {
                 vec3 g = Geom::mesh_tet_center(M,t);
                 get_nearest_frame(g.data(), &new_frames[9*t]);
                 new_centers[3*t+0] = g.x;

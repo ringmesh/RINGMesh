@@ -115,7 +115,7 @@ namespace {
          * \return a const reference to a Point
          */
         const Point& mesh_vertex(index_t v) {
-            return *(const Point*) mesh_->vertex_ptr(v);
+            return *(const Point*) mesh_->vertices.point_ptr(v);
         }
 
         /**
@@ -124,7 +124,7 @@ namespace {
          * \return a const reference to a Point
          */
         const Point& mesh_corner_vertex(index_t c) {
-            index_t v = mesh_->corner_vertex_index(c);
+            index_t v = mesh_->facet_corners.vertex(c);
             return mesh_vertex(v);
         }
 
@@ -160,11 +160,9 @@ namespace {
             is_slave_ = false;
             master_ = nil;
             has_weights_ = false;
-            for(index_t v = 0; v < mesh->nb_vertices(); v++) {
-                if(mesh->weight(v) != 1.0) {
-                    has_weights_ = true;
-                    break;
-                }
+            if(mesh->vertices.attributes().is_defined("weight")) {
+                vertex_weight_.bind(mesh->vertices.attributes(), "weight");
+                has_weights_ = true;
             }
             parts_ = nil;
             nb_parts_ = 0;
@@ -1400,8 +1398,8 @@ namespace {
                                 cell_borders_only
                             ),
                             false, // Do not visit inner tetrahedra.
-                            true // Ensure that polygonal facets are triangulated
-                                 // coherently.
+                            true // Ensure that polygonal facets are
+                                 // triangulated coherently.
                         );
                     } else {
                         RVD_.for_each_tetrahedron(
@@ -1417,32 +1415,38 @@ namespace {
                         );
                     }
                 }
-                M.clear();
-                GEO::MeshMutator::set_dimension(M, dim);
-                GEO::MeshMutator::vertices(M).swap(vertices);
-                GEO::MeshMutator::set_nb_facets(M, triangle_vertices.size() / 3);
-                GEO::MeshMutator::corner_adjacent_facets(M).assign(
-                    triangle_vertices.size(), -1
-                );
-                GEO::MeshMutator::corner_vertices(M).swap(triangle_vertices);
-                GEO::MeshMutator::set_triangulated(M, true);
-                GEO::MeshMutator::set_nb_cells(M, tet_vertices.size() / 4);
-                GEO::MeshMutator::tet_vertices(M).swap(tet_vertices);
-                GEO::MeshMutator::tet_adjacents(M).assign(
-                    tet_vertices.size(), -1
-                );
-                GEO::MeshMutator::facet_regions(M).swap(triangle_regions);
-                GEO::MeshMutator::tet_regions(M).swap(tet_regions);
-                GEO::MeshMutator::set_attributes(
-                    M, MeshAttributes(
-                        M.attributes() | MESH_FACET_REGION | MESH_CELL_REGION
-                    )
-                );
-                M.update_cached_variables();
+                
+                M.clear(true); // keep attributes
+
+                M.vertices.assign_points(vertices,dim,true);
+                M.facets.assign_triangle_mesh(triangle_vertices, true);
+                M.cells.assign_tet_mesh(tet_vertices, true);
+
+                // TODO: use Attribute::assign(vector, steal_args)
+                // when it is there...
+                
+                if(M.facets.nb() != 0) {
+                    Attribute<index_t> facet_region_attr(
+                        M.facets.attributes(), "region"
+                    );
+                    for(index_t f=0; f<M.facets.nb(); ++f) {
+                        facet_region_attr[f] = index_t(triangle_regions[f]);
+                    }
+                }
+
+                if(M.cells.nb() != 0) {
+                    Attribute<index_t> cell_region_attr(
+                        M.cells.attributes(), "region"
+                    );
+                    for(index_t c=0; c<M.cells.nb(); ++c) {
+                        cell_region_attr[c] = index_t(tet_regions[c]);
+                    }
+                }
+                
                 if(cell_borders_only) {
                     mesh_repair(M, MESH_REPAIR_TOPOLOGY);
                 } else {
-                    M.connect_facets();
+                    M.facets.connect();
                 }
             } else {
                 RVDMeshBuilder builder(
@@ -1495,7 +1499,7 @@ namespace {
         virtual bool compute_initial_sampling_on_surface(
             double* p, index_t nb_points
         ) {
-            geo_assert(mesh_->is_triangulated());
+            geo_assert(mesh_->facets.are_simplices());
 
             // We do that here, since this triggers partitioning,
             // that improves data locality. Then data locality is
@@ -1509,14 +1513,14 @@ namespace {
             }
 
             return mesh_generate_random_samples_on_surface<DIM>(
-                *mesh_, p, nb_points, true, facets_begin_, facets_end_
+                *mesh_, p, nb_points, vertex_weight_, facets_begin_, facets_end_
             );
         }
 
         virtual bool compute_initial_sampling_in_volume(
             double* p, index_t nb_points
         ) {
-            geo_assert(mesh_->nb_tets() != 0);
+            geo_assert(mesh_->cells.nb() != 0);
 
             // We do that here, since this triggers partitioning,
             // that improves data locality. Then data locality is
@@ -1530,7 +1534,7 @@ namespace {
             }
 
             return mesh_generate_random_samples_in_volume<DIM>(
-                *mesh_, p, nb_points, true, tets_begin_, tets_end_
+                *mesh_, p, nb_points, vertex_weight_, tets_begin_, tets_end_
             );
         }
 
@@ -1545,19 +1549,22 @@ namespace {
             }
 
             // Step 1: get triangles
-            for(index_t f = 0; f < mesh_->nb_facets(); f++) {
-                index_t i = mesh_->facet_begin(f);
-                for(index_t j = i + 1; j + 1 < mesh_->facet_end(f); j++) {
-                    triangles_.push_back(mesh_->corner_vertex_index(i));
-                    triangles_.push_back(mesh_->corner_vertex_index(j));
-                    triangles_.push_back(mesh_->corner_vertex_index(j + 1));
+            for(index_t f = 0; f < mesh_->facets.nb(); f++) {
+                index_t i = mesh_->facets.corners_begin(f);
+                for(
+                    index_t j = i + 1;
+                    j + 1 < mesh_->facets.corners_end(f); j++
+                ) {
+                    triangles_.push_back(mesh_->facet_corners.vertex(i));
+                    triangles_.push_back(mesh_->facet_corners.vertex(j));
+                    triangles_.push_back(mesh_->facet_corners.vertex(j + 1));
                 }
             }
             nb_triangles_ = index_t(triangles_.size() / 3);
 
             // Step 2: get vertices stars
             //    Step 2.1: get one-ring neighborhood
-            vector<vector<index_t> > stars2(mesh_->nb_vertices());
+            vector<vector<index_t> > stars2(mesh_->vertices.nb());
             for(index_t t = 0; t < nb_triangles_; t++) {
                 stars2[triangles_[3 * t]].push_back(t);
                 stars2[triangles_[3 * t + 1]].push_back(t);
@@ -1565,7 +1572,7 @@ namespace {
             }
 
             //   Step 2.2: get two-ring neighborhood
-            stars_.resize(mesh_->nb_vertices());
+            stars_.resize(mesh_->vertices.nb());
             for(index_t i = 0; i < stars2.size(); i++) {
                 vector<index_t> Ni;
                 for(index_t j = 0; j < stars2[i].size(); j++) {
@@ -1589,12 +1596,12 @@ namespace {
 
             // Step 3: create search structure
             mesh_vertices_ = Delaunay::create(dimension_, "NN");
-            index_t nb_vertices = mesh_->nb_vertices();
+            index_t nb_vertices = mesh_->vertices.nb();
             vector<double> mesh_vertices(nb_vertices * dimension_);
             for(index_t i = 0; i < nb_vertices; i++) {
                 for(index_t coord = 0; coord < dimension_; coord++) {
                     mesh_vertices[i * dimension_ + coord] =
-                        mesh_->vertex_ptr(i)[coord];
+                        mesh_->vertices.point_ptr(i)[coord];
                 }
             }
             mesh_vertices_->set_vertices(
@@ -2115,7 +2122,7 @@ namespace {
                         part(i).set_exact_predicates(RVD_.exact_predicates());
                         part(i).set_volumetric(volumetric());
                     }
-                    if(mesh_->nb_tets() != 0) {
+                    if(mesh_->cells.nb() != 0) {
                         for(index_t i = 0; i < nb_parts(); ++i) {
                             part(i).set_tetrahedra_range(
                                 tet_ptr[i], tet_ptr[i + 1]
@@ -2311,9 +2318,11 @@ namespace GEO {
             mode, seed_is_locked
         );
         if(volumetric()) {
-            RDT.assign_tet_mesh(dimension(),embedding,simplices,true);
+            RDT.cells.assign_tet_mesh(dimension(),embedding,simplices,true);
         } else {
-            RDT.assign_triangle_mesh(dimension(),embedding,simplices,true);
+            RDT.facets.assign_triangle_mesh(
+                dimension(),embedding,simplices,true
+            );
             mesh_repair(RDT); // Needed to reorient triangles
         }
     }

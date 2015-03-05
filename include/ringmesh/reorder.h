@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
@@ -88,7 +88,7 @@ namespace RINGMesh {
         }
         bool operator()( int32 i1, int32 i2 ) const
         {
-            return mesh_.vertex_ptr( i1 )[COORD] < mesh_.vertex_ptr( i2 )[COORD] ;
+            return mesh_.vertices.point_ptr( i1 )[COORD] < mesh_.vertices.point_ptr( i2 )[COORD] ;
         }
         const GEO::Mesh& mesh_ ;
     } ;
@@ -114,8 +114,8 @@ namespace RINGMesh {
         float64 center( int32 t ) const
         {
             float64 result = 0.0 ;
-            for( uint32 p = 0; p < mesh_.cell_nb_vertices( t ); p++ ) {
-                result += mesh_.vertex_ptr( mesh_.cell_vertex_index( t, p ) )[COORD] ;
+            for( uint32 p = 0; p < mesh_.cells.nb_vertices( t ); p++ ) {
+                result += mesh_.vertices.point_ptr( mesh_.cells.vertex( t, p ) )[COORD] ;
             }
             return result ;
         }
@@ -273,8 +273,8 @@ namespace RINGMesh {
         const GEO::Mesh& M,
         std::vector< int32 >& sorted_indices )
     {
-        sorted_indices.resize( M.nb_vertices() ) ;
-        for( uint32 i = 0; i < M.nb_vertices(); i++ ) {
+        sorted_indices.resize( M.vertices.nb() ) ;
+        for( uint32 i = 0; i < M.vertices.nb(); i++ ) {
             sorted_indices[i] = i ;
         }
         HilbertSort< GEO::Mesh, Morton_mesh_vertex_cmp >( M,
@@ -285,8 +285,8 @@ namespace RINGMesh {
         const GEO::Mesh& M,
         std::vector< int32 >& sorted_indices )
     {
-        sorted_indices.resize( M.nb_cells() ) ;
-        for( uint32 i = 0; i < M.nb_cells(); i++ ) {
+        sorted_indices.resize( M.cells.nb() ) ;
+        for( uint32 i = 0; i < M.cells.nb(); i++ ) {
             sorted_indices[i] = i ;
         }
         HilbertSort< GEO::Mesh, Morton_cell_cmp >( M, sorted_indices ) ;

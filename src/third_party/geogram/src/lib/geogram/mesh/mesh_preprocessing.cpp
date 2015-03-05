@@ -45,7 +45,6 @@
 
 #include <geogram/mesh/mesh_preprocessing.h>
 #include <geogram/mesh/mesh_topology.h>
-#include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/index.h>
 #include <geogram/mesh/mesh_halfedges.h>
@@ -73,14 +72,14 @@ namespace {
      */
     double signed_volume(const Mesh& M, index_t f) {
         double result = 0;
-        index_t v0 = M.corner_vertex_index(M.facet_begin(f));
+        index_t v0 = M.facet_corners.vertex(M.facets.corners_begin(f));
         const vec3& p0 = Geom::mesh_vertex(M, v0);
         for(index_t c =
-            M.facet_begin(f) + 1; c + 1 < M.facet_end(f); c++
+            M.facets.corners_begin(f) + 1; c + 1 < M.facets.corners_end(f); c++
         ) {
-            index_t v1 = M.corner_vertex_index(c);
+            index_t v1 = M.facet_corners.vertex(c);
             const vec3& p1 = Geom::mesh_vertex(M, v1);
-            index_t v2 = M.corner_vertex_index(c + 1);
+            index_t v2 = M.facet_corners.vertex(c + 1);
             const vec3& p2 = Geom::mesh_vertex(M, v2);
             result += dot(p0, cross(p1, p2));
         }
@@ -97,14 +96,17 @@ namespace GEO {
             return;
         }
         vector<vec3> border_normal;
-        border_normal.assign(M.nb_vertices(), vec3(0.0, 0.0, 0.0));
-        for(index_t f = 0; f < M.nb_facets(); f++) {
+        border_normal.assign(M.vertices.nb(), vec3(0.0, 0.0, 0.0));
+        for(index_t f = 0; f < M.facets.nb(); f++) {
             vec3 N = Geom::mesh_facet_normal(M, f);
-            for(index_t c1 = M.facet_begin(f); c1 < M.facet_end(f); c1++) {
-                if(M.corner_adjacent_facet(c1) == -1) {
-                    index_t c2 = M.next_around_facet(f, c1);
-                    index_t v1 = M.corner_vertex_index(c1);
-                    index_t v2 = M.corner_vertex_index(c2);
+            for(
+                index_t c1 = M.facets.corners_begin(f);
+                c1 < M.facets.corners_end(f); c1++
+            ) {
+                if(M.facet_corners.adjacent_facet(c1) == NO_FACET) {
+                    index_t c2 = M.facets.next_corner_around_facet(f, c1);
+                    index_t v1 = M.facet_corners.vertex(c1);
+                    index_t v2 = M.facet_corners.vertex(c2);
                     const vec3& p1 = Geom::mesh_vertex(M, v1);
                     const vec3& p2 = Geom::mesh_vertex(M, v2);
                     vec3 Ne = cross(p2 - p1, N);
@@ -113,7 +115,7 @@ namespace GEO {
                 }
             }
         }
-        for(index_t v = 0; v < M.nb_vertices(); v++) {
+        for(index_t v = 0; v < M.vertices.nb(); v++) {
             double s = length(border_normal[v]);
             if(s > 0.0) {
                 Geom::mesh_vertex_ref(M, v) +=
@@ -125,22 +127,24 @@ namespace GEO {
     // == connected components and small facets ================================
 
     void remove_small_facets(Mesh& M, double min_facet_area) {
-        vector<index_t> remove_f(M.nb_facets(), 0);
-        for(index_t f = 0; f < M.nb_facets(); f++) {
-            if(M.facet_area(f, 3) < min_facet_area) {
+        vector<index_t> remove_f(M.facets.nb(), 0);
+        for(index_t f = 0; f < M.facets.nb(); f++) {
+            if(Geom::mesh_facet_area(M, f, 3) < min_facet_area) {
                 remove_f[f] = 1;
             }
         }
-        M.remove_facets(remove_f);
+        M.facets.delete_elements(remove_f);
     }
 
-    void remove_small_connected_components(Mesh& M, double min_area, index_t min_facets) {
+    void remove_small_connected_components(
+        Mesh& M, double min_area, index_t min_facets
+    ) {
         vector<index_t> component;
         index_t nb_components = get_connected_components(M, component);
         vector<double> comp_area(nb_components, 0.0);
         vector<index_t> comp_facets(nb_components, 0);
-        for(index_t f = 0; f < M.nb_facets(); f++) {
-            comp_area[component[f]] += M.facet_area(f, 3);
+        for(index_t f = 0; f < M.facets.nb(); f++) {
+            comp_area[component[f]] += Geom::mesh_facet_area(M, f, 3);
             ++comp_facets[component[f]];
         }
 
@@ -161,8 +165,8 @@ namespace GEO {
         }
 
         index_t nb_f_remove = 0;
-        vector<index_t> remove_f(M.nb_facets(), 0);
-        for(index_t f = 0; f < M.nb_facets(); ++f) {
+        vector<index_t> remove_f(M.facets.nb(), 0);
+        for(index_t f = 0; f < M.facets.nb(); ++f) {
             if(
                 comp_area[component[f]] < min_area || 
                 comp_facets[component[f]] < min_facets
@@ -171,7 +175,7 @@ namespace GEO {
                 nb_f_remove++;
             }
         }
-        M.remove_facets(remove_f);
+        M.facets.delete_elements(remove_f);
 
         Logger::out("Components")
             << "Removed " << nb_remove << " connected components"
@@ -185,19 +189,19 @@ namespace GEO {
         vector<index_t> component;
         index_t nb_components = get_connected_components(M, component);
         vector<double> comp_signed_volume(nb_components, 0.0);
-        for(index_t f = 0; f < M.nb_facets(); ++f) {
+        for(index_t f = 0; f < M.facets.nb(); ++f) {
             comp_signed_volume[component[f]] += signed_volume(M, f);
         }
-        for(index_t f = 0; f < M.nb_facets(); ++f) {
+        for(index_t f = 0; f < M.facets.nb(); ++f) {
             if(comp_signed_volume[component[f]] < 0.0) {
-                MeshMutator::flip_facet(M, f);
+                M.facets.flip(f);
             }
         }
     }
 
     void invert_normals(Mesh& M) {
-        for(index_t f = 0; f < M.nb_facets(); ++f) {
-            MeshMutator::flip_facet(M, f);
+        for(index_t f = 0; f < M.facets.nb(); ++f) {
+            M.facets.flip(f);
         }
     }
 }

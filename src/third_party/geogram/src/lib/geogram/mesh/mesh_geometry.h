@@ -48,6 +48,8 @@
 
 #include <geogram/basic/common.h>
 #include <geogram/mesh/mesh.h>
+#include <geogram/basic/geometry.h>
+#include <geogram/basic/geometry_nd.h>
 
 /**
  * \file geogram/mesh/mesh_geometry.h
@@ -63,11 +65,11 @@ namespace GEO {
          * \param[in] M the mesh
          * \param[in] v the index of the vertex
          * \return a const reference to the \p v%th vertex of a mesh
-         * \pre M.dimension() >= 3
+         * \pre M.vertices.dimension() >= 3
          */
         inline const vec3& mesh_vertex(const Mesh& M, index_t v) {
-            geo_debug_assert(M.dimension() >= 3);
-            return *(const vec3*) (M.vertex_ptr(v));
+            geo_debug_assert(M.vertices.dimension() >= 3);
+            return *(const vec3*) (M.vertices.point_ptr(v));
         }
 
         /**
@@ -75,11 +77,11 @@ namespace GEO {
          * \param[in] M the mesh
          * \param[in] v the index of the vertex
          * \return a reference to the \p v%th vertex of a mesh
-         * \pre M.dimension() >= 3
+         * \pre M.vertices.dimension() >= 3
          */
         inline vec3& mesh_vertex_ref(const Mesh& M, index_t v) {
-            geo_debug_assert(M.dimension() >= 3);
-            return *(vec3*) (M.vertex_ptr(v));
+            geo_debug_assert(M.vertices.dimension() >= 3);
+            return *(vec3*) (M.vertices.point_ptr(v));
         }
 
         /**
@@ -87,10 +89,10 @@ namespace GEO {
          * \param[in] M the mesh
          * \param[in] c the index of a corner incident to the vertex
          * \return a reference to the \p v%th vertex of a mesh
-         * \pre M.dimension() >= 3
+         * \pre M.vertices.dimension() >= 3
          */
         inline const vec3& mesh_corner_vertex(const Mesh& M, index_t c) {
-            return mesh_vertex(M, M.corner_vertex_index(c));
+            return mesh_vertex(M, M.facet_corners.vertex(c));
         }
 
         /**
@@ -98,10 +100,10 @@ namespace GEO {
          * \param[in] M the mesh
          * \param[in] c the index of a corner incident to the vertex
          * \return a const reference to the \p v%th vertex of a mesh
-         * \pre M.dimension() >= 3
+         * \pre M.vertices.dimension() >= 3
          */
         inline vec3& mesh_corner_vertex_ref(Mesh& M, index_t c) {
-            return mesh_vertex_ref(M, M.corner_vertex_index(c));
+            return mesh_vertex_ref(M, M.facet_corners.vertex(c));
         }
 
         /**
@@ -109,11 +111,11 @@ namespace GEO {
          * \param[in] M the mesh
          * \param[in] v the index of the vertex
          * \return a const reference to the stored normal of vertex \p v
-         * \pre M.dimension() >= 6
+         * \pre M.vertices.dimension() >= 6
          */
         inline const vec3& mesh_vertex_normal(const Mesh& M, index_t v) {
-            geo_debug_assert(M.dimension() >= 6);
-            return *(const vec3*) (M.vertex_ptr(v) + 3);
+            geo_debug_assert(M.vertices.dimension() >= 6);
+            return *(const vec3*) (M.vertices.point_ptr(v) + 3);
         }
 
         /**
@@ -121,13 +123,49 @@ namespace GEO {
          * \param[in] M the mesh
          * \param[in] v the index of the vertex
          * \return a reference to the stored normal of vertex \p v
-         * \pre M.dimension() >= 6
+         * \pre M.vertices.dimension() >= 6
          */
         inline vec3& mesh_vertex_normal_ref(const Mesh& M, index_t v) {
-            geo_debug_assert(M.dimension() >= 6);
-            return *(vec3*) (M.vertex_ptr(v) + 3);
+            geo_debug_assert(M.vertices.dimension() >= 6);
+            return *(vec3*) (M.vertices.point_ptr(v) + 3);
         }
 
+
+        /**
+         * \brief Computes the area of a facet.
+         * \param[in] M a const reference to the mesh
+         * \param[in] f index of the facet
+         * \param[in] dim dimension that will be used to compute the area
+         * \return the area of the facet, obtained by considering the
+         *  \p dim first coordinates of the vertices only
+         */
+        inline double mesh_facet_area(const Mesh& M, index_t f, index_t dim=0) {
+            geo_debug_assert(dim <= M.vertices.dimension());
+            if(dim == 0) {
+                dim = M.vertices.dimension();
+            }
+            double result = 0.0;
+            // Check for empty facet, should not happen.
+            if(M.facets.corners_end(f) == M.facets.corners_begin(f)) {
+                return result;
+            }
+            const double* p0 = M.vertices.point_ptr(
+                M.facet_corners.vertex(M.facets.corners_begin(f))
+            );
+            for(
+                index_t i = M.facets.corners_begin(f) + 1;
+                i + 1 < M.facets.corners_end(f); i++
+            ) {
+                result += GEO::Geom::triangle_area(
+                    p0,
+                    M.vertices.point_ptr(M.facet_corners.vertex(i)),
+                    M.vertices.point_ptr(M.facet_corners.vertex(i + 1)),
+                    coord_index_t(dim)
+                );
+            }
+            return result;
+        }
+        
         /**
          * \brief Computes the normal to a mesh facet.
          * \param[in] M the mesh
@@ -136,9 +174,9 @@ namespace GEO {
          * \pre dimension >= 3
          */
         inline vec3 mesh_facet_normal(const Mesh& M, index_t f) {
-            index_t v1 = M.corner_vertex_index(M.facet_begin(f));
-            index_t v2 = M.corner_vertex_index(M.facet_begin(f) + 1);
-            index_t v3 = M.corner_vertex_index(M.facet_begin(f) + 2);
+            index_t v1 = M.facet_corners.vertex(M.facets.corners_begin(f));
+            index_t v2 = M.facet_corners.vertex(M.facets.corners_begin(f) + 1);
+            index_t v3 = M.facet_corners.vertex(M.facets.corners_begin(f) + 2);
             const vec3& p1 = mesh_vertex(M, v1);
             const vec3& p2 = mesh_vertex(M, v2);
             const vec3& p3 = mesh_vertex(M, v3);
@@ -155,7 +193,8 @@ namespace GEO {
         inline vec3 mesh_facet_center(const Mesh& M, index_t f) {
             vec3 result(0.0, 0.0, 0.0);
             double count = 0.0;
-            for(index_t c = M.facet_begin(f); c < M.facet_end(f); ++c) {
+            for(index_t c = M.facets.corners_begin(f);
+                c < M.facets.corners_end(f); ++c) {
                 result += Geom::mesh_corner_vertex(M, c);
                 count += 1.0;
             }
@@ -170,10 +209,10 @@ namespace GEO {
          * \return the 3d centroid of tetrahedron \p t in \p M
          */
         inline vec3 mesh_tet_center(const Mesh& M, index_t t) {
-            index_t iv1 = M.tet_vertex_index(t, 0);
-            index_t iv2 = M.tet_vertex_index(t, 1);
-            index_t iv3 = M.tet_vertex_index(t, 2);
-            index_t iv4 = M.tet_vertex_index(t, 3);
+            index_t iv1 = M.cells.vertex(t, 0);
+            index_t iv2 = M.cells.vertex(t, 1);
+            index_t iv3 = M.cells.vertex(t, 2);
+            index_t iv4 = M.cells.vertex(t, 3);
             const vec3& v1 = Geom::mesh_vertex(M, iv1);
             const vec3& v2 = Geom::mesh_vertex(M, iv2);
             const vec3& v3 = Geom::mesh_vertex(M, iv3);
@@ -188,13 +227,13 @@ namespace GEO {
          * \return a vector originating at \p c1 and 
          *  pointing at the next corner around the facet
          *  incident to \p c1
-         * \pre M.is_triangulated()
+         * \pre M.facets.are_simplices()
          */
         inline vec3 mesh_corner_vector(const Mesh& M, index_t c1) {
-            geo_debug_assert(M.is_triangulated());
-            index_t c2 = M.next_around_facet(c1/3, c1);
-            index_t v1 = M.corner_vertex_index(c1);
-            index_t v2 = M.corner_vertex_index(c2);
+            geo_debug_assert(M.facets.are_simplices());
+            index_t c2 = M.facets.next_corner_around_facet(c1/3, c1);
+            index_t v1 = M.facet_corners.vertex(c1);
+            index_t v2 = M.facet_corners.vertex(c2);
             return mesh_vertex(M,v2) - mesh_vertex(M,v1);
         }
 
@@ -205,7 +244,7 @@ namespace GEO {
          * \param[in] c a corner index in \p M
          * \return the angle between the facet that contains c and
          *  the facet adjacent to c
-         * \pre M.is_triangulated() && M.corner_adjacent_facet(c) != -1
+         * \pre M.facets.are_simplices() && M.corner_adjacent_facet(c) != -1
          */
         double GEOGRAM_API mesh_dihedral_angle(const Mesh& M, index_t c);
 
@@ -216,17 +255,17 @@ namespace GEO {
          * \param[in] M the mesh
          * \param[in] dim the dimension to be used for the computation
          * \return the area of the mesh \p M computed in dim \p d.
-         * \pre dim <= M.dimension()
+         * \pre dim <= M.vertices.dimension()
          */
-        double GEOGRAM_API mesh_area(const Mesh& M, coord_index_t dim);
+        double GEOGRAM_API mesh_area(const Mesh& M, index_t dim);
 
         /**
          * \brief Computes the total surface area of a mesh.
          * \param[in] M the mesh
-         * \return the area of the mesh computed in M.dimension() dim.
+         * \return the area of the mesh computed in M.vertices.dimension() dim.
          */
         inline double mesh_area(const Mesh& M) {
-            return mesh_area(M, M.dimension());
+            return mesh_area(M, M.vertices.dimension());
         }
     }
 
@@ -264,16 +303,6 @@ namespace GEO {
      * \return The length of \p M%'s bounding box diagonal
      */
     double GEOGRAM_API bbox_diagonal(const Mesh& M);
-
-    /**
-     * \brief Computes the bounding box of a single precision mesh.
-     * \param[in] M the mesh
-     * \param[out] xyzmin the lower corner of the bounding box
-     * \param[out] xyzmax the upper corner of the bounding box
-     */
-    void GEOGRAM_API get_bbox(
-        const SinglePrecisionMesh& M, double* xyzmin, double* xyzmax
-    );
 
     /**
      * \brief Normalizes and scales the stored vertex normals by a factor.

@@ -47,6 +47,7 @@
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/numerics/predicates.h>
+#include <geogram/basic/geometry_nd.h>
 
 namespace {
 
@@ -61,14 +62,14 @@ namespace {
     void get_facet_bbox(
         const Mesh& M, Box& B, index_t f
     ) {
-        index_t c = M.facet_begin(f);
-        const double* p = M.vertex_ptr(M.corner_vertex_index(c));
+        index_t c = M.facets.corners_begin(f);
+        const double* p = M.vertices.point_ptr(M.facet_corners.vertex(c));
         for(coord_index_t coord = 0; coord < 3; ++coord) {
             B.xyz_min[coord] = p[coord];
             B.xyz_max[coord] = p[coord];
         }
-        for(++c; c < M.facet_end(f); ++c) {
-            p = M.vertex_ptr(M.corner_vertex_index(c));
+        for(++c; c < M.facets.corners_end(f); ++c) {
+            p = M.vertices.point_ptr(M.facet_corners.vertex(c));
             for(coord_index_t coord = 0; coord < 3; ++coord) {
                 B.xyz_min[coord] = geo_min(B.xyz_min[coord], p[coord]);
                 B.xyz_max[coord] = geo_max(B.xyz_max[coord], p[coord]);
@@ -86,13 +87,13 @@ namespace {
     void get_tet_bbox(
         const Mesh& M, Box& B, index_t t
     ) {
-        const double* p = M.vertex_ptr(M.tet_vertex_index(t,0));
+        const double* p = M.vertices.point_ptr(M.cells.vertex(t,0));
         for(coord_index_t coord = 0; coord < 3; ++coord) {
             B.xyz_min[coord] = p[coord];
             B.xyz_max[coord] = p[coord];
         }
         for(index_t lv=1; lv<4; ++lv) {
-            p = M.vertex_ptr(M.tet_vertex_index(t,lv));
+            p = M.vertices.point_ptr(M.cells.vertex(t,lv));
             for(coord_index_t coord = 0; coord < 3; ++coord) {
                 B.xyz_min[coord] = geo_min(B.xyz_min[coord], p[coord]);
                 B.xyz_max[coord] = geo_max(B.xyz_max[coord], p[coord]);
@@ -180,13 +181,13 @@ namespace {
         vec3& nearest_p,
         double& squared_dist
     ) {
-        geo_debug_assert(M.facet_size(f) == 3);
-        index_t c = M.facet_begin(f);
-        const vec3& p1 = Geom::mesh_vertex(M, M.corner_vertex_index(c));
+        geo_debug_assert(M.facets.nb_vertices(f) == 3);
+        index_t c = M.facets.corners_begin(f);
+        const vec3& p1 = Geom::mesh_vertex(M, M.facet_corners.vertex(c));
         ++c;
-        const vec3& p2 = Geom::mesh_vertex(M, M.corner_vertex_index(c));
+        const vec3& p2 = Geom::mesh_vertex(M, M.facet_corners.vertex(c));
         ++c;
-        const vec3& p3 = Geom::mesh_vertex(M, M.corner_vertex_index(c));
+        const vec3& p3 = Geom::mesh_vertex(M, M.facet_corners.vertex(c));
         double lambda1, lambda2, lambda3;  // barycentric coords, not used.
         squared_dist = Geom::point_triangle_squared_distance(
             p, p1, p2, p3, nearest_p, lambda1, lambda2, lambda3
@@ -276,10 +277,10 @@ namespace {
         // Inexact mode is not implemented yet.
         geo_argused(exact);
 
-        const vec3& p0 = Geom::mesh_vertex(M, M.tet_vertex_index(t,0));
-        const vec3& p1 = Geom::mesh_vertex(M, M.tet_vertex_index(t,0));
-        const vec3& p2 = Geom::mesh_vertex(M, M.tet_vertex_index(t,0));
-        const vec3& p3 = Geom::mesh_vertex(M, M.tet_vertex_index(t,0));
+        const vec3& p0 = Geom::mesh_vertex(M, M.cells.vertex(t,0));
+        const vec3& p1 = Geom::mesh_vertex(M, M.cells.vertex(t,1));
+        const vec3& p2 = Geom::mesh_vertex(M, M.cells.vertex(t,2));
+        const vec3& p3 = Geom::mesh_vertex(M, M.cells.vertex(t,3));
 
         Sign s[4];
         s[0] = PCK::orient_3d(p, p1, p2, p3);
@@ -302,17 +303,17 @@ namespace GEO {
         Mesh& M, bool reorder
     ) :
         mesh_(M) {
-        geo_assert(mesh_.is_triangulated());
+        geo_assert(mesh_.facets.are_simplices());
         if(reorder) {
             mesh_reorder(mesh_, MESH_ORDER_MORTON);
         }
         bboxes_.resize(
             max_node_index(
-                1, 0, mesh_.nb_facets()
+                1, 0, mesh_.facets.nb()
             ) + 1 // <-- this is because size == max_index + 1 !!!
         );
         init_bboxes_recursive(
-            mesh_, bboxes_, 1, 0, mesh_.nb_facets(), get_facet_bbox
+            mesh_, bboxes_, 1, 0, mesh_.facets.nb(), get_facet_bbox
         );
     }
 
@@ -327,7 +328,7 @@ namespace GEO {
         // For a large mesh (20M facets) this gains up to 10%
         // performance as compared to picking nearest_f randomly.
         index_t b = 0;
-        index_t e = mesh_.nb_facets() - 1;
+        index_t e = mesh_.facets.nb() - 1;
         index_t n = 1;
         while(e != b + 1) {
             index_t m = b + (e - b) / 2;
@@ -346,7 +347,9 @@ namespace GEO {
         }
         nearest_f = b;
 
-        index_t v = mesh_.corner_vertex_index(mesh_.facet_begin(nearest_f));
+        index_t v = mesh_.facet_corners.vertex(
+            mesh_.facets.corners_begin(nearest_f)
+        );
         nearest_point = Geom::mesh_vertex(mesh_, v);
         sq_dist = Geom::distance2(p, nearest_point);
     }
@@ -418,17 +421,17 @@ namespace GEO {
 /****************************************************************************/
 
     MeshTetsAABB::MeshTetsAABB(Mesh& M, bool reorder) : mesh_(M) {
-        geo_assert(mesh_.is_tetrahedralized());
+        geo_assert(mesh_.cells.are_simplices());
         if(reorder) {
             mesh_reorder(mesh_, MESH_ORDER_MORTON);
         }
         bboxes_.resize(
             max_node_index(
-                1, 0, mesh_.nb_tets()
+                1, 0, mesh_.cells.nb()
             ) + 1 // <-- this is because size == max_index + 1 !!!
         );
         init_bboxes_recursive(
-            mesh_, bboxes_, 1, 0, mesh_.nb_tets(), get_tet_bbox
+            mesh_, bboxes_, 1, 0, mesh_.cells.nb(), get_tet_bbox
         );
     }
 

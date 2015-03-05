@@ -378,8 +378,9 @@ namespace GEO {
         /**
          * \brief Computes the 4d orientation test.
          * \details Given four lifted points p0', p1', p2', and p3' in 
-         * R^4, tests if the lifted point p4' in R^4 lies below or above 
-         * the hyperplance passing through the four points p0', p1', p2', and p3'.
+         *  R^4, tests if the lifted point p4' in R^4 lies below or above 
+         *  the hyperplance passing through the four points 
+         *  p0', p1', p2', and p3'.
          *  This version does not apply symbolic perturbation.
          *  The first three coordinates and the
          *  fourth one are specified in separate arguments for each vertex.
