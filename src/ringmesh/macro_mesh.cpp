@@ -36,8 +36,7 @@
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
-*/
-
+ */
 
 #include <ringmesh/macro_mesh.h>
 #include <ringmesh/boundary_model.h>
@@ -93,7 +92,10 @@ namespace RINGMesh {
         return global_vertex_indices_.size() ;
     }
 
-    index_t MacroMeshVertices::global_vertex_id( const MacroMesh& mm, index_t mesh, index_t v ) const
+    index_t MacroMeshVertices::global_vertex_id(
+        const MacroMesh& mm,
+        index_t mesh,
+        index_t v ) const
     {
         if( !initialized_ ) {
             const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
@@ -102,14 +104,15 @@ namespace RINGMesh {
         return global_vertex_indices_[vertex2mesh_[mesh] + v] ;
     }
 
-    const vec3& MacroMeshVertices::global_vertex( const MacroMesh& mm, index_t global_v ) const
+    const vec3& MacroMeshVertices::global_vertex(
+        const MacroMesh& mm,
+        index_t global_v ) const
     {
         if( !initialized_ ) {
             const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
         }
         return unique_vertices_[global_v] ;
     }
-
 
     void MacroMeshFacets::initialize( const MacroMesh& mm )
     {
@@ -119,14 +122,15 @@ namespace RINGMesh {
         for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
             const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
             std::vector< index_t > surface_proccessed ;
-            GEO::Attribute< index_t > attribute( cur_mesh.facets.attributes(), surface_att_name ) ;
+            GEO::Attribute< index_t > attribute( cur_mesh.facets.attributes(),
+                surface_att_name ) ;
             for( index_t f = 0; f < cur_mesh.facets.nb(); f++ ) {
                 index_t surface_id = attribute[f] ;
                 if( surface2mesh_[surface_id] != Surface::NO_ID ) continue ;
                 if( !Utils::contains( surface_proccessed, surface_id ) ) {
                     surface_proccessed.push_back( surface_id ) ;
                 }
-                surface_ptr_[surface_id+1]++ ;
+                surface_ptr_[surface_id + 1]++ ;
             }
             for( index_t s = 0; s < surface_proccessed.size(); s++ ) {
                 surface2mesh_[surface_proccessed[s]] = m ;
@@ -134,7 +138,7 @@ namespace RINGMesh {
         }
 
         for( index_t s = 0; s < mm.model().nb_surfaces(); s++ ) {
-            surface_ptr_[s+1] += surface_ptr_[s] ;
+            surface_ptr_[s + 1] += surface_ptr_[s] ;
         }
 
         surface_facets_.resize( surface_ptr_.back() ) ;
@@ -142,7 +146,8 @@ namespace RINGMesh {
         std::vector< index_t > surface_facet_index( mm.model().nb_surfaces(), 0 ) ;
         for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
             const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
-            GEO::Attribute< index_t > attribute( cur_mesh.facets.attributes(), surface_att_name ) ;
+            GEO::Attribute< index_t > attribute( cur_mesh.facets.attributes(),
+                surface_att_name ) ;
             for( index_t f = 0; f < cur_mesh.facets.nb(); f++ ) {
                 index_t surface_id = attribute[f] ;
                 if( surface2mesh_[surface_id] != m ) continue ;
@@ -162,7 +167,10 @@ namespace RINGMesh {
         return surface2mesh_[s] ;
     }
 
-    index_t MacroMeshFacets::surface_facet( const MacroMesh& mm, index_t s, index_t f ) const
+    index_t MacroMeshFacets::surface_facet(
+        const MacroMesh& mm,
+        index_t s,
+        index_t f ) const
     {
         if( !initialized_ ) {
             const_cast< MacroMeshFacets* >( this )->initialize( mm ) ;
@@ -170,7 +178,9 @@ namespace RINGMesh {
         return surface_facet( surface_begin( s ) + f ) ;
     }
 
-    index_t MacroMeshFacets::nb_surface_facets( const MacroMesh& mm, index_t s ) const
+    index_t MacroMeshFacets::nb_surface_facets(
+        const MacroMesh& mm,
+        index_t s ) const
     {
         if( !initialized_ ) {
             const_cast< MacroMeshFacets* >( this )->initialize( mm ) ;
@@ -181,12 +191,12 @@ namespace RINGMesh {
     void MacroMeshCells::initialize( const MacroMesh* mm )
     {
         mm_ = mm ;
-        cell2mesh_.reserve( mm_->nb_meshes()+1 ) ;
+        cell2mesh_.reserve( mm_->nb_meshes() + 1 ) ;
         cell2mesh_.push_back( 0 ) ;
         index_t total_adjacents = 0 ;
         for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_->mesh( m ) ;
-            nb_cells_ +=  mesh.cells.nb() ;
+            nb_cells_ += mesh.cells.nb() ;
             cell2mesh_.push_back( nb_cells_ ) ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                 total_adjacents += mesh.cells.nb_facets( c ) ;
@@ -208,7 +218,8 @@ namespace RINGMesh {
                             v++ ) {
                             index_t vertex_id = mm_->global_vertex_id( m,
                                 mesh.cells.facet_vertex( c, f, v ) ) ;
-                            cells_around_vertex[vertex_id].push_back( cell2mesh_[m] + c ) ;
+                            cells_around_vertex[vertex_id].push_back(
+                                cell2mesh_[m] + c ) ;
                         }
                     }
                     global_cell_adjacents_.push_back( adj ) ;
@@ -226,8 +237,7 @@ namespace RINGMesh {
                 for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                     index_t adj = mesh.cells.adjacent( c, f ) ;
                     if( adj == GEO::NO_CELL ) {
-                        index_t prev_vertex_id = mm_->global_vertex_id(
-                            m,
+                        index_t prev_vertex_id = mm_->global_vertex_id( m,
                             mesh.cells.facet_vertex( c, f, 0 ) ) ;
                         std::vector< index_t >& prev_cells =
                             cells_around_vertex[prev_vertex_id] ;
@@ -239,9 +249,10 @@ namespace RINGMesh {
                                 mesh.cells.facet_vertex( c, f, v ) ) ;
                             std::vector< index_t >& cells =
                                 cells_around_vertex[vertex_id] ;
-                            intersection.erase( std::set_intersection( prev_cells.begin(),
-                                prev_cells.end(), cells.begin(), cells.end(),
-                                intersection.begin() ), intersection.end() ) ;
+                            intersection.erase(
+                                std::set_intersection( prev_cells.begin(),
+                                    prev_cells.end(), cells.begin(), cells.end(),
+                                    intersection.begin() ), intersection.end() ) ;
                             if( intersection.size() < 2 ) break ;
                             prev_cells = intersection ;
                         }
@@ -292,9 +303,9 @@ namespace RINGMesh {
             const_cast< MacroMeshCells* >( this )->initialize( mm ) ;
         }
         for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
-            if( global_index < cell2mesh_[m+1] ) return m ;
+            if( global_index < cell2mesh_[m + 1] ) return m ;
         }
-        ringmesh_assert_not_reached ;
+        ringmesh_assert_not_reached;
         return dummy_index_t ;
     }
     index_t MacroMeshCells::nb_cells( const MacroMesh* mm ) const
@@ -304,7 +315,6 @@ namespace RINGMesh {
         }
         return nb_cells_ ;
     }
-
 
     MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
         :
@@ -317,6 +327,83 @@ namespace RINGMesh {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;
         }
+    }
+
+    MacroMesh::MacroMesh( const MacroMesh& mm )
+        :
+            model_( mm.model() ),
+            meshes_( mm.model().nb_regions(), nil ),
+            well_vertices_( mm.model().nb_regions() ),
+            facet_aabb_( mm.model().nb_regions(), nil ),
+            tet_aabb_( mm.model().nb_regions(), nil )
+    {
+        for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
+            meshes_[r] = new GEO::Mesh( 3 ) ;
+            GEO::Mesh& copy_mesh = *meshes_[r] ;
+            const GEO::Mesh& copied_mesh = mm.mesh( r ) ;
+            //GEO::MeshVertices vertices =  copied_mesh.vertices ;
+
+            for( index_t v = 0; v < copied_mesh.vertices.nb(); v++ ) {
+                copy_mesh.vertices.create_vertex(
+                    copied_mesh.vertices.point_ptr( v ) ) ;
+            }
+
+            for( index_t f = 0; f < copied_mesh.facets.nb(); f++ ) {
+
+                GEO::vector<index_t> vertices(copied_mesh.facets.nb_vertices(f)) ;
+                for(index_t v = 0 ; v < vertices.size() ; v++ ) {
+                    vertices[v] = copied_mesh.facets.vertex(f,v) ;
+                }
+                copy_mesh.facets.create_polygon(vertices) ;
+                for(index_t v = copied_mesh.facets.corners_begin(f) ; v < copied_mesh.facets.corners_end(f) ; v++ ) {
+                    copy_mesh.facet_corners.set_adjacent_facet(v,copied_mesh.facet_corners.adjacent_facet(v)) ;
+                }
+
+            }
+
+            //for(index_t fc = )
+
+            for( index_t c = 0; c < copied_mesh.cells.nb(); c++ ) {
+                if( copied_mesh.cells.type( c ) == GEO::MESH_TET ) {
+                    copy_mesh.cells.create_tet( copied_mesh.cells.vertex( c, 0 ),
+                        copied_mesh.cells.vertex( c, 1 ),
+                        copied_mesh.cells.vertex( c, 2 ),
+                        copied_mesh.cells.vertex( c, 3 ) ) ;
+
+                } else if( copied_mesh.cells.type( c ) == GEO::MESH_HEX ) {
+                    copy_mesh.cells.create_hex( copied_mesh.cells.vertex( c, 0 ),
+                        copied_mesh.cells.vertex( c, 1 ),
+                        copied_mesh.cells.vertex( c, 2 ),
+                        copied_mesh.cells.vertex( c, 3 ),
+                        copied_mesh.cells.vertex( c, 4 ),
+                        copied_mesh.cells.vertex( c, 5 ),
+                        copied_mesh.cells.vertex( c, 6 ),
+                        copied_mesh.cells.vertex( c, 7 ) ) ;
+
+                } else if( copied_mesh.cells.type( c ) == GEO::MESH_PYRAMID ) {
+                    copy_mesh.cells.create_pyramid( copied_mesh.cells.vertex( c, 0 ),
+                        copied_mesh.cells.vertex( c, 1 ),
+                        copied_mesh.cells.vertex( c, 2 ),
+                        copied_mesh.cells.vertex( c, 3 ),
+                        copied_mesh.cells.vertex( c, 4 )) ;
+                } else if( copied_mesh.cells.type( c ) == GEO::MESH_PRISM ) {
+                    copy_mesh.cells.create_prism( copied_mesh.cells.vertex( c, 0 ),
+                        copied_mesh.cells.vertex( c, 1 ),
+                        copied_mesh.cells.vertex( c, 2 ),
+                        copied_mesh.cells.vertex( c, 3 ),
+                        copied_mesh.cells.vertex( c, 4 ),
+                        copied_mesh.cells.vertex( c, 5 )) ;
+                } else {
+                    ringmesh_assert_not_reached ;
+                }
+
+                for(index_t f = copied_mesh.cells.facets_begin(c) ; f <  copied_mesh.cells.facets_end(c  ) ; f++) {
+                    copy_mesh.cell_facets.set_adjacent_cell(f,copied_mesh.cell_facets.adjacent_cell(f)) ;
+                }
+            }
+            //TODO: Attribute copy
+        }
+
     }
 
     MacroMesh::~MacroMesh()

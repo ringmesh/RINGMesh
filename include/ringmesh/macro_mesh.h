@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
@@ -152,6 +152,7 @@ namespace RINGMesh {
     class RINGMESH_API MacroMesh {
     public:
         MacroMesh( const BoundaryModel& model, index_t dim = 3 ) ;
+        MacroMesh( const MacroMesh& mm) ;
         virtual ~MacroMesh() ;
 
         //    __  __     _   _            _
