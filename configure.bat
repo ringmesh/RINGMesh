@@ -122,7 +122,7 @@ cd %~dp0
 :: Generate build tree
 
 echo.
-echo ============= GRGMesh ============
+echo ============= RINGMesh ============
 echo.
 
 
@@ -131,11 +131,11 @@ echo ============= Creating build system for %opsys% ============
 echo.
 
 
-if not exist build\grgmesh\%opsys% (
-    mkdir build\grgmesh\%opsys%
+if not exist build\ringmesh\%opsys% (
+    mkdir build\ringmesh\%opsys%
 )
 
-cd build\grgmesh\%opsys%
+cd build\ringmesh\%opsys%
 %CMAKE_EXECUTABLE% ..\..\.. %cmake_debug_options% %cmake_generator_options% -DGEOGRAM_PLATFORM:STRING=%opsys%
 
 
@@ -144,9 +144,9 @@ cd %~dp0
 
 
 echo.
-echo ============== GRGMesh build configured ==================
+echo ============== RINGMesh build configured ==================
 echo.
-echo To build GRGMesh:
+echo To build RINGMesh:
 echo - go to build/%opsys%
 echo - run 'cmake --build . --config=Release(or Debug) [--target=target_to_build]'
 echo.

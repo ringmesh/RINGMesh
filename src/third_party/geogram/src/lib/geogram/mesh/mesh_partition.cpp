@@ -45,7 +45,6 @@
 
 #include <geogram/mesh/mesh_partition.h>
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/basic/permutation.h>
 #include <stack>
@@ -69,13 +68,13 @@ namespace {
         index_t nb_parts
     ) {
         mesh_reorder(M, MESH_ORDER_HILBERT);
-        index_t part_size = M.nb_facets() / nb_parts;
+        index_t part_size = M.facets.nb() / nb_parts;
         facet_ptr.resize(nb_parts + 1);
         facet_ptr[0] = 0;
         for(index_t i = 1; i < nb_parts; i++) {
             facet_ptr[i] = facet_ptr[i - 1] + part_size;
         }
-        facet_ptr[nb_parts] = M.nb_facets();
+        facet_ptr[nb_parts] = M.facets.nb();
     }
 
     /**
@@ -96,14 +95,14 @@ namespace {
         index_t nb_parts
     ) {
         partition_Hilbert_surface(M, facet_ptr, nb_parts);
-        if(M.nb_tets() != 0) {
-            index_t part_size = M.nb_tets() / nb_parts;
+        if(M.cells.nb() != 0) {
+            index_t part_size = M.cells.nb() / nb_parts;
             tet_ptr.resize(nb_parts + 1);
             tet_ptr[0] = 0;
             for(index_t i = 1; i < nb_parts; i++) {
                 tet_ptr[i] = tet_ptr[i - 1] + part_size;
             }
-            tet_ptr[nb_parts] = M.nb_tets();
+            tet_ptr[nb_parts] = M.cells.nb();
         }
     }
 
@@ -121,10 +120,10 @@ namespace {
     ) {
         const index_t UNVISITED = index_t(-1);
 
-        vector<index_t> new_index(M.nb_facets(), UNVISITED);
+        vector<index_t> new_index(M.facets.nb(), UNVISITED);
         std::stack<index_t> S;
         index_t new_cur_index = 0;
-        for(index_t f = 0; f < M.nb_facets(); f++) {
+        for(index_t f = 0; f < M.facets.nb(); f++) {
             if(new_index[f] == UNVISITED) {
                 facet_ptr.push_back(new_cur_index);
                 new_index[f] = new_cur_index;
@@ -134,9 +133,10 @@ namespace {
             while(!S.empty()) {
                 index_t f = S.top();
                 S.pop();
-                for(index_t c = M.facet_begin(f); c < M.facet_end(f); ++c) {
-                    signed_index_t g = M.corner_adjacent_facet(c);
-                    if(g != -1 && new_index[g] == UNVISITED) {
+                for(index_t c = M.facets.corners_begin(f);
+                    c < M.facets.corners_end(f); ++c) {
+                    index_t g = M.facet_corners.adjacent_facet(c);
+                    if(g != NO_FACET && new_index[g] == UNVISITED) {
                         new_index[g] = new_cur_index;
                         new_cur_index++;
                         S.push(index_t(g));
@@ -144,10 +144,10 @@ namespace {
                 }
             }
         }
-        geo_assert(new_cur_index == M.nb_facets());
+        geo_assert(new_cur_index == M.facets.nb());
         facet_ptr.push_back(new_cur_index);
         Permutation::invert(new_index);
-        mesh_permute_facets(M, new_index);
+        M.facets.permute_elements(new_index);
     }
 
     /**
@@ -164,10 +164,10 @@ namespace {
     ) {
         const index_t UNVISITED = index_t(-1);
 
-        vector<index_t> new_index(M.nb_tets(), UNVISITED);
+        vector<index_t> new_index(M.cells.nb(), UNVISITED);
         std::stack<index_t> S;
         index_t new_cur_index = 0;
-        for(index_t t = 0; t < M.nb_tets(); ++t) {
+        for(index_t t = 0; t < M.cells.nb(); ++t) {
             if(new_index[t] == UNVISITED) {
                 tet_ptr.push_back(new_cur_index);
                 new_index[t] = new_cur_index;
@@ -178,8 +178,8 @@ namespace {
                 index_t t1 = S.top();
                 S.pop();
                 for(index_t lf = 0; lf < 4; lf++) {
-                    signed_index_t t2 = M.tet_adjacent(t1, lf);
-                    if(t2 != -1 && new_index[t2] == UNVISITED) {
+                    index_t t2 = M.cells.adjacent(t1, lf);
+                    if(t2 != NO_CELL && new_index[t2] == UNVISITED) {
                         new_index[t2] = new_cur_index;
                         new_cur_index++;
                         S.push(index_t(t2));
@@ -187,10 +187,10 @@ namespace {
                 }
             }
         }
-        geo_assert(new_cur_index == M.nb_tets());
+        geo_assert(new_cur_index == M.cells.nb());
         tet_ptr.push_back(new_cur_index);
         Permutation::invert(new_index);
-        mesh_permute_tets(M, new_index);
+        M.cells.permute_elements(new_index);
     }
 }
 
@@ -231,7 +231,7 @@ namespace GEO {
                 break;
             case MESH_PARTITION_CONNECTED_COMPONENTS:
                 partition_surface_connected_components(M, facet_ptr);
-                if(M.nb_tets() != 0) {
+                if(M.cells.nb() != 0) {
                     partition_volume_connected_components(M, tet_ptr);
                 }
                 break;

@@ -49,7 +49,7 @@
 #include <geogram/basic/common.h>
 
 #if defined(GEO_OS_LINUX) && defined(GEO_OPENMP)
-#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 4)
+#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 4) && !defined(GEO_OS_ANDROID)
 #include <parallel/algorithm>
 #define GEO_USE_GCC_PARALLEL_STL
 #endif

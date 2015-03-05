@@ -55,13 +55,15 @@
 /**
  * \file geogram/voronoi/generic_RVD_cell.h
  * \brief Internal representation of polyhedra for GEO::GenericVoronoiDiagram.
- * \note This file contains functions and classes used by the internal implementation
- *  of GEO::GenericVoronoiDiagram. They are not meant to be used directly by client 
- *  code.
+ * \note This file contains functions and classes used by the 
+ *  internal implementation of GEO::GenericVoronoiDiagram. 
+ *  They are not meant to be used directly by client code.
  */
 
 namespace GEOGen {
 
+    using GEO::Mesh;
+    
     /**
      * \brief Computes the intersection between a set of halfspaces.
      * \note This is an internal implementation class used by
@@ -220,7 +222,7 @@ namespace GEOGen {
          * \param[in] symbolic if true, symbolic information is copied
          */
         void initialize_from_mesh_tetrahedron(
-            const Mesh<double>* mesh, index_t t, bool symbolic
+            const Mesh* mesh, index_t t, bool symbolic
         );
 
         /**
@@ -242,7 +244,7 @@ namespace GEOGen {
          */
         template <int DIM>
         signed_index_t clip_by_plane(
-            const Mesh<double>* mesh, const Delaunay* delaunay,
+            const Mesh* mesh, const Delaunay* delaunay,
             index_t i, index_t j,
             bool exact, bool symbolic
         ) {
@@ -1041,7 +1043,7 @@ namespace GEOGen {
          */
         template <int DIM>
         void get_conflict_list(
-            const Mesh<double>* mesh, const Delaunay* delaunay,
+            const Mesh* mesh, const Delaunay* delaunay,
             index_t i, index_t j, bool exact,
             index_t& conflict_begin, index_t& conflict_end
         ) {
@@ -1166,7 +1168,7 @@ namespace GEOGen {
          */
         template <int DIM>
         void propagate_conflict_list(
-            const Mesh<double>* mesh, const Delaunay* delaunay,
+            const Mesh* mesh, const Delaunay* delaunay,
             index_t first_t,
             index_t i, index_t j, bool exact,
             index_t& conflict_begin, index_t& conflict_end
@@ -1226,7 +1228,7 @@ namespace GEOGen {
          */
         template <int DIM>
         Sign side(
-            const Mesh<double>* mesh, const Delaunay* delaunay,
+            const Mesh* mesh, const Delaunay* delaunay,
             const GEOGen::Vertex& v,
             index_t i, index_t j, bool exact
         ) const {
@@ -1267,7 +1269,7 @@ namespace GEOGen {
          * \note Only dimension=3 is implemented for now
          */
         Sign side_exact(
-            const Mesh<double>* mesh, const Delaunay* delaunay,
+            const Mesh* mesh, const Delaunay* delaunay,
             const GEOGen::Vertex& v,
             const double* pi, const double* pj,
             coord_index_t dim,
@@ -1426,13 +1428,14 @@ namespace GEOGen {
          *  in the tetrahedron
          */
         static index_t global_facet_id(
-            const Mesh<double>* mesh, index_t t, index_t lf
+            const Mesh* mesh, index_t t, index_t lf
         ) {
-            signed_index_t t2 = mesh->tet_adjacent(t, lf);
-            // This test also handles the border (t2==-1) correctly.
-            if(t2 > signed_index_t(t)) {
-                signed_index_t lf2 = mesh->find_tet_adjacent(index_t(t2), t);
-                geo_debug_assert(lf2 != -1);
+            index_t t2 = mesh->cells.tet_adjacent(t, lf);
+            if(t2 != GEO::NO_CELL && t2 > t) {
+                index_t lf2 = mesh->cells.find_tet_adjacent(
+                    t2, t
+                );
+                geo_debug_assert(lf2 != GEO::NO_FACET);
                 return index_t(4 * t2 + lf2);
             }
             return 4 * t + lf;

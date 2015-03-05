@@ -48,13 +48,14 @@
 
 #include <geogram/basic/common.h>
 #include <geogram/voronoi/generic_RVD_vertex.h>
+#include <geogram/basic/attributes.h>
 
 /**
  * \file geogram/voronoi/generic_RVD_polygon.h
  * \brief Internal representation of polygons for GenericVoronoiDiagram.
- * \note This file contains functions and classes used by the internal implementation
- *  of GEO::GenericVoronoiDiagram. They are not meant to be used directly by client 
- *  code.
+ * \note This file contains functions and classes used by the internal 
+ *  implementation of GEO::GenericVoronoiDiagram. 
+ *  They are not meant to be used directly by client code.
  */
 
 namespace GEOGen {
@@ -153,9 +154,13 @@ namespace GEOGen {
          * \param[in] mesh the mesh from which the facet is copied
          * \param[in] f the index of the facet in \p mesh
          * \param[in] symbolic if true, symbolic information is copied
+         * \param[in] vertex_weight a reference to a vertex attribute
+         *  that stores weights. If not bound, then 1.0 is used for
+         *  the weights.
          */
         void initialize_from_mesh_facet(
-            const Mesh<double>* mesh, index_t f, bool symbolic
+            const Mesh* mesh, index_t f, bool symbolic,
+            GEO::Attribute<double>& vertex_weight
         );
 
         /**
@@ -180,7 +185,7 @@ namespace GEOGen {
         template <int DIM>
         void clip_by_plane(
             Polygon& target, PointAllocator& target_intersections,
-            const Mesh<double>* mesh, const Delaunay* delaunay,
+            const Mesh* mesh, const Delaunay* delaunay,
             index_t i, index_t j,
             bool exact, bool symbolic
         ) {
@@ -366,7 +371,7 @@ namespace GEOGen {
         template <int DIM>
         void clip_by_plane_exact(
             Polygon& target, PointAllocator& target_intersections,
-            const Mesh<double>* mesh, const Delaunay* delaunay,
+            const Mesh* mesh, const Delaunay* delaunay,
             index_t i, index_t j
         ) {
             target.clear();
@@ -443,7 +448,7 @@ namespace GEOGen {
          *  symbolic perturbations).
          */
         static Sign side_exact(
-            const Mesh<double>* mesh, const Delaunay* delaunay,
+            const Mesh* mesh, const Delaunay* delaunay,
             const Vertex& q, const double* pi, const double* pj,
             coord_index_t dim
         );

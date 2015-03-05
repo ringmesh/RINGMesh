@@ -303,9 +303,15 @@ namespace GEO {
          * \arg capa required capacity of the expansion.
          * \relates GEO::expansion
          */
+#ifdef CPPCHECK
+        // cppcheck does not understand that the result
+        // of alloca() is passed to the placement syntax
+        // of operator new.
+    expansion& new_expansion_on_stack(index_t capa);         
+#else
 #define new_expansion_on_stack(capa)                           \
     (new (alloca(expansion::bytes(capa)))expansion(capa))
-
+#endif
         /**
          * \brief Gets the base address of an expansion.
          * \details Some additional space can be allocated and
@@ -787,10 +793,7 @@ namespace GEO {
         /**
          * \brief Computes the required capacity of an expansion
          *  to store an exact 2x2 determinant.
-         * \param[in] a11 a coefficient of the determinant
-         * \param[in] a12 a coefficient of the determinant
-         * \param[in] a21 a coefficient of the determinant
-         * \param[in] a22 a coefficient of the determinant
+         * \param[in] a11,a12,a21,a22 coefficients of the determinant
          * \return the required capacity of an expansion to store
          *  the exact determinant \p a11 * \p a22 - \p a21 * \p a12
          */
@@ -808,10 +811,7 @@ namespace GEO {
          *  (should not be used by client code).
          * \details Do not use directly, use expansion_det2x2()
          * macro instead.
-         * \param[in] a11 a coefficient of the determinant
-         * \param[in] a12 a coefficient of the determinant
-         * \param[in] a21 a coefficient of the determinant
-         * \param[in] a22 a coefficient of the determinant
+         * \param[in] a11,a12,a21,a22 coefficients of the determinant
          * \return the new value of this expansion, with
          *  the exact determinant \p a11 * \p a22 - \p a21 * \p a12
          * \pre capacity() >= det_2x2_capacity(a11,a12,,a21,a22)
@@ -824,15 +824,8 @@ namespace GEO {
         /**
          * \brief Computes the required capacity of an expansion
          *  to store an exact 3x3 determinant.
-         * \param[in] a11 a coefficient of the determinant
-         * \param[in] a12 a coefficient of the determinant
-         * \param[in] a13 a coefficient of the determinant
-         * \param[in] a21 a coefficient of the determinant
-         * \param[in] a22 a coefficient of the determinant
-         * \param[in] a23 a coefficient of the determinant
-         * \param[in] a31 a coefficient of the determinant
-         * \param[in] a32 a coefficient of the determinant
-         * \param[in] a33 a coefficient of the determinant
+         * \param[in] a11,a12,a13,a21,a22,a23,a31,a32,a33
+         *   coefficients of the determinant
          * \return the required capacity of an expansion to store
          *  the exact value of the determinant
          */
@@ -857,15 +850,8 @@ namespace GEO {
          *  (should not be used by client code).
          * \details Do not use directly, use expansion_det3x3()
          * macro instead.
-         * \param[in] a11 a coefficient of the determinant
-         * \param[in] a12 a coefficient of the determinant
-         * \param[in] a13 a coefficient of the determinant
-         * \param[in] a21 a coefficient of the determinant
-         * \param[in] a22 a coefficient of the determinant
-         * \param[in] a23 a coefficient of the determinant
-         * \param[in] a31 a coefficient of the determinant
-         * \param[in] a32 a coefficient of the determinant
-         * \param[in] a33 a coefficient of the determinant
+         * \param[in] a11,a12,a13,a21,a22,a23,a31,a32,a33
+         *   coefficients of the determinant
          * \return the new value of this expansion, with
          *  the exact 3x3 determinant
          * \pre capacity() >=
@@ -881,12 +867,8 @@ namespace GEO {
          * \brief Computes the required capacity of an expansion
          *  to store an exact 3x3 determinant where the
          *  first row is 1 1 1.
-         * \param[in] a21 a coefficient of the determinant
-         * \param[in] a22 a coefficient of the determinant
-         * \param[in] a23 a coefficient of the determinant
-         * \param[in] a31 a coefficient of the determinant
-         * \param[in] a32 a coefficient of the determinant
-         * \param[in] a33 a coefficient of the determinant
+         * \param[in] a21,a22,a23,a31,a32,a33 coefficients 
+         *  of the determinant
          * \return the required capacity of an expansion to store
          *  the exact value of the determinant
          */
@@ -905,12 +887,8 @@ namespace GEO {
          *  where the first row is 1 1 1(should not be used by client code).
          * \details Do not use directly, use expansion_det_111_3x3()
          * macro instead.
-         * \param[in] a21 a coefficient of the determinant
-         * \param[in] a22 a coefficient of the determinant
-         * \param[in] a23 a coefficient of the determinant
-         * \param[in] a31 a coefficient of the determinant
-         * \param[in] a32 a coefficient of the determinant
-         * \param[in] a33 a coefficient of the determinant
+         * \param[in] a21,a22,a23,a31,a32,a33 coefficients 
+         *  of the determinant
          * \return the new value of this expansion, with
          *  the exact 3x3 determinant
          * \pre capacity() >= det__111_2x3capacity(a21,a22,a23,a31,a32,a33)

@@ -64,8 +64,9 @@ namespace GEO {
         use_RVC_centroids_ = true;
         show_iterations_ = false;
         constrained_cvt_ = false;
-        dimension_ = (dim != 0) ? dim : mesh->dimension();
-        geo_assert(dimension_ <= mesh->dimension());
+        dimension_ =
+            (dim != 0) ? dim : coord_index_t(mesh->vertices.dimension());
+        geo_assert(index_t(dimension_) <= mesh->vertices.dimension());
         is_projection_ = true;
         delaunay_ = Delaunay::create(dimension_, delaunay);
         RVD_ = RestrictedVoronoiDiagram::create(delaunay_, mesh);
@@ -82,8 +83,9 @@ namespace GEO {
         use_RVC_centroids_ = true;
         show_iterations_ = false;
         constrained_cvt_ = false;
-        dimension_ = (dim != 0) ? dim : mesh->dimension();
-        geo_assert(dimension_ <= mesh->dimension());
+        dimension_ =
+            (dim != 0) ? dim : coord_index_t(mesh->vertices.dimension());
+        geo_assert(index_t(dimension_) <= mesh->vertices.dimension());
         is_projection_ = (R3_embedding.size() == 0);
         delaunay_ = Delaunay::create(dimension_, delaunay);
         if(is_projection_) {
@@ -213,7 +215,7 @@ namespace GEO {
         }
 
         mesh->clear();
-        mesh->assign_triangle_mesh(3, vertices_R3, triangles, true);
+        mesh->facets.assign_triangle_mesh(3, vertices_R3, triangles, true);
 
         if(multinerve) {
             mesh_postprocess_RDT(*mesh);
@@ -263,7 +265,7 @@ namespace GEO {
             geo_assert_not_reached;
         }
         mesh->clear();
-        mesh->assign_tet_mesh(3, vertices_R3, tets, true);
+        mesh->cells.assign_tet_mesh(3, vertices_R3, tets, true);
     }
 
     void CentroidalVoronoiTesselation::Newton_iterations(

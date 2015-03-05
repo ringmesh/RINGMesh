@@ -9,8 +9,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     MESSAGE("DEBUG! SUFFIX = ${SUFF}")
 endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
-set(GRGMESH_PROJECT GRGMesh${SUFF})
-project(${GRGMESH_PROJECT})
+set(RINGMESH_PROJECT RINGMesh${SUFF})
+project(${RINGMESH_PROJECT})
 
 
 function(aux_source_directories var folder)
@@ -32,16 +32,16 @@ ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
 
 
 # Files
-AUX_SOURCE_DIRECTORY(src/grgmesh SOURCES)
+AUX_SOURCE_DIRECTORY(src/ringmesh SOURCES)
 AUX_SOURCE_DIRECTORY(src/third_party/zlib SOURCES)
 INCLUDE_DIRECTORIES(include)
 
 # Geogram
 INCLUDE_DIRECTORIES(src/third_party/geogram/src/lib)
 IF(WIN32)
-    ADD_DEFINITIONS(-DGRGMESH_EXPORTS)
+    ADD_DEFINITIONS(-DRINGMESH_EXPORTS)
 	ADD_DEFINITIONS(-DGEO_DYNAMIC_LIBS)
-    aux_source_directories(SOURCES "Header Files" include/grgmesh)
+    aux_source_directories(SOURCES "Header Files" include/ringmesh)
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}/lib/${CMAKE_BUILD_TYPE})
 ELSE(WIN32)
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
@@ -94,24 +94,24 @@ ENDIF(UNIX)
 
 # Output library
 SET(LIBRARY_OUTPUT_PATH lib)
-add_library(${GRGMESH_PROJECT} SHARED ${SOURCES})
-target_link_libraries(${GRGMESH_PROJECT} geogram)
+add_library(${RINGMESH_PROJECT} SHARED ${SOURCES})
+target_link_libraries(${RINGMESH_PROJECT} geogram)
 
 # Additional link libraries
 IF(${USE_MG_TETRA})
-  TARGET_LINK_LIBRARIES(${GRGMESH_PROJECT} meshgems mg-tetra)
+  TARGET_LINK_LIBRARIES(${RINGMESH_PROJECT} meshgems mg-tetra)
 ENDIF(${USE_MG_TETRA})
 
 IF(WIN32)
-    target_link_libraries(${GRGMESH_PROJECT} psapi)
+    target_link_libraries(${RINGMESH_PROJECT} psapi)
 ENDIF(WIN32)
 
 
 if(UNIX) 
-	install(DIRECTORY include/grgmesh DESTINATION include)
+	install(DIRECTORY include/ringmesh DESTINATION include)
 	install(DIRECTORY include/geogram DESTINATION include)
 		
-	install(TARGETS ${GRGMESH_PROJECT}
+	install(TARGETS ${RINGMESH_PROJECT}
 		LIBRARY DESTINATION lib
 		RUNTIME DESTINATION lib 
 		CONFIGURATIONS All)	

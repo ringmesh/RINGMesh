@@ -460,5 +460,12 @@ namespace GEO {
     }
 }
 
+#else 
+
+// Declare a dummy variable so that
+// MSVC does not complain that it 
+// generated an empty object file.
+int dummy_process_unix_compiled = 1;
+
 #endif
 

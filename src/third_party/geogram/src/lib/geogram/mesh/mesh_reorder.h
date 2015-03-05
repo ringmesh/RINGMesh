@@ -90,42 +90,6 @@ namespace GEO {
     );
 
     /**
-     * \brief Applies the specified permutation to the vertices
-     *  of a mesh.
-     * \param[in] M the mesh to be permuted.
-     * \param[in,out] permutation the i-th vertex is
-     *  replaced by the permutation[i]-th vertex.
-     * \note: permutation is modified by the function.
-     */
-    void GEOGRAM_API mesh_permute_vertices(
-        Mesh& M, vector<index_t>& permutation
-    );
-
-    /**
-     * \brief Applies the specified permutation to the facets
-     *  of a mesh.
-     * \param[in] M the mesh to be permute. It needs to be triangulated.
-     * \param[in,out] permutation the i-th facet is replaced by
-     *   the permutation[i]-th facet.
-     * \note: permutation is modified by the function.
-     */
-    void GEOGRAM_API mesh_permute_facets(
-        Mesh& M, vector<index_t>& permutation
-    );
-
-    /**
-     * \brief Applies the specified permutation to the tetrahedra
-     *  of a mesh.
-     * \param[in] M the mesh to be permute.
-     * \param[in,out] permutation the i-th tetrahedron is replaced by
-     *   the permutation[i]-th tetrahedron.
-     * \note: permutation is modified by the function.
-     */
-    void GEOGRAM_API mesh_permute_tets(
-        Mesh& M, vector<index_t>& permutation
-    );
-
-    /**
      * \brief Computes the Hilbert order for a set of 3D points.
      * \details The implementation is inspired by:
      *  - Christophe Delage and Olivier Devillers. Spatial Sorting. 

@@ -120,8 +120,8 @@ namespace GEO {
         index_t nb_vertices, const double* vertices
     ) {
         index_t nb_borders = 0;
-        for(index_t c=0; c<constraints_->nb_corners(); ++c) {
-            if(constraints_->corner_adjacent_facet(c) == -1) {
+        for(index_t c=0; c<constraints_->facet_corners.nb(); ++c) {
+            if(constraints_->facet_corners.adjacent_facet(c) == NO_FACET) {
                 ++nb_borders;
             }
         }
@@ -173,15 +173,15 @@ namespace GEO {
         //
 
         tetgen_in_.numberofpoints = int(
-            constraints_->nb_vertices()+nb_vertices
+            constraints_->vertices.nb()+nb_vertices
         );
         tetgen_in_.pointlist = new double[3*tetgen_in_.numberofpoints];
         Memory::copy(
-            &tetgen_in_.pointlist[0], constraints_->vertex_ptr(0), 
-            constraints_->nb_vertices()*3*sizeof(double)
+            &tetgen_in_.pointlist[0], constraints_->vertices.point_ptr(0), 
+            constraints_->vertices.nb()*3*sizeof(double)
         );
         Memory::copy(
-            &tetgen_in_.pointlist[3*constraints_->nb_vertices()],
+            &tetgen_in_.pointlist[3*constraints_->vertices.nb()],
             vertices, nb_vertices*3*sizeof(double)
         );
         
@@ -191,27 +191,30 @@ namespace GEO {
 
         // All the polygons are allocated in one go, in a contiguous array.
         GEO_3rdParty::tetgenio::polygon* polygons = 
-            new GEO_3rdParty::tetgenio::polygon[constraints_->nb_facets()];
-        tetgen_in_.numberoffacets = int(constraints_->nb_facets()) ;
-        tetgen_in_.facetlist = new GEO_3rdParty::tetgenio::facet[tetgen_in_.numberoffacets];
-        for(index_t f=0; f<constraints_->nb_facets(); ++f) {
+            new GEO_3rdParty::tetgenio::polygon[constraints_->facets.nb()];
+        tetgen_in_.numberoffacets = int(constraints_->facets.nb()) ;
+        tetgen_in_.facetlist =
+            new GEO_3rdParty::tetgenio::facet[tetgen_in_.numberoffacets];
+        for(index_t f=0; f<constraints_->facets.nb(); ++f) {
             GEO_3rdParty::tetgenio::facet& F = tetgen_in_.facetlist[f];
             GEO_3rdParty::tetgenio::init(&F);
             F.numberofpolygons = 1;
             F.polygonlist = &polygons[f];
             GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[0];
             GEO_3rdParty::tetgenio::init(&P) ;
-            P.numberofvertices = int(constraints_->facet_size(f));
+            P.numberofvertices = int(constraints_->facets.nb_vertices(f));
             P.vertexlist = reinterpret_cast<int*>(
-                const_cast<Mesh*>(constraints_)->corner_vertex_index_ptr(
-                    constraints_->facet_begin(f)
+                const_cast<Mesh*>(constraints_)->facet_corners.vertex_index_ptr(
+                    constraints_->facets.corners_begin(f)
                 )
             );
             F.numberofholes = 0 ;
             F.holelist = nil ;
         }
         try {
-            GEO_3rdParty::tetrahedralize(&tetgen_args_, &tetgen_in_, &tetgen_out_);
+            GEO_3rdParty::tetrahedralize(
+                &tetgen_args_, &tetgen_in_, &tetgen_out_
+            );
         } catch(std::exception& e) {
             Logger::err("DelaunayTetgen")
                 << "Encountered a problem..." << e.what() << std::endl;
@@ -294,6 +297,13 @@ namespace GEO {
 
 
 }
+
+#else
+
+// Declare a dummy variable so that
+// MSVC does not complain that it 
+// generated an empty object file.
+int dummy_delaunay_tetgen_compiled = 1;
 
 #endif
 

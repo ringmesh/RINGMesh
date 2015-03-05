@@ -1,6 +1,5 @@
 /*
- *  Copyright (c) 2012-2014, Bruno Levy
- *  All rights reserved.
+ *  Copyright (c) 2012-2014, Bruno Levy All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
@@ -45,13 +44,12 @@
 
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_private.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_repair.h>
-#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/index.h>
 #include <geogram/basic/permutation.h>
 #include <geogram/basic/process.h>
+#include <geogram/basic/logger.h>
 #include <algorithm>
 
 namespace {
@@ -85,11 +83,13 @@ namespace {
     /************************************************************************/
 
     /**
-     * \brief Exposes an interface compatible with the requirement
+     * \brief Used by VertexMesh.
+     * \details Exposes an interface compatible with the requirement
      * of Hilbert sort templates for a raw array of vertices.
      */
     class VertexArray {
     public:
+
         /**
          * \brief Constructs a new VertexArray.
          * \param[in] base address of the points
@@ -110,7 +110,7 @@ namespace {
          * \param[in] i the index of the point
          * \return a const pointer to the coordinates of the vertex
          */
-        const double* vertex_ptr(index_t i) const {
+        const double* point_ptr(index_t i) const {
             geo_debug_assert(i < nb_vertices_);
             return base_ + i * stride_;
         }
@@ -121,6 +121,27 @@ namespace {
         index_t nb_vertices_;
     };
 
+
+    /**
+     * \brief Exposes an interface compatible with the requirement
+     * of Hilbert sort templates for a raw array of vertices.
+     */
+    class VertexMesh {
+    public:
+        /**
+         * \brief Constructs a new VertexMesh.
+         * \param[in] base address of the points
+         * \param[in] stride number of doubles between
+         *  two consecutive points
+         */
+        VertexMesh(
+            index_t nb_vertices,
+            const double* base, index_t stride
+        ) : vertices(nb_vertices, base, stride) {
+        }
+        VertexArray vertices;
+    };
+    
     /************************************************************************/
 
     /**
@@ -162,8 +183,8 @@ namespace {
          */
         bool operator() (index_t i1, index_t i2) {
             return
-                mesh_.vertex_ptr(i1)[COORD] <
-                mesh_.vertex_ptr(i2)[COORD];
+                mesh_.vertices.point_ptr(i1)[COORD] <
+                mesh_.vertices.point_ptr(i2)[COORD];
         }
 
         const MESH& mesh_;
@@ -197,8 +218,8 @@ namespace {
          */
         bool operator() (index_t i1, index_t i2) {
             return
-                mesh_.vertex_ptr(i1)[COORD] >
-                mesh_.vertex_ptr(i2)[COORD];
+                mesh_.vertices.point_ptr(i1)[COORD] >
+                mesh_.vertices.point_ptr(i2)[COORD];
         }
 
         const MESH& mesh_;
@@ -234,8 +255,8 @@ namespace {
          */
         bool operator() (index_t i1, index_t i2) {
             return
-                mesh_.vertex_ptr(i1)[COORD] <
-                mesh_.vertex_ptr(i2)[COORD];
+                mesh_.vertices.point_ptr(i1)[COORD] <
+                mesh_.vertices.point_ptr(i2)[COORD];
         }
 
         const MESH& mesh_;
@@ -268,11 +289,11 @@ namespace {
         double center(index_t f) const {
             double result = 0.0;
             for(
-                index_t c = mesh_.facet_begin(f);
-                c < mesh_.facet_end(f); c++
+                index_t c = mesh_.facets.corners_begin(f);
+                c < mesh_.facets.corners_end(f); ++c
             ) {
-                result += mesh_.vertex_ptr(
-                    mesh_.corner_vertex_index(c)
+                result += mesh_.vertices.point_ptr(
+                    mesh_.facet_corners.vertex(c)
                 )[COORD];
             }
             return result;
@@ -415,8 +436,8 @@ namespace {
             for(
                 index_t lv = 0; lv < 4; ++lv
             ) {
-                result += mesh_.vertex_ptr(
-                    mesh_.tet_vertex_index(t, lv)
+                result += mesh_.vertices.point_ptr(
+                    mesh_.cells.vertex(t, lv)
                 )[COORD];
             }
             return result;
@@ -598,12 +619,14 @@ namespace {
 
         /**
          * \brief Sorts a sequence of elements spatially.
-         * \details This function does an indirect sort, in the sense that a sequence 
-         *  of indices that refer to the elements is sorted. This function uses a 
-         *  multithreaded implementation.
+         * \details This function does an indirect sort, 
+         *  in the sense that a sequence 
+         *  of indices that refer to the elements is sorted. 
+         *  This function uses a multithreaded implementation.
          * \param[in] M the mesh in which the elements to sort reside
          * \param[in] b an interator to the first index to be sorted
-         * \param[in] e an interator one position past the last index to be sorted
+         * \param[in] e an interator one position past the last index 
+         *  to be sorted
          * \param[in] limit subsequences smaller than limit are left unsorted
          */
         HilbertSort(
@@ -717,8 +740,8 @@ namespace {
     void hilbert_vsort(
         const Mesh& M, vector<index_t>& sorted_indices
     ) {
-        sorted_indices.resize(M.nb_vertices());
-        for(index_t i = 0; i < M.nb_vertices(); i++) {
+        sorted_indices.resize(M.vertices.nb());
+        for(index_t i = 0; i < M.vertices.nb(); i++) {
             sorted_indices[i] = i;
         }
         HilbertSort<Hilbert_vcmp, Mesh>(
@@ -739,8 +762,8 @@ namespace {
     void hilbert_fsort(
         const Mesh& M, vector<index_t>& sorted_indices
     ) {
-        sorted_indices.resize(M.nb_facets());
-        for(index_t i = 0; i < M.nb_facets(); i++) {
+        sorted_indices.resize(M.facets.nb());
+        for(index_t i = 0; i < M.facets.nb(); i++) {
             sorted_indices[i] = i;
         }
         HilbertSort<Hilbert_fcmp, Mesh>(
@@ -760,8 +783,8 @@ namespace {
     void hilbert_tsort(
         const Mesh& M, vector<index_t>& sorted_indices
     ) {
-        sorted_indices.resize(M.nb_tets());
-        for(index_t i = 0; i < M.nb_tets(); i++) {
+        sorted_indices.resize(M.cells.nb());
+        for(index_t i = 0; i < M.cells.nb(); i++) {
             sorted_indices[i] = i;
         }
         HilbertSort<Hilbert_tcmp, Mesh>(
@@ -781,8 +804,8 @@ namespace {
     void morton_vsort(
         const Mesh& M, vector<index_t>& sorted_indices
     ) {
-        sorted_indices.resize(M.nb_vertices());
-        for(index_t i = 0; i < M.nb_vertices(); i++) {
+        sorted_indices.resize(M.vertices.nb());
+        for(index_t i = 0; i < M.vertices.nb(); i++) {
             sorted_indices[i] = i;
         }
         HilbertSort<Morton_vcmp, Mesh>(
@@ -802,8 +825,8 @@ namespace {
     void morton_fsort(
         const Mesh& M, vector<index_t>& sorted_indices
     ) {
-        sorted_indices.resize(M.nb_facets());
-        for(index_t i = 0; i < M.nb_facets(); i++) {
+        sorted_indices.resize(M.facets.nb());
+        for(index_t i = 0; i < M.facets.nb(); i++) {
             sorted_indices[i] = i;
         }
         HilbertSort<Morton_fcmp, Mesh>(
@@ -823,8 +846,8 @@ namespace {
     void morton_tsort(
         const Mesh& M, vector<index_t>& sorted_indices
     ) {
-        sorted_indices.resize(M.nb_tets());
-        for(index_t i = 0; i < M.nb_tets(); i++) {
+        sorted_indices.resize(M.cells.nb());
+        for(index_t i = 0; i < M.cells.nb(); i++) {
             sorted_indices[i] = i;
         }
         HilbertSort<Morton_tcmp, Mesh>(
@@ -873,8 +896,8 @@ namespace {
             );
         }
 
-        VertexArray M(nb_vertices, vertices, stride);
-        HilbertSort<Hilbert_vcmp, VertexArray>(
+        VertexMesh M(nb_vertices, vertices, stride);
+        HilbertSort<Hilbert_vcmp, VertexMesh>(
             M, m, e
         );
 
@@ -888,105 +911,9 @@ namespace {
 
 namespace GEO {
 
-    void mesh_permute_vertices(Mesh& M, vector<index_t>& permutation) {
-        Permutation::apply(
-            M.vertex_ptr(0), permutation,
-            index_t(M.dimension() * sizeof(double))
-        );
-        if(M.has_weights()) {
-            Permutation::apply(
-                MeshMutator::weights(M), permutation
-            );
-        }
-        Permutation::invert(permutation);
-        for(index_t c = 0; c < M.nb_corners(); c++) {
-            M.set_corner_vertex_index(
-                c, permutation[M.corner_vertex_index(c)]
-            );
-        }
-        for(index_t t = 0; t < M.nb_tets(); ++t) {
-            for(index_t lv = 0; lv < 4; ++lv) {
-                M.set_tet_vertex_index(
-                    t, lv, permutation[M.tet_vertex_index(t, lv)]
-                );
-            }
-        }
-        M.update_cached_variables();
-    }
-
-    void mesh_permute_facets(Mesh& M, vector<index_t>& permutation) {
-        geo_assert(M.is_triangulated());
-        Permutation::apply(
-            &(MeshMutator::corner_vertices(M)[0]),
-            permutation,
-            index_t(sizeof(index_t) * 3)
-        );
-
-        Permutation::apply(
-            &(MeshMutator::corner_adjacent_facets(M)[0]),
-            permutation,
-            index_t(sizeof(index_t) * 3)
-        );
-
-        if(M.has_attribute(MESH_FACET_REGION)) {
-            Permutation::apply(
-                &(MeshMutator::facet_regions(M)[0]),
-                permutation,
-                index_t(sizeof(signed_index_t))
-            );
-        }
-
-        Permutation::invert(permutation);
-
-        for(index_t c = 0; c < M.nb_corners(); c++) {
-            if(M.corner_adjacent_facet(c) != -1) {
-                M.set_corner_adjacent_facet(
-                    c, signed_index_t(permutation[M.corner_adjacent_facet(c)])
-                );
-            }
-        }
-    }
-
-    /************************************************************************/
-
-    void mesh_permute_tets(
-        Mesh& M, vector<index_t>& permutation
-    ) {
-        Permutation::apply(
-            &(MeshMutator::tet_vertices(M)[0]),
-            permutation,
-            index_t(sizeof(index_t) * 4)
-        );
-
-        Permutation::apply(
-            &(MeshMutator::tet_adjacents(M)[0]),
-            permutation,
-            index_t(sizeof(signed_index_t) * 4)
-        );
-
-        if(M.has_attribute(MESH_CELL_REGION)) {
-            Permutation::apply(
-                &(MeshMutator::tet_regions(M)[0]),
-                permutation,
-                index_t(sizeof(signed_index_t))
-            );
-        }
-
-        Permutation::invert(permutation);
-
-        vector<signed_index_t>& tet_adjacent = MeshMutator::tet_adjacents(M);
-        for(index_t i = 0; i < tet_adjacent.size(); ++i) {
-            if(tet_adjacent[i] != -1) {
-                tet_adjacent[i] = signed_index_t(permutation[tet_adjacent[i]]);
-            }
-        }
-    }
-
-    /************************************************************************/
-
     void mesh_reorder(Mesh& M, MeshOrder order) {
 
-        geo_assert(M.dimension() >= 3);
+        geo_assert(M.vertices.dimension() >= 3);
 
         // Step 1: reorder vertices
         {
@@ -1001,13 +928,13 @@ namespace GEO {
                 default:
                     geo_assert_not_reached;
             }
-            mesh_permute_vertices(M, sorted_indices);
+            M.vertices.permute_elements(sorted_indices);
         }
 
         // mesh_permute_facets() requires the mesh to be
         // triangulated.
         // TODO: check/correct the management of attributes in mesh_repair().
-        if(!M.is_triangulated()) {
+        if(!M.facets.are_simplices()) {
             Logger::warn("Reorder") << "Mesh is not triangulated,"
                 << "triangulating..."
                 << std::endl;
@@ -1015,7 +942,7 @@ namespace GEO {
         }
 
         // Step 2: reorder facets
-        if(M.nb_facets() != 0) {
+        if(M.facets.nb() != 0) {
             vector<index_t> sorted_indices;
             switch(order) {
                 case MESH_ORDER_HILBERT:
@@ -1027,11 +954,11 @@ namespace GEO {
                 default:
                     geo_assert_not_reached;
             }
-            mesh_permute_facets(M, sorted_indices);
+            M.facets.permute_elements(sorted_indices);
         }
 
         // Step 3: reorder tets
-        if(M.nb_tets() != 0) {
+        if(M.cells.nb() != 0) {
             vector<index_t> sorted_indices;
             switch(order) {
                 case MESH_ORDER_HILBERT:
@@ -1043,7 +970,7 @@ namespace GEO {
                 default:
                     geo_assert_not_reached;
             }
-            mesh_permute_tets(M, sorted_indices);
+            M.cells.permute_elements(sorted_indices);
         }
     }
 
@@ -1056,8 +983,8 @@ namespace GEO {
         for(index_t i = 0; i < nb_vertices; ++i) {
             sorted_indices[i] = i;
         }
-        VertexArray M(nb_vertices, vertices, stride);
-        HilbertSort<Hilbert_vcmp, VertexArray>(
+        VertexMesh M(nb_vertices, vertices, stride);
+        HilbertSort<Hilbert_vcmp, VertexMesh>(
             M, sorted_indices.begin(), sorted_indices.end()
         );
     }
@@ -1074,10 +1001,10 @@ namespace GEO {
         if(last - first <= 1) {
             return;
         }
-        VertexArray M(nb_vertices, vertices, stride);
-        HilbertSort<Hilbert_vcmp, VertexArray>(
-            M, sorted_indices.begin() + first,
-            sorted_indices.begin() + last
+        VertexMesh M(nb_vertices, vertices, stride);
+        HilbertSort<Hilbert_vcmp, VertexMesh>(
+            M, sorted_indices.begin() + int(first),
+            sorted_indices.begin() + int(last)
         );
     }
     

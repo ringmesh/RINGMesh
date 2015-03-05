@@ -332,13 +332,12 @@ void glut_viewer_get_picked_point(GLdouble* p, GLboolean* hit_background) {
 }
 
 static void save_picked_ray(int x_in, int y_in) {
-    unsigned int i;
-    GLdouble x, y;
-    GLfloat z;
-    GLdouble temp[3];
     if(transform_saved) {
-        x = (double) x_in;
-        y = (double) (viewport_save[3] - y_in);
+        unsigned int i;
+        GLdouble temp[3];
+        GLdouble x = (GLdouble) x_in;
+        GLdouble y = (GLdouble) (viewport_save[3] - y_in);
+        GLfloat z;
 
         /*
          * Get the correct value of Z
@@ -361,7 +360,9 @@ static void save_picked_ray(int x_in, int y_in) {
         for(i = 0; i < 3; i++) {
             ray_v_save[i] -= ray_p_save[i];
         }
-        glReadPixels((GLint) x, (GLint) y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+        glReadPixels(
+            (GLint) x, (GLint) y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z
+        );
         gluUnProject(
             x, y, z, modelview_save, project_save, viewport_save,
             &(ray_p3d_save[0]), &(ray_p3d_save[1]), &(ray_p3d_save[2])
@@ -370,7 +371,9 @@ static void save_picked_ray(int x_in, int y_in) {
     }
 }
 
-static GLboolean call_mouse_func(int x, int y, int button, enum GlutViewerEvent event) {
+static GLboolean call_mouse_func(
+    int x, int y, int button, enum GlutViewerEvent event
+) {
     double l = (double) (window_w > window_h ? window_w : window_h) / 2.0;
     double fx = x - (double) window_w / 2.0;
     double fy = y - (double) window_h / 2.0;
@@ -440,7 +443,7 @@ static void passive_mouse(int x, int y) {
 
 static void motion(int x, int y) {
 
-    float delta_rot[4];
+
     int W = window_w;
     int H = window_h;
 
@@ -461,6 +464,7 @@ static void motion(int x, int y) {
     switch(mode) {
         case ROTATE:
         {
+            float delta_rot[4];
             trackball(delta_rot,
                 (float) (2 * last_x - W) / (float) W,
                 (float) (H - 2 * last_y) / (float) H,
@@ -555,7 +559,6 @@ void glut_viewer_printf(char* format, ...) {
 }
 
 static void draw_foreground() {
-    int i;
     float aspect;
 
     glPointSize(1.0);
@@ -564,7 +567,7 @@ static void draw_foreground() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     aspect = (float) (glut_viewer_W) / (float) (glut_viewer_H);
-    if(aspect < 1) {
+    if(aspect < 1.0f) {
         gluOrtho2D(-3000 * aspect, 3000 * aspect, -3000, 3000);
     } else {
         gluOrtho2D(-3000, 3000, -3000 / aspect, 3000 / aspect);
@@ -575,6 +578,8 @@ static void draw_foreground() {
     glDisable(GL_LIGHTING);
 
     if(glut_viewer_is_enabled(GLUT_VIEWER_SHOW_HELP)) {
+        int i;
+        
         glDisable(GL_CLIP_PLANE0);        
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -593,7 +598,9 @@ static void draw_foreground() {
         glColor3f(5, 5, 5);
 
         if(glut_viewer_is_enabled(GLUT_VIEWER_IDLE_REDRAW)) {
-            glut_viewer_printf(" --- %s help [%4d FPS ] --- ", title, glut_viewer_fps());
+            glut_viewer_printf(
+                " --- %s help [%4d FPS ] --- ", title, glut_viewer_fps()
+            );
         } else {
             glut_viewer_printf(" --- %s help --- ", title);
         }
@@ -700,8 +707,6 @@ GLfloat* glut_viewer_get_background_color2() {
 
 static void draw_background() {
     float z = 1.0f;
-    float w = 1.0f;
-    float h = 1.0f;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
@@ -713,7 +718,9 @@ static void draw_background() {
     glLoadIdentity();
     glShadeModel(GL_SMOOTH);
     glDisable(GL_LIGHTING);
+    
     if(background_tex == 0) {
+        
         glBegin(GL_POLYGON);
         glColor3fv(bkg1);
         glVertex3f(-1, -1, z);
@@ -722,7 +729,12 @@ static void draw_background() {
         glVertex3f(1, 1, z);
         glVertex3f(-1, 1, z);
         glEnd();
+        
     } else {
+        
+        float w = 1.0f;
+        float h = 1.0f;
+        
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, background_tex);
         glColor4f(1, 1, 1, 1);
@@ -906,12 +918,8 @@ static void actually_render_display(double offset) {
        shift of the vue from the current point of view */
     float vue_shift = eye_offset * zNear / zScreen;
 
-    float right;
-    float top;
-    float sq_w;
 
     double clip_eqn[4];
-    float* background_color;
 
     if(glut_viewer_is_enabled(GLUT_VIEWER_BACKGROUND)) {
         draw_background();
@@ -930,6 +938,9 @@ static void actually_render_display(double offset) {
     glLoadIdentity();
 
     if(glut_viewer_is_enabled(GLUT_VIEWER_3D)) {
+        float right;
+        float top;
+        
         if(aspect < 1) {
             top = vue_max_size;
             right = top * aspect;
@@ -939,7 +950,9 @@ static void actually_render_display(double offset) {
         }
         right /= zoom;
         top /= zoom;
-        glFrustum(-right - vue_shift, right - vue_shift, -top, top, zNear, zFar);
+        glFrustum(
+            -right - vue_shift, right - vue_shift, -top, top, zNear, zFar
+        );
         glTranslatef(-eye_offset, 0.0, 0.0);
     } else {
         float x = 1.0f / zoom;
@@ -966,6 +979,8 @@ static void actually_render_display(double offset) {
 
     glDisable(GL_CLIP_PLANE0);
     if(glut_viewer_is_enabled(GLUT_VIEWER_CLIP)) {
+        float* background_color;
+        
         glPushMatrix();
 
         /* translate the world of the distance between eye and center */
@@ -982,7 +997,7 @@ static void actually_render_display(double offset) {
         );
 
         if(glut_viewer_is_enabled(GLUT_VIEWER_SHOW_CLIP)) {
-            sq_w = 1.25f / params[GLUT_VIEWER_ZOOM];
+            float sq_w = 1.25f / params[GLUT_VIEWER_ZOOM];
             glLineWidth(4);
             glBegin(GL_LINE_LOOP);
             glVertex3f(sq_w, -sq_w, 0.0f);
@@ -1250,8 +1265,8 @@ void glut_viewer_set_drag_drop_func(GlutViewerDragDropFunc f) {
 
 static void init_keys_if_needed() {
     static int first = 1;
-    int i;
     if(first) {
+        int i;
         first = 0;
         for(i = 0; i < 256; i++) {
             toggle[i] = NULL;
@@ -1711,8 +1726,7 @@ trackball(float q[4], float p1x, float p1y, float p2x, float p2y)
 /*
  *  Given an axis and angle, compute quaternion.
  */
-void
-axis_to_quat(float a[3], float phi, float q[4])
+void axis_to_quat(float a[3], float phi, float q[4])
 {
     vnormal(a);
     vcopy(a, q);
@@ -1724,16 +1738,14 @@ axis_to_quat(float a[3], float phi, float q[4])
  * Project an x,y pair onto a sphere of radius r OR a hyperbolic sheet
  * if we are away from the center of the sphere.
  */
-static float
-tb_project_to_sphere(float r, float x, float y)
-{
-    float d, t, z;
+static float tb_project_to_sphere(float r, float x, float y) {
+    float d, z;
 
     d = (float) sqrt(x * x + y * y);
     if(d < r * 0.70710678118654752440f) {     /* Inside sphere */
         z = (float) sqrt(r * r - d * d);
     } else {           /* On hyperbola */
-        t = r / 1.41421356237309504880f;
+        float t = r / 1.41421356237309504880f;
         z = t * t / d;
     }
     return z;
@@ -1921,12 +1933,13 @@ void glTexImage2DXPM(const char** xpm_data) {
     int color = 0;
     int key1 = 0, key2 = 0;
     char* colorcode;
-    int r, g, b;
-    int none;
     int x, y;
     unsigned char* rgba;
     unsigned char* pixel;
-    sscanf(xpm_data[line], "%d%d%d%d", &width, &height, &nb_colors, &chars_per_pixel);
+    sscanf(
+        xpm_data[line], "%6d%6d%6d%6d",
+        &width, &height, &nb_colors, &chars_per_pixel
+    );
     line++;
     if(nb_colors > 1024) {
         fprintf(stderr, "xpm with more than 1024 colors\n");
@@ -1937,6 +1950,9 @@ void glTexImage2DXPM(const char** xpm_data) {
         return;
     }
     for(color = 0; color < nb_colors; color++) {
+        int r, g, b;
+        int none ;
+        
         key1 = xpm_data[line][0];
         key2 = (chars_per_pixel == 2) ? xpm_data[line][1] : 0;
         colorcode = strstr(xpm_data[line], "c #");
@@ -1946,7 +1962,9 @@ void glTexImage2DXPM(const char** xpm_data) {
             if(strstr(xpm_data[line], "None") != NULL) {
                 none = 1;
             } else {
-                fprintf(stderr, "unknown xpm color entry (replaced with black)\n");
+                fprintf(
+                    stderr, "unknown xpm color entry (replaced with black)\n"
+                );
             }
         }
         colorcode += 3;
@@ -2116,15 +2134,16 @@ typedef struct {
     bmp_int32 iClrImportant;
 } GlutViewerBMPHeader;
 
-static void rgb_to_bgr(GLuint width, GLuint height, GLuint bpp, GLvoid* pixels) {
+static void rgb_to_bgr(
+    GLuint width, GLuint height, GLuint bpp, GLvoid* pixels
+) {
     char* p = (char*) pixels;
     int i;
-    char tmp;
     if(bpp != 3 && bpp != 4) {
         return;
     }
     for(i = 0; i < (int) (width * height); i++) {
-        tmp = p[0];
+        char tmp = p[0];
         p[0] = p[2];
         p[2] = tmp;
         p += bpp;

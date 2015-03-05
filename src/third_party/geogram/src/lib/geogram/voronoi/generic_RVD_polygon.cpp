@@ -50,19 +50,21 @@
 namespace GEOGen {
 
     void Polygon::initialize_from_mesh_facet(
-        const Mesh<double>* mesh, index_t facet, bool symbolic
+        const Mesh* mesh, index_t facet, bool symbolic,
+        GEO::Attribute<double>& vertex_weight
     ) {
         clear();
         if(symbolic) {
             // Copy facet
-            for(index_t c = mesh->facet_begin(facet);
-                c < mesh->facet_end(facet); c++
+            for(index_t c = mesh->facets.corners_begin(facet);
+                c < mesh->facets.corners_end(facet); c++
             ) {
-                index_t v = mesh->corner_vertex_index(c);
+                index_t v = mesh->facet_corners.vertex(c);
                 Vertex* vx = add_vertex(
                     Vertex(
-                        mesh->vertex_ptr(v), mesh->weight(v),
-                        mesh->corner_adjacent_facet(c)
+                        mesh->vertices.point_ptr(v),
+                        vertex_weight.is_bound() ? vertex_weight[v] : 1.0,
+                        signed_index_t(mesh->facet_corners.adjacent_facet(c))
                     )
                 );
                 vx->sym().set_boundary_vertex(v);
@@ -88,7 +90,7 @@ namespace GEOGen {
                     // We no longer need them, except for
                     // indicating vertex sym. type.
                     v2.sym().add_boundary_facet(
-                        mesh->nb_facets() + i1
+                        mesh->facets.nb() + i1
                     );
                 }
 
@@ -106,23 +108,23 @@ namespace GEOGen {
                     // We no longer need them, except for
                     //   indicating vertex sym. type.
                     v2.sym().add_boundary_facet(
-                        mesh->nb_facets() + i2
+                        mesh->facets.nb() + i2
                     );
                 }
             }
 #ifdef GEO_DEBUG
             // Sanity check: make sure that the facet is not
             // adjacent to the same facet twice.
-            index_t n = mesh->facet_size(facet);
+            index_t n = mesh->facets.nb_vertices(facet);
             signed_index_t* adj = (signed_index_t*) alloca(
                 sizeof(signed_index_t) * n
             );
             GEO::Memory::clear(adj, sizeof(signed_index_t) * n);
             index_t i = 0;
-            for(index_t c = mesh->facet_begin(facet);
-                c < mesh->facet_end(facet); ++c
+            for(index_t c = mesh->facets.corners_begin(facet);
+                c < mesh->facets.corners_end(facet); ++c
             ) {
-                adj[i] = mesh->corner_adjacent_facet(c);
+                adj[i] = signed_index_t(mesh->facet_corners.adjacent_facet(c));
                 ++i;
             }
             std::sort(adj, adj + n);
@@ -135,14 +137,15 @@ namespace GEOGen {
         } else {
             // We are not in symbolic mode,
             // we just gather the vertices, weights and adjacencies.
-            for(index_t c = mesh->facet_begin(facet);
-                c < mesh->facet_end(facet); c++
+            for(index_t c = mesh->facets.corners_begin(facet);
+                c < mesh->facets.corners_end(facet); c++
             ) {
-                index_t v = mesh->corner_vertex_index(c);
+                index_t v = mesh->facet_corners.vertex(c);
                 add_vertex(
                     Vertex(
-                        mesh->vertex_ptr(v), mesh->weight(v),
-                        mesh->corner_adjacent_facet(c)
+                        mesh->vertices.point_ptr(v),
+                        vertex_weight.is_bound() ? vertex_weight[v] : 1.0,
+                        signed_index_t(mesh->facet_corners.adjacent_facet(c))
                     )
                 );
             }
@@ -150,7 +153,7 @@ namespace GEOGen {
     }
 
     Sign Polygon::side_exact(
-        const Mesh<double>* mesh, const Delaunay* delaunay,
+        const Mesh* mesh, const Delaunay* delaunay,
         const Vertex& q, const double* pi, const double* pj, coord_index_t dim
     ) {
 
@@ -172,10 +175,13 @@ namespace GEOGen {
                 unsigned int b0 = q.sym().bisector(0);
                 unsigned int b1 = q.sym().bisector(1);
                 unsigned int f = q.sym().boundary_facet(0);
-                index_t c = mesh->facet_begin(f);
-                const double* f0 = mesh->corner_vertex_ptr(c);
-                const double* f1 = mesh->corner_vertex_ptr(c + 1);
-                const double* f2 = mesh->corner_vertex_ptr(c + 2);
+
+                index_t if0 = mesh->facets.vertex(f,0);
+                index_t if1 = mesh->facets.vertex(f,1);
+                index_t if2 = mesh->facets.vertex(f,2);                
+                const double* f0 = mesh->vertices.point_ptr(if0);
+                const double* f1 = mesh->vertices.point_ptr(if1);
+                const double* f2 = mesh->vertices.point_ptr(if2);
                 return GEO::PCK::side3_SOS(
                     pi, delaunay->vertex_ptr(b0), delaunay->vertex_ptr(b1), pj,
                     f0, f1, f2, dim
@@ -194,7 +200,8 @@ namespace GEOGen {
                 q.sym().get_boundary_edge(e0, e1);
                 return GEO::PCK::side2_SOS(
                     pi, delaunay->vertex_ptr(b0), pj,
-                    mesh->vertex_ptr(e0), mesh->vertex_ptr(e1), dim
+                    mesh->vertices.point_ptr(e0),
+                    mesh->vertices.point_ptr(e1), dim
                 );
             } break;
 
@@ -205,7 +212,7 @@ namespace GEOGen {
                 //   (i.e. a vertex v0 of the surface).
                 unsigned int v0 = q.sym().get_boundary_vertex();
                 return GEO::PCK::side1_SOS(
-                    pi, pj, mesh->vertex_ptr(v0), dim
+                    pi, pj, mesh->vertices.point_ptr(v0), dim
                 );
             } break;
         }
