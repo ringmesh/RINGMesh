@@ -482,11 +482,11 @@ namespace RINGMesh {
         const std::vector< T >& mat2,
         std::vector< T >& result )
     {
-        ringmesh_assert( mat1.nj() == mat2.size() ) ;
+        ringmesh_debug_assert( mat1.nj() == mat2.size() ) ;
 
 #pragma omp parallel for
         for( index_t i = 0; i < mat1.ni(); ++i ) {
-            ringmesh_assert( i >= 0 && i < result.size() ) ;
+            ringmesh_debug_assert( i >= 0 && i < result.size() ) ;
             result[ i ] = 0.;
             for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
                 index_t j = mat1.get_column_in_line( i, e ) ;
