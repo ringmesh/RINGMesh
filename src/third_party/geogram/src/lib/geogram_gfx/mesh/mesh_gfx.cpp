@@ -59,7 +59,7 @@ namespace {
      *  fragment-level mesh display.
      */
     const char* fshader_source =
-        "#version 150 compatibility                                         \n"
+        "#version 440 compatibility                                         \n"
         "flat in float diffuse;                                             \n"
         "flat in float specular;                                            \n"
         "flat in vec3  edge_mask;                                           \n"
@@ -67,6 +67,9 @@ namespace {
         "uniform bool mesh = true ;                                         \n"
         "uniform vec3 mesh_color = vec3(0.0, 0.0, 0.0) ;                    \n"
         "uniform bool lighting = true ;                                     \n"
+        "uniform sampler2D colormap_tex;                                    \n"
+        "readonly layout(binding = 0) buffer Bregion { uint rgnattr[]; } ;  \n"
+        "uniform bool region = false;                                       \n"
         "out vec4 frag_color ;                                              \n"
         "float edge_factor(){                                               \n"
         "    vec3 bary3 = vec3(bary.x, bary.y, 1.0-bary.x-bary.y) ;         \n"
@@ -77,8 +80,12 @@ namespace {
         "}                                                                  \n"
         "void main() {                                                      \n"
         "    float s = (lighting && gl_FrontFacing) ? 1.0 : -1.0 ;          \n"
-        "    vec4 Kdiff = gl_FrontFacing ?                                  \n"
+        "    vec4  Kdiff = gl_FrontFacing ?                                 \n"
         "         gl_FrontMaterial.diffuse : gl_BackMaterial.diffuse ;      \n"
+        "    if(region) {                                                   \n"
+        "     int rgn = int(rgnattr[gl_PrimitiveID]);                       \n"
+        "     Kdiff = texture2D(colormap_tex, vec2(float(rgn)/11.0, 0.0));  \n"
+        "    }                                                              \n"
         "    float sdiffuse = s * diffuse ;                                 \n"
         "    vec4 result = vec4(0.1, 0.1, 0.1, 1.0);                        \n"
         "    if(sdiffuse > 0.0) {                                           \n"
@@ -89,6 +96,8 @@ namespace {
         "                  mix(vec4(mesh_color,1.0),result,edge_factor()) : \n"
         "                  result ;                                         \n"
         "}                                                                  \n";
+
+
 
     /**
      * \brief The fragment shader for points.
@@ -205,7 +214,6 @@ namespace {
         " void main(void) {                                                 \n"
         "    gl_Position = gl_Vertex;                                       \n"
         " }                                                                 \n";
-
 
     /**
      * \brief The tesselation evaluation shader for hexes.
@@ -453,6 +461,7 @@ namespace {
         "}                                                                  \n"
         "                                                                   \n"
         "void main() {                                                      \n"
+        "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
         "    draw_triangle(                                                 \n"
         "       gl_in[0].gl_Position,                                       \n"
         "       gl_in[1].gl_Position,                                       \n"
@@ -522,6 +531,7 @@ namespace {
         "}                                                                  \n"
         "                                                                   \n"
         "void main() {                                                      \n"
+        "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
         "    draw_tet(                                                      \n"
         "       gl_in[0].gl_Position,                                       \n"
         "       gl_in[1].gl_Position,                                       \n"
@@ -740,6 +750,50 @@ namespace {
         return (polymode[0] == GL_FILL);
     }
 
+
+    /**
+     * \brief Creates a colormap texture with 
+     *  reasonably good looking colors.
+     */
+    GLuint create_colormap_texture() {
+        static const float c1 = 0.35f ;
+        static const float c2 = 0.5f ;
+        static const float c3 = 1.0f ;
+        
+        static float color_table[12][3] =  {
+            {c3, c2, c2},
+            {c2, c3, c2},
+            {c2, c2, c3},
+            {c2, c3, c3},
+            {c3, c2, c3},
+            {c3, c3, c2},
+            {c1, c2, c2},
+            {c2, c1, c2},
+            {c2, c2, c1},
+            {c2, c1, c1},
+            {c1, c2, c1},
+            {c1, c1, c2}
+        } ;
+
+        Logger::out("GLSL") << "Creating colormap texture" << std::endl;
+        
+        GLuint result;
+        glGenTextures(1, &result);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, result);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        glTexImage2D(
+            GL_TEXTURE_2D, 0, GL_RGB, 12, 1,
+            0, GL_RGB, GL_FLOAT, color_table
+        );
+
+        return result;
+    }
 }
 
 namespace GEO {
@@ -747,10 +801,24 @@ namespace GEO {
     MeshGfx::MeshGfx() : mesh_(nil) {
 
         vertices_VBO_ = 0;
+        vertices_VBO_size_ = 0;
+        
         facet_indices_VBO_ = 0;
+        facet_indices_VBO_size_ = 0;
+        
         cell_indices_VBO_ = 0;
+        cell_indices_VBO_size_ = 0;
+
+        facet_region_VBO_ = 0;
+        facet_region_VBO_size_ = 0;
+        
+        cell_region_VBO_ = 0;
+        cell_region_VBO_size_ = 0;
+
+        colormap_TEX_ = 0;
         
         show_mesh_ = true;
+        show_regions_ = false;
         shrink_ = 0.0;
         animate_ = false;
         time_ = 0.0;
@@ -806,6 +874,14 @@ namespace GEO {
     
 
     void MeshGfx::setup_shaders() {
+
+        /*
+        Logger::out("GLSL")
+            << "version = "
+            << glGetString(GL_SHADING_LANGUAGE_VERSION)
+            << std::endl;
+        */
+        
         if(shaders_init_) {
             return;
         }
@@ -813,7 +889,7 @@ namespace GEO {
         if(CmdLine::get_arg_bool("gfx:GLSL")) {
             Logger::out("GLSL")
                 << "Trying to use OpenGL shaders. "
-                << "To deactivate, specify use_GLSL=false on the command line"
+                << "To deactivate, specify gfx:GLSL=false on the command line"
                 << std::endl;
         } else {
             Logger::out("GLSL") << "OpenGL shaders deactivated"
@@ -946,15 +1022,19 @@ namespace GEO {
             glGenBuffers(1, &vertices_VBO_);
             glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO_);
             if(mesh_->vertices.single_precision()) {
+                
+                vertices_VBO_size_ =  GLsizeiptr(
+                    mesh_->vertices.nb() *
+                    mesh_->vertices.dimension() * sizeof(float)
+                );
+
                 glBufferData(
                     GL_ARRAY_BUFFER,
-                    GLsizeiptr(
-                        mesh_->vertices.nb() *
-                        mesh_->vertices.dimension() * sizeof(float)
-                    ),
+                    vertices_VBO_size_,
                     mesh_->vertices.single_precision_point_ptr(0),
                     GL_STATIC_DRAW
                 );
+
                 glEnableClientState(GL_VERTEX_ARRAY);
                 unsigned int stride =
                     (unsigned int) (
@@ -963,15 +1043,19 @@ namespace GEO {
                 geo_assert(mesh_->vertices.dimension() >= 3);
                 glVertexPointer(3, GL_FLOAT, GLsizei(stride), 0);
             } else {
+
+                vertices_VBO_size_ = GLsizeiptr(
+                    mesh_->vertices.nb() *
+                    mesh_->vertices.dimension() * sizeof(double)
+                );
+                
                 glBufferData(
                     GL_ARRAY_BUFFER,
-                    GLsizeiptr(
-                        mesh_->vertices.nb() *
-                        mesh_->vertices.dimension() * sizeof(double)
-                    ),
+                    vertices_VBO_size_,
                     mesh_->vertices.point_ptr(0),
                     GL_STATIC_DRAW
                 );
+                
                 glEnableClientState(GL_VERTEX_ARRAY);
                 unsigned int stride =
                     (unsigned int) (
@@ -981,23 +1065,77 @@ namespace GEO {
                 glVertexPointer(3, GL_DOUBLE, GLsizei(stride), 0);
             }
         }
+        
         if(facet_indices_VBO_ == 0 && mesh_->facets.nb() != 0) {
             glGenBuffers(1, &facet_indices_VBO_);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, facet_indices_VBO_);
+            facet_indices_VBO_size_ = GLsizeiptr(
+                mesh_->facet_corners.nb() * sizeof(int)
+            );
             glBufferData(
                 GL_ELEMENT_ARRAY_BUFFER,
-                GLsizeiptr(mesh_->facet_corners.nb() * sizeof(int)),
+                facet_indices_VBO_size_,
                 mesh_->facet_corners.vertex_index_ptr(0), GL_STATIC_DRAW
             );
         }
+        
         if(cell_indices_VBO_ == 0 && mesh_->cells.nb() != 0) {
             glGenBuffers(1, &cell_indices_VBO_);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cell_indices_VBO_);
+            cell_indices_VBO_size_ = GLsizeiptr(
+                mesh_->cell_corners.nb() * sizeof(int)
+            );            
             glBufferData(
                 GL_ELEMENT_ARRAY_BUFFER,
-                GLsizeiptr(mesh_->cell_corners.nb() * sizeof(int)),
+                cell_indices_VBO_size_,
                 mesh_->cell_corners.vertex_index_ptr(0), GL_STATIC_DRAW
             );
+        }
+
+        if(
+            GLSL_mode_ && show_regions_ &&
+            facet_region_VBO_ == 0 && mesh_->facets.nb() != 0
+        ) {
+            Attribute<index_t> region;
+            region.bind_if_is_defined(mesh_->facets.attributes(), "region");
+            if(region.is_bound()) {
+                Logger::out("GLSL") << "Creating facet region VBO" << std::endl;
+                glGenBuffers(1, &facet_region_VBO_);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, facet_region_VBO_);
+                facet_region_VBO_size_ = GLsizeiptr(
+                    region.nb_elements() * sizeof(index_t)
+                );            
+                glBufferData(
+                    GL_ELEMENT_ARRAY_BUFFER,
+                    facet_region_VBO_size_,
+                    &region[0], GL_STATIC_DRAW
+                );
+            }
+        }
+        
+        if(
+            GLSL_mode_ && show_regions_ &&
+            cell_region_VBO_ == 0 && mesh_->cells.nb() != 0
+        ) {
+            Attribute<index_t> region;
+            region.bind_if_is_defined(mesh_->cells.attributes(), "region");
+            if(region.is_bound()) {
+                Logger::out("GLSL") << "Creating cell region VBO" << std::endl;
+                glGenBuffers(1, &cell_region_VBO_);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cell_region_VBO_);
+                cell_region_VBO_size_ = GLsizeiptr(
+                    region.nb_elements() * sizeof(index_t)
+                );            
+                glBufferData(
+                    GL_ELEMENT_ARRAY_BUFFER,
+                    cell_region_VBO_size_,
+                    &region[0], GL_STATIC_DRAW
+                );
+            }
+        }
+
+        if(colormap_TEX_ == 0) {
+            colormap_TEX_ = create_colormap_texture();
         }
     }
     
@@ -1014,11 +1152,27 @@ namespace GEO {
             glDeleteBuffers(1, &cell_indices_VBO_);
             cell_indices_VBO_ = 0;
         }
+        if(facet_region_VBO_ != 0) {
+            glDeleteBuffers(1, &facet_region_VBO_);    
+            facet_region_VBO_ = 0;
+        }
+        if(cell_region_VBO_ != 0) {
+            glDeleteBuffers(1, &cell_region_VBO_);    
+            cell_region_VBO_ = 0;
+        }
+        if(colormap_TEX_ != 0) {
+            glDeleteTextures(1, &colormap_TEX_);    
+            colormap_TEX_ = 0;
+        }
     }
 
     void MeshGfx::begin_draw(MeshElementsFlags what) {
         setup_shaders();
         setup_VBOs();
+
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, colormap_TEX_);
 
         glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO_);
             
@@ -1028,9 +1182,11 @@ namespace GEO {
         } break;
         case MESH_FACETS: {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, facet_indices_VBO_);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, facet_region_VBO_);
         } break;
         case MESH_CELLS: {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cell_indices_VBO_);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, cell_region_VBO_);
         } break;
         default:
             geo_assert_not_reached;
@@ -1039,7 +1195,8 @@ namespace GEO {
 
     void MeshGfx::end_draw() {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);        
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);        
     }
 
     void MeshGfx::set_colors(ShaderName name) {
@@ -1066,6 +1223,24 @@ namespace GEO {
                 );
                 loc = glGetUniformLocation(programs_[name], "shrink");
                 glUniform1f(loc,float(shrink_));
+
+                loc = glGetUniformLocation(programs_[name], "colormap_tex");
+                glUniform1i(loc, 0);
+
+                loc = glGetUniformLocation(programs_[name], "region_tex");
+                glUniform1i(loc, 1);
+
+                if(name == PRG_TET) {
+                    loc = glGetUniformLocation(programs_[name], "region");
+                    glUniform1i(loc, show_regions_ && (cell_region_VBO_ != 0));
+                }
+
+                if(name == PRG_TRI) {
+                    loc = glGetUniformLocation(programs_[name], "region");
+                    glUniform1i(loc, show_regions_ && facet_region_VBO_ != 0);
+                }
+
+                
             }
         }
         set_colors(name);
@@ -1155,7 +1330,7 @@ namespace GEO {
                 c1<mesh_->facets.corners_end(f); ++c1
             ) {
                 if(mesh_->facet_corners.adjacent_facet(c1) == NO_FACET) {
-                    index_t v1 = mesh_->facet_corners.vertex(c1);                    
+                    index_t v1 = mesh_->facet_corners.vertex(c1);
                     index_t c2 = mesh_->facets.next_corner_around_facet(f,c1);
                     index_t v2 = mesh_->facet_corners.vertex(c2);
                     glMeshVertex(mesh_, v1);
@@ -1165,10 +1340,13 @@ namespace GEO {
         }
         glEnd();
 
-        glLineWidth(1);        
+        glLineWidth(4);
+        glColor3f(
+            mesh_color_[0]+0.2f, mesh_color_[1]+0.2f, mesh_color_[2]+0.2f
+        );        
         Attribute<index_t> region;
         region.bind_if_is_defined(mesh_->facets.attributes(),"region");
-        if(region.is_bound()) {
+        if(show_regions_ && region.is_bound()) {
             glBegin(GL_LINES);            
             for(index_t f=0; f<mesh_->facets.nb(); ++f) {
                 index_t f_rgn = region[f];
@@ -1180,8 +1358,9 @@ namespace GEO {
                     if(
                         adj_f != NO_FACET && region[adj_f] != f_rgn
                     ) {
-                        index_t v1 = mesh_->facet_corners.vertex(c1);                    
-                        index_t c2 = mesh_->facets.next_corner_around_facet(f,c1);
+                        index_t v1 = mesh_->facet_corners.vertex(c1);         
+                        index_t c2 =
+                            mesh_->facets.next_corner_around_facet(f,c1);
                         index_t v2 = mesh_->facet_corners.vertex(c2);
                         glMeshVertex(mesh_, v1);
                         glMeshVertex(mesh_, v2);                    
