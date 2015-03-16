@@ -404,6 +404,13 @@ namespace GEO {
         }
 
         /**
+         * \brief Gets the names of all the attributes in this
+         *   AttributeStore.
+         * \param[out] names a vector of all attribute names
+         */
+        void list_attribute_names(vector<std::string>& names) const;
+        
+        /**
          * \brief Gets the size.
          * \details All attributes stored in an AttributeManager have
          *  the same number of items.
@@ -536,15 +543,16 @@ namespace GEO {
 
 
     /**
-     * \brief Manipulates an attribute stored in an AttributeManager.
+     * \brief Base class for Attributes, that manipulates an 
+     *  attribute stored in an AttributeManager.
      */
-    template <class T> class Attribute : public AttributeStoreObserver {
+    template <class T> class AttributeBase : public AttributeStoreObserver {
     public:
 
         /**
          * \brief Creates an unitialized (unbound) Attribute.
          */
-        Attribute() :
+        AttributeBase() :
             manager_(nil),
             store_(nil) {
         }
@@ -558,7 +566,7 @@ namespace GEO {
          * \param[in] manager a reference to the AttributesManager
          * \param[in] name name of the attribute
          */
-        Attribute(AttributesManager& manager, const std::string& name) :
+        AttributeBase(AttributesManager& manager, const std::string& name) :
             manager_(nil),
             store_(nil) {
             bind(manager, name);
@@ -680,7 +688,7 @@ namespace GEO {
          *  by binding with the same name. To destroy the attribute,
          *  use detroy() instead.
          */
-        ~Attribute() {
+        ~AttributeBase() {
             if(is_bound()) {
                 unbind();
             }
@@ -692,15 +700,17 @@ namespace GEO {
          *  corresponding type exists in an AttributesManager.
          * \param[in] manager a reference to the AttributesManager
          * \param[in] name the name of the attribute
+         * \param[in] dim dimension, or 0 if any dimension can match
          */
         static bool is_defined(
             AttributesManager& manager, const std::string& name,
-            index_t dim = 1
+            index_t dim = 0
         ) {
             AttributeStore* store = manager.find_attribute_store(name);
             return (
                 store != nil &&
-                store->elements_type_matches(typeid(T).name()) 
+                store->elements_type_matches(typeid(T).name()) &&
+                ((dim == 0) || (store->dimension() == dim))
             );
         }
 
@@ -711,25 +721,14 @@ namespace GEO {
         index_t size() const {
             return size_;
         }
-        
-        /**
-         * \brief Gets a modifiable element by index
-         * \param [in] i index of the element
-         * \return a modifiable reference to the \p i%th element
-         */
-        T& operator[](unsigned int i) {
-            geo_debug_assert(i < nb_elements());
-            return ((T*)base_addr_)[i];
-        }
 
         /**
-         * \brief Gets an element by index
-         * \param [in] i index of the element
-         * \return a const reference to the \p i%th element
+         * \brief Sets all the elements of this Attribute to
+         *   zero.
          */
-        const T& operator[](unsigned int i) const {
-            geo_debug_assert(i < nb_elements());
-            return ((const T*)base_addr_)[i];
+        void zero() {
+            geo_debug_assert(is_bound());
+            store_->zero();
         }
 
     private:
@@ -738,7 +737,200 @@ namespace GEO {
     } ;
     
     /*********************************************************************/
+
+    template <class T> class Attribute : public AttributeBase<T> {
+    public:
+        typedef AttributeBase<T> superclass;
+
+        /**
+         * \brief Creates an unitialized (unbound) Attribute.
+         */
+        Attribute() : superclass() {
+        }
+        
+        /**
+         * \brief Creates or retreives a persistent attribute attached to 
+         *  a given AttributesManager.
+         * \details If the attribute already exists with the specified 
+         *  name in the AttributesManager then it is retreived, else
+         *  it is created and bound to the name.
+         * \param[in] manager a reference to the AttributesManager
+         * \param[in] name name of the attribute
+         */
+        Attribute(AttributesManager& manager, const std::string& name) :
+            superclass(manager, name) {
+        }
+
+        /**
+         * \brief Gets a modifiable element by index
+         * \param [in] i index of the element
+         * \return a modifiable reference to the \p i%th element
+         */
+        T& operator[](unsigned int i) {
+            geo_debug_assert(i < superclass::nb_elements());
+            return ((T*)superclass::base_addr_)[i];
+        }
+
+        /**
+         * \brief Gets an element by index
+         * \param [in] i index of the element
+         * \return a const reference to the \p i%th element
+         */
+        const T& operator[](unsigned int i) const {
+            geo_debug_assert(i < superclass::nb_elements());
+            return ((const T*)superclass::base_addr_)[i];
+        }
+
+        /**
+         * \brief Sets all the elements in this attribute
+         *   to a specified value.
+         * \param[in] val the value
+         */
+        void fill(const T& val) {
+            for(index_t i=0; i<superclass::nb_elements(); ++i) {
+                (*this)[i] = val;
+            }
+        }
+    };
     
+    /*********************************************************************/
+    
+    /**
+     * \brief Specialization of Attribute for booleans
+     * \details Attribute needs a specialization for bool, since
+     *   vector<bool> uses compressed storage (1 bit per boolean),
+     *   that is not compatible with the attribute management 
+     *   mechanism. This wrapper class uses an Attribute<Numeric::uint8>
+     *   and does the appropriate conversions, using an accessor class.
+     */
+    template <> class Attribute<bool> : public AttributeBase<Numeric::uint8> {
+    public:
+        typedef AttributeBase<Numeric::uint8> superclass;
+        
+        Attribute() : superclass() {
+        }
+        
+        Attribute(AttributesManager& manager, const std::string& name) :
+            superclass(manager,name) {
+        }
+
+        /**
+         * \brief Accessor class for adapting Attribute<bool>
+         *  indexing.
+         */
+        class BoolAttributeAccessor {
+        public:
+            /**
+             * \brief BoolAttributeAccessor constructor.
+             */
+            BoolAttributeAccessor(
+                Attribute<bool>& attribute,
+                index_t index
+                ) :
+                attribute_(attribute),
+                index_(index) {
+            }
+
+            /**
+             * \brief Converts a BoolAttributeAccessor to a bool.
+             * \details Performs the actual lookup.
+             */
+            operator bool() const {
+                return (attribute_.element(index_) != 0);
+            }
+
+            /**
+             * \brief Assigns a bool to a BoolAttributeAccessor.
+             * \details Stores the boolean into the Attribute.
+             */
+            BoolAttributeAccessor& operator=(bool x) {
+                attribute_.element(index_) = Numeric::uint8(x);
+                return *this;
+            }
+            
+        private:
+            Attribute<bool>& attribute_;
+            index_t index_;
+        };
+
+
+        /**
+         * \brief Accessor class for adapting Attribute<bool>
+         *  indexing.
+         */
+        class ConstBoolAttributeAccessor {
+        public:
+            /**
+             * \brief ConstBoolAttributeAccessor constructor.
+             */
+            ConstBoolAttributeAccessor(
+                const Attribute<bool>& attribute,
+                index_t index
+            ) :
+                attribute_(attribute),
+                index_(index) {
+            }
+
+            /**
+             * \brief Converts a BoolAttributeAccessor to a bool.
+             * \details Performs the actual lookup.
+             */
+            operator bool() const {
+                return (attribute_.element(index_) != 0);
+            }
+
+        private:
+            const Attribute<bool>& attribute_;
+            index_t index_;
+        };
+        
+
+        BoolAttributeAccessor operator[](index_t i) {
+            return BoolAttributeAccessor(*this,i);
+        }
+        
+        ConstBoolAttributeAccessor operator[](index_t i) const {
+            return ConstBoolAttributeAccessor(*this,i);
+        }
+
+        /**
+         * \brief Sets all the elements in this attribute
+         *   to a specified value.
+         * \param[in] val the value
+         */
+        void fill(bool val) {
+            for(index_t i=0; i<superclass::nb_elements(); ++i) {
+                element(i) = Numeric::uint8(val);
+            }
+        }
+        
+    protected:
+
+        friend class BoolAttributeAccessor;
+        friend class ConstBoolAttributeAccessor;
+        
+        /**
+         * \brief Gets a modifiable element by index
+         * \param [in] i index of the element
+         * \return a modifiable reference to the \p i%th element
+         */
+        Numeric::uint8& element(unsigned int i) {
+            geo_debug_assert(i < superclass::nb_elements());
+            return ((Numeric::uint8*)superclass::base_addr_)[i];
+        }
+
+        /**
+         * \brief Gets an element by index
+         * \param [in] i index of the element
+         * \return a const reference to the \p i%th element
+         */
+        const Numeric::uint8& element(unsigned int i) const {
+            geo_debug_assert(i < superclass::nb_elements());
+            return ((const Numeric::uint8*)superclass::base_addr_)[i];
+        }
+    } ;
+ 
+    /*********************************************************************/
 }
 
 #endif

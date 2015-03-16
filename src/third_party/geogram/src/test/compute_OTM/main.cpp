@@ -372,6 +372,9 @@ namespace {
             level_ = 0;
             
             simplex_func_ = new OTMIntegrationSimplex(*mesh);
+
+            save_RVD_iter_ = CmdLine::get_arg_bool("RVD_iter");
+            current_iter_ = 0;
         }
 
         /**
@@ -433,6 +436,7 @@ namespace {
             optimizer->set_max_iter(max_iterations);
             instance_ = this;
             current_call_iter_ = 0;
+            current_iter_ = 0;
             optimizer->optimize(&weights_[0]);
             instance_ = nil;
             // To make sure everything is reset properly
@@ -440,6 +444,7 @@ namespace {
             funcgrad(n, &weights_[0], dummy, nil);
             Logger::out("OTM")
                 << "Used " << current_call_iter_ << "iterations" << std::endl;
+
         }
 
         /**
@@ -638,10 +643,48 @@ namespace {
         }
 
     protected:
+
         /**
          * \brief Callback for the numerical solver.
          */
         void newiteration() {
+            if(save_RVD_iter_) {
+                save_RVD(current_iter_);
+            }
+            ++current_iter_;
+        }
+        
+        /**
+         * \brief Saves the RVD at each iteration if
+         *   specified on command line (just for debugging/
+         *   explaining the algorithm).
+         * \param[in] id index to be used for the file, that
+         *   will be named RVD_id.meshb
+         */
+        void save_RVD(index_t id) {
+            
+            if(!save_RVD_iter_) {
+                return;
+            }
+            
+            Mesh RVD_mesh;
+            Attribute<index_t> tet_region(RVD_mesh.cells.attributes(),"region");
+            RVD()->compute_RVD(
+                RVD_mesh,
+                0,     // dim (0 means use default)
+                CmdLine::get_arg_bool("RVD:borders_only"),
+                CmdLine::get_arg_bool("RVD:integration_simplices")
+            );
+            RVD_mesh.vertices.set_dimension(3);
+            RVD_mesh.cells.connect();
+            MeshIOFlags flags;
+            flags.set_attribute(MESH_CELL_REGION);
+            flags.set_attribute(MESH_FACET_REGION);            
+            mesh_save(
+                RVD_mesh,
+                "RVD_" + String::to_string(id) + ".meshb",
+                flags
+            );
         }
 
         /**
@@ -764,6 +807,9 @@ namespace {
         IntegrationSimplex_var simplex_func_;
         std::string last_stats_;
         index_t level_;
+        
+        bool save_RVD_iter_;
+        index_t current_iter_;
     };
 
     OptimalTransportMap* OptimalTransportMap::instance_ = nil;
@@ -1538,6 +1584,16 @@ int main(int argc, char** argv) {
         CmdLine::declare_arg("nb_iter", 1000, "number of iterations for OTM");
         CmdLine::declare_arg("RDT", false, "save regular triangulation");
         CmdLine::declare_arg("RVD", false, "save restricted Voronoi diagram");
+        CmdLine::declare_arg(
+            "RVD_iter", false, "save restricted Voronoi diagram at each iteration"
+        );
+        CmdLine::declare_arg(
+            "RVD:borders_only", false, "save only border of RVD"
+        );        
+        CmdLine::declare_arg(
+            "RVD:integration_simplices", true, "export RVD as integration simplices"
+        );        
+        
         CmdLine::declare_arg("multilevel", true, "use multilevel algorithm");
         CmdLine::declare_arg("BRIO", true, 
                              "use BRIO reordering to compute the levels"
@@ -1636,6 +1692,12 @@ int main(int argc, char** argv) {
             CmdLine::get_arg_bool("multilevel") || 
             CmdLine::get_arg_bool("BRIO");
 
+        if(CmdLine::get_arg_bool("RVD_iter") && multilevel) {
+            Logger::warn("OTM") << "Deactivating multilevel mode" << std::endl;
+            Logger::warn("OTM") << "(because RVD_iter is set)" << std::endl;            
+            multilevel = false;
+        }
+        
         if(multilevel) {
             if(CmdLine::get_arg_bool("BRIO")) {
                 compute_single_level_sampling(

@@ -66,7 +66,7 @@ graphic board does not have sufficient GLSL support, vorpaview uses
 plain OpenGL (fixed functionality pipeline). Note that some old
 OpenGL drivers may erroneously claim they support GLSL. If you have
 this problem, you can force vorpaview to deactivate GLSL mode, use:
-\code vorpaview use_GLSL=false meshfile \endcode
+\code vorpaview gfx:GLSL=false meshfile \endcode
 Alternatively, you can rename vorpaview(.exe) as vorpaview0(.exe),
 this will deactivate GLSL by default. Note that some options / key bindings
 may not work under this degraded mode. 

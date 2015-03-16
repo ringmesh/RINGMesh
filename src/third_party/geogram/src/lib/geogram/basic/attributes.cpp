@@ -202,6 +202,17 @@ namespace GEO {
         as->resize(size_);
     }
 
+    void AttributesManager::list_attribute_names(
+        vector<std::string>& names
+    ) const {
+        names.clear();
+        for(std::map<std::string, AttributeStore*>::const_iterator
+                it = attributes_.begin(); it != attributes_.end();
+            ++it) {
+            names.push_back(it->first);
+        }
+    }
+    
     AttributeStore* AttributesManager::find_attribute_store(
         const std::string& name
     ) {

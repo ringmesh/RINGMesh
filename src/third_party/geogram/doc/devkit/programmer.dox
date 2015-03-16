@@ -54,7 +54,6 @@ Quick links to main Geogram functions and classes
 
 - Mesh
   - GEO::Mesh 
-  - GEO::MeshBuilder
   - GEO::mesh_load()
   - GEO::mesh_save()
 - Geometry processing

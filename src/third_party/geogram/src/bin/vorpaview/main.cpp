@@ -53,8 +53,6 @@
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/logger.h>
 
-#include <stdarg.h>
-
 namespace {
 
     GEO::Mesh M(3);
@@ -288,6 +286,7 @@ namespace {
         GEO::MeshIOFlags flags;
         if(GEO::CmdLine::get_arg_bool("attributes")) {
             flags.set_attribute(GEO::MESH_FACET_REGION);
+            flags.set_attribute(GEO::MESH_CELL_REGION);            
         } 
         if(!GEO::mesh_load(filename, M, flags)) {
             return;
@@ -337,6 +336,27 @@ namespace {
             M_gfx.set_cells_color(0.9f, 0.9f, 0.9f);
         }
     }
+
+    void toggle_regions() {
+        M_gfx.set_show_regions(!M_gfx.get_show_regions());
+    }
+
+    GEO::index_t cur_RVD=0;
+    void load_RVD() {
+        load_mesh("RVD_" + GEO::String::to_string(cur_RVD) + ".meshb");
+        M_gfx.set_mesh(&M);
+    }
+    
+    void load_RVD_inc() {
+        ++cur_RVD;
+        load_RVD();
+    }
+
+    void load_RVD_dec() {
+        --cur_RVD;
+        load_RVD();
+    }
+    
 }
 
 int main(int argc, char** argv) {
@@ -398,6 +418,10 @@ int main(int argc, char** argv) {
     glut_viewer_add_key_func('x', dec_shrink, "unshrink cells");
     glut_viewer_add_key_func('w', inc_shrink, "shrink cells");
     glut_viewer_add_key_func('C', toggle_colored_cells, "toggle colored cells");
+    glut_viewer_add_key_func('R', toggle_regions, "toggle regions");    
+
+    glut_viewer_add_key_func('D', load_RVD_inc, "load next RVD");
+    glut_viewer_add_key_func('F', load_RVD_dec, "load prev RVD");    
     
     if(GEO::CmdLine::get_arg_bool("gfx:full_screen")) {
        glut_viewer_enable(GLUT_VIEWER_FULL_SCREEN);

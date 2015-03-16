@@ -107,11 +107,39 @@ namespace GEO {
          * \details The mesh visibility flags specifies
          *  whether mesh edges should be drawn. The used
          *  color can be specified by set_mesh_color()
+         * \note For now, regions are only implemented for
+         *   triangulated meshes and tetrahedralized meshes
+         *   (not implemented yet for hybrid surfacic and 
+         *    volumetric meshes).
          */
         void set_show_mesh(bool x) {
             show_mesh_ = x;
         }
 
+        /**
+         * \brief Gets the region visibility flag.
+         * \return the value of the region visibility flag.
+         * \details If activated, cell and facet regions are displayed
+         *  using a colormap.
+         * \note For now, regions are only implemented for
+         *   triangulated meshes and tetrahedralized meshes
+         *   (not implemented yet for hybrid surfacic and 
+         *    volumetric meshes).
+         */
+        bool get_show_regions() const {
+            return show_regions_;
+        }
+
+        /**
+         * \brief Gets the region visibility flag.
+         * \param[in] x the new value of the region visibility flag.
+         * \details If activated, cell and facet regions are displayed
+         *  using a colormap.
+         */
+        void set_show_regions(bool x) {
+            show_regions_ = x;
+        }
+        
         /**
          * \brief Gets the cells shrink coefficient.
          * \details The cells shrink coefficient is used 
@@ -510,11 +538,25 @@ namespace GEO {
     protected:
         Mesh* mesh_;
         
-        GLuint vertices_VBO_;
-        GLuint facet_indices_VBO_;
-        GLuint cell_indices_VBO_;
+        GLuint     vertices_VBO_;
+        GLsizeiptr vertices_VBO_size_;
+        
+        GLuint     facet_indices_VBO_;
+        GLsizeiptr facet_indices_VBO_size_;
+        
+        GLuint     cell_indices_VBO_;
+        GLsizeiptr cell_indices_VBO_size_;
+
+        GLuint     facet_region_VBO_;
+        GLsizeiptr facet_region_VBO_size_;
+        
+        GLuint     cell_region_VBO_;
+        GLsizeiptr cell_region_VBO_size_;
+
+        GLuint     colormap_TEX_;
         
         bool show_mesh_;
+        bool show_regions_;
         double shrink_;
         bool animate_;
         double time_;

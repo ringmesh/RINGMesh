@@ -2089,7 +2089,13 @@ namespace GEO {
     };
     
     /*************************************************************************/
-    
+
+    /**
+     * \brief Represents a mesh.
+     * \details A mesh can have vertices, optionally facets and
+     *  optionally volumetric cells. Attributes can be attached
+     *  to all elements and sub-elements. 
+     */
     class GEOGRAM_API Mesh {
     public:
         MeshVertices          vertices;
