@@ -280,6 +280,17 @@ namespace RINGMesh {
             ringmesh_assert_not_reached ;
             return -1 ;
         }
+
+        signed_index_t find_region( const std::string& name) const {
+            for(index_t r = 0 ; r < nb_regions() ; r++ ) {
+                if (regions_[r].name() == name ) {
+                    return r ;
+                }
+            }
+            GEO::Logger::err("") << "Region name did not match with an actual region name of the Boundary Model. Abort.. " << std::endl ;
+            ringmesh_assert_not_reached ;
+            return -1 ;
+        }
         /**
          * @}
          */
