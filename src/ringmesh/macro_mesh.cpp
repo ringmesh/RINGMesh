@@ -355,9 +355,9 @@ namespace RINGMesh {
                     vertices[v] = copied_mesh.facets.vertex(f,v) ;
                 }
                 copy_mesh.facets.create_polygon(vertices) ;
-//                for(index_t v = copied_mesh.facets.corners_begin(f) ; v < copied_mesh.facets.corners_end(f) ; v++ ) {
-//                    copy_mesh.facet_corners.set_adjacent_facet(v,copied_mesh.facet_corners.adjacent_facet(v)) ;
-//                }
+                for(index_t v = copied_mesh.facets.corners_begin(f) ; v < copied_mesh.facets.corners_end(f) ; v++ ) {
+                    copy_mesh.facet_corners.set_adjacent_facet(v,copied_mesh.facet_corners.adjacent_facet(v)) ;
+                }
 
             }
 
