@@ -794,6 +794,43 @@ namespace {
 
         return result;
     }
+
+    /**
+     * \brief Updates the content of an OpenGL buffer object, and resizes it if need be.
+     * \param[in,out] buffer_id OpenGL opaque id of the buffer object. 0 means uninitialized.
+     *    may be changed on exit if the buffer needed to be resized.
+     * \param[in] target buffer object target (GL_ARRAY_BUFFER, GL_INDEX_BUFFER ...)
+     * \param[in] new size of the buffer data, in bytes
+     * \param[in] data pointer to the data to be copied into the buffer, of length new_size
+     */
+    void update_buffer_object(
+        GLuint& buffer_id, GLenum target, size_t new_size, void* data
+    ) {
+        if(new_size == 0) {
+            if(buffer_id != 0) {
+                glDeleteBuffers(1, &buffer_id);
+                buffer_id = 0;
+            }
+            return;
+        }
+
+        if(buffer_id == 0) {
+            glGenBuffers(1, &buffer_id);            
+        }
+        
+        glBindBuffer(target, buffer_id);
+        GLint64 size = 0;
+        glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
+        
+        if(new_size == size_t(size)) {
+            glBufferSubData(target, 0, size, data);
+        } else {
+            glBufferData(
+                target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
+            );
+        }
+    }
+    
 }
 
 namespace GEO {
@@ -801,19 +838,10 @@ namespace GEO {
     MeshGfx::MeshGfx() : mesh_(nil) {
 
         vertices_VBO_ = 0;
-        vertices_VBO_size_ = 0;
-        
         facet_indices_VBO_ = 0;
-        facet_indices_VBO_size_ = 0;
-        
         cell_indices_VBO_ = 0;
-        cell_indices_VBO_size_ = 0;
-
         facet_region_VBO_ = 0;
-        facet_region_VBO_size_ = 0;
-        
         cell_region_VBO_ = 0;
-        cell_region_VBO_size_ = 0;
 
         colormap_TEX_ = 0;
         
@@ -870,6 +898,10 @@ namespace GEO {
     MeshGfx::~MeshGfx() {
         delete_VBOs();        
         delete_shaders();
+        if(colormap_TEX_ != 0) {
+            glDeleteTextures(1, &colormap_TEX_);    
+            colormap_TEX_ = 0;
+        }
     }
     
 
@@ -1018,77 +1050,46 @@ namespace GEO {
     }
     
     void MeshGfx::setup_VBOs() {
-        if(vertices_VBO_ == 0 && mesh_->vertices.nb() != 0) {
-            glGenBuffers(1, &vertices_VBO_);
-            glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO_);
+        
+        if(mesh_->vertices.nb() != 0) {
+
+
+            
             if(mesh_->vertices.single_precision()) {
                 
-                vertices_VBO_size_ =  GLsizeiptr(
-                    mesh_->vertices.nb() *
-                    mesh_->vertices.dimension() * sizeof(float)
-                );
+                size_t size = mesh_->vertices.nb() *
+                    mesh_->vertices.dimension() * sizeof(float);
 
-                glBufferData(
-                    GL_ARRAY_BUFFER,
-                    vertices_VBO_size_,
-                    mesh_->vertices.single_precision_point_ptr(0),
-                    GL_STATIC_DRAW
+                update_buffer_object(
+                    vertices_VBO_, GL_ARRAY_BUFFER,
+                    size, mesh_->vertices.single_precision_point_ptr(0)
                 );
-
-                glEnableClientState(GL_VERTEX_ARRAY);
-                unsigned int stride =
-                    (unsigned int) (
-                        mesh_->vertices.dimension() * sizeof(float)
-                    );
-                geo_assert(mesh_->vertices.dimension() >= 3);
-                glVertexPointer(3, GL_FLOAT, GLsizei(stride), 0);
+                
             } else {
+                
+                size_t size = mesh_->vertices.nb() *
+                    mesh_->vertices.dimension() * sizeof(double);
 
-                vertices_VBO_size_ = GLsizeiptr(
-                    mesh_->vertices.nb() *
-                    mesh_->vertices.dimension() * sizeof(double)
+                update_buffer_object(
+                    vertices_VBO_, GL_ARRAY_BUFFER,
+                    size, mesh_->vertices.point_ptr(0)
                 );
-                
-                glBufferData(
-                    GL_ARRAY_BUFFER,
-                    vertices_VBO_size_,
-                    mesh_->vertices.point_ptr(0),
-                    GL_STATIC_DRAW
-                );
-                
-                glEnableClientState(GL_VERTEX_ARRAY);
-                unsigned int stride =
-                    (unsigned int) (
-                        mesh_->vertices.dimension() * sizeof(double)
-                    );
-                geo_assert(mesh_->vertices.dimension() >= 3);
-                glVertexPointer(3, GL_DOUBLE, GLsizei(stride), 0);
             }
         }
         
-        if(facet_indices_VBO_ == 0 && mesh_->facets.nb() != 0) {
-            glGenBuffers(1, &facet_indices_VBO_);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, facet_indices_VBO_);
-            facet_indices_VBO_size_ = GLsizeiptr(
-                mesh_->facet_corners.nb() * sizeof(int)
-            );
-            glBufferData(
-                GL_ELEMENT_ARRAY_BUFFER,
-                facet_indices_VBO_size_,
-                mesh_->facet_corners.vertex_index_ptr(0), GL_STATIC_DRAW
+        if(mesh_->facets.nb() != 0) {
+            update_buffer_object(
+                facet_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
+                mesh_->facet_corners.nb() * sizeof(int),
+                mesh_->facet_corners.vertex_index_ptr(0)
             );
         }
         
         if(cell_indices_VBO_ == 0 && mesh_->cells.nb() != 0) {
-            glGenBuffers(1, &cell_indices_VBO_);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cell_indices_VBO_);
-            cell_indices_VBO_size_ = GLsizeiptr(
-                mesh_->cell_corners.nb() * sizeof(int)
-            );            
-            glBufferData(
-                GL_ELEMENT_ARRAY_BUFFER,
-                cell_indices_VBO_size_,
-                mesh_->cell_corners.vertex_index_ptr(0), GL_STATIC_DRAW
+            update_buffer_object(
+                cell_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
+                mesh_->cell_corners.nb() * sizeof(int),
+                mesh_->cell_corners.vertex_index_ptr(0)                
             );
         }
 
@@ -1099,16 +1100,10 @@ namespace GEO {
             Attribute<index_t> region;
             region.bind_if_is_defined(mesh_->facets.attributes(), "region");
             if(region.is_bound()) {
-                Logger::out("GLSL") << "Creating facet region VBO" << std::endl;
-                glGenBuffers(1, &facet_region_VBO_);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, facet_region_VBO_);
-                facet_region_VBO_size_ = GLsizeiptr(
-                    region.nb_elements() * sizeof(index_t)
-                );            
-                glBufferData(
-                    GL_ELEMENT_ARRAY_BUFFER,
-                    facet_region_VBO_size_,
-                    &region[0], GL_STATIC_DRAW
+                update_buffer_object(
+                    facet_region_VBO_, GL_ELEMENT_ARRAY_BUFFER,
+                    region.nb_elements() * sizeof(index_t),
+                    &region[0]
                 );
             }
         }
@@ -1120,22 +1115,12 @@ namespace GEO {
             Attribute<index_t> region;
             region.bind_if_is_defined(mesh_->cells.attributes(), "region");
             if(region.is_bound()) {
-                Logger::out("GLSL") << "Creating cell region VBO" << std::endl;
-                glGenBuffers(1, &cell_region_VBO_);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cell_region_VBO_);
-                cell_region_VBO_size_ = GLsizeiptr(
-                    region.nb_elements() * sizeof(index_t)
-                );            
-                glBufferData(
-                    GL_ELEMENT_ARRAY_BUFFER,
-                    cell_region_VBO_size_,
-                    &region[0], GL_STATIC_DRAW
+                update_buffer_object(
+                    cell_region_VBO_, GL_ELEMENT_ARRAY_BUFFER,
+                    region.nb_elements() * sizeof(index_t),
+                    &region[0]
                 );
             }
-        }
-
-        if(colormap_TEX_ == 0) {
-            colormap_TEX_ = create_colormap_texture();
         }
     }
     
@@ -1160,22 +1145,35 @@ namespace GEO {
             glDeleteBuffers(1, &cell_region_VBO_);    
             cell_region_VBO_ = 0;
         }
-        if(colormap_TEX_ != 0) {
-            glDeleteTextures(1, &colormap_TEX_);    
-            colormap_TEX_ = 0;
-        }
     }
 
     void MeshGfx::begin_draw(MeshElementsFlags what) {
         setup_shaders();
         setup_VBOs();
-
-
+        if(colormap_TEX_ == 0) {
+            colormap_TEX_ = create_colormap_texture();
+        }
+        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, colormap_TEX_);
-
         glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO_);
-            
+
+        glEnableClientState(GL_VERTEX_ARRAY);
+        geo_assert(mesh_->vertices.dimension() >= 3);        
+        if(mesh_->vertices.single_precision()) {
+            unsigned int stride =
+                (unsigned int) (
+                    mesh_->vertices.dimension() * sizeof(float)
+            );
+            glVertexPointer(3, GL_FLOAT, GLsizei(stride), 0);
+        } else {
+            unsigned int stride =
+                (unsigned int) (
+                    mesh_->vertices.dimension() * sizeof(double)
+            );
+            glVertexPointer(3, GL_DOUBLE, GLsizei(stride), 0);
+        }
+        
         switch(what) {
         case MESH_VERTICES: {
             // Nothing else to bind
@@ -1196,7 +1194,8 @@ namespace GEO {
     void MeshGfx::end_draw() {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);        
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
+        glDisableClientState(GL_VERTEX_ARRAY);        
     }
 
     void MeshGfx::set_colors(ShaderName name) {

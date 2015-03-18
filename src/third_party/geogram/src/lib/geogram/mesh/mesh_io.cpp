@@ -257,6 +257,10 @@ namespace {
                 }
             }
             unbind_attributes();
+            if(M.facets.nb() == 0) {
+                Logger::err("I/O") << "Mesh contains no facet" << std::endl;
+                return false;
+            }
             return true;
         }
 
@@ -1809,6 +1813,14 @@ namespace {
             }
 
             unbind_attributes();
+
+            if(M.facets.nb() == 0) {
+                Logger::err("I/O")
+                    << "STL file does not contain any facet"
+                    << std::endl;
+                return false;
+            }
+            
             return true;
         }
 
@@ -1867,6 +1879,15 @@ namespace {
                 }
             }
             unbind_attributes();
+            if(M.facets.nb() != nb_triangles) {
+                Logger::err("I/O")
+                    << "STL file does not have "
+                    << "the required number of triangles"
+                    << std::endl;
+
+                return false;
+            }
+            
             return true;
         }
 
@@ -2025,6 +2046,12 @@ namespace {
                         xyz[0] = in.field_as_double(0);
                         xyz[1] = in.field_as_double(1);
                         xyz[2] = in.field_as_double(2);
+                        //   Not all xyz files have the number of vertices
+                        // specified on the first line. If it is unknown,
+                        // then vertices are created dynamically.
+                        if(cur_v+1 >= M.vertices.nb()) {
+                            M.vertices.create_vertices(cur_v+1-M.vertices.nb());
+                        }
                         set_mesh_point(M,cur_v,xyz,3);
                         ++cur_v;
                     }
@@ -2045,15 +2072,35 @@ namespace {
             const Mesh& M, const std::string& filename,
             const MeshIOFlags& ioflags
         ) {
-            geo_argused(M);
-            geo_argused(filename);
             geo_argused(ioflags);
 
-            Logger::err("I/O")
-                << "Saving a mesh in XYZ format is not supported"
-                << std::endl;
+            if(M.vertices.dimension() < 3) {
+                Logger::err("I/O")
+                    << "XYZ format unsupported for dim < 3"
+                    << std::endl;
+                return false;
+            }
+            
+            std::ofstream out(filename.c_str());
+            if(!out) {
+                Logger::err("I/O")
+                    << "Could not create file : "
+                    << filename
+                    << std::endl;
+                return false;
+            }
 
-            return false;
+            out << M.vertices.nb() << std::endl;
+            
+            for(index_t v=0; v<M.vertices.nb(); ++v) {
+                double point[3];
+                get_mesh_point(M,v,point,3);
+                out << point[0] << ' '
+                    << point[1] << ' '
+                    << point[2] << std::endl;
+            }
+            
+            return true;
         }
     };
     
@@ -2109,15 +2156,33 @@ namespace {
             const Mesh& M, const std::string& filename,
             const MeshIOFlags& ioflags
         ) {
-            geo_argused(M);
-            geo_argused(filename);
             geo_argused(ioflags);
 
-            Logger::err("I/O")
-                << "Saving a mesh in XYZ format is not supported"
-                << std::endl;
+            std::ofstream out(filename.c_str());
+            if(!out) {
+                Logger::err("I/O")
+                    << "Could not create file \'"
+                    << filename << "\'" << std::endl;
+                return false;
+            }
+            if(M.vertices.dimension() != 3) {
+                Logger::err("I/O")
+                    << "invalid dimension for pts file format"
+                    << std::endl;
+                return false;
+            }
 
-            return false;
+            for(index_t v = 0; v < M.vertices.nb(); ++v) {
+                double p[3];
+                get_mesh_point(M,v,p,3);
+                out << "v ";
+                for(index_t c = 0; c < 3; ++c) {
+                    out << p[c] << ' ';
+                }
+                out << std::endl;
+            }
+
+            return true;
         }
     };
     

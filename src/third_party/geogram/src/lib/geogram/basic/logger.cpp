@@ -196,7 +196,9 @@ namespace GEO {
         return (instance_ != nil);
     }
     
-    bool Logger::set_local_value(const std::string& name, const std::string& value) {
+    bool Logger::set_local_value(
+        const std::string& name, const std::string& value
+    ) {
 
         if(name == "log:quiet") {
             set_quiet(String::to_bool(value));
@@ -246,7 +248,9 @@ namespace GEO {
         return false;
     }
 
-    bool Logger::get_local_value(const std::string& name, std::string& value) const {
+    bool Logger::get_local_value(
+        const std::string& name, std::string& value
+    ) const {
 
         if(name == "log:quiet") {
             value = String::to_string(is_quiet());
@@ -304,6 +308,10 @@ namespace GEO {
 
     void Logger::unregister_client(LoggerClient* c) {
         clients_.erase(c);
+    }
+
+    void Logger::unregister_all_clients() {
+        clients_.clear();
     }
 
     bool Logger::is_client(LoggerClient* c) const {

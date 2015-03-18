@@ -46,6 +46,8 @@
 #include <geogram/mesh/mesh_tetrahedralize.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_intersection.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/delaunay/delaunay.h>
 #include <geogram/basic/logger.h>
@@ -64,8 +66,11 @@ namespace GEO {
             return false;
         }
         if(preprocess) {
-            mesh_repair(M);
+            // 0.001% of bbox diagonal
+            double epsilon = 0.001 * 0.01 * bbox_diagonal(M);            
+            mesh_repair(M, MESH_REPAIR_DEFAULT, epsilon);
             mesh_remove_intersections(M);
+            mesh_save(M, "tetrahedralize_input_repaired.meshb");
         }
         if(!M.facets.are_simplices()) {
             Logger::err("TetMeshing")
@@ -81,6 +86,9 @@ namespace GEO {
                 return false;
             }
         }
+
+        Logger::out("TetMeshing") << "Tetrahedralizing..." << std::endl;
+        
         Delaunay_var delaunay = Delaunay::create(3,"tetgen");
         delaunay->set_refine(refine);
         delaunay->set_quality(quality);

@@ -564,11 +564,7 @@ namespace {
             Logger::out("Bridges") 
                 << "Removed " << nb_bridges << " bridge(s)"
                 << std::endl;
-        } else {
-            Logger::out("Bridges")
-                << "Mesh has no bridge (good)"
-                << std::endl;
-        }
+        } 
     }
     
 }
@@ -623,8 +619,6 @@ namespace GEO {
         }
 
         if(holes.size() == 0) {
-            Logger::out("FillHoles")
-                << "Mesh is closed (does not have any hole)" << std::endl;
             return;
         }
 

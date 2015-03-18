@@ -191,17 +191,12 @@ namespace {
             }
         }
 
-        if(count == 0) {
-            Logger::out("Intersect")
-                << "Mesh does not have self-intersections (good)"
-                << std::endl;
-        } else {
+        if(count != 0) {
             M.facets.delete_elements(has_intersection);
             Logger::out("Intersect")
                 << "Removed " << count << " facets"
                 << std::endl;
-        }
-
+        } 
         return count;
     }
 }

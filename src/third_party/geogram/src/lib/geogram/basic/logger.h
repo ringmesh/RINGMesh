@@ -487,6 +487,11 @@ namespace GEO {
         void unregister_client(LoggerClient* client);
 
         /**
+         * \brief Unregisters all the registered clients.
+         */
+        void unregister_all_clients();
+        
+        /**
          * \brief Checks if a client is registered
          * \param[in] client a logger client
          * \retval true if \p client is registered to the Logger

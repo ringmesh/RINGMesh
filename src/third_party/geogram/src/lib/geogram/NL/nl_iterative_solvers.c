@@ -146,7 +146,6 @@ NLuint nlSolve_CG_precond()  {
     NLdouble accu =0.0;
     NLdouble curr_err;
     
-
     nlCurrentContext->matrix_vector_prod(x,r);
     daxpy(N,-1.,b,1,r,1);
     nlCurrentContext->precond_vector_prod(r,d);

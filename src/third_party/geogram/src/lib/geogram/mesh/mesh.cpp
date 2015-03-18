@@ -47,6 +47,7 @@
 #include <geogram/basic/permutation.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/algorithm.h>
+#include <geogram/basic/string.h>
 
 namespace GEO {
 
@@ -980,10 +981,12 @@ namespace GEO {
                 cell_facets_permutation
             );
         }
+
+        vector<index_t>& corner_vertex = cell_corners_.corner_vertex_;
+        vector<index_t>& facet_adjacent_cell = cell_facets_.adjacent_cell_;
         
         if(is_simplicial_) {
-            vector<index_t> corner_vertex = cell_corners_.corner_vertex_;
-            vector<index_t> facet_adjacent_cell = cell_facets_.adjacent_cell_;
+            // in-place permutation !
             
             Permutation::apply(
                 corner_vertex.data(),
@@ -1006,8 +1009,42 @@ namespace GEO {
                 }
             }
         } else {
-            // TODO: Implement permutation for arbitrary cells
-            geo_assert_not_reached;
+            // we need to do some copies
+            
+            vector<index_t> new_cell_ptr(nb()+1);
+            vector<index_t> new_corner_vertex(cell_corners_.nb());
+            vector<index_t> new_facet_adjacent_cell(cell_facets_.nb());
+
+            index_t new_ptr = 0;
+            for(index_t new_c=0; new_c<nb(); ++new_c) {
+                index_t c = permutation[new_c];
+                index_t ptr = cell_ptr_[c];
+                index_t cell_size = geo_max(nb_vertices(c), nb_facets(c));
+                new_cell_ptr[new_c] = new_ptr;
+                for(index_t i=0; i<cell_size; ++i) {
+                    new_corner_vertex[new_ptr+i] = corner_vertex[ptr+i];
+                    new_facet_adjacent_cell[new_ptr+i] =
+                        facet_adjacent_cell[ptr+i];
+                }
+                new_ptr += cell_size;
+            }
+            new_cell_ptr[nb()] = new_ptr;
+
+            Permutation::apply(
+                cell_type_.data(), permutation, index_t(sizeof(Numeric::uint8))
+            );
+
+            Permutation::invert(permutation);
+
+            for(index_t f = 0; f < new_facet_adjacent_cell.size(); ++f) {
+                if(new_facet_adjacent_cell[f] != NO_CELL) {
+                    new_facet_adjacent_cell[f] =
+                        permutation[new_facet_adjacent_cell[f]];
+                }
+            }
+
+            corner_vertex.swap(new_corner_vertex);
+            facet_adjacent_cell.swap(new_facet_adjacent_cell);
         }
     }
 
@@ -1531,8 +1568,6 @@ namespace GEO {
             << " dim:" << vertices.dimension()
             << std::endl;
 
-        // TODO: display attributes
-        
         if(cells.nb() != 0) {
             if(cells.are_simplices()) {
                 Logger::out(tag) << " nb_tets:"
@@ -1559,6 +1594,13 @@ namespace GEO {
                                  << std::endl;
             }
         }
+
+        display_attributes(tag, "vertices", vertices);
+        display_attributes(tag, "facets", facets);
+        display_attributes(tag, "facet_corners", facet_corners);
+        display_attributes(tag, "cells", cells);
+        display_attributes(tag, "cell_corners", cell_corners);
+        display_attributes(tag, "cell_facets", cell_facets);
     }
 
     void Mesh::assert_is_valid() {
@@ -1583,6 +1625,32 @@ namespace GEO {
             }
         }
     }
+
+    void Mesh::display_attributes(
+        const std::string& tag, const std::string& subelement_name,
+        const MeshSubElementsStore& subelements 
+    ) const {
+        if(subelements.attributes().nb() != 0) {
+            vector<std::string> names;
+            subelements.attributes().list_attribute_names(names);
+            std::string names_str;
+            for(index_t i=0; i<names.size(); ++i) {
+                if(i != 0) {
+                    names_str = names_str + ",";
+                } 
+                names_str = names_str + names[i];
+                AttributeStore* store =
+                    subelements.attributes().find_attribute_store(names[i]);
+                index_t dim = store->dimension();
+                if(dim != 1) {
+                    names_str += ("[" + String::to_string(dim) + "]");
+                }
+            }
+            Logger::out(tag) << "Attributes on " << subelement_name
+                             << ": " << names_str << std::endl;
+        }
+    }
+
     
     /**************************************************************************/
     

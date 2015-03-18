@@ -50,6 +50,11 @@
 #include <geogram/basic/attributes.h>
 #include <geogram/basic/geometry.h>
 
+/**
+ * \file geogram/mesh/mesh.h
+ * \brief The class that represents a mesh.
+ */
+
 namespace GEO {
 
     class Mesh;
@@ -2137,6 +2142,19 @@ namespace GEO {
          * \details Used for debugging
          */
         void assert_is_valid();
+
+    protected:
+        /**
+         * \brief Displays the list of attributes to the Logger.
+         * \param[in] tag the tag to be sent to the Logger
+         * \param[in] subelement_name the name of the subelement
+         *   (vertices, facets, facet_corners ...)
+         * \param[in] subelements a const reference to the MeshSubElementsStore
+         */
+        void display_attributes(
+            const std::string& tag, const std::string& subelement_name,
+            const MeshSubElementsStore& subelements 
+        ) const;
     };
 
     /*************************************************************************/
