@@ -46,6 +46,7 @@
 #include <ringmesh/common.h>
 #include <ringmesh/boundary_model_element.h>
 #include <ringmesh/attribute.h>
+#include <geogram/basic/logger.h>
 
 #include <vector>
 #include <string>
@@ -269,6 +270,16 @@ namespace RINGMesh {
 
         void save_bm_file( const std::string& file_name ) ;
 
+        signed_index_t find_interface( const std::string& name) const {
+            for(index_t i = 0 ; i < nb_interfaces() ; i++ ) {
+                if (interfaces_[i].name() == name ) {
+                    return i ;
+                }
+            }
+            GEO::Logger::err("") << "Surface name did not match with an actual interface name of the Boundary Model. Abort.. " << std::endl ;
+            ringmesh_assert_not_reached ;
+            return -1 ;
+        }
         /**
          * @}
          */
