@@ -313,13 +313,7 @@ namespace RINGMesh {
                 std::vector< bool > atom_exported( db.nb_duplicated_vertices(),
                     false ) ;
 
-                //1. Write the vertices coordinates (with the duplicate ones)
-//                for( index_t v = 0; v < db.nb_total_vertices(); v++ ) {
-//                    const vec3& cur_v = db. ;
-//                    out << "V" << v << SPACE << cur_v.x << SPACE << cur_v.y << SPACE
-//                        << cur_v.z << std::endl ;
-//
-//                }
+
                 std::cout << "nb vertices " << mm.nb_vertices() << std::endl ;
                 std::cout << "nb total vertices " << db.nb_total_vertices()
                     << std::endl ;
@@ -328,6 +322,7 @@ namespace RINGMesh {
                 index_t cur_cell = 0 ;
                 index_t cur_facet = 0 ;
 
+                /// 1. Write the vertices coordinates (with the duplicate ones)
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
                     const GEO::Mesh& mesh = mm.mesh( r ) ;
                     out << "COOR_3D" << std::endl ;
@@ -367,8 +362,18 @@ namespace RINGMesh {
                     }
                     out << "FINSF" << std::endl ;
                 }
-                out << "TRIA3" << std::endl ;
 
+                cur_cell = 0 ;
+                for( index_t r = 0; r < model.nb_regions(); r++ ) {
+                    out << "GROUP_MA" << std::endl ;
+                    out << model.region(r).name() ;
+                    for(index_t c = 0 ; c < mm.mesh(r).cells.nb() ; c++) {
+                        out << "C" << cur_cell++ << std::endl ;
+                    }
+                }
+                out << "FINSF" << std::endl ;
+
+                out << "TRIA3" << std::endl ;
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const RINGMesh::BoundaryModelElement& interf =
                         model.one_interface( i ) ;
