@@ -96,6 +96,15 @@ namespace RINGMesh {
         const std::vector< reverse_info >& reverse_vertices( index_t global_v ) const ;
         void update_point( index_t global_v, const vec3& point ) ;
 
+        void clear() {
+            unique_vertices_.clear() ;
+            global_vertex_indices_.clear() ;
+            vertex2mesh_.clear() ;
+            reverse_db_.clear() ;
+
+            initialized_ = false ;
+            initialized_reverse_ = false ;
+        }
 
     private:
         void initialize() ;

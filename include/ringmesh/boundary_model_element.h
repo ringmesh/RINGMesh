@@ -52,6 +52,10 @@
 #include <vector>
 #include <string>
 
+namespace GEO {
+    class MeshFacetsAABB ;
+}
+
 namespace RINGMesh {
     class BoundaryModel ;
 }
@@ -598,11 +602,11 @@ namespace RINGMesh {
         Surface(
             BoundaryModel* model = nil,
             index_t id = NO_ID )
-              : BoundaryModelElement( model, SURFACE, id )
+            : BoundaryModelElement( model, SURFACE, id ), aabb_( nil ), ann_( nil )
         {
         }
 
-        virtual ~Surface() {}
+        virtual ~Surface() ;
 
         GEO::Mesh& mesh() const {
             return const_cast< GEO::Mesh& >( mesh_ ) ;
@@ -623,7 +627,6 @@ namespace RINGMesh {
          * @brief Get the vertex in the model from a vertex index in the Surface
          */
         virtual index_t model_vertex_id( index_t p ) const ;
-        index_t vertex_id( index_t f, index_t v ) const ;
         /*!
          * @brief Returns the coordinates of the point at the given index in the surface
          */
@@ -855,8 +858,15 @@ namespace RINGMesh {
             }
         }
 
+        index_t nearest_facet( const vec3& point ) const ;
+        index_t nearest_vertex( const vec3& point ) const ;
+        index_t colocated_vertex( const vec3& point ) const ;
+
+
     private:
         GEO::Mesh mesh_ ;
+        GEO::MeshFacetsAABB* aabb_ ;
+        ColocaterANN* ann_ ;
     } ;
 
     /*!

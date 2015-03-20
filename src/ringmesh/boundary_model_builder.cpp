@@ -1721,8 +1721,6 @@ namespace RINGMesh {
 
     bool BoundaryModelBuilderBM::load_file( const std::string& bm_file_name )
     {
-        ringmesh_assert_not_reached ;
-        /*
         GEO::LineInput in( bm_file_name ) ;
         if( !in.OK() ) {
             return false ;
@@ -1812,30 +1810,30 @@ namespace RINGMesh {
                 }
 
                 // Model vertices
-                else if( in.field_matches( 0, "MODEL_VERTICES" ) ) {
-                    index_t nb_vertices = in.field_as_uint( 1 ) ;
-
-                    // Attributes
-                    in.get_line() ;
-                    in.get_fields() ;
-                    ringmesh_assert( in.field_matches( 0, "MODEL_VERTEX_ATTRIBUTES" ) ) ;
-                    index_t nb_attribs = ( in.nb_fields() - 1 ) / 2 ;
-                    std::vector< SerializedAttribute< BoundaryModel::VERTEX > >
-                    vertex_attribs( nb_attribs ) ;
-                    for( index_t i = 0; i < nb_attribs; i++ ) {
-                        vertex_attribs[ i ].bind(
-                            model_.vertex_attribute_manager(), in.field(
-                                1 + 2 * i ), in.field( 2 + 2 * i ), nb_vertices ) ;
-                    }
-                    for( index_t i = 0; i < nb_vertices; ++i ) {
-                        in.get_line() ;
-                        in.get_fields() ;
-                        add_vertex( vec3(
-                                read_double( in,
-                                    0 ), read_double( in, 1 ), read_double( in, 2 ) ) ) ;
-                        serialize_read_attributes( in, 3, i, vertex_attribs ) ;
-                    }
-                }
+//                else if( in.field_matches( 0, "MODEL_VERTICES" ) ) {
+//                    index_t nb_vertices = in.field_as_uint( 1 ) ;
+//
+//                    // Attributes
+//                    in.get_line() ;
+//                    in.get_fields() ;
+//                    ringmesh_assert( in.field_matches( 0, "MODEL_VERTEX_ATTRIBUTES" ) ) ;
+//                    index_t nb_attribs = ( in.nb_fields() - 1 ) / 2 ;
+//                    std::vector< SerializedAttribute< BoundaryModel::VERTEX > >
+//                    vertex_attribs( nb_attribs ) ;
+//                    for( index_t i = 0; i < nb_attribs; i++ ) {
+//                        vertex_attribs[ i ].bind(
+//                            model_.vertex_attribute_manager(), in.field(
+//                                1 + 2 * i ), in.field( 2 + 2 * i ), nb_vertices ) ;
+//                    }
+//                    for( index_t i = 0; i < nb_vertices; ++i ) {
+//                        in.get_line() ;
+//                        in.get_fields() ;
+//                        add_vertex( vec3(
+//                                read_double( in,
+//                                    0 ), read_double( in, 1 ), read_double( in, 2 ) ) ) ;
+//                        serialize_read_attributes( in, 3, i, vertex_attribs ) ;
+//                    }
+//                }
 
                 // Corners
                 else if( match_type( in.field( 0 ) ) == BME::CORNER ) {
@@ -1847,7 +1845,8 @@ namespace RINGMesh {
                     }
                     index_t id = in.field_as_uint( 1 ) ;
                     set_element_index( BME::CORNER, id ) ;
-                    set_element_vertex( BME::CORNER, id, 0, in.field_as_uint( 2 ) ) ;
+                    vec3 point( read_double( in, 2 ), read_double( in, 3 ), read_double( in, 4 ) ) ;
+                    set_element_vertex( BME::CORNER, id, 0, point ) ;
                 }
 
                 // Lines
@@ -1861,6 +1860,16 @@ namespace RINGMesh {
                     in.get_fields() ;
                     ringmesh_assert( in.field_matches( 0, "LINE_VERTICES" ) ) ;
                     index_t nb_vertices = in.field_as_uint( 1 ) ;
+                    std::vector< vec3 > vertices( nb_vertices ) ;
+                    for( index_t i = 0; i < nb_vertices; i++ ) {
+                        in.get_line() ;
+                        in.get_fields() ;
+                        vec3 point( read_double( in, 0 ), read_double( in, 1 ), read_double( in, 2 ) ) ;
+                        vertices[i] = point ;
+                    }
+
+                    // Set the line points
+                    L.set_vertices( vertices ) ;
 
                     // Attributes on line vertices
                     in.get_line() ;
@@ -1876,16 +1885,11 @@ namespace RINGMesh {
                     }
 
                     // Read the vertices indices and attributes on vertices
-                    std::vector< index_t > vertices( nb_vertices ) ;
                     for( index_t i = 0; i < nb_vertices; i++ ) {
                         in.get_line() ;
                         in.get_fields() ;
-                        vertices[ i ] = in.field_as_uint( 0 ) ;
                         serialize_read_attributes( in, 1, i, vertex_attribs ) ;
                     }
-
-                    // Set the line points
-                    L.set_vertices( vertices ) ;
 
                     // Read attributes on line segments
                     in.get_line() ;
@@ -1932,6 +1936,14 @@ namespace RINGMesh {
                     in.get_fields() ;
                     ringmesh_assert( in.field_matches( 0, "SURFACE_VERTICES" ) ) ;
                     index_t nb_vertices = in.field_as_uint( 1 ) ;
+                    std::vector< vec3 > vertices( nb_vertices ) ;
+                    for( index_t i = 0; i < nb_vertices; i++ ) {
+                        in.get_line() ;
+                        in.get_fields() ;
+                        vec3 point( read_double( in, 0 ), read_double( in, 1 ), read_double( in, 2 ) ) ;
+                        vertices[i] = point ;
+                    }
+
 
                     in.get_line() ;
                     in.get_fields() ;
@@ -1949,11 +1961,9 @@ namespace RINGMesh {
                     }
 
                     // Read the vertices global ids and attributes
-                    std::vector< index_t > vertices( nb_vertices ) ;
                     for( index_t i = 0; i < nb_vertices; i++ ) {
                         in.get_line() ;
                         in.get_fields() ;
-                        vertices[ i ] = in.field_as_uint( 0 ) ;
                         serialize_read_attributes( in, 1, i, vertex_attribs ) ;
                     }
 
@@ -2006,7 +2016,6 @@ namespace RINGMesh {
             std::cout << "Invalid BoundaryModel loaded" << std::endl ;       
         }
         return true ;
-        */
     }
 
 
@@ -2124,8 +2133,8 @@ namespace RINGMesh {
 
         // Find the BorderTriangle that is correspond to this
         // It must exist and there is only one
-        BorderTriangle bait( in.s_, next_f, S.vertex_id( next_f, next_f_v0 ),
-                             S.vertex_id( next_f, next_f_v1 ), NO_ID ) ;
+        BorderTriangle bait( in.s_, next_f, S.surf_vertex_id( next_f, next_f_v0 ),
+                             S.surf_vertex_id( next_f, next_f_v1 ), NO_ID ) ;
 
         // lower_bound returns an iterator pointing to the first element in the range [first,last)
         // which does not compare less than the given val.
