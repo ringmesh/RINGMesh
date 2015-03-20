@@ -660,7 +660,7 @@ namespace RINGMesh {
         return next_on_border( f, e, v, next_f, next_e ) ;
     }
 
-    index_t Surface::nearest_facet( const vec3& point ) const
+    const GEO::MeshFacetsAABB& Surface::aabb() const
     {
         if( !aabb_ ) {
             Surface* this_not_const = const_cast< Surface* >( this ) ;
@@ -670,30 +670,16 @@ namespace RINGMesh {
             delete ann_ ;
             this_not_const->ann_ = nil ;
         }
-        vec3 nearest_point ;
-        double distance ;
-        return aabb_->nearest_facet( point, nearest_point, distance ) ;
+        return *aabb_ ;
     }
 
-    index_t Surface::nearest_vertex( const vec3& point ) const
+    const ColocaterANN& Surface::ann() const
     {
         if( !ann_ ) {
             const_cast< Surface* >( this )->ann_ = new ColocaterANN( mesh_, ColocaterANN::VERTICES ) ;
         }
-        return ann_->get_closest_neighbor( point ) ;
+        return *ann_ ;
     }
-
-    index_t Surface::colocated_vertex( const vec3& point ) const
-    {
-        if( !ann_ ) {
-            const_cast< Surface* >( this )->ann_ = new ColocaterANN( mesh_, ColocaterANN::VERTICES ) ;
-        }
-        std::vector< index_t > result ;
-        ann_->get_colocated( point, result ) ;
-        if( result.empty() ) return NO_ID ;
-        else return result[0] ;
-    }
-
 
 
     /*!
