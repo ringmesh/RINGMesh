@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -66,28 +66,10 @@ namespace RINGMesh {
         // High level functions
         void copy_macro_topology( const BoundaryModel& from ) ;
 
-        void make_vertices_unique() ;
-
         // Set model attributes
         void set_model_name( const std::string& name )
         {
             model_.name_ = name ;
-        }
-
-        void reserve_vertices( index_t nb )
-        {
-            model_.vertices_.reserve( nb ) ;
-        }
-
-        index_t add_vertex( const vec3& vertex )
-        {
-            model_.vertices_.push_back( vertex ) ;
-            return model_.nb_vertices() - 1 ;
-        }
-
-        index_t add_vertex( const double* vertex )
-        {
-            return add_vertex( vec3( vertex[ 0 ], vertex[ 1 ], vertex[ 2 ] ) ) ;
         }
 
         /*!
@@ -176,9 +158,9 @@ namespace RINGMesh {
             BME::TYPE e_type,
             index_t e_index,
             index_t v,
-            index_t model_v_id )
+            const vec3& point )
         {
-            element( e_type, e_index ).set_vertex( v, model_v_id ) ;
+            element( e_type, e_index ).set_vertex( v, point, false ) ;
         }
 
         /** @}
@@ -196,16 +178,16 @@ namespace RINGMesh {
             index_t nb ) ;
 
         // Corner
-        index_t find_corner( index_t ) const ;
-        index_t create_corner( index_t ) ;
-        index_t find_or_create_corner( index_t ) ;
+        index_t find_corner(  const vec3& point) const ;
+        index_t create_corner( const vec3& point ) ;
+        index_t find_or_create_corner( const vec3& point) ;
 
         // Line
-        index_t find_line( const std::vector< index_t >& vertices ) const ;
+        index_t find_line( const std::vector< vec3 >& vertices ) const ;
 
-        index_t create_line( const std::vector< index_t >& vertices ) ;
+        index_t create_line( const std::vector< vec3 >& vertices ) ;
 
-        index_t find_or_create_line( const std::vector< index_t >& vertices ) ;
+        index_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
 
         // Surface
         index_t create_surface() ;
@@ -244,15 +226,15 @@ namespace RINGMesh {
          */
         void set_corner(
             index_t corner_id,
-            index_t vertex_id ) ;
+            const vec3& point ) ;
 
         void set_line(
             index_t id,
-            const std::vector< index_t >& vertices ) ;
+            const std::vector< vec3 >& vertices ) ;
 
         void set_surface_geometry(
             index_t surface_id,
-            const std::vector< index_t >& surface_vertices,
+            const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr,
             const std::vector< index_t >& surface_adjacencies = empty_index_vector ) ;
@@ -315,7 +297,7 @@ namespace RINGMesh {
             const Surface& S,
             index_t first_vertex,
             index_t second_vertex,
-            std::vector< index_t >& border_vertex_model_ids ) const ;
+            std::vector< vec3 >& border_vertex_model_vertices ) const ;
 
     private:
         /*!

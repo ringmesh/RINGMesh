@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -89,6 +89,13 @@ namespace RINGMesh {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
     }
 
+
+    static bool operator<(
+        const vec3& u,
+        const vec3& v )
+    {
+        return u.x < v.x && u.y < v.y && u.z < v.z ;
+    }
 
     static bool operator!=(
         const vec3& u,
