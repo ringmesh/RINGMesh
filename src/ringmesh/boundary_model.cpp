@@ -442,7 +442,7 @@ namespace RINGMesh {
 
         // Print Gocad Model3d headers
         out << "GOCAD Model3d 1" << std::endl << "HEADER {" << std::endl << "name:"
-            << "model_from_graphite" << std::endl << "}" << std::endl ;
+            << name() << std::endl << "}" << std::endl ;
 
         save_coordinate_system( out ) ;
 
@@ -539,40 +539,18 @@ namespace RINGMesh {
                 for( index_t k = 0; k < sp.nb_boundaries(); ++k ) {
                     const Line& cp = dynamic_cast< const Line& >( sp.boundary( k ) ) ;
 
-                    index_t c = cp.model_vertex_id( 0 ) ;
-                    index_t next = cp.model_vertex_id( 1 ) ;
+                    vec3 c = cp.vertex( 0 ) ;
+                    vec3 next = cp.vertex( 1 ) ;
 
                     // To be sure that we have all corners we need to ensure
                     // that all corners at the end of lines are saved too
                     set_end_corners.insert(
-                        sp.surf_vertex_id( cp.model_vertex_id(
-                                cp.nb_vertices() - 1 ) ) + offset ) ;
+                        sp.colocated_vertex( cp.vertex( cp.nb_vertices() - 1 ) )
+                            + offset ) ;
 
-                    index_t t = sp.facet_from_model_vertex_ids( c, next ) ;
-                    ringmesh_assert( t != NO_ID ) ;
 
-                    index_t i0 = sp.surf_vertex_id( t, 0 ) ;
-                    index_t i1 = sp.surf_vertex_id( t, 1 ) ;
-                    index_t i2 = sp.surf_vertex_id( t, 2 ) ;
-
-                    index_t p0 = sp.model_vertex_id( i0 ) ;
-                    index_t p1 = sp.model_vertex_id( i1 ) ;
-                    index_t p2 = sp.model_vertex_id( i2 ) ;
-
-                    index_t c_id = NO_ID ;
-                    index_t next_id = NO_ID ;
-
-                    if( p0 == c ) {c_id = i0 ;} else if( p0 == next ) {
-                        next_id = i0 ;
-                    }
-
-                    if( p1 == c ) {c_id = i1 ;} else if( p1 == next ) {
-                        next_id = i1 ;
-                    }
-
-                    if( p2 == c ) {c_id = i2 ;} else if( p2 == next ) {
-                        next_id = i2 ;
-                    }
+                    index_t c_id = sp.colocated_vertex( c ) ;
+                    index_t next_id = sp.colocated_vertex( next ) ;
 
                     ringmesh_assert( c_id != NO_ID && next_id != NO_ID ) ;
 
@@ -854,21 +832,21 @@ namespace RINGMesh {
         }
         out << std::endl ;
 
-        // Vertices and attributes on vertices
-        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;
-        out << "MODEL_VERTEX_ATTRIBUTES " ;
-        std::vector< SerializedAttribute< VERTEX > > vertex_attribs ;
-        get_serializable_attributes( &vertex_attribute_manager_, vertex_attribs, out ) ;
-        for( index_t i = 0; i < nb_vertices(); ++i ) {
-            out << vertex( i )  << "  " ;
-            serialize_write_attributes( out, i, vertex_attribs ) ;
-            out << std::endl ;
-        }
+//        // Vertices and attributes on vertices
+//        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;
+//        out << "MODEL_VERTEX_ATTRIBUTES " ;
+//        std::vector< SerializedAttribute< VERTEX > > vertex_attribs ;
+//        get_serializable_attributes( &vertex_attribute_manager_, vertex_attribs, out ) ;
+//        for( index_t i = 0; i < nb_vertices(); ++i ) {
+//            out << vertex( i )  << "  " ;
+//            serialize_write_attributes( out, i, vertex_attribs ) ;
+//            out << std::endl ;
+//        }
 
         // Corners
         for( index_t i = 0; i < nb_corners(); ++i ) {
             out << BME::type_name( BME::CORNER ) << " "
-                << corner( i ).id() << " " << corner( i ).model_vertex_id() <<
+                << corner( i ).id() << " " << corner( i ).vertex() <<
             std::endl ;
         }
 
@@ -877,12 +855,15 @@ namespace RINGMesh {
             const Line& L = line( i ) ;
             out << BME::type_name( BME::LINE ) << " " << L.id() << std::endl ;
             out << "LINE_VERTICES " << L.nb_vertices() << std::endl ;
+            for( index_t j = 0; j < L.nb_vertices(); ++j ) {
+                out << L.vertex( j ) << std::endl ;
+            }
             out << "LINE_VERTEX_ATTRIBUTES " ;
             std::vector< SerializedAttribute< BME::VERTEX > > line_vertex_attribs ;
             get_serializable_attributes(
                 L.vertex_attribute_manager(), line_vertex_attribs, out ) ;
             for( index_t j = 0; j < L.nb_vertices(); ++j ) {
-                out << L.model_vertex_id( j ) << "  " ;
+                out << j << "  " ;
                 serialize_write_attributes( out, j, line_vertex_attribs ) ;
                 out << std::endl ;
             }
@@ -909,12 +890,15 @@ namespace RINGMesh {
             const Surface& S = surface( i ) ;
             out << BME::type_name( BME::SURFACE ) << " " << S.id() << std::endl ;
             out << "SURFACE_VERTICES " << S.nb_vertices() << std::endl ;
+            for( index_t j = 0; j < S.nb_vertices(); ++j ) {
+                out << S.vertex( j ) << std::endl ;
+            }
             out << "SURFACE_VERTEX_ATTRIBUTES " ;
             std::vector< SerializedAttribute< BME::VERTEX > > surface_vertex_attribs ;
             get_serializable_attributes(
                 S.vertex_attribute_manager(), surface_vertex_attribs, out ) ;
             for( index_t j = 0; j < S.nb_vertices(); ++j ) {
-                out << S.model_vertex_id( j ) << "  " ;
+                out << j << "  " ;
                 serialize_write_attributes( out, j, surface_vertex_attribs ) ;
                 out << std::endl ;
             }

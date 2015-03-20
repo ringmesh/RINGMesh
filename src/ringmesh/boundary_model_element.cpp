@@ -45,6 +45,7 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/geometry_nd.h>
+#include <geogram/mesh/mesh_AABB.h>
 
 #include <set>
 #include <stack>
@@ -507,9 +508,10 @@ namespace RINGMesh {
         return false ;
     }
 
-    index_t Surface::vertex_id( index_t f, index_t v ) const
+    Surface::~Surface()
     {
-        return mesh_.facets.vertex( f, v ) ;
+        if( aabb_ ) delete aabb_ ;
+        if( ann_ ) delete ann_ ;
     }
 
     /*!
@@ -657,6 +659,41 @@ namespace RINGMesh {
         index_t v = next_in_facet( f, e ) ;
         return next_on_border( f, e, v, next_f, next_e ) ;
     }
+
+    index_t Surface::nearest_facet( const vec3& point ) const
+    {
+        if( !aabb_ ) {
+            Surface* this_not_const = const_cast< Surface* >( this ) ;
+            this_not_const->aabb_ = new GEO::MeshFacetsAABB(
+                const_cast< GEO::Mesh& >( mesh_ ) ) ;
+            model_->vertices.clear() ;
+            delete ann_ ;
+            this_not_const->ann_ = nil ;
+        }
+        vec3 nearest_point ;
+        double distance ;
+        return aabb_->nearest_facet( point, nearest_point, distance ) ;
+    }
+
+    index_t Surface::nearest_vertex( const vec3& point ) const
+    {
+        if( !ann_ ) {
+            const_cast< Surface* >( this )->ann_ = new ColocaterANN( mesh_, ColocaterANN::VERTICES ) ;
+        }
+        return ann_->get_closest_neighbor( point ) ;
+    }
+
+    index_t Surface::colocated_vertex( const vec3& point ) const
+    {
+        if( !ann_ ) {
+            const_cast< Surface* >( this )->ann_ = new ColocaterANN( mesh_, ColocaterANN::VERTICES ) ;
+        }
+        std::vector< index_t > result ;
+        ann_->get_colocated( point, result ) ;
+        if( result.empty() ) return NO_ID ;
+        else return result[0] ;
+    }
+
 
 
     /*!
