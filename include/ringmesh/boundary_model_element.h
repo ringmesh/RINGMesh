@@ -858,10 +858,8 @@ namespace RINGMesh {
             }
         }
 
-        index_t nearest_facet( const vec3& point ) const ;
-        index_t nearest_vertex( const vec3& point ) const ;
-        index_t colocated_vertex( const vec3& point ) const ;
-
+        const GEO::MeshFacetsAABB& aabb() const ;
+        const ColocaterANN& ann() const ;
 
     private:
         GEO::Mesh mesh_ ;
