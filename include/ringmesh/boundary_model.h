@@ -127,6 +127,7 @@ namespace RINGMesh {
      * \todo Implement a BoundaryModelMutator
      */
     class RINGMESH_API BoundaryModel {
+        ringmesh_disable_copy( BoundaryModel ) ;
         friend class BoundaryModelBuilder ;
 
     public:
