@@ -17,21 +17,20 @@
 ////class StoreIntersections;
 //}
 
-namespace RINGMesh{
-	class RINGMESH_API DetectInter : public GEO::MeshTetsAABB {
-	public:
-		DetectInter(
-				GEO::Mesh& M, GEO::vector<index_t>& inter);//: GEO::MeshTetsAABB(M), inter_(inter){};
+namespace RINGMesh {
+    class RINGMESH_API DetectInter: public GEO::MeshTetsAABB {
+    public:
+        DetectInter( GEO::Mesh& M) ; //: GEO::MeshTetsAABB(M), inter_(inter){};
 
-		~DetectInter();// TODO check if need to be virtual
+        ~DetectInter() ; // TODO check if need to be virtual
 
-		void operator() (index_t idx);
+        void operator()( index_t idx ) ;
 
-		void detect_mesh_intersection(GEO::Mesh& M);
+        void detect_mesh_intersection() ;
 
-	protected:
-		GEO::vector<index_t> inter_;
-	};
+    protected:
+        GEO::vector< bool > inter_ ;
+    } ;
 
 }
 
