@@ -497,6 +497,7 @@ namespace RINGMesh {
         }
         if( equal ) return true ;
 
+        equal = true ;
         for( index_t i = 0; i < nb_vertices(); i++ ) {
             if( rhs_vertices[i] != vertices_[nb_vertices()-i-1] ) {
                 equal = false ;
