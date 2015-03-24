@@ -349,9 +349,6 @@ namespace RINGMesh {
             ringmesh_assert_not_reached ;
             return -1 ;
         }
-        /**
-         * @}
-         */
 
     private:
         bool check_model3d_compatibility() ;
