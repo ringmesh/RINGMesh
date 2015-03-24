@@ -579,14 +579,14 @@ namespace RINGMesh {
             attributes.back().bind( manager, names[ i ] ) ;
             if( attributes.back().is_bound() ) {
                 out << names[ i ] << " "
-                    << attributes.back().type_name() << std::endl ;
+                    << attributes.back().type_name() ;
             } else {
                 std::cerr << "Attribute " << names[ i ] << " is not serializable" <<
                 std::endl ;
                 attributes.pop_back() ;
             }
         }
-        if( attributes.size() == 0 ) {out << std::endl ;}
+        out << std::endl ;
     }
 
 
