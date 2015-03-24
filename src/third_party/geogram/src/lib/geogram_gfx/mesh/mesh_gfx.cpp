@@ -806,7 +806,7 @@ namespace {
     void update_buffer_object(
         GLuint& buffer_id, GLenum target, size_t new_size, void* data
     ) {
-        if(new_size == 0) {
+         if(new_size == 0) {
             if(buffer_id != 0) {
                 glDeleteBuffers(1, &buffer_id);
                 buffer_id = 0;
@@ -814,13 +814,14 @@ namespace {
             return;
         }
 
+        GLint64 size = 0;        
         if(buffer_id == 0) {
-            glGenBuffers(1, &buffer_id);            
+            glGenBuffers(1, &buffer_id);
+            glBindBuffer(target, buffer_id);            
+        } else {
+            glBindBuffer(target, buffer_id);
+            glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
         }
-        
-        glBindBuffer(target, buffer_id);
-        GLint64 size = 0;
-        glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
         
         if(new_size == size_t(size)) {
             glBufferSubData(target, 0, size, data);
