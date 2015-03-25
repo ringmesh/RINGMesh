@@ -61,6 +61,7 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
+
     /*!
      * \brief Generic class describing one element of a BoundaryModel
      */
@@ -71,8 +72,8 @@ namespace RINGMesh {
             VERTEX, FACET
         } ;
 
-        typedef AttributeManagerImpl< VERTEX > VertexAttributeManager ;
-        typedef AttributeManagerImpl< FACET > FacetAttributeManager ;
+        typedef GEO::AttributesManager VertexAttributeManager ;
+        typedef GEO::AttributesManager CellAttributeManager ;
 
         /*!
          * @brief Geological feature types for BoundaryModelElement
@@ -244,14 +245,16 @@ namespace RINGMesh {
          * \name Accessors to attribute managers
          * @{
          */
-        VertexAttributeManager* vertex_attribute_manager() const
+        virtual VertexAttributeManager* vertex_attribute_manager() const
         {
-            return const_cast< VertexAttributeManager* >( &vertex_attribute_manager_ ) ;
+            ringmesh_assert_not_reached ;
+            return nil ;
         }
 
-        FacetAttributeManager* facet_attribute_manager() const
+        virtual CellAttributeManager* cell_attribute_manager() const
         {
-            return const_cast< FacetAttributeManager* >( &facet_attribute_manager_ ) ;
+            ringmesh_assert_not_reached ;
+            return nil ;
         }
 
         /**@}
@@ -371,10 +374,6 @@ namespace RINGMesh {
 
         // / Elements constituting this one - see child_type( TYPE )
         std::vector< index_t > children_ ;
-
-        // Attribute managers
-        VertexAttributeManager vertex_attribute_manager_ ;
-        FacetAttributeManager facet_attribute_manager_ ;
     } ;
 
     /// Element to return when a method failed - to avoid compilation warnings
@@ -394,8 +393,9 @@ namespace RINGMesh {
             BoundaryModel* model = nil,
             index_t id = NO_ID,
             const vec3& vertex = dummy_vec3 )
-              : BoundaryModelElement( model, CORNER, id ), vertex_( vertex )
+              : BoundaryModelElement( model, CORNER, id )
         {
+            mesh_.vertices.create_vertex( vertex.data() ) ;
         }
 
         virtual ~Corner() {}
@@ -403,7 +403,7 @@ namespace RINGMesh {
         virtual index_t nb_cells() const { return 0 ;}
         virtual index_t nb_vertices() const { return 1 ;}
         virtual index_t model_vertex_id( index_t id = 0 ) const ;
-        virtual const vec3& vertex( index_t p = 0 ) const { return vertex_ ; }
+        virtual const vec3& vertex( index_t p = 0 ) const { return mesh_.vertices.point( p ) ; }
 
         virtual void set_vertex(
             index_t index,
@@ -412,11 +412,15 @@ namespace RINGMesh {
 
         void set_vertex( const vec3& point )
         {
-            vertex_ = point ;
+            mesh_.vertices.point( 0 ) = point ;
+        }
+
+        virtual VertexAttributeManager* vertex_attribute_manager() const {
+            return &mesh_.vertices.attributes() ;
         }
 
     private:
-        vec3 vertex_ ;
+        GEO::Mesh mesh_ ;
     } ;
 
     /*!
@@ -448,10 +452,10 @@ namespace RINGMesh {
         virtual ~Line() {}
 
         /*! @brief Returns the number of segments of the Line */
-        virtual index_t nb_cells() const { return vertices_.size() - 1 ;}
-        virtual index_t nb_vertices() const { return vertices_.size() ;}
+        virtual index_t nb_cells() const { return mesh_.vertices.nb() - 1 ;}
+        virtual index_t nb_vertices() const { return mesh_.vertices.nb() ;}
         virtual index_t model_vertex_id( index_t p ) const ;
-        virtual const vec3& vertex( index_t p ) const { return vertices_.at( p ) ;}
+        virtual const vec3& vertex( index_t p ) const { return mesh_.vertices.point( p ) ;}
 
         virtual void set_vertex(
             index_t index,
@@ -472,9 +476,11 @@ namespace RINGMesh {
 
         void set_vertices( const std::vector< vec3 >& vertices )
         {
-            vertices_.resize( 0 ) ;
-            vertices_.insert( vertices_.begin(),
-                vertices.begin(), vertices.end() ) ;
+            mesh_.vertices.clear() ;
+            mesh_.vertices.create_vertices( vertices.size() ) ;
+            for( index_t v = 0; v < vertices.size(); v++ ) {
+                mesh_.vertices.point( v ) = vertices[v] ;
+            }
         }
 
         vec3 segment_barycenter( index_t s ) const ;
@@ -483,108 +489,14 @@ namespace RINGMesh {
 
         double total_length() const ;
 
+        virtual VertexAttributeManager* vertex_attribute_manager() const {
+            return &mesh_.vertices.attributes() ;
+        }
+
     private:
-        // / Indices of the model vertices in the line
-        // / If the line is closed, the last vertex is equal to the first.
-        std::vector< vec3 > vertices_ ;
+        GEO::Mesh mesh_ ;
     } ;
 
-    /*!
-     * @brief Attribute on the vertices of a Line
-     */
-    template< class ATTRIBUTE >
-    class LineVertexAttribute : public Attribute<
-                                    BoundaryModelElement
-                                    ::VERTEX,
-                                    ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModelElement::VERTEX, ATTRIBUTE > superclass ;
-
-        void bind(
-            const Line* line,
-            const std::string& name )
-        {
-            superclass::bind( line->vertex_attribute_manager(), line->nb_vertices(),
-                name ) ;
-        }
-
-        void bind( const Line* line )
-        {
-            superclass::bind( line->vertex_attribute_manager(),
-                line->nb_vertices() ) ;
-        }
-
-        LineVertexAttribute()
-        {
-        }
-
-        LineVertexAttribute( const Line* line )
-        {
-            bind( line ) ;
-        }
-
-        LineVertexAttribute(
-            const Line* line,
-            const std::string& name )
-        {
-            bind( line, name ) ;
-        }
-
-        static bool is_defined(
-            const Line* line,
-            const std::string& name )
-        {
-            return superclass::is_defined( line->vertex_attribute_manager(), name ) ;
-        }
-    } ;
-
-    /*!
-     * @brief Attribute on the segments of a Line
-     */
-    template< class ATTRIBUTE >
-    class LineFacetAttribute : public Attribute<
-                                   BoundaryModelElement::
-                                   FACET, ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModelElement::FACET, ATTRIBUTE > superclass ;
-
-        void bind(
-            const Line* line,
-            const std::string& name )
-        {
-            superclass::bind( line->facet_attribute_manager(), line->nb_vertices(),
-                name ) ;
-        }
-
-        void bind( const Line* line )
-        {
-            superclass::bind( line->facet_attribute_manager(),
-                line->nb_vertices() ) ;
-        }
-
-        LineFacetAttribute()
-        {
-        }
-
-        LineFacetAttribute( const Line* line )
-        {
-            bind( line ) ;
-        }
-
-        LineFacetAttribute(
-            const Line* line,
-            const std::string& name )
-        {
-            bind( line, name ) ;
-        }
-
-        static bool is_defined(
-            const Line* line,
-            const std::string& name )
-        {
-            return superclass::is_defined( line->facet_attribute_manager(), name ) ;
-        }
-    } ;
 
     /*!
      * @brief A polygonal manifold surface
@@ -861,109 +773,18 @@ namespace RINGMesh {
         const GEO::MeshFacetsAABB& aabb() const ;
         const ColocaterANN& ann() const ;
 
+        virtual VertexAttributeManager* vertex_attribute_manager() const {
+            return &mesh_.vertices.attributes() ;
+        }
+
+        virtual CellAttributeManager* cell_attribute_manager() const {
+            return &mesh_.facets.attributes() ;
+        }
+
     private:
         GEO::Mesh mesh_ ;
         GEO::MeshFacetsAABB* aabb_ ;
         ColocaterANN* ann_ ;
-    } ;
-
-    /*!
-     * @brief Attribute on the vertices of a Surface
-     */
-    template< class ATTRIBUTE >
-    class SurfaceVertexAttribute : public Attribute<
-                                       BoundaryModelElement
-                                       ::VERTEX,
-                                       ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModelElement::VERTEX, ATTRIBUTE > superclass ;
-
-        void bind(
-            const Surface* surface,
-            const std::string& name )
-        {
-            superclass::bind(
-                surface->vertex_attribute_manager(), surface->nb_vertices(),
-                name ) ;
-        }
-
-        void bind( const Surface* surface )
-        {
-            superclass::bind( surface->vertex_attribute_manager(),
-                surface->nb_vertices() ) ;
-        }
-
-        SurfaceVertexAttribute()
-        {
-        }
-
-        SurfaceVertexAttribute( const Surface* surface )
-        {
-            bind( surface ) ;
-        }
-
-        SurfaceVertexAttribute(
-            const Surface* surface,
-            const std::string& name )
-        {
-            bind( surface, name ) ;
-        }
-
-        static bool is_defined(
-            const Surface* surface,
-            const std::string& name )
-        {
-            return superclass::is_defined( surface->vertex_attribute_manager(), name ) ;
-        }
-    } ;
-
-    /*!
-     * @brief Attribute on the facets of a Surface
-     */
-    template< class ATTRIBUTE >
-    class SurfaceFacetAttribute : public Attribute<
-                                      BoundaryModelElement
-                                      ::FACET,
-                                      ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModelElement::FACET, ATTRIBUTE > superclass ;
-
-        void bind(
-            const Surface* surface,
-            const std::string& name )
-        {
-            superclass::bind( surface->facet_attribute_manager(), surface->nb_cells(),
-                name ) ;
-        }
-
-        void bind( const Surface* surface )
-        {
-            superclass::bind( surface->facet_attribute_manager(),
-                surface->nb_cells() ) ;
-        }
-
-        SurfaceFacetAttribute()
-        {
-        }
-
-        SurfaceFacetAttribute( const Surface* surface )
-        {
-            bind( surface ) ;
-        }
-
-        SurfaceFacetAttribute(
-            const Surface* surface,
-            const std::string& name )
-        {
-            bind( surface, name ) ;
-        }
-
-        static bool is_defined(
-            const Surface* surface,
-            const std::string& name )
-        {
-            return superclass::is_defined( surface->facet_attribute_manager(), name ) ;
-        }
     } ;
 
     /*!

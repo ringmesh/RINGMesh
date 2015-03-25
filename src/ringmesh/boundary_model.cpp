@@ -683,43 +683,43 @@ namespace RINGMesh {
         // Write facet attributes
         {
             // Get the attributes that can be saved on the first Surface
-            std::vector< SerializedAttribute< BME::FACET > > facet_attribs ;
-            get_serializable_attributes( surface(
-                    0 ).facet_attribute_manager(), facet_attribs ) ;
-
-            for( index_t i = 0; i < facet_attribs.size(); i++ ) {
-                // Output global information on the attribute
-                out << "# attribute " << facet_attribs[ i ].name() << " facet "
-                    << alias_name( facet_attribs[ i ].type_name() )
-                    << std::endl ;
-            }
-            if( facet_attribs.size() > 0 ) {
-                // Global counter for all the facets of all surfaces
-                index_t count = 0 ;
-                for( index_t s = 0; s < nb_surfaces(); s++ ) {
-                    const Surface& S = surface( s ) ;
-
-                    std::vector< SerializedAttribute< BME::FACET > > cur_attribs ;
-                    get_serializable_attributes(
-                        S.facet_attribute_manager(), cur_attribs ) ;
-
-                    ringmesh_assert( cur_attribs.size() == facet_attribs.size() ) ;
-                    for( index_t i = 0; i < facet_attribs.size(); ++i ) {
-                        ringmesh_assert(
-                            facet_attribs[ i ].type_name() ==
-                            cur_attribs[ i ].type_name() &&
-                            facet_attribs[ i ].name() == cur_attribs[ i ].name() ) ;
-                    }
-
-                    // Output attributes values
-                    for( index_t f = 0; f < S.nb_cells(); f++ ) {
-                        out << "# attrs f " << count + 1 << " " ;
-                        serialize_write_attributes( out, f, cur_attribs ) ;
-                        out << std::endl ;
-                        count++ ;
-                    }
-                }
-            }
+//            std::vector< SerializedAttribute< BME::FACET > > facet_attribs ;
+//            get_serializable_attributes( surface(
+//                    0 ).facet_attribute_manager(), facet_attribs ) ;
+//
+//            for( index_t i = 0; i < facet_attribs.size(); i++ ) {
+//                // Output global information on the attribute
+//                out << "# attribute " << facet_attribs[ i ].name() << " facet "
+//                    << alias_name( facet_attribs[ i ].type_name() )
+//                    << std::endl ;
+//            }
+//            if( facet_attribs.size() > 0 ) {
+//                // Global counter for all the facets of all surfaces
+//                index_t count = 0 ;
+//                for( index_t s = 0; s < nb_surfaces(); s++ ) {
+//                    const Surface& S = surface( s ) ;
+//
+//                    std::vector< SerializedAttribute< BME::FACET > > cur_attribs ;
+//                    get_serializable_attributes(
+//                        S.facet_attribute_manager(), cur_attribs ) ;
+//
+//                    ringmesh_assert( cur_attribs.size() == facet_attribs.size() ) ;
+//                    for( index_t i = 0; i < facet_attribs.size(); ++i ) {
+//                        ringmesh_assert(
+//                            facet_attribs[ i ].type_name() ==
+//                            cur_attribs[ i ].type_name() &&
+//                            facet_attribs[ i ].name() == cur_attribs[ i ].name() ) ;
+//                    }
+//
+//                    // Output attributes values
+//                    for( index_t f = 0; f < S.nb_cells(); f++ ) {
+//                        out << "# attrs f " << count + 1 << " " ;
+//                        serialize_write_attributes( out, f, cur_attribs ) ;
+//                        out << std::endl ;
+//                        count++ ;
+//                    }
+//                }
+//            }
         }
     }
 
@@ -865,25 +865,25 @@ namespace RINGMesh {
                 out << L.vertex( j ) << std::endl ;
             }
             out << "LINE_VERTEX_ATTRIBUTES " ;
-            std::vector< SerializedAttribute< BME::VERTEX > > line_vertex_attribs ;
-            get_serializable_attributes(
-                L.vertex_attribute_manager(), line_vertex_attribs, out ) ;
-            for( index_t j = 0; j < L.nb_vertices(); ++j ) {
-                out << j << "  " ;
-                serialize_write_attributes( out, j, line_vertex_attribs ) ;
-                out << std::endl ;
-            }
+//            std::vector< SerializedAttribute< BME::VERTEX > > line_vertex_attribs ;
+//            get_serializable_attributes(
+//                L.vertex_attribute_manager(), line_vertex_attribs, out ) ;
+//            for( index_t j = 0; j < L.nb_vertices(); ++j ) {
+//                out << j << "  " ;
+//                serialize_write_attributes( out, j, line_vertex_attribs ) ;
+//                out << std::endl ;
+//            }
             out << "LINE_SEGMENT_ATTRIBUTES " ;
-            std::vector< SerializedAttribute< BME::FACET > > line_segments_attribs ;
-            get_serializable_attributes(
-                L.facet_attribute_manager(), line_segments_attribs, out ) ;
-            if( line_segments_attribs.size() > 0 ) {
-                for( index_t j = 0; j < L.nb_cells(); ++j ) {
-                    out << j << "  " ;
-                    serialize_write_attributes( out, j, line_segments_attribs ) ;
-                    out << std::endl ;
-                }
-            }
+//            std::vector< SerializedAttribute< BME::FACET > > line_segments_attribs ;
+//            get_serializable_attributes(
+//                L.facet_attribute_manager(), line_segments_attribs, out ) ;
+//            if( line_segments_attribs.size() > 0 ) {
+//                for( index_t j = 0; j < L.nb_cells(); ++j ) {
+//                    out << j << "  " ;
+//                    serialize_write_attributes( out, j, line_segments_attribs ) ;
+//                    out << std::endl ;
+//                }
+//            }
             out << "IN_BOUNDARY " ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 out << L.in_boundary_id( j ) << " " ;
@@ -900,30 +900,30 @@ namespace RINGMesh {
                 out << S.vertex( j ) << std::endl ;
             }
             out << "SURFACE_VERTEX_ATTRIBUTES " ;
-            std::vector< SerializedAttribute< BME::VERTEX > > surface_vertex_attribs ;
-            get_serializable_attributes(
-                S.vertex_attribute_manager(), surface_vertex_attribs, out ) ;
-            for( index_t j = 0; j < S.nb_vertices(); ++j ) {
-                out << j << "  " ;
-                serialize_write_attributes( out, j, surface_vertex_attribs ) ;
-                out << std::endl ;
-            }
+//            std::vector< SerializedAttribute< BME::VERTEX > > surface_vertex_attribs ;
+//            get_serializable_attributes(
+//                S.vertex_attribute_manager(), surface_vertex_attribs, out ) ;
+//            for( index_t j = 0; j < S.nb_vertices(); ++j ) {
+//                out << j << "  " ;
+//                serialize_write_attributes( out, j, surface_vertex_attribs ) ;
+//                out << std::endl ;
+//            }
 
             out << "SURFACE_CORNERS " << S.nb_corners() << std::endl ;
             out << "SURFACE_FACETS " << S.nb_cells() << std::endl ;
             out << "SURFACE_FACET_ATTRIBUTES " ;
-            std::vector< SerializedAttribute< BME::FACET > > surface_facet_attribs ;
-            get_serializable_attributes(
-                S.facet_attribute_manager(), surface_facet_attribs, out ) ;
-
-            for( index_t j = 0; j < S.nb_cells(); ++j ) {
-                out << S.nb_vertices_in_facet( j ) << " " ;
-                for( index_t v = 0; v < S.nb_vertices_in_facet( j ); ++v ) {
-                    out << S.surf_vertex_id( j, v ) << " " ;
-                }
-                serialize_write_attributes( out, j, surface_facet_attribs ) ;
-                out << std::endl ;
-            }
+//            std::vector< SerializedAttribute< BME::FACET > > surface_facet_attribs ;
+//            get_serializable_attributes(
+//                S.facet_attribute_manager(), surface_facet_attribs, out ) ;
+//
+//            for( index_t j = 0; j < S.nb_cells(); ++j ) {
+//                out << S.nb_vertices_in_facet( j ) << " " ;
+//                for( index_t v = 0; v < S.nb_vertices_in_facet( j ); ++v ) {
+//                    out << S.surf_vertex_id( j, v ) << " " ;
+//                }
+//                serialize_write_attributes( out, j, surface_facet_attribs ) ;
+//                out << std::endl ;
+//            }
         }
     }
 } // namespace
