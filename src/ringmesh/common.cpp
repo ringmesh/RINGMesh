@@ -73,12 +73,12 @@ INITIALIZER( initialize ) {
         GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
 
         // Initialization for BoundaryModel attribute serialization
-        RINGMesh::AttributeSerializer::initialize() ;
-        RINGMesh::ringmesh_register_attribute_type< int           > ( "int" ) ;
-        RINGMesh::ringmesh_register_attribute_type< unsigned int  > ( "index" ) ;
-        RINGMesh::ringmesh_register_attribute_type< double        > ( "double" ) ;
-        RINGMesh::ringmesh_register_attribute_type< float         > ( "float" ) ;
-        RINGMesh::ringmesh_register_attribute_type< bool          > ( "bool" ) ;
-        atexit( RINGMesh::AttributeSerializer::terminate ) ;
+//        RINGMesh::AttributeSerializer::initialize() ;
+//        RINGMesh::ringmesh_register_attribute_type< int           > ( "int" ) ;
+//        RINGMesh::ringmesh_register_attribute_type< unsigned int  > ( "index" ) ;
+//        RINGMesh::ringmesh_register_attribute_type< double        > ( "double" ) ;
+//        RINGMesh::ringmesh_register_attribute_type< float         > ( "float" ) ;
+//        RINGMesh::ringmesh_register_attribute_type< bool          > ( "bool" ) ;
+//        atexit( RINGMesh::AttributeSerializer::terminate ) ;
     }
 }

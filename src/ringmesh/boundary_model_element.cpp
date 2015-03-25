@@ -360,7 +360,7 @@ namespace RINGMesh {
             model_->vertices.update_point(
                 model_->vertices.global_vertex_id( CORNER, id(), index ), point ) ;
         else
-            vertex_ = point ;
+            mesh_.vertices.point( 0 ) = point ;
     }
 
     /*!
@@ -388,8 +388,12 @@ namespace RINGMesh {
         BoundaryModel* model,
         index_t id,
         const std::vector< vec3 >& vertices )
-          : BoundaryModelElement( model, LINE, id ), vertices_( vertices )
+          : BoundaryModelElement( model, LINE, id )
     {
+        mesh_.vertices.create_vertices( vertices.size() ) ;
+        for( index_t v = 0; v < vertices.size(); v++ ) {
+            mesh_.vertices.point( v ) = vertices[v] ;
+        }
     }
 
 
@@ -408,8 +412,12 @@ namespace RINGMesh {
         index_t corner0,
         index_t corner1,
         const std::vector< vec3 >& vertices )
-        : BoundaryModelElement( model, LINE, id ), vertices_( vertices )
+        : BoundaryModelElement( model, LINE, id )
     {
+        mesh_.vertices.create_vertices( vertices.size() ) ;
+        for( index_t v = 0; v < vertices.size(); v++ ) {
+            mesh_.vertices.point( v ) = vertices[v] ;
+        }
         boundaries_.push_back( corner0 ) ;
         boundaries_.push_back( corner1 ) ;
     }
@@ -426,7 +434,7 @@ namespace RINGMesh {
                 model_->vertices.global_vertex_id( CORNER, id(), index ),
                 point ) ;
         else
-            vertices_[index] = point ;
+            mesh_.vertices.point( index ) = point ;
     }
 
     /*!
@@ -490,7 +498,7 @@ namespace RINGMesh {
 
         bool equal = true ;
         for( index_t i = 0; i < nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != vertices_[i] ) {
+            if( rhs_vertices[i] != mesh_.vertices.point( i ) ) {
                 equal = false ;
                 break ;
             }
@@ -499,7 +507,7 @@ namespace RINGMesh {
 
         equal = true ;
         for( index_t i = 0; i < nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != vertices_[nb_vertices()-i-1] ) {
+            if( rhs_vertices[i] != mesh_.vertices.point( nb_vertices()-i-1 ) ) {
                 equal = false ;
                 break ;
             }

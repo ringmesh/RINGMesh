@@ -135,7 +135,7 @@ namespace RINGMesh {
             VERTEX
         } ;
 
-        typedef AttributeManagerImpl< VERTEX > VertexAttributeManager ;
+        typedef GEO::AttributesManager VertexAttributeManager ;
         typedef BoundaryModelElement BME ;
 
         const static index_t NO_ID = index_t( - 1 ) ;
@@ -393,10 +393,9 @@ namespace RINGMesh {
     } ;
 
     template< class ATTRIBUTE >
-    class BoundaryModelVertexAttribute : public Attribute< BoundaryModel::VERTEX,
-                                                           ATTRIBUTE > {
+    class BoundaryModelVertexAttribute : public GEO::Attribute< ATTRIBUTE > {
     public:
-        typedef Attribute< BoundaryModel::VERTEX, ATTRIBUTE > superclass ;
+        typedef GEO::Attribute< ATTRIBUTE > superclass ;
 
         void bind(
             const BoundaryModel* model,
