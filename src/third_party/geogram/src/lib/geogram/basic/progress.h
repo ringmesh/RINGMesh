@@ -127,7 +127,7 @@ namespace GEO {
      * \brief Exception thrown when a task is canceled
      * \see Progress::cancel()
      */
-    struct TaskCanceled : std::exception {
+    struct GEOGRAM_API TaskCanceled : std::exception {
         /**
          * \brief Gets the string identifying the exception
          */
@@ -169,7 +169,7 @@ namespace GEO {
          * it when the Progress terminates.
          * \param[in] client a pointer to a ProgressClient
          */
-        void set_client(ProgressClient* client);
+        void GEOGRAM_API set_client(ProgressClient* client);
 
         /**
          * \brief Gets the current task
