@@ -672,6 +672,83 @@ namespace RINGMesh {
 
         /************************************************************************/
 
+        class VTKIOHandler: public MacroMeshIOHandler {
+        public:
+            virtual bool load( const std::string& filename, MacroMesh& mesh )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a MacroMesh from VTK not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+            virtual bool save( const MacroMesh& mm, const std::string& filename )
+            {
+                std::ofstream out( filename.c_str() ) ;
+                out.precision( 16 ) ;
+
+                out << "# vtk DataFile Version 2.0" << std::endl ;
+                out << "Unstructured Grid" << std::endl ;
+                out << "ASCII" << std::endl ;
+                out << "DATASET UNSTRUCTURED_GRID" << std::endl ;
+
+                out << "POINTS " << mm.nb_vertices() << " double" << std::endl ;
+                for( index_t v = 0; v < mm.nb_vertices(); v++ ) {
+                    const vec3& point = mm.global_vertex( v ) ;
+                    out << point.x << SPACE << point.y << SPACE << point.z << std::endl ;
+                }
+                out << std::endl ;
+
+                MacroMeshExport db( mm ) ;
+                db.compute_database() ;
+
+                index_t total_corners = ( 4 + 1 ) * db.nb_tet()
+                    + ( 5 + 1 ) * db.nb_pyramid() + ( 6 + 1 ) * db.nb_prism()
+                    + ( 8 + 1 ) * db.nb_hex() ;
+                out << "CELLS " << db.nb_cells() << SPACE << total_corners
+                    << std::endl ;
+                for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+                    const GEO::Mesh& mesh = mm.mesh( m ) ;
+                    for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                        out << mesh.cells.nb_vertices( c ) ;
+                        for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                            out << SPACE << mm.global_vertex_id( m, mesh.cells.vertex( c, v ) ) ;
+                        }
+                        out << std::endl ;
+                    }
+                }
+
+                out << "CELL_TYPES " << db.nb_cells() << std::endl ;
+                for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+                    const GEO::Mesh& mesh = mm.mesh( m ) ;
+                    for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                        out << cell_type( mesh.cells.type( c ) ) << std::endl ;
+                    }
+                }
+                out << std::endl ;
+
+                return true ;
+            }
+
+        private:
+            index_t cell_type( GEO::MeshCellType t ) const {
+                switch( t ) {
+                    case GEO::MESH_TET:
+                        return 10 ;
+                    case GEO::MESH_PYRAMID:
+                        return 14 ;
+                    case GEO::MESH_PRISM:
+                        return 13 ;
+                    case GEO::MESH_HEX:
+                        return 12 ;
+                    default:
+                        ringmesh_assert_not_reached ;
+                        return NO_ID ;
+                }
+            }
+        } ;
+
+        /************************************************************************/
+
         class TSolidIOHandler: public MacroMeshIOHandler {
         public:
             virtual bool load( const std::string& filename, MacroMesh& mesh )
@@ -1708,6 +1785,7 @@ namespace RINGMesh {
             ringmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" );
             ringmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" );
             ringmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" );
+            ringmesh_register_MacroMeshIOHandler_creator( VTKIOHandler, "vtk" );
 
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
                 format ) ;
