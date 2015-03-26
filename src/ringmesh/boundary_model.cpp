@@ -545,16 +545,16 @@ namespace RINGMesh {
                     // To be sure that we have all corners we need to ensure
                     // that all corners at the end of lines are saved too
                     std::vector< index_t > result ;
-                    sp.ann().get_colocated( cp.vertex( cp.nb_vertices() - 1 ), result ) ;
+                    sp.tools.ann().get_colocated( cp.vertex( cp.nb_vertices() - 1 ), result ) ;
                     ringmesh_debug_assert( !result.empty() ) ;
                     set_end_corners.insert( result[0] + offset ) ;
 
                     result.clear() ;
-                    sp.ann().get_colocated( c, result ) ;
+                    sp.tools.ann().get_colocated( c, result ) ;
                     ringmesh_debug_assert( !result.empty() ) ;
                     index_t c_id = result[0] ;
                     result.clear() ;
-                    sp.ann().get_colocated( next, result ) ;
+                    sp.tools.ann().get_colocated( next, result ) ;
                     ringmesh_debug_assert( !result.empty() ) ;
                     index_t next_id = result[0] ;
 

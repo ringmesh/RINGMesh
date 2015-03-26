@@ -316,13 +316,48 @@ namespace RINGMesh {
         return nb_cells_ ;
     }
 
+    MacroMeshTools::MacroMeshTools( MacroMesh& mm )
+        : mm_( mm ),
+          facet_aabb_( mm.nb_meshes(), nil ),
+          tet_aabb_( mm.nb_meshes(), nil )
+    {
+    }
+    MacroMeshTools::~MacroMeshTools()
+    {
+        for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
+            if( facet_aabb_[r] ) delete facet_aabb_[r] ;
+            if( tet_aabb_[r] ) delete tet_aabb_[r] ;
+        }
+    }
+
+    const GEO::MeshFacetsAABB& MacroMeshTools::facet_aabb( index_t region )
+    {
+        init_facet_aabb( region ) ;
+        return *facet_aabb_[region] ;
+    }
+    void MacroMeshTools::init_facet_aabb( index_t region )
+    {
+        if( facet_aabb_[region] ) return ;
+        facet_aabb_[region] = new GEO::MeshFacetsAABB( mm_.mesh( region ) ) ;
+    }
+    const GEO::MeshTetsAABB& MacroMeshTools::tet_aabb( index_t region )
+    {
+        init_tet_aabb( region ) ;
+        return *tet_aabb_[region] ;
+    }
+    void MacroMeshTools::init_tet_aabb( index_t region )
+    {
+        if( tet_aabb_[region] ) return ;
+        tet_aabb_[region] = new GEO::MeshTetsAABB( mm_.mesh( region ) ) ;
+    }
+
+
     MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
         :
             model_( model ),
             meshes_( model.nb_regions(), nil ),
             well_vertices_( model.nb_regions() ),
-            facet_aabb_( model.nb_regions(), nil ),
-            tet_aabb_( model.nb_regions(), nil )
+            tools( *this )
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;
@@ -334,8 +369,7 @@ namespace RINGMesh {
             model_( mm.model() ),
             meshes_( mm.model().nb_regions(), nil ),
             well_vertices_( mm.model().nb_regions() ),
-            facet_aabb_( mm.model().nb_regions(), nil ),
-            tet_aabb_( mm.model().nb_regions(), nil )
+            tools( *this )
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( 3 ) ;
@@ -408,31 +442,9 @@ namespace RINGMesh {
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             delete meshes_[r] ;
-            if( facet_aabb_[r] ) delete facet_aabb_[r] ;
-            if( tet_aabb_[r] ) delete tet_aabb_[r] ;
         }
     }
 
-    const GEO::MeshFacetsAABB& MacroMesh::facet_aabb( index_t region )
-    {
-        init_facet_aabb( region ) ;
-        return *facet_aabb_[region] ;
-    }
-    void MacroMesh::init_facet_aabb( index_t region )
-    {
-        if( facet_aabb_[region] ) return ;
-        facet_aabb_[region] = new GEO::MeshFacetsAABB( mesh( region ) ) ;
-    }
-    const GEO::MeshTetsAABB& MacroMesh::tet_aabb( index_t region )
-    {
-        init_tet_aabb( region ) ;
-        return *tet_aabb_[region] ;
-    }
-    void MacroMesh::init_tet_aabb( index_t region )
-    {
-        if( tet_aabb_[region] ) return ;
-        tet_aabb_[region] = new GEO::MeshTetsAABB( mesh( region ) ) ;
-    }
 
     /*!
      * Compute the tetrahedral mesh of the input structural model
