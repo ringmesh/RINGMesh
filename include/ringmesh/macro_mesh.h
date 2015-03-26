@@ -169,6 +169,25 @@ namespace RINGMesh {
         index_t nb_cells_ ;
     } ;
 
+    class RINGMESH_API MacroMeshTools {
+    public:
+        MacroMeshTools( MacroMesh& mm ) ;
+        ~MacroMeshTools() ;
+
+        const GEO::MeshFacetsAABB& facet_aabb( index_t region ) ;
+        const GEO::MeshTetsAABB& tet_aabb( index_t region ) ;
+
+    private:
+        void init_facet_aabb( index_t region ) ;
+        void init_tet_aabb( index_t region ) ;
+
+    private:
+        MacroMesh& mm_ ;
+
+        std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
+        std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
+    } ;
+
     class RINGMESH_API MacroMesh {
     public:
         MacroMesh(
@@ -189,10 +208,6 @@ namespace RINGMesh {
             MacroMesh* background = nil,
             std::vector< std::vector< vec3 > >& internal_vertices =
                 empty_vertices ) ;
-
-        const GEO::MeshFacetsAABB& facet_aabb( index_t region ) ;
-
-        const GEO::MeshTetsAABB& tet_aabb( index_t region ) ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
@@ -292,10 +307,8 @@ namespace RINGMesh {
             return mm_cells_.nb_cells( this ) ;
         }
 
-    protected:
-        void init_facet_aabb( index_t region ) ;
-
-        void init_tet_aabb( index_t region ) ;
+    public:
+        MacroMeshTools tools ;
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
@@ -308,9 +321,6 @@ namespace RINGMesh {
         std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
 
     private:
-        std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
-        std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
-
         MacroMeshVertices mm_vertices_ ;
         MacroMeshFacets mm_facets_ ;
         MacroMeshCells mm_cells_ ;

@@ -519,8 +519,6 @@ namespace RINGMesh {
 
     Surface::~Surface()
     {
-        if( aabb_ ) delete aabb_ ;
-        if( ann_ ) delete ann_ ;
     }
 
     /*!
@@ -668,28 +666,6 @@ namespace RINGMesh {
         index_t v = next_in_facet( f, e ) ;
         return next_on_border( f, e, v, next_f, next_e ) ;
     }
-
-    const GEO::MeshFacetsAABB& Surface::aabb() const
-    {
-        if( !aabb_ ) {
-            Surface* this_not_const = const_cast< Surface* >( this ) ;
-            this_not_const->aabb_ = new GEO::MeshFacetsAABB(
-                const_cast< GEO::Mesh& >( mesh_ ) ) ;
-            model_->vertices.clear() ;
-            delete ann_ ;
-            this_not_const->ann_ = nil ;
-        }
-        return *aabb_ ;
-    }
-
-    const ColocaterANN& Surface::ann() const
-    {
-        if( !ann_ ) {
-            const_cast< Surface* >( this )->ann_ = new ColocaterANN( mesh_, ColocaterANN::VERTICES ) ;
-        }
-        return *ann_ ;
-    }
-
 
     /*!
      * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
@@ -1107,6 +1083,41 @@ namespace RINGMesh {
         result += vertex( f, next_in_facet( f, v ) ) ;
         return .5 * result ;
     }
+
+    SurfaceTools::SurfaceTools( const Surface& surface )
+        : surface_( surface ), aabb_( nil ), ann_( nil )
+    {
+    }
+    SurfaceTools::~SurfaceTools()
+    {
+        if( aabb_ ) delete aabb_ ;
+        if( ann_ ) delete ann_ ;
+    }
+
+    const GEO::MeshFacetsAABB& SurfaceTools::aabb() const
+    {
+        if( !aabb_ ) {
+            SurfaceTools* this_not_const = const_cast< SurfaceTools* >( this ) ;
+            this_not_const->aabb_ = new GEO::MeshFacetsAABB(
+                const_cast< GEO::Mesh& >( surface_.mesh() ) ) ;
+            surface_.model_->vertices.clear() ;
+            if( ann_ ) {
+                delete ann_ ;
+                this_not_const->ann_ = nil ;
+            }
+        }
+        return *aabb_ ;
+    }
+
+    const ColocaterANN& SurfaceTools::ann() const
+    {
+        if( !ann_ ) {
+            const_cast< SurfaceTools* >( this )->ann_ = new ColocaterANN(
+                surface_.mesh(), ColocaterANN::VERTICES ) ;
+        }
+        return *ann_ ;
+    }
+
 
 
     /*!
