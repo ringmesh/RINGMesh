@@ -795,11 +795,12 @@ namespace RINGMesh {
             return &mesh_.facets.attributes() ;
         }
 
+    private:
+        GEO::Mesh mesh_ ;
+
     public:
         SurfaceTools tools ;
 
-    private:
-        GEO::Mesh mesh_ ;
     } ;
 
 

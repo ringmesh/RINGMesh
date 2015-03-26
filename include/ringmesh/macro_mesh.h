@@ -307,8 +307,6 @@ namespace RINGMesh {
             return mm_cells_.nb_cells( this ) ;
         }
 
-    public:
-        MacroMeshTools tools ;
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
@@ -324,6 +322,10 @@ namespace RINGMesh {
         MacroMeshVertices mm_vertices_ ;
         MacroMeshFacets mm_facets_ ;
         MacroMeshCells mm_cells_ ;
+
+    public:
+        MacroMeshTools tools ;
+
     } ;
 }
 
