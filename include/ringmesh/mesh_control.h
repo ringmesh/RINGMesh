@@ -11,6 +11,7 @@
 #include <ringmesh/common.h>
 #include <ringmesh/utils.h>
 #include <geogram/mesh/mesh_AABB.h>
+#include <ringmesh/tet_intersection.h>
 
 //namespace GEO {
 //class MeshTetsAABB ;
@@ -26,7 +27,7 @@ namespace RINGMesh {
 
         void operator()( index_t idx ) ;
 
-        void detect_mesh_intersection() ;
+        void detect_mesh_intersection( MacroMesh& mm ) ;
 
     protected:
         GEO::vector< bool > inter_ ;
