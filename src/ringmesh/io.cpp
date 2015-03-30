@@ -726,6 +726,16 @@ namespace RINGMesh {
                 }
                 out << std::endl ;
 
+                out << "CELL_DATA " << db.nb_cells() << std::endl ;
+                out << "SCALARS region int 1" << std::endl ;
+                out << "LOOKUP_TABLE default" << std::endl ;
+                for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+                    const GEO::Mesh& mesh = mm.mesh( m ) ;
+                    for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                        out << m << std::endl ;
+                    }
+                }
+                out << std::endl ;
                 return true ;
             }
 
