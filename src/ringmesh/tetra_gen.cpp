@@ -90,17 +90,16 @@ namespace RINGMesh {
         const BoundaryModelElement* region,
         bool add_steiner_points,
         const std::vector< vec3 >& internal_vertices,
-        const std::vector< std::vector< Edge > >& well_vertices,
-        GEO::Mesh* background )
+        const std::vector< std::vector< Edge > >& well_vertices )
     {
         switch( method ) {
             case TetGen:
                 return new TetraGen_TetGen( tetmesh, region, add_steiner_points,
-                    internal_vertices, well_vertices, background ) ;
+                    internal_vertices, well_vertices ) ;
 #ifdef USE_MG_TETRA
             case MG_Tetra:
                 return new TetraGen_MG_Tetra( tetmesh, region, add_steiner_points,
-                    internal_vertices, well_vertices, background ) ;
+                    internal_vertices, well_vertices ) ;
 #endif
             default:
                 return nil ;
@@ -111,13 +110,11 @@ namespace RINGMesh {
         GEO::Mesh& tetmesh,
         const BoundaryModelElement* region,
         const std::vector< vec3 >& internal_vertices,
-        const std::vector< std::vector< Edge > >& well_edges,
-        GEO::Mesh* background )
+        const std::vector< std::vector< Edge > >& well_edges )
         :
             tetmesh_( tetmesh ),
             internal_points_( internal_vertices ),
             resolution_( 0 ),
-            background_( background ),
             region_( region ),
             attribute_( tetmesh.facets.attributes(), surface_att_name )
     {
@@ -356,10 +353,9 @@ namespace RINGMesh {
         const BoundaryModelElement* region,
         bool add_steiner_points,
         const std::vector< vec3 >& internal_vertices,
-        const std::vector< std::vector< Edge > >& well_edges,
-        GEO::Mesh* background )
+        const std::vector< std::vector< Edge > >& well_edges )
         :
-            TetraGen( tetmesh, region, internal_vertices, well_edges, background )
+            TetraGen( tetmesh, region, internal_vertices, well_edges )
     {
         tetgen_input_.initialize() ;
         tetgen_input_.firstnumber = 1 ;
@@ -460,8 +456,8 @@ namespace RINGMesh {
     {
         tetgen_output_.deinitialize() ;
         try {
-            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_input_, &tetgen_output_,
-                nil, &tetgen_background_ ) ;
+            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_input_,
+                &tetgen_output_ ) ;
         } catch( ... ) {
             std::cerr << "Encountered a problem..."
                 << std::endl ;
@@ -663,13 +659,11 @@ namespace RINGMesh {
         const BoundaryModelElement* region,
         bool add_steiner_points,
         const std::vector< vec3 >& internal_vertices,
-        const std::vector< std::vector< Edge > >& well_vertices,
-        GEO::Mesh* background )
+        const std::vector< std::vector< Edge > >& well_vertices )
         :
-            TetraGen( tetmesh, region, internal_vertices, well_vertices, background ),
+            TetraGen( tetmesh, region, internal_vertices, well_vertices ),
             add_steiner_points_( add_steiner_points ),
             mesh_output_( nil ),
-            mesh_background_( nil ),
             sizemap_( nil )
     {
         fpos_t pos ;
