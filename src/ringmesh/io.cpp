@@ -1001,6 +1001,12 @@ namespace RINGMesh {
                 std::ofstream data( oss_data.str().c_str() ) ;
                 data.precision( 16 ) ;
 
+                std::ostringstream oss_regions ;
+                oss_regions << directory << "/" << file << "-regions.txt" ;
+                std::ofstream regions( oss_regions.str().c_str() ) ;
+                regions << "'" << oss_regions.str() <<std::endl ;
+                regions << "no properties" << std::endl ;
+
                 index_t count = 0 ;
                 // Conversion from (X,Y,Z) to (X,Z,-Y)
                 signed_index_t conversion_sign[3] = { 1, 1, -1 } ;
@@ -1055,6 +1061,7 @@ namespace RINGMesh {
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
                     const RINGMesh::BoundaryModelElement& region = model.region(
                         r ) ;
+                    regions << region.name() << std::endl ;
                     if( mm.cells.nb_tet( r ) > 0 ) {
                         ascii << region.name() << TAB << "TETRA_4" << TAB << 0 << TAB
                             << mm.cells.nb_tet( r ) << std::endl ;
@@ -1073,6 +1080,7 @@ namespace RINGMesh {
                     }
                 }
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+                    regions << interface_name( i, mm ) << std::endl ;
                     if( nb_triangle_interface[i] > 0 ) {
                         ascii << interface_name( i, mm ) << TAB << "TRI_3" << TAB
                             << 0 << TAB << nb_triangle_interface[i] << std::endl ;
