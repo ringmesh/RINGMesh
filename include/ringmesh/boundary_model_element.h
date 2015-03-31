@@ -58,6 +58,7 @@ namespace GEO {
 
 namespace RINGMesh {
     class BoundaryModel ;
+    class Surface ;
 }
 
 namespace RINGMesh {
@@ -498,6 +499,21 @@ namespace RINGMesh {
     } ;
 
 
+    class RINGMESH_API SurfaceTools {
+    public:
+        SurfaceTools( const Surface& surface ) ;
+        ~SurfaceTools() ;
+
+        const GEO::MeshFacetsAABB& aabb() const ;
+        const ColocaterANN& ann() const ;
+
+    private:
+        const Surface& surface_ ;
+
+        GEO::MeshFacetsAABB* aabb_ ;
+        ColocaterANN* ann_ ;
+    } ;
+
     /*!
      * @brief A polygonal manifold surface
      *
@@ -507,6 +523,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Surface : public BoundaryModelElement {
         friend class SurfaceMutator ;
+        friend class SurfaceTools ;
 
     public:
         const static index_t NO_ADJACENT = index_t( - 1 ) ;
@@ -514,7 +531,7 @@ namespace RINGMesh {
         Surface(
             BoundaryModel* model = nil,
             index_t id = NO_ID )
-            : BoundaryModelElement( model, SURFACE, id ), aabb_( nil ), ann_( nil )
+            : BoundaryModelElement( model, SURFACE, id ), tools( *this )
         {
         }
 
@@ -770,9 +787,6 @@ namespace RINGMesh {
             }
         }
 
-        const GEO::MeshFacetsAABB& aabb() const ;
-        const ColocaterANN& ann() const ;
-
         virtual VertexAttributeManager* vertex_attribute_manager() const {
             return &mesh_.vertices.attributes() ;
         }
@@ -783,9 +797,12 @@ namespace RINGMesh {
 
     private:
         GEO::Mesh mesh_ ;
-        GEO::MeshFacetsAABB* aabb_ ;
-        ColocaterANN* ann_ ;
+
+    public:
+        SurfaceTools tools ;
+
     } ;
+
 
     /*!
      * @brief Class to perform modifications of a Surface
