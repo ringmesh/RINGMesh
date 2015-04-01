@@ -1785,6 +1785,143 @@ namespace RINGMesh {
 
         /************************************************************************/
 
+        class GPRSIOHandler: public MacroMeshIOHandler {
+        public:
+            struct Pipe {
+                Pipe( index_t v0_in, index_t v1_in )
+                    : v0( v0_in ), v1( v1_in )
+                {
+                }
+                index_t v0 ;
+                index_t v1 ;
+            } ;
+            virtual bool load( const std::string& filename, MacroMesh& mesh )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a MacroMesh from GPRS not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+            virtual bool save( const MacroMesh& mm, const std::string& filename )
+            {
+                std::string path = GEO::FileSystem::dir_name( filename ) ;
+                std::string directory = GEO::FileSystem::base_name( filename ) ;
+                if( path == "." ) {
+                    path = GEO::FileSystem::get_current_working_directory() ;
+                }
+                std::ostringstream oss ;
+                oss << path << "/" << directory ;
+                std::string full_path = oss.str() ;
+                GEO::FileSystem::create_directory( full_path ) ;
+
+                std::ostringstream oss_pipes ;
+                oss_pipes << full_path << "/pipes.in" ;
+                std::ofstream out_pipes( oss_pipes.str().c_str() ) ;
+
+                std::ostringstream oss_xyz ;
+                oss_xyz << full_path << "/gprs.xyz" ;
+                std::ofstream out_xyz( oss_xyz.str().c_str() ) ;
+                out_xyz.precision( 16 ) ;
+
+                const BoundaryModel& model = mm.model() ;
+                std::vector< index_t > region_offsets( mm.nb_meshes(), 0 ) ;
+                std::vector< index_t > surface_offsets( model.nb_surfaces(), 0 ) ;
+                for( index_t r = 0; r < mm.nb_meshes()-1; r++ ) {
+                    region_offsets[r+1] += region_offsets[r] + mm.mesh( r ).cells.nb() ;
+                }
+                index_t last_region = mm.nb_meshes()-1 ;
+                surface_offsets[0] += region_offsets[last_region] + mm.mesh( last_region ).cells.nb() ;
+                for( index_t s = 0; s < model.nb_surfaces()-1; s++ ) {
+                    surface_offsets[s+1] += surface_offsets[s] + model.surface( s ).nb_cells() ;
+                }
+
+                std::deque< Pipe > pipes ;
+                for( index_t r = 0; r < mm.nb_meshes(); r++ ) {
+                    const GEO::Mesh& mesh = mm.mesh( r ) ;
+                    const BoundaryModelElement& region = model.region( r ) ;
+                    std::vector< index_t > boundary_ids( region.nb_boundaries() ) ;
+                    for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
+                        boundary_ids[s] = region.boundary_id( s ) ;
+                    }
+                    index_t cell_offset = region_offsets[r] ;
+                    std::stack< index_t > S ;
+                    std::vector< bool > visited( mesh.cells.nb(), false ) ;
+                    S.push( 0 ) ;
+                    visited[0] = true ;
+                    do {
+                        index_t c = S.top() ;
+                        S.pop() ;
+                        for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+                            index_t adj = mesh.cells.adjacent( c, f ) ;
+                            if( adj != GEO::NO_CELL ) {
+                                if( visited[adj] ) continue ;
+                                pipes.push_back(
+                                    Pipe( c + cell_offset, adj + cell_offset ) ) ;
+                                S.push( adj ) ;
+                                visited[adj] = true ;
+                            } else {
+                                vec3 query = Utils::mesh_cell_facet_center( mesh, c, f ) ;
+                                for( index_t s = 0; s < boundary_ids.size(); s++ ) {
+                                    index_t s_id = boundary_ids[s] ;
+                                    index_t surface_offset = surface_offsets[s_id] ;
+                                    std::vector< index_t > results ;
+                                    if( model.surface( s_id ).tools.ann().get_colocated(
+                                        query, results ) ) {
+                                        pipes.push_back( Pipe( c + cell_offset, results[0] + surface_offset ) ) ;
+                                    }
+                                }
+                            }
+                        }
+                    } while( !S.empty() ) ;
+                }
+                for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+                    const Surface& surface = model.surface( s ) ;
+                    index_t surface_offset = surface_offsets[s] ;
+                    std::stack< index_t > S ;
+                    std::vector< bool > visited( surface.nb_cells(), false ) ;
+                    S.push( 0 ) ;
+                    visited[0] = true ;
+                    do {
+                        index_t f = S.top() ;
+                        S.pop() ;
+                        for( index_t e = 0; e < surface.nb_vertices_in_facet( f ); e++ ) {
+                            index_t adj = surface.adjacent( f, e ) ;
+                            if( adj != GEO::NO_CELL ) {
+                                if( visited[adj] ) continue ;
+                                pipes.push_back(
+                                    Pipe( f + surface_offset, adj + surface_offset ) ) ;
+                                S.push( adj ) ;
+                                visited[adj] = true ;
+                            }
+                        }
+                    } while( !S.empty() ) ;
+                }
+
+                out_pipes << pipes.size() << std::endl ;
+                for( index_t p = 0; p < pipes.size(); p++ ) {
+                    const Pipe& pipe = pipes[p] ;
+                    out_pipes << pipe.v0 << SPACE << pipe.v1 << std::endl ;
+                }
+
+
+                out_xyz
+                    << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
+                    << std::endl ;
+                for( index_t r = 0; r < mm.nb_meshes(); r++ ) {
+                    const GEO::Mesh& mesh = mm.mesh( r ) ;
+                    for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                        out_xyz << Utils::mesh_cell_center( mesh, c ) << std::endl ;
+                    }
+                }
+
+
+                return true ;
+            }
+
+        } ;
+
+        /************************************************************************/
+
         MacroMeshIOHandler* MacroMeshIOHandler::create( const std::string& format )
         {
             ringmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" ) ;
@@ -1794,6 +1931,7 @@ namespace RINGMesh {
             ringmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" );
             ringmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" );
             ringmesh_register_MacroMeshIOHandler_creator( VTKIOHandler, "vtk" );
+            ringmesh_register_MacroMeshIOHandler_creator( GPRSIOHandler, "gprs" );
 
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
                 format ) ;
