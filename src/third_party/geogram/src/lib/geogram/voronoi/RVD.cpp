@@ -1724,8 +1724,6 @@ namespace {
             vector<index_t>& triangles_;
         };
 
-        // TODO: re-implement 'project' mode
-
         /**
          * \brief Implementation class for computing the restricted Delaunay
          * triangulation of the connected components.
@@ -1747,6 +1745,7 @@ namespace {
 
             static const index_t UNINITIALIZED = index_t(-1);
             static const index_t MULTI_COMP    = index_t(-2);
+            static const index_t ON_BORDER     = index_t(-3);
 
             /**
              * \brief Constructs a new GetConnectedComponentsPrimalTriangles.
@@ -1754,18 +1753,14 @@ namespace {
              * \param[out] triangles where to store the triangles
              * \param[out] vertices where to store the vertices
              * \param[in] dimension dimension of the restricted Voronoi diagram
-             * \param[in] project if true, projects onto the input mesh
-             * \param[in] use_RVC_centroids if true, replaces vertices with
-             *    the centroids of the restricted Voronoi cells
-             * \param[in] seed_is_locked indicates for each seed whether it
-             *    is locked. Locked seeds are not moved, projected or
-             *    replaced by centroids. If left empty, then no seed is locked.
-             * \param[out] vertex_to_seed a pointer to a vector that stores for
-             *    each generated vertex the index of the seed it corresponds to,
-             *    or nil if unused
-             * \param[in] keep_original_seeds if true, whenever a restricted
-             *   Voronoi cell has a single connected component, the seed is
-             *   used instead of the centroid of the component
+             * \param[in] mode a combination of constants defined in RDTMode
+             * \param[in] seed_is_locked specifies for each seed whether it
+             *   can be moved (to RVC centroid or projected on surface). If
+             *   left uninitialized, all the seeds can be moved.
+             * \param[in] AABB an axis-aligned bounding box tree defined on 
+             *   the input surface. It is used if one of (RDT_SELECT_NEAREST,
+             *   RDT_PROJECT_ON_SURFACE) is set in \p mode. If needed and not
+             *   specified, then a new one is created locally.
              */
             GetConnectedComponentsPrimalTriangles(
                 const GenRestrictedVoronoiDiagram& RVD,
@@ -1773,7 +1768,8 @@ namespace {
                 vector<double>& vertices,
                 coord_index_t dimension,
                 RDTMode mode,
-                const std::vector<bool>& seed_is_locked
+                const std::vector<bool>& seed_is_locked,
+                MeshFacetsAABB* AABB = nil
             ) :
                 RVD_(RVD),
                 dimension_(dimension),
@@ -1783,8 +1779,12 @@ namespace {
                 cur_seed_(-1),
                 cur_vertex_(0),
                 use_RVC_centroids_((mode & RDT_RVC_CENTROIDS) != 0),
+                select_nearest_((mode & RDT_SELECT_NEAREST) != 0),
+                project_on_surface_((mode & RDT_PROJECT_ON_SURFACE) != 0),
                 seed_is_locked_(seed_is_locked),
-                prefer_seeds_((mode & RDT_PREFER_SEEDS) != 0) {
+                prefer_seeds_((mode & RDT_PREFER_SEEDS) != 0),
+                AABB_(AABB)
+            {
                 if(prefer_seeds_) {
                     seed_to_vertex_.assign(
                         RVD.delaunay()->nb_vertices(),index_t(UNINITIALIZED)
@@ -1805,6 +1805,25 @@ namespace {
                     begin_connected_component(s1);
                 }
 
+                if(prefer_seeds_ && !component_on_border_) {
+                    // NOTE: there is one vertex shift between
+                    // adjacent facet and adjacent seed, there
+                    // must be something wrong in the way the
+                    // combinatorial information is initialized,
+                    // to be checked !!! (should be the i index
+                    // for both)
+                    for(index_t i=0; i<P.nb_vertices(); ++i) {
+                        index_t j = (i+1) % P.nb_vertices();
+                        if(
+                            P.vertex(i).adjacent_facet() < 0 &&
+                            P.vertex(j).adjacent_seed() < 0
+                        ) {
+                            component_on_border_ = true;
+                            break;
+                        }
+                    }
+                }
+                
                 // Accumulate mass and barycenter
                 index_t vbase = cur_vertex_ * dimension_;
                 for(index_t i = 1; i + 1 < P.nb_vertices(); ++i) {
@@ -1859,40 +1878,112 @@ namespace {
              * \details Terminates the current connected component.
              */
             ~GetConnectedComponentsPrimalTriangles() {
+
+                bool owns_AABB = false;
+                if(select_nearest_ || project_on_surface_) {
+                    if(AABB_ == nil) {
+                        // Construct an axis-aligned bounding box tree,
+                        // do not reorder the mesh (needs to be pre-reordered)
+                        AABB_ = new MeshFacetsAABB(
+                            *const_cast<Mesh*>(RVD_.mesh()),false
+                        );
+                        owns_AABB = true;
+                    }
+                }
+                
                 if(cur_seed_ != -1) {
                     end_connected_component();
                 }
+                
                 if(prefer_seeds_) {
-                    
-                    // Construct an axis-aligned bounding box tree,
-                    // do not reorder the mesh (needs to be pre-reordered)
-                    MeshFacetsAABB AABB(*const_cast<Mesh*>(RVD_.mesh()),false);
-                    
-                    for(index_t s=0; s<seed_to_vertex_.size(); ++s) {
-                        if(
-                           seed_to_vertex_[s] != MULTI_COMP && 
-                           seed_to_vertex_[s] != UNINITIALIZED
-                        ) {
-                            index_t vbase = seed_to_vertex_[s] * dimension_;
-
-                            const double* seed_ptr = 
-                                RVD_.delaunay()->vertex_ptr(s);
-
-                            const double* vertex_ptr = &(vertices_[vbase]);
-
-                            //  If the seed is nearer to the surface than the
-                            // centroid of the connected component of the
-                            // restricted Voronoi cell, then use the seed.
+                    if(select_nearest_) {
+                        for(index_t s=0; s<seed_to_vertex_.size(); ++s) {
                             if(
-                                AABB.squared_distance(vec3(seed_ptr)) <
-                                AABB.squared_distance(vec3(vertex_ptr))
+                                seed_to_vertex_[s] != MULTI_COMP && 
+                                seed_to_vertex_[s] != UNINITIALIZED &&
+                                seed_to_vertex_[s] != ON_BORDER
                             ) {
+                                index_t vbase = seed_to_vertex_[s] * dimension_;
+
+                                const double* seed_ptr = 
+                                    RVD_.delaunay()->vertex_ptr(s);
+
+                                const double* vertex_ptr = &(vertices_[vbase]);
+                                
+                                //  If the seed is nearer to the surface than the
+                                // centroid of the connected component of the
+                                // restricted Voronoi cell, then use the seed.
+
+                                double seed_dist;
+                                vec3 seed_projection;
+                                double vertex_dist;
+                                vec3 vertex_projection;
+
+                                AABB_->nearest_facet(
+                                    vec3(seed_ptr), seed_projection, seed_dist
+                                );
+                                AABB_->nearest_facet(
+                                    vec3(vertex_ptr), vertex_projection, vertex_dist
+                                );
+                                
+                                if(seed_dist < vertex_dist) {
+                                    if(project_on_surface_) {
+                                        for(coord_index_t c = 0; c < dimension_; ++c) {
+                                            vertices_[vbase + c] = seed_projection[c];
+                                        }
+                                    } else {
+                                        for(coord_index_t c = 0; c < dimension_; ++c) {
+                                            vertices_[vbase + c] = seed_ptr[c];
+                                        }
+                                    }
+                                } else {
+                                    if(project_on_surface_) {
+                                        for(coord_index_t c = 0; c < dimension_; ++c) {
+                                            vertices_[vbase + c] = vertex_projection[c];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        
+                        //  Replace all points with the seeds (provided that
+                        // they do not correspond to multiple connected components).
+                        
+                        for(index_t s=0; s<seed_to_vertex_.size(); ++s) {
+                            if(
+                                seed_to_vertex_[s] != MULTI_COMP && 
+                                seed_to_vertex_[s] != UNINITIALIZED &&
+                                seed_to_vertex_[s] != ON_BORDER
+                            ) {
+                                index_t vbase = seed_to_vertex_[s] * dimension_;
+
+                                const double* seed_ptr = 
+                                    RVD_.delaunay()->vertex_ptr(s);
+
                                 for(coord_index_t c = 0; c < dimension_; ++c) {
                                     vertices_[vbase + c] = seed_ptr[c];
                                 }
                             }
                         }
                     }
+                }
+
+                if( (!prefer_seeds_ || !select_nearest_) && project_on_surface_) {
+                    for(index_t v=0; v<vertices_.size()/3; ++v) {
+                        vec3 p(vertices_[3*v], vertices_[3*v+1], vertices_[3*v+2]);
+                        vec3 q;
+                        double sq_dist;
+                        AABB_->nearest_facet(p,q,sq_dist);
+                        vertices_[3*v  ] = q.x;
+                        vertices_[3*v+1] = q.y;
+                        vertices_[3*v+2] = q.z;                        
+                    }
+                }
+
+                if(owns_AABB) {
+                    delete AABB_;
+                    AABB_ = nil;
                 }
             }
 
@@ -1918,15 +2009,18 @@ namespace {
                     vertices_.push_back(0.0);
                 }
                 m_ = 0.0;
+                component_on_border_ = false;
             }
 
             /**
              * \brief Terminates the current connected component.
              */
             void end_connected_component() {
+                
                 if(
                     !use_RVC_centroids_ ||
-                    seed_is_locked(index_t(cur_seed_))
+                    seed_is_locked(index_t(cur_seed_)) ||
+                    component_on_border_ 
                 ) {
                     // Copy seed
                     index_t vbase = cur_vertex_ * dimension_;
@@ -1945,10 +2039,18 @@ namespace {
                     }
                 }
                 if(prefer_seeds_) {
-                    if(seed_to_vertex_[index_t(cur_seed_)] == UNINITIALIZED) {
-                        seed_to_vertex_[index_t(cur_seed_)] = cur_vertex_;
-                    } else {
+                    if(component_on_border_) {  
+                        seed_to_vertex_[index_t(cur_seed_)] = ON_BORDER;
+                    }
+                    switch(seed_to_vertex_[index_t(cur_seed_)]) {
+                    case UNINITIALIZED:
+                        seed_to_vertex_[index_t(cur_seed_)] = cur_vertex_;                        
+                        break;
+                    case ON_BORDER:
+                        break;
+                    default:
                         seed_to_vertex_[index_t(cur_seed_)] = MULTI_COMP;
+                        break;
                     }
                 }
                 ++cur_vertex_;
@@ -1962,11 +2064,14 @@ namespace {
             double m_;
             signed_index_t cur_seed_;
             index_t cur_vertex_;
-            bool project_;   // TODO: not implemented yet.
             bool use_RVC_centroids_;
+            bool select_nearest_;
+            bool project_on_surface_;
             const std::vector<bool>& seed_is_locked_;
             bool prefer_seeds_;
             vector<index_t> seed_to_vertex_;
+            bool component_on_border_;
+            MeshFacetsAABB* AABB_;
         };
 
         /**
@@ -2009,7 +2114,8 @@ namespace {
             vector<index_t>& simplices,
             vector<double>& embedding,
             RDTMode mode,
-            const vector<bool>& seed_is_locked
+            const vector<bool>& seed_is_locked,
+            MeshFacetsAABB* AABB
         ) {
             if(volumetric_) {
                 // For the moment, only simple mode is supported
@@ -2056,7 +2162,7 @@ namespace {
                     RVD_.for_each_polygon(
                         GetConnectedComponentsPrimalTriangles(
                             RVD_, simplices, embedding, RVD_.dimension(),
-                            mode, seed_is_locked
+                            mode, seed_is_locked, AABB
                         )
                     );
                     RVD_.set_symbolic(sym);
@@ -2309,13 +2415,15 @@ namespace GEO {
     void RestrictedVoronoiDiagram::compute_RDT(
         Mesh& RDT,
         RDTMode mode,
-        const vector<bool>& seed_is_locked
+        const vector<bool>& seed_is_locked,
+        MeshFacetsAABB* AABB
     ) {
         vector<index_t> simplices;
         vector<double> embedding;
         compute_RDT(
             simplices, embedding, 
-            mode, seed_is_locked
+            mode, seed_is_locked,
+            AABB
         );
         if(volumetric()) {
             RDT.cells.assign_tet_mesh(dimension(),embedding,simplices,true);
@@ -2323,7 +2431,9 @@ namespace GEO {
             RDT.facets.assign_triangle_mesh(
                 dimension(),embedding,simplices,true
             );
-            mesh_repair(RDT); // Needed to reorient triangles
+            if((mode & RDT_DONT_REPAIR) == 0) {
+                mesh_repair(RDT); // Needed to reorient triangles
+            }
         }
     }
     

@@ -113,6 +113,15 @@ namespace GEO {
      *  are shifted
      */
     void GEOGRAM_API expand_border(Mesh& M, double epsilon);
+
+    /**
+     * \brief Removes the degree 2 vertices in a surface mesh.
+     * \details Degree two vertices cause some combinatorial
+     *   problems in some algorithms, since they make the same
+     *   pair of facets adjacent twice. This function disconnects
+     *   the concerned facets.
+     */
+    void GEOGRAM_API remove_degree2_vertices(Mesh& M);
 }
 
 #endif
