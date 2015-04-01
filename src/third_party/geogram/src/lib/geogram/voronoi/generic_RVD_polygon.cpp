@@ -60,11 +60,12 @@ namespace GEOGen {
                 c < mesh->facets.corners_end(facet); c++
             ) {
                 index_t v = mesh->facet_corners.vertex(c);
+                index_t adjacent_facet = mesh->facet_corners.adjacent_facet(c);
                 Vertex* vx = add_vertex(
                     Vertex(
                         mesh->vertices.point_ptr(v),
                         vertex_weight.is_bound() ? vertex_weight[v] : 1.0,
-                        signed_index_t(mesh->facet_corners.adjacent_facet(c))
+                        signed_index_t(adjacent_facet)
                     )
                 );
                 vx->sym().set_boundary_vertex(v);
@@ -129,6 +130,8 @@ namespace GEOGen {
             }
             std::sort(adj, adj + n);
             for(i = 0; i < n - 1; ++i) {
+                // If this assertion fails, then the mesh probably has a degree2 vertex
+                // (use remove_degree2_vertices() in mesh_preprocessing.h)
                 geo_debug_assert(
                     adj[i] == -1 || adj[i] != adj[i + 1]
                 );
@@ -141,11 +144,12 @@ namespace GEOGen {
                 c < mesh->facets.corners_end(facet); c++
             ) {
                 index_t v = mesh->facet_corners.vertex(c);
+                index_t adjacent_facet = mesh->facet_corners.adjacent_facet(c);
                 add_vertex(
                     Vertex(
                         mesh->vertices.point_ptr(v),
                         vertex_weight.is_bound() ? vertex_weight[v] : 1.0,
-                        signed_index_t(mesh->facet_corners.adjacent_facet(c))
+                        signed_index_t(adjacent_facet)
                     )
                 );
             }
