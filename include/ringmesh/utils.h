@@ -285,6 +285,10 @@ namespace RINGMesh {
 
     class RINGMESH_API Utils {
     public:
+        static double mesh_cell_volume(
+            const GEO::Mesh& M,
+            index_t c ) ;
+
         static vec3 mesh_cell_facet_normal(
             const GEO::Mesh& M,
             index_t c,
@@ -845,7 +849,8 @@ namespace RINGMesh {
             VERTICES, FACETS, CELLS
         } ;
 
-        ColocaterANN( const Surface& mesh ) ;
+        ColocaterANN( const Surface& mesh,
+            const MeshLocation& location = VERTICES ) ;
         ColocaterANN( const Line& mesh ) ;
         ColocaterANN(
             const GEO::Mesh& mesh,
