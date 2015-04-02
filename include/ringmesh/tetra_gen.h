@@ -127,8 +127,6 @@ namespace RINGMesh {
             index_t adj,
             index_t marker ) ;
 
-        void store_edge_attrib() const ;
-
     protected:
         std::vector< vec3 > points_ ;
         std::vector< vec3 > internal_points_ ;
@@ -140,9 +138,9 @@ namespace RINGMesh {
         std::vector< index_t > surface_ptr_ ;
         GEO::Mesh& tetmesh_ ;
         double resolution_ ;
-        GEO::Mesh* background_ ;
         const BoundaryModelElement* region_ ;
-        GEO::Attribute< index_t > attribute_ ;
+        GEO::Attribute< index_t > surface_region_ ;
+        GEO::Attribute< index_t > edge_region_ ;
     } ;
 
 

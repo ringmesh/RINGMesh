@@ -453,8 +453,8 @@ namespace RINGMesh {
         virtual ~Line() {}
 
         /*! @brief Returns the number of segments of the Line */
-        virtual index_t nb_cells() const { return mesh_.vertices.nb() - 1 ;}
-        virtual index_t nb_vertices() const { return mesh_.vertices.nb() ;}
+        virtual index_t nb_cells() const { return mesh_.edges.nb() ; }
+        virtual index_t nb_vertices() const { return mesh_.vertices.nb() ; }
         virtual index_t model_vertex_id( index_t p ) const ;
         virtual const vec3& vertex( index_t p ) const { return mesh_.vertices.point( p ) ;}
 
@@ -481,6 +481,10 @@ namespace RINGMesh {
             mesh_.vertices.create_vertices( vertices.size() ) ;
             for( index_t v = 0; v < vertices.size(); v++ ) {
                 mesh_.vertices.point( v ) = vertices[v] ;
+            }
+
+            for( index_t v = 1; v < vertices.size(); v++ ) {
+                mesh_.edges.create_edge( v-1, v ) ;
             }
         }
 
