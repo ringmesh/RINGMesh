@@ -289,6 +289,7 @@ namespace RINGMesh {
         }
 
         /************************************************************************/
+
         class AsterIOHandler: public MacroMeshIOHandler {
         public:
             virtual bool load( const std::string& filename, MacroMesh& mesh )
@@ -425,6 +426,7 @@ namespace RINGMesh {
 
             }
         } ;
+
         /************************************************************************/
 
         class MMIOHandler: public MacroMeshIOHandler {
@@ -1818,6 +1820,11 @@ namespace RINGMesh {
                 oss_pipes << full_path << "/pipes.in" ;
                 std::ofstream out_pipes( oss_pipes.str().c_str() ) ;
 
+                std::ostringstream oss_vol ;
+                oss_vol << full_path << "/vol.in" ;
+                std::ofstream out_vol( oss_vol.str().c_str() ) ;
+                out_vol.precision( 16 ) ;
+
                 std::ostringstream oss_xyz ;
                 oss_xyz << full_path << "/gprs.xyz" ;
                 std::ofstream out_xyz( oss_xyz.str().c_str() ) ;
@@ -1835,6 +1842,10 @@ namespace RINGMesh {
                     surface_offsets[s+1] += surface_offsets[s] + model.surface( s ).nb_cells() ;
                 }
 
+                std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
+                for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+                    anns[s] = new ColocaterANN( model.surface( s ), ColocaterANN::FACETS ) ;
+                }
                 std::deque< Pipe > pipes ;
                 for( index_t r = 0; r < mm.nb_meshes(); r++ ) {
                     const GEO::Mesh& mesh = mm.mesh( r ) ;
@@ -1847,43 +1858,64 @@ namespace RINGMesh {
                     std::stack< index_t > S ;
                     std::vector< bool > visited( mesh.cells.nb(), false ) ;
                     S.push( 0 ) ;
-                    visited[0] = true ;
                     do {
                         index_t c = S.top() ;
                         S.pop() ;
+                        if( visited[c] ) continue ;
+                        visited[c] = true ;
                         for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                             index_t adj = mesh.cells.adjacent( c, f ) ;
                             if( adj != GEO::NO_CELL ) {
-                                if( visited[adj] ) continue ;
                                 pipes.push_back(
                                     Pipe( c + cell_offset, adj + cell_offset ) ) ;
                                 S.push( adj ) ;
-                                visited[adj] = true ;
                             } else {
                                 vec3 query = Utils::mesh_cell_facet_center( mesh, c, f ) ;
                                 for( index_t s = 0; s < boundary_ids.size(); s++ ) {
                                     index_t s_id = boundary_ids[s] ;
                                     index_t surface_offset = surface_offsets[s_id] ;
                                     std::vector< index_t > results ;
-                                    if( model.surface( s_id ).tools.ann().get_colocated(
-                                        query, results ) ) {
-                                        pipes.push_back( Pipe( c + cell_offset, results[0] + surface_offset ) ) ;
+                                    if( anns[s_id]->get_colocated( query,
+                                        results ) ) {
+                                        pipes.push_back(
+                                            Pipe( c + cell_offset,
+                                                results[0] + surface_offset ) ) ;
+                                        break ;
                                     }
                                 }
                             }
                         }
                     } while( !S.empty() ) ;
                 }
+
+                index_t nb_edges = 0 ;
+                for( index_t l = 0; l < model.nb_lines(); l++ ) {
+                    nb_edges += model.line( l ).nb_cells() ;
+                }
+                std::vector< index_t > temp ; temp.reserve( 3 ) ;
+                std::vector< std::vector< index_t > > edges( nb_edges, temp ) ;
+                std::vector< vec3 > edge_vertices( nb_edges ) ;
+                index_t count_edge = 0 ;
+                for( index_t l = 0; l < model.nb_lines(); l++ ) {
+                    const Line& line = model.line( l ) ;
+                    for( index_t e = 0; e < line.nb_cells(); e++ ) {
+                        edge_vertices[count_edge++] = 0.5
+                            * ( line.vertex( e ) + line.vertex( e + 1 ) ) ;
+                    }
+                }
+                ColocaterANN ann( edge_vertices ) ;
+
                 for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
                     const Surface& surface = model.surface( s ) ;
                     index_t surface_offset = surface_offsets[s] ;
                     std::stack< index_t > S ;
                     std::vector< bool > visited( surface.nb_cells(), false ) ;
                     S.push( 0 ) ;
-                    visited[0] = true ;
                     do {
                         index_t f = S.top() ;
                         S.pop() ;
+                        if( visited[f] ) continue ;
+                        visited[f] = true ;
                         for( index_t e = 0; e < surface.nb_vertices_in_facet( f ); e++ ) {
                             index_t adj = surface.adjacent( f, e ) ;
                             if( adj != GEO::NO_CELL ) {
@@ -1891,16 +1923,40 @@ namespace RINGMesh {
                                 pipes.push_back(
                                     Pipe( f + surface_offset, adj + surface_offset ) ) ;
                                 S.push( adj ) ;
-                                visited[adj] = true ;
+                            } else {
+                                vec3 query = 0.5
+                                    * ( surface.vertex( f, e )
+                                        + surface.vertex( f,
+                                            surface.next_in_facet( f, e ) ) ) ;
+
+                                std::vector< index_t > results ;
+                                if( ann.get_colocated( query, results ) ) {
+                                    edges[results[0]].push_back( surface_offset + f ) ;
+                                } else {
+                                    ringmesh_assert_not_reached ;
+                                }
                             }
                         }
                     } while( !S.empty() ) ;
                 }
 
-                out_pipes << pipes.size() << std::endl ;
+                index_t nb_pipes = pipes.size() ;
+                for( index_t e = 0; e < edges.size(); e++ ) {
+                    nb_pipes += binomial_coef( edges[e].size() ) ;
+                }
+                out_pipes << nb_pipes << std::endl ;
                 for( index_t p = 0; p < pipes.size(); p++ ) {
                     const Pipe& pipe = pipes[p] ;
                     out_pipes << pipe.v0 << SPACE << pipe.v1 << std::endl ;
+                }
+                for( index_t e = 0; e < edges.size(); e++ ) {
+                    const std::vector< index_t > vertices = edges[e] ;
+                    for( index_t v0 = 0; v0 < vertices.size()-1; v0++ ) {
+                        for( index_t v1 = v0 + 1; v1 < vertices.size(); v1++ ) {
+                            out_pipes << vertices[v0] << SPACE << vertices[v1]
+                                << std::endl ;
+                        }
+                    }
                 }
 
 
@@ -1911,13 +1967,52 @@ namespace RINGMesh {
                     const GEO::Mesh& mesh = mm.mesh( r ) ;
                     for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                         out_xyz << Utils::mesh_cell_center( mesh, c ) << std::endl ;
+                        out_vol << Utils::mesh_cell_volume( mesh, c ) << std::endl ;
+                    }
+                }
+                for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+                    const Surface& surface = model.surface( s ) ;
+                    for( index_t f = 0; f < surface.nb_cells(); f++ ) {
+                        out_xyz << surface.facet_barycenter( f ) << std::endl ;
+                        out_vol << surface.facet_area( f ) << std::endl ;
                     }
                 }
 
+                for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+                    delete anns[s] ;
+                }
 
                 return true ;
             }
+            index_t binomial_coef( index_t n ) const
+            {
+                switch( n ) {
+                    case 1:
+                        return 0 ;
+                    case 2:
+                        return 1 ;
+                    case 3:
+                        return 3 ;
+                    case 4:
+                        return 6 ;
+                    case 5:
+                        return 10 ;
+                    case 6:
+                        return 15 ;
+                    case 7:
+                        return 21 ;
+                    case 8:
+                        return 28 ;
+                    case 9:
+                        return 36 ;
+                    case 10:
+                        return 45 ;
+                    default:
+                        ringmesh_assert_not_reached ;
+                        return 0 ;
 
+                }
+            }
         } ;
 
         /************************************************************************/
