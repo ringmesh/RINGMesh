@@ -435,7 +435,11 @@ namespace RINGMesh {
         const std::vector< vec3 >& vertices )
     {
         index_t result = find_line( vertices ) ;
-        if( result != NO_ID ) {return result ;} else {return create_line( vertices ) ;}
+        if( result != NO_ID ) {
+            return result ;
+        } else {
+            return create_line( vertices ) ;
+        }
     }
 
 

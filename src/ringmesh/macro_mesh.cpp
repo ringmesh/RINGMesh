@@ -880,13 +880,13 @@ namespace RINGMesh {
     }
 
 
-
     MacroMeshTools::MacroMeshTools( MacroMesh& mm )
         : mm_( mm ),
           facet_aabb_( mm.nb_meshes(), nil ),
           tet_aabb_( mm.nb_meshes(), nil )
     {
     }
+
     MacroMeshTools::~MacroMeshTools()
     {
         for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
