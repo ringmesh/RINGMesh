@@ -94,22 +94,10 @@ namespace RINGMesh {
         void initialize_storage( index_t nb_points, index_t nb_tets ) ;
         void set_point( index_t index, const double* point ) ;
         void set_tetra( index_t index, int* tet, index_t nb_lines, index_t nb_triangles ) ;
-        void set_triangle( index_t index, int * triangle, index_t nb_lines ) ;
-        void set_line( index_t index, int * line ) ;
-        void set_tetra_adjacent( index_t index, index_t face, signed_index_t adj ) ;
-        void set_face_marker(
-            index_t tri,
-            index_t marker ) ;
-        void set_tetra_face_marker(
-            index_t tet,
-            index_t adj,
-            index_t marker ) ;
 
     protected:
         GEO::Mesh& tetmesh_ ;
         const BoundaryModelElement* region_ ;
-        GEO::Attribute< index_t > surface_region_ ;
-        GEO::Attribute< index_t > edge_region_ ;
         index_t internal_vertices_ptr_ ;
         bool refine_ ;
     } ;
@@ -142,19 +130,11 @@ namespace RINGMesh {
         virtual bool tetrahedralize() ;
 
         static status_t my_message_cb( message_t * msg, void *user_data ) ;
-        static status_t get_size_value(
-            meshgems_integer i,
-            meshgems_real* size,
-            void *user_data ) ;
-
-    private:
-        double get_resolution_value( signed_index_t i ) ;
 
     private:
         context_t* context_ ;
         mesh_t* mesh_input_ ;
         mesh_t* mesh_output_ ;
-        sizemap_t* sizemap_ ;
         tetra_session_t* tms_ ;
     } ;
 #endif
