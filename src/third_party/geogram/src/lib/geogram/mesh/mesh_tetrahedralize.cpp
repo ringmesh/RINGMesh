@@ -78,14 +78,14 @@ namespace GEO {
                 << std::endl;
             return false;
         }
-        for(index_t c=0; c<M.facet_corners.nb(); ++c) {
-            if(M.facet_corners.adjacent_facet(c) == NO_FACET) {
-                Logger::err("TetMeshing")
-                    << "Mesh is not closed"
-                    << std::endl;
-                return false;
-            }
-        }
+//        for(index_t c=0; c<M.facet_corners.nb(); ++c) {
+//            if(M.facet_corners.adjacent_facet(c) == NO_FACET) {
+//                Logger::err("TetMeshing")
+//                    << "Mesh is not closed"
+//                    << std::endl;
+//                return false;
+//            }
+//        }
 
         Logger::out("TetMeshing") << "Tetrahedralizing..." << std::endl;
         

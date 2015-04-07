@@ -804,13 +804,13 @@ namespace RINGMesh {
             const std::vector< T >& data,
             bool T_is_a_pointer )
         {
-            signed_index_t nb_points = 0 ;
+            index_t nb_points = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
                 nb_points += data[ i ]->nb_vertices() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
-            signed_index_t cur_id = 0 ;
+            index_t cur_id = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
                 for( index_t p = 0; p < data[ i ]->nb_vertices(); p++, cur_id++ ) {
                     points_[ cur_id ] = data[ i ]->vertex( p ) ;

@@ -87,29 +87,12 @@ namespace RINGMesh {
         index_t point_index( index_t f, index_t v ) const { return triangles_[3*f+v] ; }
         const vec3& point( index_t f, index_t v ) const { return points_[triangles_[3*f+v]] ; }
         const vec3& point( index_t v ) const { return points_[v] ; }
-        signed_index_t surface_id( index_t f ) const {
-            for( index_t i = 1; i < surface_id_.size(); i++ ) {
-                if( f < surface_ptr_[i] ) return surface_id_[i-1] ;
-            }
-            return  surface_id_.back() ;
-        }
-        signed_index_t* surface_id_ptr( index_t f ) {
-            for( index_t i = 1; i < surface_id_.size(); i++ ) {
-                if( f < surface_ptr_[i] ) return &surface_id_[i-1] ;
-            }
-            return  &surface_id_.back() ;
-        }
-        signed_index_t well_id( index_t f ) const {
-            for( index_t i = 1; i < well_ptr_.size(); i++ ) {
-                if( f < well_ptr_[i] ) return i-1 ;
-            }
-            return  well_ptr_.size()-1 ;
-        }
 
     protected:
         TetraGen(
             GEO::Mesh& tetmesh,
             const BoundaryModelElement* region,
+            bool refine,
             const std::vector< vec3 >& internal_vertices,
             const std::vector< std::vector< Edge > >& well_edges ) ;
 
@@ -130,17 +113,14 @@ namespace RINGMesh {
     protected:
         std::vector< vec3 > points_ ;
         std::vector< vec3 > internal_points_ ;
-        std::vector< Edge > well_edges_ ;
-        std::vector< index_t > well_ptr_ ;
-        std::vector< signed_index_t > well_indices_ ;
         std::vector< signed_index_t > triangles_ ;
-        std::vector< signed_index_t > surface_id_ ;
-        std::vector< index_t > surface_ptr_ ;
         GEO::Mesh& tetmesh_ ;
         double resolution_ ;
         const BoundaryModelElement* region_ ;
         GEO::Attribute< index_t > surface_region_ ;
         GEO::Attribute< index_t > edge_region_ ;
+        index_t internal_vertices_ptr_ ;
+        bool refine_ ;
     } ;
 
 
@@ -185,7 +165,6 @@ namespace RINGMesh {
         double get_resolution_value( signed_index_t i ) ;
 
     private:
-        bool add_steiner_points_ ;
         context_t* context_ ;
         mesh_t* mesh_input_ ;
         mesh_t* mesh_output_ ;

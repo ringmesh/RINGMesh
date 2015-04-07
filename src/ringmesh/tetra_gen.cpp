@@ -42,6 +42,9 @@
 #include <ringmesh/tetra_gen.h>
 #include <ringmesh/boundary_model_element.h>
 
+#include <geogram/mesh/mesh_tetrahedralize.h>
+#include <geogram/mesh/mesh_io.h>
+
 #include <iomanip>
 #include <stack>
 
@@ -109,6 +112,7 @@ namespace RINGMesh {
     TetraGen::TetraGen(
         GEO::Mesh& tetmesh,
         const BoundaryModelElement* region,
+        bool refine,
         const std::vector< vec3 >& internal_vertices,
         const std::vector< std::vector< Edge > >& well_edges )
         :
@@ -117,119 +121,83 @@ namespace RINGMesh {
             resolution_( 0 ),
             region_( region ),
             surface_region_( tetmesh.facets.attributes(), surface_att_name ),
-            edge_region_( tetmesh.edges.attributes(), surface_att_name )
+            edge_region_( tetmesh.edges.attributes(), surface_att_name ),
+            refine_( refine )
     {
+
+
+        index_t nb_surfaces = region->nb_boundaries() ;
+        std::vector< const BoundaryModelElement* > unique_surfaces ;
+        unique_surfaces.reserve( nb_surfaces ) ;
+        std::vector< index_t > surface_id ;
+        index_t nb_points = 0, nb_facets = 0 ;
+        for( index_t s = 0; s < nb_surfaces; s++ ) {
+            const BoundaryModelElement& surface = region->boundary( s ) ;
+            if( Utils::contains( surface_id, surface.id() ) ) continue ;
+            nb_points += surface.nb_vertices() ;
+            nb_facets += surface.nb_cells() ;
+
+            surface_id.push_back( surface.id() ) ;
+            unique_surfaces.push_back( &surface ) ;
+        }
+
+        index_t nb_points_without_well = nb_points ;
+        nb_points += well_edges.size() ;
+        MakeUnique uniqueID( unique_surfaces, true ) ;
+        for( index_t w = 0; w < well_edges.size(); w++ ) {
+            uniqueID.add_edges( well_edges[w] ) ;
+        }
+        uniqueID.unique() ;
+
+        std::vector< vec3 > unique_points ;
+        uniqueID.unique_points( unique_points ) ;
+        const std::vector< index_t >& unique_indices = uniqueID.indices() ;
+        internal_vertices_ptr_ = unique_points.size() ;
+        tetmesh_.vertices.create_vertices(
+            internal_vertices_ptr_ + internal_vertices.size() ) ;
+        for( index_t p = 0; p < unique_points.size(); p++ ) {
+            tetmesh_.vertices.point( p ) = unique_points[p] ;
+        }
+        for( index_t p = 0; p < internal_vertices.size(); p++ ) {
+            tetmesh_.vertices.point( internal_vertices_ptr_ + p ) =
+                internal_vertices[p] ;
+        }
+
         if( !well_edges.empty() ) {
             index_t nb_well_edges = 0 ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 nb_well_edges += well_edges[w].size() ;
             }
-            well_edges_.reserve( nb_well_edges ) ;
-            well_ptr_.reserve( well_edges.size() + 1 ) ;
-            well_ptr_.push_back( 0 ) ;
+//            tetmesh_.edges.create_edges( nb_well_edges ) ;
+            index_t cur_vertex_id = nb_points_without_well ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 for( index_t e = 0; e < well_edges[w].size(); e++ ) {
-                    well_edges_.push_back( well_edges[w][e] ) ;
+                    const Edge& cur_edge = well_edges[w][e] ;
+                    index_t cur_id = tetmesh_.edges.create_edge(
+                        unique_indices[cur_vertex_id++ ],
+                        unique_indices[cur_vertex_id++ ] ) ;
+                    edge_region_[cur_id] = w ;
                 }
-                well_ptr_.push_back( well_ptr_[w] + well_edges[w].size() ) ;
             }
         }
 
-        index_t first_index = 1 ;
-        index_t nb_surfaces = region->nb_boundaries() ;
-        std::vector< const BoundaryModelElement* > unique_surfaces ;
-        unique_surfaces.reserve( nb_surfaces ) ;
-        surface_id_.reserve( nb_surfaces ) ;
-        surface_ptr_.reserve( nb_surfaces + 1 ) ;
-        surface_ptr_.push_back( 0 ) ;
-        signed_index_t nb_points = 0, nb_facets = 0 ;
-        for( index_t s = 0; s < nb_surfaces; s++ ) {
-            const BoundaryModelElement& surface = region->boundary( s ) ;
-            if( Utils::contains( surface_id_,
-                static_cast< signed_index_t >( surface.id() ) ) ) continue ;
-            nb_points += surface.nb_vertices() ;
-            nb_facets += surface.nb_cells() ;
-
-            surface_id_.push_back( surface.id() ) ;
-            unique_surfaces.push_back( &surface ) ;
-        }
-
-        signed_index_t nb_points_without_well = nb_points ;
-        nb_points += well_edges.size() ;
-        points_.reserve( nb_points ) ;
-        triangles_.reserve( 3*nb_facets ) ;
-
-        MakeUnique uniqueID( unique_surfaces, true ) ;
-        uniqueID.add_edges( well_edges_ ) ;
-        uniqueID.unique() ;
-
-        const std::vector< vec3 >& unique_points = uniqueID.points() ;
-        const std::vector< index_t >& unique_indices = uniqueID.indices() ;
-        signed_index_t offset = 0, cur_id = 0 ;
-        for( index_t p = 0; p < unique_indices.size(); p++ ) {
-            if( cur_id == unique_indices[p] ) {
-                cur_id++ ;
-                points_.push_back( unique_points[unique_indices[p] + offset] ) ;
-            } else {
-                offset++ ;
-            }
-        }
-
-        well_indices_.reserve( well_edges_.size()*2 ) ;
-        for( index_t i = nb_points_without_well; i < unique_indices.size(); i++ ) {
-            well_indices_.push_back( unique_indices[i]+first_index ) ;
-        }
-
-        offset = 0 ;
+        index_t offset = 0 ;
+        index_t cur_facet = 0 ;
+        tetmesh_.facets.create_triangles( nb_facets ) ;
         for( index_t s = 0; s < unique_surfaces.size(); s++ ) {
-            double area = 0 ;
             const Surface& surface = dynamic_cast< const Surface& >( *unique_surfaces[s] ) ;
             for( index_t t = 0; t < surface.nb_cells(); t++ ) {
-                area += surface.facet_area( t ) ;
-                if( surface.is_triangle( t ) ) {
-                    for( index_t v = 0; v < 3; v++ ) {
-                        triangles_.push_back(
-                            unique_indices[offset + surface.surf_vertex_id( t, v )]+first_index  ) ;
-                    }
-                } else {
-                    double diag0 = length(
-                        surface.vertex( t, 0 ) - surface.vertex( t, 2 ) ) ;
-                    double diag1 = length(
-                        surface.vertex( t, 1 ) - surface.vertex( t, 3 ) ) ;
-                    if( diag0 < diag1 ) {
-                        for( index_t v = 0; v < 3; v++ ) {
-                            triangles_.push_back(
-                                unique_indices[offset + surface.surf_vertex_id( t, v )]+first_index ) ;
-                        }
-
-                        triangles_.push_back(
-                            unique_indices[offset + surface.surf_vertex_id( t, 0 )]+first_index ) ;
-                        for( index_t v = 2; v < 4; v++ ) {
-                            triangles_.push_back(
-                                unique_indices[offset + surface.surf_vertex_id( t, v )]+first_index ) ;
-                        }
-                    } else {
-                        for( index_t v = 1; v < 4; v++ ) {
-                            triangles_.push_back(
-                                unique_indices[offset + surface.surf_vertex_id( t, v )]+first_index ) ;
-                        }
-
-                        for( index_t v = 0; v < 2; v++ ) {
-                            triangles_.push_back(
-                                unique_indices[offset + surface.surf_vertex_id( t, v )]+first_index ) ;
-                        }
-                        triangles_.push_back(
-                            unique_indices[offset + surface.surf_vertex_id( t, 3 )]+first_index ) ;
-                    }
-
+                ringmesh_debug_assert( surface.is_triangle( t ) ) ;
+                for( index_t v = 0; v < 3; v++ ) {
+                    tetmesh_.facets.set_vertex( cur_facet, v,
+                        unique_indices[offset + surface.surf_vertex_id( t, v )] ) ;
                 }
+                surface_region_[cur_facet++] = surface.id() ;
+
             }
             offset += surface.nb_vertices() ;
-            surface_ptr_.push_back( nb_triangles() ) ;
-            area /= static_cast< double >( surface.nb_cells() ) ;
-            double r = sqrt( (double)(4 * area / sqrt( (double)3 )) ) ;
-            resolution_ = std::max( r, resolution_ ) ;
         }
+        tetmesh_.facets.connect() ;
     }
 
     TetraGen::~TetraGen()
@@ -325,176 +293,177 @@ namespace RINGMesh {
         const std::vector< vec3 >& internal_vertices,
         const std::vector< std::vector< Edge > >& well_edges )
         :
-            TetraGen( tetmesh, region, internal_vertices, well_edges )
+            TetraGen( tetmesh, region, add_steiner_points, internal_vertices, well_edges )
     {
-        tetgen_input_.initialize() ;
-        tetgen_input_.firstnumber = 1 ;
-        tetgen_input_.numberofpoints = nb_total_points() ;
-        tetgen_input_.pointlist = new double[tetgen_input_.numberofpoints*3] ;
-
-#pragma omp parallel for
-        for( index_t p = 0; p < nb_points(); p++ ) {
-            tetgen_input_.pointlist[3*p] = points_[p].x ;
-            tetgen_input_.pointlist[3*p+1] = points_[p].y ;
-            tetgen_input_.pointlist[3*p+2] = points_[p].z ;
-        }
-
-        tetgen_input_.numberoffacets = nb_triangles() ;
-        tetgen_input_.facetlist = new GEO_3rdParty::tetgenio::facet[tetgen_input_.numberoffacets] ;
-        tetgen_input_.facetmarkerlist = new int[tetgen_input_.numberoffacets] ;
-
-#pragma omp parallel for
-        for( index_t f = 0; f < nb_triangles(); f++ ) {
-            GEO_3rdParty::tetgenio::facet* F = &( tetgen_input_.facetlist[f] ) ;
-            GEO_3rdParty::tetgenio::init( F ) ;
-            F->numberofpolygons = 1 ;
-            F->polygonlist = new GEO_3rdParty::tetgenio::polygon[F->numberofpolygons] ;
-            GEO_3rdParty::tetgenio::polygon* P = F->polygonlist ;
-            GEO_3rdParty::tetgenio::init( P ) ;
-            P->numberofvertices = 3 ;
-            P->vertexlist = new int[P->numberofvertices] ;
-            for( index_t v = 0; v < 3; v++ ) {
-                P->vertexlist[v] = point_index( f, v ) ;
-            }
-            F->numberofholes = 0 ;
-            F->holelist = nil ;
-            tetgen_input_.facetmarkerlist[f] = surface_id( f ) + 1 ; // tetgen starts at 0 and not -1
-        }
-
-        tetgen_input_.numberofedges = well_edges_.size();
-        tetgen_input_.edgelist = new int[tetgen_input_.numberofedges*2] ;
-        std::copy(well_indices_.begin(), well_indices_.end(), tetgen_input_.edgelist);
-
-#pragma omp parallel for
-        for( index_t p = 0; p < nb_internal_points(); p++ ) {
-            tetgen_input_.pointlist[3*(p+nb_points())] = internal_points_[p].x ;
-            tetgen_input_.pointlist[3*(p+nb_points())+1] = internal_points_[p].y ;
-            tetgen_input_.pointlist[3*(p+nb_points())+2] = internal_points_[p].z ;
-        }
-
-        //todo
-        /*
-        bool use_background_mesh = background_ && background_->is_resolution_set() ;
-        if( use_background_mesh ) {
-            tetgen_background_.initialize() ;
-            tetgen_background_.firstnumber = 0 ;
-            tetgen_background_.numberofpoints = background_->nb_points() ;
-            tetgen_background_.pointlist =
-                new double[tetgen_background_.numberofpoints * 3] ;
-            tetgen_background_.numberofpointmtrs = 1 ;
-            tetgen_background_.pointmtrlist =
-                new double[tetgen_background_.numberofpoints * tetgen_background_.numberofpointmtrs] ;
-#pragma omp parallel for
-            for( index_t p = 0; p < tetgen_background_.numberofpoints; p++ ) {
-                tetgen_background_.pointlist[3*p] = background_->vertex( p ).x ;
-                tetgen_background_.pointlist[3*p+1] = background_->vertex( p ).y ;
-                tetgen_background_.pointlist[3*p+2] = background_->vertex( p ).z ;
-                tetgen_background_.pointmtrlist[p] = background_->resolution( p ) ;
-            }
-
-            tetgen_background_.numberofcorners = 4 ;
-            tetgen_background_.numberoftetrahedra = background_->nb_tetra() ;
-            tetgen_background_.tetrahedronlist =
-                new int[tetgen_background_.numberoftetrahedra * tetgen_background_.numberofcorners] ;
-#pragma omp parallel for
-            for( index_t t = 0; t < tetgen_background_.numberoftetrahedra; t++ ) {
-                for( index_t p = 0; p < tetgen_background_.numberofcorners; p++ ) {
-                    tetgen_background_.tetrahedronlist[4*t+p] = background_->vertex_index( t, p ) ;
-                }
-            }
-        }
-        */
-
-
-        std::ostringstream cmd_line ;
-        cmd_line << "QpYfnn" ;
-        if( add_steiner_points ) {
-            cmd_line << "q0.9" ;
-            bool use_background_mesh = false ;
-            if( use_background_mesh ) {
-                cmd_line << "m" ;
-            } else {
-                cmd_line << std::fixed ;
-                cmd_line << "a" << sqrt( (double)2) * resolution_ * resolution_ * resolution_ / static_cast< double >( 12 ) ;
-
-            }
-        }
-        tetgen_args_.parse_commandline( const_cast< char* >( cmd_line.str().c_str() ) ) ;
+//        tetgen_input_.initialize() ;
+//        tetgen_input_.firstnumber = 1 ;
+//        tetgen_input_.numberofpoints = nb_total_points() ;
+//        tetgen_input_.pointlist = new double[tetgen_input_.numberofpoints*3] ;
+//
+//#pragma omp parallel for
+//        for( index_t p = 0; p < nb_points(); p++ ) {
+//            tetgen_input_.pointlist[3*p] = points_[p].x ;
+//            tetgen_input_.pointlist[3*p+1] = points_[p].y ;
+//            tetgen_input_.pointlist[3*p+2] = points_[p].z ;
+//        }
+//
+//        tetgen_input_.numberoffacets = nb_triangles() ;
+//        tetgen_input_.facetlist = new GEO_3rdParty::tetgenio::facet[tetgen_input_.numberoffacets] ;
+//        tetgen_input_.facetmarkerlist = new int[tetgen_input_.numberoffacets] ;
+//
+//#pragma omp parallel for
+//        for( index_t f = 0; f < nb_triangles(); f++ ) {
+//            GEO_3rdParty::tetgenio::facet* F = &( tetgen_input_.facetlist[f] ) ;
+//            GEO_3rdParty::tetgenio::init( F ) ;
+//            F->numberofpolygons = 1 ;
+//            F->polygonlist = new GEO_3rdParty::tetgenio::polygon[F->numberofpolygons] ;
+//            GEO_3rdParty::tetgenio::polygon* P = F->polygonlist ;
+//            GEO_3rdParty::tetgenio::init( P ) ;
+//            P->numberofvertices = 3 ;
+//            P->vertexlist = new int[P->numberofvertices] ;
+//            for( index_t v = 0; v < 3; v++ ) {
+//                P->vertexlist[v] = point_index( f, v ) ;
+//            }
+//            F->numberofholes = 0 ;
+//            F->holelist = nil ;
+//            tetgen_input_.facetmarkerlist[f] = surface_id( f ) + 1 ; // tetgen starts at 0 and not -1
+//        }
+//
+//        tetgen_input_.numberofedges = well_edges_.size();
+//        tetgen_input_.edgelist = new int[tetgen_input_.numberofedges*2] ;
+//        std::copy(well_indices_.begin(), well_indices_.end(), tetgen_input_.edgelist);
+//
+//#pragma omp parallel for
+//        for( index_t p = 0; p < nb_internal_points(); p++ ) {
+//            tetgen_input_.pointlist[3*(p+nb_points())] = internal_points_[p].x ;
+//            tetgen_input_.pointlist[3*(p+nb_points())+1] = internal_points_[p].y ;
+//            tetgen_input_.pointlist[3*(p+nb_points())+2] = internal_points_[p].z ;
+//        }
+//
+//        //todo
+//        /*
+//        bool use_background_mesh = background_ && background_->is_resolution_set() ;
+//        if( use_background_mesh ) {
+//            tetgen_background_.initialize() ;
+//            tetgen_background_.firstnumber = 0 ;
+//            tetgen_background_.numberofpoints = background_->nb_points() ;
+//            tetgen_background_.pointlist =
+//                new double[tetgen_background_.numberofpoints * 3] ;
+//            tetgen_background_.numberofpointmtrs = 1 ;
+//            tetgen_background_.pointmtrlist =
+//                new double[tetgen_background_.numberofpoints * tetgen_background_.numberofpointmtrs] ;
+//#pragma omp parallel for
+//            for( index_t p = 0; p < tetgen_background_.numberofpoints; p++ ) {
+//                tetgen_background_.pointlist[3*p] = background_->vertex( p ).x ;
+//                tetgen_background_.pointlist[3*p+1] = background_->vertex( p ).y ;
+//                tetgen_background_.pointlist[3*p+2] = background_->vertex( p ).z ;
+//                tetgen_background_.pointmtrlist[p] = background_->resolution( p ) ;
+//            }
+//
+//            tetgen_background_.numberofcorners = 4 ;
+//            tetgen_background_.numberoftetrahedra = background_->nb_tetra() ;
+//            tetgen_background_.tetrahedronlist =
+//                new int[tetgen_background_.numberoftetrahedra * tetgen_background_.numberofcorners] ;
+//#pragma omp parallel for
+//            for( index_t t = 0; t < tetgen_background_.numberoftetrahedra; t++ ) {
+//                for( index_t p = 0; p < tetgen_background_.numberofcorners; p++ ) {
+//                    tetgen_background_.tetrahedronlist[4*t+p] = background_->vertex_index( t, p ) ;
+//                }
+//            }
+//        }
+//        */
+//
+//
+//        std::ostringstream cmd_line ;
+//        cmd_line << "QpYfnn" ;
+//        if( add_steiner_points ) {
+//            cmd_line << "q0.9" ;
+//            bool use_background_mesh = false ;
+//            if( use_background_mesh ) {
+//                cmd_line << "m" ;
+//            } else {
+//                cmd_line << std::fixed ;
+//                cmd_line << "a" << sqrt( (double)2) * resolution_ * resolution_ * resolution_ / static_cast< double >( 12 ) ;
+//
+//            }
+//        }
+//        tetgen_args_.parse_commandline( const_cast< char* >( cmd_line.str().c_str() ) ) ;
     }
 
     bool TetraGen_TetGen::tetrahedralize()
     {
-        tetgen_output_.deinitialize() ;
-        try {
-            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_input_,
-                &tetgen_output_ ) ;
-        } catch( ... ) {
-            std::cerr << "Encountered a problem..."
-                << std::endl ;
-            return false ;
-        }
-
-        if( tetgen_output_.numberofpoints == 0 ) return false ;
-        index_t nb_triangles = 0;
-        index_t nb_lines = 0;
-
-//#pragma omp parallel for
-        for( index_t f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
-            signed_index_t face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
-            if( face_marker == -1 ) continue ;
-            nb_triangles++ ;
-        }
-//#pragma omp parallel for
+        GEO::mesh_tetrahedralize( tetmesh_, false, refine_, 1.0 ) ;
+//        tetgen_output_.deinitialize() ;
+//        try {
+//            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_input_,
+//                &tetgen_output_ ) ;
+//        } catch( ... ) {
+//            std::cerr << "Encountered a problem..."
+//                << std::endl ;
+//            return false ;
+//        }
+//
+//        if( tetgen_output_.numberofpoints == 0 ) return false ;
+//        index_t nb_triangles = 0;
+//        index_t nb_lines = 0;
+//
+////#pragma omp parallel for
+//        for( index_t f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
+//            signed_index_t face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
+//            if( face_marker == -1 ) continue ;
+//            nb_triangles++ ;
+//        }
+////#pragma omp parallel for
+////        for( index_t l = 0; l < tetgen_output_.numberofedges; l++ ) {
+////            signed_index_t line_marker = tetgen_output_.edgemarkerlist[l] - 1 ;
+////            if( line_marker == -1 ) continue ;
+////            nb_lines++ ;
+////        }
+//        initialize_storage( tetgen_output_.numberofpoints,
+//            tetgen_output_.numberoftetrahedra, nb_triangles, nb_lines ) ;
+////#pragma omp parallel for
+//        for( index_t p = 0; p < tetgen_output_.numberofpoints; p++ ) {
+//            set_point( p, &tetgen_output_.pointlist[3 * p] ) ;
+//        }
+////#pragma omp parallel for
+//        for( index_t p = 0; p < tetgen_output_.numberoftetrahedra; p++ ) {
+//            set_tetra( p, &tetgen_output_.tetrahedronlist[4 * p], nb_lines, nb_triangles ) ;
+//        }
+////#pragma omp parallel for
+//        for( index_t p = 0; p < tetgen_output_.numberoftetrahedra; p++ ) {
+//            for( index_t f = 0; f < 4; f++ ) {
+//                signed_index_t adj = std::max( tetgen_output_.neighborlist[4 * p + f]-1 , -1 ) ;
+//                set_tetra_adjacent( p, f, adj ) ;
+//            }
+//        }
+//        index_t cur_index_triangle = 0 ;
+//        std::vector< index_t > temp ;
+//        temp.reserve( 8 ) ;
+//        std::vector< std::vector< index_t > > star( tetgen_output_.numberofpoints, temp ) ;
+//
+////#pragma omp parallel for
+//        for( index_t f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
+//            signed_index_t face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
+//            if( face_marker == -1 ) continue ;
+//            set_triangle( cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines ) ;
+//            for( index_t i = 0; i < 3; i++ ) {
+//                star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
+//            }
+//            set_face_marker( cur_index_triangle, face_marker ) ;
+//            cur_index_triangle ++ ;
+//        }
+//
+//        tetmesh_.facets.connect() ;
+//        tetmesh_.cells.connect() ;
+//        Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
+//
+//        index_t cur_index_line = 0 ;
+////#pragma omp parallel for
 //        for( index_t l = 0; l < tetgen_output_.numberofedges; l++ ) {
 //            signed_index_t line_marker = tetgen_output_.edgemarkerlist[l] - 1 ;
 //            if( line_marker == -1 ) continue ;
-//            nb_lines++ ;
+//        	set_line( line_marker, &tetgen_output_.edgelist[2 *l ]) ;
 //        }
-        initialize_storage( tetgen_output_.numberofpoints,
-            tetgen_output_.numberoftetrahedra, nb_triangles, nb_lines ) ;
-//#pragma omp parallel for
-        for( index_t p = 0; p < tetgen_output_.numberofpoints; p++ ) {
-            set_point( p, &tetgen_output_.pointlist[3 * p] ) ;
-        }
-//#pragma omp parallel for
-        for( index_t p = 0; p < tetgen_output_.numberoftetrahedra; p++ ) {
-            set_tetra( p, &tetgen_output_.tetrahedronlist[4 * p], nb_lines, nb_triangles ) ;
-        }
-//#pragma omp parallel for
-        for( index_t p = 0; p < tetgen_output_.numberoftetrahedra; p++ ) {
-            for( index_t f = 0; f < 4; f++ ) {
-                signed_index_t adj = std::max( tetgen_output_.neighborlist[4 * p + f]-1 , -1 ) ;
-                set_tetra_adjacent( p, f, adj ) ;
-            }
-        }
-        index_t cur_index_triangle = 0 ;
-        std::vector< index_t > temp ;
-        temp.reserve( 8 ) ;
-        std::vector< std::vector< index_t > > star( tetgen_output_.numberofpoints, temp ) ;
-
-//#pragma omp parallel for
-        for( index_t f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
-            signed_index_t face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
-            if( face_marker == -1 ) continue ;
-            set_triangle( cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines ) ;
-            for( index_t i = 0; i < 3; i++ ) {
-                star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
-            }
-            set_face_marker( cur_index_triangle, face_marker ) ;
-            cur_index_triangle ++ ;
-        }
-
-        tetmesh_.facets.connect() ;
-        tetmesh_.cells.connect() ;
-        Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
-
-        index_t cur_index_line = 0 ;
-//#pragma omp parallel for
-        for( index_t l = 0; l < tetgen_output_.numberofedges; l++ ) {
-            signed_index_t line_marker = tetgen_output_.edgemarkerlist[l] - 1 ;
-            if( line_marker == -1 ) continue ;
-        	set_line( line_marker, &tetgen_output_.edgelist[2 *l ]) ;
-        }
 
         // store_edge_attrib() ;
         return true ;
@@ -509,58 +478,57 @@ namespace RINGMesh {
         const std::vector< vec3 >& internal_vertices,
         const std::vector< std::vector< Edge > >& well_vertices )
         :
-            TetraGen( tetmesh, region, internal_vertices, well_vertices ),
-            add_steiner_points_( add_steiner_points ),
+            TetraGen( tetmesh, region, add_steiner_points, internal_vertices, well_vertices ),
             mesh_output_( nil ),
             sizemap_( nil )
     {
-        fpos_t pos ;
-        int fd = 0 ;
-        start_redirect( pos, stdout, fd ) ;
-        fpos_t pos_err ;
-        int fd_err = 0 ;
-        start_redirect( pos_err, stderr, fd_err ) ;
-
-        context_ = context_new() ;
-        mesh_input_ = mesh_new_in_memory( context_ ) ;
-        context_set_message_callback(context_, my_message_cb, 0);
-
-        mesh_set_vertex_count( mesh_input_, nb_total_points() ) ;
-        for( index_t p = 0; p < nb_points(); p++ ) {
-            mesh_set_vertex_coordinates( mesh_input_, p + 1,
-                points_[p].data() ) ;
-        }
-
-        mesh_set_edge_count( mesh_input_, well_edges_.size() ) ;
-        for( index_t e = 0; e < well_edges_.size(); e++ ) {
-            mesh_set_edge_vertices( mesh_input_, e + 1,
-                &well_indices_[2 * e] ) ;
-        }
-
-        for( index_t p = 0; p < nb_internal_points(); p++ ) {
-            mesh_set_vertex_coordinates( mesh_input_, nb_points() + p + 1,
-                internal_points_[p].data() ) ;
-        }
-
-        mesh_set_triangle_count( mesh_input_, nb_triangles() ) ;
-        for( index_t t = 0; t < nb_triangles(); t++ ) {
-            mesh_set_triangle_vertices( mesh_input_, t + 1,
-                &triangles_[3 * t] ) ;
-            mesh_set_triangle_tag( mesh_input_, t+1, surface_id_ptr( t ) ) ;
-        }
-
-        tms_ = tetra_session_new( context_ ) ;
-        tetra_set_surface_mesh( tms_, mesh_input_ ) ;
-        tetra_set_param( tms_, "verbose", "4" ) ;
-        tetra_set_param( tms_, "components", "all" ) ;
-        tetra_set_param( tms_, "optimisation_level", "standard" ) ;
-        tetra_set_param( tms_, "gradation", "1.1" ) ;
-        tetra_set_param( tms_, "pthreads_mode", "aggressive" ) ;
-        tetra_set_param( tms_, "max_number_of_threads", "8" ) ;
-        tetra_set_param( tms_, "max_error_count", "5" ) ;
-
-        stop_redirect( pos, stdout, fd ) ;
-        stop_redirect( pos_err, stderr, fd_err ) ;
+//        fpos_t pos ;
+//        int fd = 0 ;
+//        start_redirect( pos, stdout, fd ) ;
+//        fpos_t pos_err ;
+//        int fd_err = 0 ;
+//        start_redirect( pos_err, stderr, fd_err ) ;
+//
+//        context_ = context_new() ;
+//        mesh_input_ = mesh_new_in_memory( context_ ) ;
+//        context_set_message_callback(context_, my_message_cb, 0);
+//
+//        mesh_set_vertex_count( mesh_input_, nb_total_points() ) ;
+//        for( index_t p = 0; p < nb_points(); p++ ) {
+//            mesh_set_vertex_coordinates( mesh_input_, p + 1,
+//                points_[p].data() ) ;
+//        }
+//
+//        mesh_set_edge_count( mesh_input_, well_edges_.size() ) ;
+//        for( index_t e = 0; e < well_edges_.size(); e++ ) {
+//            mesh_set_edge_vertices( mesh_input_, e + 1,
+//                &well_indices_[2 * e] ) ;
+//        }
+//
+//        for( index_t p = 0; p < nb_internal_points(); p++ ) {
+//            mesh_set_vertex_coordinates( mesh_input_, nb_points() + p + 1,
+//                internal_points_[p].data() ) ;
+//        }
+//
+//        mesh_set_triangle_count( mesh_input_, nb_triangles() ) ;
+//        for( index_t t = 0; t < nb_triangles(); t++ ) {
+//            mesh_set_triangle_vertices( mesh_input_, t + 1,
+//                &triangles_[3 * t] ) ;
+//            mesh_set_triangle_tag( mesh_input_, t+1, surface_id_ptr( t ) ) ;
+//        }
+//
+//        tms_ = tetra_session_new( context_ ) ;
+//        tetra_set_surface_mesh( tms_, mesh_input_ ) ;
+//        tetra_set_param( tms_, "verbose", "4" ) ;
+//        tetra_set_param( tms_, "components", "all" ) ;
+//        tetra_set_param( tms_, "optimisation_level", "standard" ) ;
+//        tetra_set_param( tms_, "gradation", "1.1" ) ;
+//        tetra_set_param( tms_, "pthreads_mode", "aggressive" ) ;
+//        tetra_set_param( tms_, "max_number_of_threads", "8" ) ;
+//        tetra_set_param( tms_, "max_error_count", "5" ) ;
+//
+//        stop_redirect( pos, stdout, fd ) ;
+//        stop_redirect( pos_err, stderr, fd_err ) ;
     }
 
     TetraGen_MG_Tetra::~TetraGen_MG_Tetra()
@@ -583,96 +551,96 @@ namespace RINGMesh {
 
     bool TetraGen_MG_Tetra::tetrahedralize()
     {
-        fpos_t pos ;
-        int fd = 0 ;
-        start_redirect( pos, stdout, fd ) ;
-        fpos_t pos_err ;
-        int fd_err = 0 ;
-        start_redirect( pos_err, stderr, fd_err ) ;
-
-        status_t ret = tetra_mesh_boundary( tms_ ) ;
-        if( ret != STATUS_OK ) {
-            std::cout << "Encountered a problem while meshing boundary..."
-                << std::endl ;
-            return false ;
-        }
-        if( add_steiner_points_ ) {
-            ret = tetra_insert_volume_vertices( tms_ ) ;
-            if( ret != STATUS_OK ) {
-                std::cout << "Encountered a problem while meshing inside..."
-                    << std::endl ;
-                return false ;
-            }
-            ret = tetra_optimise_volume_regular( tms_ ) ;
-            if( ret != STATUS_OK ) {
-                std::cout << "Encountered a problem while meshing inside..."
-                    << std::endl ;
-                return false ;
-            }
-        }
-        tetra_get_mesh( tms_, &mesh_output_ ) ;
-        signed_index_t nb_points = 0 ;
-        mesh_get_vertex_count( mesh_output_, &nb_points ) ;
-        signed_index_t nb_tets = 0 ;
-        mesh_get_tetrahedron_count( mesh_output_, &nb_tets ) ;
-        signed_index_t nb_triangles = 0 ;
-        mesh_get_triangle_count( mesh_output_, &nb_triangles ) ;
-        signed_index_t nb_lines = 0 ;
-        mesh_get_edge_count( mesh_output_, &nb_lines ) ;
-
-        initialize_storage( nb_points, nb_tets, nb_triangles, nb_lines ) ;
-        std::vector< index_t > temp ;
-        temp.reserve( 15 ) ;
-        std::vector< std::vector< index_t > > star( nb_points, temp ) ;
-        for( index_t t = 0; t < nb_tets; t++ ) {
-            signed_index_t tet[4] ;
-            mesh_get_tetrahedron_vertices( mesh_output_, t+1, tet ) ;
-            set_tetra( t, tet, nb_lines, nb_triangles ) ;
-            for( index_t i = 0; i < 4; i++ ) {
-                star[tet[i] - 1].push_back( t ) ;
-            }
-        }
-
-//#pragma omp parallel for
-        for( index_t p = 0; p < nb_points; p++ ) {
-            double point[3] ;
-            mesh_get_vertex_coordinates( mesh_output_, p+1, point ) ;
-            set_point( p, point ) ;
-            std::sort( star[p].begin(), star[p].end() ) ;
-        }
-        signed_index_t cur_index_triangle = 0 ;
-//#pragma omp parallel for
-        for( index_t t = 0; t < nb_triangles; t++ ) {
-            signed_index_t tag = -1 ;
-            mesh_get_triangle_tag( mesh_output_, t+1, &tag ) ;
-            if ( tag != -1 ) {
-                signed_index_t vertices[3] ;
-                mesh_get_triangle_vertices( mesh_output_, t+1, vertices ) ;
-                set_triangle(cur_index_triangle, vertices, nb_lines) ;
-                cur_index_triangle ++ ;
-            }
-
-         }
-
-
-        tetmesh_.facets.connect() ;
-        tetmesh_.cells.connect() ;
-        Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
-
-//#pragma omp parallel for
-        for( index_t l = 0; l < well_edges_.size(); l++ ) {
-            signed_index_t tag = -1 ;
-            ret = mesh_get_edge_tag( mesh_output_, l+1, &tag ) ;
-            signed_index_t lin[2] ;
-            ret = mesh_get_edge_vertices( mesh_output_, l+1, lin ) ;
-            if( tag != -1 ) {
-				set_line(tag, lin) ;
-            }
-        }
-
-
-        stop_redirect( pos, stdout, fd ) ;
-        stop_redirect( pos_err, stderr, fd_err ) ;
+//        fpos_t pos ;
+//        int fd = 0 ;
+//        start_redirect( pos, stdout, fd ) ;
+//        fpos_t pos_err ;
+//        int fd_err = 0 ;
+//        start_redirect( pos_err, stderr, fd_err ) ;
+//
+//        status_t ret = tetra_mesh_boundary( tms_ ) ;
+//        if( ret != STATUS_OK ) {
+//            std::cout << "Encountered a problem while meshing boundary..."
+//                << std::endl ;
+//            return false ;
+//        }
+//        if( refine_ ) {
+//            ret = tetra_insert_volume_vertices( tms_ ) ;
+//            if( ret != STATUS_OK ) {
+//                std::cout << "Encountered a problem while meshing inside..."
+//                    << std::endl ;
+//                return false ;
+//            }
+//            ret = tetra_optimise_volume_regular( tms_ ) ;
+//            if( ret != STATUS_OK ) {
+//                std::cout << "Encountered a problem while meshing inside..."
+//                    << std::endl ;
+//                return false ;
+//            }
+//        }
+//        tetra_get_mesh( tms_, &mesh_output_ ) ;
+//        signed_index_t nb_points = 0 ;
+//        mesh_get_vertex_count( mesh_output_, &nb_points ) ;
+//        signed_index_t nb_tets = 0 ;
+//        mesh_get_tetrahedron_count( mesh_output_, &nb_tets ) ;
+//        signed_index_t nb_triangles = 0 ;
+//        mesh_get_triangle_count( mesh_output_, &nb_triangles ) ;
+//        signed_index_t nb_lines = 0 ;
+//        mesh_get_edge_count( mesh_output_, &nb_lines ) ;
+//
+//        initialize_storage( nb_points, nb_tets, nb_triangles, nb_lines ) ;
+//        std::vector< index_t > temp ;
+//        temp.reserve( 15 ) ;
+//        std::vector< std::vector< index_t > > star( nb_points, temp ) ;
+//        for( index_t t = 0; t < nb_tets; t++ ) {
+//            signed_index_t tet[4] ;
+//            mesh_get_tetrahedron_vertices( mesh_output_, t+1, tet ) ;
+//            set_tetra( t, tet, nb_lines, nb_triangles ) ;
+//            for( index_t i = 0; i < 4; i++ ) {
+//                star[tet[i] - 1].push_back( t ) ;
+//            }
+//        }
+//
+////#pragma omp parallel for
+//        for( index_t p = 0; p < nb_points; p++ ) {
+//            double point[3] ;
+//            mesh_get_vertex_coordinates( mesh_output_, p+1, point ) ;
+//            set_point( p, point ) ;
+//            std::sort( star[p].begin(), star[p].end() ) ;
+//        }
+//        signed_index_t cur_index_triangle = 0 ;
+////#pragma omp parallel for
+//        for( index_t t = 0; t < nb_triangles; t++ ) {
+//            signed_index_t tag = -1 ;
+//            mesh_get_triangle_tag( mesh_output_, t+1, &tag ) ;
+//            if ( tag != -1 ) {
+//                signed_index_t vertices[3] ;
+//                mesh_get_triangle_vertices( mesh_output_, t+1, vertices ) ;
+//                set_triangle(cur_index_triangle, vertices, nb_lines) ;
+//                cur_index_triangle ++ ;
+//            }
+//
+//         }
+//
+//
+//        tetmesh_.facets.connect() ;
+//        tetmesh_.cells.connect() ;
+//        Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
+//
+////#pragma omp parallel for
+//        for( index_t l = 0; l < well_edges_.size(); l++ ) {
+//            signed_index_t tag = -1 ;
+//            ret = mesh_get_edge_tag( mesh_output_, l+1, &tag ) ;
+//            signed_index_t lin[2] ;
+//            ret = mesh_get_edge_vertices( mesh_output_, l+1, lin ) ;
+//            if( tag != -1 ) {
+//				set_line(tag, lin) ;
+//            }
+//        }
+//
+//
+//        stop_redirect( pos, stdout, fd ) ;
+//        stop_redirect( pos_err, stderr, fd_err ) ;
 
         return true ;
     }
