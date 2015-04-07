@@ -47,7 +47,6 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
-#include <geogram/third_party/tetgen/tetgen.h>
 
 #include <vector>
 
@@ -80,13 +79,9 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize() = 0 ;
 
-        index_t nb_points() const { return points_.size() ; }
-        index_t nb_internal_points() const { return internal_points_.size() ; }
-        index_t nb_total_points() const { return nb_points() + nb_internal_points() ; }
-        index_t nb_triangles() const { return triangles_.size() / 3 ; }
-        index_t point_index( index_t f, index_t v ) const { return triangles_[3*f+v] ; }
-        const vec3& point( index_t f, index_t v ) const { return points_[triangles_[3*f+v]] ; }
-        const vec3& point( index_t v ) const { return points_[v] ; }
+        index_t nb_points() const { return internal_vertices_ptr_ ; }
+        index_t nb_internal_points() const { return nb_total_points() - internal_vertices_ptr_ ; }
+        index_t nb_total_points() const { return tetmesh_.vertices.nb() ; }
 
     protected:
         TetraGen(
@@ -96,7 +91,7 @@ namespace RINGMesh {
             const std::vector< vec3 >& internal_vertices,
             const std::vector< std::vector< Edge > >& well_edges ) ;
 
-        void initialize_storage( index_t nb_points, index_t nb_tets, index_t nb_triangles, index_t nb_lines ) ;
+        void initialize_storage( index_t nb_points, index_t nb_tets ) ;
         void set_point( index_t index, const double* point ) ;
         void set_tetra( index_t index, int* tet, index_t nb_lines, index_t nb_triangles ) ;
         void set_triangle( index_t index, int * triangle, index_t nb_lines ) ;
@@ -111,11 +106,7 @@ namespace RINGMesh {
             index_t marker ) ;
 
     protected:
-        std::vector< vec3 > points_ ;
-        std::vector< vec3 > internal_points_ ;
-        std::vector< signed_index_t > triangles_ ;
         GEO::Mesh& tetmesh_ ;
-        double resolution_ ;
         const BoundaryModelElement* region_ ;
         GEO::Attribute< index_t > surface_region_ ;
         GEO::Attribute< index_t > edge_region_ ;
@@ -135,11 +126,6 @@ namespace RINGMesh {
         virtual ~TetraGen_TetGen() {} ;
 
         virtual bool tetrahedralize() ;
-
-    private:
-        GEO_3rdParty::tetgenio tetgen_input_ ;
-        GEO_3rdParty::tetgenio tetgen_output_ ;
-        GEO_3rdParty::tetgenbehavior tetgen_args_ ;
     } ;
 
 #ifdef USE_MG_TETRA
