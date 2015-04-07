@@ -2017,6 +2017,172 @@ namespace RINGMesh {
 
         /************************************************************************/
 
+        class GMSHIOHandler: public MacroMeshIOHandler {
+        public:
+            virtual bool load( const std::string& filename, MacroMesh& mesh )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a MacroMesh from GMSH not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+            virtual bool save( const MacroMesh& mm, const std::string& filename )
+            {
+                mm.set_duplicate_mode( FAULT ) ;
+
+                std::ofstream out( filename.c_str() ) ;
+                out.precision( 16 ) ;
+
+                out << "$MeshFormat" << std::endl ;
+                out << "2.2 0 8" << std::endl ;
+                out << "$EndMeshFormat" << std::endl ;
+
+                out << "$Nodes" << std::endl ;
+                out << mm.vertices.nb_total_vertices() << std::endl ;
+                for( index_t p = 0; p < mm.vertices.nb_vertices(); p++ ) {
+                    const vec3& point = mm.vertices.vertex( p ) ;
+                    out << p + 1 << SPACE << point.x << SPACE << point.y << SPACE
+                        << point.z << std::endl ;
+                }
+                index_t vertex_offset = mm.vertices.nb_vertices() ;
+                for( index_t p = 0; p < mm.vertices.nb_duplicated_vertices(); p++ ) {
+                    const vec3& point = mm.vertices.duplicated_vertex( p ) ;
+                    out << vertex_offset + p + 1 << SPACE << point.x << SPACE
+                        << point.y << SPACE << point.z << std::endl ;
+                }
+                out << "$EndNodes" << std::endl ;
+
+                out << "$Elements" << std::endl ;
+                out << mm.cells.nb_cells() + mm.facets.nb_facets() << std::endl ;
+                index_t cur_cell = 1 ;
+                for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+                    const GEO::Mesh& mesh = mm.mesh( m ) ;
+                    for( index_t t = 0; t < mm.cells.nb_tet( m ); t++ ) {
+                        index_t cell_id = mm.cells.tet_id( m, t ) ;
+                        out << cur_cell++ << " 4 2 " << m +1 << SPACE << m +1 ;
+                        for( index_t v = mesh.cells.corners_begin( cell_id );
+                            v < mesh.cells.corners_end( cell_id ); v++ ) {
+                            index_t vertex_id ;
+                            index_t duplicated_vertex_id ;
+                            out << SPACE ;
+                            if( mm.vertices.vertex_id( m, v, vertex_id,
+                                duplicated_vertex_id ) ) {
+                                out << vertex_id + 1 ;
+                            } else {
+                                out << vertex_offset + duplicated_vertex_id + 1 ;
+                            }
+                        }
+                        out << std::endl ;
+                    }
+                    for( index_t p = 0; p < mm.cells.nb_pyramid( m ); p++ ) {
+                        index_t cell_id = mm.cells.pyramid_id( m, p ) ;
+                        out << cur_cell++ << " 7 2 " << m +1 << SPACE << m +1 ;
+                        for( index_t v = mesh.cells.corners_begin( cell_id );
+                            v < mesh.cells.corners_end( cell_id ); v++ ) {
+                            index_t vertex_id ;
+                            index_t duplicated_vertex_id ;
+                            out << SPACE ;
+                            if( mm.vertices.vertex_id( m, v, vertex_id,
+                                duplicated_vertex_id ) ) {
+                                out << vertex_id + 1 ;
+                            } else {
+                                out << vertex_offset + duplicated_vertex_id + 1 ;
+                            }
+                        }
+                        out << std::endl ;
+                    }
+                    for( index_t p = 0; p < mm.cells.nb_prism( m ); p++ ) {
+                        index_t cell_id = mm.cells.prism_id( m, p ) ;
+                        out << cur_cell++ << " 6 2 " << m +1 << SPACE << m +1 ;
+                        for( index_t v = mesh.cells.corners_begin( cell_id );
+                            v < mesh.cells.corners_end( cell_id ); v++ ) {
+                            index_t vertex_id ;
+                            index_t duplicated_vertex_id ;
+                            out << SPACE ;
+                            if( mm.vertices.vertex_id( m, v, vertex_id,
+                                duplicated_vertex_id ) ) {
+                                out << vertex_id + 1 ;
+                            } else {
+                                out << vertex_offset + duplicated_vertex_id + 1 ;
+                            }
+                        }
+                        out << std::endl ;
+                    }
+                    for( index_t h = 0; h < mm.cells.nb_hex( m ); h++ ) {
+                        index_t cell_id = mm.cells.hex_id( m, h ) ;
+                        out << cur_cell++ << " 5 2 " << m +1 << SPACE << m +1 ;
+                        for( index_t v = mesh.cells.corners_begin( cell_id );
+                            v < mesh.cells.corners_end( cell_id ); v++ ) {
+                            index_t vertex_id ;
+                            index_t duplicated_vertex_id ;
+                            out << SPACE ;
+                            if( mm.vertices.vertex_id( m, v, vertex_id,
+                                duplicated_vertex_id ) ) {
+                                out << vertex_id + 1 ;
+                            } else {
+                                out << vertex_offset + duplicated_vertex_id + 1 ;
+                            }
+                        }
+                        out << std::endl ;
+                    }
+                }
+                const BoundaryModel& model = mm.model() ;
+                index_t offset_region = mm.nb_meshes() ;
+                index_t offset_interface = model.nb_interfaces() ;
+                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+                    const BoundaryModelElement& interf = model.one_interface( i ) ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        index_t s_id = interf.child_id( s ) ;
+                        index_t mesh_id = mm.facets.mesh( s_id ) ;
+                        const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
+                        for( index_t t = 0; t < mm.facets.nb_triangle( s_id ); t++ ) {
+                            index_t facet_id = mm.facets.triangle_id( s_id, t ) ;
+                            out << cur_cell++ << " 2 2 " << offset_region + i +1 << SPACE
+                                << offset_region + offset_interface + s_id +1 ;
+                            for( index_t v = 0; v < 3; v++ ) {
+                                index_t v_id = mesh.facets.vertex( facet_id, v ) ;
+                                out << SPACE << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
+                            }
+                            out << std::endl ;
+                        }
+                        for( index_t q = 0; q < mm.facets.nb_quad( s_id ); q++ ) {
+                            index_t facet_id = mm.facets.quad_id( s_id, q ) ;
+                            out << cur_cell++ << " 3 2 " << offset_region + i +1 << SPACE
+                                << offset_region + offset_interface + s_id +1 ;
+                            for( index_t v = 0; v < 4; v++ ) {
+                                index_t v_id = mesh.facets.vertex( facet_id, v ) ;
+                                out << SPACE << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
+                            }
+                            out << std::endl ;
+                        }
+                    }
+                }
+                out << "$EndElements" << std::endl ;
+
+                if( GEO::CmdLine::get_arg_bool( "kine3D" ) ) {
+                    std::ostringstream oss_kine ;
+                    oss_kine << filename << "_info" ;
+                    std::ofstream kine3d( oss_kine.str().c_str() ) ;
+                    for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+                        kine3d << offset_region + i + 1 << ":"
+                            << model.one_interface( i ).name() << ",1," ;
+                        const RINGMesh::BoundaryModelElement::GEOL_FEATURE feature =
+                            model.one_interface( i ).geological_feature() ;
+                        if( feature == RINGMesh::BoundaryModelElement::FAULT ) {
+                            kine3d << "FaultFeatureClass" ;
+                        } else if( feature == RINGMesh::BoundaryModelElement::STRATI ) {
+                            kine3d << "HorizonFeatureClass" ;
+                        } else if( feature == RINGMesh::BoundaryModelElement::VOI ) {
+                            kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
+                        }
+                        kine3d << std::endl ;
+                    }
+                }
+                return true ;
+            }
+        } ;
+        /************************************************************************/
+
         MacroMeshIOHandler* MacroMeshIOHandler::create( const std::string& format )
         {
             ringmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" ) ;
@@ -2027,6 +2193,7 @@ namespace RINGMesh {
             ringmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" );
             ringmesh_register_MacroMeshIOHandler_creator( VTKIOHandler, "vtk" );
             ringmesh_register_MacroMeshIOHandler_creator( GPRSIOHandler, "gprs" );
+            ringmesh_register_MacroMeshIOHandler_creator( GMSHIOHandler, "gmsh" );
 
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
                 format ) ;

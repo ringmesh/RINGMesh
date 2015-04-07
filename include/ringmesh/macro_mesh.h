@@ -75,6 +75,7 @@ namespace RINGMesh {
      * Optional storage of the MacroMesh vertices
      */
     class RINGMESH_API MacroMeshVertices {
+        friend class MacroMesh ;
     public:
         MacroMeshVertices( const MacroMesh& mm )
             : mm_( mm )
@@ -85,6 +86,7 @@ namespace RINGMesh {
         index_t vertex_id( index_t mesh, index_t v ) const ;
         const vec3& vertex( index_t global_v ) const ;
         const vec3& vertex( index_t mesh, index_t v ) const ;
+        const vec3& duplicated_vertex( index_t v ) const ;
 
         bool vertex_id(
             index_t mesh,
@@ -412,7 +414,11 @@ namespace RINGMesh {
          * @param[in] mode the new DuplicateMode for the MacroMesh
          */
         void set_duplicate_mode( const DuplicateMode& mode ) const {
-            const_cast< MacroMesh* >( this )->mode_ = mode ;
+            MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
+            not_const->mode_ = mode ;
+            not_const->vertices.cell_corners_.clear() ;
+            not_const->vertices.duplicated_vertex_indices_.clear() ;
+            not_const->vertices.mesh_cell_corner_ptr_.clear() ;
         }
 
     protected:
