@@ -420,6 +420,10 @@ namespace RINGMesh {
             return &mesh_.vertices.attributes() ;
         }
 
+        GEO::Mesh& mesh() const {
+            return const_cast< GEO::Mesh& >( mesh_ ) ;
+        }
+
     private:
         GEO::Mesh mesh_ ;
     } ;
@@ -492,6 +496,10 @@ namespace RINGMesh {
 
         virtual VertexAttributeManager* vertex_attribute_manager() const {
             return &mesh_.vertices.attributes() ;
+        }
+
+        GEO::Mesh& mesh() const {
+            return const_cast< GEO::Mesh& >( mesh_ ) ;
         }
 
     private:

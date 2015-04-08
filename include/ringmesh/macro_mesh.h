@@ -356,17 +356,7 @@ namespace RINGMesh {
          * @param[in] region id of mesh/region
          * @return a reference to the GEO::Mesh
          */
-        GEO::Mesh& mesh( index_t region )
-        {
-            return *meshes_[ region ] ;
-        }
-
-        /*!
-         * Access to a GEO::Mesh of the MacroMesh
-         * @param[in] region id of mesh/region
-         * @return a const reference to the GEO::Mesh
-         */
-        const GEO::Mesh& mesh( index_t region ) const
+        GEO::Mesh& mesh( index_t region ) const
         {
             return *meshes_[ region ] ;
         }
