@@ -60,29 +60,23 @@ namespace RINGMesh {
         index_t nb_corners = bm_.nb_corners() ;
         index_t nb_lines = bm_.nb_lines() ;
         index_t nb_surfaces = bm_.nb_surfaces() ;
-        index_t nb_bme = nb_corners + nb_lines + nb_surfaces ;
-        begin_bme_.resize( nb_bme, 0 ) ;
 
-        index_t nb_bme_vertices = 0 ;
-        index_t cur_element = 0 ;
-        for( index_t c = 0; c < nb_corners; c++ ) {
-            begin_bme_[cur_element++] = nb_bme_vertices++ ;
-        }
+        // Total number of vertices in the Corners - Lines and Surfaces of the model
+        index_t nb = bm_.nb_corners() ;
+
         for( index_t l = 0; l < nb_lines; l++ ) {
-            begin_bme_[cur_element++] = nb_bme_vertices ;
-            nb_bme_vertices += bm_.line( l ).nb_vertices() ;
+            nb += bm_.line( l ).nb_vertices() ;
         }
         for( index_t s = 0; s < nb_surfaces; s++ ) {
-            begin_bme_[cur_element++] = nb_bme_vertices ;
-            nb_bme_vertices += bm_.surface( s ).nb_vertices() ;
+            nb += bm_.surface( s ).nb_vertices() ;
         }
 
         // Get out if the BME have no vertex
-        if( nb_bme_vertices == 0 ) {
+        if( nb == 0 ) {
             return ;
         }
-
-        std::vector< vec3 > all_vertices( nb_bme_vertices ) ;
+        
+        std::vector< vec3 > all_vertices( nb ) ;
         index_t index = 0 ;
         for( index_t c = 0; c < nb_corners; c++ ) {
             all_vertices[index++] = bm_.corner( c ).vertex() ;
@@ -102,8 +96,37 @@ namespace RINGMesh {
 
         MakeUnique mu( all_vertices ) ;
         mu.unique() ;
-        mu.unique_points( unique_vertices_ ) ;
-        bme2unique_ = mu.indices() ;       
+       
+        // Get the coordinates of the unique vertices
+        std::vector< vec3 > unique_points ;
+        mu.unique_points( unique_points ) ;
+
+        // Put that in the Mesh that store our nice vertices
+        unique_vertices_.vertices.create_vertices( unique_points.size() ) ;
+        unique_vertices_.vertices.assign_points( unique_points[0].data(), 3, unique_points.size() ) ;
+
+        // Get the mapping of between all_vertices and unique_points 
+        // Store as attribute on the Corner, Line and Surface vertices
+        std::vector< index_t > bme2unique = mu.indices() ;
+
+        // We do the same loop as above
+        index = 0 ;
+        for( index_t c = 0; c < nb_corners; c++ ) {
+             Corner& C = const_cast< Corner& >( bm_.corner( c ) ) ;
+             C.set_model_vertex_id( bme2unique[index++] ) ;
+        }
+        for( index_t l = 0; l < nb_lines; l++ ) {
+            Line& L = const_cast< Line& >( bm_.line( l ) ) ;
+            for( index_t v = 0; v < L.nb_vertices(); v++ ) {
+                L.set_model_vertex_id( v, bme2unique[index++] ) ;                
+            }
+        }
+        for( index_t s = 0; s < nb_surfaces; s++ ) {
+            Surface& S = const_cast< Surface& >( bm_.surface( s ) ) ;
+            for( index_t v = 0; v < S.nb_vertices(); v++ ) {
+                S.set_model_vertex_id( v, bme2unique[index++] ) ;
+            }
+        }
     }
 
     
@@ -111,7 +134,7 @@ namespace RINGMesh {
     {
         typedef BoundaryModelElement BME ;
 
-        if( bme2unique_.empty() ) {
+        if( unique_vertices_.vertices.nb() == 0 ) {
             initialize_unique_vertices() ;
         }
         unique2bme_.resize( nb_unique_vertices() ) ;
@@ -133,28 +156,6 @@ namespace RINGMesh {
         }
     }
 
-
-    index_t BoundaryModelVertices::begin_bme( 
-        BoundaryModelElement::TYPE T, 
-        index_t id ) const 
-    {
-        if( begin_bme_.empty() ) {
-            const_cast< BoundaryModelVertices* >( this )->initialize_unique_vertices() ;
-        }
-        switch( T ) {
-            case BoundaryModelElement::CORNER:
-                return begin_bme_[id] ;
-            case BoundaryModelElement::LINE:
-                return begin_bme_[bm_.nb_corners() + id] ;               
-            case BoundaryModelElement::SURFACE:
-                return begin_bme_[bm_.nb_corners()+bm_.nb_lines() + id] ;
-            default:
-                ringmesh_assert_not_reached ;
-                return 0 ;
-        }       
-    }
-
-
     void BoundaryModelVertices::update_point( index_t v, const vec3& point )
     {
         const std::vector< VertexInBME >& bme_v = bme_vertices( v ) ;
@@ -175,13 +176,31 @@ namespace RINGMesh {
         return unique2bme_[v] ;
     }
 
+    index_t BoundaryModelVertices::add_unique_vertex( const vec3& point ) 
+    {
+        index_t id = unique_vertices_.vertices.create_vertex( point.data() ) ;
+        ringmesh_assert( id == unique2bme_.size() ) ;
+        unique2bme_.push_back( std::vector< VertexInBME >() ) ;
+        return id ;
+    }
+
+    void BoundaryModelVertices::add_unique_to_bme( 
+        index_t unique_id, 
+        BoundaryModelElement::TYPE bme_type, 
+        index_t bme_id,
+        index_t v_id ) 
+    {
+        ringmesh_assert( unique_id < unique2bme_.size() ) ;
+        unique2bme_[unique_id].push_back( VertexInBME( bme_type, bme_id, v_id ) ) ;
+    } 
+
 
     index_t BoundaryModelVertices::nb_unique_vertices() const
     {
-        if( unique_vertices_.empty() ) {
+        if( unique_vertices_.vertices.nb() == 0 ) {
             const_cast< BoundaryModelVertices* >( this )->initialize_unique_vertices() ;
         }
-        return unique_vertices_.size() ;
+        return unique_vertices_.vertices.nb() ;
     }
 
 
@@ -190,12 +209,11 @@ namespace RINGMesh {
         index_t element,
         index_t v ) const
     {
-        if( bme2unique_.empty() ) {
+        if( unique_vertices_.vertices.nb() == 0 ) {
             const_cast< BoundaryModelVertices* >( this )->initialize_unique_vertices() ;
         }
-        index_t begin = begin_bme( type, element ) ;
         ringmesh_assert( v < bm_.element( type, element ).nb_vertices() ) ;      
-        return bme2unique_[ begin + v ] ;
+        return bm_.element( type, element ).model_vertex_id( v ) ;
     }
 
 
@@ -208,11 +226,11 @@ namespace RINGMesh {
 
     const vec3& BoundaryModelVertices::unique_vertex( index_t v ) const
     {
-        if( unique_vertices_.empty() ) {
+        if( unique_vertices_.vertices.nb()==0 ) {
             const_cast< BoundaryModelVertices* >( this )->initialize_unique_vertices() ;
         }
         ringmesh_assert( v < nb_unique_vertices() ) ;
-        return unique_vertices_[v] ;
+        return unique_vertices_.vertices.point(v) ;
     }
 
 

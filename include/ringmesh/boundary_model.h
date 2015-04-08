@@ -63,8 +63,8 @@ namespace RINGMesh {
 
     class RINGMESH_API BoundaryModelVertices {
     public:
-        /**
-         * \brief Info to get a given vertex in a given BoundaryModelElement
+        /*!
+         * @brief Info to get a given vertex in a given BoundaryModelElement
          */
         struct VertexInBME {
             VertexInBME(
@@ -101,6 +101,22 @@ namespace RINGMesh {
         const std::vector< VertexInBME >& bme_vertices( index_t unique_id ) const ;
         
         /*!
+         * @brief To use when building the model by first adding its vertices
+         * @warning The client is responsible for setting the mapping between the points
+         * of the BME and the unique vertex 
+         */
+        index_t add_unique_vertex( const vec3& point ) ;
+
+        /*!
+         * @brief Add a vertex in a BoundaryModelElement corresponding to an existing unique_vertex
+         */
+        void add_unique_to_bme( 
+            index_t unique_id, 
+            BoundaryModelElement::TYPE bme_type, 
+            index_t bme_id,
+            index_t v_id ) ;        
+
+        /*!
          * @brief Set the point coordinates of all the vertices that are 
          *        share this unique vertex
          * @param[in] unique_id Index of the unique vertex in the BoundaryModel
@@ -112,47 +128,48 @@ namespace RINGMesh {
          * @brief Clear the vertices. Vertices of the BME are left untouched.
          */  
         void clear() {
-            unique_vertices_.clear() ;
-            bme2unique_.clear() ;
-            begin_bme_.clear() ;
+            unique_vertices_.clear( true, true ) ;
             unique2bme_.clear() ;
+        }
+
+        GEO::AttributesManager& attribute_manager() {
+            return unique_vertices_.vertices.attributes() ;
         }
         
     private:
         /*!
          * @brief Determine the unique vertices from the vertices of the BM Corner s, Line s, and Surface s
-         * @details Fills unique_vertices_, bme2unique_, and begin_bme_ 
+         * @details Fills unique_vertices_ and set the attributes the global index on
+         *          the BoundaryModel Corner, Line and Surface 
          */
         void initialize_unique_vertices() ;
+
         /*!
          * @brief Fills the unique2bme vector
+         * @details Call initialize_unique_vertices() if unique_vertices_ is empty
          */
         void initialize_reverse() ;
 
-        
-
-        /*!
-         * @brief Global index of where begins the vertices of the BME in bme2unique
-         */
-        index_t begin_bme( BoundaryModelElement::TYPE T, index_t id ) const ;
-
     private:
-        /// Attached BoundaryModel to which belong these vertices
+        /// Attached BoundaryModel to which belong the vertices
         const BoundaryModel& bm_ ;
-        /// Coordinates of the vertices that are not colocated, each instance is unique.
-        std::vector< vec3 > unique_vertices_ ;
-        /// Mapping of a vertex in a BME to a unique vertex index
-        std::vector< index_t > bme2unique_ ;
-        /// Where begin the vertices of a BME in bme2unique_. One value per Corner, Line, Surface of the BM.
-        std::vector< index_t > begin_bme_ ;
+        
+        /*! 
+         * @brief Mesh storing the coordinates of the vertices that are not colocated
+         * @details Each point instance is unique. 
+         * With a GEO::Mesh we have attributes on the points without any effort
+         */
+        GEO::Mesh unique_vertices_ ;
+               
         /// Mapping of a unique vertex to the vertices in the BME that have the same coordinates
+        /// \todo Could be an attribute on the unique_vertices_
         std::vector< std::vector< VertexInBME > > unique2bme_ ;
     } ;
 
 
 
     /**
-     * \brief The class to describe a volumetric model represented by its boundary surfaces
+     * @brief The class to describe a volumetric model represented by its boundary surfaces
      *
      * \todo Implement a BoundaryModelMutator
      */
@@ -171,14 +188,14 @@ namespace RINGMesh {
         const static index_t NO_ID = index_t( - 1 ) ;
 
         /**
-         * \brief Construct an empty BoundaryModel
+         * @brief Construct an empty BoundaryModel
          */
         BoundaryModel() : vertices( *this )
         {
         }
 
         /**
-         * \brief Delete all BoundaryModelElements stored and owned by the BoundaryModel
+         * @brief Delete all BoundaryModelElements stored and owned by the BoundaryModel
          */
         virtual ~BoundaryModel() ;
 
@@ -245,7 +262,7 @@ namespace RINGMesh {
         }
 
         /*!
-         * \brief Returns a const reference the identified BoundaryModelElement
+         * @brief Returns a const reference the identified BoundaryModelElement
          *
          * @param[in] t Type of the element
          * @param[in] index Index of the element
@@ -322,9 +339,9 @@ namespace RINGMesh {
 
         const BoundaryModelElement& universe() const { return universe_ ; }
 
-        VertexAttributeManager& vertex_attribute_manager() const
+        VertexAttributeManager& vertex_attribute_manager()
         {
-            return const_cast< VertexAttributeManager& >( vertex_attribute_manager_ ) ;
+            return vertices.attribute_manager() ;
         }
 
         index_t find_region(
@@ -386,71 +403,26 @@ namespace RINGMesh {
         BoundaryModelElement universe_ ;
 
         /**
-         * \brief Contacts between Intefaces
+         * @brief Contacts between Intefaces
          * Parent of a set of Line
          */
         std::vector< BoundaryModelElement* > contacts_ ;
         /**
-         * \brief Interfaces between layers
+         * @brief Interfaces between layers
          * Parent of a set of Surface
          */
         std::vector< BoundaryModelElement* > interfaces_ ;
 
         /**
-         * \brief Rock layers
+         * @brief Rock layers
          * Parent of a set of Region
          */
         std::vector< BoundaryModelElement* > layers_ ;
 
         /// Allow global access to BME. It MUST be updated if one element is added.
         std::vector< index_t > nb_elements_per_type_ ;
-
-        // Attribute manager
-        VertexAttributeManager vertex_attribute_manager_ ;
     } ;
 
-
-
-    template< class ATTRIBUTE >
-    class BoundaryModelVertexAttribute : public GEO::Attribute< ATTRIBUTE > {
-    public:
-        typedef GEO::Attribute< ATTRIBUTE > superclass ;
-
-        void bind(
-            const BoundaryModel* model,
-            const std::string& name )
-        {
-            superclass::bind( model->vertex_attribute_manager(), name ) ;
-        }
-
-        void bind( const BoundaryModel* model )
-        {
-            superclass::bind( model->vertex_attribute_manager() ) ;
-        }
-
-        BoundaryModelVertexAttribute()
-        {
-        }
-
-        BoundaryModelVertexAttribute( const BoundaryModel* model )
-        {
-            bind( model ) ;
-        }
-
-        BoundaryModelVertexAttribute(
-            const BoundaryModel* model,
-            const std::string& name )
-        {
-            bind( model, name ) ;
-        }
-
-        static bool is_defined(
-            const BoundaryModel* model,
-            const std::string& name )
-        {
-            return superclass::is_defined( model->vertex_attribute_manager(), name ) ;
-        }
-    } ;
 }
 
 #endif

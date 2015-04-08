@@ -356,6 +356,19 @@ namespace RINGMesh {
         return NO_ID ;
     }
 
+    /*!
+     * @brief Get the index of the Corner at a given model point
+     * @param[in] p_id Index of the point
+     * @return NO_ID or the index of the Corner
+     */
+     index_t BoundaryModelBuilder::find_corner( index_t model_point_id ) const 
+     {        
+        for( index_t i = 0; i < model_.nb_corners(); ++i ) {
+            if( model_.corner( i ).model_vertex_id() == model_point_id ) {return i ;}
+        }
+        return NO_ID ;
+     }
+
 
     /*!
      * @brief Create a corner at a vertex.
@@ -630,24 +643,25 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Set the vertex for a Corner
+     * @brief Set the point for a Corner
      *
      * @param[in] corner_id Index of the corner
-     * @param[in] vertex_id Index of the vertex in the model
+     * @param[in] point Coordinates of the vertex
      */
     void BoundaryModelBuilder::set_corner(
         index_t corner_id,
         const vec3& point )
     {
+        ringmesh_assert( corner_id < model_.nb_corners() ) ;
         model_.corners_[ corner_id ]->set_vertex( point ) ;
     }
 
 
     /*!
-     * @brief Set one Line vertices
+     * @brief Set one Line points
      *
      * @param[in] id Line index
-     * @param[in] vertices Indices of the vertices on the line
+     * @param[in] vertices Coordinates of the vertices on the line
      */
     void BoundaryModelBuilder::set_line(
         index_t id,
@@ -659,25 +673,25 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Set the vertices and facets for a surface
+     * @brief Set the points and facets for a surface
      * @details If facet_adjacencies are not given they are computed.
      *
      * @param[in] surface_id Index of the surface
-     * @param[in] vertices Model indices of the vertices
+     * @param[in] points Coordinates of the vertices
      * @param[in] facets Indices in the vertices vector to build facets
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
      * @param[in] surface_adjacencies Adjacent facet (size of facet_ptr)
      */
     void BoundaryModelBuilder::set_surface_geometry(
         index_t surface_id,
-        const std::vector< vec3 >& vertices,
+        const std::vector< vec3 >& points,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr,
         const std::vector< index_t >& surface_adjacencies )
     {
-        if( facets.size() == 0 ) {return ;}
+        if( facets.size() == 0 ) { return ; }
 
-        model_.surfaces_[ surface_id ]->set_geometry( vertices, facets, facet_ptr ) ;
+        model_.surfaces_[ surface_id ]->set_geometry( points, facets, facet_ptr ) ;
 
         if( surface_adjacencies.empty() ) {
             set_surface_adjacencies( surface_id ) ;
@@ -685,6 +699,73 @@ namespace RINGMesh {
             model_.surfaces_[ surface_id ]->set_adjacent( surface_adjacencies ) ;
         }
     }
+    
+
+    /*!
+     * @brief To use when adding the points to the model before building its Elements
+     */
+    index_t BoundaryModelBuilder::add_unique_vertex( const vec3& p ) 
+    {
+        return model_.vertices.add_unique_vertex( p ) ;
+    }
+
+
+    /*!
+     * @brief Set the vertex for a Corner. Store the info in the BM vertices
+     *
+     * @param[in] corner_id Index of the corner
+     * @param[in] vertex_id Index of the vertex in the model
+     */
+    void BoundaryModelBuilder::set_corner(
+        index_t corner_id,
+        index_t unique_vertex ) 
+    {        
+        ringmesh_assert( corner_id < model_.nb_corners() ) ;
+        model_.corners_[corner_id]->set_vertex( unique_vertex ) ;  
+    }
+
+     /*!
+     * @brief Set one Line vertices. Store the info in the BM vertices
+     *
+     * @param[in] id Line index
+     * @param[in] vertices Indices in the model of the unique vertices with which to build the Line
+     */
+    void BoundaryModelBuilder::set_line(
+        index_t id,
+        const std::vector< index_t >& unique_vertices ) 
+    {
+        ringmesh_assert( id < model_.nb_lines() ) ;
+        model_.lines_[ id ]->set_vertices( unique_vertices ) ;
+    }
+
+     /*!
+     * @brief Set the vertices and facets for a surface
+     * @details If facet_adjacencies are not given they are computed.
+     *
+     * @param[in] surface_id Index of the surface
+     * @param[in] vertices Indices of unique vertices in the BoundaryModel
+     * @param[in] facets Indices in the vertices vector to build facets
+     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+     * @param[in] surface_adjacencies Adjacent facet (size of facet_ptr)
+     */
+    void BoundaryModelBuilder::set_surface_geometry(
+        index_t surface_id,
+        const std::vector< index_t >& model_vertex_ids,
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr,
+        const std::vector< index_t >& adjacencies ) 
+    {
+       if( facets.size() == 0 ) { return ; }
+
+        model_.surfaces_[ surface_id ]->set_geometry( model_vertex_ids, facets, facet_ptr ) ;
+
+        if( adjacencies.empty() ) {
+            set_surface_adjacencies( surface_id ) ;
+        } else {
+            model_.surfaces_[ surface_id ]->set_adjacent( adjacencies ) ;
+        }
+    }
+
 
 
     /*!
@@ -698,19 +779,37 @@ namespace RINGMesh {
      */
     void BoundaryModelBuilder::set_surface_geometry_bis(
         index_t surface_id,
-        const std::vector< index_t >& corners,
+        const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr,
         const std::vector< index_t >& corner_adjacent_facets )
     {
-        if( corners.size() == 0 ) {return ;}
+        if( facets.size() == 0 ) {return ;}
 
-        model_.surfaces_[ surface_id ]->set_geometry( corners, facet_ptr ) ;
+         // Compute the vertices from the corners
+        // This is quite stupid !! The real solution would be to remove
+        // the vertices vector from the Surface
+        std::map< index_t, index_t > old_2_new ;
 
-        if( corner_adjacent_facets.empty() ) {
-            set_surface_adjacencies( surface_id ) ;
-        } else {
-            model_.surfaces_[ surface_id ]->set_adjacent( corner_adjacent_facets ) ;
+        std::vector< index_t > vertices ;
+        std::vector< index_t > facets_local( facets.size() ) ;
+        for( index_t i = 0; i < facets.size(); ++i ) {
+            index_t c = facets[ i ] ;
+            std::map< index_t, index_t >::iterator it = old_2_new.find( c ) ;
+            index_t new_corner_id = NO_ID ;
+
+            if( it == old_2_new.end() ) {
+                new_corner_id = vertices.size() ;
+                old_2_new[ c ] = new_corner_id ;
+
+                // Not so great to push back, but whatever
+                vertices.push_back( c ) ;
+            } else {
+                new_corner_id = old_2_new[ c ] ;
+            }
+            facets_local[ i ] = new_corner_id ;
         }
+
+        set_surface_geometry( surface_id, vertices, facets_local, facet_ptr ) ;       
     }
 
 
@@ -1656,6 +1755,72 @@ namespace RINGMesh {
         }
         return p1_corner ;
     }
+
+
+    /*!
+     * @brief Get the points of a Line between two corners on a Surface
+     *
+     * WE ASSUME THAT THE STORAGE OF THE POINTS IS UNIQUE IN THE MODEL AND THAT
+     * SURFACES DO SHARE POINTS ON THEIR CONTACT LINES
+     * make_vertices_unique() must have been called first
+     *
+     * @param[in] S Index of the surface
+     * @param[in] id0 Index of the starting point( a corner ) in S
+     * @param[in] id1 Index of the second point on the Line in S
+     * @param[out] border_vertex_model_ids Indices of vertices on the Line (resized at 0 at the beginning)
+     * @return Index of the Corner at which the Line ends
+     */
+    index_t BoundaryModelBuilderGocad::determine_line_vertices(
+        const Surface& S,
+        index_t id0,
+        index_t id1,
+        std::vector< index_t >& border_vertex_model_ids ) const
+    {
+        ringmesh_debug_assert( id0 < S.nb_vertices() && id1 < S.nb_vertices() ) ;
+
+        border_vertex_model_ids.resize( 0 ) ;
+
+        // Starting facet that contains the two given vertices
+        index_t f = S.facet_from_surface_vertex_ids( id0, id1 ) ;
+        ringmesh_assert( f != Surface::NO_ID ) ;
+
+        // Global ids at the model level
+        index_t p0 = S.model_vertex_id( id0 ) ;
+        index_t p1 = S.model_vertex_id( id1 ) ;
+
+        border_vertex_model_ids.push_back( p0 ) ;
+        border_vertex_model_ids.push_back( p1 ) ;
+
+        index_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
+        while( p1_corner == NO_ID ) {
+            index_t next_f = NO_ID ;
+            index_t id1_in_next = NO_ID ;
+            index_t next_id1_in_next = NO_ID ;
+
+            // We want the next triangle that is on the boundary and share p1
+            // If there is no such triangle, the third vertex of the current triangle is to add
+            S.next_on_border( f,
+                S.facet_vertex_id( f, id0 ), S.facet_vertex_id( f, id1 ),
+                next_f, id1_in_next, next_id1_in_next ) ;
+
+            ringmesh_assert(
+                next_f != NO_ID && id1_in_next != NO_ID
+                && next_id1_in_next != NO_ID ) ;
+
+            index_t next_id1 =  S.surf_vertex_id( next_f, next_id1_in_next ) ;
+
+            // Update
+            f = next_f ;
+            id0 = id1 ;
+            id1 = next_id1 ;
+
+            p1 = S.model_vertex_id( next_id1 ) ;
+            border_vertex_model_ids.push_back( p1 ) ;
+            p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
+        }
+        return p1_corner ;
+    }
+
 
 
     /*!
