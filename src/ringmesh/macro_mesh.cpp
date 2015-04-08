@@ -257,7 +257,7 @@ namespace RINGMesh {
             }
         }
 
-        double result = false ;
+        bool result = false ;
         for( index_t s = 0; s < info.size(); s++ ) {
             if( temp_info[s] < 0 ) continue ;
             ringmesh_debug_assert( info[s] != SKIP ) ;

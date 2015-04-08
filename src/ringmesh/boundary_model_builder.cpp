@@ -783,15 +783,15 @@ namespace RINGMesh {
     bool BoundaryModelBuilder::check_basic_element_validity(
         const BoundaryModelElement& E ) const
     {
-        // / Verify that E points to the right BoundaryModel
-        // / that its index and type are the right one.
+        /// Verify that E points to the right BoundaryModel
+        /// that its index and type are the right one.
         if( &E.model() != &model_ ) {return false ;}
         if( E.element_type() == BME::NO_TYPE ) {return false ;}
         if( E.id() == NO_ID ) {return false ;}
         if( E.id() >= model_.nb_elements( E.element_type() ) ) {return false ;}
         if( !( model_.element( E.element_type(), E.id() ) == E ) ) {return false ;}
 
-        // / Verify that the stored model vertex indices are in a valid range
+        /// Verify that the stored model vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
             if( E.model_vertex_id( i ) == NO_ID &&
                 E.model_vertex_id( i ) >= model_.nb_vertices() ) {return false ;}
@@ -1052,9 +1052,9 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Last function to call when building a model
+     * @brief This function MUST be the last function called when building a BoundaryModel
      *
-     * @details check that the model is correct and has all required information
+     * @details Check that the model is correct and has all required information
      * Calls the complete_element_connectivity function
      * Fills nb_elements_per_type_ vector
      *
@@ -1074,14 +1074,14 @@ namespace RINGMesh {
         if( model_.nb_surfaces() == 0 ) {return false ;}
 
         // The Universe
-        // / \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
+        /// \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
 
         init_global_model_element_access() ;
 
         complete_element_connectivity() ;
 
-        // / 1. Check that all the elements of the BoundaryModel have
-        // /    the required attributes - Fill optional attributes
+        /// 1. Check that all the elements of the BoundaryModel have
+        ///    the required attributes - Fill optional attributes
         for( index_t i = 0; i < model_.nb_elements( BME::ALL_TYPES ); ++i ) {
             BME& E = element( BME::ALL_TYPES, i ) ;
             if( !E.has_geological_feature() ) {fill_element_geological_feature( E ) ;}
@@ -1094,10 +1094,10 @@ namespace RINGMesh {
             }
         }
 
-        // / 2. \todo Check the consistency of connectivity relationships between the elements
+        /// 2. \todo Check the consistency of connectivity relationships between the elements
         ///          Check that the Surface on the boundary of Universe are of type VOI
         ///          if it is not the case the Model is probably invalid
-        // / 3. \todo Check the geometrical consistency of the topological relationships
+        /// 3. \todo Check the geometrical consistency of the topological relationships
 
 #ifdef RINGMESH_DEBUG
         std::cout << "Model " << model_.name() << " has " << std::endl
@@ -1406,7 +1406,7 @@ namespace RINGMesh {
                         }
                     }
 
-                    // / 6. Read the Border information and store it
+                    /// 6. Read the Border information and store it
                     else if( in.field_matches( 0, "BORDER" ) ) {
                         index_t p1 = in.field_as_uint( 2 ) - 1 ;
                         index_t p2 = in.field_as_uint( 3 ) - 1 ;
@@ -1451,7 +1451,7 @@ namespace RINGMesh {
 
 //        make_vertices_unique() ;
 
-        // / 7. Build the Lines
+        /// 7. Build the Lines
         {
             std::vector< vec3 > line_vertices ;
             for( index_t i = 0; i < borders_to_build.size(); ++i ) {
@@ -1472,7 +1472,7 @@ namespace RINGMesh {
             }
         }
 
-        // / 8. Build the Contacts
+        /// 8. Build the Contacts
         build_contacts() ;
 
         // Modify in the Region the side of the Surface for which the key facet
@@ -2226,12 +2226,12 @@ namespace RINGMesh {
     {
         ringmesh_assert( model_.nb_surfaces() > 0 ) ;
 
-        // / 1. Make the storage of the model vertices unique
-        // / So now we can make index comparison to find colocated edges
+        /// 1. Make the storage of the model vertices unique
+        /// So now we can make index comparison to find colocated edges
 //        make_vertices_unique() ; [Arnaud] no longer used
 
-        // / 2.1 Get for all Surface, the triangles that have an edge
-        // / on the boundary.
+        /// 2.1 Get for all Surface, the triangles that have an edge
+        /// on the boundary.
         std::vector< BorderTriangle > border_triangles ;
         for( index_t s = 0; s < model_.nb_surfaces(); ++s ) {
             const Surface& S = model_.surface( s ) ;
@@ -2248,10 +2248,10 @@ namespace RINGMesh {
             }
         }
 
-        // / 2.2 Sort these triangles so that triangles sharing the same edge follow one another
+        /// 2.2 Sort these triangles so that triangles sharing the same edge follow one another
         std::sort( border_triangles.begin(), border_triangles.end() ) ;
 
-        // / 3. Build the Lines and gather information to build the regions
+        /// 3. Build the Lines and gather information to build the regions
         std::vector< SortTriangleAroundEdge > regions_info ;
 
         // The goal is to visit all BorderTriangle and propagate to get each Line vertices
@@ -2397,19 +2397,19 @@ namespace RINGMesh {
             }
         }
 
-        // / 4. Build the regions
+        /// 4. Build the regions
 
         // Complete boundary information for surfaces
         // We need it to compute volumetric regions
         fill_elements_boundaries( BME::SURFACE ) ;
 
-        // / 4.1 Sort surfaces around the contacts
+        /// 4.1 Sort surfaces around the contacts
         for( index_t i = 0; i < regions_info.size(); ++i ) {
             regions_info[ i ].sort() ;
         }
 
         if( model_.nb_surfaces() == 1 ) {
-            // / \todo Build a Region when a BoundaryModel has only one Surface
+            /// \todo Build a Region when a BoundaryModel has only one Surface
             // Check that this surface is closed and define an interior
             // and exterior (universe) regions
             ringmesh_assert_not_reached ;
@@ -2469,7 +2469,7 @@ namespace RINGMesh {
 
             // Check if all the surfaces were visited
             // If not, this means that there are additionnal regions included in those built
-            // / \todo Implement the code to take into regions included in others (bubbles)
+            /// \todo Implement the code to take into regions included in others (bubbles)
             ringmesh_assert( std::count( surf_2_region.begin(), surf_2_region.end(),
                     NO_ID ) == 0 ) ;
         }

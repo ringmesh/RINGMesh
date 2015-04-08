@@ -344,36 +344,36 @@ namespace RINGMesh {
          */
 
     protected:
-        // / Pointer to the BounadyModel owning this element
+        /// Pointer to the BounadyModel owning this element
         BoundaryModel* model_ ;
 
-        // / Type of the element
+        /// Type of the element
         TYPE type_ ;
 
-        // / Elements are uniquely identified in the BoundaryModel
-        // / the pair TYPE + index
+        /// Elements are uniquely identified in the BoundaryModel
+        /// the pair TYPE + index
         index_t id_ ;
 
-        // / Name of the element - by default it is an empty string
+        /// Name of the element - by default it is an empty string
         std::string name_ ;
 
-        // / Geological feature of this object - default is NO_GEOL
+        /// Geological feature of this object - default is NO_GEOL
         GEOL_FEATURE geol_feature_ ;
 
-        // / Elements on the boundary of this element - see boundary_type( TYPE )
+        /// Elements on the boundary of this element - see boundary_type( TYPE )
         std::vector< index_t > boundaries_ ;
 
-        // / Additional information for oriented boundaries
-        // / Side: + (true) or - (false)
+        /// Additional information for oriented boundaries
+        /// Side: + (true) or - (false)
         std::vector< bool > sides_ ;
 
-        // / Elements in which boundary this element is - see in_boundary_type( TYPE )
+        /// Elements in which boundary this element is - see in_boundary_type( TYPE )
         std::vector< index_t > in_boundary_ ;
 
-        // / Index of the parent - see parent_type( TYPE ) - default value is NO_ID.
+        /// Index of the parent - see parent_type( TYPE ) - default value is NO_ID.
         index_t parent_ ;
 
-        // / Elements constituting this one - see child_type( TYPE )
+        /// Elements constituting this one - see child_type( TYPE )
         std::vector< index_t > children_ ;
     } ;
 
@@ -401,8 +401,8 @@ namespace RINGMesh {
 
         virtual ~Corner() {}
 
-        virtual index_t nb_cells() const { return 0 ;}
-        virtual index_t nb_vertices() const { return 1 ;}
+        virtual index_t nb_cells() const { return 0 ; }
+        virtual index_t nb_vertices() const { return 1 ; }
         virtual index_t model_vertex_id( index_t id = 0 ) const ;
         virtual const vec3& vertex( index_t p = 0 ) const { return mesh_.vertices.point( p ) ; }
 
@@ -528,6 +528,9 @@ namespace RINGMesh {
     public:
         const static index_t NO_ADJACENT = index_t( - 1 ) ;
 
+        // This pointer should not be used in an initialization list
+        // Warning VS C4355 - here it is more or less ok as the SurfaceTool constructor
+        // does not call any method of Surface, BUT ...
         Surface(
             BoundaryModel* model = nil,
             index_t id = NO_ID )

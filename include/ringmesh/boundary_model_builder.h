@@ -396,13 +396,13 @@ namespace RINGMesh {
     template< class MESH >
     void BoundaryModelBuilderSurface::set_surfaces( const MESH& mesh )
     {
-        // / 1. Copy the vertices of the input mesh to the model
+        /// 1. Copy the vertices of the input mesh to the model
         reserve_vertices( mesh.nb_vertices() ) ;
         for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
             add_vertex( mesh.vertex_ptr( i ) ) ;
         }
 
-        // / 2. Propagate on the input mesh facet to determine its surface connected components
+        /// 2. Propagate on the input mesh facet to determine its surface connected components
         // Vectors used in the loops
         std::vector< index_t > corners ;
         std::vector< index_t > facets_ptr ;
