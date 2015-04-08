@@ -347,6 +347,14 @@ namespace RINGMesh {
         return vertex( vertex_id( mesh, v ) ) ;
     }
 
+    const vec3& MacroMeshVertices::duplicated_vertex( index_t v ) const
+    {
+        if( cell_corners_.empty() ) {
+            const_cast< MacroMeshVertices* >( this )->initialize_duplication() ;
+        }
+        return unique_vertices_[duplicated_vertex_indices_[v]] ;
+    }
+
     /*!
      * Given a cell_corner id in a given mesh, return the vertex id in the MacroMesh
      * and the corresponding duplicated vertex id if the vertex is duplicated
@@ -354,8 +362,8 @@ namespace RINGMesh {
      * @param[in] cell_corner id of the cell corner
      * @param[out] vertex_id vertex id in the MacroMesh of the corresponding point
      * @param[out] duplicated_vertex_id duplicated vertex id if the vertex is duplicated
-     * @return returns true if the vertex is duplicated (\p duplicated_vertex_id is filled),
-     * false otherwise
+     * @return returns false if the vertex is duplicated (\p duplicated_vertex_id is filled),
+     * true otherwise
      */
     bool MacroMeshVertices::vertex_id(
         index_t mesh,
@@ -880,13 +888,13 @@ namespace RINGMesh {
     }
 
 
-
     MacroMeshTools::MacroMeshTools( MacroMesh& mm )
         : mm_( mm ),
           facet_aabb_( mm.nb_meshes(), nil ),
           tet_aabb_( mm.nb_meshes(), nil )
     {
     }
+
     MacroMeshTools::~MacroMeshTools()
     {
         for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
