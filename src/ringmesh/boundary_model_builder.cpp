@@ -2037,9 +2037,9 @@ namespace RINGMesh {
                     L.set_vertices( vertices ) ;
 
                     // Attributes on line vertices
-                    in.get_line() ;
-                    in.get_fields() ;
-                    ringmesh_assert( in.field_matches( 0, "LINE_VERTEX_ATTRIBUTES" ) ) ;
+//                    in.get_line() ;
+//                    in.get_fields() ;
+//                    ringmesh_assert( in.field_matches( 0, "LINE_VERTEX_ATTRIBUTES" ) ) ;
 //                    index_t nb_attribs = ( in.nb_fields() - 1 ) / 2 ;
 //                    std::vector< SerializedAttribute > vertex_attribs(
 //                        nb_attribs ) ;
@@ -2057,9 +2057,9 @@ namespace RINGMesh {
 //                    }
 
                     // Read attributes on line segments
-                    in.get_line() ;
-                    in.get_fields() ;
-                    ringmesh_assert( in.field_matches( 0, "LINE_SEGMENT_ATTRIBUTES" ) ) ;
+//                    in.get_line() ;
+//                    in.get_fields() ;
+//                   ringmesh_assert( in.field_matches( 0, "LINE_SEGMENT_ATTRIBUTES" ) ) ;
 //                    index_t nb_segment_attribs = ( in.nb_fields() - 1 ) / 2 ;
 //                    if( nb_segment_attribs > 0 ) {
 //                        std::vector< SerializedAttribute< BME::FACET > >
@@ -2110,12 +2110,12 @@ namespace RINGMesh {
                     }
 
 
-                    in.get_line() ;
-                    in.get_fields() ;
-                    ringmesh_assert( in.field_matches( 0,
-                            "SURFACE_VERTEX_ATTRIBUTES" ) ) ;
-                    index_t nb_vertex_attribs = ( in.nb_fields() - 1 ) / 2 ;
-
+//                    in.get_line() ;
+//                    in.get_fields() ;
+//                    ringmesh_assert( in.field_matches( 0,
+//                            "SURFACE_VERTEX_ATTRIBUTES" ) ) ;
+//                    index_t nb_vertex_attribs = ( in.nb_fields() - 1 ) / 2 ;
+//
                     // Bind the vertex attributes
 //                    std::vector< SerializedAttribute< BME::VERTEX > > vertex_attribs(
 //                        nb_vertex_attribs ) ;
@@ -2143,10 +2143,10 @@ namespace RINGMesh {
                     ringmesh_assert( in.field_matches( 0, "SURFACE_FACETS" ) ) ;
                     index_t nb_facets = in.field_as_uint( 1 ) ;
 
-                    in.get_line() ;
-                    in.get_fields() ;
-                    ringmesh_assert( in.field_matches( 0, "SURFACE_FACET_ATTRIBUTES" ) ) ;
-                    index_t nb_facet_attribs = ( in.nb_fields() - 1 ) / 2 ;
+//                    in.get_line() ;
+//                    in.get_fields() ;
+//                    ringmesh_assert( in.field_matches( 0, "SURFACE_FACET_ATTRIBUTES" ) ) ;
+//                    index_t nb_facet_attribs = ( in.nb_fields() - 1 ) / 2 ;
 
                     // Bind the facet attributes
 //                    std::vector< SerializedAttribute< BME::FACET > > facet_attribs(
@@ -2160,17 +2160,17 @@ namespace RINGMesh {
                     std::vector< index_t > corners( nb_corners ) ;
                     std::vector< index_t > facet_ptr( nb_facets + 1, 0 ) ;
                     index_t count_facets = 0 ;
-//                    for( index_t f = 0; f < nb_facets; f++ ) {
-//                        in.get_line() ;
-//                        in.get_fields() ;
-//                        index_t nb_v = in.field_as_uint( 0 ) ;
-//                        for( index_t v = 0; v < nb_v; ++v ) {
-//                            corners[ count_facets + v ] = in.field_as_uint( v + 1 ) ;
-//                        }
-//                        count_facets += nb_v ;
-//                        facet_ptr[ f + 1 ] = count_facets ;
+                    for( index_t f = 0; f < nb_facets; f++ ) {
+                        in.get_line() ;
+                        in.get_fields() ;
+                        index_t nb_v = in.field_as_uint( 0 ) ;
+                        for( index_t v = 0; v < nb_v; ++v ) {
+                            corners[ count_facets + v ] = in.field_as_uint( v + 1 ) ;
+                        }
+                        count_facets += nb_v ;
+                        facet_ptr[ f + 1 ] = count_facets ;
 //                        serialize_read_attributes( in, nb_v + 1, f, facet_attribs ) ;
-//                    }
+                    }
 
                     S.set_geometry( vertices, corners, facet_ptr ) ;
                     set_surface_adjacencies( id ) ;
