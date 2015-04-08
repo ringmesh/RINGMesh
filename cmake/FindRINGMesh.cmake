@@ -36,7 +36,7 @@ find_library(RINGMesh_LIBRARY_REL
 
 
 find_library(RINGMesh_LIBRARY_DBG  
-	NAMES "RINGMesh_d"
+	NAMES "RINGMesh"
 	PATH_SUFFIXES "lib" "build/ringmesh/Linux64-gcc-Debug/lib" "build/ringmesh/Win64-vs2012/lib/Debug"
 	PATHS ${RINGMesh_PREFIX_PATH}
 )
