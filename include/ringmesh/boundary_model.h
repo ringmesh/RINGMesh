@@ -82,7 +82,7 @@ namespace RINGMesh {
             index_t v_id ;
         } ;
 
-        BoundaryModelVertices( BoundaryModel& bm )
+        BoundaryModelVertices( const BoundaryModel& bm )
             : bm_( bm )
         {
         }
@@ -128,6 +128,8 @@ namespace RINGMesh {
          * @brief Fills the unique2bme vector
          */
         void initialize_reverse() ;
+
+        
 
         /*!
          * @brief Global index of where begins the vertices of the BME in bme2unique
@@ -320,9 +322,9 @@ namespace RINGMesh {
 
         const BoundaryModelElement& universe() const { return universe_ ; }
 
-        VertexAttributeManager* vertex_attribute_manager() const
+        VertexAttributeManager& vertex_attribute_manager() const
         {
-            return const_cast< VertexAttributeManager* >( &vertex_attribute_manager_ ) ;
+            return const_cast< VertexAttributeManager& >( vertex_attribute_manager_ ) ;
         }
 
         index_t find_region(
@@ -407,6 +409,8 @@ namespace RINGMesh {
         VertexAttributeManager vertex_attribute_manager_ ;
     } ;
 
+
+
     template< class ATTRIBUTE >
     class BoundaryModelVertexAttribute : public GEO::Attribute< ATTRIBUTE > {
     public:
@@ -416,14 +420,12 @@ namespace RINGMesh {
             const BoundaryModel* model,
             const std::string& name )
         {
-            superclass::bind( model->vertex_attribute_manager(),
-                model->nb_vertices(), name ) ;
+            superclass::bind( model->vertex_attribute_manager(), name ) ;
         }
 
         void bind( const BoundaryModel* model )
         {
-            superclass::bind( model->vertex_attribute_manager(),
-                model->nb_vertices() ) ;
+            superclass::bind( model->vertex_attribute_manager() ) ;
         }
 
         BoundaryModelVertexAttribute()
