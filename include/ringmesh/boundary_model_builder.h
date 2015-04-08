@@ -52,7 +52,7 @@
 
 namespace RINGMesh {
     /**
-     * @brief Base class for the class building a BoundaryModel.
+     * @brief Base class for classes building a BoundaryModel.
      * @details Derive from this class
      */
     class RINGMESH_API BoundaryModelBuilder {
@@ -178,7 +178,8 @@ namespace RINGMesh {
             index_t nb ) ;
 
         // Corner
-        index_t find_corner(  const vec3& point) const ;
+        index_t find_corner( const vec3& point) const ;
+        index_t find_corner( index_t model_point_id ) const ;
         index_t create_corner( const vec3& point ) ;
         index_t find_or_create_corner( const vec3& point) ;
 
@@ -231,10 +232,29 @@ namespace RINGMesh {
         void set_line(
             index_t id,
             const std::vector< vec3 >& vertices ) ;
-
+                
         void set_surface_geometry(
             index_t surface_id,
             const std::vector< vec3 >& surface_vertices,
+            const std::vector< index_t >& surface_facets,
+            const std::vector< index_t >& surface_facet_ptr,
+            const std::vector< index_t >& surface_adjacencies = empty_index_vector ) ;
+
+        // Same functions but to call in the case where the vertices of the 
+        // model are filled first 
+        index_t add_unique_vertex( const vec3& p ) ;
+
+        void set_corner(
+            index_t corner_id,
+            index_t unique_vertex ) ;
+
+        void set_line(
+            index_t id,
+            const std::vector< index_t >& unique_vertices ) ;
+
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< index_t >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr,
             const std::vector< index_t >& surface_adjacencies = empty_index_vector ) ;
@@ -292,6 +312,12 @@ namespace RINGMesh {
         virtual ~BoundaryModelBuilderGocad() {}
 
         void load_ml_file( const std::string& ml_file_name ) ;
+
+        index_t BoundaryModelBuilderGocad::determine_line_vertices(
+            const Surface& S,
+            index_t id0,
+            index_t id1,
+            std::vector< index_t >& border_vertex_model_ids ) const ;
 
         index_t determine_line_vertices(
             const Surface& S,

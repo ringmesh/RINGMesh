@@ -351,7 +351,16 @@ namespace RINGMesh {
 
     index_t Corner::model_vertex_id( index_t p ) const
     {
-        return model_->vertices.unique_vertex_id( CORNER, id(), p ) ;
+       // return model_->vertices.unique_vertex_id( CORNER, id(), p ) ;
+       return model_vertex_id_[0] ;
+    }
+
+    
+    void Corner::set_vertex( index_t model_point_id ) 
+    {
+        mesh_.vertices.point( 0 ) = model_->vertex( model_point_id ) ;
+        model_vertex_id_[0] = model_point_id ;
+        model_->vertices.add_unique_to_bme( model_point_id, element_type(), id(), 0 ) ;
     }
 
     void Corner::set_vertex( index_t index, const vec3& point, bool update )
@@ -374,6 +383,7 @@ namespace RINGMesh {
         index_t id ) :
         BoundaryModelElement( model, LINE, id )
     {
+        model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ; 
     }
 
 
@@ -394,6 +404,7 @@ namespace RINGMesh {
         for( index_t v = 0; v < vertices.size(); v++ ) {
             mesh_.vertices.point( v ) = vertices[v] ;
         }
+        model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ; 
     }
 
 
@@ -418,13 +429,16 @@ namespace RINGMesh {
         for( index_t v = 0; v < vertices.size(); v++ ) {
             mesh_.vertices.point( v ) = vertices[v] ;
         }
+        model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ; 
+
         boundaries_.push_back( corner0 ) ;
         boundaries_.push_back( corner1 ) ;
     }
 
     index_t Line::model_vertex_id( index_t p ) const
     {
-        return model_->vertices.unique_vertex_id( LINE, id(), p ) ;
+       // return model_->vertices.unique_vertex_id( LINE, id(), p ) ;
+        return model_vertex_id_[p] ;
     }
 
     void Line::set_vertex( index_t index, const vec3& point, bool update )
@@ -435,6 +449,22 @@ namespace RINGMesh {
                 point ) ;
         else
             mesh_.vertices.point( index ) = point ;
+    }
+
+    void Line::set_vertices( const std::vector< index_t >& model_vertex_ids )
+    {
+        mesh_.clear( true, true ) ;
+        mesh_.vertices.create_vertices( model_vertex_ids.size() ) ;
+        for( index_t v = 0; v < model_vertex_ids.size(); v++ ) {
+            index_t cur = model_vertex_ids[v] ;
+            mesh_.vertices.point( v ) = model_->vertex( cur ) ;
+            model_vertex_id_[v] = cur ;
+            model_->vertices.add_unique_to_bme( cur, element_type(), id(), v ) ;
+        }
+    }
+
+    void Line::set_model_vertex_id( index_t line_id, index_t model_id ) {
+        model_vertex_id_[line_id] = model_id ;
     }
 
     /*!
@@ -448,6 +478,7 @@ namespace RINGMesh {
         return std::count( in_boundary_.begin(), in_boundary_.end(),
             surface.id() ) > 1 ;
     }
+
 
     /*!
      *
@@ -549,7 +580,8 @@ namespace RINGMesh {
     }
 
     index_t Surface::model_vertex_id( index_t p ) const {
-        return model_->vertices.unique_vertex_id( SURFACE, id(), p ) ;
+        //return model_->vertices.unique_vertex_id( SURFACE, id(), p ) ;
+        return model_vertex_id_[p] ;
     }
 
     /*!
@@ -574,6 +606,54 @@ namespace RINGMesh {
         return NO_ID ;
     }
 
+
+    void Surface::set_model_vertex_id( index_t surf_id, index_t model_id ) {
+        model_vertex_id_[surf_id] = model_id ;
+    }
+
+    void Surface::set_geometry(
+        const std::vector< vec3 >& vertices,
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        mesh_.clear( true, true ) ;
+        mesh_.vertices.create_vertices( vertices.size() ) ;
+        for( index_t v = 0; v < vertices.size() ; v++ ) {
+            mesh_.vertices.point( v ) = vertices[v] ;
+        }
+        set_geometry( facets, facet_ptr ) ;
+    }
+
+    void Surface::set_geometry(
+        const std::vector< index_t >& model_vertex_ids,
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        mesh_.clear( true, true ) ;
+        mesh_.vertices.create_vertices( model_vertex_ids.size() ) ;
+        for( index_t v = 0; v < model_vertex_ids.size() ; v++ ) {
+            index_t cur = model_vertex_ids[v] ;
+            mesh_.vertices.point( v ) = model_->vertex( cur ) ;
+            model_vertex_id_[v] = cur ;
+            model_->vertices.add_unique_to_bme( cur, element_type(), id(), v ) ;
+        }
+        set_geometry( facets, facet_ptr ) ;
+    }
+
+    void Surface::set_geometry(
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        for( index_t f = 0; f < facet_ptr.size()-1; f++ ) {
+            index_t size = facet_ptr[f+1] - facet_ptr[f] ;
+            GEO::vector< index_t > facet_vertices( size ) ;
+            index_t start = facet_ptr[f] ;
+            for( index_t lv = 0; lv < size; lv++ ) {
+                facet_vertices[lv] = facets[start++] ;
+            }
+            mesh_.facets.create_polygon( facet_vertices ) ;
+        }
+    }
     /*!
      * @brief Traversal of a surface border
      * @details From the input facet f, get the facet that share vertex v and
@@ -950,22 +1030,6 @@ namespace RINGMesh {
         } while( !S.empty() ) ;
 
         return result.size() ;
-    }
-
-
-    void Surface::set_geometry(
-        const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr )
-    {
-        for( index_t f = 0; f < facet_ptr.size()-1; f++ ) {
-            index_t size = facet_ptr[f+1] - facet_ptr[f] ;
-            GEO::vector< index_t > facet_vertices( size ) ;
-            index_t start = facet_ptr[f] ;
-            for( index_t lv = 0; lv < size; lv++ ) {
-                facet_vertices[lv] = facets[start++] ;
-            }
-            mesh_.facets.create_polygon( facet_vertices ) ;
-        }
     }
 
 

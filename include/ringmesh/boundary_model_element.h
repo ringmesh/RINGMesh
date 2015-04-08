@@ -245,8 +245,9 @@ namespace RINGMesh {
         /**@}
          * \name Accessors to attribute managers
          * @{
-         */
-        virtual VertexAttributeManager* vertex_attribute_manager() const
+         * // Access at this level not necessary - Jeanne
+         *
+        virtual VertexAttributeManager& vertex_attribute_manager() const
         {
             ringmesh_assert_not_reached ;
             return nil ;
@@ -256,7 +257,7 @@ namespace RINGMesh {
         {
             ringmesh_assert_not_reached ;
             return nil ;
-        }
+        } */
 
         /**@}
          * \name Modification of the element
@@ -266,11 +267,11 @@ namespace RINGMesh {
             const BoundaryModelElement& rhs,
             BoundaryModel& model ) ;
 
-        void set_model( BoundaryModel* m ) { model_ = m  ;}
-        void set_element_type( TYPE t ) { type_ = t ;}
-        void set_id( index_t id ) { id_ = id ;}
-        void set_name( const std::string& name ) { name_ = name ;}
-        void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ;}
+        void set_model( BoundaryModel* m ) { model_ = m  ; }
+        void set_element_type( TYPE t ) { type_ = t ; }
+        void set_id( index_t id ) { id_ = id ; }
+        void set_name( const std::string& name ) { name_ = name ; }
+        void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; }
 
         void add_boundary( index_t b )
         {
@@ -381,6 +382,7 @@ namespace RINGMesh {
     const static BoundaryModelElement dummy_element(
         nil, BoundaryModelElement::NO_TYPE ) ;
 
+
     /*!
      * @brief A Corner
      *
@@ -397,6 +399,7 @@ namespace RINGMesh {
               : BoundaryModelElement( model, CORNER, id )
         {
             mesh_.vertices.create_vertex( vertex.data() ) ;
+            model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ; 
         }
 
         virtual ~Corner() {}
@@ -416,13 +419,21 @@ namespace RINGMesh {
             mesh_.vertices.point( 0 ) = point ;
         }
 
-        virtual VertexAttributeManager* vertex_attribute_manager() const {
-            return &mesh_.vertices.attributes() ;
+        void set_vertex( index_t model_point_id ) ;
+
+        void set_model_vertex_id( index_t model_id ) {
+            model_vertex_id_[0] = model_id ;
+        }
+
+        virtual VertexAttributeManager& vertex_attribute_manager() const {
+            return mesh_.vertices.attributes() ;
         }
 
     private:
         GEO::Mesh mesh_ ;
+        GEO::Attribute<index_t> model_vertex_id_ ;
     } ;
+
 
     /*!
      * @brief A boundary Line of a Surface
@@ -462,6 +473,7 @@ namespace RINGMesh {
             index_t index,
             const vec3& point,
             bool update = true ) ;
+        
 
         /*! @brief A Line is closed if its two extremities are identitcal */
         bool is_closed() const
@@ -477,12 +489,16 @@ namespace RINGMesh {
 
         void set_vertices( const std::vector< vec3 >& vertices )
         {
-            mesh_.vertices.clear() ;
+            mesh_.clear( true, true ) ;
             mesh_.vertices.create_vertices( vertices.size() ) ;
             for( index_t v = 0; v < vertices.size(); v++ ) {
                 mesh_.vertices.point( v ) = vertices[v] ;
             }
         }
+        
+        void set_vertices( const std::vector< index_t >& model_vertex_ids ) ;        
+
+        void set_model_vertex_id( index_t line_id, index_t model_id ) ;
 
         vec3 segment_barycenter( index_t s ) const ;
 
@@ -490,12 +506,13 @@ namespace RINGMesh {
 
         double total_length() const ;
 
-        virtual VertexAttributeManager* vertex_attribute_manager() const {
-            return &mesh_.vertices.attributes() ;
+        virtual VertexAttributeManager& vertex_attribute_manager() const {
+            return mesh_.vertices.attributes() ;
         }
 
     private:
         GEO::Mesh mesh_ ;
+        GEO::Attribute<index_t> model_vertex_id_ ;
     } ;
 
 
@@ -536,6 +553,7 @@ namespace RINGMesh {
             index_t id = NO_ID )
             : BoundaryModelElement( model, SURFACE, id ), tools( *this )
         {
+            model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ; 
         }
 
         virtual ~Surface() ;
@@ -637,6 +655,9 @@ namespace RINGMesh {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
             return model_vertex_id( surf_vertex_id( f, v ) ) ;
         }
+
+
+        void set_model_vertex_id( index_t surf_id, index_t model_id ) ;
 
         /*!
          * @brief Returns a vertex surface index from its model index
@@ -768,15 +789,12 @@ namespace RINGMesh {
         void set_geometry(
             const std::vector< vec3 >& vertices,
             const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr )
-        {
-            mesh_.clear() ;
-            mesh_.vertices.create_vertices( vertices.size() ) ;
-            for( index_t v = 0; v < vertices.size() ; v++ ) {
-                mesh_.vertices.point( v ) = vertices[v] ;
-            }
-            set_geometry( facets, facet_ptr ) ;
-        }
+            const std::vector< index_t >& facet_ptr ) ;
+
+        void set_geometry(
+            const std::vector< index_t >& model_vertex_ids,
+            const std::vector< index_t >& facets,
+            const std::vector< index_t >& facet_ptr ) ;
 
         void set_geometry(
             const std::vector< index_t >& facets,
@@ -790,16 +808,17 @@ namespace RINGMesh {
             }
         }
 
-        virtual VertexAttributeManager* vertex_attribute_manager() const {
-            return &mesh_.vertices.attributes() ;
+        virtual VertexAttributeManager& vertex_attribute_manager() const {
+            return mesh_.vertices.attributes() ;
         }
 
-        virtual CellAttributeManager* cell_attribute_manager() const {
-            return &mesh_.facets.attributes() ;
+        virtual CellAttributeManager& cell_attribute_manager() const {
+            return mesh_.facets.attributes() ;
         }
 
     private:
         GEO::Mesh mesh_ ;
+        GEO::Attribute<index_t> model_vertex_id_ ;
 
     public:
         SurfaceTools tools ;
@@ -809,6 +828,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Class to perform modifications of a Surface
+     * @todo remove this class
      */
     class RINGMESH_API SurfaceMutator {
     public:
@@ -829,7 +849,7 @@ namespace RINGMesh {
 
         void clear()
         {
-            S_.mesh_.clear() ;
+            S_.mesh_.clear( true, true ) ;
         }
 
         void cut_by_line( const Line& L ) ;
