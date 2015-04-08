@@ -351,14 +351,14 @@ namespace RINGMesh {
 
     index_t Corner::model_vertex_id( index_t p ) const
     {
-        return model_->vertices.global_vertex_id( CORNER, id(), p ) ;
+        return model_->vertices.unique_vertex_id( CORNER, id(), p ) ;
     }
 
     void Corner::set_vertex( index_t index, const vec3& point, bool update )
     {
         if( update )
             model_->vertices.update_point(
-                model_->vertices.global_vertex_id( CORNER, id(), index ), point ) ;
+                model_->vertices.unique_vertex_id( CORNER, id(), index ), point ) ;
         else
             mesh_.vertices.point( 0 ) = point ;
     }
@@ -424,14 +424,14 @@ namespace RINGMesh {
 
     index_t Line::model_vertex_id( index_t p ) const
     {
-        return model_->vertices.global_vertex_id( LINE, id(), p ) ;
+        return model_->vertices.unique_vertex_id( LINE, id(), p ) ;
     }
 
     void Line::set_vertex( index_t index, const vec3& point, bool update )
     {
         if( update )
             model_->vertices.update_point(
-                model_->vertices.global_vertex_id( CORNER, id(), index ),
+                model_->vertices.unique_vertex_id( CORNER, id(), index ),
                 point ) ;
         else
             mesh_.vertices.point( index ) = point ;
@@ -542,14 +542,14 @@ namespace RINGMesh {
         ringmesh_debug_assert( index < nb_vertices() ) ;
         if( update )
             model_->vertices.update_point(
-                model_->vertices.global_vertex_id( SURFACE, id(), index ),
+                 model_->vertices.unique_vertex_id( SURFACE, id(), index ),
                 point ) ;
         else
             mesh_.vertices.point( index ) = point ;
     }
 
     index_t Surface::model_vertex_id( index_t p ) const {
-        return model_->vertices.global_vertex_id( SURFACE, id(), p ) ;
+        return model_->vertices.unique_vertex_id( SURFACE, id(), p ) ;
     }
 
     /*!
@@ -563,12 +563,12 @@ namespace RINGMesh {
 
     index_t Surface::surf_vertex_id( index_t model_vertex_id ) const
     {
-        const std::vector< BoundaryModelVertices::reverse_info >& reverse_db =
-            model_->vertices.reverse_vertices( model_vertex_id ) ;
+        const std::vector< BoundaryModelVertices::VertexInBME >& reverse_db =
+            model_->vertices.bme_vertices( model_vertex_id ) ;
         for( index_t i = 0; i < reverse_db.size(); i++ ) {
-            const BoundaryModelVertices::reverse_info& info = reverse_db[i] ;
-            if( info.type == SURFACE && info.element == id() ) {
-                return info.vertex_id ;
+            const BoundaryModelVertices::VertexInBME& info = reverse_db[i] ;
+            if( info.bme_type == SURFACE && info.bme_id == id() ) {
+                return info.v_id ;
             }
         }
         return NO_ID ;
@@ -1170,7 +1170,7 @@ namespace RINGMesh {
         index_t last_vertex = L.model_vertex_id( L.nb_vertices() - 1 ) ;
 
         // Hopefully we have all the vertices on the Line..
-        // / \todo Check that all vertices on the line are recovered
+        /// \todo Check that all vertices on the line are recovered
         while( S_.model_vertex_id( id1 ) != last_vertex ) {
             // Get the next vertex on the border
             // Same algorithm than in determine_line_vertices function
@@ -1217,7 +1217,7 @@ namespace RINGMesh {
             id1 = next_id1 ;
         }
 
-        // / \todo Check qu'on ne coupe pas compl�tement la surface, si on a 2 surfaces � la fin c'est la merde
+        /// \todo Check qu'on ne coupe pas compl�tement la surface, si on a 2 surfaces � la fin c'est la merde
     }
 
 
@@ -1230,13 +1230,13 @@ namespace RINGMesh {
     {
         double result = 0. ;
 
-        // / If this element has children sum up their sizes
+        /// If this element has children sum up their sizes
         for( index_t i = 0; i < E->nb_children(); ++i ) {
             result += BoundaryModelElementMeasure::size( &E->child( i ) )  ;
         }
         if( result != 0 ) {return result ;}
 
-        // / Else it is a base element and its size is computed
+        /// Else it is a base element and its size is computed
 
         // If this is a region
         if( E->element_type() == BoundaryModelElement::REGION ) {
