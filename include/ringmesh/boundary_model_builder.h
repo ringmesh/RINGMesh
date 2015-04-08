@@ -313,7 +313,7 @@ namespace RINGMesh {
 
         void load_ml_file( const std::string& ml_file_name ) ;
 
-        index_t BoundaryModelBuilderGocad::determine_line_vertices(
+        index_t determine_line_vertices(
             const Surface& S,
             index_t id0,
             index_t id1,

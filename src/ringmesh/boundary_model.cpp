@@ -276,7 +276,7 @@ namespace RINGMesh {
 
 
     /*!
-     * \brief Returns the index of the given vertex in the model
+     * @brief Returns the index of the given vertex in the model
      * \todo Implement the function - Add a KdTree for geometrical request on model vertices
      *
      * @param[in] p input point coordinates
@@ -290,7 +290,7 @@ namespace RINGMesh {
 
 
     /*!
-     * \brief Returns the index of the region neighboring the surface.
+     * @brief Returns the index of the region neighboring the surface.
      * @param[in] surface_part_id Index of the Surface
      * @param[in] side Side of the Surface
      * @return The region index or NO_ID if none found.
