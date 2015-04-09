@@ -57,10 +57,16 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+    /*!
+     * @brief Unique storage of the vertices of a BoundaryModel
+     * @details Each instance, set of coordinates, is unique, unlike vertices in 
+     *          the model Corner, Line, and Surface.
+     *          Attributes may be defined on the vertices.
+     */          
     class RINGMESH_API BoundaryModelVertices {
     public:
         /*!
-         * @brief Info to get a given vertex in a given BoundaryModelElement
+         * @brief Identification of a vertex in a BoundaryModelElement
          */
         struct VertexInBME {
             VertexInBME(
@@ -78,23 +84,34 @@ namespace RINGMesh {
             index_t v_id ;
         } ;
 
+        /*!
+         * @brief Vertices are defined for a BoundaryModel
+         */
         BoundaryModelVertices( const BoundaryModel& bm )
             : bm_( bm )
         {
         }
 
+        /*!
+         * @brief Number of vertices stored. 
+         * @details Calls initialize_unique_vertices(), if no vertices yet
+         */
         index_t nb_unique_vertices() const ;
 
+        /*!
+         * @brief Get the index of the BM vertex corresponding to vertex v
+         *        in the BME of type T and index id.
+         * @details Calls initialize_unique_vertices(), if no vertices yet
+         *          The unique_id is stored as an attribute on the vertices of the BME
+         */
         index_t unique_vertex_id(
-            BoundaryModelElement::TYPE type,
-            index_t element,
-            index_t v ) const ;
+            BoundaryModelElement::TYPE T, index_t id, index_t v ) const ;       
 
-        index_t unique_vertex_id( const VertexInBME& v ) const ;
-
-        const vec3& unique_vertex( index_t unique_id ) const ;
-
-        const std::vector< VertexInBME >& bme_vertices( index_t unique_id ) const ;
+        /*!
+         * @brief Coordinates of a vertex of the BoundaryModel
+         * @pre unique_id < nb_unique_vertices()
+         */
+        const vec3& unique_vertex( index_t unique_id ) const ;        
         
         /*!
          * @brief To use when building the model by first adding its vertices
@@ -128,6 +145,9 @@ namespace RINGMesh {
             unique2bme_.clear() ;
         }
 
+        /*!
+         * @brief Returns the Geogram attribute manager on these vertices
+         */
         GEO::AttributesManager& attribute_manager() {
             return unique_vertices_.vertices.attributes() ;
         }
@@ -145,6 +165,16 @@ namespace RINGMesh {
          * @details Call initialize_unique_vertices() if unique_vertices_ is empty
          */
         void initialize_reverse() ;
+
+        /*!
+         * @copydoc BoundaryModelVertices::unique_vertex_id( BoundaryModelElement::TYPE,index_t,index_t )
+         */
+        index_t unique_vertex_id( const VertexInBME& v ) const ;
+
+        /*!
+         * @brief Get the vertices in BME that correspond to the given unique vertex
+         */
+        const std::vector< VertexInBME >& bme_vertices( index_t unique_id ) const ;
 
     private:
         /// Attached BoundaryModel to which belong the vertices
