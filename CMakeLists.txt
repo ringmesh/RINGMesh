@@ -111,3 +111,5 @@ if(UNIX)
 		RUNTIME DESTINATION lib 
 		CONFIGURATIONS All)	
 endif(UNIX)
+
+include(tests/tests.cmake)
