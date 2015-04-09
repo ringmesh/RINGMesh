@@ -64,7 +64,7 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     /*!
-     * \brief Generic class describing one element of a BoundaryModel
+     * @brief Generic class describing one element of a BoundaryModel
      */
     class RINGMESH_API BoundaryModelElement {
     ringmesh_disable_copy( BoundaryModelElement ) ;
@@ -163,7 +163,7 @@ namespace RINGMesh {
 
         bool operator==( const BoundaryModelElement& rhs ) const ;
 
-        /**
+        /*!
          * \name Accessors to basic information
          * @{
          */
@@ -179,7 +179,7 @@ namespace RINGMesh {
         GEOL_FEATURE geological_feature() const { return geol_feature_ ;}
         bool is_on_voi() const ;
 
-        /**@}
+        /*!@}
          * \name Connectivity - boundary and in_boundary
          * @{
          */
@@ -193,7 +193,7 @@ namespace RINGMesh {
         index_t in_boundary_id( index_t x ) const { return in_boundary_[ x ] ;}
         const BoundaryModelElement& in_boundary( index_t x ) const ;
 
-        /**@}
+        /*!@}
          * \name Parent - children relationships
          * @{
          */
@@ -206,7 +206,7 @@ namespace RINGMesh {
         index_t child_id( index_t x ) const { return children_[ x ] ;}
         const BoundaryModelElement& child( index_t x ) const ;
 
-        /**@}
+        /*!@}
          * \name Accessors to geometry - Reimplemented in Corner, Line, Surface classes
          * @{
          */
@@ -238,24 +238,14 @@ namespace RINGMesh {
         {
         }
 
-        /**@}
-         * \name Accessors to attribute managers
+        /*!@}
+         * \name Accessors to attribute managers.
          * @{
-         * // Access at this level not necessary - Jeanne
-         *
-        virtual VertexAttributeManager& vertex_attribute_manager() const
-        {
-            ringmesh_assert_not_reached ;
-            return nil ;
-        }
-
-        virtual CellAttributeManager* cell_attribute_manager() const
-        {
-            ringmesh_assert_not_reached ;
-            return nil ;
-        } */
-
-        /**@}
+         */
+        virtual VertexAttributeManager& vertex_attribute_manager() const ;        
+        virtual CellAttributeManager& cell_attribute_manager() const ;
+        
+        /*!@}
          * \name Modification of the element
          * @{
          */
@@ -336,7 +326,7 @@ namespace RINGMesh {
             children_[ id ] = c ;
         }
 
-        /**
+        /*!
          * @}
          */
 
@@ -434,12 +424,12 @@ namespace RINGMesh {
     /*!
      * @brief A boundary Line of a Surface
      *
-     * To be valid a Line must have 2 element on its boundary (the 2 Corner might be identical)
+     * @details To be valid a Line must have 2 element on its boundary (the 2 Corner might be identical)
      * and be in the boundary of a least one Surface.
      * It is defined by a set of vertices. Its segments are implicitely defined between vertices
      * vertex(n) and vertex(n+1) for n between 0 and nb_cells()
      *
-     * There is no LineMutator since hardly nothing can be performed on a Line without modifying the model
+     * @note There is no LineMutator since hardly nothing can be performed on a Line without modifying the model
      */
     class RINGMESH_API Line : public BoundaryModelElement {
     public:
@@ -541,9 +531,6 @@ namespace RINGMesh {
     public:
         const static index_t NO_ADJACENT = index_t( - 1 ) ;
 
-        // This pointer should not be used in an initialization list
-        // Warning VS C4355 - here it is more or less ok as the SurfaceTool constructor
-        // does not call any method of Surface, BUT ...
         Surface(
             BoundaryModel* model = nil,
             index_t id = NO_ID )
@@ -590,7 +577,7 @@ namespace RINGMesh {
             const vec3& point,
             bool update = true ) ;
 
-        /**
+        /*!
          * \name Accessors to facet and vertices
          * @{
          */
@@ -631,7 +618,7 @@ namespace RINGMesh {
         index_t model_facet_id( index_t f ) const ;
 
         /*!
-           *@brief Returns the surface index of vertex \param v in facet \param f
+         * @brief Returns the surface index of vertex \param v in facet \param f
          */
         index_t surf_vertex_id(
             index_t f,
@@ -700,7 +687,7 @@ namespace RINGMesh {
             bool border_only,
             index_t first_facet ) const ;
 
-        /** @}
+        /*! @}
          * \name Geometrical request on facets
          * @{
          */
@@ -718,7 +705,7 @@ namespace RINGMesh {
 
         vec3 edge_barycenter( index_t c ) const ;
 
-        /** @}
+        /*! @}
          * \name Adjacencies request
          * @{
          */
@@ -770,7 +757,7 @@ namespace RINGMesh {
             index_t& next_f,
             index_t& next_e ) const ;
 
-        /** @}
+        /*! @}
          * \name Modifiers
          * @{
          */
@@ -837,11 +824,6 @@ namespace RINGMesh {
               : S_( const_cast< Surface& >( S ) )
         {
         }
-
-//        std::vector< index_t >& vertices() const { return S_.vertices_  ;}
-//        std::vector< index_t >& facets() const { return S_.facets_    ;}
-//        std::vector< index_t >& facet_ptr() const { return S_.facet_ptr_ ;}
-//        std::vector< index_t >& adjacents() const { return S_.adjacent_  ;}
 
         void clear()
         {

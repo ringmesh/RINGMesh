@@ -58,7 +58,7 @@ namespace RINGMesh {
 
 
 //    // What follows come directly from Graphite Copyright Bruno Levy
-//    /**
+//    /*!
 //     * AttributeSerializer is used to save and load attributes attached
 //     * to an object. This is the base class for serializing the value of
 //     * an attribute and creating an AttributeStore given its type name.
@@ -106,7 +106,7 @@ namespace RINGMesh {
 //
 //    // _________________________________________________________________________________________________________
 //
-//    /**
+//    /*!
 //     * Default implementation of AttributeSerializer.
 //     */
 //    template< class ATTRIBUTE >
@@ -138,7 +138,7 @@ namespace RINGMesh {
 //        }
 //    } ;
 //
-//    /**
+//    /*!
 //     * Use this class to declare a new serializable attribute type.
 //     * In the common.cpp file of the library, add:
 //     * ringmesh_register_attribute_type<MyAttributeType>("MyAttributeType") ;
@@ -153,7 +153,7 @@ namespace RINGMesh {
 //        }
 //    } ;
 //
-//    /**
+//    /*!
 //     * SerializedAttributeRef is what SerializedAttribute::operator[] returns.
 //     * It is just meant to overload operator<< and operator>>.
 //     */
@@ -191,7 +191,7 @@ namespace RINGMesh {
 //    }
 //
 //
-//    /**
+//    /*!
 //     * SerializedAttribute allows writing attribute values into a stream,
 //     * reading attribute values from a stream, and creating an attribute
 //     * from its type name.
@@ -306,7 +306,7 @@ namespace RINGMesh {
 //    } ;
 //
 //    /*!
-//     * \brief Get from the manager the attributes that can be saved in a file
+//     * @brief Get from the manager the attributes that can be saved in a file
 //     * Those for which there is a type name has beed registered cf. ringmesh_register_attribute_type
 //     * The names and types of the writable attributes are written in the output stream
 //     * The corresponding serialized attributes are added to attributes

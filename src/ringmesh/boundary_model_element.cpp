@@ -348,6 +348,23 @@ namespace RINGMesh {
         }
         return false ;
     }
+    
+
+    BoundaryModelElement::VertexAttributeManager& 
+        BoundaryModelElement::vertex_attribute_manager() const
+    {
+        ringmesh_assert_not_reached ;
+        // Return something stupid - we crash before anyway
+        return model_->corner(0).vertex_attribute_manager();
+    }
+
+    BoundaryModelElement::CellAttributeManager& 
+        BoundaryModelElement::cell_attribute_manager() const
+    {
+        ringmesh_assert_not_reached ;
+        // Return something stupid - we crash before anyway
+        return model_->corner(0).vertex_attribute_manager();
+    }
 
     index_t Corner::model_vertex_id( index_t p ) const
     {
@@ -394,7 +411,7 @@ namespace RINGMesh {
      *
      * @param[in] model  The parent model
      * @param[in] id The index of the line in the lines_ vector of the parent model
-     * @param[in] vertices Indices (in the model) of the vertices defining this Line
+     * @param[in] vertices Coordinates of the vertices defining this Line
      */
     Line::Line(
         BoundaryModel* model,
@@ -415,9 +432,9 @@ namespace RINGMesh {
      *
      * @param[in] model  The parent model
      * @param[in] id The index of the line in the lines_ vector of the parent model
-     * @param[in] vertices Indices (in the model) of the vertices defining this Line
      * @param[in] corner0 Index of the starting corner
      * @param[in] corner1 Index of the ending corner
+     * @param[in] vertices Coordinates of the vertices defining this Line
      */
     Line::Line(
         BoundaryModel* model,
@@ -1072,7 +1089,7 @@ namespace RINGMesh {
      * @return Normal to the triangle made by the first 3 vertices
      * of the facet
      *
-     * WARNING : if the facet is not planar calling this has no meaning
+     * @warning If the facet is not planar calling this has no meaning
      */
     vec3 Surface::facet_normal( index_t f ) const
     {
@@ -1142,8 +1159,6 @@ namespace RINGMesh {
             }
         }
         ringmesh_debug_assert( f != NO_ID ) ;
-//        index_t f = narrow_cast< index_t >( std::lower_bound(
-//            facet_ptr_.begin(), facet_ptr_.end(), c ) - facet_ptr_.begin() ) ;
         index_t v = c - facet_begin( f ) ;
         result += vertex( f, v ) ;
         result += vertex( f, next_in_facet( f, v ) ) ;
@@ -1154,6 +1169,8 @@ namespace RINGMesh {
         : surface_( surface ), aabb_( nil ), ann_( nil )
     {
     }
+
+
     SurfaceTools::~SurfaceTools()
     {
         if( aabb_ ) delete aabb_ ;
@@ -1283,7 +1300,8 @@ namespace RINGMesh {
             id1 = next_id1 ;
         }
 
-        /// \todo Check qu'on ne coupe pas compl�tement la surface, si on a 2 surfaces � la fin c'est la merde
+        /// \todo Check that the surface is not cut into two parts 
+        /// in that case we hae a BIG problem
     }
 
 

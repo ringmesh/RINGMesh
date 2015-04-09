@@ -51,7 +51,7 @@
 #include <stack>
 
 namespace RINGMesh {
-    /**
+    /*!
      * @brief Base class for all classes building a BoundaryModel.
      * @details Derive from this class
      */
@@ -82,7 +82,7 @@ namespace RINGMesh {
             return const_cast< BoundaryModelElement& >( model_.element( t, index ) ) ;
         }
 
-        /** @}
+        /*! @}
          * \name Filling BoundaryModelElement attributes.
          * @{
          */
@@ -163,7 +163,7 @@ namespace RINGMesh {
             element( e_type, e_index ).set_vertex( v, point, false ) ;
         }
 
-        /** @}
+        /*! @}
          * \name Find and/or create one BoundaryModelElement.
          * @{
          */
@@ -221,7 +221,7 @@ namespace RINGMesh {
         void set_universe( const std::vector< std::pair< index_t,
                                                          bool > >& boundaries ) ;
 
-        /** @}
+        /*! @}
          * \name Set element geometry
          * @{
          */
@@ -267,7 +267,7 @@ namespace RINGMesh {
 
         void set_surface_adjacencies( index_t surface_id ) ;
 
-        /** @}
+        /*! @}
          * \name Fix model - Check validity and fill missing stuff
          * @{
          */
@@ -293,7 +293,7 @@ namespace RINGMesh {
 
         void fill_elements_children( BME::TYPE type ) ;
 
-        /**
+        /*!
          * @}
          */
 
@@ -302,7 +302,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * \brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
+     * @brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
      */
     class RINGMESH_API BoundaryModelBuilderGocad : public BoundaryModelBuilder {
     public:
@@ -352,8 +352,8 @@ namespace RINGMesh {
             const vec3& p1,
             const vec3& p2 ) ;
 
-        /**
-         * \brief Check if the surface triangle orientations match the one of the key facet
+        /*!
+         * @brief Check if the surface triangle orientations match the one of the key facet
          */
         bool check_key_facet_orientation( index_t surface ) ;
 
@@ -369,7 +369,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * \brief Build a BoundaryModel from a file_model.bm
+     * @brief Build a BoundaryModel from a file_model.bm
      */
     class RINGMESH_API BoundaryModelBuilderBM : public BoundaryModelBuilder {
     public:
@@ -393,6 +393,7 @@ namespace RINGMesh {
     /*!
      * @brief Builder of a BoundaryModel from a conformal surface meshes
      *        in which the manifold connected components are disjoints
+     * @todo A TESTER 
      */
     class RINGMESH_API BoundaryModelBuilderSurface : public BoundaryModelBuilder {
     public:
