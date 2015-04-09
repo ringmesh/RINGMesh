@@ -52,7 +52,7 @@
 
 namespace RINGMesh {
     /**
-     * @brief Base class for classes building a BoundaryModel.
+     * @brief Base class for all classes building a BoundaryModel.
      * @details Derive from this class
      */
     class RINGMESH_API BoundaryModelBuilder {
