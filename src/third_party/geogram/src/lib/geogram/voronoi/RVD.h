@@ -67,6 +67,7 @@ namespace GEO {
     class Delaunay;
     class Map;
     class IntegrationSimplex;
+    class MeshFacetsAABB;
 
     /**
      * \brief Computes a Restricted Voronoi Diagram (RVD).
@@ -442,11 +443,35 @@ namespace GEO {
             /**
              * \brief If set, the seeds are used whenever possible,
              *  i.e. whenever a restricted Voronoi cell has a single
-             *  connected component. Important: before using this
+             *  connected component. 
+             */
+            RDT_PREFER_SEEDS=4,
+
+            /**
+             * \brief If set, then the algorithm selects among the
+             *  seed and the restricted voronoi cell centroid the
+             *  one that is nearest to the surface.
+             *  Important: before using this
              *  mode, the surface mesh needs to be reordered with 
              *  Morton order (see GEO::mesh_reorder).
              */
-            RDT_PREFER_SEEDS=4
+            RDT_SELECT_NEAREST=8,
+
+            /**
+             * \brief If set, then all the vertices are projected
+             *  onto the surface.
+             *  Important: before using this
+             *  mode, the surface mesh needs to be reordered with 
+             *  Morton order (see GEO::mesh_reorder).
+             */
+            RDT_PROJECT_ON_SURFACE=16,
+
+            /**
+             * \brief If set, the generated mesh is not repaired.
+             *   As a result, triangles may be not properly
+             *   oriented.
+             */
+            RDT_DONT_REPAIR=32
         };
 
 
@@ -463,12 +488,16 @@ namespace GEO {
          *  is locked (size = delaunay()->nb_vertices()). Locked
          *  seeds are not replaced with the restricted Voronoi cell
          *  centroid.
+         * \param[in] AABB used if one of (RDT_RVC_PROJECT_ON_SURFACE,
+         *   RDT_SELECT_NEAREST) is set in \p mode. If needed but not
+         *   specified, then a temporary one is created. 
          */
         virtual void compute_RDT(
             vector<index_t>& simplices,
             vector<double>& embedding,
             RDTMode mode = RDTMode(RDT_RVC_CENTROIDS | RDT_PREFER_SEEDS),
-            const vector<bool>& seed_is_locked = vector<bool>()
+            const vector<bool>& seed_is_locked = vector<bool>(),
+            MeshFacetsAABB* AABB = nil
         ) = 0;
 
         /**
@@ -481,11 +510,15 @@ namespace GEO {
          *  is locked (size = delaunay()->nb_vertices()). Locked
          *  seeds are not replaced with the restricted Voronoi cell
          *  centroid
+         * \param[in] AABB used if one of (RDT_RVC_PROJECT_ON_SURFACE,
+         *   RDT_SELECT_NEAREST) is set in \p mode. If needed but not
+         *   specified, then a temporary one is created. 
          */
         void compute_RDT(
             Mesh& RDT,
             RDTMode mode = RDTMode(RDT_RVC_CENTROIDS | RDT_PREFER_SEEDS),
-            const vector<bool>& seed_is_locked = vector<bool>()
+            const vector<bool>& seed_is_locked = vector<bool>(),
+            MeshFacetsAABB* AABB=nil
         );
 
         /**

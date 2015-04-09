@@ -64,7 +64,7 @@ namespace {
         "flat in float specular;                                            \n"
         "flat in vec3  edge_mask;                                           \n"
         "in vec2 bary;                                                      \n"
-        "uniform bool mesh = true ;                                         \n"
+        "uniform float mesh_width = 1.0 ;                                   \n"
         "uniform vec3 mesh_color = vec3(0.0, 0.0, 0.0) ;                    \n"
         "uniform bool lighting = true ;                                     \n"
         "uniform sampler2D colormap_tex;                                    \n"
@@ -74,7 +74,7 @@ namespace {
         "float edge_factor(){                                               \n"
         "    vec3 bary3 = vec3(bary.x, bary.y, 1.0-bary.x-bary.y) ;         \n"
         "    vec3 d = fwidth(bary3);                                        \n"
-        "    vec3 a3 = smoothstep(vec3(0.0,0.0,0.0), d*1.3, bary3);         \n"
+        "    vec3 a3 = smoothstep(vec3(0.0,0.0,0.0), d*mesh_width, bary3);  \n"
         "    a3 = vec3(1.0, 1.0, 1.0) - edge_mask + edge_mask*a3;           \n"
         "    return min(min(a3.x, a3.y), a3.z);                             \n"
         "}                                                                  \n"
@@ -92,29 +92,43 @@ namespace {
         "       result += sdiffuse*Kdiff +                                  \n"
         "                 specular*gl_FrontMaterial.specular;               \n"
         "    }                                                              \n"
-        "    frag_color = mesh ?                                            \n"
+        "    frag_color = (mesh_width != 0.0) ?                             \n"
         "                  mix(vec4(mesh_color,1.0),result,edge_factor()) : \n"
         "                  result ;                                         \n"
         "}                                                                  \n";
 
-
-
     /**
      * \brief The fragment shader for points.
-     * \details Uses vshader_pass_through. Makes the points appear 
-     *  as small spheres.
+     * \details Makes the points appear as small spheres.
+     *   It (approximately) updates the depth buffer in such
+     *   a way that the intersection between overlapping 
+     *   glyphs is (approximately) correct.
+     *   In addition, some (crude/fake) shading is computed.
      */
+    
+    // Note: depth update is not correct, it should be something like:
+    // (to be checked...)
+    // gl_FragDepth = gl_FragCoord.z +
+    //   (pt_size*0.0001)/3.0 * gl_ProjectionMatrix[2].z * sqrt(1.0 - r2);
+    
     const char* points_fshader_source =
         "#version 150 compatibility                                         \n"
+        "#extension GL_ARB_conservative_depth : enable                      \n"   
+        "layout (depth_less) out float gl_FragDepth;                        \n"
         "out vec4 frag_color ;                                              \n"
         "void main() {                                                      \n"
-        "   vec2 V = gl_TexCoord[0].xy - vec2(0.5, 0.5);                    \n"
-        "   float d = 1.0-4.0*dot(V,V);                                     \n"
-        "   if(d < 0.0) {                                                   \n"
+        "   vec2 V = 2.0*(gl_TexCoord[0].xy - vec2(0.5, 0.5));              \n"
+        "   float one_minus_r2 = 1.0 - dot(V,V);                            \n"
+        "   if(one_minus_r2 < 0.0) {                                        \n"
         "      discard;                                                     \n"
         "   }                                                               \n"
-        "   frag_color = d*gl_Color;                                        \n"
+        "   vec3 W = vec3(V.x, -V.y, sqrt(one_minus_r2));                   \n"
+        "   float diff = dot(W,gl_LightSource[0].position.xyz);             \n"
+        "   float spec = 2.0*pow(diff,30.0);                                \n"
+        "   frag_color = diff*gl_Color + spec*vec4(1.0, 1.0, 1.0, 1.0);     \n"
+        "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"        
         "}                                                                  \n";
+    
     
     /** 
      * \brief Some utility functions for the geometry shaders.
@@ -365,7 +379,7 @@ namespace {
 
     
     /**
-     * \brief The vertex shader for pyramids if tesselation canot be used.
+     * \brief The vertex shader for pyramids if tesselation cannot be used.
      * \details For pyramids, the pass-through vertex shader
      *  cannot be used, since there is no standard OpenGL primitive
      *  with five vertices. We use GL_POINTS and 
@@ -806,7 +820,7 @@ namespace {
     void update_buffer_object(
         GLuint& buffer_id, GLenum target, size_t new_size, void* data
     ) {
-         if(new_size == 0) {
+        if(new_size == 0) {
             if(buffer_id != 0) {
                 glDeleteBuffers(1, &buffer_id);
                 buffer_id = 0;
@@ -877,6 +891,10 @@ namespace GEO {
         for(index_t i=0; i<MESH_NB_CELL_TYPES; ++i) {
             draw_cells_[i] = true;
         }
+
+        points_size_ = 2;
+        mesh_width_ = 1;
+        mesh_border_width_ = 3;
         
     }
 
@@ -967,7 +985,7 @@ namespace GEO {
                     << std::endl;
             }
         }
-        
+
         GLuint vshader_pass_through = GLSL::compile_shader(
             GL_VERTEX_SHADER, vshader_pass_through_source
         );
@@ -1213,8 +1231,8 @@ namespace GEO {
             glUseProgram(programs_[name]);
             if(name == PRG_POINTS) {
             } else {
-                GLint loc = glGetUniformLocation(programs_[name], "mesh");
-                glUniform1i(loc, show_mesh_);
+                GLint loc = glGetUniformLocation(programs_[name], "mesh_width");
+                glUniform1f(loc, (show_mesh_ ? GLfloat(mesh_width_) : 0.0f));
                 loc = glGetUniformLocation(programs_[name], "lighting");
                 glUniform1i(loc, lighting_);
                 loc = glGetUniformLocation(programs_[name], "mesh_color");
@@ -1239,8 +1257,6 @@ namespace GEO {
                     loc = glGetUniformLocation(programs_[name], "region");
                     glUniform1i(loc, show_regions_ && facet_region_VBO_ != 0);
                 }
-
-                
             }
         }
         set_colors(name);
@@ -1256,7 +1272,7 @@ namespace GEO {
         begin_draw(MESH_VERTICES);
         
         glDisable(GL_LIGHTING);
-        glPointSize(15);
+        glPointSize(GLfloat(points_size_ * 5));
 
         if(GLSL_mode_) {
             glEnable(GL_POINT_SPRITE);
@@ -1264,8 +1280,6 @@ namespace GEO {
             begin_shader(PRG_POINTS);            
         }
         
-        glColor3f(0.0f, 1.0f, 0.0f);
-
         glDrawArrays(GL_POINTS, 0, GLsizei(mesh_->vertices.nb()));
         
         if(GLSL_mode_) {        
@@ -1287,7 +1301,7 @@ namespace GEO {
             )
         ) {
             glDisable(GL_LIGHTING);
-            glLineWidth(1);
+            glLineWidth(GLfloat(mesh_width_));
             glColor3f(mesh_color_[0], mesh_color_[1], mesh_color_[2]);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -1321,7 +1335,7 @@ namespace GEO {
         if(mesh_->facets.nb() == 0) {
             return;
         }
-        glLineWidth(2);
+        glLineWidth(GLfloat(mesh_border_width_));
         glColor3f(mesh_color_[0], mesh_color_[1], mesh_color_[2]);
         glBegin(GL_LINES);
         for(index_t f=0; f<mesh_->facets.nb(); ++f) {
@@ -1340,7 +1354,7 @@ namespace GEO {
         }
         glEnd();
 
-        glLineWidth(4);
+        glLineWidth(GLfloat(mesh_border_width_));
         glColor3f(
             mesh_color_[0]+0.2f, mesh_color_[1]+0.2f, mesh_color_[2]+0.2f
         );        
@@ -1479,10 +1493,15 @@ namespace GEO {
             if(mesh_->vertices.single_precision()) {
                 float p[3][3];                
                 for(GEO::index_t i=0; i<3; ++i) {
-                    const float* p_t0 = mesh_->vertices.single_precision_point_ptr(mesh_->facets.vertex(t,i));
+                    const float* p_t0 =
+                        mesh_->vertices.single_precision_point_ptr(
+                            mesh_->facets.vertex(t,i)
+                        );
                     const float* p_t1 = p_t0+3;
                     for(GEO::coord_index_t c=0; c<3; ++c) {
-                        p[i][c] = float(time_) * p_t1[c] + float(1.0 - time_) * p_t0[c];
+                        p[i][c] =
+                            float(time_) * p_t1[c] +
+                            float(1.0 - time_) * p_t0[c];
                     }
                 }
                 if(!GLSL_mode_) {
@@ -1494,7 +1513,9 @@ namespace GEO {
             } else {
                 double p[3][3];                
                 for(GEO::index_t i=0; i<3; ++i) {
-                    const double* p_t0 = mesh_->vertices.point_ptr(mesh_->facets.vertex(t,i));
+                    const double* p_t0 = mesh_->vertices.point_ptr(
+                        mesh_->facets.vertex(t,i)
+                    );
                     const double* p_t1 = p_t0+3;
                     for(GEO::coord_index_t c=0; c<3; ++c) {
                         p[i][c] = time_ * p_t1[c] + (1.0 - time_) * p_t0[c];
@@ -1577,12 +1598,15 @@ namespace GEO {
                 for(GEO::index_t i=0; i<4; ++i) {
                     if(mesh_->vertices.single_precision()) {
                         float p[3];
-                        const float* p_t0 = mesh_->vertices.single_precision_point_ptr(
-                            mesh_->cells.vertex(t,i)
-                        );
+                        const float* p_t0 =
+                            mesh_->vertices.single_precision_point_ptr(
+                                mesh_->cells.vertex(t,i)
+                            );
                         const float* p_t1 = p_t0+3;
                         for(index_t c=0; c<3; ++c) {
-                            p[c] = float(time_) * p_t1[c] + float(1.0 - time_) * p_t0[c];
+                            p[c] =
+                                float(time_) * p_t1[c] +
+                                float(1.0 - time_) * p_t0[c];
                         }
                         glVertex3fv(p);
                     } else {

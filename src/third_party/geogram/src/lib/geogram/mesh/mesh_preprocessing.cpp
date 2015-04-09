@@ -204,5 +204,39 @@ namespace GEO {
             M.facets.flip(f);
         }
     }
+
+    /************************************************************************/
+    
+    void remove_degree2_vertices(Mesh& M) {
+        std::set<index_t> to_dissociate;
+        for(index_t f = 0; f < M.facets.nb(); ++f) {
+            for(index_t i1 = M.facets.corners_begin(f); i1 < M.facets.corners_end(f); ++i1) {
+                index_t i2 = M.facets.next_corner_around_facet(f,i1);
+                index_t f1 = M.facet_corners.adjacent_facet(i1);
+                index_t f2 = M.facet_corners.adjacent_facet(i2);
+                if(f1 != NO_FACET && f1 == f2) {
+                    to_dissociate.insert(f);
+                    to_dissociate.insert(f1);
+                }
+            }
+        }
+        if(!to_dissociate.empty()) {
+            GEO::Logger::warn("Mesh")
+                << to_dissociate.size()
+                << " facets with degree 2 vertices (fixed)"
+                << std::endl;
+        }
+        for(
+            std::set<index_t>::iterator it = to_dissociate.begin();
+            it != to_dissociate.end(); ++it
+        ) {
+            index_t f = *it;
+            for(index_t c=M.facets.corners_begin(f); c!=M.facets.corners_end(f); ++c) {
+                M.facet_corners.set_adjacent_facet(c,NO_FACET);
+            }
+        }
+    }
+
+    /************************************************************************/    
 }
 

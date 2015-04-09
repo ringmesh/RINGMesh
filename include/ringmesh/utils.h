@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -46,6 +46,7 @@
 
 #include <geogram/points/nn_search.h>
 #include <geogram/points/kd_tree.h>
+#include <geogram/mesh/mesh_AABB.h>
 
 #include <algorithm>
 #include <iostream>
@@ -90,6 +91,13 @@ namespace RINGMesh {
     }
 
 
+    static bool operator<(
+        const vec3& u,
+        const vec3& v )
+    {
+        return u.x < v.x && u.y < v.y && u.z < v.z ;
+    }
+
     static bool operator!=(
         const vec3& u,
         const vec3& v )
@@ -116,17 +124,11 @@ namespace RINGMesh {
     }
 
 
-    class Box3d {
+    class Box3d: public GEO::Box {
     public:
         Box3d()
               :
-                initialized_( false ),
-                x_min_( 1e30 ),
-                y_min_( 1e30 ),
-                z_min_( 1e30 ),
-                x_max_( - 1e30 ),
-                y_max_( - 1e30 ),
-                z_max_( - 1e30 )
+                initialized_( false )
         {
         }
 
@@ -140,89 +142,34 @@ namespace RINGMesh {
             initialized_ = false ;
         }
 
-        float64 x_min() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return x_min_ ;
-        }
-
-        float64 y_min() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return y_min_ ;
-        }
-
-        float64 z_min() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return z_min_ ;
-        }
-
-        float64 x_max() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return x_max_ ;
-        }
-
-        float64 y_max() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return y_max_ ;
-        }
-
-        float64 z_max() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return z_max_ ;
-        }
-
-        float64 min( unsigned axis ) const
-        {
-            return ( axis == 0 ) ? x_min_ : ( ( axis == 1 ) ? y_min_ : z_min_ ) ;
-        }
-
-        float64 max( unsigned axis ) const
-        {
-            return ( axis == 0 ) ? x_max_ : ( ( axis == 1 ) ? y_max_ : z_max_ ) ;
-        }
-
         float64 width() const
         {
-            return x_max() - x_min() ;
+            return xyz_max[0] - xyz_min[0] ;
         }
 
         float64 height() const
         {
-            return y_max() - y_min() ;
+            return xyz_max[1] - xyz_min[1] ;
         }
 
         float64 depth() const
         {
-            return z_max() - z_min() ;
+            return xyz_max[2] - xyz_min[2] ;
         }
 
         vec3 min() const
         {
-            return vec3( x_min(), y_min(), z_min() ) ;
+            return vec3( xyz_min[0], xyz_min[1], xyz_min[2] ) ;
         }
 
         vec3 max() const
         {
-            return vec3( x_max(), y_max(), z_max() ) ;
+            return vec3( xyz_max[0], xyz_max[1], xyz_max[2] ) ;
         }
 
         vec3 center() const
         {
-            return vec3( 0.5 * ( x_max() + x_min() ), 0.5 * ( y_max() + y_min() ),
-                0.5 * ( z_max() + z_min() ) ) ;
-        }
-
-        float64 radius() const
-        {
-            return 0.5
-                   * ::sqrt(
-                ::sqrt( x_max() - x_min() ) + ::sqrt( y_max() - y_min() )
-                + ::sqrt( z_max() - z_min() ) ) ;
+            return 0.5 * ( min() + max() ) ;
         }
 
         void add_point( const float64* p )
@@ -233,28 +180,24 @@ namespace RINGMesh {
         void add_point( const vec3& p )
         {
             if( !initialized_ ) {
-                x_min_ = p[ 0 ] ;
-                y_min_ = p[ 1 ] ;
-                z_min_ = p[ 2 ] ;
-                x_max_ = p[ 0 ] ;
-                y_max_ = p[ 1 ] ;
-                z_max_ = p[ 2 ] ;
+                for( index_t i = 0; i < 3; i++ ) {
+                    xyz_min[i] = p[i] ;
+                    xyz_max[i] = p[i] ;
+                }
                 initialized_ = true ;
             } else {
-                x_min_ = std::min( x_min_, p[ 0 ] ) ;
-                y_min_ = std::min( y_min_, p[ 1 ] ) ;
-                z_min_ = std::min( z_min_, p[ 2 ] ) ;
-                x_max_ = std::max( x_max_, p[ 0 ] ) ;
-                y_max_ = std::max( y_max_, p[ 1 ] ) ;
-                z_max_ = std::max( z_max_, p[ 2 ] ) ;
+                for( index_t i = 0; i < 3; i++ ) {
+                    xyz_min[i] = std::min( xyz_min[i], p[i] ) ;
+                    xyz_max[i] = std::max( xyz_max[i], p[i] ) ;
+                }
             }
         }
 
         void add_box( const Box3d& b )
         {
             if( b.initialized() ) {
-                add_point( vec3( b.x_min(), b.y_min(), b.z_min() ) ) ;
-                add_point( vec3( b.x_max(), b.y_max(), b.z_max() ) ) ;
+                add_point( b.min() ) ;
+                add_point( b.max() ) ;
             }
         }
 
@@ -338,12 +281,6 @@ namespace RINGMesh {
 
     private:
         bool initialized_ ;
-        float64 x_min_ ;
-        float64 y_min_ ;
-        float64 z_min_ ;
-        float64 x_max_ ;
-        float64 y_max_ ;
-        float64 z_max_ ;
     } ;
 
     class RINGMESH_API Utils {
@@ -902,6 +839,7 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API ColocaterANN {
+        ringmesh_disable_copy( ColocaterANN ) ;
     public:
         enum MeshLocation {
             VERTICES, FACETS, CELLS
@@ -951,9 +889,6 @@ namespace RINGMesh {
             p.z = ann_tree_->point_ptr( i )[ 2 ] ;
             return p ;
         }
-
-    private:
-        ColocaterANN( const ColocaterANN& rhs ) ;
 
     private:
         GEO::NearestNeighborSearch_var ann_tree_ ;
