@@ -152,7 +152,7 @@ namespace GEO {
          * \see GEO::initialize()
          * \see CmdLine
          */
-        void initialize();
+        void GEOGRAM_API initialize();
 
         /**
          * \brief Cleans up the Progress framework
@@ -160,7 +160,7 @@ namespace GEO {
          * cleanup the framework. It is called by the Vorpaline cleanup
          * function \c GEO::terminate().
          */
-        void terminate();
+        void GEOGRAM_API terminate();
 
         /**
          * \brief Sets the Progress client
@@ -193,7 +193,7 @@ namespace GEO {
          * \see is_canceled()
          * \see TaskCanceled
          */
-        void cancel();
+        void GEOGRAM_API cancel();
 
         /**
          * \brief Checks if the current task is canceled
@@ -202,12 +202,12 @@ namespace GEO {
          * \retval true if the task was canceled with cancel()
          * \retval false otherwise
          */
-        bool is_canceled();
+        bool GEOGRAM_API is_canceled();
 
         /**
          * \brief Clears the cancellation flag
          */
-        void clear_canceled();
+        void GEOGRAM_API clear_canceled();
     }
 
     /************************************************************************/

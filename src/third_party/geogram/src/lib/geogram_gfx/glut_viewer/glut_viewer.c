@@ -890,10 +890,10 @@ static void actually_render_display(double offset) {
     GLfloat m[4][4];
 
     /* White diffuse light. */
-    static GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
+    static GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
-    /* Infinite light location. */
-    static GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};
+    /* Infinite light location (normalize (1,1,1) */
+    static GLfloat light_position[] = {0.57735f, 0.57735f, 0.57735f, 0.0f};
 
     /* field of view of the larger dimension in degrees */
     float camera_aperture = 9.0;

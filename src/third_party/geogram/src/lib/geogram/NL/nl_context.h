@@ -190,6 +190,11 @@ typedef struct {
     NLenum           preconditioner ;
 
     /**
+     * \brief True if preconditioner was defined by client.
+     */
+    NLboolean        preconditioner_defined;
+    
+    /**
      * \brief The number of variables.
      */
     NLuint           nb_variables ;
@@ -215,6 +220,12 @@ typedef struct {
      */
     NLuint           max_iterations ;
 
+
+    /**
+     * \brief True if max_iterations was defined by client.
+     */
+    NLboolean        max_iterations_defined ;
+    
     /**
      * \brief Maximum number of inner iterations.
      * \details used by GMRES.
@@ -224,10 +235,15 @@ typedef struct {
     /**
      * \brief Convergence threshold.
      * \details Iterations are stopped whenever
-     *  \$ \| A x - b \| / \| b \| < \mbox{threshold} \$
+     *  \f$ \| A x - b \| / \| b \| < \mbox{threshold} \f$
      */
     NLdouble         threshold ;
 
+    /**
+     * \brief True if threshold was defined by client.
+     */
+    NLboolean        threshold_defined ;
+    
     /**
      * \brief Relaxation parameter for the SSOR 
      *  preconditioner.

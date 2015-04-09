@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -46,6 +46,7 @@
 #include <ringmesh/common.h>
 #include <ringmesh/boundary_model_element.h>
 #include <ringmesh/attribute.h>
+#include <geogram/basic/logger.h>
 
 #include <vector>
 #include <string>
@@ -55,67 +56,200 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-    // To move somewhere else
-    static std::vector< vec3 > empty_vector ;
-    static std::vector< index_t > empty_index_vector ;
 
-    /**
-     * \brief The class to describe a volumetric model represented by its boundary surfaces
+    /*!
+     * @brief Unique storage of the vertices of a BoundaryModel
+     * @details Each instance, set of coordinates, is unique, unlike vertices in 
+     *          the model Corner, Line, and Surface.
+     *          Attributes may be defined on the vertices.
+     */          
+    class RINGMESH_API BoundaryModelVertices {
+        ringmesh_disable_copy( BoundaryModelVertices ) ;
+    public:
+
+        /*!
+         * @brief Identification of a vertex in a BoundaryModelElement
+         */
+        struct VertexInBME {
+            VertexInBME(
+                BoundaryModelElement::TYPE element_type,
+                index_t element_id,
+                index_t vertex_id_in )
+                : bme_type( element_type ), bme_id( element_id ), v_id( vertex_id_in )
+            {
+            }
+            /// Type of the BME
+            BoundaryModelElement::TYPE bme_type ;
+            /// Index of the BME in the BoundaryModel
+            index_t bme_id ;
+            /// Index of the vertex in the BME
+            index_t v_id ;
+        } ;
+
+        /*!
+         * @brief Vertices are defined for a BoundaryModel
+         */
+        BoundaryModelVertices( const BoundaryModel& bm )
+            : bm_( bm )
+        {
+        }
+
+        /*!
+         * @brief Number of vertices stored. 
+         * @details Calls initialize_unique_vertices(), if no vertices yet
+         */
+        index_t nb_unique_vertices() const ;
+
+        /*!
+         * @brief Get the index of the BM vertex corresponding to vertex v
+         *        in the BME of type T and index id.
+         * @details Calls initialize_unique_vertices(), if no vertices yet
+         *          The unique_id is stored as an attribute on the vertices of the BME
+         */
+        index_t unique_vertex_id(
+            BoundaryModelElement::TYPE T, index_t id, index_t v ) const ;       
+
+        /*!
+         * @brief Coordinates of a vertex of the BoundaryModel
+         * @pre unique_id < nb_unique_vertices()
+         */
+        const vec3& unique_vertex( index_t unique_id ) const ;        
+
+        /*!
+         * @brief Get the vertices in BME that correspond to the given unique vertex
+         */
+        const std::vector< VertexInBME >& bme_vertices( index_t unique_id ) const ;
+        
+        /*!
+         * @brief To use when building the model by first adding its vertices
+         * @warning The client is responsible for setting the mapping between the points
+         * of the BME and the unique vertex 
+         */
+        index_t add_unique_vertex( const vec3& point ) ;
+
+        /*!
+         * @brief Add a vertex in a BoundaryModelElement corresponding to an existing unique_vertex
+         */
+        void add_unique_to_bme( 
+            index_t unique_id, 
+            BoundaryModelElement::TYPE bme_type, 
+            index_t bme_id,
+            index_t v_id ) ;        
+
+        /*!
+         * @brief Set the point coordinates of all the vertices that are 
+         *        share this unique vertex
+         * @param[in] unique_id Index of the unique vertex in the BoundaryModel
+         * @param[in] point New coordinates of the vertex 
+         */
+        void update_point( index_t unique_id, const vec3& point ) ;
+
+        /*!
+         * @brief Clear the vertices - unbind unique2bme_ - set attribute to NO_ID in BME
+         */  
+        void clear() ;
+
+        /*!
+         * @brief Returns the Geogram attribute manager on these vertices
+         */
+        GEO::AttributesManager& attribute_manager() {
+            return unique_vertices_.vertices.attributes() ;
+        }
+        
+    private:
+        /*!
+         * @brief Determine the unique vertices from the vertices of the BM Corner s, Line s, and Surface s
+         * @details Fills unique_vertices_ and set the attributes the global index on
+         *          the BoundaryModel Corner, Line and Surface 
+         */
+        void initialize_unique_vertices() ;
+
+        /*!
+         * @brief Fills the unique2bme vector
+         * @details Call initialize_unique_vertices() if unique_vertices_ is empty
+         */
+        void initialize_reverse() ;
+
+        /*!
+         * @copydoc BoundaryModelVertices::unique_vertex_id( BoundaryModelElement::TYPE,index_t,index_t )
+         */
+        index_t unique_vertex_id( const VertexInBME& v ) const ;       
+
+    private:
+        /// Attached BoundaryModel to which belong the vertices
+        const BoundaryModel& bm_ ;
+        
+        /*! 
+         * @brief Mesh storing the coordinates of the vertices that are not colocated
+         * @details Each point instance is unique. 
+         * With a GEO::Mesh we have attributes on the points without any effort
+         */
+        GEO::Mesh unique_vertices_ ;
+               
+        /// Mapping of a unique vertex to the vertices in the BME that have the same coordinates
+        GEO::Attribute< std::vector< VertexInBME > > unique2bme_ ;
+    } ;
+
+
+    /*!
+     * @brief The class to describe a volumetric model represented by its boundary surfaces
      *
-     * \todo Implement a BoundaryModelMutator
+     * \todo Implement a BoundaryModelMutator ou pas ?
      */
     class RINGMESH_API BoundaryModel {
+        ringmesh_disable_copy( BoundaryModel ) ;
         friend class BoundaryModelBuilder ;
 
     public:
-        enum AttributeLocation {
-            VERTEX
-        } ;
-
-        typedef AttributeManagerImpl< VERTEX > VertexAttributeManager ;
+        typedef GEO::AttributesManager VertexAttributeManager ;
         typedef BoundaryModelElement BME ;
 
         const static index_t NO_ID = index_t( - 1 ) ;
 
         /**
-         * \brief Construct an empty BoundaryModel
+         * @brief Construct an empty BoundaryModel
          */
-        BoundaryModel()
+        BoundaryModel() : vertices( *this )
         {
         }
 
         /**
-         * \brief Destroy a BoundaryModel
+         * @brief Delete all BoundaryModelElements stored and owned by the BoundaryModel
          */
-        virtual ~BoundaryModel()
-        {
-        }
+        virtual ~BoundaryModel() ;
 
-        void clear() ;
+        /*!
+         * @brief Name of the model
+         */ 
+        const std::string& name() const { return name_ ; }
 
-        const std::string& name() const
-        {
-            return name_ ;
-        }
-
-        index_t nb_vertices() const
-        {
-            return vertices_.size() ;
-        }
+        /*!
+         * @brief Number of unique vertices, no duplicates along Line and at Corner
+         */
+        index_t nb_vertices() const { return vertices.nb_unique_vertices() ; }
 
         index_t vertex_index( const vec3& p ) const ;
 
+        /*!
+         * @brief Coordinates of a vertex
+         * @pre p < nb_vertices() 
+         */
         const vec3& vertex( index_t p ) const
         {
-            return vertices_.at( p ) ;
+            return vertices.unique_vertex( p ) ;
         }
 
+        /*! 
+         * @brief Update the coordinates of vertex
+         * @details Linked vertices coordinates in the 
+         *        Corner, Line, and Surface are updated.
+         */
         void set_vertex_coordinates(
             index_t id,
             const vec3& p )
         {
             ringmesh_assert( id < nb_vertices() ) ;
-            vertices_[ id ] = p ;
+            vertices.update_point( id, p ) ;
         }
 
         index_t nb_facets() const ;
@@ -127,42 +261,36 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the number of elements of the given type
-         * By default returns 0.
+         * @details By default returns 0.
          */
         inline index_t nb_elements( BME::TYPE type ) const
         {
             switch( type ) {
-                 case BoundaryModelElement::CORNER :
-                     return corners_.size() ;
-                 case BoundaryModelElement::LINE :
-                     return lines_.size() ;
-                 case BoundaryModelElement::SURFACE :
-                     return surfaces_.size() ;
-                 case BoundaryModelElement::REGION :
-                     return regions_.size() ;
-                 case BoundaryModelElement::CONTACT :
-                     return contacts_.size() ;
-                 case BoundaryModelElement::INTERFACE :
-                     return interfaces_.size() ;
-                 case BoundaryModelElement::LAYER :
-                     return layers_.size() ;
+                 case BoundaryModelElement::CORNER    :   return corners_.size() ;
+                 case BoundaryModelElement::LINE      :   return lines_.size() ;
+                 case BoundaryModelElement::SURFACE   :   return surfaces_.size() ;
+                 case BoundaryModelElement::REGION    :   return regions_.size() ;
+                 case BoundaryModelElement::CONTACT   :   return contacts_.size() ;
+                 case BoundaryModelElement::INTERFACE :   return interfaces_.size() ;
+                 case BoundaryModelElement::LAYER     :   return layers_.size() ;
                  case BoundaryModelElement::ALL_TYPES :
-                     ringmesh_assert( nb_elements_per_type_.size() > 0 )
-                     ;
-                     ringmesh_debug_assert(
-                    nb_elements_per_type_.back()
-                    == corners_.size() + lines_.size() + surfaces_.size()
-                    + regions_.size() + contacts_.size()
-                    + interfaces_.size() + layers_.size() )
-                     ;
-                     return nb_elements_per_type_.back() ;
-                 default :
+                     {
+                         ringmesh_assert( nb_elements_per_type_.size() > 0 ) ;
+                         ringmesh_debug_assert(
+                                                nb_elements_per_type_.back()
+                                                == corners_.size() + lines_.size() + surfaces_.size()
+                                                + regions_.size() + contacts_.size()
+                                                + interfaces_.size() + layers_.size() 
+                                                ) ;
+                         return nb_elements_per_type_.back() ;
+                    }
+                 default :  
                      return 0 ;
             }
         }
 
         /*!
-         * \brief Returns a const reference the identified BoundaryModelElement
+         * @brief Returns a const reference the identified BoundaryModelElement
          *
          * @param[in] t Type of the element
          * @param[in] index Index of the element
@@ -173,20 +301,13 @@ namespace RINGMesh {
         {
             ringmesh_assert( index < nb_elements( type ) ) ;
             switch( type ) {
-                 case BoundaryModelElement::CORNER :
-                     return corners_[ index ] ;
-                 case BoundaryModelElement::LINE :
-                     return lines_[ index ] ;
-                 case BoundaryModelElement::SURFACE :
-                     return surfaces_[ index ] ;
-                 case BoundaryModelElement::REGION :
-                     return regions_[ index ] ;
-                 case BoundaryModelElement::CONTACT :
-                     return contacts_[ index ] ;
-                 case BoundaryModelElement::INTERFACE :
-                     return interfaces_[ index ] ;
-                 case BoundaryModelElement::LAYER :
-                     return layers_[ index ] ;
+            case BoundaryModelElement::CORNER         :  return *corners_[ index ] ;
+                 case BoundaryModelElement::LINE      :  return *lines_[ index ] ;
+                 case BoundaryModelElement::SURFACE   :  return *surfaces_[ index ] ;
+                 case BoundaryModelElement::REGION    :  return *regions_[ index ] ;
+                 case BoundaryModelElement::CONTACT   :  return *contacts_[ index ] ;
+                 case BoundaryModelElement::INTERFACE :  return *interfaces_[ index ] ;
+                 case BoundaryModelElement::LAYER     :  return *layers_[ index ] ;
                  case BoundaryModelElement::ALL_TYPES : {
                      // This must synchro with what is done in the builder
                      index_t t = NO_ID ;
@@ -212,17 +333,17 @@ namespace RINGMesh {
          * \name Specicalized accessors.
          * @{
          */
-        index_t nb_corners() const {return nb_elements( BME::CORNER ) ;}
-        index_t nb_lines() const {return nb_elements( BME::LINE ) ;}
-        index_t nb_surfaces() const {return nb_elements( BME::SURFACE ) ;}
-        index_t nb_regions() const {return nb_elements( BME::REGION ) ;}
-        index_t nb_contacts() const {return nb_elements( BME::CONTACT ) ;}
-        index_t nb_interfaces() const {return nb_elements( BME::INTERFACE ) ;}
-        index_t nb_layers() const {return nb_elements( BME::LAYER ) ;}
+        index_t nb_corners()    const { return nb_elements( BME::CORNER )    ; }
+        index_t nb_lines()      const { return nb_elements( BME::LINE )      ; }
+        index_t nb_surfaces()   const { return nb_elements( BME::SURFACE )   ; }
+        index_t nb_regions()    const { return nb_elements( BME::REGION )    ; }
+        index_t nb_contacts()   const { return nb_elements( BME::CONTACT )   ; }
+        index_t nb_interfaces() const { return nb_elements( BME::INTERFACE ) ; }
+        index_t nb_layers()     const { return nb_elements( BME::LAYER )     ; }
 
-        const Corner& corner( index_t index ) const {return corners_.at( index ) ;}
-        const Line& line( index_t index ) const {return lines_.at( index ) ;}
-        const Surface& surface( index_t index ) const {return surfaces_.at( index ) ;}
+        const Corner& corner( index_t index ) const { return *corners_.at( index ) ; }
+        const Line& line( index_t index ) const { return *lines_.at( index ) ; }
+        const Surface& surface( index_t index ) const { return *surfaces_.at( index ) ;}
 
         const BoundaryModelElement& region( index_t index ) const
         {
@@ -244,123 +365,66 @@ namespace RINGMesh {
             return element( BME::LAYER, index ) ;
         }
 
-        const BoundaryModelElement& universe() const {return universe_ ;}
+        const BoundaryModelElement& universe() const { return universe_ ; }
 
-        VertexAttributeManager* vertex_attribute_manager() const
+        VertexAttributeManager& vertex_attribute_manager()
         {
-            return const_cast< VertexAttributeManager* >( &vertex_attribute_manager_ ) ;
+            return vertices.attribute_manager() ;
         }
 
-        index_t find_region(
-            index_t surface_part_id,
-            bool side ) const ;
+        index_t find_region( index_t surf_id, bool side ) const ;
 
         /** @}
          * \name To save the BoundaryModel.
          * @{
          */
         bool save_gocad_model3d( std::ostream& out ) ;
-
-        void save_as_eobj_file( const std::string& file_name ) ;
-
-        void save_surface_as_obj_file(
-            index_t s,
-            const std::string& file_name ) const ;
-
+        void save_as_eobj_file( const std::string& file ) ;
+        void save_surface_as_obj_file( index_t s, const std::string& file ) const ;
         void save_bm_file( const std::string& file_name ) ;
 
-        /**
-         * @}
-         */
+        signed_index_t find_interface( const std::string& name) const ;
+        signed_index_t find_region( const std::string& name) const ;
 
     private:
         bool check_model3d_compatibility() ;
 
+    public:
+        BoundaryModelVertices vertices ;
+
     private:
         std::string name_ ;
 
-        /**
-         * \brief Coordinates of the vertices of the model elements
-         * Storage of vertices is unique for the whole model.
-         */
-        std::vector< vec3 > vertices_ ;
-
         // Base manifold elements of a model
-        std::vector< Corner > corners_ ;
-        std::vector< Line > lines_ ;
-        std::vector< Surface > surfaces_ ;
-        std::vector< BoundaryModelElement > regions_ ;
+        std::vector< Corner* > corners_ ;
+        std::vector< Line* > lines_ ;
+        std::vector< Surface* > surfaces_ ;
+        std::vector< BoundaryModelElement* > regions_ ;
 
-        // / The region including all the other regions
+        /// The region including all the other regions
         BoundaryModelElement universe_ ;
 
         /**
-         * \brief Contacts between Intefaces
+         * @brief Contacts between Intefaces
          * Parent of a set of Line
          */
-        std::vector< BoundaryModelElement > contacts_ ;
+        std::vector< BoundaryModelElement* > contacts_ ;
         /**
-         * \brief Interfaces between layers
+         * @brief Interfaces between layers
          * Parent of a set of Surface
          */
-        std::vector< BoundaryModelElement > interfaces_ ;
+        std::vector< BoundaryModelElement* > interfaces_ ;
 
         /**
-         * \brief Rock layers
+         * @brief Rock layers
          * Parent of a set of Region
          */
-        std::vector< BoundaryModelElement > layers_ ;
+        std::vector< BoundaryModelElement* > layers_ ;
 
-        // / Allow global access to BME. It MUST be updated if one element is added.
+        /// Allow global access to BME. It MUST be updated if one element is added.
         std::vector< index_t > nb_elements_per_type_ ;
-
-        // Attribute manager
-        VertexAttributeManager vertex_attribute_manager_ ;
     } ;
 
-    template< class ATTRIBUTE >
-    class BoundaryModelVertexAttribute : public Attribute< BoundaryModel::VERTEX,
-                                                           ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModel::VERTEX, ATTRIBUTE > superclass ;
-
-        void bind(
-            const BoundaryModel* model,
-            const std::string& name )
-        {
-            superclass::bind( model->vertex_attribute_manager(),
-                model->nb_vertices(), name ) ;
-        }
-
-        void bind( const BoundaryModel* model )
-        {
-            superclass::bind( model->vertex_attribute_manager(),
-                model->nb_vertices() ) ;
-        }
-
-        BoundaryModelVertexAttribute()
-        {
-        }
-
-        BoundaryModelVertexAttribute( const BoundaryModel* model )
-        {
-            bind( model ) ;
-        }
-
-        BoundaryModelVertexAttribute(
-            const BoundaryModel* model,
-            const std::string& name )
-        {
-            bind( model, name ) ;
-        }
-
-        static bool is_defined(
-            const BoundaryModel* model,
-            const std::string& name )
-        {
-            return superclass::is_defined( model->vertex_attribute_manager(), name ) ;
-        }
-    } ;
 }
 
 #endif

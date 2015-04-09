@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
@@ -76,8 +76,7 @@ namespace RINGMesh {
             const BoundaryModelElement* region,
             bool add_steiner_points = true,
             const std::vector< vec3 >& internal_vertices = vector_vec3,
-            const std::vector< std::vector< Edge > >& well_vertices = vector_edge,
-            GEO::Mesh* background = nil ) ;
+            const std::vector< std::vector< Edge > >& well_vertices = vector_edge ) ;
 
         virtual bool tetrahedralize() = 0 ;
 
@@ -112,8 +111,7 @@ namespace RINGMesh {
             GEO::Mesh& tetmesh,
             const BoundaryModelElement* region,
             const std::vector< vec3 >& internal_vertices,
-            const std::vector< std::vector< Edge > >& well_edges,
-            GEO::Mesh* background ) ;
+            const std::vector< std::vector< Edge > >& well_edges ) ;
 
         void initialize_storage( index_t nb_points, index_t nb_tets, index_t nb_triangles, index_t nb_lines ) ;
         void set_point( index_t index, const double* point ) ;
@@ -155,8 +153,7 @@ namespace RINGMesh {
             const BoundaryModelElement* region,
             bool add_steiner_points,
             const std::vector< vec3 >& internal_vertices,
-            const std::vector< std::vector< Edge > >& well_vertices,
-            GEO::Mesh* background ) ;
+            const std::vector< std::vector< Edge > >& well_vertices ) ;
         virtual ~TetraGen_TetGen() {} ;
 
         virtual bool tetrahedralize() ;
@@ -164,7 +161,6 @@ namespace RINGMesh {
     private:
         GEO_3rdParty::tetgenio tetgen_input_ ;
         GEO_3rdParty::tetgenio tetgen_output_ ;
-        GEO_3rdParty::tetgenio tetgen_background_ ;
         GEO_3rdParty::tetgenbehavior tetgen_args_ ;
     } ;
 
@@ -176,8 +172,7 @@ namespace RINGMesh {
             const BoundaryModelElement* region,
             bool add_steiner_points,
             const std::vector< vec3 >& internal_vertices,
-            const std::vector< std::vector< Edge > >& well_vertices,
-            GEO::Mesh* background ) ;
+            const std::vector< std::vector< Edge > >& well_vertices ) ;
         virtual ~TetraGen_MG_Tetra() ;
 
         virtual bool tetrahedralize() ;
@@ -196,7 +191,6 @@ namespace RINGMesh {
         context_t* context_ ;
         mesh_t* mesh_input_ ;
         mesh_t* mesh_output_ ;
-        mesh_t* mesh_background_ ;
         sizemap_t* sizemap_ ;
         tetra_session_t* tms_ ;
     } ;

@@ -69,7 +69,7 @@ NLboolean nlInitExtension(const char* extension) {
 
 
 
-/************************************************************************************/
+/*****************************************************************************/
 /* Get/Set parameters */
 
 void nlSolverParameterd(NLenum pname, NLdouble param) {
@@ -78,6 +78,7 @@ void nlSolverParameterd(NLenum pname, NLdouble param) {
     case NL_THRESHOLD: {
         nl_assert(param >= 0) ;
         nlCurrentContext->threshold = (NLdouble)param ;
+        nlCurrentContext->threshold_defined = NL_TRUE ;
     } break ;
     case NL_OMEGA: {
         nl_range_assert(param,1.0,2.0) ;
@@ -106,6 +107,7 @@ void nlSolverParameteri(NLenum pname, NLint param) {
     case NL_MAX_ITERATIONS: {
         nl_assert(param > 0) ;
         nlCurrentContext->max_iterations = (NLuint)param ;
+        nlCurrentContext->max_iterations_defined = NL_TRUE;
     } break ;
     case NL_SYMMETRIC: {
         nlCurrentContext->symmetric = (NLboolean)param ;        
@@ -115,7 +117,8 @@ void nlSolverParameteri(NLenum pname, NLint param) {
         nlCurrentContext->inner_iterations = (NLuint)param ;
     } break ;
     case NL_PRECONDITIONER: {
-        nlCurrentContext->preconditioner = (NLuint)param ;        
+        nlCurrentContext->preconditioner = (NLuint)param ;
+        nlCurrentContext->preconditioner_defined = NL_TRUE;
     } break ;
     default: {
         nlError("nlSolverParameteri","Invalid parameter");
@@ -436,12 +439,18 @@ void nlBeginMatrix() {
     if(nlCurrentContext->solver == NL_SOLVER_DEFAULT) {
         if(nlCurrentContext->least_squares || nlCurrentContext->symmetric) {
             nlCurrentContext->solver = NL_CG;
-            nlCurrentContext->preconditioner = NL_PRECOND_JACOBI;
+            if(!nlCurrentContext->preconditioner_defined) {
+                nlCurrentContext->preconditioner = NL_PRECOND_JACOBI;
+            }
         } else {
             nlCurrentContext->solver = NL_BICGSTAB;
         }
-        nlCurrentContext->max_iterations = n*5;
-        nlCurrentContext->threshold = 1e-6;
+        if(!nlCurrentContext->max_iterations_defined) {
+            nlCurrentContext->max_iterations = n*5;
+        }
+        if(!nlCurrentContext->threshold_defined) {
+            nlCurrentContext->threshold = 1e-6;
+        }
     }
 
     
