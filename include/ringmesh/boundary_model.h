@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -56,10 +56,6 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-    // To move somewhere else
-    static std::vector< vec3 > empty_vector ;
-    static std::vector< index_t > empty_index_vector ;
-
 
     class RINGMESH_API BoundaryModelVertices {
     public:

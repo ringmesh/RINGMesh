@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
@@ -1059,7 +1059,7 @@ namespace RINGMesh {
             GEO::ProgressTask progress( "Compute", nb_meshes() ) ;
             for( unsigned int i = 0; i < nb_meshes(); i++ ) {
                 const std::vector< vec3 >& vertices =
-                    internal_vertices.empty() ? empty_vector : internal_vertices[i] ;
+                    internal_vertices.empty() ? std::vector< vec3 >() : internal_vertices[i] ;
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
                     &model_.region( i ), add_steiner_points, vertices,
                     well_vertices( i ) ) ;
@@ -1069,7 +1069,7 @@ namespace RINGMesh {
         } else {
             const std::vector< vec3 >& vertices =
                 internal_vertices.empty() ?
-                    empty_vector : internal_vertices[region_id] ;
+                    std::vector< vec3 >() : internal_vertices[region_id] ;
             TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
                 &model_.region( region_id ), add_steiner_points, vertices,
                 well_vertices( region_id ) ) ;
