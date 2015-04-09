@@ -869,6 +869,26 @@ namespace RINGMesh {
 //                }
 //            }
         }
+        // Write the attribute <index_t> on facets called ""chart" - because I want to have it
+        {
+            out << "# attribute " << "chart" << " facet "
+                << "integer"
+                << std::endl ;
+            
+            // Global counter for all the facets of all surfaces
+            index_t count = 0 ;
+            for( index_t s = 0; s < nb_surfaces(); s++ ) {
+                const Surface& S = surface( s ) ;
+
+                GEO::Attribute< index_t > A( S.cell_attribute_manager(), "chart") ;
+
+                for( index_t f = 0; f < S.nb_cells(); f++ ) {
+                    out << "# attrs f " << count + 1 << " " << A[f] 
+                        << std::endl ;
+                    count++ ;
+                }
+            }
+        }
     }
 
 
