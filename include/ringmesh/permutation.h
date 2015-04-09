@@ -45,7 +45,7 @@
 
 namespace RINGMesh {
     namespace Permutation {
-        /**
+        /*!
          * @brief checks whether a specified vector encodes
          *  a valid permutation.
          */
@@ -67,7 +67,7 @@ namespace RINGMesh {
         }
 
 
-        /**
+        /*!
          * @brief used internally by apply_permutation()
          */
         inline bool is_marked(
@@ -79,7 +79,7 @@ namespace RINGMesh {
         }
 
 
-        /**
+        /*!
          * @brief used internally by apply_permutation()
          */
         inline void mark(
@@ -92,7 +92,7 @@ namespace RINGMesh {
         }
 
 
-        /**
+        /*!
          * @brief used internally by apply_permutation()
          */
         inline void unmark(
@@ -105,7 +105,7 @@ namespace RINGMesh {
         }
 
 
-        /**
+        /*!
          * @brief applies a permutation in-place.
          * It is equivalent to:
          * @code
@@ -153,7 +153,7 @@ namespace RINGMesh {
         }
 
 
-        /**
+        /*!
          * @brief applies a permutation in-place.
          * It is equivalent to:
          * @code
@@ -199,7 +199,7 @@ namespace RINGMesh {
         }
 
 
-        /**
+        /*!
          * @brief inverts a permutation in-place.
          * It is equivalent to:
          * @code

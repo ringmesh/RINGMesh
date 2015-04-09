@@ -344,8 +344,8 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Get the index of the Corner at a given model point
-     * @param[in] p_id Index of the point
+     * @brief Get the index of the Corner for a given point
+     * @param[in] point Geometric location to look for 
      * @return NO_ID or the index of the Corner
      */
     index_t BoundaryModelBuilder::find_corner( const vec3& point ) const
@@ -371,9 +371,9 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Create a corner at a vertex.
+     * @brief Create a corner at given coordinates.
      *
-     * @param[in] index Index of the vertex in the model
+     * @param[in] point Geometric location of the new Corner
      * @return Index of the Corner
      */
     index_t BoundaryModelBuilder::create_corner( const vec3& point )
@@ -385,24 +385,26 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Find or create a corner at a vertex.
+     * @brief Find or create a corner at given coordinates.
      *
-     * @param[in] index Index of the vertex in the model
+     * @param[in] point Geometric location of the Corner
      * @return Index of the Corner
      */
     index_t BoundaryModelBuilder::find_or_create_corner( const vec3& point )
     {
         index_t result = find_corner( point ) ;
-        if( result != NO_ID ) {return result ;} else {return create_corner( point ) ;}
+        if( result != NO_ID ) {
+            return result ;
+        } else {
+            return create_corner( point ) ;
+        }
     }
 
 
     /*!
      * @brief Looks for a line in the model
      *
-     * @param[in] corner0 Starting corner index
-     * @param[in] corner1 Ending corner index
-     * @param[in] vertices Indices of the vertices on the line
+     * @param[in] vertices Coordinates of the vertices of the line
      * @return NO_ID or the index of the Line
      */
     index_t BoundaryModelBuilder::find_line( const std::vector< vec3 >& vertices )
@@ -418,9 +420,8 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Add a Line knowing only the indices of its points and set its boundary corners
+     * @brief Add a Line knowing from teh coordinates of its vertices.
      * The corners are created if they do not exist.
-     * Used in Geomodeling to convert a surface to a model
      */
     index_t BoundaryModelBuilder::create_line( const std::vector< vec3 >& points )
     {
@@ -439,16 +440,18 @@ namespace RINGMesh {
     /*!
      * @brief Find or create a line
      *
-     * @param[in] corner0 Starting corner index
-     * @param[in] corner1 Ending corner index
-     * @param[in] vertices Indices of the vertices on this Line
+     * @param[in] vertices Coordinates of the vertices of the line
      * @return Index of the Line
      */
     index_t BoundaryModelBuilder::find_or_create_line(
         const std::vector< vec3 >& vertices )
     {
         index_t result = find_line( vertices ) ;
-        if( result != NO_ID ) {return result ;} else {return create_line( vertices ) ;}
+        if( result != NO_ID ) {
+            return result ;
+        } else {
+            return create_line( vertices ) ;
+        }
     }
 
 
@@ -514,9 +517,6 @@ namespace RINGMesh {
         index_t id = create_element( BME::CONTACT ) ;
         set_element_name( BME::CONTACT, id, name ) ;
 
-        /*for( index_t i = 0; i < interfaces.size(); ++i ) {
-            add_element_in_boundary( BME::CONTACT, id, interfaces[i] ) ;
-           }*/
         return id ;
     }
 
@@ -643,7 +643,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Set the point for a Corner
+     * @brief Set the geometric location of a Corner
      *
      * @param[in] corner_id Index of the corner
      * @param[in] point Coordinates of the vertex
@@ -702,7 +702,8 @@ namespace RINGMesh {
     
 
     /*!
-     * @brief To use when adding the points to the model before building its Elements
+     * @brief Add a point to the BoundaryModel and not to one of its elements
+     * @details To use when adding the points to the model before building its elements
      */
     index_t BoundaryModelBuilder::add_unique_vertex( const vec3& p ) 
     {
@@ -755,7 +756,9 @@ namespace RINGMesh {
         const std::vector< index_t >& facet_ptr,
         const std::vector< index_t >& adjacencies ) 
     {
-       if( facets.size() == 0 ) { return ; }
+       if( facets.size() == 0 ) { 
+           return ; 
+       }
 
         model_.surfaces_[ surface_id ]->set_geometry( model_vertex_ids, facets, facet_ptr ) ;
 
@@ -765,7 +768,6 @@ namespace RINGMesh {
             model_.surfaces_[ surface_id ]->set_adjacent( adjacencies ) ;
         }
     }
-
 
 
     /*!
@@ -783,7 +785,9 @@ namespace RINGMesh {
         const std::vector< index_t >& facet_ptr,
         const std::vector< index_t >& corner_adjacent_facets )
     {
-        if( facets.size() == 0 ) {return ;}
+        if( facets.size() == 0 ) {
+            return ;
+        }
 
          // Compute the vertices from the corners
         // This is quite stupid !! The real solution would be to remove
@@ -884,16 +888,28 @@ namespace RINGMesh {
     {
         /// Verify that E points to the right BoundaryModel
         /// that its index and type are the right one.
-        if( &E.model() != &model_ ) {return false ;}
-        if( E.element_type() == BME::NO_TYPE ) {return false ;}
-        if( E.id() == NO_ID ) {return false ;}
-        if( E.id() >= model_.nb_elements( E.element_type() ) ) {return false ;}
-        if( !( model_.element( E.element_type(), E.id() ) == E ) ) {return false ;}
+        if( &E.model() != &model_ ) {
+            return false ;
+        }
+        if( E.element_type() == BME::NO_TYPE ) {
+            return false ;
+        }
+        if( E.id() == NO_ID ) {
+            return false ;
+        }
+        if( E.id() >= model_.nb_elements( E.element_type() ) ) {
+            return false ;
+        }
+        if( !( model_.element( E.element_type(), E.id() ) == E ) ) {
+            return false ;
+        }
 
         /// Verify that the stored model vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
             if( E.model_vertex_id( i ) == NO_ID &&
-                E.model_vertex_id( i ) >= model_.nb_vertices() ) {return false ;}
+                E.model_vertex_id( i ) >= model_.nb_vertices() ) {
+                    return false ;
+            }
         }
         return true ;
     }
@@ -957,8 +973,8 @@ namespace RINGMesh {
      *
      * @details For all 7 types of elements, check what information is available
      * for the first one and fill the elements of the same type accordingly
-     * THIS MEANS that the all the elements of the same type have bee initialized with
-     * the the same information.
+     * THIS MEANS that the all the elements of the same type have been initialized with
+     * the same information.
      */
     bool BoundaryModelBuilder::complete_element_connectivity()
     {
@@ -1218,8 +1234,8 @@ namespace RINGMesh {
     }
 
 
-    /**
-     * \brief Structure used to build Line by BoundaryModelBuilderGocad
+    /*!
+     * @brief Structure used to build Line by BoundaryModelBuilderGocad
      */
     struct Border {
         Border(
@@ -1548,7 +1564,8 @@ namespace RINGMesh {
             }
         }
 
-//        make_vertices_unique() ;
+        // I agree that we do not need to compute the BoundaryModelVertices here
+        // But perhaps the computation of Lines would be faster and safer - Jeanne
 
         /// 7. Build the Lines
         {
@@ -1595,7 +1612,8 @@ namespace RINGMesh {
         }
 
         time( &end_load ) ;
-#ifdef RINGMESH_DEBUG
+        // We do not care of loading time in debug mode .... Jeanne
+#ifdef RINGMESH_DEBUG 
         std::cout << "Info" << " Boundary model loading time"
                   << difftime( end_load, start_load ) << " sec" << std::endl ;
 #endif
@@ -1604,6 +1622,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Find the facet which first 3 vertices are given
+     * 
      * @param[in] surface_id Index of the surface
      * @param[in] p0 First point coordinates
      * @param[in] p1 Second point coordinates
@@ -1663,6 +1682,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Verify that a surface key facet has an orientation consistent with the surface facets.
+     * 
      * @param[in] surface_id Index of the surface
      * @return False if the key_facet orientation is not the same than the surface facets, else true.
      */
@@ -1696,14 +1716,10 @@ namespace RINGMesh {
     /*!
      * @brief Get the points of a Line between two corners on a Surface
      *
-     * WE ASSUME THAT THE STORAGE OF THE POINTS IS UNIQUE IN THE MODEL AND THAT
-     * SURFACES DO SHARE POINTS ON THEIR CONTACT LINES
-     * make_vertices_unique() must have been called first
-     *
      * @param[in] S Index of the surface
      * @param[in] id0 Index of the starting point( a corner ) in S
      * @param[in] id1 Index of the second point on the Line in S
-     * @param[out] border_vertex_model_ids Indices of vertices on the Line (resized at 0 at the beginning)
+     * @param[out] border_vertex_model_vertices Coordinates of the vertices on the Line (emptied and filled again)
      * @return Index of the Corner at which the Line ends
      */
     index_t BoundaryModelBuilderGocad::determine_line_vertices(
@@ -1760,9 +1776,7 @@ namespace RINGMesh {
     /*!
      * @brief Get the points of a Line between two corners on a Surface
      *
-     * WE ASSUME THAT THE STORAGE OF THE POINTS IS UNIQUE IN THE MODEL AND THAT
-     * SURFACES DO SHARE POINTS ON THEIR CONTACT LINES
-     * make_vertices_unique() must have been called first
+     * WE ASSUME THAT THE MODEL VERTICES ARE AVAILABLE AND CORRECT
      *
      * @param[in] S Index of the surface
      * @param[in] id0 Index of the starting point( a corner ) in S
@@ -1849,7 +1863,9 @@ namespace RINGMesh {
      *
      * @param[in] interface_name Name of the parent. The parent MUST exist.
      * @param[in] type Type of the Surface
-     * @param[in] key KeyFacet for this Surface
+     * @param[in] p0 Coordinates of the 1 point of the TFace key facet 
+     * @param[in] p1 Coordinates of the 2 point of the TFace key facet 
+     * @param[in] p2 Coordinates of the 3 point of the TFace key facet 
      */
     void BoundaryModelBuilderGocad::create_surface(
         const std::string& interface_name,
@@ -2393,7 +2409,9 @@ namespace RINGMesh {
 
         /// 1. Make the storage of the model vertices unique
         /// So now we can make index comparison to find colocated edges
-//        make_vertices_unique() ; [Arnaud] no longer used
+        
+        // Force the computation of the model vertices to avoid troubles 
+        model_.vertices.nb_unique_vertices() ;
 
         /// 2.1 Get for all Surface, the triangles that have an edge
         /// on the boundary.

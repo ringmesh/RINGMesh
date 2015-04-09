@@ -45,14 +45,14 @@
 #include <deque>
 
 namespace RINGMesh {
-    /**
+    /*!
      * @brief enum of MatrixType, This is useful to further specialize the template in the future
      * */
     enum MatrixType {
         heavy = 0, light = 1, other = 2
     } ;
 
-    /**
+    /*!
      * @Brief Basic container for the sparse matrix, i.e. the "elements".
      * */
     template< class T >
@@ -67,7 +67,7 @@ namespace RINGMesh {
         index_t index ;
     } ;
 
-    /**
+    /*!
      * @brief Basic "Row" of the matrix, this stores the elements of the matrix in a line-oriented way
      * */
     template< class T >

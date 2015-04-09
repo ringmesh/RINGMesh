@@ -206,14 +206,14 @@ namespace RINGMesh {
 
         const static index_t NO_ID = index_t( - 1 ) ;
 
-        /**
+        /*!
          * @brief Construct an empty BoundaryModel
          */
         BoundaryModel() : vertices( *this )
         {
         }
 
-        /**
+        /*!
          * @brief Delete all BoundaryModelElements stored and owned by the BoundaryModel
          */
         virtual ~BoundaryModel() ;
@@ -254,7 +254,7 @@ namespace RINGMesh {
 
         index_t nb_facets() const ;
 
-        /**
+        /*!
          * \name Generic BoundaryModelElement accessors
          * @{
          */
@@ -329,7 +329,7 @@ namespace RINGMesh {
             }
         }
 
-        /** @}
+        /*! @}
          * \name Specicalized accessors.
          * @{
          */
@@ -374,7 +374,7 @@ namespace RINGMesh {
 
         index_t find_region( index_t surf_id, bool side ) const ;
 
-        /** @}
+        /*! @}
          * \name To save the BoundaryModel.
          * @{
          */
@@ -404,18 +404,18 @@ namespace RINGMesh {
         /// The region including all the other regions
         BoundaryModelElement universe_ ;
 
-        /**
+        /*!
          * @brief Contacts between Intefaces
          * Parent of a set of Line
          */
         std::vector< BoundaryModelElement* > contacts_ ;
-        /**
+        /*!
          * @brief Interfaces between layers
          * Parent of a set of Surface
          */
         std::vector< BoundaryModelElement* > interfaces_ ;
 
-        /**
+        /*!
          * @brief Rock layers
          * Parent of a set of Region
          */
