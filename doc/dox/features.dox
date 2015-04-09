@@ -38,20 +38,49 @@
  *     FRANCE
  */
 
+
 /*!
 
-\mainpage
+\page ringmesh_features RINGMesh features
 
-RINGMesh is a programming library for geological model meshes. It includes two efficient data structures to represent
-geological meshes: the \link ringmesh_boundary_model BoundaryModel\endlink, a data structure for a cellular representation 
-and the \link ringmesh_macro_mesh MacroMesh\endlink, a volumetric 
-representation of the BoundaryModel. 
+What it can do!
+==============
 
-- [Download](https://www.gocad.org/ringmesh)
-- \link ringmesh_compiling How to compile RINGMesh \endlink
-- \link ringmesh_license License and bundled third-party software \endlink
-- \link ringmesh_features RINGMesh features \endlink
-- \link ringmesh_boundary_model Description of the BoundaryModel \endlink
-- \link ringmesh_macro_mesh Description of the MacroMesh \endlink
+Data structures
+---------------
+ - BoundaryModel: Cellular representation to store 3D structural models
+ - MacroMesh: Volumetric mesh of the structural model
 
+Import
+------
+ - BoundaryModel
+  - .bm: homemade format
+  - .ml: Model3D format from Gocad/Skua
+ - MacroMesh
+  - .mm: homemade format
+  
+Export
+------
+ - BoundaryModel
+  - .bm: homemade format
+  - .ml: Model3D format for Gocad/Skua
+ - MacroMesh
+  - .csmp: CSMP++ format (export 3 files: .asc, .dat, -regions.txt)
+  - .gmsh: Gmsh format (can also export additional information for Kine3D)
+  - .gprs: GPRS format
+  - .mail: ASTER format
+  - .meshb: LibMesh format
+  - .mm: homemade format
+  - .so: Tsolid format for Gocad/Skua
+  - .tetgen: TetGen format (export 3 files: .node, .ele, .neigh)
+  - .vtk: VTK format for ParaView
+
+What is next?
+=============
+
+Export
+------
+ - MacroMesh
+  - .resqml: RESQML2 format
 */
+

@@ -92,10 +92,8 @@ Bundled third-party software
 ============================
 
 RINGMesh uses the following softwares:
-- [Geogram](http://alice.loria.fr/index.php/software/4-library/75-geogram.html): a programming library of geometric algorithms -
- License: Modified BSD
-- [Zlib](http://www.zlib.net/): A Massively Spiffy Yet Delicately Unobtrusive Compression Library
-  -  License: zlib
+- [Geogram](http://alice.loria.fr/index.php/software/4-library/75-geogram.html): a programming library of geometric algorithms - License: Modified BSD
+- [Zlib](http://www.zlib.net/): A Massively Spiffy Yet Delicately Unobtrusive Compression Library - License: zlib
 
 */
 
