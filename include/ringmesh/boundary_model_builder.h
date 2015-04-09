@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -238,7 +238,7 @@ namespace RINGMesh {
             const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr,
-            const std::vector< index_t >& surface_adjacencies = empty_index_vector ) ;
+            const std::vector< index_t >& surface_adjacencies = std::vector< index_t >() ) ;
 
         // Same functions but to call in the case where the vertices of the 
         // model are filled first 
@@ -257,14 +257,13 @@ namespace RINGMesh {
             const std::vector< index_t >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr,
-            const std::vector< index_t >& surface_adjacencies = empty_index_vector ) ;
+            const std::vector< index_t >& surface_adjacencies = std::vector< index_t >() ) ;
 
         void set_surface_geometry_bis(
             index_t surface_id,
             const std::vector< index_t >& corners,
             const std::vector< index_t >& facet_ptr,
-            const std::vector< index_t >& corner_adjacent_facets =
-                empty_index_vector ) ;
+            const std::vector< index_t >& corner_adjacent_facets = std::vector< index_t >() ) ;
 
         void set_surface_adjacencies( index_t surface_id ) ;
 
