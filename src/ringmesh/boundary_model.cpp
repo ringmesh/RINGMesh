@@ -137,7 +137,9 @@ namespace RINGMesh {
         if( unique_vertices_.vertices.nb() == 0 ) {
             initialize_unique_vertices() ;
         }
-        unique2bme_.resize( nb_unique_vertices() ) ;
+        if( !unique2bme_.is_bound() ) {
+            unique2bme_.bind( attribute_manager(), "unique2bme") ; 
+        }
         
         for( index_t c = 0; c < bm_.nb_corners(); c++ ) {            
             unique2bme_[c].push_back( VertexInBME( BME::CORNER, c, 0 ) ) ;
@@ -170,7 +172,7 @@ namespace RINGMesh {
     const std::vector< BoundaryModelVertices::VertexInBME >&
     BoundaryModelVertices::bme_vertices( index_t v ) const
     {
-        if( unique2bme_.empty() ) {
+        if( !unique2bme_.is_bound() ) {
             const_cast< BoundaryModelVertices* >( this )->initialize_reverse() ;
         }
         return unique2bme_[v] ;
@@ -179,8 +181,6 @@ namespace RINGMesh {
     index_t BoundaryModelVertices::add_unique_vertex( const vec3& point ) 
     {
         index_t id = unique_vertices_.vertices.create_vertex( point.data() ) ;
-        ringmesh_assert( id == unique2bme_.size() ) ;
-        unique2bme_.push_back( std::vector< VertexInBME >() ) ;
         return id ;
     }
 
@@ -190,7 +190,10 @@ namespace RINGMesh {
         index_t bme_id,
         index_t v_id ) 
     {
-        ringmesh_assert( unique_id < unique2bme_.size() ) ;
+        if( !unique2bme_.is_bound() ) {
+            unique2bme_.bind( attribute_manager(), "unique2bme") ; 
+        }
+        ringmesh_assert( unique_id < nb_unique_vertices() ) ;
         unique2bme_[unique_id].push_back( VertexInBME( bme_type, bme_id, v_id ) ) ;
     } 
 
@@ -225,10 +228,7 @@ namespace RINGMesh {
 
 
     const vec3& BoundaryModelVertices::unique_vertex( index_t v ) const
-    {
-        if( unique_vertices_.vertices.nb()==0 ) {
-            const_cast< BoundaryModelVertices* >( this )->initialize_unique_vertices() ;
-        }
+    {       
         ringmesh_assert( v < nb_unique_vertices() ) ;
         return unique_vertices_.vertices.point(v) ;
     }

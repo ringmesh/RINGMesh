@@ -112,6 +112,11 @@ namespace RINGMesh {
          * @pre unique_id < nb_unique_vertices()
          */
         const vec3& unique_vertex( index_t unique_id ) const ;        
+
+        /*!
+         * @brief Get the vertices in BME that correspond to the given unique vertex
+         */
+        const std::vector< VertexInBME >& bme_vertices( index_t unique_id ) const ;
         
         /*!
          * @brief To use when building the model by first adding its vertices
@@ -133,17 +138,14 @@ namespace RINGMesh {
          * @brief Set the point coordinates of all the vertices that are 
          *        share this unique vertex
          * @param[in] unique_id Index of the unique vertex in the BoundaryModel
-         * @param[in] point New coordinates of the point 
+         * @param[in] point New coordinates of the vertex 
          */
         void update_point( index_t unique_id, const vec3& point ) ;
 
         /*!
-         * @brief Clear the vertices. Vertices of the BME are left untouched.
+         * @brief Clear the vertices
          */  
-        void clear() {
-            unique_vertices_.clear( true, true ) ;
-            unique2bme_.clear() ;
-        }
+        void clear() { unique_vertices_.clear( true, true ) ; }
 
         /*!
          * @brief Returns the Geogram attribute manager on these vertices
@@ -169,12 +171,7 @@ namespace RINGMesh {
         /*!
          * @copydoc BoundaryModelVertices::unique_vertex_id( BoundaryModelElement::TYPE,index_t,index_t )
          */
-        index_t unique_vertex_id( const VertexInBME& v ) const ;
-
-        /*!
-         * @brief Get the vertices in BME that correspond to the given unique vertex
-         */
-        const std::vector< VertexInBME >& bme_vertices( index_t unique_id ) const ;
+        index_t unique_vertex_id( const VertexInBME& v ) const ;       
 
     private:
         /// Attached BoundaryModel to which belong the vertices
@@ -188,8 +185,7 @@ namespace RINGMesh {
         GEO::Mesh unique_vertices_ ;
                
         /// Mapping of a unique vertex to the vertices in the BME that have the same coordinates
-        /// \todo Could be an attribute on the unique_vertices_
-        std::vector< std::vector< VertexInBME > > unique2bme_ ;
+        GEO::Attribute< std::vector< VertexInBME > > unique2bme_ ;
     } ;
 
 
