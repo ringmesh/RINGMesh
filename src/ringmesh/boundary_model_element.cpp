@@ -352,6 +352,8 @@ namespace RINGMesh {
     index_t Corner::model_vertex_id( index_t p ) const
     {
        // return model_->vertices.unique_vertex_id( CORNER, id(), p ) ;
+       ringmesh_debug_assert( model_vertex_id_[0] != NO_ID ) ;
+
        return model_vertex_id_[0] ;
     }
 
@@ -437,7 +439,7 @@ namespace RINGMesh {
 
     index_t Line::model_vertex_id( index_t p ) const
     {
-       // return model_->vertices.unique_vertex_id( LINE, id(), p ) ;
+        ringmesh_debug_assert( model_vertex_id_[p] != NO_ID ) ;
         return model_vertex_id_[p] ;
     }
 
@@ -580,7 +582,7 @@ namespace RINGMesh {
     }
 
     index_t Surface::model_vertex_id( index_t p ) const {
-        //return model_->vertices.unique_vertex_id( SURFACE, id(), p ) ;
+        ringmesh_debug_assert( model_vertex_id_[p] != NO_ID ) ;
         return model_vertex_id_[p] ;
     }
 

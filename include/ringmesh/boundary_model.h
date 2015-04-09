@@ -64,8 +64,8 @@ namespace RINGMesh {
      *          Attributes may be defined on the vertices.
      */          
     class RINGMESH_API BoundaryModelVertices {
-    public:
         ringmesh_disable_copy( BoundaryModelVertices ) ;
+    public:
 
         /*!
          * @brief Identification of a vertex in a BoundaryModelElement
@@ -145,9 +145,9 @@ namespace RINGMesh {
         void update_point( index_t unique_id, const vec3& point ) ;
 
         /*!
-         * @brief Clear the vertices
+         * @brief Clear the vertices - unbind unique2bme_ - set attribute to NO_ID in BME
          */  
-        void clear() { unique_vertices_.clear( true, true ) ; }
+        void clear() ;
 
         /*!
          * @brief Returns the Geogram attribute manager on these vertices
@@ -201,10 +201,6 @@ namespace RINGMesh {
         friend class BoundaryModelBuilder ;
 
     public:
-        enum AttributeLocation {
-            VERTEX
-        } ;
-
         typedef GEO::AttributesManager VertexAttributeManager ;
         typedef BoundaryModelElement BME ;
 
@@ -222,23 +218,32 @@ namespace RINGMesh {
          */
         virtual ~BoundaryModel() ;
 
-        const std::string& name() const
-        {
-            return name_ ;
-        }
+        /*!
+         * @brief Name of the model
+         */ 
+        const std::string& name() const { return name_ ; }
 
-        index_t nb_vertices() const
-        {
-            return vertices.nb_unique_vertices() ;
-        }
+        /*!
+         * @brief Number of unique vertices, no duplicates along Line and at Corner
+         */
+        index_t nb_vertices() const { return vertices.nb_unique_vertices() ; }
 
         index_t vertex_index( const vec3& p ) const ;
 
+        /*!
+         * @brief Coordinates of a vertex
+         * @pre p < nb_vertices() 
+         */
         const vec3& vertex( index_t p ) const
         {
             return vertices.unique_vertex( p ) ;
         }
 
+        /*! 
+         * @brief Update the coordinates of vertex
+         * @details Linked vertices coordinates in the 
+         *        Corner, Line, and Surface are updated.
+         */
         void set_vertex_coordinates(
             index_t id,
             const vec3& p )
@@ -256,7 +261,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the number of elements of the given type
-         * By default returns 0.
+         * @details By default returns 0.
          */
         inline index_t nb_elements( BME::TYPE type ) const
         {
@@ -367,45 +372,19 @@ namespace RINGMesh {
             return vertices.attribute_manager() ;
         }
 
-        index_t find_region(
-            index_t surface_part_id,
-            bool side ) const ;
+        index_t find_region( index_t surf_id, bool side ) const ;
 
         /** @}
          * \name To save the BoundaryModel.
          * @{
          */
         bool save_gocad_model3d( std::ostream& out ) ;
-
-        void save_as_eobj_file( const std::string& file_name ) ;
-
-        void save_surface_as_obj_file(
-            index_t s,
-            const std::string& file_name ) const ;
-
+        void save_as_eobj_file( const std::string& file ) ;
+        void save_surface_as_obj_file( index_t s, const std::string& file ) const ;
         void save_bm_file( const std::string& file_name ) ;
 
-        signed_index_t find_interface( const std::string& name) const {
-            for(index_t i = 0 ; i < nb_interfaces() ; i++ ) {
-                if( one_interface(i).name() == name ) {
-                    return i ;
-                }
-            }
-            GEO::Logger::err("") << "Surface name did not match with an actual interface name of the Boundary Model. Abort.. " << std::endl ;
-            ringmesh_assert_not_reached ;
-            return -1 ;
-        }
-
-        signed_index_t find_region( const std::string& name) const {
-            for(index_t r = 0 ; r < nb_regions() ; r++ ) {
-                if( region(r).name() == name ) {
-                    return r ;
-                }
-            }
-            GEO::Logger::err("") << "Region name did not match with an actual region name of the Boundary Model. Abort.. " << std::endl ;
-            ringmesh_assert_not_reached ;
-            return -1 ;
-        }
+        signed_index_t find_interface( const std::string& name) const ;
+        signed_index_t find_region( const std::string& name) const ;
 
     private:
         bool check_model3d_compatibility() ;

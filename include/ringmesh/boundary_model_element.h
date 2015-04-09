@@ -69,10 +69,6 @@ namespace RINGMesh {
     class RINGMESH_API BoundaryModelElement {
     ringmesh_disable_copy( BoundaryModelElement ) ;
     public:
-        enum AttributeLocation {
-            VERTEX, FACET
-        } ;
-
         typedef GEO::AttributesManager VertexAttributeManager ;
         typedef GEO::AttributesManager CellAttributeManager ;
 

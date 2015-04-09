@@ -45,6 +45,7 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
+#include <geogram/points/colocate.h>
 
 #include <iostream>
 #include <iomanip>
@@ -54,6 +55,94 @@
 #include <set>
 
 namespace RINGMesh {
+
+
+    /*! 
+     * @brief Trigger an assertion if several vertices of a mesh at the same geometric location
+     * @note Code modified from geomgram/mesh/mesh_repair.cpp 
+     * @param[in] M the mesh
+     * @param[in] colocate_epsilon tolerance      
+     */
+    void assert_no_colocate_vertices( GEO::Mesh& M, double colocate_epsilon) {
+        GEO::vector<index_t> old2new;
+
+        index_t nb_new_vertices = 0;
+        if(colocate_epsilon == 0.0) {
+            nb_new_vertices = GEO::Geom::colocate_by_lexico_sort(
+                M.vertices.point_ptr(0), 3, M.vertices.nb(),
+                old2new, M.vertices.dimension()
+            );
+        } else {
+            nb_new_vertices = GEO::Geom::colocate(
+                M.vertices.point_ptr(0), 3, M.vertices.nb(),
+                old2new, colocate_epsilon, M.vertices.dimension()
+            );
+        }
+        if( nb_new_vertices != M.vertices.nb() ) {
+            geo_assert_not_reached ;
+        }       
+    }
+
+    /*! 
+     * @brief Merges the vertices of a mesh that are at the same geometric location
+     * @note Code modified from geomgram/mesh/mesh_repair.cpp 
+     * @param[in] M the mesh
+     * @param[in] colocate_epsilon tolerance for merging vertices
+     * @param[out] old2new mapping from previous M.vertices to new M.vertices
+     */
+    void repair_colocate_vertices(
+        GEO::Mesh& M, 
+        double colocate_epsilon, 
+        GEO::vector<index_t>& old2new) 
+    {
+        old2new.clear() ;
+
+        index_t nb_new_vertices = 0;
+        if(colocate_epsilon == 0.0) {
+            nb_new_vertices = GEO::Geom::colocate_by_lexico_sort(
+                M.vertices.point_ptr(0), 3, M.vertices.nb(),
+                old2new, M.vertices.dimension()
+            );
+        } else {
+            nb_new_vertices = GEO::Geom::colocate(
+                M.vertices.point_ptr(0), 3, M.vertices.nb(),
+                old2new, colocate_epsilon, M.vertices.dimension()
+            );
+        }        
+        if(nb_new_vertices == M.vertices.nb()) {
+            return;
+        }        
+        for(index_t c = 0; c < M.facet_corners.nb(); c++) {
+            M.facet_corners.set_vertex(c, old2new[M.facet_corners.vertex(c)]);
+        }
+
+        // Some index magic to flag the point to delete and the right 
+        // mapping between old and new vertices of the mesh
+        GEO::vector< index_t > to_delete( old2new.size() ) ;
+        for(index_t i = 0; i < old2new.size(); i++) {
+            if(old2new[i] == i) {
+                to_delete[i] = 0;
+            } else {
+                to_delete[i] = 1;
+            }
+        }
+        M.vertices.delete_elements( to_delete, false );
+
+        // The to_delete vector is used for mapping in the delete_elements function
+        // We need it to get the correct mapping
+        for( index_t i=0; i< old2new.size(); i++ ) {
+            if( to_delete[i] != NO_ID ) {
+                old2new[i] = to_delete[i] ;
+            }
+            else {
+                old2new[i] = to_delete[ old2new[i] ] ;
+            }
+        }
+    }
+
+
+    /************************************************************************/
+
 
     void BoundaryModelVertices::initialize_unique_vertices()
     {
@@ -93,40 +182,38 @@ namespace RINGMesh {
                 all_vertices[index++] = surface.vertex( v ) ;
             }
         }
+        
+        unique_vertices_.vertices.create_vertices( all_vertices.size() ) ;
+        unique_vertices_.vertices.assign_points( all_vertices[0].data(), 3, all_vertices.size() ) ;
 
-        MakeUnique mu( all_vertices ) ;
-        mu.unique() ;
-       
-        // Get the coordinates of the unique vertices
-        std::vector< vec3 > unique_points ;
-        mu.unique_points( unique_points ) ;
-
-        // Put that in the Mesh that store our nice vertices
-        unique_vertices_.vertices.create_vertices( unique_points.size() ) ;
-        unique_vertices_.vertices.assign_points( unique_points[0].data(), 3, unique_points.size() ) ;
-
-        // Get the mapping of between all_vertices and unique_points 
-        // Store as attribute on the Corner, Line and Surface vertices
-        std::vector< index_t > bme2unique = mu.indices() ;
+        GEO::vector< index_t > old2new ;
+        repair_colocate_vertices( unique_vertices_, epsilon, old2new ) ;   
 
         // We do the same loop as above
         index = 0 ;
         for( index_t c = 0; c < nb_corners; c++ ) {
              Corner& C = const_cast< Corner& >( bm_.corner( c ) ) ;
-             C.set_model_vertex_id( bme2unique[index++] ) ;
+             C.set_model_vertex_id( old2new[index++] ) ;
+             // I am crazy paranoid - Jeanne
+             ringmesh_debug_assert( C.vertex() == unique_vertex( old2new[index-1] ) ) ;
         }
         for( index_t l = 0; l < nb_lines; l++ ) {
             Line& L = const_cast< Line& >( bm_.line( l ) ) ;
             for( index_t v = 0; v < L.nb_vertices(); v++ ) {
-                L.set_model_vertex_id( v, bme2unique[index++] ) ;                
+                L.set_model_vertex_id( v, old2new[index++] ) ;                
+                ringmesh_debug_assert( L.vertex(v) == unique_vertex( old2new[index-1] ) ) ;
             }
         }
         for( index_t s = 0; s < nb_surfaces; s++ ) {
             Surface& S = const_cast< Surface& >( bm_.surface( s ) ) ;
             for( index_t v = 0; v < S.nb_vertices(); v++ ) {
-                S.set_model_vertex_id( v, bme2unique[index++] ) ;
+                S.set_model_vertex_id( v, old2new[index++] ) ;
+                ringmesh_debug_assert( S.vertex(v) == unique_vertex( old2new[index-1] ) ) ;
             }
         }
+
+        // Paranoia - Jeanne
+        assert_no_colocate_vertices( unique_vertices_, epsilon ) ;
     }
 
     
@@ -180,8 +267,7 @@ namespace RINGMesh {
 
     index_t BoundaryModelVertices::add_unique_vertex( const vec3& point ) 
     {
-        index_t id = unique_vertices_.vertices.create_vertex( point.data() ) ;
-        return id ;
+        return unique_vertices_.vertices.create_vertex( point.data() ) ;
     }
 
     void BoundaryModelVertices::add_unique_to_bme( 
@@ -233,6 +319,32 @@ namespace RINGMesh {
         return unique_vertices_.vertices.point(v) ;
     }
 
+    void BoundaryModelVertices::clear() 
+    {
+        /// \todo Unbind all attributes !!!! otherwise we'll get a crash
+        // For the moment 
+        if( unique2bme_.is_bound() ) unique2bme_.unbind() ;
+        
+        unique_vertices_.clear( true, true ) ; 
+
+        // Clear the information for the Corner - Line - Surface
+        for( index_t c = 0; c < bm_.nb_corners(); c++ ) {
+             Corner& C = const_cast< Corner& >( bm_.corner( c ) ) ;
+             C.set_model_vertex_id( NO_ID ) ;
+        }
+        for( index_t l = 0; l < bm_.nb_lines(); l++ ) {
+            Line& L = const_cast< Line& >( bm_.line( l ) ) ;
+            for( index_t v = 0; v < L.nb_vertices(); v++ ) {
+                L.set_model_vertex_id( v, NO_ID ) ;                
+            }
+        }
+        for( index_t s = 0; s < bm_.nb_surfaces(); s++ ) {
+            Surface& S = const_cast< Surface& >( bm_.surface( s ) ) ;
+            for( index_t v = 0; v < S.nb_vertices(); v++ ) {
+                S.set_model_vertex_id( v, NO_ID ) ;
+            }
+        }
+    }
 
     /*******************************************************************************/
 
@@ -263,7 +375,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Total number of facets in the model Surface
+     * @brief Total number of facets in the model Surface s
      */
     index_t BoundaryModel::nb_facets() const
     {
@@ -962,4 +1074,32 @@ namespace RINGMesh {
             }
         }
     }
+
+    signed_index_t BoundaryModel::find_interface( const std::string& name) const {
+        for(index_t i = 0 ; i < nb_interfaces() ; i++ ) {
+            if( one_interface(i).name() == name ) {
+                return i ;
+            }
+        }
+        GEO::Logger::err("") << "Surface name did not match with an actual\
+                                interface name of the Boundary Model. Abort.. " 
+                                << std::endl ;
+        ringmesh_assert_not_reached ;
+        return -1 ;
+    }
+
+    signed_index_t BoundaryModel::find_region( const std::string& name) const {
+        for(index_t r = 0 ; r < nb_regions() ; r++ ) {
+            if( region(r).name() == name ) {
+                return r ;
+            }
+        }
+        GEO::Logger::err("") << "Region name did not match with an actual\
+                                region name of the Boundary Model. Abort.. " 
+                                << std::endl ;
+        ringmesh_assert_not_reached ;
+        return -1 ;
+    }
+
+
 } // namespace
