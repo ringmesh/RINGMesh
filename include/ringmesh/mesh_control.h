@@ -49,7 +49,7 @@
 namespace RINGMesh {
 class RINGMESH_API DetectInter {
 public:
-	DetectInter(const MacroMesh& mm, index_t nb_reg);
+	DetectInter(const MacroMesh& mm);
 
 	~DetectInter();
 
@@ -71,7 +71,7 @@ public:
 	 * \param[B] the box that will be created
 	 * \param[t] the index of the cell for which the box will be created
 	 */
-	void get_tet_bbox(const GEO::Mesh& M, GEO::Box& B, index_t t);
+	//void get_tet_bbox(const GEO::Mesh& M, GEO::Box& B, index_t t);
 
 	/**
 	 * \brief Computes all the intersections between two cells.
@@ -93,7 +93,6 @@ public:
 
 private:
 	std::vector<bool> inter_;
-	index_t nb_reg_;
 	index_t cur_reg_;
 	index_t cur_reg2_;
 	index_t cur_cell_;
