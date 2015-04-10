@@ -171,7 +171,7 @@ namespace RINGMesh {
         void initialize_reverse() ;
 
         /*!
-         * @copydoc BoundaryModelVertices::unique_vertex_id( BoundaryModelElement::TYPE,index_t,index_t )
+         * @copydoc BoundaryModelVertices::unique_vertex_id( BoundaryModelElement::TYPE,index_t,index_t ) const
          */
         index_t unique_vertex_id( const VertexInBME& v ) const ;       
 
@@ -292,7 +292,7 @@ namespace RINGMesh {
         /*!
          * @brief Returns a const reference the identified BoundaryModelElement
          *
-         * @param[in] t Type of the element
+         * @param[in] type Type of the element
          * @param[in] index Index of the element
          */
         inline const BoundaryModelElement& element(

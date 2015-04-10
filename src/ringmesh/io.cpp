@@ -469,7 +469,7 @@ namespace RINGMesh {
                 return true ;
             }
 
-            /// Save a \param[in] macro mesh in a .zip file which contains all the mesh file. Type of the export is
+            /// Save a \param[in] mm macro mesh in a .zip file which contains all the mesh file. Type of the export is
             /// determined by the extension given in \param[in] filename
             virtual bool save( const MacroMesh& mm, const std::string& filename )
             {
