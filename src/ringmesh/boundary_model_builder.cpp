@@ -358,7 +358,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Get the index of the Corner at a given model point
-     * @param[in] p_id Index of the point
+     * @param[in] model_point_id Index of the point in the BoudaryModel
      * @return NO_ID or the index of the Corner
      */
      index_t BoundaryModelBuilder::find_corner( index_t model_point_id ) const 
@@ -715,7 +715,7 @@ namespace RINGMesh {
      * @brief Set the vertex for a Corner. Store the info in the BM vertices
      *
      * @param[in] corner_id Index of the corner
-     * @param[in] vertex_id Index of the vertex in the model
+     * @param[in] unique_vertex Index of the vertex in the model
      */
     void BoundaryModelBuilder::set_corner(
         index_t corner_id,
@@ -729,7 +729,7 @@ namespace RINGMesh {
      * @brief Set one Line vertices. Store the info in the BM vertices
      *
      * @param[in] id Line index
-     * @param[in] vertices Indices in the model of the unique vertices with which to build the Line
+     * @param[in] unique_vertices Indices in the model of the unique vertices with which to build the Line
      */
     void BoundaryModelBuilder::set_line(
         index_t id,
@@ -744,10 +744,10 @@ namespace RINGMesh {
      * @details If facet_adjacencies are not given they are computed.
      *
      * @param[in] surface_id Index of the surface
-     * @param[in] vertices Indices of unique vertices in the BoundaryModel
+     * @param[in] model_vertex_ids Indices of unique vertices in the BoundaryModel
      * @param[in] facets Indices in the vertices vector to build facets
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     * @param[in] surface_adjacencies Adjacent facet (size of facet_ptr)
+     * @param[in] adjacencies Adjacent facet (size of facet_ptr)
      */
     void BoundaryModelBuilder::set_surface_geometry(
         index_t surface_id,
@@ -777,7 +777,7 @@ namespace RINGMesh {
      * @param[in] surface_id Index of the surface
      * @param[in] facets Indices of the model vertices defining the facets
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     * @param[in] surface_adjacencies Adjacent facet (size of facet_ptr)
+     * @param[in] corner_adjacent_facets Adjacent facet (size of facet_ptr)
      */
     void BoundaryModelBuilder::set_surface_geometry_bis(
         index_t surface_id,
@@ -1267,7 +1267,7 @@ namespace RINGMesh {
      * Gocad Region <-> BoundaryModel Region
      * Gocad Layer  <-> BoundaryModel Layer
      *
-     * @param[in] in Input .ml file stream
+     * @param[in] ml_file_name Input .ml file stream
      */
     void BoundaryModelBuilderGocad::load_ml_file( const std::string& ml_file_name )
     {
@@ -2237,7 +2237,7 @@ namespace RINGMesh {
          * @brief Constructor
          * @param s Index of the surface
          * @param f Index of the facet containing the 3 vertices
-         * @param vi Indices in the BoundaryModel of the vertices defining the triangle
+         * @param v0, v1, v2 Indices in the BoundaryModel of the vertices defining the triangle
          *           the edge v0 - v1 is the one on the boundary
          */
         BorderTriangle(
@@ -2333,7 +2333,8 @@ namespace RINGMesh {
      *
      * @param[in] border_triangles Information on triangles MUST be sorted so that
      *            BorderTriangle having the same boundary edge are adjacent
-     *
+     * @param[in] i Index of reference BorderTriangle in border_triangles 
+     * @param[out] visited Stores which of the border_triangles have a matching edge
      */
     void visit_border_triangle_on_same_edge(
         const std::vector< BorderTriangle >& border_triangles,

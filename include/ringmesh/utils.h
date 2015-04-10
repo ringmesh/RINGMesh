@@ -993,6 +993,9 @@ namespace RINGMesh {
             /*!
              * @param index Index of this TriangleToSort in SortTriangleAroundEdge
              * @param surface_index Index of the Surface
+             * @param p0 point of the triangle
+             * @param p1 point of the triangle
+             * @param p2 point of the triangle
              */
             TriangleToSort(
                 index_t index,

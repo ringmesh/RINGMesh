@@ -677,7 +677,7 @@ namespace RINGMesh {
      * @brief Traversal of a surface border
      * @details From the input facet f, get the facet that share vertex v and
      * get the indices of vertex v and of the following vertex in this new facet.
-     * The next facet next_f may be the same, and @param is required to avoid going back.
+     * The next facet next_f may be the same, and from is required to avoid going back.
      *
      * @param[in] f Index of the facet
      * @param[in] from Index in the facet of the previous point on the border - gives the direction
@@ -808,8 +808,8 @@ namespace RINGMesh {
      * @brief Get the first facet of the surface that has an edge linking the
      * two vertices (ids in the model)
      *
-     * @param[in] in0 Index of the first vertex in the model
-     * @param[in] in1 Index of the second vertex in the model
+     * @param[in] i0 Index of the first vertex in the model
+     * @param[in] i1 Index of the second vertex in the model
      * @return NO_ID or the index of the facet
      */
     index_t Surface::facet_from_model_vertex_ids(

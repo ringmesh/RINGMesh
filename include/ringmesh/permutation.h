@@ -114,10 +114,11 @@ namespace RINGMesh {
          * }
          * data = data2 ;
          * @endcode
-         * @param data the vector to permute
-         * @param [in] permutation_in the permutation.
+         * @param data_in the vector to permute
+         * @param[in] permutation_in the permutation.
          *  It is temporarily changed during execution of the
          *  function, but identical to the input on exit.
+         * @param elemsize Size of an element
          */
         inline void apply(
             void* data_in,
