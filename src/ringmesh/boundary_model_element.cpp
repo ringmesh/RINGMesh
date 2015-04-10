@@ -366,30 +366,100 @@ namespace RINGMesh {
         return model_->corner(0).vertex_attribute_manager();
     }
 
-    index_t Corner::model_vertex_id( index_t p ) const
-    {
-       // return model_->vertices.unique_vertex_id( CORNER, id(), p ) ;
-       ringmesh_debug_assert( model_vertex_id_[0] != NO_ID ) ;
 
-       return model_vertex_id_[0] ;
+    /*********************************************************************/
+
+    index_t BoundaryModelMeshElement::local_id( index_t model_vertex_id ) const 
+    {   
+        const std::vector< BoundaryModelVertices::VertexInBME >& reverse_db =
+            model_->vertices.bme_vertices( model_vertex_id ) ;
+        
+        for( index_t i = 0; i < reverse_db.size(); i++ ) {
+            const BoundaryModelVertices::VertexInBME& info = reverse_db[i] ;
+            if( info.bme_type == element_type() && info.bme_id == id() ) {
+                return info.v_id ;
+            }
+        }
+        return NO_ID ;
     }
+
+
+    void BoundaryModelMeshElement::set_model_vertex_id( 
+        index_t vertex_id, 
+        index_t model_vertex_id ) 
+    {
+        ringmesh_assert( vertex_id < nb_vertices() ) ;
+        model_vertex_id_[vertex_id] = model_vertex_id ;
+    }
+
+
+    void BoundaryModelMeshElement::set_vertex(
+        index_t index,
+        const vec3& point,
+        bool update )
+    {
+        ringmesh_debug_assert( index < nb_vertices() ) ;
+        if( update )
+            model_->vertices.update_point(
+                 model_->vertices.unique_vertex_id( 
+                    element_type(), id(), index ), point ) ;
+        else
+            mesh_.vertices.point( index ) = point ;
+    }
+
+    
+    index_t BoundaryModelMeshElement::model_vertex_id( index_t p ) const {
+        ringmesh_assert( p < nb_vertices() ) ;
+        ringmesh_debug_assert( model_vertex_id_[p] != NO_ID ) ;
+        return model_vertex_id_[p] ;
+    }
+
+    /*!
+     * @param[in] surf_vertex_id Index of the vertex in the surface
+     * @return The coordinates of the vertex
+     */
+    const vec3& BoundaryModelMeshElement::vertex( index_t v ) const
+    {
+        ringmesh_assert( v < nb_vertices() ) ;
+        return mesh_.vertices.point( v ) ;
+    }
+
+
+    void BoundaryModelMeshElement::set_vertex( 
+        index_t v, index_t model_vertex ) 
+    {
+        set_vertex( v, model_->vertex( model_vertex ) ) ;
+        set_model_vertex_id( v, model_vertex ) ;
+        model_->vertices.add_unique_to_bme( model_vertex, element_type(), id(), v ) ;
+    }
+
+
+    void BoundaryModelMeshElement::set_mesh_vertices( 
+        const std::vector< vec3 >& points ) 
+    {
+        mesh_.vertices.create_vertices( points.size() ) ;
+        for( index_t v = 0; v < points.size(); v++ ) {            
+            set_vertex( v, points[v], false ) ;
+        }
+    }
+
+    void BoundaryModelMeshElement::set_mesh_vertices( 
+        const std::vector< index_t >& model_vertices ) 
+    {
+        mesh_.vertices.create_vertices( model_vertices.size() ) ;
+        for( index_t v = 0; v < model_vertices.size(); v++ ) {
+            set_vertex( v, model_vertices[v] ) ;
+        }
+    }
+
+     
 
     
     void Corner::set_vertex( index_t model_point_id ) 
     {
-        mesh_.vertices.point( 0 ) = model_->vertex( model_point_id ) ;
-        model_vertex_id_[0] = model_point_id ;
-        model_->vertices.add_unique_to_bme( model_point_id, element_type(), id(), 0 ) ;
+        BoundaryModelMeshElement::set_vertex( 0, model_point_id ) ;            
     }
 
-    void Corner::set_vertex( index_t index, const vec3& point, bool update )
-    {
-        if( update )
-            model_->vertices.update_point(
-                model_->vertices.unique_vertex_id( CORNER, id(), index ), point ) ;
-        else
-            mesh_.vertices.point( 0 ) = point ;
-    }
 
     /*!
      * @brief Construct a Line
@@ -400,9 +470,8 @@ namespace RINGMesh {
     Line::Line(
         BoundaryModel* model,
         index_t id ) :
-        BoundaryModelElement( model, LINE, id )
+        BoundaryModelMeshElement( model, LINE, id )
     {
-        model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ; 
     }
 
 
@@ -417,13 +486,9 @@ namespace RINGMesh {
         BoundaryModel* model,
         index_t id,
         const std::vector< vec3 >& vertices )
-          : BoundaryModelElement( model, LINE, id )
+          : BoundaryModelMeshElement( model, LINE, id )
     {
-        mesh_.vertices.create_vertices( vertices.size() ) ;
-        for( index_t v = 0; v < vertices.size(); v++ ) {
-            mesh_.vertices.point( v ) = vertices[v] ;
-        }
-        model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ; 
+       set_mesh_vertices( vertices ) ;
     }
 
 
@@ -442,48 +507,23 @@ namespace RINGMesh {
         index_t corner0,
         index_t corner1,
         const std::vector< vec3 >& vertices )
-        : BoundaryModelElement( model, LINE, id )
+        : BoundaryModelMeshElement( model, LINE, id )
     {
-        mesh_.vertices.create_vertices( vertices.size() ) ;
-        for( index_t v = 0; v < vertices.size(); v++ ) {
-            mesh_.vertices.point( v ) = vertices[v] ;
-        }
-        model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ; 
-
+        set_mesh_vertices( vertices ) ;
         boundaries_.push_back( corner0 ) ;
         boundaries_.push_back( corner1 ) ;
     }
 
-    index_t Line::model_vertex_id( index_t p ) const
+    void Line::set_vertices( const std::vector< vec3 >& vertices )
     {
-        ringmesh_debug_assert( model_vertex_id_[p] != NO_ID ) ;
-        return model_vertex_id_[p] ;
-    }
-
-    void Line::set_vertex( index_t index, const vec3& point, bool update )
-    {
-        if( update )
-            model_->vertices.update_point(
-                model_->vertices.unique_vertex_id( CORNER, id(), index ),
-                point ) ;
-        else
-            mesh_.vertices.point( index ) = point ;
+        mesh_.clear( true, true ) ;
+        set_mesh_vertices( vertices ) ;        
     }
 
     void Line::set_vertices( const std::vector< index_t >& model_vertex_ids )
     {
-        mesh_.clear( true, true ) ;
-        mesh_.vertices.create_vertices( model_vertex_ids.size() ) ;
-        for( index_t v = 0; v < model_vertex_ids.size(); v++ ) {
-            index_t cur = model_vertex_ids[v] ;
-            mesh_.vertices.point( v ) = model_->vertex( cur ) ;
-            model_vertex_id_[v] = cur ;
-            model_->vertices.add_unique_to_bme( cur, element_type(), id(), v ) ;
-        }
-    }
-
-    void Line::set_model_vertex_id( index_t line_id, index_t model_id ) {
-        model_vertex_id_[line_id] = model_id ;
+        mesh_.clear( true, true ) ;        
+        set_mesh_vertices( model_vertex_ids ) ; 
     }
 
     /*!
@@ -567,6 +607,10 @@ namespace RINGMesh {
         return false ;
     }
 
+
+    /***********************************************************************/
+
+
     Surface::~Surface()
     {
     }
@@ -583,51 +627,11 @@ namespace RINGMesh {
         ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
         return vertex( surf_vertex_id( f, v ) ) ;
     }
-
-    void Surface::set_vertex(
-        index_t index,
-        const vec3& point,
-        bool update )
-    {
-        ringmesh_debug_assert( index < nb_vertices() ) ;
-        if( update )
-            model_->vertices.update_point(
-                 model_->vertices.unique_vertex_id( SURFACE, id(), index ),
-                point ) ;
-        else
-            mesh_.vertices.point( index ) = point ;
-    }
-
-    index_t Surface::model_vertex_id( index_t p ) const {
-        ringmesh_debug_assert( model_vertex_id_[p] != NO_ID ) ;
-        return model_vertex_id_[p] ;
-    }
-
-    /*!
-     * @param[in] surf_vertex_id Index of the vertex in the surface
-     * @return The coordinates of the vertex
-     */
-    const vec3& Surface::vertex( index_t surf_vertex_id ) const
-    {
-        return mesh_.vertices.point( surf_vertex_id ) ;
-    }
+   
 
     index_t Surface::surf_vertex_id( index_t model_vertex_id ) const
     {
-        const std::vector< BoundaryModelVertices::VertexInBME >& reverse_db =
-            model_->vertices.bme_vertices( model_vertex_id ) ;
-        for( index_t i = 0; i < reverse_db.size(); i++ ) {
-            const BoundaryModelVertices::VertexInBME& info = reverse_db[i] ;
-            if( info.bme_type == SURFACE && info.bme_id == id() ) {
-                return info.v_id ;
-            }
-        }
-        return NO_ID ;
-    }
-
-
-    void Surface::set_model_vertex_id( index_t surf_id, index_t model_id ) {
-        model_vertex_id_[surf_id] = model_id ;
+        return local_id( model_vertex_id ) ;
     }
 
     void Surface::set_geometry(
@@ -636,10 +640,7 @@ namespace RINGMesh {
         const std::vector< index_t >& facet_ptr )
     {
         mesh_.clear( true, true ) ;
-        mesh_.vertices.create_vertices( vertices.size() ) ;
-        for( index_t v = 0; v < vertices.size() ; v++ ) {
-            mesh_.vertices.point( v ) = vertices[v] ;
-        }
+        set_mesh_vertices( vertices ) ;
         set_geometry( facets, facet_ptr ) ;
     }
 
@@ -649,13 +650,7 @@ namespace RINGMesh {
         const std::vector< index_t >& facet_ptr )
     {
         mesh_.clear( true, true ) ;
-        mesh_.vertices.create_vertices( model_vertex_ids.size() ) ;
-        for( index_t v = 0; v < model_vertex_ids.size() ; v++ ) {
-            index_t cur = model_vertex_ids[v] ;
-            mesh_.vertices.point( v ) = model_->vertex( cur ) ;
-            model_vertex_id_[v] = cur ;
-            model_->vertices.add_unique_to_bme( cur, element_type(), id(), v ) ;
-        }
+        set_mesh_vertices( model_vertex_ids ) ;
         set_geometry( facets, facet_ptr ) ;
     }
 
