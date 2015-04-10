@@ -791,6 +791,14 @@ namespace RINGMesh {
             }
         }
 
+        void cut_by_line( const Line& L ) ;
+
+        /*!
+         * @}
+         * \name Attribute managers
+         * @{
+         */
+
         virtual VertexAttributeManager& vertex_attribute_manager() const {
             return mesh_.vertices.attributes() ;
         }
@@ -799,42 +807,18 @@ namespace RINGMesh {
             return mesh_.facets.attributes() ;
         }
 
+        /*! @}
+         */ 
+
     private:
         GEO::Mesh mesh_ ;
         GEO::Attribute<index_t> model_vertex_id_ ;
 
     public:
         SurfaceTools tools ;
-
     } ;
 
-
-    /*!
-     * @brief Class to perform modifications of a Surface
-     * @todo remove this class
-     */
-    class RINGMESH_API SurfaceMutator {
-    public:
-        SurfaceMutator( Surface& S )
-              : S_( S )
-        {
-        }
-
-        SurfaceMutator( const Surface& S )
-              : S_( const_cast< Surface& >( S ) )
-        {
-        }
-
-        void clear()
-        {
-            S_.mesh_.clear( true, true ) ;
-        }
-
-        void cut_by_line( const Line& L ) ;
-
-    private:
-        Surface& S_ ;
-    } ;
+        
 
     /*!
      * @brief Class to answer geometrical requests on BoundaryModelElement
