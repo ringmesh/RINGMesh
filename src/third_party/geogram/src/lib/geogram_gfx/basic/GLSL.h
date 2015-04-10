@@ -45,6 +45,11 @@
 
 #include <geogram_gfx/basic/common.h>
 
+/**
+ * \file geogram_gfx/basic/GLSL.h
+ * \brief Utilities for manipulating GLSL shaders.
+ */
+
 namespace GEO {
 
     namespace GLSL {

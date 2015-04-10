@@ -87,9 +87,6 @@ namespace {
         }
 
         if(nb_new_vertices == M.vertices.nb()) {
-            Logger::out("Validate")
-                << "Mesh does not have any duplicated vertex (good)"
-                << std::endl;
             return;
         }
 
@@ -350,10 +347,12 @@ namespace {
                 remove_f[f] = 1;
             }
         }
-        Logger::out("Validate")
-            << "Detected " << nb_duplicates << " duplicate and "
-            << nb_degenerate << " degenerate facets"
-            << std::endl;
+        if(nb_duplicates != 0 || nb_degenerate != 0) {
+            Logger::out("Validate")
+                << "Detected " << nb_duplicates << " duplicate and "
+                << nb_degenerate << " degenerate facets"
+                << std::endl;
+        }
     }
 
     /**
@@ -366,9 +365,6 @@ namespace {
         vector<index_t> remove_f;
         detect_bad_facets(M, check_duplicates, remove_f);
         if(remove_f.size() == 0) {
-            Logger::out("Validate")
-                << "No degenerate nor duplicate facet (good)"
-                << std::endl;
             return;
         }
         M.facets.delete_elements(remove_f);
@@ -954,10 +950,7 @@ namespace {
                 }
             }
         }
-        if(new_vertices.size() == 0) {
-            Logger::out("Validate")
-                << "No non-manifold vertex (good)" << std::endl;
-        } else {
+        if(new_vertices.size() != 0) {
             Logger::out("Validate")
                 << "Detected non-manifold vertices" << std::endl;
             Logger::out("Validate") << "   (fixed by generating "
@@ -984,6 +977,9 @@ namespace GEO {
     void mesh_repair(
         Mesh& M, MeshRepairMode mode, double colocate_epsilon
     ) {
+        index_t nb_vertices_in = M.vertices.nb();
+        index_t nb_facets_in = M.facets.nb();
+        
         if(mode & MESH_REPAIR_COLOCATE) {
             repair_colocate_vertices(M, colocate_epsilon);
         }
@@ -1029,7 +1025,10 @@ namespace GEO {
 
         }
 
-        M.show_stats("Validate");
+        if(M.vertices.nb() != nb_vertices_in ||
+           M.facets.nb() != nb_facets_in) {
+            M.show_stats("Validate");
+        }
     }
 
     void mesh_postprocess_RDT(

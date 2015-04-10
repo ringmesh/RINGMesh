@@ -47,24 +47,29 @@
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/basic/algorithm.h>
 
+#include <stack>
+
 namespace RINGMesh {
 
-    void MacroMeshVertices::initialize( const MacroMesh& mm )
+    /*!
+     * Initializes the database of the MacroMesh vertices
+     */
+    void MacroMeshVertices::initialize()
     {
-        vertex2mesh_.resize( mm.nb_meshes(), 0 ) ;
+        vertex2mesh_.resize( mm_.nb_meshes(), 0 ) ;
 
         index_t nb_non_unique_vertices = 0 ;
-        for( index_t i = 0; i < mm.nb_meshes(); i++ ) {
+        for( index_t i = 0; i < mm_.nb_meshes(); i++ ) {
             vertex2mesh_[i] = nb_non_unique_vertices ;
-            nb_non_unique_vertices += mm.mesh( i ).vertices.nb() ;
+            nb_non_unique_vertices += mm_.mesh( i ).vertices.nb() ;
 
         }
         std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
         index_t index = 0 ;
-        for( index_t i = 0; i < mm.nb_meshes(); i++ ) {
-            index_t nb_vertices = mm.mesh( i ).vertices.nb() ;
+        for( index_t i = 0; i < mm_.nb_meshes(); i++ ) {
+            index_t nb_vertices = mm_.mesh( i ).vertices.nb() ;
             for( index_t j = 0; j < nb_vertices; j++ ) {
-                all_vertices[index] = GEO::Geom::mesh_vertex( mm.mesh( i ), j ) ;
+                all_vertices[index] = GEO::Geom::mesh_vertex( mm_.mesh( i ), j ) ;
                 index++ ;
             }
         }
@@ -72,55 +77,346 @@ namespace RINGMesh {
         mu.unique() ;
         mu.unique_points( unique_vertices_ ) ;
         global_vertex_indices_ = mu.indices() ;
-
-        initialized_ = true ;
     }
 
-    index_t MacroMeshVertices::nb_vertices( const MacroMesh& mm ) const
+    /*!
+     * Initializes the database of the duplicated MacroMesh vertices
+     */
+    void MacroMeshVertices::initialize_duplication()
     {
-        if( !initialized_ ) {
-            const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
+        if( unique_vertices_.empty() ) {
+            const_cast< MacroMeshVertices* >( this )->initialize() ;
+        }
+        /// 0 - Fills cell corner information
+        mesh_cell_corner_ptr_.resize( mm_.nb_meshes() + 1, 0 ) ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+            for( index_t c = 0; c < mesh.cells.nb(); c++ )
+                mesh_cell_corner_ptr_[m + 1] += mesh.cells.nb_vertices( c ) ;
+            mesh_cell_corner_ptr_[m + 1] += mesh_cell_corner_ptr_[m] ;
+        }
+        cell_corners_.resize( mesh_cell_corner_ptr_.back() ) ;
+
+        std::vector< index_t > cur_cell_index_type( NB_CELL_TYPES * mm_.nb_meshes(),
+            0 ) ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            GEO::Mesh& mesh = const_cast< GEO::Mesh& >( mm_.mesh( m ) ) ;
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    cell_corners_[mesh_cell_corner_ptr_[m]
+                        + mesh.cells.corners_begin( c ) + v] = mesh.cells.vertex( c,
+                        v ) ;
+                }
+            }
+        }
+
+        /// 1 - Gets all the corner vertices (redondant information)
+        std::vector< vec3 > corner_vertices( cell_corners_.size() ) ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+            index_t mesh_start = mesh_cell_corner_ptr_[m] ;
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    corner_vertices[mesh_start + mesh.cells.corners_begin( c ) + v] =
+                        GEO::Geom::mesh_vertex( mesh, mesh.cells.vertex( c, v ) ) ;
+                }
+            }
+        }
+
+        /// 2 - Tags all corners to duplicate
+        const BoundaryModel& model = mm_.model() ;
+        std::vector< SurfaceAction > surface_actions( model.nb_surfaces(), SKIP ) ;
+        std::vector< bool > corner_to_duplicate( corner_vertices.size(), false ) ;
+        {
+            ColocaterANN ann( corner_vertices ) ;
+            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+                if( !is_surface_to_duplicate( s, mm_.duplicate_mode() ) ) continue ;
+                surface_actions[s] = TO_PROCESS ;
+                const Surface& surface = model.surface( s ) ;
+                for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+                    std::vector< index_t > colocated_corners ;
+                    ann.get_colocated( surface.vertex( v ), colocated_corners ) ;
+                    for( index_t co = 0; co < colocated_corners.size(); co++ ) {
+                        corner_to_duplicate[colocated_corners[co]] = true ;
+                    }
+                }
+            }
+        }
+        corner_vertices.clear() ;
+
+        /// 3 - Duplicates the corners
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+            GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
+                surface_att_name ) ;
+            ColocaterANN ann( mesh, ColocaterANN::FACETS ) ;
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    index_t co = mesh_cell_corner_ptr_[m] + mesh.cells.corners_begin( c )
+                        + v ;
+                    if( !corner_to_duplicate[co] ) continue ;
+
+                    index_t vertex_id = mesh.cells.vertex( c, v ) ;
+                    std::vector< index_t > corner_used ;
+                    std::vector< index_t > cell_added ;
+                    std::set< surface_side > surfaces ;
+                    std::stack< index_t > S ;
+                    S.push( c ) ;
+                    cell_added.push_back( c ) ;
+                    do {
+                        index_t cur_c = S.top() ;
+                        S.pop() ;
+                        for( index_t cur_v = 0;
+                            cur_v < mesh.cells.nb_vertices( cur_c ); cur_v++ ) {
+                            if( mesh.cells.vertex( cur_c, cur_v ) == vertex_id ) {
+                                index_t cur_co = mesh_cell_corner_ptr_[m]
+                                    + mesh.cells.corners_begin( cur_c ) + cur_v ;
+                                corner_to_duplicate[cur_co] = false ;
+                                corner_used.push_back( cur_co ) ;
+                                break ;
+                            }
+                        }
+                        for( index_t cur_f = 0;
+                            cur_f < mesh.cells.nb_facets( cur_c ); cur_f++ ) {
+                            for( index_t cur_v = 0;
+                                cur_v < mesh.cells.facet_nb_vertices( cur_c, cur_f );
+                                cur_v++ ) {
+                                if( mesh.cells.facet_vertex( cur_c, cur_f, cur_v )
+                                    == vertex_id ) {
+                                    std::vector< index_t > result ;
+                                    if( ann.get_colocated(
+                                        Utils::mesh_cell_facet_center( mesh, cur_c,
+                                            cur_f ), result ) ) {
+                                        index_t surface_id = attribute[result[0]] ;
+                                        vec3 facet_normal =
+                                            GEO::Geom::mesh_facet_normal( mesh,
+                                                result[0] ) ;
+                                        vec3 cell_facet_normal =
+                                            Utils::mesh_cell_facet_normal( mesh,
+                                                cur_c, cur_f ) ;
+                                        SurfaceAction side = SurfaceAction(
+                                            dot( facet_normal, cell_facet_normal )
+                                                > 0 ) ;
+                                        surfaces.insert(
+                                            surface_side( surface_id, side ) ) ;
+                                    } else {
+                                        index_t cur_adj = mesh.cells.adjacent( cur_c,
+                                            cur_f ) ;
+                                        if( cur_adj != GEO::NO_CELL
+                                            && !Utils::contains( cell_added,
+                                                cur_adj ) ) {
+                                            cell_added.push_back( cur_adj ) ;
+                                            S.push( cur_adj ) ;
+                                        }
+                                    }
+                                    break ;
+                                }
+                            }
+                        }
+                    } while( !S.empty() ) ;
+
+                    if( duplicate_corner( surfaces, surface_actions ) ) {
+                        index_t duplicated_vertex_id = mm_.vertices.nb_vertices()
+                            + duplicated_vertex_indices_.size() ;
+                        index_t global_vertex_id = mm_.vertices.vertex_id( m,
+                            vertex_id ) ;
+                        duplicated_vertex_indices_.push_back( global_vertex_id ) ;
+                        for( index_t cur_co = 0; cur_co < corner_used.size();
+                            cur_co++ ) {
+                            cell_corners_[corner_used[cur_co]] = duplicated_vertex_id ;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*!
+     * Tests is the cell corner id should be duplicated
+     * @param[in] surfaces the set of surfaces and sides around the corner
+     * @param[in,out] info information on the behavior to adapt according the current surface
+     * @return Returns true if the corner needs to be duplicated, false otherwise
+     */
+    bool MacroMeshVertices::duplicate_corner(
+        const std::set< surface_side >& surfaces,
+        std::vector< SurfaceAction >& info )
+    {
+        std::vector< SurfaceAction > temp_info( info.size(), TO_PROCESS ) ;
+        for( std::set< surface_side >::const_iterator it( surfaces.begin() );
+            it != surfaces.end(); it++ ) {
+            index_t surface_id = it->first ;
+            if( info[surface_id] == SKIP || temp_info[surface_id] == SKIP )
+                continue ;
+            if( temp_info[surface_id] == TO_PROCESS ) {
+                temp_info[surface_id] = it->second ;
+            } else {
+                if( temp_info[surface_id] != it->second ) {
+                    // Free border
+                    temp_info[surface_id] = SKIP ;
+                }
+            }
+        }
+
+        double result = false ;
+        for( index_t s = 0; s < info.size(); s++ ) {
+            if( temp_info[s] < 0 ) continue ;
+            ringmesh_debug_assert( info[s] != SKIP ) ;
+            if( info[s] == TO_PROCESS ) {
+                info[s] = SurfaceAction( !temp_info[s] ) ;
+            } else {
+                if( info[s] == temp_info[s] ) {
+                    result = true ;
+                }
+            }
+        }
+
+        return result ;
+    }
+
+    /*!
+     * Tests is the surface should be duplicate according the DuplicateMode
+     * @param[in] surface_id id of the surface to test
+     * @param[in] mode current DuplicateMode
+     * @return Returns true if the surface should be duplicated
+     */
+    bool MacroMeshVertices::is_surface_to_duplicate(
+        index_t surface_id,
+        const DuplicateMode& mode ) const
+    {
+        BoundaryModelElement::GEOL_FEATURE feature =
+            mm_.model().surface( surface_id ).geological_feature() ;
+        if( mode == ALL && feature != BoundaryModelElement::VOI ) return true ;
+        if( mode == FAULT && feature == BoundaryModelElement::FAULT )
+            return true ;
+
+        return false ;
+    }
+
+    /*!
+     * Gets the number of vertices with different coordinates,
+     * if several vertices are collocated they are only count once
+     * (do no care about duplication or interface between GEO::Mesh)
+     * @return the corresponding number
+     */
+    index_t MacroMeshVertices::nb_vertices() const
+    {
+        if( unique_vertices_.empty() ) {
+            const_cast< MacroMeshVertices* >( this )->initialize() ;
         }
         return unique_vertices_.size() ;
     }
 
-    index_t MacroMeshVertices::nb_vertex_indices( const MacroMesh& mm ) const
-    {
-        if( !initialized_ ) {
-            const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
-        }
-        return global_vertex_indices_.size() ;
-    }
-
-    index_t MacroMeshVertices::global_vertex_id(
-        const MacroMesh& mm,
+    /*!
+     * Gets the vertex id in the MacroMesh corresponding to a GEO::Mesh vertex id
+     * @param[in] mesh id of the mesh/region
+     * @param[in] v vertex id of the GEO::Mesh vertex
+     * @return the id of \p v in the MacroMesh
+     */
+    index_t MacroMeshVertices::vertex_id(
         index_t mesh,
         index_t v ) const
     {
-        if( !initialized_ ) {
-            const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
+        if( unique_vertices_.empty() ) {
+            const_cast< MacroMeshVertices* >( this )->initialize() ;
         }
-        ringmesh_debug_assert( v < mm.mesh( mesh ).vertices.nb() ) ;
+        ringmesh_debug_assert( v < mm_.mesh( mesh ).vertices.nb() ) ;
         return global_vertex_indices_[vertex2mesh_[mesh] + v] ;
     }
 
-    const vec3& MacroMeshVertices::global_vertex(
-        const MacroMesh& mm,
+    /*!
+     * Gets the MacroMesh vertex coordinates
+     * @param[in] global_v vertex id in the MacroMesh
+     * @return the vertex coordinates
+     */
+    const vec3& MacroMeshVertices::vertex(
         index_t global_v ) const
     {
-        if( !initialized_ ) {
-            const_cast< MacroMeshVertices* >( this )->initialize( mm ) ;
+        if( unique_vertices_.empty() ) {
+            const_cast< MacroMeshVertices* >( this )->initialize() ;
         }
         return unique_vertices_[global_v] ;
     }
 
-    void MacroMeshFacets::initialize( const MacroMesh& mm )
-    {
-        surface2mesh_.resize( mm.model().nb_surfaces(), Surface::NO_ID ) ;
-        surface_ptr_.resize( mm.model().nb_surfaces() + 1, 0 ) ;
+    /*!
+     * Gets the MacroMesh vertex coordinates
+     * @param[in] global_v vertex id in the MacroMesh
+     * @param[in] v vertex id of the GEO::Mesh vertex
+     * @return the vertex coordinates
+     */
+    const vec3& MacroMeshVertices::vertex( index_t mesh, index_t v ) const {
+        return vertex( vertex_id( mesh, v ) ) ;
+    }
 
-        for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
-            const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
+    const vec3& MacroMeshVertices::duplicated_vertex( index_t v ) const
+    {
+        if( cell_corners_.empty() ) {
+            const_cast< MacroMeshVertices* >( this )->initialize_duplication() ;
+        }
+        return unique_vertices_[duplicated_vertex_indices_[v]] ;
+    }
+
+    /*!
+     * Given a cell_corner id in a given mesh, return the vertex id in the MacroMesh
+     * and the corresponding duplicated vertex id if the vertex is duplicated
+     * @param[in] mesh id of the mesh
+     * @param[in] cell_corner id of the cell corner
+     * @param[out] vertex_id vertex id in the MacroMesh of the corresponding point
+     * @param[out] duplicated_vertex_id duplicated vertex id if the vertex is duplicated
+     * @return returns false if the vertex is duplicated (\p duplicated_vertex_id is filled),
+     * true otherwise
+     */
+    bool MacroMeshVertices::vertex_id(
+        index_t mesh,
+        index_t cell_corner,
+        index_t& vertex_id,
+        index_t& duplicated_vertex_id ) const
+    {
+        if( cell_corners_.empty() ) {
+            const_cast< MacroMeshVertices* >( this )->initialize_duplication() ;
+        }
+        index_t corner_value = cell_corners_[mesh_cell_corner_ptr_[mesh] + cell_corner] ;
+        if( corner_value < mm_.vertices.nb_vertices() ) {
+            vertex_id = mm_.vertices.vertex_id( mesh, corner_value ) ;
+            return true ;
+        } else {
+            duplicated_vertex_id = corner_value - mm_.vertices.nb_vertices() ;
+            vertex_id = duplicated_vertex_indices_[duplicated_vertex_id] ;
+            return false ;
+        }
+    }
+
+    /*!
+     * Gets the number of duplicated points by the DuplicateMode algorithm
+     * @return the corresponding number of duplications
+     */
+    index_t MacroMeshVertices::nb_duplicated_vertices() const
+    {
+        if( cell_corners_.empty() ) {
+            const_cast< MacroMeshVertices* >( this )->initialize_duplication() ;
+        }
+        return duplicated_vertex_indices_.size() ;
+    }
+
+    /*!
+     * Gets the total number of vertices (nb_vertices() + nb_duplicated_vertices())
+     * @return the corresponding number of vertices
+     */
+    index_t MacroMeshVertices::nb_total_vertices() const
+    {
+        return nb_duplicated_vertices() + mm_.vertices.nb_vertices() ;
+    }
+
+    /*!
+     * Initialize the facet database of the MacroMesh
+     */
+    void MacroMeshFacets::initialize()
+    {
+        index_t facet_access[5] = { -1, -1, -1, 0, 1 } ;
+        surface2mesh_.resize( mm_.model().nb_surfaces(), Surface::NO_ID ) ;
+        surface_facet_ptr_.resize( NB_FACET_TYPES * mm_.model().nb_surfaces() + 1, 0 ) ;
+
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
             std::vector< index_t > surface_proccessed ;
             GEO::Attribute< index_t > attribute( cur_mesh.facets.attributes(),
                 surface_att_name ) ;
@@ -130,99 +426,226 @@ namespace RINGMesh {
                 if( !Utils::contains( surface_proccessed, surface_id ) ) {
                     surface_proccessed.push_back( surface_id ) ;
                 }
-                surface_ptr_[surface_id + 1]++ ;
+                surface_facet_ptr_[NB_FACET_TYPES * surface_id
+                    + facet_access[cur_mesh.facets.nb_vertices( f )] + 1]++ ;
             }
             for( index_t s = 0; s < surface_proccessed.size(); s++ ) {
                 surface2mesh_[surface_proccessed[s]] = m ;
             }
         }
 
-        for( index_t s = 0; s < mm.model().nb_surfaces(); s++ ) {
-            surface_ptr_[s + 1] += surface_ptr_[s] ;
+        for( index_t s = 1; s < surface_facet_ptr_.size()-1; s++ ) {
+            surface_facet_ptr_[s+1] += surface_facet_ptr_[s] ;
         }
+        surface_facets_.resize( surface_facet_ptr_.back() ) ;
 
-        surface_facets_.resize( surface_ptr_.back() ) ;
-
-        std::vector< index_t > surface_facet_index( mm.model().nb_surfaces(), 0 ) ;
-        for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
-            const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
+        std::vector< index_t > cur_facet_index_type(
+            NB_FACET_TYPES * mm_.model().nb_surfaces(), 0 ) ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
             GEO::Attribute< index_t > attribute( cur_mesh.facets.attributes(),
                 surface_att_name ) ;
             for( index_t f = 0; f < cur_mesh.facets.nb(); f++ ) {
                 index_t surface_id = attribute[f] ;
                 if( surface2mesh_[surface_id] != m ) continue ;
-                surface_facets_[surface_ptr_[surface_id]
-                    + surface_facet_index[surface_id]++ ] = f ;
+                index_t type_access = facet_access[cur_mesh.facets.nb_vertices( f )] ;
+                surface_facets_[surface_facet_ptr_[NB_FACET_TYPES * surface_id
+                    + type_access]
+                    + cur_facet_index_type[NB_FACET_TYPES * surface_id + type_access]++ ] =
+                    f ;
             }
         }
 
-        initialized_ = true ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            nb_triangle_ += nb_triangle( m ) ;
+            nb_quad_ += nb_quad( m ) ;
+        }
+        nb_facets_ = nb_triangle_ + nb_quad_ ;
     }
 
-    index_t MacroMeshFacets::surface_mesh( const MacroMesh& mm, index_t s ) const
+    /*!
+     * Gets the total number of triangles in the MacroMesh
+     * @return the corresponding number
+     */
+    index_t MacroMeshFacets::nb_facets() const
     {
-        if( !initialized_ ) {
-            const_cast< MacroMeshFacets* >( this )->initialize( mm ) ;
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
+        }
+        return nb_facets_ ;
+    }
+
+    /*!
+     * Gets the total number of triangles in the MacroMesh
+     * @return the corresponding number
+     */
+    index_t MacroMeshFacets::nb_triangle() const
+    {
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
+        }
+        return nb_triangle_ ;
+    }
+
+    /*!
+     * Gets the number of triangles in the given surface
+     * @param[in] s id of the surface
+     * @return the corresponding number
+     */
+    index_t MacroMeshFacets::nb_triangle( index_t s ) const
+    {
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
+        }
+        return surface_facet_ptr_[NB_FACET_TYPES * s + 1]
+            - surface_facet_ptr_[NB_FACET_TYPES * s] ;
+    }
+
+    /*!
+     * Gets the triangle id in the MacroMesh
+     * @param[in] s id of the surface
+     * @param[in] t id of the triangle
+     * @return the corresponding facet id
+     */
+    index_t MacroMeshFacets::triangle_id( index_t s, index_t t ) const
+    {
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
+        }
+        return facet( surface_facet_ptr_[NB_FACET_TYPES * s] + t ) ;
+    }
+
+    /*!
+     * Gets the total number of quad in the MacroMesh
+     * @return the corresponding number
+     */
+    index_t MacroMeshFacets::nb_quad() const
+    {
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
+        }
+        return nb_quad_ ;
+    }
+
+    /*!
+     * Gets the number of quad in the given surface
+     * @param[in] s id of the surface
+     * @return the corresponding number
+     */
+    index_t MacroMeshFacets::nb_quad( index_t s ) const
+    {
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
+        }
+        return surface_facet_ptr_[NB_FACET_TYPES * s + 2]
+            - surface_facet_ptr_[NB_FACET_TYPES * s + 1] ;
+    }
+
+    /*!
+     * Gets the quad id in the MacroMesh
+     * @param[in] s id of the surface
+     * @param[in] t id of the quad
+     * @return the corresponding facet id
+     */
+    index_t MacroMeshFacets::quad_id( index_t s, index_t q ) const
+    {
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
+        }
+        return facet( surface_facet_ptr_[NB_FACET_TYPES * s + 1] + q ) ;
+    }
+
+    /*!
+     * Gets the mesh associated to the surface id
+     * @param[in] s id of the surface
+     * @return id of the mesh that stores the surface \p s
+     */
+    index_t MacroMeshFacets::mesh( index_t s ) const
+    {
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
         }
         return surface2mesh_[s] ;
     }
 
-    index_t MacroMeshFacets::surface_facet(
-        const MacroMesh& mm,
+    /*!
+     * Gets the GEO::Mesh facet id
+     * @param[in] s id of the surface
+     * @param[in] f facet id in the surface
+     * @return the facet id of the corresponding facet in the GEO::Mesh
+     */
+    index_t MacroMeshFacets::facet(
         index_t s,
         index_t f ) const
     {
-        if( !initialized_ ) {
-            const_cast< MacroMeshFacets* >( this )->initialize( mm ) ;
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
         }
-        return surface_facet( surface_begin( s ) + f ) ;
+        return facet( surface_begin( s ) + f ) ;
     }
 
-    index_t MacroMeshFacets::nb_surface_facets(
-        const MacroMesh& mm,
+    /*!
+     * Gets the number of facets in a surface
+     * @param[in] s id of the surface
+     * @return the corresponding number
+     */
+    index_t MacroMeshFacets::nb_facets(
         index_t s ) const
     {
-        if( !initialized_ ) {
-            const_cast< MacroMeshFacets* >( this )->initialize( mm ) ;
+        if( surface_facets_.empty() ) {
+            const_cast< MacroMeshFacets* >( this )->initialize() ;
         }
         return surface_end( s ) - surface_begin( s ) ;
     }
 
-    void MacroMeshCells::initialize( const MacroMesh* mm )
+    /*!
+     * Initialize the cell database of the MacroMesh
+     */
+    void MacroMeshCells::initialize()
     {
-        mm_ = mm ;
-        cell2mesh_.reserve( mm_->nb_meshes() + 1 ) ;
-        cell2mesh_.push_back( 0 ) ;
+        mesh_cell_ptr_.resize( NB_CELL_TYPES * mm_.nb_meshes() + 1, 0 ) ;
         index_t total_adjacents = 0 ;
-        for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
-            const GEO::Mesh& mesh = mm_->mesh( m ) ;
+        index_t cell_access[4] = { 0, 3, 2, 1 } ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
             nb_cells_ += mesh.cells.nb() ;
-            cell2mesh_.push_back( nb_cells_ ) ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                mesh_cell_ptr_[NB_CELL_TYPES * m
+                    + cell_access[mesh.cells.type( c )] + 1]++ ;
                 total_adjacents += mesh.cells.nb_facets( c ) ;
             }
         }
+        for( index_t m = 1; m < mesh_cell_ptr_.size()-1; m++ ) {
+            mesh_cell_ptr_[m + 1] += mesh_cell_ptr_[m] ;
+        }
+        cells_.resize( mesh_cell_ptr_.back() ) ;
 
-        index_t nb_vertices = mm_->nb_vertices() ;
+        index_t nb_vertices = mm_.vertices.nb_vertices() ;
         std::vector< std::vector< index_t > > cells_around_vertex( nb_vertices ) ;
-        global_cell_adjacents_.reserve( total_adjacents ) ;
-        for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
-            const GEO::Mesh& mesh = mm_->mesh( m ) ;
+        cell_adjacents_.reserve( total_adjacents ) ;
+        std::vector< index_t > cur_cell_index_type(
+            NB_CELL_TYPES * mm_.nb_meshes(), 0 ) ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                index_t type_access = cell_access[mesh.cells.type( c )] ;
+                cells_[mesh_cell_ptr_[NB_CELL_TYPES * m + type_access]
+                    + cur_cell_index_type[NB_CELL_TYPES * m + type_access]++ ] = c ;
+
                 for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                     index_t adj = mesh.cells.adjacent( c, f ) ;
                     if( adj != GEO::NO_CELL ) {
-                        adj += cell2mesh_[m] ;
+                        adj += mesh_cell_ptr_[NB_CELL_TYPES * m] ;
                     } else {
                         for( index_t v = 0; v < mesh.cells.facet_nb_vertices( c, f );
                             v++ ) {
-                            index_t vertex_id = mm_->global_vertex_id( m,
+                            index_t vertex_id = mm_.vertices.vertex_id( m,
                                 mesh.cells.facet_vertex( c, f, v ) ) ;
                             cells_around_vertex[vertex_id].push_back(
-                                cell2mesh_[m] + c ) ;
+                                mesh_cell_ptr_[NB_CELL_TYPES * m] + c ) ;
                         }
                     }
-                    global_cell_adjacents_.push_back( adj ) ;
+                    cell_adjacents_.push_back( adj ) ;
                 }
             }
         }
@@ -231,13 +654,13 @@ namespace RINGMesh {
             GEO::sort_unique( cells_around_vertex[v] ) ;
         }
 
-        for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
-            const GEO::Mesh& mesh = mm_->mesh( m ) ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                 for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                     index_t adj = mesh.cells.adjacent( c, f ) ;
                     if( adj == GEO::NO_CELL ) {
-                        index_t prev_vertex_id = mm_->global_vertex_id( m,
+                        index_t prev_vertex_id = mm_.vertices.vertex_id( m,
                             mesh.cells.facet_vertex( c, f, 0 ) ) ;
                         std::vector< index_t >& prev_cells =
                             cells_around_vertex[prev_vertex_id] ;
@@ -245,7 +668,7 @@ namespace RINGMesh {
                         std::vector< index_t > intersection( size_hint ) ;
                         for( index_t v = 1; v < mesh.cells.facet_nb_vertices( c, f );
                             v++ ) {
-                            index_t vertex_id = mm_->global_vertex_id( m,
+                            index_t vertex_id = mm_.vertices.vertex_id( m,
                                 mesh.cells.facet_vertex( c, f, v ) ) ;
                             std::vector< index_t >& cells =
                                 cells_around_vertex[vertex_id] ;
@@ -259,70 +682,282 @@ namespace RINGMesh {
 
                         if( intersection.size() > 1 ) {
                             ringmesh_debug_assert( intersection.size() == 2 ) ;
-                            signed_index_t new_adj =
-                                intersection[0] == cell2mesh_[m] + c ?
+                            index_t new_adj =
+                                intersection[0] == mesh_cell_ptr_[NB_CELL_TYPES * m] + c ?
                                     intersection[1] : intersection[0] ;
-                            global_cell_adjacents_[cell2mesh_[m]
+                            cell_adjacents_[mesh_cell_ptr_[NB_CELL_TYPES * m]
                                 + mesh.cells.facets_begin( c ) + f] = new_adj ;
                         }
                     }
                 }
             }
         }
-
-        initialized_ = true ;
     }
 
-    signed_index_t MacroMeshCells::global_cell_adjacent(
-        const MacroMesh* mm,
+    /*!
+     * Gets the cell adjacent id in the MacroMesh
+     * @param[in] m id of the GEO::Mesh
+     * @param[in] c id of the cell in the GEO::Mesh
+     * @param[in] f id of the facet in the cell to test
+     * @return the cell adjacent id or GEO::NO_ADJACENT
+     */
+    index_t MacroMeshCells::cell_adjacent(
         index_t m,
         index_t c,
         index_t f ) const
     {
-        if( !initialized_ ) {
-            const_cast< MacroMeshCells* >( this )->initialize( mm ) ;
-        }
-        return global_cell_adjacents_[cell2mesh_[m]
-            + mm_->mesh( m ).cells.facets_begin( c ) + f] ;
+        test_initialize() ;
+        return cell_adjacents_[mesh_begin( m )
+            + mm_.mesh( m ).cells.facets_begin( c ) + f] ;
     }
-    index_t MacroMeshCells::get_local_cell_index(
-        const MacroMesh* mm,
-        index_t global_index ) const
+
+    /*!
+     * Convert a MacroMesh cell id to a GEO::Mesh cell id
+     * @param[in] global_index id of the MacroMesh cell
+     * @param[out] mesh_id id of the GEO::Mesh containing the cell
+     * @return the cell id in the GEO::Mesh whose id is \p mesh_id
+     */
+    index_t MacroMeshCells::cell_index_in_mesh(
+        index_t global_index,
+        index_t& mesh_id ) const
     {
-        if( !initialized_ ) {
-            const_cast< MacroMeshCells* >( this )->initialize( mm ) ;
+        test_initialize() ;
+        mesh_id = 0 ;
+        for( ; mesh_id < mm_.nb_meshes(); mesh_id++ ) {
+            if( global_index < mesh_cell_ptr_[mesh_id + 1] ) break ;
         }
-        index_t m = get_mesh( mm, global_index ) ;
-        return global_index - cell2mesh_[m] ;
+        ringmesh_debug_assert( mesh_id < mm_.nb_meshes() ) ;
+        return global_index - mesh_cell_ptr_[mesh_id] ;
     }
-    index_t MacroMeshCells::get_mesh(
-        const MacroMesh* mm,
-        index_t global_index ) const
+
+    /*!
+     * Gets the total number of cells
+     * @return the corresponding number
+     */
+    index_t MacroMeshCells::nb_cells() const
     {
-        if( !initialized_ ) {
-            const_cast< MacroMeshCells* >( this )->initialize( mm ) ;
-        }
-        for( index_t m = 0; m < mm_->nb_meshes(); m++ ) {
-            if( global_index < cell2mesh_[m + 1] ) return m ;
-        }
-        ringmesh_assert_not_reached;
-        return dummy_index_t ;
-    }
-    index_t MacroMeshCells::nb_cells( const MacroMesh* mm ) const
-    {
-        if( !initialized_ ) {
-            const_cast< MacroMeshCells* >( this )->initialize( mm ) ;
-        }
+        test_initialize() ;
         return nb_cells_ ;
     }
+
+    /*!
+     * Gets the number of cells in a GEO::Mesh (prefers using mesh.cells.nb())
+     * @param[in] r id of the GEO::Mesh
+     * @return the corresponding number
+     */
+    index_t MacroMeshCells::nb_cells( index_t r ) const
+    {
+        test_initialize() ;
+        return mesh_end( r ) - mesh_begin( r ) ;
+    }
+
+    /*!
+     * Gets the total number of tetrahedra
+     * @return the corresponding number
+     */
+    index_t MacroMeshCells::nb_tet() const
+    {
+        test_initialize() ;
+        return nb_tet_ ;
+    }
+
+    /*!
+     * Gets the number of tetrahedra in a GEO::Mesh
+     * @param[in] r id of the GEO::Mesh
+     * @return the corresponding number
+     */
+    index_t MacroMeshCells::nb_tet( index_t r ) const
+    {
+        test_initialize() ;
+        return mesh_cell_ptr_[NB_CELL_TYPES * r + 1]
+            - mesh_cell_ptr_[NB_CELL_TYPES * r] ;
+    }
+
+    /*!
+     * Gets the tetrahedron id in the MacroMesh
+     * @param[in] r id of the GEO::Mesh
+     * @param[in] t id of the terahedron
+     * @return the corresponding id
+     */
+    index_t MacroMeshCells::tet_id( index_t r, index_t t ) const
+    {
+        test_initialize() ;
+        return cells_[mesh_cell_ptr_[NB_CELL_TYPES * r] + t] ;
+    }
+
+    /*!
+     * Gets the total number of pyramids
+     * @return the corresponding number
+     */
+    index_t MacroMeshCells::nb_pyramid() const
+    {
+        test_initialize() ;
+        return nb_pyramid_ ;
+    }
+
+    /*!
+     * Gets the number of pyramids in a GEO::Mesh
+     * @param[in] r id of the GEO::Mesh
+     * @return the corresponding number
+     */
+    index_t MacroMeshCells::nb_pyramid( index_t r ) const
+    {
+        test_initialize() ;
+        return mesh_cell_ptr_[NB_CELL_TYPES * r + 2]
+            - mesh_cell_ptr_[NB_CELL_TYPES * r + 1] ;
+    }
+
+    /*!
+     * Gets the pyramid id in the MacroMesh
+     * @param[in] r id of the GEO::Mesh
+     * @param[in] t id of the pyramid
+     * @return the corresponding id
+     */
+    index_t MacroMeshCells::pyramid_id( index_t r, index_t p ) const
+    {
+        test_initialize() ;
+        return cells_[mesh_cell_ptr_[NB_CELL_TYPES * r + 1] + p] ;
+    }
+
+    /*!
+     * Gets the total number of prisms
+     * @return the corresponding number
+     */
+    index_t MacroMeshCells::nb_prism() const
+    {
+        test_initialize() ;
+        return nb_prism_ ;
+    }
+
+    /*!
+     * Gets the number of prisms in a GEO::Mesh
+     * @param[in] r id of the GEO::Mesh
+     * @return the corresponding number
+     */
+    index_t MacroMeshCells::nb_prism( index_t r ) const
+    {
+        test_initialize() ;
+        return mesh_cell_ptr_[NB_CELL_TYPES * r + 3]
+            - mesh_cell_ptr_[NB_CELL_TYPES * r + 2] ;
+    }
+
+    /*!
+     * Gets the prism id in the MacroMesh
+     * @param[in] r id of the GEO::Mesh
+     * @param[in] t id of the prism
+     * @return the corresponding id
+     */
+    index_t MacroMeshCells::prism_id( index_t r, index_t p ) const
+    {
+        test_initialize() ;
+        return cells_[mesh_cell_ptr_[NB_CELL_TYPES * r + 2] + p] ;
+    }
+
+    /*!
+     * Gets the total number of hexahedra
+     * @return the corresponding number
+     */
+    index_t MacroMeshCells::nb_hex() const
+    {
+        test_initialize() ;
+        return nb_hex_ ;
+    }
+
+    /*!
+     * Gets the number of hexahedra in a GEO::Mesh
+     * @param[in] r id of the GEO::Mesh
+     * @return the corresponding number
+     */
+    index_t MacroMeshCells::nb_hex( index_t r ) const
+    {
+        test_initialize() ;
+        return mesh_cell_ptr_[NB_CELL_TYPES * r + 4]
+            - mesh_cell_ptr_[NB_CELL_TYPES * r + 3] ;
+    }
+
+    /*!
+     * Gets the hexahedron id in the MacroMesh
+     * @param[in] r id of the GEO::Mesh
+     * @param[in] t id of the hexahedron
+     * @return the corresponding id
+     */
+    index_t MacroMeshCells::hex_id( index_t r, index_t h ) const
+    {
+        test_initialize() ;
+        return cells_[mesh_cell_ptr_[NB_CELL_TYPES * r + 3] + h] ;
+    }
+
+
+    MacroMeshTools::MacroMeshTools( MacroMesh& mm )
+        : mm_( mm ),
+          facet_aabb_( mm.nb_meshes(), nil ),
+          tet_aabb_( mm.nb_meshes(), nil )
+    {
+    }
+
+    MacroMeshTools::~MacroMeshTools()
+    {
+        for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
+            if( facet_aabb_[r] ) delete facet_aabb_[r] ;
+            if( tet_aabb_[r] ) delete tet_aabb_[r] ;
+        }
+    }
+
+    /*!
+     * Gets the GEO::MeshFacetsAABB of the given region
+     * @param[in] region id of the GEO::Mesh
+     * @return the const reference to the corresponding MeshFacetsAABB
+     */
+    const GEO::MeshFacetsAABB& MacroMeshTools::facet_aabb( index_t region ) const
+    {
+        init_facet_aabb( region ) ;
+        return *facet_aabb_[region] ;
+    }
+
+    /*!
+     * Initialize if needed the MeshFacetsAABB of the given region
+     * @param[in] region id of the GEO::Mesh
+     */
+    void MacroMeshTools::init_facet_aabb( index_t region ) const
+    {
+        if( facet_aabb_[region] ) return ;
+        const_cast< MacroMeshTools* >( this )->facet_aabb_[region] =
+            new GEO::MeshFacetsAABB( mm_.mesh( region ) ) ;
+    }
+
+    /*!
+     * Gets the GEO::MeshTetsAABB of the given region
+     * @param[in] region id of the GEO::Mesh
+     * @return the const reference to the corresponding MeshTetsAABB
+     */
+    const GEO::MeshTetsAABB& MacroMeshTools::tet_aabb( index_t region ) const
+    {
+        init_tet_aabb( region ) ;
+        return *tet_aabb_[region] ;
+    }
+
+    /*!
+     * Initialize if needed the MeshTetsAABB of the given region
+     * @param[in] region id of the GEO::Mesh
+     */
+    void MacroMeshTools::init_tet_aabb( index_t region ) const
+    {
+        if( tet_aabb_[region] ) return ;
+        const_cast< MacroMeshTools* >( this )->tet_aabb_[region] =
+            new GEO::MeshTetsAABB( mm_.mesh( region ) ) ;
+    }
+
 
     MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
         :
             model_( model ),
             meshes_( model.nb_regions(), nil ),
             well_vertices_( model.nb_regions() ),
-            facet_aabb_( model.nb_regions(), nil ),
-            tet_aabb_( model.nb_regions(), nil )
+            mode_( NONE ),
+            vertices( *this ),
+            facets( *this ),
+            cells( *this ),
+            tools( *this )
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;
@@ -334,8 +969,11 @@ namespace RINGMesh {
             model_( mm.model() ),
             meshes_( mm.model().nb_regions(), nil ),
             well_vertices_( mm.model().nb_regions() ),
-            facet_aabb_( mm.model().nb_regions(), nil ),
-            tet_aabb_( mm.model().nb_regions(), nil )
+            mode_( mm.mode_ ),
+            vertices( *this ),
+            facets( *this ),
+            cells( *this ),
+            tools( *this )
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( 3 ) ;
@@ -355,9 +993,9 @@ namespace RINGMesh {
                     vertices[v] = copied_mesh.facets.vertex(f,v) ;
                 }
                 copy_mesh.facets.create_polygon(vertices) ;
-//                for(index_t v = copied_mesh.facets.corners_begin(f) ; v < copied_mesh.facets.corners_end(f) ; v++ ) {
-//                    copy_mesh.facet_corners.set_adjacent_facet(v,copied_mesh.facet_corners.adjacent_facet(v)) ;
-//                }
+                for(index_t v = copied_mesh.facets.corners_begin(f) ; v < copied_mesh.facets.corners_end(f) ; v++ ) {
+                    copy_mesh.facet_corners.set_adjacent_facet(v,copied_mesh.facet_corners.adjacent_facet(v)) ;
+                }
 
             }
 
@@ -408,68 +1046,41 @@ namespace RINGMesh {
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
             delete meshes_[r] ;
-            if( facet_aabb_[r] ) delete facet_aabb_[r] ;
-            if( tet_aabb_[r] ) delete tet_aabb_[r] ;
         }
     }
 
-    const GEO::MeshFacetsAABB& MacroMesh::facet_aabb( index_t region )
-    {
-        init_facet_aabb( region ) ;
-        return *facet_aabb_[region] ;
-    }
-    void MacroMesh::init_facet_aabb( index_t region )
-    {
-        if( facet_aabb_[region] ) return ;
-        facet_aabb_[region] = new GEO::MeshFacetsAABB( mesh( region ) ) ;
-    }
-    const GEO::MeshTetsAABB& MacroMesh::tet_aabb( index_t region )
-    {
-        init_tet_aabb( region ) ;
-        return *tet_aabb_[region] ;
-    }
-    void MacroMesh::init_tet_aabb( index_t region )
-    {
-        if( tet_aabb_[region] ) return ;
-        tet_aabb_[region] = new GEO::MeshTetsAABB( mesh( region ) ) ;
-    }
 
     /*!
      * Compute the tetrahedral mesh of the input structural model
-     * @param method Mesher used
-     * @param region_id Region to mesh, -1 for all
-     * @param add_steiner_points if true, the mesher will add some points inside the region
+     * @param[in] method Mesher used
+     * @param[in] region_id Region to mesh, -1 for all
+     * @param[in] add_steiner_points if true, the mesher will add some points inside the region
      * to improve the mesh quality
      */
     void MacroMesh::compute_tetmesh(
         const TetraMethod& method,
         int region_id,
         bool add_steiner_points,
-        MacroMesh* background,
         std::vector< std::vector< vec3 > >& internal_vertices )
     {
         if( region_id == -1 ) {
             GEO::ProgressTask progress( "Compute", nb_meshes() ) ;
             for( unsigned int i = 0; i < nb_meshes(); i++ ) {
-                GEO::Mesh* background_mesh =
-                    background ? &background->mesh( i ) : nil ;
                 const std::vector< vec3 >& vertices =
                     internal_vertices.empty() ? empty_vector : internal_vertices[i] ;
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
                     &model_.region( i ), add_steiner_points, vertices,
-                    well_vertices( i ), background_mesh ) ;
+                    well_vertices( i ) ) ;
                 tetragen->tetrahedralize() ;
                 progress.next() ;
             }
         } else {
-            GEO::Mesh* background_mesh =
-                background ? &background->mesh( region_id ) : nil ;
             const std::vector< vec3 >& vertices =
                 internal_vertices.empty() ?
                     empty_vector : internal_vertices[region_id] ;
             TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
                 &model_.region( region_id ), add_steiner_points, vertices,
-                well_vertices( region_id ), background_mesh ) ;
+                well_vertices( region_id ) ) ;
             tetragen->tetrahedralize() ;
         }
     }

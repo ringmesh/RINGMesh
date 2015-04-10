@@ -38,47 +38,20 @@
  *     FRANCE
  */
 
-#ifdef WIN32
+/*!
 
-  #pragma section(".CRT$XCU",read)
-  #define INITIALIZER( f ) \
-    static void __cdecl f( void ) ; \
-    __declspec( allocate( ".CRT$XCU" ) ) void( __cdecl * f ## _ ) (void) = f ; \
-    static void __cdecl f( void )
+\mainpage
 
-#elif defined( __GNUC__ )
+RINGMesh is a programming library for geological model meshes. It includes two efficient data structures to represent
+geological meshes: the \link ringmesh_boundary_model BoundaryModel\endlink, a data structure for a cellular representation 
+and the \link ringmesh_macro_mesh MacroMesh\endlink, a volumetric 
+representation of the BoundaryModel. 
 
-  #define INITIALIZER( f ) \
-    static void f( void ) __attribute__( ( constructor ) ) ; \
-    static void f( void )
+- [Download](https://www.gocad.org/ringmesh)
+- \link ringmesh_compiling How to compile RINGMesh \endlink
+- \link ringmesh_license License and bundled third-party software \endlink
+- \link ringmesh_features RINGMesh features \endlink
+- \link ringmesh_boundary_model Description of the BoundaryModel \endlink
+- \link ringmesh_macro_mesh Description of the MacroMesh \endlink
 
-#endif
-
-#include <ringmesh/attribute.h>
-#include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
-
-static bool inited = false ;
-INITIALIZER( initialize ) {
-    if( !inited ) {
-        inited = true ;
-        GEO::initialize() ;
-        GEO::CmdLine::import_arg_group( "sys" ) ;
-        GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
-        GEO::CmdLine::set_arg( "sys:FPE", false ) ;
-        GEO::CmdLine::import_arg_group( "algo" ) ;
-        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
-        GEO::CmdLine::import_arg_group( "log" ) ;
-        GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
-
-        // Initialization for BoundaryModel attribute serialization
-//        RINGMesh::AttributeSerializer::initialize() ;
-//        RINGMesh::ringmesh_register_attribute_type< int           > ( "int" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< unsigned int  > ( "index" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< double        > ( "double" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< float         > ( "float" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< bool          > ( "bool" ) ;
-//        atexit( RINGMesh::AttributeSerializer::terminate ) ;
-    }
-}
+*/

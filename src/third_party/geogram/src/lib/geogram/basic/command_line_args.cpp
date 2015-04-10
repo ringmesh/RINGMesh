@@ -477,7 +477,7 @@ namespace {
         );
         declare_arg(
             "tet:quality", 2.0,
-            "desired element quality (1.0 means best, 2.0 means reasonable)"
+            "desired element quality (the lower, the better, 2.0 means reasonable)"
         );
     }
 

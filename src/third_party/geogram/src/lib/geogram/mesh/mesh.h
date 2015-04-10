@@ -50,6 +50,11 @@
 #include <geogram/basic/attributes.h>
 #include <geogram/basic/geometry.h>
 
+/**
+ * \file geogram/mesh/mesh.h
+ * \brief The class that represents a mesh.
+ */
+
 namespace GEO {
 
     class Mesh;
@@ -248,6 +253,7 @@ namespace GEO {
 
     /**************************************************************************/
 
+    class MeshEdges;
     class MeshFacetCornersStore;
     class MeshCellCornersStore;
 
@@ -488,6 +494,7 @@ namespace GEO {
 
         void bind_point_attribute(index_t dim, bool single_precision=false);
 
+        MeshEdges& edges_;
         MeshFacetCornersStore& facet_corners_;
         MeshCellCornersStore& cell_corners_;
         Attribute<double> point_;
@@ -498,6 +505,94 @@ namespace GEO {
     
     /*************************************************************************/
 
+    /**
+     * \brief The edges of a mesh.
+     */
+    class GEOGRAM_API MeshEdges :
+        public MeshSubElementsStore, public MeshElements {
+    public:
+        MeshEdges(Mesh& mesh);
+        virtual ~MeshEdges();
+
+        /**
+         * \brief Gets the index of an edge vertex
+         * \param[in] e index of the edge
+         * \param[in] lv local index of the vertex, in {0,1}
+         * \return the global index of vertex \p lv in edge \p e
+         */
+        index_t vertex(index_t e, index_t lv) {
+            geo_debug_assert(e < nb());
+            geo_debug_assert(lv < 2);
+            return edge_vertex_[2*e+lv];
+        }
+
+        /**
+         * \brief Sets a vertex of an edge
+         * \param[in] e index of the edge
+         * \param[in] lv local index of the vertex, in {0,1}
+         * \param[in] v global index of the vertex
+         */
+        void set_vertex(index_t e, index_t lv, index_t v) {
+            geo_debug_assert(e < nb());
+            geo_debug_assert(lv < 2);
+            edge_vertex_[2*e+lv] = v;
+        }
+
+        /**
+         * \brief Creates a new edge
+         * \return the index of the created edge
+         */
+        index_t create_edge() {
+            return create_sub_element();
+        }
+
+        /**
+         * \brief Creates a new edge
+         * \param[in] v1,v2 global index of the vertices of the edge
+         * \return the index of the created edge
+         */
+        index_t create_edge(index_t v1, index_t v2) {
+            index_t result = create_edge();
+            set_vertex(result,0,v1);
+            set_vertex(result,1,v2);
+            return result;
+        }
+
+        virtual void delete_elements(
+            vector<index_t>& to_delete, bool remove_isolated_vertices=true
+        );
+        
+        virtual void permute_elements(vector<index_t>& permutation);
+
+        virtual void clear(
+            bool keep_attributes=false, bool keep_memory=false
+        );
+
+        virtual void pop();
+        
+    protected:
+        virtual void clear_store(
+            bool keep_attributes, bool keep_memory = false
+        );
+        
+        virtual void resize_store(index_t new_size);
+
+        index_t create_sub_element() {
+            edge_vertex_.push_back(NO_VERTEX);
+            edge_vertex_.push_back(NO_VERTEX);
+            return MeshSubElementsStore::create_sub_element();
+        }
+
+        index_t create_sub_elements(index_t nb_in) {
+            edge_vertex_.resize(2*(nb()+nb_in),NO_VERTEX);
+            return MeshSubElementsStore::create_sub_elements(nb_in);
+        }
+
+        vector<index_t> edge_vertex_;
+    };
+    
+    /**************************************************************************/
+    
     /**
      * \brief Stores the facets of a mesh (low-level store)
      */
@@ -2099,6 +2194,7 @@ namespace GEO {
     class GEOGRAM_API Mesh {
     public:
         MeshVertices          vertices;
+        MeshEdges             edges;
         MeshFacets            facets;
         MeshFacetCornersStore facet_corners;
         MeshCells             cells;
@@ -2137,6 +2233,19 @@ namespace GEO {
          * \details Used for debugging
          */
         void assert_is_valid();
+
+    protected:
+        /**
+         * \brief Displays the list of attributes to the Logger.
+         * \param[in] tag the tag to be sent to the Logger
+         * \param[in] subelement_name the name of the subelement
+         *   (vertices, facets, facet_corners ...)
+         * \param[in] subelements a const reference to the MeshSubElementsStore
+         */
+        void display_attributes(
+            const std::string& tag, const std::string& subelement_name,
+            const MeshSubElementsStore& subelements 
+        ) const;
     };
 
     /*************************************************************************/

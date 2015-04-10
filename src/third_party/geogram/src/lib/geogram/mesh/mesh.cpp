@@ -47,6 +47,7 @@
 #include <geogram/basic/permutation.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/algorithm.h>
+#include <geogram/basic/string.h>
 
 namespace GEO {
 
@@ -82,6 +83,7 @@ namespace GEO {
     
     MeshVertices::MeshVertices(Mesh& mesh) :
         MeshSubElementsStore(mesh),
+        edges_(mesh.edges),
         facet_corners_(mesh.facet_corners),
         cell_corners_(mesh.cell_corners) {
     }
@@ -189,7 +191,13 @@ namespace GEO {
             // cur now contains the new size.
             resize_store(cur);
 
-            // TODO: map graph elements (when graph is there)
+            for(index_t e=0; e<edges_.nb(); ++e) {
+                for(index_t lv=0; lv<2; ++lv) {
+                    index_t v = edges_.vertex(e,lv);
+                    v = old2new[v];
+                    edges_.set_vertex(e,lv,v);
+                }
+            }
             
             for(index_t c=0; c<facet_corners_.nb(); ++c) {
                 index_t v = facet_corners_.vertex(c);
@@ -213,7 +221,13 @@ namespace GEO {
         attributes_.apply_permutation(permutation);
         Permutation::invert(permutation);
 
-        // TODO: map graph elements (when graph is there)
+        for(index_t e=0; e<edges_.nb(); ++e) {
+            for(index_t lv=0; lv<2; ++lv) {
+                index_t v = edges_.vertex(e,lv);
+                v = permutation[v];
+                edges_.set_vertex(e,lv,v);
+            }
+        }
         
         for(index_t c=0; c<facet_corners_.nb(); ++c) {
             index_t v = facet_corners_.vertex(c);
@@ -235,8 +249,12 @@ namespace GEO {
     void MeshVertices::remove_isolated() {
         vector<index_t> to_delete(nb(),1);
 
-        // TODO: Add here code to take into
-        // account the graph (when it will be there)
+        for(index_t e=0; e<mesh_.edges.nb(); ++e) {
+            for(index_t lv=0; lv<2; ++lv) {
+                index_t v = mesh_.edges.vertex(e,lv);
+                to_delete[v] = 0;
+            }
+        }
         
         for(index_t f=0; f<mesh_.facets.nb(); ++f) {
             for(index_t co=mesh_.facets.corners_begin(f);
@@ -305,6 +323,90 @@ namespace GEO {
     
     /**************************************************************************/
 
+    MeshEdges::MeshEdges(Mesh& mesh) : MeshSubElementsStore(mesh) {
+    }
+    
+    MeshEdges::~MeshEdges() {
+    }
+    
+    void MeshEdges::delete_elements(
+        vector<index_t>& to_delete, bool remove_isolated_vertices
+    ) {
+        geo_debug_assert(to_delete.size() == nb());
+
+        // "Fast track" if no element should be deleted
+        if(!has_non_zero(to_delete)) {
+            if(remove_isolated_vertices) {
+                mesh_.vertices.remove_isolated();
+            }
+            return;
+        }
+
+        // to_delete is used for both indicating
+        // which facets should be deleted and
+        // for storing the re-numbering map
+        vector<index_t>& edges_old2new = to_delete;
+        index_t new_nb_edges = 0;
+
+        for(index_t e = 0; e < nb(); ++e) {
+            if(edges_old2new[e] != 0) {
+                edges_old2new[e] = NO_FACET;
+            } else {
+                edges_old2new[e] = new_nb_edges;
+                if(new_nb_edges != e) {
+                    edge_vertex_[2*new_nb_edges]   = edge_vertex_[2*e];
+                    edge_vertex_[2*new_nb_edges+1] = edge_vertex_[2*e+1];                    
+                }
+                ++new_nb_edges;
+            }
+        }
+
+        // Manage facets store and attributes
+        attributes().compress(edges_old2new);
+        resize_store(new_nb_edges);
+
+        if(remove_isolated_vertices) {
+            mesh_.vertices.remove_isolated();
+        }
+    }
+    
+    void MeshEdges::permute_elements(vector<index_t>& permutation) {
+        attributes_.apply_permutation(permutation);
+        Permutation::apply(
+            edge_vertex_.data(),
+            permutation,
+            index_t(sizeof(index_t) * 2)
+        );
+    }
+    
+    void MeshEdges::clear(bool keep_attributes, bool keep_memory) {
+        clear_store(keep_attributes, keep_memory);
+    }
+
+    void MeshEdges::pop() {
+        geo_debug_assert(nb() != 0);
+        resize_store(nb()-1);
+    }
+
+    void MeshEdges::clear_store(
+        bool keep_attributes, bool keep_memory
+    ) {
+        if(keep_memory) {
+            edge_vertex_.resize(0);
+        } else {
+            edge_vertex_.clear();
+        }
+        MeshSubElementsStore::clear_store(keep_attributes, keep_memory);
+    }
+        
+    void MeshEdges::resize_store(index_t new_size) {
+        edge_vertex_.resize(new_size*2,NO_VERTEX);
+        MeshSubElementsStore::resize_store(new_size);
+    }
+
+
+    /**************************************************************************/
+    
     MeshFacetsStore::MeshFacetsStore(Mesh& mesh) :
         MeshSubElementsStore(mesh),
         is_simplicial_(true) {
@@ -980,10 +1082,12 @@ namespace GEO {
                 cell_facets_permutation
             );
         }
+
+        vector<index_t>& corner_vertex = cell_corners_.corner_vertex_;
+        vector<index_t>& facet_adjacent_cell = cell_facets_.adjacent_cell_;
         
         if(is_simplicial_) {
-            vector<index_t> corner_vertex = cell_corners_.corner_vertex_;
-            vector<index_t> facet_adjacent_cell = cell_facets_.adjacent_cell_;
+            // in-place permutation !
             
             Permutation::apply(
                 corner_vertex.data(),
@@ -1006,8 +1110,42 @@ namespace GEO {
                 }
             }
         } else {
-            // TODO: Implement permutation for arbitrary cells
-            geo_assert_not_reached;
+            // we need to do some copies
+            
+            vector<index_t> new_cell_ptr(nb()+1);
+            vector<index_t> new_corner_vertex(cell_corners_.nb());
+            vector<index_t> new_facet_adjacent_cell(cell_facets_.nb());
+
+            index_t new_ptr = 0;
+            for(index_t new_c=0; new_c<nb(); ++new_c) {
+                index_t c = permutation[new_c];
+                index_t ptr = cell_ptr_[c];
+                index_t cell_size = geo_max(nb_vertices(c), nb_facets(c));
+                new_cell_ptr[new_c] = new_ptr;
+                for(index_t i=0; i<cell_size; ++i) {
+                    new_corner_vertex[new_ptr+i] = corner_vertex[ptr+i];
+                    new_facet_adjacent_cell[new_ptr+i] =
+                        facet_adjacent_cell[ptr+i];
+                }
+                new_ptr += cell_size;
+            }
+            new_cell_ptr[nb()] = new_ptr;
+
+            Permutation::apply(
+                cell_type_.data(), permutation, index_t(sizeof(Numeric::uint8))
+            );
+
+            Permutation::invert(permutation);
+
+            for(index_t f = 0; f < new_facet_adjacent_cell.size(); ++f) {
+                if(new_facet_adjacent_cell[f] != NO_CELL) {
+                    new_facet_adjacent_cell[f] =
+                        permutation[new_facet_adjacent_cell[f]];
+                }
+            }
+
+            corner_vertex.swap(new_corner_vertex);
+            facet_adjacent_cell.swap(new_facet_adjacent_cell);
         }
     }
 
@@ -1499,6 +1637,7 @@ namespace GEO {
     
     Mesh::Mesh(index_t dimension, bool single_precision)
         : vertices(*this),
+          edges(*this),
           facets(*this),
           facet_corners(*this),
           cells(*this),
@@ -1525,14 +1664,13 @@ namespace GEO {
         Logger::out(tag)
             << (vertices.single_precision() ? "(FP32)" : "(FP64)") 
             << " nb_v:" << vertices.nb()
+            << " nb_e:" << edges.nb()
             << " nb_f:" << facets.nb()
             << " nb_b:" << nb_borders
             << " tri:" << facets.are_simplices()
             << " dim:" << vertices.dimension()
             << std::endl;
 
-        // TODO: display attributes
-        
         if(cells.nb() != 0) {
             if(cells.are_simplices()) {
                 Logger::out(tag) << " nb_tets:"
@@ -1559,6 +1697,14 @@ namespace GEO {
                                  << std::endl;
             }
         }
+
+        display_attributes(tag, "vertices", vertices);
+        display_attributes(tag, "edges", edges);        
+        display_attributes(tag, "facets", facets);
+        display_attributes(tag, "facet_corners", facet_corners);
+        display_attributes(tag, "cells", cells);
+        display_attributes(tag, "cell_corners", cell_corners);
+        display_attributes(tag, "cell_facets", cell_facets);
     }
 
     void Mesh::assert_is_valid() {
@@ -1583,6 +1729,32 @@ namespace GEO {
             }
         }
     }
+
+    void Mesh::display_attributes(
+        const std::string& tag, const std::string& subelement_name,
+        const MeshSubElementsStore& subelements 
+    ) const {
+        if(subelements.attributes().nb() != 0) {
+            vector<std::string> names;
+            subelements.attributes().list_attribute_names(names);
+            std::string names_str;
+            for(index_t i=0; i<names.size(); ++i) {
+                if(i != 0) {
+                    names_str = names_str + ",";
+                } 
+                names_str = names_str + names[i];
+                AttributeStore* store =
+                    subelements.attributes().find_attribute_store(names[i]);
+                index_t dim = store->dimension();
+                if(dim != 1) {
+                    names_str += ("[" + String::to_string(dim) + "]");
+                }
+            }
+            Logger::out(tag) << "Attributes on " << subelement_name
+                             << ": " << names_str << std::endl;
+        }
+    }
+
     
     /**************************************************************************/
     

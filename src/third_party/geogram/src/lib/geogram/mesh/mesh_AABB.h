@@ -211,14 +211,23 @@ namespace GEO {
          *
          * \param[in] p query point
          * \param[in,out] nearest_facet the nearest facet so far,
+         *   or NO_FACET if not known yet
          * \param[in,out] nearest_point a point in nearest_facet
          * \param[in,out] sq_dist squared distance between p and
          *    nearest_point
+         * \note On entry, \p sq_dist needs to be equal to the squared
+         *   distance between \p p and \p nearest_point (it is easy to
+         *   forget to update it when calling it within a loop).
          */
         void nearest_facet_with_hint(
             const vec3& p,
             index_t& nearest_facet, vec3& nearest_point, double& sq_dist
         ) const {
+            if(nearest_facet == NO_FACET) {
+                get_nearest_facet_hint(
+                    p, nearest_facet, nearest_point, sq_dist
+                );                
+            }
             nearest_facet_recursive(
                 p,
                 nearest_facet, nearest_point, sq_dist,

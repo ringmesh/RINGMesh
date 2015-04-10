@@ -69,6 +69,7 @@ namespace GEOGen {
      */
     class Polygon {
     public:
+
         /**
          * \brief Gets the number of vertices.
          */

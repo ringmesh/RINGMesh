@@ -38,47 +38,49 @@
  *     FRANCE
  */
 
-#ifdef WIN32
 
-  #pragma section(".CRT$XCU",read)
-  #define INITIALIZER( f ) \
-    static void __cdecl f( void ) ; \
-    __declspec( allocate( ".CRT$XCU" ) ) void( __cdecl * f ## _ ) (void) = f ; \
-    static void __cdecl f( void )
+/*!
 
-#elif defined( __GNUC__ )
+\page ringmesh_features RINGMesh features
 
-  #define INITIALIZER( f ) \
-    static void f( void ) __attribute__( ( constructor ) ) ; \
-    static void f( void )
+What it can do!
+==============
 
-#endif
+Data structures
+---------------
+ - BoundaryModel: Cellular representation to store 3D structural models
+ - MacroMesh: Volumetric mesh of the structural model
 
-#include <ringmesh/attribute.h>
-#include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
+Import
+------
+ - BoundaryModel
+  - .bm: homemade format
+  - .ml: Model3D format from Gocad/Skua
+ - MacroMesh
+  - .mm: homemade format
+  
+Export
+------
+ - BoundaryModel
+  - .bm: homemade format
+  - .ml: Model3D format for Gocad/Skua
+ - MacroMesh
+  - .csmp: CSMP++ format (export 3 files: .asc, .dat, -regions.txt)
+  - .gmsh: Gmsh format (can also export additional information for Kine3D)
+  - .gprs: GPRS format
+  - .mail: ASTER format
+  - .meshb: LibMesh format
+  - .mm: homemade format
+  - .so: Tsolid format for Gocad/Skua
+  - .tetgen: TetGen format (export 3 files: .node, .ele, .neigh)
+  - .vtk: VTK format for ParaView
 
-static bool inited = false ;
-INITIALIZER( initialize ) {
-    if( !inited ) {
-        inited = true ;
-        GEO::initialize() ;
-        GEO::CmdLine::import_arg_group( "sys" ) ;
-        GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
-        GEO::CmdLine::set_arg( "sys:FPE", false ) ;
-        GEO::CmdLine::import_arg_group( "algo" ) ;
-        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
-        GEO::CmdLine::import_arg_group( "log" ) ;
-        GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
+What is next?
+=============
 
-        // Initialization for BoundaryModel attribute serialization
-//        RINGMesh::AttributeSerializer::initialize() ;
-//        RINGMesh::ringmesh_register_attribute_type< int           > ( "int" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< unsigned int  > ( "index" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< double        > ( "double" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< float         > ( "float" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< bool          > ( "bool" ) ;
-//        atexit( RINGMesh::AttributeSerializer::terminate ) ;
-    }
-}
+Export
+------
+ - MacroMesh
+  - .resqml: RESQML2 format
+*/
+

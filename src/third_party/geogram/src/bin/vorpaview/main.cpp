@@ -426,7 +426,9 @@ int main(int argc, char** argv) {
     if(GEO::CmdLine::get_arg_bool("gfx:full_screen")) {
        glut_viewer_enable(GLUT_VIEWER_FULL_SCREEN);
     }
-      
+
+    M_gfx.set_points_color(0.0, 1.0, 0.0);
+    
     glut_viewer_main_loop(argc, argv);
 
     // Note: when 'q' is pressed, exit() is called

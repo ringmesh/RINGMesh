@@ -38,47 +38,50 @@
  *     FRANCE
  */
 
-#ifdef WIN32
+#include <ringmesh/io.h>
 
-  #pragma section(".CRT$XCU",read)
-  #define INITIALIZER( f ) \
-    static void __cdecl f( void ) ; \
-    __declspec( allocate( ".CRT$XCU" ) ) void( __cdecl * f ## _ ) (void) = f ; \
-    static void __cdecl f( void )
+bool compare_file( const std::string& f1, const std::string& f2 )
+{
+    const unsigned int MAX_LINE_LEN = 65535 ;
 
-#elif defined( __GNUC__ )
+    std::ifstream lFile( f1.c_str() ) ;
+    std::ifstream rFile( f2.c_str() ) ;
 
-  #define INITIALIZER( f ) \
-    static void f( void ) __attribute__( ( constructor ) ) ; \
-    static void f( void )
+    char* lBuffer = new char[MAX_LINE_LEN]() ;
+    char* rBuffer = new char[MAX_LINE_LEN]() ;
 
-#endif
+    do {
+        lFile.read( lBuffer, MAX_LINE_LEN ) ;
+        rFile.read( rBuffer, MAX_LINE_LEN ) ;
+        unsigned int numberOfRead = lFile.gcount() ;
 
-#include <ringmesh/attribute.h>
-#include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
+        if( std::memcmp( lBuffer, rBuffer, numberOfRead ) != 0 ) {
+            delete[] lBuffer ;
+            delete[] rBuffer ;
+            return false ;
+        }
+    } while( lFile.good() || rFile.good() ) ;
+    return true ;
+}
 
-static bool inited = false ;
-INITIALIZER( initialize ) {
-    if( !inited ) {
-        inited = true ;
-        GEO::initialize() ;
-        GEO::CmdLine::import_arg_group( "sys" ) ;
-        GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
-        GEO::CmdLine::set_arg( "sys:FPE", false ) ;
-        GEO::CmdLine::import_arg_group( "algo" ) ;
-        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
-        GEO::CmdLine::import_arg_group( "log" ) ;
-        GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
+int main( int argc, char** argv )
+{
+    using namespace RINGMesh ;
 
-        // Initialization for BoundaryModel attribute serialization
-//        RINGMesh::AttributeSerializer::initialize() ;
-//        RINGMesh::ringmesh_register_attribute_type< int           > ( "int" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< unsigned int  > ( "index" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< double        > ( "double" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< float         > ( "float" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< bool          > ( "bool" ) ;
-//        atexit( RINGMesh::AttributeSerializer::terminate ) ;
-    }
+    GEO::Logger::out("TEST") << "Test IO for a BoundaryModel in .ml" << std::endl ;
+
+    BoundaryModel in ;
+    RINGMeshIO::load( "../data/model1.ml", in ) ;
+    RINGMeshIO::save( in, "out.ml" ) ;
+
+    BoundaryModel in2 ;
+    RINGMeshIO::load( "out.ml", in2 ) ;
+    RINGMeshIO::save( in2, "out2.ml" ) ;
+
+    bool res = compare_file( "out.ml", "out2.ml" ) ;
+    if( res )
+        GEO::Logger::out("TEST") << "SUCCES" << std::endl ;
+    else
+        GEO::Logger::out("TEST") << "FAILED" << std::endl ;
+    return res ;
 }
