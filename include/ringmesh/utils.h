@@ -283,7 +283,7 @@ namespace RINGMesh {
         bool initialized_ ;
     } ;
 
-    class RINGMESH_API Utils {
+    class RINGMESH_API Geom {
     public:
         static double mesh_cell_volume(
             const GEO::Mesh& M,
@@ -304,31 +304,35 @@ namespace RINGMesh {
             index_t cell ) ;
 
         static bool has_edge(
-            GEO::Mesh& mesh,
+            const GEO::Mesh& mesh,
             index_t t,
             index_t p0,
             index_t p1,
             index_t& edge ) ;
 
-        static signed_index_t next_arround_edge(
-            GEO::Mesh& mesh,
+        static index_t next_arround_edge(
+            const GEO::Mesh& mesh,
             index_t t,
             index_t prev,
             index_t p0,
             index_t p1 ) ;
 
         static void edges_arround_edge(
-            GEO::Mesh& mesh,
+            const GEO::Mesh& mesh,
             index_t t,
             index_t p0,
             index_t p1,
             std::vector< index_t >& result ) ;
 
+
+    } ;
+    class RINGMESH_API Utils {
+    public:
+
         static index_t get_nearest_vertex_index(
             const GEO::Mesh& mesh,
             const vec3& p,
-            signed_index_t t ) ;
-
+            index_t t ) ;
         static bool facets_have_same_orientation(
             const GEO::Mesh& mesh,
             index_t f1,
@@ -339,7 +343,6 @@ namespace RINGMesh {
             const BoundaryModelElement& region,
             GEO::Mesh& mesh,
             bool check_duplicated_facet = false ) ;
-
         static float64 triangle_area(
             const vec3& p1,
             const vec3& p2,
@@ -457,7 +460,10 @@ namespace RINGMesh {
             }
             return false ;
         }
+    } ;
 
+    class RINGMESH_API Math {
+    public:
         // See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
         template< class VEC >
         static float64 point_triangle_distance(
@@ -684,12 +690,6 @@ namespace RINGMesh {
             const vec3& p7,
             vec3& nearest_p ) ;
 
-        static float64 nearest_point_segment(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            vec3& nearest_p ) ;
-
         static bool circle_plane_intersection(
             const vec3& O_plane,
             const vec3& N_plane,
@@ -778,7 +778,12 @@ namespace RINGMesh {
             vec3& result ) ;
     } ;
 
+    /*!
+     * Given an array of vec3, this class computes the colocated points
+     * and a database to identify which colocated point corresponds to
+     */
     class RINGMESH_API MakeUnique {
+        ringmesh_disable_copy( MakeUnique ) ;
     public:
         MakeUnique( const std::vector< vec3 >& data ) ;
         template< class T > MakeUnique( const std::vector< T >& data )
@@ -823,22 +828,39 @@ namespace RINGMesh {
 
         void add_points( const std::vector< vec3 >& points ) ;
 
-        void unique( index_t nb_neighbors = 5 ) ;
+        void unique() ;
 
+        /*!
+         * Gets the input vector of vec3
+         */
         const std::vector< vec3 >& points() const
         {
             return points_ ;
         }
 
+        /*!
+         * Gets the number of points in the database
+         * @return returns the corresponding number
+         */
+        index_t nb_points() const {
+            return points_.size() ;
+        }
+
         void unique_points( std::vector< vec3 >& results ) const ;
 
+        /*!
+         * Gets the computed database that maps
+         * the colocated point to the unique one
+         */
         const std::vector< index_t >& indices() const
         {
             return indices_ ;
         }
 
     private:
+        /// Input vector of vec3
         std::vector< vec3 > points_ ;
+        /// computed database that maps the colocated point to the unique one
         std::vector< index_t > indices_ ;
     } ;
 
@@ -868,9 +890,14 @@ namespace RINGMesh {
 
         bool get_colocated(
             const vec3& v,
-            std::vector< index_t >& result,
-            index_t nb_neighbors = 5 ) const ;
+            std::vector< index_t >& result ) const ;
 
+        /*!
+         * Gets the closest neighbor point
+         * @param[in] v the point to test
+         * @param[out] dist the distance to the closest point
+         * return returns the index of the closest point
+         */
         index_t get_closest_neighbor(
             const vec3& v,
             double& dist = dummy_float64 ) const
@@ -886,17 +913,19 @@ namespace RINGMesh {
             std::vector< index_t >& result,
             double* dist = nil ) const ;
 
-        vec3 point( signed_index_t i )
-        {
-            vec3 p ;
-            p.x = ann_tree_->point_ptr( i )[ 0 ] ;
-            p.y = ann_tree_->point_ptr( i )[ 1 ] ;
-            p.z = ann_tree_->point_ptr( i )[ 2 ] ;
-            return p ;
+        /*!
+         * Gets the point corresponding to the given index
+         * @param[in] i the point index
+         * return the corresponding point
+         */
+        vec3 point( index_t i ) {
+            return vec3( ann_tree_->point_ptr( i ) ) ;
         }
 
     private:
+        /// KdTree to compute the nearest neighbor search
         GEO::NearestNeighborSearch_var ann_tree_ ;
+        /// Array of the points (size of 3xnumber of points)
         double* ann_points_ ;
     } ;
 

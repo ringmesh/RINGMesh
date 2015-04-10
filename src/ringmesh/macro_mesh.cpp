@@ -185,14 +185,14 @@ namespace RINGMesh {
                                     == vertex_id ) {
                                     std::vector< index_t > result ;
                                     if( ann.get_colocated(
-                                        Utils::mesh_cell_facet_center( mesh, cur_c,
+                                        Geom::mesh_cell_facet_center( mesh, cur_c,
                                             cur_f ), result ) ) {
                                         index_t surface_id = attribute[result[0]] ;
                                         vec3 facet_normal =
                                             GEO::Geom::mesh_facet_normal( mesh,
                                                 result[0] ) ;
                                         vec3 cell_facet_normal =
-                                            Utils::mesh_cell_facet_normal( mesh,
+                                            Geom::mesh_cell_facet_normal( mesh,
                                                 cur_c, cur_f ) ;
                                         SurfaceAction side = SurfaceAction(
                                             dot( facet_normal, cell_facet_normal )
