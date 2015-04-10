@@ -351,7 +351,9 @@ namespace RINGMesh {
     index_t BoundaryModelBuilder::find_corner( const vec3& point ) const
     {
         for( index_t i = 0; i < model_.nb_corners(); ++i ) {
-            if( model_.corner( i ).vertex() == point ) {return i ;}
+            if( model_.corner( i ).vertex() == point ) {
+                return i ;
+            }
         }
         return NO_ID ;
     }
@@ -1883,20 +1885,6 @@ namespace RINGMesh {
             BME::determine_geological_type(
                 type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
-    }
-
-
-    /*!
-     * @brief Get the index of the Corner at given coordinates
-     * @param[in] p Coordinates of the vertex
-     * @return NO_ID or the index of the Corner
-     */
-    index_t BoundaryModelBuilderGocad::find_corner( const vec3& p ) const
-    {
-        for( index_t i = 0; i < model_.nb_corners(); ++i ) {
-            if( model_.corner( i ).vertex() == p ) {return i ;}
-        }
-        return NO_ID ;
     }
 
 
