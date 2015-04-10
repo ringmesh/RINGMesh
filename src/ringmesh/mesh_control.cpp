@@ -1,8 +1,41 @@
 /*
- * mesh_control.cpp
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
  *
- *  Created on: 13 mars 2015
- *      Author: launoy
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.gocad.org
+ *
+ *     GOCAD Project
+ *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
  */
 
 #include <ringmesh/mesh_control.h>
@@ -11,7 +44,7 @@
 
 namespace RINGMesh {
 DetectInter::DetectInter(const MacroMesh& mm, index_t nb_reg) :
-		nb_reg_(nb_reg), inter_(mm.nb_cells()), cur_reg_(0), cur_reg2_(0), nb_inter_(
+		nb_reg_(nb_reg), inter_(mm.cells.nb_tet()), cur_reg_(0), cur_reg2_(0), nb_inter_(
 				0), cur_cell_(0), mm_(mm), indx_(0) {
 
 }
@@ -169,7 +202,7 @@ void DetectInter::detect_mesh_intersection() {
 				Box box;
 				get_tet_bbox(mm_.mesh(cur_reg_), box, cur_cell_);
 
-				mm_.tet_aabb(cur_reg2_).compute_bbox_cell_bbox_intersections(
+				mm_.tools.tet_aabb(cur_reg2_).compute_bbox_cell_bbox_intersections(
 						box, *this);
 
 //				std::cout << cur_reg_ << " " << cur_cell_ << "   "
@@ -519,9 +552,9 @@ bool DetectInter::tet_a_tet(double V_1[4][3], double V_2[4][3]) {
 		std::cout << "1 " << n[1] << std::endl;
 		std::cout << "2 " << n[2] << std::endl;
 
-		std::cout << "n 1 " << n[0]+V1[0][0] << std::endl;
-		std::cout << "n 2 " << n[1]+V1[0][1] << std::endl;
-		std::cout << "n 3 " << n[2]+V1[0][2] << std::endl;
+		std::cout << "n 1 " << n[0] + V1[0][0] << std::endl;
+		std::cout << "n 2 " << n[1] + V1[0][1] << std::endl;
+		std::cout << "n 3 " << n[2] + V1[0][2] << std::endl;
 
 		std::cout << "dot 0 " << DOT(P_V1[0], n) << std::endl;
 		std::cout << "dot 1 " << DOT(P_V1[1], n) << std::endl;
