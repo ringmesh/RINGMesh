@@ -1165,6 +1165,169 @@ namespace RINGMesh {
         return .5 * result ;
     }
 
+
+    
+    bool is_corner_to_duplicate( const BoundaryModel& BM, index_t corner_id )
+    {
+        if( BM.corner( corner_id ).nb_in_boundary() > 3 ) {
+            return true ;
+        } else {
+            return false ;
+        }
+    }
+
+    void update_facet_corner( 
+        Surface& S, 
+        const std::vector< index_t >& facets, 
+        index_t old, 
+        index_t neu )
+    {
+        for( index_t i = 0; i < facets.size(); ++i ) {
+            index_t cur_f = facets[ i ] ;
+            for( index_t cur_v = 0;
+                    cur_v < S.nb_vertices_in_facet( cur_f );
+                    cur_v++ )
+            {
+                if( S.surf_vertex_id( cur_f, cur_v ) == old ) {
+                    S.mesh().facets.set_vertex( cur_f, cur_v, neu) ;
+                }                   
+            }
+        }
+    }
+
+
+    /*!
+     * @brief Cut a Surface along a Line assuming that the edges of the Line are edges of the Surface
+     *  
+     * @details First modify to NO_ADJACENT the neighbors along Line edges
+     * and then duplicate the points along this new boundary.
+     * Duplicate the corner that should be if any.
+     * 
+     * @pre The Line must not cut the Surface into 2 connected components
+     *
+     * @param[in] L The Line
+     */
+    void Surface::cut_by_line( const Line& L )
+    {
+        for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
+            index_t p0 = L.model_vertex_id( i ) ;
+            index_t p1 = ( i == L.nb_vertices()-1 ) ? 
+                L.model_vertex_id(0) : L.model_vertex_id(i+1) ;
+
+            index_t f = Surface::NO_ID ;
+            index_t v = Surface::NO_ID ;
+            edge_from_model_vertex_ids( p0, p1, f, v ) ;
+            ringmesh_debug_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
+
+            index_t f2 = adjacent( f, v ) ;
+            index_t v2 = Surface::NO_ID ;
+            ringmesh_debug_assert( f2 != Surface::NO_ADJACENT ) ;
+            edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
+            ringmesh_debug_assert( v2 != Surface::NO_ID ) ;
+
+            // Virtual cut - set adjacencies to NO_ADJACENT
+            set_adjacent( f, v, Surface::NO_ADJACENT ) ;
+            set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
+        }
+
+        BoundaryModel& M = const_cast< BoundaryModel& >( model() ) ;
+
+        // Now travel on one side of the "faked" boundary and actually duplicate
+        // the vertices in the surface
+        // Get started in the surface - find (again) one of the edge that contains
+        // the first two vertices of the line
+        index_t f = Surface::NO_ID ;
+        index_t v = Surface::NO_ID ;
+        oriented_edge_from_model_vertex_ids(
+            L.model_vertex_id(0), L.model_vertex_id(1), f, v ) ;
+        ringmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
+
+        index_t id0 = surf_vertex_id( f, v ) ;
+        index_t id1 = surf_vertex_id( f, next_in_facet( f, v ) ) ;
+
+        // Stopping criterion
+        index_t c0 = L.boundary_id(0) ;
+        index_t c1 = L.boundary_id(1) ;
+
+        // Wee need to check if we have to duplicate the Corner or not
+        // the 2 corners are         
+        bool duplicate_c0 = is_corner_to_duplicate( model(), c0 ) ;
+        bool duplicate_c1 = is_corner_to_duplicate( model(), c1 ) ;
+        // If both shall be duplicated - the line cut completely the surface
+        // and this function is not supposed to deal with that situation
+        ringmesh_assert( !duplicate_c0 || !duplicate_c1 ) ;
+        
+        // Index of the model vertex if one corner is to duplicate
+        index_t m_corner = duplicate_c0 ? M.corner(c0).model_vertex_id() :
+            (duplicate_c1 ? M.corner(c1).model_vertex_id() : NO_ID ) ;
+
+        // Index of the vertex to duplicate in S
+        // If c1 is to duplicate we do not know it yet 
+        index_t s_corner = duplicate_c0 ? id0 : NO_ID ;
+
+        // Index of the new vertex for the corner in the surface
+        index_t s_new_corner = NO_ID ;
+        // Create this new point in the surface and set mapping with point in the BM
+        if( m_corner != NO_ID ) {
+            s_new_corner = mesh_.vertices.create_vertex( M.vertex( m_corner ).data() ) ;
+            set_model_vertex_id( s_new_corner, m_corner ) ;           
+            M.vertices.add_unique_to_bme( m_corner, element_type(), id(), s_new_corner ) ;
+        }
+            
+        /// \todo Check that all vertices on the line are recovered
+        while( model_vertex_id( id1 ) != M.corner(c1).model_vertex_id() ) {
+            // Get the next vertex on the border
+            // Same algorithm than in determine_line_vertices function
+            index_t next_f = Surface::NO_ID ;
+            index_t id1_in_next = Surface::NO_ID ;
+            index_t next_id1_in_next = Surface::NO_ID ;
+
+            // Get the next facet and next triangle on this boundary
+            next_on_border( f,
+                facet_vertex_id( f, id0 ), facet_vertex_id( f, id1 ),
+                next_f, id1_in_next, next_id1_in_next ) ;
+            ringmesh_assert(
+                next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
+                && next_id1_in_next != Surface::NO_ID ) ;
+
+            index_t next_id1 = surf_vertex_id( next_f, next_id1_in_next ) ;
+
+            // Duplicate the vertex at id1
+            // After having determined the next 1 we can probably get both at the same time
+            // but I am lazy, and we must be careful not to break next_on_border function (Jeanne)
+            std::vector< index_t > facets_around_id1 ;
+            facets_around_vertex( id1, facets_around_id1, false, f ) ;
+
+            // Duplicate the vertex in the surface
+            index_t new_id1 = mesh_.vertices.create_vertex( vertex( id1 ).data() ) ;
+            // Set its model vertex index
+            set_model_vertex_id( new_id1, model_vertex_id( id1 ) ) ;
+            // Add the mapping from in the model vertices. Should we do this one ?
+            M.vertices.add_unique_to_bme( model_vertex_id(id1), element_type(), id(), new_id1 ) ;
+
+            // Update vertex index in facets 
+            update_facet_corner( *this, facets_around_id1, id1, new_id1 ) ;
+
+            // Update
+            f = next_f ;
+            id0 = new_id1 ;
+            id1 = next_id1 ;
+        }       
+        if( m_corner != NO_ID ){
+            if( duplicate_c1 ) {
+               s_corner = id1 ;
+            }
+            ringmesh_assert( s_corner != NO_ID && s_new_corner != NO_ID ) ;            
+            std::vector< index_t > facets_around_c ;
+            facets_around_vertex( s_corner, facets_around_c, false ) ;            
+            update_facet_corner( *this, facets_around_c, s_corner, s_new_corner ) ;
+        }
+    }
+
+
+
+
+
     SurfaceTools::SurfaceTools( const Surface& surface )
         : surface_( surface ), aabb_( nil ), ann_( nil )
     {
@@ -1201,112 +1364,6 @@ namespace RINGMesh {
         return *ann_ ;
     }
 
-
-
-    /*!
-     * @brief Cut the Surface along the line
-     * @details First modify to NO_ADJACENT the neighbors the edges that are along the line
-     * and then duplicate the points along this new boundary
-     * Corners are not duplicated - maybe they should be in some cases but not in general..
-     *
-     * @param[in] L The Line
-     */
-    void SurfaceMutator::cut_by_line( const Line& L )
-    {
-        for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
-            index_t p0 = L.model_vertex_id( i ) ;
-            index_t p1 = ( i == L.nb_vertices()-1 ) ? 
-                L.model_vertex_id(0) : L.model_vertex_id(i+1) ;
-
-            index_t f = Surface::NO_ID ;
-            index_t v = Surface::NO_ID ;
-            S_.edge_from_model_vertex_ids( p0, p1, f, v ) ;
-            ringmesh_debug_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
-
-            index_t f2 = S_.adjacent( f, v ) ;
-            index_t v2 = Surface::NO_ID ;
-            ringmesh_debug_assert( f2 != Surface::NO_ADJACENT ) ;
-            S_.edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
-            ringmesh_debug_assert( v2 != Surface::NO_ID ) ;
-
-            // Virtual cut - set adjacencies to NO_ADJACENT
-            S_.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
-            S_.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
-        }
-
-        // Now travel on one side of the "faked" boundary and actually duplicate
-        // the vertices in the surface
-        // Get started in the surface - find (again) one of the edge that contains
-        // the first two vertices of the line
-        index_t f = Surface::NO_ID ;
-        index_t v = Surface::NO_ID ;
-        S_.oriented_edge_from_model_vertex_ids(
-            L.model_vertex_id(0), L.model_vertex_id(1), f, v ) ;
-        ringmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
-
-        index_t id0 = S_.surf_vertex_id( f, v ) ;
-        index_t id1 = S_.surf_vertex_id( f, S_.next_in_facet( f, v ) ) ;
-
-        // Stopping criterion
-        index_t last_vertex = L.model_vertex_id( L.nb_vertices()-1 ) ;
-
-        // Hopefully we have all the vertices on the Line..
-        /// \todo Check that all vertices on the line are recovered
-        while( S_.model_vertex_id( id1 ) != last_vertex ) {
-            // Get the next vertex on the border
-            // Same algorithm than in determine_line_vertices function
-            index_t next_f = Surface::NO_ID ;
-            index_t id1_in_next = Surface::NO_ID ;
-            index_t next_id1_in_next = Surface::NO_ID ;
-
-            // Get the next facet and next triangle on this boundary
-            S_.next_on_border( f,
-                S_.facet_vertex_id( f, id0 ), S_.facet_vertex_id( f, id1 ),
-                next_f, id1_in_next, next_id1_in_next ) ;
-            ringmesh_assert(
-                next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
-                && next_id1_in_next != Surface::NO_ID ) ;
-
-            index_t next_id1 = S_.surf_vertex_id( next_f, next_id1_in_next ) ;
-
-            // Duplicate the vertex at id1
-            // After having determined the next 1 we can probably get both at the same time
-            // but I am lazy, and we must be careful not to break next_on_border function (Jeanne)
-            std::vector< index_t > facets_around_id1 ;
-            S_.facets_around_vertex( id1, facets_around_id1, false, f ) ;
-
-            // Duplicate the vertex in the surface
-            index_t new_id1 = S_.mesh_.vertices.create_vertex( S_.vertex( id1 ).data() ) ;
-            // Set its model vertex index
-            S_.set_model_vertex_id( new_id1,  S_.model_vertex_id( id1 ) ) ;
-            // Add the mapping from in the model vertices 
-            // Not sure that we should do this one ? how can we check that this mapping is filled
-            // for the others unique vertices ?
-            BoundaryModel& M = const_cast< BoundaryModel& >( S_.model() ) ;
-            M.vertices.add_unique_to_bme( S_.model_vertex_id(id1), S_.element_type(), S_.id(), new_id1 ) ;
-
-            for( index_t i = 0; i < facets_around_id1.size(); ++i ) {
-                index_t cur_f = facets_around_id1[ i ] ;
-                for( index_t cur_v = 0;
-                     cur_v < S_.nb_vertices_in_facet( cur_f );
-                     cur_v++ )
-                {
-                    if( S_.surf_vertex_id( cur_f, cur_v ) == id1 ) {
-                        S_.mesh_.facets.set_vertex( cur_f, cur_v, new_id1 ) ;
-                        break ;
-                    }
-                }
-            }
-
-            // Update
-            f = next_f ;
-            id0 = new_id1 ;
-            id1 = next_id1 ;
-        }
-
-        /// \todo Check that the surface is not cut into two parts 
-        /// in that case we would have a BIG problem
-    }
 
 
     /*!
