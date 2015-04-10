@@ -130,6 +130,12 @@ namespace RINGMesh {
         //   |___/\___/\_,_|_||_\__,_\__,_|_|  \_, |_|  |_\___/\__,_\___|_|
         //                                     |__/
 
+        /*!
+         * Loads a BoundaryModel from a file
+         * @param[in] filename the file to load
+         * @param[out] model the model to fill
+         * @return returns the success of the operation
+         */
         bool load( const std::string& filename, BoundaryModel& model )
         {
             GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
@@ -146,6 +152,12 @@ namespace RINGMesh {
             return false ;
         }
 
+        /*!
+         * Saves a BoundaryModel in a file
+         * @param[in] model the model to save
+         * @param[in] filename the filename where to save it
+         * @return returns the success of the operation
+         */
         bool save( BoundaryModel& model, const std::string& filename )
         {
             GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
@@ -256,6 +268,12 @@ namespace RINGMesh {
         //   |_|  |_\__,_\__|_| \___/_|  |_\___/__/_||_|
         //
 
+        /*!
+         * Loads a MacroMesh from a file
+         * @param[in] filename the file to load
+         * @param][out] model the mesh to fill
+         * @return returns the success of the operation
+         */
         bool load( const std::string& filename, MacroMesh& model )
         {
             GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
@@ -272,6 +290,12 @@ namespace RINGMesh {
             return false ;
         }
 
+        /*!
+         * Saves a MacroMesh in a file
+         * @param[in] model the mesh to save
+         * @param[in] filename the file where to save
+         * @return returns the success of the operation
+         */
         bool save( const MacroMesh& model, const std::string& filename )
         {
             GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
