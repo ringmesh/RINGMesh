@@ -1215,10 +1215,8 @@ namespace RINGMesh {
     {
         for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
             index_t p0 = L.model_vertex_id( i ) ;
-            index_t p1 =
-                ( i == L.nb_vertices() -
-                  1 ) ? L.model_vertex_id( 0 ) : L.model_vertex_id(
-                    i + 1 ) ;
+            index_t p1 = ( i == L.nb_vertices()-1 ) ? 
+                L.model_vertex_id(0) : L.model_vertex_id(i+1) ;
 
             index_t f = Surface::NO_ID ;
             index_t v = Surface::NO_ID ;
@@ -1242,15 +1240,15 @@ namespace RINGMesh {
         // the first two vertices of the line
         index_t f = Surface::NO_ID ;
         index_t v = Surface::NO_ID ;
-        S_.oriented_edge_from_model_vertex_ids( L.model_vertex_id(
-                0 ), L.model_vertex_id( 1 ), f, v ) ;
+        S_.oriented_edge_from_model_vertex_ids(
+            L.model_vertex_id(0), L.model_vertex_id(1), f, v ) ;
         ringmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
 
         index_t id0 = S_.surf_vertex_id( f, v ) ;
         index_t id1 = S_.surf_vertex_id( f, S_.next_in_facet( f, v ) ) ;
 
         // Stopping criterion
-        index_t last_vertex = L.model_vertex_id( L.nb_vertices() - 1 ) ;
+        index_t last_vertex = L.model_vertex_id( L.nb_vertices()-1 ) ;
 
         // Hopefully we have all the vertices on the Line..
         /// \todo Check that all vertices on the line are recovered
@@ -1277,9 +1275,15 @@ namespace RINGMesh {
             std::vector< index_t > facets_around_id1 ;
             S_.facets_around_vertex( id1, facets_around_id1, false, f ) ;
 
-            S_.mesh_.vertices.create_vertex( S_.vertex( id1 ).data() ) ;
-            ringmesh_debug_assert( S_.nb_vertices() > 0 ) ;
-            index_t new_id1 = S_.nb_vertices() - 1 ;
+            // Duplicate the vertex in the surface
+            index_t new_id1 = S_.mesh_.vertices.create_vertex( S_.vertex( id1 ).data() ) ;
+            // Set its model vertex index
+            S_.set_model_vertex_id( new_id1,  S_.model_vertex_id( id1 ) ) ;
+            // Add the mapping from in the model vertices 
+            // Not sure that we should do this one ? how can we check that this mapping is filled
+            // for the others unique vertices ?
+            BoundaryModel& M = const_cast< BoundaryModel& >( S_.model() ) ;
+            M.vertices.add_unique_to_bme( S_.model_vertex_id(id1), S_.element_type(), S_.id(), new_id1 ) ;
 
             for( index_t i = 0; i < facets_around_id1.size(); ++i ) {
                 index_t cur_f = facets_around_id1[ i ] ;
@@ -1301,7 +1305,7 @@ namespace RINGMesh {
         }
 
         /// \todo Check that the surface is not cut into two parts 
-        /// in that case we hae a BIG problem
+        /// in that case we would have a BIG problem
     }
 
 
