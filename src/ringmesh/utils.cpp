@@ -1228,18 +1228,22 @@ namespace RINGMesh {
         std::vector< index_t >& result,
         index_t nb_neighbors ) const
     {
+        nb_neighbors = std::min( nb_neighbors, ann_tree_->nb_points() ) ;
         result.clear() ;
         std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
+        index_t prev_neighbor = 0 ;
         do {
+            prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
             neighbors.resize( cur_neighbor ) ;
-            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors ) ;
-            for( index_t i = 0; i < nb_neighbors; ++i ) {
-                if( Utils::inexact_equal( v.data(),
-                    ann_tree_->point_ptr( neighbors[i] ) ) ) {
-                    result.push_back( neighbors[i] ) ;
+            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, dist ) ;
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                if( dist[i] > epsilon_sq ) {
+                    break ;
                 }
+                result.push_back( neighbors[i] ) ;
             }
         } while( result.size() == cur_neighbor ) ;
 
@@ -1253,18 +1257,13 @@ namespace RINGMesh {
         double* dist ) const
     {
         if( ann_tree_->nb_points() == 0 ) return 0 ;
-        bool to_delete = false ;
         if( !dist ) {
-            dist = new double[nb_neighbors] ;
-            to_delete = true ;
+            dist = (double*) alloca( sizeof(double) * nb_neighbors ) ;
         }
         nb_neighbors = std::min( nb_neighbors, ann_tree_->nb_points() ) ;
         result.resize( nb_neighbors ) ;
         ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
             dist ) ;
-        if( to_delete ) {
-            delete[] dist ;
-        }
         return nb_neighbors ;
     }
 
