@@ -10,14 +10,10 @@
 #include <utility>      // std::swap
 
 namespace RINGMesh {
-DetectInter::DetectInter(MacroMesh& mm, index_t nb_reg) :
-		nb_reg_(nb_reg), inter_(nb_reg), cur_reg_(0), cur_reg2_(0), nb_inter_(
+DetectInter::DetectInter(const MacroMesh& mm, index_t nb_reg) :
+		nb_reg_(nb_reg), inter_(mm.nb_cells()), cur_reg_(0), cur_reg2_(0), nb_inter_(
 				0), cur_cell_(0), mm_(mm), indx_(0) {
-	for (index_t i = 0; i < nb_reg; i++) {
-		for (index_t j = 0; j < mm.mesh(i).cells.nb(); j++) {
-			inter_[i].push_back(0);
-		}
-	}
+
 }
 
 DetectInter::~DetectInter() {
@@ -113,9 +109,9 @@ void DetectInter::detect_mesh_intersection() {
 //					mm_.mesh(0).cells.facet_vertex(9, 0, 0)).y << " z "
 //			<< mm_.mesh(0).vertices.point(
 //					mm_.mesh(0).cells.facet_vertex(9, 0, 0)).z << std::endl;
-//	mm_.mesh(0).vertices.point(mm_.mesh(0).cells.facet_vertex(9, 0, 0)).x = 0;
-//	mm_.mesh(0).vertices.point(mm_.mesh(0).cells.facet_vertex(9, 0, 0)).y = 0;
-//	mm_.mesh(0).vertices.point(mm_.mesh(0).cells.facet_vertex(9, 0, 0)).z = 0;
+//	mm_.mesh(0).vertices.point(mm_.mesh(0).cells.facet_vertex(9, 0, 0)).x = 3;
+//	mm_.mesh(0).vertices.point(mm_.mesh(0).cells.facet_vertex(9, 0, 0)).y = 3;
+//	mm_.mesh(0).vertices.point(mm_.mesh(0).cells.facet_vertex(9, 0, 0)).z = -3;
 //*************************************
 
 //*************************************
@@ -144,7 +140,7 @@ void DetectInter::detect_mesh_intersection() {
 		for (index_t reg_idx2 = cur_reg_; reg_idx2 < nb_reg_; reg_idx2++) {
 			cur_reg2_ = reg_idx2;
 //			std::cout << "cur_reg2_ " << cur_reg2_ << std::endl;
-			for (index_t c = 0; c < inter_[cur_reg_].size(); c++) {
+			for (index_t c = 0; c < mm_.mesh(cur_reg_).cells.nb(); c++) {
 				cur_cell_ = c;
 
 //				index_t v1_index = mm_.mesh(cur_reg_).cells.facet_vertex(
@@ -431,6 +427,15 @@ inline static bool EdgeA(const int & f0, const int & f1) {
 	return true;// there exists a separating plane supported by the edge shared by f0 and f1
 }
 
+void side_face(std::vector<std::vector<bool> >& maskEdges, index_t i,
+		index_t vect) {
+	if (DOT(P_V1[i], n) >= 0) {
+		maskEdges[vect].push_back(true);
+	} else {
+		maskEdges[vect].push_back(false);
+	}
+}
+
 // main function
 
 bool DetectInter::tet_a_tet(double V_1[4][3], double V_2[4][3]) {
@@ -442,17 +447,17 @@ bool DetectInter::tet_a_tet(double V_1[4][3], double V_2[4][3]) {
 	SUB(P_V1[2], V2[2], V1[0]);
 	SUB(P_V1[3], V2[3], V1[0]);
 
-//	if (cur_reg_ == 0 && cur_cell_ == 1 && indx_ == 3) {
-//		std::cout << "V1 " << V1[0][0] << std::endl;
-//		std::cout << "V1 " << V1[0][1] << std::endl;
-//		std::cout << "V1 " << V1[0][2] << std::endl;
-//		std::cout << "V2 " << V2[0][0] << std::endl;
-//		std::cout << "V2 " << V2[0][1] << std::endl;
-//		std::cout << "V2 " << V2[0][2] << std::endl;
-//		std::cout << "P_V1[0]" << P_V1[0][0] << std::endl;
-//		std::cout << "P_V1[1]" << P_V1[0][1] << std::endl;
-//		std::cout << "P_V1[2]" << P_V1[0][2] << std::endl;
-//
+//	if ((cur_reg_ == 0 && cur_cell_ == 6) && (cur_reg2_ == 1 && indx_ == 0)) {
+////		std::cout << "V1 " << V1[0][0] << std::endl;
+////		std::cout << "V1 " << V1[0][1] << std::endl;
+////		std::cout << "V1 " << V1[0][2] << std::endl;
+////		std::cout << "V2 " << V2[0][0] << std::endl;
+////		std::cout << "V2 " << V2[0][1] << std::endl;
+////		std::cout << "V2 " << V2[0][2] << std::endl;
+////		std::cout << "P_V1[0]" << P_V1[0][0] << std::endl;
+////		std::cout << "P_V1[1]" << P_V1[0][1] << std::endl;
+////		std::cout << "P_V1[2]" << P_V1[0][2] << std::endl;
+////
 //		vec3 v1 = mm_.mesh(cur_reg_).vertices.point(
 //				mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 0));
 //		vec3 v2 = mm_.mesh(cur_reg_).vertices.point(
@@ -485,90 +490,193 @@ bool DetectInter::tet_a_tet(double V_1[4][3], double V_2[4][3]) {
 
 	static double e_v1[6][3], e_v2[6][3];   // vectors edge-oriented
 	SUB(e_v1[0], V1[1], V1[0]);
+//	if ((cur_reg_ == 0 && cur_cell_ == 6) && (cur_reg2_ == 1 && indx_ == 0)) {
+//		std::cout << "0 " << e_v1[0][0] << std::endl;
+//		std::cout << "1 " << e_v1[0][1] << std::endl;
+//		std::cout << "2 " << e_v1[0][2] << std::endl;
+//
+//		std::cout << "0 V1 " << V1[0][0] << std::endl;
+//		std::cout << "1 V1 " << V1[0][1] << std::endl;
+//		std::cout << "2 V1 " << V1[0][2] << std::endl;
+//
+//		std::cout << "0 V1 " << V1[1][0] << std::endl;
+//		std::cout << "1 V1 " << V1[1][1] << std::endl;
+//		std::cout << "2 V1 " << V1[1][2] << std::endl;
+//
+//		std::cout << "0 V1 " << V1[2][0] << std::endl;
+//		std::cout << "1 V1 " << V1[2][1] << std::endl;
+//		std::cout << "2 V1 " << V1[2][2] << std::endl;
+//	}
 	SUB(e_v1[1], V1[2], V1[0]);
 
 	VECT(n, e_v1[0], e_v1[1]);		// find the normal to face 0
+	if ((cur_reg_ == 0 && cur_cell_ == 6) && (cur_reg2_ == 1 && indx_ == 0)) {
+//		a[0]*b[0]+a[1]*b[1]+a[2]*b[2]
+		std::cout << "0 " << P_V1[0][0] << std::endl;
+		std::cout << "1 " << P_V1[0][1] << std::endl;
+		std::cout << "2 " << P_V1[0][2] << std::endl;
+		std::cout << "0 " << n[0] << std::endl;
+		std::cout << "1 " << n[1] << std::endl;
+		std::cout << "2 " << n[2] << std::endl;
 
-	if (FaceA_1(&Coord_1[0][0], masks[0])) {
+		std::cout << "n 1 " << n[0]+V1[0][0] << std::endl;
+		std::cout << "n 2 " << n[1]+V1[0][1] << std::endl;
+		std::cout << "n 3 " << n[2]+V1[0][2] << std::endl;
+
+		std::cout << "dot 0 " << DOT(P_V1[0], n) << std::endl;
+		std::cout << "dot 1 " << DOT(P_V1[1], n) << std::endl;
+		std::cout << "dot 2 " << DOT(P_V1[2], n) << std::endl;
+		std::cout << "dot 3 " << DOT(P_V1[3], n) << std::endl;
+	}
+
+	std::vector<std::vector<bool> > maskEdges(4);
+
+	side_face(maskEdges, 0, 0);
+	side_face(maskEdges, 1, 0);
+	side_face(maskEdges, 2, 0);
+	side_face(maskEdges, 3, 0);
+
+	if ((cur_reg_ == 0 && cur_cell_ == 6) && (cur_reg2_ == 1 && indx_ == 0)) {
+		std::cout << "here" << std::endl;
+	}
+
+	if (maskEdges[0][0] && maskEdges[0][1] && maskEdges[0][2]
+			&& maskEdges[0][3]) {
 		return false;
 	}
+
 	SUB(e_v1[2], V1[3], V1[0]);
 	VECT(n, e_v1[2], e_v1[0]);
 
-	if (FaceA_1(&Coord_1[1][0], masks[1])) {
+	side_face(maskEdges, 0, 1);
+	side_face(maskEdges, 1, 1);
+	side_face(maskEdges, 2, 1);
+	side_face(maskEdges, 3, 1);
+
+	if (maskEdges[1][0] && maskEdges[1][1] && maskEdges[1][2]
+			&& maskEdges[1][3]) {
 		return false;
 	}
-	if (EdgeA(0, 1)) {
-		return false;
-	}
+
 	VECT(n, e_v1[1], e_v1[2]);
 
-	if (FaceA_1(&Coord_1[2][0], masks[2])) {
-		return false;
-	}
-	if (EdgeA(0, 2)) {
-		return false;
-	}
-	if (EdgeA(1, 2)) {
+	side_face(maskEdges, 0, 2);
+	side_face(maskEdges, 1, 2);
+	side_face(maskEdges, 2, 2);
+	side_face(maskEdges, 3, 2);
+
+	if (maskEdges[2][0] && maskEdges[2][1] && maskEdges[2][2]
+			&& maskEdges[2][3]) {
 		return false;
 	}
 
-	SUB(e_v1[4], V1[3], V1[1]);
 	SUB(e_v1[3], V1[2], V1[1]);
-
+	SUB(e_v1[4], V1[3], V1[1]);
 	VECT(n, e_v1[4], e_v1[3]);
 
-	if (FaceA_2(&Coord_1[3][0], masks[3])) {
+	side_face(maskEdges, 0, 3);
+	side_face(maskEdges, 1, 3);
+	side_face(maskEdges, 2, 3);
+	side_face(maskEdges, 3, 3);
+
+	if (maskEdges[3][0] && maskEdges[3][1] && maskEdges[3][2]
+			&& maskEdges[3][3]) {
 		return false;
 	}
-	if (EdgeA(0, 3)) {
+
+	if ((maskEdges[0][0] && maskEdges[1][0] && maskEdges[2][0]
+			&& maskEdges[3][0])
+			|| (maskEdges[0][1] && maskEdges[1][1] && maskEdges[2][1]
+					&& maskEdges[3][1])
+			|| (maskEdges[0][2] && maskEdges[1][2] && maskEdges[2][2]
+					&& maskEdges[3][2])
+			|| (maskEdges[0][3] && maskEdges[1][3] && maskEdges[2][3]
+					&& maskEdges[3][3])) {
 		return false;
 	}
 
-	if (EdgeA(1, 3)) {
-		return false;
-	}
-	if (EdgeA(2, 3)) {
-		return false;
-	}
-	if ((masks[0] | masks[1] | masks[2] | masks[3]) != 017) {
-		return true;
-	}
-// from now on, if there is a separating plane it is parallel to a face of b
-
-	SUB(P_V2[0], V1[0], V2[0]);
-	SUB(P_V2[1], V1[1], V2[0]);
-	SUB(P_V2[2], V1[2], V2[0]);
-	SUB(P_V2[3], V1[3], V2[0]);
-
-	SUB(e_v2[0], V2[1], V2[0]);
-	SUB(e_v2[1], V2[2], V2[0]);
-
-	VECT(n, e_v2[0], e_v2[1]);
-	if (FaceB_1()) {
-		return false;
-	}
-	SUB(e_v2[2], V2[3], V2[0]);
-
-	VECT(n, e_v2[2], e_v2[0]);
-
-	if (FaceB_1()) {
-		return false;
-	}
-	VECT(n, e_v2[1], e_v2[2]);
-
-	if (FaceB_1()) {
-		return false;
-	}
-	SUB(e_v2[4], V2[3], V2[1]);
-	SUB(e_v2[3], V2[2], V2[1]);
-
-	VECT(n, e_v2[4], e_v2[3]);
-
-	if (FaceB_2()) {
-		return false;
-	}
 	return true;
+
+//	if (FaceA_1(&Coord_1[0][0], masks[0])) {
+//		return false;
+//	}
+//	SUB(e_v1[2], V1[3], V1[0]);
+//	VECT(n, e_v1[2], e_v1[0]);
+//
+//	if (FaceA_1(&Coord_1[1][0], masks[1])) {
+//		return false;
+//	}
+//	if (EdgeA(0, 1)) {
+//		return false;
+//	}
+//	VECT(n, e_v1[1], e_v1[2]);
+//
+//	if (FaceA_1(&Coord_1[2][0], masks[2])) {
+//		return false;
+//	}
+//	if (EdgeA(0, 2)) {
+//		return false;
+//	}
+//	if (EdgeA(1, 2)) {
+//		return false;
+//	}
+//
+//	SUB(e_v1[4], V1[3], V1[1]);
+//	SUB(e_v1[3], V1[2], V1[1]);
+//
+//	VECT(n, e_v1[4], e_v1[3]);
+//
+//	if (FaceA_2(&Coord_1[3][0], masks[3])) {
+//		return false;
+//	}
+//	if (EdgeA(0, 3)) {
+//		return false;
+//	}
+//
+//	if (EdgeA(1, 3)) {
+//		return false;
+//	}
+//	if (EdgeA(2, 3)) {
+//		return false;
+//	}
+//	if ((masks[0] | masks[1] | masks[2] | masks[3]) != 017) {
+//		return true;
+//	}
+//// from now on, if there is a separating plane it is parallel to a face of b
+//
+//	SUB(P_V2[0], V1[0], V2[0]);
+//	SUB(P_V2[1], V1[1], V2[0]);
+//	SUB(P_V2[2], V1[2], V2[0]);
+//	SUB(P_V2[3], V1[3], V2[0]);
+//
+//	SUB(e_v2[0], V2[1], V2[0]);
+//	SUB(e_v2[1], V2[2], V2[0]);
+//
+//	VECT(n, e_v2[0], e_v2[1]);
+//	if (FaceB_1()) {
+//		return false;
+//	}
+//	SUB(e_v2[2], V2[3], V2[0]);
+//
+//	VECT(n, e_v2[2], e_v2[0]);
+//
+//	if (FaceB_1()) {
+//		return false;
+//	}
+//	VECT(n, e_v2[1], e_v2[2]);
+//
+//	if (FaceB_1()) {
+//		return false;
+//	}
+//	SUB(e_v2[4], V2[3], V2[1]);
+//	SUB(e_v2[3], V2[2], V2[1]);
+//
+//	VECT(n, e_v2[4], e_v2[3]);
+//
+//	if (FaceB_2()) {
+//		return false;
+//	}
+//	return true;
 }
 
 #undef DOT

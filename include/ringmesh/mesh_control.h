@@ -16,9 +16,9 @@
 namespace RINGMesh {
 class RINGMESH_API DetectInter {
 public:
-	DetectInter(MacroMesh& mm, index_t nb_reg);
+	DetectInter(const MacroMesh& mm, index_t nb_reg);
 
-	~DetectInter(); // TODO check if needs to be virtual
+	~DetectInter();
 
 	/**
 	 * \brief Operator (), changes into true the value of the given
@@ -58,13 +58,13 @@ public:
 
 	bool FaceA_2(double * Coord, int & maskEdges);
 
-protected:
-	std::vector<std::vector<bool> > inter_;
+private:
+	std::vector<bool> inter_;
 	index_t nb_reg_;
 	index_t cur_reg_;
 	index_t cur_reg2_;
 	index_t cur_cell_;
-	MacroMesh& mm_;
+	const MacroMesh& mm_;
 	index_t nb_inter_;
 	index_t indx_;
 };
