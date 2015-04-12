@@ -82,6 +82,7 @@ namespace RINGMesh {
             well.parts_[ p ].add_corner( parts_[ p ].corner( 1 ) ) ;
             well.parts_[ p ].set_id( parts_[ p ].id() ) ;
             well.parts_[ p ].set_well( &well ) ;
+            well.parts_[ p ].resolutions() = parts_[ p ].resolutions() ;
         }
     }
 
@@ -146,6 +147,61 @@ namespace RINGMesh {
         vertices.push_back( corner( well_part.corner( 1 ) ).point() ) ;
     }
 
+    index_t Well::nb_vertices() const
+    {
+        index_t result = nb_parts() + 1;
+        for( index_t p = 0; p < nb_parts(); p++ ) {
+            result += parts_[p].nb_points() ;
+        }
+        return result;
+    }
+
+    std::vector< vec3 > Well::all_vertices() const {
+        std::vector< vec3 > result ;
+        result.reserve( nb_vertices() ) ;
+        for( index_t p = 0; p < nb_parts(); ++p ) {
+            result.push_back( corner( p ).point() ) ;
+            const WellPart& well_part = part( p ) ;
+            for( index_t v = 0; v < well_part.nb_points(); ++v ) {
+                result.push_back( well_part.point( v ) ) ;
+            }
+        }
+        result.push_back( corner( nb_parts() ).point() ) ;
+        return result ;
+    }
+
+    std::vector< double > Well::all_resolutions() const {
+        std::vector< double > result ;
+        result.reserve( nb_vertices() ) ;
+        for( index_t p = 0; p < nb_parts(); ++p ) {
+            result.push_back( corner( p ).resolution() ) ;
+            const WellPart& well_part = part( p ) ;
+            for( index_t v = 0; v < well_part.nb_points(); ++v ) {
+                result.push_back( well_part.resolution( v ) ) ;
+            }
+        }
+        result.push_back( corner( nb_parts() ).resolution() ) ;
+        return result ;
+    }
+
+    index_t Well::global_point_id(index_t part_id, index_t point_id) const {
+        ringmesh_debug_assert( part_id < nb_parts() ) ;
+        ringmesh_debug_assert( point_id < part( part_id ).nb_points() ) ;
+        index_t result = point_id + 1 ;
+        for( index_t p = 0; p < part_id; ++p ) {
+            result += part( p ).nb_points() + 1 ;
+        }
+        return result ;
+    }
+
+    index_t Well::global_corner_id(index_t corner_id) const {
+        ringmesh_debug_assert( corner_id < nb_corners() ) ;
+        index_t result = 0 ;
+        for( index_t p = 0; p < corner_id; ++p ) {
+            result += part( p ).nb_points() + 1 ;
+        }
+        return result ;
+    }
 
     WellGroup::WellGroup()
           : model_( nil )
