@@ -394,13 +394,15 @@ namespace RINGMesh {
 
     /*********************************************************************/
 
-    index_t BoundaryModelMeshElement::local_id( index_t model_vertex_id ) const 
+    index_t BoundaryModelMeshElement::local_id(
+        index_t model_vertex_id ) const 
     {   
-        const std::vector< BoundaryModelVertices::VertexInBME >& reverse_db =
+        typedef BoundaryModelVertices BMV ;
+        const std::vector< BMV::VertexInBME >& bme_vertices =
             model_->vertices.bme_vertices( model_vertex_id ) ;
         
-        for( index_t i = 0; i < reverse_db.size(); i++ ) {
-            const BoundaryModelVertices::VertexInBME& info = reverse_db[i] ;
+        for( index_t i = 0; i < bme_vertices.size(); i++ ) {
+            const BMV::VertexInBME& info = bme_vertices[i] ;
             if( info.bme_type == element_type() && info.bme_id == id() ) {
                 return info.v_id ;
             }
@@ -451,34 +453,43 @@ namespace RINGMesh {
 
 
     void BoundaryModelMeshElement::set_vertex( 
-        index_t v, index_t model_vertex, bool update_model_point ) 
+        index_t v, index_t model_vertex ) 
     {
-        // I am not sure of these different updates. Jeanne
-        set_vertex( v, model_->vertex( model_vertex ), update_model_point ) ;
+        set_vertex( v, model_->vertex( model_vertex ), false ) ;
         set_model_vertex_id( v, model_vertex ) ;
         model_->vertices.add_unique_to_bme( model_vertex, element_type(), id(), v ) ;
     }
 
 
-    void BoundaryModelMeshElement::set_mesh_vertices( 
-        const std::vector< vec3 >& points ) 
+    void BoundaryModelMeshElement::set_vertices( 
+        const std::vector< vec3 >& points,
+        bool clear ) 
     {
+        // Clear the mesh, but keep the attributes and the space
+        if( clear  ){
+            mesh_.clear( true, true ) ;        
+        }
         mesh_.vertices.create_vertices( points.size() ) ;
         for( index_t v = 0; v < points.size(); v++ ) {            
             set_vertex( v, points[v], false ) ;
         }
     }
 
-    void BoundaryModelMeshElement::set_mesh_vertices( 
-        const std::vector< index_t >& model_vertices ) 
+    void BoundaryModelMeshElement::set_vertices( 
+        const std::vector< index_t >& model_vertices,
+        bool clear ) 
     {
+        // Clear the mesh, but keep the attributes and the space
+        if( clear  ){
+            mesh_.clear( true, true ) ;        
+        }
         mesh_.vertices.create_vertices( model_vertices.size() ) ;
         for( index_t v = 0; v < model_vertices.size(); v++ ) {
-            set_vertex( v, model_vertices[v], false ) ;
+            set_vertex( v, model_vertices[v] ) ;
         }
     }
 
-   
+    /***************************************************************/
 
     /*!
      * @brief Construct a Line
@@ -495,7 +506,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Construct a Line knowing its vertices
+     * @brief Construct a Line knowing its vertices. No boundaries are set.
      *
      * @param[in] model  The parent model
      * @param[in] id The index of the line in the lines_ vector of the parent model
@@ -507,7 +518,7 @@ namespace RINGMesh {
         const std::vector< vec3 >& vertices )
           : BoundaryModelMeshElement( model, LINE, id )
     {
-       set_mesh_vertices( vertices ) ;
+       set_vertices( vertices ) ;
     }
 
 
@@ -528,22 +539,11 @@ namespace RINGMesh {
         const std::vector< vec3 >& vertices )
         : BoundaryModelMeshElement( model, LINE, id )
     {
-        set_mesh_vertices( vertices ) ;
+        set_vertices( vertices ) ;
         boundaries_.push_back( corner0 ) ;
         boundaries_.push_back( corner1 ) ;
     }
 
-    void Line::set_vertices( const std::vector< vec3 >& vertices )
-    {
-        mesh_.clear( true, true ) ;
-        set_mesh_vertices( vertices ) ;        
-    }
-
-    void Line::set_vertices( const std::vector< index_t >& model_vertex_ids )
-    {
-        mesh_.clear( true, true ) ;        
-        set_mesh_vertices( model_vertex_ids ) ; 
-    }
 
     /*!
      * @brief Check if the Line is twice on the boundary of a surface
@@ -565,7 +565,7 @@ namespace RINGMesh {
      */
     vec3 Line::segment_barycenter( index_t s ) const
     {
-        return 0.5 * ( vertex( s ) + vertex( s + 1 ) ) ;
+        return 0.5*( vertex( s ) + vertex( s+1 ) ) ;
     }
 
 
@@ -659,8 +659,7 @@ namespace RINGMesh {
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {
-        mesh_.clear( true, true ) ;
-        set_mesh_vertices( vertices ) ;
+        set_vertices( vertices ) ;
         set_geometry( facets, facet_ptr ) ;
     }
 
@@ -670,8 +669,7 @@ namespace RINGMesh {
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {
-        mesh_.clear( true, true ) ;
-        set_mesh_vertices( model_vertex_ids ) ;
+        set_vertices( model_vertex_ids ) ;
         set_geometry( facets, facet_ptr ) ;
     }
 

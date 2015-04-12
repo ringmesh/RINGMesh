@@ -247,6 +247,7 @@ namespace RINGMesh {
 
     void BoundaryModelVertices::update_point( index_t v, const vec3& point )
     {
+        ringmesh_assert( v < nb_unique_vertices() ) ;
         const std::vector< VertexInBME >& bme_v = bme_vertices( v ) ;
         for( index_t i = 0; i < bme_v.size(); i++ ) {
             const VertexInBME& info = bme_v[i] ;
@@ -259,6 +260,7 @@ namespace RINGMesh {
     const std::vector< BoundaryModelVertices::VertexInBME >&
     BoundaryModelVertices::bme_vertices( index_t v ) const
     {
+        ringmesh_assert( v < nb_unique_vertices() ) ;
         if( !unique2bme_.is_bound() ) {
             const_cast< BoundaryModelVertices* >( this )->initialize_reverse() ;
         }

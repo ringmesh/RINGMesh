@@ -724,7 +724,7 @@ namespace RINGMesh {
         index_t unique_vertex ) 
     {        
         ringmesh_assert( corner_id < model_.nb_corners() ) ;
-        model_.corners_[corner_id]->set_vertex( unique_vertex, false ) ;  
+        model_.corners_[corner_id]->set_vertex( unique_vertex ) ;  
     }
 
      /*!
