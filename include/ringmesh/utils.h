@@ -67,7 +67,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
- /*! \brief A safer narrow casting function of type S to type T 
+ /*! @brief A safer narrow casting function of type S to type T 
      *  \return static_cast< T >( in ) 
      *  \post Check that the result can be cast back to in, if not throws an assertion.
      *  \note cf. The C++ programming lang. 4th edition. p299
@@ -993,6 +993,9 @@ namespace RINGMesh {
             /*!
              * @param index Index of this TriangleToSort in SortTriangleAroundEdge
              * @param surface_index Index of the Surface
+             * @param p0 point of the triangle
+             * @param p1 point of the triangle
+             * @param p2 point of the triangle
              */
             TriangleToSort(
                 index_t index,

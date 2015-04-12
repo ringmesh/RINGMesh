@@ -85,6 +85,7 @@ namespace RINGMesh {
 
     /*!
      * Test if a tetrahedron has an egde between two given points
+     * @param mesh The mesh 
      * @param t Tetrahedron index
      * @param p0 First vertex index
      * @param p1 Second vertex index
@@ -111,6 +112,7 @@ namespace RINGMesh {
 
     /*!
      * Get all the next adjacent tetrahedra sharing an edge
+     * @param mesh The mesh 
      * @param t Starting tetrahedron index to test, should contain the edge
      * @param prev Previous tetrahedron index
      * (if propagation arround the edge, prevent to go back were we came from)
@@ -139,6 +141,7 @@ namespace RINGMesh {
 
     /*!
      * Get all the edge indices arround one edge
+     * @param mesh The mesh 
      * @param t First tetrahderon index to test, should include the edge
      * @param p0 First vertex index of the edge
      * @param p1 Second vertex index of the edge

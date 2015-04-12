@@ -276,6 +276,7 @@ namespace RINGMesh {
         index_t bme_id,
         index_t v_id ) 
     {
+        /// The attribute unique2bme is bound if not already ? Good idea or not ? not sure ....
         if( !unique2bme_.is_bound() ) {
             unique2bme_.bind( attribute_manager(), "unique2bme") ; 
         }

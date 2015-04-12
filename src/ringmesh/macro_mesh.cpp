@@ -339,7 +339,7 @@ namespace RINGMesh {
 
     /*!
      * Gets the MacroMesh vertex coordinates
-     * @param[in] global_v vertex id in the MacroMesh
+     * @param[in] mesh vertex id in the MacroMesh
      * @param[in] v vertex id of the GEO::Mesh vertex
      * @return the vertex coordinates
      */
@@ -536,7 +536,7 @@ namespace RINGMesh {
     /*!
      * Gets the quad id in the MacroMesh
      * @param[in] s id of the surface
-     * @param[in] t id of the quad
+     * @param[in] q id of the quad
      * @return the corresponding facet id
      */
     index_t MacroMeshFacets::quad_id( index_t s, index_t q ) const
@@ -802,7 +802,7 @@ namespace RINGMesh {
     /*!
      * Gets the pyramid id in the MacroMesh
      * @param[in] r id of the GEO::Mesh
-     * @param[in] t id of the pyramid
+     * @param[in] p id of the pyramid
      * @return the corresponding id
      */
     index_t MacroMeshCells::pyramid_id( index_t r, index_t p ) const
@@ -836,7 +836,7 @@ namespace RINGMesh {
     /*!
      * Gets the prism id in the MacroMesh
      * @param[in] r id of the GEO::Mesh
-     * @param[in] t id of the prism
+     * @param[in] p id of the prism
      * @return the corresponding id
      */
     index_t MacroMeshCells::prism_id( index_t r, index_t p ) const
@@ -870,7 +870,7 @@ namespace RINGMesh {
     /*!
      * Gets the hexahedron id in the MacroMesh
      * @param[in] r id of the GEO::Mesh
-     * @param[in] t id of the hexahedron
+     * @param[in] h id of the hexahedron
      * @return the corresponding id
      */
     index_t MacroMeshCells::hex_id( index_t r, index_t h ) const
@@ -1047,6 +1047,7 @@ namespace RINGMesh {
      * @param[in] method Mesher used
      * @param[in] region_id Region to mesh, -1 for all
      * @param[in] add_steiner_points if true, the mesher will add some points inside the region
+     * @param[out] internal_vertices TO DOCUMENT
      * to improve the mesh quality
      */
     void MacroMesh::compute_tetmesh(
