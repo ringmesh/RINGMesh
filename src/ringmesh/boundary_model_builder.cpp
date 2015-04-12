@@ -655,7 +655,7 @@ namespace RINGMesh {
         const vec3& point )
     {
         ringmesh_assert( corner_id < model_.nb_corners() ) ;
-        model_.corners_[ corner_id ]->set_vertex( point ) ;
+        model_.corners_[ corner_id ]->set_vertex( point, false ) ;
     }
 
 

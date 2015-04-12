@@ -236,24 +236,49 @@ namespace RINGMesh {
 
     bool BoundaryModelElement::operator==( const BoundaryModelElement& rhs ) const
     {
-        if( model_ != rhs.model_ ) {return false ;}
-        if( type_ != rhs.type_ ) {return false ;}
-        if( id_ != rhs.id_ ) {return false ;}
-        if( name_ != rhs.name_ ) {return false ;}
-        if( geol_feature_ != rhs.geol_feature_ ) {return false ;}
-        if( nb_boundaries() != rhs.nb_boundaries() ) {return false ;}
+        if( model_ != rhs.model_ ) {
+            return false ;
+        }
+        if( type_ != rhs.type_ ) {
+            return false ;
+        }
+        if( id_ != rhs.id_ ) {
+            return false ;
+        }
+        if( name_ != rhs.name_ ) {
+            return false ;
+        }
+        if( geol_feature_ != rhs.geol_feature_ ) {
+            return false ;
+        }
+        if( nb_boundaries() != rhs.nb_boundaries() ) {
+            return false ;
+        }
         if( !std::equal( boundaries_.begin(), boundaries_.end(),
-                rhs.boundaries_.begin() ) ) { return false ;}
+            rhs.boundaries_.begin() ) ) {
+                return false ;
+        }
         if( !std::equal( sides_.begin(), sides_.end(),
-                rhs.sides_.begin() ) ) { return false ;}
-        if( nb_in_boundary() != rhs.nb_in_boundary() ) {return false ;}
+            rhs.sides_.begin() ) ) { 
+                return false ;
+        }
+        if( nb_in_boundary() != rhs.nb_in_boundary() ) {
+            return false ;
+        }
         if( !std::equal( in_boundary_.begin(), in_boundary_.end(),
-                rhs.in_boundary_.begin() ) ) { return false ;}
-        if( parent_ != rhs.parent_ ) {return false ;}
-        if( nb_children() != rhs.nb_children() ) {return false ;}
+                rhs.in_boundary_.begin() ) ) { 
+                    return false ;
+        }
+        if( parent_ != rhs.parent_ ) {
+            return false ;
+        }
+        if( nb_children() != rhs.nb_children() ) {
+            return false ;
+        }
         if( !std::equal( children_.begin(), children_.end(),
-                rhs.children_.begin() ) ) { return false ;}
-
+            rhs.children_.begin() ) ) { 
+            return false ;
+        }
         return true ;
     }
 
@@ -369,13 +394,15 @@ namespace RINGMesh {
 
     /*********************************************************************/
 
-    index_t BoundaryModelMeshElement::local_id( index_t model_vertex_id ) const 
+    index_t BoundaryModelMeshElement::local_id(
+        index_t model_vertex_id ) const 
     {   
-        const std::vector< BoundaryModelVertices::VertexInBME >& reverse_db =
+        typedef BoundaryModelVertices BMV ;
+        const std::vector< BMV::VertexInBME >& bme_vertices =
             model_->vertices.bme_vertices( model_vertex_id ) ;
         
-        for( index_t i = 0; i < reverse_db.size(); i++ ) {
-            const BoundaryModelVertices::VertexInBME& info = reverse_db[i] ;
+        for( index_t i = 0; i < bme_vertices.size(); i++ ) {
+            const BMV::VertexInBME& info = bme_vertices[i] ;
             if( info.bme_type == element_type() && info.bme_id == id() ) {
                 return info.v_id ;
             }
@@ -428,38 +455,41 @@ namespace RINGMesh {
     void BoundaryModelMeshElement::set_vertex( 
         index_t v, index_t model_vertex ) 
     {
-        set_vertex( v, model_->vertex( model_vertex ) ) ;
+        set_vertex( v, model_->vertex( model_vertex ), false ) ;
         set_model_vertex_id( v, model_vertex ) ;
         model_->vertices.add_unique_to_bme( model_vertex, element_type(), id(), v ) ;
     }
 
 
-    void BoundaryModelMeshElement::set_mesh_vertices( 
-        const std::vector< vec3 >& points ) 
+    void BoundaryModelMeshElement::set_vertices( 
+        const std::vector< vec3 >& points,
+        bool clear ) 
     {
+        // Clear the mesh, but keep the attributes and the space
+        if( clear  ){
+            mesh_.clear( true, true ) ;        
+        }
         mesh_.vertices.create_vertices( points.size() ) ;
         for( index_t v = 0; v < points.size(); v++ ) {            
             set_vertex( v, points[v], false ) ;
         }
     }
 
-    void BoundaryModelMeshElement::set_mesh_vertices( 
-        const std::vector< index_t >& model_vertices ) 
+    void BoundaryModelMeshElement::set_vertices( 
+        const std::vector< index_t >& model_vertices,
+        bool clear ) 
     {
+        // Clear the mesh, but keep the attributes and the space
+        if( clear  ){
+            mesh_.clear( true, true ) ;        
+        }
         mesh_.vertices.create_vertices( model_vertices.size() ) ;
         for( index_t v = 0; v < model_vertices.size(); v++ ) {
             set_vertex( v, model_vertices[v] ) ;
         }
     }
 
-     
-
-    
-    void Corner::set_vertex( index_t model_point_id ) 
-    {
-        BoundaryModelMeshElement::set_vertex( 0, model_point_id ) ;            
-    }
-
+    /***************************************************************/
 
     /*!
      * @brief Construct a Line
@@ -476,7 +506,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Construct a Line knowing its vertices
+     * @brief Construct a Line knowing its vertices. No boundaries are set.
      *
      * @param[in] model  The parent model
      * @param[in] id The index of the line in the lines_ vector of the parent model
@@ -488,7 +518,7 @@ namespace RINGMesh {
         const std::vector< vec3 >& vertices )
           : BoundaryModelMeshElement( model, LINE, id )
     {
-       set_mesh_vertices( vertices ) ;
+       set_vertices( vertices ) ;
     }
 
 
@@ -509,22 +539,11 @@ namespace RINGMesh {
         const std::vector< vec3 >& vertices )
         : BoundaryModelMeshElement( model, LINE, id )
     {
-        set_mesh_vertices( vertices ) ;
+        set_vertices( vertices ) ;
         boundaries_.push_back( corner0 ) ;
         boundaries_.push_back( corner1 ) ;
     }
 
-    void Line::set_vertices( const std::vector< vec3 >& vertices )
-    {
-        mesh_.clear( true, true ) ;
-        set_mesh_vertices( vertices ) ;        
-    }
-
-    void Line::set_vertices( const std::vector< index_t >& model_vertex_ids )
-    {
-        mesh_.clear( true, true ) ;        
-        set_mesh_vertices( model_vertex_ids ) ; 
-    }
 
     /*!
      * @brief Check if the Line is twice on the boundary of a surface
@@ -546,7 +565,7 @@ namespace RINGMesh {
      */
     vec3 Line::segment_barycenter( index_t s ) const
     {
-        return 0.5 * ( vertex( s ) + vertex( s + 1 ) ) ;
+        return 0.5*( vertex( s ) + vertex( s+1 ) ) ;
     }
 
 
@@ -634,25 +653,26 @@ namespace RINGMesh {
         return local_id( model_vertex_id ) ;
     }
 
+
     void Surface::set_geometry(
         const std::vector< vec3 >& vertices,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {
-        mesh_.clear( true, true ) ;
-        set_mesh_vertices( vertices ) ;
+        set_vertices( vertices ) ;
         set_geometry( facets, facet_ptr ) ;
     }
+
 
     void Surface::set_geometry(
         const std::vector< index_t >& model_vertex_ids,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {
-        mesh_.clear( true, true ) ;
-        set_mesh_vertices( model_vertex_ids ) ;
+        set_vertices( model_vertex_ids ) ;
         set_geometry( facets, facet_ptr ) ;
     }
+
 
     void Surface::set_geometry(
         const std::vector< index_t >& facets,
@@ -668,6 +688,8 @@ namespace RINGMesh {
             mesh_.facets.create_polygon( facet_vertices ) ;
         }
     }
+    
+    
     /*!
      * @brief Traversal of a surface border
      * @details From the input facet f, get the facet that share vertex v and

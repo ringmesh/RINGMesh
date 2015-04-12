@@ -45,7 +45,6 @@
 
 #include <ringmesh/common.h>
 #include <ringmesh/boundary_model_element.h>
-#include <ringmesh/attribute.h>
 #include <geogram/basic/logger.h>
 
 #include <vector>
@@ -294,6 +293,7 @@ namespace RINGMesh {
          *
          * @param[in] type Type of the element
          * @param[in] index Index of the element
+         *
          */
         inline const BoundaryModelElement& element(
             BME::TYPE type,
@@ -309,7 +309,7 @@ namespace RINGMesh {
                  case BoundaryModelElement::INTERFACE :  return *interfaces_[ index ] ;
                  case BoundaryModelElement::LAYER     :  return *layers_[ index ] ;
                  case BoundaryModelElement::ALL_TYPES : {
-                     // This must synchro with what is done in the builder
+                     // See the BoundaryModelBuilder::end_model() function
                      index_t t = NO_ID ;
                      for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
                          if( index >= nb_elements_per_type_[ i - 1 ]
@@ -325,7 +325,7 @@ namespace RINGMesh {
                  }
                  default :
                      ringmesh_assert_not_reached ;
-                     return dummy_element ;
+                     return BoundaryModelElement() ;
             }
         }
 
