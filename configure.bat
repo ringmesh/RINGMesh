@@ -8,7 +8,7 @@ IF [%1] == [] (
 )
 
 IF [%2] == [] (
-    set CMAKE_PATH="C:\Program Files (x86)\CMake 2.8"
+    set CMAKE_PATH="C:\Program Files (x86)\CMake"
 ) else (
     set CMAKE_PATH=%2
 )
