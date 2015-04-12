@@ -44,7 +44,6 @@
 #define __RINGMESH_BOUNDARY_MODEL_ELEMENT__
 
 #include <ringmesh/common.h>
-#include <ringmesh/attribute.h>
 #include <ringmesh/utils.h>
 
 #include <geogram/mesh/mesh.h>
@@ -92,7 +91,7 @@ namespace RINGMesh {
          * @details When no type is defined NO_TYPE should be used
          * There is two main categories of elements
          *   - low-level elements (CORNER, LINE, SURFACE, REGION) have a geometry and connectivity relationships
-         *   - high-level elements (CONTACT, INTERFACE, LAYER) that are constuted of low-level elements
+         *   - high-level elements (CONTACT, INTERFACE, LAYER) that are constituted of low-level elements
          *
          * DO NOT MODIFY THIS ENUM
          */
@@ -194,7 +193,7 @@ namespace RINGMesh {
         const BoundaryModelElement& child( index_t x ) const ;
 
         /*!@}
-         * \name Accessors to geometry - Reimplemented in Corner, Line, Surface classes
+         * \name Accessors to geometry - Reimplemented in BoundaryModelMeshElement
          * @{
          */
         virtual index_t nb_cells() const
@@ -343,11 +342,6 @@ namespace RINGMesh {
     } ;
 
 
-    /// Element to return when a method failed - to avoid compilation warnings
-    const static BoundaryModelElement dummy_element(
-        nil, BoundaryModelElement::NO_TYPE ) ;
-
-
     /*!
      * @brief A BoundaryModelElement that has a geometrical representation
      *
@@ -363,11 +357,10 @@ namespace RINGMesh {
         {
             model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ;         
         }
-
         virtual ~BoundaryModelMeshElement() {} ;
         
         /*!
-         * @brief Returns the number of facets
+         * @brief Returns the number of edges or facets of the mesh
          */
         virtual index_t nb_cells() const {
             switch ( element_type() ) {
@@ -381,7 +374,7 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Returns the number of vertices
+         * @brief Returns the number of vertices of the mesh
          */
         virtual index_t nb_vertices() const { return mesh_.vertices.nb() ; }
         
@@ -389,24 +382,79 @@ namespace RINGMesh {
          * @brief Get the vertex in the model from a vertex index in the Surface
          */
         virtual index_t model_vertex_id( index_t v = 0 ) const ;
+
+        /*!
+         * @brief Set the index of the matching point in the BoundaryModel
+         * 
+         * @param v Vertex index
+         * @param model_id Model vertex index in BoundaryModelVertices
+         */
+        void set_model_vertex_id( index_t v, index_t model_id ) ;
+
         /*!
          * @brief Returns the coordinates of the point at the given index in the surface
          */
         virtual const vec3& vertex( index_t v = 0 ) const ;
-
        
+        /*!
+         * @brief Set the geometrical position of a vertex
+         *
+         * @param index Index of the vertex to modify
+         * @param point New coordinates
+         * @param update If true, all the vertices sharing the same geometrical position 
+         *               in the BoundaryModel have their position updated, if false they
+         *               are not.
+         * 
+         * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
+         *          I removed on purpose the default value parameter for update (Jeanne)
+         */             
         virtual void set_vertex(
             index_t index,
             const vec3& point,
-            bool update = true ) ;
+            bool update ) ;
+        
+        /*!
+         * @brief Set the geometrical position of a vertex from a model vertex
+         * @details Set also both mapping from (BoundaryModelVertices::unique2bme)
+         *          and to (model_vertex_id_) the model vertex.
+         *
+         * @param index Index of the vertex to modify
+         * @param model_vertex Index in BoundaryModelVertices of the vertex giving 
+         *                     the new position
+         */
+        void set_vertex( index_t v, index_t model_vertex ) ;
+        
+        
+        /*!
+         * @brief Add vertices to the mesh
+         * @details No update of the model vertices is done
+         *
+         * @param points Geometric positions of the vertices to add
+         * @param clear_mesh If true the mesh if cleared, keeping its attributes 
+         */
+        void set_vertices(
+            const std::vector< vec3 >& points, 
+            bool clear_mesh = false ) ;
 
-        void set_model_vertex_id( index_t v, index_t model_id ) ;
+        /*!
+         * @brief Add vertices to the mesh
+         * @details See set_vertex(index_t, index_t)
+         *
+         * @param model_vertices Indices in the model of the points to add
+         * @param clear_mesh If true the mesh if cleared, keeping its attributes 
+         */
+        void set_vertices( 
+            const std::vector< index_t >& model_vertices, 
+            bool clear_mesh = false ) ;
 
         /*! 
-         * @brief Get the index of the point in this element
+         * @brief Returns the index of the first point that correspond to a model vertex
+         * @details Uses the attribute on the BoundaryModelVertices that stores the 
+         *  corresponding points in BME. Returns NO_ID if no matching point found.
+         *
+         * @param model_vertex_id Index of a vertex in BoundaryModelVertices
          */
         virtual index_t local_id( index_t model_vertex_id ) const ;
-
 
         /*!
          * @}
@@ -425,16 +473,12 @@ namespace RINGMesh {
 
     protected :
         /*!
-         * @brief We need a function checking that the mesh_ corresponds to the 
-         * element type
+         * @brief Check that the Mesh stored by the object is consistent 
+         *        with its TYPE
+         *
          * @todo To implement
          */
         bool is_valid() const ;
-
-        void set_vertex( index_t v, index_t model_vertex, bool update_model_point = true ) ;
-        
-        void set_mesh_vertices( const std::vector< vec3 >& points ) ;
-        void set_mesh_vertices( const std::vector< index_t >& model_vertices ) ;
 
     protected :
         GEO::Mesh mesh_ ;
@@ -444,9 +488,9 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief A Corner
+     * @brief A Corner 
      *
-     * Element of type CORNER. Its geometry is determined by one vertex.
+     * @details Element of type CORNER. Its geometry is determined by one vertex.
      * Most corners are at the intersections of at least two Line, but some
      * are in the boundary of a closed Line.
      */
@@ -463,20 +507,19 @@ namespace RINGMesh {
 
         virtual ~Corner() {}
         
-        void set_vertex( const vec3& point, bool update_model = true )
+        void set_vertex( const vec3& point, bool update_model )
         {
             BoundaryModelMeshElement::set_vertex( 0, point, update_model ) ;
         }
 
-        void set_vertex( index_t model_point_id, bool update_model = true ) 
+        void set_vertex( index_t model_point_id ) 
         {
-            BoundaryModelMeshElement::set_vertex( 0, model_point_id, update_model ) ;    
+            BoundaryModelMeshElement::set_vertex( 0, model_point_id ) ;    
         }
 
         void set_model_vertex_id( index_t model_id )
         {
-            BoundaryModelMeshElement::set_model_vertex_id( 0, model_id )  ;
-            // Something to update there ?
+            BoundaryModelMeshElement::set_model_vertex_id( 0, model_id ) ;
         }
     } ;
 
@@ -484,12 +527,14 @@ namespace RINGMesh {
     /*!
      * @brief A boundary Line of a Surface
      *
-     * @details To be valid a Line must have 2 element on its boundary (the 2 Corner might be identical)
+     * @details To be valid a Line must have 2 Corners that may be the same
      * and be in the boundary of a least one Surface.
      * It is defined by a set of vertices. Its segments are implicitely defined between vertices
      * vertex(n) and vertex(n+1) for n between 0 and nb_cells()
      *
      * @note There is no LineMutator since hardly nothing can be performed on a Line without modifying the model
+     *
+     * @todo Switch to the Mesh.edges
      */
     class RINGMESH_API Line : public BoundaryModelMeshElement {
     public:
@@ -510,7 +555,9 @@ namespace RINGMesh {
         virtual ~Line() {}
 
 
-        /*! @brief A Line is closed if its two extremities are identitcal */
+        /*!
+         * @brief A Line is closed if its two extremities are identitical 
+         */
         bool is_closed() const
         {
             ringmesh_assert( nb_boundaries() == 2 ) ;
@@ -521,9 +568,6 @@ namespace RINGMesh {
         bool is_inside_border( const BoundaryModelElement& e ) const ;
 
         bool equal( const std::vector< vec3 >& rhs_vertices ) const ;
-
-        void set_vertices( const std::vector< vec3 >& vertices ) ;        
-        void set_vertices( const std::vector< index_t >& model_vertex_ids ) ;        
 
         vec3 segment_barycenter( index_t s ) const ;
         double segment_length( index_t s ) const ;
@@ -549,7 +593,7 @@ namespace RINGMesh {
     /*!
      * @brief A polygonal manifold surface
      *
-     * This is a BoundaryModelElement of type SURFACE.
+     * @details This is a BoundaryModelElement of type SURFACE.
      * It is defined by a set of vertices and a set of polygonal facets.
      * Its boundaries are several Lines and it is on the boundary of 1 or 2 Region
      */
@@ -557,7 +601,7 @@ namespace RINGMesh {
         friend class SurfaceTools ;
 
     public:
-        const static index_t NO_ADJACENT = index_t( - 1 ) ;
+        const static index_t NO_ADJACENT = index_t(-1) ;
 
         Surface(
             BoundaryModel* model = nil,
@@ -568,11 +612,12 @@ namespace RINGMesh {
 
         virtual ~Surface() ;
 
+        // Je ne suis pas trop pour donner accès au Mesh directement comme ça (Jeanne)
         GEO::Mesh& mesh() const {
             return const_cast< GEO::Mesh& >( mesh_ ) ;
         }
 
-        bool is_triangulated() const { return mesh_.facets.are_simplices() ;}
+        bool is_triangulated() const { return mesh_.facets.are_simplices() ; }
 
         /*!
         * @brief Returns the coordinates of point \param v in facet \param f
@@ -581,8 +626,8 @@ namespace RINGMesh {
             index_t f,
             index_t v ) const ;
 
-        // If I do not put this one the stupid compiler does not find it
-        // There is propbably a nicer solution
+        // If I do not put these ones the stupid compiler does not find it
+        // There is propbably a nicer solution (Jeanne)
         virtual const vec3& vertex( index_t v ) const {
             return BoundaryModelMeshElement::vertex(v) ;
         }
@@ -601,14 +646,18 @@ namespace RINGMesh {
             return mesh_.facets.nb_vertices( f ) ;
         }
 
-        bool is_triangle( index_t f ) const { return nb_vertices_in_facet( f ) == 3 ;}
+        bool is_triangle( index_t f ) const { return nb_vertices_in_facet( f ) == 3 ; }
 
         index_t next_in_facet(
             index_t f,
             index_t v ) const
         {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-            if( v != nb_vertices_in_facet( f ) - 1 ) {return v + 1 ;} else {return 0 ;}
+            if( v != nb_vertices_in_facet( f ) - 1 ) {
+                return v + 1 ;
+            } else {
+                return 0 ;
+            }
         }
 
         index_t prev_in_facet(
@@ -619,7 +668,7 @@ namespace RINGMesh {
             if( v > 0 ) {return v - 1 ;} else {return nb_vertices_in_facet( f ) - 1 ;}
         }
 
-        index_t nb_corners() const { return mesh_.facet_corners.nb() ;}
+        index_t nb_corners() const { return mesh_.facet_corners.nb() ; }
         index_t model_vertex_id_at_corner( index_t corner ) const
         {
             return BoundaryModelMeshElement::model_vertex_id( mesh_.facet_corners.vertex( corner ) ) ;
@@ -647,15 +696,12 @@ namespace RINGMesh {
             return BoundaryModelMeshElement::model_vertex_id( surf_vertex_id( f, v ) ) ;
         }
 
-        
-
-
-
+       
         /*!
          * @brief Returns a vertex surface index from its model index
          * @details Returns the first one only or NO_ID if no point is found
          * 
-         * To remove
+         * @todo To remove
          */
         index_t surf_vertex_id( index_t model_vertex_id ) const ;
 
@@ -723,7 +769,7 @@ namespace RINGMesh {
             return mesh_.facets.adjacent( f, v ) ;
         }
 
-        /*! @brief Retruns the index of the adjacent facet at the given corner
+        /*! @brief Returns the index of the adjacent facet at the given corner
          */
         index_t adjacent( index_t c ) const
         {
