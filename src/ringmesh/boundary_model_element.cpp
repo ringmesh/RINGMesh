@@ -236,24 +236,49 @@ namespace RINGMesh {
 
     bool BoundaryModelElement::operator==( const BoundaryModelElement& rhs ) const
     {
-        if( model_ != rhs.model_ ) {return false ;}
-        if( type_ != rhs.type_ ) {return false ;}
-        if( id_ != rhs.id_ ) {return false ;}
-        if( name_ != rhs.name_ ) {return false ;}
-        if( geol_feature_ != rhs.geol_feature_ ) {return false ;}
-        if( nb_boundaries() != rhs.nb_boundaries() ) {return false ;}
+        if( model_ != rhs.model_ ) {
+            return false ;
+        }
+        if( type_ != rhs.type_ ) {
+            return false ;
+        }
+        if( id_ != rhs.id_ ) {
+            return false ;
+        }
+        if( name_ != rhs.name_ ) {
+            return false ;
+        }
+        if( geol_feature_ != rhs.geol_feature_ ) {
+            return false ;
+        }
+        if( nb_boundaries() != rhs.nb_boundaries() ) {
+            return false ;
+        }
         if( !std::equal( boundaries_.begin(), boundaries_.end(),
-                rhs.boundaries_.begin() ) ) { return false ;}
+            rhs.boundaries_.begin() ) ) {
+                return false ;
+        }
         if( !std::equal( sides_.begin(), sides_.end(),
-                rhs.sides_.begin() ) ) { return false ;}
-        if( nb_in_boundary() != rhs.nb_in_boundary() ) {return false ;}
+            rhs.sides_.begin() ) ) { 
+                return false ;
+        }
+        if( nb_in_boundary() != rhs.nb_in_boundary() ) {
+            return false ;
+        }
         if( !std::equal( in_boundary_.begin(), in_boundary_.end(),
-                rhs.in_boundary_.begin() ) ) { return false ;}
-        if( parent_ != rhs.parent_ ) {return false ;}
-        if( nb_children() != rhs.nb_children() ) {return false ;}
+                rhs.in_boundary_.begin() ) ) { 
+                    return false ;
+        }
+        if( parent_ != rhs.parent_ ) {
+            return false ;
+        }
+        if( nb_children() != rhs.nb_children() ) {
+            return false ;
+        }
         if( !std::equal( children_.begin(), children_.end(),
-                rhs.children_.begin() ) ) { return false ;}
-
+            rhs.children_.begin() ) ) { 
+            return false ;
+        }
         return true ;
     }
 
@@ -426,9 +451,10 @@ namespace RINGMesh {
 
 
     void BoundaryModelMeshElement::set_vertex( 
-        index_t v, index_t model_vertex ) 
+        index_t v, index_t model_vertex, bool update_model_point ) 
     {
-        set_vertex( v, model_->vertex( model_vertex ) ) ;
+        // I am not sure of these different updates. Jeanne
+        set_vertex( v, model_->vertex( model_vertex ), update_model_point ) ;
         set_model_vertex_id( v, model_vertex ) ;
         model_->vertices.add_unique_to_bme( model_vertex, element_type(), id(), v ) ;
     }
@@ -448,18 +474,11 @@ namespace RINGMesh {
     {
         mesh_.vertices.create_vertices( model_vertices.size() ) ;
         for( index_t v = 0; v < model_vertices.size(); v++ ) {
-            set_vertex( v, model_vertices[v] ) ;
+            set_vertex( v, model_vertices[v], false ) ;
         }
     }
 
-     
-
-    
-    void Corner::set_vertex( index_t model_point_id ) 
-    {
-        BoundaryModelMeshElement::set_vertex( 0, model_point_id ) ;            
-    }
-
+   
 
     /*!
      * @brief Construct a Line
@@ -634,6 +653,7 @@ namespace RINGMesh {
         return local_id( model_vertex_id ) ;
     }
 
+
     void Surface::set_geometry(
         const std::vector< vec3 >& vertices,
         const std::vector< index_t >& facets,
@@ -644,6 +664,7 @@ namespace RINGMesh {
         set_geometry( facets, facet_ptr ) ;
     }
 
+
     void Surface::set_geometry(
         const std::vector< index_t >& model_vertex_ids,
         const std::vector< index_t >& facets,
@@ -653,6 +674,7 @@ namespace RINGMesh {
         set_mesh_vertices( model_vertex_ids ) ;
         set_geometry( facets, facet_ptr ) ;
     }
+
 
     void Surface::set_geometry(
         const std::vector< index_t >& facets,
@@ -668,6 +690,8 @@ namespace RINGMesh {
             mesh_.facets.create_polygon( facet_vertices ) ;
         }
     }
+    
+    
     /*!
      * @brief Traversal of a surface border
      * @details From the input facet f, get the facet that share vertex v and

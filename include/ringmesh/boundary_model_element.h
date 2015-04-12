@@ -108,7 +108,7 @@ namespace RINGMesh {
             ALL_TYPES
         } ;
 
-        const static index_t NO_ID = index_t( - 1 ) ;
+        const static index_t NO_ID = index_t(-1) ;
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
         static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) ;
@@ -118,15 +118,15 @@ namespace RINGMesh {
 
         // Key functions - They determine which element of which type
         // can fill the different class attributes
-        static TYPE parent_type( TYPE t ) ;
-        static TYPE child_type( TYPE t ) ;
-        static TYPE boundary_type( TYPE t ) ;
+        static TYPE parent_type     ( TYPE t ) ;
+        static TYPE child_type      ( TYPE t ) ;
+        static TYPE boundary_type   ( TYPE t ) ;
         static TYPE in_boundary_type( TYPE t ) ;
-        static index_t dimension( TYPE t ) ;
+        static index_t dimension    ( TYPE t ) ;
 
-        static bool parent_allowed( TYPE t ) { return parent_type( t ) != NO_TYPE ; }
-        static bool child_allowed( TYPE t ) { return child_type( t ) != NO_TYPE ; }
-        static bool boundary_allowed( TYPE t ) { return boundary_type( t ) != NO_TYPE ; }
+        static bool parent_allowed     ( TYPE t ) { return parent_type( t )      != NO_TYPE ; }
+        static bool child_allowed      ( TYPE t ) { return child_type( t )       != NO_TYPE ; }
+        static bool boundary_allowed   ( TYPE t ) { return boundary_type( t )    != NO_TYPE ; }
         static bool in_boundary_allowed( TYPE t ) { return in_boundary_type( t ) != NO_TYPE ; }
         
 
@@ -209,6 +209,7 @@ namespace RINGMesh {
 
         virtual index_t model_vertex_id( index_t p = 0 ) const
         {
+            ringmesh_assert_not_reached ;
             return NO_ID ;
         }
 
@@ -223,6 +224,7 @@ namespace RINGMesh {
             const vec3& point,
             bool update = true )
         {
+            ringmesh_assert_not_reached ;
         }
 
         /*!@}
@@ -252,27 +254,20 @@ namespace RINGMesh {
             boundaries_.push_back( b ) ;
         }
 
-        void set_boundary(
-            index_t id,
-            index_t b )
+        void set_boundary( index_t id, index_t b )
         {
             ringmesh_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
         }
 
-        void add_boundary(
-            index_t b,
-            bool side )
+        void add_boundary( index_t b, bool side )
         {
             ringmesh_assert( boundary_allowed( type_ ) ) ;
             boundaries_.push_back( b ) ;
             sides_.push_back( side ) ;
         }
 
-        void set_boundary(
-            index_t id,
-            index_t b,
-            bool side )
+        void set_boundary( index_t id, index_t b, bool side )
         {
             ringmesh_assert( id < nb_boundaries() && id < sides_.size() ) ;
             boundaries_[ id ] = b ;
@@ -285,9 +280,7 @@ namespace RINGMesh {
             in_boundary_.push_back( e ) ;
         }
 
-        void set_in_boundary(
-            index_t id,
-            index_t in_b )
+        void set_in_boundary( index_t id, index_t in_b )
         {
             ringmesh_assert( id < nb_in_boundary() ) ;
             in_boundary_[ id ] = in_b ;
@@ -305,9 +298,7 @@ namespace RINGMesh {
             children_.push_back( e ) ;
         }
 
-        void set_child(
-            index_t id,
-            index_t c )
+        void set_child( index_t id, index_t c )
         {
             ringmesh_assert( id < nb_children() ) ;
             children_[ id ] = c ;
@@ -350,6 +341,7 @@ namespace RINGMesh {
         /// Elements constituting this one - see child_type( TYPE )
         std::vector< index_t > children_ ;
     } ;
+
 
     /// Element to return when a method failed - to avoid compilation warnings
     const static BoundaryModelElement dummy_element(
@@ -411,7 +403,7 @@ namespace RINGMesh {
         void set_model_vertex_id( index_t v, index_t model_id ) ;
 
         /*! 
-         * @brief Get teh index of the point in this element
+         * @brief Get the index of the point in this element
          */
         virtual index_t local_id( index_t model_vertex_id ) const ;
 
@@ -439,7 +431,7 @@ namespace RINGMesh {
          */
         bool is_valid() const ;
 
-        void set_vertex( index_t v, index_t model_vertex ) ;
+        void set_vertex( index_t v, index_t model_vertex, bool update_model_point = true ) ;
         
         void set_mesh_vertices( const std::vector< vec3 >& points ) ;
         void set_mesh_vertices( const std::vector< index_t >& model_vertices ) ;
@@ -471,16 +463,20 @@ namespace RINGMesh {
 
         virtual ~Corner() {}
         
-        void set_vertex( const vec3& point )
+        void set_vertex( const vec3& point, bool update_model = true )
         {
-            BoundaryModelMeshElement::set_vertex( 0, point ) ;
+            BoundaryModelMeshElement::set_vertex( 0, point, update_model ) ;
         }
 
-        void set_vertex( index_t model_point_id ) ;
+        void set_vertex( index_t model_point_id, bool update_model = true ) 
+        {
+            BoundaryModelMeshElement::set_vertex( 0, model_point_id, update_model ) ;    
+        }
 
         void set_model_vertex_id( index_t model_id )
         {
-            BoundaryModelMeshElement::set_model_vertex_id(0, model_id) ;
+            BoundaryModelMeshElement::set_model_vertex_id( 0, model_id )  ;
+            // Something to update there ?
         }
     } ;
 
