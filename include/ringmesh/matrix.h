@@ -45,15 +45,15 @@
 #include <deque>
 
 namespace RINGMesh {
-    /**
+    /*!
      * @brief enum of MatrixType, This is useful to further specialize the template in the future
      * */
     enum MatrixType {
         heavy = 0, light = 1, other = 2
     } ;
 
-    /**
-     * @Brief Basic container for the sparse matrix, i.e. the "elements".
+    /*!
+     * @brief Basic container for the sparse matrix, i.e. the "elements".
      * */
     template< class T >
     struct ElementImpl {
@@ -67,7 +67,7 @@ namespace RINGMesh {
         index_t index ;
     } ;
 
-    /**
+    /*!
      * @brief Basic "Row" of the matrix, this stores the elements of the matrix in a line-oriented way
      * */
     template< class T >
@@ -200,9 +200,9 @@ namespace RINGMesh {
         }
 
         /*!
-         * test the existence of a given i-j element
-         * @param[in] index_t i the given row
-         * @param[in] index_t j the given column
+         * Test the existence of a given i-j element
+         * @param[in] i the given row
+         * @param[in] j the given column
          * @return bool true if it exists, false if it does not exist
          */
         bool exist(
@@ -216,7 +216,7 @@ namespace RINGMesh {
         /*!
          * @brief gets number of elements within a row
          * @param[in] i row index
-         * @retrun index_t number of elements
+         * @return index_t number of elements
          */
         index_t get_nb_elements_in_line( index_t i ) const
         {
@@ -228,7 +228,7 @@ namespace RINGMesh {
          * @brief gets the j that correspond to the given index within the row
          * @param[in] i row index
          * @param[in] e the index within the row
-         * @retrun index_t of the corresponding j column in the matrix
+         * @return index_t of the corresponding j column in the matrix
          */
         index_t get_column_in_line(
             index_t i,
@@ -242,7 +242,7 @@ namespace RINGMesh {
          * @param[in] i row index
          * @param[in] j column index
          * @param[out] index the index within a row
-         * @retrun true if success, false if the i-j couple is empty
+         * @return true if success, false if the i-j couple is empty
          */
         bool get_index_in_line(
             index_t i,
@@ -282,8 +282,8 @@ namespace RINGMesh {
 
         /*!
          * build the matrix, in allocate the ni number of lines and sets the matrix dimensions
-         * @param[in] index_t ni number of lines of the matrix
-         * @param[in] index_t nj number of columns of the matrix
+         * @param[in] ni number of lines of the matrix
+         * @param[in] nj number of columns of the matrix
          */
         void build_matrix(
             index_t ni,

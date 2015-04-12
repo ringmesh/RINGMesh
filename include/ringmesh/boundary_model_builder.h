@@ -51,7 +51,7 @@
 #include <stack>
 
 namespace RINGMesh {
-    /**
+    /*!
      * @brief Base class for all classes building a BoundaryModel.
      * @details Derive from this class
      */
@@ -82,7 +82,7 @@ namespace RINGMesh {
             return const_cast< BoundaryModelElement& >( model_.element( t, index ) ) ;
         }
 
-        /** @}
+        /*! @}
          * \name Filling BoundaryModelElement attributes.
          * @{
          */
@@ -163,7 +163,7 @@ namespace RINGMesh {
             element( e_type, e_index ).set_vertex( v, point, false ) ;
         }
 
-        /** @}
+        /*! @}
          * \name Find and/or create one BoundaryModelElement.
          * @{
          */
@@ -221,7 +221,7 @@ namespace RINGMesh {
         void set_universe( const std::vector< std::pair< index_t,
                                                          bool > >& boundaries ) ;
 
-        /** @}
+        /*! @}
          * \name Set element geometry
          * @{
          */
@@ -267,7 +267,7 @@ namespace RINGMesh {
 
         void set_surface_adjacencies( index_t surface_id ) ;
 
-        /** @}
+        /*! @}
          * \name Fix model - Check validity and fill missing stuff
          * @{
          */
@@ -293,7 +293,7 @@ namespace RINGMesh {
 
         void fill_elements_children( BME::TYPE type ) ;
 
-        /**
+        /*!
          * @}
          */
 
@@ -302,7 +302,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * \brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
+     * @brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
      */
     class RINGMESH_API BoundaryModelBuilderGocad : public BoundaryModelBuilder {
     public:
@@ -341,8 +341,6 @@ namespace RINGMesh {
             vec3 p2_ ;
         } ;
 
-        index_t find_corner( const vec3& ) const ;
-
         void build_contacts() ;
 
         void create_surface(
@@ -352,8 +350,8 @@ namespace RINGMesh {
             const vec3& p1,
             const vec3& p2 ) ;
 
-        /**
-         * \brief Check if the surface triangle orientations match the one of the key facet
+        /*!
+         * @brief Check if the surface triangle orientations match the one of the key facet
          */
         bool check_key_facet_orientation( index_t surface ) ;
 
@@ -369,7 +367,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * \brief Build a BoundaryModel from a file_model.bm
+     * @brief Build a BoundaryModel from a file_model.bm
      */
     class RINGMESH_API BoundaryModelBuilderBM : public BoundaryModelBuilder {
     public:
@@ -393,6 +391,7 @@ namespace RINGMesh {
     /*!
      * @brief Builder of a BoundaryModel from a conformal surface meshes
      *        in which the manifold connected components are disjoints
+     * @todo A TESTER 
      */
     class RINGMESH_API BoundaryModelBuilderSurface : public BoundaryModelBuilder {
     public:
@@ -406,25 +405,26 @@ namespace RINGMesh {
         void build_model() ;
     } ;
 
+
     /*!
      * @brief Create the model surfaces from the connected components of the input surfacic mesh
      * @details The class MESH should implement the following functions
-     *  - nb_vertices()
-     *  - double* vertex_ptr( index_t i )
-     *  - index_t nb_corners()
-     *  - index_t nb_facets()
-     *  - index_t facet_begin( index_t f )
-     *  - index_t facet_end( index_t f )
-     *  - index_t corner_vertex_index( index_t c )
-     *  - signed_index_t corner_adjacent_facet( index_t c )   -1 if no neighbor
+     *  - vertices.nb()
+     *  - const vec3& point( index_t i )
+     *  - index_t facet_corners.nb()
+     *  - index_t facets.nb()
+     *  - index_t facets.corners_begin( index_t f )
+     *  - index_t facets.corners_end( index_t f )
+     *  - index_t facet_corners.vertex( index_t c )
+     *  - signed_index_t facet_corners.adjacent_facet( index_t c )   -1 if no neighbor
      */
     template< class MESH >
     void BoundaryModelBuilderSurface::set_surfaces( const MESH& mesh )
     {
         /// 1. Copy the vertices of the input mesh to the model
-        reserve_vertices( mesh.nb_vertices() ) ;
-        for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
-            add_vertex( mesh.vertex_ptr( i ) ) ;
+        // reserve_vertices( mesh.nb_vertices() ) ;
+        for( index_t i = 0; i < mesh.vertices.nb(); i++ ) {
+            add_unique_vertex( mesh.vertices.point( i ) ) ;
         }
 
         /// 2. Propagate on the input mesh facet to determine its surface connected components
@@ -432,11 +432,11 @@ namespace RINGMesh {
         std::vector< index_t > corners ;
         std::vector< index_t > facets_ptr ;
 
-        corners.reserve( mesh.nb_corners() ) ;
-        facets_ptr.reserve( mesh.nb_facets() ) ;
+        corners.reserve( mesh.facet_corners.nb() ) ;
+        facets_ptr.reserve( mesh.facets.nb() ) ;
 
-        std::vector< bool > visited( mesh.nb_facets(), false ) ;
-        for( index_t i = 0; i < mesh.nb_facets(); i++ ) {
+        std::vector< bool > visited( mesh.facets.nb(), false ) ;
+        for( index_t i = 0; i < mesh.facets.nb(); i++ ) {
             if( !visited[ i ] ) {
                 // Index of the Surface to create form this facet
                 index_t cc_index = model_.nb_surfaces() ;
@@ -453,12 +453,12 @@ namespace RINGMesh {
                     S.pop() ;
                     visited[ f ] = true ;
 
-                    for( index_t c = mesh.facet_begin( f );
-                         c < mesh.facet_end( f );
+                    for( index_t c = mesh.facets.corners_begin( f );
+                         c < mesh.facets.corners_end( f );
                          ++c )
                     {
-                        corners.push_back( mesh.corner_vertex_index( c ) ) ;
-                        index_t n = mesh.corner_adjacent_facet( c ) ;
+                        corners.push_back( mesh.facet_corners.vertex( c ) ) ;
+                        index_t n = mesh.facet_corners.adjacent_facet( c ) ;
                         if( n != NO_ID && !visited[ n ] ) {
                             visited[ n ] = true ;
                             S.push( n ) ;
