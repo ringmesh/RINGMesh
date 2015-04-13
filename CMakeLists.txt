@@ -4,12 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 message("CMAKE_BUILD_TYPE is equal to " ${CMAKE_BUILD_TYPE})
 # debug suffix for libraries
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(SUFF "_d")
-    MESSAGE("DEBUG! SUFFIX = ${SUFF}")
-endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-
-set(RINGMESH_PROJECT RINGMesh${SUFF})
+set(RINGMESH_PROJECT RINGMesh)
 project(${RINGMESH_PROJECT})
 
 
@@ -116,3 +111,5 @@ if(UNIX)
 		RUNTIME DESTINATION lib 
 		CONFIGURATIONS All)	
 endif(UNIX)
+
+include(tests/tests.cmake)

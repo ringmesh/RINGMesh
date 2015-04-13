@@ -612,7 +612,7 @@ namespace RINGMesh {
 
         virtual ~Surface() ;
 
-        // Je ne suis pas trop pour donner accès au Mesh directement comme ça (Jeanne)
+        // Je ne suis pas trop pour donner accï¿½s au Mesh directement comme ï¿½a (Jeanne)
         GEO::Mesh& mesh() const {
             return const_cast< GEO::Mesh& >( mesh_ ) ;
         }
