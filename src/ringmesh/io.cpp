@@ -405,7 +405,7 @@ namespace RINGMesh {
                     const RINGMesh::BoundaryModelElement& interf =
                         model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        index_t surface_id = interf.child_id( s ) ;
+                        index_t surface_id = interf.child_id( s ).index ;
                         index_t mesh_id = mm.facets.mesh( surface_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                         for( index_t f = 0; f < mm.facets.nb_facets( surface_id );
@@ -428,7 +428,7 @@ namespace RINGMesh {
                     const RINGMesh::BoundaryModelElement& interf =
                         model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        index_t surface_id = interf.child_id( s ) ;
+                        index_t surface_id = interf.child_id( s ).index ;
                         out << "GROUP_MA" <<  std::endl ;
                         out << "S" << surface_id << std::endl ;
 
@@ -855,10 +855,10 @@ namespace RINGMesh {
 
                     std::map< index_t, index_t > sides ;
                     for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
-                        if( sides.count( region.boundary_id( s ) ) > 0 )
-                            sides[region.boundary_id( s )] = 2 ;
+                        if( sides.count( region.boundary_id( s ).index ) > 0 )
+                            sides[region.boundary_id( s ).index] = 2 ;
                         else
-                            sides[region.boundary_id( s )] = region.side( s ) ;
+                            sides[region.boundary_id( s ).index] = region.side( s ) ;
                     }
 
                     GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
@@ -913,7 +913,7 @@ namespace RINGMesh {
                     out << "SURFACE " << interf.name() << std::endl ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         out << "TFACE " << tface_count++ << std::endl ;
-                        index_t surface_id = interf.child_id( s ) ;
+                        index_t surface_id = interf.child_id( s ).index ;
                         index_t mesh_id = mm.facets.mesh( surface_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                         out << "KEYVERTICES" ;
@@ -945,7 +945,7 @@ namespace RINGMesh {
                         r ) ;
                     out << "MODEL_REGION " << region.name() << " " ;
                     region.side( 0 ) ? out << "+" : out << "-" ;
-                    out << region.boundary_id( 0 ) + 1 << std::endl ;
+                    out << region.boundary_id( 0 ).index + 1 << std::endl ;
                 }
 
                 out << "END" << std::endl ;
@@ -1071,7 +1071,7 @@ namespace RINGMesh {
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        index_t s_id = interf.child_id( s ) ;
+                        index_t s_id = interf.child_id( s ).index ;
                         nb_triangle_interface[i] += mm.facets.nb_triangle( s_id ) ;
                         nb_quad_interface[i] += mm.facets.nb_quad( s_id ) ;
                     }
@@ -1388,7 +1388,7 @@ namespace RINGMesh {
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        index_t s_id = interf.child_id( s ) ;
+                        index_t s_id = interf.child_id( s ).index ;
                         index_t mesh_id = mm.facets.mesh( s_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                         for( index_t el = 0; el < mm.facets.nb_triangle( s_id ); el++ ) {
@@ -1507,7 +1507,7 @@ namespace RINGMesh {
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        index_t s_id = interf.child_id( s ) ;
+                        index_t s_id = interf.child_id( s ).index ;
                         index_t mesh_id = mm.facets.mesh( s_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                         for( index_t el = 0; el < mm.facets.nb_triangle( s_id ); el++ ) {
@@ -1732,7 +1732,7 @@ namespace RINGMesh {
 
                 point_boundaries_.resize( mm.vertices.nb_vertices() ) ;
                 for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                    index_t interface_id = model.surface( s ).parent_id() ;
+                    index_t interface_id = model.surface( s ).parent_id().index ;
                     index_t mesh_id = mm.facets.mesh( s ) ;
                     const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                     for( index_t f = 0; f < mm.facets.nb_facets( s ); f++ ) {
@@ -1880,7 +1880,7 @@ namespace RINGMesh {
                     const BoundaryModelElement& region = model.region( r ) ;
                     std::vector< index_t > boundary_ids( region.nb_boundaries() ) ;
                     for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
-                        boundary_ids[s] = region.boundary_id( s ) ;
+                        boundary_ids[s] = region.boundary_id( s ).index ;
                     }
                     index_t cell_offset = region_offsets[r] ;
                     std::stack< index_t > S ;
@@ -2160,7 +2160,7 @@ namespace RINGMesh {
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        index_t s_id = interf.child_id( s ) ;
+                        index_t s_id = interf.child_id( s ).index ;
                         index_t mesh_id = mm.facets.mesh( s_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                         for( index_t t = 0; t < mm.facets.nb_triangle( s_id ); t++ ) {
