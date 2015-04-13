@@ -61,10 +61,6 @@ public:
 	 */
 	void operator()(index_t idx);
 
-	bool mix_tetra_points(GEO::vec3& v1, GEO::vec3& v2, GEO::vec3& v3,
-			GEO::vec3& v4, GEO::vec3& v5, GEO::vec3& v6, GEO::vec3& v7,
-			GEO::vec3& v8);
-
 	/**
 	 * \brief Creates the box for a cell thanks to its given index.
 	 * \param[M] the mesh containing the cell
@@ -78,7 +74,7 @@ public:
 	 * \param[mm] macromesh in which the intersection want to be
 	 * detected.
 	 */
-	void detect_mesh_intersection();
+	index_t detect_mesh_intersection();
 
 	/**
 	 * \brief Returns true if the two tetrahedrons given intersect.
@@ -98,7 +94,6 @@ private:
 	index_t cur_cell_;
 	const MacroMesh& mm_;
 	index_t nb_inter_;
-	index_t indx_;
 };
 
 }

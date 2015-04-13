@@ -43,119 +43,127 @@
 #include <utility>      // std::swap
 
 namespace {
-    void get_tet_bbox( const Mesh& M, Box& B, index_t t )
-    {
-        const double* p = M.vertices.point_ptr( M.cells.vertex( t, 0 ) ) ;
-        for( coord_index_t coord = 0; coord < 3; ++coord ) {
-            B.xyz_min[coord] = p[coord] ;
-            B.xyz_max[coord] = p[coord] ;
-        }
-        for( index_t lv = 1; lv < 4; ++lv ) {
-            p = M.vertices.point_ptr( M.cells.vertex( t, lv ) ) ;
-            for( coord_index_t coord = 0; coord < 3; ++coord ) {
-                B.xyz_min[coord] = geo_min( B.xyz_min[coord], p[coord] ) ;
-                B.xyz_max[coord] = geo_max( B.xyz_max[coord], p[coord] ) ;
-            }
-        }
-    }
+void get_tet_bbox(const Mesh& M, Box& B, index_t t) {
+	const double* p = M.vertices.point_ptr(M.cells.vertex(t, 0));
+	for (coord_index_t coord = 0; coord < 3; ++coord) {
+		B.xyz_min[coord] = p[coord];
+		B.xyz_max[coord] = p[coord];
+	}
+	for (index_t lv = 1; lv < 4; ++lv) {
+		p = M.vertices.point_ptr(M.cells.vertex(t, lv));
+		for (coord_index_t coord = 0; coord < 3; ++coord) {
+			B.xyz_min[coord] = geo_min(B.xyz_min[coord], p[coord]);
+			B.xyz_max[coord] = geo_max(B.xyz_max[coord], p[coord]);
+		}
+	}
+}
 }
 
 namespace RINGMesh {
-    DetectInter::DetectInter( const MacroMesh& mm )
-        :
-            inter_( mm.cells.nb_tet() ),
-            cur_reg_( 0 ),
-            cur_reg2_( 0 ),
-            nb_inter_( 0 ),
-            cur_cell_( 0 ),
-            mm_( mm ),
-            indx_( 0 )
-    {
+DetectInter::DetectInter(const MacroMesh& mm) :
+		inter_(mm.cells.nb_tet()), cur_reg_(0), cur_reg2_(0), nb_inter_(0), cur_cell_(
+				0), mm_(mm) {
+}
 
-    }
+DetectInter::~DetectInter() {
+}
 
-    DetectInter::~DetectInter()
-    {
-    }
+void DetectInter::operator()(index_t idx) {
 
-    void DetectInter::operator()( index_t idx )
-    {
-        indx_ = idx ;
-        if( idx > cur_cell_ || cur_reg_ != cur_reg2_ ) {
+//	idx = mm_.cells.cell_index_in_mesh(idx, cur_reg_);
+	if (idx > cur_cell_ || cur_reg_ != cur_reg2_) {
 
-            // TODO simpler
-//		GEO::vecng<3, double>& v1 = mm_.mesh(cur_reg_).vertices.point(
-//				mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 0));
-//		GEO::vecng<3, double>& v2 = mm_.mesh(cur_reg_).vertices.point(
-//				mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 1));
-//		GEO::vecng<3, double>& v3 = mm_.mesh(cur_reg_).vertices.point(
-//				mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 2));
-//		GEO::vecng<3, double>& v4 = mm_.mesh(cur_reg_).vertices.point(
-//				mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
+		// TODO simpler
+//		const vec3& v0 = mm_.vertices.vertex(idx);
+		vec3& v1 = mm_.mesh(cur_reg_).vertices.point(
+				mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 0));
+		vec3& v2 = mm_.mesh(cur_reg_).vertices.point(
+				mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 1));
+		vec3& v3 = mm_.mesh(cur_reg_).vertices.point(
+				mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 2));
+		vec3& v4 = mm_.mesh(cur_reg_).vertices.point(
+				mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
+
+		vec3& v1_2 = mm_.mesh(cur_reg2_).vertices.point(
+				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 0));
+		vec3 v2_2 = mm_.mesh(cur_reg2_).vertices.point(
+				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 1));
+		vec3 v3_2 = mm_.mesh(cur_reg2_).vertices.point(
+				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 2));
+		vec3 v4_2 = mm_.mesh(cur_reg2_).vertices.point(
+				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 2, 2));
+
+		if (Utils::point_inside_tetra(v1_2, v1, v2, v3, v4)
+				|| Utils::point_inside_tetra(v2_2, v1, v2, v3, v4)
+				|| Utils::point_inside_tetra(v3_2, v1, v2, v3, v4)
+				|| Utils::point_inside_tetra(v4_2, v1, v2, v3, v4)) {
+			++nb_inter_;
+			std::cout << "intersection region:cell " << cur_reg_ << ":"
+					<< cur_cell_ << " " << cur_reg2_ << ":" << idx << std::endl;
+		}
+	}
+}
+
+index_t DetectInter::detect_mesh_intersection() {
+//	for (index_t c = 0; c < mm_.cells.nb_cells(); c++) {
+	for (index_t m = 0; m < mm_.nb_meshes(); m++) {
+		cur_reg_ = m;
+		for (index_t c = 0; c < mm_.mesh(m).cells.nb(); c++) {
+
+			// Get the bbox of c
+			Box box;
+			get_tet_bbox(mm_.mesh(m), box, c);
+
+			for (index_t reg_idx = cur_reg_; reg_idx < mm_.nb_meshes(); reg_idx++) {
+				cur_reg2_ = reg_idx;
+				mm_.tools.tet_aabb(reg_idx).compute_bbox_cell_bbox_intersections(
+						box, *this);
+			}
+		}
+	}
+
+//	for (index_t reg_idx = 0; reg_idx < nb_reg; reg_idx++) {
+//		cur_reg_ = reg_idx;
+//		for (index_t reg_idx2 = cur_reg_; reg_idx2 < nb_reg; reg_idx2++) {
+//			cur_reg2_ = reg_idx2;
+//			for (index_t c = 0; c < mm_.mesh(cur_reg_).cells.nb(); c++) {
+//				cur_cell_ = c;
+//				Box box;
+//				get_tet_bbox(mm_.mesh(cur_reg_), box, cur_cell_);
 //
-//		GEO::vecng<3, double>& v1_2 = mm_.mesh(cur_reg2_).vertices.point(
-//				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 0));
-//		vec3 v2_2 = mm_.mesh(cur_reg2_).vertices.point(
-//				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 1));
-//		vec3 v3_2 = mm_.mesh(cur_reg2_).vertices.point(
-//				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 2));
-//		vec3 v4_2 = mm_.mesh(cur_reg2_).vertices.point(
-//				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 2, 2));
-
-            const vec3& v1 = mm_.mesh( cur_reg_ ).vertices.point(
-                mm_.mesh( cur_reg_ ).cells.facet_vertex( cur_cell_, 0, 0 ) ) ;
-            const vec3& v2 = mm_.mesh( cur_reg_ ).vertices.point(
-                mm_.mesh( cur_reg_ ).cells.facet_vertex( cur_cell_, 0, 1 ) ) ;
-            const vec3& v3 = mm_.mesh( cur_reg_ ).vertices.point(
-                mm_.mesh( cur_reg_ ).cells.facet_vertex( cur_cell_, 0, 2 ) ) ;
-            const vec3& v4 = mm_.mesh( cur_reg_ ).vertices.point(
-                mm_.mesh( cur_reg_ ).cells.facet_vertex( cur_cell_, 2, 2 ) ) ;
-
-            const vec3& v1_2 = mm_.mesh( cur_reg2_ ).vertices.point(
-                mm_.mesh( cur_reg2_ ).cells.facet_vertex( idx, 0, 0 ) ) ;
-//		vec3 v2_2 = mm_.mesh(cur_reg2_).vertices.point(
-//				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 1));
-//		vec3 v3_2 = mm_.mesh(cur_reg2_).vertices.point(
-//				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 2));
-//		vec3 v4_2 = mm_.mesh(cur_reg2_).vertices.point(
-//				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 2, 2));
-
-//GEO::vecng<3, index_t> a;
-
-            Utils::point_inside_tetra( v1_2, v1, v2, v3, v4 ) ;
-//		if (Utils::point_inside_tetra(v1_2, v1, v2, v3)) {
-////				|| Utils::point_inside_tetra(v2_2, v1, v2, v3)
-////				|| Utils::point_inside_tetra(v3_2, v1, v2, v3)
-////				|| Utils::point_inside_tetra(v4_2, v1, v2, v3)) {
-//			++nb_inter_;
-//			std::cout << "intersection region:cell " << cur_reg_ << ":"
-//					<< cur_cell_ << " " << cur_reg2_ << ":" << idx << std::endl;
+//				mm_.tools.tet_aabb(cur_reg2_).compute_bbox_cell_bbox_intersections(
+//						box, *this);
+//			}
 //		}
-        }
-    }
-// bool point_inside_tetra(const GEO::vecng<unsigned int3,double> &, const GEO::vecng<unsigned int3,double> &,
-// const GEO::vecng<unsigned int3,double> &, const GEO::vecng<unsigned int3,double> &, const GEO::vecng<unsigned int3,double> &)
-
-    void DetectInter::detect_mesh_intersection()
-    {
-        index_t nb_inter = 0 ;
-
-//	double V2[4][3] = { { 20, 20, -20 }, { 0, 10, -10 }, { 10, 10, 0 }, { 6.67232, 6.65514, -3.34325 } };
-//	double V3[4][3] = { { 10.1, 10.1, -20.1 }, { 13.4333, 16.7667, -15.4358 }, { 10.1, 10.1, -10.1 }, { 10.1, 20.1, -10.1 } };
-//
-//	if (tet_a_tet(V2, V3)) {
-//		std::cout << "intersect2" << std::endl;
 //	}
 
-//	1 { 0, 10, -10 }
-//	2 { 6.67232, 6.65514, -3.34325 }
-//	3 { 20,20, -20 }
-//	4 { 10, 10, 0 }
+	return nb_inter_;
+}
 
-//	1 { 10.1, 20.1, -10.1 }
-//	2 { 13.4333, 16.7667, -15.4358 }
-//	3 { 10.1, 10.1, -10.1 }
-//	4 { 10.1, 10.1, -20.1 }
+}
+
+//				index_t v1_index = mm_.mesh(cur_reg_).cells.facet_vertex(
+//						cur_cell_, 0, 0);
+//				index_t v2_index = mm_.mesh(cur_reg_).cells.facet_vertex(
+//						cur_cell_, 0, 1);
+//				index_t v3_index = mm_.mesh(cur_reg_).cells.facet_vertex(
+//						cur_cell_, 0, 2);
+//				index_t v4_index = mm_.mesh(cur_reg_).cells.facet_vertex(
+//						cur_cell_, 2, 2);
+//
+//				vec3 v1 = mm_.mesh(cur_reg_).vertices.point(v1_index);
+//				vec3 v2 = mm_.mesh(cur_reg_).vertices.point(v2_index);
+//				vec3 v3 = mm_.mesh(cur_reg_).vertices.point(v3_index);
+//				vec3 v4 = mm_.mesh(cur_reg_).vertices.point(v4_index);
+//
+//				double V[4][3] = { { v1.x, v1.y, v1.z }, { v2.x, v2.y, v2.z }, {
+//						v3.x, v3.y, v3.z }, { v4.x, v4.y, v4.z } };
+//
+//				std::cout << "coord " << cur_reg_ << " " << cur_cell_ << " "
+//						<< v1.x << " " << v1.y << " " << v1.z << "     " << v2.x
+//						<< " " << v2.y << " " << v2.z << "     " << v3.x << " "
+//						<< v3.y << " " << v3.z << "     " << v4.x << " " << v4.y
+//						<< " " << v4.z << std::endl;
 
 //*************************************
 //**********  In a region   ***********
@@ -184,124 +192,3 @@ namespace RINGMesh {
 //	mm_.mesh(1).vertices.point(mm_.mesh(1).cells.facet_vertex(0, 0, 0)).y = 9;
 //	mm_.mesh(1).vertices.point(mm_.mesh(1).cells.facet_vertex(0, 0, 0)).z = -9;
 //*************************************
-
-//	double V[4][3] = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 }, { 1, 1, 1 } };
-//	double V2[4][3] = { { -1, -1, -1 }, { -1, 1, -1 }, { -1, 0, -1 }, { 0.5,
-//			0.5, 0.5 } };
-//	std::cout << "intersection (normally 1) " << tet_a_tet(V, V2) << std::endl;
-
-//	std::cout << "nb cell " << mm_.mesh(0).cells.nb() << std::endl;
-        // TODO for cell in mm ...
-        const index_t nb_reg = mm_.nb_meshes() ;
-        for( index_t reg_idx = 0; reg_idx < nb_reg; reg_idx++ ) {
-            cur_reg_ = reg_idx ;
-//		std::cout << "cur_reg_ " << cur_reg_ << std::endl;
-            for( index_t reg_idx2 = cur_reg_; reg_idx2 < nb_reg; reg_idx2++ ) {
-                cur_reg2_ = reg_idx2 ;
-//			std::cout << "cur_reg2_ " << cur_reg2_ << std::endl;
-                for( index_t c = 0; c < mm_.mesh( cur_reg_ ).cells.nb(); c++ ) {
-                    cur_cell_ = c ;
-
-//				index_t v1_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//						cur_cell_, 0, 0);
-//				index_t v2_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//						cur_cell_, 0, 1);
-//				index_t v3_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//						cur_cell_, 0, 2);
-//				index_t v4_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//						cur_cell_, 2, 2);
-//
-//				vec3 v1 = mm_.mesh(cur_reg_).vertices.point(v1_index);
-//				vec3 v2 = mm_.mesh(cur_reg_).vertices.point(v2_index);
-//				vec3 v3 = mm_.mesh(cur_reg_).vertices.point(v3_index);
-//				vec3 v4 = mm_.mesh(cur_reg_).vertices.point(v4_index);
-//
-//				double V[4][3] = { { v1.x, v1.y, v1.z }, { v2.x, v2.y, v2.z }, {
-//						v3.x, v3.y, v3.z }, { v4.x, v4.y, v4.z } };
-//
-//				std::cout << "coord " << cur_reg_ << " " << cur_cell_ << " "
-//						<< v1.x << " " << v1.y << " " << v1.z << "     " << v2.x
-//						<< " " << v2.y << " " << v2.z << "     " << v3.x << " "
-//						<< v3.y << " " << v3.z << "     " << v4.x << " " << v4.y
-//						<< " " << v4.z << std::endl;
-
-                    Box box ;
-                    get_tet_bbox( mm_.mesh( cur_reg_ ), box, cur_cell_ ) ;
-
-                    mm_.tools.tet_aabb( cur_reg2_ ).compute_bbox_cell_bbox_intersections(
-                        box, *this ) ;
-
-//				std::cout << cur_reg_ << " " << cur_cell_ << "   "
-//						<< mm_.mesh(cur_reg_).vertices.point(
-//								mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_,
-//										0, 0)).x << " "
-//						<< mm_.mesh(cur_reg_).vertices.point(
-//								mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_,
-//										0, 0)).y << " "
-//						<< mm_.mesh(cur_reg_).vertices.point(
-//								mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_,
-//										0, 0)).z << std::endl;
-
-//				for (index_t c2 = 0; c2 < inter_[cur_reg2_].size(); c2++) {
-//					index_t v1_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//							cur_cell_, 0, 0);
-//					index_t v2_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//							cur_cell_, 0, 1);
-//					index_t v3_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//							cur_cell_, 0, 2);
-//					index_t v4_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//							cur_cell_, 2, 2);
-//
-//					vec3 v1 = mm_.mesh(cur_reg_).vertices.point(v1_index);
-//					vec3 v2 = mm_.mesh(cur_reg_).vertices.point(v2_index);
-//					vec3 v3 = mm_.mesh(cur_reg_).vertices.point(v3_index);
-//					vec3 v4 = mm_.mesh(cur_reg_).vertices.point(v4_index);
-//
-//					double V[4][3] = { { v1.x, v1.y, v1.z },
-//							{ v2.x, v2.y, v2.z }, { v3.x, v3.y, v3.z }, { v4.x,
-//									v4.y, v4.z } };
-//
-//					index_t v1_2_index = mm_.mesh(cur_reg2_).cells.facet_vertex(
-//							c2, 0, 0);
-//					index_t v2_2_index = mm_.mesh(cur_reg2_).cells.facet_vertex(
-//							c2, 0, 1);
-//					index_t v3_2_index = mm_.mesh(cur_reg2_).cells.facet_vertex(
-//							c2, 0, 2);
-//					index_t v4_2_index = mm_.mesh(cur_reg2_).cells.facet_vertex(
-//							c2, 2, 2);
-//
-//					vec3 v1_2 = mm_.mesh(cur_reg2_).vertices.point(v1_2_index);
-//					vec3 v2_2 = mm_.mesh(cur_reg2_).vertices.point(v2_2_index);
-//					vec3 v3_2 = mm_.mesh(cur_reg2_).vertices.point(v3_2_index);
-//					vec3 v4_2 = mm_.mesh(cur_reg2_).vertices.point(v4_2_index);
-//
-//					double V2[4][3] = { { v1_2.x, v1_2.y, v1_2.z }, { v2_2.x,
-//							v2_2.y, v2_2.z }, { v3_2.x, v3_2.y, v3_2.z }, {
-//							v4_2.x, v4_2.y, v4_2.z } };
-//
-//						std::cout << "cur_cell_ " << cur_cell_ << std::endl;
-//						std::cout << "coord tetra1 " << v1.x << " " << v1.y
-//								<< " " << v1.z << "     " << v2.x << " " << v2.y
-//								<< " " << v2.z << "     " << v3.x << " " << v3.y
-//								<< " " << v3.z << "     " << v4.x << " " << v4.y
-//								<< " " << v4.z << std::endl;
-//
-//						std::cout << "coord tetra2 " << v1_2.x << " " << v1_2.y
-//								<< " " << v1_2.z << "     " << v2_2.x << " "
-//								<< v2_2.y << " " << v2_2.z << "     " << v3_2.x
-//								<< " " << v3_2.y << " " << v3_2.z << "     "
-//								<< v4_2.x << " " << v4_2.y << " " << v4_2.z
-//								<< std::endl;
-//
-//				}
-//
-//				std::cout << cur_reg_ << " " << cur_reg2_ << " " << cur_cell_
-//						<< std::endl;
-//			}
-                }
-            }
-        }
-        std::cout << "nb_inter " << nb_inter_ << std::endl ;
-    }
-}
-
