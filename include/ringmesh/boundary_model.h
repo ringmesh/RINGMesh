@@ -383,6 +383,10 @@ namespace RINGMesh {
         void save_surface_as_obj_file( index_t s, const std::string& file ) const ;
         void save_bm_file( const std::string& file_name ) ;
 
+        /*!
+         * @}
+         */
+
         signed_index_t find_interface( const std::string& name) const ;
         signed_index_t find_region( const std::string& name) const ;
 
