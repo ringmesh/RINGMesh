@@ -52,7 +52,15 @@ int main( int argc, char** argv )
     BoundaryModel in ;
     RINGMeshIO::load( "../data/model3.ml", in ) ;
 
-    index_t nb_non_unique_vertices = in.vertices.nb_vertex_indices() ;
+    index_t nb_non_unique_vertices = in.nb_corners() ;
+
+    for( index_t l = 0; l < in.nb_lines(); l++ ) {
+        nb_non_unique_vertices += in.line( l ).nb_vertices() ;
+    }
+    for( index_t s = 0; s < in.nb_surfaces(); s++ ) {
+        nb_non_unique_vertices += in.surface( s ).nb_vertices() ;
+    }
+
     std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
     index_t index = 0 ;
     for( index_t c = 0; c < in.nb_corners(); c++ ) {
@@ -75,7 +83,7 @@ int main( int argc, char** argv )
     index_t geo_nb = GEO::Geom::colocate( all_vertices[0].data(), 3, nb_non_unique_vertices, old2new,
         epsilon ) ;
 
-    index_t ringmesh_nb = in.vertices.nb_vertices() ;
+    index_t ringmesh_nb = in.vertices.nb_unique_vertices() ;
 
     bool res = ringmesh_nb == geo_nb ;
     if( res )

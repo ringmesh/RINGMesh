@@ -340,7 +340,7 @@ namespace RINGMesh {
         /// Elements constituting this one - see child_type( TYPE )
         std::vector< index_t > children_ ;
     } ;
-
+    const static BoundaryModelElement dummy_BME ;
 
     /*!
      * @brief A BoundaryModelElement that has a geometrical representation
