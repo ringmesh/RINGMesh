@@ -41,6 +41,8 @@
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/io.h>
 
+#include <cstring>
+
 bool compare_file( const std::string& f1, const std::string& f2 )
 {
     const unsigned int MAX_LINE_LEN = 65535 ;
