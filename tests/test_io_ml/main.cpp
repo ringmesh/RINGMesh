@@ -38,6 +38,7 @@
  *     FRANCE
  */
 
+#include <ringmesh/boundary_model.h>
 #include <ringmesh/io.h>
 
 bool compare_file( const std::string& f1, const std::string& f2 )

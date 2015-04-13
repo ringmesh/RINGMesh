@@ -54,6 +54,9 @@ namespace GEO {
 namespace RINGMesh {
     class BoundaryModel ;
     class MacroMesh ;
+}
+
+namespace RINGMesh {
 
     static std::vector< std::vector< vec3 > > empty_vertices ;
 

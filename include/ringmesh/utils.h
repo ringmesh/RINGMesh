@@ -42,17 +42,9 @@
 #define __RINGMESH_UTILS__
 
 #include <ringmesh/common.h>
-#include <ringmesh/types.h>
 
-#include <geogram/points/nn_search.h>
 #include <geogram/points/kd_tree.h>
 #include <geogram/mesh/mesh_AABB.h>
-
-#include <algorithm>
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <fstream>
 
 namespace GEO {
     class Mesh ;
