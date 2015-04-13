@@ -299,8 +299,7 @@ namespace RINGMesh {
                 }
                  default :
                      ringmesh_assert_not_reached ;
-                     BoundaryModelElement dummy ;
-                     return dummy ;
+                     return dummy_BME ;
             }
         }
 
