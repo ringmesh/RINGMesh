@@ -44,6 +44,7 @@
 
 #include <iomanip>
 #include <stack>
+#include <sstream>
 
 #ifdef WIN32
     #include <io.h>
@@ -116,7 +117,8 @@ namespace RINGMesh {
             internal_points_( internal_vertices ),
             resolution_( 0 ),
             region_( region ),
-            attribute_( tetmesh.facets.attributes(), surface_att_name )
+            surface_region_( tetmesh.facets.attributes(), surface_att_name ),
+            edge_region_( tetmesh.edges.attributes(), surface_att_name )
     {
         if( !well_edges.empty() ) {
             index_t nb_well_edges = 0 ;
@@ -287,23 +289,18 @@ namespace RINGMesh {
     }
 
     void TetraGen::set_line(
-        index_t index,
+        index_t marker,
         int * line )
     {
-        ringmesh_assert_not_reached ;
-        /*
-        tetmesh_builder_.add_line( index, 2 * index ) ;
-        for( index_t i = 0; i < 3; i++ ) {
-            tetmesh_builder_.add_vertex_index( 2 * index + i, line[i] - 1 ) ;
-        }
-        */
+        index_t index = tetmesh_.edges.create_edge( line[0], line[1] ) ;
+        edge_region_[index] = marker ;
     }
 
     void TetraGen::set_face_marker(
         index_t tri,
         index_t marker )
     {
-        attribute_[tri] = marker ;
+        surface_region_[tri] = marker ;
     }
 
     void TetraGen::set_tetra_face_marker(
@@ -320,32 +317,6 @@ namespace RINGMesh {
          *
          */
 
-    }
-
-    void TetraGen::store_edge_attrib() const
-    {
-        ringmesh_assert_not_reached ;
-        /*
-        tetmesh_.edges_on_well_.resize( 6 * tetmesh_.nb_tetra(), -1 ) ;
-        if( well_edges_.empty() ) return ;
-        ColocaterANN ann( well_edges_ ) ;
-
-        const GEO::Mesh::CellDescriptor* tet_descr =
-            GEO::Mesh::nb_v_to_cell_descriptor[4] ;
-#pragma omp parallel for
-        for( index_t t = 0; t < tetmesh_.nb_tetra(); t++ ) {
-            for( index_t e = 0; e < 6; e++ ) {
-                vec3 v0 = tetmesh_.vertex( t, tet_descr->edge[e][0] ) ;
-                vec3 v1 = tetmesh_.vertex( t, tet_descr->edge[e][1] ) ;
-                vec3 barycenter( ( v0 + v1 ) / 2.0 ) ;
-                std::vector< index_t > result ;
-                ann.get_colocated( barycenter, result ) ;
-                for( index_t f = 0; f < result.size(); f++ ){
-                    tetmesh_.edges_on_well_[6*t+e] = well_id( result[f] ) ;
-                }
-            }
-        }
-        */
     }
 
     TetraGen_TetGen::TetraGen_TetGen(
@@ -506,64 +477,6 @@ namespace RINGMesh {
         for( index_t f = 0; f < tetgen_output_.numberoftrifaces; f++ ) {
             signed_index_t face_marker = tetgen_output_.trifacemarkerlist[f] - 1 ;
             if( face_marker == -1 ) continue ;
-            /*
-            signed_index_t tet1 = tetgen_output_.adjtetlist[2 * f] - 1 ;
-            signed_index_t tet2 = tetgen_output_.adjtetlist[2 * f + 1] - 1 ;
-            if( tet1 < 0 ){
-                bool found = false ;
-                for( index_t ff = 0; ff < 4; ff++ ) {
-                    if( Utils::triple_equal(
-                        tetmesh_.tetra_vertex_index( tet2, ff, 0 ),
-                        tetmesh_.tetra_vertex_index( tet2, ff, 1 ),
-                        tetmesh_.tetra_vertex_index( tet2, ff, 2 ),
-                        tetgen_output_.trifacelist[3 * f] - 1,
-                        tetgen_output_.trifacelist[3 * f + 1] - 1,
-                        tetgen_output_.trifacelist[3 * f + 2] - 1 ) ) {
-                    	set_triangle(cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines) ;
-                        for( index_t i = 0; i < 3; i++ ) {
-                            star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
-                        }
-                        // set_tetra_face_marker( tet2, ff, face_marker ) ;
-                        set_face_marker(cur_index_triangle, face_marker) ;
-                        cur_index_triangle ++ ;
-                        found = true ;
-                        break ;
-                    }
-                }
-                ringmesh_debug_assert( found ) ;
-            } else if( tet2 < 0 ) {
-                bool found = false ;
-                for( index_t ff = 0; ff < 4; ff++ ) {
-                    if( Utils::triple_equal(
-                        tetmesh_.tetra_vertex_index( tet1, ff, 0 ),
-                        tetmesh_.tetra_vertex_index( tet1, ff, 1 ),
-                        tetmesh_.tetra_vertex_index( tet1, ff, 2 ),
-                        tetgen_output_.trifacelist[3 * f] - 1,
-                        tetgen_output_.trifacelist[3 * f + 1] - 1,
-                        tetgen_output_.trifacelist[3 * f + 2] - 1 ) ) {
-                    	set_triangle( cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines ) ;
-                        for( index_t i = 0; i < 3; i++ ) {
-                            star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
-                        }
-                        // set_tetra_face_marker( tet1, ff, face_marker ) ;
-                        set_face_marker(cur_index_triangle, face_marker) ;
-                        cur_index_triangle ++ ;
-                        found = true ;
-                        break ;
-                    }
-                }
-                ringmesh_debug_assert( found ) ;
-            } else {
-            	set_triangle( cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines ) ;
-                for( index_t i = 0; i < 3; i++ ) {
-                    star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
-                }
-                set_face_marker( tet1, face_marker ) ;
-                set_face_marker( tet2, face_marker ) ;
-                cur_index_triangle ++ ;
-            }
-            */
-
             set_triangle( cur_index_triangle, &tetgen_output_.trifacelist[3 *f ], nb_lines ) ;
             for( index_t i = 0; i < 3; i++ ) {
                 star[tetgen_output_.trifacelist[3 *f ] - 1].push_back( cur_index_triangle ) ;
@@ -576,77 +489,13 @@ namespace RINGMesh {
         tetmesh_.cells.connect() ;
         Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
 
-        /*
-        std::vector< bool > is_triangle_visited ( false, nb_triangles ) ;
-        std::vector< index_t > surfaces_id ;
-
-        for( index_t i = 0; i < nb_triangles; i++ ) {
-            index_t cur_suface_id = tetmesh_.facet_region( i ) ;
-            if( Utils::contains( surfaces_id, cur_suface_id ) ) {
-                surfaces_id.push_back( cur_suface_id ) ;
-                std::stack< index_t > S ;
-                S.push( i ) ;
-                do {
-                    index_t cur_triangle = S.top() ;
-                    is_triangle_visited[cur_triangle] = true ;
-                    S.pop() ;
-                    std::vector< index_t > vertices_on_cur_triangle( 4, -1 ) ;
-                    for( index_t j = tetmesh_.facet_begin( cur_triangle );
-                        j < tetmesh_.facet_end( cur_triangle ); j++ ) {
-                        vertices_on_cur_triangle[j] = tetmesh_.corner_vertex_index(
-                            j ) ;
-                    }
-                    vertices_on_cur_triangle[3] = tetmesh_.corner_vertex_index(
-                        tetmesh_.facet_begin( cur_triangle ) ) ;
-
-                    for( uint8 j = 0; j < 3; j++ ) {
-                        std::vector< index_t > intersect = Utils::intersect(
-                            star[vertices_on_cur_triangle[j]],
-                            star[vertices_on_cur_triangle[j + 1]] ) ;
-                        for( uint8 k = 0; k < intersect.size(); k++ ) {
-                            index_t intersect_triangle = intersect[k] ;
-                            if( tetmesh_.facet_region( intersect_triangle )
-                                == cur_suface_id
-                                && !is_triangle_visited[intersect_triangle] ) {
-                                S.push( intersect_triangle ) ;
-                                std::vector< index_t > vertices_on_neighbor_triangle(
-                                    4, -1 ) ;
-                                for( index_t l = tetmesh_.facet_begin(
-                                    intersect_triangle );
-                                    l < tetmesh_.facet_end( intersect_triangle );
-                                    l++ ) {
-                                    vertices_on_neighbor_triangle[l] =
-                                        tetmesh_.corner_vertex_index( l ) ;
-                                }
-                                vertices_on_neighbor_triangle[3] =
-                                    tetmesh_.corner_vertex_index(
-                                        tetmesh_.facet_begin(
-                                            intersect_triangle ) ) ;
-
-                                if( Utils::check_order(
-                                    vertices_on_neighbor_triangle,
-                                    vertices_on_cur_triangle[j],
-                                    vertices_on_cur_triangle[j + 1] ) ) {
-                                    GEO::MeshMutator::flip_facet( tetmesh_,
-                                        intersect_triangle ) ;
-                                }
-                            }
-                        }
-                    }
-                } while( !S.empty() ) ;
-        	}
-        }
-
-        /*
         index_t cur_index_line = 0 ;
-#pragma omp parallel for
+//#pragma omp parallel for
         for( index_t l = 0; l < tetgen_output_.numberofedges; l++ ) {
             signed_index_t line_marker = tetgen_output_.edgemarkerlist[l] - 1 ;
             if( line_marker == -1 ) continue ;
-        	set_line(cur_index_line, &tetgen_output_.edgelist[2 *l ]) ;
-        	cur_index_line ++ ;
+        	set_line( line_marker, &tetgen_output_.edgelist[2 *l ]) ;
         }
-        */
 
         // store_edge_attrib() ;
         return true ;
@@ -700,33 +549,6 @@ namespace RINGMesh {
                 &triangles_[3 * t] ) ;
             mesh_set_triangle_tag( mesh_input_, t+1, surface_id_ptr( t ) ) ;
         }
-
-            /*
-        if( background_ ) {
-            mesh_background_ = mesh_new_in_memory( context_ ) ;
-            ret = mesh_set_vertex_count( mesh_background_,
-                background_->nb_points() ) ;
-            ringmesh_debug_assert( ret == STATUS_OK ) ;
-            for( index_t p = 0; p < background_->nb_points(); p++ ) {
-                vec3 point = background_->vertex( p ) ;
-                ret = mesh_set_vertex_coordinates( mesh_background_, p + 1,
-                    background_->ref_vertex( p ).data() ) ;
-                ringmesh_debug_assert( ret == STATUS_OK ) ;
-            }
-
-            ret = mesh_set_tetrahedron_count( mesh_background_, background_->nb_tetra() ) ;
-            ringmesh_debug_assert( ret == STATUS_OK ) ;
-            for( index_t t = 0; t < background_->nb_tetra(); t++ ) {
-                ret = mesh_set_tetrahedron_vertices( mesh_background_, t + 1,
-                    background_->vertex_index_ptr( t ) ) ;
-                ringmesh_debug_assert( ret == STATUS_OK ) ;
-            }
-
-            sizemap_ = meshgems_sizemap_new( mesh_background_,
-                meshgems_sizemap_type_iso_mesh_vertex,
-                reinterpret_cast< void* >( get_size_value ), this ) ;
-        }
-                */
 
         tms_ = tetra_session_new( context_ ) ;
         tetra_set_surface_mesh( tms_, mesh_input_ ) ;
@@ -831,91 +653,24 @@ namespace RINGMesh {
                 cur_index_triangle ++ ;
             }
 
-            /*
-            const std::vector< index_t >& tetra0 = star[ vertices[0]-1 ] ;
-            const std::vector< index_t >& tetra1 = star[ vertices[1]-1 ] ;
-            const std::vector< index_t >& tetra2 = star[ vertices[2]-1 ] ;
-            std::vector< index_t >::const_iterator cur_tetra0 = tetra0.begin() ;
-            std::vector< index_t >::const_iterator cur_tetra1 = tetra1.begin() ;
-            std::vector< index_t >::const_iterator cur_tetra2 = tetra2.begin() ;
-            std::vector< index_t >::const_iterator end_tetra0 = tetra0.end() ;
-            std::vector< index_t >::const_iterator end_tetra1 = tetra1.end() ;
-            std::vector< index_t >::const_iterator end_tetra2 = tetra2.end() ;
-            index_t results[2] ;
-            index_t count = 0 ;
-            //intersection
-            while( cur_tetra0 != end_tetra0 && cur_tetra1 != end_tetra1
-                && cur_tetra2 != end_tetra2 && count < 2 ) {
-                if( *cur_tetra0 < *cur_tetra1 || *cur_tetra0 < *cur_tetra2 ) {
-                    ++cur_tetra0 ;
-                } else if( *cur_tetra1 < *cur_tetra0 || *cur_tetra1 < *cur_tetra2 ) {
-                    ++cur_tetra1 ;
-                } else if( *cur_tetra2 < *cur_tetra0 || *cur_tetra2 < *cur_tetra1 ) {
-                    ++cur_tetra2 ;
-                } else {
-                    results[count++] = *cur_tetra0 ;
-                    ++cur_tetra0 ;
-                    ++cur_tetra1 ;
-                    ++cur_tetra2 ;
-                }
-            }
-
-            ringmesh_debug_assert( count != 0 ) ;
-            if( count == 1 ) {
-                index_t tet = results[0] ;
-                bool found = false ;
-                for( index_t ff = 0; ff < 4; ff++ ) {
-                    if( Utils::triple_equal(
-                        tetmesh_.tetra_vertex_index( tet, ff, 0 ),
-                        tetmesh_.tetra_vertex_index( tet, ff, 1 ),
-                        tetmesh_.tetra_vertex_index( tet, ff, 2 ),
-                        vertices[0] - 1,
-                        vertices[1] - 1,
-                        vertices[2] - 1 ) ) {
-                        signed_index_t tri[3] ;
-                        ret = mesh_get_triangle_vertices( mesh_output_, t+1, tri ) ;
-                        ringmesh_debug_assert( ret == STATUS_OK ) ;
-                        if ( tag != -1 ) {
-                        	set_triangle(cur_index_triangle, tri, nb_lines) ;
-                        	cur_index_triangle ++ ;
-                        }
-                        set_tetra_face_marker( tet, ff, tag ) ;
-                        found = true ;
-                        break ;
-                    }
-                }
-                ringmesh_debug_assert( found ) ;
-            } else if( count == 2 ) {
-                index_t tet1 = results[0] ;
-                index_t tet2 = results[1] ;
-                set_face_marker( tet1, tag ) ;
-                set_face_marker( tet2, tag ) ;
-            }
-            */
-        }
+         }
 
 
         tetmesh_.facets.connect() ;
         tetmesh_.cells.connect() ;
         Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
 
-            /*
-        index_t cur_index_line = 0 ;
-#pragma omp parallel for
+//#pragma omp parallel for
         for( index_t l = 0; l < well_edges_.size(); l++ ) {
             signed_index_t tag = -1 ;
             ret = mesh_get_edge_tag( mesh_output_, l+1, &tag ) ;
             signed_index_t lin[2] ;
             ret = mesh_get_edge_vertices( mesh_output_, l+1, lin ) ;
             if( tag != -1 ) {
-				set_line(cur_index_line, lin) ;
-				cur_index_line ++ ;
+				set_line(tag, lin) ;
             }
         }
 
-
-        store_edge_attrib() ;
-        */
 
         stop_redirect( pos, stdout, fd ) ;
         stop_redirect( pos_err, stderr, fd_err ) ;

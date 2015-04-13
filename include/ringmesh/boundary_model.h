@@ -71,16 +71,13 @@ namespace RINGMesh {
          */
         struct VertexInBME {
             VertexInBME(
-                BoundaryModelElement::TYPE element_type,
-                index_t element_id,
+                BME::bme_t t,
                 index_t vertex_id_in )
-                : bme_type( element_type ), bme_id( element_id ), v_id( vertex_id_in )
+                : bme_type( t ), v_id( vertex_id_in )
             {
             }
-            /// Type of the BME
-            BoundaryModelElement::TYPE bme_type ;
-            /// Index of the BME in the BoundaryModel
-            index_t bme_id ;
+            /// Type of the BME and index
+            BME::bme_t bme_type ;
             /// Index of the vertex in the BME
             index_t v_id ;
         } ;
@@ -89,7 +86,7 @@ namespace RINGMesh {
          * @brief Vertices are defined for a BoundaryModel
          */
         BoundaryModelVertices( const BoundaryModel& bm )
-            : bm_( bm )
+            : bm_( bm ), ann_( nil )
         {
         }
 
@@ -106,13 +103,15 @@ namespace RINGMesh {
          *          The unique_id is stored as an attribute on the vertices of the BME
          */
         index_t unique_vertex_id(
-            BoundaryModelElement::TYPE T, index_t id, index_t v ) const ;       
+            BoundaryModelElement::bme_t T, index_t v ) const ;
 
         /*!
          * @brief Coordinates of a vertex of the BoundaryModel
          * @pre unique_id < nb_unique_vertices()
          */
         const vec3& unique_vertex( index_t unique_id ) const ;        
+
+        index_t vertex_index( const vec3& p ) const ;
 
         /*!
          * @brief Get the vertices in BME that correspond to the given unique vertex
@@ -131,8 +130,7 @@ namespace RINGMesh {
          */
         void add_unique_to_bme( 
             index_t unique_id, 
-            BoundaryModelElement::TYPE bme_type, 
-            index_t bme_id,
+            BME::bme_t bme_type,
             index_t v_id ) ;        
 
         /*!
@@ -187,6 +185,9 @@ namespace RINGMesh {
                
         /// Mapping of a unique vertex to the vertices in the BME that have the same coordinates
         GEO::Attribute< std::vector< VertexInBME > > unique2bme_ ;
+
+        /// Kd-tree of the model vertices
+        ColocaterANN* ann_ ;
     } ;
 
 
@@ -201,7 +202,6 @@ namespace RINGMesh {
 
     public:
         typedef GEO::AttributesManager VertexAttributeManager ;
-        typedef BoundaryModelElement BME ;
 
         const static index_t NO_ID = index_t( - 1 ) ;
 
@@ -227,30 +227,6 @@ namespace RINGMesh {
          */
         index_t nb_vertices() const { return vertices.nb_unique_vertices() ; }
 
-        index_t vertex_index( const vec3& p ) const ;
-
-        /*!
-         * @brief Coordinates of a vertex
-         * @pre p < nb_vertices() 
-         */
-        const vec3& vertex( index_t p ) const
-        {
-            return vertices.unique_vertex( p ) ;
-        }
-
-        /*! 
-         * @brief Update the coordinates of vertex
-         * @details Linked vertices coordinates in the 
-         *        Corner, Line, and Surface are updated.
-         */
-        void set_vertex_coordinates(
-            index_t id,
-            const vec3& p )
-        {
-            ringmesh_assert( id < nb_vertices() ) ;
-            vertices.update_point( id, p ) ;
-        }
-
         index_t nb_facets() const ;
 
         /*!
@@ -274,14 +250,13 @@ namespace RINGMesh {
                  case BoundaryModelElement::LAYER     :   return layers_.size() ;
                  case BoundaryModelElement::ALL_TYPES :
                      {
-                         ringmesh_assert( nb_elements_per_type_.size() > 0 ) ;
-                         ringmesh_debug_assert(
-                                                nb_elements_per_type_.back()
-                                                == corners_.size() + lines_.size() + surfaces_.size()
-                                                + regions_.size() + contacts_.size()
-                                                + interfaces_.size() + layers_.size() 
-                                                ) ;
-                         return nb_elements_per_type_.back() ;
+                    ringmesh_assert( nb_elements_per_type_.size() > 0 ) ;
+                    ringmesh_debug_assert(
+                        nb_elements_per_type_.back()
+                            == corners_.size() + lines_.size() + surfaces_.size()
+                                + regions_.size() + contacts_.size()
+                                + interfaces_.size() + layers_.size() ) ;
+                    return nb_elements_per_type_.back() ;
                     }
                  default :  
                      return 0 ;
@@ -296,33 +271,32 @@ namespace RINGMesh {
          *
          */
         inline const BoundaryModelElement& element(
-            BME::TYPE type,
-            index_t index ) const
+            BME::bme_t type ) const
         {
-            ringmesh_assert( index < nb_elements( type ) ) ;
-            switch( type ) {
-            case BoundaryModelElement::CORNER         :  return *corners_[ index ] ;
-                 case BoundaryModelElement::LINE      :  return *lines_[ index ] ;
-                 case BoundaryModelElement::SURFACE   :  return *surfaces_[ index ] ;
-                 case BoundaryModelElement::REGION    :  return *regions_[ index ] ;
-                 case BoundaryModelElement::CONTACT   :  return *contacts_[ index ] ;
-                 case BoundaryModelElement::INTERFACE :  return *interfaces_[ index ] ;
-                 case BoundaryModelElement::LAYER     :  return *layers_[ index ] ;
+            ringmesh_assert( type.index < nb_elements( type.type ) ) ;
+            switch( type.type ) {
+            case BoundaryModelElement::CORNER         :  return *corners_[ type.index ] ;
+                 case BoundaryModelElement::LINE      :  return *lines_[ type.index ] ;
+                 case BoundaryModelElement::SURFACE   :  return *surfaces_[ type.index ] ;
+                 case BoundaryModelElement::REGION    :  return *regions_[ type.index ] ;
+                 case BoundaryModelElement::CONTACT   :  return *contacts_[ type.index ] ;
+                 case BoundaryModelElement::INTERFACE :  return *interfaces_[ type.index ] ;
+                 case BoundaryModelElement::LAYER     :  return *layers_[ type.index ] ;
                  case BoundaryModelElement::ALL_TYPES : {
                      // See the BoundaryModelBuilder::end_model() function
-                     index_t t = NO_ID ;
+                     BME::TYPE t = BME::NO_TYPE ;
                      for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
-                         if( index >= nb_elements_per_type_[ i - 1 ]
-                             && index < nb_elements_per_type_[ i ] )
+                         if( type.index >= nb_elements_per_type_[ i - 1 ]
+                             && type.index < nb_elements_per_type_[ i ] )
                          {
-                             t = i - 1 ;
+                             t = BME::TYPE( i - 1 ) ;
                              break ;
                          }
                      }
-                     ringmesh_assert( t < BME::NO_TYPE ) ;
-                     return element( (BME::TYPE) t,
-                         index - nb_elements_per_type_[ t ] ) ;
-                 }
+                    ringmesh_assert( t < BME::NO_TYPE ) ;
+                    return element(
+                        BME::bme_t( t, type.index - nb_elements_per_type_[t] ) ) ;
+                }
                  default :
                      ringmesh_assert_not_reached ;
                      BoundaryModelElement dummy ;
@@ -348,22 +322,22 @@ namespace RINGMesh {
 
         const BoundaryModelElement& region( index_t index ) const
         {
-            return element( BME::REGION, index ) ;
+            return element( BME::bme_t( BME::REGION, index ) ) ;
         }
 
         const BoundaryModelElement& contact( index_t index ) const
         {
-            return element( BME::CONTACT, index ) ;
+            return element( BME::bme_t( BME::CONTACT, index ) ) ;
         }
 
         const BoundaryModelElement& one_interface( index_t index ) const
         {
-            return element( BME::INTERFACE, index ) ;
+            return element( BME::bme_t( BME::INTERFACE, index ) ) ;
         }
 
         const BoundaryModelElement& layer( index_t index ) const
         {
-            return element( BME::LAYER, index ) ;
+            return element( BME::bme_t( BME::LAYER, index ) ) ;
         }
 
         const BoundaryModelElement& universe() const { return universe_ ; }
