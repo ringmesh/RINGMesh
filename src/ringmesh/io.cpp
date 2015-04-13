@@ -41,6 +41,7 @@
 #include <ringmesh/io.h>
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/boundary_model_builder.h>
+#include <ringmesh/macro_mesh.h>
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
@@ -58,6 +59,9 @@
 #include <fstream>
 #include <string>
 #include <stack>
+
+#define MAX_FILENAME 512
+#define READ_SIZE 8192
 
 namespace RINGMesh {
     namespace RINGMeshIO {

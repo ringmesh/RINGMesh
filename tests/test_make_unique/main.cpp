@@ -38,6 +38,7 @@
  *     FRANCE
  */
 
+#include <ringmesh/boundary_model.h>
 #include <ringmesh/io.h>
 
 #include <geogram/points/colocate.h>
