@@ -15,9 +15,8 @@ int main(int argc, char** argv) {
 	GEO::Logger::out("TEST") << "Test for intersections" << std::endl;
 
 	BoundaryModel boundary_model;
-	RINGMeshIO::load("/home/launoy/RINGMesh/tests/data/noTouch.ml", //../data/noTouch.ml
+	RINGMeshIO::load("../data/noTouch.ml", //../data/noTouch.ml
 			boundary_model);
-	RINGMeshIO::save( boundary_model, "out.ml" ) ;
 
 //	const std::string& filename = "../data/noTouch.ml";
 //	std::ifstream input(filename.c_str());
