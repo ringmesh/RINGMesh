@@ -432,7 +432,7 @@ namespace RINGMesh {
          * @param points Geometric positions of the vertices to add
          * @param clear_mesh If true the mesh if cleared, keeping its attributes 
          */
-        void set_vertices(
+        virtual void set_vertices(
             const std::vector< vec3 >& points, 
             bool clear_mesh = false ) ;
 
@@ -443,7 +443,7 @@ namespace RINGMesh {
          * @param model_vertices Indices in the model of the points to add
          * @param clear_mesh If true the mesh if cleared, keeping its attributes 
          */
-        void set_vertices( 
+        virtual void set_vertices(
             const std::vector< index_t >& model_vertices, 
             bool clear_mesh = false ) ;
 
@@ -541,19 +541,16 @@ namespace RINGMesh {
         Line(
             BoundaryModel* model = nil,
             index_t id = NO_ID ) ;
-        Line(
-            BoundaryModel* model,
-            index_t id,
-            const std::vector< vec3 >& vertices ) ;
-        Line(
-            BoundaryModel* model,
-            index_t id,
-            index_t corner0,
-            index_t corner1,
-            const std::vector< vec3 >& vertices ) ;
 
         virtual ~Line() {}
 
+        virtual void set_vertices(
+            const std::vector< vec3 >& points,
+            bool clear_mesh = false ) ;
+
+        virtual void set_vertices(
+            const std::vector< index_t >& model_vertices,
+            bool clear_mesh = false ) ;
 
         /*!
          * @brief A Line is closed if its two extremities are identitical 

@@ -504,46 +504,39 @@ namespace RINGMesh {
     {
     }
 
-
     /*!
-     * @brief Construct a Line knowing its vertices. No boundaries are set.
+     * @brief Add vertices to the mesh and build the edges
+     * @details No update of the model vertices is done
      *
-     * @param[in] model  The parent model
-     * @param[in] id The index of the line in the lines_ vector of the parent model
-     * @param[in] vertices Coordinates of the vertices defining this Line
+     * @param points Geometric positions of the vertices to add
+     * @param clear_mesh If true the mesh if cleared, keeping its attributes
      */
-    Line::Line(
-        BoundaryModel* model,
-        index_t id,
-        const std::vector< vec3 >& vertices )
-          : BoundaryModelMeshElement( model, LINE, id )
+    void Line::set_vertices(
+        const std::vector< vec3 >& points,
+        bool clear_mesh )
     {
-       set_vertices( vertices ) ;
+        BoundaryModelMeshElement::set_vertices( points, clear_mesh ) ;
+        for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
+            mesh_.edges.create_edge( e, e + 1 ) ;
+        }
     }
 
-
     /*!
-     * @brief Construct a Line knowing its vertices
+     * @brief Add vertices to the mesh and build the edges
+     * @details See set_vertex(index_t, index_t)
      *
-     * @param[in] model  The parent model
-     * @param[in] id The index of the line in the lines_ vector of the parent model
-     * @param[in] corner0 Index of the starting corner
-     * @param[in] corner1 Index of the ending corner
-     * @param[in] vertices Coordinates of the vertices defining this Line
+     * @param model_vertices Indices in the model of the points to add
+     * @param clear_mesh If true the mesh if cleared, keeping its attributes
      */
-    Line::Line(
-        BoundaryModel* model,
-        index_t id,
-        index_t corner0,
-        index_t corner1,
-        const std::vector< vec3 >& vertices )
-        : BoundaryModelMeshElement( model, LINE, id )
+    void Line::set_vertices(
+        const std::vector< index_t >& model_vertices,
+        bool clear_mesh )
     {
-        set_vertices( vertices ) ;
-        boundaries_.push_back( corner0 ) ;
-        boundaries_.push_back( corner1 ) ;
+        BoundaryModelMeshElement::set_vertices( model_vertices, clear_mesh ) ;
+        for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
+            mesh_.edges.create_edge( e, e + 1 ) ;
+        }
     }
-
 
     /*!
      * @brief Check if the Line is twice on the boundary of a surface
