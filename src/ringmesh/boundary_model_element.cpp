@@ -68,7 +68,7 @@ namespace RINGMesh {
         if( in == "normal_fault" ) {return FAULT ;}
         if( in == "fault" ) {return FAULT ;}
         if( in == "top" ) {return STRATI ;}
-        if( in == "none" ) {return STRATI ;}
+        if( in == "none" ) {return NO_GEOL ;}
         if( in == "unconformity" ) {return STRATI ;}
         if( in == "boundary" ) {return VOI ;}
 
@@ -242,9 +242,6 @@ namespace RINGMesh {
         if( type_ != rhs.type_ ) {
             return false ;
         }
-        if( id_ != rhs.id_ ) {
-            return false ;
-        }
         if( name_ != rhs.name_ ) {
             return false ;
         }
@@ -288,8 +285,8 @@ namespace RINGMesh {
      */
     const BoundaryModelElement& BoundaryModelElement::parent() const
     {
-        ringmesh_assert( parent_id() != NO_ID ) ;
-        return model_->element( parent_type( type_ ), parent_id() ) ;
+        ringmesh_assert( parent_id() != dummy_bme_type ) ;
+        return model_->element( parent_id() ) ;
     }
 
 
@@ -301,7 +298,7 @@ namespace RINGMesh {
     const BoundaryModelElement& BoundaryModelElement::boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_boundaries() ) ;
-        return model_->element( boundary_type( type_ ), boundary_id( x ) ) ;
+        return model_->element( boundary_id( x ) ) ;
     }
 
 
@@ -313,7 +310,7 @@ namespace RINGMesh {
     const BoundaryModelElement& BoundaryModelElement::in_boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_in_boundary() ) ;
-        return model_->element( in_boundary_type( type_ ), in_boundary_id( x ) ) ;
+        return model_->element( in_boundary_id( x ) ) ;
     }
 
 
@@ -325,7 +322,7 @@ namespace RINGMesh {
     const BoundaryModelElement& BoundaryModelElement::child( index_t x ) const
     {
         ringmesh_assert( x < nb_children() ) ;
-        return model_->element( child_type( type_ ), child_id( x ) ) ;
+        return model_->element( child_id( x ) ) ;
     }
 
 
@@ -340,7 +337,6 @@ namespace RINGMesh {
     {
         model_        = &model ;
         type_         = rhs.type_ ;
-        id_           = rhs.id_ ;
         name_         = rhs.name_ ;
         geol_feature_ = rhs.geol_feature_ ;
         boundaries_   = rhs.boundaries_ ;
@@ -375,25 +371,29 @@ namespace RINGMesh {
     }
     
 
-    BoundaryModelElement::VertexAttributeManager& 
-        BoundaryModelElement::vertex_attribute_manager() const
+    GEO::AttributesManager& BoundaryModelElement::vertex_attribute_manager() const
     {
-        ringmesh_assert_not_reached ;
+        ringmesh_assert_not_reached;
         // Return something stupid - we crash before anyway
-        return model_->corner(0).vertex_attribute_manager();
+        return model_->corner(0).vertex_attribute_manager() ;
     }
 
-    BoundaryModelElement::CellAttributeManager& 
-        BoundaryModelElement::cell_attribute_manager() const
+    GEO::AttributesManager& BoundaryModelElement::cell_attribute_manager() const
     {
-        ringmesh_assert_not_reached ;
+        ringmesh_assert_not_reached;
         // Return something stupid - we crash before anyway
-        return model_->corner(0).vertex_attribute_manager();
+        return model_->corner(0).vertex_attribute_manager() ;
     }
-
 
     /*********************************************************************/
 
+    /*!
+     * @brief Returns the index of the first point that correspond to a model vertex
+     * @details Uses the attribute on the BoundaryModelVertices that stores the
+     *  corresponding points in BME. Returns NO_ID if no matching point found.
+     *
+     * @param model_vertex_id Index of a vertex in BoundaryModelVertices
+     */
     index_t BoundaryModelMeshElement::local_id(
         index_t model_vertex_id ) const 
     {   
@@ -403,7 +403,7 @@ namespace RINGMesh {
         
         for( index_t i = 0; i < bme_vertices.size(); i++ ) {
             const BMV::VertexInBME& info = bme_vertices[i] ;
-            if( info.bme_type == element_type() && info.bme_id == id() ) {
+            if( info.bme_type == bme_type() ) {
                 return info.v_id ;
             }
         }
@@ -411,6 +411,12 @@ namespace RINGMesh {
     }
 
 
+    /*!
+     * @brief Set the index of the matching point in the BoundaryModel
+     *
+     * @param[in] v Vertex index
+     * @param[in] model_id Model vertex index in BoundaryModelVertices
+     */
     void BoundaryModelMeshElement::set_model_vertex_id( 
         index_t vertex_id, 
         index_t model_vertex_id ) 
@@ -419,7 +425,18 @@ namespace RINGMesh {
         model_vertex_id_[vertex_id] = model_vertex_id ;
     }
 
-
+    /*!
+     * @brief Set the geometrical position of a vertex
+     *
+     * @param index Index of the vertex to modify
+     * @param point New coordinates
+     * @param update If true, all the vertices sharing the same geometrical position
+     *               in the BoundaryModel have their position updated, if false they
+     *               are not.
+     *
+     * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
+     *          I removed on purpose the default value parameter for update (Jeanne)
+     */
     void BoundaryModelMeshElement::set_vertex(
         index_t index,
         const vec3& point,
@@ -429,12 +446,16 @@ namespace RINGMesh {
         if( update )
             model_->vertices.update_point(
                  model_->vertices.unique_vertex_id( 
-                    element_type(), id(), index ), point ) ;
+                    bme_type(), index ), point ) ;
         else
             mesh_.vertices.point( index ) = point ;
     }
 
-    
+    /*!
+     * @brief Get the vertex in the model from a vertex index in the Surface
+     * @param[in] p Vertex index
+     * @return The vertex index in the model
+     */
     index_t BoundaryModelMeshElement::model_vertex_id( index_t p ) const {
         ringmesh_assert( p < nb_vertices() ) ;
         ringmesh_debug_assert( model_vertex_id_[p] != NO_ID ) ;
@@ -442,6 +463,7 @@ namespace RINGMesh {
     }
 
     /*!
+     * @brief Returns the coordinates of the point at the given index in the surface
      * @param[in] surf_vertex_id Index of the vertex in the surface
      * @return The coordinates of the vertex
      */
@@ -451,16 +473,31 @@ namespace RINGMesh {
         return mesh_.vertices.point( v ) ;
     }
 
-
+    /*!
+     * @brief Set the geometrical position of a vertex from a model vertex
+     * @details Set also both mapping from (BoundaryModelVertices::unique2bme)
+     *          and to (model_vertex_id_) the model vertex.
+     *
+     * @param index Index of the vertex to modify
+     * @param model_vertex Index in BoundaryModelVertices of the vertex giving
+     *                     the new position
+     */
     void BoundaryModelMeshElement::set_vertex( 
         index_t v, index_t model_vertex ) 
     {
-        set_vertex( v, model_->vertex( model_vertex ), false ) ;
+        set_vertex( v, model_->vertices.unique_vertex( model_vertex ), false ) ;
         set_model_vertex_id( v, model_vertex ) ;
-        model_->vertices.add_unique_to_bme( model_vertex, element_type(), id(), v ) ;
+        model_->vertices.add_unique_to_bme( model_vertex, bme_type(), v ) ;
     }
 
 
+    /*!
+     * @brief Add vertices to the mesh
+     * @details No update of the model vertices is done
+     *
+     * @param points Geometric positions of the vertices to add
+     * @param clear_mesh If true the mesh if cleared, keeping its attributes
+     */
     void BoundaryModelMeshElement::set_vertices( 
         const std::vector< vec3 >& points,
         bool clear ) 
@@ -475,6 +512,13 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * @brief Add vertices to the mesh
+     * @details No update of the model vertices is done
+     *
+     * @param points Geometric positions of the vertices to add
+     * @param clear_mesh If true the mesh if cleared, keeping its attributes
+     */
     void BoundaryModelMeshElement::set_vertices( 
         const std::vector< index_t >& model_vertices,
         bool clear ) 
@@ -504,46 +548,39 @@ namespace RINGMesh {
     {
     }
 
-
     /*!
-     * @brief Construct a Line knowing its vertices. No boundaries are set.
+     * @brief Add vertices to the mesh and build the edges
+     * @details No update of the model vertices is done
      *
-     * @param[in] model  The parent model
-     * @param[in] id The index of the line in the lines_ vector of the parent model
-     * @param[in] vertices Coordinates of the vertices defining this Line
+     * @param points Geometric positions of the vertices to add
+     * @param clear_mesh If true the mesh if cleared, keeping its attributes
      */
-    Line::Line(
-        BoundaryModel* model,
-        index_t id,
-        const std::vector< vec3 >& vertices )
-          : BoundaryModelMeshElement( model, LINE, id )
+    void Line::set_vertices(
+        const std::vector< vec3 >& points,
+        bool clear_mesh )
     {
-       set_vertices( vertices ) ;
+        BoundaryModelMeshElement::set_vertices( points, clear_mesh ) ;
+        for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
+            mesh_.edges.create_edge( e, e + 1 ) ;
+        }
     }
 
-
     /*!
-     * @brief Construct a Line knowing its vertices
+     * @brief Add vertices to the mesh and build the edges
+     * @details See set_vertex(index_t, index_t)
      *
-     * @param[in] model  The parent model
-     * @param[in] id The index of the line in the lines_ vector of the parent model
-     * @param[in] corner0 Index of the starting corner
-     * @param[in] corner1 Index of the ending corner
-     * @param[in] vertices Coordinates of the vertices defining this Line
+     * @param model_vertices Indices in the model of the points to add
+     * @param clear_mesh If true the mesh if cleared, keeping its attributes
      */
-    Line::Line(
-        BoundaryModel* model,
-        index_t id,
-        index_t corner0,
-        index_t corner1,
-        const std::vector< vec3 >& vertices )
-        : BoundaryModelMeshElement( model, LINE, id )
+    void Line::set_vertices(
+        const std::vector< index_t >& model_vertices,
+        bool clear_mesh )
     {
-        set_vertices( vertices ) ;
-        boundaries_.push_back( corner0 ) ;
-        boundaries_.push_back( corner1 ) ;
+        BoundaryModelMeshElement::set_vertices( model_vertices, clear_mesh ) ;
+        for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
+            mesh_.edges.create_edge( e, e + 1 ) ;
+        }
     }
-
 
     /*!
      * @brief Check if the Line is twice on the boundary of a surface
@@ -554,7 +591,7 @@ namespace RINGMesh {
     {
         // Find out if this surface is twice in the in_boundary vector
         return std::count( in_boundary_.begin(), in_boundary_.end(),
-            surface.id() ) > 1 ;
+            surface.bme_type() ) > 1 ;
     }
 
 
@@ -1263,8 +1300,8 @@ namespace RINGMesh {
         index_t id1 = surf_vertex_id( f, next_in_facet( f, v ) ) ;
 
         // Stopping criterion
-        index_t c0 = L.boundary_id(0) ;
-        index_t c1 = L.boundary_id(1) ;
+        index_t c0 = L.boundary_id(0).index ;
+        index_t c1 = L.boundary_id(1).index ;
 
         // Wee need to check if we have to duplicate the Corner or not
         // the 2 corners are         
@@ -1286,9 +1323,9 @@ namespace RINGMesh {
         index_t s_new_corner = NO_ID ;
         // Create this new point in the surface and set mapping with point in the BM
         if( m_corner != NO_ID ) {
-            s_new_corner = mesh_.vertices.create_vertex( M.vertex( m_corner ).data() ) ;
+            s_new_corner = mesh_.vertices.create_vertex( M.vertices.unique_vertex( m_corner ).data() ) ;
             set_model_vertex_id( s_new_corner, m_corner ) ;           
-            M.vertices.add_unique_to_bme( m_corner, element_type(), id(), s_new_corner ) ;
+            M.vertices.add_unique_to_bme( m_corner, bme_type(), s_new_corner ) ;
         }
             
         /// \todo Check that all vertices on the line are recovered
@@ -1320,7 +1357,7 @@ namespace RINGMesh {
             // Set its model vertex index
             set_model_vertex_id( new_id1, model_vertex_id( id1 ) ) ;
             // Add the mapping from in the model vertices. Should we do this one ?
-            M.vertices.add_unique_to_bme( model_vertex_id(id1), element_type(), id(), new_id1 ) ;
+            M.vertices.add_unique_to_bme( model_vertex_id(id1), bme_type(), new_id1 ) ;
 
             // Update vertex index in facets 
             update_facet_corner( *this, facets_around_id1, id1, new_id1 ) ;
