@@ -42,15 +42,12 @@
 #define __RINGMESH_IO__
 
 #include <ringmesh/common.h>
-#include <ringmesh/macro_mesh.h>
-#include <ringmesh/boundary_model.h>
 
-#define MAX_FILENAME 512
-#define READ_SIZE 8192
-class string ;
+#include <geogram/basic/factory.h>
 
 namespace RINGMesh {
     class BoundaryModel ;
+    class MacroMesh ;
 }
 
 namespace RINGMesh {

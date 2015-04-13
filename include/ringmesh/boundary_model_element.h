@@ -68,9 +68,6 @@ namespace RINGMesh {
     class RINGMESH_API BoundaryModelElement {
         ringmesh_disable_copy( BoundaryModelElement ) ;
     public:
-        typedef GEO::AttributesManager VertexAttributeManager ;
-        typedef GEO::AttributesManager CellAttributeManager ;
-
         /*!
          * @brief Geological feature types for BoundaryModelElement
          * \todo Read all types, this is not sufficient
@@ -107,6 +104,30 @@ namespace RINGMesh {
             ALL_TYPES
         } ;
 
+        struct bme_t {
+            bme_t()
+                : type( NO_TYPE ), index( NO_ID )
+            {
+
+            }
+            bme_t( TYPE t, index_t id )
+                : type( t ), index( id )
+            {
+            }
+            bool operator!=( const bme_t& t ) const {
+                return type != t.type || index != t.index ;
+            }
+            bool operator==( const bme_t& t ) const {
+                return type == t.type && index == t.index ;
+            }
+
+            /// Type of the element
+            TYPE type ;
+
+            /// Elements are uniquely identified in the BoundaryModel
+            /// the pair TYPE + index
+            index_t index ;
+        } ;
         const static index_t NO_ID = index_t(-1) ;
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
@@ -140,8 +161,8 @@ namespace RINGMesh {
             BoundaryModel* model = NULL,
             TYPE element_type = NO_TYPE,
             index_t id = NO_ID )
-              : model_( model ), type_( element_type ), id_( id ),
-                name_( "" ), geol_feature_( NO_GEOL ), parent_( NO_ID )
+              : model_( model ), type_( element_type, id ),
+                name_( "" ), geol_feature_( NO_GEOL )
         {
         }
 
@@ -157,10 +178,11 @@ namespace RINGMesh {
         const BoundaryModel& model() const { return *model_ ; }
         bool has_name() const { return name_ != "" ; }
         const std::string& name() const { return name_ ; }
-        bool has_id() const { return id_ != NO_ID ; }
-        index_t id() const { return id_ ; }
-        bool has_type() const { return type_ != NO_TYPE ; }
-        TYPE element_type() const { return type_ ; }
+        bool has_id() const { return type_.index != NO_ID ; }
+        index_t id() const { return type_.index ; }
+        bool has_type() const { return type_.type != NO_TYPE ; }
+        TYPE element_type() const { return type_.type ; }
+        bme_t bme_type() const { return type_ ; }
         bool has_geological_feature() const { return geol_feature_ != NO_GEOL ; }
         GEOL_FEATURE geological_feature() const { return geol_feature_ ; }
         bool is_on_voi() const ;
@@ -170,26 +192,26 @@ namespace RINGMesh {
          * @{
          */
         index_t nb_boundaries() const { return boundaries_.size() ;}
-        index_t boundary_id( index_t x ) const { return boundaries_[ x ] ;}
+        const bme_t& boundary_id( index_t x ) const { return boundaries_[ x ] ;}
         const BoundaryModelElement& boundary( index_t x ) const ;
 
         bool side( index_t i ) const { return sides_[ i ] ;}
 
         index_t nb_in_boundary() const { return in_boundary_.size() ;}
-        index_t in_boundary_id( index_t x ) const { return in_boundary_[ x ] ;}
+        const bme_t& in_boundary_id( index_t x ) const { return in_boundary_[ x ] ;}
         const BoundaryModelElement& in_boundary( index_t x ) const ;
 
         /*!@}
          * \name Parent - children relationships
          * @{
          */
-        bool has_parent() const { return parent_ != NO_ID ;}
+        bool has_parent() const { return parent_.index != NO_ID ;}
         const BoundaryModelElement& parent() const ;
 
-        index_t parent_id() const { return parent_ ;}
+        const bme_t& parent_id() const { return parent_ ;}
 
         index_t nb_children() const { return children_.size() ;}
-        index_t child_id( index_t x ) const { return children_[ x ] ;}
+        const bme_t& child_id( index_t x ) const { return children_[ x ] ;}
         const BoundaryModelElement& child( index_t x ) const ;
 
         /*!@}
@@ -230,8 +252,8 @@ namespace RINGMesh {
          * \name Accessors to attribute managers.
          * @{
          */
-        virtual VertexAttributeManager& vertex_attribute_manager() const ;        
-        virtual CellAttributeManager& cell_attribute_manager() const ;
+        virtual GEO::AttributesManager& vertex_attribute_manager() const ;
+        virtual GEO::AttributesManager& cell_attribute_manager() const ;
         
         /*!@}
          * \name Modification of the element
@@ -242,62 +264,62 @@ namespace RINGMesh {
             BoundaryModel& model ) ;
 
         void set_model( BoundaryModel* m ) { model_ = m  ; }
-        void set_element_type( TYPE t ) { type_ = t ; }
-        void set_id( index_t id ) { id_ = id ; }
+        void set_element_type( TYPE t ) { type_.type = t ; }
+        void set_id( index_t id ) { type_.index = id ; }
         void set_name( const std::string& name ) { name_ = name ; }
         void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; }
 
-        void add_boundary( index_t b )
+        void add_boundary( const bme_t& b )
         {
-            ringmesh_assert( boundary_allowed( type_ ) ) ;
+            ringmesh_assert( boundary_allowed( type_.type ) ) ;
             boundaries_.push_back( b ) ;
         }
 
-        void set_boundary( index_t id, index_t b )
+        void set_boundary( index_t id, const bme_t& b )
         {
             ringmesh_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
         }
 
-        void add_boundary( index_t b, bool side )
+        void add_boundary( const bme_t& b, bool side )
         {
-            ringmesh_assert( boundary_allowed( type_ ) ) ;
+            ringmesh_assert( boundary_allowed( type_.type ) ) ;
             boundaries_.push_back( b ) ;
             sides_.push_back( side ) ;
         }
 
-        void set_boundary( index_t id, index_t b, bool side )
+        void set_boundary( index_t id, const bme_t& b, bool side )
         {
             ringmesh_assert( id < nb_boundaries() && id < sides_.size() ) ;
             boundaries_[ id ] = b ;
             sides_[ id ] = side ;
         }
 
-        void add_in_boundary( index_t e )
+        void add_in_boundary( const bme_t& e )
         {
-            ringmesh_assert( in_boundary_allowed( type_ ) ) ;
+            ringmesh_assert( in_boundary_allowed( type_.type ) ) ;
             in_boundary_.push_back( e ) ;
         }
 
-        void set_in_boundary( index_t id, index_t in_b )
+        void set_in_boundary( index_t id, const bme_t& in_b )
         {
             ringmesh_assert( id < nb_in_boundary() ) ;
             in_boundary_[ id ] = in_b ;
         }
 
-        void set_parent( index_t p )
+        void set_parent( const bme_t& p )
         {
-            ringmesh_assert( parent_allowed( type_ ) ) ;
+            ringmesh_assert( parent_allowed( type_.type ) ) ;
             parent_ = p ;
         }
 
-        void add_child( index_t e )
+        void add_child( const bme_t& e )
         {
-            ringmesh_assert( child_allowed( type_ ) ) ;
+            ringmesh_assert( child_allowed( type_.type ) ) ;
             children_.push_back( e ) ;
         }
 
-        void set_child( index_t id, index_t c )
+        void set_child( index_t id, const bme_t& c )
         {
             ringmesh_assert( id < nb_children() ) ;
             children_[ id ] = c ;
@@ -311,12 +333,8 @@ namespace RINGMesh {
         /// Pointer to the BounadyModel owning this element
         BoundaryModel* model_ ;
 
-        /// Type of the element
-        TYPE type_ ;
-
-        /// Elements are uniquely identified in the BoundaryModel
-        /// the pair TYPE + index
-        index_t id_ ;
+        /// Type and id of the BoundaryModelElement
+        bme_t type_ ;
 
         /// Name of the element - by default it is an empty string
         std::string name_ ;
@@ -325,21 +343,24 @@ namespace RINGMesh {
         GEOL_FEATURE geol_feature_ ;
 
         /// Elements on the boundary of this element - see boundary_type( TYPE )
-        std::vector< index_t > boundaries_ ;
+        std::vector< bme_t > boundaries_ ;
 
         /// Additional information for oriented boundaries
         /// Side: + (true) or - (false)
         std::vector< bool > sides_ ;
 
         /// Elements in which boundary this element is - see in_boundary_type( TYPE )
-        std::vector< index_t > in_boundary_ ;
+        std::vector< bme_t > in_boundary_ ;
 
         /// Index of the parent - see parent_type( TYPE ) - default value is NO_ID.
-        index_t parent_ ;
+        bme_t parent_ ;
 
         /// Elements constituting this one - see child_type( TYPE )
-        std::vector< index_t > children_ ;
+        std::vector< bme_t > children_ ;
     } ;
+    typedef BoundaryModelElement BME ;
+    const static BoundaryModelElement dummy_BME ;
+    const static BoundaryModelElement::bme_t dummy_bme_type ;
 
 
     /*!
@@ -377,83 +398,31 @@ namespace RINGMesh {
          * @brief Returns the number of vertices of the mesh
          */
         virtual index_t nb_vertices() const { return mesh_.vertices.nb() ; }
-        
-        /*!
-         * @brief Get the vertex in the model from a vertex index in the Surface
-         */
+
         virtual index_t model_vertex_id( index_t v = 0 ) const ;
 
-        /*!
-         * @brief Set the index of the matching point in the BoundaryModel
-         * 
-         * @param v Vertex index
-         * @param model_id Model vertex index in BoundaryModelVertices
-         */
         void set_model_vertex_id( index_t v, index_t model_id ) ;
 
-        /*!
-         * @brief Returns the coordinates of the point at the given index in the surface
-         */
         virtual const vec3& vertex( index_t v = 0 ) const ;
        
-        /*!
-         * @brief Set the geometrical position of a vertex
-         *
-         * @param index Index of the vertex to modify
-         * @param point New coordinates
-         * @param update If true, all the vertices sharing the same geometrical position 
-         *               in the BoundaryModel have their position updated, if false they
-         *               are not.
-         * 
-         * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
-         *          I removed on purpose the default value parameter for update (Jeanne)
-         */             
+
         virtual void set_vertex(
             index_t index,
             const vec3& point,
             bool update ) ;
         
-        /*!
-         * @brief Set the geometrical position of a vertex from a model vertex
-         * @details Set also both mapping from (BoundaryModelVertices::unique2bme)
-         *          and to (model_vertex_id_) the model vertex.
-         *
-         * @param index Index of the vertex to modify
-         * @param model_vertex Index in BoundaryModelVertices of the vertex giving 
-         *                     the new position
-         */
+
         void set_vertex( index_t v, index_t model_vertex ) ;
         
-        
-        /*!
-         * @brief Add vertices to the mesh
-         * @details No update of the model vertices is done
-         *
-         * @param points Geometric positions of the vertices to add
-         * @param clear_mesh If true the mesh if cleared, keeping its attributes 
-         */
-        void set_vertices(
+
+        virtual void set_vertices(
             const std::vector< vec3 >& points, 
             bool clear_mesh = false ) ;
 
-        /*!
-         * @brief Add vertices to the mesh
-         * @details See set_vertex(index_t, index_t)
-         *
-         * @param model_vertices Indices in the model of the points to add
-         * @param clear_mesh If true the mesh if cleared, keeping its attributes 
-         */
-        void set_vertices( 
+        virtual void set_vertices(
             const std::vector< index_t >& model_vertices, 
             bool clear_mesh = false ) ;
 
-        /*! 
-         * @brief Returns the index of the first point that correspond to a model vertex
-         * @details Uses the attribute on the BoundaryModelVertices that stores the 
-         *  corresponding points in BME. Returns NO_ID if no matching point found.
-         *
-         * @param model_vertex_id Index of a vertex in BoundaryModelVertices
-         */
         virtual index_t local_id( index_t model_vertex_id ) const ;
 
         /*!
@@ -461,11 +430,11 @@ namespace RINGMesh {
          * \name Attribute managers
          * @{
          */ 
-        virtual VertexAttributeManager& vertex_attribute_manager() const {
+        virtual GEO::AttributesManager& vertex_attribute_manager() const {
             return mesh_.vertices.attributes() ;
         }
 
-        virtual CellAttributeManager& cell_attribute_manager() const {
+        virtual GEO::AttributesManager& cell_attribute_manager() const {
             return mesh_.facets.attributes() ;
         }
         /*! @}
@@ -541,19 +510,16 @@ namespace RINGMesh {
         Line(
             BoundaryModel* model = nil,
             index_t id = NO_ID ) ;
-        Line(
-            BoundaryModel* model,
-            index_t id,
-            const std::vector< vec3 >& vertices ) ;
-        Line(
-            BoundaryModel* model,
-            index_t id,
-            index_t corner0,
-            index_t corner1,
-            const std::vector< vec3 >& vertices ) ;
 
         virtual ~Line() {}
 
+        virtual void set_vertices(
+            const std::vector< vec3 >& points,
+            bool clear_mesh = false ) ;
+
+        virtual void set_vertices(
+            const std::vector< index_t >& model_vertices,
+            bool clear_mesh = false ) ;
 
         /*!
          * @brief A Line is closed if its two extremities are identitical 
@@ -561,7 +527,7 @@ namespace RINGMesh {
         bool is_closed() const
         {
             ringmesh_assert( nb_boundaries() == 2 ) ;
-            return ( boundaries_[ 0 ] != NO_ID ) &&
+            return ( boundaries_[ 0 ] != dummy_bme_type ) &&
                    ( boundaries_[ 0 ] == boundaries_[ 1 ] ) ;
         }
 
@@ -612,7 +578,7 @@ namespace RINGMesh {
 
         virtual ~Surface() ;
 
-        // Je ne suis pas trop pour donner accès au Mesh directement comme ça (Jeanne)
+        // Je ne suis pas trop pour donner accï¿½s au Mesh directement comme ï¿½a (Jeanne)
         GEO::Mesh& mesh() const {
             return const_cast< GEO::Mesh& >( mesh_ ) ;
         }
