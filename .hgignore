@@ -1,0 +1,15 @@
+
+syntax: regexp
+^.settings$
+syntax: regexp
+^build$
+syntax: regexp
+^CMakeOptions\.txt$
+syntax: regexp
+^doc/html$
+^doc/grgmesh.qch
+syntax: regexp
+^src/third_party/geogram/CMakeOptions\.txt$
+
+syntax: regexp
+^tests/bin$
