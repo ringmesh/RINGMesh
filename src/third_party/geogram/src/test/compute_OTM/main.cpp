@@ -941,7 +941,7 @@ namespace {
      *  a given tetrahedral mesh.
      * \details Implemented by sampling the tetrahedron and
      *  testing whether each sample is inside the mesh.
-     * \param[in] AABB a const reference to a MeshTetsAABB
+     * \param[in] AABB a const reference to a MeshCellsAABB
      * \param[in] p1 a const reference to the first vertex 
      *  of the tetrahedron
      * \param[in] p2 a const reference to the second vertex 
@@ -952,7 +952,7 @@ namespace {
      *  of the tetrahedron
      */
     bool mesh_contains_tet(
-        const MeshTetsAABB& AABB,
+        const MeshCellsAABB& AABB,
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
@@ -1057,7 +1057,7 @@ namespace {
 
         // Step 4: Filter-out the tets that are not contained by
         // the initial mesh M1.
-        MeshTetsAABB AABB(*OTM.RVD()->mesh());
+        MeshCellsAABB AABB(*OTM.RVD()->mesh());
         try {
             ProgressTask progress("Classifying", 100);        
             for(index_t t=0; t<nb_tets; ++t) {

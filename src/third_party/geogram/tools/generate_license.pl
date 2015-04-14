@@ -30,6 +30,9 @@ my $LICENSE_DAYS = shift(@ARGV) || 0;
 #! Name of the licensee
 my $LICENSE_CLIENT = shift(@ARGV) || "Internal version";
 
+#! Maximum number of vertices
+my $LICENSE_MAX_VERTICES = shift(@ARGV) || 0;
+
 # If specified, make sure that the output dir is a CMake build tree
 
 if( defined($OUTPUT_DIR) ) {
@@ -59,6 +62,7 @@ sub generate_license_header {
 /*
  * License issued to $LICENSE_CLIENT
  * License expires in $LICENSE_DAYS day(s) from $build_date
+ * Maximum number of vertices: $LICENSE_MAX_VERTICES 
  */
 #ifndef __VORPALINE_LICENSE_INFO__
 #define __VORPALINE_LICENSE_INFO__
@@ -71,6 +75,7 @@ END
         $text .= "#define VOR_MAXTIME $max_time\n";
         $text .= "#define VOR_CLIENT \"" . encode_string($LICENSE_CLIENT, $VOR_MESSAGE_KEY, 3) . "\"\n";
         $text .= "#define VOR_BUILD_DATE \"" . encode_string($build_date, $VOR_MESSAGE_KEY) . "\"\n";
+        $text .= "#define VOR_MAX_VERTICES $LICENSE_MAX_VERTICES\n";
     }
 
     $text .= "#endif\n\n";
@@ -98,11 +103,12 @@ sub generate_license_info {
 
 License issued to $LICENSE_CLIENT
 License expires in $LICENSE_DAYS day(s) from $build_date
+Maximum number of vertices = $LICENSE_MAX_VERTICES    
 License is personal and non-transferable
 END
 
     if( defined($OUTPUT_DIR) ) {
-	mkdir("$OUTPUT_DIR/doc");
+        mkdir("$OUTPUT_DIR/doc");
         save_file("$OUTPUT_DIR/doc/LICENSE.txt", $text);
     }
 }

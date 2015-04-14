@@ -728,7 +728,22 @@ namespace GEO {
             );
         }
     }
-    
+
+    void MeshFacets::compute_borders() {
+        mesh_.edges.clear();
+        for(index_t f=0; f<nb(); ++f) {
+            for(index_t c1=corners_begin(f); c1!=corners_end(f); ++c1) {
+                if(mesh_.facet_corners.adjacent_facet(c1) == NO_FACET) {
+                    index_t c2 = next_corner_around_facet(f,c1);
+                    mesh_.edges.create_edge(
+                        mesh_.facet_corners.vertex(c1),
+                        mesh_.facet_corners.vertex(c2)
+                    );
+                }
+            }
+        }
+    }
+
     void MeshFacets::assign_triangle_mesh(
         coord_index_t dim,
         vector<double>& vertices,
@@ -1649,10 +1664,41 @@ namespace GEO {
 
     void Mesh::clear(bool keep_attributes, bool keep_memory) {
         vertices.clear(keep_attributes, keep_memory);
+        edges.clear(keep_attributes, keep_memory);
         facets.clear(keep_attributes, keep_memory);
         cells.clear(keep_attributes, keep_memory);
     }
 
+    void Mesh::copy(
+        const Mesh& rhs,
+        bool copy_attributes,
+        MeshElementsFlags what
+    ) {
+        if((what & MESH_VERTICES) == 0) {
+            clear(false,false);
+            return;
+        }
+        vertices.copy(rhs.vertices, copy_attributes);
+        if((what & MESH_EDGES) != 0) {
+            edges.copy(rhs.edges, copy_attributes);
+        } else {
+            edges.clear(false,false);
+        }
+        if((what & MESH_FACETS) != 0) {
+            facets.copy(rhs.facets, copy_attributes);
+            facet_corners.copy(rhs.facet_corners, copy_attributes);
+        } else {
+            facets.clear(false,false);
+        }
+        if((what & MESH_CELLS) != 0) {
+            cells.copy(rhs.cells, copy_attributes);
+            cell_corners.copy(rhs.cell_corners, copy_attributes);
+            cell_facets.copy(rhs.cell_facets, copy_attributes);
+        } else {
+            cells.clear(false,false);
+        }
+    }
+    
     void Mesh::show_stats(const std::string& tag) const {
         index_t nb_borders = 0;
         for(index_t co = 0; co < facet_corners.nb(); ++co) {

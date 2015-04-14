@@ -34,8 +34,10 @@ add_definitions(${FULL_WARNINGS})
 add_flags(CMAKE_CXX_FLAGS -Wnon-virtual-dtor)
 
 # Add static and dynamic bounds checks (optimization required)
-add_flags(CMAKE_CXX_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
-add_flags(CMAKE_C_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
+if (GCC_VERSION VERSION_GREATER 4.0)
+   add_flags(CMAKE_CXX_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
+   add_flags(CMAKE_C_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
+endif()
 
 # Enable SSE3 instruction set
 add_flags(CMAKE_CXX_FLAGS -msse3)
@@ -62,8 +64,10 @@ add_flags(CMAKE_C_FLAGS -msse3)
 
 
 # Compile and link with OpenMP
-add_flags(CMAKE_CXX_FLAGS -fopenmp)
-add_flags(CMAKE_C_FLAGS -fopenmp)
+if (GCC_VERSION VERSION_GREATER 4.0)
+    add_flags(CMAKE_CXX_FLAGS -fopenmp)
+    add_flags(CMAKE_C_FLAGS -fopenmp)
+endif()
 
 # Alaways generate position independant code
 # (to allow linking geogram/vorlalib with DLLs)

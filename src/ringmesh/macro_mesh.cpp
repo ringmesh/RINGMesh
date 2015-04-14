@@ -891,7 +891,7 @@ namespace RINGMesh {
     MacroMeshTools::MacroMeshTools( MacroMesh& mm )
         : mm_( mm ),
           facet_aabb_( mm.nb_meshes(), nil ),
-          tet_aabb_( mm.nb_meshes(), nil )
+          cell_aabb_( mm.nb_meshes(), nil )
     {
     }
 
@@ -899,7 +899,7 @@ namespace RINGMesh {
     {
         for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
             if( facet_aabb_[r] ) delete facet_aabb_[r] ;
-            if( tet_aabb_[r] ) delete tet_aabb_[r] ;
+            if( cell_aabb_[r] ) delete cell_aabb_[r] ;
         }
     }
 
@@ -930,21 +930,21 @@ namespace RINGMesh {
      * @param[in] region id of the GEO::Mesh
      * @return the const reference to the corresponding MeshTetsAABB
      */
-    const GEO::MeshTetsAABB& MacroMeshTools::tet_aabb( index_t region ) const
+    const GEO::MeshCellsAABB& MacroMeshTools::cell_aabb( index_t region ) const
     {
-        init_tet_aabb( region ) ;
-        return *tet_aabb_[region] ;
+        init_cell_aabb( region ) ;
+        return *cell_aabb_[region] ;
     }
 
     /*!
      * Initialize if needed the MeshTetsAABB of the given region
      * @param[in] region id of the GEO::Mesh
      */
-    void MacroMeshTools::init_tet_aabb( index_t region ) const
+    void MacroMeshTools::init_cell_aabb( index_t region ) const
     {
-        if( tet_aabb_[region] ) return ;
-        const_cast< MacroMeshTools* >( this )->tet_aabb_[region] =
-            new GEO::MeshTetsAABB( mm_.mesh( region ) ) ;
+        if( cell_aabb_[region] ) return ;
+        const_cast< MacroMeshTools* >( this )->cell_aabb_[region] =
+            new GEO::MeshCellsAABB( mm_.mesh( region ) ) ;
     }
 
 
@@ -1072,7 +1072,9 @@ namespace RINGMesh {
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
                     &model_.region( i ), add_steiner_points, vertices,
                     well_vertices( i ) ) ;
+                GEO::Logger::instance()->set_quiet( true ) ;
                 tetragen->tetrahedralize() ;
+                GEO::Logger::instance()->set_quiet( false ) ;
                 progress.next() ;
             }
         } else {
@@ -1082,7 +1084,9 @@ namespace RINGMesh {
             TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
                 &model_.region( region_id ), add_steiner_points, vertices,
                 well_vertices( region_id ) ) ;
+            GEO::Logger::instance()->set_quiet( true ) ;
             tetragen->tetrahedralize() ;
+            GEO::Logger::instance()->set_quiet( false ) ;
         }
     }
 
