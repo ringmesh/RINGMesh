@@ -51,6 +51,7 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/delaunay/delaunay.h>
 #include <geogram/basic/logger.h>
+#include <geogram/basic/command_line.h>
 
 namespace GEO {
 
@@ -70,7 +71,9 @@ namespace GEO {
             double epsilon = 0.001 * 0.01 * bbox_diagonal(M);            
             mesh_repair(M, MESH_REPAIR_DEFAULT, epsilon);
             mesh_remove_intersections(M);
-            mesh_save(M, "tetrahedralize_input_repaired.meshb");
+            if(CmdLine::get_arg_bool("dbg:tetrahedralize")) {
+                mesh_save(M, "tetrahedralize_input_repaired.meshb");
+            }
         }
         if(!M.facets.are_simplices()) {
             Logger::err("TetMeshing")
@@ -78,14 +81,16 @@ namespace GEO {
                 << std::endl;
             return false;
         }
-//        for(index_t c=0; c<M.facet_corners.nb(); ++c) {
-//            if(M.facet_corners.adjacent_facet(c) == NO_FACET) {
-//                Logger::err("TetMeshing")
-//                    << "Mesh is not closed"
-//                    << std::endl;
-//                return false;
-//            }
-//        }
+        if(!preprocess) {
+            for(index_t c=0; c<M.facet_corners.nb(); ++c) {
+                if(M.facet_corners.adjacent_facet(c) == NO_FACET) {
+                    Logger::err("TetMeshing")
+                        << "Mesh is not closed"
+                        << std::endl;
+                    return false;
+                }
+            }
+        }
 
         Logger::out("TetMeshing") << "Tetrahedralizing..." << std::endl;
         

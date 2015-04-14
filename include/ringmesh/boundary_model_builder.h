@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -51,14 +51,12 @@
 #include <stack>
 
 namespace RINGMesh {
-    /**
-     * @brief Base class for the class building a BoundaryModel.
+    /*!
+     * @brief Base class for all classes building a BoundaryModel.
      * @details Derive from this class
      */
     class RINGMESH_API BoundaryModelBuilder {
     public:
-        typedef BoundaryModelElement BME ;
-
         BoundaryModelBuilder( BoundaryModel& model )
               : model_( model ) {}
         virtual ~BoundaryModelBuilder() {}
@@ -76,179 +74,186 @@ namespace RINGMesh {
          * @brief Generic accessor to a modifiable BoundaryModelElement
          */
         BoundaryModelElement& element(
-            BME::TYPE t,
-            index_t index )
+            const BME::bme_t& t )
         {
-            return const_cast< BoundaryModelElement& >( model_.element( t, index ) ) ;
+            return const_cast< BoundaryModelElement& >( model_.element( t ) ) ;
         }
 
-        /** @}
+        /*! @}
          * \name Filling BoundaryModelElement attributes.
          * @{
          */
         void set_model(
-            BME::TYPE e_type,
-            index_t e_index,
+            const BME::bme_t& t,
             BoundaryModel* m )
         {
-            element( e_type, e_index ).set_model( m ) ;
+            element( t ).set_model( m ) ;
         }
 
         void set_element_index(
-            BME::TYPE e_type,
-            index_t e_index )
+            const BME::bme_t& t )
         {
-            element( e_type, e_index ).set_id( e_index ) ;
+            element( t ).set_id( t.index ) ;
         }
 
         void set_element_name(
-            BME::TYPE e_type,
-            index_t e_index,
+            const BME::bme_t& t,
             const std::string& name )
         {
-            element( e_type, e_index ).set_name( name ) ;
+            element( t ).set_name( name ) ;
         }
 
         void set_element_geol_feature(
-            BME::TYPE e_type,
-            index_t e_index,
+            const BME::bme_t& t,
             BME::GEOL_FEATURE geol )
         {
-            element( e_type, e_index ).set_geological_feature( geol ) ;
+            element( t ).set_geological_feature( geol ) ;
         }
 
         void add_element_boundary(
-            BME::TYPE e_type,
-            index_t e_index,
-            index_t boundary,
+            const BME::bme_t& t,
+            const BME::bme_t& boundary,
             bool side = false )
         {
-            if( e_type == BoundaryModelElement::REGION || e_type ==
+            if( t.type == BoundaryModelElement::REGION || t.type ==
                 BoundaryModelElement::LAYER )
             {
-                element( e_type, e_index ).add_boundary( boundary, side ) ;
-            } else { element( e_type, e_index ).add_boundary( boundary ) ;}
+                element( t ).add_boundary( boundary, side ) ;
+            } else { element( t ).add_boundary( boundary ) ;}
         }
 
         void add_element_in_boundary(
-            BME::TYPE e_type,
-            index_t e_index,
-            index_t in_boundary )
+            const BME::bme_t& t,
+            const BME::bme_t& in_boundary )
         {
-            element( e_type, e_index ).add_in_boundary( in_boundary ) ;
+            element( t ).add_in_boundary( in_boundary ) ;
         }
 
         void set_parent(
-            BME::TYPE e_type,
-            index_t e_index,
-            index_t parent_index )
+            const BME::bme_t& t,
+            const BME::bme_t& parent_index )
         {
-            element( e_type, e_index ).set_parent( parent_index ) ;
+            element( t ).set_parent( parent_index ) ;
         }
 
         void add_child(
-            BME::TYPE e_type,
-            index_t e_index,
-            index_t child_index )
+            const BME::bme_t& t,
+            const BME::bme_t& child_index )
         {
-            element( e_type, e_index ).add_child( child_index ) ;
+            element( t ).add_child( child_index ) ;
         }
 
         void set_element_vertex(
-            BME::TYPE e_type,
-            index_t e_index,
+            BME::bme_t t,
             index_t v,
             const vec3& point )
         {
-            element( e_type, e_index ).set_vertex( v, point, false ) ;
+            element( t ).set_vertex( v, point, false ) ;
         }
 
-        /** @}
+        /*! @}
          * \name Find and/or create one BoundaryModelElement.
          * @{
          */
-        index_t create_element( BME::TYPE e_type ) ;
+        BME::bme_t create_element( BME::TYPE e_type ) ;
 
-        void erase_element(
-            BME::TYPE type,
-            index_t id ) ;
+        void erase_element( const BME::bme_t& t ) ;
 
         void resize_elements(
             BME::TYPE e_type,
             index_t nb ) ;
 
         // Corner
-        index_t find_corner(  const vec3& point) const ;
-        index_t create_corner( const vec3& point ) ;
-        index_t find_or_create_corner( const vec3& point) ;
+        BME::bme_t find_corner( const vec3& point) const ;
+        BME::bme_t find_corner( index_t model_point_id ) const ;
+        BME::bme_t create_corner( const vec3& point ) ;
+        BME::bme_t find_or_create_corner( const vec3& point) ;
 
         // Line
-        index_t find_line( const std::vector< vec3 >& vertices ) const ;
+        BME::bme_t find_line( const std::vector< vec3 >& vertices ) const ;
 
-        index_t create_line( const std::vector< vec3 >& vertices ) ;
+        BME::bme_t create_line( const std::vector< vec3 >& vertices ) ;
 
-        index_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
+        BME::bme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
 
         // Surface
-        index_t create_surface() ;
+        BME::bme_t create_surface() ;
 
         // Contact
-        index_t find_contact( const std::vector< index_t >& interfaces ) const ;
+        BME::bme_t find_contact( const std::vector< index_t >& interfaces ) const ;
 
-        index_t create_contact( const std::vector< index_t >& interfaces ) ;
+        BME::bme_t create_contact( const std::vector< index_t >& interfaces ) ;
 
-        index_t find_or_create_contact( const std::vector< index_t >& interfaces ) ;
+        BME::bme_t find_or_create_contact( const std::vector< index_t >& interfaces ) ;
 
         // Interface
-        index_t find_interface( const std::string& name ) const ;
+        BME::bme_t find_interface( const std::string& name ) const ;
 
-        index_t create_interface(
+        BME::bme_t create_interface(
             const std::string& name,
             BME::GEOL_FEATURE type = BME::NO_GEOL ) ;
 
         // Region
-        index_t create_region() ;
+        BME::bme_t create_region() ;
 
-        index_t create_region(
+        BME::bme_t create_region(
             const std::string& name,
             const std::vector< std::pair< index_t, bool > >& boundaries ) ;
 
         // Layers
-        index_t create_layer( const std::string& name ) ;
+        BME::bme_t create_layer( const std::string& name ) ;
 
         // Universe
         void set_universe( const std::vector< std::pair< index_t,
                                                          bool > >& boundaries ) ;
 
-        /** @}
+        /*! @}
          * \name Set element geometry
          * @{
          */
         void set_corner(
-            index_t corner_id,
+            const BME::bme_t& corner_id,
             const vec3& point ) ;
 
         void set_line(
-            index_t id,
+            const BME::bme_t& id,
             const std::vector< vec3 >& vertices ) ;
-
+                
         void set_surface_geometry(
-            index_t surface_id,
+            const BME::bme_t& surface_id,
             const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr,
-            const std::vector< index_t >& surface_adjacencies = empty_index_vector ) ;
+            const std::vector< index_t >& surface_adjacencies = std::vector< index_t >() ) ;
+
+        // Same functions but to call in the case where the vertices of the 
+        // model are filled first 
+        index_t add_unique_vertex( const vec3& p ) ;
+
+        void set_corner(
+            const BME::bme_t& corner_id,
+            index_t unique_vertex ) ;
+
+        void set_line(
+            const BME::bme_t& id,
+            const std::vector< index_t >& unique_vertices ) ;
+
+        void set_surface_geometry(
+            const BME::bme_t& surface_id,
+            const std::vector< index_t >& surface_vertices,
+            const std::vector< index_t >& surface_facets,
+            const std::vector< index_t >& surface_facet_ptr,
+            const std::vector< index_t >& surface_adjacencies = std::vector< index_t >() ) ;
 
         void set_surface_geometry_bis(
-            index_t surface_id,
+            const BME::bme_t& surface_id,
             const std::vector< index_t >& corners,
             const std::vector< index_t >& facet_ptr,
-            const std::vector< index_t >& corner_adjacent_facets =
-                empty_index_vector ) ;
+            const std::vector< index_t >& corner_adjacent_facets = std::vector< index_t >() ) ;
 
-        void set_surface_adjacencies( index_t surface_id ) ;
+        void set_surface_adjacencies( const BME::bme_t& surface_id ) ;
 
-        /** @}
+        /*! @}
          * \name Fix model - Check validity and fill missing stuff
          * @{
          */
@@ -274,7 +279,7 @@ namespace RINGMesh {
 
         void fill_elements_children( BME::TYPE type ) ;
 
-        /**
+        /*!
          * @}
          */
 
@@ -283,7 +288,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * \brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
+     * @brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
      */
     class RINGMESH_API BoundaryModelBuilderGocad : public BoundaryModelBuilder {
     public:
@@ -293,7 +298,13 @@ namespace RINGMesh {
 
         void load_ml_file( const std::string& ml_file_name ) ;
 
-        index_t determine_line_vertices(
+        BME::bme_t determine_line_vertices(
+            const Surface& S,
+            index_t id0,
+            index_t id1,
+            std::vector< index_t >& border_vertex_model_ids ) const ;
+
+        BME::bme_t determine_line_vertices(
             const Surface& S,
             index_t first_vertex,
             index_t second_vertex,
@@ -316,8 +327,6 @@ namespace RINGMesh {
             vec3 p2_ ;
         } ;
 
-        index_t find_corner( const vec3& ) const ;
-
         void build_contacts() ;
 
         void create_surface(
@@ -327,8 +336,8 @@ namespace RINGMesh {
             const vec3& p1,
             const vec3& p2 ) ;
 
-        /**
-         * \brief Check if the surface triangle orientations match the one of the key facet
+        /*!
+         * @brief Check if the surface triangle orientations match the one of the key facet
          */
         bool check_key_facet_orientation( index_t surface ) ;
 
@@ -344,7 +353,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * \brief Build a BoundaryModel from a file_model.bm
+     * @brief Build a BoundaryModel from a file_model.bm
      */
     class RINGMESH_API BoundaryModelBuilderBM : public BoundaryModelBuilder {
     public:
@@ -368,6 +377,7 @@ namespace RINGMesh {
     /*!
      * @brief Builder of a BoundaryModel from a conformal surface meshes
      *        in which the manifold connected components are disjoints
+     * @todo A TESTER 
      */
     class RINGMESH_API BoundaryModelBuilderSurface : public BoundaryModelBuilder {
     public:
@@ -381,37 +391,38 @@ namespace RINGMesh {
         void build_model() ;
     } ;
 
+
     /*!
      * @brief Create the model surfaces from the connected components of the input surfacic mesh
      * @details The class MESH should implement the following functions
-     *  - nb_vertices()
-     *  - double* vertex_ptr( index_t i )
-     *  - index_t nb_corners()
-     *  - index_t nb_facets()
-     *  - index_t facet_begin( index_t f )
-     *  - index_t facet_end( index_t f )
-     *  - index_t corner_vertex_index( index_t c )
-     *  - signed_index_t corner_adjacent_facet( index_t c )   -1 if no neighbor
+     *  - vertices.nb()
+     *  - const vec3& point( index_t i )
+     *  - index_t facet_corners.nb()
+     *  - index_t facets.nb()
+     *  - index_t facets.corners_begin( index_t f )
+     *  - index_t facets.corners_end( index_t f )
+     *  - index_t facet_corners.vertex( index_t c )
+     *  - signed_index_t facet_corners.adjacent_facet( index_t c )   -1 if no neighbor
      */
     template< class MESH >
     void BoundaryModelBuilderSurface::set_surfaces( const MESH& mesh )
     {
-        // / 1. Copy the vertices of the input mesh to the model
-        reserve_vertices( mesh.nb_vertices() ) ;
-        for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
-            add_vertex( mesh.vertex_ptr( i ) ) ;
+        /// 1. Copy the vertices of the input mesh to the model
+        // reserve_vertices( mesh.nb_vertices() ) ;
+        for( index_t i = 0; i < mesh.vertices.nb(); i++ ) {
+            add_unique_vertex( mesh.vertices.point( i ) ) ;
         }
 
-        // / 2. Propagate on the input mesh facet to determine its surface connected components
+        /// 2. Propagate on the input mesh facet to determine its surface connected components
         // Vectors used in the loops
         std::vector< index_t > corners ;
         std::vector< index_t > facets_ptr ;
 
-        corners.reserve( mesh.nb_corners() ) ;
-        facets_ptr.reserve( mesh.nb_facets() ) ;
+        corners.reserve( mesh.facet_corners.nb() ) ;
+        facets_ptr.reserve( mesh.facets.nb() ) ;
 
-        std::vector< bool > visited( mesh.nb_facets(), false ) ;
-        for( index_t i = 0; i < mesh.nb_facets(); i++ ) {
+        std::vector< bool > visited( mesh.facets.nb(), false ) ;
+        for( index_t i = 0; i < mesh.facets.nb(); i++ ) {
             if( !visited[ i ] ) {
                 // Index of the Surface to create form this facet
                 index_t cc_index = model_.nb_surfaces() ;
@@ -428,12 +439,12 @@ namespace RINGMesh {
                     S.pop() ;
                     visited[ f ] = true ;
 
-                    for( index_t c = mesh.facet_begin( f );
-                         c < mesh.facet_end( f );
+                    for( index_t c = mesh.facets.corners_begin( f );
+                         c < mesh.facets.corners_end( f );
                          ++c )
                     {
-                        corners.push_back( mesh.corner_vertex_index( c ) ) ;
-                        index_t n = mesh.corner_adjacent_facet( c ) ;
+                        corners.push_back( mesh.facet_corners.vertex( c ) ) ;
+                        index_t n = mesh.facet_corners.adjacent_facet( c ) ;
                         if( n != NO_ID && !visited[ n ] ) {
                             visited[ n ] = true ;
                             S.push( n ) ;

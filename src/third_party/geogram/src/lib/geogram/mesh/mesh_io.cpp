@@ -360,6 +360,7 @@ namespace {
             keyword2name_[GmfHexahedra] = "hex";
             keyword2name_[GmfPrisms] = "prism";
             keyword2name_[GmfPyramids] = "pyramid";
+            keyword2name_[GmfEdges] = "edge";
             keyword2nbv_[GmfTriangles] = 3;
             keyword2nbv_[GmfQuadrilaterals] = 4;
             keyword2nbv_[GmfTetrahedra] = 4;
@@ -401,6 +402,9 @@ namespace {
             
             index_t nb_vertices =
                 index_t(GmfStatKwd(mesh_file_handle, GmfVertices));
+
+            index_t nb_edges =
+                index_t(GmfStatKwd(mesh_file_handle, GmfEdges));
             
             index_t nb_tris =
                 index_t(GmfStatKwd(mesh_file_handle, GmfTriangles));
@@ -463,6 +467,27 @@ namespace {
                 }
             }
 
+            if(ioflags.has_element(MESH_EDGES)) {
+                if(nb_edges > 0) {
+                    if(!goto_elements(mesh_file_handle, GmfEdges)) {
+                        return false;
+                    }
+                    index_t first_edge = M.edges.create_edges(nb_edges);
+                    int v[8];
+                    int ref;
+                    for(index_t e=0; e<nb_edges; ++e) {
+                        if(!read_element(
+                               mesh_file_handle, GmfEdges, v, ref, M, e
+                        )) {
+                            return false;
+                        }
+                        for(index_t lv=0; lv<2; ++lv) {
+                            M.edges.set_vertex(first_edge+e, lv, index_t(v[lv]-1));
+                        }
+                    }                    
+                }
+            }
+            
             if(ioflags.has_element(MESH_FACETS)) {
                 // Read triangles
                 if(nb_tris > 0) {
@@ -730,6 +755,19 @@ namespace {
                 }
             }
 
+            if(ioflags.has_element(MESH_EDGES)) {
+                GmfSetKwd(mesh_file_handle, GmfEdges, M.edges.nb());
+                for(index_t e=0; e<M.edges.nb(); ++e) {
+                    index_t ref = 0;
+                    GmfSetLin(
+                        mesh_file_handle, GmfEdges,
+                        int(M.edges.vertex(e,0) + 1),
+                        int(M.edges.vertex(e,1) + 1),
+                        ref
+                    );
+                }
+            }
+            
             if(ioflags.has_element(MESH_CELLS)) {
                 index_t nb_tets=0;
                 index_t nb_hexes=0;
@@ -2580,10 +2618,9 @@ namespace GEO {
         if(M.cells.nb() != 0 && M.facets.nb() == 0) {
             M.cells.compute_borders();
         }
-        
-        M.show_stats("I/O");
 
-                
+        M.show_stats("I/O");
+        
         return true;
     }
 

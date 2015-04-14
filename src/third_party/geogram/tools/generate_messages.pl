@@ -35,6 +35,9 @@ my $MESSAGES = [
     ["EXPIRES_IN", "Expires in ", "VOR_MESSAGE_KEY"],
     ["DAYS", " days\n", "VOR_MESSAGE_KEY"],
     ["EXPIRES_TODAY", "Expires today.", "VOR_MESSAGE_KEY", 3],
+    ["MAX_VERTICES", "Maximum number of vertices:", "VOR_MESSAGE_KEY"],
+    ["MAX_VERTICES_EXCEEDED_1", "Maximum number of vertices exceeded\n P", "VOR_MESSAGE_KEY", 2],
+    ["MAX_VERTICES_EXCEEDED_2", "lease update license\n", "VOR_MESSAGE_KEY", 1],
 
     ["HOME", "HOME", "VOR_FILE_KEY"],
 
@@ -104,8 +107,8 @@ sub encode_message {
         $key = $key_name;
 
         # Encode the key name has a hexadecimal string
-	$key_name =~ s{.}{ sprintf("\\x%x", ord($&)) }ges;
-	$key_name = "\"$key_name\"";
+        $key_name =~ s{.}{ sprintf("\\x%x", ord($&)) }ges;
+        $key_name = "\"$key_name\"";
     }
 
     # Check if a the key offset is defined

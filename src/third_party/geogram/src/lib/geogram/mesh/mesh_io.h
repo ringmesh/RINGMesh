@@ -50,6 +50,7 @@
 #include <geogram/basic/numeric.h>
 #include <geogram/basic/factory.h>
 #include <geogram/basic/attributes.h>
+#include <geogram/mesh/mesh.h>
 #include <string>
 
 /**
@@ -59,8 +60,6 @@
 
 namespace GEO {
 
-    class Mesh;
-    
     /**
      * \brief Indicates the attributes stored in a mesh and attached
      *  to the mesh elements (vertices, facets or volumes).
@@ -77,18 +76,6 @@ namespace GEO {
         MESH_ALL_ATTRIBUTES = 255
     };
 
-    /**
-     * \brief Indicates the mesh elements (vertices, facets or cells)
-     *  present in a mesh.
-     * \details The set of elements present in a mesh is represented
-     *  by a bitwise-or combination of the constants.
-     */
-    enum MeshElementsFlags {
-        MESH_VERTICES = 1,
-        MESH_FACETS = 2,
-        MESH_CELLS = 4,
-        MESH_ALL_ELEMENTS = 7
-    };
     
     /**
      * \brief Mesh load/save flags

@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -45,21 +45,21 @@
 #include <deque>
 
 namespace RINGMesh {
-    /**
+    /*!
      * @brief enum of MatrixType, This is useful to further specialize the template in the future
      * */
     enum MatrixType {
         heavy = 0, light = 1, other = 2
     } ;
 
-    /**
-     * @Brief Basic container for the sparse matrix, i.e. the "elements".
+    /*!
+     * @brief Basic container for the sparse matrix, i.e. the "elements".
      * */
     template< class T >
     struct ElementImpl {
-        const static index_t NOT_USED = index_t( - 1 ) ;
+        const static index_t NOT_USED = index_t( -1 ) ;
         ElementImpl()
-              : index( NOT_USED )
+            : index( NOT_USED )
         {
         }
 
@@ -67,7 +67,7 @@ namespace RINGMesh {
         index_t index ;
     } ;
 
-    /**
+    /*!
      * @brief Basic "Row" of the matrix, this stores the elements of the matrix in a line-oriented way
      * */
     template< class T >
@@ -76,9 +76,9 @@ namespace RINGMesh {
         typedef ElementImpl< T > Element ;
 
         RowImpl()
-              : nb_elements_( 0 ), capacity_( 4 )
+            : nb_elements_( 0 ), capacity_( 4 )
         {
-            elements_ = new Element[ capacity_ ] ;
+            elements_ = new Element[capacity_] ;
         }
 
         ~RowImpl()
@@ -86,27 +86,25 @@ namespace RINGMesh {
             delete[] elements_ ;
         }
 
-        void set_element(
-            index_t j,
-            const T& value )
+        void set_element( index_t j, const T& value )
         {
             index_t index ;
             if( !find( j, index ) ) {
-                if( nb_elements_ == capacity_ ) {grow() ;}
-                Element& elt = elements_[ nb_elements_++ ] ;
+                if( nb_elements_ == capacity_ ) {
+                    grow() ;
+                }
+                Element& elt = elements_[nb_elements_++ ] ;
                 elt.index = j ;
                 elt.value = value ;
             } else {
-                elements_[ index ].value = value ;
+                elements_[index].value = value ;
             }
         }
 
-        bool find(
-            index_t j,
-            index_t& index = dummy_index_t ) const
+        bool find( index_t j, index_t& index = dummy_index_t ) const
         {
             for( index_t e = 0; e < nb_elements_; e++ ) {
-                if( elements_[ e ].index == j ) {
+                if( elements_[e].index == j ) {
                     index = e ;
                     return true ;
                 }
@@ -117,41 +115,39 @@ namespace RINGMesh {
         bool exist( index_t j )
         {
             for( index_t e = 0; e < nb_elements_; e++ ) {
-                if( elements_[ e ].index == j ) {
+                if( elements_[e].index == j ) {
                     return true ;
                 }
             }
             return false ;
         }
 
-        bool get_element(
-            index_t j,
-            T& value ) const
+        bool get_element( index_t j, T& value ) const
         {
             index_t index ;
-            if( !find( j, index ) ) {return false ;}
-            value = elements_[ index ].value ;
+            if( !find( j, index ) ) {
+                return false ;
+            }
+            value = elements_[index].value ;
             return true ;
         }
 
-        void element(
-            index_t e,
-            T& value ) const
+        void element( index_t e, T& value ) const
         {
             ringmesh_debug_assert( e < nb_elements_ ) ;
-            value = elements_[ e ].value ;
+            value = elements_[e].value ;
         }
 
         index_t index( index_t e ) const
         {
             ringmesh_debug_assert( e < nb_elements_ ) ;
-            return elements_[ e ].index ;
+            return elements_[e].index ;
         }
 
         T& operator[]( index_t i ) const
         {
             ringmesh_debug_assert( i < nb_elements_ ) ;
-            return elements_[ i ].value ;
+            return elements_[i].value ;
         }
 
         index_t nb_elements() const
@@ -162,7 +158,7 @@ namespace RINGMesh {
     private:
         void reallocate( index_t new_capacity )
         {
-            Element* new_elements = new Element[ new_capacity ] ;
+            Element* new_elements = new Element[new_capacity] ;
             std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
             delete[] elements_ ;
             elements_ = new_elements ;
@@ -190,51 +186,49 @@ namespace RINGMesh {
     public:
         typedef RowImpl< RowType > Row ;
         SparseMatrixImpl( bool is_symmetrical = false )
-              : rows_( NULL ), ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
+            : rows_( NULL ), ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
         {
         }
 
         ~SparseMatrixImpl()
         {
-            if( rows_ ) {delete[] rows_ ;}
+            if( rows_ ) {
+                delete[] rows_ ;
+            }
         }
 
         /*!
-         * test the existence of a given i-j element
-         * @param[in] index_t i the given row
-         * @param[in] index_t j the given column
+         * Test the existence of a given i-j element
+         * @param[in] i the given row
+         * @param[in] j the given column
          * @return bool true if it exists, false if it does not exist
          */
-        bool exist(
-            index_t i,
-            index_t j ) const
+        bool exist( index_t i, index_t j ) const
         { // test existence of the i-j element
             ringmesh_debug_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
-            return rows_[ i ].exist( j ) ;
+            return rows_[i].exist( j ) ;
         }
 
         /*!
          * @brief gets number of elements within a row
          * @param[in] i row index
-         * @retrun index_t number of elements
+         * @return index_t number of elements
          */
         index_t get_nb_elements_in_line( index_t i ) const
         {
             ringmesh_debug_assert( i < ni_ ) ;
-            return rows_[ i ].nb_elements() ;
+            return rows_[i].nb_elements() ;
         }
 
         /*!
          * @brief gets the j that correspond to the given index within the row
          * @param[in] i row index
          * @param[in] e the index within the row
-         * @retrun index_t of the corresponding j column in the matrix
+         * @return index_t of the corresponding j column in the matrix
          */
-        index_t get_column_in_line(
-            index_t i,
-            index_t e ) const
+        index_t get_column_in_line( index_t i, index_t e ) const
         {
-            return rows_[ i ].index( e ) ;
+            return rows_[i].index( e ) ;
         }
 
         /*!
@@ -242,15 +236,12 @@ namespace RINGMesh {
          * @param[in] i row index
          * @param[in] j column index
          * @param[out] index the index within a row
-         * @retrun true if success, false if the i-j couple is empty
+         * @return true if success, false if the i-j couple is empty
          */
-        bool get_index_in_line(
-            index_t i,
-            index_t j,
-            index_t& index ) const
+        bool get_index_in_line( index_t i, index_t j, index_t& index ) const
         {
             ringmesh_debug_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
-            return rows_[ i ].find( j, index ) ;
+            return rows_[i].find( j, index ) ;
         }
 
         /*!
@@ -282,16 +273,14 @@ namespace RINGMesh {
 
         /*!
          * build the matrix, in allocate the ni number of lines and sets the matrix dimensions
-         * @param[in] index_t ni number of lines of the matrix
-         * @param[in] index_t nj number of columns of the matrix
+         * @param[in] ni number of lines of the matrix
+         * @param[in] nj number of columns of the matrix
          */
-        void build_matrix(
-            index_t ni,
-            index_t nj )
+        void build_matrix( index_t ni, index_t nj )
         {
             ni_ = ni ;
             nj_ = nj ;
-            rows_ = new Row[ ni ] ;
+            rows_ = new Row[ni] ;
         }
 
     protected:
@@ -304,22 +293,19 @@ namespace RINGMesh {
      * declaration of a template class SparseMatrix, it will be specialazed for the different MatrixType
      * */
     template< class T, MatrixType Light = MatrixType(
-                  2* sizeof( T ) <= 2* sizeof( index_t ) +
-                  sizeof( T ) ) >
-    class SparseMatrix : public SparseMatrixImpl< T,
-                                                  T > {
+        2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
+    class SparseMatrix: public SparseMatrixImpl< T, T > {
     } ;
 
     /*!
      * specialization of SparseMatrix for MatrixType "light"
      * */
     template< class T >
-    class SparseMatrix< T, light > : public SparseMatrixImpl< T,
-                                                              T >{
+    class SparseMatrix< T, light > : public SparseMatrixImpl< T, T > {
     public:
         typedef SparseMatrix< T, light > thisclass ;
         SparseMatrix( bool is_symetrical = false )
-              : SparseMatrixImpl< T, T >( is_symetrical )
+            : SparseMatrixImpl< T, T >( is_symetrical )
         {
         }
 
@@ -330,14 +316,11 @@ namespace RINGMesh {
          * @param[in] value to store
          * @return bool true (for instance no checks for errors...)
          * */
-        bool set_element(
-            index_t i,
-            index_t j,
-            const T& value )
+        bool set_element( index_t i, index_t j, const T& value )
         {
-            this->rows_[ i ].set_element( j, value ) ;
+            this->rows_[i].set_element( j, value ) ;
             if( this->is_symmetrical_ ) {
-                this->rows_[ j ].set_element( i, value ) ;
+                this->rows_[j].set_element( i, value ) ;
             }
             return true ;
         }
@@ -349,12 +332,9 @@ namespace RINGMesh {
          * @param[out] value to retrieve
          * @return bool true if success and false if the element is inexistent
          * */
-        bool get_element(
-            index_t i,
-            index_t j,
-            T& value ) const
+        bool get_element( index_t i, index_t j, T& value ) const
         { // valeur du i_j_ieme element stocke sur la ligne
-            return this->rows_[ i ].get_element( j, value ) ;
+            return this->rows_[i].get_element( j, value ) ;
         }
 
         /*!
@@ -363,12 +343,9 @@ namespace RINGMesh {
          * @param[in] e index within the row
          * @param[out] value to retrieve
          * */
-        void get_element_in_line(
-            index_t i,
-            index_t e,
-            T& value ) const
+        void get_element_in_line( index_t i, index_t e, T& value ) const
         { // valeur du e_ieme element stocke sur la ligne
-            value = this->rows_[ i ][ e ] ;
+            value = this->rows_[i][e] ;
         }
 
     private:
@@ -384,12 +361,11 @@ namespace RINGMesh {
      * ids of the values within the deque.
      * */
     template< class T >
-    class SparseMatrix< T, heavy > : public SparseMatrixImpl< T,
-                                                              index_t >{
+    class SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t > {
     public:
         typedef SparseMatrix< T, heavy > thisclass ;
         SparseMatrix( bool is_symetrical = false )
-              : SparseMatrixImpl< T, index_t >( is_symetrical )
+            : SparseMatrixImpl< T, index_t >( is_symetrical )
         {
         }
 
@@ -400,23 +376,20 @@ namespace RINGMesh {
          * @param[in] value to store
          * @return bool true (for instance no checks for errors...)
          * */
-        bool set_element(
-            index_t i,
-            index_t j,
-            const T& value )
+        bool set_element( index_t i, index_t j, const T& value )
         {
             // small difference with light type: we fill a deque
             index_t value_id ;
             if( this->exist( i, j ) ) {
                 value_id = get_value_id( i, j ) ;
-                values_[ value_id ] = value ;
+                values_[value_id] = value ;
             } else {
                 values_.push_back( value ) ;
                 value_id = values_.size() - 1 ;
             }
-            this->rows_[ i ].set_element( j, value_id ) ;
+            this->rows_[i].set_element( j, value_id ) ;
             if( this->is_symmetrical_ ) {
-                this->rows_[ j ].set_element( i, value_id ) ;
+                this->rows_[j].set_element( i, value_id ) ;
             }
             return true ;
         }
@@ -428,16 +401,13 @@ namespace RINGMesh {
          * @param[out] value to retrieve
          * @return bool true if success and false if the element is inexistent
          * */
-        bool get_element(
-            index_t i,
-            index_t j,
-            T& value ) const
+        bool get_element( index_t i, index_t j, T& value ) const
         {
             index_t value_id ;
-            if( !this->rows_[ i ].get_element( j, value_id ) ) {
+            if( !this->rows_[i].get_element( j, value_id ) ) {
                 return false ;
             }
-            value = values_[ value_id ] ;
+            value = values_[value_id] ;
             return true ;
         }
 
@@ -447,13 +417,10 @@ namespace RINGMesh {
          * @param[in] e index within the row
          * @param[out] value to retrieve
          * */
-        void get_element_in_line(
-            index_t i,
-            index_t e,
-            T& value ) const
+        void get_element_in_line( index_t i, index_t e, T& value ) const
         {
-            index_t value_id = this->rows_[ i ][ e ] ;
-            value = values_[ value_id ] ;
+            index_t value_id = this->rows_[i][e] ;
+            value = values_[value_id] ;
         }
 
         void print_matrix( void )
@@ -462,11 +429,9 @@ namespace RINGMesh {
         }
 
     private:
-        index_t get_value_id(
-            index_t i,
-            index_t j )
+        index_t get_value_id( index_t i, index_t j )
         {
-            return this->rows_[ i ].find( j ) ;
+            return this->rows_[i].find( j ) ;
         }
 
         SparseMatrix( const thisclass& rhs ) ;
@@ -487,13 +452,13 @@ namespace RINGMesh {
 #pragma omp parallel for
         for( index_t i = 0; i < mat1.ni(); ++i ) {
             ringmesh_debug_assert( i >= 0 && i < result.size() ) ;
-            result[ i ] = 0.;
+            result[i] = 0. ;
             for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
                 index_t j = mat1.get_column_in_line( i, e ) ;
                 T i_j_result ;
                 mat1.get_element_in_line( i, e, i_j_result ) ;
-                i_j_result *= mat2[ j ] ;
-                result[ i ] += i_j_result ;
+                i_j_result *= mat2[j] ;
+                result[i] += i_j_result ;
             }
         }
     }
