@@ -810,12 +810,16 @@ namespace {
     }
 
     /**
-     * \brief Updates the content of an OpenGL buffer object, and resizes it if need be.
-     * \param[in,out] buffer_id OpenGL opaque id of the buffer object. 0 means uninitialized.
-     *    may be changed on exit if the buffer needed to be resized.
-     * \param[in] target buffer object target (GL_ARRAY_BUFFER, GL_INDEX_BUFFER ...)
+     * \brief Updates the content of an OpenGL buffer object, 
+     *   and resizes it if need be.
+     * \param[in,out] buffer_id OpenGL opaque id of the buffer object. 
+     *   0 means uninitialized.
+     *   may be changed on exit if the buffer needed to be resized.
+     * \param[in] target buffer object target 
+     *   (GL_ARRAY_BUFFER, GL_INDEX_BUFFER ...)
      * \param[in] new size of the buffer data, in bytes
-     * \param[in] data pointer to the data to be copied into the buffer, of length new_size
+     * \param[in] data pointer to the data to be copied into the buffer, 
+     *  of length new_size
      */
     void update_buffer_object(
         GLuint& buffer_id, GLenum target, size_t new_size, void* data
@@ -838,7 +842,7 @@ namespace {
         }
         
         if(new_size == size_t(size)) {
-            glBufferSubData(target, 0, size, data);
+            glBufferSubData(target, 0, GLsizeiptr(size), data);
         } else {
             glBufferData(
                 target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
@@ -853,6 +857,7 @@ namespace GEO {
     MeshGfx::MeshGfx() : mesh_(nil) {
 
         vertices_VBO_ = 0;
+        edge_indices_VBO_ = 0;
         facet_indices_VBO_ = 0;
         cell_indices_VBO_ = 0;
         facet_region_VBO_ = 0;
@@ -1071,9 +1076,6 @@ namespace GEO {
     void MeshGfx::setup_VBOs() {
         
         if(mesh_->vertices.nb() != 0) {
-
-
-            
             if(mesh_->vertices.single_precision()) {
                 
                 size_t size = mesh_->vertices.nb() *
@@ -1094,6 +1096,14 @@ namespace GEO {
                     size, mesh_->vertices.point_ptr(0)
                 );
             }
+        }
+
+        if(mesh_->edges.nb() != 0) {
+            update_buffer_object(
+                edge_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
+                mesh_->edges.nb() * 2 * sizeof(int),
+                mesh_->edges.vertex_index_ptr(0)
+            );
         }
         
         if(mesh_->facets.nb() != 0) {
@@ -1148,6 +1158,10 @@ namespace GEO {
             glDeleteBuffers(1, &vertices_VBO_);
             vertices_VBO_ = 0;
         }
+        if(edge_indices_VBO_ != 0) {
+            glDeleteBuffers(1, &edge_indices_VBO_);
+            edge_indices_VBO_ = 0;
+        }
         if(facet_indices_VBO_ != 0) {
             glDeleteBuffers(1, &facet_indices_VBO_);
             facet_indices_VBO_ = 0;
@@ -1196,6 +1210,9 @@ namespace GEO {
         switch(what) {
         case MESH_VERTICES: {
             // Nothing else to bind
+        } break;
+        case MESH_EDGES: {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, edge_indices_VBO_);
         } break;
         case MESH_FACETS: {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, facet_indices_VBO_);
@@ -1289,6 +1306,22 @@ namespace GEO {
         end_draw();
     }
 
+    void MeshGfx::draw_edges() {
+        if(mesh_->facets.nb() == 0) {
+            return;
+        }
+        glLineWidth(GLfloat(mesh_width_));        
+        glColor3f(mesh_color_[0], mesh_color_[1], mesh_color_[2]);
+
+        begin_draw(MESH_EDGES);
+        // Note: the fourth argument (0) corresponds to the bound VBO.        
+        glDrawElements(
+            GL_LINES, GLsizei(mesh_->edges.nb()*2), GL_UNSIGNED_INT, 0
+        );
+        end_draw();
+        
+    }
+    
     void MeshGfx::draw_surface() {
         if(mesh_->facets.nb() == 0) {
             return;

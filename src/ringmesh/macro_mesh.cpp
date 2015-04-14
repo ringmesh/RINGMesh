@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
@@ -185,14 +185,14 @@ namespace RINGMesh {
                                     == vertex_id ) {
                                     std::vector< index_t > result ;
                                     if( ann.get_colocated(
-                                        Utils::mesh_cell_facet_center( mesh, cur_c,
+                                        Geom::mesh_cell_facet_center( mesh, cur_c,
                                             cur_f ), result ) ) {
                                         index_t surface_id = attribute[result[0]] ;
                                         vec3 facet_normal =
                                             GEO::Geom::mesh_facet_normal( mesh,
                                                 result[0] ) ;
                                         vec3 cell_facet_normal =
-                                            Utils::mesh_cell_facet_normal( mesh,
+                                            Geom::mesh_cell_facet_normal( mesh,
                                                 cur_c, cur_f ) ;
                                         SurfaceAction side = SurfaceAction(
                                             dot( facet_normal, cell_facet_normal )
@@ -257,7 +257,7 @@ namespace RINGMesh {
             }
         }
 
-        double result = false ;
+        bool result = false ;
         for( index_t s = 0; s < info.size(); s++ ) {
             if( temp_info[s] < 0 ) continue ;
             ringmesh_debug_assert( info[s] != SKIP ) ;
@@ -339,12 +339,20 @@ namespace RINGMesh {
 
     /*!
      * Gets the MacroMesh vertex coordinates
-     * @param[in] global_v vertex id in the MacroMesh
+     * @param[in] mesh vertex id in the MacroMesh
      * @param[in] v vertex id of the GEO::Mesh vertex
      * @return the vertex coordinates
      */
     const vec3& MacroMeshVertices::vertex( index_t mesh, index_t v ) const {
         return vertex( vertex_id( mesh, v ) ) ;
+    }
+
+    const vec3& MacroMeshVertices::duplicated_vertex( index_t v ) const
+    {
+        if( cell_corners_.empty() ) {
+            const_cast< MacroMeshVertices* >( this )->initialize_duplication() ;
+        }
+        return unique_vertices_[duplicated_vertex_indices_[v]] ;
     }
 
     /*!
@@ -354,8 +362,8 @@ namespace RINGMesh {
      * @param[in] cell_corner id of the cell corner
      * @param[out] vertex_id vertex id in the MacroMesh of the corresponding point
      * @param[out] duplicated_vertex_id duplicated vertex id if the vertex is duplicated
-     * @return returns true if the vertex is duplicated (\p duplicated_vertex_id is filled),
-     * false otherwise
+     * @return returns false if the vertex is duplicated (\p duplicated_vertex_id is filled),
+     * true otherwise
      */
     bool MacroMeshVertices::vertex_id(
         index_t mesh,
@@ -536,7 +544,7 @@ namespace RINGMesh {
     /*!
      * Gets the quad id in the MacroMesh
      * @param[in] s id of the surface
-     * @param[in] t id of the quad
+     * @param[in] q id of the quad
      * @return the corresponding facet id
      */
     index_t MacroMeshFacets::quad_id( index_t s, index_t q ) const
@@ -802,7 +810,7 @@ namespace RINGMesh {
     /*!
      * Gets the pyramid id in the MacroMesh
      * @param[in] r id of the GEO::Mesh
-     * @param[in] t id of the pyramid
+     * @param[in] p id of the pyramid
      * @return the corresponding id
      */
     index_t MacroMeshCells::pyramid_id( index_t r, index_t p ) const
@@ -836,7 +844,7 @@ namespace RINGMesh {
     /*!
      * Gets the prism id in the MacroMesh
      * @param[in] r id of the GEO::Mesh
-     * @param[in] t id of the prism
+     * @param[in] p id of the prism
      * @return the corresponding id
      */
     index_t MacroMeshCells::prism_id( index_t r, index_t p ) const
@@ -870,7 +878,7 @@ namespace RINGMesh {
     /*!
      * Gets the hexahedron id in the MacroMesh
      * @param[in] r id of the GEO::Mesh
-     * @param[in] t id of the hexahedron
+     * @param[in] h id of the hexahedron
      * @return the corresponding id
      */
     index_t MacroMeshCells::hex_id( index_t r, index_t h ) const
@@ -883,7 +891,7 @@ namespace RINGMesh {
     MacroMeshTools::MacroMeshTools( MacroMesh& mm )
         : mm_( mm ),
           facet_aabb_( mm.nb_meshes(), nil ),
-          tet_aabb_( mm.nb_meshes(), nil )
+          cell_aabb_( mm.nb_meshes(), nil )
     {
     }
 
@@ -891,7 +899,7 @@ namespace RINGMesh {
     {
         for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
             if( facet_aabb_[r] ) delete facet_aabb_[r] ;
-            if( tet_aabb_[r] ) delete tet_aabb_[r] ;
+            if( cell_aabb_[r] ) delete cell_aabb_[r] ;
         }
     }
 
@@ -922,21 +930,21 @@ namespace RINGMesh {
      * @param[in] region id of the GEO::Mesh
      * @return the const reference to the corresponding MeshTetsAABB
      */
-    const GEO::MeshTetsAABB& MacroMeshTools::tet_aabb( index_t region ) const
+    const GEO::MeshCellsAABB& MacroMeshTools::cell_aabb( index_t region ) const
     {
-        init_tet_aabb( region ) ;
-        return *tet_aabb_[region] ;
+        init_cell_aabb( region ) ;
+        return *cell_aabb_[region] ;
     }
 
     /*!
      * Initialize if needed the MeshTetsAABB of the given region
      * @param[in] region id of the GEO::Mesh
      */
-    void MacroMeshTools::init_tet_aabb( index_t region ) const
+    void MacroMeshTools::init_cell_aabb( index_t region ) const
     {
-        if( tet_aabb_[region] ) return ;
-        const_cast< MacroMeshTools* >( this )->tet_aabb_[region] =
-            new GEO::MeshTetsAABB( mm_.mesh( region ) ) ;
+        if( cell_aabb_[region] ) return ;
+        const_cast< MacroMeshTools* >( this )->cell_aabb_[region] =
+            new GEO::MeshCellsAABB( mm_.mesh( region ) ) ;
     }
 
 
@@ -1047,6 +1055,7 @@ namespace RINGMesh {
      * @param[in] method Mesher used
      * @param[in] region_id Region to mesh, -1 for all
      * @param[in] add_steiner_points if true, the mesher will add some points inside the region
+     * @param[out] internal_vertices TO DOCUMENT
      * to improve the mesh quality
      */
     void MacroMesh::compute_tetmesh(
@@ -1059,7 +1068,7 @@ namespace RINGMesh {
             GEO::ProgressTask progress( "Compute", nb_meshes() ) ;
             for( unsigned int i = 0; i < nb_meshes(); i++ ) {
                 const std::vector< vec3 >& vertices =
-                    internal_vertices.empty() ? empty_vector : internal_vertices[i] ;
+                    internal_vertices.empty() ? std::vector< vec3 >() : internal_vertices[i] ;
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
                     &model_.region( i ), add_steiner_points, vertices,
                     well_vertices( i ) ) ;
@@ -1069,7 +1078,7 @@ namespace RINGMesh {
         } else {
             const std::vector< vec3 >& vertices =
                 internal_vertices.empty() ?
-                    empty_vector : internal_vertices[region_id] ;
+                    std::vector< vec3 >() : internal_vertices[region_id] ;
             TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
                 &model_.region( region_id ), add_steiner_points, vertices,
                 well_vertices( region_id ) ) ;

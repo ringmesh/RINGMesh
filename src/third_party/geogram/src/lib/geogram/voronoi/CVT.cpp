@@ -214,7 +214,7 @@ namespace GEO {
             );
         }
 
-        mesh->clear();
+        mesh->clear(true); // keep attributes
         mesh->facets.assign_triangle_mesh(3, vertices_R3, triangles, true);
 
         if(multinerve) {
@@ -264,7 +264,7 @@ namespace GEO {
             // when we are not in projection mode
             geo_assert_not_reached;
         }
-        mesh->clear();
+        mesh->clear(true); // keep attributes
         mesh->cells.assign_tet_mesh(3, vertices_R3, tets, true);
     }
 

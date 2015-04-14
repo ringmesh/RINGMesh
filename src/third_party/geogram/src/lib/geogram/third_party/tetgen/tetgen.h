@@ -344,7 +344,7 @@ public:
   int numberofvfacets;
   int numberofvcells;
 
-  // [Bruno] In diagnose mode, put the vertices of facets that intersect here$
+  // [Bruno] In diagnose mode, put the vertices of facets that intersect here
   std::set<int> isectvertices;
    
   // Variable (and callback functions) for meshing PSCs.

@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -42,15 +42,12 @@
 #define __RINGMESH_IO__
 
 #include <ringmesh/common.h>
-#include <ringmesh/macro_mesh.h>
-#include <ringmesh/boundary_model.h>
 
-#define MAX_FILENAME 512
-#define READ_SIZE 8192
-class string ;
+#include <geogram/basic/factory.h>
 
 namespace RINGMesh {
     class BoundaryModel ;
+    class MacroMesh ;
 }
 
 namespace RINGMesh {
