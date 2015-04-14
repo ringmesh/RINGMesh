@@ -47,6 +47,7 @@
 #include <iomanip>
 #include <stack>
 #include <sstream>
+#include <cstdio>
 
 #ifdef WIN32
     #include <io.h>
