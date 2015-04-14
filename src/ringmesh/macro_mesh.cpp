@@ -692,6 +692,13 @@ namespace RINGMesh {
                 }
             }
         }
+
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            nb_tet_ += nb_tet( m ) ;
+            nb_pyramid_ += nb_pyramid( m ) ;
+            nb_prism_ += nb_prism( m ) ;
+            nb_hex_ += nb_hex( m ) ;
+        }
     }
 
     /*!
