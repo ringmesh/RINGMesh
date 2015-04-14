@@ -47,7 +47,7 @@
 #include <geogram/mesh/mesh.h>
 
 namespace GEO {
-    class MeshTetsAABB ;
+    class MeshCellsAABB ;
     class MeshFacetsAABB ;
 }
 
@@ -314,11 +314,11 @@ namespace RINGMesh {
         ~MacroMeshTools() ;
 
         const GEO::MeshFacetsAABB& facet_aabb( index_t region ) const ;
-        const GEO::MeshTetsAABB& tet_aabb( index_t region ) const ;
+        const GEO::MeshCellsAABB& cell_aabb( index_t region ) const ;
 
     private:
         void init_facet_aabb( index_t region ) const ;
-        void init_tet_aabb( index_t region ) const ;
+        void init_cell_aabb( index_t region ) const ;
 
     private:
         /// Attached MaroMesh
@@ -326,8 +326,8 @@ namespace RINGMesh {
 
         /// Storage of the AABB trees on the facets
         std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
-        /// Storage of the AABB trees on the tetrahedra
-        std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
+        /// Storage of the AABB trees on the cells
+        std::vector< GEO::MeshCellsAABB* > cell_aabb_ ;
     } ;
 
     class RINGMESH_API MacroMesh {

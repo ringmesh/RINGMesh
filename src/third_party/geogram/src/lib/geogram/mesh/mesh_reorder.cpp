@@ -297,6 +297,8 @@ namespace {
                 )[COORD];
             }
             return result;
+            // TODO: should be  / double(mesh_.facets.nb_vertices(f));
+            // but this breaks one of the tests, to be investigated...
         }
 
     private:
@@ -418,7 +420,7 @@ namespace {
     class Base_tcmp {
     public:
         /**
-         * \brief Constructs a new Base_vcmp.
+         * \brief Constructs a new Base_tcmp.
          * \param[in] mesh the mesh in which the compared
          *  tetrahedra reside.
          */
@@ -460,8 +462,8 @@ namespace {
 
     /**
      * \brief Specialization (UP=true) of the generic comparator class
-     *  for Hilbert vertex ordering.
-     * \see Hilbert_vcmp
+     *  for Hilbert tetra ordering.
+     * \see Hilbert_tcmp
      * \tparam COORD the coordinate to compare
      * \tparam MESH  the class that represents meshes
      */
@@ -491,8 +493,8 @@ namespace {
 
     /**
      * \brief Specialization (UP=false) of the generic comparator class
-     *  for Hilbert vertex ordering.
-     * \see Hilbert_vcmp
+     *  for Hilbert tetra ordering.
+     * \see Hilbert_tcmp
      * \tparam COORD the coordinate to compare
      * \tparam MESH  the class that represents meshes
      */
@@ -552,7 +554,151 @@ namespace {
     };
 
     /************************************************************************/
+    
+    /**
+     * \brief Base class for cells ordering.
+     * \tparam COORD the coordinate to compare
+     * \tparam MESH  the class that represents meshes
+     */
+    template <int COORD, class MESH>
+    class Base_ccmp {
+    public:
+        /**
+         * \brief Constructs a new Base_ccmp.
+         * \param[in] mesh the mesh in which the compared
+         *  cells reside.
+         */
+        Base_ccmp(const MESH& mesh) :
+            mesh_(mesh) {
+        }
 
+        /**
+         * \brief Computes the compared coordinate from a cell index.
+         * \param[in] c the index of the cell
+         * \return the coordinate at the center of cell \p c
+         */
+        double center(index_t c) const {
+            double result = 0.0;
+            for(
+                index_t lv = 0; lv < mesh_.cells.nb_vertices(c); ++lv
+            ) {
+                result += mesh_.vertices.point_ptr(
+                    mesh_.cells.vertex(c, lv)
+                )[COORD];
+            }
+            return result / double(mesh_.cells.nb_vertices(c));
+        }
+
+    private:
+        const MESH& mesh_;
+    };
+
+    /**
+     * \brief The generic comparator class for Hilbert cell
+     *  ordering.
+     * \tparam COORD the coordinate to compare
+     * \tparam UP    if true, use direct order, else use reverse order
+     * \tparam MESH  the class that represents meshes
+     */
+    template <int COORD, bool UP, class MESH>
+    struct Hilbert_ccmp {
+    };
+
+    /**
+     * \brief Specialization (UP=true) of the generic comparator class
+     *  for Hilbert cell ordering.
+     * \see Hilbert_ccmp
+     * \tparam COORD the coordinate to compare
+     * \tparam MESH  the class that represents meshes
+     */
+    template <int COORD, class MESH>
+    class Hilbert_ccmp<COORD, true, MESH> : public Base_ccmp<COORD, MESH> {
+    public:
+        /**
+         * \brief Constructs a new Hilbert_ccmp.
+         * \param[in] mesh the mesh in which the compared
+         *  cells reside.
+         */
+        Hilbert_ccmp(const MESH& mesh) :
+            Base_ccmp<COORD, MESH>(mesh) {
+        }
+
+        /**
+         * \brief Compares two cells
+         * \param[in] c1 index of the first cell to compare
+         * \param[in] c2 index of the second cell to compare
+         * \return true if cell \p c1 is before cell \p c2,
+         *  false otherwise.
+         */
+        bool operator() (index_t c1, index_t c2) {
+            return this->center(c1) < this->center(c2);
+        }
+    };
+
+    /**
+     * \brief Specialization (UP=false) of the generic comparator class
+     *  for Hilbert cell ordering.
+     * \see Hilbert_ccmp
+     * \tparam COORD the coordinate to compare
+     * \tparam MESH  the class that represents meshes
+     */
+    template <int COORD, class MESH>
+    class Hilbert_ccmp<COORD, false, MESH> : public Base_ccmp<COORD, MESH> {
+    public:
+        /**
+         * \brief Constructs a new Hilbert_ccmp.
+         * \param[in] mesh the mesh in which the compared
+         *  tetrahedra reside.
+         */
+        Hilbert_ccmp(const MESH& mesh) :
+            Base_ccmp<COORD, MESH>(mesh) {
+        }
+
+        /**
+         * \brief Compares two cells.
+         * \param[in] c1 index of the first cell to compare
+         * \param[in] c2 index of the second cell to compare
+         * \return true if cell \p c1 is before cell \p c2,
+         *  false otherwise.
+         */
+        bool operator() (index_t c1, index_t c2) {
+            return this->center(c1) > this->center(c2);
+        }
+    };
+
+    /**
+     * \brief Comparator class for Morton cell
+     *  ordering.
+     * \tparam COORD the coordinate to compare
+     * \tparam UP ignored in Morton order
+     * \tparam MESH  the class that represents meshes
+     */
+    template <int COORD, bool UP, class MESH>
+    class Morton_ccmp : public Base_ccmp<COORD, MESH> {
+    public:
+        /**
+         * \brief Constructs a new Morton_ccmp.
+         * \param[in] mesh the mesh in which the compared
+         *  cells reside.
+         */
+        Morton_ccmp(const MESH& mesh) :
+            Base_ccmp<COORD, MESH>(mesh) {
+        }
+
+        /**
+         * \brief Compares two tetrahedra.
+         * \param[in] c1 index of the first cell to compare
+         * \param[in] c2 index of the second cell to compare
+         * \return true if cell \p c1 is before cell \p c2,
+         *  false otherwise.
+         */
+        bool operator() (index_t c1, index_t c2) {
+            return this->center(c1) < this->center(c2);
+        }
+    };
+
+    /************************************************************************/
+    
     /**
      * \brief Generic class for sorting arbitrary elements in
      *  Hilbert and Morton orders.
@@ -772,24 +918,30 @@ namespace {
     }
 
     /**
-     * \brief Sorts the tets of a mesh according to the Hilbert ordering.
+     * \brief Sorts the cells of a mesh according to the Hilbert ordering.
      * \details The function does not change the mesh, it computes instead
      *  the permutation. The permutation can then be reused to order other
      *  arrays that may depend on the order of the tets in the mesh (i.e.
      *  attributes).
-     * \param[in] M the mesh where the tets to be sorted reside
+     * \param[in] M the mesh where the cells to be sorted reside
      * \param[out] sorted_indices the permutation to be applied to the tets
      */
-    void hilbert_tsort(
+    void hilbert_csort(
         const Mesh& M, vector<index_t>& sorted_indices
     ) {
         sorted_indices.resize(M.cells.nb());
         for(index_t i = 0; i < M.cells.nb(); i++) {
             sorted_indices[i] = i;
         }
-        HilbertSort<Hilbert_tcmp, Mesh>(
-            M, sorted_indices.begin(), sorted_indices.end()
-        );
+        if(M.cells.are_simplices()) {
+            HilbertSort<Hilbert_tcmp, Mesh>(
+                M, sorted_indices.begin(), sorted_indices.end()
+            );
+        } else {
+            HilbertSort<Hilbert_ccmp, Mesh>(
+                M, sorted_indices.begin(), sorted_indices.end()
+            );
+        }
     }
 
     /**
@@ -835,7 +987,7 @@ namespace {
     }
 
     /**
-     * \brief Sorts the tets of a mesh according to the Morton ordering.
+     * \brief Sorts the cells of a mesh according to the Morton ordering.
      * \details The function does not change the mesh, it computes instead
      *  the permutation. The permutation can then be reused to order other
      *  arrays that may depend on the order of the tets in the mesh (i.e.
@@ -843,16 +995,22 @@ namespace {
      * \param[in] M the mesh where the tets to be sorted reside
      * \param[out] sorted_indices the permutation to be applied to the tets
      */
-    void morton_tsort(
+    void morton_csort(
         const Mesh& M, vector<index_t>& sorted_indices
     ) {
         sorted_indices.resize(M.cells.nb());
         for(index_t i = 0; i < M.cells.nb(); i++) {
             sorted_indices[i] = i;
         }
-        HilbertSort<Morton_tcmp, Mesh>(
-            M, sorted_indices.begin(), sorted_indices.end()
-        );
+        if(M.cells.are_simplices()) {
+            HilbertSort<Morton_tcmp, Mesh>(
+                M, sorted_indices.begin(), sorted_indices.end()
+            );
+        } else {
+            HilbertSort<Morton_ccmp, Mesh>(
+                M, sorted_indices.begin(), sorted_indices.end()
+            );
+        }
     }
 
     /**
@@ -931,16 +1089,6 @@ namespace GEO {
             M.vertices.permute_elements(sorted_indices);
         }
 
-        // mesh_permute_facets() requires the mesh to be
-        // triangulated.
-        // TODO: check/correct the management of attributes in mesh_repair().
-        if(!M.facets.are_simplices()) {
-            Logger::warn("Reorder") << "Mesh is not triangulated,"
-                << "triangulating..."
-                << std::endl;
-            mesh_repair(M, MESH_REPAIR_TRIANGULATE);
-        }
-
         // Step 2: reorder facets
         if(M.facets.nb() != 0) {
             vector<index_t> sorted_indices;
@@ -957,15 +1105,15 @@ namespace GEO {
             M.facets.permute_elements(sorted_indices);
         }
 
-        // Step 3: reorder tets
+        // Step 3: reorder cells
         if(M.cells.nb() != 0) {
             vector<index_t> sorted_indices;
             switch(order) {
                 case MESH_ORDER_HILBERT:
-                    hilbert_tsort(M, sorted_indices);
+                    hilbert_csort(M, sorted_indices);
                     break;
                 case MESH_ORDER_MORTON:
-                    morton_tsort(M, sorted_indices);
+                    morton_csort(M, sorted_indices);
                     break;
                 default:
                     geo_assert_not_reached;

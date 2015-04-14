@@ -78,6 +78,11 @@ namespace GEO {
         void draw_vertices();
 
         /**
+         * \brief Draws the edges of the mesh.
+         */
+        void draw_edges();
+        
+        /**
          * \brief Draws the surfacic part of the mesh.
          */
         void draw_surface();
@@ -651,6 +656,7 @@ namespace GEO {
         Mesh* mesh_;
         
         GLuint     vertices_VBO_;
+        GLuint     edge_indices_VBO_;
         GLuint     facet_indices_VBO_;
         GLuint     cell_indices_VBO_;
         GLuint     facet_region_VBO_;

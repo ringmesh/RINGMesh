@@ -281,6 +281,18 @@ namespace GEO {
             it->second->zero();
         }
     }
+
+    void AttributesManager::copy(const AttributesManager& rhs) {
+        clear(false, false);
+        resize(rhs.size());
+        for(
+            std::map<std::string, AttributeStore*>::const_iterator
+                it=rhs.attributes_.begin();
+            it != rhs.attributes_.end(); ++it
+        ) {
+            bind_attribute_store(it->first, it->second->clone());
+        }
+    }
     
     /************************************************************************/ 
     
