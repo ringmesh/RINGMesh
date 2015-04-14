@@ -456,9 +456,9 @@ namespace RINGMesh {
             }
         }
 
-        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
-            nb_triangle_ += nb_triangle( m ) ;
-            nb_quad_ += nb_quad( m ) ;
+        for( index_t s = 0; s < mm_.model().nb_surfaces(); s++ ) {
+            nb_triangle_ += nb_triangle( s ) ;
+            nb_quad_ += nb_quad( s ) ;
         }
         nb_facets_ = nb_triangle_ + nb_quad_ ;
     }

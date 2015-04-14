@@ -1426,7 +1426,7 @@ namespace RINGMesh {
                     data << std::endl ;
                 }
 
-                int nb_facets = 3 * mm.facets.nb_triangle() + 4 * mm.facets.nb_quad()
+                index_t nb_facets = 3 * mm.facets.nb_triangle() + 4 * mm.facets.nb_quad()
                     + 4 * mm.cells.nb_tet() + 5 * mm.cells.nb_pyramid() + 5 * mm.cells.nb_prism()
                     + 6 * mm.cells.nb_hex() ; //+ 2 * nb_edges ;
                 data << nb_facets << " # PFVERTS" << std::endl ;
