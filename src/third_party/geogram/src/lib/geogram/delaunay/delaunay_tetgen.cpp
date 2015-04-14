@@ -189,6 +189,7 @@ namespace GEO {
         // Copy edges constraints
         //
 
+        if(  constraints_->edges.nb() > 0 ) {
         tetgen_in_.numberofedges = int(
              constraints_->edges.nb()
         );
@@ -200,6 +201,7 @@ namespace GEO {
             constraints_->edges.vertex_index_ptr(0),
             2*constraints_->edges.nb()*sizeof(int)
         );
+        }
         
         //
         // Copy facet constraints
