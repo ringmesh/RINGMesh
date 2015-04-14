@@ -81,7 +81,7 @@ namespace GEO {
                 << std::endl;
             return false;
         }
-        if(!preprocess) {
+        if(preprocess) {
             for(index_t c=0; c<M.facet_corners.nb(); ++c) {
                 if(M.facet_corners.adjacent_facet(c) == NO_FACET) {
                     Logger::err("TetMeshing")
