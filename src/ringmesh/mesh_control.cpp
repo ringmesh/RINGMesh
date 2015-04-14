@@ -96,13 +96,13 @@ void DetectInter::operator()(index_t idx) {
 		vec3& v4_2 = mm_.mesh(cur_reg2_).vertices.point(
 				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 2, 2));
 
-		if ((Utils::point_inside_tetra(v1_2, v1, v2, v3, v4) && v1_2 != v1
+		if ((Math::point_inside_tetra(v1_2, v1, v2, v3, v4) && v1_2 != v1
 				&& v1_2 != v2 && v1_2 != v3 && v1_2 != v4)
-				|| (Utils::point_inside_tetra(v2_2, v1, v2, v3, v4)
+				|| (Math::point_inside_tetra(v2_2, v1, v2, v3, v4)
 						&& v2_2 != v1 && v2_2 != v2 && v2_2 != v3 && v2_2 != v4)
-				|| (Utils::point_inside_tetra(v3_2, v1, v2, v3, v4)
+				|| (Math::point_inside_tetra(v3_2, v1, v2, v3, v4)
 						&& v3_2 != v1 && v3_2 != v2 && v3_2 != v3 && v3_2 != v4)
-				|| (Utils::point_inside_tetra(v4_2, v1, v2, v3, v4)
+				|| (Math::point_inside_tetra(v4_2, v1, v2, v3, v4)
 						&& v4_2 != v1 && v4_2 != v2 && v4_2 != v3 && v4_2 != v4)) {
 			++nb_inter_;
 			std::cout << "intersection region:cell " << cur_reg_ << ":"

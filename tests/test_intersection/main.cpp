@@ -8,6 +8,8 @@
 #include <ringmesh/io.h>
 #include <ringmesh/mesh_control.h>
 
+#include <ringmesh/boundary_model.h>
+
 int main(int argc, char** argv) {
 	using namespace RINGMesh;
 
