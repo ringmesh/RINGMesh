@@ -184,9 +184,25 @@ namespace GEO {
             &tetgen_in_.pointlist[3*constraints_->vertices.nb()],
             vertices, nb_vertices*3*sizeof(double)
         );
+
+        //
+        // Copy edges constraints
+        //
+
+        tetgen_in_.numberofedges = int(
+             constraints_->edges.nb()
+        );
+        tetgen_in_.edgelist = new int[
+            2*constraints_->edges.nb()
+        ];
+        Memory::copy(
+            &tetgen_in_.edgelist[0],
+            constraints_->edges.vertex_index_ptr(0),
+            2*constraints_->edges.nb()*sizeof(int)
+        );
         
         //
-        // Copy facets
+        // Copy facet constraints
         //
 
         // All the polygons are allocated in one go, in a contiguous array.
@@ -211,6 +227,7 @@ namespace GEO {
             F.numberofholes = 0 ;
             F.holelist = nil ;
         }
+
         try {
             GEO_3rdParty::tetrahedralize(
                 &tetgen_args_, &tetgen_in_, &tetgen_out_

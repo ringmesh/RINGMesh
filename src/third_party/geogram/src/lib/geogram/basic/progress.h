@@ -179,7 +179,7 @@ namespace GEO {
          * \return a pointer the current ProgressTask if any or a null pointer
          * if there's no current task.
          */
-        const ProgressTask* current_task();
+        const ProgressTask* GEOGRAM_API current_task();
 
         /**
          * \brief Cancels the current task

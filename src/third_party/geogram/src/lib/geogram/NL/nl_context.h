@@ -199,6 +199,12 @@ typedef struct {
      */
     NLuint           nb_variables ;
 
+
+    /**
+     * \brief True if NLIJCoefficient() was called
+     */
+    NLboolean        ij_coefficient_called;
+    
     /**
      * \brief The index of the current row
      */

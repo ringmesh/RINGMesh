@@ -269,6 +269,13 @@ namespace GEO {
          *  and that need a more elaborate initialization mechanism.
          */
         virtual void zero();
+
+        /**
+         * \brief Creates a new AttributeStore that is a carbon copy
+         *  of this AttributeStore.
+         * \details Only the data is copied, observers are not copied.
+         */
+        virtual AttributeStore* clone() const = 0;
         
     protected:
         /**
@@ -299,7 +306,6 @@ namespace GEO {
          * \pre \p observer is registered.
          */
         void unregister_observer(AttributeStoreObserver* observer);
-
         
     protected:
         index_t element_size_;
@@ -374,6 +380,13 @@ namespace GEO {
             return type_name == typeid(T).name();
         }
 
+        virtual AttributeStore* clone() const {
+            TypedAttributeStore<T>* result = new TypedAttributeStore<T>(dimension());
+            result->resize(size());
+            result->store_ = store_;
+            return result;
+        }
+        
     private:
         vector<T> store_;
     };
@@ -521,15 +534,28 @@ namespace GEO {
          */
         void compress(const vector<index_t>& old2new);
 
+        /**
+         * \brief Copies all the attributes from another AttributesManager.
+         * \details Previous content of this AttributesManager is erased.
+         */
+        void copy(const AttributesManager& rhs);
         
     private:
         /**
          * \brief Forbids copy.
+         * \details This is to make sure that client code does
+         *   not unintentionlly copies an AttributesManager (for
+         *   instance by passing it by-value to a function). 
+         *   Use copy() instead.
          */
-        AttributesManager(const AttributesManager* rhs);
+        AttributesManager(const AttributesManager& rhs);
 
         /**
          * \brief Forbids copy.
+         * \details This is to make sure that client code does
+         *   not unintentionlly copies an AttributesManager (for
+         *   instance by passing it by-value to a function). 
+         *   Use copy() instead.
          */
         const AttributesManager& operator=(const AttributesManager& rhs);
         
@@ -791,6 +817,16 @@ namespace GEO {
                 (*this)[i] = val;
             }
         }
+
+    private:
+        /**
+         * \brief Forbids copy.
+         */
+        Attribute(const Attribute<T>& rhs);
+        /**
+         * \brief Forbids copy.
+         */
+        Attribute<T>& operator=(const Attribute<T>& rhs);
     };
     
     /*********************************************************************/
@@ -928,6 +964,16 @@ namespace GEO {
             geo_debug_assert(i < superclass::nb_elements());
             return ((const Numeric::uint8*)superclass::base_addr_)[i];
         }
+
+    private:
+        /**
+         * \brief Forbids copy.
+         */
+        Attribute(const Attribute<bool>& rhs);
+        /**
+         * \brief Forbids copy.
+         */
+        Attribute<bool>& operator=(const Attribute<bool>& rhs);
     } ;
  
     /*********************************************************************/

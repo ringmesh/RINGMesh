@@ -101,6 +101,28 @@ namespace {
         }
     }
 
+    /**
+     * \brief Computes the axis-aligned bounding box of a mesh tetrahedron.
+     * \param[in] M the mesh
+     * \param[out] B the bounding box of the facet
+     * \param[in] t the index of the tetrahedron in mesh \p M
+     */
+    void get_cell_bbox(
+        const Mesh& M, Box& B, index_t c
+    ) {
+        const double* p = M.vertices.point_ptr(M.cells.vertex(c,0));
+        for(coord_index_t coord = 0; coord < 3; ++coord) {
+            B.xyz_min[coord] = p[coord];
+            B.xyz_max[coord] = p[coord];
+        }
+        for(index_t lv=1; lv<M.cells.nb_vertices(c); ++lv) {
+            p = M.vertices.point_ptr(M.cells.vertex(c,lv));
+            for(coord_index_t coord = 0; coord < 3; ++coord) {
+                B.xyz_min[coord] = geo_min(B.xyz_min[coord], p[coord]);
+                B.xyz_max[coord] = geo_max(B.xyz_max[coord], p[coord]);
+            }
+        }
+    }
     
     /**
      * \brief Computes the maximum node index in a subtree
@@ -420,7 +442,7 @@ namespace GEO {
 
 /****************************************************************************/
 
-    MeshTetsAABB::MeshTetsAABB(Mesh& M, bool reorder) : mesh_(M) {
+    MeshCellsAABB::MeshCellsAABB(Mesh& M, bool reorder) : mesh_(M) {
         geo_assert(mesh_.cells.are_simplices());
         if(reorder) {
             mesh_reorder(mesh_, MESH_ORDER_MORTON);
@@ -430,12 +452,18 @@ namespace GEO {
                 1, 0, mesh_.cells.nb()
             ) + 1 // <-- this is because size == max_index + 1 !!!
         );
-        init_bboxes_recursive(
-            mesh_, bboxes_, 1, 0, mesh_.cells.nb(), get_tet_bbox
-        );
+        if(mesh_.cells.are_simplices()) {
+            init_bboxes_recursive(
+                mesh_, bboxes_, 1, 0, mesh_.cells.nb(), get_tet_bbox
+            );
+        } else {
+            init_bboxes_recursive(
+                mesh_, bboxes_, 1, 0, mesh_.cells.nb(), get_cell_bbox
+            );
+        }
     }
 
-    signed_index_t MeshTetsAABB::containing_tet_recursive(
+    signed_index_t MeshCellsAABB::containing_tet_recursive(
         const vec3& p, bool exact,
         index_t n, index_t b, index_t e        
     ) const {

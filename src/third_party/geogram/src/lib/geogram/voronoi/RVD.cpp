@@ -1875,7 +1875,6 @@ namespace {
 
             /**
              * \brief The destructor
-             * \details Terminates the current connected component.
              */
             ~GetConnectedComponentsPrimalTriangles() {
 
@@ -1908,6 +1907,12 @@ namespace {
                                 const double* seed_ptr = 
                                     RVD_.delaunay()->vertex_ptr(s);
 
+
+                                //  At this step, vertex_ptr contains the centroid
+                                // of the connected component of the RVC, we now
+                                // determine whether it should be replaced by the
+                                // seed (or by a projection onto the surface).
+                                
                                 const double* vertex_ptr = &(vertices_[vbase]);
                                 
                                 //  If the seed is nearer to the surface than the
@@ -1946,6 +1951,8 @@ namespace {
                             }
                         }
                     } else {
+
+                        // Current mode: prefer seeds and not select nearest
                         
                         //  Replace all points with the seeds (provided that
                         // they do not correspond to multiple connected components).
