@@ -32,48 +32,47 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *     Ecole Nationale Sup�rieure de G�ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
-#ifndef __RINGMESH_COMMON__
-#define __RINGMESH_COMMON__
 
-#if defined( _WIN32 )
-  #    ifndef WIN32
-    #        define WIN32
-  #    endif
-#endif
+/**
 
-#ifdef WIN32
-  #   ifdef RINGMESH_EXPORTS
-    #        define RINGMESH_API __declspec( dllexport )
-  #    else
-    #        define RINGMESH_API __declspec( dllimport )
-  #    endif
-#else
-  #   define RINGMESH_API
-#endif
+\page ringmesh_compiling Instructions for compiling RINGMesh
 
-#ifndef NDEBUG
-  #   define RINGMESH_DEBUG
-#else
-  #   undef RINGMESH_DEBUG
-#endif
+RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
+You will need CMake (version >= 2.8.11). There is no other dependancy (everything
+that you need is shipped with RINGMesh). Follow the Linux or Windows instructions below.
 
-#ifdef WIN32
-  #   pragma warning( disable: 4267 )
-  #   pragma warning( disable: 4251 )
-#endif
+Linux
+=====
 
-#define ringmesh_disable_copy( Class ) \
-    private: \
-    Class( const Class & ) ; \
-    Class& operator=( const Class& )
+- ./configure.sh
+- cd build/ringmesh/Linux64-gcc-Release
+- make
 
-#include <ringmesh/types.h>
-#include <ringmesh/ringmesh_assert.h>
+This will first configure and compile Geogram 
+and then it will generate dynamic libraries.
 
-#endif
+Windows
+=======
+
+Jeanne tu peux t'occuper de cette partie stp ?
+
+- start CMake (cmake-gui)
+- Where is the source code: <geogram_path>
+- Where to build the binaries: <geogram_path>/build/windows
+- Push the 'configure' button
+- Choose the compiler (32 or 64 bits)
+- (and ignore the warning about Doxygen)
+- Push the 'generate' button
+- Open <geogram_path>/build/windows/Geogram.sln in Visual studio
+- Select the 'Release' or 'Debug' (default) configuration (pulldown menu)
+- Build the solution (F7)
+
+
+*/
+

@@ -32,48 +32,59 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *     Ecole Nationale Sup�rieure de G�ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
-#ifndef __RINGMESH_COMMON__
-#define __RINGMESH_COMMON__
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/io.h>
 
-#if defined( _WIN32 )
-  #    ifndef WIN32
-    #        define WIN32
-  #    endif
-#endif
+#include <cstring>
 
-#ifdef WIN32
-  #   ifdef RINGMESH_EXPORTS
-    #        define RINGMESH_API __declspec( dllexport )
-  #    else
-    #        define RINGMESH_API __declspec( dllimport )
-  #    endif
-#else
-  #   define RINGMESH_API
-#endif
+bool compare_file( const std::string& f1, const std::string& f2 )
+{
+    const unsigned int MAX_LINE_LEN = 65535 ;
 
-#ifndef NDEBUG
-  #   define RINGMESH_DEBUG
-#else
-  #   undef RINGMESH_DEBUG
-#endif
+    std::ifstream lFile( f1.c_str() ) ;
+    std::ifstream rFile( f2.c_str() ) ;
 
-#ifdef WIN32
-  #   pragma warning( disable: 4267 )
-  #   pragma warning( disable: 4251 )
-#endif
+    char* lBuffer = new char[MAX_LINE_LEN]() ;
+    char* rBuffer = new char[MAX_LINE_LEN]() ;
 
-#define ringmesh_disable_copy( Class ) \
-    private: \
-    Class( const Class & ) ; \
-    Class& operator=( const Class& )
+    do {
+        lFile.read( lBuffer, MAX_LINE_LEN ) ;
+        rFile.read( rBuffer, MAX_LINE_LEN ) ;
+        unsigned int numberOfRead = lFile.gcount() ;
 
-#include <ringmesh/types.h>
-#include <ringmesh/ringmesh_assert.h>
+        if( std::memcmp( lBuffer, rBuffer, numberOfRead ) != 0 ) {
+            delete[] lBuffer ;
+            delete[] rBuffer ;
+            return false ;
+        }
+    } while( lFile.good() || rFile.good() ) ;
+    return true ;
+}
 
-#endif
+int main( int argc, char** argv )
+{
+    using namespace RINGMesh ;
+
+    GEO::Logger::out("TEST") << "Test IO for a BoundaryModel in .bm" << std::endl ;
+
+    BoundaryModel in ;
+    RINGMeshIO::load( "../data/model1.ml", in ) ;
+    RINGMeshIO::save( in, "out.bm" ) ;
+
+    BoundaryModel in2 ;
+    RINGMeshIO::load( "out.bm", in2 ) ;
+    RINGMeshIO::save( in2, "out2.bm" ) ;
+
+    bool res = compare_file( "out.bm", "out2.bm" ) ;
+    if( res )
+        GEO::Logger::out("TEST") << "SUCCES" << std::endl ;
+    else
+        GEO::Logger::out("TEST") << "FAILED" << std::endl ;
+    return res ;
+}

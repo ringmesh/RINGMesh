@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -42,16 +42,9 @@
 #define __RINGMESH_UTILS__
 
 #include <ringmesh/common.h>
-#include <ringmesh/types.h>
 
-#include <geogram/points/nn_search.h>
 #include <geogram/points/kd_tree.h>
-
-#include <algorithm>
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <fstream>
+#include <geogram/mesh/mesh_AABB.h>
 
 namespace GEO {
     class Mesh ;
@@ -66,7 +59,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
- /*! \brief A safer narrow casting function of type S to type T 
+ /*! @brief A safer narrow casting function of type S to type T 
      *  \return static_cast< T >( in ) 
      *  \post Check that the result can be cast back to in, if not throws an assertion.
      *  \note cf. The C++ programming lang. 4th edition. p299
@@ -89,6 +82,13 @@ namespace RINGMesh {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
     }
 
+
+    static bool operator<(
+        const vec3& u,
+        const vec3& v )
+    {
+        return u.x < v.x && u.y < v.y && u.z < v.z ;
+    }
 
     static bool operator!=(
         const vec3& u,
@@ -116,17 +116,11 @@ namespace RINGMesh {
     }
 
 
-    class Box3d {
+    class Box3d: public GEO::Box {
     public:
         Box3d()
               :
-                initialized_( false ),
-                x_min_( 1e30 ),
-                y_min_( 1e30 ),
-                z_min_( 1e30 ),
-                x_max_( - 1e30 ),
-                y_max_( - 1e30 ),
-                z_max_( - 1e30 )
+                initialized_( false )
         {
         }
 
@@ -140,89 +134,34 @@ namespace RINGMesh {
             initialized_ = false ;
         }
 
-        float64 x_min() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return x_min_ ;
-        }
-
-        float64 y_min() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return y_min_ ;
-        }
-
-        float64 z_min() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return z_min_ ;
-        }
-
-        float64 x_max() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return x_max_ ;
-        }
-
-        float64 y_max() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return y_max_ ;
-        }
-
-        float64 z_max() const
-        {
-            ringmesh_debug_assert( initialized_ ) ;
-            return z_max_ ;
-        }
-
-        float64 min( unsigned axis ) const
-        {
-            return ( axis == 0 ) ? x_min_ : ( ( axis == 1 ) ? y_min_ : z_min_ ) ;
-        }
-
-        float64 max( unsigned axis ) const
-        {
-            return ( axis == 0 ) ? x_max_ : ( ( axis == 1 ) ? y_max_ : z_max_ ) ;
-        }
-
         float64 width() const
         {
-            return x_max() - x_min() ;
+            return xyz_max[0] - xyz_min[0] ;
         }
 
         float64 height() const
         {
-            return y_max() - y_min() ;
+            return xyz_max[1] - xyz_min[1] ;
         }
 
         float64 depth() const
         {
-            return z_max() - z_min() ;
+            return xyz_max[2] - xyz_min[2] ;
         }
 
         vec3 min() const
         {
-            return vec3( x_min(), y_min(), z_min() ) ;
+            return vec3( xyz_min[0], xyz_min[1], xyz_min[2] ) ;
         }
 
         vec3 max() const
         {
-            return vec3( x_max(), y_max(), z_max() ) ;
+            return vec3( xyz_max[0], xyz_max[1], xyz_max[2] ) ;
         }
 
         vec3 center() const
         {
-            return vec3( 0.5 * ( x_max() + x_min() ), 0.5 * ( y_max() + y_min() ),
-                0.5 * ( z_max() + z_min() ) ) ;
-        }
-
-        float64 radius() const
-        {
-            return 0.5
-                   * ::sqrt(
-                ::sqrt( x_max() - x_min() ) + ::sqrt( y_max() - y_min() )
-                + ::sqrt( z_max() - z_min() ) ) ;
+            return 0.5 * ( min() + max() ) ;
         }
 
         void add_point( const float64* p )
@@ -233,28 +172,24 @@ namespace RINGMesh {
         void add_point( const vec3& p )
         {
             if( !initialized_ ) {
-                x_min_ = p[ 0 ] ;
-                y_min_ = p[ 1 ] ;
-                z_min_ = p[ 2 ] ;
-                x_max_ = p[ 0 ] ;
-                y_max_ = p[ 1 ] ;
-                z_max_ = p[ 2 ] ;
+                for( index_t i = 0; i < 3; i++ ) {
+                    xyz_min[i] = p[i] ;
+                    xyz_max[i] = p[i] ;
+                }
                 initialized_ = true ;
             } else {
-                x_min_ = std::min( x_min_, p[ 0 ] ) ;
-                y_min_ = std::min( y_min_, p[ 1 ] ) ;
-                z_min_ = std::min( z_min_, p[ 2 ] ) ;
-                x_max_ = std::max( x_max_, p[ 0 ] ) ;
-                y_max_ = std::max( y_max_, p[ 1 ] ) ;
-                z_max_ = std::max( z_max_, p[ 2 ] ) ;
+                for( index_t i = 0; i < 3; i++ ) {
+                    xyz_min[i] = std::min( xyz_min[i], p[i] ) ;
+                    xyz_max[i] = std::max( xyz_max[i], p[i] ) ;
+                }
             }
         }
 
         void add_box( const Box3d& b )
         {
             if( b.initialized() ) {
-                add_point( vec3( b.x_min(), b.y_min(), b.z_min() ) ) ;
-                add_point( vec3( b.x_max(), b.y_max(), b.z_max() ) ) ;
+                add_point( b.min() ) ;
+                add_point( b.max() ) ;
             }
         }
 
@@ -338,16 +273,14 @@ namespace RINGMesh {
 
     private:
         bool initialized_ ;
-        float64 x_min_ ;
-        float64 y_min_ ;
-        float64 z_min_ ;
-        float64 x_max_ ;
-        float64 y_max_ ;
-        float64 z_max_ ;
     } ;
 
-    class RINGMESH_API Utils {
+    class RINGMESH_API Geom {
     public:
+        static double mesh_cell_volume(
+            const GEO::Mesh& M,
+            index_t c ) ;
+
         static vec3 mesh_cell_facet_normal(
             const GEO::Mesh& M,
             index_t c,
@@ -363,31 +296,35 @@ namespace RINGMesh {
             index_t cell ) ;
 
         static bool has_edge(
-            GEO::Mesh& mesh,
+            const GEO::Mesh& mesh,
             index_t t,
             index_t p0,
             index_t p1,
             index_t& edge ) ;
 
-        static signed_index_t next_arround_edge(
-            GEO::Mesh& mesh,
+        static index_t next_arround_edge(
+            const GEO::Mesh& mesh,
             index_t t,
             index_t prev,
             index_t p0,
             index_t p1 ) ;
 
         static void edges_arround_edge(
-            GEO::Mesh& mesh,
+            const GEO::Mesh& mesh,
             index_t t,
             index_t p0,
             index_t p1,
             std::vector< index_t >& result ) ;
 
+
+    } ;
+    class RINGMESH_API Utils {
+    public:
+
         static index_t get_nearest_vertex_index(
             const GEO::Mesh& mesh,
             const vec3& p,
-            signed_index_t t ) ;
-
+            index_t t ) ;
         static bool facets_have_same_orientation(
             const GEO::Mesh& mesh,
             index_t f1,
@@ -398,7 +335,6 @@ namespace RINGMesh {
             const BoundaryModelElement& region,
             GEO::Mesh& mesh,
             bool check_duplicated_facet = false ) ;
-
         static float64 triangle_area(
             const vec3& p1,
             const vec3& p2,
@@ -516,7 +452,10 @@ namespace RINGMesh {
             }
             return false ;
         }
+    } ;
 
+    class RINGMESH_API Math {
+    public:
         // See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
         template< class VEC >
         static float64 point_triangle_distance(
@@ -743,12 +682,6 @@ namespace RINGMesh {
             const vec3& p7,
             vec3& nearest_p ) ;
 
-        static float64 nearest_point_segment(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
-            vec3& nearest_p ) ;
-
         static bool circle_plane_intersection(
             const vec3& O_plane,
             const vec3& N_plane,
@@ -837,7 +770,12 @@ namespace RINGMesh {
             vec3& result ) ;
     } ;
 
+    /*!
+     * Given an array of vec3, this class computes the colocated points
+     * and a database to identify which colocated point corresponds to
+     */
     class RINGMESH_API MakeUnique {
+        ringmesh_disable_copy( MakeUnique ) ;
     public:
         MakeUnique( const std::vector< vec3 >& data ) ;
         template< class T > MakeUnique( const std::vector< T >& data )
@@ -882,32 +820,51 @@ namespace RINGMesh {
 
         void add_points( const std::vector< vec3 >& points ) ;
 
-        void unique( index_t nb_neighbors = 5 ) ;
+        void unique() ;
 
+        /*!
+         * Gets the input vector of vec3
+         */
         const std::vector< vec3 >& points() const
         {
             return points_ ;
         }
 
+        /*!
+         * Gets the number of points in the database
+         * @return returns the corresponding number
+         */
+        index_t nb_points() const {
+            return points_.size() ;
+        }
+
         void unique_points( std::vector< vec3 >& results ) const ;
 
+        /*!
+         * Gets the computed database that maps
+         * the colocated point to the unique one
+         */
         const std::vector< index_t >& indices() const
         {
             return indices_ ;
         }
 
     private:
+        /// Input vector of vec3
         std::vector< vec3 > points_ ;
+        /// computed database that maps the colocated point to the unique one
         std::vector< index_t > indices_ ;
     } ;
 
     class RINGMESH_API ColocaterANN {
+        ringmesh_disable_copy( ColocaterANN ) ;
     public:
         enum MeshLocation {
             VERTICES, FACETS, CELLS
         } ;
 
-        ColocaterANN( const Surface& mesh ) ;
+        ColocaterANN( const Surface& mesh,
+            const MeshLocation& location = VERTICES ) ;
         ColocaterANN( const Line& mesh ) ;
         ColocaterANN(
             const GEO::Mesh& mesh,
@@ -925,9 +882,14 @@ namespace RINGMesh {
 
         bool get_colocated(
             const vec3& v,
-            std::vector< index_t >& result,
-            index_t nb_neighbors = 5 ) const ;
+            std::vector< index_t >& result ) const ;
 
+        /*!
+         * Gets the closest neighbor point
+         * @param[in] v the point to test
+         * @param[out] dist the distance to the closest point
+         * return returns the index of the closest point
+         */
         index_t get_closest_neighbor(
             const vec3& v,
             double& dist = dummy_float64 ) const
@@ -943,20 +905,19 @@ namespace RINGMesh {
             std::vector< index_t >& result,
             double* dist = nil ) const ;
 
-        vec3 point( signed_index_t i )
-        {
-            vec3 p ;
-            p.x = ann_tree_->point_ptr( i )[ 0 ] ;
-            p.y = ann_tree_->point_ptr( i )[ 1 ] ;
-            p.z = ann_tree_->point_ptr( i )[ 2 ] ;
-            return p ;
+        /*!
+         * Gets the point corresponding to the given index
+         * @param[in] i the point index
+         * return the corresponding point
+         */
+        vec3 point( index_t i ) {
+            return vec3( ann_tree_->point_ptr( i ) ) ;
         }
 
     private:
-        ColocaterANN( const ColocaterANN& rhs ) ;
-
-    private:
+        /// KdTree to compute the nearest neighbor search
         GEO::NearestNeighborSearch_var ann_tree_ ;
+        /// Array of the points (size of 3xnumber of points)
         double* ann_points_ ;
     } ;
 
@@ -1058,6 +1019,9 @@ namespace RINGMesh {
             /*!
              * @param index Index of this TriangleToSort in SortTriangleAroundEdge
              * @param surface_index Index of the Surface
+             * @param p0 point of the triangle
+             * @param p1 point of the triangle
+             * @param p2 point of the triangle
              */
             TriangleToSort(
                 index_t index,

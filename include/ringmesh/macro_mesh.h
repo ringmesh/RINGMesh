@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -54,127 +54,289 @@ namespace GEO {
 namespace RINGMesh {
     class BoundaryModel ;
     class MacroMesh ;
+}
+
+namespace RINGMesh {
 
     static std::vector< std::vector< vec3 > > empty_vertices ;
 
+    /*!
+     * Several modes for vertex duplication algorithm:
+     *  - NONE = no duplication
+     *  - FAULT = duplication along faults
+     *  - HORIZON = duplication along horizons
+     *  - ALL = duplication along faults and horizons
+     */
+    enum DuplicateMode {
+        NONE, FAULT, HORIZON, ALL
+    } ;
+    const static index_t NB_FACET_TYPES = 2 ;
+    const static index_t NB_CELL_TYPES = 4 ;
+
+
+    /*!
+     * Optional storage of the MacroMesh vertices
+     */
     class RINGMESH_API MacroMeshVertices {
+        friend class MacroMesh ;
     public:
-        MacroMeshVertices()
-              : initialized_( false )
+        MacroMeshVertices( const MacroMesh& mm )
+            : mm_( mm )
         {
         }
 
-        index_t nb_vertices( const MacroMesh& mm ) const ;
+        index_t nb_vertices() const ;
+        index_t vertex_id( index_t mesh, index_t v ) const ;
+        const vec3& vertex( index_t global_v ) const ;
+        const vec3& vertex( index_t mesh, index_t v ) const ;
+        const vec3& duplicated_vertex( index_t v ) const ;
 
-        index_t nb_vertex_indices( const MacroMesh& mm ) const ;
-
-        index_t global_vertex_id(
-            const MacroMesh& mm,
+        bool vertex_id(
             index_t mesh,
-            index_t v ) const ;
+            index_t cell_corner,
+            index_t& vertex_id,
+            index_t& duplicated_vertex_id = dummy_index_t ) const ;
 
-        const vec3& global_vertex(
-            const MacroMesh& mm,
-            index_t global_v ) const ;
+        index_t nb_duplicated_vertices() const ;
+        index_t nb_total_vertices() const ;
+
 
     private:
-        void initialize( const MacroMesh& mm ) ;
+        enum SurfaceAction {
+            SKIP = - 2, TO_PROCESS = - 1, NEG_SIDE = 0, POS_SIDE = 1
+        } ;
+        typedef std::pair< index_t, SurfaceAction > surface_side ;
+
+        void initialize() ;
+        void initialize_duplication() ;
+
+        bool is_surface_to_duplicate(
+            index_t s,
+            const DuplicateMode& mode ) const ;
+        bool duplicate_corner(
+            const std::set< surface_side >& surfaces,
+            std::vector< SurfaceAction >& info ) ;
 
     private:
-        bool initialized_ ;
+        /// Attached MaroMesh
+        const MacroMesh& mm_ ;
 
+        /// Vector of the vertices with different coordinates
         std::vector< vec3 > unique_vertices_ ;
+        /// Mapping between the vertex ids in a GEO::Mesh and a MacroMesh
         std::vector< index_t > global_vertex_indices_ ;
+        /// Mapping between the mesh id and the global_vertex_indices_ vector
         std::vector< index_t > vertex2mesh_ ;
+
+        /// Vector of the cell corners, stores the vertex id (can duplicated)
+        std::vector< index_t > cell_corners_ ;
+        /// Mapping between the mesh id and the cell_corners_ vector
+        std::vector< index_t > mesh_cell_corner_ptr_ ;
+        /// Mapping between the duplicated vertices and the unique vertex ids
+        std::vector< index_t > duplicated_vertex_indices_ ;
     } ;
 
+    /*!
+     * Optional storage of the MacroMesh facets
+     */
     class RINGMESH_API MacroMeshFacets {
     public:
-        MacroMeshFacets()
-              : initialized_( false )
+        MacroMeshFacets( const MacroMesh& mm )
+            : mm_( mm ), nb_facets_( 0 ), nb_triangle_( 0 ), nb_quad_( 0 )
         {
         }
 
-        index_t surface_facet(
-            const MacroMesh& mm,
-            index_t s,
-            index_t f ) const ;
+        index_t facet( index_t s, index_t f ) const ;
+        index_t mesh( index_t s ) const ;
+        index_t nb_facets() const ;
+        index_t nb_facets( index_t s ) const ;
 
-        index_t surface_mesh(
-            const MacroMesh& mm,
-            index_t s ) const ;
+        index_t nb_triangle() const ;
+        index_t nb_triangle( index_t s ) const ;
+        index_t triangle_id( index_t s, index_t t ) const ;
 
-        index_t nb_surface_facets(
-            const MacroMesh& mm,
-            index_t s ) const ;
+        index_t nb_quad() const ;
+        index_t nb_quad( index_t s ) const ;
+        index_t quad_id( index_t s, index_t q ) const ;
 
     private:
+        /*!
+         * Id where to start reading the vector surface_facets_ for a given surface
+         * @param[in] s id of the surface
+         * @return the corresponding id
+         */
         index_t surface_begin( index_t s ) const
         {
-            return surface_ptr_[ s ] ;
+            return surface_facet_ptr_[ NB_FACET_TYPES * s ] ;
         }
-
+        /*!
+         * Id where to stop reading the vector surface_facets_ for a given surface
+         * @param[in] s id of the surface
+         * @return the corresponding id
+         */
         index_t surface_end( index_t s ) const
         {
-            return surface_ptr_[ s + 1 ] ;
+            return surface_facet_ptr_[ NB_FACET_TYPES * ( s + 1 ) ] ;
         }
-
-        index_t surface_facet( index_t f ) const
+        /*!
+         * Accessor for the surface_facets_ vector
+         * @param[in] global_f the id to read
+         * @return the value in the vector
+         */
+        index_t facet( index_t global_f ) const
         {
-            return surface_facets_[ f ] ;
+            return surface_facets_[ global_f ] ;
         }
 
-        void initialize( const MacroMesh& mm ) ;
+        void initialize() ;
 
     private:
-        bool initialized_ ;
+        /// Attached MaroMesh
+        const MacroMesh& mm_ ;
 
+        /// Vector of the facet ids in the corresponding GEO::Mesh
         std::vector< index_t > surface_facets_ ;
-        std::vector< index_t > surface_ptr_ ;
+        /// Mapping between surface id and facet elements in surface_facets_
+        std::vector< index_t > surface_facet_ptr_ ;
+        /// Mapping between the surface id and the GEO::Mesh
         std::vector< index_t > surface2mesh_ ;
+
+        /// Number of facets in the MacroMesh
+        index_t nb_facets_ ;
+        /// Number of triangles in the MacroMesh
+        index_t nb_triangle_ ;
+        /// Number of quad in the MacroMesh
+        index_t nb_quad_ ;
     } ;
 
+
+    /*!
+     * Optional storage of the MacroMesh cells
+     */
     class RINGMESH_API MacroMeshCells {
     public:
-        MacroMeshCells()
-              : mm_( nil ), initialized_( false ), nb_cells_( 0 )
+        MacroMeshCells( const MacroMesh& mm )
+            :
+                mm_( mm ),
+                nb_cells_( 0 ),
+                nb_tet_( 0 ),
+                nb_pyramid_( 0 ),
+                nb_prism_( 0 ),
+                nb_hex_( 0 )
         {
         }
 
-        signed_index_t global_cell_adjacent(
-            const MacroMesh* mm,
+        index_t cell_adjacent(
             index_t mesh,
             index_t c,
             index_t f ) const ;
 
-        index_t get_local_cell_index(
-            const MacroMesh* mm,
-            index_t global_index ) const ;
+        index_t cell_index_in_mesh(
+            index_t global_index,
+            index_t& mesh_id ) const ;
 
-        index_t get_mesh(
-            const MacroMesh* mm,
-            index_t global_index ) const ;
+        index_t nb_cells() const ;
+        index_t nb_cells( index_t r ) const ;
 
-        index_t nb_cells( const MacroMesh* mm ) const ;
+        index_t nb_tet() const ;
+        index_t nb_tet( index_t r ) const ;
+        index_t tet_id( index_t r, index_t t ) const ;
+
+        index_t nb_pyramid() const ;
+        index_t nb_pyramid( index_t r ) const ;
+        index_t pyramid_id( index_t r, index_t p ) const ;
+
+        index_t nb_prism() const ;
+        index_t nb_prism( index_t r ) const ;
+        index_t prism_id( index_t r, index_t p ) const ;
+
+        index_t nb_hex() const ;
+        index_t nb_hex( index_t r ) const ;
+        index_t hex_id( index_t r, index_t h ) const ;
 
     private:
-        void initialize( const MacroMesh* mm ) ;
+        /*!
+         * Tests if the MacroMeshCells needs to be initialized and initialize it
+         */
+        void test_initialize() const  {
+            if( nb_cells_ == 0 ) {
+                const_cast< MacroMeshCells* >( this )->initialize() ;
+            }
+        }
+        void initialize() ;
+        /*!
+         * Id where to start reading the vector mesh_cell_ptr_ for a given mesh
+         * @param[in] mesh id of the mesh
+         * @return the corresponding id
+         */
+        index_t mesh_begin( index_t mesh ) const {
+            return mesh_cell_ptr_[ NB_CELL_TYPES * mesh ] ;
+        }
+        /*!
+         * Id where to stop reading the vector mesh_cell_ptr_ for a given mesh
+         * @param[in] mesh id of the mesh
+         * @return the corresponding id
+         */
+        index_t mesh_end( index_t mesh ) const {
+            return mesh_cell_ptr_[ NB_CELL_TYPES * mesh ] ;
+        }
 
     private:
-        const MacroMesh* mm_ ;
-        bool initialized_ ;
+        /// Attached MaroMesh
+        const MacroMesh& mm_ ;
 
-        std::vector< signed_index_t > global_cell_adjacents_ ;
-        std::vector< index_t > cell2mesh_ ;
+        /// Vector of the cell ids in the corresponding GEO::Mesh
+        std::vector< index_t > cells_ ;
+        /// Vector of the adjacent cell ids in the MacroMesh
+        std::vector< index_t > cell_adjacents_ ;
+        /// Mapping between mesh id and cell elements in cells_
+        std::vector< index_t > mesh_cell_ptr_ ;
+
+        /// Number of cells in the MacroMesh
         index_t nb_cells_ ;
+        /// Number of tetrahedra in the MacroMesh
+        index_t nb_tet_ ;
+        /// Number of pyramids in the MacroMesh
+        index_t nb_pyramid_ ;
+        /// Number of prisms in the MacroMesh
+        index_t nb_prism_ ;
+        /// Number of hexahedra in the MacroMesh
+        index_t nb_hex_ ;
+    } ;
+
+
+    /*!
+     * Optional storage of the MacroMesh tools
+     */
+    class RINGMESH_API MacroMeshTools {
+    public:
+        MacroMeshTools( MacroMesh& mm ) ;
+        ~MacroMeshTools() ;
+
+        const GEO::MeshFacetsAABB& facet_aabb( index_t region ) const ;
+        const GEO::MeshTetsAABB& tet_aabb( index_t region ) const ;
+
+    private:
+        void init_facet_aabb( index_t region ) const ;
+        void init_tet_aabb( index_t region ) const ;
+
+    private:
+        /// Attached MaroMesh
+        MacroMesh& mm_ ;
+
+        /// Storage of the AABB trees on the facets
+        std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
+        /// Storage of the AABB trees on the tetrahedra
+        std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
     } ;
 
     class RINGMESH_API MacroMesh {
     public:
+
         MacroMesh(
             const BoundaryModel& model,
             index_t dim = 3 ) ;
-        MacroMesh( const MacroMesh& mm) ;
+        MacroMesh( const MacroMesh& mm ) ;
         virtual ~MacroMesh() ;
 
         //    __  __     _   _            _
@@ -186,29 +348,28 @@ namespace RINGMesh {
             const TetraMethod& method,
             int region_id = - 1,
             bool add_steiner_points = true,
-            MacroMesh* background = nil,
             std::vector< std::vector< vec3 > >& internal_vertices =
                 empty_vertices ) ;
-
-        const GEO::MeshFacetsAABB& facet_aabb( index_t region ) ;
-
-        const GEO::MeshTetsAABB& tet_aabb( index_t region ) ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
         //    / _ \/ _/ _/ -_|_-<_-< _ \ '_(_-<
         //   /_/ \_\__\__\___/__/__|___/_| /__/
         //
-        GEO::Mesh& mesh( index_t region )
+        /*!
+         * Access to a GEO::Mesh of the MacroMesh
+         * @param[in] region id of mesh/region
+         * @return a reference to the GEO::Mesh
+         */
+        GEO::Mesh& mesh( index_t region ) const
         {
             return *meshes_[ region ] ;
         }
 
-        const GEO::Mesh& mesh( index_t region ) const
-        {
-            return *meshes_[ region ] ;
-        }
-
+        /*!
+         * Get the number of meshes/regions
+         * @return the corresponding number
+         */
         index_t nb_meshes() const
         {
             return meshes_.size() ;
@@ -225,95 +386,55 @@ namespace RINGMesh {
             return well_vertices_[ region ] ;
         }
 
+        /*!
+         * Access to the BoundaryModel attached to the MacroMesh
+         * @return a const reference to the corresponding BoundaryModel
+         */
         const BoundaryModel& model() const
         {
             return model_ ;
         }
 
-        index_t surface_facet(
-            index_t s,
-            index_t f ) const
-        {
-            return mm_facets_.surface_facet( *this, s, f ) ;
+        /*!
+         * Access the DuplicateMode
+         * @return the current DuplicateMode
+         */
+        DuplicateMode duplicate_mode() const {
+            return mode_ ;
         }
-
-        index_t surface_mesh( index_t s ) const
-        {
-            return mm_facets_.surface_mesh( *this, s ) ;
+        /*!
+         * Set a new DuplicateMode
+         * @param[in] mode the new DuplicateMode for the MacroMesh
+         */
+        void set_duplicate_mode( const DuplicateMode& mode ) const {
+            MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
+            not_const->mode_ = mode ;
+            not_const->vertices.cell_corners_.clear() ;
+            not_const->vertices.duplicated_vertex_indices_.clear() ;
+            not_const->vertices.mesh_cell_corner_ptr_.clear() ;
         }
-
-        index_t nb_surface_facets( index_t s ) const
-        {
-            return mm_facets_.nb_surface_facets( *this, s ) ;
-        }
-
-        index_t global_vertex_id(
-            index_t mesh,
-            index_t v ) const
-        {
-            return mm_vertices_.global_vertex_id( *this, mesh, v ) ;
-        }
-
-        const vec3& global_vertex( index_t global_v ) const
-        {
-            return mm_vertices_.global_vertex( *this, global_v ) ;
-        }
-
-        index_t nb_vertices() const
-        {
-            return mm_vertices_.nb_vertices( *this ) ;
-        }
-
-        index_t nb_vertex_indices() const
-        {
-            return mm_vertices_.nb_vertex_indices( *this ) ;
-        }
-
-        signed_index_t global_cell_adjacent(
-            index_t mesh,
-            index_t c,
-            index_t f ) const
-        {
-            return mm_cells_.global_cell_adjacent( this, mesh, c, f ) ;
-        }
-
-        index_t get_local_cell_index( index_t global_index ) const
-        {
-            return mm_cells_.get_local_cell_index( this, global_index ) ;
-        }
-
-        index_t get_mesh( index_t global_index ) const
-        {
-            return mm_cells_.get_mesh( this, global_index ) ;
-        }
-
-        index_t nb_cells() const
-        {
-            return mm_cells_.nb_cells( this ) ;
-        }
-
-    protected:
-        void init_facet_aabb( index_t region ) ;
-
-        void init_tet_aabb( index_t region ) ;
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
         const BoundaryModel& model_ ;
-
         /// Vector of meshes, one by region
         std::vector< GEO::Mesh* > meshes_ ;
+        /// Optional duplication mode to compute the duplication of vertices on surfaces
+        DuplicateMode mode_ ;
 
         /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
         std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
 
-    private:
-        std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
-        std::vector< GEO::MeshTetsAABB* > tet_aabb_ ;
+    public:
+        /// Optional storage of the MacroMesh vertices
+        MacroMeshVertices vertices ;
+        /// Optional storage of the MacroMesh facets
+        MacroMeshFacets facets ;
+        /// Optional storage of the MacroMesh cells
+        MacroMeshCells cells ;
+        /// Optional storage of tools
+        MacroMeshTools tools ;
 
-        MacroMeshVertices mm_vertices_ ;
-        MacroMeshFacets mm_facets_ ;
-        MacroMeshCells mm_cells_ ;
     } ;
 }
 

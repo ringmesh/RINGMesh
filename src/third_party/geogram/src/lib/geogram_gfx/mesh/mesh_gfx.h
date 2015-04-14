@@ -121,6 +121,51 @@ namespace GEO {
             show_mesh_ = x;
         }
 
+
+        /**
+         * \brief Gets the mesh width
+         * \details The mesh width is taken into account 
+         *   when the mesh visibility flag is set 
+         *   (by set_show_mesh()), when drawing facets
+         *   and cells.
+         * \return the mesh width
+         */
+        index_t get_mesh_width() const {
+            return mesh_width_;
+        }
+
+        /**
+         * \brief Sets the mesh width
+         * \details The mesh width is taken into account 
+         *   when the mesh visibility flag is set 
+         *   (by set_show_mesh()), when drawing facets
+         *   and cells.
+         * \param[in] x the mesh width (minimum is 1)
+         */
+        void set_mesh_width(index_t x) {
+            mesh_width_ = x;
+        }
+
+        /**
+         * \brief Gets the mesh border width
+         * \details The mesh border width is the one used
+         *   by draw_surface_borders()
+         * \return the mesh border width
+         */
+        index_t get_mesh_border_width() const {
+            return mesh_border_width_;
+        }
+
+        /**
+         * \brief Sets the mesh border width
+         * \details The mesh border width is the one used
+         *   by draw_surface_borders()
+         * \param[in] x the mesh width (minimum is 1)
+         */
+        void set_mesh_border_width(index_t x) {
+            mesh_border_width_ = x;
+        }
+        
         /**
          * \brief Gets the region visibility flag.
          * \return the value of the region visibility flag.
@@ -270,6 +315,25 @@ namespace GEO {
          */
         void get_points_color(float& r, float& g, float& b) const {
             get_color(PRG_POINTS, r, g, b);
+        }
+
+
+        /**
+         * \brief Sets the point size
+         * \param[in] x the point size (minimum 1)
+         * \see draw_points()
+         */
+        void set_points_size(index_t x) {
+            points_size_ = x;
+        }
+
+        /**
+         * \brief Gets the point size
+         * \return the point size
+         * \see draw_points()
+         */
+        index_t get_points_size() const {
+            return points_size_;
         }
         
         /**
@@ -674,6 +738,10 @@ namespace GEO {
          */
         vector<void*>   cell_draw_start_index_[GEO::MESH_NB_CELL_TYPES];
 
+        index_t points_size_;
+        index_t mesh_width_;
+        index_t mesh_border_width_;
+        
         /**
          * \brief Defines the default color for one of the programs.
          * \param[in] index index of the program, in 0..PRG_NB - 1

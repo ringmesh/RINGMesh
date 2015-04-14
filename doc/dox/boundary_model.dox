@@ -32,48 +32,16 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *     Ecole Nationale Sup�rieure de G�ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
-#ifndef __RINGMESH_COMMON__
-#define __RINGMESH_COMMON__
 
-#if defined( _WIN32 )
-  #    ifndef WIN32
-    #        define WIN32
-  #    endif
-#endif
+/**
 
-#ifdef WIN32
-  #   ifdef RINGMESH_EXPORTS
-    #        define RINGMESH_API __declspec( dllexport )
-  #    else
-    #        define RINGMESH_API __declspec( dllimport )
-  #    endif
-#else
-  #   define RINGMESH_API
-#endif
+\page ringmesh_boundary_model Description of the BoundaryModel
 
-#ifndef NDEBUG
-  #   define RINGMESH_DEBUG
-#else
-  #   undef RINGMESH_DEBUG
-#endif
+*/
 
-#ifdef WIN32
-  #   pragma warning( disable: 4267 )
-  #   pragma warning( disable: 4251 )
-#endif
-
-#define ringmesh_disable_copy( Class ) \
-    private: \
-    Class( const Class & ) ; \
-    Class& operator=( const Class& )
-
-#include <ringmesh/types.h>
-#include <ringmesh/ringmesh_assert.h>
-
-#endif

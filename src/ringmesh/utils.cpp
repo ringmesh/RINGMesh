@@ -28,19 +28,98 @@
 
 namespace RINGMesh {
 
-    vec3 Utils::mesh_cell_facet_center( const GEO::Mesh& M, index_t cell, index_t f )
+    /*!
+     * Computes the volume of a Mesh cell
+     * @param[in] M the mesh
+     * @param[in] c the cell index
+     * @return the volume of the cell
+     */
+    double Geom::mesh_cell_volume( const GEO::Mesh& M, index_t c )
+    {
+        switch( M.cells.type( c ) ) {
+            case GEO::MESH_TET:
+                return GEO::Geom::tetra_volume(
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 0 ) ),
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 1 ) ),
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 2 ) ),
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 3 ) ) ) ;
+            case GEO::MESH_PYRAMID:
+                return GEO::Geom::tetra_volume(
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 0 ) ),
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 1 ) ),
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 2 ) ),
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 4 ) ) )
+                    + GEO::Geom::tetra_volume(
+                        GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 0 ) ),
+                        GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 2 ) ),
+                        GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 3 ) ),
+                        GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 4 ) ) ) ;
+            case GEO::MESH_PRISM:
+            case GEO::MESH_HEX: {
+                vec3 ori( 0, 0, 0 ) ;
+                double volume = 0 ;
+                for( index_t f = 0; f < M.cells.nb_facets( c ); f++ ) {
+                    switch( M.cells.facet_nb_vertices( c, f ) ) {
+                        case 3:
+                            volume += GEO::Geom::tetra_signed_volume(
+                                GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( c, f, 0 ) ),
+                                GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( c, f, 1 ) ),
+                                GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( c, f, 2 ) ),
+                                ori ) ;
+                            break ;
+                        case 4:
+                            volume += GEO::Geom::tetra_signed_volume(
+                                GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( c, f, 0 ) ),
+                                GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( c, f, 1 ) ),
+                                GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( c, f, 2 ) ),
+                                ori ) ;
+                            volume += GEO::Geom::tetra_signed_volume(
+                                GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( c, f, 0 ) ),
+                                GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( c, f, 2 ) ),
+                                GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( c, f, 3 ) ),
+                                ori ) ;
+                            break ;
+                        default:
+                            ringmesh_assert_not_reached ;
+                            return 0 ;
+                    }
+                }
+                ringmesh_debug_assert( volume > 0 ) ;
+                return volume ;
+            }
+            default:
+                ringmesh_assert_not_reached ;
+                return 0 ;
+        }
+    }
+
+    /*!
+     * Computes the Mesh cell facet barycenter
+     * @param[in] M the mesh
+     * @param[in] cell the cell index
+     * @param[in] f the facet index in the cell
+     * @return the cell facet center
+     */
+    vec3 Geom::mesh_cell_facet_center( const GEO::Mesh& M, index_t cell, index_t f )
     {
         vec3 result( 0.0, 0.0, 0.0 ) ;
         double count = 0.0 ;
-        for( index_t c = 0; c < 3; ++c ) {
+        for( index_t v = 0; v < M.cells.facet_nb_vertices( cell, f ); ++v ) {
             result += GEO::Geom::mesh_vertex( M,
-                M.cells.facet_vertex( cell, f, c ) ) ;
+                M.cells.facet_vertex( cell, f, v ) ) ;
             count += 1.0 ;
         }
         return ( 1.0 / count ) * result ;
     }
 
-    vec3 Utils::mesh_cell_facet_normal( const GEO::Mesh& M, index_t c, index_t f )
+    /*!
+     * Computes the Mesh cell facet normal
+     * @param[in] M the mesh
+     * @param[in] c the cell index
+     * @param[in] f the facet index in the cell
+     * @return the cell facet normal
+     */
+    vec3 Geom::mesh_cell_facet_normal( const GEO::Mesh& M, index_t c, index_t f )
     {
         const vec3& p1 = GEO::Geom::mesh_vertex( M,
             M.cells.facet_vertex( c, f, 0 ) ) ;
@@ -51,7 +130,13 @@ namespace RINGMesh {
         return cross( p2 - p1, p3 - p1 ) ;
     }
 
-    vec3 Utils::mesh_cell_center( const GEO::Mesh& M, index_t cell )
+    /*!
+     * Computes the Mesh cell barycenter
+     * @param[in] M the mesh
+     * @param[in] c the cell index
+     * @return the cell center
+     */
+    vec3 Geom::mesh_cell_center( const GEO::Mesh& M, index_t cell )
     {
         vec3 result( 0.0, 0.0, 0.0 ) ;
         double count = 0.0 ;
@@ -72,27 +157,17 @@ namespace RINGMesh {
         }
     }
 
-    static bool inexact_equal( const vec3& v1, const vec3& v2 )
-    {
-        for( index_t i = 0; i < 3; i++ ) {
-            double diff( v1[i] - v2[i] ) ;
-            if( diff > epsilon || diff < -epsilon ) {
-                return false ;
-            }
-        }
-        return true ;
-    }
-
     /*!
-     * Test if a tetrahedron has an egde between two given points
-     * @param t Tetrahedron index
-     * @param p0 First vertex index
-     * @param p1 Second vertex index
-     * @param edge Output edge index
+     * Tests if a tetrahedron has an egde between two given points
+     * @param[in] mesh the mesh
+     * @param[in] t Tetrahedron index
+     * @param[in] p0 First vertex index
+     * @param[in] p1 Second vertex index
+     * @param[out] edge Output edge index
      * @return The result of the test
      */
-    bool Utils::has_edge(
-        GEO::Mesh& mesh,
+    bool Geom::has_edge(
+        const GEO::Mesh& mesh,
         index_t t,
         index_t p0,
         index_t p1,
@@ -110,16 +185,18 @@ namespace RINGMesh {
     }
 
     /*!
-     * Get all the next adjacent tetrahedra sharing an edge
-     * @param t Starting tetrahedron index to test, should contain the edge
-     * @param prev Previous tetrahedron index
+     * Gets all the next adjacent tetrahedra sharing an edge
+     * @param[in] mesh the mesh
+     * @param[in] t Starting tetrahedron index to test, should contain the edge
+     * @param[in] prev Previous tetrahedron index
      * (if propagation arround the edge, prevent to go back were we came from)
-     * @param p0 First vertex index of the edge
-     * @param p1 Second vertex index of the edge
+     * @param[in] p0 First vertex index of the edge
+     * @param[in] p1 Second vertex index of the edge
      * @return The edge index
+     * \pre the mesh needs to be tetrahedralized
      */
-    signed_index_t Utils::next_arround_edge(
-        GEO::Mesh& mesh,
+    index_t Geom::next_arround_edge(
+        const GEO::Mesh& mesh,
         index_t t,
         index_t prev,
         index_t p0,
@@ -134,18 +211,19 @@ namespace RINGMesh {
                 return 6 * t_adj + edge ;
             }
         }
-        return -1 ;
+        return GEO::NO_CELL ;
     }
 
     /*!
-     * Get all the edge indices arround one edge
-     * @param t First tetrahderon index to test, should include the edge
-     * @param p0 First vertex index of the edge
-     * @param p1 Second vertex index of the edge
-     * @param result Output list of edge indices
+     * Gets all the edge indices arround one edge
+     * @param[in] mesh the mesh
+     * @param[in] t First tetrahderon index to test, should include the edge
+     * @param[in] p0 First vertex index of the edge
+     * @param[in] p1 Second vertex index of the edge
+     * @param[out] result Output list of edge indices
      */
-    void Utils::edges_arround_edge(
-        GEO::Mesh& mesh,
+    void Geom::edges_arround_edge(
+        const GEO::Mesh& mesh,
         index_t t,
         index_t p0,
         index_t p1,
@@ -154,21 +232,28 @@ namespace RINGMesh {
         index_t prev = t ;
         int cur = t ;
         do {
-            int info = next_arround_edge( mesh, cur, prev, p0, p1 ) ;
-            if( info == -1 ) return ;
+            index_t info = next_arround_edge( mesh, cur, prev, p0, p1 ) ;
+            if( info == GEO::NO_CELL ) return ;
             result.push_back( info ) ;
             prev = cur ;
             cur = info / 6 ;
         } while( cur != t ) ;
     }
 
+    /*!
+     * Gets the closest local vertex index in a mesh cell of a point
+     * @param[in] mesh the mesh
+     * @param[in] p the point to test
+     * @param[in] t the cell index
+     * @return the local vertex index
+     */
     index_t Utils::get_nearest_vertex_index(
         const GEO::Mesh& mesh,
         const vec3& p,
-        signed_index_t t )
+        index_t t )
     {
         float64 dist = GEO::Numeric::max_float64() ;
-        index_t result = 0 ;
+        index_t result = -1 ;
         for( index_t v = 0; v < mesh.cells.nb_vertices( t ); v++ ) {
             float64 distance = length2(
                 GEO::Geom::mesh_vertex( mesh, mesh.cells.vertex( t, v ) ) - p ) ;
@@ -179,6 +264,14 @@ namespace RINGMesh {
         return result ;
     }
 
+    /*!
+     * Tests if two adjacent facets have the same orientation
+     * @param[in] mesh the mesh
+     * @param[in[ f1 the first facet index
+     * @param[in] c11 the corner index in the first facet
+     * @param[in] f2 the second facet index
+     * @return the result of the test
+     */
     bool Utils::facets_have_same_orientation(
         const GEO::Mesh& mesh,
         index_t f1,
@@ -203,6 +296,13 @@ namespace RINGMesh {
         return true ;
     }
 
+    /*!
+     * Repair the consistency between a BoundaryModel region
+     * and its volumetric Mesh. It repairs duplicated facets and facet orientation
+     * @param[in] region the BoundaryModel region
+     * @param[in] mesh the mesh to repair
+     * @param[in] check_duplicated_facet the test of duplicated facets is optional
+     */
     void Utils::check_and_repair_mesh_consistency(
         const BoundaryModelElement& region,
         GEO::Mesh& mesh,
@@ -350,7 +450,17 @@ namespace RINGMesh {
         }
     }
 
-    bool Utils::circle_plane_intersection(
+    /*!
+     * Computes the intersection(s) between a circle and a plane
+     * @param[in] O_plane a point on the plane
+     * @param[in] N_plane the normal of the plane
+     * @param[in] O_circle the center of the circle
+     * @param[in] N_circle the normal of the plane supporting the circle
+     * @param[in] r the radius of the circle
+     * @param[out] result the intersected points
+     * @return returns true if there is at least one intersection
+     */
+    bool Math::circle_plane_intersection(
         const vec3& O_plane,
         const vec3& N_plane,
         const vec3& O_circle,
@@ -389,7 +499,17 @@ namespace RINGMesh {
         return true ;
     }
 
-    bool Utils::plan_plane_intersection(
+    /*!
+     * Computes the intersection between two planes
+     * @param[in] O_P0 a point on the first plane
+     * @param[in] N_P0 the normal of the frst plane
+     * @param[in] O_P1 a point on the second plane
+     * @param[in] N_P1 the normal of the second plane
+     * @param[out] O_inter a point on the intersected line
+     * @param[out] D_inter the direction of the intersected line
+     * @return true is there is an intersection between the planes
+     */
+    bool Math::plan_plane_intersection(
         const vec3& O_P0,
         const vec3& N_P0,
         const vec3& O_P1,
@@ -425,7 +545,18 @@ namespace RINGMesh {
         return true ;
     }
 
-    bool Utils::circle_triangle_intersection(
+    /*!
+     * Computes the intersection(s) between a circle and a triangle
+     * @param[in] p0 the first vertex of the triangle
+     * @param[in] p1 the second vertex of the triangle
+     * @param[in] p2 the third vertex of the triangle
+     * @param[in] O_circle the center of the circle
+     * @param[in] N_circle the normal of the plane supporting the circle
+     * @param[in] r the radius of the circle
+     * @param[out] result the intersected points
+     * @return returns true if there is at least one intersection
+     */
+    bool Math::circle_triangle_intersection(
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
@@ -449,7 +580,15 @@ namespace RINGMesh {
         return !result.empty() ;
     }
 
-    bool Utils::point_segment_projection(
+    /*!
+     * Computes the orthogonal projection of a point on a segment
+     * @param[in] p the point to project
+     * @param[in] p0 the first vertex of the segment
+     * @param[in] p1 the second vertex of the segment
+     * @param[out] new_p the projected point
+     * @return returns true if the projection is possible
+     */
+    bool Math::point_segment_projection(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -469,7 +608,17 @@ namespace RINGMesh {
         return false ;
     }
 
-    float64 Utils::point_quad_distance(
+    /*!
+     * Computes the smallest distance between a point and a quad
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the quad
+     * @param[in] p1 the second vertex of the quad
+     * @param[in] p2 the third vertex of the quad
+     * @param[in] p3 the fourth vertex of the quad
+     * @param[out] nearest_p the closest point on the quad
+     * @return the smallest distance
+     */
+    float64 Math::point_quad_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -521,7 +670,17 @@ namespace RINGMesh {
         return distance ;
     }
 
-    bool Utils::segment_triangle_intersection(
+    /*!
+     * Computes the intersection of a segment and a triangle
+     * @param[in] seg0 the first vertex of the segment
+     * @param[in] seg1 the second vertex of the segment
+     * @param[in] trgl0 the first vertex of the triangle
+     * @param[in] trgl1 the second vertex of the triangle
+     * @param[in] trgl2 the third vertex of the triangle
+     * @param[out] result the intersected point
+     * @return true is there is an intersection
+     */
+    bool Math::segment_triangle_intersection(
         const vec3& seg0,
         const vec3& seg1,
         const vec3& trgl0,
@@ -582,87 +741,93 @@ namespace RINGMesh {
         return false ;
     }
 
-    bool Utils::point_inside_triangle(
+    /*!
+     * Tests if a point is inside a triangle, more precisely if it is inside
+     * a prism based on the triangle and its normal
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the triangle
+     * @param[in] p1 the second vertex of the triangle
+     * @param[in] p2 the third vertex of the triangle
+     * @return returns true if the point is inside
+     */
+    bool Math::point_inside_triangle(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2 )
     {
-        vec3& P = const_cast< vec3& >( p ) ;
-        vec3& P0 = const_cast< vec3& >( p0 ) ;
-        vec3& P1 = const_cast< vec3& >( p1 ) ;
-        vec3& P2 = const_cast< vec3& >( p2 ) ;
+        vec3 n = cross( p2 - p0, p1 - p0 ) ;
+        vec3 q = p + n ;
 
-        // calculer la normale au triangle
-        vec3 n = cross( P2 - P0, P1 - P0 ) ;
-
-        // calculer un deuxieme point un peu au dessus du triangle
-        vec3 q = P + n ;
-
-        // calculer le signe du volume signé des trois tétraèdres qui
-        // s'appuient sur [p,q] et sur les trois aretes du triangle.
         Sign s1 = sign(
-            GEO::PCK::orient_3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
+            GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
         Sign s2 = sign(
-            GEO::PCK::orient_3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
+            GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
         Sign s3 = sign(
-            GEO::PCK::orient_3d( P.data(), q.data(), P2.data(), P0.data() ) ) ;
+            GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) ) ;
 
         if( s1 == ZERO || s2 == ZERO || s3 == ZERO ) {
-            if( inexact_equal( P, P0 ) || inexact_equal( P, P1 )
-                || inexact_equal( P, P2 ) ) {
+            if( Utils::inexact_equal( p, p0 ) || Utils::inexact_equal( p, p1 )
+                || Utils::inexact_equal( p, p2 ) ) {
                 return true ;
             }
-//            std::cerr << "Point on edge... :(" << std::endl ;
             return false ; // Arbitrary choice !!!!
         }
 
         return s1 == s2 && s2 == s3 ;
     }
 
-    bool Utils::point_inside_quad(
+    /*!
+     * Tests if a point is inside a quad, more precisely if it is inside the box
+     * based on the quad and its normal
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the quad
+     * @param[in] p1 the second vertex of the quad
+     * @param[in] p2 the third vertex of the quad
+     * @param[in] p3 the fourth vertex of the quad
+     * @return returns true if the point is inside
+     */
+    bool Math::point_inside_quad(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
         const vec3& p3 )
     {
-        vec3& P = const_cast< vec3& >( p ) ;
-        vec3& P0 = const_cast< vec3& >( p0 ) ;
-        vec3& P1 = const_cast< vec3& >( p1 ) ;
-        vec3& P2 = const_cast< vec3& >( p2 ) ;
-        vec3& P3 = const_cast< vec3& >( p3 ) ;
+        vec3 n = cross( p2 - p0, p1 - p0 ) ;
+        vec3 q = p + n ;
 
-        // calculer la normale au quad
-        vec3 n = cross( P2 - P0, P1 - P0 ) ;
-
-        // calculer un deuxieme point un peu au dessus du quad
-        vec3 q = P + n ;
-
-        // calculer le signe du volume signé des quatre tétraèdres qui
-        // s'appuient sur [p,q] et sur les quatre aretes du quad.
         Sign s1 = sign(
-            GEO::PCK::orient_3d( P.data(), q.data(), P0.data(), P1.data() ) ) ;
+            GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
         Sign s2 = sign(
-            GEO::PCK::orient_3d( P.data(), q.data(), P1.data(), P2.data() ) ) ;
+            GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
         Sign s3 = sign(
-            GEO::PCK::orient_3d( P.data(), q.data(), P2.data(), P3.data() ) ) ;
+            GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p3.data() ) ) ;
         Sign s4 = sign(
-            GEO::PCK::orient_3d( P.data(), q.data(), P3.data(), P0.data() ) ) ;
+            GEO::PCK::orient_3d( p.data(), q.data(), p3.data(), p0.data() ) ) ;
 
         if( s1 == ZERO || s2 == ZERO || s3 == ZERO || s4 == ZERO ) {
-            if( inexact_equal( P, P0 ) || inexact_equal( P, P1 )
-                || inexact_equal( P, P2 ) || inexact_equal( P, P3 ) ) {
+            if( Utils::inexact_equal( p, p0 ) || Utils::inexact_equal( p, p1 )
+                || Utils::inexact_equal( p, p2 ) || Utils::inexact_equal( p, p3 ) ) {
                 return true ;
             }
-//            std::cerr << "Point on edge... :(" << std::endl ;
             return false ; // Arbitrary choice !!!!
         }
 
         return s1 == s2 && s2 == s3 && s3 == s4 ;
     }
 
-    float64 Utils::point_tetra_distance(
+    /*!
+     * Computes the distance between a point and a tetrahedron
+     * @param[in] p the point
+     * @param[in] p0 the first vertex of the tetrahedron
+     * @param[in] p1 the second vertex of the tetrahedron
+     * @param[in] p2 the third vertex of the tetrahedron
+     * @param[in] p3 the fourth vertex of the tetrahedron
+     * @param[out] nearest_p the nearest point on the tetrahedron
+     * @return the distance between the point and the tetrahedron facets
+     */
+    float64 Math::point_tetra_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -690,7 +855,18 @@ namespace RINGMesh {
         return dist ;
     }
 
-    float64 Utils::point_pyramid_distance(
+    /*!
+     * Computes the distance between a point and a pyramid
+     * @param[in] p the point
+     * @param[in] p0 the first vertex of the pyramid
+     * @param[in] p1 the second vertex of the pyramid
+     * @param[in] p2 the third vertex of the pyramid
+     * @param[in] p3 the fourth vertex of the pyramid
+     * @param[in] p4 the fifth vertex of the pyramid
+     * @param[out] nearest_p the nearest point on the pyramid
+     * @return the distance between the point and the pyramid facets
+     */
+    float64 Math::point_pyramid_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -732,7 +908,19 @@ namespace RINGMesh {
         return dist ;
     }
 
-    float64 Utils::point_prism_distance(
+    /*!
+     * Computes the distance between a point and a prism
+     * @param[in] p the point
+     * @param[in] p0 the first vertex of the prism
+     * @param[in] p1 the second vertex of the prism
+     * @param[in] p2 the third vertex of the prism
+     * @param[in] p3 the fourth vertex of the prism
+     * @param[in] p4 the fifth vertex of the prism
+     * @param[in] p5 the sixth vertex of the prism
+     * @param[out] nearest_p the nearest point on the prism
+     * @return the distance between the point and the prism facets
+     */
+    float64 Math::point_prism_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -775,8 +963,21 @@ namespace RINGMesh {
         }
         return dist ;
     }
-
-    float64 Utils::point_hexa_distance(
+    /*!
+     * Computes the distance between a point and a hexahedron
+     * @param[in] p the point
+     * @param[in] p0 the first vertex of the hexahedron
+     * @param[in] p1 the second vertex of the hexahedron
+     * @param[in] p2 the third vertex of the hexahedron
+     * @param[in] p3 the fourth vertex of the hexahedron
+     * @param[in] p4 the fifth vertex of the hexahedron
+     * @param[in] p5 the sixth vertex of the hexahedron
+     * @param[in] p6 the seventh vertex of the hexahedron
+     * @param[in] p7 the heith vertex of the hexahedron
+     * @param[out] nearest_p the nearest point on the hexahedron
+     * @return the distance between the point and the hexahedron facets
+     */
+    float64 Math::point_hexa_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -813,7 +1014,16 @@ namespace RINGMesh {
         return dist ;
     }
 
-    bool Utils::point_inside_tetra(
+    /*!
+     * Tests if a point is inside a tetrahedron
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the tetrahedron
+     * @param[in] p1 the second vertex of the tetrahedron
+     * @param[in] p2 the third vertex of the tetrahedron
+     * @param[in] p3 the fourth vertex of the tetrahedron
+     * @return returns true if the point is inside the tetrahedron
+     */
+    bool Math::point_inside_tetra(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -840,7 +1050,17 @@ namespace RINGMesh {
         return true ;
     }
 
-    bool Utils::point_inside_pyramid(
+    /*!
+     * Tests if a point is inside a pyramid
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the pyramid
+     * @param[in] p1 the second vertex of the pyramid
+     * @param[in] p2 the third vertex of the pyramid
+     * @param[in] p3 the fourth vertex of the pyramid
+     * @param[in] p4 the fifth vertex of the pyramid
+     * @return returns true if the point is inside the pyramid
+     */
+    bool Math::point_inside_pyramid(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -879,7 +1099,18 @@ namespace RINGMesh {
         return true ;
     }
 
-    bool Utils::point_inside_prism(
+    /*!
+     * Tests if a point is inside a prism
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the prism
+     * @param[in] p1 the second vertex of the prism
+     * @param[in] p2 the third vertex of the prism
+     * @param[in] p3 the fourth vertex of the prism
+     * @param[in] p4 the fifth vertex of the prism
+     * @param[in] p5 the sixth vertex of the prism
+     * @return returns true if the point is inside the prism
+     */
+    bool Math::point_inside_prism(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -919,8 +1150,20 @@ namespace RINGMesh {
         }
         return true ;
     }
-
-    bool Utils::point_inside_hexa(
+    /*!
+     * Tests if a point is inside a hexahedron
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the hexahedron
+     * @param[in] p1 the second vertex of the hexahedron
+     * @param[in] p2 the third vertex of the hexahedron
+     * @param[in] p3 the fourth vertex of the hexahedron
+     * @param[in] p4 the fifth vertex of the hexahedron
+     * @param[in] p5 the sixth vertex of the hexahedron
+     * @param[in] p6 the seventh vertex of the hexahedron
+     * @param[in] p7 the heigth vertex of the hexahedron
+     * @return returns true if the point is inside the hexahedron
+     */
+    bool Math::point_inside_hexa(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -956,17 +1199,10 @@ namespace RINGMesh {
         return true ;
     }
 
-    float64 Utils::nearest_point_segment(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        vec3& nearest_p )
-    {
-        bool inside = point_segment_projection( p, p0, p1, nearest_p ) ;
-        float64 distance = length( p - nearest_p ) ;
-        return inside ? -distance : distance ;
-    }
-
+    /*!
+     * Gets a vector of unique points (initial vector - colocated points)
+     * @param[out] results the vector to fill
+     */
     void MakeUnique::unique_points( std::vector< vec3 >& results ) const
     {
         results.reserve( indices_.size() ) ;
@@ -981,13 +1217,16 @@ namespace RINGMesh {
         }
     }
 
-    void MakeUnique::unique( index_t nb_neighbors )
+    /*!
+     * Computes the unique database
+     */
+    void MakeUnique::unique()
     {
         ColocaterANN ann( points_ ) ;
         for( index_t i = 0; i < indices_.size(); i++ ) {
             if( indices_[i] != i ) continue ;
             std::vector< index_t > results ;
-            ann.get_colocated( points_[i], results, nb_neighbors ) ;
+            ann.get_colocated( points_[i], results ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             for( index_t j = 0; j < results.size(); j++ ) {
                 if( id == results[j] ) continue ;
@@ -1004,6 +1243,10 @@ namespace RINGMesh {
             }
         }
     }
+    /*!
+     * Add edges to the initial vector
+     * @param[in] points the edges to add
+     */
     void MakeUnique::add_edges( const std::vector< Edge >& points )
     {
         signed_index_t offset = points_.size() ;
@@ -1018,6 +1261,10 @@ namespace RINGMesh {
             offset++ ;
         }
     }
+    /*!
+     * Add points to the initial vector
+     * @param[in] points the points to add
+     */
     void MakeUnique::add_points( const std::vector< vec3 >& points )
     {
         signed_index_t offset = points_.size() ;
@@ -1029,18 +1276,40 @@ namespace RINGMesh {
         }
     }
 
-    ColocaterANN::ColocaterANN( const Surface& mesh )
+    ColocaterANN::ColocaterANN( const Surface& mesh,
+        const MeshLocation& location )
     {
-        index_t nb_vertices = mesh.nb_vertices() ;
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices * 3] ;
-        for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
-            index_t index_in_ann = 3 * i ;
-            ann_points_[index_in_ann] = mesh.vertex( i ).x ;
-            ann_points_[index_in_ann + 1] = mesh.vertex( i ).y ;
-            ann_points_[index_in_ann + 2] = mesh.vertex( i ).z ;
+        switch( location ) {
+            case VERTICES: {
+                index_t nb_vertices = mesh.nb_vertices() ;
+                ann_points_ = new double[nb_vertices * 3] ;
+                ann_points_ = new double[nb_vertices * 3] ;
+                for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
+                    index_t index_in_ann = 3 * i ;
+                    ann_points_[index_in_ann] = mesh.vertex( i ).x ;
+                    ann_points_[index_in_ann + 1] = mesh.vertex( i ).y ;
+                    ann_points_[index_in_ann + 2] = mesh.vertex( i ).z ;
+                }
+                ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+                break ;
+            }
+            case FACETS: {
+                index_t nb_vertices = mesh.nb_cells() ;
+                ann_points_ = new double[nb_vertices * 3] ;
+                for( index_t i = 0; i < mesh.nb_cells(); i++ ) {
+                    vec3 center = mesh.facet_barycenter( i ) ;
+                    index_t index_in_ann = 3 * i ;
+                    ann_points_[index_in_ann] = center.x ;
+                    ann_points_[index_in_ann + 1] = center.y ;
+                    ann_points_[index_in_ann + 2] = center.z ;
+                }
+                ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+                break ;
+            }
         }
-        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+
+
     }
 
     ColocaterANN::ColocaterANN( const Line& mesh )
@@ -1090,7 +1359,7 @@ namespace RINGMesh {
                 index_t nb_vertices = mesh.cells.nb() ;
                 ann_points_ = new double[nb_vertices * 3] ;
                 for( index_t i = 0; i < mesh.cells.nb(); i++ ) {
-                    vec3 center = Utils::mesh_cell_center( mesh, i ) ;
+                    vec3 center = Geom::mesh_cell_center( mesh, i ) ;
                     index_t index_in_ann = 3 * i ;
                     ann_points_[index_in_ann] = center.x ;
                     ann_points_[index_in_ann + 1] = center.y ;
@@ -1142,29 +1411,47 @@ namespace RINGMesh {
         ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
+    /*!
+     * Compute the colocated point(s) of a given point
+     * @param[in] v the point to test
+     * @param[out] result the colocated point indices
+     * @return return true if there is at least one intersections
+     */
     bool ColocaterANN::get_colocated(
         const vec3& v,
-        std::vector< index_t >& result,
-        index_t nb_neighbors ) const
+        std::vector< index_t >& result ) const
     {
+        index_t nb_neighbors = std::min( index_t(5), ann_tree_->nb_points() ) ;
         result.clear() ;
         std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
+        index_t prev_neighbor = 0 ;
         do {
+            prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
             neighbors.resize( cur_neighbor ) ;
-            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors ) ;
-            for( index_t i = 0; i < nb_neighbors; ++i ) {
-                if( Utils::inexact_equal( v.data(),
-                    ann_tree_->point_ptr( neighbors[i] ) ) ) {
-                    result.push_back( neighbors[i] ) ;
+            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, dist ) ;
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                if( dist[i] > epsilon_sq ) {
+                    break ;
                 }
+                result.push_back( neighbors[i] ) ;
             }
         } while( result.size() == cur_neighbor ) ;
 
         return !result.empty() ;
     }
 
+    /*!
+     * Gets the neighboring points of a given one sorted by increasing distance
+     * @param[in] v the point to test
+     * @param[in] nb_neighbors the number of neighbors to return
+     * @param[out] result the neighboring points
+     * @param[out] dist the distance between each neigbhor and the point \p v
+     * @return the number of neighbors returned (can be less than \p nb_neighbors
+     * if there is not enough points)
+     */
     index_t ColocaterANN::get_neighbors(
         const vec3& v,
         index_t nb_neighbors,
@@ -1172,18 +1459,13 @@ namespace RINGMesh {
         double* dist ) const
     {
         if( ann_tree_->nb_points() == 0 ) return 0 ;
-        bool to_delete = false ;
         if( !dist ) {
-            dist = new double[nb_neighbors] ;
-            to_delete = true ;
+            dist = (double*) alloca( sizeof(double) * nb_neighbors ) ;
         }
         nb_neighbors = std::min( nb_neighbors, ann_tree_->nb_points() ) ;
         result.resize( nb_neighbors ) ;
         ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
             dist ) ;
-        if( to_delete ) {
-            delete[] dist ;
-        }
         return nb_neighbors ;
     }
 

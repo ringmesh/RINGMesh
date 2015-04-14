@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -44,29 +44,30 @@
 #define __RINGMESH_BOUNDARY_MODEL_ELEMENT__
 
 #include <ringmesh/common.h>
-#include <ringmesh/attribute.h>
 #include <ringmesh/utils.h>
+
+#include <geogram/mesh/mesh.h>
 
 #include <vector>
 #include <string>
 
-namespace RINGMesh {
-    class BoundaryModel ;
+namespace GEO {
+    class MeshFacetsAABB ;
 }
 
 namespace RINGMesh {
+    class BoundaryModel ;
+    class Surface ;
+}
+
+namespace RINGMesh {
+
     /*!
-     * \brief Generic class describing one element of a BoundaryModel
+     * @brief Generic class describing one element of a BoundaryModel
      */
     class RINGMESH_API BoundaryModelElement {
+        ringmesh_disable_copy( BoundaryModelElement ) ;
     public:
-        enum AttributeLocation {
-            VERTEX, FACET
-        } ;
-
-        typedef AttributeManagerImpl< VERTEX > VertexAttributeManager ;
-        typedef AttributeManagerImpl< FACET > FacetAttributeManager ;
-
         /*!
          * @brief Geological feature types for BoundaryModelElement
          * \todo Read all types, this is not sufficient
@@ -87,7 +88,7 @@ namespace RINGMesh {
          * @details When no type is defined NO_TYPE should be used
          * There is two main categories of elements
          *   - low-level elements (CORNER, LINE, SURFACE, REGION) have a geometry and connectivity relationships
-         *   - high-level elements (CONTACT, INTERFACE, LAYER) that are constuted of low-level elements
+         *   - high-level elements (CONTACT, INTERFACE, LAYER) that are constituted of low-level elements
          *
          * DO NOT MODIFY THIS ENUM
          */
@@ -103,10 +104,33 @@ namespace RINGMesh {
             ALL_TYPES
         } ;
 
-        const static index_t NO_ID = index_t( - 1 ) ;
+        struct bme_t {
+            bme_t()
+                : type( NO_TYPE ), index( NO_ID )
+            {
+
+            }
+            bme_t( TYPE t, index_t id )
+                : type( t ), index( id )
+            {
+            }
+            bool operator!=( const bme_t& t ) const {
+                return type != t.type || index != t.index ;
+            }
+            bool operator==( const bme_t& t ) const {
+                return type == t.type && index == t.index ;
+            }
+
+            /// Type of the element
+            TYPE type ;
+
+            /// Elements are uniquely identified in the BoundaryModel
+            /// the pair TYPE + index
+            index_t index ;
+        } ;
+        const static index_t NO_ID = index_t(-1) ;
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
-
         static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) ;
 
         static std::string geol_name( GEOL_FEATURE ) ;
@@ -114,29 +138,17 @@ namespace RINGMesh {
 
         // Key functions - They determine which element of which type
         // can fill the different class attributes
-        static TYPE parent_type( TYPE t ) ;
-
-        static TYPE child_type( TYPE t ) ;
-
-        static TYPE boundary_type( TYPE t ) ;
-
+        static TYPE parent_type     ( TYPE t ) ;
+        static TYPE child_type      ( TYPE t ) ;
+        static TYPE boundary_type   ( TYPE t ) ;
         static TYPE in_boundary_type( TYPE t ) ;
+        static index_t dimension    ( TYPE t ) ;
 
-        static index_t dimension( TYPE t ) ;
-
-        static bool parent_allowed( TYPE t ) { return parent_type( t ) != NO_TYPE ;}
-        static bool child_allowed( TYPE t ) { return child_type( t ) != NO_TYPE ;}
-        static bool boundary_allowed( TYPE t )
-        {
-            return boundary_type( t ) !=
-                   NO_TYPE ;
-        }
-
-        static bool in_boundary_allowed( TYPE t )
-        {
-            return in_boundary_type( t ) !=
-                   NO_TYPE ;
-        }
+        static bool parent_allowed     ( TYPE t ) { return parent_type( t )      != NO_TYPE ; }
+        static bool child_allowed      ( TYPE t ) { return child_type( t )       != NO_TYPE ; }
+        static bool boundary_allowed   ( TYPE t ) { return boundary_type( t )    != NO_TYPE ; }
+        static bool in_boundary_allowed( TYPE t ) { return in_boundary_type( t ) != NO_TYPE ; }
+        
 
         /*!
          * @brief Constructs a BoundaryModelElement
@@ -149,8 +161,8 @@ namespace RINGMesh {
             BoundaryModel* model = NULL,
             TYPE element_type = NO_TYPE,
             index_t id = NO_ID )
-              : model_( model ), type_( element_type ), id_( id ),
-                name_( "" ), geol_feature_( NO_GEOL ), parent_( NO_ID )
+              : model_( model ), type_( element_type, id ),
+                name_( "" ), geol_feature_( NO_GEOL )
         {
         }
 
@@ -158,51 +170,52 @@ namespace RINGMesh {
 
         bool operator==( const BoundaryModelElement& rhs ) const ;
 
-        /**
+        /*!
          * \name Accessors to basic information
          * @{
          */
-        bool has_model() const { return model_ != NULL ;}
-        const BoundaryModel& model() const { return *model_ ;}
-        bool has_name() const { return name_ != "" ;}
-        const std::string& name() const { return name_ ;}
-        bool has_id() const { return id_ != NO_ID ;}
-        index_t id() const { return id_ ;}
-        bool has_type() const { return type_ != NO_TYPE ;}
-        TYPE element_type() const { return type_ ;}
-        bool has_geological_feature() const { return geol_feature_ != NO_GEOL ;}
-        GEOL_FEATURE geological_feature() const { return geol_feature_ ;}
+        bool has_model() const { return model_ != NULL ; }
+        const BoundaryModel& model() const { return *model_ ; }
+        bool has_name() const { return name_ != "" ; }
+        const std::string& name() const { return name_ ; }
+        bool has_id() const { return type_.index != NO_ID ; }
+        index_t id() const { return type_.index ; }
+        bool has_type() const { return type_.type != NO_TYPE ; }
+        TYPE element_type() const { return type_.type ; }
+        bme_t bme_type() const { return type_ ; }
+        bool has_geological_feature() const { return geol_feature_ != NO_GEOL ; }
+        GEOL_FEATURE geological_feature() const { return geol_feature_ ; }
         bool is_on_voi() const ;
 
-        /**@}
+        /*!@}
          * \name Connectivity - boundary and in_boundary
          * @{
          */
         index_t nb_boundaries() const { return boundaries_.size() ;}
-        index_t boundary_id( index_t x ) const { return boundaries_[ x ] ;}
+        const bme_t& boundary_id( index_t x ) const { return boundaries_[ x ] ;}
         const BoundaryModelElement& boundary( index_t x ) const ;
 
         bool side( index_t i ) const { return sides_[ i ] ;}
 
         index_t nb_in_boundary() const { return in_boundary_.size() ;}
-        index_t in_boundary_id( index_t x ) const { return in_boundary_[ x ] ;}
+        const bme_t& in_boundary_id( index_t x ) const { return in_boundary_[ x ] ;}
         const BoundaryModelElement& in_boundary( index_t x ) const ;
 
-        /**@}
+        /*!@}
          * \name Parent - children relationships
          * @{
          */
-        bool has_parent() const { return parent_ != NO_ID ;}
+        bool has_parent() const { return parent_.index != NO_ID ;}
         const BoundaryModelElement& parent() const ;
 
-        index_t parent_id() const { return parent_ ;}
+        const bme_t& parent_id() const { return parent_ ;}
 
         index_t nb_children() const { return children_.size() ;}
-        index_t child_id( index_t x ) const { return children_[ x ] ;}
+        const bme_t& child_id( index_t x ) const { return children_[ x ] ;}
         const BoundaryModelElement& child( index_t x ) const ;
 
-        /**@}
-         * \name Accessors to geometry - Reimplemented in Corner, Line, Surface classes
+        /*!@}
+         * \name Accessors to geometry - Reimplemented in BoundaryModelMeshElement
          * @{
          */
         virtual index_t nb_cells() const
@@ -217,6 +230,7 @@ namespace RINGMesh {
 
         virtual index_t model_vertex_id( index_t p = 0 ) const
         {
+            ringmesh_assert_not_reached ;
             return NO_ID ;
         }
 
@@ -228,25 +242,20 @@ namespace RINGMesh {
 
         virtual void set_vertex(
             index_t index,
-            index_t model_vertex_id )
+            const vec3& point,
+            bool update = true )
         {
+            ringmesh_assert_not_reached ;
         }
 
-        /**@}
-         * \name Accessors to attribute managers
+        /*!@}
+         * \name Accessors to attribute managers.
          * @{
          */
-        VertexAttributeManager* vertex_attribute_manager() const
-        {
-            return const_cast< VertexAttributeManager* >( &vertex_attribute_manager_ ) ;
-        }
-
-        FacetAttributeManager* facet_attribute_manager() const
-        {
-            return const_cast< FacetAttributeManager* >( &facet_attribute_manager_ ) ;
-        }
-
-        /**@}
+        virtual GEO::AttributesManager& vertex_attribute_manager() const ;
+        virtual GEO::AttributesManager& cell_attribute_manager() const ;
+        
+        /*!@}
          * \name Modification of the element
          * @{
          */
@@ -254,411 +263,367 @@ namespace RINGMesh {
             const BoundaryModelElement& rhs,
             BoundaryModel& model ) ;
 
-        void set_model( BoundaryModel* m ) { model_ = m  ;}
-        void set_element_type( TYPE t ) { type_ = t ;}
-        void set_id( index_t id ) { id_ = id ;}
-        void set_name( const std::string& name ) { name_ = name ;}
-        void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ;}
+        void set_model( BoundaryModel* m ) { model_ = m  ; }
+        void set_element_type( TYPE t ) { type_.type = t ; }
+        void set_id( index_t id ) { type_.index = id ; }
+        void set_name( const std::string& name ) { name_ = name ; }
+        void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; }
 
-        void add_boundary( index_t b )
+        void add_boundary( const bme_t& b )
         {
-            ringmesh_assert( boundary_allowed( type_ ) ) ;
+            ringmesh_assert( boundary_allowed( type_.type ) ) ;
             boundaries_.push_back( b ) ;
         }
 
-        void set_boundary(
-            index_t id,
-            index_t b )
+        void set_boundary( index_t id, const bme_t& b )
         {
             ringmesh_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
         }
 
-        void add_boundary(
-            index_t b,
-            bool side )
+        void add_boundary( const bme_t& b, bool side )
         {
-            ringmesh_assert( boundary_allowed( type_ ) ) ;
+            ringmesh_assert( boundary_allowed( type_.type ) ) ;
             boundaries_.push_back( b ) ;
             sides_.push_back( side ) ;
         }
 
-        void set_boundary(
-            index_t id,
-            index_t b,
-            bool side )
+        void set_boundary( index_t id, const bme_t& b, bool side )
         {
             ringmesh_assert( id < nb_boundaries() && id < sides_.size() ) ;
             boundaries_[ id ] = b ;
             sides_[ id ] = side ;
         }
 
-        void add_in_boundary( index_t e )
+        void add_in_boundary( const bme_t& e )
         {
-            ringmesh_assert( in_boundary_allowed( type_ ) ) ;
+            ringmesh_assert( in_boundary_allowed( type_.type ) ) ;
             in_boundary_.push_back( e ) ;
         }
 
-        void set_in_boundary(
-            index_t id,
-            index_t in_b )
+        void set_in_boundary( index_t id, const bme_t& in_b )
         {
             ringmesh_assert( id < nb_in_boundary() ) ;
             in_boundary_[ id ] = in_b ;
         }
 
-        void set_parent( index_t p )
+        void set_parent( const bme_t& p )
         {
-            ringmesh_assert( parent_allowed( type_ ) ) ;
+            ringmesh_assert( parent_allowed( type_.type ) ) ;
             parent_ = p ;
         }
 
-        void add_child( index_t e )
+        void add_child( const bme_t& e )
         {
-            ringmesh_assert( child_allowed( type_ ) ) ;
+            ringmesh_assert( child_allowed( type_.type ) ) ;
             children_.push_back( e ) ;
         }
 
-        void set_child(
-            index_t id,
-            index_t c )
+        void set_child( index_t id, const bme_t& c )
         {
             ringmesh_assert( id < nb_children() ) ;
             children_[ id ] = c ;
         }
 
-        /**
+        /*!
          * @}
          */
 
     protected:
-        // / Pointer to the BounadyModel owning this element
+        /// Pointer to the BounadyModel owning this element
         BoundaryModel* model_ ;
 
-        // / Type of the element
-        TYPE type_ ;
+        /// Type and id of the BoundaryModelElement
+        bme_t type_ ;
 
-        // / Elements are uniquely identified in the BoundaryModel
-        // / the pair TYPE + index
-        index_t id_ ;
-
-        // / Name of the element - by default it is an empty string
+        /// Name of the element - by default it is an empty string
         std::string name_ ;
 
-        // / Geological feature of this object - default is NO_GEOL
+        /// Geological feature of this object - default is NO_GEOL
         GEOL_FEATURE geol_feature_ ;
 
-        // / Elements on the boundary of this element - see boundary_type( TYPE )
-        std::vector< index_t > boundaries_ ;
+        /// Elements on the boundary of this element - see boundary_type( TYPE )
+        std::vector< bme_t > boundaries_ ;
 
-        // / Additional information for oriented boundaries
-        // / Side: + (true) or - (false)
+        /// Additional information for oriented boundaries
+        /// Side: + (true) or - (false)
         std::vector< bool > sides_ ;
 
-        // / Elements in which boundary this element is - see in_boundary_type( TYPE )
-        std::vector< index_t > in_boundary_ ;
+        /// Elements in which boundary this element is - see in_boundary_type( TYPE )
+        std::vector< bme_t > in_boundary_ ;
 
-        // / Index of the parent - see parent_type( TYPE ) - default value is NO_ID.
-        index_t parent_ ;
+        /// Index of the parent - see parent_type( TYPE ) - default value is NO_ID.
+        bme_t parent_ ;
 
-        // / Elements constituting this one - see child_type( TYPE )
-        std::vector< index_t > children_ ;
-
-        // Attribute managers
-        VertexAttributeManager vertex_attribute_manager_ ;
-        FacetAttributeManager facet_attribute_manager_ ;
+        /// Elements constituting this one - see child_type( TYPE )
+        std::vector< bme_t > children_ ;
     } ;
+    typedef BoundaryModelElement BME ;
+    const static BoundaryModelElement dummy_BME ;
+    const static BoundaryModelElement::bme_t dummy_bme_type ;
 
-    // / Element to return when a method failed - to avoid compilation warnings
-    const static BoundaryModelElement dummy_element = BoundaryModelElement(
-        nil, BoundaryModelElement::NO_TYPE ) ;
 
     /*!
-     * @brief A Corner
+     * @brief A BoundaryModelElement that has a geometrical representation
      *
-     * Element of type CORNER. Its geometry is determined by one vertex.
+     */
+    class RINGMESH_API BoundaryModelMeshElement : public BoundaryModelElement {
+        ringmesh_disable_copy( BoundaryModelMeshElement ) ;
+    public :
+        BoundaryModelMeshElement(
+            BoundaryModel* model = NULL,
+            TYPE element_type = NO_TYPE,
+            index_t id = NO_ID ) 
+            : BoundaryModelElement( model, element_type, id ) 
+        {
+            model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ;         
+        }
+        virtual ~BoundaryModelMeshElement() {} ;
+        
+        /*!
+         * @brief Returns the number of edges or facets of the mesh
+         */
+        virtual index_t nb_cells() const {
+            switch ( element_type() ) {
+            case LINE :
+                return mesh_.vertices.nb() - 1 ;
+            case SURFACE :
+                return mesh_.facets.nb() ;
+            default :
+                return 0 ;
+            }
+        }
+
+        /*!
+         * @brief Returns the number of vertices of the mesh
+         */
+        virtual index_t nb_vertices() const { return mesh_.vertices.nb() ; }
+
+        virtual index_t model_vertex_id( index_t v = 0 ) const ;
+
+        void set_model_vertex_id( index_t v, index_t model_id ) ;
+
+        virtual const vec3& vertex( index_t v = 0 ) const ;
+       
+
+        virtual void set_vertex(
+            index_t index,
+            const vec3& point,
+            bool update ) ;
+        
+
+        void set_vertex( index_t v, index_t model_vertex ) ;
+        
+
+        virtual void set_vertices(
+            const std::vector< vec3 >& points, 
+            bool clear_mesh = false ) ;
+
+        virtual void set_vertices(
+            const std::vector< index_t >& model_vertices, 
+            bool clear_mesh = false ) ;
+
+        virtual index_t local_id( index_t model_vertex_id ) const ;
+
+        /*!
+         * @}
+         * \name Attribute managers
+         * @{
+         */ 
+        virtual GEO::AttributesManager& vertex_attribute_manager() const {
+            return mesh_.vertices.attributes() ;
+        }
+
+        virtual GEO::AttributesManager& cell_attribute_manager() const {
+            return mesh_.facets.attributes() ;
+        }
+        /*! @}
+         */ 
+
+    protected :
+        /*!
+         * @brief Check that the Mesh stored by the object is consistent 
+         *        with its TYPE
+         *
+         * @todo To implement
+         */
+        bool is_valid() const ;
+
+    protected :
+        GEO::Mesh mesh_ ;
+        GEO::Attribute<index_t> model_vertex_id_ ;
+    } ;
+
+
+
+    /*!
+     * @brief A Corner 
+     *
+     * @details Element of type CORNER. Its geometry is determined by one vertex.
      * Most corners are at the intersections of at least two Line, but some
      * are in the boundary of a closed Line.
      */
-    class RINGMESH_API Corner : public BoundaryModelElement {
+    class RINGMESH_API Corner : public BoundaryModelMeshElement {
     public:
         Corner(
-            BoundaryModel* model,
+            BoundaryModel* model = nil,
             index_t id = NO_ID,
-            index_t model_vertex_id = NO_ID )
-              : BoundaryModelElement( model, CORNER, id ), vertex_( model_vertex_id )
+            const vec3& vertex = vec3() )
+              : BoundaryModelMeshElement( model, CORNER, id )
         {
+            mesh_.vertices.create_vertex( vertex.data() ) ;
         }
 
         virtual ~Corner() {}
+        
+        void set_vertex( const vec3& point, bool update_model )
+        {
+            BoundaryModelMeshElement::set_vertex( 0, point, update_model ) ;
+        }
 
-        virtual index_t nb_cells() const { return 0 ;}
-        virtual index_t nb_vertices() const { return 1 ;}
-        virtual index_t model_vertex_id( index_t id = 0 ) const { return vertex_ ;}
-        virtual const vec3& vertex( index_t p = 0 ) const ;
+        void set_vertex( index_t model_point_id ) 
+        {
+            BoundaryModelMeshElement::set_vertex( 0, model_point_id ) ;    
+        }
 
-        virtual void set_vertex(
-            index_t toto,
-            index_t model_vertex_id ) { vertex_ = model_vertex_id ;}
-
-        void set_vertex( index_t model_vertex_id ) { vertex_ = model_vertex_id ;}
-
-    private:
-        index_t vertex_ ;
+        void set_model_vertex_id( index_t model_id )
+        {
+            BoundaryModelMeshElement::set_model_vertex_id( 0, model_id ) ;
+        }
     } ;
+
 
     /*!
      * @brief A boundary Line of a Surface
      *
-     * To be valid a Line must have 2 element on its boundary (the 2 Corner might be identical)
+     * @details To be valid a Line must have 2 Corners that may be the same
      * and be in the boundary of a least one Surface.
      * It is defined by a set of vertices. Its segments are implicitely defined between vertices
      * vertex(n) and vertex(n+1) for n between 0 and nb_cells()
      *
-     * There is no LineMutator since hardly nothing can be performed on a Line without modifying the model
+     * @note There is no LineMutator since hardly nothing can be performed on a Line without modifying the model
+     *
+     * @todo Switch to the Mesh.edges
      */
-    class RINGMESH_API Line : public BoundaryModelElement {
+    class RINGMESH_API Line : public BoundaryModelMeshElement {
     public:
         Line(
-            BoundaryModel* model,
+            BoundaryModel* model = nil,
             index_t id = NO_ID ) ;
-        Line(
-            BoundaryModel* model,
-            index_t id,
-            const std::vector< index_t >& vertices ) ;
-        Line(
-            BoundaryModel* model,
-            index_t id,
-            index_t corner0,
-            index_t corner1,
-            const std::vector< index_t >& vertices ) ;
 
         virtual ~Line() {}
 
-        /*! @brief Returns the number of segments of the Line */
-        virtual index_t nb_cells() const { return vertices_.size() - 1 ;}
-        virtual index_t nb_vertices() const { return vertices_.size() ;}
-        virtual index_t model_vertex_id( index_t p ) const { return vertices_.at( p ) ;}
-        virtual const vec3& vertex( index_t line_vertex_id ) const ;
+        virtual void set_vertices(
+            const std::vector< vec3 >& points,
+            bool clear_mesh = false ) ;
 
-        virtual void set_vertex(
-            index_t index,
-            index_t model_vertex_id )
-        {
-            ringmesh_assert( index < nb_vertices() ) ;
-            vertices_[ index ] = model_vertex_id ;
-        }
+        virtual void set_vertices(
+            const std::vector< index_t >& model_vertices,
+            bool clear_mesh = false ) ;
 
-        /*! @brief A Line is closed if its two extremities are identitcal */
+        /*!
+         * @brief A Line is closed if its two extremities are identitical 
+         */
         bool is_closed() const
         {
             ringmesh_assert( nb_boundaries() == 2 ) ;
-            return ( boundaries_[ 0 ] != NO_ID ) &&
+            return ( boundaries_[ 0 ] != dummy_bme_type ) &&
                    ( boundaries_[ 0 ] == boundaries_[ 1 ] ) ;
         }
 
         bool is_inside_border( const BoundaryModelElement& e ) const ;
 
-        bool equal( const std::vector< index_t >& rhs_vertices ) const ;
-
-        void set_vertices( const std::vector< index_t >& model_vertex_ids )
-        {
-            vertices_.resize( 0 ) ;
-            vertices_.insert( vertices_.begin(),
-                model_vertex_ids.begin(), model_vertex_ids.end() ) ;
-        }
+        bool equal( const std::vector< vec3 >& rhs_vertices ) const ;
 
         vec3 segment_barycenter( index_t s ) const ;
-
         double segment_length( index_t s ) const ;
-
         double total_length() const ;
+    } ;
+
+
+    class RINGMESH_API SurfaceTools {
+    public:
+        SurfaceTools( const Surface& surface ) ;
+        ~SurfaceTools() ;
+
+        const GEO::MeshFacetsAABB& aabb() const ;
+        const ColocaterANN& ann() const ;
 
     private:
-        // / Indices of the model vertices in the line
-        // / If the line is closed, the last vertex is equal to the first.
-        std::vector< index_t > vertices_ ;
-    } ;
+        const Surface& surface_ ;
 
-    /*!
-     * @brief Attribute on the vertices of a Line
-     */
-    template< class ATTRIBUTE >
-    class LineVertexAttribute : public Attribute<
-                                    BoundaryModelElement
-                                    ::VERTEX,
-                                    ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModelElement::VERTEX, ATTRIBUTE > superclass ;
-
-        void bind(
-            const Line* line,
-            const std::string& name )
-        {
-            superclass::bind( line->vertex_attribute_manager(), line->nb_vertices(),
-                name ) ;
-        }
-
-        void bind( const Line* line )
-        {
-            superclass::bind( line->vertex_attribute_manager(),
-                line->nb_vertices() ) ;
-        }
-
-        LineVertexAttribute()
-        {
-        }
-
-        LineVertexAttribute( const Line* line )
-        {
-            bind( line ) ;
-        }
-
-        LineVertexAttribute(
-            const Line* line,
-            const std::string& name )
-        {
-            bind( line, name ) ;
-        }
-
-        static bool is_defined(
-            const Line* line,
-            const std::string& name )
-        {
-            return superclass::is_defined( line->vertex_attribute_manager(), name ) ;
-        }
-    } ;
-
-    /*!
-     * @brief Attribute on the segments of a Line
-     */
-    template< class ATTRIBUTE >
-    class LineFacetAttribute : public Attribute<
-                                   BoundaryModelElement::
-                                   FACET, ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModelElement::FACET, ATTRIBUTE > superclass ;
-
-        void bind(
-            const Line* line,
-            const std::string& name )
-        {
-            superclass::bind( line->facet_attribute_manager(), line->nb_vertices(),
-                name ) ;
-        }
-
-        void bind( const Line* line )
-        {
-            superclass::bind( line->facet_attribute_manager(),
-                line->nb_vertices() ) ;
-        }
-
-        LineFacetAttribute()
-        {
-        }
-
-        LineFacetAttribute( const Line* line )
-        {
-            bind( line ) ;
-        }
-
-        LineFacetAttribute(
-            const Line* line,
-            const std::string& name )
-        {
-            bind( line, name ) ;
-        }
-
-        static bool is_defined(
-            const Line* line,
-            const std::string& name )
-        {
-            return superclass::is_defined( line->facet_attribute_manager(), name ) ;
-        }
+        GEO::MeshFacetsAABB* aabb_ ;
+        ColocaterANN* ann_ ;
     } ;
 
     /*!
      * @brief A polygonal manifold surface
      *
-     * This is a BoundaryModelElement of type SURFACE.
+     * @details This is a BoundaryModelElement of type SURFACE.
      * It is defined by a set of vertices and a set of polygonal facets.
      * Its boundaries are several Lines and it is on the boundary of 1 or 2 Region
      */
-    class RINGMESH_API Surface : public BoundaryModelElement {
-        friend class SurfaceMutator ;
+    class RINGMESH_API Surface : public BoundaryModelMeshElement {
+        friend class SurfaceTools ;
 
     public:
-        const static index_t NO_ADJACENT = index_t( - 1 ) ;
+        const static index_t NO_ADJACENT = index_t(-1) ;
 
         Surface(
-            BoundaryModel* model,
+            BoundaryModel* model = nil,
             index_t id = NO_ID )
-              : BoundaryModelElement( model, SURFACE, id ),
-                is_triangulated_( false )
+            : BoundaryModelMeshElement( model, SURFACE, id ), tools( *this )
         {
         }
 
-        virtual ~Surface() {}
+        virtual ~Surface() ;
 
-        bool is_triangulated() const { return is_triangulated_ ;}
-
-        /*!
-         * @brief Returns the number of facets
-         */
-        virtual index_t nb_cells() const
-        {
-            return facets_.empty() ? 0 : facet_ptr_.
-                   size() - 1 ;
+        // Je ne suis pas trop pour donner accï¿½s au Mesh directement comme ï¿½a (Jeanne)
+        GEO::Mesh& mesh() const {
+            return const_cast< GEO::Mesh& >( mesh_ ) ;
         }
 
-        /*!
-         * @brief Returns the number of vertices
-         */
-        virtual index_t nb_vertices() const { return vertices_.size() ;}
-        /*!
-         * @brief Get the vertex in the model from a vertex index in the Surface
-         */
-        virtual index_t model_vertex_id( index_t p ) const { return vertices_[ p ] ;}
-        /*!
-         * @brief Returns the coordinates of the point at the given index in the surface
-         */
-        virtual const vec3& vertex( index_t surf_vertex_id ) const ;
+        bool is_triangulated() const { return mesh_.facets.are_simplices() ; }
 
         /*!
-         * @brief Returns the coordinates of point \param v in facet \param f
-         */
+        * @brief Returns the coordinates of point \param v in facet \param f
+        */
         const vec3& vertex(
             index_t f,
             index_t v ) const ;
 
-        virtual void set_vertex(
-            index_t index,
-            index_t new_model_index )
-        {
-            ringmesh_assert( index < nb_vertices() ) ;
-            vertices_[ index ] = new_model_index ;
+        // If I do not put these ones the stupid compiler does not find it
+        // There is propbably a nicer solution (Jeanne)
+        virtual const vec3& vertex( index_t v ) const {
+            return BoundaryModelMeshElement::vertex(v) ;
+        }
+        index_t model_vertex_id( index_t v ) const {
+            return BoundaryModelMeshElement::model_vertex_id(v) ;
         }
 
-        /**
+        /*!
          * \name Accessors to facet and vertices
          * @{
          */
-        index_t facet_begin( index_t f ) const { return facet_ptr_.at( f ) ;}
-        index_t facet_end( index_t f ) const { return facet_ptr_.at( f + 1 ) ;}
+        index_t facet_begin( index_t f ) const { return mesh_.facets.corners_begin( f ) ; }
+        index_t facet_end( index_t f ) const { return mesh_.facets.corners_end( f ) ; }
         index_t nb_vertices_in_facet( index_t f ) const
         {
-            return facet_end( f ) -
-                   facet_begin( f ) ;
+            return mesh_.facets.nb_vertices( f ) ;
         }
 
-        bool is_triangle( index_t f ) const { return nb_vertices_in_facet( f ) == 3 ;}
+        bool is_triangle( index_t f ) const { return nb_vertices_in_facet( f ) == 3 ; }
 
         index_t next_in_facet(
             index_t f,
             index_t v ) const
         {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-            if( v != nb_vertices_in_facet( f ) - 1 ) {return v + 1 ;} else {return 0 ;}
+            if( v != nb_vertices_in_facet( f ) - 1 ) {
+                return v + 1 ;
+            } else {
+                return 0 ;
+            }
         }
 
         index_t prev_in_facet(
@@ -669,30 +634,21 @@ namespace RINGMesh {
             if( v > 0 ) {return v - 1 ;} else {return nb_vertices_in_facet( f ) - 1 ;}
         }
 
-        index_t nb_corners() const { return facets_.size() ;}
+        index_t nb_corners() const { return mesh_.facet_corners.nb() ; }
         index_t model_vertex_id_at_corner( index_t corner ) const
         {
-            return vertices_
-                   [ facets_
-                     [
-                         corner
-                     ] ] ;
+            return BoundaryModelMeshElement::model_vertex_id( mesh_.facet_corners.vertex( corner ) ) ;
         }
 
         /*!
-         * @brief Convert the facet index in the surface to a facet index in the BoundaryModel
-         */
-        index_t model_facet_id( index_t f ) const ;
-
-        /*!
-           *@brief Returns the surface index of vertex \param v in facet \param f
+         * @brief Returns the surface index of vertex \param v in facet \param f
          */
         index_t surf_vertex_id(
             index_t f,
             index_t v ) const
         {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-            return facets_[ facet_begin( f ) + v ] ;
+            return mesh_.facets.vertex( f, v ) ;
         }
 
         /*!
@@ -703,20 +659,17 @@ namespace RINGMesh {
             index_t v ) const
         {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-            return vertices_[ surf_vertex_id( f, v ) ] ;
+            return BoundaryModelMeshElement::model_vertex_id( surf_vertex_id( f, v ) ) ;
         }
 
+       
         /*!
          * @brief Returns a vertex surface index from its model index
          * @details Returns the first one only or NO_ID if no point is found
+         * 
+         * @todo To remove
          */
-        index_t surf_vertex_id( index_t model_vertex_id ) const
-        {
-            for( index_t i = 0; i < vertices_.size(); ++i ) {
-                if( vertices_[ i ] == model_vertex_id ) {return i ;}
-            }
-            return NO_ID ;
-        }
+        index_t surf_vertex_id( index_t model_vertex_id ) const ;
 
         index_t facet_vertex_id(
             index_t t,
@@ -757,58 +710,49 @@ namespace RINGMesh {
             bool border_only,
             index_t first_facet ) const ;
 
-        /** @}
+        /*! @}
          * \name Geometrical request on facets
          * @{
          */
         vec3 facet_barycenter( index_t f ) const ;
-
         double facet_area( index_t f ) const ;
-
         vec3 facet_normal( index_t f ) const ;
-
         void vertex_normals( std::vector< vec3 >& normals ) const ;
-
         index_t closest_vertex_in_facet(
             index_t f,
             const vec3& vertex ) const ;
-
         vec3 edge_barycenter( index_t c ) const ;
 
-        /** @}
+        /*! @}
          * \name Adjacencies request
          * @{
          */
         /*! @brief Returns the index of the adjacent facet of \param f in this surface
          *  along the edge starting at \param v */
-        index_t adjacent(
-            index_t f,
-            index_t v ) const
+        index_t adjacent( index_t f, index_t v ) const
         {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-            return adjacent_[ facet_begin( f ) + v ] ;
+            return mesh_.facets.adjacent( f, v ) ;
         }
 
-        /*! @brief Retruns the index of the adjacent facet at the given corner
+        /*! @brief Returns the index of the adjacent facet at the given corner
          */
         index_t adjacent( index_t c ) const
         {
-            ringmesh_assert( c < adjacent_.size() ) ;
-            return adjacent_[ c ] ;
+            ringmesh_assert( c < mesh_.facet_corners.nb() ) ;
+            return mesh_.facet_corners.adjacent_facet( c ) ;
         }
 
-        bool is_on_border(
-            index_t f,
-            index_t v ) const
+        bool is_on_border( index_t f, index_t v ) const
         {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-            return adjacent( f, v ) == NO_ADJACENT ;
+            return adjacent( f, v ) == GEO::NO_CELL ;
         }
 
         bool is_on_border( index_t f ) const
         {
             for( index_t adj = 0; adj < nb_vertices_in_facet( f ); adj++ ) {
-                if( is_on_border( f, adj ) ) {return true ;}
+                if( is_on_border( f, adj ) ) { return true ; }
             }
             return false ;
         }
@@ -827,7 +771,7 @@ namespace RINGMesh {
             index_t& next_f,
             index_t& next_e ) const ;
 
-        /** @}
+        /*! @}
          * \name Modifiers
          * @{
          */
@@ -836,30 +780,18 @@ namespace RINGMesh {
             index_t e,
             index_t adjacent )
         {
-            adjacent_[ facet_begin( f ) + e ] = adjacent ;
-        }
-
-        void compute_is_triangulated()
-        {
-            for( index_t f = 0; f < nb_cells(); f++ ) {
-                if( !is_triangle( f ) ) {
-                    is_triangulated_ = false ;
-                    return ;
-                }
-            }
-            is_triangulated_ = true ;
+            mesh_.facets.set_adjacent( f, e, adjacent ) ;
         }
 
         void set_geometry(
-            const std::vector< index_t >& vertices,
+            const std::vector< vec3 >& vertices,
             const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr )
-        {
-            vertices_ = vertices ;
-            facets_ = facets ;
-            facet_ptr_ = facet_ptr ;
-            compute_is_triangulated() ;
-        }
+            const std::vector< index_t >& facet_ptr ) ;
+
+        void set_geometry(
+            const std::vector< index_t >& model_vertex_ids,
+            const std::vector< index_t >& facets,
+            const std::vector< index_t >& facet_ptr ) ;
 
         void set_geometry(
             const std::vector< index_t >& facets,
@@ -867,165 +799,19 @@ namespace RINGMesh {
 
         void set_adjacent( const std::vector< index_t >& adjacent )
         {
-            ringmesh_assert( adjacent.size() == facets_.size() ) ;
-            adjacent_ = adjacent ;
-        }
-
-        /**
-         * @}
-         */
-
-    private:
-        // / Indices (in the BoundaryModel) of the vertices defining the surface
-        // / The same index can appear several times when there is an Line boundary inside
-        std::vector< index_t > vertices_ ;
-
-        // / Indices (in the Surface) of each vertex in each facet
-        std::vector< index_t > facets_ ;
-
-        // / Beginning (and end) of one facet in the facets_ vector
-        std::vector< index_t > facet_ptr_ ;
-
-        // / Adjacent facet for each vertex in each facet along
-        // / the edge starting at this vertex.
-        // / When the edge is along a Surface boundary it is set at NO_ADJACENT
-        std::vector< index_t > adjacent_ ;
-
-        bool is_triangulated_ ;
-    } ;
-
-    /*!
-     * @brief Attribute on the vertices of a Surface
-     */
-    template< class ATTRIBUTE >
-    class SurfaceVertexAttribute : public Attribute<
-                                       BoundaryModelElement
-                                       ::VERTEX,
-                                       ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModelElement::VERTEX, ATTRIBUTE > superclass ;
-
-        void bind(
-            const Surface* surface,
-            const std::string& name )
-        {
-            superclass::bind(
-                surface->vertex_attribute_manager(), surface->nb_vertices(),
-                name ) ;
-        }
-
-        void bind( const Surface* surface )
-        {
-            superclass::bind( surface->vertex_attribute_manager(),
-                surface->nb_vertices() ) ;
-        }
-
-        SurfaceVertexAttribute()
-        {
-        }
-
-        SurfaceVertexAttribute( const Surface* surface )
-        {
-            bind( surface ) ;
-        }
-
-        SurfaceVertexAttribute(
-            const Surface* surface,
-            const std::string& name )
-        {
-            bind( surface, name ) ;
-        }
-
-        static bool is_defined(
-            const Surface* surface,
-            const std::string& name )
-        {
-            return superclass::is_defined( surface->vertex_attribute_manager(), name ) ;
-        }
-    } ;
-
-    /*!
-     * @brief Attribute on the facets of a Surface
-     */
-    template< class ATTRIBUTE >
-    class SurfaceFacetAttribute : public Attribute<
-                                      BoundaryModelElement
-                                      ::FACET,
-                                      ATTRIBUTE > {
-    public:
-        typedef Attribute< BoundaryModelElement::FACET, ATTRIBUTE > superclass ;
-
-        void bind(
-            const Surface* surface,
-            const std::string& name )
-        {
-            superclass::bind( surface->facet_attribute_manager(), surface->nb_cells(),
-                name ) ;
-        }
-
-        void bind( const Surface* surface )
-        {
-            superclass::bind( surface->facet_attribute_manager(),
-                surface->nb_cells() ) ;
-        }
-
-        SurfaceFacetAttribute()
-        {
-        }
-
-        SurfaceFacetAttribute( const Surface* surface )
-        {
-            bind( surface ) ;
-        }
-
-        SurfaceFacetAttribute(
-            const Surface* surface,
-            const std::string& name )
-        {
-            bind( surface, name ) ;
-        }
-
-        static bool is_defined(
-            const Surface* surface,
-            const std::string& name )
-        {
-            return superclass::is_defined( surface->facet_attribute_manager(), name ) ;
-        }
-    } ;
-
-    /*!
-     * @brief Class to perform modifications of a Surface
-     */
-    class RINGMESH_API SurfaceMutator {
-    public:
-        SurfaceMutator( Surface& S )
-              : S_( S )
-        {
-        }
-
-        SurfaceMutator( const Surface& S )
-              : S_( const_cast< Surface& >( S ) )
-        {
-        }
-
-        std::vector< index_t >& vertices() const { return S_.vertices_  ;}
-        std::vector< index_t >& facets() const { return S_.facets_    ;}
-        std::vector< index_t >& facet_ptr() const { return S_.facet_ptr_ ;}
-        std::vector< index_t >& adjacents() const { return S_.adjacent_  ;}
-
-        void clear()
-        {
-            S_.vertices_.clear() ;
-            S_.facets_.clear() ;
-            S_.facet_ptr_.clear() ;
-            S_.adjacent_.clear() ;
+            ringmesh_assert( adjacent.size() == mesh_.facet_corners.nb() ) ;
+            for( index_t i = 0; i < adjacent.size(); i++ ) {
+                mesh_.facet_corners.set_adjacent_facet( i, adjacent[i] ) ;
+            }
         }
 
         void cut_by_line( const Line& L ) ;
 
-    private:
-        Surface& S_ ;
+    public:
+        SurfaceTools tools ;
     } ;
+
+        
 
     /*!
      * @brief Class to answer geometrical requests on BoundaryModelElement

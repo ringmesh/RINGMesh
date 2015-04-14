@@ -45,6 +45,7 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/geometry_nd.h>
+#include <geogram/mesh/mesh_AABB.h>
 
 #include <set>
 #include <stack>
@@ -67,7 +68,7 @@ namespace RINGMesh {
         if( in == "normal_fault" ) {return FAULT ;}
         if( in == "fault" ) {return FAULT ;}
         if( in == "top" ) {return STRATI ;}
-        if( in == "none" ) {return STRATI ;}
+        if( in == "none" ) {return NO_GEOL ;}
         if( in == "unconformity" ) {return STRATI ;}
         if( in == "boundary" ) {return VOI ;}
 
@@ -235,24 +236,46 @@ namespace RINGMesh {
 
     bool BoundaryModelElement::operator==( const BoundaryModelElement& rhs ) const
     {
-        if( model_ != rhs.model_ ) {return false ;}
-        if( type_ != rhs.type_ ) {return false ;}
-        if( id_ != rhs.id_ ) {return false ;}
-        if( name_ != rhs.name_ ) {return false ;}
-        if( geol_feature_ != rhs.geol_feature_ ) {return false ;}
-        if( nb_boundaries() != rhs.nb_boundaries() ) {return false ;}
+        if( model_ != rhs.model_ ) {
+            return false ;
+        }
+        if( type_ != rhs.type_ ) {
+            return false ;
+        }
+        if( name_ != rhs.name_ ) {
+            return false ;
+        }
+        if( geol_feature_ != rhs.geol_feature_ ) {
+            return false ;
+        }
+        if( nb_boundaries() != rhs.nb_boundaries() ) {
+            return false ;
+        }
         if( !std::equal( boundaries_.begin(), boundaries_.end(),
-                rhs.boundaries_.begin() ) ) { return false ;}
+            rhs.boundaries_.begin() ) ) {
+                return false ;
+        }
         if( !std::equal( sides_.begin(), sides_.end(),
-                rhs.sides_.begin() ) ) { return false ;}
-        if( nb_in_boundary() != rhs.nb_in_boundary() ) {return false ;}
+            rhs.sides_.begin() ) ) { 
+                return false ;
+        }
+        if( nb_in_boundary() != rhs.nb_in_boundary() ) {
+            return false ;
+        }
         if( !std::equal( in_boundary_.begin(), in_boundary_.end(),
-                rhs.in_boundary_.begin() ) ) { return false ;}
-        if( parent_ != rhs.parent_ ) {return false ;}
-        if( nb_children() != rhs.nb_children() ) {return false ;}
+                rhs.in_boundary_.begin() ) ) { 
+                    return false ;
+        }
+        if( parent_ != rhs.parent_ ) {
+            return false ;
+        }
+        if( nb_children() != rhs.nb_children() ) {
+            return false ;
+        }
         if( !std::equal( children_.begin(), children_.end(),
-                rhs.children_.begin() ) ) { return false ;}
-
+            rhs.children_.begin() ) ) { 
+            return false ;
+        }
         return true ;
     }
 
@@ -262,8 +285,8 @@ namespace RINGMesh {
      */
     const BoundaryModelElement& BoundaryModelElement::parent() const
     {
-        ringmesh_assert( parent_id() != NO_ID ) ;
-        return model_->element( parent_type( type_ ), parent_id() ) ;
+        ringmesh_assert( parent_id() != dummy_bme_type ) ;
+        return model_->element( parent_id() ) ;
     }
 
 
@@ -275,7 +298,7 @@ namespace RINGMesh {
     const BoundaryModelElement& BoundaryModelElement::boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_boundaries() ) ;
-        return model_->element( boundary_type( type_ ), boundary_id( x ) ) ;
+        return model_->element( boundary_id( x ) ) ;
     }
 
 
@@ -287,7 +310,7 @@ namespace RINGMesh {
     const BoundaryModelElement& BoundaryModelElement::in_boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_in_boundary() ) ;
-        return model_->element( in_boundary_type( type_ ), in_boundary_id( x ) ) ;
+        return model_->element( in_boundary_id( x ) ) ;
     }
 
 
@@ -299,7 +322,7 @@ namespace RINGMesh {
     const BoundaryModelElement& BoundaryModelElement::child( index_t x ) const
     {
         ringmesh_assert( x < nb_children() ) ;
-        return model_->element( child_type( type_ ), child_id( x ) ) ;
+        return model_->element( child_id( x ) ) ;
     }
 
 
@@ -314,7 +337,6 @@ namespace RINGMesh {
     {
         model_        = &model ;
         type_         = rhs.type_ ;
-        id_           = rhs.id_ ;
         name_         = rhs.name_ ;
         geol_feature_ = rhs.geol_feature_ ;
         boundaries_   = rhs.boundaries_ ;
@@ -347,16 +369,171 @@ namespace RINGMesh {
         }
         return false ;
     }
+    
+
+    GEO::AttributesManager& BoundaryModelElement::vertex_attribute_manager() const
+    {
+        ringmesh_assert_not_reached;
+        // Return something stupid - we crash before anyway
+        return model_->corner(0).vertex_attribute_manager() ;
+    }
+
+    GEO::AttributesManager& BoundaryModelElement::cell_attribute_manager() const
+    {
+        ringmesh_assert_not_reached;
+        // Return something stupid - we crash before anyway
+        return model_->corner(0).vertex_attribute_manager() ;
+    }
+
+    /*********************************************************************/
+
+    /*!
+     * @brief Returns the index of the first point that correspond to a model vertex
+     * @details Uses the attribute on the BoundaryModelVertices that stores the
+     *  corresponding points in BME. Returns NO_ID if no matching point found.
+     *
+     * @param model_vertex_id Index of a vertex in BoundaryModelVertices
+     */
+    index_t BoundaryModelMeshElement::local_id(
+        index_t model_vertex_id ) const 
+    {   
+        typedef BoundaryModelVertices BMV ;
+        const std::vector< BMV::VertexInBME >& bme_vertices =
+            model_->vertices.bme_vertices( model_vertex_id ) ;
+        
+        for( index_t i = 0; i < bme_vertices.size(); i++ ) {
+            const BMV::VertexInBME& info = bme_vertices[i] ;
+            if( info.bme_type == bme_type() ) {
+                return info.v_id ;
+            }
+        }
+        return NO_ID ;
+    }
 
 
     /*!
-     * @return The coordinates of the point at this corner.
+     * @brief Set the index of the matching point in the BoundaryModel
+     *
+     * @param[in] v Vertex index
+     * @param[in] model_id Model vertex index in BoundaryModelVertices
      */
-    const vec3& Corner::vertex( index_t p ) const
+    void BoundaryModelMeshElement::set_model_vertex_id( 
+        index_t vertex_id, 
+        index_t model_vertex_id ) 
     {
-        return model_->vertex( vertex_ ) ;
+        ringmesh_assert( vertex_id < nb_vertices() ) ;
+        model_vertex_id_[vertex_id] = model_vertex_id ;
     }
 
+    /*!
+     * @brief Set the geometrical position of a vertex
+     *
+     * @param index Index of the vertex to modify
+     * @param point New coordinates
+     * @param update If true, all the vertices sharing the same geometrical position
+     *               in the BoundaryModel have their position updated, if false they
+     *               are not.
+     *
+     * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
+     *          I removed on purpose the default value parameter for update (Jeanne)
+     */
+    void BoundaryModelMeshElement::set_vertex(
+        index_t index,
+        const vec3& point,
+        bool update )
+    {
+        ringmesh_debug_assert( index < nb_vertices() ) ;
+        if( update )
+            model_->vertices.update_point(
+                 model_->vertices.unique_vertex_id( 
+                    bme_type(), index ), point ) ;
+        else
+            mesh_.vertices.point( index ) = point ;
+    }
+
+    /*!
+     * @brief Get the vertex in the model from a vertex index in the Surface
+     * @param[in] p Vertex index
+     * @return The vertex index in the model
+     */
+    index_t BoundaryModelMeshElement::model_vertex_id( index_t p ) const {
+        ringmesh_assert( p < nb_vertices() ) ;
+        ringmesh_debug_assert( model_vertex_id_[p] != NO_ID ) ;
+        return model_vertex_id_[p] ;
+    }
+
+    /*!
+     * @brief Returns the coordinates of the point at the given index in the surface
+     * @param[in] surf_vertex_id Index of the vertex in the surface
+     * @return The coordinates of the vertex
+     */
+    const vec3& BoundaryModelMeshElement::vertex( index_t v ) const
+    {
+        ringmesh_assert( v < nb_vertices() ) ;
+        return mesh_.vertices.point( v ) ;
+    }
+
+    /*!
+     * @brief Set the geometrical position of a vertex from a model vertex
+     * @details Set also both mapping from (BoundaryModelVertices::unique2bme)
+     *          and to (model_vertex_id_) the model vertex.
+     *
+     * @param index Index of the vertex to modify
+     * @param model_vertex Index in BoundaryModelVertices of the vertex giving
+     *                     the new position
+     */
+    void BoundaryModelMeshElement::set_vertex( 
+        index_t v, index_t model_vertex ) 
+    {
+        set_vertex( v, model_->vertices.unique_vertex( model_vertex ), false ) ;
+        set_model_vertex_id( v, model_vertex ) ;
+        model_->vertices.add_unique_to_bme( model_vertex, bme_type(), v ) ;
+    }
+
+
+    /*!
+     * @brief Add vertices to the mesh
+     * @details No update of the model vertices is done
+     *
+     * @param points Geometric positions of the vertices to add
+     * @param clear_mesh If true the mesh if cleared, keeping its attributes
+     */
+    void BoundaryModelMeshElement::set_vertices( 
+        const std::vector< vec3 >& points,
+        bool clear ) 
+    {
+        // Clear the mesh, but keep the attributes and the space
+        if( clear  ){
+            mesh_.clear( true, true ) ;        
+        }
+        mesh_.vertices.create_vertices( points.size() ) ;
+        for( index_t v = 0; v < points.size(); v++ ) {            
+            set_vertex( v, points[v], false ) ;
+        }
+    }
+
+    /*!
+     * @brief Add vertices to the mesh
+     * @details No update of the model vertices is done
+     *
+     * @param points Geometric positions of the vertices to add
+     * @param clear_mesh If true the mesh if cleared, keeping its attributes
+     */
+    void BoundaryModelMeshElement::set_vertices( 
+        const std::vector< index_t >& model_vertices,
+        bool clear ) 
+    {
+        // Clear the mesh, but keep the attributes and the space
+        if( clear  ){
+            mesh_.clear( true, true ) ;        
+        }
+        mesh_.vertices.create_vertices( model_vertices.size() ) ;
+        for( index_t v = 0; v < model_vertices.size(); v++ ) {
+            set_vertex( v, model_vertices[v] ) ;
+        }
+    }
+
+    /***************************************************************/
 
     /*!
      * @brief Construct a Line
@@ -367,49 +544,43 @@ namespace RINGMesh {
     Line::Line(
         BoundaryModel* model,
         index_t id ) :
-        BoundaryModelElement( model, LINE, id )
+        BoundaryModelMeshElement( model, LINE, id )
     {
     }
-
 
     /*!
-     * @brief Construct a Line knowing its vertices
+     * @brief Add vertices to the mesh and build the edges
+     * @details No update of the model vertices is done
      *
-     * @param[in] model  The parent model
-     * @param[in] id The index of the line in the lines_ vector of the parent model
-     * @param[in] vertices Indices (in the model) of the vertices defining this Line
+     * @param points Geometric positions of the vertices to add
+     * @param clear_mesh If true the mesh if cleared, keeping its attributes
      */
-    Line::Line(
-        BoundaryModel* model,
-        index_t id,
-        const std::vector< index_t >& vertices )
-          : BoundaryModelElement( model, LINE, id ), vertices_( vertices )
+    void Line::set_vertices(
+        const std::vector< vec3 >& points,
+        bool clear_mesh )
     {
+        BoundaryModelMeshElement::set_vertices( points, clear_mesh ) ;
+        for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
+            mesh_.edges.create_edge( e, e + 1 ) ;
+        }
     }
-
 
     /*!
-     * @brief Construct a Line knowing its vertices
+     * @brief Add vertices to the mesh and build the edges
+     * @details See set_vertex(index_t, index_t)
      *
-     * @param[in] model  The parent model
-     * @param[in] id The index of the line in the lines_ vector of the parent model
-     * @param[in] vertices Indices (in the model) of the vertices defining this Line
-     * @param[in] corner0 Index of the starting corner
-     * @param[in] corner1 Index of the ending corner
+     * @param model_vertices Indices in the model of the points to add
+     * @param clear_mesh If true the mesh if cleared, keeping its attributes
      */
-    Line::Line(
-        BoundaryModel* model,
-        index_t id,
-        index_t corner0,
-        index_t corner1,
-        const std::vector< index_t >& vertices ) :  BoundaryModelElement( model,
-                                                                          LINE, id ),
-                                                    vertices_( vertices )
+    void Line::set_vertices(
+        const std::vector< index_t >& model_vertices,
+        bool clear_mesh )
     {
-        boundaries_.push_back( corner0 ) ;
-        boundaries_.push_back( corner1 ) ;
+        BoundaryModelMeshElement::set_vertices( model_vertices, clear_mesh ) ;
+        for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
+            mesh_.edges.create_edge( e, e + 1 ) ;
+        }
     }
-
 
     /*!
      * @brief Check if the Line is twice on the boundary of a surface
@@ -420,16 +591,7 @@ namespace RINGMesh {
     {
         // Find out if this surface is twice in the in_boundary vector
         return std::count( in_boundary_.begin(), in_boundary_.end(),
-            surface.id() ) > 1 ;
-    }
-
-
-    /*!
-     * @return The coordinates of the \param line_vertex_id th vertex on the Line
-     */
-    const vec3& Line::vertex( index_t line_vertex_id ) const
-    {
-        return model_->vertex( vertices_.at( line_vertex_id ) ) ;
+            surface.bme_type() ) > 1 ;
     }
 
 
@@ -440,7 +602,7 @@ namespace RINGMesh {
      */
     vec3 Line::segment_barycenter( index_t s ) const
     {
-        return 0.5 * ( vertex( s ) + vertex( s + 1 ) ) ;
+        return 0.5*( vertex( s ) + vertex( s+1 ) ) ;
     }
 
 
@@ -474,25 +636,40 @@ namespace RINGMesh {
      *
      * @param[in] rhs_vertices Vertices to compare to
      */
-    bool Line::equal( const std::vector< index_t >& rhs_vertices ) const
+    bool Line::equal( const std::vector< vec3 >& rhs_vertices ) const
     {
-        if( nb_vertices() != rhs_vertices.size() ) {return false ;}
-
-        if( std::equal( rhs_vertices.begin(), rhs_vertices.end(),
-                vertices_.begin() ) )
-        {
-            return true ;
+        if( nb_vertices() != rhs_vertices.size() ) {
+            return false ;
         }
 
-        if( std::equal( rhs_vertices.begin(), rhs_vertices.end(),
-                vertices_.rbegin() ) )
-        {
-            return true ;
+        bool equal = true ;
+        for( index_t i = 0; i < nb_vertices(); i++ ) {
+            if( rhs_vertices[i] != mesh_.vertices.point( i ) ) {
+                equal = false ;
+                break ;
+            }
         }
+        if( equal ) return true ;
+
+        equal = true ;
+        for( index_t i = 0; i < nb_vertices(); i++ ) {
+            if( rhs_vertices[i] != mesh_.vertices.point( nb_vertices()-i-1 ) ) {
+                equal = false ;
+                break ;
+            }
+        }
+        if( equal ) return true ;
 
         return false ;
     }
 
+
+    /***********************************************************************/
+
+
+    Surface::~Surface()
+    {
+    }
 
     /*!
      * @param[in] f Facet index
@@ -506,23 +683,55 @@ namespace RINGMesh {
         ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
         return vertex( surf_vertex_id( f, v ) ) ;
     }
+   
 
-
-    /*!
-     * @param[in] surf_vertex_id Index of the vertex in the surface
-     * @return The coordinates of the vertex
-     */
-    const vec3& Surface::vertex( index_t surf_vertex_id ) const
+    index_t Surface::surf_vertex_id( index_t model_vertex_id ) const
     {
-        return model_->vertex( vertices_.at( surf_vertex_id ) ) ;
+        return local_id( model_vertex_id ) ;
     }
 
 
+    void Surface::set_geometry(
+        const std::vector< vec3 >& vertices,
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        set_vertices( vertices ) ;
+        set_geometry( facets, facet_ptr ) ;
+    }
+
+
+    void Surface::set_geometry(
+        const std::vector< index_t >& model_vertex_ids,
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        set_vertices( model_vertex_ids ) ;
+        set_geometry( facets, facet_ptr ) ;
+    }
+
+
+    void Surface::set_geometry(
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        for( index_t f = 0; f < facet_ptr.size()-1; f++ ) {
+            index_t size = facet_ptr[f+1] - facet_ptr[f] ;
+            GEO::vector< index_t > facet_vertices( size ) ;
+            index_t start = facet_ptr[f] ;
+            for( index_t lv = 0; lv < size; lv++ ) {
+                facet_vertices[lv] = facets[start++] ;
+            }
+            mesh_.facets.create_polygon( facet_vertices ) ;
+        }
+    }
+    
+    
     /*!
      * @brief Traversal of a surface border
      * @details From the input facet f, get the facet that share vertex v and
      * get the indices of vertex v and of the following vertex in this new facet.
-     * The next facet next_f may be the same, and @param is required to avoid going back.
+     * The next facet next_f may be the same, and from is required to avoid going back.
      *
      * @param[in] f Index of the facet
      * @param[in] from Index in the facet of the previous point on the border - gives the direction
@@ -611,7 +820,6 @@ namespace RINGMesh {
         return next_on_border( f, e, v, next_f, next_e ) ;
     }
 
-
     /*!
      * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
      *
@@ -623,7 +831,7 @@ namespace RINGMesh {
         index_t in0,
         index_t in1 ) const
     {
-        ringmesh_debug_assert( in0 < vertices_.size() && in1 < vertices_.size() ) ;
+        ringmesh_debug_assert( in0 < mesh_.vertices.nb() && in1 < mesh_.vertices.nb() ) ;
 
         // Another possible, probably faster, algorithm is to check if the 2 indices
         // are neighbors in facets_ and check that they are in the same facet
@@ -654,8 +862,8 @@ namespace RINGMesh {
      * @brief Get the first facet of the surface that has an edge linking the
      * two vertices (ids in the model)
      *
-     * @param[in] in0 Index of the first vertex in the model
-     * @param[in] in1 Index of the second vertex in the model
+     * @param[in] i0 Index of the first vertex in the model
+     * @param[in] i1 Index of the second vertex in the model
      * @return NO_ID or the index of the facet
      */
     index_t Surface::facet_from_model_vertex_ids(
@@ -898,37 +1106,6 @@ namespace RINGMesh {
     }
 
 
-    void Surface::set_geometry(
-        const std::vector< index_t >& corners,
-        const std::vector< index_t >& facet_ptr )
-    {
-        facets_ = corners ;
-        facet_ptr_ = facet_ptr ;
-
-        // Compute the vertices from the corners
-        // This is quite stupid !! The real solution would be to remove
-        // the vertices vector from the Surface
-        std::map< index_t, index_t > old_2_new ;
-
-        for( index_t i = 0; i < facets_.size(); ++i ) {
-            index_t c = facets_[ i ] ;
-            std::map< index_t, index_t >::iterator it = old_2_new.find( c ) ;
-            index_t new_corner_id = NO_ID ;
-
-            if( it == old_2_new.end() ) {
-                new_corner_id = vertices_.size() ;
-                old_2_new[ c ] = new_corner_id ;
-
-                // Not so great to push back, but whatever
-                vertices_.push_back( c ) ;
-            } else {new_corner_id = old_2_new[ c ] ;}
-            facets_[ i ] = new_corner_id ;
-        }
-
-        compute_is_triangulated() ;
-    }
-
-
     /*!
      * @brief Compute the barycenter of a facet
      * @param[in] f Facet index in the surface
@@ -966,7 +1143,7 @@ namespace RINGMesh {
      * @return Normal to the triangle made by the first 3 vertices
      * of the facet
      *
-     * WARNING : if the facet is not planar calling this has no meaning
+     * @warning If the facet is not planar calling this has no meaning
      */
     vec3 Surface::facet_normal( index_t f ) const
     {
@@ -1029,8 +1206,13 @@ namespace RINGMesh {
         vec3 result( 0, 0, 0 ) ;
 
         // Get the facet index
-        index_t f = narrow_cast< index_t >( std::lower_bound(
-            facet_ptr_.begin(), facet_ptr_.end(), c ) - facet_ptr_.begin() ) ;
+        index_t f = NO_ID ;
+        for( ; f < mesh_.facets.nb(); f++ ) {
+            if( mesh_.facets.corners_begin(f ) < c  ) {
+                break ;
+            }
+        }
+        ringmesh_debug_assert( f != NO_ID ) ;
         index_t v = c - facet_begin( f ) ;
         result += vertex( f, v ) ;
         result += vertex( f, next_in_facet( f, v ) ) ;
@@ -1038,38 +1220,71 @@ namespace RINGMesh {
     }
 
 
+    
+    bool is_corner_to_duplicate( const BoundaryModel& BM, index_t corner_id )
+    {
+        if( BM.corner( corner_id ).nb_in_boundary() > 3 ) {
+            return true ;
+        } else {
+            return false ;
+        }
+    }
+
+    void update_facet_corner( 
+        Surface& S, 
+        const std::vector< index_t >& facets, 
+        index_t old, 
+        index_t neu )
+    {
+        for( index_t i = 0; i < facets.size(); ++i ) {
+            index_t cur_f = facets[ i ] ;
+            for( index_t cur_v = 0;
+                    cur_v < S.nb_vertices_in_facet( cur_f );
+                    cur_v++ )
+            {
+                if( S.surf_vertex_id( cur_f, cur_v ) == old ) {
+                    S.mesh().facets.set_vertex( cur_f, cur_v, neu) ;
+                }                   
+            }
+        }
+    }
+
+
     /*!
-     * @brief Cut the Surface along the line
-     * @details First modify to NO_ADJACENT the neighbors the edges that are along the line
-     * and then duplicate the points along this new boundary
-     * Corners are not duplicated - maybe they should be in some cases but not in general..
+     * @brief Cut a Surface along a Line assuming that the edges of the Line are edges of the Surface
+     *  
+     * @details First modify to NO_ADJACENT the neighbors along Line edges
+     * and then duplicate the points along this new boundary.
+     * Duplicate the corner that should be if any.
+     * 
+     * @pre The Line must not cut the Surface into 2 connected components
      *
      * @param[in] L The Line
      */
-    void SurfaceMutator::cut_by_line( const Line& L )
+    void Surface::cut_by_line( const Line& L )
     {
         for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
             index_t p0 = L.model_vertex_id( i ) ;
-            index_t p1 =
-                ( i == L.nb_vertices() -
-                  1 ) ? L.model_vertex_id( 0 ) : L.model_vertex_id(
-                    i + 1 ) ;
+            index_t p1 = ( i == L.nb_vertices()-1 ) ? 
+                L.model_vertex_id(0) : L.model_vertex_id(i+1) ;
 
             index_t f = Surface::NO_ID ;
             index_t v = Surface::NO_ID ;
-            S_.edge_from_model_vertex_ids( p0, p1, f, v ) ;
+            edge_from_model_vertex_ids( p0, p1, f, v ) ;
             ringmesh_debug_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
 
-            index_t f2 = S_.adjacent( f, v ) ;
+            index_t f2 = adjacent( f, v ) ;
             index_t v2 = Surface::NO_ID ;
             ringmesh_debug_assert( f2 != Surface::NO_ADJACENT ) ;
-            S_.edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
+            edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
             ringmesh_debug_assert( v2 != Surface::NO_ID ) ;
 
             // Virtual cut - set adjacencies to NO_ADJACENT
-            S_.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
-            S_.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
+            set_adjacent( f, v, Surface::NO_ADJACENT ) ;
+            set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
         }
+
+        BoundaryModel& M = const_cast< BoundaryModel& >( model() ) ;
 
         // Now travel on one side of the "faked" boundary and actually duplicate
         // the vertices in the surface
@@ -1077,19 +1292,44 @@ namespace RINGMesh {
         // the first two vertices of the line
         index_t f = Surface::NO_ID ;
         index_t v = Surface::NO_ID ;
-        S_.oriented_edge_from_model_vertex_ids( L.model_vertex_id(
-                0 ), L.model_vertex_id( 1 ), f, v ) ;
+        oriented_edge_from_model_vertex_ids(
+            L.model_vertex_id(0), L.model_vertex_id(1), f, v ) ;
         ringmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
 
-        index_t id0 = S_.surf_vertex_id( f, v ) ;
-        index_t id1 = S_.surf_vertex_id( f, S_.next_in_facet( f, v ) ) ;
+        index_t id0 = surf_vertex_id( f, v ) ;
+        index_t id1 = surf_vertex_id( f, next_in_facet( f, v ) ) ;
 
         // Stopping criterion
-        index_t last_vertex = L.model_vertex_id( L.nb_vertices() - 1 ) ;
+        index_t c0 = L.boundary_id(0).index ;
+        index_t c1 = L.boundary_id(1).index ;
 
-        // Hopefully we have all the vertices on the Line..
-        // / \todo Check that all vertices on the line are recovered
-        while( S_.model_vertex_id( id1 ) != last_vertex ) {
+        // Wee need to check if we have to duplicate the Corner or not
+        // the 2 corners are         
+        bool duplicate_c0 = is_corner_to_duplicate( model(), c0 ) ;
+        bool duplicate_c1 = is_corner_to_duplicate( model(), c1 ) ;
+        // If both shall be duplicated - the line cut completely the surface
+        // and this function is not supposed to deal with that situation
+        ringmesh_assert( !duplicate_c0 || !duplicate_c1 ) ;
+        
+        // Index of the model vertex if one corner is to duplicate
+        index_t m_corner = duplicate_c0 ? M.corner(c0).model_vertex_id() :
+            (duplicate_c1 ? M.corner(c1).model_vertex_id() : NO_ID ) ;
+
+        // Index of the vertex to duplicate in S
+        // If c1 is to duplicate we do not know it yet 
+        index_t s_corner = duplicate_c0 ? id0 : NO_ID ;
+
+        // Index of the new vertex for the corner in the surface
+        index_t s_new_corner = NO_ID ;
+        // Create this new point in the surface and set mapping with point in the BM
+        if( m_corner != NO_ID ) {
+            s_new_corner = mesh_.vertices.create_vertex( M.vertices.unique_vertex( m_corner ).data() ) ;
+            set_model_vertex_id( s_new_corner, m_corner ) ;           
+            M.vertices.add_unique_to_bme( m_corner, bme_type(), s_new_corner ) ;
+        }
+            
+        /// \todo Check that all vertices on the line are recovered
+        while( model_vertex_id( id1 ) != M.corner(c1).model_vertex_id() ) {
             // Get the next vertex on the border
             // Same algorithm than in determine_line_vertices function
             index_t next_f = Surface::NO_ID ;
@@ -1097,46 +1337,87 @@ namespace RINGMesh {
             index_t next_id1_in_next = Surface::NO_ID ;
 
             // Get the next facet and next triangle on this boundary
-            S_.next_on_border( f,
-                S_.facet_vertex_id( f, id0 ), S_.facet_vertex_id( f, id1 ),
+            next_on_border( f,
+                facet_vertex_id( f, id0 ), facet_vertex_id( f, id1 ),
                 next_f, id1_in_next, next_id1_in_next ) ;
             ringmesh_assert(
                 next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
                 && next_id1_in_next != Surface::NO_ID ) ;
 
-            index_t next_id1 = S_.surf_vertex_id( next_f, next_id1_in_next ) ;
+            index_t next_id1 = surf_vertex_id( next_f, next_id1_in_next ) ;
 
             // Duplicate the vertex at id1
             // After having determined the next 1 we can probably get both at the same time
             // but I am lazy, and we must be careful not to break next_on_border function (Jeanne)
             std::vector< index_t > facets_around_id1 ;
-            S_.facets_around_vertex( id1, facets_around_id1, false, f ) ;
+            facets_around_vertex( id1, facets_around_id1, false, f ) ;
 
-            S_.vertices_.push_back( S_.model_vertex_id( id1 ) ) ;
-            ringmesh_debug_assert( S_.nb_vertices() > 0 ) ;
-            index_t new_id1 = S_.nb_vertices() - 1 ;
+            // Duplicate the vertex in the surface
+            index_t new_id1 = mesh_.vertices.create_vertex( vertex( id1 ).data() ) ;
+            // Set its model vertex index
+            set_model_vertex_id( new_id1, model_vertex_id( id1 ) ) ;
+            // Add the mapping from in the model vertices. Should we do this one ?
+            M.vertices.add_unique_to_bme( model_vertex_id(id1), bme_type(), new_id1 ) ;
 
-            for( index_t i = 0; i < facets_around_id1.size(); ++i ) {
-                index_t cur_f = facets_around_id1[ i ] ;
-                for( index_t cur_v = 0;
-                     cur_v < S_.nb_vertices_in_facet( cur_f );
-                     cur_v++ )
-                {
-                    if( S_.surf_vertex_id( cur_f, cur_v ) == id1 ) {
-                        S_.facets_[ S_.facet_begin( cur_f ) + cur_v ] = new_id1 ;
-                        break ;
-                    }
-                }
-            }
+            // Update vertex index in facets 
+            update_facet_corner( *this, facets_around_id1, id1, new_id1 ) ;
 
             // Update
             f = next_f ;
             id0 = new_id1 ;
             id1 = next_id1 ;
+        }       
+        if( m_corner != NO_ID ){
+            if( duplicate_c1 ) {
+               s_corner = id1 ;
+            }
+            ringmesh_assert( s_corner != NO_ID && s_new_corner != NO_ID ) ;            
+            std::vector< index_t > facets_around_c ;
+            facets_around_vertex( s_corner, facets_around_c, false ) ;            
+            update_facet_corner( *this, facets_around_c, s_corner, s_new_corner ) ;
         }
-
-        // / \todo Check qu'on ne coupe pas compl�tement la surface, si on a 2 surfaces � la fin c'est la merde
     }
+
+
+
+
+
+    SurfaceTools::SurfaceTools( const Surface& surface )
+        : surface_( surface ), aabb_( nil ), ann_( nil )
+    {
+    }
+
+
+    SurfaceTools::~SurfaceTools()
+    {
+        if( aabb_ ) delete aabb_ ;
+        if( ann_ ) delete ann_ ;
+    }
+
+    const GEO::MeshFacetsAABB& SurfaceTools::aabb() const
+    {
+        if( !aabb_ ) {
+            SurfaceTools* this_not_const = const_cast< SurfaceTools* >( this ) ;
+            this_not_const->aabb_ = new GEO::MeshFacetsAABB(
+                const_cast< GEO::Mesh& >( surface_.mesh() ) ) ;
+            surface_.model_->vertices.clear() ;
+            if( ann_ ) {
+                delete ann_ ;
+                this_not_const->ann_ = nil ;
+            }
+        }
+        return *aabb_ ;
+    }
+
+    const ColocaterANN& SurfaceTools::ann() const
+    {
+        if( !ann_ ) {
+            const_cast< SurfaceTools* >( this )->ann_ = new ColocaterANN(
+                surface_.mesh(), ColocaterANN::VERTICES ) ;
+        }
+        return *ann_ ;
+    }
+
 
 
     /*!
@@ -1148,13 +1429,13 @@ namespace RINGMesh {
     {
         double result = 0. ;
 
-        // / If this element has children sum up their sizes
+        /// If this element has children sum up their sizes
         for( index_t i = 0; i < E->nb_children(); ++i ) {
             result += BoundaryModelElementMeasure::size( &E->child( i ) )  ;
         }
         if( result != 0 ) {return result ;}
 
-        // / Else it is a base element and its size is computed
+        /// Else it is a base element and its size is computed
 
         // If this is a region
         if( E->element_type() == BoundaryModelElement::REGION ) {

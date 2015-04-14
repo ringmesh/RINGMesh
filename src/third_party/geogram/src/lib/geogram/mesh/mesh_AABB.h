@@ -180,6 +180,13 @@ namespace GEO {
             );
         }
         
+        void compute_bbox_intersections(
+            const Box& box,
+            std::vector< index_t >& results ) const
+        {
+            bbox_intersect_recursive( results, box, 1, 0, mesh_.facets.nb() ) ;
+        }
+
         /**
          * \brief Finds the nearest facet from an arbitrary 3d query point.
          * \param[in] p query point
@@ -211,14 +218,23 @@ namespace GEO {
          *
          * \param[in] p query point
          * \param[in,out] nearest_facet the nearest facet so far,
+         *   or NO_FACET if not known yet
          * \param[in,out] nearest_point a point in nearest_facet
          * \param[in,out] sq_dist squared distance between p and
          *    nearest_point
+         * \note On entry, \p sq_dist needs to be equal to the squared
+         *   distance between \p p and \p nearest_point (it is easy to
+         *   forget to update it when calling it within a loop).
          */
         void nearest_facet_with_hint(
             const vec3& p,
             index_t& nearest_facet, vec3& nearest_point, double& sq_dist
         ) const {
+            if(nearest_facet == NO_FACET) {
+                get_nearest_facet_hint(
+                    p, nearest_facet, nearest_point, sq_dist
+                );                
+            }
             nearest_facet_recursive(
                 p,
                 nearest_facet, nearest_point, sq_dist,
@@ -287,6 +303,55 @@ namespace GEO {
             bbox_intersect_recursive(action, box, node_r, m, e);
         }
         
+        /**
+         * @brief computes all the pairs of intersecting facets
+         *  for two sub-trees of the AABB tree.
+         *
+         * Note that the tree structure is completely implicit,
+         *  therefore the bounds of the (continuous) facet indices
+         *  sequences that correspond to the facets contained
+         *  in the two nodes are sent as well as the node indices.
+         *
+         * @param action ACTION::operator(index_t) is
+         *   invoked of all pairs of facets that have overlapping
+         *   bounding boxes.
+         * @param box   input box to test
+         * @param node  index of the node of the AABB tree
+         * @param b     index of the facet in node1
+         * @param e     one position past the index of the last facet in node1
+         */
+        void bbox_intersect_recursive(
+            std::vector< index_t >& results,
+            const Box& box,
+            index_t node,
+            index_t b,
+            index_t e ) const
+        {
+            geo_debug_assert( e != b ) ;
+
+            // The acceleration is here:
+            if( !bboxes_overlap( box, bboxes_[ node ] ) ) {
+                return ;
+            }
+
+            // Simple case: leaf - leaf intersection.
+            if( b + 1 == e ) {
+                results.push_back( b ) ;
+                return ;
+            }
+
+            // If node2 has more facets than node1, then
+            //   intersect node2's two children with node1
+            // else
+            //   intersect node1's two children with node2
+
+            index_t m = b + ( e - b ) / 2 ;
+            index_t node_l = 2 * node ;
+            index_t node_r = 2 * node + 1 ;
+            bbox_intersect_recursive( results, box, node_l, b, m ) ;
+            bbox_intersect_recursive( results, box, node_r, m, e ) ;
+        }
+
         /**
          * \brief Computes all the pairs of intersecting facets
          *  for two sub-trees of the AABB tree.
