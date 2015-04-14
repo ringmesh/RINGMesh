@@ -12,4 +12,4 @@ syntax: regexp
 ^src/third_party/geogram/CMakeOptions\.txt$
 
 syntax: regexp
-^tests/bin$
+^src/ringmesh/mesh_control\.cpp$
