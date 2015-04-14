@@ -69,11 +69,14 @@ DetectInter::~DetectInter() {
 }
 
 void DetectInter::operator()(index_t idx) {
+	mm_.vertices.vertex(idx);
+//	mm_.cells.tet_id();
 
 //	idx = mm_.cells.cell_index_in_mesh(idx, cur_reg_);
 	if (idx > cur_cell_ || cur_reg_ != cur_reg2_) {
+//		std::cout << "cur_cell " << cur_cell_ << " idx " << idx << std::endl;
 
-		// TODO simpler
+// TODO simpler
 //		const vec3& v0 = mm_.vertices.vertex(idx);
 		vec3& v1 = mm_.mesh(cur_reg_).vertices.point(
 				mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 0));
@@ -86,56 +89,69 @@ void DetectInter::operator()(index_t idx) {
 
 		vec3& v1_2 = mm_.mesh(cur_reg2_).vertices.point(
 				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 0));
-		vec3 v2_2 = mm_.mesh(cur_reg2_).vertices.point(
+		vec3& v2_2 = mm_.mesh(cur_reg2_).vertices.point(
 				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 1));
-		vec3 v3_2 = mm_.mesh(cur_reg2_).vertices.point(
+		vec3& v3_2 = mm_.mesh(cur_reg2_).vertices.point(
 				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 2));
-		vec3 v4_2 = mm_.mesh(cur_reg2_).vertices.point(
+		vec3& v4_2 = mm_.mesh(cur_reg2_).vertices.point(
 				mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 2, 2));
 
-		if (Utils::point_inside_tetra(v1_2, v1, v2, v3, v4)
-				|| Utils::point_inside_tetra(v2_2, v1, v2, v3, v4)
-				|| Utils::point_inside_tetra(v3_2, v1, v2, v3, v4)
-				|| Utils::point_inside_tetra(v4_2, v1, v2, v3, v4)) {
+		if ((Utils::point_inside_tetra(v1_2, v1, v2, v3, v4) && v1_2 != v1
+				&& v1_2 != v2 && v1_2 != v3 && v1_2 != v4)
+				|| (Utils::point_inside_tetra(v2_2, v1, v2, v3, v4)
+						&& v2_2 != v1 && v2_2 != v2 && v2_2 != v3 && v2_2 != v4)
+				|| (Utils::point_inside_tetra(v3_2, v1, v2, v3, v4)
+						&& v3_2 != v1 && v3_2 != v2 && v3_2 != v3 && v3_2 != v4)
+				|| (Utils::point_inside_tetra(v4_2, v1, v2, v3, v4)
+						&& v4_2 != v1 && v4_2 != v2 && v4_2 != v3 && v4_2 != v4)) {
 			++nb_inter_;
 			std::cout << "intersection region:cell " << cur_reg_ << ":"
 					<< cur_cell_ << " " << cur_reg2_ << ":" << idx << std::endl;
 		}
+
+//		if ((Utils::point_inside_tetra(v1_2, v1, v2, v3, v4))
+//				&& cur_reg_ == 1) {
+//			std::cout << "intersection 1 region:cell " << cur_reg_ << ":"
+//					<< cur_cell_ << " " << cur_reg2_ << ":" << idx << std::endl;
+//		}
+//		if ((Utils::point_inside_tetra(v2_2, v1, v2, v3, v4))
+//				&& cur_reg_ == 1) {
+//			std::cout << "intersection 2 region:cell " << cur_reg_ << ":"
+//					<< cur_cell_ << " " << cur_reg2_ << ":" << idx << std::endl;
+//		}
+//		if ((Utils::point_inside_tetra(v3_2, v1, v2, v3, v4))
+//				&& cur_reg_ == 1) {
+//			std::cout << "intersection 3 region:cell " << cur_reg_ << ":"
+//					<< cur_cell_ << " " << cur_reg2_ << ":" << idx << std::endl;
+//		}
+//		if ((Utils::point_inside_tetra(v4_2, v1, v2, v3, v4))
+//				&& cur_reg_ == 1) {
+//			std::cout << "intersection 4 region:cell " << cur_reg_ << ":"
+//					<< cur_cell_ << " " << cur_reg2_ << ":" << idx << std::endl;
+//		}
 	}
 }
 
 index_t DetectInter::detect_mesh_intersection() {
 //	for (index_t c = 0; c < mm_.cells.nb_cells(); c++) {
+//	std::cout << "nb mesh " << mm_.nb_meshes() << std::endl;
 	for (index_t m = 0; m < mm_.nb_meshes(); m++) {
 		cur_reg_ = m;
 		for (index_t c = 0; c < mm_.mesh(m).cells.nb(); c++) {
+			cur_cell_ = c;
 
 			// Get the bbox of c
 			Box box;
 			get_tet_bbox(mm_.mesh(m), box, c);
 
-			for (index_t reg_idx = cur_reg_; reg_idx < mm_.nb_meshes(); reg_idx++) {
+			for (index_t reg_idx = cur_reg_; reg_idx < mm_.nb_meshes();
+					reg_idx++) {
 				cur_reg2_ = reg_idx;
-				mm_.tools.tet_aabb(reg_idx).compute_bbox_cell_bbox_intersections(
+				mm_.tools.tet_aabb(cur_reg_).compute_bbox_cell_bbox_intersections(
 						box, *this);
 			}
 		}
 	}
-
-//	for (index_t reg_idx = 0; reg_idx < nb_reg; reg_idx++) {
-//		cur_reg_ = reg_idx;
-//		for (index_t reg_idx2 = cur_reg_; reg_idx2 < nb_reg; reg_idx2++) {
-//			cur_reg2_ = reg_idx2;
-//			for (index_t c = 0; c < mm_.mesh(cur_reg_).cells.nb(); c++) {
-//				cur_cell_ = c;
-//				Box box;
-//				get_tet_bbox(mm_.mesh(cur_reg_), box, cur_cell_);
-//
-//				mm_.tools.tet_aabb(cur_reg2_).compute_bbox_cell_bbox_intersections(
-//						box, *this);
-//			}
-//		}
-//	}
 
 	return nb_inter_;
 }
