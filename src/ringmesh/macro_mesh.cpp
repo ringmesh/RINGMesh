@@ -1072,7 +1072,9 @@ namespace RINGMesh {
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
                     &model_.region( i ), add_steiner_points, vertices,
                     well_vertices( i ) ) ;
+                GEO::Logger::instance()->set_quiet( true ) ;
                 tetragen->tetrahedralize() ;
+                GEO::Logger::instance()->set_quiet( false ) ;
                 progress.next() ;
             }
         } else {
@@ -1082,7 +1084,9 @@ namespace RINGMesh {
             TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
                 &model_.region( region_id ), add_steiner_points, vertices,
                 well_vertices( region_id ) ) ;
+            GEO::Logger::instance()->set_quiet( true ) ;
             tetragen->tetrahedralize() ;
+            GEO::Logger::instance()->set_quiet( false ) ;
         }
     }
 
