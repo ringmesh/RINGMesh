@@ -201,8 +201,6 @@ namespace RINGMesh {
         friend class BoundaryModelBuilder ;
 
     public:
-        typedef GEO::AttributesManager VertexAttributeManager ;
-
         const static index_t NO_ID = index_t( - 1 ) ;
 
         /*!
@@ -341,7 +339,7 @@ namespace RINGMesh {
 
         const BoundaryModelElement& universe() const { return universe_ ; }
 
-        VertexAttributeManager& vertex_attribute_manager()
+        GEO::AttributesManager& vertex_attribute_manager()
         {
             return vertices.attribute_manager() ;
         }

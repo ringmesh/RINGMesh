@@ -25,6 +25,7 @@
 #include <sstream>
 #include <stack>
 #include <algorithm>
+#include <cstring>
 
 namespace RINGMesh {
 
@@ -449,6 +450,37 @@ namespace RINGMesh {
             }
         }
     }
+
+    /*!
+     * Compares the contains of two files
+     * @param[in] f1 the first filename
+     * @param[in] f2 the second filename
+     * @return return True if the files are identical
+     */
+    bool Utils::compare_file( const std::string& f1, const std::string& f2 )
+    {
+        const unsigned int MAX_LINE_LEN = 65535 ;
+
+        std::ifstream lFile( f1.c_str() ) ;
+        std::ifstream rFile( f2.c_str() ) ;
+
+        char* lBuffer = new char[MAX_LINE_LEN]() ;
+        char* rBuffer = new char[MAX_LINE_LEN]() ;
+
+        do {
+            lFile.read( lBuffer, MAX_LINE_LEN ) ;
+            rFile.read( rBuffer, MAX_LINE_LEN ) ;
+            unsigned int numberOfRead = lFile.gcount() ;
+
+            if( std::memcmp( lBuffer, rBuffer, numberOfRead ) != 0 ) {
+                delete[] lBuffer ;
+                delete[] rBuffer ;
+                return false ;
+            }
+        } while( lFile.good() || rFile.good() ) ;
+        return true ;
+    }
+
 
     /*!
      * Computes the intersection(s) between a circle and a plane

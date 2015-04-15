@@ -320,6 +320,7 @@ namespace RINGMesh {
     } ;
     class RINGMESH_API Utils {
     public:
+        static bool compare_file( const std::string& f1, const std::string& f2 ) ;
 
         static index_t get_nearest_vertex_index(
             const GEO::Mesh& mesh,
