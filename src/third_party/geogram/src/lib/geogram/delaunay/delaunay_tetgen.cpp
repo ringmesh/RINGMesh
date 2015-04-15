@@ -102,7 +102,9 @@ namespace GEO {
         tetgen_in_.numberofpoints = (int)nb_vertices;
         tetgen_in_.pointlist = (double*)vertices;
         try {
-            GEO_3rdParty::tetrahedralize(&tetgen_args_, &tetgen_in_, &tetgen_out_);
+            GEO_3rdParty::tetrahedralize(
+                &tetgen_args_, &tetgen_in_, &tetgen_out_
+            );
         }
         catch(...) {
             Logger::err("DelaunayTetgen")
@@ -160,7 +162,7 @@ namespace GEO {
             if(CmdLine::get_arg_bool("dbg:tetgen")) {            
                 tetgen_args_.parse_commandline((char*)"VVpnO0YYAA");
             } else {
-                tetgen_args_.parse_commandline((char*)"QpnO0YYAA");                
+                tetgen_args_.parse_commandline((char*)"QpnO0YYAA");   
             }
         }
 
@@ -189,18 +191,18 @@ namespace GEO {
         // Copy edges constraints
         //
 
-        if(  constraints_->edges.nb() > 0 ) {
-        tetgen_in_.numberofedges = int(
-             constraints_->edges.nb()
-        );
-        tetgen_in_.edgelist = new int[
-            2*constraints_->edges.nb()
-        ];
-        Memory::copy(
-            &tetgen_in_.edgelist[0],
-            constraints_->edges.vertex_index_ptr(0),
-            2*constraints_->edges.nb()*sizeof(int)
-        );
+        if(constraints_->edges.nb() != 0) {
+            tetgen_in_.numberofedges = int(
+                constraints_->edges.nb()
+            );
+            tetgen_in_.edgelist = new int[
+                2*constraints_->edges.nb()
+            ];
+            Memory::copy(
+                &tetgen_in_.edgelist[0],
+                constraints_->edges.vertex_index_ptr(0),
+                2*constraints_->edges.nb()*sizeof(int)
+            );
         }
         
         //
