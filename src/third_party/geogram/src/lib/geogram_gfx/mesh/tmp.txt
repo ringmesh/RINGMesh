@@ -1,0 +1,96 @@
+
+    
+    /**
+     * \brief The vertex shader for points, 
+     *   in old ARBvp1.0 language.
+     * \details Has one uniform parameter that
+     *   needs to be set to [1.0/r, 0.0, 0.0, 0.0]
+     *   where r = max(width,height).
+     */
+    const char* points_vshader_ASM_source = 
+        "!!ARBvp1.0                                  "
+        "ATTRIB iPos        = vertex.position;       " 
+        "ATTRIB iCol        = vertex.color ;         "
+        "PARAM mvp[4]       = { state.matrix.mvp };  "
+        "PARAM point_size   = state.point.size ;     "
+        "PARAM screen_scale = program.local[0] ;     "
+        "PARAM zero         = {0, 0, 0, 0} ;         " 
+        "                                            "
+        "TEMP R0, R1 ;                               "
+        "                                            "
+        "OUTPUT oPos    = result.position;           " 
+        "OUTPUT oCol    = result.color ;             "
+        "OUTPUT oCenter = result.texcoord[0] ;       "
+        "OUTPUT oRadius = result.texcoord[1] ;       "
+        "OUTPUT oPtSize = result.pointsize ;         "
+        "                                            "
+        "DP4 R1.x, mvp[0], iPos;                     "
+        "DP4 R1.y, mvp[1], iPos;                     "
+        "DP4 R1.z, mvp[2], iPos;                     "
+        "DP4 R1.w, mvp[3], iPos;                     "
+        "RCP R0.x, R1.w;                             "
+        "MUL R0, R1, R0.x;                           "
+        "                                            " 
+        "MOV oPos,    R0;                            "
+        "MOV oCenter.xy, R0;                         "
+        "MOV oCenter.zw, zero ;                      "
+        "                                            "
+        "MUL R0.x, point_size.x, screen_scale.x ;    "
+        "MOV oPtSize.x, point_size.x ;               "
+        "                                            " 
+        "MOV oRadius.x, R0.x ;                       "
+        "MUL oRadius.y, R0.x, R0.x ;                 "
+        "RCP oRadius.z, R0.x ;                       " 
+        "                                            " 
+        "MOV oCol, iCol ;                            "
+        "                                            "
+        "END                                         "
+        ;
+
+    /**
+     * \brief The fragment shader for points, 
+     *   in old ARBvp1.0 language.
+     * \details Has two uniform parameters, that
+     *  need to be set as:
+     *  - [-width/2.0, -height/2.0, 0.0, 0.0]
+     *  - [-2.0/r, -2.0/r, 0.0, 0.0]
+     *   where r = max(width,height).
+     */
+    const char* points_fprogram_source = 
+        "!!ARBfp1.0                                "
+        "                                          "
+        "ATTRIB iPos    = fragment.position ;      "
+        "ATTRIB iCol    = fragment.color ;         " 
+        "                                          "
+        "ATTRIB iCenter = fragment.texcoord[0] ;   " 
+        "ATTRIB iRadius = fragment.texcoord[1] ;   "
+        "                                          "
+        "PARAM screen_offset = program.local[0] ;  "
+        "PARAM screen_scale  = program.local[1] ;  "
+        "                                          "
+        "TEMP R0, H0 ;                             "
+        "                                          "
+        "ADD R0, iPos, screen_offset ;             "
+        "MAD R0, screen_scale, R0, iCenter ;       "
+        "                                          "
+        "DP3 R0.z, R0, R0;                         "
+        "ADD R0.z, iRadius.y, -R0.z ;              "
+        "                                          "
+        "KIL R0.z ;                                "
+        "                                          "
+        "RSQ R0.z, R0.z;                           "
+        "RCP R0.z, R0.z;                           "
+        "                                          "
+        "MAD result.depth, R0.z, state.matrix.projection.row[2].z, fragment.position.z ; "
+        "                                          "
+        "MUL R0, R0, -iRadius.z ;                  "
+        
+        "MOV H0, state.light[0].position ; "
+        "MOV H0.z, -H0.z ; "
+        "DP3 R0.x, R0, H0; "
+        
+        "MUL result.color, R0.x, iCol ;            "
+        "MOV result.color.w, 1.0 ;            "
+        "                                          " 
+        "END                                       " ;
+    
