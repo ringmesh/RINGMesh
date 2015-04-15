@@ -134,6 +134,12 @@ namespace RINGMesh {
         //   |___/\___/\_,_|_||_\__,_\__,_|_|  \_, |_|  |_\___/\__,_\___|_|
         //                                     |__/
 
+		bool load( const char* filename, BoundaryModel& model )
+        {
+			std::string str_filename(filename);
+			return load(str_filename, model);
+		}
+
         /*!
          * Loads a BoundaryModel from a file
          * @param[in] filename the file to load
@@ -142,6 +148,10 @@ namespace RINGMesh {
          */
         bool load( const std::string& filename, BoundaryModel& model )
         {
+			std::ofstream toto;
+			toto.open ("C:\\Users\\Benjamin\\Desktop\\Code\\Plugins\\14\\RINGMesh2Go\\test.txt");
+			toto << "file name  :   " << filename << std::endl;
+			toto.close();
             GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
                 << std::endl ;
 
