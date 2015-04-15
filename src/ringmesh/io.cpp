@@ -2045,7 +2045,7 @@ namespace RINGMesh {
 
         /************************************************************************/
 
-        class GMSHIOHandler: public MacroMeshIOHandler {
+        class MSHIOHandler: public MacroMeshIOHandler {
         public:
             virtual bool load( const std::string& filename, MacroMesh& mesh )
             {
@@ -2087,7 +2087,7 @@ namespace RINGMesh {
                     const GEO::Mesh& mesh = mm.mesh( m ) ;
                     for( index_t t = 0; t < mm.cells.nb_tet( m ); t++ ) {
                         index_t cell_id = mm.cells.tet_id( m, t ) ;
-                        out << cur_cell++ << " 4 2 " << m +1 << SPACE << m +1 ;
+                        out << cur_cell++ << " 4 2 " << m << SPACE << m ;
                         for( index_t v = mesh.cells.corners_begin( cell_id );
                             v < mesh.cells.corners_end( cell_id ); v++ ) {
                             index_t vertex_id ;
@@ -2104,7 +2104,7 @@ namespace RINGMesh {
                     }
                     for( index_t p = 0; p < mm.cells.nb_pyramid( m ); p++ ) {
                         index_t cell_id = mm.cells.pyramid_id( m, p ) ;
-                        out << cur_cell++ << " 7 2 " << m +1 << SPACE << m +1 ;
+                        out << cur_cell++ << " 7 2 " << m << SPACE << m ;
                         for( index_t v = mesh.cells.corners_begin( cell_id );
                             v < mesh.cells.corners_end( cell_id ); v++ ) {
                             index_t vertex_id ;
@@ -2121,7 +2121,7 @@ namespace RINGMesh {
                     }
                     for( index_t p = 0; p < mm.cells.nb_prism( m ); p++ ) {
                         index_t cell_id = mm.cells.prism_id( m, p ) ;
-                        out << cur_cell++ << " 6 2 " << m +1 << SPACE << m +1 ;
+                        out << cur_cell++ << " 6 2 " << m << SPACE << m ;
                         for( index_t v = mesh.cells.corners_begin( cell_id );
                             v < mesh.cells.corners_end( cell_id ); v++ ) {
                             index_t vertex_id ;
@@ -2138,7 +2138,7 @@ namespace RINGMesh {
                     }
                     for( index_t h = 0; h < mm.cells.nb_hex( m ); h++ ) {
                         index_t cell_id = mm.cells.hex_id( m, h ) ;
-                        out << cur_cell++ << " 5 2 " << m +1 << SPACE << m +1 ;
+                        out << cur_cell++ << " 5 2 " << m << SPACE << m ;
                         for( index_t v = mesh.cells.corners_begin( cell_id );
                             v < mesh.cells.corners_end( cell_id ); v++ ) {
                             index_t vertex_id ;
@@ -2165,8 +2165,8 @@ namespace RINGMesh {
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                         for( index_t t = 0; t < mm.facets.nb_triangle( s_id ); t++ ) {
                             index_t facet_id = mm.facets.triangle_id( s_id, t ) ;
-                            out << cur_cell++ << " 2 2 " << offset_region + i +1 << SPACE
-                                << offset_region + offset_interface + s_id +1 ;
+                            out << cur_cell++ << " 2 2 " << offset_region + i << SPACE
+                                << offset_region + offset_interface + s_id ;
                             for( index_t v = 0; v < 3; v++ ) {
                                 index_t v_id = mesh.facets.vertex( facet_id, v ) ;
                                 out << SPACE << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
@@ -2175,8 +2175,8 @@ namespace RINGMesh {
                         }
                         for( index_t q = 0; q < mm.facets.nb_quad( s_id ); q++ ) {
                             index_t facet_id = mm.facets.quad_id( s_id, q ) ;
-                            out << cur_cell++ << " 3 2 " << offset_region + i +1 << SPACE
-                                << offset_region + offset_interface + s_id +1 ;
+                            out << cur_cell++ << " 3 2 " << offset_region + i << SPACE
+                                << offset_region + offset_interface + s_id ;
                             for( index_t v = 0; v < 4; v++ ) {
                                 index_t v_id = mesh.facets.vertex( facet_id, v ) ;
                                 out << SPACE << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
@@ -2221,7 +2221,7 @@ namespace RINGMesh {
             ringmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" );
             ringmesh_register_MacroMeshIOHandler_creator( VTKIOHandler, "vtk" );
             ringmesh_register_MacroMeshIOHandler_creator( GPRSIOHandler, "gprs" );
-            ringmesh_register_MacroMeshIOHandler_creator( GMSHIOHandler, "gmsh" );
+            ringmesh_register_MacroMeshIOHandler_creator( MSHIOHandler, "msh" );
 
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
                 format ) ;
