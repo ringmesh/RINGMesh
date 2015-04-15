@@ -41,32 +41,6 @@
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/io.h>
 
-#include <cstring>
-
-bool compare_file( const std::string& f1, const std::string& f2 )
-{
-    const unsigned int MAX_LINE_LEN = 65535 ;
-
-    std::ifstream lFile( f1.c_str() ) ;
-    std::ifstream rFile( f2.c_str() ) ;
-
-    char* lBuffer = new char[MAX_LINE_LEN]() ;
-    char* rBuffer = new char[MAX_LINE_LEN]() ;
-
-    do {
-        lFile.read( lBuffer, MAX_LINE_LEN ) ;
-        rFile.read( rBuffer, MAX_LINE_LEN ) ;
-        unsigned int numberOfRead = lFile.gcount() ;
-
-        if( std::memcmp( lBuffer, rBuffer, numberOfRead ) != 0 ) {
-            delete[] lBuffer ;
-            delete[] rBuffer ;
-            return false ;
-        }
-    } while( lFile.good() || rFile.good() ) ;
-    return true ;
-}
-
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
@@ -81,7 +55,7 @@ int main( int argc, char** argv )
     RINGMeshIO::load( "out.bm", in2 ) ;
     RINGMeshIO::save( in2, "out2.bm" ) ;
 
-    bool res = compare_file( "out.bm", "out2.bm" ) ;
+    bool res = Utils::compare_file( "out.bm", "out2.bm" ) ;
     if( res )
         GEO::Logger::out("TEST") << "SUCCES" << std::endl ;
     else
