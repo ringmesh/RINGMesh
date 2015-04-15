@@ -134,11 +134,20 @@ namespace RINGMesh {
         //   |___/\___/\_,_|_||_\__,_\__,_|_|  \_, |_|  |_\___/\__,_\___|_|
         //                                     |__/
 
-		bool load( const char* filename, BoundaryModel& model )
+        /*!
+         * Loads a BoundaryModel from a file. This function calls
+         * bool load( const char* filename, BoundaryModel& model ).
+         * char* is used instead of std::string to avoid a crash in Gocad
+         * which uses a different version of the std.
+         * @param[in] filename the file to load
+         * @param[out] model the model to fill
+         * @return returns the success of the operation
+         */
+        bool load( const char* filename, BoundaryModel& model )
         {
-			std::string str_filename(filename);
-			return load(str_filename, model);
-		}
+            const std::string str_filename(filename);
+            return load(str_filename, model);
+        }
 
         /*!
          * Loads a BoundaryModel from a file
@@ -148,10 +157,6 @@ namespace RINGMesh {
          */
         bool load( const std::string& filename, BoundaryModel& model )
         {
-			std::ofstream toto;
-			toto.open ("C:\\Users\\Benjamin\\Desktop\\Code\\Plugins\\14\\RINGMesh2Go\\test.txt");
-			toto << "file name  :   " << filename << std::endl;
-			toto.close();
             GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
                 << std::endl ;
 
@@ -281,6 +286,21 @@ namespace RINGMesh {
         //   | |\/| / _` / _| '_/ _ \ |\/| / -_|_-< ' \
         //   |_|  |_\__,_\__|_| \___/_|  |_\___/__/_||_|
         //
+
+        /*!
+         * Loads a MacroMesh from a file. This function calls
+         * bool load( const std::string& filename, MacroMesh& model ).
+         * char* is used instead of std::string to avoid a crash in Gocad
+         * which uses a different version of the std.
+         * @param[in] filename the file to load
+         * @param][out] model the mesh to fill
+         * @return returns the success of the operation
+         */
+        bool load( const char* filename, MacroMesh& model )
+        {
+            const std::string str_filename(filename);
+            return load(str_filename, model);
+        }
 
         /*!
          * Loads a MacroMesh from a file
