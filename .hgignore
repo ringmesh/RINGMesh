@@ -13,4 +13,4 @@ syntax: regexp
 syntax: regexp
 ^doc/ringmesh\.qch$
 syntax: regexp
-^tests/bin$
+^src/ringmesh/mesh_control\.cpp$

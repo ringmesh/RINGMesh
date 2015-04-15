@@ -1073,12 +1073,18 @@ namespace RINGMesh {
                     - vertices[tetra_descriptor.facet[f][0]],
                 vertices[tetra_descriptor.facet[f][2]]
                     - vertices[tetra_descriptor.facet[f][0]] ) ;
+            vec3 N2 = cross(
+				vertices[tetra_descriptor.facet[f][2]]
+					- vertices[tetra_descriptor.facet[f][1]],
+				vertices[tetra_descriptor.facet[f][0]]
+					- vertices[tetra_descriptor.facet[f][1]] ) ;
             vec3 n = p
                 - ( ( vertices[tetra_descriptor.facet[f][0]]
                     + vertices[tetra_descriptor.facet[f][1]]
                     + vertices[tetra_descriptor.facet[f][2]] ) / 3. ) ;
-            if( dot( N, n ) > 0 ) return false ;
+            if( dot( N, n ) > 0 || dot(N2, n) > 0 ) return false ;
         }
+
         return true ;
     }
 
