@@ -185,6 +185,13 @@ namespace RINGMesh {
         index_t nb_corners() const { return corners_.size() ;}
         index_t nb_parts() const { return parts_.size() ;}
 
+        index_t nb_vertices() const ;
+        std::vector< vec3 > all_vertices() const ;
+        std::vector< double > all_resolutions() const ;
+
+        index_t global_point_id(index_t part_id, index_t point_id) const;
+        index_t global_corner_id(index_t corner_id) const;
+
         void set_name( const std::string& name ) { name_ = name ;}
         const std::string& name() const { return name_ ;}
 

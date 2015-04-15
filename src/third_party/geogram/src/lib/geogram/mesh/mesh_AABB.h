@@ -180,6 +180,13 @@ namespace GEO {
             );
         }
         
+        void compute_bbox_intersections(
+            const Box& box,
+            std::vector< index_t >& results ) const
+        {
+            bbox_intersect_recursive( results, box, 1, 0, mesh_.facets.nb() ) ;
+        }
+
         /**
          * \brief Finds the nearest facet from an arbitrary 3d query point.
          * \param[in] p query point
@@ -296,6 +303,55 @@ namespace GEO {
             bbox_intersect_recursive(action, box, node_r, m, e);
         }
         
+        /**
+         * @brief computes all the pairs of intersecting facets
+         *  for two sub-trees of the AABB tree.
+         *
+         * Note that the tree structure is completely implicit,
+         *  therefore the bounds of the (continuous) facet indices
+         *  sequences that correspond to the facets contained
+         *  in the two nodes are sent as well as the node indices.
+         *
+         * @param action ACTION::operator(index_t) is
+         *   invoked of all pairs of facets that have overlapping
+         *   bounding boxes.
+         * @param box   input box to test
+         * @param node  index of the node of the AABB tree
+         * @param b     index of the facet in node1
+         * @param e     one position past the index of the last facet in node1
+         */
+        void bbox_intersect_recursive(
+            std::vector< index_t >& results,
+            const Box& box,
+            index_t node,
+            index_t b,
+            index_t e ) const
+        {
+            geo_debug_assert( e != b ) ;
+
+            // The acceleration is here:
+            if( !bboxes_overlap( box, bboxes_[ node ] ) ) {
+                return ;
+            }
+
+            // Simple case: leaf - leaf intersection.
+            if( b + 1 == e ) {
+                results.push_back( b ) ;
+                return ;
+            }
+
+            // If node2 has more facets than node1, then
+            //   intersect node2's two children with node1
+            // else
+            //   intersect node1's two children with node2
+
+            index_t m = b + ( e - b ) / 2 ;
+            index_t node_l = 2 * node ;
+            index_t node_r = 2 * node + 1 ;
+            bbox_intersect_recursive( results, box, node_l, b, m ) ;
+            bbox_intersect_recursive( results, box, node_r, m, e ) ;
+        }
+
         /**
          * \brief Computes all the pairs of intersecting facets
          *  for two sub-trees of the AABB tree.
