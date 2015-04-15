@@ -130,7 +130,7 @@ namespace RINGMesh {
         {
             ColocaterANN ann( corner_vertices ) ;
             for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                if( !is_surface_to_duplicate( s, mm_.duplicate_mode() ) ) continue ;
+                if( !is_surface_to_duplicate( s ) ) continue ;
                 surface_actions[s] = TO_PROCESS ;
                 const Surface& surface = model.surface( s ) ;
                 for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
@@ -275,18 +275,16 @@ namespace RINGMesh {
 
     /*!
      * Tests is the surface should be duplicate according the DuplicateMode
+     * in the MacroMesh
      * @param[in] surface_id id of the surface to test
-     * @param[in] mode current DuplicateMode
      * @return Returns true if the surface should be duplicated
      */
-    bool MacroMeshVertices::is_surface_to_duplicate(
-        index_t surface_id,
-        const DuplicateMode& mode ) const
+    bool MacroMeshVertices::is_surface_to_duplicate( index_t surface_id ) const
     {
         BoundaryModelElement::GEOL_FEATURE feature =
             mm_.model().surface( surface_id ).geological_feature() ;
-        if( mode == ALL && feature != BoundaryModelElement::VOI ) return true ;
-        if( mode == FAULT && feature == BoundaryModelElement::FAULT )
+        if( mm_.duplicate_mode() == ALL && feature != BoundaryModelElement::VOI ) return true ;
+        if( mm_.duplicate_mode() == FAULT && feature == BoundaryModelElement::FAULT )
             return true ;
 
         return false ;
