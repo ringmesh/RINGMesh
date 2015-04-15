@@ -13,6 +13,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/bin)
 add_test(test_io_ml)
 add_test(test_io_bm)
 add_test(test_intersection)
-add_test(test_make_unique)
 
 ENDIF()
