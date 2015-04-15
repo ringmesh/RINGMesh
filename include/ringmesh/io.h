@@ -58,10 +58,10 @@ namespace RINGMesh {
         //   |___/\___/\_,_|_||_\__,_\__,_|_|  \_, |_|  |_\___/\__,_\___|_|
         //                                     |__/
         bool RINGMESH_API load(
-			const char* filename,
-			BoundaryModel& model );
-		
-		bool RINGMESH_API load(
+            const char* filename,
+            BoundaryModel& model );
+
+        bool RINGMESH_API load(
             const std::string& filename,
             BoundaryModel& model ) ;
 
@@ -75,11 +75,11 @@ namespace RINGMesh {
         //   |_|  |_\__,_\__|_| \___/_|  |_\___/__/_||_|
         //
         
-		bool RINGMESH_API load(
-			const char* mesh_file,
-			MacroMesh& model );
+        bool RINGMESH_API load(
+            const char* mesh_file,
+            MacroMesh& model );
 
-		bool RINGMESH_API load(
+        bool RINGMESH_API load(
             const std::string& mesh_file,
             MacroMesh& mm ) ;
 
