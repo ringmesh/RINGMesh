@@ -256,7 +256,7 @@ namespace GEO {
          *  element creations.
          */
         virtual void clear(
-            bool keep_attributes=false, bool keep_memory=false
+            bool keep_attributes=true, bool keep_memory=false
         ) = 0;
 
         /**
@@ -340,7 +340,7 @@ namespace GEO {
         }
 
         virtual void clear(
-            bool keep_attributes=false, bool keep_memory=false
+            bool keep_attributes=true, bool keep_memory=false
         ) ;
 
         /**
@@ -671,7 +671,7 @@ namespace GEO {
         virtual void permute_elements(vector<index_t>& permutation);
 
         virtual void clear(
-            bool keep_attributes=false, bool keep_memory=false
+            bool keep_attributes=true, bool keep_memory=false
         );
 
         virtual void pop();
@@ -1039,7 +1039,7 @@ namespace GEO {
         virtual void permute_elements(vector<index_t>& permutation);
 
         virtual void clear(
-            bool keep_attributes=false, bool keep_memory=false
+            bool keep_attributes=true, bool keep_memory=false
         ) ;
 
         /**
@@ -1781,7 +1781,7 @@ namespace GEO {
         }
 
         virtual void clear(
-            bool keep_attributes=false, bool keep_memory=false
+            bool keep_attributes=true, bool keep_memory=false
         ) ;
         
         virtual void delete_elements(
@@ -2400,7 +2400,7 @@ namespace GEO {
          *  kept and can be reused by subsequent mesh
          *  element creations.
          */
-        void clear(bool keep_attributes=false, bool keep_memory=false);
+        void clear(bool keep_attributes=true, bool keep_memory=false);
 
         /**
          * \brief Displays number of vertices, facets and borders.
