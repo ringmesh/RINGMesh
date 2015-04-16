@@ -822,7 +822,7 @@ namespace {
      *  of length new_size
      */
     void update_buffer_object(
-        GLuint& buffer_id, GLenum target, size_t new_size, void* data
+        GLuint& buffer_id, GLenum target, size_t new_size, const void* data
     ) {
         if(new_size == 0) {
             if(buffer_id != 0) {
@@ -903,7 +903,7 @@ namespace GEO {
         
     }
 
-    void MeshGfx::set_mesh(Mesh* M) {
+    void MeshGfx::set_mesh(const Mesh* M) {
         delete_VBOs();
         clear_cell_draw_cache();
         triangles_and_quads_ = true;

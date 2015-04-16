@@ -110,9 +110,16 @@ NLuint nlSolve_CG() {
     for(i = 0 ; i < N ; ++i) {
         accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
     }
-    nlCurrentContext->error = sqrt(accu/b_square);
-    if(nlCurrentContext->verbose) {
-        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+    if(b_square == 0.0) {
+        nlCurrentContext->error = sqrt(accu);
+        if(nlCurrentContext->verbose) {
+            printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
+        }
+    } else {
+        nlCurrentContext->error = sqrt(accu/b_square);
+        if(nlCurrentContext->verbose) {
+            printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+        }
     }
     
     NL_DELETE_ARRAY(Ax);
@@ -175,10 +182,19 @@ NLuint nlSolve_CG_precond()  {
     for(i = 0 ; i < N ; ++i) {
         accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
     }
-    nlCurrentContext->error = sqrt(accu/b_square);
-    if(nlCurrentContext->verbose) {            
-        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+
+    if(b_square == 0.0) {
+        nlCurrentContext->error = sqrt(accu);
+        if(nlCurrentContext->verbose) {
+            printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
+        }
+    } else {
+        nlCurrentContext->error = sqrt(accu/b_square);
+        if(nlCurrentContext->verbose) {
+            printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+        }
     }
+    
     NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(r) ;
     NL_DELETE_ARRAY(d) ;
@@ -262,10 +278,19 @@ NLuint nlSolve_BICGSTAB() {
     for(i = 0 ; i < N ; ++i){
         accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
     }
-    nlCurrentContext->error = sqrt(accu/b_square);
-    if(nlCurrentContext->verbose) {        
-        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+
+    if(b_square == 0.0) {
+        nlCurrentContext->error = sqrt(accu);
+        if(nlCurrentContext->verbose) {
+            printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
+        }
+    } else {
+        nlCurrentContext->error = sqrt(accu/b_square);
+        if(nlCurrentContext->verbose) {
+            printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+        }
     }
+
     NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(r) ;
     NL_DELETE_ARRAY(rT) ;
@@ -358,10 +383,19 @@ NLuint nlSolve_BICGSTAB_precond() {
     for(i = 0 ; i < N ; ++i){
         accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
     }
-    nlCurrentContext->error=sqrt(accu/b_square);
-    if(nlCurrentContext->verbose) {            
-        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+
+    if(b_square == 0.0) {
+        nlCurrentContext->error = sqrt(accu);
+        if(nlCurrentContext->verbose) {
+            printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
+        }
+    } else {
+        nlCurrentContext->error = sqrt(accu/b_square);
+        if(nlCurrentContext->verbose) {
+            printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+        }
     }
+
     NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(r);
     NL_DELETE_ARRAY(rT);
@@ -470,10 +504,19 @@ NLuint nlSolve_GMRES() {
     for(i = 0 ; i < n ; ++i) {
         accu+=(Ax[i]-b[i])*(Ax[i]-b[i]);
     }
-    nlCurrentContext->error = sqrt(accu)/nrm2b;
-    if(nlCurrentContext->verbose)    {
-        printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+
+    if(nrm2b == 0.0) {
+        nlCurrentContext->error = sqrt(accu);
+        if(nlCurrentContext->verbose) {
+            printf("in OpenNL : ||Ax-b|| = %e\n",nlCurrentContext->error);
+        }
+    } else {
+        nlCurrentContext->error = sqrt(accu/nrm2b);
+        if(nlCurrentContext->verbose) {
+            printf("in OpenNL : ||Ax-b||/||b|| = %e\n",nlCurrentContext->error);
+        }
     }
+
     NL_DELETE_ARRAY(Ax);
     NL_DELETE_ARRAY(V) ;
     NL_DELETE_ARRAY(U) ;

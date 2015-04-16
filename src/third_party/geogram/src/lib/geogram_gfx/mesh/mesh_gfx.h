@@ -470,13 +470,13 @@ namespace GEO {
          * \param[in] M a pointer to the mesh that should be
          *  displayed.
          */
-        void set_mesh(Mesh* M);
+        void set_mesh(const Mesh* M);
 
         /**
          * \brief Gets the mesh
          * \return a pointer to the mesh that will be displayed.
          */
-        Mesh* mesh() const {
+        const Mesh* mesh() const {
             return mesh_;
         }
         
@@ -653,7 +653,7 @@ namespace GEO {
 
         
     protected:
-        Mesh* mesh_;
+        const Mesh* mesh_;
         
         GLuint     vertices_VBO_;
         GLuint     edge_indices_VBO_;
