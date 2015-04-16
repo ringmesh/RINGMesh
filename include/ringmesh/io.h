@@ -40,21 +40,13 @@
 
 #ifndef __RINGMESH_IO__
 #define __RINGMESH_IO__
-#ifdef WIN32
-    #ifdef RINGMESH_EXPORTS
-    #    define DECLSPECIFIER __declspec(dllexport)
-    #    define EXPIMP_TEMPLATE
-    #else
-    #    define DECLSPECIFIER __declspec(dllimport)
-    #    define EXPIMP_TEMPLATE extern
-    #endif
-    #endif
-#include <string>
-EXPIMP_TEMPLATE template class DECLSPECIFIER std::basic_string<char>;
+
 
 #include <ringmesh/common.h>
 
 #include <geogram/basic/factory.h>
+
+EXPIMP_TEMPLATE template class RINGMESH_API std::basic_string<char>;
 
 namespace RINGMesh {
     class BoundaryModel ;
