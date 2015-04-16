@@ -229,8 +229,7 @@ namespace RINGMesh {
                 }
 
                 BoundaryModelBuilderBM builder( model ) ;
-                builder.load_file( filename ) ;
-                return true ;
+                return builder.load_file( filename ) ;
             }
 
             virtual bool save( BoundaryModel& model, const std::string& filename )
