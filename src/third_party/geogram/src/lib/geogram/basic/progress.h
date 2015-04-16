@@ -179,7 +179,10 @@ namespace GEO {
          * \return a pointer the current ProgressTask if any or a null pointer
          * if there's no current task.
          */
-        const ProgressTask* GEOGRAM_API current_task();
+        // Note: MSVC does not want to declare it with GEOGRAM_API linkage
+        // (generates a syntax error, I do not understand why, so GEOGRAM_API
+        //  is commented-out for now).
+        const ProgressTask* /* GEOGRAM_API */ current_task();
 
         /**
          * \brief Cancels the current task
