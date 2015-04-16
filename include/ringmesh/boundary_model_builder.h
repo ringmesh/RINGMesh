@@ -63,6 +63,7 @@ namespace RINGMesh {
 
         // High level functions
         void copy_macro_topology( const BoundaryModel& from ) ;
+        void copy_meshes( const BoundaryModel& from ) ;
 
         // Set model attributes
         void set_model_name( const std::string& name )
