@@ -439,8 +439,8 @@ namespace RINGMesh {
         }
         /*! @}
          */ 
-        const GEO::Mesh& mesh() const {
-            return mesh_;
+        GEO::Mesh& mesh() const {
+            return const_cast< GEO::Mesh& >( mesh_ ) ;
         }
 
     protected :
