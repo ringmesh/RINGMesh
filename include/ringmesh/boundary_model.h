@@ -215,6 +215,8 @@ namespace RINGMesh {
          */
         virtual ~BoundaryModel() ;
 
+        void copy( const BoundaryModel& from ) ;
+
         /*!
          * @brief Name of the model
          */ 

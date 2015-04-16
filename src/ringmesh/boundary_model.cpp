@@ -409,6 +409,16 @@ namespace RINGMesh {
         return result ;
     }
 
+    /*!
+     * Copies a BoundaryModel in another one
+     * @param[in] from BoundaryModel to copy
+     */
+    void BoundaryModel::copy( const BoundaryModel& from )
+    {
+        BoundaryModelBuilder builder( *this ) ;
+        builder.copy_macro_topology( from ) ;
+        builder.copy_meshes( from ) ;
+    }
 
     /*!
      * @brief Returns the index of the region neighboring the surface.
