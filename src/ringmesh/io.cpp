@@ -2086,11 +2086,13 @@ namespace RINGMesh {
                 index_t offset_region = mm.nb_meshes() ;
                 index_t offset_interface = model.nb_interfaces() * 2 ; // one for each side
                 index_t nb_facets = 0 ;
+                std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
                 for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
                     if( mm.vertices.is_surface_to_duplicate( s ) )
                         nb_facets += 2*mm.facets.nb_facets( s ) ;
                     else
                         nb_facets += mm.facets.nb_facets( s ) ;
+                    anns[s] = new ColocaterANN( model.surface( s ), ColocaterANN::FACETS ) ;
                 }
                 out << "$Elements" << std::endl ;
                 out << mm.cells.nb_cells() + nb_facets << std::endl ;
@@ -2099,7 +2101,15 @@ namespace RINGMesh {
                     const GEO::Mesh& mesh = mm.mesh( m ) ;
                     GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
                         surface_att_name ) ;
-                    ColocaterANN ann( mesh, ColocaterANN::FACETS ) ;
+                    const BoundaryModelElement& region = model.region( m ) ;
+                    std::vector< index_t > surfaces ;
+                    surfaces.reserve( region.nb_boundaries() ) ;
+                    for( index_t b = 0; b < region.nb_boundaries(); b++ ) {
+                        index_t cur_s_id = region.boundary_id( b ).index ;
+                        if( !mm.vertices.is_surface_to_duplicate( cur_s_id ) )
+                            continue ;
+                        surfaces.push_back( cur_s_id ) ;
+                    }
                     for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                         out << cur_cell++ << " " << cell_type[mesh.cells.type( c )]
                             << " 2 " << m << SPACE << m ;
@@ -2118,43 +2128,50 @@ namespace RINGMesh {
                         out << std::endl ;
 
                         for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
-                            std::vector< index_t > result ;
-                            if( ann.get_colocated(
-                                Geom::mesh_cell_facet_center( mesh, c, f ),
-                                result ) ) {
-                                index_t surface_id = attribute[result[0]] ;
-                                if( !mm.vertices.is_surface_to_duplicate(
-                                    surface_id ) ) continue ;
-                                vec3 facet_normal = GEO::Geom::mesh_facet_normal(
-                                    mesh, result[0] ) ;
-                                vec3 cell_facet_normal =
-                                    Geom::mesh_cell_facet_normal( mesh, c, f ) ;
-                                bool side = dot( facet_normal, cell_facet_normal ) > 0 ;
-                                out << cur_cell++ << " "
-                                    << facet_type[mesh.cells.facet_nb_vertices( c,
-                                        f )] << " 2 "
-                                    << offset_region
-                                        + 2
-                                            * model.surface( surface_id ).parent_id().index
-                                        + side << SPACE
-                                    << offset_region + offset_interface
-                                        + surface_id ;
-                                for( index_t v = 0;
-                                    v < mesh.cells.facet_nb_vertices( c, f ); v++ ) {
-                                    index_t corner_id =
-                                        mesh.cells.corner( c,
-                                            mesh.cells.descriptor( c ).facet_vertex[f][v] ) ;
-                                    index_t vertex_id ;
-                                    index_t duplicated_vertex_id ;
-                                    out << SPACE ;
-                                    if( mm.vertices.vertex_id( m, corner_id, vertex_id,
-                                        duplicated_vertex_id ) ) {
-                                        out << vertex_id + 1 ;
-                                    } else {
-                                        out << vertex_offset + duplicated_vertex_id + 1 ;
+                            vec3 facet_bary = Geom::mesh_cell_facet_center( mesh, c,
+                                f ) ;
+                            vec3 cell_facet_normal = Geom::mesh_cell_facet_normal(
+                                mesh, c, f ) ;
+                            for( index_t s = 0; s < surfaces.size(); s++ ) {
+                                index_t surface_id = surfaces[s] ;
+                                std::vector< index_t > result ;
+                                if( anns[surface_id]->get_colocated( facet_bary,
+                                    result ) ) {
+                                    vec3 facet_normal =
+                                        model.surface( surface_id ).facet_normal(
+                                            result[0] ) ;
+                                    bool side = dot( facet_normal,
+                                        cell_facet_normal ) > 0 ;
+                                    out << cur_cell++ << " "
+                                        << facet_type[mesh.cells.facet_nb_vertices(
+                                            c, f )] << " 2 "
+                                        << offset_region
+                                            + 2
+                                                * model.surface( surface_id ).parent_id().index
+                                            + side << SPACE
+                                        << offset_region + offset_interface
+                                            + 2 * surface_id + side ;
+                                    for( index_t v = 0;
+                                        v < mesh.cells.facet_nb_vertices( c, f );
+                                        v++ ) {
+                                        index_t corner_id =
+                                            mesh.cells.corner( c,
+                                                mesh.cells.descriptor( c ).facet_vertex[f][v] ) ;
+                                        index_t vertex_id ;
+                                        index_t duplicated_vertex_id ;
+                                        out << SPACE ;
+                                        if( mm.vertices.vertex_id( m, corner_id,
+                                            vertex_id, duplicated_vertex_id ) ) {
+                                            out << vertex_id + 1 ;
+                                        } else {
+                                            out
+                                                << vertex_offset
+                                                    + duplicated_vertex_id + 1 ;
+                                        }
                                     }
+                                    out << std::endl ;
+                                    break ;
                                 }
-                                out << std::endl ;
                             }
                         }
                     }
@@ -2172,7 +2189,7 @@ namespace RINGMesh {
                             out << cur_cell++ << SPACE
                                 << facet_type[mesh.facets.nb_vertices( facet_id )]
                                 << " 2 " << offset_region + 2 * i << SPACE
-                                << offset_region + offset_interface + s_id ;
+                                << offset_region + offset_interface + 2 * s_id ;
                             for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id ); v++ ) {
                                 index_t v_id = mesh.facets.vertex( facet_id, v ) ;
                                 out << SPACE << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
@@ -2188,18 +2205,38 @@ namespace RINGMesh {
                     oss_kine << filename << "_info" ;
                     std::ofstream kine3d( oss_kine.str().c_str() ) ;
                     for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                        kine3d << offset_region + i + 1 << ":"
-                            << model.one_interface( i ).name() << ",1," ;
+                        const BoundaryModelElement& interf = model.one_interface( i ) ;
+                        index_t s_id = interf.child_id( 0 ).index ;
+                        kine3d << offset_region + 2 * i << ":" << interf.name()
+                            << ",1," ;
                         const RINGMesh::BoundaryModelElement::GEOL_FEATURE feature =
                             model.one_interface( i ).geological_feature() ;
                         if( feature == RINGMesh::BoundaryModelElement::FAULT ) {
                             kine3d << "FaultFeatureClass" ;
-                        } else if( feature == RINGMesh::BoundaryModelElement::STRATI ) {
+                        } else if( feature
+                            == RINGMesh::BoundaryModelElement::STRATI ) {
                             kine3d << "HorizonFeatureClass" ;
-                        } else if( feature == RINGMesh::BoundaryModelElement::VOI ) {
+                        } else if( feature
+                            == RINGMesh::BoundaryModelElement::VOI ) {
                             kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
                         }
                         kine3d << std::endl ;
+                        if( mm.vertices.is_surface_to_duplicate( s_id ) ) {
+                            kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
+                                << ",0," ;
+                            const RINGMesh::BoundaryModelElement::GEOL_FEATURE feature =
+                                model.one_interface( i ).geological_feature() ;
+                            if( feature == RINGMesh::BoundaryModelElement::FAULT ) {
+                                kine3d << "FaultFeatureClass" ;
+                            } else if( feature
+                                == RINGMesh::BoundaryModelElement::STRATI ) {
+                                kine3d << "HorizonFeatureClass" ;
+                            } else if( feature
+                                == RINGMesh::BoundaryModelElement::VOI ) {
+                                kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
+                            }
+                            kine3d << std::endl ;
+                        }
                     }
                 }
                 return true ;
