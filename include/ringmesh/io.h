@@ -40,6 +40,17 @@
 
 #ifndef __RINGMESH_IO__
 #define __RINGMESH_IO__
+#ifdef WIN32
+    #ifdef RINGMESH_EXPORTS
+    #    define DECLSPECIFIER __declspec(dllexport)
+    #    define EXPIMP_TEMPLATE
+    #else
+    #    define DECLSPECIFIER __declspec(dllimport)
+    #    define EXPIMP_TEMPLATE extern
+    #endif
+    #endif
+#include <string>
+EXPIMP_TEMPLATE template class DECLSPECIFIER std::basic_string<char>;
 
 #include <ringmesh/common.h>
 
@@ -57,9 +68,6 @@ namespace RINGMesh {
         //   | _ \/ _ \ || | ' \/ _` / _` | '_| || | |\/| / _ \/ _` / -_) |
         //   |___/\___/\_,_|_||_\__,_\__,_|_|  \_, |_|  |_\___/\__,_\___|_|
         //                                     |__/
-        bool RINGMESH_API load(
-            const char* filename,
-            BoundaryModel& model );
 
         bool RINGMESH_API load(
             const std::string& filename,
@@ -74,10 +82,6 @@ namespace RINGMesh {
         //   | |\/| / _` / _| '_/ _ \ |\/| / -_|_-< ' \
         //   |_|  |_\__,_\__|_| \___/_|  |_\___/__/_||_|
         //
-        
-        bool RINGMESH_API load(
-            const char* mesh_file,
-            MacroMesh& model );
 
         bool RINGMESH_API load(
             const std::string& mesh_file,
