@@ -410,6 +410,20 @@ namespace RINGMesh {
         return NO_ID ;
     }
 
+    /*!
+     * Binds member attributes
+     */
+    void BoundaryModelMeshElement::bind_attributes()
+    {
+        model_vertex_id_.bind( mesh_.vertices.attributes(), model_vertex_id_att_name ) ;
+    }
+    /*!
+     * Unbinds member attributes
+     */
+    void BoundaryModelMeshElement::unbind_attributes()
+    {
+        model_vertex_id_.unbind() ;
+    }
 
     /*!
      * @brief Set the index of the matching point in the BoundaryModel
