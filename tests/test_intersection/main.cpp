@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 			<< " regions" << std::endl;
 
 	MacroMesh macro_mesh(boundary_model);
-	RINGMeshIO::load("../data/noTouch5.mm", macro_mesh);
+	RINGMeshIO::load("../data/noTouch2Hex.mm", macro_mesh);
 
 	GEO::Logger::div(" Control mesh quality ");
 
@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
 //	macro_mesh.mesh(1).vertices.point(macro_mesh.mesh(1).cells.facet_vertex(0, 0, 0)).z = -1;
 
 	GEO::Logger::out("Mesh control") << "test" << std::endl;
+	GEO::Logger::out("Mesh control") << macro_mesh.cells.nb_cells() << std::endl;
 	DetectInter inters(macro_mesh);
 	GEO::Logger::out("Mesh control") << inters.detect_mesh_intersection()
 			<< " intersections" << std::endl;
