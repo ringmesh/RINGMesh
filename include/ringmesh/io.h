@@ -46,7 +46,6 @@
 
 #include <geogram/basic/factory.h>
 
-EXPIMP_TEMPLATE template class RINGMESH_API std::basic_string<char>;
 
 namespace RINGMesh {
     class BoundaryModel ;
