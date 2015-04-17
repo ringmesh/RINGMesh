@@ -379,7 +379,7 @@ namespace RINGMesh {
         {
             model_vertex_id_.bind( mesh_.vertices.attributes(), model_vertex_id_att_name ) ;
         }
-        virtual ~BoundaryModelMeshElement() {} ;
+        virtual ~BoundaryModelMeshElement() ;
         
         /*!
          * @brief Returns the number of edges or facets of the mesh
