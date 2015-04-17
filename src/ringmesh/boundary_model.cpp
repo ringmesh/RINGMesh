@@ -702,6 +702,11 @@ namespace RINGMesh {
                 }
 
                 for( index_t k = 0; k < sp.nb_cells(); ++k ) {
+                    if( sp.nb_vertices_in_facet( k ) != 3 ) {
+                        GEO::Logger::err( "I/O" ) << "Model is not triangulated"
+                            << std::endl ;
+                        return false ;
+                    }
                     out << "TRGL " << sp.surf_vertex_id( k, 0 ) + offset << " "
                         << sp.surf_vertex_id( k, 1 ) + offset << " "
                         << sp.surf_vertex_id( k, 2 ) + offset << std::endl ;

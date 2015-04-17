@@ -142,15 +142,21 @@ namespace RINGMesh {
     {
 #pragma omp parallel for
         for( index_t i = 0; i < model_.nb_corners(); i++ ) {
+            model_.corners_[i]->unbind_attributes() ;
             model_.corners_[i]->mesh().copy( from.corner( i ).mesh() ) ;
+            model_.corners_[i]->bind_attributes() ;
         }
 #pragma omp parallel for
         for( index_t i = 0; i < model_.nb_lines(); i++ ) {
+            model_.lines_[i]->unbind_attributes() ;
             model_.lines_[i]->mesh().copy( from.line( i ).mesh() ) ;
+            model_.lines_[i]->bind_attributes() ;
         }
 #pragma omp parallel for
         for( index_t i = 0; i < model_.nb_surfaces(); i++ ) {
+            model_.surfaces_[i]->unbind_attributes() ;
             model_.surfaces_[i]->mesh().copy( from.surface( i ).mesh() ) ;
+            model_.surfaces_[i]->bind_attributes() ;
         }
     }
 
