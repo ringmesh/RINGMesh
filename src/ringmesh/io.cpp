@@ -229,8 +229,7 @@ namespace RINGMesh {
                 }
 
                 BoundaryModelBuilderBM builder( model ) ;
-                builder.load_file( filename ) ;
-                return true ;
+                return builder.load_file( filename ) ;
             }
 
             virtual bool save( BoundaryModel& model, const std::string& filename )
@@ -2200,9 +2199,11 @@ namespace RINGMesh {
                 }
                 out << "$EndElements" << std::endl ;
 
-                if( GEO::CmdLine::get_arg_bool( "kine3D" ) ) {
+                if( GEO::CmdLine::get_arg_bool( "out:kine3d" ) ) {
+                    std::string directory = GEO::FileSystem::dir_name( filename ) ;
+                    std::string file = GEO::FileSystem::base_name( filename ) ;
                     std::ostringstream oss_kine ;
-                    oss_kine << filename << "_info" ;
+                    oss_kine << directory << "/" << file << ".gmsh_info" ;
                     std::ofstream kine3d( oss_kine.str().c_str() ) ;
                     for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                         const BoundaryModelElement& interf = model.one_interface( i ) ;

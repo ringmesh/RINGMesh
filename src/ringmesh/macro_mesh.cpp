@@ -1050,6 +1050,9 @@ namespace RINGMesh {
     MacroMesh::~MacroMesh()
     {
         for( unsigned int r = 0; r < model_.nb_regions(); r++ ) {
+#ifdef RINGMESH_DEBUG
+            Utils::print_bounded_attributes( *meshes_[r] ) ;
+#endif
             delete meshes_[r] ;
         }
     }
