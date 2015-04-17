@@ -55,7 +55,6 @@
   #    endif
 #else
   #   define RINGMESH_API
-  #	  define EXPIMP_TEMPLATE
 #endif
 
 #ifndef NDEBUG
