@@ -443,7 +443,7 @@ namespace GEO {
 /****************************************************************************/
 
     MeshCellsAABB::MeshCellsAABB(Mesh& M, bool reorder) : mesh_(M) {
-        geo_assert(mesh_.cells.are_simplices());
+//        geo_assert(mesh_.cells.are_simplices());
         if(reorder) {
             mesh_reorder(mesh_, MESH_ORDER_MORTON);
         }

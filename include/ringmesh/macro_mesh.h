@@ -100,6 +100,7 @@ namespace RINGMesh {
         index_t nb_duplicated_vertices() const ;
         index_t nb_total_vertices() const ;
 
+        bool is_surface_to_duplicate( index_t s ) const ;
 
     private:
         enum SurfaceAction {
@@ -110,9 +111,6 @@ namespace RINGMesh {
         void initialize() ;
         void initialize_duplication() ;
 
-        bool is_surface_to_duplicate(
-            index_t s,
-            const DuplicateMode& mode ) const ;
         bool duplicate_corner(
             const std::set< surface_side >& surfaces,
             std::vector< SurfaceAction >& info ) ;

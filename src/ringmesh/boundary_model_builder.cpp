@@ -133,6 +133,34 @@ namespace RINGMesh {
     }
 
     /*!
+     * @brief Copy meshes from a model
+     * @details Copy the all the element meshes
+     *
+     * @param[in] from Model to copy the meshes from
+     */
+    void BoundaryModelBuilder::copy_meshes( const BoundaryModel& from )
+    {
+#pragma omp parallel for
+        for( index_t i = 0; i < model_.nb_corners(); i++ ) {
+            model_.corners_[i]->unbind_attributes() ;
+            model_.corners_[i]->mesh().copy( from.corner( i ).mesh() ) ;
+            model_.corners_[i]->bind_attributes() ;
+        }
+#pragma omp parallel for
+        for( index_t i = 0; i < model_.nb_lines(); i++ ) {
+            model_.lines_[i]->unbind_attributes() ;
+            model_.lines_[i]->mesh().copy( from.line( i ).mesh() ) ;
+            model_.lines_[i]->bind_attributes() ;
+        }
+#pragma omp parallel for
+        for( index_t i = 0; i < model_.nb_surfaces(); i++ ) {
+            model_.surfaces_[i]->unbind_attributes() ;
+            model_.surfaces_[i]->mesh().copy( from.surface( i ).mesh() ) ;
+            model_.surfaces_[i]->bind_attributes() ;
+        }
+    }
+
+    /*!
      * @brief Update the indices stored by each element of the model \
      * according to its actual position in the corresponding vector in the model
      */

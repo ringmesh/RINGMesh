@@ -41,9 +41,12 @@
 #ifndef __RINGMESH_IO__
 #define __RINGMESH_IO__
 
+
 #include <ringmesh/common.h>
 
 #include <geogram/basic/factory.h>
+
+EXPIMP_TEMPLATE template class RINGMESH_API std::basic_string<char>;
 
 namespace RINGMesh {
     class BoundaryModel ;
@@ -57,6 +60,7 @@ namespace RINGMesh {
         //   | _ \/ _ \ || | ' \/ _` / _` | '_| || | |\/| / _ \/ _` / -_) |
         //   |___/\___/\_,_|_||_\__,_\__,_|_|  \_, |_|  |_\___/\__,_\___|_|
         //                                     |__/
+
         bool RINGMESH_API load(
             const std::string& filename,
             BoundaryModel& model ) ;
@@ -70,6 +74,7 @@ namespace RINGMesh {
         //   | |\/| / _` / _| '_/ _ \ |\/| / -_|_-< ' \
         //   |_|  |_\__,_\__|_| \___/_|  |_\___/__/_||_|
         //
+
         bool RINGMESH_API load(
             const std::string& mesh_file,
             MacroMesh& mm ) ;

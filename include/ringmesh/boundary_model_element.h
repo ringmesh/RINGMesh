@@ -362,6 +362,7 @@ namespace RINGMesh {
     const static BoundaryModelElement dummy_BME ;
     const static BoundaryModelElement::bme_t dummy_bme_type ;
 
+    const static std::string model_vertex_id_att_name = std::string( "model_vertex_id" ) ;
 
     /*!
      * @brief A BoundaryModelElement that has a geometrical representation
@@ -376,9 +377,9 @@ namespace RINGMesh {
             index_t id = NO_ID ) 
             : BoundaryModelElement( model, element_type, id ) 
         {
-            model_vertex_id_.bind( mesh_.vertices.attributes(), "model_vertex_id" ) ;         
+            model_vertex_id_.bind( mesh_.vertices.attributes(), model_vertex_id_att_name ) ;
         }
-        virtual ~BoundaryModelMeshElement() {} ;
+        virtual ~BoundaryModelMeshElement() ;
         
         /*!
          * @brief Returns the number of edges or facets of the mesh
@@ -439,8 +440,10 @@ namespace RINGMesh {
         }
         /*! @}
          */ 
-        const GEO::Mesh& mesh() const {
-            return mesh_;
+        void bind_attributes() ;
+        void unbind_attributes() ;
+        GEO::Mesh& mesh() const {
+            return const_cast< GEO::Mesh& >( mesh_ ) ;
         }
 
     protected :
