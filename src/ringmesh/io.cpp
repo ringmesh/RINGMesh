@@ -81,7 +81,7 @@ namespace RINGMesh {
             zipOpenNewFileInZip( zf, name.c_str(), &zfi,
             NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
             zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size ) ;
-            zipCloseFileInZip( file ) ;
+            zipCloseFileInZip( &file ) ;
             file.close() ;
         }
 
