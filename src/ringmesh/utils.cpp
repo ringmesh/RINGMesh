@@ -451,6 +451,172 @@ namespace RINGMesh {
         }
     }
 
+    void Utils::print_bounded_attributes( const GEO::Mesh& M )
+    {
+        {
+            GEO::vector< std::string > names ;
+            M.vertices.attributes().list_attribute_names( names ) ;
+            if( !names.empty() ) {
+                std::vector< bool > is_bounded( names.size(), false ) ;
+                bool failed = false ;
+                for( index_t a = 0; a < names.size(); a++ ) {
+                    if( names[a] == "point" ) continue ;
+                    is_bounded[a] =
+                        M.vertices.attributes().find_attribute_store(
+                            names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
+                }
+                if( failed ) {
+                    GEO::Logger::err( "Attributes" ) << "Attributes still bounded on vertices:" ;
+                    for( index_t a = 0; a < names.size(); a++ ) {
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                        }
+                    }
+                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                }
+            }
+        }
+        {
+            GEO::vector< std::string > names ;
+            M.edges.attributes().list_attribute_names( names ) ;
+            if( !names.empty() ) {
+                std::vector< bool > is_bounded( names.size() ) ;
+                bool failed = false ;
+                for( index_t a = 0; a < names.size(); a++ ) {
+                    is_bounded[a] =
+                        M.edges.attributes().find_attribute_store(
+                            names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
+                }
+                if( failed ) {
+                    GEO::Logger::err( "Attributes" ) << "Attributes still bounded on edges:" ;
+                    for( index_t a = 0; a < names.size(); a++ ) {
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                        }
+                    }
+                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                }
+            }
+        }
+        {
+            GEO::vector< std::string > names ;
+            M.facets.attributes().list_attribute_names( names ) ;
+            if( !names.empty() ) {
+                std::vector< bool > is_bounded( names.size() ) ;
+                bool failed = false ;
+                for( index_t a = 0; a < names.size(); a++ ) {
+                    is_bounded[a] =
+                        M.facets.attributes().find_attribute_store(
+                            names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
+                }
+                if( failed ) {
+                    GEO::Logger::err( "Attributes" ) << "Attributes still bounded on facets:" ;
+                    for( index_t a = 0; a < names.size(); a++ ) {
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                        }
+                    }
+                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                }
+            }
+        }
+        {
+            GEO::vector< std::string > names ;
+            M.facet_corners.attributes().list_attribute_names( names ) ;
+            if( !names.empty() ) {
+                std::vector< bool > is_bounded( names.size() ) ;
+                bool failed = false ;
+                for( index_t a = 0; a < names.size(); a++ ) {
+                    is_bounded[a] =
+                        M.facet_corners.attributes().find_attribute_store(
+                            names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
+                }
+                if( failed ) {
+                    GEO::Logger::err( "Attributes" ) << "Attributes still bounded on facet_corners:" ;
+                    for( index_t a = 0; a < names.size(); a++ ) {
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                        }
+                    }
+                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                }
+            }
+        }
+        {
+            GEO::vector< std::string > names ;
+            M.cells.attributes().list_attribute_names( names ) ;
+            if( !names.empty() ) {
+                std::vector< bool > is_bounded( names.size() ) ;
+                bool failed = false ;
+                for( index_t a = 0; a < names.size(); a++ ) {
+                    is_bounded[a] =
+                        M.cells.attributes().find_attribute_store(
+                            names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
+                }
+                if( failed ) {
+                    GEO::Logger::err( "Attributes" ) << "Attributes still bounded on cells:" ;
+                    for( index_t a = 0; a < names.size(); a++ ) {
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                        }
+                    }
+                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                }
+            }
+        }
+        {
+            GEO::vector< std::string > names ;
+            M.cell_corners.attributes().list_attribute_names( names ) ;
+            if( !names.empty() ) {
+                std::vector< bool > is_bounded( names.size() ) ;
+                bool failed = false ;
+                for( index_t a = 0; a < names.size(); a++ ) {
+                    is_bounded[a] =
+                        M.cell_corners.attributes().find_attribute_store(
+                            names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
+                }
+                if( failed ) {
+                    GEO::Logger::err( "Attributes" ) << "Attributes still bounded on cell_corners:" ;
+                    for( index_t a = 0; a < names.size(); a++ ) {
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                        }
+                    }
+                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                }
+            }
+        }
+        {
+            GEO::vector< std::string > names ;
+            M.cell_facets.attributes().list_attribute_names( names ) ;
+            if( !names.empty() ) {
+                std::vector< bool > is_bounded( names.size() ) ;
+                bool failed = false ;
+                for( index_t a = 0; a < names.size(); a++ ) {
+                    is_bounded[a] =
+                        M.cell_facets.attributes().find_attribute_store(
+                            names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
+                }
+                if( failed ) {
+                    GEO::Logger::err( "Attributes" ) << "Attributes still bounded on cell_facets:" ;
+                    for( index_t a = 0; a < names.size(); a++ ) {
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                        }
+                    }
+                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                }
+            }
+        }
+    }
+
     /*!
      * Compares the contains of two files
      * @param[in] f1 the first filename
