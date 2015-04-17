@@ -387,6 +387,15 @@ namespace RINGMesh {
 
     /*********************************************************************/
 
+
+    BoundaryModelMeshElement::~BoundaryModelMeshElement()
+    {
+        unbind_attributes() ;
+#ifdef RINGMESH_DEBUG
+            Utils::print_bounded_attributes( mesh_ ) ;
+#endif
+    }
+
     /*!
      * @brief Returns the index of the first point that correspond to a model vertex
      * @details Uses the attribute on the BoundaryModelVertices that stores the
