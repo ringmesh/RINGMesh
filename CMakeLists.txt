@@ -8,16 +8,6 @@ set(RINGMESH_PROJECT RINGMesh)
 project(${RINGMESH_PROJECT})
 
 
-function(aux_source_directories var folder)
-    set(sources)
-    foreach(dir ${ARGN})
-        file(GLOB _sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.[ch]" "${dir}/*.[ch]pp")
-        list(APPEND sources ${_sources})
-    endforeach()
-    source_group(${folder} FILES ${sources})
-    set(${var} ${${var}} ${sources} PARENT_SCOPE)
-endfunction()
-
 ##############################################################################
 # Options
 IF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
@@ -32,13 +22,27 @@ AUX_SOURCE_DIRECTORY(src/ringmesh SOURCES)
 AUX_SOURCE_DIRECTORY(src/third_party/zlib SOURCES)
 INCLUDE_DIRECTORIES(include)
 
+
+function(aux_source_directories var folder)
+    set(sources)
+    foreach(dir ${ARGN})
+        file(GLOB _sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.[ch]" "${dir}/*.[ch]pp")
+        list(APPEND sources ${_sources})
+    endforeach()
+    source_group(${folder} FILES ${sources})
+    set(${var} ${${var}} ${sources} PARENT_SCOPE)
+endfunction()
+
+IF(WIN32)
+    aux_source_directories(SOURCES "Header Files" include/ringmesh)
+ENDIF(WIN32)
 ##############################################################################
 # Geogram
 INCLUDE_DIRECTORIES(src/third_party/geogram/src/lib)
 IF(WIN32)
     ADD_DEFINITIONS(-DRINGMESH_EXPORTS)
 	ADD_DEFINITIONS(-DGEO_DYNAMIC_LIBS)
-    aux_source_directories(SOURCES "Header Files" include/ringmesh)
+
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}/lib/${CMAKE_BUILD_TYPE})
 ELSE(WIN32)
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
