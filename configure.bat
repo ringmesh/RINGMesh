@@ -37,7 +37,7 @@ rem The available platforms can be found in RINGMesh\src\third_party\geogram\cma
 rem For CMake > 3, the year of the compiler should be provided : "Visual Studio 10 2010 Win64"
 if %GENERATOR%=="Visual Studio 10 2010 Win64" (
 	set opsys=Win64-vs2010
-) else if %GENERATOR%=="Visual Studio 2010 Win64" (
+) else if %GENERATOR%=="Visual Studio 10 Win64" (
 	set opsys=Win64-vs2010
 ) else if %GENERATOR%=="Visual Studio 11 2012 Win64" (
 	set opsys=Win64-vs2012
