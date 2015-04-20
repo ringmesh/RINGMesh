@@ -133,6 +133,7 @@ namespace GEO {
          * \param[in] reorder if not set, Morton re-ordering is
          *  skipped (but it means that mesh_reorder() was previously
          *  called else the algorithm will be pretty unefficient).
+         * \pre M.facets.are_simplices()
          */
         MeshFacetsAABB(Mesh& M, bool reorder = true);
 
