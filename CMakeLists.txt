@@ -18,6 +18,7 @@ function(aux_source_directories var folder)
     set(${var} ${${var}} ${sources} PARENT_SCOPE)
 endfunction()
 
+##############################################################################
 # Options
 IF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
    MESSAGE(INFO: "Using local options file: " .${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
@@ -25,12 +26,13 @@ IF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
 ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
 
 
-
+##############################################################################
 # Files
 AUX_SOURCE_DIRECTORY(src/ringmesh SOURCES)
 AUX_SOURCE_DIRECTORY(src/third_party/zlib SOURCES)
 INCLUDE_DIRECTORIES(include)
 
+##############################################################################
 # Geogram
 INCLUDE_DIRECTORIES(src/third_party/geogram/src/lib)
 IF(WIN32)
@@ -42,6 +44,7 @@ ELSE(WIN32)
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
 ENDIF(WIN32)
 
+##############################################################################
 # MG-Tetra
 IF(NOT DEFINED USE_MG_TETRA)
   SET(USE_MG_TETRA FALSE)
@@ -72,7 +75,7 @@ IF(${USE_MG_TETRA})
   ENDIF(WIN32)
 ENDIF(${USE_MG_TETRA})
 
-
+##############################################################################
 #To use OpenMP 
 IF(WIN32) 
        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4996 /MP")
@@ -87,14 +90,21 @@ IF(UNIX)
     SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 ENDIF(UNIX)
 
-# Output library
-SET(LIBRARY_OUTPUT_PATH lib)
+
+##############################################################################
+# Build configuration
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
 add_library(${RINGMESH_PROJECT} SHARED ${SOURCES})
 target_link_libraries(${RINGMESH_PROJECT} geogram)
 
-# Additional link libraries
+##############################################################################
+# Additional optional link libraries
 IF(${USE_MG_TETRA})
-  TARGET_LINK_LIBRARIES(${RINGMESH_PROJECT} meshgems mg-tetra)
+  target_link_libraries(${RINGMESH_PROJECT} meshgems mg-tetra)
 ENDIF(${USE_MG_TETRA})
 
 IF(WIN32)
