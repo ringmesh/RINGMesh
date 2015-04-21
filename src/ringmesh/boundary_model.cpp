@@ -817,7 +817,7 @@ namespace RINGMesh {
      * \todo Make this function const
      *
      */
-    void BoundaryModel::save_as_eobj_file( const std::string& file_name )
+    void BoundaryModel::save_as_eobj_file( const std::string& file_name ) const
     {
         std::ofstream out ;
         out.open( file_name.c_str() ) ;
@@ -980,7 +980,7 @@ namespace RINGMesh {
     /*!
      * @brief Save the BoundaryModel into a dedicated format bm
      */
-    void BoundaryModel::save_bm_file( const std::string& file_name )
+    void BoundaryModel::save_bm_file( const std::string& file_name ) const
     {
         std::ofstream out ;
         out.open( file_name.c_str() ) ;
@@ -1122,6 +1122,56 @@ namespace RINGMesh {
                 out << std::endl ;
             }
         }
+    }
+
+
+    /*!
+     * \brief Save the model in smesh format
+     * \details No attributes and no boundary marker are transferred
+     */
+    void BoundaryModel::save_smesh_file( const std::string& file_name ) const 
+    {
+        std::ofstream out;
+        out.open(file_name.c_str());
+        if (out.bad()) {
+            std::cout << "Error when opening the file: " << file_name.c_str() <<
+                std::endl;
+            return;
+        }
+        out.precision(16);
+
+        /// 1. Write the unique vertices
+        out << "# Node list" << std::endl;
+        out << "# node count, 3 dim, no attribute, no boundary marker" << std::endl;
+        out << vertices.nb_unique_vertices() << " 3 0 0" << std::endl;
+        out << "# node index, node coordinates " << std::endl;
+        for (index_t p = 0; p < vertices.nb_unique_vertices(); p++){
+            const vec3& V = vertices.unique_vertex(p);
+            out << p << " "
+                << " " << V.x
+                << " " << V.y
+                << " " << V.z
+                << std::endl;
+        }
+
+        /// 2. Write the triangles 
+        out << "# Part 2 - facet list" << std::endl;
+        out << "# facet count, no boundary marker" << std::endl;
+        out << nb_facets() << "  0 " << std::endl;
+
+        for (index_t i = 0; i < nb_surfaces(); ++i) {
+            const Surface& S = surface(i);
+            for (index_t f = 0; f < S.nb_cells(); f++){
+                out << S.nb_vertices_in_facet(f) << " ";
+                for (index_t v = 0; v < S.nb_vertices_in_facet(f); v++){
+                    out << S.model_vertex_id( f, v ) << " ";
+                }
+                out << std::endl;
+            }
+        }
+
+        // Do not forget the stupid zeros at the end of the file 
+        out << std::endl << "0" << std::endl << "0" << std::endl;
     }
 
     signed_index_t BoundaryModel::find_interface( const std::string& name) const {
