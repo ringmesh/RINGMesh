@@ -195,20 +195,20 @@ namespace RINGMesh {
              Corner& C = const_cast< Corner& >( bm_.corner( c ) ) ;
              C.set_model_vertex_id( old2new[index++] ) ;
              // I am crazy paranoid - Jeanne
-             ringmesh_debug_assert( C.vertex() == unique_vertex( old2new[index-1] ) ) ;
+             ringmesh_debug_assert( length2( C.vertex() - unique_vertex( old2new[index-1] ) ) < epsilon_sq ) ;
         }
         for( index_t l = 0; l < nb_lines; l++ ) {
             Line& L = const_cast< Line& >( bm_.line( l ) ) ;
             for( index_t v = 0; v < L.nb_vertices(); v++ ) {
                 L.set_model_vertex_id( v, old2new[index++] ) ;                
-                ringmesh_debug_assert( L.vertex(v) == unique_vertex( old2new[index-1] ) ) ;
+                ringmesh_debug_assert( length2( L.vertex(v) - unique_vertex( old2new[index-1] ) ) < epsilon_sq ) ;
             }
         }
         for( index_t s = 0; s < nb_surfaces; s++ ) {
             Surface& S = const_cast< Surface& >( bm_.surface( s ) ) ;
             for( index_t v = 0; v < S.nb_vertices(); v++ ) {
                 S.set_model_vertex_id( v, old2new[index++] ) ;
-                ringmesh_debug_assert( S.vertex(v) == unique_vertex( old2new[index-1] ) ) ;
+                ringmesh_debug_assert( length2( S.vertex(v) - unique_vertex( old2new[index-1] ) ) < epsilon_sq ) ;
             }
         }
 
