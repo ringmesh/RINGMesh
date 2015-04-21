@@ -64,6 +64,8 @@ Export
  - BoundaryModel
   - .bm: homemade format
   - .ml: Model3D format for Gocad/Skua
+  - .obj: surface mesh format
+  - .smesh: Tetgen native surface mesh format
  - MacroMesh
   - .csmp: CSMP++ format (export 3 files: .asc, .dat, -regions.txt)
   - .gmsh: Gmsh format (can also export additional information for Kine3D)
