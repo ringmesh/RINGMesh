@@ -282,6 +282,38 @@ namespace RINGMesh {
             nj_ = nj ;
             rows_ = new Row[ni] ;
         }
+                
+        /*!
+         *  get the value of e-element (index within the row, not in the matrix) on line i.
+         *  this code should never be reached.
+         * @param[in] i row index
+         * @param[in] e index within the row
+         * @param[out] value to retrieve
+         * */
+        void get_element_in_line( index_t i, index_t e, T& value ) const
+        {
+            ringmesh_assert_not_reached ;
+        }
+
+        void product_matrix_by_vector(
+        const std::vector< T >& mat2,
+        std::vector< T >& result ) const
+    {
+        ringmesh_debug_assert( nj() == mat2.size() ) ;
+
+#pragma omp parallel for
+        for( index_t i = 0; i < ni(); ++i ) {
+            ringmesh_debug_assert( i >= 0 && i < result.size() ) ;
+            result[i] = 0. ;
+            for( index_t e = 0; e < get_nb_elements_in_line( i ); ++e ) {
+                index_t j = get_column_in_line( i, e ) ;
+                T i_j_result ;
+                get_element_in_line( i, e, i_j_result ) ;
+                i_j_result *= mat2[j] ;
+                result[i] += i_j_result ;
+            }
+        }
+    }
 
     protected:
         Row* rows_ ;
@@ -441,26 +473,7 @@ namespace RINGMesh {
         std::deque< T > values_ ;
     } ;
 
-    template< class T >
-    void product_matrix_by_vector(
-        const SparseMatrix< T >& mat1,
-        const std::vector< T >& mat2,
-        std::vector< T >& result )
-    {
-        ringmesh_debug_assert( mat1.nj() == mat2.size() ) ;
 
-#pragma omp parallel for
-        for( index_t i = 0; i < mat1.ni(); ++i ) {
-            ringmesh_debug_assert( i >= 0 && i < result.size() ) ;
-            result[i] = 0. ;
-            for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
-                index_t j = mat1.get_column_in_line( i, e ) ;
-                T i_j_result ;
-                mat1.get_element_in_line( i, e, i_j_result ) ;
-                i_j_result *= mat2[j] ;
-                result[i] += i_j_result ;
-            }
-        }
-    }
+    
 }
 #endif
