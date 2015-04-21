@@ -979,6 +979,12 @@ namespace GEO {
         vector<index_t>& to_delete,
         bool remove_isolated_vertices
     ) {
+        std::ofstream type_in( "type_in.txt" ) ;
+        std::ofstream debug( "debug.txt" ) ;
+        for( index_t i = 0; i < nb(); i++ ) {
+            type_in << type(i) << std::endl ;
+            debug << to_delete[i] << std::endl ;
+        }
         // "Fast track" if no element should be deleted
         if(!has_non_zero(to_delete)) {
             if(remove_isolated_vertices) {
@@ -1013,8 +1019,10 @@ namespace GEO {
                 cells_old2new[c] = NO_CELL;
             } else {
                 cells_old2new[c] = new_nb_cells;
+
                 if(!is_simplicial_) {
                     cell_ptr_[new_nb_cells] = new_nb_corner_facets;
+                    cell_type_[new_nb_cells] = cell_type_[c];
                 }
 
                 index_t b,e;
@@ -1070,6 +1078,11 @@ namespace GEO {
         
         if(remove_isolated_vertices) {
             mesh_.vertices.remove_isolated();
+        }
+
+        std::ofstream type_out( "type_out.txt" ) ;
+        for( index_t i = 0; i < nb(); i++ ) {
+            type_out << type(i) << std::endl ;
         }
     }
         
