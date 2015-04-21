@@ -1239,6 +1239,11 @@ namespace GEO {
         glMaterialfv(GL_FRONT, GL_DIFFUSE, colors_[name]);        
         glMaterialfv(GL_BACK, GL_DIFFUSE, back_colors_[name]);
         glColor3f(colors_[name][0], colors_[name][1], colors_[name][2]);
+        if(name == PRG_TET){
+            std::cout << "color for PRG tet : r   " << colors_[name][0] << std::endl;
+            std::cout << "color for PRG tet : v   " << colors_[name][1] << std::endl;
+            std::cout << "color for PRG tet : b   " << colors_[name][2] << std::endl;
+        }
     }
     
     void MeshGfx::begin_shader(ShaderName name) {
@@ -1743,6 +1748,7 @@ namespace GEO {
     }
 
     void MeshGfx::draw_cells() {
+        std::cout << "MeshGfx::draw_cells" << std::endl;
         begin_draw(MESH_CELLS);
 
         glCullFace(GL_FRONT);

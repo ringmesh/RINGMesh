@@ -2111,7 +2111,7 @@ namespace RINGMesh {
                     }
                     for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                         out << cur_cell++ << " " << cell_type[mesh.cells.type( c )]
-                            << " 2 " << m << SPACE << m ;
+                            << " 2 " << m + 1 << SPACE << m ;
                         for( index_t v = mesh.cells.corners_begin( c );
                             v < mesh.cells.corners_end( c ); v++ ) {
                             index_t vertex_id ;
@@ -2147,7 +2147,7 @@ namespace RINGMesh {
                                         << offset_region
                                             + 2
                                                 * model.surface( surface_id ).parent_id().index
-                                            + side << SPACE
+                                            + side + 1 << SPACE
                                         << offset_region + offset_interface
                                             + 2 * surface_id + side ;
                                     for( index_t v = 0;
@@ -2187,7 +2187,7 @@ namespace RINGMesh {
                             index_t facet_id = mm.facets.facet( s_id, t ) ;
                             out << cur_cell++ << SPACE
                                 << facet_type[mesh.facets.nb_vertices( facet_id )]
-                                << " 2 " << offset_region + 2 * i << SPACE
+                                << " 2 " << offset_region + 2 * i + 1 << SPACE
                                 << offset_region + offset_interface + 2 * s_id ;
                             for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id ); v++ ) {
                                 index_t v_id = mesh.facets.vertex( facet_id, v ) ;
