@@ -30,14 +30,14 @@ find_path(RINGMesh_INCLUDE_DIR
 
 find_library(RINGMesh_LIBRARY_REL 
 	NAMES "RINGMesh"
-	PATH_SUFFIXES "lib" "build/ringmesh/Linux64-gcc-Release/lib" "build/ringmesh/Win64-vs2012/lib/Release"
+	PATH_SUFFIXES "lib" "build/ringmesh/Linux64-gcc-Release/lib" "build/ringmesh/Win64-vs2010/lib/Release"
 	PATHS ${RINGMesh_PREFIX_PATH}
 )
 
 
 find_library(RINGMesh_LIBRARY_DBG  
 	NAMES "RINGMesh"
-	PATH_SUFFIXES "lib" "build/ringmesh/Linux64-gcc-Debug/lib" "build/ringmesh/Win64-vs2012/lib/Debug"
+	PATH_SUFFIXES "lib" "build/ringmesh/Linux64-gcc-Debug/lib" "build/ringmesh/Win64-vs2010/lib/Debug"
 	PATHS ${RINGMesh_PREFIX_PATH}
 )
 
