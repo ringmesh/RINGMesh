@@ -102,6 +102,8 @@ namespace RINGMesh {
 
         bool is_surface_to_duplicate( index_t s ) const ;
 
+        void clear() ;
+
     private:
         enum SurfaceAction {
             SKIP = - 2, TO_PROCESS = - 1, NEG_SIDE = 0, POS_SIDE = 1
@@ -156,6 +158,8 @@ namespace RINGMesh {
         index_t nb_quad() const ;
         index_t nb_quad( index_t s ) const ;
         index_t quad_id( index_t s, index_t q ) const ;
+
+        void clear() ;
 
     private:
         /*!
@@ -251,6 +255,8 @@ namespace RINGMesh {
         index_t nb_hex() const ;
         index_t nb_hex( index_t r ) const ;
         index_t hex_id( index_t r, index_t h ) const ;
+
+        void clear() ;
 
     private:
         /*!
