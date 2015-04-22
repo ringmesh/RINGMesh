@@ -51,6 +51,7 @@ EXPIMP_TEMPLATE template class RINGMESH_API std::basic_string<char>;
 namespace RINGMesh {
     class BoundaryModel ;
     class MacroMesh ;
+    class WellGroup ;
 }
 
 namespace RINGMesh {
@@ -83,11 +84,23 @@ namespace RINGMesh {
             const MacroMesh& mm,
             const std::string& filename ) ;
 
-        class RINGMESH_API BoundaryModelIOHandler : public GEO::Counted {
-    public:
+        //   __      __   _ _  ___
+        //   \ \    / /__| | |/ __|_ _ ___ _  _ _ __
+        //    \ \/\/ / -_) | | (_ | '_/ _ \ || | '_ \
+        //     \_/\_/\___|_|_|\___|_| \___/\_,_| .__/
+        //                                     |_|
+
+        bool RINGMESH_API load(
+            const std::string& mesh_file,
+            WellGroup& wells ) ;
+
+
+        class RINGMESH_API BoundaryModelIOHandler: public GEO::Counted {
+        public:
             static BoundaryModelIOHandler* create( const std::string& format ) ;
 
-            static BoundaryModelIOHandler* get_handler( const std::string& filename ) ;
+            static BoundaryModelIOHandler* get_handler(
+                const std::string& filename ) ;
 
             virtual bool load(
                 const std::string& filename,
@@ -97,7 +110,7 @@ namespace RINGMesh {
                 BoundaryModel& model,
                 const std::string& filename ) = 0 ;
 
-    protected:
+        protected:
             BoundaryModelIOHandler()
             {
             }
@@ -107,28 +120,24 @@ namespace RINGMesh {
             }
         } ;
 
-        typedef GEO::SmartPointer< BoundaryModelIOHandler >
-        BoundaryModelIOHandler_var ;
-        typedef GEO::Factory0< BoundaryModelIOHandler >
-        BoundaryModelIOHandlerFactory ;
+        typedef GEO::SmartPointer< BoundaryModelIOHandler > BoundaryModelIOHandler_var ;
+        typedef GEO::Factory0< BoundaryModelIOHandler > BoundaryModelIOHandlerFactory ;
 #define ringmesh_register_BoundaryModelIOHandler_creator( type, name ) \
     geo_register_creator( BoundaryModelIOHandlerFactory, type, name )
 
-        class RINGMESH_API MacroMeshIOHandler : public GEO::Counted {
-    public:
+        class RINGMESH_API MacroMeshIOHandler: public GEO::Counted {
+        public:
             static MacroMeshIOHandler* create( const std::string& format ) ;
 
             static MacroMeshIOHandler* get_handler( const std::string& filename ) ;
 
-            virtual bool load(
-                const std::string& filename,
-                MacroMesh& mesh ) = 0 ;
+            virtual bool load( const std::string& filename, MacroMesh& mesh ) = 0 ;
 
             virtual bool save(
                 const MacroMesh& mesh,
                 const std::string& filename ) = 0 ;
 
-    protected:
+        protected:
             MacroMeshIOHandler()
             {
             }
@@ -142,6 +151,33 @@ namespace RINGMesh {
         typedef GEO::Factory0< MacroMeshIOHandler > MacroMeshIOHandlerFactory ;
 #define ringmesh_register_MacroMeshIOHandler_creator( type, name ) \
     geo_register_creator( MacroMeshIOHandlerFactory, type, name )
+
+        class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
+        public:
+            static WellGroupIOHandler* create( const std::string& format ) ;
+
+            static WellGroupIOHandler* get_handler( const std::string& filename ) ;
+
+            virtual bool load( const std::string& filename, WellGroup& mesh ) = 0 ;
+
+            virtual bool save(
+                const WellGroup& mesh,
+                const std::string& filename ) = 0 ;
+
+        protected:
+            WellGroupIOHandler()
+            {
+            }
+
+            virtual ~WellGroupIOHandler()
+            {
+            }
+        } ;
+
+        typedef GEO::SmartPointer< WellGroupIOHandler > WellGroupIOHandler_var ;
+        typedef GEO::Factory0< WellGroupIOHandler > WellGroupIOHandlerFactory ;
+#define ringmesh_register_WellGroupIOHandler_creator( type, name ) \
+    geo_register_creator( WellGroupIOHandlerFactory, type, name )
 
     }
 }
