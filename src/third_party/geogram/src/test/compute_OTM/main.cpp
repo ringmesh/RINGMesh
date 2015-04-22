@@ -1583,6 +1583,9 @@ int main(int argc, char** argv) {
         CmdLine::declare_arg("nb_pts", 1000, "number of points");
         CmdLine::declare_arg("nb_iter", 1000, "number of iterations for OTM");
         CmdLine::declare_arg("RDT", false, "save regular triangulation");
+        CmdLine::declare_arg_group(
+            "RVD", "RVD output options", CmdLine::ARG_ADVANCED
+        );
         CmdLine::declare_arg("RVD", false, "save restricted Voronoi diagram");
         CmdLine::declare_arg(
             "RVD_iter", false, "save restricted Voronoi diagram at each iteration"
