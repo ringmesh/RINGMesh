@@ -1295,6 +1295,10 @@ namespace GEO {
             glEnable(GL_POINT_SPRITE);
             glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
             begin_shader(PRG_POINTS);            
+        } else {
+            glEnable(GL_POINT_SMOOTH);
+            set_colors(PRG_POINTS);
+            glDisable(GL_LIGHTING);
         }
         
         glDrawArrays(GL_POINTS, 0, GLsizei(mesh_->vertices.nb()));
