@@ -49,51 +49,49 @@
 namespace RINGMesh {
 class RINGMESH_API DetectInter {
 public:
+	/**
+	 * DetectInter is a class whose goal is to count and display
+	 * the number of intersections inside a macro mesh
+	 * \brief Constructor of the class
+	 * \param[mm] macro mesh in which intersections are detected
+	 */
 	DetectInter(const MacroMesh& mm);
 
+	/**
+	 * Destructor of the class
+	 */
 	~DetectInter();
 
 	/**
-	 * \brief Operator (), changes into true the value of the given
-	 * index in a list
+	 * \brief Operator (), returns the number of the cell
+	 * and its mesh that contains a point of another cell
 	 * \param[in] action ACTION::operator(index_t) is
 	 *  invoked for all cell that have a intersection.
 	 */
 	void operator()(index_t idx);
 
 	/**
-	 * \brief Creates the box for a cell thanks to its given index.
-	 * \param[M] the mesh containing the cell
-	 * \param[B] the box that will be created
-	 * \param[t] the index of the cell for which the box will be created
-	 */
-	//void get_tet_bbox(const GEO::Mesh& M, GEO::Box& B, index_t t);
-
-	/**
 	 * \brief Computes all the intersections between two cells.
-	 * \param[mm] macromesh in which the intersection want to be
+	 * \param[mm] macromesh in which the intersection are
 	 * detected.
 	 */
 	index_t detect_mesh_intersection();
 
+	void fill_list_intersection(index_t idx);
+
 	/**
-	 * \brief Returns true if the two tetrahedrons given intersect.
-	 * \param[V] coordinates of the vertices of a cell (just done
-	 * for tetrahedrons).
+	 * \brief Computes the volume of each cell to know if
+	 * it is high enought to be coherent
 	 */
-	bool tet_a_tet(double V_1[4][3], double V_2[4][3]);
-
-	bool FaceA_1(double * Coord, int & maskEdges);
-
-	bool FaceA_2(double * Coord, int & maskEdges);
+	index_t check_volumes();
 
 private:
-	std::vector<bool> inter_;
 	index_t cur_reg_;
 	index_t cur_reg2_;
 	index_t cur_cell_;
 	const MacroMesh& mm_;
 	index_t nb_inter_;
+	std::vector<bool> inter_;
 };
 
 }

@@ -612,6 +612,7 @@ namespace RINGMesh {
                     + cell_access[mesh.cells.type( c )] + 1]++ ;
                 total_adjacents += mesh.cells.nb_facets( c ) ;
             }
+
         }
         for( index_t m = 1; m < mesh_cell_ptr_.size()-1; m++ ) {
             mesh_cell_ptr_[m + 1] += mesh_cell_ptr_[m] ;

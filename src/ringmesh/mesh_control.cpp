@@ -40,369 +40,676 @@
 
 #include <ringmesh/mesh_control.h>
 #include <geogram/mesh/mesh_intersection.cpp>
-#include <utility>      // std::swap
-
-namespace {
-void get_tet_bbox(const Mesh& M, Box& B, index_t t) {
-	const double* p = M.vertices.point_ptr(M.cells.vertex(t, 0));
-	for (coord_index_t coord = 0; coord < 3; ++coord) {
-		B.xyz_min[coord] = p[coord];
-		B.xyz_max[coord] = p[coord];
-	}
-	for (index_t lv = 1; lv < 4; ++lv) {
-		p = M.vertices.point_ptr(M.cells.vertex(t, lv));
-		for (coord_index_t coord = 0; coord < 3; ++coord) {
-			B.xyz_min[coord] = geo_min(B.xyz_min[coord], p[coord]);
-			B.xyz_max[coord] = geo_max(B.xyz_max[coord], p[coord]);
-		}
-	}
-}
-}
+#include <geogram/mesh/mesh_AABB.cpp>
 
 namespace RINGMesh {
 DetectInter::DetectInter(const MacroMesh& mm) :
-		inter_(mm.cells.nb_tet()), cur_reg_(0), cur_reg2_(0), nb_inter_(0), cur_cell_(
-				0), mm_(mm) {
+		cur_reg_(0), cur_reg2_(0), nb_inter_(0), cur_cell_(0), mm_(mm), inter_(
+				mm_.cells.nb_cells(), false) {
 }
 
 DetectInter::~DetectInter() {
 }
 
 void DetectInter::operator()(index_t idx) {
-	mm_.vertices.vertex(idx);
 
 	if (idx > cur_cell_ || cur_reg_ != cur_reg2_) {
-//mm_.mesh(cur_reg_).cell_corners.vertex(0);
-//const vec3& v0 = mm_.vertices.vertex(idx);
 
-// TODO simpler
+		vec3& v1 = mm_.mesh(cur_reg_).vertices.point(
+				mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 0));
+		vec3& v2 = mm_.mesh(cur_reg_).vertices.point(
+				mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 1));
+		vec3& v3 = mm_.mesh(cur_reg_).vertices.point(
+				mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 2));
+		vec3& v4 = mm_.mesh(cur_reg_).vertices.point(
+				mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 3));
 
-//// tetrahedron
-//		if (mm_.mesh(cur_reg_).cells.nb_vertices(idx) == 4) {
-//			vec3& v1 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 0));
-//			vec3& v2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 1));
-//			vec3& v3 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 2));
-//			vec3& v4 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//
-//			vec3& v1_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 0));
-//			vec3& v2_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 1));
-//			vec3& v3_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 2));
-//			vec3& v4_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 2, 2));
-//
-//			if (cur_reg_ == cur_reg2_
-//					&& ((Math::point_inside_tetra(v1_2, v1, v2, v3, v4)
-//							&& v1_2 != v1 && v1_2 != v2 && v1_2 != v3
-//							&& v1_2 != v4)
-//							|| (Math::point_inside_tetra(v2_2, v1, v2, v3, v4)
-//									&& v2_2 != v1 && v2_2 != v2 && v2_2 != v3
-//									&& v2_2 != v4)
-//							|| (Math::point_inside_tetra(v3_2, v1, v2, v3, v4)
-//									&& v3_2 != v1 && v3_2 != v2 && v3_2 != v3
-//									&& v3_2 != v4)
-//							|| (Math::point_inside_tetra(v4_2, v1, v2, v3, v4)
-//									&& v4_2 != v1 && v4_2 != v2 && v4_2 != v3
-//									&& v4_2 != v4))) {
-//
-//				++nb_inter_;
-//				std::cout << "the tetrahedron " << cur_reg_ << ":" << cur_cell_
-//						<< " contains a point of the tetrahedron " << cur_reg2_
-//						<< ":" << idx << " region:cell" << std::endl;
-//			}
-//
-//			if (cur_reg_ != cur_reg2_) {
-//				if (Math::point_inside_tetra(v1_2, v1, v2, v3, v4)
-//						|| Math::point_inside_tetra(v2_2, v1, v2, v3, v4)
-//						|| Math::point_inside_tetra(v3_2, v1, v2, v3, v4)
-//						|| Math::point_inside_tetra(v4_2, v1, v2, v3, v4)) {
-//
-//					++nb_inter_;
-//					std::cout << "the tetrahedron " << cur_reg_ << ":"
-//							<< cur_cell_
-//							<< " contains a point of the tetrahedron "
-//							<< cur_reg2_ << ":" << idx << " region:cell"
-//							<< std::endl;
-//				} else if (v1_2 == v1 || v1_2 == v2 || v1_2 == v3 || v1_2 == v4
-//						|| v2_2 == v1 || v2_2 == v2 || v2_2 == v3 || v2_2 == v4
-//						|| v3_2 == v1 || v3_2 == v2 || v3_2 == v3 || v3_2 == v4
-//						|| v4_2 == v1 || v4_2 == v2 || v4_2 == v3
-//						|| v4_2 == v4) {
-//					// if a point of one region is at the same place of the point of another region
-//					++nb_inter_;
-//					std::cout << "the tetrahedron " << cur_reg_ << ":"
-//							<< cur_cell_
-//							<< " contains a point of the tetrahedron "
-//							<< cur_reg2_ << ":" << idx << " region:cell"
-//							<< std::endl;
-//				}
-//			}
-//		}
+		vec3& v1_2 = mm_.mesh(cur_reg2_).vertices.point(
+				mm_.mesh(cur_reg2_).cells.vertex(idx, 0));
+		vec3& v2_2 = mm_.mesh(cur_reg2_).vertices.point(
+				mm_.mesh(cur_reg2_).cells.vertex(idx, 1));
+		vec3& v3_2 = mm_.mesh(cur_reg2_).vertices.point(
+				mm_.mesh(cur_reg2_).cells.vertex(idx, 2));
+		vec3& v4_2 = mm_.mesh(cur_reg2_).vertices.point(
+				mm_.mesh(cur_reg2_).cells.vertex(idx, 3));
+
+//		// tetrahedron
+		if (mm_.mesh(cur_reg_).cells.nb_vertices(cur_cell_) == 4) {
+			if (cur_reg_ == cur_reg2_) {
+				if ((Math::point_inside_tetra(v1_2, v1, v2, v3, v4)
+						&& v1_2 != v1 && v1_2 != v2 && v1_2 != v3 && v1_2 != v4)
+						|| (Math::point_inside_tetra(v2_2, v1, v2, v3, v4)
+								&& v2_2 != v1 && v2_2 != v2 && v2_2 != v3
+								&& v2_2 != v4)
+						|| (Math::point_inside_tetra(v3_2, v1, v2, v3, v4)
+								&& v3_2 != v1 && v3_2 != v2 && v3_2 != v3
+								&& v3_2 != v4)
+						|| (Math::point_inside_tetra(v4_2, v1, v2, v3, v4)
+								&& v4_2 != v1 && v4_2 != v2 && v4_2 != v3
+								&& v4_2 != v4)) {
+					++nb_inter_;
+					std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+							<< " contains a point of the cell " << cur_reg2_
+							<< ":" << idx << " region:cell" << std::endl;
+					fill_list_intersection(idx);
+					return;
+				}
+				// if the cell idx is a pyramid
+				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 4) {
+					vec3& v5_2 = mm_.mesh(cur_reg2_).vertices.point(
+							mm_.mesh(cur_reg2_).cells.vertex(idx, 4));
+					if (Math::point_inside_tetra(v5_2, v1, v2, v3, v4)
+							&& v5_2 != v1 && v5_2 != v2 && v5_2 != v3
+							&& v5_2 != v4) {
+						++nb_inter_;
+						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+								<< " contains a point of the cell " << cur_reg2_
+								<< ":" << idx << " region:cell" << std::endl;
+						fill_list_intersection(idx);
+						return;
+					}
+				}
+				// if the cell idx is a prism
+				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 5) {
+					vec3& v6_2 = mm_.mesh(cur_reg2_).vertices.point(
+							mm_.mesh(cur_reg2_).cells.vertex(idx, 5));
+					if (Math::point_inside_tetra(v6_2, v1, v2, v3, v4)
+							&& v6_2 != v1 && v6_2 != v2 && v6_2 != v3
+							&& v6_2 != v4) {
+						++nb_inter_;
+						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+								<< " contains a point of the cell " << cur_reg2_
+								<< ":" << idx << " region:cell" << std::endl;
+						fill_list_intersection(idx);
+						return;
+					}
+				}
+				// if the cell idx is a hexahedron
+				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) == 8) {
+					vec3& v7_2 = mm_.mesh(cur_reg2_).vertices.point(
+							mm_.mesh(cur_reg2_).cells.vertex(idx, 6));
+					vec3& v8_2 = mm_.mesh(cur_reg2_).vertices.point(
+							mm_.mesh(cur_reg2_).cells.vertex(idx, 7));
+					if ((Math::point_inside_tetra(v7_2, v1, v2, v3, v4)
+							&& v7_2 != v1 && v7_2 != v2 && v7_2 != v3
+							&& v7_2 != v4)
+							|| (Math::point_inside_tetra(v8_2, v1, v2, v3, v4)
+									&& v8_2 != v1 && v8_2 != v2 && v8_2 != v3
+									&& v8_2 != v4)) {
+						++nb_inter_;
+						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+								<< " contains a point of the cell " << cur_reg2_
+								<< ":" << idx << " region:cell" << std::endl;
+						fill_list_intersection(idx);
+						return;
+					}
+				}
+			}
+
+			if (cur_reg_ != cur_reg2_) {
+				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 3) {
+					if (Math::point_inside_tetra(v1_2, v1, v2, v3, v4)
+							|| Math::point_inside_tetra(v2_2, v1, v2, v3, v4)
+							|| Math::point_inside_tetra(v3_2, v1, v2, v3, v4)
+							|| Math::point_inside_tetra(v4_2, v1, v2, v3, v4)) {
+						++nb_inter_;
+						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+								<< " contains a point of the cell " << cur_reg2_
+								<< ":" << idx << " region:cell" << std::endl;
+						fill_list_intersection(idx);
+						return;
+					}
+//					else if (v1_2 == v1 || v1_2 == v2 || v1_2 == v3
+//							|| v1_2 == v4 || v2_2 == v1 || v2_2 == v2
+//							|| v2_2 == v3 || v2_2 == v4 || v3_2 == v1
+//							|| v3_2 == v2 || v3_2 == v3 || v3_2 == v4
+//							|| v4_2 == v1 || v4_2 == v2 || v4_2 == v3
+//							|| v4_2 == v4) {
+//						// if the point of two different regions are at the same place
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//					fill_list_intersection(idx);
+//						return;
+//					}
+				}
+				// if the cell idx is a pyramid
+				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 4) {
+					vec3& v5_2 = mm_.mesh(cur_reg2_).vertices.point(
+							mm_.mesh(cur_reg2_).cells.vertex(idx, 4));
+					if (Math::point_inside_tetra(v5_2, v1, v2, v3, v4)) {
+						++nb_inter_;
+						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+								<< " contains a point of the cell " << cur_reg2_
+								<< ":" << idx << " region:cell" << std::endl;
+						fill_list_intersection(idx);
+						return;
+					}
+//					else if (v5_2 == v1 || v5_2 == v2 || v5_2 == v3
+//							|| v5_2 == v4) {
+//						// if the point of two different regions are at the same place
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//					fill_list_intersection(idx);
+//						return;
+//					}
+					// if the cell idx is a prism
+				}
+				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 5) {
+					vec3& v6_2 = mm_.mesh(cur_reg2_).vertices.point(
+							mm_.mesh(cur_reg2_).cells.vertex(idx, 5));
+					if (Math::point_inside_tetra(v6_2, v1, v2, v3, v4)) {
+						++nb_inter_;
+						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+								<< " contains a point of the cell " << cur_reg2_
+								<< ":" << idx << " region:cell" << std::endl;
+						fill_list_intersection(idx);
+						return;
+					}
+//					else if (v6_2 == v1 || v6_2 == v2 || v6_2 == v3
+//							|| v6_2 == v4) {
+//						// if the point of two different regions are at the same place
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//					fill_list_intersection(idx);
+//						return;
+//					}
+				}
+				// if the cell idx is a hexahedron
+				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) == 8) {
+					vec3& v7_2 = mm_.mesh(cur_reg2_).vertices.point(
+							mm_.mesh(cur_reg2_).cells.vertex(idx, 6));
+					vec3& v8_2 = mm_.mesh(cur_reg2_).vertices.point(
+							mm_.mesh(cur_reg2_).cells.vertex(idx, 7));
+					if (Math::point_inside_tetra(v7_2, v1, v2, v3, v4)
+							|| Math::point_inside_tetra(v8_2, v1, v2, v3, v4)) {
+						++nb_inter_;
+						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+								<< " contains a point of the cell " << cur_reg2_
+								<< ":" << idx << " region:cell" << std::endl;
+						fill_list_intersection(idx);
+						return;
+					}
+//					else if (v7_2 == v1 || v7_2 == v2 || v7_2 == v3
+//							|| v7_2 == v4 || v8_2 == v1 || v8_2 == v2
+//							|| v8_2 == v3 || v8_2 == v4) {
+//						// if the point of two different regions are at the same place
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//					fill_list_intersection(idx);
+//						return;
+//					}
+				}
+			}
+		}
 
 //		// pyramid
-//		if (mm_.mesh(cur_reg_).cells.nb_vertices(idx) == 5) {
-//			vec3& v1 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 0));
-//			vec3& v2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 1));
-//			vec3& v3 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 2));
-//			vec3& v4 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//			// TODO change coordinates
+//		if (mm_.mesh(cur_reg_).cells.nb_vertices(cur_cell_) == 5) {
 //			vec3& v5 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//
-//			vec3& v1_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 0));
-//			vec3& v2_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 1));
-//			vec3& v3_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 2));
-//			vec3& v4_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 2, 2));
-//			// TODO change coordinates
-//			vec3& v5_2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//
-//			if (cur_reg_ == cur_reg2_
-//					&& ((Math::point_inside_pyramid(v1_2, v1, v2, v3, v4, v5)
-//							&& v1_2 != v1 && v1_2 != v2 && v1_2 != v3
-//							&& v1_2 != v4 && v1_2 != v5)
-//							|| (Math::point_inside_pyramid(v2_2, v1, v2, v3, v4,
-//									v5) && v2_2 != v1 && v2_2 != v2
-//									&& v2_2 != v3 && v2_2 != v4 && v2_2 != v5)
-//							|| (Math::point_inside_pyramid(v3_2, v1, v2, v3, v4,
-//									v5) && v3_2 != v1 && v3_2 != v2
-//									&& v3_2 != v3 && v3_2 != v4 && v3_2 != v5)
-//							|| (Math::point_inside_pyramid(v4_2, v1, v2, v3, v4,
-//									v5) && v4_2 != v1 && v4_2 != v2
-//									&& v4_2 != v3 && v4_2 != v4 && v4_2 != v5)
-//							|| (Math::point_inside_pyramid(v5_2, v1, v2, v3, v4,
-//									v5) && v5_2 != v1 && v5_2 != v2
-//									&& v5_2 != v3 && v5_2 != v4 && v5_2 != v5))) {
-//
-//				++nb_inter_;
-//				std::cout << "the tetrahedron " << cur_reg_ << ":" << cur_cell_
-//						<< " contains a point of the tetrahedron " << cur_reg2_
-//						<< ":" << idx << " region:cell" << std::endl;
+//					mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 4));
+//			if (cur_reg_ == cur_reg2_) {
+//				// if the cell idx is a tetrahedron
+//				if ((Math::point_inside_pyramid(v1_2, v1, v2, v3, v4, v5)
+//						&& v1_2 != v1 && v1_2 != v2 && v1_2 != v3 && v1_2 != v4
+//						&& v1_2 != v5)
+//						|| (Math::point_inside_pyramid(v2_2, v1, v2, v3, v4, v5)
+//								&& v2_2 != v1 && v2_2 != v2 && v2_2 != v3
+//								&& v2_2 != v4 && v2_2 != v5)
+//						|| (Math::point_inside_pyramid(v3_2, v1, v2, v3, v4, v5)
+//								&& v3_2 != v1 && v3_2 != v2 && v3_2 != v3
+//								&& v3_2 != v4 && v3_2 != v5)
+//						|| (Math::point_inside_pyramid(v4_2, v1, v2, v3, v4, v5)
+//								&& v4_2 != v1 && v4_2 != v2 && v4_2 != v3
+//								&& v4_2 != v4 && v4_2 != v5)) {
+//					++nb_inter_;
+//					std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//							<< " contains a point of the cell " << cur_reg2_
+//							<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//					return;
+//				}
+//				// if the cell idx is a pyramid
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 4) {
+//					vec3& v5_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 4));
+//					if (Math::point_inside_pyramid(v5_2, v1, v2, v3, v4, v5)
+//							&& v5_2 != v1 && v5_2 != v2 && v5_2 != v3
+//							&& v5_2 != v4 && v5_2 != v5) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+//				}
+//				// if the cell idx is a prism
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 5) {
+//					vec3& v6_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 5));
+//					if (Math::point_inside_pyramid(v6_2, v1, v2, v3, v4, v5)
+//							&& v6_2 != v1 && v6_2 != v2 && v6_2 != v3
+//							&& v6_2 != v4 && v6_2 != v5) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+//				}
+//				// if the cell idx is a hexahedron
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) == 8) {
+//					vec3& v7_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 6));
+//					vec3& v8_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 7));
+//					if ((Math::point_inside_pyramid(v7_2, v1, v2, v3, v4, v5)
+//							&& v7_2 != v1 && v7_2 != v2 && v7_2 != v3
+//							&& v7_2 != v4 && v7_2 != v5)
+//							|| (Math::point_inside_pyramid(v8_2, v1, v2, v3, v4,
+//									v5) && v8_2 != v1 && v8_2 != v2
+//									&& v8_2 != v3 && v8_2 != v4 && v8_2 != v5)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+//				}
 //			}
 //
 //			if (cur_reg_ != cur_reg2_) {
 //				if (Math::point_inside_pyramid(v1_2, v1, v2, v3, v4, v5)
 //						|| Math::point_inside_pyramid(v2_2, v1, v2, v3, v4, v5)
 //						|| Math::point_inside_pyramid(v3_2, v1, v2, v3, v4, v5)
-//						|| Math::point_inside_pyramid(v4_2, v1, v2, v3, v4, v5)
-//						|| Math::point_inside_pyramid(v5_2, v1, v2, v3, v4,
+//						|| Math::point_inside_pyramid(v4_2, v1, v2, v3, v4,
 //								v5)) {
-//
 //					++nb_inter_;
-//					std::cout << "the tetrahedron " << cur_reg_ << ":"
-//							<< cur_cell_
-//							<< " contains a point of the tetrahedron "
-//							<< cur_reg2_ << ":" << idx << " region:cell"
-//							<< std::endl;
-//				} else if (v1_2 == v1 || v1_2 == v2 || v1_2 == v3 || v1_2 == v4
-//						|| v1_2 == v5 || v2_2 == v1 || v2_2 == v2 || v2_2 == v3
-//						|| v2_2 == v4 || v2_2 == v5 || v3_2 == v1 || v3_2 == v2
-//						|| v3_2 == v3 || v3_2 == v4 || v3_2 == v5 || v4_2 == v1
-//						|| v4_2 == v2 || v4_2 == v3 || v4_2 == v4 || v4_2 == v5
-//						|| v5_2 == v1 || v5_2 == v2 || v5_2 == v3 || v5_2 == v4
-//						|| v5_2 == v5) {
-//					// if a point of one region is at the same place of the point of another region
-//					++nb_inter_;
-//					std::cout << "the tetrahedron " << cur_reg_ << ":"
-//							<< cur_cell_
-//							<< " contains a point of the tetrahedron "
-//							<< cur_reg2_ << ":" << idx << " region:cell"
-//							<< std::endl;
+//					std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//							<< " contains a point of the cell " << cur_reg2_
+//							<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//					return;
+//				}
+////		else if (v1_2 == v1 || v1_2 == v2 || v1_2 == v3 || v1_2 == v4
+////						|| v1_2 == v5 || v2_2 == v1 || v2_2 == v2 || v2_2 == v3
+////						|| v2_2 == v4 || v2_2 == v5 || v3_2 == v1 || v3_2 == v2
+////						|| v3_2 == v3 || v3_2 == v4 || v3_2 == v5 || v4_2 == v1
+////						|| v4_2 == v2 || v4_2 == v3 || v4_2 == v4
+////						|| v4_2 == v5) {
+////					// if the point of two different regions are at the same place
+////					++nb_inter_;
+////					std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////							<< " contains a point of the cell " << cur_reg2_
+////							<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////					return;
+////				}
+//				// if the cell idx is a pyramid
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 4) {
+//					vec3& v5_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 4));
+//					if (Math::point_inside_pyramid(v5_2, v1, v2, v3, v4, v5)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+////		else if (v5_2 == v1 || v5_2 == v2 || v5_2 == v3
+////							|| v5_2 == v4 || v5_2 == v5) {
+////						// if the point of two different regions are at the same place
+////						++nb_inter_;
+////						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////								<< " contains a point of the cell " << cur_reg2_
+////								<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////						return;
+////					}
+//				}
+//				// if the cell idx is a prism
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 5) {
+//					vec3& v6_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 5));
+//					if (Math::point_inside_pyramid(v6_2, v1, v2, v3, v4, v5)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+////		else if (v6_2 == v1 || v6_2 == v2 || v6_2 == v3
+////							|| v6_2 == v4 || v6_2 == v5) {
+////						// if the point of two different regions are at the same place
+////						++nb_inter_;
+////						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////								<< " contains a point of the cell " << cur_reg2_
+////								<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////						return;
+////					}
+//				}
+//				// if the cell idx is a hexahedron
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) == 8) {
+//					vec3& v7_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 6));
+//					vec3& v8_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 7));
+//					if (Math::point_inside_pyramid(v7_2, v1, v2, v3, v4, v5)
+//							|| Math::point_inside_pyramid(v8_2, v1, v2, v3, v4,
+//									v5)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+////		else if (v7_2 == v1 || v7_2 == v2 || v7_2 == v3
+////							|| v7_2 == v4 || v7_2 == v5 || v8_2 == v1
+////							|| v8_2 == v2 || v8_2 == v3 || v8_2 == v4
+////							|| v8_2 == v5) {
+////						// if the point of two different regions are at the same place
+////						++nb_inter_;
+////						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////								<< " contains a point of the cell " << cur_reg2_
+////								<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////						return;
+////					}
 //				}
 //			}
 //		}
 
 //		// prism
-//		if (mm_.mesh(cur_reg_).cells.nb_vertices(idx) == 6) {
-//			vec3& v1 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 0));
-//			vec3& v2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 1));
-//			vec3& v3 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 2));
-//			vec3& v4 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//			// TODO change coordinates
+//		if (mm_.mesh(cur_reg_).cells.nb_vertices(cur_cell_) == 6) {
 //			vec3& v5 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
+//					mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 4));
 //			vec3& v6 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
+//					mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 5));
 //
-//			vec3& v1_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 0));
-//			vec3& v2_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 1));
-//			vec3& v3_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 2));
-//			vec3& v4_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 2, 2));
-//			// TODO change coordinates
-//			vec3& v5_2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//			vec3& v6_2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//
-//			if (cur_reg_ == cur_reg2_
-//					&& ((Math::point_inside_prism(v1_2, v1, v2, v3, v4, v5, v6)
-//							&& v1_2 != v1 && v1_2 != v2 && v1_2 != v3
-//							&& v1_2 != v4 && v1_2 != v5 && v1_2 != v6)
-//							|| (Math::point_inside_prism(v2_2, v1, v2, v3, v4,
-//									v5, v6) && v2_2 != v1 && v2_2 != v2
-//									&& v2_2 != v3 && v2_2 != v4 && v2_2 != v5
-//									&& v2_2 != v6)
-//							|| (Math::point_inside_prism(v3_2, v1, v2, v3, v4,
-//									v5, v6) && v3_2 != v1 && v3_2 != v2
-//									&& v3_2 != v3 && v3_2 != v4 && v3_2 != v5
-//									&& v3_2 != v6)
-//							|| (Math::point_inside_prism(v4_2, v1, v2, v3, v4,
-//									v5, v6) && v4_2 != v1 && v4_2 != v2
-//									&& v4_2 != v3 && v4_2 != v4 && v4_2 != v5
-//									&& v4_2 != v6)
-//							|| (Math::point_inside_prism(v5_2, v1, v2, v3, v4,
-//									v5, v6) && v5_2 != v1 && v5_2 != v2
-//									&& v5_2 != v3 && v5_2 != v4 && v5_2 != v5
-//									&& v5_2 != v6)
-//							|| (Math::point_inside_prism(v6_2, v1, v2, v3, v4,
-//									v5, v6) && v6_2 != v1 && v6_2 != v2
-//									&& v6_2 != v3 && v6_2 != v4 && v6_2 != v5
-//									&& v6_2 != v6))) {
-//
-//				++nb_inter_;
-//				std::cout << "the tetrahedron " << cur_reg_ << ":" << cur_cell_
-//						<< " contains a point of the tetrahedron " << cur_reg2_
-//						<< ":" << idx << " region:cell" << std::endl;
+//			if (cur_reg_ == cur_reg2_) {
+//				if ((mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 3)
+//						&& ((Math::point_inside_prism(v1_2, v1, v2, v3, v4, v5,
+//								v6) && v1_2 != v1 && v1_2 != v2 && v1_2 != v3
+//								&& v1_2 != v4 && v1_2 != v5 && v1_2 != v6)
+//								|| (Math::point_inside_prism(v2_2, v1, v2, v3,
+//										v4, v5, v6) && v2_2 != v1 && v2_2 != v2
+//										&& v2_2 != v3 && v2_2 != v4
+//										&& v2_2 != v5 && v2_2 != v6)
+//								|| (Math::point_inside_prism(v3_2, v1, v2, v3,
+//										v4, v5, v6) && v3_2 != v1 && v3_2 != v2
+//										&& v3_2 != v3 && v3_2 != v4
+//										&& v3_2 != v5 && v3_2 != v6)
+//								|| (Math::point_inside_prism(v4_2, v1, v2, v3,
+//										v4, v5, v6) && v4_2 != v1 && v4_2 != v2
+//										&& v4_2 != v3 && v4_2 != v4
+//										&& v4_2 != v5 && v4_2 != v6))) {
+//					++nb_inter_;
+//					std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//							<< " contains a point of the cell " << cur_reg2_
+//							<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//					return;
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 4) {
+//					vec3& v5_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 4));
+//					if (Math::point_inside_prism(v5_2, v1, v2, v3, v4, v5, v6)
+//							&& v5_2 != v1 && v5_2 != v2 && v5_2 != v3
+//							&& v5_2 != v4 && v5_2 != v5 && v5_2 != v6) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 5) {
+//					vec3& v6_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 5));
+//					if (Math::point_inside_prism(v6_2, v1, v2, v3, v4, v5, v6)
+//							&& v6_2 != v1 && v6_2 != v2 && v6_2 != v3
+//							&& v6_2 != v4 && v6_2 != v5 && v6_2 != v6) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) == 8) {
+//					vec3& v7_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 6));
+//					vec3& v8_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 7));
+//					if ((Math::point_inside_prism(v7_2, v1, v2, v3, v4, v5, v6)
+//							&& v7_2 != v1 && v7_2 != v2 && v7_2 != v3
+//							&& v7_2 != v4 && v7_2 != v5 && v7_2 != v6)
+//							&& (Math::point_inside_prism(v8_2, v1, v2, v3, v4,
+//									v5, v6) && v8_2 != v1 && v8_2 != v2
+//									&& v8_2 != v3 && v8_2 != v4 && v8_2 != v5
+//									&& v8_2 != v6)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+//				}
 //			}
 //
 //			if (cur_reg_ != cur_reg2_) {
-//				if (Math::point_inside_prism(v1_2, v1, v2, v3, v4, v5, v6)
-//						|| Math::point_inside_prism(v2_2, v1, v2, v3, v4, v5,
-//								v6)
-//						|| Math::point_inside_prism(v3_2, v1, v2, v3, v4, v5,
-//								v6)
-//						|| Math::point_inside_prism(v4_2, v1, v2, v3, v4, v5,
-//								v6)
-//						|| Math::point_inside_prism(v5_2, v1, v2, v3, v4, v5,
-//								v6)
-//						|| Math::point_inside_prism(v6_2, v1, v2, v3, v4, v5,
-//								v6)) {
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 3) {
+//					if (Math::point_inside_prism(v1_2, v1, v2, v3, v4, v5, v6)
+//							|| Math::point_inside_prism(v2_2, v1, v2, v3, v4,
+//									v5, v6)
+//							|| Math::point_inside_prism(v3_2, v1, v2, v3, v4,
+//									v5, v6)
+//							|| Math::point_inside_prism(v4_2, v1, v2, v3, v4,
+//									v5, v6)) {
 //
-//					++nb_inter_;
-//					std::cout << "the tetrahedron " << cur_reg_ << ":"
-//							<< cur_cell_
-//							<< " contains a point of the tetrahedron "
-//							<< cur_reg2_ << ":" << idx << " region:cell"
-//							<< std::endl;
-//				} else if (v1_2 == v1 || v1_2 == v2 || v1_2 == v3 || v1_2 == v4
-//						|| v1_2 == v5 || v1_2 == v6 || v2_2 == v1 || v2_2 == v2
-//						|| v2_2 == v3 || v2_2 == v4 || v2_2 == v5 || v2_2 == v6
-//						|| v3_2 == v1 || v3_2 == v2 || v3_2 == v3 || v3_2 == v4
-//						|| v3_2 == v5 || v3_2 == v6 || v4_2 == v1 || v4_2 == v2
-//						|| v4_2 == v3 || v4_2 == v4 || v4_2 == v5 || v4_2 == v6
-//						|| v5_2 == v1 || v5_2 == v2 || v5_2 == v3 || v5_2 == v4
-//						|| v5_2 == v5 || v5_2 == v6 || v6_2 == v1 || v6_2 == v2
-//						|| v6_2 == v3 || v6_2 == v4 || v6_2 == v5
-//						|| v6_2 == v6) {
-//					// if a point of one region is at the same place of the point of another region
-//					++nb_inter_;
-//					std::cout << "the tetrahedron " << cur_reg_ << ":"
-//							<< cur_cell_
-//							<< " contains a point of the tetrahedron "
-//							<< cur_reg2_ << ":" << idx << " region:cell"
-//							<< std::endl;
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+////		else if (v1_2 == v1 || v1_2 == v2 || v1_2 == v3
+////							|| v1_2 == v4 || v1_2 == v5 || v1_2 == v6
+////							|| v2_2 == v1 || v2_2 == v2 || v2_2 == v3
+////							|| v2_2 == v4 || v2_2 == v5 || v2_2 == v6
+////							|| v3_2 == v1 || v3_2 == v2 || v3_2 == v3
+////							|| v3_2 == v4 || v3_2 == v5 || v3_2 == v6
+////							|| v4_2 == v1 || v4_2 == v2 || v4_2 == v3
+////							|| v4_2 == v4 || v4_2 == v5 || v4_2 == v6) {
+////						// if a point of one region is at the same place of the point of another region
+////						++nb_inter_;
+////						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////								<< " contains a point of the cell " << cur_reg2_
+////								<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////						return;
+////					}
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 4) {
+//					vec3& v5_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 4));
+//					if (Math::point_inside_prism(v5_2, v1, v2, v3, v4, v5,
+//							v6)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+////		else if (v5_2 == v1 || v5_2 == v2 || v5_2 == v3
+////							|| v5_2 == v4 || v5_2 == v5 || v5_2 == v6) {
+////						// if a point of one region is at the same place of the point of another region
+////						++nb_inter_;
+////						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////								<< " contains a point of the cell " << cur_reg2_
+////								<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////						return;
+////					}
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 5) {
+//					vec3& v6_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 5));
+//					if (Math::point_inside_prism(v6_2, v1, v2, v3, v4, v5,
+//							v6)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+////		else if (v6_2 == v1 || v6_2 == v2 || v6_2 == v3
+////							|| v6_2 == v4 || v6_2 == v5 || v6_2 == v6) {
+////						// if a point of one region is at the same place of the point of another region
+////						++nb_inter_;
+////						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////								<< " contains a point of the cell " << cur_reg2_
+////								<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////						return;
+////					}
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) == 8) {
+//					vec3& v7_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 6));
+//					vec3& v8_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 7));
+//					if (Math::point_inside_prism(v7_2, v1, v2, v3, v4, v5, v6)
+//							|| Math::point_inside_prism(v8_2, v1, v2, v3, v4,
+//									v5, v6)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+////		else if (v7_2 == v1 || v7_2 == v2 || v7_2 == v3
+////							|| v7_2 == v4 || v7_2 == v5 || v7_2 == v6
+////							|| v8_2 == v1 || v8_2 == v2 || v8_2 == v3
+////							|| v8_2 == v4 || v8_2 == v5 || v8_2 == v6) {
+////						// if a point of one region is at the same place of the point of another region
+////						++nb_inter_;
+////						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////								<< " contains a point of the cell " << cur_reg2_
+////								<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////						return;
+////					}
 //				}
 //			}
 //		}
 
 //		// hexahedron
-//		if (mm_.mesh(cur_reg_).cells.nb_vertices(idx) == 8) {
-//			vec3& v1 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 0));
-//			vec3& v2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 1));
-//			vec3& v3 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 0, 2));
-//			vec3& v4 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//			// TODO change coordinates
+//		if (mm_.mesh(cur_reg_).cells.nb_vertices(cur_cell_) == 8) {
 //			vec3& v5 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
+//					mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 4));
 //			vec3& v6 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
+//					mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 5));
 //			vec3& v7 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
+//					mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 6));
 //			vec3& v8 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
+//					mm_.mesh(cur_reg_).cells.vertex(cur_cell_, 7));
 //
-//			vec3& v1_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 0));
-//			vec3& v2_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 1));
-//			vec3& v3_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 0, 2));
-//			vec3& v4_2 = mm_.mesh(cur_reg2_).vertices.point(
-//					mm_.mesh(cur_reg2_).cells.facet_vertex(idx, 2, 2));
-//			// TODO change coordinates
-//			vec3& v5_2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//			vec3& v6_2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//			vec3& v7_2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//			vec3& v8_2 = mm_.mesh(cur_reg_).vertices.point(
-//					mm_.mesh(cur_reg_).cells.facet_vertex(cur_cell_, 2, 2));
-//
-//			if (cur_reg_ == cur_reg2_
-//					&& ((Math::point_inside_hexa(v1_2, v1, v2, v3, v4, v5, v6,
-//							v7, v8) && v1_2 != v1 && v1_2 != v2 && v1_2 != v3
-//							&& v1_2 != v4 && v1_2 != v5 && v1_2 != v6
-//							&& v1_2 != v7 && v1_2 != v8)
-//							|| (Math::point_inside_hexa(v2_2, v1, v2, v3, v4,
-//									v5, v6, v7, v8) && v2_2 != v1 && v2_2 != v2
-//									&& v2_2 != v3 && v2_2 != v4 && v2_2 != v5
-//									&& v2_2 != v6 && v2_2 != v7 && v2_2 != v8)
-//							|| (Math::point_inside_hexa(v3_2, v1, v2, v3, v4,
-//									v5, v6, v7, v8) && v3_2 != v1 && v3_2 != v2
-//									&& v3_2 != v3 && v3_2 != v4 && v3_2 != v5
-//									&& v3_2 != v6 && v3_2 != v7 && v3_2 != v8)
-//							|| (Math::point_inside_hexa(v4_2, v1, v2, v3, v4,
-//									v5, v6, v7, v8) && v4_2 != v1 && v4_2 != v2
-//									&& v4_2 != v3 && v4_2 != v4 && v4_2 != v5
-//									&& v4_2 != v6 && v4_2 != v7 && v4_2 != v8)
-//							|| (Math::point_inside_hexa(v5_2, v1, v2, v3, v4,
-//									v5, v6, v7, v8) && v5_2 != v1 && v5_2 != v2
-//									&& v5_2 != v3 && v5_2 != v4 && v5_2 != v5
-//									&& v5_2 != v6 && v5_2 != v7 && v5_2 != v8)
-//							|| (Math::point_inside_hexa(v6_2, v1, v2, v3, v4,
-//									v5, v6, v7, v8) && v6_2 != v1 && v6_2 != v2
-//									&& v6_2 != v3 && v6_2 != v4 && v6_2 != v5
-//									&& v6_2 != v6 && v6_2 != v7 && v6_2 != v8)
-//							|| (Math::point_inside_hexa(v7_2, v1, v2, v3, v4,
-//									v5, v6, v7, v8) && v7_2 != v1 && v7_2 != v2
-//									&& v7_2 != v3 && v7_2 != v4 && v7_2 != v5
-//									&& v7_2 != v6 && v7_2 != v7 && v7_2 != v8)
+//			if (cur_reg_ == cur_reg2_) {
+//				if ((Math::point_inside_hexa(v1_2, v1, v2, v3, v4, v5, v6, v7,
+//						v8) && v1_2 != v1 && v1_2 != v2 && v1_2 != v3
+//						&& v1_2 != v4 && v1_2 != v5 && v1_2 != v6 && v1_2 != v7
+//						&& v1_2 != v8)
+//						|| (Math::point_inside_hexa(v2_2, v1, v2, v3, v4, v5,
+//								v6, v7, v8) && v2_2 != v1 && v2_2 != v2
+//								&& v2_2 != v3 && v2_2 != v4 && v2_2 != v5
+//								&& v2_2 != v6 && v2_2 != v7 && v2_2 != v8)
+//						|| (Math::point_inside_hexa(v3_2, v1, v2, v3, v4, v5,
+//								v6, v7, v8) && v3_2 != v1 && v3_2 != v2
+//								&& v3_2 != v3 && v3_2 != v4 && v3_2 != v5
+//								&& v3_2 != v6 && v3_2 != v7 && v3_2 != v8)
+//						|| (Math::point_inside_hexa(v4_2, v1, v2, v3, v4, v5,
+//								v6, v7, v8) && v4_2 != v1 && v4_2 != v2
+//								&& v4_2 != v3 && v4_2 != v4 && v4_2 != v5
+//								&& v4_2 != v6 && v4_2 != v7 && v4_2 != v8)) {
+//					++nb_inter_;
+//					std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//							<< " contains a point of the cell " << cur_reg2_
+//							<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//					return;
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 4) {
+//					vec3& v5_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 4));
+//					if (Math::point_inside_hexa(v5_2, v1, v2, v3, v4, v5, v6,
+//							v7, v8) && v5_2 != v1 && v5_2 != v2 && v5_2 != v3
+//							&& v5_2 != v4 && v5_2 != v5 && v5_2 != v6
+//							&& v5_2 != v7 && v5_2 != v8) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 5) {
+//					vec3& v6_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 5));
+//					if (Math::point_inside_hexa(v6_2, v1, v2, v3, v4, v5, v6,
+//							v7, v8) && v6_2 != v1 && v6_2 != v2 && v6_2 != v3
+//							&& v6_2 != v4 && v6_2 != v5 && v6_2 != v6
+//							&& v6_2 != v7 && v6_2 != v8) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) == 8) {
+//					vec3& v7_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 6));
+//					vec3& v8_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 7));
+//					if ((Math::point_inside_hexa(v7_2, v1, v2, v3, v4, v5, v6,
+//							v7, v8) && v7_2 != v1 && v7_2 != v2 && v7_2 != v3
+//							&& v7_2 != v4 && v7_2 != v5 && v7_2 != v6
+//							&& v7_2 != v7 && v7_2 != v8)
 //							|| (Math::point_inside_hexa(v8_2, v1, v2, v3, v4,
 //									v5, v6, v7, v8) && v8_2 != v1 && v8_2 != v2
 //									&& v8_2 != v3 && v8_2 != v4 && v8_2 != v5
-//									&& v8_2 != v6 && v8_2 != v7 && v8_2 != v8))) {
-//
-//				++nb_inter_;
-//				std::cout << "the tetrahedron " << cur_reg_ << ":" << cur_cell_
-//						<< " contains a point of the tetrahedron " << cur_reg2_
-//						<< ":" << idx << " region:cell" << std::endl;
+//									&& v8_2 != v6 && v8_2 != v7 && v8_2 != v8)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+//				}
 //			}
 //
 //			if (cur_reg_ != cur_reg2_) {
@@ -413,46 +720,109 @@ void DetectInter::operator()(index_t idx) {
 //						|| Math::point_inside_hexa(v3_2, v1, v2, v3, v4, v5, v6,
 //								v7, v8)
 //						|| Math::point_inside_hexa(v4_2, v1, v2, v3, v4, v5, v6,
-//								v7, v8)
-//						|| Math::point_inside_hexa(v5_2, v1, v2, v3, v4, v5, v6,
-//								v7, v8)
-//						|| Math::point_inside_hexa(v6_2, v1, v2, v3, v4, v5, v6,
-//								v7, v8)
-//						|| Math::point_inside_hexa(v7_2, v1, v2, v3, v4, v5, v6,
-//								v7, v8)
-//						|| Math::point_inside_hexa(v8_2, v1, v2, v3, v4, v5, v6,
 //								v7, v8)) {
-//
 //					++nb_inter_;
-//					std::cout << "the tetrahedron " << cur_reg_ << ":"
-//							<< cur_cell_
-//							<< " contains a point of the tetrahedron "
-//							<< cur_reg2_ << ":" << idx << " region:cell"
-//							<< std::endl;
-//				} else if (v1_2 == v1 || v1_2 == v2 || v1_2 == v3 || v1_2 == v4
-//						|| v1_2 == v5 || v1_2 == v6 || v1_2 == v7 || v1_2 == v8
-//						|| v2_2 == v1 || v2_2 == v2 || v2_2 == v3 || v2_2 == v4
-//						|| v2_2 == v5 || v2_2 == v6 || v2_2 == v7 || v2_2 == v8
-//						|| v3_2 == v1 || v3_2 == v2 || v3_2 == v3 || v3_2 == v4
-//						|| v3_2 == v5 || v3_2 == v6 || v3_2 == v7 || v3_2 == v8
-//						|| v4_2 == v1 || v4_2 == v2 || v4_2 == v3 || v4_2 == v4
-//						|| v4_2 == v5 || v4_2 == v6 || v4_2 == v7 || v4_2 == v8
-//						|| v5_2 == v1 || v5_2 == v2 || v5_2 == v3 || v5_2 == v4
-//						|| v5_2 == v5 || v5_2 == v6 || v5_2 == v7 || v5_2 == v8
-//						|| v6_2 == v1 || v6_2 == v2 || v6_2 == v3 || v6_2 == v4
-//						|| v6_2 == v5 || v6_2 == v6 || v6_2 == v7 || v6_2 == v8
-//						|| v7_2 == v1 || v7_2 == v2 || v7_2 == v3 || v7_2 == v4
-//						|| v7_2 == v5 || v7_2 == v6 || v7_2 == v7 || v7_2 == v8
-//						|| v8_2 == v1 || v8_2 == v2 || v8_2 == v3 || v8_2 == v4
-//						|| v8_2 == v5 || v8_2 == v6 || v8_2 == v7
-//						|| v8_2 == v8) {
-//					// if a point of one region is at the same place of the point of another region
-//					++nb_inter_;
-//					std::cout << "the tetrahedron " << cur_reg_ << ":"
-//							<< cur_cell_
-//							<< " contains a point of the tetrahedron "
-//							<< cur_reg2_ << ":" << idx << " region:cell"
-//							<< std::endl;
+//					std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//							<< " contains a point of the cell " << cur_reg2_
+//							<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//					return;
+//				}
+////		else if (v1_2 == v1 || v1_2 == v2 || v1_2 == v3 || v1_2 == v4
+////						|| v1_2 == v5 || v1_2 == v6 || v1_2 == v7 || v1_2 == v8
+////						|| v2_2 == v1 || v2_2 == v2 || v2_2 == v3 || v2_2 == v4
+////						|| v2_2 == v5 || v2_2 == v6 || v2_2 == v7 || v2_2 == v8
+////						|| v3_2 == v1 || v3_2 == v2 || v3_2 == v3 || v3_2 == v4
+////						|| v3_2 == v5 || v3_2 == v6 || v3_2 == v7 || v3_2 == v8
+////						|| v4_2 == v1 || v4_2 == v2 || v4_2 == v3 || v4_2 == v4
+////						|| v4_2 == v5 || v4_2 == v6 || v4_2 == v7
+////						|| v4_2 == v8) {
+////					// if a point of one region is at the same place of the point of another region
+////					++nb_inter_;
+////					std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////							<< " contains a point of the cell " << cur_reg2_
+////							<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////					return;
+////				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 4) {
+//					vec3& v5_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 4));
+//					if (Math::point_inside_hexa(v5_2, v1, v2, v3, v4, v5, v6,
+//							v7, v8)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+////		else if (v5_2 == v1 || v5_2 == v2 || v5_2 == v3
+////							|| v5_2 == v4 || v5_2 == v5 || v5_2 == v6
+////							|| v5_2 == v7 || v5_2 == v8) {
+////						// if a point of one region is at the same place of the point of another region
+////						++nb_inter_;
+////						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////								<< " contains a point of the cell " << cur_reg2_
+////								<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////						return;
+////					}
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) > 5) {
+//					vec3& v6_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 5));
+//					if (Math::point_inside_hexa(v6_2, v1, v2, v3, v4, v5, v6,
+//							v7, v8)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+////		else if (v6_2 == v1 || v6_2 == v2 || v6_2 == v3
+////							|| v6_2 == v4 || v6_2 == v5 || v6_2 == v6
+////							|| v6_2 == v7 || v6_2 == v8) {
+////						// if a point of one region is at the same place of the point of another region
+////						++nb_inter_;
+////						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////								<< " contains a point of the cell " << cur_reg2_
+////								<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////						return;
+////					}
+//				}
+//				if (mm_.mesh(cur_reg2_).cells.nb_vertices(idx) == 8) {
+//					vec3& v7_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 6));
+//					vec3& v8_2 = mm_.mesh(cur_reg2_).vertices.point(
+//							mm_.mesh(cur_reg2_).cells.vertex(idx, 7));
+//					if (Math::point_inside_hexa(v7_2, v1, v2, v3, v4, v5, v6,
+//							v7, v8)
+//							&& Math::point_inside_hexa(v8_2, v1, v2, v3, v4, v5,
+//									v6, v7, v8)) {
+//						++nb_inter_;
+//						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+//								<< " contains a point of the cell " << cur_reg2_
+//								<< ":" << idx << " region:cell" << std::endl;
+//		fill_list_intersection(idx);
+//						return;
+//					}
+////		else if (v7_2 == v1 || v7_2 == v2 || v7_2 == v3
+////							|| v7_2 == v4 || v7_2 == v5 || v7_2 == v6
+////							|| v7_2 == v7 || v7_2 == v8 || v8_2 == v1
+////							|| v8_2 == v2 || v8_2 == v3 || v8_2 == v4
+////							|| v8_2 == v5 || v8_2 == v6 || v8_2 == v7
+////							|| v8_2 == v8) {
+////						// if a point of one region is at the same place of the point of another region
+////						++nb_inter_;
+////						std::cout << "the cell " << cur_reg_ << ":" << cur_cell_
+////								<< " contains a point of the cell " << cur_reg2_
+////								<< ":" << idx << " region:cell" << std::endl;
+////		fill_list_intersection(idx);
+////						return;
+////					}
 //				}
 //			}
 //		}
@@ -461,33 +831,10 @@ void DetectInter::operator()(index_t idx) {
 }
 
 index_t DetectInter::detect_mesh_intersection() {
-
-	std::cout << "cells " << mm_.cells.nb_cells() << std::endl;
-//// Display coordinates of the four points of all the tetrahedron
-//	for (index_t cur_reg = 0; cur_reg < mm_.nb_meshes(); cur_reg++) {
-//		for (index_t c = 0; c < mm_.mesh(cur_reg).cells.nb(); c++) {
-//
-//			vec3& v1 = mm_.mesh(cur_reg).vertices.point(
-//					mm_.mesh(cur_reg).cells.facet_vertex(c, 0, 0));
-//			vec3& v2 = mm_.mesh(cur_reg).vertices.point(
-//					mm_.mesh(cur_reg).cells.facet_vertex(c, 0, 1));
-//			vec3& v3 = mm_.mesh(cur_reg).vertices.point(
-//					mm_.mesh(cur_reg).cells.facet_vertex(c, 0, 2));
-//			vec3& v4 = mm_.mesh(cur_reg).vertices.point(
-//					mm_.mesh(cur_reg).cells.facet_vertex(c, 2, 2));
-//			std::cout << "c " << c << " mesh " << cur_reg << "   " << v1.x
-//					<< " " << v1.y << " " << v1.z << "   " << v2.x << " "
-//					<< v2.y << " " << v2.z << "   " << v3.x << " " << v3.y
-//					<< " " << v3.z << "   " << v4.x << " " << v4.y << " "
-//					<< v4.z << std::endl;
-//		}
-//	}
-
 	for (index_t m = 0; m < mm_.nb_meshes(); m++) {
 		cur_reg_ = m;
 		for (index_t c = 0; c < mm_.mesh(m).cells.nb(); c++) {
 			cur_cell_ = c;
-
 			// Get the bbox of c
 			Box box;
 			get_tet_bbox(mm_.mesh(m), box, c);
@@ -501,58 +848,49 @@ index_t DetectInter::detect_mesh_intersection() {
 		}
 	}
 
+//	//Display the elements of inter_
+//	for (index_t i = 0; i < inter_.size(); i++) {
+//		if (inter_[i]) {
+//			std::cout << "cell " << i << std::endl;
+//		}
+//	}
 	return nb_inter_;
 }
 
+void DetectInter::fill_list_intersection(index_t idx) {
+	int reg = cur_reg_;
+	int reg2 = cur_reg2_;
+	index_t id = idx;
+	index_t cell = cur_cell_;
+	while (reg2 - 1 >= 0) {
+		reg2 -= 1;
+		id += mm_.mesh(reg2).cells.nb();
+	}
+	if (!inter_[id]) {
+		inter_[id] = true;
+	}
+
+	while (reg - 1 >= 0) {
+		reg -= 1;
+		cell += mm_.mesh(reg).cells.nb();
+	}
+	if (!inter_[cell]) {
+		inter_[cell] = true;
+	}
 }
 
-//				index_t v1_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//						cur_cell_, 0, 0);
-//				index_t v2_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//						cur_cell_, 0, 1);
-//				index_t v3_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//						cur_cell_, 0, 2);
-//				index_t v4_index = mm_.mesh(cur_reg_).cells.facet_vertex(
-//						cur_cell_, 2, 2);
-//
-//				vec3 v1 = mm_.mesh(cur_reg_).vertices.point(v1_index);
-//				vec3 v2 = mm_.mesh(cur_reg_).vertices.point(v2_index);
-//				vec3 v3 = mm_.mesh(cur_reg_).vertices.point(v3_index);
-//				vec3 v4 = mm_.mesh(cur_reg_).vertices.point(v4_index);
-//
-//				double V[4][3] = { { v1.x, v1.y, v1.z }, { v2.x, v2.y, v2.z }, {
-//						v3.x, v3.y, v3.z }, { v4.x, v4.y, v4.z } };
-//
-//				std::cout << "coord " << cur_reg_ << " " << cur_cell_ << " "
-//						<< v1.x << " " << v1.y << " " << v1.z << "     " << v2.x
-//						<< " " << v2.y << " " << v2.z << "     " << v3.x << " "
-//						<< v3.y << " " << v3.z << "     " << v4.x << " " << v4.y
-//						<< " " << v4.z << std::endl;
+index_t DetectInter::check_volumes() {
+	for (index_t m = 0; m < mm_.nb_meshes(); m++) {
+		for (index_t c = 0; c < mm_.mesh(m).cells.nb(); c++) {
+			if (mm_.mesh(m).cells.nb_vertices(c) == 4) {
+				mm_.mesh(m).cells;
+				index_t B;
+				index_t h;
+				index_t vol = 1 / 3 * B * h;
+			}
+		}
+	}
 
-//*************************************
-//**********  In a region   ***********
-//	std::cout << "x "
-//			<< mm_.mesh(0).vertices.point(
-//					mm_.mesh(0).cells.facet_vertex(9, 0, 0)).x << " y "
-//			<< mm_.mesh(0).vertices.point(
-//					mm_.mesh(0).cells.facet_vertex(9, 0, 0)).y << " z "
-//			<< mm_.mesh(0).vertices.point(
-//					mm_.mesh(0).cells.facet_vertex(9, 0, 0)).z << std::endl;
-//	mm_.mesh(0).vertices.point(mm_.mesh(0).cells.facet_vertex(9, 0, 0)).x = 3;
-//	mm_.mesh(0).vertices.point(mm_.mesh(0).cells.facet_vertex(9, 0, 0)).y = 3;
-//	mm_.mesh(0).vertices.point(mm_.mesh(0).cells.facet_vertex(9, 0, 0)).z = -3;
-//*************************************
+	return 0;
 
-//*************************************
-//*********  Between regions   ********
-//	std::cout << "x "
-//			<< mm_.mesh(1).vertices.point(
-//					mm_.mesh(1).cells.facet_vertex(0, 0, 0)).x << " y "
-//			<< mm_.mesh(1).vertices.point(
-//					mm_.mesh(1).cells.facet_vertex(0, 0, 0)).y << " z "
-//			<< mm_.mesh(1).vertices.point(
-//					mm_.mesh(1).cells.facet_vertex(0, 0, 0)).z << std::endl;
-//	mm_.mesh(1).vertices.point(mm_.mesh(1).cells.facet_vertex(0, 0, 0)).x = 9;
-//	mm_.mesh(1).vertices.point(mm_.mesh(1).cells.facet_vertex(0, 0, 0)).y = 9;
-//	mm_.mesh(1).vertices.point(mm_.mesh(1).cells.facet_vertex(0, 0, 0)).z = -9;
-//*************************************
+}
