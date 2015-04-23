@@ -405,6 +405,19 @@ namespace RINGMesh {
     }
 
     /*!
+     * Clear the MacroMeshVertices database
+     */
+    void MacroMeshVertices::clear()
+    {
+        unique_vertices_.clear() ;
+        global_vertex_indices_.clear() ;
+        vertex2mesh_.clear() ;
+        cell_corners_.clear() ;
+        mesh_cell_corner_ptr_.clear() ;
+        duplicated_vertex_indices_.clear() ;
+    }
+
+    /*!
      * Initialize the facet database of the MacroMesh
      */
     void MacroMeshFacets::initialize()
@@ -594,6 +607,19 @@ namespace RINGMesh {
             const_cast< MacroMeshFacets* >( this )->initialize() ;
         }
         return surface_end( s ) - surface_begin( s ) ;
+    }
+
+    /*!
+     * Clear the MacroMeshFacets database
+     */
+    void MacroMeshFacets::clear()
+    {
+        surface_facets_.clear() ;
+        surface_facet_ptr_.clear() ;
+        surface2mesh_.clear() ;
+        nb_facets_ = 0 ;
+        nb_triangle_ = 0 ;
+        nb_quad_ = 0 ;
     }
 
     /*!
@@ -893,6 +919,20 @@ namespace RINGMesh {
         return cells_[mesh_cell_ptr_[NB_CELL_TYPES * r + 3] + h] ;
     }
 
+    /*!
+     * Clear the MacroMeshCells database
+     */
+    void MacroMeshCells::clear()
+    {
+        cells_.clear() ;
+        cell_adjacents_.clear() ;
+        mesh_cell_ptr_.clear() ;
+        nb_cells_ = 0 ;
+        nb_tet_ = 0 ;
+        nb_pyramid_ = 0 ;
+        nb_prism_ = 0 ;
+        nb_hex_ = 0 ;
+    }
 
     MacroMeshTools::MacroMeshTools( MacroMesh& mm )
         : mm_( mm ),

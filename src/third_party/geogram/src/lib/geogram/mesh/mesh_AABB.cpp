@@ -46,6 +46,7 @@
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_reorder.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_repair.h>
 #include <geogram/numerics/predicates.h>
 #include <geogram/basic/geometry_nd.h>
 
@@ -325,7 +326,9 @@ namespace GEO {
         Mesh& M, bool reorder
     ) :
         mesh_(M) {
-        geo_assert(mesh_.facets.are_simplices());
+        if(!M.facets.are_simplices()) {
+            mesh_repair(M, MESH_REPAIR_TRIANGULATE);
+        }
         if(reorder) {
             mesh_reorder(mesh_, MESH_ORDER_MORTON);
         }
@@ -443,7 +446,6 @@ namespace GEO {
 /****************************************************************************/
 
     MeshCellsAABB::MeshCellsAABB(Mesh& M, bool reorder) : mesh_(M) {
-//        geo_assert(mesh_.cells.are_simplices());
         if(reorder) {
             mesh_reorder(mesh_, MESH_ORDER_MORTON);
         }

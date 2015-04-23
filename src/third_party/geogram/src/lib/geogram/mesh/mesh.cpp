@@ -607,9 +607,39 @@ namespace GEO {
             }
             
         } else {
-            // Permutation for arbitrary polygons, not implemented yet
-            // needs to copy things and apply the permutation out-of-place.
-            geo_assert_not_reached;
+
+            {
+                vector<index_t> new_corner_vertex;
+                new_corner_vertex.reserve(corner_vertex.size());
+                vector<index_t> new_corner_adjacent_facet;
+                new_corner_adjacent_facet.reserve(corner_adjacent_facet.size());
+                vector<index_t> new_facet_ptr;
+                new_facet_ptr.reserve(nb()+1);
+
+                new_facet_ptr.push_back(0);
+                for(index_t new_f=0; new_f<nb(); ++new_f) {
+                    index_t old_f = permutation[new_f];
+                    for(index_t old_c = corners_begin(old_f); old_c < corners_end(old_f); ++old_c) {
+                        new_corner_vertex.push_back(mesh_.facet_corners.vertex(old_c));
+                        new_corner_adjacent_facet.push_back(mesh_.facet_corners.adjacent_facet(old_c));
+                    }
+                    new_facet_ptr.push_back(new_facet_ptr[new_facet_ptr.size()-1] + nb_vertices(old_f));
+                }
+
+                corner_vertex.swap(new_corner_vertex);
+                corner_adjacent_facet.swap(new_corner_adjacent_facet);
+                facet_ptr_.swap(new_facet_ptr);
+            }
+
+
+            Permutation::invert(permutation);
+                
+            for(index_t c = 0; c < corner_adjacent_facet.size(); ++c) {
+                if(corner_adjacent_facet[c] != NO_FACET) {
+                    corner_adjacent_facet[c] =
+                        permutation[corner_adjacent_facet[c]];
+                }
+            }
         }
     }
 
@@ -1013,8 +1043,10 @@ namespace GEO {
                 cells_old2new[c] = NO_CELL;
             } else {
                 cells_old2new[c] = new_nb_cells;
+
                 if(!is_simplicial_) {
                     cell_ptr_[new_nb_cells] = new_nb_corner_facets;
+                    cell_type_[new_nb_cells] = cell_type_[c];
                 }
 
                 index_t b,e;
@@ -1130,17 +1162,17 @@ namespace GEO {
             vector<index_t> new_cell_ptr(nb()+1);
             vector<index_t> new_corner_vertex(cell_corners_.nb());
             vector<index_t> new_facet_adjacent_cell(cell_facets_.nb());
-
+            
             index_t new_ptr = 0;
             for(index_t new_c=0; new_c<nb(); ++new_c) {
-                index_t c = permutation[new_c];
-                index_t ptr = cell_ptr_[c];
-                index_t cell_size = geo_max(nb_vertices(c), nb_facets(c));
+                index_t old_c = permutation[new_c];
+                index_t old_ptr = cell_ptr_[old_c];
+                index_t cell_size = geo_max(nb_vertices(old_c), nb_facets(old_c));
                 new_cell_ptr[new_c] = new_ptr;
                 for(index_t i=0; i<cell_size; ++i) {
-                    new_corner_vertex[new_ptr+i] = corner_vertex[ptr+i];
+                    new_corner_vertex[new_ptr+i] = corner_vertex[old_ptr+i];
                     new_facet_adjacent_cell[new_ptr+i] =
-                        facet_adjacent_cell[ptr+i];
+                        facet_adjacent_cell[old_ptr+i];
                 }
                 new_ptr += cell_size;
             }
@@ -1161,6 +1193,7 @@ namespace GEO {
 
             corner_vertex.swap(new_corner_vertex);
             facet_adjacent_cell.swap(new_facet_adjacent_cell);
+            cell_ptr_.swap(new_cell_ptr);
         }
     }
 
