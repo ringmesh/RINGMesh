@@ -48,12 +48,16 @@ int main( int argc, char** argv )
     GEO::Logger::out("TEST") << "Test IO for a BoundaryModel in .ml" << std::endl ;
 
     BoundaryModel in ;
-    RINGMeshIO::load( "../data/model1.ml", in ) ;
-    RINGMeshIO::save( in, "out.ml" ) ;
+    if( !RINGMeshIO::load( "../data/model1.ml", in ) )
+        return 1 ;
+    if( !RINGMeshIO::save( in, "out.ml" ) )
+        return 1 ;
 
     BoundaryModel in2 ;
-    RINGMeshIO::load( "out.ml", in2 ) ;
-    RINGMeshIO::save( in2, "out2.ml" ) ;
+    if( !RINGMeshIO::load( "out.ml", in2 ) )
+        return 1 ;
+    if( !RINGMeshIO::save( in2, "out2.ml" ) )
+        return 1 ;
 
     bool res = Utils::compare_file( "out.ml", "out2.ml" ) ;
     if( res )
