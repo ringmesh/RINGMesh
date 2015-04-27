@@ -217,6 +217,10 @@ namespace RINGMesh {
             index_t region,
             std::vector< Edge >& edges ) const ;
 
+        void get_region_edges(
+            index_t region,
+            std::vector< std::vector< Edge > >& edges ) const ;
+
         const BoundaryModel* model() const { return model_ ;}
         void set_model( RINGMesh::BoundaryModel* model ) { model_ = model ;}
         bool is_well_already_added( const std::string& name ) const ;

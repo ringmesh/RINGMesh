@@ -41,6 +41,7 @@
 #include <ringmesh/macro_mesh.h>
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/tetra_gen.h>
+#include <ringmesh/well.h>
 
 #include <geogram/basic/progress.h>
 #include <geogram/mesh/mesh_AABB.h>
@@ -997,8 +998,8 @@ namespace RINGMesh {
         :
             model_( model ),
             meshes_( model.nb_regions(), nil ),
-            well_vertices_( model.nb_regions() ),
             mode_( NONE ),
+            wells_( nil ),
             vertices( *this ),
             facets( *this ),
             cells( *this ),
@@ -1013,9 +1014,9 @@ namespace RINGMesh {
         :
             model_( mm.model() ),
             meshes_( mm.model().nb_regions(), nil ),
-            well_vertices_( mm.model().nb_regions() ),
             mode_( mm.mode_ ),
             vertices( *this ),
+            wells_( nil ),
             facets( *this ),
             cells( *this ),
             tools( *this )
@@ -1118,8 +1119,7 @@ namespace RINGMesh {
                 const std::vector< vec3 >& vertices =
                     internal_vertices.empty() ? std::vector< vec3 >() : internal_vertices[i] ;
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
-                    &model_.region( i ), add_steiner_points, vertices,
-                    well_vertices( i ) ) ;
+                    &model_.region( i ), add_steiner_points, vertices, wells() ) ;
                 GEO::Logger::instance()->set_quiet( true ) ;
                 tetragen->tetrahedralize() ;
                 GEO::Logger::instance()->set_quiet( false ) ;
@@ -1130,12 +1130,16 @@ namespace RINGMesh {
                 internal_vertices.empty() ?
                     std::vector< vec3 >() : internal_vertices[region_id] ;
             TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
-                &model_.region( region_id ), add_steiner_points, vertices,
-                well_vertices( region_id ) ) ;
+                &model_.region( region_id ), add_steiner_points, vertices, wells() ) ;
             GEO::Logger::instance()->set_quiet( true ) ;
             tetragen->tetrahedralize() ;
             GEO::Logger::instance()->set_quiet( false ) ;
         }
+    }
+
+    void MacroMesh::add_wells( const WellGroup* wells )
+    {
+        wells_ = wells ;
     }
 
 }
