@@ -41,6 +41,7 @@
 
 #include <ringmesh/tetra_gen.h>
 #include <ringmesh/boundary_model_element.h>
+#include <ringmesh/well.h>
 
 #include <geogram/mesh/mesh_tetrahedralize.h>
 
@@ -94,16 +95,16 @@ namespace RINGMesh {
         const BoundaryModelElement* region,
         bool add_steiner_points,
         const std::vector< vec3 >& internal_vertices,
-        const std::vector< std::vector< Edge > >& well_vertices )
+        const WellGroup* wells )
     {
         switch( method ) {
             case TetGen:
                 return new TetraGen_TetGen( tetmesh, region, add_steiner_points,
-                    internal_vertices, well_vertices ) ;
+                    internal_vertices, wells ) ;
 #ifdef USE_MG_TETRA
             case MG_Tetra:
                 return new TetraGen_MG_Tetra( tetmesh, region, add_steiner_points,
-                    internal_vertices, well_vertices ) ;
+                    internal_vertices, wells ) ;
 #endif
             default:
                 return nil ;
@@ -115,10 +116,11 @@ namespace RINGMesh {
         const BoundaryModelElement* region,
         bool refine,
         const std::vector< vec3 >& internal_vertices,
-        const std::vector< std::vector< Edge > >& well_edges )
+        const WellGroup* wells )
         :
             tetmesh_( tetmesh ),
             region_( region ),
+            wells_( wells ),
             refine_( refine )
     {
 
@@ -138,6 +140,10 @@ namespace RINGMesh {
             unique_surfaces.push_back( &surface ) ;
         }
 
+        std::vector< std::vector< Edge > > well_edges ;
+        if( wells_ ) {
+            wells->get_region_edges( region->id(), well_edges ) ;
+        }
         index_t nb_points_without_well = nb_points ;
         nb_points += well_edges.size() ;
         MakeUnique uniqueID( unique_surfaces, true ) ;
@@ -234,9 +240,9 @@ namespace RINGMesh {
         const BoundaryModelElement* region,
         bool add_steiner_points,
         const std::vector< vec3 >& internal_vertices,
-        const std::vector< std::vector< Edge > >& well_edges )
+        const WellGroup* wells )
         :
-            TetraGen( tetmesh, region, add_steiner_points, internal_vertices, well_edges )
+            TetraGen( tetmesh, region, add_steiner_points, internal_vertices, wells )
     {
     }
 
@@ -254,9 +260,9 @@ namespace RINGMesh {
         const BoundaryModelElement* region,
         bool add_steiner_points,
         const std::vector< vec3 >& internal_vertices,
-        const std::vector< std::vector< Edge > >& well_vertices )
+        const WellGroup* wells )
         :
-            TetraGen( tetmesh, region, add_steiner_points, internal_vertices, well_vertices ),
+            TetraGen( tetmesh, region, add_steiner_points, internal_vertices, wells ),
             mesh_output_( nil )
     {
         fpos_t pos ;

@@ -176,6 +176,17 @@ namespace RINGMesh {
         }
     }
 
+    void WellGroup::get_region_edges(
+        index_t region,
+        std::vector< std::vector< Edge > >& edges ) const
+    {
+        edges.clear() ;
+        edges.resize( nb_wells() ) ;
+        for( index_t w = 0; w < nb_wells(); w++ ) {
+            const Well& cur_well = well( w ) ;
+            cur_well.get_region_edges( region, edges[w] ) ;
+        }
+    }
 
     struct LineInstersection {
         LineInstersection(

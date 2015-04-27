@@ -90,6 +90,11 @@ namespace RINGMesh {
         {
         }
 
+        ~BoundaryModelVertices() {
+            if( ann_ ) delete ann_ ;
+        }
+
+
         /*!
          * @brief Number of vertices stored. 
          * @details Calls initialize_unique_vertices(), if no vertices yet

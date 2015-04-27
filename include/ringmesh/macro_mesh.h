@@ -54,6 +54,7 @@ namespace GEO {
 namespace RINGMesh {
     class BoundaryModel ;
     class MacroMesh ;
+    class WellGroup ;
 }
 
 namespace RINGMesh {
@@ -379,15 +380,9 @@ namespace RINGMesh {
             return meshes_.size() ;
         }
 
-        std::vector< std::vector< Edge > >& well_vertices( index_t region )
-        {
-            return well_vertices_[ region ] ;
-        }
-
-        const std::vector< std::vector< Edge > >& well_vertices( index_t region )
-        const
-        {
-            return well_vertices_[ region ] ;
+        void add_wells( const WellGroup* wells ) ;
+        const WellGroup* wells() const {
+            return wells_ ;
         }
 
         /*!
@@ -426,8 +421,8 @@ namespace RINGMesh {
         /// Optional duplication mode to compute the duplication of vertices on surfaces
         DuplicateMode mode_ ;
 
-        /// Vector of constrained edges, one vector by region by well (well_vertices_[r][w] = edges of well w in the region r)
-        std::vector< std::vector< std::vector< Edge > > > well_vertices_ ;
+        /// Optional WellGroup associated with the model
+        const WellGroup* wells_ ;
 
     public:
         /// Optional storage of the MacroMesh vertices
