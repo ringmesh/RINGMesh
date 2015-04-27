@@ -58,10 +58,12 @@
 #endif
 
 namespace RINGMesh {
-
     class BoundaryModelElement ;
     class TetraGen ;
+    class WellGroup ;
+}
 
+namespace RINGMesh {
     typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
 
     static const std::vector< vec3 > vector_vec3 ;
@@ -75,7 +77,7 @@ namespace RINGMesh {
             const BoundaryModelElement* region,
             bool add_steiner_points = true,
             const std::vector< vec3 >& internal_vertices = vector_vec3,
-            const std::vector< std::vector< Edge > >& well_vertices = vector_edge ) ;
+            const WellGroup* wells = nil ) ;
 
         virtual bool tetrahedralize() = 0 ;
 
@@ -89,7 +91,7 @@ namespace RINGMesh {
             const BoundaryModelElement* region,
             bool refine,
             const std::vector< vec3 >& internal_vertices,
-            const std::vector< std::vector< Edge > >& well_edges ) ;
+            const WellGroup* wells ) ;
 
         void initialize_storage( index_t nb_points, index_t nb_tets ) ;
         void set_point( index_t index, const double* point ) ;
@@ -98,6 +100,7 @@ namespace RINGMesh {
     protected:
         GEO::Mesh& tetmesh_ ;
         const BoundaryModelElement* region_ ;
+        const WellGroup* wells_ ;
         index_t internal_vertices_ptr_ ;
         bool refine_ ;
     } ;
@@ -110,7 +113,7 @@ namespace RINGMesh {
             const BoundaryModelElement* region,
             bool add_steiner_points,
             const std::vector< vec3 >& internal_vertices,
-            const std::vector< std::vector< Edge > >& well_vertices ) ;
+            const WellGroup* wells ) ;
         virtual ~TetraGen_TetGen() {} ;
 
         virtual bool tetrahedralize() ;
@@ -124,7 +127,7 @@ namespace RINGMesh {
             const BoundaryModelElement* region,
             bool add_steiner_points,
             const std::vector< vec3 >& internal_vertices,
-            const std::vector< std::vector< Edge > >& well_vertices ) ;
+            const WellGroup* wells ) ;
         virtual ~TetraGen_MG_Tetra() ;
 
         virtual bool tetrahedralize() ;
