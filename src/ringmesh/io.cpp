@@ -2217,7 +2217,7 @@ namespace RINGMesh {
                     for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                         const BoundaryModelElement& interf = model.one_interface( i ) ;
                         index_t s_id = interf.child_id( 0 ).index ;
-                        kine3d << offset_region + 2 * i << ":" << interf.name()
+                        kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
                             << ",1," ;
                         const RINGMesh::BoundaryModelElement::GEOL_FEATURE feature =
                             model.one_interface( i ).geological_feature() ;

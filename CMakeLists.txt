@@ -49,6 +49,16 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 ##############################################################################
+# Geogram_gfx
+IF(NOT DEFINED RINGMESH_WITH_GRAPHICS)
+  SET(RINGMESH_WITH_GRAPHICS FALSE)
+ENDIF(NOT DEFINED RINGMESH_WITH_GRAPHICS)
+if(${RINGMESH_WITH_GRAPHICS})
+    add_definitions(-DRINGMESH_WITH_GRAPHICS)
+endif()
+
+
+##############################################################################
 # MG-Tetra
 IF(NOT DEFINED USE_MG_TETRA)
   SET(USE_MG_TETRA FALSE)
@@ -110,7 +120,9 @@ target_link_libraries(${RINGMESH_PROJECT} geogram)
 IF(${USE_MG_TETRA})
   target_link_libraries(${RINGMESH_PROJECT} meshgems mg-tetra)
 ENDIF(${USE_MG_TETRA})
-
+if(${RINGMESH_WITH_GRAPHICS})
+  TARGET_LINK_LIBRARIES(${RINGMESH_PROJECT} geogram_gfx)
+endif()
 IF(WIN32)
     target_link_libraries(${RINGMESH_PROJECT} psapi)
 ENDIF(WIN32)

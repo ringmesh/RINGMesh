@@ -59,6 +59,10 @@
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
 
+#ifdef RINGMESH_WITH_GRAPHICS
+#   include <geogram_gfx/basic/common.h>
+#endif
+
 static bool inited = false ;
 INITIALIZER( initialize ) {
     if( !inited ) {
@@ -71,6 +75,11 @@ INITIALIZER( initialize ) {
         GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
         GEO::CmdLine::import_arg_group( "log" ) ;
         GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
+
+#ifdef RINGMESH_WITH_GRAPHICS
+        GEO::Graphics::initialize();
+        GEO::CmdLine::import_arg_group( "gfx" ) ;
+#endif
 
         // Initialization for BoundaryModel attribute serialization
 //        RINGMesh::AttributeSerializer::initialize() ;
