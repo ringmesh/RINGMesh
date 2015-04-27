@@ -59,6 +59,7 @@ namespace RINGMesh {
         : BoundaryModelMeshElementGfx( corner )
     {
         vertices_visible_ = true ;
+        gfx_.set_points_color( 1, 0, 0 ) ;
     }
 
     LineGfx::LineGfx( const Line& line )
@@ -81,18 +82,25 @@ namespace RINGMesh {
     void BoundaryModelGfx::set_boundary_model( const BoundaryModel& model )
     {
         model_ = &model ;
-        corners_.resize( model_->nb_corners(), nil ) ;
-        lines_.resize( model_->nb_lines(), nil ) ;
-        surfaces_.resize( model_->nb_surfaces(), nil ) ;
+        initialize() ;
+    }
 
-        for( index_t c = 0; c < corners_.size(); c++ ) {
-            corners_[c] = new CornerGfx( model_->corner( c ) ) ;
-        }
-        for( index_t l = 0; l < lines_.size(); l++ ) {
-            lines_[l] = new LineGfx( model_->line( l ) ) ;
-        }
-        for( index_t s = 0; s < surfaces_.size(); s++ ) {
-            surfaces_[s] = new SurfaceGfx( model_->surface( s ) ) ;
+    void BoundaryModelGfx::initialize()
+    {
+        if( corners_.empty() && lines_.empty() && surfaces_.empty() ) {
+            corners_.resize( model_->nb_corners(), nil ) ;
+            lines_.resize( model_->nb_lines(), nil ) ;
+            surfaces_.resize( model_->nb_surfaces(), nil ) ;
+
+            for( index_t c = 0; c < corners_.size(); c++ ) {
+                corners_[c] = new CornerGfx( model_->corner( c ) ) ;
+            }
+            for( index_t l = 0; l < lines_.size(); l++ ) {
+                lines_[l] = new LineGfx( model_->line( l ) ) ;
+            }
+            for( index_t s = 0; s < surfaces_.size(); s++ ) {
+                surfaces_[s] = new SurfaceGfx( model_->surface( s ) ) ;
+            }
         }
     }
 
@@ -101,6 +109,36 @@ namespace RINGMesh {
         for( index_t c = 0; c < corners_.size(); c++ ) {
             if( corners_[c]->get_vertices_visible() ) corners_[c]->gfx().draw_vertices() ;
         }
+    }
+    void BoundaryModelGfx::set_corners_color( float r, float g, float b )
+    {
+        for( index_t c = 0; c < corners_.size(); c++ ) {
+            set_corner_color( c, r, g, b ) ;
+        }
+    }
+    void BoundaryModelGfx::set_corner_color( index_t c, float r, float g, float b )
+    {
+        corners_[c]->gfx().set_points_color( r, g, b ) ;
+    }
+    void BoundaryModelGfx::set_corners_visibility( bool b )
+    {
+        for( index_t c = 0; c < corners_.size(); c++ ) {
+            set_corner_visibility( c, b ) ;
+        }
+    }
+    void BoundaryModelGfx::set_corner_visibility( index_t c, bool b )
+    {
+        corners_[c]->set_vertices_visible( b ) ;
+    }
+    void BoundaryModelGfx::set_corners_size( index_t s )
+    {
+        for( index_t c = 0; c < corners_.size(); c++ ) {
+            set_corner_size( c, s ) ;
+        }
+    }
+    void BoundaryModelGfx::set_corner_size( index_t c, index_t s )
+    {
+        corners_[c]->gfx().set_points_size( s ) ;
     }
 
 } // namespace

@@ -100,10 +100,18 @@ namespace RINGMesh {
         BoundaryModelGfx() ;
 
         void set_boundary_model( const BoundaryModel& model ) ;
+        void initialize() ;
 
         void draw_corners() ;
         void draw_lines() ;
         void draw_surfaces() ;
+
+        void set_corners_color( float r, float g, float b ) ;
+        void set_corner_color( index_t c, float r, float g, float b ) ;
+        void set_corners_visibility( bool b ) ;
+        void set_corner_visibility( index_t c, bool b ) ;
+        void set_corners_size( index_t s ) ;
+        void set_corner_size( index_t c, index_t s ) ;
 
     private:
 
