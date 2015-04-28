@@ -38,8 +38,6 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
-
 #ifndef __RINGMESH_GFX__
 #define __RINGMESH_GFX__
 
