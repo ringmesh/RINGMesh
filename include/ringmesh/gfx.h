@@ -62,6 +62,7 @@ namespace RINGMesh {
         ringmesh_disable_copy( BoundaryModelGfx ) ;
     public:
         BoundaryModelGfx() ;
+        ~BoundaryModelGfx() ;
 
         void set_boundary_model( const BoundaryModel& model ) ;
         void initialize() ;
@@ -111,12 +112,14 @@ namespace RINGMesh {
         void set_vertex_surface_size( index_t c, index_t s ) ;
 
     private:
-
+        /// The BoundaryModel associated to the graphics
         const BoundaryModel* model_ ;
 
-        // Base manifold elements of a model
+        /// The graphics associated to each Corner
         std::vector< CornerGfx* > corners_ ;
+        /// The graphics associated to each Line
         std::vector< LineGfx* > lines_ ;
+        /// The graphics associated to each Surface
         std::vector< SurfaceGfx* > surfaces_ ;
 
     } ;
