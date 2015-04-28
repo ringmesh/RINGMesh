@@ -1316,7 +1316,7 @@ namespace GEO {
     }
 
     void MeshGfx::draw_edges() {
-        if(mesh_->facets.nb() == 0) {
+        if(mesh_->edges.nb() == 0) {
             return;
         }
         glLineWidth(GLfloat(mesh_width_));        
