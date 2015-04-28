@@ -930,14 +930,6 @@ namespace GEO {
     
 
     void MeshGfx::setup_shaders() {
-
-        /*
-        Logger::out("GLSL")
-            << "version = "
-            << glGetString(GL_SHADING_LANGUAGE_VERSION)
-            << std::endl;
-        */
-        
         if(shaders_init_) {
             return;
         }
@@ -956,9 +948,11 @@ namespace GEO {
         const char* shading_language_ver_str = (const char*)glGetString(
             GL_SHADING_LANGUAGE_VERSION
         );
-        Logger::out("GLSL") << "version = "
+        Logger::out("GLSL") << "version string = "
             << shading_language_ver_str << std::endl;
         double shading_language_ver = atof(shading_language_ver_str);
+        Logger::out("GLSL") << "version = " << shading_language_ver
+                            << std::endl;
         if(shading_language_ver < 1.5) {
             Logger::out("GLSL")
                 << "Deactivated (requires GLSL version >= 1.50)"
@@ -1239,11 +1233,6 @@ namespace GEO {
         glMaterialfv(GL_FRONT, GL_DIFFUSE, colors_[name]);        
         glMaterialfv(GL_BACK, GL_DIFFUSE, back_colors_[name]);
         glColor3f(colors_[name][0], colors_[name][1], colors_[name][2]);
-        if(name == PRG_TET){
-            std::cout << "color for PRG tet : r   " << colors_[name][0] << std::endl;
-            std::cout << "color for PRG tet : v   " << colors_[name][1] << std::endl;
-            std::cout << "color for PRG tet : b   " << colors_[name][2] << std::endl;
-        }
     }
     
     void MeshGfx::begin_shader(ShaderName name) {
@@ -1752,7 +1741,6 @@ namespace GEO {
     }
 
     void MeshGfx::draw_cells() {
-        std::cout << "MeshGfx::draw_cells" << std::endl;
         begin_draw(MESH_CELLS);
 
         glCullFace(GL_FRONT);
