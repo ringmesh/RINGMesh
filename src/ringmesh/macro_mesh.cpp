@@ -1120,9 +1120,9 @@ namespace RINGMesh {
                     internal_vertices.empty() ? std::vector< vec3 >() : internal_vertices[i] ;
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
                     &model_.region( i ), add_steiner_points, vertices, wells() ) ;
-                GEO::Logger::instance()->set_quiet( true ) ;
+                GEO::Logger::instance()->set_minimal( true ) ;
                 tetragen->tetrahedralize() ;
-                GEO::Logger::instance()->set_quiet( false ) ;
+                GEO::Logger::instance()->set_minimal( false ) ;
                 progress.next() ;
             }
         } else {
