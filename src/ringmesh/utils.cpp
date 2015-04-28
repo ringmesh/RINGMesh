@@ -644,6 +644,8 @@ namespace RINGMesh {
                 return false ;
             }
         } while( lFile.good() || rFile.good() ) ;
+        delete[] lBuffer ;
+        delete[] rBuffer ;
         return true ;
     }
 
