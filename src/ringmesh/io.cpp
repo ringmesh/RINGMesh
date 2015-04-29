@@ -486,10 +486,10 @@ namespace RINGMesh {
                     GEO::Mesh& m = mm.mesh( r ) ;
                     std::string ext = GEO::FileSystem::extension( filename ) ;
                     if( ext == "meshb" ) {
-                        GEO::Logger::instance()->set_quiet( true ) ;
+                        GEO::Logger::instance()->set_minimal( true ) ;
                         GEO::mesh_load( GEO::String::to_string( filename ), m,
                             flags ) ;
-                        GEO::Logger::instance()->set_quiet( false ) ;
+                        GEO::Logger::instance()->set_minimal( false ) ;
                     } else {
                         ringmesh_assert_not_reached;
                     }
@@ -636,9 +636,9 @@ namespace RINGMesh {
                 flags.set_element( GEO::MESH_FACETS ) ;
                 flags.set_element( GEO::MESH_CELLS ) ;
                 flags.set_attribute( GEO::MESH_FACET_REGION ) ;
-                GEO::Logger::instance()->set_quiet( true ) ;
+                GEO::Logger::instance()->set_minimal( true ) ;
                 GEO::mesh_save( mesh, filename, flags ) ;
-                GEO::Logger::instance()->set_quiet( false ) ;
+                GEO::Logger::instance()->set_minimal( false ) ;
 
                 return true ;
             }

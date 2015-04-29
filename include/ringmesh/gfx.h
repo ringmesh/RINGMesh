@@ -38,8 +38,6 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
-
 #ifndef __RINGMESH_GFX__
 #define __RINGMESH_GFX__
 
@@ -51,53 +49,20 @@
 
 namespace RINGMesh {
     class BoundaryModel ;
-    class BoundaryModelMeshElement ;
-    class Corner ;
-    class Line ;
-    class Surface ;
+    class MacroMesh ;
+    class CornerGfx ;
+    class LineGfx ;
+    class SurfaceGfx ;
+    class RegionGfx ;
 }
 
 namespace RINGMesh {
-
-    class RINGMESH_API BoundaryModelMeshElementGfx {
-        ringmesh_disable_copy( BoundaryModelMeshElementGfx ) ;
-    public:
-        BoundaryModelMeshElementGfx( const BoundaryModelMeshElement& mesh ) ;
-
-        GEO::MeshGfx& gfx() {
-            return gfx_ ;
-        }
-
-        void set_vertices_visible( bool b ) { vertices_visible_ = b ; }
-        bool get_vertices_visible() const { return vertices_visible_ ; }
-
-    protected:
-        GEO::MeshGfx gfx_ ;
-
-        bool vertices_visible_ ;
-    } ;
-
-    class RINGMESH_API CornerGfx: public BoundaryModelMeshElementGfx {
-    public:
-        CornerGfx( const Corner& corner ) ;
-    } ;
-
-    class RINGMESH_API LineGfx: public BoundaryModelMeshElementGfx {
-    public:
-        LineGfx( const Line& line ) ;
-    } ;
-
-    class RINGMESH_API SurfaceGfx: public BoundaryModelMeshElementGfx {
-    public:
-        SurfaceGfx( const Surface& surface ) ;
-    } ;
-
-
 
     class RINGMESH_API BoundaryModelGfx {
         ringmesh_disable_copy( BoundaryModelGfx ) ;
     public:
         BoundaryModelGfx() ;
+        ~BoundaryModelGfx() ;
 
         void set_boundary_model( const BoundaryModel& model ) ;
         void initialize() ;
@@ -113,17 +78,93 @@ namespace RINGMesh {
         void set_corners_size( index_t s ) ;
         void set_corner_size( index_t c, index_t s ) ;
 
-    private:
+        void set_edge_lines_color( float r, float g, float b ) ;
+        void set_edge_line_color( index_t c, float r, float g, float b ) ;
+        void set_edge_lines_visibility( bool b ) ;
+        void set_edge_line_visibility( index_t c, bool b ) ;
+        void set_edge_lines_size( index_t s ) ;
+        void set_edge_line_size( index_t c, index_t s ) ;
 
+        void set_vertex_lines_color( float r, float g, float b ) ;
+        void set_vertex_line_color( index_t c, float r, float g, float b ) ;
+        void set_vertex_lines_visibility( bool b ) ;
+        void set_vertex_line_visibility( index_t c, bool b ) ;
+        void set_vertex_lines_size( index_t s ) ;
+        void set_vertex_line_size( index_t c, index_t s ) ;
+
+        void set_surfaces_color( float r, float g, float b ) ;
+        void set_surface_color( index_t c, float r, float g, float b ) ;
+        void set_surfaces_visibility( bool b ) ;
+        void set_surface_visibility( index_t c, bool b ) ;
+
+        void set_mesh_surfaces_color( float r, float g, float b ) ;
+        void set_mesh_surface_color( index_t c, float r, float g, float b ) ;
+        void set_mesh_surfaces_visibility( bool b ) ;
+        void set_mesh_surface_visibility( index_t c, bool b ) ;
+        void set_mesh_surfaces_size( index_t s ) ;
+        void set_mesh_surface_size( index_t c, index_t s ) ;
+
+        void set_vertex_surfaces_color( float r, float g, float b ) ;
+        void set_vertex_surface_color( index_t c, float r, float g, float b ) ;
+        void set_vertex_surfaces_visibility( bool b ) ;
+        void set_vertex_surface_visibility( index_t c, bool b ) ;
+        void set_vertex_surfaces_size( index_t s ) ;
+        void set_vertex_surface_size( index_t c, index_t s ) ;
+
+    private:
+        /// The BoundaryModel associated to the graphics
         const BoundaryModel* model_ ;
 
-        // Base manifold elements of a model
+        /// The graphics associated to each Corner
         std::vector< CornerGfx* > corners_ ;
+        /// The graphics associated to each Line
         std::vector< LineGfx* > lines_ ;
+        /// The graphics associated to each Surface
         std::vector< SurfaceGfx* > surfaces_ ;
 
     } ;
 
+    class RINGMESH_API MacroMeshGfx {
+        ringmesh_disable_copy( MacroMeshGfx ) ;
+    public:
+        MacroMeshGfx() ;
+        ~MacroMeshGfx() ;
+
+        void set_macro_mesh( const MacroMesh& model ) ;
+        void initialize() ;
+
+        void draw() ;
+
+        void set_vertex_regions_color( float m, float g, float b ) ;
+        void set_vertex_region_color( index_t m, float r, float g, float b ) ;
+        void set_vertex_regions_visibility( bool b ) ;
+        void set_vertex_region_visibility( index_t m, bool b ) ;
+        void set_vertex_regions_size( index_t s ) ;
+        void set_vertex_region_size( index_t m, index_t s ) ;
+
+        void set_mesh_regions_color( float m, float g, float b ) ;
+        void set_mesh_region_color( index_t m, float r, float g, float b ) ;
+        void set_mesh_regions_visibility( bool b ) ;
+        void set_mesh_region_visibility( index_t m, bool b ) ;
+        void set_mesh_regions_size( index_t s ) ;
+        void set_mesh_region_size( index_t m, index_t s ) ;
+
+        void set_cell_regions_color( float m, float g, float b ) ;
+        void set_cell_region_color( index_t m, float r, float g, float b ) ;
+        void set_cell_regions_color_type() ;
+        void set_cell_region_color_type( index_t m) ;
+        void set_cell_regions_visibility( bool b ) ;
+        void set_cell_region_visibility( index_t m, bool b ) ;
+        void set_cell_regions_shrink( double s ) ;
+        void set_cell_region_shrink( index_t m, double s ) ;
+
+    private:
+        /// The MacroMesh associated to the graphics
+        const MacroMesh* mm_ ;
+
+        /// The graphics associated to each Mesh
+        std::vector< RegionGfx* > meshes_ ;
+    } ;
 }
 
 #endif

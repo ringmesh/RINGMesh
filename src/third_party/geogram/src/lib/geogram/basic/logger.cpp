@@ -205,6 +205,11 @@ namespace GEO {
             return true;
         }
 
+        if(name == "log:minimal") {
+            set_minimal(String::to_bool(value));
+            return true;
+        }
+        
         if(name == "log:pretty") {
             set_pretty(String::to_bool(value));
             return true;
@@ -257,6 +262,11 @@ namespace GEO {
             return true;
         }
 
+        if(name == "log:minimal") {
+            value = String::to_string(is_minimal());
+            return true;
+        }
+        
         if(name == "log:pretty") {
             value = String::to_string(is_pretty());
             return true;
@@ -322,6 +332,10 @@ namespace GEO {
         quiet_ = flag;
     }
 
+    void Logger::set_minimal(bool flag) {
+        minimal_ = flag;
+    }
+    
     void Logger::set_pretty(bool flag) {
         pretty_ = flag;
     }
@@ -334,7 +348,8 @@ namespace GEO {
         log_everything_(true),
         current_feature_changed_(false),
         quiet_(true),
-        pretty_(true)
+        pretty_(true),
+        minimal_(false)
     {
         // Add a default client printing stuff to std::cout
         register_client(new ConsoleLogger());
@@ -400,7 +415,7 @@ namespace GEO {
     }
 
     std::ostream& Logger::out_stream(const std::string& feature) {
-        if(!quiet_ && current_feature_ != feature) {
+        if(!quiet_ && !minimal_ && current_feature_ != feature) {
             current_feature_changed_ = true;
             current_feature_ = feature;
         }
@@ -488,7 +503,7 @@ namespace GEO {
 
     void Logger::notify(LoggerStream* s, const std::string& message) {
 
-        if(quiet_ || clients_.empty()) {
+        if(quiet_ || (minimal_ && s == &out_) || clients_.empty()) {
             return;
         }
 

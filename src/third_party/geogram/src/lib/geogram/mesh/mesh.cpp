@@ -567,14 +567,15 @@ namespace GEO {
             facet_corners_.corner_adjacent_facet_;
 
         if(facet_corners_.attributes().nb() != 0) {
-            vector<index_t> facet_corners_permutation(facet_corners_.nb());
-            
-            // TODO: compute facet corners permutation
-            // (by using either permutation or its inverse,
-            //  the way it is simpler, allowing to traverse
-            //  facet_corners_permutation with increasing
-            //  indices...)
-            geo_assert_not_reached;
+            vector<index_t> facet_corners_permutation;
+            facet_corners_permutation.reserve(facet_corners_.nb());
+
+            for(index_t new_f=0; new_f<nb(); ++new_f) {
+                index_t old_f = permutation[new_f];
+                for(index_t old_c=corners_begin(old_f); old_c<corners_end(old_f); ++old_c) {
+                    facet_corners_permutation.push_back(old_c);
+                }
+            }
             
             facet_corners_.attributes().apply_permutation(
                 facet_corners_permutation
@@ -1108,26 +1109,31 @@ namespace GEO {
     void MeshCells::permute_elements(vector<index_t>& permutation) {
         attributes_.apply_permutation(permutation);
 
-        if(cell_corners_.attributes().nb() != 0) {
-            vector<index_t> cell_corners_permutation(cell_corners_.nb());
-            
-            // TODO: compute cell corners permutation
-            geo_assert_not_reached;
-            
-            cell_corners_.attributes().apply_permutation(
-                cell_corners_permutation
-            );
-        }
+        if(
+            cell_corners_.attributes().nb() != 0 ||
+            cell_facets_.attributes().nb() != 0
+        ) {
+            vector<index_t> cell_corner_facets_permutation;
+            cell_corner_facets_permutation.reserve(cell_corners_.nb());
 
-        if(cell_facets_.attributes().nb() != 0) {
-            vector<index_t> cell_facets_permutation(cell_facets_.nb());
+            for(index_t new_cell = 0; new_cell<nb(); ++new_cell) {
+                index_t old_cell = permutation[new_cell];
+                index_t cell_size = geo_max(nb_vertices(old_cell), nb_facets(old_cell));
+                for(index_t i=0; i<cell_size; ++i) {
+                    cell_corner_facets_permutation.push_back(cell_ptr_[old_cell]+i);
+                }
+            }
             
-            // TODO: compute cell facets permutation
-            geo_assert_not_reached;
-            
-            cell_facets_.attributes().apply_permutation(
-                cell_facets_permutation
-            );
+            if(cell_corners_.attributes().nb() != 0) {
+                cell_corners_.attributes().apply_permutation(
+                    cell_corner_facets_permutation
+                );
+            }
+            if(cell_facets_.attributes().nb() != 0) {
+                cell_facets_.attributes().apply_permutation(
+                    cell_corner_facets_permutation
+                );
+            }
         }
 
         vector<index_t>& corner_vertex = cell_corners_.corner_vertex_;
