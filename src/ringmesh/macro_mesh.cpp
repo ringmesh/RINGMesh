@@ -1009,14 +1009,14 @@ namespace RINGMesh {
 
     /*!
      * Copy a MacroMesh and its attributes
-     * @param[out] rhs the MacroMesh copy
+     * @param[in] rhs the MacroMesh copied
      * @param[in] copy_attributes tells whether or not you want to copy attributes
      */
     void MacroMesh::copy( MacroMesh& rhs, bool copy_attributes ) const
     {
         index_t dim = meshes_[0]->vertices.dimension() ;
         for( index_t r = 0; r < model_.nb_regions(); r++ ) {
-            rhs.meshes_[r]->copy( *meshes_[r], copy_attributes ) ;
+            meshes_[r]->copy( *rhs.meshes_[r], copy_attributes ) ;
         }
     }
 
