@@ -45,16 +45,17 @@
 #include <ringmesh/gfx.h>
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/boundary_model_element.h>
+#include <ringmesh/macro_mesh.h>
 
 namespace RINGMesh {
 
-    class RINGMESH_API BoundaryModelMeshElementGfx {
-    ringmesh_disable_copy( BoundaryModelMeshElementGfx ) ;
+    class MeshElementGfx {
+    ringmesh_disable_copy( MeshElementGfx ) ;
     public:
-        BoundaryModelMeshElementGfx( const BoundaryModelMeshElement& mesh )
+        MeshElementGfx( const GEO::Mesh& mesh )
             : vertices_visible_( false )
         {
-            gfx_.set_mesh( &mesh.mesh() ) ;
+            gfx_.set_mesh( &mesh ) ;
         }
 
         GEO::MeshGfx& gfx()
@@ -77,20 +78,20 @@ namespace RINGMesh {
         bool vertices_visible_ ;
     } ;
 
-    class RINGMESH_API CornerGfx: public BoundaryModelMeshElementGfx {
+    class CornerGfx: public MeshElementGfx {
     public:
         CornerGfx( const Corner& corner )
-            : BoundaryModelMeshElementGfx( corner )
+            : MeshElementGfx( corner.mesh() )
         {
             vertices_visible_ = true ;
             gfx_.set_points_color( 1, 0, 0 ) ;
         }
     } ;
 
-    class RINGMESH_API LineGfx: public BoundaryModelMeshElementGfx {
+    class LineGfx: public MeshElementGfx {
     public:
         LineGfx( const Line& line )
-            : BoundaryModelMeshElementGfx( line )
+            : MeshElementGfx( line.mesh() )
         {
             vertices_visible_ = false ;
             gfx_.set_points_color( 1, 1, 1 ) ;
@@ -112,10 +113,10 @@ namespace RINGMesh {
 
     } ;
 
-    class RINGMESH_API SurfaceGfx: public BoundaryModelMeshElementGfx {
+    class SurfaceGfx: public MeshElementGfx {
     public:
         SurfaceGfx( const Surface& surface )
-            : BoundaryModelMeshElementGfx( surface )
+            : MeshElementGfx( surface.mesh() )
         {
             vertices_visible_ = false ;
             surface_visible_ = true ;
@@ -131,6 +132,29 @@ namespace RINGMesh {
         }
     private:
         bool surface_visible_ ;
+
+    } ;
+
+
+    class RegionGfx: public MeshElementGfx {
+    public:
+        RegionGfx( const GEO::Mesh& mesh )
+            : MeshElementGfx( mesh )
+        {
+            vertices_visible_ = false ;
+            region_visible_ = true ;
+        }
+
+        void set_region_visible( bool b )
+        {
+            region_visible_ = b ;
+        }
+        bool get_region_visible() const
+        {
+            return region_visible_ ;
+        }
+    private:
+        bool region_visible_ ;
 
     } ;
 
@@ -570,6 +594,277 @@ namespace RINGMesh {
     {
         surfaces_[s]->gfx().set_points_size( size ) ;
     }
+
+
+
+    MacroMeshGfx::MacroMeshGfx()
+        : mm_( nil )
+    {
+    }
+
+    MacroMeshGfx::~MacroMeshGfx()
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            delete meshes_[m] ;
+        }
+    }
+
+    /*!
+     * Sets the MacroMesh associated to the graphics
+     * @param[in] mm the MacroMesh
+     */
+    void MacroMeshGfx::set_macro_mesh( const MacroMesh& mm )
+    {
+        mm_ = &mm ;
+        initialize() ;
+    }
+
+    /*!
+     * Initializes the database according the MacroMesh dimensions
+     */
+    void MacroMeshGfx::initialize()
+    {
+        ringmesh_debug_assert( mm_ ) ;
+        if( meshes_.empty() ) {
+            meshes_.resize( mm_->nb_meshes(), nil ) ;
+
+            for( index_t m = 0; m < meshes_.size(); m++ ) {
+                meshes_[m] = new RegionGfx( mm_->mesh( m ) ) ;
+            }
+        }
+    }
+
+    /*!
+     * Draws the MacroMesh
+     */
+    void MacroMeshGfx::draw()
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            if( meshes_[m]->get_vertices_visible() ) meshes_[m]->gfx().draw_vertices() ;
+            if( meshes_[m]->get_region_visible() ) meshes_[m]->gfx().draw_volume() ;
+        }
+    }
+
+    /*!
+     * Sets the vertex region color to all the regions
+     * @param[in] r the red component of the color in [0.0, 1.0]
+     * @param[in] g the green component of the color in [0.0, 1.0]
+     * @param[in] b the blue component of the color in [0.0, 1.0]
+     */
+    void MacroMeshGfx::set_vertex_regions_color( float r, float g, float b )
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            set_vertex_region_color( m, r, g, b ) ;
+        }
+    }
+
+    /*!
+     * Sets the vertex region color
+     * @param[in] m the region index
+     * @param[in] r the red component of the color in [0.0, 1.0]
+     * @param[in] g the green component of the color in [0.0, 1.0]
+     * @param[in] b the blue component of the color in [0.0, 1.0]
+     */
+    void MacroMeshGfx::set_vertex_region_color( index_t m, float r, float g, float b )
+    {
+        meshes_[r]->gfx().set_points_color( r, g, b ) ;
+    }
+
+    /*!
+     * Sets the vertex region visibility to all the regions
+     * @param[in] b the visibility
+     */
+    void MacroMeshGfx::set_vertex_regions_visibility( bool b )
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            set_vertex_region_visibility( m, b ) ;
+        }
+    }
+
+    /*!
+     * Sets the vertex region visibility
+     * @param[in] m the region index
+     * @param[in] b the visibility
+     */
+    void MacroMeshGfx::set_vertex_region_visibility( index_t m, bool b )
+    {
+        meshes_[m]->set_vertices_visible( b ) ;
+    }
+
+    /*!
+     * Sets the vertex region size to all the regions
+     * @param[in] s the size
+     */
+    void MacroMeshGfx::set_vertex_regions_size( index_t s )
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            set_vertex_region_size( m, s ) ;
+        }
+    }
+
+    /*!
+     * Sets the vertex region size
+     * @param[in] m the region index
+     * @param[in] s the size
+     */
+    void MacroMeshGfx::set_vertex_region_size( index_t m, index_t s )
+    {
+        meshes_[m]->gfx().set_points_size( s ) ;
+    }
+
+    /*!
+     * Sets the mesh region color to all the regions
+     * @param[in] r the red component of the color in [0.0, 1.0]
+     * @param[in] g the green component of the color in [0.0, 1.0]
+     * @param[in] b the blue component of the color in [0.0, 1.0]
+     */
+    void MacroMeshGfx::set_mesh_regions_color( float r, float g, float b )
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            set_mesh_region_color( m, r, g, b ) ;
+        }
+    }
+
+    /*!
+     * Sets the mesh region color
+     * @param[in] m the region index
+     * @param[in] r the red component of the color in [0.0, 1.0]
+     * @param[in] g the green component of the color in [0.0, 1.0]
+     * @param[in] b the blue component of the color in [0.0, 1.0]
+     */
+    void MacroMeshGfx::set_mesh_region_color( index_t m, float r, float g, float b )
+    {
+        meshes_[m]->gfx().set_mesh_color( r, g, b ) ;
+    }
+
+    /*!
+     * Toggles the cell region color per cell type to all the regions
+     */
+    void MacroMeshGfx::set_cell_regions_color_type()
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            set_cell_region_color_type( m ) ;
+        }
+    }
+
+    /*!
+     * Toggles the cell region color per cell type
+     * @param[in] m the region index
+     */
+    void MacroMeshGfx::set_cell_region_color_type( index_t m )
+    {
+        meshes_[m]->gfx().set_cells_colors_by_type() ;
+    }
+
+    /*!
+     * Sets the mesh region visibility to all the regions
+     * @param[in] b the visibility
+     */
+    void MacroMeshGfx::set_mesh_regions_visibility( bool b )
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            set_mesh_region_visibility( m, b ) ;
+        }
+    }
+
+    /*!
+     * Sets the mesh region visibility
+     * @param[in] m the region index
+     * @param[in] b the visibility
+     */
+    void MacroMeshGfx::set_mesh_region_visibility( index_t m, bool b )
+    {
+        meshes_[m]->gfx().set_show_mesh( b ) ;
+    }
+
+    /*!
+     * Sets the mesh region size to all the regions
+     * @param[in] s the size
+     */
+    void MacroMeshGfx::set_mesh_regions_size( index_t s )
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            set_mesh_region_size( m, s ) ;
+        }
+    }
+
+    /*!
+     * Sets the mesh region size
+     * @param[in] m the region index
+     * @param[in] s the size
+     */
+    void MacroMeshGfx::set_mesh_region_size( index_t m, index_t s )
+    {
+        meshes_[m]->gfx().set_mesh_width( s ) ;
+    }
+
+    /*!
+     * Sets the cell region color to all the regions
+     * @param[in] r the red component of the color in [0.0, 1.0]
+     * @param[in] g the green component of the color in [0.0, 1.0]
+     * @param[in] b the blue component of the color in [0.0, 1.0]
+     */
+    void MacroMeshGfx::set_cell_regions_color( float r, float g, float b )
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            set_cell_region_color( m, r, g, b ) ;
+        }
+    }
+
+    /*!
+     * Sets the cell region color
+     * @param[in] m the region index
+     * @param[in] r the red component of the color in [0.0, 1.0]
+     * @param[in] g the green component of the color in [0.0, 1.0]
+     * @param[in] b the blue component of the color in [0.0, 1.0]
+     */
+    void MacroMeshGfx::set_cell_region_color( index_t m, float r, float g, float b )
+    {
+        meshes_[m]->gfx().set_cells_color( r, g, b ) ;
+    }
+
+    /*!
+     * Sets the cell region visibility to all the regions
+     * @param[in] b the visibility
+     */
+    void MacroMeshGfx::set_cell_regions_visibility( bool b )
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            set_cell_region_visibility( m, b ) ;
+        }
+    }
+
+    /*!
+     * Sets the cell region visibility to all the regions
+     * @param[in] m the region index
+     * @param[in] b the visibility
+     */
+    void MacroMeshGfx::set_cell_region_visibility( index_t m, bool b )
+    {
+        meshes_[m]->set_region_visible( b ) ;
+    }
+
+    /*!
+     * Sets the cell region shrink to all the regions
+     * @param[in] s the shrink
+     */
+    void MacroMeshGfx::set_cell_regions_shrink( double s )
+    {
+        for( index_t m = 0; m < meshes_.size(); m++ ) {
+            set_cell_region_shrink( m, s ) ;
+        }
+    }
+
+    /*!
+     * Sets the cell region shrink
+     * @param[in] m the region index
+     * @param[in] s the shrink
+     */
+    void MacroMeshGfx::set_cell_region_shrink( index_t m, double s )
+    {
+        meshes_[m]->gfx().set_shrink( s ) ;
+    }
+
 
 } // namespace
 
