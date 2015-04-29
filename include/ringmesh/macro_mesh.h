@@ -336,12 +336,12 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API MacroMesh {
+        ringmesh_disable_copy( MacroMesh ) ;
     public:
 
         MacroMesh(
             const BoundaryModel& model,
             index_t dim = 3 ) ;
-        MacroMesh( const MacroMesh& mm ) ;
         virtual ~MacroMesh() ;
 
         //    __  __     _   _            _
@@ -355,6 +355,7 @@ namespace RINGMesh {
             bool add_steiner_points = true,
             std::vector< std::vector< vec3 > >& internal_vertices =
                 empty_vertices ) ;
+        void copy(MacroMesh& mm, bool copy_attributes = true) const;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
