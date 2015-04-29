@@ -355,7 +355,7 @@ namespace RINGMesh {
             bool add_steiner_points = true,
             std::vector< std::vector< vec3 > >& internal_vertices =
                 empty_vertices ) ;
-        void copy(MacroMesh& mm, bool copy_attributes = true) const;
+        void copy(const MacroMesh& mm, bool copy_attributes = true) const;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
