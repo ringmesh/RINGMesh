@@ -321,6 +321,8 @@ namespace RINGMesh {
         const GEO::MeshFacetsAABB& facet_aabb( index_t region ) const ;
         const GEO::MeshCellsAABB& cell_aabb( index_t region ) const ;
 
+        void clear() ;
+
     private:
         void init_facet_aabb( index_t region ) const ;
         void init_cell_aabb( index_t region ) const ;
