@@ -288,6 +288,10 @@ namespace RINGMesh {
     {
         surfaces_[s]->gfx().set_surface_color( r, g, b ) ;
     }
+    void BoundaryModelGfx::set_backface_surface_color( index_t s, float r, float g, float b )
+    {
+        surfaces_[s]->gfx().set_backface_surface_color( r, g, b ) ;
+    }
     void BoundaryModelGfx::set_surfaces_visibility( bool b )
     {
         for( index_t s = 0; s < surfaces_.size(); s++ ) {

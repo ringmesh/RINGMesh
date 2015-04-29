@@ -93,6 +93,7 @@ namespace RINGMesh {
 
         void set_surfaces_color( float r, float g, float b ) ;
         void set_surface_color( index_t c, float r, float g, float b ) ;
+        void set_backface_surface_color( index_t c, float r, float g, float b ) ;
         void set_surfaces_visibility( bool b ) ;
         void set_surface_visibility( index_t c, bool b ) ;
 
