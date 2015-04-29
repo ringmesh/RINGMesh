@@ -191,9 +191,11 @@ namespace RINGMesh {
      */
     void BoundaryModelGfx::draw_corners()
     {
+        GEO::Logger::instance()->set_quiet( true ) ;
         for( index_t c = 0; c < corners_.size(); c++ ) {
             if( corners_[c]->get_vertices_visible() ) corners_[c]->gfx().draw_vertices() ;
         }
+        GEO::Logger::instance()->set_quiet( false ) ;
     }
     /*!
      * Sets the corner color to all the corners
@@ -262,10 +264,12 @@ namespace RINGMesh {
      */
     void BoundaryModelGfx::draw_lines()
     {
+        GEO::Logger::instance()->set_quiet( true ) ;
         for( index_t l = 0; l < lines_.size(); l++ ) {
             if( lines_[l]->get_vertices_visible() ) lines_[l]->gfx().draw_vertices() ;
             if( lines_[l]->get_edges_visible() ) lines_[l]->gfx().draw_edges() ;
         }
+        GEO::Logger::instance()->set_quiet( false ) ;
     }
     /*!
      * Sets the line color to all the lines
@@ -395,10 +399,12 @@ namespace RINGMesh {
      */
     void BoundaryModelGfx::draw_surfaces()
     {
+        GEO::Logger::instance()->set_quiet( true ) ;
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             if( surfaces_[s]->get_vertices_visible() ) surfaces_[s]->gfx().draw_vertices() ;
             if( surfaces_[s]->get_surface_visible() ) surfaces_[s]->gfx().draw_surface() ;
         }
+        GEO::Logger::instance()->set_quiet( false ) ;
     }
     /*!
      * Sets the surface color to all the surfaces

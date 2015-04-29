@@ -993,6 +993,22 @@ namespace RINGMesh {
             new GEO::MeshCellsAABB( mm_.mesh( region ) ) ;
     }
 
+    /*!
+     * Clear the MacroMeshTools database
+     */
+    void MacroMeshTools::clear()
+    {
+        for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
+            if( facet_aabb_[r] ) {
+                delete facet_aabb_[r] ;
+                facet_aabb_[r] = nil ;
+            }
+            if( cell_aabb_[r] ) {
+                delete cell_aabb_[r] ;
+                cell_aabb_[r] = nil ;
+            }
+        }
+    }
 
     MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
         :
@@ -1120,9 +1136,9 @@ namespace RINGMesh {
                     internal_vertices.empty() ? std::vector< vec3 >() : internal_vertices[i] ;
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
                     &model_.region( i ), add_steiner_points, vertices, wells() ) ;
-                GEO::Logger::instance()->set_minimal( true ) ;
+                GEO::Logger::instance()->set_quiet( true ) ;
                 tetragen->tetrahedralize() ;
-                GEO::Logger::instance()->set_minimal( false ) ;
+                GEO::Logger::instance()->set_quiet( false ) ;
                 progress.next() ;
             }
         } else {
@@ -1137,6 +1153,10 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * Associates a WellGroup to the MacroMesh
+     * @param[in] wells the WellGroup
+     */
     void MacroMesh::add_wells( const WellGroup* wells )
     {
         wells_ = wells ;
