@@ -991,6 +991,23 @@ namespace RINGMesh {
             new GEO::MeshCellsAABB( mm_.mesh( region ) ) ;
     }
 
+    /*!
+     * Clear the MacroMeshTools database
+     */
+    void MacroMeshTools::clear()
+    {
+        for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
+            if( facet_aabb_[r] ) {
+                delete facet_aabb_[r] ;
+                facet_aabb_[r] = nil ;
+            }
+            if( cell_aabb_[r] ) {
+                delete cell_aabb_[r] ;
+                cell_aabb_[r] = nil ;
+            }
+        }
+    }
+    
     MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
         :
             model_( model ),
@@ -1070,6 +1087,10 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * Associates a WellGroup to the MacroMesh
+     * @param[in] wells the WellGroup
+     */
     void MacroMesh::add_wells( const WellGroup* wells )
     {
         wells_ = wells ;

@@ -16,9 +16,9 @@ endif()
 
 # For now, Parallel Delaunay is only implemented for Unix (depends on
 # some pthread functions)
-if(UNIX)
-    add_definitions(-DGEOGRAM_WITH_PDEL)
-endif()
+#if(UNIX)
+add_definitions(-DGEOGRAM_WITH_PDEL)
+#endif()
 
 # Copy the default version info to the build directory
 configure_file(basic/version.h.in version.h @ONLY)
