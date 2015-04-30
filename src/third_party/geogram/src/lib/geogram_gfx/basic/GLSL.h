@@ -55,6 +55,18 @@ namespace GEO {
     namespace GLSL {
 
         /**
+         * \brief Exception thrown when a task is canceled
+         * \see Progress::cancel()
+         */
+        struct GEOGRAM_GFX_API GLSLCompileError : std::exception {
+            /**
+             * \brief Gets the string identifying the exception
+             */
+            virtual const char* what() const throw();
+        };
+
+        
+        /**
          * \brief Compiles a shader for a specific target.
          * \details One may use \p source1 for library functions common 
          *  to different shaders (then the code of the shader is in 
@@ -68,8 +80,9 @@ namespace GEO {
          * \param[in] source2 an optional additional source string or 0 
          *  if unused
          * \return the OpenGL opaque Id of the created shader object
+         * \throw GLSLCompileError
          */
-        GLuint compile_shader(
+        GLuint GEOGRAM_GFX_API compile_shader(
             GLenum target, const char* source1, const char* source2=0
         );
 
@@ -80,6 +93,6 @@ namespace GEO {
          * \param[in] shader the first shader of the list
          * \return the OpenGL opaque Id of the created program
          */
-        GLuint setup_program(GLuint shader, ...);
+        GLuint GEOGRAM_GFX_API setup_program(GLuint shader, ...);
     }
 }

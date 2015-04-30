@@ -687,6 +687,11 @@ namespace GEO {
         bool GLSL_tesselation_;
 
         /**
+         * \brief GLSL version supported by the OpenGL driver.
+         */
+        double GLSL_version_;
+        
+        /**
          * \brief true if shaders are already initialized.
          */
         bool shaders_init_;
