@@ -38,8 +38,6 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
-
 #ifndef __RINGMESH_GFX__
 #define __RINGMESH_GFX__
 
@@ -51,9 +49,11 @@
 
 namespace RINGMesh {
     class BoundaryModel ;
+    class MacroMesh ;
     class CornerGfx ;
     class LineGfx ;
     class SurfaceGfx ;
+    class RegionGfx ;
 }
 
 namespace RINGMesh {
@@ -62,6 +62,7 @@ namespace RINGMesh {
         ringmesh_disable_copy( BoundaryModelGfx ) ;
     public:
         BoundaryModelGfx() ;
+        ~BoundaryModelGfx() ;
 
         void set_boundary_model( const BoundaryModel& model ) ;
         void initialize() ;
@@ -112,16 +113,59 @@ namespace RINGMesh {
         void set_vertex_surface_size( index_t c, index_t s ) ;
 
     private:
-
+        /// The BoundaryModel associated to the graphics
         const BoundaryModel* model_ ;
 
-        // Base manifold elements of a model
+        /// The graphics associated to each Corner
         std::vector< CornerGfx* > corners_ ;
+        /// The graphics associated to each Line
         std::vector< LineGfx* > lines_ ;
+        /// The graphics associated to each Surface
         std::vector< SurfaceGfx* > surfaces_ ;
 
     } ;
 
+    class RINGMESH_API MacroMeshGfx {
+        ringmesh_disable_copy( MacroMeshGfx ) ;
+    public:
+        MacroMeshGfx() ;
+        ~MacroMeshGfx() ;
+
+        void set_macro_mesh( const MacroMesh& model ) ;
+        void initialize() ;
+
+        void draw() ;
+
+        void set_vertex_regions_color( float m, float g, float b ) ;
+        void set_vertex_region_color( index_t m, float r, float g, float b ) ;
+        void set_vertex_regions_visibility( bool b ) ;
+        void set_vertex_region_visibility( index_t m, bool b ) ;
+        void set_vertex_regions_size( index_t s ) ;
+        void set_vertex_region_size( index_t m, index_t s ) ;
+
+        void set_mesh_regions_color( float m, float g, float b ) ;
+        void set_mesh_region_color( index_t m, float r, float g, float b ) ;
+        void set_mesh_regions_visibility( bool b ) ;
+        void set_mesh_region_visibility( index_t m, bool b ) ;
+        void set_mesh_regions_size( index_t s ) ;
+        void set_mesh_region_size( index_t m, index_t s ) ;
+
+        void set_cell_regions_color( float m, float g, float b ) ;
+        void set_cell_region_color( index_t m, float r, float g, float b ) ;
+        void set_cell_regions_color_type() ;
+        void set_cell_region_color_type( index_t m) ;
+        void set_cell_regions_visibility( bool b ) ;
+        void set_cell_region_visibility( index_t m, bool b ) ;
+        void set_cell_regions_shrink( double s ) ;
+        void set_cell_region_shrink( index_t m, double s ) ;
+
+    private:
+        /// The MacroMesh associated to the graphics
+        const MacroMesh* mm_ ;
+
+        /// The graphics associated to each Mesh
+        std::vector< RegionGfx* > meshes_ ;
+    } ;
 }
 
 #endif
