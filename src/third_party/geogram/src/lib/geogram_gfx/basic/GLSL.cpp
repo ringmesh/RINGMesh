@@ -52,6 +52,12 @@ namespace GEO {
         namespace GLSL {
 
             /*************************************************************/
+
+            const char* GLSLCompileError::what() const throw() {
+                return "GLSL Compile Error";
+            }
+            
+            /*************************************************************/
             
             GLuint compile_shader(
                 GLenum target, const char* source1, const char* source2
@@ -82,6 +88,7 @@ namespace GEO {
                         << compiler_message << std::endl;
                     glDeleteShader(s_handle);
                     s_handle = 0;
+                    throw GLSLCompileError();
                 }
                 return s_handle;
             }

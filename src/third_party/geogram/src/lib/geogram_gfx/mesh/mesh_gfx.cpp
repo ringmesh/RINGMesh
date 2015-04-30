@@ -48,6 +48,7 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/logger.h>
+#include <geogram/basic/stacktrace.h>
 
 namespace {
     using namespace GEO;
@@ -97,6 +98,47 @@ namespace {
         "                  result ;                                         \n"
         "}                                                                  \n";
 
+
+    /**
+     * \brief The fragment shader for polygons if GLSL version is 1.50.
+     * \details cells colored by region attribute is deactivated in this
+     *   version.
+     */
+    const char* fshader_source_150 =
+        "#version 150 compatibility                                         \n"
+        "flat in float diffuse;                                             \n"
+        "flat in float specular;                                            \n"
+        "flat in vec3  edge_mask;                                           \n"
+        "in vec2 bary;                                                      \n"
+        "uniform float mesh_width = 1.0 ;                                   \n"
+        "uniform vec3 mesh_color = vec3(0.0, 0.0, 0.0) ;                    \n"
+        "uniform bool lighting = true ;                                     \n"
+        "uniform sampler2D colormap_tex;                                    \n"
+        "uniform bool region = false;                                       \n"
+        "out vec4 frag_color ;                                              \n"
+        "float edge_factor(){                                               \n"
+        "    vec3 bary3 = vec3(bary.x, bary.y, 1.0-bary.x-bary.y) ;         \n"
+        "    vec3 d = fwidth(bary3);                                        \n"
+        "    vec3 a3 = smoothstep(vec3(0.0,0.0,0.0), d*mesh_width, bary3);  \n"
+        "    a3 = vec3(1.0, 1.0, 1.0) - edge_mask + edge_mask*a3;           \n"
+        "    return min(min(a3.x, a3.y), a3.z);                             \n"
+        "}                                                                  \n"
+        "void main() {                                                      \n"
+        "    float s = (lighting && gl_FrontFacing) ? 1.0 : -1.0 ;          \n"
+        "    vec4  Kdiff = gl_FrontFacing ?                                 \n"
+        "         gl_FrontMaterial.diffuse : gl_BackMaterial.diffuse ;      \n"
+        "    float sdiffuse = s * diffuse ;                                 \n"
+        "    vec4 result = vec4(0.1, 0.1, 0.1, 1.0);                        \n"
+        "    if(sdiffuse > 0.0) {                                           \n"
+        "       result += sdiffuse*Kdiff +                                  \n"
+        "                 specular*gl_FrontMaterial.specular;               \n"
+        "    }                                                              \n"
+        "    frag_color = (mesh_width != 0.0) ?                             \n"
+        "                  mix(vec4(mesh_color,1.0),result,edge_factor()) : \n"
+        "                  result ;                                         \n"
+        "}                                                                  \n";
+
+    
     /**
      * \brief The fragment shader for points.
      * \details Makes the points appear as small spheres.
@@ -824,29 +866,49 @@ namespace {
     void update_buffer_object(
         GLuint& buffer_id, GLenum target, size_t new_size, const void* data
     ) {
+        std::cout << "chevrron 1 enclenche" << std::endl;
         if(new_size == 0) {
+        std::cout << "chevrron 2 enclenche" << std::endl;
             if(buffer_id != 0) {
+        std::cout << "chevrron 3 enclenche" << std::endl;
                 glDeleteBuffers(1, &buffer_id);
+        std::cout << "chevrron 4 enclenche" << std::endl;
                 buffer_id = 0;
+        std::cout << "chevrron 5 enclenche" << std::endl;
             }
+        std::cout << "chevrron 6 enclenche" << std::endl;
             return;
         }
 
+        std::cout << "chevrron 7 enclenche" << std::endl;
         GLint64 size = 0;        
+        std::cout << "chevrron 8 enclenche" << std::endl;
         if(buffer_id == 0) {
+        std::cout << "chevrron 9 enclenche" << std::endl;
             glGenBuffers(1, &buffer_id);
+        std::cout << "chevrron 10 enclenche" << std::endl;
             glBindBuffer(target, buffer_id);            
+        std::cout << "chevrron 11 enclenche" << std::endl;
         } else {
+        std::cout << "chevrron 12 enclenche" << std::endl;
             glBindBuffer(target, buffer_id);
+        std::cout << "chevrron 13 enclenche" << std::endl;
+        StackTrace::print_stack_trace();
             glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
+        std::cout << "chevrron 14 enclenche" << std::endl;
         }
         
+        std::cout << "chevrron 15 enclenche" << std::endl;
         if(new_size == size_t(size)) {
+        std::cout << "chevrron 16 enclenche" << std::endl;
             glBufferSubData(target, 0, GLsizeiptr(size), data);
+        std::cout << "chevrron 17 enclenche" << std::endl;
         } else {
+        std::cout << "chevrron 18 enclenche" << std::endl;
             glBufferData(
                 target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
             );
+        std::cout << "chevrron 19 enclenche" << std::endl;
         }
     }
     
@@ -875,7 +937,8 @@ namespace GEO {
         triangles_and_quads_ = false;
         GLSL_mode_ = true;
         GLSL_tesselation_ = false;
-
+        GLSL_version_ = 0.0;
+        
         for(index_t i=0; i<PRG_NB; ++i) {
             programs_[i] = 0;
             set_color(i, 0.9f, 0.9f, 0.9f);
@@ -950,10 +1013,10 @@ namespace GEO {
         );
         Logger::out("GLSL") << "version string = "
             << shading_language_ver_str << std::endl;
-        double shading_language_ver = atof(shading_language_ver_str);
-        Logger::out("GLSL") << "version = " << shading_language_ver
+        GLSL_version_ = atof(shading_language_ver_str);
+        Logger::out("GLSL") << "version = " << GLSL_version_
                             << std::endl;
-        if(shading_language_ver < 1.5) {
+        if(GLSL_version_ < 1.5) {
             Logger::out("GLSL")
                 << "Deactivated (requires GLSL version >= 1.50)"
                 << std::endl;
@@ -965,7 +1028,7 @@ namespace GEO {
 
         GLSL_tesselation_ =
             CmdLine::get_arg_bool("gfx:GLSL_tesselation") &&
-            (shading_language_ver >= 4.0);
+            (GLSL_version_ >= 4.0);
 
         if(GLSL_tesselation_) {
             Logger::out("GLSL")
@@ -1001,7 +1064,8 @@ namespace GEO {
             GL_GEOMETRY_SHADER, gshader_utils_source, gshader_prism_source
         );
         GLuint fshader = GLSL::compile_shader(
-            GL_FRAGMENT_SHADER, fshader_source
+            GL_FRAGMENT_SHADER,
+            (GLSL_version_ >= 4.40) ? fshader_source : fshader_source_150
         );
         GLuint points_fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER, points_fshader_source
@@ -1072,6 +1136,7 @@ namespace GEO {
         if(mesh_->vertices.nb() != 0) {
             if(mesh_->vertices.single_precision()) {
                 
+               std::cout << "setup_VBOs float " << std::endl;
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(float);
 
@@ -1081,7 +1146,7 @@ namespace GEO {
                 );
                 
             } else {
-                
+               std::cout << "setup_VBOs double " << std::endl;
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(double);
 
@@ -1123,6 +1188,10 @@ namespace GEO {
             Attribute<index_t> region;
             region.bind_if_is_defined(mesh_->facets.attributes(), "region");
             if(region.is_bound()) {
+                if(GLSL_version_ < 4.40) {
+                    Logger::warn("GLSL") << "Region attribute not supported"
+                                         << std::endl;
+                }
                 update_buffer_object(
                     facet_region_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                     region.nb_elements() * sizeof(index_t),
@@ -1138,6 +1207,10 @@ namespace GEO {
             Attribute<index_t> region;
             region.bind_if_is_defined(mesh_->cells.attributes(), "region");
             if(region.is_bound()) {
+                if(GLSL_version_ < 4.40) {
+                    Logger::warn("GLSL") << "Region attribute not supported"
+                                         << std::endl;
+                }
                 update_buffer_object(
                     cell_region_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                     region.nb_elements() * sizeof(index_t),
@@ -1175,7 +1248,15 @@ namespace GEO {
     }
 
     void MeshGfx::begin_draw(MeshElementsFlags what) {
-        setup_shaders();
+        try {
+            setup_shaders();
+        } catch (const std::exception& e) {
+            Logger::warn("GLSL") << "received exception:" << e.what()
+                                 << std::endl;
+            Logger::warn("GLSL") << "Falling back to plain OpenGL mode"
+                                 << std::endl;
+            GLSL_mode_ = false;
+        }
         setup_VBOs();
         if(colormap_TEX_ == 0) {
             colormap_TEX_ = create_colormap_texture();
