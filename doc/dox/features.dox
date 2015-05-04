@@ -48,25 +48,25 @@ What it can do!
 
 Data structures
 ---------------
- - BoundaryModel: Cellular representation to store 3D structural models
- - MacroMesh: Volumetric mesh of the structural model
+ - RINGMesh::BoundaryModel: Cellular representation to store 3D structural models
+ - RINGMesh::MacroMesh: Volumetric mesh of the structural model
 
 Import
 ------
- - BoundaryModel
+ - RINGMesh::BoundaryModel
   - .bm: homemade format
   - .ml: Model3D format from Gocad/Skua
- - MacroMesh
+ - RINGMesh::MacroMesh
   - .mm: homemade format
   
 Export
 ------
- - BoundaryModel
+ - RINGMesh::BoundaryModel
   - .bm: homemade format
   - .ml: Model3D format for Gocad/Skua
   - .obj: surface mesh format
   - .smesh: Tetgen native surface mesh format
- - MacroMesh
+ - RINGMesh::MacroMesh
   - .csmp: CSMP++ format (export 3 files: .asc, .dat, -regions.txt)
   - .gmsh: Gmsh format (can also export additional information for Kine3D)
   - .gprs: GPRS format
@@ -82,7 +82,7 @@ What is next?
 
 Export
 ------
- - MacroMesh
+ - RINGMesh::MacroMesh
   - .resqml: RESQML2 format
 */
 
