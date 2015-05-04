@@ -358,6 +358,9 @@ namespace RINGMesh {
         /// Elements constituting this one - see child_type( TYPE )
         std::vector< bme_t > children_ ;
     } ;
+
+    // Ce n'est pas tres malin de faire ce genre de chose dans un .h dit Mr Stroupstrup
+    // N'importe qui peut inclure un .h (Jeanne)
     typedef BoundaryModelElement BME ;
     const static BoundaryModelElement dummy_BME ;
     const static BoundaryModelElement::bme_t dummy_bme_type ;
@@ -583,12 +586,7 @@ namespace RINGMesh {
         }
 
         virtual ~Surface() ;
-
-        // Je ne suis pas trop pour donner acc�s au Mesh directement comme �a (Jeanne)
-        GEO::Mesh& mesh() const {
-            return const_cast< GEO::Mesh& >( mesh_ ) ;
-        }
-
+        
         bool is_triangulated() const { return mesh_.facets.are_simplices() ; }
 
         /*!
@@ -820,7 +818,7 @@ namespace RINGMesh {
         
 
     /*!
-     * @brief Class to answer geometrical requests on BoundaryModelElement
+     * @brief Class to answer geometrical requests on a BoundaryModelElement
      */
     class RINGMESH_API BoundaryModelElementMeasure {
     public:
