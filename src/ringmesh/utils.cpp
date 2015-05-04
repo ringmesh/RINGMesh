@@ -1476,6 +1476,11 @@ namespace RINGMesh {
         }
     }
 
+    ColocaterANN::ColocaterANN()
+        : ann_points_( nil )
+    {
+    }
+
     ColocaterANN::ColocaterANN( const Surface& mesh,
         const MeshLocation& location )
     {
@@ -1610,6 +1615,21 @@ namespace RINGMesh {
         }
         ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
+
+    void ColocaterANN::set_points( const std::vector< vec3 >& vertices )
+    {
+        index_t nb_vertices = vertices.size() ;
+        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+        ann_points_ = new double[nb_vertices * 3] ;
+        for( index_t i = 0; i < nb_vertices; i++ ) {
+            index_t index_in_ann = 3 * i ;
+            ann_points_[index_in_ann] = vertices[i].x ;
+            ann_points_[index_in_ann + 1] = vertices[i].y ;
+            ann_points_[index_in_ann + 2] = vertices[i].z ;
+        }
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+    }
+
 
     /*!
      * Compute the colocated point(s) of a given point
