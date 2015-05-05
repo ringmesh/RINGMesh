@@ -384,6 +384,8 @@ namespace GEO {
              * \param[in] size_in The desired new size.
              */
             void resize(index_t size_in) {
+                std::cout << size_in << std::endl ;
+                std::cout << size_ << std::endl ;
                 if(size_ != size_in) {
                     size_ = size_in;
                     index_t nb_words = (size_ >> 5) + 1;
