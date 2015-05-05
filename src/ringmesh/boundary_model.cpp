@@ -247,7 +247,7 @@ namespace RINGMesh {
         }
     }
 
-    void BoundaryModelVertices::update_point( index_t v, const vec3& point )
+    void BoundaryModelVertices::update_point( index_t v, const vec3& point ) const
     {
         ringmesh_assert( v < nb_unique_vertices() ) ;
         const std::vector< VertexInBME >& bme_v = bme_vertices( v ) ;

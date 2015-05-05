@@ -390,7 +390,7 @@ namespace RINGMesh {
         virtual index_t nb_cells() const {
             switch ( element_type() ) {
             case LINE :
-                return mesh_.vertices.nb() - 1 ;
+                return mesh_.edges.nb() ;
             case SURFACE :
                 return mesh_.facets.nb() ;
             default :

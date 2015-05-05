@@ -144,7 +144,7 @@ namespace RINGMesh {
          * @param[in] unique_id Index of the unique vertex in the BoundaryModel
          * @param[in] point New coordinates of the vertex 
          */
-        void update_point( index_t unique_id, const vec3& point ) ;
+        void update_point( index_t unique_id, const vec3& point ) const ;
 
         /*!
          * @brief Clear the vertices - unbind unique2bme_ - set attribute to NO_ID in BME
