@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -63,7 +63,7 @@ and then it will generate dynamic libraries.
 Compiling the documentation
 ---------------------------
 
-The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/) :
+The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
 - cd doc
 - doxygen Doxyfile
 
