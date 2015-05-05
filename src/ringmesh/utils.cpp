@@ -1489,7 +1489,6 @@ namespace RINGMesh {
             case VERTICES: {
                 index_t nb_vertices = mesh.nb_vertices() ;
                 ann_points_ = new double[nb_vertices * 3] ;
-                ann_points_ = new double[nb_vertices * 3] ;
                 for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
                     index_t index_in_ann = 3 * i ;
                     ann_points_[index_in_ann] = mesh.vertex( i ).x ;

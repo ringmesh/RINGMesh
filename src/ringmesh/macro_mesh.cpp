@@ -245,7 +245,7 @@ namespace RINGMesh {
     {
         std::vector< SurfaceAction > temp_info( info.size(), TO_PROCESS ) ;
         for( std::set< surface_side >::const_iterator it( surfaces.begin() );
-            it != surfaces.end(); it++ ) {
+            it != surfaces.end(); ++it ) {
             index_t surface_id = it->first ;
             if( info[surface_id] == SKIP || temp_info[surface_id] == SKIP )
                 continue ;

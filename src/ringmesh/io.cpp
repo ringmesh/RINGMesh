@@ -441,7 +441,6 @@ namespace RINGMesh {
                         out << "S" << surface_id << std::endl ;
 
                         index_t mesh_id = mm.facets.mesh( surface_id ) ;
-                        const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                         for( index_t f = 0; f < mm.facets.nb_facets( surface_id );
                             f++ ) {
                             index_t facet_id = mm.facets.facet( surface_id, f ) ;
@@ -2323,8 +2322,8 @@ namespace RINGMesh {
                         index_t id = mesh.vertices.create_vertex( vertex ) ;
                         mesh.edges.create_edge( id-1, id ) ;
                     } else if( in.field_matches( 0, "END" ) ) {
-
-
+                        wells.add_well( mesh, name ) ;
+                        mesh.clear() ;
                     }
                 }
 
