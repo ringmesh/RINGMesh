@@ -1682,7 +1682,6 @@ namespace RINGMesh {
      */
     bool BoundaryModelBuilderGocad::check_key_facet_orientation( index_t surface_id )
     {
-        const Surface& S = model_.surface( surface_id ) ;
         const KeyFacet& key_facet = key_facets_[surface_id] ;
 
         const vec3& p0 = key_facet.p0_ ;
@@ -2232,7 +2231,7 @@ namespace RINGMesh {
          *           the edge v0 - v1 is the one on the boundary
          */
         BorderTriangle( index_t s, index_t f, index_t v0, index_t v1, index_t v2 )
-            : s_( s ), f_( f ), v0_( v0 ), v1_( v1 ), v2_( v2 )
+            : v0_( v0 ), v1_( v1 ), v2_( v2 ), s_( s ), f_( f )
         {
         }
 
