@@ -75,17 +75,12 @@ namespace RINGMesh {
     }
 
 
-    static bool operator==(
-        const vec3& u,
-        const vec3& v )
+    static bool operator==( const vec3& u, const vec3& v )
     {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
     }
 
-
-    static bool operator<(
-        const vec3& u,
-        const vec3& v )
+    static bool operator<( const vec3& u, const vec3& v )
     {
         return u.x < v.x && u.y < v.y && u.z < v.z ;
     }
@@ -864,7 +859,7 @@ namespace RINGMesh {
         enum MeshLocation {
             VERTICES, FACETS, CELLS
         } ;
-
+        ColocaterANN() ;
         ColocaterANN( const Surface& mesh,
             const MeshLocation& location = VERTICES ) ;
         ColocaterANN( const Line& mesh ) ;
@@ -881,6 +876,8 @@ namespace RINGMesh {
         {
             delete[] ann_points_ ;
         }
+
+        void set_points( const std::vector< vec3 >& vertices ) ;
 
         bool get_colocated(
             const vec3& v,

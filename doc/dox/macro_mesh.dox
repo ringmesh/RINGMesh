@@ -99,7 +99,7 @@ for( index_t v = 0; v < mm.vertices.nb_vertices(); v++ ) {
 // Iterates on the RINGMesh::MacroMesh (mm) facets without redondancy
 for( index_t s = 0; s < mm.model().nb_surfaces(); s++ ) {
     // Each surface can be stored twice if it is at the interface of two meshes
-    // Gets on of the  mesh that store the surface s
+    // Gets one of the mesh that store the surface s
     const GEO::Mesh& mesh = mm.facets.mesh( s ) ; 
     for( index_t f = 0; f < mm.facets.nb_facets( s ); f++ ) { // It is also possible to iterate only on triangle or quad
         index_t facet_id_in_the_mesh = mm.facets.facet( s, f ) ;
