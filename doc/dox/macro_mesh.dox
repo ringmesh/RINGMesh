@@ -49,9 +49,9 @@ the volumetric mesh of a 3D structural model.
 Structure
 =========
 
-Tha main member of a RINGMesh::MacroMesh is its vector< GEO::Mesh* > (meshes_). There is one GEO::Mesh (mesh fron geogram)
+Tha main member of a RINGMesh::MacroMesh is a vector< GEO::Mesh* > (meshes_). There is one GEO::Mesh (mesh from geogram)
 per volumetric region of the structural model, the RINGMesh::BoundaryModel, attached. All the methods and algorithms
-defined in geogram on these meshes can directly by applied here but region per region.
+defined in geogram on these meshes can directly be applied here but region per region.
 
 Example:
 \code
@@ -61,13 +61,13 @@ for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
 }
 \endcode
 
-Thanks to these structure, one can apply easily a different algorithm to each region mesh.
+Thanks to these structure, one can apply easily different algorithm to each region mesh.
 
 
 Associated objects
 ==================
 
-There are deux others objects that can be linked to the RINGMesh::MacroMesh:
+There are two other objects that can be linked to the RINGMesh::MacroMesh:
  - a RINGMesh::BoundaryModel representing the corresponding structural model (mandatory).
  - a RINGMesh::WellGroup representing the wells associated (optional). There can be used during the meshing stages
  and during the export to flow simulators.
@@ -130,8 +130,8 @@ for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
 Other tools
 ===========
 
-Finally, RINGMesh::MacroMeshTools stores one GEO::MeshFacetsAABB and one GEO::MeshCellsAABB per region mesh.
-These AABB trees are only filled if they are called somewhere. This can be usedfull to prevent the computation
+Eventually, RINGMesh::MacroMeshTools stores one GEO::MeshFacetsAABB and one GEO::MeshCellsAABB per region mesh.
+These AABB trees are only filled if they are called somewhere. This can be useful to prevent the computation
 of the AABB tree several times. However, it is stored in memory so if do not want to loose any memory for this,
 instanciate an AABB tree directly in the stack.
 
