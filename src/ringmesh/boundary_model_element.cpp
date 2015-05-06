@@ -370,21 +370,6 @@ namespace RINGMesh {
         return false ;
     }
     
-
-    GEO::AttributesManager& BoundaryModelElement::vertex_attribute_manager() const
-    {
-        ringmesh_assert_not_reached;
-        // Return something stupid - we crash before anyway
-        return model_->corner(0).vertex_attribute_manager() ;
-    }
-
-    GEO::AttributesManager& BoundaryModelElement::cell_attribute_manager() const
-    {
-        ringmesh_assert_not_reached;
-        // Return something stupid - we crash before anyway
-        return model_->corner(0).vertex_attribute_manager() ;
-    }
-
     /*********************************************************************/
 
 

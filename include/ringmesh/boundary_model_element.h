@@ -179,10 +179,6 @@ namespace RINGMesh {
         const BoundaryModel& model() const { return *model_ ; }
         bool has_name() const { return name_ != "" ; }
         const std::string& name() const { return name_ ; }
-        //bool has_id() const { return id_.index != NO_ID ; }
-        //index_t bme_id().index const { return id_.index ; }
-        //bool has_type() const { return id_.type != NO_TYPE ; }
-        //TYPE bme_id().type const { return id_.type ; }
         bme_t bme_id() const { return id_ ; }
         bool has_geological_feature() const { return geol_feature_ != NO_GEOL ; }
         GEOL_FEATURE geological_feature() const { return geol_feature_ ; }
@@ -249,13 +245,7 @@ namespace RINGMesh {
             ringmesh_assert_not_reached ;
         }
 
-        /*!@}
-         * \name Accessors to attribute managers.
-         * @{
-         */
-        virtual GEO::AttributesManager& vertex_attribute_manager() const ;
-        virtual GEO::AttributesManager& cell_attribute_manager() const ;
-        
+
         /*!@}
          * \name Modification of the element
          * @{
@@ -334,7 +324,7 @@ namespace RINGMesh {
         /// Pointer to the BounadyModel owning this element
         BoundaryModel* model_ ;
 
-        /// Type and id of the BoundaryModelElement
+        /// TYPE and id of the BoundaryModelElement
         bme_t id_ ;
 
         /// Name of the element - by default it is an empty string
@@ -346,14 +336,14 @@ namespace RINGMesh {
         /// Elements on the boundary of this element - see boundary_type( TYPE )
         std::vector< bme_t > boundaries_ ;
 
-        /// Additional information for oriented boundaries
+        /// Additional information for oriented boundaries (only for REGION)
         /// Side: + (true) or - (false)
         std::vector< bool > sides_ ;
 
         /// Elements in which boundary this element is - see in_boundary_type( TYPE )
         std::vector< bme_t > in_boundary_ ;
 
-        /// Index of the parent - see parent_type( TYPE ) - default value is NO_ID.
+        /// Id of the parent - see parent_type( TYPE ) - default value is NO_ID.
         bme_t parent_ ;
 
         /// Elements constituting this one - see child_type( TYPE )
@@ -367,6 +357,8 @@ namespace RINGMesh {
     const static BoundaryModelElement::bme_t dummy_bme_type ;
 
     const static std::string model_vertex_id_att_name = std::string( "model_vertex_id" ) ;
+
+
 
     /*!
      * @brief A BoundaryModelElement that has a geometrical representation
@@ -442,10 +434,13 @@ namespace RINGMesh {
         virtual GEO::AttributesManager& cell_attribute_manager() const {
             return mesh_.facets.attributes() ;
         }
+        void bind_attributes();
+        
+        void unbind_attributes();
+
         /*! @}
          */ 
-        void bind_attributes() ;
-        void unbind_attributes() ;
+
         GEO::Mesh& mesh() const {
             return const_cast< GEO::Mesh& >( mesh_ ) ;
         }
