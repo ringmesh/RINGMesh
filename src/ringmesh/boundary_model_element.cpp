@@ -239,7 +239,7 @@ namespace RINGMesh {
         if( model_ != rhs.model_ ) {
             return false ;
         }
-        if( type_ != rhs.type_ ) {
+        if( id_ != rhs.id_) {
             return false ;
         }
         if( name_ != rhs.name_ ) {
@@ -336,7 +336,7 @@ namespace RINGMesh {
         BoundaryModel& model )
     {
         model_        = &model ;
-        type_         = rhs.type_ ;
+        id_           = rhs.id_ ;
         name_         = rhs.name_ ;
         geol_feature_ = rhs.geol_feature_ ;
         boundaries_   = rhs.boundaries_ ;
@@ -412,7 +412,7 @@ namespace RINGMesh {
         
         for( index_t i = 0; i < bme_vertices.size(); i++ ) {
             const BMV::VertexInBME& info = bme_vertices[i] ;
-            if( info.bme_type == bme_type() ) {
+            if( info.bme_id == bme_id() ) {
                 return info.v_id ;
             }
         }
@@ -469,7 +469,7 @@ namespace RINGMesh {
         if( update )
             model_->vertices.update_point(
                  model_->vertices.unique_vertex_id( 
-                    bme_type(), index ), point ) ;
+                    bme_id(), index ), point ) ;
         else
             mesh_.vertices.point( index ) = point ;
     }
@@ -510,7 +510,7 @@ namespace RINGMesh {
     {
         set_vertex( v, model_->vertices.unique_vertex( model_vertex ), false ) ;
         set_model_vertex_id( v, model_vertex ) ;
-        model_->vertices.add_unique_to_bme( model_vertex, bme_type(), v ) ;
+        model_->vertices.add_unique_to_bme( model_vertex, bme_id(), v ) ;
     }
 
 
@@ -614,7 +614,7 @@ namespace RINGMesh {
     {
         // Find out if this surface is twice in the in_boundary vector
         return std::count( in_boundary_.begin(), in_boundary_.end(),
-            surface.bme_type() ) > 1 ;
+            surface.bme_id() ) > 1 ;
     }
 
 
@@ -1348,7 +1348,7 @@ namespace RINGMesh {
         if( m_corner != NO_ID ) {
             s_new_corner = mesh_.vertices.create_vertex( M.vertices.unique_vertex( m_corner ).data() ) ;
             set_model_vertex_id( s_new_corner, m_corner ) ;           
-            M.vertices.add_unique_to_bme( m_corner, bme_type(), s_new_corner ) ;
+            M.vertices.add_unique_to_bme( m_corner, bme_id(), s_new_corner ) ;
         }
             
         /// \todo Check that all vertices on the line are recovered
@@ -1380,7 +1380,7 @@ namespace RINGMesh {
             // Set its model vertex index
             set_model_vertex_id( new_id1, model_vertex_id( id1 ) ) ;
             // Add the mapping from in the model vertices. Should we do this one ?
-            M.vertices.add_unique_to_bme( model_vertex_id(id1), bme_type(), new_id1 ) ;
+            M.vertices.add_unique_to_bme( model_vertex_id(id1), bme_id(), new_id1 ) ;
 
             // Update vertex index in facets 
             update_facet_corner( *this, facets_around_id1, id1, new_id1 ) ;
@@ -1461,7 +1461,7 @@ namespace RINGMesh {
         /// Else it is a base element and its size is computed
 
         // If this is a region
-        if( E->element_type() == BoundaryModelElement::REGION ) {
+        if( E->bme_id().type == BoundaryModelElement::REGION ) {
             // Compute the volume if this is a region
             for( index_t i = 0; i < E->nb_boundaries(); i++ ) {
                 const Surface& surface =
@@ -1483,16 +1483,16 @@ namespace RINGMesh {
                 }
             }
             return fabs( result ) ;
-        } else if( E->element_type() == BoundaryModelElement::CORNER ) {
+        } else if( E->bme_id().type == BoundaryModelElement::CORNER ) {
             return 0 ;
-        } else if( E->element_type() == BoundaryModelElement::LINE ) {
+        } else if( E->bme_id().type == BoundaryModelElement::LINE ) {
             const Line* L = dynamic_cast< const Line* >( E ) ;
             ringmesh_assert( L != nil ) ;
             for( index_t i = 1; i < E->nb_vertices(); ++i ) {
                 result += GEO::Geom::distance( E->vertex( i ), E->vertex( i - 1 ) ) ;
             }
             return result ;
-        } else if( E->element_type() == BoundaryModelElement::SURFACE ) {
+        } else if( E->bme_id().type == BoundaryModelElement::SURFACE ) {
             const Surface* S = dynamic_cast< const Surface* >( E ) ;
             ringmesh_assert( S != nil ) ;
 

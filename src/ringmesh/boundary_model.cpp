@@ -257,7 +257,7 @@ namespace RINGMesh {
         for (index_t i = 0; i < bme_v.size(); i++) {
             const VertexInBME& info = bme_v[i];
             const_cast<BME&>(bm_.element(
-                BME::bme_t(info.bme_type))).set_vertex(
+                BME::bme_t(info.bme_id))).set_vertex(
                 info.v_id, point, false);
         }
     }
@@ -332,7 +332,7 @@ namespace RINGMesh {
     index_t BoundaryModelVertices::unique_vertex_id(
         const VertexInBME& v) const
     {
-        return unique_vertex_id(v.bme_type, v.v_id);
+        return unique_vertex_id(v.bme_id, v.v_id);
     }
 
 
@@ -535,13 +535,13 @@ namespace RINGMesh {
         if (&E.model() != this ) {
             return false;
         }
-        if (E.bme_type() == dummy_bme_type) {
+        if (E.bme_id() == dummy_bme_type) {
             return false;
         }
-        if (E.id() >= nb_elements(E.element_type())) {
+        if (E.bme_id().index >= nb_elements(E.bme_id().type)) {
             return false;
         }
-        if (!(element(E.bme_type()) == E)) {
+        if (!(element(E.bme_id()) == E)) {
             return false;
         }
 
@@ -563,7 +563,7 @@ namespace RINGMesh {
     bool BoundaryModel::check_element_connectivity(
         const BoundaryModelElement& E) const
     {
-        BME::TYPE T = E.element_type();
+        BME::TYPE T = E.bme_id().type;
         if (BME::boundary_allowed(T) && T != BME::SURFACE) {
             // A closed surface - bubble might have no boundary
             // The others Line - and Region must have one
@@ -617,7 +617,7 @@ namespace RINGMesh {
     bool BoundaryModel::check_meshes_validity() const
     {
 
-
+        return false;
     }
 
     /*!
@@ -626,7 +626,7 @@ namespace RINGMesh {
     */
     bool BoundaryModel::check_geometry_consistency() const
     {
-
+        return false;
 
 
     }
@@ -657,7 +657,7 @@ namespace RINGMesh {
             } else {
                 out << "-" ;
             }
-            out << region.boundary( i ).id() + 1 ;
+            out << region.boundary( i ).bme_id().index + 1 ;
             it++ ;
             if( it == 5 ) {
                 out << std::endl ;
@@ -1077,8 +1077,8 @@ namespace RINGMesh {
         const BoundaryModelElement& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
-        out << BoundaryModelElement::type_name( E.element_type() ) << " "
-            << E.id() << " " ;
+        out << BoundaryModelElement::type_name( E.bme_id().type ) << " "
+            << E.bme_id().index << " " ;
         if( E.has_name() ) { out << E.name() << " " ;} else { out << "no_name " ;}
         out <<  BoundaryModelElement::geol_name( E.geological_feature() )
             << std::endl ;
@@ -1129,7 +1129,7 @@ namespace RINGMesh {
             const BME& E = region( i ) ;
 
             // Save ID - NAME -
-            out << BME::type_name( BME::REGION ) << " " << E.id() << " " ;
+            out << BME::type_name( BME::REGION ) << " " << E.bme_id().index << " " ;
             if( E.has_name() ) {out << E.name() ;} else {out << "no_name" ;}
             out << std::endl ;
 
@@ -1163,14 +1163,14 @@ namespace RINGMesh {
         // Corners
         for( index_t i = 0; i < nb_corners(); ++i ) {
             out << BME::type_name( BME::CORNER ) << " "
-                << corner( i ).id() << " " << corner( i ).vertex() <<
+                << corner( i ).bme_id().index << " " << corner( i ).vertex() <<
             std::endl ;
         }
 
         // Lines
         for( index_t i = 0; i < nb_lines(); ++i ) {
             const Line& L = line( i ) ;
-            out << BME::type_name( BME::LINE ) << " " << L.id() << std::endl ;
+            out << BME::type_name( BME::LINE ) << " " << L.bme_id().index << std::endl ;
             out << "LINE_VERTICES " << L.nb_vertices() << std::endl ;
             for( index_t j = 0; j < L.nb_vertices(); ++j ) {
                 out << L.vertex( j ) << std::endl ;
@@ -1205,7 +1205,7 @@ namespace RINGMesh {
         // Surfaces
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             const Surface& S = surface( i ) ;
-            out << BME::type_name( BME::SURFACE ) << " " << S.id() << std::endl ;
+            out << BME::type_name( BME::SURFACE ) << " " << S.bme_id().index << std::endl ;
             out << "SURFACE_VERTICES " << S.nb_vertices() << std::endl ;
             for( index_t j = 0; j < S.nb_vertices(); ++j ) {
                 out << S.vertex( j ) << std::endl ;
