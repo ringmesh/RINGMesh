@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -50,12 +50,24 @@ that you need is shipped with RINGMesh). Follow the Linux or Windows instruction
 Linux
 =====
 
+Compiling RINGMesh
+------------------
+
 - ./configure.sh
 - cd build/ringmesh/Linux64-gcc-Release
 - make
 
 This will first configure and compile Geogram 
 and then it will generate dynamic libraries.
+
+Compiling the documentation
+---------------------------
+
+The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
+- cd doc
+- doxygen Doxyfile
+
+Then you can open the doc/html/index.html file in your web browser.
 
 Windows
 =======
