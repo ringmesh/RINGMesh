@@ -866,49 +866,29 @@ namespace {
     void update_buffer_object(
         GLuint& buffer_id, GLenum target, size_t new_size, const void* data
     ) {
-        std::cout << "chevrron 1 enclenche" << std::endl;
         if(new_size == 0) {
-        std::cout << "chevrron 2 enclenche" << std::endl;
             if(buffer_id != 0) {
-        std::cout << "chevrron 3 enclenche" << std::endl;
                 glDeleteBuffers(1, &buffer_id);
-        std::cout << "chevrron 4 enclenche" << std::endl;
                 buffer_id = 0;
-        std::cout << "chevrron 5 enclenche" << std::endl;
             }
-        std::cout << "chevrron 6 enclenche" << std::endl;
             return;
         }
 
-        std::cout << "chevrron 7 enclenche" << std::endl;
         GLint64 size = 0;        
-        std::cout << "chevrron 8 enclenche" << std::endl;
         if(buffer_id == 0) {
-        std::cout << "chevrron 9 enclenche" << std::endl;
             glGenBuffers(1, &buffer_id);
-        std::cout << "chevrron 10 enclenche" << std::endl;
             glBindBuffer(target, buffer_id);            
-        std::cout << "chevrron 11 enclenche" << std::endl;
         } else {
-        std::cout << "chevrron 12 enclenche" << std::endl;
             glBindBuffer(target, buffer_id);
-        std::cout << "chevrron 13 enclenche" << std::endl;
-        StackTrace::print_stack_trace();
             glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
-        std::cout << "chevrron 14 enclenche" << std::endl;
         }
         
-        std::cout << "chevrron 15 enclenche" << std::endl;
         if(new_size == size_t(size)) {
-        std::cout << "chevrron 16 enclenche" << std::endl;
             glBufferSubData(target, 0, GLsizeiptr(size), data);
-        std::cout << "chevrron 17 enclenche" << std::endl;
         } else {
-        std::cout << "chevrron 18 enclenche" << std::endl;
             glBufferData(
                 target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
             );
-        std::cout << "chevrron 19 enclenche" << std::endl;
         }
     }
     
@@ -1136,7 +1116,6 @@ namespace GEO {
         if(mesh_->vertices.nb() != 0) {
             if(mesh_->vertices.single_precision()) {
                 
-               std::cout << "setup_VBOs float " << std::endl;
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(float);
 
@@ -1146,7 +1125,6 @@ namespace GEO {
                 );
                 
             } else {
-               std::cout << "setup_VBOs double " << std::endl;
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(double);
 
