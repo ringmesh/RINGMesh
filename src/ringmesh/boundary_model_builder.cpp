@@ -1757,7 +1757,7 @@ namespace RINGMesh {
             for( index_t j = 0; j < model_.line( i ).nb_in_boundary(); ++j ) {
                 index_t sp_id = model_.line( i ).in_boundary_id( j ).index ;
                 const BoundaryModelElement& p = model_.surface( sp_id ).parent() ;
-                interfaces.insert( p.id() ) ;
+                interfaces.insert( p.bme_id().index ) ;
             }
             std::vector< index_t > toto( interfaces.begin(), interfaces.end() ) ;
             BME::bme_t contact_id = find_or_create_contact( toto ) ;
@@ -2571,7 +2571,7 @@ namespace RINGMesh {
         std::vector< std::pair< index_t, bool > > univ_boundaries(
             cur_region.nb_boundaries() ) ;
         for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
-            univ_boundaries[i].first = cur_region.boundary( i ).id() ;
+            univ_boundaries[i].first = cur_region.boundary( i ).bme_id().index ;
             univ_boundaries[i].second = cur_region.side( i ) ;
         }
         set_universe( univ_boundaries ) ;
@@ -2579,7 +2579,7 @@ namespace RINGMesh {
         // Decrease by one the ids of the regions that are after the
         // one converted to the universe
         for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-            index_t cur_id = model_.region( i ).id() ;
+            index_t cur_id = model_.region( i ).bme_id().index ;
             if( i > universe_id ) {
                 element( BME::bme_t( BME::REGION, i ) ).set_id( cur_id - 1 ) ;
             }

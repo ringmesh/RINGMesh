@@ -73,11 +73,11 @@ namespace RINGMesh {
             VertexInBME(
                 BME::bme_t t,
                 index_t vertex_id_in )
-                : bme_type( t ), v_id( vertex_id_in )
+                : bme_id( t ), v_id( vertex_id_in )
             {
             }
             /// Type of the BME and index
-            BME::bme_t bme_type ;
+            BME::bme_t bme_id ;
             /// Index of the vertex in the BME
             index_t v_id ;
         } ;
@@ -135,7 +135,7 @@ namespace RINGMesh {
          */
         void add_unique_to_bme( 
             index_t unique_id, 
-            BME::bme_t bme_type,
+            BME::bme_t bme_id,
             index_t v_id ) ;        
 
         /*!

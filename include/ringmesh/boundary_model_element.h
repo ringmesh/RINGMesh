@@ -104,11 +104,15 @@ namespace RINGMesh {
             ALL_TYPES
         } ;
 
+        /*! 
+         * @brief Unique identification of a BoundaryModelElement in a BoundaryModel
+         * @details Stores the TYPE of the element and its index in the BoundaryModel.
+         *          Default values are NO_TYPE and NO_ID
+         */
         struct bme_t {
             bme_t()
                 : type( NO_TYPE ), index( NO_ID )
             {
-
             }
             bme_t( TYPE t, index_t id )
                 : type( t ), index( id )
@@ -120,12 +124,9 @@ namespace RINGMesh {
             bool operator==( const bme_t& t ) const {
                 return type == t.type && index == t.index ;
             }
-
-            /// Type of the element
+            /// TYPE of the BoundaryModelElement
             TYPE type ;
-
-            /// Elements are uniquely identified in the BoundaryModel
-            /// the pair TYPE + index
+            ///  Index of the element in the BoundaryModel
             index_t index ;
         } ;
         const static index_t NO_ID = index_t(-1) ;
@@ -161,7 +162,7 @@ namespace RINGMesh {
             BoundaryModel* model = NULL,
             TYPE element_type = NO_TYPE,
             index_t id = NO_ID )
-              : model_( model ), type_( element_type, id ),
+              : model_( model ), id_( element_type, id ),
                 name_( "" ), geol_feature_( NO_GEOL )
         {
         }
@@ -178,11 +179,11 @@ namespace RINGMesh {
         const BoundaryModel& model() const { return *model_ ; }
         bool has_name() const { return name_ != "" ; }
         const std::string& name() const { return name_ ; }
-        bool has_id() const { return type_.index != NO_ID ; }
-        index_t id() const { return type_.index ; }
-        bool has_type() const { return type_.type != NO_TYPE ; }
-        TYPE element_type() const { return type_.type ; }
-        bme_t bme_type() const { return type_ ; }
+        //bool has_id() const { return id_.index != NO_ID ; }
+        //index_t bme_id().index const { return id_.index ; }
+        //bool has_type() const { return id_.type != NO_TYPE ; }
+        //TYPE bme_id().type const { return id_.type ; }
+        bme_t bme_id() const { return id_ ; }
         bool has_geological_feature() const { return geol_feature_ != NO_GEOL ; }
         GEOL_FEATURE geological_feature() const { return geol_feature_ ; }
         bool is_on_voi() const ;
@@ -264,14 +265,14 @@ namespace RINGMesh {
             BoundaryModel& model ) ;
 
         void set_model( BoundaryModel* m ) { model_ = m  ; }
-        void set_element_type( TYPE t ) { type_.type = t ; }
-        void set_id( index_t id ) { type_.index = id ; }
+        void set_element_type( TYPE t ) { id_.type = t ; }
+        void set_id(index_t id) { id_.index = id; }
         void set_name( const std::string& name ) { name_ = name ; }
         void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; }
 
         void add_boundary( const bme_t& b )
         {
-            ringmesh_assert( boundary_allowed( type_.type ) ) ;
+            ringmesh_assert( boundary_allowed( id_.type ) ) ;
             boundaries_.push_back( b ) ;
         }
 
@@ -283,7 +284,7 @@ namespace RINGMesh {
 
         void add_boundary( const bme_t& b, bool side )
         {
-            ringmesh_assert( boundary_allowed( type_.type ) ) ;
+            ringmesh_assert( boundary_allowed( id_.type ) ) ;
             boundaries_.push_back( b ) ;
             sides_.push_back( side ) ;
         }
@@ -297,7 +298,7 @@ namespace RINGMesh {
 
         void add_in_boundary( const bme_t& e )
         {
-            ringmesh_assert( in_boundary_allowed( type_.type ) ) ;
+            ringmesh_assert(in_boundary_allowed(id_.type));
             in_boundary_.push_back( e ) ;
         }
 
@@ -309,13 +310,13 @@ namespace RINGMesh {
 
         void set_parent( const bme_t& p )
         {
-            ringmesh_assert( parent_allowed( type_.type ) ) ;
+            ringmesh_assert( parent_allowed( id_.type ) ) ;
             parent_ = p ;
         }
 
         void add_child( const bme_t& e )
         {
-            ringmesh_assert( child_allowed( type_.type ) ) ;
+            ringmesh_assert( child_allowed( id_.type ) ) ;
             children_.push_back( e ) ;
         }
 
@@ -334,7 +335,7 @@ namespace RINGMesh {
         BoundaryModel* model_ ;
 
         /// Type and id of the BoundaryModelElement
-        bme_t type_ ;
+        bme_t id_ ;
 
         /// Name of the element - by default it is an empty string
         std::string name_ ;
@@ -388,7 +389,7 @@ namespace RINGMesh {
          * @brief Returns the number of edges or facets of the mesh
          */
         virtual index_t nb_cells() const {
-            switch ( element_type() ) {
+            switch ( bme_id().type ) {
             case LINE :
                 return mesh_.edges.nb() ;
             case SURFACE :
