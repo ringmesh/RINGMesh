@@ -373,6 +373,14 @@ namespace RINGMesh {
     private:
         bool check_model3d_compatibility() ;
 
+        bool check_geometry_consistency() const;
+            
+        bool check_meshes_validity() const;
+
+        bool check_basic_element_validity(const BoundaryModelElement& E) const ;
+
+        bool check_element_connectivity(const BoundaryModelElement& E) const ;
+
     public:
         BoundaryModelVertices vertices ;
 

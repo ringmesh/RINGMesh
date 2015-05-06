@@ -878,87 +878,6 @@ namespace RINGMesh {
         S.set_adjacent( adjacent ) ;
     }
 
-    /*!
-     * @brief Basic check of the validity of a BoundaryModelElement
-     *
-     * \todo Write meaningful message when the test fails ?
-     */
-    bool BoundaryModelBuilder::check_basic_element_validity(
-        const BoundaryModelElement& E ) const
-    {
-        /// Verify that E points to the right BoundaryModel
-        /// that its index and type are the right one.
-        if( &E.model() != &model_ ) {
-            return false ;
-        }
-        if( E.bme_type() == dummy_bme_type ) {
-            return false ;
-        }
-        if( E.id() >= model_.nb_elements( E.element_type() ) ) {
-            return false ;
-        }
-        if( !( model_.element( E.bme_type() ) == E ) ) {
-            return false ;
-        }
-
-        /// Verify that the stored model vertex indices are in a valid range
-        for( index_t i = 0; i < E.nb_vertices(); ++i ) {
-            if( E.model_vertex_id( i ) == NO_ID
-                && E.model_vertex_id( i ) >= model_.nb_vertices() ) {
-                return false ;
-            }
-        }
-        return true ;
-    }
-
-    /*!
-     * @brief Check that one element has the expected connectivity information
-     * @details Requirements depend on the element type
-     * See the static functions   ***_type( TYPE ) in class BME
-     */
-    bool BoundaryModelBuilder::check_element_connectivity(
-        const BoundaryModelElement& E ) const
-    {
-        BME::TYPE T = E.element_type() ;
-        if( BME::boundary_allowed( T ) && T != BME::SURFACE ) {
-            // A closed surface - bubble might have no boundary
-            // The others Line - and Region must have one
-            if( E.nb_boundaries() == 0 ) {
-                return false ;
-            }
-
-            // A Line must have two corners, that can be the same if it is closed
-            if( T == BME::LINE && E.nb_boundaries() != 2 ) {
-                return false ;
-            }
-        }
-
-        // In_boundary
-        if( BME::in_boundary_allowed( T ) ) {
-            // Fix for a .ml for which VOI Surface are only on the boundary of Universe
-            // Can we keep this ? Or should we compute the Region
-            if( E.nb_in_boundary() == 0 ) {
-                return false ;
-            }
-        }
-
-        // Parent - High level elements are not mandatory
-        // But if the model has elements of the parent type, the element must have a parent
-        if( BME::parent_allowed( T ) ) {
-            if( E.parent_id() == dummy_bme_type
-                && model_.nb_elements( BME::parent_type( T ) ) > 0 ) {
-                return false ;
-            }
-        }
-
-        // Children
-        if( BME::child_allowed( T ) ) {
-            if( E.nb_children() == 0 ) {
-                return false ;
-            }
-        }
-        return true ;
-    }
 
     /*!
      * @brief Complete missing information in BoundaryModelElements
@@ -1195,10 +1114,10 @@ namespace RINGMesh {
                 fill_element_geological_feature( E ) ;
             }
 
-            if( !check_basic_element_validity( E ) ) {
+            if( !model_.check_basic_element_validity( E ) ) {
                 return false ;
             }
-            if( !check_element_connectivity( E ) ) {
+            if (!model_.check_element_connectivity(E)) {
                 return false ;
             }
         }
