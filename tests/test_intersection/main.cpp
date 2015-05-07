@@ -7,8 +7,10 @@
 
 #include <ringmesh/io.h>
 #include <ringmesh/mesh_control.h>
-
 #include <ringmesh/boundary_model.h>
+
+#include <iostream>
+#include <ctime>
 
 int main(int argc, char** argv) {
 	using namespace RINGMesh;
@@ -37,20 +39,20 @@ int main(int argc, char** argv) {
 //					macro_mesh.mesh(0).cells.facet_vertex(9, 0, 0)).z
 //			<< std::endl;
 //	macro_mesh.mesh(0).vertices.point(
-//			macro_mesh.mesh(0).cells.facet_vertex(9, 0, 0)).x = 2;
+//			macro_mesh.mesh(0).cells.facet_vertex(9, 0, 0)).x = 1;
 //	macro_mesh.mesh(0).vertices.point(
-//			macro_mesh.mesh(0).cells.facet_vertex(9, 0, 0)).y = 2;
+//			macro_mesh.mesh(0).cells.facet_vertex(9, 0, 0)).y = 1;
 //	macro_mesh.mesh(0).vertices.point(
 //			macro_mesh.mesh(0).cells.facet_vertex(9, 0, 0)).z = -1;
 
 //	// Test intersection between regions
-//	GEO::Logger::out("Mesh control") << "x "
-//			<< macro_mesh.mesh(1).vertices.point(
-//					macro_mesh.mesh(1).cells.facet_vertex(0, 0, 0)).x << " y "
-//			<< macro_mesh.mesh(1).vertices.point(
-//					macro_mesh.mesh(1).cells.facet_vertex(0, 0, 0)).y << " z "
-//			<< macro_mesh.mesh(1).vertices.point(
-//					macro_mesh.mesh(1).cells.facet_vertex(0, 0, 0)).z << std::endl;
+	GEO::Logger::out("Mesh control") << "x "
+			<< macro_mesh.mesh(1).vertices.point(
+					macro_mesh.mesh(1).cells.facet_vertex(0, 0, 0)).x << " y "
+			<< macro_mesh.mesh(1).vertices.point(
+					macro_mesh.mesh(1).cells.facet_vertex(0, 0, 0)).y << " z "
+			<< macro_mesh.mesh(1).vertices.point(
+					macro_mesh.mesh(1).cells.facet_vertex(0, 0, 0)).z << std::endl;
 	macro_mesh.mesh(1).vertices.point(macro_mesh.mesh(1).cells.facet_vertex(0, 0, 0)).x = 1;
 	macro_mesh.mesh(1).vertices.point(macro_mesh.mesh(1).cells.facet_vertex(0, 0, 0)).y = 1;
 	macro_mesh.mesh(1).vertices.point(macro_mesh.mesh(1).cells.facet_vertex(0, 0, 0)).z = -1;
@@ -75,10 +77,35 @@ int main(int argc, char** argv) {
 //		}
 //	}
 
-	GEO::Logger::out("Mesh control") << "test" << std::endl;
+	// Start timer
+	time_t tbegin = time(NULL); // get the current calendar time
+
+	GEO::Logger::out("Mesh control") << "nb cell " << macro_mesh.cells.nb_cells() << std::endl;
 	DetectInter inters(macro_mesh);
 	GEO::Logger::out("Mesh control") << inters.detect_mesh_intersection()
 			<< " intersections" << std::endl;
+
+	// End timer
+	time_t tend = time(NULL); // get the current calendar time
+
+	// Compute execution time
+	double texec = difftime(tend, tbegin); // tend-tbegin (result in second)
+
+	GEO::Logger::out("Mesh control") << "time " << texec << std::endl;
+
+//	double angle_min;
+//	GEO::Logger::out("Mesh control") << "Enter the minimal angle wanted (rad)"
+//			<< std::endl;
+//	std::cin >> angle_min;
+//	index_t angle = inters.check_angles(angle_min);
+//	index_t count = 0;
+//	for (index_t i = 0; i < angle.size(); i++) {
+//		if (angle[i]) {
+//			count++;
+//		}
+//	}
+//	GEO::Logger::out("Mesh control") << "There are " << angle
+//			<< " angles below the wanted value" << std::endl;
 
 	return 0;
 }

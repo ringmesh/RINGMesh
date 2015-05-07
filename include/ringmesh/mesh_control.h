@@ -79,9 +79,11 @@ public:
 
 	void fill_list_intersection(index_t idx);
 
+	index_t check_angles(float angle_min);
+
 	/**
 	 * \brief Computes the volume of each cell to know if
-	 * it is high enought to be coherent
+	 * it is high enough to be coherent
 	 */
 	index_t check_volumes();
 
