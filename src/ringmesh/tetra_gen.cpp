@@ -132,17 +132,17 @@ namespace RINGMesh {
         index_t nb_points = 0, nb_facets = 0 ;
         for( index_t s = 0; s < nb_surfaces; s++ ) {
             const BoundaryModelElement& surface = region->boundary( s ) ;
-            if( Utils::contains( surface_id, surface.id() ) ) continue ;
+            if( Utils::contains( surface_id, surface.bme_id().index ) ) continue ;
             nb_points += surface.nb_vertices() ;
             nb_facets += surface.nb_cells() ;
 
-            surface_id.push_back( surface.id() ) ;
+            surface_id.push_back( surface.bme_id().index ) ;
             unique_surfaces.push_back( &surface ) ;
         }
 
         std::vector< std::vector< Edge > > well_edges ;
         if( wells_ ) {
-            wells->get_region_edges( region->id(), well_edges ) ;
+            wells->get_region_edges( region->bme_id().index, well_edges ) ;
         }
         index_t nb_points_without_well = nb_points ;
         nb_points += well_edges.size() ;
@@ -199,7 +199,7 @@ namespace RINGMesh {
                     tetmesh_.facets.set_vertex( cur_facet, v,
                         unique_indices[offset + surface.surf_vertex_id( t, v )] ) ;
                 }
-                surface_region[cur_facet++] = surface.id() ;
+                surface_region[cur_facet++] = surface.bme_id().index ;
 
             }
             offset += surface.nb_vertices() ;
