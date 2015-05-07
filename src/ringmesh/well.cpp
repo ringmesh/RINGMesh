@@ -227,7 +227,7 @@ namespace RINGMesh {
                 surface_.vertex( trgl, 0 ), surface_.vertex( trgl, 1 ),
                 surface_.vertex( trgl, 2 ), result ) ) {
                 intersections_.push_back(
-                    LineInstersection( result, surface_.id(), trgl ) ) ;
+                    LineInstersection( result, surface_.bme_id().index, trgl ) ) ;
             }
         }
 
