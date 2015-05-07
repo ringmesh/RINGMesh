@@ -337,6 +337,20 @@ namespace RINGMesh {
         std::vector< GEO::MeshCellsAABB* > cell_aabb_ ;
     } ;
 
+    class RINGMESH_API MacroMeshOrder {
+    public:
+        MacroMeshOrder(MacroMesh& mm) ;
+        ~MacroMeshOrder() ;
+
+    private:
+        void initialize(const index_t order) ;
+
+    private:
+        /// Attached MaroMesh
+        const MacroMesh& mm_ ;
+    };
+
+
     class RINGMESH_API MacroMesh {
         ringmesh_disable_copy( MacroMesh ) ;
     public:
