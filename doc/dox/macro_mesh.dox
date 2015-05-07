@@ -73,7 +73,7 @@ There are two other objects that can be linked to the RINGMesh::MacroMesh:
  and during the export to flow simulators.
  
 
-Optional usefull databases
+Optional useful databases
 ==========================
 
 Each GEO::Mesh representing a region is independant from the other ones.
