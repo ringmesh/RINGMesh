@@ -124,11 +124,18 @@ namespace RINGMesh {
             bool operator==( const bme_t& t ) const {
                 return type == t.type && index == t.index ;
             }
+            bool is_defined() const
+            {
+                return type != NO_TYPE &&
+                       type != ALL_TYPES &&
+                       index != NO_ID ;
+            }
             /// TYPE of the BoundaryModelElement
             TYPE type ;
             ///  Index of the element in the BoundaryModel
             index_t index ;
         } ;
+
         const static index_t NO_ID = index_t(-1) ;
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
@@ -282,63 +289,76 @@ namespace RINGMesh {
 
         void set_model( BoundaryModel* m ) { model_ = m  ; }
         void set_element_type( TYPE t ) { id_.type = t ; }
-        void set_id(index_t id) { id_.index = id; }
+        void set_id( index_t id ) { id_.index = id ; }
         void set_name( const std::string& name ) { name_ = name ; }
         void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; }
 
         void add_boundary( const bme_t& b )
         {
-            ringmesh_assert( boundary_allowed( id_.type ) ) ;
+            ringmesh_debug_assert( b.is_defined() ) ;
+            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             boundaries_.push_back( b ) ;
         }
 
         void set_boundary( index_t id, const bme_t& b )
         {
-            ringmesh_assert( id < nb_boundaries() ) ;
+            ringmesh_debug_assert( b.is_defined() ) ;
+            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
+            ringmesh_debug_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
         }
 
         void add_boundary( const bme_t& b, bool side )
         {
-            ringmesh_assert( boundary_allowed( id_.type ) ) ;
+            ringmesh_debug_assert( b.is_defined() ) ;
+            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             boundaries_.push_back( b ) ;
             sides_.push_back( side ) ;
         }
 
         void set_boundary( index_t id, const bme_t& b, bool side )
         {
-            ringmesh_assert( id < nb_boundaries() && id < sides_.size() ) ;
+            ringmesh_debug_assert( b.is_defined() ) ;
+            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
+            ringmesh_debug_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
             sides_[ id ] = side ;
         }
 
-        void add_in_boundary( const bme_t& e )
+        void add_in_boundary( const bme_t& in_b )
         {
-            ringmesh_assert(in_boundary_allowed(id_.type));
-            in_boundary_.push_back( e ) ;
+            ringmesh_debug_assert( in_b.is_defined() ) ;
+            ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
+            in_boundary_.push_back( in_b ) ;
         }
 
         void set_in_boundary( index_t id, const bme_t& in_b )
         {
-            ringmesh_assert( id < nb_in_boundary() ) ;
+            ringmesh_debug_assert( in_b.is_defined() ) ;
+            ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
+            ringmesh_debug_assert( id < nb_in_boundary() ) ;
             in_boundary_[ id ] = in_b ;
         }
 
         void set_parent( const bme_t& p )
         {
-            ringmesh_assert( parent_allowed( id_.type ) ) ;
+            ringmesh_debug_assert( p.is_defined() ) ;
+            ringmesh_debug_assert( parent_type( id_.type ) == p.type ) ;
             parent_ = p ;
         }
 
-        void add_child( const bme_t& e )
+        void add_child( const bme_t& c )
         {
-            ringmesh_assert( child_allowed( id_.type ) ) ;
-            children_.push_back( e ) ;
+            ringmesh_debug_assert( c.is_defined() ) ;
+            ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
+            children_.push_back( c ) ;
         }
 
         void set_child( index_t id, const bme_t& c )
         {
-            ringmesh_assert( id < nb_children() ) ;
+            ringmesh_debug_assert( c.is_defined() ) ;
+            ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
+            ringmesh_debug_assert( id < nb_children() ) ;
             children_[ id ] = c ;
         }
 
@@ -376,14 +396,16 @@ namespace RINGMesh {
         std::vector< bme_t > children_ ;
     } ;
 
+
     // Ce n'est pas tres malin de faire ce genre de chose dans un .h dit Mr Stroupstrup
     // N'importe qui peut inclure un .h (Jeanne)
     typedef BoundaryModelElement BME ;
-    const static BoundaryModelElement dummy_BME ;
-    const static BoundaryModelElement::bme_t dummy_bme_type ;
 
-    const static std::string model_vertex_id_att_name = std::string( "model_vertex_id" ) ;
-
+    // I am against the use of a dummy_BME defined in .h
+    // PLEASE do not put it back Jeanne
+    // There are nicer ways to deal with these
+    // const static BoundaryModelElement dummy_BME ;
+    // const static BoundaryModelElement::bme_t dummy_bme_type ;
 
 
     /*!
@@ -402,6 +424,11 @@ namespace RINGMesh {
             model_vertex_id_.bind( mesh_.vertices.attributes(), model_vertex_id_att_name ) ;
         }
         virtual ~BoundaryModelMeshElement() ;
+
+        /*!
+         * @brief Name of the attribute storing the index of a vertex in the model
+         */
+        const static std::string model_vertex_id_att_name ;
 
         /*! 
          * @brief Check if the mesh stored is valid.
@@ -570,7 +597,7 @@ namespace RINGMesh {
         bool is_closed() const
         {
             ringmesh_assert( nb_boundaries() == 2 ) ;
-            return ( boundaries_[ 0 ] != dummy_bme_type ) &&
+            return ( boundaries_[ 0 ].is_defined() ) &&
                    ( boundaries_[ 0 ] == boundaries_[ 1 ] ) ;
         }
 
