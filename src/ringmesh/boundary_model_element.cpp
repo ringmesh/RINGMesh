@@ -350,7 +350,7 @@ namespace RINGMesh {
      */
     const BoundaryModelElement& BoundaryModelElement::parent() const
     {
-        ringmesh_assert( parent_id() != dummy_bme_type ) ;
+        ringmesh_assert( parent_id().is_defined() ) ;
         return model_->element( parent_id() ) ;
     }
 
@@ -437,6 +437,7 @@ namespace RINGMesh {
     
     /*********************************************************************/
 
+    const std::string BoundaryModelMeshElement::model_vertex_id_att_name( "model_vertex_id" ) ;
 
     BoundaryModelMeshElement::~BoundaryModelMeshElement()
     {

@@ -304,7 +304,10 @@ namespace RINGMesh {
                 }
                  default :
                      ringmesh_assert_not_reached ;
-                     return dummy_BME ;
+                     // return dummy_BME ;
+                     // If we must return something let's return the mandatory element in a model
+                     // the first surface
+                     return element( BME::bme_t( BME::SURFACE, 0 ) ) ;
             }
         }
 
