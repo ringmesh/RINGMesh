@@ -59,7 +59,7 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     class RINGMESH_API BoundaryModelGfx {
-        ringmesh_disable_copy( BoundaryModelGfx ) ;
+    ringmesh_disable_copy( BoundaryModelGfx ) ;
     public:
         BoundaryModelGfx() ;
         ~BoundaryModelGfx() ;
@@ -94,6 +94,7 @@ namespace RINGMesh {
 
         void set_surfaces_color( float r, float g, float b ) ;
         void set_surface_color( index_t c, float r, float g, float b ) ;
+        void set_backface_surfaces_color( float r, float g, float b ) ;
         void set_backface_surface_color( index_t c, float r, float g, float b ) ;
         void set_surfaces_visibility( bool b ) ;
         void set_surface_visibility( index_t c, bool b ) ;
@@ -126,7 +127,7 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API MacroMeshGfx {
-        ringmesh_disable_copy( MacroMeshGfx ) ;
+    ringmesh_disable_copy( MacroMeshGfx ) ;
     public:
         MacroMeshGfx() ;
         ~MacroMeshGfx() ;
@@ -143,19 +144,44 @@ namespace RINGMesh {
         void set_vertex_regions_size( index_t s ) ;
         void set_vertex_region_size( index_t m, index_t s ) ;
 
-        void set_mesh_regions_color( float m, float g, float b ) ;
-        void set_mesh_region_color( index_t m, float r, float g, float b ) ;
-        void set_mesh_regions_visibility( bool b ) ;
-        void set_mesh_region_visibility( index_t m, bool b ) ;
-        void set_mesh_regions_size( index_t s ) ;
-        void set_mesh_region_size( index_t m, index_t s ) ;
+        void set_edge_regions_color( float r, float g, float b ) ;
+        void set_edge_region_color( index_t m, float r, float g, float b ) ;
+        void set_edge_regions_visibility( bool b ) ;
+        void set_edge_region_visibility( index_t m, bool b ) ;
+        void set_edge_regions_size( index_t s ) ;
+        void set_edge_region_size( index_t m, index_t s ) ;
+
+        void set_surface_regions_color( float r, float g, float b ) ;
+        void set_surface_region_color( index_t m, float r, float g, float b ) ;
+        void set_backface_surface_regions_color( float r, float g, float b ) ;
+        void set_backface_surface_region_color( index_t m, float r, float g, float b ) ;
+        void set_surface_regions_visibility( bool b ) ;
+        void set_surface_region_visibility( index_t m, bool b ) ;
+        void set_mesh_surface_regions_color( float r, float g, float b ) ;
+        void set_mesh_surface_region_color( index_t m, float r, float g, float b ) ;
+        void set_mesh_surface_regions_visibility( bool b ) ;
+        void set_mesh_surface_region_visibility( index_t m, bool b ) ;
+        void set_mesh_surface_regions_size( index_t s ) ;
+        void set_mesh_surface_region_size( index_t m, index_t s ) ;
+
+        void set_cell_mesh_regions_color( float m, float g, float b ) ;
+        void set_cell_mesh_region_color( index_t m, float r, float g, float b ) ;
+        void set_cell_mesh_regions_visibility( bool b ) ;
+        void set_cell_mesh_region_visibility( index_t m, bool b ) ;
+        void set_cell_mesh_regions_size( index_t s ) ;
+        void set_cell_mesh_region_size( index_t m, index_t s ) ;
 
         void set_cell_regions_color( float m, float g, float b ) ;
         void set_cell_region_color( index_t m, float r, float g, float b ) ;
         void set_cell_regions_color_type() ;
-        void set_cell_region_color_type( index_t m) ;
+        void set_cell_region_color_type( index_t m ) ;
         void set_cell_regions_visibility( bool b ) ;
         void set_cell_region_visibility( index_t m, bool b ) ;
+        void set_cell_regions_type_visibility( GEO::MeshCellType t, bool b ) ;
+        void set_cell_region_type_visibility(
+            index_t m,
+            GEO::MeshCellType t,
+            bool b ) ;
         void set_cell_regions_shrink( double s ) ;
         void set_cell_region_shrink( index_t m, double s ) ;
 
@@ -165,6 +191,8 @@ namespace RINGMesh {
 
         /// The graphics associated to each Mesh
         std::vector< RegionGfx* > meshes_ ;
+        std::vector< SurfaceGfx* > surfaces_ ;
+        std::vector< LineGfx* > edges_ ;
     } ;
 }
 

@@ -48,7 +48,6 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/logger.h>
-#include <geogram/basic/stacktrace.h>
 
 namespace {
     using namespace GEO;
@@ -154,22 +153,23 @@ namespace {
     //   (pt_size*0.0001)/3.0 * gl_ProjectionMatrix[2].z * sqrt(1.0 - r2);
     
     const char* points_fshader_source =
-        "#version 150 compatibility                                         \n"
-        "#extension GL_ARB_conservative_depth : enable                      \n"   
-        "layout (depth_less) out float gl_FragDepth;                        \n"
-        "out vec4 frag_color ;                                              \n"
-        "void main() {                                                      \n"
-        "   vec2 V = 2.0*(gl_TexCoord[0].xy - vec2(0.5, 0.5));              \n"
-        "   float one_minus_r2 = 1.0 - dot(V,V);                            \n"
-        "   if(one_minus_r2 < 0.0) {                                        \n"
-        "      discard;                                                     \n"
-        "   }                                                               \n"
-        "   vec3 W = vec3(V.x, -V.y, sqrt(one_minus_r2));                   \n"
-        "   float diff = dot(W,gl_LightSource[0].position.xyz);             \n"
-        "   float spec = 2.0*pow(diff,30.0);                                \n"
-        "   frag_color = diff*gl_Color + spec*vec4(1.0, 1.0, 1.0, 1.0);     \n"
-        "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"        
-        "}                                                                  \n";
+            "#version 150 compatibility                                         \n"
+            "#extension GL_ARB_conservative_depth : enable                      \n"
+            "layout (depth_less) out float gl_FragDepth;                        \n"
+            "out vec4 frag_color ;                                              \n"
+            "void main() {                                                      \n"
+            "   vec2 V = 2.0*(gl_TexCoord[0].xy - vec2(0.5, 0.5));              \n"
+            "   float one_minus_r2 = 1.0 - dot(V,V);                            \n"
+            "   if(one_minus_r2 < 0.0) {                                        \n"
+            " discard;                                                     \n"
+            " } \n"
+            "   vec3 W = vec3(V.x, -V.y, sqrt(one_minus_r2));                   \n"
+            "   float diff = dot(W,gl_LightSource[0].position.xyz) /            \n"
+            " length(gl_LightSource[0].position.xyz);         \n"
+            "   float spec = 2.0*pow(diff,30.0);                                \n"
+            "   frag_color = diff*gl_Color + spec*vec4(1.0, 1.0, 1.0, 1.0);     \n"
+            "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"
+    "} \n";
     
     
     /** 
@@ -874,13 +874,13 @@ namespace {
             return;
         }
 
-        GLint64 size = 0;        
+        GLint size = 0;        
         if(buffer_id == 0) {
             glGenBuffers(1, &buffer_id);
             glBindBuffer(target, buffer_id);            
         } else {
             glBindBuffer(target, buffer_id);
-            glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
+            glGetBufferParameteriv(target,GL_BUFFER_SIZE,&size);
         }
         
         if(new_size == size_t(size)) {
@@ -991,6 +991,10 @@ namespace GEO {
         const char* shading_language_ver_str = (const char*)glGetString(
             GL_SHADING_LANGUAGE_VERSION
         );
+        const char* vendor = (const char*)glGetString(
+                    GL_VENDOR
+                );
+                Logger::out("GLSL") << "vendor = " << vendor << std::endl;
         Logger::out("GLSL") << "version string = "
             << shading_language_ver_str << std::endl;
         GLSL_version_ = atof(shading_language_ver_str);
