@@ -282,17 +282,68 @@ namespace RINGMesh {
 
     bool BoundaryModelElement::is_connectivity_valid() const
     {
+        /// 1. Check the model
+        if( !has_model() ) return false ;
 
-        return true; 
-    }
+        /// 2. Check the validity of identification information
+        ///    in the model
+        if( bme_id() == bme_t() ) {
+            return false ;
+        }
+        if( bme_id().index >= model().nb_elements( bme_id().type ) ) {
+            return false ;
+        }
+        if( &( model().element( bme_id() ) ) != this ) {
+            return false ;
+        }
 
+        /// 3. Check that required information for the TYPE is defined
+        TYPE T = bme_id().type ;
+        // Boundaries
+        if( boundary_allowed( T ) ) {
+            if( T == REGION ) {
+                if( nb_boundaries() == 0 ) {
+                    return false ;
+                }
+                if( nb_boundaries() != sides_.size() ) {
+                    return false ;
+                }
+            }            
+            // A Line must have two corners, pointing to the same Corner
+            // when the Line is closed
+            if( T == LINE && nb_boundaries() != 2 ) {
+                return false ;
+            }
+            // No requirement on Surface - one may have no boundary - bubble
+        }
 
-    bool BoundaryModelElement::is_valid() const 
-    {
+        // In_boundary
+        if( in_boundary_allowed( T ) ) {
+            // Fix for a .ml for which VOI Surface are only on the boundary of Universe
+            // Can we keep this ? Or should we compute the Region
+            if( nb_in_boundary() == 0 ) {
+                return false ;
+            }
+        }
 
+        // Parent - High level elements are not mandatory
+        // But if the model has elements of the parent type, the element must have a parent
+        if( parent_allowed( T ) ) {
+            if( model().nb_elements( parent_type( T ) ) > 0 &&
+                parent_id() == bme_t() ) {
+                return false ;
+            }
+        }
 
+        // Children
+        if( child_allowed( T ) ) {
+            if( nb_children() == 0 ) {
+                return false ;
+            }
+        }
         return true ;
     }
+
 
     /*!
      * @return Assert that the parent exists and returns it.
@@ -553,6 +604,19 @@ namespace RINGMesh {
         for( index_t v = 0; v < model_vertices.size(); v++ ) {
             set_vertex( v, model_vertices[v] ) ;
         }
+    }
+
+
+    bool BoundaryModelMeshElement::are_model_vertices_valid() const
+    {
+        /// Check that the stored model vertex indices are in a valid range
+        for( index_t i = 0; i < nb_vertices(); ++i ) {
+            if( model_vertex_id( i ) == NO_ID
+                && model_vertex_id( i ) >= model().nb_vertices() ) {
+                return false ;
+            }
+        }
+        return true ;
     }
 
     /***************************************************************/

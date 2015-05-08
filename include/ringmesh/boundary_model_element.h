@@ -176,18 +176,27 @@ namespace RINGMesh {
          */
         bool operator==( const BoundaryModelElement& rhs ) const ;
 
+        /*!@}
+        * \name Validity checks
+        * @{
+        */
+
+        /*!
+        * @brief Global validity check - Reimplemented in BMME
+        */
+        virtual bool is_valid() const
+        {
+            return is_connectivity_valid() ;
+        }
+        
         /*!
          * @brief Basic checks assessing if the element has the minimum
-         *        required basic and connectivity information for its TYPE.
+         *        required basic and connectivity information for its TYPE.         
+         * @todo Write meaningful message when the test fails ?
          */
         bool is_connectivity_valid() const ;
 
-        /*! 
-         * @brief Basic checks to assess the validity of the element, connectivity
-         *        
-         */
-        virtual bool is_valid() const ;
-
+        
         /*!
          * \name Accessors to basic information
          * @{
@@ -405,6 +414,12 @@ namespace RINGMesh {
         virtual bool is_valid() const {
             return is_connectivity_valid() && is_mesh_valid();
         }
+
+        /*! 
+         * @brief Check the validity of model vertex ids.
+         */
+        bool are_model_vertices_valid() const ;
+
         
         /*!
          * @brief Returns the number of edges or facets of the mesh
