@@ -169,7 +169,24 @@ namespace RINGMesh {
 
         virtual ~BoundaryModelElement() {}
 
+
+        /*! 
+         * @brief Test the strict equality of the attributes.
+         * @todo Sort the vectors before comparison ?
+         */
         bool operator==( const BoundaryModelElement& rhs ) const ;
+
+        /*!
+         * @brief Basic checks assessing if the element has the minimum
+         *        required basic and connectivity information for its TYPE.
+         */
+        bool is_connectivity_valid() const ;
+
+        /*! 
+         * @brief Basic checks to assess the validity of the element, connectivity
+         *        
+         */
+        virtual bool is_valid() const ;
 
         /*!
          * \name Accessors to basic information
@@ -361,7 +378,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief A BoundaryModelElement that has a geometrical representation
+     * @brief Abstract base class for BoundaryModelElement which have a geometrical representation
      *
      */
     class RINGMESH_API BoundaryModelMeshElement : public BoundaryModelElement {
@@ -376,6 +393,18 @@ namespace RINGMesh {
             model_vertex_id_.bind( mesh_.vertices.attributes(), model_vertex_id_att_name ) ;
         }
         virtual ~BoundaryModelMeshElement() ;
+
+        /*! 
+         * @brief Check if the mesh stored is valid.
+         */
+        virtual bool is_mesh_valid() const = 0 ;
+
+        /*!
+         * @brief Global validity of the element
+         */
+        virtual bool is_valid() const {
+            return is_connectivity_valid() && is_mesh_valid();
+        }
         
         /*!
          * @brief Returns the number of edges or facets of the mesh
@@ -446,15 +475,6 @@ namespace RINGMesh {
         }
 
     protected :
-        /*!
-         * @brief Check that the Mesh stored by the object is consistent 
-         *        with its TYPE
-         *
-         * @todo To implement
-         */
-        bool is_valid() const ;
-
-    protected :
         GEO::Mesh mesh_ ;
         GEO::Attribute<index_t> model_vertex_id_ ;
     } ;
@@ -480,6 +500,8 @@ namespace RINGMesh {
         }
 
         virtual ~Corner() {}
+
+        virtual bool is_mesh_valid() const { return true; }
         
         void set_vertex( const vec3& point, bool update_model )
         {
@@ -517,6 +539,7 @@ namespace RINGMesh {
             index_t id = NO_ID ) ;
 
         virtual ~Line() {}
+        virtual bool is_mesh_valid() const { return true; }
 
         virtual void set_vertices(
             const std::vector< vec3 >& points,
@@ -582,7 +605,10 @@ namespace RINGMesh {
         }
 
         virtual ~Surface() ;
-        
+
+        virtual bool is_mesh_valid() const { return true; }
+
+
         bool is_triangulated() const { return mesh_.facets.are_simplices() ; }
 
         /*!

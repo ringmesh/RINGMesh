@@ -250,7 +250,7 @@ namespace RINGMesh {
         }
         if( nb_boundaries() != rhs.nb_boundaries() ) {
             return false ;
-        }
+        }        
         if( !std::equal( boundaries_.begin(), boundaries_.end(),
             rhs.boundaries_.begin() ) ) {
                 return false ;
@@ -279,6 +279,20 @@ namespace RINGMesh {
         return true ;
     }
 
+
+    bool BoundaryModelElement::is_connectivity_valid() const
+    {
+
+        return true; 
+    }
+
+
+    bool BoundaryModelElement::is_valid() const 
+    {
+
+
+        return true ;
+    }
 
     /*!
      * @return Assert that the parent exists and returns it.
