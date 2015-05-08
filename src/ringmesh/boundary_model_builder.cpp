@@ -1114,7 +1114,7 @@ namespace RINGMesh {
                 fill_element_geological_feature( E ) ;
             }
 
-            if( !model_.check_element_validity( E ) ) {
+            if( !model_.check_one_element_validity( E ) ) {
                 return false ;
             }
         }

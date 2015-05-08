@@ -298,6 +298,8 @@ namespace RINGMesh {
         }
 
         /// 3. Check that required information for the TYPE is defined
+        ///    and that reverse information is stored by the corresponding
+        ///    elements
         TYPE T = bme_id().type ;
         // Boundaries
         if( boundary_allowed( T ) ) {
@@ -315,6 +317,23 @@ namespace RINGMesh {
                 return false ;
             }
             // No requirement on Surface - one may have no boundary - bubble
+
+            // All elements in the boundary must have this in their
+            // in_boundary vector
+            for( index_t i = 0; i < nb_boundaries(); ++i ) {
+                const BME& E = boundary( i ) ;
+                bool found = false ;
+                index_t j = 0 ;
+                while( !found && j < E.nb_in_boundary() ) {
+                    if( E.in_boundary_id( j ) == bme_id() ) {
+                        found = true ;
+                    }
+                    j++ ;
+                }
+                if( !found ) {
+                    return false ;
+                }
+            }
         }
 
         // In_boundary
@@ -324,14 +343,46 @@ namespace RINGMesh {
             if( nb_in_boundary() == 0 ) {
                 return false ;
             }
+
+            // All elements in the in_boundary must have this in their
+            // boundary vector
+            for( index_t i = 0; i < nb_in_boundary(); ++i ) {
+                const BME& E = in_boundary( i ) ;
+                bool found = false ;
+                index_t j = 0 ;
+                while( !found && j < E.nb_boundaries() ) {
+                    if( E.boundary_id( j ) == bme_id() ) {
+                        found = true ;
+                    }
+                    j++ ;
+                }
+                if( !found ) {
+                    return false ;
+                }
+            }
         }
 
         // Parent - High level elements are not mandatory
         // But if the model has elements of the parent type, the element must have a parent
         if( parent_allowed( T ) ) {
-            if( model().nb_elements( parent_type( T ) ) > 0 &&
-                parent_id() == bme_t() ) {
-                return false ;
+            if( model().nb_elements( parent_type( T ) ) > 0 ) {
+                if( parent_id() == bme_t() ) {
+                    return false ;
+                }
+
+                // The parent must have this element in its children
+                const BME& E = parent() ;
+                bool found = false ;
+                index_t j = 0 ;
+                while( !found && j < E.nb_children() ) {
+                    if( E.child_id(j) == bme_id() ) {
+                        found = true ;
+                    }
+                    j++ ;
+                }
+                if( !found ) {
+                    return false ;
+                }
             }
         }
 
@@ -340,7 +391,16 @@ namespace RINGMesh {
             if( nb_children() == 0 ) {
                 return false ;
             }
+
+            // All children must have this element as a parent
+            for( index_t i = 0; i < nb_children(); ++i ) {
+                if( child( i ).parent_id() != bme_id() ) {
+                    return false ;
+                }
+            }
         }
+
+        // If no test failed, we are good to go.
         return true ;
     }
 
@@ -436,8 +496,6 @@ namespace RINGMesh {
     }
     
     /*********************************************************************/
-
-    const std::string BoundaryModelMeshElement::model_vertex_id_att_name( "model_vertex_id" ) ;
 
     BoundaryModelMeshElement::~BoundaryModelMeshElement()
     {
@@ -635,6 +693,36 @@ namespace RINGMesh {
     {
     }
 
+    bool Line::is_mesh_valid() const
+    {
+        /// 1. Check that the GEO::Mesh has the expected elements
+        if( mesh_.vertices.nb() < 2 ) {
+            return false ;
+        }
+        if( mesh_.edges.nb() == 0 ) {
+            return false ;
+        }
+        if( mesh_.facets.nb() != 0 ) {
+            return false ;
+        }
+
+        if( mesh_.cells.nb() != 0 ) {
+            return false ;
+        }
+
+        /// 2. Check the validity of the edges 
+
+        // No isolated vertices
+        // No zero edge length
+        // No duplicated edge
+        // No non-manifold vertex - each point is in max 2 edges
+        // No self-intersection - let's say there are none.
+        // One connected component
+
+        return true ; 
+    }
+
+
     /*!
      * @brief Add vertices to the mesh and build the edges
      * @details No update of the model vertices is done
@@ -757,6 +845,40 @@ namespace RINGMesh {
     Surface::~Surface()
     {
     }
+
+    
+    bool Surface::is_mesh_valid() const
+    {
+        /// 1. Check that the GEO::Mesh has the expected elements
+        ///    at least 3 vertices and one facet.
+        if( mesh_.vertices.nb() < 3 ) {
+            return false ;
+        }
+        // Is it important to have edges or not ?
+        // I would say we do not care (JP) - so no check on that 
+        if( mesh_.facets.nb() == 0 ) {
+            return false ;
+        }
+        if( mesh_.cells.nb() != 0 ) {
+            return false ;
+        }
+
+        /// 2. Check the validity of the facets 
+        
+        // No isolated vertices
+        // No zero area facet
+        // No duplicated facet
+        // No self-intersection
+        // One connected component  GEO::mesh_nb_connected_components(const Mesh& M);
+        // No non-manifold edges
+        // No non-manifold points
+        // Orientable surface - No #$@!$ Moebius allowed        
+        // Boundary is a closed-manifold line - possibly several connected components
+        // Planar polygonal facets 
+
+        return true ; 
+    }
+
 
     /*!
      * @param[in] f Facet index

@@ -197,8 +197,11 @@ namespace RINGMesh {
         }
         
         /*!
-         * @brief Basic checks assessing if the element has the minimum
-         *        required basic and connectivity information for its TYPE.         
+         * @brief Basic checks on the minimum required information 
+         * @details Required connectivity information depend on the TYPE.   
+         *          Check that connectivity information stored by elements is consistent.
+         *          e.g. the parent of a BME must have it in its chidren list 
+         * 
          * @todo Write meaningful message when the test fails ?
          */
         bool is_connectivity_valid() const ;
@@ -236,9 +239,8 @@ namespace RINGMesh {
          * @{
          */
         bool has_parent() const { return parent_.index != NO_ID ;}
+        const bme_t& parent_id() const { return parent_ ; }
         const BoundaryModelElement& parent() const ;
-
-        const bme_t& parent_id() const { return parent_ ;}
 
         index_t nb_children() const { return children_.size() ;}
         const bme_t& child_id( index_t x ) const { return children_[ x ] ;}
@@ -398,7 +400,7 @@ namespace RINGMesh {
 
 
     // Ce n'est pas tres malin de faire ce genre de chose dans un .h dit Mr Stroupstrup
-    // N'importe qui peut inclure un .h (Jeanne)
+    // N'importe qui peut inclure un .h (Jeanne). Ici encore on pourrait le garder.    
     typedef BoundaryModelElement BME ;
 
     // I am against the use of a dummy_BME defined in .h
@@ -407,6 +409,13 @@ namespace RINGMesh {
     // const static BoundaryModelElement dummy_BME ;
     // const static BoundaryModelElement::bme_t dummy_bme_type ;
 
+    /*!
+    * @brief Name of the attribute storing the index of a vertex in the model
+    * 
+    * @todo Put it in the  BoundaryModelMeshElement - but if I do it I have 
+    *       linking errors in the code that depend on it JP
+    */
+    const static std::string model_vertex_id_att_name = std::string( "model_vertex_id" ) ;
 
     /*!
      * @brief Abstract base class for BoundaryModelElement which have a geometrical representation
@@ -423,12 +432,7 @@ namespace RINGMesh {
         {
             model_vertex_id_.bind( mesh_.vertices.attributes(), model_vertex_id_att_name ) ;
         }
-        virtual ~BoundaryModelMeshElement() ;
-
-        /*!
-         * @brief Name of the attribute storing the index of a vertex in the model
-         */
-        const static std::string model_vertex_id_att_name ;
+        virtual ~BoundaryModelMeshElement() ;       
 
         /*! 
          * @brief Check if the mesh stored is valid.
@@ -543,7 +547,14 @@ namespace RINGMesh {
 
         virtual ~Corner() {}
 
-        virtual bool is_mesh_valid() const { return true; }
+        virtual bool is_mesh_valid() const 
+        { 
+            return mesh_.vertices.nb() == 1 &&                    
+                   mesh_.edges.nb()    == 0 && 
+                   mesh_.facets.nb()   == 0 &&  
+                   mesh_.cells.nb()    == 0 &&
+                   mesh_.vertices.point(0) != vec3();
+        }
         
         void set_vertex( const vec3& point, bool update_model )
         {
@@ -567,12 +578,6 @@ namespace RINGMesh {
      *
      * @details To be valid a Line must have 2 Corners that may be the same
      * and be in the boundary of a least one Surface.
-     * It is defined by a set of vertices. Its segments are implicitely defined between vertices
-     * vertex(n) and vertex(n+1) for n between 0 and nb_cells()
-     *
-     * @note There is no LineMutator since hardly nothing can be performed on a Line without modifying the model
-     *
-     * @todo Switch to the Mesh.edges
      */
     class RINGMESH_API Line : public BoundaryModelMeshElement {
     public:
@@ -581,7 +586,7 @@ namespace RINGMesh {
             index_t id = NO_ID ) ;
 
         virtual ~Line() {}
-        virtual bool is_mesh_valid() const { return true; }
+        virtual bool is_mesh_valid() const ;
 
         virtual void set_vertices(
             const std::vector< vec3 >& points,
@@ -596,7 +601,7 @@ namespace RINGMesh {
          */
         bool is_closed() const
         {
-            ringmesh_assert( nb_boundaries() == 2 ) ;
+            ringmesh_debug_assert( nb_boundaries() == 2 ) ;
             return ( boundaries_[ 0 ].is_defined() ) &&
                    ( boundaries_[ 0 ] == boundaries_[ 1 ] ) ;
         }
@@ -609,6 +614,7 @@ namespace RINGMesh {
         double segment_length( index_t s ) const ;
         double total_length() const ;
     } ;
+
 
 
     class RINGMESH_API SurfaceTools {
@@ -648,8 +654,7 @@ namespace RINGMesh {
 
         virtual ~Surface() ;
 
-        virtual bool is_mesh_valid() const { return true; }
-
+        virtual bool is_mesh_valid() const ;
 
         bool is_triangulated() const { return mesh_.facets.are_simplices() ; }
 

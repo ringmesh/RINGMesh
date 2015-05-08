@@ -276,23 +276,23 @@ namespace RINGMesh {
          *
          */
         inline const BoundaryModelElement& element(
-            BME::bme_t type ) const
+            BME::bme_t id ) const
         {
-            ringmesh_assert( type.index < nb_elements( type.type ) ) ;
-            switch( type.type ) {
-            case BoundaryModelElement::CORNER         :  return *corners_[ type.index ] ;
-                 case BoundaryModelElement::LINE      :  return *lines_[ type.index ] ;
-                 case BoundaryModelElement::SURFACE   :  return *surfaces_[ type.index ] ;
-                 case BoundaryModelElement::REGION    :  return *regions_[ type.index ] ;
-                 case BoundaryModelElement::CONTACT   :  return *contacts_[ type.index ] ;
-                 case BoundaryModelElement::INTERFACE :  return *interfaces_[ type.index ] ;
-                 case BoundaryModelElement::LAYER     :  return *layers_[ type.index ] ;
+            ringmesh_assert( id.index < nb_elements( id.type ) ) ;
+            switch( id.type ) {
+            case BoundaryModelElement::CORNER         :  return *corners_[ id.index ] ;
+                 case BoundaryModelElement::LINE      :  return *lines_[ id.index ] ;
+                 case BoundaryModelElement::SURFACE   :  return *surfaces_[ id.index ] ;
+                 case BoundaryModelElement::REGION    :  return *regions_[ id.index ] ;
+                 case BoundaryModelElement::CONTACT   :  return *contacts_[ id.index ] ;
+                 case BoundaryModelElement::INTERFACE :  return *interfaces_[ id.index ] ;
+                 case BoundaryModelElement::LAYER     :  return *layers_[ id.index ] ;
                  case BoundaryModelElement::ALL_TYPES : {
                      // See the BoundaryModelBuilder::end_model() function
                      BME::TYPE t = BME::NO_TYPE ;
                      for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
-                         if( type.index >= nb_elements_per_type_[ i - 1 ]
-                             && type.index < nb_elements_per_type_[ i ] )
+                         if( id.index >= nb_elements_per_type_[ i - 1 ]
+                             && id.index < nb_elements_per_type_[ i ] )
                          {
                              t = BME::TYPE( i - 1 ) ;
                              break ;
@@ -300,13 +300,13 @@ namespace RINGMesh {
                      }
                     ringmesh_assert( t < BME::NO_TYPE ) ;
                     return element(
-                        BME::bme_t( t, type.index - nb_elements_per_type_[t] ) ) ;
+                        BME::bme_t( t, id.index - nb_elements_per_type_[t] ) ) ;
                 }
                  default :
                      ringmesh_assert_not_reached ;
                      // return dummy_BME ;
                      // If we must return something let's return the mandatory element in a model
-                     // the first surface
+                     // the first surface JP
                      return element( BME::bme_t( BME::SURFACE, 0 ) ) ;
             }
         }
@@ -376,11 +376,10 @@ namespace RINGMesh {
     private:
         bool check_model3d_compatibility() ;
 
-        bool check_geometry_consistency() const;
+        bool check_all_elements_validity() const ;
+        bool check_element_consistency() const ;
             
-        bool check_meshes_validity() const;
-
-        bool check_element_validity(const BoundaryModelElement& E) const ;      
+        bool check_one_element_validity(const BoundaryModelElement& E) const ;      
 
     public:
         BoundaryModelVertices vertices ;
