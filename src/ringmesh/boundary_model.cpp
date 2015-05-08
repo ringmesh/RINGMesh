@@ -526,10 +526,10 @@ namespace RINGMesh {
     * @brief Basic check of the validity of a BoundaryModelElement
     * @details Check that the BME points to this model and call BME::is_valid()
     */
-    bool BoundaryModel::check_element_validity(
+    bool BoundaryModel::check_one_element_validity(
         const BoundaryModelElement& E) const
     {
-        // Paranoia - Verify that E points to the right BoundaryModel
+        // Verify that E points actually to this BoundaryModel
         if( &E.model() != this ) {
             return false;
         }        
@@ -538,28 +538,45 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Performs basic verifications of the meshes of 
-     *        the Corners, Lines and Surfaces of the model. 
-     * @details Check consistency of the geometry of the model with the stored connectivity 
-     * information
-     * 
-     * 
+     * @brief Check the validity of all individual elements 
      */
-    bool BoundaryModel::check_meshes_validity() const
+    bool BoundaryModel::check_all_elements_validity() const
     {
+        for( index_t i = 0; i < nb_elements( BME::ALL_TYPES ); ++i ) {
+            const BME& E = element( BME::bme_t( BME::ALL_TYPES, i ) ) ;
+            if( !check_one_element_validity( E ) ) {
+                return false ;
+            }
+        }
 
-        return false;
+        // Check geological validity - caumon2004 - if we have geological information
+        // Only a fault can have a free border - a line that is only in one Boundary
+        // Layer check  - an interface can on the boundary of maximum two layers
+
+
+        return true ;
     }
 
     /*!
-     * @brief Check consistency of the geometry of the model with the stored connectivity
-    * information
-    */
-    bool BoundaryModel::check_geometry_consistency() const
+     * @brief Check consistency of the geometry of the model elements 
+     *        with the stored connectivity information
+     * @details Finite extension - Universe region exists - has no hole -
+     *          its boundary must be a closed manifold surface - one connected component.
+     *          
+     *          No intersection between two different elements except along
+     *          shared boundaries - that must be actual boundaries  
+     *          Performed on Corners, Lines and Surfaces.
+     */
+    bool BoundaryModel::check_element_consistency() const 
     {
+        
+        // Other checks
+        // No point on a Line - except at extremities - can be a Corner
+
+        // No edge of a Surface can be on the boundary of this Surface without
+        // being in a Line
+
         return false;
-
-
     }
 
 
