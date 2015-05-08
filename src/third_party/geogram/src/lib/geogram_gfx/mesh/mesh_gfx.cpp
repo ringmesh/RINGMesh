@@ -48,7 +48,6 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/logger.h>
-#include <geogram/basic/stacktrace.h>
 
 namespace {
     using namespace GEO;
@@ -154,22 +153,23 @@ namespace {
     //   (pt_size*0.0001)/3.0 * gl_ProjectionMatrix[2].z * sqrt(1.0 - r2);
     
     const char* points_fshader_source =
-        "#version 150 compatibility                                         \n"
-        "#extension GL_ARB_conservative_depth : enable                      \n"   
-        "layout (depth_less) out float gl_FragDepth;                        \n"
-        "out vec4 frag_color ;                                              \n"
-        "void main() {                                                      \n"
-        "   vec2 V = 2.0*(gl_TexCoord[0].xy - vec2(0.5, 0.5));              \n"
-        "   float one_minus_r2 = 1.0 - dot(V,V);                            \n"
-        "   if(one_minus_r2 < 0.0) {                                        \n"
-        "      discard;                                                     \n"
-        "   }                                                               \n"
-        "   vec3 W = vec3(V.x, -V.y, sqrt(one_minus_r2));                   \n"
-        "   float diff = dot(W,gl_LightSource[0].position.xyz);             \n"
-        "   float spec = 2.0*pow(diff,30.0);                                \n"
-        "   frag_color = diff*gl_Color + spec*vec4(1.0, 1.0, 1.0, 1.0);     \n"
-        "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"        
-        "}                                                                  \n";
+            "#version 150 compatibility                                         \n"
+            "#extension GL_ARB_conservative_depth : enable                      \n"
+            "layout (depth_less) out float gl_FragDepth;                        \n"
+            "out vec4 frag_color ;                                              \n"
+            "void main() {                                                      \n"
+            "   vec2 V = 2.0*(gl_TexCoord[0].xy - vec2(0.5, 0.5));              \n"
+            "   float one_minus_r2 = 1.0 - dot(V,V);                            \n"
+            "   if(one_minus_r2 < 0.0) {                                        \n"
+            " discard;                                                     \n"
+            " } \n"
+            "   vec3 W = vec3(V.x, -V.y, sqrt(one_minus_r2));                   \n"
+            "   float diff = dot(W,gl_LightSource[0].position.xyz) /            \n"
+            " length(gl_LightSource[0].position.xyz);         \n"
+            "   float spec = 2.0*pow(diff,30.0);                                \n"
+            "   frag_color = diff*gl_Color + spec*vec4(1.0, 1.0, 1.0, 1.0);     \n"
+            "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"
+    "} \n";
     
     
     /** 
@@ -866,49 +866,29 @@ namespace {
     void update_buffer_object(
         GLuint& buffer_id, GLenum target, size_t new_size, const void* data
     ) {
-        std::cout << "chevrron 1 enclenche" << std::endl;
         if(new_size == 0) {
-        std::cout << "chevrron 2 enclenche" << std::endl;
             if(buffer_id != 0) {
-        std::cout << "chevrron 3 enclenche" << std::endl;
                 glDeleteBuffers(1, &buffer_id);
-        std::cout << "chevrron 4 enclenche" << std::endl;
                 buffer_id = 0;
-        std::cout << "chevrron 5 enclenche" << std::endl;
             }
-        std::cout << "chevrron 6 enclenche" << std::endl;
             return;
         }
 
-        std::cout << "chevrron 7 enclenche" << std::endl;
-        GLint64 size = 0;        
-        std::cout << "chevrron 8 enclenche" << std::endl;
+        GLint size = 0;        
         if(buffer_id == 0) {
-        std::cout << "chevrron 9 enclenche" << std::endl;
             glGenBuffers(1, &buffer_id);
-        std::cout << "chevrron 10 enclenche" << std::endl;
             glBindBuffer(target, buffer_id);            
-        std::cout << "chevrron 11 enclenche" << std::endl;
         } else {
-        std::cout << "chevrron 12 enclenche" << std::endl;
             glBindBuffer(target, buffer_id);
-        std::cout << "chevrron 13 enclenche" << std::endl;
-        StackTrace::print_stack_trace();
-            glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
-        std::cout << "chevrron 14 enclenche" << std::endl;
+            glGetBufferParameteriv(target,GL_BUFFER_SIZE,&size);
         }
         
-        std::cout << "chevrron 15 enclenche" << std::endl;
         if(new_size == size_t(size)) {
-        std::cout << "chevrron 16 enclenche" << std::endl;
             glBufferSubData(target, 0, GLsizeiptr(size), data);
-        std::cout << "chevrron 17 enclenche" << std::endl;
         } else {
-        std::cout << "chevrron 18 enclenche" << std::endl;
             glBufferData(
                 target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
             );
-        std::cout << "chevrron 19 enclenche" << std::endl;
         }
     }
     
@@ -1011,6 +991,10 @@ namespace GEO {
         const char* shading_language_ver_str = (const char*)glGetString(
             GL_SHADING_LANGUAGE_VERSION
         );
+        const char* vendor = (const char*)glGetString(
+                    GL_VENDOR
+                );
+                Logger::out("GLSL") << "vendor = " << vendor << std::endl;
         Logger::out("GLSL") << "version string = "
             << shading_language_ver_str << std::endl;
         GLSL_version_ = atof(shading_language_ver_str);
@@ -1136,7 +1120,6 @@ namespace GEO {
         if(mesh_->vertices.nb() != 0) {
             if(mesh_->vertices.single_precision()) {
                 
-               std::cout << "setup_VBOs float " << std::endl;
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(float);
 
@@ -1146,7 +1129,6 @@ namespace GEO {
                 );
                 
             } else {
-               std::cout << "setup_VBOs double " << std::endl;
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(double);
 
