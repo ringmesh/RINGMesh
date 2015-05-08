@@ -1100,7 +1100,7 @@ namespace RINGMesh {
         }
 
         // The Universe
-        /// \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
+        /// \todo Write some code to create the universe (cf. builder from surfaces)
 
         init_global_model_element_access() ;
 
@@ -1114,10 +1114,7 @@ namespace RINGMesh {
                 fill_element_geological_feature( E ) ;
             }
 
-            if( !model_.check_basic_element_validity( E ) ) {
-                return false ;
-            }
-            if (!model_.check_element_connectivity(E)) {
+            if( !model_.check_element_validity( E ) ) {
                 return false ;
             }
         }
