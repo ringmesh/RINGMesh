@@ -264,15 +264,14 @@ namespace GEO {
             /**
              * \brief Constructs a new SpinLockArray of size 0.
              */
-            SpinLockArray() :
-                size_(0) {
+            SpinLockArray() : size_(0) {
             }
 
             /**
              * \brief Constructs a new SpinLockArray of size \p size_in.
              * \param[in] size_in number of spinlocks in the array.
              */
-            SpinLockArray(index_t size_in) {
+            SpinLockArray(index_t size_in) : size_(0) {
                 resize(size_in);
             }
 
@@ -368,15 +367,14 @@ namespace GEO {
             /**
              * \brief Constructs a new SpinLockArray of size 0.
              */
-            SpinLockArray() :
-                size_(0) {
+            SpinLockArray() : size_(0) {
             }
 
             /**
              * \brief Constructs a new SpinLockArray of size \p size_in.
              * \param[in] size_in number of spinlocks in the array.
              */
-            SpinLockArray(index_t size_in) {
+            SpinLockArray(index_t size_in) : size_(0) {
                 resize(size_in);
             }
 
@@ -468,15 +466,14 @@ namespace GEO {
             /**
              * \brief Constructs a new SpinLockArray of size 0.
              */
-            SpinLockArray() :
-                size_(0) {
+            SpinLockArray() : size_(0) {
             }
 
             /**
              * \brief Constructs a new SpinLockArray of size \p size_in.
              * \param[in] size_in number of spinlocks in the array.
              */
-            SpinLockArray(index_t size_in) {
+            SpinLockArray(index_t size_in) : size_(0) {
                 resize(size_in);
             }
 
