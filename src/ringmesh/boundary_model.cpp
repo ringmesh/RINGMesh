@@ -524,111 +524,59 @@ namespace RINGMesh {
 
     /*!
     * @brief Basic check of the validity of a BoundaryModelElement
-    *
-    * \todo Write meaningful message when the test fails ?
+    * @details Check that the BME points to this model and call BME::is_valid()
     */
-    bool BoundaryModel::check_basic_element_validity(
+    bool BoundaryModel::check_one_element_validity(
         const BoundaryModelElement& E) const
     {
-        /// Verify that E points to the right BoundaryModel
-        /// that its index and type are the right one.
-        if (&E.model() != this ) {
+        // Verify that E points actually to this BoundaryModel
+        if( &E.model() != this ) {
             return false;
-        }
-        if (E.bme_id() == dummy_bme_type) {
-            return false;
-        }
-        if (E.bme_id().index >= nb_elements(E.bme_id().type)) {
-            return false;
-        }
-        if (!(element(E.bme_id()) == E)) {
-            return false;
-        }
-
-        /// Verify that the stored model vertex indices are in a valid range
-        for (index_t i = 0; i < E.nb_vertices(); ++i) {
-            if (E.model_vertex_id(i) == NO_ID
-                && E.model_vertex_id(i) >= nb_vertices()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /*!
-    * @brief Check that one element has the expected connectivity information
-    * @details Requirements depend on the element type
-    * See the static functions   ***_type( TYPE ) in class BME
-    */
-    bool BoundaryModel::check_element_connectivity(
-        const BoundaryModelElement& E) const
-    {
-        BME::TYPE T = E.bme_id().type;
-        if (BME::boundary_allowed(T) && T != BME::SURFACE) {
-            // A closed surface - bubble might have no boundary
-            // The others Line - and Region must have one
-            if (E.nb_boundaries() == 0) {
-                return false;
-            }
-
-            // A Line must have two corners, that can be the same if it is closed
-            if (T == BME::LINE && E.nb_boundaries() != 2) {
-                return false;
-            }
-        }
-
-        // In_boundary
-        if (BME::in_boundary_allowed(T)) {
-            // Fix for a .ml for which VOI Surface are only on the boundary of Universe
-            // Can we keep this ? Or should we compute the Region
-            if (E.nb_in_boundary() == 0) {
-                return false;
-            }
-        }
-
-        // Parent - High level elements are not mandatory
-        // But if the model has elements of the parent type, the element must have a parent
-        if (BME::parent_allowed(T)) {
-            if (E.parent_id() == dummy_bme_type
-                && nb_elements(BME::parent_type(T)) > 0) {
-                return false;
-            }
-        }
-
-        // Children
-        if (BME::child_allowed(T)) {
-            if (E.nb_children() == 0) {
-                return false;
-            }
-        }
-        return true;
+        }        
+        return E.is_valid() ;
     }
 
 
-
     /*!
-     * @brief Performs basic verifications of the meshes of 
-     *        the Corners, Lines and Surfaces of the model. 
-     * @details Check consistency of the geometry of the model with the stored connectivity 
-     * information
-     * 
-     * 
+     * @brief Check the validity of all individual elements 
      */
-    bool BoundaryModel::check_meshes_validity() const
+    bool BoundaryModel::check_all_elements_validity() const
     {
+        for( index_t i = 0; i < nb_elements( BME::ALL_TYPES ); ++i ) {
+            const BME& E = element( BME::bme_t( BME::ALL_TYPES, i ) ) ;
+            if( !check_one_element_validity( E ) ) {
+                return false ;
+            }
+        }
 
-        return false;
+        // Check geological validity - caumon2004 - if we have geological information
+        // Only a fault can have a free border - a line that is only in one Boundary
+        // Layer check  - an interface can on the boundary of maximum two layers
+
+
+        return true ;
     }
 
     /*!
-     * @brief Check consistency of the geometry of the model with the stored connectivity
-    * information
-    */
-    bool BoundaryModel::check_geometry_consistency() const
+     * @brief Check consistency of the geometry of the model elements 
+     *        with the stored connectivity information
+     * @details Finite extension - Universe region exists - has no hole -
+     *          its boundary must be a closed manifold surface - one connected component.
+     *          
+     *          No intersection between two different elements except along
+     *          shared boundaries - that must be actual boundaries  
+     *          Performed on Corners, Lines and Surfaces.
+     */
+    bool BoundaryModel::check_element_consistency() const 
     {
+        
+        // Other checks
+        // No point on a Line - except at extremities - can be a Corner
+
+        // No edge of a Surface can be on the boundary of this Surface without
+        // being in a Line
+
         return false;
-
-
     }
 
 

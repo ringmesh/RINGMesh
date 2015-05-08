@@ -373,7 +373,7 @@ namespace RINGMesh {
                 return BME::bme_t( BME::CORNER, i ) ;
             }
         }
-        return dummy_bme_type ;
+        return BME::bme_t() ;
     }
 
     /*!
@@ -388,7 +388,7 @@ namespace RINGMesh {
                 return BME::bme_t( BME::CORNER, i ) ;
             }
         }
-        return dummy_bme_type ;
+        return BME::bme_t() ;
     }
 
     /*!
@@ -413,7 +413,7 @@ namespace RINGMesh {
     BME::bme_t BoundaryModelBuilder::find_or_create_corner( const vec3& point )
     {
         BME::bme_t result = find_corner( point ) ;
-        if( result != dummy_bme_type ) {
+        if( result.is_defined() ) {
             return result ;
         } else {
             return create_corner( point ) ;
@@ -434,7 +434,7 @@ namespace RINGMesh {
                 return BME::bme_t( BME::LINE, i ) ;
             }
         }
-        return dummy_bme_type ;
+        return BME::bme_t() ;
     }
 
     /*!
@@ -464,7 +464,7 @@ namespace RINGMesh {
         const std::vector< vec3 >& vertices )
     {
         BME::bme_t result = find_line( vertices ) ;
-        if( result != dummy_bme_type ) {
+        if( result.is_defined() ) {
             return result ;
         } else {
             return create_line( vertices ) ;
@@ -508,7 +508,7 @@ namespace RINGMesh {
                 }
             }
         }
-        return dummy_bme_type ;
+        return BME::bme_t() ;
     }
 
     /*!
@@ -544,7 +544,7 @@ namespace RINGMesh {
         const std::vector< index_t >& interfaces )
     {
         BME::bme_t result = find_contact( interfaces ) ;
-        if( result != dummy_bme_type ) {
+        if( result.is_defined() ) {
             return result ;
         } else {
             return create_contact( interfaces ) ;
@@ -564,7 +564,7 @@ namespace RINGMesh {
                 return BME::bme_t( BME::INTERFACE, i ) ;
             }
         }
-        return dummy_bme_type ;
+        return BME::bme_t() ;
     }
 
     /*!
@@ -898,7 +898,7 @@ namespace RINGMesh {
             if( model_.line( 0 ).nb_in_boundary() == 0 ) {
                 fill_elements_in_boundaries( BME::LINE ) ;
             }
-            if( model_.line( 0 ).parent_id() == dummy_bme_type
+            if( !model_.line( 0 ).parent_id().is_defined()
                 && model_.nb_contacts() > 0 ) {
                 fill_elements_parent( BME::LINE ) ;
             }
@@ -917,7 +917,7 @@ namespace RINGMesh {
         if( model_.surface( 0 ).nb_in_boundary() == 0 ) {
             fill_elements_in_boundaries( BME::SURFACE ) ;
         }
-        if( model_.surface( 0 ).parent_id() == dummy_bme_type ) {
+        if( !model_.surface( 0 ).parent_id().is_defined() ) {
             fill_elements_parent( BME::SURFACE ) ;
         }
 
@@ -926,7 +926,7 @@ namespace RINGMesh {
             if( model_.region( 0 ).nb_boundaries() == 0 ) {
                 fill_elements_boundaries( BME::REGION ) ;
             }
-            if( model_.region( 0 ).parent_id() == dummy_bme_type && model_.nb_layers() > 0 ) {
+            if( !model_.region( 0 ).parent_id().is_defined() && model_.nb_layers() > 0 ) {
                 fill_elements_parent( BME::REGION ) ;
             }
         }
@@ -1050,7 +1050,7 @@ namespace RINGMesh {
                 BME::bme_t cur_child = BME::bme_t( c_type, i ) ;
                 const BME::bme_t& parent =
                     model_.element( cur_child ).parent_id() ;
-                if( parent != dummy_bme_type ) {
+                if( parent.is_defined() ) {
                     add_child( parent, cur_child ) ;
                 }
             }
@@ -1100,7 +1100,7 @@ namespace RINGMesh {
         }
 
         // The Universe
-        /// \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
+        /// \todo Write some code to create the universe (cf. builder from surfaces)
 
         init_global_model_element_access() ;
 
@@ -1114,10 +1114,7 @@ namespace RINGMesh {
                 fill_element_geological_feature( E ) ;
             }
 
-            if( !model_.check_basic_element_validity( E ) ) {
-                return false ;
-            }
-            if (!model_.check_element_connectivity(E)) {
+            if( !model_.check_one_element_validity( E ) ) {
                 return false ;
             }
         }
@@ -1428,8 +1425,7 @@ namespace RINGMesh {
                     //    containing them
                     else if( in.field_matches( 0, "BSTONE" ) ) {
                         index_t v_id = in.field_as_uint( 1 ) - 1 ;
-                        if( find_corner( tsurf_vertices[ v_id ] )
-                            == dummy_bme_type )
+                        if( !find_corner(tsurf_vertices[v_id]).is_defined() )
                         {
                             create_corner( tsurf_vertices[ v_id ] ) ;
                         }
@@ -1443,7 +1439,7 @@ namespace RINGMesh {
                         // Get the global corner id
                         BME::bme_t corner_id =
                         find_corner( tsurf_vertices[ p1 ] ) ;
-                        ringmesh_assert( corner_id != dummy_bme_type ) ;
+                        ringmesh_assert( corner_id.is_defined() ) ;
 
                         // Get the surface
                         index_t part_id = NO_ID ;
@@ -1654,7 +1650,7 @@ namespace RINGMesh {
         border_vertex_model_vertices.push_back( p1 ) ;
 
         BME::bme_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
-        while( p1_corner == dummy_bme_type ) {
+        while( !p1_corner.is_defined() ) {
             index_t next_f = NO_ID ;
             index_t id1_in_next = NO_ID ;
             index_t next_id1_in_next = NO_ID ;
@@ -1716,7 +1712,7 @@ namespace RINGMesh {
         border_vertex_model_ids.push_back( p1 ) ;
 
         BME::bme_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
-        while( p1_corner == dummy_bme_type ) {
+        while( !p1_corner.is_defined() ) {
             index_t next_f = NO_ID ;
             index_t id1_in_next = NO_ID ;
             index_t next_id1_in_next = NO_ID ;
@@ -1783,7 +1779,7 @@ namespace RINGMesh {
     {
         BME::bme_t parent = find_interface( interface_name ) ;
         if( interface_name != "" ) {
-            ringmesh_assert( parent != dummy_bme_type ) ;
+            ringmesh_assert( parent.is_defined() ) ;
         }
 
         BME::bme_t id = create_element( BME::SURFACE ) ;
