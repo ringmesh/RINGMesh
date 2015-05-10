@@ -84,8 +84,8 @@ The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/
 - doxygen Doxyfile
 
 Then you can open the doc/html/index.html file in your web browser. If you have qhelpgenerator
-in your path, a .qch file is generated. It can be imported in Qt Assisant: Edit>Preferences>
-Docuementation>add and select the .qch file.
+in your path, a .qch file is generated (ringmesh.qch). It can be imported in Qt Assisant: Edit>Preferences>
+Documentation>add and select the .qch file.
 
 Windows
 =======
