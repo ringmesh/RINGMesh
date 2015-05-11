@@ -41,6 +41,7 @@
 /*! \author Jeanne Pellerin */
 
 #include <ringmesh/boundary_model_builder.h>
+#include <ringmesh/utils.h>
 
 #include <geogram/basic/line_stream.h>
 

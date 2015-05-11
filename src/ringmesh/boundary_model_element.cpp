@@ -529,14 +529,14 @@ namespace RINGMesh {
     }
 
     /*!
-     * Binds member attributes
+     * @brief Binds attributes on the Mesh stored by the BME
      */
     void BoundaryModelMeshElement::bind_attributes()
     {
         model_vertex_id_.bind( mesh_.vertices.attributes(), model_vertex_id_att_name ) ;
     }
     /*!
-     * Unbinds member attributes
+    * @brief Unbinds attributes on the Mesh stored by the BME
      */
     void BoundaryModelMeshElement::unbind_attributes()
     {
@@ -677,6 +677,18 @@ namespace RINGMesh {
         }
         return true ;
     }
+
+    /**************************************************************/
+
+    bool Corner::is_mesh_valid() const 
+    {
+         return mesh_.vertices.nb() == 1 &&
+             mesh_.edges.nb()    == 0 &&
+             mesh_.facets.nb()   == 0 &&
+             mesh_.cells.nb()    == 0 &&
+             mesh_.vertices.point( 0 ) != vec3();
+     }
+    
 
     /***************************************************************/
 

@@ -91,7 +91,7 @@ namespace RINGMesh {
         }
 
         ~BoundaryModelVertices() {
-            if( ann_ ) delete ann_ ;
+            delete ann_ ;
         }
 
 
