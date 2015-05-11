@@ -146,6 +146,10 @@ namespace RINGMesh {
 
     /************************************************************************/
 
+    BoundaryModelVertices::~BoundaryModelVertices()
+    {
+        delete ann_ ;
+    }
 
     void BoundaryModelVertices::initialize_unique_vertices()
     {
