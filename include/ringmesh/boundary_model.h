@@ -58,8 +58,8 @@ namespace RINGMesh {
 
     /*!
      * @brief Unique storage of the vertices of a BoundaryModel
-     * @details Each instance, set of coordinates, is unique, unlike vertices in 
-     *          the model Corner, Line, and Surface.
+     * @details Each instance is unique, unlike vertices in 
+     *          the model's Corner, Line, and Surface.
      *          Attributes may be defined on the vertices.
      */          
     class RINGMESH_API BoundaryModelVertices {
@@ -90,10 +90,7 @@ namespace RINGMesh {
         {
         }
 
-        ~BoundaryModelVertices() {
-            delete ann_ ;
-        }
-
+        ~BoundaryModelVertices() ; 
 
         /*!
          * @brief Number of vertices stored. 

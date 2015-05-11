@@ -1105,6 +1105,15 @@ namespace RINGMesh {
         std::vector< T2 >& output_ ;
     } ;
 
+    /******************************************************************/
+
+    // Utility function on GEO::Mesh 
+    // Move it in BME.cpp ?
+    // So much is burried in cpp files - We need some other test 
+
+    index_t RINGMESH_API detect_intersecting_facets( const Surface& M ) ;
+
+
 }
 
 #endif
