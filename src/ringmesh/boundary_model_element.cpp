@@ -79,9 +79,9 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Compute an intersection type
+     * @brief Compute an intersection type. Really useful ?
      *
-     * @param[in] types Type that intersect
+     * @param[in] types TYPEs that intersect
      * @return Intersection type
      */
     BoundaryModelElement::GEOL_FEATURE BoundaryModelElement::determine_type(
@@ -89,7 +89,7 @@ namespace RINGMesh {
     {
         if( types.size() == 0 ) {return NO_GEOL ;}
 
-        // Sort and remove duplicates form the in types
+        // Sort and remove duplicates from the in types
         std::vector< GEOL_FEATURE > in = types ;
         std::sort( in.begin(), in.end() ) ;
         index_t new_size = narrow_cast< index_t >(std::unique( in.begin(), in.end() ) - in.begin()) ;
@@ -143,7 +143,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Define the type of the parent of an element of type @param t
+     * @brief Defines the type of the parent of an element of type @param t
      *        If no parent is allowed returns NO_TYPE
      * @details The elements that can have a parent are LINE, SURFACE, and REGION
      */
@@ -163,7 +163,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Define the type of a child of an element of type @param t
+     * @brief Defines the type of a child of an element of type @param t
      *        If no child is allowed returns NO_TYPE
      * @details The elements that can have a parent are CONTACT, INTERFACE, and LAYER
      */
@@ -181,7 +181,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Define the type of an element on the boundary of an element of type @param t
+     * @brief Defines the type of an element on the boundary of an element of type @param t
      *        If no boundary is allowed returns NO_TYPE
      * @details The elements that can have a boundary are LINE, SURFACE, and REGION
      */
@@ -201,7 +201,7 @@ namespace RINGMesh {
     /*!
      * @brief Define the type of an element into which boundary an element of type @param t can be
      *        If no in_boundary is allowed returns NO_TYPE
-     * @details The elements that can be in the boudanry of another are CORNER, LINE, and SURFACE
+     * @details The elements that can be in the boundary of another are CORNER, LINE, and SURFACE
      */
     BoundaryModelElement::TYPE BoundaryModelElement::in_boundary_type(
         BoundaryModelElement::TYPE t )
@@ -217,7 +217,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Dimension 0, 1, 2, or 3 of anelement of type @param t
+     * @brief Dimension 0, 1, 2, or 3 of an element of type @param t
      */
     index_t BoundaryModelElement::dimension( BoundaryModelElement::TYPE t )
     {
@@ -301,6 +301,7 @@ namespace RINGMesh {
         ///    and that reverse information is stored by the corresponding
         ///    elements
         TYPE T = bme_id().type ;
+
         // Boundaries
         if( boundary_allowed( T ) ) {
             if( T == REGION ) {
@@ -311,12 +312,11 @@ namespace RINGMesh {
                     return false ;
                 }
             }            
-            // A Line must have two corners, pointing to the same Corner
-            // when the Line is closed
+            // A Line must have 2 corners - they are identical if the Line is closed
             if( T == LINE && nb_boundaries() != 2 ) {
                 return false ;
             }
-            // No requirement on Surface - one may have no boundary - bubble
+            // No requirement on Surface - it may have no boundary - bubble
 
             // All elements in the boundary must have this in their
             // in_boundary vector
@@ -418,7 +418,7 @@ namespace RINGMesh {
     /*!
      *
      * @param[in] x Index of the boundary element
-     * @return Assert that is exits and return the element on the boundary
+     * @return Asserts that is exists and returns the element on the boundary
      */
     const BoundaryModelElement& BoundaryModelElement::boundary( index_t x ) const
     {
@@ -430,7 +430,7 @@ namespace RINGMesh {
     /*!
      *
      * @param[in] x Index of the in_boundary element
-     * @return Assert that it exist and return the element in in_boundary.
+     * @return Asserts that it exists and returns the element in in_boundary.
      */
     const BoundaryModelElement& BoundaryModelElement::in_boundary( index_t x ) const
     {
@@ -442,7 +442,7 @@ namespace RINGMesh {
     /*!
      *
      * @param[in] x Index of the child
-     * @return Assert that the child exists and returns it.
+     * @return Asserts that the child exists and returns it.
      */
     const BoundaryModelElement& BoundaryModelElement::child( index_t x ) const
     {
@@ -452,7 +452,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Copy all attribute except model_ from @param rhs to this element
+     * @brief Copy all attributes except model_ from @param rhs to this element
      * @param[in] rhs To copy from
      * @param[in] model Model to associate to this element
      */
@@ -476,6 +476,8 @@ namespace RINGMesh {
      * @brief Checks if this element or one of the element containing it
      * determines the model Volume Of Interest
      * @details This is known with the type of an element
+     * 
+     * @todo To modify ? and test if the element ia around the universe region?
      */
     bool BoundaryModelElement::is_on_voi() const
     {
@@ -506,9 +508,9 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Returns the index of the first point that correspond to a model vertex
+     * @brief Returns the index of the first point corresponding to the input model index
      * @details Uses the attribute on the BoundaryModelVertices that stores the
-     *  corresponding points in BME. Returns NO_ID if no matching point found.
+     *  corresponding points in BME. Returns NO_ID if no matching point is found.
      *
      * @param model_vertex_id Index of a vertex in BoundaryModelVertices
      */
@@ -529,14 +531,14 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Binds attributes on the Mesh stored by the BME
+     * @brief Binds attributes stored by the BME on the Mesh 
      */
     void BoundaryModelMeshElement::bind_attributes()
     {
         model_vertex_id_.bind( mesh_.vertices.attributes(), model_vertex_id_att_name ) ;
     }
     /*!
-    * @brief Unbinds attributes on the Mesh stored by the BME
+     * @brief Unbinds attributes stored by the BME on the Mesh 
      */
     void BoundaryModelMeshElement::unbind_attributes()
     {
@@ -544,7 +546,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the index of the matching point in the BoundaryModel
+     * @brief Sets the index of the matching point in the BoundaryModel
      *
      * @param[in] v Vertex index
      * @param[in] model_id Model vertex index in BoundaryModelVertices
@@ -558,7 +560,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the geometrical position of a vertex
+     * @brief Sets the geometrical position of a vertex
      *
      * @param index Index of the vertex to modify
      * @param point New coordinates
@@ -567,7 +569,7 @@ namespace RINGMesh {
      *               are not.
      *
      * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
-     *          I removed on purpose the default value parameter for update (Jeanne)
+     *          I removed on purpose the default value parameter (Jeanne).
      */
     void BoundaryModelMeshElement::set_vertex(
         index_t index,
@@ -584,7 +586,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Get the vertex in the model from a vertex index in the Surface
+     * @brief Vertex index in model from local index
      * @param[in] p Vertex index
      * @return The vertex index in the model
      */
@@ -624,7 +626,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Add vertices to the mesh
+     * @brief Adds vertices to the mesh
      * @details No update of the model vertices is done
      *
      * @param points Geometric positions of the vertices to add
@@ -736,11 +738,11 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Add vertices to the mesh and build the edges
+     * @brief Adds vertices to the mesh and builds the edges
      * @details No update of the model vertices is done
      *
      * @param points Geometric positions of the vertices to add
-     * @param clear_mesh If true the mesh if cleared, keeping its attributes
+     * @param clear_mesh If true the mesh is cleared keeping its attributes
      */
     void Line::set_vertices(
         const std::vector< vec3 >& points,
@@ -753,11 +755,11 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Add vertices to the mesh and build the edges
+     * @brief Adds vertices to the mesh and builds the edges
      * @details See set_vertex(index_t, index_t)
      *
      * @param model_vertices Indices in the model of the points to add
-     * @param clear_mesh If true the mesh if cleared, keeping its attributes
+     * @param clear_mesh If true the mesh is cleared keeping its attributes
      */
     void Line::set_vertices(
         const std::vector< index_t >& model_vertices,
@@ -770,7 +772,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Check if the Line is twice on the boundary of a surface
+     * @brief Check if the Line is twice on the boundary of a Surface
      *
      * @param[in] surface The surface to test
      */
@@ -819,7 +821,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Returns true if the Line has exaclty the given vertices
+     * @brief Returns true if the Line has exactly the given vertices
      *
      * @param[in] rhs_vertices Vertices to compare to
      */
