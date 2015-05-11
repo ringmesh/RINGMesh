@@ -568,9 +568,9 @@ namespace RINGMesh {
             mesh_.vertices.create_vertex( vertex.data() ) ;
         }
 
-        virtual ~Corner() {}
+        ~Corner() {}
 
-        virtual bool is_mesh_valid() const ;
+        bool is_mesh_valid() const ;
        
         void set_vertex( const vec3& point, bool update_model )
         {
@@ -601,14 +601,14 @@ namespace RINGMesh {
             BoundaryModel* model = nil,
             index_t id = NO_ID ) ;
 
-        virtual ~Line() {}
-        virtual bool is_mesh_valid() const ;
+        ~Line() {}
+        bool is_mesh_valid() const ;
 
-        virtual void set_vertices(
+        void set_vertices(
             const std::vector< vec3 >& points,
             bool clear_mesh = false ) ;
 
-        virtual void set_vertices(
+        void set_vertices(
             const std::vector< index_t >& model_vertices,
             bool clear_mesh = false ) ;
 
@@ -652,7 +652,7 @@ namespace RINGMesh {
     /*!
      * @brief A BoundaryModelElement of type SURFACE
      *
-     * @details One 2-manifold connected component 
+     * @details One 2-manifold connected component .
      */
     class RINGMESH_API Surface : public BoundaryModelMeshElement {
         friend class SurfaceTools ;
@@ -667,9 +667,9 @@ namespace RINGMesh {
         {
         }
 
-        virtual ~Surface() ;
+        ~Surface() ;
 
-        virtual bool is_mesh_valid() const ;
+        bool is_mesh_valid() const ;
 
         bool is_triangulated() const { return mesh_.facets.are_simplices() ; }
 
@@ -680,9 +680,9 @@ namespace RINGMesh {
             index_t f,
             index_t v ) const ;
 
-        // If I do not put these ones the stupid compiler does not find it
-        // There is propbably a nicer solution (Jeanne)
-        virtual const vec3& vertex( index_t v ) const {
+        // If I do not put these ones compiler does not find it
+        // There is probably a nicer solution (Jeanne)
+        const vec3& vertex( index_t v ) const {
             return BoundaryModelMeshElement::vertex(v) ;
         }
         index_t model_vertex_id( index_t v ) const {
