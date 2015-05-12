@@ -45,7 +45,15 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
+#include <geogram/basic/geometry_nd.h>
 #include <geogram/points/colocate.h>
+#include <geogram/mesh/triangle_intersection.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_AABB.h>
+//#include <geogram/mesh/mesh_topology.h>
+#include <geogram/mesh/mesh_intersection.h>
+
 
 #include <iostream>
 #include <iomanip>
@@ -53,6 +61,185 @@
 #include <cmath>
 #include <ctime>
 #include <set>
+
+
+
+namespace {
+    using namespace GEO ;
+    using GEO::index_t ;
+    using GEO::vec3 ;
+
+    /*---------------------------------------------------------------------------*/
+    /* ----- Code copied and modified from geogram\mesh\mesh_intersection.cpp ---*/
+    /*
+    *  Copyright (c) 2012-2014, Bruno Levy
+    *  All rights reserved.
+    *
+    *  Redistribution and use in source and binary forms, with or without
+    *  modification, are permitted provided that the following conditions are met:
+    *
+    *  * Redistributions of source code must retain the above copyright notice,
+    *  this list of conditions and the following disclaimer.
+    *  * Redistributions in binary form must reproduce the above copyright notice,
+    *  this list of conditions and the following disclaimer in the documentation
+    *  and/or other materials provided with the distribution.
+    *  * Neither the name of the ALICE Project-Team nor the names of its
+    *  contributors may be used to endorse or promote products derived from this
+    *  software without specific prior written permission.
+    *
+    *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    *  POSSIBILITY OF SUCH DAMAGE.
+    */
+
+
+
+    /**
+    * \brief Computes the intersection between two triangular facets in
+    *  a mesh
+    * \param[in] M the mesh
+    * \param[in] f1 index of the first facet
+    * \param[in] f2 index of the second facet
+    * \param[out] sym symbolic representation of the intersection (if any)
+    * \return true if facets \p f1 and \p f2 have an intersection, false
+    *  otherwise
+    */
+    bool triangles_intersect(
+        const Mesh& M, index_t f1, index_t f2,
+        vector<TriangleIsect>& sym
+        )
+    {
+        geo_debug_assert( M.facets.nb_vertices( f1 ) == 3 );
+        geo_debug_assert( M.facets.nb_vertices( f2 ) == 3 );
+        index_t c1 = M.facets.corners_begin( f1 );
+        const vec3& p1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 ) );
+        const vec3& p2 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 + 1 ) );
+        const vec3& p3 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 + 2 ) );
+        index_t c2 = M.facets.corners_begin( f2 );
+        const vec3& q1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 ) );
+        const vec3& q2 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 + 1 ) );
+        const vec3& q3 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 + 2 ) );
+        return triangles_intersections( p1, p2, p3, q1, q2, q3, sym );
+    }
+
+    /**
+    * \brief Tests whether two facets are adjacent
+    * \details Two facets are adjacents if they share an edge
+    *          In a Surface two facets are adjacent if they are stored as such
+    *          in the Mesh, but they can also share an edge along the boundary of the
+    *          Surface - checked with the global model indices
+    *
+    * \param[in] S the surface
+    * \param[in] f1 index of the first facet
+    * \param[in] f2 index of the second facet
+    * \return true if facets \p f1 and \p f2 share an edge, false
+    *  otherwise
+    */
+    bool facets_are_adjacent( const RINGMesh::Surface& S, index_t f1, index_t f2 )
+    {
+        if( f1 == f2 ) {
+            return true;
+        }
+        for( index_t v = 0; v < S.nb_vertices_in_facet( f1 ); ++v ) {
+            if( S.adjacent( f1, v ) == f2 ) {
+                return true;
+            } else if( S.adjacent( f1, v ) == RINGMesh::NO_ID ) {
+                index_t p0 = S.model_vertex_id( f1, v ) ;
+                index_t p1 = S.model_vertex_id( f1, S.next_in_facet( f1, v ) );
+                // Check if the edge on border is not the same
+                // than an edge on the border in f2 - JP
+                for( index_t v2 = 0; v2 < S.nb_vertices_in_facet( f2 ); ++v2 ) {
+                    if( S.adjacent( f2, v2 ) == RINGMesh::NO_ID ) {
+                        index_t p02 = S.model_vertex_id( f2, v ) ;
+                        index_t p12 = S.model_vertex_id( f2, S.next_in_facet( f2, v ) );
+                        if( p0 == p02 && p1 == p12 ) {
+                            return true ;
+                        } else if( p0 = p12 && p1 == p02 ) {
+                            return true ;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+    * \brief Action class for storing intersections when traversing
+    *  a AABBTree.
+    */
+    class StoreIntersections {
+    public:
+        /**
+        * \brief Constructs the StoreIntersections
+        * \param[in] M the mesh
+        * \param[out] has_isect the flag that indicates for each facet
+        *  whether it has intersections
+        */
+        StoreIntersections(
+            const RINGMesh::Surface& S, vector<index_t>& has_isect
+            ) :
+            S_( S ),
+            has_intersection_( has_isect )
+        {
+            has_intersection_.assign( S.mesh().facets.nb(), 0 );
+        }
+
+        /**
+        * \brief Determines the intersections between two facets
+        * \details It is a callback for AABBTree traversal
+        * \param[in] f1 index of the first facet
+        * \param[in] f2 index of the second facet
+        */
+        void operator() ( index_t f1, index_t f2 )
+        {
+            if(
+                !facets_are_adjacent( S_, f1, f2 ) &&
+                f1 != f2 &&
+                triangles_intersect( S_.mesh(), f1, f2, sym_ )
+                ) {
+                has_intersection_[ f1 ] = 1;
+                has_intersection_[ f2 ] = 1;
+            }
+
+
+        }
+
+    private:
+        const RINGMesh::Surface& S_;
+        vector<index_t>& has_intersection_;
+        vector<TriangleIsect> sym_;
+    };
+
+
+    /**
+    * \brief Detect intersecting facets in a mesh TRIANGULATED !!
+    * \param[in] M the mesh
+    * \return
+    */
+    index_t detect_intersecting_facets( const RINGMesh::Surface& S )
+    {
+        GEO::Mesh& M = S.mesh() ;
+        geo_assert( M.vertices.dimension() >= 3 );
+
+        vector<index_t> has_intersection;
+        StoreIntersections action( S, has_intersection );
+        MeshFacetsAABB AABB( M );
+        AABB.compute_facet_bbox_intersections( action );
+
+        return std::count( has_intersection.begin(), has_intersection.end(), 0 ) ;
+    }
+}
+
+
 
 namespace RINGMesh {
 
@@ -573,7 +760,10 @@ namespace RINGMesh {
      */
     bool BoundaryModel::check_element_consistency() const 
     {
-        
+        if( detect_intersecting_facets( surface(0) ) > 0 ) {
+            return false ;
+        }
+
         // Other checks
         // No point on a Line - except at extremities - can be a Corner
 

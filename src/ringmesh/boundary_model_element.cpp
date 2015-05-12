@@ -51,8 +51,7 @@
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/mesh_intersection.h>
-//#include <geogram/mesh/mesh_reorder.h>
-//#include <geogram/mesh/mesh_preprocessing.h>
+
 
 #include <set>
 #include <stack>
@@ -62,9 +61,6 @@
 namespace {
     /* Definition of functions that we do not want exported in the interface */
     using namespace RINGMesh ;
-    using namespace GEO ;
-    using GEO::index_t ;
-    using GEO::vec3 ;
 
     /*!
     * @brief Checks that the model vertex indices of @param E 
@@ -148,178 +144,27 @@ namespace {
             }
         }
     }
-
-
-
-    /*---------------------------------------------------------------------------*/
-    /* ----- Code copied and modified from geogram\mesh\mesh_intersection.cpp ---*/
-    /*
-    *  Copyright (c) 2012-2014, Bruno Levy
-    *  All rights reserved.
-    *
-    *  Redistribution and use in source and binary forms, with or without
-    *  modification, are permitted provided that the following conditions are met:
-    *
-    *  * Redistributions of source code must retain the above copyright notice,
-    *  this list of conditions and the following disclaimer.
-    *  * Redistributions in binary form must reproduce the above copyright notice,
-    *  this list of conditions and the following disclaimer in the documentation
-    *  and/or other materials provided with the distribution.
-    *  * Neither the name of the ALICE Project-Team nor the names of its
-    *  contributors may be used to endorse or promote products derived from this
-    *  software without specific prior written permission.
-    *
-    *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-    *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    *  POSSIBILITY OF SUCH DAMAGE.
-    */
     
-
-
-    /**
-    * \brief Computes the intersection between two triangular facets in
-    *  a mesh
-    * \param[in] M the mesh
-    * \param[in] f1 index of the first facet
-    * \param[in] f2 index of the second facet
-    * \param[out] sym symbolic representation of the intersection (if any)
-    * \return true if facets \p f1 and \p f2 have an intersection, false
-    *  otherwise
-    */
-    bool triangles_intersect(
-        const Mesh& M, index_t f1, index_t f2,
-        vector<TriangleIsect>& sym
-        )
+    /*!
+     * @brief Returns true if the surface facet is incident twice to the same vertex
+     */
+    bool facet_is_degenerate( const Surface& S, index_t f )
     {
-        geo_debug_assert( M.facets.nb_vertices( f1 ) == 3 );
-        geo_debug_assert( M.facets.nb_vertices( f2 ) == 3 );
-        index_t c1 = M.facets.corners_begin( f1 );
-        const vec3& p1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 ) );
-        const vec3& p2 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 + 1 ) );
-        const vec3& p3 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 + 2 ) );
-        index_t c2 = M.facets.corners_begin( f2 );
-        const vec3& q1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 ) );
-        const vec3& q2 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 + 1 ) );
-        const vec3& q3 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 + 2 ) );
-        return triangles_intersections( p1, p2, p3, q1, q2, q3, sym );
+        std::vector< index_t > corners( S.nb_vertices_in_facet( f ) ) ;
+        std::vector< index_t > corners_global( S.nb_vertices_in_facet( f ) ) ;
+        int v = 0 ;
+        for( index_t c = S.facet_begin( f ) ; c < S.facet_end( f ); ++c ) {
+            corners[ v ] = c ;
+            corners_global[ v ] = S.model_vertex_id( c ) ;
+            v++ ;
+        }
+        std::sort( corners.begin(), corners.end() ) ;
+        std::sort( corners_global.begin(), corners_global.end() ) ;
+        return std::unique( corners.begin(), corners.end() ) != corners.end() ||
+            std::unique( corners_global.begin(), corners_global.end() ) != corners_global.end() ;
+
+        return false ;
     }
-
-    /**
-    * \brief Tests whether two facets are adjacent
-    * \details Two facets are adjacents if they share an edge
-    *          In a Surface two facets are adjacent if they are stored as such
-    *          in the Mesh, but they can also share an edge along the boundary of the 
-    *          Surface - checked with the global model indices
-    *
-    * \param[in] S the surface
-    * \param[in] f1 index of the first facet
-    * \param[in] f2 index of the second facet
-    * \return true if facets \p f1 and \p f2 share an edge, false
-    *  otherwise
-    */
-    bool facets_are_adjacent( const Surface& S, index_t f1, index_t f2 )
-    {
-        if( f1 == f2 ) {
-            return true;
-        }
-        for( index_t v = 0; v < S.nb_vertices_in_facet( f1 ); ++v ) {
-            if( S.adjacent( f1, v ) == f2 ) {
-                return true;
-            } else if( S.adjacent( f1, v ) == NO_ID ) {
-                index_t p0 = S.model_vertex_id( f1, v ) ;
-                index_t p1 = S.model_vertex_id( f1, S.next_in_facet( f1, v ) );
-                // Check if the edge on border is not the same
-                // than an edge on the border in f2 - JP
-                for( index_t v2 = 0; v2 < S.nb_vertices_in_facet( f2 ); ++v2 ) {
-                    if( S.adjacent( f2, v2 ) == NO_ID ) {
-                        index_t p02 = S.model_vertex_id( f2, v ) ;
-                        index_t p12 = S.model_vertex_id( f2, S.next_in_facet( f2, v ) );
-                        if( p0 == p02 && p1 == p12 ) {
-                            return true ;
-                        } else if( p0 = p12 && p1 == p02 ) {
-                            return true ;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-    * \brief Action class for storing intersections when traversing
-    *  a AABBTree.
-    */
-    class StoreIntersections {
-    public:
-        /**
-        * \brief Constructs the StoreIntersections
-        * \param[in] M the mesh
-        * \param[out] has_isect the flag that indicates for each facet
-        *  whether it has intersections
-        */
-        StoreIntersections(
-            const Surface& S, vector<index_t>& has_isect
-            ) :
-            S_( S ),
-            has_intersection_( has_isect )
-        {
-            has_intersection_.assign( S.mesh().facets.nb(), 0 );
-        }
-
-        /**
-        * \brief Determines the intersections between two facets
-        * \details It is a callback for AABBTree traversal
-        * \param[in] f1 index of the first facet
-        * \param[in] f2 index of the second facet
-        */
-        void operator() ( index_t f1, index_t f2 )
-        {
-            if(
-                !facets_are_adjacent( S_, f1, f2 ) &&
-                f1 != f2 &&
-                triangles_intersect( S_.mesh(), f1, f2, sym_ )
-                ) {
-                has_intersection_[ f1 ] = 1;
-                has_intersection_[ f2 ] = 1;
-            }
-
-
-        }
-
-    private:
-        const Surface& S_;
-        vector<index_t>& has_intersection_;
-        vector<TriangleIsect> sym_;
-    };
-
-
-    /**
-    * \brief Detect intersecting facets in a mesh TRIANGULATED !!
-    * \param[in] M the mesh
-    * \return
-    */
-    index_t detect_intersecting_facets( const Surface& S )
-    {
-        GEO::Mesh& M = S.mesh() ;
-        geo_assert( M.vertices.dimension() >= 3 );
-
-        vector<index_t> has_intersection;
-        StoreIntersections action( S, has_intersection );
-        MeshFacetsAABB AABB( M );
-        AABB.compute_facet_bbox_intersections( action );
-
-        return std::count( has_intersection.begin(), has_intersection.end(), 0 ) ;
-    }
-
 
 }
 
@@ -972,6 +817,9 @@ namespace RINGMesh {
 
     /**************************************************************/
 
+    /*!
+    * @brief Check that the Corner mesh is a unique valid point
+    */
     bool Corner::is_mesh_valid() const 
     {
          return mesh_.vertices.nb() == 1 &&
@@ -997,9 +845,21 @@ namespace RINGMesh {
     {
     }
 
+
+    /*!
+     * @brief Check that the mesh of the Line is valid
+     * @details Check that 
+     *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - 
+     *  - no facets and no cells.
+     *  - global indices of vertices in the model are in a valid range 
+     *  - each vertex is in 2 edges except extremities that are in 1 edge
+     *  - no vertex is duplicated, except the extremity if the Line is closed
+     * 
+     * @todo Write meaninful message - Save objects to allow debugging
+     */
     bool Line::is_mesh_valid() const
     {
-        /// 1. Check that the GEO::Mesh has the expected elements
+        // Check that the GEO::Mesh has the expected elements
         if( mesh_.vertices.nb() < 2 ) {
             return false ;
         }
@@ -1009,12 +869,9 @@ namespace RINGMesh {
         if( mesh_.facets.nb() != 0 ) {
             return false ;
         }
-
         if( mesh_.cells.nb() != 0 ) {
             return false ;
         }
-
-        /// 2. Check the validity of the vertices and edges
 
         // Model indices must be valid
         if( !check_range_model_vertex_ids( *this ) ) {
@@ -1052,12 +909,12 @@ namespace RINGMesh {
         }
         
         std::vector< index_t > duplicated ;
-        // Only extremity vertex can be duplicated
+        // Only the extremity vertex can be duplicated
         index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
         if( nb_duplicated > 2 ) {
             return false ;
         }
-        // If it is the line is closed
+        // If it is, the line is closed
         else if( nb_duplicated == 2 ) {
             if( !is_closed() ) {
                 return false ;
@@ -1073,11 +930,10 @@ namespace RINGMesh {
             ringmesh_debug_assert( nb_duplicated == 0 ) ;
         }
 
-        // No zero edge length - already ruled out with the duplicated vertex test
-        // No self-intersection - let's say there are none
-        // No duplicated edge - I would say it is also ruled out with the duplicated
-        // vertex test JP
-       
+        // No zero edge length - already ruled out with the duplicated vertex test (JP)
+        // No self-intersection - let's say there are none (JP)
+        // No duplicated edge - probably ruled out with the duplicated vertex test (JP)
+
         return true ; 
     }
 
@@ -1198,26 +1054,6 @@ namespace RINGMesh {
     }
 
 
-    /***********************************************************************/
-
-
-    bool facet_is_degenerate( const Surface& S, index_t f )
-    {
-        std::vector< index_t > corners( S.nb_vertices_in_facet( f ) ) ;
-        std::vector< index_t > corners_global( S.nb_vertices_in_facet( f ) ) ;
-        int v = 0 ;
-        for( index_t c = S.facet_begin( f ) ; c < S.facet_end( f ); ++c ) {
-            corners[ v ] = c ;
-            corners_global[ v ] = S.model_vertex_id( c ) ;
-            v++ ;
-        }
-        std::sort( corners.begin(), corners.end() ) ;
-        std::sort( corners_global.begin(), corners_global.end() ) ;
-        return std::unique( corners.begin(), corners.end() ) != corners.end() ||
-            std::unique( corners_global.begin(), corners_global.end() ) != corners_global.end() ;
-
-        return false ; 
-    }
     /********************************************************************/
 
     Surface::~Surface()
@@ -1225,23 +1061,44 @@ namespace RINGMesh {
     }
 
     
+    /*!
+     * @brief Check that the mesh of the Surface is valid
+     * @details Check that
+     *  - the GEO::Mesh has more than 2 vertices, at least 1 facet, no cells.
+     *  - global indices of vertices in the model are in a valid range
+     *  - duplicated vertices are on a boundary Line ending in the Surface 
+     *  - no degenerate facet 
+     *  - no duplicated facet 
+     *  - one connected component 
+     *
+     *  Some tests are not performed here but globally on the BoundaryModel
+     *  - intersection of facets 
+     *  - non-manifold edges 
+     *
+     *  Some tests are not performed
+     *  - non-manifold points
+     *  - surface orientability is assumed true
+     *  - planarity of polygonal facets 
+     *
+     * @todo Implement check duplicated vertices only on boundary line 
+     *       and duplicated facet test 
+     *       Write meaninful message - Save objects to allow debugging
+     */
     bool Surface::is_mesh_valid() const
     {
-        /// 1. Check that the GEO::Mesh has the expected elements
-        ///    at least 3 vertices and one facet.
+        // Check that the GEO::Mesh has the expected elements
+        // at least 3 vertices and one facet.
         if( mesh_.vertices.nb() < 3 ) {
             return false ;
         }
         // Is it important to have edges or not ?
         // I would say we do not care (JP) - so no check on that 
-        if( mesh_.facets.nb() != 0 ) {
+        if( mesh_.facets.nb() == 0 ) {
             return false ;
         }
-        if( mesh_.cells.nb() == 0 ) {
+        if( mesh_.cells.nb() != 0 ) {
             return false ;
         }
-
-        /// 2. Check the validity of the facets 
 
         // No isolated vertices
         std::vector< index_t > nb ;
@@ -1253,7 +1110,7 @@ namespace RINGMesh {
         std::vector< index_t > duplicated ;
         index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
 
-        // There might be several duplicated points, but they must be ine one of the
+        // There might be several duplicated points, but they must be in one of the
         // boundary lines that are twice in the boundary of this surface
 
         // No zero area facet
@@ -1285,16 +1142,6 @@ namespace RINGMesh {
             return false ;
         }
 
-        // No self-intersection - we need a triangulated mesh
-        if( detect_intersecting_facets( *this ) > 0 ) {
-            return false ;
-        }
-
-        // No non-manifold edges
-        // No non-manifold points
-        // Orientable surface - No #$@!$ Moebius allowed        
-        // Boundary is a closed-manifold line - possibly several connected components
-        // Planar polygonal facets 
 
         return true ; 
     }
