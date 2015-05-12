@@ -51,8 +51,9 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
-//#include <geogram/mesh/mesh_topology.h>
+#include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/mesh_intersection.h>
+#include <geogram/mesh/mesh_repair.h>
 
 
 #include <iostream>
@@ -66,6 +67,7 @@
 
 namespace {
     using namespace GEO ;
+    using namespace RINGMesh ;
     using GEO::index_t ;
     using GEO::vec3 ;
 
@@ -130,6 +132,109 @@ namespace {
         return triangles_intersections( p1, p2, p3, q1, q2, q3, sym );
     }
 
+    /*!
+     * @brief Returns the Line identification if the points given define 
+     *       an edge of one of this Line of the model
+     */
+    BME::bme_t is_edge_on_line(
+        const BoundaryModel& model,
+        const vec3& p0,
+        const vec3& p1 )
+    {
+        // Get the ids in the model of these 2 points
+        index_t v0 = model.vertices.vertex_index( p0 ) ;
+        index_t v1 = model.vertices.vertex_index( p1 ) ;
+        ringmesh_assert( v0 != NO_ID && v1 != NO_ID ) ;
+
+        const std::vector< BoundaryModelVertices::VertexInBME >& 
+            v0_bme = model.vertices.bme_vertices( v0 ) ;
+        const std::vector< BoundaryModelVertices::VertexInBME >&
+            v1_bme = model.vertices.bme_vertices( v1 ) ;
+
+        // Get the local indices of the vertices in 
+        // a common Line if any 
+        BME::bme_t result ;
+        index_t lv0 = NO_ID ;
+        index_t lv1 = NO_ID ;
+        for( index_t i = 0; i < v0_bme.size() ; ++i ) {
+            if( v0_bme[ i ].bme_id.type == BME::LINE ) {
+                for( index_t j = 0; j < v0_bme.size() ; ++j ) {
+                    if(
+                        v1_bme[ j ].bme_id.type == BME::LINE &&
+                        v0_bme[ i ].bme_id.index == v1_bme[ j ].bme_id.index
+                        ) {
+                        if( lv0 == NO_ID ) {
+                            lv0 = v0_bme[ i ].v_id ;
+                            lv1 = v1_bme[ j ].v_id ;
+                            result = v0_bme[ i ].bme_id ;
+                        } else {
+                            // The two points should be corners ...
+                            // I am not completely sure (JP) - If they define an edge 
+                            // model topology is not correct 
+                            return BME::bme_t() ;
+                        }
+                    }
+                }
+            }
+        }
+       
+        // There is an edge between the 2 points if their indices
+        // in the Line of i and i+1
+        if( abs( (int)lv0 - (int)lv1 ) == 1 ) {
+            return result ;
+        } else {
+            return BME::bme_t() ;
+        }
+    }
+
+
+    /*! 
+     * @brief Returns true if the facets of the mesh share an edge
+     *       that is on one Line of the boundary model
+     * @pre the mesh is triangulated
+     */
+    bool facets_share_line_edge(
+        const Mesh& M,
+        const BoundaryModel& BM,
+        index_t f1,
+        index_t f2 )
+    {
+        geo_debug_assert( M.facets.nb_vertices( f1 ) == 3 );
+        geo_debug_assert( M.facets.nb_vertices( f2 ) == 3 );
+        
+        // I only want to test the edges that are on boundary 
+        for( index_t i = 0; i < 3; ++i ) {
+            if( M.facets.adjacent( f1, i ) == NO_ID ) {
+                for( index_t j = 0; j < 3; ++j ) {
+                    if( M.facets.adjacent( f2, j ) == NO_ID ) {
+                        const vec3& p10 = M.vertices.point( M.facets.vertex( f1, i ) ) ;
+                        const vec3& p11 = M.vertices.point( M.facets.vertex( f1, i==0 ? 2 : i+1 ) ) ;
+
+                        const vec3& p20 = M.vertices.point( M.facets.vertex( f2, j ) ) ;
+                        const vec3& p21 = M.vertices.point( M.facets.vertex( f2, j==0 ? 2 : j+1 ) ) ;
+
+                        index_t v10 = BM.vertices.vertex_index( p10 ) ;
+                        index_t v11 = BM.vertices.vertex_index( p11 ) ;
+                        ringmesh_assert( v10 != NO_ID && v11 != NO_ID ) ;
+
+                        index_t v20 = BM.vertices.vertex_index( p20 ) ;
+                        index_t v21 = BM.vertices.vertex_index( p21 ) ;
+
+                        if( v10 == v20 && v11 == v21 && is_edge_on_line( BM, p20, p21 ).is_defined() ) {
+                            return true ;
+                        }
+                        if( v10 == v21 && v11 == v20 && is_edge_on_line( BM, p20, p21 ).is_defined() ) {
+                            return true ;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false ;
+    }
+
+
     /**
     * \brief Tests whether two facets are adjacent
     * \details Two facets are adjacents if they share an edge
@@ -137,38 +242,25 @@ namespace {
     *          in the Mesh, but they can also share an edge along the boundary of the
     *          Surface - checked with the global model indices
     *
-    * \param[in] S the surface
+    * \param[in] M the mesh
     * \param[in] f1 index of the first facet
     * \param[in] f2 index of the second facet
     * \return true if facets \p f1 and \p f2 share an edge, false
     *  otherwise
     */
-    bool facets_are_adjacent( const RINGMesh::Surface& S, index_t f1, index_t f2 )
+    bool facets_are_adjacent(
+        const Mesh& M, 
+        index_t f1, index_t f2 )
     {
         if( f1 == f2 ) {
             return true;
-        }
-        for( index_t v = 0; v < S.nb_vertices_in_facet( f1 ); ++v ) {
-            if( S.adjacent( f1, v ) == f2 ) {
+        }                 
+        for( index_t c = M.facets.corners_begin( f1 );
+             c != M.facets.corners_end( f1 ); ++c ) {
+            if( M.facet_corners.adjacent_facet( c ) == f2 ) {
                 return true;
-            } else if( S.adjacent( f1, v ) == RINGMesh::NO_ID ) {
-                index_t p0 = S.model_vertex_id( f1, v ) ;
-                index_t p1 = S.model_vertex_id( f1, S.next_in_facet( f1, v ) );
-                // Check if the edge on border is not the same
-                // than an edge on the border in f2 - JP
-                for( index_t v2 = 0; v2 < S.nb_vertices_in_facet( f2 ); ++v2 ) {
-                    if( S.adjacent( f2, v2 ) == RINGMesh::NO_ID ) {
-                        index_t p02 = S.model_vertex_id( f2, v ) ;
-                        index_t p12 = S.model_vertex_id( f2, S.next_in_facet( f2, v ) );
-                        if( p0 == p02 && p1 == p12 ) {
-                            return true ;
-                        } else if( p0 = p12 && p1 == p02 ) {
-                            return true ;
-                        }
-                    }
-                }
             }
-        }
+        }        
         return false;
     }
 
@@ -185,12 +277,12 @@ namespace {
         *  whether it has intersections
         */
         StoreIntersections(
-            const RINGMesh::Surface& S, vector<index_t>& has_isect
+            const Mesh& M, const BoundaryModel& BM, vector<index_t>& has_isect
             ) :
-            S_( S ),
+            M_(M), BM_(BM),
             has_intersection_( has_isect )
         {
-            has_intersection_.assign( S.mesh().facets.nb(), 0 );
+            has_intersection_.assign( M.facets.nb(), 0 );
         }
 
         /**
@@ -202,19 +294,19 @@ namespace {
         void operator() ( index_t f1, index_t f2 )
         {
             if(
-                !facets_are_adjacent( S_, f1, f2 ) &&
+                !facets_are_adjacent( M_, f1, f2 ) &&
                 f1 != f2 &&
-                triangles_intersect( S_.mesh(), f1, f2, sym_ )
+                !facets_share_line_edge( M_, BM_, f1, f2 ) && 
+                triangles_intersect( M_, f1, f2, sym_ )
                 ) {
                 has_intersection_[ f1 ] = 1;
                 has_intersection_[ f2 ] = 1;
             }
-
-
         }
 
     private:
-        const RINGMesh::Surface& S_;
+        const Mesh& M_;
+        const BoundaryModel& BM_ ;
         vector<index_t>& has_intersection_;
         vector<TriangleIsect> sym_;
     };
@@ -225,113 +317,407 @@ namespace {
     * \param[in] M the mesh
     * \return
     */
-    index_t detect_intersecting_facets( const RINGMesh::Surface& S )
+    index_t detect_intersecting_facets( 
+        const BoundaryModel& model, 
+        Mesh& M )
     {
-        GEO::Mesh& M = S.mesh() ;
         geo_assert( M.vertices.dimension() >= 3 );
 
         vector<index_t> has_intersection;
-        StoreIntersections action( S, has_intersection );
+        StoreIntersections action( M, model, has_intersection );
         MeshFacetsAABB AABB( M );
         AABB.compute_facet_bbox_intersections( action );
 
         return std::count( has_intersection.begin(), has_intersection.end(), 0 ) ;
     }
-}
 
-
-
-namespace RINGMesh {
-
+    /*---------------------------------------------------------------------------*/
+    /* ----- Code copied and modified from geogram\mesh\mesh_repair.cpp ---*/
 
     /*!
-     * @brief Trigger an assertion if several vertices of a mesh at the same geometric location
-     * @note Code modified from geomgram/mesh/mesh_repair.cpp
-     * @param[in] M the mesh
-     * @param[in] colocate_epsilon tolerance
-     */
-    void assert_no_colocate_vertices(GEO::Mesh& M, double colocate_epsilon) {
+    * @brief Trigger an assertion if several vertices of a mesh at the same geometric location
+    * @note Code modified from geogram/mesh/mesh_repair.cpp
+    * @param[in] M the mesh
+    * @param[in] colocate_epsilon tolerance
+    */
+    void assert_no_colocate_vertices( GEO::Mesh& M, double colocate_epsilon )
+    {
         GEO::vector<index_t> old2new;
 
         index_t nb_new_vertices = 0;
-        if (colocate_epsilon == 0.0) {
+        if( colocate_epsilon == 0.0 ) {
             nb_new_vertices = GEO::Geom::colocate_by_lexico_sort(
-                M.vertices.point_ptr(0), 3, M.vertices.nb(),
+                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(),
                 old2new, M.vertices.dimension()
                 );
-        }
-        else {
+        } else {
             nb_new_vertices = GEO::Geom::colocate(
-                M.vertices.point_ptr(0), 3, M.vertices.nb(),
+                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(),
                 old2new, colocate_epsilon, M.vertices.dimension()
                 );
         }
-        if (nb_new_vertices != M.vertices.nb()) {
+        if( nb_new_vertices != M.vertices.nb() ) {
             geo_assert_not_reached;
         }
     }
 
     /*!
-     * @brief Merges the vertices of a mesh that are at the same geometric location
-     * @note Code modified from geomgram/mesh/mesh_repair.cpp
-     * @param[in] M the mesh
-     * @param[in] colocate_epsilon tolerance for merging vertices
-     * @param[out] old2new mapping from previous M.vertices to new M.vertices
-     */
+    * @brief Merges the vertices of a mesh that are at the same geometric location
+    * @note Code modified from geogram/mesh/mesh_repair.cpp
+    * @param[in] M the mesh
+    * @param[in] colocate_epsilon tolerance for merging vertices
+    * @param[out] old2new mapping from previous M.vertices to new M.vertices
+    */
     void repair_colocate_vertices(
         GEO::Mesh& M,
         double colocate_epsilon,
-        GEO::vector<index_t>& old2new)
+        GEO::vector<index_t>& old2new )
     {
         old2new.clear();
 
         index_t nb_new_vertices = 0;
-        if (colocate_epsilon == 0.0) {
+        if( colocate_epsilon == 0.0 ) {
             nb_new_vertices = GEO::Geom::colocate_by_lexico_sort(
-                M.vertices.point_ptr(0), 3, M.vertices.nb(),
+                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(),
                 old2new, M.vertices.dimension()
                 );
-        }
-        else {
+        } else {
             nb_new_vertices = GEO::Geom::colocate(
-                M.vertices.point_ptr(0), 3, M.vertices.nb(),
+                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(),
                 old2new, colocate_epsilon, M.vertices.dimension()
                 );
         }
-        if (nb_new_vertices == M.vertices.nb()) {
+        if( nb_new_vertices == M.vertices.nb() ) {
             return;
         }
-        for (index_t c = 0; c < M.facet_corners.nb(); c++) {
-            M.facet_corners.set_vertex(c, old2new[M.facet_corners.vertex(c)]);
+        for( index_t c = 0; c < M.facet_corners.nb(); c++ ) {
+            M.facet_corners.set_vertex( c, old2new[ M.facet_corners.vertex( c ) ] );
         }
 
         // Some index magic to flag the point to delete and the right 
         // mapping between old and new vertices of the mesh
-        GEO::vector< index_t > to_delete(old2new.size());
-        for (index_t i = 0; i < old2new.size(); i++) {
-            if (old2new[i] == i) {
-                to_delete[i] = 0;
-            }
-            else {
-                to_delete[i] = 1;
+        GEO::vector< index_t > to_delete( old2new.size() );
+        for( index_t i = 0; i < old2new.size(); i++ ) {
+            if( old2new[ i ] == i ) {
+                to_delete[ i ] = 0;
+            } else {
+                to_delete[ i ] = 1;
             }
         }
-        M.vertices.delete_elements(to_delete, false);
+        M.vertices.delete_elements( to_delete, false );
 
         // The to_delete vector is used for mapping in the delete_elements function
         // We need it to get the correct mapping
-        for (index_t i = 0; i < old2new.size(); i++) {
-            if (to_delete[i] != NO_ID) {
-                old2new[i] = to_delete[i];
-            }
-            else {
-                old2new[i] = to_delete[old2new[i]];
+        for( index_t i = 0; i < old2new.size(); i++ ) {
+            if( to_delete[ i ] != NO_ID ) {
+                old2new[ i ] = to_delete[ i ];
+            } else {
+                old2new[ i ] = to_delete[ old2new[ i ] ];
             }
         }
     }
 
+    /**
+    * \brief Connects the facets in a triangulated mesh.
+    * \details Reconstructs the corners.adjacent_facet links. 
+    *          Orientation not checked 
+    *
+    * \note Modified from geogram to take into account a predicate that impose to disconnect facets
+    *       along identified edges - Jeanne
+    *       The predicate implements bool operator() (index_t v1, index_t v2) const ;
+    */
+    template< typename P >
+    void repair_connect_facets(
+        Mesh& M, P is_border
+        )
+    {
+        const index_t NO_FACET = index_t( -1 );
+        const index_t NO_CORNER = index_t( -1 );
+        const index_t NON_MANIFOLD = index_t( -2 );
 
-    /************************************************************************/
+        // Reset all facet-facet adjacencies.
+        for( index_t c = 0; c<M.facet_corners.nb(); ++c ) {
+            M.facet_corners.set_adjacent_facet( c, NO_FACET );
+        }
+
+        // For each vertex v, v2c[v] gives the index of a 
+        // corner incident to vertex v.
+        vector<index_t> v2c( M.vertices.nb(), NO_CORNER );
+
+        // For each corner c, next_c_around_v[c] is the 
+        // linked list of all the corners incident to 
+        // vertex v.
+        vector<index_t> next_c_around_v( M.facet_corners.nb(), NO_CORNER );
+
+       
+        // Compute v2c and next_c_around_v
+        for( index_t c = 0; c<M.facet_corners.nb(); ++c ) {
+            index_t v = M.facet_corners.vertex( c );
+            next_c_around_v[ c ] = v2c[ v ];
+            v2c[ v ] = c;
+        }
+
+        for( index_t f1 = 0; f1<M.facets.nb(); ++f1 ) {
+            for(
+                index_t c1 = M.facets.corners_begin( f1 );
+                c1<M.facets.corners_end( f1 ); ++c1
+                ) {
+
+                if( M.facet_corners.adjacent_facet( c1 ) == NO_FACET ) {
+                    index_t adj_corner = NO_CORNER;
+                    index_t v1 = M.facet_corners.vertex( c1 );
+                    index_t v2 = M.facet_corners.vertex(
+                        M.facets.next_corner_around_facet( f1, c1 )
+                        );
+
+                    index_t c2 = v2c[ v1 ];
+
+                    // Lookup candidate adjacent edges from incident
+                    // edges list.
+                    while( c2 != NO_CORNER ) {
+                        if( c2 != c1 ) {
+                            index_t f2 = c2/3 ;
+                            index_t c3 = 
+                                M.facets.prev_corner_around_facet( f2, c2 );
+                            index_t v3 = M.facet_corners.vertex( c3 );
+                            // Check with standard orientation.
+                            if( v3 == v2 ) {
+                                if( !is_border( M.vertices.point( v1 ), 
+                                                M.vertices.point( v2 ) ) )
+                                { // Jeanne
+                                    if( adj_corner == NO_CORNER ) {
+                                        adj_corner = c3;
+                                    } else {
+                                        // Non-manifold edge
+                                        is_border.debug( M.vertices.point( v1 ),
+                                                         M.vertices.point( v2 ) ) ;
+                                        adj_corner = NON_MANIFOLD;
+                                    }
+                                }
+                            } else {
+                                // Check with the other ("wrong") orientation
+                                c3 = M.facets.next_corner_around_facet( f2, c2 );
+                                v3 = M.facet_corners.vertex( c3 );
+                                if( v3 == v2 ) {
+                                    if( !is_border( M.vertices.point( v1 ),
+                                                    M.vertices.point( v2 ) ) 
+                                       ) { // Jeanne
+                                        if( adj_corner == NO_CORNER ) {
+                                            adj_corner = c2;
+                                        } else {
+                                            // Non-manifold edge
+                                            is_border.debug( M.vertices.point( v1 ), M.vertices.point( v2 ) ) ;
+                                            adj_corner = NON_MANIFOLD;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        c2 = next_c_around_v[ c2 ];
+                    }
+                    if(
+                        adj_corner != NO_CORNER &&
+                        adj_corner != NON_MANIFOLD
+                        ) {
+                        M.facet_corners.set_adjacent_facet( adj_corner, f1 );
+                        index_t f2 = adj_corner/3 ;
+                        M.facet_corners.set_adjacent_facet( c1, f2 );
+                    }
+                }
+            }
+        }
+    }
+
+    
+
+
+    /**
+     * \brief Predicate to be used by the function setting facet adjacencies in the GEO::Mesh
+     * and force disconnection of facets on a Line edge
+     */
+    class EdgeOnLine {
+    public:
+        EdgeOnLine( const BoundaryModel& model, Mesh& non_manifold ) :
+            M_( model ), non_manifold_( non_manifold )
+        {} ;
+        bool operator()( const vec3& p0, const vec3& p1 ) const
+        {
+            return is_edge_on_line( M_, p0, p1 ).is_defined() ;
+        }
+        void debug( const vec3& p0, const vec3& p1 )
+        {
+            index_t v0 = non_manifold_.vertices.create_vertex( p0.data() ) ;
+            index_t v1 = non_manifold_.vertices.create_vertex( p0.data() ) ;
+            non_manifold_.edges.create_edge( v0, v1 ) ;
+        }
+    private:
+        const BoundaryModel& M_ ;
+        Mesh& non_manifold_ ;
+    } ;
+
+
+    /*----------------------------------------------------------------------------*/
+
+    /*!
+     * @brief Build a Mesh from the model non-duplicated vertices
+     *        and its Surface facets.     
+     */
+    void mesh_from_boundary_model( const BoundaryModel& model, Mesh& M )
+    {
+        // Clear the Mesh keeping the attributes, otherwise we crash
+        M.clear( true ) ;
+
+        // Set the vertices 
+        index_t nbv = model.nb_vertices() ;
+        M.vertices.create_vertices( nbv ) ;
+        for( index_t i = 0; i < nbv; ++i ) {
+            M.vertices.point( i ) = model.vertices.unique_vertex( i ) ;
+        }
+
+        // Set the facets  
+        index_t begin_S = 0 ;
+        for( index_t s = 0; s < model.nb_surfaces(); ++s ) {
+            begin_S = M.facets.nb() ;
+
+            const Surface& S = model.surface( s ) ;
+            for( index_t f = 0; f < S.nb_cells(); ++f ) {
+                index_t nbv = S.nb_vertices_in_facet( f ) ;
+                GEO::vector< index_t > ids( nbv ) ;
+
+                for( index_t v = 0; v < nbv; ++v ) {
+                    ids[ v ] = S.model_vertex_id( f, v ) ;
+                }
+                M.facets.create_polygon( ids ) ;
+            }
+            for( index_t f = 0; f < S.nb_cells(); ++f ) {
+                index_t nbv = S.nb_vertices_in_facet( f ) ;
+                for( index_t v = 0; v < nbv; ++v ) {
+                    index_t adj = S.adjacent( f, v ) == NO_ID ? NO_ID : S.adjacent( f, v ) + begin_S ;
+                    M.facets.set_adjacent( f, v, adj ) ;
+                }
+            }
+        }
+    }
+
+    /*! 
+     * @brief Get the BMME defining the boundaries of an element
+     */
+    void boundary_bmme( const BME& E, std::vector< BME::bme_t >& borders )
+    {
+        borders.clear() ;
+
+        BME::TYPE T = E.bme_id().type ;
+        if( BME::parent_allowed( T ) ) {
+            // We are dealing with basic elements 
+            for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
+                borders.push_back( E.boundary_id( i ) ) ;
+            }
+        } else {
+            for( index_t i = 0; i < E.nb_children(); ++i ) {
+                for( index_t j = 0; j < E.child( i ).nb_boundaries(); ++j ) {
+                    borders.push_back( E.child( i ).boundary_id( j ) ) ;
+                }
+            }
+            std::sort( borders.begin(), borders.end() ) ;
+            index_t nb = std::unique( borders.begin(), borders.end() )-borders.begin() ;
+            borders.resize( nb ) ;
+        }
+    }
+
+
+    /*!
+     * @brief Build a Mesh from the boundaries of the given element
+     */
+    void mesh_from_element_boundaries( const BME& E, Mesh& M )
+    {
+        M.clear();
+
+        BME::TYPE T = E.bme_id().type ;
+        if( T == BME::CORNER ) {
+            return ;
+        }
+        else {
+            std::vector< BME::bme_t > borders ;
+            boundary_bmme( E, borders ) ;
+            if( borders.size() == 0 ) {
+                return ;
+            } else {
+                if( T == BME::LINE || T == BME::CONTACT ) {
+                    // There are only points to add
+                    M.vertices.create_vertices( borders.size() ) ;
+                    for( index_t i = 0; i < borders.size(); ++i ) {
+                        M.vertices.point( i ) = 
+                            E.model().element( borders[ i ] ).vertex() ;
+                    }                            
+                } else {
+                    // Put an attribute on the ModelVertices to know its index
+                    // in this Mesh
+                    const BoundaryModel& model = E.model() ;
+                    GEO::Attribute< index_t > old2new ; 
+                    old2new.bind( model.vertices.attribute_manager(), "old2new" ) ;
+                    old2new.fill( NO_ID ) ;
+
+                    // Add the vertices 
+                    for( index_t i = 0; i < borders.size(); ++i ) {
+                        const BME& b = model.element( borders[ i ] ) ;
+                        for( index_t v = 0; v < b.nb_vertices(); ++v ) {
+                            index_t global_v = b.model_vertex_id( v ) ;
+                            if( old2new[ global_v ] == NO_ID ) {
+                                old2new[ global_v ] = M.vertices.create_vertex(
+                                    model.vertices.unique_vertex( global_v ).data() ) ;
+                            }
+                        }
+                    }
+
+                    if( T == BME::SURFACE || T == BME::INTERFACE ) {
+                        // Build edges
+                        for( index_t i = 0; i < borders.size(); ++i ) {
+                            ringmesh_debug_assert( borders[ i ].type == BME::LINE ) ;
+                            const Line& L = model.line( borders[ i ].index ) ;
+                            index_t off = M.edges.create_edges( L.mesh().edges.nb() ) ;
+                            for( index_t e = 0; e < L.mesh().edges.nb(); ++e ) {
+                                M.edges.set_vertex( off+e, 0, old2new[
+                                    L.model_vertex_id( L.mesh().edges.vertex( e, 0 ) ) ] );
+                                M.edges.set_vertex( off+e, 1, old2new[
+                                    L.model_vertex_id( L.mesh().edges.vertex( e, 1 ) ) ] );
+                            }
+                        }
+
+                    } else if( T == BME::REGION ) {
+                        // Build facets
+                        index_t off = 0 ;                        
+                        for( index_t i = 0; i < borders.size(); ++i ) {
+                            ringmesh_debug_assert( borders[ i ].type == BME::SURFACE ) ;
+                            const Surface& S = model.surface( borders[ i ].index ) ;
+                            index_t off = M.facets.nb() ;
+                            for( index_t f = 0; f < S.nb_cells(); ++f ) {
+                                index_t nbv = S.nb_vertices_in_facet( f ) ;
+                                GEO::vector< index_t > ids( nbv ) ;
+                                for( index_t v = 0; v < nbv; ++v ) {
+                                    ids[ v ] = old2new[ S.model_vertex_id( f, v ) ] ;
+                                }
+                                M.facets.create_polygon( ids ) ;
+                            }
+                            for( index_t f = 0; f < S.nb_cells(); ++f ) {
+                                index_t nbv = S.nb_vertices_in_facet( f ) ;
+                                for( index_t v = 0; v < nbv; ++v ) {
+                                    index_t adj = S.adjacent( f, v ) == NO_ID ? NO_ID : S.adjacent( f, v ) + off ;
+                                    M.facets.set_adjacent( f, v, adj ) ;
+                                }
+                            }
+                        }
+                    }
+                    old2new.unbind() ;
+                }                
+            }
+        }
+    }
+
+} // anonymous namespace 
+
+
+
+namespace RINGMesh {
 
     BoundaryModelVertices::~BoundaryModelVertices()
     {
@@ -347,69 +733,75 @@ namespace RINGMesh {
         // Total number of vertices in the Corners - Lines and Surfaces of the model
         index_t nb = bm_.nb_corners();
 
-        for (index_t l = 0; l < nb_lines; l++) {
-            nb += bm_.line(l).nb_vertices();
+        for( index_t l = 0; l < nb_lines; l++ ) {
+            nb += bm_.line( l ).nb_vertices();
         }
-        for (index_t s = 0; s < nb_surfaces; s++) {
-            nb += bm_.surface(s).nb_vertices();
+        for( index_t s = 0; s < nb_surfaces; s++ ) {
+            nb += bm_.surface( s ).nb_vertices();
         }
 
-        // Get out if the BME have no vertex
-        if (nb == 0) {
+        // Get out if the BME has no vertex
+        if( nb == 0 ) {
             return;
         }
 
-        std::vector< vec3 > all_vertices(nb);
+        std::vector< vec3 > all_vertices( nb );
         index_t index = 0;
-        for (index_t c = 0; c < nb_corners; c++) {
-            all_vertices[index++] = bm_.corner(c).vertex();
+        for( index_t c = 0; c < nb_corners; c++ ) {
+            all_vertices[ index++ ] = bm_.corner( c ).vertex();
         }
-        for (index_t l = 0; l < nb_lines; l++) {
-            const Line& line = bm_.line(l);
-            for (index_t v = 0; v < line.nb_vertices(); v++) {
-                all_vertices[index++] = line.vertex(v);
+        for( index_t l = 0; l < nb_lines; l++ ) {
+            const Line& line = bm_.line( l );
+            for( index_t v = 0; v < line.nb_vertices(); v++ ) {
+                all_vertices[ index++ ] = line.vertex( v );
             }
         }
-        for (index_t s = 0; s < nb_surfaces; s++) {
-            const Surface& surface = bm_.surface(s);
-            for (index_t v = 0; v < surface.nb_vertices(); v++) {
-                all_vertices[index++] = surface.vertex(v);
+        for( index_t s = 0; s < nb_surfaces; s++ ) {
+            const Surface& surface = bm_.surface( s );
+            for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+                all_vertices[ index++ ] = surface.vertex( v );
             }
         }
 
-        unique_vertices_.vertices.create_vertices(all_vertices.size());
-        unique_vertices_.vertices.assign_points(all_vertices[0].data(), 3, all_vertices.size());
+        unique_vertices_.vertices.create_vertices( all_vertices.size() );
+        unique_vertices_.vertices.assign_points( all_vertices[ 0 ].data(), 3, all_vertices.size() );
 
         GEO::vector< index_t > old2new;
-        repair_colocate_vertices(unique_vertices_, epsilon, old2new);
+        repair_colocate_vertices( unique_vertices_, epsilon, old2new );
 
         // We do the same loop as above
         index = 0;
-        for (index_t c = 0; c < nb_corners; c++) {
-            Corner& C = const_cast<Corner&>(bm_.corner(c));
-            C.set_model_vertex_id(old2new[index++]);
-            // I am crazy paranoid - Jeanne
-            ringmesh_debug_assert(length2(C.vertex() - unique_vertex(old2new[index - 1])) < epsilon_sq);
+        for( index_t c = 0; c < nb_corners; c++ ) {
+            Corner& C = const_cast<Corner&>( bm_.corner( c ) );
+            C.set_model_vertex_id( old2new[ index++ ] );
+            // I am crazy paranoid (JP)
+            ringmesh_debug_assert( 
+                length2( C.vertex() - unique_vertex(
+                old2new[ index - 1 ] ) ) < epsilon_sq );
         }
-        for (index_t l = 0; l < nb_lines; l++) {
-            Line& L = const_cast<Line&>(bm_.line(l));
-            for (index_t v = 0; v < L.nb_vertices(); v++) {
-                L.set_model_vertex_id(v, old2new[index++]);
-                ringmesh_debug_assert(length2(L.vertex(v) - unique_vertex(old2new[index - 1])) < epsilon_sq);
+        for( index_t l = 0; l < nb_lines; l++ ) {
+            Line& L = const_cast<Line&>( bm_.line( l ) );
+            for( index_t v = 0; v < L.nb_vertices(); v++ ) {
+                L.set_model_vertex_id( v, old2new[ index++ ] );
+                ringmesh_debug_assert( 
+                    length2( L.vertex( v ) - unique_vertex( 
+                    old2new[ index - 1 ] ) ) < epsilon_sq );
             }
         }
-        for (index_t s = 0; s < nb_surfaces; s++) {
-            Surface& S = const_cast<Surface&>(bm_.surface(s));
-            for (index_t v = 0; v < S.nb_vertices(); v++) {
-                S.set_model_vertex_id(v, old2new[index++]);
-                ringmesh_debug_assert(length2(S.vertex(v) - unique_vertex(old2new[index - 1])) < epsilon_sq);
+        for( index_t s = 0; s < nb_surfaces; s++ ) {
+            Surface& S = const_cast<Surface&>( bm_.surface( s ) );
+            for( index_t v = 0; v < S.nb_vertices(); v++ ) {
+                S.set_model_vertex_id( v, old2new[ index++ ] );
+                ringmesh_debug_assert( 
+                    length2( S.vertex( v ) - unique_vertex(
+                    old2new[ index - 1 ] ) ) < epsilon_sq );
             }
         }
 
-        ann_ = new ColocaterANN(unique_vertices_, ColocaterANN::VERTICES);
+        ann_ = new ColocaterANN( unique_vertices_, ColocaterANN::VERTICES );
 
 #ifdef RINGMESH_DEBUG
-        // Paranoia - Jeanne
+        // Paranoia (JP)
         assert_no_colocate_vertices(unique_vertices_, epsilon);
 #endif
     }
@@ -714,53 +1106,107 @@ namespace RINGMesh {
     }
 
     /*!
-    * @brief Basic check of the validity of a BoundaryModelElement
-    * @details Check that the BME points to this model and call BME::is_valid()
-    */
-    bool BoundaryModel::check_one_element_validity(
-        const BoundaryModelElement& E) const
-    {
-        // Verify that E points actually to this BoundaryModel
-        if( &E.model() != this ) {
-            return false;
-        }        
-        return E.is_valid() ;
-    }
-
-
-    /*!
      * @brief Check the validity of all individual elements 
      */
-    bool BoundaryModel::check_all_elements_validity() const
+    bool BoundaryModel::check_elements_validity() const
     {
         for( index_t i = 0; i < nb_elements( BME::ALL_TYPES ); ++i ) {
             const BME& E = element( BME::bme_t( BME::ALL_TYPES, i ) ) ;
-            if( !check_one_element_validity( E ) ) {
+            // Verify that E points actually to this BoundaryModel
+            if( &E.model() != this ) {
+                return false;
+            }
+            if( !E.is_valid() ) {
                 return false ;
             }
         }
 
-        // Check geological validity - caumon2004 - if we have geological information
-        // Only a fault can have a free border - a line that is only in one Boundary
-        // Layer check  - an interface can on the boundary of maximum two layers
+       return true ;
+    }
 
+    /*! 
+     * @brief Check geological validity - Caumon2004 
+     * @details Only a fault can have a free border and 
+     *          an interface can on the boundary of maximum two layers      
+     */          
+    bool BoundaryModel::check_geology_validity() const
+    {
+        for( index_t i = 0; i < nb_lines(); ++i ) {
+            if( line( i ).nb_in_boundary() == 1 ) {
+                const BME& S = line( i ).in_boundary( 0 ) ;
+                if( S.has_parent() && S.parent().has_geological_feature() &&
+                    S.parent().geological_feature() != BME::FAULT ) {
+                    return false ;
+                }
+            }
+        }
 
-        return true ;
+        for( index_t i = 0; i < nb_interfaces(); ++i ) {
+            std::vector< BME::bme_t > borders ;
+            boundary_bmme( one_interface(i), borders ) ;            
+            if( borders.size() == 0 ) {
+                return false ;
+            }
+            if( borders.size() > 2 ) {
+                return false ;
+            }            
+        }
     }
 
     /*!
      * @brief Check consistency of the geometry of the model elements 
      *        with the stored connectivity information
      * @details Finite extension - Universe region exists - has no hole -
-     *          its boundary must be a closed manifold surface - one connected component.
+     *          its boundary is be a closed manifold surface - one connected component.
      *          
      *          No intersection between two different elements except along
      *          shared boundaries - that must be actual boundaries  
      *          Performed on Corners, Lines and Surfaces.
      */
-    bool BoundaryModel::check_element_consistency() const 
+    bool BoundaryModel::check_model_validity() const
     {
-        if( detect_intersecting_facets( surface(0) ) > 0 ) {
+        if( !check_elements_validity() ) {
+            return false ;
+        }
+        if( nb_interfaces() > 0 && !check_geology_validity() ) {
+            return false ;
+        }
+
+        // Check that the model has a finite extension 
+        // The boundary of the universe region is a one connected component 
+        // manifold closed surface 
+        Mesh U_mesh ;
+        mesh_from_element_boundaries( universe(), U_mesh ) ;        
+        if( GEO::mesh_nb_connected_components( U_mesh ) != 1 ) {
+            return false ;
+        }
+        if( GEO::mesh_nb_borders( U_mesh ) != 0 ) {
+            return false ;
+        }
+        if( GEO::mesh_Xi( U_mesh ) != 2 ) {
+            return false ;
+        }
+        /// @todo check that facet orientation is consistent
+
+
+        // Check surface-surface intersections 
+        // Build a global triangulated mesh corresponding
+        // to this model
+        Mesh model_mesh ;
+        mesh_from_boundary_model( *this, model_mesh ) ;
+        GEO::mesh_repair( model_mesh, MESH_REPAIR_TRIANGULATE ) ;
+
+        // Check that non-manifold edges are all Lines
+        Mesh non_manifold_edges ;
+        EdgeOnLine P( *this, non_manifold_edges ) ;
+        repair_connect_facets( model_mesh, P ) ;
+
+        if( non_manifold_edges.vertices.nb() > 0 ) {
+            return false ;
+        }
+        
+        // Check there is no intersections except along Line boundaries
+        if( detect_intersecting_facets( *this, model_mesh ) > 0 ) {
             return false ;
         }
 

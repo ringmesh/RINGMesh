@@ -76,6 +76,15 @@ namespace RINGMesh {
                 : bme_id( t ), v_id( vertex_id_in )
             {
             }
+            bool operator<( const VertexInBME& rhs )
+            {
+                if( bme_id != rhs.bme_id ) {
+                    return bme_id < rhs.bme_id ;
+                }
+                else {
+                    return v_id < rhs.v_id ;
+                }
+            }
             /// Type of the BME and index
             BME::bme_t bme_id ;
             /// Index of the vertex in the BME
@@ -151,8 +160,9 @@ namespace RINGMesh {
         /*!
          * @brief Returns the Geogram attribute manager on these vertices
          */
-        GEO::AttributesManager& attribute_manager() {
-            return unique_vertices_.vertices.attributes() ;
+        GEO::AttributesManager& attribute_manager() const {
+            return const_cast<GEO::AttributesManager&> 
+                ( unique_vertices_.vertices.attributes() );
         }
         
     private:
@@ -373,10 +383,9 @@ namespace RINGMesh {
     private:
         bool check_model3d_compatibility() ;
 
-        bool check_all_elements_validity() const ;
-        bool check_element_consistency() const ;
-            
-        bool check_one_element_validity(const BoundaryModelElement& E) const ;      
+        bool check_elements_validity() const ;
+        bool check_model_validity() const ;
+        bool check_geology_validity() const ;
 
     public:
         BoundaryModelVertices vertices ;
