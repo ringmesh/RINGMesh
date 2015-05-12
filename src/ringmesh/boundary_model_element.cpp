@@ -45,12 +45,285 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/geometry_nd.h>
+#include <geogram/mesh/triangle_intersection.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_topology.h>
+#include <geogram/mesh/mesh_intersection.h>
+//#include <geogram/mesh/mesh_reorder.h>
+//#include <geogram/mesh/mesh_preprocessing.h>
 
 #include <set>
 #include <stack>
 #include <fstream>
+
+
+namespace {
+    /* Definition of functions that we do not want exported in the interface */
+    using namespace RINGMesh ;
+    using namespace GEO ;
+    using GEO::index_t ;
+    using GEO::vec3 ;
+
+    /*!
+    * @brief Checks that the model vertex indices of @param E 
+    *       are in a valid range
+    */
+    bool check_range_model_vertex_ids( const BoundaryModelMeshElement& E )
+    {
+        /// Check that the stored model vertex indices are in a valid range
+        for( index_t i = 0; i < E.nb_vertices(); ++i ) {
+            if( E.model_vertex_id( i ) == NO_ID
+                && E.model_vertex_id( i ) >= E.model().nb_vertices() ) {
+                return false ;
+            }
+        }
+        return true ;
+    }
+
+    /*!
+    * @brief Detects duplicated vertices in a BMME
+    * @details Uses model indices.
+    *
+    * @param E The BoundaryModel element to check
+    * @param duplicated For each vertex if it is duplicated refers to the
+    *    model vertex id for the point in the surface otherwise NO_ID is stored.
+    *    The points that are duplicated must be in the boundary
+    *    of the element to have a valid element.
+    *
+    */
+    index_t detect_duplicated_vertices(
+        const BoundaryModelMeshElement& E,
+        std::vector< index_t >& duplicated )
+    {
+        const GEO::Mesh& M = E.mesh() ;
+        duplicated.resize( M.vertices.nb(), NO_ID ) ;
+
+        for( index_t v = 0; v < M.vertices.nb(); ++v ) {
+            if( duplicated[ v ] == NO_ID ) {
+                index_t gv = E.model_vertex_id( v ) ;
+
+                const std::vector< BoundaryModelVertices::VertexInBME >&
+                    colocated = E.model().vertices.bme_vertices( gv ) ;
+                if( colocated.size() > 0 ) {
+                    int count = 0 ;
+                    for( index_t i = 0; i < colocated.size(); ++i ) {
+                        if( colocated[ i ].bme_id == E.bme_id() ) {
+                            count++ ;
+                        }
+                    }
+                    ringmesh_assert( count > 0 ) ;
+                    if( count > 1 ) {
+                        duplicated[ v ] = gv ;
+                    }
+                }
+            }
+        }
+        return duplicated.size() - std::count(
+            duplicated.begin(), duplicated.end(), NO_ID ) ;
+    }
+
+    /*!
+    * @brief Count the number of times each vertex is in an edge or facet
+    *
+    * @param[in] M The mesh 
+    * @param[out] nb Resized to the number of vertices of the mesh.
+    *      Number of times one vertex appear in an edge or facet of the mesh.
+    */
+    void count_vertex_occurences(
+        const GEO::Mesh& M,
+        std::vector< index_t >& nb ) 
+    {        
+        nb.resize( M.vertices.nb(), 0 ) ;
+        for( index_t e = 0; e < M.edges.nb(); ++e ) {
+            ++nb[ M.edges.vertex( e, 0 ) ] ;
+            ++nb[ M.edges.vertex( e, 1 ) ] ;
+        }
+        for( index_t f = 0; f < M.facets.nb(); ++f ) {
+            for( index_t co = M.facets.corners_begin( f ) ;
+                 co < M.facets.corners_end( f ); ++co
+                 ) {
+                ++nb[ M.facet_corners.vertex( co ) ] ;
+            }
+        }
+    }
+
+
+
+    /*---------------------------------------------------------------------------*/
+    /* ----- Code copied and modified from geogram\mesh\mesh_intersection.cpp ---*/
+    /*
+    *  Copyright (c) 2012-2014, Bruno Levy
+    *  All rights reserved.
+    *
+    *  Redistribution and use in source and binary forms, with or without
+    *  modification, are permitted provided that the following conditions are met:
+    *
+    *  * Redistributions of source code must retain the above copyright notice,
+    *  this list of conditions and the following disclaimer.
+    *  * Redistributions in binary form must reproduce the above copyright notice,
+    *  this list of conditions and the following disclaimer in the documentation
+    *  and/or other materials provided with the distribution.
+    *  * Neither the name of the ALICE Project-Team nor the names of its
+    *  contributors may be used to endorse or promote products derived from this
+    *  software without specific prior written permission.
+    *
+    *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    *  POSSIBILITY OF SUCH DAMAGE.
+    */
+    
+
+
+    /**
+    * \brief Computes the intersection between two triangular facets in
+    *  a mesh
+    * \param[in] M the mesh
+    * \param[in] f1 index of the first facet
+    * \param[in] f2 index of the second facet
+    * \param[out] sym symbolic representation of the intersection (if any)
+    * \return true if facets \p f1 and \p f2 have an intersection, false
+    *  otherwise
+    */
+    bool triangles_intersect(
+        const Mesh& M, index_t f1, index_t f2,
+        vector<TriangleIsect>& sym
+        )
+    {
+        geo_debug_assert( M.facets.nb_vertices( f1 ) == 3 );
+        geo_debug_assert( M.facets.nb_vertices( f2 ) == 3 );
+        index_t c1 = M.facets.corners_begin( f1 );
+        const vec3& p1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 ) );
+        const vec3& p2 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 + 1 ) );
+        const vec3& p3 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 + 2 ) );
+        index_t c2 = M.facets.corners_begin( f2 );
+        const vec3& q1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 ) );
+        const vec3& q2 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 + 1 ) );
+        const vec3& q3 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 + 2 ) );
+        return triangles_intersections( p1, p2, p3, q1, q2, q3, sym );
+    }
+
+    /**
+    * \brief Tests whether two facets are adjacent
+    * \details Two facets are adjacents if they share an edge
+    *          In a Surface two facets are adjacent if they are stored as such
+    *          in the Mesh, but they can also share an edge along the boundary of the 
+    *          Surface - checked with the global model indices
+    *
+    * \param[in] S the surface
+    * \param[in] f1 index of the first facet
+    * \param[in] f2 index of the second facet
+    * \return true if facets \p f1 and \p f2 share an edge, false
+    *  otherwise
+    */
+    bool facets_are_adjacent( const Surface& S, index_t f1, index_t f2 )
+    {
+        if( f1 == f2 ) {
+            return true;
+        }
+        for( index_t v = 0; v < S.nb_vertices_in_facet( f1 ); ++v ) {
+            if( S.adjacent( f1, v ) == f2 ) {
+                return true;
+            } else if( S.adjacent( f1, v ) == NO_ID ) {
+                index_t p0 = S.model_vertex_id( f1, v ) ;
+                index_t p1 = S.model_vertex_id( f1, S.next_in_facet( f1, v ) );
+                // Check if the edge on border is not the same
+                // than an edge on the border in f2 - JP
+                for( index_t v2 = 0; v2 < S.nb_vertices_in_facet( f2 ); ++v2 ) {
+                    if( S.adjacent( f2, v2 ) == NO_ID ) {
+                        index_t p02 = S.model_vertex_id( f2, v ) ;
+                        index_t p12 = S.model_vertex_id( f2, S.next_in_facet( f2, v ) );
+                        if( p0 == p02 && p1 == p12 ) {
+                            return true ;
+                        } else if( p0 = p12 && p1 == p02 ) {
+                            return true ;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+    * \brief Action class for storing intersections when traversing
+    *  a AABBTree.
+    */
+    class StoreIntersections {
+    public:
+        /**
+        * \brief Constructs the StoreIntersections
+        * \param[in] M the mesh
+        * \param[out] has_isect the flag that indicates for each facet
+        *  whether it has intersections
+        */
+        StoreIntersections(
+            const Surface& S, vector<index_t>& has_isect
+            ) :
+            S_( S ),
+            has_intersection_( has_isect )
+        {
+            has_intersection_.assign( S.mesh().facets.nb(), 0 );
+        }
+
+        /**
+        * \brief Determines the intersections between two facets
+        * \details It is a callback for AABBTree traversal
+        * \param[in] f1 index of the first facet
+        * \param[in] f2 index of the second facet
+        */
+        void operator() ( index_t f1, index_t f2 )
+        {
+            if(
+                !facets_are_adjacent( S_, f1, f2 ) &&
+                f1 != f2 &&
+                triangles_intersect( S_.mesh(), f1, f2, sym_ )
+                ) {
+                has_intersection_[ f1 ] = 1;
+                has_intersection_[ f2 ] = 1;
+            }
+
+
+        }
+
+    private:
+        const Surface& S_;
+        vector<index_t>& has_intersection_;
+        vector<TriangleIsect> sym_;
+    };
+
+
+    /**
+    * \brief Detect intersecting facets in a mesh TRIANGULATED !!
+    * \param[in] M the mesh
+    * \return
+    */
+    index_t detect_intersecting_facets( const Surface& S )
+    {
+        GEO::Mesh& M = S.mesh() ;
+        geo_assert( M.vertices.dimension() >= 3 );
+
+        vector<index_t> has_intersection;
+        StoreIntersections action( S, has_intersection );
+        MeshFacetsAABB AABB( M );
+        AABB.compute_facet_bbox_intersections( action );
+
+        return std::count( has_intersection.begin(), has_intersection.end(), 0 ) ;
+    }
+
+
+}
+
+
 
 namespace RINGMesh {
     /*!
@@ -697,84 +970,6 @@ namespace RINGMesh {
     }
 
 
-    bool BoundaryModelMeshElement::check_range_model_vertex_ids() const
-    {
-        /// Check that the stored model vertex indices are in a valid range
-        for( index_t i = 0; i < nb_vertices(); ++i ) {
-            if( model_vertex_id( i ) == NO_ID
-                && model_vertex_id( i ) >= model().nb_vertices() ) {
-                return false ;
-            }
-        }
-        return true ;
-    }
-
-
-    /*!
-    * @brief Detects duplicated vertices
-    * @details Uses model indices.
-    *
-    * @param duplicated For each vertex if it is duplicated refers to the 
-    *    model vertex id for the point in the surface otherwise NO_ID is stored.
-    *    The points that are duplicated must be in the boundary
-    *    of the element to have a valid element.
-    *
-    */
-    index_t BoundaryModelMeshElement::detect_duplicated_vertices(
-        std::vector< index_t >& duplicated ) const
-    {
-        duplicated.resize( mesh_.vertices.nb(), NO_ID ) ;
-
-        for( index_t v = 0; v < mesh_.vertices.nb(); ++v ) {
-            if( duplicated[ v ] == NO_ID ) {
-                index_t gv = model_vertex_id( v ) ;
-
-                const std::vector< BoundaryModelVertices::VertexInBME >&
-                    colocated = model().vertices.bme_vertices( gv ) ;
-                if( colocated.size() > 0 ) {
-                    int count = 0 ;
-                    for( index_t i = 0; i < colocated.size(); ++i ) {
-                        if( colocated[ i ].bme_id == bme_id() ) {
-                            count++ ;
-                        }
-                    }
-                    ringmesh_assert( count > 0 ) ;
-                    if( count > 1 ) {
-                        duplicated[ v ] = gv ;
-                    }
-                }
-            }
-        }
-        
-        return duplicated.size() - std::count( 
-            duplicated.begin(), duplicated.end(), NO_ID ) ;
-    }
-
-    
-    /*!
-    * @brief Count the number of times each vertex is in an edge or facet
-    * 
-    * @param[out] nb Resized to the number of vertices of the mesh.
-    *      Number of times one vertex appear in an edge or facet of the mesh.
-    */
-    void BoundaryModelMeshElement::count_vertex_occurences(
-        std::vector< index_t >& nb ) const
-    {
-        nb.resize( mesh_.vertices.nb(), 0 ) ;
-        for( index_t e = 0; e < mesh_.edges.nb(); ++e ) {
-            ++nb[ mesh_.edges.vertex( e, 0 ) ] ;
-            ++nb[ mesh_.edges.vertex( e, 1 ) ] ;
-        }
-        for( index_t f = 0; f< mesh_.facets.nb(); ++f ) {
-            for( index_t co = mesh_.facets.corners_begin( f ) ;
-                 co < mesh_.facets.corners_end( f ); ++co
-                 ) {
-                ++nb[ mesh_.facet_corners.vertex( co ) ] ;
-            }
-        }
-    }
-
-
     /**************************************************************/
 
     bool Corner::is_mesh_valid() const 
@@ -822,12 +1017,12 @@ namespace RINGMesh {
         /// 2. Check the validity of the vertices and edges
 
         // Model indices must be valid
-        if( !check_range_model_vertex_ids() ) {
+        if( !check_range_model_vertex_ids( *this ) ) {
             return false ;
         }
         // Count the number of edges in which each vertex is
         std::vector< index_t > nb ;
-        count_vertex_occurences( nb ) ;
+        count_vertex_occurences( mesh(), nb ) ;
         index_t nb0 = 0 ;
         index_t nb1 = 0 ;
         index_t nb2 = 0 ;
@@ -858,7 +1053,7 @@ namespace RINGMesh {
         
         std::vector< index_t > duplicated ;
         // Only extremity vertex can be duplicated
-        index_t nb_duplicated = detect_duplicated_vertices( duplicated ) ;
+        index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
         if( nb_duplicated > 2 ) {
             return false ;
         }
@@ -1039,10 +1234,10 @@ namespace RINGMesh {
         }
         // Is it important to have edges or not ?
         // I would say we do not care (JP) - so no check on that 
-        if( mesh_.facets.nb() == 0 ) {
+        if( mesh_.facets.nb() != 0 ) {
             return false ;
         }
-        if( mesh_.cells.nb() != 0 ) {
+        if( mesh_.cells.nb() == 0 ) {
             return false ;
         }
 
@@ -1050,13 +1245,13 @@ namespace RINGMesh {
 
         // No isolated vertices
         std::vector< index_t > nb ;
-        count_vertex_occurences( nb ) ;
+        count_vertex_occurences( mesh(), nb ) ;
         if( std::count( nb.begin(), nb.end(), 0 ) > 0 ) {
             return false ;
         }
 
         std::vector< index_t > duplicated ;
-        index_t nb_duplicated = detect_duplicated_vertices( duplicated ) ;
+        index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
 
         // There might be several duplicated points, but they must be ine one of the
         // boundary lines that are twice in the boundary of this surface
