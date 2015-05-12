@@ -542,18 +542,7 @@ namespace RINGMesh {
         * @brief Check if the mesh stored is valid.
         */
         virtual bool is_mesh_valid() const = 0 ;
-
-        /*!
-        * @brief Checks model vertex indices are in a valid range
-        */
-        bool check_range_model_vertex_ids() const ;
-       
-        index_t detect_duplicated_vertices(
-            std::vector< index_t >& duplicated ) const ;
-
-        void count_vertex_occurences(
-            std::vector< index_t >& nb ) const ;
-
+     
     protected :
         /// Mesh of the element
         GEO::Mesh mesh_ ;
