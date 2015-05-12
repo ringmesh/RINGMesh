@@ -1142,7 +1142,6 @@ namespace RINGMesh {
             return false ;
         }
 
-
         return true ; 
     }
 

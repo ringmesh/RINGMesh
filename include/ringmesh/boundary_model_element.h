@@ -134,17 +134,26 @@ namespace RINGMesh {
         struct bme_t {
             bme_t()
                 : type( NO_TYPE ), index( NO_ID )
-            {
-            }
+            {}
             bme_t( TYPE t, index_t id )
                 : type( t ), index( id )
+            {}
+            bool operator!=( const bme_t& rhs ) const
             {
+                return type != rhs.type || index != rhs.index ;
             }
-            bool operator!=( const bme_t& t ) const {
-                return type != t.type || index != t.index ;
+            bool operator==( const bme_t& rhs ) const
+            {
+                return type == rhs.type && index == rhs.index ;
             }
-            bool operator==( const bme_t& t ) const {
-                return type == t.type && index == t.index ;
+            bool operator<( const bme_t& rhs ) const
+            {
+                if( type != rhs.type ) {
+                    return type < rhs.type  ;
+                }
+                else {
+                    return index < rhs.index ;
+                }
             }
             bool is_defined() const
             {

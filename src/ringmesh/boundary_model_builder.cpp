@@ -1114,10 +1114,10 @@ namespace RINGMesh {
             if( !E.has_geological_feature() ) {
                 fill_element_geological_feature( E ) ;
             }
+        }
 
-            if( !model_.check_one_element_validity( E ) ) {
-                return false ;
-            }
+        if( !model_.check_elements_validity() ) {
+            return false ;
         }
 
         /// 2. \todo Check the consistency of connectivity relationships between the elements
