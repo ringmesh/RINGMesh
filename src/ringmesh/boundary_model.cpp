@@ -54,6 +54,7 @@
 #include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/mesh_intersection.h>
 #include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_io.h>
 
 
 #include <iostream>
@@ -155,7 +156,7 @@ namespace {
         index_t lv1 = NO_ID ;
         for( index_t i = 0; i < v0_bme.size() ; ++i ) {
             if( v0_bme[ i ].bme_id.type == BME::LINE ) {
-                for( index_t j = 0; j < v0_bme.size() ; ++j ) {
+                for( index_t j = 0; j < v1_bme.size() ; ++j ) {
                     if(
                         v1_bme[ j ].bme_id.type == BME::LINE &&
                         v0_bme[ i ].bme_id.index == v1_bme[ j ].bme_id.index
@@ -220,10 +221,10 @@ namespace {
                 for( index_t j = 0; j < 3; ++j ) {
                     if( M.facets.adjacent( f2, j ) == NO_ID ) {
                         const vec3& p10 = M.vertices.point( M.facets.vertex( f1, i ) ) ;
-                        const vec3& p11 = M.vertices.point( M.facets.vertex( f1, i==0 ? 2 : i+1 ) ) ;
+                        const vec3& p11 = M.vertices.point( M.facets.vertex( f1, i==2 ? 0 : i+1 ) ) ;
 
                         const vec3& p20 = M.vertices.point( M.facets.vertex( f2, j ) ) ;
-                        const vec3& p21 = M.vertices.point( M.facets.vertex( f2, j==0 ? 2 : j+1 ) ) ;
+                        const vec3& p21 = M.vertices.point( M.facets.vertex( f2, j==2 ? 0 : j+1 ) ) ;
 
                         index_t v10 = BM.vertices.vertex_index( p10 ) ;
                         index_t v11 = BM.vertices.vertex_index( p11 ) ;
@@ -305,9 +306,8 @@ namespace {
         */
         void operator() ( index_t f1, index_t f2 )
         {
-            if(
-                !facets_are_adjacent( M_, f1, f2 ) &&
-                f1 != f2 &&
+            if( f1 != f2 &&
+                !facets_are_adjacent( M_, f1, f2 ) &&                
                 !facets_share_line_edge( M_, BM_, f1, f2 ) && 
                 triangles_intersect( M_, f1, f2, sym_ )
                 ) {
@@ -327,7 +327,7 @@ namespace {
     /**
     * \brief Detect intersecting facets in a mesh TRIANGULATED !!
     * \param[in] M the mesh
-    * \return
+    * \return number of intersecting facets
     */
     index_t detect_intersecting_facets( 
         const BoundaryModel& model, 
@@ -340,7 +340,7 @@ namespace {
         MeshFacetsAABB AABB( M );
         AABB.compute_facet_bbox_intersections( action );
 
-        return std::count( has_intersection.begin(), has_intersection.end(), 0 ) ;
+        return std::count( has_intersection.begin(), has_intersection.end(), 1 ) ;
     }
 
     /*********************************************************************/
@@ -615,20 +615,38 @@ namespace {
     /*! 
      * @brief Get the BMME defining the boundaries of an element
      */
-    void boundary_bmme( const BME& E, std::vector< BME::bme_t >& borders )
+    void boundary_bmme( 
+        const BME& E,
+        std::vector< BME::bme_t >& borders, 
+        bool with_inside_borders )
     {
         borders.clear() ;
 
         BME::TYPE T = E.bme_id().type ;
+        if( T == BME::CORNER ) {
+            return ;
+        }
         if( BME::parent_allowed( T ) ) {
             // We are dealing with basic elements 
             for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
-                borders.push_back( E.boundary_id( i ) ) ;
+
+                if( with_inside_borders ||
+                    ( !with_inside_borders &&
+                    !E.boundary( i ).is_inside_border( E ) )
+                  ) {
+                    borders.push_back( E.boundary_id( i ) ) ;
+                }
             }
         } else {
             for( index_t i = 0; i < E.nb_children(); ++i ) {
-                for( index_t j = 0; j < E.child( i ).nb_boundaries(); ++j ) {
-                    borders.push_back( E.child( i ).boundary_id( j ) ) ;
+                const BME& C = E.child( i ) ;
+                for( index_t j = 0; j < C.nb_boundaries(); ++j ) {
+                    if( with_inside_borders ||
+                        ( !with_inside_borders &&
+                          !C.boundary( j ).is_inside_border( C ) )
+                    ) {
+                        borders.push_back( E.child( i ).boundary_id( j ) ) ;
+                    }
                 }
             }
             std::sort( borders.begin(), borders.end() ) ;
@@ -637,9 +655,48 @@ namespace {
         }
     }
 
+     
+    /*!
+     * @brief Get the elements BME in_boundary
+     * @details For BMME, get the contents of in_boudnary vector
+     *          For high level elements determine in_boundary high level elements
+     */
+    void in_boundary_bme( const BME& E, std::vector< BME::bme_t >& in_boundary )
+    {
+        in_boundary.clear() ;
+
+        BME::TYPE T = E.bme_id().type ;
+        if( T == BME::REGION || T == BME::LAYER ) {
+            return ;
+        }
+        if( BME::parent_allowed( T ) ) {
+            // We are dealing with basic elements 
+            for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
+                in_boundary.push_back( E.in_boundary_id( i ) ) ;
+            }
+        } else {
+            // We are dealing with high level elements
+            // Need to go through the children to get information
+            for( index_t i = 0; i < E.nb_children(); ++i ) {
+                for( index_t j = 0; j < E.child( i ).nb_in_boundary(); ++j ) {
+                    in_boundary.push_back( E.child( i ).in_boundary( j ).parent_id() ) ;
+                }
+            }
+            // Remove duplicates
+            std::sort( in_boundary.begin(), in_boundary.end() ) ;
+            index_t nb = std::unique( in_boundary.begin(), 
+                                      in_boundary.end() ) - in_boundary.begin() ;
+            in_boundary.resize( nb ) ;
+        }
+
+    }
+
+
+
 
     /*!
      * @brief Build a Mesh from the boundaries of the given element
+     * @details Inside borders are ignored.
      */
     void mesh_from_element_boundaries( const BME& E, Mesh& M )
     {
@@ -651,7 +708,7 @@ namespace {
         }
         else {
             std::vector< BME::bme_t > borders ;
-            boundary_bmme( E, borders ) ;
+            boundary_bmme( E, borders, false ) ;
             if( borders.size() == 0 ) {
                 return ;
             } else {
@@ -672,7 +729,7 @@ namespace {
 
                     // Add the vertices 
                     for( index_t i = 0; i < borders.size(); ++i ) {
-                        const BME& b = model.element( borders[ i ] ) ;
+                        const BME& b = model.element( borders[ i ] ) ;                       
                         for( index_t v = 0; v < b.nb_vertices(); ++v ) {
                             index_t global_v = b.model_vertex_id( v ) ;
                             if( old2new[ global_v ] == NO_ID ) {
@@ -734,6 +791,15 @@ namespace {
         }
         Mesh mesh ;
         mesh_from_element_boundaries( region, mesh ) ;
+        GEO::mesh_repair( mesh ) ;
+      
+
+//#ifdef RINGMESH_DEBUG
+//        std::ostringstream file ;
+//        file << "D:\\Programming\\DataTest\\debug\\region_border_" 
+//            << region.bme_id().index << ".mesh"  ;
+//        GEO::mesh_save( mesh, file.str() ) ;
+//#endif
         if( GEO::mesh_nb_connected_components( mesh ) != 1 ) {
             return false ;
         }
@@ -1339,8 +1405,10 @@ namespace RINGMesh {
                 // Check validity of region definition
                 valid[ i ] = is_region_valid( E ) ;
             }
-        }
-        return std::count( valid.begin(), valid.end(), false) == 0 ;
+        }        
+        index_t nb_invalid = std::count( valid.begin(), valid.end(), false) ;
+        std::cout << nb_invalid << " elements are invalid " << std::endl ;
+        return nb_invalid == 0 ;
     }
 
     /*! 
@@ -1363,12 +1431,12 @@ namespace RINGMesh {
         }
 
         for( index_t i = 0; i < nb_interfaces(); ++i ) {
-            std::vector< BME::bme_t > borders ;
-            boundary_bmme( one_interface(i), borders ) ;            
-            if( borders.size() == 0 ) {
+            std::vector< BME::bme_t > regions ;
+            in_boundary_bme( one_interface( i ), regions ) ;
+            if( regions.size() == 0 ) {
                 return false ;
             }
-            if( borders.size() > 2 ) {
+            if( !one_interface(i).is_on_voi() && regions.size() > 2 ) {
                 return false ;
             }            
         }
@@ -1436,7 +1504,7 @@ namespace RINGMesh {
             return false ;
         }
 
-        return false;
+        return true ;
     }
 
 

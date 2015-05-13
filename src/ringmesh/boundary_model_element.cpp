@@ -642,6 +642,20 @@ namespace RINGMesh {
         }
         return false ;
     }
+    
+    /*!
+    * @brief Check if the element is twice on the boundary of the other element
+    * @details That can be Surface stopping in a Region, or Line stopping in a Surface.
+    * @param[in] rhs The element to test
+    */
+    bool BoundaryModelElement::is_inside_border( const BoundaryModelElement& rhs ) const
+    {
+        // Find out if this surface is twice in the in_boundary vector
+        return std::count( in_boundary_.begin(), in_boundary_.end(),
+                           rhs.bme_id() ) > 1 ;
+    }
+
+
 
     /*********************************************************************/
 
@@ -970,20 +984,7 @@ namespace RINGMesh {
         for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
             mesh_.edges.create_edge( e, e + 1 ) ;
         }
-    }
-
-    /*!
-     * @brief Check if the Line is twice on the boundary of a Surface
-     *
-     * @param[in] surface The surface to test
-     */
-    bool Line::is_inside_border( const BoundaryModelElement& surface ) const
-    {
-        // Find out if this surface is twice in the in_boundary vector
-        return std::count( in_boundary_.begin(), in_boundary_.end(),
-            surface.bme_id() ) > 1 ;
-    }
-
+    }   
 
     /*!
      *
