@@ -963,6 +963,24 @@ namespace {
         return std::count( valid.begin(), valid.end(), false ) == 0 ;
     }
 
+    void save_edges( 
+        const std::string& file,
+        const BoundaryModel& M, 
+        const std::vector< index_t >& e )
+    {
+        std::ofstream out( file ) ;
+        if( out.is_open() ) {
+            out.precision( 16 ) ;
+            for( index_t i = 0 ; i < e.size(); ++i ) {
+                out << "v " <<  M.vertices.unique_vertex( e[i] ) << std::endl ;
+            }
+            for( index_t i = 0 ; i+1 < e.size() ; i+=2 ) {
+                out << "s "<< i+1 << " "<< i+2 << std::endl ;
+            }
+            out.close() ;
+        }
+    }
+
     /*! 
      * @brief Check boundary of a surface 
      * @details All the edges on the boundary of a surface must be in a Line
@@ -980,10 +998,21 @@ namespace {
                         S.model_vertex_id( f, v ),
                         S.model_vertex_id( f, S.next_in_facet( f, v ) ) ).is_defined()
                  ) {
-                    invalid_corners.push_back( S.surf_vertex_id( f, v ) ) ;
+                    invalid_corners.push_back( S.model_vertex_id( f, v ) ) ;
+                    invalid_corners.push_back( S.model_vertex_id( f, S.next_in_facet( f, v ) ) ) ;
                 }
             }
         }
+#ifdef RINGMESH_DEBUG
+        if( !invalid_corners.empty() ) {
+            std::ostringstream file ;
+            file << "D:\\Programming\\DataTest\\debug\\invalid_border_edge_S"
+                << S.bme_id().index << ".lin"  ;
+            save_edges( file.str(), S.model(), invalid_corners ) ;
+        }
+#endif
+
+        
         return invalid_corners.empty() ;
     }
 
