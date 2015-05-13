@@ -1436,7 +1436,9 @@ namespace RINGMesh {
             if( regions.size() == 0 ) {
                 return false ;
             }
-            if( !one_interface(i).is_on_voi() && regions.size() > 2 ) {
+            if( !one_interface(i).geological_feature() == BME::STRATI &&
+                regions.size() > 2 
+              ) {
                 return false ;
             }            
         }
