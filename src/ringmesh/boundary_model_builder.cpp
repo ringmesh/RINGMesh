@@ -1115,16 +1115,7 @@ namespace RINGMesh {
                 fill_element_geological_feature( E ) ;
             }
         }
-
-        if( !model_.check_elements_validity() ) {
-            return false ;
-        }
-
-        /// 2. \todo Check the consistency of connectivity relationships between the elements
-        ///          Check that the Surface on the boundary of Universe are of type VOI
-        ///          if it is not the case the Model is probably invalid
-        /// 3. \todo Check the geometrical consistency of the topological relationships
-
+         
 #ifdef RINGMESH_DEBUG
         std::cout << "Model " << model_.name() << " has " << std::endl
             << std::setw( 10 ) << std::left << model_.nb_vertices() << " vertices "
@@ -1136,6 +1127,16 @@ namespace RINGMesh {
             << std::endl << std::setw( 10 ) << std::left << model_.nb_corners()
             << " corners " << std::endl << std::endl ;
 #endif
+        std::cout << std::endl ;
+
+        // What do we do if the model is not valid ?
+        if( model_.check_model_validity() ) {            
+            std::cout << "Model is valid " << std::endl ;
+        } 
+        else {
+            std::cout << " INVALID Boundary Model " << std::endl ;
+        }
+
         return true ;
     }
 

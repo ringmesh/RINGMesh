@@ -379,12 +379,14 @@ namespace RINGMesh {
 
         signed_index_t find_interface( const std::string& name) const ;
         signed_index_t find_region( const std::string& name) const ;
+        
+        // To put back 
+        bool check_model_validity() const ;
 
     private:
         bool check_model3d_compatibility() ;
 
         bool check_elements_validity() const ;
-        bool check_model_validity() const ;
         bool check_geology_validity() const ;
 
     public:
