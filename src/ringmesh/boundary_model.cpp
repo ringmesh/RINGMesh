@@ -786,30 +786,29 @@ namespace {
 
     bool is_region_valid( const BoundaryModelElement& region )
     {
+        bool valid = true ;
         if( region.bme_id().type != BME::REGION ) {
-            return false ;
+            valid = false ;
         }
         Mesh mesh ;
         mesh_from_element_boundaries( region, mesh ) ;
         GEO::mesh_repair( mesh ) ;
       
-
-//#ifdef RINGMESH_DEBUG
-//        std::ostringstream file ;
-//        file << "D:\\Programming\\DataTest\\debug\\region_border_" 
-//            << region.bme_id().index << ".mesh"  ;
-//        GEO::mesh_save( mesh, file.str() ) ;
-//#endif
         if( GEO::mesh_nb_connected_components( mesh ) != 1 ) {
-            return false ;
+            valid = false ;
         }
         if( GEO::mesh_nb_borders( mesh ) != 0 ) {
-            return false ;
+            valid = false ;
+        }       
+#ifdef RINGMESH_DEBUG
+        if( !valid ) {
+            std::ostringstream file ;
+            file << "D:\\Programming\\DataTest\\debug\\region_border_"
+                << region.bme_id().index << ".mesh"  ;
+            GEO::mesh_save( mesh, file.str() ) ;
         }
-        if( GEO::mesh_Xi( mesh ) != 2 ) {
-            return false ;
-        }
-        return true ;
+#endif
+        return valid;
     }
 
     /*********************************************************************/
