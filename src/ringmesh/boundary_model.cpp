@@ -62,6 +62,7 @@
 #include <cmath>
 #include <ctime>
 #include <set>
+#include <map>
 
 
 
@@ -72,7 +73,7 @@ namespace {
     using GEO::vec3 ;
 
     /*---------------------------------------------------------------------------*/
-    /* ----- Code copied and modified from geogram\mesh\mesh_intersection.cpp ---*/
+    /* ----- Some code below is copied/modified from geogram\mesh\mesh_intersection.cpp ---*/
     /*
     *  Copyright (c) 2012-2014, Bruno Levy
     *  All rights reserved.
@@ -103,8 +104,9 @@ namespace {
     */
 
 
+    /*********************************************************************/
 
-    /**
+    /** 
     * \brief Computes the intersection between two triangular facets in
     *  a mesh
     * \param[in] M the mesh
@@ -138,15 +140,10 @@ namespace {
      */
     BME::bme_t is_edge_on_line(
         const BoundaryModel& model,
-        const vec3& p0,
-        const vec3& p1 )
+        index_t v0,
+        index_t v1 )
     {
-        // Get the ids in the model of these 2 points
-        index_t v0 = model.vertices.vertex_index( p0 ) ;
-        index_t v1 = model.vertices.vertex_index( p1 ) ;
-        ringmesh_assert( v0 != NO_ID && v1 != NO_ID ) ;
-
-        const std::vector< BoundaryModelVertices::VertexInBME >& 
+        const std::vector< BoundaryModelVertices::VertexInBME >&
             v0_bme = model.vertices.bme_vertices( v0 ) ;
         const std::vector< BoundaryModelVertices::VertexInBME >&
             v1_bme = model.vertices.bme_vertices( v1 ) ;
@@ -177,7 +174,7 @@ namespace {
                 }
             }
         }
-       
+
         // There is an edge between the 2 points if their indices
         // in the Line of i and i+1
         if( abs( (int)lv0 - (int)lv1 ) == 1 ) {
@@ -186,6 +183,21 @@ namespace {
             return BME::bme_t() ;
         }
     }
+
+    BME::bme_t is_edge_on_line(
+        const BoundaryModel& model,
+        const vec3& p0,
+        const vec3& p1 )
+    {
+        // Get the ids in the model of these 2 points
+        index_t v0 = model.vertices.vertex_index( p0 ) ;
+        index_t v1 = model.vertices.vertex_index( p1 ) ;
+        ringmesh_assert( v0 != NO_ID && v1 != NO_ID ) ;
+
+        return is_edge_on_line( model, v0, v1 ) ;
+    }
+
+   
 
 
     /*! 
@@ -330,6 +342,9 @@ namespace {
 
         return std::count( has_intersection.begin(), has_intersection.end(), 0 ) ;
     }
+
+    /*********************************************************************/
+
 
     /*---------------------------------------------------------------------------*/
     /* ----- Code copied and modified from geogram\mesh\mesh_repair.cpp ---*/
@@ -528,12 +543,10 @@ namespace {
         }
     }
 
-    
-
-
+   
     /**
      * \brief Predicate to be used by the function setting facet adjacencies in the GEO::Mesh
-     * and force disconnection of facets on a Line edge
+     *  to force disconnection of facets on a Line edge and detect unexpected non-manifold edges
      */
     class EdgeOnLine {
     public:
@@ -711,6 +724,202 @@ namespace {
                 }                
             }
         }
+    }
+
+
+    bool is_region_valid( const BoundaryModelElement& region )
+    {
+        if( region.bme_id().type != BME::REGION ) {
+            return false ;
+        }
+        Mesh mesh ;
+        mesh_from_element_boundaries( region, mesh ) ;
+        if( GEO::mesh_nb_connected_components( mesh ) != 1 ) {
+            return false ;
+        }
+        if( GEO::mesh_nb_borders( mesh ) != 0 ) {
+            return false ;
+        }
+        if( GEO::mesh_Xi( mesh ) != 2 ) {
+            return false ;
+        }
+        return true ;
+    }
+
+    /*********************************************************************/
+
+    /*! 
+     * @brief Check if element @param is of the @param model is in the 
+     *        in_boundary vector of element @param in. 
+     */
+    bool is_in_in_boundary(
+        const BoundaryModel& model,
+        BME::bme_t is, BME::bme_t in )
+    {
+        const BME& E = model.element( in ) ;
+        for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
+            if( E.in_boundary_id( i ) == is ) {
+                return true ;
+            }
+        }
+        return false ;
+    }
+
+
+    /*! 
+     * @brief Check the geometrical-topological consistency of the model
+     * @details Verification is based on the information stored by the unique
+     *          vertices of the model
+     */
+    bool check_model_points_validity( const BoundaryModel& M )
+    {
+        // For all the vertices of the model 
+        // We check that the elements in which they are are consistent 
+        // to have a valid model
+        std::vector< bool > valid( M.vertices.nb_unique_vertices(), true ) ;
+
+        for( index_t i = 0 ; i < M.vertices.nb_unique_vertices(); ++i ) {
+            
+            index_t corner = NO_ID ;
+            std::vector< index_t > lines ;
+            std::vector< index_t > surfaces ;
+            
+            bool valid_vertex = true ; 
+
+            const std::vector< BoundaryModelVertices::VertexInBME >&
+                bmes = M.vertices.bme_vertices( i ) ;
+
+            for( index_t j = 0; j < bmes.size(); ++j ) {
+                BME::TYPE T = bmes[ j ].bme_id.type ;
+                index_t id = bmes[ j ].bme_id.index ;
+
+                switch( T ) {
+                    case BME::SURFACE:
+                        surfaces.push_back( id ) ;
+                        break ;
+                    case BME::LINE:
+                        lines.push_back( id ) ;
+                        break ;
+                    case BME::CORNER :
+                        if( corner != NO_ID ) {
+                            valid_vertex = false ;
+                        }
+                        else {
+                            corner = id ;
+                        }
+                        break ;                    
+                    default :
+                        valid_vertex = false ;
+                }
+            }
+
+            if( valid_vertex ) {
+                if( corner == NO_ID && lines.empty() ) {
+                    // This is a point on one SURFACE and only one
+                    if( surfaces.size() != 1 ) {
+                        valid_vertex = false ;
+                    }
+                }
+
+                else if( corner == NO_ID && !lines.empty() ) {
+                    // This is a point on one LINE 
+                    if( lines.size() != 1 ) {
+                        valid_vertex = false ;
+                    } else {
+                        // This point must also be in at least one SURFACE
+                        if( surfaces.empty() ) {
+                            valid_vertex = false ;
+                        }
+                        // Check that one point is no more than twice in a SURFACE
+                        for( index_t k = 0; k < surfaces.size(); ++k ) {
+                            index_t nb = std::count( surfaces.begin(), surfaces.end(), surfaces[ k ] ) ;
+                            if( nb > 2 ) {
+                                valid_vertex = false ;
+                                break ;
+                            }
+                        }
+                        // Check that all the surfaces are in in_boundary of all
+                        // the lines 
+                        for( index_t k = 0; k < surfaces.size(); ++k ) {
+                            for( index_t l = 0; l < lines.size(); ++l ) {
+                                if( !is_in_in_boundary( M,
+                                    BME::bme_t( BME::SURFACE, surfaces[ k ] ),
+                                    BME::bme_t( BME::LINE, lines[ l ] ) )
+                                    ) {
+                                    valid_vertex = false ;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if( corner != NO_ID ) {
+                    // This is one point at a CORNER
+                    // It must be in at least one LINE
+                    if( lines.empty() ) {
+                        valid_vertex = false ;
+                    }
+                    else {
+                        if( lines.size() < 2 ) {
+                            valid_vertex = false ;
+                        }
+                        // Check that a point is no more than twice in a LINE
+                        for( index_t k = 0; k < lines.size(); ++k ) {
+                            index_t nb = std::count( lines.begin(), lines.end(), lines[ k ] ) ;
+                            if( nb == 2 ) {
+                                // The line must be closed
+                                if( !M.line( lines[ k ] ).is_closed() ) {
+                                    valid_vertex = false ;
+                                }
+                            }
+                            if( nb > 2 ) {
+                                valid_vertex = false ;
+                                break ;
+                            }
+                        }   
+                        // Check that all the lines are in in_boundary of this corner
+                        for( index_t k = 0; k < lines.size(); ++k ) {
+                            if( !is_in_in_boundary( M,
+                                BME::bme_t( BME::LINE, lines[ k ] ),
+                                BME::bme_t( BME::CORNER, corner ) )
+                                ) {
+                                valid_vertex = false ;
+                            }
+                        }
+
+                    }
+                    // It must also be in a least one surface ? perhaps 2
+                    if( surfaces.empty() ) {
+                        valid_vertex ;                    
+                    }
+                }
+            }
+            valid[ i ] = valid_vertex ;
+        }
+        return std::count( valid.begin(), valid.end(), false ) == 0 ;
+    }
+
+    /*! 
+     * @brief Check boundary of a surface 
+     * @details All the edges on the boundary of a surface must be in a Line
+     *          of the associated model
+     *          The Line boundaries must form a closed manifold line.
+     */
+    bool surface_boundary_valid( const Surface& S )
+    {
+        std::vector< index_t > invalid_corners ;
+        for( index_t f = 0; f < S.nb_cells(); ++f ) {
+            for( index_t v = 0; v < S.nb_vertices_in_facet( f ); ++v ) {
+                if( S.adjacent( f, v ) == NO_ID &&
+                    !is_edge_on_line(
+                        S.model(),
+                        S.model_vertex_id( f, v ),
+                        S.model_vertex_id( f, S.next_in_facet( f, v ) ) ).is_defined()
+                 ) {
+                    invalid_corners.push_back( S.surf_vertex_id( f, v ) ) ;
+                }
+            }
+        }
+        return invalid_corners.empty() ;
     }
 
 } // anonymous namespace 
@@ -1107,27 +1316,39 @@ namespace RINGMesh {
 
     /*!
      * @brief Check the validity of all individual elements 
+     * @details Check that the elements belong to this model, 
+     *          call the check validity for each element
+     *          For regions, check that their boundary is a one connected component
+     *          manifold closed surface.
+     *
      */
     bool BoundaryModel::check_elements_validity() const
     {
+        std::vector< bool > valid( nb_elements( BME::ALL_TYPES ), true ) ;
         for( index_t i = 0; i < nb_elements( BME::ALL_TYPES ); ++i ) {
             const BME& E = element( BME::bme_t( BME::ALL_TYPES, i ) ) ;
             // Verify that E points actually to this BoundaryModel
             if( &E.model() != this ) {
-                return false;
+                valid[i] = false ;
+                ringmesh_debug_assert( false ) ; 
+                break ;
             }
-            if( !E.is_valid() ) {
-                return false ;
+            valid[ i ] = E.is_valid() ;
+            
+            if( valid[i] && E.bme_id().type == BME::REGION ) {
+                // Check validity of region definition
+                valid[ i ] = is_region_valid( E ) ;
             }
         }
-
-       return true ;
+        return std::count( valid.begin(), valid.end(), false) == 0 ;
     }
 
     /*! 
-     * @brief Check geological validity - Caumon2004 
+     * @brief Check geological validity -
      * @details Only a fault can have a free border and 
      *          an interface can on the boundary of maximum two layers      
+     *          See Building and Editing a Sealed Geological Model,
+     *          Caumon et al. 2004
      */          
     bool BoundaryModel::check_geology_validity() const
     {
@@ -1175,29 +1396,34 @@ namespace RINGMesh {
         // Check that the model has a finite extension 
         // The boundary of the universe region is a one connected component 
         // manifold closed surface 
-        Mesh U_mesh ;
-        mesh_from_element_boundaries( universe(), U_mesh ) ;        
-        if( GEO::mesh_nb_connected_components( U_mesh ) != 1 ) {
+        if( !is_region_valid( universe() ) ) {
             return false ;
-        }
-        if( GEO::mesh_nb_borders( U_mesh ) != 0 ) {
-            return false ;
-        }
-        if( GEO::mesh_Xi( U_mesh ) != 2 ) {
-            return false ;
-        }
-        /// @todo check that facet orientation is consistent
+        }        
+        /// @todo check that facet orientation is consistent ? useful really ?
 
+        // Check geometrical-connectivity consistency
+        if( !check_model_points_validity( *this ) ) {
+            return false ;
+        }
+
+        // No edge of a Surface can be on the boundary of this Surface without
+        // being in a Line
+        for( index_t i = 0; i < nb_surfaces(); ++i ) {
+            if( !surface_boundary_valid( surface( i ) ) ){
+                return false ;
+            }
+        }
+      
 
         // Check surface-surface intersections 
         // Build a global triangulated mesh corresponding
         // to this model
-        Mesh model_mesh ;
+        GEO::Mesh model_mesh ;
         mesh_from_boundary_model( *this, model_mesh ) ;
         GEO::mesh_repair( model_mesh, MESH_REPAIR_TRIANGULATE ) ;
 
         // Check that non-manifold edges are all Lines
-        Mesh non_manifold_edges ;
+        GEO::Mesh non_manifold_edges ;
         EdgeOnLine P( *this, non_manifold_edges ) ;
         repair_connect_facets( model_mesh, P ) ;
 
@@ -1209,12 +1435,6 @@ namespace RINGMesh {
         if( detect_intersecting_facets( *this, model_mesh ) > 0 ) {
             return false ;
         }
-
-        // Other checks
-        // No point on a Line - except at extremities - can be a Corner
-
-        // No edge of a Surface can be on the boundary of this Surface without
-        // being in a Line
 
         return false;
     }
