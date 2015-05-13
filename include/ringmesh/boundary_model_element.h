@@ -270,6 +270,9 @@ namespace RINGMesh {
         bme_t in_boundary_id( index_t x ) const { return in_boundary_[ x ] ;}
         const BoundaryModelElement& in_boundary( index_t x ) const ;
 
+        bool is_inside_border( const BoundaryModelElement& e ) const ;
+
+
         /*!@}
          * \name Parent - children relationships
          * @{
@@ -633,8 +636,6 @@ namespace RINGMesh {
             return ( boundaries_[ 0 ].is_defined() ) &&
                    ( boundaries_[ 0 ] == boundaries_[ 1 ] ) ;
         }
-
-        bool is_inside_border( const BoundaryModelElement& e ) const ;
 
         bool equal( const std::vector< vec3 >& rhs_vertices ) const ;
 
