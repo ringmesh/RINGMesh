@@ -155,7 +155,7 @@ namespace {
         int v = 0 ;
         for( index_t c = S.facet_begin( f ) ; c < S.facet_end( f ); ++c ) {
             corners[ v ] = c ;
-            corners_global[ v ] = S.model_vertex_id( c ) ;
+            corners_global[ v ] = S.model_vertex_id( f, v ) ;
             v++ ;
         }
         std::sort( corners.begin(), corners.end() ) ;
