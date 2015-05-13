@@ -968,7 +968,7 @@ namespace {
         const BoundaryModel& M, 
         const std::vector< index_t >& e )
     {
-        std::ofstream out( file ) ;
+        std::ofstream out( file.c_str() ) ;
         if( out.is_open() ) {
             out.precision( 16 ) ;
             for( index_t i = 0 ; i < e.size(); ++i ) {
@@ -1003,6 +1003,9 @@ namespace {
                 }
             }
         }
+        // en fait là on a un probleme avec la ligne fermee dans A6
+        // les deux segments autour du coin ne sont pas bon pour S17 ?
+        // il ne faut pas sortir de suite pour voir si on a d'autres choses qui crashent.
 #ifdef RINGMESH_DEBUG
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
@@ -1010,9 +1013,7 @@ namespace {
                 << S.bme_id().index << ".lin"  ;
             save_edges( file.str(), S.model(), invalid_corners ) ;
         }
-#endif
-
-        
+#endif        
         return invalid_corners.empty() ;
     }
 
@@ -1481,6 +1482,10 @@ namespace RINGMesh {
      *          No intersection between two different elements except along
      *          shared boundaries - that must be actual boundaries  
      *          Performed on Corners, Lines and Surfaces.
+     *
+     * @todo FAIRE TOUT LES TESTS MEME SI CERTAINS RATENT - 
+     *       TROUVER UN MOYEN MALIN POUR VOIR IDENTIFIER LES ERREURS -
+     *       test the code on various models
      */
     bool BoundaryModel::check_model_validity() const
     {
