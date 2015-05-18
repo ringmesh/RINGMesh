@@ -154,7 +154,13 @@ namespace RINGMesh {
                 else {
                     return index < rhs.index ;
                 }
+            }    
+            friend std::ostream& operator<<( std::ostream& os, const bme_t& in )
+            {
+                os << BoundaryModelElement::type_name( in.type ) << " " << in.index ;
+                return os;
             }
+
             bool is_defined() const
             {
                 return type != NO_TYPE &&
@@ -167,6 +173,7 @@ namespace RINGMesh {
             index_t index ;
         } ;
 
+       
         const static index_t NO_ID = index_t(-1) ;
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;

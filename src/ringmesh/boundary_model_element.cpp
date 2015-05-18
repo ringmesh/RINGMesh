@@ -44,6 +44,7 @@
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/utils.h>
 
+#include <geogram/basic/logger.h>
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/mesh/triangle_intersection.h>
 #include <geogram/mesh/mesh.h>
@@ -51,7 +52,7 @@
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/mesh_intersection.h>
-
+#include <geogram/mesh/mesh_repair.h>
 
 #include <set>
 #include <stack>
@@ -72,6 +73,8 @@ namespace {
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
             if( E.model_vertex_id( i ) == NO_ID
                 && E.model_vertex_id( i ) >= E.model().nb_vertices() ) {
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << "Invalid model vertex index in " << E.bme_id() << std::endl ;
                 return false ;
             }
         }
@@ -207,7 +210,7 @@ namespace RINGMesh {
             return VOI ;
         }
 
-        std::cout << "ERROR" << "Unexpected type in the model file " << in
+        GEO::Logger::err("BoundaryModel") << "Unexpected geological feature " << in
             << std::endl ;
         return NO_GEOL ;
     }
@@ -302,7 +305,6 @@ namespace RINGMesh {
             case SURFACE: return INTERFACE ;
             case REGION: return LAYER ;
             default:
-
                 // The others have no parent
                 return NO_TYPE ;
         }
@@ -429,19 +431,53 @@ namespace RINGMesh {
 
     bool BoundaryModelElement::is_connectivity_valid() const
     {
+        bool valid = true ;
+
         /// 1. Check the model
-        if( !has_model() ) return false ;
+        if( !has_model() ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                << " Element associated to no model " << std::endl ;
+            valid = false ; 
+        }
 
         /// 2. Check the validity of identification information
-        ///    in the model
+        ///    in the model - Universe has no index, but a TYPE
         if( bme_id() == bme_t() ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << " Element associated to model " << model().name()
+                << "has no type and no index " 
+                << std::endl ;           
+            valid = false ;
         }
+
+        if( !valid ) {
+            // If previous information are not valid
+            // No further checks are possible 
+            // This really should not happen 
+            ringmesh_debug_assert( valid ) ;
+            return valid ;
+        }
+
         if( bme_id().index >= model().nb_elements( bme_id().type ) ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << " Element index "<< bme_id() << " is not valid " 
+                << " There are " << model().nb_elements( bme_id().type )
+                << " element of that type in model " << model().name()
+                << std::endl ;
+            // This really should not happen
+            valid = false ;
+            ringmesh_debug_assert( valid ) ;            
+            return valid ;
         }
         if( &( model().element( bme_id() ) ) != this ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << " Element "<< bme_id() << " in model " 
+                << model().name() << " does not match this element"
+                << std::endl ;
+            // This really should not happen
+            ringmesh_debug_assert( valid ) ;
+            valid = false ;
+            return valid ;
         }
 
         /// 3. Check that required information for the TYPE is defined
@@ -453,15 +489,24 @@ namespace RINGMesh {
         if( boundary_allowed( T ) ) {
             if( T == REGION ) {
                 if( nb_boundaries() == 0 ) {
-                    return false ;
+                    GEO::Logger::err( "BoundaryModelElement" )
+                        << bme_id() << " has no boundaries "
+                        << std::endl ;
+                    valid = false ;
                 }
                 if( nb_boundaries() != sides_.size() ) {
-                    return false ;
+                    GEO::Logger::err( "BoundaryModelElement" )
+                        << bme_id() << " boundary sides are invalid "
+                        << std::endl ;
+                    valid = false ;
                 }
             }
             // A Line must have 2 corners - they are identical if the Line is closed
             if( T == LINE && nb_boundaries() != 2 ) {
-                return false ;
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << bme_id() << " does not have 2 corners"
+                    << std::endl ;
+                valid = false ;
             }
             // No requirement on Surface - it may have no boundary - bubble
 
@@ -478,7 +523,11 @@ namespace RINGMesh {
                     j++ ;
                 }
                 if( !found ) {
-                    return false ;
+                    GEO::Logger::err( "BoundaryModelElement" )
+                        << "Inconsistency boundary-in_boundary between "
+                        << bme_id() << " and " << E.bme_id() 
+                        << std::endl ;
+                    valid = false ;
                 }
             }
         }
@@ -488,7 +537,10 @@ namespace RINGMesh {
             // Fix for a .ml for which VOI Surface are only on the boundary of Universe
             // Can we keep this ? Or should we compute the Region
             if( nb_in_boundary() == 0 ) {
-                return false ;
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << bme_id() << " is in the boundary of no element "
+                    << std::endl ;
+                valid = false ;
             }
 
             // All elements in the in_boundary must have this in their
@@ -504,7 +556,11 @@ namespace RINGMesh {
                     j++ ;
                 }
                 if( !found ) {
-                    return false ;
+                    GEO::Logger::err( "BoundaryModelElement" )
+                        << "Inconsistency in_boundary-boundary between "
+                        << bme_id() << " and " << E.bme_id()
+                        << std::endl ;
+                    valid = false ;
                 }
             }
         }
@@ -514,7 +570,10 @@ namespace RINGMesh {
         if( parent_allowed( T ) ) {
             if( model().nb_elements( parent_type( T ) ) > 0 ) {
                 if( parent_id() == bme_t() ) {
-                    return false ;
+                    GEO::Logger::err( "BoundaryModelElement" )
+                       << bme_id() << " has no geological parent element "
+                       << std::endl ;
+                    valid = false ;
                 }
 
                 // The parent must have this element in its children
@@ -528,7 +587,11 @@ namespace RINGMesh {
                     j++ ;
                 }
                 if( !found ) {
-                    return false ;
+                    GEO::Logger::err( "BoundaryModelElement" )
+                        << "Inconsistency parent-child between "
+                        << bme_id() << " and " << E.bme_id()
+                        << std::endl ;
+                    valid = false ;
                 }
             }
         }
@@ -536,19 +599,24 @@ namespace RINGMesh {
         // Children
         if( child_allowed( T ) ) {
             if( nb_children() == 0 ) {
-                return false ;
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << bme_id() << " has no children mesh element, so no geometry "
+                    << std::endl ;
+                valid = false ;
             }
 
             // All children must have this element as a parent
             for( index_t i = 0; i < nb_children(); ++i ) {
                 if( child( i ).parent_id() != bme_id() ) {
-                    return false ;
+                    GEO::Logger::err( "BoundaryModelElement" )
+                        << "Inconsistency child-parent between "
+                        << bme_id() << " and " << child(i).bme_id()
+                        << std::endl ;
+                    valid = false ;
                 }
             }
         }
-
-        // If no test failed, we are good to go.
-        return true ;
+        return valid ;
     }
 
 
@@ -729,7 +797,7 @@ namespace RINGMesh {
      *               are not.
      *
      * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
-     *          I removed on purpose the default value parameter (Jeanne).
+     *          I removed on purpose the default value parameter (JP).
      */
     void BoundaryModelMeshElement::set_vertex(
         index_t index,
@@ -737,12 +805,14 @@ namespace RINGMesh {
         bool update )
     {
         ringmesh_debug_assert( index < nb_vertices() ) ;
-        if( update )
+        if( update ) {
             model_->vertices.update_point(
-            model_->vertices.unique_vertex_id(
-            bme_id(), index ), point ) ;
-        else
+                model_->vertices.unique_vertex_id(
+                bme_id(), index ), point ) ;
+        }
+        else {
             mesh_.vertices.point( index ) = point ;
+        }
     }
 
     /*!
@@ -836,11 +906,42 @@ namespace RINGMesh {
     */
     bool Corner::is_mesh_valid() const 
     {
-         return mesh_.vertices.nb() == 1 &&
-             mesh_.edges.nb()    == 0 &&
-             mesh_.facets.nb()   == 0 &&
-             mesh_.cells.nb()    == 0 &&
-             mesh_.vertices.point( 0 ) != vec3();
+        bool valid = true ;
+        if( mesh_.vertices.nb() != 1 ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Corner " << bme_id().index
+                << " mesh has " << mesh_.vertices.nb()
+                << " vertices " << std::endl ;
+            valid = false ;
+        }
+        if( mesh_.edges.nb() != 0 ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Corner " << bme_id().index
+                << " mesh has " << mesh_.edges.nb()
+                << " edges " << std::endl ;
+            valid = false ;
+        }
+        if( mesh_.facets.nb() != 0 ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Corner " << bme_id().index
+                << " mesh has " << mesh_.facets.nb()
+                << " facets " << std::endl ;
+            valid = false ;
+        }
+        if( mesh_.cells.nb() != 0 ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Corner " << bme_id().index
+                << " mesh has " << mesh_.cells.nb()
+                << " cells " << std::endl ;
+            valid = false ;
+        }
+        if( mesh_.vertices.point( 0 ) == vec3() ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Corner " << bme_id().index
+                << " point is default " << std::endl ;
+            valid = false ;
+        }
+        return valid ;
      }
     
 
@@ -873,24 +974,41 @@ namespace RINGMesh {
      */
     bool Line::is_mesh_valid() const
     {
+        bool valid = true ;
+
         // Check that the GEO::Mesh has the expected elements
         if( mesh_.vertices.nb() < 2 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Line " << bme_id().index
+                << " has " << mesh_.vertices.nb()
+                << " vertices " << std::endl ;
+            valid = false ;
         }
         if( mesh_.edges.nb() == 0 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Line " << bme_id().index
+                << " mesh has " << mesh_.edges.nb()
+                << " edges " << std::endl ;
+            valid = false ;
         }
         if( mesh_.facets.nb() != 0 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Line " << bme_id().index
+                << " mesh has " << mesh_.facets.nb()
+                << " facets " << std::endl ;
+            valid = false ;
         }
         if( mesh_.cells.nb() != 0 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Line " << bme_id().index
+                << " mesh has " << mesh_.cells.nb()
+                << " cells " << std::endl ;
+            valid = false ;
         }
-
+       
         // Model indices must be valid
-        if( !check_range_model_vertex_ids( *this ) ) {
-            return false ;
-        }
+        valid = check_range_model_vertex_ids( *this ) && valid ;
+
         // Count the number of edges in which each vertex is
         std::vector< index_t > nb ;
         count_vertex_occurences( mesh(), nb ) ;
@@ -905,50 +1023,63 @@ namespace RINGMesh {
 
         // Vertices at extremitites must be in only one edge
         if( nb.front() != 1 || nb.back() != 1 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Invalid extremity points in " << bme_id() << std::endl ;
+            valid = false ;
         }               
         // No isolated vertices are allowed
         if( nb0 > 0 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << nb0 << " isolated vertices in " << bme_id() << std::endl ;
+            valid = false ;
         }
         // Only the two extremities are in only 1 edge 
         // One connected component condition
         if( nb1 != 2 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "More than one connected component for " << bme_id() << std::endl ;
+            valid = false ;
         }
         // All the others must be in 2 edges and 2 edges only
         // Manifold condition
         if( nb2 != nb.size()-2 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << "Non-manifold element" << bme_id() << std::endl ;
+            valid = false ;
         }
         
         std::vector< index_t > duplicated ;
         // Only the extremity vertex can be duplicated
         index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
         if( nb_duplicated > 2 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                << nb_duplicated << " vertices in " << bme_id() << std::endl ;
+            valid = false ;
         }
-        // If it is, the line is closed
+        // If there 2 duplicates, the line is closed
         else if( nb_duplicated == 2 ) {
             if( !is_closed() ) {
-                return false ;
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << " Duplicated vertex in non closed " << bme_id() << std::endl ;
+                valid = false ;
             }
-            if( duplicated.front() == NO_ID ) {
-                return false ;
+            else if( duplicated.front() == NO_ID ) {
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << " Invalid duplicated vertex in closed " << bme_id() << std::endl ;
+                valid = false ;
             }
-            if( duplicated.front() != duplicated.back() ) {
-                return false ;
+            else if( duplicated.front() != duplicated.back() ) {
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << " Invalid duplicated vertex in closed " << bme_id() << std::endl ;
+                valid = false ;
             }
-        }
-        else {
-            ringmesh_debug_assert( nb_duplicated == 0 ) ;
         }
 
         // No zero edge length - already ruled out with the duplicated vertex test (JP)
-        // No self-intersection - let's say there are none (JP)
-        // No duplicated edge - probably ruled out with the duplicated vertex test (JP)
+        // No self-intersection - I suppose there are no segment - segment intersection (JP)
+        // No duplicated edge - most probably ruled out with the duplicated vertex test (JP)
 
-        return true ; 
+        return valid ; 
     }
 
 
@@ -1087,25 +1218,37 @@ namespace RINGMesh {
      */
     bool Surface::is_mesh_valid() const
     {
+        bool valid = true ;
         // Check that the GEO::Mesh has the expected elements
         // at least 3 vertices and one facet.
         if( mesh_.vertices.nb() < 3 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                <<  bme_id() << " has less than 3 vertices " << std::endl ;
+            valid = false ;
         }
         // Is it important to have edges or not ?
         // I would say we do not care (JP) - so no check on that 
         if( mesh_.facets.nb() == 0 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                <<  bme_id() << " has no facets " << std::endl ;
+            valid = false ;
         }
         if( mesh_.cells.nb() != 0 ) {
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                <<  bme_id() << " has " 
+                <<  mesh_.cells.nb() << " cells " << std::endl ;
+            valid = false ;
         }
 
         // No isolated vertices
         std::vector< index_t > nb ;
         count_vertex_occurences( mesh(), nb ) ;
-        if( std::count( nb.begin(), nb.end(), 0 ) > 0 ) {
-            return false ;
+        index_t nb0 = std::count( nb.begin(), nb.end(), 0 ) ;
+        if( nb0 > 0 ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                <<  bme_id() << " mesh has "
+                << nb0 << " isolated vertices " << std::endl ;
+            valid = false ;
         }
 
         std::vector< index_t > duplicated ;
@@ -1113,6 +1256,7 @@ namespace RINGMesh {
 
         // There might be several duplicated points, but they must be in one of the
         // boundary lines that are twice in the boundary of this surface
+        /// @todo Check taht duplicated vertices are on a Line that is an internal boundary
 
         // No zero area facet
         // No facet incident to the same vertex check local and global indices
@@ -1123,27 +1267,39 @@ namespace RINGMesh {
             }
         }
         if( nb_degenerate != 0 ) {
-            std::cout << "Detected " << nb_degenerate << " degenerate facets in SURFACE "
-                << bme_id().index << std::endl ;
-            return false ;
+            GEO::Logger::err( "BoundaryModelElement" )
+                <<  bme_id() << " mesh has "
+                << nb_degenerate << " degenerate facets " << std::endl ;
+            valid = false ;
         }
 
 
         // No duplicated facet
-        // Waiting for mesh validity checks in geogram 
-        /* GEO::vector< index_t > duplicated ;
-           GEO::detect_duplicated_facets( mesh_, vector<index_t>& remove_f ) ;
-           if( duplicated.size() > 0 ) {
-                return false ;
-           } 
-        */
+        GEO::vector<index_t> colocated ;
+        // GEO::mesh_detect_duplicated_facets( mesh_, colocated ) ; // not implemented yet 
+        index_t nb_duplicated_f = 0 ; 
+        for( index_t f = 0; f < colocated.size(); ++f ) {
+            if( colocated[ f ] != f ) {
+                nb_duplicated_f++ ;
+            }
+        } 
+        if( nb_duplicated_f > 0 ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                <<  bme_id() << " mesh has "
+                << nb_duplicated_f << " duplicated facets " << std::endl ;
+            valid = false ;
+        }
         
         // One connected component  
-        if( GEO::mesh_nb_connected_components( mesh_ ) != 1 ) {
-            return false ;
+        index_t cc = GEO::mesh_nb_connected_components( mesh_ ) ;
+        if( cc != 1 ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                <<  bme_id() << " mesh has "
+                << cc << " connected components " << std::endl ;
+            valid = false ;
         }
 
-        return true ; 
+        return valid ; 
     }
 
 
