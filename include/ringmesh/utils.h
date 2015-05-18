@@ -62,7 +62,7 @@ namespace RINGMesh {
     /*! @brief A safer narrow casting function of type S to type T
      *  \return static_cast< T >( in ) 
      *  \post Check that the result can be cast back to in, if not throws an assertion.
-     *  \note cf. The C++ programming lang. 4th edition. p299
+     *  \note cf. The C++ programming language. 4th edition. p299
      */
     template< typename T, typename S >
     T narrow_cast( S in )
@@ -1104,6 +1104,9 @@ namespace RINGMesh {
         std::vector< T1 >& input_ ;
         std::vector< T2 >& output_ ;
     } ;
+
+    /******************************************************************/
+
 
 }
 
