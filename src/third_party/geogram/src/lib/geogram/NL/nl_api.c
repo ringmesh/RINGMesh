@@ -111,7 +111,7 @@ void nlSolverParameteri(NLenum pname, NLint param) {
     } break ;
     case NL_SYMMETRIC: {
         nlCurrentContext->symmetric = (NLboolean)param ;        
-    }
+    } break ;
     case NL_INNER_ITERATIONS: {
         nl_assert(param > 0) ;
         nlCurrentContext->inner_iterations = (NLuint)param ;

@@ -2351,6 +2351,7 @@ namespace GEO {
         Delaunay* delaunay, Mesh* mesh,
         const double* R3_embedding, index_t R3_embedding_stride
     ) {
+        delaunay->set_stores_neighbors(true);
         RestrictedVoronoiDiagram* result = nil;
         geo_assert(delaunay != nil);
         coord_index_t dim = delaunay->dimension();

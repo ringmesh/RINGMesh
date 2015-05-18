@@ -48,7 +48,6 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/logger.h>
-#include <geogram/basic/stacktrace.h>
 
 namespace {
     using namespace GEO;
@@ -155,7 +154,7 @@ namespace {
     
     const char* points_fshader_source =
         "#version 150 compatibility                                         \n"
-        "#extension GL_ARB_conservative_depth : enable                      \n"   
+        "#extension GL_ARB_conservative_depth : enable                      \n"
         "layout (depth_less) out float gl_FragDepth;                        \n"
         "out vec4 frag_color ;                                              \n"
         "void main() {                                                      \n"
@@ -165,10 +164,11 @@ namespace {
         "      discard;                                                     \n"
         "   }                                                               \n"
         "   vec3 W = vec3(V.x, -V.y, sqrt(one_minus_r2));                   \n"
-        "   float diff = dot(W,gl_LightSource[0].position.xyz);             \n"
+        "   float diff = dot(W,gl_LightSource[0].position.xyz) /            \n" 
+        "                   length(gl_LightSource[0].position.xyz);         \n"
         "   float spec = 2.0*pow(diff,30.0);                                \n"
         "   frag_color = diff*gl_Color + spec*vec4(1.0, 1.0, 1.0, 1.0);     \n"
-        "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"        
+        "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"
         "}                                                                  \n";
     
     
@@ -866,6 +866,31 @@ namespace {
     void update_buffer_object(
         GLuint& buffer_id, GLenum target, size_t new_size, const void* data
     ) {
+        static bool init = false;
+        static bool use_glGetBufferParameteri64v = true;
+
+        // Note: there is a version of glGetBufferParameteriv that uses
+        // 64 bit parameters. Since array data larger than 4Gb will be
+        // common place, it is this version that should be used. However,
+        // it is not supported by the Intel driver (therefore we fallback
+        // to the standard 32 bits version if such a driver is detected).
+        
+        if(!init) {
+            init = true;
+            const char* vendor = (const char*)glGetString(
+                GL_VENDOR
+            );
+            use_glGetBufferParameteri64v = (
+                strlen(vendor) < 5 || strncmp(vendor, "Intel", 5) != 0
+            );
+            if(!use_glGetBufferParameteri64v) {
+                Logger::warn("GLSL")
+                    << "Buggy Intel driver detected (working around...)"
+                    << std::endl;
+            }
+        }
+        
+        
         if(new_size == 0) {
             if(buffer_id != 0) {
                 glDeleteBuffers(1, &buffer_id);
@@ -880,7 +905,15 @@ namespace {
             glBindBuffer(target, buffer_id);            
         } else {
             glBindBuffer(target, buffer_id);
-            glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
+            
+            // See comment at the beginning of the function.
+            if(use_glGetBufferParameteri64v) {
+                glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);                
+            } else {
+                GLint size32=0;
+                glGetBufferParameteriv(target,GL_BUFFER_SIZE,&size32);
+                size = GLint64(size32);
+            }
         }
         
         if(new_size == size_t(size)) {
@@ -905,6 +938,8 @@ namespace GEO {
         facet_region_VBO_ = 0;
         cell_region_VBO_ = 0;
 
+        VBO_dirty_ = false;
+        
         colormap_TEX_ = 0;
         
         show_mesh_ = true;
@@ -940,23 +975,29 @@ namespace GEO {
             draw_cells_[i] = true;
         }
 
-        points_size_ = 2;
+        points_size_ = 2.0f;
         mesh_width_ = 1;
         mesh_border_width_ = 3;
         
     }
 
     void MeshGfx::set_mesh(const Mesh* M) {
-        delete_VBOs();
+        if(M == nil) {
+            delete_VBOs();
+        } else {
+            VBO_dirty_ = true;
+        }
         clear_cell_draw_cache();
         triangles_and_quads_ = true;
-        for(index_t f=0; f<M->facets.nb(); ++f) {
-            if(
-                M->facets.nb_vertices(f) != 3 &&
-                M->facets.nb_vertices(f) != 4
-            ) {
-                triangles_and_quads_ = false;
-                break;
+        if(M != nil) {
+            for(index_t f=0; f<M->facets.nb(); ++f) {
+                if(
+                    M->facets.nb_vertices(f) != 3 &&
+                    M->facets.nb_vertices(f) != 4
+                ) {
+                    triangles_and_quads_ = false;
+                    break;
+                }
             }
         }
         mesh_ = M;
@@ -991,6 +1032,10 @@ namespace GEO {
         const char* shading_language_ver_str = (const char*)glGetString(
             GL_SHADING_LANGUAGE_VERSION
         );
+        const char* vendor = (const char*)glGetString(
+            GL_VENDOR
+        );
+        Logger::out("GLSL") << "vendor = " << vendor << std::endl;
         Logger::out("GLSL") << "version string = "
             << shading_language_ver_str << std::endl;
         GLSL_version_ = atof(shading_language_ver_str);
@@ -1112,6 +1157,10 @@ namespace GEO {
     }
     
     void MeshGfx::setup_VBOs() {
+
+        if(!VBO_dirty_) {
+            return;
+        }
         
         if(mesh_->vertices.nb() != 0) {
             if(mesh_->vertices.single_precision()) {
@@ -1125,6 +1174,7 @@ namespace GEO {
                 );
                 
             } else {
+                
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(double);
 
@@ -1196,6 +1246,8 @@ namespace GEO {
                 );
             }
         }
+
+        VBO_dirty_ = false;
     }
     
     void MeshGfx::delete_VBOs() {
@@ -1342,7 +1394,7 @@ namespace GEO {
         begin_draw(MESH_VERTICES);
         
         glDisable(GL_LIGHTING);
-        glPointSize(GLfloat(points_size_ * 5));
+        glPointSize(points_size_ * 5.0f);
 
         if(GLSL_mode_) {
             glEnable(GL_POINT_SPRITE);
@@ -1747,7 +1799,7 @@ namespace GEO {
         glCullFace(GL_FRONT);
         glEnable(GL_CULL_FACE);
         
-        // Try using loaded vertex array with glDrawElements() 
+        // TODO: try using loaded vertex array with glDrawElements() 
 
         set_colors(PRG_TET);
         glBegin(GL_TRIANGLES);

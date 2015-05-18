@@ -328,7 +328,7 @@ namespace GEO {
          * \param[in] x the point size (minimum 1)
          * \see draw_points()
          */
-        void set_points_size(index_t x) {
+        void set_points_size(float x) {
             points_size_ = x;
         }
 
@@ -337,7 +337,7 @@ namespace GEO {
          * \return the point size
          * \see draw_points()
          */
-        index_t get_points_size() const {
+        float get_points_size() const {
             return points_size_;
         }
         
@@ -663,6 +663,8 @@ namespace GEO {
         GLuint     cell_region_VBO_;
 
         GLuint     colormap_TEX_;
+
+        bool VBO_dirty_;
         
         bool show_mesh_;
         bool show_regions_;
@@ -749,7 +751,7 @@ namespace GEO {
          */
         vector<void*>   cell_draw_start_index_[GEO::MESH_NB_CELL_TYPES];
 
-        index_t points_size_;
+        float points_size_;
         index_t mesh_width_;
         index_t mesh_border_width_;
         
