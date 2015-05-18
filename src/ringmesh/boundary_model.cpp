@@ -136,8 +136,8 @@ namespace {
     }
 
     /*!
-     * @brief Returns the Line identification if the points given define 
-     *       an edge of one of this Line of the model
+     * @brief Returns the Line identification if the given points define 
+     *       an edge of one of the Line of the model
      */
     BME::bme_t is_edge_on_line(
         const BoundaryModel& model,
@@ -166,23 +166,44 @@ namespace {
                             lv1 = v1_bme[ j ].v_id ;
                             result = v0_bme[ i ].bme_id ;
                         } else {
-                            // The two points should be corners ...
-                            // I am not completely sure (JP) - If they define an edge 
-                            // model topology is not correct 
-                            return BME::bme_t() ;
+                            if( !model.line( result.index ).is_closed() ) {
+                                // If the Line is not closed I am not completely sure 
+                                // that model topology is correct  (JP)
+                                ringmesh_debug_assert( false ) ;
+                                return BME::bme_t() ;
+                            }
+                            
                         }
                     }
                 }
             }
         }
+         if( !result.is_defined() ) {
+             // The two points are not on the same Line
+             return BME::bme_t() ;
+         }
+         else {
+             // Determine if the points define an edge 
+             if( lv0 > lv1 ) {
+                 std::swap( lv0, lv1 ) ;
+             }
+             int delta_i = (int)lv1 - (int)lv0 ;
 
-        // There is an edge between the 2 points if their indices
-        // in the Line of i and i+1
-        if( abs( (int)lv0 - (int)lv1 ) == 1 ) {
-            return result ;
-        } else {
-            return BME::bme_t() ;
-        }
+             if( delta_i == 1 ) {
+                 // There is if their indices in the Line are i and i+1
+                 return result ;
+             } else if( model.line( result.index ).is_closed() ) {
+                 // If the Line is closed we can also have 0; n-2 or n-1; 1
+                 index_t n = model.line( result.index ).nb_vertices() ;
+                 if( delta_i == n-2 ) {
+                     return result ;
+                 }
+             } else {
+                 // The two points are on the same line but 
+                 // do not define an edge
+                 return BME::bme_t() ;
+             }
+         }       
     }
 
     BME::bme_t is_edge_on_line(
