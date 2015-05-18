@@ -659,11 +659,18 @@ namespace RINGMesh {
         surfaces_[s]->gfx().set_points_size( size ) ;
     }
 
+    /*!
+     * Constructor. Does nothing.
+     */
     MacroMeshGfx::MacroMeshGfx()
         : mm_( nil ), meshes_(), surfaces_(), edges_()
     {
     }
 
+    /*!
+     * Destructor. Deletes the RegionGfx, SurfaceGfx and LineGfx
+     * inside meshes_, surfaces_ and edges_.
+     */
     MacroMeshGfx::~MacroMeshGfx()
     {
         for( index_t m = 0; m < meshes_.size(); m++ ) {
@@ -850,10 +857,10 @@ namespace RINGMesh {
      * @param[in] l the line index
      * @param[in] s the size
      */
-    void MacroMeshGfx::set_edge_region_size( index_t m, index_t s )
+    void MacroMeshGfx::set_edge_region_size( index_t l, index_t s )
     {
-        ringmesh_debug_assert( m < meshes_.size() ) ;
-        edges_[m]->gfx().set_mesh_width( s ) ; //TODO function not good
+        ringmesh_debug_assert( l < meshes_.size() ) ;
+        edges_[l]->gfx().set_mesh_width( s ) ;
     }
 
     /*!
