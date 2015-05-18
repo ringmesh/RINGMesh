@@ -46,6 +46,7 @@
 #include <ringmesh/common.h>
 #include <ringmesh/boundary_model_element.h>
 #include <geogram/basic/logger.h>
+#include <geogram/basic/file_system.h>
 
 #include <vector>
 #include <string>
@@ -220,6 +221,7 @@ namespace RINGMesh {
          */
         BoundaryModel() : vertices( *this )
         {
+            debug_directory_ = GEO::FileSystem::get_current_working_directory() ;
         }
 
         /*!
@@ -233,6 +235,23 @@ namespace RINGMesh {
          * @brief Name of the model
          */ 
         const std::string& name() const { return name_ ; }
+
+        const std::string& debug_directory() const
+        {
+            return debug_directory_ ;
+        }
+        void set_debug_directory( const std::string& directory )
+        {
+            if( GEO::FileSystem::is_directory( directory ) ) {
+                debug_directory_ = directory ;
+            }
+            else {            
+                GEO::Logger::err( "I/O" ) << "Invalid debug directory "
+                    << directory << " for BoudnaryModel " << name() 
+                    << "using default directory " << debug_directory_
+                    << std::endl ;
+            }
+        }
 
         /*!
          * @brief Number of unique vertices, no duplicates along Line and at Corner
@@ -380,12 +399,11 @@ namespace RINGMesh {
         signed_index_t find_interface( const std::string& name) const ;
         signed_index_t find_region( const std::string& name) const ;
         
-        // To put back 
-        bool check_model_validity() const ;
 
     private:
         bool check_model3d_compatibility() ;
 
+        bool check_model_validity() const ;
         bool check_elements_validity() const ;
         bool check_geology_validity() const ;
 
@@ -393,6 +411,7 @@ namespace RINGMesh {
         BoundaryModelVertices vertices ;
 
     private:
+        // Name of the model
         std::string name_ ;
 
         // Base manifold elements of a model
@@ -423,6 +442,11 @@ namespace RINGMesh {
 
         /// Allow global access to BME. It MUST be updated if one element is added.
         std::vector< index_t > nb_elements_per_type_ ;
+
+
+        /// Name of the debug directory in which to save stuff 
+        /// @todo Put this in another class ? 
+        std::string debug_directory_ ;  
     } ;
 
 }
