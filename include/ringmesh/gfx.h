@@ -149,7 +149,7 @@ namespace RINGMesh {
         void set_edge_regions_visibility( bool b ) ;
         void set_edge_region_visibility( index_t m, bool b ) ;
         void set_edge_regions_size( index_t s ) ;
-        void set_edge_region_size( index_t m, index_t s ) ;
+        void set_edge_region_size( index_t l, index_t s ) ;
 
         void set_surface_regions_color( float r, float g, float b ) ;
         void set_surface_region_color( index_t m, float r, float g, float b ) ;
