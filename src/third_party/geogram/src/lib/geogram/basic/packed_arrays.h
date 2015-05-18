@@ -264,9 +264,13 @@ namespace GEO {
             const vector<index_t>& array,
             bool lock = true
         ) {
-            set_array(
-                array_index, index_t(array.size()), &array[0], lock
-            );
+            if(array.size() == 0) {
+                set_array(array_index, 0, nil, lock);
+            } else {
+                set_array(
+                    array_index, index_t(array.size()), &array[0], lock
+                );
+            }
         }
 
         /**

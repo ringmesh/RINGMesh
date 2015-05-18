@@ -133,6 +133,19 @@ namespace {
     }
 
     /**
+     * \brief Cycles between three possible points size.
+     */
+    void cycle_points_size() {
+        if(M_gfx.get_points_size() == 2.0f) {
+            M_gfx.set_points_size(0.1f);
+        } else if(M_gfx.get_points_size() == 0.1f) {
+            M_gfx.set_points_size(1.0f);            
+        } else {
+            M_gfx.set_points_size(2.0f);            
+        }
+    }
+    
+    /**
      * \brief Increments the time of the Optimal Transport animation.
      */
     void increment_time() {
@@ -177,7 +190,7 @@ namespace {
      */
     void display() {
 
-        if(M_gfx.mesh() == nil) {
+        if(M_gfx.mesh() != &M) {
             M_gfx.set_mesh(&M);
         }
         
@@ -283,6 +296,8 @@ namespace {
      */
     void load_mesh(const std::string& filename) {
 
+        M_gfx.set_mesh(nil);
+        
         GEO::MeshIOFlags flags;
         if(GEO::CmdLine::get_arg_bool("attributes")) {
             flags.set_attribute(GEO::MESH_FACET_REGION);
@@ -412,6 +427,7 @@ int main(int argc, char** argv) {
     glut_viewer_set_drag_drop_func(dropped_file_cb);
     glut_viewer_add_toggle('V', &show_volume, "volume");
     glut_viewer_add_toggle('p', &show_vertices, "vertices");
+    glut_viewer_add_key_func('P', &cycle_points_size, "change points size");    
     glut_viewer_add_toggle('S', &show_surface, "surface");
     glut_viewer_add_key_func('L', toggle_lighting, "toggle lighting");
     glut_viewer_add_key_func('n', invert_normals, "invert normals");

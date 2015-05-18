@@ -111,7 +111,6 @@ else()
     set(BUILD_SHARED_LIBS FALSE)
 endif()
 
-add_definitions(-DGEOGRAM_WITH_PDEL)
 ##############################################################################
 # Vorpaline sources
 

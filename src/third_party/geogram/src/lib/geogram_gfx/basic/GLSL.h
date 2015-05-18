@@ -44,6 +44,7 @@
  */
 
 #include <geogram_gfx/basic/common.h>
+#include <geogram/basic/numeric.h>
 
 /**
  * \file geogram_gfx/basic/GLSL.h
@@ -68,25 +69,77 @@ namespace GEO {
         
         /**
          * \brief Compiles a shader for a specific target.
-         * \details One may use \p source1 for library functions common 
-         *  to different shaders (then the code of the shader is in 
-         *   \p source2). 
+         * \details One can split the source of the shader into
+         *  different strings, one of them being used for library
+         *  functions common to different shaders.
          *  It may seem more natural to generate a shader object with library 
          *  functions, but OpenGL documentation does not recommend
          *  to do so (and it did not seem to work). Errors are detected and 
          *  displayed to std::err.
          * \param[in] target the OpenGL shader target ()
-         * \param[in] source1 the source of the shader (ASCII string)
-         * \param[in] source2 an optional additional source string or 0 
-         *  if unused
+         * \param[in] sources an array of pointer to ASCII strings that contain 
+         *    the source of the shader 
+         * \param[in] nb_sources number of strings in \p sources
          * \return the OpenGL opaque Id of the created shader object
          * \throw GLSLCompileError
          */
         GLuint GEOGRAM_GFX_API compile_shader(
-            GLenum target, const char* source1, const char* source2=0
+            GLenum target, const char** sources, index_t nb_sources
         );
 
+        /**
+         * \brief Compiles a shader for a specific target.
+         * \param[in] target the OpenGL shader target ()
+         * \param[in] source the source of the shader as an ASCII string
+         * \return the OpenGL opaque Id of the created shader object
+         * \throw GLSLCompileError
+         */
+        inline GLuint GEOGRAM_GFX_API compile_shader(
+            GLenum target, const char* source
+        ) {
+            return compile_shader(target, &source, 1);
+        }
 
+
+        /**
+         * \brief Compiles a shader for a specific target.
+         * \details One can split the source of the shader into
+         *  different strings, one of them being used for library
+         *  functions common to different shaders.
+         *  It may seem more natural to generate a shader object with library 
+         *  functions, but OpenGL documentation does not recommend
+         *  to do so (and it did not seem to work). Errors are detected and 
+         *  displayed to std::err.
+         * \param[in] target the OpenGL shader target ()
+         * \param[in] source1, source2 ASCII strings that will be 
+         *  concatened to form the source of the shader.
+         * \return the OpenGL opaque Id of the created shader object
+         * \throw GLSLCompileError
+         */
+        GLuint GEOGRAM_GFX_API compile_shader(
+            GLenum target, const char* source1, const char* source2
+        );
+
+        /**
+         * \brief Compiles a shader for a specific target.
+         * \details One can split the source of the shader into
+         *  different strings, one of them being used for library
+         *  functions common to different shaders.
+         *  It may seem more natural to generate a shader object with library 
+         *  functions, but OpenGL documentation does not recommend
+         *  to do so (and it did not seem to work). Errors are detected and 
+         *  displayed to std::err.
+         * \param[in] target the OpenGL shader target ()
+         * \param[in] source1, source2, source3 ASCII strings that will be 
+         *  concatened to form the source of the shader.
+         * \return the OpenGL opaque Id of the created shader object
+         * \throw GLSLCompileError
+         */
+        GLuint GEOGRAM_GFX_API compile_shader(
+            GLenum target,
+            const char* source1, const char* source2, const char* source3
+        );
+        
         /**
          * \brief Creates a program from a zero-terminated list of shaders
          * \details Errors are detected and displayed to the Logger.
