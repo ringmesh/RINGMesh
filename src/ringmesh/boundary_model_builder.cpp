@@ -1116,25 +1116,39 @@ namespace RINGMesh {
             }
         }
          
-#ifdef RINGMESH_DEBUG
-        std::cout << "Model " << model_.name() << " has " << std::endl
-            << std::setw( 10 ) << std::left << model_.nb_vertices() << " vertices "
-            << std::endl << std::setw( 10 ) << std::left << model_.nb_facets()
-            << " facets " << std::endl << std::setw( 10 ) << std::left
-            << model_.nb_regions() << " regions " << std::endl << std::setw( 10 )
-            << std::left << model_.nb_surfaces() << " surfaces " << std::endl
-            << std::setw( 10 ) << std::left << model_.nb_lines() << " lines "
-            << std::endl << std::setw( 10 ) << std::left << model_.nb_corners()
-            << " corners " << std::endl << std::endl ;
-#endif
-        std::cout << std::endl ;
+        GEO::Logger::out( "BoundaryModel" )
+            << "Model " << model_.name() << " has " << std::endl
+            << std::setw( 10 ) << std::left << model_.nb_vertices()
+            << " vertices "<< std::endl
+            << std::setw( 10 ) << std::left << model_.nb_facets()
+            << " facets " << std::endl << std::endl
+            << std::setw( 10 ) << std::left << model_.nb_regions()
+            << " regions " << std::endl
+            << std::setw( 10 ) << std::left << model_.nb_surfaces()
+            << " surfaces " << std::endl
+            << std::setw( 10 ) << std::left << model_.nb_lines()
+            << " lines " << std::endl
+            << std::setw( 10 ) << std::left << model_.nb_corners()
+            << " corners " << std::endl << std::endl
+            << std::setw( 10 ) << std::left << model_.nb_contacts()
+            << " contacts " << std::endl
+            << std::setw( 10 ) << std::left << model_.nb_interfaces()
+            << " interfaces " << std::endl 
+            << std::setw( 10 ) << std::left << model_.nb_layers()
+            << " layers " << std::endl << std::endl ;
 
         // What do we do if the model is not valid ?
         if( model_.check_model_validity() ) {            
-            std::cout << "Model is valid " << std::endl ;
+            GEO::Logger::out("BoundaryModel") << "Model " 
+                << model_.name() 
+                << " is valid " 
+                << std::endl ;
         } 
         else {
-            std::cout << " INVALID Boundary Model " << std::endl ;
+            GEO::Logger::out( "BoundaryModel" ) << "Model "
+                << model_.name()
+                << " is invalid "
+                << std::endl ;
         }
 
         return true ;

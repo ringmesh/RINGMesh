@@ -154,6 +154,8 @@ namespace RINGMesh {
             GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
                 << std::endl ;
 
+            model.set_debug_directory( GEO::FileSystem::dir_name( filename ) ) ;
+
             BoundaryModelIOHandler_var handler = BoundaryModelIOHandler::get_handler(
                 filename ) ;
             if( handler && handler->load( filename, model ) ) {
