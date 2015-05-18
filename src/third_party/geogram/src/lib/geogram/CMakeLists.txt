@@ -10,15 +10,15 @@ aux_source_directories(SOURCES "Source Files\\points"    points)
 aux_source_directories(SOURCES "Source Files\\api"       api)
 aux_source_directories(SOURCES "Source Files\\NL"        NL)
 
+# Tetgen is currently included by default.
+set(GEOGRAM_WITH_TETGEN TRUE)
 if(GEOGRAM_WITH_TETGEN)
-    add_definitions(-DGEOGRAM_WITH_TETGEN)
+   add_definitions(-DGEOGRAM_WITH_TETGEN)
 endif()
 
-# For now, Parallel Delaunay is only implemented for Unix (depends on
-# some pthread functions)
-#if(UNIX)
+# Parallel Delaunay now works on both Windows and Unix !
 add_definitions(-DGEOGRAM_WITH_PDEL)
-#endif()
+
 
 # Copy the default version info to the build directory
 configure_file(basic/version.h.in version.h @ONLY)

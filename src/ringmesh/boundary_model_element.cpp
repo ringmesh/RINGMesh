@@ -45,11 +45,130 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/geometry_nd.h>
+#include <geogram/mesh/triangle_intersection.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
+#include <geogram/mesh/mesh_topology.h>
+#include <geogram/mesh/mesh_intersection.h>
+
 
 #include <set>
 #include <stack>
 #include <fstream>
+
+
+namespace {
+    /* Definition of functions that we do not want exported in the interface */
+    using namespace RINGMesh ;
+
+    /*!
+    * @brief Checks that the model vertex indices of @param E 
+    *       are in a valid range
+    */
+    bool check_range_model_vertex_ids( const BoundaryModelMeshElement& E )
+    {
+        /// Check that the stored model vertex indices are in a valid range
+        for( index_t i = 0; i < E.nb_vertices(); ++i ) {
+            if( E.model_vertex_id( i ) == NO_ID
+                && E.model_vertex_id( i ) >= E.model().nb_vertices() ) {
+                return false ;
+            }
+        }
+        return true ;
+    }
+
+    /*!
+    * @brief Detects duplicated vertices in a BMME
+    * @details Uses model indices.
+    *
+    * @param E The BoundaryModel element to check
+    * @param duplicated For each vertex if it is duplicated refers to the
+    *    model vertex id for the point in the surface otherwise NO_ID is stored.
+    *    The points that are duplicated must be in the boundary
+    *    of the element to have a valid element.
+    *
+    */
+    index_t detect_duplicated_vertices(
+        const BoundaryModelMeshElement& E,
+        std::vector< index_t >& duplicated )
+    {
+        const GEO::Mesh& M = E.mesh() ;
+        duplicated.resize( M.vertices.nb(), NO_ID ) ;
+
+        for( index_t v = 0; v < M.vertices.nb(); ++v ) {
+            if( duplicated[ v ] == NO_ID ) {
+                index_t gv = E.model_vertex_id( v ) ;
+
+                const std::vector< BoundaryModelVertices::VertexInBME >&
+                    colocated = E.model().vertices.bme_vertices( gv ) ;
+                if( colocated.size() > 0 ) {
+                    int count = 0 ;
+                    for( index_t i = 0; i < colocated.size(); ++i ) {
+                        if( colocated[ i ].bme_id == E.bme_id() ) {
+                            count++ ;
+                        }
+                    }
+                    ringmesh_assert( count > 0 ) ;
+                    if( count > 1 ) {
+                        duplicated[ v ] = gv ;
+                    }
+                }
+            }
+        }
+        return duplicated.size() - std::count(
+            duplicated.begin(), duplicated.end(), NO_ID ) ;
+    }
+
+    /*!
+    * @brief Count the number of times each vertex is in an edge or facet
+    *
+    * @param[in] M The mesh 
+    * @param[out] nb Resized to the number of vertices of the mesh.
+    *      Number of times one vertex appear in an edge or facet of the mesh.
+    */
+    void count_vertex_occurences(
+        const GEO::Mesh& M,
+        std::vector< index_t >& nb ) 
+    {        
+        nb.resize( M.vertices.nb(), 0 ) ;
+        for( index_t e = 0; e < M.edges.nb(); ++e ) {
+            ++nb[ M.edges.vertex( e, 0 ) ] ;
+            ++nb[ M.edges.vertex( e, 1 ) ] ;
+        }
+        for( index_t f = 0; f < M.facets.nb(); ++f ) {
+            for( index_t co = M.facets.corners_begin( f ) ;
+                 co < M.facets.corners_end( f ); ++co
+                 ) {
+                ++nb[ M.facet_corners.vertex( co ) ] ;
+            }
+        }
+    }
+    
+    /*!
+     * @brief Returns true if the surface facet is incident twice to the same vertex
+     */
+    bool facet_is_degenerate( const Surface& S, index_t f )
+    {
+        std::vector< index_t > corners( S.nb_vertices_in_facet( f ) ) ;
+        std::vector< index_t > corners_global( S.nb_vertices_in_facet( f ) ) ;
+        int v = 0 ;
+        for( index_t c = S.facet_begin( f ) ; c < S.facet_end( f ); ++c ) {
+            corners[ v ] = c ;
+            corners_global[ v ] = S.model_vertex_id( f, v ) ;
+            v++ ;
+        }
+        std::sort( corners.begin(), corners.end() ) ;
+        std::sort( corners_global.begin(), corners_global.end() ) ;
+        return std::unique( corners.begin(), corners.end() ) != corners.end() ||
+            std::unique( corners_global.begin(), corners_global.end() ) != corners_global.end() ;
+
+        return false ;
+    }
+
+}
+
+
 
 namespace RINGMesh {
     /*!
@@ -58,52 +177,80 @@ namespace RINGMesh {
      * @param[in] in Name of the feature
      * @return The geological feature index
      *
-     * \todo Keep all the information ( add new GEOL_FEATURE) instead of simplfying it.
+     * \todo Keep all the information (add new GEOL_FEATURE) instead of simplifying it.
      */
     BoundaryModelElement::GEOL_FEATURE BoundaryModelElement::
-    determine_geological_type( const std::string& in )
+        determine_geological_type( const std::string& in )
     {
-        if( in == "" ) {return NO_GEOL ;}
-        if( in == "reverse_fault" ) {return FAULT ;}
-        if( in == "normal_fault" ) {return FAULT ;}
-        if( in == "fault" ) {return FAULT ;}
-        if( in == "top" ) {return STRATI ;}
-        if( in == "none" ) {return NO_GEOL ;}
-        if( in == "unconformity" ) {return STRATI ;}
-        if( in == "boundary" ) {return VOI ;}
+        if( in == "" ) {
+            return NO_GEOL ;
+        }
+        if( in == "reverse_fault" ) {
+            return FAULT ;
+        }
+        if( in == "normal_fault" ) {
+            return FAULT ;
+        }
+        if( in == "fault" ) {
+            return FAULT ;
+        }
+        if( in == "top" ) {
+            return STRATI ;
+        }
+        if( in == "none" ) {
+            return NO_GEOL ;
+        }
+        if( in == "unconformity" ) {
+            return STRATI ;
+        }
+        if( in == "boundary" ) {
+            return VOI ;
+        }
 
         std::cout << "ERROR" << "Unexpected type in the model file " << in
-                  << std::endl ;
+            << std::endl ;
         return NO_GEOL ;
     }
 
 
     /*!
-     * @brief Compute an intersection type
+     * @brief Compute an intersection type. Really useful ?
      *
-     * @param[in] types Type that intersect
+     * @param[in] types TYPEs that intersect
      * @return Intersection type
      */
     BoundaryModelElement::GEOL_FEATURE BoundaryModelElement::determine_type(
         const std::vector< GEOL_FEATURE >& types )
     {
-        if( types.size() == 0 ) {return NO_GEOL ;}
+        if( types.size() == 0 ) {
+            return NO_GEOL ;
+        }
 
-        // Sort and remove duplicates form the in types
+        // Sort and remove duplicates from the in types
         std::vector< GEOL_FEATURE > in = types ;
         std::sort( in.begin(), in.end() ) ;
-        index_t new_size = narrow_cast< index_t >(std::unique( in.begin(), in.end() ) - in.begin()) ;
+        index_t new_size = narrow_cast<index_t>( std::unique( in.begin(), in.end() ) - in.begin() ) ;
         in.resize( new_size ) ;
 
-        if( in.size() == 1 ) {return in[ 0 ] ;}
+        if( in.size() == 1 ) {
+            return in[ 0 ] ;
+        }
 
         if( in.size() == 2 ) {
-            if( in[ 0 ] == NO_GEOL ) {return NO_GEOL ;}
+            if( in[ 0 ] == NO_GEOL ) {
+                return NO_GEOL ;
+            }
             if( in[ 0 ] == STRATI ) {
-                if( in[ 1 ] == FAULT ) {return STRATI_FAULT ;}
-                if( in[ 1 ] == VOI ) {return STRATI_VOI ;}
+                if( in[ 1 ] == FAULT ) {
+                    return STRATI_FAULT ;
+                }
+                if( in[ 1 ] == VOI ) {
+                    return STRATI_VOI ;
+                }
             } else if( in[ 0 ] == FAULT ) {
-                if( in[ 1 ] == VOI ) {return FAULT_VOI ;}
+                if( in[ 1 ] == VOI ) {
+                    return FAULT_VOI ;
+                }
             }
 
             // Other cases ? for corners ? what is the vertex ?
@@ -116,14 +263,14 @@ namespace RINGMesh {
     std::string BoundaryModelElement::type_name( BoundaryModelElement::TYPE t )
     {
         switch( t ) {
-             case CORNER    : return "CORNER" ;
-             case LINE      : return "LINE" ;
-             case SURFACE   : return "SURFACE" ;
-             case REGION    : return "REGION" ;
-             case CONTACT   : return "CONTACT" ;
-             case INTERFACE : return "INTERFACE" ;
-             case LAYER     : return "LAYER" ;
-             default        : return "NO_TYPE_NAME" ;
+            case CORNER: return "CORNER" ;
+            case LINE: return "LINE" ;
+            case SURFACE: return "SURFACE" ;
+            case REGION: return "REGION" ;
+            case CONTACT: return "CONTACT" ;
+            case INTERFACE: return "INTERFACE" ;
+            case LAYER: return "LAYER" ;
+            default: return "NO_TYPE_NAME" ;
         }
     }
 
@@ -132,18 +279,18 @@ namespace RINGMesh {
         BoundaryModelElement::GEOL_FEATURE t )
     {
         switch( t ) {
-             case STRATI  : return "top" ;
-             case FAULT   : return "fault" ;
-             case VOI     : return "boundary" ;
-             case NO_GEOL : return "none" ;
-             default      : return "none" ;
-                 break ;
+            case STRATI: return "top" ;
+            case FAULT: return "fault" ;
+            case VOI: return "boundary" ;
+            case NO_GEOL: return "none" ;
+            default: return "none" ;
+                break ;
         }
     }
 
 
     /*!
-     * @brief Define the type of the parent of an element of type @param t
+     * @brief Defines the type of the parent of an element of type @param t
      *        If no parent is allowed returns NO_TYPE
      * @details The elements that can have a parent are LINE, SURFACE, and REGION
      */
@@ -151,19 +298,19 @@ namespace RINGMesh {
         BoundaryModelElement::TYPE t )
     {
         switch( t ) {
-             case LINE      : return CONTACT ;
-             case SURFACE   : return INTERFACE ;
-             case REGION    : return LAYER ;
-             default :
+            case LINE: return CONTACT ;
+            case SURFACE: return INTERFACE ;
+            case REGION: return LAYER ;
+            default:
 
-                 // The others have no parent
-                 return NO_TYPE ;
+                // The others have no parent
+                return NO_TYPE ;
         }
     }
 
 
     /*!
-     * @brief Define the type of a child of an element of type @param t
+     * @brief Defines the type of a child of an element of type @param t
      *        If no child is allowed returns NO_TYPE
      * @details The elements that can have a parent are CONTACT, INTERFACE, and LAYER
      */
@@ -171,17 +318,17 @@ namespace RINGMesh {
         BoundaryModelElement::TYPE t )
     {
         switch( t ) {
-             case CONTACT   : return LINE  ;
-             case INTERFACE : return SURFACE ;
-             case LAYER     : return REGION ;
-             default :
-                 return NO_TYPE ;
+            case CONTACT: return LINE  ;
+            case INTERFACE: return SURFACE ;
+            case LAYER: return REGION ;
+            default:
+                return NO_TYPE ;
         }
     }
 
 
     /*!
-     * @brief Define the type of an element on the boundary of an element of type @param t
+     * @brief Defines the type of an element on the boundary of an element of type @param t
      *        If no boundary is allowed returns NO_TYPE
      * @details The elements that can have a boundary are LINE, SURFACE, and REGION
      */
@@ -189,11 +336,11 @@ namespace RINGMesh {
         BoundaryModelElement::TYPE t )
     {
         switch( t ) {
-             case LINE      : return CORNER ;
-             case SURFACE   : return LINE ;
-             case REGION    : return SURFACE ;
-             default :
-                 return NO_TYPE ;
+            case LINE: return CORNER ;
+            case SURFACE: return LINE ;
+            case REGION: return SURFACE ;
+            default:
+                return NO_TYPE ;
         }
     }
 
@@ -201,35 +348,35 @@ namespace RINGMesh {
     /*!
      * @brief Define the type of an element into which boundary an element of type @param t can be
      *        If no in_boundary is allowed returns NO_TYPE
-     * @details The elements that can be in the boudanry of another are CORNER, LINE, and SURFACE
+     * @details The elements that can be in the boundary of another are CORNER, LINE, and SURFACE
      */
     BoundaryModelElement::TYPE BoundaryModelElement::in_boundary_type(
         BoundaryModelElement::TYPE t )
     {
         switch( t ) {
-             case CORNER    : return LINE ;
-             case LINE      : return SURFACE ;
-             case SURFACE   : return REGION ;
-             default :
-                 return NO_TYPE ;
+            case CORNER: return LINE ;
+            case LINE: return SURFACE ;
+            case SURFACE: return REGION ;
+            default:
+                return NO_TYPE ;
         }
     }
 
 
     /*!
-     * @brief Dimension 0, 1, 2, or 3 of anelement of type @param t
+     * @brief Dimension 0, 1, 2, or 3 of an element of type @param t
      */
     index_t BoundaryModelElement::dimension( BoundaryModelElement::TYPE t )
     {
         switch( t ) {
-             case CORNER    : return 0 ;
-             case LINE      : return 1 ;
-             case SURFACE   : return 2 ;
-             case REGION    : return 3 ;
-             case CONTACT   : return 1 ;
-             case INTERFACE : return 2 ;
-             case LAYER     : return 3 ;
-             default        : return NO_ID ;
+            case CORNER: return 0 ;
+            case LINE: return 1 ;
+            case SURFACE: return 2 ;
+            case REGION: return 3 ;
+            case CONTACT: return 1 ;
+            case INTERFACE: return 2 ;
+            case LAYER: return 3 ;
+            default: return NO_ID ;
         }
     }
 
@@ -239,7 +386,7 @@ namespace RINGMesh {
         if( model_ != rhs.model_ ) {
             return false ;
         }
-        if( id_ != rhs.id_) {
+        if( id_ != rhs.id_ ) {
             return false ;
         }
         if( name_ != rhs.name_ ) {
@@ -250,21 +397,21 @@ namespace RINGMesh {
         }
         if( nb_boundaries() != rhs.nb_boundaries() ) {
             return false ;
-        }        
+        }
         if( !std::equal( boundaries_.begin(), boundaries_.end(),
             rhs.boundaries_.begin() ) ) {
-                return false ;
+            return false ;
         }
         if( !std::equal( sides_.begin(), sides_.end(),
-            rhs.sides_.begin() ) ) { 
-                return false ;
+            rhs.sides_.begin() ) ) {
+            return false ;
         }
         if( nb_in_boundary() != rhs.nb_in_boundary() ) {
             return false ;
         }
         if( !std::equal( in_boundary_.begin(), in_boundary_.end(),
-                rhs.in_boundary_.begin() ) ) { 
-                    return false ;
+            rhs.in_boundary_.begin() ) ) {
+            return false ;
         }
         if( parent_ != rhs.parent_ ) {
             return false ;
@@ -273,7 +420,7 @@ namespace RINGMesh {
             return false ;
         }
         if( !std::equal( children_.begin(), children_.end(),
-            rhs.children_.begin() ) ) { 
+            rhs.children_.begin() ) ) {
             return false ;
         }
         return true ;
@@ -301,6 +448,7 @@ namespace RINGMesh {
         ///    and that reverse information is stored by the corresponding
         ///    elements
         TYPE T = bme_id().type ;
+
         // Boundaries
         if( boundary_allowed( T ) ) {
             if( T == REGION ) {
@@ -310,13 +458,12 @@ namespace RINGMesh {
                 if( nb_boundaries() != sides_.size() ) {
                     return false ;
                 }
-            }            
-            // A Line must have two corners, pointing to the same Corner
-            // when the Line is closed
+            }
+            // A Line must have 2 corners - they are identical if the Line is closed
             if( T == LINE && nb_boundaries() != 2 ) {
                 return false ;
             }
-            // No requirement on Surface - one may have no boundary - bubble
+            // No requirement on Surface - it may have no boundary - bubble
 
             // All elements in the boundary must have this in their
             // in_boundary vector
@@ -375,7 +522,7 @@ namespace RINGMesh {
                 bool found = false ;
                 index_t j = 0 ;
                 while( !found && j < E.nb_children() ) {
-                    if( E.child_id(j) == bme_id() ) {
+                    if( E.child_id( j ) == bme_id() ) {
                         found = true ;
                     }
                     j++ ;
@@ -418,7 +565,7 @@ namespace RINGMesh {
     /*!
      *
      * @param[in] x Index of the boundary element
-     * @return Assert that is exits and return the element on the boundary
+     * @return Asserts that is exists and returns the element on the boundary
      */
     const BoundaryModelElement& BoundaryModelElement::boundary( index_t x ) const
     {
@@ -430,7 +577,7 @@ namespace RINGMesh {
     /*!
      *
      * @param[in] x Index of the in_boundary element
-     * @return Assert that it exist and return the element in in_boundary.
+     * @return Asserts that it exists and returns the element in in_boundary.
      */
     const BoundaryModelElement& BoundaryModelElement::in_boundary( index_t x ) const
     {
@@ -442,7 +589,7 @@ namespace RINGMesh {
     /*!
      *
      * @param[in] x Index of the child
-     * @return Assert that the child exists and returns it.
+     * @return Asserts that the child exists and returns it.
      */
     const BoundaryModelElement& BoundaryModelElement::child( index_t x ) const
     {
@@ -452,7 +599,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Copy all attribute except model_ from @param rhs to this element
+     * @brief Copy all attributes except model_ from @param rhs to this element
      * @param[in] rhs To copy from
      * @param[in] model Model to associate to this element
      */
@@ -460,15 +607,15 @@ namespace RINGMesh {
         const BoundaryModelElement& rhs,
         BoundaryModel& model )
     {
-        model_        = &model ;
-        id_           = rhs.id_ ;
-        name_         = rhs.name_ ;
+        model_ = &model ;
+        id_ = rhs.id_ ;
+        name_ = rhs.name_ ;
         geol_feature_ = rhs.geol_feature_ ;
-        boundaries_   = rhs.boundaries_ ;
-        sides_        = rhs.sides_ ;
-        in_boundary_  = rhs.in_boundary_ ;
-        parent_       = rhs.parent_ ;
-        children_     = rhs.children_ ;
+        boundaries_ = rhs.boundaries_ ;
+        sides_ = rhs.sides_ ;
+        in_boundary_ = rhs.in_boundary_ ;
+        parent_ = rhs.parent_ ;
+        children_ = rhs.children_ ;
     }
 
 
@@ -476,6 +623,8 @@ namespace RINGMesh {
      * @brief Checks if this element or one of the element containing it
      * determines the model Volume Of Interest
      * @details This is known with the type of an element
+     *
+     * @todo To modify ? and test if the element ia around the universe region?
      */
     bool BoundaryModelElement::is_on_voi() const
     {
@@ -488,39 +637,52 @@ namespace RINGMesh {
             }
         } else if( geol_feature_ == VOI        ||
                    geol_feature_ == STRATI_VOI ||
-                   geol_feature_ == FAULT_VOI )
-        {
+                   geol_feature_ == FAULT_VOI ) {
             return true ;
         }
         return false ;
     }
     
+    /*!
+    * @brief Check if the element is twice on the boundary of the other element
+    * @details That can be Surface stopping in a Region, or Line stopping in a Surface.
+    * @param[in] rhs The element to test
+    */
+    bool BoundaryModelElement::is_inside_border( const BoundaryModelElement& rhs ) const
+    {
+        // Find out if this surface is twice in the in_boundary vector
+        return std::count( in_boundary_.begin(), in_boundary_.end(),
+                           rhs.bme_id() ) > 1 ;
+    }
+
+
+
     /*********************************************************************/
 
     BoundaryModelMeshElement::~BoundaryModelMeshElement()
     {
         unbind_attributes() ;
 #ifdef RINGMESH_DEBUG
-            Utils::print_bounded_attributes( mesh_ ) ;
+        Utils::print_bounded_attributes( mesh_ ) ;
 #endif
     }
 
     /*!
-     * @brief Returns the index of the first point that correspond to a model vertex
+     * @brief Returns the index of the first point corresponding to the input model index
      * @details Uses the attribute on the BoundaryModelVertices that stores the
-     *  corresponding points in BME. Returns NO_ID if no matching point found.
+     *  corresponding points in BME. Returns NO_ID if no matching point is found.
      *
      * @param model_vertex_id Index of a vertex in BoundaryModelVertices
      */
     index_t BoundaryModelMeshElement::local_id(
-        index_t model_vertex_id ) const 
-    {   
+        index_t model_vertex_id ) const
+    {
         typedef BoundaryModelVertices BMV ;
         const std::vector< BMV::VertexInBME >& bme_vertices =
             model_->vertices.bme_vertices( model_vertex_id ) ;
-        
+
         for( index_t i = 0; i < bme_vertices.size(); i++ ) {
-            const BMV::VertexInBME& info = bme_vertices[i] ;
+            const BMV::VertexInBME& info = bme_vertices[ i ] ;
             if( info.bme_id == bme_id() ) {
                 return info.v_id ;
             }
@@ -529,14 +691,14 @@ namespace RINGMesh {
     }
 
     /*!
-     * Binds member attributes
+     * @brief Binds attributes stored by the BME on the Mesh
      */
     void BoundaryModelMeshElement::bind_attributes()
     {
         model_vertex_id_.bind( mesh_.vertices.attributes(), model_vertex_id_att_name ) ;
     }
     /*!
-     * Unbinds member attributes
+     * @brief Unbinds attributes stored by the BME on the Mesh
      */
     void BoundaryModelMeshElement::unbind_attributes()
     {
@@ -544,21 +706,21 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the index of the matching point in the BoundaryModel
+     * @brief Sets the index of the matching point in the BoundaryModel
      *
      * @param[in] v Vertex index
      * @param[in] model_id Model vertex index in BoundaryModelVertices
      */
-    void BoundaryModelMeshElement::set_model_vertex_id( 
-        index_t vertex_id, 
-        index_t model_vertex_id ) 
+    void BoundaryModelMeshElement::set_model_vertex_id(
+        index_t vertex_id,
+        index_t model_vertex_id )
     {
         ringmesh_assert( vertex_id < nb_vertices() ) ;
-        model_vertex_id_[vertex_id] = model_vertex_id ;
+        model_vertex_id_[ vertex_id ] = model_vertex_id ;
     }
 
     /*!
-     * @brief Set the geometrical position of a vertex
+     * @brief Sets the geometrical position of a vertex
      *
      * @param index Index of the vertex to modify
      * @param point New coordinates
@@ -567,7 +729,7 @@ namespace RINGMesh {
      *               are not.
      *
      * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
-     *          I removed on purpose the default value parameter for update (Jeanne)
+     *          I removed on purpose the default value parameter (Jeanne).
      */
     void BoundaryModelMeshElement::set_vertex(
         index_t index,
@@ -577,21 +739,22 @@ namespace RINGMesh {
         ringmesh_debug_assert( index < nb_vertices() ) ;
         if( update )
             model_->vertices.update_point(
-                 model_->vertices.unique_vertex_id( 
-                    bme_id(), index ), point ) ;
+            model_->vertices.unique_vertex_id(
+            bme_id(), index ), point ) ;
         else
             mesh_.vertices.point( index ) = point ;
     }
 
     /*!
-     * @brief Get the vertex in the model from a vertex index in the Surface
+     * @brief Vertex index in model from local index
      * @param[in] p Vertex index
      * @return The vertex index in the model
      */
-    index_t BoundaryModelMeshElement::model_vertex_id( index_t p ) const {
+    index_t BoundaryModelMeshElement::model_vertex_id( index_t p ) const
+    {
         ringmesh_assert( p < nb_vertices() ) ;
-        ringmesh_debug_assert( model_vertex_id_[p] != NO_ID ) ;
-        return model_vertex_id_[p] ;
+        ringmesh_debug_assert( model_vertex_id_[ p ] != NO_ID ) ;
+        return model_vertex_id_[ p ] ;
     }
 
     /*!
@@ -614,8 +777,8 @@ namespace RINGMesh {
      * @param model_vertex Index in BoundaryModelVertices of the vertex giving
      *                     the new position
      */
-    void BoundaryModelMeshElement::set_vertex( 
-        index_t v, index_t model_vertex ) 
+    void BoundaryModelMeshElement::set_vertex(
+        index_t v, index_t model_vertex )
     {
         set_vertex( v, model_->vertices.unique_vertex( model_vertex ), false ) ;
         set_model_vertex_id( v, model_vertex ) ;
@@ -624,23 +787,23 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Add vertices to the mesh
+     * @brief Adds vertices to the mesh
      * @details No update of the model vertices is done
      *
      * @param points Geometric positions of the vertices to add
      * @param clear_mesh If true the mesh if cleared, keeping its attributes
      */
-    void BoundaryModelMeshElement::set_vertices( 
+    void BoundaryModelMeshElement::set_vertices(
         const std::vector< vec3 >& points,
-        bool clear ) 
+        bool clear )
     {
         // Clear the mesh, but keep the attributes and the space
-        if( clear  ){
-            mesh_.clear( true, true ) ;        
+        if( clear ) {
+            mesh_.clear( true, true ) ;
         }
         mesh_.vertices.create_vertices( points.size() ) ;
-        for( index_t v = 0; v < points.size(); v++ ) {            
-            set_vertex( v, points[v], false ) ;
+        for( index_t v = 0; v < points.size(); v++ ) {
+            set_vertex( v, points[ v ], false ) ;
         }
     }
 
@@ -651,32 +814,35 @@ namespace RINGMesh {
      * @param points Geometric positions of the vertices to add
      * @param clear_mesh If true the mesh if cleared, keeping its attributes
      */
-    void BoundaryModelMeshElement::set_vertices( 
+    void BoundaryModelMeshElement::set_vertices(
         const std::vector< index_t >& model_vertices,
-        bool clear ) 
+        bool clear )
     {
         // Clear the mesh, but keep the attributes and the space
-        if( clear  ){
-            mesh_.clear( true, true ) ;        
+        if( clear ) {
+            mesh_.clear( true, true ) ;
         }
         mesh_.vertices.create_vertices( model_vertices.size() ) ;
         for( index_t v = 0; v < model_vertices.size(); v++ ) {
-            set_vertex( v, model_vertices[v] ) ;
+            set_vertex( v, model_vertices[ v ] ) ;
         }
     }
 
 
-    bool BoundaryModelMeshElement::are_model_vertices_valid() const
+    /**************************************************************/
+
+    /*!
+    * @brief Check that the Corner mesh is a unique valid point
+    */
+    bool Corner::is_mesh_valid() const 
     {
-        /// Check that the stored model vertex indices are in a valid range
-        for( index_t i = 0; i < nb_vertices(); ++i ) {
-            if( model_vertex_id( i ) == NO_ID
-                && model_vertex_id( i ) >= model().nb_vertices() ) {
-                return false ;
-            }
-        }
-        return true ;
-    }
+         return mesh_.vertices.nb() == 1 &&
+             mesh_.edges.nb()    == 0 &&
+             mesh_.facets.nb()   == 0 &&
+             mesh_.cells.nb()    == 0 &&
+             mesh_.vertices.point( 0 ) != vec3();
+     }
+    
 
     /***************************************************************/
 
@@ -693,9 +859,21 @@ namespace RINGMesh {
     {
     }
 
+
+    /*!
+     * @brief Check that the mesh of the Line is valid
+     * @details Check that 
+     *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - 
+     *  - no facets and no cells.
+     *  - global indices of vertices in the model are in a valid range 
+     *  - each vertex is in 2 edges except extremities that are in 1 edge
+     *  - no vertex is duplicated, except the extremity if the Line is closed
+     * 
+     * @todo Write meaninful message - Save objects to allow debugging
+     */
     bool Line::is_mesh_valid() const
     {
-        /// 1. Check that the GEO::Mesh has the expected elements
+        // Check that the GEO::Mesh has the expected elements
         if( mesh_.vertices.nb() < 2 ) {
             return false ;
         }
@@ -705,30 +883,81 @@ namespace RINGMesh {
         if( mesh_.facets.nb() != 0 ) {
             return false ;
         }
-
         if( mesh_.cells.nb() != 0 ) {
             return false ;
         }
 
-        /// 2. Check the validity of the edges 
+        // Model indices must be valid
+        if( !check_range_model_vertex_ids( *this ) ) {
+            return false ;
+        }
+        // Count the number of edges in which each vertex is
+        std::vector< index_t > nb ;
+        count_vertex_occurences( mesh(), nb ) ;
+        index_t nb0 = 0 ;
+        index_t nb1 = 0 ;
+        index_t nb2 = 0 ;
+        for( index_t i = 0; i < nb.size(); ++i ) {
+            if( nb[ i ] == 0 ) ++nb0 ;
+            else if( nb[ i ] == 1 ) ++nb1 ;
+            else if( nb[ i ] == 2 ) ++nb2 ;
+        }
 
-        // No isolated vertices
-        // No zero edge length
-        // No duplicated edge
-        // No non-manifold vertex - each point is in max 2 edges
-        // No self-intersection - let's say there are none.
-        // One connected component
+        // Vertices at extremitites must be in only one edge
+        if( nb.front() != 1 || nb.back() != 1 ) {
+            return false ;
+        }               
+        // No isolated vertices are allowed
+        if( nb0 > 0 ) {
+            return false ;
+        }
+        // Only the two extremities are in only 1 edge 
+        // One connected component condition
+        if( nb1 != 2 ) {
+            return false ;
+        }
+        // All the others must be in 2 edges and 2 edges only
+        // Manifold condition
+        if( nb2 != nb.size()-2 ) {
+            return false ;
+        }
+        
+        std::vector< index_t > duplicated ;
+        // Only the extremity vertex can be duplicated
+        index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
+        if( nb_duplicated > 2 ) {
+            return false ;
+        }
+        // If it is, the line is closed
+        else if( nb_duplicated == 2 ) {
+            if( !is_closed() ) {
+                return false ;
+            }
+            if( duplicated.front() == NO_ID ) {
+                return false ;
+            }
+            if( duplicated.front() != duplicated.back() ) {
+                return false ;
+            }
+        }
+        else {
+            ringmesh_debug_assert( nb_duplicated == 0 ) ;
+        }
+
+        // No zero edge length - already ruled out with the duplicated vertex test (JP)
+        // No self-intersection - let's say there are none (JP)
+        // No duplicated edge - probably ruled out with the duplicated vertex test (JP)
 
         return true ; 
     }
 
 
     /*!
-     * @brief Add vertices to the mesh and build the edges
+     * @brief Adds vertices to the mesh and builds the edges
      * @details No update of the model vertices is done
      *
      * @param points Geometric positions of the vertices to add
-     * @param clear_mesh If true the mesh if cleared, keeping its attributes
+     * @param clear_mesh If true the mesh is cleared keeping its attributes
      */
     void Line::set_vertices(
         const std::vector< vec3 >& points,
@@ -741,11 +970,11 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Add vertices to the mesh and build the edges
+     * @brief Adds vertices to the mesh and builds the edges
      * @details See set_vertex(index_t, index_t)
      *
      * @param model_vertices Indices in the model of the points to add
-     * @param clear_mesh If true the mesh if cleared, keeping its attributes
+     * @param clear_mesh If true the mesh is cleared keeping its attributes
      */
     void Line::set_vertices(
         const std::vector< index_t >& model_vertices,
@@ -755,20 +984,7 @@ namespace RINGMesh {
         for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
             mesh_.edges.create_edge( e, e + 1 ) ;
         }
-    }
-
-    /*!
-     * @brief Check if the Line is twice on the boundary of a surface
-     *
-     * @param[in] surface The surface to test
-     */
-    bool Line::is_inside_border( const BoundaryModelElement& surface ) const
-    {
-        // Find out if this surface is twice in the in_boundary vector
-        return std::count( in_boundary_.begin(), in_boundary_.end(),
-            surface.bme_id() ) > 1 ;
-    }
-
+    }   
 
     /*!
      *
@@ -807,7 +1023,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Returns true if the Line has exaclty the given vertices
+     * @brief Returns true if the Line has exactly the given vertices
      *
      * @param[in] rhs_vertices Vertices to compare to
      */
@@ -839,18 +1055,40 @@ namespace RINGMesh {
     }
 
 
-    /***********************************************************************/
-
+    /********************************************************************/
 
     Surface::~Surface()
     {
     }
 
     
+    /*!
+     * @brief Check that the mesh of the Surface is valid
+     * @details Check that
+     *  - the GEO::Mesh has more than 2 vertices, at least 1 facet, no cells.
+     *  - global indices of vertices in the model are in a valid range
+     *  - duplicated vertices are on a boundary Line ending in the Surface 
+     *  - no degenerate facet 
+     *  - no duplicated facet 
+     *  - one connected component 
+     *
+     *  Some tests are not performed here but globally on the BoundaryModel
+     *  - intersection of facets 
+     *  - non-manifold edges 
+     *
+     *  Some tests are not performed
+     *  - non-manifold points
+     *  - surface orientability is assumed true
+     *  - planarity of polygonal facets 
+     *
+     * @todo Implement check duplicated vertices only on boundary line 
+     *       and duplicated facet test 
+     *       Write meaninful message - Save objects to allow debugging
+     */
     bool Surface::is_mesh_valid() const
     {
-        /// 1. Check that the GEO::Mesh has the expected elements
-        ///    at least 3 vertices and one facet.
+        // Check that the GEO::Mesh has the expected elements
+        // at least 3 vertices and one facet.
         if( mesh_.vertices.nb() < 3 ) {
             return false ;
         }
@@ -863,18 +1101,47 @@ namespace RINGMesh {
             return false ;
         }
 
-        /// 2. Check the validity of the facets 
-        
         // No isolated vertices
+        std::vector< index_t > nb ;
+        count_vertex_occurences( mesh(), nb ) ;
+        if( std::count( nb.begin(), nb.end(), 0 ) > 0 ) {
+            return false ;
+        }
+
+        std::vector< index_t > duplicated ;
+        index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
+
+        // There might be several duplicated points, but they must be in one of the
+        // boundary lines that are twice in the boundary of this surface
+
         // No zero area facet
+        // No facet incident to the same vertex check local and global indices
+        index_t nb_degenerate = 0 ;
+        for( index_t f = 0; f < mesh_.facets.nb(); f++ ) {
+            if( facet_is_degenerate( *this, f ) ) {
+                nb_degenerate++;
+            }
+        }
+        if( nb_degenerate != 0 ) {
+            std::cout << "Detected " << nb_degenerate << " degenerate facets in SURFACE "
+                << bme_id().index << std::endl ;
+            return false ;
+        }
+
+
         // No duplicated facet
-        // No self-intersection
-        // One connected component  GEO::mesh_nb_connected_components(const Mesh& M);
-        // No non-manifold edges
-        // No non-manifold points
-        // Orientable surface - No #$@!$ Moebius allowed        
-        // Boundary is a closed-manifold line - possibly several connected components
-        // Planar polygonal facets 
+        // Waiting for mesh validity checks in geogram 
+        /* GEO::vector< index_t > duplicated ;
+           GEO::detect_duplicated_facets( mesh_, vector<index_t>& remove_f ) ;
+           if( duplicated.size() > 0 ) {
+                return false ;
+           } 
+        */
+        
+        // One connected component  
+        if( GEO::mesh_nb_connected_components( mesh_ ) != 1 ) {
+            return false ;
+        }
 
         return true ; 
     }
