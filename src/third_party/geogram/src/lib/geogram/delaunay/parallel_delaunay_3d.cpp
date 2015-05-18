@@ -2388,7 +2388,7 @@ namespace GEO {
         vector<signed_index_t>& cell_to_cell_store_;
         vector<index_t>& cell_next_;
         vector<thread_index_t>& cell_thread_;
-
+        
         index_t first_free_;
         index_t nb_free_;
         bool memory_overflow_;
@@ -2572,6 +2572,8 @@ namespace GEO {
         }
 
         if(benchmark_mode_) {
+            Logger::out("PDEL")
+                << "Using " << levels_.size() << " levels" << std::endl;
             Logger::out("PDEL") 
                 << "Levels 0 - " << lvl-1 
                 << ": bootstraping with first levels in sequential mode"

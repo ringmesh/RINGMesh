@@ -423,7 +423,8 @@ namespace GEO {
          * \details Vertices neighbors (i.e. Delaunay 1-skeleton) can be
          *  stored for faster access (used for instance by
          *  RestrictedVoronoiDiagram).
-         * \return true if neighbors are stored, false otherwise.
+         * \retval true if neighbors are stored.
+         * \retval false otherwise.
          */
         bool stores_neighbors() const {
             return store_neighbors_;
@@ -438,8 +439,31 @@ namespace GEO {
          */
         void set_stores_neighbors(bool x) {
             store_neighbors_ = x;
+            if(store_neighbors_) {
+                set_stores_cicl(true);
+            }
         }
 
+        /**
+         * \brief Tests whether incident tetrahedra lists
+         *   are stored.
+         * \retval true if incident tetrahedra lists are stored.
+         * \retval false otherwise.
+         */
+        bool stores_cicl() const {
+            return store_cicl_;
+        }
+
+        /**
+         * \brief Specifies whether incident tetrahedra lists 
+         *   should be stored.
+         * \param[in] x if true, incident trahedra lists are stored,
+         *   else they are not.
+         */
+        void set_stores_cicl(bool x) {
+            store_cicl_ = x;
+        }
+        
         /**
          * \brief Tests whether thread-safe mode is active.
          * \return true if thread-safe mode is active, false otherwise.
@@ -614,6 +638,9 @@ namespace GEO {
 
         bool refine_;
         double quality_;
+
+        bool store_cicl_; // It true, circular incident tet
+                          // lists are stored.
     };
 
     /**

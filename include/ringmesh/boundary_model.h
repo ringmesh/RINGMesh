@@ -58,8 +58,8 @@ namespace RINGMesh {
 
     /*!
      * @brief Unique storage of the vertices of a BoundaryModel
-     * @details Each instance, set of coordinates, is unique, unlike vertices in 
-     *          the model Corner, Line, and Surface.
+     * @details Each instance is unique, unlike vertices in 
+     *          the model's Corner, Line, and Surface.
      *          Attributes may be defined on the vertices.
      */          
     class RINGMESH_API BoundaryModelVertices {
@@ -76,6 +76,15 @@ namespace RINGMesh {
                 : bme_id( t ), v_id( vertex_id_in )
             {
             }
+            bool operator<( const VertexInBME& rhs )
+            {
+                if( bme_id != rhs.bme_id ) {
+                    return bme_id < rhs.bme_id ;
+                }
+                else {
+                    return v_id < rhs.v_id ;
+                }
+            }
             /// Type of the BME and index
             BME::bme_t bme_id ;
             /// Index of the vertex in the BME
@@ -90,10 +99,7 @@ namespace RINGMesh {
         {
         }
 
-        ~BoundaryModelVertices() {
-            if( ann_ ) delete ann_ ;
-        }
-
+        ~BoundaryModelVertices() ; 
 
         /*!
          * @brief Number of vertices stored. 
@@ -154,8 +160,9 @@ namespace RINGMesh {
         /*!
          * @brief Returns the Geogram attribute manager on these vertices
          */
-        GEO::AttributesManager& attribute_manager() {
-            return unique_vertices_.vertices.attributes() ;
+        GEO::AttributesManager& attribute_manager() const {
+            return const_cast<GEO::AttributesManager&> 
+                ( unique_vertices_.vertices.attributes() );
         }
         
     private:
@@ -372,14 +379,15 @@ namespace RINGMesh {
 
         signed_index_t find_interface( const std::string& name) const ;
         signed_index_t find_region( const std::string& name) const ;
+        
+        // To put back 
+        bool check_model_validity() const ;
 
     private:
         bool check_model3d_compatibility() ;
 
-        bool check_all_elements_validity() const ;
-        bool check_element_consistency() const ;
-            
-        bool check_one_element_validity(const BoundaryModelElement& E) const ;      
+        bool check_elements_validity() const ;
+        bool check_geology_validity() const ;
 
     public:
         BoundaryModelVertices vertices ;

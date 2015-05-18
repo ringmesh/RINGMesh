@@ -82,7 +82,7 @@ struct GXKeyList gxKeyList;
     /* used in the event handling code to match and discard stale mouse motion events */
     static Bool match_motion(Display *dpy, XEvent *xev, XPointer arg)
     {
-	ARGUSED(dpy) ; ARGUSED(arg) ;
+        ARGUSED(dpy) ; ARGUSED(arg) ;
         return xev->type == MotionNotify;
     }
 #endif
@@ -90,8 +90,8 @@ struct GXKeyList gxKeyList;
 #ifdef WM_TOUCH
     typedef BOOL (WINAPI *pGetTouchInputInfo)(HTOUCHINPUT,UINT,PTOUCHINPUT,int);
     typedef BOOL (WINAPI *pCloseTouchInputHandle)(HTOUCHINPUT);
-	static pGetTouchInputInfo fghGetTouchInputInfo = (pGetTouchInputInfo)(size_t)0xDEADBEEF;
-	static pCloseTouchInputHandle fghCloseTouchInputHandle = (pCloseTouchInputHandle)(size_t)0xDEADBEEF;
+        static pGetTouchInputInfo fghGetTouchInputInfo = (pGetTouchInputInfo)(size_t)0xDEADBEEF;
+        static pCloseTouchInputHandle fghCloseTouchInputHandle = (pCloseTouchInputHandle)(size_t)0xDEADBEEF;
 #endif
 
 #if TARGET_HOST_MS_WINDOWS
@@ -348,15 +348,21 @@ unsigned long fgSystemTime(void) {
     return timeGetTime();
 #    endif
 #else
+/*    
 #   ifdef CLOCK_MONOTONIC
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     return now.tv_nsec/1000000 + now.tv_sec*1000;
 #   elif HAVE_GETTIMEOFDAY
+[BL]: always use gettimeofday under Unix
+*/
     struct timeval now;
     gettimeofday( &now, NULL );
     return now.tv_usec/1000 + now.tv_sec*1000;
+/*    
 #   endif
+[BL]: end of modification.
+*/
 #endif
 }
   
@@ -534,7 +540,7 @@ static void fghSleepForEvents( void )
         wait.tv_sec = msec / 1000;
         wait.tv_usec = (msec % 1000) * 1000;
         err = select( socket+1, &fdset, NULL, NULL, &wait );
-	ARGUSED(err);
+        ARGUSED(err);
 
 #ifdef HAVE_ERRNO_H
         if( ( -1 == err ) && ( errno != EINTR ) )
@@ -1042,82 +1048,82 @@ void FGAPIENTRY glutMainLoopEvent( void )
 #endif
 
         switch( event.type ) {
-	/* [Bruno] */
+        /* [Bruno] */
         case SelectionNotify: {
-	   Atom sel = XInternAtom(fgDisplay.Display, "PRIMARY", 0);
-	   Atom actual_type;
-	   int actual_format;
-	   unsigned long nitems;
-	   unsigned long bytes_after;
-	   char *ret=0;
-	   XGetWindowProperty(
-			      fgDisplay.Display, event.xany.window, sel, 0,
-			      4096, False, AnyPropertyType, 
-			      &actual_type, &actual_format, &nitems, &bytes_after, (unsigned char**)(&ret)
-	   ) ;
-	   if(!isprint(ret[nitems-2])) {
-	      ret[nitems-2] = '\0' ; /* I do not know why, but there are some trailing \n's here */
-	   }
-	   if(strlen(ret) > 7 && !strncmp(ret, "file://",7)) {
-	      INVOKE_WCB( *fgWindowByHandle(event.xany.window), DragDrop, (ret+7) ) ;	      
-	   }
-	   XFree(ret) ;
-	   if(1) {
-	      Atom XdndActionCopy = XInternAtom(fgDisplay.Display, "XdndActionCopy", False);
-	      Atom XdndFinished   = XInternAtom(fgDisplay.Display, "XdndFinished", False);
-	      XClientMessageEvent m;
-	      GETWINDOW(xany)
-	      memset(&m, 0, sizeof(m));
-	      m.type = ClientMessage;
-	      m.display = fgDisplay.Display ;
-	      m.window = window->State.xdnd_source_window ;
-	      m.message_type = XdndFinished;
-	      m.format=32;
-	      m.data.l[0] = event.xany.window;
-	      m.data.l[1] = 1;
-	      m.data.l[2] = XdndActionCopy; /* We only ever copy. */
-	      /* Reply that all is well. */
-	      XSendEvent(fgDisplay.Display, window->State.xdnd_source_window, False, NoEventMask, (XEvent*)&m);
-	      XSync(fgDisplay.Display, False);
-	   }
- 	} break ;
+           Atom sel = XInternAtom(fgDisplay.Display, "PRIMARY", 0);
+           Atom actual_type;
+           int actual_format;
+           unsigned long nitems;
+           unsigned long bytes_after;
+           char *ret=0;
+           XGetWindowProperty(
+                              fgDisplay.Display, event.xany.window, sel, 0,
+                              4096, False, AnyPropertyType, 
+                              &actual_type, &actual_format, &nitems, &bytes_after, (unsigned char**)(&ret)
+           ) ;
+           if(!isprint(ret[nitems-2])) {
+              ret[nitems-2] = '\0' ; /* I do not know why, but there are some trailing \n's here */
+           }
+           if(strlen(ret) > 7 && !strncmp(ret, "file://",7)) {
+              INVOKE_WCB( *fgWindowByHandle(event.xany.window), DragDrop, (ret+7) ) ;         
+           }
+           XFree(ret) ;
+           if(1) {
+              Atom XdndActionCopy = XInternAtom(fgDisplay.Display, "XdndActionCopy", False);
+              Atom XdndFinished   = XInternAtom(fgDisplay.Display, "XdndFinished", False);
+              XClientMessageEvent m;
+              GETWINDOW(xany)
+              memset(&m, 0, sizeof(m));
+              m.type = ClientMessage;
+              m.display = fgDisplay.Display ;
+              m.window = window->State.xdnd_source_window ;
+              m.message_type = XdndFinished;
+              m.format=32;
+              m.data.l[0] = event.xany.window;
+              m.data.l[1] = 1;
+              m.data.l[2] = XdndActionCopy; /* We only ever copy. */
+              /* Reply that all is well. */
+              XSendEvent(fgDisplay.Display, window->State.xdnd_source_window, False, NoEventMask, (XEvent*)&m);
+              XSync(fgDisplay.Display, False);
+           }
+        } break ;
         case ClientMessage:  {
-	    /* [Bruno] */
-	    Atom XdndEnter      = XInternAtom(fgDisplay.Display, "XdndEnter", False);
-	    Atom XdndPosition   = XInternAtom(fgDisplay.Display, "XdndPosition", False);
-	    Atom XdndStatus     = XInternAtom(fgDisplay.Display, "XdndStatus", False);
-/*	    Atom XdndTypeList   = XInternAtom(fgDisplay.Display, "XdndTypeList", False); */
-	    Atom XdndActionCopy = XInternAtom(fgDisplay.Display, "XdndActionCopy", False);
-	    Atom XdndDrop       = XInternAtom(fgDisplay.Display, "XdndDrop", False);
-	    Atom XdndLeave      = XInternAtom(fgDisplay.Display, "XdndLeave", False);
-/*	    Atom XdndFinished   = XInternAtom(fgDisplay.Display, "XdndFinished", False); */
-	    Atom XdndSelection  = XInternAtom(fgDisplay.Display, "XdndSelection", False);
-/*	    Atom XdndProxy      = XInternAtom(fgDisplay.Display, "XdndProxy", False);    */
+            /* [Bruno] */
+            Atom XdndEnter      = XInternAtom(fgDisplay.Display, "XdndEnter", False);
+            Atom XdndPosition   = XInternAtom(fgDisplay.Display, "XdndPosition", False);
+            Atom XdndStatus     = XInternAtom(fgDisplay.Display, "XdndStatus", False);
+/*          Atom XdndTypeList   = XInternAtom(fgDisplay.Display, "XdndTypeList", False); */
+            Atom XdndActionCopy = XInternAtom(fgDisplay.Display, "XdndActionCopy", False);
+            Atom XdndDrop       = XInternAtom(fgDisplay.Display, "XdndDrop", False);
+            Atom XdndLeave      = XInternAtom(fgDisplay.Display, "XdndLeave", False);
+/*          Atom XdndFinished   = XInternAtom(fgDisplay.Display, "XdndFinished", False); */
+            Atom XdndSelection  = XInternAtom(fgDisplay.Display, "XdndSelection", False);
+/*          Atom XdndProxy      = XInternAtom(fgDisplay.Display, "XdndProxy", False);    */
 
-	    if(event.xclient.message_type == XdndEnter) {
-	    } else if(event.xclient.message_type == XdndPosition) {
-	       /* Hand-shaking, answer with a ClientMessage */
-	       XClientMessageEvent m;
-	       memset(&m, 0, sizeof(m));
-	       m.type = ClientMessage;
-	       m.display = event.xclient.display;
-	       m.window = event.xclient.data.l[0];
-	       m.message_type = XdndStatus;
-	       m.format=32;
-	       m.data.l[0] = event.xany.window;
-	       m.data.l[1] = 1;
-	       m.data.l[2] = 0; /*Specify an empty rectangle*/
-	       m.data.l[3] = 0;
-	       m.data.l[4] = XdndActionCopy; /*We only accept copying anyway.*/
-	       XSendEvent(fgDisplay.Display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
-	       XFlush(fgDisplay.Display);
-	    } else if(event.xclient.message_type == XdndLeave) {
-	    } else if(event.xclient.message_type == XdndDrop) {
-	       Atom sel = XInternAtom(fgDisplay.Display, "PRIMARY", 0);	       
-	       XConvertSelection(fgDisplay.Display, XdndSelection, XA_STRING, sel, event.xany.window, event.xclient.data.l[2]) ;
-	       GETWINDOW(xclient) ;	       
-	       window->State.xdnd_source_window = event.xclient.data.l[0] ;
-	    }
+            if(event.xclient.message_type == XdndEnter) {
+            } else if(event.xclient.message_type == XdndPosition) {
+               /* Hand-shaking, answer with a ClientMessage */
+               XClientMessageEvent m;
+               memset(&m, 0, sizeof(m));
+               m.type = ClientMessage;
+               m.display = event.xclient.display;
+               m.window = event.xclient.data.l[0];
+               m.message_type = XdndStatus;
+               m.format=32;
+               m.data.l[0] = event.xany.window;
+               m.data.l[1] = 1;
+               m.data.l[2] = 0; /*Specify an empty rectangle*/
+               m.data.l[3] = 0;
+               m.data.l[4] = XdndActionCopy; /*We only accept copying anyway.*/
+               XSendEvent(fgDisplay.Display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+               XFlush(fgDisplay.Display);
+            } else if(event.xclient.message_type == XdndLeave) {
+            } else if(event.xclient.message_type == XdndDrop) {
+               Atom sel = XInternAtom(fgDisplay.Display, "PRIMARY", 0);        
+               XConvertSelection(fgDisplay.Display, XdndSelection, XA_STRING, sel, event.xany.window, event.xclient.data.l[2]) ;
+               GETWINDOW(xclient) ;            
+               window->State.xdnd_source_window = event.xclient.data.l[0] ;
+            }
             if (fgStructure.CurrentWindow)
                 if(fgIsSpaceballXEvent(&event)) {
                     fgSpaceballHandleXEvent(&event);
@@ -1389,8 +1395,8 @@ void FGAPIENTRY glutMainLoopEvent( void )
                  *
                  * XXX Note that {button} has already been decremented
                  * XXX in mapping from X button numbering to GLUT.
-				 *
-				 * XXX Should add support for partial wheel turns as Windows does -- 5/27/11
+                                 *
+                                 * XXX Should add support for partial wheel turns as Windows does -- 5/27/11
                  */
                 int wheel_number = (button - glutDeviceGet ( GLUT_NUM_MOUSE_BUTTONS )) / 2;
                 int direction = -1;
@@ -2225,14 +2231,14 @@ LRESULT CALLBACK fgWindowProc( HWND hWnd, UINT uMsg, WPARAM wParam,
     {
         int wheel_number = LOWORD( wParam );
         short ticks = ( short )HIWORD( wParam );
-		fgState.MouseWheelTicks += ticks;
+                fgState.MouseWheelTicks += ticks;
 
         /*
          * XXX Should use WHEEL_DELTA instead of 120
          */
-		if ( abs ( fgState.MouseWheelTicks ) >= 120 )
-		{
-			int direction = ( fgState.MouseWheelTicks > 0 ) ? 1 : -1;
+                if ( abs ( fgState.MouseWheelTicks ) >= 120 )
+                {
+                        int direction = ( fgState.MouseWheelTicks > 0 ) ? 1 : -1;
 
             if( ! FETCH_WCB( *window, MouseWheel ) &&
                 ! FETCH_WCB( *window, Mouse ) )
@@ -2245,7 +2251,7 @@ LRESULT CALLBACK fgWindowProc( HWND hWnd, UINT uMsg, WPARAM wParam,
              * XXX Should use WHEEL_DELTA instead of 120
              */
             while( abs ( fgState.MouseWheelTicks ) >= 120 )
-			{
+                        {
                 if( FETCH_WCB( *window, MouseWheel ) )
                     INVOKE_WCB( *window, MouseWheel,
                                 ( wheel_number,
@@ -2255,7 +2261,7 @@ LRESULT CALLBACK fgWindowProc( HWND hWnd, UINT uMsg, WPARAM wParam,
                                 )
                     );
                 else  /* No mouse wheel, call the mouse button callback twice */
-				{
+                                {
                     /*
                      * Map wheel zero to button 3 and 4; +1 to 3, -1 to 4
                      *  "    "   one                     +1 to 5, -1 to 6, ...
@@ -2274,16 +2280,16 @@ LRESULT CALLBACK fgWindowProc( HWND hWnd, UINT uMsg, WPARAM wParam,
                                 ( button, GLUT_UP,
                                   window->State.MouseX, window->State.MouseY )
                     );
-				}
+                                }
 
                 /*
                  * XXX Should use WHEEL_DELTA instead of 120
                  */
-				fgState.MouseWheelTicks -= 120 * direction;
-			}
+                                fgState.MouseWheelTicks -= 120 * direction;
+                        }
 
             fgState.Modifiers = INVALID_MODIFIERS;
-		}
+                }
     }
     break ;
 
@@ -2630,68 +2636,68 @@ LRESULT CALLBACK fgWindowProc( HWND hWnd, UINT uMsg, WPARAM wParam,
         break;
 
 #ifdef WM_TOUCH
-	/* handle multi-touch messages */
-	case WM_TOUCH:
-	{
-		unsigned int numInputs = (unsigned int)wParam;
-		unsigned int i = 0;
-		TOUCHINPUT* ti = (TOUCHINPUT*)malloc( sizeof(TOUCHINPUT)*numInputs);
+        /* handle multi-touch messages */
+        case WM_TOUCH:
+        {
+                unsigned int numInputs = (unsigned int)wParam;
+                unsigned int i = 0;
+                TOUCHINPUT* ti = (TOUCHINPUT*)malloc( sizeof(TOUCHINPUT)*numInputs);
 
-		if (fghGetTouchInputInfo == (pGetTouchInputInfo)(size_t)0xDEADBEEF) {
-		    fghGetTouchInputInfo = (pGetTouchInputInfo)GetProcAddress(GetModuleHandle("user32"),"GetTouchInputInfo");
-		    fghCloseTouchInputHandle = (pCloseTouchInputHandle)GetProcAddress(GetModuleHandle("user32"),"CloseTouchInputHandle");
-		}
+                if (fghGetTouchInputInfo == (pGetTouchInputInfo)(size_t)0xDEADBEEF) {
+                    fghGetTouchInputInfo = (pGetTouchInputInfo)GetProcAddress(GetModuleHandle("user32"),"GetTouchInputInfo");
+                    fghCloseTouchInputHandle = (pCloseTouchInputHandle)GetProcAddress(GetModuleHandle("user32"),"CloseTouchInputHandle");
+                }
 
-		if (!fghGetTouchInputInfo) { 
-			free( (void*)ti );
-			break;
-		}
+                if (!fghGetTouchInputInfo) { 
+                        free( (void*)ti );
+                        break;
+                }
 
-		if (fghGetTouchInputInfo( (HTOUCHINPUT)lParam, numInputs, ti, sizeof(TOUCHINPUT) )) {
-			/* Handle each contact point */
-			for (i = 0; i < numInputs; ++i ) {
+                if (fghGetTouchInputInfo( (HTOUCHINPUT)lParam, numInputs, ti, sizeof(TOUCHINPUT) )) {
+                        /* Handle each contact point */
+                        for (i = 0; i < numInputs; ++i ) {
 
-				POINT tp;
-				tp.x = TOUCH_COORD_TO_PIXEL(ti[i].x);
-				tp.y = TOUCH_COORD_TO_PIXEL(ti[i].y);
-				ScreenToClient( hWnd, &tp );
+                                POINT tp;
+                                tp.x = TOUCH_COORD_TO_PIXEL(ti[i].x);
+                                tp.y = TOUCH_COORD_TO_PIXEL(ti[i].y);
+                                ScreenToClient( hWnd, &tp );
 
-				ti[i].dwID = ti[i].dwID * 2;
+                                ti[i].dwID = ti[i].dwID * 2;
 
-				if (ti[i].dwFlags & TOUCHEVENTF_DOWN) {
-					INVOKE_WCB( *window, MultiEntry,  ( ti[i].dwID, GLUT_ENTERED ) );
-					INVOKE_WCB( *window, MultiButton, ( ti[i].dwID, tp.x, tp.y, 0, GLUT_DOWN ) );
-				} else if (ti[i].dwFlags & TOUCHEVENTF_MOVE) {
-					INVOKE_WCB( *window, MultiMotion, ( ti[i].dwID, tp.x, tp.y ) );
-				} else if (ti[i].dwFlags & TOUCHEVENTF_UP)   { 
-					INVOKE_WCB( *window, MultiButton, ( ti[i].dwID, tp.x, tp.y, 0, GLUT_UP ) );
-					INVOKE_WCB( *window, MultiEntry,  ( ti[i].dwID, GLUT_LEFT ) );
-				}
-			}
-		}
-		fghCloseTouchInputHandle((HTOUCHINPUT)lParam);
-		free( (void*)ti );
-		lRet = 0; /*DefWindowProc( hWnd, uMsg, wParam, lParam );*/
-		break;
-	}
+                                if (ti[i].dwFlags & TOUCHEVENTF_DOWN) {
+                                        INVOKE_WCB( *window, MultiEntry,  ( ti[i].dwID, GLUT_ENTERED ) );
+                                        INVOKE_WCB( *window, MultiButton, ( ti[i].dwID, tp.x, tp.y, 0, GLUT_DOWN ) );
+                                } else if (ti[i].dwFlags & TOUCHEVENTF_MOVE) {
+                                        INVOKE_WCB( *window, MultiMotion, ( ti[i].dwID, tp.x, tp.y ) );
+                                } else if (ti[i].dwFlags & TOUCHEVENTF_UP)   { 
+                                        INVOKE_WCB( *window, MultiButton, ( ti[i].dwID, tp.x, tp.y, 0, GLUT_UP ) );
+                                        INVOKE_WCB( *window, MultiEntry,  ( ti[i].dwID, GLUT_LEFT ) );
+                                }
+                        }
+                }
+                fghCloseTouchInputHandle((HTOUCHINPUT)lParam);
+                free( (void*)ti );
+                lRet = 0; /*DefWindowProc( hWnd, uMsg, wParam, lParam );*/
+                break;
+        }
 #endif
 
     /* [Bruno] */
-	case WM_DROPFILES: { 
-	   HDROP hdrop = (HDROP)(wParam) ;
-	   TCHAR szFileName[_MAX_PATH + 1];
-	   UINT nFiles, nNames ;
-	   if(hdrop != NULL) {
-	      nFiles = DragQueryFile(hdrop, (UINT)-1, NULL, 0);
-	      for(nNames = 0; nNames < nFiles; nNames++) {
-		     ZeroMemory(szFileName, _MAX_PATH + 1);
-		     DragQueryFile(
-		        hdrop, nNames, (LPTSTR)szFileName, _MAX_PATH + 1
-		     ) ;
-		     INVOKE_WCB( *window, DragDrop, (szFileName) ) ;
-	      }
-	   }  
-	}
+        case WM_DROPFILES: { 
+           HDROP hdrop = (HDROP)(wParam) ;
+           TCHAR szFileName[_MAX_PATH + 1];
+           UINT nFiles, nNames ;
+           if(hdrop != NULL) {
+              nFiles = DragQueryFile(hdrop, (UINT)-1, NULL, 0);
+              for(nNames = 0; nNames < nFiles; nNames++) {
+                     ZeroMemory(szFileName, _MAX_PATH + 1);
+                     DragQueryFile(
+                        hdrop, nNames, (LPTSTR)szFileName, _MAX_PATH + 1
+                     ) ;
+                     INVOKE_WCB( *window, DragDrop, (szFileName) ) ;
+              }
+           }  
+        }
        
         break ;
     default:
