@@ -46,6 +46,7 @@
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/geometry_nd.h>
+#include <geogram/basic/string.h>
 #include <geogram/points/colocate.h>
 #include <geogram/mesh/triangle_intersection.h>
 #include <geogram/mesh/mesh.h>
@@ -79,7 +80,7 @@ namespace {
         std::string result( BME::type_name( E.bme_id().type ) ) ;
         if( E.bme_id().index != NO_ID ) {
             result += "_" ;
-            result += std::to_string( E.bme_id().index ) ;
+            result += String::to_string( E.bme_id().index ) ;
         }
         if( E.has_name() ) {
             result += "_" ;
