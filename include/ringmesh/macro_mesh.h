@@ -74,7 +74,6 @@ namespace RINGMesh {
     const static index_t NB_FACET_TYPES = 2 ;
     const static index_t NB_CELL_TYPES = 4 ;
 
-
     /*!
      * Optional storage of the MacroMesh vertices
      */
@@ -107,7 +106,7 @@ namespace RINGMesh {
 
     private:
         enum SurfaceAction {
-            SKIP = - 2, TO_PROCESS = - 1, NEG_SIDE = 0, POS_SIDE = 1
+            SKIP = -2, TO_PROCESS = -1, NEG_SIDE = 0, POS_SIDE = 1
         } ;
         typedef std::pair< index_t, SurfaceAction > surface_side ;
 
@@ -170,7 +169,7 @@ namespace RINGMesh {
          */
         index_t surface_begin( index_t s ) const
         {
-            return surface_facet_ptr_[ NB_FACET_TYPES * s ] ;
+            return surface_facet_ptr_[NB_FACET_TYPES * s] ;
         }
         /*!
          * Id where to stop reading the vector surface_facets_ for a given surface
@@ -179,7 +178,7 @@ namespace RINGMesh {
          */
         index_t surface_end( index_t s ) const
         {
-            return surface_facet_ptr_[ NB_FACET_TYPES * ( s + 1 ) ] ;
+            return surface_facet_ptr_[NB_FACET_TYPES * ( s + 1 )] ;
         }
         /*!
          * Accessor for the surface_facets_ vector
@@ -188,7 +187,7 @@ namespace RINGMesh {
          */
         index_t facet( index_t global_f ) const
         {
-            return surface_facets_[ global_f ] ;
+            return surface_facets_[global_f] ;
         }
 
         void initialize() ;
@@ -212,7 +211,6 @@ namespace RINGMesh {
         index_t nb_quad_ ;
     } ;
 
-
     /*!
      * Optional storage of the MacroMesh cells
      */
@@ -229,14 +227,9 @@ namespace RINGMesh {
         {
         }
 
-        index_t cell_adjacent(
-            index_t mesh,
-            index_t c,
-            index_t f ) const ;
+        index_t cell_adjacent( index_t mesh, index_t c, index_t f ) const ;
 
-        index_t cell_index_in_mesh(
-            index_t global_index,
-            index_t& mesh_id ) const ;
+        index_t cell_index_in_mesh( index_t global_index, index_t& mesh_id ) const ;
 
         index_t nb_cells() const ;
         index_t nb_cells( index_t r ) const ;
@@ -263,7 +256,8 @@ namespace RINGMesh {
         /*!
          * Tests if the MacroMeshCells needs to be initialized and initialize it
          */
-        void test_initialize() const  {
+        void test_initialize() const
+        {
             if( nb_cells_ == 0 ) {
                 const_cast< MacroMeshCells* >( this )->initialize() ;
             }
@@ -274,16 +268,18 @@ namespace RINGMesh {
          * @param[in] mesh id of the mesh
          * @return the corresponding id
          */
-        index_t mesh_begin( index_t mesh ) const {
-            return mesh_cell_ptr_[ NB_CELL_TYPES * mesh ] ;
+        index_t mesh_begin( index_t mesh ) const
+        {
+            return mesh_cell_ptr_[NB_CELL_TYPES * mesh] ;
         }
         /*!
          * Id where to stop reading the vector mesh_cell_ptr_ for a given mesh
          * @param[in] mesh id of the mesh
          * @return the corresponding id
          */
-        index_t mesh_end( index_t mesh ) const {
-            return mesh_cell_ptr_[ NB_CELL_TYPES * mesh ] ;
+        index_t mesh_end( index_t mesh ) const
+        {
+            return mesh_cell_ptr_[NB_CELL_TYPES * mesh] ;
         }
 
     private:
@@ -308,7 +304,6 @@ namespace RINGMesh {
         /// Number of hexahedra in the MacroMesh
         index_t nb_hex_ ;
     } ;
-
 
     /*!
      * Optional storage of the MacroMesh tools
@@ -339,25 +334,33 @@ namespace RINGMesh {
 
     class RINGMESH_API MacroMeshOrder {
     public:
-        MacroMeshOrder(MacroMesh& mm) ;
+        MacroMeshOrder( MacroMesh& mm ) ;
+        void order( const index_t order ) ;
         ~MacroMeshOrder() ;
-
-    private:
-        void initialize(const index_t order) ;
+        const index_t nb_total_vertices() const ;
+        void nb_total_vertices(const index_t nb_vertices) ;
+        void initialize( index_t order, bool point_in_middle = false ) ;
+        const index_t order() const ;
+        const index_t id(const vec3& point) const ;
+        const vec3 point(index_t i) const {
+            return ann_.point(i) ;
+        }
 
     private:
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
-    };
+        index_t nb_vertices_ ;
+        index_t order_ ;
+        std::vector<index_t> tet_to_edge_;
+        ColocaterANN ann_ ;
 
+    } ;
 
     class RINGMESH_API MacroMesh {
-        ringmesh_disable_copy( MacroMesh ) ;
+    ringmesh_disable_copy( MacroMesh ) ;
     public:
 
-        MacroMesh(
-            const BoundaryModel& model,
-            index_t dim = 3 ) ;
+        MacroMesh( const BoundaryModel& model, index_t dim = 3 ) ;
         virtual ~MacroMesh() ;
 
         //    __  __     _   _            _
@@ -367,11 +370,10 @@ namespace RINGMesh {
         //
         void compute_tetmesh(
             const TetraMethod& method,
-            int region_id = - 1,
+            int region_id = -1,
             bool add_steiner_points = true,
-            std::vector< std::vector< vec3 > >& internal_vertices =
-                empty_vertices ) ;
-        void copy(const MacroMesh& mm, bool copy_attributes = true) const;
+            std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
+        void copy( const MacroMesh& mm, bool copy_attributes = true ) const ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
@@ -385,7 +387,7 @@ namespace RINGMesh {
          */
         GEO::Mesh& mesh( index_t region ) const
         {
-            return *meshes_[ region ] ;
+            return *meshes_[region] ;
         }
 
         /*!
@@ -398,7 +400,8 @@ namespace RINGMesh {
         }
 
         void add_wells( const WellGroup* wells ) ;
-        const WellGroup* wells() const {
+        const WellGroup* wells() const
+        {
             return wells_ ;
         }
 
@@ -415,14 +418,16 @@ namespace RINGMesh {
          * Access the DuplicateMode
          * @return the current DuplicateMode
          */
-        DuplicateMode duplicate_mode() const {
+        DuplicateMode duplicate_mode() const
+        {
             return mode_ ;
         }
         /*!
          * Set a new DuplicateMode
          * @param[in] mode the new DuplicateMode for the MacroMesh
          */
-        void set_duplicate_mode( const DuplicateMode& mode ) const {
+        void set_duplicate_mode( const DuplicateMode& mode ) const
+        {
             MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
             not_const->mode_ = mode ;
             not_const->vertices.cell_corners_.clear() ;
@@ -450,6 +455,9 @@ namespace RINGMesh {
         MacroMeshCells cells ;
         /// Optional storage of tools
         MacroMeshTools tools ;
+        /// Optional storage for high orders mesh
+        MacroMeshOrder order ;
+
 
     } ;
 }

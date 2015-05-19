@@ -306,6 +306,13 @@ namespace RINGMesh {
             index_t nb_parts,
             std::vector< vec3 >& points ) ;
 
+        static void divide_edge_in_parts(
+            vec3& node0,
+            vec3& node1,
+            index_t nb_parts,
+            std::vector< vec3 >& points ) ;
+
+
     } ;
     class RINGMESH_API Utils {
     public:
@@ -890,7 +897,7 @@ namespace RINGMesh {
          * @param[in] i the point index
          * return the corresponding point
          */
-        vec3 point( index_t i )
+        vec3 point( index_t i ) const
         {
             return vec3( ann_tree_->point_ptr( i ) ) ;
         }

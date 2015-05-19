@@ -1007,32 +1007,79 @@ namespace RINGMesh {
             }
         }
     }
-    
-    MacroMeshOrder::MacroMeshOrder(MacroMesh& mm) : mm_(mm) {
+
+    MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
+        : mm_( mm ), nb_vertices_( 0 ), order_( 1 ), ann_()
+    {
 
     }
 
-    MacroMeshOrder::~MacroMeshOrder() {
+    MacroMeshOrder::~MacroMeshOrder()
+    {
 
     }
 
-    void MacroMeshOrder::initialize(const index_t order) {
-        ringmesh_assert(order > 1 ) ;
+    void MacroMeshOrder::order( const index_t order )
+    {
+        order_ = order ;
+    }
+    void MacroMeshOrder::initialize( index_t order, bool point_in_middle )
+    {
+        nb_vertices_ = mm_.vertices.nb_total_vertices() ;
 
-
-        std::vector<vec3> new_points_coords ;
-        ColocaterANN ann(new_points_coords) ;
-
+        if( order > 1 ) {
+        order_ = order ;
+        std::vector<vec3> new_points ;
+        new_points.reserve(mm_.cells.nb_cells()*4) ;
         for(index_t r = 0 ; r < mm_.nb_meshes() ; r++) {
-            GEO::Mesh& cur_m = mm_.mesh(r) ;
-            GEO::Attribute< index_t* > points( cur_m.cells.attributes(),
-                "other_points" ) ;
-            for(index_t c = 0 ; c < cur_m.cells.nb() ; c++) {
-                points[c] = new index_t[cur_m.cells.nb_edges(c)*(order-1)] ;
+            const GEO::Mesh& cur_mesh = mm_.mesh(r) ;
+            for(index_t c = 0 ; c < cur_mesh.cells.nb() ; c++ ) {
+                for(index_t e = 0 ; e < cur_mesh.cells.nb_edges(c) ; e++) {
+                    std::vector<vec3> new_points_in_edge ;
+                    vec3 node0 = GEO::Geom::mesh_vertex(cur_mesh,cur_mesh.cells.edge_vertex(c,e,0)) ;
+                    vec3 node1 = GEO::Geom::mesh_vertex(cur_mesh,cur_mesh.cells.edge_vertex(c,e,1)) ;
+                    Geom::divide_edge_in_parts(node0,node1,order_,new_points_in_edge) ;
 
+                    for(index_t v = 0 ; v < new_points_in_edge.size() ; v++) {
+                        new_points.push_back(new_points_in_edge[v]) ;
+                    }
+                }
             }
         }
+
+        MakeUnique uniq(new_points) ;
+        uniq.unique() ;
+        std::vector<vec3> uniq_points ;
+        uniq.unique_points(uniq_points) ;
+        ann_.set_points(uniq_points) ;
+        nb_vertices_+=uniq_points.size() ;
+
+        }
+
     }
+
+    const index_t MacroMeshOrder::nb_total_vertices() const
+    {
+        return nb_vertices_ ;
+    }
+
+    void MacroMeshOrder::nb_total_vertices( const index_t nb_vertices )
+    {
+        nb_vertices_ = nb_vertices ;
+    }
+
+    const index_t MacroMeshOrder::order() const
+    {
+        return order_ ;
+    }
+
+    const index_t MacroMeshOrder::id(const vec3& point) const {
+        std::vector<index_t> colocated_points ;
+        ann_.get_colocated(point,colocated_points) ;
+        ringmesh_debug_assert(colocated_points.size() == 1) ;
+        return mm_.vertices.nb_total_vertices() + colocated_points[0] ;
+    }
+
 
     MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
         :
@@ -1043,11 +1090,13 @@ namespace RINGMesh {
             vertices( *this ),
             facets( *this ),
             cells( *this ),
-            tools( *this )
+            tools( *this ),
+            order( *this )
     {
         for( index_t r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;
         }
+
     }
 
     /*!
