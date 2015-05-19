@@ -1611,7 +1611,7 @@ namespace RINGMesh {
      * @param[in] surface_id Index of the surface
      * @return False if the key_facet orientation is not the same than the surface facets, else true.
      */
-    bool BoundaryModelBuilderGocad::check_key_facet_orientation( index_t surface_id )
+    bool BoundaryModelBuilderGocad::check_key_facet_orientation( index_t surface_id ) const
     {
         const KeyFacet& key_facet = key_facets_[surface_id] ;
 
