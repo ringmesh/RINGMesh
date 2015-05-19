@@ -1668,10 +1668,8 @@ namespace RINGMesh {
      */
     bool BoundaryModel::check_model_validity() const
     {
-        bool valid = true ; 
-       
         /// Verify the validity of all BoundaryModelElements
-        valid = check_elements_validity() ;
+        bool valid = check_elements_validity() ;
          
         /// Verify the geological validity if the model has interfaces
         if( nb_interfaces() > 0 ) {
