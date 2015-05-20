@@ -23,7 +23,7 @@ Run Test
     [Arguments]    ${input_name}=${TEST NAME}    @{options}
     [Documentation]    Runs a vorpaline test
     ...    The name of the input file is taken from the test name.
-    run vorpaline    ${DATADIR}${/}${input_name}    pts=50000    @{options}
+    run vorpaline    ${DATADIR}${/}${input_name}    pts=50000    pre:max_hole_area=1%   post:max_hole_area=1%   @{options}
     run vorpastat
 
 

@@ -1116,6 +1116,5 @@ namespace GEO {
             f_is_degenerate[f] = facet_is_degenerate(M,f);
         }
     }
-    
 }
 

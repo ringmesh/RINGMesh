@@ -50,7 +50,6 @@
 #include <geogram/basic/vecg.h>
 #include <geogram/basic/matrix.h>
 #include <geogram/basic/numeric.h>
-#include <geogram/third_party/shewchuk/shewchuk.h>
 
 /**
  * \file geogram/basic/geometry.h

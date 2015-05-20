@@ -1,3 +1,6 @@
+# Tetgen is currently included by default.
+set(GEOGRAM_WITH_TETGEN TRUE)
+
 add_subdirectory(third_party)
 
 aux_source_directories(SOURCES "Source Files"            .)
@@ -10,8 +13,6 @@ aux_source_directories(SOURCES "Source Files\\points"    points)
 aux_source_directories(SOURCES "Source Files\\api"       api)
 aux_source_directories(SOURCES "Source Files\\NL"        NL)
 
-# Tetgen is currently included by default.
-set(GEOGRAM_WITH_TETGEN TRUE)
 if(GEOGRAM_WITH_TETGEN)
    add_definitions(-DGEOGRAM_WITH_TETGEN)
 endif()

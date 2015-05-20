@@ -169,32 +169,6 @@ namespace GEO {
     );
 
     /**
-     * \brief Detects duplicated facets in a mesh.
-     * \details Example of function to remove duplicated
-     *  facets in a mesh:
-     *  \code
-     *   mesh_detect_duplicated_facets(M, colocated, epsilon);
-     *   for(index_t f=0; f<M.facets.nb(); ++f) {
-     *      if(colocated[f] == f) {
-     *         colocated[f] = 0; // keep facet 
-     *      } else {
-     *         colocated[f] = 1; // delete facet if duplicated
-     *      }
-     *   }
-     *   M.facets.delete_elements(colocated);
-     *  \endcode
-     * \param[in] M a const reference to the mesh
-     * \param[out] f_duplicated_index on exit, a vector
-     *  of size M.facets.nb(), such that for each facet
-     *  index f, f_duplicated_index[f] contains either f (if facet
-     *  f should be kept) or the index of the facet that f is
-     *  colocated with.
-     */
-    void GEOGRAM_API mesh_detect_duplicated_facets(
-        const Mesh& M, vector<index_t>& f_duplicated_index
-    );
-
-    /**
      * \brief Detects isolated vertices in a mesh.
      * \details A vertex is isolated if no mesh element
      *  (edge, facet or cell) is incident to it.
