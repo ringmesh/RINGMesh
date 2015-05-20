@@ -74,7 +74,6 @@ namespace RINGMesh {
             return result ;
         }
 
-
         static std::string TAB = "\t" ;
         static std::string SPACE = " " ;
 
@@ -342,16 +341,17 @@ namespace RINGMesh {
                 const BoundaryModel& model = mm.model() ;
                 std::vector< index_t > vertex_exported_id( mm.vertices.nb_vertices(),
                     NO_ID ) ;
-                std::vector< index_t > atom_exported_id( mm.vertices.nb_duplicated_vertices(),
-                    NO_ID ) ;
+                std::vector< index_t > atom_exported_id(
+                    mm.vertices.nb_duplicated_vertices(), NO_ID ) ;
                 std::ofstream out( filename.c_str() ) ;
                 out.precision( 16 ) ;
-                std::vector< bool > vertex_exported( mm.vertices.nb_vertices(), false ) ;
-                std::vector< bool > atom_exported( mm.vertices.nb_duplicated_vertices(),
+                std::vector< bool > vertex_exported( mm.vertices.nb_vertices(),
                     false ) ;
+                std::vector< bool > atom_exported(
+                    mm.vertices.nb_duplicated_vertices(), false ) ;
 
-
-                std::cout << "nb vertices " << mm.vertices.nb_vertices() << std::endl ;
+                std::cout << "nb vertices " << mm.vertices.nb_vertices()
+                    << std::endl ;
                 std::cout << "nb total vertices " << mm.vertices.nb_total_vertices()
                     << std::endl ;
 
@@ -367,7 +367,8 @@ namespace RINGMesh {
                         for( index_t co = mesh.cells.corners_begin( c );
                             co < mesh.cells.corners_end( c ); co++ ) {
                             index_t vertex_id, atom_id ;
-                            if( mm.vertices.vertex_id( r, co, vertex_id, atom_id ) ) {
+                            if( mm.vertices.vertex_id( r, co, vertex_id,
+                                atom_id ) ) {
                                 if( vertex_exported[vertex_id] ) continue ;
                                 vertex_exported[vertex_id] = true ;
                                 vertex_exported_id[vertex_id] =
@@ -388,7 +389,8 @@ namespace RINGMesh {
                         for( index_t co = mesh.cells.corners_begin( cur_tet );
                             co < mesh.cells.corners_end( cur_tet ); co++ ) {
                             index_t vertex_id, atom_id ;
-                            if( mm.vertices.vertex_id( r, co, vertex_id, atom_id ) ) {
+                            if( mm.vertices.vertex_id( r, co, vertex_id,
+                                atom_id ) ) {
                                 out << "V" << vertex_exported_id[vertex_id] << " " ;
                             } else {
                                 out << "V" << atom_exported_id[atom_id] << " " ;
@@ -403,8 +405,8 @@ namespace RINGMesh {
                 cur_cell = 0 ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
                     out << "GROUP_MA" << std::endl ;
-                    out << model.region(r).name() ;
-                    for(index_t c = 0 ; c < mm.mesh(r).cells.nb() ; c++) {
+                    out << model.region( r ).name() ;
+                    for( index_t c = 0; c < mm.mesh( r ).cells.nb(); c++ ) {
                         out << "C" << cur_cell++ << std::endl ;
                     }
                 }
@@ -439,7 +441,7 @@ namespace RINGMesh {
                         model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         index_t surface_id = interf.child_id( s ).index ;
-                        out << "GROUP_MA" <<  std::endl ;
+                        out << "GROUP_MA" << std::endl ;
                         out << "S" << surface_id << std::endl ;
 
                         index_t mesh_id = mm.facets.mesh( surface_id ) ;
@@ -452,8 +454,6 @@ namespace RINGMesh {
                         out << "FINSF" << std::endl ;
                     }
                 }
-
-
 
                 out << "FIN" << std::endl ;
 
@@ -686,14 +686,15 @@ namespace RINGMesh {
                     const GEO::Mesh& mesh = mm.mesh( m ) ;
                     for( index_t tet = 0; tet < mesh.cells.nb(); tet++ ) {
                         ele << nb_tet_exported + tet << SPACE
-                            << mm.vertices.vertex_id( m, mesh.cells.vertex( tet, 0 ) )
-                            << SPACE
-                            << mm.vertices.vertex_id( m, mesh.cells.vertex( tet, 1 ) )
-                            << SPACE
-                            << mm.vertices.vertex_id( m, mesh.cells.vertex( tet, 2 ) )
-                            << SPACE
-                            << mm.vertices.vertex_id( m, mesh.cells.vertex( tet, 3 ) )
-                            << SPACE << m + 1 << std::endl ;
+                            << mm.vertices.vertex_id( m,
+                                mesh.cells.vertex( tet, 0 ) ) << SPACE
+                            << mm.vertices.vertex_id( m,
+                                mesh.cells.vertex( tet, 1 ) ) << SPACE
+                            << mm.vertices.vertex_id( m,
+                                mesh.cells.vertex( tet, 2 ) ) << SPACE
+                            << mm.vertices.vertex_id( m,
+                                mesh.cells.vertex( tet, 3 ) ) << SPACE << m + 1
+                            << std::endl ;
                         neigh << nb_tet_exported + tet ;
                         for( index_t f = 0; f < mesh.cells.nb_facets( tet ); f++ ) {
                             neigh << SPACE << mm.cells.cell_adjacent( m, tet, f ) ;
@@ -727,15 +728,18 @@ namespace RINGMesh {
                 out << "ASCII" << std::endl ;
                 out << "DATASET UNSTRUCTURED_GRID" << std::endl ;
 
-                out << "POINTS " << mm.vertices.nb_vertices() << " double" << std::endl ;
+                out << "POINTS " << mm.vertices.nb_vertices() << " double"
+                    << std::endl ;
                 for( index_t v = 0; v < mm.vertices.nb_vertices(); v++ ) {
                     const vec3& point = mm.vertices.vertex( v ) ;
-                    out << point.x << SPACE << point.y << SPACE << point.z << std::endl ;
+                    out << point.x << SPACE << point.y << SPACE << point.z
+                        << std::endl ;
                 }
                 out << std::endl ;
 
                 index_t total_corners = ( 4 + 1 ) * mm.cells.nb_tet()
-                    + ( 5 + 1 ) * mm.cells.nb_pyramid() + ( 6 + 1 ) * mm.cells.nb_prism()
+                    + ( 5 + 1 ) * mm.cells.nb_pyramid()
+                    + ( 6 + 1 ) * mm.cells.nb_prism()
                     + ( 8 + 1 ) * mm.cells.nb_hex() ;
                 out << "CELLS " << mm.cells.nb_cells() << SPACE << total_corners
                     << std::endl ;
@@ -744,7 +748,9 @@ namespace RINGMesh {
                     for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                         out << mesh.cells.nb_vertices( c ) ;
                         for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
-                            out << SPACE << mm.vertices.vertex_id( m, mesh.cells.vertex( c, v ) ) ;
+                            out << SPACE
+                                << mm.vertices.vertex_id( m,
+                                    mesh.cells.vertex( c, v ) ) ;
                         }
                         out << std::endl ;
                     }
@@ -773,7 +779,8 @@ namespace RINGMesh {
             }
 
         private:
-            index_t cell_type( GEO::MeshCellType t ) const {
+            index_t cell_type( GEO::MeshCellType t ) const
+            {
                 switch( t ) {
                     case GEO::MESH_TET:
                         return 10 ;
@@ -784,13 +791,13 @@ namespace RINGMesh {
                     case GEO::MESH_HEX:
                         return 12 ;
                     default:
-                        ringmesh_assert_not_reached ;
+                        ringmesh_assert_not_reached;
                         return NO_ID ;
+                    }
                 }
-            }
-        } ;
+            } ;
 
-        /************************************************************************/
+            /************************************************************************/
 
         class TSolidIOHandler: public MacroMeshIOHandler {
         public:
@@ -819,13 +826,14 @@ namespace RINGMesh {
 
                 mm.set_duplicate_mode( ALL ) ;
 
-                std::vector< bool > vertex_exported( mm.vertices.nb_vertices(), false ) ;
-                std::vector< bool > atom_exported( mm.vertices.nb_duplicated_vertices(),
+                std::vector< bool > vertex_exported( mm.vertices.nb_vertices(),
                     false ) ;
+                std::vector< bool > atom_exported(
+                    mm.vertices.nb_duplicated_vertices(), false ) ;
                 std::vector< index_t > vertex_exported_id( mm.vertices.nb_vertices(),
                     NO_ID ) ;
-                std::vector< index_t > atom_exported_id( mm.vertices.nb_duplicated_vertices(),
-                    NO_ID ) ;
+                std::vector< index_t > atom_exported_id(
+                    mm.vertices.nb_duplicated_vertices(), NO_ID ) ;
                 index_t nb_vertices_exported = 1 ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
                     const RINGMesh::BoundaryModelElement& region = model.region(
@@ -837,7 +845,8 @@ namespace RINGMesh {
                         for( index_t co = mesh.cells.corners_begin( c );
                             co < mesh.cells.corners_end( c ); co++ ) {
                             index_t vertex_id, atom_id ;
-                            if( mm.vertices.vertex_id( r, co, vertex_id, atom_id ) ) {
+                            if( mm.vertices.vertex_id( r, co, vertex_id,
+                                atom_id ) ) {
                                 if( vertex_exported[vertex_id] ) continue ;
                                 vertex_exported[vertex_id] = true ;
                                 vertex_exported_id[vertex_id] =
@@ -852,7 +861,8 @@ namespace RINGMesh {
                         for( index_t co = mesh.cells.corners_begin( c );
                             co < mesh.cells.corners_end( c ); co++ ) {
                             index_t vertex_id, atom_id ;
-                            if( !mm.vertices.vertex_id( r, co, vertex_id, atom_id ) ) {
+                            if( !mm.vertices.vertex_id( r, co, vertex_id,
+                                atom_id ) ) {
                                 if( atom_exported[atom_id] ) continue ;
                                 atom_exported[atom_id] = true ;
                                 atom_exported_id[atom_id] = nb_vertices_exported ;
@@ -1010,6 +1020,19 @@ namespace RINGMesh {
 
         class CSMPIOHandler: public MacroMeshIOHandler {
         public:
+            CSMPIOHandler()
+                :
+                    MacroMeshIOHandler(),
+                    point_boundaries_(),
+                    box_model_( false ),
+                    back_(),
+                    top_(),
+                    front_(),
+                    bottom_(),
+                    left_(),
+                    right_()
+            {
+            }
             virtual bool load( const std::string& filename, MacroMesh& mesh )
             {
                 GEO::Logger::err( "I/O" )
@@ -1043,7 +1066,7 @@ namespace RINGMesh {
                 std::ostringstream oss_regions ;
                 oss_regions << directory << "/" << file << "-regions.txt" ;
                 std::ofstream regions( oss_regions.str().c_str() ) ;
-                regions << "'" << oss_regions.str() <<std::endl ;
+                regions << "'" << oss_regions.str() << std::endl ;
                 regions << "no properties" << std::endl ;
 
                 index_t count = 0 ;
@@ -1158,7 +1181,8 @@ namespace RINGMesh {
                     data << std::endl ;
                 }
 
-                index_t nb_total_elements = mm.cells.nb_cells() + mm.facets.nb_facets() ;
+                index_t nb_total_elements = mm.cells.nb_cells()
+                    + mm.facets.nb_facets() ;
                 data << nb_total_elements << " # PELEMENT" << std::endl ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
                     for( index_t el = 0; el < mm.cells.nb_tet( r ); el++ ) {
@@ -1324,8 +1348,9 @@ namespace RINGMesh {
                     }
                 }
 
-                index_t nb_plist = 3 * mm.facets.nb_triangle() + 4 * mm.facets.nb_quad()
-                    + 4 * mm.cells.nb_tet() + 5 * mm.cells.nb_pyramid() + 6 * mm.cells.nb_prism()
+                index_t nb_plist = 3 * mm.facets.nb_triangle()
+                    + 4 * mm.facets.nb_quad() + 4 * mm.cells.nb_tet()
+                    + 5 * mm.cells.nb_pyramid() + 6 * mm.cells.nb_prism()
                     + 8 * mm.cells.nb_hex() ; //+ 2 * nb_edges ;
                 data << nb_plist << " # PLIST" << std::endl ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
@@ -1351,7 +1376,8 @@ namespace RINGMesh {
                         for( index_t p = 0; p < 5; p++ ) {
                             index_t vertex_id ;
                             index_t csmp_p = pyramid_descriptor.vertices[p] ;
-                            mm.vertices.vertex_id( r, mesh.cells.corners_begin( py ) + csmp_p,
+                            mm.vertices.vertex_id( r,
+                                mesh.cells.corners_begin( py ) + csmp_p,
                                 vertex_id ) ;
                             data << " " << std::setw( 7 ) << vertex_id ;
                             count++ ;
@@ -1400,7 +1426,8 @@ namespace RINGMesh {
                         index_t s_id = interf.child_id( s ).index ;
                         index_t mesh_id = mm.facets.mesh( s_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                        for( index_t el = 0; el < mm.facets.nb_triangle( s_id ); el++ ) {
+                        for( index_t el = 0; el < mm.facets.nb_triangle( s_id );
+                            el++ ) {
                             index_t tri = mm.facets.triangle_id( mesh_id, el ) ;
                             for( index_t p = mesh.facets.corners_begin( tri );
                                 p < mesh.facets.corners_end( tri ); p++ ) {
@@ -1435,8 +1462,9 @@ namespace RINGMesh {
                     data << std::endl ;
                 }
 
-                index_t nb_facets = 3 * mm.facets.nb_triangle() + 4 * mm.facets.nb_quad()
-                    + 4 * mm.cells.nb_tet() + 5 * mm.cells.nb_pyramid() + 5 * mm.cells.nb_prism()
+                index_t nb_facets = 3 * mm.facets.nb_triangle()
+                    + 4 * mm.facets.nb_quad() + 4 * mm.cells.nb_tet()
+                    + 5 * mm.cells.nb_pyramid() + 5 * mm.cells.nb_prism()
                     + 6 * mm.cells.nb_hex() ; //+ 2 * nb_edges ;
                 data << nb_facets << " # PFVERTS" << std::endl ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
@@ -1519,7 +1547,8 @@ namespace RINGMesh {
                         index_t s_id = interf.child_id( s ).index ;
                         index_t mesh_id = mm.facets.mesh( s_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                        for( index_t el = 0; el < mm.facets.nb_triangle( s_id ); el++ ) {
+                        for( index_t el = 0; el < mm.facets.nb_triangle( s_id );
+                            el++ ) {
                             index_t tri = mm.facets.triangle_id( mesh_id, el ) ;
                             for( index_t f = mesh.facets.corners_begin( tri );
                                 f < mesh.facets.corners_end( tri ); f++ ) {
@@ -1870,18 +1899,22 @@ namespace RINGMesh {
                 const BoundaryModel& model = mm.model() ;
                 std::vector< index_t > region_offsets( mm.nb_meshes(), 0 ) ;
                 std::vector< index_t > surface_offsets( model.nb_surfaces(), 0 ) ;
-                for( index_t r = 0; r < mm.nb_meshes()-1; r++ ) {
-                    region_offsets[r+1] += region_offsets[r] + mm.mesh( r ).cells.nb() ;
+                for( index_t r = 0; r < mm.nb_meshes() - 1; r++ ) {
+                    region_offsets[r + 1] += region_offsets[r]
+                        + mm.mesh( r ).cells.nb() ;
                 }
-                index_t last_region = mm.nb_meshes()-1 ;
-                surface_offsets[0] += region_offsets[last_region] + mm.mesh( last_region ).cells.nb() ;
-                for( index_t s = 0; s < model.nb_surfaces()-1; s++ ) {
-                    surface_offsets[s+1] += surface_offsets[s] + model.surface( s ).nb_cells() ;
+                index_t last_region = mm.nb_meshes() - 1 ;
+                surface_offsets[0] += region_offsets[last_region]
+                    + mm.mesh( last_region ).cells.nb() ;
+                for( index_t s = 0; s < model.nb_surfaces() - 1; s++ ) {
+                    surface_offsets[s + 1] += surface_offsets[s]
+                        + model.surface( s ).nb_cells() ;
                 }
 
                 std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
                 for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                    anns[s] = new ColocaterANN( model.surface( s ), ColocaterANN::FACETS ) ;
+                    anns[s] = new ColocaterANN( model.surface( s ),
+                        ColocaterANN::FACETS ) ;
                 }
                 std::deque< Pipe > pipes ;
                 for( index_t r = 0; r < mm.nb_meshes(); r++ ) {
@@ -1907,7 +1940,8 @@ namespace RINGMesh {
                                     Pipe( c + cell_offset, adj + cell_offset ) ) ;
                                 S.push( adj ) ;
                             } else {
-                                vec3 query = Geom::mesh_cell_facet_center( mesh, c, f ) ;
+                                vec3 query = Geom::mesh_cell_facet_center( mesh, c,
+                                    f ) ;
                                 for( index_t s = 0; s < boundary_ids.size(); s++ ) {
                                     index_t s_id = boundary_ids[s] ;
                                     index_t surface_offset = surface_offsets[s_id] ;
@@ -1929,14 +1963,15 @@ namespace RINGMesh {
                 for( index_t l = 0; l < model.nb_lines(); l++ ) {
                     nb_edges += model.line( l ).nb_cells() ;
                 }
-                std::vector< index_t > temp ; temp.reserve( 3 ) ;
+                std::vector< index_t > temp ;
+                temp.reserve( 3 ) ;
                 std::vector< std::vector< index_t > > edges( nb_edges, temp ) ;
                 std::vector< vec3 > edge_vertices( nb_edges ) ;
                 index_t count_edge = 0 ;
                 for( index_t l = 0; l < model.nb_lines(); l++ ) {
                     const Line& line = model.line( l ) ;
                     for( index_t e = 0; e < line.nb_cells(); e++ ) {
-                        edge_vertices[count_edge++] = 0.5
+                        edge_vertices[count_edge++ ] = 0.5
                             * ( line.vertex( e ) + line.vertex( e + 1 ) ) ;
                     }
                 }
@@ -1953,12 +1988,14 @@ namespace RINGMesh {
                         S.pop() ;
                         if( visited[f] ) continue ;
                         visited[f] = true ;
-                        for( index_t e = 0; e < surface.nb_vertices_in_facet( f ); e++ ) {
+                        for( index_t e = 0; e < surface.nb_vertices_in_facet( f );
+                            e++ ) {
                             index_t adj = surface.adjacent( f, e ) ;
                             if( adj != GEO::NO_CELL ) {
                                 if( visited[adj] ) continue ;
                                 pipes.push_back(
-                                    Pipe( f + surface_offset, adj + surface_offset ) ) ;
+                                    Pipe( f + surface_offset,
+                                        adj + surface_offset ) ) ;
                                 S.push( adj ) ;
                             } else {
                                 vec3 query = 0.5
@@ -1968,13 +2005,14 @@ namespace RINGMesh {
 
                                 std::vector< index_t > results ;
                                 if( ann.get_colocated( query, results ) ) {
-                                    edges[results[0]].push_back( surface_offset + f ) ;
+                                    edges[results[0]].push_back(
+                                        surface_offset + f ) ;
                                 } else {
-                                    ringmesh_assert_not_reached ;
+                                    ringmesh_assert_not_reached;
                                 }
                             }
                         }
-                    } while( !S.empty() ) ;
+                    }while( !S.empty() ) ;
                 }
 
                 index_t nb_pipes = pipes.size() ;
@@ -1988,14 +2026,13 @@ namespace RINGMesh {
                 }
                 for( index_t e = 0; e < edges.size(); e++ ) {
                     const std::vector< index_t > vertices = edges[e] ;
-                    for( index_t v0 = 0; v0 < vertices.size()-1; v0++ ) {
+                    for( index_t v0 = 0; v0 < vertices.size() - 1; v0++ ) {
                         for( index_t v1 = v0 + 1; v1 < vertices.size(); v1++ ) {
                             out_pipes << vertices[v0] << SPACE << vertices[v1]
                                 << std::endl ;
                         }
                     }
                 }
-
 
                 out_xyz
                     << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
@@ -2045,14 +2082,14 @@ namespace RINGMesh {
                     case 10:
                         return 45 ;
                     default:
-                        ringmesh_assert_not_reached ;
+                        ringmesh_assert_not_reached;
                         return 0 ;
 
+                    }
                 }
-            }
-        } ;
+            } ;
 
-        /************************************************************************/
+            /************************************************************************/
 
         class MSHIOHandler: public MacroMeshIOHandler {
         public:
@@ -2098,10 +2135,11 @@ namespace RINGMesh {
                 std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
                 for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
                     if( mm.vertices.is_surface_to_duplicate( s ) )
-                        nb_facets += 2*mm.facets.nb_facets( s ) ;
+                        nb_facets += 2 * mm.facets.nb_facets( s ) ;
                     else
                         nb_facets += mm.facets.nb_facets( s ) ;
-                    anns[s] = new ColocaterANN( model.surface( s ), ColocaterANN::FACETS ) ;
+                    anns[s] = new ColocaterANN( model.surface( s ),
+                        ColocaterANN::FACETS ) ;
                 }
                 out << "$Elements" << std::endl ;
                 out << mm.cells.nb_cells() + nb_facets << std::endl ;
@@ -2199,9 +2237,11 @@ namespace RINGMesh {
                                 << facet_type[mesh.facets.nb_vertices( facet_id )]
                                 << " 2 " << offset_region + 2 * i + 1 << SPACE
                                 << offset_region + offset_interface + 2 * s_id ;
-                            for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id ); v++ ) {
+                            for( index_t v = 0;
+                                v < mesh.facets.nb_vertices( facet_id ); v++ ) {
                                 index_t v_id = mesh.facets.vertex( facet_id, v ) ;
-                                out << SPACE << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
+                                out << SPACE
+                                    << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
                             }
                             out << std::endl ;
                         }
@@ -2216,7 +2256,8 @@ namespace RINGMesh {
                     oss_kine << directory << "/" << file << ".gmsh_info" ;
                     std::ofstream kine3d( oss_kine.str().c_str() ) ;
                     for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                        const BoundaryModelElement& interf = model.one_interface( i ) ;
+                        const BoundaryModelElement& interf = model.one_interface(
+                            i ) ;
                         index_t s_id = interf.child_id( 0 ).index ;
                         kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
                             << ",1," ;
@@ -2227,14 +2268,13 @@ namespace RINGMesh {
                         } else if( feature
                             == RINGMesh::BoundaryModelElement::STRATI ) {
                             kine3d << "HorizonFeatureClass" ;
-                        } else if( feature
-                            == RINGMesh::BoundaryModelElement::VOI ) {
+                        } else if( feature == RINGMesh::BoundaryModelElement::VOI ) {
                             kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
                         }
                         kine3d << std::endl ;
                         if( mm.vertices.is_surface_to_duplicate( s_id ) ) {
-                            kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
-                                << ",0," ;
+                            kine3d << offset_region + 2 * i + 1 << ":"
+                                << interf.name() << ",0," ;
                             const RINGMesh::BoundaryModelElement::GEOL_FEATURE feature =
                                 model.one_interface( i ).geological_feature() ;
                             if( feature == RINGMesh::BoundaryModelElement::FAULT ) {
@@ -2302,13 +2342,14 @@ namespace RINGMesh {
                 double vertex_ref[3] ;
 
                 while( !in.eof() ) {
-                    in.get_line() ; in.get_fields() ;
+                    in.get_line() ;
+                    in.get_fields() ;
                     if( in.nb_fields() == 0 ) continue ;
                     if( in.field_matches( 0, "name:" ) ) {
                         name = in.field( 1 ) ;
                     } else if( in.field_matches( 0, "ZPOSITIVE" ) ) {
                         if( in.field_matches( 1, "Depth" ) ) {
-                            z_sign = - 1.0 ;
+                            z_sign = -1.0 ;
                         }
                     } else if( in.field_matches( 0, "WREF" ) ) {
                         vertex_ref[0] = z_sign * read_double( in, 1 ) ;
@@ -2322,7 +2363,7 @@ namespace RINGMesh {
                         vertex[1] = read_double( in, 3 ) + vertex_ref[1] ;
                         vertex[2] = read_double( in, 4 ) + vertex_ref[2] ;
                         index_t id = mesh.vertices.create_vertex( vertex ) ;
-                        mesh.edges.create_edge( id-1, id ) ;
+                        mesh.edges.create_edge( id - 1, id ) ;
                     } else if( in.field_matches( 0, "END" ) ) {
                         wells.add_well( mesh, name ) ;
                         mesh.clear() ;
@@ -2342,13 +2383,11 @@ namespace RINGMesh {
 
         /************************************************************************/
 
-
         //   __      __   _ _  ___
         //   \ \    / /__| | |/ __|_ _ ___ _  _ _ __
         //    \ \/\/ / -_) | | (_ | '_/ _ \ || | '_ \
         //     \_/\_/\___|_|_|\___|_| \___/\_,_| .__/
         //                                     |_|
-
         /*!
          * Loads a WellGroup from a file
          * @param[in] filename the file to load
@@ -2370,7 +2409,6 @@ namespace RINGMesh {
                 << std::endl ;
             return false ;
         }
-
 
         WellGroupIOHandler* WellGroupIOHandler::create( const std::string& format )
         {

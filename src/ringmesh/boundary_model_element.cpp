@@ -2045,6 +2045,7 @@ namespace RINGMesh {
             const_cast< SurfaceTools* >( this )->ann_ = new ColocaterANN(
                 surface_.mesh(), ColocaterANN::VERTICES ) ;
         }
+        ringmesh_debug_assert( ann_ != nil );
         return *ann_ ;
     }
 
