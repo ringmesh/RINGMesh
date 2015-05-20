@@ -902,7 +902,7 @@ namespace RINGMesh {
     /**************************************************************/
 
     /*!
-    * @brief Check that the Corner mesh is a unique valid point
+    * @brief Check that the Corner mesh is a unique point
     */
     bool Corner::is_mesh_valid() const 
     {
@@ -935,12 +935,14 @@ namespace RINGMesh {
                 << " cells " << std::endl ;
             valid = false ;
         }
-        if( mesh_.vertices.point( 0 ) == vec3() ) {
+        // The default point is (0., 0., 0.) and there might be a valid
+        // Corner at this position.
+        /*if( mesh_.vertices.point( 0 ) == vec3() ) {
             GEO::Logger::err( "BoundaryModelElement" )
                 << "Corner " << bme_id().index
                 << " point is default " << std::endl ;
             valid = false ;
-        }
+        }*/
         return valid ;
      }
     
@@ -964,13 +966,11 @@ namespace RINGMesh {
     /*!
      * @brief Check that the mesh of the Line is valid
      * @details Check that 
-     *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - 
-     *  - no facets and no cells.
+     *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - no facets - no cells.
      *  - global indices of vertices in the model are in a valid range 
      *  - each vertex is in 2 edges except extremities that are in 1 edge
-     *  - no vertex is duplicated, except the extremity if the Line is closed
+     *  - no vertex is duplicated, except the extremity if the Line if closed
      * 
-     * @todo Write meaninful message - Save objects to allow debugging
      */
     bool Line::is_mesh_valid() const
     {

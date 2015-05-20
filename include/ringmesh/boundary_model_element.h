@@ -916,6 +916,8 @@ namespace RINGMesh {
 
         void cut_by_line( const Line& L ) ;
 
+        /*! @}
+        */
     public:
         SurfaceTools tools ;
 

@@ -1670,32 +1670,31 @@ namespace RINGMesh {
     {
         bool valid = true ; 
        
-        /// Verify the validity of all BoundaryModelElements
+        /// 1. Verify the validity of all BoundaryModelElements
         valid = check_elements_validity() ;
          
-        /// Verify the geological validity if the model has interfaces
+        /// 2. Verify the geological validity if the model has interfaces
         if( nb_interfaces() > 0 ) {
             valid = check_geology_validity() && valid ;
         }
 
-        /// Check that the model has a finite extension 
+        /// 2. Check that the model has a finite extension 
         /// The boundary of the universe region is a one connected component 
         /// manifold closed surface 
         valid = is_region_valid( universe() ) && valid ;
           
-        /// Check geometrical-connectivity consistency
+        /// 3. Check geometrical-connectivity consistency
         valid = check_model_points_validity( *this ) && valid ;
 
-        /// No edge of a Surface can be on the boundary of this Surface without
+        /// 4. No edge of a Surface can be on the boundary of this Surface without
         /// being in a Line
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             valid = surface_boundary_valid( surface( i ) ) && valid ;          
         }
       
 
-        /// Check  non-manifold edges and surface-surface intersections 
-        /// using a global triangulated mesh corresponding to this model
-        /// Errors ?? when polygonal facets are not planar ? 
+        /// 5. Check non-manifold edges using a global
+        /// triangulated mesh corresponding to this model.
         GEO::Mesh model_mesh ;
         mesh_from_boundary_model( *this, model_mesh ) ;
         GEO::mesh_repair( model_mesh, MESH_REPAIR_TRIANGULATE ) ;
@@ -1719,9 +1718,11 @@ namespace RINGMesh {
             GEO::mesh_save( non_manifold_edges, file.str() ) ;
 #endif
         }
-
         
-        /// Check there is no intersections except along Line boundaries
+        /// 6. Check there is no surface-surface intersection
+        /// except along Line boundaries using a global
+        /// triangulated mesh corresponding to this model.
+        // Errors ?? when polygonal facets are not planar ? 
         index_t nb_intersections = detect_intersecting_facets( *this, model_mesh ) ;
         if( nb_intersections > 0 ) {
             GEO::Logger::err( "BoundaryModel" )
