@@ -266,8 +266,6 @@ namespace RINGMesh {
 
         bool complete_element_connectivity() ;  
 
-        void fill_element_geological_feature( BoundaryModelElement& E ) ;
-
         void fill_elements_boundaries( BME::TYPE type ) ;
 
         void fill_elements_in_boundaries( BME::TYPE type ) ;

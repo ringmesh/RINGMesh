@@ -343,9 +343,6 @@ namespace RINGMesh {
         ~MacroMeshOrder() ;
 
     private:
-        void initialize(const index_t order) ;
-
-    private:
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
     };

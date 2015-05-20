@@ -1016,24 +1016,6 @@ namespace RINGMesh {
 
     }
 
-    void MacroMeshOrder::initialize(const index_t order) {
-        ringmesh_assert(order > 1 ) ;
-
-
-        std::vector<vec3> new_points_coords ;
-        ColocaterANN ann(new_points_coords) ;
-
-        for(index_t r = 0 ; r < mm_.nb_meshes() ; r++) {
-            GEO::Mesh& cur_m = mm_.mesh(r) ;
-            GEO::Attribute< index_t* > points( cur_m.cells.attributes(),
-                "other_points" ) ;
-            for(index_t c = 0 ; c < cur_m.cells.nb() ; c++) {
-                points[c] = new index_t[cur_m.cells.nb_edges(c)*(order-1)] ;
-
-            }
-        }
-    }
-
     MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
         :
             model_( model ),
