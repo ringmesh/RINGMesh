@@ -336,7 +336,7 @@ namespace RINGMesh {
         /*!
          * @brief Check if the surface triangle orientations match the one of the key facet
          */
-        bool check_key_facet_orientation( index_t surface ) ;
+        bool check_key_facet_orientation( index_t surface ) const;
 
         index_t find_key_facet(
             index_t surface_id,
