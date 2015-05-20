@@ -2773,7 +2773,7 @@ inline void tetgenmesh::sfnext(face& s1, face& s2)
     if (seg.sh != NULL) {
       seg.shver = 0;
       if (sorg(s1) != sorg(seg)) {      
-        while (1) {
+        for(;;) {
           spivot(s2, s3);
           if (s3.sh == s1.sh) break;
           s2 = s3;
@@ -2799,7 +2799,7 @@ inline void tetgenmesh::sfnextself(face& s)
     if (seg.sh != NULL) {
       seg.shver = 0;
       if (sorg(s) != sorg(seg)) {      
-        while (1) {
+        for(;;) {
           spivot(s2, s3);
           if (s3.sh == s.sh) break;
           s2 = s3;
@@ -3293,7 +3293,7 @@ inline tetgenmesh::point tetgenmesh::farsorg(face& s)
   face travesh, neighsh;
 
   travesh = s;
-  while (1) {
+  for(;;) {
     senext2(travesh, neighsh);
     spivotself(neighsh); 
     if (neighsh.sh == NULL) break;
@@ -3309,7 +3309,7 @@ inline tetgenmesh::point tetgenmesh::farsdest(face& s)
   face travesh, neighsh;
 
   travesh = s;
-  while (1) {
+  for(;;) {
     senext(travesh, neighsh);
     spivotself(neighsh); 
     if (neighsh.sh == NULL) break;

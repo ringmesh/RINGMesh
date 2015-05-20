@@ -1,21 +1,26 @@
 *** Settings ***
 Test Setup        Prepare Test
 Test Teardown     Cleanup Test
-Force Tags        Remesh    smoke    daily
+Force Tags        Delaunay    smoke    daily
 Library           OperatingSystem
+Library           String
 Library           lib/VorpatestLibrary.py
 
 *** Variables ***
 ${DATADIR}        %{VORPATEST_ROOT_DIR}${/}data${/}Small
 
 *** Test Cases ***
-three_holes.obj
+cube.obj
     [Tags]    daily_valgrind
-    Run Test   three_holes.obj  profile=hex  pts=1000
+    Run Test
+
+joint.off
+    [Tags]    daily_valgrind
+    Run Test
 
 *** Keywords ***
 Run Test
     [Arguments]    ${input_name}=${TEST NAME}    @{options}
-    [Documentation]    Runs a vorpaline PGP3D hex dominant meshing test
+    [Documentation]    Runs compute_delaunay on a single input file.
     ...    The name of the input file is taken from the test name.
-    run vorpaline    ${DATADIR}${/}${input_name}  @{options}
+    run command    compute_delaunay  ${DATADIR}${/}${input_name}   algo:delaunay=BDEL   @{options}
