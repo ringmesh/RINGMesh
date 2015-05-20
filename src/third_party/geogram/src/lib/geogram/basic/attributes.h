@@ -381,7 +381,8 @@ namespace GEO {
         }
 
         virtual AttributeStore* clone() const {
-            TypedAttributeStore<T>* result = new TypedAttributeStore<T>(dimension());
+            TypedAttributeStore<T>* result =
+                new TypedAttributeStore<T>(dimension());
             result->resize(size());
             result->store_ = store_;
             return result;
