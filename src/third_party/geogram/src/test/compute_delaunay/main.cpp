@@ -109,8 +109,13 @@ int main(int argc, char** argv) {
         Mesh M_in;
         Mesh M_out;
 
-        if(!mesh_load(points_filename, M_in)) {
-            return 1;
+        {
+            MeshIOFlags flags;
+            flags.reset_element(MESH_FACETS);
+            flags.reset_element(MESH_CELLS);
+            if(!mesh_load(points_filename, M_in, flags)) {
+                return 1;
+            }
         }
 
         Logger::div("Computing 3D Delaunay triangulation");

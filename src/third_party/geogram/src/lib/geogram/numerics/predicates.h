@@ -71,8 +71,7 @@ namespace GEO {
          * \details Computes the side of \f$ q0 \f$ relative to
          * \f$ \Pi(p0,p1) \f$.
          * Symbolic perturbation is applied whenever equality holds.
-         * \param[in] p0 first extremity of the bisector
-         * \param[in] p1 second extremity of the bisector
+         * \param[in] p0,p1 extremities of the bisector
          * \param[in] q0 point to be tested
          * \param[in] DIM number of coordinates of the point
          * \retval POSITIVE if d(p0,q0) < d(p1,q0)
@@ -99,9 +98,7 @@ namespace GEO {
          *  (that defines the intersection q)
          * \param[in] p2 second extremity of the second bisector
          *  (against which orientation is tested)
-         * \param[in] q0 first extremity of the segment
-         *  (that defines the intersection q)
-         * \param[in] q1 second extremity of the segment
+         * \param[in] q0,q1 extremities of the segment
          *  (that defines the intersection q)
          * \retval POSITIVE if d(p0,q) < d(p2,q)
          * \retval NEGATIVE if d(p0,q) > d(p2,q)
@@ -130,11 +127,7 @@ namespace GEO {
          *  (that defines the intersection q)
          * \param[in] p3 second extremity of the third bisector
          *  (against which orientation is tested)
-         * \param[in] q0 first vertex of the triangle
-         *  (that defines the intersection q)
-         * \param[in] q1 second vertex of the triangle
-         *  (that defines the intersection q)
-         * \param[in] q2 third vertex of the triangle
+         * \param[in] q0,q1,q2 vertices of the triangle
          *  (that defines the intersection q)
          * \retval POSITIVE if d(p0,q) < d(p3,q)
          * \retval NEGATIVE if d(p0,q) > d(p3,q)
@@ -167,13 +160,8 @@ namespace GEO {
          *  (that defines the intersection q)
          * \param[in] p4 second extremity of the fourth bisector
          *  (against which orientation is tested)
-         * \param[in] q0 first vertex of the tetrahedron
+         * \param[in] q0,q1,q2,q3 vertices of the tetrahedron
          *  (that defines the intersection q)
-         * \param[in] q1 second vertex of the tetrahedron
-         *  (that defines the intersection q)
-         * \param[in] q2 third vertex of the tetrahedron
-         *  (that defines the intersection q)
-         * \param[in] q3 third vertex of the tetrahedron
          *  (that defines the intersection q)
          * \retval POSITIVE if d(p0,q) < d(p4,q)
          * \retval NEGATIVE if d(p0,q) > d(p4,q)
@@ -184,8 +172,10 @@ namespace GEO {
          */
         Sign GEOGRAM_API side4_SOS(
             const double* p0,
-            const double* p1, const double* p2, const double* p3, const double* p4,
-            const double* q0, const double* q1, const double* q2, const double* q3,
+            const double* p1, const double* p2,
+            const double* p3, const double* p4,
+            const double* q0, const double* q1,
+            const double* q2, const double* q3,
             coord_index_t DIM
         );
 
@@ -216,7 +206,8 @@ namespace GEO {
          */
         Sign GEOGRAM_API side4_3d(
             const double* p0,
-            const double* p1, const double* p2, const double* p3, const double* p4
+            const double* p1, const double* p2,
+            const double* p3, const double* p4
         );
 
         /**
@@ -277,9 +268,7 @@ namespace GEO {
         /**
          * \brief Tests whether a 3d point is inside the 
          *  circumscribed circle of a 3d triangle.
-         * \param[in] p0 first vertex of the triangle
-         * \param[in] p1 second vertex of the triangle
-         * \param[in] p2 third vertex of the triangle
+         * \param[in] p0,p1,p2 vertices of the triangle
          * \param[in] p3 the point to be tested
          * \retval POSITIVE whenever \p p3 is inside the circumscribed circle
          *  of the triangle \p p0, \p p1, \p p2
@@ -299,10 +288,8 @@ namespace GEO {
         /**
          * \brief Computes the orientation predicate in 3d.
          * \details Computes the sign of the signed area of
-         *  the ttriangle p0, p1, p2.
-         * \param[in] p0 first vertex of the triangle
-         * \param[in] p1 second vertex of the triangle
-         * \param[in] p2 third vertex of the triangle
+         *  the triangle p0, p1, p2.
+         * \param[in] p0,p1,p2 vertices of the triangle
          * \retval POSITIVE if the triangle is oriented positively
          * \retval ZERO if the triangle is flat
          * \retval NEGATIVE if the triangle is oriented negatively
@@ -315,12 +302,10 @@ namespace GEO {
 
 
         /**
-         * \brief Computes the orientation predicate in 3d.
+         * \brief Computes the orientation predicate in 2d.
          * \details Computes the sign of the signed area of
-         *  the ttriangle p0, p1, p2.
-         * \param[in] p0 first vertex of the triangle
-         * \param[in] p1 second vertex of the triangle
-         * \param[in] p2 third vertex of the triangle
+         *  the triangle p0, p1, p2.
+         * \param[in] p0,p1,p2 vertices of the triangle
          * \retval POSITIVE if the triangle is oriented positively
          * \retval ZERO if the triangle is flat
          * \retval NEGATIVE if the triangle is oriented negatively
@@ -338,10 +323,7 @@ namespace GEO {
          * \brief Computes the orientation predicate in 3d.
          * \details Computes the sign of the signed volume of
          *  the tetrahedron p0, p1, p2, p3.
-         * \param[in] p0 first vertex of the tetrahedron
-         * \param[in] p1 second vertex of the tetrahedron
-         * \param[in] p2 third vertex of the tetrahedron
-         * \param[in] p3 fourth vertex of the tetrahedron
+         * \param[in] p0,p1,p2,p3 vertices of the tetrahedron
          * \retval POSITIVE if the tetrahedron is oriented positively
          * \retval ZERO if the tetrahedron is flat
          * \retval NEGATIVE if the tetrahedron is oriented negatively
@@ -358,10 +340,7 @@ namespace GEO {
          * \brief Computes the orientation predicate in 3d.
          * \details Computes the sign of the signed volume of
          *  the tetrahedron p0, p1, p2, p3.
-         * \param[in] p0 first vertex of the tetrahedron
-         * \param[in] p1 second vertex of the tetrahedron
-         * \param[in] p2 third vertex of the tetrahedron
-         * \param[in] p3 fourth vertex of the tetrahedron
+         * \param[in] p0,p1,p2,p3 vertices of the tetrahedron
          * \retval POSITIVE if the tetrahedron is oriented positively
          * \retval ZERO if the tetrahedron is flat
          * \retval NEGATIVE if the tetrahedron is oriented negatively
@@ -384,16 +363,9 @@ namespace GEO {
          *  This version does not apply symbolic perturbation.
          *  The first three coordinates and the
          *  fourth one are specified in separate arguments for each vertex.
-         * \param[in] p0 first 3 coordinates of the first vertex of the 4-simplex
-         * \param[in] p1 first 3 coordinates of the second vertex of the 4-simplex
-         * \param[in] p2 first 3 coordinates of the third vertex of the 4-simplex
-         * \param[in] p3 first 3 coordinates of the fourth vertex of the 4-simplex
-         * \param[in] p4 first 3 coordinates of the fifth vertex of the 4-simplex
-         * \param[in] h0 height of the first vertex of the 4-simplex
-         * \param[in] h1 height of the second vertex of the 4-simplex
-         * \param[in] h2 height of the third vertex of the 4-simplex
-         * \param[in] h3 height of the fourth vertex of the 4-simplex
-         * \param[in] h4 height of the fifth vertex of the 4-simplex
+         * \param[in] p0,p1,p2,p3,p4 first 3 coordinates 
+         *   of the vertices of the 4-simplex
+         * \param[in] h0,h1,h2,h3,h4 heights of the vertices of the 4-simplex
          * \retval POSITIVE if p4' lies below the hyperplane
          * \retval NEGATIVE if p4' lies above the hyperplane
          * \retval ZERO if p4' lies exactly on the hyperplane
@@ -408,21 +380,15 @@ namespace GEO {
         /**
          * \brief Computes the 4d orientation test with symbolic perturbation.
          * \details Given four lifted points p0', p1', p2', and p3' in 
-         * R^4, tests if the lifted point p4' in R^4 lies below or above 
-         * the hyperplance passing through the four points p0', p1', p2', and p3'.
+         *  R^4, tests if the lifted point p4' in R^4 lies below or above 
+         *  the hyperplance passing through the four 
+         *  points p0', p1', p2', and p3'.
          *  Symbolic perturbation is applied whenever the 5 vertices are
          *  not linearly independent. The first three coordinates and the
          *  fourth one are specified in separate arguments for each vertex.
-         * \param[in] p0 first 3 coordinates of the first vertex of the 4-simplex
-         * \param[in] p1 first 3 coordinates of the second vertex of the 4-simplex
-         * \param[in] p2 first 3 coordinates of the third vertex of the 4-simplex
-         * \param[in] p3 first 3 coordinates of the fourth vertex of the 4-simplex
-         * \param[in] p4 first 3 coordinates of the fifth vertex of the 4-simplex
-         * \param[in] h0 height of the first vertex of the 4-simplex
-         * \param[in] h1 height of the second vertex of the 4-simplex
-         * \param[in] h2 height of the third vertex of the 4-simplex
-         * \param[in] h3 height of the fourth vertex of the 4-simplex
-         * \param[in] h4 height of the fifth vertex of the 4-simplex
+         * \param[in] p0,p1,p2,p3,p4 first 3 coordinates 
+         *   of the vertices of the 4-simplex
+         * \param[in] h0,h1,h2,h3,h4 heights of the vertices of the 4-simplex
          * \retval POSITIVE if p4' lies below the hyperplane
          * \retval NEGATIVE if p4' lies above the hyperplane
          * \retval perturb() if p4' lies exactly on the hyperplane
