@@ -165,8 +165,6 @@ namespace {
         std::sort( corners_global.begin(), corners_global.end() ) ;
         return std::unique( corners.begin(), corners.end() ) != corners.end() ||
             std::unique( corners_global.begin(), corners_global.end() ) != corners_global.end() ;
-
-        return false ;
     }
 
 }

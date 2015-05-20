@@ -77,7 +77,7 @@ namespace RINGMesh {
                 : bme_id( t ), v_id( vertex_id_in )
             {
             }
-            bool operator<( const VertexInBME& rhs )
+            bool operator<( const VertexInBME& rhs ) const
             {
                 if( bme_id != rhs.bme_id ) {
                     return bme_id < rhs.bme_id ;
@@ -219,9 +219,10 @@ namespace RINGMesh {
         /*!
          * @brief Construct an empty BoundaryModel
          */
-        BoundaryModel() : vertices( *this )
+        BoundaryModel() :
+            vertices( *this ),
+            debug_directory_(GEO::FileSystem::get_current_working_directory())
         {
-            debug_directory_ = GEO::FileSystem::get_current_working_directory() ;
         }
 
         /*!
