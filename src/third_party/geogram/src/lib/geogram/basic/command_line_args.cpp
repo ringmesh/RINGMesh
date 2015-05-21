@@ -397,19 +397,19 @@ namespace {
             "Toggles hex-dominant meshing"
         );
         declare_arg(
-            "hex:save_points", true,
+            "hex:save_points", false,
             "Save points to points.meshb"
         );
         declare_arg(
-            "hex:save_tets", true,
+            "hex:save_tets", false,
             "Save tetrahedra (before primitive merging) to tets.meshb"
         );
         declare_arg(
-            "hex:save_surface", true,
+            "hex:save_surface", false,
             "Save surface to surface.meshb"
         );
         declare_arg(
-            "hex:save_frames", true,
+            "hex:save_frames", false,
             "Save frames and surface to frames_surface.eobj"
         );
         declare_arg(

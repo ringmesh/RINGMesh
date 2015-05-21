@@ -266,8 +266,6 @@ namespace RINGMesh {
 
         bool complete_element_connectivity() ;  
 
-        void fill_element_geological_feature( BoundaryModelElement& E ) ;
-
         void fill_elements_boundaries( BME::TYPE type ) ;
 
         void fill_elements_in_boundaries( BME::TYPE type ) ;
@@ -336,7 +334,7 @@ namespace RINGMesh {
         /*!
          * @brief Check if the surface triangle orientations match the one of the key facet
          */
-        bool check_key_facet_orientation( index_t surface ) ;
+        bool check_key_facet_orientation( index_t surface ) const;
 
         index_t find_key_facet(
             index_t surface_id,

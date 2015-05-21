@@ -13,8 +13,10 @@ files="configure.bat
       src
       doc/Doxyfile
       doc/dox
+      doc/logo_ringmesh_doc.png
+      doc/logo_ringmesh.png
       tests
-      CMakeOptions.txt
+      CMakeOptions.txt.sample
       CMakeLists.txt
       cmake"
        

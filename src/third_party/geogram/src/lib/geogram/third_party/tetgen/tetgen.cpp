@@ -3193,7 +3193,7 @@ bool tetgenbehavior::parse_commandline(int argc, char **argv)
               k++;
             }
             workstring[k] = '\0';
-            hilbert_order = (REAL) strtod(workstring, (char **) NULL);
+            hilbert_order = (int)strtod(workstring, (char **) NULL);
           }
         }
         if (brio_threshold == 0) { // -b0
@@ -10993,7 +10993,7 @@ void tetgenmesh::brio_multiscale_sort(point* vertexarray, int arraysize,
   middle = 0;
   if (arraysize >= threshold) {
     (*depth)++;
-    middle = arraysize * ratio;
+    middle = (int)(arraysize * ratio);
     brio_multiscale_sort(vertexarray, middle, threshold, ratio, depth);
   }
   // Sort the right-array (rnd-th round) using the Hilbert curve.
@@ -17719,7 +17719,7 @@ bool tetgenmesh::fillregion(arraypool* missingshs, arraypool* missingshbds,
 
   newshs->restart();
 
-  return success;
+  return (success!=0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

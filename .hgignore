@@ -20,3 +20,6 @@ syntax: regexp
 \.gz$
 syntax: regexp
 \.pdf$
+
+syntax: regexp
+^articles/iamg/tmp$

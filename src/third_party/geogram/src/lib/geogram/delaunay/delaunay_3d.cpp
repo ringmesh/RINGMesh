@@ -496,7 +496,7 @@ namespace GEO {
         // traversed by locate_inexact()  (2500)
         // since there exists configurations in which
         // locate_inexact() loops forever !
-        // hint = locate_inexact(p, hint, 2500);
+        hint = locate_inexact(p, hint, 2500);
 
         static Process::spinlock lock = 0;
 
