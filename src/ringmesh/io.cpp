@@ -401,7 +401,7 @@ namespace RINGMesh {
                 cur_cell = 0 ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
                     out << "GROUP_MA" << std::endl ;
-                    out << model.region(r).name() ;
+                    out << model.region(r).name()<< std::endl ;
                     for(index_t c = 0 ; c < mm.mesh(r).cells.nb() ; c++) {
                         out << "C" << cur_cell++ << std::endl ;
                     }
@@ -438,7 +438,7 @@ namespace RINGMesh {
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         index_t surface_id = interf.child_id( s ).index ;
                         out << "GROUP_MA" <<  std::endl ;
-                        out << "S" << surface_id << std::endl ;
+                        out << interf.name() << std::endl ;
 
                         index_t mesh_id = mm.facets.mesh( surface_id ) ;
                         for( index_t f = 0; f < mm.facets.nb_facets( surface_id );
