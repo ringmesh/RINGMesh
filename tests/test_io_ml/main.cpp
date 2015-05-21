@@ -40,6 +40,7 @@
 
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/io.h>
+#include <ringmesh/utils.h>
 
 int main( int argc, char** argv )
 {

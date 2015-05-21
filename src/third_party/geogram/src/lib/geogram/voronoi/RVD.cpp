@@ -305,7 +305,8 @@ namespace {
                 m_[v] += cur_m;
                 double* cur_mg_out = mg_ + v * DIM;
                 for(coord_index_t coord = 0; coord < DIM; coord++) {
-                    cur_mg_out[coord] += s * (p1[coord] + p2[coord] + p3[coord]);
+                    cur_mg_out[coord] +=
+                        s * (p1[coord] + p2[coord] + p3[coord]);
                 }
                 locks_.release_spinlock(v);
             }
@@ -1147,8 +1148,8 @@ namespace {
          *    a volumetric mesh that corresponds to the volumetric
          *    restricted Voronoi diagram.
          * \details To be used as a template argument
-         *    to RVD::for_each_volumetric_integration_simplex(). The current Voronoi cell
-         *    is reported in tetrahedron region.
+         *    to RVD::for_each_volumetric_integration_simplex(). 
+         *    The current Voronoi cell is reported in tetrahedron region.
          * \note For the moment, vertices are duplicated (will be fixed
          *  in a future version).
          */
@@ -1908,14 +1909,16 @@ namespace {
                                     RVD_.delaunay()->vertex_ptr(s);
 
 
-                                //  At this step, vertex_ptr contains the centroid
-                                // of the connected component of the RVC, we now
-                                // determine whether it should be replaced by the
+                                //  At this step, vertex_ptr contains
+                                // the centroid of the connected component
+                                // of the RVC, we now determine whether it
+                                // should be replaced by the
                                 // seed (or by a projection onto the surface).
                                 
                                 const double* vertex_ptr = &(vertices_[vbase]);
                                 
-                                //  If the seed is nearer to the surface than the
+                                //  If the seed is nearer to the surface
+                                // than the
                                 // centroid of the connected component of the
                                 // restricted Voronoi cell, then use the seed.
 
@@ -1928,23 +1931,34 @@ namespace {
                                     vec3(seed_ptr), seed_projection, seed_dist
                                 );
                                 AABB_->nearest_facet(
-                                    vec3(vertex_ptr), vertex_projection, vertex_dist
+                                    vec3(vertex_ptr),
+                                    vertex_projection, vertex_dist
                                 );
                                 
                                 if(seed_dist < vertex_dist) {
                                     if(project_on_surface_) {
-                                        for(coord_index_t c = 0; c < dimension_; ++c) {
-                                            vertices_[vbase + c] = seed_projection[c];
+                                        for(
+                                            coord_index_t c = 0;
+                                            c < dimension_; ++c
+                                        ) {
+                                            vertices_[vbase + c] =
+                                                seed_projection[c];
                                         }
                                     } else {
-                                        for(coord_index_t c = 0; c < dimension_; ++c) {
+                                        for(coord_index_t c = 0;
+                                            c < dimension_; ++c
+                                        ) {
                                             vertices_[vbase + c] = seed_ptr[c];
                                         }
                                     }
                                 } else {
                                     if(project_on_surface_) {
-                                        for(coord_index_t c = 0; c < dimension_; ++c) {
-                                            vertices_[vbase + c] = vertex_projection[c];
+                                        for(
+                                            coord_index_t c = 0;
+                                            c < dimension_; ++c
+                                        ) {
+                                            vertices_[vbase + c] =
+                                                vertex_projection[c];
                                         }
                                     }
                                 }
@@ -1953,9 +1967,9 @@ namespace {
                     } else {
 
                         // Current mode: prefer seeds and not select nearest
-                        
                         //  Replace all points with the seeds (provided that
-                        // they do not correspond to multiple connected components).
+                        // they do not correspond to multiple
+                        // connected components).
                         
                         for(index_t s=0; s<seed_to_vertex_.size(); ++s) {
                             if(
@@ -1976,9 +1990,13 @@ namespace {
                     }
                 }
 
-                if( (!prefer_seeds_ || !select_nearest_) && project_on_surface_) {
+                if(
+                    (!prefer_seeds_ || !select_nearest_) && project_on_surface_
+                ) {
                     for(index_t v=0; v<vertices_.size()/3; ++v) {
-                        vec3 p(vertices_[3*v], vertices_[3*v+1], vertices_[3*v+2]);
+                        vec3 p(
+                            vertices_[3*v], vertices_[3*v+1], vertices_[3*v+2]
+                        );
                         vec3 q;
                         double sq_dist;
                         AABB_->nearest_facet(p,q,sq_dist);
@@ -2133,22 +2151,11 @@ namespace {
                 // Reorient the tetrahedra
                 index_t nb_tetrahedra = simplices.size() / 4;
                 for(index_t t = 0; t < nb_tetrahedra; ++t) {
-                    // const-cast is required because orient3d() is 
-                    //  declared in C and does
-                    // not know about constness...
-                    double* p1 = const_cast<double*>(
-                        delaunay()->vertex_ptr(simplices[4 * t])
-                    );
-                    double* p2 = const_cast<double*>(
-                        delaunay()->vertex_ptr(simplices[4 * t + 1])
-                    );
-                    double* p3 = const_cast<double*>(
-                        delaunay()->vertex_ptr(simplices[4 * t + 2])
-                    );
-                    double* p4 = const_cast<double*>(
-                        delaunay()->vertex_ptr(simplices[4 * t + 3])
-                    );
-                    if(GEO_3rdParty::orient3d(p1, p2, p3, p4) > 0) {
+                    const double* p1 = delaunay()->vertex_ptr(simplices[4 * t]);
+                    const double* p2 = delaunay()->vertex_ptr(simplices[4 * t + 1]);
+                    const double* p3 = delaunay()->vertex_ptr(simplices[4 * t + 2]);
+                    const double* p4 = delaunay()->vertex_ptr(simplices[4 * t + 3]);
+                    if(PCK::orient_3d(p1, p2, p3, p4) < 0) {
                         geo_swap(simplices[4 * t], simplices[4 * t + 1]);
                     }
                 }

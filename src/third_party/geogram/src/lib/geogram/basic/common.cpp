@@ -53,7 +53,6 @@
 #include <geogram/numerics/predicates.h>
 #include <geogram/delaunay/delaunay.h>
 #include <geogram/mesh/mesh_io.h>
-#include <geogram/third_party/shewchuk/shewchuk.h>
 #include <sstream>
 #include <iomanip>
 
@@ -69,10 +68,7 @@ namespace GEO {
         Process::initialize();
         Progress::initialize();
         CmdLine::initialize();
-
-        GEO_3rdParty::exactinit();
         PCK::initialize();
-
         Delaunay::initialize();
 
         atexit(GEO::terminate);

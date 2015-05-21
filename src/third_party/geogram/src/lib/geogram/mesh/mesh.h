@@ -70,6 +70,7 @@ namespace GEO {
      * \details Sub-elements are those that cannot exist
      *  independantly (such as MeshFacetCorner, MeshCellCorner
      *  and MeshCellFacet).
+     * \relates Mesh
      */
     class GEOGRAM_API MeshSubElementsStore {
     public:
@@ -212,6 +213,7 @@ namespace GEO {
      * \details Mesh elements can be created / manipulated indepdendantly,
      *  in contrast with sub-elements that cannot. Mesh elements are
      *  vertices, facets and cells.
+     * \relates Mesh
      */
     class GEOGRAM_API MeshElements {
     public:
@@ -290,6 +292,7 @@ namespace GEO {
 
     /**
      * \brief The vertices of a mesh.
+     * \relates Mesh
      */
     class GEOGRAM_API MeshVertices :
         public MeshSubElementsStore, public MeshElements {
@@ -581,6 +584,7 @@ namespace GEO {
 
     /**
      * \brief The edges of a mesh.
+     * \relates Mesh
      */
     class GEOGRAM_API MeshEdges :
         public MeshSubElementsStore, public MeshElements {
@@ -707,6 +711,7 @@ namespace GEO {
     
     /**
      * \brief Stores the facets of a mesh (low-level store)
+     * \relates MeshFacets
      */
     class GEOGRAM_API MeshFacetsStore : public MeshSubElementsStore {
     public:
@@ -807,6 +812,7 @@ namespace GEO {
 
     /**
      * \brief Stores the facet corners of a mesh (low-level store)
+     * \relates MeshFacets
      */
     class GEOGRAM_API MeshFacetCornersStore : public MeshSubElementsStore {
     public:
@@ -941,6 +947,7 @@ namespace GEO {
 
     /**
      * \brief The facets of a mesh
+     * \relates Mesh
      */
     class GEOGRAM_API MeshFacets : public MeshFacetsStore, public MeshElements {
     public:
@@ -1276,6 +1283,7 @@ namespace GEO {
     /**
      * \brief Lookup tables that describe the combinatorics
      *  of each cell type.
+     * \relates MeshCells
      */
     struct CellDescriptor {
         /** Number of vertices */
@@ -1305,6 +1313,7 @@ namespace GEO {
 
     /**
      * \brief Stores the cells of a mesh (low-level store)
+     * \relates MeshCells
      */
     class GEOGRAM_API MeshCellsStore : public MeshSubElementsStore {
     public:
@@ -1517,6 +1526,7 @@ namespace GEO {
 
     /**
      * \brief Stores the cell corners of a mesh (low-level store)
+     * \relates MeshCells
      */
     class GEOGRAM_API MeshCellCornersStore : public MeshSubElementsStore {
     public:
@@ -1605,6 +1615,7 @@ namespace GEO {
 
     /**
      * \brief Stores the cell facets of a mesh (low-level store)
+     * \relates MeshCells
      */
     class GEOGRAM_API MeshCellFacetsStore : public MeshSubElementsStore {
     public:
@@ -1678,6 +1689,7 @@ namespace GEO {
 
     /**
      * \brief The cells of a mesh.
+     * \relates Mesh
      */
     class GEOGRAM_API MeshCells : public MeshCellsStore, public MeshElements {
     public:
@@ -2354,6 +2366,7 @@ namespace GEO {
      *  present in a mesh.
      * \details The set of elements present in a mesh is represented
      *  by a bitwise-or combination of the constants.
+     * \relates Mesh
      */
     enum MeshElementsFlags {
         MESH_VERTICES = 1,
