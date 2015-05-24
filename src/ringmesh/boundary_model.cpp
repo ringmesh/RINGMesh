@@ -238,8 +238,8 @@ namespace {
 
     /*! 
      * @brief Returns true if the facets of the mesh share an edge
-     *       that is on one Line of the boundary model
      * @pre the mesh is triangulated
+     *       that is on one Line of the boundary model
      */
     bool facets_share_line_edge(
         const Mesh& M,
@@ -1388,8 +1388,11 @@ namespace RINGMesh {
         return unique_vertices_.vertices.point(v);
     }
 
+
+
     void BoundaryModelVertices::clear()
     {
+        GEO::Process::acquire_spinlock( lock_ ) ;
         /// \todo Unbind all attributes !!!! otherwise we'll get a crash
         // For the moment 
         if (unique2bme_.is_bound()) unique2bme_.unbind();
@@ -1413,6 +1416,7 @@ namespace RINGMesh {
                 S.set_model_vertex_id(v, NO_ID);
             }
         }
+        GEO::Process::release_spinlock( lock_ ) ;
     }
 
     /*******************************************************************************/
