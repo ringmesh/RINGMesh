@@ -205,6 +205,15 @@ namespace RINGMesh {
     }
 
     /*!
+     * Gets the BoundaryModel associated to the graphics
+     * @return the BoundaryModel
+     */
+    const BoundaryModel* BoundaryModelGfx::boundary_model()
+    {
+        return model_ ;
+    }
+
+    /*!
      * Initializes the database according the BoundaryModel dimensions
      */
     void BoundaryModelGfx::initialize()

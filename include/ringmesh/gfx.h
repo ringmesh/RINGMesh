@@ -65,6 +65,7 @@ namespace RINGMesh {
         ~BoundaryModelGfx() ;
 
         void set_boundary_model( const BoundaryModel& model ) ;
+        const BoundaryModel* boundary_model() ;
         void initialize() ;
 
         void draw_corners() ;
