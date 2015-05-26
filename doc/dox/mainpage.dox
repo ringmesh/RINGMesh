@@ -54,4 +54,7 @@ representation of the BoundaryModel.
 - \link ringmesh_boundary_model Description of the BoundaryModel \endlink
 - \link ringmesh_macro_mesh Description of the MacroMesh \endlink
 
+\image html ringmesh.png width=10cm
+
+
 */
