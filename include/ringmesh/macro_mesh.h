@@ -364,7 +364,8 @@ namespace RINGMesh {
     ringmesh_disable_copy( MacroMesh ) ;
     public:
 
-        MacroMesh( const BoundaryModel& model, index_t dim = 3 ) ;
+        MacroMesh( const BoundaryModel& model ) ;
+        MacroMesh() ;
         virtual ~MacroMesh() ;
 
         //    __  __     _   _            _
@@ -415,8 +416,10 @@ namespace RINGMesh {
          */
         const BoundaryModel& model() const
         {
-            return model_ ;
+            ringmesh_debug_assert( model_ ) ;
+            return *model_ ;
         }
+        void set_nodel( const BoundaryModel& model ) ;
 
         /*!
          * Access the DuplicateMode
@@ -459,7 +462,7 @@ namespace RINGMesh {
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
-        const BoundaryModel& model_ ;
+        const BoundaryModel* model_ ;
         /// Vector of meshes, one by region
         std::vector< GEO::Mesh* > meshes_ ;
         /// Optional duplication mode to compute the duplication of vertices on surfaces
