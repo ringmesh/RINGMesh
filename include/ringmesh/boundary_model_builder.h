@@ -67,6 +67,11 @@ namespace RINGMesh {
             model_.name_ = name ;
         }
 
+        void copy_macro_topology( const BoundaryModel& from )
+        {
+            model_.copy_macro_topology( from ) ;
+        }
+
         /*!
          * @brief Generic accessor to a modifiable BoundaryModelElement
          */
@@ -205,7 +210,7 @@ namespace RINGMesh {
                                                          bool > >& boundaries ) ;
 
         /*! @}
-         * \name Set element geometry
+         * \name Set element geometry, the vertices are added.
          * @{
          */
         void set_corner(
@@ -220,11 +225,12 @@ namespace RINGMesh {
             const BME::bme_t& surface_id,
             const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr,
-            const std::vector< index_t >& surface_adjacencies = std::vector< index_t >() ) ;
+            const std::vector< index_t >& surface_facet_ptr ) ;
 
-        // Same functions but to call in the case where the vertices of the 
-        // model are filled first 
+        /*! @}
+        * \name Set element geometry using the BoundaryModel vertices
+        * @{
+        */
         index_t add_unique_vertex( const vec3& p ) ;
 
         void set_corner(
@@ -239,14 +245,12 @@ namespace RINGMesh {
             const BME::bme_t& surface_id,
             const std::vector< index_t >& surface_vertices,
             const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr,
-            const std::vector< index_t >& surface_adjacencies = std::vector< index_t >() ) ;
+            const std::vector< index_t >& surface_facet_ptr ) ;
 
-        void set_surface_geometry_bis(
+        void set_surface_geometry(
             const BME::bme_t& surface_id,
             const std::vector< index_t >& corners,
-            const std::vector< index_t >& facet_ptr,
-            const std::vector< index_t >& corner_adjacent_facets = std::vector< index_t >() ) ;
+            const std::vector< index_t >& facet_ptr ) ;
 
         void set_surface_adjacencies( const BME::bme_t& surface_id ) ;
 
@@ -261,6 +265,8 @@ namespace RINGMesh {
         void init_global_model_element_access() ;
 
         bool complete_element_connectivity() ;  
+        
+        void remove_degenerate_facet_and_edges() ;
 
         void fill_elements_boundaries( BME::TYPE type ) ;
 
@@ -286,9 +292,10 @@ namespace RINGMesh {
         BoundaryModelBuilderGocad( BoundaryModel& model )
               : BoundaryModelBuilder( model ) {}
         virtual ~BoundaryModelBuilderGocad() {}
-
+        
         void load_ml_file( const std::string& ml_file_name ) ;
 
+    protected:
         BME::bme_t determine_line_vertices(
             const Surface& S,
             index_t id0,
@@ -302,8 +309,18 @@ namespace RINGMesh {
             std::vector< vec3 >& border_vertex_model_vertices ) const ;
 
     private:
+        void build_contacts() ;
+
+        void create_surface(
+            const std::string& interface_name,
+            const std::string& type,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2 ) ;
+
         /*!
          * @brief Triangle that set the orientation of a TFACE
+         *        in a .ml file
          */
         struct KeyFacet {
             KeyFacet(
@@ -318,16 +335,7 @@ namespace RINGMesh {
             vec3 p2_ ;
         } ;
 
-        void build_contacts() ;
-
-        void create_surface(
-            const std::string& interface_name,
-            const std::string& type,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2 ) ;
-
-        /*!
+       /*!
          * @brief Check if the surface triangle orientations match the one of the key facet
          */
         bool check_key_facet_orientation( index_t surface ) const;
@@ -445,7 +453,7 @@ namespace RINGMesh {
                 }
 
                 // Create the surface and set its geometry - adjacencies are computed
-                set_surface_geometry_bis( create_surface(), corners, facets_ptr ) ;
+                set_surface_geometry( create_surface(), corners, facets_ptr ) ;
             }
         }
     }

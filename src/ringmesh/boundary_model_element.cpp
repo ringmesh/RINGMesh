@@ -91,6 +91,7 @@ namespace {
     *    The points that are duplicated must be in the boundary
     *    of the element to have a valid element.
     *
+    * @todo Test that this function does its job, does not seem so. JP
     */
     index_t detect_duplicated_vertices(
         const BoundaryModelMeshElement& E,
@@ -1007,73 +1008,84 @@ namespace RINGMesh {
         // Model indices must be valid
         valid = check_range_model_vertex_ids( *this ) && valid ;
 
-        // Count the number of edges in which each vertex is
-        std::vector< index_t > nb ;
-        count_vertex_occurences( mesh(), nb ) ;
-        index_t nb0 = 0 ;
-        index_t nb1 = 0 ;
-        index_t nb2 = 0 ;
-        for( index_t i = 0; i < nb.size(); ++i ) {
-            if( nb[ i ] == 0 ) ++nb0 ;
-            else if( nb[ i ] == 1 ) ++nb1 ;
-            else if( nb[ i ] == 2 ) ++nb2 ;
+        if( mesh_.vertices.nb() > 1 ) {
+            // Count the number of edges in which each vertex is
+            std::vector< index_t > nb ;
+            count_vertex_occurences( mesh(), nb ) ;
+            index_t nb0 = 0 ;
+            index_t nb1 = 0 ;
+            index_t nb2 = 0 ;
+            for( index_t i = 0; i < nb.size(); ++i ) {
+                if( nb[ i ] == 0 ) ++nb0 ;
+                else if( nb[ i ] == 1 ) ++nb1 ;
+                else if( nb[ i ] == 2 ) ++nb2 ;
+            }
+
+            // Vertices at extremitites must be in only one edge
+            if( nb.front() != 1 || nb.back() != 1 ) {
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << "Invalid extremity points in " << bme_id() << std::endl ;
+                valid = false ;
+            }
+            // No isolated vertices are allowed
+            if( nb0 > 0 ) {
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << nb0 << " isolated vertices in " << bme_id() << std::endl ;
+                valid = false ;
+            }
+            // Only the two extremities are in only 1 edge 
+            // One connected component condition
+            if( nb1 != 2 ) {
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << "More than one connected component for " << bme_id() << std::endl ;
+                valid = false ;
+            }
+            // All the others must be in 2 edges and 2 edges only
+            // Manifold condition
+            if( nb2 != nb.size()-2 ) {
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << "Non-manifold element" << bme_id() << std::endl ;
+                valid = false ;
+            }
+
+            std::vector< index_t > duplicated ;
+            // Only the 2 extremity vertices can be duplicated
+            // when the line is closed
+            index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
+            if( nb_duplicated == 1 || nb_duplicated > 2 ) {
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << nb_duplicated << " duplicated vertices in " << bme_id() << std::endl ;
+                valid = false ;
+            } else if( nb_duplicated == 2 ) {
+                if( !is_closed() ) {
+                    GEO::Logger::err( "BoundaryModelElement" )
+                        << " Duplicated vertex in non closed " << bme_id() << std::endl ;
+                    valid = false ;
+                } else if( duplicated.front() == NO_ID ) {
+                    GEO::Logger::err( "BoundaryModelElement" )
+                        << " Invalid duplicated vertex in closed " << bme_id() << std::endl ;
+                    valid = false ;
+                } else if( duplicated.front() != duplicated.back() ) {
+                    GEO::Logger::err( "BoundaryModelElement" )
+                        << " Invalid duplicated vertex in closed " << bme_id() << std::endl ;
+                    valid = false ;
+                }
+            }
         }
 
-        // Vertices at extremitites must be in only one edge
-        if( nb.front() != 1 || nb.back() != 1 ) {
-            GEO::Logger::err( "BoundaryModelElement" )
-                << "Invalid extremity points in " << bme_id() << std::endl ;
-            valid = false ;
-        }               
-        // No isolated vertices are allowed
-        if( nb0 > 0 ) {
-            GEO::Logger::err( "BoundaryModelElement" )
-                << nb0 << " isolated vertices in " << bme_id() << std::endl ;
-            valid = false ;
-        }
-        // Only the two extremities are in only 1 edge 
-        // One connected component condition
-        if( nb1 != 2 ) {
-            GEO::Logger::err( "BoundaryModelElement" )
-                << "More than one connected component for " << bme_id() << std::endl ;
-            valid = false ;
-        }
-        // All the others must be in 2 edges and 2 edges only
-        // Manifold condition
-        if( nb2 != nb.size()-2 ) {
-            GEO::Logger::err( "BoundaryModelElement" )
-                << "Non-manifold element" << bme_id() << std::endl ;
-            valid = false ;
-        }
-        
-        std::vector< index_t > duplicated ;
-        // Only the extremity vertex can be duplicated
-        index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
-        if( nb_duplicated > 2 ) {
-            GEO::Logger::err( "BoundaryModelElement" )
-                << nb_duplicated << " vertices in " << bme_id() << std::endl ;
-            valid = false ;
-        }
-        // If there 2 duplicates, the line is closed
-        else if( nb_duplicated == 2 ) {
-            if( !is_closed() ) {
-                GEO::Logger::err( "BoundaryModelElement" )
-                    << " Duplicated vertex in non closed " << bme_id() << std::endl ;
-                valid = false ;
-            }
-            else if( duplicated.front() == NO_ID ) {
-                GEO::Logger::err( "BoundaryModelElement" )
-                    << " Invalid duplicated vertex in closed " << bme_id() << std::endl ;
-                valid = false ;
-            }
-            else if( duplicated.front() != duplicated.back() ) {
-                GEO::Logger::err( "BoundaryModelElement" )
-                    << " Invalid duplicated vertex in closed " << bme_id() << std::endl ;
-                valid = false ;
+        // No zero edge length
+        index_t nb_degenerated = 0 ;
+        for( index_t e = 0; e < nb_cells(); ++e ) {
+            if( segment_length( e ) < epsilon ) {
+                nb_degenerated++ ;
             }
         }
-
-        // No zero edge length - already ruled out with the duplicated vertex test (JP)
+        if( nb_degenerated > 0 ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                << nb_degenerated 
+                << " degenerated edges in " << bme_id() << std::endl ;
+            valid = false ;
+        }
         // No self-intersection - I suppose there are no segment - segment intersection (JP)
         // No duplicated edge - most probably ruled out with the duplicated vertex test (JP)
 
@@ -1254,7 +1266,7 @@ namespace RINGMesh {
 
         // There might be several duplicated points, but they must be in one of the
         // boundary lines that are twice in the boundary of this surface
-        /// @todo Check taht duplicated vertices are on a Line that is an internal boundary
+        /// @todo Check that duplicated vertices are on a Line that is an internal boundary
 
         // No zero area facet
         // No facet incident to the same vertex check local and global indices
@@ -1295,8 +1307,17 @@ namespace RINGMesh {
                 <<  bme_id() << " mesh has "
                 << cc << " connected components " << std::endl ;
             valid = false ;
-        }
+#ifdef RINGMESH_DEBUG
+            std::ostringstream file ;
+            file << model().debug_directory()
+                << "\\"
+                << " invalid_surf_"
+                << bme_id().index << ".obj"  ;
+            model().save_surface_as_obj_file( bme_id().index, file.str() ) ;
 
+#endif  
+        }
+        
         return valid ; 
     }
 
