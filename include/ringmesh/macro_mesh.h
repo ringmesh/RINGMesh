@@ -335,11 +335,9 @@ namespace RINGMesh {
     class RINGMESH_API MacroMeshOrder {
     public:
         MacroMeshOrder( MacroMesh& mm ) ;
-        void order( const index_t order ) ;
         ~MacroMeshOrder() ;
         const index_t nb_total_vertices() const ;
-        void nb_total_vertices(const index_t nb_vertices) ;
-        void initialize( index_t order, bool point_in_middle = false ) ;
+        void initialize( index_t order ) ;
         const index_t order() const ;
         const index_t id(const vec3& point) const ;
         const vec3 point(index_t i) const {
@@ -351,7 +349,6 @@ namespace RINGMesh {
         const MacroMesh& mm_ ;
         index_t nb_vertices_ ;
         index_t order_ ;
-        std::vector<index_t> tet_to_edge_;
         ColocaterANN ann_ ;
 
     } ;
