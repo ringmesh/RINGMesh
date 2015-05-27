@@ -44,6 +44,8 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/line_stream.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_preprocessing.h>
 
 #include <iostream>
 #include <iomanip>
@@ -84,6 +86,105 @@ namespace {
         // Paranoia : we should perhaps verify that all children
         // have the same geological features
     }
+
+    /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
+    *
+    * \brief Tests whether a facet is degenerate.
+    * \param[in] M the mesh that the facet belongs to
+    * \param[in] f the index of the facet in \p M
+    * \return true if facet \p f has duplicated vertices,
+    *  false otherwise
+    */
+    bool facet_is_degenerate( 
+        const GEO::Mesh& M,
+        index_t f,
+        GEO::vector<index_t>& colocated_vertices )
+    {
+        index_t nb_vertices = M.facets.nb_vertices( f );
+        if( nb_vertices != 3 ) {
+            index_t* vertices = (index_t*)alloca( nb_vertices*sizeof( index_t ) );
+            for( index_t lv = 0; lv<nb_vertices; ++lv ) {
+                vertices[ lv ] = colocated_vertices[ M.facets.vertex( f, lv ) ];
+            }
+            std::sort( vertices, vertices + nb_vertices );
+            return std::unique(
+                vertices, vertices + nb_vertices
+                ) != vertices + nb_vertices;
+        }
+        index_t c1 = M.facets.corners_begin( f );
+        index_t c2 = c1 + 1;
+        index_t c3 = c2 + 1;
+        index_t v1 = colocated_vertices[ M.facet_corners.vertex( c1 ) ];
+        index_t v2 = colocated_vertices[ M.facet_corners.vertex( c2 ) ];
+        index_t v3 = colocated_vertices[ M.facet_corners.vertex( c3 ) ];
+        return v1 == v2 || v2 == v3 || v3 == v1;
+    }
+
+    /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
+     */
+    void mesh_detect_degenerate_facets(
+        const GEO::Mesh& M, 
+        GEO::vector<index_t>& f_is_degenerate,
+        GEO::vector<index_t>& colocated_vertices
+        )
+    {
+        f_is_degenerate.resize( M.facets.nb() );
+        for( index_t f = 0; f<M.facets.nb(); ++f ) {
+            f_is_degenerate[ f ] = facet_is_degenerate( M, f, colocated_vertices );
+        }
+    }
+
+    /*! 
+     * @brief Detect and remove degenerated facets in a Mesh
+     */
+    index_t detect_degenerate_facets( GEO::Mesh& M )
+    {
+        GEO::vector< index_t > colocated ;
+        GEO::mesh_detect_colocated_vertices( M, colocated ) ;
+
+        GEO::vector< index_t > degenerate ;
+        mesh_detect_degenerate_facets( M, degenerate, colocated ) ;
+        return std::count( degenerate.begin(), degenerate.end(), 1 ) ;
+    }
+
+    bool edge_is_degenerate(
+        const GEO::Mesh& M,
+        index_t e,
+        GEO::vector<index_t>& colocated_vertices )
+    {
+        index_t v1 = colocated_vertices[ M.edges.vertex( e, 0 ) ];
+        index_t v2 = colocated_vertices[ M.edges.vertex( e, 1 ) ];
+        return v1 == v2 ;
+    }
+
+    void mesh_detect_degenerate_edges(
+        const GEO::Mesh& M,
+        GEO::vector<index_t>& e_is_degenerate,
+        GEO::vector<index_t>& colocated_vertices
+        )
+    {
+        e_is_degenerate.resize( M.edges.nb() );
+        for( index_t e = 0; e<M.edges.nb(); ++e ) {
+            e_is_degenerate[ e ] = edge_is_degenerate( M, e, colocated_vertices );
+        }
+    }
+
+    /*!
+    * @brief Detect and remove degenerated edges in a Mesh
+    */
+    index_t repair_line_mesh( GEO::Mesh& M )
+    {
+        GEO::vector< index_t > colocated ;
+        GEO::mesh_detect_colocated_vertices( M, colocated ) ;
+
+        GEO::vector< index_t > degenerate ;
+        mesh_detect_degenerate_edges( M, degenerate, colocated ) ;
+        index_t nb = std::count( degenerate.begin(), degenerate.end(), 1 ) ;
+        M.edges.delete_elements( degenerate ) ;
+        return nb ;
+    }
+  
+
 
 }
 
@@ -167,7 +268,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief To use with extreme caution -  Erase one element of the BoundaryModel
+     * @brief Use with EXTREME caution -  Erase one element of the BoundaryModel
      * @details TO USE ONLY AFTER having removed all references to this element,
      * AND having updated the indices of the elements of the same type
      * AND having updated all references to these elements in their boundaries,
@@ -616,27 +717,30 @@ namespace RINGMesh {
      * @param[in] points Coordinates of the vertices
      * @param[in] facets Indices in the vertices vector to build facets
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     * @param[in] surface_adjacencies Adjacent facet (size of facet_ptr)
      */
     void BoundaryModelBuilder::set_surface_geometry(
         const BME::bme_t& surface_id,
         const std::vector< vec3 >& points,
         const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr,
-        const std::vector< index_t >& surface_adjacencies )
+        const std::vector< index_t >& facet_ptr )
     {
         if( facets.size() == 0 ) {
             return ;
         }
 
-        model_.surfaces_[surface_id.index]->set_geometry( points, facets,
-            facet_ptr ) ;
+        model_.surfaces_[surface_id.index]->
+            set_geometry( points, facets, facet_ptr ) ;
 
-        if( surface_adjacencies.empty() ) {
-            set_surface_adjacencies( surface_id ) ;
-        } else {
-            model_.surfaces_[surface_id.index]->set_adjacent( surface_adjacencies ) ;
+        // Test - remove degenerated facets 
+      /*  GEO::Mesh& M = model_.surface( surface_id.index ).mesh() ;
+        index_t nb = repair_surface_mesh( M ) ;
+        if( nb > 0 ) {
+            GEO::Logger::out( "BoundaryModel" )
+                << " Removed " << nb << " degenerated facets in Surface "
+                << surface_id.index << std::endl ;
         }
+      */
+        set_surface_adjacencies( surface_id ) ;
     }
 
     /*!
@@ -684,43 +788,34 @@ namespace RINGMesh {
      * @param[in] model_vertex_ids Indices of unique vertices in the BoundaryModel
      * @param[in] facets Indices in the vertices vector to build facets
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     * @param[in] adjacencies Adjacent facet (size of facet_ptr)
      */
     void BoundaryModelBuilder::set_surface_geometry(
         const BME::bme_t& surface_id,
         const std::vector< index_t >& model_vertex_ids,
         const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr,
-        const std::vector< index_t >& adjacencies )
+        const std::vector< index_t >& facet_ptr )
     {
         if( facets.size() == 0 ) {
             return ;
         }
 
-        model_.surfaces_[surface_id.index]->set_geometry( model_vertex_ids, facets,
-            facet_ptr ) ;
+        model_.surfaces_[ surface_id.index ]->
+            set_geometry( model_vertex_ids, facets, facet_ptr ) ;
 
-        if( adjacencies.empty() ) {
-            set_surface_adjacencies( surface_id ) ;
-        } else {
-            model_.surfaces_[surface_id.index]->set_adjacent( adjacencies ) ;
-        }
+        set_surface_adjacencies( surface_id ) ;
     }
 
     /*!
      * @brief Set the facets of a surface
-     * @details If facet_adjacencies are not given they are computed
      *
      * @param[in] surface_id Index of the surface
      * @param[in] facets Indices of the model vertices defining the facets
-     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     * @param[in] corner_adjacent_facets Adjacent facet (size of facet_ptr)
+     * @param[in] facet_ptr Pointer to the beginning of a facet in facets     
      */
-    void BoundaryModelBuilder::set_surface_geometry_bis(
+    void BoundaryModelBuilder::set_surface_geometry(
         const BME::bme_t& surface_id,
         const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr,
-        const std::vector< index_t >& corner_adjacent_facets )
+        const std::vector< index_t >& facet_ptr )
     {
         if( facets.size() == 0 ) {
             return ;
@@ -968,6 +1063,55 @@ namespace RINGMesh {
         }
     }
 
+    void BoundaryModelBuilder::remove_degenerate_facet_and_edges()
+    {
+        for( index_t i = 0; i < model_.nb_lines(); ++i ) {
+            index_t nb = repair_line_mesh( model_.line( i ).mesh() ) ;
+            if( nb > 0 ) {
+                GEO::Logger::out( "BoundaryModel" )
+                    << nb << " degenerated edges removed in LINE "
+                    << i << std::endl ;
+
+                /// @todo The line may be empty now - remove it from the model
+            }
+
+        }
+
+        for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
+            GEO::Mesh& M = model_.surface( i ).mesh() ;
+            index_t nb = detect_degenerate_facets( M ) ;
+            if( nb > 0 ) {
+                // If there are some degenerated facets 
+                // We need to repair the model 
+                GEO::Logger::out( "BoundaryModel" )
+                    << nb << " degenerated facets in SURFACE "
+                    << i << std::endl ;
+                // Using repair function of geogram
+                // Warning - This triangulates the mesh
+                GEO::mesh_repair( M ) ;
+                                
+                // This might create some small components - remove them
+                // How to choose the epsilon ? and the maximum number of facets ?
+                GEO::remove_small_connected_components( M, epsilon_sq, 3 ) ;
+
+                // Ok this is a bit of an overkill
+                // The alternative is to copy mesh_repair and change it
+                GEO::mesh_repair( M ) ;
+
+                // If the Surface has internal boundaries, we need to 
+                // re-cut the Surface along these lines
+                Surface& S = *model_.surfaces_[ i ] ;
+                for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
+                    const Line& L = model_.line( S.boundary_id( l ).index ) ;
+                    if( L.is_inside_border( S ) ) {
+                        S.cut_by_line( L ) ;
+                    }
+                }
+            }
+        }
+        
+    }
+
     /*!
      * @brief Fills the model nb_elements_per_type_ vector
      * @details See global element access with BoundaryModel::element( BME::TYPE, index_t )
@@ -1000,31 +1144,23 @@ namespace RINGMesh {
             set_model_name( "model_default_name" ) ;
         }
 
-        // There must be at least 3 vertices
-        if( model_.nb_vertices() == 0 ) {
-            return false ;
-        }
-
-        // And at least one surface
-        if( model_.nb_surfaces() == 0 ) {
-            return false ;
-        }
-
-        // The Universe
-        /// \todo Write some code to create the universe (cf. builder from surfaces)
-
         init_global_model_element_access() ;
 
         complete_element_connectivity() ;
 
-        /// 1. Check that all the elements of the BoundaryModel have
-        ///    the required attributes - Fill optional attributes
+        // Fill geological feature if missing
         for( index_t i = 0; i < model_.nb_elements( BME::ALL_TYPES ); ++i ) {
             BME& E = element( BME::bme_t( BME::ALL_TYPES, i ) ) ;
             if( !E.has_geological_feature() ) {
                 fill_element_geological_feature( E ) ;
             }
         }
+
+        // Mesh repair for surfaces and lines
+        // Not activated now - because it might create empty elements
+        // That must be removed of the BoundaryModel
+    
+        remove_degenerate_facet_and_edges() ;
 
         GEO::Logger::out( "BoundaryModel" ) << "Model " << model_.name() << " has "
             << std::endl << std::setw( 10 ) << std::left << model_.nb_vertices()

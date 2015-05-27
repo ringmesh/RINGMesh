@@ -88,7 +88,8 @@ namespace {
     }
 
     /*---------------------------------------------------------------------------*/
-    /* ----- Some code below is copied/modified from geogram\mesh\mesh_intersection.cpp ---*/
+    /*----- Some pieces of the code below are copied or modified from -----------*/ 
+    /*----- geogram\mesh\mesh_intersection.cpp-----------------------------------*/
     /*
     *  Copyright (c) 2012-2014, Bruno Levy
     *  All rights reserved.
@@ -117,11 +118,8 @@ namespace {
     *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     *  POSSIBILITY OF SUCH DAMAGE.
     */
-
-
-    /*********************************************************************/
-
-    /** 
+    
+    /** \note Copied from geogram
     * \brief Computes the intersection between two triangular facets in
     *  a mesh
     * \param[in] M the mesh
@@ -288,13 +286,10 @@ namespace {
     }
 
 
-    /**
+    /** \note Copied from geogram
     * \brief Tests whether two facets are adjacent
     * \details Two facets are adjacents if they share an edge
-    *          In a Surface two facets are adjacent if they are stored as such
-    *          in the Mesh, but they can also share an edge along the boundary of the
-    *          Surface - checked with the global model indices
-    *
+    *          
     * \param[in] M the mesh
     * \param[in] f1 index of the first facet
     * \param[in] f2 index of the second facet
@@ -317,7 +312,7 @@ namespace {
         return false;
     }
 
-    /**
+    /** \note Modified from geogram
     * \brief Action class for storing intersections when traversing
     *  a AABBTree.
     */
@@ -364,8 +359,8 @@ namespace {
     };
 
 
-    /**
-    * \brief Detect intersecting facets in a mesh TRIANGULATED !!
+    /** \note Copied from geogram
+    * \brief Detect intersecting facets in a TRIANGULATED mesh
     * \param[in] M the mesh
     * \return number of intersecting facets
     */
@@ -387,11 +382,11 @@ namespace {
         return nb_intersections ;
     }
 
-    /*********************************************************************/
-
+    /***************************************************************************/
 
     /*---------------------------------------------------------------------------*/
-    /* ----- Code copied and modified from geogram\mesh\mesh_repair.cpp ---*/
+    /*----- Some pieces of the code below are copied or modified from -----------*/
+    /*----- geogram\mesh\mesh_repair.cpp-----------------------------------------*/
 
     /*!
     * @brief Trigger an assertion if several vertices of a mesh at the same geometric location
@@ -477,13 +472,13 @@ namespace {
     }
 
     /**
-    * \brief Connects the facets in a triangulated mesh.
+    * \brief Connects the facets in a TRIANGULATED mesh.
     * \details Reconstructs the corners.adjacent_facet links. 
     *          Orientation not checked 
-    *
     * \note Modified from geogram to take into account a predicate that impose to disconnect facets
     *       along identified edges - Jeanne
-    *       The predicate implements bool operator() (index_t v1, index_t v2) const ;
+    *       The predicate should implement
+    *       bool operator() (index_t v1, index_t v2) const ;
     */
     template< typename P >
     void repair_connect_facets(
@@ -507,7 +502,6 @@ namespace {
         // linked list of all the corners incident to 
         // vertex v.
         vector<index_t> next_c_around_v( M.facet_corners.nb(), NO_CORNER );
-
        
         // Compute v2c and next_c_around_v
         for( index_t c = 0; c<M.facet_corners.nb(); ++c ) {
@@ -735,8 +729,6 @@ namespace {
     }
 
 
-
-
     /*!
      * @brief Build a Mesh from the boundaries of the given element
      * @details Inside borders are ignored.
@@ -829,7 +821,7 @@ namespace {
     /*
      * @brief Checks that boundary surfaces of @param region define
      *        a one connected component closed manifold surface
-     * @details Builds a GEO::Mesh from the surface meshes, repair it and analyse it.s
+     * @details Builds a GEO::Mesh from the surface meshes, repairs it and analyses it.
      */
     bool is_region_valid( const BoundaryModelElement& region )
     {
