@@ -133,6 +133,9 @@ namespace RINGMesh {
         MacroMeshGfx() ;
         ~MacroMeshGfx() ;
 
+        const MacroMesh* macro_mesh() const {
+            return mm_ ;
+        }
         void set_macro_mesh( const MacroMesh& model ) ;
         void initialize() ;
 

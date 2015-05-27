@@ -933,16 +933,16 @@ namespace RINGMesh {
 
     MacroMeshTools::MacroMeshTools( MacroMesh& mm )
         :
-            mm_( mm ),
-            facet_aabb_( mm.nb_meshes(), nil ),
-            cell_aabb_( mm.nb_meshes(), nil )
+            mm_( mm )
     {
     }
 
     MacroMeshTools::~MacroMeshTools()
     {
-        for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
+        for( index_t r = 0; r < facet_aabb_.size(); r++ ) {
             if( facet_aabb_[r] ) delete facet_aabb_[r] ;
+        }
+        for( index_t r = 0; r < cell_aabb_.size(); r++ ) {
             if( cell_aabb_[r] ) delete cell_aabb_[r] ;
         }
     }
@@ -964,6 +964,9 @@ namespace RINGMesh {
      */
     void MacroMeshTools::init_facet_aabb( index_t region ) const
     {
+        if( facet_aabb_.size() <= region ) {
+            facet_aabb_.resize( region+1, nil ) ;
+        }
         if( facet_aabb_[region] ) return ;
         const_cast< MacroMeshTools* >( this )->facet_aabb_[region] =
             new GEO::MeshFacetsAABB( mm_.mesh( region ) ) ;
@@ -986,6 +989,9 @@ namespace RINGMesh {
      */
     void MacroMeshTools::init_cell_aabb( index_t region ) const
     {
+        if( cell_aabb_.size() <= region ) {
+            cell_aabb_.resize( region+1, nil ) ;
+        }
         if( cell_aabb_[region] ) return ;
         const_cast< MacroMeshTools* >( this )->cell_aabb_[region] =
             new GEO::MeshCellsAABB( mm_.mesh( region ) ) ;
@@ -1084,9 +1090,9 @@ namespace RINGMesh {
         return mm_.vertices.nb_total_vertices() + colocated_points[0] ;
     }
 
-    MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
+    MacroMesh::MacroMesh( const BoundaryModel& model )
         :
-            model_( model ),
+            model_( &model ),
             meshes_( model.nb_regions(), nil ),
             mode_( NONE ),
             wells_( nil ),
@@ -1097,10 +1103,23 @@ namespace RINGMesh {
             order( *this ),
             order_(1)
     {
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
-            meshes_[r] = new GEO::Mesh( dim ) ;
+        for( index_t r = 0; r < model_->nb_regions(); r++ ) {
+            meshes_[r] = new GEO::Mesh( 3 ) ;
         }
+    }
 
+    MacroMesh::MacroMesh()
+        :
+            model_( nil ),
+            meshes_(),
+            mode_( NONE ),
+            wells_( nil ),
+            vertices( *this ),
+            facets( *this ),
+            cells( *this ),
+            tools( *this ),
+            order( *this )
+    {
     }
 
     /*!
@@ -1111,14 +1130,14 @@ namespace RINGMesh {
     void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes ) const
     {
         index_t dim = meshes_[0]->vertices.dimension() ;
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
+        for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r]->copy( *rhs.meshes_[r], copy_attributes ) ;
         }
     }
 
     MacroMesh::~MacroMesh()
     {
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
+        for( index_t r = 0; r < meshes_.size(); r++ ) {
 #ifdef RINGMESH_DEBUG
             Utils::print_bounded_attributes( *meshes_[r] ) ;
 #endif
@@ -1147,7 +1166,7 @@ namespace RINGMesh {
                     internal_vertices.empty() ?
                         std::vector< vec3 >() : internal_vertices[i] ;
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
-                    &model_.region( i ), add_steiner_points, vertices, wells() ) ;
+                    &model_->region( i ), add_steiner_points, vertices, wells() ) ;
                 GEO::Logger::instance()->set_quiet( true ) ;
                 tetragen->tetrahedralize() ;
                 GEO::Logger::instance()->set_quiet( false ) ;
@@ -1158,7 +1177,7 @@ namespace RINGMesh {
                 internal_vertices.empty() ?
                     std::vector< vec3 >() : internal_vertices[region_id] ;
             TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
-                &model_.region( region_id ), add_steiner_points, vertices,
+                &model_->region( region_id ), add_steiner_points, vertices,
                 wells() ) ;
             GEO::Logger::instance()->set_quiet( true ) ;
             tetragen->tetrahedralize() ;
@@ -1175,5 +1194,13 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
+    void MacroMesh::set_nodel( const BoundaryModel& model )
+    {
+        model_ = &model ;
+        meshes_.resize( model_->nb_regions(), nil ) ;
+        for( index_t r = 0; r < model_->nb_regions(); r++ ) {
+            meshes_[r] = new GEO::Mesh( 3 ) ;
+        }
+    }
 }
 

@@ -84,14 +84,12 @@
  */
 
 #include <ringmesh/boundary_model.h>
+#include <ringmesh/macro_mesh.h>
 #include <ringmesh/gfx.h>
 #include <ringmesh/io.h>
 
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram_gfx/glut_viewer/glut_viewer.h>
-//#include <geogram/mesh/mesh.h>
-//#include <geogram/mesh/mesh_io.h>
-//#include <geogram_gfx/mesh/mesh_gfx.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
 #include <geogram/basic/file_system.h>
@@ -104,16 +102,19 @@ namespace {
     RINGMesh::BoundaryModel BM ;
     RINGMesh::BoundaryModelGfx BM_gfx ;
 
-    bool hexes = true ;
-    bool show_colors = true ;
+    RINGMesh::MacroMesh MM ;
+    RINGMesh::MacroMeshGfx MM_gfx ;
+
     bool show_borders = false ;
     bool white_bg = true ;
     bool show_corners = true ;
     bool show_lines = true ;
     bool show_surface = true ;
     bool show_volume = false ;
-    bool show_vertices = false ;
     bool colored_cells = false ;
+
+    double shrink = 1.0 ;
+    bool mesh_visible = true ;
 
     /**
      * \brief Zooms in.
@@ -142,9 +143,11 @@ namespace {
         if( white_bg ) {
             glut_viewer_set_background_color( 1.0, 1.0, 1.0 ) ;
             BM_gfx.set_mesh_surfaces_color( 0.0, 0.0, 0.0 ) ;
+            MM_gfx.set_cell_mesh_regions_color( 0.0, 0.0, 0.0 ) ;
         } else {
             glut_viewer_set_background_color( 0.0, 0.0, 0.0 ) ;
             BM_gfx.set_mesh_surfaces_color( 1.0, 1.0, 1.0 ) ;
+            MM_gfx.set_cell_mesh_regions_color( 1.0, 1.0, 1.0 ) ;
         }
     }
 
@@ -153,7 +156,9 @@ namespace {
      */
     void toggle_mesh()
     {
-//        BM_gfx.set_mesh_surfaces_visibility( !BM_gfx.get_show_mesh() ) ;
+        mesh_visible = !mesh_visible ;
+        BM_gfx.set_mesh_surfaces_visibility( mesh_visible ) ;
+        MM_gfx.set_cell_mesh_regions_visibility( mesh_visible ) ;
     }
 
     /**
@@ -161,7 +166,8 @@ namespace {
      */
     void inc_shrink()
     {
-//        BM_gfx.set_shrink( BM_gfx.get_shrink() + 0.1 ) ;
+        shrink += 0.1 ;
+        MM_gfx.set_cell_regions_shrink( shrink ) ;
     }
 
     /**
@@ -169,15 +175,8 @@ namespace {
      */
     void dec_shrink()
     {
-//        BM_gfx.set_shrink( BM_gfx.get_shrink() - 0.1 ) ;
-    }
-
-    /**
-     * \brief Toggles color / BW display.
-     */
-    void toggle_colors()
-    {
-        show_colors = !show_colors ;
+        shrink -= 0.1 ;
+        MM_gfx.set_cell_regions_shrink( shrink ) ;
     }
 
     /**
@@ -187,21 +186,6 @@ namespace {
     {
 //        BM_gfx.set_lighting( !BM_gfx.get_lighting() ) ;
     }
-
-    /**
-     * \brief Cycles between three possible points size.
-     */
-    void cycle_points_size()
-    {
-//        if( BM_gfx.get_points_size() == 2.0f ) {
-//            BM_gfx.set_points_size( 0.1f ) ;
-//        } else if( BM_gfx.get_points_size() == 0.1f ) {
-//            BM_gfx.set_points_size( 1.0f ) ;
-//        } else {
-//            BM_gfx.set_points_size( 2.0f ) ;
-//        }
-    }
-
 
     /**
      * \brief Initializes OpenGL objects.
@@ -216,14 +200,12 @@ namespace {
             glut_viewer_is_enabled_ptr( GLUT_VIEWER_TWEAKBARS ),
             "Toggle tweakbars" ) ;
         glut_viewer_add_key_func( 'b', toggle_background, "Toggle background" ) ;
-        glut_viewer_add_key_func( 'c', toggle_colors, "colors" ) ;
         glut_viewer_add_toggle( 'B', &show_borders, "borders" ) ;
         glut_viewer_add_key_func( 'z', zoom_in, "Zoom in" ) ;
         glut_viewer_add_key_func( 'Z', zoom_out, "Zoom out" ) ;
         glut_viewer_disable( GLUT_VIEWER_TWEAKBARS ) ;
         glut_viewer_disable( GLUT_VIEWER_BACKGROUND ) ;
         glut_viewer_add_key_func( 'm', toggle_mesh, "mesh" ) ;
-        glut_viewer_add_toggle( 'j', &hexes, "hexes" ) ;
     }
 
     /**
@@ -237,28 +219,20 @@ namespace {
             BM_gfx.set_boundary_model( BM ) ;
         }
 
-//        BM_gfx.set_draw_cells( GEO::MESH_HEX, hexes ) ;
+        if( MM_gfx.macro_mesh() != &MM ) {
+            MM_gfx.set_macro_mesh( MM ) ;
+        }
 
         GLfloat shininess = 20.0f ;
         glMaterialfv( GL_FRONT_AND_BACK, GL_SHININESS, &shininess ) ;
         static float spec[4] = { 0.6f, 0.6f, 0.6f, 1.0f } ;
         glMaterialfv( GL_FRONT_AND_BACK, GL_SPECULAR, spec ) ;
 
-//        if( show_colors ) {
-//            if( BM.cells.nb() == 0 ) {
-//                BM_gfx.set_surface_color( 0.5f, 0.75f, 1.0f ) ;
-//                BM_gfx.set_backface_surface_color( 1.0f, 0.0f, 0.0f ) ;
-//            } else {
-//                BM_gfx.set_surface_color( 0.7f, 0.0f, 0.0f ) ;
-//                BM_gfx.set_backface_surface_color( 1.0f, 1.0f, 0.0f ) ;
-//            }
-//        } else {
-            if( white_bg ) {
-                BM_gfx.set_surfaces_color( 0.9f, 0.9f, 0.9f ) ;
-            } else {
-                BM_gfx.set_surfaces_color( 0.1f, 0.1f, 0.1f ) ;
-            }
-//        }
+        if( white_bg ) {
+            BM_gfx.set_surfaces_color( 0.9f, 0.9f, 0.9f ) ;
+        } else {
+            BM_gfx.set_surfaces_color( 0.1f, 0.1f, 0.1f ) ;
+        }
 
         if( show_corners ) {
             BM_gfx.draw_corners() ;
@@ -270,6 +244,10 @@ namespace {
 
         if( show_surface ) {
             BM_gfx.draw_surfaces() ;
+        }
+
+        if( show_volume ) {
+            MM_gfx.draw() ;
         }
 
     }
@@ -286,13 +264,36 @@ namespace {
      */
     void get_bbox( const RINGMesh::BoundaryModel& BM, double* xyzmin, double* xyzmax, bool animate )
     {
-        for( GEO::index_t c = 0; c < 3; c++ ) {
-            xyzmin[c] = GEO::Numeric::max_float64() ;
-            xyzmax[c] = GEO::Numeric::min_float64() ;
-        }
-
         for( GEO::index_t s = 0; s < BM.nb_surfaces(); s++ ) {
             GEO::Mesh& M = BM.surface( s ).mesh() ;
+            for( GEO::index_t v = 0; v < M.vertices.nb(); ++v ) {
+                const double* p = M.vertices.point_ptr( v ) ;
+                for( GEO::coord_index_t c = 0; c < 3; ++c ) {
+                    xyzmin[c] = GEO::geo_min( xyzmin[c], p[c] ) ;
+                    xyzmax[c] = GEO::geo_max( xyzmax[c], p[c] ) ;
+                    if( animate ) {
+                        xyzmin[c] = GEO::geo_min( xyzmin[c], p[c + 3] ) ;
+                        xyzmax[c] = GEO::geo_max( xyzmax[c], p[c + 3] ) ;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * \brief Gets the bounding box of a mesh animation.
+     * \details In animated mode, the mesh animation is stored as a mesh with
+     *  6d coordinates, that correspond to the geometric location
+     *  at the vertices at time 0 and at time 1.
+     * \param[in] M the mesh
+     * \param[out] xyzmin a pointer to the three minimum coordinates
+     * \param[out] xyzmax a pointer to the three maximum coordinates
+     * \param[in] animate true if displaying a mesh animation
+     */
+    void get_bbox( const RINGMesh::MacroMesh& MM, double* xyzmin, double* xyzmax, bool animate )
+    {
+        for( GEO::index_t m = 0; m < MM.nb_meshes(); m++ ) {
+            GEO::Mesh& M = MM.mesh( m ) ;
             for( GEO::index_t v = 0; v < M.vertices.nb(); ++v ) {
                 const double* p = M.vertices.point_ptr( v ) ;
                 for( GEO::coord_index_t c = 0; c < 3; ++c ) {
@@ -313,10 +314,12 @@ namespace {
      */
     void invert_normals()
     {
-//        for( GEO::index_t f = 0; f < BM.facets.nb(); ++f ) {
-//            BM.facets.flip( f ) ;
-//        }
-//        BM_gfx.set_mesh( &BM ) ;
+        for( GEO::index_t s = 0; s < BM.nb_surfaces(); s++ ) {
+            GEO::Mesh& M = BM.surface( s ).mesh() ;
+            for( GEO::index_t f = 0; f < M.facets.nb(); ++f ) {
+                M.facets.flip( f ) ;
+            }
+        }
     }
 
     /**
@@ -324,16 +327,24 @@ namespace {
      */
     void load_mesh()
     {
-
-//        BM_gfx.set_boundary_model( nil ) ;
-
         if( !RINGMesh::RINGMeshIO::load( GEO::CmdLine::get_arg( "model" ), BM ) ) {
             return ;
         }
 
         double xyzmin[3] ;
         double xyzmax[3] ;
+        for( GEO::index_t c = 0; c < 3; c++ ) {
+            xyzmin[c] = GEO::Numeric::max_float64() ;
+            xyzmax[c] = GEO::Numeric::min_float64() ;
+        }
+
         get_bbox( BM, xyzmin, xyzmax, false ) ;
+
+        MM.set_nodel( BM ) ;
+        if( RINGMesh::RINGMeshIO::load( GEO::CmdLine::get_arg( "mesh" ), MM ) ) {
+            get_bbox( MM, xyzmin, xyzmax, false ) ;
+        }
+
         glut_viewer_set_region_of_interest( float( xyzmin[0] ), float( xyzmin[1] ),
             float( xyzmin[2] ), float( xyzmax[0] ), float( xyzmax[1] ),
             float( xyzmax[2] ) ) ;
@@ -341,18 +352,14 @@ namespace {
 
     void toggle_colored_cells()
     {
-//        colored_cells = !colored_cells ;
-//        if( colored_cells ) {
-//            BM_gfx.set_cells_colors_by_type() ;
-//        } else {
-//            BM_gfx.set_cells_color( 0.9f, 0.9f, 0.9f ) ;
-//        }
+        colored_cells = !colored_cells ;
+        if( colored_cells ) {
+            MM_gfx.set_cell_regions_color_type() ;
+        } else {
+            MM_gfx.set_cell_regions_color( 0.9f, 0.9f, 0.9f ) ;
+        }
     }
 
-    void toggle_regions()
-    {
-//        BM_gfx.set_show_regions( !BM_gfx.get_show_regions() ) ;
-    }
 
 
 }
@@ -392,20 +399,19 @@ int main( int argc, char** argv )
 //    }
 
     glut_viewer_set_window_title(
-//        (char*) "||||||(G)||E||(O)|(G)||R||/A\\|BM|||||||" ) ;
+//        (char*) "||||||(G)||E||(O)|(G)||R||/A\\||||||||" ) ;
         (char*) "RINGMeshView" ) ;
     glut_viewer_set_init_func( init ) ;
     glut_viewer_set_display_func( display ) ;
-    glut_viewer_add_toggle( 'V', &show_volume, "volume" ) ;
-    glut_viewer_add_toggle( 'p', &show_vertices, "vertices" ) ;
-    glut_viewer_add_key_func( 'P', &cycle_points_size, "change points size" ) ;
-    glut_viewer_add_toggle( 'S', &show_surface, "surface" ) ;
+    glut_viewer_add_toggle( 'c', &show_corners, "corners" ) ;
+    glut_viewer_add_toggle( 'e', &show_lines, "lines" ) ;
+    glut_viewer_add_toggle( 's', &show_surface, "surface" ) ;
+    glut_viewer_add_toggle( 'v', &show_volume, "volume" ) ;
     glut_viewer_add_key_func( 'L', toggle_lighting, "toggle lighting" ) ;
     glut_viewer_add_key_func( 'n', invert_normals, "invert normals" ) ;
     glut_viewer_add_key_func( 'x', dec_shrink, "unshrink cells" ) ;
     glut_viewer_add_key_func( 'w', inc_shrink, "shrink cells" ) ;
     glut_viewer_add_key_func( 'C', toggle_colored_cells, "toggle colored cells" ) ;
-    glut_viewer_add_key_func( 'R', toggle_regions, "toggle regions" ) ;
 
     if( GEO::CmdLine::get_arg_bool( "gfx:full_screen" ) ) {
         glut_viewer_enable( GLUT_VIEWER_FULL_SCREEN ) ;
