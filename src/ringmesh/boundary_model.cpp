@@ -41,7 +41,6 @@
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
 #include <ringmesh/boundary_model.h>
-#include <ringmesh/boundary_model_builder.h>
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
@@ -56,7 +55,6 @@
 #include <geogram/mesh/mesh_intersection.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_io.h>
-
 
 #include <iostream>
 #include <iomanip>
@@ -1463,6 +1461,19 @@ namespace RINGMesh {
         }
     }
 
+    void BoundaryModel::set_debug_directory( const std::string& directory )
+    {
+        if( GEO::FileSystem::is_directory( directory ) ) {
+            debug_directory_ = directory ;
+        } else {
+            GEO::Logger::err( "I/O" ) << "Invalid debug directory "
+                << directory << " for BoudnaryModel " << name()
+                << "using default directory " << debug_directory_
+                << std::endl ;
+        }
+    }
+
+
     /*!
      * @brief Total number of facets in the model Surface s
      */
@@ -1479,11 +1490,110 @@ namespace RINGMesh {
      * Copies a BoundaryModel in another one
      * @param[in] from BoundaryModel to copy
      */
-    void BoundaryModel::copy(const BoundaryModel& from)
+    void BoundaryModel::copy( const BoundaryModel& from )
     {
-        BoundaryModelBuilder builder(*this);
-        builder.copy_macro_topology(from);
-        builder.copy_meshes(from);
+        copy_macro_topology( from );
+        copy_meshes( from );
+    }
+
+
+    /*!
+    * @brief Copy macro information from a model
+    * @details Copy the all the model elements and their relationship ignoring their geometry
+    *
+    * @param[in] from Model to copy the information from
+    */
+    void BoundaryModel::copy_macro_topology( const BoundaryModel& from )
+    {
+        name_ = from.name_ ;
+        corners_.resize( from.nb_corners(), nil ) ;
+        lines_.resize( from.nb_lines(), nil ) ;
+        surfaces_.resize( from.nb_surfaces(), nil ) ;
+        regions_.resize( from.nb_regions(), nil ) ;
+        layers_.resize( from.nb_layers(), nil ) ;
+        contacts_.resize( from.nb_contacts(), nil ) ;
+        interfaces_.resize( from.nb_interfaces(), nil ) ;
+
+        for( index_t i = 0; i < nb_corners(); i++ ) {
+            corners_[ i ] = new Corner ;
+        }
+        for( index_t i = 0; i < nb_lines(); i++ ) {
+            lines_[ i ] = new Line ;
+        }
+        for( index_t i = 0; i < nb_surfaces(); i++ ) {
+            surfaces_[ i ] = new Surface ;
+        }
+        for( index_t i = 0; i < nb_layers(); i++ ) {
+            layers_[ i ] = new BoundaryModelElement ;
+        }
+        for( index_t i = 0; i < nb_regions(); i++ ) {
+            regions_[ i ] = new BoundaryModelElement ;
+        }
+        for( index_t i = 0; i < nb_contacts(); i++ ) {
+            contacts_[ i ] = new BoundaryModelElement ;
+        }
+        for( index_t i = 0; i < nb_interfaces(); i++ ) {
+            interfaces_[ i ] = new BoundaryModelElement ;
+        }
+
+#pragma omp parallel for
+        for( index_t i = 0; i < nb_corners(); i++ ) {
+            corners_[ i ]->copy_macro_topology( from.corner( i ), *this ) ;
+        }
+#pragma omp parallel for
+        for( index_t i = 0; i < nb_lines(); i++ ) {
+            lines_[ i ]->copy_macro_topology( from.line( i ), *this ) ;
+        }
+#pragma omp parallel for
+        for( index_t i = 0; i < nb_surfaces(); i++ ) {
+            surfaces_[ i ]->copy_macro_topology( from.surface( i ), *this ) ;
+        }
+#pragma omp parallel for
+        for( index_t i = 0; i < nb_layers(); i++ ) {
+            layers_[ i ]->copy_macro_topology( from.layer( i ), *this ) ;
+        }
+#pragma omp parallel for
+        for( index_t i = 0; i < nb_regions(); i++ ) {
+            regions_[ i ]->copy_macro_topology( from.region( i ), *this ) ;
+        }
+#pragma omp parallel for
+        for( index_t i = 0; i < nb_contacts(); i++ ) {
+            contacts_[ i ]->copy_macro_topology( from.contact( i ), *this ) ;
+        }
+#pragma omp parallel for
+        for( index_t i = 0; i < nb_interfaces(); i++ ) {
+            interfaces_[ i ]->copy_macro_topology( from.one_interface( i ),
+                                                          *this ) ;
+        }
+        universe_.copy_macro_topology( from.universe_, *this ) ;
+    }
+
+    /*!
+    * @brief Copy meshes from a model
+    * @details Copy the all the element meshes
+    *
+    * @param[in] from Model to copy the meshes from
+    */
+    void BoundaryModel::copy_meshes( const BoundaryModel& from )
+    {
+#pragma omp parallel for
+        for( index_t i = 0; i < nb_corners(); i++ ) {
+            corners_[ i ]->unbind_attributes() ;
+            corners_[ i ]->mesh().copy( from.corner( i ).mesh() ) ;
+            corners_[ i ]->bind_attributes() ;
+        }
+#pragma omp parallel for
+        for( index_t i = 0; i < nb_lines(); i++ ) {
+            lines_[ i ]->unbind_attributes() ;
+            lines_[ i ]->mesh().copy( from.line( i ).mesh() ) ;
+            lines_[ i ]->bind_attributes() ;
+        }
+#pragma omp parallel for
+        for( index_t i = 0; i < nb_surfaces(); i++ ) {
+            surfaces_[ i ]->unbind_attributes() ;
+            surfaces_[ i ]->mesh().copy( from.surface( i ).mesh() ) ;
+            surfaces_[ i ]->bind_attributes() ;
+        }
     }
 
     /*!
@@ -1514,75 +1624,39 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Modify the model so that it is compatible with a Gocad Model3d
-     *   and can be saved in .ml format
-     *
-     * @return True if this was a success, False if modifications could not be done.
+     * @brief Check if the model can be saved in a skua-gocad .ml file
+     * @details It assumes that the model is valid and verifies that:
+     *   - all Interface have a name and geological feature
+     *   - all Surfaces are in an Interface
+     *   - all Surfaces are triangulated
+     *   - all Regions have a name
      */
-    bool BoundaryModel::check_model3d_compatibility()
+    bool BoundaryModel::check_gocad_validity() const 
     {
-        BoundaryModelBuilder builder(*this);
-
-        /// 1. Check that the Interfaces exist
-        if (nb_interfaces() == 0 && nb_surfaces() > 0) {
-            /// If not create one Interface per Surface
-            for (index_t i = 0; i < surfaces_.size(); ++i) {
-                // Set name, type, links with other elements
-                std::ostringstream name;
-                name << "surface_" << i;
-                BME::bme_t id = builder.create_interface(name.str());
-                builder.add_child(id, BME::bme_t(BME::SURFACE, i));
-            }
-
-            // Set links from surfaces_ toward interfaces_
-            for (index_t i = 0; i < interfaces_.size(); ++i) {
-                builder.set_parent(
-                    one_interface(i).child_id(0),
-                    BME::bme_t(BME::INTERFACE, i));
-            }
-
-            // Is it really useful to have contacts, let's hope not... I am not doing it
+        if( nb_interfaces() == 0 ) {
+            return false ;
         }
-
-        /// 2. Check that the Universe region exists
-        /// \todo Write some code to create the universe (cf. line 805 to 834 de s2_b_model.cpp)
-        if (universe_.name() != "Universe") {
-            GEO::Logger::err("")
-                <<
-                "The region universe is not defined for the model. IMPLEMENTATION TO DO"
-                << std::endl;
-            return false;
-        }
-
-        /// 3. Check that each region has a name and valid surfaces
-        for (index_t i = 0; i < regions_.size(); ++i) {
-            const BME& region = this->region(i);
-
-            if (region.name() == "") {
-                std::ostringstream name;
-                name << "region_" << i;
-                builder.set_element_name(
-                    BME::bme_t(BME::REGION, i),
-                    name.str());
+        for( index_t i = 0; i < nb_interfaces(); ++i ) {
+            if( !one_interface( i ).has_name() ) {
+                return false ;
             }
-            if (region.nb_boundaries() == 0) {
-                GEO::Logger::err("") << "The region " << region.name()
-                    << " has no Surfaces on its boundary" <<
-                    std::endl;
-                return false;
+            if( !one_interface( i ).has_geological_feature() ) {
+                return false ;
             }
         }
-
-        /// 4. Check that all the surfaces_ of the model are triangulated
-        /// \todo Implement a triangulation function in SurfaceMutator
-        for (index_t s = 0; s < nb_surfaces(); s++) {
-            if (!surface(s).is_triangulated()) {
-                GEO::Logger::err("") << "Surface " << s <<
-                    " is not triangulated"
-                    << std::endl  << std::endl ;
-                return false;
+        for( index_t i = 0; i < nb_surfaces(); ++i ) {
+            if( !surface( i ).has_parent() ) {
+                return false ;
+            }
+            if( !surface( i ).is_triangulated() ) {
+                return false ;
             }
         }
+        for( index_t i = 0; i < nb_regions(); ++i ) {
+            if( !region( i ).has_name() ) {
+                return false ;
+            }
+        }    
         return true;
     }
 
@@ -1681,9 +1755,10 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Check B-Rep and geology validity 
+     * @brief Check model validity
+     * @details In debug mode problematic vertices, edges, elements are
+     *          saved in the debug_directory_
      *
-     * @todo Testing
      * @todo Should we check facet orientation consistency ? useful ?
      */
     bool BoundaryModel::check_model_validity() const
@@ -1708,8 +1783,7 @@ namespace RINGMesh {
         /// being in a Line
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             valid = surface_boundary_valid( surface( i ) ) && valid ;          
-        }
-      
+        }      
 
         /// 5. Check non-manifold edges using a global
         /// triangulated mesh corresponding to this model.
@@ -1843,12 +1917,12 @@ namespace RINGMesh {
      */
     bool BoundaryModel::save_gocad_model3d( std::ostream& out )
     {
-        out.precision( 16 ) ;
-        if( !check_model3d_compatibility() ) {
+        if( !check_model_validity() || !check_gocad_validity() ) {
             GEO::Logger::err( "" ) << "The BoundaryModel " << name_
                                    << " cannot be saved in .ml format " << std::endl ;
             return false ;
         }
+        out.precision( 16 ) ;
 
         // Print Gocad Model3d headers
         out << "GOCAD Model3d 1" << std::endl << "HEADER {" << std::endl << "name:"

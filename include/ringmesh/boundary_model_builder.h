@@ -53,19 +53,15 @@
 namespace RINGMesh {
     /*!
      * @brief Base class for all classes building a BoundaryModel.
-     * @details Derive from this class
+     * @details Derive from this class to build or modify a BoundaryModel
      */
     class RINGMESH_API BoundaryModelBuilder {
-    public:
+    protected:
         BoundaryModelBuilder( BoundaryModel& model )
               : model_( model ) {}
         virtual ~BoundaryModelBuilder() {}
 
-        // High level functions
-        void copy_macro_topology( const BoundaryModel& from ) ;
-        void copy_meshes( const BoundaryModel& from ) ;
-
-        // Set model attributes
+        
         void set_model_name( const std::string& name )
         {
             model_.name_ = name ;

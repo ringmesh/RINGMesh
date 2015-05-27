@@ -45,15 +45,13 @@
 
 #include <ringmesh/common.h>
 #include <ringmesh/boundary_model_element.h>
+
 #include <geogram/basic/logger.h>
 #include <geogram/basic/file_system.h>
 
 #include <vector>
 #include <string>
 
-namespace RINGMesh {
-    class BoundaryModelBuilder ;
-}
 
 namespace RINGMesh {
 
@@ -240,22 +238,19 @@ namespace RINGMesh {
          */ 
         const std::string& name() const { return name_ ; }
 
-        const std::string& debug_directory() const
-        {
-            return debug_directory_ ;
-        }
-        void set_debug_directory( const std::string& directory )
-        {
-            if( GEO::FileSystem::is_directory( directory ) ) {
-                debug_directory_ = directory ;
-            }
-            else {            
-                GEO::Logger::err( "I/O" ) << "Invalid debug directory "
-                    << directory << " for BoudnaryModel " << name() 
-                    << "using default directory " << debug_directory_
-                    << std::endl ;
-            }
-        }
+        /*!
+         * @brief Get the directory for debug information
+         */
+        const std::string& debug_directory() const { return debug_directory_ ; }
+
+        /*!
+         * @brief Set the directory where debugging information shall be stored
+         * @details Test that this directory exists, if not
+         *          keep the previous value.
+         *          Default directory is executable directory .
+         */
+        void set_debug_directory( const std::string& directory ) ;
+        
 
         /*!
          * @brief Number of unique vertices, no duplicates along Line and at Corner
@@ -405,11 +400,13 @@ namespace RINGMesh {
         
 
     private:
-        bool check_model3d_compatibility() ;
-
         bool check_model_validity() const ;
         bool check_elements_validity() const ;
         bool check_geology_validity() const ;
+        bool check_gocad_validity() const ;
+
+        void copy_macro_topology( const BoundaryModel& from ) ;
+        void copy_meshes( const BoundaryModel& from ) ;
 
     public:
         BoundaryModelVertices vertices ;
@@ -446,7 +443,6 @@ namespace RINGMesh {
 
         /// Allow global access to BME. It MUST be updated if one element is added.
         std::vector< index_t > nb_elements_per_type_ ;
-
 
         /// Name of the debug directory in which to save stuff 
         /// @todo Put this in another class ? 
