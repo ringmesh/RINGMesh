@@ -52,6 +52,71 @@
 #include <geogram/basic/stopwatch.h>
 #include <geogram/basic/command_line.h>
 
+#ifdef GEO_OS_WINDOWS
+
+namespace {
+    using namespace GEO;
+    
+    // Emulation of pthread mutexes using Windows API
+
+    typedef CRITICAL_SECTION pthread_mutex_t;
+    typedef unsigned int pthread_mutexattr_t;
+    
+    inline int pthread_mutex_lock(pthread_mutex_t *m) {
+        EnterCriticalSection(m);
+        return 0;
+    }
+
+    inline int pthread_mutex_unlock(pthread_mutex_t *m) {
+        LeaveCriticalSection(m);
+        return 0;
+    }
+        
+    inline int pthread_mutex_trylock(pthread_mutex_t *m) {
+        return TryEnterCriticalSection(m) ? 0 : EBUSY; 
+    }
+
+    inline int pthread_mutex_init(pthread_mutex_t *m, pthread_mutexattr_t *a) {
+        geo_argused(a);
+        InitializeCriticalSection(m);
+        return 0;
+    }
+
+    inline int pthread_mutex_destroy(pthread_mutex_t *m) {
+        DeleteCriticalSection(m);
+        return 0;
+    }
+
+    // Emulation of pthread condition variables using Windows API
+
+    typedef CONDITION_VARIABLE pthread_cond_t;
+    typedef unsigned int pthread_condattr_t;
+
+    inline int pthread_cond_init(pthread_cond_t *c, pthread_condattr_t *a) {
+        geo_argused(a);
+        InitializeConditionVariable(c);
+        return 0;
+    }
+
+    inline int pthread_cond_destroy(pthread_cond_t *c) {
+        geo_argused(c);
+        return 0;
+    }
+
+    inline int pthread_cond_broadcast(pthread_cond_t *c) {
+        WakeAllConditionVariable(c);
+        return 0;
+    }
+
+    inline int pthread_cond_wait(pthread_cond_t *c, pthread_mutex_t *m) {
+        SleepConditionVariableCS(c, m, INFINITE);
+        return 0;
+    }
+}
+
+
+#endif
+
 namespace {
     using namespace GEO;
 
@@ -369,88 +434,11 @@ namespace GEO {
             );
         }
 
-
-        /**
-         * \brief Steals work from another thread
-         * \param [in] thrd the thread to steal work from
-         * \details Steals half of the point sequence that
-         *  was initially allocated to \p thrd.
-         * \todo the code is still buggy, the absence
-         *  of synchronization creates some invalid 
-         *  configurations where points are "fogotten".
-         */
-        void steal_work_from(Delaunay3dThread* thrd) {
-            //   Note: there is absolutely no synchronization
-            // mechanism in this function. This means that
-            // the same point may be inserted by two different
-            // threads. This is not problematic, since the second
-            // one will detect that the vertex already exists in
-            // the Delaunay triangulation (see locate()).
-            //   Even worse: if the thread from which points are
-            // stolen changes direction_ right in the middle of 
-            // this function, a complete sequence of points may
-            // be duplicated between both threads. Again this does
-            // not cause any error, but may slow down things (which
-            // is clearly not the behavior that we want...).
-
-            signed_index_t m = signed_index_t(
-                (thrd->work_begin_ + thrd->work_end_)/2
-            );
-            if(thrd->direction_) {
-                work_begin_ = m+1;
-                work_end_ = thrd->work_end_;
-                thrd->work_end_ = m;
-            } else {
-                work_begin_ = thrd->work_begin_;
-                work_end_ = m;
-                thrd->work_begin_ = m+1;
-            }
-            b_hint_ = thrd->b_hint_;
-            e_hint_ = thrd->e_hint_;
-            //   Change direction as compared to the
-            // thread we stole the points from, so
-            // that they will take more time to "collide"
-            // (this avoids a few rollbacks).
-            direction_ = !thrd->direction_;
-            finished_ = (work_begin_ > work_end_);
-        }
-
-        /**
-         * \brief Tentatively steals work from another thread
-         * \details It selects the thread with the largest 
-         *  point sequence, if it is larger than a minimum number
-         *  of points (128).
-         * \retval true if it did successfully steal points from
-         *  another thread
-         * \retval false otherwise
-         */
-        bool steal_work() {
-            Delaunay3dThread* rich_thread = nil;
-            index_t max_work_size = 0;
-            for(index_t t=0; t < nb_threads(); ++t) {
-                Delaunay3dThread* thrd = thread(t);
-                if(
-                    thrd->work_size() > max_work_size && 
-                    thrd->work_size() > 128
-                ) {
-                    rich_thread = thrd;
-                    max_work_size = thrd->work_size();
-                }
-            }
-            if(rich_thread != nil) {
-                steal_work_from(rich_thread);
-                return true;
-            }
-            return false;
-        }
-
         /**
          * \brief Inserts the point sequence allocated to 
          *  this thread.
          * \details The point sequence was previously defined
-         *  by set_work(). Once the point sequence is inserted,
-         *  the thread tentatively steals points from another
-         *  thread that has not finished its work yet.
+         *  by set_work(). 
          */
         virtual void run() {
             
@@ -472,7 +460,6 @@ namespace GEO {
             // else insert in e->b order
             direction_ = true;
             
-        restart:
             while(work_end_ >= work_begin_ && !memory_overflow_) {
                 index_t v = direction_ ? 
                     index_t(work_begin_) : index_t(work_end_) ;
@@ -514,10 +501,6 @@ namespace GEO {
                 }
             }
             finished_ = true;
-            // steal_work_from() is buggy, deactivated for now.
-            if(false && !memory_overflow_ && steal_work()) {
-                goto restart;
-            }
         }
 
         /**
@@ -1575,12 +1558,21 @@ namespace GEO {
         bool acquire_tet(index_t t) {
             geo_debug_assert(t < max_t());
             geo_debug_assert(!owns_tet(t));
- 
+
+#ifdef GEO_OS_WINDOWS
+           // Note: comparand and exchange parameter are swapped in Windows API
+           // as compared to __sync_val_compare_and_swap !!
+            interfering_thread_ =
+                (thread_index_t)(_InterlockedCompareExchange8(
+                    (volatile char *)(&cell_thread_[t]), (char)(id() << 1), (char)(NO_THREAD)
+                ));
+#else            
             interfering_thread_ = 
                 __sync_val_compare_and_swap(
                     &cell_thread_[t], NO_THREAD, id() << 1
                 );
-
+#endif
+            
             if(interfering_thread_ == NO_THREAD) {
                 geo_debug_assert(t == first_free_ || !tet_is_in_list(t));
 #ifdef GEO_DEBUG
@@ -2396,7 +2388,7 @@ namespace GEO {
         vector<signed_index_t>& cell_to_cell_store_;
         vector<index_t>& cell_next_;
         vector<thread_index_t>& cell_thread_;
-
+        
         index_t first_free_;
         index_t nb_free_;
         bool memory_overflow_;
@@ -2416,8 +2408,9 @@ namespace GEO {
         bool finished_;
 
         //  Whenever acquire_tet() is uncessful, contains
-        // the index of the thread that was interfering.
-        index_t interfering_thread_;
+        // the index of the thread that was interfering
+        // (shifted to the left by 1 !!)
+        thread_index_t interfering_thread_;
 
 #ifdef GEO_DEBUG
         index_t nb_acquired_tets_;
@@ -2579,6 +2572,8 @@ namespace GEO {
         }
 
         if(benchmark_mode_) {
+            Logger::out("PDEL")
+                << "Using " << levels_.size() << " levels" << std::endl;
             Logger::out("PDEL") 
                 << "Levels 0 - " << lvl-1 
                 << ": bootstraping with first levels in sequential mode"

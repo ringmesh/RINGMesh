@@ -68,8 +68,10 @@ namespace {
      * \param[in] s fourth vertex of the tetrahedron
      * \param[out] t_circumcenter computed circumcenter of the tetrahedron
      * \param[out] squared_radius computed squared radius of the tetrahedron
-     * \param[out] dihedral_angles if non-NULL, computed dihedral angles of the tetrahedron
-     * \return true if successfull, false otherwise (for instance, if the tetrahedron is flat).
+     * \param[out] dihedral_angles if non-NULL, 
+     *   computed dihedral angles of the tetrahedron
+     * \return true if successfull, false otherwise 
+     *  (for instance, if the tetrahedron is flat).
      */
     bool tetra_circumcenter_squaredradius(
         const vec3& p, const vec3& q,
@@ -136,10 +138,12 @@ namespace {
     }
 
     /**
-     * \brief Gets a Delaunay vertex by tetrahedron index and local vertex index.
+     * \brief Gets a Delaunay vertex by tetrahedron index 
+     *  and local vertex index.
      * \param[in] delaunay the Delaunay triangulation
      * \param[in] c the index of the tetrahedron
-     * \param[in] lv the local index of the vertex (0,1,2 or 3) in tetrahedron \p c.
+     * \param[in] lv the local index of the vertex (0,1,2 or 3) 
+     *  in tetrahedron \p c.
      * \return a const reference to the vertex, as a vec3.
      */
     inline const vec3& delaunay_tet_vertex(
@@ -159,7 +163,8 @@ namespace {
      * \brief Computes the normal to a tetrahedron facet.
      * \param[in] delaunay the Delaunay triangulation
      * \param[in] t the index of the tetrahedron
-     * \param[in] f the local index (0,1,2 or 3) of the facet in the tetrahedron \p t
+     * \param[in] f the local index (0,1,2 or 3) of 
+     *  the facet in the tetrahedron \p t
      * \return the normal to the facet \p f or tetrahedron \p t
      */
     vec3 delaunay_facet_normal(

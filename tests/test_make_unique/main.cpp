@@ -50,7 +50,8 @@ int main( int argc, char** argv )
     GEO::Logger::out("TEST") << "Test MakeUnique" << std::endl ;
 
     BoundaryModel in ;
-    RINGMeshIO::load( "../data/model3.ml", in ) ;
+    if( !RINGMeshIO::load( "../data/model3.ml", in ) )
+        return 1 ;
 
     index_t nb_non_unique_vertices = in.nb_corners() ;
 
@@ -94,5 +95,5 @@ int main( int argc, char** argv )
         GEO::Logger::out( "TEST" ) << "geo_nb=" << geo_nb << std::endl ;
         GEO::Logger::out( "TEST" ) << "ringmesh_nb=" << ringmesh_nb << std::endl ;
     }
-    return res ;
+    return !res ;
 }

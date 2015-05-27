@@ -78,6 +78,11 @@ namespace GEO {
         void draw_vertices();
 
         /**
+         * \brief Draws the edges of the mesh.
+         */
+        void draw_edges();
+        
+        /**
          * \brief Draws the surfacic part of the mesh.
          */
         void draw_surface();
@@ -323,7 +328,7 @@ namespace GEO {
          * \param[in] x the point size (minimum 1)
          * \see draw_points()
          */
-        void set_points_size(index_t x) {
+        void set_points_size(float x) {
             points_size_ = x;
         }
 
@@ -332,7 +337,7 @@ namespace GEO {
          * \return the point size
          * \see draw_points()
          */
-        index_t get_points_size() const {
+        float get_points_size() const {
             return points_size_;
         }
         
@@ -465,13 +470,13 @@ namespace GEO {
          * \param[in] M a pointer to the mesh that should be
          *  displayed.
          */
-        void set_mesh(Mesh* M);
+        void set_mesh(const Mesh* M);
 
         /**
          * \brief Gets the mesh
          * \return a pointer to the mesh that will be displayed.
          */
-        Mesh* mesh() const {
+        const Mesh* mesh() const {
             return mesh_;
         }
         
@@ -648,15 +653,18 @@ namespace GEO {
 
         
     protected:
-        Mesh* mesh_;
+        const Mesh* mesh_;
         
         GLuint     vertices_VBO_;
+        GLuint     edge_indices_VBO_;
         GLuint     facet_indices_VBO_;
         GLuint     cell_indices_VBO_;
         GLuint     facet_region_VBO_;
         GLuint     cell_region_VBO_;
 
         GLuint     colormap_TEX_;
+
+        bool VBO_dirty_;
         
         bool show_mesh_;
         bool show_regions_;
@@ -680,6 +688,11 @@ namespace GEO {
          */
         bool GLSL_tesselation_;
 
+        /**
+         * \brief GLSL version supported by the OpenGL driver.
+         */
+        double GLSL_version_;
+        
         /**
          * \brief true if shaders are already initialized.
          */
@@ -738,7 +751,7 @@ namespace GEO {
          */
         vector<void*>   cell_draw_start_index_[GEO::MESH_NB_CELL_TYPES];
 
-        index_t points_size_;
+        float points_size_;
         index_t mesh_width_;
         index_t mesh_border_width_;
         

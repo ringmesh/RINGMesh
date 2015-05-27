@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -45,34 +45,76 @@
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
 You will need CMake (version >= 2.8.11). There is no other dependancy (everything
-that you need is shipped with RINGMesh). Follow the Linux or Windows instructions below.
+ you need is shipped with RINGMesh). Follow the Linux or Windows instructions below.
 
 Linux
 =====
 
-- ./configure.sh
-- cd build/ringmesh/Linux64-gcc-Release
-- make
+Configuring RINGMesh
+------------------
 
-This will first configure and compile Geogram 
+Go to RINGMesh directory and then copy the file CMakeOptions.txt.sample into
+CMakeOptions.txt: <b>cp CMakeOptions.txt.sample CMakeOptions.txt</b>.
+
+If you need to use the <b>graphic</b> part of RINGMesh (visualization of RINGMesh::BoundaryModel
+and RINGMesh::MacroMesh) set the variable <b>RINGMESH_WITH_GRAPHICS to TRUE</b> (uncomment the line).
+
+Then to configure: <b>./configure.sh</b>. This will first configure and compile Geogram 
 and then it will generate dynamic libraries.
+
+Compiling RINGMesh
+------------------
+
+- cd build/ringmesh/Linux64-gcc-Release
+- make [-j8]
+
+To build in debug, go to build/ringmesh/Linux64-gcc-Debug instead.
+
+Eclipse-cdt project is provided (.project and .cproject). You can import RINGMesh into
+Eclipse: File>Import...>General>Existing Projects into Workspace. Click on next, then
+select the root directory (RINGMesh directory) then click on Finish. There are two
+build configurations: release and debug. There is a target to clean and compile. There are
+also targets to build/rebuild geogram.
+
+Compiling the documentation
+---------------------------
+
+The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
+- cd doc
+- doxygen Doxyfile
+
+Then you can open the doc/html/index.html file in your web browser. If you have qhelpgenerator
+in your path, a .qch file is generated (ringmesh.qch). It can be imported in Qt Assisant: Edit>Preferences>
+Documentation>add and select the .qch file.
 
 Windows
 =======
 
-Jeanne tu peux t'occuper de cette partie stp ?
+Configuring RINGMesh
+------------------
 
-- start CMake (cmake-gui)
-- Where is the source code: <geogram_path>
-- Where to build the binaries: <geogram_path>/build/windows
-- Push the 'configure' button
-- Choose the compiler (32 or 64 bits)
-- (and ignore the warning about Doxygen)
-- Push the 'generate' button
-- Open <geogram_path>/build/windows/Geogram.sln in Visual studio
-- Select the 'Release' or 'Debug' (default) configuration (pulldown menu)
-- Build the solution (F7)
+Go to RINGMesh directory, open and save the CMakeOptions.txt.sample file as CMakeOptions.txt.
+To use the <b>graphic</b> components of RINGMesh (visualization of RINGMesh::BoundaryModel
+and RINGMesh::MacroMesh) set the variable <b>RINGMESH_WITH_GRAPHICS to TRUE</b> (uncomment the line).
 
+To configure RINGMesh launch the configure.bat or by command line: <b>call ./configure.bat</b>.
+By default, the project will be configured for Visual Studio 2010 in 64bits.
+You can specify a different platform by adding it as an argument when executing
+the configuration script in command line.
+The supported platforms are :
+- Visual Studio 10 2010 Win64
+- Visual Studio 11 2012 Win64
+- Visual Studio 12 2013 Win64
+
+
+Compiling RINGMesh
+------------------
+
+You can either launch building in VisualStudio or calling cmake in command line
+in the build directory created at the configuration step.
+\code
+    cmake --build . --config Release
+\endcode
 
 */
 

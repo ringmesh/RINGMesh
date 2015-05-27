@@ -43,6 +43,10 @@
 
 #include <ringmesh/common.h>
 
+namespace GEO {
+    class Mesh ;
+}
+
 namespace RINGMesh {
     class BoundaryModel ;
     class Edge ;
@@ -54,7 +58,7 @@ namespace RINGMesh {
     public:
         WellCorner(
             const vec3& point,
-            signed_index_t id = - 1 )
+            signed_index_t id = -1 )
               : point_( point ), surface_id_( id ), resolution_( - 1 )
         {
         }
@@ -154,7 +158,7 @@ namespace RINGMesh {
 
         signed_index_t find_or_create_corner(
             const vec3& p,
-            signed_index_t id = - 1 ) ;
+            signed_index_t id = -1 ) ;
 
         signed_index_t find_corner( const vec3& p ) const ;
 
@@ -213,11 +217,16 @@ namespace RINGMesh {
             index_t region,
             std::vector< Edge >& edges ) const ;
 
-        BoundaryModel* model() const { return model_ ;}
+        void get_region_edges(
+            index_t region,
+            std::vector< std::vector< Edge > >& edges ) const ;
+
+        const BoundaryModel* model() const { return model_ ;}
         void set_model( RINGMesh::BoundaryModel* model ) { model_ = model ;}
         bool is_well_already_added( const std::string& name ) const ;
 
         void add_well( const Well& w ) { wells_.push_back( w ) ;}
+        void add_well( const GEO::Mesh& mesh, const std::string& name ) ;
 
         index_t nb_wells() const { return wells_.size() ;}
         const Well& well( index_t w ) const { return wells_[ w ] ;}

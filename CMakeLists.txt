@@ -8,6 +8,21 @@ set(RINGMESH_PROJECT RINGMesh)
 project(${RINGMESH_PROJECT})
 
 
+##############################################################################
+# Options
+IF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
+   MESSAGE(INFO: "Using local options file: " .${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
+   INCLUDE(${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
+ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
+
+
+##############################################################################
+# Files
+AUX_SOURCE_DIRECTORY(src/ringmesh SOURCES)
+AUX_SOURCE_DIRECTORY(src/third_party/zlib SOURCES)
+INCLUDE_DIRECTORIES(include)
+
+
 function(aux_source_directories var folder)
     set(sources)
     foreach(dir ${ARGN})
@@ -18,30 +33,32 @@ function(aux_source_directories var folder)
     set(${var} ${${var}} ${sources} PARENT_SCOPE)
 endfunction()
 
-# Options
-IF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
-   MESSAGE(INFO: "Using local options file: " .${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
-   INCLUDE(${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
-ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
-
-
-
-# Files
-AUX_SOURCE_DIRECTORY(src/ringmesh SOURCES)
-AUX_SOURCE_DIRECTORY(src/third_party/zlib SOURCES)
-INCLUDE_DIRECTORIES(include)
-
+IF(WIN32)
+    aux_source_directories(SOURCES "Header Files" include/ringmesh)
+ENDIF(WIN32)
+##############################################################################
 # Geogram
 INCLUDE_DIRECTORIES(src/third_party/geogram/src/lib)
 IF(WIN32)
     ADD_DEFINITIONS(-DRINGMESH_EXPORTS)
 	ADD_DEFINITIONS(-DGEO_DYNAMIC_LIBS)
-    aux_source_directories(SOURCES "Header Files" include/ringmesh)
+
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}/lib/${CMAKE_BUILD_TYPE})
 ELSE(WIN32)
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
 ENDIF(WIN32)
 
+##############################################################################
+# Geogram_gfx
+IF(NOT DEFINED RINGMESH_WITH_GRAPHICS)
+  SET(RINGMESH_WITH_GRAPHICS FALSE)
+ENDIF(NOT DEFINED RINGMESH_WITH_GRAPHICS)
+if(${RINGMESH_WITH_GRAPHICS})
+    add_definitions(-DRINGMESH_WITH_GRAPHICS)
+endif()
+
+
+##############################################################################
 # MG-Tetra
 IF(NOT DEFINED USE_MG_TETRA)
   SET(USE_MG_TETRA FALSE)
@@ -72,7 +89,7 @@ IF(${USE_MG_TETRA})
   ENDIF(WIN32)
 ENDIF(${USE_MG_TETRA})
 
-
+##############################################################################
 #To use OpenMP 
 IF(WIN32) 
        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4996 /MP")
@@ -87,16 +104,25 @@ IF(UNIX)
     SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 ENDIF(UNIX)
 
-# Output library
-SET(LIBRARY_OUTPUT_PATH lib)
+
+##############################################################################
+# Build configuration
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
 add_library(${RINGMESH_PROJECT} SHARED ${SOURCES})
 target_link_libraries(${RINGMESH_PROJECT} geogram)
 
-# Additional link libraries
+##############################################################################
+# Additional optional link libraries
 IF(${USE_MG_TETRA})
-  TARGET_LINK_LIBRARIES(${RINGMESH_PROJECT} meshgems mg-tetra)
+  target_link_libraries(${RINGMESH_PROJECT} meshgems mg-tetra)
 ENDIF(${USE_MG_TETRA})
-
+if(${RINGMESH_WITH_GRAPHICS})
+  TARGET_LINK_LIBRARIES(${RINGMESH_PROJECT} geogram_gfx)
+endif()
 IF(WIN32)
     target_link_libraries(${RINGMESH_PROJECT} psapi)
 ENDIF(WIN32)

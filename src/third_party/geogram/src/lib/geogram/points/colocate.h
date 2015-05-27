@@ -73,7 +73,7 @@ namespace GEO {
          *  (i.e. max index in old2new + 1).
          */
         index_t GEOGRAM_API colocate(
-            double* points,
+            const double* points,
             coord_index_t dim,
             index_t nb_points,
             vector<index_t>& old2new,
@@ -97,7 +97,7 @@ namespace GEO {
          *  (i.e. max index in old2new + 1).
          */
         index_t GEOGRAM_API colocate_by_lexico_sort(
-            double* points,
+            const double* points,
             coord_index_t dim,
             index_t nb_points,
             vector<index_t>& old2new,

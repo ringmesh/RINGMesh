@@ -520,6 +520,28 @@ namespace GEO {
             return quiet_;
         }
 
+
+        /**
+         * \brief Sets the minimal mode
+         * \details When the Logger is in minimal mode, only warning and error
+         * messages sent to it are dispatched to the registered clients. The minimal
+         * mode can also be set by setting the value of the property
+         * "log:minimal" with set_value().
+         * \param[in] flag set to true/false to turn the minimal mode on/off
+         * \note The minimal mode is off by default
+         * \see set_value()
+         */
+        void set_minimal(bool flag);
+
+        /**
+         * \brief Checks the minimal mode
+         * \retval true if the minimal mode is on
+         * \retval false othwerwise
+         */
+        bool is_minimal() const {
+            return minimal_;
+        }
+        
         /**
          * \brief Sets the console pretty mode
          * \details When the Logger console is in pretty mode, messages are
@@ -688,7 +710,8 @@ namespace GEO {
 
         bool quiet_;
         bool pretty_;
-
+        bool minimal_;
+        
         friend class LoggerStream;
     };
 

@@ -283,8 +283,9 @@ inline char atomic_bittestandreset_x86(volatile unsigned int* ptr, unsigned int 
 
 #include <windows.h>
 #include <intrin.h>
-#pragma intrinsic(_InterlockedCompareExchange)
+#pragma intrinsic(_InterlockedCompareExchange8)
 #pragma intrinsic(_InterlockedCompareExchange16)
+#pragma intrinsic(_InterlockedCompareExchange)
 #pragma intrinsic(_interlockedbittestandset)
 #pragma intrinsic(_interlockedbittestandreset)
 #pragma intrinsic(_ReadBarrier)

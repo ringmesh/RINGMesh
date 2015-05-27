@@ -62,8 +62,6 @@ namespace {
 
     using namespace GEO;
 
-    // TODO: check/correct the management of attributes.
-
     /**
      * \brief Merges the vertices of a mesh that are at the same
      *  geometric location
@@ -112,15 +110,6 @@ namespace {
     }
 
     /**
-     * \brief Triangulates the facets of a mesh.
-     * \param[in] M the mesh to triangulate
-     */
-    void repair_triangulate(Mesh& M) {
-        // Now it is builtin the mesh class.
-        M.facets.triangulate();
-    }
-
-    /**
      * \brief Tests whether a facet is degenerate.
      * \param[in] M the mesh that the facet belongs to
      * \param[in] f the index of the facet in \p M
@@ -128,13 +117,20 @@ namespace {
      *  false otherwise
      */
     bool facet_is_degenerate(const Mesh& M, index_t f) {
+        index_t nb_vertices = M.facets.nb_vertices(f);
+        if(nb_vertices != 3) {
+            index_t* vertices = (index_t*)alloca(nb_vertices*sizeof(index_t));
+            for(index_t lv=0; lv<nb_vertices; ++lv) {
+                vertices[lv] = M.facets.vertex(f,lv);
+            }
+            std::sort(vertices, vertices + nb_vertices);
+            return std::unique(
+                vertices, vertices + nb_vertices
+            ) != vertices + nb_vertices;
+        } 
         index_t c1 = M.facets.corners_begin(f);
         index_t c2 = c1 + 1;
         index_t c3 = c2 + 1;
-        // For the moment, we only consider triangles
-        if(c3 + 1 != M.facets.corners_end(f)) {
-            return false;
-        }
         index_t v1 = M.facet_corners.vertex(c1);
         index_t v2 = M.facet_corners.vertex(c2);
         index_t v3 = M.facet_corners.vertex(c3);
@@ -984,7 +980,7 @@ namespace GEO {
             repair_colocate_vertices(M, colocate_epsilon);
         }
         if(mode & MESH_REPAIR_TRIANGULATE) {
-            repair_triangulate(M);
+            M.facets.triangulate();
         }
         repair_remove_bad_facets(
             M, (mode & MESH_REPAIR_DUP_F) != 0
@@ -1079,5 +1075,46 @@ namespace GEO {
         repair_reorient_facets_anti_moebius(M, moebius_facets);
     }
 
+    void mesh_detect_colocated_vertices(
+        const Mesh& M, vector<index_t>& v_colocated_index,
+        double colocate_epsilon
+    ) {
+        Geom::colocate(
+            M.vertices.point_ptr(0),
+            coord_index_t(M.vertices.dimension()),
+            M.vertices.nb(),
+            v_colocated_index,
+            colocate_epsilon
+        );
+    }
+
+    void mesh_detect_isolated_vertices(
+        const Mesh& M, vector<index_t>& v_is_isolated
+    ) {
+        v_is_isolated.assign(M.vertices.nb(),1);
+        for(index_t e=0; e<M.edges.nb(); ++e) {
+            v_is_isolated[M.edges.vertex(e,0)] = 0;
+            v_is_isolated[M.edges.vertex(e,1)] = 0;            
+        }
+        for(index_t f=0; f<M.facets.nb(); ++f) {
+            for(index_t lv=0; lv<M.facets.nb_vertices(f); ++lv) {
+                v_is_isolated[M.facets.vertex(f,lv)] = 0;
+            }
+        }
+        for(index_t c=0; c<M.cells.nb(); ++c) {
+            for(index_t lv=0; lv<M.cells.nb_vertices(c); ++lv) {
+                v_is_isolated[M.cells.vertex(c,lv)] = 0;
+            }
+        }
+    }
+
+    void mesh_detect_degenerate_facets(
+        const Mesh& M, vector<index_t>& f_is_degenerate
+    ) {
+        f_is_degenerate.resize(M.facets.nb());
+        for(index_t f=0; f<M.facets.nb(); ++f) {
+            f_is_degenerate[f] = facet_is_degenerate(M,f);
+        }
+    }
 }
 

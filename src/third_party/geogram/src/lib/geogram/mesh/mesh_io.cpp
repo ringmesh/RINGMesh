@@ -167,7 +167,7 @@ namespace {
                         }
                         index_t v = M.vertices.create_vertex();
                         set_mesh_point(M, v, P.data(), dimension_);
-                    } else if(in.field_matches(0, "f")) {
+                    } else if(ioflags.has_element(MESH_FACETS) && in.field_matches(0, "f")) {
                         if(in.nb_fields() < 3) {
                             Logger::err("I/O")
                                 << "Line " << in.line_number()
@@ -211,6 +211,7 @@ namespace {
                             M.facets.set_vertex(f,lv,facet_vertices[lv]);
                         }
                     } else if(
+                        ioflags.has_element(MESH_FACETS) &&
                         facet_region_.is_bound() &&
                         in.field_matches(0, "#")
                     ) {
@@ -257,7 +258,7 @@ namespace {
                 }
             }
             unbind_attributes();
-            if(M.facets.nb() == 0) {
+            if(ioflags.has_element(MESH_FACETS) && M.facets.nb() == 0) {
                 Logger::err("I/O") << "Mesh contains no facet" << std::endl;
                 return false;
             }
@@ -294,25 +295,26 @@ namespace {
                 }
                 out << std::endl;
             }
-            
-            for(index_t f = 0; f < M.facets.nb(); ++f) {
-                out << "f ";
-                for(index_t i = M.facets.corners_begin(f);
-                    i < M.facets.corners_end(f); ++i
-                ) {
-                    out << M.facet_corners.vertex(i) + 1 << " ";
-                }
-                out << std::endl;
-            }
 
-            if(
-                facet_region_.is_bound()
-            ) {
-                out << "# attribute chart facet integer" << std::endl;
+            if(ioflags.has_element(MESH_FACETS)) {
                 for(index_t f = 0; f < M.facets.nb(); ++f) {
-                    out << "# attrs f "
-                        << f + 1 << " "
-                        << facet_region_[f] << std::endl;
+                    out << "f ";
+                    for(index_t i = M.facets.corners_begin(f);
+                        i < M.facets.corners_end(f); ++i
+                    ) {
+                        out << M.facet_corners.vertex(i) + 1 << " ";
+                    }
+                    out << std::endl;
+                }
+                if(
+                    facet_region_.is_bound()
+                ) {
+                    out << "# attribute chart facet integer" << std::endl;
+                    for(index_t f = 0; f < M.facets.nb(); ++f) {
+                        out << "# attrs f "
+                            << f + 1 << " "
+                            << facet_region_[f] << std::endl;
+                    }
                 }
             }
 
@@ -360,6 +362,7 @@ namespace {
             keyword2name_[GmfHexahedra] = "hex";
             keyword2name_[GmfPrisms] = "prism";
             keyword2name_[GmfPyramids] = "pyramid";
+            keyword2name_[GmfEdges] = "edge";
             keyword2nbv_[GmfTriangles] = 3;
             keyword2nbv_[GmfQuadrilaterals] = 4;
             keyword2nbv_[GmfTetrahedra] = 4;
@@ -401,6 +404,9 @@ namespace {
             
             index_t nb_vertices =
                 index_t(GmfStatKwd(mesh_file_handle, GmfVertices));
+
+            index_t nb_edges =
+                index_t(GmfStatKwd(mesh_file_handle, GmfEdges));
             
             index_t nb_tris =
                 index_t(GmfStatKwd(mesh_file_handle, GmfTriangles));
@@ -463,6 +469,27 @@ namespace {
                 }
             }
 
+            if(ioflags.has_element(MESH_EDGES)) {
+                if(nb_edges > 0) {
+                    if(!goto_elements(mesh_file_handle, GmfEdges)) {
+                        return false;
+                    }
+                    index_t first_edge = M.edges.create_edges(nb_edges);
+                    int v[8];
+                    int ref;
+                    for(index_t e=0; e<nb_edges; ++e) {
+                        if(!read_element(
+                               mesh_file_handle, GmfEdges, v, ref, M, e
+                        )) {
+                            return false;
+                        }
+                        for(index_t lv=0; lv<2; ++lv) {
+                            M.edges.set_vertex(first_edge+e, lv, index_t(v[lv]-1));
+                        }
+                    }                    
+                }
+            }
+            
             if(ioflags.has_element(MESH_FACETS)) {
                 // Read triangles
                 if(nb_tris > 0) {
@@ -730,6 +757,19 @@ namespace {
                 }
             }
 
+            if(ioflags.has_element(MESH_EDGES)) {
+                GmfSetKwd(mesh_file_handle, GmfEdges, M.edges.nb());
+                for(index_t e=0; e<M.edges.nb(); ++e) {
+                    index_t ref = 0;
+                    GmfSetLin(
+                        mesh_file_handle, GmfEdges,
+                        int(M.edges.vertex(e,0) + 1),
+                        int(M.edges.vertex(e,1) + 1),
+                        ref
+                    );
+                }
+            }
+            
             if(ioflags.has_element(MESH_CELLS)) {
                 index_t nb_tets=0;
                 index_t nb_hexes=0;
@@ -974,10 +1014,15 @@ namespace {
              * \brief Construts a new PlyLoader.
              * \param[in] filename name of the file to be loaded
              * \param[out] M the loaded mesh
+             * \param[in] flags flags that determine which elements
+             *  and attributes should be read
              */
-            PlyLoader(const std::string& filename, Mesh& M) :
+            PlyLoader(
+                const std::string& filename, Mesh& M, const MeshIOFlags& flags
+            ) :
                 mesh_(M),
                 filename_(filename),
+                flags_(flags),
                 current_vertex_(max_index_t()),
                 has_colors_(false),
                 color_mult_(1.0),
@@ -1033,21 +1078,24 @@ namespace {
                     ply, "vertex", "z", PlyLoader::vertex_cb, this, 2
                 );
 
-                long nfaces = ply_set_read_cb(
-                    ply, "face", "vertex_indices", PlyLoader::face_cb, this, 0
-                );
-                nfaces += ply_set_read_cb(
-                    ply, "face", "vertex_index", PlyLoader::face_cb, this, 0
-                );
-                long ntstrips = ply_set_read_cb(
-                    ply, "tristrips", "vertex_indices",
-                    PlyLoader::tristrip_cb, this, 0
-                );
-                ntstrips += ply_set_read_cb(
-                    ply, "tristrips", "vertex_index",
-                    PlyLoader::tristrip_cb, this, 0
-                );
-
+                long nfaces = 0;
+                long ntstrips = 0;
+                if(flags_.has_element(MESH_FACETS)) {
+                    nfaces += ply_set_read_cb(
+                        ply, "face", "vertex_indices", PlyLoader::face_cb, this, 0
+                    );
+                    nfaces += ply_set_read_cb(
+                        ply, "face", "vertex_index", PlyLoader::face_cb, this, 0
+                    );
+                    ntstrips += ply_set_read_cb(
+                        ply, "tristrips", "vertex_indices",
+                        PlyLoader::tristrip_cb, this, 0
+                    );
+                    ntstrips += ply_set_read_cb(
+                        ply, "tristrips", "vertex_index",
+                        PlyLoader::tristrip_cb, this, 0
+                    );
+                }
                 if(nvertices == 0) {
                     Logger::err("I/O") 
                         << "File contains no vertices" << std::endl;
@@ -1455,7 +1503,8 @@ namespace {
         protected:
             Mesh& mesh_;
             std::string filename_;
-
+            MeshIOFlags flags_;
+            
             index_t current_vertex_;
 
             bool has_colors_;
@@ -1475,8 +1524,7 @@ namespace {
             const std::string& filename, Mesh& M,
             const MeshIOFlags& ioflags = MeshIOFlags()
         ) {
-            geo_argused(ioflags);
-            PlyLoader loader(filename, M);
+            PlyLoader loader(filename, M, ioflags);
             return loader.load();
         }
         
@@ -1484,7 +1532,6 @@ namespace {
             const Mesh& M, const std::string& filename,
             const MeshIOFlags& ioflags
         ) {
-            geo_argused(ioflags);
             p_ply oply = ply_create(
                 filename.c_str(), PLY_LITTLE_ENDIAN, NULL, 0, NULL
             );
@@ -1500,25 +1547,27 @@ namespace {
             ply_add_property(oply, "y", coord_type, coord_type, coord_type);
             ply_add_property(oply, "z", coord_type, coord_type, coord_type);
 
-            // Create element and properties for facets
-            // (determine best index types)
-            index_t max_facet_size = 0;
-            for(index_t f = 0; f < M.facets.nb(); ++f) {
-                max_facet_size = geo_max(
-                    max_facet_size, M.facets.nb_vertices(f)
+            if(ioflags.has_element(MESH_FACETS)) {
+                // Create element and properties for facets
+                // (determine best index types)
+                index_t max_facet_size = 0;
+                for(index_t f = 0; f < M.facets.nb(); ++f) {
+                    max_facet_size = geo_max(
+                        max_facet_size, M.facets.nb_vertices(f)
+                    );
+                }
+                e_ply_type facet_len_type = PLY_UCHAR;
+                if(max_facet_size > 65535) {
+                    facet_len_type = PLY_UINT;
+                } else if(max_facet_size > 255) {
+                    facet_len_type = PLY_USHORT;
+                }
+                e_ply_type facet_idx_type = PLY_INT;
+                ply_add_element(oply, "face", long(M.facets.nb()));
+                ply_add_property(
+                    oply, "vertex_indices", PLY_LIST, facet_len_type, facet_idx_type
                 );
             }
-            e_ply_type facet_len_type = PLY_UCHAR;
-            if(max_facet_size > 65535) {
-                facet_len_type = PLY_UINT;
-            } else if(max_facet_size > 255) {
-                facet_len_type = PLY_USHORT;
-            }
-            e_ply_type facet_idx_type = PLY_INT;
-            ply_add_element(oply, "face", long(M.facets.nb()));
-            ply_add_property(
-                oply, "vertex_indices", PLY_LIST, facet_len_type, facet_idx_type
-            );
 
             std::vector<std::string> args;
             CmdLine::get_args(args);
@@ -1541,13 +1590,15 @@ namespace {
                 }
             }
 
-            // Write facets
-            for(index_t f = 0; f < M.facets.nb(); ++f) {
-                ply_write(oply, double(M.facets.nb_vertices(f)));
-                for(index_t c = M.facets.corners_begin(f);
-                    c < M.facets.corners_end(f); ++c
-                ) {
-                    ply_write(oply, double(M.facet_corners.vertex(c)));
+            if(ioflags.has_element(MESH_FACETS)) {
+                // Write facets
+                for(index_t f = 0; f < M.facets.nb(); ++f) {
+                    ply_write(oply, double(M.facets.nb_vertices(f)));
+                    for(index_t c = M.facets.corners_begin(f);
+                        c < M.facets.corners_end(f); ++c
+                        ) {
+                        ply_write(oply, double(M.facet_corners.vertex(c)));
+                    }
                 }
             }
 
@@ -1648,41 +1699,43 @@ namespace {
                 set_mesh_point(M, i, xyz, 3);
             }
 
-            while(!in.eof() && in.get_line()) {
-                in.get_fields();
-                if(in.nb_fields() < 4) {
-                    Logger::err("I/O")
-                        << "Line " << in.line_number()
-                        << ": facet line only has " << in.nb_fields()
-                        << " fields (expected 1 count +"
-                        << " at least 3 corner fields)"
-                        << std::endl;
-                    return false;
-                }
-                index_t nb_facet_vertices = in.field_as_uint(0);
-                if(in.nb_fields() != nb_facet_vertices + 1) {
-                    Logger::err("I/O")
-                        << "Line " << in.line_number()
-                        << ": facet has " << in.nb_fields() - 1
-                        << " actual vertices ("
-                        << nb_facet_vertices << " expected)"
-                        << std::endl;
-                    return false;
-                }
-                index_t f = M.facets.create_polygon(nb_facet_vertices);
-
-                for(index_t j = 0; j < nb_facet_vertices; j++) {
-                    index_t vertex_index = in.field_as_uint(j + 1);
-                    if(vertex_index >= M.vertices.nb()) {
+            if(ioflags.has_element(MESH_FACETS)) {
+                while(!in.eof() && in.get_line()) {
+                    in.get_fields();
+                    if(in.nb_fields() < 4) {
                         Logger::err("I/O")
                             << "Line " << in.line_number()
-                            << ": facet corner #" << j
-                            << " references an invalid vertex: "
-                            << vertex_index
+                            << ": facet line only has " << in.nb_fields()
+                            << " fields (expected 1 count +"
+                            << " at least 3 corner fields)"
                             << std::endl;
                         return false;
                     }
-                    M.facets.set_vertex(f, j, vertex_index);
+                    index_t nb_facet_vertices = in.field_as_uint(0);
+                    if(in.nb_fields() != nb_facet_vertices + 1) {
+                        Logger::err("I/O")
+                            << "Line " << in.line_number()
+                            << ": facet has " << in.nb_fields() - 1
+                            << " actual vertices ("
+                            << nb_facet_vertices << " expected)"
+                            << std::endl;
+                        return false;
+                    }
+                    index_t f = M.facets.create_polygon(nb_facet_vertices);
+                    
+                    for(index_t j = 0; j < nb_facet_vertices; j++) {
+                        index_t vertex_index = in.field_as_uint(j + 1);
+                        if(vertex_index >= M.vertices.nb()) {
+                            Logger::err("I/O")
+                                << "Line " << in.line_number()
+                                << ": facet corner #" << j
+                                << " references an invalid vertex: "
+                                << vertex_index
+                                << std::endl;
+                            return false;
+                        }
+                        M.facets.set_vertex(f, j, vertex_index);
+                    }
                 }
             }
             return true;
@@ -1700,8 +1753,6 @@ namespace {
             const Mesh& M, const std::string& filename,
             const MeshIOFlags& ioflags
         ) {
-            geo_argused(ioflags);
-
             std::ofstream output(filename.c_str());
             if(!output) {
                 return false;
@@ -1720,16 +1771,18 @@ namespace {
                 output << xyz[0] << " " << xyz[1] << " " << xyz[2] << std::endl;
             }
 
-            // Output facets
-            for(index_t f = 0; f < M.facets.nb(); ++f) {
-                output << M.facets.nb_vertices(f) << " ";
-                for(
-                    index_t c = M.facets.corners_begin(f);
-                    c < M.facets.corners_end(f); ++c
-                ) {
-                    output << M.facet_corners.vertex(c) << " ";
+            if(ioflags.has_element(MESH_FACETS)) {
+                // Output facets
+                for(index_t f = 0; f < M.facets.nb(); ++f) {
+                    output << M.facets.nb_vertices(f) << " ";
+                    for(
+                        index_t c = M.facets.corners_begin(f);
+                        c < M.facets.corners_end(f); ++c
+                    ) {
+                        output << M.facet_corners.vertex(c) << " ";
+                    }
+                    output << std::endl;
                 }
-                output << std::endl;
             }
             return true;
         }
@@ -1774,12 +1827,14 @@ namespace {
                     facet_opened = true;
                 } else if(in.field_matches(0, "endloop")) {
                     facet_opened = false;
-                    index_t f = M.facets.create_polygon(facet_vertices.size());
-                    for(index_t lv=0; lv<facet_vertices.size(); ++lv) {
-                        M.facets.set_vertex(f,lv,facet_vertices[lv]);
-                    }
-                    if(facet_region_.is_bound()) {
-                        facet_region_[f] = index_t(current_chart);
+                    if(ioflags.has_element(MESH_FACETS)) {
+                        index_t f = M.facets.create_polygon(facet_vertices.size());
+                        for(index_t lv=0; lv<facet_vertices.size(); ++lv) {
+                            M.facets.set_vertex(f,lv,facet_vertices[lv]);
+                        }
+                        if(facet_region_.is_bound()) {
+                            facet_region_[f] = index_t(current_chart);
+                        }
                     }
                 } else if(in.field_matches(0, "vertex")) {
                     if(in.nb_fields() < 4) {
@@ -1851,7 +1906,9 @@ namespace {
             bind_attributes(M, ioflags, true);
 
             M.vertices.create_vertices(nb_triangles*3);
-            M.facets.create_triangles(nb_triangles);
+            if(ioflags.has_element(MESH_FACETS)) {
+                M.facets.create_triangles(nb_triangles);
+            }
             
             for(index_t t = 0; t < nb_triangles; t++) {
                 Numeric::float32 N[3];
@@ -1870,12 +1927,13 @@ namespace {
                 set_mesh_point(M, 3*t+1, XYZ+3, 3);
                 set_mesh_point(M, 3*t+2, XYZ+6, 3);
 
-                M.facets.set_vertex(t, 0, 3*t);
-                M.facets.set_vertex(t, 1, 3*t+1);
-                M.facets.set_vertex(t, 2, 3*t+2);
-
-                if(facet_region_.is_bound()) {
-                    facet_region_[t] = index_t(attrib);
+                if(ioflags.has_element(MESH_FACETS)) {                
+                    M.facets.set_vertex(t, 0, 3*t);
+                    M.facets.set_vertex(t, 1, 3*t+1);
+                    M.facets.set_vertex(t, 2, 3*t+2);
+                    if(facet_region_.is_bound()) {
+                        facet_region_[t] = index_t(attrib);
+                    }
                 }
             }
             unbind_attributes();
@@ -2580,10 +2638,9 @@ namespace GEO {
         if(M.cells.nb() != 0 && M.facets.nb() == 0) {
             M.cells.compute_borders();
         }
-        
-        M.show_stats("I/O");
 
-                
+        M.show_stats("I/O");
+        
         return true;
     }
 

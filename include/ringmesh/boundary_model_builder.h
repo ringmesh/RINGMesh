@@ -63,6 +63,7 @@ namespace RINGMesh {
 
         // High level functions
         void copy_macro_topology( const BoundaryModel& from ) ;
+        void copy_meshes( const BoundaryModel& from ) ;
 
         // Set model attributes
         void set_model_name( const std::string& name )
@@ -263,13 +264,7 @@ namespace RINGMesh {
 
         void init_global_model_element_access() ;
 
-        bool complete_element_connectivity() ;
-
-        bool check_basic_element_validity( const BoundaryModelElement& E ) const ;
-
-        bool check_element_connectivity( const BoundaryModelElement& E ) const ;
-
-        void fill_element_geological_feature( BoundaryModelElement& E ) ;
+        bool complete_element_connectivity() ;  
 
         void fill_elements_boundaries( BME::TYPE type ) ;
 
@@ -339,7 +334,7 @@ namespace RINGMesh {
         /*!
          * @brief Check if the surface triangle orientations match the one of the key facet
          */
-        bool check_key_facet_orientation( index_t surface ) ;
+        bool check_key_facet_orientation( index_t surface ) const;
 
         index_t find_key_facet(
             index_t surface_id,

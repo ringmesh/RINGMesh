@@ -10,6 +10,16 @@ syntax: regexp
 ^doc/grgmesh.qch
 syntax: regexp
 ^src/third_party/geogram/CMakeOptions\.txt$
-
+syntax: regexp
+^doc/ringmesh\.qch$
 syntax: regexp
 ^tests/bin$
+syntax: regexp
+\.aux$
+syntax: regexp
+\.gz$
+syntax: regexp
+\.pdf$
+
+syntax: regexp
+^articles/iamg/tmp$
