@@ -92,7 +92,12 @@ namespace GEO {
             if(dot(cross(n1,n2),mesh_corner_vector(M,c)) > 0.0) {
                 sign = -1.0;
             }
-            return sign*acos(dot(n1, n2));
+            double cos_angle = dot(n1, n2);
+            // Numerical precision problem may occur, and generate
+            // normalized dot products that are outside the valid
+            // range of acos.
+            geo_clamp(cos_angle, -1.0, 1.0);
+            return sign*acos(cos_angle);
         }
 
         double mesh_area(const Mesh& M, index_t dim) {

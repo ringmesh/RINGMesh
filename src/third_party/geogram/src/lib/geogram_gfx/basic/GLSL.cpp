@@ -52,9 +52,35 @@ namespace GEO {
         namespace GLSL {
 
             /*************************************************************/
+
+            const char* GLSLCompileError::what() const throw() {
+                return "GLSL Compile Error";
+            }
             
+            /*************************************************************/
+
             GLuint compile_shader(
                 GLenum target, const char* source1, const char* source2
+            ) {
+                const char* sources[2];
+                sources[0] = source1;
+                sources[1] = source2;
+                return compile_shader(target, &sources[0], 2);
+            }
+
+            GLuint compile_shader(
+                GLenum target,
+                const char* source1, const char* source2, const char* source3
+            ) {
+                const char* sources[3];
+                sources[0] = source1;
+                sources[1] = source2;
+                sources[2] = source3;
+                return compile_shader(target, &sources[0], 2);
+            }
+            
+            GLuint compile_shader(
+                GLenum target, const char** sources, index_t nb_sources
             ) {
                 GLuint s_handle = glCreateShader(target);
                 if(s_handle == 0) {
@@ -62,10 +88,7 @@ namespace GEO {
                                         << std::endl;
                     exit(1);
                 }
-                const char* sources[2];
-                sources[0] = source1;
-                sources[1] = source2;
-                glShaderSource(s_handle, (source2 == 0) ? 1 : 2, sources, 0);
+                glShaderSource(s_handle, (GLsizei)nb_sources, sources, 0);
                 glCompileShader(s_handle);
                 GLint compile_status;
                 glGetShaderiv(s_handle, GL_COMPILE_STATUS, &compile_status);
@@ -82,6 +105,7 @@ namespace GEO {
                         << compiler_message << std::endl;
                     glDeleteShader(s_handle);
                     s_handle = 0;
+                    throw GLSLCompileError();
                 }
                 return s_handle;
             }

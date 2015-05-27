@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -42,17 +42,9 @@
 #define __RINGMESH_UTILS__
 
 #include <ringmesh/common.h>
-#include <ringmesh/types.h>
 
-#include <geogram/points/nn_search.h>
 #include <geogram/points/kd_tree.h>
 #include <geogram/mesh/mesh_AABB.h>
-
-#include <algorithm>
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <fstream>
 
 namespace GEO {
     class Mesh ;
@@ -67,47 +59,38 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
- /*! \brief A safer narrow casting function of type S to type T 
+    /*! @brief A safer narrow casting function of type S to type T
      *  \return static_cast< T >( in ) 
      *  \post Check that the result can be cast back to in, if not throws an assertion.
-     *  \note cf. The C++ programming lang. 4th edition. p299
+     *  \note cf. The C++ programming language. 4th edition. p299
      */
-    template< typename T, typename S > 
+    template< typename T, typename S >
     T narrow_cast( S in )
     {
         T r = static_cast< T >( in ) ;
         if( static_cast< S >( r ) != in ) {
-            ringmesh_assert_not_reached ;
+            ringmesh_assert_not_reached;
         }
         return r ;
     }
 
-
-    static bool operator==(
-        const vec3& u,
-        const vec3& v )
+    static bool operator==( const vec3& u, const vec3& v )
     {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
     }
 
-
-    static bool operator<(
-        const vec3& u,
-        const vec3& v )
+    static bool operator<( const vec3& u, const vec3& v )
     {
         return u.x < v.x && u.y < v.y && u.z < v.z ;
     }
 
-    static bool operator!=(
-        const vec3& u,
-        const vec3& v )
+    static bool operator!=( const vec3& u, const vec3& v )
     {
         return u.x != v.x || u.y != v.y || u.z != v.z ;
     }
 
-
     enum Sign {
-        NEGATIVE = - 1, ZERO = 0, POSITIVE = 1
+        NEGATIVE = -1, ZERO = 0, POSITIVE = 1
     } ;
 
     template< class T >
@@ -116,19 +99,16 @@ namespace RINGMesh {
         return x * x ;
     }
 
-
     template< class T >
     inline Sign sign( T x )
     {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO ) ;
     }
 
-
     class Box3d: public GEO::Box {
     public:
         Box3d()
-              :
-                initialized_( false )
+            : initialized_( false )
         {
         }
 
@@ -208,10 +188,10 @@ namespace RINGMesh {
             vec3 maximum = max() ;
             vec3 b_maximum = B.max() ;
             for( index_t c = 0; c < 3; ++c ) {
-                if( maximum[ c ] < b_minimum[ c ] ) {
+                if( maximum[c] < b_minimum[c] ) {
                     return false ;
                 }
-                if( minimum[ c ] > b_maximum[ c ] ) {
+                if( minimum[c] > b_maximum[c] ) {
                     return false ;
                 }
             }
@@ -230,10 +210,10 @@ namespace RINGMesh {
             vec3 minimum = min() ;
             vec3 maximum = max() ;
             for( index_t c = 0; c < 3; ++c ) {
-                if( b[ c ] < minimum[ c ] ) {
+                if( b[c] < minimum[c] ) {
                     return false ;
                 }
-                if( b[ c ] > maximum[ c ] ) {
+                if( b[c] > maximum[c] ) {
                     return false ;
                 }
             }
@@ -246,7 +226,7 @@ namespace RINGMesh {
             vec3 minimum = min() ;
             vec3 maximum = max() ;
             for( index_t c = 0; c < 3; ++c ) {
-                float64 d = p[ c ] - 0.5 * ( minimum[ c ] + maximum[ c ] ) ;
+                float64 d = p[c] - 0.5 * ( minimum[c] + maximum[c] ) ;
                 result += sqr( d ) ;
             }
             return result ;
@@ -259,22 +239,22 @@ namespace RINGMesh {
             vec3 minimum = min() ;
             vec3 maximum = max() ;
             for( index_t c = 0; c < 3; c++ ) {
-                if( p[ c ] < minimum[ c ] ) {
+                if( p[c] < minimum[c] ) {
                     inside = false ;
-                    result += sqr( p[ c ] - minimum[ c ] ) ;
-                } else if( p[ c ] > maximum[ c ] ) {
+                    result += sqr( p[c] - minimum[c] ) ;
+                } else if( p[c] > maximum[c] ) {
                     inside = false ;
-                    result += sqr( p[ c ] - maximum[ c ] ) ;
+                    result += sqr( p[c] - maximum[c] ) ;
                 }
             }
             if( inside ) {
-                result = sqr( p[ 0 ] - minimum[ 0 ] ) ;
-                result = std::min( result, sqr( p[ 0 ] - maximum[ 0 ] ) ) ;
+                result = sqr( p[0] - minimum[0] ) ;
+                result = std::min( result, sqr( p[0] - maximum[0] ) ) ;
                 for( index_t c = 1; c < 3; ++c ) {
-                    result = std::min( result, sqr( p[ c ] - minimum[ c ] ) ) ;
-                    result = std::min( result, sqr( p[ c ] - maximum[ c ] ) ) ;
+                    result = std::min( result, sqr( p[c] - minimum[c] ) ) ;
+                    result = std::min( result, sqr( p[c] - maximum[c] ) ) ;
                 }
-                result = - result ;
+                result = -result ;
             }
             return result ;
         }
@@ -283,8 +263,10 @@ namespace RINGMesh {
         bool initialized_ ;
     } ;
 
-    class RINGMESH_API Utils {
+    class RINGMESH_API Geom {
     public:
+        static double mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
+
         static vec3 mesh_cell_facet_normal(
             const GEO::Mesh& M,
             index_t c,
@@ -295,36 +277,52 @@ namespace RINGMesh {
             index_t cell,
             index_t f ) ;
 
-        static vec3 mesh_cell_center(
-            const GEO::Mesh& M,
-            index_t cell ) ;
+        static vec3 mesh_cell_center( const GEO::Mesh& M, index_t cell ) ;
 
         static bool has_edge(
-            GEO::Mesh& mesh,
+            const GEO::Mesh& mesh,
             index_t t,
             index_t p0,
             index_t p1,
             index_t& edge ) ;
 
-        static signed_index_t next_arround_edge(
-            GEO::Mesh& mesh,
+        static index_t next_arround_edge(
+            const GEO::Mesh& mesh,
             index_t t,
             index_t prev,
             index_t p0,
             index_t p1 ) ;
 
         static void edges_arround_edge(
-            GEO::Mesh& mesh,
+            const GEO::Mesh& mesh,
             index_t t,
             index_t p0,
             index_t p1,
             std::vector< index_t >& result ) ;
 
+        static void divide_edge_in_parts(
+            const GEO::Mesh& mesh,
+            index_t edge,
+            index_t nb_parts,
+            std::vector< vec3 >& points ) ;
+
+        static void divide_edge_in_parts(
+            vec3& node0,
+            vec3& node1,
+            index_t nb_parts,
+            std::vector< vec3 >& points ) ;
+
+
+    } ;
+    class RINGMESH_API Utils {
+    public:
+        static void print_bounded_attributes( const GEO::Mesh& M ) ;
+        static bool compare_file( const std::string& f1, const std::string& f2 ) ;
+
         static index_t get_nearest_vertex_index(
             const GEO::Mesh& mesh,
             const vec3& p,
-            signed_index_t t ) ;
-
+            index_t t ) ;
         static bool facets_have_same_orientation(
             const GEO::Mesh& mesh,
             index_t f1,
@@ -335,7 +333,6 @@ namespace RINGMesh {
             const BoundaryModelElement& region,
             GEO::Mesh& mesh,
             bool check_duplicated_facet = false ) ;
-
         static float64 triangle_area(
             const vec3& p1,
             const vec3& p2,
@@ -361,15 +358,12 @@ namespace RINGMesh {
         }
 
         template< class T >
-        static bool check_order(
-            std::vector< T > v1,
-            T p1,
-            T p2 )
+        static bool check_order( std::vector< T > v1, T p1, T p2 )
         {
             v1.resize( v1.size() + 1 ) ;
-            v1[ v1.size() - 1 ] = v1[ 0 ] ;
+            v1[v1.size() - 1] = v1[0] ;
             for( index_t i = 0; i < v1.size() - 1; i++ ) {
-                if( v1[ i ] == p1 && v1[ i + 1 ] == p2 ) {
+                if( v1[i] == p1 && v1[i + 1] == p2 ) {
                     return true ;
                 }
                 return false ;
@@ -384,39 +378,35 @@ namespace RINGMesh {
         {
             std::vector< T > intersect( v1.size() + v2.size() ) ;
             std::vector< index_t >::iterator it ;
-            it = std::set_intersection( v1.begin(), v1.end(), v2.begin(),
-                v2.end(), intersect.begin() ) ;
+            it = std::set_intersection( v1.begin(), v1.end(), v2.begin(), v2.end(),
+                intersect.begin() ) ;
             intersect.resize( it - intersect.begin() ) ;
             return intersect ;
         }
 
         template< class T >
-        static bool contains(
-            const std::vector< T >& v,
-            const T& t )
+        static bool contains( const std::vector< T >& v, const T& t )
         {
-            return find( v, t ) != - 1 ;
+            return find( v, t ) != -1 ;
         }
 
         template< class T >
-        static signed_index_t find(
-            const std::vector< T >& v,
-            const T& t )
+        static signed_index_t find( const std::vector< T >& v, const T& t )
         {
             for( index_t i = 0; i < v.size(); i++ ) {
-                if( v[ i ] == t ) {return i ;}
+                if( v[i] == t ) {
+                    return i ;
+                }
             }
-            return - 1 ;
+            return -1 ;
         }
 
         template< class T1, class T2 >
-        static bool inexact_equal(
-            const T1& v1,
-            const T2& v2 )
+        static bool inexact_equal( const T1& v1, const T2& v2 )
         {
             for( index_t i = 0; i < 3; i++ ) {
-                float64 diff( v1[ i ] - v2[ i ] ) ;
-                if( diff > epsilon || diff < - epsilon ) {
+                float64 diff( v1[i] - v2[i] ) ;
+                if( diff > epsilon || diff < -epsilon ) {
                     return false ;
                 }
             }
@@ -453,7 +443,10 @@ namespace RINGMesh {
             }
             return false ;
         }
+    } ;
 
+    class RINGMESH_API Math {
+    public:
         // See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
         template< class VEC >
         static float64 point_triangle_distance(
@@ -485,11 +478,11 @@ namespace RINGMesh {
                     if( t < 0.0 ) { // region 4
                         if( b0 < 0.0 ) {
                             t = 0.0 ;
-                            if( - b0 >= a00 ) {
+                            if( -b0 >= a00 ) {
                                 s = 1.0 ;
                                 sqrDistance = a00 + 2.0 * b0 + c ;
                             } else {
-                                s = - b0 / a00 ;
+                                s = -b0 / a00 ;
                                 sqrDistance = b0 * s + c ;
                             }
                         } else {
@@ -497,11 +490,11 @@ namespace RINGMesh {
                             if( b1 >= 0.0 ) {
                                 t = 0.0 ;
                                 sqrDistance = c ;
-                            } else if( - b1 >= a11 ) {
+                            } else if( -b1 >= a11 ) {
                                 t = 1.0 ;
                                 sqrDistance = a11 + 2.0 * b1 + c ;
                             } else {
-                                t = - b1 / a11 ;
+                                t = -b1 / a11 ;
                                 sqrDistance = b1 * t + c ;
                             }
                         }
@@ -510,11 +503,11 @@ namespace RINGMesh {
                         if( b1 >= 0.0 ) {
                             t = 0.0 ;
                             sqrDistance = c ;
-                        } else if( - b1 >= a11 ) {
+                        } else if( -b1 >= a11 ) {
                             t = 1.0 ;
                             sqrDistance = a11 + 2.0 * b1 + c ;
                         } else {
-                            t = - b1 / a11 ;
+                            t = -b1 / a11 ;
                             sqrDistance = b1 * t + c ;
                         }
                     }
@@ -523,11 +516,11 @@ namespace RINGMesh {
                     if( b0 >= 0.0 ) {
                         s = 0.0 ;
                         sqrDistance = c ;
-                    } else if( - b0 >= a00 ) {
+                    } else if( -b0 >= a00 ) {
                         s = 1.0 ;
                         sqrDistance = a00 + 2.0 * b0 + c ;
                     } else {
-                        s = - b0 / a00 ;
+                        s = -b0 / a00 ;
                         sqrDistance = b0 * s + c ;
                     }
                 } else { // region 0
@@ -536,7 +529,7 @@ namespace RINGMesh {
                     s *= invDet ;
                     t *= invDet ;
                     sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                                  + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                        + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
                 }
             } else {
                 float64 tmp0, tmp1, numer, denom ;
@@ -555,7 +548,7 @@ namespace RINGMesh {
                             s = numer / denom ;
                             t = 1.0 - s ;
                             sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                                          + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                                + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
                         }
                     } else {
                         s = 0.0 ;
@@ -566,7 +559,7 @@ namespace RINGMesh {
                             t = 0.0 ;
                             sqrDistance = c ;
                         } else {
-                            t = - b1 / a11 ;
+                            t = -b1 / a11 ;
                             sqrDistance = b1 * t + c ;
                         }
                     }
@@ -584,7 +577,7 @@ namespace RINGMesh {
                             t = numer / denom ;
                             s = 1.0 - t ;
                             sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                                          + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                                + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
                         }
                     } else {
                         t = 0.0 ;
@@ -595,7 +588,7 @@ namespace RINGMesh {
                             s = 0.0 ;
                             sqrDistance = c ;
                         } else {
-                            s = - b0 / a00 ;
+                            s = -b0 / a00 ;
                             sqrDistance = b0 * s + c ;
                         }
                     }
@@ -615,7 +608,7 @@ namespace RINGMesh {
                             s = numer / denom ;
                             t = 1.0 - s ;
                             sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                                          + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                                + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
                         }
                     }
                 }
@@ -678,12 +671,6 @@ namespace RINGMesh {
             const vec3& p5,
             const vec3& p6,
             const vec3& p7,
-            vec3& nearest_p ) ;
-
-        static float64 nearest_point_segment(
-            const vec3& p,
-            const vec3& p0,
-            const vec3& p1,
             vec3& nearest_p ) ;
 
         static bool circle_plane_intersection(
@@ -774,24 +761,27 @@ namespace RINGMesh {
             vec3& result ) ;
     } ;
 
+    /*!
+     * Given an array of vec3, this class computes the colocated points
+     * and a database to identify which colocated point corresponds to
+     */
     class RINGMESH_API MakeUnique {
+    ringmesh_disable_copy( MakeUnique ) ;
     public:
         MakeUnique( const std::vector< vec3 >& data ) ;
         template< class T > MakeUnique( const std::vector< T >& data )
         {
             signed_index_t nb_points = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
-                nb_points += data[ i ].points().size() ;
+                nb_points += data[i].points().size() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
             signed_index_t cur_id = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
-                for( index_t p = 0; p < data[ i ].points().size();
-                     p++, cur_id++ )
-                {
-                    points_[ cur_id ] = data[ i ].points()[ p ] ;
-                    indices_[ cur_id ] = cur_id ;
+                for( index_t p = 0; p < data[i].points().size(); p++, cur_id++ ) {
+                    points_[cur_id] = data[i].points()[p] ;
+                    indices_[cur_id] = cur_id ;
                 }
             }
         }
@@ -800,17 +790,17 @@ namespace RINGMesh {
             const std::vector< T >& data,
             bool T_is_a_pointer )
         {
-            signed_index_t nb_points = 0 ;
+            index_t nb_points = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
-                nb_points += data[ i ]->nb_vertices() ;
+                nb_points += data[i]->nb_vertices() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
-            signed_index_t cur_id = 0 ;
+            index_t cur_id = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
-                for( index_t p = 0; p < data[ i ]->nb_vertices(); p++, cur_id++ ) {
-                    points_[ cur_id ] = data[ i ]->vertex( p ) ;
-                    indices_[ cur_id ] = cur_id ;
+                for( index_t p = 0; p < data[i]->nb_vertices(); p++, cur_id++ ) {
+                    points_[cur_id] = data[i]->vertex( p ) ;
+                    indices_[cur_id] = cur_id ;
                 }
             }
         }
@@ -819,41 +809,57 @@ namespace RINGMesh {
 
         void add_points( const std::vector< vec3 >& points ) ;
 
-        void unique( index_t nb_neighbors = 5 ) ;
+        void unique() ;
 
+        /*!
+         * Gets the input vector of vec3
+         */
         const std::vector< vec3 >& points() const
         {
             return points_ ;
         }
 
+        /*!
+         * Gets the number of points in the database
+         * @return returns the corresponding number
+         */
+        index_t nb_points() const
+        {
+            return points_.size() ;
+        }
+
         void unique_points( std::vector< vec3 >& results ) const ;
 
+        /*!
+         * Gets the computed database that maps
+         * the colocated point to the unique one
+         */
         const std::vector< index_t >& indices() const
         {
             return indices_ ;
         }
 
     private:
+        /// Input vector of vec3
         std::vector< vec3 > points_ ;
+        /// computed database that maps the colocated point to the unique one
         std::vector< index_t > indices_ ;
     } ;
 
     class RINGMESH_API ColocaterANN {
-        ringmesh_disable_copy( ColocaterANN ) ;
+    ringmesh_disable_copy( ColocaterANN ) ;
     public:
         enum MeshLocation {
             VERTICES, FACETS, CELLS
         } ;
-
-        ColocaterANN( const Surface& mesh ) ;
+        ColocaterANN() ;
+        ColocaterANN(
+            const Surface& mesh,
+            const MeshLocation& location = VERTICES ) ;
         ColocaterANN( const Line& mesh ) ;
-        ColocaterANN(
-            const GEO::Mesh& mesh,
-            const MeshLocation& location ) ;
+        ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location ) ;
         ColocaterANN( const std::vector< vec3 >& vertices ) ;
-        ColocaterANN(
-            float64* vertices,
-            index_t nb_vertices ) ;
+        ColocaterANN( float64* vertices, index_t nb_vertices ) ;
         ColocaterANN( const std::vector< Edge >& edges ) ;
 
         ~ColocaterANN()
@@ -861,18 +867,23 @@ namespace RINGMesh {
             delete[] ann_points_ ;
         }
 
-        bool get_colocated(
-            const vec3& v,
-            std::vector< index_t >& result,
-            index_t nb_neighbors = 5 ) const ;
+        void set_points( const std::vector< vec3 >& vertices ) ;
 
+        bool get_colocated( const vec3& v, std::vector< index_t >& result ) const ;
+
+        /*!
+         * Gets the closest neighbor point
+         * @param[in] v the point to test
+         * @param[out] dist the distance to the closest point
+         * return returns the index of the closest point
+         */
         index_t get_closest_neighbor(
             const vec3& v,
             double& dist = dummy_float64 ) const
         {
             std::vector< index_t > result ;
             get_neighbors( v, 1, result, &dist ) ;
-            return result[ 0 ] ;
+            return result[0] ;
         }
 
         index_t get_neighbors(
@@ -881,17 +892,20 @@ namespace RINGMesh {
             std::vector< index_t >& result,
             double* dist = nil ) const ;
 
-        vec3 point( signed_index_t i )
+        /*!
+         * Gets the point corresponding to the given index
+         * @param[in] i the point index
+         * return the corresponding point
+         */
+        vec3 point( index_t i ) const
         {
-            vec3 p ;
-            p.x = ann_tree_->point_ptr( i )[ 0 ] ;
-            p.y = ann_tree_->point_ptr( i )[ 1 ] ;
-            p.z = ann_tree_->point_ptr( i )[ 2 ] ;
-            return p ;
+            return vec3( ann_tree_->point_ptr( i ) ) ;
         }
 
     private:
+        /// KdTree to compute the nearest neighbor search
         GEO::NearestNeighborSearch_var ann_tree_ ;
+        /// Array of the points (size of 3xnumber of points)
         double* ann_points_ ;
     } ;
 
@@ -902,18 +916,18 @@ namespace RINGMesh {
         {
             ringmesh_debug_assert( values.size() < n + 1 ) ;
             for( index_t i = 0; i < values.size(); i++ ) {
-                values_[ i ] = values[ i ] ;
+                values_[i] = values[i] ;
             }
         }
 
         T value( signed_index_t i ) const
         {
-            return values_[ i ] ;
+            return values_[i] ;
         }
 
         T& value( signed_index_t i )
         {
-            return values_[ i ] ;
+            return values_[i] ;
         }
 
         float64 normalized_value(
@@ -922,7 +936,7 @@ namespace RINGMesh {
             float64 min,
             float64 scale ) const
         {
-            float64 s = values_[ i ] ;
+            float64 s = values_[i] ;
             s = ( s - min ) / ( max - min ) ;
             s = std::min( s, 1.0 ) ;
             s = std::max( s, 0.0 ) ;
@@ -931,16 +945,16 @@ namespace RINGMesh {
         }
 
     protected:
-        T values_[ n ] ;
+        T values_[n] ;
     } ;
 
     template< index_t n >
-    class intArrayTmpl : public Array< int, n > {
+    class intArrayTmpl: public Array< int, n > {
     public:
         intArrayTmpl()
         {
             for( index_t i = 0; i < n; i++ ) {
-                this->values_[ i ] = - 1 ;
+                this->values_[i] = -1 ;
             }
         }
     } ;
@@ -949,31 +963,29 @@ namespace RINGMesh {
     typedef intArrayTmpl< 12 > edgeArray ;
 
     template< index_t n >
-    class boolArrayTmpl : public Array< bool, n > {
+    class boolArrayTmpl: public Array< bool, n > {
     public:
         boolArrayTmpl()
         {
             for( index_t i = 0; i < n; i++ ) {
-                this->values_[ i ] = false ;
+                this->values_[i] = false ;
             }
         }
     } ;
 
     typedef boolArrayTmpl< 6 > boolArray ;
 
-    class Edge : public Array< vec3, 2 > {
+    class Edge: public Array< vec3, 2 > {
     public:
-        Edge(
-            const vec3& v0,
-            const vec3& v1 )
+        Edge( const vec3& v0, const vec3& v1 )
         {
-            values_[ 0 ] = v0 ;
-            values_[ 1 ] = v1 ;
+            values_[0] = v0 ;
+            values_[1] = v1 ;
         }
 
         vec3 barycenter() const
         {
-            return ( values_[ 0 ] + values_[ 1 ] ) / static_cast< float64 >( 2 ) ;
+            return ( values_[0] + values_[1] ) / static_cast< float64 >( 2 ) ;
         }
     } ;
 
@@ -993,13 +1005,16 @@ namespace RINGMesh {
             /*!
              * @param index Index of this TriangleToSort in SortTriangleAroundEdge
              * @param surface_index Index of the Surface
+             * @param p0 point of the triangle
+             * @param p1 point of the triangle
+             * @param p2 point of the triangle
              */
             TriangleToSort(
                 index_t index,
                 index_t surface_index,
                 const vec3& p0,
                 const vec3& p1,
-                const vec3& p2  ) ;
+                const vec3& p2 ) ;
 
             bool operator<( const TriangleToSort& r ) const
             {
@@ -1023,7 +1038,9 @@ namespace RINGMesh {
             bool side_ ;
         } ;
 
-        SortTriangleAroundEdge() {}
+        SortTriangleAroundEdge()
+        {
+        }
 
         void add_triangle(
             index_t surface_index,
@@ -1031,8 +1048,8 @@ namespace RINGMesh {
             const vec3& p1,
             const vec3& p2 )
         {
-            triangles_.push_back( TriangleToSort( triangles_.size(), surface_index,
-                    p0, p1, p2 ) ) ;
+            triangles_.push_back(
+                TriangleToSort( triangles_.size(), surface_index, p0, p1, p2 ) ) ;
         }
 
         /*!
@@ -1042,24 +1059,62 @@ namespace RINGMesh {
          * @param angle Angle in RADIANS
          * @param V the vector to rotate
          */
-        static vec3 rotate(
-            const vec3& axis,
-            double angle,
-            const vec3& V ) ;
+        static vec3 rotate( const vec3& axis, double angle, const vec3& V ) ;
 
         void sort() ;
 
         /*! Returns the next pair Triangle index (surface) + side
          */
-        const std::pair< index_t,
-                         bool >& next( const std::pair< index_t, bool >& in ) const ;
+        const std::pair< index_t, bool >& next(
+            const std::pair< index_t, bool >& in ) const ;
 
     private:
         std::vector< TriangleToSort > triangles_ ;
 
         // Pairs global triangle identifier (Surface index) and side reached
-        std::vector< std::pair < index_t, bool > > sorted_triangles_ ;
+        std::vector< std::pair< index_t, bool > > sorted_triangles_ ;
     } ;
+
+    /*!
+     * Class to sort two vectors using indirect sorting
+     */
+    template< class T1, class T2 >
+    class IndirectSort {
+    public:
+        IndirectSort( std::vector< T1 >& input, std::vector< T2 >& output )
+            : input_( input ), output_( output )
+        {
+
+        }
+        void sort()
+        {
+            if( input_.size() < 2 ) return ;
+            for( index_t it1 = 0; it1 < input_.size() - 1; it1++ ) {
+                index_t ref_index = it1 ;
+                T1& ref_value = input_[it1] ;
+                for( index_t it2 = it1 + 1; it2 < input_.size(); it2++ ) {
+                    index_t new_index = it2 ;
+                    T1& new_value = input_[it2] ;
+                    if( ref_value > new_value ) {
+                        ref_value = new_value ;
+                        ref_index = new_index ;
+                    }
+                }
+                std::iter_swap( input_.begin() + it1, input_.begin() + ref_index ) ;
+                std::iter_swap( output_.begin() + it1,
+                    output_.begin() + ref_index ) ;
+
+            }
+        }
+
+    private:
+        std::vector< T1 >& input_ ;
+        std::vector< T2 >& output_ ;
+    } ;
+
+    /******************************************************************/
+
+
 }
 
 #endif

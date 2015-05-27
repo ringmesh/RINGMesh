@@ -111,7 +111,7 @@ void nlSolverParameteri(NLenum pname, NLint param) {
     } break ;
     case NL_SYMMETRIC: {
         nlCurrentContext->symmetric = (NLboolean)param ;        
-    }
+    } break ;
     case NL_INNER_ITERATIONS: {
         nl_assert(param > 0) ;
         nlCurrentContext->inner_iterations = (NLuint)param ;
@@ -521,8 +521,10 @@ void nlEndMatrix() {
     
     if(!nlCurrentContext->least_squares) {
         nl_assert(
-            nlCurrentContext->current_row == 
-            nlCurrentContext->n
+            nlCurrentContext->ij_coefficient_called || (
+                nlCurrentContext->current_row == 
+                nlCurrentContext->n
+            )
         ) ;
     }
 
@@ -645,6 +647,33 @@ void nlCoefficient(NLuint index, NLdouble value) {
         nlRowColumnAppend(&(nlCurrentContext->af), v->index, value) ;
     }
 }
+
+void nlAddIJCoefficient(NLuint i, NLuint j, NLdouble value) {
+    NLSparseMatrix* M  = &nlCurrentContext->M;    
+    nlCheckState(NL_STATE_MATRIX);
+    nl_debug_range_assert(i, 0, nlCurrentContext->nb_variables - 1);
+    nl_debug_range_assert(j, 0, nlCurrentContext->nb_variables - 1);
+#ifdef NL_DEBUG
+    for(NLuint i=0; i<nlCurrentContext->nb_variables; ++i) {
+        nl_debug_assert(!nlCurrentContext->variable[i].is_locked);
+    }
+#endif    
+    nlSparseMatrixAdd(M, i, j, value);
+    nlCurrentContext->ij_coefficient_called = NL_TRUE;
+}
+
+void nlAddIRightHandSide(NLuint i, NLdouble value) {
+    nlCheckState(NL_STATE_MATRIX);
+    nl_debug_range_assert(i, 0, nlCurrentContext->nb_variables - 1);
+#ifdef NL_DEBUG
+    for(NLuint i=0; i<nlCurrentContext->nb_variables; ++i) {
+        nl_debug_assert(!nlCurrentContext->variable[i].is_locked);
+    }
+#endif
+    nlCurrentContext->b[i] += value;
+    nlCurrentContext->ij_coefficient_called = NL_TRUE;
+}
+
 
 void nlRightHandSide(NLdouble value) {
     nl_assert(!nlCurrentContext->right_hand_side_set);

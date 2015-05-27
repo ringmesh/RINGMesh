@@ -1081,6 +1081,31 @@ typedef void* NLContext ;
     NLAPI void NLAPIENTRY nlCoefficient(NLuint i, NLdouble value) ;
 
 
+
+/**
+ * \brief Appends a coefficient to the current matrix.
+ * \details This function should be called between a
+ *   nlBegin(NL_MATRIX) / nlEnd(NL_MATRIX) pair (else an assertion failure
+ *   is triggered). This function should not be called in least squares mode.
+ *   There should not be any locked variable when using this function.
+ * \param[in] i,j indices
+ * \param[in] value value of the coefficient
+ */    
+    NLAPI void NLAPIENTRY nlAddIJCoefficient(NLuint i, NLuint j, NLdouble value) ;
+
+
+/**
+ * \brief Adds a coefficient to a component of the right hand side of the equation.
+ * \details This function should be called between a
+ *   nlBegin(NL_MATRIX) / nlEnd(NL_MATRIX) pair (else an assertion failure
+ *   is triggered). This function should not be called in least squares mode.
+ *   There should not be any locked variable when using this function.
+ * \param[in] i index of the component
+ * \param[in] value value of the component
+ */    
+    NLAPI void NLAPIENTRY nlAddIRightHandSide(NLuint i, NLdouble value);
+
+    
 /**
  * \brief Sets the right-hand side of the current row.
  * \details 

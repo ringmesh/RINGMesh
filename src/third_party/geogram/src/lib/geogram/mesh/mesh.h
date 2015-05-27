@@ -70,6 +70,7 @@ namespace GEO {
      * \details Sub-elements are those that cannot exist
      *  independantly (such as MeshFacetCorner, MeshCellCorner
      *  and MeshCellFacet).
+     * \relates Mesh
      */
     class GEOGRAM_API MeshSubElementsStore {
     public:
@@ -163,8 +164,39 @@ namespace GEO {
             return result;
         }
 
+        /**
+         * \brief Makes the size of the store tightly match
+         *   the number of the elements.
+         * \details When elements are created one by one, the
+         *   system may allocate more memory than necessary, to
+         *   amortize the cost of container reallocation. Once
+         *   the object is constructed, this function may be called
+         *   to release the memory that was not used.
+         */
         void adjust_store() {
             attributes_.resize(nb_);
+        }
+
+        /**
+         * \brief Copies a MeshSubElementsStore into
+         *   this one.
+         * \param[in] rhs a const reference to the 
+         *   MeshSubElementsStore to be copied.
+         * \param[in] copy_attributes if true, copies
+         *   also the attributes, else attributes are
+         *   cleared.
+         */
+        void copy(
+            const MeshSubElementsStore& rhs,
+            bool copy_attributes = true
+        ) {
+            nb_ = rhs.nb();
+            if(copy_attributes) {
+                attributes_.copy(rhs.attributes_);
+            } else {
+                attributes_.clear(false,false);
+                attributes_.resize(rhs.attributes_.size());
+            }
         }
         
     protected:
@@ -181,6 +213,7 @@ namespace GEO {
      * \details Mesh elements can be created / manipulated indepdendantly,
      *  in contrast with sub-elements that cannot. Mesh elements are
      *  vertices, facets and cells.
+     * \relates Mesh
      */
     class GEOGRAM_API MeshElements {
     public:
@@ -225,7 +258,7 @@ namespace GEO {
          *  element creations.
          */
         virtual void clear(
-            bool keep_attributes=false, bool keep_memory=false
+            bool keep_attributes=true, bool keep_memory=false
         ) = 0;
 
         /**
@@ -259,6 +292,7 @@ namespace GEO {
 
     /**
      * \brief The vertices of a mesh.
+     * \relates Mesh
      */
     class GEOGRAM_API MeshVertices :
         public MeshSubElementsStore, public MeshElements {
@@ -309,7 +343,7 @@ namespace GEO {
         }
 
         virtual void clear(
-            bool keep_attributes=false, bool keep_memory=false
+            bool keep_attributes=true, bool keep_memory=false
         ) ;
 
         /**
@@ -494,6 +528,49 @@ namespace GEO {
 
         void bind_point_attribute(index_t dim, bool single_precision=false);
 
+        void copy(const MeshVertices& rhs, bool copy_attributes=true) {
+            index_t dim = rhs.dimension();
+            if(point_fp32_.is_bound()) {
+                point_fp32_.destroy();
+            }
+            if(point_.is_bound()) {
+                point_.destroy();
+            }
+            MeshSubElementsStore::copy(rhs, copy_attributes);
+            if(rhs.single_precision()) {
+                point_fp32_.bind_if_is_defined(attributes(),"point_fp32");
+                if(!point_fp32_.is_bound()) {
+                    point_fp32_.create_vector_attribute(
+                        attributes(), "point_fp32", dim
+                    );
+                }
+            } else {
+                point_.bind_if_is_defined(attributes(),"point");
+                if(!point_.is_bound()) {
+                    point_.create_vector_attribute(
+                        attributes(), "point", dim
+                    );
+                }
+            }
+            // Even if we do not copy the attributes, we need at least
+            // to copy the coordinates of the points !!
+            if(!copy_attributes) {
+                if(rhs.single_precision()) {
+                    Memory::copy(
+                        single_precision_point_ptr(0),
+                        rhs.single_precision_point_ptr(0),
+                        rhs.dimension()*rhs.nb()*sizeof(float)
+                    );
+                } else {
+                    Memory::copy(
+                        point_ptr(0),
+                        rhs.point_ptr(0),
+                        rhs.dimension()*rhs.nb()*sizeof(double)
+                    );
+                }
+            }
+        }
+        
         MeshEdges& edges_;
         MeshFacetCornersStore& facet_corners_;
         MeshCellCornersStore& cell_corners_;
@@ -507,6 +584,7 @@ namespace GEO {
 
     /**
      * \brief The edges of a mesh.
+     * \relates Mesh
      */
     class GEOGRAM_API MeshEdges :
         public MeshSubElementsStore, public MeshElements {
@@ -520,7 +598,7 @@ namespace GEO {
          * \param[in] lv local index of the vertex, in {0,1}
          * \return the global index of vertex \p lv in edge \p e
          */
-        index_t vertex(index_t e, index_t lv) {
+        index_t vertex(index_t e, index_t lv) const {
             geo_debug_assert(e < nb());
             geo_debug_assert(lv < 2);
             return edge_vertex_[2*e+lv];
@@ -538,6 +616,29 @@ namespace GEO {
             edge_vertex_[2*e+lv] = v;
         }
 
+
+        /**
+         * \brief Gets a pointer to a vertex index by corner index
+         * \param[in] c corner index (2 * edge index + 0 or 1)
+         * \return a pointer to the index of the vertex. 
+         * \note Normal uses do not call this function
+         */
+        index_t* vertex_index_ptr(index_t c) {
+            geo_debug_assert(c < 2*nb());
+            return &(edge_vertex_[c]);
+        }
+
+        /**
+         * \brief Gets a pointer to a vertex index by corner index
+         * \param[in] c corner index (2 * edge index + 0 or 1)
+         * \return a pointer to the index of the vertex. 
+         * \note Normal uses do not call this function
+         */
+        const index_t* vertex_index_ptr(index_t c) const {
+            geo_debug_assert(c < 2*nb());
+            return &(edge_vertex_[c]);
+        }
+
         /**
          * \brief Creates a new edge
          * \return the index of the created edge
@@ -546,6 +647,15 @@ namespace GEO {
             return create_sub_element();
         }
 
+        /**
+         * \brief Creates a batch of edges
+         * \param[in] nb number of edges to create
+         * \return the index of the first created edge
+         */
+        index_t create_edges(index_t nb) {
+            return create_sub_elements(nb);
+        }
+        
         /**
          * \brief Creates a new edge
          * \param[in] v1,v2 global index of the vertices of the edge
@@ -565,7 +675,7 @@ namespace GEO {
         virtual void permute_elements(vector<index_t>& permutation);
 
         virtual void clear(
-            bool keep_attributes=false, bool keep_memory=false
+            bool keep_attributes=true, bool keep_memory=false
         );
 
         virtual void pop();
@@ -588,13 +698,20 @@ namespace GEO {
             return MeshSubElementsStore::create_sub_elements(nb_in);
         }
 
+        void copy(const MeshEdges& rhs, bool copy_attributes=true) {
+            MeshSubElementsStore::copy(rhs, copy_attributes);
+            edge_vertex_ = rhs.edge_vertex_;
+        }
+        
         vector<index_t> edge_vertex_;
+        friend class Mesh;        
     };
     
     /**************************************************************************/
     
     /**
      * \brief Stores the facets of a mesh (low-level store)
+     * \relates MeshFacets
      */
     class GEOGRAM_API MeshFacetsStore : public MeshSubElementsStore {
     public:
@@ -678,16 +795,24 @@ namespace GEO {
             }
             return MeshSubElementsStore::create_sub_elements(nb);
         }
+
+        void copy(const MeshFacetsStore& rhs, bool copy_attributes=true) {
+            MeshSubElementsStore::copy(rhs,copy_attributes);
+            is_simplicial_ = rhs.is_simplicial_;
+            facet_ptr_ = rhs.facet_ptr_;
+        }
         
     protected:
         bool is_simplicial_;
         vector<index_t> facet_ptr_;
+        friend class Mesh;        
     };
 
     /*************************************************************************/
 
     /**
      * \brief Stores the facet corners of a mesh (low-level store)
+     * \relates MeshFacets
      */
     class GEOGRAM_API MeshFacetCornersStore : public MeshSubElementsStore {
     public:
@@ -762,7 +887,7 @@ namespace GEO {
          * \note Normal uses do not call this function
          */
         index_t* vertex_index_ptr(index_t c) {
-            geo_assert(c < nb());
+            geo_debug_assert(c < nb());
             return &(corner_vertex_[c]);
         }
 
@@ -774,7 +899,7 @@ namespace GEO {
          * \note Normal uses do not call this function
          */
         const index_t* vertex_index_ptr(index_t c) const {
-            geo_assert(c < nb());
+            geo_debug_assert(c < nb());
             return &(corner_vertex_[c]);
         }
         
@@ -799,6 +924,14 @@ namespace GEO {
             }
             return MeshSubElementsStore::create_sub_elements(nb);
         }
+
+        void copy(
+            const MeshFacetCornersStore& rhs, bool copy_attributes=true
+        ) {
+            MeshSubElementsStore::copy(rhs, copy_attributes);
+            corner_vertex_ = rhs.corner_vertex_;
+            corner_adjacent_facet_ = rhs.corner_adjacent_facet_;
+        }
         
     protected:
         MeshVertices& vertices_;
@@ -807,12 +940,14 @@ namespace GEO {
         vector<index_t> corner_adjacent_facet_;
 
         friend class MeshFacets;
+        friend class Mesh;        
     };
 
     /*************************************************************************/
 
     /**
      * \brief The facets of a mesh
+     * \relates Mesh
      */
     class GEOGRAM_API MeshFacets : public MeshFacetsStore, public MeshElements {
     public:
@@ -911,7 +1046,7 @@ namespace GEO {
         virtual void permute_elements(vector<index_t>& permutation);
 
         virtual void clear(
-            bool keep_attributes=false, bool keep_memory=false
+            bool keep_attributes=true, bool keep_memory=false
         ) ;
 
         /**
@@ -1071,6 +1206,12 @@ namespace GEO {
         void flip(index_t f);
 
         /**
+         * \brief Replaces the edges of this mesh
+         *   with the borders of the surfacic part.
+         */
+        void compute_borders();
+        
+        /**
          * \brief Copies a triangle mesh into this Mesh.
          * \details Facet adjacence are not computed.
          *   Facet and corner attributes are zeroed.
@@ -1125,6 +1266,7 @@ namespace GEO {
     protected:
         MeshVertices& vertices_;        
         MeshFacetCornersStore& facet_corners_;
+        friend class Mesh;        
     };
     
     /*************************************************************************/
@@ -1141,6 +1283,7 @@ namespace GEO {
     /**
      * \brief Lookup tables that describe the combinatorics
      *  of each cell type.
+     * \relates MeshCells
      */
     struct CellDescriptor {
         /** Number of vertices */
@@ -1165,10 +1308,12 @@ namespace GEO {
          * Cell vertex index by (edge index, edge vertex index).
          */
         index_t edge_vertex[12][2];
+        friend class Mesh;        
     };
 
     /**
      * \brief Stores the cells of a mesh (low-level store)
+     * \relates MeshCells
      */
     class GEOGRAM_API MeshCellsStore : public MeshSubElementsStore {
     public:
@@ -1348,6 +1493,14 @@ namespace GEO {
             return MeshSubElementsStore::create_sub_elements(nb);
         }
 
+        void copy(
+            const MeshCellsStore& rhs, bool copy_attributes=true
+        ) {
+            MeshSubElementsStore::copy(rhs, copy_attributes);
+            is_simplicial_ = rhs.is_simplicial_;
+            cell_type_ = rhs.cell_type_;
+            cell_ptr_ = rhs.cell_ptr_;
+        }
         
     protected:
         bool is_simplicial_;
@@ -1365,13 +1518,15 @@ namespace GEO {
         static CellDescriptor hex_descriptor_;
         static CellDescriptor prism_descriptor_;
         static CellDescriptor pyramid_descriptor_;
-        static CellDescriptor connector_descriptor_;        
+        static CellDescriptor connector_descriptor_;
+        friend class Mesh;        
     };
     
     /*************************************************************************/
 
     /**
      * \brief Stores the cell corners of a mesh (low-level store)
+     * \relates MeshCells
      */
     class GEOGRAM_API MeshCellCornersStore : public MeshSubElementsStore {
     public:
@@ -1406,7 +1561,7 @@ namespace GEO {
          * \note Normal uses do not call this function
          */
         index_t* vertex_index_ptr(index_t c) {
-            geo_assert(c < nb());
+            geo_debug_assert(c < nb());
             return &(corner_vertex_[c]);
         }
 
@@ -1418,7 +1573,7 @@ namespace GEO {
          * \note Normal uses do not call this function
          */
         const index_t* vertex_index_ptr(index_t c) const {
-            geo_assert(c < nb());
+            geo_debug_assert(c < nb());
             return &(corner_vertex_[c]);
         }
         
@@ -1441,18 +1596,26 @@ namespace GEO {
             return MeshSubElementsStore::create_sub_elements(nb);
         }
 
+        void copy(
+            const MeshCellCornersStore& rhs, bool copy_attributes=true
+        ) {
+            MeshSubElementsStore::copy(rhs, copy_attributes);
+            corner_vertex_ = rhs.corner_vertex_;
+        }
         
     protected:
         MeshVertices& vertices_;
         vector<index_t> corner_vertex_;
 
-        friend class MeshCells;        
+        friend class MeshCells;
+        friend class Mesh;        
     };
 
     /*************************************************************************/
 
     /**
      * \brief Stores the cell facets of a mesh (low-level store)
+     * \relates MeshCells
      */
     class GEOGRAM_API MeshCellFacetsStore : public MeshSubElementsStore {
     public:
@@ -1506,19 +1669,27 @@ namespace GEO {
             return MeshSubElementsStore::create_sub_elements(nb);
         }
 
+        void copy(
+            const MeshCellFacetsStore& rhs, bool copy_attributes=true
+        ) {
+            MeshSubElementsStore::copy(rhs, copy_attributes);
+            adjacent_cell_ = rhs.adjacent_cell_;
+        }
         
     protected:
         MeshVertices& vertices_;
         MeshCellsStore& cells_;
         vector<index_t> adjacent_cell_;
 
-        friend class MeshCells;                
+        friend class MeshCells;
+        friend class Mesh;        
     };
 
     /*************************************************************************/
 
     /**
      * \brief The cells of a mesh.
+     * \relates Mesh
      */
     class GEOGRAM_API MeshCells : public MeshCellsStore, public MeshElements {
     public:
@@ -1622,7 +1793,7 @@ namespace GEO {
         }
 
         virtual void clear(
-            bool keep_attributes=false, bool keep_memory=false
+            bool keep_attributes=true, bool keep_memory=false
         ) ;
         
         virtual void delete_elements(
@@ -1896,6 +2067,10 @@ namespace GEO {
 
         void connect();
 
+        /**
+         * \brief Replaces the surfacic part of this mesh
+         *   with the borders of the volumetric part.
+         */
         void compute_borders();
 
         /**
@@ -2181,10 +2356,28 @@ namespace GEO {
         MeshVertices& vertices_;
         MeshCellCornersStore& cell_corners_;
         MeshCellFacetsStore& cell_facets_;
+        friend class Mesh;        
     };
     
     /*************************************************************************/
 
+    /**
+     * \brief Indicates the mesh elements (vertices, facets or cells)
+     *  present in a mesh.
+     * \details The set of elements present in a mesh is represented
+     *  by a bitwise-or combination of the constants.
+     * \relates Mesh
+     */
+    enum MeshElementsFlags {
+        MESH_VERTICES = 1,
+        MESH_FACETS = 2,
+        MESH_EDGES  = 4,
+        MESH_CELLS  = 8,
+        MESH_ALL_ELEMENTS = 15
+    };
+
+    /*************************************************************************/
+    
     /**
      * \brief Represents a mesh.
      * \details A mesh can have vertices, optionally facets and
@@ -2220,7 +2413,7 @@ namespace GEO {
          *  kept and can be reused by subsequent mesh
          *  element creations.
          */
-        void clear(bool keep_attributes=false, bool keep_memory=false);
+        void clear(bool keep_attributes=true, bool keep_memory=false);
 
         /**
          * \brief Displays number of vertices, facets and borders.
@@ -2230,10 +2423,30 @@ namespace GEO {
 
         /**
          * \brief Does some validity checks.
-         * \details Used for debugging
+         * \details Used for debugging. If the
+         *  validity checks are not satisfied, 
+         *  then it crashes with an assertion
+         *  failure.
          */
         void assert_is_valid();
 
+
+        /**
+         * \brief Copies a mesh onto this one
+         * \param[in] rhs a const reference to the mesh to be copied
+         * \param[in] copy_attributes if true, all the attributes are
+         *   copied.
+         * \param[in] what a combination of MESH_VERTICES, MESH_EDGES,
+         *  MESH_FACETS, MESH_CELLS flags. Set to MESH_ALL_ELEMENTS
+         *  to copy everything (default). If MESH_VERTICES is not set,
+         *  then the mesh is cleared.
+         */
+        void copy(
+            const Mesh& rhs,
+            bool copy_attributes=true,
+            MeshElementsFlags what=MESH_ALL_ELEMENTS
+        );
+        
     protected:
         /**
          * \brief Displays the list of attributes to the Logger.
@@ -2246,6 +2459,25 @@ namespace GEO {
             const std::string& tag, const std::string& subelement_name,
             const MeshSubElementsStore& subelements 
         ) const;
+
+    private:
+        /**
+         * \brief Forbids copy.
+         * \details This is to make sure that client code does
+         *   not unintentionlly copies a Mesh (for
+         *   instance by passing it by-value to a function). 
+         *   Use copy() instead.
+         */
+        Mesh(const Mesh& rhs);
+
+        /**
+         * \brief Forbids copy.
+         * \details This is to make sure that client code does
+         *   not unintentionlly copies a Mesh (for
+         *   instance by passing it by-value to a function). 
+         *   Use copy() instead.
+         */
+        const Mesh& operator=(const Mesh& rhs);
     };
 
     /*************************************************************************/

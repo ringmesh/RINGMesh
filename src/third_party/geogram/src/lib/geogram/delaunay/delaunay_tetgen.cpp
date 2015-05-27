@@ -102,7 +102,9 @@ namespace GEO {
         tetgen_in_.numberofpoints = (int)nb_vertices;
         tetgen_in_.pointlist = (double*)vertices;
         try {
-            GEO_3rdParty::tetrahedralize(&tetgen_args_, &tetgen_in_, &tetgen_out_);
+            GEO_3rdParty::tetrahedralize(
+                &tetgen_args_, &tetgen_in_, &tetgen_out_
+            );
         }
         catch(...) {
             Logger::err("DelaunayTetgen")
@@ -160,7 +162,7 @@ namespace GEO {
             if(CmdLine::get_arg_bool("dbg:tetgen")) {            
                 tetgen_args_.parse_commandline((char*)"VVpnO0YYAA");
             } else {
-                tetgen_args_.parse_commandline((char*)"QpnO0YYAA");                
+                tetgen_args_.parse_commandline((char*)"QpnO0YYAA");   
             }
         }
 
@@ -176,20 +178,37 @@ namespace GEO {
             constraints_->vertices.nb()+nb_vertices
         );
         tetgen_in_.pointlist = new double[3*tetgen_in_.numberofpoints];
-        Memory::copy(
-            &tetgen_in_.pointlist[0], constraints_->vertices.point_ptr(0), 
-            constraints_->vertices.nb()*3*sizeof(double)
-        );
-        Memory::copy(
-            &tetgen_in_.pointlist[3*constraints_->vertices.nb()],
-            vertices, nb_vertices*3*sizeof(double)
-        );
-        
-        //
-        // Copy facets
-        //
+        if(constraints_->vertices.nb() != 0) {
+            Memory::copy(
+                &tetgen_in_.pointlist[0], constraints_->vertices.point_ptr(0), 
+                constraints_->vertices.nb()*3*sizeof(double)
+            );
+        }
+        if(nb_vertices != 0) {
+            Memory::copy(
+                &tetgen_in_.pointlist[3*constraints_->vertices.nb()],
+                vertices, nb_vertices*3*sizeof(double)
+            );
+        }
 
+        // Edges constraints
+        // (no need to copy, we make tetgen_in_
+        //  point to the edges of the input
+        //  constraints mesh)
+        
+        if(constraints_->edges.nb() != 0) {
+            tetgen_in_.numberofedges = int(
+                constraints_->edges.nb()
+            );
+            tetgen_in_.edgelist = (int*)(
+                constraints_->edges.vertex_index_ptr(0)
+            );
+        }
+        
+        // Copy facet constraints
+        //
         // All the polygons are allocated in one go, in a contiguous array.
+        
         GEO_3rdParty::tetgenio::polygon* polygons = 
             new GEO_3rdParty::tetgenio::polygon[constraints_->facets.nb()];
         tetgen_in_.numberoffacets = int(constraints_->facets.nb()) ;
@@ -211,6 +230,7 @@ namespace GEO {
             F.numberofholes = 0 ;
             F.holelist = nil ;
         }
+
         try {
             GEO_3rdParty::tetrahedralize(
                 &tetgen_args_, &tetgen_in_, &tetgen_out_
@@ -224,6 +244,20 @@ namespace GEO {
         // Deallocate the datastructures used by tetgen,
         // and disconnect them from tetgen,
         // so that tetgen does not try to deallocate them.
+
+        // Pointlist was allocated in local array
+        tetgen_in_.numberofpoints = 0;
+        delete[] tetgen_in_.pointlist;
+        tetgen_in_.pointlist = nil;
+
+        // Edges were shared with constraint mesh
+        // (no need to deallocate)
+        tetgen_in_.numberofedges = 0;
+        tetgen_in_.edgelist = nil;
+
+        // Facets structures were allocated in local
+        // array, and vertices indices were shared
+        // with constraint mesh
         delete[] tetgen_in_.facetlist; 
         tetgen_in_.facetlist = nil;
         tetgen_in_.numberoffacets = 0;

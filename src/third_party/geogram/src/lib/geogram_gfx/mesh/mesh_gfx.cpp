@@ -97,6 +97,47 @@ namespace {
         "                  result ;                                         \n"
         "}                                                                  \n";
 
+
+    /**
+     * \brief The fragment shader for polygons if GLSL version is 1.50.
+     * \details cells colored by region attribute is deactivated in this
+     *   version.
+     */
+    const char* fshader_source_150 =
+        "#version 150 compatibility                                         \n"
+        "flat in float diffuse;                                             \n"
+        "flat in float specular;                                            \n"
+        "flat in vec3  edge_mask;                                           \n"
+        "in vec2 bary;                                                      \n"
+        "uniform float mesh_width = 1.0 ;                                   \n"
+        "uniform vec3 mesh_color = vec3(0.0, 0.0, 0.0) ;                    \n"
+        "uniform bool lighting = true ;                                     \n"
+        "uniform sampler2D colormap_tex;                                    \n"
+        "uniform bool region = false;                                       \n"
+        "out vec4 frag_color ;                                              \n"
+        "float edge_factor(){                                               \n"
+        "    vec3 bary3 = vec3(bary.x, bary.y, 1.0-bary.x-bary.y) ;         \n"
+        "    vec3 d = fwidth(bary3);                                        \n"
+        "    vec3 a3 = smoothstep(vec3(0.0,0.0,0.0), d*mesh_width, bary3);  \n"
+        "    a3 = vec3(1.0, 1.0, 1.0) - edge_mask + edge_mask*a3;           \n"
+        "    return min(min(a3.x, a3.y), a3.z);                             \n"
+        "}                                                                  \n"
+        "void main() {                                                      \n"
+        "    float s = (lighting && gl_FrontFacing) ? 1.0 : -1.0 ;          \n"
+        "    vec4  Kdiff = gl_FrontFacing ?                                 \n"
+        "         gl_FrontMaterial.diffuse : gl_BackMaterial.diffuse ;      \n"
+        "    float sdiffuse = s * diffuse ;                                 \n"
+        "    vec4 result = vec4(0.1, 0.1, 0.1, 1.0);                        \n"
+        "    if(sdiffuse > 0.0) {                                           \n"
+        "       result += sdiffuse*Kdiff +                                  \n"
+        "                 specular*gl_FrontMaterial.specular;               \n"
+        "    }                                                              \n"
+        "    frag_color = (mesh_width != 0.0) ?                             \n"
+        "                  mix(vec4(mesh_color,1.0),result,edge_factor()) : \n"
+        "                  result ;                                         \n"
+        "}                                                                  \n";
+
+    
     /**
      * \brief The fragment shader for points.
      * \details Makes the points appear as small spheres.
@@ -113,7 +154,7 @@ namespace {
     
     const char* points_fshader_source =
         "#version 150 compatibility                                         \n"
-        "#extension GL_ARB_conservative_depth : enable                      \n"   
+        "#extension GL_ARB_conservative_depth : enable                      \n"
         "layout (depth_less) out float gl_FragDepth;                        \n"
         "out vec4 frag_color ;                                              \n"
         "void main() {                                                      \n"
@@ -123,10 +164,11 @@ namespace {
         "      discard;                                                     \n"
         "   }                                                               \n"
         "   vec3 W = vec3(V.x, -V.y, sqrt(one_minus_r2));                   \n"
-        "   float diff = dot(W,gl_LightSource[0].position.xyz);             \n"
+        "   float diff = dot(W,gl_LightSource[0].position.xyz) /            \n" 
+        "                   length(gl_LightSource[0].position.xyz);         \n"
         "   float spec = 2.0*pow(diff,30.0);                                \n"
         "   frag_color = diff*gl_Color + spec*vec4(1.0, 1.0, 1.0, 1.0);     \n"
-        "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"        
+        "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"
         "}                                                                  \n";
     
     
@@ -810,16 +852,45 @@ namespace {
     }
 
     /**
-     * \brief Updates the content of an OpenGL buffer object, and resizes it if need be.
-     * \param[in,out] buffer_id OpenGL opaque id of the buffer object. 0 means uninitialized.
-     *    may be changed on exit if the buffer needed to be resized.
-     * \param[in] target buffer object target (GL_ARRAY_BUFFER, GL_INDEX_BUFFER ...)
+     * \brief Updates the content of an OpenGL buffer object, 
+     *   and resizes it if need be.
+     * \param[in,out] buffer_id OpenGL opaque id of the buffer object. 
+     *   0 means uninitialized.
+     *   may be changed on exit if the buffer needed to be resized.
+     * \param[in] target buffer object target 
+     *   (GL_ARRAY_BUFFER, GL_INDEX_BUFFER ...)
      * \param[in] new size of the buffer data, in bytes
-     * \param[in] data pointer to the data to be copied into the buffer, of length new_size
+     * \param[in] data pointer to the data to be copied into the buffer, 
+     *  of length new_size
      */
     void update_buffer_object(
-        GLuint& buffer_id, GLenum target, size_t new_size, void* data
+        GLuint& buffer_id, GLenum target, size_t new_size, const void* data
     ) {
+        static bool init = false;
+        static bool use_glGetBufferParameteri64v = true;
+
+        // Note: there is a version of glGetBufferParameteriv that uses
+        // 64 bit parameters. Since array data larger than 4Gb will be
+        // common place, it is this version that should be used. However,
+        // it is not supported by the Intel driver (therefore we fallback
+        // to the standard 32 bits version if such a driver is detected).
+        
+        if(!init) {
+            init = true;
+            const char* vendor = (const char*)glGetString(
+                GL_VENDOR
+            );
+            use_glGetBufferParameteri64v = (
+                strlen(vendor) < 5 || strncmp(vendor, "Intel", 5) != 0
+            );
+            if(!use_glGetBufferParameteri64v) {
+                Logger::warn("GLSL")
+                    << "Buggy Intel driver detected (working around...)"
+                    << std::endl;
+            }
+        }
+        
+        
         if(new_size == 0) {
             if(buffer_id != 0) {
                 glDeleteBuffers(1, &buffer_id);
@@ -834,11 +905,19 @@ namespace {
             glBindBuffer(target, buffer_id);            
         } else {
             glBindBuffer(target, buffer_id);
-            glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
+            
+            // See comment at the beginning of the function.
+            if(use_glGetBufferParameteri64v) {
+                glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);                
+            } else {
+                GLint size32=0;
+                glGetBufferParameteriv(target,GL_BUFFER_SIZE,&size32);
+                size = GLint64(size32);
+            }
         }
         
         if(new_size == size_t(size)) {
-            glBufferSubData(target, 0, size, data);
+            glBufferSubData(target, 0, GLsizeiptr(size), data);
         } else {
             glBufferData(
                 target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
@@ -853,11 +932,14 @@ namespace GEO {
     MeshGfx::MeshGfx() : mesh_(nil) {
 
         vertices_VBO_ = 0;
+        edge_indices_VBO_ = 0;
         facet_indices_VBO_ = 0;
         cell_indices_VBO_ = 0;
         facet_region_VBO_ = 0;
         cell_region_VBO_ = 0;
 
+        VBO_dirty_ = false;
+        
         colormap_TEX_ = 0;
         
         show_mesh_ = true;
@@ -870,7 +952,8 @@ namespace GEO {
         triangles_and_quads_ = false;
         GLSL_mode_ = true;
         GLSL_tesselation_ = false;
-
+        GLSL_version_ = 0.0;
+        
         for(index_t i=0; i<PRG_NB; ++i) {
             programs_[i] = 0;
             set_color(i, 0.9f, 0.9f, 0.9f);
@@ -892,23 +975,29 @@ namespace GEO {
             draw_cells_[i] = true;
         }
 
-        points_size_ = 2;
+        points_size_ = 2.0f;
         mesh_width_ = 1;
         mesh_border_width_ = 3;
         
     }
 
-    void MeshGfx::set_mesh(Mesh* M) {
-        delete_VBOs();
+    void MeshGfx::set_mesh(const Mesh* M) {
+        if(M == nil) {
+            delete_VBOs();
+        } else {
+            VBO_dirty_ = true;
+        }
         clear_cell_draw_cache();
         triangles_and_quads_ = true;
-        for(index_t f=0; f<M->facets.nb(); ++f) {
-            if(
-                M->facets.nb_vertices(f) != 3 &&
-                M->facets.nb_vertices(f) != 4
-            ) {
-                triangles_and_quads_ = false;
-                break;
+        if(M != nil) {
+            for(index_t f=0; f<M->facets.nb(); ++f) {
+                if(
+                    M->facets.nb_vertices(f) != 3 &&
+                    M->facets.nb_vertices(f) != 4
+                ) {
+                    triangles_and_quads_ = false;
+                    break;
+                }
             }
         }
         mesh_ = M;
@@ -925,14 +1014,6 @@ namespace GEO {
     
 
     void MeshGfx::setup_shaders() {
-
-        /*
-        Logger::out("GLSL")
-            << "version = "
-            << glGetString(GL_SHADING_LANGUAGE_VERSION)
-            << std::endl;
-        */
-        
         if(shaders_init_) {
             return;
         }
@@ -951,10 +1032,16 @@ namespace GEO {
         const char* shading_language_ver_str = (const char*)glGetString(
             GL_SHADING_LANGUAGE_VERSION
         );
-        Logger::out("GLSL") << "version = "
+        const char* vendor = (const char*)glGetString(
+            GL_VENDOR
+        );
+        Logger::out("GLSL") << "vendor = " << vendor << std::endl;
+        Logger::out("GLSL") << "version string = "
             << shading_language_ver_str << std::endl;
-        double shading_language_ver = atof(shading_language_ver_str);
-        if(shading_language_ver < 1.5) {
+        GLSL_version_ = atof(shading_language_ver_str);
+        Logger::out("GLSL") << "version = " << GLSL_version_
+                            << std::endl;
+        if(GLSL_version_ < 1.5) {
             Logger::out("GLSL")
                 << "Deactivated (requires GLSL version >= 1.50)"
                 << std::endl;
@@ -966,7 +1053,7 @@ namespace GEO {
 
         GLSL_tesselation_ =
             CmdLine::get_arg_bool("gfx:GLSL_tesselation") &&
-            (shading_language_ver >= 4.0);
+            (GLSL_version_ >= 4.0);
 
         if(GLSL_tesselation_) {
             Logger::out("GLSL")
@@ -1002,7 +1089,8 @@ namespace GEO {
             GL_GEOMETRY_SHADER, gshader_utils_source, gshader_prism_source
         );
         GLuint fshader = GLSL::compile_shader(
-            GL_FRAGMENT_SHADER, fshader_source
+            GL_FRAGMENT_SHADER,
+            (GLSL_version_ >= 4.40) ? fshader_source : fshader_source_150
         );
         GLuint points_fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER, points_fshader_source
@@ -1069,11 +1157,12 @@ namespace GEO {
     }
     
     void MeshGfx::setup_VBOs() {
+
+        if(!VBO_dirty_) {
+            return;
+        }
         
         if(mesh_->vertices.nb() != 0) {
-
-
-            
             if(mesh_->vertices.single_precision()) {
                 
                 size_t size = mesh_->vertices.nb() *
@@ -1094,6 +1183,14 @@ namespace GEO {
                     size, mesh_->vertices.point_ptr(0)
                 );
             }
+        }
+
+        if(mesh_->edges.nb() != 0) {
+            update_buffer_object(
+                edge_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
+                mesh_->edges.nb() * 2 * sizeof(int),
+                mesh_->edges.vertex_index_ptr(0)
+            );
         }
         
         if(mesh_->facets.nb() != 0) {
@@ -1119,6 +1216,10 @@ namespace GEO {
             Attribute<index_t> region;
             region.bind_if_is_defined(mesh_->facets.attributes(), "region");
             if(region.is_bound()) {
+                if(GLSL_version_ < 4.40) {
+                    Logger::warn("GLSL") << "Region attribute not supported"
+                                         << std::endl;
+                }
                 update_buffer_object(
                     facet_region_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                     region.nb_elements() * sizeof(index_t),
@@ -1134,6 +1235,10 @@ namespace GEO {
             Attribute<index_t> region;
             region.bind_if_is_defined(mesh_->cells.attributes(), "region");
             if(region.is_bound()) {
+                if(GLSL_version_ < 4.40) {
+                    Logger::warn("GLSL") << "Region attribute not supported"
+                                         << std::endl;
+                }
                 update_buffer_object(
                     cell_region_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                     region.nb_elements() * sizeof(index_t),
@@ -1141,12 +1246,18 @@ namespace GEO {
                 );
             }
         }
+
+        VBO_dirty_ = false;
     }
     
     void MeshGfx::delete_VBOs() {
         if(vertices_VBO_ != 0) {
             glDeleteBuffers(1, &vertices_VBO_);
             vertices_VBO_ = 0;
+        }
+        if(edge_indices_VBO_ != 0) {
+            glDeleteBuffers(1, &edge_indices_VBO_);
+            edge_indices_VBO_ = 0;
         }
         if(facet_indices_VBO_ != 0) {
             glDeleteBuffers(1, &facet_indices_VBO_);
@@ -1167,7 +1278,15 @@ namespace GEO {
     }
 
     void MeshGfx::begin_draw(MeshElementsFlags what) {
-        setup_shaders();
+        try {
+            setup_shaders();
+        } catch (const std::exception& e) {
+            Logger::warn("GLSL") << "received exception:" << e.what()
+                                 << std::endl;
+            Logger::warn("GLSL") << "Falling back to plain OpenGL mode"
+                                 << std::endl;
+            GLSL_mode_ = false;
+        }
         setup_VBOs();
         if(colormap_TEX_ == 0) {
             colormap_TEX_ = create_colormap_texture();
@@ -1196,6 +1315,9 @@ namespace GEO {
         switch(what) {
         case MESH_VERTICES: {
             // Nothing else to bind
+        } break;
+        case MESH_EDGES: {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, edge_indices_VBO_);
         } break;
         case MESH_FACETS: {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, facet_indices_VBO_);
@@ -1272,12 +1394,16 @@ namespace GEO {
         begin_draw(MESH_VERTICES);
         
         glDisable(GL_LIGHTING);
-        glPointSize(GLfloat(points_size_ * 5));
+        glPointSize(points_size_ * 5.0f);
 
         if(GLSL_mode_) {
             glEnable(GL_POINT_SPRITE);
             glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
             begin_shader(PRG_POINTS);            
+        } else {
+            glEnable(GL_POINT_SMOOTH);
+            set_colors(PRG_POINTS);
+            glDisable(GL_LIGHTING);
         }
         
         glDrawArrays(GL_POINTS, 0, GLsizei(mesh_->vertices.nb()));
@@ -1289,6 +1415,22 @@ namespace GEO {
         end_draw();
     }
 
+    void MeshGfx::draw_edges() {
+        if(mesh_->edges.nb() == 0) {
+            return;
+        }
+        glLineWidth(GLfloat(mesh_width_));        
+        glColor3f(mesh_color_[0], mesh_color_[1], mesh_color_[2]);
+
+        begin_draw(MESH_EDGES);
+        // Note: the fourth argument (0) corresponds to the bound VBO.        
+        glDrawElements(
+            GL_LINES, GLsizei(mesh_->edges.nb()*2), GL_UNSIGNED_INT, 0
+        );
+        end_draw();
+        
+    }
+    
     void MeshGfx::draw_surface() {
         if(mesh_->facets.nb() == 0) {
             return;
@@ -1657,7 +1799,7 @@ namespace GEO {
         glCullFace(GL_FRONT);
         glEnable(GL_CULL_FACE);
         
-        // Try using loaded vertex array with glDrawElements() 
+        // TODO: try using loaded vertex array with glDrawElements() 
 
         set_colors(PRG_TET);
         glBegin(GL_TRIANGLES);

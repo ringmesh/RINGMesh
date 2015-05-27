@@ -59,8 +59,8 @@
 
 namespace GEO {
 
-    typedef Numeric::uint8 thread_index_t;
-
+     typedef Numeric::uint8 thread_index_t;
+     
     /**
      * \brief Multithreaded implementation of Delaunay in 3d.
      * \details This class is based on ideas and a prototype

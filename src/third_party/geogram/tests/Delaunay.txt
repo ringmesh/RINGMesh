@@ -27,4 +27,4 @@ Run Test
     [Arguments]    ${input_name}=${TEST NAME}    @{options}
     [Documentation]    Runs compute_delaunay on a single input file.
     ...    The name of the input file is taken from the test name.
-    run command    compute_delaunay    dbg:delaunay_verbose=true    @{options}    ${DATADIR}${/}${input_name}
+    run command    compute_delaunay  ${DATADIR}${/}${input_name}  dbg:delaunay_verbose=true  dbg:delaunay_benchmark=true   @{options}    
