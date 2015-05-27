@@ -189,7 +189,7 @@ namespace {
 }
 
 namespace RINGMesh {
-  
+
 
     /*!
      * @brief Update the indices stored by each element of the model \
@@ -198,25 +198,25 @@ namespace RINGMesh {
     void BoundaryModelBuilder::update_all_ids()
     {
         for( index_t co = 0; co < model_.nb_corners(); co++ ) {
-            model_.corners_[co]->set_id( co ) ;
+            model_.corners_[ co ]->set_id( co ) ;
         }
         for( index_t cp = 0; cp < model_.nb_lines(); cp++ ) {
-            model_.lines_[cp]->set_id( cp ) ;
+            model_.lines_[ cp ]->set_id( cp ) ;
         }
         for( index_t sp = 0; sp < model_.nb_surfaces(); sp++ ) {
-            model_.surfaces_[sp]->set_id( sp ) ;
+            model_.surfaces_[ sp ]->set_id( sp ) ;
         }
         for( index_t c = 0; c < model_.nb_contacts(); c++ ) {
-            model_.contacts_[c]->set_id( c ) ;
+            model_.contacts_[ c ]->set_id( c ) ;
         }
         for( index_t s = 0; s < model_.nb_interfaces(); s++ ) {
-            model_.interfaces_[s]->set_id( s ) ;
+            model_.interfaces_[ s ]->set_id( s ) ;
         }
         for( index_t r = 0; r < model_.nb_regions(); r++ ) {
-            model_.regions_[r]->set_id( r ) ;
+            model_.regions_[ r ]->set_id( r ) ;
         }
         for( index_t l = 0; l < model_.nb_layers(); l++ ) {
-            model_.layers_[l]->set_id( l ) ;
+            model_.layers_[ l ]->set_id( l ) ;
         }
     }
 
@@ -263,9 +263,269 @@ namespace RINGMesh {
             default:
                 ringmesh_assert_not_reached;
                 break ;
-            }
+        }
         return BME::bme_t( type, id ) ;
     }
+
+    /*!
+     * @brief Remove a list of elements of the model
+     */
+    void BoundaryModelBuilder::remove_elements( 
+        const std::vector< BME::bme_t > elements )
+    {
+        /// Get the indices of the elements to remove type by type
+        std::vector< index_t > layers_to_erase( model_.nb_layers(), 0 ) ;
+        std::vector< index_t > interfaces_to_erase( model_.nb_interfaces(), 0 ) ;
+        std::vector< index_t > contacts_to_erase( model_.nb_contacts(), 0 ) ; ;
+        std::vector< index_t > regions_to_erase( model_.nb_regions(), 0 ) ; ;
+        std::vector< index_t > surfaces_to_erase( model_.nb_surfaces(), 0 ) ; ;
+        std::vector< index_t > lines_to_erase( model_.nb_lines(), 0 ) ; ;
+        std::vector< index_t > corners_to_erase( model_.nb_corners(), 0 ) ; ;
+
+        for( index_t i = 0; i < elements.size(); ++i ) {
+            switch( elements[ i ].type ) {
+                case BME::CORNER:
+                    corners_to_erase[ elements[ i ].index ] = NO_ID ;
+                    break ;
+                case BME::LINE:
+                    lines_to_erase[ elements[ i ].index ] = NO_ID ;
+                    break ;
+                case BME::SURFACE:
+                    surfaces_to_erase[ elements[ i ].index ] = NO_ID ;
+                    break ;
+                case BME::REGION:
+                    regions_to_erase[ elements[ i ].index ] = NO_ID ;
+                    break ;
+
+                case BME::CONTACT:
+                {
+                    contacts_to_erase[ elements[ i ].index ] = NO_ID ;
+                    const BME& E = model_.element( elements[ i ] ) ;
+                    for( index_t j = 0 ; j < E.nb_children() ; ++j ) {
+                        lines_to_erase[ E.child_id( j ).index ] = NO_ID ;
+                    }
+                    break ;
+                }
+                case BME::INTERFACE:
+                {
+                    interfaces_to_erase.push_back( elements[ i ].index ) ;
+                    const BME& E = model_.element( elements[ i ] ) ;
+                    for( index_t j = 0 ; j < E.nb_children() ; ++j ) {
+                        surfaces_to_erase[ E.child_id( j ).index ] = NO_ID ;
+                    }
+                    break ;
+                }
+                case BME::LAYER:
+                {
+                    layers_to_erase.push_back( elements[ i ].index ) ;
+                    const BME& E = model_.element( elements[ i ] ) ;
+                    for( index_t j = 0 ; j < E.nb_children() ; ++j ) {
+                        regions_to_erase[ E.child_id( j ).index ] = NO_ID ;
+                    }
+                    break ;
+                }
+                default:
+                    ringmesh_assert_not_reached;
+                    break ;
+            }
+        }
+        
+        // Is the order important ? 
+        if( prepare_to_erase_elements( BME::LAYER, layers_to_erase ) ){
+            erase_elements( BME::LAYER, layers_to_erase ) ;
+        }
+        if( prepare_to_erase_elements( BME::INTERFACE, interfaces_to_erase ) ){
+            erase_elements( BME::INTERFACE, interfaces_to_erase ) ;
+        }
+        if( prepare_to_erase_elements( BME::CONTACT, contacts_to_erase )){
+            erase_elements( BME::CONTACT, contacts_to_erase ) ;
+        }
+        if( prepare_to_erase_elements( BME::REGION, regions_to_erase )){
+            erase_elements( BME::REGION, regions_to_erase ) ;
+        }
+        if( prepare_to_erase_elements( BME::SURFACE, surfaces_to_erase )){
+            erase_elements( BME::SURFACE, surfaces_to_erase ) ;
+        }
+        if( prepare_to_erase_elements( BME::LINE, lines_to_erase ) ){
+            erase_elements( BME::LINE, lines_to_erase ) ;
+        }
+        if( prepare_to_erase_elements( BME::CORNER, corners_to_erase ) ) {
+            erase_elements( BME::CORNER, corners_to_erase ) ;
+        }
+
+        init_global_model_element_access() ;
+       
+    }
+
+    void BoundaryModelBuilder::erase_elements(
+        BME::TYPE T, const std::vector< index_t >& to_erase )
+    {
+        for( index_t i = 0; i < to_erase.size(); ++i ) {
+            if( to_erase[ i ] != NO_ID ) {
+                // Nothing to do 
+                continue ;
+            }
+            switch( T ) {
+                case BME::CORNER:
+                    delete model_.corners_[ i ] ;
+                    model_.corners_[ i ] = nullptr ;
+                    break ;
+                case BME::LINE:
+                    delete model_.lines_[ i ] ;
+                    model_.lines_[ i ] = nullptr ;
+                    break ;
+
+                case BME::SURFACE:
+                    delete model_.surfaces_[ i ] ;
+                    model_.surfaces_[ i ] = nullptr ;
+                    break ;
+
+                case BME::REGION:
+                    delete model_.regions_[ i ] ;
+                    model_.regions_[ i ] = nullptr;
+                    break ;
+
+                case BME::CONTACT:
+                    delete model_.contacts_[ i ] ;
+                    model_.contacts_[ i ] = nullptr;
+                    break ;
+
+                case BME::INTERFACE:
+                    delete model_.interfaces_[ i ] ;
+                    model_.interfaces_[ i ] = nullptr ;
+                    break ;
+
+                case BME::LAYER:
+                    delete model_.layers_[ i ] ;
+                    model_.layers_[ i ] = nullptr ;
+                    break ;
+            }
+        }
+        switch( T ) {
+            case BME::CORNER:
+                model_.corners_.erase( std::remove(
+                    model_.corners_.begin(), model_.corners_.end(), nullptr ),
+                    model_.corners_.end() );
+                break ;
+            case BME::LINE:
+                model_.lines_.erase( std::remove(
+                    model_.lines_.begin(), model_.lines_.end(), nullptr ),
+                    model_.lines_.end() );
+                break ;
+
+            case BME::SURFACE:
+                model_.surfaces_.erase( std::remove(
+                    model_.surfaces_.begin(), model_.surfaces_.end(), nullptr ),
+                    model_.surfaces_.end() );
+                break ;
+
+            case BME::REGION:
+                model_.regions_.erase( std::remove(
+                    model_.regions_.begin(), model_.regions_.end(), nullptr ),
+                    model_.regions_.end() );
+                break ;
+
+            case BME::CONTACT:
+                model_.contacts_.erase( std::remove(
+                    model_.contacts_.begin(), model_.contacts_.end(), nullptr ),
+                    model_.contacts_.end() );
+                break ;
+
+            case BME::INTERFACE:
+                model_.interfaces_.erase( std::remove(
+                    model_.interfaces_.begin(), model_.interfaces_.end(), nullptr ),
+                    model_.interfaces_.end() );
+                break ;
+
+            case BME::LAYER:
+                model_.layers_.erase( std::remove(
+                    model_.layers_.begin(), model_.layers_.end(), nullptr ),
+                    model_.layers_.end() );
+
+            default:
+                ringmesh_assert_not_reached;
+                break ;
+        }    
+    }
+
+
+    /*!
+     * @brief Remove all references to the elements flagged with a NO_ID index
+     *        The to erase vector is recycled to store correspondance to the modified
+     *        index of the remaining elements of that type.
+     */
+    bool BoundaryModelBuilder::prepare_to_erase_elements(
+        BME::TYPE T,
+        std::vector< index_t >& to_erase )
+    {
+        // Change the indices of all the elements of the same type
+        index_t nb_removed = 0 ;
+        for( index_t i = 0; i < to_erase.size(); ++i ) {
+            if( to_erase[ i ] == NO_ID ) {
+                nb_removed++ ;
+            }
+            else {
+                to_erase[ i ] = i - nb_removed ;
+            }
+        }
+
+        if( nb_removed == 0 ) {
+            return false ;
+        }
+
+        for( index_t i = 0; i <model_.nb_elements( T ); ++i ) {
+            BoundaryModelElement& E = element( BME::bme_t( T, i ) ) ;
+            E.set_id( to_erase[ i ] ) ;
+        }
+
+        // Then update all references to all the elements
+        // of that type
+        if( BME::boundary_allowed( T ) ) {
+            BME::TYPE B = BME::boundary_type( T ) ;            
+            for( index_t i = 0; i < model_.nb_elements( B ); ++i ) {
+                BoundaryModelElement& E = element( BME::bme_t( B, i ) ) ;
+                for( index_t j = 0; j < E.nb_in_boundary(); ++j ) {                    
+                    E.set_in_boundary( j, BME::bme_t ( 
+                         T, to_erase[ E.in_boundary_id(j).index ] ) ) ;
+                }
+                E.erase_invalid_element_references() ;
+            }
+        }
+        if( BME::in_boundary_allowed( T ) ) {
+            BME::TYPE IB = BME::in_boundary_type( T ) ;
+            for( index_t i = 0; i < model_.nb_elements( IB ); ++i ) {
+                BoundaryModelElement& E = element( BME::bme_t( IB, i ) ) ;
+                for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
+                    E.set_boundary( j, BME::bme_t(
+                        T, to_erase[ E.boundary_id( j ).index ] ) ) ;
+                }
+                E.erase_invalid_element_references() ;
+            }
+        }
+
+        if( BME::parent_allowed( T ) ) {
+            BME::TYPE P = BME::parent_type( T ) ;
+            for( index_t i = 0; i < model_.nb_elements( P ); ++i ) {
+                BoundaryModelElement& E = element( BME::bme_t( P, i ) ) ;
+                for( index_t j = 0; j < E.nb_children(); ++j ) {
+                    E.set_child( j, BME::bme_t(
+                        T, to_erase[ E.child_id( j ).index ] ) ) ;
+                }
+                E.erase_invalid_element_references() ;
+            }
+        }
+
+        if( BME::child_allowed( T ) ) {
+            BME::TYPE C = BME::child_type( T ) ;
+            for( index_t i = 0; i < model_.nb_elements( C ); ++i ) {
+                BoundaryModelElement& E = element( BME::bme_t( C, i ) ) ;
+                E.set_parent( BME::bme_t( T, to_erase[ E.parent_id().index ] ) ) ;                
+            }
+        }        
+        return true ;
+    }
+
+
 
     /*!
      * @brief Use with EXTREME caution -  Erase one element of the BoundaryModel
@@ -274,9 +534,8 @@ namespace RINGMesh {
      * AND having updated all references to these elements in their boundaries,
      * in_boundaries, parent or children.
      *
-     * \todo Implement a generic function remove all references to an element (its index)
-     * update the indices of elements of the same type (after it in the vector) and update
-     * references to these elements in all other elements.
+     *
+     * @todo Remove this function
      */
     void BoundaryModelBuilder::erase_element( const BME::bme_t& t )
     {
@@ -1065,6 +1324,7 @@ namespace RINGMesh {
 
     void BoundaryModelBuilder::remove_degenerate_facet_and_edges()
     {
+        std::vector< BME::bme_t > to_remove ;
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             index_t nb = repair_line_mesh( model_.line( i ).mesh() ) ;
             if( nb > 0 ) {
@@ -1073,8 +1333,10 @@ namespace RINGMesh {
                     << i << std::endl ;
 
                 /// @todo The line may be empty now - remove it from the model
+                if( model_.line( i ).nb_cells() == 0 ) {
+                    to_remove.push_back( BME::bme_t( BME::LINE, i ) ) ;
+                }
             }
-
         }
 
         for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
@@ -1098,6 +1360,7 @@ namespace RINGMesh {
                 // The alternative is to copy mesh_repair and change it
                 GEO::mesh_repair( M ) ;
 
+
                 // If the Surface has internal boundaries, we need to 
                 // re-cut the Surface along these lines
                 Surface& S = *model_.surfaces_[ i ] ;
@@ -1109,7 +1372,8 @@ namespace RINGMesh {
                 }
             }
         }
-        
+
+        remove_elements( to_remove ) ;
     }
 
     /*!
@@ -1118,6 +1382,8 @@ namespace RINGMesh {
      */
     void BoundaryModelBuilder::init_global_model_element_access()
     {
+        model_.nb_elements_per_type_.clear() ;
+
         index_t count = 0 ;
         model_.nb_elements_per_type_.push_back( count ) ;
         for( index_t type = BME::CORNER; type < BME::NO_TYPE; type++ ) {

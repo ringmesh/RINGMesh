@@ -723,6 +723,53 @@ namespace RINGMesh {
     }
 
 
+    /*! 
+     * @brief Remove invalid reference to elements 
+     *       boundary, in_boundary and children vectors
+     *       Invalid elements have a NO_ID index
+     */
+    void BoundaryModelElement::erase_invalid_element_references()
+    {
+        TYPE T = bme_id().type ;
+        if( child_allowed( T ) ) {
+            bme_t invalid_child( child_type( T ), NO_ID ) ;
+            children_.erase( std::remove(
+                children_.begin(), children_.end(), invalid_child ), 
+                children_.end() );
+
+        }
+        if( boundary_allowed( T ) ) {
+            bme_t invalid_boundary( boundary_type( T ), NO_ID ) ;
+
+            if( !sides_.empty() ) {
+                // Change side values if necessary
+                index_t offset = 0 ;
+                for( index_t i = 0; i+offset < nb_boundaries(); ++i ) {
+                    if( boundaries_[ i ] == invalid_boundary ) {
+                        offset++ ;
+                    } else {
+                        sides_[ i ] = sides_[ i+offset ] ;
+                    }
+                }
+            }
+            index_t end = std::remove( boundaries_.begin(), boundaries_.end(), invalid_boundary )
+                - boundaries_.begin() ;
+
+            boundaries_.erase( boundaries_.begin()+end, boundaries_.end() );
+            sides_.erase( sides_.begin() + end, sides_.end() ) ;
+
+        }
+        if( in_boundary_allowed( T ) ) {
+            bme_t invalid_in_boundary( in_boundary_type( T ), NO_ID ) ;
+            in_boundary_.erase( std::remove(
+                in_boundary_.begin(), in_boundary_.end(), invalid_in_boundary ), 
+                in_boundary_.end() );
+        }
+
+    }
+
+
+
 
     /*********************************************************************/
 
