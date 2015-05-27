@@ -965,7 +965,8 @@ namespace RINGMesh {
     void MacroMeshTools::init_facet_aabb( index_t region ) const
     {
         if( facet_aabb_.size() <= region ) {
-            facet_aabb_.resize( region+1, nil ) ;
+            const_cast< MacroMeshTools* >( this )->facet_aabb_.resize( region + 1,
+                nil ) ;
         }
         if( facet_aabb_[region] ) return ;
         const_cast< MacroMeshTools* >( this )->facet_aabb_[region] =
@@ -990,7 +991,8 @@ namespace RINGMesh {
     void MacroMeshTools::init_cell_aabb( index_t region ) const
     {
         if( cell_aabb_.size() <= region ) {
-            cell_aabb_.resize( region+1, nil ) ;
+            const_cast< MacroMeshTools* >( this )->cell_aabb_.resize( region + 1,
+                nil ) ;
         }
         if( cell_aabb_[region] ) return ;
         const_cast< MacroMeshTools* >( this )->cell_aabb_[region] =
