@@ -88,104 +88,7 @@ namespace {
 }
 
 namespace RINGMesh {
-    /*!
-     * @brief Copy macro information from a model
-     * @details Copy the all the model elements and their relationship ignoring their geometry
-     *
-     * @param[in] from Model to copy the information from
-     */
-    void BoundaryModelBuilder::copy_macro_topology( const BoundaryModel& from )
-    {
-        model_.name_ = from.name_ ;
-        model_.corners_.resize( from.nb_corners(), nil ) ;
-        model_.lines_.resize( from.nb_lines(), nil ) ;
-        model_.surfaces_.resize( from.nb_surfaces(), nil ) ;
-        model_.regions_.resize( from.nb_regions(), nil ) ;
-        model_.layers_.resize( from.nb_layers(), nil ) ;
-        model_.contacts_.resize( from.nb_contacts(), nil ) ;
-        model_.interfaces_.resize( from.nb_interfaces(), nil ) ;
-
-        for( index_t i = 0; i < model_.nb_corners(); i++ ) {
-            model_.corners_[i] = new Corner ;
-        }
-        for( index_t i = 0; i < model_.nb_lines(); i++ ) {
-            model_.lines_[i] = new Line ;
-        }
-        for( index_t i = 0; i < model_.nb_surfaces(); i++ ) {
-            model_.surfaces_[i] = new Surface ;
-        }
-        for( index_t i = 0; i < model_.nb_layers(); i++ ) {
-            model_.layers_[i] = new BoundaryModelElement ;
-        }
-        for( index_t i = 0; i < model_.nb_regions(); i++ ) {
-            model_.regions_[i] = new BoundaryModelElement ;
-        }
-        for( index_t i = 0; i < model_.nb_contacts(); i++ ) {
-            model_.contacts_[i] = new BoundaryModelElement ;
-        }
-        for( index_t i = 0; i < model_.nb_interfaces(); i++ ) {
-            model_.interfaces_[i] = new BoundaryModelElement ;
-        }
-
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_corners(); i++ ) {
-            model_.corners_[i]->copy_macro_topology( from.corner( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_lines(); i++ ) {
-            model_.lines_[i]->copy_macro_topology( from.line( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_surfaces(); i++ ) {
-            model_.surfaces_[i]->copy_macro_topology( from.surface( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_layers(); i++ ) {
-            model_.layers_[i]->copy_macro_topology( from.layer( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_regions(); i++ ) {
-            model_.regions_[i]->copy_macro_topology( from.region( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_contacts(); i++ ) {
-            model_.contacts_[i]->copy_macro_topology( from.contact( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_interfaces(); i++ ) {
-            model_.interfaces_[i]->copy_macro_topology( from.one_interface( i ),
-                model_ ) ;
-        }
-        model_.universe_.copy_macro_topology( from.universe_, model_ ) ;
-    }
-
-    /*!
-     * @brief Copy meshes from a model
-     * @details Copy the all the element meshes
-     *
-     * @param[in] from Model to copy the meshes from
-     */
-    void BoundaryModelBuilder::copy_meshes( const BoundaryModel& from )
-    {
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_corners(); i++ ) {
-            model_.corners_[i]->unbind_attributes() ;
-            model_.corners_[i]->mesh().copy( from.corner( i ).mesh() ) ;
-            model_.corners_[i]->bind_attributes() ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_lines(); i++ ) {
-            model_.lines_[i]->unbind_attributes() ;
-            model_.lines_[i]->mesh().copy( from.line( i ).mesh() ) ;
-            model_.lines_[i]->bind_attributes() ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_surfaces(); i++ ) {
-            model_.surfaces_[i]->unbind_attributes() ;
-            model_.surfaces_[i]->mesh().copy( from.surface( i ).mesh() ) ;
-            model_.surfaces_[i]->bind_attributes() ;
-        }
-    }
+  
 
     /*!
      * @brief Update the indices stored by each element of the model \
@@ -1176,10 +1079,10 @@ namespace RINGMesh {
      *
      *  @details This is pretty tricky because of the annoying not well adapted file format.
      * The correspondance between Gocad::Model3D elements and BoundaryModel elements is :
-     * Gocad TSurf  <-> BoundaryModel Interface
-     * Gocad TFace  <-> BoundaryModel Surface
-     * Gocad Region <-> BoundaryModel Region
-     * Gocad Layer  <-> BoundaryModel Layer
+     *  - Gocad TSurf  <-> BoundaryModel Interface
+     *  - Gocad TFace  <-> BoundaryModel Surface
+     *  - Gocad Region <-> BoundaryModel Region
+     *  - Gocad Layer  <-> BoundaryModel Layer
      *
      * @param[in] ml_file_name Input .ml file stream
      */
@@ -1206,9 +1109,9 @@ namespace RINGMesh {
         index_t current_nb_tfaces = 0 ;
         index_t nb_tface_in_prev_tsurf = 0 ;
 
-        // The file contains 2 parts and is read in 2 steps
-        // 1. Read model info (true)
-        // 2. Read surfaces geometry (false)
+        /// The file contains 2 parts and is read in 2 steps
+        /// 1. Read global information on model elements
+        /// 2. Read surface geometries and info to build corners and contacts
         bool read_model = true ;
 
         // The orientation of positive Z
@@ -1245,7 +1148,7 @@ namespace RINGMesh {
                     if( strncmp( in.field( 0 ), "name:", 5 ) == 0 ) {
                         set_model_name( &in.field( 0 )[5] ) ;
                     } else if( in.field_matches( 0, "TSURF" ) ) {
-                        // 1. Create Interface its name
+                        /// 1.1 Create Interface from its name
                         index_t f = 1 ;
                         std::ostringstream oss ;
                         do {
@@ -1254,8 +1157,8 @@ namespace RINGMesh {
                         create_interface( oss.str() ) ;
                         nb_tsurf++ ;
                     } else if( in.field_matches( 0, "TFACE" ) ) {
-                        // 2. Create the Surface from the name of its parent Interface
-                        // its geological feature
+                        /// 1.2 Create Surface from the name of its parent Interface
+                        /// and its geological feature
                         index_t id = in.field_as_uint( 1 ) ;
                         std::string geol = in.field( 2 ) ;
                         index_t f = 3 ;
@@ -1282,8 +1185,8 @@ namespace RINGMesh {
                         create_surface( interface_name, geol, p0, p1, p2 ) ;
                         nb_tface++ ;
                     } else if( in.field_matches( 0, "REGION" ) ) {
-                        // 3. Read Region information and create them from their name,
-                        // the surfaces on their boundary
+                        /// 1.3 Read Region information and create them from their name,
+                        /// and the surfaces on their boundary
                         index_t id = in.field_as_uint( 1 ) ;
                         std::string name = in.field( 2 ) ;
 
@@ -1316,8 +1219,8 @@ namespace RINGMesh {
                             create_region( name, region_boundaries ) ;
                         }
                     } else if( in.field_matches( 0, "LAYER" ) ) {
-                        // 4. Build the volumetric layers from their name and
-                        // the ids of the regions they contain
+                        /// 1.4 Build the volumetric layers from their name and
+                        /// the ids of the regions they contain
                         BME::bme_t layer_id = create_layer( in.field( 1 ) ) ;
                         bool end_layer = false ;
                         while( !end_layer ) {
@@ -1408,7 +1311,7 @@ namespace RINGMesh {
                         tface_count++ ;
                     }
 
-                    // 4. Read the surface vertices and facets (only triangles in Gocad Model3d files)
+                    /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
                     else if( in.field_matches( 0,
                             "VRTX" ) || in.field_matches( 0, "PVRTX" ) )
                     {
@@ -1433,7 +1336,7 @@ namespace RINGMesh {
                         tface_facets_ptr.push_back( tface_facets.size() ) ;
                     }
 
-                    // 5. Build the corners from their position and the surface parts
+                    // 2.2 Build the corners from their position and the surface parts
                     //    containing them
                     else if( in.field_matches( 0, "BSTONE" ) ) {
                         index_t v_id = in.field_as_uint( 1 ) - 1 ;
@@ -1443,7 +1346,7 @@ namespace RINGMesh {
                         }
                     }
 
-                    /// 6. Read the Border information and store it
+                    /// 2.3 Read the Border information and store it
                     else if( in.field_matches( 0, "BORDER" ) ) {
                         index_t p1 = in.field_as_uint( 2 ) - 1 ;
                         index_t p2 = in.field_as_uint( 3 ) - 1 ;
@@ -1489,7 +1392,7 @@ namespace RINGMesh {
         // I agree that we do not need to compute the BoundaryModelVertices here
         // But perhaps the computation of Lines would be faster and safer - Jeanne
 
-        /// 7. Build the Lines
+        /// 3. Build the Lines
         {
             std::vector< vec3 > line_vertices ;
             for( index_t i = 0; i < borders_to_build.size(); ++i ) {
@@ -1511,7 +1414,7 @@ namespace RINGMesh {
             }
         }
 
-        /// 8. Build the Contacts
+        /// 4. Build the Contacts
         build_contacts() ;
 
         // Modify in the Region the side of the Surface for which the key facet
@@ -1529,17 +1432,16 @@ namespace RINGMesh {
             }
         }
 
-        // Finish up the model - CRASH if this failed
+        /// 5. Fill missing information and check model validity
         if( !end_model() ) {
-            std::cout << "ERROR : Invalid model " << std::endl ;
+            GEO::Logger::err("BoundaryModel") << " Model " << model_.name() 
+                << " is not a valid boundary representation. " << std::endl ;
         }
 
         time( &end_load ) ;
-        // We do not care of loading time in debug mode .... Jeanne
-#ifdef RINGMESH_DEBUG 
-        std::cout << "Info" << " Boundary model loading time"
+        // Output of loading time only in debug mode has no meaning (JP)
+        GEO::Logger::out("I/O") << " Model loading time "
             << difftime( end_load, start_load ) << " sec" << std::endl ;
-#endif
     }
 
     /*!
