@@ -1019,11 +1019,13 @@ namespace RINGMesh {
 
     }
 
-    void MacroMeshOrder::order( const index_t order )
-    {
-        order_ = order ;
-    }
-    void MacroMeshOrder::initialize( index_t order, bool point_in_middle )
+    /*
+     * Initialize the database by computing the new vertices of the mesh.
+     * \param order -1 vertices are added per edges, the edges are divided
+     * in equal parts by these vertices.
+     * @param[in] order the mesh elements order
+     */
+    void MacroMeshOrder::initialize( index_t order)
     {
         nb_vertices_ = mm_.vertices.nb_total_vertices() ;
 
@@ -1058,21 +1060,29 @@ namespace RINGMesh {
 
     }
 
+    /*
+     * Gets the mesh total number of vertices. It is the number of unique nodes
+     * on the mesh plus the added nodes on the elements edges
+     * @return the const number of vertices
+     */
     const index_t MacroMeshOrder::nb_total_vertices() const
     {
         return nb_vertices_ ;
     }
 
-    void MacroMeshOrder::nb_total_vertices( const index_t nb_vertices )
-    {
-        nb_vertices_ = nb_vertices ;
-    }
-
+    /*
+     * Gets the mesh elements order
+     * @return the const order
+     */
     const index_t MacroMeshOrder::order() const
     {
         return order_ ;
     }
 
+    /*
+     * Gets the id of the added node
+     * @return the const id of the node
+     */
     const index_t MacroMeshOrder::id(const vec3& point) const {
         std::vector<index_t> colocated_points ;
         ann_.get_colocated(point,colocated_points) ;
