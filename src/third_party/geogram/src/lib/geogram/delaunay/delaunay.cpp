@@ -161,6 +161,7 @@ namespace GEO {
         do_reorder_ = true;
         refine_ = false;
         quality_ = 2.0;
+        store_cicl_ = false;
     }
 
     Delaunay::~Delaunay() {
@@ -193,8 +194,10 @@ namespace GEO {
         cell_to_cell_ = cell_to_cell;
 
         if(cell_to_cell != nil) {
-            update_v_to_cell();
-            update_cicl();
+            if(store_cicl_) {
+                update_v_to_cell();
+                update_cicl();
+            }
             if(store_neighbors_) {
                 update_neighbors();
             }

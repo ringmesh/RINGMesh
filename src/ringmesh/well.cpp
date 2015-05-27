@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -40,6 +40,10 @@
 
 #include <ringmesh/well.h>
 #include <ringmesh/utils.h>
+#include <ringmesh/boundary_model.h>
+
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_geometry.h>
 
 #include <cmath>
 #include <stack>
@@ -67,7 +71,7 @@ namespace RINGMesh {
                 return c ;
             }
         }
-        return - 1 ;
+        return -1 ;
     }
 
 
@@ -172,6 +176,174 @@ namespace RINGMesh {
         }
     }
 
+    void WellGroup::get_region_edges(
+        index_t region,
+        std::vector< std::vector< Edge > >& edges ) const
+    {
+        edges.clear() ;
+        edges.resize( nb_wells() ) ;
+        for( index_t w = 0; w < nb_wells(); w++ ) {
+            const Well& cur_well = well( w ) ;
+            cur_well.get_region_edges( region, edges[w] ) ;
+        }
+    }
+
+    struct LineInstersection {
+        LineInstersection(
+            const vec3& intersection,
+            index_t surface_id = NO_ID,
+            index_t trgl_id = NO_ID )
+            :
+                intersection_( intersection ),
+                surface_id_( surface_id ),
+                trgl_id_( trgl_id )
+        {
+        }
+        vec3 intersection_ ;
+        index_t surface_id_ ;
+        index_t trgl_id_ ;
+    } ;
+
+    class EdgeConformerAction {
+    public:
+        EdgeConformerAction(
+            const Surface& surface,
+            const vec3& v_from,
+            const vec3& v_to,
+            std::vector< LineInstersection >& intersections )
+            :
+                surface_( surface ),
+                v_from_( v_from ),
+                v_to_( v_to ),
+                intersections_( intersections )
+        {
+        }
+
+        void operator()( index_t trgl )
+        {
+            vec3 result ;
+            if( Math::segment_triangle_intersection(
+                v_from_, v_to_,
+                surface_.vertex( trgl, 0 ), surface_.vertex( trgl, 1 ),
+                surface_.vertex( trgl, 2 ), result ) ) {
+                intersections_.push_back(
+                    LineInstersection( result, surface_.bme_id().index, trgl ) ) ;
+            }
+        }
+
+    private:
+        const Surface& surface_ ;
+        const vec3& v_from_ ;
+        const vec3& v_to_ ;
+
+        std::vector< LineInstersection >& intersections_ ;
+    } ;
+
+    void WellGroup::add_well( const GEO::Mesh& mesh, const std::string& name )
+    {
+        ringmesh_debug_assert( model() ) ;
+        if( is_well_already_added( name ) ) return ;
+        wells_.push_back( Well() ) ;
+        Well& new_well = wells_.back() ;
+        new_well.set_name( name ) ;
+
+        std::vector< Box3d > boxes( model()->nb_surfaces() ) ;
+        for( index_t s = 0; s < model()->nb_surfaces(); s++ ) {
+            Box3d& box = boxes[s] ;
+            const Surface& surface = model()->surface( s ) ;
+            for( unsigned int p = 0; p < surface.nb_vertices(); p++ ) {
+                box.add_point( surface.vertex( p ) ) ;
+            }
+        }
+
+        bool last_sign = false ;
+        LineInstersection start( mesh.vertices.point( 0 ) ) ;
+        std::vector< vec3 > well_points ;
+        for( index_t e = 0; e < mesh.edges.nb(); e++ ) {
+            const vec3& v_from = GEO::Geom::mesh_vertex( mesh, mesh.edges.vertex( e, 0 ) ) ;
+            const vec3& v_to = GEO::Geom::mesh_vertex( mesh, mesh.edges.vertex( e, 1 ) ) ;
+            Box3d box ;
+            box.add_point( v_from ) ;
+            box.add_point( v_to ) ;
+            std::vector< index_t > potential_surfaces ;
+            for( index_t s = 0; s < model()->nb_surfaces(); s++ ) {
+                if( box.bboxes_overlap( boxes[s] ) ) {
+                    potential_surfaces.push_back( s ) ;
+                }
+            }
+            std::vector< LineInstersection > intersections ;
+            for( index_t s = 0; s < potential_surfaces.size(); s++ ) {
+                index_t s_id = potential_surfaces[s] ;
+                const Surface& surface = model_->surface( s_id ) ;
+                EdgeConformerAction action( surface, v_from, v_to, intersections ) ;
+                surface.tools.aabb().compute_bbox_facet_bbox_intersections( box,
+                    action ) ;
+            }
+            if( !intersections.empty() ) {
+                std::vector< index_t > indices( intersections.size() ) ;
+                std::vector< double > distances( intersections.size() ) ;
+                if( intersections.size() == 1 ) {
+                    indices[0] = 0 ;
+                } else {
+                    for( index_t i = 0; i < intersections.size(); i++ ) {
+                        indices[i] = i ;
+                        distances[i] = length(
+                            v_from - intersections[i].intersection_ ) ;
+                    }
+                    IndirectSort< double, index_t > sort( distances, indices ) ;
+                    sort.sort() ;
+                }
+                for( index_t i = 0; i < intersections.size(); i++ ) {
+                    vec3 v_prev =
+                        well_points.empty() ?
+                            start.intersection_ : vec3( well_points.back().data() ) ;
+                    index_t index = indices[i] ;
+                    vec3 direction = v_prev - intersections[index].intersection_ ;
+                    bool sign =
+                        dot( direction,
+                            model_->surface( intersections[index].surface_id_ ).facet_normal(
+                                intersections[index].trgl_id_ ) ) > 0 ;
+                    last_sign = sign ;
+                    index_t region = model_->find_region(
+                        intersections[index].surface_id_, sign ) ;
+                    if( region == NO_ID ) {
+                        well_points.clear() ;
+                    } else {
+                        WellPart well_part ;
+                        index_t id =
+                            start.surface_id_ == NO_ID ?
+                                -region - 1 : start.surface_id_ ;
+                        signed_index_t corner_id = new_well.find_or_create_corner(
+                            start.intersection_, id ) ;
+                        well_part.add_corner( corner_id ) ;
+                        corner_id = new_well.find_or_create_corner(
+                            intersections[index].intersection_,
+                            intersections[index].surface_id_ ) ;
+                        well_part.add_corner( corner_id ) ;
+                        well_part.add_points( well_points ) ;
+                        new_well.add_part( well_part, region ) ;
+                        well_points.clear() ;
+                    }
+                    start = intersections[index] ;
+                }
+            }
+            well_points.push_back( v_to ) ;
+        }
+        index_t region = model_->find_region( start.surface_id_, !last_sign ) ;
+        if( region != NO_ID ) {
+            WellPart well_part ;
+            index_t id = start.surface_id_ == -1 ? -region - 1 : start.surface_id_ ;
+            signed_index_t corner_id = new_well.find_or_create_corner( start.intersection_,
+                id ) ;
+            well_part.add_corner( corner_id ) ;
+            corner_id = new_well.find_or_create_corner( well_points.back() ) ;
+            well_part.add_corner( corner_id ) ;
+            well_points.resize( well_points.size() - 1 ) ;
+            well_part.add_points( well_points ) ;
+            new_well.add_part( well_part, region ) ;
+        }
+
+    }
 
     bool WellGroup::is_well_already_added( const std::string& name ) const
     {

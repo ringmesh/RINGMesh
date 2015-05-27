@@ -133,6 +133,7 @@ namespace GEO {
          * \param[in] reorder if not set, Morton re-ordering is
          *  skipped (but it means that mesh_reorder() was previously
          *  called else the algorithm will be pretty unefficient).
+         * \pre M.facets.are_simplices()
          */
         MeshFacetsAABB(Mesh& M, bool reorder = true);
 
@@ -417,19 +418,17 @@ namespace GEO {
      * \details Used to quickly find the tetrahedron that contains
      *  a given 3d point.
      */
-    class GEOGRAM_API MeshTetsAABB {
+    class GEOGRAM_API MeshCellsAABB {
     public:
         /**
          * \brief Creates the Axis Aligned Bounding Boxes tree.
          * \param[in] M the input mesh. It can be modified,
-         *  and will be triangulated (if
-         *  not already a triangular mesh). The facets are
-         *  re-ordered (using Morton's order, see mesh_reorder()).
+         *  The cells are re-ordered (using Morton's order, see mesh_reorder()).
          * \param[in] reorder if not set, Morton re-ordering is
          *  skipped (but it means that mesh_reorder() was previously
          *  called else the algorithm will be pretty unefficient).
          */
-        MeshTetsAABB(Mesh& M, bool reorder = true);
+        MeshCellsAABB(Mesh& M, bool reorder = true);
 
         /**
          * \brief Finds the index of a tetrahedron that contains a query point
@@ -437,8 +436,11 @@ namespace GEO {
          * \param[in] exact specifies whether exact predicates should be used
          * \return the index of one of the tetrahedra that contains \p p or
          *  -1 if \p p is outside the mesh.
+         * \note The input mesh needs to be tetrahedralized. If the mesh has
+         *   arbitrary cells, then one may use instead containing_boxes().
          */
         signed_index_t containing_tet(const vec3& p, bool exact =true) const {
+            geo_debug_assert(mesh_.cells.are_simplices());
             return containing_tet_recursive(
                 p, exact, 1, 0, mesh_.cells.nb()
             );
@@ -466,6 +468,28 @@ namespace GEO {
             );
         }
 
+
+
+        /**
+         * \brief Finds all the cells such that their bounding
+         *  box contain a point.
+         * \param[in] action ACTION::operator(index_t) is
+         *  invoked for all cells that have a bounding
+         *  box that contains \p p.
+         * \tparam ACTION user action class, that needs to define
+         * operator(index_t), where the parameter is the index
+         * of the cell that has its bounding box containing
+         * \p p.
+         */
+        template< class ACTION >
+        void containing_boxes(
+            const vec3& p,
+            ACTION& action
+        ) const {
+            containing_boxes_recursive(
+                action, p, 1, 0, mesh_.cells.nb()
+            );
+        }
         
     protected:
 
@@ -481,6 +505,7 @@ namespace GEO {
          * \param[in] action ACTION::operator(index_t) is
          *  invoked for all cells that has a bounding box that
          *  overlaps \p box.
+         * \param[in] box the query box
          * \param[in] node index of the first node of the AABB tree
          * \param[in] b index of the first facet in \p node
          * \param[in] e one position past the index of the last
@@ -531,6 +556,53 @@ namespace GEO {
             const vec3& p, bool exact, 
             index_t n, index_t b, index_t e
         ) const;
+
+
+        /**
+         * \brief Computes all the cells that have a bbox that
+         *  contain a given point in a sub-tree of the AABB tree.
+         *
+         * Note that the tree structure is completely implicit,
+         *  therefore the bounds of the (continuous) facet indices
+         *  sequences that correspond to the facets contained
+         *  in the two nodes are sent as well as the node indices.
+         *
+         * \param[in] action ACTION::operator(index_t) is
+         *  invoked for all cells that has a bounding box that
+         *  contains \p p.
+         * \param[in] p a const reference to the query point
+         * \param[in] node index of the first node of the AABB tree
+         * \param[in] b index of the first facet in \p node
+         * \param[in] e one position past the index of the last
+         *  facet in \p node
+         */
+        template <class ACTION>
+        void containing_bboxes_recursive(
+            ACTION& action,
+            const vec3& p,
+            index_t node, index_t b, index_t e
+        ) const {
+            geo_debug_assert(e != b);
+
+            // Prune sub-tree that does not have intersection            
+            if(!bboxes_[node].contains(p)) {
+                return;
+            }
+
+            // Leaf case
+            if(e == b+1) {
+                action(b);
+                return;
+            }
+
+            // Recursion
+            index_t m = b + (e - b) / 2;
+            index_t node_l = 2 * node;
+            index_t node_r = 2 * node + 1;
+
+            containing_bbox_recursive(action, p, node_l, b, m);
+            containing_bbox_recursive(action, p, node_r, m, e);
+        }
         
         vector<Box> bboxes_;
         Mesh& mesh_;

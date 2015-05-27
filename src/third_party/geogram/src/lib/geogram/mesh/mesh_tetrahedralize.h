@@ -63,7 +63,11 @@ namespace GEO {
      *  needs to be interfaced (e.g., compiling with tetgen support).
      * \param [in,out] M a reference to a mesh
      * \param [in] preprocess if true, the surface mesh is preprocessed
-     *  to fix some defects (small gaps and intersections)
+     *  to fix some defects (small gaps and intersections). If preprocess
+     *  is set and borders are detected after preprocessing, then the function
+     *  returns false. If preprocess is set to false, then the caller is 
+     *  supposed to provide a correct set of input constraints (that may have
+     *  dangling borders / internal constraints).
      * \param [in] refine if true, inserts additional vertices to improve
      *  the quality of the mesh elements
      * \param[in] quality, typically in [1.0, 2.0], specifies

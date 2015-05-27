@@ -217,7 +217,7 @@ namespace GEO {
     namespace Geom {
 
         index_t colocate(
-            double* points,
+            const double* points,
             coord_index_t dim,
             index_t nb_points,
             vector<index_t>& old2new,
@@ -262,7 +262,7 @@ namespace GEO {
         }
 
         index_t colocate_by_lexico_sort(
-            double* points,
+            const double* points,
             coord_index_t dim,
             index_t nb_points,
             vector<index_t>& old2new,

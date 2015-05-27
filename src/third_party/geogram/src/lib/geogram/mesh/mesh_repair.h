@@ -136,6 +136,67 @@ namespace GEO {
         Mesh& M, vector<index_t>* moebius_facets=nil
     );
 
+    /**
+     * \brief Detects colocated vertices in a mesh.
+     * \details Example of function to remove duplicated
+     *  vertices in a mesh:
+     *  \code
+     *   mesh_detect_colocated_vertices(M, colocated, epsilon);
+     *   for(index_t v=0; v<M.vertices.nb(); ++v) {
+     *      if(colocated[v] == v) {
+     *         // keep vertex if colocated with itself
+     *         colocated[v] = 0; 
+     *      } else {
+     *         // delete vertex if colocated with other
+     *         colocated[v] = 1; 
+     *      }
+     *   }
+     *   M.vertices.delete_elements(colocated);
+     *  \endcode
+     * \param[in] M a const reference to the mesh
+     * \param[out] v_colocated_index on exit, a vector
+     *  of size M.vertices.nb(), such that for each vertex 
+     *  index v, v_colocated_index[v] contains either v (if 
+     *  v should be kept) or the index of the vertex that v 
+     *  is colocated with.
+     * \param[in] colocate_epsilon if the distance between two
+     *  mesh vertices is smaller than colocate_epsilon, then they
+     *  are colocated.
+     */
+    void GEOGRAM_API mesh_detect_colocated_vertices(
+        const Mesh& M, vector<index_t>& v_colocated_index,
+        double colocate_epsilon=0.0
+    );
+
+    /**
+     * \brief Detects isolated vertices in a mesh.
+     * \details A vertex is isolated if no mesh element
+     *  (edge, facet or cell) is incident to it.
+     * \param[in] M a const reference to the mesh
+     * \param[out] v_is_isolated on exit, a vector of
+     *  size M.vertices.nb(), such that v_is_isolated[v]
+     *  is equal to 1 if v is isolated or 0 if v is 
+     *  not isolated.
+     */
+    void GEOGRAM_API mesh_detect_isolated_vertices(
+        const Mesh& M, vector<index_t>& v_is_isolated
+    );
+
+    /**
+     * \brief Detects degenerate facets in a mesh.
+     * \details A facet is degenerate if it is 
+     *  incident to the same vertex several times.
+     * \param[in] M a const reference to the mesh
+     * \param[out] f_is_degenerate on exit, a vector of
+     *  size M.facets.nb(), such that f_is_degenerate[f]
+     *  is equal to 1 if f is degenerate or 0 if f is 
+     *  not degenerate.
+     */
+    void GEOGRAM_API mesh_detect_degenerate_facets(
+        const Mesh& M, vector<index_t>& f_is_degenerate
+    );
+
+    
 }
 
 #endif

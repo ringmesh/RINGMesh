@@ -212,15 +212,12 @@ namespace GEO {
      *  weights.
      * \param[in] mesh the surface mesh
      * \param[in] t a tetrahedron index in \p mesh
-     * \param[in] weights a reference to a vertex weight attribute. If it
-     *  is bound, it is taken into account in mass computation
      * \return the mass of tetrahedron \p t in \p mesh
      */
     template <int DIM>
     inline double mesh_tetra_mass(
         const Mesh& mesh,
-        index_t t,
-        Attribute<double>& weight = Attribute<double>()
+        index_t t
     ) {
         geo_debug_assert(mesh.vertices.dimension() >= DIM);
         typedef vecng<DIM, double> Point;
@@ -237,18 +234,42 @@ namespace GEO {
             *reinterpret_cast<const Point*>(mesh.vertices.point_ptr(v3))
         );
 
+        return result;
+    }
+
+    /**
+     * \brief Computes the mass of a mesh tetrahedron.
+     * \details The function can optionally take into account the vertex
+     *  weights.
+     * \param[in] mesh the surface mesh
+     * \param[in] t a tetrahedron index in \p mesh
+     * \param[in] weights a reference to a vertex weight attribute. If it
+     *  is bound, it is taken into account in mass computation
+     * \return the mass of tetrahedron \p t in \p mesh
+     */
+    template <int DIM>
+    inline double mesh_tetra_mass(
+        const Mesh& mesh,
+        index_t t,
+        const Attribute<double>& weight 
+    ) {
+        double result = mesh_tetra_mass<DIM>(mesh, t);
+
         if(weight.is_bound()) {
+            index_t v0 = mesh.cells.vertex(t, 0);
+            index_t v1 = mesh.cells.vertex(t, 1);
+            index_t v2 = mesh.cells.vertex(t, 2);
+            index_t v3 = mesh.cells.vertex(t, 3);
             result *= (
                 weight[v0] + weight[v1] +
                 weight[v2] + weight[v3]
             ) / 4.0;
             // TODO: check whether this is the correct formula
-            // (I do not think so...)
         }
 
         return result;
     }
-
+    
     /**
      * \brief Generates a set of random samples in a volumetric mesh.
      * \param[in] mesh the mesh
