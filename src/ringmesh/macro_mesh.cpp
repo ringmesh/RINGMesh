@@ -1009,7 +1009,7 @@ namespace RINGMesh {
     }
 
     MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
-        : mm_( mm ), nb_vertices_( 0 ), order_( 1 ), ann_()
+        : mm_( mm ), nb_vertices_( 0 ), ann_()
     {
 
     }
@@ -1025,12 +1025,9 @@ namespace RINGMesh {
      * in equal parts by these vertices.
      * @param[in] order the mesh elements order
      */
-    void MacroMeshOrder::initialize( index_t order)
+    void MacroMeshOrder::initialize()
     {
         nb_vertices_ = mm_.vertices.nb_total_vertices() ;
-
-        if( order > 1 ) {
-        order_ = order ;
         std::vector<vec3> new_points ;
         new_points.reserve(mm_.cells.nb_cells()*4) ;
         for(index_t r = 0 ; r < mm_.nb_meshes() ; r++) {
@@ -1040,7 +1037,7 @@ namespace RINGMesh {
                     std::vector<vec3> new_points_in_edge ;
                     vec3 node0 = GEO::Geom::mesh_vertex(cur_mesh,cur_mesh.cells.edge_vertex(c,e,0)) ;
                     vec3 node1 = GEO::Geom::mesh_vertex(cur_mesh,cur_mesh.cells.edge_vertex(c,e,1)) ;
-                    Geom::divide_edge_in_parts(node0,node1,order_,new_points_in_edge) ;
+                    Geom::divide_edge_in_parts(node0,node1,mm_.get_order(),new_points_in_edge) ;
 
                     for(index_t v = 0 ; v < new_points_in_edge.size() ; v++) {
                         new_points.push_back(new_points_in_edge[v]) ;
@@ -1058,6 +1055,11 @@ namespace RINGMesh {
 
         }
 
+    /*
+     * Clear the MacroMeshOrder database
+     */
+    void MacroMeshOrder::clear() {
+        nb_vertices_ = 0;
     }
 
     /*
@@ -1067,16 +1069,8 @@ namespace RINGMesh {
      */
     const index_t MacroMeshOrder::nb_total_vertices() const
     {
+        test_initialize() ;
         return nb_vertices_ ;
-    }
-
-    /*
-     * Gets the mesh elements order
-     * @return the const order
-     */
-    const index_t MacroMeshOrder::order() const
-    {
-        return order_ ;
     }
 
     /*
@@ -1090,7 +1084,6 @@ namespace RINGMesh {
         return mm_.vertices.nb_total_vertices() + colocated_points[0] ;
     }
 
-
     MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
         :
             model_( model ),
@@ -1101,7 +1094,8 @@ namespace RINGMesh {
             facets( *this ),
             cells( *this ),
             tools( *this ),
-            order( *this )
+            order( *this ),
+            order_(1)
     {
         for( index_t r = 0; r < model_.nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( dim ) ;

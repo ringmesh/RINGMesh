@@ -337,18 +337,25 @@ namespace RINGMesh {
         MacroMeshOrder( MacroMesh& mm ) ;
         ~MacroMeshOrder() ;
         const index_t nb_total_vertices() const ;
-        void initialize( index_t order ) ;
-        const index_t order() const ;
         const index_t id(const vec3& point) const ;
-        const vec3 point(index_t i) const {
-            return ann_.point(i) ;
+        void clear() ;
+    private:
+        void initialize() ;
+        /*!
+         * Tests if the MacroMeshOrder needs to be initialized and initialize it
+         */
+        void test_initialize() const
+        {
+            if( nb_vertices_ == 0 ) {
+                const_cast< MacroMeshOrder* >( this )->initialize() ;
+            }
         }
-
     private:
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
+        /// Total number of vertices + new nodes on cell edges
         index_t nb_vertices_ ;
-        index_t order_ ;
+        /// ANNTree composed only with new nodes on cell edges
         ColocaterANN ann_ ;
 
     } ;
@@ -432,6 +439,24 @@ namespace RINGMesh {
             not_const->vertices.mesh_cell_corner_ptr_.clear() ;
         }
 
+        /*
+         * Change the order of the mesh
+         */
+        void set_order(const index_t o) {
+            if(o != order_) {
+                order.clear() ;
+            }
+            order_ = o ;
+        }
+
+        /*
+         * Gets the mesh elements order
+         * @return the const order
+         */
+        const index_t get_order() const {
+            return order_ ;
+        }
+
     protected:
         /// BoundaryModel representing the structural information of the mesh
         const BoundaryModel& model_ ;
@@ -442,6 +467,9 @@ namespace RINGMesh {
 
         /// Optional WellGroup associated with the model
         const WellGroup* wells_ ;
+
+        /// Order of the mesh
+        index_t order_ ;
 
     public:
         /// Optional storage of the MacroMesh vertices
