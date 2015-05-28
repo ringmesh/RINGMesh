@@ -1098,12 +1098,12 @@ namespace RINGMesh {
             meshes_( model.nb_regions(), nil ),
             mode_( NONE ),
             wells_( nil ),
+            order_(1),
             vertices( *this ),
             facets( *this ),
             cells( *this ),
             tools( *this ),
-            order( *this ),
-            order_(1)
+            order( *this )
     {
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( 3 ) ;
@@ -1116,6 +1116,7 @@ namespace RINGMesh {
             meshes_(),
             mode_( NONE ),
             wells_( nil ),
+            order_(1),
             vertices( *this ),
             facets( *this ),
             cells( *this ),
