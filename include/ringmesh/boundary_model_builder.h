@@ -56,7 +56,7 @@ namespace RINGMesh {
      * @details Derive from this class to build or modify a BoundaryModel
      */
     class RINGMESH_API BoundaryModelBuilder {
-    protected:
+    public:
         BoundaryModelBuilder( BoundaryModel& model )
               : model_( model ) {}
         virtual ~BoundaryModelBuilder() {}
