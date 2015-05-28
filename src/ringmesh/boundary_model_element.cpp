@@ -1308,8 +1308,10 @@ namespace RINGMesh {
             valid = false ;
         }
 
-        std::vector< index_t > duplicated ;
-        index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
+        // This does not work ? 
+        /// @todo Use Geogram function
+        // std::vector< index_t > duplicated ;
+        // index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
 
         // There might be several duplicated points, but they must be in one of the
         // boundary lines that are twice in the boundary of this surface
