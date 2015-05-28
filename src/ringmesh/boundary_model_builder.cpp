@@ -414,86 +414,100 @@ namespace RINGMesh {
             }
             switch( T ) {
                 case BME::CORNER:
-                    delete model_.corners_[ i ] ;
-                    model_.corners_[ i ] = nullptr ;
+                    delete model_.corners_[i] ;
+                    model_.corners_[i] =
+                        static_cast< Corner* >( nil ) ;
                     break ;
                 case BME::LINE:
-                    delete model_.lines_[ i ] ;
-                    model_.lines_[ i ] = nullptr ;
+                    delete model_.lines_[i] ;
+                    model_.lines_[i] = static_cast< Line* >( nil ) ;
                     break ;
 
                 case BME::SURFACE:
-                    delete model_.surfaces_[ i ] ;
-                    model_.surfaces_[ i ] = nullptr ;
+                    delete model_.surfaces_[i] ;
+                    model_.surfaces_[i] =
+                        static_cast< Surface* >( nil ) ;
                     break ;
 
                 case BME::REGION:
-                    delete model_.regions_[ i ] ;
-                    model_.regions_[ i ] = nullptr;
+                    delete model_.regions_[i] ;
+                    model_.regions_[i] =
+                        static_cast< BoundaryModelElement* >( nil ) ;
                     break ;
 
                 case BME::CONTACT:
-                    delete model_.contacts_[ i ] ;
-                    model_.contacts_[ i ] = nullptr;
+                    delete model_.contacts_[i] ;
+                    model_.contacts_[i] =
+                        static_cast< BoundaryModelElement* >( nil ) ;
                     break ;
 
                 case BME::INTERFACE:
-                    delete model_.interfaces_[ i ] ;
-                    model_.interfaces_[ i ] = nullptr ;
+                    delete model_.interfaces_[i] ;
+                    model_.interfaces_[i] =
+                        static_cast< BoundaryModelElement* >( nil ) ;
                     break ;
 
                 case BME::LAYER:
-                    delete model_.layers_[ i ] ;
-                    model_.layers_[ i ] = nullptr ;
+                    delete model_.layers_[i] ;
+                    model_.layers_[i] = static_cast< BoundaryModelElement* >( nil ) ;
                     break ;
             }
         }
         switch( T ) {
             case BME::CORNER:
-                model_.corners_.erase( std::remove(
-                    model_.corners_.begin(), model_.corners_.end(), nullptr ),
-                    model_.corners_.end() );
+                model_.corners_.erase(
+                    std::remove( model_.corners_.begin(), model_.corners_.end(),
+                        static_cast< Corner* >( nil ) ),
+                    model_.corners_.end() ) ;
                 break ;
             case BME::LINE:
-                model_.lines_.erase( std::remove(
-                    model_.lines_.begin(), model_.lines_.end(), nullptr ),
-                    model_.lines_.end() );
+                model_.lines_.erase(
+                    std::remove( model_.lines_.begin(), model_.lines_.end(),
+                        static_cast< Line* >( nil ) ),
+                    model_.lines_.end() ) ;
                 break ;
 
             case BME::SURFACE:
-                model_.surfaces_.erase( std::remove(
-                    model_.surfaces_.begin(), model_.surfaces_.end(), nullptr ),
-                    model_.surfaces_.end() );
+                model_.surfaces_.erase(
+                    std::remove( model_.surfaces_.begin(), model_.surfaces_.end(),
+                        static_cast< Surface* >( nil ) ),
+                    model_.surfaces_.end() ) ;
                 break ;
 
             case BME::REGION:
-                model_.regions_.erase( std::remove(
-                    model_.regions_.begin(), model_.regions_.end(), nullptr ),
-                    model_.regions_.end() );
+                model_.regions_.erase(
+                    std::remove( model_.regions_.begin(), model_.regions_.end(),
+                        static_cast< BoundaryModelElement* >( nil ) ),
+                    model_.regions_.end() ) ;
                 break ;
 
             case BME::CONTACT:
-                model_.contacts_.erase( std::remove(
-                    model_.contacts_.begin(), model_.contacts_.end(), nullptr ),
-                    model_.contacts_.end() );
+                model_.contacts_.erase(
+                    std::remove( model_.contacts_.begin(), model_.contacts_.end(),
+                        static_cast< BoundaryModelElement* >( nil ) ),
+                    model_.contacts_.end() ) ;
                 break ;
 
             case BME::INTERFACE:
-                model_.interfaces_.erase( std::remove(
-                    model_.interfaces_.begin(), model_.interfaces_.end(), nullptr ),
-                    model_.interfaces_.end() );
+                model_.interfaces_.erase(
+                    std::remove( model_.interfaces_.begin(),
+                        model_.interfaces_.end(),
+                        static_cast< BoundaryModelElement* >( nil ) ),
+                    model_.interfaces_.end() ) ;
                 break ;
 
             case BME::LAYER:
-                model_.layers_.erase( std::remove(
-                    model_.layers_.begin(), model_.layers_.end(), nullptr ),
-                    model_.layers_.end() );
+                model_.layers_.erase(
+                    std::remove( model_.layers_.begin(), model_.layers_.end(),
+                        static_cast< BoundaryModelElement* >( nil ) ),
+                    model_.layers_.end() ) ;
+                break ;
 
             default:
                 ringmesh_assert_not_reached;
                 break ;
-        }    
-    }
+            }
+        }
 
 
     /*!
