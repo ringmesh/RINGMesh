@@ -269,9 +269,16 @@ namespace RINGMesh {
 
     /*!
      * @brief Remove a list of elements of the model
+     * @details No check is done on the consistency of this removal
+     *          The elements and all references to them are removed. 
+     * @warning The client is responsible to set the proper connectivity
+     *          information between the remaining model elements.
+     *
+     * @todo Rewrite in a smarter way to reduce the number of lines of code
+     *       We can certainly do without the copy paste
      */
     void BoundaryModelBuilder::remove_elements( 
-        const std::vector< BME::bme_t > elements )
+        const std::vector< BME::bme_t >& elements )
     {
         /// Get the indices of the elements to remove type by type
         std::vector< index_t > layers_to_erase( model_.nb_layers(), 0 ) ;
@@ -329,6 +336,46 @@ namespace RINGMesh {
                     break ;
             }
         }
+
+        // Flag to be removed the parent elements who do not
+        // have anymore children
+        for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
+            index_t nb_c = 0 ;
+            for( index_t j = 0; j < model_.contact( i ).nb_children(); ++j ) {
+                if( lines_to_erase[ model_.contact( i ).child_id(j).index ] != NO_ID ) {
+                    nb_c++ ;
+                    break ;
+                }
+            }
+            if( nb_c == 0 ) {
+                contacts_to_erase[ i ] = NO_ID ;
+            }
+        }
+        for( index_t i = 0; i < model_.nb_interfaces(); ++i ) {
+            index_t nb_c = 0 ;
+            for( index_t j = 0; j < model_.one_interface( i ).nb_children(); ++j ) {
+                if( surfaces_to_erase[ model_.one_interface( i ).child_id( j ).index ] != NO_ID ) {
+                    nb_c++ ;
+                    break ;
+                }
+            }
+            if( nb_c == 0 ) {
+                interfaces_to_erase[ i ] = NO_ID ;
+            }
+        }
+        for( index_t i = 0; i < model_.nb_layers(); ++i ) {
+            index_t nb_c = 0 ;
+            for( index_t j = 0; j < model_.layer( i ).nb_children(); ++j ) {
+                if( regions_to_erase[ model_.layer( i ).child_id( j ).index ] != NO_ID ) {
+                    nb_c++ ;
+                    break ;
+                }
+            }
+            if( nb_c == 0 ) {
+                layers_to_erase[ i ] = NO_ID ;
+            }
+        }
+
         
         // Is the order important ? 
         if( prepare_to_erase_elements( BME::LAYER, layers_to_erase ) ){
@@ -537,7 +584,7 @@ namespace RINGMesh {
      *
      * @todo Remove this function
      */
-    void BoundaryModelBuilder::erase_element( const BME::bme_t& t )
+    void BoundaryModelBuilder::erase_element( const BME::bme_t t )
     {
         switch( t.type ) {
             case BME::CORNER:
