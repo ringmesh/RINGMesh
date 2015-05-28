@@ -53,22 +53,23 @@
 namespace RINGMesh {
     /*!
      * @brief Base class for all classes building a BoundaryModel.
-     * @details Derive from this class
+     * @details Derive from this class to build or modify a BoundaryModel
      */
     class RINGMESH_API BoundaryModelBuilder {
-    public:
+    protected:
         BoundaryModelBuilder( BoundaryModel& model )
               : model_( model ) {}
         virtual ~BoundaryModelBuilder() {}
 
-        // High level functions
-        void copy_macro_topology( const BoundaryModel& from ) ;
-        void copy_meshes( const BoundaryModel& from ) ;
-
-        // Set model attributes
+        
         void set_model_name( const std::string& name )
         {
             model_.name_ = name ;
+        }
+
+        void copy_macro_topology( const BoundaryModel& from )
+        {
+            model_.copy_macro_topology( from ) ;
         }
 
         /*!
@@ -158,7 +159,8 @@ namespace RINGMesh {
          */
         BME::bme_t create_element( BME::TYPE e_type ) ;
 
-        void erase_element( const BME::bme_t& t ) ;
+        void remove_elements( const std::vector< BME::bme_t >& elements ) ;        
+        void erase_element( const BME::bme_t t ) ;
 
         void resize_elements(
             BME::TYPE e_type,
@@ -209,7 +211,7 @@ namespace RINGMesh {
                                                          bool > >& boundaries ) ;
 
         /*! @}
-         * \name Set element geometry
+         * \name Set element geometry, the vertices are added.
          * @{
          */
         void set_corner(
@@ -224,11 +226,12 @@ namespace RINGMesh {
             const BME::bme_t& surface_id,
             const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr,
-            const std::vector< index_t >& surface_adjacencies = std::vector< index_t >() ) ;
+            const std::vector< index_t >& surface_facet_ptr ) ;
 
-        // Same functions but to call in the case where the vertices of the 
-        // model are filled first 
+        /*! @}
+        * \name Set element geometry using the BoundaryModel vertices
+        * @{
+        */
         index_t add_unique_vertex( const vec3& p ) ;
 
         void set_corner(
@@ -243,14 +246,12 @@ namespace RINGMesh {
             const BME::bme_t& surface_id,
             const std::vector< index_t >& surface_vertices,
             const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr,
-            const std::vector< index_t >& surface_adjacencies = std::vector< index_t >() ) ;
+            const std::vector< index_t >& surface_facet_ptr ) ;
 
-        void set_surface_geometry_bis(
+        void set_surface_geometry(
             const BME::bme_t& surface_id,
             const std::vector< index_t >& corners,
-            const std::vector< index_t >& facet_ptr,
-            const std::vector< index_t >& corner_adjacent_facets = std::vector< index_t >() ) ;
+            const std::vector< index_t >& facet_ptr ) ;
 
         void set_surface_adjacencies( const BME::bme_t& surface_id ) ;
 
@@ -265,6 +266,8 @@ namespace RINGMesh {
         void init_global_model_element_access() ;
 
         bool complete_element_connectivity() ;  
+        
+        void remove_degenerate_facet_and_edges() ;
 
         void fill_elements_boundaries( BME::TYPE type ) ;
 
@@ -280,6 +283,10 @@ namespace RINGMesh {
 
     protected:
         BoundaryModel& model_ ;
+
+    private:
+        bool prepare_to_erase_elements( BME::TYPE T, std::vector< index_t >& to_erase ) ;
+        void erase_elements( BME::TYPE T, const std::vector< index_t >& to_erase ) ;
     } ;
 
     /*!
@@ -290,9 +297,10 @@ namespace RINGMesh {
         BoundaryModelBuilderGocad( BoundaryModel& model )
               : BoundaryModelBuilder( model ) {}
         virtual ~BoundaryModelBuilderGocad() {}
-
+        
         void load_ml_file( const std::string& ml_file_name ) ;
 
+    protected:
         BME::bme_t determine_line_vertices(
             const Surface& S,
             index_t id0,
@@ -306,8 +314,18 @@ namespace RINGMesh {
             std::vector< vec3 >& border_vertex_model_vertices ) const ;
 
     private:
+        void build_contacts() ;
+
+        void create_surface(
+            const std::string& interface_name,
+            const std::string& type,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2 ) ;
+
         /*!
          * @brief Triangle that set the orientation of a TFACE
+         *        in a .ml file
          */
         struct KeyFacet {
             KeyFacet(
@@ -322,16 +340,7 @@ namespace RINGMesh {
             vec3 p2_ ;
         } ;
 
-        void build_contacts() ;
-
-        void create_surface(
-            const std::string& interface_name,
-            const std::string& type,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2 ) ;
-
-        /*!
+       /*!
          * @brief Check if the surface triangle orientations match the one of the key facet
          */
         bool check_key_facet_orientation( index_t surface ) const;
@@ -449,7 +458,7 @@ namespace RINGMesh {
                 }
 
                 // Create the surface and set its geometry - adjacencies are computed
-                set_surface_geometry_bis( create_surface(), corners, facets_ptr ) ;
+                set_surface_geometry( create_surface(), corners, facets_ptr ) ;
             }
         }
     }
