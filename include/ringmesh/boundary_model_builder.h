@@ -160,7 +160,7 @@ namespace RINGMesh {
         BME::bme_t create_element( BME::TYPE e_type ) ;
 
         void remove_elements( const std::vector< BME::bme_t >& elements ) ;        
-        void erase_element( const BME::bme_t t ) ;
+        void erase_element( const BME::bme_t& t ) ;
 
         void resize_elements(
             BME::TYPE e_type,

@@ -598,7 +598,7 @@ namespace RINGMesh {
      *
      * @todo Remove this function
      */
-    void BoundaryModelBuilder::erase_element( const BME::bme_t t )
+    void BoundaryModelBuilder::erase_element( const BME::bme_t& t )
     {
         switch( t.type ) {
             case BME::CORNER:
