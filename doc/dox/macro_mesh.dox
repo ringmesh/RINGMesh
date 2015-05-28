@@ -43,13 +43,12 @@
 
 \page ringmesh_macro_mesh Description of the MacroMesh
 
-A RINGMesh::MacroMesh is a volumetric mesh always associated to a RINGMesh::BoundaryModel, in other words it represents
-the volumetric mesh of a 3D structural model.
+A RINGMesh::MacroMesh represents the volumetric mesh associated to a RINGMesh::BoundaryModel.
 
 Structure
 =========
 
-Tha main member of a RINGMesh::MacroMesh is a vector< GEO::Mesh* > (meshes_). There is one GEO::Mesh (mesh from geogram)
+The main member of a RINGMesh::MacroMesh is a vector< GEO::Mesh* > (meshes_). There is one GEO::Mesh (mesh from geogram)
 per volumetric region of the structural model, the RINGMesh::BoundaryModel, attached. All the methods and algorithms
 defined in geogram on these meshes can directly be applied here but region per region.
 
@@ -61,7 +60,7 @@ for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
 }
 \endcode
 
-Thanks to these structure, one can apply easily different algorithm to each region mesh.
+This design permits to apply easily different algorithms to the region meshes.
 
 
 Associated objects
@@ -76,13 +75,13 @@ There are two other objects that can be linked to the RINGMesh::MacroMesh:
 Optional useful databases
 ==========================
 
-Each GEO::Mesh representing a region is independant from the other ones.
+Each GEO::Mesh representing a region is independent from the other ones.
 It implies that there is no connection between the different meshes, in other words,
 each mesh stores its vertices, facets and cells.
 However, you may want/need a more general information than the one stores inside a mesh.
 
 To ease the global access, three optional databases are attached to the RINGMesh::MacroMesh:
- - RINGMesh::MacroMeshVertices: access to a global vertex without redondancy at the mesh interfaces.
+ - RINGMesh::MacroMeshVertices: access to a global vertex without redundancy at the mesh interfaces.
  it also handle vertices duplication if needed. Several duplication mode can be set in the
  RINGMesh::MacroMesh (cf. RINGMesh::DuplicateMode).
  - RINGMesh::MacroMeshFacets: access to a global facet.
@@ -91,7 +90,7 @@ These databases are empty by default and are automatically filled as soon as the
 
 Examples:
 \code
-// Iterates on the RINGMesh::MacroMesh (mm) vertices without redondancy
+// Iterates on the RINGMesh::MacroMesh (mm) vertices without redundancy
 for( index_t v = 0; v < mm.vertices.nb_vertices(); v++ ) {
     const vec3& point = mm.vertices.vertex( v ) ;
 }
@@ -133,7 +132,7 @@ Other tools
 Eventually, RINGMesh::MacroMeshTools stores one GEO::MeshFacetsAABB and one GEO::MeshCellsAABB per region mesh.
 These AABB trees are only filled if they are called somewhere. This can be useful to prevent the computation
 of the AABB tree several times. However, it is stored in memory so if do not want to loose any memory for this,
-instanciate an AABB tree directly in the stack.
+instantiate an AABB tree directly in the stack.
 
 */
 

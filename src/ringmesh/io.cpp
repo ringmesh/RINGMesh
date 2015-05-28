@@ -81,7 +81,7 @@ namespace RINGMesh {
         void zip_file( zipFile zf, const std::string& name )
         {
             zip_fileinfo zfi = { 0 } ;
-            std::fstream file( name.c_str(), std::ios::in ) ;
+            std::fstream file( name.c_str(), std::ios::in | std::ios::binary ) ;
             file.seekg( 0, std::ios::end ) ;
             long size = file.tellg() ;
             file.seekg( 0, std::ios::beg ) ;
@@ -90,7 +90,7 @@ namespace RINGMesh {
             zipOpenNewFileInZip( zf, name.c_str(), &zfi,
             NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
             zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size ) ;
-            zipCloseFileInZip( &file ) ;
+            zipCloseFileInZip( zf ) ;
             file.close() ;
         }
 
@@ -2309,16 +2309,20 @@ namespace RINGMesh {
                             z_sign = - 1.0 ;
                         }
                     } else if( in.field_matches( 0, "WREF" ) ) {
-                        vertex_ref[0] = z_sign * read_double( in, 1 ) ;
+                        std::cout << "debug WREF" << std::endl << std::flush ;
+                        vertex_ref[0] = read_double( in, 1 ) ;
                         vertex_ref[1] = read_double( in, 2 ) ;
-                        vertex_ref[2] = read_double( in, 3 ) ;
+                        vertex_ref[2] = z_sign * read_double( in, 3 ) ;
                         mesh.vertices.create_vertex( vertex_ref ) ;
+                        std::cout << "fin WREF" << std::endl << std::flush ;
                     } else if( in.field_matches( 0, "PATH" ) ) {
-                        if( in.field_as_uint( 1 ) == 0 ) continue ;
+                        if( read_double( in, 1 ) == 0. ) continue ;
                         double vertex[3] ;
-                        vertex[0] = z_sign * read_double( in, 2 ) ;
-                        vertex[1] = read_double( in, 3 ) + vertex_ref[1] ;
-                        vertex[2] = read_double( in, 4 ) + vertex_ref[2] ;
+                        std::cout << "debug PATH" << std::endl << std::flush ;
+                        vertex[2] = z_sign * read_double( in, 2 ) ;
+                        vertex[0] = read_double( in, 3 ) + vertex_ref[0] ;
+                        vertex[1] = read_double( in, 4 ) + vertex_ref[1] ;
+                        std::cout << "fin PATH" << std::endl << std::flush ;
                         index_t id = mesh.vertices.create_vertex( vertex ) ;
                         mesh.edges.create_edge( id-1, id ) ;
                     } else if( in.field_matches( 0, "END" ) ) {

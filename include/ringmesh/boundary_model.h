@@ -45,22 +45,20 @@
 
 #include <ringmesh/common.h>
 #include <ringmesh/boundary_model_element.h>
+
 #include <geogram/basic/logger.h>
 #include <geogram/basic/file_system.h>
 
 #include <vector>
 #include <string>
 
-namespace RINGMesh {
-    class BoundaryModelBuilder ;
-}
 
 namespace RINGMesh {
 
     /*!
      * @brief Unique storage of the vertices of a BoundaryModel
      * @details Each instance is unique, unlike vertices in 
-     *          the model's Corner, Line, and Surface.
+     *          the model Corner, Line, and Surface meshes.
      *          Attributes may be defined on the vertices.
      */          
     class RINGMESH_API BoundaryModelVertices {
@@ -96,7 +94,7 @@ namespace RINGMesh {
          * @brief Vertices are defined for a BoundaryModel
          */
         BoundaryModelVertices( const BoundaryModel& bm )
-            : bm_( bm ), ann_( nil )
+            : bm_( bm ), ann_( nil ), lock_( 0 )
         {
         }
 
@@ -138,7 +136,8 @@ namespace RINGMesh {
         index_t add_unique_vertex( const vec3& point ) ;
 
         /*!
-         * @brief Add a vertex in a BoundaryModelElement corresponding to an existing unique_vertex
+         * @brief Add a vertex in a BoundaryModelElement 
+         *        corresponding to an existing unique_vertex
          */
         void add_unique_to_bme( 
             index_t unique_id, 
@@ -154,7 +153,8 @@ namespace RINGMesh {
         void update_point( index_t unique_id, const vec3& point ) const ;
 
         /*!
-         * @brief Clear the vertices - unbind unique2bme_ - set attribute to NO_ID in BME
+         * @brief Clear the vertices - unbind unique2bme_ - 
+         *        set attribute to NO_ID in BME
          */  
         void clear() ;
 
@@ -168,9 +168,10 @@ namespace RINGMesh {
         
     private:
         /*!
-         * @brief Determine the unique vertices from the vertices of the BM Corner s, Line s, and Surface s
+         * @brief Determine the unique vertices from the vertices 
+         *        of the BoundaryModel Corner s, Line s, and Surface s
          * @details Fills unique_vertices_ and set the attributes the global index on
-         *          the BoundaryModel Corner, Line and Surface 
+         *          the BoundaryModel Corner, Line and Surface. 
          */
         void initialize_unique_vertices() ;
 
@@ -196,11 +197,17 @@ namespace RINGMesh {
          */
         GEO::Mesh unique_vertices_ ;
                
-        /// Mapping of a unique vertex to the vertices in the BME that have the same coordinates
+        /*! 
+         * Mapping of a unique vertex to the vertices in the 
+         * BoundaryModelElements that have the same coordinates
+         */
         GEO::Attribute< std::vector< VertexInBME > > unique2bme_ ;
 
         /// Kd-tree of the model vertices
         ColocaterANN* ann_ ;
+
+        /// Lock to protect from multi-threading during clear()
+        GEO::Process::spinlock lock_ ;
     } ;
 
 
@@ -217,11 +224,12 @@ namespace RINGMesh {
         const static index_t NO_ID = index_t( - 1 ) ;
 
         /*!
-         * @brief Construct an empty BoundaryModel
+         * @brief Constructs an empty BoundaryModel
          */
         BoundaryModel() :
             vertices( *this ),
-            debug_directory_(GEO::FileSystem::get_current_working_directory())
+            debug_directory_( 
+                GEO::FileSystem::get_current_working_directory() )
         {
         }
 
@@ -237,25 +245,22 @@ namespace RINGMesh {
          */ 
         const std::string& name() const { return name_ ; }
 
-        const std::string& debug_directory() const
-        {
-            return debug_directory_ ;
-        }
-        void set_debug_directory( const std::string& directory )
-        {
-            if( GEO::FileSystem::is_directory( directory ) ) {
-                debug_directory_ = directory ;
-            }
-            else {            
-                GEO::Logger::err( "I/O" ) << "Invalid debug directory "
-                    << directory << " for BoudnaryModel " << name() 
-                    << "using default directory " << debug_directory_
-                    << std::endl ;
-            }
-        }
+        /*!
+         * @brief Get the directory for debug information
+         */
+        const std::string& debug_directory() const { return debug_directory_ ; }
 
         /*!
-         * @brief Number of unique vertices, no duplicates along Line and at Corner
+         * @brief Set the directory where debugging information shall be stored
+         * @details Test that this directory exists, if not
+         *          keep the previous value.
+         *          Default directory is executable directory .
+         */
+        void set_debug_directory( const std::string& directory ) ;
+        
+
+        /*!
+         * @brief Number of unique vertices
          */
         index_t nb_vertices() const { return vertices.nb_unique_vertices() ; }
 
@@ -402,11 +407,13 @@ namespace RINGMesh {
         
 
     private:
-        bool check_model3d_compatibility() ;
-
         bool check_model_validity() const ;
         bool check_elements_validity() const ;
         bool check_geology_validity() const ;
+        bool check_gocad_validity() const ;
+
+        void copy_macro_topology( const BoundaryModel& from ) ;
+        void copy_meshes( const BoundaryModel& from ) ;
 
     public:
         BoundaryModelVertices vertices ;
@@ -443,7 +450,6 @@ namespace RINGMesh {
 
         /// Allow global access to BME. It MUST be updated if one element is added.
         std::vector< index_t > nb_elements_per_type_ ;
-
 
         /// Name of the debug directory in which to save stuff 
         /// @todo Put this in another class ? 
