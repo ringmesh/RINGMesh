@@ -23,3 +23,5 @@ syntax: regexp
 
 syntax: regexp
 ^articles/iamg/tmp$
+syntax: regexp
+^doc/doc_online$
