@@ -1288,13 +1288,15 @@ namespace RINGMesh {
         for (index_t l = 0; l < bm_.nb_lines(); l++) {
             for (index_t v = 0; v < bm_.line(l).nb_vertices(); v++) {
                 VertexInBME cur(BME::bme_t(BME::LINE, l), v);
-                unique2bme_[unique_vertex_id(cur)].push_back(cur);
+                index_t uv = unique_vertex_id( cur ) ;
+                unique2bme_[uv].push_back(cur);
             }
         }
         for (index_t s = 0; s < bm_.nb_surfaces(); s++) {
             for (index_t v = 0; v < bm_.surface(s).nb_vertices(); v++) {
                 VertexInBME cur(BME::bme_t(BME::SURFACE, s), v);
-                unique2bme_[unique_vertex_id(cur)].push_back(cur);
+                index_t uv = unique_vertex_id( cur ) ;
+                unique2bme_[ uv ].push_back( cur );
             }
         }
     }
@@ -1401,7 +1403,12 @@ namespace RINGMesh {
         GEO::Process::acquire_spinlock( lock_ ) ;
         /// \todo Unbind all attributes !!!! otherwise we'll get a crash
         // For the moment 
-        if (unique2bme_.is_bound()) unique2bme_.unbind();
+        if( unique2bme_.is_bound() ) {
+            for( index_t i = 0 ; i < nb_unique_vertices(); ++i ) {
+                unique2bme_[ i ].clear() ;
+            }
+            unique2bme_.unbind();
+        }
 
         unique_vertices_.clear(true, true);
 
