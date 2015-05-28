@@ -67,7 +67,8 @@ namespace RINGMesh {
         freopen( "nul", "w", out ) ;
 #else
         fd = dup( fileno( out ) ) ;
-        freopen( "/dev/null", "w", out ) ;
+        FILE* f = freopen( "/dev/null", "w", out ) ;
+        ringmesh_unused(f) ;
 #endif
 #endif
     }

@@ -96,7 +96,7 @@ namespace RINGMesh {
          * @brief Vertices are defined for a BoundaryModel
          */
         BoundaryModelVertices( const BoundaryModel& bm )
-            : bm_( bm ), ann_( nil )
+            : bm_( bm ), ann_( nil ), lock_( 0 )
         {
         }
 
@@ -201,6 +201,9 @@ namespace RINGMesh {
 
         /// Kd-tree of the model vertices
         ColocaterANN* ann_ ;
+
+        /// Lock to protect from multi-threading during clear()
+        GEO::Process::spinlock lock_ ;
     } ;
 
 

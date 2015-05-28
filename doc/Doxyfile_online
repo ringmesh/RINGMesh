@@ -58,7 +58,7 @@ PROJECT_LOGO = logo_ringmesh_doc.png
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY = .
+OUTPUT_DIRECTORY = doc_online
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 4096 sub-
 # directories (in 2 levels) under the output directory of each output format and
@@ -743,7 +743,7 @@ WARN_LOGFILE =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT = ../src/third_party/geogram/src/lib ../include/ringmesh ../src/ringmesh dox
+INPUT = ../include/ringmesh ../src/ringmesh dox 
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -831,7 +831,7 @@ EXAMPLE_RECURSIVE = NO
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH = 
+IMAGE_PATH = . 
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -892,7 +892,7 @@ USE_MDFILE_AS_MAINPAGE =
 # also VERBATIM_HEADERS is set to NO.
 # The default value is: NO.
 
-SOURCE_BROWSER = YES
+SOURCE_BROWSER = NO
 
 # Setting the INLINE_SOURCES tag to YES will include the body of functions,
 # classes and enums directly into the documentation.
