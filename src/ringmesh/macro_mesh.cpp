@@ -933,16 +933,16 @@ namespace RINGMesh {
 
     MacroMeshTools::MacroMeshTools( MacroMesh& mm )
         :
-            mm_( mm ),
-            facet_aabb_( mm.nb_meshes(), nil ),
-            cell_aabb_( mm.nb_meshes(), nil )
+            mm_( mm )
     {
     }
 
     MacroMeshTools::~MacroMeshTools()
     {
-        for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
+        for( index_t r = 0; r < facet_aabb_.size(); r++ ) {
             if( facet_aabb_[r] ) delete facet_aabb_[r] ;
+        }
+        for( index_t r = 0; r < cell_aabb_.size(); r++ ) {
             if( cell_aabb_[r] ) delete cell_aabb_[r] ;
         }
     }
@@ -964,6 +964,10 @@ namespace RINGMesh {
      */
     void MacroMeshTools::init_facet_aabb( index_t region ) const
     {
+        if( facet_aabb_.size() <= region ) {
+            const_cast< MacroMeshTools* >( this )->facet_aabb_.resize( region + 1,
+                nil ) ;
+        }
         if( facet_aabb_[region] ) return ;
         const_cast< MacroMeshTools* >( this )->facet_aabb_[region] =
             new GEO::MeshFacetsAABB( mm_.mesh( region ) ) ;
@@ -986,6 +990,10 @@ namespace RINGMesh {
      */
     void MacroMeshTools::init_cell_aabb( index_t region ) const
     {
+        if( cell_aabb_.size() <= region ) {
+            const_cast< MacroMeshTools* >( this )->cell_aabb_.resize( region + 1,
+                nil ) ;
+        }
         if( cell_aabb_[region] ) return ;
         const_cast< MacroMeshTools* >( this )->cell_aabb_[region] =
             new GEO::MeshCellsAABB( mm_.mesh( region ) ) ;
@@ -1009,7 +1017,7 @@ namespace RINGMesh {
     }
 
     MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
-        : mm_( mm ), nb_vertices_( 0 ), order_( 1 ), ann_()
+        : mm_( mm ), nb_vertices_( 0 ), ann_()
     {
 
     }
@@ -1019,16 +1027,15 @@ namespace RINGMesh {
 
     }
 
-    void MacroMeshOrder::order( const index_t order )
-    {
-        order_ = order ;
-    }
-    void MacroMeshOrder::initialize( index_t order, bool point_in_middle )
+    /*
+     * Initialize the database by computing the new vertices of the mesh.
+     * \param order -1 vertices are added per edges, the edges are divided
+     * in equal parts by these vertices.
+     * @param[in] order the mesh elements order
+     */
+    void MacroMeshOrder::initialize()
     {
         nb_vertices_ = mm_.vertices.nb_total_vertices() ;
-
-        if( order > 1 ) {
-        order_ = order ;
         std::vector<vec3> new_points ;
         new_points.reserve(mm_.cells.nb_cells()*4) ;
         for(index_t r = 0 ; r < mm_.nb_meshes() ; r++) {
@@ -1038,7 +1045,7 @@ namespace RINGMesh {
                     std::vector<vec3> new_points_in_edge ;
                     vec3 node0 = GEO::Geom::mesh_vertex(cur_mesh,cur_mesh.cells.edge_vertex(c,e,0)) ;
                     vec3 node1 = GEO::Geom::mesh_vertex(cur_mesh,cur_mesh.cells.edge_vertex(c,e,1)) ;
-                    Geom::divide_edge_in_parts(node0,node1,order_,new_points_in_edge) ;
+                    Geom::divide_edge_in_parts(node0,node1,mm_.get_order(),new_points_in_edge) ;
 
                     for(index_t v = 0 ; v < new_points_in_edge.size() ; v++) {
                         new_points.push_back(new_points_in_edge[v]) ;
@@ -1056,23 +1063,28 @@ namespace RINGMesh {
 
         }
 
+    /*
+     * Clear the MacroMeshOrder database
+     */
+    void MacroMeshOrder::clear() {
+        nb_vertices_ = 0;
     }
 
+    /*
+     * Gets the mesh total number of vertices. It is the number of unique nodes
+     * on the mesh plus the added nodes on the elements edges
+     * @return the const number of vertices
+     */
     const index_t MacroMeshOrder::nb_total_vertices() const
     {
+        test_initialize() ;
         return nb_vertices_ ;
     }
 
-    void MacroMeshOrder::nb_total_vertices( const index_t nb_vertices )
-    {
-        nb_vertices_ = nb_vertices ;
-    }
-
-    const index_t MacroMeshOrder::order() const
-    {
-        return order_ ;
-    }
-
+    /*
+     * Gets the id of the added node
+     * @return the const id of the node
+     */
     const index_t MacroMeshOrder::id(const vec3& point) const {
         std::vector<index_t> colocated_points ;
         ann_.get_colocated(point,colocated_points) ;
@@ -1080,11 +1092,28 @@ namespace RINGMesh {
         return mm_.vertices.nb_total_vertices() + colocated_points[0] ;
     }
 
-
-    MacroMesh::MacroMesh( const BoundaryModel& model, index_t dim )
+    MacroMesh::MacroMesh( const BoundaryModel& model )
         :
-            model_( model ),
+            model_( &model ),
             meshes_( model.nb_regions(), nil ),
+            mode_( NONE ),
+            wells_( nil ),
+            vertices( *this ),
+            facets( *this ),
+            cells( *this ),
+            tools( *this ),
+            order( *this ),
+            order_(1)
+    {
+        for( index_t r = 0; r < model_->nb_regions(); r++ ) {
+            meshes_[r] = new GEO::Mesh( 3 ) ;
+        }
+    }
+
+    MacroMesh::MacroMesh()
+        :
+            model_( nil ),
+            meshes_(),
             mode_( NONE ),
             wells_( nil ),
             vertices( *this ),
@@ -1093,10 +1122,6 @@ namespace RINGMesh {
             tools( *this ),
             order( *this )
     {
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
-            meshes_[r] = new GEO::Mesh( dim ) ;
-        }
-
     }
 
     /*!
@@ -1107,14 +1132,14 @@ namespace RINGMesh {
     void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes ) const
     {
         index_t dim = meshes_[0]->vertices.dimension() ;
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
+        for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r]->copy( *rhs.meshes_[r], copy_attributes ) ;
         }
     }
 
     MacroMesh::~MacroMesh()
     {
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
+        for( index_t r = 0; r < meshes_.size(); r++ ) {
 #ifdef RINGMESH_DEBUG
             Utils::print_bounded_attributes( *meshes_[r] ) ;
 #endif
@@ -1143,7 +1168,7 @@ namespace RINGMesh {
                     internal_vertices.empty() ?
                         std::vector< vec3 >() : internal_vertices[i] ;
                 TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
-                    &model_.region( i ), add_steiner_points, vertices, wells() ) ;
+                    &model_->region( i ), add_steiner_points, vertices, wells() ) ;
                 GEO::Logger::instance()->set_quiet( true ) ;
                 tetragen->tetrahedralize() ;
                 GEO::Logger::instance()->set_quiet( false ) ;
@@ -1154,7 +1179,7 @@ namespace RINGMesh {
                 internal_vertices.empty() ?
                     std::vector< vec3 >() : internal_vertices[region_id] ;
             TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
-                &model_.region( region_id ), add_steiner_points, vertices,
+                &model_->region( region_id ), add_steiner_points, vertices,
                 wells() ) ;
             GEO::Logger::instance()->set_quiet( true ) ;
             tetragen->tetrahedralize() ;
@@ -1171,5 +1196,13 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
+    void MacroMesh::set_nodel( const BoundaryModel& model )
+    {
+        model_ = &model ;
+        meshes_.resize( model_->nb_regions(), nil ) ;
+        for( index_t r = 0; r < model_->nb_regions(); r++ ) {
+            meshes_[r] = new GEO::Mesh( 3 ) ;
+        }
+    }
 }
 
