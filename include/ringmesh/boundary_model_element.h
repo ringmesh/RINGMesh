@@ -350,7 +350,8 @@ namespace RINGMesh {
 
         void set_boundary( index_t id, bme_t b )
         {
-            ringmesh_debug_assert( b.is_defined() ) ;
+            //ringmesh_debug_assert( b.is_defined() ) ; // removed assertion to update indices when deleting elements
+            /// @todo Write specific function to set an invalid boudnary, in_boudary, child
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             ringmesh_debug_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
@@ -366,9 +367,9 @@ namespace RINGMesh {
 
         void set_boundary( index_t id, bme_t b, bool side )
         {
-            ringmesh_debug_assert( b.is_defined() ) ;
+           // ringmesh_debug_assert( b.is_defined() ) ;
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            ringmesh_debug_assert( id < nb_boundaries() ) ;
+           // ringmesh_debug_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
             sides_[ id ] = side ;
         }
@@ -382,15 +383,15 @@ namespace RINGMesh {
 
         void set_in_boundary( index_t id, bme_t in_b )
         {
-            ringmesh_debug_assert( in_b.is_defined() ) ;
+//            ringmesh_debug_assert( in_b.is_defined() ) ;
             ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
-            ringmesh_debug_assert( id < nb_in_boundary() ) ;
+            //ringmesh_debug_assert( id < nb_in_boundary() ) ;
             in_boundary_[ id ] = in_b ;
         }
 
         void set_parent( bme_t p )
         {
-            ringmesh_debug_assert( p.is_defined() ) ;
+            //ringmesh_debug_assert( p.is_defined() ) ;
             ringmesh_debug_assert( parent_type( id_.type ) == p.type ) ;
             parent_ = p ;
         }
@@ -404,12 +405,14 @@ namespace RINGMesh {
 
         void set_child( index_t id, bme_t c )
         {
-            ringmesh_debug_assert( c.is_defined() ) ;
+            //ringmesh_debug_assert( c.is_defined() ) ;
             ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
-            ringmesh_debug_assert( id < nb_children() ) ;
+            //ringmesh_debug_assert( id < nb_children() ) ;
             children_[ id ] = c ;
         }
 
+
+        void erase_invalid_element_references() ;
         /*!
          * @}
          */
