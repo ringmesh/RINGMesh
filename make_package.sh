@@ -15,6 +15,8 @@ files="configure.bat
       doc/dox
       doc/logo_ringmesh_doc.png
       doc/logo_ringmesh.png
+      doc/ringmesh.png
+      doc/bme_doc.png
       tests
       CMakeOptions.txt.sample
       CMakeLists.txt

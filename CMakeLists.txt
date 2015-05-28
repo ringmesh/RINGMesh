@@ -138,4 +138,8 @@ if(UNIX)
 		CONFIGURATIONS All)	
 endif(UNIX)
 
+# Output binary
+if(${RINGMESH_WITH_GRAPHICS})
+    add_subdirectory(src/bin/ringmeshview)
+endif()
 include(tests/tests.cmake)

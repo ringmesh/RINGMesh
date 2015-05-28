@@ -154,6 +154,9 @@ namespace {
     /*!
      * @brief Returns the Line identification if the given points define 
      *       an edge of one of the Line of the model
+     * @param model The BoundaryModel to consider
+     * @param v0 Index of the first point in the model
+     * @param v1 Index of the second point in the model 
      */
     BME::bme_t is_edge_on_line(
         const BoundaryModel& model,
@@ -220,6 +223,10 @@ namespace {
          }
     }
 
+    /*!
+    * @brief Returns the Line identification if the given points define 
+     *       an edge of one of the Line of the model
+    */
     BME::bme_t is_edge_on_line(
         const BoundaryModel& model,
         const vec3& p0,
@@ -233,13 +240,13 @@ namespace {
         return is_edge_on_line( model, v0, v1 ) ;
     }
 
-   
-
 
     /*! 
-     * @brief Returns true if the facets of the mesh share an edge
-     *       that is on one Line of the boundary model
-     * @pre the mesh is triangulated
+     * @brief Returns true if the facets @param f1 and @param f2
+     *        of the mesh @param M share an edge
+     *        that is on one Line of the boundary model @param BM
+     * @pre The mesh M is triangulated
+     *      
      */
     bool facets_share_line_edge(
         const Mesh& M,
@@ -838,8 +845,11 @@ namespace {
             valid = false ;
         }
         Mesh mesh ;
+        GEO::Logger::instance()->set_quiet( true ) ;
         mesh_from_element_boundaries( region, mesh ) ;
         GEO::mesh_repair( mesh ) ;
+        GEO::Logger::instance()->set_quiet( false ) ;
+
       
         if( GEO::mesh_nb_connected_components( mesh ) != 1 ) {
             GEO::Logger::err( "BoundaryModel" )
@@ -950,8 +960,12 @@ namespace {
                     if( surfaces.size() != 1 ) {
                         GEO::Logger::err( "BoundaryModelVertex" )
                             << " Vertex "
-                            << i << " is in " << surfaces.size() << " surfaces "
-                            << std::endl ;
+                            << i << " is in " << surfaces.size() << " surfaces " ;
+                        for( index_t j = 0; j < surfaces.size(); ++j ) {
+                            GEO::Logger::err( "BoundaryModelVertex" )
+                                << " " << surfaces[ j ] ;
+                        }
+                        GEO::Logger::err( "BoundaryModelVertex" ) << std::endl ;
                         valid_vertex = false ;
                     }
                 }
@@ -973,6 +987,8 @@ namespace {
                             valid_vertex = false ;
                         }
                         // Check that one point is no more than twice in a SURFACE
+                        /// @todo If a point is twice in a SURFACE, it must be 
+                        ///       on an internal boundary Line - write the test.
                         for( index_t k = 0; k < surfaces.size(); ++k ) {
                             index_t nb = std::count( surfaces.begin(), surfaces.end(), surfaces[ k ] ) ;
                             if( nb > 2 ) {
@@ -1388,8 +1404,11 @@ namespace RINGMesh {
         return unique_vertices_.vertices.point(v);
     }
 
+
+
     void BoundaryModelVertices::clear()
     {
+        GEO::Process::acquire_spinlock( lock_ ) ;
         /// \todo Unbind all attributes !!!! otherwise we'll get a crash
         // For the moment 
         if (unique2bme_.is_bound()) unique2bme_.unbind();
@@ -1413,6 +1432,7 @@ namespace RINGMesh {
                 S.set_model_vertex_id(v, NO_ID);
             }
         }
+        GEO::Process::release_spinlock( lock_ ) ;
     }
 
     /*******************************************************************************/
@@ -1694,8 +1714,10 @@ namespace RINGMesh {
         /// 5. Check non-manifold edges using a global
         /// triangulated mesh corresponding to this model.
         GEO::Mesh model_mesh ;
+        GEO::Logger::instance()->set_quiet( true ) ;
         mesh_from_boundary_model( *this, model_mesh ) ;
         GEO::mesh_repair( model_mesh, MESH_REPAIR_TRIANGULATE ) ;
+        GEO::Logger::instance()->set_quiet( false ) ;
 
         GEO::Mesh non_manifold_edges ;
         EdgeOnLine P( *this, non_manifold_edges ) ;

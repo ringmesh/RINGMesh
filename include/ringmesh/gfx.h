@@ -65,6 +65,7 @@ namespace RINGMesh {
         ~BoundaryModelGfx() ;
 
         void set_boundary_model( const BoundaryModel& model ) ;
+        const BoundaryModel* boundary_model() ;
         void initialize() ;
 
         void draw_corners() ;
@@ -132,6 +133,9 @@ namespace RINGMesh {
         MacroMeshGfx() ;
         ~MacroMeshGfx() ;
 
+        const MacroMesh* macro_mesh() const {
+            return mm_ ;
+        }
         void set_macro_mesh( const MacroMesh& model ) ;
         void initialize() ;
 
