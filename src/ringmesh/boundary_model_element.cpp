@@ -887,7 +887,7 @@ namespace RINGMesh {
      * @details No update of the model vertices is done
      *
      * @param points Geometric positions of the vertices to add
-     * @param clear_mesh If true the mesh if cleared, keeping its attributes
+     * @param clear If true the mesh if cleared, keeping its attributes
      */
     void BoundaryModelMeshElement::set_vertices(
         const std::vector< vec3 >& points,

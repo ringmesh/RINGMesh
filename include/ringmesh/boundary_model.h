@@ -184,8 +184,9 @@ namespace RINGMesh {
         void initialize_reverse() ;
 
         /*!
-         * @copydoc BoundaryModelVertices::unique_vertex_id( BoundaryModelElement::TYPE,index_t,index_t ) const
-         */
+        * @brief Get the index of the BM vertex corresponding to 
+        *        a given vertex in a BME.
+        */
         index_t unique_vertex_id( const VertexInBME& v ) const ;       
 
     private:
