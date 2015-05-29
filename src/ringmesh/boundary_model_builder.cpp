@@ -184,6 +184,261 @@ namespace {
         return nb ;
     }
   
+    /*************************************************************************/
+
+    /*!
+    * @brief Utility class to sort a set of oriented triangles around a common edge
+    * Used in BoundaryModelBuilderSurface.
+    *
+    * This code could certainly be improved.
+    */
+    class SortTriangleAroundEdge {
+    public:
+        /*!
+        * @brief A triangle to sort around an edge, see SortTriangleAroundEdge
+        * @details This triangle belongs to a mesh connected component identified by its index.
+        */
+        struct TriangleToSort {
+            /*!
+            * @param index Index of this TriangleToSort in SortTriangleAroundEdge
+            * @param surface_index Index of the Surface
+            * @param p0 point of the triangle
+            * @param p1 point of the triangle
+            * @param p2 point of the triangle
+            */
+            TriangleToSort(
+                index_t index,
+                index_t surface_index,
+                const vec3& p0,
+                const vec3& p1,
+                const vec3& p2 
+            ) :
+                index_( index ),
+                surface_index_( surface_index ),
+                N_(),
+                B_A_(),
+                angle_( -99999 ),
+                side_( false )
+            {
+                ringmesh_assert( p0 != p1 ) ;
+                ringmesh_assert( p0 != p2 ) ;
+                ringmesh_assert( p1 != p2 ) ;
+
+                vec3 e1 = normalize( p1 - p0 ) ;
+                vec3 e2 = normalize( p2 - p0 ) ;
+
+                N_ = normalize( cross( e1, e2 ) ) ;
+                ringmesh_assert( dot( N_, e1 ) < epsilon ) ;
+
+                vec3 B = 0.5 * p1 + 0.5 * p0 ;
+                vec3 p2B = p2 - B ;
+                B_A_ = normalize( p2B - dot( p2B, e1 ) * e1 ) ;
+
+                ringmesh_assert( dot( B_A_, e1 ) < epsilon ) ;
+                ringmesh_assert( B_A_.length() > epsilon ) ;
+            };
+
+            bool operator<( const TriangleToSort& r ) const
+            {
+                return angle_ < r.angle_ ;
+            }
+
+            /// Index in SortTriangleAroundEdge
+            index_t index_ ;
+
+            /// Global index of the surface owning this triangle
+            index_t surface_index_ ;
+
+            /// Normal to the triangle - normalized vector
+            vec3 N_ ;
+
+            /// Normal to the edge p0p1 in the plane defined by the triangle - normalized
+            vec3 B_A_ ;
+
+            // Values filled by sorting function in SortTriangleAroundEdge
+            double angle_ ;
+            bool side_ ;
+        } ;
+
+        SortTriangleAroundEdge()
+        {}
+
+        void add_triangle(
+            index_t surface_index,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2 )
+        {
+            triangles_.push_back(
+                TriangleToSort( triangles_.size(), surface_index, p0, p1, p2 ) ) ;
+        }
+
+        /*!
+        * @details Rotation around axis of an angle A of the vector V
+        *
+        * @param axis Oriented axis
+        * @param angle Angle in RADIANS
+        * @param V the vector to rotate
+        */
+        static vec3 rotate( const vec3& axis, double angle, const vec3& V )
+        {
+            vec3 q = axis ;
+            if( q.length() > 0 ) {
+                double s = 1.0 / q.length() ;
+                q[ 0 ] *= s ;
+                q[ 1 ] *= s ;
+                q[ 2 ] *= s ;
+            }
+            q *= sinf( 0.5 * angle ) ;
+
+            float quat[ 4 ] = { q[ 0 ], q[ 1 ], q[ 2 ], cosf( 0.5 * angle ) } ;
+
+            double m[ 4 ][ 4 ] ;
+
+            m[ 0 ][ 0 ] = 1 - 2.0 * ( quat[ 1 ] * quat[ 1 ] + quat[ 2 ] * quat[ 2 ] ) ;
+            m[ 0 ][ 1 ] = 2.0 * ( quat[ 0 ] * quat[ 1 ] + quat[ 2 ] * quat[ 3 ] ) ;
+            m[ 0 ][ 2 ] = 2.0 * ( quat[ 2 ] * quat[ 0 ] - quat[ 1 ] * quat[ 3 ] ) ;
+            m[ 0 ][ 3 ] = 0.0 ;
+
+            m[ 1 ][ 0 ] = 2.0 * ( quat[ 0 ] * quat[ 1 ] - quat[ 2 ] * quat[ 3 ] ) ;
+            m[ 1 ][ 1 ] = 1 - 2.0 * ( quat[ 2 ] * quat[ 2 ] + quat[ 0 ] * quat[ 0 ] ) ;
+            m[ 1 ][ 2 ] = 2.0 * ( quat[ 1 ] * quat[ 2 ] + quat[ 0 ] * quat[ 3 ] ) ;
+            m[ 1 ][ 3 ] = 0.0 ;
+
+            m[ 2 ][ 0 ] = 2.0 * ( quat[ 2 ] * quat[ 0 ] + quat[ 1 ] * quat[ 3 ] ) ;
+            m[ 2 ][ 1 ] = 2.0 * ( quat[ 1 ] * quat[ 2 ] - quat[ 0 ] * quat[ 3 ] ) ;
+            m[ 2 ][ 2 ] = 1 - 2.0 * ( quat[ 1 ] * quat[ 1 ] + quat[ 0 ] * quat[ 0 ] ) ;
+            m[ 2 ][ 3 ] = 0.0 ;
+
+            m[ 3 ][ 0 ] = 0.0 ;
+            m[ 3 ][ 1 ] = 0.0 ;
+            m[ 3 ][ 2 ] = 0.0 ;
+            m[ 3 ][ 3 ] = 1.0 ;
+
+            double x = V[ 0 ] * m[ 0 ][ 0 ] + V[ 1 ] * m[ 1 ][ 0 ] + V[ 2 ] * m[ 2 ][ 0 ] + m[ 3 ][ 0 ] ;
+            double y = V[ 0 ] * m[ 0 ][ 1 ] + V[ 1 ] * m[ 1 ][ 1 ] + V[ 2 ] * m[ 2 ][ 1 ] + m[ 3 ][ 1 ] ;
+            double z = V[ 0 ] * m[ 0 ][ 2 ] + V[ 1 ] * m[ 1 ][ 2 ] + V[ 2 ] * m[ 2 ][ 2 ] + m[ 3 ][ 2 ] ;
+            double w = V[ 0 ] * m[ 0 ][ 3 ] + V[ 1 ] * m[ 1 ][ 3 ] + V[ 2 ] * m[ 2 ][ 3 ] + m[ 3 ][ 3 ] ;
+            return vec3( x / w, y / w, z / w ) ;
+        }
+
+        void sort()
+        {
+            ringmesh_assert( triangles_.size() > 0 ) ;
+
+            std::pair< index_t, bool > default_pair( index_t( -1 ), false ) ;
+            sorted_triangles_.resize( 2 * triangles_.size(), default_pair ) ;
+
+            // If there is only one Triangle to sort - nothing to do
+            if( triangles_.size() == 1 ) {
+                sorted_triangles_[ 0 ] = std::pair< index_t, bool >(
+                    triangles_[ 0 ].surface_index_, true ) ;
+                sorted_triangles_[ 1 ] = std::pair< index_t, bool >(
+                    triangles_[ 0 ].surface_index_, false ) ;
+                return ;
+            }
+
+            // Initialization
+            // We start on the plus (true) side of the first Triangle            
+            sorted_triangles_[ 0 ] = std::pair< index_t, bool >(
+                triangles_[ 0 ].surface_index_, true ) ;
+
+            // Reference vectors with wich angles will be computed
+            vec3 N_ref = triangles_[ 0 ].N_ ;
+            vec3 B_A_ref = triangles_[ 0 ].B_A_ ;
+            vec3 Ax_ref = normalize( cross( B_A_ref, N_ref ) ) ;
+
+            // The minus (false) side of the start triangle will the last one encountered
+            triangles_[ 0 ].angle_ = 2 * M_PI ;
+            triangles_[ 0 ].side_ = false ;
+
+            for( index_t i = 1; i < triangles_.size(); ++i ) {
+                TriangleToSort& cur = triangles_[ i ] ;
+                // Compute the angle RADIANS between the reference and the current
+                // triangle 
+                double cos = dot( B_A_ref, cur.B_A_ ) ;
+                // Remove invalid values
+                if( cos < -1 )
+                    cos = -1 ;
+                else if( cos > 1 ) cos = 1 ;
+                cur.angle_ = std::acos( cos ) ;
+                // Put the angle between PI and 2PI if necessary
+                if( dot( cross( B_A_ref, cur.B_A_ ), Ax_ref ) < 0. ) {
+                    cur.angle_ = 2 * M_PI - cur.angle_ ;
+                }
+
+                // Get the side of the surface first encountered
+                // when rotating in the N_ref direction
+                vec3 N_rotate = rotate( Ax_ref, -cur.angle_, cur.N_ ) ;
+                cur.side_ = dot( N_rotate, N_ref ) > 0 ? false : true ;
+            }
+
+            // Sort the Surfaces according to the angle
+            std::sort( triangles_.begin(), triangles_.end() ) ;
+
+            // Fill the sorted surfaces adding the side
+            index_t it = 1 ;
+            for( index_t i = 0; i < triangles_.size(); ++i ) {
+                TriangleToSort& cur = triangles_[ i ] ;
+                if( triangles_[ i ].index_ == 0 ) { // The last to add
+                    ringmesh_assert( i == triangles_.size() - 1 ) ;
+                    sorted_triangles_[ it ].first = cur.surface_index_ ;
+                    sorted_triangles_[ it ].second = cur.side_ ;
+                } else {
+                    sorted_triangles_[ it ].first = cur.surface_index_ ;
+                    sorted_triangles_[ it ].second = cur.side_ ;
+                    sorted_triangles_[ it + 1 ].first = cur.surface_index_ ;
+                    sorted_triangles_[ it + 1 ].second = !cur.side_ ;
+                    it += 2 ;
+                }
+            }
+            // All the surfaces must have been sorted
+            ringmesh_assert(
+                std::count( sorted_triangles_.begin(), sorted_triangles_.end(),
+                default_pair ) == 0 ) ;
+        }
+        /*! Returns the next pair Triangle index (surface) + side
+        */
+        const std::pair< index_t, bool >& next(
+            const std::pair< index_t, bool >& in ) const
+        {
+            for( index_t i = 0; i < sorted_triangles_.size(); ++i ) {
+                if( sorted_triangles_[ i ] == in ) {
+                    if( i == sorted_triangles_.size() - 1 )
+                        return sorted_triangles_[ sorted_triangles_.size() - 2 ] ;
+                    if( i == 0 ) return sorted_triangles_[ 1 ] ;
+
+                    if( sorted_triangles_[ i + 1 ].first == sorted_triangles_[ i ].first ) {
+                        // The next has the same surface id, check its sign
+                        if( sorted_triangles_[ i + 1 ].second
+                            != sorted_triangles_[ i ].second ) {
+                            return sorted_triangles_[ i - 1 ] ;
+                        } else {
+                            // Sign is the same
+                            return sorted_triangles_[ i + 1 ] ;
+                        }
+                    } else {
+                        ringmesh_assert(
+                            sorted_triangles_[ i - 1 ].first
+                            == sorted_triangles_[ i ].first ) ;
+                        if( sorted_triangles_[ i - 1 ].second
+                            != sorted_triangles_[ i ].second ) {
+                            return sorted_triangles_[ i + 1 ] ;
+                        } else {
+                            return sorted_triangles_[ i - 1 ] ;
+                        }
+                    }
+                }
+            }
+            ringmesh_assert_not_reached;
+        }
+
+    private:
+        std::vector< TriangleToSort > triangles_ ;
+        // Pairs global triangle identifier (Surface index) and side reached
+        std::vector< std::pair< index_t, bool > > sorted_triangles_ ;
+    } ;
+
 
 
 }
@@ -2689,17 +2944,17 @@ namespace RINGMesh {
     * corners, contacts and regions.
     *
     */
-    void BoundaryModelBuilderSurface::build_model()
+    bool BoundaryModelBuilderSurface::build_model()
     {
-        ringmesh_assert( model_.nb_surfaces() > 0 ) ;
+        if( model_.nb_surfaces() == 0 ) {
+            GEO::Logger::err( "BoundaryModel" )
+                << "No surface to build the model " << std::endl ;
+            return false ;
+        }
 
-        /// 1. Force the recomputation of the model unique vertices 
-        /// So now we can make index comparison to find colocated edges
- //       model_.vertices.clear() ;
+        /// 1. Initialize model_ global vertices and backward information
         model_.vertices.nb_unique_vertices() ;
-
- //       const std::vector< BoundaryModelVertices::VertexInBME >& toto =
-            model_.vertices.bme_vertices( 0 ) ;
+        model_.vertices.bme_vertices( 0 ) ;
 
         /// 2.1 Get for all Surface, the triangles that have an edge
         /// on the boundary.
@@ -2842,14 +3097,18 @@ namespace RINGMesh {
                             true ) ;
                     } while( same_surfaces ) ;
                 }
-
                 ringmesh_assert( vertices.size() > 1 ) ;
 
                 // At last create the Line
                 BME::bme_t l_id = create_element( BME::LINE ) ;
                 set_line( l_id, vertices ) ;
-                // Find or create the Corners
-                BME::bme_t c0 = find_corner( vertices.back() ) ;
+                for( index_t j = 0; j < adjacent.size(); ++j ) {
+                    add_element_in_boundary(
+                        l_id, BME::bme_t( BME::SURFACE, adjacent[ j ] ) ) ;
+                }
+
+                // Find or create the corners at line extremities
+                BME::bme_t c0 = find_corner( vertices.front() ) ;
                 if( !c0.is_defined() ) {
                     c0 = create_element( BME::CORNER ) ;
                     set_corner( c0, vertices.front() ) ;
@@ -2860,18 +3119,14 @@ namespace RINGMesh {
                     c1 = create_element( BME::CORNER ) ;
                     set_corner( c1, vertices.back() ) ;
                 }
-                add_element_boundary( l_id, c1 ) ;
-
-                for( index_t j = 0; j < adjacent.size(); ++j ) {
-                    add_element_in_boundary( l_id, BME::bme_t( BME::SURFACE, adjacent[ j ] ) ) ;
-                }
+                add_element_boundary( l_id, c1 ) ;              
             }
         }
 
         /// 4. Build the regions
 
         // Complete boundary information for surfaces
-        // We need it to compute volumetric regions
+        // Needed to compute volumetric regions
         fill_elements_boundaries( BME::SURFACE ) ;
 
         /// 4.1 Sort surfaces around the contacts
@@ -2879,11 +3134,26 @@ namespace RINGMesh {
             regions_info[ i ].sort() ;
         }
 
-        if( model_.nb_surfaces() == 1 ) {
-            /// \todo Build a Region when a BoundaryModel has only one Surface
-            // Check that this surface is closed and define an interior
-            // and exterior (universe) regions
-            ringmesh_assert_not_reached ;
+        if( model_.nb_surfaces() == 1 ) {        
+            if( model_.nb_lines() != 0 ) {
+                GEO::Logger::err( "BoundaryModel" )
+                    << "The unique surface provided to build the model has boundaries " 
+                    << std::endl ;
+                return false ;
+            }
+            else {
+                /// @todo Decide what side is the inside of the closed surface
+                bool inside = true ;
+                // Create the region - set the surface on its boundaries
+                BME::bme_t cur_region_id = create_region() ;
+                add_element_boundary( cur_region_id, BME::bme_t( BME::SURFACE, 0 ),
+                                     inside ) ;
+
+                // Create the universe region
+                std::vector< std::pair< index_t, bool > > univ_boundaries ;
+                univ_boundaries.push_back( std::pair<index_t, bool>( 0, !inside ) ) ;
+                set_universe( univ_boundaries ) ;                
+            }
         } else {
             // Each side of each Surface is in one Region( +side is first )
             std::vector< index_t > surf_2_region( 2 * model_.nb_surfaces(), NO_ID ) ;
@@ -2946,39 +3216,44 @@ namespace RINGMesh {
 
             // Check if all the surfaces were visited
             // If not, this means that there are additionnal regions included in those built
-            /// \todo Implement the code to take into regions included in others (bubbles)
-            ringmesh_assert( std::count( surf_2_region.begin(), surf_2_region.end(),
-                NO_ID ) == 0 ) ;
-        }
-
-        // We need to remove from the regions_ the one corresponding
-        // to the universe_, the one with the biggest volume
-        double max_volume = -1. ;
-        index_t universe_id = NO_ID ;
-        for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-            double cur_volume = BoundaryModelElementMeasure::size( &model_.region( i ) ) ;
-            if( cur_volume > max_volume ) {
-                max_volume = cur_volume ;
-                universe_id = i ;
+            /// @todo Implement the code to take into regions included in others (bubbles)
+            if( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID ) != 0 ) {
+                GEO::Logger::err( "BoundaryModel" )
+                    << "Small bubble regions were skipped at model building "
+                    << std::endl ;
+                // Or, most probably, we have a problem before
+                ringmesh_debug_assert( false ) ;
             }
+         
+            // We need to remove from the regions_ the one corresponding
+            // to the universe_, the one with the biggest volume
+            double max_volume = -1. ;
+            index_t universe_id = NO_ID ;
+            for( index_t i = 0; i < model_.nb_regions(); ++i ) {
+                double cur_volume = BoundaryModelElementMeasure::size( &model_.region( i ) ) ;
+                if( cur_volume > max_volume ) {
+                    max_volume = cur_volume ;
+                    universe_id = i ;
+                }
+            }
+
+            const BoundaryModelElement& cur_region = model_.region( universe_id ) ;
+            std::vector< std::pair< index_t, bool > > univ_boundaries(
+                cur_region.nb_boundaries() ) ;
+            for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
+                univ_boundaries[ i ].first = cur_region.boundary( i ).bme_id().index ;
+                univ_boundaries[ i ].second = cur_region.side( i ) ;
+            }
+            set_universe( univ_boundaries ) ;
+
+            // Erase that region
+            std::vector< BME::bme_t > to_erase ;
+            to_erase.push_back( BME::bme_t( BME::REGION, universe_id ) ) ;
+            remove_elements( to_erase ) ;
         }
 
-        const BoundaryModelElement& cur_region = model_.region( universe_id ) ;
-        std::vector< std::pair< index_t, bool > > univ_boundaries(
-            cur_region.nb_boundaries() ) ;
-        for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
-            univ_boundaries[ i ].first = cur_region.boundary( i ).bme_id().index ;
-            univ_boundaries[ i ].second = cur_region.side( i ) ;
-        }
-        set_universe( univ_boundaries ) ;
-      
-        // We are not in trouble since the boundaries of surface are not yet set
-        // And we have no layer in the model
-        std::vector< BME::bme_t > to_erase ;
-        to_erase.push_back( BME::bme_t( BME::REGION, universe_id ) ) ;
-        remove_elements( to_erase ) ;
-
-        end_model() ;
-
+        // Finish up the model and check its validity
+        return end_model() ;
     }
+
 } // namespace
