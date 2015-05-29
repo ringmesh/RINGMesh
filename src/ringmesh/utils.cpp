@@ -140,7 +140,7 @@ namespace RINGMesh {
     /*!
      * Computes the Mesh cell barycenter
      * @param[in] M the mesh
-     * @param[in] c the cell index
+     * @param[in] cell the cell index
      * @return the cell center
      */
     vec3 Geom::mesh_cell_center( const GEO::Mesh& M, index_t cell )
