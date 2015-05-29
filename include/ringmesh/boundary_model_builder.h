@@ -392,13 +392,16 @@ namespace RINGMesh {
         template< class MESH >
         void set_surfaces( const MESH& mesh ) ;
 
-        void build_model() ;
+        bool build_model() ;
     } ;
 
 
     /*!
      * @brief Create the model surfaces from the connected components of the input surfacic mesh
-     * @details The class MESH should implement the following functions
+     * @details Add the separately the connected components of the mesh 
+     *          as Surface of the model to create 
+     *   
+     *  The class MESH should implement the following functions
      *  - vertices.nb()
      *  - const vec3& point( index_t i )
      *  - index_t facet_corners.nb()
@@ -410,21 +413,13 @@ namespace RINGMesh {
      */
     template< class MESH >
     void BoundaryModelBuilderSurface::set_surfaces( const MESH& mesh )
-    {
-        /// 1. Copy the vertices of the input mesh to the model
-        // reserve_vertices( mesh.nb_vertices() ) ;
-
-        // Il ne faut pas faire ça
-        // Il faut ajouter surface a partir des points 
-        // Se démerder pour avoir les composantes connexes là 
-        for( index_t i = 0; i < mesh.vertices.nb(); i++ ) {
-            add_unique_vertex( mesh.vertices.point( i ) ) ;
-        }
-
-        /// 2. Propagate on the input mesh facet to determine its surface connected components
+    {        
+        // Propagate on the input mesh facet to determine its surface connected components
         // Vectors used in the loops
         std::vector< index_t > corners ;
         std::vector< index_t > facets_ptr ;
+        std::vector< vec3 > vertices ;
+        std::vector< index_t > cc_vertex( mesh.vertices.nb(), NO_ID ) ;
 
         corners.reserve( mesh.facet_corners.nb() ) ;
         facets_ptr.reserve( mesh.facets.nb() ) ;
@@ -438,6 +433,9 @@ namespace RINGMesh {
                 // Get the facets that are in the same connected component than the current facet
                 corners.resize( 0 ) ;
                 facets_ptr.resize( 0 ) ;
+                vertices.resize( 0 ) ;
+                cc_vertex.resize( mesh.vertices.nb(), NO_ID ) ;
+
                 facets_ptr.push_back( 0 ) ;
 
                 std::stack< index_t > S ;
@@ -451,7 +449,12 @@ namespace RINGMesh {
                          c < mesh.facets.corners_end( f );
                          ++c )
                     {
-                        corners.push_back( mesh.facet_corners.vertex( c ) ) ;
+                        index_t v = mesh.facet_corners.vertex( c ) ;
+                        if( cc_vertex[ v ] == NO_ID ) {
+                            cc_vertex[ v ] = vertices.size() ;
+                            vertices.push_back( mesh.vertices.point( v ) ) ;
+                        }
+                        corners.push_back( cc_vertex[v] ) ;
                         index_t n = mesh.facet_corners.adjacent_facet( c ) ;
                         if( n != NO_ID && !visited[ n ] ) {
                             visited[ n ] = true ;
@@ -461,8 +464,8 @@ namespace RINGMesh {
                     facets_ptr.push_back( corners.size() ) ;
                 }
 
-                // Create the surface and set its geometry - adjacencies are computed
-                set_surface_geometry( create_surface(), corners, facets_ptr ) ;
+                // Create the surface and set its geometry
+                set_surface_geometry( create_surface(), vertices, corners, facets_ptr ) ;
             }
         }
     }
