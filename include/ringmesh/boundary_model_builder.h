@@ -413,6 +413,10 @@ namespace RINGMesh {
     {
         /// 1. Copy the vertices of the input mesh to the model
         // reserve_vertices( mesh.nb_vertices() ) ;
+
+        // Il ne faut pas faire ça
+        // Il faut ajouter surface a partir des points 
+        // Se démerder pour avoir les composantes connexes là 
         for( index_t i = 0; i < mesh.vertices.nb(); i++ ) {
             add_unique_vertex( mesh.vertices.point( i ) ) ;
         }
