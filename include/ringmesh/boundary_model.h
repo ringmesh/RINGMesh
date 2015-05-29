@@ -239,6 +239,7 @@ namespace RINGMesh {
         virtual ~BoundaryModel() ;
 
         void copy( const BoundaryModel& from ) ;
+        void remove_elements( const std::vector< BME::bme_t >& elements ) ;
 
         /*!
          * @brief Name of the model
