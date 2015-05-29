@@ -1019,7 +1019,7 @@ namespace RINGMesh {
     }
 
     MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
-        : mm_( mm ), nb_vertices_( 0 ), ann_()
+        : mm_( mm ), nb_vertices_( 0 ), ann_(), points_(0)
     {
 
     }
@@ -1062,6 +1062,7 @@ namespace RINGMesh {
         uniq.unique() ;
         std::vector<vec3> uniq_points ;
         uniq.unique_points(uniq_points) ;
+        points_ = uniq_points ;
         ann_.set_points(uniq_points) ;
         nb_vertices_+=uniq_points.size() ;
         }
@@ -1109,7 +1110,18 @@ namespace RINGMesh {
      */
     const vec3 MacroMeshOrder::point(const index_t id) const {
         test_initialize() ;
-        return ann_.point(id)  ;
+        return points_[id]  ;
+    }
+
+    /*
+     * Move a added point
+     * @param[in] id the id of the point
+     * @param[in] u the displacement applied on this point
+     */
+    void MacroMeshOrder::move_point(const index_t id, const vec3& u) {
+        for(index_t i = 0 ; i < 3 ; i++){
+            points_[id][i] += u[i] ;
+        }
     }
 
 
@@ -1151,7 +1163,7 @@ namespace RINGMesh {
      * @param[in] rhs the MacroMesh copied
      * @param[in] copy_attributes tells whether or not you want to copy attributes
      */
-    void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes )
+    void MacroMesh::copy( const MacroMesh& rhs, bool keep_order, bool copy_attributes )
     {
         index_t dim = meshes_[0]->vertices.dimension() ;
 

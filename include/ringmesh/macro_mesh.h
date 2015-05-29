@@ -341,6 +341,7 @@ namespace RINGMesh {
         const index_t id(const vec3& point) const ;
         void clear() ;
         const vec3 point(const index_t id) const ;
+        void move_point(const index_t id, const vec3& u) ;
     private:
         void initialize() ;
         /*!
@@ -359,6 +360,8 @@ namespace RINGMesh {
         index_t nb_vertices_ ;
         /// ANNTree composed only with new nodes on cell edges
         ColocaterANN ann_ ;
+        /// New points
+        std::vector<vec3> points_ ;
 
     } ;
 
@@ -380,7 +383,7 @@ namespace RINGMesh {
             int region_id = -1,
             bool add_steiner_points = true,
             std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
-        void copy( const MacroMesh& mm, bool copy_attributes = true ) ;
+        void copy( const MacroMesh& mm, bool copy_order = true,bool copy_attributes = true ) ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
