@@ -1161,7 +1161,9 @@ namespace RINGMesh {
     /*!
      * Copy a MacroMesh and its attributes
      * @param[in] rhs the MacroMesh copied
+     * @param[in] keep_order To document
      * @param[in] copy_attributes tells whether or not you want to copy attributes
+     * @todo Check this function - keep_order parameter is not used
      */
     void MacroMesh::copy( const MacroMesh& rhs, bool keep_order, bool copy_attributes )
     {

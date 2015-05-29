@@ -57,6 +57,7 @@
 
 namespace {
     using namespace RINGMesh;
+    typedef BoundaryModelElement::bme_t bme_t;
 
     double read_double( GEO::LineInput& in, index_t field )
     {
@@ -482,7 +483,7 @@ namespace RINGMesh {
      * @param[in] type Type of the element to create
      * @return The index of the created element
      */
-    BME::bme_t BoundaryModelBuilder::create_element( BME::TYPE type )
+    bme_t BoundaryModelBuilder::create_element( BME::TYPE type )
     {
         index_t id = model_.nb_elements( type ) ;
         ringmesh_assert( id != NO_ID ) ;
@@ -519,7 +520,7 @@ namespace RINGMesh {
                 ringmesh_assert_not_reached;
                 break ;
         }
-        return BME::bme_t( type, id ) ;
+        return bme_t( type, id ) ;
     }
 
     /*!
@@ -532,7 +533,7 @@ namespace RINGMesh {
      * @todo Rewrite to remove copy paste
      */
     void BoundaryModelBuilder::remove_elements( 
-        const std::vector< BME::bme_t >& elements )
+        const std::vector< bme_t >& elements )
     {
         /// Get the indices of the elements to remove type by type
         std::vector< index_t > layers_to_erase( model_.nb_layers(), 0 ) ;
@@ -789,7 +790,7 @@ namespace RINGMesh {
         }
 
         for( index_t i = 0; i <model_.nb_elements( T ); ++i ) {
-            BoundaryModelElement& E = element( BME::bme_t( T, i ) ) ;
+            BoundaryModelElement& E = element( bme_t( T, i ) ) ;
             E.set_id( to_erase[ i ] ) ;
         }
 
@@ -798,9 +799,9 @@ namespace RINGMesh {
         if( BME::boundary_allowed( T ) ) {
             BME::TYPE B = BME::boundary_type( T ) ;            
             for( index_t i = 0; i < model_.nb_elements( B ); ++i ) {
-                BoundaryModelElement& E = element( BME::bme_t( B, i ) ) ;
+                BoundaryModelElement& E = element( bme_t( B, i ) ) ;
                 for( index_t j = 0; j < E.nb_in_boundary(); ++j ) {                    
-                    E.set_in_boundary( j, BME::bme_t ( 
+                    E.set_in_boundary( j, bme_t ( 
                          T, to_erase[ E.in_boundary_id(j).index ] ) ) ;
                 }
                 E.erase_invalid_element_references() ;
@@ -809,9 +810,9 @@ namespace RINGMesh {
         if( BME::in_boundary_allowed( T ) ) {
             BME::TYPE IB = BME::in_boundary_type( T ) ;
             for( index_t i = 0; i < model_.nb_elements( IB ); ++i ) {
-                BoundaryModelElement& E = element( BME::bme_t( IB, i ) ) ;
+                BoundaryModelElement& E = element( bme_t( IB, i ) ) ;
                 for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
-                    E.set_boundary( j, BME::bme_t(
+                    E.set_boundary( j, bme_t(
                         T, to_erase[ E.boundary_id( j ).index ] ) ) ;
                 }
                 E.erase_invalid_element_references() ;
@@ -821,9 +822,9 @@ namespace RINGMesh {
         if( BME::parent_allowed( T ) ) {
             BME::TYPE P = BME::parent_type( T ) ;
             for( index_t i = 0; i < model_.nb_elements( P ); ++i ) {
-                BoundaryModelElement& E = element( BME::bme_t( P, i ) ) ;
+                BoundaryModelElement& E = element( bme_t( P, i ) ) ;
                 for( index_t j = 0; j < E.nb_children(); ++j ) {
-                    E.set_child( j, BME::bme_t(
+                    E.set_child( j, bme_t(
                         T, to_erase[ E.child_id( j ).index ] ) ) ;
                 }
                 E.erase_invalid_element_references() ;
@@ -833,15 +834,15 @@ namespace RINGMesh {
         if( BME::child_allowed( T ) ) {
             BME::TYPE C = BME::child_type( T ) ;
             for( index_t i = 0; i < model_.nb_elements( C ); ++i ) {
-                BoundaryModelElement& E = element( BME::bme_t( C, i ) ) ;
-                E.set_parent( BME::bme_t( T, to_erase[ E.parent_id().index ] ) ) ;                
+                BoundaryModelElement& E = element( bme_t( C, i ) ) ;
+                E.set_parent( bme_t( T, to_erase[ E.parent_id().index ] ) ) ;                
             }
         }      
 
         // Do not forget the universe ...
         if( T == BME::SURFACE ) {
             for( index_t i = 0; i < model_.universe().nb_boundaries(); ++i ) {
-                model_.universe_.set_boundary( i, BME::bme_t(
+                model_.universe_.set_boundary( i, bme_t(
                     T, to_erase[ model_.universe().boundary_id(i).index ] ) ) ;
             }
             model_.universe_.erase_invalid_element_references() ;
@@ -925,14 +926,14 @@ namespace RINGMesh {
      * @param[in] point Geometric location to look for 
      * @return NO_ID or the index of the Corner
      */
-    BME::bme_t BoundaryModelBuilder::find_corner( const vec3& point ) const
+    bme_t BoundaryModelBuilder::find_corner( const vec3& point ) const
     {
         for( index_t i = 0; i < model_.nb_corners(); ++i ) {
             if( model_.corner( i ).vertex() == point ) {
-                return BME::bme_t( BME::CORNER, i ) ;
+                return bme_t( BME::CORNER, i ) ;
             }
         }
-        return BME::bme_t() ;
+        return bme_t() ;
     }
 
     /*!
@@ -940,14 +941,14 @@ namespace RINGMesh {
      * @param[in] model_point_id Index of the point in the BoudaryModel
      * @return NO_ID or the index of the Corner
      */
-    BME::bme_t BoundaryModelBuilder::find_corner( index_t model_point_id ) const
+    bme_t BoundaryModelBuilder::find_corner( index_t model_point_id ) const
     {
         for( index_t i = 0; i < model_.nb_corners(); ++i ) {
             if( model_.corner( i ).model_vertex_id() == model_point_id ) {
-                return BME::bme_t( BME::CORNER, i ) ;
+                return bme_t( BME::CORNER, i ) ;
             }
         }
-        return BME::bme_t() ;
+        return bme_t() ;
     }
 
     /*!
@@ -956,9 +957,9 @@ namespace RINGMesh {
      * @param[in] point Geometric location of the new Corner
      * @return Index of the Corner
      */
-    BME::bme_t BoundaryModelBuilder::create_corner( const vec3& point )
+    bme_t BoundaryModelBuilder::create_corner( const vec3& point )
     {
-        BME::bme_t id = create_element( BME::CORNER ) ;
+        bme_t id = create_element( BME::CORNER ) ;
         set_corner( id, point ) ;
         return id ;
     }
@@ -969,9 +970,9 @@ namespace RINGMesh {
      * @param[in] point Geometric location of the Corner
      * @return Index of the Corner
      */
-    BME::bme_t BoundaryModelBuilder::find_or_create_corner( const vec3& point )
+    bme_t BoundaryModelBuilder::find_or_create_corner( const vec3& point )
     {
-        BME::bme_t result = find_corner( point ) ;
+        bme_t result = find_corner( point ) ;
         if( result.is_defined() ) {
             return result ;
         } else {
@@ -985,24 +986,24 @@ namespace RINGMesh {
      * @param[in] vertices Coordinates of the vertices of the line
      * @return NO_ID or the index of the Line
      */
-    BME::bme_t BoundaryModelBuilder::find_line(
+    bme_t BoundaryModelBuilder::find_line(
         const std::vector< vec3 >& vertices ) const
     {
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             if( model_.line( i ).equal( vertices ) ) {
-                return BME::bme_t( BME::LINE, i ) ;
+                return bme_t( BME::LINE, i ) ;
             }
         }
-        return BME::bme_t() ;
+        return bme_t() ;
     }
 
     /*!
      * @brief Add a Line knowing from teh coordinates of its vertices.
      * The corners are created if they do not exist.
      */
-    BME::bme_t BoundaryModelBuilder::create_line( const std::vector< vec3 >& points )
+    bme_t BoundaryModelBuilder::create_line( const std::vector< vec3 >& points )
     {
-        BME::bme_t id = create_element( BME::LINE ) ;
+        bme_t id = create_element( BME::LINE ) ;
         set_line( id, points ) ;
 
         // Find the indices of the corner at both extremities
@@ -1019,10 +1020,10 @@ namespace RINGMesh {
      * @param[in] vertices Coordinates of the vertices of the line
      * @return Index of the Line
      */
-    BME::bme_t BoundaryModelBuilder::find_or_create_line(
+    bme_t BoundaryModelBuilder::find_or_create_line(
         const std::vector< vec3 >& vertices )
     {
-        BME::bme_t result = find_line( vertices ) ;
+        bme_t result = find_line( vertices ) ;
         if( result.is_defined() ) {
             return result ;
         } else {
@@ -1035,7 +1036,7 @@ namespace RINGMesh {
      *
      * @return Index of the Surface in the surfaces_ vector
      */
-    BME::bme_t BoundaryModelBuilder::create_surface()
+    bme_t BoundaryModelBuilder::create_surface()
     {
         return create_element( BME::SURFACE ) ;
     }
@@ -1045,7 +1046,7 @@ namespace RINGMesh {
      * @param[in] interfaces Indices of the Interfaces determining the contact
      * @return NO_ID or index of the contact
      */
-    BME::bme_t BoundaryModelBuilder::find_contact(
+    bme_t BoundaryModelBuilder::find_contact(
         const std::vector< index_t >& interfaces ) const
     {
         std::vector< const BoundaryModelElement* > comp( interfaces.size() ) ;
@@ -1063,11 +1064,11 @@ namespace RINGMesh {
                     }
                 }
                 if( equal ) {
-                    return BME::bme_t( BME::CONTACT, i ) ;
+                    return bme_t( BME::CONTACT, i ) ;
                 }
             }
         }
-        return BME::bme_t() ;
+        return bme_t() ;
     }
 
     /*!
@@ -1077,7 +1078,7 @@ namespace RINGMesh {
      * @param[in] interfaces Indices of the intersecting interfaces
      * @return Index of the Contact
      */
-    BME::bme_t BoundaryModelBuilder::create_contact(
+    bme_t BoundaryModelBuilder::create_contact(
         const std::vector< index_t >& interfaces )
     {
         // Create a name for this contact
@@ -1087,7 +1088,7 @@ namespace RINGMesh {
             name += "_" ;
         }
 
-        BME::bme_t id = create_element( BME::CONTACT ) ;
+        bme_t id = create_element( BME::CONTACT ) ;
         set_element_name( id, name ) ;
 
         return id ;
@@ -1099,10 +1100,10 @@ namespace RINGMesh {
      * @param[in] interfaces Indices of the intersecting interfaces
      * @return Index of the Contact
      */
-    BME::bme_t BoundaryModelBuilder::find_or_create_contact(
+    bme_t BoundaryModelBuilder::find_or_create_contact(
         const std::vector< index_t >& interfaces )
     {
-        BME::bme_t result = find_contact( interfaces ) ;
+        bme_t result = find_contact( interfaces ) ;
         if( result.is_defined() ) {
             return result ;
         } else {
@@ -1116,14 +1117,14 @@ namespace RINGMesh {
      * @param[in] name Name of the Interface
      * @return Index of the interface in the model, NO_ID if not found.
      */
-    BME::bme_t BoundaryModelBuilder::find_interface( const std::string& name ) const
+    bme_t BoundaryModelBuilder::find_interface( const std::string& name ) const
     {
         for( index_t i = 0; i < model_.nb_interfaces(); ++i ) {
             if( model_.one_interface( i ).name() == name ) {
-                return BME::bme_t( BME::INTERFACE, i ) ;
+                return bme_t( BME::INTERFACE, i ) ;
             }
         }
-        return BME::bme_t() ;
+        return bme_t() ;
     }
 
     /*!
@@ -1133,11 +1134,11 @@ namespace RINGMesh {
      * @param[in] type Type of the interface
      * @return The Interface index.
      */
-    BME::bme_t BoundaryModelBuilder::create_interface(
+    bme_t BoundaryModelBuilder::create_interface(
         const std::string& name,
         BME::GEOL_FEATURE type )
     {
-        BME::bme_t id = create_element( BME::INTERFACE ) ;
+        bme_t id = create_element( BME::INTERFACE ) ;
         set_element_geol_feature( id, type ) ;
         set_element_name( id, name ) ;
         return id ;
@@ -1148,7 +1149,7 @@ namespace RINGMesh {
      *
      *  Used in Geomodeling to convert a surface to a model
      */
-    BME::bme_t BoundaryModelBuilder::create_region()
+    bme_t BoundaryModelBuilder::create_region()
     {
         return create_element( BME::REGION ) ;
     }
@@ -1161,15 +1162,15 @@ namespace RINGMesh {
      *            side of the surface is the region
      * @return Index of the created region
      */
-    BME::bme_t BoundaryModelBuilder::create_region(
+    bme_t BoundaryModelBuilder::create_region(
         const std::string& name,
         const std::vector< std::pair< index_t, bool > >& boundaries )
     {
-        BME::bme_t id = create_element( BME::REGION ) ;
+        bme_t id = create_element( BME::REGION ) ;
         set_element_name( id, name ) ;
         for( index_t i = 0; i < boundaries.size(); ++i ) {
             add_element_boundary( id,
-                BME::bme_t( BME::SURFACE, boundaries[i].first ),
+                bme_t( BME::SURFACE, boundaries[i].first ),
                 boundaries[i].second ) ;
         }
         return id ;
@@ -1181,9 +1182,9 @@ namespace RINGMesh {
      * @param[in] name Name of the layer
      * @return The layer index
      */
-    BME::bme_t BoundaryModelBuilder::create_layer( const std::string& name )
+    bme_t BoundaryModelBuilder::create_layer( const std::string& name )
     {
-        BME::bme_t id = create_element( BME::LAYER ) ;
+        bme_t id = create_element( BME::LAYER ) ;
         set_element_name( id, name ) ;
         return id ;
     }
@@ -1204,7 +1205,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < boundaries.size(); ++i ) {
             ringmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
             model_.universe_.add_boundary(
-                BME::bme_t( BME::SURFACE, boundaries[i].first ),
+                bme_t( BME::SURFACE, boundaries[i].first ),
                 boundaries[i].second ) ;
         }
     }
@@ -1216,7 +1217,7 @@ namespace RINGMesh {
      * @param[in] point Coordinates of the vertex
      */
     void BoundaryModelBuilder::set_corner(
-        const BME::bme_t& corner_id,
+        const bme_t& corner_id,
         const vec3& point )
     {
         ringmesh_assert( corner_id.index < model_.nb_corners() ) ;
@@ -1230,7 +1231,7 @@ namespace RINGMesh {
      * @param[in] vertices Coordinates of the vertices on the line
      */
     void BoundaryModelBuilder::set_line(
-        const BME::bme_t& id,
+        const bme_t& id,
         const std::vector< vec3 >& vertices )
     {
         ringmesh_assert( id.index < model_.nb_lines() ) ;
@@ -1247,7 +1248,7 @@ namespace RINGMesh {
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
      */
     void BoundaryModelBuilder::set_surface_geometry(
-        const BME::bme_t& surface_id,
+        const bme_t& surface_id,
         const std::vector< vec3 >& points,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
@@ -1287,7 +1288,7 @@ namespace RINGMesh {
      * @param[in] unique_vertex Index of the vertex in the model
      */
     void BoundaryModelBuilder::set_corner(
-        const BME::bme_t& corner_id,
+        const bme_t& corner_id,
         index_t unique_vertex )
     {
         ringmesh_assert( corner_id.index < model_.nb_corners() ) ;
@@ -1301,7 +1302,7 @@ namespace RINGMesh {
      * @param[in] unique_vertices Indices in the model of the unique vertices with which to build the Line
      */
     void BoundaryModelBuilder::set_line(
-        const BME::bme_t& id,
+        const bme_t& id,
         const std::vector< index_t >& unique_vertices )
     {
         ringmesh_assert( id.index < model_.nb_lines() ) ;
@@ -1318,7 +1319,7 @@ namespace RINGMesh {
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
      */
     void BoundaryModelBuilder::set_surface_geometry(
-        const BME::bme_t& surface_id,
+        const bme_t& surface_id,
         const std::vector< index_t >& model_vertex_ids,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
@@ -1341,7 +1342,7 @@ namespace RINGMesh {
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets     
      */
     void BoundaryModelBuilder::set_surface_geometry(
-        const BME::bme_t& surface_id,
+        const bme_t& surface_id,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {
@@ -1385,7 +1386,7 @@ namespace RINGMesh {
      * @param[in] surface_id Index of the surface
      */
     void BoundaryModelBuilder::set_surface_adjacencies(
-        const BME::bme_t& surface_id )
+        const bme_t& surface_id )
     {
         Surface& S = *model_.surfaces_[surface_id.index] ;
         ringmesh_assert( S.nb_cells() > 0 ) ;
@@ -1523,10 +1524,10 @@ namespace RINGMesh {
         BME::TYPE b_type = BME::boundary_type( type ) ;
         if( b_type != BME::NO_TYPE ) {
             for( index_t i = 0; i < model_.nb_elements( b_type ); ++i ) {
-                const BME& b = model_.element( BME::bme_t( b_type, i ) ) ;
+                const BME& b = model_.element( bme_t( b_type, i ) ) ;
                 for( index_t j = 0; j < b.nb_in_boundary(); ++j ) {
                     add_element_boundary( b.in_boundary_id( j ),
-                        BME::bme_t( b_type, i ) ) ;
+                        bme_t( b_type, i ) ) ;
                 }
             }
         }
@@ -1543,10 +1544,10 @@ namespace RINGMesh {
         BME::TYPE in_b_type = BME::in_boundary_type( type ) ;
         if( in_b_type != BME::NO_TYPE ) {
             for( index_t i = 0; i < model_.nb_elements( in_b_type ); ++i ) {
-                const BME& in_b = model_.element( BME::bme_t( in_b_type, i ) ) ;
+                const BME& in_b = model_.element( bme_t( in_b_type, i ) ) ;
                 for( index_t j = 0; j < in_b.nb_boundaries(); ++j ) {
                     add_element_in_boundary( in_b.boundary_id( j ),
-                        BME::bme_t( in_b_type, i ) ) ;
+                        bme_t( in_b_type, i ) ) ;
                 }
             }
         }
@@ -1563,9 +1564,9 @@ namespace RINGMesh {
         BME::TYPE p_type = BME::parent_type( type ) ;
         if( p_type != BME::NO_TYPE ) {
             for( index_t i = 0; i < model_.nb_elements( p_type ); ++i ) {
-                const BME& p = model_.element( BME::bme_t( p_type, i ) ) ;
+                const BME& p = model_.element( bme_t( p_type, i ) ) ;
                 for( index_t j = 0; j < p.nb_children(); ++j ) {
-                    set_parent( p.child_id( j ), BME::bme_t( p_type, i ) ) ;
+                    set_parent( p.child_id( j ), bme_t( p_type, i ) ) ;
                 }
             }
         }
@@ -1582,8 +1583,8 @@ namespace RINGMesh {
         BME::TYPE c_type = BME::child_type( type ) ;
         if( c_type != BME::NO_TYPE ) {
             for( index_t i = 0; i < model_.nb_elements( c_type ); ++i ) {
-                BME::bme_t cur_child = BME::bme_t( c_type, i ) ;
-                const BME::bme_t& parent = model_.element( cur_child ).parent_id() ;
+                bme_t cur_child = bme_t( c_type, i ) ;
+                const bme_t& parent = model_.element( cur_child ).parent_id() ;
                 if( parent.is_defined() ) {
                     add_child( parent, cur_child ) ;
                 }
@@ -1593,7 +1594,7 @@ namespace RINGMesh {
 
     void BoundaryModelBuilder::remove_degenerate_facet_and_edges()
     {
-        std::vector< BME::bme_t > to_remove ;
+        std::vector< bme_t > to_remove ;
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             index_t nb = repair_line_mesh( model_.line( i ).mesh() ) ;
             if( nb > 0 ) {
@@ -1603,7 +1604,7 @@ namespace RINGMesh {
 
                 // The line may be empty now - remove it from the model
                 if( model_.line( i ).nb_cells() == 0 ) {
-                    to_remove.push_back( BME::bme_t( BME::LINE, i ) ) ;
+                    to_remove.push_back( bme_t( BME::LINE, i ) ) ;
                 }
             }
         }
@@ -1685,7 +1686,7 @@ namespace RINGMesh {
 
         // Fill geological feature if missing
         for( index_t i = 0; i < model_.nb_elements( BME::ALL_TYPES ); ++i ) {
-            BME& E = element( BME::bme_t( BME::ALL_TYPES, i ) ) ;
+            BME& E = element( bme_t( BME::ALL_TYPES, i ) ) ;
             if( !E.has_geological_feature() ) {
                 fill_element_geological_feature( E ) ;
             }
@@ -1892,7 +1893,7 @@ namespace RINGMesh {
                     } else if( in.field_matches( 0, "LAYER" ) ) {
                         /// 1.4 Build the volumetric layers from their name and
                         /// the ids of the regions they contain
-                        BME::bme_t layer_id = create_layer( in.field( 1 ) ) ;
+                        bme_t layer_id = create_layer( in.field( 1 ) ) ;
                         bool end_layer = false ;
                         while( !end_layer ) {
                             in.get_line() ;
@@ -1906,7 +1907,7 @@ namespace RINGMesh {
                                     region_id -= nb_tface + 1 ; // Remove Universe region
                                     // Correction because ids begin at 1 in the file
                                     add_child( layer_id,
-                                        BME::bme_t( BME::REGION, region_id - 1 ) ) ;
+                                        bme_t( BME::REGION, region_id - 1 ) ) ;
                                 }
                             }
                         }
@@ -1933,7 +1934,7 @@ namespace RINGMesh {
                         if( tsurf_count > 0 ) {
                             // End the last TFace - Surface of this TSurf
                             set_surface_geometry(
-                                BME::bme_t( BME::SURFACE, tface_count - 1 ),
+                                bme_t( BME::SURFACE, tface_count - 1 ),
                                 std::vector< vec3 >(
                                     tsurf_vertices.begin() +
                                     tface_vertex_start.back(),
@@ -1959,7 +1960,7 @@ namespace RINGMesh {
                         if( tface_vertex_start.size() > 0 ) {
                             // End the previous TFace - Surface  (copy from line 1180)
                             set_surface_geometry(
-                                BME::bme_t( BME::SURFACE, tface_count - 1),
+                                bme_t( BME::SURFACE, tface_count - 1),
                                 std::vector< vec3 >(
                                     tsurf_vertices.begin() +
                                     tface_vertex_start.back(),
@@ -2023,7 +2024,7 @@ namespace RINGMesh {
                         index_t p2 = in.field_as_uint( 3 ) - 1 ;
 
                         // Get the global corner id
-                        BME::bme_t corner_id =
+                        bme_t corner_id =
                         find_corner( tsurf_vertices[ p1 ] ) ;
                         ringmesh_assert( corner_id.is_defined() ) ;
 
@@ -2073,15 +2074,15 @@ namespace RINGMesh {
                 // of vertices on the border
                 const Surface& S = model_.surface( b.part_id_ ) ;
 
-                BME::bme_t end_corner_id = determine_line_vertices( S, b.p0_, b.p1_,
+                bme_t end_corner_id = determine_line_vertices( S, b.p0_, b.p1_,
                     line_vertices ) ;
 
                 // 2 - Check if this border already exists
-                BME::bme_t line_id = find_or_create_line( line_vertices ) ;
+                bme_t line_id = find_or_create_line( line_vertices ) ;
 
                 // Add the surface in which this line is
                 add_element_in_boundary( line_id,
-                    BME::bme_t( BME::SURFACE, b.part_id_ ) ) ;
+                    bme_t( BME::SURFACE, b.part_id_ ) ) ;
             }
         }
 
@@ -2215,7 +2216,7 @@ namespace RINGMesh {
      * @param[out] border_vertex_model_vertices Coordinates of the vertices on the Line (emptied and filled again)
      * @return Index of the Corner at which the Line ends
      */
-    BME::bme_t BoundaryModelBuilderGocad::determine_line_vertices(
+    bme_t BoundaryModelBuilderGocad::determine_line_vertices(
         const Surface& S,
         index_t id0,
         index_t id1,
@@ -2235,7 +2236,7 @@ namespace RINGMesh {
         border_vertex_model_vertices.push_back( p0 ) ;
         border_vertex_model_vertices.push_back( p1 ) ;
 
-        BME::bme_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
+        bme_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
         while( !p1_corner.is_defined() ) {
             index_t next_f = NO_ID ;
             index_t id1_in_next = NO_ID ;
@@ -2276,7 +2277,7 @@ namespace RINGMesh {
      * @param[out] border_vertex_model_ids Indices of vertices on the Line (resized at 0 at the beginning)
      * @return Index of the Corner at which the Line ends
      */
-    BME::bme_t BoundaryModelBuilderGocad::determine_line_vertices(
+    bme_t BoundaryModelBuilderGocad::determine_line_vertices(
         const Surface& S,
         index_t id0,
         index_t id1,
@@ -2297,7 +2298,7 @@ namespace RINGMesh {
         border_vertex_model_ids.push_back( p0 ) ;
         border_vertex_model_ids.push_back( p1 ) ;
 
-        BME::bme_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
+        bme_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
         while( !p1_corner.is_defined() ) {
             index_t next_f = NO_ID ;
             index_t id1_in_next = NO_ID ;
@@ -2342,8 +2343,8 @@ namespace RINGMesh {
                 interfaces.insert( p.bme_id().index ) ;
             }
             std::vector< index_t > toto( interfaces.begin(), interfaces.end() ) ;
-            BME::bme_t contact_id = find_or_create_contact( toto ) ;
-            add_child( contact_id, BME::bme_t( BME::LINE, i ) ) ;
+            bme_t contact_id = find_or_create_contact( toto ) ;
+            add_child( contact_id, bme_t( BME::LINE, i ) ) ;
         }
     }
 
@@ -2363,12 +2364,12 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2 )
     {
-        BME::bme_t parent = find_interface( interface_name ) ;
+        bme_t parent = find_interface( interface_name ) ;
         if( interface_name != "" ) {
             ringmesh_assert( parent.is_defined() ) ;
         }
 
-        BME::bme_t id = create_element( BME::SURFACE ) ;
+        bme_t id = create_element( BME::SURFACE ) ;
         set_parent( id, parent ) ;
         set_element_geol_feature( parent, BME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
@@ -2410,7 +2411,7 @@ namespace RINGMesh {
                     }
                     BME::TYPE t = match_type( in.field( 0 ) ) ;
                     index_t id = in.field_as_uint( 1 ) ;
-                    BME::bme_t element( t, id ) ;
+                    bme_t element( t, id ) ;
                     set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
                     set_element_geol_feature( element,
@@ -2421,7 +2422,7 @@ namespace RINGMesh {
                     in.get_fields() ;
                     for( index_t c = 0; c < in.nb_fields(); c++ ) {
                         add_child( element,
-                            BME::bme_t( BME::child_type( t ),
+                            bme_t( BME::child_type( t ),
                                 in.field_as_uint( c ) ) ) ;
                     }
                 }
@@ -2435,7 +2436,7 @@ namespace RINGMesh {
                         return false ;
                     }
                     index_t id = in.field_as_uint( 1 ) ;
-                    BME::bme_t element( BME::REGION, id ) ;
+                    bme_t element( BME::REGION, id ) ;
                     set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
 
@@ -2450,7 +2451,7 @@ namespace RINGMesh {
                         index_t s ;
                         GEO::String::from_string( &in.field( c )[1], s ) ;
 
-                        add_element_boundary( element, BME::bme_t( BME::SURFACE, s ),
+                        add_element_boundary( element, bme_t( BME::SURFACE, s ),
                             side ) ;
                     }
                 }
@@ -2511,7 +2512,7 @@ namespace RINGMesh {
                         return false ;
                     }
                     index_t id = in.field_as_uint( 1 ) ;
-                    BME::bme_t element( BME::CORNER, id ) ;
+                    bme_t element( BME::CORNER, id ) ;
                     set_element_index( element ) ;
                     vec3 point( read_double( in, 2 ), read_double( in, 3 ),
                         read_double( in, 4 ) ) ;
@@ -2521,7 +2522,7 @@ namespace RINGMesh {
                 // Lines
                 else if( match_type( in.field( 0 ) ) == BME::LINE ) {
                     index_t id = in.field_as_uint( 1 ) ;
-                    BME::bme_t cur_element( BME::LINE, id ) ;
+                    bme_t cur_element( BME::LINE, id ) ;
                     Line& L = dynamic_cast< Line& >( element( cur_element ) ) ;
                     L.set_id( id ) ;
 
@@ -2595,14 +2596,14 @@ namespace RINGMesh {
                     ringmesh_assert( in.field_matches( 0, "IN_BOUNDARY" ) ) ;
                     for( index_t b = 1; b < in.nb_fields(); b++ ) {
                         L.add_in_boundary(
-                            BME::bme_t( BME::SURFACE, in.field_as_uint( b ) ) ) ;
+                            bme_t( BME::SURFACE, in.field_as_uint( b ) ) ) ;
                     }
                 }
 
                 // Surfaces
                 else if( match_type( in.field( 0 ) ) == BME::SURFACE ) {
                     index_t id = in.field_as_uint( 1 ) ;
-                    BME::bme_t cur_element( BME::SURFACE, id ) ;
+                    bme_t cur_element( BME::SURFACE, id ) ;
                     Surface& S = dynamic_cast< Surface& >( element( cur_element ) ) ;
                     S.set_id( id ) ;
 
@@ -3053,21 +3054,21 @@ namespace RINGMesh {
                 ringmesh_assert( vertices.size() > 1 ) ;
 
                 // At last create the Line
-                BME::bme_t l_id = create_element( BME::LINE ) ;
+                bme_t l_id = create_element( BME::LINE ) ;
                 set_line( l_id, vertices ) ;
                 for( index_t j = 0; j < adjacent.size(); ++j ) {
                     add_element_in_boundary(
-                        l_id, BME::bme_t( BME::SURFACE, adjacent[ j ] ) ) ;
+                        l_id, bme_t( BME::SURFACE, adjacent[ j ] ) ) ;
                 }
 
                 // Find or create the corners at line extremities
-                BME::bme_t c0 = find_corner( vertices.front() ) ;
+                bme_t c0 = find_corner( vertices.front() ) ;
                 if( !c0.is_defined() ) {
                     c0 = create_element( BME::CORNER ) ;
                     set_corner( c0, vertices.front() ) ;
                 }
                 add_element_boundary( l_id, c0 ) ;
-                BME::bme_t c1 = find_corner( vertices.back() ) ;
+                bme_t c1 = find_corner( vertices.back() ) ;
                 if( !c1.is_defined() ) {
                     c1 = create_element( BME::CORNER ) ;
                     set_corner( c1, vertices.back() ) ;
@@ -3099,8 +3100,8 @@ namespace RINGMesh {
                 /// the + side. No check done
                 bool inside = true ;
                 // Create the region - set the surface on its boundaries
-                BME::bme_t cur_region_id = create_region() ;
-                add_element_boundary( cur_region_id, BME::bme_t( BME::SURFACE, 0 ),
+                bme_t cur_region_id = create_region() ;
+                add_element_boundary( cur_region_id, bme_t( BME::SURFACE, 0 ),
                                      inside ) ;
 
                 // Create the universe region
@@ -3127,7 +3128,7 @@ namespace RINGMesh {
                 }
 
                 // Create a new region
-                BME::bme_t cur_region_id = create_region() ;
+                bme_t cur_region_id = create_region() ;
 
                 std::stack< std::pair< index_t, bool > > SR ;
                 SR.push( cur ) ;
@@ -3142,7 +3143,7 @@ namespace RINGMesh {
                     }
 
                     // Add the surface to the current region
-                    add_element_boundary( cur_region_id, BME::bme_t( BME::SURFACE, s.first ),
+                    add_element_boundary( cur_region_id, bme_t( BME::SURFACE, s.first ),
                                           s.second ) ;
                     surf_2_region[ s_id ] = cur_region_id.index ;
 
@@ -3200,8 +3201,8 @@ namespace RINGMesh {
             set_universe( univ_boundaries ) ;
 
             // Erase that region
-            std::vector< BME::bme_t > to_erase ;
-            to_erase.push_back( BME::bme_t( BME::REGION, universe_id ) ) ;
+            std::vector< bme_t > to_erase ;
+            to_erase.push_back( bme_t( BME::REGION, universe_id ) ) ;
             remove_elements( to_erase ) ;
         }
 
