@@ -310,6 +310,7 @@ namespace RINGMesh {
                         well_points.clear() ;
                     } else {
                         WellPart well_part ;
+                        well_part.set_well( &new_well ) ;
                         index_t id =
                             start.surface_id_ == NO_ID ?
                                 -region - 1 : start.surface_id_ ;
@@ -332,6 +333,7 @@ namespace RINGMesh {
         index_t region = model_->find_region( start.surface_id_, !last_sign ) ;
         if( region != NO_ID ) {
             WellPart well_part ;
+            well_part.set_well( &new_well ) ;
             index_t id = start.surface_id_ == -1 ? -region - 1 : start.surface_id_ ;
             signed_index_t corner_id = new_well.find_or_create_corner( start.intersection_,
                 id ) ;
