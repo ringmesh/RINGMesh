@@ -358,8 +358,6 @@ namespace RINGMesh {
         const MacroMesh& mm_ ;
         /// Total number of vertices + new nodes on cell edges
         index_t nb_vertices_ ;
-        /// ANNTree composed only with new nodes on cell edges
-        ColocaterANN ann_ ;
         /// New points
         std::vector<vec3> points_ ;
 
