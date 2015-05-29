@@ -41,6 +41,7 @@
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
 #include <ringmesh/boundary_model.h>
+#include <ringmesh/boundary_model_builder.h>
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
@@ -1511,6 +1512,12 @@ namespace RINGMesh {
         copy_meshes( from );
     }
 
+    void BoundaryModel::remove_elements( const std::vector< BME::bme_t >& elements )
+    {
+        BoundaryModelBuilder builder( *this ) ;
+        builder.remove_elements( elements ) ;
+        ringmesh_debug_assert( check_model_validity() ) ;
+    }
 
     /*!
     * @brief Copy macro information from a model
