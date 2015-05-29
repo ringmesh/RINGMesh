@@ -155,6 +155,8 @@ namespace RINGMesh {
         /*!
          * @brief Clear the vertices - unbind unique2bme_ - 
          *        set attribute to NO_ID in BME
+         * @warning Not stable - crashes because of issues in 
+         * Mesh attributes clearing
          */  
         void clear() ;
 
@@ -213,8 +215,6 @@ namespace RINGMesh {
 
     /*!
      * @brief The class to describe a volumetric model represented by its boundary surfaces
-     *
-     * \todo Implement a BoundaryModelMutator ou pas ?
      */
     class RINGMESH_API BoundaryModel {
         ringmesh_disable_copy( BoundaryModel ) ;
@@ -452,7 +452,7 @@ namespace RINGMesh {
         std::vector< index_t > nb_elements_per_type_ ;
 
         /// Name of the debug directory in which to save stuff 
-        /// @todo Put this in another class ? 
+        /// @note Maybe move this in another class
         std::string debug_directory_ ;  
     } ;
 
