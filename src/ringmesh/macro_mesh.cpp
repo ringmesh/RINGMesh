@@ -1165,7 +1165,7 @@ namespace RINGMesh {
      * @param[in] copy_attributes tells whether or not you want to copy attributes
      * @todo Check this function - keep_order parameter is not used
      */
-    void MacroMesh::copy( const MacroMesh& rhs, bool keep_order, bool copy_attributes )
+    void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes )
     {
         index_t dim = meshes_[0]->vertices.dimension() ;
 

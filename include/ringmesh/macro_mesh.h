@@ -383,7 +383,7 @@ namespace RINGMesh {
             int region_id = -1,
             bool add_steiner_points = true,
             std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
-        void copy( const MacroMesh& mm, bool copy_order = true,bool copy_attributes = true ) ;
+        void copy( const MacroMesh& mm,bool copy_attributes = true ) ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
