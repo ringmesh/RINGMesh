@@ -337,8 +337,10 @@ namespace RINGMesh {
         MacroMeshOrder( MacroMesh& mm ) ;
         ~MacroMeshOrder() ;
         const index_t nb_total_vertices() const ;
+        const index_t nb_vertices() const ;
         const index_t id(const vec3& point) const ;
         void clear() ;
+        const vec3 point(const index_t id) const ;
     private:
         void initialize() ;
         /*!
@@ -378,7 +380,7 @@ namespace RINGMesh {
             int region_id = -1,
             bool add_steiner_points = true,
             std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
-        void copy( const MacroMesh& mm, bool copy_attributes = true ) const ;
+        void copy( const MacroMesh& mm, bool copy_attributes = true ) ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
