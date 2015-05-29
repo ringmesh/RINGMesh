@@ -842,61 +842,6 @@ namespace RINGMesh {
     }
 
 
-
-    /*!
-     * @brief Use with EXTREME caution -  Erase one element of the BoundaryModel
-     * @details TO USE ONLY AFTER having removed all references to this element,
-     * AND having updated the indices of the elements of the same type
-     * AND having updated all references to these elements in their boundaries,
-     * in_boundaries, parent or children.
-     *
-     *
-     * @todo Remove this function
-     */
-    void BoundaryModelBuilder::erase_element( const BME::bme_t& t )
-    {
-        switch( t.type ) {
-            case BME::CORNER:
-                delete model_.corners_[t.index] ;
-                model_.corners_.erase( model_.corners_.begin() + t.index ) ;
-                break ;
-
-            case BME::LINE:
-                delete model_.lines_[t.index] ;
-                model_.lines_.erase( model_.lines_.begin() + t.index ) ;
-                break ;
-
-            case BME::SURFACE:
-                delete model_.surfaces_[t.index] ;
-                model_.surfaces_.erase( model_.surfaces_.begin() + t.index ) ;
-                break ;
-
-            case BME::REGION:
-                delete model_.regions_[t.index] ;
-                model_.regions_.erase( model_.regions_.begin() + t.index ) ;
-                break ;
-
-            case BME::CONTACT:
-                delete model_.contacts_[t.index] ;
-                model_.contacts_.erase( model_.contacts_.begin() + t.index ) ;
-                break ;
-
-            case BME::INTERFACE:
-                delete model_.interfaces_[t.index] ;
-                model_.interfaces_.erase( model_.interfaces_.begin() + t.index ) ;
-                break ;
-
-            case BME::LAYER:
-                delete model_.layers_[t.index] ;
-                model_.layers_.erase( model_.layers_.begin() + t.index ) ;
-                break ;
-
-            default:
-                ringmesh_assert_not_reached;
-                break ;
-            }
-        }
-
     void BoundaryModelBuilder::resize_elements( BME::TYPE type, index_t nb )
     {
         switch( type ) {
