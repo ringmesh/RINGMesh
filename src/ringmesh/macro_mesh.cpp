@@ -1004,11 +1004,13 @@ namespace RINGMesh {
      */
     void MacroMeshTools::clear()
     {
-        for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
+        for( index_t r = 0; r < facet_aabb_.size(); r++ ) {
             if( facet_aabb_[r] ) {
                 delete facet_aabb_[r] ;
                 facet_aabb_[r] = nil ;
             }
+        }
+        for( index_t r = 0; r < cell_aabb_.size(); r++ ) {
             if( cell_aabb_[r] ) {
                 delete cell_aabb_[r] ;
                 cell_aabb_[r] = nil ;
@@ -1036,6 +1038,8 @@ namespace RINGMesh {
     void MacroMeshOrder::initialize()
     {
         nb_vertices_ = mm_.vertices.nb_total_vertices() ;
+        if(mm_.get_order() != 1){
+
         std::vector<vec3> new_points ;
         new_points.reserve(mm_.cells.nb_cells()*4) ;
         for(index_t r = 0 ; r < mm_.nb_meshes() ; r++) {
@@ -1060,7 +1064,7 @@ namespace RINGMesh {
         uniq.unique_points(uniq_points) ;
         ann_.set_points(uniq_points) ;
         nb_vertices_+=uniq_points.size() ;
-
+        }
         }
 
     /*
@@ -1086,11 +1090,28 @@ namespace RINGMesh {
      * @return the const id of the node
      */
     const index_t MacroMeshOrder::id(const vec3& point) const {
+
+        test_initialize() ;
         std::vector<index_t> colocated_points ;
         ann_.get_colocated(point,colocated_points) ;
         ringmesh_debug_assert(colocated_points.size() == 1) ;
         return mm_.vertices.nb_total_vertices() + colocated_points[0] ;
     }
+
+    const index_t MacroMeshOrder::nb_vertices() const {
+        test_initialize() ;
+        return  nb_vertices_ - mm_.vertices.nb_total_vertices() ;
+    }
+    /*
+     * Gets the vec3
+     * @param[in] id an id of the new created point for order > 2
+     * @return the vec3 matching with the id
+     */
+    const vec3 MacroMeshOrder::point(const index_t id) const {
+        test_initialize() ;
+        return ann_.point(id)  ;
+    }
+
 
     MacroMesh::MacroMesh( const BoundaryModel& model )
         :
@@ -1130,12 +1151,18 @@ namespace RINGMesh {
      * @param[in] rhs the MacroMesh copied
      * @param[in] copy_attributes tells whether or not you want to copy attributes
      */
-    void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes ) const
+    void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes )
     {
         index_t dim = meshes_[0]->vertices.dimension() ;
+
+        model_ = &rhs.model() ;
+        order_ = rhs.get_order() ;
+        mode_= rhs.duplicate_mode() ;
+        wells_ = rhs.wells() ;
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r]->copy( *rhs.meshes_[r], copy_attributes ) ;
         }
+
     }
 
     MacroMesh::~MacroMesh()
