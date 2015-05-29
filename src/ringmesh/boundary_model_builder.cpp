@@ -837,7 +837,16 @@ namespace RINGMesh {
                 BoundaryModelElement& E = element( BME::bme_t( C, i ) ) ;
                 E.set_parent( BME::bme_t( T, to_erase[ E.parent_id().index ] ) ) ;                
             }
-        }        
+        }      
+
+        // Do not forget the universe ...
+        if( T == BME::SURFACE ) {
+            for( index_t i = 0; i < model_.universe().nb_boundaries(); ++i ) {
+                model_.universe_.set_boundary( i, BME::bme_t(
+                    T, to_erase[ model_.universe().in_boundary_id(i).index ] ) ) ;
+            }
+            model_.universe_.erase_invalid_element_references() ;
+        }
         return true ;
     }
 
