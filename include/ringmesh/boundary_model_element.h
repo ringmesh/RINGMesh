@@ -103,7 +103,7 @@ namespace RINGMesh {
          *
          * DO NOT MODIFY THIS ENUM
          * 
-         * @todo Add fault blocks ?
+         * @todo Add fault blocks.
          */
         enum TYPE {
             /// Points at LINE extremities
@@ -241,11 +241,9 @@ namespace RINGMesh {
         
         /*!
          * @brief Basic checks on the minimum required information 
-         * @details Required connectivity information depend on the TYPE.   
+         * @details Required connectivity information depends on the TYPE.   
          *          Check that connectivity information stored by elements is consistent.
          *          e.g. the parent of a BME must have it in its chidren list 
-         * 
-         * @todo Write meaningful message when the test fails ?
          */
         bool is_connectivity_valid() const ;
 
@@ -350,8 +348,8 @@ namespace RINGMesh {
 
         void set_boundary( index_t id, bme_t b )
         {
-            //ringmesh_debug_assert( b.is_defined() ) ; // removed assertion to update indices when deleting elements
-            /// @todo Write specific function to set an invalid boudnary, in_boudary, child
+            /// No check on the validity of the index of the element b
+            /// NO_ID is used to flag elements to delete            
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             ringmesh_debug_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
@@ -367,9 +365,10 @@ namespace RINGMesh {
 
         void set_boundary( index_t id, bme_t b, bool side )
         {
-           // ringmesh_debug_assert( b.is_defined() ) ;
+            /// No check on the validity of the index of the element b
+            /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-           // ringmesh_debug_assert( id < nb_boundaries() ) ;
+            ringmesh_debug_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
             sides_[ id ] = side ;
         }
@@ -383,15 +382,17 @@ namespace RINGMesh {
 
         void set_in_boundary( index_t id, bme_t in_b )
         {
-//            ringmesh_debug_assert( in_b.is_defined() ) ;
+            /// No check on the validity of the index of the element in_b
+            /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
-            //ringmesh_debug_assert( id < nb_in_boundary() ) ;
+            ringmesh_debug_assert( id < nb_in_boundary() ) ;
             in_boundary_[ id ] = in_b ;
         }
 
         void set_parent( bme_t p )
         {
-            //ringmesh_debug_assert( p.is_defined() ) ;
+            /// No check on the validity of the index of the element p
+            /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( parent_type( id_.type ) == p.type ) ;
             parent_ = p ;
         }
@@ -405,9 +406,10 @@ namespace RINGMesh {
 
         void set_child( index_t id, bme_t c )
         {
-            //ringmesh_debug_assert( c.is_defined() ) ;
+            /// No check on the validity of the index of the element c
+            /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
-            //ringmesh_debug_assert( id < nb_children() ) ;
+            ringmesh_debug_assert( id < nb_children() ) ;
             children_[ id ] = c ;
         }
 
@@ -456,8 +458,8 @@ namespace RINGMesh {
     /*!
     * @brief Name of the attribute storing the index of a vertex in the model
     * 
-    * @todo Put it in BoundaryModelMeshElement class - but if I do it I have 
-    *       linking errors in the code that depends on it JP
+    * @note It should be in BoundaryModelMeshElement class 
+    *       but then there are linking errors in code that depends on it (JP)
     */
     const static std::string model_vertex_id_att_name = std::string( "model_vertex_id" ) ;
 
