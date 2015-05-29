@@ -1960,7 +1960,7 @@ namespace RINGMesh {
             out << BME::geol_name( s.geological_feature() ) ;
             out << " " << s.parent().name() << std::endl ;
 
-            // Print the key facet points, whuich are simply the first three
+            // Print the key facet points, which are simply the first three
             // vertices of the first facet
             out << "  " << s.vertex( 0, 0 ) << std::endl ;
             out << "  " << s.vertex( 0, 1 ) << std::endl ;
@@ -1968,18 +1968,14 @@ namespace RINGMesh {
 
             ++count ;
         }
-
-        index_t offset_layer = count ;
-
         // Print universe, region, and layer information
+        index_t offset_layer = count ;
         save_region( count, universe_, out ) ;
         ++count ;
-
         for( index_t i = 0; i < nb_regions(); ++i ) {
             save_region( count, region( i ), out ) ;
             ++count ;
         }
-
         for( index_t i = 0; i < nb_layers(); ++i ) {
             save_layer( count, offset_layer, layer( i ), out ) ;
             ++count ;
@@ -2005,6 +2001,11 @@ namespace RINGMesh {
             out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" <<
             std::endl
                 << "}" << std::endl ;
+
+
+            /// @todo Rewrite the writing of the Surfaces - Lines 
+            ///       and Corner in the gocad file
+            // The following works but it is non sense.
 
             // Save surfaces_ geometry
             index_t vertex_count = 1 ;

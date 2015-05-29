@@ -712,6 +712,7 @@ namespace RINGMesh {
         const vec3& vertex( index_t v ) const {
             return BoundaryModelMeshElement::vertex(v) ;
         }
+
         index_t model_vertex_id( index_t v ) const {
             return BoundaryModelMeshElement::model_vertex_id(v) ;
         }
@@ -779,8 +780,9 @@ namespace RINGMesh {
 
        
         /*!
-         * @brief Returns a vertex surface index from its model index
-         * @details Returns the first one only or NO_ID if no point is found
+         * @brief Returns a vertex surface index from its model index \param model_vertex_id
+         * @details If there are two points, returns the first one.
+         *          Returns NO_ID if no point is found
          */
         index_t surf_vertex_id( index_t model_vertex_id ) const ;
 
