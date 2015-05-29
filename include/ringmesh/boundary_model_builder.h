@@ -392,7 +392,7 @@ namespace RINGMesh {
         template< class MESH >
         void set_surfaces( const MESH& mesh ) ;
 
-        void build_model() ;
+        bool build_model() ;
     } ;
 
 
