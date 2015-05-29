@@ -537,7 +537,7 @@ namespace {
                             if( v3 == v2 ) {
                                 if( !is_border( M.vertices.point( v1 ), 
                                                 M.vertices.point( v2 ) ) )
-                                { // Jeanne
+                                {
                                     if( adj_corner == NO_CORNER ) {
                                         adj_corner = c3;
                                     } else {
@@ -554,7 +554,7 @@ namespace {
                                 if( v3 == v2 ) {
                                     if( !is_border( M.vertices.point( v1 ),
                                                     M.vertices.point( v2 ) ) 
-                                       ) { // Jeanne
+                                       ) {
                                         if( adj_corner == NO_CORNER ) {
                                             adj_corner = c2;
                                         } else {
@@ -977,8 +977,6 @@ namespace {
                             valid_vertex = false ;
                         }
                         // Check that one point is no more than twice in a SURFACE
-                        /// @todo If a point is twice in a SURFACE, it must be 
-                        ///       on an internal boundary Line - write the test.
                         for( index_t k = 0; k < surfaces.size(); ++k ) {
                             index_t nb = std::count( surfaces.begin(), surfaces.end(), surfaces[ k ] ) ;
                             if( nb > 2 ) {
@@ -988,6 +986,27 @@ namespace {
                                     << print_bme_id( M.surface( surfaces[ k ] ) ) 
                                     << std::endl  << std::endl;
                                 valid_vertex = false ;                                
+                            }
+                            else if( nb == 2 ) {
+                                // If a point is twice in a SURFACE, it must be
+                                // on an internal boundary Line.
+                                bool internal_boundary = false ;
+                                for( index_t l = 0; l < lines.size(); ++l ) {
+                                    if( M.line( lines[ l ] ).is_inside_border(
+                                        M.surface( surfaces[ k ] ) ) 
+                                    ) {
+                                        internal_boundary = true ;
+                                        break ;
+                                    }
+                                }
+                                if( !internal_boundary ) {
+                                    GEO::Logger::err( "BoundaryModelVertex" )
+                                        << " Vertex "
+                                        << i << " appears " << nb << " times in "
+                                        << print_bme_id( M.surface( surfaces[ k ] ) )
+                                        << std::endl  << std::endl;
+                                    valid_vertex = false ; 
+                                }
                             }
                         }
                         // Check that all the surfaces are in in_boundary of all
@@ -1344,10 +1363,9 @@ namespace RINGMesh {
 
     /*!
      * @brief Returns the index of the given vertex in the model
-     * \todo Implement the function - Add a KdTree for geometrical request on model vertices
      *
      * @param[in] p input point coordinates
-     * @return NO_ID
+     * @return index of the vertex in the model if found, otherwise NO_ID
      */
     index_t BoundaryModelVertices::vertex_index(const vec3& p) const
     {
@@ -1366,7 +1384,6 @@ namespace RINGMesh {
         }
         return unique_vertices_.vertices.nb();
     }
-
 
     index_t BoundaryModelVertices::unique_vertex_id(
         BME::bme_t t,
@@ -1401,8 +1418,7 @@ namespace RINGMesh {
     void BoundaryModelVertices::clear()
     {
         GEO::Process::acquire_spinlock( lock_ ) ;
-        /// \todo Unbind all attributes !!!! otherwise we'll get a crash
-        // For the moment 
+        /// @todo Unbind all attributes !!!! otherwise we'll get a crash
         if( unique2bme_.is_bound() ) {
             for( index_t i = 0 ; i < nb_unique_vertices(); ++i ) {
                 unique2bme_[ i ].clear() ;
@@ -1757,29 +1773,28 @@ namespace RINGMesh {
      * @brief Check model validity
      * @details In debug mode problematic vertices, edges, elements are
      *          saved in the debug_directory_
-     *
-     * @todo Should we check facet orientation consistency ? useful ?
      */
     bool BoundaryModel::check_model_validity() const
     {
         /// 1. Verify the validity of all BoundaryModelElements
         bool valid = check_elements_validity() ;
          
-        /// 2. Verify the geological validity if the model has interfaces and layers
+        /// 2. Verify the geological validity if the model has
+        ///    interfaces and layers
         if( nb_interfaces() > 0 && nb_layers() > 0 ) {
             valid = check_geology_validity() && valid ;
         }
 
         /// 2. Check that the model has a finite extension 
-        /// The boundary of the universe region is a one connected component 
-        /// manifold closed surface 
+        ///    The boundary of the universe region is a one connected component 
+        ///     manifold closed surface 
         valid = is_region_valid( universe() ) && valid ;
           
         /// 3. Check geometrical-connectivity consistency
         valid = check_model_points_validity( *this ) && valid ;
 
         /// 4. No edge of a Surface can be on the boundary of this Surface without
-        /// being in a Line
+        ///    being in a Line
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             valid = surface_boundary_valid( surface( i ) ) && valid ;          
         }      
@@ -1807,15 +1822,18 @@ namespace RINGMesh {
             file << debug_directory()
                 << "\\non_manifold_edges"
                 << ".mesh"  ;
-            /// @todo Save in .lin ? new save of GEO::Mesh if there are only edges ?
+            /// @todo Save a GEO::Mesh in an adapted format
+            /// if the Mesh has only edges or vertices (.pts ? .lin ? ) 
             GEO::mesh_save( non_manifold_edges, file.str() ) ;
 #endif
         }
         
         /// 6. Check there is no surface-surface intersection
-        /// except along Line boundaries using a global
-        /// triangulated mesh corresponding to this model.
-        // Errors ?? when polygonal facets are not planar ? 
+        ///    except along Line boundaries.
+        
+        // The global triangulated mesh corresponding to this model
+        // is used again 
+        // If the model has non-planar polygonal facets ...
         index_t nb_intersections = detect_intersecting_facets( *this, model_mesh ) ;
         if( nb_intersections > 0 ) {
             GEO::Logger::err( "BoundaryModel" )
@@ -1824,7 +1842,6 @@ namespace RINGMesh {
                 << std::endl << std::endl ;
             valid = false ;
         }
-
         return valid ;
     }
 
@@ -2123,10 +2140,7 @@ namespace RINGMesh {
      * @details WARNING We assume that all Surface have the same attributes - if not this function will most
      *  certainly crash.
      *
-     * @param[in] file_name Name of the file
-     *
-     * \todo Make this function const
-     *
+     * @param[in] file_name Name of the file        
      */
     void BoundaryModel::save_as_eobj_file( const std::string& file_name ) const
     {

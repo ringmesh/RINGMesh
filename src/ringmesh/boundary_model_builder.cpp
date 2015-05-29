@@ -529,8 +529,7 @@ namespace RINGMesh {
      * @warning The client is responsible to set the proper connectivity
      *          information between the remaining model elements.
      *
-     * @todo Rewrite in a smarter way to reduce the number of lines of code
-     *       We can certainly do without the copy paste
+     * @todo Rewrite to remove copy paste
      */
     void BoundaryModelBuilder::remove_elements( 
         const std::vector< BME::bme_t >& elements )
@@ -837,65 +836,19 @@ namespace RINGMesh {
                 BoundaryModelElement& E = element( BME::bme_t( C, i ) ) ;
                 E.set_parent( BME::bme_t( T, to_erase[ E.parent_id().index ] ) ) ;                
             }
-        }        
+        }      
+
+        // Do not forget the universe ...
+        if( T == BME::SURFACE ) {
+            for( index_t i = 0; i < model_.universe().nb_boundaries(); ++i ) {
+                model_.universe_.set_boundary( i, BME::bme_t(
+                    T, to_erase[ model_.universe().boundary_id(i).index ] ) ) ;
+            }
+            model_.universe_.erase_invalid_element_references() ;
+        }
         return true ;
     }
 
-
-
-    /*!
-     * @brief Use with EXTREME caution -  Erase one element of the BoundaryModel
-     * @details TO USE ONLY AFTER having removed all references to this element,
-     * AND having updated the indices of the elements of the same type
-     * AND having updated all references to these elements in their boundaries,
-     * in_boundaries, parent or children.
-     *
-     *
-     * @todo Remove this function
-     */
-    void BoundaryModelBuilder::erase_element( const BME::bme_t& t )
-    {
-        switch( t.type ) {
-            case BME::CORNER:
-                delete model_.corners_[t.index] ;
-                model_.corners_.erase( model_.corners_.begin() + t.index ) ;
-                break ;
-
-            case BME::LINE:
-                delete model_.lines_[t.index] ;
-                model_.lines_.erase( model_.lines_.begin() + t.index ) ;
-                break ;
-
-            case BME::SURFACE:
-                delete model_.surfaces_[t.index] ;
-                model_.surfaces_.erase( model_.surfaces_.begin() + t.index ) ;
-                break ;
-
-            case BME::REGION:
-                delete model_.regions_[t.index] ;
-                model_.regions_.erase( model_.regions_.begin() + t.index ) ;
-                break ;
-
-            case BME::CONTACT:
-                delete model_.contacts_[t.index] ;
-                model_.contacts_.erase( model_.contacts_.begin() + t.index ) ;
-                break ;
-
-            case BME::INTERFACE:
-                delete model_.interfaces_[t.index] ;
-                model_.interfaces_.erase( model_.interfaces_.begin() + t.index ) ;
-                break ;
-
-            case BME::LAYER:
-                delete model_.layers_[t.index] ;
-                model_.layers_.erase( model_.layers_.begin() + t.index ) ;
-                break ;
-
-            default:
-                ringmesh_assert_not_reached;
-                break ;
-            }
-        }
 
     void BoundaryModelBuilder::resize_elements( BME::TYPE type, index_t nb )
     {
@@ -1648,7 +1601,7 @@ namespace RINGMesh {
                     << nb << " degenerated edges removed in LINE "
                     << i << std::endl ;
 
-                /// @todo The line may be empty now - remove it from the model
+                // The line may be empty now - remove it from the model
                 if( model_.line( i ).nb_cells() == 0 ) {
                     to_remove.push_back( BME::bme_t( BME::LINE, i ) ) ;
                 }
@@ -3142,7 +3095,8 @@ namespace RINGMesh {
                 return false ;
             }
             else {
-                /// @todo Decide what side is the inside of the closed surface
+                /// If there is only one surface, its inside is set to be 
+                /// the + side. No check done
                 bool inside = true ;
                 // Create the region - set the surface on its boundaries
                 BME::bme_t cur_region_id = create_region() ;
@@ -3216,7 +3170,6 @@ namespace RINGMesh {
 
             // Check if all the surfaces were visited
             // If not, this means that there are additionnal regions included in those built
-            /// @todo Implement the code to take into regions included in others (bubbles)
             if( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID ) != 0 ) {
                 GEO::Logger::err( "BoundaryModel" )
                     << "Small bubble regions were skipped at model building "
