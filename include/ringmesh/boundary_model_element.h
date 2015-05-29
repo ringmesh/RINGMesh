@@ -70,7 +70,7 @@ namespace RINGMesh {
     public:
         /*!
          * @brief Geological feature types for BoundaryModelElement
-         * \todo Read all possible geological features set by Gocad.
+         * @todo Read all possible geological features set by Gocad.
          *       Are types for contacts really necessary ?
          */
         enum GEOL_FEATURE {
@@ -222,7 +222,8 @@ namespace RINGMesh {
 
         /*! 
          * @brief Test the strict equality of the two BME
-         * @todo Sort the vectors before comparison ?
+         * @warning Connectivity information must match exactly
+         *          elements being in the exact same order
          */
         bool operator==( const BoundaryModelElement& rhs ) const ;
 
@@ -780,8 +781,6 @@ namespace RINGMesh {
         /*!
          * @brief Returns a vertex surface index from its model index
          * @details Returns the first one only or NO_ID if no point is found
-         * 
-         * @todo To remove
          */
         index_t surf_vertex_id( index_t model_vertex_id ) const ;
 

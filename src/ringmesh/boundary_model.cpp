@@ -1418,8 +1418,7 @@ namespace RINGMesh {
     void BoundaryModelVertices::clear()
     {
         GEO::Process::acquire_spinlock( lock_ ) ;
-        /// \todo Unbind all attributes !!!! otherwise we'll get a crash
-        // For the moment 
+        /// @todo Unbind all attributes !!!! otherwise we'll get a crash
         if( unique2bme_.is_bound() ) {
             for( index_t i = 0 ; i < nb_unique_vertices(); ++i ) {
                 unique2bme_[ i ].clear() ;
@@ -1774,8 +1773,6 @@ namespace RINGMesh {
      * @brief Check model validity
      * @details In debug mode problematic vertices, edges, elements are
      *          saved in the debug_directory_
-     *
-     * @todo Should we check facet orientation consistency ? useful ?
      */
     bool BoundaryModel::check_model_validity() const
     {
