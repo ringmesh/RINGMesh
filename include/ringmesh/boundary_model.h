@@ -213,8 +213,6 @@ namespace RINGMesh {
 
     /*!
      * @brief The class to describe a volumetric model represented by its boundary surfaces
-     *
-     * \todo Implement a BoundaryModelMutator ou pas ?
      */
     class RINGMESH_API BoundaryModel {
         ringmesh_disable_copy( BoundaryModel ) ;

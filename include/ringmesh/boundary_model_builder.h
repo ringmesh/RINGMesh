@@ -160,8 +160,7 @@ namespace RINGMesh {
         BME::bme_t create_element( BME::TYPE e_type ) ;
 
         void remove_elements( const std::vector< BME::bme_t >& elements ) ;        
-        void erase_element( const BME::bme_t& t ) ;
-
+       
         void resize_elements(
             BME::TYPE e_type,
             index_t nb ) ;
@@ -381,7 +380,6 @@ namespace RINGMesh {
     /*!
      * @brief Builder of a BoundaryModel from a conformal surface meshes
      *        in which the manifold connected components are disjoints
-     * @todo A TESTER 
      */
     class RINGMESH_API BoundaryModelBuilderSurface : public BoundaryModelBuilder {
     public:
