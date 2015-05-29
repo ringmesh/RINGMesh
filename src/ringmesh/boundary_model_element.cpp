@@ -199,8 +199,10 @@ namespace RINGMesh {
         if( in == "top" ) {
             return STRATI ;
         }
+        // This might seem strange - but it seems that what's
+        // Gocad is doing
         if( in == "none" ) {
-            return NO_GEOL ;
+            return STRATI ;
         }
         if( in == "unconformity" ) {
             return STRATI ;

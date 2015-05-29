@@ -1765,8 +1765,8 @@ namespace RINGMesh {
         /// 1. Verify the validity of all BoundaryModelElements
         bool valid = check_elements_validity() ;
          
-        /// 2. Verify the geological validity if the model has interfaces
-        if( nb_interfaces() > 0 ) {
+        /// 2. Verify the geological validity if the model has interfaces and layers
+        if( nb_interfaces() > 0 && nb_layers() > 0 ) {
             valid = check_geology_validity() && valid ;
         }
 
@@ -1917,7 +1917,7 @@ namespace RINGMesh {
     bool BoundaryModel::save_gocad_model3d( std::ostream& out )
     {
         if( !check_model_validity() || !check_gocad_validity() ) {
-            GEO::Logger::err( "" ) << "The BoundaryModel " << name_
+            GEO::Logger::err( "" ) << " The BoundaryModel " << name_
                                    << " cannot be saved in .ml format " << std::endl ;
             return false ;
         }
