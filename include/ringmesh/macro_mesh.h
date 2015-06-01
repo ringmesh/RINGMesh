@@ -338,10 +338,10 @@ namespace RINGMesh {
         ~MacroMeshOrder() ;
         const index_t nb_total_vertices() const ;
         const index_t nb_vertices() const ;
-        const index_t id(const vec3& point) const ;
+//        const index_t id(const vec3& point) const ;
         void clear() ;
-        const vec3 point(const index_t id) const ;
-        void move_point(const index_t id, const vec3& u) ;
+//        const vec3 point(const index_t id) const ;
+//        void move_point(const index_t id, const vec3& u) ;
     private:
         void initialize() ;
         /*!
@@ -358,8 +358,6 @@ namespace RINGMesh {
         const MacroMesh& mm_ ;
         /// Total number of vertices + new nodes on cell edges
         index_t nb_vertices_ ;
-        /// New points
-        std::vector<vec3> points_ ;
 
     } ;
 

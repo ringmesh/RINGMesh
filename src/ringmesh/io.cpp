@@ -2256,14 +2256,6 @@ namespace RINGMesh {
                     out << vertex_offset + p + 1 << SPACE << point.x << SPACE
                         << point.y << SPACE << point.z << std::endl ;
                 }
-
-                vertex_offset = mm.vertices.nb_total_vertices() ;
-                for( index_t p = 0; p < mm.order.nb_total_vertices() - vertex_offset;
-                    p++ ) {
-                    const vec3& point = mm.order.point( p ) ;
-                    out << vertex_offset + p + 1 << SPACE << point.x << SPACE
-                        << point.y << SPACE << point.z << std::endl ;
-                }
                 out << "$EndNodes" << std::endl ;
 
                 index_t cell_type[4] = { 4, 5, 6, 7 } ;
@@ -2327,25 +2319,6 @@ namespace RINGMesh {
                             } else {
                                 out << vertex_offset + duplicated_vertex_id + 1 ;
                             }
-                        }
-                        std::vector< index_t > more_vertices(
-                            mesh.cells.nb_edges( c ) ) ;
-                        for( index_t e = 0; e < mesh.cells.nb_edges( c ); e++ ) {
-                            std::vector< vec3 > new_points_in_edge ;
-                            vec3 node0 = GEO::Geom::mesh_vertex( mesh,
-                                mesh.cells.edge_vertex( c, e, 0 ) ) ;
-                            vec3 node1 = GEO::Geom::mesh_vertex( mesh,
-                                mesh.cells.edge_vertex( c, e, 1 ) ) ;
-                            RINGMesh::Geom::divide_edge_in_parts( node0, node1,
-                                mm.get_order(), new_points_in_edge ) ;
-                            more_vertices[e] = mm.order.id( new_points_in_edge[0] ) ;
-                        }
-                        if(mm.get_order() == 2) {
-                        out << SPACE << more_vertices[3] + 1 << SPACE
-                            << more_vertices[0] + 1 << SPACE << more_vertices[4] + 1
-                            << SPACE << more_vertices[5] + 1 << SPACE
-                            << more_vertices[1] + 1 << SPACE
-                            << more_vertices[2] + 1 ;
                         }
                         out << std::endl ;
 
@@ -2418,30 +2391,6 @@ namespace RINGMesh {
                                 out << SPACE
                                     << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
                             }
-                            for( index_t e = 0; e < mesh.facets.nb_vertices( facet_id ); e++ ) {
-                                vec3 node0 ;
-                                vec3 node1 ;
-                                std::vector< vec3 > new_points_in_edge ;
-
-                                if( e == mesh.facets.nb_vertices( facet_id ) - 1 ) {
-                                    node0 = GEO::Geom::mesh_vertex( mesh,
-                                        mesh.facets.vertex( facet_id, e ) ) ;
-                                    node1 = GEO::Geom::mesh_vertex( mesh,
-                                        mesh.facets.vertex( facet_id, 0 ) ) ;
-                                } else {
-                                    node0 = GEO::Geom::mesh_vertex( mesh,
-                                        mesh.facets.vertex( facet_id, e ) ) ;
-                                    node1 = GEO::Geom::mesh_vertex( mesh,
-                                        mesh.facets.vertex( facet_id, e + 1 ) ) ;
-                                }
-                                RINGMesh::Geom::divide_edge_in_parts( node0, node1,
-                                    mm.get_order(), new_points_in_edge ) ;
-                                for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
-                                    out << SPACE <<mm.order.id(new_points_in_edge[0]) ;
-                                }
-                            }
-
-
                             out << std::endl ;
                         }
                     }
