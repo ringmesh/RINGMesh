@@ -102,7 +102,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Number of vertices stored. 
-         * @details Calls initialize_unique_vertices(), if no vertices yet
+         * @details Calls initialize_unique_vertices() if they are not filled yet
          */
         index_t nb_unique_vertices() const ;
 
@@ -111,6 +111,9 @@ namespace RINGMesh {
          *        in the BME of type T and index id.
          * @details Calls initialize_unique_vertices(), if no vertices yet
          *          The unique_id is stored as an attribute on the vertices of the BME
+         * 
+         * @todo Remove ? This function is not related to this class
+         * This is managed by the BME itself.
          */
         index_t unique_vertex_id(
             BoundaryModelElement::bme_t T, index_t v ) const ;
@@ -120,7 +123,12 @@ namespace RINGMesh {
          * @pre unique_id < nb_unique_vertices()
          */
         const vec3& unique_vertex( index_t unique_id ) const ;        
-
+        
+        /*!
+         * @brief Returns the index of the given vertex in the model
+         * @param[in] p input point coordinates
+         * @return index of the vertex in the model if found, otherwise NO_ID
+         */
         index_t vertex_index( const vec3& p ) const ;
 
         /*!
@@ -146,11 +154,11 @@ namespace RINGMesh {
 
         /*!
          * @brief Set the point coordinates of all the vertices that are 
-         *        share this unique vertex
+         *        share this unique vertex, including the unique vertex itself.
          * @param[in] unique_id Index of the unique vertex in the BoundaryModel
          * @param[in] point New coordinates of the vertex 
          */
-        void update_point( index_t unique_id, const vec3& point ) const ;
+        void update_point( index_t unique_id, const vec3& point ) ;
 
         /*!
          * @brief Clear the vertices - unbind unique2bme_ - 
@@ -189,6 +197,19 @@ namespace RINGMesh {
         */
         index_t unique_vertex_id( const VertexInBME& v ) const ;       
 
+        /*!
+         * @brief Delete the KdTree and set the pointer to nil.         
+         */
+        void set_ann_to_update() ;
+        
+        /*!
+         * @brief Build the KdTree. 
+         * @pre In debug mode, assert that ann_ pointer is nil.
+         * @note Function is const to be called in accessors to point index.
+         *  without ugly const-cast.
+         */
+        void initialize_ann() const ;
+       
     private:
         /// Attached BoundaryModel to which belong the vertices
         const BoundaryModel& bm_ ;
@@ -207,7 +228,7 @@ namespace RINGMesh {
         GEO::Attribute< std::vector< VertexInBME > > unique2bme_ ;
 
         /// Kd-tree of the model vertices
-        ColocaterANN* ann_ ;
+        mutable ColocaterANN* ann_ ;
 
         /// Lock to protect from multi-threading during clear()
         GEO::Process::spinlock lock_ ;

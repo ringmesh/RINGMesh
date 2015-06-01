@@ -1674,7 +1674,7 @@ namespace RINGMesh {
      * Compute the colocated point(s) of a given point
      * @param[in] v the point to test
      * @param[out] result the colocated point indices
-     * @return return true if there is at least one intersections
+     * @return return true if there is at least one intersection
      */
     bool ColocaterANN::get_colocated(
         const vec3& v,

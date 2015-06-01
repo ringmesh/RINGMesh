@@ -2884,12 +2884,11 @@ namespace RINGMesh {
             k-- ;
         }
 
-        // In rare cases - the same surface can appear twice around a contact
-        // Make unique and sort the adjacent regions
+        // Sort the adjacent surfaces
         std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() ) ;
-        adjacent_surfaces.resize(
-            std::unique( adjacent_surfaces.begin(),
-            adjacent_surfaces.end() ) - adjacent_surfaces.begin() ) ;
+
+        // When the surface appear twice (the line is an internal border)
+        // we keep both occurrence, otherwise this connectivity info is lost
     }
 
 
@@ -2970,8 +2969,8 @@ namespace RINGMesh {
                 // While the adjacent surfaces are the same the vertices the next edge on the
                 // boundary of the Surface are added
                 bool same_surfaces = true ;
-                index_t next_i = get_next_border_triangle( model_, border_triangles,
-                                                           i ) ;
+                index_t next_i = get_next_border_triangle( 
+                    model_, border_triangles, i ) ;
                 do {
                     ringmesh_assert( next_i != NO_ID ) ;
                     if( !visited[ next_i ] ) {
