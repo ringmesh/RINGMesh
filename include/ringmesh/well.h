@@ -43,9 +43,7 @@
 
 #include <ringmesh/common.h>
 
-namespace GEO {
-    class Mesh ;
-}
+#include <geogram/mesh/mesh.h>
 
 namespace RINGMesh {
     class BoundaryModel ;
@@ -54,137 +52,137 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-    class RINGMESH_API WellCorner {
+
+    class RINGMESH_API WellMesh {
+        ringmesh_disable_copy( WellMesh ) ;
+    protected:
+        WellMesh( const Well* well ) ;
+        virtual ~WellMesh() {}
+
     public:
-        WellCorner(
-            const vec3& point,
-            signed_index_t id = -1 )
-              : point_( point ), surface_id_( id ), resolution_( - 1 )
-        {
-        }
+        const Well& well() const { return *well_ ; }
+        GEO::Mesh& mesh() const ;
+        const vec3& point( index_t p = 0 ) const ;
+        index_t nb_points() const ;
 
-        const vec3& point() const { return point_ ;}
-        void set_surface_id( signed_index_t id ) { surface_id_ = id ;}
-        signed_index_t surface_id() const { return surface_id_ ;}
-        double resolution() const { return resolution_ ;}
-        void set_resolution( double d ) { resolution_ = d ;}
-
-    private:
-        vec3 point_ ;
-        signed_index_t surface_id_ ;
-        double resolution_ ;
+    protected:
+        /// Pointer to the Well owning this element
+        const Well* well_ ;
+        /// Mesh of the element
+        GEO::Mesh mesh_ ;
     } ;
 
-    class RINGMESH_API WellPart {
-    public:
-        WellPart()
-              : well_( nil ), id_( - 1 )
-        {
-            corners_.reserve( 2 ) ;
-        }
+// --------------------------------------------------------------------------
 
-        void add_corner( signed_index_t c ) { corners_.push_back( c ) ;}
-        signed_index_t corner( signed_index_t c ) const
+    class RINGMESH_API WellCorner: public WellMesh {
+    public:
+        struct corner_info_t {
+            corner_info_t()
+                : is_on_surface( false ), id( NO_ID )
+            {
+            }
+            corner_info_t( bool is_on_surface_in, const index_t& id_in )
+                : is_on_surface( is_on_surface_in ), id( id_in )
+            {
+            }
+            /// True is the corner is on a surface, false if is in a region
+            bool is_on_surface ;
+            /// The id of the corresponding surface or region
+            index_t id ;
+        } ;
+
+        WellCorner(
+            const Well* well,
+            const vec3& point,
+            const corner_info_t& corner_info ) ;
+        virtual ~WellCorner() ;
+
+        const corner_info_t& corner_info() const ;
+
+    private:
+        /// Information on the corner (cf. corner_info_t)
+        GEO::Attribute< corner_info_t > corner_info_ ;
+    } ;
+
+// --------------------------------------------------------------------------
+
+    class RINGMESH_API WellPart: public WellMesh {
+    public:
+        WellPart( const Well* well, index_t id ) ;
+
+        void set_corner( index_t c, index_t id ) { corners_[c] = id ;}
+        index_t corner( index_t c ) const
         {
-            ringmesh_debug_assert( c < corners_.size() ) ;
+            ringmesh_debug_assert( c < 2 ) ;
             return corners_[ c ] ;
         }
 
-        void add_points( const std::vector< vec3 >& p ) { points_ = p ;}
-        const vec3& point( index_t p ) const
-        {
-            ringmesh_debug_assert( p < points_.size() ) ;
-            return points_[ p ] ;
-        }
+        void set_points( const std::vector< vec3 >& points ) ;
 
-        index_t nb_points() const { return points_.size() ;}
-        const std::vector< vec3 >& points() const { return points_ ;}
-        double resolution( index_t p ) const
-        {
-            ringmesh_debug_assert( p < resolutions_.size() ) ;
-            return resolutions_[ p ] ;
-        }
+        index_t nb_edges() const ;
+        double length() const ;
 
-        std::vector< double >& resolutions() { return resolutions_ ;}
-        const std::vector< double >& resolutions() const { return resolutions_ ; }
-        void set_well( Well* well ) { well_ = well ;}
-        const Well* well() const { return well_ ;}
-        void set_id( signed_index_t id ) { id_ = id ;}
-        signed_index_t id() const { return id_ ;}
+        void set_id( index_t id ) { id_ = id ;}
+        index_t id() const { return id_ ;}
 
     private:
-        Well* well_ ;
-        signed_index_t id_ ;
-        std::vector< vec3 > points_ ;
-        std::vector< signed_index_t > corners_ ;
-        std::vector< double > resolutions_ ;
+        index_t id_ ;
+        index_t corners_[2] ;
     } ;
 
+// --------------------------------------------------------------------------
+
     class RINGMESH_API Well {
+        ringmesh_disable_copy( Well ) ;
     public:
-        Well() {}
+        Well() ;
+        ~Well() ;
+
         void copy_corners_and_informations( Well& well ) const ;
-
-        void set_well_in_parts()
-        {
-            for( index_t p = 0; p < nb_parts(); p++ ) {
-                parts_[ p ].set_well( this ) ;
-            }
-        }
-
-        void add_part_points(
-            index_t part,
-            const std::vector< vec3 >& p )
-        {
-            parts_[ part ].add_points( p ) ;
-        }
 
         void get_part_edges(
             index_t p,
             std::vector< Edge >& edges ) const ;
-
         void get_region_edges(
             index_t p,
             std::vector< Edge >& edges ) const ;
 
-        void add_part(
-            const WellPart& part,
-            index_t r )
-        {
-            parts_.push_back( part ) ;
-            part_region_id_.push_back( r ) ;
-            parts_.back().set_id( parts_.size() - 1 ) ;
-        }
 
-        signed_index_t find_or_create_corner(
+        index_t create_corner(
             const vec3& p,
-            signed_index_t id = -1 ) ;
-
-        signed_index_t find_corner( const vec3& p ) const ;
-
+            const WellCorner::corner_info_t& corner_info)
+        {
+            corners_.push_back( new WellCorner( this, p, corner_info ) ) ;
+            return corners_.size() - 1 ;
+        }
+        index_t find_corner( const vec3& p ) const ;
         const WellCorner& corner( index_t c ) const
         {
             ringmesh_debug_assert( c < corners_.size() ) ;
-            return corners_[ c ] ;
+            return *corners_[ c ] ;
         }
 
+        index_t create_part( index_t region )
+        {
+            parts_.push_back( new WellPart( this, parts_.size() ) ) ;
+            part_region_id_.push_back( region ) ;
+            return parts_.size() - 1 ;
+        }
         const WellPart& part( index_t part ) const
         {
             ringmesh_debug_assert( part < parts_.size() ) ;
-            return parts_[ part ] ;
+            return *parts_[ part ] ;
         }
-
-        signed_index_t part_region_id( index_t part ) const
+        WellPart& part( index_t part )
+        {
+            ringmesh_debug_assert( part < parts_.size() ) ;
+            return *parts_[ part ] ;
+        }
+        index_t part_region_id( index_t part ) const
         {
             ringmesh_debug_assert( part < nb_parts() ) ;
             return part_region_id_[ part ] ;
         }
-
-        double part_length( index_t part ) const ;
-
-        void all_part_vertices(
-            index_t part,
-            std::vector< vec3 >& vertices ) const ;
 
         index_t nb_corners() const { return corners_.size() ;}
         index_t nb_parts() const { return parts_.size() ;}
@@ -193,22 +191,16 @@ namespace RINGMesh {
         const std::string& name() const { return name_ ;}
 
     private:
-        signed_index_t add_corner(
-            const vec3& p,
-            signed_index_t id )
-        {
-            corners_.push_back( WellCorner( p, id ) ) ;
-            return corners_.size() - 1 ;
-        }
-
-    private:
-        std::vector< WellCorner > corners_ ;
-        std::vector< WellPart > parts_ ;
+        std::vector< WellCorner* > corners_ ;
+        std::vector< WellPart* > parts_ ;
         std::vector< index_t > part_region_id_ ;
         std::string name_ ;
     } ;
 
+// --------------------------------------------------------------------------
+
     class RINGMESH_API WellGroup {
+        ringmesh_disable_copy( WellGroup ) ;
     public:
         WellGroup() ;
         virtual ~WellGroup() ;
@@ -225,20 +217,14 @@ namespace RINGMesh {
         void set_model( RINGMesh::BoundaryModel* model ) { model_ = model ;}
         bool is_well_already_added( const std::string& name ) const ;
 
-        void add_well( const Well& w ) { wells_.push_back( w ) ;}
+        void create_wells( index_t nb_wells ) ;
         void add_well( const GEO::Mesh& mesh, const std::string& name ) ;
 
         index_t nb_wells() const { return wells_.size() ;}
-        const Well& well( index_t w ) const { return wells_[ w ] ;}
-        void update_wells()
-        {
-            for( index_t w = 0; w < nb_wells(); w++ ) {
-                wells_[ w ].set_well_in_parts() ;
-            }
-        }
+        const Well& well( index_t w ) const { return *wells_[ w ] ;}
 
     protected:
-        std::vector< Well > wells_ ;
+        std::vector< Well* > wells_ ;
         BoundaryModel* model_ ;
     } ;
 }
