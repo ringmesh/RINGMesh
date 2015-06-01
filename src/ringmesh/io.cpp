@@ -486,10 +486,10 @@ namespace RINGMesh {
                     GEO::Mesh& m = mm.mesh( r ) ;
                     std::string ext = GEO::FileSystem::extension( filename ) ;
                     if( ext == "meshb" ) {
-//                        GEO::Logger::instance()->set_minimal( true ) ;
+                        GEO::Logger::instance()->set_minimal( true ) ;
                         GEO::mesh_load( GEO::String::to_string( filename ), m,
                             flags ) ;
-//                        GEO::Logger::instance()->set_minimal( false ) ;
+                        GEO::Logger::instance()->set_minimal( false ) ;
                     } else {
                         ringmesh_assert_not_reached;
                     }
@@ -523,7 +523,6 @@ namespace RINGMesh {
                     flags.set_attribute( GEO::MESH_FACET_REGION ) ;
 
                     const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
-                    cur_mesh.show_stats( "TEST" ) ;
                     std::string name_mesh_file = "region_"
                         + GEO::String::to_string( m ) + ".meshb" ;
 

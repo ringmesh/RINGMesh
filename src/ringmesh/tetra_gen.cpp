@@ -144,7 +144,6 @@ namespace RINGMesh {
 
         std::vector< std::vector< Edge > > well_edges ;
         if( wells_ ) {
-            GEO::Logger::out( "Info" ) << "Adding well constrain..." << std::endl ;
             wells->get_region_edges( region->bme_id().index, well_edges ) ;
         }
         index_t nb_points_without_well = nb_points ;
