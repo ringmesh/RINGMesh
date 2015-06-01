@@ -481,14 +481,15 @@ namespace RINGMesh {
                     GEO::MeshIOFlags flags ;
                     flags.set_element( GEO::MESH_FACETS ) ;
                     flags.set_element( GEO::MESH_CELLS ) ;
+                    flags.set_element( GEO::MESH_EDGES ) ;
                     flags.set_attribute( GEO::MESH_FACET_REGION ) ;
                     GEO::Mesh& m = mm.mesh( r ) ;
                     std::string ext = GEO::FileSystem::extension( filename ) ;
                     if( ext == "meshb" ) {
-                        GEO::Logger::instance()->set_minimal( true ) ;
+//                        GEO::Logger::instance()->set_minimal( true ) ;
                         GEO::mesh_load( GEO::String::to_string( filename ), m,
                             flags ) ;
-                        GEO::Logger::instance()->set_minimal( false ) ;
+//                        GEO::Logger::instance()->set_minimal( false ) ;
                     } else {
                         ringmesh_assert_not_reached;
                     }
@@ -518,9 +519,11 @@ namespace RINGMesh {
                     GEO::MeshIOFlags flags ;
                     flags.set_element( GEO::MESH_FACETS ) ;
                     flags.set_element( GEO::MESH_CELLS ) ;
+                    flags.set_element( GEO::MESH_EDGES ) ;
                     flags.set_attribute( GEO::MESH_FACET_REGION ) ;
 
                     const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
+                    cur_mesh.show_stats( "TEST" ) ;
                     std::string name_mesh_file = "region_"
                         + GEO::String::to_string( m ) + ".meshb" ;
 
@@ -2552,20 +2555,16 @@ namespace RINGMesh {
                             z_sign = -1.0 ;
                         }
                     } else if( in.field_matches( 0, "WREF" ) ) {
-                        std::cout << "debug WREF" << std::endl << std::flush ;
                         vertex_ref[0] = read_double( in, 1 ) ;
                         vertex_ref[1] = read_double( in, 2 ) ;
                         vertex_ref[2] = z_sign * read_double( in, 3 ) ;
                         mesh.vertices.create_vertex( vertex_ref ) ;
-                        std::cout << "fin WREF" << std::endl << std::flush ;
                     } else if( in.field_matches( 0, "PATH" ) ) {
                         if( read_double( in, 1 ) == 0. ) continue ;
                         double vertex[3] ;
-                        std::cout << "debug PATH" << std::endl << std::flush ;
                         vertex[2] = z_sign * read_double( in, 2 ) ;
                         vertex[0] = read_double( in, 3 ) + vertex_ref[0] ;
                         vertex[1] = read_double( in, 4 ) + vertex_ref[1] ;
-                        std::cout << "fin PATH" << std::endl << std::flush ;
                         index_t id = mesh.vertices.create_vertex( vertex ) ;
                         mesh.edges.create_edge( id - 1, id ) ;
                     } else if( in.field_matches( 0, "END" ) ) {
