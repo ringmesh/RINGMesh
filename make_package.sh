@@ -7,6 +7,8 @@ else
     version=$1
 fi
 
+cd `dirname $0`
+
 files="configure.bat
       configure.sh
       include
