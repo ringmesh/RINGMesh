@@ -611,7 +611,10 @@ namespace {
 
     /*!
      * @brief Build a Mesh from the model non-duplicated vertices
-     *        and its Surface facets.     
+     *        and its Surface facets. 
+     * @details Adjacencies are not set. Client should call
+     *  mesh repair functions afterwards.
+     * 
      */
     void mesh_from_boundary_model( const BoundaryModel& model, Mesh& M )
     {
@@ -626,10 +629,7 @@ namespace {
         }
 
         // Set the facets  
-        index_t begin_S = 0 ;
         for( index_t s = 0; s < model.nb_surfaces(); ++s ) {
-            begin_S = M.facets.nb() ;
-
             const Surface& S = model.surface( s ) ;
             for( index_t f = 0; f < S.nb_cells(); ++f ) {
                 index_t nbv = S.nb_vertices_in_facet( f ) ;
@@ -639,13 +639,6 @@ namespace {
                     ids[ v ] = S.model_vertex_id( f, v ) ;
                 }
                 M.facets.create_polygon( ids ) ;
-            }
-            for( index_t f = 0; f < S.nb_cells(); ++f ) {
-                index_t nbv = S.nb_vertices_in_facet( f ) ;
-                for( index_t v = 0; v < nbv; ++v ) {
-                    index_t adj = S.adjacent( f, v ) == NO_ID ? NO_ID : S.adjacent( f, v ) + begin_S ;
-                    M.facets.set_adjacent( f, v, adj ) ;
-                }
             }
         }
     }
@@ -731,7 +724,8 @@ namespace {
 
     /*!
      * @brief Build a Mesh from the boundaries of the given element
-     * @details Inside borders are ignored.
+     * @details Inside borders are ignored. Adjacencies are not set. 
+     * Client should call mesh repair functions afterwards.
      */
     void mesh_from_element_boundaries( const BME& E, Mesh& M )
     {
@@ -789,12 +783,10 @@ namespace {
                         }
 
                     } else if( T == BME::REGION ) {
-                        // Build facets
-                        index_t off = 0 ;                        
+                        // Build facets              
                         for( index_t i = 0; i < borders.size(); ++i ) {
                             ringmesh_debug_assert( borders[ i ].type == BME::SURFACE ) ;
                             const Surface& S = model.surface( borders[ i ].index ) ;
-                            index_t off = M.facets.nb() ;
                             for( index_t f = 0; f < S.nb_cells(); ++f ) {
                                 index_t nbv = S.nb_vertices_in_facet( f ) ;
                                 GEO::vector< index_t > ids( nbv ) ;
@@ -802,13 +794,6 @@ namespace {
                                     ids[ v ] = old2new[ S.model_vertex_id( f, v ) ] ;
                                 }
                                 M.facets.create_polygon( ids ) ;
-                            }
-                            for( index_t f = 0; f < S.nb_cells(); ++f ) {
-                                index_t nbv = S.nb_vertices_in_facet( f ) ;
-                                for( index_t v = 0; v < nbv; ++v ) {
-                                    index_t adj = S.adjacent( f, v ) == NO_ID ? NO_ID : S.adjacent( f, v ) + off ;
-                                    M.facets.set_adjacent( f, v, adj ) ;
-                                }
                             }
                         }
                     }
