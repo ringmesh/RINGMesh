@@ -143,8 +143,7 @@ namespace {
     {
         show_voi = !show_voi ;
         for( GEO::index_t s = 0; s < BM.nb_surfaces(); s++ ) {
-            if( BM.surface( s ).geological_feature()
-                == RINGMesh::BoundaryModelElement::VOI ) {
+            if( BM.surface( s ).is_on_voi() ) {
                 BM_gfx.set_surface_visibility( s, show_voi ) ;
             }
         }
