@@ -252,9 +252,6 @@ namespace RINGMesh {
         BoundaryModelIOHandler* BoundaryModelIOHandler::create(
             const std::string& format )
         {
-            ringmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" ) ;
-            ringmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" );
-
             BoundaryModelIOHandler* handler =
                 BoundaryModelIOHandlerFactory::create_object( format ) ;
             if( handler ) {
@@ -1122,6 +1119,11 @@ namespace RINGMesh {
 
         class CSMPIOHandler: public MacroMeshIOHandler {
         public:
+            CSMPIOHandler()
+            {
+                clear() ;
+            }
+
             virtual bool load( const std::string& filename, MacroMesh& mesh )
             {
                 GEO::Logger::err( "I/O" )
@@ -1694,9 +1696,23 @@ namespace RINGMesh {
             }
 
         private:
-
+            void clear() {
+                point_boundaries_.clear() ;
+                box_model_ = false ;
+                back_ = NO_ID ;
+                top_ = NO_ID ;
+                front_ = NO_ID ;
+                bottom_ = NO_ID ;
+                left_ = NO_ID ;
+                right_ = NO_ID ;
+                corner_boundary_flags_.clear() ;
+                edge_boundary_flags_.clear() ;
+                surface_boundary_flags_.clear() ;
+            }
             bool initialize( const MacroMesh& mm )
             {
+                clear() ;
+
                 const BoundaryModel& model = mm.model() ;
                 std::string cmsp_filename = GEO::CmdLine::get_arg( "out:csmp" ) ;
                 box_model_ = cmsp_filename != "" ;
@@ -2498,17 +2514,6 @@ namespace RINGMesh {
 
         MacroMeshIOHandler* MacroMeshIOHandler::create( const std::string& format )
         {
-            ringmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" ) ;
-            ringmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" );
-            ringmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" );
-            ringmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" );
-            ringmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" );
-            ringmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" );
-            ringmesh_register_MacroMeshIOHandler_creator( VTKIOHandler, "vtk" );
-            ringmesh_register_MacroMeshIOHandler_creator( GPRSIOHandler, "gprs" );
-            ringmesh_register_MacroMeshIOHandler_creator( MSHIOHandler, "msh" );
-            ringmesh_register_MacroMeshIOHandler_creator( MESHIOHandler, "mesh" );
-
             MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
                 format ) ;
             if( handler ) {
@@ -2614,8 +2619,6 @@ namespace RINGMesh {
 
         WellGroupIOHandler* WellGroupIOHandler::create( const std::string& format )
         {
-            ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
-
             WellGroupIOHandler* handler = WellGroupIOHandlerFactory::create_object(
                 format ) ;
             if( handler ) {
@@ -2633,5 +2636,28 @@ namespace RINGMesh {
             std::string ext = GEO::FileSystem::extension( filename ) ;
             return create( ext ) ;
         }
+
+        /*
+         * Initializes the possible handler for IO files
+         */
+        void initialize()
+        {
+            ringmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" ) ;
+            ringmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" );
+            ringmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" );
+            ringmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" );
+            ringmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" );
+            ringmesh_register_MacroMeshIOHandler_creator( AsterIOHandler, "mail" );
+            ringmesh_register_MacroMeshIOHandler_creator( VTKIOHandler, "vtk" );
+            ringmesh_register_MacroMeshIOHandler_creator( GPRSIOHandler, "gprs" );
+            ringmesh_register_MacroMeshIOHandler_creator( MSHIOHandler, "msh" );
+            ringmesh_register_MacroMeshIOHandler_creator( MESHIOHandler, "mesh" );
+
+            ringmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" ) ;
+            ringmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" );
+
+            ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
+        }
+
     }
 }

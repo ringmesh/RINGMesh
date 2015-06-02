@@ -55,6 +55,8 @@
 #endif
 
 #include <ringmesh/attribute.h>
+#include <ringmesh/io.h>
+
 #include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
@@ -80,6 +82,8 @@ INITIALIZER( initialize ) {
         GEO::Graphics::initialize();
         GEO::CmdLine::import_arg_group( "gfx" ) ;
 #endif
+
+        RINGMesh::RINGMeshIO::initialize() ;
 
         // Initialization for BoundaryModel attribute serialization
 //        RINGMesh::AttributeSerializer::initialize() ;

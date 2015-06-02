@@ -178,6 +178,9 @@ namespace RINGMesh {
 #define ringmesh_register_WellGroupIOHandler_creator( type, name ) \
     geo_register_creator( WellGroupIOHandlerFactory, type, name )
 
+
+        void RINGMESH_API initialize() ;
+
     }
 }
 #endif
