@@ -146,12 +146,21 @@ namespace RINGMesh {
             {
                 return type == rhs.type && index == rhs.index ;
             }
+            /*!
+             * @brief Sort BME identifiers
+             * @details Compare first types, then compare indices, 
+             *          beginning with NO_ID indices. 
+             * @note In a sorted vector v of bme_t one can find the first surface with
+             *       std::lower_bound( v.begin(), v.end(), bme_t( SURFACE, NO_ID ) ) ;
+             */
             bool operator<( const bme_t& rhs ) const
             {
                 if( type != rhs.type ) {
                     return type < rhs.type  ;
                 }
                 else {
+                    if( index == NO_ID ) return true ;
+                    if( rhs.index == NO_ID ) return false ;
                     return index < rhs.index ;
                 }
             }    
