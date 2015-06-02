@@ -377,7 +377,7 @@ namespace RINGMesh {
         //   |_|  |_\___|\__|_||_\___/\__,_/__/
         //
         void compute_tetmesh(
-            const TetraMethod& method,
+            const std::string& method,
             int region_id = -1,
             bool add_steiner_points = true,
             std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
