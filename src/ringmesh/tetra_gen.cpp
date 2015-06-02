@@ -302,7 +302,13 @@ namespace RINGMesh {
     } ;
 #endif
 
-
+    /*!
+     * Creates an instance of the tetrahedral mesher
+     * @param[in,out] tetmesh this mesh will be filled with
+     * the generated tetrahedral mesh
+     * @param[in] algo_name the name of the algorithm to use
+     * @return the corresponding instance
+     */
     TetraGen* TetraGen::create( GEO::Mesh& tetmesh, const std::string& algo_name )
     {
         TetraGen* mesher = TetraGenFactory::create_object( algo_name, tetmesh ) ;
@@ -323,6 +329,11 @@ namespace RINGMesh {
     {
     }
 
+    /*!
+     * Sets the boundaries of the domain
+     * @param[in] region the boundary surfaces of the domain to mesh
+     * @param[int] wells the wells to be conformal to
+     */
     void TetraGen::set_boundaries(
         const BoundaryModelElement* region,
         const WellGroup* wells )
@@ -403,6 +414,10 @@ namespace RINGMesh {
         tetmesh_.facets.connect() ;
     }
 
+    /*!
+     * Set additional points to be in the output tetrahedral mesh
+     * @param[in] points the points to add
+     */
     void TetraGen::set_internal_points( const std::vector< vec3 >& points )
     {
         index_t start = tetmesh_.vertices.create_vertices( points.size() ) ;
