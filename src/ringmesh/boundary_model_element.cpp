@@ -82,49 +82,6 @@ namespace {
     }
 
     /*!
-    * @brief Detects duplicated vertices in a BMME
-    * @details Uses model indices.
-    *
-    * @param E The BoundaryModel element to check
-    * @param duplicated For each vertex if it is duplicated refers to the
-    *    model vertex id for the point in the surface otherwise NO_ID is stored.
-    *    The points that are duplicated must be in the boundary
-    *    of the element to have a valid element.
-    *
-    * @todo Test that this function does its job, does not seem so. JP
-    */
-    index_t detect_duplicated_vertices(
-        const BoundaryModelMeshElement& E,
-        std::vector< index_t >& duplicated )
-    {
-        const GEO::Mesh& M = E.mesh() ;
-        duplicated.resize( M.vertices.nb(), NO_ID ) ;
-
-        for( index_t v = 0; v < M.vertices.nb(); ++v ) {
-            if( duplicated[ v ] == NO_ID ) {
-                index_t gv = E.model_vertex_id( v ) ;
-
-                const std::vector< BoundaryModelVertices::VertexInBME >&
-                    colocated = E.model().vertices.bme_vertices( gv ) ;
-                if( colocated.size() > 0 ) {
-                    int count = 0 ;
-                    for( index_t i = 0; i < colocated.size(); ++i ) {
-                        if( colocated[ i ].bme_id == E.bme_id() ) {
-                            count++ ;
-                        }
-                    }
-                    ringmesh_assert( count > 0 ) ;
-                    if( count > 1 ) {
-                        duplicated[ v ] = gv ;
-                    }
-                }
-            }
-        }
-        return duplicated.size() - std::count(
-            duplicated.begin(), duplicated.end(), NO_ID ) ;
-    }
-
-    /*!
     * @brief Count the number of times each vertex is in an edge or facet
     *
     * @param[in] M The mesh 
@@ -178,8 +135,6 @@ namespace RINGMesh {
      *
      * @param[in] in Name of the feature
      * @return The geological feature index
-     *
-     * \todo Keep all the information (add new GEOL_FEATURE) instead of simplifying it.
      */
     BoundaryModelElement::GEOL_FEATURE BoundaryModelElement::
         determine_geological_type( const std::string& in )
@@ -689,27 +644,50 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Checks if this element or one of the element containing it
-     * determines the model Volume Of Interest
-     * @details This is known with the type of an element
-     *
-     * @todo To modify ? and test if the element ia around the universe region?
+     * @brief Checks if this element define the model external boundary
+     * @details Test if the element is in the Surfaces defining the universe 
      */
     bool BoundaryModelElement::is_on_voi() const
     {
-        if( geol_feature_ == NO_GEOL ) {
-            for( index_t j = 0; j < nb_in_boundary(); ++j ) {
-                GEOL_FEATURE t = in_boundary( j ).geological_feature() ;
-                if( t == VOI || t == STRATI_VOI || t == FAULT_VOI ) {
+        TYPE T = bme_id().type ;
+        if( T == SURFACE ) {
+            for( index_t i = 0; i < model().universe().nb_boundaries(); ++i ) {
+                if( model().universe().boundary_id( i ) == bme_id() ) {
                     return true ;
                 }
             }
-        } else if( geol_feature_ == VOI        ||
-                   geol_feature_ == STRATI_VOI ||
-                   geol_feature_ == FAULT_VOI ) {
-            return true ;
+            return false ;         
+        }            
+        else if( T== LINE || T == CORNER ) {
+            // True if one of the incident surface define the universe
+            for( index_t i = 0; i < nb_in_boundary(); ++i ) {
+                if( in_boundary( i ).is_on_voi() ) {
+                    return true ;
+                }
+            }
+            return false ;
         }
-        return false ;
+        else if( T == REGION || T == LAYER ) {
+            return false ;
+        }
+        else if( T == INTERFACE || T == CONTACT ) {
+            // Check that all children are on the voi
+            if( nb_children() > 0 ) {
+                for( index_t i = 0; i < nb_children(); ++i ) {
+                    if( !child( i ).is_on_voi() ) {
+                        return false ;
+                    }
+                }
+                return true ;
+            }
+            else {
+                return false ;
+            }
+        }
+        else {
+            ringmesh_debug_assert( false ) ;
+            return false ;
+        }
     }
     
     /*!
@@ -909,7 +887,7 @@ namespace RINGMesh {
      * @details No update of the model vertices is done
      *
      * @param points Geometric positions of the vertices to add
-     * @param clear_mesh If true the mesh if cleared, keeping its attributes
+     * @param clear If true the mesh if cleared, keeping its attributes
      */
     void BoundaryModelMeshElement::set_vertices(
         const std::vector< vec3 >& points,
@@ -1017,8 +995,11 @@ namespace RINGMesh {
      *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - no facets - no cells.
      *  - global indices of vertices in the model are in a valid range 
      *  - each vertex is in 2 edges except extremities that are in 1 edge
-     *  - no vertex is duplicated, except the extremity if the Line if closed
      * 
+     * Does not check:
+     *  - Self-intersection - I suppose there are no segment - segment intersection (JP)
+     *  - Duplicated edge - most probably ruled out with the duplicated vertex test (JP)
+     *  - Duplicated vertex (verified at BoundaryModel level)
      */
     bool Line::is_mesh_valid() const
     {
@@ -1096,30 +1077,6 @@ namespace RINGMesh {
                     << "Non-manifold element" << bme_id() << std::endl ;
                 valid = false ;
             }
-
-            std::vector< index_t > duplicated ;
-            // Only the 2 extremity vertices can be duplicated
-            // when the line is closed
-            index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
-            if( nb_duplicated == 1 || nb_duplicated > 2 ) {
-                GEO::Logger::err( "BoundaryModelElement" )
-                    << nb_duplicated << " duplicated vertices in " << bme_id() << std::endl ;
-                valid = false ;
-            } else if( nb_duplicated == 2 ) {
-                if( !is_closed() ) {
-                    GEO::Logger::err( "BoundaryModelElement" )
-                        << " Duplicated vertex in non closed " << bme_id() << std::endl ;
-                    valid = false ;
-                } else if( duplicated.front() == NO_ID ) {
-                    GEO::Logger::err( "BoundaryModelElement" )
-                        << " Invalid duplicated vertex in closed " << bme_id() << std::endl ;
-                    valid = false ;
-                } else if( duplicated.front() != duplicated.back() ) {
-                    GEO::Logger::err( "BoundaryModelElement" )
-                        << " Invalid duplicated vertex in closed " << bme_id() << std::endl ;
-                    valid = false ;
-                }
-            }
         }
 
         // No zero edge length
@@ -1135,9 +1092,6 @@ namespace RINGMesh {
                 << " degenerated edges in " << bme_id() << std::endl ;
             valid = false ;
         }
-        // No self-intersection - I suppose there are no segment - segment intersection (JP)
-        // No duplicated edge - most probably ruled out with the duplicated vertex test (JP)
-
         return valid ; 
     }
 
@@ -1257,23 +1211,21 @@ namespace RINGMesh {
      * @details Check that
      *  - the GEO::Mesh has more than 2 vertices, at least 1 facet, no cells.
      *  - global indices of vertices in the model are in a valid range
-     *  - duplicated vertices are on a boundary Line ending in the Surface 
      *  - no degenerate facet 
-     *  - no duplicated facet 
      *  - one connected component 
      *
      *  Some tests are not performed here but globally on the BoundaryModel
      *  - intersection of facets 
      *  - non-manifold edges 
+     *  - duplicated vertices are on a boundary Line ending in the Surface 
+     * 
      *
-     *  Some tests are not performed
+     *  Some tests are not performed     
      *  - non-manifold points
-     *  - surface orientability is assumed true
+     *  - surface orientability
      *  - planarity of polygonal facets 
      *
-     * @todo Implement check duplicated vertices only on boundary line 
-     *       and duplicated facet test 
-     *       Write meaninful message - Save objects to allow debugging
+     * @todo Check that there is no duplicated facet 
      */
     bool Surface::is_mesh_valid() const
     {
@@ -1309,16 +1261,7 @@ namespace RINGMesh {
                 << nb0 << " isolated vertices " << std::endl ;
             valid = false ;
         }
-
-        // This does not work ? 
-        /// @todo Use Geogram function
-        // std::vector< index_t > duplicated ;
-        // index_t nb_duplicated = detect_duplicated_vertices( *this, duplicated ) ;
-
-        // There might be several duplicated points, but they must be in one of the
-        // boundary lines that are twice in the boundary of this surface
-        /// @todo Check that duplicated vertices are on a Line that is an internal boundary
-
+     
         // No zero area facet
         // No facet incident to the same vertex check local and global indices
         index_t nb_degenerate = 0 ;
@@ -1718,7 +1661,7 @@ namespace RINGMesh {
      * @param[in] border_only If true only facets on the border are considered
      * @return The number of facet found
      *
-     * \todo Evaluate if this is fast enough !!
+     * @todo Evaluate if this is fast enough !!
      */
     index_t Surface::facets_around_vertex(
         index_t shared_vertex,
@@ -1748,7 +1691,7 @@ namespace RINGMesh {
      * @param[in] f0 Index of one facet containing the vertex @param P
      * @return The number of facet found
      *
-     * \todo Evaluate if this is fast enough !!
+     * @todo Evaluate if this is fast enough !!
      */
     index_t Surface::facets_around_vertex(
         index_t P,
@@ -2029,8 +1972,7 @@ namespace RINGMesh {
             set_model_vertex_id( s_new_corner, m_corner ) ;           
             M.vertices.add_unique_to_bme( m_corner, bme_id(), s_new_corner ) ;
         }
-            
-        /// \todo Check that all vertices on the line are recovered
+
         while( model_vertex_id( id1 ) != M.corner(c1).model_vertex_id() ) {
             // Get the next vertex on the border
             // Same algorithm than in determine_line_vertices function

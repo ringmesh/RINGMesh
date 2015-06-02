@@ -43,6 +43,7 @@
 #include <ringmesh/boundary_model_element.h>
 #include <ringmesh/well.h>
 
+#include <geogram/basic/logger.h>
 #include <geogram/mesh/mesh_tetrahedralize.h>
 
 #include <iomanip>
