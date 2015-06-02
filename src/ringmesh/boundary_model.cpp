@@ -1749,7 +1749,7 @@ namespace RINGMesh {
             if( line( i ).nb_in_boundary() == 1 ) {
                 const BME& S = line( i ).in_boundary( 0 ) ;
                 if( S.has_parent() &&
-                    BME::is_fault( S.parent().geological_feature() )
+                   !BME::is_fault( S.parent().geological_feature() )
                     ) {
                     GEO::Logger::err( "BoundaryModel" ) << " Invalid free border: "
                         << print_bme_id( line( i ) ) << " is in the boundary of "
