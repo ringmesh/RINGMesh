@@ -76,9 +76,39 @@ namespace RINGMesh {
          * @brief Generic accessor to a modifiable BoundaryModelElement
          */
         BoundaryModelElement& element(
-            const BME::bme_t& t )
+            const BME::bme_t& t ) const
         {
-            return const_cast< BoundaryModelElement& >( model_.element( t ) ) ;
+            return *element_ptr( t ) ;
+        }
+        BoundaryModelElement* element_ptr( const BME::bme_t& id ) const
+        {
+            switch( id.type ) {
+                case BME::CORNER: return model_.corners_[ id.index ] ;
+                case BME::LINE:  return model_.lines_[ id.index ] ;
+                case BME::SURFACE:  return model_.surfaces_[ id.index ] ;
+                case BME::REGION:  return model_.regions_[ id.index ] ;
+                case BME::CONTACT:  return model_.contacts_[ id.index ] ;
+                case BME::INTERFACE:  return model_.interfaces_[ id.index ] ;
+                case BME::LAYER:  return model_.layers_[ id.index ] ;
+                case BME::ALL_TYPES: return element_ptr( model_.global_to_typed_id( id ) ) ;
+                default:
+                    ringmesh_assert_not_reached ;
+                    return &model_.universe_ ;
+            }
+        }
+        void set_nil_element_ptr( const BME::bme_t& id ) const
+        {
+            switch( id.type ) {
+                case BME::CORNER: model_.corners_[ id.index ] = nil ; break ;
+                case BME::LINE:  model_.lines_[ id.index ] = nil ; break ;
+                case BME::SURFACE:  model_.surfaces_[ id.index ] = nil ; break ;
+                case BME::REGION:  model_.regions_[ id.index ] = nil ; break ;
+                case BME::CONTACT:  model_.contacts_[ id.index ] = nil ; break ;
+                case BME::INTERFACE:  model_.interfaces_[ id.index ] = nil ; break ;
+                case BME::LAYER:  model_.layers_[ id.index ] = nil ; break ;
+                default:
+                    ringmesh_assert_not_reached ;
+            }
         }
 
         /*! @}

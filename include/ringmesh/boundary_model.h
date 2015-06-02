@@ -51,6 +51,7 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 
 namespace RINGMesh {
@@ -334,34 +335,18 @@ namespace RINGMesh {
         {
             ringmesh_assert( id.index < nb_elements( id.type ) ) ;
             switch( id.type ) {
-            case BoundaryModelElement::CORNER         :  return *corners_[ id.index ] ;
-                 case BoundaryModelElement::LINE      :  return *lines_[ id.index ] ;
-                 case BoundaryModelElement::SURFACE   :  return *surfaces_[ id.index ] ;
-                 case BoundaryModelElement::REGION    :  return *regions_[ id.index ] ;
-                 case BoundaryModelElement::CONTACT   :  return *contacts_[ id.index ] ;
-                 case BoundaryModelElement::INTERFACE :  return *interfaces_[ id.index ] ;
-                 case BoundaryModelElement::LAYER     :  return *layers_[ id.index ] ;
-                 case BoundaryModelElement::ALL_TYPES : {
-                     // See the BoundaryModelBuilder::end_model() function
-                     BME::TYPE t = BME::NO_TYPE ;
-                     for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
-                         if( id.index >= nb_elements_per_type_[ i - 1 ]
-                             && id.index < nb_elements_per_type_[ i ] )
-                         {
-                             t = BME::TYPE( i - 1 ) ;
-                             break ;
-                         }
-                     }
-                    ringmesh_assert( t < BME::NO_TYPE ) ;
-                    return element(
-                        BME::bme_t( t, id.index - nb_elements_per_type_[t] ) ) ;
-                }
+                 case BME::CORNER    :  return *corners_[ id.index ] ;
+                 case BME::LINE      :  return *lines_[ id.index ] ;
+                 case BME::SURFACE   :  return *surfaces_[ id.index ] ;
+                 case BME::REGION    :  return *regions_[ id.index ] ;
+                 case BME::CONTACT   :  return *contacts_[ id.index ] ;
+                 case BME::INTERFACE :  return *interfaces_[ id.index ] ;
+                 case BME::LAYER     :  return *layers_[ id.index ] ;
+                 case BME::ALL_TYPES :  return element( global_to_typed_id( id ) ) ;                     
                  default :
                      ringmesh_assert_not_reached ;
-                     // return dummy_BME ;
-                     // If we must return something let's return the mandatory element in a model
-                     // the first surface JP
-                     return element( BME::bme_t( BME::SURFACE, 0 ) ) ;
+                     // By default, return the universe
+                     return universe_ ;
             }
         }
 
@@ -436,6 +421,31 @@ namespace RINGMesh {
 
         void copy_macro_topology( const BoundaryModel& from ) ;
         void copy_meshes( const BoundaryModel& from ) ;
+
+        /*! 
+         * @brief Convert a global BME index into a typed index
+         * @details Relies on the nb_elements_per_type_ vector that 
+         *          must be updodate 
+         *          See the BoundaryModelBuilder::end_model() function
+         * @param[in] global A BME id of TYPE - ALL_TYPES
+         * @return A BME id of an element of the model, or a invalid one if nothing found
+         */
+        inline BME::bme_t global_to_typed_id(
+            const BME::bme_t& global ) const
+        {        
+            index_t it = std::upper_bound(
+                nb_elements_per_type_.begin(), nb_elements_per_type_.end(), global.index ) 
+                - nb_elements_per_type_.begin() ;
+            
+            if( it != nb_elements_per_type_.size() ) {
+                BME::TYPE T = (BME::TYPE) (it-1) ;
+                index_t i = global.index - nb_elements_per_type_[ it-1 ] ;
+                return BME::bme_t( T, i ) ;
+            }
+            else {
+                return BME::bme_t() ;
+            }
+        }
 
     public:
         BoundaryModelVertices vertices ;
