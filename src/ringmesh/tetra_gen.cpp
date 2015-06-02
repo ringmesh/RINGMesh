@@ -459,6 +459,9 @@ namespace RINGMesh {
     void TetraGen::initialize()
     {
         ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
+
+#ifdef USE_MG_TETRA
         ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
+#endif
     }
 }
