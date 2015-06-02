@@ -537,7 +537,7 @@ namespace {
                             if( v3 == v2 ) {
                                 if( !is_border( M.vertices.point( v1 ), 
                                                 M.vertices.point( v2 ) ) )
-                                { // Jeanne
+                                {
                                     if( adj_corner == NO_CORNER ) {
                                         adj_corner = c3;
                                     } else {
@@ -554,7 +554,7 @@ namespace {
                                 if( v3 == v2 ) {
                                     if( !is_border( M.vertices.point( v1 ),
                                                     M.vertices.point( v2 ) ) 
-                                       ) { // Jeanne
+                                       ) {
                                         if( adj_corner == NO_CORNER ) {
                                             adj_corner = c2;
                                         } else {
@@ -611,7 +611,10 @@ namespace {
 
     /*!
      * @brief Build a Mesh from the model non-duplicated vertices
-     *        and its Surface facets.     
+     *        and its Surface facets. 
+     * @details Adjacencies are not set. Client should call
+     *  mesh repair functions afterwards.
+     * 
      */
     void mesh_from_boundary_model( const BoundaryModel& model, Mesh& M )
     {
@@ -626,10 +629,7 @@ namespace {
         }
 
         // Set the facets  
-        index_t begin_S = 0 ;
         for( index_t s = 0; s < model.nb_surfaces(); ++s ) {
-            begin_S = M.facets.nb() ;
-
             const Surface& S = model.surface( s ) ;
             for( index_t f = 0; f < S.nb_cells(); ++f ) {
                 index_t nbv = S.nb_vertices_in_facet( f ) ;
@@ -639,13 +639,6 @@ namespace {
                     ids[ v ] = S.model_vertex_id( f, v ) ;
                 }
                 M.facets.create_polygon( ids ) ;
-            }
-            for( index_t f = 0; f < S.nb_cells(); ++f ) {
-                index_t nbv = S.nb_vertices_in_facet( f ) ;
-                for( index_t v = 0; v < nbv; ++v ) {
-                    index_t adj = S.adjacent( f, v ) == NO_ID ? NO_ID : S.adjacent( f, v ) + begin_S ;
-                    M.facets.set_adjacent( f, v, adj ) ;
-                }
             }
         }
     }
@@ -731,7 +724,8 @@ namespace {
 
     /*!
      * @brief Build a Mesh from the boundaries of the given element
-     * @details Inside borders are ignored.
+     * @details Inside borders are ignored. Adjacencies are not set. 
+     * Client should call mesh repair functions afterwards.
      */
     void mesh_from_element_boundaries( const BME& E, Mesh& M )
     {
@@ -789,12 +783,10 @@ namespace {
                         }
 
                     } else if( T == BME::REGION ) {
-                        // Build facets
-                        index_t off = 0 ;                        
+                        // Build facets              
                         for( index_t i = 0; i < borders.size(); ++i ) {
                             ringmesh_debug_assert( borders[ i ].type == BME::SURFACE ) ;
                             const Surface& S = model.surface( borders[ i ].index ) ;
-                            index_t off = M.facets.nb() ;
                             for( index_t f = 0; f < S.nb_cells(); ++f ) {
                                 index_t nbv = S.nb_vertices_in_facet( f ) ;
                                 GEO::vector< index_t > ids( nbv ) ;
@@ -802,13 +794,6 @@ namespace {
                                     ids[ v ] = old2new[ S.model_vertex_id( f, v ) ] ;
                                 }
                                 M.facets.create_polygon( ids ) ;
-                            }
-                            for( index_t f = 0; f < S.nb_cells(); ++f ) {
-                                index_t nbv = S.nb_vertices_in_facet( f ) ;
-                                for( index_t v = 0; v < nbv; ++v ) {
-                                    index_t adj = S.adjacent( f, v ) == NO_ID ? NO_ID : S.adjacent( f, v ) + off ;
-                                    M.facets.set_adjacent( f, v, adj ) ;
-                                }
                             }
                         }
                     }
@@ -977,8 +962,6 @@ namespace {
                             valid_vertex = false ;
                         }
                         // Check that one point is no more than twice in a SURFACE
-                        /// @todo If a point is twice in a SURFACE, it must be 
-                        ///       on an internal boundary Line - write the test.
                         for( index_t k = 0; k < surfaces.size(); ++k ) {
                             index_t nb = std::count( surfaces.begin(), surfaces.end(), surfaces[ k ] ) ;
                             if( nb > 2 ) {
@@ -988,6 +971,27 @@ namespace {
                                     << print_bme_id( M.surface( surfaces[ k ] ) ) 
                                     << std::endl  << std::endl;
                                 valid_vertex = false ;                                
+                            }
+                            else if( nb == 2 ) {
+                                // If a point is twice in a SURFACE, it must be
+                                // on an internal boundary Line.
+                                bool internal_boundary = false ;
+                                for( index_t l = 0; l < lines.size(); ++l ) {
+                                    if( M.line( lines[ l ] ).is_inside_border(
+                                        M.surface( surfaces[ k ] ) ) 
+                                    ) {
+                                        internal_boundary = true ;
+                                        break ;
+                                    }
+                                }
+                                if( !internal_boundary ) {
+                                    GEO::Logger::err( "BoundaryModelVertex" )
+                                        << " Vertex "
+                                        << i << " appears " << nb << " times in "
+                                        << print_bme_id( M.surface( surfaces[ k ] ) )
+                                        << std::endl  << std::endl;
+                                    valid_vertex = false ; 
+                                }
                             }
                         }
                         // Check that all the surfaces are in in_boundary of all
@@ -1183,6 +1187,7 @@ namespace {
 
 
 
+
 namespace RINGMesh {
 
     BoundaryModelVertices::~BoundaryModelVertices()
@@ -1230,12 +1235,13 @@ namespace RINGMesh {
         }
 
         unique_vertices_.vertices.create_vertices( all_vertices.size() );
-        unique_vertices_.vertices.assign_points( all_vertices[ 0 ].data(), 3, all_vertices.size() );
+        unique_vertices_.vertices.assign_points( 
+            all_vertices[ 0 ].data(), 3, all_vertices.size() );
 
         GEO::vector< index_t > old2new;
         repair_colocate_vertices( unique_vertices_, epsilon, old2new );
 
-        // We do the same loop as above
+        // We do the same loops as above
         index = 0;
         for( index_t c = 0; c < nb_corners; c++ ) {
             Corner& C = const_cast<Corner&>( bm_.corner( c ) );
@@ -1264,7 +1270,9 @@ namespace RINGMesh {
             }
         }
 
-        ann_ = new ColocaterANN( unique_vertices_, ColocaterANN::VERTICES );
+        set_ann_to_update() ;
+        initialize_ann() ;
+
 
 #ifdef RINGMESH_DEBUG
         // Paranoia (JP)
@@ -1301,9 +1309,17 @@ namespace RINGMesh {
         }
     }
 
-    void BoundaryModelVertices::update_point(index_t v, const vec3& point) const
+
+    void BoundaryModelVertices::update_point(index_t v, const vec3& point) 
     {
         ringmesh_assert(v < nb_unique_vertices());
+        // Change the position of the unique_vertex 
+        double* p = unique_vertices_.vertices.point_ptr(v) ;
+        for( index_t c = 0; c < 3; ++c ) {
+            p[ c ] = double( point[ c ] );
+        }         
+        set_ann_to_update() ;
+
         const std::vector< VertexInBME >& bme_v = bme_vertices(v);
         for (index_t i = 0; i < bme_v.size(); i++) {
             const VertexInBME& info = bme_v[i];
@@ -1324,8 +1340,10 @@ namespace RINGMesh {
         return unique2bme_[v];
     }
 
+
     index_t BoundaryModelVertices::add_unique_vertex(const vec3& point)
     {
+        set_ann_to_update() ;
         return unique_vertices_.vertices.create_vertex(point.data());
     }
 
@@ -1334,29 +1352,33 @@ namespace RINGMesh {
         BME::bme_t type,
         index_t v_id)
     {
-        /// The attribute unique2bme is bound if not already ? Good idea or not ? not sure ....
+        /// The attribute unique2bme is bound if not already ? 
+        // Good idea ? not sure ....
         if (!unique2bme_.is_bound()) {
             unique2bme_.bind(attribute_manager(), "unique2bme");
         }
         ringmesh_assert(unique_id < nb_unique_vertices());
         unique2bme_[unique_id].push_back(VertexInBME(type, v_id));
     }
-
-    /*!
-     * @brief Returns the index of the given vertex in the model
-     * \todo Implement the function - Add a KdTree for geometrical request on model vertices
-     *
-     * @param[in] p input point coordinates
-     * @return NO_ID
-     */
-    index_t BoundaryModelVertices::vertex_index(const vec3& p) const
+   
+    index_t BoundaryModelVertices::vertex_index( const vec3& p ) const
     {
-        if (unique_vertices_.vertices.nb() == 0) {
-            const_cast<BoundaryModelVertices*>(this)->initialize_unique_vertices();
+        // nb_unique_vertices() call initializes the points if necessary
+        if( nb_unique_vertices() == 0 ) {
+            return NO_ID ;
+        }
+
+        if( ann_ == nil ) {
+            initialize_ann() ;
         }
         std::vector< index_t > result;
-        if (ann_->get_colocated(p, result)) return result[0];
-        return NO_ID;
+        if( ann_->get_colocated( p, result ) ) {
+            // There must be only one point
+            ringmesh_debug_assert( result.size() == 1 ) ;
+            return result[ 0 ];
+        } else {
+            return NO_ID;
+        }
     }
 
     index_t BoundaryModelVertices::nb_unique_vertices() const
@@ -1367,14 +1389,12 @@ namespace RINGMesh {
         return unique_vertices_.vertices.nb();
     }
 
-
     index_t BoundaryModelVertices::unique_vertex_id(
         BME::bme_t t,
         index_t v) const
     {
-        if (unique_vertices_.vertices.nb() == 0) {
-            const_cast<BoundaryModelVertices*>(this)->initialize_unique_vertices();
-        }
+        // Get nb_unique_vertices() to initialize the points if necessary
+        nb_unique_vertices() ;
         ringmesh_assert(v < bm_.element(t).nb_vertices());
         return bm_.element(t).model_vertex_id(v);
     }
@@ -1389,20 +1409,17 @@ namespace RINGMesh {
 
     const vec3& BoundaryModelVertices::unique_vertex(index_t v) const
     {
-        if (unique_vertices_.vertices.nb() == 0) {
-            const_cast<BoundaryModelVertices*>(this)->initialize_unique_vertices();
-        }
+        // The call to nb_unique_vertices() in the assert
+        // initialize the points if necessary
         ringmesh_assert(v < nb_unique_vertices());
         return unique_vertices_.vertices.point(v);
     }
 
 
-
     void BoundaryModelVertices::clear()
     {
         GEO::Process::acquire_spinlock( lock_ ) ;
-        /// \todo Unbind all attributes !!!! otherwise we'll get a crash
-        // For the moment 
+        /// @todo Unbind all attributes !!!! otherwise we'll get a crash
         if( unique2bme_.is_bound() ) {
             for( index_t i = 0 ; i < nb_unique_vertices(); ++i ) {
                 unique2bme_[ i ].clear() ;
@@ -1432,6 +1449,21 @@ namespace RINGMesh {
         GEO::Process::release_spinlock( lock_ ) ;
     }
 
+    void BoundaryModelVertices::set_ann_to_update()
+    {
+        // Having functions, permit to easily change the way to update
+        // this Kdtree. Do not remove them. JP
+        delete ann_ ;
+        ann_ = nil ;
+    }
+    
+    void BoundaryModelVertices::initialize_ann() const
+    {
+        ringmesh_debug_assert( ann_ == nil ) ;
+        ann_ = new ColocaterANN( unique_vertices_, ColocaterANN::VERTICES ) ;
+    }
+
+ 
     /*******************************************************************************/
 
 
@@ -1757,29 +1789,28 @@ namespace RINGMesh {
      * @brief Check model validity
      * @details In debug mode problematic vertices, edges, elements are
      *          saved in the debug_directory_
-     *
-     * @todo Should we check facet orientation consistency ? useful ?
      */
     bool BoundaryModel::check_model_validity() const
     {
         /// 1. Verify the validity of all BoundaryModelElements
         bool valid = check_elements_validity() ;
          
-        /// 2. Verify the geological validity if the model has interfaces and layers
+        /// 2. Verify the geological validity if the model has
+        ///    interfaces and layers
         if( nb_interfaces() > 0 && nb_layers() > 0 ) {
             valid = check_geology_validity() && valid ;
         }
 
         /// 2. Check that the model has a finite extension 
-        /// The boundary of the universe region is a one connected component 
-        /// manifold closed surface 
+        ///    The boundary of the universe region is a one connected component 
+        ///     manifold closed surface 
         valid = is_region_valid( universe() ) && valid ;
           
         /// 3. Check geometrical-connectivity consistency
         valid = check_model_points_validity( *this ) && valid ;
 
         /// 4. No edge of a Surface can be on the boundary of this Surface without
-        /// being in a Line
+        ///    being in a Line
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             valid = surface_boundary_valid( surface( i ) ) && valid ;          
         }      
@@ -1807,15 +1838,18 @@ namespace RINGMesh {
             file << debug_directory()
                 << "\\non_manifold_edges"
                 << ".mesh"  ;
-            /// @todo Save in .lin ? new save of GEO::Mesh if there are only edges ?
+            /// @todo Save a GEO::Mesh in an adapted format
+            /// if the Mesh has only edges or vertices (.pts ? .lin ? ) 
             GEO::mesh_save( non_manifold_edges, file.str() ) ;
 #endif
         }
         
         /// 6. Check there is no surface-surface intersection
-        /// except along Line boundaries using a global
-        /// triangulated mesh corresponding to this model.
-        // Errors ?? when polygonal facets are not planar ? 
+        ///    except along Line boundaries.
+        
+        // The global triangulated mesh corresponding to this model
+        // is used again 
+        // If the model has non-planar polygonal facets ...
         index_t nb_intersections = detect_intersecting_facets( *this, model_mesh ) ;
         if( nb_intersections > 0 ) {
             GEO::Logger::err( "BoundaryModel" )
@@ -1824,7 +1858,6 @@ namespace RINGMesh {
                 << std::endl << std::endl ;
             valid = false ;
         }
-
         return valid ;
     }
 
@@ -1943,7 +1976,7 @@ namespace RINGMesh {
             out << BME::geol_name( s.geological_feature() ) ;
             out << " " << s.parent().name() << std::endl ;
 
-            // Print the key facet points, whuich are simply the first three
+            // Print the key facet points, which are simply the first three
             // vertices of the first facet
             out << "  " << s.vertex( 0, 0 ) << std::endl ;
             out << "  " << s.vertex( 0, 1 ) << std::endl ;
@@ -1951,18 +1984,14 @@ namespace RINGMesh {
 
             ++count ;
         }
-
-        index_t offset_layer = count ;
-
         // Print universe, region, and layer information
+        index_t offset_layer = count ;
         save_region( count, universe_, out ) ;
         ++count ;
-
         for( index_t i = 0; i < nb_regions(); ++i ) {
             save_region( count, region( i ), out ) ;
             ++count ;
         }
-
         for( index_t i = 0; i < nb_layers(); ++i ) {
             save_layer( count, offset_layer, layer( i ), out ) ;
             ++count ;
@@ -1988,6 +2017,11 @@ namespace RINGMesh {
             out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" <<
             std::endl
                 << "}" << std::endl ;
+
+
+            /// @todo Rewrite the writing of the Surfaces - Lines 
+            ///       and Corner in the gocad file
+            // The following works but it is non sense.
 
             // Save surfaces_ geometry
             index_t vertex_count = 1 ;
@@ -2123,10 +2157,7 @@ namespace RINGMesh {
      * @details WARNING We assume that all Surface have the same attributes - if not this function will most
      *  certainly crash.
      *
-     * @param[in] file_name Name of the file
-     *
-     * \todo Make this function const
-     *
+     * @param[in] file_name Name of the file        
      */
     void BoundaryModel::save_as_eobj_file( const std::string& file_name ) const
     {

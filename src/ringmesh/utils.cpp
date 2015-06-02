@@ -140,7 +140,7 @@ namespace RINGMesh {
     /*!
      * Computes the Mesh cell barycenter
      * @param[in] M the mesh
-     * @param[in] c the cell index
+     * @param[in] cell the cell index
      * @return the cell center
      */
     vec3 Geom::mesh_cell_center( const GEO::Mesh& M, index_t cell )
@@ -1675,7 +1675,7 @@ namespace RINGMesh {
      * Compute the colocated point(s) of a given point
      * @param[in] v the point to test
      * @param[out] result the colocated point indices
-     * @return return true if there is at least one intersections
+     * @return return true if there is at least one intersection
      */
     bool ColocaterANN::get_colocated(
         const vec3& v,
