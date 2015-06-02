@@ -530,7 +530,8 @@ namespace RINGMesh {
      * @warning The client is responsible to set the proper connectivity
      *          information between the remaining model elements.
      *
-     * @todo Rewrite to remove copy paste
+     * @todo Rewrite to remove copy paste - see save_bm_file() function implementation 
+     *       in boundary_model.cpp
      */
     void BoundaryModelBuilder::remove_elements( 
         const std::vector< bme_t >& elements )

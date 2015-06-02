@@ -143,10 +143,10 @@ namespace RINGMesh {
             return NO_GEOL ;
         }
         if( in == "reverse_fault" ) {
-            return FAULT ;
+            return REVERSE_FAULT ;
         }
         if( in == "normal_fault" ) {
-            return FAULT ;
+            return NORMAL_FAULT ;
         }
         if( in == "fault" ) {
             return FAULT ;
@@ -160,7 +160,7 @@ namespace RINGMesh {
             return STRATI ;
         }
         if( in == "unconformity" ) {
-            return STRATI ;
+            return UNCONFORMITY ;
         }
         if( in == "boundary" ) {
             return VOI ;
@@ -168,53 +168,6 @@ namespace RINGMesh {
 
         GEO::Logger::err("BoundaryModel") << "Unexpected geological feature " << in
             << std::endl ;
-        return NO_GEOL ;
-    }
-
-
-    /*!
-     * @brief Compute an intersection type. Really useful ?
-     *
-     * @param[in] types TYPEs that intersect
-     * @return Intersection type
-     */
-    BoundaryModelElement::GEOL_FEATURE BoundaryModelElement::determine_type(
-        const std::vector< GEOL_FEATURE >& types )
-    {
-        if( types.size() == 0 ) {
-            return NO_GEOL ;
-        }
-
-        // Sort and remove duplicates from the in types
-        std::vector< GEOL_FEATURE > in = types ;
-        std::sort( in.begin(), in.end() ) ;
-        index_t new_size = narrow_cast<index_t>( std::unique( in.begin(), in.end() ) - in.begin() ) ;
-        in.resize( new_size ) ;
-
-        if( in.size() == 1 ) {
-            return in[ 0 ] ;
-        }
-
-        if( in.size() == 2 ) {
-            if( in[ 0 ] == NO_GEOL ) {
-                return NO_GEOL ;
-            }
-            if( in[ 0 ] == STRATI ) {
-                if( in[ 1 ] == FAULT ) {
-                    return STRATI_FAULT ;
-                }
-                if( in[ 1 ] == VOI ) {
-                    return STRATI_VOI ;
-                }
-            } else if( in[ 0 ] == FAULT ) {
-                if( in[ 1 ] == VOI ) {
-                    return FAULT_VOI ;
-                }
-            }
-
-            // Other cases ? for corners ? what is the vertex ?
-            return NO_GEOL ;
-        }
         return NO_GEOL ;
     }
 
@@ -240,9 +193,12 @@ namespace RINGMesh {
         switch( t ) {
             case STRATI: return "top" ;
             case FAULT: return "fault" ;
+            case REVERSE_FAULT: return "reverse_fault" ;
+            case NORMAL_FAULT: return "normal_fault" ;
+            case UNCONFORMITY: return "unconformity" ;
             case VOI: return "boundary" ;
-            case NO_GEOL: return "none" ;
-            default: return "none" ;
+            case NO_GEOL: return "" ;
+            default: return "" ;
                 break ;
         }
     }

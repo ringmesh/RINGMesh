@@ -285,9 +285,11 @@ namespace RINGMesh {
     {
         BoundaryModelElement::GEOL_FEATURE feature = mm_.model().surface(
             surface_id ).geological_feature() ;
-        if( mm_.duplicate_mode() == ALL && feature != BoundaryModelElement::VOI )
+        if( mm_.duplicate_mode() == ALL &&
+            !mm_.model().surface( surface_id ).is_on_voi() 
+           )
             return true ;
-        if( mm_.duplicate_mode() == FAULT && feature == BoundaryModelElement::FAULT )
+        if( mm_.duplicate_mode() == FAULT && BME::is_fault( feature ) )
             return true ;
 
         return false ;
