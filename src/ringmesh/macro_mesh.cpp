@@ -1018,7 +1018,7 @@ namespace RINGMesh {
     }
 
     MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
-        : mm_( mm ), nb_vertices_( 0 )
+        : mm_( mm ), nb_vertices_( 0 ), points_( 0 )
     {
 
     }
@@ -1046,7 +1046,7 @@ namespace RINGMesh {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
                     for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
-                        nb_total_edges ++ ;
+                        nb_total_edges++ ;
                     }
                 }
             }
@@ -1091,7 +1091,8 @@ namespace RINGMesh {
                     cur_mesh.cells.attributes(), "order_vertices" ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
                     for( index_t v = 0; v < order_vertices[c].size(); v++ ) {
-                        order_vertices[c][v] = map[order_vertices[c][v]] + nb_vertices_ ;
+                        order_vertices[c][v] = map[order_vertices[c][v]]
+                            + nb_vertices_ ;
                     }
                 }
             }
@@ -1127,14 +1128,15 @@ namespace RINGMesh {
                             std::vector< index_t > colocated_vertices ;
                             index_t real_vertex_id = ann.get_colocated(
                                 new_points_in_edge[v], colocated_vertices ) ;
-                            ringmesh_debug_assert(colocated_vertices.size() == 1) ;
-                            cur_order_vertices[e+v] = colocated_vertices[0] + nb_vertices() ;
+                            ringmesh_debug_assert( colocated_vertices.size() == 1 ) ;
+                            cur_order_vertices[e + v] = colocated_vertices[0]
+                                + nb_vertices_ ;
                         }
                     }
                     order_vertices[cur_facet] = cur_order_vertices ;
                 }
             }
-            nb_vertices_+=uniq_points.size() ;
+            nb_vertices_ += uniq_points.size() ;
         }
 
     }
@@ -1177,28 +1179,80 @@ namespace RINGMesh {
         test_initialize() ;
         return nb_vertices_ - mm_.vertices.nb_total_vertices() ;
     }
-//    /*
-//     * Gets the vec3
-//     * @param[in] id an id of the new created point for order > 2
-//     * @return the vec3 matching with the id
-//     */
-//    const vec3 MacroMeshOrder::point( const index_t id ) const
-//    {
-//        test_initialize() ;
-//        return points_[id] ;
-//    }
 
-//    /*
-//     * Move a added point
-//     * @param[in] id the id of the point
-//     * @param[in] u the displacement applied on this point
-//     */
-//    void MacroMeshOrder::move_point( const index_t id, const vec3& u )
-//    {
-//        for( index_t i = 0; i < 3; i++ ) {
-//            points_[id][i] += u[i] ;
-//        }
-//    }
+    /*
+     * Gets the vec3 of a added point
+     * @param[in] id an id of the new created point for order > 2
+     * @return the vec3 matching with the id
+     */
+    const vec3 MacroMeshOrder::point( const index_t id ) const
+    {
+        const_cast< MacroMeshOrder* >( this )->test_point_list_initialize() ;
+        return points_[id] ;
+    }
+
+    /*
+     * Move a added point
+     * @param[in] id the id of the point
+     * @param[in] u the displacement applied on this point
+     */
+    void MacroMeshOrder::move_point( const index_t id, const vec3& u )
+    {
+        const_cast< MacroMeshOrder* >( this )->test_point_list_initialize() ;
+        for( index_t i = 0; i < 3; i++ ) {
+            points_[id][i] += u[i] ;
+
+        }
+    }
+
+    /*
+     * Test wether the vec3 point list is initialize. If note, the point
+     * list is initialize
+     */
+    void MacroMeshOrder::test_point_list_initialize()
+    {
+        index_t order = mm_.get_order() ;
+
+        if( points_.size() == 0 && order > 1 ) {
+            index_t offset = 0 ;
+            index_t nb_total_edges = 0 ;
+            for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
+                const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
+                for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
+                    for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
+                        nb_total_edges++ ;
+                    }
+                }
+            }
+
+            std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
+            for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
+                const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
+                for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
+                    std::vector< index_t > cur_order_vertices(
+                        cur_mesh.cells.nb_edges( c ) * ( order - 1 ) ) ;
+                    for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
+                        std::vector< vec3 > new_points_in_edge ;
+                        vec3 node0 = GEO::Geom::mesh_vertex( cur_mesh,
+                            cur_mesh.cells.edge_vertex( c, e, 0 ) ) ;
+                        vec3 node1 = GEO::Geom::mesh_vertex( cur_mesh,
+                            cur_mesh.cells.edge_vertex( c, e, 1 ) ) ;
+                        Geom::divide_edge_in_parts( node0, node1, order,
+                            new_points_in_edge ) ;
+
+                        for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
+                            new_points[offset] = new_points_in_edge[v] ;
+                            offset++ ;
+                        }
+                    }
+                }
+            }
+
+            MakeUnique uniq( new_points ) ;
+            uniq.unique() ;
+            uniq.unique_points( points_ ) ;
+        }
+    }
 
     MacroMesh::MacroMesh( const BoundaryModel& model )
         :
