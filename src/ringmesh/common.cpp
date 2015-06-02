@@ -56,6 +56,7 @@
 
 #include <ringmesh/attribute.h>
 #include <ringmesh/io.h>
+#include <ringmesh/tetra_gen.h>
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
@@ -84,6 +85,7 @@ INITIALIZER( initialize ) {
 #endif
 
         RINGMesh::RINGMeshIO::initialize() ;
+        RINGMesh::TetraGen::initialize() ;
 
         // Initialization for BoundaryModel attribute serialization
 //        RINGMesh::AttributeSerializer::initialize() ;

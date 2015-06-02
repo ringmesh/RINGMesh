@@ -1198,33 +1198,33 @@ namespace RINGMesh {
      * to improve the mesh quality
      */
     void MacroMesh::compute_tetmesh(
-        const TetraMethod& method,
+        const std::string& method,
         int region_id,
         bool add_steiner_points,
         std::vector< std::vector< vec3 > >& internal_vertices )
     {
+        GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
         if( region_id == -1 ) {
             GEO::ProgressTask progress( "Compute", nb_meshes() ) ;
-            for( unsigned int i = 0; i < nb_meshes(); i++ ) {
-                const std::vector< vec3 >& vertices =
-                    internal_vertices.empty() ?
-                        std::vector< vec3 >() : internal_vertices[i] ;
-                TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
-                    &model_->region( i ), add_steiner_points, vertices, wells() ) ;
+            for( index_t i = 0; i < nb_meshes(); i++ ) {
+                TetraGen_var tetragen = TetraGen::create( mesh( i ), method ) ;
+                tetragen->set_boundaries( &model_->region( i ), wells() ) ;
+                if( !internal_vertices.empty() ) {
+                    tetragen->set_internal_points( internal_vertices[i] ) ;
+                }
                 GEO::Logger::instance()->set_quiet( true ) ;
-                tetragen->tetrahedralize() ;
+                tetragen->tetrahedralize( add_steiner_points ) ;
                 GEO::Logger::instance()->set_quiet( false ) ;
                 progress.next() ;
             }
         } else {
-            const std::vector< vec3 >& vertices =
-                internal_vertices.empty() ?
-                    std::vector< vec3 >() : internal_vertices[region_id] ;
-            TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
-                &model_->region( region_id ), add_steiner_points, vertices,
-                wells() ) ;
+            TetraGen_var tetragen = TetraGen::create( mesh( region_id ), method ) ;
+            tetragen->set_boundaries( &model_->region( region_id ), wells() ) ;
+            if( !internal_vertices.empty() ) {
+                tetragen->set_internal_points( internal_vertices[region_id] ) ;
+            }
             GEO::Logger::instance()->set_quiet( true ) ;
-            tetragen->tetrahedralize() ;
+            tetragen->tetrahedralize( add_steiner_points ) ;
             GEO::Logger::instance()->set_quiet( false ) ;
         }
     }
