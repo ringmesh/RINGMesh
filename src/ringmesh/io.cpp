@@ -2446,29 +2446,28 @@ namespace RINGMesh {
                         index_t s_id = interf.child_id( 0 ).index ;
                         kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
                             << ",1," ;
-                        const RINGMesh::BoundaryModelElement::GEOL_FEATURE feature =
-                            model.one_interface( i ).geological_feature() ;
-                        if( feature == RINGMesh::BoundaryModelElement::FAULT ) {
+                        const RINGMesh::BoundaryModelElement& E =
+                            model.one_interface( i ) ; 
+                        if( RINGMesh::BoundaryModelElement::is_fault( E.geological_feature() ) ) {
                             kine3d << "FaultFeatureClass" ;
-                        } else if( feature
-                            == RINGMesh::BoundaryModelElement::STRATI ) {
+                        } else if( RINGMesh::BoundaryModelElement::is_stratigraphic_limit(
+                                    E.geological_feature() ) ) {
                             kine3d << "HorizonFeatureClass" ;
-                        } else if( feature == RINGMesh::BoundaryModelElement::VOI ) {
+                        } else if( E.is_on_voi() ) {
                             kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
                         }
                         kine3d << std::endl ;
                         if( mm.vertices.is_surface_to_duplicate( s_id ) ) {
                             kine3d << offset_region + 2 * i + 1 << ":"
                                 << interf.name() << ",0," ;
-                            const RINGMesh::BoundaryModelElement::GEOL_FEATURE feature =
-                                model.one_interface( i ).geological_feature() ;
-                            if( feature == RINGMesh::BoundaryModelElement::FAULT ) {
+                            const RINGMesh::BoundaryModelElement& E =
+                                model.one_interface( i ) ;
+                            if( RINGMesh::BoundaryModelElement::is_fault( E.geological_feature() ) ) {
                                 kine3d << "FaultFeatureClass" ;
-                            } else if( feature
-                                == RINGMesh::BoundaryModelElement::STRATI ) {
+                            } else if( RINGMesh::BoundaryModelElement::is_stratigraphic_limit(
+                                E.geological_feature() ) ) {
                                 kine3d << "HorizonFeatureClass" ;
-                            } else if( feature
-                                == RINGMesh::BoundaryModelElement::VOI ) {
+                            } else if( E.is_on_voi() ) {
                                 kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
                             }
                             kine3d << std::endl ;
