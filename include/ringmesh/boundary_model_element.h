@@ -80,16 +80,16 @@ namespace RINGMesh {
             NO_GEOL,
             /// Stratigraphical surface - an horizon
             STRATI,
-            /// A fault
+            /// Unconformity
+            UNCONFORMITY,
+            /// A normal fault
+            NORMAL_FAULT,
+            /// A reverse fault 
+            REVERSE_FAULT,
+            /// An unspecified fault 
             FAULT,
             /// Volume Of Interest
-            VOI,
-            /// Intersection stratigraphy - fault
-            STRATI_FAULT,
-            /// Intersection stratigraphy - VOI
-            STRATI_VOI,
-            /// Intersection fault - VOI 
-            FAULT_VOI
+            VOI
         } ;
 
         /*!
@@ -180,6 +180,14 @@ namespace RINGMesh {
         static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) ;
 
         static std::string geol_name( GEOL_FEATURE ) ;
+        static bool is_fault( GEOL_FEATURE T )
+        {
+            return T == FAULT || T == REVERSE_FAULT || T == NORMAL_FAULT ;
+        }
+        static bool is_stratigraphic_limit( GEOL_FEATURE T )
+        {
+            return T == STRATI || T == UNCONFORMITY ;
+        }
         
         /*!
          * \name Key functions to access relationships between TYPE s 

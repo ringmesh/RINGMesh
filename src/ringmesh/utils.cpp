@@ -262,8 +262,8 @@ namespace RINGMesh {
     {
         points.resize( nb_parts - 1 ) ;
         double pond = 1. / nb_parts ;
-        vec3 node0 = GEO::Geom::mesh_vertex(mesh,mesh.edges.vertex( edge, 0 ) ) ;
-        vec3 node1 = GEO::Geom::mesh_vertex(mesh,mesh.edges.vertex( edge, 1 ) ) ;
+        vec3 node0 = GEO::Geom::mesh_vertex( mesh, mesh.edges.vertex( edge, 0 ) ) ;
+        vec3 node1 = GEO::Geom::mesh_vertex( mesh, mesh.edges.vertex( edge, 1 ) ) ;
         for( index_t i = 0; i < nb_parts - 1; i++ ) {
             for( index_t j = 0; j < 3; j++ ) {
                 points[i][j] = ( i + 1 ) * pond * node1[j]
@@ -279,15 +279,16 @@ namespace RINGMesh {
         index_t nb_parts,
         std::vector< vec3 >& points )
     {
-        points.resize( nb_parts - 1 ) ;
-        double pond = 1. / nb_parts ;
-        for( index_t i = 0; i < nb_parts - 1; i++ ) {
-            for( index_t j = 0; j < 3; j++ ) {
-                points[i][j] = ( i + 1 ) * pond * node1[j]
-                    + ( 1. - ( i + 1 ) * pond ) * node0[j] ;
+        if( nb_parts > 0 ) {
+            points.resize( nb_parts - 1 ) ;
+            double pond = 1. / nb_parts ;
+            for( index_t i = 0; i < nb_parts - 1; i++ ) {
+                for( index_t j = 0; j < 3; j++ ) {
+                    points[i][j] = ( i + 1 ) * pond * node1[j]
+                        + ( 1. - ( i + 1 ) * pond ) * node0[j] ;
+                }
             }
         }
-
     }
     /*!
      * Gets the closest local vertex index in a mesh cell of a point
@@ -1728,11 +1729,6 @@ namespace RINGMesh {
         return nb_neighbors ;
     }
 
-
-    /**********************************************************/
-
-
-
-
+/**********************************************************/
 
 }
