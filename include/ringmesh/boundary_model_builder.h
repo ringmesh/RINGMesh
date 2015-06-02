@@ -297,7 +297,7 @@ namespace RINGMesh {
               : BoundaryModelBuilder( model ) {}
         virtual ~BoundaryModelBuilderGocad() {}
         
-        void load_ml_file( const std::string& ml_file_name ) ;
+        bool load_ml_file( const std::string& ml_file_name ) ;
 
     protected:
         BME::bme_t determine_line_vertices(

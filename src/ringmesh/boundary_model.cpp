@@ -1708,8 +1708,8 @@ namespace RINGMesh {
             if( &E.model() != this ) {
                 GEO::Logger::err( "BoundaryModel" )
                     << "The model stored for " << BME::type_name( E.bme_id().type )
-                    << " " << E.bme_id().index << " is not correct " 
-                    << std::endl  << std::endl;
+                    << " " << E.bme_id().index << " is not correct "
+                    << std::endl ;
                 valid[i] = false ;
                 // This is a major problem
                 ringmesh_debug_assert( false ) ; 
@@ -1728,7 +1728,7 @@ namespace RINGMesh {
                 GEO::Logger::err( "BoundaryModel" ) << "Element " 
                     << print_bme_id( element( BME::bme_t( BME::ALL_TYPES, i ) ) )
                     << " is invalid. "
-                    << std::endl << std::endl;
+                    << std::endl ;
                 nb_invalid++ ;
             }
         }        
@@ -1767,7 +1767,7 @@ namespace RINGMesh {
                 GEO::Logger::err( "BoundaryModel" ) << " Invalid interface: "
                     << print_bme_id( one_interface( i ) )
                     << " is in the boundary of no layer "
-                    << std::endl << std::endl ;
+                    << std::endl ;
                 valid = false ;
 
             }
@@ -1778,7 +1778,7 @@ namespace RINGMesh {
                     << print_bme_id( one_interface( i ) )
                     << " is in the boundary of " << layers.size()
                     << " different layers "
-                    << std::endl << std::endl ;
+                    << std::endl ;
                 valid = false ;
             }            
         }
@@ -1831,7 +1831,7 @@ namespace RINGMesh {
             GEO::Logger::err( "BoundaryModel" )
                 << " Encountered " << non_manifold_edges.edges.nb()
                 << "non manifold edges "
-                << std::endl << std::endl ;
+                << std::endl ;
             valid = false ;
 #ifdef RINGMESH_DEBUG
             std::ostringstream file ;
@@ -1855,7 +1855,7 @@ namespace RINGMesh {
             GEO::Logger::err( "BoundaryModel" )
                 << " Encountered " << nb_intersections
                 << "facet intersections "
-                << std::endl << std::endl ;
+                << std::endl ;
             valid = false ;
         }
         return valid ;

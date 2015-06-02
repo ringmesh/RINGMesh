@@ -1693,10 +1693,7 @@ namespace RINGMesh {
             }
         }
 
-        // Mesh repair for surfaces and lines
-        // Not activated now - because it might create empty elements
-        // That must be removed of the BoundaryModel
-    
+        // Basic mesh repair for surfaces and lines
         remove_degenerate_facet_and_edges() ;
 
         GEO::Logger::out( "BoundaryModel" ) << "Model " << model_.name() << " has "
@@ -1714,16 +1711,19 @@ namespace RINGMesh {
             << std::setw( 10 ) << std::left << model_.nb_layers() << " layers "
             << std::endl << std::endl ;
 
-        // What do we do if the model is not valid ?
         if( model_.check_model_validity() ) {
-            GEO::Logger::out( "BoundaryModel" ) << "Model " << model_.name()
-                << " is valid " << std::endl ;
+            GEO::Logger::out( "BoundaryModel" ) 
+                << std::endl  
+                << "Model " << model_.name() << " is valid " 
+                << std::endl << std::endl ;
+            return true ;
         } else {
-            GEO::Logger::out( "BoundaryModel" ) << "Model " << model_.name()
-                << " is invalid " << std::endl ;
+            GEO::Logger::out( "BoundaryModel" ) 
+                << std::endl
+                << "Model " << model_.name() << " is invalid " 
+                << std::endl << std::endl ;
+            return false ;
         }
-
-        return true ;
     }
 
     /*!
@@ -1759,11 +1759,11 @@ namespace RINGMesh {
      *
      * @param[in] ml_file_name Input .ml file stream
      */
-    void BoundaryModelBuilderGocad::load_ml_file( const std::string& ml_file_name )
+    bool BoundaryModelBuilderGocad::load_ml_file( const std::string& ml_file_name )
     {
         GEO::LineInput in( ml_file_name ) ;
         if( !in.OK() ) {
-            return ;
+            return false ;
         }
 
         time_t start_load, end_load ;
@@ -2104,17 +2104,16 @@ namespace RINGMesh {
                 }
             }
         }
-
+        
         /// 5. Fill missing information and check model validity
-        if( !end_model() ) {
-            GEO::Logger::err("BoundaryModel") << " Model " << model_.name() 
-                << " is not a valid boundary representation. " << std::endl ;
-        }
+        bool valid_model = end_model() ;
 
         time( &end_load ) ;
         // Output of loading time only in debug mode has no meaning (JP)
         GEO::Logger::out("I/O") << " Model loading time "
             << difftime( end_load, start_load ) << " sec" << std::endl ;
+        
+        return valid_model ;
     }
 
     /*!
