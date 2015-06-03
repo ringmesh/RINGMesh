@@ -127,7 +127,7 @@ namespace {
         // If we have only 0 either this is a degenerate facets, but most certainly
         // model vertex ids are not good 
         ringmesh_debug_assert(
-            std::count( corners_global.begin(), corners_global.end(), 0 ) == corners_global.size() ) ;
+            std::count( corners_global.begin(), corners_global.end(), 0 ) != corners_global.size() ) ;
 
         std::sort( corners.begin(), corners.end() ) ;
         std::sort( corners_global.begin(), corners_global.end() ) ;

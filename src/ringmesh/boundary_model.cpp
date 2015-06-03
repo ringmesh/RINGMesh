@@ -1792,6 +1792,10 @@ namespace RINGMesh {
      */
     bool BoundaryModel::check_model_validity() const
     {
+        // Ensure that the model vertices are computed and uptodate
+        // Without them we cannot do anything
+        nb_vertices() ;
+
         /// 1. Verify the validity of all BoundaryModelElements
         bool valid = check_elements_validity() ;
          
