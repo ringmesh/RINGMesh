@@ -99,9 +99,8 @@ namespace RINGMesh {
          *     geometry and connectivity relationships
          *   - high-level elements (CONTACT, INTERFACE, LAYER) 
          *     that are constituted of low-level elements
-         * TYPE is used extensively to manage elements, iterate on them.
+         * TYPE is used extensively to manage elements, iterate on them, etc.
          *  
-         * 
          * @warning DO NOT MODIFY THIS ENUM.
          * 
          * @todo Add fault blocks.

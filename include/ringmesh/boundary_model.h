@@ -301,27 +301,14 @@ namespace RINGMesh {
          */
         inline index_t nb_elements( BME::TYPE type ) const
         {
-            switch( type ) {
-                 case BoundaryModelElement::CORNER    :   return corners_.size() ;
-                 case BoundaryModelElement::LINE      :   return lines_.size() ;
-                 case BoundaryModelElement::SURFACE   :   return surfaces_.size() ;
-                 case BoundaryModelElement::REGION    :   return regions_.size() ;
-                 case BoundaryModelElement::CONTACT   :   return contacts_.size() ;
-                 case BoundaryModelElement::INTERFACE :   return interfaces_.size() ;
-                 case BoundaryModelElement::LAYER     :   return layers_.size() ;
-                 case BoundaryModelElement::ALL_TYPES :
-                     {
-                    ringmesh_assert( nb_elements_per_type_.size() > 0 ) ;
-                    ringmesh_debug_assert(
-                        nb_elements_per_type_.back()
-                            == corners_.size() + lines_.size() + surfaces_.size()
-                                + regions_.size() + contacts_.size()
-                                + interfaces_.size() + layers_.size() ) ;
-                    return nb_elements_per_type_.back() ;
-                    }
-                 default :  
-                     return 0 ;
+            if( type < BME::NO_TYPE ) {
+                return end_elements( type )-begin_elements( type ) ;
             }
+            else if( type == BME::ALL_TYPES ) {
+                ringmesh_assert( !nb_elements_per_type_.empty() ) ;              
+                return nb_elements_per_type_.back() ;
+            }
+            else { return 0 ; }            
         }
 
         /*!
@@ -335,20 +322,11 @@ namespace RINGMesh {
             BME::bme_t id ) const
         {
             ringmesh_assert( id.index < nb_elements( id.type ) ) ;
-            switch( id.type ) {
-                 case BME::CORNER    :  return *corners_[ id.index ] ;
-                 case BME::LINE      :  return *lines_[ id.index ] ;
-                 case BME::SURFACE   :  return *surfaces_[ id.index ] ;
-                 case BME::REGION    :  return *regions_[ id.index ] ;
-                 case BME::CONTACT   :  return *contacts_[ id.index ] ;
-                 case BME::INTERFACE :  return *interfaces_[ id.index ] ;
-                 case BME::LAYER     :  return *layers_[ id.index ] ;
-                 case BME::ALL_TYPES :  return element( global_to_typed_id( id ) ) ;                     
-                 default :
-                     ringmesh_assert_not_reached ;
-                     // By default, return the universe
-                     return universe_ ;
+            if( id.type < BME::NO_TYPE ) { return *elements( id.type )[id.index] ; }
+            else if( id.type == BME::ALL_TYPES ) {
+                return element( global_to_typed_id( id ) ) ;
             }
+            else { return universe_ ; }
         }
 
         /*! @}
@@ -459,46 +437,50 @@ namespace RINGMesh {
             }            
         }
 
+
+        /*!
+        * @brief Generic accessor to the storage of elements of the given type
+        * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
+        */
+        std::vector< BME* >& modifiable_elements( BME::TYPE type )
+        {
+            return const_cast<std::vector< BME* >&>( elements( type ) ) ;
+        }
+
+        const std::vector< BME* >& elements( BME::TYPE type ) const
+        {
+            switch( type ) {
+                case BME::CORNER:     return corners_ ;
+                case BME::LINE:       return lines_ ;
+                case BME::SURFACE:    return surfaces_ ;
+                case BME::REGION:     return regions_ ;
+                case BME::CONTACT:    return contacts_ ;
+                case BME::INTERFACE:  return interfaces_ ;
+                case BME::LAYER:      return layers_ ;
+                default:
+                    ringmesh_assert_not_reached ;
+                    return surfaces_ ; ;
+            }
+        }
+        
         /*!
         * @brief Generic accessor to the beginning of the storage of elements of the given type
         * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
         */
-        std::vector< BME* >::iterator begin_elements( BME::TYPE type )
+        std::vector< BME* >::const_iterator begin_elements( BME::TYPE type ) const
         {
-            switch( type ) {
-                case BME::CORNER:     return corners_.begin() ;
-                case BME::LINE:       return lines_.begin() ;
-                case BME::SURFACE:    return surfaces_.begin() ;
-                case BME::REGION:     return regions_.begin() ;
-                case BME::CONTACT:    return contacts_.begin() ;
-                case BME::INTERFACE:  return interfaces_.begin() ;
-                case BME::LAYER:      return layers_.begin() ;
-                default:
-                    ringmesh_assert_not_reached ;
-                    return corners_.begin() ;
-            }
+            return elements( type ).begin() ;            
         }
 
         /*!
         * @brief Generic accessor to the end of the storage of elements of the given type
         * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
         */
-        std::vector< BME* >::iterator end_elements( BME::TYPE type ) 
+        std::vector< BME* >::const_iterator end_elements( BME::TYPE type ) const
         {
-            switch( type ) {
-                case BME::CORNER:     return corners_.end() ;
-                case BME::LINE:       return lines_.end() ;
-                case BME::SURFACE:    return surfaces_.end() ;
-                case BME::REGION:     return regions_.end() ;
-                case BME::CONTACT:    return contacts_.end() ;
-                case BME::INTERFACE:  return interfaces_.end() ;
-                case BME::LAYER:      return layers_.end() ;
-                default:
-                    ringmesh_assert_not_reached ;
-                    return layers_.end() ;
-            }
+            return elements( type ).end() ;
         }
-
+        
     public:
         BoundaryModelVertices vertices ;
 
