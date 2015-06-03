@@ -713,7 +713,7 @@ namespace RINGMesh {
         {
         }
 
-        ~Surface() ;
+        ~Surface(){} ;
         
         bool is_triangulated() const { return mesh_.facets.are_simplices() ; }
 
