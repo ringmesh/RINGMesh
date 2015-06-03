@@ -27,6 +27,7 @@
 									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-1.1/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
+									<listOptionValue builtIn="false" value="/home/guyau/app/hdf5/include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1044941177" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_MG_TETRA=TRUE"/>
@@ -44,6 +45,12 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.717298664" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.226762870" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release">
 								<option id="gnu.cpp.link.option.paths.423015916" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths"/>
+								<option id="gnu.cpp.link.option.libs.1259430071" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="/home/guyau/app/hdf5/lib/libhdf5_hl_cpp.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="/home/guyau/app/hdf5/lib/libhdf5_hl.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="/home/guyau/app/hdf5/lib/libhdf5_cpp.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="/home/guyau/app/hdf5/lib/libhdf5.a"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.761219993" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
