@@ -844,7 +844,8 @@ namespace RINGMesh {
     {
         set_vertex( v, model_->vertices.unique_vertex( model_vertex ), false ) ;
         set_model_vertex_id( v, model_vertex ) ;
-        model_->vertices.add_unique_to_bme( model_vertex, bme_id(), v ) ;
+        model_->vertices.add_unique_to_bme( 
+            model_vertex, BoundaryModelVertices::VertexInBME( bme_id(), v ) ) ;
     }
 
 
@@ -1931,7 +1932,8 @@ namespace RINGMesh {
         if( m_corner != NO_ID ) {
             s_new_corner = mesh_.vertices.create_vertex( M.vertices.unique_vertex( m_corner ).data() ) ;
             set_model_vertex_id( s_new_corner, m_corner ) ;           
-            M.vertices.add_unique_to_bme( m_corner, bme_id(), s_new_corner ) ;
+            M.vertices.add_unique_to_bme( 
+                m_corner, BoundaryModelVertices::VertexInBME( bme_id(), s_new_corner ) ) ;
         }
 
         while( model_vertex_id( id1 ) != M.corner(c1).model_vertex_id() ) {
@@ -1962,7 +1964,8 @@ namespace RINGMesh {
             // Set its model vertex index
             set_model_vertex_id( new_id1, model_vertex_id( id1 ) ) ;
             // Add the mapping from in the model vertices. Should we do this one ?
-            M.vertices.add_unique_to_bme( model_vertex_id(id1), bme_id(), new_id1 ) ;
+            M.vertices.add_unique_to_bme(
+                model_vertex_id( id1 ), BoundaryModelVertices::VertexInBME( bme_id(), new_id1 ) ) ;
 
             // Update vertex index in facets 
             update_facet_corner( *this, facets_around_id1, id1, new_id1 ) ;
