@@ -111,14 +111,24 @@ namespace {
      */
     bool facet_is_degenerate( const Surface& S, index_t f )
     {
-        std::vector< index_t > corners( S.nb_vertices_in_facet( f ) ) ;
-        std::vector< index_t > corners_global( S.nb_vertices_in_facet( f ) ) ;
+        std::vector< index_t > corners( S.nb_vertices_in_facet( f ), NO_ID ) ;
+        std::vector< index_t > corners_global( S.nb_vertices_in_facet( f ), NO_ID ) ;
         int v = 0 ;
         for( index_t c = S.facet_begin( f ) ; c < S.facet_end( f ); ++c ) {
             corners[ v ] = c ;
             corners_global[ v ] = S.model_vertex_id( f, v ) ;
             v++ ;
         }
+        ringmesh_debug_assert( 
+            std::count( corners.begin(), corners.end(), NO_ID ) == 0 ) ;
+        ringmesh_debug_assert( 
+            std::count( corners_global.begin(), corners_global.end(), NO_ID ) == 0 ) ;
+        // 0 is the default value of the model_vertex_id
+        // If we have only 0 either this is a degenerate facets, but most certainly
+        // model vertex ids are not good 
+        ringmesh_debug_assert(
+            std::count( corners_global.begin(), corners_global.end(), 0 ) == corners_global.size() ) ;
+
         std::sort( corners.begin(), corners.end() ) ;
         std::sort( corners_global.begin(), corners_global.end() ) ;
         return std::unique( corners.begin(), corners.end() ) != corners.end() ||
@@ -1156,11 +1166,6 @@ namespace RINGMesh {
 
 
     /********************************************************************/
-
-    Surface::~Surface()
-    {
-    }
-
     
     /*!
      * @brief Check that the mesh of the Surface is valid

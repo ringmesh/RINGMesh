@@ -432,19 +432,24 @@ namespace RINGMesh {
          */
         inline BME::bme_t global_to_typed_id(
             const BME::bme_t& global ) const
-        {        
-            index_t it = std::upper_bound(
-                nb_elements_per_type_.begin(), nb_elements_per_type_.end(), global.index ) 
-                - nb_elements_per_type_.begin() ;
-            
-            if( it != nb_elements_per_type_.size() ) {
-                BME::TYPE T = (BME::TYPE) (it-1) ;
-                index_t i = global.index - nb_elements_per_type_[ it-1 ] ;
+        {     
+            index_t t = NO_ID ;
+            for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
+                if( global.index >= nb_elements_per_type_[ i - 1 ]
+                    && global.index < nb_elements_per_type_[ i ] 
+                  ) {
+                    t = i - 1 ;
+                    break ;
+                 }                
+            }
+            if( ( BME::TYPE ) t < BME::NO_TYPE ) {
+                BME::TYPE T = ( BME::TYPE ) ( t ) ;
+                index_t i = global.index - nb_elements_per_type_[ t ] ;
                 return BME::bme_t( T, i ) ;
             }
             else {
-                return BME::bme_t() ;
-            }
+                return BME::bme_t() ;                
+            }            
         }
 
     public:

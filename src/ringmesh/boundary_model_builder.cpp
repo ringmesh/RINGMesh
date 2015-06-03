@@ -527,8 +527,20 @@ namespace RINGMesh {
      * @brief Remove a list of elements of the model
      * @details No check is done on the consistency of this removal
      *          The elements and all references to them are removed. 
-     * @warning The client is responsible to set the proper connectivity
+     * @warning DOES NOT WORK AT ALL. 
+     *          The client is responsible to set the proper connectivity
      *          information between the remaining model elements.
+     * 
+     * @todo 
+     *   - Write a function to determine which elements should be removed 
+     *     because these elements are removed (children, parents with no children,
+     *     elements in the boundary of nothing, others?? ) 
+     *   - UPDATE reference to points in BME, we store some bme_t over there, they must
+     *     be update if some BMME are removed, and the BMVertices must be updated 
+     *     (remove empty global points, update all indices everywhere)
+     *   - Prepare erase must be done globally 1. Fill the mapping for all elements
+     *     2. Update all connectivity information using this mapping
+     *   - TESTS. How ??
      */
     void BoundaryModelBuilder::remove_elements( 
         const std::vector< bme_t >& elements )
@@ -583,10 +595,9 @@ namespace RINGMesh {
         }        
         
         for( index_t i = BME::CORNER; i < BME::NO_TYPE; ++i ) {
-            prepare_to_erase_elements( ( BME::TYPE )i, to_erase_by_type[i] ) ;
-        }
-        for( index_t i = BME::CORNER; i < BME::NO_TYPE; ++i ) {
-            erase_elements( ( BME::TYPE )i, to_erase_by_type[ i ] ) ;
+            if( prepare_to_erase_elements( ( BME::TYPE )i, to_erase_by_type[ i ] ) ) {
+                erase_elements( ( BME::TYPE )i, to_erase_by_type[ i ] ) ;
+            }
         }
         
         // Re-initialize global access to elements
@@ -601,52 +612,16 @@ namespace RINGMesh {
         BME::TYPE T, const std::vector< index_t >& to_erase )
     {
         for( index_t i = 0; i < to_erase.size(); ++i ) {
-
             if( to_erase[ i ] != NO_ID ) {
                 // Nothing to do 
                 continue ;
-            }
-            switch( T ) {
-                case BME::CORNER:
-                    delete model_.corners_[ i ] ;
-                    model_.corners_[ i ] =
-                        static_cast<Corner*>( nil ) ;
-                    break ;
-                case BME::LINE:
-                    delete model_.lines_[ i ] ;
-                    model_.lines_[ i ] = static_cast<Line*>( nil ) ;
-                    break ;
-
-                case BME::SURFACE:
-                    delete model_.surfaces_[ i ] ;
-                    model_.surfaces_[ i ] =
-                        static_cast<Surface*>( nil ) ;
-                    break ;
-
-                case BME::REGION:
-                    delete model_.regions_[ i ] ;
-                    model_.regions_[ i ] =
-                        static_cast<BoundaryModelElement*>( nil ) ;
-                    break ;
-
-                case BME::CONTACT:
-                    delete model_.contacts_[ i ] ;
-                    model_.contacts_[ i ] =
-                        static_cast<BoundaryModelElement*>( nil ) ;
-                    break ;
-
-                case BME::INTERFACE:
-                    delete model_.interfaces_[ i ] ;
-                    model_.interfaces_[ i ] =
-                        static_cast<BoundaryModelElement*>( nil ) ;
-                    break ;
-
-                case BME::LAYER:
-                    delete model_.layers_[ i ] ;
-                    model_.layers_[ i ] = static_cast<BoundaryModelElement*>( nil ) ;
-                    break ;
+            } else {
+                BME::bme_t cur( T, i ) ;
+                delete element_ptr( cur ) ;
+                set_element( cur, nil ) ;
             }
         }
+
         switch( T ) {
             case BME::CORNER:
                 model_.corners_.erase(
@@ -1526,6 +1501,13 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * @brief Remove degenerate facets and edges from the Surface
+     *        and Line of the model
+     * @warning DOES NOT WORK. 
+     *         Because it may need to call remove_elements, that does not work
+     * @todo Update the model vertices ? Sans doute necessaire.
+     */
     void BoundaryModelBuilder::remove_degenerate_facet_and_edges()
     {
         std::vector< bme_t > to_remove ;
@@ -1649,7 +1631,8 @@ namespace RINGMesh {
         }
 
         // Basic mesh repair for surfaces and lines
-        remove_degenerate_facet_and_edges() ;
+        /// @todo To put repair when remove_elements is OK
+        // remove_degenerate_facet_and_edges() ; 
 
         if( model_.check_model_validity() ) {
             GEO::Logger::out( "BoundaryModel" ) 

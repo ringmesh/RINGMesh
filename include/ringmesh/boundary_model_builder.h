@@ -78,8 +78,12 @@ namespace RINGMesh {
         BoundaryModelElement& element(
             const BME::bme_t& t ) const
         {
-            return *element_ptr( t ) ;
+            return *element_ptr(t) ;
         }
+        
+        /*!
+         * @brief Modifiable pointer to an element of the associated model
+         */
         BoundaryModelElement* element_ptr( const BME::bme_t& id ) const
         {
             switch( id.type ) {
@@ -96,20 +100,58 @@ namespace RINGMesh {
                     return &model_.universe_ ;
             }
         }
-        void set_nil_element_ptr( const BME::bme_t& id ) const
+
+        /*!
+         * @brief Set the element of the model to the given element.
+         * @details No checking whatsoever are performed on purpose,
+         *          so that nil pointers can be set. Used to removed elements
+         */
+        void set_element( const BME::bme_t& id, BoundaryModelElement* E ) const
         {
             switch( id.type ) {
-                case BME::CORNER: model_.corners_[ id.index ] = nil ; break ;
-                case BME::LINE:  model_.lines_[ id.index ] = nil ; break ;
-                case BME::SURFACE:  model_.surfaces_[ id.index ] = nil ; break ;
-                case BME::REGION:  model_.regions_[ id.index ] = nil ; break ;
-                case BME::CONTACT:  model_.contacts_[ id.index ] = nil ; break ;
-                case BME::INTERFACE:  model_.interfaces_[ id.index ] = nil ; break ;
-                case BME::LAYER:  model_.layers_[ id.index ] = nil ; break ;
+                case BME::CORNER:
+                    model_.corners_[ id.index ] = dynamic_cast< Corner* >(E) ;
+                    break ;
+                case BME::LINE:  
+                    model_.lines_[ id.index ] = dynamic_cast< Line* >(E) ; 
+                    break ;
+                case BME::SURFACE: 
+                    model_.surfaces_[ id.index ] = dynamic_cast< Surface*>(E) ;
+                    break ;
+                case BME::REGION:  
+                    model_.regions_[ id.index ] = E ;
+                    break ;
+                case BME::CONTACT:  
+                    model_.contacts_[ id.index ] = E ;
+                    break ;
+                case BME::INTERFACE:  
+                    model_.interfaces_[ id.index ] = E ; 
+                    break ;
+                case BME::LAYER:  
+                    model_.layers_[ id.index ] = E ; 
+                    break ;
                 default:
                     ringmesh_assert_not_reached ;
             }
         }
+
+        /*!
+         * @todo To implement
+         */
+        std::vector< BME* >::iterator begin_elements( BME::TYPE type ) const
+        {
+            return model_.layers_.begin() ;
+        }
+
+        /*!
+         * @todo To implement 
+         */
+        std::vector< BME* >::iterator end_elements( BME::TYPE T ) const
+        {
+            return model_.layers_.end() ;
+        }
+
+
 
         /*! @}
          * \name Filling BoundaryModelElement attributes.
