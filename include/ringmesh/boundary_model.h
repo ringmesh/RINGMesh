@@ -51,6 +51,7 @@
 
 #include <vector>
 #include <string>
+#include <iterator>
 #include <algorithm>
 
 
@@ -362,9 +363,15 @@ namespace RINGMesh {
         index_t nb_interfaces() const { return nb_elements( BME::INTERFACE ) ; }
         index_t nb_layers()     const { return nb_elements( BME::LAYER )     ; }
 
-        const Corner& corner( index_t index ) const { return *corners_.at( index ) ; }
-        const Line& line( index_t index ) const { return *lines_.at( index ) ; }
-        const Surface& surface( index_t index ) const { return *surfaces_.at( index ) ;}
+        const Corner& corner( index_t index ) const { 
+            return dynamic_cast< const Corner& >(*corners_.at( index ) ) ; 
+        }
+        const Line& line( index_t index ) const {
+            return dynamic_cast< const Line& >(*lines_.at( index ) ) ;
+        }
+        const Surface& surface( index_t index ) const {
+            return dynamic_cast< const Surface& > (*surfaces_.at( index ) );
+        }
 
         const BoundaryModelElement& region( index_t index ) const
         {
@@ -452,6 +459,46 @@ namespace RINGMesh {
             }            
         }
 
+        /*!
+        * @brief Generic accessor to the beginning of the storage of elements of the given type
+        * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
+        */
+        std::vector< BME* >::iterator begin_elements( BME::TYPE type )
+        {
+            switch( type ) {
+                case BME::CORNER:     return corners_.begin() ;
+                case BME::LINE:       return lines_.begin() ;
+                case BME::SURFACE:    return surfaces_.begin() ;
+                case BME::REGION:     return regions_.begin() ;
+                case BME::CONTACT:    return contacts_.begin() ;
+                case BME::INTERFACE:  return interfaces_.begin() ;
+                case BME::LAYER:      return layers_.begin() ;
+                default:
+                    ringmesh_assert_not_reached ;
+                    return corners_.begin() ;
+            }
+        }
+
+        /*!
+        * @brief Generic accessor to the end of the storage of elements of the given type
+        * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
+        */
+        std::vector< BME* >::iterator end_elements( BME::TYPE type ) 
+        {
+            switch( type ) {
+                case BME::CORNER:     return corners_.end() ;
+                case BME::LINE:       return lines_.end() ;
+                case BME::SURFACE:    return surfaces_.end() ;
+                case BME::REGION:     return regions_.end() ;
+                case BME::CONTACT:    return contacts_.end() ;
+                case BME::INTERFACE:  return interfaces_.end() ;
+                case BME::LAYER:      return layers_.end() ;
+                default:
+                    ringmesh_assert_not_reached ;
+                    return layers_.end() ;
+            }
+        }
+
     public:
         BoundaryModelVertices vertices ;
 
@@ -460,9 +507,9 @@ namespace RINGMesh {
         std::string name_ ;
 
         // Base manifold elements of a model
-        std::vector< Corner* > corners_ ;
-        std::vector< Line* > lines_ ;
-        std::vector< Surface* > surfaces_ ;
+        std::vector< BoundaryModelElement* > corners_ ;
+        std::vector< BoundaryModelElement* > lines_ ;
+        std::vector< BoundaryModelElement* > surfaces_ ;
         std::vector< BoundaryModelElement* > regions_ ;
 
         /// The region including all the other regions

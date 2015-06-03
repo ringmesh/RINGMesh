@@ -1139,7 +1139,8 @@ namespace RINGMesh {
         const vec3& point )
     {
         ringmesh_assert( corner_id.index < model_.nb_corners() ) ;
-        model_.corners_[corner_id.index]->set_vertex( point, false ) ;
+        dynamic_cast< Corner* >( model_.corners_[corner_id.index] )->
+            set_vertex( point, false ) ;
     }
 
     /*!
@@ -1153,7 +1154,8 @@ namespace RINGMesh {
         const std::vector< vec3 >& vertices )
     {
         ringmesh_assert( id.index < model_.nb_lines() ) ;
-        model_.lines_[id.index]->set_vertices( vertices ) ;
+        dynamic_cast< Line* >( model_.lines_[ id.index ] )->
+            set_vertices( vertices ) ;
     }
 
     /*!
@@ -1175,7 +1177,7 @@ namespace RINGMesh {
             return ;
         }
 
-        model_.surfaces_[surface_id.index]->
+        dynamic_cast< Surface* > (model_.surfaces_[surface_id.index] )->
             set_geometry( points, facets, facet_ptr ) ;
 
         set_surface_adjacencies( surface_id ) ;
@@ -1201,7 +1203,8 @@ namespace RINGMesh {
         index_t unique_vertex )
     {
         ringmesh_assert( corner_id.index < model_.nb_corners() ) ;
-        model_.corners_[corner_id.index]->set_vertex( unique_vertex ) ;
+        dynamic_cast< Corner* >( model_.corners_[corner_id.index] )->
+            set_vertex( unique_vertex ) ;
     }
 
     /*!
@@ -1215,7 +1218,8 @@ namespace RINGMesh {
         const std::vector< index_t >& unique_vertices )
     {
         ringmesh_assert( id.index < model_.nb_lines() ) ;
-        model_.lines_[id.index]->set_vertices( unique_vertices ) ;
+        dynamic_cast< Corner* >( model_.corners_[ id.index ] )->
+            set_vertices( unique_vertices ) ;
     }
 
     /*!
@@ -1236,8 +1240,7 @@ namespace RINGMesh {
         if( facets.size() == 0 ) {
             return ;
         }
-
-        model_.surfaces_[ surface_id.index ]->
+        dynamic_cast< Surface* >( model_.surfaces_[ surface_id.index ] )->
             set_geometry( model_vertex_ids, facets, facet_ptr ) ;
 
         set_surface_adjacencies( surface_id ) ;
@@ -1297,7 +1300,7 @@ namespace RINGMesh {
     void BoundaryModelBuilder::set_surface_adjacencies(
         const bme_t& surface_id )
     {
-        Surface& S = *model_.surfaces_[surface_id.index] ;
+        Surface& S = dynamic_cast< Surface& >( *model_.surfaces_[surface_id.index] );
         ringmesh_assert( S.nb_cells() > 0 ) ;
 
         std::vector< index_t > adjacent ;
@@ -1552,7 +1555,7 @@ namespace RINGMesh {
 
                 // If the Surface has internal boundaries, we need to 
                 // re-cut the Surface along these lines
-                Surface& S = *model_.surfaces_[ i ] ;
+                Surface& S = dynamic_cast< Surface& >( *model_.surfaces_[ i ] ) ;
                 for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                     const Line& L = model_.line( S.boundary_id( l ).index ) ;
                     if( L.is_inside_border( S ) ) {

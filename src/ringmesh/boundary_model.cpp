@@ -1607,24 +1607,23 @@ namespace RINGMesh {
     */
     void BoundaryModel::copy_meshes( const BoundaryModel& from )
     {
+        for( index_t i = BME::CORNER; i < BME::REGION; ++i ) {
 #pragma omp parallel for
-        for( index_t i = 0; i < nb_corners(); i++ ) {
-            corners_[ i ]->unbind_attributes() ;
-            corners_[ i ]->mesh().copy( from.corner( i ).mesh() ) ;
-            corners_[ i ]->bind_attributes() ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < nb_lines(); i++ ) {
-            lines_[ i ]->unbind_attributes() ;
-            lines_[ i ]->mesh().copy( from.line( i ).mesh() ) ;
-            lines_[ i ]->bind_attributes() ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < nb_surfaces(); i++ ) {
-            surfaces_[ i ]->unbind_attributes() ;
-            surfaces_[ i ]->mesh().copy( from.surface( i ).mesh() ) ;
-            surfaces_[ i ]->bind_attributes() ;
-        }
+            BME::TYPE T = ( BME::TYPE ) i ;
+            for( std::vector< BME* >::iterator it = begin_elements( T );
+                 it < end_elements( T ); ++it ) {
+                BoundaryModelMeshElement* E =
+                    dynamic_cast<BoundaryModelMeshElement*>( *it ) ;
+                ringmesh_assert( E != nil ) ;
+                const BoundaryModelMeshElement& E_from =
+                    dynamic_cast<const BoundaryModelMeshElement&> (
+                    from.element( BME::bme_t( T, i ) ) ) ;
+
+                E->unbind_attributes() ;               
+                E->mesh().copy( E_from.mesh() ) ;                
+                E->bind_attributes() ;
+            }
+        }        
     }
 
     /*!

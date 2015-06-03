@@ -135,24 +135,7 @@ namespace RINGMesh {
             }
         }
 
-        /*!
-         * @todo To implement
-         */
-        std::vector< BME* >::iterator begin_elements( BME::TYPE type ) const
-        {
-            return model_.layers_.begin() ;
-        }
-
-        /*!
-         * @todo To implement 
-         */
-        std::vector< BME* >::iterator end_elements( BME::TYPE T ) const
-        {
-            return model_.layers_.end() ;
-        }
-
-
-
+   
         /*! @}
          * \name Filling BoundaryModelElement attributes.
          * @{
