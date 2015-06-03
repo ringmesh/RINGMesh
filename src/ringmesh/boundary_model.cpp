@@ -1571,8 +1571,8 @@ namespace RINGMesh {
     void BoundaryModel::copy_meshes( const BoundaryModel& from )
     {
         for( index_t i = BME::CORNER; i < BME::REGION; ++i ) {
-#pragma omp parallel for
             BME::TYPE T = ( BME::TYPE ) i ;
+#pragma omp parallel for
             for( std::vector< BME* >::const_iterator it = begin_elements( T );
                  it < end_elements( T ); ++it ) {
                 BoundaryModelMeshElement* E =
@@ -2489,30 +2489,13 @@ namespace RINGMesh {
         out << std::endl << "0" << std::endl << "0" << std::endl;
     }
 
-    signed_index_t BoundaryModel::find_interface( const std::string& name) const {
-        for(index_t i = 0 ; i < nb_interfaces() ; i++ ) {
-            if( one_interface(i).name() == name ) {
+    index_t BoundaryModel::find_element( BME::TYPE type, const std::string& name) const {
+        for(index_t i = 0 ; i < nb_elements( type ) ; i++ ) {
+            if( element( BME::bme_t( type, i ) ).name() == name ) {
                 return i ;
             }
         }
-        GEO::Logger::err("") << "Surface name did not match with an actual\
-                                interface name of the Boundary Model. Abort.. " 
-                                << std::endl ;
-        ringmesh_assert_not_reached ;
-        return -1 ;
-    }
-
-    signed_index_t BoundaryModel::find_region( const std::string& name) const {
-        for(index_t r = 0 ; r < nb_regions() ; r++ ) {
-            if( region(r).name() == name ) {
-                return r ;
-            }
-        }
-        GEO::Logger::err("") << "Region name did not match with an actual\
-                                region name of the Boundary Model. Abort.. " 
-                                << std::endl ;
-        ringmesh_assert_not_reached ;
-        return -1 ;
+        return NO_ID ;
     }
 
 

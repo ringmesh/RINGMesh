@@ -394,8 +394,7 @@ namespace RINGMesh {
          * @}
          */
 
-        signed_index_t find_interface( const std::string& name) const ;
-        signed_index_t find_region( const std::string& name) const ;
+        index_t find_element( BME::TYPE type, const std::string& name) const ;
         
 
     private:
