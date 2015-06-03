@@ -70,8 +70,7 @@ namespace RINGMesh {
     public:
         /*!
          * @brief Geological feature types for BoundaryModelElement
-         * \todo Read all possible geological features set by Gocad.
-         *       Are types for contacts really necessary ?
+         * @todo Read all possible geological features set by Gocad.
          */
         enum GEOL_FEATURE {
             /// All geological features 
@@ -80,16 +79,16 @@ namespace RINGMesh {
             NO_GEOL,
             /// Stratigraphical surface - an horizon
             STRATI,
-            /// A fault
+            /// Unconformity
+            UNCONFORMITY,
+            /// A normal fault
+            NORMAL_FAULT,
+            /// A reverse fault 
+            REVERSE_FAULT,
+            /// An unspecified fault 
             FAULT,
             /// Volume Of Interest
-            VOI,
-            /// Intersection stratigraphy - fault
-            STRATI_FAULT,
-            /// Intersection stratigraphy - VOI
-            STRATI_VOI,
-            /// Intersection fault - VOI 
-            FAULT_VOI
+            VOI
         } ;
 
         /*!
@@ -100,10 +99,11 @@ namespace RINGMesh {
          *     geometry and connectivity relationships
          *   - high-level elements (CONTACT, INTERFACE, LAYER) 
          *     that are constituted of low-level elements
-         *
-         * DO NOT MODIFY THIS ENUM
+         * TYPE is used extensively to manage elements, iterate on them, etc.
+         *  
+         * @warning DO NOT MODIFY THIS ENUM.
          * 
-         * @todo Add fault blocks ?
+         * @todo Add fault blocks.
          */
         enum TYPE {
             /// Points at LINE extremities
@@ -146,12 +146,21 @@ namespace RINGMesh {
             {
                 return type == rhs.type && index == rhs.index ;
             }
+            /*!
+             * @brief Sort BME identifiers
+             * @details Compare first types, then compare indices, 
+             *          beginning with NO_ID indices. 
+             * @note In a sorted vector v of bme_t one can find the first surface with
+             *       std::lower_bound( v.begin(), v.end(), bme_t( SURFACE, NO_ID ) ) ;
+             */
             bool operator<( const bme_t& rhs ) const
             {
                 if( type != rhs.type ) {
                     return type < rhs.type  ;
                 }
                 else {
+                    if( index == NO_ID ) return true ;
+                    if( rhs.index == NO_ID ) return false ;
                     return index < rhs.index ;
                 }
             }    
@@ -180,6 +189,14 @@ namespace RINGMesh {
         static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) ;
 
         static std::string geol_name( GEOL_FEATURE ) ;
+        static bool is_fault( GEOL_FEATURE T )
+        {
+            return T == FAULT || T == REVERSE_FAULT || T == NORMAL_FAULT ;
+        }
+        static bool is_stratigraphic_limit( GEOL_FEATURE T )
+        {
+            return T == STRATI || T == UNCONFORMITY ;
+        }
         
         /*!
          * \name Key functions to access relationships between TYPE s 
@@ -222,7 +239,8 @@ namespace RINGMesh {
 
         /*! 
          * @brief Test the strict equality of the two BME
-         * @todo Sort the vectors before comparison ?
+         * @warning Connectivity information must match exactly
+         *          elements being in the exact same order
          */
         bool operator==( const BoundaryModelElement& rhs ) const ;
 
@@ -241,11 +259,9 @@ namespace RINGMesh {
         
         /*!
          * @brief Basic checks on the minimum required information 
-         * @details Required connectivity information depend on the TYPE.   
+         * @details Required connectivity information depends on the TYPE.   
          *          Check that connectivity information stored by elements is consistent.
          *          e.g. the parent of a BME must have it in its chidren list 
-         * 
-         * @todo Write meaningful message when the test fails ?
          */
         bool is_connectivity_valid() const ;
 
@@ -350,7 +366,8 @@ namespace RINGMesh {
 
         void set_boundary( index_t id, bme_t b )
         {
-            ringmesh_debug_assert( b.is_defined() ) ;
+            /// No check on the validity of the index of the element b
+            /// NO_ID is used to flag elements to delete            
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             ringmesh_debug_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
@@ -366,7 +383,8 @@ namespace RINGMesh {
 
         void set_boundary( index_t id, bme_t b, bool side )
         {
-            ringmesh_debug_assert( b.is_defined() ) ;
+            /// No check on the validity of the index of the element b
+            /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             ringmesh_debug_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
@@ -382,7 +400,8 @@ namespace RINGMesh {
 
         void set_in_boundary( index_t id, bme_t in_b )
         {
-            ringmesh_debug_assert( in_b.is_defined() ) ;
+            /// No check on the validity of the index of the element in_b
+            /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
             ringmesh_debug_assert( id < nb_in_boundary() ) ;
             in_boundary_[ id ] = in_b ;
@@ -390,7 +409,8 @@ namespace RINGMesh {
 
         void set_parent( bme_t p )
         {
-            ringmesh_debug_assert( p.is_defined() ) ;
+            /// No check on the validity of the index of the element p
+            /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( parent_type( id_.type ) == p.type ) ;
             parent_ = p ;
         }
@@ -404,12 +424,15 @@ namespace RINGMesh {
 
         void set_child( index_t id, bme_t c )
         {
-            ringmesh_debug_assert( c.is_defined() ) ;
+            /// No check on the validity of the index of the element c
+            /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
             ringmesh_debug_assert( id < nb_children() ) ;
             children_[ id ] = c ;
         }
 
+
+        void erase_invalid_element_references() ;
         /*!
          * @}
          */
@@ -453,8 +476,8 @@ namespace RINGMesh {
     /*!
     * @brief Name of the attribute storing the index of a vertex in the model
     * 
-    * @todo Put it in BoundaryModelMeshElement class - but if I do it I have 
-    *       linking errors in the code that depends on it JP
+    * @note It should be in BoundaryModelMeshElement class 
+    *       but then there are linking errors in code that depends on it (JP)
     */
     const static std::string model_vertex_id_att_name = std::string( "model_vertex_id" ) ;
 
@@ -690,7 +713,7 @@ namespace RINGMesh {
         {
         }
 
-        ~Surface() ;
+        ~Surface(){} ;
         
         bool is_triangulated() const { return mesh_.facets.are_simplices() ; }
 
@@ -706,6 +729,7 @@ namespace RINGMesh {
         const vec3& vertex( index_t v ) const {
             return BoundaryModelMeshElement::vertex(v) ;
         }
+
         index_t model_vertex_id( index_t v ) const {
             return BoundaryModelMeshElement::model_vertex_id(v) ;
         }
@@ -773,10 +797,9 @@ namespace RINGMesh {
 
        
         /*!
-         * @brief Returns a vertex surface index from its model index
-         * @details Returns the first one only or NO_ID if no point is found
-         * 
-         * @todo To remove
+         * @brief Returns a vertex surface index from its model index \param model_vertex_id
+         * @details If there are two points, returns the first one.
+         *          Returns NO_ID if no point is found
          */
         index_t surf_vertex_id( index_t model_vertex_id ) const ;
 

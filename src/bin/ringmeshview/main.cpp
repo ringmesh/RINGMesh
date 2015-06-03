@@ -111,10 +111,43 @@ namespace {
     bool show_lines = true ;
     bool show_surface = true ;
     bool show_volume = false ;
+    bool show_wells = false ;
     bool colored_cells = false ;
+    bool show_voi = true ;
 
     double shrink = 1.0 ;
     bool mesh_visible = true ;
+
+    /**
+     * \brief Toggles the well display
+     */
+    void toggle_wells()
+    {
+        show_wells = !show_wells ;
+        MM_gfx.set_edge_regions_visibility( show_wells ) ;
+    }
+
+    /**
+     * \brief Toggles the volume display
+     */
+    void toggle_volume()
+    {
+        show_volume = !show_volume ;
+        MM_gfx.set_cell_regions_visibility( show_volume ) ;
+    }
+
+    /**
+     * \brief Toggles the VOI display
+     */
+    void toggle_voi()
+    {
+        show_voi = !show_voi ;
+        for( GEO::index_t s = 0; s < BM.nb_surfaces(); s++ ) {
+            if( BM.surface( s ).is_on_voi() ) {
+                BM_gfx.set_surface_visibility( s, show_voi ) ;
+            }
+        }
+    }
 
     /**
      * \brief Zooms in.
@@ -142,12 +175,16 @@ namespace {
         white_bg = !white_bg ;
         if( white_bg ) {
             glut_viewer_set_background_color( 1.0, 1.0, 1.0 ) ;
+            BM_gfx.set_edge_lines_color( 0.0, 0.0, 0.0 ) ;
             BM_gfx.set_mesh_surfaces_color( 0.0, 0.0, 0.0 ) ;
             MM_gfx.set_cell_mesh_regions_color( 0.0, 0.0, 0.0 ) ;
+            MM_gfx.set_edge_regions_color( 0.0, 0.0, 0.0 ) ;
         } else {
             glut_viewer_set_background_color( 0.0, 0.0, 0.0 ) ;
+            BM_gfx.set_edge_lines_color( 1.0, 1.0, 1.0 ) ;
             BM_gfx.set_mesh_surfaces_color( 1.0, 1.0, 1.0 ) ;
             MM_gfx.set_cell_mesh_regions_color( 1.0, 1.0, 1.0 ) ;
+            MM_gfx.set_edge_regions_color( 1.0, 1.0, 1.0 ) ;
         }
     }
 
@@ -230,8 +267,18 @@ namespace {
 
         if( white_bg ) {
             BM_gfx.set_surfaces_color( 0.9f, 0.9f, 0.9f ) ;
+
+            BM_gfx.set_edge_lines_color( 0.0, 0.0, 0.0 ) ;
+            BM_gfx.set_mesh_surfaces_color( 0.0, 0.0, 0.0 ) ;
+            MM_gfx.set_cell_mesh_regions_color( 0.0, 0.0, 0.0 ) ;
+            MM_gfx.set_edge_regions_color( 0.0, 0.0, 0.0 ) ;
         } else {
             BM_gfx.set_surfaces_color( 0.1f, 0.1f, 0.1f ) ;
+
+            BM_gfx.set_edge_lines_color( 1.0, 1.0, 1.0 ) ;
+            BM_gfx.set_mesh_surfaces_color( 1.0, 1.0, 1.0 ) ;
+            MM_gfx.set_cell_mesh_regions_color( 1.0, 1.0, 1.0 ) ;
+            MM_gfx.set_edge_regions_color( 1.0, 1.0, 1.0 ) ;
         }
 
         if( show_corners ) {
@@ -246,7 +293,7 @@ namespace {
             BM_gfx.draw_surfaces() ;
         }
 
-        if( show_volume ) {
+        if( show_volume || show_wells ) {
             MM_gfx.draw() ;
         }
 
@@ -340,8 +387,11 @@ namespace {
 
         get_bbox( BM, xyzmin, xyzmax, false ) ;
 
-        MM.set_nodel( BM ) ;
-        if( RINGMesh::RINGMeshIO::load( GEO::CmdLine::get_arg( "mesh" ), MM ) ) {
+        if( GEO::CmdLine::get_arg( "mesh" ) != "" ) {
+            MM.set_nodel( BM ) ;
+            if( !RINGMesh::RINGMeshIO::load( GEO::CmdLine::get_arg( "mesh" ), MM ) ) {
+                return ;
+            }
             get_bbox( MM, xyzmin, xyzmax, false ) ;
         }
 
@@ -392,11 +442,9 @@ int main( int argc, char** argv )
 
     load_mesh() ;
 
-//    if( BM.cells.nb() != 0 ) {
-//        show_volume = true ;
-//    } else if( BM.facets.nb() == 0 ) {
-//        show_vertices = true ;
-//    }
+    if( MM.nb_meshes() != 0 ) {
+        toggle_volume() ;
+    }
 
     glut_viewer_set_window_title(
 //        (char*) "||||||(G)||E||(O)|(G)||R||/A\\||||||||" ) ;
@@ -406,11 +454,13 @@ int main( int argc, char** argv )
     glut_viewer_add_toggle( 'c', &show_corners, "corners" ) ;
     glut_viewer_add_toggle( 'e', &show_lines, "lines" ) ;
     glut_viewer_add_toggle( 's', &show_surface, "surface" ) ;
-    glut_viewer_add_toggle( 'v', &show_volume, "volume" ) ;
+    glut_viewer_add_key_func( 'v', &toggle_volume, "toggle volume" ) ;
+    glut_viewer_add_key_func( 'w', &toggle_wells, "toggle wells" ) ;
+    glut_viewer_add_key_func( 'V', toggle_voi, "toggle VOI" ) ;
     glut_viewer_add_key_func( 'L', toggle_lighting, "toggle lighting" ) ;
     glut_viewer_add_key_func( 'n', invert_normals, "invert normals" ) ;
     glut_viewer_add_key_func( 'x', dec_shrink, "unshrink cells" ) ;
-    glut_viewer_add_key_func( 'w', inc_shrink, "shrink cells" ) ;
+    glut_viewer_add_key_func( 'X', inc_shrink, "shrink cells" ) ;
     glut_viewer_add_key_func( 'C', toggle_colored_cells, "toggle colored cells" ) ;
 
     if( GEO::CmdLine::get_arg_bool( "gfx:full_screen" ) ) {

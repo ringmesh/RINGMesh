@@ -64,7 +64,7 @@ A model is defined by:
    Implemented by RINGMesh::BoundaryModelElement.
 -  A set of RINGMesh::Corner, the points at the extremities of the lines.
 
-\image html bme_doc.png width=10cm
+\image html bme_doc.png 
 
 BoundaryModelElement and derived classes
 ---------------------------------

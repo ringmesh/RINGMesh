@@ -337,8 +337,10 @@ namespace RINGMesh {
         MacroMeshOrder( MacroMesh& mm ) ;
         ~MacroMeshOrder() ;
         const index_t nb_total_vertices() const ;
-        const index_t id(const vec3& point) const ;
+        const index_t nb_vertices() const ;
         void clear() ;
+        const vec3 point(const index_t id) const ;
+        void move_point(const index_t id, const vec3& u) ;
     private:
         void initialize() ;
         /*!
@@ -350,13 +352,14 @@ namespace RINGMesh {
                 const_cast< MacroMeshOrder* >( this )->initialize() ;
             }
         }
+        void test_point_list_initialize() ;
     private:
-        /// Attached MaroMesh
+        /// Attached MacroMesh
         const MacroMesh& mm_ ;
         /// Total number of vertices + new nodes on cell edges
         index_t nb_vertices_ ;
-        /// ANNTree composed only with new nodes on cell edges
-        ColocaterANN ann_ ;
+        /// New points
+        std::vector<vec3> points_ ;
 
     } ;
 
@@ -374,11 +377,11 @@ namespace RINGMesh {
         //   |_|  |_\___|\__|_||_\___/\__,_/__/
         //
         void compute_tetmesh(
-            const TetraMethod& method,
+            const std::string& method,
             int region_id = -1,
             bool add_steiner_points = true,
             std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
-        void copy( const MacroMesh& mm, bool copy_attributes = true ) const ;
+        void copy( const MacroMesh& mm,bool copy_attributes = true ) ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
