@@ -62,6 +62,9 @@ namespace RINGMesh {
      * @details Each instance is unique, unlike vertices in 
      *          the model Corner, Line, and Surface meshes.
      *          Attributes may be defined on the vertices.
+     *
+     * @todo Clean the implementation of the function of copy-paste
+     *       and use generic access
      */          
     class RINGMESH_API BoundaryModelVertices {
         ringmesh_disable_copy( BoundaryModelVertices ) ;
@@ -77,6 +80,9 @@ namespace RINGMesh {
                 : bme_id( t ), v_id( vertex_id_in )
             {
             }
+            VertexInBME() : bme_id(), v_id( NO_ID ) 
+            {
+            }
             bool operator<( const VertexInBME& rhs ) const
             {
                 if( bme_id != rhs.bme_id ) {
@@ -85,6 +91,14 @@ namespace RINGMesh {
                 else {
                     return v_id < rhs.v_id ;
                 }
+            }
+            bool operator==( const VertexInBME& rhs ) const
+            {
+                return bme_id == rhs.bme_id && v_id == rhs.v_id ;
+            }
+            bool is_defined()
+            {
+                return bme_id.is_defined() && v_id != NO_ID ;
             }
             /// Type of the BME and index
             BME::bme_t bme_id ;
@@ -151,8 +165,12 @@ namespace RINGMesh {
          */
         void add_unique_to_bme( 
             index_t unique_id, 
-            BME::bme_t bme_id,
-            index_t v_id ) ;        
+            const VertexInBME& v ) ;   
+
+        /*! 
+         * @brief Change one of the BME vertex associated to a unique vertex
+         */
+        void set_bme( index_t unique_id, index_t k, const VertexInBME& v ) ;
 
         /*!
          * @brief Set the point coordinates of all the vertices that are 
@@ -177,6 +195,11 @@ namespace RINGMesh {
             return const_cast<GEO::AttributesManager&> 
                 ( unique_vertices_.vertices.attributes() );
         }
+
+        /*! 
+         * @brief Delete the vertices that do not correspond to a BME element
+         */
+        void erase_invalid_vertices() ;
         
     private:
         /*!
@@ -211,7 +234,12 @@ namespace RINGMesh {
          *  without ugly const-cast.
          */
         void initialize_ann() const ;
-       
+
+        /*!
+         * @brief Update the model_vertex_id in the corners, lines, surfaces
+         *        from new to old index
+         */
+        void update_bme_model_ids( const GEO::vector< index_t >& old2new ) const ;
     private:
         /// Attached BoundaryModel to which belong the vertices
         const BoundaryModel& bm_ ;
@@ -427,8 +455,8 @@ namespace RINGMesh {
                     break ;
                  }                
             }
-            if( ( BME::TYPE ) t < BME::NO_TYPE ) {
-                BME::TYPE T = ( BME::TYPE ) ( t ) ;
+            if( static_cast< BME::TYPE >(t) < BME::NO_TYPE ) {
+                BME::TYPE T = static_cast< BME::TYPE > ( t ) ;
                 index_t i = global.index - nb_elements_per_type_[ t ] ;
                 return BME::bme_t( T, i ) ;
             }
