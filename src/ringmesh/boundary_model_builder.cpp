@@ -440,7 +440,24 @@ namespace {
         std::vector< std::pair< index_t, bool > > sorted_triangles_ ;
     } ;
 
+    /*!
+    * @brief Mini-factory. Create an empty element of the right type
+    */
+    BME* new_element( BME::TYPE T, BoundaryModel* M, index_t id )
+    {
 
+        if( T == BME::CORNER ) {
+            return new Corner( M, id ) ;
+        } else if( T == BME::LINE ) {
+            return new Line( M, id ) ;
+        } else if( T == BME::SURFACE ) {
+            return new Surface( M, id ) ;
+        } else if( T > BME::SURFACE && T < BME::NO_TYPE ) {
+            return new BoundaryModelElement( M, T, id ) ;
+        } else {
+            return nil ;
+        }
+    }
 
 }
 
@@ -452,27 +469,12 @@ namespace RINGMesh {
      * according to its actual position in the corresponding vector in the model
      */
     void BoundaryModelBuilder::update_all_ids()
-    {
-        for( index_t co = 0; co < model_.nb_corners(); co++ ) {
-            model_.corners_[ co ]->set_id( co ) ;
-        }
-        for( index_t cp = 0; cp < model_.nb_lines(); cp++ ) {
-            model_.lines_[ cp ]->set_id( cp ) ;
-        }
-        for( index_t sp = 0; sp < model_.nb_surfaces(); sp++ ) {
-            model_.surfaces_[ sp ]->set_id( sp ) ;
-        }
-        for( index_t c = 0; c < model_.nb_contacts(); c++ ) {
-            model_.contacts_[ c ]->set_id( c ) ;
-        }
-        for( index_t s = 0; s < model_.nb_interfaces(); s++ ) {
-            model_.interfaces_[ s ]->set_id( s ) ;
-        }
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
-            model_.regions_[ r ]->set_id( r ) ;
-        }
-        for( index_t l = 0; l < model_.nb_layers(); l++ ) {
-            model_.layers_[ l ]->set_id( l ) ;
+    {        
+        for( index_t t = BME::CORNER; t < BME::NO_TYPE; ++t ) {
+            BME::TYPE T = ( BME::TYPE ) t ;
+            for( index_t i = 0; i < model_.nb_elements( T ); ++i ) {
+                element( bme_t( T, i ) ).set_id( i ) ;
+            }
         }
     }
 
@@ -487,40 +489,15 @@ namespace RINGMesh {
     {
         index_t id = model_.nb_elements( type ) ;
         ringmesh_assert( id != NO_ID ) ;
-        switch( type ) {
-            case BME::CORNER:
-                model_.corners_.push_back( new Corner( &model_, id ) ) ;
-                break ;
-
-            case BME::LINE:
-                model_.lines_.push_back( new Line( &model_, id ) ) ;
-                break ;
-
-            case BME::SURFACE:
-                model_.surfaces_.push_back( new Surface( &model_, id ) ) ;
-                break ;
-
-            case BME::REGION:
-                model_.regions_.push_back( new BME( &model_, BME::REGION, id ) ) ;
-                break ;
-
-            case BME::CONTACT:
-                model_.contacts_.push_back( new BME( &model_, BME::CONTACT, id ) ) ;
-                break ;
-
-            case BME::INTERFACE:
-                model_.interfaces_.push_back(
-                    new BME( &model_, BME::INTERFACE, id ) ) ;
-                break ;
-
-            case BME::LAYER:
-                model_.layers_.push_back( new BME( &model_, BME::LAYER, id ) ) ;
-                break ;
-            default:
-                ringmesh_assert_not_reached;
-                break ;
+        if( type >= BME::CORNER && type < BME::NO_TYPE ) {
+            model_.modifiable_elements( type ).push_back(
+                new_element( type, &model_, id ) ) ;
+            return bme_t( type, id ) ;
         }
-        return bme_t( type, id ) ;
+        else {
+            ringmesh_assert_not_reached;
+            return bme_t() ;
+        }
     }
 
     /*!
@@ -621,61 +598,10 @@ namespace RINGMesh {
                 set_element( cur, nil ) ;
             }
         }
-
-        switch( T ) {
-            case BME::CORNER:
-                model_.corners_.erase(
-                    std::remove( model_.corners_.begin(), model_.corners_.end(),
-                    static_cast<Corner*>( nil ) ),
-                    model_.corners_.end() ) ;
-                break ;
-            case BME::LINE:
-                model_.lines_.erase(
-                    std::remove( model_.lines_.begin(), model_.lines_.end(),
-                    static_cast<Line*>( nil ) ),
-                    model_.lines_.end() ) ;
-                break ;
-
-            case BME::SURFACE:
-                model_.surfaces_.erase(
-                    std::remove( model_.surfaces_.begin(), model_.surfaces_.end(),
-                    static_cast<Surface*>( nil ) ),
-                    model_.surfaces_.end() ) ;
-                break ;
-
-            case BME::REGION:
-                model_.regions_.erase(
-                    std::remove( model_.regions_.begin(), model_.regions_.end(),
-                    static_cast<BoundaryModelElement*>( nil ) ),
-                    model_.regions_.end() ) ;
-                break ;
-
-            case BME::CONTACT:
-                model_.contacts_.erase(
-                    std::remove( model_.contacts_.begin(), model_.contacts_.end(),
-                    static_cast<BoundaryModelElement*>( nil ) ),
-                    model_.contacts_.end() ) ;
-                break ;
-
-            case BME::INTERFACE:
-                model_.interfaces_.erase(
-                    std::remove( model_.interfaces_.begin(),
-                    model_.interfaces_.end(),
-                    static_cast<BoundaryModelElement*>( nil ) ),
-                    model_.interfaces_.end() ) ;
-                break ;
-
-            case BME::LAYER:
-                model_.layers_.erase(
-                    std::remove( model_.layers_.begin(), model_.layers_.end(),
-                    static_cast<BoundaryModelElement*>( nil ) ),
-                    model_.layers_.end() ) ;
-                break ;
-
-            default:
-                ringmesh_assert_not_reached;
-                break ;
-        }
+        std::vector< BME* >& store = model_.modifiable_elements( T ) ;
+        store.erase( std::remove( store.begin(), store.end(), static_cast<BME*>( nil ) ),
+                    store.end() ) ;                
+        
     }
 
 
@@ -771,72 +697,14 @@ namespace RINGMesh {
 
     void BoundaryModelBuilder::resize_elements( BME::TYPE type, index_t nb )
     {
-        switch( type ) {
-            case BME::CORNER:
-                model_.corners_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.corners_[i] ) {
-                        model_.corners_[i] = new Corner( &model_ ) ;
-                    }
-                }
-                break ;
-
-            case BME::LINE:
-                model_.lines_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.lines_[i] ) {
-                        model_.lines_[i] = new Line( &model_ ) ;
-                    }
-                }
-                break ;
-
-            case BME::SURFACE:
-                model_.surfaces_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.surfaces_[i] ) {
-                        model_.surfaces_[i] = new Surface( &model_ ) ;
-                    }
-                }
-                break ;
-
-            case BME::REGION:
-                model_.regions_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.regions_[i] ) {
-                        model_.regions_[i] = new BME( &model_, BME::REGION ) ;
-                    }
-                }
-                break ;
-
-            case BME::CONTACT:
-                model_.contacts_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.contacts_[i] ) {
-                        model_.contacts_[i] = new BME( &model_, BME::CONTACT ) ;
-                    }
-                }
-                break ;
-
-            case BME::INTERFACE:
-                model_.interfaces_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.interfaces_[i] ) {
-                        model_.interfaces_[i] = new BME( &model_, BME::INTERFACE ) ;
-                    }
-                }
-                break ;
-
-            case BME::LAYER:
-                model_.layers_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.layers_[i] ) {
-                        model_.layers_[i] = new BME( &model_, BME::LAYER ) ;
-                    }
-                }
-                break ;
-            default:
-                break ;
+        if( type >= BME::NO_TYPE ) {
+            return ;
         }
+        std::vector< BME*>& store = model_.modifiable_elements( type ) ;
+        store.resize( nb, nil ) ;
+        for( index_t i = 0; i < nb; i++ ) {
+            store[ i ] = new_element( type, &model_, i ) ;
+        }        
     }
 
     /*!

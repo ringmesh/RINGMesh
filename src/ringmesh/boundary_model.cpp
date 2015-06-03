@@ -1190,6 +1190,8 @@ namespace {
 
 namespace RINGMesh {
 
+    typedef BME::bme_t bme_t ;
+
     BoundaryModelVertices::~BoundaryModelVertices()
     {
         delete ann_ ;
@@ -1469,27 +1471,12 @@ namespace RINGMesh {
 
     BoundaryModel::~BoundaryModel()
     {
-        for (index_t i = 0; i < corners_.size(); i++) {
-            if (corners_[i]) delete corners_[i];
-        }
-        for (index_t i = 0; i < lines_.size(); i++) {
-            if (lines_[i]) delete lines_[i];
-        }
-        for (index_t i = 0; i < surfaces_.size(); i++) {
-            if (surfaces_[i]) delete surfaces_[i];
-        }
-        for (index_t i = 0; i < regions_.size(); i++) {
-            if (regions_[i]) delete regions_[i];
-        }
-        for (index_t i = 0; i < contacts_.size(); i++) {
-            if (contacts_[i]) delete contacts_[i];
-        }
-        for (index_t i = 0; i < interfaces_.size(); i++) {
-            if (interfaces_[i]) delete interfaces_[i];
-        }
-        for (index_t i = 0; i < layers_.size(); i++) {
-            if (layers_[i]) delete layers_[i];
-        }
+        for( index_t t = BME::CORNER; t < BME::NO_TYPE; ++t ) {
+            BME::TYPE T = ( BME::TYPE ) t ;
+            for( index_t i = 0; i < nb_elements( T ); ++i ) {
+                delete elements( T )[ i ] ;
+            }
+        }        
     }
 
     void BoundaryModel::set_debug_directory( const std::string& directory )
@@ -1527,6 +1514,28 @@ namespace RINGMesh {
         copy_meshes( from );
     }
 
+    /*!
+     * @brief Mini-factory. Create an empty element of the right type 
+     */
+    BME* create_element( BME::TYPE T )
+    {
+
+        if( T == BME::CORNER ) {
+            return new Corner ;
+        }
+        else if( T == BME::LINE ) {
+            return new Line ;
+        }
+        else if( T == BME::SURFACE ) {
+            return new Surface ;
+        }
+        else if( T > BME::SURFACE && T < BME::NO_TYPE ) {
+            return new BoundaryModelElement ;
+        }
+        else {
+            return nil ;
+        }
+    }
 
     /*!
     * @brief Copy macro information from a model
@@ -1537,64 +1546,18 @@ namespace RINGMesh {
     void BoundaryModel::copy_macro_topology( const BoundaryModel& from )
     {
         name_ = from.name_ ;
-        corners_.resize( from.nb_corners(), nil ) ;
-        lines_.resize( from.nb_lines(), nil ) ;
-        surfaces_.resize( from.nb_surfaces(), nil ) ;
-        regions_.resize( from.nb_regions(), nil ) ;
-        layers_.resize( from.nb_layers(), nil ) ;
-        contacts_.resize( from.nb_contacts(), nil ) ;
-        interfaces_.resize( from.nb_interfaces(), nil ) ;
-
-        for( index_t i = 0; i < nb_corners(); i++ ) {
-            corners_[ i ] = new Corner ;
-        }
-        for( index_t i = 0; i < nb_lines(); i++ ) {
-            lines_[ i ] = new Line ;
-        }
-        for( index_t i = 0; i < nb_surfaces(); i++ ) {
-            surfaces_[ i ] = new Surface ;
-        }
-        for( index_t i = 0; i < nb_layers(); i++ ) {
-            layers_[ i ] = new BoundaryModelElement ;
-        }
-        for( index_t i = 0; i < nb_regions(); i++ ) {
-            regions_[ i ] = new BoundaryModelElement ;
-        }
-        for( index_t i = 0; i < nb_contacts(); i++ ) {
-            contacts_[ i ] = new BoundaryModelElement ;
-        }
-        for( index_t i = 0; i < nb_interfaces(); i++ ) {
-            interfaces_[ i ] = new BoundaryModelElement ;
-        }
-
+        for( index_t t = BME::CORNER; t < BME::NO_TYPE; ++t ) {
+            BME::TYPE T = ( BME::TYPE ) t ;
+            std::vector< BME* >& store = modifiable_elements( T ) ;
+            store.resize( from.nb_elements( T ), nil ) ;
+            
 #pragma omp parallel for
-        for( index_t i = 0; i < nb_corners(); i++ ) {
-            corners_[ i ]->copy_macro_topology( from.corner( i ), *this ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < nb_lines(); i++ ) {
-            lines_[ i ]->copy_macro_topology( from.line( i ), *this ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < nb_surfaces(); i++ ) {
-            surfaces_[ i ]->copy_macro_topology( from.surface( i ), *this ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < nb_layers(); i++ ) {
-            layers_[ i ]->copy_macro_topology( from.layer( i ), *this ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < nb_regions(); i++ ) {
-            regions_[ i ]->copy_macro_topology( from.region( i ), *this ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < nb_contacts(); i++ ) {
-            contacts_[ i ]->copy_macro_topology( from.contact( i ), *this ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < nb_interfaces(); i++ ) {
-            interfaces_[ i ]->copy_macro_topology( from.one_interface( i ),
-                                                          *this ) ;
+            for( index_t i = 0; i < nb_elements( T ); ++i ) {
+                store[ i ] = create_element( T ) ;
+                ringmesh_debug_assert( store[ i ] != nil ) ;
+                store[ i ]->copy_macro_topology(
+                    from.element( bme_t( T, i ) ), *this ) ;
+            }
         }
         universe_.copy_macro_topology( from.universe_, *this ) ;
     }
@@ -1610,7 +1573,7 @@ namespace RINGMesh {
         for( index_t i = BME::CORNER; i < BME::REGION; ++i ) {
 #pragma omp parallel for
             BME::TYPE T = ( BME::TYPE ) i ;
-            for( std::vector< BME* >::iterator it = begin_elements( T );
+            for( std::vector< BME* >::const_iterator it = begin_elements( T );
                  it < end_elements( T ); ++it ) {
                 BoundaryModelMeshElement* E =
                     dynamic_cast<BoundaryModelMeshElement*>( *it ) ;
@@ -1795,8 +1758,15 @@ namespace RINGMesh {
         // Without them we cannot do anything
         nb_vertices() ;
 
+        bool valid = true ; 
+
+        /// 0. Check validity of global element access
+        valid = valid && nb_elements_per_type_.back() == 
+            ( nb_corners()+nb_lines()+nb_surfaces()+nb_regions()+
+             nb_contacts()+nb_interfaces()+nb_layers() );
+
         /// 1. Verify the validity of all BoundaryModelElements
-        bool valid = check_elements_validity() ;
+        valid = check_elements_validity() && valid ;
          
         /// 2. Verify the geological validity if the model has
         ///    interfaces and layers
