@@ -161,7 +161,7 @@ namespace GEOGen {
          */
         void initialize_from_mesh_facet(
             const Mesh* mesh, index_t f, bool symbolic,
-            GEO::Attribute<double>& vertex_weight
+            const GEO::Attribute<double>& vertex_weight
         );
 
         /**

@@ -72,4 +72,15 @@
  */
 NLboolean nlSolve_SUPERLU();
 
+/**
+ * \brief Initializes the SUPERLU extension.
+ * \retval NL_TRUE if SUPERLU could be successfully
+ *   dynamically loaded and all functions could be
+ *   found in it.
+ * \retval NL_FALSE otherwise.
+ * \note Not implemented yet...
+ */
+NLboolean nlInitExtension_SUPERLU();
+
+
 #endif

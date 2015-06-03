@@ -157,6 +157,36 @@ namespace GEO {
              return volumetric_;
          }
 
+         /**
+          * \brief Specifies whether the background 
+          *  mesh has varying attributes used in the
+          *  computation.
+          * \details The RestrictedVoronoiDiagram class
+          *  computes the intersection between a Voronoi
+          *  diagram and a background mesh. If the triangles 
+          *  or tetrahedra of this background mesh have a 
+          *  property that varies on each triangle / tetrahedron,
+          *  then the intersection between the Voronoi cells and
+          *  each individual triangle / tetrahedron is computed.
+          *  Default mode is constant, subclasses may override.
+          *  \retval true if the background mesh has varying
+          *   attributes
+          *  \retval false otherwise
+          */
+         bool background_mesh_has_varying_attribute() const {
+             return varying_background_;
+         }
+
+         /**
+          * \brief Before starting computation, resets 
+          *  thread local storage variables. 
+          * \details RestrictedVoronoiDiagram can operate
+          *  in multi-threading mode. Some derived classes
+          *  may need to reset some thread local storage 
+          *  variables before starting each thread. 
+          */
+         virtual void reset_thread_local_storage();
+         
     protected:
         /**
          * \brief Constructs a new IntegrationSimplex.
@@ -200,6 +230,7 @@ namespace GEO {
              return frames_ + i * nb_comp_per_frame_;
          }
 
+         
     protected:
         const Mesh& mesh_;
         bool volumetric_;
@@ -211,6 +242,7 @@ namespace GEO {
         index_t nb_comp_per_frame_;
         const double* frames_;
         Process::SpinLockArray* spinlocks_;
+        bool varying_background_;
     };   
 
     typedef SmartPointer<IntegrationSimplex> 
