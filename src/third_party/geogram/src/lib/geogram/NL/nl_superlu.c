@@ -226,3 +226,8 @@ NLboolean nlSolve_SUPERLU() {
 
 #endif
 
+NLboolean nlInitExtension_SUPERLU() {
+/* Not Implemented yet */    
+    return NL_FALSE;
+}
+

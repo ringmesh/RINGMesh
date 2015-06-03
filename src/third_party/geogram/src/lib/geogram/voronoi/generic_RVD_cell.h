@@ -1,3 +1,4 @@
+
 /*
  *  Copyright (c) 2012-2014, Bruno Levy
  *  All rights reserved.
@@ -49,6 +50,7 @@
 #include <geogram/basic/common.h>
 #include <geogram/voronoi/generic_RVD_vertex.h>
 #include <geogram/basic/argused.h>
+#include <geogram/basic/attributes.h>
 #include <iosfwd>
 #include <stack>
 
@@ -220,9 +222,12 @@ namespace GEOGen {
          * \param[in] mesh the mesh from which the tetrahedron is copied
          * \param[in] t the index of the tetrahedron in \p mesh
          * \param[in] symbolic if true, symbolic information is copied
+         * \param[in] vertex_weight if bound, an attribute that gives
+         *  the weight of each vertex in \p mesh.
          */
         void initialize_from_mesh_tetrahedron(
-            const Mesh* mesh, index_t t, bool symbolic
+            const Mesh* mesh, index_t t, bool symbolic,
+            const GEO::Attribute<double>& vertex_weight
         );
 
         /**
@@ -887,6 +892,7 @@ namespace GEOGen {
          * The created triangle is marked as used.
          * \param[in] p geometric location at the dual vertex, shared with
          *   caller. Caller remains responsible for memory management.
+         * \param[in] w the weight associated with point \p p
          * \param[in] v0 index of first vertex
          * \param[in] v1 index of second vertex
          * \param[in] v2 index of third vertex
@@ -897,14 +903,16 @@ namespace GEOGen {
          */
         index_t create_triangle(
             const double* p,
+            double w,
             index_t v0, index_t v1, index_t v2,
             index_t t0, index_t t1, index_t t2
         ) {
             index_t t = create_triangle(v0, v1, v2, t0, t1, t2);
             triangle_dual(t).set_point(p);
+            triangle_dual(t).set_weight(w);
             return t;
         }
-
+        
         /**
          * \brief Creates a new triangles with specified vertices,
          *  adjacent triangles and geometric location at the dual

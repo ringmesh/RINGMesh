@@ -63,9 +63,14 @@ namespace GEO {
         nb_frames_(nb_frames),
         nb_comp_per_frame_(nb_comp_per_frame),
         frames_(frames),
-        spinlocks_(nil) {
+        spinlocks_(nil),
+        varying_background_(false)
+    {
     }
 
     IntegrationSimplex::~IntegrationSimplex() {
+    }
+
+    void IntegrationSimplex::reset_thread_local_storage() {
     }
 }

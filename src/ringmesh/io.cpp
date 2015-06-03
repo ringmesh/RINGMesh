@@ -2216,7 +2216,7 @@ namespace RINGMesh {
 //
 //               static RINGMesh2GMSH hex_descriptor_gmsh = { 6,                         // type
 //                   8,                              // nb vertices
-//                   { 0, 1, 3, 2, 4, 5, 7, 6 },     // vertices
+//                   { 4, 0, 5, 1, 7, 3, 6, 2 },     // vertices
 //                   6,                              // nb facets
 //                   { 4, 4, 4, 4, 4, 4 },           // nb vertices in facet
 //                   { 4, 2, 1, 3, 0, 5 },           // facets
