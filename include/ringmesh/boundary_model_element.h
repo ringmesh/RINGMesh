@@ -573,12 +573,6 @@ namespace RINGMesh {
             return const_cast< GEO::Mesh& >( mesh_ ) ;
         }
 
-        // It would be better to have two functions, remove the const of the one above.
-        /*const GEO::Mesh& mesh() const
-        {
-            return mesh_ ;
-        }*/ 
-
     protected:
         /*!
         * @brief Check if the mesh stored is valid.
