@@ -71,7 +71,6 @@ namespace RINGMesh {
         /*!
          * @brief Geological feature types for BoundaryModelElement
          * @todo Read all possible geological features set by Gocad.
-         *       Are types for contacts really necessary ?
          */
         enum GEOL_FEATURE {
             /// All geological features 
@@ -100,8 +99,10 @@ namespace RINGMesh {
          *     geometry and connectivity relationships
          *   - high-level elements (CONTACT, INTERFACE, LAYER) 
          *     that are constituted of low-level elements
-         *
-         * DO NOT MODIFY THIS ENUM
+         * TYPE is used extensively to manage elements, iterate on them.
+         *  
+         * 
+         * @warning DO NOT MODIFY THIS ENUM.
          * 
          * @todo Add fault blocks.
          */
