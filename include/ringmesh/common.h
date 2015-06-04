@@ -68,7 +68,7 @@
   #   pragma warning( disable: 4251 )
 #endif
 
-#ifdef USE_OPENMP
+#ifdef RINGMESH_USE_OPENMP
 #   ifdef WIN32
 #       define PARALLEL_LOOP __pragma("omp parallel for")
 #   else
