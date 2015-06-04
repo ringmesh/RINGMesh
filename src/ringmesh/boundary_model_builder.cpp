@@ -1542,7 +1542,7 @@ namespace RINGMesh {
 
         // Basic mesh repair for surfaces and lines
         /// @todo To put repair when remove_elements is OK
-        remove_degenerate_facet_and_edges() ; 
+//        remove_degenerate_facet_and_edges() ;
 
         if( model_.check_model_validity() ) {
             GEO::Logger::out( "BoundaryModel" ) 
