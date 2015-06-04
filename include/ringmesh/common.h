@@ -70,12 +70,12 @@
 
 #ifdef RINGMESH_USE_OPENMP
 #   ifdef WIN32
-#       define PARALLEL_LOOP __pragma("omp parallel for")
+#       define RINGMESH_PARALLEL_LOOP __pragma("omp parallel for")
 #   else
-#       define PARALLEL_LOOP _Pragma("omp parallel for")
+#       define RINGMESH_PARALLEL_LOOP _Pragma("omp parallel for")
 #   endif
 #else
-#   define PARALLEL_LOOP
+#   define RINGMESH_PARALLEL_LOOP
 #endif
 
 #define ringmesh_disable_copy( Class ) \
