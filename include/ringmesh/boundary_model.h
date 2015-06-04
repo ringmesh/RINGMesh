@@ -330,7 +330,7 @@ namespace RINGMesh {
         inline index_t nb_elements( BME::TYPE type ) const
         {
             if( type < BME::NO_TYPE ) {
-                return end_elements( type )-begin_elements( type ) ;
+                return elements( type ).size() ;
             }
             else if( type == BME::ALL_TYPES ) {
                 ringmesh_assert( !nb_elements_per_type_.empty() ) ;              
@@ -488,25 +488,7 @@ namespace RINGMesh {
                     ringmesh_assert_not_reached ;
                     return surfaces_ ; ;
             }
-        }
-        
-        /*!
-        * @brief Generic accessor to the beginning of the storage of elements of the given type
-        * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
-        */
-        std::vector< BME* >::const_iterator begin_elements( BME::TYPE type ) const
-        {
-            return elements( type ).begin() ;            
-        }
-
-        /*!
-        * @brief Generic accessor to the end of the storage of elements of the given type
-        * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
-        */
-        std::vector< BME* >::const_iterator end_elements( BME::TYPE type ) const
-        {
-            return elements( type ).end() ;
-        }
+        }       
         
     public:
         BoundaryModelVertices vertices ;
