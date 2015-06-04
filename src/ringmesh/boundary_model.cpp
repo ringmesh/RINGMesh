@@ -1597,20 +1597,21 @@ namespace RINGMesh {
     * @details Copy the all the element meshes
     *
     * @param[in] from Model to copy the meshes from
+    * 
+    * @pre The two models must have the same number of elements
     */
     void BoundaryModel::copy_meshes( const BoundaryModel& from )
     {
         for( index_t i = BME::CORNER; i < BME::REGION; ++i ) {
             BME::TYPE T = ( BME::TYPE ) i ;
 #pragma omp parallel for
-            for( std::vector< BME* >::const_iterator it = begin_elements( T );
-                 it < end_elements( T ); ++it ) {
+            for( index_t j = 0; j < elements( T ).size(); ++j ) {
                 BoundaryModelMeshElement* E =
-                    dynamic_cast<BoundaryModelMeshElement*>( *it ) ;
+                    dynamic_cast<BoundaryModelMeshElement*>( elements(T)[j] ) ;
                 ringmesh_assert( E != nil ) ;
                 const BoundaryModelMeshElement& E_from =
                     dynamic_cast<const BoundaryModelMeshElement&> (
-                    from.element( BME::bme_t( T, i ) ) ) ;
+                    from.element( BME::bme_t( T, j ) ) ) ;
 
                 E->unbind_attributes() ;               
                 E->mesh().copy( E_from.mesh() ) ;                
