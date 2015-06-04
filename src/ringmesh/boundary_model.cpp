@@ -1585,7 +1585,7 @@ namespace RINGMesh {
                 store[ i ] = create_element( T ) ;
                 ringmesh_debug_assert( store[ i ] != nil ) ;
             }
-            PARALLEL_LOOP
+            RINGMESH_PARALLEL_LOOP
             for( index_t i = 0; i < nb_elements( T ); ++i ) {
                 store[ i ]->copy_macro_topology(
                     from.element( bme_t( T, i ) ), *this ) ;
@@ -1606,7 +1606,7 @@ namespace RINGMesh {
     {
         for( index_t i = BME::CORNER; i < BME::REGION; ++i ) {
             BME::TYPE T = ( BME::TYPE ) i ;
-            PARALLEL_LOOP
+            RINGMESH_PARALLEL_LOOP
             for( index_t j = 0; j < elements( T ).size(); ++j ) {
                 BoundaryModelMeshElement* E =
                     dynamic_cast<BoundaryModelMeshElement*>( elements(T)[j] ) ;
