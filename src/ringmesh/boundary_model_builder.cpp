@@ -652,29 +652,33 @@ namespace RINGMesh {
                 // id_ 
                 E.set_id( to_erase[ i ][ j ] ) ;
                 // boundary_
-                if( BME::boundary_allowed( T ) ) {
+                if( E.nb_boundaries() > 0 ) {
                     BME::TYPE B = BME::boundary_type( T ) ;
+                    ringmesh_debug_assert( B < BME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_boundaries(); ++k ) {
                         E.set_boundary( k, bme_t(
                             B, to_erase[ B ][ E.boundary_id( k ).index ] ) ) ;
                     }
                 }
                 // in_boundary
-                if( BME::in_boundary_allowed( T ) ) {
+                if( E.nb_in_boundary() > 0 ) {
                     BME::TYPE IB = BME::in_boundary_type( T ) ;
+                    ringmesh_debug_assert( IB < BME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
                         E.set_in_boundary( k, bme_t(
                             IB, to_erase[ IB ][ E.in_boundary_id( k ).index ] ) ) ;
                     }
                 }
                 // parent_
-                if( BME::parent_allowed( T ) ) {
+                if( E.has_parent() ) {
                     BME::TYPE P = BME::parent_type( T ) ;
+                    ringmesh_debug_assert( P < BME::NO_TYPE ) ;
                     E.set_parent( bme_t( P, to_erase[ P ][ E.parent_id().index ] ) ) ;
                 }
                 // children_ 
-                if( BME::child_allowed( T ) ) {
+                if( E.nb_children() > 0 ) {
                     BME::TYPE C = BME::child_type( T ) ;
+                    ringmesh_debug_assert( C < BME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_children(); ++k ) {
                         E.set_child( k, bme_t(
                             C, to_erase[ C ][ E.child_id( k ).index ] ) ) ;
@@ -1412,7 +1416,7 @@ namespace RINGMesh {
      */
     void BoundaryModelBuilder::remove_degenerate_facet_and_edges()
     {
-        std::vector< bme_t > to_remove ;
+        std::set< bme_t > to_remove ;
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             index_t nb = repair_line_mesh( model_.line( i ).mesh() ) ;
             if( nb > 0 ) {
@@ -1422,7 +1426,7 @@ namespace RINGMesh {
 
                 // The line may be empty now - remove it from the model
                 if( model_.line( i ).nb_cells() == 0 ) {
-                    to_remove.push_back( bme_t( BME::LINE, i ) ) ;
+                    to_remove.insert( model_.line( i ).bme_id() ) ;
                 }
             }
         }
@@ -1461,10 +1465,14 @@ namespace RINGMesh {
                         S.cut_by_line( L ) ;
                     }
                 }
+                // The line may be empty now - remove it from the model
+                if( S.nb_cells() == 0 ) {
+                    to_remove.insert( S.bme_id() ) ;
+                }
             }
         }
-
-        remove_elements( to_remove ) ;
+        get_dependent_elements( to_remove ) ;
+        remove_elements( std::vector< bme_t >( to_remove.begin(), to_remove.end() ) ) ;
     }
 
     /*!
@@ -1534,7 +1542,7 @@ namespace RINGMesh {
 
         // Basic mesh repair for surfaces and lines
         /// @todo To put repair when remove_elements is OK
-        // remove_degenerate_facet_and_edges() ; 
+        remove_degenerate_facet_and_edges() ; 
 
         if( model_.check_model_validity() ) {
             GEO::Logger::out( "BoundaryModel" ) 
