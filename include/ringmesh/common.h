@@ -68,6 +68,16 @@
   #   pragma warning( disable: 4251 )
 #endif
 
+#ifdef USE_OPENMP
+#   ifdef WIN32
+#       define PARALLEL_LOOP __pragma("omp parallel for")
+#   else
+#       define PARALLEL_LOOP _Pragma("omp parallel for")
+#   endif
+#else
+#   define PARALLEL_LOOP
+#endif
+
 #define ringmesh_disable_copy( Class ) \
     private: \
     Class( const Class & ) ; \

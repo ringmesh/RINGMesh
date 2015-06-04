@@ -1580,11 +1580,13 @@ namespace RINGMesh {
             BME::TYPE T = ( BME::TYPE ) t ;
             std::vector< BME* >& store = modifiable_elements( T ) ;
             store.resize( from.nb_elements( T ), nil ) ;
-            
-#pragma omp parallel for
+
             for( index_t i = 0; i < nb_elements( T ); ++i ) {
                 store[ i ] = create_element( T ) ;
                 ringmesh_debug_assert( store[ i ] != nil ) ;
+            }
+            PARALLEL_LOOP
+            for( index_t i = 0; i < nb_elements( T ); ++i ) {
                 store[ i ]->copy_macro_topology(
                     from.element( bme_t( T, i ) ), *this ) ;
             }
@@ -1604,7 +1606,7 @@ namespace RINGMesh {
     {
         for( index_t i = BME::CORNER; i < BME::REGION; ++i ) {
             BME::TYPE T = ( BME::TYPE ) i ;
-#pragma omp parallel for
+            PARALLEL_LOOP
             for( index_t j = 0; j < elements( T ).size(); ++j ) {
                 BoundaryModelMeshElement* E =
                     dynamic_cast<BoundaryModelMeshElement*>( elements(T)[j] ) ;
