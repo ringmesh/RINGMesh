@@ -102,7 +102,7 @@ IF(${USE_OPENMP})
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
         SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
     ENDIF(WIN32)
-    add_definitions(-DUSE_OPENMP)
+    add_definitions(-DRINGMESH_USE_OPENMP)
 ENDIF()
 
 IF(UNIX)
