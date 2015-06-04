@@ -92,6 +92,7 @@ namespace RINGMesh {
                 return element_ptr( model_.global_to_typed_id( id ) ) ;
             } else {
                 ringmesh_assert_not_reached ;
+                return &model_.universe_ ;
             }            
         }
 
