@@ -1127,7 +1127,7 @@ namespace RINGMesh {
         const std::vector< index_t >& unique_vertices )
     {
         ringmesh_assert( id.index < model_.nb_lines() ) ;
-        dynamic_cast< Corner* >( model_.corners_[ id.index ] )->
+        dynamic_cast< Line* >( model_.lines_[ id.index ] )->
             set_vertices( unique_vertices ) ;
     }
 

@@ -624,7 +624,7 @@ namespace RINGMesh {
             }
             return false ;         
         }            
-        else if( T== LINE || T == CORNER ) {
+        else if( T == LINE || T == CORNER ) {
             // True if one of the incident surface define the universe
             for( index_t i = 0; i < nb_in_boundary(); ++i ) {
                 if( in_boundary( i ).is_on_voi() ) {
