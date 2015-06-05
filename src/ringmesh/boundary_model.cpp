@@ -1468,13 +1468,19 @@ namespace RINGMesh {
                     related[ i ] = VertexInBME() ;
                 }
             }
-            // Remove the invalid values
-            related.erase( std::remove(
-                related.begin(), related.end(), VertexInBME() ), related.end() );
-            // If not points in the elements 
-            // The unique point must be removed
-            if( related.empty() ) {
+            // All related points are invalid
+            if( std::count( related.begin(), related.end(), VertexInBME() ) 
+                == related.size() 
+              ) {
+                // Undefined behavior if erase is used to remove all elements
+                related.clear() ;
+                // The unique point must be removed
                 to_delete[ v ] = 1 ;
+            }
+            else {
+                // Remove the invalid values
+                related.erase( std::remove(
+                    related.begin(), related.end(), VertexInBME() ), related.end() );             
             }
         }
         if( std::count( to_delete.begin(), to_delete.end(), 1 ) > 0 ) {
