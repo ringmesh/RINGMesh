@@ -501,199 +501,240 @@ namespace RINGMesh {
     }
 
     /*!
+     * @brief Add to the vector the elements which cannot exist if 
+     *        an element in the set does not exist.
+     * @details These elements are added to the set.
+     *          Recursive call till nothing is added.
+     *          
+     * @return True if at least one element was added, otherwise false.
+     */
+    bool BoundaryModelBuilder::get_dependent_elements(
+        std::set< bme_t >& in ) const 
+    {
+        index_t input_size = in.size() ;
+
+        for( std::set< bme_t >::iterator it( in.begin() );
+             it != in.end(); ++it 
+           ) {
+            bme_t cur = *it ;
+            /// If an element has children elements - add them 
+            if( BME::child_allowed( cur.type ) ) {
+                index_t c = BME::child_type( cur.type ) ;
+                const BME& E = model_.element( cur ) ;
+                for( index_t j = 0 ; j < E.nb_children() ; ++j ) {
+                    in.insert( E.child_id(j) ) ;
+                }                
+            }         
+        }
+
+        /// If a parent has no children anymore - add it 
+        for( index_t p = BME::CONTACT; p < BME::NO_TYPE; ++p ) {
+            BME::TYPE P = ( BME::TYPE ) p ;            
+            for( index_t j = 0; j < model_.nb_elements( P ); ++j ) {
+                bool no_child = true ;
+                const BME& E = model_.element( BME::bme_t( P, j ) ) ;
+                for( index_t k = 0; k < E.nb_children(); ++k ) {                    
+                    if( in.count( E.child_id( k ) ) == 0 ) {
+                        no_child = false ;
+                        break ;
+                    }
+                }
+                if( no_child ) {
+                    in.insert( E.bme_id() ) ;
+                }
+            }
+        }
+
+        /// If an element is in the boundary of nothing - add it
+        for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
+            BME::TYPE T = ( BME::TYPE ) t ;
+            for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
+                bool no_incident = true ;
+                const BME& E = model_.element( BME::bme_t( T, j ) ) ;
+                for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
+                    if( in.count( E.in_boundary_id( k ) ) == 0 ) {
+                        no_incident = false ;
+                        break ;
+                    }
+                }
+                if( no_incident ) {
+                    in.insert( E.bme_id() ) ;
+                }
+            }
+        }
+
+        if( in.size() != input_size ) {
+            return get_dependent_elements( in ) ;
+        }
+        else {
+            return false ;
+        }
+    }
+    
+
+    /*!
      * @brief Remove a list of elements of the model
      * @details No check is done on the consistency of this removal
      *          The elements and all references to them are removed. 
-     * @warning DOES NOT WORK AT ALL. 
+     *          All dependent elements should be in the set of elements to remove,
+     *          with a prior call to get_dependent_elements function.
+     * 
+     * @warning NOT TESTED.
      *          The client is responsible to set the proper connectivity
      *          information between the remaining model elements.
      * 
-     * @todo 
-     *   - Write a function to determine which elements should be removed 
-     *     because these elements are removed (children, parents with no children,
-     *     elements in the boundary of nothing, others?? ) 
-     *   - UPDATE reference to points in BME, we store some bme_t over there, they must
-     *     be update if some BMME are removed, and the BMVertices must be updated 
-     *     (remove empty global points, update all indices everywhere)
-     *   - Prepare erase must be done globally 1. Fill the mapping for all elements
-     *     2. Update all connectivity information using this mapping
-     *   - TESTS. How ??
+     * @todo TEST IT
      */
     void BoundaryModelBuilder::remove_elements( 
         const std::vector< bme_t >& elements )
     {
+        if( elements.size() == 0 ) {
+            return ;
+        }
+
         // We need to remove elements type by type since they are 
         // stored in different vectors and since we use indices in these 
         // vectors to identify them.
+        // Initialize the vector
         std::vector < std::vector < index_t > > to_erase_by_type ;
         for( index_t i = BME::CORNER; i < BME::NO_TYPE; ++i ) {
-            to_erase_by_type.push_back(
-                std::vector< index_t >( model_.nb_elements( (BME::TYPE)i ), 0 ) ) ;
+            to_erase_by_type.push_back( std::vector< index_t >( 
+                model_.nb_elements( static_cast<BME::TYPE>(i) ), 0 ) ) ;
         }
-        
+        // Flag the elements to erase
         for( index_t i = 0; i < elements.size(); ++i ) {
             bme_t cur = elements[ i ] ;
             if( cur.type < BME::NO_TYPE ) {
-                to_erase_by_type[ cur.type ][ cur.index ] = NO_ID ;
-
-                // If the element has children elements tag them as to remove 
-                if( BME::child_allowed( cur.type ) ) {
-                    index_t c = BME::child_type( cur.type ) ;
-                    const BME& E = model_.element( cur ) ;
-                    for( index_t j = 0 ; j < E.nb_children() ; ++j ) {
-                        to_erase_by_type[ c ][ E.child_id( j ).index ] = NO_ID ;
-                    }
-                }
+                to_erase_by_type[ cur.type ][ cur.index ] = NO_ID ;                
             }
         }
-
-        // Tag to remove the parent element which do not have 
-        // have children anymore
-        for( index_t parent_type = BME::CONTACT; 
-             parent_type < BME::NO_TYPE; ++parent_type 
-            ) {
-            BME::TYPE T = (BME::TYPE) parent_type ;
-            index_t child_type = BME::child_type( T ) ;
-            for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
-                if( to_erase_by_type[ parent_type ][ j ] != NO_ID ) {
-                    bool no_child = true ;
-                    const BME& E = model_.element( BME::bme_t( T, j ) ) ;
-                    for( index_t k = 0; k < E.nb_children(); ++k ) {
-                        if( to_erase_by_type[ child_type ][ E.child_id( k ).index ] != NO_ID ) {
-                            no_child = false ;
-                            break ;
-                        }
-                    }
-                    if( no_child ) {
-                        to_erase_by_type[ parent_type ][ j ] = NO_ID ;
-                    }
-                }
-            }
-        }        
-        
-        for( index_t i = BME::CORNER; i < BME::NO_TYPE; ++i ) {
-            if( prepare_to_erase_elements( ( BME::TYPE )i, to_erase_by_type[ i ] ) ) {
-                erase_elements( ( BME::TYPE )i, to_erase_by_type[ i ] ) ;
-            }
-        }
+       
+        delete_elements( to_erase_by_type ) ;
         
         // Re-initialize global access to elements
         init_global_model_element_access() ;       
     }
 
     /*!
-     * @brief Delete the elements to erase and remove them from the 
-     *        corresponding vector of model elements
-     */
-    void BoundaryModelBuilder::erase_elements(
-        BME::TYPE T, const std::vector< index_t >& to_erase )
-    {
+    * @brief Delete elements and remove all references to them in the model
+    *
+    * @param[in] T Type of the elements
+    * @param[in,out] to_erase For each type of element T, 
+    *        store a vector of the size of model_.nb_elements(T) in which
+    *        elements are flagged with NO_ID.
+    *        In output it stores the mapping table between old and new indices
+    *        for the elements.
+    * @todo TEST IT
+    */
+    void BoundaryModelBuilder::delete_elements(
+        std::vector< std::vector< index_t > >& to_erase )
+    {        
+        // Number of elements deleted for each TYPE
+        std::vector< index_t > nb_removed( to_erase.size(), 0 ) ;
+
+        /// 1. Get the mapping between old indices of the elements
+        ///    and new ones (when elements to remove will actually be removed)
         for( index_t i = 0; i < to_erase.size(); ++i ) {
-            if( to_erase[ i ] != NO_ID ) {
-                // Nothing to do 
-                continue ;
-            } else {
-                BME::bme_t cur( T, i ) ;
-                delete element_ptr( cur ) ;
-                set_element( cur, nil ) ;
+            for( index_t j = 0 ; j < to_erase[ i ].size(); ++j ) {
+                if( to_erase[ i ][ j ] == NO_ID ) {
+                    nb_removed[ i ]++ ;
+                } else {
+                    to_erase[ i ][ j ] = j - nb_removed[ i ] ;
+                }
             }
         }
-        std::vector< BME* >& store = model_.modifiable_elements( T ) ;
-        store.erase( std::remove( store.begin(), store.end(), static_cast<BME*>( nil ) ),
-                    store.end() ) ;                
-        
-    }
 
-
-    /*!
-     * @brief Remove all references to the given elements
-     * @param[in] T Type of the elements
-     * @param[in,out] to_erase Vector of the size of model_.nb_elements(T) in which 
-     *        elements to erase correspond to NO_ID. 
-     *        In output it stores the mapping table between old and new indices
-     *        for the elements.
-     */
-    bool BoundaryModelBuilder::prepare_to_erase_elements(
-        BME::TYPE T,
-        std::vector< index_t >& to_erase )
-    {
-        // Get the mapping between old indices of the elements
-        // and new ones (when elements to remove will actually be removed)
-        index_t nb_removed = 0 ;
+        /// 2. For element update all possible indices 
         for( index_t i = 0; i < to_erase.size(); ++i ) {
-            if( to_erase[ i ] == NO_ID ) {
-                nb_removed++ ;
-            }
-            else {
-                to_erase[ i ] = i - nb_removed ;
-            }
-        }
-        // Short cut to get out if nothing to do
-        if( nb_removed == 0 ) {
-            return false ;
-        }
+            BME::TYPE T = static_cast<BME::TYPE>( i ) ;
 
-        // Change the indices stored by the BME
-        for( index_t i = 0; i <model_.nb_elements( T ); ++i ) {
-            BoundaryModelElement& E = element( bme_t( T, i ) ) ;
-            E.set_id( to_erase[ i ] ) ;
-        }
-
-        // Change all references to all elements of type T
-        if( BME::boundary_allowed( T ) ) {
-            BME::TYPE B = BME::boundary_type( T ) ;            
-            for( index_t i = 0; i < model_.nb_elements( B ); ++i ) {
-                BoundaryModelElement& E = element( bme_t( B, i ) ) ;
-                for( index_t j = 0; j < E.nb_in_boundary(); ++j ) {                    
-                    E.set_in_boundary( j, bme_t ( 
-                         T, to_erase[ E.in_boundary_id(j).index ] ) ) ;
+            // Update all indices stored by the BME of that type 
+            for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
+                if( to_erase[ i ][ j ] == NO_ID ) {
+                    // Element will be erased - no update necessary
+                    continue ;
                 }
+                BoundaryModelElement& E = element( bme_t( T, j ) ) ;
+                // id_ 
+                E.set_id( to_erase[ i ][ j ] ) ;
+                // boundary_
+                if( E.nb_boundaries() > 0 ) {
+                    BME::TYPE B = BME::boundary_type( T ) ;
+                    ringmesh_debug_assert( B < BME::NO_TYPE ) ;
+                    for( index_t k = 0; k < E.nb_boundaries(); ++k ) {
+                        E.set_boundary( k, bme_t(
+                            B, to_erase[ B ][ E.boundary_id( k ).index ] ) ) ;
+                    }
+                }
+                // in_boundary
+                if( E.nb_in_boundary() > 0 ) {
+                    BME::TYPE IB = BME::in_boundary_type( T ) ;
+                    ringmesh_debug_assert( IB < BME::NO_TYPE ) ;
+                    for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
+                        E.set_in_boundary( k, bme_t(
+                            IB, to_erase[ IB ][ E.in_boundary_id( k ).index ] ) ) ;
+                    }
+                }
+                // parent_
+                if( E.has_parent() ) {
+                    BME::TYPE P = BME::parent_type( T ) ;
+                    ringmesh_debug_assert( P < BME::NO_TYPE ) ;
+                    E.set_parent( bme_t( P, to_erase[ P ][ E.parent_id().index ] ) ) ;
+                }
+                // children_ 
+                if( E.nb_children() > 0 ) {
+                    BME::TYPE C = BME::child_type( T ) ;
+                    ringmesh_debug_assert( C < BME::NO_TYPE ) ;
+                    for( index_t k = 0; k < E.nb_children(); ++k ) {
+                        E.set_child( k, bme_t(
+                            C, to_erase[ C ][ E.child_id( k ).index ] ) ) ;
+                    }
+                }
+                // Clean the vectors in the element
                 E.erase_invalid_element_references() ;
             }
         }
-        if( BME::in_boundary_allowed( T ) ) {
-            BME::TYPE IB = BME::in_boundary_type( T ) ;
-            for( index_t i = 0; i < model_.nb_elements( IB ); ++i ) {
-                BoundaryModelElement& E = element( bme_t( IB, i ) ) ;
-                for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
-                    E.set_boundary( j, bme_t(
-                        T, to_erase[ E.boundary_id( j ).index ] ) ) ;
-                }
-                E.erase_invalid_element_references() ;
-            }
-        }
-
-        if( BME::parent_allowed( T ) ) {
-            BME::TYPE P = BME::parent_type( T ) ;
-            for( index_t i = 0; i < model_.nb_elements( P ); ++i ) {
-                BoundaryModelElement& E = element( bme_t( P, i ) ) ;
-                for( index_t j = 0; j < E.nb_children(); ++j ) {
-                    E.set_child( j, bme_t(
-                        T, to_erase[ E.child_id( j ).index ] ) ) ;
-                }
-                E.erase_invalid_element_references() ;
-            }
-        }
-
-        if( BME::child_allowed( T ) ) {
-            BME::TYPE C = BME::child_type( T ) ;
-            for( index_t i = 0; i < model_.nb_elements( C ); ++i ) {
-                BoundaryModelElement& E = element( bme_t( C, i ) ) ;
-                E.set_parent( bme_t( T, to_erase[ E.parent_id().index ] ) ) ;                
-            }
-        }      
-
-        // Do not forget the universe ...
-        if( T == BME::SURFACE ) {
+        // Do not forget the universe
+        /// @todo Put the universe in the list of regions - so annoying to think of it each time
+        {
             for( index_t i = 0; i < model_.universe().nb_boundaries(); ++i ) {
                 model_.universe_.set_boundary( i, bme_t(
-                    T, to_erase[ model_.universe().boundary_id(i).index ] ) ) ;
+                    BME::SURFACE, to_erase[ BME::SURFACE ][
+                        model_.universe().boundary_id( i ).index ] ) ) ;
             }
             model_.universe_.erase_invalid_element_references() ;
         }
-        return true ;
-    }
 
+        /// 3. Dealing with the model vertices
+        for( index_t v = 0; v < model_.vertices.nb_unique_vertices(); ++v ) {
+            const std::vector<BoundaryModelVertices::VertexInBME>& cur =
+                model_.vertices.bme_vertices( v ) ;
+            for( index_t i = 0; i < cur.size(); ++i ) {
+                bme_t id = cur[ i ].bme_id ;
+                bme_t new_id( id.type, to_erase[ id.type ][ id.index ] ) ;
+                model_.vertices.set_bme(
+                    v, i, BoundaryModelVertices::VertexInBME( new_id, cur[i].v_id ) ) ;
+            }
+        }
+        model_.vertices.erase_invalid_vertices() ;
+       
+        /// 4. Effectively delete the elements 
+        for( index_t i = 0; i < to_erase.size(); ++i ) {
+            for( index_t j = 0 ; j < to_erase[ i ].size(); ++j ) {
+                if( to_erase[ i ][ j ] == NO_ID ) {
+                    BME::bme_t cur( static_cast<BME::TYPE>( i ), j ) ;
+                    delete element_ptr( cur ) ;
+                    set_element( cur, nil ) ;
+                }
+            }
+            std::vector< BME* >& store = model_.modifiable_elements( 
+                static_cast<BME::TYPE>( i ) ) ;
+            store.erase( std::remove( store.begin(), store.end(),
+                static_cast<BME*>( nil ) ), store.end() ) ;
+        }
+
+    }
+    
 
     void BoundaryModelBuilder::resize_elements( BME::TYPE type, index_t nb )
     {
@@ -1375,13 +1416,10 @@ namespace RINGMesh {
     /*!
      * @brief Remove degenerate facets and edges from the Surface
      *        and Line of the model
-     * @warning DOES NOT WORK. 
-     *         Because it may need to call remove_elements, that does not work
-     * @todo Update the model vertices ? Sans doute necessaire.
      */
     void BoundaryModelBuilder::remove_degenerate_facet_and_edges()
     {
-        std::vector< bme_t > to_remove ;
+        std::set< bme_t > to_remove ;
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             index_t nb = repair_line_mesh( model_.line( i ).mesh() ) ;
             if( nb > 0 ) {
@@ -1391,7 +1429,7 @@ namespace RINGMesh {
 
                 // The line may be empty now - remove it from the model
                 if( model_.line( i ).nb_cells() == 0 ) {
-                    to_remove.push_back( bme_t( BME::LINE, i ) ) ;
+                    to_remove.insert( model_.line( i ).bme_id() ) ;
                 }
             }
         }
@@ -1430,10 +1468,16 @@ namespace RINGMesh {
                         S.cut_by_line( L ) ;
                     }
                 }
+                // The line may be empty now - remove it from the model
+                if( S.nb_cells() == 0 ) {
+                    to_remove.insert( S.bme_id() ) ;
+                }
             }
         }
-
-        remove_elements( to_remove ) ;
+        if( to_remove.size() > 0 ) {
+            get_dependent_elements( to_remove ) ;
+            remove_elements( std::vector< bme_t >( to_remove.begin(), to_remove.end() ) ) ;
+        }
     }
 
     /*!
@@ -1503,7 +1547,7 @@ namespace RINGMesh {
 
         // Basic mesh repair for surfaces and lines
         /// @todo To put repair when remove_elements is OK
-        // remove_degenerate_facet_and_edges() ; 
+        //remove_degenerate_facet_and_edges() ; 
 
         if( model_.check_model_validity() ) {
             GEO::Logger::out( "BoundaryModel" ) 

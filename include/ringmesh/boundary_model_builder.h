@@ -86,19 +86,14 @@ namespace RINGMesh {
          */
         BoundaryModelElement* element_ptr( const BME::bme_t& id ) const
         {
-            switch( id.type ) {
-                case BME::CORNER: return model_.corners_[ id.index ] ;
-                case BME::LINE:  return model_.lines_[ id.index ] ;
-                case BME::SURFACE:  return model_.surfaces_[ id.index ] ;
-                case BME::REGION:  return model_.regions_[ id.index ] ;
-                case BME::CONTACT:  return model_.contacts_[ id.index ] ;
-                case BME::INTERFACE:  return model_.interfaces_[ id.index ] ;
-                case BME::LAYER:  return model_.layers_[ id.index ] ;
-                case BME::ALL_TYPES: return element_ptr( model_.global_to_typed_id( id ) ) ;
-                default:
-                    ringmesh_assert_not_reached ;
-                    return &model_.universe_ ;
-            }
+            if( id.type < BME::NO_TYPE ) {
+                return model_.elements( id.type )[ id.index ] ;
+            } else if( id.type == BME::ALL_TYPES ) {
+                return element_ptr( model_.global_to_typed_id( id ) ) ;
+            } else {
+                ringmesh_assert_not_reached ;
+                return &model_.universe_ ;
+            }            
         }
 
         /*!
@@ -108,30 +103,11 @@ namespace RINGMesh {
          */
         void set_element( const BME::bme_t& id, BoundaryModelElement* E ) const
         {
-            switch( id.type ) {
-                case BME::CORNER:
-                    model_.corners_[ id.index ] = dynamic_cast< Corner* >(E) ;
-                    break ;
-                case BME::LINE:  
-                    model_.lines_[ id.index ] = dynamic_cast< Line* >(E) ; 
-                    break ;
-                case BME::SURFACE: 
-                    model_.surfaces_[ id.index ] = dynamic_cast< Surface*>(E) ;
-                    break ;
-                case BME::REGION:  
-                    model_.regions_[ id.index ] = E ;
-                    break ;
-                case BME::CONTACT:  
-                    model_.contacts_[ id.index ] = E ;
-                    break ;
-                case BME::INTERFACE:  
-                    model_.interfaces_[ id.index ] = E ; 
-                    break ;
-                case BME::LAYER:  
-                    model_.layers_[ id.index ] = E ; 
-                    break ;
-                default:
-                    ringmesh_assert_not_reached ;
+            if( id.type < BME::NO_TYPE ) {
+                model_.modifiable_elements( id.type )[ id.index ] = E ;
+            }
+            else {
+                ringmesh_assert_not_reached ;
             }
         }
 
@@ -214,8 +190,12 @@ namespace RINGMesh {
          */
         BME::bme_t create_element( BME::TYPE e_type ) ;
 
+        bool get_dependent_elements( std::set< BME::bme_t >& elements ) const ;
+
         void remove_elements( const std::vector< BME::bme_t >& elements ) ;        
-       
+
+        void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
+
         void resize_elements(
             BME::TYPE e_type,
             index_t nb ) ;
@@ -337,10 +317,6 @@ namespace RINGMesh {
 
     protected:
         BoundaryModel& model_ ;
-
-    private:
-        bool prepare_to_erase_elements( BME::TYPE T, std::vector< index_t >& to_erase ) ;
-        void erase_elements( BME::TYPE T, const std::vector< index_t >& to_erase ) ;
     } ;
 
     /*!

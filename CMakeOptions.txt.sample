@@ -7,3 +7,6 @@
 #SET(MG_TETRA /home/antoine/app/DISTENE/MeshGems-1.1/Products)
 
 #SET(RINGMESH_WITH_GRAPHICS TRUE)
+
+# To disable OpenMP
+#SET(USE_OPENMP FALSE)

@@ -301,7 +301,7 @@ namespace RINGMesh {
     {
         ringmesh_debug_assert( nj() == mat2.size() ) ;
 
-#pragma omp parallel for
+        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < ni(); ++i ) {
             ringmesh_debug_assert( i >= 0 && i < result.size() ) ;
             result[i] = 0. ;

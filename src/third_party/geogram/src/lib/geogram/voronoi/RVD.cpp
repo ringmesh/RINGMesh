@@ -948,6 +948,7 @@ namespace {
                 f_(0.0),
                 RVD_(RVD), 
                 simplex_func_(F) {
+                simplex_func_->reset_thread_local_storage();
             }
 
             /**
@@ -1030,7 +1031,7 @@ namespace {
                 if(F->volumetric()) {
                     RVD_.for_each_volumetric_integration_simplex(
                         C,
-                        false,  /* Visit inner tets   */
+                        F->background_mesh_has_varying_attribute(),  
                         false   /* Coherent triangles */
                     );
                 } else {

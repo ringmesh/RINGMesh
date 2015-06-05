@@ -42,11 +42,21 @@ INCLUDE_DIRECTORIES(src/third_party/geogram/src/lib)
 IF(WIN32)
     ADD_DEFINITIONS(-DRINGMESH_EXPORTS)
 	ADD_DEFINITIONS(-DGEO_DYNAMIC_LIBS)
+    link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
 
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}/lib/${CMAKE_BUILD_TYPE})
 ELSE(WIN32)
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
 ENDIF(WIN32)
+
+##############################################################################
+# HDF5
+# IF(NOT DEFINED HDF5_HOME)
+# 	set(HDF5_HOME $ENV{HDF5_HOME})
+# ENDIF(NOT DEFINED HDF5_HOME)
+# message("HDF5_HOME is equal to ${HDF5_HOME}")
+    link_directories(${CMAKE_SOURCE_DIR}/include/third_party/hdf5)
+
 
 ##############################################################################
 # Geogram_gfx
@@ -91,13 +101,19 @@ ENDIF(${USE_MG_TETRA})
 
 ##############################################################################
 #To use OpenMP 
-IF(WIN32) 
-       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4996 /MP")
-       SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4996 /MP")
-ELSE(WIN32)
-       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-       SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-ENDIF(WIN32)
+if(NOT DEFINED USE_OPENMP)
+    SET(USE_OPENMP TRUE)
+endif()
+IF(${USE_OPENMP})
+    IF(WIN32) 
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4996 /MP")
+        SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} /wd4275 /wd4996 /MP")
+    ELSE(WIN32)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+        SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+    ENDIF(WIN32)
+    add_definitions(-DRINGMESH_USE_OPENMP)
+ENDIF()
 
 IF(UNIX)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
@@ -114,6 +130,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 add_library(${RINGMESH_PROJECT} SHARED ${SOURCES})
 target_link_libraries(${RINGMESH_PROJECT} geogram)
+target_link_libraries(${RINGMESH_PROJECT} hdf5)
+target_link_libraries(${RINGMESH_PROJECT} hdf5_cpp)
+target_link_libraries(${RINGMESH_PROJECT} hdf5_hl)
+target_link_libraries(${RINGMESH_PROJECT} hdf5_hl_cpp)
+
 
 ##############################################################################
 # Additional optional link libraries

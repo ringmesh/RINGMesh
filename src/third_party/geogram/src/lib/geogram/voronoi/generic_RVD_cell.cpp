@@ -212,7 +212,8 @@ namespace GEOGen {
     }
 
     void ConvexCell::initialize_from_mesh_tetrahedron(
-        const Mesh* mesh, index_t t, bool symbolic
+        const Mesh* mesh, index_t t, bool symbolic,
+        const GEO::Attribute<double>& vertex_weight
     ) {
         clear();
 
@@ -238,10 +239,22 @@ namespace GEOGen {
         set_vertex_id(2, (t2 == signed_index_t(GEO::NO_CELL)) ? 0 : -t2 - 1);
         set_vertex_id(3, (t3 == signed_index_t(GEO::NO_CELL)) ? 0 : -t3 - 1);
 
-        create_triangle(mesh->vertices.point_ptr(v0), 2, 1, 3, 2, 1, 3);
-        create_triangle(mesh->vertices.point_ptr(v1), 3, 0, 2, 3, 0, 2);
-        create_triangle(mesh->vertices.point_ptr(v2), 0, 3, 1, 0, 3, 1);
-        create_triangle(mesh->vertices.point_ptr(v3), 2, 0, 1, 2, 0, 1);
+        double w0 = 1.0;
+        double w1 = 1.0;
+        double w2 = 1.0;
+        double w3 = 1.0;
+        
+        if(vertex_weight.is_bound()) {
+            w0 = vertex_weight[v0];
+            w1 = vertex_weight[v1];
+            w2 = vertex_weight[v2];
+            w3 = vertex_weight[v3];            
+        }
+        
+        create_triangle(mesh->vertices.point_ptr(v0), w0, 2, 1, 3, 2, 1, 3);
+        create_triangle(mesh->vertices.point_ptr(v1), w1, 3, 0, 2, 3, 0, 2);
+        create_triangle(mesh->vertices.point_ptr(v2), w2, 0, 3, 1, 0, 3, 1);
+        create_triangle(mesh->vertices.point_ptr(v3), w3, 2, 0, 1, 2, 0, 1);
 
         if(symbolic) {
 
