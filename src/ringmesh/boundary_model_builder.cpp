@@ -583,20 +583,25 @@ namespace RINGMesh {
      *          The client is responsible to set the proper connectivity
      *          information between the remaining model elements.
      * 
-     * @todo TESTS that it works. How ??
+     * @todo TEST IT
      */
     void BoundaryModelBuilder::remove_elements( 
         const std::vector< bme_t >& elements )
     {
+        if( elements.size() == 0 ) {
+            return ;
+        }
+
         // We need to remove elements type by type since they are 
         // stored in different vectors and since we use indices in these 
         // vectors to identify them.
+        // Initialize the vector
         std::vector < std::vector < index_t > > to_erase_by_type ;
         for( index_t i = BME::CORNER; i < BME::NO_TYPE; ++i ) {
-            to_erase_by_type.push_back(
-                std::vector< index_t >( model_.nb_elements( static_cast<BME::TYPE>(i) ), 0 ) ) ;
+            to_erase_by_type.push_back( std::vector< index_t >( 
+                model_.nb_elements( static_cast<BME::TYPE>(i) ), 0 ) ) ;
         }
-        
+        // Flag the elements to erase
         for( index_t i = 0; i < elements.size(); ++i ) {
             bme_t cur = elements[ i ] ;
             if( cur.type < BME::NO_TYPE ) {
@@ -619,6 +624,7 @@ namespace RINGMesh {
     *        elements are flagged with NO_ID.
     *        In output it stores the mapping table between old and new indices
     *        for the elements.
+    * @todo TEST IT
     */
     void BoundaryModelBuilder::delete_elements(
         std::vector< std::vector< index_t > >& to_erase )
@@ -1410,9 +1416,6 @@ namespace RINGMesh {
     /*!
      * @brief Remove degenerate facets and edges from the Surface
      *        and Line of the model
-     * @warning DOES NOT WORK. 
-     *         Because it may need to call remove_elements, that does not work
-     * @todo Update the model vertices ? Sans doute necessaire.
      */
     void BoundaryModelBuilder::remove_degenerate_facet_and_edges()
     {
@@ -1471,8 +1474,10 @@ namespace RINGMesh {
                 }
             }
         }
-        get_dependent_elements( to_remove ) ;
-        remove_elements( std::vector< bme_t >( to_remove.begin(), to_remove.end() ) ) ;
+        if( to_remove.size() > 0 ) {
+            get_dependent_elements( to_remove ) ;
+            remove_elements( std::vector< bme_t >( to_remove.begin(), to_remove.end() ) ) ;
+        }
     }
 
     /*!
@@ -1542,7 +1547,7 @@ namespace RINGMesh {
 
         // Basic mesh repair for surfaces and lines
         /// @todo To put repair when remove_elements is OK
-        remove_degenerate_facet_and_edges() ; 
+        //remove_degenerate_facet_and_edges() ; 
 
         if( model_.check_model_validity() ) {
             GEO::Logger::out( "BoundaryModel" ) 

@@ -677,14 +677,20 @@ namespace RINGMesh {
     void BoundaryModelElement::erase_invalid_element_references()
     {
         TYPE T = bme_id().type ;
-        if( child_allowed( T ) ) {
+        if( nb_children() > 0 ) {
             bme_t invalid_child( child_type( T ), NO_ID ) ;
-            children_.erase( std::remove(
-                children_.begin(), children_.end(), invalid_child ), 
-                children_.end() );
-
+            if( std::count( children_.begin(), children_.end(), invalid_child ) 
+                == children_.size() 
+              ) {
+                // Calling erase on all elements -> undefined behavior 
+                children_.clear() ;              
+            } else {            
+                children_.erase( std::remove(
+                    children_.begin(), children_.end(), invalid_child ),
+                    children_.end() );
+            }
         }
-        if( boundary_allowed( T ) ) {
+        if( nb_boundaries() > 0 ) {
             bme_t invalid_boundary( boundary_type( T ), NO_ID ) ;
 
             if( !sides_.empty() ) {
@@ -700,20 +706,29 @@ namespace RINGMesh {
             }
             index_t end = std::remove( boundaries_.begin(), boundaries_.end(), invalid_boundary )
                 - boundaries_.begin() ;
-
-            boundaries_.erase( boundaries_.begin()+end, boundaries_.end() );
-            sides_.erase( sides_.begin() + end, sides_.end() ) ;
-
+            if( end == 0 ) {
+                boundaries_.clear() ;
+                sides_.clear() ;
+            } else {
+                boundaries_.erase( boundaries_.begin()+end, boundaries_.end() );
+                if( !sides_.empty() ) {
+                    sides_.erase( sides_.begin() + end, sides_.end() ) ;
+                }
+            }            
         }
-        if( in_boundary_allowed( T ) ) {
+        if( nb_in_boundary() > 0 ) {
             bme_t invalid_in_boundary( in_boundary_type( T ), NO_ID ) ;
-            in_boundary_.erase( std::remove(
-                in_boundary_.begin(), in_boundary_.end(), invalid_in_boundary ), 
-                in_boundary_.end() );
+            if( std::count( in_boundary_.begin(), in_boundary_.end(), invalid_in_boundary )
+                == in_boundary_.size()
+              ) {
+                in_boundary_.clear() ;
+            } else {
+                in_boundary_.erase( std::remove(
+                    in_boundary_.begin(), in_boundary_.end(), invalid_in_boundary ),
+                    in_boundary_.end() );
+            }
         }
-
     }
-
 
 
 
