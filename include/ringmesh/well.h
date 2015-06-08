@@ -186,6 +186,7 @@ namespace RINGMesh {
 
         index_t nb_corners() const { return corners_.size() ;}
         index_t nb_parts() const { return parts_.size() ;}
+        index_t nb_edges() const ;
 
         void set_name( const std::string& name ) { name_ = name ;}
         const std::string& name() const { return name_ ;}
@@ -195,6 +196,7 @@ namespace RINGMesh {
         std::vector< WellPart* > parts_ ;
         std::vector< index_t > part_region_id_ ;
         std::string name_ ;
+        index_t nb_edges_ ;
     } ;
 
 // --------------------------------------------------------------------------
