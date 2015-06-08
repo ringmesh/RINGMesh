@@ -48,6 +48,7 @@
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/file_system.h>
+#include <geogram/points/kd_tree.h>
 
 #include <vector>
 #include <string>
@@ -62,9 +63,6 @@ namespace RINGMesh {
      * @details Each instance is unique, unlike vertices in 
      *          the model Corner, Line, and Surface meshes.
      *          Attributes may be defined on the vertices.
-     *
-     * @todo Clean the implementation of the function of copy-paste
-     *       and use generic access
      */          
     class RINGMESH_API BoundaryModelVertices {
         ringmesh_disable_copy( BoundaryModelVertices ) ;
@@ -96,11 +94,11 @@ namespace RINGMesh {
             {
                 return bme_id == rhs.bme_id && v_id == rhs.v_id ;
             }
-            bool is_defined()
+            bool is_defined() const
             {
                 return bme_id.is_defined() && v_id != NO_ID ;
             }
-            /// Type of the BME and index
+            /// Unique identifier of the associated BoundaryModelElement
             BME::bme_t bme_id ;
             /// Index of the vertex in the BME
             index_t v_id ;
@@ -110,7 +108,7 @@ namespace RINGMesh {
          * @brief Vertices are defined for a BoundaryModel
          */
         BoundaryModelVertices( const BoundaryModel& bm )
-            : bm_( bm ), ann_( nil ), lock_( 0 )
+            : bm_( bm ), kdtree_( nil ), lock_( 0 )
         {
         }
 
@@ -143,7 +141,7 @@ namespace RINGMesh {
         /*!
          * @brief Returns the index of the given vertex in the model
          * @param[in] p input point coordinates
-         * @return index of the vertex in the model if found, otherwise NO_ID
+         * @return index of the vertex in the model if found (distance < epsilon), otherwise NO_ID
          */
         index_t vertex_index( const vec3& p ) const ;
 
@@ -181,7 +179,7 @@ namespace RINGMesh {
         void update_point( index_t unique_id, const vec3& point ) ;
 
         /*!
-         * @brief Clear the vertices - unbind unique2bme_ - 
+         * @brief Clear the vertices - unbind bme_vertices_ - 
          *        set attribute to NO_ID in BME
          * @warning Not stable - crashes because of issues in 
          * Mesh attributes clearing
@@ -192,12 +190,12 @@ namespace RINGMesh {
          * @brief Returns the Geogram attribute manager on these vertices
          */
         GEO::AttributesManager& attribute_manager() const {
-            return const_cast<GEO::AttributesManager&> 
-                ( unique_vertices_.vertices.attributes() );
+            return mesh_.vertices.attributes() ;
         }
 
         /*! 
-         * @brief Delete the vertices that do not correspond to a BME element
+         * @brief Delete the vertices that are not anymore in any 
+         * BoundaryModelElement
          */
         void erase_invalid_vertices() ;
         
@@ -217,48 +215,47 @@ namespace RINGMesh {
         void initialize_reverse() ;
 
         /*!
-        * @brief Get the index of the BM vertex corresponding to 
-        *        a given vertex in a BME.
+        * @brief Get the index of unique vertex matching a given vertex in a BME.
         */
         index_t unique_vertex_id( const VertexInBME& v ) const ;       
 
         /*!
          * @brief Delete the KdTree and set the pointer to nil.         
          */
-        void set_ann_to_update() ;
+        void set_to_update() ;
         
         /*!
-         * @brief Build the KdTree. 
+         * @brief Build the KdTree of the vertices 
          * @pre In debug mode, assert that ann_ pointer is nil.
-         * @note Function is const to be called in accessors to point index.
-         *  without ugly const-cast.
+         * @note The function is const to be called when accessing a point index
+         *  from coodinated without an ugly const-cast.
          */
-        void initialize_ann() const ;
+        void initialize_kdtree() const ;
 
         /*!
          * @brief Update the model_vertex_id in the corners, lines, surfaces
          *        from new to old index
          */
         void update_bme_model_ids( const GEO::vector< index_t >& old2new ) const ;
+
     private:
-        /// Attached BoundaryModel to which belong the vertices
+        /// Attached BoundaryModel that owns the vertices
         const BoundaryModel& bm_ ;
         
         /*! 
          * @brief Mesh storing the coordinates of the vertices that are not colocated
-         * @details Each point instance is unique. 
+         * @details Each vertex is unique. 
          * With a GEO::Mesh we have attributes on the points without any effort
          */
-        GEO::Mesh unique_vertices_ ;
+        GEO::Mesh mesh_ ;
                
         /*! 
-         * Mapping of a unique vertex to the vertices in the 
-         * BoundaryModelElements that have the same coordinates
+         * Vertices in BoundaryModelElements corresponding to each vertex
          */
-        GEO::Attribute< std::vector< VertexInBME > > unique2bme_ ;
+        GEO::Attribute< std::vector< VertexInBME > > bme_vertices_ ;
 
         /// Kd-tree of the model vertices
-        mutable ColocaterANN* ann_ ;
+        mutable GEO::NearestNeighborSearch_var kdtree_ ;
 
         /// Lock to protect from multi-threading during clear()
         GEO::Process::spinlock lock_ ;
