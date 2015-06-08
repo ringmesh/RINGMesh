@@ -644,7 +644,22 @@ namespace RINGMesh {
             }
         }
 
-        /// 2. For element update all possible indices 
+        /// 2. Deal with the model vertices
+        // We need to to this before changing ids of the BMEs 
+        // We need the BMEs to have their previous ids to get the new correct ones
+        for( index_t v = 0; v < model_.vertices.nb_unique_vertices(); ++v ) {
+            const std::vector<BoundaryModelVertices::VertexInBME>& cur =
+                model_.vertices.bme_vertices( v ) ;
+            for( index_t i = 0; i < cur.size(); ++i ) {
+                bme_t id = cur[ i ].bme_id ;
+                bme_t new_id( id.type, to_erase[ id.type ][ id.index ] ) ;
+                model_.vertices.set_bme(
+                    v, i, BoundaryModelVertices::VertexInBME( new_id, cur[ i ].v_id ) ) ;
+            }
+        }
+        model_.vertices.erase_invalid_vertices() ;
+
+        /// 3. For element update all possible indices 
         for( index_t i = 0; i < to_erase.size(); ++i ) {
             BME::TYPE T = static_cast<BME::TYPE>( i ) ;
 
@@ -703,20 +718,7 @@ namespace RINGMesh {
                         model_.universe().boundary_id( i ).index ] ) ) ;
             }
             model_.universe_.erase_invalid_element_references() ;
-        }
-
-        /// 3. Dealing with the model vertices
-        for( index_t v = 0; v < model_.vertices.nb_unique_vertices(); ++v ) {
-            const std::vector<BoundaryModelVertices::VertexInBME>& cur =
-                model_.vertices.bme_vertices( v ) ;
-            for( index_t i = 0; i < cur.size(); ++i ) {
-                bme_t id = cur[ i ].bme_id ;
-                bme_t new_id( id.type, to_erase[ id.type ][ id.index ] ) ;
-                model_.vertices.set_bme(
-                    v, i, BoundaryModelVertices::VertexInBME( new_id, cur[i].v_id ) ) ;
-            }
-        }
-        model_.vertices.erase_invalid_vertices() ;
+        }       
        
         /// 4. Effectively delete the elements 
         for( index_t i = 0; i < to_erase.size(); ++i ) {
@@ -1547,7 +1549,7 @@ namespace RINGMesh {
 
         // Basic mesh repair for surfaces and lines
         /// @todo To put repair when remove_elements is OK
-        //remove_degenerate_facet_and_edges() ; 
+        remove_degenerate_facet_and_edges() ; 
 
         if( model_.check_model_validity() ) {
             GEO::Logger::out( "BoundaryModel" ) 
