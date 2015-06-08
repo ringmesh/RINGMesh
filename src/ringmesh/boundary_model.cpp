@@ -1344,7 +1344,7 @@ namespace RINGMesh {
         if( nb_unique_vertices() == 0 ) {
             return NO_ID ;
         }
-        if( kdtree_ == nil ) {
+        if( kdtree_to_update_ ) {
             initialize_kdtree() ;
         }
         index_t nn = NO_ID ;
@@ -1425,14 +1425,15 @@ namespace RINGMesh {
         // this Kdtree. Do not remove them. JP
         if( !kdtree_.is_nil() ) {
             kdtree_->unref() ;
-        }    
+        } 
+        kdtree_to_update_ = true ;
     }
     
     void BoundaryModelVertices::initialize_kdtree() const
     {
         kdtree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         kdtree_->set_points( mesh_.vertices.nb(), mesh_.vertices.point_ptr( 0 ) ) ;
-
+        kdtree_to_update_ = false ;
 #ifdef RINGMESH_DEBUG
         // Paranoia
         assert_no_colocate_vertices( mesh_, epsilon );
@@ -1484,7 +1485,9 @@ namespace RINGMesh {
                     }
                 }
             }
-        }               
+            set_to_update() ;
+        } 
+        
     }
  
     /*******************************************************************************/
