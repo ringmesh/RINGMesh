@@ -1243,6 +1243,13 @@ namespace RINGMesh {
                             << 0 << TAB << nb_quad_interface[i] << std::endl ;
                     }
                 }
+                if( mm.wells() ) {
+                    for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
+                        const Well& well = mm.wells()->well( w ) ;
+                        ascii << well.name() << TAB << "BAR_2" << TAB << 0 << TAB
+                            << well.nb_edges() << std::endl ;
+                    }
+                }
 
                 data << "# PBFLAGS" << std::endl ;
                 for( index_t p = 0; p < mm.vertices.nb_vertices(); p++ ) {
@@ -1273,7 +1280,7 @@ namespace RINGMesh {
                 }
 
                 index_t nb_total_elements = mm.cells.nb_cells()
-                    + mm.facets.nb_facets() ;
+                    + mm.facets.nb_facets() + mm.edges.nb_edges() ;
                 data << nb_total_elements << " # PELEMENT" << std::endl ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
                     for( index_t el = 0; el < mm.cells.nb_tet( r ); el++ ) {
@@ -1324,6 +1331,19 @@ namespace RINGMesh {
                         if( count == 20 ) {
                             data << std::endl ;
                             count = 0 ;
+                        }
+                    }
+                    if( mm.wells() ) {
+                        for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
+                            const Well& well = mm.wells()->well( w ) ;
+                            for( index_t e = 0; e < well.nb_edges(); e++ ) {
+                                data << " " << std::setw( 3 ) << 2 ;
+                                count++ ;
+                                if( count == 20 ) {
+                                    data << std::endl ;
+                                    count = 0 ;
+                                }
+                            }
                         }
                     }
                 }
@@ -1438,11 +1458,30 @@ namespace RINGMesh {
                         }
                     }
                 }
+                if( mm.wells() ) {
+                    for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
+                        const Well& well = mm.wells()->well( w ) ;
+                        ascii << well.name() << " " << "BAR_2" << " "
+                            << well.nb_edges() << std::endl ;
+                        for( index_t e = 0; e < well.nb_edges(); e++ ) {
+                            ascii << cur_cell++ << " " ;
+                            count++ ;
+                            if( count == 10 ) {
+                                ascii << std::endl ;
+                                count = 0 ;
+                            }
+                        }
+                        if( count != 0 ) {
+                            count = 0 ;
+                            ascii << std::endl ;
+                        }
+                    }
+                }
 
                 index_t nb_plist = 3 * mm.facets.nb_triangle()
                     + 4 * mm.facets.nb_quad() + 4 * mm.cells.nb_tet()
                     + 5 * mm.cells.nb_pyramid() + 6 * mm.cells.nb_prism()
-                    + 8 * mm.cells.nb_hex() ; //+ 2 * nb_edges ;
+                    + 8 * mm.cells.nb_hex() + 2 * mm.edges.nb_edges() ;
                 data << nb_plist << " # PLIST" << std::endl ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
                     const GEO::Mesh& mesh = mm.mesh( r ) ;
@@ -1548,6 +1587,19 @@ namespace RINGMesh {
                         }
                     }
                 }
+                for( index_t w = 0; w < mm.edges.nb_wells(); w++ ) {
+                    for( index_t e = 0; e < mm.edges.nb_edges( w ); e++ ) {
+                        for( index_t v = 0; v < 2; v++ ) {
+                            index_t vertex_id = mm.edges.vertex_id( w, e, v ) ;
+                            data << " " << std::setw( 7 ) << vertex_id ;
+                            count++ ;
+                            if( count == 10 ) {
+                                data << std::endl ;
+                                count = 0 ;
+                            }
+                        }
+                    }
+                }
                 if( count != 0 ) {
                     count = 0 ;
                     data << std::endl ;
@@ -1556,7 +1608,7 @@ namespace RINGMesh {
                 index_t nb_facets = 3 * mm.facets.nb_triangle()
                     + 4 * mm.facets.nb_quad() + 4 * mm.cells.nb_tet()
                     + 5 * mm.cells.nb_pyramid() + 5 * mm.cells.nb_prism()
-                    + 6 * mm.cells.nb_hex() ; //+ 2 * nb_edges ;
+                    + 6 * mm.cells.nb_hex() + 2 * mm.edges.nb_edges() ;
                 data << nb_facets << " # PFVERTS" << std::endl ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
                     for( index_t el = 0; el < mm.cells.nb_tet( r ); el++ ) {
@@ -1675,6 +1727,42 @@ namespace RINGMesh {
                                 }
                             }
                         }
+                    }
+                }
+                index_t edge_offset = mm.facets.nb_facets() + mm.cells.nb_cells() ;
+                index_t cur_edge = 0 ;
+                for( index_t w = 0; w < mm.edges.nb_wells(); w++ ) {
+                    data << " " << std::setw( 7 ) << -28 ;
+                    if( mm.edges.nb_edges( w ) > 1 ) {
+                        data << " " << std::setw( 7 ) << edge_offset + cur_edge + 1 ;
+                        cur_edge++ ;
+                        count++ ;
+                        if( count == 10 ) {
+                            data << std::endl ;
+                            count = 0 ;
+                        }
+                        for( index_t e = 1; e < mm.edges.nb_edges( w ) - 1; e++ ) {
+                            for( index_t v = 0; v < 2; v++ ) {
+                                data << " " << std::setw( 7 )
+                                    << edge_offset + cur_edge - 1 ;
+                                data << " " << std::setw( 7 )
+                                    << edge_offset + cur_edge + 1 ;
+                            }
+                            cur_edge++ ;
+                            count++ ;
+                            if( count == 10 ) {
+                                data << std::endl ;
+                                count = 0 ;
+                            }
+                        }
+                        data << " " << std::setw( 7 ) << edge_offset + cur_edge - 1 ;
+                    }
+                    data << " " << std::setw( 7 ) << -28 ;
+                    cur_edge++ ;
+                    count++ ;
+                    if( count == 10 ) {
+                        data << std::endl ;
+                        count = 0 ;
                     }
                 }
                 if( count != 0 ) {

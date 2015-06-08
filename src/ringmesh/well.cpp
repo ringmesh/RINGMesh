@@ -132,6 +132,7 @@ namespace RINGMesh {
 // --------------------------------------------------------------------------
 
     Well::Well()
+        : nb_edges_( NO_ID )
     {
     }
 
@@ -176,7 +177,16 @@ namespace RINGMesh {
         }
     }
 
-
+    index_t Well::nb_edges() const {
+        if( nb_edges_ == NO_ID ) {
+            index_t res = 0 ;
+            for( index_t p = 0; p < nb_parts(); p++ ) {
+                res += part( p ).mesh().edges.nb() ;
+            }
+            const_cast< Well* >( this )->nb_edges_ = res ;
+        }
+        return nb_edges_ ;
+    }
 
     void Well::get_part_edges(
         index_t p,
