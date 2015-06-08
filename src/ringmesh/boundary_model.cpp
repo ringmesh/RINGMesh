@@ -1366,24 +1366,6 @@ namespace RINGMesh {
         return mesh_.vertices.nb();
     }
 
-    index_t BoundaryModelVertices::unique_vertex_id(
-        BME::bme_t t,
-        index_t v) const
-    {
-        // Get nb_unique_vertices() to initialize the points if necessary
-        nb_unique_vertices() ;
-        ringmesh_assert(v < bm_.element(t).nb_vertices());
-        return bm_.element(t).model_vertex_id(v);
-    }
-
-
-    index_t BoundaryModelVertices::unique_vertex_id(
-        const VertexInBME& v) const
-    {
-        return unique_vertex_id(v.bme_id, v.v_id);
-    }
-
-
     const vec3& BoundaryModelVertices::unique_vertex(index_t v) const
     {
         // The call to nb_unique_vertices() in the assert

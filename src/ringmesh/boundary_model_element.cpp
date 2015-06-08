@@ -804,8 +804,7 @@ namespace RINGMesh {
         ringmesh_debug_assert( index < nb_vertices() ) ;
         if( update ) {
             model_->vertices.update_point(
-                model_->vertices.unique_vertex_id(
-                bme_id(), index ), point ) ;
+                model_vertex_id( index ) , point ) ;
         }
         else {
             mesh_.vertices.point( index ) = point ;
