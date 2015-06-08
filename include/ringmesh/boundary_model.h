@@ -121,18 +121,6 @@ namespace RINGMesh {
         index_t nb_unique_vertices() const ;
 
         /*!
-         * @brief Get the index of the BM vertex corresponding to vertex v
-         *        in the BME of type T and index id.
-         * @details Calls initialize_unique_vertices(), if no vertices yet
-         *          The unique_id is stored as an attribute on the vertices of the BME
-         * 
-         * @todo Remove ? This function is not related to this class
-         * This is managed by the BME itself.
-         */
-        index_t unique_vertex_id(
-            BoundaryModelElement::bme_t T, index_t v ) const ;
-
-        /*!
          * @brief Coordinates of a vertex of the BoundaryModel
          * @pre unique_id < nb_unique_vertices()
          */
@@ -213,12 +201,7 @@ namespace RINGMesh {
          * @details Call initialize_unique_vertices() if unique_vertices_ is empty
          */
         void initialize_reverse() ;
-
-        /*!
-        * @brief Get the index of unique vertex matching a given vertex in a BME.
-        */
-        index_t unique_vertex_id( const VertexInBME& v ) const ;       
-
+    
         /*!
          * @brief Delete the KdTree and set the pointer to nil.         
          */
