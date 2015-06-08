@@ -149,36 +149,26 @@ namespace RINGMesh {
     BoundaryModelElement::GEOL_FEATURE BoundaryModelElement::
         determine_geological_type( const std::string& in )
     {
-        if( in == "" ) {
-            return NO_GEOL ;
-        }
         if( in == "reverse_fault" ) {
             return REVERSE_FAULT ;
-        }
-        if( in == "normal_fault" ) {
+        } else if( in == "normal_fault" ) {
             return NORMAL_FAULT ;
-        }
-        if( in == "fault" ) {
+        } else if( in == "fault" ) {
             return FAULT ;
-        }
-        if( in == "top" ) {
+        } else if( in == "top" ) {
             return STRATI ;
-        }
-        // This might seem strange - but it seems that what's
-        // Gocad is doing
-        if( in == "none" ) {
+        } else if( in == "none" ) {
+            // This might seem strange - but it seems that what's
+            // Gocad is doing
             return STRATI ;
-        }
-        if( in == "unconformity" ) {
+        } else if( in == "unconformity" ) {
             return UNCONFORMITY ;
-        }
-        if( in == "boundary" ) {
+        } else if( in == "boundary" ) {
             return VOI ;
+        } else {
+            // Default case - no information
+            return NO_GEOL ;            
         }
-
-        GEO::Logger::err("BoundaryModel") << "Unexpected geological feature " << in
-            << std::endl ;
-        return NO_GEOL ;
     }
 
 
@@ -207,8 +197,8 @@ namespace RINGMesh {
             case NORMAL_FAULT: return "normal_fault" ;
             case UNCONFORMITY: return "unconformity" ;
             case VOI: return "boundary" ;
-            case NO_GEOL: return "" ;
-            default: return "" ;
+            case NO_GEOL: return "no_geological_feature" ;
+            default: return "no_geological_feature" ;
                 break ;
         }
     }
@@ -624,7 +614,7 @@ namespace RINGMesh {
             }
             return false ;         
         }            
-        else if( T== LINE || T == CORNER ) {
+        else if( T == LINE || T == CORNER ) {
             // True if one of the incident surface define the universe
             for( index_t i = 0; i < nb_in_boundary(); ++i ) {
                 if( in_boundary( i ).is_on_voi() ) {

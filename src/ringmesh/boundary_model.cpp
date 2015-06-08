@@ -2317,9 +2317,12 @@ namespace RINGMesh {
         const BoundaryModelElement& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
-        out << BoundaryModelElement::type_name( E.bme_id().type ) << " "
-            << E.bme_id().index << " " ;
-        if( E.has_name() ) { out << E.name() << " " ;} else { out << "no_name " ;}
+        out << E.bme_id() << " " ;
+        if( E.has_name() ) {
+            out << E.name() << " " ;
+        } else {
+            out << "no_name " ;
+        }
         out <<  BoundaryModelElement::geol_name( E.geological_feature() )
             << std::endl ;
 
@@ -2348,43 +2351,51 @@ namespace RINGMesh {
         out << "RINGMESH BOUNDARY MODEL" << std::endl ;
         out << "NAME " << name() << std::endl ;
 
-        // Number of the different type of elements
+        // Numbers of the different types of elements
         for( index_t i = BME::CORNER; i < BME::NO_TYPE; i++ ) {
-            BME::TYPE type = (BME::TYPE) i ;
-            out <<  "NB_" << BME::type_name( type ) << " " << nb_elements( type ) <<
-            std::endl ;
+            BME::TYPE type = static_cast< BME::TYPE >( i ) ;
+            out <<  "NB_" << BME::type_name( type ) << " " 
+                << nb_elements( type ) 
+                << std::endl ;
         }
-
         // Write high-level elements
         for( index_t i = BME::CONTACT; i < BME::NO_TYPE; i++ ) {
-            BME::TYPE type = (BME::TYPE) i ;
+            BME::TYPE type = static_cast< BME::TYPE >( i ) ;
             index_t nb = nb_elements( type ) ;
             for( index_t j = 0; j < nb; ++j ) {
                 save_high_level_bme( out, element( BME::bme_t( type, j ) ) ) ;
             }
         }
-
         // Regions
         for( index_t i = 0; i < nb_regions(); ++i ) {
             const BME& E = region( i ) ;
-
-            // Save ID - NAME -
-            out << BME::type_name( BME::REGION ) << " " << E.bme_id().index << " " ;
-            if( E.has_name() ) {out << E.name() ;} else {out << "no_name" ;}
+            // Save ID - NAME 
+            out << E.bme_id() << " " ;
+            if( E.has_name() ) {
+                out << E.name() ;
+            } else {
+                out << "no_name" ;
+            }
             out << std::endl ;
-
             // Second line Signed ids of boundary surfaces
             for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
-                if( E.side( j ) ) {out << "+" ;} else {out << "-" ;}
+                if( E.side( j ) ) {
+                    out << "+" ;
+                } else {
+                    out << "-" ;
+                }
                 out << E.boundary_id( j ).index << " " ;
             }
             out << std::endl ;
         }
-
         // Universe
         out << "UNIVERSE " << std::endl ;
         for( index_t j = 0; j < universe().nb_boundaries(); ++j ) {
-            if( universe().side( j ) ) {out << "+" ;} else {out << "-" ;}
+            if( universe().side( j ) ) {
+                out << "+" ;
+            } else {
+                out << "-" ;
+            }
             out << universe().boundary_id( j ).index << " " ;
         }
         out << std::endl ;
@@ -2402,15 +2413,14 @@ namespace RINGMesh {
 
         // Corners
         for( index_t i = 0; i < nb_corners(); ++i ) {
-            out << BME::type_name( BME::CORNER ) << " "
-                << corner( i ).bme_id().index << " " << corner( i ).vertex() <<
-            std::endl ;
+            out << corner( i ).bme_id() << " " 
+                << corner( i ).vertex() 
+                << std::endl ;
         }
-
         // Lines
         for( index_t i = 0; i < nb_lines(); ++i ) {
             const Line& L = line( i ) ;
-            out << BME::type_name( BME::LINE ) << " " << L.bme_id().index << std::endl ;
+            out << L.bme_id() << std::endl ;
             out << "LINE_VERTICES " << L.nb_vertices() << std::endl ;
             for( index_t j = 0; j < L.nb_vertices(); ++j ) {
                 out << L.vertex( j ) << std::endl ;
@@ -2445,7 +2455,7 @@ namespace RINGMesh {
         // Surfaces
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             const Surface& S = surface( i ) ;
-            out << BME::type_name( BME::SURFACE ) << " " << S.bme_id().index << std::endl ;
+            out << S.bme_id() << std::endl ;
             out << "SURFACE_VERTICES " << S.nb_vertices() << std::endl ;
             for( index_t j = 0; j < S.nb_vertices(); ++j ) {
                 out << S.vertex( j ) << std::endl ;

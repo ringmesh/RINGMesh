@@ -1127,7 +1127,7 @@ namespace RINGMesh {
         const std::vector< index_t >& unique_vertices )
     {
         ringmesh_assert( id.index < model_.nb_lines() ) ;
-        dynamic_cast< Corner* >( model_.corners_[ id.index ] )->
+        dynamic_cast< Line* >( model_.lines_[ id.index ] )->
             set_vertices( unique_vertices ) ;
     }
 
@@ -2230,7 +2230,6 @@ namespace RINGMesh {
                         set_model_name( in.field( 1 ) ) ;
                     }
                 }
-
                 // Number of elements of a given type
                 else if( match_nb_elements( in.field( 0 ) ) != BME::NO_TYPE ) {
                     // Allocate the space
@@ -2243,9 +2242,10 @@ namespace RINGMesh {
                 // High-level elements
                 else if( match_high_level_type( in.field( 0 ) ) ) {
                     // Read this element
-                    // First line id - name - geol_feature
+                    // First line : type - id - name - geol_feature
                     if( in.nb_fields() < 4 ) {
-                        std::cout << "I/O Error File line " << in.line_number()
+                        GEO::Logger::err("I/O") << "Invalid line: " << in.line_number()
+                            << "4 fields are expected, the type, id, name, and geological feature"
                             << std::endl ;
                         return false ;
                     }
@@ -2256,8 +2256,7 @@ namespace RINGMesh {
                     set_element_name( element, in.field( 2 ) ) ;
                     set_element_geol_feature( element,
                         BME::determine_geological_type( in.field( 3 ) ) ) ;
-
-                    // Second line - indices of its children
+                    // Second line : indices of its children
                     in.get_line() ;
                     in.get_fields() ;
                     for( index_t c = 0; c < in.nb_fields(); c++ ) {
@@ -2266,21 +2265,20 @@ namespace RINGMesh {
                                 in.field_as_uint( c ) ) ) ;
                     }
                 }
-
                 // Regions
                 else if( match_type( in.field( 0 ) ) == BME::REGION ) {
-                    // First line id - name
+                    // First line : type - id - name
                     if( in.nb_fields() < 3 ) {
-                        std::cout << "I/O Error File line " << in.line_number()
-                            << std::endl ;
+                        GEO::Logger::err( "I/O" ) << "Invalid line: " << in.line_number()
+                            << "3 fields are expected to describe a region: REGION, id, and name"
+                            << std::endl ; 
                         return false ;
                     }
                     index_t id = in.field_as_uint( 1 ) ;
                     bme_t element( BME::REGION, id ) ;
                     set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
-
-                    // Second line - signed indices of boundaries
+                    // Second line : signed indices of boundaries
                     in.get_line() ;
                     in.get_fields() ;
                     for( index_t c = 0; c < in.nb_fields(); c++ ) {
@@ -2299,8 +2297,7 @@ namespace RINGMesh {
                 // Universe
                 else if( in.field_matches( 0, "UNIVERSE" ) ) {
                     std::vector< std::pair< index_t, bool > > b_universe ;
-
-                    // Second line - signed indices of boundaries
+                    // Second line: signed indices of boundaries
                     in.get_line() ;
                     in.get_fields() ;
                     for( index_t c = 0; c < in.nb_fields(); c++ ) {
@@ -2345,9 +2342,11 @@ namespace RINGMesh {
 
                 // Corners
                 else if( match_type( in.field( 0 ) ) == BME::CORNER ) {
-                    // One line id - vertex id
-                    if( in.nb_fields() < 3 ) {
-                        std::cout << "I/O Error File line " << in.line_number()
+                    // First line: CORNER - id - vertex id
+                    if( in.nb_fields() < 5 ) {
+                        GEO::Logger::err( "I/O" ) << "Invalid line: " << in.line_number()
+                            << " 5 fields are expected to describe a corner: "
+                            << " CORNER, index, and X, Y, Z coordinates "
                             << std::endl ;
                         return false ;
                     }
@@ -2366,7 +2365,7 @@ namespace RINGMesh {
                     Line& L = dynamic_cast< Line& >( element( cur_element ) ) ;
                     L.set_id( id ) ;
 
-                    // Following information - vertices of the lines
+                    // Following information: vertices of the line
                     in.get_line() ;
                     in.get_fields() ;
                     ringmesh_assert( in.field_matches( 0, "LINE_VERTICES" ) ) ;
