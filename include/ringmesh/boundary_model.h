@@ -108,7 +108,7 @@ namespace RINGMesh {
          * @brief Vertices are defined for a BoundaryModel
          */
         BoundaryModelVertices( const BoundaryModel& bm )
-            : bm_( bm ), kdtree_( nil ), lock_( 0 )
+            : bm_( bm ), kdtree_( nil ), lock_( 0 ), kdtree_to_update_(true)
         {
         }
 
@@ -256,6 +256,7 @@ namespace RINGMesh {
 
         /// Kd-tree of the model vertices
         mutable GEO::NearestNeighborSearch_var kdtree_ ;
+        mutable bool kdtree_to_update_ ;
 
         /// Lock to protect from multi-threading during clear()
         GEO::Process::spinlock lock_ ;
