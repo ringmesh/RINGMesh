@@ -115,7 +115,7 @@ namespace {
     bool colored_cells = false ;
     bool show_voi = true ;
 
-    double shrink = 1.0 ;
+    double shrink = 0.0 ;
     bool mesh_visible = true ;
 
     /**
@@ -203,7 +203,7 @@ namespace {
      */
     void inc_shrink()
     {
-        shrink += 0.1 ;
+        shrink = std::min( shrink + 0.1, 1. ) ;
         MM_gfx.set_cell_regions_shrink( shrink ) ;
     }
 
@@ -212,7 +212,7 @@ namespace {
      */
     void dec_shrink()
     {
-        shrink -= 0.1 ;
+        shrink = std::max( shrink - 0.1, 0. ) ;
         MM_gfx.set_cell_regions_shrink( shrink ) ;
     }
 
@@ -447,7 +447,6 @@ int main( int argc, char** argv )
     }
 
     glut_viewer_set_window_title(
-//        (char*) "||||||(G)||E||(O)|(G)||R||/A\\||||||||" ) ;
         (char*) "RINGMeshView" ) ;
     glut_viewer_set_init_func( init ) ;
     glut_viewer_set_display_func( display ) ;
@@ -459,8 +458,8 @@ int main( int argc, char** argv )
     glut_viewer_add_key_func( 'V', toggle_voi, "toggle VOI" ) ;
     glut_viewer_add_key_func( 'L', toggle_lighting, "toggle lighting" ) ;
     glut_viewer_add_key_func( 'n', invert_normals, "invert normals" ) ;
-    glut_viewer_add_key_func( 'x', dec_shrink, "unshrink cells" ) ;
-    glut_viewer_add_key_func( 'X', inc_shrink, "shrink cells" ) ;
+    glut_viewer_add_key_func( 'X', dec_shrink, "unshrink cells" ) ;
+    glut_viewer_add_key_func( 'x', inc_shrink, "shrink cells" ) ;
     glut_viewer_add_key_func( 'C', toggle_colored_cells, "toggle colored cells" ) ;
 
     if( GEO::CmdLine::get_arg_bool( "gfx:full_screen" ) ) {
