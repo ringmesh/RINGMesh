@@ -49,7 +49,7 @@ int main( int argc, char** argv )
     GEO::Logger::out("TEST") << "Test IO for a BoundaryModel in .bm" << std::endl ;
 
     BoundaryModel in ;
-    if( !RINGMeshIO::load( "../data/model1.ml", in ) )
+   if( !RINGMeshIO::load( "../data/model1.ml", in ) )
         return 1 ;
     if( !RINGMeshIO::save( in, "out.bm" ) )
         return 1 ;
