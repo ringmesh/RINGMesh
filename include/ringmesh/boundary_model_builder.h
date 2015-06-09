@@ -62,18 +62,32 @@ namespace RINGMesh {
         virtual ~BoundaryModelBuilder() {}
 
         
+        /*!
+         *@brief Set the name of the model  
+         */
         void set_model_name( const std::string& name )
         {
             model_.name_ = name ;
         }
 
+        /*! 
+         *@brief Copy elements and element connectivity of model @param from 
+         */
         void copy_macro_topology( const BoundaryModel& from )
         {
             model_.copy_macro_topology( from ) ;
         }
 
         /*!
-         * @brief Generic accessor to a modifiable BoundaryModelElement
+         *@brief The model under construction
+         */
+        const BoundaryModel& model() const 
+        {
+            return model_ ;
+        }
+
+        /*!
+         * @brief Accessor to a modifiable BoundaryModelElement of the model
          */
         BoundaryModelElement& element(
             const BME::bme_t& t ) const
@@ -82,7 +96,7 @@ namespace RINGMesh {
         }
         
         /*!
-         * @brief Modifiable pointer to an element of the associated model
+         * @brief Modifiable pointer to an element of the model
          */
         BoundaryModelElement* element_ptr( const BME::bme_t& id ) const
         {
@@ -98,8 +112,8 @@ namespace RINGMesh {
 
         /*!
          * @brief Set the element of the model to the given element.
-         * @details No checking whatsoever are performed on purpose,
-         *          so that nil pointers can be set. Used to removed elements
+         * @details It is on purpose that no checking whatsoever is performed.
+         *          This way, nil pointers can be set and this is useful to remove elements.
          */
         void set_element( const BME::bme_t& id, BoundaryModelElement* E ) const
         {
@@ -110,7 +124,6 @@ namespace RINGMesh {
                 ringmesh_assert_not_reached ;
             }
         }
-
    
         /*! @}
          * \name Filling BoundaryModelElement attributes.
@@ -148,9 +161,7 @@ namespace RINGMesh {
             const BME::bme_t& boundary,
             bool side = false )
         {
-            if( t.type == BoundaryModelElement::REGION || t.type ==
-                BoundaryModelElement::LAYER )
-            {
+            if( t.type == BME::REGION ) {
                 element( t ).add_boundary( boundary, side ) ;
             } else { element( t ).add_boundary( boundary ) ;}
         }
@@ -199,38 +210,13 @@ namespace RINGMesh {
         // Corner
         BME::bme_t find_corner( const vec3& point) const ;
         BME::bme_t find_corner( index_t model_point_id ) const ;
-        BME::bme_t create_corner( const vec3& point ) ;
-        BME::bme_t find_or_create_corner( const vec3& point) ;
-
-        // Line
-        BME::bme_t find_line( const std::vector< vec3 >& vertices ) const ;
-        BME::bme_t create_line( const std::vector< vec3 >& vertices ) ;
-        BME::bme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
-
-        // Surface
-        BME::bme_t create_surface() ;   
-
-        // Interface
-        BME::bme_t find_interface( const std::string& name ) const ;
-        BME::bme_t create_interface(
-            const std::string& name,
-            BME::GEOL_FEATURE type = BME::NO_GEOL ) ;
-
-        // Region
-        BME::bme_t create_region() ;
-        BME::bme_t create_region(
-            const std::string& name,
-            const std::vector< std::pair< index_t, bool > >& boundaries ) ;
-
-        // Layers
-        BME::bme_t create_layer( const std::string& name ) ;
 
         // Universe
-        void set_universe( const std::vector< std::pair< index_t,
-                                                         bool > >& boundaries ) ;
+        void set_universe( const std::vector< 
+                           std::pair< index_t, bool > >& boundaries ) ;
 
         /*! @}
-         * \name Set element geometry, the vertices are added.
+         * \name Set element geometry from geometrical positions   
          * @{
          */
         void set_corner(
@@ -248,7 +234,7 @@ namespace RINGMesh {
             const std::vector< index_t >& surface_facet_ptr ) ;
 
         /*! @}
-        * \name Set element geometry using the BoundaryModel vertices
+        * \name Set element geometry using BoundaryModel vertices
         * @{
         */
         index_t add_unique_vertex( const vec3& p ) ;
@@ -279,21 +265,14 @@ namespace RINGMesh {
          * @{
          */
         bool end_model() ;
-
         void update_all_ids() ;
-
         void init_global_model_element_access() ;
-
-        bool complete_element_connectivity() ;  
-        
+        bool complete_element_connectivity() ;          
         void remove_degenerate_facet_and_edges() ;
 
         void fill_elements_boundaries( BME::TYPE type ) ;
-
         void fill_elements_in_boundaries( BME::TYPE type ) ;
-
         void fill_elements_parent( BME::TYPE type ) ;
-
         void fill_elements_children( BME::TYPE type ) ;
 
         /*!
@@ -479,7 +458,7 @@ namespace RINGMesh {
                 }
 
                 // Create the surface and set its geometry
-                set_surface_geometry( create_surface(), vertices, corners, facets_ptr ) ;
+                set_surface_geometry( create_element( BME::SURFACE ), vertices, corners, facets_ptr ) ;
             }
         }
     }
