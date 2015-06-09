@@ -1444,7 +1444,7 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
-    void MacroMesh::set_nodel( const BoundaryModel& model )
+    void MacroMesh::set_model( const BoundaryModel& model )
     {
         model_ = &model ;
         meshes_.resize( model_->nb_regions(), nil ) ;

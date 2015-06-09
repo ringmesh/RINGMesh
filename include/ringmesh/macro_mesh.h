@@ -456,7 +456,7 @@ namespace RINGMesh {
             ringmesh_debug_assert( model_ ) ;
             return *model_ ;
         }
-        void set_nodel( const BoundaryModel& model ) ;
+        void set_model( const BoundaryModel& model ) ;
 
         /*!
          * Access the DuplicateMode
