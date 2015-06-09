@@ -388,7 +388,7 @@ namespace {
         get_bbox( BM, xyzmin, xyzmax, false ) ;
 
         if( GEO::CmdLine::get_arg( "mesh" ) != "" ) {
-            MM.set_nodel( BM ) ;
+            MM.set_model( BM ) ;
             if( !RINGMesh::RINGMeshIO::load( GEO::CmdLine::get_arg( "mesh" ), MM ) ) {
                 return ;
             }
