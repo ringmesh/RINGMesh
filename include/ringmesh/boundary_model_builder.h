@@ -189,13 +189,9 @@ namespace RINGMesh {
          * @{
          */
         BME::bme_t create_element( BME::TYPE e_type ) ;
-
         bool get_dependent_elements( std::set< BME::bme_t >& elements ) const ;
-
         void remove_elements( const std::vector< BME::bme_t >& elements ) ;        
-
         void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
-
         void resize_elements(
             BME::TYPE e_type,
             index_t nb ) ;
@@ -208,31 +204,20 @@ namespace RINGMesh {
 
         // Line
         BME::bme_t find_line( const std::vector< vec3 >& vertices ) const ;
-
         BME::bme_t create_line( const std::vector< vec3 >& vertices ) ;
-
         BME::bme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
 
         // Surface
-        BME::bme_t create_surface() ;
-
-        // Contact
-        BME::bme_t find_contact( const std::vector< index_t >& interfaces ) const ;
-
-        BME::bme_t create_contact( const std::vector< index_t >& interfaces ) ;
-
-        BME::bme_t find_or_create_contact( const std::vector< index_t >& interfaces ) ;
+        BME::bme_t create_surface() ;   
 
         // Interface
         BME::bme_t find_interface( const std::string& name ) const ;
-
         BME::bme_t create_interface(
             const std::string& name,
             BME::GEOL_FEATURE type = BME::NO_GEOL ) ;
 
         // Region
         BME::bme_t create_region() ;
-
         BME::bme_t create_region(
             const std::string& name,
             const std::vector< std::pair< index_t, bool > >& boundaries ) ;

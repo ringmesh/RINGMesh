@@ -871,73 +871,6 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Find a Contact
-     * @param[in] interfaces Indices of the Interfaces determining the contact
-     * @return NO_ID or index of the contact
-     */
-    bme_t BoundaryModelBuilder::find_contact(
-        const std::vector< index_t >& interfaces ) const
-    {
-        std::set< index_t > in( interfaces.begin(), interfaces.end() ) ;
-        for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
-            std::set< index_t > comp ;
-            const BoundaryModelElement& E = model_.contact( i ) ;
-            for( index_t j = 0 ; j < E.nb_in_boundary(); ++j ) {
-                comp.insert( E.in_boundary_id( j ).index ) ;
-            }
-            if( comp.size() == in.size() &&
-                std::equal( comp.begin(), comp.end(), in.begin() )
-              ) {
-                return bme_t( BME::CONTACT, i ) ;
-            }
-        }
-        return bme_t() ;
-    }
-
-    /*!
-     * @brief Create a contact between the given Interfaces
-     * The name of the contact is determined from the names of the interfaces.
-     *
-     * @param[in] interfaces Indices of the intersecting interfaces
-     * @return Index of the Contact
-     */
-    bme_t BoundaryModelBuilder::create_contact(
-        const std::vector< index_t >& interfaces )
-    {
-        // Create a name for this contact
-        std::string name = "contact_" ;
-        for( index_t i = 0; i < interfaces.size(); ++i ) {
-            name += model_.one_interface( interfaces[i] ).name() ;
-            name += "_" ;
-        }
-
-        bme_t id = create_element( BME::CONTACT ) ;
-        set_element_name( id, name ) ;
-
-        for( index_t i = 0; i < interfaces.size(); ++i ) {
-            add_element_in_boundary( id, bme_t( BME::INTERFACE, interfaces[ i ] ) ) ;
-        }
-        return id ;
-    }
-
-    /*!
-     * @brief Find or create a contact between given Interfaces
-     *
-     * @param[in] interfaces Indices of the intersecting interfaces
-     * @return Index of the Contact
-     */
-    bme_t BoundaryModelBuilder::find_or_create_contact(
-        const std::vector< index_t >& interfaces )
-    {
-        bme_t result = find_contact( interfaces ) ;
-        if( result.is_defined() ) {
-            return result ;
-        } else {
-            return create_contact( interfaces ) ;
-        }
-    }
-
-    /*!
      * @brief Get the index of an Interface from its name
      *
      * @param[in] name Name of the Interface
@@ -2173,15 +2106,38 @@ namespace RINGMesh {
      */
     void BoundaryModelBuilderGocad::build_contacts()
     {
+        std::vector< std::set< bme_t > > interfaces ;
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             const Line& L = model_.line( i ) ;
-            std::set< index_t > interfaces ;
+            std::set< bme_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                interfaces.insert( model_.element( 
-                    L.in_boundary_id(j) ).parent().bme_id().index ) ;
+                cur_interfaces.insert( model_.element( 
+                    L.in_boundary_id(j) ).parent().bme_id() ) ;
+            }            
+            bme_t contact_id ;
+            for( index_t j = 0; j < interfaces.size(); ++j ) {
+                if( cur_interfaces.size() == interfaces[j].size() && 
+                    std::equal(cur_interfaces.begin(), 
+                      cur_interfaces.end(), interfaces[j].begin() )
+                   ) {
+                    contact_id = bme_t( BME::CONTACT, j ) ;
+                    break ;
+                }
             }
-            bme_t contact_id = find_or_create_contact( 
-                std::vector< index_t >( interfaces.begin(), interfaces.end() ) ) ;
+            if( !contact_id.is_defined() ) {
+                contact_id = create_element( BME::CONTACT ) ;
+                ringmesh_debug_assert( contact_id.index == interfaces.size() ) ;
+                interfaces.push_back( cur_interfaces ) ;
+                // Create a name for this contact
+                std::string name = "contact_" ;
+                for( std::set< bme_t >::const_iterator it( cur_interfaces.begin() );
+                     it != cur_interfaces.end(); ++it 
+                    ) {
+                    name += model_.element( *it ).name() ;
+                    name += "_" ;
+                }
+                set_element_name( contact_id, name ) ;
+            }
             add_child( contact_id, bme_t( BME::LINE, i ) ) ;
         }
     }
