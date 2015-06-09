@@ -54,7 +54,6 @@
 
 #endif
 
-#include <ringmesh/attribute.h>
 #include <ringmesh/io.h>
 #include <ringmesh/tetra_gen.h>
 
@@ -87,13 +86,5 @@ INITIALIZER( initialize ) {
         RINGMesh::RINGMeshIO::initialize() ;
         RINGMesh::TetraGen::initialize() ;
 
-        // Initialization for BoundaryModel attribute serialization
-//        RINGMesh::AttributeSerializer::initialize() ;
-//        RINGMesh::ringmesh_register_attribute_type< int           > ( "int" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< unsigned int  > ( "index" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< double        > ( "double" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< float         > ( "float" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< bool          > ( "bool" ) ;
-//        atexit( RINGMesh::AttributeSerializer::terminate ) ;
     }
 }
