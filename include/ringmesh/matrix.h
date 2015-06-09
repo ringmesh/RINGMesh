@@ -327,6 +327,7 @@ namespace RINGMesh {
     template< class T, MatrixType Light = MatrixType(
         2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
     class SparseMatrix: public SparseMatrixImpl< T, T > {
+        ringmesh_disable_copy( SparseMatrix ) ;
     } ;
 
     /*!
