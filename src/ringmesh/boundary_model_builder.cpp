@@ -878,23 +878,17 @@ namespace RINGMesh {
     bme_t BoundaryModelBuilder::find_contact(
         const std::vector< index_t >& interfaces ) const
     {
-        std::vector< const BoundaryModelElement* > comp( interfaces.size() ) ;
-        for( index_t i = 0; i < interfaces.size(); ++i ) {
-            comp[i] = &model_.one_interface( interfaces[i] ) ;
-        }
-
+        std::set< index_t > in( interfaces.begin(), interfaces.end() ) ;
         for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
-            if( comp.size() == model_.contact( i ).nb_in_boundary() ) {
-                bool equal = true ;
-                for( index_t j = 0; j < model_.contact( i ).nb_in_boundary(); j++ ) {
-                    if( comp[j] != &model_.contact( i ).in_boundary( j ) ) {
-                        equal = false ;
-                        break ;
-                    }
-                }
-                if( equal ) {
-                    return bme_t( BME::CONTACT, i ) ;
-                }
+            std::set< index_t > comp ;
+            const BoundaryModelElement& E = model_.contact( i ) ;
+            for( index_t j = 0 ; j < E.nb_in_boundary(); ++j ) {
+                comp.insert( E.in_boundary_id( j ).index ) ;
+            }
+            if( comp.size() == in.size() &&
+                std::equal( comp.begin(), comp.end(), in.begin() )
+              ) {
+                return bme_t( BME::CONTACT, i ) ;
             }
         }
         return bme_t() ;
@@ -920,6 +914,9 @@ namespace RINGMesh {
         bme_t id = create_element( BME::CONTACT ) ;
         set_element_name( id, name ) ;
 
+        for( index_t i = 0; i < interfaces.size(); ++i ) {
+            add_element_in_boundary( id, bme_t( BME::INTERFACE, interfaces[ i ] ) ) ;
+        }
         return id ;
     }
 
@@ -2177,15 +2174,14 @@ namespace RINGMesh {
     void BoundaryModelBuilderGocad::build_contacts()
     {
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
-            // The surface part in whose boundary is the part
+            const Line& L = model_.line( i ) ;
             std::set< index_t > interfaces ;
-            for( index_t j = 0; j < model_.line( i ).nb_in_boundary(); ++j ) {
-                index_t sp_id = model_.line( i ).in_boundary_id( j ).index ;
-                const BoundaryModelElement& p = model_.surface( sp_id ).parent() ;
-                interfaces.insert( p.bme_id().index ) ;
+            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
+                interfaces.insert( model_.element( 
+                    L.in_boundary_id(j) ).parent().bme_id().index ) ;
             }
-            std::vector< index_t > toto( interfaces.begin(), interfaces.end() ) ;
-            bme_t contact_id = find_or_create_contact( toto ) ;
+            bme_t contact_id = find_or_create_contact( 
+                std::vector< index_t >( interfaces.begin(), interfaces.end() ) ) ;
             add_child( contact_id, bme_t( BME::LINE, i ) ) ;
         }
     }
