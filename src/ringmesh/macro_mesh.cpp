@@ -334,6 +334,7 @@ namespace RINGMesh {
         if( unique_vertices_.empty() ) {
             const_cast< MacroMeshVertices* >( this )->initialize() ;
         }
+        ringmesh_debug_assert( global_v < unique_vertices_.size() ) ;
         return unique_vertices_[global_v] ;
     }
 
