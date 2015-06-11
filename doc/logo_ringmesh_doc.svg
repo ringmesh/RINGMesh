@@ -15,10 +15,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="logo_ringmesh.svg"
-   inkscape:export-filename="/data/GasperCloud/ring_consortium/logo/fond_blanc/logo_ring.png"
-   inkscape:export-xdpi="300"
-   inkscape:export-ydpi="300">
+   sodipodi:docname="logo_ringmesh_doc.svg"
+   inkscape:export-filename="/home/botella/RING/RINGMesh/doc/logo_ringmesh_doc.png"
+   inkscape:export-xdpi="75.348167"
+   inkscape:export-ydpi="75.348167">
   <defs
      id="defs4">
     <linearGradient
@@ -182,9 +182,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="271.58254"
-     inkscape:cy="2.5403827"
+     inkscape:zoom="2"
+     inkscape:cx="176.71663"
+     inkscape:cy="51.812868"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -197,9 +197,9 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1859"
-     inkscape:window-height="1056"
-     inkscape:window-x="1661"
+     inkscape:window-width="1539"
+     inkscape:window-height="876"
+     inkscape:window-x="61"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
      inkscape:snap-bbox="true"
