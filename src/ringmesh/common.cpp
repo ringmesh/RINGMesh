@@ -54,7 +54,9 @@
 
 #endif
 
-#include <ringmesh/attribute.h>
+#include <ringmesh/io.h>
+#include <ringmesh/tetra_gen.h>
+
 #include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
@@ -81,13 +83,8 @@ INITIALIZER( initialize ) {
         GEO::CmdLine::import_arg_group( "gfx" ) ;
 #endif
 
-        // Initialization for BoundaryModel attribute serialization
-//        RINGMesh::AttributeSerializer::initialize() ;
-//        RINGMesh::ringmesh_register_attribute_type< int           > ( "int" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< unsigned int  > ( "index" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< double        > ( "double" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< float         > ( "float" ) ;
-//        RINGMesh::ringmesh_register_attribute_type< bool          > ( "bool" ) ;
-//        atexit( RINGMesh::AttributeSerializer::terminate ) ;
+        RINGMesh::RINGMeshIO::initialize() ;
+        RINGMesh::TetraGen::initialize() ;
+
     }
 }

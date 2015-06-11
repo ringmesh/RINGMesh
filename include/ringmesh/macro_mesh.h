@@ -337,8 +337,10 @@ namespace RINGMesh {
         MacroMeshOrder( MacroMesh& mm ) ;
         ~MacroMeshOrder() ;
         const index_t nb_total_vertices() const ;
-        const index_t id(const vec3& point) const ;
+        const index_t nb_vertices() const ;
         void clear() ;
+        const vec3 point(const index_t id) const ;
+        void move_point(const index_t id, const vec3& u) ;
     private:
         void initialize() ;
         /*!
@@ -350,13 +352,48 @@ namespace RINGMesh {
                 const_cast< MacroMeshOrder* >( this )->initialize() ;
             }
         }
+        void test_point_list_initialize() ;
     private:
-        /// Attached MaroMesh
+        /// Attached MacroMesh
         const MacroMesh& mm_ ;
         /// Total number of vertices + new nodes on cell edges
         index_t nb_vertices_ ;
-        /// ANNTree composed only with new nodes on cell edges
-        ColocaterANN ann_ ;
+        /// New points
+        std::vector<vec3> points_ ;
+
+    } ;
+
+    class RINGMESH_API MacroMeshEdges {
+    public:
+        MacroMeshEdges( MacroMesh& mm )
+            : mm_( mm )
+        {
+        }
+
+        index_t nb_wells() const ;
+        index_t nb_edges() const ;
+        index_t nb_edges( index_t w ) const ;
+        index_t vertex_id( index_t w, index_t e, index_t v ) const ;
+
+    private:
+        /*!
+         * Tests if the MacroMeshCells needs to be initialized and initialize it
+         */
+        void test_initialize() const
+        {
+            if( edges_.empty() ) {
+                const_cast< MacroMeshEdges* >( this )->initialize() ;
+            }
+        }
+        void initialize() ;
+    private:
+        /// Attached MaroMesh
+        const MacroMesh& mm_ ;
+
+        /// Vector of edge vertex id in the MacroMesh
+        std::vector< index_t > edges_ ;
+        /// Mapping between well id and edges_
+        std::vector< index_t > well_ptr_ ;
 
     } ;
 
@@ -374,11 +411,11 @@ namespace RINGMesh {
         //   |_|  |_\___|\__|_||_\___/\__,_/__/
         //
         void compute_tetmesh(
-            const TetraMethod& method,
+            const std::string& method,
             int region_id = -1,
             bool add_steiner_points = true,
             std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
-        void copy( const MacroMesh& mm, bool copy_attributes = true ) const ;
+        void copy( const MacroMesh& mm,bool copy_attributes = true ) ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
@@ -419,7 +456,7 @@ namespace RINGMesh {
             ringmesh_debug_assert( model_ ) ;
             return *model_ ;
         }
-        void set_nodel( const BoundaryModel& model ) ;
+        void set_model( const BoundaryModel& model ) ;
 
         /*!
          * Access the DuplicateMode
@@ -477,6 +514,8 @@ namespace RINGMesh {
     public:
         /// Optional storage of the MacroMesh vertices
         MacroMeshVertices vertices ;
+        /// Optional storage of the MacroMesh edges
+        MacroMeshEdges edges ;
         /// Optional storage of the MacroMesh facets
         MacroMeshFacets facets ;
         /// Optional storage of the MacroMesh cells

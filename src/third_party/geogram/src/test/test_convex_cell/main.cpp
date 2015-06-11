@@ -134,7 +134,7 @@ namespace {
             //   Mesh numbering -> Triangulation numering
             // conversion !
             C.create_triangle(
-                M.vertices.point_ptr(v),
+                M.vertices.point_ptr(v), 1.0,
                 fi[0], fi[1], fi[2], va[2], va[0], va[1]
             );
             C.triangle_dual(v).sym().add_boundary_facet(fi[0]);

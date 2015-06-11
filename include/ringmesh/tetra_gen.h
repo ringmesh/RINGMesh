@@ -64,34 +64,22 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-    typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
 
     static const std::vector< vec3 > vector_vec3 ;
-    static const std::vector< std::vector< Edge > > vector_edge ;
-    class RINGMESH_API TetraGen : public GEO::Counted {
+    class RINGMESH_API TetraGen: public GEO::Counted {
+        ringmesh_disable_copy( TetraGen ) ;
     public:
         virtual ~TetraGen() ;
-        static TetraGen_var instantiate(
-            const TetraMethod& method,
-            GEO::Mesh& tetmesh,
-            const BoundaryModelElement* region,
-            bool add_steiner_points = true,
-            const std::vector< vec3 >& internal_vertices = vector_vec3,
-            const WellGroup* wells = nil ) ;
+        static TetraGen* create( GEO::Mesh& tetmesh, const std::string& algo_name ) ;
+        static void initialize() ;
 
-        virtual bool tetrahedralize() = 0 ;
+        void set_boundaries( const BoundaryModelElement* region, const WellGroup* wells = nil ) ;
+        void set_internal_points( const std::vector< vec3 >& points ) ;
 
-        index_t nb_points() const { return internal_vertices_ptr_ ; }
-        index_t nb_internal_points() const { return nb_total_points() - internal_vertices_ptr_ ; }
-        index_t nb_total_points() const { return tetmesh_.vertices.nb() ; }
+        virtual bool tetrahedralize( bool refine = true ) = 0 ;
 
     protected:
-        TetraGen(
-            GEO::Mesh& tetmesh,
-            const BoundaryModelElement* region,
-            bool refine,
-            const std::vector< vec3 >& internal_vertices,
-            const WellGroup* wells ) ;
+        TetraGen( GEO::Mesh& tetmesh ) ;
 
         void initialize_storage( index_t nb_points, index_t nb_tets ) ;
         void set_point( index_t index, const double* point ) ;
@@ -101,47 +89,12 @@ namespace RINGMesh {
         GEO::Mesh& tetmesh_ ;
         const BoundaryModelElement* region_ ;
         const WellGroup* wells_ ;
-        index_t internal_vertices_ptr_ ;
-        bool refine_ ;
     } ;
 
-
-    class RINGMESH_API TetraGen_TetGen: public TetraGen {
-    public:
-        TetraGen_TetGen(
-            GEO::Mesh& tetmesh,
-            const BoundaryModelElement* region,
-            bool add_steiner_points,
-            const std::vector< vec3 >& internal_vertices,
-            const WellGroup* wells ) ;
-        virtual ~TetraGen_TetGen() {} ;
-
-        virtual bool tetrahedralize() ;
-    } ;
-
-#ifdef USE_MG_TETRA
-    class RINGMESH_API TetraGen_MG_Tetra: public TetraGen {
-    public:
-        TetraGen_MG_Tetra(
-            GEO::Mesh& tetmesh,
-            const BoundaryModelElement* region,
-            bool add_steiner_points,
-            const std::vector< vec3 >& internal_vertices,
-            const WellGroup* wells ) ;
-        virtual ~TetraGen_MG_Tetra() ;
-
-        virtual bool tetrahedralize() ;
-
-        static status_t my_message_cb( message_t * msg, void *user_data ) ;
-
-    private:
-        context_t* context_ ;
-        mesh_t* mesh_input_ ;
-        mesh_t* mesh_output_ ;
-        tetra_session_t* tms_ ;
-    } ;
-#endif
-
+    typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
+    typedef GEO::Factory1< TetraGen, GEO::Mesh& > TetraGenFactory;
+#define ringmesh_register_tetragen(type, name) \
+    geo_register_creator(TetraGenFactory, type, name)
 }
 
 #endif

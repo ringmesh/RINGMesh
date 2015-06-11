@@ -282,7 +282,7 @@ namespace RINGMesh {
             nj_ = nj ;
             rows_ = new Row[ni] ;
         }
-                
+
         /*!
          *  get the value of e-element (index within the row, not in the matrix) on line i.
          *  this code should never be reached.
@@ -292,32 +292,12 @@ namespace RINGMesh {
          * */
         void get_element_in_line( index_t i, index_t e, T& value ) const
         {
-            ringmesh_assert_not_reached ;
+            ringmesh_assert_not_reached;
         }
-
-        void product_matrix_by_vector(
-        const std::vector< T >& mat2,
-        std::vector< T >& result ) const
-    {
-        ringmesh_debug_assert( nj() == mat2.size() ) ;
-
-#pragma omp parallel for
-        for( index_t i = 0; i < ni(); ++i ) {
-            ringmesh_debug_assert( i >= 0 && i < result.size() ) ;
-            result[i] = 0. ;
-            for( index_t e = 0; e < get_nb_elements_in_line( i ); ++e ) {
-                index_t j = get_column_in_line( i, e ) ;
-                T i_j_result ;
-                get_element_in_line( i, e, i_j_result ) ;
-                i_j_result *= mat2[j] ;
-                result[i] += i_j_result ;
-            }
-        }
-    }
 
     protected:
         Row* rows_ ;
-        index_t ni_, nj_ ; // matrix dimensions
+        index_t ni_, nj_ ;// matrix dimensions
         bool is_symmetrical_ ;
     } ;
 
@@ -327,6 +307,7 @@ namespace RINGMesh {
     template< class T, MatrixType Light = MatrixType(
         2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
     class SparseMatrix: public SparseMatrixImpl< T, T > {
+    ringmesh_disable_copy( SparseMatrix ) ;
     } ;
 
     /*!
@@ -389,7 +370,7 @@ namespace RINGMesh {
      * specialization of SparseMatrix for MatrixType "heavy" ,
      * the main difference with light is that here we store only
      * one copy of the data in the case of a symmetrical matrix.
-     * The data are strored in a std::deque and the rows contains the
+     * The data are stored in a std::deque and the rows contains the
      * ids of the values within the deque.
      * */
     template< class T >
@@ -473,7 +454,29 @@ namespace RINGMesh {
         std::deque< T > values_ ;
     } ;
 
+    // Note: without light or heavy, it does not compile on Windows.
+    // Error C2770. BC
+    template< class T >
+    void product_matrix_by_vector(
+        const SparseMatrix< T, light >& mat1,
+        const std::vector< T >& mat2,
+        std::vector< T >& result )
+    {
+        ringmesh_debug_assert( mat1.nj() == mat2.size() ) ;
 
-    
+        RINGMESH_PARALLEL_LOOP
+        for( index_t i = 0; i < mat1.ni(); ++i ) {
+            ringmesh_debug_assert( i >= 0 && i < result.size() ) ;
+            result[i] = 0. ;
+            for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
+                index_t j = mat1.get_column_in_line( i, e ) ;
+                T i_j_result ;
+                mat1.get_element_in_line( i, e, i_j_result ) ;
+                i_j_result *= mat2[j] ;
+                result[i] += i_j_result ;
+            }
+        }
+    }
+
 }
 #endif

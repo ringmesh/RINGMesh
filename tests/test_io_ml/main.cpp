@@ -59,10 +59,15 @@ int main( int argc, char** argv )
         return 1 ;
     if( !RINGMeshIO::save( in2, "out2.ml" ) )
         return 1 ;
-
+	
+	// Test a bad fixable input annot
+	BoundaryModel in3 ;
+	if( !RINGMeshIO::load( "../data/annot.ml", in3 ) )
+        return 1 ;
+		
     bool res = Utils::compare_file( "out.ml", "out2.ml" ) ;
     if( res )
-        GEO::Logger::out("TEST") << "SUCCES" << std::endl ;
+        GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
     else
         GEO::Logger::out("TEST") << "FAILED" << std::endl ;
     return !res ;
