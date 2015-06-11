@@ -6,4 +6,8 @@
 # To speficy the path of MG-Tetra, uncomment the next line or add the environment variable MG_TETRA
 #SET(MG_TETRA /home/antoine/app/DISTENE/MeshGems-1.1/Products)
 
+# To enable the compilation of RINGMesh graphics
 #SET(RINGMESH_WITH_GRAPHICS TRUE)
+
+# To disable OpenMP
+#SET(USE_OPENMP FALSE)

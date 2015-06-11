@@ -57,10 +57,27 @@ namespace RINGMesh {
         {
             gfx_.set_mesh( &mesh ) ;
         }
+        virtual ~MeshElementGfx(){}
 
         GEO::MeshGfx& gfx()
         {
             return gfx_ ;
+        }
+
+        virtual void draw_vertices() {
+            gfx_.draw_vertices() ;
+        }
+        virtual void draw_edges() {
+            index_t w = gfx_.get_mesh_width() ;
+            gfx_.set_mesh_width( w+1 ) ;
+            gfx_.draw_edges() ;
+            gfx_.set_mesh_width( w ) ;
+        }
+        virtual void draw_surface() {
+            gfx_.draw_surface() ;
+        }
+        virtual void draw_volume() {
+            gfx_.draw_volume() ;
         }
 
         void set_vertices_visible( bool b )
@@ -244,7 +261,7 @@ namespace RINGMesh {
         GEO::Logger::instance()->set_quiet( true ) ;
         for( index_t c = 0; c < corners_.size(); c++ ) {
             if( corners_[c]->get_vertices_visible() )
-                corners_[c]->gfx().draw_vertices() ;
+                corners_[c]->draw_vertices() ;
         }
         GEO::Logger::instance()->set_quiet( false ) ;
     }
@@ -318,8 +335,8 @@ namespace RINGMesh {
         GEO::Logger::instance()->set_quiet( true ) ;
         for( index_t l = 0; l < lines_.size(); l++ ) {
             if( lines_[l]->get_vertices_visible() )
-                lines_[l]->gfx().draw_vertices() ;
-            if( lines_[l]->get_edges_visible() ) lines_[l]->gfx().draw_edges() ;
+                lines_[l]->draw_vertices() ;
+            if( lines_[l]->get_edges_visible() ) lines_[l]->draw_edges() ;
         }
         GEO::Logger::instance()->set_quiet( false ) ;
     }
@@ -462,9 +479,9 @@ namespace RINGMesh {
         GEO::Logger::instance()->set_quiet( true ) ;
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             if( surfaces_[s]->get_vertices_visible() )
-                surfaces_[s]->gfx().draw_vertices() ;
+                surfaces_[s]->draw_vertices() ;
             if( surfaces_[s]->get_surface_visible() )
-                surfaces_[s]->gfx().draw_surface() ;
+                surfaces_[s]->draw_surface() ;
         }
         GEO::Logger::instance()->set_quiet( false ) ;
     }
@@ -716,6 +733,7 @@ namespace RINGMesh {
                 edges_[m] = new LineGfx( mm_->mesh( m ) ) ;
             }
         }
+        set_surface_regions_visibility( false ) ;
     }
 
     /*!
@@ -725,11 +743,11 @@ namespace RINGMesh {
     {
         for( index_t m = 0; m < meshes_.size(); m++ ) {
             if( meshes_[m]->get_vertices_visible() )
-                meshes_[m]->gfx().draw_vertices() ;
-            if( edges_[m]->get_edges_visible() ) edges_[m]->gfx().draw_edges() ;
+                meshes_[m]->draw_vertices() ;
+            if( edges_[m]->get_edges_visible() ) edges_[m]->draw_edges() ;
             if( surfaces_[m]->get_surface_visible() )
-                surfaces_[m]->gfx().draw_surface() ;
-            if( meshes_[m]->get_region_visible() ) meshes_[m]->gfx().draw_volume() ;
+                surfaces_[m]->draw_surface() ;
+            if( meshes_[m]->get_region_visible() ) meshes_[m]->draw_volume() ;
         }
     }
 

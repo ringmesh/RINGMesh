@@ -369,6 +369,7 @@ namespace {
             keyword2nbv_[GmfHexahedra] = 8;
             keyword2nbv_[GmfPrisms] = 6;
             keyword2nbv_[GmfPyramids] = 5;
+            keyword2nbv_[GmfEdges] = 2;            
         }
         
         virtual bool load(
@@ -921,6 +922,12 @@ namespace {
             index_t nbv = keyword2nbv_[keyword];
             int res = 0;
             switch(nbv) {
+            case 2:
+                res = GmfGetLin(
+                    mesh_file_handle, keyword,
+                    &v[0], &v[1], &ref
+                );
+                break;
             case 3:
                 res = GmfGetLin(
                     mesh_file_handle, keyword,

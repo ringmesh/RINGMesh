@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // HLBFGS                                                                    //
-// http://www.loria.fr/~liuyang/software/HLBFGS/							 //
+// http://www.loria.fr/~liuyang/software/HLBFGS/                             //
 //                                                                           //
 // HLBFGS is a hybrid L-BFGS optimization framework which unifies L-BFGS     //
 // method, Preconditioned L-BFGS method and                                  //
@@ -12,10 +12,10 @@
 //                                                                           //
 // Copyright (C) 2009--2010                                                  //
 // Yang Liu                                                                  //
-//																			 //
+//                                                                           //
 // xueyuhanlang@gmail.com                                                    //
 //                                                                           //
-// HLBFGS is HLBFGS is freely available for non-commercial purposes.		 //
+// HLBFGS is HLBFGS is freely available for non-commercial purposes.         //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef USE_OPENMP
@@ -27,53 +27,53 @@
 
 double HLBFGS_DDOT(const int n, const double *x, const double *y)
 {
-	double result = 0;
-	int i = 0;
+        double result = 0;
+        int i = 0;
 #ifdef USE_OPENMP
 #pragma omp parallel for private(i) reduction(+:result)
 #endif
-	for (i = 0; i < n; i++)
-	{
-		result += x[i] * y[i];
-	}
-	return result;
+        for (i = 0; i < n; i++)
+        {
+                result += x[i] * y[i];
+        }
+        return result;
 }
 
 void HLBFGS_DAXPY(const int n, const double alpha, const double *x, double *y)
 {
-	int i = 0;
+        int i = 0;
 #ifdef USE_OPENMP
 #pragma omp parallel for private(i)
 #endif
-	for (i = 0; i < n; i++)
-	{
-		y[i] += alpha * x[i];
-	}
+        for (i = 0; i < n; i++)
+        {
+                y[i] += alpha * x[i];
+        }
 }
 
 double HLBFGS_DNRM2(const int n, const double *x)
 {
-	double result = 0;
-	int i = 0;
+        double result = 0;
+        int i = 0;
 #ifdef USE_OPENMP
 #pragma omp parallel for private(i) reduction(+:result)
 #endif
-	for (i = 0; i < n; i++)
-	{
-		result += x[i] * x[i];
-	}
-	return std::sqrt(result);
+        for (i = 0; i < n; i++)
+        {
+                result += x[i] * x[i];
+        }
+        return std::sqrt(result);
 }
 
 void HLBFGS_DSCAL(const int n, const double a, double *x)
 {
-	int i = 0;
+        int i = 0;
 #ifdef USE_OPENMP
 #pragma omp parallel for private(i)
 #endif
-	for (i = 0; i < n; i++)
-	{
-		x[i] *= a;
-	}
+        for (i = 0; i < n; i++)
+        {
+                x[i] *= a;
+        }
 }
 

@@ -44,6 +44,8 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/line_stream.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_preprocessing.h>
 
 #include <iostream>
 #include <iomanip>
@@ -55,6 +57,7 @@
 
 namespace {
     using namespace RINGMesh;
+    typedef BoundaryModelElement::bme_t bme_t;
 
     double read_double( GEO::LineInput& in, index_t field )
     {
@@ -85,134 +88,432 @@ namespace {
         // have the same geological features
     }
 
+    /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
+    *
+    * \brief Tests whether a facet is degenerate.
+    * \param[in] M the mesh that the facet belongs to
+    * \param[in] f the index of the facet in \p M
+    * \return true if facet \p f has duplicated vertices,
+    *  false otherwise
+    */
+    bool facet_is_degenerate( 
+        const GEO::Mesh& M,
+        index_t f,
+        GEO::vector<index_t>& colocated_vertices )
+    {
+        index_t nb_vertices = M.facets.nb_vertices( f );
+        if( nb_vertices != 3 ) {
+            index_t* vertices = (index_t*)alloca( nb_vertices*sizeof( index_t ) );
+            for( index_t lv = 0; lv<nb_vertices; ++lv ) {
+                vertices[ lv ] = colocated_vertices[ M.facets.vertex( f, lv ) ];
+            }
+            std::sort( vertices, vertices + nb_vertices );
+            return std::unique(
+                vertices, vertices + nb_vertices
+                ) != vertices + nb_vertices;
+        }
+        index_t c1 = M.facets.corners_begin( f );
+        index_t c2 = c1 + 1;
+        index_t c3 = c2 + 1;
+        index_t v1 = colocated_vertices[ M.facet_corners.vertex( c1 ) ];
+        index_t v2 = colocated_vertices[ M.facet_corners.vertex( c2 ) ];
+        index_t v3 = colocated_vertices[ M.facet_corners.vertex( c3 ) ];
+        return v1 == v2 || v2 == v3 || v3 == v1;
+    }
+
+    /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
+     */
+    void mesh_detect_degenerate_facets(
+        const GEO::Mesh& M, 
+        GEO::vector<index_t>& f_is_degenerate,
+        GEO::vector<index_t>& colocated_vertices
+        )
+    {
+        f_is_degenerate.resize( M.facets.nb() );
+        for( index_t f = 0; f<M.facets.nb(); ++f ) {
+            f_is_degenerate[ f ] = facet_is_degenerate( M, f, colocated_vertices );
+        }
+    }
+
+    /*! 
+     * @brief Detect and remove degenerated facets in a Mesh
+     */
+    index_t detect_degenerate_facets( GEO::Mesh& M )
+    {
+        GEO::vector< index_t > colocated ;
+        GEO::mesh_detect_colocated_vertices( M, colocated ) ;
+
+        GEO::vector< index_t > degenerate ;
+        mesh_detect_degenerate_facets( M, degenerate, colocated ) ;
+        return std::count( degenerate.begin(), degenerate.end(), 1 ) ;
+    }
+
+    bool edge_is_degenerate(
+        const GEO::Mesh& M,
+        index_t e,
+        GEO::vector<index_t>& colocated_vertices )
+    {
+        index_t v1 = colocated_vertices[ M.edges.vertex( e, 0 ) ];
+        index_t v2 = colocated_vertices[ M.edges.vertex( e, 1 ) ];
+        return v1 == v2 ;
+    }
+
+    void mesh_detect_degenerate_edges(
+        const GEO::Mesh& M,
+        GEO::vector<index_t>& e_is_degenerate,
+        GEO::vector<index_t>& colocated_vertices
+        )
+    {
+        e_is_degenerate.resize( M.edges.nb() );
+        for( index_t e = 0; e<M.edges.nb(); ++e ) {
+            e_is_degenerate[ e ] = edge_is_degenerate( M, e, colocated_vertices );
+        }
+    }
+
+    /*!
+    * @brief Detect and remove degenerated edges in a Mesh
+    */
+    index_t repair_line_mesh( GEO::Mesh& M )
+    {
+        GEO::vector< index_t > colocated ;
+        GEO::mesh_detect_colocated_vertices( M, colocated ) ;
+
+        GEO::vector< index_t > degenerate ;
+        mesh_detect_degenerate_edges( M, degenerate, colocated ) ;
+        index_t nb = std::count( degenerate.begin(), degenerate.end(), 1 ) ;
+        M.edges.delete_elements( degenerate ) ;
+        return nb ;
+    }
+  
+    /*************************************************************************/
+    /*!
+    * @brief Get the index of an Interface from its name
+    *
+    * @param[in] BM the model to consider
+    * @param[in] name Name of the Interface
+    * @return Index of the interface in the model, NO_ID if not found.
+    */
+    bme_t find_interface( const BoundaryModel& BM, const std::string& name )
+    {
+        for( index_t i = 0; i < BM.nb_interfaces(); ++i ) {
+            if( BM.one_interface( i ).name() == name ) {
+                return BM.one_interface( i ).bme_id() ;
+            }
+        }
+        return bme_t() ;
+    }
+
+
+    /*!
+    * @brief Structure used to build Line by BoundaryModelBuilderGocad
+    */
+    struct Border {
+        Border( index_t part, index_t corner, index_t p0, index_t p1 )
+            : part_id_( part ), corner_id_( corner ), p0_( p0 ), p1_( p1 )
+        {}
+
+        // Id of the Surface owning this Border
+        index_t part_id_ ;
+
+        // Id of p0 in the BoundaryModel corner vector
+        index_t corner_id_ ;
+
+        // Ids of the starting corner and second vertex on the border in the Surface
+        // to which this Border belong
+        index_t p0_ ;
+        index_t p1_ ;
+    } ;
+
+    /*************************************************************************/
+
+    /*!
+    * @brief Utility class to sort a set of oriented triangles around a common edge
+    * Used in BoundaryModelBuilderSurface.
+    *
+    * This code could certainly be improved.
+    */
+    class SortTriangleAroundEdge {
+    public:
+        /*!
+        * @brief A triangle to sort around an edge, see SortTriangleAroundEdge
+        * @details This triangle belongs to a mesh connected component identified by its index.
+        */
+        struct TriangleToSort {
+            /*!
+            * @param index Index of this TriangleToSort in SortTriangleAroundEdge
+            * @param surface_index Index of the Surface
+            * @param p0 point of the triangle
+            * @param p1 point of the triangle
+            * @param p2 point of the triangle
+            */
+            TriangleToSort(
+                index_t index,
+                index_t surface_index,
+                const vec3& p0,
+                const vec3& p1,
+                const vec3& p2 
+            ) :
+                index_( index ),
+                surface_index_( surface_index ),
+                N_(),
+                B_A_(),
+                angle_( -99999 ),
+                side_( false )
+            {
+                ringmesh_assert( p0 != p1 ) ;
+                ringmesh_assert( p0 != p2 ) ;
+                ringmesh_assert( p1 != p2 ) ;
+
+                vec3 e1 = normalize( p1 - p0 ) ;
+                vec3 e2 = normalize( p2 - p0 ) ;
+
+                N_ = normalize( cross( e1, e2 ) ) ;
+                ringmesh_assert( dot( N_, e1 ) < epsilon ) ;
+
+                vec3 B = 0.5 * p1 + 0.5 * p0 ;
+                vec3 p2B = p2 - B ;
+                B_A_ = normalize( p2B - dot( p2B, e1 ) * e1 ) ;
+
+                ringmesh_assert( dot( B_A_, e1 ) < epsilon ) ;
+                ringmesh_assert( B_A_.length() > epsilon ) ;
+            };
+
+            bool operator<( const TriangleToSort& r ) const
+            {
+                return angle_ < r.angle_ ;
+            }
+
+            /// Index in SortTriangleAroundEdge
+            index_t index_ ;
+
+            /// Global index of the surface owning this triangle
+            index_t surface_index_ ;
+
+            /// Normal to the triangle - normalized vector
+            vec3 N_ ;
+
+            /// Normal to the edge p0p1 in the plane defined by the triangle - normalized
+            vec3 B_A_ ;
+
+            // Values filled by sorting function in SortTriangleAroundEdge
+            double angle_ ;
+            bool side_ ;
+        } ;
+
+        SortTriangleAroundEdge()
+        {}
+
+        void add_triangle(
+            index_t surface_index,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2 )
+        {
+            triangles_.push_back(
+                TriangleToSort( triangles_.size(), surface_index, p0, p1, p2 ) ) ;
+        }
+
+        /*!
+        * @details Rotation around axis of an angle A of the vector V
+        *
+        * @param axis Oriented axis
+        * @param angle Angle in RADIANS
+        * @param V the vector to rotate
+        */
+        static vec3 rotate( const vec3& axis, double angle, const vec3& V )
+        {
+            vec3 q = axis ;
+            if( q.length() > 0 ) {
+                double s = 1.0 / q.length() ;
+                q[ 0 ] *= s ;
+                q[ 1 ] *= s ;
+                q[ 2 ] *= s ;
+            }
+            q *= sinf( 0.5 * angle ) ;
+
+            double quat[ 4 ] = { q[ 0 ], q[ 1 ], q[ 2 ], cosf( 0.5 * angle ) } ;
+
+            double m[ 4 ][ 4 ] ;
+
+            m[ 0 ][ 0 ] = 1 - 2.0 * ( quat[ 1 ] * quat[ 1 ] + quat[ 2 ] * quat[ 2 ] ) ;
+            m[ 0 ][ 1 ] = 2.0 * ( quat[ 0 ] * quat[ 1 ] + quat[ 2 ] * quat[ 3 ] ) ;
+            m[ 0 ][ 2 ] = 2.0 * ( quat[ 2 ] * quat[ 0 ] - quat[ 1 ] * quat[ 3 ] ) ;
+            m[ 0 ][ 3 ] = 0.0 ;
+
+            m[ 1 ][ 0 ] = 2.0 * ( quat[ 0 ] * quat[ 1 ] - quat[ 2 ] * quat[ 3 ] ) ;
+            m[ 1 ][ 1 ] = 1 - 2.0 * ( quat[ 2 ] * quat[ 2 ] + quat[ 0 ] * quat[ 0 ] ) ;
+            m[ 1 ][ 2 ] = 2.0 * ( quat[ 1 ] * quat[ 2 ] + quat[ 0 ] * quat[ 3 ] ) ;
+            m[ 1 ][ 3 ] = 0.0 ;
+
+            m[ 2 ][ 0 ] = 2.0 * ( quat[ 2 ] * quat[ 0 ] + quat[ 1 ] * quat[ 3 ] ) ;
+            m[ 2 ][ 1 ] = 2.0 * ( quat[ 1 ] * quat[ 2 ] - quat[ 0 ] * quat[ 3 ] ) ;
+            m[ 2 ][ 2 ] = 1 - 2.0 * ( quat[ 1 ] * quat[ 1 ] + quat[ 0 ] * quat[ 0 ] ) ;
+            m[ 2 ][ 3 ] = 0.0 ;
+
+            m[ 3 ][ 0 ] = 0.0 ;
+            m[ 3 ][ 1 ] = 0.0 ;
+            m[ 3 ][ 2 ] = 0.0 ;
+            m[ 3 ][ 3 ] = 1.0 ;
+
+            double x = V[ 0 ] * m[ 0 ][ 0 ] + V[ 1 ] * m[ 1 ][ 0 ] + V[ 2 ] * m[ 2 ][ 0 ] + m[ 3 ][ 0 ] ;
+            double y = V[ 0 ] * m[ 0 ][ 1 ] + V[ 1 ] * m[ 1 ][ 1 ] + V[ 2 ] * m[ 2 ][ 1 ] + m[ 3 ][ 1 ] ;
+            double z = V[ 0 ] * m[ 0 ][ 2 ] + V[ 1 ] * m[ 1 ][ 2 ] + V[ 2 ] * m[ 2 ][ 2 ] + m[ 3 ][ 2 ] ;
+            double w = V[ 0 ] * m[ 0 ][ 3 ] + V[ 1 ] * m[ 1 ][ 3 ] + V[ 2 ] * m[ 2 ][ 3 ] + m[ 3 ][ 3 ] ;
+            return vec3( x / w, y / w, z / w ) ;
+        }
+
+        void sort()
+        {
+            ringmesh_assert( triangles_.size() > 0 ) ;
+
+            std::pair< index_t, bool > default_pair( index_t( -1 ), false ) ;
+            sorted_triangles_.resize( 2 * triangles_.size(), default_pair ) ;
+
+            // If there is only one Triangle to sort - nothing to do
+            if( triangles_.size() == 1 ) {
+                sorted_triangles_[ 0 ] = std::pair< index_t, bool >(
+                    triangles_[ 0 ].surface_index_, true ) ;
+                sorted_triangles_[ 1 ] = std::pair< index_t, bool >(
+                    triangles_[ 0 ].surface_index_, false ) ;
+                return ;
+            }
+
+            // Initialization
+            // We start on the plus (true) side of the first Triangle            
+            sorted_triangles_[ 0 ] = std::pair< index_t, bool >(
+                triangles_[ 0 ].surface_index_, true ) ;
+
+            // Reference vectors with wich angles will be computed
+            vec3 N_ref = triangles_[ 0 ].N_ ;
+            vec3 B_A_ref = triangles_[ 0 ].B_A_ ;
+            vec3 Ax_ref = normalize( cross( B_A_ref, N_ref ) ) ;
+
+            // The minus (false) side of the start triangle will the last one encountered
+            triangles_[ 0 ].angle_ = 2 * M_PI ;
+            triangles_[ 0 ].side_ = false ;
+
+            for( index_t i = 1; i < triangles_.size(); ++i ) {
+                TriangleToSort& cur = triangles_[ i ] ;
+                // Compute the angle RADIANS between the reference and the current
+                // triangle 
+                double cos = dot( B_A_ref, cur.B_A_ ) ;
+                // Remove invalid values
+                if( cos < -1 )
+                    cos = -1 ;
+                else if( cos > 1 ) cos = 1 ;
+                cur.angle_ = std::acos( cos ) ;
+                // Put the angle between PI and 2PI if necessary
+                if( dot( cross( B_A_ref, cur.B_A_ ), Ax_ref ) < 0. ) {
+                    cur.angle_ = 2 * M_PI - cur.angle_ ;
+                }
+
+                // Get the side of the surface first encountered
+                // when rotating in the N_ref direction
+                vec3 N_rotate = rotate( Ax_ref, -cur.angle_, cur.N_ ) ;
+                cur.side_ = dot( N_rotate, N_ref ) > 0 ? false : true ;
+            }
+
+            // Sort the Surfaces according to the angle
+            std::sort( triangles_.begin(), triangles_.end() ) ;
+
+            // Fill the sorted surfaces adding the side
+            index_t it = 1 ;
+            for( index_t i = 0; i < triangles_.size(); ++i ) {
+                TriangleToSort& cur = triangles_[ i ] ;
+                if( triangles_[ i ].index_ == 0 ) { // The last to add
+                    ringmesh_assert( i == triangles_.size() - 1 ) ;
+                    sorted_triangles_[ it ].first = cur.surface_index_ ;
+                    sorted_triangles_[ it ].second = cur.side_ ;
+                } else {
+                    sorted_triangles_[ it ].first = cur.surface_index_ ;
+                    sorted_triangles_[ it ].second = cur.side_ ;
+                    sorted_triangles_[ it + 1 ].first = cur.surface_index_ ;
+                    sorted_triangles_[ it + 1 ].second = !cur.side_ ;
+                    it += 2 ;
+                }
+            }
+            // All the surfaces must have been sorted
+            ringmesh_assert(
+                std::count( sorted_triangles_.begin(), sorted_triangles_.end(),
+                default_pair ) == 0 ) ;
+        }
+        /*! Returns the next pair Triangle index (surface) + side
+        */
+        const std::pair< index_t, bool >& next(
+            const std::pair< index_t, bool >& in ) const
+        {
+            for( index_t i = 0; i < sorted_triangles_.size(); ++i ) {
+                if( sorted_triangles_[ i ] == in ) {
+                    if( i == sorted_triangles_.size() - 1 )
+                        return sorted_triangles_[ sorted_triangles_.size() - 2 ] ;
+                    if( i == 0 ) return sorted_triangles_[ 1 ] ;
+
+                    if( sorted_triangles_[ i + 1 ].first == sorted_triangles_[ i ].first ) {
+                        // The next has the same surface id, check its sign
+                        if( sorted_triangles_[ i + 1 ].second
+                            != sorted_triangles_[ i ].second ) {
+                            return sorted_triangles_[ i - 1 ] ;
+                        } else {
+                            // Sign is the same
+                            return sorted_triangles_[ i + 1 ] ;
+                        }
+                    } else {
+                        ringmesh_assert(
+                            sorted_triangles_[ i - 1 ].first
+                            == sorted_triangles_[ i ].first ) ;
+                        if( sorted_triangles_[ i - 1 ].second
+                            != sorted_triangles_[ i ].second ) {
+                            return sorted_triangles_[ i + 1 ] ;
+                        } else {
+                            return sorted_triangles_[ i - 1 ] ;
+                        }
+                    }
+                }
+            }
+            ringmesh_assert_not_reached;
+        }
+
+    private:
+        std::vector< TriangleToSort > triangles_ ;
+        // Pairs global triangle identifier (Surface index) and side reached
+        std::vector< std::pair< index_t, bool > > sorted_triangles_ ;
+    } ;
+
+    /*!
+    * @brief Mini-factory. Create an empty element of the right type
+    */
+    BME* new_element( BME::TYPE T, BoundaryModel* M, index_t id )
+    {
+
+        if( T == BME::CORNER ) {
+            return new Corner( M, id ) ;
+        } else if( T == BME::LINE ) {
+            return new Line( M, id ) ;
+        } else if( T == BME::SURFACE ) {
+            return new Surface( M, id ) ;
+        } else if( T > BME::SURFACE && T < BME::NO_TYPE ) {
+            return new BoundaryModelElement( M, T, id ) ;
+        } else {
+            return nil ;
+        }
+    }
+
 }
 
 namespace RINGMesh {
-    /*!
-     * @brief Copy macro information from a model
-     * @details Copy the all the model elements and their relationship ignoring their geometry
-     *
-     * @param[in] from Model to copy the information from
-     */
-    void BoundaryModelBuilder::copy_macro_topology( const BoundaryModel& from )
-    {
-        model_.name_ = from.name_ ;
-        model_.corners_.resize( from.nb_corners(), nil ) ;
-        model_.lines_.resize( from.nb_lines(), nil ) ;
-        model_.surfaces_.resize( from.nb_surfaces(), nil ) ;
-        model_.regions_.resize( from.nb_regions(), nil ) ;
-        model_.layers_.resize( from.nb_layers(), nil ) ;
-        model_.contacts_.resize( from.nb_contacts(), nil ) ;
-        model_.interfaces_.resize( from.nb_interfaces(), nil ) ;
 
-        for( index_t i = 0; i < model_.nb_corners(); i++ ) {
-            model_.corners_[i] = new Corner ;
-        }
-        for( index_t i = 0; i < model_.nb_lines(); i++ ) {
-            model_.lines_[i] = new Line ;
-        }
-        for( index_t i = 0; i < model_.nb_surfaces(); i++ ) {
-            model_.surfaces_[i] = new Surface ;
-        }
-        for( index_t i = 0; i < model_.nb_layers(); i++ ) {
-            model_.layers_[i] = new BoundaryModelElement ;
-        }
-        for( index_t i = 0; i < model_.nb_regions(); i++ ) {
-            model_.regions_[i] = new BoundaryModelElement ;
-        }
-        for( index_t i = 0; i < model_.nb_contacts(); i++ ) {
-            model_.contacts_[i] = new BoundaryModelElement ;
-        }
-        for( index_t i = 0; i < model_.nb_interfaces(); i++ ) {
-            model_.interfaces_[i] = new BoundaryModelElement ;
-        }
-
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_corners(); i++ ) {
-            model_.corners_[i]->copy_macro_topology( from.corner( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_lines(); i++ ) {
-            model_.lines_[i]->copy_macro_topology( from.line( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_surfaces(); i++ ) {
-            model_.surfaces_[i]->copy_macro_topology( from.surface( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_layers(); i++ ) {
-            model_.layers_[i]->copy_macro_topology( from.layer( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_regions(); i++ ) {
-            model_.regions_[i]->copy_macro_topology( from.region( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_contacts(); i++ ) {
-            model_.contacts_[i]->copy_macro_topology( from.contact( i ), model_ ) ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_interfaces(); i++ ) {
-            model_.interfaces_[i]->copy_macro_topology( from.one_interface( i ),
-                model_ ) ;
-        }
-        model_.universe_.copy_macro_topology( from.universe_, model_ ) ;
-    }
-
-    /*!
-     * @brief Copy meshes from a model
-     * @details Copy the all the element meshes
-     *
-     * @param[in] from Model to copy the meshes from
-     */
-    void BoundaryModelBuilder::copy_meshes( const BoundaryModel& from )
-    {
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_corners(); i++ ) {
-            model_.corners_[i]->unbind_attributes() ;
-            model_.corners_[i]->mesh().copy( from.corner( i ).mesh() ) ;
-            model_.corners_[i]->bind_attributes() ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_lines(); i++ ) {
-            model_.lines_[i]->unbind_attributes() ;
-            model_.lines_[i]->mesh().copy( from.line( i ).mesh() ) ;
-            model_.lines_[i]->bind_attributes() ;
-        }
-#pragma omp parallel for
-        for( index_t i = 0; i < model_.nb_surfaces(); i++ ) {
-            model_.surfaces_[i]->unbind_attributes() ;
-            model_.surfaces_[i]->mesh().copy( from.surface( i ).mesh() ) ;
-            model_.surfaces_[i]->bind_attributes() ;
-        }
-    }
 
     /*!
      * @brief Update the indices stored by each element of the model \
      * according to its actual position in the corresponding vector in the model
      */
     void BoundaryModelBuilder::update_all_ids()
-    {
-        for( index_t co = 0; co < model_.nb_corners(); co++ ) {
-            model_.corners_[co]->set_id( co ) ;
-        }
-        for( index_t cp = 0; cp < model_.nb_lines(); cp++ ) {
-            model_.lines_[cp]->set_id( cp ) ;
-        }
-        for( index_t sp = 0; sp < model_.nb_surfaces(); sp++ ) {
-            model_.surfaces_[sp]->set_id( sp ) ;
-        }
-        for( index_t c = 0; c < model_.nb_contacts(); c++ ) {
-            model_.contacts_[c]->set_id( c ) ;
-        }
-        for( index_t s = 0; s < model_.nb_interfaces(); s++ ) {
-            model_.interfaces_[s]->set_id( s ) ;
-        }
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
-            model_.regions_[r]->set_id( r ) ;
-        }
-        for( index_t l = 0; l < model_.nb_layers(); l++ ) {
-            model_.layers_[l]->set_id( l ) ;
+    {        
+        for( index_t t = BME::CORNER; t < BME::NO_TYPE; ++t ) {
+            BME::TYPE T = ( BME::TYPE ) t ;
+            for( index_t i = 0; i < model_.nb_elements( T ); ++i ) {
+                element( bme_t( T, i ) ).set_id( i ) ;
+            }
         }
     }
 
@@ -223,169 +524,269 @@ namespace RINGMesh {
      * @param[in] type Type of the element to create
      * @return The index of the created element
      */
-    BME::bme_t BoundaryModelBuilder::create_element( BME::TYPE type )
+    bme_t BoundaryModelBuilder::create_element( BME::TYPE type )
     {
         index_t id = model_.nb_elements( type ) ;
         ringmesh_assert( id != NO_ID ) ;
-        switch( type ) {
-            case BME::CORNER:
-                model_.corners_.push_back( new Corner( &model_, id ) ) ;
-                break ;
-
-            case BME::LINE:
-                model_.lines_.push_back( new Line( &model_, id ) ) ;
-                break ;
-
-            case BME::SURFACE:
-                model_.surfaces_.push_back( new Surface( &model_, id ) ) ;
-                break ;
-
-            case BME::REGION:
-                model_.regions_.push_back( new BME( &model_, BME::REGION, id ) ) ;
-                break ;
-
-            case BME::CONTACT:
-                model_.contacts_.push_back( new BME( &model_, BME::CONTACT, id ) ) ;
-                break ;
-
-            case BME::INTERFACE:
-                model_.interfaces_.push_back(
-                    new BME( &model_, BME::INTERFACE, id ) ) ;
-                break ;
-
-            case BME::LAYER:
-                model_.layers_.push_back( new BME( &model_, BME::LAYER, id ) ) ;
-                break ;
-            default:
-                ringmesh_assert_not_reached;
-                break ;
-            }
-        return BME::bme_t( type, id ) ;
+        if( type >= BME::CORNER && type < BME::NO_TYPE ) {
+            model_.modifiable_elements( type ).push_back(
+                new_element( type, &model_, id ) ) ;
+            return bme_t( type, id ) ;
+        }
+        else {
+            ringmesh_assert_not_reached;
+            return bme_t() ;
+        }
     }
 
     /*!
-     * @brief To use with extreme caution -  Erase one element of the BoundaryModel
-     * @details TO USE ONLY AFTER having removed all references to this element,
-     * AND having updated the indices of the elements of the same type
-     * AND having updated all references to these elements in their boundaries,
-     * in_boundaries, parent or children.
-     *
-     * \todo Implement a generic function remove all references to an element (its index)
-     * update the indices of elements of the same type (after it in the vector) and update
-     * references to these elements in all other elements.
+     * @brief Add to the vector the elements which cannot exist if 
+     *        an element in the set does not exist.
+     * @details These elements are added to the set.
+     *          Recursive call till nothing is added.
+     *          
+     * @return True if at least one element was added, otherwise false.
      */
-    void BoundaryModelBuilder::erase_element( const BME::bme_t& t )
+    bool BoundaryModelBuilder::get_dependent_elements(
+        std::set< bme_t >& in ) const 
     {
-        switch( t.type ) {
-            case BME::CORNER:
-                delete model_.corners_[t.index] ;
-                model_.corners_.erase( model_.corners_.begin() + t.index ) ;
-                break ;
+        index_t input_size = in.size() ;
 
-            case BME::LINE:
-                delete model_.lines_[t.index] ;
-                model_.lines_.erase( model_.lines_.begin() + t.index ) ;
-                break ;
+        for( std::set< bme_t >::iterator it( in.begin() );
+             it != in.end(); ++it 
+           ) {
+            bme_t cur = *it ;
+            /// If an element has children elements - add them 
+            if( BME::child_allowed( cur.type ) ) {
+                index_t c = BME::child_type( cur.type ) ;
+                const BME& E = model_.element( cur ) ;
+                for( index_t j = 0 ; j < E.nb_children() ; ++j ) {
+                    in.insert( E.child_id(j) ) ;
+                }                
+            }         
+        }
 
-            case BME::SURFACE:
-                delete model_.surfaces_[t.index] ;
-                model_.surfaces_.erase( model_.surfaces_.begin() + t.index ) ;
-                break ;
-
-            case BME::REGION:
-                delete model_.regions_[t.index] ;
-                model_.regions_.erase( model_.regions_.begin() + t.index ) ;
-                break ;
-
-            case BME::CONTACT:
-                delete model_.contacts_[t.index] ;
-                model_.contacts_.erase( model_.contacts_.begin() + t.index ) ;
-                break ;
-
-            case BME::INTERFACE:
-                delete model_.interfaces_[t.index] ;
-                model_.interfaces_.erase( model_.interfaces_.begin() + t.index ) ;
-                break ;
-
-            case BME::LAYER:
-                delete model_.layers_[t.index] ;
-                model_.layers_.erase( model_.layers_.begin() + t.index ) ;
-                break ;
-
-            default:
-                ringmesh_assert_not_reached;
-                break ;
+        /// If a parent has no children anymore - add it 
+        for( index_t p = BME::CONTACT; p < BME::NO_TYPE; ++p ) {
+            BME::TYPE P = ( BME::TYPE ) p ;            
+            for( index_t j = 0; j < model_.nb_elements( P ); ++j ) {
+                bool no_child = true ;
+                const BME& E = model_.element( BME::bme_t( P, j ) ) ;
+                for( index_t k = 0; k < E.nb_children(); ++k ) {                    
+                    if( in.count( E.child_id( k ) ) == 0 ) {
+                        no_child = false ;
+                        break ;
+                    }
+                }
+                if( no_child ) {
+                    in.insert( E.bme_id() ) ;
+                }
             }
         }
 
+        /// If an element is in the boundary of nothing - add it
+        for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
+            BME::TYPE T = ( BME::TYPE ) t ;
+            for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
+                bool no_incident = true ;
+                const BME& E = model_.element( BME::bme_t( T, j ) ) ;
+                for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
+                    if( in.count( E.in_boundary_id( k ) ) == 0 ) {
+                        no_incident = false ;
+                        break ;
+                    }
+                }
+                if( no_incident ) {
+                    in.insert( E.bme_id() ) ;
+                }
+            }
+        }
+
+        if( in.size() != input_size ) {
+            return get_dependent_elements( in ) ;
+        }
+        else {
+            return false ;
+        }
+    }
+    
+
+    /*!
+     * @brief Remove a list of elements of the model
+     * @details No check is done on the consistency of this removal
+     *          The elements and all references to them are removed. 
+     *          All dependent elements should be in the set of elements to remove,
+     *          with a prior call to get_dependent_elements function.
+     * 
+     * @warning NOT TESTED.
+     *          The client is responsible to set the proper connectivity
+     *          information between the remaining model elements.
+     * 
+     * @todo TEST IT
+     */
+    void BoundaryModelBuilder::remove_elements( 
+        const std::vector< bme_t >& elements )
+    {
+        if( elements.size() == 0 ) {
+            return ;
+        }
+
+        // We need to remove elements type by type since they are 
+        // stored in different vectors and since we use indices in these 
+        // vectors to identify them.
+        // Initialize the vector
+        std::vector < std::vector < index_t > > to_erase_by_type ;
+        for( index_t i = BME::CORNER; i < BME::NO_TYPE; ++i ) {
+            to_erase_by_type.push_back( std::vector< index_t >( 
+                model_.nb_elements( static_cast<BME::TYPE>(i) ), 0 ) ) ;
+        }
+        // Flag the elements to erase
+        for( index_t i = 0; i < elements.size(); ++i ) {
+            bme_t cur = elements[ i ] ;
+            if( cur.type < BME::NO_TYPE ) {
+                to_erase_by_type[ cur.type ][ cur.index ] = NO_ID ;                
+            }
+        }
+       
+        delete_elements( to_erase_by_type ) ;
+        
+        // Re-initialize global access to elements
+        init_global_model_element_access() ;       
+    }
+
+    /*!
+    * @brief Delete elements and remove all references to them in the model
+    *
+    * @param[in] T Type of the elements
+    * @param[in,out] to_erase For each type of element T, 
+    *        store a vector of the size of model_.nb_elements(T) in which
+    *        elements are flagged with NO_ID.
+    *        In output it stores the mapping table between old and new indices
+    *        for the elements.
+    * @todo TEST IT
+    */
+    void BoundaryModelBuilder::delete_elements(
+        std::vector< std::vector< index_t > >& to_erase )
+    {        
+        // Number of elements deleted for each TYPE
+        std::vector< index_t > nb_removed( to_erase.size(), 0 ) ;
+
+        /// 1. Get the mapping between old indices of the elements
+        ///    and new ones (when elements to remove will actually be removed)
+        for( index_t i = 0; i < to_erase.size(); ++i ) {
+            for( index_t j = 0 ; j < to_erase[ i ].size(); ++j ) {
+                if( to_erase[ i ][ j ] == NO_ID ) {
+                    nb_removed[ i ]++ ;
+                } else {
+                    to_erase[ i ][ j ] = j - nb_removed[ i ] ;
+                }
+            }
+        }
+
+        /// 2. Deal with the model vertices
+        // We need to to this before changing ids of the BMEs 
+        // We need the BMEs to have their previous ids to get the new correct ones
+        for( index_t v = 0; v < model_.vertices.nb_unique_vertices(); ++v ) {
+            const std::vector<BoundaryModelVertices::VertexInBME>& cur =
+                model_.vertices.bme_vertices( v ) ;
+            for( index_t i = 0; i < cur.size(); ++i ) {
+                bme_t id = cur[ i ].bme_id ;
+                bme_t new_id( id.type, to_erase[ id.type ][ id.index ] ) ;
+                model_.vertices.set_bme(
+                    v, i, BoundaryModelVertices::VertexInBME( new_id, cur[ i ].v_id ) ) ;
+            }
+        }
+        model_.vertices.erase_invalid_vertices() ;
+
+        /// 3. For element update all possible indices 
+        for( index_t i = 0; i < to_erase.size(); ++i ) {
+            BME::TYPE T = static_cast<BME::TYPE>( i ) ;
+
+            // Update all indices stored by the BME of that type 
+            for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
+                if( to_erase[ i ][ j ] == NO_ID ) {
+                    // Element will be erased - no update necessary
+                    continue ;
+                }
+                BoundaryModelElement& E = element( bme_t( T, j ) ) ;
+                // id_ 
+                E.set_id( to_erase[ i ][ j ] ) ;
+                // boundary_
+                if( E.nb_boundaries() > 0 ) {
+                    BME::TYPE B = BME::boundary_type( T ) ;
+                    ringmesh_debug_assert( B < BME::NO_TYPE ) ;
+                    for( index_t k = 0; k < E.nb_boundaries(); ++k ) {
+                        E.set_boundary( k, bme_t(
+                            B, to_erase[ B ][ E.boundary_id( k ).index ] ) ) ;
+                    }
+                }
+                // in_boundary
+                if( E.nb_in_boundary() > 0 ) {
+                    BME::TYPE IB = BME::in_boundary_type( T ) ;
+                    ringmesh_debug_assert( IB < BME::NO_TYPE ) ;
+                    for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
+                        E.set_in_boundary( k, bme_t(
+                            IB, to_erase[ IB ][ E.in_boundary_id( k ).index ] ) ) ;
+                    }
+                }
+                // parent_
+                if( E.has_parent() ) {
+                    BME::TYPE P = BME::parent_type( T ) ;
+                    ringmesh_debug_assert( P < BME::NO_TYPE ) ;
+                    E.set_parent( bme_t( P, to_erase[ P ][ E.parent_id().index ] ) ) ;
+                }
+                // children_ 
+                if( E.nb_children() > 0 ) {
+                    BME::TYPE C = BME::child_type( T ) ;
+                    ringmesh_debug_assert( C < BME::NO_TYPE ) ;
+                    for( index_t k = 0; k < E.nb_children(); ++k ) {
+                        E.set_child( k, bme_t(
+                            C, to_erase[ C ][ E.child_id( k ).index ] ) ) ;
+                    }
+                }
+                // Clean the vectors in the element
+                E.erase_invalid_element_references() ;
+            }
+        }
+        // Do not forget the universe
+        /// @todo Put the universe in the list of regions - so annoying to think of it each time
+        {
+            for( index_t i = 0; i < model_.universe().nb_boundaries(); ++i ) {
+                model_.universe_.set_boundary( i, bme_t(
+                    BME::SURFACE, to_erase[ BME::SURFACE ][
+                        model_.universe().boundary_id( i ).index ] ) ) ;
+            }
+            model_.universe_.erase_invalid_element_references() ;
+        }       
+       
+        /// 4. Effectively delete the elements 
+        for( index_t i = 0; i < to_erase.size(); ++i ) {
+            for( index_t j = 0 ; j < to_erase[ i ].size(); ++j ) {
+                if( to_erase[ i ][ j ] == NO_ID ) {
+                    BME::bme_t cur( static_cast<BME::TYPE>( i ), j ) ;
+                    delete element_ptr( cur ) ;
+                    set_element( cur, nil ) ;
+                }
+            }
+            std::vector< BME* >& store = model_.modifiable_elements( 
+                static_cast<BME::TYPE>( i ) ) ;
+            store.erase( std::remove( store.begin(), store.end(),
+                static_cast<BME*>( nil ) ), store.end() ) ;
+        }
+
+    }
+    
+
     void BoundaryModelBuilder::resize_elements( BME::TYPE type, index_t nb )
     {
-        switch( type ) {
-            case BME::CORNER:
-                model_.corners_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.corners_[i] ) {
-                        model_.corners_[i] = new Corner( &model_ ) ;
-                    }
-                }
-                break ;
-
-            case BME::LINE:
-                model_.lines_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.lines_[i] ) {
-                        model_.lines_[i] = new Line( &model_ ) ;
-                    }
-                }
-                break ;
-
-            case BME::SURFACE:
-                model_.surfaces_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.surfaces_[i] ) {
-                        model_.surfaces_[i] = new Surface( &model_ ) ;
-                    }
-                }
-                break ;
-
-            case BME::REGION:
-                model_.regions_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.regions_[i] ) {
-                        model_.regions_[i] = new BME( &model_, BME::REGION ) ;
-                    }
-                }
-                break ;
-
-            case BME::CONTACT:
-                model_.contacts_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.contacts_[i] ) {
-                        model_.contacts_[i] = new BME( &model_, BME::CONTACT ) ;
-                    }
-                }
-                break ;
-
-            case BME::INTERFACE:
-                model_.interfaces_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.interfaces_[i] ) {
-                        model_.interfaces_[i] = new BME( &model_, BME::INTERFACE ) ;
-                    }
-                }
-                break ;
-
-            case BME::LAYER:
-                model_.layers_.resize( nb, nil ) ;
-                for( index_t i = 0; i < nb; i++ ) {
-                    if( !model_.layers_[i] ) {
-                        model_.layers_[i] = new BME( &model_, BME::LAYER ) ;
-                    }
-                }
-                break ;
-            default:
-                break ;
+        if( type >= BME::NO_TYPE ) {
+            return ;
         }
+        std::vector< BME*>& store = model_.modifiable_elements( type ) ;
+        store.resize( nb, nil ) ;
+        for( index_t i = 0; i < nb; i++ ) {
+            store[ i ] = new_element( type, &model_, i ) ;
+        }        
     }
 
     /*!
@@ -393,14 +794,14 @@ namespace RINGMesh {
      * @param[in] point Geometric location to look for 
      * @return NO_ID or the index of the Corner
      */
-    BME::bme_t BoundaryModelBuilder::find_corner( const vec3& point ) const
+    bme_t BoundaryModelBuilder::find_corner( const vec3& point ) const
     {
         for( index_t i = 0; i < model_.nb_corners(); ++i ) {
             if( model_.corner( i ).vertex() == point ) {
-                return BME::bme_t( BME::CORNER, i ) ;
+                return bme_t( BME::CORNER, i ) ;
             }
         }
-        return BME::bme_t() ;
+        return bme_t() ;
     }
 
     /*!
@@ -408,27 +809,14 @@ namespace RINGMesh {
      * @param[in] model_point_id Index of the point in the BoudaryModel
      * @return NO_ID or the index of the Corner
      */
-    BME::bme_t BoundaryModelBuilder::find_corner( index_t model_point_id ) const
+    bme_t BoundaryModelBuilder::find_corner( index_t model_point_id ) const
     {
         for( index_t i = 0; i < model_.nb_corners(); ++i ) {
             if( model_.corner( i ).model_vertex_id() == model_point_id ) {
-                return BME::bme_t( BME::CORNER, i ) ;
+                return bme_t( BME::CORNER, i ) ;
             }
         }
-        return BME::bme_t() ;
-    }
-
-    /*!
-     * @brief Create a corner at given coordinates.
-     *
-     * @param[in] point Geometric location of the new Corner
-     * @return Index of the Corner
-     */
-    BME::bme_t BoundaryModelBuilder::create_corner( const vec3& point )
-    {
-        BME::bme_t id = create_element( BME::CORNER ) ;
-        set_corner( id, point ) ;
-        return id ;
+        return bme_t() ;
     }
 
     /*!
@@ -437,224 +825,46 @@ namespace RINGMesh {
      * @param[in] point Geometric location of the Corner
      * @return Index of the Corner
      */
-    BME::bme_t BoundaryModelBuilder::find_or_create_corner( const vec3& point )
+    bme_t find_or_create_corner( BoundaryModelBuilder& BMB, const vec3& point )
     {
-        BME::bme_t result = find_corner( point ) ;
-        if( result.is_defined() ) {
-            return result ;
-        } else {
-            return create_corner( point ) ;
+        bme_t result = BMB.find_corner( point ) ;
+        if( !result.is_defined() ) {
+            result = BMB.create_element( BME::CORNER ) ;
+            BMB.set_corner( result, point ) ;
         }
-    }
-
-    /*!
-     * @brief Looks for a line in the model
-     *
-     * @param[in] vertices Coordinates of the vertices of the line
-     * @return NO_ID or the index of the Line
-     */
-    BME::bme_t BoundaryModelBuilder::find_line(
-        const std::vector< vec3 >& vertices ) const
-    {
-        for( index_t i = 0; i < model_.nb_lines(); ++i ) {
-            if( model_.line( i ).equal( vertices ) ) {
-                return BME::bme_t( BME::LINE, i ) ;
-            }
-        }
-        return BME::bme_t() ;
-    }
-
-    /*!
-     * @brief Add a Line knowing from teh coordinates of its vertices.
-     * The corners are created if they do not exist.
-     */
-    BME::bme_t BoundaryModelBuilder::create_line( const std::vector< vec3 >& points )
-    {
-        BME::bme_t id = create_element( BME::LINE ) ;
-        set_line( id, points ) ;
-
-        // Find the indices of the corner at both extremities
-        // Both must be defined to have a valid LINE
-        add_element_boundary( id, find_or_create_corner( points.front() ) ) ;
-        add_element_boundary( id, find_or_create_corner( points.back() ) ) ;
-
-        return id ;
+        return result ;
     }
 
     /*!
      * @brief Find or create a line
-     *
+     * 
+     * @param[in] BM model to consider
      * @param[in] vertices Coordinates of the vertices of the line
      * @return Index of the Line
      */
-    BME::bme_t BoundaryModelBuilder::find_or_create_line(
+    bme_t find_or_create_line( BoundaryModelBuilder& BMB,  
         const std::vector< vec3 >& vertices )
     {
-        BME::bme_t result = find_line( vertices ) ;
-        if( result.is_defined() ) {
-            return result ;
-        } else {
-            return create_line( vertices ) ;
-        }
-    }
-
-    /*!
-     * @brief Create a surface
-     *
-     * @return Index of the Surface in the surfaces_ vector
-     */
-    BME::bme_t BoundaryModelBuilder::create_surface()
-    {
-        return create_element( BME::SURFACE ) ;
-    }
-
-    /*!
-     * @brief Find a Contact
-     * @param[in] interfaces Indices of the Interfaces determining the contact
-     * @return NO_ID or index of the contact
-     */
-    BME::bme_t BoundaryModelBuilder::find_contact(
-        const std::vector< index_t >& interfaces ) const
-    {
-        std::vector< const BoundaryModelElement* > comp( interfaces.size() ) ;
-        for( index_t i = 0; i < interfaces.size(); ++i ) {
-            comp[i] = &model_.one_interface( interfaces[i] ) ;
-        }
-
-        for( index_t i = 0; i < model_.nb_contacts(); ++i ) {
-            if( comp.size() == model_.contact( i ).nb_in_boundary() ) {
-                bool equal = true ;
-                for( index_t j = 0; j < model_.contact( i ).nb_in_boundary(); j++ ) {
-                    if( comp[j] != &model_.contact( i ).in_boundary( j ) ) {
-                        equal = false ;
-                        break ;
-                    }
-                }
-                if( equal ) {
-                    return BME::bme_t( BME::CONTACT, i ) ;
-                }
+        bme_t result ;
+        for( index_t i = 0; i < BMB.model().nb_lines(); ++i ) {
+            if( BMB.model().line( i ).equal( vertices ) ) {
+                result = BMB.model().line( i ).bme_id() ;
             }
         }
-        return BME::bme_t() ;
-    }
+        if( !result.is_defined() ) {
+            result = BMB.create_element( BME::LINE ) ;
+            BMB.set_line( result, vertices ) ;
 
-    /*!
-     * @brief Create a contact between the given Interfaces
-     * The name of the contact is determined from the names of the interfaces.
-     *
-     * @param[in] interfaces Indices of the intersecting interfaces
-     * @return Index of the Contact
-     */
-    BME::bme_t BoundaryModelBuilder::create_contact(
-        const std::vector< index_t >& interfaces )
-    {
-        // Create a name for this contact
-        std::string name = "contact_" ;
-        for( index_t i = 0; i < interfaces.size(); ++i ) {
-            name += model_.one_interface( interfaces[i] ).name() ;
-            name += "_" ;
+            // Find the indices of the corner at both extremities
+            // Both must be defined to have a valid LINE
+            BMB.add_element_boundary( 
+                result, find_or_create_corner( BMB, vertices.front() ) ) ;
+            BMB.add_element_boundary( 
+                result, find_or_create_corner( BMB, vertices.back() ) ) ;
         }
-
-        BME::bme_t id = create_element( BME::CONTACT ) ;
-        set_element_name( id, name ) ;
-
-        return id ;
+        return result ;
     }
 
-    /*!
-     * @brief Find or create a contact between given Interfaces
-     *
-     * @param[in] interfaces Indices of the intersecting interfaces
-     * @return Index of the Contact
-     */
-    BME::bme_t BoundaryModelBuilder::find_or_create_contact(
-        const std::vector< index_t >& interfaces )
-    {
-        BME::bme_t result = find_contact( interfaces ) ;
-        if( result.is_defined() ) {
-            return result ;
-        } else {
-            return create_contact( interfaces ) ;
-        }
-    }
-
-    /*!
-     * @brief Get the index of an Interface from its name
-     *
-     * @param[in] name Name of the Interface
-     * @return Index of the interface in the model, NO_ID if not found.
-     */
-    BME::bme_t BoundaryModelBuilder::find_interface( const std::string& name ) const
-    {
-        for( index_t i = 0; i < model_.nb_interfaces(); ++i ) {
-            if( model_.one_interface( i ).name() == name ) {
-                return BME::bme_t( BME::INTERFACE, i ) ;
-            }
-        }
-        return BME::bme_t() ;
-    }
-
-    /*!
-     * @brief Create a new Interface
-     *
-     * @param[in] name Name of the interface
-     * @param[in] type Type of the interface
-     * @return The Interface index.
-     */
-    BME::bme_t BoundaryModelBuilder::create_interface(
-        const std::string& name,
-        BME::GEOL_FEATURE type )
-    {
-        BME::bme_t id = create_element( BME::INTERFACE ) ;
-        set_element_geol_feature( id, type ) ;
-        set_element_name( id, name ) ;
-        return id ;
-    }
-
-    /*
-     * @brief Adds an empty region to the model
-     *
-     *  Used in Geomodeling to convert a surface to a model
-     */
-    BME::bme_t BoundaryModelBuilder::create_region()
-    {
-        return create_element( BME::REGION ) ;
-    }
-
-    /*!
-     * @brief Adds a new region to the model
-     *
-     * @param[in] name Name of the region
-     * @param[in] boundaries Indices of the surfaces on the region boundary, plus indication on which
-     *            side of the surface is the region
-     * @return Index of the created region
-     */
-    BME::bme_t BoundaryModelBuilder::create_region(
-        const std::string& name,
-        const std::vector< std::pair< index_t, bool > >& boundaries )
-    {
-        BME::bme_t id = create_element( BME::REGION ) ;
-        set_element_name( id, name ) ;
-        for( index_t i = 0; i < boundaries.size(); ++i ) {
-            add_element_boundary( id,
-                BME::bme_t( BME::SURFACE, boundaries[i].first ),
-                boundaries[i].second ) ;
-        }
-        return id ;
-    }
-
-    /*!
-     * @brief Creates a new empty Layer with the given name
-     *
-     * @param[in] name Name of the layer
-     * @return The layer index
-     */
-    BME::bme_t BoundaryModelBuilder::create_layer( const std::string& name )
-    {
-        BME::bme_t id = create_element( BME::LAYER ) ;
-        set_element_name( id, name ) ;
-        return id ;
-    }
 
     /*!
      * @brief Fill the model universe_
@@ -672,7 +882,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < boundaries.size(); ++i ) {
             ringmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
             model_.universe_.add_boundary(
-                BME::bme_t( BME::SURFACE, boundaries[i].first ),
+                bme_t( BME::SURFACE, boundaries[i].first ),
                 boundaries[i].second ) ;
         }
     }
@@ -684,11 +894,12 @@ namespace RINGMesh {
      * @param[in] point Coordinates of the vertex
      */
     void BoundaryModelBuilder::set_corner(
-        const BME::bme_t& corner_id,
+        const bme_t& corner_id,
         const vec3& point )
     {
         ringmesh_assert( corner_id.index < model_.nb_corners() ) ;
-        model_.corners_[corner_id.index]->set_vertex( point, false ) ;
+        dynamic_cast< Corner* >( model_.corners_[corner_id.index] )->
+            set_vertex( point, false ) ;
     }
 
     /*!
@@ -698,11 +909,12 @@ namespace RINGMesh {
      * @param[in] vertices Coordinates of the vertices on the line
      */
     void BoundaryModelBuilder::set_line(
-        const BME::bme_t& id,
+        const bme_t& id,
         const std::vector< vec3 >& vertices )
     {
         ringmesh_assert( id.index < model_.nb_lines() ) ;
-        model_.lines_[id.index]->set_vertices( vertices ) ;
+        dynamic_cast< Line* >( model_.lines_[ id.index ] )->
+            set_vertices( vertices ) ;
     }
 
     /*!
@@ -713,27 +925,21 @@ namespace RINGMesh {
      * @param[in] points Coordinates of the vertices
      * @param[in] facets Indices in the vertices vector to build facets
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     * @param[in] surface_adjacencies Adjacent facet (size of facet_ptr)
      */
     void BoundaryModelBuilder::set_surface_geometry(
-        const BME::bme_t& surface_id,
+        const bme_t& surface_id,
         const std::vector< vec3 >& points,
         const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr,
-        const std::vector< index_t >& surface_adjacencies )
+        const std::vector< index_t >& facet_ptr )
     {
         if( facets.size() == 0 ) {
             return ;
         }
 
-        model_.surfaces_[surface_id.index]->set_geometry( points, facets,
-            facet_ptr ) ;
+        dynamic_cast< Surface* > (model_.surfaces_[surface_id.index] )->
+            set_geometry( points, facets, facet_ptr ) ;
 
-        if( surface_adjacencies.empty() ) {
-            set_surface_adjacencies( surface_id ) ;
-        } else {
-            model_.surfaces_[surface_id.index]->set_adjacent( surface_adjacencies ) ;
-        }
+        set_surface_adjacencies( surface_id ) ;
     }
 
     /*!
@@ -752,11 +958,12 @@ namespace RINGMesh {
      * @param[in] unique_vertex Index of the vertex in the model
      */
     void BoundaryModelBuilder::set_corner(
-        const BME::bme_t& corner_id,
+        const bme_t& corner_id,
         index_t unique_vertex )
     {
         ringmesh_assert( corner_id.index < model_.nb_corners() ) ;
-        model_.corners_[corner_id.index]->set_vertex( unique_vertex ) ;
+        dynamic_cast< Corner* >( model_.corners_[corner_id.index] )->
+            set_vertex( unique_vertex ) ;
     }
 
     /*!
@@ -766,11 +973,12 @@ namespace RINGMesh {
      * @param[in] unique_vertices Indices in the model of the unique vertices with which to build the Line
      */
     void BoundaryModelBuilder::set_line(
-        const BME::bme_t& id,
+        const bme_t& id,
         const std::vector< index_t >& unique_vertices )
     {
         ringmesh_assert( id.index < model_.nb_lines() ) ;
-        model_.lines_[id.index]->set_vertices( unique_vertices ) ;
+        dynamic_cast< Line* >( model_.lines_[ id.index ] )->
+            set_vertices( unique_vertices ) ;
     }
 
     /*!
@@ -781,43 +989,33 @@ namespace RINGMesh {
      * @param[in] model_vertex_ids Indices of unique vertices in the BoundaryModel
      * @param[in] facets Indices in the vertices vector to build facets
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     * @param[in] adjacencies Adjacent facet (size of facet_ptr)
      */
     void BoundaryModelBuilder::set_surface_geometry(
-        const BME::bme_t& surface_id,
+        const bme_t& surface_id,
         const std::vector< index_t >& model_vertex_ids,
         const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr,
-        const std::vector< index_t >& adjacencies )
+        const std::vector< index_t >& facet_ptr )
     {
         if( facets.size() == 0 ) {
             return ;
         }
+        dynamic_cast< Surface* >( model_.surfaces_[ surface_id.index ] )->
+            set_geometry( model_vertex_ids, facets, facet_ptr ) ;
 
-        model_.surfaces_[surface_id.index]->set_geometry( model_vertex_ids, facets,
-            facet_ptr ) ;
-
-        if( adjacencies.empty() ) {
-            set_surface_adjacencies( surface_id ) ;
-        } else {
-            model_.surfaces_[surface_id.index]->set_adjacent( adjacencies ) ;
-        }
+        set_surface_adjacencies( surface_id ) ;
     }
 
     /*!
      * @brief Set the facets of a surface
-     * @details If facet_adjacencies are not given they are computed
      *
      * @param[in] surface_id Index of the surface
      * @param[in] facets Indices of the model vertices defining the facets
-     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     * @param[in] corner_adjacent_facets Adjacent facet (size of facet_ptr)
+     * @param[in] facet_ptr Pointer to the beginning of a facet in facets     
      */
-    void BoundaryModelBuilder::set_surface_geometry_bis(
-        const BME::bme_t& surface_id,
+    void BoundaryModelBuilder::set_surface_geometry(
+        const bme_t& surface_id,
         const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr,
-        const std::vector< index_t >& corner_adjacent_facets )
+        const std::vector< index_t >& facet_ptr )
     {
         if( facets.size() == 0 ) {
             return ;
@@ -859,9 +1057,9 @@ namespace RINGMesh {
      * @param[in] surface_id Index of the surface
      */
     void BoundaryModelBuilder::set_surface_adjacencies(
-        const BME::bme_t& surface_id )
+        const bme_t& surface_id )
     {
-        Surface& S = *model_.surfaces_[surface_id.index] ;
+        Surface& S = dynamic_cast< Surface& >( *model_.surfaces_[surface_id.index] );
         ringmesh_assert( S.nb_cells() > 0 ) ;
 
         std::vector< index_t > adjacent ;
@@ -997,10 +1195,10 @@ namespace RINGMesh {
         BME::TYPE b_type = BME::boundary_type( type ) ;
         if( b_type != BME::NO_TYPE ) {
             for( index_t i = 0; i < model_.nb_elements( b_type ); ++i ) {
-                const BME& b = model_.element( BME::bme_t( b_type, i ) ) ;
+                const BME& b = model_.element( bme_t( b_type, i ) ) ;
                 for( index_t j = 0; j < b.nb_in_boundary(); ++j ) {
                     add_element_boundary( b.in_boundary_id( j ),
-                        BME::bme_t( b_type, i ) ) ;
+                        bme_t( b_type, i ) ) ;
                 }
             }
         }
@@ -1017,10 +1215,10 @@ namespace RINGMesh {
         BME::TYPE in_b_type = BME::in_boundary_type( type ) ;
         if( in_b_type != BME::NO_TYPE ) {
             for( index_t i = 0; i < model_.nb_elements( in_b_type ); ++i ) {
-                const BME& in_b = model_.element( BME::bme_t( in_b_type, i ) ) ;
+                const BME& in_b = model_.element( bme_t( in_b_type, i ) ) ;
                 for( index_t j = 0; j < in_b.nb_boundaries(); ++j ) {
                     add_element_in_boundary( in_b.boundary_id( j ),
-                        BME::bme_t( in_b_type, i ) ) ;
+                        bme_t( in_b_type, i ) ) ;
                 }
             }
         }
@@ -1037,9 +1235,9 @@ namespace RINGMesh {
         BME::TYPE p_type = BME::parent_type( type ) ;
         if( p_type != BME::NO_TYPE ) {
             for( index_t i = 0; i < model_.nb_elements( p_type ); ++i ) {
-                const BME& p = model_.element( BME::bme_t( p_type, i ) ) ;
+                const BME& p = model_.element( bme_t( p_type, i ) ) ;
                 for( index_t j = 0; j < p.nb_children(); ++j ) {
-                    set_parent( p.child_id( j ), BME::bme_t( p_type, i ) ) ;
+                    set_parent( p.child_id( j ), bme_t( p_type, i ) ) ;
                 }
             }
         }
@@ -1056,8 +1254,8 @@ namespace RINGMesh {
         BME::TYPE c_type = BME::child_type( type ) ;
         if( c_type != BME::NO_TYPE ) {
             for( index_t i = 0; i < model_.nb_elements( c_type ); ++i ) {
-                BME::bme_t cur_child = BME::bme_t( c_type, i ) ;
-                const BME::bme_t& parent = model_.element( cur_child ).parent_id() ;
+                bme_t cur_child = bme_t( c_type, i ) ;
+                const bme_t& parent = model_.element( cur_child ).parent_id() ;
                 if( parent.is_defined() ) {
                     add_child( parent, cur_child ) ;
                 }
@@ -1066,11 +1264,80 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Fills the model nb_elements_per_type_ vector
+     * @brief Remove degenerate facets and edges from the Surface
+     *        and Line of the model
+     */
+    void BoundaryModelBuilder::remove_degenerate_facet_and_edges()
+    {
+        std::set< bme_t > to_remove ;
+        for( index_t i = 0; i < model_.nb_lines(); ++i ) {
+            index_t nb = repair_line_mesh( model_.line( i ).mesh() ) ;
+            if( nb > 0 ) {
+                GEO::Logger::out( "BoundaryModel" )
+                    << nb << " degenerated edges removed in LINE "
+                    << i << std::endl ;
+
+                // The line may be empty now - remove it from the model
+                if( model_.line( i ).nb_cells() == 0 ) {
+                    to_remove.insert( model_.line( i ).bme_id() ) ;
+                }
+            }
+        }
+
+        for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
+            GEO::Mesh& M = model_.surface( i ).mesh() ;
+            index_t nb = detect_degenerate_facets( M ) ;
+            if( nb > 0 ) {
+                // If there are some degenerated facets 
+                // We need to repair the model 
+                GEO::Logger::out( "BoundaryModel" )
+                    << nb << " degenerated facets in SURFACE "
+                    << i << std::endl ;
+
+                GEO::Logger::instance()->set_quiet( true ) ;
+                // Using repair function of geogram
+                // Warning - This triangulates the mesh
+                GEO::mesh_repair( M ) ;
+                                
+                // This might create some small components - remove them
+                // How to choose the epsilon ? and the maximum number of facets ?
+                GEO::remove_small_connected_components( M, epsilon_sq, 3 ) ;
+
+                // Ok this is a bit of an overkill
+                // The alternative is to copy mesh_repair and change it
+                GEO::mesh_repair( M ) ;
+                GEO::Logger::instance()->set_quiet( false ) ;
+
+
+                // If the Surface has internal boundaries, we need to 
+                // re-cut the Surface along these lines
+                Surface& S = dynamic_cast< Surface& >( *model_.surfaces_[ i ] ) ;
+                for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
+                    const Line& L = model_.line( S.boundary_id( l ).index ) ;
+                    if( L.is_inside_border( S ) ) {
+                        S.cut_by_line( L ) ;
+                    }
+                }
+                // The line may be empty now - remove it from the model
+                if( S.nb_cells() == 0 ) {
+                    to_remove.insert( S.bme_id() ) ;
+                }
+            }
+        }
+        if( to_remove.size() > 0 ) {
+            get_dependent_elements( to_remove ) ;
+            remove_elements( std::vector< bme_t >( to_remove.begin(), to_remove.end() ) ) ;
+        }
+    }
+
+    /*!
+     * @brief Clears and fills the model nb_elements_per_type_ vector
      * @details See global element access with BoundaryModel::element( BME::TYPE, index_t )
      */
     void BoundaryModelBuilder::init_global_model_element_access()
     {
+        model_.nb_elements_per_type_.clear() ;
+
         index_t count = 0 ;
         model_.nb_elements_per_type_.push_back( count ) ;
         for( index_t type = BME::CORNER; type < BME::NO_TYPE; type++ ) {
@@ -1078,6 +1345,25 @@ namespace RINGMesh {
             model_.nb_elements_per_type_.push_back( count ) ;
         }
     }
+
+    void print_model( const BoundaryModel& model )
+    {
+        GEO::Logger::out( "BoundaryModel" ) << "Model " << model.name() << " has "
+            << std::endl << std::setw( 10 ) << std::left << model.nb_vertices()
+            << " vertices " << std::endl << std::setw( 10 ) << std::left
+            << model.nb_facets() << " facets " << std::endl << std::endl
+            << std::setw( 10 ) << std::left << model.nb_regions() << " regions "
+            << std::endl << std::setw( 10 ) << std::left << model.nb_surfaces()
+            << " surfaces " << std::endl << std::setw( 10 ) << std::left
+            << model.nb_lines() << " lines " << std::endl << std::setw( 10 )
+            << std::left << model.nb_corners() << " corners " << std::endl
+            << std::endl << std::setw( 10 ) << std::left << model.nb_contacts()
+            << " contacts " << std::endl << std::setw( 10 ) << std::left
+            << model.nb_interfaces() << " interfaces " << std::endl
+            << std::setw( 10 ) << std::left << model.nb_layers() << " layers "
+            << std::endl << std::endl ;
+    }
+
 
     /*!
      * @brief This function MUST be the last function called when building a BoundaryModel
@@ -1097,97 +1383,58 @@ namespace RINGMesh {
             set_model_name( "model_default_name" ) ;
         }
 
-        // There must be at least 3 vertices
-        if( model_.nb_vertices() == 0 ) {
-            return false ;
-        }
-
-        // And at least one surface
-        if( model_.nb_surfaces() == 0 ) {
-            return false ;
-        }
-
-        // The Universe
-        /// \todo Write some code to create the universe (cf. builder from surfaces)
-
         init_global_model_element_access() ;
 
         complete_element_connectivity() ;
 
-        /// 1. Check that all the elements of the BoundaryModel have
-        ///    the required attributes - Fill optional attributes
+        // Fill geological feature if missing
         for( index_t i = 0; i < model_.nb_elements( BME::ALL_TYPES ); ++i ) {
-            BME& E = element( BME::bme_t( BME::ALL_TYPES, i ) ) ;
+            BME& E = element( bme_t( BME::ALL_TYPES, i ) ) ;
             if( !E.has_geological_feature() ) {
                 fill_element_geological_feature( E ) ;
             }
         }
 
-        GEO::Logger::out( "BoundaryModel" ) << "Model " << model_.name() << " has "
-            << std::endl << std::setw( 10 ) << std::left << model_.nb_vertices()
-            << " vertices " << std::endl << std::setw( 10 ) << std::left
-            << model_.nb_facets() << " facets " << std::endl << std::endl
-            << std::setw( 10 ) << std::left << model_.nb_regions() << " regions "
-            << std::endl << std::setw( 10 ) << std::left << model_.nb_surfaces()
-            << " surfaces " << std::endl << std::setw( 10 ) << std::left
-            << model_.nb_lines() << " lines " << std::endl << std::setw( 10 )
-            << std::left << model_.nb_corners() << " corners " << std::endl
-            << std::endl << std::setw( 10 ) << std::left << model_.nb_contacts()
-            << " contacts " << std::endl << std::setw( 10 ) << std::left
-            << model_.nb_interfaces() << " interfaces " << std::endl
-            << std::setw( 10 ) << std::left << model_.nb_layers() << " layers "
-            << std::endl << std::endl ;
+        // Basic mesh repair for surfaces and lines
+        /// @todo To put repair when remove_elements is OK
+        remove_degenerate_facet_and_edges() ; 
 
-        // What do we do if the model is not valid ?
         if( model_.check_model_validity() ) {
-            GEO::Logger::out( "BoundaryModel" ) << "Model " << model_.name()
-                << " is valid " << std::endl ;
+            GEO::Logger::out( "BoundaryModel" ) 
+                << std::endl  
+                << "Model " << model_.name() << " is valid " 
+                << std::endl << std::endl ;
+            print_model( model_ ) ;
+            return true ;
         } else {
-            GEO::Logger::out( "BoundaryModel" ) << "Model " << model_.name()
-                << " is invalid " << std::endl ;
+            GEO::Logger::out( "BoundaryModel" ) 
+                << std::endl
+                << "Model " << model_.name() << " is invalid "                 
+                << std::endl << std::endl ;
+            print_model( model_ ) ;
+            return false ;
         }
-
-        return true ;
     }
 
-    /*!
-     * @brief Structure used to build Line by BoundaryModelBuilderGocad
-     */
-    struct Border {
-        Border( index_t part, index_t corner, index_t p0, index_t p1 )
-            : part_id_( part ), corner_id_( corner ), p0_( p0 ), p1_( p1 )
-        {
-        }
-
-        // Id of the Surface owning this Border
-        index_t part_id_ ;
-
-        // Id of p0 in the BoundaryModel corner vector
-        index_t corner_id_ ;
-
-        // Ids of the starting corner and second vertex on the border in the Surface
-        // to which this Border belong
-        index_t p0_ ;
-        index_t p1_ ;
-    } ;
+    /*************************************************************************/
 
     /*!
      * @brief Load and build a BoundaryModel from a Gocad .ml file
      *
      *  @details This is pretty tricky because of the annoying not well adapted file format.
      * The correspondance between Gocad::Model3D elements and BoundaryModel elements is :
-     * Gocad TSurf  <-> BoundaryModel Interface
-     * Gocad TFace  <-> BoundaryModel Surface
-     * Gocad Region <-> BoundaryModel Region
-     * Gocad Layer  <-> BoundaryModel Layer
+     *  - Gocad TSurf  <-> BoundaryModel Interface
+     *  - Gocad TFace  <-> BoundaryModel Surface
+     *  - Gocad Region <-> BoundaryModel Region
+     *  - Gocad Layer  <-> BoundaryModel Layer
      *
      * @param[in] ml_file_name Input .ml file stream
      */
-    void BoundaryModelBuilderGocad::load_ml_file( const std::string& ml_file_name )
+    bool BoundaryModelBuilderGocad::load_ml_file( const std::string& ml_file_name )
     {
         GEO::LineInput in( ml_file_name ) ;
         if( !in.OK() ) {
-            return ;
+            return false ;
         }
 
         time_t start_load, end_load ;
@@ -1206,9 +1453,9 @@ namespace RINGMesh {
         index_t current_nb_tfaces = 0 ;
         index_t nb_tface_in_prev_tsurf = 0 ;
 
-        // The file contains 2 parts and is read in 2 steps
-        // 1. Read model info (true)
-        // 2. Read surfaces geometry (false)
+        /// The file contains 2 parts and is read in 2 steps
+        /// 1. Read global information on model elements
+        /// 2. Read surface geometries and info to build corners and contacts
         bool read_model = true ;
 
         // The orientation of positive Z
@@ -1245,17 +1492,19 @@ namespace RINGMesh {
                     if( strncmp( in.field( 0 ), "name:", 5 ) == 0 ) {
                         set_model_name( &in.field( 0 )[5] ) ;
                     } else if( in.field_matches( 0, "TSURF" ) ) {
-                        // 1. Create Interface its name
+                        /// 1.1 Create Interface from its name
                         index_t f = 1 ;
                         std::ostringstream oss ;
                         do {
                             oss << in.field( f++ ) ;
                         } while( f < in.nb_fields() ) ;
-                        create_interface( oss.str() ) ;
+                        // Create an interface and set its name
+                        set_element_name( create_element( BME::INTERFACE ), oss.str() ) ;
+
                         nb_tsurf++ ;
                     } else if( in.field_matches( 0, "TFACE" ) ) {
-                        // 2. Create the Surface from the name of its parent Interface
-                        // its geological feature
+                        /// 1.2 Create Surface from the name of its parent Interface
+                        /// and its geological feature
                         index_t id = in.field_as_uint( 1 ) ;
                         std::string geol = in.field( 2 ) ;
                         index_t f = 3 ;
@@ -1282,8 +1531,8 @@ namespace RINGMesh {
                         create_surface( interface_name, geol, p0, p1, p2 ) ;
                         nb_tface++ ;
                     } else if( in.field_matches( 0, "REGION" ) ) {
-                        // 3. Read Region information and create them from their name,
-                        // the surfaces on their boundary
+                        /// 1.3 Read Region information and create them from their name,
+                        /// and the surfaces on their boundary
                         index_t id = in.field_as_uint( 1 ) ;
                         std::string name = in.field( 2 ) ;
 
@@ -1313,12 +1562,20 @@ namespace RINGMesh {
                         if( name == "Universe" ) {
                             set_universe( region_boundaries ) ;
                         } else {
-                            create_region( name, region_boundaries ) ;
+                            // Create the regions and set its boundaries 
+                            bme_t region_id = create_element( BME::REGION ) ;
+                            set_element_name( region_id, name ) ;
+                            for( index_t i = 0; i < region_boundaries.size(); ++i ) {
+                                add_element_boundary( region_id,
+                                    bme_t( BME::SURFACE, region_boundaries[ i ].first ),
+                                    region_boundaries[ i ].second ) ;
+                            }
                         }
                     } else if( in.field_matches( 0, "LAYER" ) ) {
-                        // 4. Build the volumetric layers from their name and
-                        // the ids of the regions they contain
-                        BME::bme_t layer_id = create_layer( in.field( 1 ) ) ;
+                        /// 1.4 Build the volumetric layers from their name and
+                        /// the ids of the regions they contain
+                        bme_t layer_id = create_element( BME::LAYER ) ;
+                        set_element_name( layer_id, in.field( 1 ) ) ;
                         bool end_layer = false ;
                         while( !end_layer ) {
                             in.get_line() ;
@@ -1332,7 +1589,7 @@ namespace RINGMesh {
                                     region_id -= nb_tface + 1 ; // Remove Universe region
                                     // Correction because ids begin at 1 in the file
                                     add_child( layer_id,
-                                        BME::bme_t( BME::REGION, region_id - 1 ) ) ;
+                                        bme_t( BME::REGION, region_id - 1 ) ) ;
                                 }
                             }
                         }
@@ -1359,7 +1616,7 @@ namespace RINGMesh {
                         if( tsurf_count > 0 ) {
                             // End the last TFace - Surface of this TSurf
                             set_surface_geometry(
-                                BME::bme_t( BME::SURFACE, tface_count - 1 ),
+                                bme_t( BME::SURFACE, tface_count - 1 ),
                                 std::vector< vec3 >(
                                     tsurf_vertices.begin() +
                                     tface_vertex_start.back(),
@@ -1385,7 +1642,7 @@ namespace RINGMesh {
                         if( tface_vertex_start.size() > 0 ) {
                             // End the previous TFace - Surface  (copy from line 1180)
                             set_surface_geometry(
-                                BME::bme_t( BME::SURFACE, tface_count - 1),
+                                bme_t( BME::SURFACE, tface_count - 1),
                                 std::vector< vec3 >(
                                     tsurf_vertices.begin() +
                                     tface_vertex_start.back(),
@@ -1408,7 +1665,7 @@ namespace RINGMesh {
                         tface_count++ ;
                     }
 
-                    // 4. Read the surface vertices and facets (only triangles in Gocad Model3d files)
+                    /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
                     else if( in.field_matches( 0,
                             "VRTX" ) || in.field_matches( 0, "PVRTX" ) )
                     {
@@ -1433,23 +1690,24 @@ namespace RINGMesh {
                         tface_facets_ptr.push_back( tface_facets.size() ) ;
                     }
 
-                    // 5. Build the corners from their position and the surface parts
+                    // 2.2 Build the corners from their position and the surface parts
                     //    containing them
                     else if( in.field_matches( 0, "BSTONE" ) ) {
                         index_t v_id = in.field_as_uint( 1 ) - 1 ;
                         if( !find_corner(tsurf_vertices[v_id]).is_defined() )
                         {
-                            create_corner( tsurf_vertices[ v_id ] ) ;
+                            // Create the corner
+                            set_corner( create_element( BME::CORNER ), tsurf_vertices[ v_id ] ) ;
                         }
                     }
 
-                    /// 6. Read the Border information and store it
+                    /// 2.3 Read the Border information and store it
                     else if( in.field_matches( 0, "BORDER" ) ) {
                         index_t p1 = in.field_as_uint( 2 ) - 1 ;
                         index_t p2 = in.field_as_uint( 3 ) - 1 ;
 
                         // Get the global corner id
-                        BME::bme_t corner_id =
+                        bme_t corner_id =
                         find_corner( tsurf_vertices[ p1 ] ) ;
                         ringmesh_assert( corner_id.is_defined() ) ;
 
@@ -1489,7 +1747,7 @@ namespace RINGMesh {
         // I agree that we do not need to compute the BoundaryModelVertices here
         // But perhaps the computation of Lines would be faster and safer - Jeanne
 
-        /// 7. Build the Lines
+        /// 3. Build the Lines
         {
             std::vector< vec3 > line_vertices ;
             for( index_t i = 0; i < borders_to_build.size(); ++i ) {
@@ -1499,19 +1757,19 @@ namespace RINGMesh {
                 // of vertices on the border
                 const Surface& S = model_.surface( b.part_id_ ) ;
 
-                BME::bme_t end_corner_id = determine_line_vertices( S, b.p0_, b.p1_,
+                bme_t end_corner_id = determine_line_vertices( S, b.p0_, b.p1_,
                     line_vertices ) ;
 
                 // 2 - Check if this border already exists
-                BME::bme_t line_id = find_or_create_line( line_vertices ) ;
+                bme_t line_id = find_or_create_line( *this, line_vertices ) ;
 
                 // Add the surface in which this line is
                 add_element_in_boundary( line_id,
-                    BME::bme_t( BME::SURFACE, b.part_id_ ) ) ;
+                    bme_t( BME::SURFACE, b.part_id_ ) ) ;
             }
         }
 
-        /// 8. Build the Contacts
+        /// 4. Build the Contacts
         build_contacts() ;
 
         // Modify in the Region the side of the Surface for which the key facet
@@ -1528,18 +1786,16 @@ namespace RINGMesh {
                 }
             }
         }
-
-        // Finish up the model - CRASH if this failed
-        if( !end_model() ) {
-            std::cout << "ERROR : Invalid model " << std::endl ;
-        }
+        
+        /// 5. Fill missing information and check model validity
+        bool valid_model = end_model() ;
 
         time( &end_load ) ;
-        // We do not care of loading time in debug mode .... Jeanne
-#ifdef RINGMESH_DEBUG 
-        std::cout << "Info" << " Boundary model loading time"
+        // Output of loading time only in debug mode has no meaning (JP)
+        GEO::Logger::out("I/O") << " Model loading time "
             << difftime( end_load, start_load ) << " sec" << std::endl ;
-#endif
+        
+        return valid_model ;
     }
 
     /*!
@@ -1642,7 +1898,7 @@ namespace RINGMesh {
      * @param[out] border_vertex_model_vertices Coordinates of the vertices on the Line (emptied and filled again)
      * @return Index of the Corner at which the Line ends
      */
-    BME::bme_t BoundaryModelBuilderGocad::determine_line_vertices(
+    bme_t BoundaryModelBuilderGocad::determine_line_vertices(
         const Surface& S,
         index_t id0,
         index_t id1,
@@ -1662,7 +1918,7 @@ namespace RINGMesh {
         border_vertex_model_vertices.push_back( p0 ) ;
         border_vertex_model_vertices.push_back( p1 ) ;
 
-        BME::bme_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
+        bme_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
         while( !p1_corner.is_defined() ) {
             index_t next_f = NO_ID ;
             index_t id1_in_next = NO_ID ;
@@ -1703,7 +1959,7 @@ namespace RINGMesh {
      * @param[out] border_vertex_model_ids Indices of vertices on the Line (resized at 0 at the beginning)
      * @return Index of the Corner at which the Line ends
      */
-    BME::bme_t BoundaryModelBuilderGocad::determine_line_vertices(
+    bme_t BoundaryModelBuilderGocad::determine_line_vertices(
         const Surface& S,
         index_t id0,
         index_t id1,
@@ -1724,7 +1980,7 @@ namespace RINGMesh {
         border_vertex_model_ids.push_back( p0 ) ;
         border_vertex_model_ids.push_back( p1 ) ;
 
-        BME::bme_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
+        bme_t p1_corner = BoundaryModelBuilder::find_corner( p1 ) ;
         while( !p1_corner.is_defined() ) {
             index_t next_f = NO_ID ;
             index_t id1_in_next = NO_ID ;
@@ -1760,17 +2016,39 @@ namespace RINGMesh {
      */
     void BoundaryModelBuilderGocad::build_contacts()
     {
+        std::vector< std::set< bme_t > > interfaces ;
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
-            // The surface part in whose boundary is the part
-            std::set< index_t > interfaces ;
-            for( index_t j = 0; j < model_.line( i ).nb_in_boundary(); ++j ) {
-                index_t sp_id = model_.line( i ).in_boundary_id( j ).index ;
-                const BoundaryModelElement& p = model_.surface( sp_id ).parent() ;
-                interfaces.insert( p.bme_id().index ) ;
+            const Line& L = model_.line( i ) ;
+            std::set< bme_t > cur_interfaces ;
+            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
+                cur_interfaces.insert( model_.element( 
+                    L.in_boundary_id(j) ).parent().bme_id() ) ;
+            }            
+            bme_t contact_id ;
+            for( index_t j = 0; j < interfaces.size(); ++j ) {
+                if( cur_interfaces.size() == interfaces[j].size() && 
+                    std::equal(cur_interfaces.begin(), 
+                      cur_interfaces.end(), interfaces[j].begin() )
+                   ) {
+                    contact_id = bme_t( BME::CONTACT, j ) ;
+                    break ;
+                }
             }
-            std::vector< index_t > toto( interfaces.begin(), interfaces.end() ) ;
-            BME::bme_t contact_id = find_or_create_contact( toto ) ;
-            add_child( contact_id, BME::bme_t( BME::LINE, i ) ) ;
+            if( !contact_id.is_defined() ) {
+                contact_id = create_element( BME::CONTACT ) ;
+                ringmesh_debug_assert( contact_id.index == interfaces.size() ) ;
+                interfaces.push_back( cur_interfaces ) ;
+                // Create a name for this contact
+                std::string name = "contact_" ;
+                for( std::set< bme_t >::const_iterator it( cur_interfaces.begin() );
+                     it != cur_interfaces.end(); ++it 
+                    ) {
+                    name += model_.element( *it ).name() ;
+                    name += "_" ;
+                }
+                set_element_name( contact_id, name ) ;
+            }
+            add_child( contact_id, bme_t( BME::LINE, i ) ) ;
         }
     }
 
@@ -1790,12 +2068,12 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2 )
     {
-        BME::bme_t parent = find_interface( interface_name ) ;
+        bme_t parent = find_interface( model_, interface_name ) ;
         if( interface_name != "" ) {
             ringmesh_assert( parent.is_defined() ) ;
         }
 
-        BME::bme_t id = create_element( BME::SURFACE ) ;
+        bme_t id = create_element( BME::SURFACE ) ;
         set_parent( id, parent ) ;
         set_element_geol_feature( parent, BME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
@@ -1816,7 +2094,6 @@ namespace RINGMesh {
                         set_model_name( in.field( 1 ) ) ;
                     }
                 }
-
                 // Number of elements of a given type
                 else if( match_nb_elements( in.field( 0 ) ) != BME::NO_TYPE ) {
                     // Allocate the space
@@ -1829,44 +2106,43 @@ namespace RINGMesh {
                 // High-level elements
                 else if( match_high_level_type( in.field( 0 ) ) ) {
                     // Read this element
-                    // First line id - name - geol_feature
+                    // First line : type - id - name - geol_feature
                     if( in.nb_fields() < 4 ) {
-                        std::cout << "I/O Error File line " << in.line_number()
+                        GEO::Logger::err("I/O") << "Invalid line: " << in.line_number()
+                            << "4 fields are expected, the type, id, name, and geological feature"
                             << std::endl ;
                         return false ;
                     }
                     BME::TYPE t = match_type( in.field( 0 ) ) ;
                     index_t id = in.field_as_uint( 1 ) ;
-                    BME::bme_t element( t, id ) ;
+                    bme_t element( t, id ) ;
                     set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
                     set_element_geol_feature( element,
                         BME::determine_geological_type( in.field( 3 ) ) ) ;
-
-                    // Second line - indices of its children
+                    // Second line : indices of its children
                     in.get_line() ;
                     in.get_fields() ;
                     for( index_t c = 0; c < in.nb_fields(); c++ ) {
                         add_child( element,
-                            BME::bme_t( BME::child_type( t ),
+                            bme_t( BME::child_type( t ),
                                 in.field_as_uint( c ) ) ) ;
                     }
                 }
-
                 // Regions
                 else if( match_type( in.field( 0 ) ) == BME::REGION ) {
-                    // First line id - name
+                    // First line : type - id - name
                     if( in.nb_fields() < 3 ) {
-                        std::cout << "I/O Error File line " << in.line_number()
-                            << std::endl ;
+                        GEO::Logger::err( "I/O" ) << "Invalid line: " << in.line_number()
+                            << "3 fields are expected to describe a region: REGION, id, and name"
+                            << std::endl ; 
                         return false ;
                     }
                     index_t id = in.field_as_uint( 1 ) ;
-                    BME::bme_t element( BME::REGION, id ) ;
+                    bme_t element( BME::REGION, id ) ;
                     set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
-
-                    // Second line - signed indices of boundaries
+                    // Second line : signed indices of boundaries
                     in.get_line() ;
                     in.get_fields() ;
                     for( index_t c = 0; c < in.nb_fields(); c++ ) {
@@ -1877,7 +2153,7 @@ namespace RINGMesh {
                         index_t s ;
                         GEO::String::from_string( &in.field( c )[1], s ) ;
 
-                        add_element_boundary( element, BME::bme_t( BME::SURFACE, s ),
+                        add_element_boundary( element, bme_t( BME::SURFACE, s ),
                             side ) ;
                     }
                 }
@@ -1885,8 +2161,7 @@ namespace RINGMesh {
                 // Universe
                 else if( in.field_matches( 0, "UNIVERSE" ) ) {
                     std::vector< std::pair< index_t, bool > > b_universe ;
-
-                    // Second line - signed indices of boundaries
+                    // Second line: signed indices of boundaries
                     in.get_line() ;
                     in.get_fields() ;
                     for( index_t c = 0; c < in.nb_fields(); c++ ) {
@@ -1931,14 +2206,16 @@ namespace RINGMesh {
 
                 // Corners
                 else if( match_type( in.field( 0 ) ) == BME::CORNER ) {
-                    // One line id - vertex id
-                    if( in.nb_fields() < 3 ) {
-                        std::cout << "I/O Error File line " << in.line_number()
+                    // First line: CORNER - id - vertex id
+                    if( in.nb_fields() < 5 ) {
+                        GEO::Logger::err( "I/O" ) << "Invalid line: " << in.line_number()
+                            << " 5 fields are expected to describe a corner: "
+                            << " CORNER, index, and X, Y, Z coordinates "
                             << std::endl ;
                         return false ;
                     }
                     index_t id = in.field_as_uint( 1 ) ;
-                    BME::bme_t element( BME::CORNER, id ) ;
+                    bme_t element( BME::CORNER, id ) ;
                     set_element_index( element ) ;
                     vec3 point( read_double( in, 2 ), read_double( in, 3 ),
                         read_double( in, 4 ) ) ;
@@ -1948,11 +2225,11 @@ namespace RINGMesh {
                 // Lines
                 else if( match_type( in.field( 0 ) ) == BME::LINE ) {
                     index_t id = in.field_as_uint( 1 ) ;
-                    BME::bme_t cur_element( BME::LINE, id ) ;
+                    bme_t cur_element( BME::LINE, id ) ;
                     Line& L = dynamic_cast< Line& >( element( cur_element ) ) ;
                     L.set_id( id ) ;
 
-                    // Following information - vertices of the lines
+                    // Following information: vertices of the line
                     in.get_line() ;
                     in.get_fields() ;
                     ringmesh_assert( in.field_matches( 0, "LINE_VERTICES" ) ) ;
@@ -2022,14 +2299,14 @@ namespace RINGMesh {
                     ringmesh_assert( in.field_matches( 0, "IN_BOUNDARY" ) ) ;
                     for( index_t b = 1; b < in.nb_fields(); b++ ) {
                         L.add_in_boundary(
-                            BME::bme_t( BME::SURFACE, in.field_as_uint( b ) ) ) ;
+                            bme_t( BME::SURFACE, in.field_as_uint( b ) ) ) ;
                     }
                 }
 
                 // Surfaces
                 else if( match_type( in.field( 0 ) ) == BME::SURFACE ) {
                     index_t id = in.field_as_uint( 1 ) ;
-                    BME::bme_t cur_element( BME::SURFACE, id ) ;
+                    bme_t cur_element( BME::SURFACE, id ) ;
                     Surface& S = dynamic_cast< Surface& >( element( cur_element ) ) ;
                     S.set_id( id ) ;
 
@@ -2148,77 +2425,81 @@ namespace RINGMesh {
         return BME::NO_TYPE ;
     }
 
-    /*!
-     * @brief Utility structure to build a BoundaryModel knowing only its surface
-     * @details Store the vertices of a triangle that is on the boundary of a surface
-     */
+    /*
+    * @brief Utility structure to build a BoundaryModel knowing only its surface
+    * @details Store the vertices of a triangle that is on the boundary of a surface
+    */
     struct BorderTriangle {
         /*!
-         * @brief Constructor
-         * @param s Index of the surface
-         * @param f Index of the facet containing the 3 vertices
-         * @param v0, v1, v2 Indices in the BoundaryModel of the vertices defining the triangle
-         *           the edge v0 - v1 is the one on the boundary
-         */
-        BorderTriangle( index_t s, index_t f, index_t v0, index_t v1, index_t v2 )
-            : v0_( v0 ), v1_( v1 ), v2_( v2 ), s_( s ), f_( f )
-        {
-        }
+        * @brief Constructor
+        * @param s Index of the surface
+        * @param f Index of the facet containing the 3 vertices
+        * @param vi Indices in the BoundaryModel of the vertices defining the triangle
+        *           the edge v0 - v1 is the one on the boundary
+        */
+        BorderTriangle(
+            index_t s,
+            index_t f,
+            index_t v0,
+            index_t v1,
+            index_t v2 )
+            : s_( s ), f_( f ), v0_( v0 ), v1_( v1 ), v2_( v2 )
+        {}
 
         bool operator<( const BorderTriangle& rhs ) const
         {
-            if( s_ != rhs.s_ ) {
-                return s_ < rhs.s_ ;
-            }
-            if( f_ != rhs.f_ ) {
-                return f_ < rhs.f_ ;
-            }
             if( std::min( v0_, v1_ ) != std::min( rhs.v0_, rhs.v1_ ) ) {
                 return std::min( v0_, v1_ ) < std::min( rhs.v0_, rhs.v1_ ) ;
             }
             if( std::max( v0_, v1_ ) != std::max( rhs.v0_, rhs.v1_ ) ) {
                 return std::max( v0_, v1_ ) < std::max( rhs.v0_, rhs.v1_ ) ;
             }
+            if( s_ != rhs.s_ ) {
+                return s_ < rhs.s_ ;
+            }
+            if( f_ != rhs.f_ ) {
+                return f_ < rhs.f_ ;
+            }
             return rhs.v2_ == index_t( -1 ) ? false : v2_ < rhs.v2_ ;
         }
 
         bool same_edge( const BorderTriangle& rhs ) const
         {
-            return std::min( v0_, v1_ ) == std::min( rhs.v0_, rhs.v1_ )
-                && std::max( v0_, v1_ ) == std::max( rhs.v0_, rhs.v1_ ) ;
+            return std::min( v0_, v1_ ) == std::min( rhs.v0_, rhs.v1_ ) &&
+                std::max( v0_, v1_ ) == std::max( rhs.v0_, rhs.v1_ ) ;
         }
 
-        /// Indices of the points in the surface. Triangle has the Surface orientation
+        /// Indices of the points in the model. Triangle has the Surface orientation
         /// The edge v0v1 is, in surface s_, on the border.
         index_t v0_ ;
         index_t v1_ ;
         index_t v2_ ;
 
-        /// Index of the model surface
+        // Index of the model surface
         index_t s_ ;
 
-        /// Index of the facet in the surface
+        // Index of the facet in the surface
         index_t f_ ;
     } ;
 
     /*!
-     * @brief Get the BorderTriangle corresponding to the next edge on border
-     * in the considered Surface
-     */
+    * @brief Get the BorderTriangle corresponding to the next edge on border
+    * in the considered Surface
+    */
     index_t get_next_border_triangle(
         const BoundaryModel& M,
         const std::vector< BorderTriangle >& BT,
         index_t from,
         bool backward = false )
     {
-        const BorderTriangle& in = BT[from] ;
+        const BorderTriangle& in = BT[ from ] ;
         const Surface& S = M.surface( in.s_ ) ;
         index_t NO_ID( -1 ) ;
 
         // Get the next edge on border in the Surface
         index_t f = in.f_ ;
-        index_t f_v0 = in.v0_ ;
-        index_t f_v1 = in.v1_ ;
+        index_t f_v0 = S.facet_id_from_model( f, in.v0_ ) ;
+        index_t f_v1 = S.facet_id_from_model( f, in.v1_ ) ;
         ringmesh_assert( f_v0 != NO_ID && f_v1 != NO_ID ) ;
 
         index_t next_f = NO_ID ;
@@ -2226,62 +2507,65 @@ namespace RINGMesh {
         index_t next_f_v1 = NO_ID ;
 
         if( !backward ) {
-            S.next_on_border( f, f_v0, f_v1, next_f, next_f_v0, next_f_v1 ) ;
+            S.next_on_border( f, f_v0, f_v1, next_f, next_f_v0,
+                              next_f_v1 ) ;
         } else {
-            S.next_on_border( f, f_v1, f_v0, next_f, next_f_v0, next_f_v1 ) ;
+            S.next_on_border( f, f_v1, f_v0, next_f, next_f_v0,
+                              next_f_v1 ) ;
         }
 
         // Find the BorderTriangle that is correspond to this
         // It must exist and there is only one
-        BorderTriangle bait( in.s_, next_f, S.surf_vertex_id( next_f, next_f_v0 ),
-            S.surf_vertex_id( next_f, next_f_v1 ), NO_ID ) ;
+        BorderTriangle bait( in.s_, next_f, S.model_vertex_id( next_f, next_f_v0 ),
+                             S.model_vertex_id( next_f, next_f_v1 ), NO_ID ) ;
 
         // lower_bound returns an iterator pointing to the first element in the range [first,last)
         // which does not compare less than the given val.
         // See operator< on BorderTriangle
-        index_t result = narrow_cast< index_t >(
-            std::lower_bound( BT.begin(), BT.end(), bait ) - BT.begin() ) ;
+        index_t result = narrow_cast< index_t >( std::lower_bound( BT.begin(), BT.end(), bait ) - BT.begin() );
 
         ringmesh_assert( result < BT.size() ) ;
         return result ;
     }
 
+
     /*!
-     * @brief Mark as visited all BorderTriangle which first edge is the same than
-     * the first edge of i.
-     *
-     * @param[in] border_triangles Information on triangles MUST be sorted so that
-     *            BorderTriangle having the same boundary edge are adjacent
-     * @param[in] i Index of reference BorderTriangle in border_triangles 
-     * @param[out] visited Stores which of the border_triangles have a matching edge
-     */
+    * @brief Mark as visited all BorderTriangle which first edge is the same than
+    * the first edge of i.
+    *
+    * @param[in] border_triangles Information on triangles MUST be sorted so that
+    *            BorderTriangle having the same boundary edge are adjacent
+    *
+    */
     void visit_border_triangle_on_same_edge(
         const std::vector< BorderTriangle >& border_triangles,
         index_t i,
         std::vector< bool >& visited )
     {
         index_t j = i ;
-        while( j < border_triangles.size()
-            && border_triangles[i].same_edge( border_triangles[j] ) ) {
-            visited[j] = true ;
+        while( j < border_triangles.size() &&
+               border_triangles[ i ].same_edge( border_triangles[ j ] ) ) {
+            visited[ j ] = true ;
             j++ ;
         }
         signed_index_t k = i - 1 ;
-        while( k > -1 && border_triangles[i].same_edge( border_triangles[k] ) ) {
-            visited[k] = true ;
+        while( k > -1 &&
+               border_triangles[ i ].same_edge( border_triangles[ k ] ) ) {
+            visited[ k ] = true ;
             k-- ;
         }
     }
 
+
     /*!
-     * @brief Get the indices of the Surface adjacent to the first edge of a BorderTriangle
-     *
-     * @param[in] border_triangles Information on triangles MUST be sorted so that
-     *          BorderTriangle having the same boundary edge are adjacent
-     * @param[in] i Index of the BorderTriangle
-     * @param[out] adjacent_surfaces Indices of the Surface stored by the BorderTriangle sharing
-     *             the first edge of i
-     */
+    * @brief Get the indices of the Surface adjacent to the first edge of a BorderTriangle
+    *
+    * @param[in] border_triangles Information on triangles MUST be sorted so that
+    *          BorderTriangle having the same boundary edge are adjacent
+    * @param[in] i Index of the BorderTriangle
+    * @param[out] adjacent_surfaces Indices of the Surface stored by the BorderTriangle sharing
+    *             the first edge of i
+    */
     void get_adjacent_surfaces(
         const std::vector< BorderTriangle >& border_triangles,
         index_t i,
@@ -2290,53 +2574,57 @@ namespace RINGMesh {
         adjacent_surfaces.resize( 0 ) ;
 
         index_t j = i ;
-        while( j < border_triangles.size()
-            && border_triangles[i].same_edge( border_triangles[j] ) ) {
-            adjacent_surfaces.push_back( border_triangles[j].s_ ) ;
+        while( j < border_triangles.size() &&
+               border_triangles[ i ].same_edge( border_triangles[ j ] ) ) {
+            adjacent_surfaces.push_back( border_triangles[ j ].s_ ) ;
             j++ ;
         }
 
         signed_index_t k = i - 1 ;
-        while( k > -1 && border_triangles[i].same_edge( border_triangles[k] ) ) {
-            adjacent_surfaces.push_back( border_triangles[k].s_ ) ;
+        while( k > -1 &&
+               border_triangles[ i ].same_edge( border_triangles[ k ] ) ) {
+            adjacent_surfaces.push_back( border_triangles[ k ].s_ ) ;
             k-- ;
         }
 
-        // In rare cases - the same surface can appear twice around a contact
-        // Make unique and sort the adjacent regions
+        // Sort the adjacent surfaces
         std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() ) ;
-        adjacent_surfaces.resize(
-            std::unique( adjacent_surfaces.begin(), adjacent_surfaces.end() )
-                - adjacent_surfaces.begin() ) ;
+
+        // When the surface appear twice (the line is an internal border)
+        // we keep both occurrence, otherwise this connectivity info is lost
     }
 
+
     /*!
-     * @brief From a BoundaryModel in which only Surface are defined, create
-     * corners, contacts and regions.
-     *
-     */
-    void BoundaryModelBuilderSurface::build_model()
+    * @brief From a BoundaryModel in which only Surface are defined, create
+    * corners, contacts and regions.
+    *
+    */
+    bool BoundaryModelBuilderSurface::build_model()
     {
-        ringmesh_assert( model_.nb_surfaces() > 0 ) ;
+        if( model_.nb_surfaces() == 0 ) {
+            GEO::Logger::err( "BoundaryModel" )
+                << "No surface to build the model " << std::endl ;
+            return false ;
+        }
 
-        /// 1. Make the storage of the model vertices unique
-        /// So now we can make index comparison to find colocated edges
-
-        // Force the computation of the model vertices to avoid troubles 
+        /// 1. Initialize model_ global vertices and backward information
         model_.vertices.nb_unique_vertices() ;
+        model_.vertices.bme_vertices( 0 ) ;
 
         /// 2.1 Get for all Surface, the triangles that have an edge
         /// on the boundary.
         std::vector< BorderTriangle > border_triangles ;
-        for( index_t s = 0; s < model_.nb_surfaces(); ++s ) {
-            const Surface& S = model_.surface( s ) ;
-            for( index_t f = 0; f < S.nb_cells(); ++f ) {
-                for( index_t v = 0; v < S.nb_vertices_in_facet( f ); ++v ) {
-                    if( S.is_on_border( f, v ) ) {
-                        border_triangles.push_back(
-                            BorderTriangle( s, f, S.model_vertex_id( f, v ),
-                                S.model_vertex_id( f, S.next_in_facet( f, v ) ),
-                                S.model_vertex_id( f, S.prev_in_facet( f, v ) ) ) ) ;
+        for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
+            const Surface& S = model_.surface( i ) ;
+            for( index_t j = 0; j < S.nb_cells(); ++j ) {
+                for( index_t v = 0; v < S.nb_vertices_in_facet( j ); ++v ) {
+                    if( S.is_on_border( j, v ) ) {
+                        border_triangles.push_back( BorderTriangle( i, j,
+                            S.model_vertex_id( j, v ),
+                            S.model_vertex_id( j, S.next_in_facet( j, v ) ),
+                            S.model_vertex_id( j, S.prev_in_facet( j, v ) )
+                            ) ) ;
                     }
                 }
             }
@@ -2351,9 +2639,9 @@ namespace RINGMesh {
         // The goal is to visit all BorderTriangle and propagate to get each Line vertices
         std::vector< bool > visited( border_triangles.size(), false ) ;
         for( index_t i = 0; i < border_triangles.size(); ++i ) {
-            if( !visited[i] ) {
+            if( !visited[ i ] ) {
                 // This is a new Line
-                std::vector< vec3 > vertices ;
+                std::vector< index_t > vertices ;
 
                 // Get the indices of the Surfaces around this Line
                 std::vector< index_t > adjacent ;
@@ -2365,59 +2653,49 @@ namespace RINGMesh {
                 // Gather information to sort triangles around the contact
                 regions_info.push_back( SortTriangleAroundEdge() ) ;
                 index_t j = i ;
-                while( j < border_triangles.size()
-                    && border_triangles[i].same_edge( border_triangles[j] ) ) {
-                    index_t cur_surface_id = border_triangles[j].s_ ;
-                    const Surface& cur_surface = model_.surface( cur_surface_id ) ;
-                    regions_info.back().add_triangle( cur_surface_id,
-                        cur_surface.vertex( border_triangles[j].v0_ ),
-                        cur_surface.vertex( border_triangles[j].v1_ ),
-                        cur_surface.vertex( border_triangles[j].v2_ ) ) ;
+                while( j < border_triangles.size() &&
+                       border_triangles[ i ].same_edge( border_triangles[ j ] ) ) {
+                    regions_info.back().add_triangle(
+                        border_triangles[ j ].s_,
+                        model_.vertices.unique_vertex( border_triangles[ j ].v0_ ),
+                        model_.vertices.unique_vertex( border_triangles[ j ].v1_ ),
+                        model_.vertices.unique_vertex( border_triangles[ j ].v2_ )
+                        ) ;
                     j++ ;
                 }
 
-                // Add vertices to the Lin
-                index_t surface_id = border_triangles[i].s_ ;
-                const Surface& surface = model_.surface( surface_id ) ;
-                vertices.push_back( surface.vertex( border_triangles[i].v0_ ) ) ;
-                vertices.push_back( surface.vertex( border_triangles[i].v1_ ) ) ;
+                // Add vertices to the Line
+                vertices.push_back( border_triangles[ i ].v0_ ) ;
+                vertices.push_back( border_triangles[ i ].v1_ ) ;
 
                 // Build the contact propating forward on the border of the Surface
                 // While the adjacent surfaces are the same the vertices the next edge on the
                 // boundary of the Surface are added
                 bool same_surfaces = true ;
-                index_t next_i = get_next_border_triangle( model_, border_triangles,
-                    i ) ;
+                index_t next_i = get_next_border_triangle( 
+                    model_, border_triangles, i ) ;
                 do {
                     ringmesh_assert( next_i != NO_ID ) ;
-                    if( !visited[next_i] ) {
-                        index_t cur_surface_id = border_triangles[next_i].s_ ;
-                        const Surface& cur_surface = model_.surface(
-                            cur_surface_id ) ;
+                    if( !visited[ next_i ] ) {
                         std::vector< index_t > adjacent_next ;
                         get_adjacent_surfaces( border_triangles, next_i,
-                            adjacent_next ) ;
+                                               adjacent_next ) ;
 
-                        if( adjacent.size() == adjacent_next.size()
-                            && std::equal( adjacent.begin(), adjacent.end(),
-                                adjacent_next.begin() ) ) {
-                            visit_border_triangle_on_same_edge( border_triangles,
-                                next_i, visited ) ;
+                        if( adjacent.size() == adjacent_next.size() &&
+                            std::equal( adjacent.begin(), adjacent.end(),
+                            adjacent_next.begin() )
+                            ) {
+                            visit_border_triangle_on_same_edge(
+                                border_triangles, next_i, visited ) ;
 
                             // Add the next vertex
-                            if( cur_surface.vertex( border_triangles[next_i].v0_ )
-                                == vertices.back() ) {
-                                vertices.push_back(
-                                    cur_surface.vertex(
-                                        border_triangles[next_i].v1_ ) ) ;
+                            if( border_triangles[ next_i ].v0_ ==
+                                vertices.back() ) {
+                                vertices.push_back( border_triangles[ next_i ].v1_ ) ;
                             } else {
                                 ringmesh_assert(
-                                    cur_surface.vertex(
-                                        border_triangles[next_i].v1_ )
-                                        == vertices.back() ) ;
-                                vertices.push_back(
-                                    cur_surface.vertex(
-                                        border_triangles[next_i].v0_ ) ) ;
+                                    border_triangles[ next_i ].v1_ == vertices.back() ) ;
+                                vertices.push_back( border_triangles[ next_i ].v0_ ) ;
                             }
                         } else {
                             same_surfaces = false ;
@@ -2426,45 +2704,42 @@ namespace RINGMesh {
                         same_surfaces = false ;
                     }
                     next_i = get_next_border_triangle( model_, border_triangles,
-                        next_i ) ;
+                                                       next_i ) ;
                 } while( same_surfaces && next_i != i ) ;
 
                 if( next_i != i ) {
                     // Propagate backward to reach the other extremity
                     same_surfaces = true ;
-                    index_t prev_i = get_next_border_triangle( model_,
-                        border_triangles, i, true ) ;
+                    index_t prev_i =
+                        get_next_border_triangle( model_, border_triangles, i,
+                        true ) ;
                     do {
                         ringmesh_assert( prev_i != NO_ID && prev_i != i ) ;
-                        if( !visited[prev_i] ) {
-                            index_t cur_surface_id = border_triangles[prev_i].s_ ;
-                            const Surface& cur_surface = model_.surface(
-                                cur_surface_id ) ;
+                        if( !visited[ prev_i ] ) {
                             std::vector< index_t > adjacent_prev ;
                             get_adjacent_surfaces( border_triangles, prev_i,
-                                adjacent_prev ) ;
+                                                   adjacent_prev ) ;
 
-                            if( adjacent.size() == adjacent_prev.size()
-                                && std::equal( adjacent.begin(), adjacent.end(),
-                                    adjacent_prev.begin() ) ) {
-                                visit_border_triangle_on_same_edge( border_triangles,
-                                    prev_i, visited ) ;
+                            if( adjacent.size() == adjacent_prev.size() &&
+                                std::equal( adjacent.begin(), adjacent.end(),
+                                adjacent_prev.begin() )
+                                ) {
+                                visit_border_triangle_on_same_edge(
+                                    border_triangles, prev_i, visited ) ;
 
                                 // Fill the Line vertices
-                                if( cur_surface.vertex(
-                                    border_triangles[prev_i].v0_ )
-                                    == vertices.front() ) {
-                                    vertices.insert( vertices.begin(),
-                                        cur_surface.vertex(
-                                            border_triangles[prev_i].v1_ ) ) ;
+                                if( border_triangles[ prev_i ].v0_ ==
+                                    vertices.front() ) {
+                                    vertices.insert(
+                                        vertices.begin(),
+                                        border_triangles[ prev_i ].v1_ ) ;
                                 } else {
                                     ringmesh_assert(
-                                        cur_surface.vertex(
-                                            border_triangles[prev_i].v1_ )
-                                            == vertices.front() ) ;
-                                    vertices.insert( vertices.begin(),
-                                        cur_surface.vertex(
-                                            border_triangles[prev_i].v0_ ) ) ;
+                                        border_triangles[ prev_i ].v1_ ==
+                                        vertices.front() ) ;
+                                    vertices.insert(
+                                        vertices.begin(),
+                                        border_triangles[ prev_i ].v0_ ) ;
                                 }
                             } else {
                                 same_surfaces = false ;
@@ -2472,45 +2747,77 @@ namespace RINGMesh {
                         } else {
                             same_surfaces = false ;
                         }
-                        prev_i = get_next_border_triangle( model_, border_triangles,
-                            prev_i, true ) ;
+                        prev_i =
+                            get_next_border_triangle( model_, border_triangles,
+                            prev_i,
+                            true ) ;
                     } while( same_surfaces ) ;
                 }
-
-                ringmesh_assert( vertices.size() > 1 )
+                ringmesh_assert( vertices.size() > 1 ) ;
 
                 // At last create the Line
-                BME::bme_t created = create_line( vertices ) ;
+                bme_t l_id = create_element( BME::LINE ) ;
+                set_line( l_id, vertices ) ;
                 for( index_t j = 0; j < adjacent.size(); ++j ) {
-                    add_element_in_boundary( created,
-                        BME::bme_t( BME::SURFACE, adjacent[j] ) ) ;
+                    add_element_in_boundary(
+                        l_id, bme_t( BME::SURFACE, adjacent[ j ] ) ) ;
                 }
+
+                // Find or create the corners at line extremities
+                bme_t c0 = find_corner( vertices.front() ) ;
+                if( !c0.is_defined() ) {
+                    c0 = create_element( BME::CORNER ) ;
+                    set_corner( c0, vertices.front() ) ;
+                }
+                add_element_boundary( l_id, c0 ) ;
+                bme_t c1 = find_corner( vertices.back() ) ;
+                if( !c1.is_defined() ) {
+                    c1 = create_element( BME::CORNER ) ;
+                    set_corner( c1, vertices.back() ) ;
+                }
+                add_element_boundary( l_id, c1 ) ;              
             }
         }
 
         /// 4. Build the regions
 
         // Complete boundary information for surfaces
-        // We need it to compute volumetric regions
+        // Needed to compute volumetric regions
         fill_elements_boundaries( BME::SURFACE ) ;
 
         /// 4.1 Sort surfaces around the contacts
         for( index_t i = 0; i < regions_info.size(); ++i ) {
-            regions_info[i].sort() ;
+            regions_info[ i ].sort() ;
         }
 
-        if( model_.nb_surfaces() == 1 ) {
-            /// \todo Build a Region when a BoundaryModel has only one Surface
-            // Check that this surface is closed and define an interior
-            // and exterior (universe) regions
-            ringmesh_assert_not_reached;
+        if( model_.nb_surfaces() == 1 ) {        
+            if( model_.nb_lines() != 0 ) {
+                GEO::Logger::err( "BoundaryModel" )
+                    << "The unique surface provided to build the model has boundaries " 
+                    << std::endl ;
+                return false ;
+            }
+            else {
+                /// If there is only one surface, its inside is set to be 
+                /// the + side. No check done
+                bool inside = true ;
+                // Create the region - set the surface on its boundaries
+                bme_t cur_region_id = create_element( BME::REGION ) ;
+                add_element_boundary( cur_region_id, bme_t( BME::SURFACE, 0 ),
+                                     inside ) ;
+
+                // Create the universe region
+                std::vector< std::pair< index_t, bool > > univ_boundaries ;
+                univ_boundaries.push_back( std::pair<index_t, bool>( 0, !inside ) ) ;
+                set_universe( univ_boundaries ) ;                
+            }
         } else {
             // Each side of each Surface is in one Region( +side is first )
             std::vector< index_t > surf_2_region( 2 * model_.nb_surfaces(), NO_ID ) ;
 
             // Start with the first Surface on its + side
             std::stack< std::pair< index_t, bool > > S ;
-            S.push( std::pair< index_t, bool > ( 0, true ) ) ;
+            S.push( std::pair< index_t, bool >( 0, true ) ) ;
 
             while( !S.empty() ) {
                 std::pair< index_t, bool > cur = S.top() ;
@@ -2518,10 +2825,12 @@ namespace RINGMesh {
 
                 // This side is already assigned
                 if( surf_2_region[ cur.second == true ? 2 * cur.first : 2 *
-                    cur.first + 1 ] != NO_ID ) {continue ;}
+                    cur.first + 1 ] != NO_ID ) {
+                    continue ;
+                }
 
                 // Create a new region
-                BME::bme_t cur_region_id = create_region() ;
+                bme_t cur_region_id = create_element( BME::REGION ) ;
 
                 std::stack< std::pair< index_t, bool > > SR ;
                 SR.push( cur ) ;
@@ -2531,77 +2840,76 @@ namespace RINGMesh {
                     index_t s_id = s.second == true ? 2 * s.first : 2 * s.first + 1 ;
 
                     // This side is already assigned
-                    if( surf_2_region[ s_id ] != NO_ID ) {continue ;}
+                    if( surf_2_region[ s_id ] != NO_ID ) {
+                        continue ;
+                    }
 
                     // Add the surface to the current region
-                    add_element_boundary( cur_region_id, BME::bme_t( BME::SURFACE, s.first ),
-                        s.second ) ;
+                    add_element_boundary( cur_region_id, bme_t( BME::SURFACE, s.first ),
+                                          s.second ) ;
                     surf_2_region[ s_id ] = cur_region_id.index ;
 
                     // Check the other side of the surface and push it in S
                     index_t s_id_opp = !s.second == true ? 2 * s.first : 2 *
-                    s.first + 1 ;
+                        s.first + 1 ;
                     if( surf_2_region[ s_id_opp ] == NO_ID ) {
                         S.push( std::pair< index_t, bool >( s.first, !s.second ) ) ;
                     }
 
                     // For each contact, push the next oriented surface that is in the same region
                     const BoundaryModelElement& surface = model_.surface( s.first ) ;
-                    for( index_t i = 0 ; i < surface.nb_boundaries() ; ++i ) {
+                    for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
                         const std::pair< index_t, bool >& n =
-                        regions_info[ surface.boundary_id( i ).index ].next( s ) ;
+                            regions_info[ surface.boundary_id( i ).index ].next( s ) ;
                         index_t n_id = n.second == true ? 2 * n.first : 2 *
-                        n.first + 1 ;
+                            n.first + 1 ;
 
-                        if( surf_2_region[ n_id ] == NO_ID ) {SR.push( n ) ;}
+                        if( surf_2_region[ n_id ] == NO_ID ) {
+                            SR.push( n ) ;
+                        }
                     }
                 }
             }
 
             // Check if all the surfaces were visited
             // If not, this means that there are additionnal regions included in those built
-            /// \todo Implement the code to take into regions included in others (bubbles)
-            ringmesh_assert( std::count( surf_2_region.begin(), surf_2_region.end(),
-                    NO_ID ) == 0 ) ;
-        }
-
-        // We need to remove from the regions_ the one corresponding
-        // to the universe_, the one with the biggest volume
-        double max_volume = -1. ;
-        index_t universe_id = NO_ID ;
-        for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-            double cur_volume = BoundaryModelElementMeasure::size(
-                &model_.region( i ) ) ;
-            if( cur_volume > max_volume ) {
-                max_volume = cur_volume ;
-                universe_id = i ;
+            if( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID ) != 0 ) {
+                GEO::Logger::err( "BoundaryModel" )
+                    << "Small bubble regions were skipped at model building "
+                    << std::endl ;
+                // Or, most probably, we have a problem before
+                ringmesh_debug_assert( false ) ;
             }
-        }
-
-        const BoundaryModelElement& cur_region = model_.region( universe_id ) ;
-        std::vector< std::pair< index_t, bool > > univ_boundaries(
-            cur_region.nb_boundaries() ) ;
-        for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
-            univ_boundaries[i].first = cur_region.boundary( i ).bme_id().index ;
-            univ_boundaries[i].second = cur_region.side( i ) ;
-        }
-        set_universe( univ_boundaries ) ;
-
-        // Decrease by one the ids of the regions that are after the
-        // one converted to the universe
-        for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-            index_t cur_id = model_.region( i ).bme_id().index ;
-            if( i > universe_id ) {
-                element( BME::bme_t( BME::REGION, i ) ).set_id( cur_id - 1 ) ;
+         
+            // We need to remove from the regions_ the one corresponding
+            // to the universe_, the one with the biggest volume
+            double max_volume = -1. ;
+            index_t universe_id = NO_ID ;
+            for( index_t i = 0; i < model_.nb_regions(); ++i ) {
+                double cur_volume = BoundaryModelElementMeasure::size( &model_.region( i ) ) ;
+                if( cur_volume > max_volume ) {
+                    max_volume = cur_volume ;
+                    universe_id = i ;
+                }
             }
+
+            const BoundaryModelElement& cur_region = model_.region( universe_id ) ;
+            std::vector< std::pair< index_t, bool > > univ_boundaries(
+                cur_region.nb_boundaries() ) ;
+            for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
+                univ_boundaries[ i ].first = cur_region.boundary( i ).bme_id().index ;
+                univ_boundaries[ i ].second = cur_region.side( i ) ;
+            }
+            set_universe( univ_boundaries ) ;
+
+            // Erase that region
+            std::vector< bme_t > to_erase ;
+            to_erase.push_back( bme_t( BME::REGION, universe_id ) ) ;
+            remove_elements( to_erase ) ;
         }
 
-        // Remove the region converted to universe from the regions
-        erase_element( BME::bme_t( BME::REGION, universe_id ) ) ;
-
-        // We are not in trouble since the boundaries of surface are not yet set
-        // And we have no layer in the model
-
-        ringmesh_assert( end_model() ) ;
+        // Finish up the model and check its validity
+        return end_model() ;
     }
+
 } // namespace

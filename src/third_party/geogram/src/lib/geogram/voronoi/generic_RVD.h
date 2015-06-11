@@ -63,8 +63,9 @@
 /**
  * \file geogram/voronoi/generic_RVD.h
  * \brief Generic implementation of restricted Voronoi diagrams.
- * \note This file contains functions and classes used by the internal implementation
- *  of GEO::GenericVoronoiDiagram. They are not meant to be used directly by client 
+ * \note This file contains functions and classes used by the 
+ *  internal implementation of GEO::GenericVoronoiDiagram. 
+ *  They are not meant to be used directly by client 
  *  code.
  */
 
@@ -531,7 +532,9 @@ namespace GEOGen {
                     if(P.vertex(i).check_flag(ORIGINAL)) {
                         if(P.vertex(i).adjacent_facet() == -1) {
                             index_t j = P.next_vertex(i);
-                            const_cast<ACTION&> (do_it_)(v, P.vertex(i), P.vertex(j));
+                            const_cast<ACTION&> (do_it_)(
+                                v, P.vertex(i), P.vertex(j)
+                            );
                         }
                     }
                 }
@@ -733,7 +736,8 @@ namespace GEOGen {
                     // to tet on border.
 
                     Polyhedron::Corner c1(
-                        index_t(ct), index_t(C.find_triangle_vertex(index_t(ct), cv))
+                        index_t(ct),
+                        index_t(C.find_triangle_vertex(index_t(ct), cv))
                     );
 
                     // If required, ensure that two polygonal facets
@@ -755,7 +759,9 @@ namespace GEOGen {
                     do {
                         const Vertex& v2 = C.triangle_dual(c2.t);
                         const Vertex& v3 = C.triangle_dual(c3.t);
-                        const_cast<ACTION&> (do_it_)(v, v_adj, t, t_adj, v1, v2, v3);
+                        const_cast<ACTION&> (do_it_)(
+                            v, v_adj, t, t_adj, v1, v2, v3
+                        );
                         c2 = c3;
                         C.move_to_next_around_vertex(c3);
                     } while(c3 != c1);
@@ -838,7 +844,8 @@ namespace GEOGen {
          * \tparam ACTION the user action class. It needs to implement:
          *  operator()(index_t v, signed_index_t v_adj,
          *    index_t t, index_t t_adj,
-         *    const Vertex& v0, const Vertex& v1, const Vertex& v2, const Vertex& v3
+         *    const Vertex& v0, const Vertex& v1, 
+         *    const Vertex& v2, const Vertex& v3
          *  )
          *  where the parameters are as follows:
          *    - v is the index of the current Voronoi cell
@@ -943,7 +950,9 @@ namespace GEOGen {
                     do {
                         const Vertex& v2 = C.triangle_dual(c2.t);
                         const Vertex& v3 = C.triangle_dual(c3.t);
-                        const_cast<ACTION&> (do_it_)(v, v_adj, t, t_adj, * v0, v1, v2, v3);
+                        const_cast<ACTION&> (do_it_)(
+                            v, v_adj, t, t_adj, * v0, v1, v2, v3
+                        );
                         c2 = c3;
                         C.move_to_next_around_vertex(c3);
                     } while(c3 != c1);
@@ -1211,7 +1220,8 @@ namespace GEOGen {
          * \tparam ACTION needs to implement:
          *  operator()(index_t v, signed_index_t v_adj,
          *    index_t t, index_t t_adj,
-         *    const Vertex& v0, const Vertex& v1, const Vertex& v2, const Vertex& v3
+         *    const Vertex& v0, const Vertex& v1, 
+         *    const Vertex& v2, const Vertex& v3
          *  )
          *  where the parameters are as follows:
          *    - v is the index of the current Voronoi cell
@@ -1326,9 +1336,7 @@ namespace GEOGen {
             SeedStack adjacent_seeds;
             Polygon F;
             GEO::Attribute<double> vertex_weight;
-            if(mesh_->vertices.attributes().is_defined("weight")) {
-                vertex_weight.bind(mesh_->vertices.attributes(),"weight");
-            }
+            vertex_weight.bind_if_is_defined(mesh_->vertices.attributes(), "weight");
 
             // The algorithm propagates along both the facet-graph of
             // the surface and the 1-skeleton of the Delaunay triangulation,
@@ -1383,10 +1391,17 @@ namespace GEOGen {
                                     neigh_f < signed_index_t(facets_end_) &&
                                     neigh_f != signed_index_t(current_facet_)
                                 ) {
-                                    if(!facet_is_marked[index_t(neigh_f)-facets_begin_]) {
-                                        facet_is_marked[index_t(neigh_f)-facets_begin_] = true;
+                                    if(!facet_is_marked[
+                                           index_t(neigh_f)-facets_begin_
+                                    ]) {
+                                        facet_is_marked[
+                                            index_t(neigh_f)-facets_begin_
+                                        ] = true;
                                         adjacent_facets.push(
-                                            FacetSeed(index_t(neigh_f), current_seed_)
+                                            FacetSeed(
+                                                index_t(neigh_f),
+                                                current_seed_
+                                            )
                                         );
                                     }
                                 }
@@ -1468,6 +1483,9 @@ namespace GEOGen {
             TetSeedStack adjacent_tets;
             SeedStack adjacent_seeds;
             Polyhedron C(dimension());
+            GEO::Attribute<double> vertex_weight;
+            vertex_weight.bind_if_is_defined(mesh_->vertices.attributes(), "weight");
+            
             current_polyhedron_ = &C;
             // The algorithm propagates along both the facet-graph of
             // the surface and the 1-skeleton of the Delaunay triangulation,
@@ -1503,7 +1521,7 @@ namespace GEOGen {
                             adjacent_seeds.pop();
 
                             C.initialize_from_mesh_tetrahedron(
-                                mesh_, current_tet_, symbolic_
+                                mesh_, current_tet_, symbolic_, vertex_weight
                             );
 
                             intersect_cell_tet(
@@ -1525,7 +1543,8 @@ namespace GEOGen {
                                 //  Skip clipping planes that are no longer
                                 // connected to a cell facet.
                                 if(
-                                    current_polyhedron().vertex_triangle(v) == -1
+                                    current_polyhedron().vertex_triangle(v)
+                                    == -1
                                 ) {
                                     continue;
                                 }
@@ -1547,15 +1566,21 @@ namespace GEOGen {
                                     // Propagate to adjacent tet
                                     signed_index_t neigh_t = -id - 1;
                                     if(
-                                        neigh_t >= signed_index_t(tets_begin_) &&
+                                        neigh_t >=
+                                        signed_index_t(tets_begin_) &&
                                         neigh_t <  signed_index_t(tets_end_) &&
                                         neigh_t != signed_index_t(current_tet_)
                                     ) {
-                                        if(!tet_is_marked[index_t(neigh_t)-tets_begin_]) {
-                                            tet_is_marked[index_t(neigh_t)-tets_begin_] = true;
+                                        if(!tet_is_marked[
+                                               index_t(neigh_t)-tets_begin_
+                                        ]) {
+                                            tet_is_marked[
+                                                index_t(neigh_t)-tets_begin_
+                                            ] = true;
                                             adjacent_tets.push(
                                                 TetSeed(
-                                                    index_t(neigh_t), current_seed_
+                                                    index_t(neigh_t),
+                                                    current_seed_
                                                 )
                                             );
                                         }
@@ -1666,9 +1691,7 @@ namespace GEOGen {
             index_t F_index = facets_end_ + 1;
 
             GEO::Attribute<double> vertex_weight;
-            if(mesh_->vertices.attributes().is_defined("weight")) {
-                vertex_weight.bind(mesh_->vertices.attributes(),"weight");
-            }
+            vertex_weight.bind_if_is_defined(mesh_->vertices.attributes(),"weight");
             
             // The algorithm propagates along both the facet-graph of
             // the surface and the 1-skeleton of the Delaunay triangulation,
@@ -1737,7 +1760,8 @@ namespace GEOGen {
                                 const Vertex& ve = current_polygon().vertex(v);
                                 signed_index_t s_neigh_f = ve.adjacent_facet();
                                 if(
-                                    s_neigh_f >= signed_index_t(facets_begin_) &&
+                                    s_neigh_f >= signed_index_t(facets_begin_)
+                                    &&
                                     s_neigh_f < signed_index_t(facets_end_)
                                 ) {
                                     geo_debug_assert(

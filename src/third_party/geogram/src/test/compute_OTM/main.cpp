@@ -273,6 +273,8 @@ namespace {
         ) : IntegrationSimplex(
             M, true, 0, 0, nil
         ), w_(nil) {
+            weighted_ = M.vertices.attributes().is_defined("weight");
+            varying_background_ = weighted_;
         }
         
         /**
@@ -288,39 +290,197 @@ namespace {
             const GEOGen::Vertex& v1,
             const GEOGen::Vertex& v2,
             const GEOGen::Vertex& v3,
-            index_t frame_index
+            index_t t
         ) {
-            geo_argused(frame_index);
-            const double* p0 = point(center_vertex_index);
-            const double* p1 = v1.point();
-            const double* p2 = v2.point();
-            const double* p3 = v3.point();
-            double m = Geom::tetra_signed_volume(p0, p1, p2, p3);
             double fT = 0.0;
-            for(coord_index_t c = 0; c < 3; ++c) {
-                double Uc = p1[c] - p0[c];
-                double Vc = p2[c] - p0[c];
-                double Wc = p3[c] - p0[c];
-                fT += Uc * Uc + Vc * Vc + Wc * Wc + Uc * Vc + Vc * Wc + Wc * Uc;
+            if(weighted_) {
+                if(
+                    current_tet_ != t ||
+                    current_seed_ != center_vertex_index
+                ) {
+                    current_tet_ = t;
+                    current_seed_ = center_vertex_index;
+                    p0_[0] = v1.point()[0];
+                    p0_[1] = v1.point()[1];
+                    p0_[2] = v1.point()[2];
+                    p0_mass_ = v1.weight();
+                } else {
+                    fT = eval_with_density(
+                        center_vertex_index,
+                        p0_, p0_mass_,
+                        v1.point(), v1.weight(),
+                        v2.point(), v2.weight(),
+                        v3.point(), v3.weight()
+                    );
+                }
+            } else {
+                const double* p0 = point(center_vertex_index);
+                const double* p1 = v1.point();
+                const double* p2 = v2.point();
+                const double* p3 = v3.point();
+                double m = Geom::tetra_signed_volume(p0, p1, p2, p3);
+
+                for(coord_index_t c = 0; c < 3; ++c) {
+                    double Uc = p1[c] - p0[c];
+                    double Vc = p2[c] - p0[c];
+                    double Wc = p3[c] - p0[c];
+                    fT +=
+                        Uc * Uc +
+                        Vc * Vc +
+                        Wc * Wc +
+                        Uc * Vc +
+                        Vc * Wc +
+                        Wc * Uc;
+                }
+                
+                fT = m * (fT / 10.0 - w_[center_vertex_index]);
+                
+                //  Spinlocks are used in multithreading mode, to avoid
+                // that two threads update g_[center_vertex_index]
+                // simultaneously.
+                if(spinlocks_ != nil) {
+                    spinlocks_->acquire_spinlock(center_vertex_index);
+                }
+                // -m because we maximize F <=> minimize -F                
+                g_[center_vertex_index] -= m;
+                if(spinlocks_ != nil) {
+                    spinlocks_->release_spinlock(center_vertex_index);
+                }
             }
-            fT = m * (fT / 10.0 - w_[center_vertex_index]);
+            // -fT because we maximize F <=> minimize -F
+            return -fT;
+        }
+
+        /**
+         * \brief Evaluates the objective function maximized by
+         *  OTM on an integration simplex when the background 
+         *  mesh has a varying density interpolated on the vertices.
+         * \param[in] center_vertex_index index of the first vertex
+         *  of the integration simplex, that corresponds to one of 
+         *  the points to be optimized.
+         * \param[in] p0 const pointer to the three coordinates of
+         *   the first vertex
+         * \param[in] p0_mass the mass of the first vertex
+         * \param[in] p1 const pointer to the three coordinates of
+         *   the second vertex
+         * \param[in] p1_mass the mass of the second vertex
+         * \param[in] p2 const pointer to the three coordinates of
+         *   the third vertex
+         * \param[in] p2_mass the mass of the third vertex
+         * \param[in] p2 const pointer to the three coordinates of
+         *   the fourth vertex
+         * \param[in] p2_mass the mass of the fourth vertex
+         */
+        double eval_with_density(
+            index_t center_vertex_index,
+            const double* p0, double p0_mass,
+            const double* p1, double p1_mass,
+            const double* p2, double p2_mass,
+            const double* p3, double p3_mass            
+        ) {
+            const double* q = point(center_vertex_index);
+
+            double Tvol = Geom::tetra_volume<3>(p0,p1,p2,p3);
+            double Sp = p0_mass + p1_mass + p2_mass + p3_mass;
+            
+            double m = (Tvol * Sp) / 4.0;
+            double rho[4], alpha[4];
+            
+            rho[0] = p0_mass;
+            rho[1] = p1_mass;
+            rho[2] = p2_mass;
+            rho[3] = p3_mass;
+            
+            alpha[0] = Sp + rho[0];
+            alpha[1] = Sp + rho[1];
+            alpha[2] = Sp + rho[2];
+            alpha[3] = Sp + rho[3];
+            
+            double dotprod_00 = 0.0;
+            double dotprod_10 = 0.0;
+            double dotprod_11 = 0.0;
+            double dotprod_20 = 0.0;
+            double dotprod_21 = 0.0;
+            double dotprod_22 = 0.0;
+            double dotprod_30 = 0.0;
+            double dotprod_31 = 0.0;
+            double dotprod_32 = 0.0;
+            double dotprod_33 = 0.0;
+            
+            for(coord_index_t c = 0; c < 3; c++) {
+                double sp0 = q[c] - p0[c];
+                double sp1 = q[c] - p1[c];
+                double sp2 = q[c] - p2[c];
+                double sp3 = q[c] - p3[c];                
+                dotprod_00 += sp0 * sp0;
+                dotprod_10 += sp1 * sp0;
+                dotprod_11 += sp1 * sp1;
+                dotprod_20 += sp2 * sp0;
+                dotprod_21 += sp2 * sp1;
+                dotprod_22 += sp2 * sp2;
+                dotprod_30 += sp3 * sp0;
+                dotprod_31 += sp3 * sp1;
+                dotprod_32 += sp3 * sp2;
+                dotprod_33 += sp3 * sp3;                
+            }
+            
+            double fT = 0.0;
+            fT += (alpha[0] + rho[0]) * dotprod_00;  // 0 0
+            fT += (alpha[1] + rho[0]) * dotprod_10;  // 1 0
+            fT += (alpha[1] + rho[1]) * dotprod_11;  // 1 1
+            fT += (alpha[2] + rho[0]) * dotprod_20;  // 2 0
+            fT += (alpha[2] + rho[1]) * dotprod_21;  // 2 1
+            fT += (alpha[2] + rho[2]) * dotprod_22;  // 2 2
+            fT += (alpha[3] + rho[0]) * dotprod_30;  // 3 0
+            fT += (alpha[3] + rho[1]) * dotprod_31;  // 3 1
+            fT += (alpha[3] + rho[2]) * dotprod_32;  // 3 2
+            fT += (alpha[3] + rho[3]) * dotprod_33;  // 3 3            
+
+            fT = Tvol * fT / 60.0 - m * w_[center_vertex_index];
             
             //  Spinlocks are used in multithreading mode, to avoid
-            // that two threads update g_[center_vertex_index] simultaneously.
+            // that two threads update g_[center_vertex_index]
+            // simultaneously.
             if(spinlocks_ != nil) {
                 spinlocks_->acquire_spinlock(center_vertex_index);
             }
+            // -m because we maximize F <=> minimize -F                
             g_[center_vertex_index] -= m;
             if(spinlocks_ != nil) {
                 spinlocks_->release_spinlock(center_vertex_index);
             }
-            return -fT;
-        }
 
+            // Note Ft is negated (minimize -F) by caller
+            return fT;
+        }
+        
+        virtual void reset_thread_local_storage() {
+            current_tet_ = index_t(-1);
+            current_seed_ = index_t(-1);
+        }
+        
     private:
         const double* w_;
+        bool weighted_;
+
+        //   For each Voronoi Cell / background tet intersection,
+        // we need to tessellate the corresponding polyhedron.
+        //   The callback traverses the border of the polyhedron,
+        // one triangle at a time. To tesselate the polyhedron, we
+        // need to keep track of the first vertex. This needs to
+        // be a thread-local variable.
+
+        static GEO_THREAD_LOCAL double p0_[3];
+        static GEO_THREAD_LOCAL double p0_mass_;
+        static GEO_THREAD_LOCAL index_t current_seed_;
+        static GEO_THREAD_LOCAL index_t current_tet_;
     } ;
 
+    GEO_THREAD_LOCAL double OTMIntegrationSimplex::p0_[3];
+    GEO_THREAD_LOCAL double OTMIntegrationSimplex::p0_mass_;    
+    GEO_THREAD_LOCAL index_t OTMIntegrationSimplex::current_tet_;
+    GEO_THREAD_LOCAL index_t OTMIntegrationSimplex::current_seed_;        
+    
     /*************************************************************************/
 
     /**
@@ -366,7 +526,7 @@ namespace {
 
             instance_ = nil;
             lambda_p_ = 0.0;
-            total_volume_ = 0.0;
+            total_mass_ = 0.0;
             current_call_iter_ = 0;
             epsilon_ = 0.01;
             level_ = 0;
@@ -375,6 +535,8 @@ namespace {
 
             save_RVD_iter_ = CmdLine::get_arg_bool("RVD_iter");
             current_iter_ = 0;
+
+            pretty_log_ = CmdLine::get_arg_bool("log:pretty");
         }
 
         /**
@@ -394,16 +556,39 @@ namespace {
                 points_4d_[i * 4 + 3] = 0.0;
             }
             weights_.assign(nb_points, 0);
-            total_volume_ = 0.0;
+            total_mass_ = 0.0;
+
+            //   This is terribly confusing, the parameters for
+            // a power diagram are called "weights", and the
+            // standard attribute name for vertices density is
+            // also called "weight" (and is unrelated).
+            //   In this program, what is called weight corresponds
+            // to the parameters of the power diagram (except the
+            // name of the attribute), and everything that corresponds
+            // to mass/density is called mass.
+            Attribute<double> vertex_mass;
+            vertex_mass.bind_if_is_defined(
+                mesh_->vertices.attributes(), "weight"
+            );
+            
             for(index_t t = 0; t < mesh_->cells.nb(); ++t) {
-                total_volume_ += Geom::tetra_volume<3>(
+                double tet_mass = Geom::tetra_volume<3>(
                     mesh_->vertices.point_ptr(mesh_->cells.tet_vertex(t, 0)),
                     mesh_->vertices.point_ptr(mesh_->cells.tet_vertex(t, 1)),
                     mesh_->vertices.point_ptr(mesh_->cells.tet_vertex(t, 2)),
                     mesh_->vertices.point_ptr(mesh_->cells.tet_vertex(t, 3))
                 );
+                if(vertex_mass.is_bound()) {
+                    tet_mass *= (
+                        vertex_mass[mesh_->cells.tet_vertex(t, 0)] +
+                        vertex_mass[mesh_->cells.tet_vertex(t, 1)] +
+                        vertex_mass[mesh_->cells.tet_vertex(t, 2)] +
+                        vertex_mass[mesh_->cells.tet_vertex(t, 3)]
+                    ) / 4.0;
+                }
+                total_mass_ += tet_mass;
             }
-            lambda_p_ = total_volume_ / double(nb_points);
+            lambda_p_ = total_mass_ / double(nb_points);
         }
 
         /**
@@ -443,7 +628,7 @@ namespace {
             double dummy = 0;
             funcgrad(n, &weights_[0], dummy, nil);
             Logger::out("OTM")
-                << "Used " << current_call_iter_ << "iterations" << std::endl;
+                << "Used " << current_call_iter_ << " iterations" << std::endl;
 
         }
 
@@ -509,7 +694,7 @@ namespace {
             // Important! lambda_p_ (target measure of a cell) needs
             // to be updated, since it depends on the number of samples
             // (that varies at each level).
-            lambda_p_ = total_volume_ / double(n);
+            lambda_p_ = total_mass_ / double(n);
 
             index_t m = 7;
             Optimizer_var optimizer = Optimizer::create("HLBFGS");
@@ -709,8 +894,10 @@ namespace {
             delaunay_->set_vertices(n, &points_4d_[0]);
 
             if(g == nil) {
-                CmdLine::ui_clear_line();
-                CmdLine::ui_message(last_stats_ + "\n");
+                if(pretty_log_) {
+                    CmdLine::ui_clear_line();
+                    CmdLine::ui_message(last_stats_ + "\n");
+                }
                 return;
             }
 
@@ -771,11 +958,16 @@ namespace {
             last_stats_ = str.str();
 
             // "custom task progress" (clears the standard message
-            // and replaces it with another one). 
-            if(current_call_iter_ != 0) {
-                CmdLine::ui_clear_line();
+            // and replaces it with another one).
+            if(pretty_log_) {
+                if(current_call_iter_ != 0) {
+                    CmdLine::ui_clear_line();
+                }
+                CmdLine::ui_message(str.str());
+            } else {
+                str << " f=" << f;
+                CmdLine::ui_message(str.str() + "\n");
             }
-            CmdLine::ui_message(str.str());
             ++current_call_iter_;
         }
 
@@ -799,13 +991,14 @@ namespace {
         RestrictedVoronoiDiagram_var RVD_;
         vector<double> points_4d_;
         vector<double> weights_;
-        double total_volume_;
+        double total_mass_;
         double lambda_p_; /**< \brief Value of one of the Diracs */
         double epsilon_;
         /**< \brief Acceptable relative deviation for the measure of a cell */
         index_t current_call_iter_;
         IntegrationSimplex_var simplex_func_;
         std::string last_stats_;
+        bool pretty_log_;
         index_t level_;
         
         bool save_RVD_iter_;
@@ -1566,6 +1759,151 @@ namespace {
         }
         return true;
     }
+
+    enum DensityFunction {
+        DENSITY_X=0,
+        DENSITY_Y=1,
+        DENSITY_Z=2,
+        DENSITY_R,
+        DENSITY_SIN,
+        DENSITY_DIST
+    };
+    
+    void set_density(Mesh& M, double mass1, double mass2) {
+
+        if(mass1 == mass2) {
+            return;
+        }
+
+        std::string function_str =
+            CmdLine::get_arg("density_function");
+
+        bool minus = false;
+        if(function_str.length() > 1 && function_str[0] == '-') {
+            minus = true;
+            function_str = function_str.substr(1,function_str.length()-1);
+        }
+        double density_pow = 1.0;
+        {
+            std::size_t found = function_str.find('^');
+            if(found != std::string::npos) {
+                std::string pow_str =
+                    function_str.substr(found+1, function_str.length()-found-1);
+                density_pow = String::to_double(pow_str);
+                function_str = function_str.substr(0,found);
+            }
+        }
+
+        Logger::out("OTM")
+            << "Using density: "
+            << (minus ? "-" : "+")
+            << function_str << "^"
+            << density_pow
+            << " rescaled to ("
+            << mass1 << "," << mass2
+            << ")"
+            << std::endl;
+        
+        DensityFunction function;
+        if(function_str == "X") {
+            function = DENSITY_X;
+        } else if(function_str == "Y") {
+            function = DENSITY_Y;            
+        } else if(function_str == "Z") {
+            function = DENSITY_Z;            
+        } else if(function_str == "R") {
+            function = DENSITY_R;            
+        } else if(function_str == "sin") {
+            function = DENSITY_SIN;
+        } else if(function_str == "dist") {
+            function = DENSITY_DIST;
+        } else {
+            Logger::err("OTM") << function_str << ": no such density function"
+                               << std::endl;
+            return;
+        }
+        
+        Attribute<double> mass(M.vertices.attributes(),"weight");
+
+        switch(function) {
+        case DENSITY_X:
+        case DENSITY_Y:
+        case DENSITY_Z: {
+            for(index_t v=0; v<M.vertices.nb(); ++v) {
+                mass[v] = M.vertices.point_ptr(v)[index_t(function)];
+            }
+        } break;
+        case DENSITY_R: {
+            double xyz_min[3];
+            double xyz_max[3];
+            get_bbox(M, xyz_min, xyz_max);
+            for(index_t v=0; v<M.vertices.nb(); ++v) {
+                double r=0;
+                const double* p = M.vertices.point_ptr(v);
+                for(coord_index_t c=0; c<3; ++c) {
+                    r += geo_sqr(p[c] - 0.5*(xyz_min[c] + xyz_max[c]));
+                }
+                r = ::sqrt(r);
+                mass[v] = r;
+            }
+        } break;
+        case DENSITY_SIN: {
+            double xyz_min[3];
+            double xyz_max[3];
+            get_bbox(M, xyz_min, xyz_max);
+            for(index_t v=0; v<M.vertices.nb(); ++v) {
+                double f = 1.0;
+                const double* p = M.vertices.point_ptr(v);
+                for(coord_index_t c=0; c<3; ++c) {
+                    double coord = (p[c] - xyz_min[c]) / (xyz_max[c] - xyz_min[c]);
+                    f *= sin(coord *  M_PI * 2.0 * 2.0);
+                }
+                mass[v] = f;                
+            }
+        } break;
+        case DENSITY_DIST: {
+            std::string ref_filename = CmdLine::get_arg("density_distance_reference");
+            if(ref_filename != "")  {
+                Mesh reference;
+                MeshIOFlags flags;
+                flags.reset_element(MESH_CELLS);
+                if(!mesh_load(ref_filename, reference, flags)) {
+                    exit(1);
+                }
+                MeshFacetsAABB AABB(reference);
+                for(index_t v=0; v<M.vertices.nb(); ++v) {
+                    mass[v] = ::sqrt(AABB.squared_distance(vec3(M.vertices.point_ptr(v))));
+                }
+            } else {
+                MeshFacetsAABB AABB(M);
+                for(index_t v=0; v<M.vertices.nb(); ++v) {
+                    mass[v] = ::sqrt(AABB.squared_distance(vec3(M.vertices.point_ptr(v))));
+                }
+            }
+        } break;
+        default: {
+            geo_assert_not_reached;
+        } break;
+        }
+
+        // Compute min and max mass
+        double mass_min = Numeric::max_float64();
+        double mass_max = Numeric::min_float64();
+        for(index_t v=0; v<M.vertices.nb(); ++v) {
+            mass_min = geo_min(mass_min, mass[v]);
+            mass_max = geo_max(mass_max, mass[v]);
+        }
+
+        // Normalize mass, apply power, and rescale to (mass1 - mass2)
+        for(index_t v=0; v<M.vertices.nb(); ++v) {
+            double f = (mass[v] - mass_min) / (mass_max - mass_min);
+            if(minus) {
+                f = 1.0 - f;
+            }
+            f = ::pow(f,density_pow);
+            mass[v] = mass1 + f*(mass2 - mass1);
+        }
+    }
 }
 
 int main(int argc, char** argv) {
@@ -1628,6 +1966,19 @@ int main(int argc, char** argv) {
             "rescale", true, "rescale target to match source volume"
         );
         CmdLine::declare_arg(
+            "density_min", 1.0, "min density in first mesh"
+        );
+        CmdLine::declare_arg(
+            "density_max", 1.0, "max density in first mesh"
+        );
+        CmdLine::declare_arg(
+            "density_function", "x", "used function for density"
+        );
+        CmdLine::declare_arg(
+            "density_distance_reference", "",
+            "filename of the reference surface"
+        );
+        CmdLine::declare_arg(
             "out", "morph.tet6", "output filename"
         );
         
@@ -1658,13 +2009,21 @@ int main(int argc, char** argv) {
         Mesh M1;
         Mesh M2;
         Mesh M2_samples;
+        
         if(!load_volume_mesh(mesh1_filename, M1)) {
             return 1;
         }
+        
         if(!load_volume_mesh(mesh2_filename, M2)) {
             return 1;
         }
 
+        set_density(
+            M1,
+            CmdLine::get_arg_double("density_min"),
+            CmdLine::get_arg_double("density_max")
+        );
+        
         if(CmdLine::get_arg_bool("recenter")) {
             recenter_mesh(M1,M2);
         }
@@ -1684,6 +2043,7 @@ int main(int argc, char** argv) {
                 << std::endl;
             return 1;
         }
+
         
         Logger::div("Sampling target shape");
 

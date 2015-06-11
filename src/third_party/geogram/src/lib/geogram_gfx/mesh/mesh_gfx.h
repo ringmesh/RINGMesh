@@ -43,6 +43,9 @@
  *
  */
 
+#ifndef __GEOGRAM_GFX_MESH__
+#define __GEOGRAM_GFX_MESH__
+
 #include <geogram_gfx/basic/common.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
@@ -813,5 +816,6 @@ namespace GEO {
         }
     };
 
-    
 }
+
+#endif

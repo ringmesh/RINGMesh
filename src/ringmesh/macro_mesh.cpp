@@ -285,9 +285,11 @@ namespace RINGMesh {
     {
         BoundaryModelElement::GEOL_FEATURE feature = mm_.model().surface(
             surface_id ).geological_feature() ;
-        if( mm_.duplicate_mode() == ALL && feature != BoundaryModelElement::VOI )
+        if( mm_.duplicate_mode() == ALL &&
+            !mm_.model().surface( surface_id ).is_on_voi() 
+           )
             return true ;
-        if( mm_.duplicate_mode() == FAULT && feature == BoundaryModelElement::FAULT )
+        if( mm_.duplicate_mode() == FAULT && BME::is_fault( feature ) )
             return true ;
 
         return false ;
@@ -332,6 +334,7 @@ namespace RINGMesh {
         if( unique_vertices_.empty() ) {
             const_cast< MacroMeshVertices* >( this )->initialize() ;
         }
+        ringmesh_debug_assert( global_v < unique_vertices_.size() ) ;
         return unique_vertices_[global_v] ;
     }
 
@@ -1004,11 +1007,13 @@ namespace RINGMesh {
      */
     void MacroMeshTools::clear()
     {
-        for( unsigned int r = 0; r < mm_.nb_meshes(); r++ ) {
+        for( index_t r = 0; r < facet_aabb_.size(); r++ ) {
             if( facet_aabb_[r] ) {
                 delete facet_aabb_[r] ;
                 facet_aabb_[r] = nil ;
             }
+        }
+        for( index_t r = 0; r < cell_aabb_.size(); r++ ) {
             if( cell_aabb_[r] ) {
                 delete cell_aabb_[r] ;
                 cell_aabb_[r] = nil ;
@@ -1017,7 +1022,7 @@ namespace RINGMesh {
     }
 
     MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
-        : mm_( mm ), nb_vertices_( 0 ), ann_()
+        : mm_( mm ), nb_vertices_( 0 ), points_( 0 )
     {
 
     }
@@ -1035,39 +1040,117 @@ namespace RINGMesh {
      */
     void MacroMeshOrder::initialize()
     {
+        index_t offset = 0 ;
         nb_vertices_ = mm_.vertices.nb_total_vertices() ;
-        std::vector<vec3> new_points ;
-        new_points.reserve(mm_.cells.nb_cells()*4) ;
-        for(index_t r = 0 ; r < mm_.nb_meshes() ; r++) {
-            const GEO::Mesh& cur_mesh = mm_.mesh(r) ;
-            for(index_t c = 0 ; c < cur_mesh.cells.nb() ; c++ ) {
-                for(index_t e = 0 ; e < cur_mesh.cells.nb_edges(c) ; e++) {
-                    std::vector<vec3> new_points_in_edge ;
-                    vec3 node0 = GEO::Geom::mesh_vertex(cur_mesh,cur_mesh.cells.edge_vertex(c,e,0)) ;
-                    vec3 node1 = GEO::Geom::mesh_vertex(cur_mesh,cur_mesh.cells.edge_vertex(c,e,1)) ;
-                    Geom::divide_edge_in_parts(node0,node1,mm_.get_order(),new_points_in_edge) ;
+        index_t order = mm_.get_order() ;
+        if( order != 1 ) {
 
-                    for(index_t v = 0 ; v < new_points_in_edge.size() ; v++) {
-                        new_points.push_back(new_points_in_edge[v]) ;
+            index_t nb_total_edges = 0 ;
+            for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
+                const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
+                for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
+                    for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
+                        nb_total_edges++ ;
                     }
                 }
             }
+
+            std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
+            for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
+                const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
+                GEO::Attribute< std::vector< index_t > > order_vertices(
+                    cur_mesh.cells.attributes(), "order_vertices" ) ;
+                for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
+                    std::vector< index_t > cur_order_vertices(
+                        cur_mesh.cells.nb_edges( c ) * ( order - 1 ) ) ;
+                    for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
+                        std::vector< vec3 > new_points_in_edge ;
+                        vec3 node0 = GEO::Geom::mesh_vertex( cur_mesh,
+                            cur_mesh.cells.edge_vertex( c, e, 0 ) ) ;
+                        vec3 node1 = GEO::Geom::mesh_vertex( cur_mesh,
+                            cur_mesh.cells.edge_vertex( c, e, 1 ) ) ;
+                        Geom::divide_edge_in_parts( node0, node1, order,
+                            new_points_in_edge ) ;
+
+                        for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
+                            new_points[offset] = new_points_in_edge[v] ;
+                            cur_order_vertices[e + v] = offset ;
+                            offset++ ;
+                        }
+                        order_vertices[c] = cur_order_vertices ;
+                    }
+                }
+            }
+
+            MakeUnique uniq( new_points ) ;
+            uniq.unique() ;
+            std::vector< vec3 > uniq_points ;
+            uniq.unique_points( uniq_points ) ;
+            std::vector< index_t > map = uniq.indices() ;
+
+            ColocaterANN ann( uniq_points ) ;
+            for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
+                const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
+                GEO::Attribute< std::vector< index_t > > order_vertices(
+                    cur_mesh.cells.attributes(), "order_vertices" ) ;
+                for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
+                    for( index_t v = 0; v < order_vertices[c].size(); v++ ) {
+                        order_vertices[c][v] = map[order_vertices[c][v]]
+                            + nb_vertices_ ;
+                    }
+                }
+            }
+
+            for( index_t s = 0; s < mm_.model().nb_surfaces(); s++ ) {
+                index_t cur_mesh_id = mm_.facets.mesh( s ) ;
+                const GEO::Mesh& cur_mesh = mm_.mesh( cur_mesh_id ) ;
+                GEO::Attribute< std::vector< index_t > > order_vertices(
+                    cur_mesh.facets.attributes(), "order_vertices" ) ;
+                for( index_t f = 0; f < mm_.facets.nb_facets( s ); f++ ) {
+                    index_t cur_facet = mm_.facets.facet( s, f ) ;
+                    std::vector< index_t > cur_order_vertices(
+                        cur_mesh.facets.nb_vertices( f ) * ( order - 1 ) ) ;
+                    for( index_t e = 0; e < cur_mesh.facets.nb_vertices( cur_facet );
+                        e++ ) {
+                        vec3 node0 ;
+                        vec3 node1 ;
+                        std::vector< vec3 > new_points_in_edge ;
+                        if( e == cur_mesh.facets.nb_vertices( cur_facet ) - 1 ) {
+                            node0 = GEO::Geom::mesh_vertex( cur_mesh,
+                                cur_mesh.facets.vertex( cur_facet, e ) ) ;
+                            node1 = GEO::Geom::mesh_vertex( cur_mesh,
+                                cur_mesh.facets.vertex( cur_facet, 0 ) ) ;
+                        } else {
+                            node0 = GEO::Geom::mesh_vertex( cur_mesh,
+                                cur_mesh.facets.vertex( cur_facet, e ) ) ;
+                            node1 = GEO::Geom::mesh_vertex( cur_mesh,
+                                cur_mesh.facets.vertex( cur_facet, e + 1 ) ) ;
+                        }
+                        RINGMesh::Geom::divide_edge_in_parts( node0, node1, order,
+                            new_points_in_edge ) ;
+                        for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
+                            std::vector< index_t > colocated_vertices ;
+                            index_t real_vertex_id = ann.get_colocated(
+                                new_points_in_edge[v], colocated_vertices ) ;
+                            ringmesh_debug_assert( colocated_vertices.size() == 1 ) ;
+                            cur_order_vertices[e + v] = colocated_vertices[0]
+                                + nb_vertices_ ;
+                        }
+                    }
+                    order_vertices[cur_facet] = cur_order_vertices ;
+                }
+            }
+            nb_vertices_ += uniq_points.size() ;
         }
 
-        MakeUnique uniq(new_points) ;
-        uniq.unique() ;
-        std::vector<vec3> uniq_points ;
-        uniq.unique_points(uniq_points) ;
-        ann_.set_points(uniq_points) ;
-        nb_vertices_+=uniq_points.size() ;
-
-        }
+    }
 
     /*
      * Clear the MacroMeshOrder database
      */
-    void MacroMeshOrder::clear() {
-        nb_vertices_ = 0;
+    void MacroMeshOrder::clear()
+    {
+        nb_vertices_ = 0 ;
     }
 
     /*
@@ -1081,15 +1164,170 @@ namespace RINGMesh {
         return nb_vertices_ ;
     }
 
+//    /*
+//     * Gets the id of the added node
+//     * @return the const id of the node
+//     */
+//    const index_t MacroMeshOrder::id( const vec3& point ) const
+//    {
+//
+//        test_initialize() ;
+//        std::vector< index_t > colocated_points ;
+//        ann_.get_colocated( point, colocated_points ) ;
+//        ringmesh_debug_assert( colocated_points.size() == 1 ) ;
+//        return mm_.vertices.nb_total_vertices() + colocated_points[0] ;
+//    }
+
+    const index_t MacroMeshOrder::nb_vertices() const
+    {
+        test_initialize() ;
+        return nb_vertices_ - mm_.vertices.nb_total_vertices() ;
+    }
+
     /*
-     * Gets the id of the added node
-     * @return the const id of the node
+     * Gets the vec3 of a added point
+     * @param[in] id an id of the new created point for order > 2
+     * @return the vec3 matching with the id
      */
-    const index_t MacroMeshOrder::id(const vec3& point) const {
-        std::vector<index_t> colocated_points ;
-        ann_.get_colocated(point,colocated_points) ;
-        ringmesh_debug_assert(colocated_points.size() == 1) ;
-        return mm_.vertices.nb_total_vertices() + colocated_points[0] ;
+    const vec3 MacroMeshOrder::point( const index_t id ) const
+    {
+        const_cast< MacroMeshOrder* >( this )->test_point_list_initialize() ;
+        return points_[id] ;
+    }
+
+    /*
+     * Move a added point
+     * @param[in] id the id of the point
+     * @param[in] u the displacement applied on this point
+     */
+    void MacroMeshOrder::move_point( const index_t id, const vec3& u )
+    {
+        const_cast< MacroMeshOrder* >( this )->test_point_list_initialize() ;
+        for( index_t i = 0; i < 3; i++ ) {
+            points_[id][i] += u[i] ;
+
+        }
+    }
+
+    /*
+     * Test wether the vec3 point list is initialize. If note, the point
+     * list is initialize
+     */
+    void MacroMeshOrder::test_point_list_initialize()
+    {
+        index_t order = mm_.get_order() ;
+
+        if( points_.size() == 0 && order > 1 ) {
+            index_t offset = 0 ;
+            index_t nb_total_edges = 0 ;
+            for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
+                const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
+                for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
+                    for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
+                        nb_total_edges++ ;
+                    }
+                }
+            }
+
+            std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
+            for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
+                const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
+                for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
+                    std::vector< index_t > cur_order_vertices(
+                        cur_mesh.cells.nb_edges( c ) * ( order - 1 ) ) ;
+                    for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
+                        std::vector< vec3 > new_points_in_edge ;
+                        vec3 node0 = GEO::Geom::mesh_vertex( cur_mesh,
+                            cur_mesh.cells.edge_vertex( c, e, 0 ) ) ;
+                        vec3 node1 = GEO::Geom::mesh_vertex( cur_mesh,
+                            cur_mesh.cells.edge_vertex( c, e, 1 ) ) ;
+                        Geom::divide_edge_in_parts( node0, node1, order,
+                            new_points_in_edge ) ;
+
+                        for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
+                            new_points[offset] = new_points_in_edge[v] ;
+                            offset++ ;
+                        }
+                    }
+                }
+            }
+
+            MakeUnique uniq( new_points ) ;
+            uniq.unique() ;
+            uniq.unique_points( points_ ) ;
+        }
+    }
+
+    /*!
+     * Initialize the cell database of the MacroMesh
+     */
+    void MacroMeshEdges::initialize()
+    {
+        if( !mm_.wells() ) return ;
+        const WellGroup& wells = *mm_.wells() ;
+        well_ptr_.resize( wells.nb_wells() +1, 0 ) ;
+        well_ptr_[0] = 0 ;
+        index_t nb_edges = 0 ;
+        for( index_t w = 0; w < wells.nb_wells(); w++ ) {
+            nb_edges += wells.well( w ).nb_edges()  ;
+            well_ptr_[w+1] = 2*nb_edges ;
+        }
+        edges_.resize( 2*nb_edges ) ;
+
+        std::vector< index_t > edge_offset( wells.nb_wells(), 0 ) ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+            GEO::Attribute< index_t > well_id( mesh.edges.attributes(),
+                region_att_name ) ;
+            for( index_t e = 0; e < mesh.edges.nb(); e++ ) {
+                index_t id = well_id[e] ;
+                edges_[well_ptr_[id] + edge_offset[id]++ ] = mm_.vertices.vertex_id(
+                    m, mesh.edges.vertex( e, 0 ) ) ;
+                edges_[well_ptr_[id] + edge_offset[id]++ ] = mm_.vertices.vertex_id(
+                    m, mesh.edges.vertex( e, 1 ) ) ;
+            }
+        }
+    }
+
+    /*!
+     * Gets the number of wells
+     * @return the corresponding number
+     */
+    index_t MacroMeshEdges::nb_wells() const
+    {
+        test_initialize() ;
+        return mm_.wells() ? mm_.wells()->nb_wells() : 0 ;
+    }
+    /*!
+     * Gets the number of edges in the MacroMesh
+     * @return the corresponding number
+     */
+    index_t MacroMeshEdges::nb_edges() const
+    {
+        test_initialize() ;
+        return edges_.size() / 2 ;
+    }
+    /*!
+     * Gets the number of edges of a Well
+     * @param[in] w the well id
+     * @return the corresponding number
+     */
+    index_t MacroMeshEdges::nb_edges( index_t w ) const
+    {
+        test_initialize() ;
+        return ( well_ptr_[w+1] - well_ptr_[w] ) / 2 ;
+    }
+    /*!
+     * Gets the vertex id of the MacroMesh
+     * @param[in] w the well id
+     * @param[in] e the edge id
+     * @param[in] v the vertex id of the edge (0 or 1 )
+     * @return the global vertex id
+     */
+    index_t MacroMeshEdges::vertex_id( index_t w, index_t e, index_t v ) const
+    {
+        test_initialize() ;
+        return edges_[well_ptr_[w] + 2 * e + v] ;
     }
 
     MacroMesh::MacroMesh( const BoundaryModel& model )
@@ -1098,12 +1336,13 @@ namespace RINGMesh {
             meshes_( model.nb_regions(), nil ),
             mode_( NONE ),
             wells_( nil ),
+            order_(1),
             vertices( *this ),
+            edges( *this ),
             facets( *this ),
             cells( *this ),
             tools( *this ),
-            order( *this ),
-            order_(1)
+            order( *this )
     {
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( 3 ) ;
@@ -1116,7 +1355,9 @@ namespace RINGMesh {
             meshes_(),
             mode_( NONE ),
             wells_( nil ),
+            order_(1),
             vertices( *this ),
+            edges( *this ),
             facets( *this ),
             cells( *this ),
             tools( *this ),
@@ -1127,14 +1368,22 @@ namespace RINGMesh {
     /*!
      * Copy a MacroMesh and its attributes
      * @param[in] rhs the MacroMesh copied
+     * @param[in] keep_order To document
      * @param[in] copy_attributes tells whether or not you want to copy attributes
+     * @todo Check this function - keep_order parameter is not used
      */
-    void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes ) const
+    void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes )
     {
         index_t dim = meshes_[0]->vertices.dimension() ;
+
+        model_ = &rhs.model() ;
+        order_ = rhs.get_order() ;
+        mode_= rhs.duplicate_mode() ;
+        wells_ = rhs.wells() ;
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r]->copy( *rhs.meshes_[r], copy_attributes ) ;
         }
+
     }
 
     MacroMesh::~MacroMesh()
@@ -1156,33 +1405,33 @@ namespace RINGMesh {
      * to improve the mesh quality
      */
     void MacroMesh::compute_tetmesh(
-        const TetraMethod& method,
+        const std::string& method,
         int region_id,
         bool add_steiner_points,
         std::vector< std::vector< vec3 > >& internal_vertices )
     {
+        GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
         if( region_id == -1 ) {
             GEO::ProgressTask progress( "Compute", nb_meshes() ) ;
-            for( unsigned int i = 0; i < nb_meshes(); i++ ) {
-                const std::vector< vec3 >& vertices =
-                    internal_vertices.empty() ?
-                        std::vector< vec3 >() : internal_vertices[i] ;
-                TetraGen_var tetragen = TetraGen::instantiate( method, mesh( i ),
-                    &model_->region( i ), add_steiner_points, vertices, wells() ) ;
+            for( index_t i = 0; i < nb_meshes(); i++ ) {
+                TetraGen_var tetragen = TetraGen::create( mesh( i ), method ) ;
+                tetragen->set_boundaries( &model_->region( i ), wells() ) ;
+                if( !internal_vertices.empty() ) {
+                    tetragen->set_internal_points( internal_vertices[i] ) ;
+                }
                 GEO::Logger::instance()->set_quiet( true ) ;
-                tetragen->tetrahedralize() ;
+                tetragen->tetrahedralize( add_steiner_points ) ;
                 GEO::Logger::instance()->set_quiet( false ) ;
                 progress.next() ;
             }
         } else {
-            const std::vector< vec3 >& vertices =
-                internal_vertices.empty() ?
-                    std::vector< vec3 >() : internal_vertices[region_id] ;
-            TetraGen_var tetragen = TetraGen::instantiate( method, mesh( region_id ),
-                &model_->region( region_id ), add_steiner_points, vertices,
-                wells() ) ;
+            TetraGen_var tetragen = TetraGen::create( mesh( region_id ), method ) ;
+            tetragen->set_boundaries( &model_->region( region_id ), wells() ) ;
+            if( !internal_vertices.empty() ) {
+                tetragen->set_internal_points( internal_vertices[region_id] ) ;
+            }
             GEO::Logger::instance()->set_quiet( true ) ;
-            tetragen->tetrahedralize() ;
+            tetragen->tetrahedralize( add_steiner_points ) ;
             GEO::Logger::instance()->set_quiet( false ) ;
         }
     }
@@ -1196,7 +1445,7 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
-    void MacroMesh::set_nodel( const BoundaryModel& model )
+    void MacroMesh::set_model( const BoundaryModel& model )
     {
         model_ = &model ;
         meshes_.resize( model_->nb_regions(), nil ) ;

@@ -51,7 +51,7 @@ namespace GEOGen {
 
     void Polygon::initialize_from_mesh_facet(
         const Mesh* mesh, index_t facet, bool symbolic,
-        GEO::Attribute<double>& vertex_weight
+        const GEO::Attribute<double>& vertex_weight
     ) {
         clear();
         if(symbolic) {
