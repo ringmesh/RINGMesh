@@ -31,7 +31,7 @@ then
     rm -rf ${main_directory}
 fi
 mkdir ${main_directory}
-cp -R ${files} ${main_directory}
+cp -R --parents ${files} ${main_directory}
        
 tar vczf RINGMesh-${version}.tar.gz ${main_directory}
 zip -r RINGMesh-${version}.zip ${main_directory}
