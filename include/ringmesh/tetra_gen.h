@@ -67,6 +67,7 @@ namespace RINGMesh {
 
     static const std::vector< vec3 > vector_vec3 ;
     class RINGMESH_API TetraGen: public GEO::Counted {
+        ringmesh_disable_copy( TetraGen ) ;
     public:
         virtual ~TetraGen() ;
         static TetraGen* create( GEO::Mesh& tetmesh, const std::string& algo_name ) ;

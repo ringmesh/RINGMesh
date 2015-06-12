@@ -334,6 +334,7 @@ namespace RINGMesh {
         if( unique_vertices_.empty() ) {
             const_cast< MacroMeshVertices* >( this )->initialize() ;
         }
+        ringmesh_debug_assert( global_v < unique_vertices_.size() ) ;
         return unique_vertices_[global_v] ;
     }
 
@@ -1444,7 +1445,7 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
-    void MacroMesh::set_nodel( const BoundaryModel& model )
+    void MacroMesh::set_model( const BoundaryModel& model )
     {
         model_ = &model ;
         meshes_.resize( model_->nb_regions(), nil ) ;
