@@ -55,16 +55,27 @@ namespace RINGMesh {
     {
     }
 
+    /*!
+     * Gets the associated Mesh
+     */
     GEO::Mesh& WellMesh::mesh() const
     {
         return const_cast< GEO::Mesh& >( mesh_ ) ;
     }
 
+    /*!
+     * Gets a point from the mesh
+     * @param[in] p the point id
+     * @return the corresponding point
+     */
     const vec3& WellMesh::point( index_t p ) const
     {
         return mesh_.vertices.point( p ) ;
     }
 
+    /*!
+     * Gets the number of points
+     */
     index_t WellMesh::nb_points() const
     {
         return mesh_.vertices.nb() ;
@@ -88,12 +99,20 @@ namespace RINGMesh {
         if( corner_info_.is_bound() ) corner_info_.unbind() ;
     }
 
+    /*!
+     * Gets the corner info
+     */
     const WellCorner::corner_info_t& WellCorner::corner_info() const {
         return corner_info_[0] ;
     }
 
 // --------------------------------------------------------------------------
 
+    /*!
+     * Create a WellPart
+     * @param[in] well the associated well
+     * @param[in] id the position in the parts_ vector of the associated well
+     */
     WellPart::WellPart( const Well* well, index_t id )
           : WellMesh( well ), id_( id )
     {
@@ -101,6 +120,11 @@ namespace RINGMesh {
         corners_[1] = NO_ID ;
     }
 
+    /*!
+     * Create the associated Mesh of the part
+     * @param[in] points the points of the mesh
+     * @pre the points should be oriented in the order of the well path
+     */
     void WellPart::set_points( const std::vector< vec3 >& points )
     {
         mesh_.vertices.create_vertices( points.size() ) ;
@@ -115,11 +139,17 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * Gets the number of edges
+     */
     index_t WellPart::nb_edges() const
     {
         return mesh_.edges.nb() ;
     }
 
+    /*!
+     * Gets the length of the part
+     */
     double WellPart::length() const
     {
         double l = 0.0 ;
@@ -132,6 +162,7 @@ namespace RINGMesh {
 // --------------------------------------------------------------------------
 
     Well::Well()
+        : nb_edges_( NO_ID )
     {
     }
 
@@ -145,6 +176,11 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * Finds if a corner at a given geometric position exist
+     * @param[in] p the geometric position to test
+     * @return the id of the corner or NO_ID if not found any corresponding to \p p
+     */
     index_t Well::find_corner( const vec3& p ) const
     {
         for( index_t c = 0; c < nb_corners(); c++ ) {
@@ -155,6 +191,10 @@ namespace RINGMesh {
         return NO_ID ;
     }
 
+    /*!
+     * Copies information and resize the number of parts and corners
+     * @param[in,out] well the current well information will be copied into this one
+     */
     void Well::copy_corners_and_informations( Well& well ) const
     {
         well.name_ = name_ ;
@@ -176,8 +216,25 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * Gets the number of edges of the well
+     */
+    index_t Well::nb_edges() const {
+        if( nb_edges_ == NO_ID ) {
+            index_t res = 0 ;
+            for( index_t p = 0; p < nb_parts(); p++ ) {
+                res += part( p ).mesh().edges.nb() ;
+            }
+            const_cast< Well* >( this )->nb_edges_ = res ;
+        }
+        return nb_edges_ ;
+    }
 
-
+    /*!
+     * Gets the edges of a part
+     * @param[in] p the part id
+     * @param[out] edges the edges of the part
+     */
     void Well::get_part_edges(
         index_t p,
         std::vector< Edge >& edges ) const
@@ -189,7 +246,11 @@ namespace RINGMesh {
         }
     }
 
-
+    /*!
+     * Gets all the edges of a corresponding region
+     * @param[in] region the region id
+     * @param[out] edges the corresponding edges
+     */
     void Well::get_region_edges(
         index_t region,
         std::vector< Edge >& edges ) const
@@ -215,7 +276,11 @@ namespace RINGMesh {
     {
     }
 
-
+    /*!
+     * Gets all the edges contained in a region
+     * @param[in] region the region id
+     * @param[out] edges the edges of the region
+     */
     void WellGroup::get_region_edges(
         index_t region,
         std::vector< Edge >& edges ) const
@@ -230,6 +295,11 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * Gets all the edges contained in a region
+     * @param[in] region the region id
+     * @param[out] edges the edges of the region, one vector per well
+     */
     void WellGroup::get_region_edges(
         index_t region,
         std::vector< std::vector< Edge > >& edges ) const
@@ -293,6 +363,10 @@ namespace RINGMesh {
         std::vector< LineInstersection >& intersections_ ;
     } ;
 
+    /*!
+     * Creates new wells
+     * @param[in] nb the number of wells to create
+     */
     void WellGroup::create_wells( index_t nb )
     {
         wells_.resize( nb, nil ) ;
@@ -301,6 +375,12 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * Add a well from its mesh and makes it conformal to the associated BoundarModel
+     * @param[in] mesh the mesh of the well
+     * @param[in] name the name of the well
+     * @pre the mesh should be made of continuous edges without fork or discontinuities
+     */
     void WellGroup::add_well( const GEO::Mesh& mesh, const std::string& name )
     {
         ringmesh_debug_assert( model() ) ;
@@ -465,6 +545,11 @@ namespace RINGMesh {
 
     }
 
+    /*!
+     * Tests if a well with the same name already exist
+     * @param[in] name the name to test
+     * @return the result of the test
+     */
     bool WellGroup::is_well_already_added( const std::string& name ) const
     {
         for( index_t w = 0; w < nb_wells(); w++ ) {

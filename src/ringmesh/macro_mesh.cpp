@@ -334,6 +334,7 @@ namespace RINGMesh {
         if( unique_vertices_.empty() ) {
             const_cast< MacroMeshVertices* >( this )->initialize() ;
         }
+        ringmesh_debug_assert( global_v < unique_vertices_.size() ) ;
         return unique_vertices_[global_v] ;
     }
 
@@ -1020,7 +1021,7 @@ namespace RINGMesh {
         }
     }
 
-MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
+    MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
         : mm_( mm ), nb_vertices_( 0 ), points_( 0 )
     {
 
@@ -1257,6 +1258,77 @@ MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
         }
     }
 
+    /*!
+     * Initialize the cell database of the MacroMesh
+     */
+    void MacroMeshEdges::initialize()
+    {
+        if( !mm_.wells() ) return ;
+        const WellGroup& wells = *mm_.wells() ;
+        well_ptr_.resize( wells.nb_wells() +1, 0 ) ;
+        well_ptr_[0] = 0 ;
+        index_t nb_edges = 0 ;
+        for( index_t w = 0; w < wells.nb_wells(); w++ ) {
+            nb_edges += wells.well( w ).nb_edges()  ;
+            well_ptr_[w+1] = 2*nb_edges ;
+        }
+        edges_.resize( 2*nb_edges ) ;
+
+        std::vector< index_t > edge_offset( wells.nb_wells(), 0 ) ;
+        for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
+            const GEO::Mesh& mesh = mm_.mesh( m ) ;
+            GEO::Attribute< index_t > well_id( mesh.edges.attributes(),
+                region_att_name ) ;
+            for( index_t e = 0; e < mesh.edges.nb(); e++ ) {
+                index_t id = well_id[e] ;
+                edges_[well_ptr_[id] + edge_offset[id]++ ] = mm_.vertices.vertex_id(
+                    m, mesh.edges.vertex( e, 0 ) ) ;
+                edges_[well_ptr_[id] + edge_offset[id]++ ] = mm_.vertices.vertex_id(
+                    m, mesh.edges.vertex( e, 1 ) ) ;
+            }
+        }
+    }
+
+    /*!
+     * Gets the number of wells
+     * @return the corresponding number
+     */
+    index_t MacroMeshEdges::nb_wells() const
+    {
+        test_initialize() ;
+        return mm_.wells() ? mm_.wells()->nb_wells() : 0 ;
+    }
+    /*!
+     * Gets the number of edges in the MacroMesh
+     * @return the corresponding number
+     */
+    index_t MacroMeshEdges::nb_edges() const
+    {
+        test_initialize() ;
+        return edges_.size() / 2 ;
+    }
+    /*!
+     * Gets the number of edges of a Well
+     * @param[in] w the well id
+     * @return the corresponding number
+     */
+    index_t MacroMeshEdges::nb_edges( index_t w ) const
+    {
+        test_initialize() ;
+        return ( well_ptr_[w+1] - well_ptr_[w] ) / 2 ;
+    }
+    /*!
+     * Gets the vertex id of the MacroMesh
+     * @param[in] w the well id
+     * @param[in] e the edge id
+     * @param[in] v the vertex id of the edge (0 or 1 )
+     * @return the global vertex id
+     */
+    index_t MacroMeshEdges::vertex_id( index_t w, index_t e, index_t v ) const
+    {
+        test_initialize() ;
+        return edges_[well_ptr_[w] + 2 * e + v] ;
+    }
 
     MacroMesh::MacroMesh( const BoundaryModel& model )
         :
@@ -1266,6 +1338,7 @@ MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
             wells_( nil ),
             order_(1),
             vertices( *this ),
+            edges( *this ),
             facets( *this ),
             cells( *this ),
             tools( *this ),
@@ -1284,6 +1357,7 @@ MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
             wells_( nil ),
             order_(1),
             vertices( *this ),
+            edges( *this ),
             facets( *this ),
             cells( *this ),
             tools( *this ),
@@ -1371,7 +1445,7 @@ MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
         wells_ = wells ;
     }
 
-    void MacroMesh::set_nodel( const BoundaryModel& model )
+    void MacroMesh::set_model( const BoundaryModel& model )
     {
         model_ = &model ;
         meshes_.resize( model_->nb_regions(), nil ) ;

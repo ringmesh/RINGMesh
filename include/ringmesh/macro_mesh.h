@@ -363,6 +363,40 @@ namespace RINGMesh {
 
     } ;
 
+    class RINGMESH_API MacroMeshEdges {
+    public:
+        MacroMeshEdges( MacroMesh& mm )
+            : mm_( mm )
+        {
+        }
+
+        index_t nb_wells() const ;
+        index_t nb_edges() const ;
+        index_t nb_edges( index_t w ) const ;
+        index_t vertex_id( index_t w, index_t e, index_t v ) const ;
+
+    private:
+        /*!
+         * Tests if the MacroMeshCells needs to be initialized and initialize it
+         */
+        void test_initialize() const
+        {
+            if( edges_.empty() ) {
+                const_cast< MacroMeshEdges* >( this )->initialize() ;
+            }
+        }
+        void initialize() ;
+    private:
+        /// Attached MaroMesh
+        const MacroMesh& mm_ ;
+
+        /// Vector of edge vertex id in the MacroMesh
+        std::vector< index_t > edges_ ;
+        /// Mapping between well id and edges_
+        std::vector< index_t > well_ptr_ ;
+
+    } ;
+
     class RINGMESH_API MacroMesh {
     ringmesh_disable_copy( MacroMesh ) ;
     public:
@@ -422,7 +456,7 @@ namespace RINGMesh {
             ringmesh_debug_assert( model_ ) ;
             return *model_ ;
         }
-        void set_nodel( const BoundaryModel& model ) ;
+        void set_model( const BoundaryModel& model ) ;
 
         /*!
          * Access the DuplicateMode
@@ -480,6 +514,8 @@ namespace RINGMesh {
     public:
         /// Optional storage of the MacroMesh vertices
         MacroMeshVertices vertices ;
+        /// Optional storage of the MacroMesh edges
+        MacroMeshEdges edges ;
         /// Optional storage of the MacroMesh facets
         MacroMeshFacets facets ;
         /// Optional storage of the MacroMesh cells

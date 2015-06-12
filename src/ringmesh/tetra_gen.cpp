@@ -217,14 +217,14 @@ namespace RINGMesh {
             mesh_get_edge_count( mesh_output_, &nb_lines ) ;
 
             initialize_storage( nb_points, nb_tets ) ;
-#pragma omp parallel for
+            RINGMESH_PARALLEL_LOOP
             for( index_t t = 0; t < nb_tets; t++ ) {
                 signed_index_t tet[4] ;
                 mesh_get_tetrahedron_vertices( mesh_output_, t + 1, tet ) ;
                 set_tetra( t, tet, nb_lines, nb_triangles ) ;
             }
 
-#pragma omp parallel for
+            RINGMESH_PARALLEL_LOOP
             for( index_t p = 0; p < nb_points; p++ ) {
                 double point[3] ;
                 mesh_get_vertex_coordinates( mesh_output_, p + 1, point ) ;
@@ -459,6 +459,9 @@ namespace RINGMesh {
     void TetraGen::initialize()
     {
         ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
+
+#ifdef USE_MG_TETRA
         ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
+#endif
     }
 }

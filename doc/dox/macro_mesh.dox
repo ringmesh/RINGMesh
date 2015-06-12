@@ -80,12 +80,13 @@ It implies that there is no connection between the different meshes, in other wo
 each mesh stores its vertices, facets and cells.
 However, you may want/need a more general information than the one stores inside a mesh.
 
-To ease the global access, three optional databases are attached to the RINGMesh::MacroMesh:
+To ease the global access, four optional databases are attached to the RINGMesh::MacroMesh:
  - RINGMesh::MacroMeshVertices: access to a global vertex without redundancy at the mesh interfaces.
  it also handle vertices duplication if needed. Several duplication mode can be set in the
  RINGMesh::MacroMesh (cf. RINGMesh::DuplicateMode).
  - RINGMesh::MacroMeshFacets: access to a global facet.
  - RINGMesh::MacroMeshCells: access to a global cell and its adjacent cells (even at the mesh interfaces).
+ - RINGMesh::MacroMeshEdges: access to a global edge (to model wells).
 These databases are empty by default and are automatically filled as soon as they are used.
 
 Examples:

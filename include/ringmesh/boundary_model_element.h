@@ -71,7 +71,6 @@ namespace RINGMesh {
         /*!
          * @brief Geological feature types for BoundaryModelElement
          * @todo Read all possible geological features set by Gocad.
-         *       Are types for contacts really necessary ?
          */
         enum GEOL_FEATURE {
             /// All geological features 
@@ -100,8 +99,9 @@ namespace RINGMesh {
          *     geometry and connectivity relationships
          *   - high-level elements (CONTACT, INTERFACE, LAYER) 
          *     that are constituted of low-level elements
-         *
-         * DO NOT MODIFY THIS ENUM
+         * TYPE is used extensively to manage elements, iterate on them, etc.
+         *  
+         * @warning DO NOT MODIFY THIS ENUM.
          * 
          * @todo Add fault blocks.
          */
@@ -146,12 +146,21 @@ namespace RINGMesh {
             {
                 return type == rhs.type && index == rhs.index ;
             }
+            /*!
+             * @brief Sort BME identifiers
+             * @details Compare first types, then compare indices, 
+             *          beginning with NO_ID indices. 
+             * @note In a sorted vector v of bme_t one can find the first surface with
+             *       std::lower_bound( v.begin(), v.end(), bme_t( SURFACE, NO_ID ) ) ;
+             */
             bool operator<( const bme_t& rhs ) const
             {
                 if( type != rhs.type ) {
                     return type < rhs.type  ;
                 }
                 else {
+                    if( index == NO_ID ) return true ;
+                    if( rhs.index == NO_ID ) return false ;
                     return index < rhs.index ;
                 }
             }    
@@ -265,7 +274,7 @@ namespace RINGMesh {
         const BoundaryModel& model() const { return *model_ ; }
         bool has_name() const { return name_ != "" ; }
         const std::string& name() const { return name_ ; }
-        bme_t bme_id() const { return id_ ; }
+        const bme_t& bme_id() const { return id_ ; }
         bool has_geological_feature() const { return geol_feature_ != NO_GEOL ; }
         GEOL_FEATURE geological_feature() const { return geol_feature_ ; }
         bool is_on_voi() const ;
@@ -275,13 +284,13 @@ namespace RINGMesh {
          * @{
          */
         index_t nb_boundaries() const { return boundaries_.size() ;}
-        bme_t boundary_id( index_t x ) const { return boundaries_[ x ] ;}
+        const bme_t& boundary_id( index_t x ) const { return boundaries_[ x ] ;}
         const BoundaryModelElement& boundary( index_t x ) const ;
 
         bool side( index_t i ) const { return sides_[ i ] ;}
 
         index_t nb_in_boundary() const { return in_boundary_.size() ;}
-        bme_t in_boundary_id( index_t x ) const { return in_boundary_[ x ] ;}
+        const bme_t& in_boundary_id( index_t x ) const { return in_boundary_[ x ] ;}
         const BoundaryModelElement& in_boundary( index_t x ) const ;
 
         bool is_inside_border( const BoundaryModelElement& e ) const ;
@@ -292,11 +301,11 @@ namespace RINGMesh {
          * @{
          */
         bool has_parent() const { return parent_.index != NO_ID ;}
-        bme_t parent_id() const { return parent_ ; }
+        const bme_t& parent_id() const { return parent_ ; }
         const BoundaryModelElement& parent() const ;
 
         index_t nb_children() const { return children_.size() ;}
-        bme_t child_id( index_t x ) const { return children_[ x ] ;}
+        const bme_t& child_id( index_t x ) const { return children_[ x ] ;}
         const BoundaryModelElement& child( index_t x ) const ;
 
         /*!@}
@@ -348,14 +357,14 @@ namespace RINGMesh {
         void set_name( const std::string& name ) { name_ = name ; }
         void set_geological_feature( GEOL_FEATURE type ) { geol_feature_ = type ; }
 
-        void add_boundary( bme_t b )
+        void add_boundary( const bme_t& b )
         {
             ringmesh_debug_assert( b.is_defined() ) ;
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             boundaries_.push_back( b ) ;
         }
 
-        void set_boundary( index_t id, bme_t b )
+        void set_boundary( index_t id, const bme_t& b )
         {
             /// No check on the validity of the index of the element b
             /// NO_ID is used to flag elements to delete            
@@ -364,7 +373,7 @@ namespace RINGMesh {
             boundaries_[ id ] = b ;
         }
 
-        void add_boundary( bme_t b, bool side )
+        void add_boundary( const bme_t& b, bool side )
         {
             ringmesh_debug_assert( b.is_defined() ) ;
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
@@ -372,7 +381,7 @@ namespace RINGMesh {
             sides_.push_back( side ) ;
         }
 
-        void set_boundary( index_t id, bme_t b, bool side )
+        void set_boundary( index_t id, const bme_t& b, bool side )
         {
             /// No check on the validity of the index of the element b
             /// NO_ID is used to flag elements to delete 
@@ -382,14 +391,14 @@ namespace RINGMesh {
             sides_[ id ] = side ;
         }
 
-        void add_in_boundary( bme_t in_b )
+        void add_in_boundary( const bme_t& in_b )
         {
             ringmesh_debug_assert( in_b.is_defined() ) ;
             ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
             in_boundary_.push_back( in_b ) ;
         }
 
-        void set_in_boundary( index_t id, bme_t in_b )
+        void set_in_boundary( index_t id, const bme_t& in_b )
         {
             /// No check on the validity of the index of the element in_b
             /// NO_ID is used to flag elements to delete 
@@ -398,7 +407,7 @@ namespace RINGMesh {
             in_boundary_[ id ] = in_b ;
         }
 
-        void set_parent( bme_t p )
+        void set_parent( const bme_t& p )
         {
             /// No check on the validity of the index of the element p
             /// NO_ID is used to flag elements to delete 
@@ -406,14 +415,14 @@ namespace RINGMesh {
             parent_ = p ;
         }
 
-        void add_child( bme_t c )
+        void add_child( const bme_t& c )
         {
             ringmesh_debug_assert( c.is_defined() ) ;
             ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
             children_.push_back( c ) ;
         }
 
-        void set_child( index_t id, bme_t c )
+        void set_child( index_t id, const bme_t& c )
         {
             /// No check on the validity of the index of the element c
             /// NO_ID is used to flag elements to delete 
@@ -564,12 +573,6 @@ namespace RINGMesh {
             return const_cast< GEO::Mesh& >( mesh_ ) ;
         }
 
-        // It would be better to have two functions, remove the const of the one above.
-        /*const GEO::Mesh& mesh() const
-        {
-            return mesh_ ;
-        }*/ 
-
     protected:
         /*!
         * @brief Check if the mesh stored is valid.
@@ -704,7 +707,7 @@ namespace RINGMesh {
         {
         }
 
-        ~Surface() ;
+        ~Surface(){} ;
         
         bool is_triangulated() const { return mesh_.facets.are_simplices() ; }
 

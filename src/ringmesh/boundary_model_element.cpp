@@ -111,14 +111,24 @@ namespace {
      */
     bool facet_is_degenerate( const Surface& S, index_t f )
     {
-        std::vector< index_t > corners( S.nb_vertices_in_facet( f ) ) ;
-        std::vector< index_t > corners_global( S.nb_vertices_in_facet( f ) ) ;
+        std::vector< index_t > corners( S.nb_vertices_in_facet( f ), NO_ID ) ;
+        std::vector< index_t > corners_global( S.nb_vertices_in_facet( f ), NO_ID ) ;
         int v = 0 ;
         for( index_t c = S.facet_begin( f ) ; c < S.facet_end( f ); ++c ) {
             corners[ v ] = c ;
             corners_global[ v ] = S.model_vertex_id( f, v ) ;
             v++ ;
         }
+        ringmesh_debug_assert( 
+            std::count( corners.begin(), corners.end(), NO_ID ) == 0 ) ;
+        ringmesh_debug_assert( 
+            std::count( corners_global.begin(), corners_global.end(), NO_ID ) == 0 ) ;
+        // 0 is the default value of the model_vertex_id
+        // If we have only 0 either this is a degenerate facets, but most certainly
+        // model vertex ids are not good 
+        ringmesh_debug_assert(
+            std::count( corners_global.begin(), corners_global.end(), 0 ) != corners_global.size() ) ;
+
         std::sort( corners.begin(), corners.end() ) ;
         std::sort( corners_global.begin(), corners_global.end() ) ;
         return std::unique( corners.begin(), corners.end() ) != corners.end() ||
@@ -139,36 +149,26 @@ namespace RINGMesh {
     BoundaryModelElement::GEOL_FEATURE BoundaryModelElement::
         determine_geological_type( const std::string& in )
     {
-        if( in == "" ) {
-            return NO_GEOL ;
-        }
         if( in == "reverse_fault" ) {
             return REVERSE_FAULT ;
-        }
-        if( in == "normal_fault" ) {
+        } else if( in == "normal_fault" ) {
             return NORMAL_FAULT ;
-        }
-        if( in == "fault" ) {
+        } else if( in == "fault" ) {
             return FAULT ;
-        }
-        if( in == "top" ) {
+        } else if( in == "top" ) {
             return STRATI ;
-        }
-        // This might seem strange - but it seems that what's
-        // Gocad is doing
-        if( in == "none" ) {
+        } else if( in == "none" ) {
+            // This might seem strange - but it seems that what's
+            // Gocad is doing
             return STRATI ;
-        }
-        if( in == "unconformity" ) {
+        } else if( in == "unconformity" ) {
             return UNCONFORMITY ;
-        }
-        if( in == "boundary" ) {
+        } else if( in == "boundary" ) {
             return VOI ;
+        } else {
+            // Default case - no information
+            return NO_GEOL ;            
         }
-
-        GEO::Logger::err("BoundaryModel") << "Unexpected geological feature " << in
-            << std::endl ;
-        return NO_GEOL ;
     }
 
 
@@ -197,8 +197,8 @@ namespace RINGMesh {
             case NORMAL_FAULT: return "normal_fault" ;
             case UNCONFORMITY: return "unconformity" ;
             case VOI: return "boundary" ;
-            case NO_GEOL: return "" ;
-            default: return "" ;
+            case NO_GEOL: return "no_geological_feature" ;
+            default: return "no_geological_feature" ;
                 break ;
         }
     }
@@ -614,7 +614,7 @@ namespace RINGMesh {
             }
             return false ;         
         }            
-        else if( T== LINE || T == CORNER ) {
+        else if( T == LINE || T == CORNER ) {
             // True if one of the incident surface define the universe
             for( index_t i = 0; i < nb_in_boundary(); ++i ) {
                 if( in_boundary( i ).is_on_voi() ) {
@@ -667,14 +667,20 @@ namespace RINGMesh {
     void BoundaryModelElement::erase_invalid_element_references()
     {
         TYPE T = bme_id().type ;
-        if( child_allowed( T ) ) {
+        if( nb_children() > 0 ) {
             bme_t invalid_child( child_type( T ), NO_ID ) ;
-            children_.erase( std::remove(
-                children_.begin(), children_.end(), invalid_child ), 
-                children_.end() );
-
+            if( std::count( children_.begin(), children_.end(), invalid_child ) 
+                == children_.size() 
+              ) {
+                // Calling erase on all elements -> undefined behavior 
+                children_.clear() ;              
+            } else {            
+                children_.erase( std::remove(
+                    children_.begin(), children_.end(), invalid_child ),
+                    children_.end() );
+            }
         }
-        if( boundary_allowed( T ) ) {
+        if( nb_boundaries() > 0 ) {
             bme_t invalid_boundary( boundary_type( T ), NO_ID ) ;
 
             if( !sides_.empty() ) {
@@ -690,20 +696,29 @@ namespace RINGMesh {
             }
             index_t end = std::remove( boundaries_.begin(), boundaries_.end(), invalid_boundary )
                 - boundaries_.begin() ;
-
-            boundaries_.erase( boundaries_.begin()+end, boundaries_.end() );
-            sides_.erase( sides_.begin() + end, sides_.end() ) ;
-
+            if( end == 0 ) {
+                boundaries_.clear() ;
+                sides_.clear() ;
+            } else {
+                boundaries_.erase( boundaries_.begin()+end, boundaries_.end() );
+                if( !sides_.empty() ) {
+                    sides_.erase( sides_.begin() + end, sides_.end() ) ;
+                }
+            }            
         }
-        if( in_boundary_allowed( T ) ) {
+        if( nb_in_boundary() > 0 ) {
             bme_t invalid_in_boundary( in_boundary_type( T ), NO_ID ) ;
-            in_boundary_.erase( std::remove(
-                in_boundary_.begin(), in_boundary_.end(), invalid_in_boundary ), 
-                in_boundary_.end() );
+            if( std::count( in_boundary_.begin(), in_boundary_.end(), invalid_in_boundary )
+                == in_boundary_.size()
+              ) {
+                in_boundary_.clear() ;
+            } else {
+                in_boundary_.erase( std::remove(
+                    in_boundary_.begin(), in_boundary_.end(), invalid_in_boundary ),
+                    in_boundary_.end() );
+            }
         }
-
     }
-
 
 
 
@@ -789,8 +804,7 @@ namespace RINGMesh {
         ringmesh_debug_assert( index < nb_vertices() ) ;
         if( update ) {
             model_->vertices.update_point(
-                model_->vertices.unique_vertex_id(
-                bme_id(), index ), point ) ;
+                model_vertex_id( index ) , point ) ;
         }
         else {
             mesh_.vertices.point( index ) = point ;
@@ -834,7 +848,8 @@ namespace RINGMesh {
     {
         set_vertex( v, model_->vertices.unique_vertex( model_vertex ), false ) ;
         set_model_vertex_id( v, model_vertex ) ;
-        model_->vertices.add_unique_to_bme( model_vertex, bme_id(), v ) ;
+        model_->vertices.add_unique_to_bme( 
+            model_vertex, BoundaryModelVertices::VertexInBME( bme_id(), v ) ) ;
     }
 
 
@@ -1156,11 +1171,6 @@ namespace RINGMesh {
 
 
     /********************************************************************/
-
-    Surface::~Surface()
-    {
-    }
-
     
     /*!
      * @brief Check that the mesh of the Surface is valid
@@ -1926,7 +1936,8 @@ namespace RINGMesh {
         if( m_corner != NO_ID ) {
             s_new_corner = mesh_.vertices.create_vertex( M.vertices.unique_vertex( m_corner ).data() ) ;
             set_model_vertex_id( s_new_corner, m_corner ) ;           
-            M.vertices.add_unique_to_bme( m_corner, bme_id(), s_new_corner ) ;
+            M.vertices.add_unique_to_bme( 
+                m_corner, BoundaryModelVertices::VertexInBME( bme_id(), s_new_corner ) ) ;
         }
 
         while( model_vertex_id( id1 ) != M.corner(c1).model_vertex_id() ) {
@@ -1957,7 +1968,8 @@ namespace RINGMesh {
             // Set its model vertex index
             set_model_vertex_id( new_id1, model_vertex_id( id1 ) ) ;
             // Add the mapping from in the model vertices. Should we do this one ?
-            M.vertices.add_unique_to_bme( model_vertex_id(id1), bme_id(), new_id1 ) ;
+            M.vertices.add_unique_to_bme(
+                model_vertex_id( id1 ), BoundaryModelVertices::VertexInBME( bme_id(), new_id1 ) ) ;
 
             // Update vertex index in facets 
             update_facet_corner( *this, facets_around_id1, id1, new_id1 ) ;
