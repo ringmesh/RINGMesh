@@ -8,6 +8,7 @@ else
 fi
 
 cd `dirname $0`
+RINGMesh_HOME=$(pwd)
 
 files="configure.bat
       configure.sh
@@ -30,10 +31,18 @@ then
     rm -rf ${main_directory}
 fi
 mkdir ${main_directory}
-cp -R ${files} ${main_directory}
+cp -R --parents ${files} ${main_directory}
        
-tar vczf RINGMesh-$version.tar.gz ${main_directory}
-zip -r RINGMesh-$version.zip ${main_directory}
+tar vczf RINGMesh-${version}.tar.gz ${main_directory}
+zip -r RINGMesh-${version}.zip ${main_directory}
 
 rm -rf ${main_directory}
+
+doc_target=doc_online
+cd doc
+rm -rf $doc_target
+doxygen Doxyfile_online
+cd $doc_target/html
+tar vczf ${RINGMesh_HOME}/doc.tar.gz ./*
+
 

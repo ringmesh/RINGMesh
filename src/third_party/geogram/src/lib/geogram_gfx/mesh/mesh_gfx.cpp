@@ -1201,7 +1201,7 @@ namespace GEO {
             );
         }
         
-        if(cell_indices_VBO_ == 0 && mesh_->cells.nb() != 0) {
+        if(mesh_->cells.nb() != 0) {
             update_buffer_object(
                 cell_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                 mesh_->cell_corners.nb() * sizeof(int),
@@ -1421,7 +1421,8 @@ namespace GEO {
         }
         glLineWidth(GLfloat(mesh_width_));        
         glColor3f(mesh_color_[0], mesh_color_[1], mesh_color_[2]);
-
+        glDisable(GL_LIGHTING);
+        
         begin_draw(MESH_EDGES);
         // Note: the fourth argument (0) corresponds to the bound VBO.        
         glDrawElements(
@@ -1816,7 +1817,7 @@ namespace GEO {
                     index_t i = mesh_->cells.facet_vertex(c,f,0);
                     index_t j = mesh_->cells.facet_vertex(c,f,1);
                     index_t k = mesh_->cells.facet_vertex(c,f,2);
-                    glMeshTriangleNormal(mesh_,k,j,i);
+                    glMeshTriangleNormal(mesh_,i,j,k);
                     glMeshVertex(mesh_,i);
                     glMeshVertex(mesh_,j);
                     glMeshVertex(mesh_,k);                    
@@ -1838,7 +1839,7 @@ namespace GEO {
                     index_t j = mesh_->cells.facet_vertex(c,f,1);
                     index_t k = mesh_->cells.facet_vertex(c,f,2);
                     index_t l = mesh_->cells.facet_vertex(c,f,3);
-                    glMeshTriangleNormal(mesh_,k,j,i);
+                    glMeshTriangleNormal(mesh_,i,j,k);
                     glMeshVertex(mesh_,i);
                     glMeshVertex(mesh_,j);
                     glMeshVertex(mesh_,k);

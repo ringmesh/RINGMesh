@@ -60,6 +60,16 @@ namespace GEO {
 
     void initialize() {
 
+        // When locale is set to non-us countries,
+        // this may cause some problems when reading
+        // floating-point numbers (some locale expect
+        // a decimal ',' instead of a '.').
+        // This restores the default behavior for
+        // reading floating-point numbers.
+#ifdef GEO_OS_UNIX
+        setenv("LC_NUMERIC","POSIX",1);
+#endif
+        
         Environment* env = Environment::instance();
         env->set_value("version", "0.0");
         env->set_value("release_date", "Jan 2015");

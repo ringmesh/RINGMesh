@@ -2573,7 +2573,7 @@ namespace GEO {
 
         if(benchmark_mode_) {
             Logger::out("PDEL")
-                << "Using " << levels_.size() << " levels" << std::endl;
+                << "Using " << levels_.size()-1 << " levels" << std::endl;
             Logger::out("PDEL") 
                 << "Levels 0 - " << lvl-1 
                 << ": bootstraping with first levels in sequential mode"
