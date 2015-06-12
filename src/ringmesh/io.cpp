@@ -51,11 +51,10 @@
 #include <geogram/basic/logger.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <third_party/hdf5/H5Cpp.h>
 
 #include <third_party/zlib/zip.h>
 #include <third_party/zlib/unzip.h>
-
-#include <third_party/hdf5/H5Cpp.h>
 
 #include <iostream>
 #include <iomanip>
@@ -2584,71 +2583,167 @@ namespace RINGMesh {
                 return true ;
             }
         } ;
-        /************************************************************************/
-
-        MacroMeshIOHandler* MacroMeshIOHandler::create( const std::string& format )
-        {
-            MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
-                format ) ;
-            if( handler ) {
-                return handler ;
-            }
-
-            GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
-                << std::endl ;
-            return nil ;
-        }
-
-        MacroMeshIOHandler* MacroMeshIOHandler::get_handler(
-            const std::string& filename )
-        {
-            std::string ext = GEO::FileSystem::extension( filename ) ;
-            return create( ext ) ;
-        }
 
         /************************************************************************/
+
         class HDF5IOHandler: public MacroMeshIOHandler {
         public:
 
-            virtual bool load( const std::string& filename, MacroMesh& mesh )
+            virtual bool load( const std::string& filename, MacroMesh& mm )
             {
-                GEO::Logger::err( "I/O" )
-                    << "Loading of a MacroMesh from HDF5 not implemented yet"
-                    << std::endl ;
-                return false ;
+                H5::H5File in(filename, H5F_ACC_RDONLY);
 
-//                H5::H5File in(filename, H5F_ACC_RDONLY);
+                index_t nb_meshes_in[1];
+                index_t nb_vertices_in[1];
+                index_t nb_facets_in[2];
+                index_t nb_cells_in[4];
+
+                H5::DataSet nb_meshes = in.openDataSet("nbMeshes");
+                nb_meshes.read(nb_meshes_in, H5::PredType::NATIVE_INT);
+                nb_meshes.close();
+
+                for(index_t m=0; m<nb_meshes_in[0]; m++){
+                	GEO::Mesh& mesh = mm.mesh(m);
+                	mesh.vertices.set_dimension(3);
+
+                    std::stringstream int_to_str;
+                	int_to_str<<m;
+                	H5::Group curr_mesh_in = in.openGroup(int_to_str.str());
+
+                	H5::DataSet nb_vertices = curr_mesh_in.openDataSet("nbVertices");
+                	nb_vertices.read(nb_vertices_in, H5::PredType::NATIVE_INT);
+                	nb_vertices.close();
+
+                	H5::Group vertices_in = curr_mesh_in.openGroup("vertices");
+
+                	for(index_t v=0; v<nb_vertices_in[0]; v++){
+                		double point[3];
+                		std::stringstream int_to_str;
+                		int_to_str<<v;
+
+                		H5::DataSet curr_vertex = vertices_in.openDataSet(int_to_str.str());
+                		curr_vertex.read(point, H5::PredType::NATIVE_DOUBLE);
+                		curr_vertex.close();
+
+                		mesh.vertices.create_vertex(point);
+                	}
+
+                	vertices_in.close();
+
+                	H5::DataSet nb_facets = curr_mesh_in.openDataSet("nbTri_nbQuad");
+                	nb_facets.read(nb_facets_in, H5::PredType::NATIVE_INT);
+                	nb_facets.close();
+
+                	H5::Group facets_in = curr_mesh_in.openGroup("facets");
+
+                	for(index_t f=0; f<(nb_facets_in[0]+nb_facets_in[1]); f++){
+                		std::stringstream int_to_str;
+                		int_to_str<<f;
+                		H5::Group curr_facet = facets_in.openGroup(int_to_str.str());
+                		H5::DataSet facet_data = curr_facet.openDataSet("dset");
+
+                		int obj_type[1];
+                		int nb_vertices;
+                		H5::Attribute type = facet_data.openAttribute("type");
+                		type.read(H5::PredType::NATIVE_INT, obj_type);
+                		type.close();
+
+                		if(obj_type[0]==1) nb_vertices=3;
+                		else if(obj_type[0]==2) nb_vertices=4;
+
+                		int vertices_id[nb_vertices];
+                		H5::Attribute vertices = facet_data.openAttribute("verticesID");
+                		vertices.read(H5::PredType::NATIVE_INT, vertices_id);
+                		vertices.close();
+
+                		if(obj_type[0]==1){
+                			mesh.facets.create_triangle(vertices_id[0], vertices_id[1], vertices_id[2]);
+                		} else if(obj_type[0]==2){
+                			mesh.facets.create_quad(vertices_id[0], vertices_id[1], vertices_id[2], vertices_id[3]);
+                		}
+
+                		facet_data.close();
+                		curr_facet.close();
+                	}
+                	facets_in.close();
+
+                	H5::DataSet nb_cells = curr_mesh_in.openDataSet("nbTetra_nbPyr_nbPrism_nbHexa");
+                	nb_cells.read(nb_cells_in, H5::PredType::NATIVE_INT);
+                	nb_cells.close();
+
+                	H5::Group cells_in = curr_mesh_in.openGroup("cells");
+
+                	for(index_t c=0; c<(nb_cells_in[0]+nb_cells_in[1]+nb_cells_in[2]+nb_cells_in[3]); c++){
+                        if(c>(nb_cells_in[0]+nb_cells_in[1]+nb_cells_in[2]+nb_cells_in[3])-1){
+                    		GEO::Logger::out( "I/O" ) << "out of bonds "<< m << std::endl;
+                        }
+                		std::stringstream int_to_str;
+                		int_to_str<<c;
+                		H5::Group curr_cell = cells_in.openGroup(int_to_str.str());
+                		H5::DataSet cell_data = curr_cell.openDataSet("dset");
+
+                		int obj_type[1];
+                		int nb_vertices;
+                		H5::Attribute type = cell_data.openAttribute("type");
+                		type.read(H5::PredType::NATIVE_INT, obj_type);
+                		type.close();
+
+                		if(obj_type[0]==3) nb_vertices=4;
+                		else if(obj_type[0]==4) nb_vertices=5;
+                		else if(obj_type[0]==5) nb_vertices=6;
+                		else if(obj_type[0]==6) nb_vertices=8;
+
+                		int vertices_id[nb_vertices];
+                		H5::Attribute vertices = cell_data.openAttribute("verticesID");
+                		vertices.read(H5::PredType::NATIVE_INT, vertices_id);
+                		vertices.close();
+
+                		if(obj_type[0]==3){
+                			mesh.cells.create_tet(
+                					vertices_id[0],
+									vertices_id[1],
+									vertices_id[2],
+									vertices_id[3]);
+                		} else if(obj_type[0]==4){
+                			mesh.cells.create_pyramid(
+                					vertices_id[0],
+									vertices_id[1],
+									vertices_id[2],
+									vertices_id[3],
+									vertices_id[4]);
+                		} else if(obj_type[0]==5){
+                			mesh.cells.create_prism(
+                					vertices_id[0],
+									vertices_id[1],
+									vertices_id[2],
+									vertices_id[3],
+									vertices_id[4],
+									vertices_id[5]);
+                		} else if(obj_type[0]==6){
+                			mesh.cells.create_hex(
+                					vertices_id[0],
+									vertices_id[1],
+									vertices_id[2],
+									vertices_id[3],
+									vertices_id[4],
+									vertices_id[5],
+									vertices_id[6],
+									vertices_id[7]);
+                		}
+
+                		cell_data.close();
+                		curr_cell.close();
+                	}
+                	cells_in.close();
+
+//                    GEO::Logger::out( "I/O" ) << "Number of cells :"<< std::endl;
 //
-//                index_t* nb_meshes_in;
-//                index_t* unique_vertices_in;
-//                index_t nb_facets_in[2];
-//                index_t nb_cells_in[4];
-//
-//                H5::DataSet nb_meshes = in.openDataSet("nbMeshes");
-//                nb_meshes.read(nb_meshes_in, H5::PredType::NATIVE_INT);
-//                nb_meshes.close();
-//
-//                H5::DataSet nb_vertices = in.openDataSet("nbVertices");
-//                nb_vertices.read(unique_vertices_in, H5::PredType::NATIVE_INT);
-//                nb_vertices.close();
-//
-//                H5::DataSet nb_facets = in.openDataSet("nbTri_nbQuad");
-//                nb_facets.read(nb_facets_in, H5::PredType::NATIVE_INT);
-//                nb_facets.close();
-//
-//                H5::DataSet nb_cells = in.openDataSet("nbTetra_nbPyr_nbPrism_nbHexa");
-//                nb_cells.read(nb_cells_in, H5::PredType::NATIVE_INT);
-//                nb_cells.close();
-//
-//                for(index_t m=0; m<nb_meshes_in[0]; m++){
-//                    std::stringstream int_to_str;
-//                	int_to_str<<m;
-//                	H5::Group curr_mesh_in = in.openGroup(int_to_str.str());
-//
-//                	GEO::Mesh curr_mesh = mesh.mesh(m);
-//
-//                	std::vector< double > points_in(curr_mesh_in);
-//                }
+//                    GEO::Logger::out( "I/O" ) << "Connecting the cells "<< m << std::endl;
+//                	  mesh.cells.connect();
+                }
+
+                in.close();
+                return true;
             }
 
             virtual bool save( const MacroMesh& mm, const std::string& filename )
@@ -2669,16 +2764,25 @@ namespace RINGMesh {
 
                 hsize_t attr_dims[1] = {1};
                 H5::DataSpace attr_dataspace(1, attr_dims);
+                attr_dims[0] = 3;
+                H5::DataSpace tri_attr_dataspace(1, attr_dims);
+                attr_dims[0] = 4;
+                H5::DataSpace quad_attr_dataspace(1, attr_dims);
+                H5::DataSpace tetra_attr_dataspace(1, attr_dims);
+                attr_dims[0] = 5;
+                H5::DataSpace pyr_attr_dataspace(1, attr_dims);
+                attr_dims[0] = 6;
+                H5::DataSpace prism_attr_dataspace(1, attr_dims);
+                attr_dims[0] = 7;
+                H5::DataSpace hexa_attr_dataspace(1, attr_dims);
 
                 std::vector< bool > vertex_is_added(mm.vertices.nb_vertices(), false);
-                std::vector< H5std_string > unique_dset_names(mm.vertices.nb_vertices(), "/");
+                std::vector< H5std_string > unique_vertices_names(mm.vertices.nb_vertices(), "/");
 
                 std::vector< H5::Group > meshes;
                 std::vector< H5::Group > cells_grp;
                 std::vector< H5::Group > facets_grp;
                 std::vector< H5::Group > vertices_grp;
-
-                std::vector< H5::DataSet > vertices;
 
                 H5::H5File out(filename, H5F_ACC_TRUNC);
 
@@ -2699,7 +2803,8 @@ namespace RINGMesh {
                 for( index_t m=0; m<mm.nb_meshes(); m++ ){
                 	const GEO::Mesh& mesh = mm.mesh( m ) ;
 
-                    GEO::Logger::out( "I/O" ) << "Adding vertices to mesh "<< m << std::endl ;
+                    GEO::Logger::out( "I/O" ) << "Adding vertices to mesh "<< m << std::endl;
+
                 	for( index_t v=0; v<mesh.vertices.nb(); v++ ){
                     	index_t mm_v = mm.vertices.vertex_id( m, v );
                     	const vec3 & point = mm.vertices.vertex( mm_v );
@@ -2708,15 +2813,13 @@ namespace RINGMesh {
 
 						if(!vertex_is_added[mm_v]){
 							vertex_is_added[mm_v] = true;
-							unique_dset_names[mm_v] = build_dset_name(m, v, "vertices");
-
-							vertices.push_back(
-									vertices_grp[m].createDataSet(
-											int_to_str.str(),
-											H5::PredType::IEEE_F64BE,
-											vertex_dataspace));
-							vertices.back().write(point.data(), H5::PredType::NATIVE_DOUBLE);
-							H5::Attribute vertex_attribute = vertices.back().createAttribute(
+							unique_vertices_names[mm_v] = build_dset_name(m, v, "vertices");
+							H5::DataSet new_vertex = vertices_grp[m].createDataSet(
+									int_to_str.str(),
+									H5::PredType::IEEE_F64BE,
+									vertex_dataspace);
+							new_vertex.write(point.data(), H5::PredType::NATIVE_DOUBLE);
+							H5::Attribute vertex_attribute = new_vertex.createAttribute(
 									"type",
 									H5::PredType::STD_I32BE,
 									attr_dataspace);
@@ -2725,25 +2828,36 @@ namespace RINGMesh {
 							vertex_attribute.write(H5::PredType::NATIVE_INT, obj_type);
 
 							vertex_attribute.close();
+							new_vertex.close();
 						} else{
 							vertices_grp[m].link(
 									H5L_TYPE_HARD,
-									unique_dset_names[mm_v],
+									unique_vertices_names[mm_v],
 									int_to_str.str() );
 						}
                     }
 
                     GEO::Logger::out( "I/O" ) << "Adding facets to mesh "<< m << std::endl ;
                     for( index_t f=0; f<mesh.facets.nb(); f++ ){
+
                     	std::stringstream int_to_str;
                     	int_to_str<<f;
+
+                    	H5std_string facet_name = "/";
+                    	if(find_identical_facet(f, m, mm, facet_name)){
+                    		facets_grp[m].link(H5L_TYPE_HARD, facet_name, int_to_str.str());
+                    		continue;
+                    	}
+
                     	H5::Group curr_facet = facets_grp[m].createGroup(int_to_str.str());
 
                     	double facet_data[mesh.facets.nb_vertices(f)][3];
+                    	int vertices_id[mesh.facets.nb_vertices(f)];
                     	for(index_t v=0; v<mesh.facets.nb_vertices(f); v++){
                         	std::stringstream int_to_str;
                     		int_to_str<<v;
-                        	index_t mm_v = mm.vertices.vertex_id( m, v );
+                    		index_t m_v = mesh.facets.vertex( f, v );
+                        	index_t mm_v = mm.vertices.vertex_id( m, m_v );
 
                     		facet_data[v][0]=mm.vertices.vertex(mm_v).x;
                     		facet_data[v][1]=mm.vertices.vertex(mm_v).y;
@@ -2751,9 +2865,10 @@ namespace RINGMesh {
 
                     		curr_facet.link(
                     				H5L_TYPE_HARD,
-									unique_dset_names[mm_v],
+									unique_vertices_names[mm_v],
 									int_to_str.str());
-                    		int_to_str.flush();
+
+                    		vertices_id[v] = m_v;
                     	}
 
                     	int obj_type[1];
@@ -2761,7 +2876,7 @@ namespace RINGMesh {
                     	if(mesh.facets.nb_vertices(f)==3){
                         	object_type("tri", obj_type);
                     		H5::DataSet curr_tri = curr_facet.createDataSet(
-                    				"facet_dset",
+                    				"dset",
 									H5::PredType::IEEE_F64BE,
 									tri_dataspace);
                     		curr_tri.write(facet_data, H5::PredType::NATIVE_DOUBLE);
@@ -2772,12 +2887,20 @@ namespace RINGMesh {
                     		tri_attribute.write(H5::PredType::NATIVE_INT, obj_type);
 
                     		tri_attribute.close();
+
+                    		H5::Attribute v_ids = curr_tri.createAttribute(
+                    				"verticesID",
+									H5::PredType::STD_I32BE,
+									tri_attr_dataspace);
+                    		v_ids.write(H5::PredType::NATIVE_INT, vertices_id);
+
+                    		v_ids.close();
                     		curr_tri.close();
                     	}
                     	else if(mesh.facets.nb_vertices(f)==4){
                         	object_type("quad", obj_type);
                     		H5::DataSet curr_quad = curr_facet.createDataSet(
-                    				"facet_dset",
+                    				"dset",
 									H5::PredType::IEEE_F64BE,
 									quad_dataspace);
                     		curr_quad.write(facet_data, H5::PredType::NATIVE_DOUBLE);
@@ -2788,6 +2911,14 @@ namespace RINGMesh {
                     		quad_attribute.write(H5::PredType::NATIVE_INT, obj_type);
 
                     		quad_attribute.close();
+
+                    		H5::Attribute v_ids = curr_quad.createAttribute(
+                    				"verticesID",
+									H5::PredType::STD_I32BE,
+									quad_attr_dataspace);
+                    		v_ids.write(H5::PredType::NATIVE_INT, vertices_id);
+
+                    		v_ids.close();
                     		curr_quad.close();
                     	}
 
@@ -2795,16 +2926,19 @@ namespace RINGMesh {
                     }
 
                     GEO::Logger::out( "I/O" ) << "Adding cells to mesh "<< m << std::endl ;
+
                     for(index_t c=0; c<mesh.cells.nb(); c++){
                     	std::stringstream int_to_str;
                     	int_to_str<<c;
                     	H5::Group curr_cell = cells_grp[m].createGroup(int_to_str.str());
 
                     	double cell_data[mesh.cells.nb_vertices(c)][3];
+                    	double vertices_id[mesh.cells.nb_vertices(c)];
                     	for(index_t v=0; v<mesh.cells.nb_vertices(c); v++){
                         	std::stringstream int_to_str;
                     		int_to_str<<v;
-                        	index_t mm_v = mm.vertices.vertex_id( m, v );
+                    		index_t m_v = mesh.cells.vertex( c, v );
+                        	index_t mm_v = mm.vertices.vertex_id( m, m_v );
 
                     		cell_data[v][0] = mm.vertices.vertex(mm_v).x;
                     		cell_data[v][1] = mm.vertices.vertex(mm_v).y;
@@ -2812,9 +2946,10 @@ namespace RINGMesh {
 
                     		curr_cell.link(
                     				H5L_TYPE_HARD,
-									unique_dset_names[mm_v],
+									unique_vertices_names[mm_v],
 									int_to_str.str());
-                    		int_to_str.flush();
+
+                    		vertices_id[v]=m_v;
                     	}
 
                     	int obj_type[1];
@@ -2822,7 +2957,7 @@ namespace RINGMesh {
                     	if(mesh.cells.nb_vertices(c)==4){
                         	object_type("tetra", obj_type);
                     		H5::DataSet curr_tetra = curr_cell.createDataSet(
-                    				"cell_dset",
+                    				"dset",
 									H5::PredType::IEEE_F64BE,
 									tetra_dataspace);
                     		curr_tetra.write(cell_data, H5::PredType::NATIVE_DOUBLE);
@@ -2833,12 +2968,20 @@ namespace RINGMesh {
                     		tetra_attribute.write(H5::PredType::NATIVE_INT, obj_type);
 
                     		tetra_attribute.close();
+
+                    		H5::Attribute v_ids = curr_tetra.createAttribute(
+                    				"verticesID",
+									H5::PredType::STD_I32BE,
+									tetra_attr_dataspace);
+                    		v_ids.write(H5::PredType::NATIVE_INT, vertices_id);
+
+                    		v_ids.close();
                     		curr_tetra.close();
                     	}
                     	else if(mesh.cells.nb_vertices(c)==5){
                         	object_type("pyr", obj_type);
                     		H5::DataSet curr_pyr = curr_cell.createDataSet(
-                    				"cell_dset",
+                    				"dset",
 									H5::PredType::IEEE_F64BE,
 									pyr_dataspace);
                     		curr_pyr.write(cell_data, H5::PredType::NATIVE_DOUBLE);
@@ -2849,12 +2992,20 @@ namespace RINGMesh {
                     		pyr_attribute.write(H5::PredType::NATIVE_INT, obj_type);
 
                     		pyr_attribute.close();
+
+                    		H5::Attribute v_ids = curr_pyr.createAttribute(
+                    				"verticesID",
+									H5::PredType::STD_I32BE,
+									pyr_attr_dataspace);
+                    		v_ids.write(H5::PredType::NATIVE_INT, vertices_id);
+
+                    		v_ids.close();
                     		curr_pyr.close();
                     	}
                     	else if(mesh.cells.nb_vertices(c)==6){
                         	object_type("prism", obj_type);
                     		H5::DataSet curr_prism = curr_cell.createDataSet(
-                    				"cell_dset",
+                    				"dset",
 									H5::PredType::IEEE_F64BE,
 									pyr_dataspace);
                     		curr_prism.write(cell_data, H5::PredType::NATIVE_DOUBLE);
@@ -2865,12 +3016,20 @@ namespace RINGMesh {
                     		prism_attribute.write(H5::PredType::NATIVE_INT, obj_type);
 
                     		prism_attribute.close();
+
+                    		H5::Attribute v_ids = curr_prism.createAttribute(
+                    				"verticesID",
+									H5::PredType::STD_I32BE,
+									prism_attr_dataspace);
+                    		v_ids.write(H5::PredType::NATIVE_INT, vertices_id);
+
+                    		v_ids.close();
                     		curr_prism.close();
                     	}
                     	else if(mesh.cells.nb_vertices(c)==8){
                         	object_type("hexa", obj_type);
                     		H5::DataSet curr_hexa = curr_cell.createDataSet(
-                    				"cell_dset",
+                    				"dset",
 									H5::PredType::IEEE_F64BE,
 									hexa_dataspace);
                     		curr_hexa.write(cell_data, H5::PredType::NATIVE_DOUBLE);
@@ -2881,19 +3040,20 @@ namespace RINGMesh {
                     		hexa_attribute.write(H5::PredType::NATIVE_INT, obj_type);
 
                     		hexa_attribute.close();
+
+                    		H5::Attribute v_ids = curr_hexa.createAttribute(
+                    				"verticesID",
+									H5::PredType::STD_I32BE,
+									hexa_attr_dataspace);
+                    		v_ids.write(H5::PredType::NATIVE_INT, vertices_id);
+
+                    		v_ids.close();
                     		curr_hexa.close();
                     	}
 
                     	curr_cell.close();
                     }
                 }
-
-                GEO::Logger::out( "I/O" ) << "Closing all datasets "<< std::endl ;
-            	for(index_t v=0; v<mm.vertices.nb_vertices(); v++){
-            		vertices[v].close();
-            	}
-
-                GEO::Logger::out( "I/O" ) << "Closing all groups "<< std::endl ;
                 for(index_t m=0; m<mm.nb_meshes(); m++){
                 	cells_grp[m].close();
                 	facets_grp[m].close();
@@ -2926,6 +3086,42 @@ namespace RINGMesh {
             	result+=int2str_dset.str();
 
             	return result;
+            }
+
+            bool find_identical_facet(
+            		index_t local_fid,
+					index_t curr_m,
+					const MacroMesh& mm,
+					H5std_string& init_facet_name){
+
+            	std::vector< index_t > corners_id;
+            	for(index_t v=0; v<mm.mesh(curr_m).facets.nb_vertices(local_fid); v++){
+            		corners_id.push_back(
+            				mm.vertices.vertex_id(curr_m, mm.mesh(curr_m).facets.vertex(local_fid, v)));
+            	}
+
+            	index_t compt_identical=0;
+            	for(index_t m=0; m<curr_m; m++){
+            		for(index_t f=0; f<mm.mesh(m).facets.nb(); f++){
+            			if (mm.mesh(m).facets.nb_vertices(f)!=corners_id.size()) continue;
+            			for(index_t v=0; v<mm.mesh(m).facets.nb_vertices(f); v++){
+            				index_t m_v = mm.mesh(m).facets.vertex(f, v);
+            				index_t mm_v = mm.vertices.vertex_id(m, m_v);
+            				for(index_t i=0; i<corners_id.size(); i++){
+            					if(mm_v==corners_id[i]){
+            						compt_identical++;
+            						break;
+            					}
+            				}
+            			}
+            			if(compt_identical==corners_id.size()){
+            				init_facet_name = build_dset_name(m, f, "facets");
+            				return true;
+            			}
+            			compt_identical = 0;
+            		}
+            	}
+            	return false;
             }
 
             void add_general_info(H5::H5File& out, const MacroMesh& mm){
@@ -2991,27 +3187,58 @@ namespace RINGMesh {
                 v_info_dataspace.close();
                 nb_vertices.close();
 
+                dset_dims[0]=2;
                 H5::DataSpace f_info_dataspace(1, dset_dims);
                 H5::DataSet nb_facets = mesh.createDataSet(
-                		"nbFacets",
+                		"nbTri_nbQuad",
 						H5::PredType::STD_I32BE,
 						f_info_dataspace);
-                int facets[1] = {mm.mesh(m).facets.nb()};
+                int facets[2] = {0, 0};
+                for(index_t f=0; f<mm.mesh(m).facets.nb(); f++){
+                	if(mm.mesh(m).facets.nb_vertices(f)==3) facets[0]++;
+                	else if(mm.mesh(m).facets.nb_vertices(f)==4) facets[1]++;
+                }
                 nb_facets.write(facets, H5::PredType::NATIVE_INT);
                 f_info_dataspace.close();
                 nb_facets.close();
 
+                dset_dims[0]=4;
                 H5::DataSpace c_info_dataspace(1, dset_dims);
                 H5::DataSet nb_cells = mesh.createDataSet(
-                		"nbCells",
+                		"nbTetra_nbPyr_nbPrism_nbHexa",
 						H5::PredType::STD_I32BE,
 						c_info_dataspace);
-                int cells[1] = {mm.mesh(m).cells.nb()};
+                int cells[4] = {
+                		mm.cells.nb_tet(m),
+						mm.cells.nb_pyramid(m),
+                		mm.cells.nb_prism(m),
+                		mm.cells.nb_hex(m)};
                 nb_cells.write(cells, H5::PredType::NATIVE_INT);
                 c_info_dataspace.close();
                 nb_cells.close();
             }
         } ;
+        /************************************************************************/
+
+        MacroMeshIOHandler* MacroMeshIOHandler::create( const std::string& format )
+        {
+            MacroMeshIOHandler* handler = MacroMeshIOHandlerFactory::create_object(
+                format ) ;
+            if( handler ) {
+                return handler ;
+            }
+
+            GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
+                << std::endl ;
+            return nil ;
+        }
+
+        MacroMeshIOHandler* MacroMeshIOHandler::get_handler(
+            const std::string& filename )
+        {
+            std::string ext = GEO::FileSystem::extension( filename ) ;
+            return create( ext ) ;
+        }
 
         /************************************************************************/
 
