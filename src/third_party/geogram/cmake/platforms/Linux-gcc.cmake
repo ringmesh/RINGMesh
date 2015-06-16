@@ -156,6 +156,5 @@ macro(vor_add_executable)
     if(UNIX)
         target_link_libraries(${ARGV0} m pthread)
     endif()
-
 endmacro()
 

@@ -239,7 +239,7 @@ namespace {
                             signed_index_t facet_region = in.field_as_int(4);
                             if(
                                 (facet_index < 1) ||
-                                (facet_index > M.vertices.nb())
+                                (facet_index > M.facets.nb())
                             ) {
                                 Logger::err("I/O")
                                     << "Line " << in.line_number()
