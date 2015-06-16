@@ -1,3 +1,28 @@
+http://www.davidbishop.org/oglmeta
+
+Remplacement des variables d'etat du vieuw pipeline OpenGL:
+   Utiliser des "Uniform Buffer Object" est peut-etre pas mal,
+ parceque ca peut etre partage entre differents shaders.
+
+  Uniform Buffer Objects (OpenGL 3.1)
+  
+layout(shared) uniform LightingStateBlock {
+     vec3 front_color;
+     vec3 back_color;
+     vec3 light_vector;
+     vec3 light_half_vector;     
+     float shininess;
+} lighting_state;
+  
+layout(shared) uniform TransformStateBlock {
+     mat4 projection_matrix;
+     mat4 modelview_matrix;
+     mat4 normal_matrix;
+     vec4 clip_plane;
+} transform_state;
+
+/================================================================================
+
 Utilisation des variables OpenGL R\'eserv\'ees dans les shaders de Geogram_gfx:
 
 Variables des shaders:

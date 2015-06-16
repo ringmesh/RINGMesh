@@ -54,11 +54,10 @@ NLboolean nlInitExtension(const char* extension) {
 
     nl_arg_used(extension);
 
-#ifdef NL_USE_SUPERLU
     if(!strcmp(extension, "SUPERLU")) {
-        return NL_TRUE ;
+        return nlInitExtension_SUPERLU() ;
     }
-#endif
+
 #ifdef NL_USE_CNC
     if(!strcmp(extension, "CNC")) {
         return NL_TRUE ;

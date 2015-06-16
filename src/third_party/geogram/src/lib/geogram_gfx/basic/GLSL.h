@@ -56,8 +56,10 @@ namespace GEO {
     namespace GLSL {
 
         /**
-         * \brief Exception thrown when a task is canceled
-         * \see Progress::cancel()
+         * \brief Exception thrown when a GLSL shader fails to
+         *  compiled.
+         * \details Can occur when OpenGL driver or hardware
+         *  does not support some features.
          */
         struct GEOGRAM_GFX_API GLSLCompileError : std::exception {
             /**
