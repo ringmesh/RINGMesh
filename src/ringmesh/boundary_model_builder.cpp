@@ -1792,7 +1792,7 @@ namespace RINGMesh {
 
         time( &end_load ) ;
         // Output of loading time only in debug mode has no meaning (JP)
-        GEO::Logger::out("I/O") << " Model loading time "
+        GEO::Logger::out("I/O") << "Model loading time "
             << difftime( end_load, start_load ) << " sec" << std::endl ;
         
         return valid_model ;

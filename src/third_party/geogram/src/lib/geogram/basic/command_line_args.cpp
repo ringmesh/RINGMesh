@@ -456,6 +456,22 @@ namespace {
             "hex:PGP_FF_fixed_topo", 1,
             "number of fixed topo. frame field opt. iterations"
         );
+        declare_arg(
+            "hex:PGP_direct_solver", false,
+            "(tentatively) use PGP direct solver"
+        );
+        declare_arg(
+            "hex:border_refine", false,
+            "refine border to lower Hausdorff distance"
+        );
+        declare_arg_percent(
+            "hex:border_max_distance", 0.1,
+            "maximum distance to reference (in % of diagonal bbox)"
+        );
+        declare_arg(
+            "hex:border_max_points", 30,
+            "maximum number of points inserted to refine the border"
+        );
     }
 
     /**
@@ -495,6 +511,10 @@ namespace {
         declare_arg(
             "gfx:GLSL_tesselation", false,
             "Use tesselation shaders (if supported and GLSL enabled)"
+        );
+        declare_arg(
+            "gfx:GLSL_version", 0.0,
+            "If non-zero, force GLSL version detection"
         );
     }
     

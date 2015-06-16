@@ -131,7 +131,7 @@ namespace GEO {
         if(nb_borders != 0) {
             Logger::warn("DelaunayTetgen") 
                 << "Constraints have " << nb_borders
-                << "edge(s) on the border" 
+                << " edge(s) on the border" 
                 << std::endl;
         }
 
