@@ -181,27 +181,41 @@ namespace RINGMesh {
             return mesh_.vertices.attributes() ;
         }
 
+        /*!
+        * @brief Remove colocated vertices 
+        */
+        void remove_colocated() ;
+
         /*! 
          * @brief Delete the vertices that are not anymore in any 
          * BoundaryModelElement
          */
-        void erase_invalid_vertices() ;
+        void erase_invalid_vertices(
+            GEO::vector< index_t >& old2new = GEO::vector< index_t >() ) ;
+
         
     private:
         /*!
-         * @brief Determine the unique vertices from the vertices 
+         * @brief Initialize the vertices from the vertices 
          *        of the BoundaryModel Corner s, Line s, and Surface s
-         * @details Fills unique_vertices_ and set the attributes the global index on
-         *          the BoundaryModel Corner, Line and Surface. 
+         *        Duplicates are not removed yet.
+         * @details Fills unique_vertices_, set model vertex id in BME and
+         *          initialize the reverse information.
          */
-        void initialize_unique_vertices() ;
+        void initialize() ;
 
         /*!
-         * @brief Fills the unique2bme vector
-         * @details Call initialize_unique_vertices() if unique_vertices_ is empty
+         * @brief Set a vertex as invalid
+         * @details Put all the ids of its VertexInBME to NO_ID
          */
-        void initialize_reverse() ;
-    
+        void set_invalid_vertex( index_t v ) ;
+
+        /*!
+         * @brief True if the vertex is not valid
+         */
+        bool is_invalid_vertex( index_t v ) const ;
+
+
         /*!
          * @brief Delete the KdTree and set the pointer to nil.         
          */
@@ -209,9 +223,11 @@ namespace RINGMesh {
         
         /*!
          * @brief Build the KdTree of the vertices 
-         * @pre In debug mode, assert that ann_ pointer is nil.
+         * @pre In debug mode, assert that ann_ pointer is nil,
+         *      and that there is no colocated vertices.
+         *
          * @note The function is const to be called when accessing a point index
-         *  from coodinated without an ugly const-cast.
+         *  from coordinated without an ugly const-cast.
          */
         void initialize_kdtree() const ;
 
