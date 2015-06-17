@@ -285,12 +285,9 @@ namespace RINGMesh {
     {
         BoundaryModelElement::GEOL_FEATURE feature = mm_.model().surface(
             surface_id ).geological_feature() ;
-        if( mm_.duplicate_mode() == ALL &&
-            !mm_.model().surface( surface_id ).is_on_voi() 
-           )
-            return true ;
-        if( mm_.duplicate_mode() == FAULT && BME::is_fault( feature ) )
-            return true ;
+        if( mm_.duplicate_mode() == ALL
+            && !mm_.model().surface( surface_id ).is_on_voi() ) return true ;
+        if( mm_.duplicate_mode() == FAULT && BME::is_fault( feature ) ) return true ;
 
         return false ;
     }
@@ -935,8 +932,7 @@ namespace RINGMesh {
     }
 
     MacroMeshTools::MacroMeshTools( MacroMesh& mm )
-        :
-            mm_( mm )
+        : mm_( mm )
     {
     }
 
@@ -969,7 +965,7 @@ namespace RINGMesh {
     {
         if( facet_aabb_.size() <= region ) {
             const_cast< MacroMeshTools* >( this )->facet_aabb_.resize( region + 1,
-                nil ) ;
+            nil ) ;
         }
         if( facet_aabb_[region] ) return ;
         const_cast< MacroMeshTools* >( this )->facet_aabb_[region] =
@@ -995,7 +991,7 @@ namespace RINGMesh {
     {
         if( cell_aabb_.size() <= region ) {
             const_cast< MacroMeshTools* >( this )->cell_aabb_.resize( region + 1,
-                nil ) ;
+            nil ) ;
         }
         if( cell_aabb_[region] ) return ;
         const_cast< MacroMeshTools* >( this )->cell_aabb_[region] =
@@ -1265,14 +1261,14 @@ namespace RINGMesh {
     {
         if( !mm_.wells() ) return ;
         const WellGroup& wells = *mm_.wells() ;
-        well_ptr_.resize( wells.nb_wells() +1, 0 ) ;
+        well_ptr_.resize( wells.nb_wells() + 1, 0 ) ;
         well_ptr_[0] = 0 ;
         index_t nb_edges = 0 ;
         for( index_t w = 0; w < wells.nb_wells(); w++ ) {
-            nb_edges += wells.well( w ).nb_edges()  ;
-            well_ptr_[w+1] = 2*nb_edges ;
+            nb_edges += wells.well( w ).nb_edges() ;
+            well_ptr_[w + 1] = 2 * nb_edges ;
         }
-        edges_.resize( 2*nb_edges ) ;
+        edges_.resize( 2 * nb_edges ) ;
 
         std::vector< index_t > edge_offset( wells.nb_wells(), 0 ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
@@ -1315,7 +1311,7 @@ namespace RINGMesh {
     index_t MacroMeshEdges::nb_edges( index_t w ) const
     {
         test_initialize() ;
-        return ( well_ptr_[w+1] - well_ptr_[w] ) / 2 ;
+        return ( well_ptr_[w + 1] - well_ptr_[w] ) / 2 ;
     }
     /*!
      * Gets the vertex id of the MacroMesh
@@ -1336,7 +1332,7 @@ namespace RINGMesh {
             meshes_( model.nb_regions(), nil ),
             mode_( NONE ),
             wells_( nil ),
-            order_(1),
+            order_( 1 ),
             vertices( *this ),
             edges( *this ),
             facets( *this ),
@@ -1355,7 +1351,7 @@ namespace RINGMesh {
             meshes_(),
             mode_( NONE ),
             wells_( nil ),
-            order_(1),
+            order_( 1 ),
             vertices( *this ),
             edges( *this ),
             facets( *this ),
@@ -1378,7 +1374,7 @@ namespace RINGMesh {
 
         model_ = &rhs.model() ;
         order_ = rhs.get_order() ;
-        mode_= rhs.duplicate_mode() ;
+        mode_ = rhs.duplicate_mode() ;
         wells_ = rhs.wells() ;
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r]->copy( *rhs.meshes_[r], copy_attributes ) ;
@@ -1451,6 +1447,24 @@ namespace RINGMesh {
         meshes_.resize( model_->nb_regions(), nil ) ;
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( 3 ) ;
+        }
+    }
+
+    void MacroMesh::translate( const vec3& translation_vector )
+    {
+        // Note: if the translation is null, do nothing.
+        if( translation_vector == vec3() ) {
+            return ;
+        }
+
+        for( index_t mesh_i = 0; mesh_i < meshes_.size(); ++mesh_i ) {
+            GEO::Mesh* cur_mesh = meshes_[mesh_i] ;
+            ringmesh_debug_assert( cur_mesh ) ;
+            for( index_t v = 0; v < cur_mesh->vertices.nb(); v++ ) {
+                for( index_t i = 0; i < 3; i++ ) {
+                    cur_mesh->vertices.point_ptr( v )[i] += translation_vector[i] ;
+                }
+            }
         }
     }
 }

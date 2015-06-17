@@ -497,6 +497,8 @@ namespace RINGMesh {
             return order_ ;
         }
 
+        void translate(const vec3& translation_vector) ;
+
     protected:
         /// BoundaryModel representing the structural information of the mesh
         const BoundaryModel* model_ ;
