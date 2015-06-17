@@ -686,7 +686,7 @@ namespace RINGMesh {
         /// 2. Deal with the model vertices
         // We need to to this before changing ids of the BMEs 
         // We need the BMEs to have their previous ids to get the new correct ones
-        for( index_t v = 0; v < model_.vertices.nb_unique_vertices(); ++v ) {
+        for( index_t v = 0; v < model_.vertices.nb(); ++v ) {
             const std::vector<BoundaryModelVertices::VertexInBME>& cur =
                 model_.vertices.bme_vertices( v ) ;
             for( index_t i = 0; i < cur.size(); ++i ) {
@@ -1394,6 +1394,10 @@ namespace RINGMesh {
                 fill_element_geological_feature( E ) ;
             }
         }
+
+        // This is basic requirement ! no_colocated vertices !
+        // So remove them if there are any 
+        model_.vertices.remove_colocated() ;
 
         // Basic mesh repair for surfaces and lines
         /// @todo To put repair when remove_elements is OK
@@ -2609,7 +2613,7 @@ namespace RINGMesh {
         }
 
         /// 1. Initialize model_ global vertices and backward information
-        model_.vertices.nb_unique_vertices() ;
+        model_.vertices.nb() ;
         model_.vertices.bme_vertices( 0 ) ;
 
         /// 2.1 Get for all Surface, the triangles that have an edge

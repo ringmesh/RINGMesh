@@ -105,36 +105,47 @@ namespace RINGMesh {
         } ;
 
         /*!
-         * @brief Vertices are defined for a BoundaryModel
+         * @brief Constructor from an existing BoundaryModel
          */
         BoundaryModelVertices( const BoundaryModel& bm )
-            : bm_( bm ), kdtree_( nil ), lock_( 0 ), kdtree_to_update_(true)
+            : bm_( bm ), kdtree_( nil ),
+              lock_( 0 ), kdtree_to_update_( true )
         {
         }
 
-        ~BoundaryModelVertices() ; 
+        ~BoundaryModelVertices()
+        {
+        }
 
         /*!
          * @brief Number of vertices stored. 
-         * @details Calls initialize_unique_vertices() if they are not filled yet
+         * @details Calls initialize() if vertices are not filled yet
+         * @todo remove
          */
         index_t nb_unique_vertices() const ;
 
         /*!
+        * @brief Number of vertices stored.
+        * @details Calls initialize() if vertices are not filled yet
+        */
+        index_t nb() const ;
+
+        /*!
          * @brief Coordinates of a vertex of the BoundaryModel
-         * @pre unique_id < nb_unique_vertices()
+         * @pre unique_id < nb()
          */
         const vec3& unique_vertex( index_t unique_id ) const ;        
         
         /*!
          * @brief Returns the index of the given vertex in the model
          * @param[in] p input point coordinates
-         * @return index of the vertex in the model if found (distance < epsilon), otherwise NO_ID
+         * @return index of the vertex in the model if found 
+         * (distance < epsilon), otherwise NO_ID
          */
         index_t vertex_index( const vec3& p ) const ;
 
         /*!
-         * @brief Get the vertices in BME that correspond to the given unique vertex
+         * @brief Get the vertices in BME corresponding to the given unique vertex
          */
         const std::vector< VertexInBME >& bme_vertices( index_t unique_id ) const ;
         
@@ -171,6 +182,7 @@ namespace RINGMesh {
          *        set attribute to NO_ID in BME
          * @warning Not stable - crashes because of issues in 
          * Mesh attributes clearing
+         * @todo Unbind all attributes !!!! 
          */  
         void clear() ;
 
@@ -187,11 +199,19 @@ namespace RINGMesh {
         void remove_colocated() ;
 
         /*! 
-         * @brief Delete the vertices that are not anymore in any 
-         * BoundaryModelElement
+         * @brief Remove all invalid VertexInBME and delete the vertices 
+         * that are not anymore in any BoundaryModelElement
          */
-        void erase_invalid_vertices(
-            GEO::vector< index_t >& old2new = GEO::vector< index_t >() ) ;
+        void erase_invalid_vertices() ;
+
+        /*! 
+         * @brief Delete vertices for which to_delete[i] != i ;
+         * @param[in,out] to_delete can be NO_ID or give the index of a 
+         *  kept vertex with wich information should be merged.
+         *  It is recyled to give the mapping between old and new vertex indices        
+         * @pre to_delete[ v ] is either NO_ID, or is equal or inferior to v
+         */
+        void erase_vertices( std::vector< index_t >& to_delete ) ;
 
         
     private:
@@ -250,8 +270,9 @@ namespace RINGMesh {
                
         /*! 
          * Vertices in BoundaryModelElements corresponding to each vertex
+         * @todo Change this extremely expensive storage !!!
          */
-        GEO::Attribute< std::vector< VertexInBME > > bme_vertices_ ;
+        std::vector< std::vector< VertexInBME > > bme_vertices_ ;
 
         /// Kd-tree of the model vertices
         mutable GEO::NearestNeighborSearch_var kdtree_ ;
@@ -311,7 +332,7 @@ namespace RINGMesh {
         /*!
          * @brief Number of unique vertices
          */
-        index_t nb_vertices() const { return vertices.nb_unique_vertices() ; }
+        index_t nb_vertices() const { return vertices.nb() ; }
 
         index_t nb_facets() const ;
 
