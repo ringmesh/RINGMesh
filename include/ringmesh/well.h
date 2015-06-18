@@ -292,7 +292,7 @@ namespace RINGMesh {
          * Sets the associated BoundaryModel
          */
         void set_model( RINGMesh::BoundaryModel* model ) { model_ = model ;}
-        bool is_well_already_added( const std::string& name ) const ;
+        index_t find_well( const std::string& name ) const ;
 
         void create_wells( index_t nb_wells ) ;
         void add_well( const GEO::Mesh& mesh, const std::string& name ) ;
