@@ -384,7 +384,7 @@ namespace RINGMesh {
     void WellGroup::add_well( const GEO::Mesh& mesh, const std::string& name )
     {
         ringmesh_debug_assert( model() ) ;
-        if( is_well_already_added( name ) ) return ;
+        if( find_well( name ) != NO_ID ) return ;
         wells_.push_back( new Well ) ;
         Well& new_well = *wells_.back() ;
         new_well.set_name( name ) ;
@@ -546,15 +546,17 @@ namespace RINGMesh {
     }
 
     /*!
-     * Tests if a well with the same name already exist
+     * Finds if a well with the same name already exist
      * @param[in] name the name to test
-     * @return the result of the test
+     * @return the id of the well or NO_ID
      */
-    bool WellGroup::is_well_already_added( const std::string& name ) const
+    index_t WellGroup::find_well( const std::string& name ) const
     {
         for( index_t w = 0; w < nb_wells(); w++ ) {
-            if( well( w ).name() == name ) {return true ;}
+            if( well( w ).name() == name ) {
+                return w ;
+            }
         }
-        return false ;
+        return NO_ID ;
     }
 }
