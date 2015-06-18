@@ -1453,7 +1453,7 @@ namespace RINGMesh {
     void MacroMesh::translate( const vec3& translation_vector )
     {
         // Note: if the translation is null, do nothing.
-        if( translation_vector == vec3() ) {
+        if( translation_vector == vec3() ) { // TODO assert ?
             return ;
         }
 
@@ -1464,6 +1464,64 @@ namespace RINGMesh {
                 for( index_t i = 0; i < 3; i++ ) {
                     cur_mesh->vertices.point_ptr( v )[i] += translation_vector[i] ;
                 }
+            }
+        }
+    }
+
+    void MacroMesh::rotate( const vec3& origin, const vec3& axis, float64 angle )
+    {
+        // Note: Orientation is impossible about an axis with null length.
+        if( axis == vec3() ) { // TODO assert ?
+            return ;
+        }
+
+        // TODO assert on the angle
+
+        float64 axis_length = axis.length() ;
+        ringmesh_debug_assert( axis_length > 0. ) ;
+        float64 a = origin[0] ;
+        float64 b = origin[1] ;
+        float64 c = origin[2] ;
+        float64 u = axis[0] ;
+        float64 v = axis[1] ;
+        float64 w = axis[2] ;
+        float64 cos_angle = std::cos( angle ) ;
+        float64 sin_angle = std::sin( angle ) ;
+
+        for( index_t mesh_i = 0; mesh_i < meshes_.size(); ++mesh_i ) {
+            GEO::Mesh* cur_mesh = meshes_[mesh_i] ;
+            ringmesh_debug_assert( cur_mesh ) ;
+            for( index_t v = 0; v < cur_mesh->vertices.nb(); v++ ) {
+                float64 old_x = cur_mesh->vertices.point( v ).x ;
+                float64 old_y = cur_mesh->vertices.point( v ).y ;
+                float64 old_z = cur_mesh->vertices.point( v ).z ;
+
+                float64 new_x = a * ( v * v + w * w ) ;
+                new_x -= u * ( b * v + c * w - u * old_x - v * old_y - w * old_z ) ;
+                new_x *= 1 - cos_angle ;
+                new_x += axis_length * old_x * cos_angle ;
+                new_x += std::sqrt( axis_length )
+                    * ( -c * v + b * w - w * old_y + v * old_z ) * sin_angle ;
+                new_x / axis_length ;
+                cur_mesh->vertices.point_ptr( v )[0] += new_x ;
+
+                float64 new_y = b * ( u * u + w * w ) ;
+                new_y -= v * ( a * u + c * w - u * old_x - v * old_y - w * old_z ) ;
+                new_y *= 1 - cos_angle ;
+                new_y += axis_length * old_y * cos_angle ;
+                new_y += std::sqrt( axis_length )
+                    * ( c * u - a * w + w * old_x - u * old_z ) * sin_angle ;
+                new_y / axis_length ;
+                cur_mesh->vertices.point_ptr( v )[1] += new_y ;
+
+                float64 new_z = c * ( u * u + v * v ) ;
+                new_z -= w * ( a * u + b * v - u * old_x - v * old_y - w * old_z ) ;
+                new_z *= 1 - cos_angle ;
+                new_z += axis_length * old_z * cos_angle ;
+                new_z += std::sqrt( axis_length )
+                    * ( -b * u + a * v - v * old_x + u * old_y ) * sin_angle ;
+                new_z / axis_length ;
+                cur_mesh->vertices.point_ptr( v )[2] += new_z ;
             }
         }
     }
