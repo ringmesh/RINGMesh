@@ -647,7 +647,7 @@ namespace RINGMesh {
     }
     
     /*!
-    * @brief Check if the element is twice on the boundary of the other element
+    * @brief Check if this element an inside border of rhs
     * @details That can be Surface stopping in a Region, or Line stopping in a Surface.
     * @param[in] rhs The element to test
     */
@@ -1106,9 +1106,10 @@ namespace RINGMesh {
      * @param[in] s Segment index
      * @return The coordinates of the barycenter of the segment
      */
-    vec3 Line::segment_barycenter( index_t s ) const
+    vec3 Line::segment_barycenter( index_t e ) const
     {
-        return 0.5*( vertex( s ) + vertex( s+1 ) ) ;
+        return 0.5*( vertex( mesh_.edges.vertex( e, 0 ) ) +
+                     vertex( mesh_.edges.vertex( e, 1 ) ) ) ;
     }
 
 
@@ -1117,9 +1118,10 @@ namespace RINGMesh {
      * @param[in] s Segment index
      * @return The length of the segment
      */
-    double Line::segment_length( index_t s ) const
+    double Line::segment_length( index_t e ) const
     {
-        return length( vertex( s + 1 ) - vertex( s ) ) ;
+        return length( vertex( mesh_.edges.vertex( e, 1 ) ) -
+                       vertex( mesh_.edges.vertex( e, 0 ) ) ) ;
     }
 
 
