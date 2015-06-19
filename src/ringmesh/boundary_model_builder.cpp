@@ -181,7 +181,9 @@ namespace {
         GEO::vector< index_t > degenerate ;
         mesh_detect_degenerate_edges( M, degenerate, colocated ) ;
         index_t nb = std::count( degenerate.begin(), degenerate.end(), 1 ) ;
-        M.edges.delete_elements( degenerate ) ;
+        /// We have a problem if some vertices are left isolated
+        /// If we ermove them here we can kill all indices correspondances
+        M.edges.delete_elements( degenerate, false ) ;
         return nb ;
     }
   
@@ -1265,7 +1267,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Remove degenerate facets and edges from the Surface
-     *        and Line of the model
+     *        and Line of the model. 
      */
     void BoundaryModelBuilder::remove_degenerate_facet_and_edges()
     {
@@ -1297,36 +1299,191 @@ namespace RINGMesh {
                 GEO::Logger::instance()->set_quiet( true ) ;
                 // Using repair function of geogram
                 // Warning - This triangulates the mesh
-                GEO::mesh_repair( M ) ;
-                                
-                // This might create some small components - remove them
-                // How to choose the epsilon ? and the maximum number of facets ?
-                GEO::remove_small_connected_components( M, epsilon_sq, 3 ) ;
 
-                // Ok this is a bit of an overkill
-                // The alternative is to copy mesh_repair and change it
-                GEO::mesh_repair( M ) ;
+                if( M.vertices.nb() > 0 ) {
+                    // MESH_REPAIR_COLOCATE 1 and MESH_REPAIR_DUP_F 2 ;
+                    GEO::MeshRepairMode mode =
+                        static_cast< GEO::MeshRepairMode >( 3 ) ; 
+                    GEO::mesh_repair( M, mode ) ;
+                    
+                    // This might create some small components - remove them
+                    // How to choose the epsilon ? and the maximum number of facets ?
+                    GEO::remove_small_connected_components( M, epsilon_sq, 3 ) ;
+
+                    // Ok this is a bit of an overkill
+                    // The alternative is to copy mesh_repair and change it
+                    if( M.vertices.nb() > 0 ) {
+                        GEO::mesh_repair( M, mode ) ;
+                    }
+                }                                               
                 GEO::Logger::instance()->set_quiet( false ) ;
 
-
-                // If the Surface has internal boundaries, we need to 
-                // re-cut the Surface along these lines
-                Surface& S = dynamic_cast< Surface& >( *model_.surfaces_[ i ] ) ;
-                for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
-                    const Line& L = model_.line( S.boundary_id( l ).index ) ;
-                    if( L.is_inside_border( S ) ) {
-                        S.cut_by_line( L ) ;
+                if( M.vertices.nb() == 0 || M.facets.nb() == 0 ) {
+                    to_remove.insert( model_.surface(i).bme_id() ) ;
+                }
+                else {
+                    // If the Surface has internal boundaries, we need to 
+                    // re-cut the Surface along these lines
+                    Surface& S = dynamic_cast<Surface&>( *model_.surfaces_[ i ] ) ;
+                    for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
+                        const Line& L = model_.line( S.boundary_id( l ).index ) ;
+                        if( L.is_inside_border( S ) ) {
+                            S.cut_by_line( L ) ;
+                        }
                     }
                 }
-                // The line may be empty now - remove it from the model
-                if( S.nb_cells() == 0 ) {
-                    to_remove.insert( S.bme_id() ) ;
-                }
+                
             }
         }
         if( to_remove.size() > 0 ) {
             get_dependent_elements( to_remove ) ;
             remove_elements( std::vector< bme_t >( to_remove.begin(), to_remove.end() ) ) ;
+        }
+    }
+
+
+    /*!
+     * Get the indices of the duplicated vertices that are on an inside border.
+     * Only the vertex with the biggest index is added.
+     * If there are more than 2 colocated vertices throws an assertion in debug mode
+     */
+    void vertices_on_inside_boundary(
+        const BoundaryModelMeshElement& E,
+        std::vector< index_t >& vertices )
+    {
+        vertices.resize( 0 ) ;
+        if( E.bme_id().type == BME::CORNER ) {
+            return ;
+        }
+        if( E.bme_id().type == BME::LINE ) {
+            if( E.boundary( 0 ).is_inside_border( E ) ) {
+                vertices.push_back( E.nb_vertices()-1 ) ;
+            }
+            return ;
+        }
+        std::vector< const BoundaryModelMeshElement* > inside_border ;
+        for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
+            if( E.boundary( i ).is_inside_border( E ) ) {
+                inside_border.push_back(
+                    dynamic_cast<const BoundaryModelMeshElement*>( &E.boundary( i ) ) ) ;
+            }
+        }
+        if( !inside_border.empty() ) {
+            // We want to get the indices of the vertices in E
+            // that are colocated with those of the inside boundary
+            // We assume that the model vertice are not yet computed
+            GEO::NearestNeighborSearch_var kdtree =
+                GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+            kdtree->set_points( E.mesh().vertices.nb(), 
+                                E.mesh().vertices.point_ptr( 0 ) ) ;
+            
+            for( index_t i = 0; i < inside_border.size(); ++i ) {
+                const GEO::Mesh& m = inside_border[ i ]->mesh() ;
+                for( index_t v = 0; v < m.vertices.nb(); ++v ) {
+                    index_t neighbors[ 3 ] ;
+                    double sq_dist[ 3 ] ;
+                    kdtree->get_nearest_neighbors( 
+                        3, m.vertices.point_ptr( v ), neighbors, sq_dist ) ;
+                    
+                    if( sq_dist[ 2 ] < epsilon_sq ) {
+                        // We have a problem there colocated points on the inside
+                        // border. They are not properly processed. 
+                        ringmesh_debug_assert( false ) ;
+                    }
+                    else if( sq_dist[ 1 ] <epsilon_sq ) {
+                        // Colocated vertices
+                        vertices.push_back( GEO::geo_max( neighbors[ 0 ], neighbors[ 1 ] ) ) ;
+                    }
+                    // Otherwise nothing to do
+                }
+            }
+        }
+    }
+
+    void BoundaryModelBuilder::remove_colocated_element_vertices()
+    {
+        std::set< bme_t > to_remove ;
+        // For all Lines and Surfaces
+        for( index_t t = BME::LINE; t < BME::REGION; ++t ) {
+            BME::TYPE T = static_cast<BME::TYPE>( t ) ;
+
+            for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
+                BoundaryModelMeshElement& E =
+                    dynamic_cast<BoundaryModelMeshElement&>( element( bme_t( T, e ) ) ) ;
+
+                GEO::Mesh& M = E.mesh() ;
+                GEO::vector< index_t > colocated ;
+                GEO::mesh_detect_colocated_vertices( M, colocated, epsilon ) ;
+
+                // Get the vertices to delete
+                std::vector< index_t > inside_border ;
+                vertices_on_inside_boundary( E, inside_border ) ;
+    
+                GEO::vector< index_t > to_delete( colocated.size(), 0 ) ;
+                GEO::vector< index_t > old2new( colocated.size() ) ;
+                index_t nb_todelete = 0 ;
+                index_t cur = 0 ;
+                for( index_t v = 0; v < colocated.size(); ++v ) {
+                    if( colocated[ v ] == v ) {
+                        old2new[ v ] = cur ;
+                        ++cur;
+                    } else if( std::find( inside_border.begin(), inside_border.end(), v) ==
+                                          inside_border.end() 
+                    ){
+                        old2new[ v ] = old2new[ colocated[ v ] ] ;
+                        to_delete[ v ] = 1 ;
+                        nb_todelete++ ;
+                    }
+                }
+                
+                if( nb_todelete == 0 ) {
+                    // Nothing to do there
+                    continue ;
+                } else if( nb_todelete == E.nb_vertices() ) {
+                    // The complete element should be removed
+                    to_remove.insert( E.bme_id() ) ;
+                    continue ;
+                } else {
+                    // We need to update the VertexInBME at the model level
+                    // if they exist. If not let's avoid this costly operation
+                    if( model_.vertices.is_initialized() ) {
+                        // For all the vertices of this element
+                        // we need to update the vertex ids in the bme_vertices_
+                        // of the corresponding global vertex
+                        for( index_t v = 0; v < to_delete.size(); ++v ) {
+                            index_t model_id = E.model_vertex_id( v ) ;
+                            const std::vector<BoundaryModelVertices::VertexInBME>& cur =
+                                model_.vertices.bme_vertices( model_id ) ;
+                            for( index_t i = 0; i < cur.size(); ++i ) {
+                                if( cur[ i ].bme_id == E.bme_id() ) {
+                                    index_t new_id = old2new[ v ] ;
+                                    model_.vertices.set_bme(
+                                        model_id, i, BoundaryModelVertices::VertexInBME( E.bme_id(), new_id ) ) ;
+                                }
+                            }
+                        }
+                        model_.vertices.erase_invalid_vertices() ;
+                    }
+                    
+                    for( index_t c = 0; c < M.facet_corners.nb(); c++ ) {
+                        M.facet_corners.set_vertex( c, colocated[ M.facet_corners.vertex( c ) ] );
+                    }
+                    for( index_t e = 0; e < M.edges.nb(); e++ ) {
+                        M.edges.set_vertex( e, 0, colocated[ M.edges.vertex( e, 0 ) ] ) ;
+                        M.edges.set_vertex( e, 1, colocated[ M.edges.vertex( e, 1 ) ] ) ;
+                    }
+                    M.vertices.delete_elements( to_delete, false ) ;
+                   
+                    GEO::Logger::out( "BoundaryModel" )
+                        << nb_todelete << " colocated vertices deleted in "
+                        << E.bme_id() << std::endl ;
+                }
+            }
+        }
+        if( to_remove.size() > 0 ) {
+            get_dependent_elements( to_remove ) ;
+            remove_elements( std::vector< bme_t >( 
+                to_remove.begin(), to_remove.end() ) ) ;
         }
     }
 
@@ -1395,13 +1552,17 @@ namespace RINGMesh {
             }
         }
 
-        // This is basic requirement ! no_colocated vertices !
-        // So remove them if there are any 
-        model_.vertices.remove_colocated() ;
+        // Remove colocated vertices in each element
+        remove_colocated_element_vertices() ;
 
         // Basic mesh repair for surfaces and lines
         /// @todo To put repair when remove_elements is OK
         remove_degenerate_facet_and_edges() ; 
+
+
+        // This is basic requirement ! no_colocated model vertices !
+        // So remove them if there are any 
+        model_.vertices.remove_colocated() ;
 
         if( model_.check_model_validity() ) {
             GEO::Logger::out( "BoundaryModel" ) 
