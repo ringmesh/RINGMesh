@@ -423,6 +423,9 @@ namespace {
     * @param[out] old2new if old2new[i] == i, point is to keep; otherwise
     *             old2new[i] = j, j is the index of the matching point kept
     * @returns true if there are colocated vertices
+    * 
+    * @todo replace by a call to  GEO::mesh_detect_colocated_vertices since it
+    *       is now in the API
     *
     * @pre The mesh has no facet, cell or edges.
     */
@@ -1266,6 +1269,7 @@ namespace RINGMesh {
             erase_vertices( 
                 std::vector< index_t >(old2new.begin(), old2new.end() ) ) ;
         }
+
     }
 
 
@@ -1447,8 +1451,7 @@ namespace RINGMesh {
             return ;
         }
 
-        // Empty the bme_vertices_ of the deleted vertices 
-        // and erase them
+        // Empty the bme_vertices_ of the deleted vertices and erase them
         for( index_t v = 0; v < nb(); ++v ) {
             if( to_delete_geo[ v ] == 1 ) {
                 bme_vertices_[ v ].clear() ;

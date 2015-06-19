@@ -267,8 +267,11 @@ namespace RINGMesh {
         bool end_model() ;
         void update_all_ids() ;
         void init_global_model_element_access() ;
-        bool complete_element_connectivity() ;          
+        bool complete_element_connectivity() ;    
+        /// To move in cpp file ?
         void remove_degenerate_facet_and_edges() ;
+        /// To move in cpp file ?
+        void remove_colocated_element_vertices() ;
 
         void fill_elements_boundaries( BME::TYPE type ) ;
         void fill_elements_in_boundaries( BME::TYPE type ) ;

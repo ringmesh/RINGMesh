@@ -117,6 +117,13 @@ namespace RINGMesh {
         {
         }
 
+        /// Maybe this is not the best test, maybe we should store a bool
+        /// to store this
+        bool is_initialized() const
+        {
+            return mesh_.vertices.nb() > 0 ;
+        }
+
         /*!
          * @brief Number of vertices stored. 
          * @details Calls initialize() if vertices are not filled yet
@@ -168,6 +175,7 @@ namespace RINGMesh {
          * @brief Change one of the BME vertex associated to a unique vertex
          */
         void set_bme( index_t unique_id, index_t k, const VertexInBME& v ) ;
+
 
         /*!
          * @brief Set the point coordinates of all the vertices that are 
