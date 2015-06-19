@@ -339,8 +339,8 @@ namespace RINGMesh {
         const index_t nb_total_vertices() const ;
         const index_t nb_vertices() const ;
         void clear() ;
-        const vec3 point(const index_t id) const ;
-        void move_point(const index_t id, const vec3& u) ;
+        const vec3 point( const index_t id ) const ;
+        void move_point( const index_t id, const vec3& u ) ;
     private:
         void initialize() ;
         /*!
@@ -359,7 +359,7 @@ namespace RINGMesh {
         /// Total number of vertices + new nodes on cell edges
         index_t nb_vertices_ ;
         /// New points
-        std::vector<vec3> points_ ;
+        std::vector< vec3 > points_ ;
 
     } ;
 
@@ -415,7 +415,7 @@ namespace RINGMesh {
             int region_id = -1,
             bool add_steiner_points = true,
             std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
-        void copy( const MacroMesh& mm,bool copy_attributes = true ) ;
+        void copy( const MacroMesh& mm, bool copy_attributes = true ) ;
 
         //      _
         //     /_\  __ __ ___ _________ _ _ ___
@@ -482,8 +482,9 @@ namespace RINGMesh {
         /*
          * Change the order of the mesh
          */
-        void set_order(const index_t o) {
-            if(o != order_) {
+        void set_order( const index_t o )
+        {
+            if( o != order_ ) {
                 order.clear() ;
             }
             order_ = o ;
@@ -493,9 +494,13 @@ namespace RINGMesh {
          * Gets the mesh elements order
          * @return the const order
          */
-        const index_t get_order() const {
+        const index_t get_order() const
+        {
             return order_ ;
         }
+
+        void translate( const vec3& translation_vector ) ;
+        void rotate( const vec3& origin, const vec3& axis, float64 angle, bool degrees = false ) ;
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
@@ -524,7 +529,6 @@ namespace RINGMesh {
         MacroMeshTools tools ;
         /// Optional storage for high orders mesh
         MacroMeshOrder order ;
-
 
     } ;
 }
