@@ -1077,7 +1077,7 @@ namespace {
         if( nb_invalid > 0 ) {
             std::ostringstream file ;
             file << M.debug_directory()
-                << "\\invalid_global_vertices.pts" ;
+                << "/invalid_global_vertices.pts" ;
             
             std::ofstream out ;
             out.open( file.str().c_str() ) ;
@@ -1150,8 +1150,8 @@ namespace {
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
             file << S.model().debug_directory() 
-                << "\\"
-                << " invalid_boundary_" 
+                << "/"
+                << "invalid_boundary_" 
                 << print_bme_id( S ) << ".lin"  ;
             save_edges( file.str(), S.model(), invalid_corners ) ;
         }
@@ -1888,7 +1888,7 @@ namespace RINGMesh {
 #ifdef RINGMESH_DEBUG
             std::ostringstream file ;
             file << debug_directory()
-                << "\\non_manifold_edges"
+                << "/non_manifold_edges"
                 << ".mesh"  ;
             /// @todo Save a GEO::Mesh in an adapted format
             /// if the Mesh has only edges or vertices (.pts ? .lin ? ) 
