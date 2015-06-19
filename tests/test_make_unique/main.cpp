@@ -84,7 +84,7 @@ int main( int argc, char** argv )
     index_t geo_nb = GEO::Geom::colocate( all_vertices[0].data(), 3, nb_non_unique_vertices, old2new,
         epsilon ) ;
 
-    index_t ringmesh_nb = in.vertices.nb_unique_vertices() ;
+    index_t ringmesh_nb = in.vertices.nb() ;
 
     bool res = ringmesh_nb == geo_nb ;
     if( res )
