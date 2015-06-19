@@ -500,7 +500,7 @@ namespace RINGMesh {
         }
 
         void translate( const vec3& translation_vector ) ;
-        void rotate( const vec3& origin, const vec3& axis, float64 angle ) ;
+        void rotate( const vec3& origin, const vec3& axis, float64 angle, bool degrees = false ) ;
 
     protected:
         /// BoundaryModel representing the structural information of the mesh

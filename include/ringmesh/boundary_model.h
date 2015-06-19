@@ -437,6 +437,11 @@ namespace RINGMesh {
         index_t find_element( BME::TYPE type, const std::string& name ) const ;
 
         void translate( const vec3& ) ;
+        void rotate(
+            const vec3& origin,
+            const vec3& axis,
+            float64 angle,
+            bool degrees = false ) ;
 
     private:
         bool check_model_validity() const ;

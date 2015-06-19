@@ -312,7 +312,6 @@ namespace RINGMesh {
             index_t nb_parts,
             std::vector< vec3 >& points ) ;
 
-
     } ;
     class RINGMESH_API Utils {
     public:
@@ -759,6 +758,16 @@ namespace RINGMesh {
             const vec3& trgl1,
             const vec3& trgl2,
             vec3& result ) ;
+
+        static void rotation_matrix_about_arbitrary_axis(
+            const vec3& origin,
+            const vec3& axis,
+            float64 theta,
+            bool degrees,
+            GEO::Matrix< float64, 4 >& rot_mat ) ;
+        static void rotate_mesh(
+            GEO::Mesh& mesh,
+            const GEO::Matrix< float64, 4 >& rot_mat ) ;
     } ;
 
     /*!
@@ -989,8 +998,6 @@ namespace RINGMesh {
         }
     } ;
 
-    
-
     /*!
      * Class to sort two vectors using indirect sorting
      */
@@ -1028,8 +1035,7 @@ namespace RINGMesh {
         std::vector< T2 >& output_ ;
     } ;
 
-    /******************************************************************/
-
+/******************************************************************/
 
 }
 

@@ -990,6 +990,242 @@ namespace RINGMesh {
         return false ;
     }
 
+    void Math::rotation_matrix_about_arbitrary_axis(
+        const vec3& origin,
+        const vec3& axis,
+        float64 theta,
+        bool degrees,
+        GEO::Matrix< float64, 4 >& rot_mat )
+    {
+        // Note: Rotation is impossible about an axis with null length.
+        ringmesh_debug_assert( axis == vec3() ) ;
+
+        if( degrees ) {
+            float64 pi = 3.141592653589793 ;
+            theta * pi / 180. ;
+        }
+
+        float64 axis_length = axis.length() ;
+        ringmesh_debug_assert( axis_length > 0. ) ;
+        float64 x1 = origin[0] ;
+        float64 y1 = origin[1] ;
+        float64 z1 = origin[2] ;
+        float64 a = axis[0] / axis_length ;
+        float64 b = axis[1] / axis_length ;
+        float64 c = axis[2] / axis_length ;
+        float64 d = std::sqrt( b * b + c * c ) ;
+        float64 cos_angle = std::cos( theta ) ;
+        float64 sin_angle = std::sin( theta ) ;
+
+        GEO::Matrix< float64, 4 > T ;
+        T( 0, 0 ) = 1 ;
+        T( 0, 1 ) = 0 ;
+        T( 0, 2 ) = 0 ;
+        T( 0, 3 ) = -x1 ;
+        T( 1, 0 ) = 0 ;
+        T( 1, 1 ) = 1 ;
+        T( 1, 2 ) = 0 ;
+        T( 1, 3 ) = -y1 ;
+        T( 2, 0 ) = 0 ;
+        T( 2, 1 ) = 0 ;
+        T( 2, 2 ) = 1 ;
+        T( 2, 3 ) = -z1 ;
+        T( 3, 0 ) = 0 ;
+        T( 3, 1 ) = 0 ;
+        T( 3, 2 ) = 0 ;
+        T( 3, 3 ) = 1 ;
+
+        GEO::Matrix< float64, 4 > inv_T ;
+        inv_T( 0, 0 ) = 1. ;
+        inv_T( 0, 1 ) = 0. ;
+        inv_T( 0, 2 ) = 0. ;
+        inv_T( 0, 3 ) = x1 ;
+        inv_T( 1, 0 ) = 0. ;
+        inv_T( 1, 1 ) = 1. ;
+        inv_T( 1, 2 ) = 0. ;
+        inv_T( 1, 3 ) = y1 ;
+        inv_T( 2, 0 ) = 0. ;
+        inv_T( 2, 1 ) = 0. ;
+        inv_T( 2, 2 ) = 1. ;
+        inv_T( 2, 3 ) = z1 ;
+        inv_T( 3, 0 ) = 0. ;
+        inv_T( 3, 1 ) = 0. ;
+        inv_T( 3, 2 ) = 0. ;
+        inv_T( 3, 3 ) = 1. ;
+
+#ifdef RINGMESH_DEBUG
+        GEO::Matrix< float64, 4 > computed_inv_T = T.inverse() ;
+#endif
+        ringmesh_debug_assert( inv_T( 0, 0 ) == computed_inv_T( 0, 0 ) ) ;
+        ringmesh_debug_assert( inv_T( 0, 1 ) == computed_inv_T( 0, 1 ) ) ;
+        ringmesh_debug_assert( inv_T( 0, 2 ) == computed_inv_T( 0, 2 ) ) ;
+        ringmesh_debug_assert( inv_T( 0, 3 ) == computed_inv_T( 0, 3 ) ) ;
+        ringmesh_debug_assert( inv_T( 1, 0 ) == computed_inv_T( 1, 0 ) ) ;
+        ringmesh_debug_assert( inv_T( 1, 1 ) == computed_inv_T( 1, 1 ) ) ;
+        ringmesh_debug_assert( inv_T( 1, 2 ) == computed_inv_T( 1, 2 ) ) ;
+        ringmesh_debug_assert( inv_T( 1, 3 ) == computed_inv_T( 1, 3 ) ) ;
+        ringmesh_debug_assert( inv_T( 2, 0 ) == computed_inv_T( 2, 0 ) ) ;
+        ringmesh_debug_assert( inv_T( 2, 1 ) == computed_inv_T( 2, 1 ) ) ;
+        ringmesh_debug_assert( inv_T( 2, 2 ) == computed_inv_T( 2, 2 ) ) ;
+        ringmesh_debug_assert( inv_T( 2, 3 ) == computed_inv_T( 2, 3 ) ) ;
+        ringmesh_debug_assert( inv_T( 3, 0 ) == computed_inv_T( 3, 0 ) ) ;
+        ringmesh_debug_assert( inv_T( 3, 1 ) == computed_inv_T( 3, 1 ) ) ;
+        ringmesh_debug_assert( inv_T( 3, 2 ) == computed_inv_T( 3, 2 ) ) ;
+        ringmesh_debug_assert( inv_T( 3, 3 ) == computed_inv_T( 3, 3 ) ) ;
+
+        GEO::Matrix< float64, 4 > Rx ;
+        Rx( 0, 0 ) = 1. ;
+        Rx( 0, 1 ) = 0. ;
+        Rx( 0, 2 ) = 0. ;
+        Rx( 0, 3 ) = 0. ;
+        Rx( 1, 0 ) = 0. ;
+        Rx( 1, 1 ) = c / d ;
+        Rx( 1, 2 ) = -b / d ;
+        Rx( 1, 3 ) = 0. ;
+        Rx( 2, 0 ) = 0. ;
+        Rx( 2, 1 ) = b / d ;
+        Rx( 2, 2 ) = c / d ;
+        Rx( 2, 3 ) = 0. ;
+        Rx( 3, 0 ) = 0. ;
+        Rx( 3, 1 ) = 0. ;
+        Rx( 3, 2 ) = 0. ;
+        Rx( 3, 3 ) = 1. ;
+
+        GEO::Matrix< float64, 4 > inv_Rx ;
+        inv_Rx( 0, 0 ) = 1. ;
+        inv_Rx( 0, 1 ) = 0. ;
+        inv_Rx( 0, 2 ) = 0. ;
+        inv_Rx( 0, 3 ) = 0. ;
+        inv_Rx( 1, 0 ) = 0. ;
+        inv_Rx( 1, 1 ) = c / d ;
+        inv_Rx( 1, 2 ) = b / d ;
+        inv_Rx( 1, 3 ) = 0. ;
+        inv_Rx( 2, 0 ) = 0. ;
+        inv_Rx( 2, 1 ) = -b / d ;
+        inv_Rx( 2, 2 ) = c / d ;
+        inv_Rx( 2, 3 ) = 0. ;
+        inv_Rx( 3, 0 ) = 0. ;
+        inv_Rx( 3, 1 ) = 0. ;
+        inv_Rx( 3, 2 ) = 0. ;
+        inv_Rx( 3, 3 ) = 1. ;
+
+#ifdef RINGMESH_DEBUG
+        GEO::Matrix< float64, 4 > computed_inv_Rx = Rx.inverse() ;
+#endif
+        ringmesh_debug_assert( inv_Rx( 0, 0 ) == computed_inv_Rx( 0, 0 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 0, 1 ) == computed_inv_Rx( 0, 1 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 0, 2 ) == computed_inv_Rx( 0, 2 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 0, 3 ) == computed_inv_Rx( 0, 3 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 1, 0 ) == computed_inv_Rx( 1, 0 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 1, 1 ) == computed_inv_Rx( 1, 1 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 1, 2 ) == computed_inv_Rx( 1, 2 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 1, 3 ) == computed_inv_Rx( 1, 3 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 2, 0 ) == computed_inv_Rx( 2, 0 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 2, 1 ) == computed_inv_Rx( 2, 1 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 2, 2 ) == computed_inv_Rx( 2, 2 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 2, 3 ) == computed_inv_Rx( 2, 3 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 3, 0 ) == computed_inv_Rx( 3, 0 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 3, 1 ) == computed_inv_Rx( 3, 1 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 3, 2 ) == computed_inv_Rx( 3, 2 ) ) ;
+        ringmesh_debug_assert( inv_Rx( 3, 3 ) == computed_inv_Rx( 3, 3 ) ) ;
+
+        GEO::Matrix< float64, 4 > Ry ;
+        Ry( 0, 0 ) = d ;
+        Ry( 0, 1 ) = 0. ;
+        Ry( 0, 2 ) = -a ;
+        Ry( 0, 3 ) = 0. ;
+        Ry( 1, 0 ) = 0. ;
+        Ry( 1, 1 ) = 1. ;
+        Ry( 1, 2 ) = 0. ;
+        Ry( 1, 3 ) = 0. ;
+        Ry( 2, 0 ) = a ;
+        Ry( 2, 1 ) = 0. ;
+        Ry( 2, 2 ) = d ;
+        Ry( 2, 3 ) = 0. ;
+        Ry( 3, 0 ) = 0. ;
+        Ry( 3, 1 ) = 0. ;
+        Ry( 3, 2 ) = 0. ;
+        Ry( 3, 3 ) = 1. ;
+
+        GEO::Matrix< float64, 4 > inv_Ry ;
+        inv_Ry( 0, 0 ) = d ;
+        inv_Ry( 0, 1 ) = 0. ;
+        inv_Ry( 0, 2 ) = a ;
+        inv_Ry( 0, 3 ) = 0. ;
+        inv_Ry( 1, 0 ) = 0. ;
+        inv_Ry( 1, 1 ) = 1. ;
+        inv_Ry( 1, 2 ) = 0. ;
+        inv_Ry( 1, 3 ) = 0. ;
+        inv_Ry( 2, 0 ) = -a ;
+        inv_Ry( 2, 1 ) = 0. ;
+        inv_Ry( 2, 2 ) = d ;
+        inv_Ry( 2, 3 ) = 0. ;
+        inv_Ry( 3, 0 ) = 0. ;
+        inv_Ry( 3, 1 ) = 0. ;
+        inv_Ry( 3, 2 ) = 0. ;
+        inv_Ry( 3, 3 ) = 1. ;
+
+#ifdef RINGMESH_DEBUG
+        GEO::Matrix< float64, 4 > computed_inv_Ry = Ry.inverse() ;
+#endif
+        ringmesh_debug_assert( inv_Ry( 0, 0 ) == computed_inv_Ry( 0, 0 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 0, 1 ) == computed_inv_Ry( 0, 1 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 0, 2 ) == computed_inv_Ry( 0, 2 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 0, 3 ) == computed_inv_Ry( 0, 3 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 1, 0 ) == computed_inv_Ry( 1, 0 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 1, 1 ) == computed_inv_Ry( 1, 1 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 1, 2 ) == computed_inv_Ry( 1, 2 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 1, 3 ) == computed_inv_Ry( 1, 3 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 2, 0 ) == computed_inv_Ry( 2, 0 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 2, 1 ) == computed_inv_Ry( 2, 1 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 2, 2 ) == computed_inv_Ry( 2, 2 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 2, 3 ) == computed_inv_Ry( 2, 3 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 3, 0 ) == computed_inv_Ry( 3, 0 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 3, 1 ) == computed_inv_Ry( 3, 1 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 3, 2 ) == computed_inv_Ry( 3, 2 ) ) ;
+        ringmesh_debug_assert( inv_Ry( 3, 3 ) == computed_inv_Ry( 3, 3 ) ) ;
+
+        GEO::Matrix< float64, 4 > Rz ;
+        Rz( 0, 0 ) = cos_angle ;
+        Rz( 0, 1 ) = -sin_angle ;
+        Rz( 0, 2 ) = 0. ;
+        Rz( 0, 3 ) = 0. ;
+        Rz( 1, 0 ) = sin_angle ;
+        Rz( 1, 1 ) = cos_angle ;
+        Rz( 1, 2 ) = 0. ;
+        Rz( 1, 3 ) = 0. ;
+        Rz( 2, 0 ) = 0. ;
+        Rz( 2, 1 ) = 0. ;
+        Rz( 2, 2 ) = 1. ;
+        Rz( 2, 3 ) = 0. ;
+        Rz( 3, 0 ) = 0. ;
+        Rz( 3, 1 ) = 0. ;
+        Rz( 3, 2 ) = 0. ;
+        Rz( 3, 3 ) = 1. ;
+
+        rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx * T ;
+    }
+
+    void Math::rotate_mesh(
+        GEO::Mesh& mesh,
+        const GEO::Matrix< float64, 4 >& rot_mat )
+    {
+        for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
+            float64 old_coords[4] ;
+            for( index_t i = 0; i < 3; i++ ) {
+                old_coords[i] = mesh.vertices.point_ptr( v )[i] ;
+            }
+            old_coords[3] = 1. ;
+            float64 new_coords[4] ;
+            GEO::mult( rot_mat, old_coords, new_coords ) ;
+
+            for( index_t i = 0; i < 3; i++ ) {
+                mesh.vertices.point_ptr( v )[i] = new_coords[i] ;
+            }
+            ringmesh_debug_assert( new_coords[3] == 1. ) ;
+        }
+    }
+
     /*!
      * Tests if a point is inside a triangle, more precisely if it is inside
      * a prism based on the triangle and its normal
