@@ -1002,7 +1002,7 @@ namespace RINGMesh {
 
         if( degrees ) {
             float64 pi = 3.141592653589793 ;
-            theta * pi / 180. ;
+            theta = theta * pi / 180. ;
         }
 
         float64 axis_length = axis.length() ;
