@@ -2434,4 +2434,36 @@ namespace RINGMesh {
         }
     }
 
+    void BoundaryModel::rotate(
+        const vec3& origin,
+        const vec3& axis,
+        float64 theta,
+        bool degrees )
+    {
+        // Note: Rotation is impossible about an axis with null length.
+        ringmesh_debug_assert( axis == vec3() ) ;
+        if( theta == 0. ) {
+            return ;
+        }
+
+        GEO::Matrix< float64, 4 > rot_mat ;
+        Math::rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
+            rot_mat ) ;
+
+        for( index_t corner_i = 0; corner_i < nb_corners(); ++corner_i ) {
+            GEO::Mesh& cur_corner = corner( corner_i ).mesh() ;
+            Math::rotate_mesh( cur_corner, rot_mat ) ;
+        }
+
+        for( index_t line_i = 0; line_i < nb_lines(); ++line_i ) {
+            GEO::Mesh& cur_line = line( line_i ).mesh() ;
+            Math::rotate_mesh( cur_line, rot_mat ) ;
+        }
+
+        for( index_t surface_i = 0; surface_i < nb_surfaces(); ++surface_i ) {
+            GEO::Mesh& cur_surface = surface( surface_i ).mesh() ;
+            Math::rotate_mesh( cur_surface, rot_mat ) ;
+        }
+    }
+
 } // namespace
