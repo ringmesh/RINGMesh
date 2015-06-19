@@ -40,8 +40,8 @@
 
 /*! \author Jeanne Pellerin */
 
-#ifndef __RINGMESH_BOUNDARY_MODEL_FROM_SURFACE__
-#define __RINGMESH_BOUNDARY_MODEL_FROM_SURFACE__
+#ifndef __RINGMESH_BOUNDARY_MODEL_BUILDER__
+#define __RINGMESH_BOUNDARY_MODEL_BUILDER__
 
 #include <ringmesh/common.h>
 #include <ringmesh/boundary_model.h>
