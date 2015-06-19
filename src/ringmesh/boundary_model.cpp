@@ -2464,6 +2464,14 @@ namespace RINGMesh {
         return NO_ID ;
     }
 
+    /*!
+     * @brief Translates the boundary model by a vector.
+     *
+     * Every single mesh of the boundary model is translated:
+     * corners, lines and surfaces.
+     *
+     * @param[in] translation_vector vector of translation.
+     */
     void BoundaryModel::translate( const vec3& translation_vector )
     {
         // Note: if the translation is null, do nothing.
@@ -2499,6 +2507,25 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * \brief Rotate the boundary model.
+     *
+     * Applies a rotation about the line defined by the point
+     * \p origin and the vector \p axis. The rotation angle is
+     * \p theta. If \p degrees is true the angle is in degrees,
+     * else in radians. All the vertices of the boundary model
+     * undergo the rotation (each mesh inside the boundary model:
+     * corners, lines and surfaces).
+     *
+     * @param origin point in which passes the rotation axis.
+     *
+     * @param axis vector which defines the rotation axis.
+     *
+     * @param theta rotation angle (in radians or degrees).
+     *
+     * @param degrees true is \p theta is in degrees, false
+     * if in radians.
+     */
     void BoundaryModel::rotate(
         const vec3& origin,
         const vec3& axis,

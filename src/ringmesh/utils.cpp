@@ -990,6 +990,26 @@ namespace RINGMesh {
         return false ;
     }
 
+    /*!
+     * @brief Builds a rotational matrix about an arbitrary axis.
+     *
+     * Mathematical development: http://paulbourke.net/geometry/rotate/.
+     *
+     * @param[in] origin point in which passes the rotation axis.
+     *
+     * @param[in] axis vector which defines the rotation axis.
+     *
+     * @param[in] theta rotation angle (in radians or degrees).
+     *
+     * @param[in] degrees true is \p theta is in degrees, false
+     * if in radians.
+     *
+     * @param[out] rot_mat the matrix which defines the rotation
+     * of a point around the axis defined by point \p origin
+     * and vector \p axis by an angle \p theta.
+     * New coordinates of a point (x,y,z) are:
+     * (x',y',z') = rot_mat*(x,y,z)
+     */
     void Math::rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
@@ -1206,6 +1226,14 @@ namespace RINGMesh {
         rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx * T ;
     }
 
+    /*!
+     * Rotation of all the vertices of a mesh following
+     * a defined rotational matrix.
+     *
+     * @param mesh[in,out] the mesh to rotate.
+     *
+     * @param[in] rot_mat matrix which defines the rotation.
+     */
     void Math::rotate_mesh(
         GEO::Mesh& mesh,
         const GEO::Matrix< float64, 4 >& rot_mat )
