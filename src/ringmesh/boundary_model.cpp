@@ -1266,10 +1266,9 @@ namespace RINGMesh {
         // Identify and invalidate colocated vertices
         GEO::vector< index_t > old2new;
         if( colocate_vertices( mesh_, epsilon, old2new ) ) {
-            erase_vertices( 
-                std::vector< index_t >(old2new.begin(), old2new.end() ) ) ;
+            std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
+            erase_vertices( stupid_copy ) ;
         }
-
     }
 
 
