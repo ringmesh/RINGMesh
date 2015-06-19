@@ -406,18 +406,30 @@ namespace {
     }
 
     /*!
-     * @brief Merges the vertices of a mesh that are at the same geometric location
+     * @brief Get the colocated vertices of a mesh, i.e. which have the same geometric location
      * @note Code modified from geogram/mesh/mesh_repair.cpp
      * @param[in] M the mesh
      * @param[in] colocate_epsilon tolerance for merging vertices
-     * @param[out] old2new mapping from previous M.vertices to new M.vertices
+     * @param[out] old2new if old2new[i] == i, point is to keep; otherwise
+     *             old2new[i] = j, j is the index of the matching point kept
+     * @returns true if there are colocated vertices
+     *
+     * @todo replace by a call to  GEO::mesh_detect_colocated_vertices since it
+     *       is now in the API
+     *
+     * @pre The mesh has no facet, cell or edges.
      */
-    void repair_colocate_vertices(
+    bool colocate_vertices(
         GEO::Mesh& M,
         double colocate_epsilon,
         GEO::vector< index_t >& old2new )
     {
         old2new.clear() ;
+
+        if( M.edges.nb() > 0 || M.facets.nb() > 0 || M.cells.nb() > 0 ) {
+            // This function is not sufficient to update the complete mesh.
+            ringmesh_debug_assert( false ) ;
+        }
 
         index_t nb_new_vertices = 0 ;
         if( colocate_epsilon == 0.0 ) {
@@ -429,34 +441,7 @@ namespace {
                 M.vertices.nb(), old2new, colocate_epsilon,
                 M.vertices.dimension() ) ;
         }
-        if( nb_new_vertices == M.vertices.nb() ) {
-            return ;
-        }
-        if( M.edges.nb() > 0 || M.facets.nb() > 0 || M.cells.nb() > 0 ) {
-            // This function is not sufficient to update the complete
-            // mesh.
-            ringmesh_debug_assert( false ) ;
-        }
-
-        // Some index magic to flag the points to delete
-        GEO::vector< index_t > to_delete( old2new.size() ) ;
-        for( index_t i = 0; i < old2new.size(); i++ ) {
-            if( old2new[i] == i ) {
-                to_delete[i] = 0 ;
-            } else {
-                to_delete[i] = 1 ;
-            }
-        }
-        M.vertices.delete_elements( to_delete, false ) ;
-        // and then get the right mapping between old and new vertices
-        // from information written in to_delete by delete_elements function
-        for( index_t i = 0; i < old2new.size(); i++ ) {
-            if( to_delete[i] != NO_ID ) {
-                old2new[i] = to_delete[i] ;
-            } else {
-                old2new[i] = to_delete[old2new[i]] ;
-            }
-        }
+        return nb_new_vertices != M.vertices.nb() ;
     }
 
     /**
@@ -856,8 +841,8 @@ namespace {
         // For all the vertices of the model 
         // We check that the elements in which they are are consistent 
         // to have a valid B-Rep model
-        std::vector< bool > valid( M.vertices.nb_unique_vertices(), true ) ;
-        for( index_t i = 0; i < M.vertices.nb_unique_vertices(); ++i ) {
+        std::vector< bool > valid( M.vertices.nb(), true ) ;
+        for( index_t i = 0; i < M.vertices.nb(); ++i ) {
             bool valid_vertex = true ;
 
             // Get the mesh elements in which this vertex is            
@@ -882,7 +867,7 @@ namespace {
                     case BME::CORNER:
                         if( corner != NO_ID ) {
                             GEO::Logger::err( "BoundaryModelVertex" ) << " Vertex "
-                                << i << " is in in at least 2 corners" << std::endl
+                                << i << " is in at least 2 corners" << std::endl
                                 << std::endl ;
                             valid_vertex = false ;
                         } else {
@@ -1046,7 +1031,7 @@ namespace {
 #ifdef RINGMESH_DEBUG
         if( nb_invalid > 0 ) {
             std::ostringstream file ;
-            file << M.debug_directory() << "\\invalid_global_vertices.pts" ;
+            file << M.debug_directory() << "/invalid_global_vertices.pts" ;
 
             std::ofstream out ;
             out.open( file.str().c_str() ) ;
@@ -1111,7 +1096,7 @@ namespace {
 #ifdef RINGMESH_DEBUG
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
-            file << S.model().debug_directory() << "\\" << " invalid_boundary_"
+            file << S.model().debug_directory() << "/" << "invalid_boundary_"
                 << print_bme_id( S ) << ".lin" ;
             save_edges( file.str(), S.model(), invalid_corners ) ;
         }
@@ -1142,13 +1127,12 @@ namespace RINGMesh {
 
     typedef BME::bme_t bme_t ;
 
-    BoundaryModelVertices::~BoundaryModelVertices()
+    void BoundaryModelVertices::initialize()
     {
-    }
+        mesh_.clear() ;
 
-    void BoundaryModelVertices::initialize_unique_vertices()
-    {
-        // Total number of vertices in the Corners - Lines and Surfaces of the model
+        // Total number of vertices in the 
+        // Corners, Lines, and Surfaces of the BoundaryModel
         index_t nb = 0 ;
         for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
             BME::TYPE T = static_cast< BME::TYPE >( t ) ;
@@ -1156,73 +1140,81 @@ namespace RINGMesh {
                 nb += bm_.element( bme_t( T, e ) ).nb_vertices() ;
             }
         }
-        // Get out if the BM has no vertex yet
+        // Get out if no vertices
         if( nb == 0 ) {
             return ;
         }
-        // Allocate the space for the vertices 
-        std::vector< vec3 > all_vertices( nb ) ;
-        // Fill the vertices coordinates
+
+        // Fill the vertices
+        mesh_.vertices.create_vertices( nb ) ;
+        bme_vertices_.resize( nb ) ;
+
         index_t index = 0 ;
-        for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
-            BME::TYPE T = static_cast< BME::TYPE >( t ) ;
-            for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
-                const BME& E = bm_.element( bme_t( T, e ) ) ;
-                for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                    all_vertices[index++ ] = E.vertex( v ) ;
-                }
-            }
-        }
-        // Assign these points to the Mesh 
-        mesh_.vertices.create_vertices( all_vertices.size() ) ;
-        mesh_.vertices.assign_points( all_vertices[0].data(), 3,
-            all_vertices.size() ) ;
-
-        // Remove the colocated vertices
-        GEO::vector< index_t > old2new ;
-        repair_colocate_vertices( mesh_, epsilon, old2new ) ;
-
-        // Initialize model_vertex_id in BMME
-        // Same loops than to get the point
-        index = 0 ;
         for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
             BME::TYPE T = static_cast< BME::TYPE >( t ) ;
             for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
                 BoundaryModelMeshElement& E = cast_bmm_element( bm_, T, e ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                    E.set_model_vertex_id( v, old2new[index++ ] ) ;
+                    // Vertex coordinates
+                    double* p = mesh_.vertices.point_ptr( index ) ;
+                    const double* from = E.vertex( v ).data() ;
+                    for( index_t c = 0; c < 3; ++c ) {
+                        p[c] = from[c] ;
+                    }
+                    // Global index stored at BME level
+                    E.set_model_vertex_id( v, index ) ;
+                    // Index in the BME stored at global level  
+                    bme_vertices_[index].push_back( VertexInBME( E.bme_id(), v ) ) ;
+                    // Global vertex index increment
+                    index++ ;
                 }
             }
         }
-
-        set_to_update() ;
-        initialize_kdtree() ;
+        // Remove colocated vertices
+        remove_colocated() ;
     }
 
-    void BoundaryModelVertices::initialize_reverse()
+    void BoundaryModelVertices::set_invalid_vertex( index_t v )
     {
-        if( mesh_.vertices.nb() == 0 ) {
-            initialize_unique_vertices() ;
+        ringmesh_assert( v < nb() ) ;
+        std::vector< VertexInBME >& related = bme_vertices_[v] ;
+        for( index_t i = 0; i < related.size(); ++i ) {
+            related[i] = VertexInBME() ;
         }
-        if( !bme_vertices_.is_bound() ) {
-            bme_vertices_.bind( attribute_manager(), "bme_vertices" ) ;
-        }
-        for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
-            BME::TYPE T = static_cast< BME::TYPE >( t ) ;
-            for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
-                const BoundaryModelElement& E = bm_.element( bme_t( T, e ) ) ;
-                for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                    index_t unique = E.model_vertex_id( v ) ;
-                    ringmesh_debug_assert( unique != NO_ID ) ;
-                    bme_vertices_[unique].push_back( VertexInBME( E.bme_id(), v ) ) ;
-                }
+    }
+
+    bool BoundaryModelVertices::is_invalid_vertex( index_t v ) const
+    {
+        ringmesh_assert( v < nb() ) ;
+        const std::vector< VertexInBME >& related = bme_vertices_[v] ;
+        index_t count = 0 ;
+        for( index_t i = 0; i < related.size(); ++i ) {
+            if( !related[i].is_defined() ) {
+                count++ ;
             }
         }
+        return count == related.size() ;
+    }
+
+    void BoundaryModelVertices::remove_colocated()
+    {
+        // Go out if nothing to do
+        // and compute the points if they are not initialized yet
+        if( nb() == 0 ) {
+            return ;
+        }
+        // Identify and invalidate colocated vertices
+        GEO::vector< index_t > old2new ;
+        if( colocate_vertices( mesh_, epsilon, old2new ) ) {
+            std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
+            erase_vertices( stupid_copy ) ;
+        }
+
     }
 
     void BoundaryModelVertices::update_point( index_t v, const vec3& point )
     {
-        ringmesh_assert( v < nb_unique_vertices() ) ;
+        ringmesh_assert( v < nb() ) ;
         // Change the position of the unique_vertex 
         double* p = mesh_.vertices.point_ptr( v ) ;
         for( index_t c = 0; c < 3; ++c ) {
@@ -1241,16 +1233,14 @@ namespace RINGMesh {
     const std::vector< BoundaryModelVertices::VertexInBME >&
     BoundaryModelVertices::bme_vertices( index_t v ) const
     {
-        ringmesh_assert( v < nb_unique_vertices() ) ;
-        if( !bme_vertices_.is_bound() ) {
-            const_cast< BoundaryModelVertices* >( this )->initialize_reverse() ;
-        }
+        ringmesh_assert( v < nb() ) ;
         return bme_vertices_[v] ;
     }
 
     index_t BoundaryModelVertices::add_unique_vertex( const vec3& point )
     {
         set_to_update() ;
+        bme_vertices_.push_back( std::vector< VertexInBME >() ) ;
         return mesh_.vertices.create_vertex( point.data() ) ;
     }
 
@@ -1258,12 +1248,8 @@ namespace RINGMesh {
         index_t unique_id,
         const VertexInBME& v )
     {
-        /// The attribute bme_vertices is bound if not already ? 
-        // Good idea ? not sure ....
-        if( !bme_vertices_.is_bound() ) {
-            bme_vertices_.bind( attribute_manager(), "bme_vertices" ) ;
-        }
-        ringmesh_assert( unique_id < nb_unique_vertices() ) ;
+        ringmesh_assert( unique_id < nb() ) ;
+        ringmesh_debug_assert( bme_vertices_.size() == nb() ) ;
         bme_vertices_[unique_id].push_back( v ) ;
     }
 
@@ -1272,15 +1258,15 @@ namespace RINGMesh {
         index_t k,
         const VertexInBME& v )
     {
-        ringmesh_assert( unique_id < nb_unique_vertices() ) ;
+        ringmesh_assert( unique_id < nb() ) ;
         ringmesh_assert( k < bme_vertices( unique_id ).size() ) ;
         bme_vertices_[unique_id][k] = v ;
     }
 
     index_t BoundaryModelVertices::vertex_index( const vec3& p ) const
     {
-        // nb_unique_vertices() call initializes the points if necessary
-        if( nb_unique_vertices() == 0 ) {
+        // nb() call initializes the points if necessary
+        if( nb() == 0 ) {
             return NO_ID ;
         }
         if( kdtree_to_update_ ) {
@@ -1297,34 +1283,36 @@ namespace RINGMesh {
         }
     }
 
+    // Deprecated - to remove - the name is stupidly annoying
     index_t BoundaryModelVertices::nb_unique_vertices() const
     {
+        return nb() ;
+    }
+
+    index_t BoundaryModelVertices::nb() const
+    {
         if( mesh_.vertices.nb() == 0 ) {
-            const_cast< BoundaryModelVertices* >( this )->initialize_unique_vertices() ;
+            const_cast< BoundaryModelVertices* >( this )->initialize() ;
         }
+        ringmesh_debug_assert( bme_vertices_.size() == mesh_.vertices.nb() ) ;
         return mesh_.vertices.nb() ;
     }
 
     const vec3& BoundaryModelVertices::unique_vertex( index_t v ) const
     {
-        // The call to nb_unique_vertices() in the assert
+        // The call to nb() in the assert
         // initialize the points if necessary
-        ringmesh_assert( v < nb_unique_vertices() ) ;
+        ringmesh_assert( v < nb() ) ;
         return mesh_.vertices.point( v ) ;
     }
 
     void BoundaryModelVertices::clear()
     {
         GEO::Process::acquire_spinlock( lock_ ) ;
-        /// @todo Unbind all attributes !!!! otherwise we'll get a crash
-        if( bme_vertices_.is_bound() ) {
-            for( index_t i = 0; i < nb_unique_vertices(); ++i ) {
-                bme_vertices_[i].clear() ;
-            }
-            bme_vertices_.unbind() ;
-        }
 
         mesh_.clear( true, true ) ;
+        bme_vertices_.clear() ;
+        set_to_update() ;
 
         // Clear the model vertex id information for the Corner - Line - Surface
         for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
@@ -1360,52 +1348,129 @@ namespace RINGMesh {
 #endif
     }
 
-    void BoundaryModelVertices::erase_invalid_vertices()
+    void BoundaryModelVertices::erase_vertices( std::vector< index_t >& to_delete )
     {
-        GEO::vector< index_t > to_delete( nb_unique_vertices(), 0 ) ;
+        ringmesh_assert( to_delete.size() == nb() ) ;
 
-        for( index_t v = 0; v < nb_unique_vertices(); ++v ) {
-            std::vector< VertexInBME >& related = bme_vertices_[v] ;
-            for( index_t i = 0; i < related.size(); ++i ) {
-                // If this related vertex is not valid
-                if( !related[i].is_defined() ) {
-                    // Set the default invalid value
-                    related[i] = VertexInBME() ;
+        // For mesh vertices deletion
+        GEO::vector< index_t > to_delete_geo( nb(), 0 ) ;
+
+        // Fill the delete information for geogram
+        // Recycle the to_delete vertex to get the mapping between
+        // new and old points. This implemented to be similar 
+        // to what is done in the delete_elements function in geogram
+        index_t nb_todelete = 0 ;
+        index_t cur = 0 ;
+        for( index_t v = 0; v < nb(); ++v ) {
+            if( to_delete[v] != v ) {
+                to_delete_geo[v] = 1 ;
+                nb_todelete++ ;
+                if( to_delete[v] != NO_ID ) {
+                    ringmesh_debug_assert( to_delete[v] < v ) ;
+                    to_delete[v] = to_delete[to_delete[v]] ;
                 }
-            }
-            // All related points are invalid
-            if( std::count( related.begin(), related.end(), VertexInBME() )
-                == related.size() ) {
-                // Undefined behavior if erase is used to remove all elements
-                related.clear() ;
-                // The unique point must be removed
-                to_delete[v] = 1 ;
             } else {
-                // Remove the invalid values
-                related.erase(
-                    std::remove( related.begin(), related.end(), VertexInBME() ),
-                    related.end() ) ;
+                to_delete[v] = cur ;
+                ++cur ;
             }
         }
-        if( std::count( to_delete.begin(), to_delete.end(), 1 ) > 0 ) {
-            // Delete the vertices
-            mesh_.vertices.delete_elements( to_delete, false ) ;
+        if( nb_todelete == 0 ) {
+            return ;
+        }
+        if( nb_todelete == nb() ) {
+            // Clear everything
+            clear() ;
+            return ;
+        }
 
-            // Update model_vertex_ids in BMME 
-            for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
-                BME::TYPE T = static_cast< BME::TYPE >( t ) ;
-                for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
-                    BoundaryModelMeshElement& E = cast_bmm_element( bm_, T, e ) ;
-                    for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                        index_t new_id = to_delete[E.model_vertex_id( v )] ;
-                        ringmesh_debug_assert( new_id != NO_ID ) ;
-                        E.set_model_vertex_id( v, new_id ) ;
+        // Empty the bme_vertices_ of the deleted vertices and erase them
+        for( index_t v = 0; v < nb(); ++v ) {
+            if( to_delete_geo[v] == 1 ) {
+                bme_vertices_[v].clear() ;
+            }
+        }
+        bme_vertices_.erase(
+            std::remove( bme_vertices_.begin(), bme_vertices_.end(),
+                std::vector< VertexInBME >() ), bme_vertices_.end() ) ;
+
+        // Delete the vertices - false is to not remove 
+        // isolated vertices (here all the vertices) 
+        mesh_.vertices.delete_elements( to_delete_geo, false ) ;
+
+#ifdef RINGMESH_DEBUG 
+        // Paranoia - check that we have the same mapping than the
+        // delete_elements function in Geogram
+        for( index_t v = 0; v < nb(); ++v ) {
+            ringmesh_assert(
+                to_delete_geo[v] == NO_ID || to_delete_geo[v] == to_delete[v] ) ;
+        }
+#endif
+
+        // Update model_vertex_ids in BMME 
+        for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
+            BME::TYPE T = static_cast< BME::TYPE >( t ) ;
+
+            for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
+                BoundaryModelMeshElement& E = cast_bmm_element( bm_, T, e ) ;
+
+                for( index_t v = 0; v < E.nb_vertices(); v++ ) {
+                    index_t old_id = E.model_vertex_id( v ) ;
+                    index_t new_id = to_delete[old_id] ;
+                    // The new_id must be valid - or the vertex should have been
+                    // previsouly removed from the BMME
+                    ringmesh_debug_assert( new_id != NO_ID ) ;
+                    E.set_model_vertex_id( v, new_id ) ;
+
+                    // Merge bme_vertices_ information
+                    if( std::find( bme_vertices_[new_id].begin(),
+                        bme_vertices_[new_id].end(), VertexInBME( E.bme_id(), v ) )
+                        == bme_vertices_[new_id].end() ) {
+                        bme_vertices_[new_id].push_back(
+                            VertexInBME( E.bme_id(), v ) ) ;
                     }
                 }
             }
-            set_to_update() ;
         }
 
+        // The Kd-tree should be updated next time we need it
+        set_to_update() ;
+    }
+
+    void BoundaryModelVertices::erase_invalid_vertices()
+    {
+        index_t nb_todelete = 0 ;
+        std::vector< index_t > to_delete( nb() ) ;
+
+        for( index_t v = 0; v < nb(); ++v ) {
+            std::vector< VertexInBME >& related = bme_vertices_[v] ;
+            index_t nb_invalid = 0 ;
+
+            // Get the invalid BMEVertices for the current global vertex
+            for( index_t i = 0; i < related.size(); ++i ) {
+                if( !related[i].is_defined() ) {
+                    // To ease removal of invalid BMEVertices
+                    related[i] = VertexInBME() ;
+                    nb_invalid++ ;
+                }
+            }
+
+            if( nb_invalid < related.size() ) {
+                to_delete[v] = v ;
+                related.erase(
+                    std::remove( related.begin(), related.end(), VertexInBME() ),
+                    related.end() ) ;
+            } else {
+                // This vertex must be deleted
+                to_delete[v] = NO_ID ;
+                nb_todelete++ ;
+                // std::erase of all elements has an undefined behavior
+                related.clear() ;
+            }
+        }
+
+        if( nb_todelete > 0 ) {
+            erase_vertices( to_delete ) ;
+        }
     }
 
     /*******************************************************************************/
@@ -1735,7 +1800,7 @@ namespace RINGMesh {
             valid = false ;
 #ifdef RINGMESH_DEBUG
             std::ostringstream file ;
-            file << debug_directory() << "\\non_manifold_edges" << ".mesh" ;
+            file << debug_directory() << "/non_manifold_edges" << ".mesh" ;
             /// @todo Save a GEO::Mesh in an adapted format
             /// if the Mesh has only edges or vertices (.pts ? .lin ? ) 
             GEO::mesh_save( non_manifold_edges, file.str() ) ;
@@ -2360,9 +2425,9 @@ namespace RINGMesh {
         /// 1. Write the unique vertices
         out << "# Node list" << std::endl ;
         out << "# node count, 3 dim, no attribute, no boundary marker" << std::endl ;
-        out << vertices.nb_unique_vertices() << " 3 0 0" << std::endl ;
+        out << vertices.nb() << " 3 0 0" << std::endl ;
         out << "# node index, node coordinates " << std::endl ;
-        for( index_t p = 0; p < vertices.nb_unique_vertices(); p++ ) {
+        for( index_t p = 0; p < vertices.nb(); p++ ) {
             const vec3& V = vertices.unique_vertex( p ) ;
             out << p << " " << " " << V.x << " " << V.y << " " << V.z << std::endl ;
         }

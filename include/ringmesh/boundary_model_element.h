@@ -663,8 +663,8 @@ namespace RINGMesh {
 
         bool equal( const std::vector< vec3 >& rhs_vertices ) const ;
 
-        vec3 segment_barycenter( index_t s ) const ;
-        double segment_length( index_t s ) const ;
+        vec3 segment_barycenter( index_t e ) const ;
+        double segment_length( index_t e ) const ;
         double total_length() const ;
 
     protected:

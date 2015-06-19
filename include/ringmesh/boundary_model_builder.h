@@ -40,8 +40,8 @@
 
 /*! \author Jeanne Pellerin */
 
-#ifndef __RINGMESH_BOUNDARY_MODEL_FROM_SURFACE__
-#define __RINGMESH_BOUNDARY_MODEL_FROM_SURFACE__
+#ifndef __RINGMESH_BOUNDARY_MODEL_BUILDER__
+#define __RINGMESH_BOUNDARY_MODEL_BUILDER__
 
 #include <ringmesh/common.h>
 #include <ringmesh/boundary_model.h>
@@ -61,7 +61,11 @@ namespace RINGMesh {
               : model_( model ) {}
         virtual ~BoundaryModelBuilder() {}
 
-        
+        /*! @}
+        * \name Access - Modification of the BoundaryModel
+        * @{
+        */
+
         /*!
          *@brief Set the name of the model  
          */
@@ -86,8 +90,32 @@ namespace RINGMesh {
             return model_ ;
         }
 
+        bool end_model() ;
+        bool complete_element_connectivity() ;
+
+        /*! @}
+        * \name Creation - Deletion - Access to BoundaryModelElements .
+        * @{
+        */
+
+        BME::bme_t create_element( BME::TYPE e_type ) ;
+
         /*!
-         * @brief Accessor to a modifiable BoundaryModelElement of the model
+        * @brief Set the element of the model to the given element.
+        * @details It is on purpose that no checking whatsoever is performed.
+        *          This way, nil pointers can be set for a following element removal.
+        */
+        void set_element( const BME::bme_t& id, BoundaryModelElement* E ) const
+        {
+            if( id.type < BME::NO_TYPE ) {
+                model_.modifiable_elements( id.type )[ id.index ] = E ;
+            } else {
+                ringmesh_assert_not_reached ;
+            }
+        }      
+
+        /*!
+         * @brief Reference to a modifiable element of the model
          */
         BoundaryModelElement& element(
             const BME::bme_t& t ) const
@@ -110,21 +138,10 @@ namespace RINGMesh {
             }            
         }
 
-        /*!
-         * @brief Set the element of the model to the given element.
-         * @details It is on purpose that no checking whatsoever is performed.
-         *          This way, nil pointers can be set and this is useful to remove elements.
-         */
-        void set_element( const BME::bme_t& id, BoundaryModelElement* E ) const
-        {
-            if( id.type < BME::NO_TYPE ) {
-                model_.modifiable_elements( id.type )[ id.index ] = E ;
-            }
-            else {
-                ringmesh_assert_not_reached ;
-            }
-        }
-   
+        bool get_dependent_elements( std::set< BME::bme_t >& elements ) const ;
+        void remove_elements( const std::set< BME::bme_t >& elements ) ;
+
+      
         /*! @}
          * \name Filling BoundaryModelElement attributes.
          * @{
@@ -187,6 +204,15 @@ namespace RINGMesh {
             element( t ).add_child( child_index ) ;
         }
 
+
+        // Universe
+        void set_universe( const std::vector<
+                           std::pair< index_t, bool > >& boundaries ) ;
+     
+        /*! @}
+         * \name Set element geometry from geometrical positions   
+         * @{
+         */
         void set_element_vertex(
             BME::bme_t t,
             index_t v,
@@ -195,30 +221,6 @@ namespace RINGMesh {
             element( t ).set_vertex( v, point, false ) ;
         }
 
-        /*! @}
-         * \name Find and/or create one BoundaryModelElement.
-         * @{
-         */
-        BME::bme_t create_element( BME::TYPE e_type ) ;
-        bool get_dependent_elements( std::set< BME::bme_t >& elements ) const ;
-        void remove_elements( const std::vector< BME::bme_t >& elements ) ;        
-        void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
-        void resize_elements(
-            BME::TYPE e_type,
-            index_t nb ) ;
-
-        // Corner
-        BME::bme_t find_corner( const vec3& point) const ;
-        BME::bme_t find_corner( index_t model_point_id ) const ;
-
-        // Universe
-        void set_universe( const std::vector< 
-                           std::pair< index_t, bool > >& boundaries ) ;
-
-        /*! @}
-         * \name Set element geometry from geometrical positions   
-         * @{
-         */
         void set_corner(
             const BME::bme_t& corner_id,
             const vec3& point ) ;
@@ -232,6 +234,7 @@ namespace RINGMesh {
             const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr ) ;
+
 
         /*! @}
         * \name Set element geometry using BoundaryModel vertices
@@ -260,27 +263,19 @@ namespace RINGMesh {
 
         void set_surface_adjacencies( const BME::bme_t& surface_id ) ;
 
-        /*! @}
-         * \name Fix model - Check validity and fill missing stuff
-         * @{
-         */
-        bool end_model() ;
-        void update_all_ids() ;
-        void init_global_model_element_access() ;
-        bool complete_element_connectivity() ;          
-        void remove_degenerate_facet_and_edges() ;
-
-        void fill_elements_boundaries( BME::TYPE type ) ;
-        void fill_elements_in_boundaries( BME::TYPE type ) ;
-        void fill_elements_parent( BME::TYPE type ) ;
-        void fill_elements_children( BME::TYPE type ) ;
-
         /*!
          * @}
          */
 
     protected:
+        void delete_elements(
+            std::vector< std::vector< index_t > >& to_erase ) ;
+        void init_global_model_element_access() ;
+        void resize_elements( BME::TYPE type, index_t nb ) ;
+
+    protected:
         BoundaryModel& model_ ;
+
     } ;
 
     /*!

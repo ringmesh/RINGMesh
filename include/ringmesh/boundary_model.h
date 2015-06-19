@@ -102,36 +102,53 @@ namespace RINGMesh {
         } ;
 
         /*!
-         * @brief Vertices are defined for a BoundaryModel
+         * @brief Constructor from an existing BoundaryModel
          */
         BoundaryModelVertices( const BoundaryModel& bm )
             : bm_( bm ), kdtree_( nil ), lock_( 0 ), kdtree_to_update_( true )
         {
         }
 
-        ~BoundaryModelVertices() ;
+        ~BoundaryModelVertices()
+        {
+        }
+
+        /// Maybe this is not the best test, maybe we should store a bool
+        /// to store this
+        bool is_initialized() const
+        {
+            return mesh_.vertices.nb() > 0 ;
+        }
 
         /*!
          * @brief Number of vertices stored. 
-         * @details Calls initialize_unique_vertices() if they are not filled yet
+         * @details Calls initialize() if vertices are not filled yet
+         * @todo remove
          */
         index_t nb_unique_vertices() const ;
 
         /*!
+         * @brief Number of vertices stored.
+         * @details Calls initialize() if vertices are not filled yet
+         */
+        index_t nb() const ;
+
+        /*!
          * @brief Coordinates of a vertex of the BoundaryModel
-         * @pre unique_id < nb_unique_vertices()
+         * @pre unique_id < nb()
          */
         const vec3& unique_vertex( index_t unique_id ) const ;
 
         /*!
          * @brief Returns the index of the given vertex in the model
          * @param[in] p input point coordinates
-         * @return index of the vertex in the model if found (distance < epsilon), otherwise NO_ID
+         * @return index of the vertex in the model if found 
+         * (distance < epsilon), otherwise NO_ID
          */
         index_t vertex_index( const vec3& p ) const ;
 
         /*!
-         * @brief Get the vertices in BME that correspond to the given unique vertex
+         * @brief Get the vertices in BME corresponding to the given unique vertex
          */
         const std::vector< VertexInBME >& bme_vertices( index_t unique_id ) const ;
 
@@ -166,6 +183,7 @@ namespace RINGMesh {
          *        set attribute to NO_ID in BME
          * @warning Not stable - crashes because of issues in 
          * Mesh attributes clearing
+         * @todo Unbind all attributes !!!! 
          */
         void clear() ;
 
@@ -177,26 +195,46 @@ namespace RINGMesh {
             return mesh_.vertices.attributes() ;
         }
 
+        /*!
+         * @brief Remove colocated vertices
+         */
+        void remove_colocated() ;
+
         /*! 
-         * @brief Delete the vertices that are not anymore in any 
-         * BoundaryModelElement
+         * @brief Remove all invalid VertexInBME and delete the vertices 
+         * that are not anymore in any BoundaryModelElement
          */
         void erase_invalid_vertices() ;
 
+        /*! 
+         * @brief Delete vertices for which to_delete[i] != i ;
+         * @param[in,out] to_delete can be NO_ID or give the index of a 
+         *  kept vertex with wich information should be merged.
+         *  It is recyled to give the mapping between old and new vertex indices        
+         * @pre to_delete[ v ] is either NO_ID, or is equal or inferior to v
+         */
+        void erase_vertices( std::vector< index_t >& to_delete ) ;
+
     private:
         /*!
-         * @brief Determine the unique vertices from the vertices 
+         * @brief Initialize the vertices from the vertices 
          *        of the BoundaryModel Corner s, Line s, and Surface s
-         * @details Fills unique_vertices_ and set the attributes the global index on
-         *          the BoundaryModel Corner, Line and Surface. 
+         *        Duplicates are not removed yet.
+         * @details Fills unique_vertices_, set model vertex id in BME and
+         *          initialize the reverse information.
          */
-        void initialize_unique_vertices() ;
+        void initialize() ;
 
         /*!
-         * @brief Fills the unique2bme vector
-         * @details Call initialize_unique_vertices() if unique_vertices_ is empty
+         * @brief Set a vertex as invalid
+         * @details Put all the ids of its VertexInBME to NO_ID
          */
-        void initialize_reverse() ;
+        void set_invalid_vertex( index_t v ) ;
+
+        /*!
+         * @brief True if the vertex is not valid
+         */
+        bool is_invalid_vertex( index_t v ) const ;
 
         /*!
          * @brief Delete the KdTree and set the pointer to nil.         
@@ -205,9 +243,11 @@ namespace RINGMesh {
 
         /*!
          * @brief Build the KdTree of the vertices 
-         * @pre In debug mode, assert that ann_ pointer is nil.
+         * @pre In debug mode, assert that ann_ pointer is nil,
+         *      and that there is no colocated vertices.
+         *
          * @note The function is const to be called when accessing a point index
-         *  from coodinated without an ugly const-cast.
+         *  from coordinated without an ugly const-cast.
          */
         void initialize_kdtree() const ;
 
@@ -230,8 +270,9 @@ namespace RINGMesh {
 
         /*! 
          * Vertices in BoundaryModelElements corresponding to each vertex
+         * @todo Change this extremely expensive storage !!!
          */
-        GEO::Attribute< std::vector< VertexInBME > > bme_vertices_ ;
+        std::vector< std::vector< VertexInBME > > bme_vertices_ ;
 
         /// Kd-tree of the model vertices
         mutable GEO::NearestNeighborSearch_var kdtree_ ;
@@ -297,7 +338,7 @@ namespace RINGMesh {
          */
         index_t nb_vertices() const
         {
-            return vertices.nb_unique_vertices() ;
+            return vertices.nb() ;
         }
 
         index_t nb_facets() const ;
