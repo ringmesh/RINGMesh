@@ -2349,7 +2349,6 @@ namespace RINGMesh {
                 out << "$EndMeshFormat" << std::endl ;
 
                 out << "$Nodes" << std::endl ;
-                std::cout << "ORDER PUTAIN" << mm.get_order() << std::endl ;
                 out << mm.order.nb_total_vertices() << std::endl ;
                 for( index_t p = 0; p < mm.vertices.nb_vertices(); p++ ) {
 
