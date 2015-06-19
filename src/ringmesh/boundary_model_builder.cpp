@@ -702,9 +702,11 @@ namespace {
         for( index_t i = 0; i < BM.nb_lines(); ++i ) {
             index_t nb = repair_line_mesh( BM.line( i ).mesh() ) ;
             if( nb > 0 ) {
+#ifdef RINGMESH_DEBUG
                 GEO::Logger::out( "BoundaryModel" )
                     << nb << " degenerated edges removed in LINE "
                     << i << std::endl ;
+#endif
 
                 // The line may be empty now - remove it from the model
                 if( BM.line( i ).nb_cells() == 0 ) {
@@ -720,9 +722,6 @@ namespace {
             if( nb > 0 ) {
                 // If there are some degenerated facets 
                 // We need to repair the model 
-                GEO::Logger::out( "BoundaryModel" )
-                    << nb << " degenerated facets in SURFACE "
-                    << i << std::endl ;
 
                 GEO::Logger::instance()->set_quiet( true ) ;
                 // Using repair function of geogram
@@ -895,10 +894,11 @@ namespace {
                         M.edges.set_vertex( e, 1, colocated[ M.edges.vertex( e, 1 ) ] ) ;
                     }
                     M.vertices.delete_elements( to_delete, false ) ;
-
+#ifdef RINGMESH_DEBUG
                     GEO::Logger::out( "BoundaryModel" )
                         << nb_todelete << " colocated vertices deleted in "
                         << E.bme_id() << std::endl ;
+#endif
                 }
             }
         }
