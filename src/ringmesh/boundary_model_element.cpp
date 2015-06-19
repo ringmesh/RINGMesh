@@ -1272,14 +1272,13 @@ namespace RINGMesh {
 #ifdef RINGMESH_DEBUG
             std::ostringstream file ;
             file << model().debug_directory()
-                << "\\"
-                << " invalid_surf_"
+                << "/"
+                << "invalid_surf_"
                 << bme_id().index << ".obj"  ;
             model().save_surface_as_obj_file( bme_id().index, file.str() ) ;
 
 #endif  
-        }
-        
+        }        
         return valid ; 
     }
 
