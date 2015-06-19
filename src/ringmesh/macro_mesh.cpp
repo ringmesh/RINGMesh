@@ -1450,6 +1450,13 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * @brief Translates the macro mesh by a vector.
+     *
+     * Each mesh of the macro mesh is translated.
+     *
+     * @param[in] translation_vector vector of translation.
+     */
     void MacroMesh::translate( const vec3& translation_vector )
     {
         // Note: if the translation is null, do nothing.
@@ -1469,9 +1476,22 @@ namespace RINGMesh {
     }
 
     /*!
-     * Note: http://paulbourke.net/geometry/rotate/
-     * TODO can be hard coded and the computation in assert ?
-     * theta must be in radian.
+     * \brief Rotate the macro meshl.
+     *
+     * Applies a rotation about the line defined by the point
+     * \p origin and the vector \p axis. The rotation angle is
+     * \p theta. If \p degrees is true the angle is in degrees,
+     * else in radians. All the vertices of the macro mesh
+     * undergo the rotation (each mesh).
+     *
+     * @param origin point in which passes the rotation axis.
+     *
+     * @param axis vector which defines the rotation axis.
+     *
+     * @param theta rotation angle (in radians or degrees).
+     *
+     * @param degrees true is \p theta is in degrees, false
+     * if in radians.
      */
     void MacroMesh::rotate(
         const vec3& origin,
