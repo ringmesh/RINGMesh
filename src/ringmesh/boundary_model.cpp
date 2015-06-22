@@ -831,7 +831,7 @@ namespace {
         if( !valid ) {
             std::ostringstream file ;
             file << region.model().debug_directory()
-                 << "\\boundary_surface_"
+                 << "/boundary_surface_"
                  << print_bme_id( region )
                  << ".mesh"  ;
             GEO::mesh_save( mesh, file.str() ) ;
@@ -1150,8 +1150,7 @@ namespace {
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
             file << S.model().debug_directory() 
-                << "/"
-                << "invalid_boundary_" 
+                << "/invalid_boundary_"
                 << print_bme_id( S ) << ".lin"  ;
             save_edges( file.str(), S.model(), invalid_corners ) ;
         }

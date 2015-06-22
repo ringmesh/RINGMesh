@@ -1195,6 +1195,7 @@ namespace GEO {
 
         /**
          * \brief Triangulates the facets
+         * \note Attributes are zeroed
          */
         void triangulate();
 

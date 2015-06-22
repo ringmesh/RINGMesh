@@ -637,7 +637,7 @@ namespace GEO {
             for(index_t c=0; c<mesh_->cells.nb(); ++c) {
                 index_t first_c = c;
                 GLsizei nb_v = 0;
-                while(c < mesh_->cells.nb() && mesh_->cells.type(c) == cell_type) {
+                while(c<mesh_->cells.nb() && mesh_->cells.type(c)) {
                     nb_v += vertices_per_cell;
                     ++c;
                 }
@@ -833,6 +833,22 @@ namespace GEO {
 
         glEnable(GL_LIGHTING);
 
+        static bool cell_type_has_triangles[MESH_NB_CELL_TYPES] = {
+            true,  // tets
+            false, // hexes
+            true,  // prisms
+            true,  // pyramids
+            true   // connectors
+        };
+
+        static bool cell_type_has_quads[MESH_NB_CELL_TYPES] = {
+            false, // tets
+            true,  // hexes
+            true,  // prisms
+            true,  // pyramids
+            true   // connectors
+        };
+
         static ShaderName cell_type_to_prg[MESH_NB_CELL_TYPES] = {
             PRG_TET,      // tets
             PRG_HEX,      // hexes
@@ -844,48 +860,57 @@ namespace GEO {
         glCullFace(GL_FRONT);
         glEnable(GL_CULL_FACE);
         
-        begin_draw(MESH_CELLS);
-        // We unbind the element array buffer since
-        // we cannot directly lookup individual cell
-        // facets with glDrawElements. We need to
-        // manually do the additional cell->facet
-        // indirection (+ normal vectors generation).
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        
-        set_colors(PRG_TET);        
+        // TODO: try using loaded vertex array with glDrawElements() 
+
+        set_colors(PRG_TET);
+        glBegin(GL_TRIANGLES);
         for(index_t c=0; c<mesh_->cells.nb(); ++c) {
             MeshCellType type = mesh_->cells.type(c);
-            if(!draw_cells_[type]) {
+            if(!draw_cells_[type] || !cell_type_has_triangles[type]) {
                 continue;
             }
             if(!mesh_->cells.are_simplices()) {
                 set_colors(cell_type_to_prg[type]);
             }
             for(index_t f=0; f<mesh_->cells.nb_facets(c); ++f) {
-                switch(mesh_->cells.facet_nb_vertices(c,f)) {
-                case 3: {
-                    index_t indices[3];
-                    indices[0] = mesh_->cells.facet_vertex(c,f,0);
-                    indices[1] = mesh_->cells.facet_vertex(c,f,1);
-                    indices[2] = mesh_->cells.facet_vertex(c,f,2);
-                    glMeshTriangleNormal(indices[0],indices[1],indices[2]);                    
-                    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,indices);
-                } break;
-                case 4: {
-                    index_t indices[4];
-                    indices[0] = mesh_->cells.facet_vertex(c,f,0);
-                    indices[1] = mesh_->cells.facet_vertex(c,f,1);
-                    indices[2] = mesh_->cells.facet_vertex(c,f,2);
-                    indices[3] = mesh_->cells.facet_vertex(c,f,3);
-                    glMeshTriangleNormal(indices[0],indices[1],indices[2]);
-                    glDrawElements(GL_QUADS,4,GL_UNSIGNED_INT,indices);
-                } break;
+                if(mesh_->cells.facet_nb_vertices(c,f) == 3) {
+                    index_t i = mesh_->cells.facet_vertex(c,f,0);
+                    index_t j = mesh_->cells.facet_vertex(c,f,1);
+                    index_t k = mesh_->cells.facet_vertex(c,f,2);
+                    glMeshTriangleNormal(i,j,k);
+                    glMeshVertex(i);
+                    glMeshVertex(j);
+                    glMeshVertex(k);                    
                 }
             }
-        }        
-        end_draw();
+        }
+        glEnd();
         
+        glBegin(GL_QUADS);
+        for(index_t c=0; c<mesh_->cells.nb(); ++c) {
+            MeshCellType type = mesh_->cells.type(c);            
+            if(!draw_cells_[type] || !cell_type_has_quads[type]) {
+                continue;
+            }
+            set_colors(cell_type_to_prg[type]);            
+            for(index_t f=0; f<mesh_->cells.nb_facets(c); ++f) {
+                if(mesh_->cells.facet_nb_vertices(c,f) == 4) {
+                    index_t i = mesh_->cells.facet_vertex(c,f,0);
+                    index_t j = mesh_->cells.facet_vertex(c,f,1);
+                    index_t k = mesh_->cells.facet_vertex(c,f,2);
+                    index_t l = mesh_->cells.facet_vertex(c,f,3);
+                    glMeshTriangleNormal(i,j,k);
+                    glMeshVertex(i);
+                    glMeshVertex(j);
+                    glMeshVertex(k);
+                    glMeshVertex(l);                    
+                }
+            }
+        }
+        glEnd();
+
         glDisable(GL_CULL_FACE);        
+        
         glDisable(GL_LIGHTING);
     }
     
@@ -1538,7 +1563,6 @@ namespace GEO {
                 begin_shader(PRG_PYRAMID);
                 draw_mesh_cells_as_opengl_points(MESH_PYRAMID);
                 end_shader();
-                
                 end_draw();
             }
         }
@@ -1854,8 +1878,6 @@ namespace GEO {
                     MESH_PYRAMID, GL_PATCHES
                 );
                 end_shader();
-                
-                end_draw();
             }
         }
         glDisable(GL_CULL_FACE);

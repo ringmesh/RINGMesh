@@ -5,7 +5,9 @@ Remplacement des variables d'etat du vieuw pipeline OpenGL:
  parceque ca peut etre partage entre differents shaders.
 
   Uniform Buffer Objects (OpenGL 3.1)
-  
+
+// Q: std140 ou shared pour le layout ??
+
 layout(shared) uniform LightingStateBlock {
      vec3 front_color;
      vec3 back_color;

@@ -276,6 +276,23 @@ namespace GEO {
          * \details Only the data is copied, observers are not copied.
          */
         virtual AttributeStore* clone() const = 0;
+
+
+        /**
+         * \brief Copies an item
+         * \param[in] to index of the destination item
+         * \param[in] from index of the source item
+         */
+        void copy_item(index_t to, index_t from) {
+            geo_debug_assert(from < cached_size_);
+            geo_debug_assert(to < cached_size_);
+            index_t item_size = element_size_ * dimension_;            
+            Memory::copy(
+                cached_base_addr_+to*item_size,
+                cached_base_addr_+from*item_size,
+                item_size
+            );
+        }
         
     protected:
         /**
@@ -395,6 +412,10 @@ namespace GEO {
 
     /*********************************************************************/    
 
+    /**
+     * \brief Managers a set of attributes attached to 
+     *  an object.
+     */
     class GEOGRAM_API AttributesManager {
     public:
         /**
@@ -540,6 +561,15 @@ namespace GEO {
          * \details Previous content of this AttributesManager is erased.
          */
         void copy(const AttributesManager& rhs);
+
+
+        /**
+         * \brief Copies all the attributes of an item into another one.
+         * \param[in] to index of the destination item
+         * \param[in] from index of the source item
+         * \note This function is not efficient.
+         */
+        void copy_item(index_t to, index_t from);
         
     private:
         /**
@@ -765,6 +795,12 @@ namespace GEO {
     
     /*********************************************************************/
 
+    /**
+     * \brief Manages an attribute attached to a set of object.
+     * \tparam T type of the attributes. Needs to be a basic type
+     *  or a plain ordinary datatype (classes that do dynamic 
+     *  memory allocation are not allowed here).
+     */
     template <class T> class Attribute : public AttributeBase<T> {
     public:
         typedef AttributeBase<T> superclass;
