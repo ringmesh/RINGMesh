@@ -50,7 +50,7 @@ int main( int argc, char** argv )
     GEO::Logger::out("TEST") << "Test BoundaryModel building from Surface" << std::endl ;
 
 	GEO::Mesh in ; 
-    GEO::mesh_load(  "../data/modelA6.mesh", in ) ;
+    GEO::mesh_load(  "/home/botella/temp/pdgm/all_surfaces.meshb", in ) ;
     RINGMesh::BoundaryModel model ;
 	
 	RINGMesh::BoundaryModelBuilderSurface BB( model ) ;
