@@ -1335,7 +1335,7 @@ namespace RINGMesh {
         // Having functions, permit to easily change the way to update
         // this Kdtree. Do not remove them. JP
         if( !kdtree_.is_nil() ) {
-            kdtree_->unref() ;
+            kdtree_.reset() ;
         }
         kdtree_to_update_ = true ;
     }
