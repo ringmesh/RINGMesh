@@ -43,6 +43,9 @@
 #include <ringmesh/well.h>
 
 #include <geogram/basic/logger.h>
+#include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_tetrahedralize.h>
 
 #include <iomanip>
@@ -150,7 +153,6 @@ namespace RINGMesh {
 
             context_ = context_new() ;
             mesh_input_ = mesh_new_in_memory( context_ ) ;
-            context_set_message_callback( context_, my_message_cb, 0 ) ;
 
             mesh_set_vertex_count( mesh_input_, tetmesh_.vertices.nb() ) ;
             for( index_t p = 0; p < tetmesh_.vertices.nb(); p++ ) {
@@ -161,17 +163,17 @@ namespace RINGMesh {
             mesh_set_edge_count( mesh_input_, tetmesh_.edges.nb() ) ;
             for( index_t e = 0; e < tetmesh_.edges.nb(); e++ ) {
                 meshgems_integer edge_indices[2] ;
-                edge_indices[0] = tetmesh_.edges.vertex( e, 0 ) ;
-                edge_indices[1] = tetmesh_.edges.vertex( e, 1 ) ;
+                edge_indices[0] = tetmesh_.edges.vertex( e, 0 ) + 1 ;
+                edge_indices[1] = tetmesh_.edges.vertex( e, 1 ) + 1 ;
                 mesh_set_edge_vertices( mesh_input_, e + 1, edge_indices ) ;
             }
 
             mesh_set_triangle_count( mesh_input_, tetmesh_.facets.nb() ) ;
             for( index_t t = 0; t < tetmesh_.facets.nb(); t++ ) {
                 meshgems_integer triangle_indices[3] ;
-                triangle_indices[0] = tetmesh_.facets.vertex( t, 0 ) ;
-                triangle_indices[1] = tetmesh_.facets.vertex( t, 1 ) ;
-                triangle_indices[2] = tetmesh_.facets.vertex( t, 2 ) ;
+                triangle_indices[0] = tetmesh_.facets.vertex( t, 0 ) + 1 ;
+                triangle_indices[1] = tetmesh_.facets.vertex( t, 1 ) + 1 ;
+                triangle_indices[2] = tetmesh_.facets.vertex( t, 2 ) + 1 ;
                 mesh_set_triangle_vertices( mesh_input_, t + 1, triangle_indices ) ;
             }
 
