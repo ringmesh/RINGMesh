@@ -568,6 +568,9 @@ namespace RINGMesh {
 
         /*!  
          * @brief Open-bar access to the mesh of the element
+         * @detail For internal use. 
+         * @warning DO NOT directly call this function to modify the facets, edges,
+         * or vertices of the element.
          */
         GEO::Mesh& mesh() const {
             return const_cast< GEO::Mesh& >( mesh_ ) ;

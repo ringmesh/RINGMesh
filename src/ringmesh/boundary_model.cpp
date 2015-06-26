@@ -1395,9 +1395,8 @@ namespace RINGMesh {
     {
         // Having functions, permit to easily change the way to update
         // this Kdtree. Do not remove them. JP
-        if( !kdtree_.is_nil() ) {
-            kdtree_->unref() ;
-        }
+        // We do not need to reset or unref anything - this is done when 
+        // I new tree is computed. Jeanne.
         kdtree_to_update_ = true ;
     }
 
@@ -1483,9 +1482,9 @@ namespace RINGMesh {
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     index_t old_id = E.model_vertex_id( v ) ;
                     index_t new_id = to_delete[ old_id ] ;
-                    // The new_id must be valid - or the vertex should have been
-                    // previsouly removed from the BMME
-                    ringmesh_debug_assert( new_id != NO_ID ) ;                    
+                    // If new_id is NO_ID the vertex should be removed afterwards
+                    // from the BMME 
+                    // ringmesh_debug_assert( new_id != NO_ID ) ;                    
                     E.set_model_vertex_id( v, new_id ) ;
 
                     // Merge bme_vertices_ information
