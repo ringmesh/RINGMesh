@@ -1078,9 +1078,26 @@ namespace RINGMesh {
             }
         }
 
-        /// 2. Deal with the model vertices
-        // We need to to this before changing ids of the BMEs 
-        // We need the BMEs to have their previous ids to get the new correct ones
+        /// 2. Effectively delete the elements 
+        for( index_t i = 0; i < to_erase.size(); ++i ) {
+            for( index_t j = 0 ; j < to_erase[ i ].size(); ++j ) {
+                if( to_erase[ i ][ j ] == NO_ID ) {
+                    BME::bme_t cur( static_cast<BME::TYPE>( i ), j ) ;
+                    delete element_ptr( cur ) ;
+                    set_element( cur, nil ) ;
+                }
+            }
+            std::vector< BME* >& store = model_.modifiable_elements(
+                static_cast<BME::TYPE>( i ) ) ;
+            store.erase( std::remove( store.begin(), store.end(),
+                static_cast<BME*>( nil ) ), store.end() ) ;
+        }
+
+        /// 3. Deal with the model vertices
+        // We need to to this before changing ids of the BMEs
+        // (because we need the old ids to get the new ones)
+        // but after deleting the elements otherwise 
+        // we are putting back the vertices of the BMMEs to delete
         for( index_t v = 0; v < model_.vertices.nb(); ++v ) {
             const std::vector<BoundaryModelVertices::VertexInBME>& cur =
                 model_.vertices.bme_vertices( v ) ;
@@ -1093,19 +1110,20 @@ namespace RINGMesh {
         }
         model_.vertices.erase_invalid_vertices() ;
 
-        /// 3. For element update all possible indices 
+        /// 3. Update all possible indices in remaining elements
         for( index_t i = 0; i < to_erase.size(); ++i ) {
             BME::TYPE T = static_cast<BME::TYPE>( i ) ;
 
             // Update all indices stored by the BME of that type 
-            for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
-                if( to_erase[ i ][ j ] == NO_ID ) {
-                    // Element will be erased - no update necessary
-                    continue ;
-                }
+            for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {                               
                 BoundaryModelElement& E = element( bme_t( T, j ) ) ;
+
+                // Not the same than j - since we have erased some elements
+                index_t old_id = E.bme_id().index ;
+                ringmesh_debug_assert( to_erase[ i ][ old_id ] != NO_ID ) ;
+                    
                 // id_ 
-                E.set_id( to_erase[ i ][ j ] ) ;
+                E.set_id( to_erase[ i ][ old_id ] ) ;
                 // boundary_
                 if( E.nb_boundaries() > 0 ) {
                     BME::TYPE B = BME::boundary_type( T ) ;
@@ -1152,23 +1170,7 @@ namespace RINGMesh {
                         model_.universe().boundary_id( i ).index ] ) ) ;
             }
             model_.universe_.erase_invalid_element_references() ;
-        }       
-       
-        /// 4. Effectively delete the elements 
-        for( index_t i = 0; i < to_erase.size(); ++i ) {
-            for( index_t j = 0 ; j < to_erase[ i ].size(); ++j ) {
-                if( to_erase[ i ][ j ] == NO_ID ) {
-                    BME::bme_t cur( static_cast<BME::TYPE>( i ), j ) ;
-                    delete element_ptr( cur ) ;
-                    set_element( cur, nil ) ;
-                }
-            }
-            std::vector< BME* >& store = model_.modifiable_elements( 
-                static_cast<BME::TYPE>( i ) ) ;
-            store.erase( std::remove( store.begin(), store.end(),
-                static_cast<BME*>( nil ) ), store.end() ) ;
-        }
-
+        }             
     }
     
 
@@ -1532,6 +1534,12 @@ namespace RINGMesh {
         // The name should exist
         if( model_.name() == "" ) {
             set_model_name( "model_default_name" ) ;
+        }
+        
+        // Get out if the model has no surface
+        if( model_.nb_surfaces() == 0 ) {
+            print_model( model_ ) ;
+            return false ;
         }
 
         init_global_model_element_access() ;
@@ -1956,7 +1964,7 @@ namespace RINGMesh {
         /// 5. Fill missing information and check model validity
         bool valid_model = end_model() ;
 
-        time( &end_load ) ;
+        time( &end_load ) ;        
         // Output of loading time only in debug mode has no meaning (JP)
         GEO::Logger::out("I/O") << "Model loading time "
             << difftime( end_load, start_load ) << " sec" << std::endl ;
