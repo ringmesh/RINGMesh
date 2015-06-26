@@ -1535,6 +1535,12 @@ namespace RINGMesh {
         if( model_.name() == "" ) {
             set_model_name( "model_default_name" ) ;
         }
+        
+        // Get out if the model has no surface
+        if( model_.nb_surfaces() == 0 ) {
+            print_model( model_ ) ;
+            return false ;
+        }
 
         init_global_model_element_access() ;
 
@@ -1958,7 +1964,7 @@ namespace RINGMesh {
         /// 5. Fill missing information and check model validity
         bool valid_model = end_model() ;
 
-        time( &end_load ) ;
+        time( &end_load ) ;        
         // Output of loading time only in debug mode has no meaning (JP)
         GEO::Logger::out("I/O") << "Model loading time "
             << difftime( end_load, start_load ) << " sec" << std::endl ;
