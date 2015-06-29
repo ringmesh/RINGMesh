@@ -698,7 +698,8 @@ namespace RINGMesh {
      * @details One 2-manifold connected component .
      */
     class RINGMESH_API Surface : public BoundaryModelMeshElement {
-        friend class SurfaceTools ;
+        // Pourquoi aurait-t-on besoin d'etre amis ??
+        //friend class SurfaceTools ;
 
     public:
         const static index_t NO_ADJACENT = index_t(-1) ;

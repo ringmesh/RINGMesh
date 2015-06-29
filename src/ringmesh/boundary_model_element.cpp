@@ -1623,29 +1623,40 @@ namespace RINGMesh {
     /*!
      * @brief Determines the facets around a vertex
      *
-     * @param[in] shared_vertex Index ot the vertex in the surface
-     * @param[in] result Indices of the facets containing @param shared_vertex
+     * @param[in] v Index ot the vertex in the surface
+     * @param[in] result Indices of the facets containing @param v
      * @param[in] border_only If true only facets on the border are considered
      * @return The number of facet found
-     *
-     * @todo Evaluate if this is fast enough !!
      */
     index_t Surface::facets_around_vertex(
-        index_t shared_vertex,
+        index_t v,
         std::vector< index_t >& result,
         bool border_only ) const
     {
-        result.resize( 0 ) ;
-        for( index_t t = 0; t < nb_cells(); ++t ) {
-            for( index_t v = 0; v < nb_vertices_in_facet( t ); v++ ) {
-                if( surf_vertex_id( t, v ) == shared_vertex ) {
-                    return facets_around_vertex( shared_vertex, result,
-                        border_only, t ) ;
+        index_t f = NO_ID ;
+        if( mesh().facets.are_simplices() ) {
+            double dist = DBL_MAX ;
+            vec3 nearest ;
+            f = tools.aabb().nearest_facet( vertex( v ), nearest, dist ) ;
+            // Check that the point is indeed a vertex of the facet
+            if( facet_vertex_id( f, v ) == NO_ID ) {
+                f = NO_ID ;
+            }
+        }
+        else {
+            // When building an AABB tree the Mesh is triangulated 
+            // We do not want that 
+            // @todo Improve this brute force algorithm
+            for( index_t i = 0; i < nb_cells(); ++i ) {
+                for( index_t lv = 0; lv < nb_vertices_in_facet( i ); lv++ ) {
+                    if( surf_vertex_id( i, lv ) == v ) {
+                        f = i ; 
+                        break ;                        
+                    }
                 }
             }
         }
-        ringmesh_assert_not_reached ;
-        return dummy_index_t ;
+        return facets_around_vertex( v, result, border_only, f ) ;
     }
 
 
@@ -1665,8 +1676,12 @@ namespace RINGMesh {
         std::vector< index_t >& result,
         bool border_only,
         index_t f0 ) const
-    {
+    {    
         result.resize( 0 ) ;
+
+        if( f0 == NO_ID ) {
+            return 0 ;
+        }
 
         // Flag the visited facets
         std::vector< index_t > visited ;
@@ -1678,14 +1693,14 @@ namespace RINGMesh {
         visited.push_back( f0 ) ;
 
         do {
-            index_t t = S.top() ;
+            index_t f = S.top() ;
             S.pop() ;
 
-            for( index_t v = 0; v < nb_vertices_in_facet( t ); ++v ) {
-                if( surf_vertex_id( t, v ) == P ) {
-                    index_t adj_P = adjacent( t, v ) ;
-                    index_t prev = prev_in_facet( t, v ) ;
-                    index_t adj_prev = adjacent( t, prev ) ;
+            for( index_t v = 0; v < nb_vertices_in_facet( f ); ++v ) {
+                if( surf_vertex_id( f, v ) == P ) {
+                    index_t adj_P = adjacent( f, v ) ;
+                    index_t prev = prev_in_facet( f, v ) ;
+                    index_t adj_prev = adjacent( f, prev ) ;
 
                     if( adj_P != NO_ADJACENT ) {
                         // The edge starting at P is not on the boundary
@@ -1704,9 +1719,11 @@ namespace RINGMesh {
 
                     if( border_only ) {
                         if( adj_P == NO_ADJACENT || adj_prev == NO_ADJACENT ) {
-                            result.push_back( t ) ;
+                            result.push_back( f ) ;
                         }
-                    } else {result.push_back( t ) ;}
+                    } else {
+                        result.push_back( f ) ;
+                    }
 
                     // We are done with this facet
                     break ;
@@ -2009,22 +2026,29 @@ namespace RINGMesh {
 
     const GEO::MeshFacetsAABB& SurfaceTools::aabb() const
     {
-        if( !aabb_ ) {
+        if( aabb_ == nil ) {
+            // Sinon on va droit dans le mur
+            // Parce que le mesh est triangulé dans notre dos
+            ringmesh_assert( surface_.mesh().facets.are_simplices() ) ;
+
             SurfaceTools* this_not_const = const_cast< SurfaceTools* >( this ) ;
-            this_not_const->aabb_ = new GEO::MeshFacetsAABB(
-                const_cast< GEO::Mesh& >( surface_.mesh() ) ) ;
-            surface_.model_->vertices.clear() ;
-            if( ann_ ) {
-                delete ann_ ;
-                this_not_const->ann_ = nil ;
-            }
+            this_not_const->aabb_ = new GEO::MeshFacetsAABB( surface_.mesh() ) ;
+            /// @todo Et pourquoi créer AABB me fait vider les sommets ?
+            /// @todo Il faut un mécanisme update de ces SurfaceTools correct.
+            // surface_.model_->vertices.clear() ;
+            // if( ann_ ) {
+            //     delete ann_ ;
+            //     this_not_const->ann_ = nil ;
+            // }
         }
         return *aabb_ ;
     }
 
     const ColocaterANN& SurfaceTools::ann() const
     {
-        if( !ann_ ) {
+        /// @todo Il vaut mieux utiliser les NearestNeighbor de geogram
+        /// on s'évite une copie de tous les points
+        if( ann_ == nil ) {
             const_cast< SurfaceTools* >( this )->ann_ = new ColocaterANN(
                 surface_.mesh(), ColocaterANN::VERTICES ) ;
         }
