@@ -294,6 +294,7 @@ namespace RINGMesh {
         const BoundaryModelElement& in_boundary( index_t x ) const ;
 
         bool is_inside_border( const BoundaryModelElement& e ) const ;
+        bool has_inside_border() const ;
 
 
         /*!@}

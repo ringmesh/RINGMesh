@@ -1212,7 +1212,6 @@ namespace RINGMesh {
             std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
             erase_vertices( stupid_copy ) ;
         }
-
     }
 
     void BoundaryModelVertices::update_point( index_t v, const vec3& point )
@@ -1248,12 +1247,16 @@ namespace RINGMesh {
     }
 
     void BoundaryModelVertices::add_unique_to_bme(
-        index_t unique_id,
-        const VertexInBME& v )
+        index_t v,
+        const VertexInBME& v_bme )
     {
-        ringmesh_assert( unique_id < nb() ) ;
+        ringmesh_assert( v < nb() ) ;
         ringmesh_debug_assert( bme_vertices_.size() == nb() ) ;
-        bme_vertices_[unique_id].push_back( v ) ;
+        // Assert if adding twice the same thing - not a normal behavior
+        ringmesh_debug_assert( std::find( bme_vertices_[v].begin(),
+            bme_vertices_[v].end(), v_bme ) == bme_vertices_[v].end() ) ;
+
+        bme_vertices_[v].push_back( v_bme ) ;
     }
 
     void BoundaryModelVertices::set_bme(
@@ -1294,7 +1297,7 @@ namespace RINGMesh {
 
     index_t BoundaryModelVertices::nb() const
     {
-        if( mesh_.vertices.nb() == 0 ) {
+        if( !is_initialized() ) {
             const_cast< BoundaryModelVertices* >( this )->initialize() ;
         }
         ringmesh_debug_assert( bme_vertices_.size() == mesh_.vertices.nb() ) ;
