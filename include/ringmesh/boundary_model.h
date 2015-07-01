@@ -135,9 +135,9 @@ namespace RINGMesh {
 
         /*!
          * @brief Coordinates of a vertex of the BoundaryModel
-         * @pre unique_id < nb()
+         * @pre v < nb()
          */
-        const vec3& unique_vertex( index_t unique_id ) const ;
+        const vec3& unique_vertex( index_t v ) const ;
 
         /*!
          * @brief Returns the index of the given vertex in the model
@@ -150,7 +150,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the vertices in BME corresponding to the given unique vertex
          */
-        const std::vector< VertexInBME >& bme_vertices( index_t unique_id ) const ;
+        const std::vector< VertexInBME >& bme_vertices( index_t v ) const ;
 
         /*!
          * @brief To use when building the model by first adding its vertices
@@ -161,22 +161,25 @@ namespace RINGMesh {
 
         /*!
          * @brief Add a vertex in a BoundaryModelElement 
-         *        corresponding to an existing unique_vertex
+         *        corresponding to an existing vertex of the model
          */
-        void add_unique_to_bme( index_t unique_id, const VertexInBME& v ) ;
+        void add_unique_to_bme( index_t v, const VertexInBME& v_bme ) ;
 
         /*! 
-         * @brief Change one of the BME vertex associated to a unique vertex
+         * @brief Change one of the BME vertex associated to a vertex
+         * @param v Index of the vertex
+         * @param i Index of the BME vertex
+         * @param v_bme Id of BME and of the vertex in that BME
          */
-        void set_bme( index_t unique_id, index_t k, const VertexInBME& v ) ;
+        void set_bme( index_t v, index_t i, const VertexInBME& v_bme ) ;
 
         /*!
          * @brief Set the point coordinates of all the vertices that are 
          *        share this unique vertex, including the unique vertex itself.
-         * @param[in] unique_id Index of the unique vertex in the BoundaryModel
-         * @param[in] point New coordinates of the vertex 
+         * @param[in] v Index of the vertex
+         * @param[in] point New coordinates
          */
-        void update_point( index_t unique_id, const vec3& point ) ;
+        void update_point( index_t v, const vec3& point ) ;
 
         /*!
          * @brief Clear the vertices - unbind bme_vertices_ - 
