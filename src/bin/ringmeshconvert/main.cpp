@@ -83,7 +83,7 @@ int main( int argc, char** argv )
         return 1 ;
 
     std::string model_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
-    if( model_out_name == "" ) {
+    if( model_out_name != "" ) {
         if( !RINGMeshIO::save( model_in, model_out_name ) )
             return 1 ;
     }
@@ -98,7 +98,7 @@ int main( int argc, char** argv )
         return 1 ;
 
     std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
-    if( mesh_out_name == "" ) {
+    if( mesh_out_name != "" ) {
         if( !RINGMeshIO::save( mesh_in, mesh_out_name ) )
             return 1 ;
     }
