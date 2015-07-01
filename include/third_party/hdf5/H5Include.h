@@ -14,7 +14,7 @@
  * access to either file, you may request a copy from help@hdfgroup.org.     *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <hdf5.h>
+#include <third_party/hdf5/hdf5.h>
 
 // Define bool type for platforms that don't support bool yet
 #ifdef BOOL_NOTDEFINED

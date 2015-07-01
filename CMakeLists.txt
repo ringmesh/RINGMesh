@@ -52,9 +52,9 @@ ENDIF(WIN32)
 ##############################################################################
 # HDF5
 IF(WIN32)
-    link_directories(src/third_party/hdf5/Windows)
+    link_directories(${CMAKE_SOURCE_DIR}/src/third_party/hdf5/Windows)
 ELSE(WIN32)
-    link_directories(src/third_party/hdf5/Linux)
+    link_directories(${CMAKE_SOURCE_DIR}/src/third_party/hdf5/Linux)
 ENDIF(WIN32)
 
 
