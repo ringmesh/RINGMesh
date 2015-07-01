@@ -42,11 +42,21 @@ INCLUDE_DIRECTORIES(src/third_party/geogram/src/lib)
 IF(WIN32)
     ADD_DEFINITIONS(-DRINGMESH_EXPORTS)
 	ADD_DEFINITIONS(-DGEO_DYNAMIC_LIBS)
+    link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
 
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}/lib)
 ELSE(WIN32)
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
 ENDIF(WIN32)
+
+##############################################################################
+# HDF5
+IF(WIN32)
+    link_directories(${CMAKE_SOURCE_DIR}/src/third_party/hdf5/Windows)
+ELSE(WIN32)
+    link_directories(${CMAKE_SOURCE_DIR}/src/third_party/hdf5/Linux)
+ENDIF(WIN32)
+
 
 ##############################################################################
 # Geogram_gfx
@@ -119,7 +129,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 add_library(${RINGMESH_PROJECT} SHARED ${SOURCES})
-target_link_libraries(${RINGMESH_PROJECT} geogram)
+target_link_libraries(${RINGMESH_PROJECT} geogram hdf5 hdf5_cpp hdf5_hl hdf5_hl_cpp)
 
 ##############################################################################
 # Additional optional link libraries
