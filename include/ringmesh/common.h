@@ -71,12 +71,16 @@
 #ifdef RINGMESH_USE_OPENMP
 #   ifdef WIN32
 #       define RINGMESH_PARALLEL_LOOP __pragma("omp parallel for")
+#       define RINGMESH_PARALLEL_LOOP_DYNAMIC __pragma( "omp parallel for schedule(dynamic)" )
 #   else
 #       define RINGMESH_PARALLEL_LOOP _Pragma("omp parallel for")
+#       define RINGMESH_PARALLEL_LOOP_DYNAMIC _Pragma( "omp parallel for schedule(dynamic)" )
 #   endif
 #else
 #   define RINGMESH_PARALLEL_LOOP
+#   define RINGMESH_PARALLEL_LOOP_DYNAMIC
 #endif
+
 
 #define ringmesh_disable_copy( Class ) \
     private: \
