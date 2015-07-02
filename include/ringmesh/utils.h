@@ -328,6 +328,7 @@ namespace RINGMesh {
             index_t c11,
             index_t f2 ) ;
 
+        static void mesh_facet_connect( GEO::Mesh& mesh ) ;
         static void check_and_repair_mesh_consistency(
             const BoundaryModelElement& region,
             GEO::Mesh& mesh,
@@ -883,7 +884,7 @@ namespace RINGMesh {
         /*!
          * Gets the closest neighbor point
          * @param[in] v the point to test
-         * @param[out] dist the distance to the closest point
+         * @param[out] dist the square distance to the closest point
          * return returns the index of the closest point
          */
         index_t get_closest_neighbor(
