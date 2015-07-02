@@ -247,6 +247,87 @@ namespace RINGMesh {
             }
         } ;
 
+        class UCDIOHandler: public BoundaryModelIOHandler {
+        public:
+            virtual bool load( const std::string& filename, BoundaryModel& model )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a MacroMesh from UCD mesh not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+
+            virtual bool save( BoundaryModel& model, const std::string& filename )
+            {
+                std::string path = GEO::FileSystem::dir_name( filename ) ;
+                std::string directory = GEO::FileSystem::base_name( filename ) ;
+                if( path == "." ) {
+                    path = GEO::FileSystem::get_current_working_directory() ;
+                }
+                std::ostringstream oss_dir ;
+                oss_dir << path << "/" << directory ;
+                std::string full_path = oss_dir.str() ;
+                GEO::FileSystem::create_directory( full_path ) ;
+
+                std::ostringstream oss_cmd ;
+                oss_cmd << full_path << "/cmd.lgi" ;
+                std::ofstream cmd( oss_cmd.str().c_str() ) ;
+                cmd << "cmo/create/3DMesh" << std::endl ;
+                for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+                    std::ostringstream oss ;
+                    oss << full_path << "/surface_" << s << ".inp" ;
+                    std::ofstream out( oss.str().c_str() ) ;
+                    out.precision( 16 ) ;
+
+                    const Surface& surface = model.surface( s ) ;
+                    out << surface.nb_vertices() << " " << surface.nb_cells()
+                        << " 0 0 0" << std::endl ;
+                    for( index_t v = 0 ; v < surface.nb_vertices(); v++ ) {
+                        out << v << " " << surface.vertex( v ) << std::endl ;
+                    }
+
+                    for( index_t f = 0; f < surface.nb_cells(); f++ ) {
+                        out << f << " 0 tri" ;
+                        for( index_t v = 0; v < surface.nb_vertices_in_facet( f ); v++ ) {
+                            out << " " << surface.surf_vertex_id( f, v ) ;
+                        }
+                        out << std::endl ;
+                    }
+
+                    cmd << "cmo/create/s_" << s << std::endl ;
+                    cmd << "read/surface_" << s << ".inp/s_" << s << std::endl ;
+                    cmd << "surface/surface_" << s << "/" ;
+                    if( surface.is_on_voi() ) {
+                        cmd << "reflect" ;
+                    } else {
+                        cmd << "interface" ;
+                    }
+                    cmd << "/sheet/s_" << s << std::endl ;
+                }
+
+                for( index_t r = 0; r < model.nb_regions(); r++ ) {
+                    const BoundaryModelElement& region = model.region( r ) ;
+                    cmd << "region/" << region.name() << "/" ;
+                    std::string sep = "" ;
+                    for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
+                        cmd << sep << "&" << std::endl ;
+                        if( region.side( s ) )
+                            cmd << "g" ;
+                        else
+                            cmd << "l" ;
+                        cmd << "e surface_" << region.boundary_id( s ).index ;
+                        sep = " and " ;
+                    }
+                    cmd << std::endl ;
+                    cmd << "mregion/mat" << r << "/" << region.name() << std::endl ;
+                }
+
+                cmd << "finish" << std::endl ;
+                return true ;
+            }
+        } ;
+
+
         /************************************************************************/
 
         BoundaryModelIOHandler* BoundaryModelIOHandler::create(
@@ -2725,6 +2806,7 @@ namespace RINGMesh {
 
             ringmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" ) ;
             ringmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" );
+            ringmesh_register_BoundaryModelIOHandler_creator( UCDIOHandler, "inp" );
 
             ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
         }
