@@ -1768,6 +1768,7 @@ namespace RINGMesh {
      */
     bool BoundaryModel::check_model_validity() const
     {
+        GEO::Logger::out( "BoundaryModel" ) << "Validity checking..." << std::endl ;
         // Ensure that the model vertices are computed and uptodate
         // Without them we cannot do anything
         nb_vertices() ;
