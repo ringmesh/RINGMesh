@@ -369,7 +369,26 @@ namespace {
         index_t nb_intersections = std::count( has_intersection.begin(),
             has_intersection.end(), 1 ) ;
 
-        /// @todo Save intersecting facets in debug mode
+#ifdef RINGMESH_DEBUG
+        if( nb_intersections > 0 ) {
+            GEO::Mesh mesh ;
+            for( index_t f = 0; f < has_intersection.size(); f++ ) {
+                if( !has_intersection[f] ) continue ;
+                GEO::vector< index_t > vertices ;
+                vertices.reserve( 3 ) ;
+                for( index_t v = 0; v < M.facets.nb_vertices( f ); v++ ) {
+                    index_t id = mesh.vertices.create_vertex(
+                        M.vertices.point_ptr( M.facets.vertex( f, v ) ) ) ;
+                    vertices.push_back( id ) ;
+                }
+                mesh.facets.create_polygon( vertices ) ;
+            }
+            std::ostringstream file ;
+            file << model.debug_directory() << "/intersected_facets.mesh" ;
+            GEO::mesh_save( mesh, file.str() ) ;
+        }
+
+#endif
 
         return nb_intersections ;
     }
