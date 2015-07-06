@@ -51,11 +51,16 @@ ENDIF(WIN32)
 
 ##############################################################################
 # HDF5
-IF(WIN32)
-    link_directories(${CMAKE_SOURCE_DIR}/src/third_party/hdf5/Windows)
-ELSE(WIN32)
-    link_directories(${CMAKE_SOURCE_DIR}/src/third_party/hdf5/Linux)
-ENDIF(WIN32)
+IF(NOT DEFINED USE_HDF5)
+	SET(USE_HDF5 FALSE)
+ENDIF(NOT DEFINES USE_HDF5)
+IF(${USE_HDF5})
+	IF(WIN32)
+    	link_directories(${CMAKE_SOURCE_DIR}/src/third_party/hdf5/Windows)
+	ELSE(WIN32)
+    	link_directories(${CMAKE_SOURCE_DIR}/src/third_party/hdf5/Linux)
+	ENDIF(WIN32)
+ENDIF(${USE_HDF5})
 
 
 ##############################################################################
@@ -129,13 +134,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 add_library(${RINGMESH_PROJECT} SHARED ${SOURCES})
-target_link_libraries(${RINGMESH_PROJECT} geogram hdf5 hdf5_cpp hdf5_hl hdf5_hl_cpp sz)
+target_link_libraries(${RINGMESH_PROJECT} geogram)
 
 ##############################################################################
 # Additional optional link libraries
 IF(${USE_MG_TETRA})
   target_link_libraries(${RINGMESH_PROJECT} meshgems mg-tetra)
 ENDIF(${USE_MG_TETRA})
+IF(${USE_HDF5})
+  target_link_libraries(${RINGMESH_PROJECT} hdf5 hdf5_cpp hdf5_hl hdf5_hl_cpp)
+ENDIF(${USE_HDF5})
 if(${RINGMESH_WITH_GRAPHICS})
   TARGET_LINK_LIBRARIES(${RINGMESH_PROJECT} geogram_gfx)
 endif()
