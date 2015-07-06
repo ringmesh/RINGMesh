@@ -129,7 +129,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 add_library(${RINGMESH_PROJECT} SHARED ${SOURCES})
-target_link_libraries(${RINGMESH_PROJECT} geogram hdf5 hdf5_cpp hdf5_hl hdf5_hl_cpp)
+target_link_libraries(${RINGMESH_PROJECT} geogram hdf5 hdf5_cpp hdf5_hl hdf5_hl_cpp sz)
 
 ##############################################################################
 # Additional optional link libraries

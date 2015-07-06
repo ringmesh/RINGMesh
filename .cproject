@@ -32,6 +32,7 @@
 									<listOptionValue builtIn="false" value="USE_MG_TETRA=FALSE"/>
 									<listOptionValue builtIn="false" value="GEOGRAM_WITH_TETGEN=true"/>
 									<listOptionValue builtIn="false" value="RINGMESH_WITH_GRAPHICS=true"/>
+									<listOptionValue builtIn="false" value="USE_HDF5=FALSE"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.195942933" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -96,6 +97,7 @@
 									<listOptionValue builtIn="false" value="USE_MG_TETRA=TRUE"/>
 									<listOptionValue builtIn="false" value="GEOGRAM_WITH_TETGEN=true"/>
 									<listOptionValue builtIn="false" value="RINGMESH_WITH_GRAPHICS=TRUE"/>
+									<listOptionValue builtIn="false" value="USE_HDF5=FALSE"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.689726032" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

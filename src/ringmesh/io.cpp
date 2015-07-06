@@ -51,7 +51,10 @@
 #include <geogram/basic/logger.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
+
+#ifdef USE_HDF5
 #include <third_party/hdf5/H5Cpp.h>
+#endif
 
 #include <third_party/zlib/zip.h>
 #include <third_party/zlib/unzip.h>
@@ -2666,6 +2669,7 @@ namespace RINGMesh {
 
         /************************************************************************/
 
+#ifdef USE_HDF5
         class HDF5IOHandler: public MacroMeshIOHandler {
         public:
 
@@ -3298,6 +3302,7 @@ namespace RINGMesh {
                 nb_cells.close();
             }
         } ;
+#endif
         /************************************************************************/
 
         MacroMeshIOHandler* MacroMeshIOHandler::create( const std::string& format )
@@ -3440,7 +3445,10 @@ namespace RINGMesh {
             ringmesh_register_MacroMeshIOHandler_creator( GPRSIOHandler, "gprs" );
             ringmesh_register_MacroMeshIOHandler_creator( MSHIOHandler, "msh" );
             ringmesh_register_MacroMeshIOHandler_creator( MESHIOHandler, "mesh" );
+
+#ifdef USE_HDF5
             ringmesh_register_MacroMeshIOHandler_creator( HDF5IOHandler, "h5" );
+#endif
 
             ringmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" ) ;
             ringmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" );
