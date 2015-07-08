@@ -207,8 +207,7 @@ namespace RINGMesh {
                 }
 
                 BoundaryModelBuilderGocad builder( model ) ;
-                builder.load_ml_file( filename ) ;
-                return true ;
+                return builder.load_ml_file( filename ) ;                
             }
 
             virtual bool save( BoundaryModel& model, const std::string& filename )

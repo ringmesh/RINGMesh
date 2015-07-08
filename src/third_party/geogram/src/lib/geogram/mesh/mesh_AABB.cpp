@@ -353,7 +353,7 @@ namespace GEO {
         // For a large mesh (20M facets) this gains up to 10%
         // performance as compared to picking nearest_f randomly.
         index_t b = 0;
-        index_t e = mesh_.facets.nb() - 1;
+        index_t e = mesh_.facets.nb();
         index_t n = 1;
         while(e != b + 1) {
             index_t m = b + (e - b) / 2;
