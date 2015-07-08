@@ -294,6 +294,7 @@ namespace RINGMesh {
         const BoundaryModelElement& in_boundary( index_t x ) const ;
 
         bool is_inside_border( const BoundaryModelElement& e ) const ;
+        bool has_inside_border() const ;
 
 
         /*!@}
@@ -568,6 +569,9 @@ namespace RINGMesh {
 
         /*!  
          * @brief Open-bar access to the mesh of the element
+         * @detail For internal use. 
+         * @warning DO NOT directly call this function to modify the facets, edges,
+         * or vertices of the element.
          */
         GEO::Mesh& mesh() const {
             return const_cast< GEO::Mesh& >( mesh_ ) ;
@@ -695,7 +699,8 @@ namespace RINGMesh {
      * @details One 2-manifold connected component .
      */
     class RINGMESH_API Surface : public BoundaryModelMeshElement {
-        friend class SurfaceTools ;
+        // Pourquoi aurait-t-on besoin d'etre amis ??
+        //friend class SurfaceTools ;
 
     public:
         const static index_t NO_ADJACENT = index_t(-1) ;

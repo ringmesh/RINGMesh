@@ -57,7 +57,10 @@
 
 namespace {
     using namespace RINGMesh;
+
     typedef BoundaryModelElement::bme_t bme_t;
+    typedef BoundaryModelMeshElement BMME ;
+    typedef BoundaryModelVertices::VertexInBME VBME ;    
 
     double read_double( GEO::LineInput& in, index_t field )
     {
@@ -693,6 +696,7 @@ namespace {
     /*!
     * @brief Remove degenerate facets and edges from the Surface
     *        and Line of the model.
+    * @pre colocated vertices have already been removed
     */
     void remove_degenerate_facet_and_edges(
         const BoundaryModel& BM, std::set< bme_t >& to_remove
@@ -728,9 +732,10 @@ namespace {
                 // Warning - This triangulates the mesh
 
                 if( M.vertices.nb() > 0 ) {
-                    // MESH_REPAIR_COLOCATE 1 and MESH_REPAIR_DUP_F 2 ;
+                    // Colocated vertices must be processed before
+                    // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
-                        static_cast< GEO::MeshRepairMode >( 3 ) ;
+                        static_cast< GEO::MeshRepairMode >( 2 ) ;
                     GEO::mesh_repair( M, mode ) ;
 
                     // This might create some small components - remove them
@@ -746,15 +751,22 @@ namespace {
 
                 if( M.vertices.nb() == 0 || M.facets.nb() == 0 ) {
                     to_remove.insert( BM.surface( i ).bme_id() ) ;
-                } else {
+                }
+                else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
                     Surface& S = const_cast< Surface& >( BM.surface( i ) ) ;
+                    std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                         const Line& L = BM.line( S.boundary_id( l ).index ) ;
                         if( L.is_inside_border( S ) ) {
-                            S.cut_by_line( L ) ;
+                            cutting_lines.insert( L.bme_id().index ) ;
                         }
+                    }
+                    for( std::set< index_t>::iterator it = cutting_lines.begin();
+                         it != cutting_lines.end(); ++it 
+                    ) {
+                        S.cut_by_line( BM.line( *it ) ) ;
                     }
                 }
             }
@@ -764,20 +776,20 @@ namespace {
 
     /*!
     * Get the indices of the duplicated vertices that are on an inside border.
-    * Only the vertex with the biggest index is added.
+    * Only the vertex with the biggest index are added.
     * If there are more than 2 colocated vertices throws an assertion in debug mode
     */
     void vertices_on_inside_boundary(
         const BoundaryModelMeshElement& E,
-        std::vector< index_t >& vertices )
+        std::set< index_t >& vertices )
     {
-        vertices.resize( 0 ) ;
+        vertices.clear() ;
         if( E.bme_id().type == BME::CORNER ) {
             return ;
         }
         if( E.bme_id().type == BME::LINE ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
-                vertices.push_back( E.nb_vertices()-1 ) ;
+                vertices.insert( E.nb_vertices()-1 ) ;
             }
             return ;
         }
@@ -811,7 +823,7 @@ namespace {
                         ringmesh_debug_assert( false ) ;
                     } else if( sq_dist[ 1 ] <epsilon_sq ) {
                         // Colocated vertices
-                        vertices.push_back( GEO::geo_max( neighbors[ 0 ], neighbors[ 1 ] ) ) ;
+                        vertices.insert( GEO::geo_max( neighbors[ 0 ], neighbors[ 1 ] ) ) ;
                     }
                     // Otherwise nothing to do
                 }
@@ -828,8 +840,7 @@ namespace {
             BME::TYPE T = static_cast<BME::TYPE>( t ) ;
 
             for( index_t e = 0; e < BM.nb_elements( T ); ++e ) {
-                const BoundaryModelMeshElement& E =
-                    dynamic_cast< const BoundaryModelMeshElement&>(
+                const BMME& E = dynamic_cast< const BMME&>(
                     BM.element( bme_t( T, e ) ) ) ;
 
                 GEO::Mesh& M = E.mesh() ;
@@ -837,7 +848,7 @@ namespace {
                 GEO::mesh_detect_colocated_vertices( M, colocated, epsilon ) ;
 
                 // Get the vertices to delete
-                std::vector< index_t > inside_border ;
+                std::set< index_t > inside_border ;
                 vertices_on_inside_boundary( E, inside_border ) ;
 
                 GEO::vector< index_t > to_delete( colocated.size(), 0 ) ;
@@ -845,15 +856,18 @@ namespace {
                 index_t nb_todelete = 0 ;
                 index_t cur = 0 ;
                 for( index_t v = 0; v < colocated.size(); ++v ) {
-                    if( colocated[ v ] == v ) {
+                    if( colocated[ v ] == v ||
+                        inside_border.find( v ) != inside_border.end()
+                    ) {
+                        // This point is kept 
+                        // No colocated or on an inside boundary
                         old2new[ v ] = cur ;
-                        ++cur;
-                    } else if( std::find( inside_border.begin(), inside_border.end(), v ) ==
-                               inside_border.end()
-                               ) {
+                        ++cur ;
+                    } else {
+                        // The point is to remove
                         old2new[ v ] = old2new[ colocated[ v ] ] ;
                         to_delete[ v ] = 1 ;
-                        nb_todelete++ ;
+                        nb_todelete++ ;                        
                     }
                 }
 
@@ -873,13 +887,13 @@ namespace {
                         // of the corresponding global vertex
                         for( index_t v = 0; v < to_delete.size(); ++v ) {
                             index_t model_id = E.model_vertex_id( v ) ;
-                            const std::vector<BoundaryModelVertices::VertexInBME>& cur =
+                            const std::vector<VBME>& cur =
                                 BM.vertices.bme_vertices( model_id ) ;
                             for( index_t i = 0; i < cur.size(); ++i ) {
-                                if( cur[ i ].bme_id == E.bme_id() ) {
+                                if( cur[ i ] == VBME( E.bme_id(), v) ) {
                                     index_t new_id = old2new[ v ] ;
                                     BM.vertices.set_bme(
-                                        model_id, i, BoundaryModelVertices::VertexInBME( E.bme_id(), new_id ) ) ;
+                                        model_id, i, VBME( E.bme_id(), new_id ) ) ;
                                 }
                             }
                         }
@@ -1078,9 +1092,26 @@ namespace RINGMesh {
             }
         }
 
-        /// 2. Deal with the model vertices
-        // We need to to this before changing ids of the BMEs 
-        // We need the BMEs to have their previous ids to get the new correct ones
+        /// 2. Effectively delete the elements 
+        for( index_t i = 0; i < to_erase.size(); ++i ) {
+            for( index_t j = 0 ; j < to_erase[ i ].size(); ++j ) {
+                if( to_erase[ i ][ j ] == NO_ID ) {
+                    BME::bme_t cur( static_cast<BME::TYPE>( i ), j ) ;
+                    delete element_ptr( cur ) ;
+                    set_element( cur, nil ) ;
+                }
+            }
+            std::vector< BME* >& store = model_.modifiable_elements(
+                static_cast<BME::TYPE>( i ) ) ;
+            store.erase( std::remove( store.begin(), store.end(),
+                static_cast<BME*>( nil ) ), store.end() ) ;
+        }
+
+        /// 3. Deal with the model vertices
+        // We need to to this before changing ids of the BMEs
+        // (because we need the old ids to get the new ones)
+        // but after deleting the elements otherwise 
+        // we are putting back the vertices of the BMMEs to delete
         for( index_t v = 0; v < model_.vertices.nb(); ++v ) {
             const std::vector<BoundaryModelVertices::VertexInBME>& cur =
                 model_.vertices.bme_vertices( v ) ;
@@ -1093,19 +1124,20 @@ namespace RINGMesh {
         }
         model_.vertices.erase_invalid_vertices() ;
 
-        /// 3. For element update all possible indices 
+        /// 3. Update all possible indices in remaining elements
         for( index_t i = 0; i < to_erase.size(); ++i ) {
             BME::TYPE T = static_cast<BME::TYPE>( i ) ;
 
             // Update all indices stored by the BME of that type 
-            for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
-                if( to_erase[ i ][ j ] == NO_ID ) {
-                    // Element will be erased - no update necessary
-                    continue ;
-                }
+            for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {                               
                 BoundaryModelElement& E = element( bme_t( T, j ) ) ;
+
+                // Not the same than j - since we have erased some elements
+                index_t old_id = E.bme_id().index ;
+                ringmesh_debug_assert( to_erase[ i ][ old_id ] != NO_ID ) ;
+                    
                 // id_ 
-                E.set_id( to_erase[ i ][ j ] ) ;
+                E.set_id( to_erase[ i ][ old_id ] ) ;
                 // boundary_
                 if( E.nb_boundaries() > 0 ) {
                     BME::TYPE B = BME::boundary_type( T ) ;
@@ -1152,23 +1184,7 @@ namespace RINGMesh {
                         model_.universe().boundary_id( i ).index ] ) ) ;
             }
             model_.universe_.erase_invalid_element_references() ;
-        }       
-       
-        /// 4. Effectively delete the elements 
-        for( index_t i = 0; i < to_erase.size(); ++i ) {
-            for( index_t j = 0 ; j < to_erase[ i ].size(); ++j ) {
-                if( to_erase[ i ][ j ] == NO_ID ) {
-                    BME::bme_t cur( static_cast<BME::TYPE>( i ), j ) ;
-                    delete element_ptr( cur ) ;
-                    set_element( cur, nil ) ;
-                }
-            }
-            std::vector< BME* >& store = model_.modifiable_elements( 
-                static_cast<BME::TYPE>( i ) ) ;
-            store.erase( std::remove( store.begin(), store.end(),
-                static_cast<BME*>( nil ) ), store.end() ) ;
-        }
-
+        }             
     }
     
 
@@ -1533,6 +1549,12 @@ namespace RINGMesh {
         if( model_.name() == "" ) {
             set_model_name( "model_default_name" ) ;
         }
+        
+        // Get out if the model has no surface
+        if( model_.nb_surfaces() == 0 ) {
+            print_model( model_ ) ;
+            return false ;
+        }
 
         init_global_model_element_access() ;
 
@@ -1563,7 +1585,7 @@ namespace RINGMesh {
 
         // This is basic requirement ! no_colocated model vertices !
         // So remove them if there are any 
-        model_.vertices.remove_colocated() ;
+        model_.vertices.remove_colocated() ; 
 
         if( model_.check_model_validity() ) {
             GEO::Logger::out( "BoundaryModel" ) 
@@ -1956,7 +1978,7 @@ namespace RINGMesh {
         /// 5. Fill missing information and check model validity
         bool valid_model = end_model() ;
 
-        time( &end_load ) ;
+        time( &end_load ) ;        
         // Output of loading time only in debug mode has no meaning (JP)
         GEO::Logger::out("I/O") << "Model loading time "
             << difftime( end_load, start_load ) << " sec" << std::endl ;

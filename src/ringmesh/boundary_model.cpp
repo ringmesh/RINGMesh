@@ -1231,7 +1231,6 @@ namespace RINGMesh {
             std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
             erase_vertices( stupid_copy ) ;
         }
-
     }
 
     void BoundaryModelVertices::update_point( index_t v, const vec3& point )
@@ -1267,12 +1266,16 @@ namespace RINGMesh {
     }
 
     void BoundaryModelVertices::add_unique_to_bme(
-        index_t unique_id,
-        const VertexInBME& v )
+        index_t v,
+        const VertexInBME& v_bme )
     {
-        ringmesh_assert( unique_id < nb() ) ;
+        ringmesh_assert( v < nb() ) ;
         ringmesh_debug_assert( bme_vertices_.size() == nb() ) ;
-        bme_vertices_[unique_id].push_back( v ) ;
+        // Assert if adding twice the same thing - not a normal behavior
+        ringmesh_debug_assert( std::find( bme_vertices_[v].begin(),
+            bme_vertices_[v].end(), v_bme ) == bme_vertices_[v].end() ) ;
+
+        bme_vertices_[v].push_back( v_bme ) ;
     }
 
     void BoundaryModelVertices::set_bme(
@@ -1313,7 +1316,7 @@ namespace RINGMesh {
 
     index_t BoundaryModelVertices::nb() const
     {
-        if( mesh_.vertices.nb() == 0 ) {
+        if( !is_initialized() ) {
             const_cast< BoundaryModelVertices* >( this )->initialize() ;
         }
         ringmesh_debug_assert( bme_vertices_.size() == mesh_.vertices.nb() ) ;
@@ -1353,9 +1356,8 @@ namespace RINGMesh {
     {
         // Having functions, permit to easily change the way to update
         // this Kdtree. Do not remove them. JP
-        if( !kdtree_.is_nil() ) {
-            kdtree_.reset() ;
-        }
+        // We do not need to reset or unref anything - this is done when 
+        // I new tree is computed. Jeanne.
         kdtree_to_update_ = true ;
     }
 
@@ -1438,9 +1440,9 @@ namespace RINGMesh {
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     index_t old_id = E.model_vertex_id( v ) ;
                     index_t new_id = to_delete[old_id] ;
-                    // The new_id must be valid - or the vertex should have been
-                    // previsouly removed from the BMME
-                    ringmesh_debug_assert( new_id != NO_ID ) ;
+                    // If new_id is NO_ID the vertex should be removed afterwards
+                    // from the BMME 
+                    ringmesh_debug_assert( new_id != NO_ID ) ;                    
                     E.set_model_vertex_id( v, new_id ) ;
 
                     // Merge bme_vertices_ information
