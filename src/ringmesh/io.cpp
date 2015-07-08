@@ -877,7 +877,13 @@ namespace RINGMesh {
                             << std::endl ;
                         neigh << nb_tet_exported + tet ;
                         for( index_t f = 0; f < mesh.cells.nb_facets( tet ); f++ ) {
-                            neigh << SPACE << mm.cells.cell_adjacent( m, tet, f ) ;
+                            neigh << SPACE ;
+                            index_t adj = mm.cells.cell_adjacent( m, tet, f ) ;
+                            if( adj == GEO::NO_CELL ) {
+                                neigh << -1 ;
+                            } else {
+                                neigh << adj ;
+                            }
                         }
                         neigh << std::endl ;
                     }
@@ -1696,9 +1702,9 @@ namespace RINGMesh {
                         index_t tet = mm.cells.tet_id( r, el ) ;
                         for( index_t f = 0; f < 4; f++ ) {
                             index_t csmp_f = tet_descriptor.facet[f] ;
-                            signed_index_t adj = mm.cells.cell_adjacent( r, tet,
+                            index_t adj = mm.cells.cell_adjacent( r, tet,
                                 csmp_f ) ;
-                            if( adj == -1 ) {
+                            if( adj == GEO::NO_CELL ) {
                                 data << " " << std::setw( 7 ) << -28 ;
                             } else {
                                 data << " " << std::setw( 7 ) << adj ;
@@ -1714,9 +1720,9 @@ namespace RINGMesh {
                         index_t py = mm.cells.pyramid_id( r, el ) ;
                         for( index_t f = 0; f < 5; f++ ) {
                             index_t csmp_f = pyramid_descriptor.facet[f] ;
-                            signed_index_t adj = mm.cells.cell_adjacent( r, py,
+                            index_t adj = mm.cells.cell_adjacent( r, py,
                                 csmp_f ) ;
-                            if( adj == -1 ) {
+                            if( adj == GEO::NO_CELL ) {
                                 data << " " << std::setw( 7 ) << -28 ;
                             } else {
                                 data << " " << std::setw( 7 ) << adj ;
@@ -1732,9 +1738,9 @@ namespace RINGMesh {
                         index_t prism = mm.cells.prism_id( r, el ) ;
                         for( index_t f = 0; f < 5; f++ ) {
                             index_t csmp_f = prism_descriptor.facet[f] ;
-                            signed_index_t adj = mm.cells.cell_adjacent( r, prism,
+                            index_t adj = mm.cells.cell_adjacent( r, prism,
                                 csmp_f ) ;
-                            if( adj == -1 ) {
+                            if( adj == GEO::NO_CELL ) {
                                 data << " " << std::setw( 7 ) << -28 ;
                             } else {
                                 data << " " << std::setw( 7 ) << adj ;
@@ -1750,9 +1756,9 @@ namespace RINGMesh {
                         index_t hex = mm.cells.hex_id( r, el ) ;
                         for( index_t f = 0; f < 6; f++ ) {
                             index_t csmp_f = hex_descriptor.facet[f] ;
-                            signed_index_t adj = mm.cells.cell_adjacent( r, hex,
+                            index_t adj = mm.cells.cell_adjacent( r, hex,
                                 csmp_f ) ;
-                            if( adj == -1 ) {
+                            if( adj == GEO::NO_CELL ) {
                                 data << " " << std::setw( 7 ) << -28 ;
                             } else {
                                 data << " " << std::setw( 7 ) << adj ;
