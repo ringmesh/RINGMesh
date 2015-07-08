@@ -292,6 +292,8 @@ namespace RINGMesh {
         std::vector< index_t > cell_adjacents_ ;
         /// Mapping between mesh id and cell elements in cells_
         std::vector< index_t > mesh_cell_ptr_ ;
+        /// Mapping between mesh id and cell elements in cell_adjacents_
+        std::vector< index_t > mesh_cell_adjacent_ptr_ ;
 
         /// Number of cells in the MacroMesh
         index_t nb_cells_ ;

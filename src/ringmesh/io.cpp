@@ -864,7 +864,7 @@ namespace RINGMesh {
                 for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
                     const GEO::Mesh& mesh = mm.mesh( m ) ;
                     for( index_t tet = 0; tet < mesh.cells.nb(); tet++ ) {
-                        ele << nb_tet_exported + tet << SPACE
+                        ele << nb_tet_exported << SPACE
                             << mm.vertices.vertex_id( m,
                                 mesh.cells.vertex( tet, 0 ) ) << SPACE
                             << mm.vertices.vertex_id( m,
@@ -874,7 +874,7 @@ namespace RINGMesh {
                             << mm.vertices.vertex_id( m,
                                 mesh.cells.vertex( tet, 3 ) ) << SPACE << m + 1
                             << std::endl ;
-                        neigh << nb_tet_exported + tet ;
+                        neigh << nb_tet_exported ;
                         for( index_t f = 0; f < mesh.cells.nb_facets( tet ); f++ ) {
                             neigh << SPACE ;
                             index_t adj = mm.cells.cell_adjacent( m, tet, f ) ;
@@ -885,8 +885,8 @@ namespace RINGMesh {
                             }
                         }
                         neigh << std::endl ;
+                        nb_tet_exported++ ;
                     }
-                    nb_tet_exported += mesh.cells.nb() ;
                 }
                 return true ;
             }
