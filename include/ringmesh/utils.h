@@ -385,20 +385,34 @@ namespace RINGMesh {
         }
 
         template< class T >
-        static bool contains( const std::vector< T >& v, const T& t )
+        static bool contains( const std::vector< T >& v, const T& t, bool sorted = false )
         {
-            return find( v, t ) != -1 ;
+            if( sorted )
+                return find_sorted( v, t ) != NO_ID ;
+            else
+                return find( v, t ) != NO_ID ;
         }
 
         template< class T >
-        static signed_index_t find( const std::vector< T >& v, const T& t )
+        static index_t find( const std::vector< T >& v, const T& t )
         {
-            for( index_t i = 0; i < v.size(); i++ ) {
-                if( v[i] == t ) {
-                    return i ;
-                }
-            }
-            return -1 ;
+            typename std::vector< T >::const_iterator it = std::find(
+                v.begin(), v.end(), t ) ;
+            if( it == v.end() )
+                return NO_ID ;
+            else
+                return it - v.begin() ;
+        }
+
+        template< class T >
+        static index_t find_sorted( const std::vector< T >& v, const T& t )
+        {
+            typename std::vector< T >::const_iterator low = std::lower_bound(
+                v.begin(), v.end(), t ) ;
+            if( low == v.end() )
+                return NO_ID ;
+            else
+                return low - v.begin() ;
         }
 
         template< class T1, class T2 >
