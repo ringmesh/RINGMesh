@@ -143,19 +143,38 @@ void nlPreconditioner_Jacobi(const NLdouble* x, NLdouble* y) {
     }
 }
 
+
+static double* nlPreconditioner_SSOR_work = NULL;
+static NLuint nlPreconditioner_SSOR_work_size = 0;
+
+void nlPreconditioner_SSOR_terminate() {
+    NL_DELETE_ARRAY(nlPreconditioner_SSOR_work);
+}
+
 void nlPreconditioner_SSOR(const NLdouble* x, NLdouble* y) {
     NLdouble omega = nlCurrentContext->omega ;
-    static double* work = NULL ;
-    static NLuint work_size = 0 ;
     NLuint n = nlCurrentContext->n ;
-    if(n != work_size) {
-        work = NL_RENEW_ARRAY(NLdouble, work, n) ;
-        work_size = n ;
+    static NLboolean init = NL_FALSE;
+    if(!init) {
+        atexit(nlPreconditioner_SSOR_terminate);
+        init = NL_TRUE;
+    }
+    if(n != nlPreconditioner_SSOR_work_size) {
+        nlPreconditioner_SSOR_work = NL_RENEW_ARRAY(
+            NLdouble, nlPreconditioner_SSOR_work, n
+        ) ;
+        nlPreconditioner_SSOR_work_size = n ;
     }
     
-    nlMultLowerInverse(x, work, omega) ;
-    nlMultDiagonal(work, omega) ;
-    nlMultUpperInverse(work, y, omega) ;
+    nlMultLowerInverse(
+        x, nlPreconditioner_SSOR_work, omega
+    );
+    nlMultDiagonal(
+        nlPreconditioner_SSOR_work, omega
+    );
+    nlMultUpperInverse(
+        nlPreconditioner_SSOR_work, y, omega
+    );
 
     dscal((NLint)n, 2.0 - omega, y, 1) ;
 

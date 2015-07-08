@@ -616,7 +616,8 @@ namespace GEO {
 
         /**
          * \brief Creates a pre-allocated vector
-         * \details Constructs a container with \p size elements. Each element is default-constructed.
+         * \details Constructs a container with \p size elements. 
+         *  Each element is default-constructed.
          * \param[in] size Number of elements to allocate
          */
         explicit vector(index_t size) :
@@ -625,7 +626,8 @@ namespace GEO {
 
         /**
          * \brief Creates a pre-initialized vector
-         * \details Constructs a container with \p size elements. Each element is a copy of \p val.
+         * \details Constructs a container with \p size elements. 
+         *  Each element is a copy of \p val.
          * \param[in] size Number of elements to allocate
          * \param[in] val Initial value of the elements
          */
@@ -692,7 +694,7 @@ namespace GEO {
          * \return a pointer to the first element of the vector
          */
         T* data() {
-            return &(*this)[0];
+            return size() == 0 ? nil : &(*this)[0];
         }
 
         /**
@@ -700,7 +702,7 @@ namespace GEO {
          * \return a const pointer to the first element of the vector
          */
         const T* data() const {
-            return &(*this)[0];
+            return size() == 0 ? nil : &(*this)[0];
         }
 
     };

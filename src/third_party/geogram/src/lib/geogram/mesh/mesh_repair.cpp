@@ -92,11 +92,28 @@ namespace {
             << M.vertices.nb() - nb_new_vertices
             << " duplicated vertices" << std::endl;
 
-        
-        for(index_t c = 0; c < M.facet_corners.nb(); c++) {
+
+        // Replace vertex indices for edges
+        for(index_t e = 0; e < M.edges.nb(); ++e) {
+            M.edges.set_vertex(e, 0, old2new[M.edges.vertex(e,0)]);
+            M.edges.set_vertex(e, 1, old2new[M.edges.vertex(e,1)]);            
+        }
+
+        // Replace vertex indices for facets
+        for(index_t c = 0; c < M.facet_corners.nb(); ++c) {
             M.facet_corners.set_vertex(c, old2new[M.facet_corners.vertex(c)]);
         }
 
+        // Replace vertex indices for cells
+        for(index_t ce = 0; ce < M.cells.nb(); ++ce) {
+            for(
+                index_t c=M.cells.corners_begin(ce);
+                c<M.cells.corners_end(ce); ++c
+            ) {
+                M.cell_corners.set_vertex(c, old2new[M.cell_corners.vertex(c)]);
+            }
+        } 
+        
         // Now old2new is "recycled" for marking vertices that
         // need to be removed.
         for(index_t i = 0; i < old2new.size(); i++) {

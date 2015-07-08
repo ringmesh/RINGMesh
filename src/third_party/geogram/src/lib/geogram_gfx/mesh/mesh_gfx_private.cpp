@@ -759,9 +759,7 @@ namespace GEO {
         glLineWidth(GLfloat(mesh_width_));
         set_colors(PRG_LINES);
         glDisable(GL_LIGHTING);
-        
         begin_draw(MESH_EDGES);
-        // Note: the fourth argument (0) corresponds to the bound VBO.        
         glDrawElements(
             GL_LINES, GLsizei(mesh_->edges.nb()*2), GL_UNSIGNED_INT, 0
         );
@@ -1417,6 +1415,7 @@ namespace GEO {
         begin_shader(PRG_POINTS);            
         glDrawArrays(GL_POINTS, 0, GLsizei(mesh_->vertices.nb()));
         end_shader();
+        glDisable(GL_POINT_SPRITE);        
         end_draw();
     }
     
@@ -1719,6 +1718,7 @@ namespace GEO {
         begin_shader(PRG_POINTS);            
         glDrawArrays(GL_POINTS, 0, GLsizei(mesh_->vertices.nb()));
         end_shader();
+        glDisable(GL_POINT_SPRITE);        
         end_draw();
     }
     

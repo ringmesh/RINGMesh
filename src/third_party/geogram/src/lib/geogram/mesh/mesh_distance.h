@@ -59,7 +59,8 @@ namespace GEO {
 
     /**
      * \brief Computes an approximation of the
-     *  single sided Hausdorff distance dH(m1->m2).
+     *  single sided Hausdorff distance dH(m1->m2) between
+     *  two surfacic meshes.
      *
      *  The single sided Hausdorff distance dH(m1,m2)
      *  is defined as:
@@ -67,9 +68,12 @@ namespace GEO {
      *
      *  The mesh \p m1 is sampled as discrete locations and
      *  the max of the distances between these samples
-     *  and \p m2 is returned.
+     *  and \p m2 is returned. 
      *
-     * \param[in] m1,m2 meshes whose distance is computed
+     * \remark Only the facets of meshes \p m1 and
+     *  \p m2 are used (line segments and volumetric cells are ignored).
+     *
+     * \param[in] m1,m2 two surfacic meshes whose distance is computed
      * \param[in] sampling_dist average distance between
      *  two samples (the smaller, the more accurate).
      *  At least all the vertices of m1 are sampled,
@@ -83,13 +87,17 @@ namespace GEO {
 
     /**
      * \brief Computes an approximation of the
-     *  symmetric Hausdorff distance dH(m1<->m2).
+     *  symmetric Hausdorff distance dH(m1<->m2)
+     *  between two surfacic meshes.
      *
      * The symmetric Hausdorff distance dH(m1<->m2)
      * is defined as:
      * dH(m1<->m2) = Max(dH(m1->m2),dH(m2->m1))
      *
-     * \param[in] m1,m2 meshes whose distance is computed
+     * \remark Only the facets of meshes \p m1 and
+     *  \p m2 are used (line segments and volumetric cells are ignored).
+     *
+     * \param[in] m1,m2 two surfacic meshes whose distance is computed
      * \param[in] sampling_dist average distance between
      *  two samples (the smaller, the more accurate).
      *  At least all the vertices of m1 (resp. m2)

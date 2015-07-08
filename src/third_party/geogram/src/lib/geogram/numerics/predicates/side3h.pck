@@ -1,14 +1,15 @@
 #include "kernel.pckh"
 
-Sign predicate(side3h)(
-    point(p0), point(p1), point(p2), point(p3),
-    point(q0), point(q1), point(q2)  DIM
-) {
+#ifdef DIM3
 
-    /* note: 1* for ensuring mcc's degree compatibility */
-    scalar l1 = 1*sq_dist(p1,p0);
-    scalar l2 = 1*sq_dist(p2,p0);
-    scalar l3 = 1*sq_dist(p3,p0);
+Sign predicate(side3)(
+    point(p0), point(p1), point(p2), point(p3),
+    scalar h0, scalar h1, scalar h2, scalar h3,    
+    point(q0), point(q1), point(q2)
+) {
+    scalar l1 = (h1-h0);
+    scalar l2 = (h2-h0);
+    scalar l3 = (h3-h0);
 
     scalar a10 = 2*dot_at(p1,q0,p0);
     scalar a11 = 2*dot_at(p1,q1,p0);
@@ -69,3 +70,5 @@ Sign predicate(side3h)(
        sos(p3, NEGATIVE)
     end_sos
 }
+
+#endif

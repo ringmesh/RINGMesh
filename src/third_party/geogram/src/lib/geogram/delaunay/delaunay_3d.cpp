@@ -334,7 +334,7 @@ namespace GEO {
 
         set_arrays(
             nb_tets,
-            &cell_to_v_store_[0], &cell_to_cell_store_[0]
+            cell_to_v_store_.data(), cell_to_cell_store_.data()
         );
     }
 

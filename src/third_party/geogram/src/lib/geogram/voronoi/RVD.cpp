@@ -1607,7 +1607,7 @@ namespace {
                 }
             }
             mesh_vertices_->set_vertices(
-                nb_vertices, &mesh_vertices[0]
+                nb_vertices, mesh_vertices.data()
             );
         }
 

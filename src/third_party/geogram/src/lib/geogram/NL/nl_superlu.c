@@ -597,8 +597,10 @@ NLboolean nlSolve_SUPERLU() {
 #if defined(GEO_DYNAMIC_LIBS) && defined(unix)
 
 void nlTerminateExtension_SUPERLU() {
-    dlclose(SuperLU()->DLL_handle);
-    SuperLU()->DLL_handle = NULL;
+    if(SuperLU()->DLL_handle != NULL) {
+        dlclose(SuperLU()->DLL_handle);
+        SuperLU()->DLL_handle = NULL;
+    }
 }
 
 NLboolean nlInitExtension_SUPERLU() {
