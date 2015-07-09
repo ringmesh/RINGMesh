@@ -370,8 +370,7 @@ namespace RINGMesh {
         /*!
          * @brief Returns a const reference the identified BoundaryModelElement
          *
-         * @param[in] type Type of the element
-         * @param[in] index Index of the element
+         * @param[in] id Id of the element
          *
          */
         inline const BoundaryModelElement& element( BME::bme_t id ) const
@@ -384,6 +383,22 @@ namespace RINGMesh {
             } else {
                 return universe_ ;
             }
+        }
+
+        /*!
+         * @brief Returns a const reference the identified BoundaryModelElement
+         *
+         * @param[in] type Type of the element
+         * @param[in] index Index of the element
+         *
+         */
+        inline const BoundaryModelElement& element(
+            BME::TYPE bme_type,
+            index_t index ) const
+        {
+            ringmesh_debug_assert( bme_type < BME::NO_TYPE ) ;
+            ringmesh_debug_assert( index < elements( bme_type ).size() ) ;
+            return *( elements( bme_type )[index] ) ;
         }
 
         /*! @}
