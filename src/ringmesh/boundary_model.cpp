@@ -1586,6 +1586,8 @@ namespace RINGMesh {
             }
         }
         universe_.copy_macro_topology( from.universe_, *this ) ;
+
+        nb_elements_per_type_ = from.nb_elements_per_type_;
     }
 
     /*!
