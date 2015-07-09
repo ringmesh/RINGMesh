@@ -409,7 +409,7 @@ namespace RINGMesh {
         {
             typename std::vector< T >::const_iterator low = std::lower_bound(
                 v.begin(), v.end(), t ) ;
-            if( low == v.end() )
+            if( low == v.end() || t < *low )
                 return NO_ID ;
             else
                 return low - v.begin() ;
