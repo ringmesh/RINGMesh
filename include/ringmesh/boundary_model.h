@@ -499,7 +499,7 @@ namespace RINGMesh {
         /*! 
          * @brief Convert a global BME index into a typed index
          * @details Relies on the nb_elements_per_type_ vector that 
-         *          must be updodate 
+         *          must be updated
          *          See the BoundaryModelBuilder::end_model() function
          * @param[in] global A BME id of TYPE - ALL_TYPES
          * @return A BME id of an element of the model, or a invalid one if nothing found
