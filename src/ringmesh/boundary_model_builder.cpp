@@ -726,8 +726,9 @@ namespace {
             if( nb > 0 ) {
                 // If there are some degenerated facets 
                 // We need to repair the model 
-
+#ifndef RINGMESH_DEBUG
                 GEO::Logger::instance()->set_quiet( true ) ;
+#endif
                 // Using repair function of geogram
                 // Warning - This triangulates the mesh
 
@@ -747,8 +748,9 @@ namespace {
                         GEO::mesh_repair( M, mode ) ;
                     }
                 }
+#ifndef RINGMESH_DEBUG
                 GEO::Logger::instance()->set_quiet( false ) ;
-
+#endif 
                 if( M.vertices.nb() == 0 || M.facets.nb() == 0 ) {
                     to_remove.insert( BM.surface( i ).bme_id() ) ;
                 }
@@ -881,6 +883,7 @@ namespace {
                 } else {
                     // We need to update the VertexInBME at the model level
                     // if they exist. If not let's avoid this costly operation
+                    // @todo This is bugged ?? I am not sure. JP
                     if( BM.vertices.is_initialized() ) {
                         // For all the vertices of this element
                         // we need to update the vertex ids in the bme_vertices_
@@ -1861,7 +1864,7 @@ namespace RINGMesh {
                                 3 ), z_sign * read_double( in, 4 ) ) ;
                         tsurf_vertices.push_back( p ) ;
                     } else if( in.field_matches( 0,
-                            "PATOM" ) | in.field_matches( 0, "ATOM" ) )
+                            "PATOM" ) || in.field_matches( 0, "ATOM" ) )
                     {
                         tsurf_vertices.push_back( tsurf_vertices[ in.
                             field_as_uint(
