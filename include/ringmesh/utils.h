@@ -58,6 +58,12 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
+    /*!
+     * \brief To load a Gocad TSurf surface .ts
+     * \todo Create the appropriate Mesh handler
+     */
+    bool RINGMESH_API load_ts_file( GEO::Mesh& M, const std::string& file_name ) ;
+
 
     /*! @brief A safer narrow casting function of type S to type T
      *  \return static_cast< T >( in ) 
