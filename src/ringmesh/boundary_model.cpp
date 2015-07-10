@@ -2226,7 +2226,7 @@ namespace RINGMesh {
     /*!
      * @brief Debug: Save a Surface of the model in the file OBJ format is used
      */
-    void BoundaryModel::save_surface_as_obj_file(
+    void BoundaryModel::save_surface_as_eobj_file(
         index_t s,
         const std::string& file_name ) const
     {
@@ -2250,6 +2250,13 @@ namespace RINGMesh {
             }
             out << std::endl ;
         }
+
+        out << "# attribute " << "chart" << " facet " << "integer" << std::endl ;          
+        GEO::Attribute< index_t > A( S.cell_attribute_manager(), "chart" ) ;
+
+        for( index_t f = 0; f < S.nb_cells(); f++ ) {
+            out << "# attrs f " << f + 1 << " " << A[ f ] << std::endl ;
+        }        
     }
 
     /*!
