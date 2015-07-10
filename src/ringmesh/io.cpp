@@ -621,110 +621,7 @@ namespace RINGMesh {
 
         /************************************************************************/
 
-        class MESHBIOHandler: public MacroMeshIOHandler {
-        public:
-            virtual bool load( const std::string& filename, MacroMesh& mesh )
-            {
-                GEO::Logger::err( "I/O" )
-                    << "Loading of a MacroMesh from a meshb not implemented yet"
-                    << std::endl ;
-                return false ;
-            }
-            virtual bool save( const MacroMesh& mm, const std::string& filename )
-            {
-                GEO::Mesh mesh( 3 ) ;
-                mesh.vertices.create_vertices( mm.vertices.nb_vertices() ) ;
-                for( index_t p = 0; p < mm.vertices.nb_vertices(); p++ ) {
-                    mesh.vertices.point( p ) = mm.vertices.vertex( p ) ;
-                }
-
-                GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
-                    surface_att_name ) ;
-                index_t cell_offset = 0 ;
-                for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
-                    const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
-                    GEO::Attribute< index_t > cur_attribute(
-                        cur_mesh.facets.attributes(), surface_att_name ) ;
-                    for( index_t f = 0; f < cur_mesh.facets.nb(); f++ ) {
-                        GEO::vector< index_t > vertices ;
-                        vertices.reserve( cur_mesh.facets.nb_vertices( f ) ) ;
-                        for( index_t v = cur_mesh.facets.corners_begin( f );
-                            v < cur_mesh.facets.corners_end( f ); v++ ) {
-                            vertices.push_back(
-                                mm.vertices.vertex_id( m,
-                                    cur_mesh.facet_corners.vertex( v ) ) ) ;
-                        }
-                        index_t f_id = mesh.facets.create_polygon( vertices ) ;
-                        attribute[f_id] = cur_attribute[f] ;
-                    }
-
-                    for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
-                        std::vector< index_t > vertex_indices ;
-                        vertex_indices.reserve( 8 ) ;
-                        for( index_t v = 0; v < cur_mesh.cells.nb_vertices( c );
-                            v++ ) {
-                            vertex_indices.push_back(
-                                mm.vertices.vertex_id( m,
-                                    cur_mesh.cells.vertex( c, v ) ) ) ;
-                        }
-                        std::vector< index_t > adj_indices ;
-                        adj_indices.reserve( 6 ) ;
-                        for( index_t f = 0; f < cur_mesh.cells.nb_facets( c );
-                            f++ ) {
-                            index_t adj = cur_mesh.cells.adjacent( c, f ) ;
-                            adj_indices.push_back(
-                                adj == GEO::NO_CELL ? adj : cell_offset + adj ) ;
-                        }
-                        if( cur_mesh.cells.type( c ) == GEO::MESH_TET ) {
-                            mesh.cells.create_tet( vertex_indices[0],
-                                vertex_indices[1], vertex_indices[2],
-                                vertex_indices[3], adj_indices[0], adj_indices[1],
-                                adj_indices[2], adj_indices[3] ) ;
-                        } else if( cur_mesh.cells.type( c ) == GEO::MESH_PRISM ) {
-                            mesh.cells.create_prism( vertex_indices[0],
-                                vertex_indices[1], vertex_indices[2],
-                                vertex_indices[3], vertex_indices[4],
-                                vertex_indices[5], adj_indices[0], adj_indices[1],
-                                adj_indices[2], adj_indices[3], adj_indices[4] ) ;
-                        } else if( cur_mesh.cells.type( c ) == GEO::MESH_PYRAMID ) {
-                            mesh.cells.create_pyramid( vertex_indices[0],
-                                vertex_indices[1], vertex_indices[2],
-                                vertex_indices[3], vertex_indices[4], adj_indices[0],
-                                adj_indices[1], adj_indices[2], adj_indices[3],
-                                adj_indices[4] ) ;
-                        } else if( cur_mesh.cells.type( c ) == GEO::MESH_HEX ) {
-                            mesh.cells.create_hex( vertex_indices[0],
-                                vertex_indices[1], vertex_indices[2],
-                                vertex_indices[3], vertex_indices[4],
-                                vertex_indices[5], vertex_indices[6],
-                                vertex_indices[7], adj_indices[0], adj_indices[1],
-                                adj_indices[2], adj_indices[3], adj_indices[4],
-                                adj_indices[5] ) ;
-                        } else {
-                            ringmesh_assert_not_reached;
-                        }
-                    }
-                    cell_offset += cur_mesh.cells.nb() ;
-                }
-
-                mesh.facets.connect() ;
-                mesh.cells.connect() ;
-
-                GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MESH_FACETS ) ;
-                flags.set_element( GEO::MESH_CELLS ) ;
-                flags.set_attribute( GEO::MESH_FACET_REGION ) ;
-                GEO::Logger::instance()->set_minimal( true ) ;
-                GEO::mesh_save( mesh, filename, flags ) ;
-                GEO::Logger::instance()->set_minimal( false ) ;
-
-                return true ;
-            }
-        } ;
-
-        /************************************************************************/
-
-        class MESHIOHandler: public MacroMeshIOHandler {
+        class LMIOHandler: public MacroMeshIOHandler {
         public:
             virtual bool load( const std::string& filename, MacroMesh& mesh )
             {
@@ -2799,7 +2696,8 @@ namespace RINGMesh {
         void initialize()
         {
             ringmesh_register_MacroMeshIOHandler_creator( MMIOHandler, "mm" ) ;
-            ringmesh_register_MacroMeshIOHandler_creator( MESHBIOHandler, "meshb" );
+            ringmesh_register_MacroMeshIOHandler_creator( LMIOHandler, "meshb" );
+            ringmesh_register_MacroMeshIOHandler_creator( LMIOHandler, "mesh" );
             ringmesh_register_MacroMeshIOHandler_creator( TetGenIOHandler, "tetgen" );
             ringmesh_register_MacroMeshIOHandler_creator( TSolidIOHandler, "so" );
             ringmesh_register_MacroMeshIOHandler_creator( CSMPIOHandler, "csmp" );
@@ -2807,7 +2705,6 @@ namespace RINGMesh {
             ringmesh_register_MacroMeshIOHandler_creator( VTKIOHandler, "vtk" );
             ringmesh_register_MacroMeshIOHandler_creator( GPRSIOHandler, "gprs" );
             ringmesh_register_MacroMeshIOHandler_creator( MSHIOHandler, "msh" );
-            ringmesh_register_MacroMeshIOHandler_creator( MESHIOHandler, "mesh" );
 
             ringmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" ) ;
             ringmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" );
