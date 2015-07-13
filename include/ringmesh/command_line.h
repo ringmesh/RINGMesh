@@ -37,61 +37,22 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
+ 
 
-#ifndef __RINGMESH_COMMON__
-#define __RINGMESH_COMMON__
+#ifndef __RINGMESH_COMMAND_LINE_
+#define __RINGMESH_COMMAND_LINE_
 
-#if defined( _WIN32 )
-  #    ifndef WIN32
-    #        define WIN32
-  #    endif
-#endif
+#include <ringmesh/common.h>
 
-#ifdef WIN32
-  #   ifdef RINGMESH_EXPORTS
-    #        define RINGMESH_API __declspec( dllexport )
-  #    else
-    #        define RINGMESH_API __declspec( dllimport )
-  #    endif
-#else
-  #   define RINGMESH_API
-#endif
+namespace RINGMesh {
 
-#ifndef NDEBUG
-  #   define RINGMESH_DEBUG
-#else
-  #   undef RINGMESH_DEBUG
-#endif
+    namespace CmdLine {
 
-#ifdef WIN32
-  #   pragma warning( disable: 4267 )
-  #   pragma warning( disable: 4251 )
-#endif
+        bool RINGMESH_API import_arg_group( const std::string& name ) ;
 
-#ifdef RINGMESH_USE_OPENMP
-#   ifdef WIN32
-#       define RINGMESH_PARALLEL_LOOP __pragma("omp parallel for")
-#       define RINGMESH_PARALLEL_LOOP_DYNAMIC __pragma( "omp parallel for schedule(dynamic)" )
-#   else
-#       define RINGMESH_PARALLEL_LOOP _Pragma("omp parallel for")
-#       define RINGMESH_PARALLEL_LOOP_DYNAMIC _Pragma( "omp parallel for schedule(dynamic)" )
-#   endif
-#else
-#   define RINGMESH_PARALLEL_LOOP
-#   define RINGMESH_PARALLEL_LOOP_DYNAMIC
-#endif
+    }
 
-
-#define ringmesh_disable_copy( Class ) \
-    private: \
-    Class( const Class & ) ; \
-    Class& operator=( const Class& )
-
-template< class T > inline void ringmesh_unused( T const& )
-{
 }
 
-#include <ringmesh/types.h>
-#include <ringmesh/ringmesh_assert.h>
-
 #endif
+

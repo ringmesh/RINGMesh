@@ -441,6 +441,44 @@ namespace RINGMesh {
         return true ;
     }
 
+    void Utils::mesh_facet_connect( GEO::Mesh& mesh ) {
+        std::vector< index_t > temp ;
+        temp.reserve( 7 ) ;
+        std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            for( index_t c = mesh.facets.corners_begin( f );
+                c < mesh.facets.corners_end( f ); c++ ) {
+                stars[mesh.facet_corners.vertex( c )].push_back( f ) ;
+            }
+        }
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            for( index_t c = mesh.facets.corners_begin( f );
+                c < mesh.facets.corners_end( f ); c++ ) {
+                index_t f_adj = mesh.facet_corners.adjacent_facet( c ) ;
+                if( f_adj != GEO::NO_FACET ) continue ;
+                const std::vector< index_t >& star0 =
+                    stars[mesh.facet_corners.vertex( c )] ;
+                const std::vector< index_t >& star1 =
+                    stars[mesh.facet_corners.vertex(
+                        mesh.facets.next_corner_around_facet( f, c ) )] ;
+                std::vector< index_t > intersect(
+                    std::min( star0.size(), star1.size() ) ) ;
+                intersect.erase(
+                    std::set_intersection( star0.begin(), star0.end(), star1.begin(),
+                        star1.end(), intersect.begin() ), intersect.end() ) ;
+                if( intersect.size() > 1 ) {
+                    for( index_t i = 0; i < intersect.size(); i++ ) {
+                        index_t cur_f = intersect[i] ;
+                        if( cur_f != f ) {
+                            f_adj = cur_f ;
+                        }
+                    }
+                    mesh.facet_corners.set_adjacent_facet( c, f_adj ) ;
+                }
+            }
+        }
+    }
+
     /*!
      * Repair the consistency between a BoundaryModel region
      * and its volumetric Mesh. It repairs duplicated facets and facet orientation
@@ -2067,7 +2105,7 @@ namespace RINGMesh {
      * @param[in] v the point to test
      * @param[in] nb_neighbors the number of neighbors to return
      * @param[out] result the neighboring points
-     * @param[out] dist the distance between each neigbhor and the point \p v
+     * @param[out] dist the square distance between each neigbhor and the point \p v
      * @return the number of neighbors returned (can be less than \p nb_neighbors
      * if there is not enough points)
      */
