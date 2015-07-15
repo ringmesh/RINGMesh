@@ -273,7 +273,7 @@ namespace {
      *              non-duplicated vertices of facet \p f
      *              and a terminal index_t(-1)
      */
-    void find_facet_non_duplicated_vertices(
+    bool find_facet_non_duplicated_vertices(
         const Mesh& M, index_t f, vector<index_t>& new_polygon
     ) {
         index_t first_corner = index_t(-1);
@@ -294,7 +294,7 @@ namespace {
         // All the vertices may be identical (if the facet
         // is completely degenerate).
         if(first_corner == index_t(-1)) {
-            return;
+            return false ;
         }
 
         index_t c = first_corner;
@@ -317,10 +317,12 @@ namespace {
         // not want to generate facets with two vertices only).
         if(nb == 2) {
             new_polygon.resize(new_polygon.size()-3);
+            return false ;
         }
+        return true ;
     }
-    
-    
+
+   
     /**
      * \brief Detects degenerate facets in a mesh.
      * \param[in] M the mesh
@@ -410,11 +412,14 @@ namespace {
                     new_polygons != nil &&
                     M.facets.nb_vertices(f) > 3
                 ) {
-                    old_polygons->push_back(f);
-                    find_facet_non_duplicated_vertices(M,f,*new_polygons);
+                    if( find_facet_non_duplicated_vertices(
+                        M, f, *new_polygons ) ) {
+                        old_polygons->push_back( f );
+                    }
                 }
             }
-        }
+        } 
+
         if(nb_duplicates != 0 || nb_degenerate != 0) {
             Logger::out("Validate")
                 << "Detected " << nb_duplicates << " duplicate and "

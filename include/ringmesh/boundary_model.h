@@ -470,7 +470,7 @@ namespace RINGMesh {
          */
         bool save_gocad_model3d( std::ostream& out ) ;
         void save_as_eobj_file( const std::string& file ) const ;
-        void save_surface_as_obj_file( index_t s, const std::string& file ) const ;
+        void save_surface_as_eobj_file( index_t s, const std::string& file ) const ;
         void save_bm_file( const std::string& file_name ) const ;
         void save_smesh_file( const std::string& file_name ) const ;
 
@@ -499,7 +499,7 @@ namespace RINGMesh {
         /*! 
          * @brief Convert a global BME index into a typed index
          * @details Relies on the nb_elements_per_type_ vector that 
-         *          must be updodate 
+         *          must be updated
          *          See the BoundaryModelBuilder::end_model() function
          * @param[in] global A BME id of TYPE - ALL_TYPES
          * @return A BME id of an element of the model, or a invalid one if nothing found
