@@ -58,7 +58,7 @@ do
    build_dir=build/ringmesh/$platform
 
    mkdir -p $build_dir
-   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DGEOGRAM_PLATFORM:STRING=$os -DCMAKE_INSTALL_PREFIX=/opt/software/ringmesh  ../../../)
+   (cd $build_dir; $CMAKE -Wno-dev -DCMAKE_BUILD_TYPE:STRING=$config -DPLATFORM:STRING=$os -DCMAKE_INSTALL_PREFIX=/opt/software/ringmesh  ../../../)
 done
 echo
 echo ============== RINGMesh build configured ==================
