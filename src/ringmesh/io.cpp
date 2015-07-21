@@ -326,6 +326,65 @@ namespace RINGMesh {
             }
         } ;
 
+        class WebGLIOHandler: public BoundaryModelIOHandler {
+        public:
+            virtual bool load( const std::string& filename, BoundaryModel& model )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a MacroMesh from WebGL mesh not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+
+            virtual bool save( BoundaryModel& model, const std::string& filename )
+            {
+                std::string path = GEO::FileSystem::dir_name( filename ) ;
+                std::string directory = GEO::FileSystem::base_name( filename ) ;
+                if( path == "." ) {
+                    path = GEO::FileSystem::get_current_working_directory() ;
+                }
+                std::ostringstream oss_dir ;
+                oss_dir << path << "/" << directory ;
+                std::string full_path = oss_dir.str() ;
+                GEO::FileSystem::create_directory( full_path ) ;
+
+                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+                    const BoundaryModelElement& interf = model.one_interface( i ) ;
+                    std::ostringstream oss ;
+                    oss << full_path << "/" << interf.name() << ".js" ;
+                    std::ofstream out( oss.str().c_str() ) ;
+                    out.precision( 16 ) ;
+                    index_t nb_pts = 0 ;
+                    index_t nb_trgl = 0 ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        const BoundaryModelElement& surface = interf.child( s ) ;
+                        nb_pts += surface.nb_vertices() ;
+                        nb_trgl += surface.nb_cells() ;
+                    }
+                    out << nb_pts << " " << nb_trgl << std::endl ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        const BoundaryModelElement& surface = interf.child( s ) ;
+                        for( index_t p = 0; p < surface.nb_vertices(); p++ ) {
+                            out << surface.vertex( p ) << std::endl ;
+                        }
+                    }
+                    index_t offset = 0 ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        const Surface& surface =
+                            dynamic_cast< const Surface& >( interf.child( s ) ) ;
+                        for( index_t c = 0; c < surface.nb_cells(); c++ ) {
+                            out << offset + surface.surf_vertex_id( c, 0 ) << " "
+                                << offset + surface.surf_vertex_id( c, 1 ) << " "
+                                << offset + surface.surf_vertex_id( c, 2 )
+                                << std::endl ;
+                        }
+                        offset += surface.nb_vertices() ;
+                    }
+                }
+
+                return true ;
+            }
+        } ;
 
         /************************************************************************/
 
@@ -701,7 +760,12 @@ namespace RINGMesh {
                                 adj_indices[2], adj_indices[3], adj_indices[4],
                                 adj_indices[5] ) ;
                         } else {
-                            ringmesh_assert_not_reached;
+                            ringmesh_debug_assert(
+                                cur_mesh.cells.type( c ) == GEO::MESH_CONNECTOR ) ;
+                            mesh.cells.create_connector( vertex_indices[0],
+                                vertex_indices[1], vertex_indices[2],
+                                vertex_indices[3], adj_indices[0], adj_indices[1],
+                                adj_indices[2] ) ;
                         }
                     }
                     cell_offset += cur_mesh.cells.nb() ;
@@ -2709,6 +2773,7 @@ namespace RINGMesh {
             ringmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" ) ;
             ringmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" );
             ringmesh_register_BoundaryModelIOHandler_creator( UCDIOHandler, "inp" );
+            ringmesh_register_BoundaryModelIOHandler_creator( WebGLIOHandler, "js" );
 
             ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
         }
