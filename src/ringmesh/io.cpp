@@ -350,6 +350,7 @@ namespace RINGMesh {
 
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
+                    if( interf.is_on_voi() ) continue ;
                     std::ostringstream oss ;
                     oss << full_path << "/" << interf.name() << ".js" ;
                     std::ofstream out( oss.str().c_str() ) ;
