@@ -90,15 +90,20 @@ namespace RINGMesh {
         {
             index_t index ;
             if( !find( j, index ) ) {
-                if( nb_elements_ == capacity_ ) {
-                    grow() ;
-                }
-                Element& elt = elements_[nb_elements_++ ] ;
-                elt.index = j ;
-                elt.value = value ;
+                push_element( j, value ) ;
             } else {
                 elements_[index].value = value ;
             }
+        }
+
+        void push_element( index_t j, const T& value )
+        {
+            if( nb_elements_ == capacity_ ) {
+                grow() ;
+            }
+            Element& elt = elements_[nb_elements_++ ] ;
+            elt.index = j ;
+            elt.value = value ;
         }
 
         bool find( index_t j, index_t& index = dummy_index_t ) const
@@ -334,6 +339,24 @@ namespace RINGMesh {
             this->rows_[i].set_element( j, value ) ;
             if( this->is_symmetrical_ ) {
                 this->rows_[j].set_element( i, value ) ;
+            }
+            return true ;
+        }
+
+
+        /*!
+         * set the value of element i-j in the matrix without verifying
+         * if the element i-j already exists !!! BE CAREFULL
+         * @param[in] i row index
+         * @param[in] j column index
+         * @param[in] value to store
+         * @return bool true (for instance no checks for errors...)
+         * */
+        bool push_element( index_t i, index_t j, const T& value )
+        {
+            this->rows_[i].push_element( j, value ) ;
+            if( this->is_symmetrical_ ) {
+                this->rows_[j].push_element( i, value ) ;
             }
             return true ;
         }
