@@ -338,6 +338,7 @@ namespace RINGMesh {
 
             virtual bool save( BoundaryModel& model, const std::string& filename )
             {
+                std::string sep = ", " ;
                 std::string path = GEO::FileSystem::dir_name( filename ) ;
                 std::string directory = GEO::FileSystem::base_name( filename ) ;
                 if( path == "." ) {
@@ -362,11 +363,12 @@ namespace RINGMesh {
                         nb_pts += surface.nb_vertices() ;
                         nb_trgl += surface.nb_cells() ;
                     }
-                    out << nb_pts << " " << nb_trgl << std::endl ;
+                    out << "var " << interf.name() << " = [ " << nb_pts << sep
+                        << nb_trgl ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         const BoundaryModelElement& surface = interf.child( s ) ;
                         for( index_t p = 0; p < surface.nb_vertices(); p++ ) {
-                            out << surface.vertex( p ) << std::endl ;
+                            out << sep << surface.vertex( p ) ;
                         }
                     }
                     index_t offset = 0 ;
@@ -374,13 +376,13 @@ namespace RINGMesh {
                         const Surface& surface =
                             dynamic_cast< const Surface& >( interf.child( s ) ) ;
                         for( index_t c = 0; c < surface.nb_cells(); c++ ) {
-                            out << offset + surface.surf_vertex_id( c, 0 ) << " "
-                                << offset + surface.surf_vertex_id( c, 1 ) << " "
-                                << offset + surface.surf_vertex_id( c, 2 )
-                                << std::endl ;
+                            out << sep << offset + surface.surf_vertex_id( c, 0 )
+                                << sep << offset + surface.surf_vertex_id( c, 1 )
+                                << sep << offset + surface.surf_vertex_id( c, 2 ) ;
                         }
                         offset += surface.nb_vertices() ;
                     }
+                    out << " ] ;" << std::endl ;
                 }
 
                 return true ;
