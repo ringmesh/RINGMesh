@@ -368,7 +368,9 @@ namespace RINGMesh {
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         const BoundaryModelElement& surface = interf.child( s ) ;
                         for( index_t p = 0; p < surface.nb_vertices(); p++ ) {
-                            out << sep << surface.vertex( p ) ;
+                            const vec3& point = surface.vertex( p ) ;
+                            out << sep << point.x << sep << point.y << sep
+                                << point.z ;
                         }
                     }
                     index_t offset = 0 ;
