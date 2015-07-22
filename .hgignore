@@ -27,3 +27,5 @@ syntax: regexp
 ^doc/doc_online$
 syntax: regexp
 ^articles/gocad_meeting/appli/tmp$
+syntax: regexp
+\.txt$
