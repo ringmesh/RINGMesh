@@ -2822,7 +2822,7 @@ namespace RINGMesh {
                 out << "<html>" << std::endl ;
                 out << "<head>" << std::endl ;
                 out << "<title>" << std::endl ;
-                out << "Visualisation of Gocad surface" << std::endl ;
+                out << "Visualisation of structural model from RINGMesh" << std::endl ;
                 out << "</title>" << std::endl ;
                 out << "<style>" << std::endl ;
                 out << "body {margin: 0;} canvas { width: 100%; height: 100% }" << std::endl ;
