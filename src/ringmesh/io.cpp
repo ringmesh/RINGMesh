@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
  *     * Neither the name of the <organization> nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr 
- *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
  *     http://www.gocad.org
@@ -34,7 +34,7 @@
  *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
- *     54518 VANDOEUVRE-LES-NANCY 
+ *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
@@ -207,7 +207,7 @@ namespace RINGMesh {
                 }
 
                 BoundaryModelBuilderGocad builder( model ) ;
-                return builder.load_ml_file( filename ) ;                
+                return builder.load_ml_file( filename ) ;
             }
 
             virtual bool save( BoundaryModel& model, const std::string& filename )
@@ -2780,35 +2780,6 @@ namespace RINGMesh {
                 std::string full_path = oss_dir.str() ;
                 GEO::FileSystem::create_directory( full_path ) ;
 
-                std::ostringstream oss_js ;
-                oss_js << full_path << "/js" ;
-                std::string js_path = oss_js.str() ;
-                GEO::FileSystem::create_directory( js_path ) ;
-
-                std::ostringstream oss_js_key ;
-                oss_js_key << js_path << "/KeyboardState.js" ;
-                std::ofstream out_key( oss_js_key.str().c_str() ) ;
-                print_KeyboardState( out_key ) ;
-
-                std::ostringstream oss_js_orbit ;
-                oss_js_orbit << js_path << "/OrbitControls.js" ;
-                std::ofstream out_orbit( oss_js_orbit.str().c_str() ) ;
-                print_OrbitControls( out_orbit ) ;
-
-                std::ostringstream oss_js_script01 ;
-                oss_js_script01 << js_path << "/script01.js" ;
-                std::ofstream out_script01( oss_js_script01.str().c_str() ) ;
-                print_script01( out_script01 ) ;
-
-                std::ostringstream oss_js_three ;
-                oss_js_three << js_path << "/three.min.js" ;
-                std::ofstream out_three( oss_js_three.str().c_str() ) ;
-                print_three_min( out_three ) ;
-
-                std::ostringstream oss_js_track ;
-                oss_js_track << js_path << "/TrackballControls.js" ;
-                std::ofstream out_track( oss_js_track.str().c_str() ) ;
-                print_TrackballControls( out_track ) ;
 
                 std::ostringstream oss_var ;
                 oss_var << full_path << "/var" ;
@@ -2829,11 +2800,26 @@ namespace RINGMesh {
                 out << "</style>" << std::endl ;
                 out << "</head>" << std::endl ;
                 out << "<body>" << std::endl ;
-                out << " <script src=\"js/three.min.js \"></script>" << std::endl ;
-                out << " <script src=\"js/OrbitControls.js \"></script>" << std::endl ;
-                out << " <script src=\"js/TrackballControls.js \"></script>" << std::endl ;
-                out << " <script src=\"js/KeyboardState.js \"></script>" << std::endl ;
-                out << " <script src=\"js/script01.js\"></script>" << std::endl ;
+
+                out << "<script>" << std::endl ;
+                print_three_min(out) ;
+                out << "</script>" << std::endl;
+
+                out << "<script>" << std::endl ;
+                print_TrackballControls(out) ;
+                out << "</script>" << std::endl ;
+
+                out << "<script>" << std::endl ;
+                print_OrbitControls(out) ;
+                out << "</script>" << std::endl ;
+
+                out << "<script>" << std::endl ;
+                print_KeyboardState(out) ;
+                out << "</script>" << std::endl ;
+
+                out << "<script>" << std::endl ;
+                print_script01(out) ;
+                out << "</script>" << std::endl ;
 
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
@@ -5115,7 +5101,7 @@ namespace RINGMesh {
                         kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
                             << ",1," ;
                         const RINGMesh::BoundaryModelElement& E =
-                            model.one_interface( i ) ; 
+                            model.one_interface( i ) ;
                         if( RINGMesh::BoundaryModelElement::is_fault( E.geological_feature() ) ) {
                             kine3d << "FaultFeatureClass" ;
                         } else if( RINGMesh::BoundaryModelElement::is_stratigraphic_limit(
