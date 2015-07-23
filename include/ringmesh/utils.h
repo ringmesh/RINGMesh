@@ -883,10 +883,6 @@ namespace RINGMesh {
             VERTICES, FACETS, CELLS
         } ;
         ColocaterANN() ;
-        ColocaterANN(
-            const Surface& mesh,
-            const MeshLocation& location = VERTICES ) ;
-        ColocaterANN( const Line& mesh ) ;
         ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location = VERTICES ) ;
         ColocaterANN( const std::vector< vec3 >& vertices ) ;
         ColocaterANN( float64* vertices, index_t nb_vertices ) ;
@@ -894,7 +890,7 @@ namespace RINGMesh {
 
         ~ColocaterANN()
         {
-            delete[] ann_points_ ;
+            if( ann_points_ ) delete[] ann_points_ ;
         }
 
         void set_points( const std::vector< vec3 >& vertices ) ;
@@ -922,20 +918,10 @@ namespace RINGMesh {
             std::vector< index_t >& result,
             double* dist = nil ) const ;
 
-        /*!
-         * Gets the point corresponding to the given index
-         * @param[in] i the point index
-         * return the corresponding point
-         */
-        vec3 point( index_t i ) const
-        {
-            return vec3( ann_tree_->point_ptr( i ) ) ;
-        }
-
     private:
         /// KdTree to compute the nearest neighbor search
         GEO::NearestNeighborSearch_var ann_tree_ ;
-        /// Array of the points (size of 3xnumber of points)
+        /// Array of the points (size of 3xnumber of points), possibly nil
         double* ann_points_ ;
     } ;
 
