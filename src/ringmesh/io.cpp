@@ -2780,13 +2780,6 @@ namespace RINGMesh {
                 std::string full_path = oss_dir.str() ;
                 GEO::FileSystem::create_directory( full_path ) ;
 
-
-                std::ostringstream oss_var ;
-                oss_var << full_path << "/var" ;
-                std::string var_path = oss_var.str() ;
-                GEO::FileSystem::create_directory( var_path ) ;
-
-
                 std::ostringstream oss_main ;
                 oss_main << full_path << "/main.html" ;
                 std::ofstream out( oss_main.str().c_str() ) ;
@@ -2834,12 +2827,9 @@ namespace RINGMesh {
                 out << "var meshes=[];" << std::endl ;
                 out << "var mouse = new THREE.Vector2(), INTERSECTED;" << std::endl ;
 
-
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
                     if( interf.is_on_voi() ) continue ;
-
-
                     out.precision( 16 ) ;
                     index_t nb_pts = 0 ;
                     index_t nb_trgl = 0 ;
