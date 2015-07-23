@@ -887,7 +887,7 @@ namespace RINGMesh {
             const Surface& mesh,
             const MeshLocation& location = VERTICES ) ;
         ColocaterANN( const Line& mesh ) ;
-        ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location ) ;
+        ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location = VERTICES ) ;
         ColocaterANN( const std::vector< vec3 >& vertices ) ;
         ColocaterANN( float64* vertices, index_t nb_vertices ) ;
         ColocaterANN( const std::vector< Edge >& edges ) ;
