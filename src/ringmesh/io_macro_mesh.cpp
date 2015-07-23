@@ -1874,7 +1874,7 @@ namespace RINGMesh {
 
                 std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
                 for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                    anns[s] = new ColocaterANN( model.surface( s ),
+                    anns[s] = new ColocaterANN( model.surface( s ).mesh(),
                         ColocaterANN::FACETS ) ;
                 }
                 std::deque< Pipe > pipes ;
@@ -2171,7 +2171,7 @@ namespace RINGMesh {
                         nb_facets += 2 * mm.facets.nb_facets( s ) ;
                     else
                         nb_facets += mm.facets.nb_facets( s ) ;
-                    anns[s] = new ColocaterANN( model.surface( s ),
+                    anns[s] = new ColocaterANN( model.surface( s ).mesh(),
                         ColocaterANN::FACETS ) ;
                 }
                 out << "$Elements" << std::endl ;
