@@ -2711,9 +2711,8 @@ namespace RINGMesh {
 
                 out << "" << std::endl ;
                 out << "<script>" << std::endl ;
-                out << "var scene,camera,material,light,ambientLight,renderer, keyboard, raycaster;" << std::endl ;
+                out << "var scene,camera,material,light,ambientLight,renderer;" << std::endl ;
                 out << "var meshes=[];" << std::endl ;
-                out << "var mouse = new THREE.Vector2(), INTERSECTED;" << std::endl ;
 
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
                     const BoundaryModelElement& interf = model.one_interface( i ) ;
@@ -2750,7 +2749,7 @@ namespace RINGMesh {
                 }
 
 
-				out << "init();animate();" << std::endl ;
+				out << "init();render();" << std::endl ;
                 out << "function loadObjects(){" << std::endl ;
                 out << "var i = 0;" << std::endl ;
 
