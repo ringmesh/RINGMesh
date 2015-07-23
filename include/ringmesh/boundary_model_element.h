@@ -592,7 +592,7 @@ namespace RINGMesh {
         GEO::Attribute<index_t> model_vertex_id_ ;
     } ;
 
-
+    typedef BoundaryModelMeshElement BMME ;
 
     /*!
      * @brief A BoundaryModelElement of type CORNER
