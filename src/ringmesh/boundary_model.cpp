@@ -801,34 +801,43 @@ namespace {
                 << print_bme_id( region ) << std::endl << std::endl ;
             valid = false ;
         }
-        Mesh mesh ;
-        GEO::Logger::instance()->set_quiet( true ) ;
-        mesh_from_element_boundaries( region, mesh ) ;
-        GEO::mesh_repair( mesh ) ;
-        GEO::Logger::instance()->set_quiet( false ) ;
-
-        if( GEO::mesh_nb_connected_components( mesh ) != 1 ) {
-            GEO::Logger::err( "BoundaryModel" ) << " Surface boundary of "
-                << print_bme_id( region ) << " has not 1 connected component "
-                << std::endl << std::endl ;
-            valid = false ;
-        }
-        if( GEO::mesh_nb_borders( mesh ) != 0 ) {
-            GEO::Logger::err( "BoundaryModel" ) << " Surface boundary of "
-                << print_bme_id( region ) << " has borders " << std::endl
+        if( region.nb_boundaries() == 0 ) {
+            GEO::Logger::err( "BoundaryModel" )
+                << print_bme_id( region ) << " has no boundary Surface"
                 << std::endl ;
             valid = false ;
         }
+        else {
+            Mesh mesh ;
+            GEO::Logger::instance()->set_quiet( true ) ;
+            mesh_from_element_boundaries( region, mesh ) ;
+            GEO::mesh_repair( mesh ) ;
+            GEO::Logger::instance()->set_quiet( false ) ;
+
+            if( GEO::mesh_nb_connected_components( mesh ) != 1 ) {
+                GEO::Logger::err( "BoundaryModel" ) << " Surface boundary of "
+                    << print_bme_id( region ) << " has not 1 connected component "
+                    << std::endl ;
+                valid = false ;
+            }
+            if( GEO::mesh_nb_borders( mesh ) != 0 ) {
+                GEO::Logger::err( "BoundaryModel" ) << " Surface boundary of "
+                    << print_bme_id( region ) << " has borders "
+                    << std::endl ;
+                valid = false ;
+            }
+
 #ifdef RINGMESH_DEBUG
-        if( !valid ) {
-            std::ostringstream file ;
-            file << region.model().debug_directory()
-                 << "/boundary_surface_"
-                 << print_bme_id( region )
-                 << ".mesh"  ;
-            GEO::mesh_save( mesh, file.str() ) ;
-        }
+            if( !valid ) {
+                std::ostringstream file ;
+                file << region.model().debug_directory()
+                    << "/boundary_surface_"
+                    << print_bme_id( region )
+                    << ".mesh"  ;
+                GEO::mesh_save( mesh, file.str() ) ;
+            }
 #endif
+        }
         return valid ;
     }
 
@@ -1586,6 +1595,8 @@ namespace RINGMesh {
             }
         }
         universe_.copy_macro_topology( from.universe_, *this ) ;
+
+        nb_elements_per_type_ = from.nb_elements_per_type_;
     }
 
     /*!
@@ -1767,6 +1778,9 @@ namespace RINGMesh {
      * @brief Check model validity
      * @details In debug mode problematic vertices, edges, elements are
      *          saved in the debug_directory_
+     *
+     * @todo Check the consistency of index info for vertices - 
+     * bme_vertices model_vertex_id
      */
     bool BoundaryModel::check_model_validity() const
     {
@@ -1796,6 +1810,7 @@ namespace RINGMesh {
         ///    The boundary of the universe region is a one connected component 
         ///     manifold closed surface 
         valid = is_region_valid( universe() ) && valid ;
+        
 
         /// 3. Check geometrical-connectivity consistency
         valid = check_model_points_validity( *this ) && valid ;
@@ -2233,7 +2248,7 @@ namespace RINGMesh {
     /*!
      * @brief Debug: Save a Surface of the model in the file OBJ format is used
      */
-    void BoundaryModel::save_surface_as_obj_file(
+    void BoundaryModel::save_surface_as_eobj_file(
         index_t s,
         const std::string& file_name ) const
     {
@@ -2257,6 +2272,13 @@ namespace RINGMesh {
             }
             out << std::endl ;
         }
+
+        out << "# attribute " << "chart" << " facet " << "integer" << std::endl ;          
+        GEO::Attribute< index_t > A( S.cell_attribute_manager(), "chart" ) ;
+
+        for( index_t f = 0; f < S.nb_cells(); f++ ) {
+            out << "# attrs f " << f + 1 << " " << A[ f ] << std::endl ;
+        }        
     }
 
     /*!

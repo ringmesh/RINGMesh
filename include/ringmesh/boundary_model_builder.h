@@ -380,7 +380,7 @@ namespace RINGMesh {
         template< class MESH >
         void set_surfaces( const MESH& mesh ) ;
 
-        bool build_model() ;
+        bool build_model( bool build_regions = true ) ;
     } ;
 
 

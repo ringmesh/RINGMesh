@@ -116,7 +116,7 @@ if not exist build\ringmesh\%opsys% (
 )
 
 cd build\ringmesh\%opsys%
-cmake ..\..\.. %cmake_debug_options% %cmake_generator_options% -DGEOGRAM_PLATFORM:STRING=%opsys%
+cmake ..\..\.. %cmake_debug_options% %cmake_generator_options% -DPLATFORM:STRING=%opsys%
 
 
 cd %~dp0

@@ -27,7 +27,102 @@
 #include <algorithm>
 #include <cstring>
 
+#include <geogram/basic/line_stream.h> // to move 
+#include <geogram/mesh/mesh_repair.h>
+
 namespace RINGMesh {
+
+    // Copied from boundary_model_builder.cpp. Still needed ?? check Geogram
+    double read_double( GEO::LineInput& in, index_t field )
+    {
+        double result ;
+        std::istringstream iss( in.field( field ) ) ;
+        iss >> result >> std::ws ;
+        return result ;
+    }
+    /// TO MOVE
+    // we assume there is only one TSURF saved in the file
+    bool load_ts_file( GEO::Mesh& M, const std::string& file_name )
+    {
+        // Count the number of triangles and vertices
+        index_t nb_points = 0 ;
+        index_t nb_triangles = 0 ; 
+        int z_sign = 1 ;
+        {
+            GEO::LineInput in( file_name ) ;
+            if( !in.OK() ) {
+                return false ;
+            }
+            while( !in.eof() && in.get_line() ) {
+                in.get_fields() ;
+                if( in.nb_fields() > 0 ) {
+                    if( in.field_matches( 0, "ZPOSITIVE" ) ) {
+                        if( in.field_matches( 1, "Elevation" ) ) {
+                            z_sign = 1 ;
+                        } else if( in.field_matches( 1, "Depth" ) ) {
+                            z_sign = -1 ;
+                        } else {
+                            ringmesh_assert_not_reached;
+                        }
+                    }
+                    /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
+                    else if( in.field_matches( 0,
+                        "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
+                        nb_points++ ;
+                    } else if( in.field_matches( 0,
+                        "PATOM" ) | in.field_matches( 0, "ATOM" ) ) {
+                        nb_points++ ;
+                    } else if( in.field_matches( 0, "TRGL" ) ) {
+                        nb_triangles++ ;
+                    }
+                }
+            }
+        }
+        index_t dim = 3 ;
+        GEO::vector< double > vertices ( dim * nb_points ) ;
+        GEO::vector< index_t > triangles( 3*nb_triangles ) ;
+        {
+            GEO::LineInput in( file_name ) ;
+            if( !in.OK() ) {
+                return false ;
+            }
+            index_t v = 0 ;
+            index_t t = 0 ;
+            while( !in.eof() && in.get_line() ) {
+                in.get_fields() ;
+                if( in.nb_fields() > 0 ) {
+                    /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
+                    if( in.field_matches( 0, "VRTX" ) ||
+                        in.field_matches( 0, "PVRTX" )
+                        ) {
+                        vertices[ dim*v ] = read_double( in, 2 ) ;
+                        vertices[ dim*v + 1 ] = read_double( in, 3 ) ;
+                        vertices[ dim*v + 2 ] = z_sign * read_double( in, 4 ) ;
+                        ++v ;
+                    } else if( in.field_matches( 0, "PATOM" ) ||
+                               in.field_matches( 0, "ATOM" ) ) {
+                        index_t v0 = in.field_as_uint( 2 ) - 1 ;
+                        vertices[ dim*v ] = vertices[ dim*v0 ] ;
+                        vertices[ dim*v + 1 ] = vertices[ dim*v0 + 1 ] ;
+                        vertices[ dim*v + 2 ] = vertices[ dim*v0 + 2 ] ;
+                        ++v ;
+                    } else if( in.field_matches( 0, "TRGL" ) ) {
+                        triangles[ 3*t ] = static_cast<index_t>( in.field_as_uint( 1 )-1 ) ;
+                        triangles[ 3*t+1 ] = static_cast<index_t>( in.field_as_uint( 2 )-1 ) ;
+                        triangles[ 3*t+2 ] = static_cast<index_t>( in.field_as_uint( 3 )-1 ) ;
+                        t++ ;
+                    }
+                }
+            }
+        }
+        
+        M.facets.assign_triangle_mesh( dim, vertices, triangles, true ) ;       
+        
+        GEO::MeshRepairMode mode = static_cast< GEO::MeshRepairMode >( 2 ) ;
+        GEO::mesh_repair( M, mode ) ;
+    }
+
+
 
     /*!
      * Computes the volume of a Mesh cell

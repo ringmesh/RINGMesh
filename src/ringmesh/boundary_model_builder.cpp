@@ -726,8 +726,9 @@ namespace {
             if( nb > 0 ) {
                 // If there are some degenerated facets 
                 // We need to repair the model 
-
+#ifndef RINGMESH_DEBUG
                 GEO::Logger::instance()->set_quiet( true ) ;
+#endif
                 // Using repair function of geogram
                 // Warning - This triangulates the mesh
 
@@ -747,8 +748,9 @@ namespace {
                         GEO::mesh_repair( M, mode ) ;
                     }
                 }
+#ifndef RINGMESH_DEBUG
                 GEO::Logger::instance()->set_quiet( false ) ;
-
+#endif 
                 if( M.vertices.nb() == 0 || M.facets.nb() == 0 ) {
                     to_remove.insert( BM.surface( i ).bme_id() ) ;
                 }
@@ -881,6 +883,7 @@ namespace {
                 } else {
                     // We need to update the VertexInBME at the model level
                     // if they exist. If not let's avoid this costly operation
+                    // @todo This is bugged ?? I am not sure. JP
                     if( BM.vertices.is_initialized() ) {
                         // For all the vertices of this element
                         // we need to update the vertex ids in the bme_vertices_
@@ -1861,7 +1864,7 @@ namespace RINGMesh {
                                 3 ), z_sign * read_double( in, 4 ) ) ;
                         tsurf_vertices.push_back( p ) ;
                     } else if( in.field_matches( 0,
-                            "PATOM" ) | in.field_matches( 0, "ATOM" ) )
+                            "PATOM" ) || in.field_matches( 0, "ATOM" ) )
                     {
                         tsurf_vertices.push_back( tsurf_vertices[ in.
                             field_as_uint(
@@ -2788,7 +2791,7 @@ namespace RINGMesh {
     * corners, contacts and regions.
     *
     */
-    bool BoundaryModelBuilderSurface::build_model()
+    bool BoundaryModelBuilderSurface::build_model( bool build_regions )
     {
         if( model_.nb_surfaces() == 0 ) {
             GEO::Logger::err( "BoundaryModel" )
@@ -2967,134 +2970,139 @@ namespace RINGMesh {
             }
         }
 
-        /// 4. Build the regions
+        if( build_regions ) {
+            /// 4. Build the regions
 
-        // Complete boundary information for surfaces
-        // Needed to compute volumetric regions
-        fill_elements_boundaries( *this, BME::SURFACE ) ;
+            // Complete boundary information for surfaces
+            // Needed to compute volumetric regions
+            fill_elements_boundaries( *this, BME::SURFACE ) ;
 
-        /// 4.1 Sort surfaces around the contacts
-        for( index_t i = 0; i < regions_info.size(); ++i ) {
-            regions_info[ i ].sort() ;
-        }
-
-        if( model_.nb_surfaces() == 1 ) {        
-            if( model_.nb_lines() != 0 ) {
-                GEO::Logger::err( "BoundaryModel" )
-                    << "The unique surface provided to build the model has boundaries " 
-                    << std::endl ;
-                return false ;
+            /// 4.1 Sort surfaces around the contacts
+            for( index_t i = 0; i < regions_info.size(); ++i ) {
+                regions_info[ i ].sort() ;
             }
-            else {
-                /// If there is only one surface, its inside is set to be 
-                /// the + side. No check done
-                bool inside = true ;
-                // Create the region - set the surface on its boundaries
-                bme_t cur_region_id = create_element( BME::REGION ) ;
-                add_element_boundary( cur_region_id, bme_t( BME::SURFACE, 0 ),
-                                     inside ) ;
 
-                // Create the universe region
-                std::vector< std::pair< index_t, bool > > univ_boundaries ;
-                univ_boundaries.push_back( std::pair<index_t, bool>( 0, !inside ) ) ;
-                set_universe( univ_boundaries ) ;                
-            }
-        } else {
-            // Each side of each Surface is in one Region( +side is first )
-            std::vector< index_t > surf_2_region( 2 * model_.nb_surfaces(), NO_ID ) ;
+            if( model_.nb_surfaces() == 1 ) {
+                if( model_.nb_lines() != 0 ) {
+                    GEO::Logger::err( "BoundaryModel" )
+                        << "The unique surface provided to build the model has boundaries "
+                        << std::endl ;
+                    return false ;
+                } else {
+                    /// If there is only one surface, its inside is set to be 
+                    /// the + side. No check done
+                    bool inside = true ;
+                    // Create the region - set the surface on its boundaries
+                    bme_t cur_region_id = create_element( BME::REGION ) ;
+                    add_element_boundary( cur_region_id, bme_t( BME::SURFACE, 0 ),
+                                          inside ) ;
 
-            // Start with the first Surface on its + side
-            std::stack< std::pair< index_t, bool > > S ;
-            S.push( std::pair< index_t, bool >( 0, true ) ) ;
-
-            while( !S.empty() ) {
-                std::pair< index_t, bool > cur = S.top() ;
-                S.pop() ;
-
-                // This side is already assigned
-                if( surf_2_region[ cur.second == true ? 2 * cur.first : 2 *
-                    cur.first + 1 ] != NO_ID ) {
-                    continue ;
+                    // Create the universe region
+                    std::vector< std::pair< index_t, bool > > univ_boundaries ;
+                    univ_boundaries.push_back( std::pair<index_t, bool>( 0, !inside ) ) ;
+                    set_universe( univ_boundaries ) ;
                 }
+            } else {
+                // Each side of each Surface is in one Region( +side is first )
+                std::vector< index_t > surf_2_region( 2 * model_.nb_surfaces(), NO_ID ) ;
 
-                // Create a new region
-                bme_t cur_region_id = create_element( BME::REGION ) ;
+                // Start with the first Surface on its + side
+                std::stack< std::pair< index_t, bool > > S ;
+                S.push( std::pair< index_t, bool >( 0, true ) ) ;
 
-                std::stack< std::pair< index_t, bool > > SR ;
-                SR.push( cur ) ;
-                while( !SR.empty() ) {
-                    std::pair< index_t, bool > s = SR.top() ;
-                    SR.pop() ;
-                    index_t s_id = s.second == true ? 2 * s.first : 2 * s.first + 1 ;
+                while( !S.empty() ) {
+                    std::pair< index_t, bool > cur = S.top() ;
+                    S.pop() ;
 
                     // This side is already assigned
-                    if( surf_2_region[ s_id ] != NO_ID ) {
+                    if( surf_2_region[ cur.second == true ? 2 * cur.first : 2 *
+                        cur.first + 1 ] != NO_ID ) {
                         continue ;
                     }
 
-                    // Add the surface to the current region
-                    add_element_boundary( cur_region_id, bme_t( BME::SURFACE, s.first ),
-                                          s.second ) ;
-                    surf_2_region[ s_id ] = cur_region_id.index ;
+                    // Create a new region
+                    bme_t cur_region_id = create_element( BME::REGION ) ;
 
-                    // Check the other side of the surface and push it in S
-                    index_t s_id_opp = !s.second == true ? 2 * s.first : 2 *
-                        s.first + 1 ;
-                    if( surf_2_region[ s_id_opp ] == NO_ID ) {
-                        S.push( std::pair< index_t, bool >( s.first, !s.second ) ) ;
-                    }
+                    std::stack< std::pair< index_t, bool > > SR ;
+                    SR.push( cur ) ;
+                    while( !SR.empty() ) {
+                        std::pair< index_t, bool > s = SR.top() ;
+                        SR.pop() ;
+                        index_t s_id = s.second == true ? 2 * s.first : 2 * s.first + 1 ;
 
-                    // For each contact, push the next oriented surface that is in the same region
-                    const BoundaryModelElement& surface = model_.surface( s.first ) ;
-                    for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
-                        const std::pair< index_t, bool >& n =
-                            regions_info[ surface.boundary_id( i ).index ].next( s ) ;
-                        index_t n_id = n.second == true ? 2 * n.first : 2 *
-                            n.first + 1 ;
+                        // This side is already assigned
+                        if( surf_2_region[ s_id ] != NO_ID ) {
+                            continue ;
+                        }
 
-                        if( surf_2_region[ n_id ] == NO_ID ) {
-                            SR.push( n ) ;
+                        // Add the surface to the current region
+                        add_element_boundary( cur_region_id, bme_t( BME::SURFACE, s.first ),
+                                              s.second ) ;
+                        surf_2_region[ s_id ] = cur_region_id.index ;
+
+                        // Check the other side of the surface and push it in S
+                        index_t s_id_opp = !s.second == true ? 2 * s.first : 2 *
+                            s.first + 1 ;
+                        if( surf_2_region[ s_id_opp ] == NO_ID ) {
+                            S.push( std::pair< index_t, bool >( s.first, !s.second ) ) ;
+                        }
+
+                        // For each contact, push the next oriented surface that is in the same region
+                        const BoundaryModelElement& surface = model_.surface( s.first ) ;
+                        for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
+                            const std::pair< index_t, bool >& n =
+                                regions_info[ surface.boundary_id( i ).index ].next( s ) ;
+                            index_t n_id = n.second == true ? 2 * n.first : 2 *
+                                n.first + 1 ;
+
+                            if( surf_2_region[ n_id ] == NO_ID ) {
+                                SR.push( n ) ;
+                            }
                         }
                     }
                 }
-            }
 
-            // Check if all the surfaces were visited
-            // If not, this means that there are additionnal regions included in those built
-            if( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID ) != 0 ) {
-                GEO::Logger::err( "BoundaryModel" )
-                    << "Small bubble regions were skipped at model building "
-                    << std::endl ;
-                // Or, most probably, we have a problem before
-                ringmesh_debug_assert( false ) ;
-            }
-         
-            // We need to remove from the regions_ the one corresponding
-            // to the universe_, the one with the biggest volume
-            double max_volume = -1. ;
-            index_t universe_id = NO_ID ;
-            for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-                double cur_volume = BoundaryModelElementMeasure::size( &model_.region( i ) ) ;
-                if( cur_volume > max_volume ) {
-                    max_volume = cur_volume ;
-                    universe_id = i ;
+                // Check if all the surfaces were visited
+                // If not, this means that there are additionnal regions included in those built
+                if( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID ) != 0 ) {
+                    GEO::Logger::err( "BoundaryModel" )
+                        << "Small bubble regions were skipped at model building "
+                        << std::endl ;
+                    // Or, most probably, we have a problem before
+                    ringmesh_debug_assert( false ) ;
                 }
-            }
 
-            const BoundaryModelElement& cur_region = model_.region( universe_id ) ;
-            std::vector< std::pair< index_t, bool > > univ_boundaries(
-                cur_region.nb_boundaries() ) ;
-            for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
-                univ_boundaries[ i ].first = cur_region.boundary( i ).bme_id().index ;
-                univ_boundaries[ i ].second = cur_region.side( i ) ;
-            }
-            set_universe( univ_boundaries ) ;
+                // We need to remove from the regions_ the one corresponding
+                // to the universe_, the one with the biggest volume
+                double max_volume = -1. ;
+                index_t universe_id = NO_ID ;
+                for( index_t i = 0; i < model_.nb_regions(); ++i ) {
+                    double cur_volume = BoundaryModelElementMeasure::size( &model_.region( i ) ) ;
+                    if( cur_volume > max_volume ) {
+                        max_volume = cur_volume ;
+                        universe_id = i ;
+                    }
+                }
 
-            // Erase that region
-            std::set< bme_t > to_erase ;
-            to_erase.insert( bme_t( BME::REGION, universe_id ) ) ;
-            remove_elements( to_erase ) ;
+                const BoundaryModelElement& cur_region = model_.region( universe_id ) ;
+                std::vector< std::pair< index_t, bool > > univ_boundaries(
+                    cur_region.nb_boundaries() ) ;
+                for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
+                    univ_boundaries[ i ].first = cur_region.boundary( i ).bme_id().index ;
+                    univ_boundaries[ i ].second = cur_region.side( i ) ;
+                }
+                set_universe( univ_boundaries ) ;
+
+                // Erase that region
+                std::set< bme_t > to_erase ;
+                to_erase.insert( bme_t( BME::REGION, universe_id ) ) ;
+                remove_elements( to_erase ) ;
+            }
         }
+
+        // Deliberated clear of the model vertices 
+        // To force their recomputation
+        model_.vertices.clear() ;
 
         // Finish up the model and check its validity
         return end_model() ;

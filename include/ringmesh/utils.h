@@ -58,6 +58,12 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
+    /*!
+     * \brief To load a Gocad TSurf surface .ts
+     * \todo Create the appropriate Mesh handler
+     */
+    bool RINGMESH_API load_ts_file( GEO::Mesh& M, const std::string& file_name ) ;
+
 
     /*! @brief A safer narrow casting function of type S to type T
      *  \return static_cast< T >( in ) 
@@ -384,8 +390,8 @@ namespace RINGMesh {
             return intersect ;
         }
 
-        template< class T >
-        static bool contains( const std::vector< T >& v, const T& t, bool sorted = false )
+        template< typename T, typename container >
+        static bool contains( const container& v, const T& t, bool sorted = false )
         {
             if( sorted )
                 return find_sorted( v, t ) != NO_ID ;
@@ -393,10 +399,10 @@ namespace RINGMesh {
                 return find( v, t ) != NO_ID ;
         }
 
-        template< class T >
-        static index_t find( const std::vector< T >& v, const T& t )
+        template< typename T, typename container >
+        static index_t find( const container& v, const T& t )
         {
-            typename std::vector< T >::const_iterator it = std::find(
+            typename container::const_iterator it = std::find(
                 v.begin(), v.end(), t ) ;
             if( it == v.end() )
                 return NO_ID ;
@@ -404,12 +410,12 @@ namespace RINGMesh {
                 return it - v.begin() ;
         }
 
-        template< class T >
-        static index_t find_sorted( const std::vector< T >& v, const T& t )
+        template< typename T, typename container >
+        static index_t find_sorted( const container& v, const T& t )
         {
-            typename std::vector< T >::const_iterator low = std::lower_bound(
+            typename container::const_iterator low = std::lower_bound(
                 v.begin(), v.end(), t ) ;
-            if( low == v.end() )
+            if( low == v.end() || t < *low )
                 return NO_ID ;
             else
                 return low - v.begin() ;

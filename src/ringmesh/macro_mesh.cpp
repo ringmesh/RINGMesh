@@ -628,7 +628,7 @@ namespace RINGMesh {
     void MacroMeshCells::initialize()
     {
         mesh_cell_ptr_.resize( NB_CELL_TYPES * mm_.nb_meshes() + 1, 0 ) ;
-        index_t total_adjacents = 0 ;
+        mesh_cell_adjacent_ptr_.resize( mm_.nb_meshes() + 1, 0 ) ;
         index_t cell_access[4] = { 0, 3, 2, 1 } ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_.mesh( m ) ;
@@ -636,19 +636,23 @@ namespace RINGMesh {
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                 mesh_cell_ptr_[NB_CELL_TYPES * m + cell_access[mesh.cells.type( c )]
                     + 1]++ ;
-                total_adjacents += mesh.cells.nb_facets( c ) ;
+                mesh_cell_adjacent_ptr_[m + 1] += mesh.cells.nb_facets( c ) ;
             }
         }
         for( index_t m = 1; m < mesh_cell_ptr_.size() - 1; m++ ) {
             mesh_cell_ptr_[m + 1] += mesh_cell_ptr_[m] ;
         }
+        for( index_t m = 1; m < mesh_cell_adjacent_ptr_.size() - 1; m++ ) {
+            mesh_cell_adjacent_ptr_[m + 1] += mesh_cell_adjacent_ptr_[m] ;
+        }
         cells_.resize( mesh_cell_ptr_.back() ) ;
+        cell_adjacents_.resize( mesh_cell_adjacent_ptr_.back() ) ;
 
         index_t nb_vertices = mm_.vertices.nb_vertices() ;
         std::vector< std::vector< index_t > > cells_around_vertex( nb_vertices ) ;
-        cell_adjacents_.reserve( total_adjacents ) ;
         std::vector< index_t > cur_cell_index_type( NB_CELL_TYPES * mm_.nb_meshes(),
             0 ) ;
+        std::vector< index_t > cur_cell_adj_type( mm_.nb_meshes(), 0 ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_.mesh( m ) ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
@@ -669,7 +673,8 @@ namespace RINGMesh {
                                 mesh_cell_ptr_[NB_CELL_TYPES * m] + c ) ;
                         }
                     }
-                    cell_adjacents_.push_back( adj ) ;
+                    cell_adjacents_[mesh_cell_adjacent_ptr_[m]
+                        + cur_cell_adj_type[m]++ ] = adj ;
                 }
             }
         }
@@ -686,7 +691,7 @@ namespace RINGMesh {
                     if( adj == GEO::NO_CELL ) {
                         index_t prev_vertex_id = mm_.vertices.vertex_id( m,
                             mesh.cells.facet_vertex( c, f, 0 ) ) ;
-                        std::vector< index_t >& prev_cells =
+                        std::vector< index_t > prev_cells =
                             cells_around_vertex[prev_vertex_id] ;
                         index_t size_hint = prev_cells.size() ;
                         std::vector< index_t > intersection( size_hint ) ;
@@ -694,7 +699,7 @@ namespace RINGMesh {
                             v++ ) {
                             index_t vertex_id = mm_.vertices.vertex_id( m,
                                 mesh.cells.facet_vertex( c, f, v ) ) ;
-                            std::vector< index_t >& cells =
+                            const std::vector< index_t >& cells =
                                 cells_around_vertex[vertex_id] ;
                             intersection.erase(
                                 std::set_intersection( prev_cells.begin(),
@@ -704,13 +709,12 @@ namespace RINGMesh {
                             prev_cells = intersection ;
                         }
 
-                        if( intersection.size() > 1 ) {
-                            ringmesh_debug_assert( intersection.size() == 2 ) ;
+                        if( intersection.size() == 2 ) {
                             index_t new_adj =
                                 intersection[0]
                                     == mesh_cell_ptr_[NB_CELL_TYPES * m] + c ?
                                     intersection[1] : intersection[0] ;
-                            cell_adjacents_[mesh_cell_ptr_[NB_CELL_TYPES * m]
+                            cell_adjacents_[mesh_cell_adjacent_ptr_[m]
                                 + mesh.cells.facets_begin( c ) + f] = new_adj ;
                         }
                     }
@@ -736,7 +740,7 @@ namespace RINGMesh {
     index_t MacroMeshCells::cell_adjacent( index_t m, index_t c, index_t f ) const
     {
         test_initialize() ;
-        return cell_adjacents_[mesh_begin( m )
+        return cell_adjacents_[mesh_cell_adjacent_ptr_[m]
             + mm_.mesh( m ).cells.facets_begin( c ) + f] ;
     }
 

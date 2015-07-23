@@ -1293,7 +1293,7 @@ namespace RINGMesh {
                 << "/"
                 << "invalid_surf_"
                 << bme_id().index << ".obj"  ;
-            model().save_surface_as_obj_file( bme_id().index, file.str() ) ;
+            model().save_surface_as_eobj_file( bme_id().index, file.str() ) ;
 
 #endif  
         }        
