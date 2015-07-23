@@ -1979,20 +1979,20 @@ namespace RINGMesh {
         }
     }
 
-    ColocaterANN::ColocaterANN( const std::vector< Edge >& edges )
-    {
-        index_t nb_vertices = edges.size() ;
-        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices * 3] ;
-        for( index_t i = 0; i < nb_vertices; i++ ) {
-            vec3 barycenter( ( edges[i].value( 0 ) + edges[i].value( 1 ) ) / 2.0 ) ;
-            index_t index_in_ann = 3 * i ;
-            ann_points_[index_in_ann] = barycenter.x ;
-            ann_points_[index_in_ann + 1] = barycenter.y ;
-            ann_points_[index_in_ann + 2] = barycenter.z ;
-        }
-        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
-    }
+//    ColocaterANN::ColocaterANN( const std::vector< Edge >& edges )
+//    {
+//        index_t nb_vertices = edges.size() ;
+//        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+//        ann_points_ = new double[nb_vertices * 3] ;
+//        for( index_t i = 0; i < nb_vertices; i++ ) {
+//            vec3 barycenter( ( edges[i].value( 0 ) + edges[i].value( 1 ) ) / 2.0 ) ;
+//            index_t index_in_ann = 3 * i ;
+//            ann_points_[index_in_ann] = barycenter.x ;
+//            ann_points_[index_in_ann + 1] = barycenter.y ;
+//            ann_points_[index_in_ann + 2] = barycenter.z ;
+//        }
+//        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+//    }
 
     void ColocaterANN::set_points( const std::vector< vec3 >& vertices )
     {
