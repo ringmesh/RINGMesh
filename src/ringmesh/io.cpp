@@ -2833,7 +2833,47 @@ namespace RINGMesh {
                 out << "var scene,camera,material,light,ambientLight,renderer, keyboard, raycaster;" << std::endl ;
                 out << "var meshes=[];" << std::endl ;
                 out << "var mouse = new THREE.Vector2(), INTERSECTED;" << std::endl ;
-                out << "init();animate();" << std::endl ;
+
+
+                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+                    const BoundaryModelElement& interf = model.one_interface( i ) ;
+                    if( interf.is_on_voi() ) continue ;
+
+
+                    out.precision( 16 ) ;
+                    index_t nb_pts = 0 ;
+                    index_t nb_trgl = 0 ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        const BoundaryModelElement& surface = interf.child( s ) ;
+                        nb_pts += surface.nb_vertices() ;
+                        nb_trgl += surface.nb_cells() ;
+                    }
+                    out << "var " << interf.name() << " = [ " << nb_pts << sep
+                        << nb_trgl ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        const BoundaryModelElement& surface = interf.child( s ) ;
+                        for( index_t p = 0; p < surface.nb_vertices(); p++ ) {
+                            const vec3& point = surface.vertex( p ) ;
+                            out << sep << point.x << sep << point.y << sep
+                                << point.z ;
+                        }
+                    }
+                    index_t offset = 0 ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        const Surface& surface =
+                            dynamic_cast< const Surface& >( interf.child( s ) ) ;
+                        for( index_t c = 0; c < surface.nb_cells(); c++ ) {
+                            out << sep << offset + surface.surf_vertex_id( c, 0 )
+                                << sep << offset + surface.surf_vertex_id( c, 1 )
+                                << sep << offset + surface.surf_vertex_id( c, 2 ) ;
+                        }
+                        offset += surface.nb_vertices() ;
+                    }
+                    out << " ] ;" << std::endl ;
+                }
+
+
+				out << "init();animate();" << std::endl ;
                 out << "function loadObjects(){" << std::endl ;
                 out << "var i = 0;" << std::endl ;
 
@@ -2845,39 +2885,6 @@ namespace RINGMesh {
                         << GEO::Numeric::random_int32() % 256 << ","
                         << GEO::Numeric::random_int32() % 256 << ","
                         << GEO::Numeric::random_int32() % 256 << ")\");" << std::endl ;
-                    std::ostringstream oss ;
-                    oss << var_path << "/" << interf.name() << ".js" ;
-                    std::ofstream out_surf( oss.str().c_str() ) ;
-                    out_surf.precision( 16 ) ;
-                    index_t nb_pts = 0 ;
-                    index_t nb_trgl = 0 ;
-                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        const BoundaryModelElement& surface = interf.child( s ) ;
-                        nb_pts += surface.nb_vertices() ;
-                        nb_trgl += surface.nb_cells() ;
-                    }
-                    out_surf << "var " << interf.name() << " = [ " << nb_pts << sep
-                        << nb_trgl ;
-                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        const BoundaryModelElement& surface = interf.child( s ) ;
-                        for( index_t p = 0; p < surface.nb_vertices(); p++ ) {
-                            const vec3& point = surface.vertex( p ) ;
-                            out_surf << sep << point.x << sep << point.y << sep
-                                << point.z ;
-                        }
-                    }
-                    index_t offset = 0 ;
-                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        const Surface& surface =
-                            dynamic_cast< const Surface& >( interf.child( s ) ) ;
-                        for( index_t c = 0; c < surface.nb_cells(); c++ ) {
-                            out_surf << sep << offset + surface.surf_vertex_id( c, 0 )
-                                << sep << offset + surface.surf_vertex_id( c, 1 )
-                                << sep << offset + surface.surf_vertex_id( c, 2 ) ;
-                        }
-                        offset += surface.nb_vertices() ;
-                    }
-                    out_surf << " ] ;" << std::endl ;
                 }
 
                 out << "addMeshes();" << std::endl ;
