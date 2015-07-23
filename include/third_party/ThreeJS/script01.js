@@ -16,20 +16,11 @@ function init() {
     scene.add(camera)
 };
 
-function animate() {
-    requestAnimationFrame(animate);
-    render();
-    update()
-};
-
-function update() {
-    controls.update();
-    stats.update()
-};
-
-function render() {
+var render = function render() {
+    requestAnimationFrame(render);
     light.position.set(camera.position.x, camera.position.y, camera.position.z);
-    renderer.render(scene, camera)
+    renderer.render(scene, camera) ;
+    controls.update();
 };
 
 function setCameraPlace() {
@@ -57,8 +48,6 @@ function setCameraPlace() {
         }
     }
 
-
-
     center = new THREE.Vector3((minX + maxX) * 0.5, (minY + maxY) * 0.5, (minZ + maxZ) * 0.5);
     distance = Math.sqrt((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY) + (maxZ - minZ) * (maxZ - minZ));
     for (obj = 0; obj < meshes.length; ++obj) {
@@ -74,7 +63,6 @@ function setCameraPlace() {
 
 function initControl() {
     controls = new THREE.TrackballControls(camera, renderer.domElement);
-    controls.addEventListener('change');
     controls.rotateSpeed *= 2.0;
     controls.zoomSpeed *= 2.0;
     controls.panSpeed *= 2.0
@@ -95,8 +83,6 @@ function initLights() {
     light.position.set(camera.position.x, camera.position.y, camera.position.z);
     scene.add(light)
 };
-
-
 
 function loadTSurf(numbers) {
     number_of_points = numbers[0];
@@ -121,30 +107,28 @@ function loadTSurf(numbers) {
 
 function loadPLine(numbers){
 
-	var type = THREE.LineStrip ; //THREE.LinePieces
-	var geometry = new THREE.Geometry();
-	for (var p = 0; p < numbers.length / 3 ; p++) {
-		var point = new THREE.Vector3(numbers[3*p+0],numbers[3*p+1],numbers[3*p+2]);
-		geometry.vertices.push(point);
-	}
-	var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: Math.random() * 0xffffff , linewidth:5 }  ), type );
-	 meshes.push(line);
+    var type = THREE.LineStrip ; //THREE.LinePieces
+    var geometry = new THREE.Geometry();
+    for (var p = 0; p < numbers.length / 3 ; p++) {
+        var point = new THREE.Vector3(numbers[3*p+0],numbers[3*p+1],numbers[3*p+2]);
+        geometry.vertices.push(point);
+    }
+    var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: Math.random() * 0xffffff , linewidth:5 }  ), type );
+     meshes.push(line);
 }
 
 function loadTSolid(numbers){
-	loadTSurf(numbers);
+    loadTSurf(numbers);
 }
 
 function loadVSet(numbers){
-
-	var geometry = new THREE.Geometry();
-	for (var p = 0; p < numbers.length / 3 ; p++) {
-		var point = new THREE.Vector3(numbers[3*p+0],numbers[3*p+1],numbers[3*p+2]);
-		geometry.vertices.push(point);
-	}
-	var pointCloud = new THREE.PointCloud( geometry, new THREE.PointCloudMaterial( { color: Math.random() * 0xffffff  } ) );
-	 meshes.push(pointCloud);
-
+    var geometry = new THREE.Geometry();
+    for (var p = 0; p < numbers.length / 3 ; p++) {
+        var point = new THREE.Vector3(numbers[3*p+0],numbers[3*p+1],numbers[3*p+2]);
+        geometry.vertices.push(point);
+    }
+    var pointCloud = new THREE.PointCloud( geometry, new THREE.PointCloudMaterial( { color: Math.random() * 0xffffff  } ) );
+     meshes.push(pointCloud);
 }
 
 
