@@ -2814,13 +2814,6 @@ namespace RINGMesh {
                 print_script01(out) ;
                 out << "</script>" << std::endl ;
 
-                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const BoundaryModelElement& interf = model.one_interface( i ) ;
-                    if( interf.is_on_voi() ) continue ;
-                    out << "<script src=\"var/" << interf.name() << ".js\"></script>" << std::endl ;
-
-                }
-
                 out << "" << std::endl ;
                 out << "<script>" << std::endl ;
                 out << "var scene,camera,material,light,ambientLight,renderer, keyboard, raycaster;" << std::endl ;
