@@ -96,6 +96,8 @@ namespace RINGMesh {
 
         class RINGMESH_API BoundaryModelIOHandler: public GEO::Counted {
         public:
+            static void initialize() ;
+
             static BoundaryModelIOHandler* create( const std::string& format ) ;
 
             static BoundaryModelIOHandler* get_handler(
@@ -126,6 +128,8 @@ namespace RINGMesh {
 
         class RINGMESH_API MacroMeshIOHandler: public GEO::Counted {
         public:
+            static void initialize() ;
+
             static MacroMeshIOHandler* create( const std::string& format ) ;
 
             static MacroMeshIOHandler* get_handler( const std::string& filename ) ;
@@ -153,6 +157,8 @@ namespace RINGMesh {
 
         class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
         public:
+            static void initialize() ;
+
             static WellGroupIOHandler* create( const std::string& format ) ;
 
             static WellGroupIOHandler* get_handler( const std::string& filename ) ;
