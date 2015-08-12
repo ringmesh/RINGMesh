@@ -54,6 +54,12 @@ namespace {
             for( index_t mat_j = 0; mat_j < 4; ++mat_j ) {
                 float64 diff = lhs( mat_i, mat_j ) - rhs( mat_i, mat_j ) ;
                 if( diff > epsilon || diff < -epsilon ) {
+                    GEO::Logger::out( "TEST" ) << "Error at " << mat_i << " , "
+                        << mat_j << std::endl ;
+                    GEO::Logger::out( "TEST" ) << "One is " << lhs( mat_i, mat_j )
+                        << std::endl ;
+                    GEO::Logger::out( "TEST" ) << "Other is " << rhs( mat_i, mat_j )
+                        << std::endl ;
                     return false ;
                 }
             }
@@ -96,7 +102,35 @@ int main( int argc, char** argv )
     result( 3, 3 ) = 1 ;
 
     if( !are_equal_matrices( rot_mat, result ) ) {
-        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+        GEO::Logger::out( "TEST" ) << "FAILED for angle 90" << std::endl ;
+        return 1 ;
+    }
+
+    angle = 180 ;
+    Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
+        rot_mat ) ;
+    result( 0, 0 ) = -1 ;
+    result( 0, 1 ) = 0 ;
+    result( 0, 2 ) = 0 ;
+    result( 0, 3 ) = 0 ;
+
+    result( 1, 0 ) = 0 ;
+    result( 1, 1 ) = -1 ;
+    result( 1, 2 ) = 0 ;
+    result( 1, 3 ) = 0 ;
+
+    result( 2, 0 ) = 0 ;
+    result( 2, 1 ) = 0 ;
+    result( 2, 2 ) = 1 ;
+    result( 2, 3 ) = 0 ;
+
+    result( 3, 0 ) = 0 ;
+    result( 3, 1 ) = 0 ;
+    result( 3, 2 ) = 0 ;
+    result( 3, 3 ) = 1 ;
+
+    if( !are_equal_matrices( rot_mat, result ) ) {
+        GEO::Logger::out( "TEST" ) << "FAILED for angle 180" << std::endl ;
         return 1 ;
     }
 
