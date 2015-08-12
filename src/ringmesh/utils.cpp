@@ -1151,7 +1151,7 @@ namespace RINGMesh {
         GEO::Matrix< float64, 4 >& rot_mat )
     {
         // Note: Rotation is impossible about an axis with null length.
-        ringmesh_debug_assert( axis == vec3() ) ;
+        ringmesh_debug_assert( axis != vec3() ) ;
 
         if( degrees ) {
             float64 pi = 3.141592653589793 ;

@@ -38,8 +38,6 @@
  *     FRANCE
  */
 
-//#include <ringmesh/boundary_model.h>
-//#include <ringmesh/io.h>
 #include <ringmesh/utils.h>
 #include <geogram/basic/logger.h>
 
@@ -75,63 +73,117 @@ int main( int argc, char** argv )
         << "Test rotations of a boundary model and a macro mesh" << std::endl ;
 
     const vec3 origin( 0, 0, 0 ) ;
-    const vec3 axis( 0, 0, 1 ) ;
-    float64 angle = 90 ;
-    GEO::Matrix< float64, 4 > rot_mat ;
-    Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
-        rot_mat ) ;
+    const float64 pi = 3.14159265359 ;
+    const float64 step = 0.1 ;
+
+    GEO::Matrix< float64, 4 > rot_mat_degree ;
+    GEO::Matrix< float64, 4 > rot_mat_radian ;
     GEO::Matrix< float64, 4 > result ;
-    result( 0, 0 ) = 0 ;
-    result( 0, 1 ) = -1 ;
-    result( 0, 2 ) = 0 ;
     result( 0, 3 ) = 0 ;
-
-    result( 1, 0 ) = 1 ;
-    result( 1, 1 ) = 0 ;
-    result( 1, 2 ) = 0 ;
     result( 1, 3 ) = 0 ;
-
-    result( 2, 0 ) = 0 ;
-    result( 2, 1 ) = 0 ;
-    result( 2, 2 ) = 1 ;
     result( 2, 3 ) = 0 ;
-
     result( 3, 0 ) = 0 ;
     result( 3, 1 ) = 0 ;
     result( 3, 2 ) = 0 ;
     result( 3, 3 ) = 1 ;
 
-    if( !are_equal_matrices( rot_mat, result ) ) {
-        GEO::Logger::out( "TEST" ) << "FAILED for angle 90" << std::endl ;
-        return 1 ;
+    // Tests rotation along x axis
+    vec3 axis( 1, 0, 0 ) ;
+    for( float64 angle = 0.; angle <= 360.; angle += step ) {
+        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
+            rot_mat_degree ) ;
+        float64 angle_rad = angle * pi / 180. ;
+        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
+            rot_mat_radian ) ;
+        result( 0, 0 ) = 1 ;
+        result( 0, 1 ) = 0 ;
+        result( 0, 2 ) = 0 ;
+
+        result( 1, 0 ) = 0 ;
+        result( 1, 1 ) = std::cos( angle_rad ) ;
+        result( 1, 2 ) = -std::sin( angle_rad ) ;
+
+        result( 2, 0 ) = 0 ;
+        result( 2, 1 ) = std::sin( angle_rad ) ;
+        result( 2, 2 ) = std::cos( angle_rad ) ;
+
+        if( !are_equal_matrices( rot_mat_degree, result ) ) {
+            GEO::Logger::out( "TEST" ) << "FAILED for axis x for angle " << angle
+                << " degrees." << std::endl ;
+            return 1 ;
+        }
+
+        if( !are_equal_matrices( rot_mat_radian, result ) ) {
+            GEO::Logger::out( "TEST" ) << "FAILED for axis x for angle " << angle_rad
+                << " radians." << std::endl ;
+            return 1 ;
+        }
     }
 
-    angle = 180 ;
-    Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
-        rot_mat ) ;
-    result( 0, 0 ) = -1 ;
-    result( 0, 1 ) = 0 ;
-    result( 0, 2 ) = 0 ;
-    result( 0, 3 ) = 0 ;
+    // Tests rotation along y axis
+    axis = vec3( 0, 1, 0 ) ;
+    for( float64 angle = 0.; angle <= 360.; angle += step ) {
+        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
+            rot_mat_degree ) ;
+        float64 angle_rad = angle * pi / 180. ;
+        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
+            rot_mat_radian ) ;
+        result( 0, 0 ) = std::cos( angle_rad ) ;
+        result( 0, 1 ) = 0 ;
+        result( 0, 2 ) = std::sin( angle_rad ) ;
 
-    result( 1, 0 ) = 0 ;
-    result( 1, 1 ) = -1 ;
-    result( 1, 2 ) = 0 ;
-    result( 1, 3 ) = 0 ;
+        result( 1, 0 ) = 0 ;
+        result( 1, 1 ) = 1 ;
+        result( 1, 2 ) = 0 ;
 
-    result( 2, 0 ) = 0 ;
-    result( 2, 1 ) = 0 ;
-    result( 2, 2 ) = 1 ;
-    result( 2, 3 ) = 0 ;
+        result( 2, 0 ) = -std::sin( angle_rad ) ;
+        result( 2, 1 ) = 0 ;
+        result( 2, 2 ) = std::cos( angle_rad ) ;
 
-    result( 3, 0 ) = 0 ;
-    result( 3, 1 ) = 0 ;
-    result( 3, 2 ) = 0 ;
-    result( 3, 3 ) = 1 ;
+        if( !are_equal_matrices( rot_mat_degree, result ) ) {
+            GEO::Logger::out( "TEST" ) << "FAILED for axis y for angle " << angle
+                << " degrees." << std::endl ;
+            return 1 ;
+        }
 
-    if( !are_equal_matrices( rot_mat, result ) ) {
-        GEO::Logger::out( "TEST" ) << "FAILED for angle 180" << std::endl ;
-        return 1 ;
+        if( !are_equal_matrices( rot_mat_radian, result ) ) {
+            GEO::Logger::out( "TEST" ) << "FAILED for axis y for angle " << angle_rad
+                << " radians." << std::endl ;
+            return 1 ;
+        }
+    }
+
+    // Tests rotation along z axis
+    axis = vec3( 0, 0, 1 ) ;
+    for( float64 angle = 0.; angle <= 360.; angle += step ) {
+        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
+            rot_mat_degree ) ;
+        float64 angle_rad = angle * pi / 180. ;
+        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
+            rot_mat_radian ) ;
+        result( 0, 0 ) = std::cos( angle_rad ) ;
+        result( 0, 1 ) = -std::sin( angle_rad ) ;
+        result( 0, 2 ) = 0 ;
+
+        result( 1, 0 ) = std::sin( angle_rad ) ;
+        result( 1, 1 ) = std::cos( angle_rad ) ;
+        result( 1, 2 ) = 0 ;
+
+        result( 2, 0 ) = 0 ;
+        result( 2, 1 ) = 0 ;
+        result( 2, 2 ) = 1 ;
+
+        if( !are_equal_matrices( rot_mat_degree, result ) ) {
+            GEO::Logger::out( "TEST" ) << "FAILED for axis z for angle " << angle
+                << " degrees." << std::endl ;
+            return 1 ;
+        }
+
+        if( !are_equal_matrices( rot_mat_radian, result ) ) {
+            GEO::Logger::out( "TEST" ) << "FAILED for axis z for angle " << angle_rad
+                << " radians." << std::endl ;
+            return 1 ;
+        }
     }
 
     GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
