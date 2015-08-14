@@ -799,6 +799,36 @@ namespace RINGMesh {
         model_vertex_id_.unbind() ;
     }
 
+    bool BoundaryModelMeshElement::are_model_vertex_indices_valid() const
+    {
+        bool valid = true ;
+        // For all vertices
+        // Check that the global vertex has an index backward to 
+        // the vertex of this element
+        for( index_t v = 0; v < nb_vertices(); ++v ) {
+            index_t model_v = model_vertex_id( v ) ;
+            
+            const std::vector< BoundaryModelVertices::VertexInBME >&
+                backward = model_->vertices.bme_vertices( model_v ) ;
+
+            BoundaryModelVertices::VertexInBME cur_v( bme_id(), v ) ;
+            index_t count_v = std::count( backward.begin(), backward.end(), cur_v ) ;
+
+            if( count_v != 1 ) {
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << bme_id() 
+                    << " vertex " << v 
+                    << " appears " << count_v 
+                    << " in the related global model vertex " << model_v 
+                    << std::endl ;                    
+                valid = false ;
+            }
+        }
+        return valid ;
+    }
+
+
+
     /*!
      * @brief Sets the index of the matching point in the BoundaryModel
      *

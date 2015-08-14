@@ -674,7 +674,8 @@ namespace {
      * @details For BMME, get the contents of the in_boundary vector
      *          For high level elements, determine in_boundary high level elements
      */
-    void in_boundary_bme( const BME& E, std::vector< BME::bme_t >& in_boundary )
+    void in_boundary_bme( 
+        const BME& E, std::vector< BME::bme_t >& in_boundary )
     {
         in_boundary.clear() ;
 
@@ -865,7 +866,7 @@ namespace {
     /*! 
      * @brief Check the geometrical-topological consistency of the model
      * @details Verification is based on the information stored by the unique
-     *          vertices of the model
+     *          vertices of the model which validity must be checked beforehand
      * @todo Check that the model vertices are consistent with the model_vertex_ids
      *       stored at by the BMME
      */
@@ -1809,6 +1810,11 @@ namespace RINGMesh {
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             valid = surface_boundary_valid( surface( i ) ) && valid ;
         }
+        /// \todo Check that all Line segments correspond to an Surface
+        /// edge that is on the boundary
+        // With the current tests, it is possible we miss this problem,
+        // but I am not sure (JP - 08/2015)
+
 
         /// 5. Check non-manifold edges using a global
         /// triangulated mesh corresponding to this model.
