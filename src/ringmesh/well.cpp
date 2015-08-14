@@ -48,6 +48,35 @@
 #include <cmath>
 #include <stack>
 
+namespace {
+    using namespace RINGMesh ;
+
+    /*!
+    * @brief Returns the index of the region of the model neighboring the surface.
+    * @param[in] model to consider
+    * @param[in] surface_part_id Index of the Surface
+    * @param[in] side Side of the Surface
+    * @return The region index or NO_ID if none found.
+    */
+    index_t find_region( const BoundaryModel& BM, index_t surface_part_id, bool side )
+    {
+        ringmesh_debug_assert( surface_part_id < BM.nb_surfaces() ) ;
+        BME::bme_t cur_surface( BME::SURFACE, surface_part_id ) ;
+        /// @todo It would be better to directly check the region
+        /// adjacent to the Surface.
+        for( index_t r = 0; r < BM.nb_regions(); r++ ) {
+            const BME& cur_region = BM.region( r ) ;
+            for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
+                if( cur_region.side( s ) == side
+                    && cur_region.boundary_id( s ) == cur_surface ) {
+                    return r ;
+                }
+            }
+        }
+        return BME::NO_ID ;
+    }
+}
+
 namespace RINGMesh {
 
     WellMesh::WellMesh( const Well* well )
@@ -445,8 +474,8 @@ namespace RINGMesh {
                             model_->surface( intersections[index].surface_id_ ).facet_normal(
                                 intersections[index].trgl_id_ ) ) > 0 ;
                     last_sign = sign ;
-                    index_t region = model_->find_region(
-                        intersections[index].surface_id_, sign ) ;
+                    index_t region = find_region(
+                        *model_, intersections[index].surface_id_, sign ) ;
                     if( region != NO_ID ) {
                         index_t new_well_part_id = new_well.create_part( region ) ;
                         WellPart& well_part = new_well.part( new_well_part_id ) ;
@@ -490,7 +519,7 @@ namespace RINGMesh {
             }
             well_points.push_back( v_to ) ;
         }
-        index_t region = model_->find_region( start.surface_id_, !last_sign ) ;
+        index_t region = find_region( *model_, start.surface_id_, !last_sign ) ;
         if( region != NO_ID ) {
 //            WellPart well_part ;
 //            well_part.set_well( &new_well ) ;

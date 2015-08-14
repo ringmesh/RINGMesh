@@ -342,12 +342,13 @@ namespace RINGMesh {
     {
         region_ = region ;
         index_t nb_surfaces = region_->nb_boundaries() ;
-        std::vector< const BoundaryModelElement* > unique_surfaces ;
+        std::vector< const BoundaryModelMeshElement* > unique_surfaces ;
         unique_surfaces.reserve( nb_surfaces ) ;
         std::vector< index_t > surface_id ;
         index_t nb_surface_points = 0, nb_facets = 0 ;
         for( index_t s = 0; s < nb_surfaces; s++ ) {
-            const BoundaryModelElement& surface = region_->boundary( s ) ;
+            const Surface& surface = 
+                dynamic_cast< const Surface& >( region_->boundary( s ) ) ;
             if( Utils::contains( surface_id, surface.bme_id().index ) ) continue ;
             nb_surface_points += surface.nb_vertices() ;
             nb_facets += surface.nb_cells() ;

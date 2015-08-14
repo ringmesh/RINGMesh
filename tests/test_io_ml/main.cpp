@@ -42,6 +42,8 @@
 #include <ringmesh/io.h>
 #include <ringmesh/utils.h>
 
+#include <geogram/basic/logger.h>
+
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;

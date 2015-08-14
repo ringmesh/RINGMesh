@@ -43,6 +43,7 @@
 #include <ringmesh/boundary_model_builder.h>
 #include <ringmesh/utils.h>
 
+#include <geogram/basic/logger.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_preprocessing.h>

@@ -44,6 +44,7 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
+#include <geogram/basic/file_system.h>
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/basic/string.h>
 #include <geogram/points/colocate.h>
@@ -726,7 +727,7 @@ namespace {
                     M.vertices.create_vertices( borders.size() ) ;
                     for( index_t i = 0; i < borders.size(); ++i ) {
                         M.vertices.point( i ) =
-                            E.model().element( borders[i] ).vertex() ;
+                            E.model().mesh_element( borders[i] ).vertex() ;
                     }
                 } else {
                     // Put an attribute on the ModelVertices to know its index
@@ -738,7 +739,7 @@ namespace {
 
                     // Add the vertices 
                     for( index_t i = 0; i < borders.size(); ++i ) {
-                        const BME& b = model.element( borders[i] ) ;
+                        const BMME& b = model.mesh_element( borders[i] ) ;
                         for( index_t v = 0; v < b.nb_vertices(); ++v ) {
                             index_t global_v = b.model_vertex_id( v ) ;
                             if( old2new[global_v] == NO_ID ) {
@@ -1170,7 +1171,7 @@ namespace RINGMesh {
         for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
             BME::TYPE T = static_cast< BME::TYPE >( t ) ;
             for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
-                nb += bm_.element( bme_t( T, e ) ).nb_vertices() ;
+                nb += bm_.mesh_element( bme_t( T, e ) ).nb_vertices() ;
             }
         }
         // Get out if no vertices
@@ -1231,7 +1232,7 @@ namespace RINGMesh {
 
     void BoundaryModelVertices::remove_colocated()
     {
-        // Go out if nothing to do
+        // Get out if nothing to do
         // and compute the points if they are not initialized yet
         if( nb() == 0 ) {
             return ;
@@ -1257,7 +1258,7 @@ namespace RINGMesh {
         const std::vector< VertexInBME >& bme_v = bme_vertices( v ) ;
         for( index_t i = 0; i < bme_v.size(); i++ ) {
             const VertexInBME& info = bme_v[i] ;
-            const_cast< BME& >( bm_.element( BME::bme_t( info.bme_id ) ) ).set_vertex(
+            const_cast< BMME& >( bm_.mesh_element( BME::bme_t( info.bme_id ) ) ).set_vertex(
                 info.v_id, point, false ) ;
         }
     }
@@ -1319,7 +1320,7 @@ namespace RINGMesh {
         }
     }
 
-    // Deprecated - to remove - the name is stupidly annoying
+    /// Deprecated - to remove - the name is stupidly annoying
     index_t BoundaryModelVertices::nb_unique_vertices() const
     {
         return nb() ;
@@ -1368,7 +1369,7 @@ namespace RINGMesh {
         // Having functions, permit to easily change the way to update
         // this Kdtree. Do not remove them. JP
         // We do not need to reset or unref anything - this is done when 
-        // I new tree is computed. Jeanne.
+        // a new tree is computed. Jeanne.
         kdtree_to_update_ = true ;
     }
 
@@ -1392,8 +1393,8 @@ namespace RINGMesh {
 
         // Fill the delete information for geogram
         // Recycle the to_delete vertex to get the mapping between
-        // new and old points. This implemented to be similar 
-        // to what is done in the delete_elements function in geogram
+        // new and old points. This is implemented to be the same 
+        // as what is done in the delete_elements function in geogram
         index_t nb_todelete = 0 ;
         index_t cur = 0 ;
         for( index_t v = 0; v < nb(); ++v ) {
@@ -1510,6 +1511,13 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
+    BoundaryModel::BoundaryModel()
+        : vertices( *this ),
+            debug_directory_( GEO::FileSystem::get_current_working_directory() )
+    {
+    }
+    
+    
     BoundaryModel::~BoundaryModel()
     {
         for( index_t t = BME::CORNER; t < BME::NO_TYPE; ++t ) {
@@ -1629,28 +1637,7 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @brief Returns the index of the region neighboring the surface.
-     * @param[in] surface_part_id Index of the Surface
-     * @param[in] side Side of the Surface
-     * @return The region index or NO_ID if none found.
-     */
-    index_t BoundaryModel::find_region( index_t surface_part_id, bool side ) const
-    {
-        ringmesh_debug_assert( surface_part_id < nb_surfaces() ) ;
-        BME::bme_t cur_surface( BME::SURFACE, surface_part_id ) ;
-        for( index_t r = 0; r < nb_regions(); r++ ) {
-            const BME& cur_region = region( r ) ;
-            for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
-                if( cur_region.side( s ) == side
-                    && cur_region.boundary_id( s ) == cur_surface ) {
-                    return r ;
-                }
-            }
-        }
-        return BME::NO_ID ;
-    }
-
+    
     /*!
      * @brief Check if the model can be saved in a skua-gocad .ml file
      * @details It assumes that the model is valid and verifies that:
@@ -2499,18 +2486,6 @@ namespace RINGMesh {
 
         // Do not forget the stupid zeros at the end of the file 
         out << std::endl << "0" << std::endl << "0" << std::endl ;
-    }
-
-    index_t BoundaryModel::find_element(
-        BME::TYPE type,
-        const std::string& name ) const
-    {
-        for( index_t i = 0; i < nb_elements( type ); i++ ) {
-            if( element( BME::bme_t( type, i ) ).name() == name ) {
-                return i ;
-            }
-        }
-        return NO_ID ;
     }
 
     /*!

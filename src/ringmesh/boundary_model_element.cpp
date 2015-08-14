@@ -63,6 +63,7 @@ namespace {
     /* Definition of functions that we do not want exported in the interface */
     using namespace RINGMesh ;
 
+    typedef BoundaryModelElement BME ;
     typedef BoundaryModelElement::bme_t bme_t;
     typedef BoundaryModelMeshElement BMME ;
     typedef BoundaryModelVertices::VertexInBME VBME ;
@@ -72,7 +73,7 @@ namespace {
     * @brief Checks that the model vertex indices of @param E 
     *       are in a valid range
     */
-    bool check_range_model_vertex_ids( const BoundaryModelMeshElement& E )
+    bool check_range_model_vertex_ids( const BMME& E )
     {
         /// Check that the stored model vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
@@ -177,7 +178,7 @@ namespace RINGMesh {
     }
 
 
-    std::string BoundaryModelElement::type_name( BoundaryModelElement::TYPE t )
+    std::string BoundaryModelElement::type_name( BME::TYPE t )
     {
         switch( t ) {
             case CORNER: return "CORNER" ;
@@ -193,7 +194,7 @@ namespace RINGMesh {
 
 
     std::string BoundaryModelElement::geol_name(
-        BoundaryModelElement::GEOL_FEATURE t )
+        BME::GEOL_FEATURE t )
     {
         switch( t ) {
             case STRATI: return "top" ;
@@ -215,7 +216,7 @@ namespace RINGMesh {
      * @details The elements that can have a parent are LINE, SURFACE, and REGION
      */
     BoundaryModelElement::TYPE BoundaryModelElement::parent_type(
-        BoundaryModelElement::TYPE t )
+        BME::TYPE t )
     {
         switch( t ) {
             case LINE: return CONTACT ;
@@ -234,7 +235,7 @@ namespace RINGMesh {
      * @details The elements that can have a parent are CONTACT, INTERFACE, and LAYER
      */
     BoundaryModelElement::TYPE BoundaryModelElement::child_type(
-        BoundaryModelElement::TYPE t )
+        BME::TYPE t )
     {
         switch( t ) {
             case CONTACT: return LINE  ;
@@ -285,7 +286,7 @@ namespace RINGMesh {
     /*!
      * @brief Dimension 0, 1, 2, or 3 of an element of type @param t
      */
-    index_t BoundaryModelElement::dimension( BoundaryModelElement::TYPE t )
+    index_t BoundaryModelElement::dimension( BME::TYPE t )
     {
         switch( t ) {
             case CORNER: return 0 ;
@@ -298,9 +299,19 @@ namespace RINGMesh {
             default: return NO_ID ;
         }
     }
+    
+
+    /*!
+     * @brief Return true if this is a CORNER, LINE or SURFACEs
+    */
+    bool BoundaryModelElement::has_mesh( BME::TYPE t )
+    {
+        return t < REGION ;
+    }
 
 
-    bool BoundaryModelElement::operator==( const BoundaryModelElement& rhs ) const
+    bool BoundaryModelElement::operator==(
+        const BoundaryModelElement& rhs ) const
     {
         if( model_ != rhs.model_ ) {
             return false ;
@@ -2157,8 +2168,7 @@ namespace RINGMesh {
 
     const ColocaterANN& SurfaceTools::ann() const
     {
-        /// @todo Il vaut mieux utiliser les NearestNeighbor de geogram
-        /// on s'évite une copie de tous les points
+        /// @todo Using geogram NearestNeighbor would avoid a copy of all pointss
         if( ann_ == nil ) {
             const_cast< SurfaceTools* >( this )->ann_ = new ColocaterANN(
                 surface_.mesh(), ColocaterANN::VERTICES ) ;
@@ -2214,8 +2224,8 @@ namespace RINGMesh {
         } else if( E->bme_id().type == BoundaryModelElement::LINE ) {
             const Line* L = dynamic_cast< const Line* >( E ) ;
             ringmesh_assert( L != nil ) ;
-            for( index_t i = 1; i < E->nb_vertices(); ++i ) {
-                result += GEO::Geom::distance( E->vertex( i ), E->vertex( i - 1 ) ) ;
+            for( index_t i = 1; i < L->nb_vertices(); ++i ) {
+                result += GEO::Geom::distance( L->vertex( i ), L->vertex( i - 1 ) ) ;
             }
             return result ;
         } else if( E->bme_id().type == BoundaryModelElement::SURFACE ) {

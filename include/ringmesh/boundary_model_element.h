@@ -70,7 +70,8 @@ namespace RINGMesh {
     public:
         /*!
          * @brief Geological feature types for BoundaryModelElement
-         * @todo Read all possible geological features set by Gocad.
+         * @todo Read all possible geological features set by Gocad or 
+         * another software.
          */
         enum GEOL_FEATURE {
             /// All geological features 
@@ -181,13 +182,10 @@ namespace RINGMesh {
             ///  Index of the element in the BoundaryModel
             index_t index ;
         } ;
-
        
         const static index_t NO_ID = index_t(-1) ;
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
-        static GEOL_FEATURE determine_type( const std::vector< GEOL_FEATURE >& types ) ;
-
         static std::string geol_name( GEOL_FEATURE ) ;
         static bool is_fault( GEOL_FEATURE T )
         {
@@ -209,6 +207,7 @@ namespace RINGMesh {
         static TYPE boundary_type   ( TYPE t ) ;
         static TYPE in_boundary_type( TYPE t ) ;
         static index_t dimension    ( TYPE t ) ;
+        static bool has_mesh        ( TYPE t ) ;
 
         static bool parent_allowed     ( TYPE t ) { return parent_type( t )      != NO_TYPE ; }
         static bool child_allowed      ( TYPE t ) { return child_type( t )       != NO_TYPE ; }
@@ -239,8 +238,8 @@ namespace RINGMesh {
 
         /*! 
          * @brief Test the strict equality of the two BME
-         * @warning Connectivity information must match exactly
-         *          elements being in the exact same order
+         * @warning Connectivity information must match exactly with
+         *          elements in the exact same order
          */
         bool operator==( const BoundaryModelElement& rhs ) const ;
 
@@ -260,8 +259,6 @@ namespace RINGMesh {
         /*!
          * @brief Basic checks on the minimum required information 
          * @details Required connectivity information depends on the TYPE.   
-         *          Check that connectivity information stored by elements is consistent.
-         *          e.g. the parent of a BME must have it in its chidren list 
          */
         bool is_connectivity_valid() const ;
 
@@ -272,10 +269,10 @@ namespace RINGMesh {
          */
         bool has_model() const { return model_ != NULL ; }
         const BoundaryModel& model() const { return *model_ ; }
-        bool has_name() const { return name_ != "" ; }
+        bool has_name() const { return name() != "" ; }
         const std::string& name() const { return name_ ; }
         const bme_t& bme_id() const { return id_ ; }
-        bool has_geological_feature() const { return geol_feature_ != NO_GEOL ; }
+        bool has_geological_feature() const { return geological_feature() != NO_GEOL ; }
         GEOL_FEATURE geological_feature() const { return geol_feature_ ; }
         bool is_on_voi() const ;
 
@@ -301,7 +298,7 @@ namespace RINGMesh {
          * \name Parent - children relationships
          * @{
          */
-        bool has_parent() const { return parent_.index != NO_ID ;}
+        bool has_parent() const { return parent_id().is_defined() ;}
         const bme_t& parent_id() const { return parent_ ; }
         const BoundaryModelElement& parent() const ;
 
@@ -310,31 +307,43 @@ namespace RINGMesh {
         const BoundaryModelElement& child( index_t x ) const ;
 
         /*!@}
-         * \name Accessors to geometry - Reimplemented in BoundaryModelMeshElement
+         * \name DEPRECATED. Accessors to geometry . 
          * @{
          */
+        /// \todo Remove acccessors to geometry at BME level. 
+        /*!
+        * @brief To remove
+        */
         virtual index_t nb_cells() const
         {
             return 0 ;
         }
-
+        /*!
+        * @brief To remove
+        */
         virtual index_t nb_vertices() const
         {
             return 0 ;
         }
-
+        /*!
+        * @brief To remove
+        */
         virtual index_t model_vertex_id( index_t p = 0 ) const
         {
             ringmesh_assert_not_reached ;
             return NO_ID ;
         }
-
+        /*!
+        * @brief To remove
+        */
         virtual const vec3& vertex( index_t p = 0 ) const
         {
             ringmesh_assert_not_reached ;
             return dummy_vec3 ;
         }
-
+        /*!
+        * @brief To remove
+        */
         virtual void set_vertex(
             index_t index,
             const vec3& point,
@@ -342,7 +351,7 @@ namespace RINGMesh {
         {
             ringmesh_assert_not_reached ;
         }
-
+        
 
         /*!@}
          * \name Modification of the element
@@ -469,7 +478,7 @@ namespace RINGMesh {
     } ;
 
 
-    // This is probably not the best place to do this.
+    /// @todo This is probably not the best place to do this.
     // Anybody can include a header says Mr Stroustrup (Jeanne).
     typedef BoundaryModelElement BME ;
 
@@ -478,7 +487,7 @@ namespace RINGMesh {
     * @brief Name of the attribute storing the index of a vertex in the model
     * 
     * @note It should be in BoundaryModelMeshElement class 
-    *       but then there are linking errors in code that depends on it (JP)
+    *       but then there are linking errors in code that depends on it ?? (JP)
     */
     const static std::string model_vertex_id_att_name = std::string( "model_vertex_id" ) ;
 
@@ -569,7 +578,7 @@ namespace RINGMesh {
 
         /*!  
          * @brief Open-bar access to the mesh of the element
-         * @detail For internal use. 
+         * @detail ONLY for internal use. 
          * @warning DO NOT directly call this function to modify the facets, edges,
          * or vertices of the element.
          */
@@ -592,6 +601,8 @@ namespace RINGMesh {
         GEO::Attribute<index_t> model_vertex_id_ ;
     } ;
 
+    /// @todo This is probably not the best place to do this.
+    // Anybody can include a header says Mr Stroustrup (Jeanne).
     typedef BoundaryModelMeshElement BMME ;
 
     /*!
@@ -629,7 +640,6 @@ namespace RINGMesh {
 
     protected:
         bool is_mesh_valid() const ;
-
     } ;
 
 
@@ -699,9 +709,6 @@ namespace RINGMesh {
      * @details One 2-manifold connected component .
      */
     class RINGMESH_API Surface : public BoundaryModelMeshElement {
-        // Pourquoi aurait-t-on besoin d'etre amis ??
-        //friend class SurfaceTools ;
-
     public:
         const static index_t NO_ADJACENT = index_t(-1) ;
 
@@ -723,7 +730,7 @@ namespace RINGMesh {
             index_t f,
             index_t v ) const ;
 
-        // If I do not put these ones compiler does not find it
+        // If I do not put these ones, the compiler does not find them in BMME
         // There is probably a nicer solution (Jeanne)
         const vec3& vertex( index_t v ) const {
             return BoundaryModelMeshElement::vertex(v) ;

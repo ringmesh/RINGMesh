@@ -122,6 +122,13 @@ namespace RINGMesh {
         {
             return *element_ptr(t) ;
         }
+
+        BoundaryModelMeshElement& mesh_element(
+            const BME::bme_t& t ) const
+        {
+            ringmesh_assert( BME::has_mesh( t.type ) ) ;
+            return dynamic_cast<BoundaryModelMeshElement&>( element( t ) ) ;
+        }
         
         /*!
          * @brief Modifiable pointer to an element of the model
@@ -218,7 +225,7 @@ namespace RINGMesh {
             index_t v,
             const vec3& point )
         {
-            element( t ).set_vertex( v, point, false ) ;
+            mesh_element( t ).set_vertex( v, point, false ) ;
         }
 
         void set_corner(

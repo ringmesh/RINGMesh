@@ -46,14 +46,9 @@
 #include <ringmesh/common.h>
 #include <ringmesh/boundary_model_element.h>
 
-#include <geogram/basic/logger.h>
-#include <geogram/basic/file_system.h>
 #include <geogram/points/kd_tree.h>
 
 #include <vector>
-#include <string>
-#include <iterator>
-#include <algorithm>
 
 namespace RINGMesh {
 
@@ -182,8 +177,8 @@ namespace RINGMesh {
         void update_point( index_t v, const vec3& point ) ;
 
         /*!
-         * @brief Clear the vertices - unbind bme_vertices_ - 
-         *        set attribute to NO_ID in BME
+         * @brief Clear the vertices - clear the bme_vertices_ - 
+         *        clear global vertex information in the all BMME
          * @warning Not stable - crashes because of issues in 
          * Mesh attributes clearing
          * @todo Unbind all attributes !!!! 
@@ -191,7 +186,7 @@ namespace RINGMesh {
         void clear() ;
 
         /*!
-         * @brief Returns the Geogram attribute manager on these vertices
+         * @brief Returns the Geogram attribute manager on the global vertices
          */
         GEO::AttributesManager& attribute_manager() const
         {
@@ -210,7 +205,11 @@ namespace RINGMesh {
         void erase_invalid_vertices() ;
 
         /*! 
-         * @brief Delete vertices for which to_delete[i] != i ;
+         * @brief Delete vertices for which to_delete[i] != i 
+         * @detail The global vertices are deleted, bme_vertices_
+         * is updated and the model_vertx_id in the BoundaryModelMeshElement
+         * of the BoudnaryModel are updated too.
+         *
          * @param[in,out] to_delete can be NO_ID or give the index of a 
          *  kept vertex with wich information should be merged.
          *  It is recyled to give the mapping between old and new vertex indices        
@@ -221,21 +220,22 @@ namespace RINGMesh {
     private:
         /*!
          * @brief Initialize the vertices from the vertices 
-         *        of the BoundaryModel Corner s, Line s, and Surface s
-         *        Duplicates are not removed yet.
-         * @details Fills unique_vertices_, set model vertex id in BME and
-         *          initialize the reverse information.
+         *        of the BoundaryModel Corners, Lines, and Surfaces
+         * @details Fills the mesh_.vertices, bme_vertices_ and 
+         *         delete colocated vertices
          */
         void initialize() ;
 
         /*!
          * @brief Set a vertex as invalid
-         * @details Put all the ids of its VertexInBME to NO_ID
+         * @details Sets all the ids of the corresponding VertexInBME to NO_ID
          */
         void set_invalid_vertex( index_t v ) ;
 
         /*!
          * @brief True if the vertex is not valid
+         * @details A vertex is invalid if all corresponding VertexInBME 
+         * have a NO_ID value.
          */
         bool is_invalid_vertex( index_t v ) const ;
 
@@ -246,28 +246,19 @@ namespace RINGMesh {
 
         /*!
          * @brief Build the KdTree of the vertices 
-         * @pre In debug mode, assert that ann_ pointer is nil,
-         *      and that there is no colocated vertices.
-         *
          * @note The function is const to be called when accessing a point index
          *  from coordinated without an ugly const-cast.
          */
         void initialize_kdtree() const ;
 
-        /*!
-         * @brief Update the model_vertex_id in the corners, lines, surfaces
-         *        from new to old index
-         */
-        void update_bme_model_ids( const GEO::vector< index_t >& old2new ) const ;
-
     private:
-        /// Attached BoundaryModel that owns the vertices
+        /// Attached BoundaryModel owning the vertices
         const BoundaryModel& bm_ ;
 
         /*! 
          * @brief Mesh storing the coordinates of the vertices that are not colocated
          * @details Each vertex is unique. 
-         * With a GEO::Mesh we have attributes on the points without any effort
+         * On these vertices attributes can be defined
          */
         GEO::Mesh mesh_ ;
 
@@ -286,7 +277,8 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief The class to describe a volumetric model represented by its boundary surfaces
+     * @brief The class to describe a volumetric model represented 
+     * by its boundary surfaces
      */
     class RINGMESH_API BoundaryModel {
     ringmesh_disable_copy( BoundaryModel ) ;
@@ -298,12 +290,7 @@ namespace RINGMesh {
         /*!
          * @brief Constructs an empty BoundaryModel
          */
-        BoundaryModel()
-            :
-                vertices( *this ),
-                debug_directory_( GEO::FileSystem::get_current_working_directory() )
-        {
-        }
+        BoundaryModel() ;
 
         /*!
          * @brief Delete all BoundaryModelElements stored and owned by the BoundaryModel
@@ -332,7 +319,7 @@ namespace RINGMesh {
          * @brief Set the directory where debugging information shall be stored
          * @details Test that this directory exists, if not
          *          keep the previous value.
-         *          Default directory is executable directory .
+         *          The default directory is the executable directory .
          */
         void set_debug_directory( const std::string& directory ) ;
 
@@ -353,7 +340,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the number of elements of the given type
-         * @details By default returns 0.
+         * @details Default value is 0.
          */
         inline index_t nb_elements( BME::TYPE type ) const
         {
@@ -369,7 +356,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns a const reference the identified BoundaryModelElement
-         *
+         * @details The default value is the universe
          * @param[in] type Type of the element
          * @param[in] index Index of the element
          *
@@ -384,6 +371,12 @@ namespace RINGMesh {
             } else {
                 return universe_ ;
             }
+        }
+
+        inline const BoundaryModelMeshElement& mesh_element( BME::bme_t id ) const
+        {
+            ringmesh_assert( BME::has_mesh( id.type ) ) ;
+            return dynamic_cast<const BoundaryModelMeshElement&>( element( id ) ) ;
         }
 
         /*! @}
@@ -462,8 +455,6 @@ namespace RINGMesh {
             return vertices.attribute_manager() ;
         }
 
-        index_t find_region( index_t surf_id, bool side ) const ;
-
         /*! @}
          * \name To save the BoundaryModel.
          * @{
@@ -477,8 +468,6 @@ namespace RINGMesh {
         /*!
          * @}
          */
-
-        index_t find_element( BME::TYPE type, const std::string& name ) const ;
 
         void translate( const vec3& ) ;
         void rotate(

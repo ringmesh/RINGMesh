@@ -47,6 +47,8 @@
 #include <ringmesh/boundary_model_element.h>
 #include <ringmesh/macro_mesh.h>
 
+#include <geogram/basic/logger.h>
+
 namespace RINGMesh {
 
     class MeshElementGfx {

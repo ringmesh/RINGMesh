@@ -42,6 +42,7 @@
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/boundary_model_builder.h>
 
+#include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
 
@@ -2720,14 +2721,16 @@ namespace RINGMesh {
                     index_t nb_pts = 0 ;
                     index_t nb_trgl = 0 ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        const BoundaryModelElement& surface = interf.child( s ) ;
+                        const Surface& surface = 
+                            dynamic_cast< const Surface& >( interf.child( s ) ) ;
                         nb_pts += surface.nb_vertices() ;
                         nb_trgl += surface.nb_cells() ;
                     }
                     out << "var " << interf.name() << " = [ " << nb_pts << sep
                         << nb_trgl ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        const BoundaryModelElement& surface = interf.child( s ) ;
+                        const Surface& surface = 
+                            dynamic_cast< const Surface& >( interf.child( s ) ) ;
                         for( index_t p = 0; p < surface.nb_vertices(); p++ ) {
                             const vec3& point = surface.vertex( p ) ;
                             out << sep << point.x << sep << point.y << sep
