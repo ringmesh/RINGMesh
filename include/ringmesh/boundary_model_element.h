@@ -514,7 +514,11 @@ namespace RINGMesh {
          * @brief Global validity of the element
          */
         virtual bool is_valid() const {
-            return is_connectivity_valid() && is_mesh_valid();
+            return is_connectivity_valid() &&
+                is_mesh_valid() ;
+            /// \todo Test and add the model vertex validity test            
+            /// (no time right now JP)
+            // are_model_vertex_indices_valid() ;
         }      
         
         /*!
@@ -591,7 +595,13 @@ namespace RINGMesh {
         * @brief Check if the mesh stored is valid.
         */
         virtual bool is_mesh_valid() const = 0 ;
-     
+
+        /*!
+         * @brief Check that model vertex ids are consistent 
+         * with info stored by the model vertices
+         */
+        bool are_model_vertex_indices_valid() const ;
+
     protected :
         /// Mesh of the element
         GEO::Mesh mesh_ ;
