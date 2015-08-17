@@ -462,6 +462,7 @@ namespace RINGMesh {
             return vertices.attribute_manager() ;
         }
 
+        void remove_elements( std::set< BME::bme_t >& elements ) ;
         index_t find_region( index_t surf_id, bool side ) const ;
 
         /*! @}

@@ -42,6 +42,7 @@
 
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/utils.h>
+#include <ringmesh/boundary_model_builder.h>
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/geometry_nd.h>
@@ -802,12 +803,10 @@ namespace {
             valid = false ;
         }
         if( region.nb_boundaries() == 0 ) {
-            GEO::Logger::err( "BoundaryModel" )
-                << print_bme_id( region ) << " has no boundary Surface"
-                << std::endl ;
+            GEO::Logger::err( "BoundaryModel" ) << print_bme_id( region )
+                << " has no boundary Surface" << std::endl ;
             valid = false ;
-        }
-        else {
+        } else {
             Mesh mesh ;
             GEO::Logger::instance()->set_quiet( true ) ;
             mesh_from_element_boundaries( region, mesh ) ;
@@ -822,18 +821,15 @@ namespace {
             }
             if( GEO::mesh_nb_borders( mesh ) != 0 ) {
                 GEO::Logger::err( "BoundaryModel" ) << " Surface boundary of "
-                    << print_bme_id( region ) << " has borders "
-                    << std::endl ;
+                    << print_bme_id( region ) << " has borders " << std::endl ;
                 valid = false ;
             }
 
 #ifdef RINGMESH_DEBUG
             if( !valid ) {
                 std::ostringstream file ;
-                file << region.model().debug_directory()
-                    << "/boundary_surface_"
-                    << print_bme_id( region )
-                    << ".mesh"  ;
+                file << region.model().debug_directory() << "/boundary_surface_"
+                    << print_bme_id( region ) << ".mesh" ;
                 GEO::mesh_save( mesh, file.str() ) ;
             }
 #endif
@@ -1128,9 +1124,8 @@ namespace {
 #ifdef RINGMESH_DEBUG
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
-            file << S.model().debug_directory() 
-                << "/invalid_boundary_"
-                << print_bme_id( S ) << ".lin"  ;
+            file << S.model().debug_directory() << "/invalid_boundary_"
+                << print_bme_id( S ) << ".lin" ;
             save_edges( file.str(), S.model(), invalid_corners ) ;
         }
 #endif  
@@ -1283,8 +1278,9 @@ namespace RINGMesh {
         ringmesh_assert( v < nb() ) ;
         ringmesh_debug_assert( bme_vertices_.size() == nb() ) ;
         // Assert if adding twice the same thing - not a normal behavior
-        ringmesh_debug_assert( std::find( bme_vertices_[v].begin(),
-            bme_vertices_[v].end(), v_bme ) == bme_vertices_[v].end() ) ;
+        ringmesh_debug_assert(
+            std::find( bme_vertices_[v].begin(), bme_vertices_[v].end(), v_bme )
+                == bme_vertices_[v].end() ) ;
 
         bme_vertices_[v].push_back( v_bme ) ;
     }
@@ -1453,7 +1449,7 @@ namespace RINGMesh {
                     index_t new_id = to_delete[old_id] ;
                     // If new_id is NO_ID the vertex should be removed afterwards
                     // from the BMME 
-                    ringmesh_debug_assert( new_id != NO_ID ) ;                    
+                    ringmesh_debug_assert( new_id != NO_ID ) ;
                     E.set_model_vertex_id( v, new_id ) ;
 
                     // Merge bme_vertices_ information
@@ -1598,7 +1594,7 @@ namespace RINGMesh {
         }
         universe_.copy_macro_topology( from.universe_, *this ) ;
 
-        nb_elements_per_type_ = from.nb_elements_per_type_;
+        nb_elements_per_type_ = from.nb_elements_per_type_ ;
     }
 
     /*!
@@ -1627,6 +1623,14 @@ namespace RINGMesh {
                 E->bind_attributes() ;
             }
         }
+    }
+
+    void BoundaryModel::remove_elements( std::set< BME::bme_t >& elements )
+    {
+        BoundaryModelBuilder builder( *this ) ;
+        builder.get_dependent_elements(elements);
+        builder.remove_elements( elements ) ;
+        ringmesh_debug_assert( check_model_validity() ) ;
     }
 
     /*!
@@ -1812,7 +1816,6 @@ namespace RINGMesh {
         ///    The boundary of the universe region is a one connected component 
         ///     manifold closed surface 
         valid = is_region_valid( universe() ) && valid ;
-        
 
         /// 3. Check geometrical-connectivity consistency
         valid = check_model_points_validity( *this ) && valid ;
@@ -2275,12 +2278,12 @@ namespace RINGMesh {
             out << std::endl ;
         }
 
-        out << "# attribute " << "chart" << " facet " << "integer" << std::endl ;          
+        out << "# attribute " << "chart" << " facet " << "integer" << std::endl ;
         GEO::Attribute< index_t > A( S.cell_attribute_manager(), "chart" ) ;
 
         for( index_t f = 0; f < S.nb_cells(); f++ ) {
-            out << "# attrs f " << f + 1 << " " << A[ f ] << std::endl ;
-        }        
+            out << "# attrs f " << f + 1 << " " << A[f] << std::endl ;
+        }
     }
 
     /*!
