@@ -1627,9 +1627,48 @@ namespace RINGMesh {
 
     void BoundaryModel::remove_elements( std::set< BME::bme_t >& elements )
     {
+        const BoundaryModelElement& reg = element( *( elements.begin() ) ) ;
         BoundaryModelBuilder builder( *this ) ;
-        builder.get_dependent_elements(elements);
+        builder.get_dependent_elements( elements ) ;
+
+        for( std::set< BME::bme_t >::const_iterator itr = elements.begin();
+            itr != elements.end(); ++itr ) {
+            std::cout << "type   " << itr->type << "   id   " << itr->index << std::endl ;
+        }
+
+        std::vector< BME::bme_t > to_remove_in_universe ;
+        std::vector< BME::bme_t > to_add_in_universe ;
+
+        for( index_t b_i = 0; b_i < reg.nb_boundaries(); ++b_i ) {
+            if( reg.boundary( b_i ).is_on_voi() ) {
+                to_remove_in_universe.push_back( reg.boundary( b_i ).bme_id() ) ;
+                std::cout << "Remove from universe surface     "
+                    << reg.boundary( b_i ).name() << std::endl ;
+            } else {
+                to_add_in_universe.push_back( reg.boundary( b_i ).bme_id() ) ;
+                std::cout << "Add to universe surface     "
+                    << reg.boundary( b_i ).name() << std::endl ;
+            }
+        }
+
         builder.remove_elements( elements ) ;
+
+        std::cout << "corner 0  " << corner(0).vertex() << std::endl;
+        std::cout<<"line 15 b 0  "<< line(15).boundary(0).vertex() << std::endl;
+        std::cout<<"line 15 b 1  " << line(15).boundary(1).vertex() << std::endl;
+
+        // Update Universe
+//        for( std::vector< BME::bme_t >::const_iterator itr =
+//            to_remove_in_universe.begin(); itr != to_remove_in_universe.end();
+//            ++itr ) {
+//            std::cout << "itr->index    " << itr->index << std::endl ;
+//universe_.delete_boundary_with_side( *itr ) ;
+//        }
+        for( std::vector< BME::bme_t >::const_iterator itr =
+            to_add_in_universe.begin(); itr != to_add_in_universe.end(); ++itr ) {
+            universe_.add_boundary( *itr, true ) ;
+        }
+
         ringmesh_debug_assert( check_model_validity() ) ;
     }
 
