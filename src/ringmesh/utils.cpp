@@ -46,7 +46,7 @@ namespace RINGMesh {
     {
         // Count the number of triangles and vertices
         index_t nb_points = 0 ;
-        index_t nb_triangles = 0 ; 
+        index_t nb_triangles = 0 ;
         int z_sign = 1 ;
         {
             GEO::LineInput in( file_name ) ;
@@ -67,10 +67,10 @@ namespace RINGMesh {
                     }
                     /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
                     else if( in.field_matches( 0,
-                        "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
+                            "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
                         nb_points++ ;
                     } else if( in.field_matches( 0,
-                        "PATOM" ) | in.field_matches( 0, "ATOM" ) ) {
+                            "PATOM" ) | in.field_matches( 0, "ATOM" ) ) {
                         nb_points++ ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
                         nb_triangles++ ;
@@ -79,8 +79,8 @@ namespace RINGMesh {
             }
         }
         index_t dim = 3 ;
-        GEO::vector< double > vertices ( dim * nb_points ) ;
-        GEO::vector< index_t > triangles( 3*nb_triangles ) ;
+        GEO::vector< double > vertices( dim * nb_points ) ;
+        GEO::vector< index_t > triangles( 3 * nb_triangles ) ;
         {
             GEO::LineInput in( file_name ) ;
             if( !in.OK() ) {
@@ -92,37 +92,37 @@ namespace RINGMesh {
                 in.get_fields() ;
                 if( in.nb_fields() > 0 ) {
                     /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
-                    if( in.field_matches( 0, "VRTX" ) ||
-                        in.field_matches( 0, "PVRTX" )
-                        ) {
-                        vertices[ dim*v ] = read_double( in, 2 ) ;
-                        vertices[ dim*v + 1 ] = read_double( in, 3 ) ;
-                        vertices[ dim*v + 2 ] = z_sign * read_double( in, 4 ) ;
+                    if( in.field_matches( 0, "VRTX" )
+                        || in.field_matches( 0, "PVRTX" ) ) {
+                        vertices[dim * v] = read_double( in, 2 ) ;
+                        vertices[dim * v + 1] = read_double( in, 3 ) ;
+                        vertices[dim * v + 2] = z_sign * read_double( in, 4 ) ;
                         ++v ;
-                    } else if( in.field_matches( 0, "PATOM" ) ||
-                               in.field_matches( 0, "ATOM" ) ) {
+                    } else if( in.field_matches( 0, "PATOM" )
+                        || in.field_matches( 0, "ATOM" ) ) {
                         index_t v0 = in.field_as_uint( 2 ) - 1 ;
-                        vertices[ dim*v ] = vertices[ dim*v0 ] ;
-                        vertices[ dim*v + 1 ] = vertices[ dim*v0 + 1 ] ;
-                        vertices[ dim*v + 2 ] = vertices[ dim*v0 + 2 ] ;
+                        vertices[dim * v] = vertices[dim * v0] ;
+                        vertices[dim * v + 1] = vertices[dim * v0 + 1] ;
+                        vertices[dim * v + 2] = vertices[dim * v0 + 2] ;
                         ++v ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
-                        triangles[ 3*t ] = static_cast<index_t>( in.field_as_uint( 1 )-1 ) ;
-                        triangles[ 3*t+1 ] = static_cast<index_t>( in.field_as_uint( 2 )-1 ) ;
-                        triangles[ 3*t+2 ] = static_cast<index_t>( in.field_as_uint( 3 )-1 ) ;
+                        triangles[3 * t] = static_cast< index_t >( in.field_as_uint(
+                            1 ) - 1 ) ;
+                        triangles[3 * t + 1] =
+                            static_cast< index_t >( in.field_as_uint( 2 ) - 1 ) ;
+                        triangles[3 * t + 2] =
+                            static_cast< index_t >( in.field_as_uint( 3 ) - 1 ) ;
                         t++ ;
                     }
                 }
             }
         }
-        
-        M.facets.assign_triangle_mesh( dim, vertices, triangles, true ) ;       
-        
+
+        M.facets.assign_triangle_mesh( dim, vertices, triangles, true ) ;
+
         GEO::MeshRepairMode mode = static_cast< GEO::MeshRepairMode >( 2 ) ;
         GEO::mesh_repair( M, mode ) ;
     }
-
-
 
     /*!
      * Computes the volume of a Mesh cell
@@ -441,7 +441,8 @@ namespace RINGMesh {
         return true ;
     }
 
-    void Utils::mesh_facet_connect( GEO::Mesh& mesh ) {
+    void Utils::mesh_facet_connect( GEO::Mesh& mesh )
+    {
         std::vector< index_t > temp ;
         temp.reserve( 7 ) ;
         std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
@@ -1151,7 +1152,7 @@ namespace RINGMesh {
         GEO::Matrix< float64, 4 >& rot_mat )
     {
         // Note: Rotation is impossible about an axis with null length.
-        ringmesh_debug_assert( axis == vec3() ) ;
+        ringmesh_debug_assert( axis != vec3() ) ;
 
         if( degrees ) {
             float64 pi = 3.141592653589793 ;
@@ -1226,23 +1227,31 @@ namespace RINGMesh {
         ringmesh_debug_assert( inv_T( 3, 2 ) == computed_inv_T( 3, 2 ) ) ;
         ringmesh_debug_assert( inv_T( 3, 3 ) == computed_inv_T( 3, 3 ) ) ;
 
+        // Note: If d = 0, so rotation is along x axis. So Rx = inv_Rx = Id
         GEO::Matrix< float64, 4 > Rx ;
         Rx( 0, 0 ) = 1. ;
         Rx( 0, 1 ) = 0. ;
         Rx( 0, 2 ) = 0. ;
         Rx( 0, 3 ) = 0. ;
         Rx( 1, 0 ) = 0. ;
-        Rx( 1, 1 ) = c / d ;
-        Rx( 1, 2 ) = -b / d ;
         Rx( 1, 3 ) = 0. ;
         Rx( 2, 0 ) = 0. ;
-        Rx( 2, 1 ) = b / d ;
-        Rx( 2, 2 ) = c / d ;
         Rx( 2, 3 ) = 0. ;
         Rx( 3, 0 ) = 0. ;
         Rx( 3, 1 ) = 0. ;
         Rx( 3, 2 ) = 0. ;
         Rx( 3, 3 ) = 1. ;
+        if( d == 0. ) {
+            Rx( 1, 1 ) = 1. ;
+            Rx( 1, 2 ) = 0. ;
+            Rx( 2, 1 ) = 0. ;
+            Rx( 2, 2 ) = 1. ;
+        } else {
+            Rx( 1, 1 ) = c / d ;
+            Rx( 1, 2 ) = -b / d ;
+            Rx( 2, 1 ) = b / d ;
+            Rx( 2, 2 ) = c / d ;
+        }
 
         GEO::Matrix< float64, 4 > inv_Rx ;
         inv_Rx( 0, 0 ) = 1. ;
@@ -1250,17 +1259,24 @@ namespace RINGMesh {
         inv_Rx( 0, 2 ) = 0. ;
         inv_Rx( 0, 3 ) = 0. ;
         inv_Rx( 1, 0 ) = 0. ;
-        inv_Rx( 1, 1 ) = c / d ;
-        inv_Rx( 1, 2 ) = b / d ;
         inv_Rx( 1, 3 ) = 0. ;
         inv_Rx( 2, 0 ) = 0. ;
-        inv_Rx( 2, 1 ) = -b / d ;
-        inv_Rx( 2, 2 ) = c / d ;
         inv_Rx( 2, 3 ) = 0. ;
         inv_Rx( 3, 0 ) = 0. ;
         inv_Rx( 3, 1 ) = 0. ;
         inv_Rx( 3, 2 ) = 0. ;
         inv_Rx( 3, 3 ) = 1. ;
+        if( d == 0. ) {
+            inv_Rx( 1, 1 ) = 1. ;
+            inv_Rx( 1, 2 ) = 0. ;
+            inv_Rx( 2, 1 ) = 0. ;
+            inv_Rx( 2, 2 ) = 1. ;
+        } else {
+            inv_Rx( 1, 1 ) = c / d ;
+            inv_Rx( 1, 2 ) = b / d ;
+            inv_Rx( 2, 1 ) = -b / d ;
+            inv_Rx( 2, 2 ) = c / d ;
+        }
 
 #ifdef RINGMESH_DEBUG
         GEO::Matrix< float64, 4 > computed_inv_Rx = Rx.inverse() ;
@@ -1922,13 +1938,25 @@ namespace RINGMesh {
     {
     }
 
-    ColocaterANN::ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location )
+    ColocaterANN::ColocaterANN(
+        const GEO::Mesh& mesh,
+        const MeshLocation& location,
+        bool copy )
     {
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {
             case VERTICES: {
+                if( !copy ) {
                 ann_points_ = nil ;
-                ann_tree_->set_points( mesh.vertices.nb(), mesh.vertices.point_ptr(0) ) ;
+                ann_tree_->set_points( mesh.vertices.nb(),
+                    mesh.vertices.point_ptr( 0 ) ) ;
+                } else {
+                    index_t nb_vertices = mesh.vertices.nb() ;
+                    ann_points_ = new double[nb_vertices * 3] ;
+                    GEO::Memory::copy( ann_points_, mesh.vertices.point_ptr( 0 ),
+                        nb_vertices * 3 * sizeof(double) ) ;
+                    ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+                }
                 break ;
             }
             case FACETS: {

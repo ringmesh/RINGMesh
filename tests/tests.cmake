@@ -15,4 +15,5 @@
     add_test(test_io_bm)
     add_test(test_make_unique)
 	add_test(test_build_bm_surface)
+	add_test(test_rotation)
 #ENDIF()

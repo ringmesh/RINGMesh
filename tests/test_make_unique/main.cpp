@@ -88,7 +88,7 @@ int main( int argc, char** argv )
 
     bool res = ringmesh_nb == geo_nb ;
     if( res )
-        GEO::Logger::out("TEST") << "SUCCES" << std::endl ;
+        GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
     else {
         GEO::Logger::out( "TEST" ) << "FAILED:" << std::endl ;
         GEO::Logger::out( "TEST" ) << "initial_nb=" << nb_non_unique_vertices << std::endl ;

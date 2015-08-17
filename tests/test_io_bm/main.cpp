@@ -62,7 +62,7 @@ int main( int argc, char** argv )
 
     bool res = Utils::compare_file( "out.bm", "out2.bm" ) ;
     if( res )
-        GEO::Logger::out("TEST") << "SUCCES" << std::endl ;
+        GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
     else
         GEO::Logger::out("TEST") << "FAILED" << std::endl ;
     return !res ;

@@ -883,7 +883,10 @@ namespace RINGMesh {
             VERTICES, FACETS, CELLS
         } ;
         ColocaterANN() ;
-        ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location = VERTICES ) ;
+        ColocaterANN(
+            const GEO::Mesh& mesh,
+            const MeshLocation& location = VERTICES,
+            bool copy = false ) ;
         ColocaterANN( const std::vector< vec3 >& vertices, bool copy = true ) ;
 
         ~ColocaterANN()
