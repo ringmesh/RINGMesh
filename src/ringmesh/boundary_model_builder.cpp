@@ -969,7 +969,6 @@ namespace RINGMesh {
             bme_t cur = *it ;
             /// If an element has children elements - add them 
             if( BME::child_allowed( cur.type ) ) {
-                index_t c = BME::child_type( cur.type ) ;
                 const BME& E = model_.element( cur ) ;
                 for( index_t j = 0 ; j < E.nb_children() ; ++j ) {
                     in.insert( E.child_id(j) ) ;
