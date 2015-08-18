@@ -607,8 +607,8 @@ namespace {
         // Set the vertices 
         index_t nbv = model.nb_vertices() ;
         M.vertices.create_vertices( nbv ) ;
-        for( index_t i = 0; i < nbv; ++i ) {
-            M.vertices.point( i ) = model.vertices.unique_vertex( i ) ;
+        for( index_t v = 0; v < nbv; ++v ) {
+            M.vertices.point( v ) = model.vertices.unique_vertex( v ) ;
         }
 
         // Set the facets  
@@ -661,6 +661,9 @@ namespace {
                     }
                 }
             }
+            /*!
+             * @todo Review: this can be done using GEO::sort_unique( in_boundary ) [AB]
+             */
             std::sort( borders.begin(), borders.end() ) ;
             index_t nb = std::unique( borders.begin(), borders.end() )
                 - borders.begin() ;
@@ -696,6 +699,9 @@ namespace {
                 }
             }
             // Remove duplicates
+            /*!
+             * @todo Review: this can be done using GEO::sort_unique( in_boundary ) [AB]
+             */
             std::sort( in_boundary.begin(), in_boundary.end() ) ;
             index_t nb = std::unique( in_boundary.begin(), in_boundary.end() )
                 - in_boundary.begin() ;
@@ -1582,17 +1588,17 @@ namespace RINGMesh {
     {
         name_ = from.name_ ;
         for( index_t t = BME::CORNER; t < BME::NO_TYPE; ++t ) {
-            BME::TYPE T = (BME::TYPE) t ;
+            BME::TYPE T = static_cast< BME::TYPE >( t ) ;
             std::vector< BME* >& store = modifiable_elements( T ) ;
             store.resize( from.nb_elements( T ), nil ) ;
 
-            for( index_t i = 0; i < nb_elements( T ); ++i ) {
-                store[i] = create_element( T ) ;
-                ringmesh_debug_assert( store[ i ] != nil ) ;
+            for( index_t e = 0; e < nb_elements( T ); ++e ) {
+                store[e] = create_element( T ) ;
+                ringmesh_debug_assert( store[ e ] != nil ) ;
             }
             RINGMESH_PARALLEL_LOOP
-            for( index_t i = 0; i < nb_elements( T ); ++i ) {
-                store[i]->copy_macro_topology( from.element( bme_t( T, i ) ),
+            for( index_t e = 0; e < nb_elements( T ); ++e ) {
+                store[e]->copy_macro_topology( from.element( bme_t( T, e ) ),
                     *this ) ;
             }
         }
@@ -1611,16 +1617,16 @@ namespace RINGMesh {
      */
     void BoundaryModel::copy_meshes( const BoundaryModel& from )
     {
-        for( index_t i = BME::CORNER; i < BME::REGION; ++i ) {
-            BME::TYPE T = (BME::TYPE) i ;
+        for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
+            BME::TYPE T = static_cast< BME::TYPE >( t ) ;
             RINGMESH_PARALLEL_LOOP
-            for( index_t j = 0; j < elements( T ).size(); ++j ) {
+            for( index_t e = 0; e < elements( T ).size(); ++e ) {
                 BoundaryModelMeshElement* E =
-                    dynamic_cast< BoundaryModelMeshElement* >( elements( T )[j] ) ;
+                    dynamic_cast< BoundaryModelMeshElement* >( elements( T )[e] ) ;
                 ringmesh_assert( E != nil ) ;
                 const BoundaryModelMeshElement& E_from =
                     dynamic_cast< const BoundaryModelMeshElement& >( from.element(
-                        BME::bme_t( T, j ) ) ) ;
+                        BME::bme_t( T, e ) ) ) ;
 
                 E->unbind_attributes() ;
                 E->mesh().copy( E_from.mesh() ) ;
@@ -1631,14 +1637,14 @@ namespace RINGMesh {
 
     /*!
      * @brief Returns the index of the region neighboring the surface.
-     * @param[in] surface_part_id Index of the Surface
+     * @param[in] surface_id Index of the Surface
      * @param[in] side Side of the Surface
      * @return The region index or NO_ID if none found.
      */
-    index_t BoundaryModel::find_region( index_t surface_part_id, bool side ) const
+    index_t BoundaryModel::find_region( index_t surface_id, bool side ) const
     {
-        ringmesh_debug_assert( surface_part_id < nb_surfaces() ) ;
-        BME::bme_t cur_surface( BME::SURFACE, surface_part_id ) ;
+        ringmesh_debug_assert( surface_id < nb_surfaces() ) ;
+        BME::bme_t cur_surface( BME::SURFACE, surface_id ) ;
         for( index_t r = 0; r < nb_regions(); r++ ) {
             const BME& cur_region = region( r ) ;
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
@@ -1672,16 +1678,16 @@ namespace RINGMesh {
                 return false ;
             }
         }
-        for( index_t i = 0; i < nb_surfaces(); ++i ) {
-            if( !surface( i ).has_parent() ) {
+        for( index_t s = 0; s < nb_surfaces(); ++s ) {
+            if( !surface( s ).has_parent() ) {
                 return false ;
             }
-            if( !surface( i ).is_triangulated() ) {
+            if( !surface( s ).is_triangulated() ) {
                 return false ;
             }
         }
-        for( index_t i = 0; i < nb_regions(); ++i ) {
-            if( !region( i ).has_name() ) {
+        for( index_t r = 0; r < nb_regions(); ++r ) {
+            if( !region( r ).has_name() ) {
                 return false ;
             }
         }
@@ -1699,23 +1705,23 @@ namespace RINGMesh {
     bool BoundaryModel::check_elements_validity() const
     {
         std::vector< bool > valid( nb_elements( BME::ALL_TYPES ), true ) ;
-        for( index_t i = 0; i < nb_elements( BME::ALL_TYPES ); ++i ) {
-            const BME& E = element( BME::bme_t( BME::ALL_TYPES, i ) ) ;
+        for( index_t e = 0; e < nb_elements( BME::ALL_TYPES ); ++e ) {
+            const BME& E = element( BME::bme_t( BME::ALL_TYPES, e ) ) ;
             // Verify that E points actually to this BoundaryModel
             if( &E.model() != this ) {
                 GEO::Logger::err( "BoundaryModel" ) << "The model stored for "
                     << BME::type_name( E.bme_id().type ) << " " << E.bme_id().index
                     << " is not correct " << std::endl ;
-                valid[i] = false ;
+                valid[e] = false ;
                 // This is a major problem
                 ringmesh_debug_assert( false ) ;
                 break ;
             }
-            valid[i] = E.is_valid() ;
+            valid[e] = E.is_valid() ;
 
-            if( valid[i] && E.bme_id().type == BME::REGION ) {
+            if( valid[e] && E.bme_id().type == BME::REGION ) {
                 // Check validity of region definition
-                valid[i] = is_region_valid( E ) ;
+                valid[e] = is_region_valid( E ) ;
             }
         }
         index_t nb_invalid = 0 ;
@@ -1740,13 +1746,13 @@ namespace RINGMesh {
     bool BoundaryModel::check_geology_validity() const
     {
         bool valid = true ;
-        for( index_t i = 0; i < nb_lines(); ++i ) {
-            if( line( i ).nb_in_boundary() == 1 ) {
-                const BME& S = line( i ).in_boundary( 0 ) ;
+        for( index_t l = 0; l < nb_lines(); ++l ) {
+            if( line( l ).nb_in_boundary() == 1 ) {
+                const BME& S = line( l ).in_boundary( 0 ) ;
                 if( S.has_parent()
                     && !BME::is_fault( S.parent().geological_feature() ) ) {
                     GEO::Logger::err( "BoundaryModel" ) << " Invalid free border: "
-                        << print_bme_id( line( i ) ) << " is in the boundary of "
+                        << print_bme_id( line( l ) ) << " is in the boundary of "
                         << print_bme_id( S ) << " that is not a FAULT " << std::endl
                         << std::endl ;
                     valid = false ;
@@ -1855,12 +1861,12 @@ namespace RINGMesh {
         // The global triangulated mesh corresponding to this model
         // is used again 
         // If the model has non-planar polygonal facets ...
-        index_t nb_intersections = detect_intersecting_facets( *this, model_mesh ) ;
-        if( nb_intersections > 0 ) {
-            GEO::Logger::err( "BoundaryModel" ) << " Encountered "
-                << nb_intersections << "facet intersections " << std::endl ;
-            valid = false ;
-        }
+//        index_t nb_intersections = detect_intersecting_facets( *this, model_mesh ) ;
+//        if( nb_intersections > 0 ) {
+//            GEO::Logger::err( "BoundaryModel" ) << " Encountered "
+//                << nb_intersections << "facet intersections " << std::endl ;
+//            valid = false ;
+//        }
         return valid ;
     }
 
@@ -2031,48 +2037,49 @@ namespace RINGMesh {
             for( index_t j = 0; j < tsurf.nb_children(); ++j ) {
                 offset = vertex_count ;
 
-                const Surface& sp =
+                const Surface& surface =
                     dynamic_cast< const Surface& >( tsurf.child( j ) ) ;
 
                 out << "TFACE" << std::endl ;
-                for( index_t k = 0; k < sp.nb_vertices(); ++k ) {
-                    out << "VRTX " << vertex_count << " " << sp.vertex( k )
+                for( index_t k = 0; k < surface.nb_vertices(); ++k ) {
+                    out << "VRTX " << vertex_count << " " << surface.vertex( k )
                         << std::endl ;
                     vertex_count++ ;
                 }
 
-                for( index_t k = 0; k < sp.nb_cells(); ++k ) {
-                    if( sp.nb_vertices_in_facet( k ) != 3 ) {
+                /// @todo Revie: already checked in check_gocad_validity [AB]
+                for( index_t k = 0; k < surface.nb_cells(); ++k ) {
+                    if( surface.nb_vertices_in_facet( k ) != 3 ) {
                         GEO::Logger::err( "I/O" ) << "Model is not triangulated"
                             << std::endl ;
                         return false ;
                     }
-                    out << "TRGL " << sp.surf_vertex_id( k, 0 ) + offset << " "
-                        << sp.surf_vertex_id( k, 1 ) + offset << " "
-                        << sp.surf_vertex_id( k, 2 ) + offset << std::endl ;
+                    out << "TRGL " << surface.surf_vertex_id( k, 0 ) + offset << " "
+                        << surface.surf_vertex_id( k, 1 ) + offset << " "
+                        << surface.surf_vertex_id( k, 2 ) + offset << std::endl ;
                 }
 
                 // Gather information on Corners (BStones) and Lines (getting the next point on the line)
-                for( index_t k = 0; k < sp.nb_boundaries(); ++k ) {
-                    const Line& cp = dynamic_cast< const Line& >( sp.boundary( k ) ) ;
+                for( index_t k = 0; k < surface.nb_boundaries(); ++k ) {
+                    const Line& line = dynamic_cast< const Line& >( surface.boundary( k ) ) ;
 
-                    vec3 c = cp.vertex( 0 ) ;
-                    vec3 next = cp.vertex( 1 ) ;
+                    const vec3& c = line.vertex( 0 ) ;
+                    const vec3& next = line.vertex( 1 ) ;
 
                     // To be sure that we have all corners we need to ensure
                     // that all corners at the end of lines are saved too
                     std::vector< index_t > result ;
-                    sp.tools.ann().get_colocated( cp.vertex( cp.nb_vertices() - 1 ),
+                    surface.tools.ann().get_colocated( line.vertex( line.nb_vertices() - 1 ),
                         result ) ;
                     ringmesh_debug_assert( !result.empty() ) ;
                     set_end_corners.insert( result[0] + offset ) ;
 
                     result.clear() ;
-                    sp.tools.ann().get_colocated( c, result ) ;
+                    surface.tools.ann().get_colocated( c, result ) ;
                     ringmesh_debug_assert( !result.empty() ) ;
                     index_t c_id = result[0] ;
                     result.clear() ;
-                    sp.tools.ann().get_colocated( next, result ) ;
+                    surface.tools.ann().get_colocated( next, result ) ;
                     ringmesh_debug_assert( !result.empty() ) ;
                     index_t next_id = result[0] ;
 
@@ -2153,11 +2160,10 @@ namespace RINGMesh {
      */
     void BoundaryModel::save_as_eobj_file( const std::string& file_name ) const
     {
-        std::ofstream out ;
-        out.open( file_name.c_str() ) ;
+        std::ofstream out( file_name.c_str() ) ;
         if( out.bad() ) {
-            std::cout << "Error when opening the file: " << file_name.c_str()
-                << std::endl ;
+            GEO::Logger::err( "I/O" ) << "Error when opening the file: "
+                << file_name.c_str() << std::endl ;
             return ;
         }
         out.precision( 16 ) ;
@@ -2187,6 +2193,7 @@ namespace RINGMesh {
             }
         }
 
+        /// @todo Review: delete commented code [AB]
         // Write facet attributes
         {
             // Get the attributes that can be saved on the first Surface
@@ -2254,11 +2261,10 @@ namespace RINGMesh {
         index_t s,
         const std::string& file_name ) const
     {
-        std::ofstream out ;
-        out.open( file_name.c_str() ) ;
+        std::ofstream out( file_name.c_str() ) ;
         if( out.bad() ) {
-            std::cout << "Error when opening the file: " << file_name.c_str()
-                << std::endl ;
+            GEO::Logger::err( "I/O" ) << "Error when opening the file: "
+                << file_name.c_str() << std::endl ;
             return ;
         }
         out.precision( 16 ) ;
@@ -2310,11 +2316,10 @@ namespace RINGMesh {
      */
     void BoundaryModel::save_bm_file( const std::string& file_name ) const
     {
-        std::ofstream out ;
-        out.open( file_name.c_str() ) ;
+        std::ofstream out( file_name.c_str() ) ;
         if( out.bad() ) {
-            std::cout << "Error when opening the file: " << file_name.c_str()
-                << std::endl ;
+            GEO::Logger::err( "I/O" ) << "Error when opening the file: "
+                << file_name.c_str() << std::endl ;
             return ;
         }
         out.precision( 16 ) ;
@@ -2370,6 +2375,7 @@ namespace RINGMesh {
         }
         out << std::endl ;
 
+        /// @todo Review: delete commented code [AB]
 //        // Vertices and attributes on vertices
 //        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;
 //        out << "MODEL_VERTEX_ATTRIBUTES " ;
@@ -2462,11 +2468,10 @@ namespace RINGMesh {
      */
     void BoundaryModel::save_smesh_file( const std::string& file_name ) const
     {
-        std::ofstream out ;
-        out.open( file_name.c_str() ) ;
+        std::ofstream out( file_name.c_str() ) ;
         if( out.bad() ) {
-            std::cout << "Error when opening the file: " << file_name.c_str()
-                << std::endl ;
+            GEO::Logger::err( "I/O" ) << "Error when opening the file: "
+                << file_name.c_str() << std::endl ;
             return ;
         }
         out.precision( 16 ) ;
@@ -2501,6 +2506,7 @@ namespace RINGMesh {
         out << std::endl << "0" << std::endl << "0" << std::endl ;
     }
 
+    /// @todo Review: Add documentation - Replace the return value by a bme_t [AB]
     index_t BoundaryModel::find_element(
         BME::TYPE type,
         const std::string& name ) const
@@ -2528,6 +2534,9 @@ namespace RINGMesh {
             return ;
         }
 
+        /*!
+         * @todo Review: Use vertices.update_point instead of these 3 blocks [AB]
+         */
         for( index_t corner_i = 0; corner_i < nb_corners(); ++corner_i ) {
             GEO::Mesh& cur_corner = corner( corner_i ).mesh() ;
             for( index_t v = 0; v < cur_corner.vertices.nb(); v++ ) {
@@ -2591,6 +2600,9 @@ namespace RINGMesh {
         Math::rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
             rot_mat ) ;
 
+        /*!
+         * @todo Review: Use vertices.update_point instead of these 3 blocks [AB]
+         */
         for( index_t corner_i = 0; corner_i < nb_corners(); ++corner_i ) {
             GEO::Mesh& cur_corner = corner( corner_i ).mesh() ;
             Math::rotate_mesh( cur_corner, rot_mat ) ;
