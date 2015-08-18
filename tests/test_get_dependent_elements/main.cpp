@@ -161,6 +161,31 @@ int main( int argc, char** argv )
         return 1 ;
     }
 
+    elt_set.clear() ;
+    result.clear() ;
+    // Third test
+    reg_id = in.find_element( BoundaryModelElement::REGION, "Region_1" ) ;
+    if( reg_id == NO_ID ) {
+        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+        return 1 ;
+    }
+    elt_set.insert( in.region( reg_id ).bme_id() ) ;
+
+    result.insert( BME::bme_t( BoundaryModelElement::REGION, 2 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 17 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 18 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 30 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 31 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 5 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 10 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 14 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 18 ) ) ;
+
+    if( !check_with_expected_result( builder, elt_set, result ) ) {
+        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+        return 1 ;
+    }
+
     GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 }
