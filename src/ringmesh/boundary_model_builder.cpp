@@ -1069,7 +1069,6 @@ namespace RINGMesh {
     /*!
     * @brief Delete elements and remove all references to them in the model
     *
-    * @param[in] T Type of the elements
     * @param[in,out] to_erase For each type of element T, 
     *        store a vector of the size of model_.nb_elements(T) in which
     *        elements are flagged with NO_ID.

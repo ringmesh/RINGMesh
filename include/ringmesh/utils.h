@@ -1022,10 +1022,10 @@ namespace RINGMesh {
             if( input_.size() < 2 ) return ;
             for( index_t it1 = 0; it1 < input_.size() - 1; it1++ ) {
                 index_t ref_index = it1 ;
-                T1& ref_value = input_[it1] ;
+                T1 ref_value = input_[it1] ;
                 for( index_t it2 = it1 + 1; it2 < input_.size(); it2++ ) {
                     index_t new_index = it2 ;
-                    T1& new_value = input_[it2] ;
+                    T1 new_value = input_[it2] ;
                     if( ref_value > new_value ) {
                         ref_value = new_value ;
                         ref_index = new_index ;
