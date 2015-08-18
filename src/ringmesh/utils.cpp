@@ -1939,14 +1939,25 @@ namespace RINGMesh {
     {
     }
 
-    ColocaterANN::ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location )
+    ColocaterANN::ColocaterANN(
+        const GEO::Mesh& mesh,
+        const MeshLocation& location,
+        bool copy )
     {
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {
             case VERTICES: {
+                if( !copy ) {
                 ann_points_ = nil ;
                 ann_tree_->set_points( mesh.vertices.nb(),
                     mesh.vertices.point_ptr( 0 ) ) ;
+                } else {
+                    index_t nb_vertices = mesh.vertices.nb() ;
+                    ann_points_ = new double[nb_vertices * 3] ;
+                    GEO::Memory::copy( ann_points_, mesh.vertices.point_ptr( 0 ),
+                        nb_vertices * 3 * sizeof(double) ) ;
+                    ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+                }
                 break ;
             }
             case FACETS: {
