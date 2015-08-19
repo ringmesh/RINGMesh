@@ -65,6 +65,13 @@
 #include <map>
 
 namespace {
+
+    /*!
+     * @todo Review: Almost all the ringmesh_assert should be converted into
+     * ringmesh_debug_assert, this is taking to much time and release mode is not
+     * suppose to crash but send messages or don't crash..
+     */
+
     using namespace GEO ;
     using namespace RINGMesh ;
     using GEO::index_t ;
@@ -132,8 +139,8 @@ namespace {
         index_t f2,
         vector< TriangleIsect >& sym )
     {
-        geo_debug_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
-        geo_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
+        ringmesh_debug_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
+        ringmesh_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
         index_t c1 = M.facets.corners_begin( f1 ) ;
         const vec3& p1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 ) ) ;
         const vec3& p2 = GEO::Geom::mesh_vertex( M,
@@ -168,6 +175,9 @@ namespace {
         BME::bme_t result ;
         index_t lv0 = NO_ID ;
         index_t lv1 = NO_ID ;
+        /*!
+         * @todo Review: Could be faster if v0_bme and v1_bme are sorted [AB]
+         */
         for( index_t i = 0; i < v0_bme.size(); ++i ) {
             if( v0_bme[i].bme_id.type == BME::LINE ) {
                 for( index_t j = 0; j < v1_bme.size(); ++j ) {
@@ -196,6 +206,7 @@ namespace {
             if( lv0 > lv1 ) {
                 std::swap( lv0, lv1 ) ;
             }
+            /// @todo Review: Interesting C-like cast... Why int and not index_t ? [AB]
             int delta_i = (int) lv1 - (int) lv0 ;
 
             if( delta_i == 1 ) {
@@ -243,8 +254,8 @@ namespace {
         index_t f1,
         index_t f2 )
     {
-        geo_debug_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
-        geo_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
+        ringmesh_debug_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
+        ringmesh_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
 
         // I only want to test the edges that are on boundary 
         for( index_t i = 0; i < 3; ++i ) {
@@ -255,11 +266,13 @@ namespace {
                             M.facets.vertex( f1, i ) ) ;
                         const vec3& p11 = M.vertices.point(
                             M.facets.vertex( f1, i == 2 ? 0 : i + 1 ) ) ;
+                        /// @todo Review: could also be done using (i+1)%3 [AB]
 
                         const vec3& p20 = M.vertices.point(
                             M.facets.vertex( f2, j ) ) ;
                         const vec3& p21 = M.vertices.point(
                             M.facets.vertex( f2, j == 2 ? 0 : j + 1 ) ) ;
+                        /// @todo Review: could also be done using (i+1)%3 [AB]
 
                         index_t v10 = BM.vertices.vertex_index( p10 ) ;
                         index_t v11 = BM.vertices.vertex_index( p11 ) ;
@@ -607,6 +620,10 @@ namespace {
         // Set the vertices 
         index_t nbv = model.nb_vertices() ;
         M.vertices.create_vertices( nbv ) ;
+        /*!
+         * @todo Review: could be much faster using M.vertices.assign_points
+         * because it directly copies the bytes [AB]
+         */
         for( index_t v = 0; v < nbv; ++v ) {
             M.vertices.point( v ) = model.vertices.unique_vertex( v ) ;
         }
@@ -643,7 +660,6 @@ namespace {
         if( BME::parent_allowed( T ) ) {
             // We are dealing with basic elements 
             for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
-
                 if( with_inside_borders
                     || ( !with_inside_borders
                         && !E.boundary( i ).is_inside_border( E ) ) ) {
@@ -916,6 +932,7 @@ namespace {
                         GEO::Logger::err( "BoundaryModelVertex" ) << " Vertex " << i
                             << " is in no element of the model" << std::endl ;
                         valid_vertex = false ;
+                        break ;
                 }
             }
 
@@ -1151,6 +1168,10 @@ namespace {
         }
     }
 
+    /*!
+     * @todo Review: this function could be inline or even better define as a macro
+     * to be replaced by the precompiler [AB]
+     */
     BoundaryModelMeshElement& cast_bmm_element(
         const BoundaryModel& M,
         BME::TYPE T,
@@ -1193,6 +1214,10 @@ namespace RINGMesh {
             BME::TYPE T = static_cast< BME::TYPE >( t ) ;
             for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
                 BoundaryModelMeshElement& E = cast_bmm_element( bm_, T, e ) ;
+                /*!
+                 * @todo Review: could you use memcpy to copy all the vertices at once
+                 * and then save the indices inside E and  bme_vertices_[index]. [AB]
+                 */
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     // Vertex coordinates
                     double* p = mesh_.vertices.point_ptr( index ) ;
@@ -1206,6 +1231,7 @@ namespace RINGMesh {
                     bme_vertices_[index].push_back( VertexInBME( E.bme_id(), v ) ) ;
                     // Global vertex index increment
                     index++ ;
+                    /// @todo Review: index++ could be written with v++ insidde the for [AB]
                 }
             }
         }
@@ -1217,6 +1243,7 @@ namespace RINGMesh {
     {
         ringmesh_assert( v < nb() ) ;
         std::vector< VertexInBME >& related = bme_vertices_[v] ;
+        /// @todo Review could also use std::fill [AB]
         for( index_t i = 0; i < related.size(); ++i ) {
             related[i] = VertexInBME() ;
         }
@@ -1227,6 +1254,9 @@ namespace RINGMesh {
         ringmesh_assert( v < nb() ) ;
         const std::vector< VertexInBME >& related = bme_vertices_[v] ;
         index_t count = 0 ;
+        /*!
+         * @todo Review: Why not looking for the first valid vertex and break the for ? [AB]
+         */
         for( index_t i = 0; i < related.size(); ++i ) {
             if( !related[i].is_defined() ) {
                 count++ ;
@@ -1255,6 +1285,7 @@ namespace RINGMesh {
         ringmesh_assert( v < nb() ) ;
         // Change the position of the unique_vertex 
         double* p = mesh_.vertices.point_ptr( v ) ;
+        /// @todo Review: p is never really used [AB]
         for( index_t c = 0; c < 3; ++c ) {
             p[c] = double( point[c] ) ;
         }
@@ -1326,6 +1357,7 @@ namespace RINGMesh {
     }
 
     // Deprecated - to remove - the name is stupidly annoying
+    /// @todo Review: if so, why is it still here ? ;) [AB]
     index_t BoundaryModelVertices::nb_unique_vertices() const
     {
         return nb() ;
@@ -1359,6 +1391,8 @@ namespace RINGMesh {
         // Clear the model vertex id information for the Corner - Line - Surface
         for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
             BME::TYPE T = static_cast< BME::TYPE >( t ) ;
+            /// @todo Review: could be parallelized RINGMESH_PARALLEL_LOOP
+            /// I do not know if it will be usefull [AB]
             for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
                 BoundaryModelMeshElement& E = cast_bmm_element( bm_, T, e ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
@@ -1462,6 +1496,11 @@ namespace RINGMesh {
                     ringmesh_debug_assert( new_id != NO_ID ) ;                    
                     E.set_model_vertex_id( v, new_id ) ;
 
+                    /*!
+                     * @todo Review: I don't understand this for and what it does...
+                     * When we remove a region, this for add stupid vertices inside the
+                     * vector... [AB]
+                     */
                     // Merge bme_vertices_ information
                     if( std::find( bme_vertices_[new_id].begin(),
                         bme_vertices_[new_id].end(), VertexInBME( E.bme_id(), v ) )
