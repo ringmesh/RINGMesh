@@ -42,7 +42,6 @@
 #define __RINGMESH_MACRO_MESH__
 
 #include <ringmesh/common.h>
-#include <ringmesh/utils.h>
 
 #include <geogram/mesh/mesh.h>
 
@@ -59,7 +58,6 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    static std::vector< std::vector< vec3 > > empty_vertices ;
 
     /*!
      * Several modes for vertex duplication algorithm:
@@ -105,9 +103,14 @@ namespace RINGMesh {
         void clear() ;
 
     private:
+        /// enum to characterize the action to do concerning a surface
         enum SurfaceAction {
-            SKIP = -2, TO_PROCESS = -1, NEG_SIDE = 0, POS_SIDE = 1
+            SKIP = -2,          /// do nothing
+            TO_PROCESS = -1,    /// need to be duplicated (don't know which side yet)
+            NEG_SIDE = 0,       /// need to duplicate the side opposite to the facet normal
+            POS_SIDE = 1        /// need to duplicate the side following the facet normal
         } ;
+        /// Action to do according a surface index
         typedef std::pair< index_t, SurfaceAction > surface_side ;
 
         void initialize() ;
@@ -121,18 +124,47 @@ namespace RINGMesh {
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
 
-        /// Vector of the vertices with different coordinates
-        std::vector< vec3 > unique_vertices_ ;
-        /// Mapping between the vertex ids in a GEO::Mesh and a MacroMesh
+        /// Vector of the vertices with different coordinates without duplication
+        std::vector< vec3 > vertices_ ;
+        /*!
+         * @brief Mapping of each mesh vertex id into the global macromesh
+         * vertex storage id
+         * @details Let Vmi denote the vertex index value of ith vertex
+         * of the mth mesh in the macromesh. The vector is stored like this :
+         * [V11, V12, V13 ... , Vi1, Vi2, Vi3, ...]
+         */
         std::vector< index_t > global_vertex_indices_ ;
-        /// Mapping between the mesh id and the global_vertex_indices_ vector
+        /*!
+         * Vector of size mm_.nb_meshes(). Each value is the
+         * number of all the number of vertices of the previous meshes.
+         * This is equivalent to this code:
+         * vertex2mesh_[m] = 0 ;
+         * for( index_t i = 0; i < m; i++ ) {
+         *     vertex2mesh_[m] += mm_.mesh(i).vertices.nb() ;
+         * }
+         */
         std::vector< index_t > vertex2mesh_ ;
 
-        /// Vector of the cell corners, stores the vertex id (can duplicated)
+        /*!
+         * @brief Vector of the cell corners
+         * @details A corner denote the point index of a cell vertex.
+         * There is one corner per vertex per cell, so for a mesh of 3 tetrahedra
+         * there are 3 * 4 = 12 corners. This vector stores continuously all the
+         * cell corners of all the meshes.
+         */
         std::vector< index_t > cell_corners_ ;
-        /// Mapping between the mesh id and the cell_corners_ vector
+        /*!
+         * Vector storing the index of where to start reading the cell_corners_
+         * vector for a given mesh. Vector size is  mm_.nb_meshes() + 1.
+         * Ex. The first cell corner of the mesh m is cell_corners_[mesh_cell_corner_ptr_[m]],
+         * the second cell_corners_[mesh_cell_corner_ptr_[m]+1], ...
+         */
         std::vector< index_t > mesh_cell_corner_ptr_ ;
-        /// Mapping between the duplicated vertices and the unique vertex ids
+        /*!
+         * @brief Vector of duplicated vertices
+         * @details Each value is a duplicated vertex, the index corresponds to
+         * vertex index in vertices_.
+         */
         std::vector< index_t > duplicated_vertex_indices_ ;
     } ;
 
@@ -399,31 +431,23 @@ namespace RINGMesh {
 
     } ;
 
+    static std::vector< std::vector< vec3 > > empty_vertices ;
     class RINGMESH_API MacroMesh {
     ringmesh_disable_copy( MacroMesh ) ;
     public:
+        const static index_t ALL_REGIONS = index_t( -1 ) ;
 
         MacroMesh( const BoundaryModel& model ) ;
         MacroMesh() ;
         virtual ~MacroMesh() ;
-
-        //    __  __     _   _            _
-        //   |  \/  |___| |_| |_  ___  __| |___
-        //   | |\/| / -_)  _| ' \/ _ \/ _` (_-<
-        //   |_|  |_\___|\__|_||_\___/\__,_/__/
-        //
-        void compute_tetmesh(
-            const std::string& method,
-            int region_id = -1,
-            bool add_steiner_points = true,
-            std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
         void copy( const MacroMesh& mm, bool copy_attributes = true ) ;
 
-        //      _
-        //     /_\  __ __ ___ _________ _ _ ___
-        //    / _ \/ _/ _/ -_|_-<_-< _ \ '_(_-<
-        //   /_/ \_\__\__\___/__/__|___/_| /__/
-        //
+        void compute_tetmesh(
+            const std::string& method,
+            index_t region_id = ALL_REGIONS,
+            bool add_steiner_points = true,
+            std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
+
         /*!
          * Access to a GEO::Mesh of the MacroMesh
          * @param[in] region id of mesh/region
@@ -443,7 +467,7 @@ namespace RINGMesh {
             return meshes_.size() ;
         }
 
-        void add_wells( const WellGroup* wells ) ;
+        void set_wells( const WellGroup* wells ) ;
         const WellGroup* wells() const
         {
             return wells_ ;

@@ -42,6 +42,7 @@
 #include <ringmesh/macro_mesh.h>
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/well.h>
+#include <ringmesh/utils.h>
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/line_stream.h>
