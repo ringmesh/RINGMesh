@@ -195,6 +195,14 @@ namespace RINGMesh {
 
     private:
         /*!
+         *Tests if the MacroMeshFacets needs to be initialized and initialize it
+         */
+        void test_initialize() const {
+            if( surface_facets_.empty() ) {
+                const_cast< MacroMeshFacets* >( this )->initialize() ;
+            }
+        }
+        /*!
          * Id where to start reading the vector surface_facets_ for a given surface
          * @param[in] s id of the surface
          * @return the corresponding id
@@ -228,11 +236,28 @@ namespace RINGMesh {
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
 
-        /// Vector of the facet ids in the corresponding GEO::Mesh
+        /*!
+         * @brief  Vector of the facet indices
+         * @details This vector stores the facet indices sorted by mesh and by type.
+         * Let Tsi denote the ith triangle index of the sth surface and
+         * Qsi  denote the ith quad index of the sth surface. The vector storage is:
+         * [T11, T12, .... , Q11, Q12 ... , T21, T22, ... , Q21, Q22 ... ]
+         */
         std::vector< index_t > surface_facets_ ;
-        /// Mapping between surface id and facet elements in surface_facets_
+        /*!
+         * Vector storing the index of where to start reading the surface_facets_
+         * vector for a given surface and a given facet type.
+         * For example:
+         *    the 2nd quad index of the surface index S will be found here:
+         *    surface_facets_[surface_facet_ptr_[NB_FACET_TYPES*S + 1] + 2]
+         */
         std::vector< index_t > surface_facet_ptr_ ;
-        /// Mapping between the surface id and the GEO::Mesh
+        /*!
+         * @brief Mapping between a surface id and a mesh id of the MacroMesh
+         * @details Since the same surfaces can be found twice, one in each adjacent
+         * region. This vector stores the mesh indices to use corresponding to each
+         * surface index.
+         */
         std::vector< index_t > surface2mesh_ ;
 
         /// Number of facets in the MacroMesh
@@ -320,10 +345,10 @@ namespace RINGMesh {
 
         /// Vector of the cell ids in the corresponding GEO::Mesh
         std::vector< index_t > cells_ ;
-        /// Vector of the adjacent cell ids in the MacroMesh
-        std::vector< index_t > cell_adjacents_ ;
         /// Mapping between mesh id and cell elements in cells_
         std::vector< index_t > mesh_cell_ptr_ ;
+        /// Vector of the adjacent cell ids in the MacroMesh
+        std::vector< index_t > cell_adjacents_ ;
         /// Mapping between mesh id and cell elements in cell_adjacents_
         std::vector< index_t > mesh_cell_adjacent_ptr_ ;
 
