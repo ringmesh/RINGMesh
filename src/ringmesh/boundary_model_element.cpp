@@ -612,7 +612,6 @@ namespace RINGMesh {
     {
         TYPE T = bme_id().type ;
         if( T == SURFACE ) {
-//            std::cout << "model().universe().nb_boundaries()   " << model().universe().nb_boundaries()<<std::endl;
             for( index_t i = 0; i < model().universe().nb_boundaries(); ++i ) {
                 if( model().universe().boundary_id( i ) == bme_id() ) {
                     return true ;

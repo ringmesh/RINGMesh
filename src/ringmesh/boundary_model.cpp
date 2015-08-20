@@ -1420,6 +1420,7 @@ namespace RINGMesh {
                 bme_vertices_[v].clear() ;
             }
         }
+
         bme_vertices_.erase(
             std::remove( bme_vertices_.begin(), bme_vertices_.end(),
                 std::vector< VertexInBME >() ), bme_vertices_.end() ) ;
@@ -1469,8 +1470,9 @@ namespace RINGMesh {
 
     void BoundaryModelVertices::erase_invalid_vertices()
     {
+
         index_t nb_todelete = 0 ;
-        std::vector< index_t > to_delete( nb() ) ;
+        std::vector< index_t > to_delete( nb() ) ; // Here nb() represents the number of vertices before removal of the elements
 
         for( index_t v = 0; v < nb(); ++v ) {
             std::vector< VertexInBME >& related = bme_vertices_[v] ;
@@ -1478,6 +1480,7 @@ namespace RINGMesh {
 
             // Get the invalid BMEVertices for the current global vertex
             for( index_t i = 0; i < related.size(); ++i ) {
+
                 if( !related[i].is_defined() ) {
                     // To ease removal of invalid BMEVertices
                     related[i] = VertexInBME() ;
@@ -1627,43 +1630,74 @@ namespace RINGMesh {
 
     void BoundaryModel::remove_elements( std::set< BME::bme_t >& elements )
     {
+        // TODO Handle the case of several objects in elements
         const BoundaryModelElement& reg = element( *( elements.begin() ) ) ;
         BoundaryModelBuilder builder( *this ) ;
         builder.get_dependent_elements( elements ) ;
 
-        for( std::set< BME::bme_t >::const_iterator itr = elements.begin();
-            itr != elements.end(); ++itr ) {
-            std::cout << "type   " << itr->type << "   id   " << itr->index << std::endl ;
+        // TODO Dirty duplication of code------------------------
+        // We need to remove elements type by type since they are
+        // stored in different vectors and since we use indices in these
+        // vectors to identify them.
+        // Initialize the vector
+        std::vector< std::vector< index_t > > to_erase_by_type ;
+        to_erase_by_type.reserve( BME::NO_TYPE ) ;
+        for( index_t i = BME::CORNER; i < BME::NO_TYPE; ++i ) {
+            to_erase_by_type.push_back(
+                std::vector< index_t >( nb_elements( static_cast< BME::TYPE >( i ) ),
+                    0 ) ) ;
+        }
+        // Flag the elements to erase
+        for( std::set< bme_t >::const_iterator it = elements.begin();
+            it != elements.end(); ++it ) {
+            bme_t cur = *it ;
+            if( cur.type < BME::NO_TYPE ) {
+                ringmesh_debug_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
+                to_erase_by_type[cur.type][cur.index] = NO_ID ;
+            }
         }
 
-        std::vector< BME::bme_t > to_remove_in_universe ;
+        // Number of elements deleted for each TYPE
+        std::vector< index_t > nb_removed( to_erase_by_type.size(), 0 ) ;
+
+        /// 1. Get the mapping between old indices of the elements
+        ///    and new ones (when elements to remove will actually be removed)
+        for( index_t i = 0; i < to_erase_by_type.size(); ++i ) {
+            for( index_t j = 0; j < to_erase_by_type[i].size(); ++j ) {
+                if( to_erase_by_type[i][j] == NO_ID ) {
+                    nb_removed[i]++ ;
+                } else {
+                    to_erase_by_type[i][j] = j - nb_removed[i] ;
+                }
+            }
+        }
+        // TODO Dirty duplication of code--------------------------
+
         std::vector< BME::bme_t > to_add_in_universe ;
 
-        for( index_t b_i = 0; b_i < reg.nb_boundaries(); ++b_i ) {
-            if( reg.boundary( b_i ).is_on_voi() ) {
-                to_remove_in_universe.push_back( reg.boundary( b_i ).bme_id() ) ;
-                std::cout << "Remove from universe surface     "
-                    << reg.boundary( b_i ).name() << std::endl ;
-            } else {
-                to_add_in_universe.push_back( reg.boundary( b_i ).bme_id() ) ;
-                std::cout << "Add to universe surface     "
-                    << reg.boundary( b_i ).name() << std::endl ;
+        if( reg.bme_id().type == BME::REGION ) {
+            index_t nb_added = 0 ;
+            for( index_t b_i = 0; b_i < reg.nb_boundaries(); ++b_i ) {
+                if( !reg.boundary( b_i ).is_on_voi() ) {
+                    to_add_in_universe.push_back( reg.boundary( b_i ).bme_id() ) ;
+                    /*std::cout << "type   " << reg.boundary( b_i ).bme_id().type
+                     << std::endl ;
+                     std::cout << "index   " << reg.boundary( b_i ).bme_id().index
+                     << std::endl ;*/
+                    ringmesh_debug_assert(
+                        to_erase_by_type[reg.boundary( b_i ).bme_id().type][reg.boundary(
+                            b_i ).bme_id().index] != NO_ID ) ;
+                    to_add_in_universe[nb_added].index =
+                        to_erase_by_type[reg.boundary( b_i ).bme_id().type][reg.boundary(
+                            b_i ).bme_id().index] ;
+                    ++nb_added ;
+                }
             }
         }
 
         builder.remove_elements( elements ) ;
 
-        std::cout << "corner 0  " << corner(0).vertex() << std::endl;
-        std::cout<<"line 15 b 0  "<< line(15).boundary(0).vertex() << std::endl;
-        std::cout<<"line 15 b 1  " << line(15).boundary(1).vertex() << std::endl;
-
         // Update Universe
-//        for( std::vector< BME::bme_t >::const_iterator itr =
-//            to_remove_in_universe.begin(); itr != to_remove_in_universe.end();
-//            ++itr ) {
-//            std::cout << "itr->index    " << itr->index << std::endl ;
-//universe_.delete_boundary_with_side( *itr ) ;
-//        }
         for( std::vector< BME::bme_t >::const_iterator itr =
             to_add_in_universe.begin(); itr != to_add_in_universe.end(); ++itr ) {
             universe_.add_boundary( *itr, true ) ;
