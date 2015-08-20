@@ -16,4 +16,6 @@
     add_test(test_make_unique)
 	add_test(test_build_bm_surface)
 	add_test(test_rotation)
+	#add_test(test_perso)
+	add_test(test_get_dependent_elements)
 #ENDIF()
