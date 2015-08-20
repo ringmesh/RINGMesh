@@ -289,7 +289,7 @@ namespace RINGMesh {
      * @brief The class to describe a volumetric model represented by its boundary surfaces
      */
     class RINGMESH_API BoundaryModel {
-        ringmesh_disable_copy( BoundaryModel ) ;
+    ringmesh_disable_copy( BoundaryModel ) ;
         friend class BoundaryModelBuilder ;
 
     public:
@@ -354,12 +354,8 @@ namespace RINGMesh {
         /*!
          * @brief Returns the number of elements of the given type
          * @details By default returns 0.
-         * @param[in] type the element type
          */
         inline index_t nb_elements( BME::TYPE type ) const
-        /*! @todo Review: the keyword inline is useless if the method is implemented
-         * inside the class (same comment for method element( BME::bme_t id ) ) [AB]
-         */
         {
             if( type < BME::NO_TYPE ) {
                 return elements( type ).size() ;
@@ -374,7 +370,8 @@ namespace RINGMesh {
         /*!
          * @brief Returns a const reference the identified BoundaryModelElement
          *
-         * @param[in] id  the id of an element
+         * @param[in] type Type of the element
+         * @param[in] index Index of the element
          *
          */
         inline const BoundaryModelElement& element( BME::bme_t id ) const
@@ -422,10 +419,6 @@ namespace RINGMesh {
             return nb_elements( BME::LAYER ) ;
         }
 
-        /*!
-         * @todo Review: could use static_cast instead, it is faster and no need to check
-         * if the element is really a Corner for ex, it is by definition [AB]
-         */
         const Corner& corner( index_t index ) const
         {
             return dynamic_cast< const Corner& >( *corners_.at( index ) ) ;
@@ -464,24 +457,17 @@ namespace RINGMesh {
             return universe_ ;
         }
 
-        /*!
-         * @todo Review: Is this accessor really usefull ? The client code could directly
-         * use vertices.attribute_manager() [AB]
-         */
         GEO::AttributesManager& vertex_attribute_manager()
         {
             return vertices.attribute_manager() ;
         }
 
-        index_t find_region( index_t surface_id, bool side ) const ;
+        void remove_elements( std::set< BME::bme_t >& elements ) ;
+        index_t find_region( index_t surf_id, bool side ) const ;
 
         /*! @}
          * \name To save the BoundaryModel.
          * @{
-         */
-        /*!
-         * @todo Review: This methods should not be inside the class but in the
-         * io_boundar_model.cpp ! [AB]
          */
         bool save_gocad_model3d( std::ostream& out ) ;
         void save_as_eobj_file( const std::string& file ) const ;
@@ -495,10 +481,6 @@ namespace RINGMesh {
 
         index_t find_element( BME::TYPE type, const std::string& name ) const ;
 
-        /*!
-         * @todo Review: This methods should not be inside the class but in another
-         * namespace. [AB]
-         */
         void translate( const vec3& ) ;
         void rotate(
             const vec3& origin,
@@ -510,7 +492,6 @@ namespace RINGMesh {
         bool check_model_validity() const ;
         bool check_elements_validity() const ;
         bool check_geology_validity() const ;
-        /// @todo Review: should be with save_gocad_model3d somewhere else [AB]
         bool check_gocad_validity() const ;
 
         void copy_macro_topology( const BoundaryModel& from ) ;
@@ -552,10 +533,6 @@ namespace RINGMesh {
             return const_cast< std::vector< BME* >& >( elements( type ) ) ;
         }
 
-        /*!
-         * @brief Generic accessor to the storage of elements of the given type
-         * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
-         */
         const std::vector< BME* >& elements( BME::TYPE type ) const
         {
             switch( type ) {
@@ -583,7 +560,7 @@ namespace RINGMesh {
         BoundaryModelVertices vertices ;
 
     private:
-        /// Name of the model
+        // Name of the model
         std::string name_ ;
 
         // Base manifold elements of a model
@@ -596,7 +573,7 @@ namespace RINGMesh {
         BoundaryModelElement universe_ ;
 
         /*!
-         * @brief Contacts between Interfaces
+         * @brief Contacts between Intefaces
          * Parent of a set of Line
          */
         std::vector< BoundaryModelElement* > contacts_ ;

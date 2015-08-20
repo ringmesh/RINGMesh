@@ -1384,9 +1384,7 @@ namespace RINGMesh {
      */
     void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes )
     {
-        index_t dim = meshes_[0]->vertices.dimension() ;
-
-        model_ = &rhs.model() ;
+        set_model( rhs.model() ) ;
         order_ = rhs.get_order() ;
         mode_ = rhs.duplicate_mode() ;
         wells_ = rhs.wells() ;
@@ -1456,6 +1454,12 @@ namespace RINGMesh {
     void MacroMesh::set_model( const BoundaryModel& model )
     {
         model_ = &model ;
+        for( index_t mesh_i = 0; mesh_i < meshes_.size(); ++mesh_i ) {
+#ifdef RINGMESH_DEBUG
+            Utils::print_bounded_attributes( *meshes_[mesh_i] ) ;
+#endif
+            delete meshes_[mesh_i] ;
+        }
         meshes_.resize( model_->nb_regions(), nil ) ;
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( 3 ) ;
