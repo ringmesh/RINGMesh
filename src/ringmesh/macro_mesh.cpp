@@ -455,6 +455,10 @@ namespace RINGMesh {
         surface_facet_ptr_.resize( NB_FACET_TYPES * mm_.model().nb_surfaces() + 1,
             0 ) ;
 
+        /*!
+         * 1. Associate each surface to the first Mesh than is storing it
+         * Also compute the starting facet indices sorted by type and by surface
+         */
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
             std::vector< index_t > surface_proccessed ;
@@ -463,23 +467,25 @@ namespace RINGMesh {
             for( index_t f = 0; f < cur_mesh.facets.nb(); f++ ) {
                 index_t surface_id = attribute[f] ;
                 if( surface2mesh_[surface_id] != Surface::NO_ID ) continue ;
-                if( !Utils::contains( surface_proccessed, surface_id ) ) {
+                if( !RINGMesh::Utils::contains( surface_proccessed, surface_id ) ) {
                     surface_proccessed.push_back( surface_id ) ;
                 }
                 surface_facet_ptr_[NB_FACET_TYPES * surface_id
                     + facet_access[cur_mesh.facets.nb_vertices( f )] + 1]++ ;
             }
+            // Mark the surfaces processed
             for( index_t s = 0; s < surface_proccessed.size(); s++ ) {
                 surface2mesh_[surface_proccessed[s]] = m ;
             }
         }
-
+        // Sum the values to take into account the shifting of the previous surfaces
         for( index_t s = 1; s < surface_facet_ptr_.size() - 1; s++ ) {
             surface_facet_ptr_[s + 1] += surface_facet_ptr_[s] ;
         }
-        surface_facets_.resize( surface_facet_ptr_.back() ) ;
 
-        std::vector< index_t > cur_facet_index_type(
+        /// 2. Fill the facet indices vector directly at the right position
+        surface_facets_.resize( surface_facet_ptr_.back() ) ;
+        std::vector< index_t > offset_facet_index_type(
             NB_FACET_TYPES * mm_.model().nb_surfaces(), 0 ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
@@ -491,11 +497,12 @@ namespace RINGMesh {
                 index_t type_access = facet_access[cur_mesh.facets.nb_vertices( f )] ;
                 surface_facets_[surface_facet_ptr_[NB_FACET_TYPES * surface_id
                     + type_access]
-                    + cur_facet_index_type[NB_FACET_TYPES * surface_id + type_access]++ ] =
+                    + offset_facet_index_type[NB_FACET_TYPES * surface_id + type_access]++ ] =
                     f ;
             }
         }
 
+        /// 3. Save the number of triangles, quads and facets for later faster access
         for( index_t s = 0; s < mm_.model().nb_surfaces(); s++ ) {
             nb_triangle_ += nb_triangle( s ) ;
             nb_quad_ += nb_quad( s ) ;
@@ -509,9 +516,7 @@ namespace RINGMesh {
      */
     index_t MacroMeshFacets::nb_facets() const
     {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
-        }
+        test_initialize() ;
         return nb_facets_ ;
     }
 
@@ -521,9 +526,7 @@ namespace RINGMesh {
      */
     index_t MacroMeshFacets::nb_triangle() const
     {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
-        }
+        test_initialize() ;
         return nb_triangle_ ;
     }
 
@@ -534,9 +537,7 @@ namespace RINGMesh {
      */
     index_t MacroMeshFacets::nb_triangle( index_t s ) const
     {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
-        }
+        test_initialize() ;
         return surface_facet_ptr_[NB_FACET_TYPES * s + 1]
             - surface_facet_ptr_[NB_FACET_TYPES * s] ;
     }
@@ -549,9 +550,7 @@ namespace RINGMesh {
      */
     index_t MacroMeshFacets::triangle_id( index_t s, index_t t ) const
     {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
-        }
+        test_initialize() ;
         return facet( surface_facet_ptr_[NB_FACET_TYPES * s] + t ) ;
     }
 
@@ -561,9 +560,7 @@ namespace RINGMesh {
      */
     index_t MacroMeshFacets::nb_quad() const
     {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
-        }
+        test_initialize() ;
         return nb_quad_ ;
     }
 
@@ -574,9 +571,7 @@ namespace RINGMesh {
      */
     index_t MacroMeshFacets::nb_quad( index_t s ) const
     {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
-        }
+        test_initialize() ;
         return surface_facet_ptr_[NB_FACET_TYPES * s + 2]
             - surface_facet_ptr_[NB_FACET_TYPES * s + 1] ;
     }
@@ -589,9 +584,7 @@ namespace RINGMesh {
      */
     index_t MacroMeshFacets::quad_id( index_t s, index_t q ) const
     {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
-        }
+        test_initialize() ;
         return facet( surface_facet_ptr_[NB_FACET_TYPES * s + 1] + q ) ;
     }
 
@@ -602,9 +595,7 @@ namespace RINGMesh {
      */
     index_t MacroMeshFacets::mesh( index_t s ) const
     {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
-        }
+        test_initialize() ;
         return surface2mesh_[s] ;
     }
 
@@ -616,9 +607,7 @@ namespace RINGMesh {
      */
     index_t MacroMeshFacets::facet( index_t s, index_t f ) const
     {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
-        }
+        test_initialize() ;
         return facet( surface_begin( s ) + f ) ;
     }
 
@@ -629,9 +618,7 @@ namespace RINGMesh {
      */
     index_t MacroMeshFacets::nb_facets( index_t s ) const
     {
-        if( surface_facets_.empty() ) {
-            const_cast< MacroMeshFacets* >( this )->initialize() ;
-        }
+        test_initialize() ;
         return surface_end( s ) - surface_begin( s ) ;
     }
 
