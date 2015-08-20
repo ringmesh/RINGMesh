@@ -770,10 +770,10 @@ namespace RINGMesh {
         test_initialize() ;
         mesh_id = 0 ;
         for( ; mesh_id < mm_.nb_meshes(); mesh_id++ ) {
-            if( global_index < mesh_cell_ptr_[mesh_id + 1] ) break ;
+            if( global_index < mesh_cell_ptr_[NB_CELL_TYPES*mesh_id + 1] ) break ;
         }
         ringmesh_debug_assert( mesh_id < mm_.nb_meshes() ) ;
-        return global_index - mesh_cell_ptr_[mesh_id] ;
+        return global_index - mesh_cell_ptr_[NB_CELL_TYPES*mesh_id] ;
     }
 
     /*!
@@ -1421,6 +1421,7 @@ namespace RINGMesh {
         bool add_steiner_points,
         std::vector< std::vector< vec3 > >& internal_vertices )
     {
+        if( internal_vertices.empty() ) internal_vertices.resize( nb_meshes() ) ;
         GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
         if( region_id == ALL_REGIONS ) {
             GEO::ProgressTask progress( "Compute", nb_meshes() ) ;
