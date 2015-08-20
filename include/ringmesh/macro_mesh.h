@@ -195,7 +195,7 @@ namespace RINGMesh {
 
     private:
         /*!
-         *Tests if the MacroMeshFacets needs to be initialized and initialize it
+         * Tests if the MacroMeshFacets needs to be initialized and initialize it
          */
         void test_initialize() const {
             if( surface_facets_.empty() ) {
