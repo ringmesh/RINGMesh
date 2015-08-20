@@ -1454,14 +1454,7 @@ namespace RINGMesh {
     void MacroMesh::set_model( const BoundaryModel& model )
     {
         model_ = &model ;
-        for( index_t mesh_i = 0; mesh_i < meshes_.size(); ++mesh_i ) {
-            if( meshes_[mesh_i] != nil ) {
-#ifdef RINGMESH_DEBUG
-                Utils::print_bounded_attributes( *meshes_[mesh_i] ) ;
-#endif
-                delete meshes_[mesh_i] ;
-            }
-        }
+        ringmesh_debug_assert( meshes_.empty() ) ;
         meshes_.resize( model_->nb_regions(), nil ) ;
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( 3 ) ;
