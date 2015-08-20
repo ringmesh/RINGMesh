@@ -2108,7 +2108,7 @@ namespace RINGMesh {
             }
             virtual bool save( const MacroMesh& mm, const std::string& filename )
             {
-                mm.set_duplicate_mode( FAULT ) ;
+//                mm.set_duplicate_mode( FAULT ) ;
 
                 std::ofstream out( filename.c_str() ) ;
                 out.precision( 16 ) ;
