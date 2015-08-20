@@ -57,7 +57,7 @@ namespace RINGMesh {
      */
     void MacroMeshVertices::initialize()
     {
-        vertex2mesh_.resize( mm_.nb_meshes()+1, 0 ) ;
+        vertex2mesh_.resize( mm_.nb_meshes() + 1, 0 ) ;
 
         /// 1. Compute the sum of the number of vertices of the previous meshes
         index_t nb_non_unique_vertices = 0 ;
@@ -497,8 +497,8 @@ namespace RINGMesh {
                 index_t type_access = facet_access[cur_mesh.facets.nb_vertices( f )] ;
                 surface_facets_[surface_facet_ptr_[NB_FACET_TYPES * surface_id
                     + type_access]
-                    + offset_facet_index_type[NB_FACET_TYPES * surface_id + type_access]++ ] =
-                    f ;
+                    + offset_facet_index_type[NB_FACET_TYPES * surface_id
+                        + type_access]++ ] = f ;
             }
         }
 
@@ -770,10 +770,10 @@ namespace RINGMesh {
         test_initialize() ;
         mesh_id = 0 ;
         for( ; mesh_id < mm_.nb_meshes(); mesh_id++ ) {
-            if( global_index < mesh_cell_ptr_[NB_CELL_TYPES*mesh_id + 1] ) break ;
+            if( global_index < mesh_cell_ptr_[NB_CELL_TYPES * mesh_id + 1] ) break ;
         }
         ringmesh_debug_assert( mesh_id < mm_.nb_meshes() ) ;
-        return global_index - mesh_cell_ptr_[NB_CELL_TYPES*mesh_id] ;
+        return global_index - mesh_cell_ptr_[NB_CELL_TYPES * mesh_id] ;
     }
 
     /*!
@@ -1455,10 +1455,12 @@ namespace RINGMesh {
     {
         model_ = &model ;
         for( index_t mesh_i = 0; mesh_i < meshes_.size(); ++mesh_i ) {
+            if( meshes_[mesh_i] != nil ) {
 #ifdef RINGMESH_DEBUG
-            Utils::print_bounded_attributes( *meshes_[mesh_i] ) ;
+                Utils::print_bounded_attributes( *meshes_[mesh_i] ) ;
 #endif
-            delete meshes_[mesh_i] ;
+                delete meshes_[mesh_i] ;
+            }
         }
         meshes_.resize( model_->nb_regions(), nil ) ;
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
