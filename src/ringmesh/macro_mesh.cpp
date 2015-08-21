@@ -108,6 +108,8 @@ namespace RINGMesh {
                 mesh.cell_corners.nb() * sizeof(index_t) ) ;
         }
 
+        if( mm_.duplicate_mode() == MacroMesh::NONE ) return ;
+
         /// 3. Get all the corner vertices (a lot of duplicated vertices)
         std::vector< vec3 > corner_vertices( cell_corners_.size() ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
@@ -309,9 +311,9 @@ namespace RINGMesh {
     {
         BoundaryModelElement::GEOL_FEATURE feature = mm_.model().surface(
             surface_id ).geological_feature() ;
-        if( mm_.duplicate_mode() == ALL
+        if( mm_.duplicate_mode() == MacroMesh::ALL
             && !mm_.model().surface( surface_id ).is_on_voi() ) return true ;
-        if( mm_.duplicate_mode() == FAULT && BME::is_fault( feature ) ) return true ;
+        if( mm_.duplicate_mode() == MacroMesh::FAULT && BME::is_fault( feature ) ) return true ;
 
         return false ;
     }
@@ -450,7 +452,7 @@ namespace RINGMesh {
     {
         index_t facet_access[5] = { -1, -1, -1, 0, 1 } ;
         surface2mesh_.resize( mm_.model().nb_surfaces(), Surface::NO_ID ) ;
-        surface_facet_ptr_.resize( NB_FACET_TYPES * mm_.model().nb_surfaces() + 1,
+        surface_facet_ptr_.resize( MacroMesh::NB_FACET_TYPES * mm_.model().nb_surfaces() + 1,
             0 ) ;
 
         /*!
@@ -468,7 +470,7 @@ namespace RINGMesh {
                 if( !RINGMesh::Utils::contains( surface_proccessed, surface_id ) ) {
                     surface_proccessed.push_back( surface_id ) ;
                 }
-                surface_facet_ptr_[NB_FACET_TYPES * surface_id
+                surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * surface_id
                     + facet_access[cur_mesh.facets.nb_vertices( f )] + 1]++ ;
             }
             // Mark the surfaces processed
@@ -484,7 +486,7 @@ namespace RINGMesh {
         /// 2. Fill the facet indices vector directly at the right position
         surface_facets_.resize( surface_facet_ptr_.back() ) ;
         std::vector< index_t > offset_facet_index_type(
-            NB_FACET_TYPES * mm_.model().nb_surfaces(), 0 ) ;
+            MacroMesh::NB_FACET_TYPES * mm_.model().nb_surfaces(), 0 ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
             GEO::Attribute< index_t > attribute( cur_mesh.facets.attributes(),
@@ -493,9 +495,9 @@ namespace RINGMesh {
                 index_t surface_id = attribute[f] ;
                 if( surface2mesh_[surface_id] != m ) continue ;
                 index_t type_access = facet_access[cur_mesh.facets.nb_vertices( f )] ;
-                surface_facets_[surface_facet_ptr_[NB_FACET_TYPES * surface_id
+                surface_facets_[surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * surface_id
                     + type_access]
-                    + offset_facet_index_type[NB_FACET_TYPES * surface_id
+                    + offset_facet_index_type[MacroMesh::NB_FACET_TYPES * surface_id
                         + type_access]++ ] = f ;
             }
         }
@@ -536,8 +538,8 @@ namespace RINGMesh {
     index_t MacroMeshFacets::nb_triangle( index_t s ) const
     {
         test_initialize() ;
-        return surface_facet_ptr_[NB_FACET_TYPES * s + 1]
-            - surface_facet_ptr_[NB_FACET_TYPES * s] ;
+        return surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s + 1]
+            - surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s] ;
     }
 
     /*!
@@ -549,7 +551,7 @@ namespace RINGMesh {
     index_t MacroMeshFacets::triangle_id( index_t s, index_t t ) const
     {
         test_initialize() ;
-        return facet( surface_facet_ptr_[NB_FACET_TYPES * s] + t ) ;
+        return facet( surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s] + t ) ;
     }
 
     /*!
@@ -570,8 +572,8 @@ namespace RINGMesh {
     index_t MacroMeshFacets::nb_quad( index_t s ) const
     {
         test_initialize() ;
-        return surface_facet_ptr_[NB_FACET_TYPES * s + 2]
-            - surface_facet_ptr_[NB_FACET_TYPES * s + 1] ;
+        return surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s + 2]
+            - surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s + 1] ;
     }
 
     /*!
@@ -583,7 +585,7 @@ namespace RINGMesh {
     index_t MacroMeshFacets::quad_id( index_t s, index_t q ) const
     {
         test_initialize() ;
-        return facet( surface_facet_ptr_[NB_FACET_TYPES * s + 1] + q ) ;
+        return facet( surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s + 1] + q ) ;
     }
 
     /*!
@@ -633,19 +635,40 @@ namespace RINGMesh {
         nb_quad_ = 0 ;
     }
 
+    index_t MacroMeshFacets::surface_begin( index_t s ) const
+    {
+        return surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s] ;
+    }
+
+    index_t MacroMeshFacets::surface_end( index_t s ) const
+    {
+        return surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * ( s + 1 )] ;
+    }
+
+
+    index_t MacroMeshCells::mesh_begin( index_t mesh ) const
+    {
+        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh] ;
+    }
+
+    index_t MacroMeshCells::mesh_end( index_t mesh ) const
+    {
+        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh] ;
+    }
+
     /*!
      * Initialize the cell database of the MacroMesh
      */
     void MacroMeshCells::initialize()
     {
-        mesh_cell_ptr_.resize( NB_CELL_TYPES * mm_.nb_meshes() + 1, 0 ) ;
+        mesh_cell_ptr_.resize( MacroMesh::NB_CELL_TYPES * mm_.nb_meshes() + 1, 0 ) ;
         mesh_cell_adjacent_ptr_.resize( mm_.nb_meshes() + 1, 0 ) ;
         index_t cell_access[4] = { 0, 3, 2, 1 } ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_.mesh( m ) ;
             nb_cells_ += mesh.cells.nb() ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                mesh_cell_ptr_[NB_CELL_TYPES * m + cell_access[mesh.cells.type( c )]
+                mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m + cell_access[mesh.cells.type( c )]
                     + 1]++ ;
                 mesh_cell_adjacent_ptr_[m + 1] += mesh.cells.nb_facets( c ) ;
             }
@@ -661,27 +684,27 @@ namespace RINGMesh {
 
         index_t nb_vertices = mm_.vertices.nb_vertices() ;
         std::vector< std::vector< index_t > > cells_around_vertex( nb_vertices ) ;
-        std::vector< index_t > cur_cell_index_type( NB_CELL_TYPES * mm_.nb_meshes(),
+        std::vector< index_t > cur_cell_index_type( MacroMesh::NB_CELL_TYPES * mm_.nb_meshes(),
             0 ) ;
         std::vector< index_t > cur_cell_adj_type( mm_.nb_meshes(), 0 ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_.mesh( m ) ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                 index_t type_access = cell_access[mesh.cells.type( c )] ;
-                cells_[mesh_cell_ptr_[NB_CELL_TYPES * m + type_access]
-                    + cur_cell_index_type[NB_CELL_TYPES * m + type_access]++ ] = c ;
+                cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m + type_access]
+                    + cur_cell_index_type[MacroMesh::NB_CELL_TYPES * m + type_access]++ ] = c ;
 
                 for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                     index_t adj = mesh.cells.adjacent( c, f ) ;
                     if( adj != GEO::NO_CELL ) {
-                        adj += mesh_cell_ptr_[NB_CELL_TYPES * m] ;
+                        adj += mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m] ;
                     } else {
                         for( index_t v = 0; v < mesh.cells.facet_nb_vertices( c, f );
                             v++ ) {
                             index_t vertex_id = mm_.vertices.vertex_id( m,
                                 mesh.cells.facet_vertex( c, f, v ) ) ;
                             cells_around_vertex[vertex_id].push_back(
-                                mesh_cell_ptr_[NB_CELL_TYPES * m] + c ) ;
+                                mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m] + c ) ;
                         }
                     }
                     cell_adjacents_[mesh_cell_adjacent_ptr_[m]
@@ -723,7 +746,7 @@ namespace RINGMesh {
                         if( intersection.size() == 2 ) {
                             index_t new_adj =
                                 intersection[0]
-                                    == mesh_cell_ptr_[NB_CELL_TYPES * m] + c ?
+                                    == mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m] + c ?
                                     intersection[1] : intersection[0] ;
                             cell_adjacents_[mesh_cell_adjacent_ptr_[m]
                                 + mesh.cells.facets_begin( c ) + f] = new_adj ;
@@ -768,10 +791,10 @@ namespace RINGMesh {
         test_initialize() ;
         mesh_id = 0 ;
         for( ; mesh_id < mm_.nb_meshes(); mesh_id++ ) {
-            if( global_index < mesh_cell_ptr_[NB_CELL_TYPES * mesh_id + 1] ) break ;
+            if( global_index < mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh_id + 1] ) break ;
         }
         ringmesh_debug_assert( mesh_id < mm_.nb_meshes() ) ;
-        return global_index - mesh_cell_ptr_[NB_CELL_TYPES * mesh_id] ;
+        return global_index - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh_id] ;
     }
 
     /*!
@@ -813,8 +836,8 @@ namespace RINGMesh {
     index_t MacroMeshCells::nb_tet( index_t r ) const
     {
         test_initialize() ;
-        return mesh_cell_ptr_[NB_CELL_TYPES * r + 1]
-            - mesh_cell_ptr_[NB_CELL_TYPES * r] ;
+        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 1]
+            - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r] ;
     }
 
     /*!
@@ -826,7 +849,7 @@ namespace RINGMesh {
     index_t MacroMeshCells::tet_id( index_t r, index_t t ) const
     {
         test_initialize() ;
-        return cells_[mesh_cell_ptr_[NB_CELL_TYPES * r] + t] ;
+        return cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r] + t] ;
     }
 
     /*!
@@ -847,8 +870,8 @@ namespace RINGMesh {
     index_t MacroMeshCells::nb_pyramid( index_t r ) const
     {
         test_initialize() ;
-        return mesh_cell_ptr_[NB_CELL_TYPES * r + 2]
-            - mesh_cell_ptr_[NB_CELL_TYPES * r + 1] ;
+        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 2]
+            - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 1] ;
     }
 
     /*!
@@ -860,7 +883,7 @@ namespace RINGMesh {
     index_t MacroMeshCells::pyramid_id( index_t r, index_t p ) const
     {
         test_initialize() ;
-        return cells_[mesh_cell_ptr_[NB_CELL_TYPES * r + 1] + p] ;
+        return cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 1] + p] ;
     }
 
     /*!
@@ -881,8 +904,8 @@ namespace RINGMesh {
     index_t MacroMeshCells::nb_prism( index_t r ) const
     {
         test_initialize() ;
-        return mesh_cell_ptr_[NB_CELL_TYPES * r + 3]
-            - mesh_cell_ptr_[NB_CELL_TYPES * r + 2] ;
+        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 3]
+            - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 2] ;
     }
 
     /*!
@@ -894,7 +917,7 @@ namespace RINGMesh {
     index_t MacroMeshCells::prism_id( index_t r, index_t p ) const
     {
         test_initialize() ;
-        return cells_[mesh_cell_ptr_[NB_CELL_TYPES * r + 2] + p] ;
+        return cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 2] + p] ;
     }
 
     /*!
@@ -915,8 +938,8 @@ namespace RINGMesh {
     index_t MacroMeshCells::nb_hex( index_t r ) const
     {
         test_initialize() ;
-        return mesh_cell_ptr_[NB_CELL_TYPES * r + 4]
-            - mesh_cell_ptr_[NB_CELL_TYPES * r + 3] ;
+        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 4]
+            - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 3] ;
     }
 
     /*!
@@ -928,7 +951,7 @@ namespace RINGMesh {
     index_t MacroMeshCells::hex_id( index_t r, index_t h ) const
     {
         test_initialize() ;
-        return cells_[mesh_cell_ptr_[NB_CELL_TYPES * r + 3] + h] ;
+        return cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 3] + h] ;
     }
 
     /*!

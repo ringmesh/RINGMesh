@@ -60,19 +60,6 @@ namespace RINGMesh {
 
 
     /*!
-     * Several modes for vertex duplication algorithm:
-     *  - NONE = no duplication
-     *  - FAULT = duplication along faults
-     *  - HORIZON = duplication along horizons
-     *  - ALL = duplication along faults and horizons
-     */
-    enum DuplicateMode {
-        NONE, FAULT, HORIZON, ALL
-    } ;
-    const static index_t NB_FACET_TYPES = 2 ;
-    const static index_t NB_CELL_TYPES = 4 ;
-
-    /*!
      * Optional storage of the MacroMesh vertices
      */
     class RINGMESH_API MacroMeshVertices {
@@ -207,19 +194,13 @@ namespace RINGMesh {
          * @param[in] s id of the surface
          * @return the corresponding id
          */
-        index_t surface_begin( index_t s ) const
-        {
-            return surface_facet_ptr_[NB_FACET_TYPES * s] ;
-        }
+        index_t surface_begin( index_t s ) const;
         /*!
          * Id where to stop reading the vector surface_facets_ for a given surface
          * @param[in] s id of the surface
          * @return the corresponding id
          */
-        index_t surface_end( index_t s ) const
-        {
-            return surface_facet_ptr_[NB_FACET_TYPES * ( s + 1 )] ;
-        }
+        index_t surface_end( index_t s ) const;
         /*!
          * Accessor for the surface_facets_ vector
          * @param[in] global_f the id to read
@@ -325,19 +306,13 @@ namespace RINGMesh {
          * @param[in] mesh id of the mesh
          * @return the corresponding id
          */
-        index_t mesh_begin( index_t mesh ) const
-        {
-            return mesh_cell_ptr_[NB_CELL_TYPES * mesh] ;
-        }
+        index_t mesh_begin( index_t mesh ) const ;
         /*!
          * Id where to stop reading the vector mesh_cell_ptr_ for a given mesh
          * @param[in] mesh id of the mesh
          * @return the corresponding id
          */
-        index_t mesh_end( index_t mesh ) const
-        {
-            return mesh_cell_ptr_[NB_CELL_TYPES * mesh] ;
-        }
+        index_t mesh_end( index_t mesh ) const ;
 
     private:
         /// Attached MaroMesh
@@ -460,6 +435,19 @@ namespace RINGMesh {
     class RINGMESH_API MacroMesh {
     ringmesh_disable_copy( MacroMesh ) ;
     public:
+        /*!
+         * Several modes for vertex duplication algorithm:
+         *  - NONE = no duplication
+         *  - FAULT = duplication along faults
+         *  - HORIZON = duplication along horizons
+         *  - ALL = duplication along faults and horizons
+         */
+        enum DuplicateMode {
+            NONE, FAULT, HORIZON, ALL
+        } ;
+        const static index_t NB_FACET_TYPES = 2 ;
+        const static index_t NB_CELL_TYPES = 4 ;
+
         const static index_t ALL_REGIONS = index_t( -1 ) ;
 
         MacroMesh( const BoundaryModel& model ) ;
