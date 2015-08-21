@@ -57,7 +57,7 @@ namespace RINGMesh {
      */
     void MacroMeshVertices::initialize()
     {
-        vertex2mesh_.resize( mm_.nb_meshes()+1, 0 ) ;
+        vertex2mesh_.resize( mm_.nb_meshes() + 1, 0 ) ;
 
         /// 1. Compute the sum of the number of vertices of the previous meshes
         index_t nb_non_unique_vertices = 0 ;
@@ -495,8 +495,8 @@ namespace RINGMesh {
                 index_t type_access = facet_access[cur_mesh.facets.nb_vertices( f )] ;
                 surface_facets_[surface_facet_ptr_[NB_FACET_TYPES * surface_id
                     + type_access]
-                    + offset_facet_index_type[NB_FACET_TYPES * surface_id + type_access]++ ] =
-                    f ;
+                    + offset_facet_index_type[NB_FACET_TYPES * surface_id
+                        + type_access]++ ] = f ;
             }
         }
 
@@ -768,10 +768,10 @@ namespace RINGMesh {
         test_initialize() ;
         mesh_id = 0 ;
         for( ; mesh_id < mm_.nb_meshes(); mesh_id++ ) {
-            if( global_index < mesh_cell_ptr_[NB_CELL_TYPES*mesh_id + 1] ) break ;
+            if( global_index < mesh_cell_ptr_[NB_CELL_TYPES * mesh_id + 1] ) break ;
         }
         ringmesh_debug_assert( mesh_id < mm_.nb_meshes() ) ;
-        return global_index - mesh_cell_ptr_[NB_CELL_TYPES*mesh_id] ;
+        return global_index - mesh_cell_ptr_[NB_CELL_TYPES * mesh_id] ;
     }
 
     /*!
@@ -1382,9 +1382,7 @@ namespace RINGMesh {
      */
     void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes )
     {
-        index_t dim = meshes_[0]->vertices.dimension() ;
-
-        model_ = &rhs.model() ;
+        set_model( rhs.model() ) ;
         order_ = rhs.get_order() ;
         mode_ = rhs.duplicate_mode() ;
         wells_ = rhs.wells() ;
@@ -1454,6 +1452,7 @@ namespace RINGMesh {
     void MacroMesh::set_model( const BoundaryModel& model )
     {
         model_ = &model ;
+        ringmesh_debug_assert( meshes_.empty() ) ;
         meshes_.resize( model_->nb_regions(), nil ) ;
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             meshes_[r] = new GEO::Mesh( 3 ) ;
