@@ -103,11 +103,9 @@ namespace RINGMesh {
         cell_corners_.resize( mesh_cell_corner_ptr_.back() ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             GEO::Mesh& mesh = mm_.mesh( m ) ;
-            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                GEO::Memory::copy( &cell_corners_[mesh_cell_corner_ptr_[m]],
-                    mesh.cell_corners.vertex_index_ptr( 0 ),
-                    mesh.cell_corners.nb() * sizeof(index_t) ) ;
-            }
+            GEO::Memory::copy( &cell_corners_[mesh_cell_corner_ptr_[m]],
+                mesh.cell_corners.vertex_index_ptr( 0 ),
+                mesh.cell_corners.nb() * sizeof(index_t) ) ;
         }
 
         /// 3. Get all the corner vertices (a lot of duplicated vertices)
