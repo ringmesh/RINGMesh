@@ -72,8 +72,8 @@ namespace RINGMesh {
 
         index_t nb_vertices() const ;
         index_t vertex_id( index_t mesh, index_t v ) const ;
-        const vec3& vertex( index_t global_v ) const ;
         const vec3& vertex( index_t mesh, index_t v ) const ;
+        const vec3& vertex( index_t global_v ) const ;
         const vec3& duplicated_vertex( index_t v ) const ;
 
         bool vertex_id(
@@ -100,7 +100,9 @@ namespace RINGMesh {
         /// Action to do according a surface index
         typedef std::pair< index_t, SurfaceAction > surface_side ;
 
+        void test_initialize() const ;
         void initialize() ;
+        void test_initialize_duplication() const ;
         void initialize_duplication() ;
 
         bool duplicate_corner(
@@ -219,7 +221,7 @@ namespace RINGMesh {
 
         /*!
          * @brief  Vector of the facet indices
-         * @details This vector stores the facet indices sorted by mesh and by type.
+         * @details This vector stores the facet indices sorted by surface and by type.
          * Let Tsi denote the ith triangle index of the sth surface and
          * Qsi  denote the ith quad index of the sth surface. The vector storage is:
          * [T11, T12, .... , Q11, Q12 ... , T21, T22, ... , Q21, Q22 ... ]
@@ -318,14 +320,35 @@ namespace RINGMesh {
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
 
-        /// Vector of the cell ids in the corresponding GEO::Mesh
+        /*!
+         * @brief Vector of the cell indices
+         * @details This vector stores the cell indices sorted by mesh and by type.
+         * Let Tmi  denote the ith tetra index of the mth mesh,
+         *     PYmi denote the ith pyramid index of the mth mesh
+         *     Pmi  denote the ith prism index of the mth mesh
+         *     Hmi  denote the ith hex index of the mth mesh
+         * The vector storage is:
+         * [T11, T12, ..., PY11, PY12, ..., P11, P12, ..., H11, H12, ...,
+         *  T21, T22, ..., PY21, PY22, ..., P21, P22, ..., H21, H22, ... ]
+         */
         std::vector< index_t > cells_ ;
-        /// Mapping between mesh id and cell elements in cells_
+        /*!
+         * Vector storing the index of where to start reading the cells_
+         * vector for a given mesh and a given cell type.
+         * For example:
+         *    the 2nd hex index of the mesh index M will be found here:
+         *    cells_[mesh_cell_ptr_[NB_CELL_TYPES*M + 3] + 2]
+         */
         std::vector< index_t > mesh_cell_ptr_ ;
-        /// Vector of the adjacent cell ids in the MacroMesh
+        /*!
+         * Vector of the adjacent cell indices in the MacroMesh sorted by mesh
+         */
         std::vector< index_t > cell_adjacents_ ;
-        /// Mapping between mesh id and cell elements in cell_adjacents_
-        std::vector< index_t > mesh_cell_adjacent_ptr_ ;
+        /*!
+         * Vector storing the index of where to start reading the cell_adjacents_
+         * vector for a given mesh.
+         */
+         std::vector< index_t > mesh_cell_adjacent_ptr_ ;
 
         /// Number of cells in the MacroMesh
         index_t nb_cells_ ;
@@ -342,7 +365,8 @@ namespace RINGMesh {
     /*!
      * Optional storage of the MacroMesh tools
      */
-    class RINGMESH_API MacroMeshTools {
+
+        class RINGMESH_API MacroMeshTools {
     public:
         MacroMeshTools( MacroMesh& mm ) ;
         ~MacroMeshTools() ;
@@ -361,9 +385,9 @@ namespace RINGMesh {
         MacroMesh& mm_ ;
 
         /// Storage of the AABB trees on the facets
-        std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
+        mutable std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
         /// Storage of the AABB trees on the cells
-        std::vector< GEO::MeshCellsAABB* > cell_aabb_ ;
+        mutable std::vector< GEO::MeshCellsAABB* > cell_aabb_ ;
     } ;
 
     class RINGMESH_API MacroMeshOrder {
@@ -408,6 +432,7 @@ namespace RINGMesh {
         index_t nb_edges() const ;
         index_t nb_edges( index_t w ) const ;
         index_t vertex_id( index_t w, index_t e, index_t v ) const ;
+    private:
 
     private:
         /*!
@@ -420,6 +445,7 @@ namespace RINGMesh {
             }
         }
         void initialize() ;
+
     private:
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
