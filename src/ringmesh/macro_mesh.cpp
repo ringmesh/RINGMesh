@@ -1343,7 +1343,6 @@ namespace RINGMesh {
 
     MacroMesh::MacroMesh( const BoundaryModel& model )
         :
-            meshes_( model.nb_regions(), nil ),
             mode_( NONE ),
             wells_( nil ),
             order_( 1 ),
