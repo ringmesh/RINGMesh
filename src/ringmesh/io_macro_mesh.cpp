@@ -692,7 +692,7 @@ namespace RINGMesh {
                     << "ZPOSITIVE Elevation" << std::endl
                     << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
 
-                mm.set_duplicate_mode( ALL ) ;
+                mm.set_duplicate_mode( MacroMesh::ALL ) ;
 
                 std::vector< bool > vertex_exported( mm.vertices.nb_vertices(),
                     false ) ;
