@@ -54,6 +54,7 @@ namespace RINGMesh {
 
     /*!
      * Initializes the database of the MacroMesh vertices
+     * @todo Review : Give details. Database ? to do what ? answer which requests ? [JP]
      */
     void MacroMeshVertices::initialize()
     {
@@ -65,6 +66,8 @@ namespace RINGMesh {
             vertex2mesh_[i] = nb_non_unique_vertices ;
             nb_non_unique_vertices += mm_.mesh( i ).vertices.nb() ;
         }
+        /// @todo Review : vertex2mesh_[mm_.nb_meshes()] is left at 0 [JP]
+        
 
         /// 2. Get all the vertices of all the meshes
         std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
@@ -88,6 +91,7 @@ namespace RINGMesh {
      */
     void MacroMeshVertices::initialize_duplication()
     {
+        /// @todo Review : Use the initialize test [JP]
         if( vertices_.empty() ) {
             initialize() ;
         }
@@ -341,8 +345,7 @@ namespace RINGMesh {
 
     /*!
      * Gets the number of vertices with different coordinates,
-     * if several vertices are collocated they are only count once
-     * (do no care about duplication or interface between GEO::Mesh)
+     * if several vertices are colocated they are only counted once
      * @return the corresponding number
      */
     index_t MacroMeshVertices::nb_vertices() const
