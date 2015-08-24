@@ -208,6 +208,7 @@ namespace RINGMesh {
         static TYPE boundary_type( TYPE t ) ;
         static TYPE in_boundary_type( TYPE t ) ;
         static index_t dimension( TYPE t ) ;
+        static bool has_mesh        ( TYPE t ) ;
 
         static bool parent_allowed( TYPE t )
         {
