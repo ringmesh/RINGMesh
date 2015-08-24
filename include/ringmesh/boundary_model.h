@@ -455,6 +455,7 @@ namespace RINGMesh {
             return vertices.attribute_manager() ;
         }
 
+        void remove_elements( std::set< BME::bme_t >& elements ) ;
         /*! @}
          * \name To save the BoundaryModel.
          * @{

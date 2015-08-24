@@ -42,7 +42,6 @@
 #define __RINGMESH_MACRO_MESH__
 
 #include <ringmesh/common.h>
-#include <ringmesh/utils.h>
 
 #include <geogram/mesh/mesh.h>
 
@@ -59,20 +58,6 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    static std::vector< std::vector< vec3 > > empty_vertices ;
-
-    /*!
-     * Several modes for vertex duplication algorithm:
-     *  - NONE = no duplication
-     *  - FAULT = duplication along faults
-     *  - HORIZON = duplication along horizons
-     *  - ALL = duplication along faults and horizons
-     */
-    enum DuplicateMode {
-        NONE, FAULT, HORIZON, ALL
-    } ;
-    const static index_t NB_FACET_TYPES = 2 ;
-    const static index_t NB_CELL_TYPES = 4 ;
 
     /*!
      * Optional storage of the MacroMesh vertices
@@ -87,8 +72,8 @@ namespace RINGMesh {
 
         index_t nb_vertices() const ;
         index_t vertex_id( index_t mesh, index_t v ) const ;
-        const vec3& vertex( index_t global_v ) const ;
         const vec3& vertex( index_t mesh, index_t v ) const ;
+        const vec3& vertex( index_t global_v ) const ;
         const vec3& duplicated_vertex( index_t v ) const ;
 
         bool vertex_id(
@@ -105,12 +90,19 @@ namespace RINGMesh {
         void clear() ;
 
     private:
+        /// enum to characterize the action to do concerning a surface
         enum SurfaceAction {
-            SKIP = -2, TO_PROCESS = -1, NEG_SIDE = 0, POS_SIDE = 1
+            SKIP = -2,          /// do nothing
+            TO_PROCESS = -1,    /// need to be duplicated (don't know which side yet)
+            NEG_SIDE = 0,       /// need to duplicate the side opposite to the facet normal
+            POS_SIDE = 1        /// need to duplicate the side following the facet normal
         } ;
+        /// Action to do according a surface index
         typedef std::pair< index_t, SurfaceAction > surface_side ;
 
+        void test_initialize() const ;
         void initialize() ;
+        void test_initialize_duplication() const ;
         void initialize_duplication() ;
 
         bool duplicate_corner(
@@ -121,18 +113,47 @@ namespace RINGMesh {
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
 
-        /// Vector of the vertices with different coordinates
-        std::vector< vec3 > unique_vertices_ ;
-        /// Mapping between the vertex ids in a GEO::Mesh and a MacroMesh
+        /// Vector of the vertices with different coordinates without duplication
+        std::vector< vec3 > vertices_ ;
+        /*!
+         * @brief Mapping of each mesh vertex id into the global macromesh
+         * vertex storage id
+         * @details Let Vmi denote the vertex index value of ith vertex
+         * of the mth mesh in the macromesh. The vector is stored like this :
+         * [V11, V12, V13 ... , Vi1, Vi2, Vi3, ...]
+         */
         std::vector< index_t > global_vertex_indices_ ;
-        /// Mapping between the mesh id and the global_vertex_indices_ vector
+        /*!
+         * Vector of size mm_.nb_meshes(). Each value is the
+         * number of all the number of vertices of the previous meshes.
+         * This is equivalent to this code:
+         * vertex2mesh_[m] = 0 ;
+         * for( index_t i = 0; i < m; i++ ) {
+         *     vertex2mesh_[m] += mm_.mesh(i).vertices.nb() ;
+         * }
+         */
         std::vector< index_t > vertex2mesh_ ;
 
-        /// Vector of the cell corners, stores the vertex id (can duplicated)
+        /*!
+         * @brief Vector of the cell corners
+         * @details A corner denote the point index of a cell vertex.
+         * There is one corner per vertex per cell, so for a mesh of 3 tetrahedra
+         * there are 3 * 4 = 12 corners. This vector stores continuously all the
+         * cell corners of all the meshes.
+         */
         std::vector< index_t > cell_corners_ ;
-        /// Mapping between the mesh id and the cell_corners_ vector
+        /*!
+         * Vector storing the index of where to start reading the cell_corners_
+         * vector for a given mesh. Vector size is  mm_.nb_meshes() + 1.
+         * Ex. The first cell corner of the mesh m is cell_corners_[mesh_cell_corner_ptr_[m]],
+         * the second cell_corners_[mesh_cell_corner_ptr_[m]+1], ...
+         */
         std::vector< index_t > mesh_cell_corner_ptr_ ;
-        /// Mapping between the duplicated vertices and the unique vertex ids
+        /*!
+         * @brief Vector of duplicated vertices
+         * @details Each value is a duplicated vertex, the index corresponds to
+         * vertex index in vertices_.
+         */
         std::vector< index_t > duplicated_vertex_indices_ ;
     } ;
 
@@ -163,23 +184,25 @@ namespace RINGMesh {
 
     private:
         /*!
+         * Tests if the MacroMeshFacets needs to be initialized and initialize it
+         */
+        void test_initialize() const {
+            if( surface_facets_.empty() ) {
+                const_cast< MacroMeshFacets* >( this )->initialize() ;
+            }
+        }
+        /*!
          * Id where to start reading the vector surface_facets_ for a given surface
          * @param[in] s id of the surface
          * @return the corresponding id
          */
-        index_t surface_begin( index_t s ) const
-        {
-            return surface_facet_ptr_[NB_FACET_TYPES * s] ;
-        }
+        index_t surface_begin( index_t s ) const;
         /*!
          * Id where to stop reading the vector surface_facets_ for a given surface
          * @param[in] s id of the surface
          * @return the corresponding id
          */
-        index_t surface_end( index_t s ) const
-        {
-            return surface_facet_ptr_[NB_FACET_TYPES * ( s + 1 )] ;
-        }
+        index_t surface_end( index_t s ) const;
         /*!
          * Accessor for the surface_facets_ vector
          * @param[in] global_f the id to read
@@ -196,11 +219,28 @@ namespace RINGMesh {
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
 
-        /// Vector of the facet ids in the corresponding GEO::Mesh
+        /*!
+         * @brief  Vector of the facet indices
+         * @details This vector stores the facet indices sorted by surface and by type.
+         * Let Tsi denote the ith triangle index of the sth surface and
+         * Qsi  denote the ith quad index of the sth surface. The vector storage is:
+         * [T11, T12, .... , Q11, Q12 ... , T21, T22, ... , Q21, Q22 ... ]
+         */
         std::vector< index_t > surface_facets_ ;
-        /// Mapping between surface id and facet elements in surface_facets_
+        /*!
+         * Vector storing the index of where to start reading the surface_facets_
+         * vector for a given surface and a given facet type.
+         * For example:
+         *    the 2nd quad index of the surface index S will be found here:
+         *    surface_facets_[surface_facet_ptr_[NB_FACET_TYPES*S + 1] + 2]
+         */
         std::vector< index_t > surface_facet_ptr_ ;
-        /// Mapping between the surface id and the GEO::Mesh
+        /*!
+         * @brief Mapping between a surface id and a mesh id of the MacroMesh
+         * @details Since the same surfaces can be found twice, one in each adjacent
+         * region. This vector stores the mesh indices to use corresponding to each
+         * surface index.
+         */
         std::vector< index_t > surface2mesh_ ;
 
         /// Number of facets in the MacroMesh
@@ -268,32 +308,47 @@ namespace RINGMesh {
          * @param[in] mesh id of the mesh
          * @return the corresponding id
          */
-        index_t mesh_begin( index_t mesh ) const
-        {
-            return mesh_cell_ptr_[NB_CELL_TYPES * mesh] ;
-        }
+        index_t mesh_begin( index_t mesh ) const ;
         /*!
          * Id where to stop reading the vector mesh_cell_ptr_ for a given mesh
          * @param[in] mesh id of the mesh
          * @return the corresponding id
          */
-        index_t mesh_end( index_t mesh ) const
-        {
-            return mesh_cell_ptr_[NB_CELL_TYPES * mesh] ;
-        }
+        index_t mesh_end( index_t mesh ) const ;
 
     private:
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
 
-        /// Vector of the cell ids in the corresponding GEO::Mesh
+        /*!
+         * @brief Vector of the cell indices
+         * @details This vector stores the cell indices sorted by mesh and by type.
+         * Let Tmi  denote the ith tetra index of the mth mesh,
+         *     PYmi denote the ith pyramid index of the mth mesh
+         *     Pmi  denote the ith prism index of the mth mesh
+         *     Hmi  denote the ith hex index of the mth mesh
+         * The vector storage is:
+         * [T11, T12, ..., PY11, PY12, ..., P11, P12, ..., H11, H12, ...,
+         *  T21, T22, ..., PY21, PY22, ..., P21, P22, ..., H21, H22, ... ]
+         */
         std::vector< index_t > cells_ ;
-        /// Vector of the adjacent cell ids in the MacroMesh
-        std::vector< index_t > cell_adjacents_ ;
-        /// Mapping between mesh id and cell elements in cells_
+        /*!
+         * Vector storing the index of where to start reading the cells_
+         * vector for a given mesh and a given cell type.
+         * For example:
+         *    the 2nd hex index of the mesh index M will be found here:
+         *    cells_[mesh_cell_ptr_[NB_CELL_TYPES*M + 3] + 2]
+         */
         std::vector< index_t > mesh_cell_ptr_ ;
-        /// Mapping between mesh id and cell elements in cell_adjacents_
-        std::vector< index_t > mesh_cell_adjacent_ptr_ ;
+        /*!
+         * Vector of the adjacent cell indices in the MacroMesh sorted by mesh
+         */
+        std::vector< index_t > cell_adjacents_ ;
+        /*!
+         * Vector storing the index of where to start reading the cell_adjacents_
+         * vector for a given mesh.
+         */
+         std::vector< index_t > mesh_cell_adjacent_ptr_ ;
 
         /// Number of cells in the MacroMesh
         index_t nb_cells_ ;
@@ -310,7 +365,8 @@ namespace RINGMesh {
     /*!
      * Optional storage of the MacroMesh tools
      */
-    class RINGMESH_API MacroMeshTools {
+
+        class RINGMESH_API MacroMeshTools {
     public:
         MacroMeshTools( MacroMesh& mm ) ;
         ~MacroMeshTools() ;
@@ -329,9 +385,9 @@ namespace RINGMesh {
         MacroMesh& mm_ ;
 
         /// Storage of the AABB trees on the facets
-        std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
+        mutable std::vector< GEO::MeshFacetsAABB* > facet_aabb_ ;
         /// Storage of the AABB trees on the cells
-        std::vector< GEO::MeshCellsAABB* > cell_aabb_ ;
+        mutable std::vector< GEO::MeshCellsAABB* > cell_aabb_ ;
     } ;
 
     class RINGMESH_API MacroMeshOrder {
@@ -376,6 +432,7 @@ namespace RINGMesh {
         index_t nb_edges() const ;
         index_t nb_edges( index_t w ) const ;
         index_t vertex_id( index_t w, index_t e, index_t v ) const ;
+    private:
 
     private:
         /*!
@@ -388,6 +445,7 @@ namespace RINGMesh {
             }
         }
         void initialize() ;
+
     private:
         /// Attached MaroMesh
         const MacroMesh& mm_ ;
@@ -399,31 +457,36 @@ namespace RINGMesh {
 
     } ;
 
+    static std::vector< std::vector< vec3 > > empty_vertices ;
     class RINGMESH_API MacroMesh {
     ringmesh_disable_copy( MacroMesh ) ;
     public:
+        /*!
+         * Several modes for vertex duplication algorithm:
+         *  - NONE = no duplication
+         *  - FAULT = duplication along faults
+         *  - HORIZON = duplication along horizons
+         *  - ALL = duplication along faults and horizons
+         */
+        enum DuplicateMode {
+            NONE, FAULT, HORIZON, ALL
+        } ;
+        const static index_t NB_FACET_TYPES = 2 ;
+        const static index_t NB_CELL_TYPES = 4 ;
+
+        const static index_t ALL_REGIONS = index_t( -1 ) ;
 
         MacroMesh( const BoundaryModel& model ) ;
         MacroMesh() ;
         virtual ~MacroMesh() ;
-
-        //    __  __     _   _            _
-        //   |  \/  |___| |_| |_  ___  __| |___
-        //   | |\/| / -_)  _| ' \/ _ \/ _` (_-<
-        //   |_|  |_\___|\__|_||_\___/\__,_/__/
-        //
-        void compute_tetmesh(
-            const std::string& method,
-            int region_id = -1,
-            bool add_steiner_points = true,
-            std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
         void copy( const MacroMesh& mm, bool copy_attributes = true ) ;
 
-        //      _
-        //     /_\  __ __ ___ _________ _ _ ___
-        //    / _ \/ _/ _/ -_|_-<_-< _ \ '_(_-<
-        //   /_/ \_\__\__\___/__/__|___/_| /__/
-        //
+        void compute_tetmesh(
+            const std::string& method,
+            index_t region_id = ALL_REGIONS,
+            bool add_steiner_points = true,
+            std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
+
         /*!
          * Access to a GEO::Mesh of the MacroMesh
          * @param[in] region id of mesh/region
@@ -443,7 +506,7 @@ namespace RINGMesh {
             return meshes_.size() ;
         }
 
-        void add_wells( const WellGroup* wells ) ;
+        void set_wells( const WellGroup* wells ) ;
         const WellGroup* wells() const
         {
             return wells_ ;
