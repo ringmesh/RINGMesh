@@ -341,8 +341,9 @@ namespace RINGMesh {
         /*!
          * @brief Returns the number of elements of the given type
          * @details Default value is 0.
+         * @param[in] type the element type
          */
-        inline index_t nb_elements( BME::TYPE type ) const
+        index_t nb_elements( BME::TYPE type ) const
         {
             if( type < BME::NO_TYPE ) {
                 return elements( type ).size() ;
@@ -361,7 +362,7 @@ namespace RINGMesh {
          * @param[in] index Index of the element
          *
          */
-        inline const BoundaryModelElement& element( BME::bme_t id ) const
+        const BoundaryModelElement& element( BME::bme_t id ) const
         {
             ringmesh_assert( id.index < nb_elements( id.type ) ) ;
             if( id.type < BME::NO_TYPE ) {
@@ -373,7 +374,7 @@ namespace RINGMesh {
             }
         }
 
-        inline const BoundaryModelMeshElement& mesh_element( BME::bme_t id ) const
+        const BoundaryModelMeshElement& mesh_element( BME::bme_t id ) const
         {
             ringmesh_assert( BME::has_mesh( id.type ) ) ;
             return dynamic_cast<const BoundaryModelMeshElement&>( element( id ) ) ;
@@ -412,6 +413,7 @@ namespace RINGMesh {
             return nb_elements( BME::LAYER ) ;
         }
 
+        // Yes, we could use static_cast, but I prefer to check [JP]          
         const Corner& corner( index_t index ) const
         {
             return dynamic_cast< const Corner& >( *corners_.at( index ) ) ;
@@ -450,6 +452,9 @@ namespace RINGMesh {
             return universe_ ;
         }
 
+        /*!
+        * @todo  Remove this function. Client can use vertices.attribute_manager()
+        */
         GEO::AttributesManager& vertex_attribute_manager()
         {
             return vertices.attribute_manager() ;
@@ -459,6 +464,9 @@ namespace RINGMesh {
         /*! @}
          * \name To save the BoundaryModel.
          * @{
+         */
+        /*!
+         * @todo Move these functions in io_boundary_model.cpp
          */
         bool save_gocad_model3d( std::ostream& out ) ;
         void save_as_eobj_file( const std::string& file ) const ;
@@ -481,6 +489,8 @@ namespace RINGMesh {
         bool check_model_validity() const ;
         bool check_elements_validity() const ;
         bool check_geology_validity() const ;
+
+        /// @todo Move gocad validity check function. Maybe the other ones too.
         bool check_gocad_validity() const ;
 
         void copy_macro_topology( const BoundaryModel& from ) ;
@@ -522,6 +532,10 @@ namespace RINGMesh {
             return const_cast< std::vector< BME* >& >( elements( type ) ) ;
         }
 
+        /*!
+        * @brief Generic accessor to the storage of elements of the given type
+        * @pre The type must be valid. NO_TYPE or ALL_TYPES will throw an assertion
+        */
         const std::vector< BME* >& elements( BME::TYPE type ) const
         {
             switch( type ) {
@@ -541,7 +555,7 @@ namespace RINGMesh {
                     return layers_ ;
                 default:
                     ringmesh_assert_not_reached;
-                return surfaces_ ; ;
+                    return surfaces_ ;
             }
         }
 
