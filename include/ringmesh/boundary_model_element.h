@@ -282,14 +282,14 @@ namespace RINGMesh {
          * @{
          */
         bool has_name() const { 
-            return name_ != "" ;
+            return name() != "" ;
         }
         const BoundaryModel& model() const {
             return *model_ ;
         }
-        bool has_name() const
+        bool has_model() const
         {
-            return name() != "" ;
+            return model_ != NULL ;
         }
         const std::string& name() const
         {
@@ -585,7 +585,7 @@ namespace RINGMesh {
         /*!
          * @brief Global validity of the element
          */
-        virtual bool is_valid() const
+        virtual bool is_valid() const {
             return is_connectivity_valid() &&
                 is_mesh_valid() ;
             /// \todo Test and add the model vertex validity test            
