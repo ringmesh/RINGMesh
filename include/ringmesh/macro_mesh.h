@@ -61,6 +61,9 @@ namespace RINGMesh {
 
     /*!
      * Optional storage of the MacroMesh vertices
+     * @todo Review: Give details on the purpose of the class.
+     * Comments are difficult to understand for one who does not know anything
+     * about what it is doing [JP]
      */
     class RINGMESH_API MacroMeshVertices {
         friend class MacroMesh ;
@@ -76,6 +79,9 @@ namespace RINGMesh {
         const vec3& vertex( index_t global_v ) const ;
         const vec3& duplicated_vertex( index_t v ) const ;
 
+
+        /* @todo Review : Change the name of the function, the reader expects a index
+         * Update the comment in cpp file [JP] */
         bool vertex_id(
             index_t mesh,
             index_t cell_corner,
@@ -91,13 +97,21 @@ namespace RINGMesh {
 
     private:
         /// enum to characterize the action to do concerning a surface
+        /// @todo Review : Comments are not very very precise. [JP]
+        /// Action concerns the vertices of a Surface and not the Surface 
         enum SurfaceAction {
-            SKIP = -2,          /// do nothing
-            TO_PROCESS = -1,    /// need to be duplicated (don't know which side yet)
-            NEG_SIDE = 0,       /// need to duplicate the side opposite to the facet normal
-            POS_SIDE = 1        /// need to duplicate the side following the facet normal
+            /// do nothing
+            SKIP = -2,          
+            /// need to be duplicated (don't know which side yet)
+            TO_PROCESS = -1,    
+            /// need to duplicate the side opposite to the facet normal
+            NEG_SIDE = 0,       
+            /// need to duplicate the side following the facet normal
+            POS_SIDE = 1        
         } ;
+
         /// Action to do according a surface index
+        /// @todo Review : change this unclear variable name [JP]
         typedef std::pair< index_t, SurfaceAction > surface_side ;
 
         void test_initialize() const ;
@@ -110,19 +124,25 @@ namespace RINGMesh {
             std::vector< SurfaceAction >& info ) ;
 
     private:
-        /// Attached MaroMesh
+        /// Attached MacroMesh
         const MacroMesh& mm_ ;
 
         /// Vector of the vertices with different coordinates without duplication
+        /// @todo Review : Detail, duplication of what where ? [JP]
         std::vector< vec3 > vertices_ ;
+
         /*!
          * @brief Mapping of each mesh vertex id into the global macromesh
          * vertex storage id
          * @details Let Vmi denote the vertex index value of ith vertex
          * of the mth mesh in the macromesh. The vector is stored like this :
          * [V11, V12, V13 ... , Vi1, Vi2, Vi3, ...]
+         * 
+         * @todo Review : Clarify comments, what is the global macromesh vertex storage ? [JP]
+         * (Bruno comments are very nice for the same kind of compressed storage)
          */
         std::vector< index_t > global_vertex_indices_ ;
+        
         /*!
          * Vector of size mm_.nb_meshes(). Each value is the
          * number of all the number of vertices of the previous meshes.
@@ -131,7 +151,11 @@ namespace RINGMesh {
          * for( index_t i = 0; i < m; i++ ) {
          *     vertex2mesh_[m] += mm_.mesh(i).vertices.nb() ;
          * }
-         */
+         *
+         * @todo Review : Use a more explicit variable name, eg region_mesh_vertex_begin [JP]
+         * Why not use a region_mesh_vertex_end, so the vector size is the same that the number
+         * of regions [JP]
+         */ 
         std::vector< index_t > vertex2mesh_ ;
 
         /*!
@@ -140,8 +164,14 @@ namespace RINGMesh {
          * There is one corner per vertex per cell, so for a mesh of 3 tetrahedra
          * there are 3 * 4 = 12 corners. This vector stores continuously all the
          * cell corners of all the meshes.
+         *
+         *
+         * @todo Review : Why do we have cell corners here ? Explain [JP]
+         * Clarify the storage. Why have the corners if there is no way to 
+         * have the cells (I do not see any at least) [JP] Explain where it is used.
          */
         std::vector< index_t > cell_corners_ ;
+
         /*!
          * Vector storing the index of where to start reading the cell_corners_
          * vector for a given mesh. Vector size is  mm_.nb_meshes() + 1.
@@ -149,6 +179,7 @@ namespace RINGMesh {
          * the second cell_corners_[mesh_cell_corner_ptr_[m]+1], ...
          */
         std::vector< index_t > mesh_cell_corner_ptr_ ;
+        
         /*!
          * @brief Vector of duplicated vertices
          * @details Each value is a duplicated vertex, the index corresponds to
@@ -546,6 +577,8 @@ namespace RINGMesh {
 
         /*
          * Change the order of the mesh
+         * @todo Review: o is not a good parameter name because looks like 0
+         * for our stupid brain [JP]
          */
         void set_order( const index_t o )
         {
@@ -569,8 +602,10 @@ namespace RINGMesh {
 
     protected:
         /// BoundaryModel representing the structural information of the mesh
+        /// @todo Review : Can a MacroMesh exist without a BoundaryModel ? If not,
+        /// use a const reference [JP]
         const BoundaryModel* model_ ;
-        /// Vector of meshes, one by region
+        /// Vector of meshes, one by region of the BoundaryModel
         std::vector< GEO::Mesh* > meshes_ ;
         /// Optional duplication mode to compute the duplication of vertices on surfaces
         DuplicateMode mode_ ;
@@ -579,6 +614,7 @@ namespace RINGMesh {
         const WellGroup* wells_ ;
 
         /// Order of the mesh
+        /// @todo Review Detail what is the order of the mesh [JP]
         index_t order_ ;
 
     public:
