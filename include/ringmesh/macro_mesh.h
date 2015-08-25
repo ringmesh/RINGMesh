@@ -64,8 +64,19 @@ namespace RINGMesh {
      * @todo Review: Give details on the purpose of the class.
      * Comments are difficult to understand for one who does not know anything
      * about what it is doing [JP]
+     *
+     * @todo Review : Move functions, enums, etc, that 
+     * implement algo details in the cpp file. If I checked well, they are not used outside the class.
+     * This way the role of this class is clear, maintenance is easier, etc [JP]
+     * Please move :
+     *   - SurfaceAction enum 
+     *   - duplicate_corner function 
+     *   - surface_side typedef
+     *   - is_surface_to_duplicate function
      */
     class RINGMESH_API MacroMeshVertices {
+        /* @todo Review : There is no real need to be friends [JP]
+         */
         friend class MacroMesh ;
     public:
         MacroMeshVertices( const MacroMesh& mm )
@@ -80,20 +91,27 @@ namespace RINGMesh {
         const vec3& duplicated_vertex( index_t v ) const ;
 
 
-        /* @todo Review : Change the name of the function, the reader expects a index
-         * Update the comment in cpp file [JP] */
+        /* @todo Review : Change the name of the function, the reader expects an index
+         * Update the comment in cpp file [JP] 
+         * La logique m'echappe. Ca a meme pas trop l'air utilise.
+         * Je mettrai une fonction bool is_corner_a_duplicate(index_t mesh, index_t corner, index_t& duplicate_id)
+         * et une seconde index_t unique_vertex_id( index_t duplicate )
+         * histoire d'avoir un peu de flexibilite
+         */
         bool vertex_id(
             index_t mesh,
             index_t cell_corner,
             index_t& vertex_id,
             index_t& duplicated_vertex_id = dummy_index_t ) const ;
-
+        
         index_t nb_duplicated_vertices() const ;
         index_t nb_total_vertices() const ;
 
         bool is_surface_to_duplicate( index_t s ) const ;
 
         void clear() ;
+
+        /* @todo Review : Implement a clear_duplicates function */
 
     private:
         /// enum to characterize the action to do concerning a surface
@@ -128,7 +146,10 @@ namespace RINGMesh {
         const MacroMesh& mm_ ;
 
         /// Vector of the vertices with different coordinates without duplication
-        /// @todo Review : Detail, duplication of what where ? [JP]
+        /* @todo Review : Detail, duplication of what where ? Perhaps rename these unique_vertices [JP]
+         * Just say that there are no colocated vertices in that vector. 
+         * Is there an epsilon tolerance ? [JP]
+         */ 
         std::vector< vec3 > vertices_ ;
 
         /*!
@@ -140,6 +161,10 @@ namespace RINGMesh {
          * 
          * @todo Review : Clarify comments, what is the global macromesh vertex storage ? [JP]
          * (Bruno comments are very nice for the same kind of compressed storage)
+         * @todo Review : Comments are miseleading, this is a mapping FROM a vertex id
+         * in the MacroMesh (index of a region + index of the vertex in the mesh of that region)
+         * TO a unique vertex in this class (vector vertices_).
+         * @todo Review : Rename this vector, e.g. macromesh_id_2_local_id_ 
          */
         std::vector< index_t > global_vertex_indices_ ;
         
@@ -152,7 +177,7 @@ namespace RINGMesh {
          *     vertex2mesh_[m] += mm_.mesh(i).vertices.nb() ;
          * }
          *
-         * @todo Review : Use a more explicit variable name, eg region_mesh_vertex_begin [JP]
+         * @todo Review : Use a more explicit variable name, e.g. region_mesh_vertex_begin [JP]
          * Why not use a region_mesh_vertex_end, so the vector size is the same that the number
          * of regions [JP]
          */ 
@@ -169,6 +194,9 @@ namespace RINGMesh {
          * @todo Review : Why do we have cell corners here ? Explain [JP]
          * Clarify the storage. Why have the corners if there is no way to 
          * have the cells (I do not see any at least) [JP] Explain where it is used.
+         * Comment proposal: This vector is build from the cell_corner_ vectors 
+         * of the MacroMesh region meshes. The indices stored are modified to point to
+         * the correct duplicated (or not) vertex stored in this class.
          */
         std::vector< index_t > cell_corners_ ;
 
@@ -177,6 +205,9 @@ namespace RINGMesh {
          * vector for a given mesh. Vector size is  mm_.nb_meshes() + 1.
          * Ex. The first cell corner of the mesh m is cell_corners_[mesh_cell_corner_ptr_[m]],
          * the second cell_corners_[mesh_cell_corner_ptr_[m]+1], ...
+         *
+         * @todo Review : Use a more explicit variable name, eg region_mesh_corner_
+         * Why not use the end so the vector size is the same that the number of regions [JP]
          */
         std::vector< index_t > mesh_cell_corner_ptr_ ;
         
@@ -184,9 +215,14 @@ namespace RINGMesh {
          * @brief Vector of duplicated vertices
          * @details Each value is a duplicated vertex, the index corresponds to
          * vertex index in vertices_.
+         *
+         * @todo Review : Precise that each vertex of vertices_ might be duplicated X times [JP]
          */
         std::vector< index_t > duplicated_vertex_indices_ ;
     } ;
+
+
+
 
     /*!
      * Optional storage of the MacroMesh facets
@@ -570,6 +606,8 @@ namespace RINGMesh {
         {
             MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
             not_const->mode_ = mode ;
+            /* @todo Review : Implement and use a MacroMeshVertices::clean_duplicates function [JP]
+             */
             not_const->vertices.cell_corners_.clear() ;
             not_const->vertices.duplicated_vertex_indices_.clear() ;
             not_const->vertices.mesh_cell_corner_ptr_.clear() ;

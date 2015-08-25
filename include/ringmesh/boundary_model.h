@@ -478,6 +478,10 @@ namespace RINGMesh {
          * @}
          */
 
+        /* @todo Rewrite translate and rotate functions  and move them somewhere else
+         * It is a very very bad idea to modify the coordinates of vertices the BME 
+         * without the BM knowing !!! [JP]
+         */
         void translate( const vec3& ) ;
         void rotate(
             const vec3& origin,

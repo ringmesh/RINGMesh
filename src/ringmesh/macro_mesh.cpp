@@ -54,13 +54,20 @@ namespace RINGMesh {
 
     /*!
      * Initializes the database of the MacroMesh vertices
-     * @todo Review : Give details. Database ? to do what ? answer which requests ? [JP]
+     * @todo Review : Give details. Database ? to do what ? answer which requests ? 
+     *                How this function works ?
+     *                What does it fill ?
      */
     void MacroMeshVertices::initialize()
     {
         vertex2mesh_.resize( mm_.nb_meshes() + 1, 0 ) ;
 
         /// 1. Compute the sum of the number of vertices of the previous meshes
+        /* @todo Review : Be precise previous meshes of what ? 
+         * Compute and store the number of vertices per region of the attached macromesh.         
+         * I know I am annoying [JP]
+         * Same for 2 and 3
+         */
         index_t nb_non_unique_vertices = 0 ;
         for( index_t i = 0; i < mm_.nb_meshes(); i++ ) {
             vertex2mesh_[i] = nb_non_unique_vertices ;
@@ -69,7 +76,7 @@ namespace RINGMesh {
         /// @todo Review : vertex2mesh_[mm_.nb_meshes()] is left at 0 [JP]
         
 
-        /// 2. Get all the vertices of all the meshes
+        /// 2. Get all the vertices of all the meshes               
         std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
         for( index_t i = 0; i < mm_.nb_meshes(); i++ ) {
             index_t nb_vertices = mm_.mesh( i ).vertices.nb() ;
@@ -80,6 +87,12 @@ namespace RINGMesh {
         }
 
         /// 3. Compute the colocated vertices
+        /* @todo Review : Above comment is useless. We want to know that
+        * the vertices_ vector is filled with non-colocated vertices 
+        * and that the global_vertex_indices_ now stores the mapping from 
+        * all_vertices to vertices_ 
+        * Ça ça intéresse vachement plus le lecteur, enfin moi [JP]
+        */
         MakeUnique mu( all_vertices ) ;
         mu.unique() ;
         mu.unique_points( vertices_ ) ;
@@ -88,6 +101,8 @@ namespace RINGMesh {
 
     /*!
      * Initializes the database of the duplicated MacroMesh vertices
+     *
+     * @todo Review : This database stays a mystery.... [JP]
      */
     void MacroMeshVertices::initialize_duplication()
     {
@@ -95,7 +110,10 @@ namespace RINGMesh {
         if( vertices_.empty() ) {
             initialize() ;
         }
+        
         /// 1. Compute the mesh_cell_corner_ptr_ vector
+        /// @todo Review : You fill the vector with incremental sum of 
+        /// the number of cell corners of the MM region meshes [JP]
         mesh_cell_corner_ptr_.resize( mm_.nb_meshes() + 1, 0 ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_.mesh( m ) ;
@@ -112,7 +130,9 @@ namespace RINGMesh {
                 mesh.cell_corners.nb() * sizeof(index_t) ) ;
         }
 
-        if( mm_.duplicate_mode() == MacroMesh::NONE ) return ;
+        if( mm_.duplicate_mode() == MacroMesh::NONE ) {
+            return ;
+        }
 
         /// 3. Get all the corner vertices (a lot of duplicated vertices)
         std::vector< vec3 > corner_vertices( cell_corners_.size() ) ;
@@ -150,6 +170,11 @@ namespace RINGMesh {
         corner_vertices.clear() ;
 
         /// 5. Duplicate the corners (only one side of the duplicated surfaces)
+        /* @todo Review : Add comment. The goal is to visit the corners of the MacroMesh
+         * that are on one side of a given Surface. We propagate through the cells staying ... 
+         * All the corners of the MacroMesh are visited and duplicated if needed ...
+         * [JP]
+         */
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_.mesh( m ) ;
             GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
@@ -158,22 +183,35 @@ namespace RINGMesh {
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                 for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
                     // get the index of the corner inside cell_corners_
+                    /* @todo Review : Write a member function of MMV for this [JP]
+                     */
                     index_t co = mesh_cell_corner_ptr_[m]
                         + mesh.cells.corners_begin( c ) + v ;
+
                     if( !is_corner_to_duplicate[co] ) continue ;
                     // The vertex is on a surface to duplicate
 
                     // Propagate on the cells around the corresponding vertex.
                     // The propagation process cannot cross any surface.
                     index_t vertex_id = mesh.cells.vertex( c, v ) ;
+                    
                     // all the cell corners resulting of the propagation
                     std::vector< index_t > corner_used ;
+
                     // all cells used during the propagation, used to provide
                     // adding the same cell several times into the stack
+                    /* @todo Review : Why not use an Attribute on the Mesh cells 
+                     * I think it would be faster [JP]
+                     */
                     std::vector< index_t > cell_added ;
+                    
                     // all the surfaces encountered during the propagation
                     // and which side stopped the propagation
+                    /* @todo These surfaces should be the boundaries of the Region, right ?
+                     * Maybe check that we have all of them at the end ? [JP] 
+                     */
                     std::set< surface_side > surfaces ;
+                    
                     // stack of the front of cells
                     std::stack< index_t > S ;
                     S.push( c ) ;
@@ -182,32 +220,56 @@ namespace RINGMesh {
                         index_t cur_c = S.top() ;
                         S.pop() ;
                         // Find which corner of the current cell matches vertex_id
+                        /* @todo Review : Write a function for this in the cpp file 
+                         * index_t find_corner( const Mesh&, index_t cell, index_t vertex_id) [JP]
+                         */
                         for( index_t cur_v = 0;
-                            cur_v < mesh.cells.nb_vertices( cur_c ); cur_v++ ) {
+                            cur_v < mesh.cells.nb_vertices( cur_c ); cur_v++ 
+                        ) {
                             if( mesh.cells.vertex( cur_c, cur_v ) == vertex_id ) {
                                 index_t cur_co = mesh_cell_corner_ptr_[m]
                                     + mesh.cells.corners_begin( cur_c ) + cur_v ;
                                 // No need to process the corner another time
+                                /* @todo Review : comment proposal : Flag the corner as processed [JP]
+                                 */
                                 is_corner_to_duplicate[cur_co] = false ;
                                 corner_used.push_back( cur_co ) ;
                                 break ;
                             }
                         }
                         // Find the cell facets including the vertex
+                        /* @todo Review : Idem write a function to get the cells for this in the cpp file [JP]
+                         * void facets_around_vertex( const Mesh&, index_t cell, index_t vertex_id, vector<index_t>& facets ) [JP]
+                         * Y en a peut être même une dans le code de Bruno.
+                         *
+                         * Comment is misleading, in that loop, you do not only find these
+                         * cells.... [JP] 
+                         */
                         for( index_t cur_f = 0;
-                            cur_f < mesh.cells.nb_facets( cur_c ); cur_f++ ) {
+                            cur_f < mesh.cells.nb_facets( cur_c ); cur_f++
+                        ) {
                             for( index_t cur_v = 0;
                                 cur_v < mesh.cells.facet_nb_vertices( cur_c, cur_f );
-                                cur_v++ ) {
+                                cur_v++ 
+                            ) {
                                 if( mesh.cells.facet_vertex( cur_c, cur_f, cur_v )
                                     != vertex_id ) continue ;
                                 // Find if the facet is on a surface or inside the domain
+                                /* @todo Review : Idem write a function for this in the cpp file 
+                                 * [JP]
+                                 * 
+                                 * @todo Review : Why is a ColocaterANN necessary ???
+                                 * Isn't the attribute giving the surface stored on all facets ? [JP]                                 
+                                 */
                                 std::vector< index_t > result ;
                                 if( ann.get_colocated(
-                                    Geom::mesh_cell_facet_center( mesh, cur_c,
-                                        cur_f ), result ) ) {
+                                        Geom::mesh_cell_facet_center( mesh, cur_c,
+                                            cur_f ), result ) 
+                                ) {
                                     index_t surface_id = attribute[result[0]] ;
-                                    // Compute which side of the surface the cell facet is
+                                    // Compute on which side of the surface the cell facet is
+                                    /* @todo Review : write a function [ JP ]
+                                     */
                                     vec3 facet_normal = GEO::Geom::mesh_facet_normal(
                                         mesh, result[0] ) ;
                                     vec3 cell_facet_normal =
@@ -220,10 +282,9 @@ namespace RINGMesh {
                                         surface_side( surface_id, side ) ) ;
                                 } else {
                                     // The cell facet is not on a surface.
-                                    // Add the adjacent cell if it exists and not already
-                                    // processed or added into the stack
-                                    index_t cur_adj = mesh.cells.adjacent( cur_c,
-                                        cur_f ) ;
+                                    // Add the adjacent cell to the stack if it exists 
+                                    // and has not already been processed or added into the stack
+                                    index_t cur_adj = mesh.cells.adjacent( cur_c, cur_f ) ;
                                     if( cur_adj != GEO::NO_CELL
                                         && !RINGMesh::Utils::contains( cell_added,
                                             cur_adj ) ) {
@@ -240,15 +301,23 @@ namespace RINGMesh {
                     // we need to duplicate only one side of the surface
                     if( duplicate_corner( surfaces, surface_actions ) ) {
                         // Add a new duplicated vertex and its associated vertex
+                        
+                        /* @todo Review : Use the total_nb_vertices function [JP] 
+                         * why mm_.vertices.nb_vertices() and not nb_vertices() ?
+                         * Please help the reader !! same thing 2 lines below [JP]
+                         */
                         index_t duplicated_vertex_id = mm_.vertices.nb_vertices()
                             + duplicated_vertex_indices_.size() ;
+                        
                         index_t global_vertex_id = mm_.vertices.vertex_id( m,
                             vertex_id ) ;
+
                         duplicated_vertex_indices_.push_back( global_vertex_id ) ;
-                        // Update all the cell corners on this side to the surface
+                        // Update all the cell corners on this side of the surface
                         // to the new duplicated vertex index
                         for( index_t cur_co = 0; cur_co < corner_used.size();
-                            cur_co++ ) {
+                            cur_co++
+                        ) {
                             cell_corners_[corner_used[cur_co]] =
                                 duplicated_vertex_id ;
                         }
@@ -259,9 +328,10 @@ namespace RINGMesh {
     }
 
     /*!
-     * Tests is the cell corner id should be duplicated
-     * @param[in] surfaces the set of surfaces and sides around the corner
+     * Tests if a cell corner vertex should be duplicated or not
+     * @param[in] surfaces set of oriented surfaces around the corner
      * @param[in,out] info information on the behavior to adapt according the current surface
+     * @todo Review : mysterious comment, to adapt ? what are the values ? to do what ? [JP]
      * @return Returns true if the corner needs to be duplicated, false otherwise
      */
     bool MacroMeshVertices::duplicate_corner(
@@ -270,12 +340,17 @@ namespace RINGMesh {
     {
         // Determine the actions to do according the surface_side
         // encountered during the propagation
+        /* @todo Review : propagation of what ? where ? Name the function [JP]
+         * Je ne comprends rien 
+         */
         std::vector< SurfaceAction > temp_info( info.size(), TO_PROCESS ) ;
         for( std::set< surface_side >::const_iterator it( surfaces.begin() );
-            it != surfaces.end(); ++it ) {
+            it != surfaces.end(); ++it 
+        ) {
             index_t surface_id = it->first ;
-            if( info[surface_id] == SKIP || temp_info[surface_id] == SKIP )
+            if( info[ surface_id ] == SKIP || temp_info[ surface_id ] == SKIP ) {
                 continue ;
+            }
             if( temp_info[surface_id] == TO_PROCESS ) {
                 temp_info[surface_id] = it->second ;
             } else {
@@ -287,7 +362,9 @@ namespace RINGMesh {
         }
 
         for( index_t s = 0; s < info.size(); s++ ) {
-            if( temp_info[s] < 0 ) continue ;
+            if( temp_info[ s ] < 0 ) {
+                continue ;
+            }
             ringmesh_debug_assert( info[s] != SKIP ) ;
             if( info[s] == TO_PROCESS ) {
                 // First time we encounter this surface, do not duplicate
@@ -325,6 +402,10 @@ namespace RINGMesh {
 
     /*!
      * Tests if the MacroMeshVertices needs to be initialized and initialize it
+     * 
+     * @todo Review : name of the function not consistent with what it is doing.
+     * I am expecting only a test, that returns true or false.
+     * Idem for test_initialize_duplication [JP]
      */
     void MacroMeshVertices::test_initialize() const
     {
@@ -347,6 +428,10 @@ namespace RINGMesh {
      * Gets the number of vertices with different coordinates,
      * if several vertices are colocated they are only counted once
      * @return the corresponding number
+     *
+     * @todo Review : Simplify and clarify conmments, please put a brief
+     * section ( number of unique vertices ) details: returns the number 
+     * of unique instances of the mesh vertex coordinates. [JP]
      */
     index_t MacroMeshVertices::nb_vertices() const
     {
@@ -359,6 +444,11 @@ namespace RINGMesh {
      * @param[in] mesh id of the mesh/region
      * @param[in] v vertex id of the GEO::Mesh vertex
      * @return the id of \p v in the MacroMesh
+     *
+     * @todo Review : Comment is misleading. I understood this return an 
+     * index in the MacroMesh [JP] 
+     * Perhaps rename the function mm_vertex_id
+     * I'd also rename the parameter mesh, this is not a mesh this a region_id.
      */
     index_t MacroMeshVertices::vertex_id( index_t mesh, index_t v ) const
     {
@@ -371,6 +461,9 @@ namespace RINGMesh {
      * Gets the MacroMesh vertex coordinates
      * @param[in] global_v vertex id in the MacroMesh
      * @return the vertex coordinates
+     *
+     * @todo Review : misleading comment, global_v is an index in MMVertices,
+     * in the unique vertices [JP]
      */
     const vec3& MacroMeshVertices::vertex( index_t global_v ) const
     {
@@ -384,16 +477,22 @@ namespace RINGMesh {
      * @param[in] mesh vertex id in the MacroMesh
      * @param[in] v vertex id of the GEO::Mesh vertex
      * @return the vertex coordinates
+     *
+     * @todo Review : Seems that this function is not used. It is not very useful.
+     * I'd remove it. [JP]
      */
     const vec3& MacroMeshVertices::vertex( index_t mesh, index_t v ) const
     {
         return vertex( vertex_id( mesh, v ) ) ;
     }
 
+    /* @todo Review : function used only once, really useful ? [JP]
+     */
     const vec3& MacroMeshVertices::duplicated_vertex( index_t v ) const
     {
         test_initialize_duplication() ;
-        return vertices_[duplicated_vertex_indices_[v]] ;
+        ringmesh_debug_assert( v < duplicated_vertex_indices_.size() ) ;
+        return vertex( duplicated_vertex_indices_[v] ) ;
     }
 
     /*!
@@ -415,7 +514,8 @@ namespace RINGMesh {
         test_initialize_duplication() ;
         index_t corner_value = cell_corners_[mesh_cell_corner_ptr_[mesh]
             + cell_corner] ;
-        if( corner_value < mm_.vertices.nb_vertices() ) {
+        
+        if( corner_value < mm_.vertices.nb_vertices() ) { 
             vertex_id = mm_.vertices.vertex_id( mesh, corner_value ) ;
             return true ;
         } else {
@@ -441,6 +541,11 @@ namespace RINGMesh {
      */
     index_t MacroMeshVertices::nb_total_vertices() const
     {
+        /* @todo Review : Code does not match comment ? 
+         * Which total are we talking about ? 
+         * Writing mm_.vertices.nb_vertices() from time to time is REALLY ANNOYING.
+         * Please, fix it everywhere [JP] 
+         */
         return nb_duplicated_vertices() + mm_.vertices.nb_vertices() ;
     }
 
@@ -456,6 +561,10 @@ namespace RINGMesh {
         mesh_cell_corner_ptr_.clear() ;
         duplicated_vertex_indices_.clear() ;
     }
+
+
+    /*******************************************************************************/
+
 
     /*!
      * Initialize the facet database of the MacroMesh
