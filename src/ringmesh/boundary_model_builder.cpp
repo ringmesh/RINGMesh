@@ -504,12 +504,24 @@ namespace {
         }
     }
 
+    /*!
+    * @brief Total number of facets in the model Surfaces
+    */
+    index_t nb_facets( const BoundaryModel& BM )
+    {
+        index_t result = 0 ;
+        for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
+            result += BM.surface( i ).nb_cells() ;
+        }
+        return result ;
+    }
+
     void print_model( const BoundaryModel& model )
     {
         GEO::Logger::out( "BoundaryModel" ) << "Model " << model.name() << " has "
-            << std::endl << std::setw( 10 ) << std::left << model.nb_vertices()
+            << std::endl << std::setw( 10 ) << std::left << model.vertices.nb()
             << " vertices " << std::endl << std::setw( 10 ) << std::left
-            << model.nb_facets() << " facets " << std::endl << std::endl
+            << nb_facets( model ) << " facets " << std::endl << std::endl
             << std::setw( 10 ) << std::left << model.nb_regions() << " regions "
             << std::endl << std::setw( 10 ) << std::left << model.nb_surfaces()
             << " surfaces " << std::endl << std::setw( 10 ) << std::left

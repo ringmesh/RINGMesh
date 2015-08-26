@@ -48,6 +48,7 @@
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/basic/string.h>
+#include <geogram/basic/algorithm.h>
 #include <geogram/points/colocate.h>
 #include <geogram/mesh/triangle_intersection.h>
 #include <geogram/mesh/mesh.h>
@@ -67,13 +68,7 @@
 #include <map>
 
 namespace {
-
-    /*!
-     * @todo Review: Almost all the ringmesh_assert should be converted into
-     * ringmesh_debug_assert, this is taking to much time and release mode is not
-     * suppose to crash but send messages or don't crash..
-     */
-
+   
     using namespace GEO ;
     using namespace RINGMesh ;
     using GEO::index_t ;
@@ -177,14 +172,15 @@ namespace {
         BME::bme_t result ;
         index_t lv0 = NO_ID ;
         index_t lv1 = NO_ID ;
-        /*!
-         * @todo Review: Could be faster if v0_bme and v1_bme are sorted [AB]
-         */
+
+        // No sorting to optimize since 
+        // v0_bme and v1_bme are very small sets ( < 10 elements ) [JP]
         for( index_t i = 0; i < v0_bme.size(); ++i ) {
             if( v0_bme[i].bme_id.type == BME::LINE ) {
                 for( index_t j = 0; j < v1_bme.size(); ++j ) {
                     if( v1_bme[j].bme_id.type == BME::LINE
-                        && v0_bme[i].bme_id.index == v1_bme[j].bme_id.index ) {
+                        && v0_bme[i].bme_id.index == v1_bme[j].bme_id.index 
+                    ) {
                         if( lv0 == NO_ID ) {
                             lv0 = v0_bme[i].v_id ;
                             lv1 = v1_bme[j].v_id ;
@@ -208,14 +204,15 @@ namespace {
             if( lv0 > lv1 ) {
                 std::swap( lv0, lv1 ) ;
             }
-            /// @todo Review: Interesting C-like cast... Why int and not index_t ? [AB]
-            int delta_i = (int) lv1 - (int) lv0 ;
+            // Casts are here to avoid a compiler warning [JP]
+            int delta_i = static_cast<int>( lv1 ) - static_cast<int>( lv0 ) ;
 
             if( delta_i == 1 ) {
-                // There is if their indices in the Line are i and i+1
+                // There is an edge if their indices in the Line are i and i+1
                 return result ;
             } else if( model.line( result.index ).is_closed()
-                && delta_i == model.line( result.index ).nb_vertices() - 2 ) {
+                && delta_i == model.line( result.index ).nb_vertices() - 2 
+            ) {
                 // If the Line is closed we can also have 0; n-2 or n-1; 1
                 return result ;
             } else {
@@ -238,7 +235,7 @@ namespace {
         // Get the ids in the model of these 2 points
         index_t v0 = model.vertices.vertex_index( p0 ) ;
         index_t v1 = model.vertices.vertex_index( p1 ) ;
-        ringmesh_assert( v0 != NO_ID && v1 != NO_ID ) ;
+        ringmesh_debug_assert( v0 != NO_ID && v1 != NO_ID ) ;
 
         return is_edge_on_line( model, v0, v1 ) ;
     }
@@ -268,17 +265,15 @@ namespace {
                             M.facets.vertex( f1, i ) ) ;
                         const vec3& p11 = M.vertices.point(
                             M.facets.vertex( f1, i == 2 ? 0 : i + 1 ) ) ;
-                        /// @todo Review: could also be done using (i+1)%3 [AB]
-
+                        
                         const vec3& p20 = M.vertices.point(
                             M.facets.vertex( f2, j ) ) ;
                         const vec3& p21 = M.vertices.point(
                             M.facets.vertex( f2, j == 2 ? 0 : j + 1 ) ) ;
-                        /// @todo Review: could also be done using (i+1)%3 [AB]
-
+                        
                         index_t v10 = BM.vertices.vertex_index( p10 ) ;
                         index_t v11 = BM.vertices.vertex_index( p11 ) ;
-                        ringmesh_assert( v10 != NO_ID && v11 != NO_ID ) ;
+                        ringmesh_debug_assert( v10 != NO_ID && v11 != NO_ID ) ;
 
                         index_t v20 = BM.vertices.vertex_index( p20 ) ;
                         index_t v21 = BM.vertices.vertex_index( p21 ) ;
@@ -620,11 +615,12 @@ namespace {
         M.clear( true ) ;
 
         // Set the vertices 
-        index_t nbv = model.nb_vertices() ;
+        index_t nbv = model.vertices.nb() ;
         M.vertices.create_vertices( nbv ) ;
-        /*!
-         * @todo Review: could be much faster using M.vertices.assign_points
-         * because it directly copies the bytes [AB]
+
+        /* We need to copy the point one after another since we do not have access
+         * to the storage of the model.vertices. 
+         * I do not want to provide this access [JP]
          */
         for( index_t v = 0; v < nbv; ++v ) {
             M.vertices.point( v ) = model.vertices.unique_vertex( v ) ;
@@ -679,13 +675,8 @@ namespace {
                     }
                 }
             }
-            /*!
-             * @todo Review: this can be done using GEO::sort_unique( in_boundary ) [AB]
-             */
-            std::sort( borders.begin(), borders.end() ) ;
-            index_t nb = std::unique( borders.begin(), borders.end() )
-                - borders.begin() ;
-            borders.resize( nb ) ;
+            
+            GEO::sort_unique( borders ) ;            
         }
     }
 
@@ -718,13 +709,7 @@ namespace {
                 }
             }
             // Remove duplicates
-            /*!
-             * @todo Review: this can be done using GEO::sort_unique( in_boundary ) [AB]
-             */
-            std::sort( in_boundary.begin(), in_boundary.end() ) ;
-            index_t nb = std::unique( in_boundary.begin(), in_boundary.end() )
-                - in_boundary.begin() ;
-            in_boundary.resize( nb ) ;
+            GEO::sort_unique( in_boundary ) ;
         }
     }
 
@@ -1166,8 +1151,9 @@ namespace {
     }
 
     /*!
-     * @todo Review: this function could be inline or even better define as a macro
+     * @todo Review: this function could be defined as a macro
      * to be replaced by the precompiler [AB]
+     * Maybe the compiler does it by itself ? [JP]
      */
     BoundaryModelMeshElement& cast_bmm_element(
         const BoundaryModel& M,
@@ -1176,6 +1162,18 @@ namespace {
     {
         return dynamic_cast< BoundaryModelMeshElement& >( const_cast< BME& >( M.element(
             BME::bme_t( T, i ) ) ) ) ;
+    }
+
+    /*!
+    * @brief Total number of facets in the model Surfaces
+    */
+    index_t nb_facets( const BoundaryModel& BM )
+    {
+        index_t result = 0 ;
+        for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
+            result += BM.surface( i ).nb_cells() ;
+        }
+        return result ;
     }
 
 } // anonymous namespace 
@@ -1228,7 +1226,6 @@ namespace RINGMesh {
                     bme_vertices_[index].push_back( VertexInBME( E.bme_id(), v ) ) ;
                     // Global vertex index increment
                     index++ ;
-                    /// @todo Review: index++ could be written with v++ insidde the for [AB]
                 }
             }
         }
@@ -1238,28 +1235,21 @@ namespace RINGMesh {
 
     void BoundaryModelVertices::set_invalid_vertex( index_t v )
     {
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         std::vector< VertexInBME >& related = bme_vertices_[v] ;
-        /// @todo Review could also use std::fill [AB]
-        for( index_t i = 0; i < related.size(); ++i ) {
-            related[i] = VertexInBME() ;
-        }
+        std::fill( related.begin(), related.end(), VertexInBME() ) ;        
     }
 
     bool BoundaryModelVertices::is_invalid_vertex( index_t v ) const
     {
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         const std::vector< VertexInBME >& related = bme_vertices_[v] ;
-        index_t count = 0 ;
-        /*!
-         * @todo Review: Why not looking for the first valid vertex and break the for ? [AB]
-         */
         for( index_t i = 0; i < related.size(); ++i ) {
-            if( !related[i].is_defined() ) {
-                count++ ;
+            if( related[i].is_defined() ) {
+                return false ;
             }
         }
-        return count == related.size() ;
+        return true ;
     }
 
     void BoundaryModelVertices::remove_colocated()
@@ -1279,12 +1269,10 @@ namespace RINGMesh {
 
     void BoundaryModelVertices::update_point( index_t v, const vec3& point )
     {
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         // Change the position of the unique_vertex 
-        double* p = mesh_.vertices.point_ptr( v ) ;
-        /// @todo Review: p is never really used [AB]
         for( index_t c = 0; c < 3; ++c ) {
-            p[c] = double( point[c] ) ;
+            mesh_.vertices.point_ptr( v )[ c ] = double( point[ c ] ) ;
         }
         set_to_update() ;
 
@@ -1299,7 +1287,7 @@ namespace RINGMesh {
     const std::vector< BoundaryModelVertices::VertexInBME >&
     BoundaryModelVertices::bme_vertices( index_t v ) const
     {
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         return bme_vertices_[v] ;
     }
 
@@ -1314,7 +1302,7 @@ namespace RINGMesh {
         index_t v,
         const VertexInBME& v_bme )
     {
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         ringmesh_debug_assert( bme_vertices_.size() == nb() ) ;
         // Assert if adding twice the same thing - not a normal behavior
         ringmesh_debug_assert(
@@ -1329,8 +1317,8 @@ namespace RINGMesh {
         index_t k,
         const VertexInBME& v )
     {
-        ringmesh_assert( unique_id < nb() ) ;
-        ringmesh_assert( k < bme_vertices( unique_id ).size() ) ;
+        ringmesh_debug_assert( unique_id < nb() ) ;
+        ringmesh_debug_assert( k < bme_vertices( unique_id ).size() ) ;
         bme_vertices_[unique_id][k] = v ;
     }
 
@@ -1347,18 +1335,11 @@ namespace RINGMesh {
         double sq_dist ;
         kdtree_->get_nearest_neighbors( 1, p.data(), &nn, &sq_dist ) ;
         if( sq_dist < epsilon_sq ) {
-            ringmesh_assert( nn != NO_ID ) ;
+            ringmesh_debug_assert( nn != NO_ID ) ;
             return nn ;
         } else {
             return NO_ID ;
         }
-    }
-
-    /// Deprecated - to remove - the name is stupidly annoying
-    /// @todo Review: if so, why is it still here ? ;) [AB]
-    index_t BoundaryModelVertices::nb_unique_vertices() const
-    {
-        return nb() ;
     }
 
     index_t BoundaryModelVertices::nb() const
@@ -1374,7 +1355,7 @@ namespace RINGMesh {
     {
         // The call to nb() in the assert
         // initialize the points if necessary
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         return mesh_.vertices.point( v ) ;
     }
 
@@ -1423,7 +1404,7 @@ namespace RINGMesh {
 
     void BoundaryModelVertices::erase_vertices( std::vector< index_t >& to_delete )
     {
-        ringmesh_assert( to_delete.size() == nb() ) ;
+        ringmesh_debug_assert( to_delete.size() == nb() ) ;
 
         // For mesh vertices deletion
         GEO::vector< index_t > to_delete_geo( nb(), 0 ) ;
@@ -1475,7 +1456,7 @@ namespace RINGMesh {
         // Paranoia - check that we have the same mapping than the
         // delete_elements function in Geogram
         for( index_t v = 0; v < nb(); ++v ) {
-            ringmesh_assert(
+            ringmesh_debug_assert(
                 to_delete_geo[v] == NO_ID || to_delete_geo[v] == to_delete[v] ) ;
         }
 #endif
@@ -1582,19 +1563,7 @@ namespace RINGMesh {
                 << " for BoudnaryModel " << name() << "using default directory "
                 << debug_directory_ << std::endl ;
         }
-    }
-
-    /*!
-     * @brief Total number of facets in the model Surface s
-     */
-    index_t BoundaryModel::nb_facets() const
-    {
-        index_t result = 0 ;
-        for( index_t i = 0; i < nb_surfaces(); ++i ) {
-            result += surface( i ).nb_cells() ;
-        }
-        return result ;
-    }
+    }    
 
     /*!
      * Copies a BoundaryModel in another one
@@ -1670,7 +1639,7 @@ namespace RINGMesh {
             for( index_t e = 0; e < elements( T ).size(); ++e ) {
                 BoundaryModelMeshElement* E =
                     dynamic_cast< BoundaryModelMeshElement* >( elements( T )[e] ) ;
-                ringmesh_assert( E != nil ) ;
+                ringmesh_debug_assert( E != nil ) ;
                 const BoundaryModelMeshElement& E_from =
                     dynamic_cast< const BoundaryModelMeshElement& >( from.element(
                         BME::bme_t( T, e ) ) ) ;
@@ -1899,7 +1868,7 @@ namespace RINGMesh {
         GEO::Logger::out( "BoundaryModel" ) << "Validity checking..." << std::endl ;
         // Ensure that the model vertices are computed and uptodate
         // Without them we cannot do anything
-        nb_vertices() ;
+        vertices.nb() ;
 
         bool valid = true ;
 
@@ -1931,7 +1900,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             valid = surface_boundary_valid( surface( i ) ) && valid ;
         }
-        /// \todo Check that all Line segments correspond to an Surface
+        /// @todo Check that all Line segments correspond to an Surface
         /// edge that is on the boundary
         // With the current tests, it is possible we miss this problem,
         // but I am not sure (JP - 08/2015)
@@ -2155,13 +2124,8 @@ namespace RINGMesh {
                     vertex_count++ ;
                 }
 
-                /// @todo Revie: already checked in check_gocad_validity [AB]
                 for( index_t k = 0; k < surface.nb_cells(); ++k ) {
-                    if( surface.nb_vertices_in_facet( k ) != 3 ) {
-                        GEO::Logger::err( "I/O" ) << "Model is not triangulated"
-                            << std::endl ;
-                        return false ;
-                    }
+                    ringmesh_debug_assert( surface.nb_vertices_in_facet( k ) == 3 ) ;
                     out << "TRGL " << surface.surf_vertex_id( k, 0 ) + offset << " "
                         << surface.surf_vertex_id( k, 1 ) + offset << " "
                         << surface.surf_vertex_id( k, 2 ) + offset << std::endl ;
@@ -2191,7 +2155,7 @@ namespace RINGMesh {
                     ringmesh_debug_assert( !result.empty() ) ;
                     index_t next_id = result[0] ;
 
-                    ringmesh_assert( c_id != NO_ID && next_id != NO_ID ) ;
+                    ringmesh_debug_assert( c_id != NO_ID && next_id != NO_ID ) ;
 
                     bstones.push_back( c_id + offset ) ;
                     next_vertex.push_back( next_id + offset ) ;
@@ -2302,6 +2266,7 @@ namespace RINGMesh {
         }
 
         /// @todo Review: delete commented code [AB]
+        /// I want generic read-write attribute functionnalities on a mesh [JP]
         // Write facet attributes
         {
             // Get the attributes that can be saved on the first Surface
@@ -2325,9 +2290,9 @@ namespace RINGMesh {
 //                    get_serializable_attributes(
 //                        S.facet_attribute_manager(), cur_attribs ) ;
 //
-//                    ringmesh_assert( cur_attribs.size() == facet_attribs.size() ) ;
+//                    ringmesh_debug_assert( cur_attribs.size() == facet_attribs.size() ) ;
 //                    for( index_t i = 0; i < facet_attribs.size(); ++i ) {
-//                        ringmesh_assert(
+//                        ringmesh_debug_assert(
 //                            facet_attribs[ i ].type_name() ==
 //                            cur_attribs[ i ].type_name() &&
 //                            facet_attribs[ i ].name() == cur_attribs[ i ].name() ) ;
@@ -2597,7 +2562,7 @@ namespace RINGMesh {
         /// 2. Write the triangles 
         out << "# Part 2 - facet list" << std::endl ;
         out << "# facet count, no boundary marker" << std::endl ;
-        out << nb_facets() << "  0 " << std::endl ;
+        out << nb_facets( *this ) << "  0 " << std::endl ;
 
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             const Surface& S = surface( i ) ;

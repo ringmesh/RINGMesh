@@ -114,14 +114,7 @@ namespace RINGMesh {
         {
             return mesh_.vertices.nb() > 0 ;
         }
-
-        /*!
-         * @brief Number of vertices stored. 
-         * @details Calls initialize() if vertices are not filled yet
-         * @todo remove
-         */
-        index_t nb_unique_vertices() const ;
-
+    
         /*!
          * @brief Number of vertices stored.
          * @details Calls initialize() if vertices are not filled yet
@@ -179,9 +172,7 @@ namespace RINGMesh {
         /*!
          * @brief Clear the vertices - clear the bme_vertices_ - 
          *        clear global vertex information in the all BMME
-         * @warning Not stable - crashes because of issues in 
-         * Mesh attributes clearing
-         * @todo Unbind all attributes !!!! 
+         * @warning Not stable - crashes if atributes are still bound
          */
         void clear() ;
 
@@ -324,16 +315,6 @@ namespace RINGMesh {
         void set_debug_directory( const std::string& directory ) ;
 
         /*!
-         * @brief Number of unique vertices
-         */
-        index_t nb_vertices() const
-        {
-            return vertices.nb() ;
-        }
-
-        index_t nb_facets() const ;
-
-        /*!
          * \name Generic BoundaryModelElement accessors
          * @{
          */
@@ -412,16 +393,19 @@ namespace RINGMesh {
         {
             return nb_elements( BME::LAYER ) ;
         }
-
-        // Yes, we could use static_cast, but I prefer to check [JP]          
+               
         const Corner& corner( index_t index ) const
         {
+            // Yes, we could use static_cast, but I do not trust the
+            // Builder and I prefer to check [JP]  
             return dynamic_cast< const Corner& >( *corners_.at( index ) ) ;
         }
+        
         const Line& line( index_t index ) const
         {
             return dynamic_cast< const Line& >( *lines_.at( index ) ) ;
         }
+
         const Surface& surface( index_t index ) const
         {
             return dynamic_cast< const Surface& >( *surfaces_.at( index ) ) ;
@@ -452,15 +436,8 @@ namespace RINGMesh {
             return universe_ ;
         }
 
-        /*!
-        * @todo  Remove this function. Client can use vertices.attribute_manager()
-        */
-        GEO::AttributesManager& vertex_attribute_manager()
-        {
-            return vertices.attribute_manager() ;
-        }
-
         void remove_elements( std::set< BME::bme_t >& elements ) ;
+
         /*! @}
          * \name To save the BoundaryModel.
          * @{
