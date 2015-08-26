@@ -114,7 +114,7 @@ namespace RINGMesh {
         {
             return mesh_.vertices.nb() > 0 ;
         }
-    
+
         /*!
          * @brief Number of vertices stored.
          * @details Calls initialize() if vertices are not filled yet
@@ -358,7 +358,7 @@ namespace RINGMesh {
         const BoundaryModelMeshElement& mesh_element( BME::bme_t id ) const
         {
             ringmesh_assert( BME::has_mesh( id.type ) ) ;
-            return dynamic_cast<const BoundaryModelMeshElement&>( element( id ) ) ;
+            return dynamic_cast< const BoundaryModelMeshElement& >( element( id ) ) ;
         }
 
         /*! @}
@@ -393,14 +393,14 @@ namespace RINGMesh {
         {
             return nb_elements( BME::LAYER ) ;
         }
-               
+
         const Corner& corner( index_t index ) const
         {
             // Yes, we could use static_cast, but I do not trust the
             // Builder and I prefer to check [JP]  
             return dynamic_cast< const Corner& >( *corners_.at( index ) ) ;
         }
-        
+
         const Line& line( index_t index ) const
         {
             return dynamic_cast< const Line& >( *lines_.at( index ) ) ;
@@ -435,8 +435,6 @@ namespace RINGMesh {
         {
             return universe_ ;
         }
-
-        void remove_elements( std::set< BME::bme_t >& elements ) ;
 
         /*! @}
          * \name To save the BoundaryModel.
@@ -514,9 +512,9 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Generic accessor to the storage of elements of the given type
-        * @pre The type must be valid. NO_TYPE or ALL_TYPES will throw an assertion
-        */
+         * @brief Generic accessor to the storage of elements of the given type
+         * @pre The type must be valid. NO_TYPE or ALL_TYPES will throw an assertion
+         */
         const std::vector< BME* >& elements( BME::TYPE type ) const
         {
             switch( type ) {
@@ -536,7 +534,7 @@ namespace RINGMesh {
                     return layers_ ;
                 default:
                     ringmesh_assert_not_reached;
-                    return surfaces_ ;
+                return surfaces_ ;
             }
         }
 

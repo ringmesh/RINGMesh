@@ -62,13 +62,17 @@ namespace RINGMesh {
     class RINGMESH_API BoundaryModelBuilder {
     public:
         BoundaryModelBuilder( BoundaryModel& model )
-              : model_( model ) {}
-        virtual ~BoundaryModelBuilder() {}
+            : model_( model )
+        {
+        }
+        virtual ~BoundaryModelBuilder()
+        {
+        }
 
         /*! @}
-        * \name Access - Modification of the BoundaryModel
-        * @{
-        */
+         * \name Access - Modification of the BoundaryModel
+         * @{
+         */
 
         /*!
          *@brief Set the name of the model  
@@ -89,7 +93,7 @@ namespace RINGMesh {
         /*!
          *@brief The model under construction
          */
-        const BoundaryModel& model() const 
+        const BoundaryModel& model() const
         {
             return model_ ;
         }
@@ -98,25 +102,25 @@ namespace RINGMesh {
         bool complete_element_connectivity() ;
 
         /*! @}
-        * \name Creation - Deletion - Access to BoundaryModelElements .
-        * @{
-        */
+         * \name Creation - Deletion - Access to BoundaryModelElements .
+         * @{
+         */
 
         BME::bme_t create_element( BME::TYPE e_type ) ;
 
         /*!
-        * @brief Set the element of the model to the given element.
-        * @details It is on purpose that no checking whatsoever is performed.
-        *          This way, nil pointers can be set for a following element removal.
-        */
+         * @brief Set the element of the model to the given element.
+         * @details It is on purpose that no checking whatsoever is performed.
+         *          This way, nil pointers can be set for a following element removal.
+         */
         void set_element( const BME::bme_t& id, BoundaryModelElement* E ) const
         {
             if( id.type < BME::NO_TYPE ) {
-                model_.modifiable_elements( id.type )[ id.index ] = E ;
+                model_.modifiable_elements( id.type )[id.index] = E ;
             } else {
-                ringmesh_assert_not_reached ;
+                ringmesh_assert_not_reached;
             }
-        }      
+        }
 
         /*!
          * @brief Reference to a modifiable element of the model
@@ -133,7 +137,7 @@ namespace RINGMesh {
             ringmesh_assert( BME::has_mesh( t.type ) ) ;
             return dynamic_cast<BoundaryModelMeshElement&>( element( t ) ) ;
         }
-        
+
         /*!
          * @brief Modifiable pointer to an element of the model
          */
@@ -146,13 +150,12 @@ namespace RINGMesh {
             } else {
                 ringmesh_assert_not_reached ;
                 return &model_.universe_ ;
-            }            
+            }
         }
 
         bool get_dependent_elements( std::set< BME::bme_t >& elements ) const ;
-        void remove_elements( const std::set< BME::bme_t >& elements ) ;
+        void remove_elements_and_dependencies( const std::set< BME::bme_t >& elements_to_remove ) ;
 
-      
         /*! @}
          * \name Filling BoundaryModelElement attributes.
          * @{
@@ -191,7 +194,7 @@ namespace RINGMesh {
         {
             if( t.type == BME::REGION ) {
                 element( t ).add_boundary( boundary, side ) ;
-            } else { element( t ).add_boundary( boundary ) ;}
+            } else {element( t ).add_boundary( boundary ) ;}
         }
 
         void add_element_in_boundary(
@@ -215,11 +218,10 @@ namespace RINGMesh {
             element( t ).add_child( child_index ) ;
         }
 
-
         // Universe
         void set_universe( const std::vector<
-                           std::pair< index_t, bool > >& boundaries ) ;
-     
+            std::pair< index_t, bool > >& boundaries ) ;
+
         /*! @}
          * \name Set element geometry from geometrical positions   
          * @{
@@ -239,18 +241,17 @@ namespace RINGMesh {
         void set_line(
             const BME::bme_t& id,
             const std::vector< vec3 >& vertices ) ;
-                
+
         void set_surface_geometry(
             const BME::bme_t& surface_id,
             const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr ) ;
 
-
         /*! @}
-        * \name Set element geometry using BoundaryModel vertices
-        * @{
-        */
+         * \name Set element geometry using BoundaryModel vertices
+         * @{
+         */
         index_t add_unique_vertex( const vec3& p ) ;
 
         void set_corner(
@@ -279,10 +280,13 @@ namespace RINGMesh {
          */
 
     protected:
-        void delete_elements(
-            std::vector< std::vector< index_t > >& to_erase ) ;
+        void remove_elements( const std::set< BME::bme_t >& elements ) ;
         void init_global_model_element_access() ;
         void resize_elements( BME::TYPE type, index_t nb ) ;
+
+    private:
+        void delete_elements(
+            std::vector< std::vector< index_t > >& to_erase ) ;
 
     protected:
         BoundaryModel& model_ ;
@@ -292,12 +296,16 @@ namespace RINGMesh {
     /*!
      * @brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
      */
-    class RINGMESH_API BoundaryModelBuilderGocad : public BoundaryModelBuilder {
+    class RINGMESH_API BoundaryModelBuilderGocad: public BoundaryModelBuilder {
     public:
         BoundaryModelBuilderGocad( BoundaryModel& model )
-              : BoundaryModelBuilder( model ) {}
-        virtual ~BoundaryModelBuilderGocad() {}
-        
+            : BoundaryModelBuilder( model )
+        {
+        }
+        virtual ~BoundaryModelBuilderGocad()
+        {
+        }
+
         bool load_ml_file( const std::string& ml_file_name ) ;
 
     protected:
@@ -328,11 +336,10 @@ namespace RINGMesh {
          *        in a .ml file
          */
         struct KeyFacet {
-            KeyFacet(
-                const vec3& p0,
-                const vec3& p1,
-                const vec3& p2 ) :
-                p0_( p0 ), p1_( p1 ), p2_( p2 ) {}
+            KeyFacet( const vec3& p0, const vec3& p1, const vec3& p2 )
+                : p0_( p0 ), p1_( p1 ), p2_( p2 )
+            {
+            }
 
         public:
             vec3 p0_ ;
@@ -340,10 +347,10 @@ namespace RINGMesh {
             vec3 p2_ ;
         } ;
 
-       /*!
+        /*!
          * @brief Check if the surface triangle orientations match the one of the key facet
          */
-        bool check_key_facet_orientation( index_t surface ) const;
+        bool check_key_facet_orientation( index_t surface ) const ;
 
         index_t find_key_facet(
             index_t surface_id,
@@ -359,11 +366,15 @@ namespace RINGMesh {
     /*!
      * @brief Build a BoundaryModel from a file_model.bm
      */
-    class RINGMESH_API BoundaryModelBuilderBM : public BoundaryModelBuilder {
+    class RINGMESH_API BoundaryModelBuilderBM: public BoundaryModelBuilder {
     public:
         BoundaryModelBuilderBM( BoundaryModel& model )
-              : BoundaryModelBuilder( model ) {}
-        virtual ~BoundaryModelBuilderBM() {}
+            : BoundaryModelBuilder( model )
+        {
+        }
+        virtual ~BoundaryModelBuilderBM()
+        {
+        }
 
         bool load_file( const std::string& bm_file_name ) ;
 
@@ -382,11 +393,15 @@ namespace RINGMesh {
      * @brief Builder of a BoundaryModel from a surface mesh
      *        in which the manifold connected components are disjoints
      */
-    class RINGMESH_API BoundaryModelBuilderSurface : public BoundaryModelBuilder {
+    class RINGMESH_API BoundaryModelBuilderSurface: public BoundaryModelBuilder {
     public:
-        BoundaryModelBuilderSurface( BoundaryModel& model  ) :
-            BoundaryModelBuilder( model ) {}
-        virtual ~BoundaryModelBuilderSurface() {}
+        BoundaryModelBuilderSurface( BoundaryModel& model )
+            : BoundaryModelBuilder( model )
+        {
+        }
+        virtual ~BoundaryModelBuilderSurface()
+        {
+        }
 
         void set_surfaces( const GEO::Mesh& mesh ) ;
 
