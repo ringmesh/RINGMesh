@@ -78,7 +78,7 @@ namespace {
         /// Check that the stored model vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
             if( E.model_vertex_id( i ) == NO_ID
-                && E.model_vertex_id( i ) >= E.model().nb_vertices() ) {
+                && E.model_vertex_id( i ) >= E.model().vertices.nb() ) {
                 GEO::Logger::err( "BoundaryModelElement" )
                     << "Invalid model vertex index in " << E.bme_id() << std::endl ;
                 return false ;
