@@ -505,8 +505,8 @@ namespace {
     }
 
     /*!
-    * @brief Total number of facets in the model Surfaces
-    */
+     * @brief Total number of facets in the model Surfaces
+     */
     index_t nb_facets( const BoundaryModel& BM )
     {
         index_t result = 0 ;
@@ -1057,6 +1057,99 @@ namespace RINGMesh {
 
         // Re-initialize global access to elements
         init_global_model_element_access() ;
+    }
+
+    /*!
+     * @brief Removes properly some elements of the Boundary Model.
+     *
+     * @param[in] elements: in input the elements the client wants to
+     * remove, in output all the removed elements (dependencies of ).
+     *
+     * Calls get_dependent_elements on each elements of \p elements_to_remove.
+     * Then do remove these elements and updates the universe.
+     *
+     * @warning It is only implemented for deleting a region which has only one
+     * single region as neighbor.
+     *
+     * @todo Finish to implement it for any kind of BME. BC must continue this work.
+     *
+     */
+    void BoundaryModelBuilder::remove_elements_and_dependencies(
+        const std::set< BME::bme_t >& elements_to_remove )
+    {
+        // Copy because it is not logical to have in output the removed elements. BC
+        std::set< BME::bme_t > elements = elements_to_remove;
+        // TODO Handle the case of several objects in elements
+        const BoundaryModelElement& reg = element( *( elements.begin() ) ) ;
+        get_dependent_elements( elements ) ;
+
+        // TODO Dirty duplication of code------------------------
+        // We need to remove elements type by type since they are
+        // stored in different vectors and since we use indices in these
+        // vectors to identify them.
+        // Initialize the vector
+        std::vector< std::vector< index_t > > to_erase_by_type ;
+        to_erase_by_type.reserve( BME::NO_TYPE ) ;
+        for( index_t i = BME::CORNER; i < BME::NO_TYPE; ++i ) {
+            to_erase_by_type.push_back(
+                std::vector< index_t >(
+                    model_.nb_elements( static_cast< BME::TYPE >( i ) ), 0 ) ) ;
+        }
+        // Flag the elements to erase
+        for( std::set< bme_t >::const_iterator it = elements.begin();
+            it != elements.end(); ++it ) {
+            bme_t cur = *it ;
+            if( cur.type < BME::NO_TYPE ) {
+                ringmesh_debug_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
+                to_erase_by_type[cur.type][cur.index] = NO_ID ;
+            }
+        }
+
+        // Number of elements deleted for each TYPE
+        std::vector< index_t > nb_removed( to_erase_by_type.size(), 0 ) ;
+
+        /// 1. Get the mapping between old indices of the elements
+        ///    and new ones (when elements to remove will actually be removed)
+        for( index_t i = 0; i < to_erase_by_type.size(); ++i ) {
+            for( index_t j = 0; j < to_erase_by_type[i].size(); ++j ) {
+                if( to_erase_by_type[i][j] == NO_ID ) {
+                    nb_removed[i]++ ;
+                } else {
+                    to_erase_by_type[i][j] = j - nb_removed[i] ;
+                }
+            }
+        }
+        // TODO Dirty duplication of code--------------------------
+
+        std::vector< BME::bme_t > to_add_in_universe ;
+
+        if( reg.bme_id().type == BME::REGION ) {
+            index_t nb_added = 0 ;
+            for( index_t b_i = 0; b_i < reg.nb_boundaries(); ++b_i ) {
+                if( !reg.boundary( b_i ).is_on_voi() ) {
+                    to_add_in_universe.push_back( reg.boundary( b_i ).bme_id() ) ;
+                    ringmesh_debug_assert(
+                        to_erase_by_type[reg.boundary( b_i ).bme_id().type][reg.boundary(
+                            b_i ).bme_id().index] != NO_ID ) ;
+                    to_add_in_universe[nb_added].index =
+                        to_erase_by_type[reg.boundary( b_i ).bme_id().type][reg.boundary(
+                            b_i ).bme_id().index] ;
+                    ++nb_added ;
+                }
+            }
+        }
+
+        remove_elements( elements ) ;
+
+        // Update Universe
+        for( std::vector< BME::bme_t >::const_iterator itr =
+            to_add_in_universe.begin(); itr != to_add_in_universe.end(); ++itr ) {
+            // TODO Instead of a dirty const_cast, use BoundaryModelBuilder::set_universe BC
+            const_cast< BoundaryModelElement& >( model_.universe() ).add_boundary(
+                *itr, true ) ;
+        }
+
+        ringmesh_debug_assert( model_.check_model_validity() ) ;
     }
 
     /*!
@@ -2768,19 +2861,17 @@ namespace RINGMesh {
         // we keep both occurrence, otherwise this connectivity info is lost
     }
 
-
-
     /*!
-    * @brief Create the model surfaces from the connected components 
+     * @brief Create the model surfaces from the connected components
      *       of the input surfacic mesh
-    * @details Add the separately the connected components of the mesh
-    *          as Surface of the model to create. 
-    *          All the facets of the input mesh are visited and added to a
-    *          Surface of the BoudnaryModel. 
-    *          Connected components of the mesh are determined with a
-    *          propagation (or "coloriage" algorithm) using the adjacent_facet
-    *          information provided on the input GEO::Mesh.
-    */
+     * @details Add the separately the connected components of the mesh
+     *          as Surface of the model to create.
+     *          All the facets of the input mesh are visited and added to a
+     *          Surface of the BoudnaryModel.
+     *          Connected components of the mesh are determined with a
+     *          propagation (or "coloriage" algorithm) using the adjacent_facet
+     *          information provided on the input GEO::Mesh.
+     */
     void BoundaryModelBuilderSurface::set_surfaces( const GEO::Mesh& mesh )
     {
         // Vectors storing the information to build
@@ -2796,10 +2887,10 @@ namespace RINGMesh {
 
         std::vector< bool > visited( mesh.facets.nb(), false ) ;
         for( index_t i = 0; i < mesh.facets.nb(); i++ ) {
-            if( !visited[ i ] ) {
+            if( !visited[i] ) {
                 // Index of the Surface to create from this facet
                 index_t cc_index = model_.nb_surfaces() ;
-                
+
                 // Clear information for previous connected component
                 corners.resize( 0 ) ;
                 facets_ptr.resize( 0 ) ;
@@ -2817,21 +2908,20 @@ namespace RINGMesh {
                 while( !S.empty() ) {
                     index_t f = S.top() ;
                     S.pop() ;
-                    visited[ f ] = true ;
+                    visited[f] = true ;
 
                     for( index_t c = mesh.facets.corners_begin( f );
-                         c < mesh.facets.corners_end( f ); ++c 
-                    ) {
+                        c < mesh.facets.corners_end( f ); ++c ) {
                         index_t v = mesh.facet_corners.vertex( c ) ;
-                        if( cc_vertex[ v ] == NO_ID ) {
-                            cc_vertex[ v ] = vertices.size() ;
+                        if( cc_vertex[v] == NO_ID ) {
+                            cc_vertex[v] = vertices.size() ;
                             vertices.push_back( mesh.vertices.point( v ) ) ;
                         }
-                        corners.push_back( cc_vertex[ v ] ) ;
+                        corners.push_back( cc_vertex[v] ) ;
 
                         index_t n = mesh.facet_corners.adjacent_facet( c ) ;
-                        if( n != NO_ID && !visited[ n ] ) {
-                            visited[ n ] = true ;
+                        if( n != NO_ID && !visited[n] ) {
+                            visited[n] = true ;
                             S.push( n ) ;
                         }
                     }
@@ -2839,8 +2929,8 @@ namespace RINGMesh {
                 }
 
                 // Create the surface and set its geometry
-                set_surface_geometry( create_element( BME::SURFACE ), 
-                                      vertices, corners, facets_ptr ) ;
+                set_surface_geometry( create_element( BME::SURFACE ), vertices,
+                    corners, facets_ptr ) ;
             }
         }
     }
@@ -3172,7 +3262,5 @@ namespace RINGMesh {
         // Finish up the model and check its validity
         return end_model() ;
     }
-
-
 
 } // namespace
