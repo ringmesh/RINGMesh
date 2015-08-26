@@ -50,6 +50,10 @@
 #include <string>
 #include <stack>
 
+namespace GEO {
+    class Mesh ;
+}
+
 namespace RINGMesh {
     /*!
      * @brief Base class for all classes building a BoundaryModel.
@@ -375,7 +379,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Builder of a BoundaryModel from a conformal surface meshes
+     * @brief Builder of a BoundaryModel from a surface mesh
      *        in which the manifold connected components are disjoints
      */
     class RINGMESH_API BoundaryModelBuilderSurface : public BoundaryModelBuilder {
@@ -384,86 +388,11 @@ namespace RINGMesh {
             BoundaryModelBuilder( model ) {}
         virtual ~BoundaryModelBuilderSurface() {}
 
-        template< class MESH >
-        void set_surfaces( const MESH& mesh ) ;
+        void set_surfaces( const GEO::Mesh& mesh ) ;
 
         bool build_model( bool build_regions = true ) ;
     } ;
 
-
-    /*!
-     * @brief Create the model surfaces from the connected components of the input surfacic mesh
-     * @details Add the separately the connected components of the mesh 
-     *          as Surface of the model to create 
-     *   
-     *  The class MESH should implement the following functions
-     *  - vertices.nb()
-     *  - const vec3& point( index_t i )
-     *  - index_t facet_corners.nb()
-     *  - index_t facets.nb()
-     *  - index_t facets.corners_begin( index_t f )
-     *  - index_t facets.corners_end( index_t f )
-     *  - index_t facet_corners.vertex( index_t c )
-     *  - signed_index_t facet_corners.adjacent_facet( index_t c )   -1 if no neighbor
-     */
-    template< class MESH >
-    void BoundaryModelBuilderSurface::set_surfaces( const MESH& mesh )
-    {        
-        // Propagate on the input mesh facet to determine its surface connected components
-        // Vectors used in the loops
-        std::vector< index_t > corners ;
-        std::vector< index_t > facets_ptr ;
-        std::vector< vec3 > vertices ;
-        std::vector< index_t > cc_vertex( mesh.vertices.nb(), NO_ID ) ;
-
-        corners.reserve( mesh.facet_corners.nb() ) ;
-        facets_ptr.reserve( mesh.facets.nb() ) ;
-
-        std::vector< bool > visited( mesh.facets.nb(), false ) ;
-        for( index_t i = 0; i < mesh.facets.nb(); i++ ) {
-            if( !visited[ i ] ) {
-                // Index of the Surface to create form this facet
-                index_t cc_index = model_.nb_surfaces() ;
-
-                // Get the facets that are in the same connected component than the current facet
-                corners.resize( 0 ) ;
-                facets_ptr.resize( 0 ) ;
-                vertices.resize( 0 ) ;
-                cc_vertex.resize( mesh.vertices.nb(), NO_ID ) ;
-
-                facets_ptr.push_back( 0 ) ;
-
-                std::stack< index_t > S ;
-                S.push( i ) ;
-                while( !S.empty() ) {
-                    index_t f = S.top() ;
-                    S.pop() ;
-                    visited[ f ] = true ;
-
-                    for( index_t c = mesh.facets.corners_begin( f );
-                         c < mesh.facets.corners_end( f );
-                         ++c )
-                    {
-                        index_t v = mesh.facet_corners.vertex( c ) ;
-                        if( cc_vertex[ v ] == NO_ID ) {
-                            cc_vertex[ v ] = vertices.size() ;
-                            vertices.push_back( mesh.vertices.point( v ) ) ;
-                        }
-                        corners.push_back( cc_vertex[v] ) ;
-                        index_t n = mesh.facet_corners.adjacent_facet( c ) ;
-                        if( n != NO_ID && !visited[ n ] ) {
-                            visited[ n ] = true ;
-                            S.push( n ) ;
-                        }
-                    }
-                    facets_ptr.push_back( corners.size() ) ;
-                }
-
-                // Create the surface and set its geometry
-                set_surface_geometry( create_element( BME::SURFACE ), vertices, corners, facets_ptr ) ;
-            }
-        }
-    }
 }
 
 #endif

@@ -2756,10 +2756,93 @@ namespace RINGMesh {
         // we keep both occurrence, otherwise this connectivity info is lost
     }
 
+
+
+    /*!
+    * @brief Create the model surfaces from the connected components 
+     *       of the input surfacic mesh
+    * @details Add the separately the connected components of the mesh
+    *          as Surface of the model to create. 
+    *          All the facets of the input mesh are visited and added to a
+    *          Surface of the BoudnaryModel. 
+    *          Connected components of the mesh are determined with a
+    *          propagation (or "coloriage" algorithm) using the adjacent_facet
+    *          information provided on the input GEO::Mesh.
+    */
+    void BoundaryModelBuilderSurface::set_surfaces( const GEO::Mesh& mesh )
+    {
+        // Vectors storing the information to build
+        // the current connected component during propagation
+        std::vector< index_t > corners ;
+        std::vector< index_t > facets_ptr ;
+        std::vector< vec3 > vertices ;
+        // Index of the mesh vertex in the current connected component
+        std::vector< index_t > cc_vertex( mesh.vertices.nb(), NO_ID ) ;
+
+        corners.reserve( mesh.facet_corners.nb() ) ;
+        facets_ptr.reserve( mesh.facets.nb() ) ;
+
+        std::vector< bool > visited( mesh.facets.nb(), false ) ;
+        for( index_t i = 0; i < mesh.facets.nb(); i++ ) {
+            if( !visited[ i ] ) {
+                // Index of the Surface to create from this facet
+                index_t cc_index = model_.nb_surfaces() ;
+                
+                // Clear information for previous connected component
+                corners.resize( 0 ) ;
+                facets_ptr.resize( 0 ) ;
+                vertices.resize( 0 ) ;
+                /// @todo Review : This should not be necessary as each vertex should
+                /// be in one and only one connected component. To test. [JP]
+                std::fill( cc_vertex.begin(), cc_vertex.end(), NO_ID ) ;
+
+                // First facet begin at corner 0
+                facets_ptr.push_back( 0 ) ;
+
+                // Propagate from facet #i 
+                std::stack< index_t > S ;
+                S.push( i ) ;
+                while( !S.empty() ) {
+                    index_t f = S.top() ;
+                    S.pop() ;
+                    visited[ f ] = true ;
+
+                    for( index_t c = mesh.facets.corners_begin( f );
+                         c < mesh.facets.corners_end( f ); ++c 
+                    ) {
+                        index_t v = mesh.facet_corners.vertex( c ) ;
+                        if( cc_vertex[ v ] == NO_ID ) {
+                            cc_vertex[ v ] = vertices.size() ;
+                            vertices.push_back( mesh.vertices.point( v ) ) ;
+                        }
+                        corners.push_back( cc_vertex[ v ] ) ;
+
+                        index_t n = mesh.facet_corners.adjacent_facet( c ) ;
+                        if( n != NO_ID && !visited[ n ] ) {
+                            visited[ n ] = true ;
+                            S.push( n ) ;
+                        }
+                    }
+                    facets_ptr.push_back( corners.size() ) ;
+                }
+
+                // Create the surface and set its geometry
+                set_surface_geometry( create_element( BME::SURFACE ), 
+                                      vertices, corners, facets_ptr ) ;
+            }
+        }
+    }
+
     /*!
      * @brief From a BoundaryModel in which only Surface are defined, create
      * corners, contacts and regions.
-     *
+     * @param build_region If set to false the region of the BoundaryModel are not
+     *        computed. Used to have a BoundaryModel instance corresponding to a
+     *        set of surface that do not define volumetric regions (invalid model).
+     *        Default value is true.
+     * @return True if a valid model has been built, else returns false.
+     * @pre The BoundaryModel should have at least one Surface. Nothing is done if not.
+     * 
      */
     bool BoundaryModelBuilderSurface::build_model( bool build_regions )
     {
@@ -2790,7 +2873,7 @@ namespace RINGMesh {
             }
         }
 
-        /// 2.2 Sort these triangles so that triangles sharing the same edge follow one another
+        /// 2.2 Sort these triangles so that triangles sharing an edge follow one another
         std::sort( border_triangles.begin(), border_triangles.end() ) ;
 
         /// 3. Build the Lines and gather information to build the regions
@@ -3070,12 +3153,14 @@ namespace RINGMesh {
             }
         }
 
-        // Deliberated clear of the model vertices 
-        // To force their recomputation
+        // Deliberate clear of the model vertices 
+        // to force their recomputation when checking model validity
         model_.vertices.clear() ;
 
         // Finish up the model and check its validity
         return end_model() ;
     }
+
+
 
 } // namespace
