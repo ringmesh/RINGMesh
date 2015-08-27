@@ -436,19 +436,6 @@ namespace RINGMesh {
             return universe_ ;
         }
 
-        /*! @}
-         * \name To save the BoundaryModel.
-         * @{
-         */
-        /*!
-         * @todo Move these functions in io_boundary_model.cpp
-         */
-        bool save_gocad_model3d( std::ostream& out ) ;
-        void save_as_eobj_file( const std::string& file ) const ;
-        void save_surface_as_eobj_file( index_t s, const std::string& file ) const ;
-        void save_bm_file( const std::string& file_name ) const ;
-        void save_smesh_file( const std::string& file_name ) const ;
-
         /*!
          * @}
          */
@@ -464,13 +451,11 @@ namespace RINGMesh {
             float64 angle,
             bool degrees = false ) ;
 
-    private:
-        bool check_model_validity() const ;
-        bool check_elements_validity() const ;
-        bool check_geology_validity() const ;
+        bool check_model_validity() const ;           
 
-        /// @todo Move gocad validity check function. Maybe the other ones too.
-        bool check_gocad_validity() const ;
+    private:
+        bool check_elements_validity() const ;
+        bool check_geology_validity() const ;        
 
         void copy_macro_topology( const BoundaryModel& from ) ;
         void copy_meshes( const BoundaryModel& from ) ;

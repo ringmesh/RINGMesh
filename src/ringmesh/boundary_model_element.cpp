@@ -141,6 +141,34 @@ namespace {
             std::unique( corners_global.begin(), corners_global.end() ) != corners_global.end() ;
     }
 
+    /*!
+    * @brief Debug: Save a Surface of the model in the file OBJ format is used
+    * @todo Move this function to an API providing utility functions on a
+    * BoundaryModel and its Elements ? [JP]
+    */
+    void save_surface_as_obj_file(
+        const Surface& S,
+        const std::string& file_name )
+    {
+        std::ofstream out( file_name.c_str() ) ;
+        if( out.bad() ) {
+            GEO::Logger::err( "I/O" ) << "Error when opening the file: "
+                << file_name.c_str() << std::endl ;
+            return ;
+        }
+        out.precision( 16 ) ;
+        for( index_t p = 0; p < S.nb_vertices(); p++ ) {
+            const vec3& V = S.vertex( p ) ;
+            out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
+        }
+        for( index_t f = 0; f < S.nb_cells(); f++ ) {
+            out << "f" << " " ;
+            for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
+                out << S.surf_vertex_id( f, v ) + 1 << " " ;
+            }
+            out << std::endl ;
+        }
+    }
 }
 
 
@@ -1334,7 +1362,7 @@ namespace RINGMesh {
                 << "/"
                 << "invalid_surf_"
                 << bme_id().index << ".obj"  ;
-            model().save_surface_as_eobj_file( bme_id().index, file.str() ) ;
+            save_surface_as_obj_file( *this, file.str() ) ;
 
 #endif  
         }        
