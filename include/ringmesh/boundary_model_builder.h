@@ -153,8 +153,11 @@ namespace RINGMesh {
             }
         }
 
+        void remove_elements( const std::set< BME::bme_t >& elements ) ;
         bool get_dependent_elements( std::set< BME::bme_t >& elements ) const ;
-        void remove_elements_and_dependencies( const std::set< BME::bme_t >& elements_to_remove ) ;
+        void remove_elements_and_dependencies( 
+            const std::set< BME::bme_t >& elements_to_remove ) ;
+
 
         /*! @}
          * \name Filling BoundaryModelElement attributes.
@@ -278,15 +281,11 @@ namespace RINGMesh {
         /*!
          * @}
          */
-
-    protected:
-        void remove_elements( const std::set< BME::bme_t >& elements ) ;
+        
+    protected: 
+        void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
         void init_global_model_element_access() ;
         void resize_elements( BME::TYPE type, index_t nb ) ;
-
-    private:
-        void delete_elements(
-            std::vector< std::vector< index_t > >& to_erase ) ;
 
     protected:
         BoundaryModel& model_ ;
