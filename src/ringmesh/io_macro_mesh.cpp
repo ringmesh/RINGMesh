@@ -977,6 +977,7 @@ namespace RINGMesh {
                     if( mm.cells.nb_prism( r ) > 0 ) nb_families++ ;
                     if( mm.cells.nb_hex( r ) > 0 ) nb_families++ ;
                 }
+                nb_families += mm.wells()->nb_wells() ;
 
                 ascii << nb_families << " # Number of families" << std::endl ;
                 ascii << "# Object name" << TAB << "Element type" << TAB
@@ -1104,16 +1105,16 @@ namespace RINGMesh {
                             count = 0 ;
                         }
                     }
-                    if( mm.wells() ) {
-                        for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
-                            const Well& well = mm.wells()->well( w ) ;
-                            for( index_t e = 0; e < well.nb_edges(); e++ ) {
-                                data << " " << std::setw( 3 ) << 2 ;
-                                count++ ;
-                                if( count == 20 ) {
-                                    data << std::endl ;
-                                    count = 0 ;
-                                }
+                }
+                if( mm.wells() ) {
+                    for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
+                        const Well& well = mm.wells()->well( w ) ;
+                        for( index_t e = 0; e < well.nb_edges(); e++ ) {
+                            data << " " << std::setw( 3 ) << 2 ;
+                            count++ ;
+                            if( count == 20 ) {
+                                data << std::endl ;
+                                count = 0 ;
                             }
                         }
                     }
@@ -1496,6 +1497,11 @@ namespace RINGMesh {
                 index_t cur_edge = 0 ;
                 for( index_t w = 0; w < mm.edges.nb_wells(); w++ ) {
                     data << " " << std::setw( 7 ) << -28 ;
+                    count++ ;
+                    if( count == 10 ) {
+                        data << std::endl ;
+                        count = 0 ;
+                    }
                     if( mm.edges.nb_edges( w ) > 1 ) {
                         data << " " << std::setw( 7 ) << edge_offset + cur_edge + 1 ;
                         cur_edge++ ;
@@ -1504,14 +1510,16 @@ namespace RINGMesh {
                             data << std::endl ;
                             count = 0 ;
                         }
-                        for( index_t e = 1; e < mm.edges.nb_edges( w ) - 1; e++ ) {
-                            for( index_t v = 0; v < 2; v++ ) {
-                                data << " " << std::setw( 7 )
-                                    << edge_offset + cur_edge - 1 ;
-                                data << " " << std::setw( 7 )
-                                    << edge_offset + cur_edge + 1 ;
+                        for( index_t e = 1; e < mm.edges.nb_edges( w ) - 1; e++, cur_edge++ ) {
+                            data << " " << std::setw( 7 )
+                                << edge_offset + cur_edge - 1 ;
+                            count++ ;
+                            if( count == 10 ) {
+                                data << std::endl ;
+                                count = 0 ;
                             }
-                            cur_edge++ ;
+                            data << " " << std::setw( 7 )
+                                << edge_offset + cur_edge + 1 ;
                             count++ ;
                             if( count == 10 ) {
                                 data << std::endl ;
@@ -1519,6 +1527,11 @@ namespace RINGMesh {
                             }
                         }
                         data << " " << std::setw( 7 ) << edge_offset + cur_edge - 1 ;
+                        count++ ;
+                        if( count == 10 ) {
+                            data << std::endl ;
+                            count = 0 ;
+                        }
                     }
                     data << " " << std::setw( 7 ) << -28 ;
                     cur_edge++ ;
@@ -1534,7 +1547,7 @@ namespace RINGMesh {
                 }
 
                 data << nb_total_elements << " # PMATERIAL" << std::endl ;
-                for( unsigned int i = 0; i < nb_total_elements; i++ ) {
+                for( index_t i = 0; i < nb_total_elements; i++ ) {
                     data << " " << std::setw( 3 ) << 0 ;
                     count++ ;
                     if( count == 20 ) {
