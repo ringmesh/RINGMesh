@@ -123,6 +123,7 @@ namespace RINGMesh {
 
         GEO::MeshRepairMode mode = static_cast< GEO::MeshRepairMode >( 2 ) ;
         GEO::mesh_repair( M, mode ) ;
+        return true ;
     }
 
     /*!
