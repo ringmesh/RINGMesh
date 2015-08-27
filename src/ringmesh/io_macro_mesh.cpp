@@ -1016,6 +1016,7 @@ namespace RINGMesh {
                 if( mm.wells() ) {
                     for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
                         const Well& well = mm.wells()->well( w ) ;
+                        regions << well.name() << std::endl ;
                         ascii << well.name() << TAB << "BAR_2" << TAB << 0 << TAB
                             << well.nb_edges() << std::endl ;
                     }
