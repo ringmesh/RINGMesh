@@ -1060,7 +1060,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Removes properly some elements of the Boundary Model.
+     * @brief ONGOING WORK. Removes properly some elements of the Boundary Model.
      *
      * @param[in] elements: in input the elements the client wants to
      * remove, in output all the removed elements (dependencies of ).
@@ -1068,18 +1068,25 @@ namespace RINGMesh {
      * Calls get_dependent_elements on each elements of \p elements_to_remove.
      * Then do remove these elements and updates the universe.
      *
-     * @warning It is only implemented for deleting a region which has only one
-     * single region as neighbor.
+     * @pre Assert that the element to remove is one region that has only one neighbor
      *
      * @todo Finish to implement it for any kind of BME. BC must continue this work.
      *
+     * @todo Review : Error in the comments [JP]
      */
     void BoundaryModelBuilder::remove_elements_and_dependencies(
         const std::set< BME::bme_t >& elements_to_remove )
     {
+        // Asserts to remove when implementation is completed
+        ringmesh_assert( elements_to_remove.size() == 1 &&
+                         elements_to_remove.begin()->type == BME::REGION ) ;
+
+
         // Copy because it is not logical to have in output the removed elements. BC
+        /// @todo Review : youpiii what did the comment on the function just said ? [JP]
         std::set< BME::bme_t > elements = elements_to_remove;
         // TODO Handle the case of several objects in elements
+    
         const BoundaryModelElement& reg = element( *( elements.begin() ) ) ;
         get_dependent_elements( elements ) ;
 
