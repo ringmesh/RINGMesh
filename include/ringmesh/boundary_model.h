@@ -451,7 +451,7 @@ namespace RINGMesh {
             float64 angle,
             bool degrees = false ) ;
 
-        bool check_model_validity() const ;           
+        bool check_model_validity( bool check_surface_intersections = true ) const ;           
 
     private:
         bool check_elements_validity() const ;

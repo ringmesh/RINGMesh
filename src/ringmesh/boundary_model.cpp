@@ -1724,10 +1724,13 @@ namespace RINGMesh {
      * @details In debug mode problematic vertices, edges, elements are
      *          saved in the debug_directory_
      *
+     * @param check_surface_intersections Optional expensive check of the 
+     *        intersections between the model surfaces             
+     *
      * @todo Check the consistency of index info for vertices - 
      * bme_vertices model_vertex_id
      */
-    bool BoundaryModel::check_model_validity() const
+    bool BoundaryModel::check_model_validity( bool check_surface_intersections ) const
     {
         GEO::Logger::out( "BoundaryModel" ) << "Validity checking..." << std::endl ;
         // Ensure that the model vertices are computed and uptodate
@@ -1764,7 +1767,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             valid = surface_boundary_valid( surface( i ) ) && valid ;
         }
-        /// @todo Check that all Line segments correspond to an Surface
+        /// @todo Check that all Line segments correspond to a Surface
         /// edge that is on the boundary
         // With the current tests, it is possible we miss this problem,
         // but I am not sure (JP - 08/2015)
@@ -1801,12 +1804,12 @@ namespace RINGMesh {
         // The global triangulated mesh corresponding to this model
         // is used again 
         // If the model has non-planar polygonal facets ...
-//        index_t nb_intersections = detect_intersecting_facets( *this, model_mesh ) ;
-//        if( nb_intersections > 0 ) {
-//            GEO::Logger::err( "BoundaryModel" ) << " Encountered "
-//                << nb_intersections << "facet intersections " << std::endl ;
-//            valid = false ;
-//        }
+        index_t nb_intersections = detect_intersecting_facets( *this, model_mesh ) ;
+        if( nb_intersections > 0 ) {
+            GEO::Logger::err( "BoundaryModel" ) << " Encountered "
+                << nb_intersections << "facet intersections " << std::endl ;
+            valid = false ;
+        }
         return valid ;
     }
 
