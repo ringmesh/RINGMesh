@@ -1814,8 +1814,6 @@ namespace RINGMesh {
         return valid ;
     }
 
-
-    /// @todo Review: Add documentation - Replace the return value by a bme_t [AB]
     /*!
      * @brief Translates the boundary model by a vector.
      *
@@ -1823,42 +1821,22 @@ namespace RINGMesh {
      * corners, lines and surfaces.
      *
      * @param[in] translation_vector vector of translation.
+     *
+     * @todo Review: Add documentation - Replace the return value by a bme_t [AB]
      */
     void BoundaryModel::translate( const vec3& translation_vector )
     {
         // Note: if the translation is null, do nothing.
-        if( translation_vector == vec3() ) {
+        if( translation_vector == vec3( 0, 0, 0 ) ) {
             return ;
         }
 
-        /*!
-         * @todo Review: Use vertices.update_point instead of these 3 blocks [AB]
-         */
-        for( index_t corner_i = 0; corner_i < nb_corners(); ++corner_i ) {
-            GEO::Mesh& cur_corner = corner( corner_i ).mesh() ;
-            for( index_t v = 0; v < cur_corner.vertices.nb(); v++ ) {
-                for( index_t i = 0; i < 3; i++ ) {
-                    cur_corner.vertices.point_ptr( v )[i] += translation_vector[i] ;
-                }
+        for( index_t v = 0; v < vertices.nb(); ++v ) {
+            vec3 p = vertices.unique_vertex( v ) ;
+            for( index_t i = 0; i < 3; i++ ) {
+                p[i] += translation_vector[ i ] ;
             }
-        }
-
-        for( index_t line_i = 0; line_i < nb_lines(); ++line_i ) {
-            GEO::Mesh& cur_line = line( line_i ).mesh() ;
-            for( index_t v = 0; v < cur_line.vertices.nb(); v++ ) {
-                for( index_t i = 0; i < 3; i++ ) {
-                    cur_line.vertices.point_ptr( v )[i] += translation_vector[i] ;
-                }
-            }
-        }
-
-        for( index_t surface_i = 0; surface_i < nb_surfaces(); ++surface_i ) {
-            GEO::Mesh& cur_surface = surface( surface_i ).mesh() ;
-            for( index_t v = 0; v < cur_surface.vertices.nb(); v++ ) {
-                for( index_t i = 0; i < 3; i++ ) {
-                    cur_surface.vertices.point_ptr( v )[i] += translation_vector[i] ;
-                }
-            }
+            vertices.update_point( v, p ) ;
         }
     }
 
@@ -1894,26 +1872,19 @@ namespace RINGMesh {
         }
 
         GEO::Matrix< float64, 4 > rot_mat ;
-        Math::rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
-            rot_mat ) ;
+        Math::rotation_matrix_about_arbitrary_axis( 
+            origin, axis, theta, degrees,rot_mat ) ;
 
-        /*!
-         * @todo Review: Use vertices.update_point instead of these 3 blocks [AB]
-         */
-        for( index_t corner_i = 0; corner_i < nb_corners(); ++corner_i ) {
-            GEO::Mesh& cur_corner = corner( corner_i ).mesh() ;
-            Math::rotate_mesh( cur_corner, rot_mat ) ;
-        }
+        for( index_t v = 0; v < vertices.nb(); ++v ) {
+            const vec3& p = vertices.unique_vertex( v ) ;
+         
+            float64 old[ 4 ] = { p[ 0 ], p[ 1 ], p[ 2 ], 1. } ;
+            float64 new_p[ 4 ] = { 0, 0, 0, 1. } ;
+            GEO::mult( rot_mat, old, new_p ) ;
+            ringmesh_debug_assert( new_p[ 3 ] == 1. ) ;
 
-        for( index_t line_i = 0; line_i < nb_lines(); ++line_i ) {
-            GEO::Mesh& cur_line = line( line_i ).mesh() ;
-            Math::rotate_mesh( cur_line, rot_mat ) ;
-        }
-
-        for( index_t surface_i = 0; surface_i < nb_surfaces(); ++surface_i ) {
-            GEO::Mesh& cur_surface = surface( surface_i ).mesh() ;
-            Math::rotate_mesh( cur_surface, rot_mat ) ;
-        }
+            vertices.update_point( v, vec3( new_p[0], new_p[1], new_p[2] ) ) ;
+        }        
     }
 
 } // namespace
