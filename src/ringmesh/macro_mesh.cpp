@@ -1652,6 +1652,8 @@ namespace RINGMesh {
      *
      * @param degrees true is \p theta is in degrees, false
      * if in radians.
+     *
+     * @todo Reviw : This does not rotate the BoundaryModel. DANGER ! [JP]
      */
     void MacroMesh::rotate(
         const vec3& origin,

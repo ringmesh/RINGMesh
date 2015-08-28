@@ -124,6 +124,7 @@ namespace RINGMesh {
         /*!
          * @brief Coordinates of a vertex of the BoundaryModel
          * @pre v < nb()
+         * @todo Review : Change the name of this function [JP]
          */
         const vec3& unique_vertex( index_t v ) const ;
 
@@ -162,7 +163,7 @@ namespace RINGMesh {
         void set_bme( index_t v, index_t i, const VertexInBME& v_bme ) ;
 
         /*!
-         * @brief Set the point coordinates of all the vertices that are 
+         * @brief Set the point coordinates of all the vertices that 
          *        share this unique vertex, including the unique vertex itself.
          * @param[in] v Index of the vertex
          * @param[in] point New coordinates
