@@ -102,16 +102,19 @@ namespace RINGMesh {
         bool complete_element_connectivity() ;
 
         /*! @}
-         * \name Creation - Deletion - Access to BoundaryModelElements .
+         * \name Creation - Deletion - Access to BoundaryModelElements.
          * @{
          */
 
         BME::bme_t create_element( BME::TYPE e_type ) ;
 
         /*!
-         * @brief Set the element of the model to the given element.
-         * @details It is on purpose that no checking whatsoever is performed.
-         *          This way, nil pointers can be set for a following element removal.
+         * @brief Set an element of the model.
+         * @details It is on purpose that element validity is not checked.
+         *          This way nil pointers can be set for a further element removal.
+         * @param id Id card of the element to modify. The ownership of the previous element
+         *           is given up by the BoundaryModel.
+         * @param E Element to set. The ownership is transferred to the BoundaryModel.
          */
         void set_element( const BME::bme_t& id, BoundaryModelElement* E ) const
         {
@@ -124,18 +127,24 @@ namespace RINGMesh {
 
         /*!
          * @brief Reference to a modifiable element of the model
+         * @pre The id must refer to a valid element of the model
          */
         BoundaryModelElement& element(
-            const BME::bme_t& t ) const
+            const BME::bme_t& id ) const
         {
-            return *element_ptr(t) ;
+            return *element_ptr(id) ;
         }
 
+        /*!
+         * @brief Reference to a modifiable meshed element of the model
+         * @pre Assert in debug model that the given id refers to a meshed element.
+         *      The id must refer to a valid element.
+         */
         BoundaryModelMeshElement& mesh_element(
-            const BME::bme_t& t ) const
+            const BME::bme_t& id ) const
         {
-            ringmesh_assert( BME::has_mesh( t.type ) ) ;
-            return dynamic_cast<BoundaryModelMeshElement&>( element( t ) ) ;
+            ringmesh_debug_assert( BME::has_mesh( id.type ) ) ;
+            return dynamic_cast<BoundaryModelMeshElement&>( element( id ) ) ;
         }
 
         /*!
@@ -390,7 +399,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Builder of a BoundaryModel from a surface mesh
-     *        in which the manifold connected components are disjoints
+     *        in which the manifold surface connected components are disjoints
      */
     class RINGMESH_API BoundaryModelBuilderSurface: public BoundaryModelBuilder {
     public:

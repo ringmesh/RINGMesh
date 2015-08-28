@@ -374,8 +374,8 @@ namespace {
         MeshFacetsAABB AABB( M ) ;
         AABB.compute_facet_bbox_intersections( action ) ;
 
-        index_t nb_intersections = std::count( has_intersection.begin(),
-            has_intersection.end(), 1 ) ;
+        index_t nb_intersections = static_cast< index_t>( std::count( has_intersection.begin(),
+            has_intersection.end(), 1 ) ) ;
 
 #ifdef RINGMESH_DEBUG
         if( nb_intersections > 0 ) {
@@ -946,8 +946,8 @@ namespace {
                         }
                         // Check that one point is no more than twice in a SURFACE
                         for( index_t k = 0; k < surfaces.size(); ++k ) {
-                            index_t nb = std::count( surfaces.begin(),
-                                surfaces.end(), surfaces[k] ) ;
+                            index_t nb = static_cast< index_t >( std::count( surfaces.begin(),
+                                surfaces.end(), surfaces[k] ) ) ;
                             if( nb > 2 ) {
                                 GEO::Logger::err( "BoundaryModelVertex" )
                                     << " Vertex " << i << " appears " << nb
@@ -1012,8 +1012,8 @@ namespace {
                         }
                         // Check that a point is no more than twice in a LINE
                         for( index_t k = 0; k < lines.size(); ++k ) {
-                            index_t nb = std::count( lines.begin(), lines.end(),
-                                lines[k] ) ;
+                            index_t nb = static_cast< index_t >(
+                                std::count( lines.begin(), lines.end(), lines[k] ) ) ;
                             if( nb == 2 ) {
                                 // The line must be closed
                                 if( !M.line( lines[k] ).is_closed() ) {
@@ -1061,7 +1061,8 @@ namespace {
             }
             valid[i] = valid_vertex ;
         }
-        index_t nb_invalid = std::count( valid.begin(), valid.end(), false ) ;
+        index_t nb_invalid = static_cast< index_t >( 
+            std::count( valid.begin(), valid.end(), false ) ) ;
 
 #ifdef RINGMESH_DEBUG
         if( nb_invalid > 0 ) {

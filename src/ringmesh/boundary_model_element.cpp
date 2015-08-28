@@ -751,8 +751,9 @@ namespace RINGMesh {
                     }
                 }
             }
-            index_t end = std::remove( boundaries_.begin(), boundaries_.end(), invalid_boundary )
-                - boundaries_.begin() ;
+            index_t end = static_cast< index_t >(
+                std::remove( boundaries_.begin(), boundaries_.end(), invalid_boundary )
+                - boundaries_.begin() ) ;
             if( end == 0 ) {
                 boundaries_.clear() ;
                 sides_.clear() ;
@@ -840,7 +841,8 @@ namespace RINGMesh {
                 backward = model_->vertices.bme_vertices( model_v ) ;
 
             BoundaryModelVertices::VertexInBME cur_v( bme_id(), v ) ;
-            index_t count_v = std::count( backward.begin(), backward.end(), cur_v ) ;
+            index_t count_v = static_cast< index_t >( 
+                std::count( backward.begin(), backward.end(), cur_v ) ) ;
 
             if( count_v != 1 ) {
                 GEO::Logger::err( "BoundaryModelElement" )
@@ -1309,7 +1311,7 @@ namespace RINGMesh {
         // No isolated vertices
         std::vector< index_t > nb ;
         count_vertex_occurences( mesh(), nb ) ;
-        index_t nb0 = std::count( nb.begin(), nb.end(), 0 ) ;
+        index_t nb0 = static_cast< index_t>( std::count( nb.begin(), nb.end(), 0 ) );
         if( nb0 > 0 ) {
             GEO::Logger::err( "BoundaryModelElement" )
                 <<  bme_id() << " mesh has "
