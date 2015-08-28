@@ -1866,7 +1866,7 @@ namespace RINGMesh {
         bool degrees )
     {
         // Note: Rotation is impossible about an axis with null length.
-        ringmesh_debug_assert( axis == vec3() ) ;
+        ringmesh_debug_assert( axis != vec3() ) ;
         if( theta == 0. ) {
             return ;
         }
