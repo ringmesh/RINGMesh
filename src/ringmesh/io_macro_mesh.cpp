@@ -977,7 +977,7 @@ namespace RINGMesh {
                     if( mm.cells.nb_prism( r ) > 0 ) nb_families++ ;
                     if( mm.cells.nb_hex( r ) > 0 ) nb_families++ ;
                 }
-                nb_families += mm.wells()->nb_wells() ;
+                if( mm.wells() ) nb_families += mm.wells()->nb_wells() ;
 
                 ascii << nb_families << " # Number of families" << std::endl ;
                 ascii << "# Object name" << TAB << "Element type" << TAB
