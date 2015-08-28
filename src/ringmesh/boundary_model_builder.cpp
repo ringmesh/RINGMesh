@@ -147,7 +147,8 @@ namespace {
 
         GEO::vector< index_t > degenerate ;
         mesh_detect_degenerate_facets( M, degenerate, colocated ) ;
-        return std::count( degenerate.begin(), degenerate.end(), 1 ) ;
+        return static_cast< index_t> ( 
+            std::count( degenerate.begin(), degenerate.end(), 1 ) ) ;
     }
 
     bool edge_is_degenerate(
@@ -181,7 +182,7 @@ namespace {
 
         GEO::vector< index_t > degenerate ;
         mesh_detect_degenerate_edges( M, degenerate, colocated ) ;
-        index_t nb = std::count( degenerate.begin(), degenerate.end(), 1 ) ;
+        index_t nb = static_cast< index_t >( std::count( degenerate.begin(), degenerate.end(), 1 ) ) ;
         /// We have a problem if some vertices are left isolated
         /// If we ermove them here we can kill all indices correspondances
         M.edges.delete_elements( degenerate, false ) ;
@@ -334,9 +335,9 @@ namespace {
                 q[1] *= s ;
                 q[2] *= s ;
             }
-            q *= sinf( 0.5 * angle ) ;
+            q *= sin( 0.5 * angle ) ;
 
-            double quat[4] = { q[0], q[1], q[2], cosf( 0.5 * angle ) } ;
+            double quat[4] = { q[0], q[1], q[2], cos( 0.5 * angle ) } ;
 
             double m[4][4] ;
 

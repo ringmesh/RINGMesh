@@ -46,7 +46,10 @@
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/algorithm.h>
-
+/*
+* @todo Review : The most part of what is in this file should be in an anonymous
+*       namespace as it is not supposed to go out of this file [JP]
+*/
 namespace RINGMesh {
     namespace RINGMeshIO {
         double read_double( GEO::LineInput& in, index_t field )
@@ -61,7 +64,7 @@ namespace RINGMesh {
         static std::string SPACE = " " ;
 
         /*!
-        * @brief Total number of facets in a BM Surfaces
+        * @brief Total number of facets in the Surfaces of a BM
         */
         inline index_t nb_facets( const BoundaryModel& BM )
         {
@@ -3434,7 +3437,7 @@ namespace RINGMesh {
         }
 
         /*
-         * Initializes the possible handler for IO files
+         * Initializes the possible handlers for IO BoundaryModel files
          */
         void BoundaryModelIOHandler::initialize()
         {

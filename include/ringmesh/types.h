@@ -60,6 +60,11 @@ namespace RINGMesh {
 
     /*! Integer type with a width of 8 bits */
     typedef char int8 ;
+    /*
+     * @todo Review : I do not understand the point of these uncommented 
+     * dummy variables. I would love to see them removed. To avoid warnings
+     * it is sufficient and clearer for the reader to use the default vec3() [JP]
+     */
     static int8 dummy_int8 ;
 
     /*! Integer type with a width of 16 bits */
@@ -124,7 +129,9 @@ namespace RINGMesh {
     //   | _|| ' \ || | '  \(_-<
     //   |___|_||_\_,_|_|_|_/__/
     //
-
+    
+    /* @todo Review : Please put this in the MacroMesh class [JP]
+     */
     enum ElementType {
         VERTEX  = -1,
         LINE    =  0,
@@ -135,6 +142,11 @@ namespace RINGMesh {
         PRISM   =  5,
         HEXA    =  6
     } ;
+
+    /* 
+     * @todo Review : Where are these cell descriptors used ? Please put them
+     * where they are used or remove them. [JP]
+     */
 
     //     ___     _ _      _               _      _
     //    / __|___| | |  __| |___ _____ _ _(_)_ __| |_ ___ _ _ ___
@@ -221,7 +233,8 @@ namespace RINGMesh {
         { { 0, 1, 2, 3 }, { 4, 5, 0 }, { 3, 6, 4 },
           { 6, 7, 2 }, { 1, 5, 7 } }  //edges_in_facet
     } ;
-
+    /* @todo Review : Please put this where it is used, MacroMesh class ? [JP]
+    */
     static ElementType cell_types[9] = {
         VERTEX,
         VERTEX,

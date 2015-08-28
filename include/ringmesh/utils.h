@@ -407,7 +407,7 @@ namespace RINGMesh {
             if( it == v.end() )
                 return NO_ID ;
             else
-                return it - v.begin() ;
+                return static_cast<index_t>( it - v.begin() ) ;
         }
 
         template< typename T, typename container >
@@ -418,7 +418,7 @@ namespace RINGMesh {
             if( low == v.end() || t < *low )
                 return NO_ID ;
             else
-                return low - v.begin() ;
+                return static_cast<index_t>( low - v.begin() );
         }
 
         template< class T1, class T2 >
