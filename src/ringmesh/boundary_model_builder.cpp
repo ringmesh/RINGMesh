@@ -812,11 +812,10 @@ namespace {
                     std::vector< index_t > colocated_indices ;
                     kdtree.get_colocated( m.vertices.point( v ),
                         colocated_indices ) ;
-                    std::sort( colocated_indices.begin(), colocated_indices.end() ) ;
-                    for( index_t col_id = 1; col_id < colocated_indices.size();
-                        col_id++ ) {
-                        // Colocated vertices
-                        vertices.insert( colocated_indices[col_id] ) ;
+                    if( colocated_vertices.size() > 1 ){ 
+                        std::sort( colocated_indices.begin(), colocated_indices.end() ) ;
+                        // Add colocated vertices except one to the duplicated vertices set
+                        vertices.insert( colocated.begin()+1, colocated_indices.end() ) ;                    
                     }
                 }
             }
