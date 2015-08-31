@@ -16,6 +16,7 @@
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/boundary_model_element.h>
 
+#include <geogram/basic/logger.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
@@ -122,6 +123,7 @@ namespace RINGMesh {
 
         GEO::MeshRepairMode mode = static_cast< GEO::MeshRepairMode >( 2 ) ;
         GEO::mesh_repair( M, mode ) ;
+        return true ;
     }
 
     /*!

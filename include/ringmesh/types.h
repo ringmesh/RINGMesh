@@ -115,6 +115,8 @@ namespace RINGMesh {
 
     const static index_t NO_ID = index_t( -1 ) ;
 
+    /* @todo Review : Please put this in the MacroMesh class [JP]
+     */
     const std::string surface_att_name = "region" ;
     const std::string region_att_name = "region" ;
     //    ___

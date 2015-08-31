@@ -42,7 +42,9 @@
 #include <ringmesh/macro_mesh.h>
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/well.h>
+#include <ringmesh/utils.h>
 
+#include <geogram/basic/file_system.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
@@ -691,7 +693,7 @@ namespace RINGMesh {
                     << "ZPOSITIVE Elevation" << std::endl
                     << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
 
-                mm.set_duplicate_mode( ALL ) ;
+                mm.set_duplicate_mode( MacroMesh::ALL ) ;
 
                 std::vector< bool > vertex_exported( mm.vertices.nb_vertices(),
                     false ) ;
@@ -975,6 +977,7 @@ namespace RINGMesh {
                     if( mm.cells.nb_prism( r ) > 0 ) nb_families++ ;
                     if( mm.cells.nb_hex( r ) > 0 ) nb_families++ ;
                 }
+                if( mm.wells() ) nb_families += mm.wells()->nb_wells() ;
 
                 ascii << nb_families << " # Number of families" << std::endl ;
                 ascii << "# Object name" << TAB << "Element type" << TAB
@@ -1014,6 +1017,7 @@ namespace RINGMesh {
                 if( mm.wells() ) {
                     for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
                         const Well& well = mm.wells()->well( w ) ;
+                        regions << well.name() << std::endl ;
                         ascii << well.name() << TAB << "BAR_2" << TAB << 0 << TAB
                             << well.nb_edges() << std::endl ;
                     }
@@ -1101,16 +1105,16 @@ namespace RINGMesh {
                             count = 0 ;
                         }
                     }
-                    if( mm.wells() ) {
-                        for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
-                            const Well& well = mm.wells()->well( w ) ;
-                            for( index_t e = 0; e < well.nb_edges(); e++ ) {
-                                data << " " << std::setw( 3 ) << 2 ;
-                                count++ ;
-                                if( count == 20 ) {
-                                    data << std::endl ;
-                                    count = 0 ;
-                                }
+                }
+                if( mm.wells() ) {
+                    for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
+                        const Well& well = mm.wells()->well( w ) ;
+                        for( index_t e = 0; e < well.nb_edges(); e++ ) {
+                            data << " " << std::setw( 3 ) << 2 ;
+                            count++ ;
+                            if( count == 20 ) {
+                                data << std::endl ;
+                                count = 0 ;
                             }
                         }
                     }
@@ -1256,11 +1260,9 @@ namespace RINGMesh {
                     for( index_t el = 0; el < mm.cells.nb_tet( r ); el++ ) {
                         index_t tet = mm.cells.tet_id( r, el ) ;
                         for( index_t p = 0; p < 4; p++ ) {
-                            index_t vertex_id ;
                             index_t csmp_p = tet_descriptor.vertices[p] ;
-                            mm.vertices.vertex_id( r,
-                                mesh.cells.corners_begin( tet ) + csmp_p,
-                                vertex_id ) ;
+                            index_t vertex_id = mm.vertices.vertex_id( r,
+                                mesh.cells.vertex( tet, csmp_p ) ) ;
                             data << " " << std::setw( 7 ) << vertex_id ;
                             count++ ;
                             if( count == 10 ) {
@@ -1272,11 +1274,9 @@ namespace RINGMesh {
                     for( index_t el = 0; el < mm.cells.nb_pyramid( r ); el++ ) {
                         index_t py = mm.cells.pyramid_id( r, el ) ;
                         for( index_t p = 0; p < 5; p++ ) {
-                            index_t vertex_id ;
                             index_t csmp_p = pyramid_descriptor.vertices[p] ;
-                            mm.vertices.vertex_id( r,
-                                mesh.cells.corners_begin( py ) + csmp_p,
-                                vertex_id ) ;
+                            index_t vertex_id = mm.vertices.vertex_id( r,
+                                mesh.cells.vertex( py, csmp_p ) ) ;
                             data << " " << std::setw( 7 ) << vertex_id ;
                             count++ ;
                             if( count == 10 ) {
@@ -1288,11 +1288,9 @@ namespace RINGMesh {
                     for( index_t el = 0; el < mm.cells.nb_prism( r ); el++ ) {
                         index_t prism = mm.cells.prism_id( r, el ) ;
                         for( index_t p = 0; p < 6; p++ ) {
-                            index_t vertex_id ;
                             index_t csmp_p = prism_descriptor.vertices[p] ;
-                            mm.vertices.vertex_id( r,
-                                mesh.cells.corners_begin( prism ) + csmp_p,
-                                vertex_id ) ;
+                            index_t vertex_id = mm.vertices.vertex_id( r,
+                                mesh.cells.vertex( prism, csmp_p ) ) ;
                             data << " " << std::setw( 7 ) << vertex_id ;
                             count++ ;
                             if( count == 10 ) {
@@ -1304,11 +1302,9 @@ namespace RINGMesh {
                     for( index_t el = 0; el < mm.cells.nb_hex( r ); el++ ) {
                         index_t hex = mm.cells.prism_id( r, el ) ;
                         for( index_t p = 0; p < 8; p++ ) {
-                            index_t vertex_id ;
                             index_t csmp_p = hex_descriptor.vertices[p] ;
-                            mm.vertices.vertex_id( r,
-                                mesh.cells.corners_begin( hex ) + csmp_p,
-                                vertex_id ) ;
+                            index_t vertex_id = mm.vertices.vertex_id( r,
+                                mesh.cells.vertex( hex, csmp_p ) ) ;
                             data << " " << std::setw( 7 ) << vertex_id ;
                             count++ ;
                             if( count == 10 ) {
@@ -1326,7 +1322,7 @@ namespace RINGMesh {
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                         for( index_t el = 0; el < mm.facets.nb_triangle( s_id );
                             el++ ) {
-                            index_t tri = mm.facets.triangle_id( mesh_id, el ) ;
+                            index_t tri = mm.facets.triangle_id( s_id, el ) ;
                             for( index_t p = mesh.facets.corners_begin( tri );
                                 p < mesh.facets.corners_end( tri ); p++ ) {
                                 index_t vertex_id = mm.vertices.vertex_id( mesh_id,
@@ -1340,7 +1336,7 @@ namespace RINGMesh {
                             }
                         }
                         for( index_t el = 0; el < mm.facets.nb_quad( s_id ); el++ ) {
-                            index_t quad = mm.facets.quad_id( mesh_id, el ) ;
+                            index_t quad = mm.facets.quad_id( s_id, el ) ;
                             for( index_t p = mesh.facets.corners_begin( quad );
                                 p < mesh.facets.corners_end( quad ); p++ ) {
                                 index_t vertex_id = mm.vertices.vertex_id( mesh_id,
@@ -1460,7 +1456,7 @@ namespace RINGMesh {
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                         for( index_t el = 0; el < mm.facets.nb_triangle( s_id );
                             el++ ) {
-                            index_t tri = mm.facets.triangle_id( mesh_id, el ) ;
+                            index_t tri = mm.facets.triangle_id( s_id, el ) ;
                             for( index_t f = mesh.facets.corners_begin( tri );
                                 f < mesh.facets.corners_end( tri ); f++ ) {
                                 index_t adj = mesh.facet_corners.adjacent_facet(
@@ -1478,7 +1474,7 @@ namespace RINGMesh {
                             }
                         }
                         for( index_t el = 0; el < mm.facets.nb_quad( s_id ); el++ ) {
-                            index_t quad = mm.facets.quad_id( mesh_id, el ) ;
+                            index_t quad = mm.facets.quad_id( s_id, el ) ;
                             for( index_t f = mesh.facets.corners_begin( quad );
                                 f < mesh.facets.corners_end( quad ); f++ ) {
                                 index_t adj = mesh.facet_corners.adjacent_facet(
@@ -1501,6 +1497,11 @@ namespace RINGMesh {
                 index_t cur_edge = 0 ;
                 for( index_t w = 0; w < mm.edges.nb_wells(); w++ ) {
                     data << " " << std::setw( 7 ) << -28 ;
+                    count++ ;
+                    if( count == 10 ) {
+                        data << std::endl ;
+                        count = 0 ;
+                    }
                     if( mm.edges.nb_edges( w ) > 1 ) {
                         data << " " << std::setw( 7 ) << edge_offset + cur_edge + 1 ;
                         cur_edge++ ;
@@ -1509,14 +1510,16 @@ namespace RINGMesh {
                             data << std::endl ;
                             count = 0 ;
                         }
-                        for( index_t e = 1; e < mm.edges.nb_edges( w ) - 1; e++ ) {
-                            for( index_t v = 0; v < 2; v++ ) {
-                                data << " " << std::setw( 7 )
-                                    << edge_offset + cur_edge - 1 ;
-                                data << " " << std::setw( 7 )
-                                    << edge_offset + cur_edge + 1 ;
+                        for( index_t e = 1; e < mm.edges.nb_edges( w ) - 1; e++, cur_edge++ ) {
+                            data << " " << std::setw( 7 )
+                                << edge_offset + cur_edge - 1 ;
+                            count++ ;
+                            if( count == 10 ) {
+                                data << std::endl ;
+                                count = 0 ;
                             }
-                            cur_edge++ ;
+                            data << " " << std::setw( 7 )
+                                << edge_offset + cur_edge + 1 ;
                             count++ ;
                             if( count == 10 ) {
                                 data << std::endl ;
@@ -1524,6 +1527,11 @@ namespace RINGMesh {
                             }
                         }
                         data << " " << std::setw( 7 ) << edge_offset + cur_edge - 1 ;
+                        count++ ;
+                        if( count == 10 ) {
+                            data << std::endl ;
+                            count = 0 ;
+                        }
                     }
                     data << " " << std::setw( 7 ) << -28 ;
                     cur_edge++ ;
@@ -1539,7 +1547,7 @@ namespace RINGMesh {
                 }
 
                 data << nb_total_elements << " # PMATERIAL" << std::endl ;
-                for( unsigned int i = 0; i < nb_total_elements; i++ ) {
+                for( index_t i = 0; i < nb_total_elements; i++ ) {
                     data << " " << std::setw( 3 ) << 0 ;
                     count++ ;
                     if( count == 20 ) {
@@ -2107,7 +2115,7 @@ namespace RINGMesh {
             }
             virtual bool save( const MacroMesh& mm, const std::string& filename )
             {
-                mm.set_duplicate_mode( FAULT ) ;
+//                mm.set_duplicate_mode( FAULT ) ;
 
                 std::ofstream out( filename.c_str() ) ;
                 out.precision( 16 ) ;
