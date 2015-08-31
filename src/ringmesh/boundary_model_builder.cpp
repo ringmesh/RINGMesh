@@ -812,12 +812,11 @@ namespace {
                     std::vector< index_t > colocated_indices ;
                     kdtree.get_colocated( m.vertices.point( v ),
                         colocated_indices ) ;
+                    std::sort( colocated_indices.begin(), colocated_indices.end() ) ;
                     for( index_t col_id = 1; col_id < colocated_indices.size();
                         col_id++ ) {
                         // Colocated vertices
-                        vertices.insert(
-                            GEO::geo_max( colocated_indices[0],
-                                colocated_indices[col_id] ) ) ;
+                        vertices.insert( colocated_indices[col_id] ) ;
                     }
                 }
             }
