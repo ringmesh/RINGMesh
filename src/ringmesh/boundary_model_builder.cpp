@@ -804,29 +804,19 @@ namespace {
             // We want to get the indices of the vertices in E
             // that are colocated with those of the inside boundary
             // We assume that the model vertice are not yet computed
-            GEO::NearestNeighborSearch_var kdtree =
-                GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-            kdtree->set_points( E.mesh().vertices.nb(),
-                E.mesh().vertices.point_ptr( 0 ) ) ;
+            ColocaterANN kdtree( E.mesh(), ColocaterANN::VERTICES ) ;
 
             for( index_t i = 0; i < inside_border.size(); ++i ) {
                 const GEO::Mesh& m = inside_border[i]->mesh() ;
                 for( index_t v = 0; v < m.vertices.nb(); ++v ) {
-                    index_t neighbors[3] ;
-                    double sq_dist[3] ;
-                    kdtree->get_nearest_neighbors( 3, m.vertices.point_ptr( v ),
-                        neighbors, sq_dist ) ;
-
-                    if( sq_dist[2] < epsilon_sq ) {
-                        // We have a problem there colocated points on the inside
-                        // border. They are not properly processed. 
-                        ringmesh_debug_assert( false ) ;
-                    } else if( sq_dist[1] < epsilon_sq ) {
-                        // Colocated vertices
-                        vertices.insert(
-                            GEO::geo_max( neighbors[0], neighbors[1] ) ) ;
+                    std::vector< index_t > colocated_indices ;
+                    kdtree.get_colocated( m.vertices.point( v ),
+                        colocated_indices ) ;
+                    if( colocated_vertices.size() > 1 ){ 
+                        std::sort( colocated_indices.begin(), colocated_indices.end() ) ;
+                        // Add colocated vertices except one to the duplicated vertices set
+                        vertices.insert( colocated.begin()+1, colocated_indices.end() ) ;                    
                     }
-                    // Otherwise nothing to do
                 }
             }
         }
