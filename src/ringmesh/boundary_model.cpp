@@ -42,10 +42,13 @@
 
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/utils.h>
+#include <ringmesh/boundary_model_builder.h>
 
 #include <geogram/basic/logger.h>
+#include <geogram/basic/file_system.h>
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/basic/string.h>
+#include <geogram/basic/algorithm.h>
 #include <geogram/points/colocate.h>
 #include <geogram/mesh/triangle_intersection.h>
 #include <geogram/mesh/mesh.h>
@@ -65,6 +68,7 @@
 #include <map>
 
 namespace {
+
     using namespace GEO ;
     using namespace RINGMesh ;
     using GEO::index_t ;
@@ -132,8 +136,8 @@ namespace {
         index_t f2,
         vector< TriangleIsect >& sym )
     {
-        geo_debug_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
-        geo_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
+        ringmesh_debug_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
+        ringmesh_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
         index_t c1 = M.facets.corners_begin( f1 ) ;
         const vec3& p1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 ) ) ;
         const vec3& p2 = GEO::Geom::mesh_vertex( M,
@@ -168,6 +172,9 @@ namespace {
         BME::bme_t result ;
         index_t lv0 = NO_ID ;
         index_t lv1 = NO_ID ;
+
+        // No sorting to optimize since 
+        // v0_bme and v1_bme are very small sets ( < 10 elements ) [JP]
         for( index_t i = 0; i < v0_bme.size(); ++i ) {
             if( v0_bme[i].bme_id.type == BME::LINE ) {
                 for( index_t j = 0; j < v1_bme.size(); ++j ) {
@@ -196,10 +203,11 @@ namespace {
             if( lv0 > lv1 ) {
                 std::swap( lv0, lv1 ) ;
             }
-            int delta_i = (int) lv1 - (int) lv0 ;
+            // Casts are here to avoid a compiler warning [JP]
+            int delta_i = static_cast< int >( lv1 ) - static_cast< int >( lv0 ) ;
 
             if( delta_i == 1 ) {
-                // There is if their indices in the Line are i and i+1
+                // There is an edge if their indices in the Line are i and i+1
                 return result ;
             } else if( model.line( result.index ).is_closed()
                 && delta_i == model.line( result.index ).nb_vertices() - 2 ) {
@@ -225,7 +233,7 @@ namespace {
         // Get the ids in the model of these 2 points
         index_t v0 = model.vertices.vertex_index( p0 ) ;
         index_t v1 = model.vertices.vertex_index( p1 ) ;
-        ringmesh_assert( v0 != NO_ID && v1 != NO_ID ) ;
+        ringmesh_debug_assert( v0 != NO_ID && v1 != NO_ID ) ;
 
         return is_edge_on_line( model, v0, v1 ) ;
     }
@@ -243,8 +251,8 @@ namespace {
         index_t f1,
         index_t f2 )
     {
-        geo_debug_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
-        geo_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
+        ringmesh_debug_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
+        ringmesh_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
 
         // I only want to test the edges that are on boundary 
         for( index_t i = 0; i < 3; ++i ) {
@@ -263,7 +271,7 @@ namespace {
 
                         index_t v10 = BM.vertices.vertex_index( p10 ) ;
                         index_t v11 = BM.vertices.vertex_index( p11 ) ;
-                        ringmesh_assert( v10 != NO_ID && v11 != NO_ID ) ;
+                        ringmesh_debug_assert( v10 != NO_ID && v11 != NO_ID ) ;
 
                         index_t v20 = BM.vertices.vertex_index( p20 ) ;
                         index_t v21 = BM.vertices.vertex_index( p21 ) ;
@@ -605,10 +613,15 @@ namespace {
         M.clear( true ) ;
 
         // Set the vertices 
-        index_t nbv = model.nb_vertices() ;
+        index_t nbv = model.vertices.nb() ;
         M.vertices.create_vertices( nbv ) ;
-        for( index_t i = 0; i < nbv; ++i ) {
-            M.vertices.point( i ) = model.vertices.unique_vertex( i ) ;
+
+        /* We need to copy the point one after another since we do not have access
+         * to the storage of the model.vertices. 
+         * I do not want to provide this access [JP]
+         */
+        for( index_t v = 0; v < nbv; ++v ) {
+            M.vertices.point( v ) = model.vertices.unique_vertex( v ) ;
         }
 
         // Set the facets  
@@ -643,7 +656,6 @@ namespace {
         if( BME::parent_allowed( T ) ) {
             // We are dealing with basic elements 
             for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
-
                 if( with_inside_borders
                     || ( !with_inside_borders
                         && !E.boundary( i ).is_inside_border( E ) ) ) {
@@ -661,10 +673,8 @@ namespace {
                     }
                 }
             }
-            std::sort( borders.begin(), borders.end() ) ;
-            index_t nb = std::unique( borders.begin(), borders.end() )
-                - borders.begin() ;
-            borders.resize( nb ) ;
+
+            GEO::sort_unique( borders ) ;
         }
     }
 
@@ -696,10 +706,7 @@ namespace {
                 }
             }
             // Remove duplicates
-            std::sort( in_boundary.begin(), in_boundary.end() ) ;
-            index_t nb = std::unique( in_boundary.begin(), in_boundary.end() )
-                - in_boundary.begin() ;
-            in_boundary.resize( nb ) ;
+            GEO::sort_unique( in_boundary ) ;
         }
     }
 
@@ -726,7 +733,7 @@ namespace {
                     M.vertices.create_vertices( borders.size() ) ;
                     for( index_t i = 0; i < borders.size(); ++i ) {
                         M.vertices.point( i ) =
-                            E.model().element( borders[i] ).vertex() ;
+                            E.model().mesh_element( borders[i] ).vertex() ;
                     }
                 } else {
                     // Put an attribute on the ModelVertices to know its index
@@ -738,7 +745,7 @@ namespace {
 
                     // Add the vertices 
                     for( index_t i = 0; i < borders.size(); ++i ) {
-                        const BME& b = model.element( borders[i] ) ;
+                        const BMME& b = model.mesh_element( borders[i] ) ;
                         for( index_t v = 0; v < b.nb_vertices(); ++v ) {
                             index_t global_v = b.model_vertex_id( v ) ;
                             if( old2new[global_v] == NO_ID ) {
@@ -802,12 +809,10 @@ namespace {
             valid = false ;
         }
         if( region.nb_boundaries() == 0 ) {
-            GEO::Logger::err( "BoundaryModel" )
-                << print_bme_id( region ) << " has no boundary Surface"
-                << std::endl ;
+            GEO::Logger::err( "BoundaryModel" ) << print_bme_id( region )
+                << " has no boundary Surface" << std::endl ;
             valid = false ;
-        }
-        else {
+        } else {
             Mesh mesh ;
             GEO::Logger::instance()->set_quiet( true ) ;
             mesh_from_element_boundaries( region, mesh ) ;
@@ -822,18 +827,15 @@ namespace {
             }
             if( GEO::mesh_nb_borders( mesh ) != 0 ) {
                 GEO::Logger::err( "BoundaryModel" ) << " Surface boundary of "
-                    << print_bme_id( region ) << " has borders "
-                    << std::endl ;
+                    << print_bme_id( region ) << " has borders " << std::endl ;
                 valid = false ;
             }
 
 #ifdef RINGMESH_DEBUG
             if( !valid ) {
                 std::ostringstream file ;
-                file << region.model().debug_directory()
-                    << "/boundary_surface_"
-                    << print_bme_id( region )
-                    << ".mesh"  ;
+                file << region.model().debug_directory() << "/boundary_surface_"
+                    << print_bme_id( region ) << ".mesh" ;
                 GEO::mesh_save( mesh, file.str() ) ;
             }
 #endif
@@ -864,7 +866,7 @@ namespace {
     /*! 
      * @brief Check the geometrical-topological consistency of the model
      * @details Verification is based on the information stored by the unique
-     *          vertices of the model
+     *          vertices of the model which validity must be checked beforehand
      * @todo Check that the model vertices are consistent with the model_vertex_ids
      *       stored at by the BMME
      */
@@ -910,6 +912,7 @@ namespace {
                         GEO::Logger::err( "BoundaryModelVertex" ) << " Vertex " << i
                             << " is in no element of the model" << std::endl ;
                         valid_vertex = false ;
+                        break ;
                 }
             }
 
@@ -1128,9 +1131,8 @@ namespace {
 #ifdef RINGMESH_DEBUG
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
-            file << S.model().debug_directory() 
-                << "/invalid_boundary_"
-                << print_bme_id( S ) << ".lin"  ;
+            file << S.model().debug_directory() << "/invalid_boundary_"
+                << print_bme_id( S ) << ".lin" ;
             save_edges( file.str(), S.model(), invalid_corners ) ;
         }
 #endif  
@@ -1145,14 +1147,14 @@ namespace {
         }
     }
 
-    BoundaryModelMeshElement& cast_bmm_element(
+    inline BoundaryModelMeshElement& cast_bmm_element(
         const BoundaryModel& M,
         BME::TYPE T,
         index_t i )
     {
         return dynamic_cast< BoundaryModelMeshElement& >( const_cast< BME& >( M.element(
             BME::bme_t( T, i ) ) ) ) ;
-    }
+    }   
 
 } // anonymous namespace 
 
@@ -1170,7 +1172,7 @@ namespace RINGMesh {
         for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
             BME::TYPE T = static_cast< BME::TYPE >( t ) ;
             for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
-                nb += bm_.element( bme_t( T, e ) ).nb_vertices() ;
+                nb += bm_.mesh_element( bme_t( T, e ) ).nb_vertices() ;
             }
         }
         // Get out if no vertices
@@ -1187,6 +1189,10 @@ namespace RINGMesh {
             BME::TYPE T = static_cast< BME::TYPE >( t ) ;
             for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
                 BoundaryModelMeshElement& E = cast_bmm_element( bm_, T, e ) ;
+                /*!
+                 * @todo Review: could you use memcpy to copy all the vertices at once
+                 * and then save the indices inside E and  bme_vertices_[index]. [AB]
+                 */
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     // Vertex coordinates
                     double* p = mesh_.vertices.point_ptr( index ) ;
@@ -1209,29 +1215,26 @@ namespace RINGMesh {
 
     void BoundaryModelVertices::set_invalid_vertex( index_t v )
     {
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         std::vector< VertexInBME >& related = bme_vertices_[v] ;
-        for( index_t i = 0; i < related.size(); ++i ) {
-            related[i] = VertexInBME() ;
-        }
+        std::fill( related.begin(), related.end(), VertexInBME() ) ;
     }
 
     bool BoundaryModelVertices::is_invalid_vertex( index_t v ) const
     {
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         const std::vector< VertexInBME >& related = bme_vertices_[v] ;
-        index_t count = 0 ;
         for( index_t i = 0; i < related.size(); ++i ) {
-            if( !related[i].is_defined() ) {
-                count++ ;
+            if( related[i].is_defined() ) {
+                return false ;
             }
         }
-        return count == related.size() ;
+        return true ;
     }
 
     void BoundaryModelVertices::remove_colocated()
     {
-        // Go out if nothing to do
+        // Get out if nothing to do
         // and compute the points if they are not initialized yet
         if( nb() == 0 ) {
             return ;
@@ -1246,18 +1249,17 @@ namespace RINGMesh {
 
     void BoundaryModelVertices::update_point( index_t v, const vec3& point )
     {
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         // Change the position of the unique_vertex 
-        double* p = mesh_.vertices.point_ptr( v ) ;
         for( index_t c = 0; c < 3; ++c ) {
-            p[c] = double( point[c] ) ;
+            mesh_.vertices.point_ptr( v )[c] = double( point[c] ) ;
         }
         set_to_update() ;
 
         const std::vector< VertexInBME >& bme_v = bme_vertices( v ) ;
         for( index_t i = 0; i < bme_v.size(); i++ ) {
             const VertexInBME& info = bme_v[i] ;
-            const_cast< BME& >( bm_.element( BME::bme_t( info.bme_id ) ) ).set_vertex(
+            const_cast< BMME& >( bm_.mesh_element( BME::bme_t( info.bme_id ) ) ).set_vertex(
                 info.v_id, point, false ) ;
         }
     }
@@ -1265,7 +1267,7 @@ namespace RINGMesh {
     const std::vector< BoundaryModelVertices::VertexInBME >&
     BoundaryModelVertices::bme_vertices( index_t v ) const
     {
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         return bme_vertices_[v] ;
     }
 
@@ -1280,11 +1282,12 @@ namespace RINGMesh {
         index_t v,
         const VertexInBME& v_bme )
     {
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         ringmesh_debug_assert( bme_vertices_.size() == nb() ) ;
         // Assert if adding twice the same thing - not a normal behavior
-        ringmesh_debug_assert( std::find( bme_vertices_[v].begin(),
-            bme_vertices_[v].end(), v_bme ) == bme_vertices_[v].end() ) ;
+        ringmesh_debug_assert(
+            std::find( bme_vertices_[v].begin(), bme_vertices_[v].end(), v_bme )
+                == bme_vertices_[v].end() ) ;
 
         bme_vertices_[v].push_back( v_bme ) ;
     }
@@ -1294,8 +1297,8 @@ namespace RINGMesh {
         index_t k,
         const VertexInBME& v )
     {
-        ringmesh_assert( unique_id < nb() ) ;
-        ringmesh_assert( k < bme_vertices( unique_id ).size() ) ;
+        ringmesh_debug_assert( unique_id < nb() ) ;
+        ringmesh_debug_assert( k < bme_vertices( unique_id ).size() ) ;
         bme_vertices_[unique_id][k] = v ;
     }
 
@@ -1312,17 +1315,11 @@ namespace RINGMesh {
         double sq_dist ;
         kdtree_->get_nearest_neighbors( 1, p.data(), &nn, &sq_dist ) ;
         if( sq_dist < epsilon_sq ) {
-            ringmesh_assert( nn != NO_ID ) ;
+            ringmesh_debug_assert( nn != NO_ID ) ;
             return nn ;
         } else {
             return NO_ID ;
         }
-    }
-
-    // Deprecated - to remove - the name is stupidly annoying
-    index_t BoundaryModelVertices::nb_unique_vertices() const
-    {
-        return nb() ;
     }
 
     index_t BoundaryModelVertices::nb() const
@@ -1338,7 +1335,7 @@ namespace RINGMesh {
     {
         // The call to nb() in the assert
         // initialize the points if necessary
-        ringmesh_assert( v < nb() ) ;
+        ringmesh_debug_assert( v < nb() ) ;
         return mesh_.vertices.point( v ) ;
     }
 
@@ -1353,6 +1350,8 @@ namespace RINGMesh {
         // Clear the model vertex id information for the Corner - Line - Surface
         for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
             BME::TYPE T = static_cast< BME::TYPE >( t ) ;
+            /// @todo Review: could be parallelized RINGMESH_PARALLEL_LOOP
+            /// I do not know if it will be usefull [AB]
             for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
                 BoundaryModelMeshElement& E = cast_bmm_element( bm_, T, e ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
@@ -1368,7 +1367,7 @@ namespace RINGMesh {
         // Having functions, permit to easily change the way to update
         // this Kdtree. Do not remove them. JP
         // We do not need to reset or unref anything - this is done when 
-        // I new tree is computed. Jeanne.
+        // a new tree is computed. Jeanne.
         kdtree_to_update_ = true ;
     }
 
@@ -1385,15 +1384,15 @@ namespace RINGMesh {
 
     void BoundaryModelVertices::erase_vertices( std::vector< index_t >& to_delete )
     {
-        ringmesh_assert( to_delete.size() == nb() ) ;
+        ringmesh_debug_assert( to_delete.size() == nb() ) ;
 
         // For mesh vertices deletion
         GEO::vector< index_t > to_delete_geo( nb(), 0 ) ;
 
         // Fill the delete information for geogram
         // Recycle the to_delete vertex to get the mapping between
-        // new and old points. This implemented to be similar 
-        // to what is done in the delete_elements function in geogram
+        // new and old points. This is implemented to be the same 
+        // as what is done in the delete_elements function in geogram
         index_t nb_todelete = 0 ;
         index_t cur = 0 ;
         for( index_t v = 0; v < nb(); ++v ) {
@@ -1424,6 +1423,7 @@ namespace RINGMesh {
                 bme_vertices_[v].clear() ;
             }
         }
+
         bme_vertices_.erase(
             std::remove( bme_vertices_.begin(), bme_vertices_.end(),
                 std::vector< VertexInBME >() ), bme_vertices_.end() ) ;
@@ -1436,7 +1436,7 @@ namespace RINGMesh {
         // Paranoia - check that we have the same mapping than the
         // delete_elements function in Geogram
         for( index_t v = 0; v < nb(); ++v ) {
-            ringmesh_assert(
+            ringmesh_debug_assert(
                 to_delete_geo[v] == NO_ID || to_delete_geo[v] == to_delete[v] ) ;
         }
 #endif
@@ -1453,9 +1453,14 @@ namespace RINGMesh {
                     index_t new_id = to_delete[old_id] ;
                     // If new_id is NO_ID the vertex should be removed afterwards
                     // from the BMME 
-                    ringmesh_debug_assert( new_id != NO_ID ) ;                    
+                    ringmesh_debug_assert( new_id != NO_ID ) ;
                     E.set_model_vertex_id( v, new_id ) ;
 
+                    /*!
+                     * @todo Review: I don't understand this for and what it does...
+                     * When we remove a region, this for add stupid vertices inside the
+                     * vector... [AB]
+                     */
                     // Merge bme_vertices_ information
                     if( std::find( bme_vertices_[new_id].begin(),
                         bme_vertices_[new_id].end(), VertexInBME( E.bme_id(), v ) )
@@ -1473,8 +1478,9 @@ namespace RINGMesh {
 
     void BoundaryModelVertices::erase_invalid_vertices()
     {
+
         index_t nb_todelete = 0 ;
-        std::vector< index_t > to_delete( nb() ) ;
+        std::vector< index_t > to_delete( nb() ) ; // Here nb() represents the number of vertices before removal of the elements
 
         for( index_t v = 0; v < nb(); ++v ) {
             std::vector< VertexInBME >& related = bme_vertices_[v] ;
@@ -1482,6 +1488,7 @@ namespace RINGMesh {
 
             // Get the invalid BMEVertices for the current global vertex
             for( index_t i = 0; i < related.size(); ++i ) {
+
                 if( !related[i].is_defined() ) {
                     // To ease removal of invalid BMEVertices
                     related[i] = VertexInBME() ;
@@ -1510,6 +1517,13 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
+    BoundaryModel::BoundaryModel()
+        :
+            vertices( *this ),
+            debug_directory_( GEO::FileSystem::get_current_working_directory() )
+    {
+    }
+
     BoundaryModel::~BoundaryModel()
     {
         for( index_t t = BME::CORNER; t < BME::NO_TYPE; ++t ) {
@@ -1529,18 +1543,6 @@ namespace RINGMesh {
                 << " for BoudnaryModel " << name() << "using default directory "
                 << debug_directory_ << std::endl ;
         }
-    }
-
-    /*!
-     * @brief Total number of facets in the model Surface s
-     */
-    index_t BoundaryModel::nb_facets() const
-    {
-        index_t result = 0 ;
-        for( index_t i = 0; i < nb_surfaces(); ++i ) {
-            result += surface( i ).nb_cells() ;
-        }
-        return result ;
     }
 
     /*!
@@ -1582,23 +1584,23 @@ namespace RINGMesh {
     {
         name_ = from.name_ ;
         for( index_t t = BME::CORNER; t < BME::NO_TYPE; ++t ) {
-            BME::TYPE T = (BME::TYPE) t ;
+            BME::TYPE T = static_cast< BME::TYPE >( t ) ;
             std::vector< BME* >& store = modifiable_elements( T ) ;
             store.resize( from.nb_elements( T ), nil ) ;
 
-            for( index_t i = 0; i < nb_elements( T ); ++i ) {
-                store[i] = create_element( T ) ;
-                ringmesh_debug_assert( store[ i ] != nil ) ;
+            for( index_t e = 0; e < nb_elements( T ); ++e ) {
+                store[e] = create_element( T ) ;
+                ringmesh_debug_assert( store[ e ] != nil ) ;
             }
             RINGMESH_PARALLEL_LOOP
-            for( index_t i = 0; i < nb_elements( T ); ++i ) {
-                store[i]->copy_macro_topology( from.element( bme_t( T, i ) ),
+            for( index_t e = 0; e < nb_elements( T ); ++e ) {
+                store[e]->copy_macro_topology( from.element( bme_t( T, e ) ),
                     *this ) ;
             }
         }
         universe_.copy_macro_topology( from.universe_, *this ) ;
 
-        nb_elements_per_type_ = from.nb_elements_per_type_;
+        nb_elements_per_type_ = from.nb_elements_per_type_ ;
     }
 
     /*!
@@ -1611,82 +1613,23 @@ namespace RINGMesh {
      */
     void BoundaryModel::copy_meshes( const BoundaryModel& from )
     {
-        for( index_t i = BME::CORNER; i < BME::REGION; ++i ) {
-            BME::TYPE T = (BME::TYPE) i ;
+        for( index_t t = BME::CORNER; t < BME::REGION; ++t ) {
+            BME::TYPE T = static_cast< BME::TYPE >( t ) ;
             RINGMESH_PARALLEL_LOOP
-            for( index_t j = 0; j < elements( T ).size(); ++j ) {
+            for( index_t e = 0; e < elements( T ).size(); ++e ) {
                 BoundaryModelMeshElement* E =
-                    dynamic_cast< BoundaryModelMeshElement* >( elements( T )[j] ) ;
-                ringmesh_assert( E != nil ) ;
+                    dynamic_cast< BoundaryModelMeshElement* >( elements( T )[e] ) ;
+                ringmesh_debug_assert( E != nil ) ;
                 const BoundaryModelMeshElement& E_from =
                     dynamic_cast< const BoundaryModelMeshElement& >( from.element(
-                        BME::bme_t( T, j ) ) ) ;
+                        BME::bme_t( T, e ) ) ) ;
 
                 E->unbind_attributes() ;
                 E->mesh().copy( E_from.mesh() ) ;
                 E->bind_attributes() ;
             }
         }
-    }
-
-    /*!
-     * @brief Returns the index of the region neighboring the surface.
-     * @param[in] surface_part_id Index of the Surface
-     * @param[in] side Side of the Surface
-     * @return The region index or NO_ID if none found.
-     */
-    index_t BoundaryModel::find_region( index_t surface_part_id, bool side ) const
-    {
-        ringmesh_debug_assert( surface_part_id < nb_surfaces() ) ;
-        BME::bme_t cur_surface( BME::SURFACE, surface_part_id ) ;
-        for( index_t r = 0; r < nb_regions(); r++ ) {
-            const BME& cur_region = region( r ) ;
-            for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
-                if( cur_region.side( s ) == side
-                    && cur_region.boundary_id( s ) == cur_surface ) {
-                    return r ;
-                }
-            }
-        }
-        return BME::NO_ID ;
-    }
-
-    /*!
-     * @brief Check if the model can be saved in a skua-gocad .ml file
-     * @details It assumes that the model is valid and verifies that:
-     *   - all Interface have a name and geological feature
-     *   - all Surfaces are in an Interface
-     *   - all Surfaces are triangulated
-     *   - all Regions have a name
-     */
-    bool BoundaryModel::check_gocad_validity() const
-    {
-        if( nb_interfaces() == 0 ) {
-            return false ;
-        }
-        for( index_t i = 0; i < nb_interfaces(); ++i ) {
-            if( !one_interface( i ).has_name() ) {
-                return false ;
-            }
-            if( !one_interface( i ).has_geological_feature() ) {
-                return false ;
-            }
-        }
-        for( index_t i = 0; i < nb_surfaces(); ++i ) {
-            if( !surface( i ).has_parent() ) {
-                return false ;
-            }
-            if( !surface( i ).is_triangulated() ) {
-                return false ;
-            }
-        }
-        for( index_t i = 0; i < nb_regions(); ++i ) {
-            if( !region( i ).has_name() ) {
-                return false ;
-            }
-        }
-        return true ;
-    }
+    }  
 
     /*!
      * @brief Check the validity of all individual elements 
@@ -1699,23 +1642,23 @@ namespace RINGMesh {
     bool BoundaryModel::check_elements_validity() const
     {
         std::vector< bool > valid( nb_elements( BME::ALL_TYPES ), true ) ;
-        for( index_t i = 0; i < nb_elements( BME::ALL_TYPES ); ++i ) {
-            const BME& E = element( BME::bme_t( BME::ALL_TYPES, i ) ) ;
+        for( index_t e = 0; e < nb_elements( BME::ALL_TYPES ); ++e ) {
+            const BME& E = element( BME::bme_t( BME::ALL_TYPES, e ) ) ;
             // Verify that E points actually to this BoundaryModel
             if( &E.model() != this ) {
                 GEO::Logger::err( "BoundaryModel" ) << "The model stored for "
                     << BME::type_name( E.bme_id().type ) << " " << E.bme_id().index
                     << " is not correct " << std::endl ;
-                valid[i] = false ;
+                valid[e] = false ;
                 // This is a major problem
                 ringmesh_debug_assert( false ) ;
                 break ;
             }
-            valid[i] = E.is_valid() ;
+            valid[e] = E.is_valid() ;
 
-            if( valid[i] && E.bme_id().type == BME::REGION ) {
+            if( valid[e] && E.bme_id().type == BME::REGION ) {
                 // Check validity of region definition
-                valid[i] = is_region_valid( E ) ;
+                valid[e] = is_region_valid( E ) ;
             }
         }
         index_t nb_invalid = 0 ;
@@ -1740,13 +1683,13 @@ namespace RINGMesh {
     bool BoundaryModel::check_geology_validity() const
     {
         bool valid = true ;
-        for( index_t i = 0; i < nb_lines(); ++i ) {
-            if( line( i ).nb_in_boundary() == 1 ) {
-                const BME& S = line( i ).in_boundary( 0 ) ;
+        for( index_t l = 0; l < nb_lines(); ++l ) {
+            if( line( l ).nb_in_boundary() == 1 ) {
+                const BME& S = line( l ).in_boundary( 0 ) ;
                 if( S.has_parent()
                     && !BME::is_fault( S.parent().geological_feature() ) ) {
                     GEO::Logger::err( "BoundaryModel" ) << " Invalid free border: "
-                        << print_bme_id( line( i ) ) << " is in the boundary of "
+                        << print_bme_id( line( l ) ) << " is in the boundary of "
                         << print_bme_id( S ) << " that is not a FAULT " << std::endl
                         << std::endl ;
                     valid = false ;
@@ -1789,7 +1732,7 @@ namespace RINGMesh {
         GEO::Logger::out( "BoundaryModel" ) << "Validity checking..." << std::endl ;
         // Ensure that the model vertices are computed and uptodate
         // Without them we cannot do anything
-        nb_vertices() ;
+        vertices.nb() ;
 
         bool valid = true ;
 
@@ -1812,7 +1755,6 @@ namespace RINGMesh {
         ///    The boundary of the universe region is a one connected component 
         ///     manifold closed surface 
         valid = is_region_valid( universe() ) && valid ;
-        
 
         /// 3. Check geometrical-connectivity consistency
         valid = check_model_points_validity( *this ) && valid ;
@@ -1822,6 +1764,10 @@ namespace RINGMesh {
         for( index_t i = 0; i < nb_surfaces(); ++i ) {
             valid = surface_boundary_valid( surface( i ) ) && valid ;
         }
+        /// @todo Check that all Line segments correspond to an Surface
+        /// edge that is on the boundary
+        // With the current tests, it is possible we miss this problem,
+        // but I am not sure (JP - 08/2015)
 
         /// 5. Check non-manifold edges using a global
         /// triangulated mesh corresponding to this model.
@@ -1855,664 +1801,17 @@ namespace RINGMesh {
         // The global triangulated mesh corresponding to this model
         // is used again 
         // If the model has non-planar polygonal facets ...
-        index_t nb_intersections = detect_intersecting_facets( *this, model_mesh ) ;
-        if( nb_intersections > 0 ) {
-            GEO::Logger::err( "BoundaryModel" ) << " Encountered "
-                << nb_intersections << "facet intersections " << std::endl ;
-            valid = false ;
-        }
+//        index_t nb_intersections = detect_intersecting_facets( *this, model_mesh ) ;
+//        if( nb_intersections > 0 ) {
+//            GEO::Logger::err( "BoundaryModel" ) << " Encountered "
+//                << nb_intersections << "facet intersections " << std::endl ;
+//            valid = false ;
+//        }
         return valid ;
     }
 
-    /*!
-     * @brief Write a region information in a stream
-     * @details Used by function to save the Model in a .ml file
-     *
-     * @param[in] count Region index in the file
-     * @param[in] region The region to save
-     * @param[in,out] out The file output stream
-     */
-    void save_region(
-        index_t count,
-        const BoundaryModelElement& region,
-        std::ostream& out )
-    {
-        out << "REGION " << count << "  " << region.name() << " " << std::endl ;
-        index_t it = 0 ;
 
-        for( index_t i = 0; i < region.nb_boundaries(); ++i ) {
-            out << "  " ;
-            if( region.side( i ) ) {
-                out << "+" ;
-            } else {
-                out << "-" ;
-            }
-            out << region.boundary( i ).bme_id().index + 1 ;
-            it++ ;
-            if( it == 5 ) {
-                out << std::endl ;
-                it = 0 ;
-            }
-        }
-        out << "  0" << std::endl ;
-    }
-
-    /*!
-     * @brief Write information for on layer in a stream
-     * @details Used by function to save the Model in a .ml file
-     *
-     * @param[in] count Index of the layer in the file
-     * @param[in] offset Offset of region indices in the file
-     * @param[in] layer The layer to write
-     * @param[in,out] out The output file stream
-     */
-    void save_layer(
-        index_t count,
-        index_t offset,
-        const BoundaryModelElement& layer,
-        std::ostream& out )
-    {
-        out << "LAYER " << layer.name() << " " << std::endl ;
-        index_t it = 0 ;
-
-        for( index_t i = 0; i < layer.nb_children(); ++i ) {
-            out << "  " << layer.child_id( i ).index + offset + 1 ;
-            it++ ;
-            if( it == 5 ) {
-                out << std::endl ;
-                it = 0 ;
-            }
-        }
-        out << "  0" << std::endl ;
-    }
-
-    /*!
-     * @brief Write basic header for Gocad coordinate system.
-     * @param[in,out] out Output .ml file stream
-     */
-    void save_coordinate_system( std::ostream& out )
-    {
-        out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
-            << std::endl << "AXIS_NAME \"X\" \"Y\" \"Z\"" << std::endl
-            << "AXIS_UNIT \"m\" \"m\" \"m\"" << std::endl << "ZPOSITIVE Elevation"
-            << std::endl << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
-    }
-
-    /*!
-     * @brief Save the model in a .ml file if it compatible
-     *
-     * @param[in,out] out Output file stream
-     * @return false if the model is not compatible with a Gocad model
-     */
-    bool BoundaryModel::save_gocad_model3d( std::ostream& out )
-    {
-        if( !check_model_validity() || !check_gocad_validity() ) {
-            GEO::Logger::err( "" ) << " The BoundaryModel " << name_
-                << " cannot be saved in .ml format " << std::endl ;
-            return false ;
-        }
-        out.precision( 16 ) ;
-
-        // Print Gocad Model3d headers
-        out << "GOCAD Model3d 1" << std::endl << "HEADER {" << std::endl << "name:"
-            << name() << std::endl << "}" << std::endl ;
-
-        save_coordinate_system( out ) ;
-
-        // Print the TSurf = Interface information
-        for( index_t i = 0; i < nb_interfaces(); ++i ) {
-            out << "TSURF " << one_interface( i ).name() << std::endl ;
-        }
-
-        index_t count = 1 ;
-
-        // Print the TFace = Surface information
-        for( index_t i = 0; i < nb_surfaces(); ++i ) {
-            const Surface& s = surface( i ) ;
-            out << "TFACE " << count << "  " ;
-            out << BME::geol_name( s.geological_feature() ) ;
-            out << " " << s.parent().name() << std::endl ;
-
-            // Print the key facet points, which are simply the first three
-            // vertices of the first facet
-            out << "  " << s.vertex( 0, 0 ) << std::endl ;
-            out << "  " << s.vertex( 0, 1 ) << std::endl ;
-            out << "  " << s.vertex( 0, 2 ) << std::endl ;
-
-            ++count ;
-        }
-        // Print universe, region, and layer information
-        index_t offset_layer = count ;
-        save_region( count, universe_, out ) ;
-        ++count ;
-        for( index_t i = 0; i < nb_regions(); ++i ) {
-            save_region( count, region( i ), out ) ;
-            ++count ;
-        }
-        for( index_t i = 0; i < nb_layers(); ++i ) {
-            save_layer( count, offset_layer, layer( i ), out ) ;
-            ++count ;
-        }
-        out << "END" << std::endl ;
-
-        // Save the geometry of the Surfaces (TFace), Interface (TSurf) by Interface
-        for( index_t i = 0; i < nb_interfaces(); ++i ) {
-            const BME& tsurf = one_interface( i ) ;
-
-            // Header
-            out << "GOCAD TSurf 1" << std::endl << "HEADER {" << std::endl << "name:"
-                << tsurf.name() << std::endl << "name_in_model_list:" << tsurf.name()
-                << std::endl << "}" << std::endl ;
-            save_coordinate_system( out ) ;
-
-            out << "GEOLOGICAL_FEATURE " << tsurf.name() << std::endl
-                << "GEOLOGICAL_TYPE " ;
-            out << BME::geol_name( tsurf.geological_feature() ) ;
-            out << std::endl ;
-
-            out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" << std::endl
-                << "}" << std::endl ;
-
-            /// @todo Rewrite the writing of the Surfaces - Lines 
-            ///       and Corner in the gocad file
-            // The following works but it is non sense.
-
-            // Save surfaces_ geometry
-            index_t vertex_count = 1 ;
-            index_t offset = vertex_count ;
-
-            std::vector< index_t > bstones ;
-            std::vector< index_t > next_vertex ;
-            std::set< index_t > set_end_corners ;
-
-            bstones.reserve( tsurf.nb_boundaries() ) ;
-            next_vertex.reserve( tsurf.nb_boundaries() ) ;
-
-            for( index_t j = 0; j < tsurf.nb_children(); ++j ) {
-                offset = vertex_count ;
-
-                const Surface& sp =
-                    dynamic_cast< const Surface& >( tsurf.child( j ) ) ;
-
-                out << "TFACE" << std::endl ;
-                for( index_t k = 0; k < sp.nb_vertices(); ++k ) {
-                    out << "VRTX " << vertex_count << " " << sp.vertex( k )
-                        << std::endl ;
-                    vertex_count++ ;
-                }
-
-                for( index_t k = 0; k < sp.nb_cells(); ++k ) {
-                    if( sp.nb_vertices_in_facet( k ) != 3 ) {
-                        GEO::Logger::err( "I/O" ) << "Model is not triangulated"
-                            << std::endl ;
-                        return false ;
-                    }
-                    out << "TRGL " << sp.surf_vertex_id( k, 0 ) + offset << " "
-                        << sp.surf_vertex_id( k, 1 ) + offset << " "
-                        << sp.surf_vertex_id( k, 2 ) + offset << std::endl ;
-                }
-
-                // Gather information on Corners (BStones) and Lines (getting the next point on the line)
-                for( index_t k = 0; k < sp.nb_boundaries(); ++k ) {
-                    const Line& cp = dynamic_cast< const Line& >( sp.boundary( k ) ) ;
-
-                    vec3 c = cp.vertex( 0 ) ;
-                    vec3 next = cp.vertex( 1 ) ;
-
-                    // To be sure that we have all corners we need to ensure
-                    // that all corners at the end of lines are saved too
-                    std::vector< index_t > result ;
-                    sp.tools.ann().get_colocated( cp.vertex( cp.nb_vertices() - 1 ),
-                        result ) ;
-                    ringmesh_debug_assert( !result.empty() ) ;
-                    set_end_corners.insert( result[0] + offset ) ;
-
-                    result.clear() ;
-                    sp.tools.ann().get_colocated( c, result ) ;
-                    ringmesh_debug_assert( !result.empty() ) ;
-                    index_t c_id = result[0] ;
-                    result.clear() ;
-                    sp.tools.ann().get_colocated( next, result ) ;
-                    ringmesh_debug_assert( !result.empty() ) ;
-                    index_t next_id = result[0] ;
-
-                    ringmesh_assert( c_id != NO_ID && next_id != NO_ID ) ;
-
-                    bstones.push_back( c_id + offset ) ;
-                    next_vertex.push_back( next_id + offset ) ;
-                }
-            }
-
-            // Print Corners and Lines
-            std::vector< index_t > end_corners( set_end_corners.begin(),
-                set_end_corners.end() ) ;
-            std::vector< bool > end_corner_to_print( end_corners.size(), true ) ;
-
-            for( index_t j = 0; j < bstones.size(); ++j ) {
-                out << "BSTONE " << bstones[j] << std::endl ;
-
-                // Determine the corners at the end of the lines that are not saved
-                for( index_t k = 0; k < end_corners.size(); k++ ) {
-                    if( bstones[j] == end_corners[k] ) {
-                        end_corner_to_print[k] = false ;
-                        break ;
-                    }
-                }
-            }
-
-            // Print the corners that were at the beginning of none of the contacts
-            // in this Interface
-            for( index_t j = 0; j < end_corners.size(); j++ ) {
-                if( end_corner_to_print[j] ) {
-                    out << "BSTONE " << end_corners[j] << std::endl ;
-                }
-            }
-
-            // Print the the information to build the lines :
-            // index of the vertex at the corner and index of the second vertex on the line
-            for( index_t j = 0; j < bstones.size(); ++j ) {
-                out << "BORDER " << vertex_count << " " << bstones[j] << " "
-                    << next_vertex[j] << std::endl ;
-                vertex_count++ ;
-            }
-            out << "END" << std::endl ;
-        }
-        return true ;
-    }
-
-    /*! To save the attributes in a Graphite readable file, we need to write the correct
-     * keyword for the attribute type - We restrict ourselves to the 3 types
-     * int          "integer"
-     * double       "real"
-     * float        "real"
-     * bool         "boolean"
-     */
-    inline std::string alias_name( const std::string& in )
-    {
-        if( in == "int" ) {
-            return "integer" ;
-        } else if( in == "index" ) {
-            return "integer" ;
-        } else if( in == "double" ) {
-            return "real" ;
-        } else if( in == "float" ) {
-            return "real" ;
-        } else if( in == "bool" ) {
-            return "boolean" ;
-        }
-        ringmesh_assert_not_reached;
-        return "" ;
-    }
-
-    /*!
-     * @brief DEBUG function - Save the surfaces of the model with their facet attributes into an .eobj file.
-     * @details WARNING We assume that all Surface have the same attributes - if not this function will most
-     *  certainly crash.
-     *
-     * @param[in] file_name Name of the file        
-     */
-    void BoundaryModel::save_as_eobj_file( const std::string& file_name ) const
-    {
-        std::ofstream out ;
-        out.open( file_name.c_str() ) ;
-        if( out.bad() ) {
-            std::cout << "Error when opening the file: " << file_name.c_str()
-                << std::endl ;
-            return ;
-        }
-        out.precision( 16 ) ;
-        std::vector< index_t > offset( nb_surfaces(), 0 ) ;
-        index_t cur_offset = 0 ;
-
-        // Write vertices once for each surface
-        for( index_t s = 0; s < nb_surfaces(); s++ ) {
-            const Surface& S = surface( s ) ;
-            offset[s] = cur_offset ;
-            for( index_t p = 0; p < S.nb_vertices(); p++ ) {
-                const vec3& V = S.vertex( p ) ;
-                out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
-            }
-            cur_offset += S.nb_vertices() ;
-        }
-
-        // Write the facets for a each surface
-        for( index_t s = 0; s < nb_surfaces(); s++ ) {
-            const Surface& S = surface( s ) ;
-            for( index_t f = 0; f < S.nb_cells(); f++ ) {
-                out << "f" << " " ;
-                for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
-                    out << offset[s] + S.surf_vertex_id( f, v ) + 1 << " " ;
-                }
-                out << std::endl ;
-            }
-        }
-
-        // Write facet attributes
-        {
-            // Get the attributes that can be saved on the first Surface
-//            std::vector< SerializedAttribute< BME::FACET > > facet_attribs ;
-//            get_serializable_attributes( surface(
-//                    0 ).facet_attribute_manager(), facet_attribs ) ;
-//
-//            for( index_t i = 0; i < facet_attribs.size(); i++ ) {
-//                // Output global information on the attribute
-//                out << "# attribute " << facet_attribs[ i ].name() << " facet "
-//                    << alias_name( facet_attribs[ i ].type_name() )
-//                    << std::endl ;
-//            }
-//            if( facet_attribs.size() > 0 ) {
-//                // Global counter for all the facets of all surfaces
-//                index_t count = 0 ;
-//                for( index_t s = 0; s < nb_surfaces(); s++ ) {
-//                    const Surface& S = surface( s ) ;
-//
-//                    std::vector< SerializedAttribute< BME::FACET > > cur_attribs ;
-//                    get_serializable_attributes(
-//                        S.facet_attribute_manager(), cur_attribs ) ;
-//
-//                    ringmesh_assert( cur_attribs.size() == facet_attribs.size() ) ;
-//                    for( index_t i = 0; i < facet_attribs.size(); ++i ) {
-//                        ringmesh_assert(
-//                            facet_attribs[ i ].type_name() ==
-//                            cur_attribs[ i ].type_name() &&
-//                            facet_attribs[ i ].name() == cur_attribs[ i ].name() ) ;
-//                    }
-//
-//                    // Output attributes values
-//                    for( index_t f = 0; f < S.nb_cells(); f++ ) {
-//                        out << "# attrs f " << count + 1 << " " ;
-//                        serialize_write_attributes( out, f, cur_attribs ) ;
-//                        out << std::endl ;
-//                        count++ ;
-//                    }
-//                }
-//            }
-        }
-        // Write the attribute <index_t> on facets called ""chart" - because I want to have it
-        {
-            out << "# attribute " << "chart" << " facet " << "integer" << std::endl ;
-
-            // Global counter for all the facets of all surfaces
-            index_t count = 0 ;
-            for( index_t s = 0; s < nb_surfaces(); s++ ) {
-                const Surface& S = surface( s ) ;
-
-                GEO::Attribute< index_t > A( S.cell_attribute_manager(), "chart" ) ;
-
-                for( index_t f = 0; f < S.nb_cells(); f++ ) {
-                    out << "# attrs f " << count + 1 << " " << A[f] << std::endl ;
-                    count++ ;
-                }
-            }
-        }
-    }
-
-    /*!
-     * @brief Debug: Save a Surface of the model in the file OBJ format is used
-     */
-    void BoundaryModel::save_surface_as_eobj_file(
-        index_t s,
-        const std::string& file_name ) const
-    {
-        std::ofstream out ;
-        out.open( file_name.c_str() ) ;
-        if( out.bad() ) {
-            std::cout << "Error when opening the file: " << file_name.c_str()
-                << std::endl ;
-            return ;
-        }
-        out.precision( 16 ) ;
-        const Surface& S = surface( s ) ;
-        for( index_t p = 0; p < S.nb_vertices(); p++ ) {
-            const vec3& V = S.vertex( p ) ;
-            out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
-        }
-        for( index_t f = 0; f < S.nb_cells(); f++ ) {
-            out << "f" << " " ;
-            for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
-                out << S.surf_vertex_id( f, v ) + 1 << " " ;
-            }
-            out << std::endl ;
-        }
-
-        out << "# attribute " << "chart" << " facet " << "integer" << std::endl ;          
-        GEO::Attribute< index_t > A( S.cell_attribute_manager(), "chart" ) ;
-
-        for( index_t f = 0; f < S.nb_cells(); f++ ) {
-            out << "# attrs f " << f + 1 << " " << A[ f ] << std::endl ;
-        }        
-    }
-
-    /*!
-     * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
-     */
-    void save_high_level_bme( std::ofstream& out, const BoundaryModelElement& E )
-    {
-        /// First line:  TYPE - ID - NAME - GEOL
-        out << E.bme_id() << " " ;
-        if( E.has_name() ) {
-            out << E.name() << " " ;
-        } else {
-            out << "no_name " ;
-        }
-        out << BoundaryModelElement::geol_name( E.geological_feature() )
-            << std::endl ;
-
-        /// Second line:  IDS of children
-        for( index_t j = 0; j < E.nb_children(); ++j ) {
-            out << " " << E.child_id( j ).index ;
-        }
-        out << std::endl ;
-    }
-
-    /*!
-     * @brief Save the BoundaryModel into a dedicated format bm
-     */
-    void BoundaryModel::save_bm_file( const std::string& file_name ) const
-    {
-        std::ofstream out ;
-        out.open( file_name.c_str() ) ;
-        if( out.bad() ) {
-            std::cout << "Error when opening the file: " << file_name.c_str()
-                << std::endl ;
-            return ;
-        }
-        out.precision( 16 ) ;
-
-        out << "RINGMESH BOUNDARY MODEL" << std::endl ;
-        out << "NAME " << name() << std::endl ;
-
-        // Numbers of the different types of elements
-        for( index_t i = BME::CORNER; i < BME::NO_TYPE; i++ ) {
-            BME::TYPE type = static_cast< BME::TYPE >( i ) ;
-            out << "NB_" << BME::type_name( type ) << " " << nb_elements( type )
-                << std::endl ;
-        }
-        // Write high-level elements
-        for( index_t i = BME::CONTACT; i < BME::NO_TYPE; i++ ) {
-            BME::TYPE type = static_cast< BME::TYPE >( i ) ;
-            index_t nb = nb_elements( type ) ;
-            for( index_t j = 0; j < nb; ++j ) {
-                save_high_level_bme( out, element( BME::bme_t( type, j ) ) ) ;
-            }
-        }
-        // Regions
-        for( index_t i = 0; i < nb_regions(); ++i ) {
-            const BME& E = region( i ) ;
-            // Save ID - NAME 
-            out << E.bme_id() << " " ;
-            if( E.has_name() ) {
-                out << E.name() ;
-            } else {
-                out << "no_name" ;
-            }
-            out << std::endl ;
-            // Second line Signed ids of boundary surfaces
-            for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
-                if( E.side( j ) ) {
-                    out << "+" ;
-                } else {
-                    out << "-" ;
-                }
-                out << E.boundary_id( j ).index << " " ;
-            }
-            out << std::endl ;
-        }
-        // Universe
-        out << "UNIVERSE " << std::endl ;
-        for( index_t j = 0; j < universe().nb_boundaries(); ++j ) {
-            if( universe().side( j ) ) {
-                out << "+" ;
-            } else {
-                out << "-" ;
-            }
-            out << universe().boundary_id( j ).index << " " ;
-        }
-        out << std::endl ;
-
-//        // Vertices and attributes on vertices
-//        out << "MODEL_VERTICES" << " " << nb_vertices() << std::endl ;
-//        out << "MODEL_VERTEX_ATTRIBUTES " ;
-//        std::vector< SerializedAttribute< VERTEX > > vertex_attribs ;
-//        get_serializable_attributes( &vertex_attribute_manager_, vertex_attribs, out ) ;
-//        for( index_t i = 0; i < nb_vertices(); ++i ) {
-//            out << vertex( i )  << "  " ;
-//            serialize_write_attributes( out, i, vertex_attribs ) ;
-//            out << std::endl ;
-//        }
-
-        // Corners
-        for( index_t i = 0; i < nb_corners(); ++i ) {
-            out << corner( i ).bme_id() << " " << corner( i ).vertex() << std::endl ;
-        }
-        // Lines
-        for( index_t i = 0; i < nb_lines(); ++i ) {
-            const Line& L = line( i ) ;
-            out << L.bme_id() << std::endl ;
-            out << "LINE_VERTICES " << L.nb_vertices() << std::endl ;
-            for( index_t j = 0; j < L.nb_vertices(); ++j ) {
-                out << L.vertex( j ) << std::endl ;
-            }
-//            out << "LINE_VERTEX_ATTRIBUTES " ;
-//            std::vector< SerializedAttribute< BME::VERTEX > > line_vertex_attribs ;
-//            get_serializable_attributes(
-//                L.vertex_attribute_manager(), line_vertex_attribs, out ) ;
-//            for( index_t j = 0; j < L.nb_vertices(); ++j ) {
-//                out << j << "  " ;
-//                serialize_write_attributes( out, j, line_vertex_attribs ) ;
-//                out << std::endl ;
-//            }
-//            out << "LINE_SEGMENT_ATTRIBUTES " ;
-//            std::vector< SerializedAttribute< BME::FACET > > line_segments_attribs ;
-//            get_serializable_attributes(
-//                L.facet_attribute_manager(), line_segments_attribs, out ) ;
-//            if( line_segments_attribs.size() > 0 ) {
-//                for( index_t j = 0; j < L.nb_cells(); ++j ) {
-//                    out << j << "  " ;
-//                    serialize_write_attributes( out, j, line_segments_attribs ) ;
-//                    out << std::endl ;
-//                }
-//            }
-            out << "IN_BOUNDARY " ;
-            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                out << L.in_boundary_id( j ).index << " " ;
-            }
-            out << std::endl ;
-        }
-
-        // Surfaces
-        for( index_t i = 0; i < nb_surfaces(); ++i ) {
-            const Surface& S = surface( i ) ;
-            out << S.bme_id() << std::endl ;
-            out << "SURFACE_VERTICES " << S.nb_vertices() << std::endl ;
-            for( index_t j = 0; j < S.nb_vertices(); ++j ) {
-                out << S.vertex( j ) << std::endl ;
-            }
-//            out << "SURFACE_VERTEX_ATTRIBUTES " ;
-//            std::vector< SerializedAttribute< BME::VERTEX > > surface_vertex_attribs ;
-//            get_serializable_attributes(
-//                S.vertex_attribute_manager(), surface_vertex_attribs, out ) ;
-//            for( index_t j = 0; j < S.nb_vertices(); ++j ) {
-//                out << j << "  " ;
-//                serialize_write_attributes( out, j, surface_vertex_attribs ) ;
-//                out << std::endl ;
-//            }
-
-            out << "SURFACE_CORNERS " << S.nb_corners() << std::endl ;
-            out << "SURFACE_FACETS " << S.nb_cells() << std::endl ;
-//            out << "SURFACE_FACET_ATTRIBUTES " ;
-//            std::vector< SerializedAttribute< BME::FACET > > surface_facet_attribs ;
-//            get_serializable_attributes(
-//                S.facet_attribute_manager(), surface_facet_attribs, out ) ;
-//
-            for( index_t j = 0; j < S.nb_cells(); ++j ) {
-                out << S.nb_vertices_in_facet( j ) << " " ;
-                for( index_t v = 0; v < S.nb_vertices_in_facet( j ); ++v ) {
-                    out << S.surf_vertex_id( j, v ) << " " ;
-                }
-//                serialize_write_attributes( out, j, surface_facet_attribs ) ;
-                out << std::endl ;
-            }
-        }
-    }
-
-    /*!
-     * \brief Save the model in smesh format
-     * \details No attributes and no boundary marker are transferred
-     */
-    void BoundaryModel::save_smesh_file( const std::string& file_name ) const
-    {
-        std::ofstream out ;
-        out.open( file_name.c_str() ) ;
-        if( out.bad() ) {
-            std::cout << "Error when opening the file: " << file_name.c_str()
-                << std::endl ;
-            return ;
-        }
-        out.precision( 16 ) ;
-
-        /// 1. Write the unique vertices
-        out << "# Node list" << std::endl ;
-        out << "# node count, 3 dim, no attribute, no boundary marker" << std::endl ;
-        out << vertices.nb() << " 3 0 0" << std::endl ;
-        out << "# node index, node coordinates " << std::endl ;
-        for( index_t p = 0; p < vertices.nb(); p++ ) {
-            const vec3& V = vertices.unique_vertex( p ) ;
-            out << p << " " << " " << V.x << " " << V.y << " " << V.z << std::endl ;
-        }
-
-        /// 2. Write the triangles 
-        out << "# Part 2 - facet list" << std::endl ;
-        out << "# facet count, no boundary marker" << std::endl ;
-        out << nb_facets() << "  0 " << std::endl ;
-
-        for( index_t i = 0; i < nb_surfaces(); ++i ) {
-            const Surface& S = surface( i ) ;
-            for( index_t f = 0; f < S.nb_cells(); f++ ) {
-                out << S.nb_vertices_in_facet( f ) << " " ;
-                for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
-                    out << S.model_vertex_id( f, v ) << " " ;
-                }
-                out << std::endl ;
-            }
-        }
-
-        // Do not forget the stupid zeros at the end of the file 
-        out << std::endl << "0" << std::endl << "0" << std::endl ;
-    }
-
-    index_t BoundaryModel::find_element(
-        BME::TYPE type,
-        const std::string& name ) const
-    {
-        for( index_t i = 0; i < nb_elements( type ); i++ ) {
-            if( element( BME::bme_t( type, i ) ).name() == name ) {
-                return i ;
-            }
-        }
-        return NO_ID ;
-    }
-
+    /// @todo Review: Add documentation - Replace the return value by a bme_t [AB]
     /*!
      * @brief Translates the boundary model by a vector.
      *
@@ -2528,6 +1827,9 @@ namespace RINGMesh {
             return ;
         }
 
+        /*!
+         * @todo Review: Use vertices.update_point instead of these 3 blocks [AB]
+         */
         for( index_t corner_i = 0; corner_i < nb_corners(); ++corner_i ) {
             GEO::Mesh& cur_corner = corner( corner_i ).mesh() ;
             for( index_t v = 0; v < cur_corner.vertices.nb(); v++ ) {
@@ -2591,6 +1893,9 @@ namespace RINGMesh {
         Math::rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
             rot_mat ) ;
 
+        /*!
+         * @todo Review: Use vertices.update_point instead of these 3 blocks [AB]
+         */
         for( index_t corner_i = 0; corner_i < nb_corners(); ++corner_i ) {
             GEO::Mesh& cur_corner = corner( corner_i ).mesh() ;
             Math::rotate_mesh( cur_corner, rot_mat ) ;

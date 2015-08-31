@@ -63,6 +63,7 @@ namespace {
     /* Definition of functions that we do not want exported in the interface */
     using namespace RINGMesh ;
 
+    typedef BoundaryModelElement BME ;
     typedef BoundaryModelElement::bme_t bme_t;
     typedef BoundaryModelMeshElement BMME ;
     typedef BoundaryModelVertices::VertexInBME VBME ;
@@ -72,12 +73,12 @@ namespace {
     * @brief Checks that the model vertex indices of @param E 
     *       are in a valid range
     */
-    bool check_range_model_vertex_ids( const BoundaryModelMeshElement& E )
+    bool check_range_model_vertex_ids( const BMME& E )
     {
         /// Check that the stored model vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
             if( E.model_vertex_id( i ) == NO_ID
-                && E.model_vertex_id( i ) >= E.model().nb_vertices() ) {
+                && E.model_vertex_id( i ) >= E.model().vertices.nb() ) {
                 GEO::Logger::err( "BoundaryModelElement" )
                     << "Invalid model vertex index in " << E.bme_id() << std::endl ;
                 return false ;
@@ -140,6 +141,34 @@ namespace {
             std::unique( corners_global.begin(), corners_global.end() ) != corners_global.end() ;
     }
 
+    /*!
+    * @brief Debug: Save a Surface of the model in the file OBJ format is used
+    * @todo Move this function to an API providing utility functions on a
+    * BoundaryModel and its Elements ? [JP]
+    */
+    void save_surface_as_obj_file(
+        const Surface& S,
+        const std::string& file_name )
+    {
+        std::ofstream out( file_name.c_str() ) ;
+        if( out.bad() ) {
+            GEO::Logger::err( "I/O" ) << "Error when opening the file: "
+                << file_name.c_str() << std::endl ;
+            return ;
+        }
+        out.precision( 16 ) ;
+        for( index_t p = 0; p < S.nb_vertices(); p++ ) {
+            const vec3& V = S.vertex( p ) ;
+            out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
+        }
+        for( index_t f = 0; f < S.nb_cells(); f++ ) {
+            out << "f" << " " ;
+            for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
+                out << S.surf_vertex_id( f, v ) + 1 << " " ;
+            }
+            out << std::endl ;
+        }
+    }
 }
 
 
@@ -177,7 +206,7 @@ namespace RINGMesh {
     }
 
 
-    std::string BoundaryModelElement::type_name( BoundaryModelElement::TYPE t )
+    std::string BoundaryModelElement::type_name( BME::TYPE t )
     {
         switch( t ) {
             case CORNER: return "CORNER" ;
@@ -193,7 +222,7 @@ namespace RINGMesh {
 
 
     std::string BoundaryModelElement::geol_name(
-        BoundaryModelElement::GEOL_FEATURE t )
+        BME::GEOL_FEATURE t )
     {
         switch( t ) {
             case STRATI: return "top" ;
@@ -215,7 +244,7 @@ namespace RINGMesh {
      * @details The elements that can have a parent are LINE, SURFACE, and REGION
      */
     BoundaryModelElement::TYPE BoundaryModelElement::parent_type(
-        BoundaryModelElement::TYPE t )
+        BME::TYPE t )
     {
         switch( t ) {
             case LINE: return CONTACT ;
@@ -234,7 +263,7 @@ namespace RINGMesh {
      * @details The elements that can have a parent are CONTACT, INTERFACE, and LAYER
      */
     BoundaryModelElement::TYPE BoundaryModelElement::child_type(
-        BoundaryModelElement::TYPE t )
+        BME::TYPE t )
     {
         switch( t ) {
             case CONTACT: return LINE  ;
@@ -285,7 +314,7 @@ namespace RINGMesh {
     /*!
      * @brief Dimension 0, 1, 2, or 3 of an element of type @param t
      */
-    index_t BoundaryModelElement::dimension( BoundaryModelElement::TYPE t )
+    index_t BoundaryModelElement::dimension( BME::TYPE t )
     {
         switch( t ) {
             case CORNER: return 0 ;
@@ -298,9 +327,19 @@ namespace RINGMesh {
             default: return NO_ID ;
         }
     }
+    
+
+    /*!
+     * @brief Return true if this is a CORNER, LINE or SURFACEs
+    */
+    bool BoundaryModelElement::has_mesh( BME::TYPE t )
+    {
+        return t < REGION ;
+    }
 
 
-    bool BoundaryModelElement::operator==( const BoundaryModelElement& rhs ) const
+    bool BoundaryModelElement::operator==(
+        const BoundaryModelElement& rhs ) const
     {
         if( model_ != rhs.model_ ) {
             return false ;
@@ -787,6 +826,36 @@ namespace RINGMesh {
     {
         model_vertex_id_.unbind() ;
     }
+
+    bool BoundaryModelMeshElement::are_model_vertex_indices_valid() const
+    {
+        bool valid = true ;
+        // For all vertices
+        // Check that the global vertex has an index backward to 
+        // the vertex of this element
+        for( index_t v = 0; v < nb_vertices(); ++v ) {
+            index_t model_v = model_vertex_id( v ) ;
+            
+            const std::vector< BoundaryModelVertices::VertexInBME >&
+                backward = model_->vertices.bme_vertices( model_v ) ;
+
+            BoundaryModelVertices::VertexInBME cur_v( bme_id(), v ) ;
+            index_t count_v = std::count( backward.begin(), backward.end(), cur_v ) ;
+
+            if( count_v != 1 ) {
+                GEO::Logger::err( "BoundaryModelElement" )
+                    << bme_id() 
+                    << " vertex " << v 
+                    << " appears " << count_v 
+                    << " in the related global model vertex " << model_v 
+                    << std::endl ;                    
+                valid = false ;
+            }
+        }
+        return valid ;
+    }
+
+
 
     /*!
      * @brief Sets the index of the matching point in the BoundaryModel
@@ -1293,7 +1362,7 @@ namespace RINGMesh {
                 << "/"
                 << "invalid_surf_"
                 << bme_id().index << ".obj"  ;
-            model().save_surface_as_eobj_file( bme_id().index, file.str() ) ;
+            save_surface_as_obj_file( *this, file.str() ) ;
 
 #endif  
         }        
@@ -2157,8 +2226,7 @@ namespace RINGMesh {
 
     const ColocaterANN& SurfaceTools::ann() const
     {
-        /// @todo Il vaut mieux utiliser les NearestNeighbor de geogram
-        /// on s'évite une copie de tous les points
+        /// @todo Using geogram NearestNeighbor would avoid a copy of all pointss
         if( ann_ == nil ) {
             const_cast< SurfaceTools* >( this )->ann_ = new ColocaterANN(
                 surface_.mesh(), ColocaterANN::VERTICES ) ;
@@ -2214,8 +2282,8 @@ namespace RINGMesh {
         } else if( E->bme_id().type == BoundaryModelElement::LINE ) {
             const Line* L = dynamic_cast< const Line* >( E ) ;
             ringmesh_assert( L != nil ) ;
-            for( index_t i = 1; i < E->nb_vertices(); ++i ) {
-                result += GEO::Geom::distance( E->vertex( i ), E->vertex( i - 1 ) ) ;
+            for( index_t i = 1; i < L->nb_vertices(); ++i ) {
+                result += GEO::Geom::distance( L->vertex( i ), L->vertex( i - 1 ) ) ;
             }
             return result ;
         } else if( E->bme_id().type == BoundaryModelElement::SURFACE ) {

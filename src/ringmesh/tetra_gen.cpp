@@ -334,7 +334,7 @@ namespace RINGMesh {
     /*!
      * Sets the boundaries of the domain
      * @param[in] region the boundary surfaces of the domain to mesh
-     * @param[int] wells the wells to be conformal to
+     * @param[in] wells the wells to be conformal to
      */
     void TetraGen::set_boundaries(
         const BoundaryModelElement* region,
@@ -342,12 +342,14 @@ namespace RINGMesh {
     {
         region_ = region ;
         index_t nb_surfaces = region_->nb_boundaries() ;
-        std::vector< const BoundaryModelElement* > unique_surfaces ;
+        std::vector< const BoundaryModelMeshElement* > unique_surfaces ;
         unique_surfaces.reserve( nb_surfaces ) ;
         std::vector< index_t > surface_id ;
+        surface_id.reserve( nb_surfaces ) ;
         index_t nb_surface_points = 0, nb_facets = 0 ;
         for( index_t s = 0; s < nb_surfaces; s++ ) {
-            const BoundaryModelElement& surface = region_->boundary( s ) ;
+            const Surface& surface = 
+                dynamic_cast< const Surface& >( region_->boundary( s ) ) ;
             if( Utils::contains( surface_id, surface.bme_id().index ) ) continue ;
             nb_surface_points += surface.nb_vertices() ;
             nb_facets += surface.nb_cells() ;
@@ -422,10 +424,10 @@ namespace RINGMesh {
      */
     void TetraGen::set_internal_points( const std::vector< vec3 >& points )
     {
+        if( points.empty() ) return ;
         index_t start = tetmesh_.vertices.create_vertices( points.size() ) ;
-        for( index_t p = 0; p < points.size(); p++ ) {
-            tetmesh_.vertices.point( start + p ) = points[p] ;
-        }
+        GEO::Memory::copy( tetmesh_.vertices.point_ptr( start ),
+            points.front().data(), points.size() * 3 * sizeof(double) ) ;
     }
 
     TetraGen::~TetraGen()

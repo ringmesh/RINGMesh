@@ -42,6 +42,7 @@
 #include <ringmesh/io.h>
 
 #include <geogram/points/colocate.h>
+#include <geogram/basic/logger.h>
 
 int main( int argc, char** argv )
 {
