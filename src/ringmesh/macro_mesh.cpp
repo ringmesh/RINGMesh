@@ -91,7 +91,7 @@ namespace RINGMesh {
         * the vertices_ vector is filled with non-colocated vertices 
         * and that the global_vertex_indices_ now stores the mapping from 
         * all_vertices to vertices_ 
-        * Ça ça intéresse vachement plus le lecteur, enfin moi [JP]
+        * ï¿½a ï¿½a intï¿½resse vachement plus le lecteur, enfin moi [JP]
         */
         MakeUnique mu( all_vertices ) ;
         mu.unique() ;
@@ -240,7 +240,7 @@ namespace RINGMesh {
                         // Find the cell facets including the vertex
                         /* @todo Review : Idem write a function to get the cells for this in the cpp file [JP]
                          * void facets_around_vertex( const Mesh&, index_t cell, index_t vertex_id, vector<index_t>& facets ) [JP]
-                         * Y en a peut être même une dans le code de Bruno.
+                         * Y en a peut ï¿½tre mï¿½me une dans le code de Bruno.
                          *
                          * Comment is misleading, in that loop, you do not only find these
                          * cells.... [JP] 
@@ -1221,11 +1221,10 @@ namespace RINGMesh {
             std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
-                GEO::Attribute< std::vector< index_t > > order_vertices(
-                    cur_mesh.cells.attributes(), "order_vertices" ) ;
+                GEO::Attribute< index_t*> order_vertices(
+                    cur_mesh.cells.attributes(), order_att_name ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
-                    std::vector< index_t > cur_order_vertices(
-                        cur_mesh.cells.nb_edges( c ) * ( order - 1 ) ) ;
+                    index_t cur_order_vertices[ cur_mesh.cells.nb_edges( c ) * ( order - 1 )] ;
                     for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
                         std::vector< vec3 > new_points_in_edge ;
                         vec3 node0 = GEO::Geom::mesh_vertex( cur_mesh,
@@ -1254,10 +1253,10 @@ namespace RINGMesh {
             ColocaterANN ann( uniq_points ) ;
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
-                GEO::Attribute< std::vector< index_t > > order_vertices(
-                    cur_mesh.cells.attributes(), "order_vertices" ) ;
+                GEO::Attribute< index_t* > order_vertices(
+                    cur_mesh.cells.attributes(), order_att_name ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
-                    for( index_t v = 0; v < order_vertices[c].size(); v++ ) {
+                    for( index_t v = 0; v < cur_mesh.cells.nb_edges( c ) * ( order - 1 ); v++ ) {
                         order_vertices[c][v] = map[order_vertices[c][v]]
                             + nb_vertices_ ;
                     }
@@ -1267,12 +1266,12 @@ namespace RINGMesh {
             for( index_t s = 0; s < mm_.model().nb_surfaces(); s++ ) {
                 index_t cur_mesh_id = mm_.facets.mesh( s ) ;
                 const GEO::Mesh& cur_mesh = mm_.mesh( cur_mesh_id ) ;
-                GEO::Attribute< std::vector< index_t > > order_vertices(
-                    cur_mesh.facets.attributes(), "order_vertices" ) ;
+                GEO::Attribute< index_t* > order_vertices(
+                    cur_mesh.facets.attributes(), order_att_name ) ;
                 for( index_t f = 0; f < mm_.facets.nb_facets( s ); f++ ) {
                     index_t cur_facet = mm_.facets.facet( s, f ) ;
-                    std::vector< index_t > cur_order_vertices(
-                        cur_mesh.facets.nb_vertices( f ) * ( order - 1 ) ) ;
+                    index_t cur_order_vertices[
+                        cur_mesh.facets.nb_vertices( f ) * ( order - 1 ) ] ;
                     for( index_t e = 0; e < cur_mesh.facets.nb_vertices( cur_facet );
                         e++ ) {
                         vec3 node0 ;
