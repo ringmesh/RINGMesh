@@ -618,12 +618,13 @@ namespace RINGMesh {
          * @todo Review: o is not a good parameter name because looks like 0
          * for our stupid brain [JP]
          */
-        void set_order( const index_t o )
+        void set_order( const index_t o ) const
         {
+            MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
             if( o != order_ ) {
-                order.clear() ;
+                not_const->order.clear() ;
             }
-            order_ = o ;
+            not_const->order_ = o ;
         }
 
         /*
