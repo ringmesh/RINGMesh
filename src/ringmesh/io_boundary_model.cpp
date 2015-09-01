@@ -3367,6 +3367,131 @@ namespace RINGMesh {
             }
         } ;
 
+        class ParaviewIOHandler: public BoundaryModelIOHandler {
+        public:
+            virtual bool load( const std::string& filename, BoundaryModel& model )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a MacroMesh from UCD mesh not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+
+            virtual bool save( BoundaryModel& model, const std::string& filename )
+            {
+                std::string path = GEO::FileSystem::dir_name( filename ) ;
+                std::string directory = GEO::FileSystem::base_name( filename ) ;
+                if( path == "." ) {
+                    path = GEO::FileSystem::get_current_working_directory() ;
+                }
+                std::ostringstream oss ;
+                oss << path << "/" << directory ;
+                std::string full_path = oss.str() ;
+                GEO::FileSystem::create_directory( full_path ) ;
+
+
+                std::ostringstream pvd_oss ;
+                pvd_oss << full_path << "/" << directory << ".pvd" ;
+                std::ofstream pvd( pvd_oss.str().c_str() ) ;
+
+                pvd << "<?xml version=\"1.0\"?>" << std::endl ;
+                pvd << "<VTKFile type=\"Collection\" version=\"0.1\" "
+                    << "byte_order=\"LittleEndian\" >" << std::endl ;
+                pvd << "<Collection>" << std::endl ;
+
+                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+                    const BoundaryModelElement& interf = model.one_interface( i ) ;
+                    const std::string& name = interf.name() ;
+                    std::ostringstream cur_oss ;
+                    cur_oss << full_path << "/" << name << ".vtp" ;
+                    std::ofstream out( cur_oss.str().c_str() ) ;
+                    out.precision( 16 ) ;
+                    pvd << "<DataSet group=\"\" part=\"0\" file=\"" << name
+                        << ".vtp\" />" << std::endl ;
+
+                    out << "<?xml version=\"1.0\"?>" << std::endl ;
+                    out
+                        << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">"
+                        << std::endl ;
+                    out << "<PolyData>" << std::endl ;
+
+                    index_t nb_vertices = 0 ;
+                    index_t nb_polygons = 0 ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        const Surface& surface =
+                            dynamic_cast< const Surface& >( interf.child( s ) ) ;
+                        nb_vertices += surface.nb_vertices() ;
+                        nb_polygons += surface.nb_cells() ;
+                    }
+
+                    out << "<Piece NumberOfPoints=\"" << nb_vertices
+                        << "\" NumberOfVerts=\"0\" NumberOfLines=\"0\" NumberOfStrips=\"0\" NumberOfPolys=\""
+                        << nb_polygons << "\">" << std::endl ;
+                    out << "<Points>" << std::endl ;
+                    out
+                        << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">"
+                        << std::endl ;
+                    // output all the vertices
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        const BoundaryModelElement& surface = interf.child( s ) ;
+                        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+                            out << surface.vertex( v ) << " " ;
+                        }
+                    }
+                    out << std::endl ;
+
+                    out << "</DataArray>" << std::endl ;
+                    out << "</Points>" << std::endl ;
+                    out << "<Polys>" << std::endl ;
+                    out
+                        << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">"
+                        << std::endl ;
+
+                    // output vertex indices
+                    index_t vertex_offset = 0 ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        const Surface& surface =
+                            dynamic_cast< const Surface& >( interf.child( s ) ) ;
+                        for( index_t f = 0; f < surface.nb_cells(); f++ ) {
+                            for( index_t v = 0; v < surface.nb_vertices_in_facet( f ); v++ ) {
+                                out << surface.surf_vertex_id( f, v ) + vertex_offset << " " ;
+                            }
+                        }
+                        vertex_offset += surface.nb_vertices() ;
+                    }
+                    out << std::endl ;
+
+                    out << "</DataArray>" << std::endl ;
+                    out
+                        << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">"
+                        << std::endl ;
+                    // output offset to group the vertex indices (equivalent to facet_end()
+                    index_t facet_offset = 0 ;
+                    for( index_t s = 0; s < interf.nb_children(); s++ ) {
+                        const Surface& surface =
+                            dynamic_cast< const Surface& >( interf.child( s ) ) ;
+                        for( index_t f = 0; f < surface.nb_cells(); f++ ) {
+                            facet_offset += surface.nb_vertices_in_facet( f ) ;
+                            out << facet_offset << " " ;
+                        }
+                    }
+                    out << std::endl ;
+
+                    out << "</DataArray>" << std::endl ;
+                    out << "</Polys>" << std::endl ;
+                    out << "</Piece>" << std::endl ;
+                    out << "</PolyData>" << std::endl ;
+                    out << "</VTKFile>" << std::endl ;
+                }
+
+                pvd << "</Collection>" << std::endl ;
+                pvd << "</VTKFile>" << std::endl ;
+
+                return true ;
+            }
+        } ;
+
+
         /************************************************************************/
 
         /*!
@@ -3445,6 +3570,7 @@ namespace RINGMesh {
             ringmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" );
             ringmesh_register_BoundaryModelIOHandler_creator( UCDIOHandler, "inp" );
             ringmesh_register_BoundaryModelIOHandler_creator( WebGLIOHandler, "html" );
+            ringmesh_register_BoundaryModelIOHandler_creator( ParaviewIOHandler, "paraview" );
         }
 
     }
