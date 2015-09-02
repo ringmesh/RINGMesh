@@ -91,7 +91,7 @@ namespace RINGMesh {
         * the vertices_ vector is filled with non-colocated vertices 
         * and that the global_vertex_indices_ now stores the mapping from 
         * all_vertices to vertices_ 
-        * Ça ça intéresse vachement plus le lecteur, enfin moi [JP]
+        * ï¿½a ï¿½a intï¿½resse vachement plus le lecteur, enfin moi [JP]
         */
         MakeUnique mu( all_vertices ) ;
         mu.unique() ;
@@ -240,7 +240,7 @@ namespace RINGMesh {
                         // Find the cell facets including the vertex
                         /* @todo Review : Idem write a function to get the cells for this in the cpp file [JP]
                          * void facets_around_vertex( const Mesh&, index_t cell, index_t vertex_id, vector<index_t>& facets ) [JP]
-                         * Y en a peut être même une dans le code de Bruno.
+                         * Y en a peut ï¿½tre mï¿½me une dans le code de Bruno.
                          *
                          * Comment is misleading, in that loop, you do not only find these
                          * cells.... [JP] 
@@ -1506,22 +1506,6 @@ namespace RINGMesh {
             order( *this )
     {
         set_model( model ) ;
-    }
-
-    MacroMesh::MacroMesh()
-        :
-            model_( nil ),
-            meshes_(),
-            mode_( NONE ),
-            wells_( nil ),
-            order_( 1 ),
-            vertices( *this ),
-            edges( *this ),
-            facets( *this ),
-            cells( *this ),
-            tools( *this ),
-            order( *this )
-    {
     }
 
     /*!
