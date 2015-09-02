@@ -1,0 +1,14 @@
+#TeXlipse project settings
+#Mon Apr 27 11:17:40 CEST 2015
+markTmpDer=true
+builderNum=2
+outputDir=articles/iamg/
+makeIndSty=
+bibrefDir=
+outputFormat=pdf
+tempDir=articles/iamg/tmp
+mainTexFile=article.tex
+outputFile=article.pdf
+langSpell=en
+markDer=true
+srcDir=articles/iamg/
