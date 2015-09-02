@@ -2040,21 +2040,52 @@ namespace RINGMesh {
             model().vertices.nb() ;
         }
 
+        std::cout << "CUTTING" << std::endl ;
+        const GEO::MeshFacetsAABB& aabb = tools.aabb() ;
         for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
             index_t p0 = L.model_vertex_id( i ) ;
-            index_t p1 = ( i == L.nb_vertices()-1 ) ? 
-                L.model_vertex_id(0) : L.model_vertex_id(i+1) ;
+            index_t p1 = L.model_vertex_id( i+1 ) ;
+            const vec3& v0 = L.vertex( i ) ;
+            const vec3& v1 = L.vertex( i+1 ) ;
+            vec3 v_bary = 0.5 * ( v0 + v1 ) ;
 
-            index_t f = Surface::NO_ID ;
+            // Get the closest facet of the edge center
+            // Ad the surface is conformal to the edge, the AABBTree gets
+            // one of the two facets index
+            vec3 nearest_point ;
+            double distance ;
+            index_t f = aabb.nearest_facet( v_bary, nearest_point, distance ) ;
+
+            // Then look for the edge corresponding to the one on the Line
             index_t v = Surface::NO_ID ;
-            edge_from_model_vertex_ids( p0, p1, f, v ) ;
-            ringmesh_debug_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
+            for( index_t j = 0; j < nb_vertices_in_facet( f ); j++ ) {
+                if( model_vertex_id( f, j ) == p0 ) {
+                    index_t j_next = next_in_facet( f, j ) ;
+                    if( model_vertex_id( f, j_next ) == p1 ) {
+                        v = j ;
+                    } else {
+                        v = prev_in_facet( f, j ) ;
+                    }
+                    break ;
+                }
+            }
+            ringmesh_assert( v != Surface::NO_ADJACENT ) ;
 
             index_t f2 = adjacent( f, v ) ;
             index_t v2 = Surface::NO_ID ;
-            ringmesh_debug_assert( f2 != Surface::NO_ADJACENT ) ;
-            edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
-            ringmesh_debug_assert( v2 != Surface::NO_ID ) ;
+            ringmesh_assert( f2 != Surface::NO_ADJACENT ) ;
+            for( index_t j = 0; j < nb_vertices_in_facet( f2 ); j++ ) {
+                if( model_vertex_id( f2, j ) == p0 ) {
+                    index_t j_next = next_in_facet( f, j ) ;
+                    if( model_vertex_id( f, j_next ) == p1 ) {
+                        v2 = j ;
+                    } else {
+                        v2 = prev_in_facet( f2, j ) ;
+                    }
+                    break ;
+                }
+            }
+            ringmesh_assert( v2 != Surface::NO_ID ) ;
 
             // Virtual cut - set adjacencies to NO_ADJACENT
             set_adjacent( f, v, Surface::NO_ADJACENT ) ;
@@ -2066,10 +2097,28 @@ namespace RINGMesh {
         // the vertices in the surface
         // Get started in the surface - find (again) one of the edge that contains
         // the first two vertices of the line
-        index_t f = Surface::NO_ID ;
+        index_t p0 = L.model_vertex_id( 0 ) ;
+        index_t p1 = L.model_vertex_id( 1 ) ;
+        const vec3& v0 = L.vertex( 0 ) ;
+        const vec3& v1 = L.vertex( 1 ) ;
+        vec3 v_bary = 0.5 * ( v0 + v1 ) ;
+
+        vec3 nearest_point ;
+        double distance ;
+        index_t f = aabb.nearest_facet( v_bary, nearest_point, distance ) ;
+
         index_t v = Surface::NO_ID ;
-        oriented_edge_from_model_vertex_ids(
-            L.model_vertex_id(0), L.model_vertex_id(1), f, v ) ;
+        for( index_t j = 0; j < nb_vertices_in_facet( f ); j++ ) {
+            if( model_vertex_id( f, j ) == p0 ) {
+                index_t j_next = next_in_facet( f, j ) ;
+                if( model_vertex_id( f, j_next ) == p1 ) {
+                    v = j ;
+                } else {
+                    v = prev_in_facet( f, j ) ;
+                }
+                break ;
+            }
+        }
         ringmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
 
         index_t id0 = surf_vertex_id( f, v ) ;
