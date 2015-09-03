@@ -544,7 +544,6 @@ namespace RINGMesh {
         const static index_t ALL_REGIONS = index_t( -1 ) ;
 
         MacroMesh( const BoundaryModel& model ) ;
-        MacroMesh() ;
         virtual ~MacroMesh() ;
         void copy( const MacroMesh& mm, bool copy_attributes = true ) ;
 
@@ -618,12 +617,13 @@ namespace RINGMesh {
          * @todo Review: o is not a good parameter name because looks like 0
          * for our stupid brain [JP]
          */
-        void set_order( const index_t o )
+        void set_order( const index_t o ) const
         {
+            MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
             if( o != order_ ) {
-                order.clear() ;
+                not_const->order.clear() ;
             }
-            order_ = o ;
+            not_const->order_ = o ;
         }
 
         /*
@@ -668,6 +668,12 @@ namespace RINGMesh {
         MacroMeshTools tools ;
         /// Optional storage for high orders mesh
         MacroMeshOrder order ;
+
+    private:
+        /*!
+         * Forbids to create a MacroMesh without its associated BoundaryModel
+         */
+        MacroMesh() ;
 
     } ;
 }

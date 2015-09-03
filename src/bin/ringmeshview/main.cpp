@@ -102,7 +102,7 @@ namespace {
     RINGMesh::BoundaryModel BM ;
     RINGMesh::BoundaryModelGfx BM_gfx ;
 
-    RINGMesh::MacroMesh MM ;
+    RINGMesh::MacroMesh* MM = nil ;
     RINGMesh::MacroMeshGfx MM_gfx ;
 
     bool show_borders = false ;
@@ -257,8 +257,8 @@ namespace {
             BM_gfx.set_boundary_model( BM ) ;
         }
 
-        if( MM_gfx.macro_mesh() != &MM ) {
-            MM_gfx.set_macro_mesh( MM ) ;
+        if( MM_gfx.macro_mesh() != MM ) {
+            MM_gfx.set_macro_mesh( *MM ) ;
         }
 
         GLfloat shininess = 20.0f ;
@@ -389,11 +389,11 @@ namespace {
         get_bbox( BM, xyzmin, xyzmax, false ) ;
 
         if( GEO::CmdLine::get_arg( "mesh" ) != "" ) {
-            MM.set_model( BM ) ;
-            if( !RINGMesh::RINGMeshIO::load( GEO::CmdLine::get_arg( "mesh" ), MM ) ) {
+            MM = new RINGMesh::MacroMesh( BM ) ;
+            if( !RINGMesh::RINGMeshIO::load( GEO::CmdLine::get_arg( "mesh" ), *MM ) ) {
                 return ;
             }
-            get_bbox( MM, xyzmin, xyzmax, false ) ;
+            get_bbox( *MM, xyzmin, xyzmax, false ) ;
         }
 
         glut_viewer_set_region_of_interest( float( xyzmin[0] ), float( xyzmin[1] ),
@@ -414,8 +414,8 @@ namespace {
     void toggle_colored_regions()
     {
         show_colored_regions = !show_colored_regions ;
-        if( show_colored_regions ) {
-            for( GEO::index_t m = 0; m < MM.nb_meshes(); m++ ) {
+        if( show_colored_regions && MM ) {
+            for( GEO::index_t m = 0; m < MM->nb_meshes(); m++ ) {
                 MM_gfx.set_cell_region_color( m,
                     std::fmod( GEO::Numeric::random_float32(), 1 ),
                     std::fmod( GEO::Numeric::random_float32(), 1 ),
@@ -456,7 +456,7 @@ int main( int argc, char** argv )
 
     load_mesh() ;
 
-    if( MM.nb_meshes() != 0 ) {
+    if( MM ) {
         toggle_volume() ;
     }
 
