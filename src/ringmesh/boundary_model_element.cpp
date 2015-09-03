@@ -2052,14 +2052,14 @@ namespace RINGMesh {
                         index_t j_next = surface.next_in_facet( f, j ) ;
                         if( surface.model_vertex_id( f, j_next ) == model_v1 ) {
                             e = j ;
-                        } else {
-                            e = surface.prev_in_facet( f, j ) ;
                         }
                         return true ;
                     }
                 }
             }
         }
+        f = Surface::NO_ID ;
+        e = Surface::NO_ID ;
         return false ;
     }
 
