@@ -702,7 +702,7 @@ namespace {
      * @pre colocated vertices have already been removed
      */
     void remove_degenerate_facet_and_edges(
-        const BoundaryModel& BM,
+        BoundaryModel& BM,
         std::set< bme_t >& to_remove )
     {
         to_remove.clear() ;
@@ -762,12 +762,18 @@ namespace {
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                         const Line& L = BM.line( S.boundary_id( l ).index ) ;
-                        if( L.is_inside_border( S ) ) {
+                        if( to_remove.count( L.bme_id() ) == 0 && 
+                            L.is_inside_border( S ) 
+                        ) {
                             cutting_lines.insert( L.bme_id().index ) ;
                         }
                     }
                     for( std::set< index_t >::iterator it = cutting_lines.begin();
-                        it != cutting_lines.end(); ++it ) {
+                        it != cutting_lines.end(); ++it 
+                     ) {
+                        // Force the recomputing of the model vertices
+                        // I do not understand exactly what is happening [JP]
+                        BM.vertices.clear() ;
                         S.cut_by_line( BM.line( *it ) ) ;
                     }
                 }
