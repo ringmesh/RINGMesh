@@ -1044,8 +1044,19 @@ namespace RINGMesh {
     } ;
 
     template< class T >
-    class AttributeVector: public std::vector<GEO::Attribute< T >*> {
+    class AttributeVector: public std::vector< GEO::Attribute< T >* > {
+    public:
+        typedef std::vector< GEO::Attribute< T >* > base_class ;
+        AttributeVector( index_t size )
+            : base_class( size, nil )
+        {
+        }
 
+        ~AttributeVector() {
+            for(index_t i = 0 ; i < base_class::size() ; i++) {
+                if(base_class::operator[]( i )) delete base_class::operator[]( i ) ;
+            }
+        }
     } ;
 
 //    class AttributeHandler {
