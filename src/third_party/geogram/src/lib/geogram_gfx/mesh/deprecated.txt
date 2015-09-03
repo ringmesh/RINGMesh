@@ -1,0 +1,79 @@
+http://www.davidbishop.org/oglmeta
+
+Remplacement des variables d'etat du vieuw pipeline OpenGL:
+   Utiliser des "Uniform Buffer Object" est peut-etre pas mal,
+ parceque ca peut etre partage entre differents shaders.
+
+  Uniform Buffer Objects (OpenGL 3.1)
+
+// Q: std140 ou shared pour le layout ??
+
+layout(shared) uniform LightingStateBlock {
+     vec3 front_color;
+     vec3 back_color;
+     vec3 light_vector;
+     vec3 light_half_vector;     
+     float shininess;
+} lighting_state;
+  
+layout(shared) uniform TransformStateBlock {
+     mat4 projection_matrix;
+     mat4 modelview_matrix;
+     mat4 normal_matrix;
+     vec4 clip_plane;
+} transform_state;
+
+/================================================================================
+
+Utilisation des variables OpenGL R\'eserv\'ees dans les shaders de Geogram_gfx:
+
+Variables des shaders:
+
+  gl_FrontFacing
+  gl_PrimitiveID
+  gl_FragDepth
+  gl_TexCoord
+  gl_FragCoord
+  gl_ClipDistance
+  gl_Position
+  gl_TessCoord
+  gl_in
+
+Variables d'etat OpenGL (toutes celles-ci sont "deprecated"):
+
+  gl_FrontMaterial.diffuse, gl_BackMaterial.diffuse, gl_FrontMaterial.specular, gl_FrontMaterial.shininess
+   -> front_color, back_color, shininess
+
+  gl_LightSource[0].position.xyz
+  gl_LightSource[0].halfvector.xyz  
+   -> light_vector, light_half_vector
+   
+  gl_ModelViewProjectionMatrix, gl_ModelViewMatrix, gl_NormalMatrix
+    -> projection_matrix, modelview_matrix, normal_matrix
+    
+  gl_ClipPlane[0]
+    -> clip_plane
+
+
+Ca serait bien sans doute de "forcer le binding" pour eviter d'avoir
+a cherches les "locations" pour chaque shader. Une petite question: qu'est-ce
+qui se passe si une variable a une "location" fixee alors qu'elle est pas
+utilisee, est-ce que ca va me consommer des bindings points ?
+Comment on dit d'ailleurs qu'on veut une "location" specifique pour une variable unforme, est-ce que ca ce dit comme ca ?
+Oui sans doute: Rem: d'apres la doc des shaders, on suppose que toutes les variables declarees sont utilisees...
+
+  uniform TransformState {
+     layout(location = 0)  mat4 projection_matrix;
+     layout(location = 4)  mat4 modelview_matrix;
+     layout(location = 8)  mat4 normal_matrix;
+     layout(location = 12) vec4 clip_plane;
+  };
+
+  uniform LightingState {
+     layout(location = 13) vec3 front_color;
+     layout(location = 14) vec3 back_color;
+     layout(location = 15) vec3 light_vector;
+     layout(location = 16) vec3 light_half_vector;     
+     layout(location = 17) float shininess;
+  };
+  
