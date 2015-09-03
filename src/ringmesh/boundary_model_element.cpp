@@ -2038,9 +2038,10 @@ namespace RINGMesh {
         std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
         index_t prev_neighbor = 0 ;
-        for( ;; ) {
+        do {
             prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
+            cur_neighbor = std::min( cur_neighbor, surface.nb_cells() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
             nb_neighbors = ann.get_neighbors( v_bary, cur_neighbor, neighbors,
@@ -2057,7 +2058,7 @@ namespace RINGMesh {
                     }
                 }
             }
-        }
+        } while( surface.nb_cells() != cur_neighbor ) ;
         f = Surface::NO_ID ;
         e = Surface::NO_ID ;
         return false ;
