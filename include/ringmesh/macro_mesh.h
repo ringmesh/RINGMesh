@@ -42,6 +42,7 @@
 #define __RINGMESH_MACRO_MESH__
 
 #include <ringmesh/common.h>
+#include <ringmesh/utils.h>
 
 #include <geogram/mesh/mesh.h>
 
@@ -57,7 +58,6 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-
 
     /*!
      * Optional storage of the MacroMesh vertices
@@ -90,7 +90,6 @@ namespace RINGMesh {
         const vec3& vertex( index_t global_v ) const ;
         const vec3& duplicated_vertex( index_t v ) const ;
 
-
         /* @todo Review : Change the name of the function, the reader expects an index
          * Update the comment in cpp file [JP] 
          * La logique m'echappe. Ca a meme pas trop l'air utilise.
@@ -103,7 +102,7 @@ namespace RINGMesh {
             index_t cell_corner,
             index_t& vertex_id,
             index_t& duplicated_vertex_id = dummy_index_t ) const ;
-        
+
         index_t nb_duplicated_vertices() const ;
         index_t nb_total_vertices() const ;
 
@@ -119,13 +118,13 @@ namespace RINGMesh {
         /// Action concerns the vertices of a Surface and not the Surface 
         enum SurfaceAction {
             /// do nothing
-            SKIP = -2,          
+            SKIP = -2,
             /// need to be duplicated (don't know which side yet)
-            TO_PROCESS = -1,    
+            TO_PROCESS = -1,
             /// need to duplicate the side opposite to the facet normal
-            NEG_SIDE = 0,       
+            NEG_SIDE = 0,
             /// need to duplicate the side following the facet normal
-            POS_SIDE = 1        
+            POS_SIDE = 1
         } ;
 
         /// Action to do according a surface index
@@ -149,7 +148,7 @@ namespace RINGMesh {
         /* @todo Review : Detail, duplication of what where ? Perhaps rename these unique_vertices [JP]
          * Just say that there are no colocated vertices in that vector. 
          * Is there an epsilon tolerance ? [JP]
-         */ 
+         */
         std::vector< vec3 > vertices_ ;
 
         /*!
@@ -167,7 +166,7 @@ namespace RINGMesh {
          * @todo Review : Rename this vector, e.g. macromesh_id_2_local_id_ 
          */
         std::vector< index_t > global_vertex_indices_ ;
-        
+
         /*!
          * Vector of size mm_.nb_meshes(). Each value is the
          * number of all the number of vertices of the previous meshes.
@@ -180,7 +179,7 @@ namespace RINGMesh {
          * @todo Review : Use a more explicit variable name, e.g. region_mesh_vertex_begin [JP]
          * Why not use a region_mesh_vertex_end, so the vector size is the same that the number
          * of regions [JP]
-         */ 
+         */
         std::vector< index_t > vertex2mesh_ ;
 
         /*!
@@ -210,7 +209,7 @@ namespace RINGMesh {
          * Why not use the end so the vector size is the same that the number of regions [JP]
          */
         std::vector< index_t > mesh_cell_corner_ptr_ ;
-        
+
         /*!
          * @brief Vector of duplicated vertices
          * @details Each value is a duplicated vertex, the index corresponds to
@@ -220,9 +219,6 @@ namespace RINGMesh {
          */
         std::vector< index_t > duplicated_vertex_indices_ ;
     } ;
-
-
-
 
     /*!
      * Optional storage of the MacroMesh facets
@@ -253,7 +249,8 @@ namespace RINGMesh {
         /*!
          * Tests if the MacroMeshFacets needs to be initialized and initialize it
          */
-        void test_initialize() const {
+        void test_initialize() const
+        {
             if( surface_facets_.empty() ) {
                 const_cast< MacroMeshFacets* >( this )->initialize() ;
             }
@@ -263,13 +260,13 @@ namespace RINGMesh {
          * @param[in] s id of the surface
          * @return the corresponding id
          */
-        index_t surface_begin( index_t s ) const;
+        index_t surface_begin( index_t s ) const ;
         /*!
          * Id where to stop reading the vector surface_facets_ for a given surface
          * @param[in] s id of the surface
          * @return the corresponding id
          */
-        index_t surface_end( index_t s ) const;
+        index_t surface_end( index_t s ) const ;
         /*!
          * Accessor for the surface_facets_ vector
          * @param[in] global_f the id to read
@@ -415,7 +412,7 @@ namespace RINGMesh {
          * Vector storing the index of where to start reading the cell_adjacents_
          * vector for a given mesh.
          */
-         std::vector< index_t > mesh_cell_adjacent_ptr_ ;
+        std::vector< index_t > mesh_cell_adjacent_ptr_ ;
 
         /// Number of cells in the MacroMesh
         index_t nb_cells_ ;
@@ -433,7 +430,7 @@ namespace RINGMesh {
      * Optional storage of the MacroMesh tools
      */
 
-        class RINGMESH_API MacroMeshTools {
+    class RINGMESH_API MacroMeshTools {
     public:
         MacroMeshTools( MacroMesh& mm ) ;
         ~MacroMeshTools() ;
@@ -466,6 +463,36 @@ namespace RINGMesh {
         void clear() ;
         const vec3 point( const index_t id ) const ;
         void move_point( const index_t id, const vec3& u ) ;
+        /*!
+         * Gets the if of an added point on a cell
+         * @param[in] m id of the mesh where the cell is
+         * @param[in] c id of the cell on the mesh
+         * @param[in] component position of the wanted id on the attribute
+         * @return the const index of the point
+         */
+        const index_t get_id_on_cell( index_t m, index_t c, index_t component ) const
+        {
+            ringmesh_debug_assert( m < mm_.nb_meshes() ) ;
+            ringmesh_debug_assert( c < mm_.cells.nb_cells( m ) ) ;
+            ringmesh_debug_assert( component < max_new_points_on_cell_ ) ;
+            return new_ids_on_cells_[m]->operator [](
+                max_new_points_on_cell_ * c + component ) ;
+        }
+        /*!
+         * Gets the if of an added point on a facet
+         * @param[in] s id of the surface
+         * @param[in] f id of the facet on the surface
+         * @param[in] component position of the wanted id on the attribute
+         * @return the const index of the point
+         */
+        const index_t get_id_on_facet(index_t s, index_t f, index_t component ) const
+        {
+            ringmesh_debug_assert( s < mm_.model().nb_surfaces() ) ;
+            ringmesh_debug_assert( f < mm_.facets.nb_facets(s)) ;
+            ringmesh_debug_assert( component < max_new_points_on_cell_ ) ;
+            return new_ids_on_cells_[s]->operator [](
+                max_new_points_on_facet_ * f + component ) ;
+        }
     private:
         void initialize() ;
         /*!
@@ -485,6 +512,14 @@ namespace RINGMesh {
         index_t nb_vertices_ ;
         /// New points
         std::vector< vec3 > points_ ;
+        ///Store the news vertices id on cells
+        AttributeVector< index_t > new_ids_on_cells_ ;
+        ///Store the news vertices id on facets
+        AttributeVector< index_t > new_ids_on_facets_ ;
+        /// The max number of new vertices a cell could have
+        index_t max_new_points_on_cell_ ;
+        /// The max number of new vertices a facet could have
+        index_t max_new_points_on_facet_ ;
 
     } ;
 
@@ -636,7 +671,11 @@ namespace RINGMesh {
         }
 
         void translate( const vec3& translation_vector ) ;
-        void rotate( const vec3& origin, const vec3& axis, float64 angle, bool degrees = false ) ;
+        void rotate(
+            const vec3& origin,
+            const vec3& axis,
+            float64 angle,
+            bool degrees = false ) ;
 
     protected:
         /// BoundaryModel representing the structural information of the mesh

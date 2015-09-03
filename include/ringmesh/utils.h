@@ -1047,6 +1047,8 @@ namespace RINGMesh {
     class AttributeVector: public std::vector< GEO::Attribute< T >* > {
     public:
         typedef std::vector< GEO::Attribute< T >* > base_class ;
+        AttributeVector() : base_class(){
+        }
         AttributeVector( index_t size )
             : base_class( size, nil )
         {
@@ -1059,28 +1061,6 @@ namespace RINGMesh {
         }
     } ;
 
-//    class AttributeHandler {
-//        AttributeHandler(index_t nb_meshes)
-//            : attributes_(nb_meshes )
-//        {
-//
-//        }
-//
-//        const T get( index_t mesh_id, index_t cell_id, index_t att_range ) const
-//        {
-//            ringmesh_debug_assert(mesh_id < attributes_.size()) ;
-//            ringmesh_debug_assert(att_range < attributes_[mesh_id].size()) ;
-//
-//            return attributes_[mesh_id][att_range][cell_id] ;
-//        }
-//
-//        void set(index_t mesh_id, index_t cell_id, index_t att_range, T value) {
-//            attributes_[mesh_id][att_range][cell_id] = value ;
-//        }
-//    private:
-//        std::vector<  GEO::Attribute< T >*  > attributes_ ;
-//
-//    } ;
 /******************************************************************/
 
 }
