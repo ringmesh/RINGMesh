@@ -1507,22 +1507,6 @@ namespace RINGMesh {
         set_model( model ) ;
     }
 
-    MacroMesh::MacroMesh()
-        :
-            model_( nil ),
-            meshes_(),
-            mode_( NONE ),
-            wells_( nil ),
-            order_( 1 ),
-            vertices( *this ),
-            edges( *this ),
-            facets( *this ),
-            cells( *this ),
-            tools( *this ),
-            order( *this )
-    {
-    }
-
     /*!
      * Copy a MacroMesh and its attributes
      * @param[in] rhs the MacroMesh copied

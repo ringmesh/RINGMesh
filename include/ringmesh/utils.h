@@ -55,6 +55,7 @@ namespace RINGMesh {
     class Edge ;
     class Surface ;
     class Line ;
+
 }
 
 namespace RINGMesh {
@@ -63,7 +64,6 @@ namespace RINGMesh {
      * \todo Create the appropriate Mesh handler
      */
     bool RINGMESH_API load_ts_file( GEO::Mesh& M, const std::string& file_name ) ;
-
 
     /*! @brief A safer narrow casting function of type S to type T
      *  \return static_cast< T >( in ) 
@@ -402,23 +402,23 @@ namespace RINGMesh {
         template< typename T, typename container >
         static index_t find( const container& v, const T& t )
         {
-            typename container::const_iterator it = std::find(
-                v.begin(), v.end(), t ) ;
+            typename container::const_iterator it = std::find( v.begin(), v.end(),
+                t ) ;
             if( it == v.end() )
                 return NO_ID ;
             else
-                return static_cast<index_t>( it - v.begin() ) ;
+                return static_cast< index_t >( it - v.begin() ) ;
         }
 
         template< typename T, typename container >
         static index_t find_sorted( const container& v, const T& t )
         {
-            typename container::const_iterator low = std::lower_bound(
-                v.begin(), v.end(), t ) ;
+            typename container::const_iterator low = std::lower_bound( v.begin(),
+                v.end(), t ) ;
             if( low == v.end() || t < *low )
                 return NO_ID ;
             else
-                return static_cast<index_t>( low - v.begin() );
+                return static_cast< index_t >( low - v.begin() ) ;
         }
 
         template< class T1, class T2 >
@@ -1043,6 +1043,33 @@ namespace RINGMesh {
         std::vector< T2 >& output_ ;
     } ;
 
+    template< class T >
+    class AttributeVector: public std::vector<GEO::Attribute< T >*> {
+
+    } ;
+
+//    class AttributeHandler {
+//        AttributeHandler(index_t nb_meshes)
+//            : attributes_(nb_meshes )
+//        {
+//
+//        }
+//
+//        const T get( index_t mesh_id, index_t cell_id, index_t att_range ) const
+//        {
+//            ringmesh_debug_assert(mesh_id < attributes_.size()) ;
+//            ringmesh_debug_assert(att_range < attributes_[mesh_id].size()) ;
+//
+//            return attributes_[mesh_id][att_range][cell_id] ;
+//        }
+//
+//        void set(index_t mesh_id, index_t cell_id, index_t att_range, T value) {
+//            attributes_[mesh_id][att_range][cell_id] = value ;
+//        }
+//    private:
+//        std::vector<  GEO::Attribute< T >*  > attributes_ ;
+//
+//    } ;
 /******************************************************************/
 
 }
