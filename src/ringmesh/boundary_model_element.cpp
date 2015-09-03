@@ -2053,12 +2053,13 @@ namespace RINGMesh {
                         index_t j_next = surface.next_in_facet( f, j ) ;
                         if( surface.model_vertex_id( f, j_next ) == model_v1 ) {
                             e = j ;
+                            return true ;
                         }
-                        return true ;
                     }
                 }
             }
         } while( surface.nb_cells() != cur_neighbor ) ;
+
         f = Surface::NO_ID ;
         e = Surface::NO_ID ;
         return false ;
@@ -2096,11 +2097,12 @@ namespace RINGMesh {
         for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
             index_t p0 = L.model_vertex_id( i ) ;
             index_t p1 = L.model_vertex_id( i+1 ) ;
+            ringmesh_debug_assert( p0 != p1 ) ;
 
             index_t f = Surface::NO_ID ;
             index_t v = Surface::NO_ID ;
             bool found = find_facet_and_edge( ann, *this, p0, p1, f, v ) ;
-            ringmesh_debug_assert( found ) ;
+            ringmesh_debug_assert( found && f != NO_ID && v != NO_ID ) ;
 
             index_t f2 = adjacent( f, v ) ;
             index_t v2 = Surface::NO_ID ;
