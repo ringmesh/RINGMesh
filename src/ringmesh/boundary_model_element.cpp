@@ -2011,6 +2011,58 @@ namespace RINGMesh {
         return duplicate ;
     }
 
+    /*!
+     * Find a facet and its edge index that are colocalised with an edge
+     * defined by its two model vertex indices
+     * @param[in] ann a ColocatorANN of the Surface \p surface using the keyword FACETS
+     * @param[in] surface the surface where to find the facet
+     * @param[in] model_v0 the first model vertex index of the edge
+     * @param[in] model_v1 the second model vertex index of the edge
+     * @param[out] f the found facet index
+     * @param[out] e the found edge index
+     * @return True if the facet and the edge indices are found
+     */
+    bool find_facet_and_edge(
+        const ColocaterANN& ann,
+        const Surface& surface,
+        index_t model_v0,
+        index_t model_v1,
+        index_t& f,
+        index_t& e )
+    {
+        const vec3& v0 = surface.model().vertices.unique_vertex( model_v0 ) ;
+        const vec3& v1 = surface.model().vertices.unique_vertex( model_v1 ) ;
+        vec3 v_bary = 0.5 * ( v0 + v1 ) ;
+
+        index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_cells() ) ;
+        std::vector< index_t > neighbors ;
+        index_t cur_neighbor = 0 ;
+        index_t prev_neighbor = 0 ;
+        do {
+            prev_neighbor = cur_neighbor ;
+            cur_neighbor += nb_neighbors ;
+            cur_neighbor = std::min( cur_neighbor, surface.nb_cells() ) ;
+            neighbors.resize( cur_neighbor ) ;
+            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+            nb_neighbors = ann.get_neighbors( v_bary, cur_neighbor, neighbors,
+                dist ) ;
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                f = neighbors[i] ;
+                for( index_t j = 0; j < surface.nb_vertices_in_facet( f ); j++ ) {
+                    if( surface.model_vertex_id( f, j ) == model_v0 ) {
+                        index_t j_next = surface.next_in_facet( f, j ) ;
+                        if( surface.model_vertex_id( f, j_next ) == model_v1 ) {
+                            e = j ;
+                        }
+                        return true ;
+                    }
+                }
+            }
+        } while( surface.nb_cells() != cur_neighbor ) ;
+        f = Surface::NO_ID ;
+        e = Surface::NO_ID ;
+        return false ;
+    }
 
     /*!
      * @brief Cut a Surface along a Line assuming that the edges of the Line are edges of the Surface
@@ -2040,20 +2092,30 @@ namespace RINGMesh {
             model().vertices.nb() ;
         }
 
+        ColocaterANN ann( mesh(), ColocaterANN::FACETS ) ;
         for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
             index_t p0 = L.model_vertex_id( i ) ;
-            index_t p1 = ( i == L.nb_vertices()-1 ) ? 
-                L.model_vertex_id(0) : L.model_vertex_id(i+1) ;
+            index_t p1 = L.model_vertex_id( i+1 ) ;
 
             index_t f = Surface::NO_ID ;
             index_t v = Surface::NO_ID ;
-            edge_from_model_vertex_ids( p0, p1, f, v ) ;
-            ringmesh_debug_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
+            bool found = find_facet_and_edge( ann, *this, p0, p1, f, v ) ;
+            ringmesh_debug_assert( found ) ;
 
             index_t f2 = adjacent( f, v ) ;
             index_t v2 = Surface::NO_ID ;
-            ringmesh_debug_assert( f2 != Surface::NO_ADJACENT ) ;
-            edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
+            ringmesh_assert( f2 != Surface::NO_ADJACENT ) ;
+            for( index_t j = 0; j < nb_vertices_in_facet( f2 ); j++ ) {
+                if( model_vertex_id( f2, j ) == p0 ) {
+                    index_t j_next = next_in_facet( f, j ) ;
+                    if( model_vertex_id( f, j_next ) == p1 ) {
+                        v2 = j ;
+                    } else {
+                        v2 = prev_in_facet( f2, j ) ;
+                    }
+                    break ;
+                }
+            }
             ringmesh_debug_assert( v2 != Surface::NO_ID ) ;
 
             // Virtual cut - set adjacencies to NO_ADJACENT
@@ -2066,10 +2128,14 @@ namespace RINGMesh {
         // the vertices in the surface
         // Get started in the surface - find (again) one of the edge that contains
         // the first two vertices of the line
+        index_t p0 = L.model_vertex_id( 0 ) ;
+        index_t p1 = L.model_vertex_id( 1 ) ;
+
         index_t f = Surface::NO_ID ;
         index_t v = Surface::NO_ID ;
-        oriented_edge_from_model_vertex_ids(
-            L.model_vertex_id(0), L.model_vertex_id(1), f, v ) ;
+        bool found = find_facet_and_edge( ann, *this, p0, p1, f, v ) ;
+        ringmesh_debug_assert( found ) ;
+
         ringmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
 
         index_t id0 = surf_vertex_id( f, v ) ;
