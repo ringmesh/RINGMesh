@@ -131,7 +131,7 @@ void nlRowColumnGrow(NLRowColumn* c) ;
 /**
  * \brief Adds a coefficient to an NLRowColumn.    
  * \details Performs the following operation:
- *  \$ a_i \leftarrow a_i + value \$. If the NLRowColumn
+ *  \f$ a_i \leftarrow a_i + value \f$. If the NLRowColumn
  *  already has a coefficient with index \p index, then 
  *  the value is added to that coefficient, else a new
  *  coefficient is created. Additional storage is allocated

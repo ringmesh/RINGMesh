@@ -420,6 +420,14 @@ namespace GEO {
      */
     class GEOGRAM_API MeshCellsAABB {
     public:
+
+        /**
+         * \brief Symbolic constant for indicating that there
+         *  is no containing tetrahedron.
+         * \see containing_tet()
+         */
+        static const index_t NO_TET = index_t(-1);
+        
         /**
          * \brief Creates the Axis Aligned Bounding Boxes tree.
          * \param[in] M the input mesh. It can be modified,
@@ -435,11 +443,11 @@ namespace GEO {
          * \param[in] p a const reference to the query point
          * \param[in] exact specifies whether exact predicates should be used
          * \return the index of one of the tetrahedra that contains \p p or
-         *  -1 if \p p is outside the mesh.
+         *  NO_TET if \p p is outside the mesh.
          * \note The input mesh needs to be tetrahedralized. If the mesh has
          *   arbitrary cells, then one may use instead containing_boxes().
          */
-        signed_index_t containing_tet(const vec3& p, bool exact =true) const {
+        index_t containing_tet(const vec3& p, bool exact =true) const {
             geo_debug_assert(mesh_.cells.are_simplices());
             return containing_tet_recursive(
                 p, exact, 1, 0, mesh_.cells.nb()
@@ -550,9 +558,9 @@ namespace GEO {
          * \param[in] e one position past the index of the last tet in the
          *  subtree under node \p n
          * \return the index of one of the tetrahedra that contains \p p, or
-         *  -1 if \p p is outside the mesh.
+         *  NO_TET if \p p is outside the mesh.
          */
-        signed_index_t containing_tet_recursive(
+        index_t containing_tet_recursive(
             const vec3& p, bool exact, 
             index_t n, index_t b, index_t e
         ) const;

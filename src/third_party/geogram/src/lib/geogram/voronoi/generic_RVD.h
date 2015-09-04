@@ -1524,7 +1524,7 @@ namespace GEOGen {
                                 mesh_, current_tet_, symbolic_, vertex_weight
                             );
 
-                            intersect_cell_tet(
+                            intersect_cell_cell(
                                 current_seed_, C
                             );
 
@@ -2054,14 +2054,15 @@ namespace GEOGen {
          * \name Clipping for volumetric mode
          * @{
          */
-
+        
+    public:
         /**
          * \brief Computes the intersection between a Voronoi cell
          *  and a cell with radius of security or plain mode.
          * \param[in] seed the index of the seed that defines the Voronoi cell
          * \param[in,out] C the cell to be clipped
          */
-        void intersect_cell_tet(index_t seed, Polyhedron& C) {
+        void intersect_cell_cell(index_t seed, Polyhedron& C) {
             // Clip current facet by current Voronoi cell (associated with seed)
             if(delaunay_nn_ != nil) {
                 clip_by_cell_SR(seed, C);   // "Security Radius" mode.
@@ -2070,6 +2071,7 @@ namespace GEOGen {
             }
         }
 
+    protected:
         /**
          * \brief Computes the intersection between a Voronoi cell
          *  and a cell in radius-of-security mode.
@@ -2174,14 +2176,9 @@ namespace GEOGen {
          * \param[in] j index of the second extremity of the bisector
          */
         void clip_by_plane(Polyhedron& C, index_t i, index_t j) {
-            signed_index_t new_v = C.clip_by_plane<DIM>(
+            C.clip_by_plane<DIM>(
                 mesh_, delaunay_, i, j, exact_, symbolic_
             );
-            // Decorate new vertex with symbolic information for
-            // mesh traversal.
-            if(new_v != -1) {
-                C.set_vertex_id(index_t(new_v), signed_index_t(j)+1);
-            }
         }
 
         /**

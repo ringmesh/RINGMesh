@@ -135,7 +135,7 @@ namespace {
      *  an array of points and a mesh stored in
      *  a MeshFacetsAABB.
      * \details Uses a multithread implementation.
-     * \param[out] result the maximum distance
+     * \param[out] result the maximum squared distance
      * \param[in] AABB the mesh stored in an axis-aligned bounding box
      * \param[in] nb_points number of query points
      * \param[in] points_ptr pointer to the points coordinates
@@ -198,27 +198,66 @@ namespace GEO {
     ) {
         double result = 0.0;
         MeshFacetsAABB AABB(m2);
-        compute_max_distance(
-            result, AABB, m1.vertices.nb(),
-            m1.vertices.point_ptr(0), m1.vertices.dimension()
-        );
+
+        index_t nb_points = 0;
+        
+        if(m1.cells.nb() == 0 && m1.edges.nb() == 0) {
+            nb_points = m1.vertices.nb();
+            compute_max_distance(
+                result, AABB, m1.vertices.nb(),
+                m1.vertices.point_ptr(0), m1.vertices.dimension()
+            );
+        } else {
+            // If the mesh has cells, then we need to remove the vertices
+            // that are not on the surface, else their distance to the
+            // other surface will be included in the computation !
+            vector<bool> on_surface(m1.vertices.nb(),false);
+            for(index_t f=0; f<m1.facets.nb(); ++f) {
+                for(
+                    index_t c = m1.facets.corners_begin(f);
+                    c < m1.facets.corners_end(f); ++c
+                ) {
+                    on_surface[m1.facet_corners.vertex(c)] = true;
+                }
+            }
+            for(index_t v=0; v<m1.vertices.nb(); ++v) {
+                if(on_surface[v]) {
+                    ++nb_points;
+                }
+            }
+            vector<double> points;
+            points.reserve(nb_points*m1.vertices.dimension());
+            for(index_t v=0; v<m1.vertices.nb(); ++v) {
+                if(on_surface[v]) {                
+                    for(index_t c=0; c<m1.vertices.dimension(); ++c) {
+                        points.push_back(m1.vertices.point_ptr(v)[c]);
+                    }
+                }
+            }
+
+            compute_max_distance(
+                result, AABB, nb_points, points.data(),
+                m1.vertices.dimension()
+            );
+        }
 
         index_t nb_samples = index_t(
             Geom::mesh_area(m1, 3) / geo_sqr(sampling_step)
         );
 
-        if(nb_samples > m1.vertices.nb()) {
-            nb_samples -= m1.vertices.nb();
+        if(nb_samples > nb_points) {            
+
+            nb_samples -= nb_points;
             Logger::out("Distance") << "Using " << nb_samples
                 << " additional samples"
                 << std::endl;
             vector<double> samples(nb_samples * 3);
             Attribute<double> weight; // left unbound
             mesh_generate_random_samples_on_surface<3>(
-                m1, &samples[0], nb_samples, weight
+                m1, samples.data(), nb_samples, weight
             );
             compute_max_distance(
-                result, AABB, nb_samples, &samples[0], 3
+                result, AABB, nb_samples, samples.data(), 3
             );
         }
 

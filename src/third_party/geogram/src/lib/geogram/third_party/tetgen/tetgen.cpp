@@ -4831,13 +4831,13 @@ namespace GEO {
             const double* p2, const double* p3
         );
 
-        Sign GEOGRAM_API orient_4d(
+        Sign GEOGRAM_API orient_3dlifted(
             const double* p0, const double* p1,
             const double* p2, const double* p3, const double* p4,
             double h0, double h1, double h2, double h3, double h4
         );
 
-        Sign GEOGRAM_API orient_4d_SOS(
+        Sign GEOGRAM_API orient_3dlifted_SOS(
             const double* p0, const double* p1,
             const double* p2, const double* p3, const double* p4,
             double h0, double h1, double h2, double h3, double h4
@@ -4868,7 +4868,7 @@ namespace {
 
     REAL orient4d(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe,
                   REAL ah, REAL bh, REAL ch, REAL dh, REAL eh) {
-        return REAL(GEO::PCK::orient_4d(pa,pb,pc,pd,pe,ah,bh,ch,dh,eh));
+        return REAL(GEO::PCK::orient_3dlifted(pa,pb,pc,pd,pe,ah,bh,ch,dh,eh));
     }
 
     /**
@@ -5081,7 +5081,7 @@ REAL tetgenmesh::orient4d_s(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe,
                             REAL dheight, REAL eheight) {
 #ifdef USE_PCK // [Bruno]
 
-    return REAL(GEO::PCK::orient_4d_SOS(
+    return REAL(GEO::PCK::orient_3dlifted_SOS(
                     pa,pb,pc,pd,pe,aheight,bheight,cheight,dheight,eheight
     ));
 

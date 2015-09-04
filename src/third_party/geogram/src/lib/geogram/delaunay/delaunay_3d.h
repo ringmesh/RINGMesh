@@ -908,7 +908,7 @@ namespace GEO {
                     (p - vertex_ptr(0)) / int(vertex_stride_)
                 );
                 double h = heights_[pindex];
-                return (PCK::orient_4d_SOS(
+                return (PCK::orient_3dlifted_SOS(
                             pv[0],pv[1],pv[2],pv[3],p,h0,h1,h2,h3,h
                        ) > 0) ;
             }

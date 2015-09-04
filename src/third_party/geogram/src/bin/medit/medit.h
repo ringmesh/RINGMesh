@@ -12,7 +12,7 @@
 #include <signal.h>
 #include <ctype.h>
 
-#ifdef WIN32
+#if (defined(WIN32) || defined(_WIN64))
 #include <windows.h>
 #endif
 #ifdef __APPLE__

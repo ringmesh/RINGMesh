@@ -465,20 +465,20 @@ namespace GEO {
         }
     }
 
-    signed_index_t MeshCellsAABB::containing_tet_recursive(
+    index_t MeshCellsAABB::containing_tet_recursive(
         const vec3& p, bool exact,
         index_t n, index_t b, index_t e        
     ) const {
 
         if(!bboxes_[n].contains(p)) {
-            return -1;
+            return NO_TET;
         }
         
         if(e==b+1) {
             if(mesh_tet_contains_point(mesh_, b, p, exact)) {
-                return signed_index_t(b);
+                return b;
             } else {
-                return -1;
+                return NO_TET;
             }
         }
         
@@ -486,10 +486,10 @@ namespace GEO {
         index_t childl = 2 * n;
         index_t childr = 2 * n + 1;
 
-        signed_index_t result = containing_tet_recursive(
+        index_t result = containing_tet_recursive(
             p, exact, childl, b, m
         );
-        if(result == -1) {
+        if(result == NO_TET) {
             result = containing_tet_recursive(p, exact, childr, m, e);
         }
         return result;
