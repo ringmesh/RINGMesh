@@ -1231,6 +1231,16 @@ namespace RINGMesh {
                 }
             }
 
+            /// Fill nb_added_points_per_cell_type_ with the number of high order vertices
+            nb_high_order_points_per_cell_type_[GEO::MESH_TET] = 6*(order-1) ;
+            nb_high_order_points_per_cell_type_[GEO::MESH_HEX] = 12*(order-1) ;
+            nb_high_order_points_per_cell_type_[GEO::MESH_PYRAMID] = 8*(order-1) ;
+            nb_high_order_points_per_cell_type_[GEO::MESH_PRISM] = 9*(order-1) ;
+
+            /// Fill nb_added_points_per_facet_type_ with the number of high order vertices
+            nb_high_order_points_per_facet_type_[0] = 3*(order-1) ;
+            nb_high_order_points_per_facet_type_[1] = 4*(order-1) ;
+
             std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
 
             /// Adding new ids on cells edges
@@ -1342,20 +1352,6 @@ namespace RINGMesh {
         test_initialize() ;
         return nb_vertices_ ;
     }
-
-//    /*
-//     * Gets the id of the added node
-//     * @return the const id of the node
-//     */
-//    const index_t MacroMeshOrder::id( const vec3& point ) const
-//    {
-//
-//        test_initialize() ;
-//        std::vector< index_t > colocated_points ;
-//        ann_.get_colocated( point, colocated_points ) ;
-//        ringmesh_debug_assert( colocated_points.size() == 1 ) ;
-//        return mm_.vertices.nb_total_vertices() + colocated_points[0] ;
-//    }
 
     const index_t MacroMeshOrder::nb_vertices() const
     {
@@ -1478,6 +1474,32 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * Gets the number of high order vertices on a facet
+     * @param[in] s id of the surface
+     * @param[in] f id of the facet on the surface
+     * @return the const number of high order vertices
+     */
+    const index_t MacroMeshOrder::nb_high_order_vertices_per_facet(const index_t s, const index_t f) const {
+        test_initialize() ;
+        ringmesh_debug_assert( s < mm_.model().nb_surfaces() ) ;
+        ringmesh_debug_assert( f < mm_.facets.nb_facets( s ) ) ;
+        index_t m = mm_.facets.mesh(s) ;
+        return nb_high_order_points_per_facet_type_[mm_.mesh(m).facets.nb_vertices(f) -3] ;
+    }
+
+    /*!
+     * Gets the number of high order vertices on a mesh
+     * @param[in] m id of the mesh
+     * @param[in] c id of the cell on the mesh
+     * @return the const number of high order vertices
+     */
+    const index_t MacroMeshOrder::nb_high_order_vertices_per_cell(const index_t m, const index_t c) const {
+        test_initialize() ;
+        ringmesh_debug_assert( m < mm_.nb_meshes() ) ;
+        ringmesh_debug_assert( c < mm_.cells.nb_cells( m ) ) ;
+        return nb_high_order_points_per_facet_type_[mm_.mesh(m).cells.type(c)] ;
+    }
     /*!
      * Initialize the cell database of the MacroMesh
      */
