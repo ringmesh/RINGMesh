@@ -472,11 +472,11 @@ namespace RINGMesh {
          */
         const index_t get_id_on_cell( index_t m, index_t c, index_t component ) const
         {
+            test_initialize() ;
             ringmesh_debug_assert( m < mm_.nb_meshes() ) ;
             ringmesh_debug_assert( c < mm_.cells.nb_cells( m ) ) ;
             ringmesh_debug_assert( component < max_new_points_on_cell_ ) ;
-            return new_ids_on_cells_[m]->operator [](
-                max_new_points_on_cell_ * c + component ) ;
+            return new_ids_on_cells_[m][max_new_points_on_cell_ * c + component] ;
         }
         /*!
          * Gets the if of an added point on a facet
@@ -485,13 +485,16 @@ namespace RINGMesh {
          * @param[in] component position of the wanted id on the attribute
          * @return the const index of the point
          */
-        const index_t get_id_on_facet(index_t s, index_t f, index_t component ) const
+        const index_t get_id_on_facet(
+            index_t s,
+            index_t f,
+            index_t component ) const
         {
+            test_initialize() ;
             ringmesh_debug_assert( s < mm_.model().nb_surfaces() ) ;
-            ringmesh_debug_assert( f < mm_.facets.nb_facets(s)) ;
+            ringmesh_debug_assert( f < mm_.facets.nb_facets( s ) ) ;
             ringmesh_debug_assert( component < max_new_points_on_cell_ ) ;
-            return new_ids_on_cells_[s]->operator [](
-                max_new_points_on_facet_ * f + component ) ;
+            return new_ids_on_cells_[s][max_new_points_on_facet_ * f + component] ;
         }
     private:
         void initialize() ;
@@ -512,9 +515,12 @@ namespace RINGMesh {
         index_t nb_vertices_ ;
         /// New points
         std::vector< vec3 > points_ ;
-        ///Store the news vertices id on cells
+        /// Store the new vertices id on cells.
+        /// Each Attribute are in fact attribute vector. One element of this vector
+        /// is one new index of a new added point
         AttributeVector< index_t > new_ids_on_cells_ ;
-        ///Store the news vertices id on facets
+        /// Each Attribute are in fact attribute vector. One element of this vector
+        /// is one new index of a new added point
         AttributeVector< index_t > new_ids_on_facets_ ;
         /// The max number of new vertices a cell could have
         index_t max_new_points_on_cell_ ;

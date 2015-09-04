@@ -1184,8 +1184,8 @@ namespace RINGMesh {
             points_( 0 ),
             new_ids_on_cells_( mm.nb_meshes() ),
             new_ids_on_facets_( mm.model().nb_surfaces() ),
-            max_new_points_on_cell_(0),
-            max_new_points_on_facet_(0)
+            max_new_points_on_cell_( 0 ),
+            max_new_points_on_facet_( 0 )
 
     {
     }
@@ -1210,7 +1210,6 @@ namespace RINGMesh {
 
             index_t nb_total_edges = 0 ;
 
-
             if( mm_.cells.nb_cells() == mm_.cells.nb_tet() ) {
                 max_new_points_on_cell_ = 6 * ( order - 1 ) ;
                 max_new_points_on_facet_ = 3 * ( order - 1 ) ;
@@ -1223,9 +1222,8 @@ namespace RINGMesh {
             /// First loop to find a maximum number of new points
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
-                new_ids_on_cells_[r] = new GEO::Attribute< index_t > ;
-                new_ids_on_cells_[r]->create_vector_attribute(
-                    cur_mesh.cells.attributes(), order_att_name, max_new_points_on_cell_ ) ;
+                new_ids_on_cells_.allocate_attributes( order_att_name,
+                    cur_mesh.cells.attributes(), max_new_points_on_cell_ ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
                     for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
                         nb_total_edges++ ;
@@ -1250,9 +1248,8 @@ namespace RINGMesh {
 
                         for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
                             new_points[offset] = new_points_in_edge[v] ;
-                            GEO::Attribute< index_t >* att = new_ids_on_cells_[r] ;
-                            new_ids_on_cells_[r]->operator [](
-                                c * max_new_points_on_cell_ + e + v ) = offset ;
+                            new_ids_on_cells_[r][c * max_new_points_on_cell_ + e + v] =
+                                offset ;
                             offset++ ;
                         }
                     }
@@ -1264,7 +1261,7 @@ namespace RINGMesh {
             std::vector< vec3 > uniq_points ;
             uniq.unique_points( uniq_points ) ;
             std::vector< index_t > map = uniq.indices() ;
-            ColocaterANN ann( uniq_points ) ;
+            ColocaterANN ann( uniq_points, false ) ;
 
             /// Rewriting the right new ids on the cell attribute
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
@@ -1272,10 +1269,9 @@ namespace RINGMesh {
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
                     for( index_t v = 0;
                         v < cur_mesh.cells.nb_edges( c ) * ( order - 1 ); v++ ) {
-                        new_ids_on_cells_[r]->operator [](
-                            c * max_new_points_on_cell_ + v ) =
-                            map[new_ids_on_cells_[r]->operator [](
-                                c * max_new_points_on_cell_ + v )] + nb_vertices_ ;
+                        new_ids_on_cells_[r][c * max_new_points_on_cell_ + v] =
+                            map[new_ids_on_cells_[r][c * max_new_points_on_cell_ + v]]
+                                + nb_vertices_ ;
                     }
                 }
             }
@@ -1284,10 +1280,9 @@ namespace RINGMesh {
             for( index_t s = 0; s < mm_.model().nb_surfaces(); s++ ) {
                 index_t cur_mesh_id = mm_.facets.mesh( s ) ;
                 const GEO::Mesh& cur_mesh = mm_.mesh( cur_mesh_id ) ;
-                new_ids_on_facets_[s] = new GEO::Attribute< index_t > ;
-                new_ids_on_facets_[s]->create_vector_attribute(
-                    cur_mesh.facets.attributes(), order_att_name,
-                    max_new_points_on_facet_ ) ;
+//                new_ids_on_facets_[s] = new GEO::Attribute< index_t > ;
+                new_ids_on_facets_.allocate_attributes( order_att_name,
+                    cur_mesh.facets.attributes(), max_new_points_on_facet_ ) ;
                 for( index_t f = 0; f < mm_.facets.nb_facets( s ); f++ ) {
                     index_t cur_facet = mm_.facets.facet( s, f ) ;
                     index_t cur_order_vertices[cur_mesh.facets.nb_vertices( f )
@@ -1316,7 +1311,8 @@ namespace RINGMesh {
                                 new_points_in_edge[v], colocated_vertices ) ;
                             ringmesh_debug_assert( colocated_vertices.size() == 1 ) ;
 
-                            new_ids_on_facets_[s]->operator [](cur_facet * max_new_points_on_facet_ + e + v) =
+                            new_ids_on_facets_[s][cur_facet
+                                * max_new_points_on_facet_ + e + v] =
                                 colocated_vertices[0] + nb_vertices_ ;
 
                         }
