@@ -471,7 +471,7 @@ namespace RINGMesh {
          * Gets the id of a point added on the cell edges
          * @param[in] m id of the mesh where the cell is
          * @param[in] c id of the cell on the mesh
-         * @param[in] component position of the point in the attribute.
+         * @param[in] component point number in the cell
          * Ids are ordered by edges on the attribute vector of Geogram
          * @return the const index of the point
          */
@@ -487,7 +487,7 @@ namespace RINGMesh {
          * Gets the id of an added point on a facet
          * @param[in] s id of the surface
          * @param[in] f id of the facet on the surface
-         * @param[in] component position of the point in the attribute
+         * @param[in] component point number in the cell
          * Ids are ordered by edges on the attribute vector of Geogram
          * @return the const index of the point
          */
