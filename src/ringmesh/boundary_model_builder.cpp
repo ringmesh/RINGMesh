@@ -41,6 +41,7 @@
 /*! \author Jeanne Pellerin */
 
 #include <ringmesh/boundary_model_builder.h>
+#include <ringmesh/boundary_model.h>
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
@@ -88,8 +89,8 @@ namespace {
             E.set_geological_feature( E.child( 0 ).geological_feature() ) ;
         }
 
-        // Paranoia : we should perhaps verify that all children
-        // have the same geological features
+        /// @todo Paranoia : we should verify that all children
+        /// have the same geological feature
     }
 
     /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
@@ -701,7 +702,7 @@ namespace {
      * @pre colocated vertices have already been removed
      */
     void remove_degenerate_facet_and_edges(
-        const BoundaryModel& BM,
+        BoundaryModel& BM,
         std::set< bme_t >& to_remove )
     {
         to_remove.clear() ;
@@ -761,12 +762,18 @@ namespace {
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                         const Line& L = BM.line( S.boundary_id( l ).index ) ;
-                        if( L.is_inside_border( S ) ) {
+                        if( to_remove.count( L.bme_id() ) == 0 && 
+                            L.is_inside_border( S ) 
+                        ) {
                             cutting_lines.insert( L.bme_id().index ) ;
                         }
                     }
                     for( std::set< index_t >::iterator it = cutting_lines.begin();
-                        it != cutting_lines.end(); ++it ) {
+                        it != cutting_lines.end(); ++it 
+                     ) {
+                        // Force the recomputing of the model vertices
+                        // I do not understand exactly what is happening [JP]
+                        BM.vertices.clear() ;
                         S.cut_by_line( BM.line( *it ) ) ;
                     }
                 }
@@ -1737,16 +1744,18 @@ namespace RINGMesh {
         // In the .ml file - vertices are indexed TSurf by Tsurf
         // They can be duplicated inside one TSurf and betweeen TSurfs
 
-        // Indices of the vertices of the currently built TSurf in the model
+        // Coordinates of the vertices of the currently built TSurf in the model
         std::vector< vec3 > tsurf_vertices ;
 
-        // Where the vertices of a TFace start in the vertices of the TSurf (offest)
+        // Where the vertices of a TFace start in the vertices of the TSurf (offset)
         std::vector< index_t > tface_vertex_start ;
 
-        // Indices of vertices in facets (triangles) of the currently built TFace
+        // Triangles of the currently built TFace
         std::vector< index_t > tface_facets ;
 
         // Starting and ending indices of each facet triangle in the tface_facets vector
+        /// @todo This is useless. Facets are all triangles.
+        /// Write functions to be able to use the Mesh.facets.assign_triangle_mesh function [JP]
         std::vector< index_t > tface_facets_ptr ;
         tface_facets_ptr.push_back( 0 ) ;
 
@@ -1947,11 +1956,10 @@ namespace RINGMesh {
                                 3 ), z_sign * read_double( in, 4 ) ) ;
                         tsurf_vertices.push_back( p ) ;
                     } else if( in.field_matches( 0,
-                            "PATOM" ) || in.field_matches( 0, "ATOM" ) )
-                    {
-                        tsurf_vertices.push_back( tsurf_vertices[ in.
-                            field_as_uint(
-                                2 ) - 1 ] ) ;
+                            "PATOM" ) || in.field_matches( 0, "ATOM" ) 
+                      ){
+                        tsurf_vertices.push_back( tsurf_vertices[
+                            in.field_as_uint( 2 ) - 1 ] ) ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
                         // Read ids of the vertices of each triangle in the TSurf
                         // and switch to ids in the TFace
@@ -1968,8 +1976,7 @@ namespace RINGMesh {
                     //    containing them
                     else if( in.field_matches( 0, "BSTONE" ) ) {
                         index_t v_id = in.field_as_uint( 1 ) - 1 ;
-                        if( !find_corner(model_, tsurf_vertices[v_id]).is_defined() )
-                        {
+                        if( !find_corner(model_, tsurf_vertices[v_id]).is_defined() ) {
                             // Create the corner
                             set_corner( create_element( BME::CORNER ), tsurf_vertices[ v_id ] ) ;
                         }
@@ -2019,7 +2026,7 @@ namespace RINGMesh {
         }
 
         // I agree that we do not need to compute the BoundaryModelVertices here
-        // But perhaps the computation of Lines would be faster and safer - Jeanne
+        // But perhaps the computation of Lines would be faster and safer [JP]
 
         /// 3. Build the Lines
         {
@@ -2065,7 +2072,7 @@ namespace RINGMesh {
         bool valid_model = end_model() ;
 
         time( &end_load ) ;
-        // Output of loading time only in debug mode has no meaning (JP)
+        // Output of loading time only in debug mode has no meaning [JP]
         GEO::Logger::out( "I/O" ) << "Model loading time "
             << difftime( end_load, start_load ) << " sec" << std::endl ;
 
@@ -3009,8 +3016,8 @@ namespace RINGMesh {
                 vertices.push_back( border_triangles[i].v0_ ) ;
                 vertices.push_back( border_triangles[i].v1_ ) ;
 
-                // Build the contact propating forward on the border of the Surface
-                // While the adjacent surfaces are the same the vertices the next edge on the
+                // Build the contact propagating forward on the border of the Surface
+                // While the adjacent surfaces stay the same the vertices the next edge on the
                 // boundary of the Surface are added
                 bool same_surfaces = true ;
                 index_t next_i = get_next_border_triangle( model_, border_triangles,
