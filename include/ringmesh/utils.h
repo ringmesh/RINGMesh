@@ -1044,23 +1044,29 @@ namespace RINGMesh {
     } ;
 
     /*!
-     *  Handle GEO::Attribute. Create a std::vector of attributes, the size
-     *  of this vector can be classicly the number of meshes in the MacroMesh,
-     *  the number of surfaces...
+     * \brief Convenient class to manipulate vectors of geogram attributes.
+     * \details Used to ease the storage of a common attribute on several
+     * meshes grouped in the same object, for example those stored by a MacroMesh.
      */
     template< class T >
-    class AttributeVector: public std::vector< GEO::Attribute< T >* > {
+    class AttributeHandler: public std::vector< GEO::Attribute< T >* > {
+    ringmesh_disable_copy(AttributeHandler) ;
     public:
         typedef std::vector< GEO::Attribute< T >* > base_class ;
-        AttributeVector()
+        AttributeHandler()
             : base_class()
         {
         }
-        AttributeVector( index_t size )
+        AttributeHandler( index_t size )
             : base_class( size, nil )
         {
         }
 
+        /*!
+         * Allocate one attribute on all the components of the vector
+         * @param[in] name name of the attribute
+         * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
+         */
         void allocate_attribute(
             const std::string& name,
             GEO::AttributesManager& am )
@@ -1070,6 +1076,12 @@ namespace RINGMesh {
             }
         }
 
+        /*!
+         * Allocate one vector of attributes on all the components of the vector
+         * @param[in] name name of the attribute
+         * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
+         * @param[in] size size of the vector of attributes
+         */
         void allocate_attributes(
             const std::string& name,
             GEO::AttributesManager& am,
@@ -1092,12 +1104,7 @@ namespace RINGMesh {
             return *base_class::operator[]( i ) ;
         }
 
-        AttributeVector& operator=( const AttributeVector& av )
-        {
-            return *base_class::operator=( av ) ;
-        }
-
-        ~AttributeVector()
+        ~AttributeHandler()
         {
             for( index_t i = 0; i < base_class::size(); i++ ) {
                 if( base_class::operator[]( i ) )

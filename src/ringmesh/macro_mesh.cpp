@@ -1195,9 +1195,9 @@ namespace RINGMesh {
 
     }
 
-    /*
+    /*!
      * Initialize the database by computing the new vertices of the mesh.
-     * \param order -1 vertices are added per edges, the edges are divided
+     * @param[in] order -1 vertices are added per edges, the edges are divided
      * in equal parts by these vertices.
      * @param[in] order the mesh elements order
      */
