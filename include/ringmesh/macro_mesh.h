@@ -523,11 +523,11 @@ namespace RINGMesh {
         std::vector< vec3 > points_ ;
         /// Store the new vertices id on cells.
         /// [AttributeOnMesh0, AttributeOnMesh1...]
-        // AttributeOnMeshI = [ [FirstNewPointIndexOnEdge0, SecondNewPointIndexOnEdge0], ...]
+        /// AttributeOnMeshI = [ [FirstNewPointIndexOnEdge0, SecondNewPointIndexOnEdge0], ...]
         AttributeHandler< index_t > new_ids_on_cells_ ;
         /// Store the new vertices id on facets.
         /// [AttributeOnSurface0, AttributeOnSurface1...]
-        // AttributeOnSurfaceI = [ [FirstNewPointIndexOnEdge0, SecondNewPointIndexOnEdge0], ...]
+        /// AttributeOnSurfaceI = [ [FirstNewPointIndexOnEdge0, SecondNewPointIndexOnEdge0], ...]
         AttributeHandler< index_t > new_ids_on_facets_ ;
         /// The max number of new vertices a cell could have
         index_t max_new_points_on_cell_ ;
