@@ -176,7 +176,7 @@ namespace GEO {
 
 // =============================== WINDOWS defines =========================
 
-#elif defined(WIN32)
+#elif defined(WIN32) || defined(_WIN64)
 
 #define GEO_OS_WINDOWS
 

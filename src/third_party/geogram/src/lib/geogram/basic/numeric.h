@@ -75,7 +75,7 @@
 
 namespace GEO {
 
-    /*
+    /**
      * \brief Defines numeric types used in Vorpaline.
      * \details
      * These types names have the form (u)int<size> or float<size>,

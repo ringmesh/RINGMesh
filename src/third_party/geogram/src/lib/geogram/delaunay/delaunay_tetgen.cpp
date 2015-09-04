@@ -180,7 +180,7 @@ namespace GEO {
         tetgen_in_.pointlist = new double[3*tetgen_in_.numberofpoints];
         if(constraints_->vertices.nb() != 0) {
             Memory::copy(
-                &tetgen_in_.pointlist[0], constraints_->vertices.point_ptr(0), 
+                tetgen_in_.pointlist, constraints_->vertices.point_ptr(0), 
                 constraints_->vertices.nb()*3*sizeof(double)
             );
         }

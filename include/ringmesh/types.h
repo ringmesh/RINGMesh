@@ -124,6 +124,8 @@ namespace RINGMesh {
      */
     const std::string surface_att_name = "region" ;
     const std::string region_att_name = "region" ;
+    const std::string order_att_name = "order" ;
+
     //    ___
     //   | __|_ _ _  _ _ __  ___
     //   | _|| ' \ || | '  \(_-<

@@ -127,6 +127,8 @@ endif()
 if(GEOGRAM_WITH_VORPALINE)
    add_subdirectory(src/lib/vorpalib)
    add_subdirectory(src/bin/vorpaline)
+else()
+   add_subdirectory(src/bin/vorpalite)
 endif()
 
 if(GEOGRAM_WITH_GRAPHICS)

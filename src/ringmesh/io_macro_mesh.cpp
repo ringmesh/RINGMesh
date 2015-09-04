@@ -2187,8 +2187,6 @@ namespace RINGMesh {
                 index_t cur_cell = 1 ;
                 for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
                     const GEO::Mesh& mesh = mm.mesh( m ) ;
-                    GEO::Attribute< std::vector< index_t > > order_vertices(
-                        mesh.cells.attributes(), "order_vertices" ) ;
                     GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
                         surface_att_name ) ;
                     const BoundaryModelElement& region = model.region( m ) ;
@@ -2217,17 +2215,17 @@ namespace RINGMesh {
                         }
                         if(mm.get_order()==2) {
                             out << SPACE ;
-                            out << order_vertices[c][3] + 1 ;
+                            out << mm.order.get_id_on_cell(m,c,3) + 1 ;
                             out << SPACE ;
-                            out << order_vertices[c][0] + 1 ;
+                            out <<  mm.order.get_id_on_cell(m,c,0) + 1 ;
                             out << SPACE ;
-                            out << order_vertices[c][4] + 1 ;
+                            out <<  mm.order.get_id_on_cell(m,c,4) + 1 ;
                             out << SPACE ;
-                            out << order_vertices[c][5] + 1 ;
+                            out << mm.order.get_id_on_cell(m,c,5) + 1 ;
                             out << SPACE ;
-                            out << order_vertices[c][1] + 1 ;
+                            out <<  mm.order.get_id_on_cell(m,c,1) + 1 ;
                             out << SPACE ;
-                            out << order_vertices[c][2] + 1 ;
+                            out <<  mm.order.get_id_on_cell(m,c,2) + 1 ;
                         }
                         out << std::endl ;
 
@@ -2288,8 +2286,6 @@ namespace RINGMesh {
                         if( mm.vertices.is_surface_to_duplicate( s_id ) ) continue ;
                         index_t mesh_id = mm.facets.mesh( s_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                        GEO::Attribute< std::vector< index_t > > order_vertices(
-                            mesh.facets.attributes(), "order_vertices" ) ;
                         for( index_t t = 0; t < mm.facets.nb_facets( s_id ); t++ ) {
                             index_t facet_id = mm.facets.facet( s_id, t ) ;
                             out << cur_cell++ << SPACE
@@ -2302,10 +2298,10 @@ namespace RINGMesh {
                                 out << SPACE
                                     << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
                             }
-                            for( index_t v = 0; v < order_vertices[facet_id].size();
+                            for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id) * ( mm.get_order() - 1 );
                                 v++ ) {
                                 out << SPACE ;
-                                out << order_vertices[facet_id][v] + 1 ;
+                                out <<mm.order.get_id_on_facet(s,facet_id,v) + 1 ;
                             }
                             out << std::endl ;
                         }
