@@ -1,0 +1,21 @@
+# MultiPrecision PSM description file
+# See tools/extract_psm.sh
+
+HEADERS="../api/defs.h \
+../basic/common.h \
+../basic/argused.h \
+../basic/numeric.h \
+../basic/memory.h \
+../basic/psm.h \
+multi_precision.h \
+expansion_nt.h
+"
+
+SOURCES="multi_precision.cpp \
+expansion_nt.cpp
+"
+
+DOC="http://alice.loria.fr/software/geogram/doc/html/multi__precision_8h.html"
+
+EXAMPLE="../../../test/test_expansion_nt/main.cpp"
+
