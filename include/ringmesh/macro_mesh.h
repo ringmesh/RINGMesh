@@ -464,8 +464,6 @@ namespace RINGMesh {
         ~MacroMeshOrder() ;
         const index_t nb_total_vertices() const ;
         const index_t nb_vertices() const ;
-        const index_t nb_added_vertices_on_cell( const index_t m, const index_t c) const ;
-        const index_t nb_added_vertices_on_facet( const index_t s, const index_t f) const ;
         void clear() ;
         const vec3 point( const index_t id ) const ;
         void move_point( const index_t id, const vec3& u ) ;
