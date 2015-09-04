@@ -453,7 +453,11 @@ namespace RINGMesh {
         /// Storage of the AABB trees on the cells
         mutable std::vector< GEO::MeshCellsAABB* > cell_aabb_ ;
     } ;
-
+    /*!
+     * Optional storage of new vertices when using meshes with order > 1
+     * This is especially useful for simulations based on the MacroMesh (e.g. FEM)
+     * It is possible to introduce new points on the cell edges.
+     */
     class RINGMESH_API MacroMeshOrder {
     public:
         MacroMeshOrder( MacroMesh& mm ) ;
@@ -464,10 +468,11 @@ namespace RINGMesh {
         const vec3 point( const index_t id ) const ;
         void move_point( const index_t id, const vec3& u ) ;
         /*!
-         * Gets the if of an added point on a cell
+         * Gets the id of a point added on the cell edges
          * @param[in] m id of the mesh where the cell is
          * @param[in] c id of the cell on the mesh
-         * @param[in] component position of the wanted id on the attribute
+         * @param[in] component position of the point in the attribute.
+         * Ids are ordered by edges on the attribute vector of Geogram
          * @return the const index of the point
          */
         const index_t get_id_on_cell( index_t m, index_t c, index_t component ) const
@@ -479,10 +484,11 @@ namespace RINGMesh {
             return new_ids_on_cells_[m][max_new_points_on_cell_ * c + component] ;
         }
         /*!
-         * Gets the if of an added point on a facet
+         * Gets the id of an added point on a facet
          * @param[in] s id of the surface
          * @param[in] f id of the facet on the surface
-         * @param[in] component position of the wanted id on the attribute
+         * @param[in] component position of the point in the attribute
+         * Ids are ordered by edges on the attribute vector of Geogram
          * @return the const index of the point
          */
         const index_t get_id_on_facet(
@@ -516,11 +522,12 @@ namespace RINGMesh {
         /// New points
         std::vector< vec3 > points_ ;
         /// Store the new vertices id on cells.
-        /// Each Attribute are in fact attribute vector. One element of this vector
-        /// is one new index of a new added point
+        /// [AttributeOnMesh0, AttributeOnMesh1...]
+        // AttributeOnMeshI = [ [FirstNewPointIndexOnEdge0, SecondNewPointIndexOnEdge0], ...]
         AttributeHandler< index_t > new_ids_on_cells_ ;
-        /// Each Attribute are in fact attribute vector. One element of this vector
-        /// is one new index of a new added point
+        /// Store the new vertices id on facets.
+        /// [AttributeOnSurface0, AttributeOnSurface1...]
+        // AttributeOnSurfaceI = [ [FirstNewPointIndexOnEdge0, SecondNewPointIndexOnEdge0], ...]
         AttributeHandler< index_t > new_ids_on_facets_ ;
         /// The max number of new vertices a cell could have
         index_t max_new_points_on_cell_ ;
