@@ -1064,6 +1064,15 @@ namespace RINGMesh {
 
         /*!
          * Allocate one attribute on all the components of the vector
+         */
+        void allocate_attribute()
+        {
+            for( index_t m = 0; m < base_class::size(); m++ ) {
+                base_class::operator[]( m ) = new GEO::Attribute< T >() ;
+            }
+        }
+        /*!
+         * Allocate one attribute on all the components of the vector
          * @param[in] name name of the attribute
          * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
          */
