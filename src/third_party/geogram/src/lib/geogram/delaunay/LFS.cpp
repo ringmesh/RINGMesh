@@ -332,7 +332,7 @@ namespace GEO {
         }
 
         spatial_search_ = Delaunay::create(3, "NN");
-        spatial_search_->set_vertices(poles_.size() / 3, &poles_[0]);
+        spatial_search_->set_vertices(poles_.size() / 3, poles_.data());
     }
 }
 

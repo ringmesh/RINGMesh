@@ -1467,6 +1467,25 @@ namespace {
 
         /********************************************************************/
 
+        void compute_RVC(
+            index_t i,
+            Mesh& M,
+            Mesh& result,
+            bool copy_symbolic_info
+        ) {
+            Mesh* tmp_mesh = mesh_;
+            mesh_ = &M;
+            RVD_.set_mesh(&M);
+            typename GenRestrictedVoronoiDiagram::Polyhedron Cell(dimension());
+            Cell.initialize_from_surface_mesh(&M, RVD_.symbolic());
+            RVD_.intersect_cell_cell(i, Cell);
+            Cell.convert_to_mesh(&result, copy_symbolic_info);
+            mesh_ = tmp_mesh;
+            RVD_.set_mesh(tmp_mesh);
+        }
+
+        /********************************************************************/
+        
         /**
          * \brief Does the actual computation for a specific part
          *    in multithread mode.
@@ -1607,7 +1626,7 @@ namespace {
                 }
             }
             mesh_vertices_->set_vertices(
-                nb_vertices, &mesh_vertices[0]
+                nb_vertices, mesh_vertices.data()
             );
         }
 
@@ -2390,11 +2409,8 @@ namespace GEO {
                 break;
         }
         if(CmdLine::get_arg("algo:predicates") == "exact") {
-            Logger::out("RVD") << "Using exact predicates" << std::endl;
             result->set_exact_predicates(true);
-        } else {
-            Logger::out("RVD") << "Using fast predicates" << std::endl;
-        }
+        } 
         return result;
     }
 

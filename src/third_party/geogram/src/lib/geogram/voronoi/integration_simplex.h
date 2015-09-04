@@ -53,9 +53,9 @@
 #include <geogram/basic/geometry.h>
 
 /**
- * \file geogram/voronoi/LpCVT.h
- * \brief Computing the LpCVT objective function and
- *  its gradient.
+ * \file geogram/voronoi/integration_simplex.h
+ * \brief base classes for computing integrals over
+ *  the cells of a restricted Voronoi diagram
  */
 
 namespace GEOGen {

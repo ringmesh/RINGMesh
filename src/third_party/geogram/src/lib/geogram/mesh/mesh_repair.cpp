@@ -92,11 +92,28 @@ namespace {
             << M.vertices.nb() - nb_new_vertices
             << " duplicated vertices" << std::endl;
 
-        
-        for(index_t c = 0; c < M.facet_corners.nb(); c++) {
+
+        // Replace vertex indices for edges
+        for(index_t e = 0; e < M.edges.nb(); ++e) {
+            M.edges.set_vertex(e, 0, old2new[M.edges.vertex(e,0)]);
+            M.edges.set_vertex(e, 1, old2new[M.edges.vertex(e,1)]);            
+        }
+
+        // Replace vertex indices for facets
+        for(index_t c = 0; c < M.facet_corners.nb(); ++c) {
             M.facet_corners.set_vertex(c, old2new[M.facet_corners.vertex(c)]);
         }
 
+        // Replace vertex indices for cells
+        for(index_t ce = 0; ce < M.cells.nb(); ++ce) {
+            for(
+                index_t c=M.cells.corners_begin(ce);
+                c<M.cells.corners_end(ce); ++c
+            ) {
+                M.cell_corners.set_vertex(c, old2new[M.cell_corners.vertex(c)]);
+            }
+        } 
+        
         // Now old2new is "recycled" for marking vertices that
         // need to be removed.
         for(index_t i = 0; i < old2new.size(); i++) {
@@ -272,6 +289,9 @@ namespace {
      * \param[out] new_polygon on exit, where to append the 
      *              non-duplicated vertices of facet \p f
      *              and a terminal index_t(-1)
+     * \retval true if the facet has three non-duplicated 
+     *               vertices and more
+     * \retval false otherwise
      */
     bool find_facet_non_duplicated_vertices(
         const Mesh& M, index_t f, vector<index_t>& new_polygon
@@ -294,7 +314,7 @@ namespace {
         // All the vertices may be identical (if the facet
         // is completely degenerate).
         if(first_corner == index_t(-1)) {
-            return false ;
+            return false;
         }
 
         index_t c = first_corner;
@@ -317,12 +337,13 @@ namespace {
         // not want to generate facets with two vertices only).
         if(nb == 2) {
             new_polygon.resize(new_polygon.size()-3);
-            return false ;
+            return false;
         }
-        return true ;
-    }
 
-   
+        return true;
+    }
+    
+    
     /**
      * \brief Detects degenerate facets in a mesh.
      * \param[in] M the mesh
@@ -412,14 +433,14 @@ namespace {
                     new_polygons != nil &&
                     M.facets.nb_vertices(f) > 3
                 ) {
-                    if( find_facet_non_duplicated_vertices(
-                        M, f, *new_polygons ) ) {
-                        old_polygons->push_back( f );
+                    if(find_facet_non_duplicated_vertices(
+                           M,f,*new_polygons
+                    )) {
+                        old_polygons->push_back(f);
                     }
                 }
             }
-        } 
-
+        }
         if(nb_duplicates != 0 || nb_degenerate != 0) {
             Logger::out("Validate")
                 << "Detected " << nb_duplicates << " duplicate and "
@@ -459,7 +480,8 @@ namespace {
                     new_f, old_polygons[current_old_polygon]
                 );
                 ++current_old_polygon;
-                remove_f.push_back(0); // This one we want to keep !!
+                // We created a new facet that we want to keep !!
+                remove_f.push_back(0); 
                 for(index_t lv=0; lv<e-b; ++lv) {
                     M.facets.set_vertex(new_f,lv,new_polygons[b+lv]);
                 }

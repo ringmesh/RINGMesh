@@ -465,12 +465,8 @@ namespace {
             "refine border to lower Hausdorff distance"
         );
         declare_arg_percent(
-            "hex:border_max_distance", 0.1,
-            "maximum distance to reference (in % of diagonal bbox)"
-        );
-        declare_arg(
-            "hex:border_max_points", 30,
-            "maximum number of points inserted to refine the border"
+            "hex:border_max_distance", 20,
+            "maximum distance to reference (in % of input average edge length)"
         );
     }
 

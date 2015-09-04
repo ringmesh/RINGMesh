@@ -54,7 +54,7 @@
 #include <string>
 
 /**
- * \file geogram/mesh/new_mesh_io.h
+ * \file geogram/mesh/mesh_io.h
  * \brief Functions to load and save meshes
  */
 

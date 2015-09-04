@@ -77,7 +77,8 @@ void test_simple_linear_solve(NLint solver) {
         if(nlInitExtension("SUPERLU")) {
             printf("...SUPERLU extension successfully initialized\n");
         } else {
-            printf("...failed to initialize SUPERLU extension\n");            
+            printf("...failed to initialize SUPERLU extension\n");
+            printf("Needs Linux/shared librariess/-DGEO_DYNAMIC_LIBS\n");
             return;
         }
         break;
@@ -115,14 +116,22 @@ void test_simple_linear_solve(NLint solver) {
 
     printf("Solution:   x0=%f   x1=%f\n", nlGetVariable(0), nlGetVariable(1));
     printf("Verifying:\n");
-    printf("  1.0*x0 + 2.0*x1 = %f\n", 1.0 * nlGetVariable(0) + 2.0 * nlGetVariable(1));
-    printf("  3.0*x0 + 4.0*x1 = %f\n", 3.0 * nlGetVariable(0) + 4.0 * nlGetVariable(1));
+    printf(
+        "  1.0*x0 + 2.0*x1 = %f\n",
+        1.0 * nlGetVariable(0) + 2.0 * nlGetVariable(1)
+    );
+    printf(
+        "  3.0*x0 + 4.0*x1 = %f\n",
+        3.0 * nlGetVariable(0) + 4.0 * nlGetVariable(1)
+    );
 
     /* Cleanup */
     nlDeleteContext(nlGetCurrent());
 }
 
-void test_least_squares_regression(NLboolean origin, NLboolean use_SSOR_precond) {
+void test_least_squares_regression(
+    NLboolean origin, NLboolean use_SSOR_precond
+) {
     NLint nb_pts = 7, k;
     NLdouble XY[7][2] = {
         {1.0, 3.5},

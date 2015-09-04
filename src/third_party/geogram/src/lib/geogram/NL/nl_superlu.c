@@ -45,7 +45,7 @@
 #include "nl_superlu.h"
 #include "nl_context.h"
 
-/*
+/**
  * \file Weak-coupling adapter to call SuperLU from OpenNL, 
  *  works with both SuperLU 3.x and SuperLU 4.x.
  */
@@ -597,8 +597,10 @@ NLboolean nlSolve_SUPERLU() {
 #if defined(GEO_DYNAMIC_LIBS) && defined(unix)
 
 void nlTerminateExtension_SUPERLU() {
-    dlclose(SuperLU()->DLL_handle);
-    SuperLU()->DLL_handle = NULL;
+    if(SuperLU()->DLL_handle != NULL) {
+        dlclose(SuperLU()->DLL_handle);
+        SuperLU()->DLL_handle = NULL;
+    }
 }
 
 NLboolean nlInitExtension_SUPERLU() {

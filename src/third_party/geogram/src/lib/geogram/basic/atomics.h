@@ -134,8 +134,8 @@ inline unsigned int atomic_bitset_arm(volatile unsigned int* ptr, unsigned int b
  * The function is atomic and acts as a read-write memory barrier.
  * \param[in] ptr a pointer to an unsigned integer
  * \param[in] bit index of the bit to reset in *\p ptr
- * \retval a non-zero integer if the bit was set
- * \retval 0 if the bit was not set
+ * \retval a non-zero integer if the bit was reset
+ * \retval 0 if the bit was not reset
  */
 inline unsigned int atomic_bitreset_arm(volatile unsigned int* ptr, unsigned int bit) {
     unsigned int tmp;

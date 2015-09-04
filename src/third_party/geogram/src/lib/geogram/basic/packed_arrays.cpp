@@ -123,7 +123,6 @@ namespace GEO {
     }
 
     void PackedArrays::clear() {
-        Memory::lock();
         if(ZV_ != nil) {
             for(index_t i = 0; i < nb_arrays_; i++) {
                 free(ZV_[i]);
@@ -136,7 +135,6 @@ namespace GEO {
         Z1_stride_ = 0;
         free(Z1_);
         Z1_ = nil;
-        Memory::unlock();
     }
 
     void PackedArrays::set_thread_safe(bool x) {
@@ -240,11 +238,9 @@ namespace GEO {
                 index_t nb_in_ZV =
                     (array_size > Z1_block_size_) ?
                     array_size - Z1_block_size_ : 0;
-                Memory::lock();
                 ZV_[array_index] = (index_t*) realloc(
                     ZV_[array_index], sizeof(index_t) * nb_in_ZV
                 );
-                Memory::unlock();
             }
         }
         if(lock) {
