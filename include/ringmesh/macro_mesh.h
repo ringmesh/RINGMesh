@@ -518,10 +518,10 @@ namespace RINGMesh {
         /// Store the new vertices id on cells.
         /// Each Attribute are in fact attribute vector. One element of this vector
         /// is one new index of a new added point
-        AttributeVector< index_t > new_ids_on_cells_ ;
+        AttributeHandler< index_t > new_ids_on_cells_ ;
         /// Each Attribute are in fact attribute vector. One element of this vector
         /// is one new index of a new added point
-        AttributeVector< index_t > new_ids_on_facets_ ;
+        AttributeHandler< index_t > new_ids_on_facets_ ;
         /// The max number of new vertices a cell could have
         index_t max_new_points_on_cell_ ;
         /// The max number of new vertices a facet could have
