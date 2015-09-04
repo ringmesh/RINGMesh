@@ -1489,7 +1489,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * Gets the number of high order vertices on a mesh
+     * Gets the number of high order vertices on a cell
      * @param[in] m id of the mesh
      * @param[in] c id of the cell on the mesh
      * @return the const number of high order vertices
