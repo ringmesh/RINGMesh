@@ -1363,7 +1363,31 @@ namespace RINGMesh {
         return nb_vertices_ - mm_.vertices.nb_total_vertices() ;
     }
 
-    /*
+    /*!
+     * Gets the number of a added point
+     * @param[in] m the region id where the cell is
+     * @param[in] c the cell id on the mesh
+     * @return the const number of added points
+     */
+    const index_t MacroMeshOrder::nb_added_vertices_on_cell( const index_t m, const index_t c) const {
+        ringmesh_debug_assert( m < mm_.nb_meshes() ) ;
+        ringmesh_debug_assert( c < mm_.cells.nb_cells(m) ) ;
+        return new_ids_on_cells_[m].dimension() ;
+    }
+
+    /*!
+     * Gets the number of a added point
+     * @param[in] s the surface id where the facet is
+     * @param[in] f the facet id on the surface
+     * @return the const number of added points
+     */
+    const index_t MacroMeshOrder::nb_added_vertices_on_facet( const index_t s, const index_t f) const {
+        ringmesh_debug_assert( s < mm_.model().nb_surfaces() ) ;
+        ringmesh_debug_assert( f < mm_.facets.nb_facets( s ) ) ;
+        return new_ids_on_facets_[s].dimension() ;
+    }
+
+    /*!
      * Gets the vec3 of a added point
      * @param[in] id an id of the new created point for order > 2
      * @return the vec3 matching with the id

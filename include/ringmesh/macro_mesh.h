@@ -464,6 +464,8 @@ namespace RINGMesh {
         ~MacroMeshOrder() ;
         const index_t nb_total_vertices() const ;
         const index_t nb_vertices() const ;
+        const index_t nb_added_vertices_on_cell( const index_t m, const index_t c) const ;
+        const index_t nb_added_vertices_on_facet( const index_t s, const index_t f) const ;
         void clear() ;
         const vec3 point( const index_t id ) const ;
         void move_point( const index_t id, const vec3& u ) ;
@@ -475,7 +477,10 @@ namespace RINGMesh {
          * Ids are ordered by edges on the attribute vector of Geogram
          * @return the const index of the point
          */
-        const index_t get_id_on_cell( index_t m, index_t c, index_t component ) const
+        const index_t get_id_on_cell(
+            const index_t m,
+            const index_t c,
+            const index_t component ) const
         {
             test_initialize() ;
             ringmesh_debug_assert( m < mm_.nb_meshes() ) ;
@@ -492,9 +497,9 @@ namespace RINGMesh {
          * @return the const index of the point
          */
         const index_t get_id_on_facet(
-            index_t s,
-            index_t f,
-            index_t component ) const
+            const index_t s,
+            const index_t f,
+            const index_t component ) const
         {
             test_initialize() ;
             ringmesh_debug_assert( s < mm_.model().nb_surfaces() ) ;
