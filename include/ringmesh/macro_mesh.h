@@ -467,45 +467,14 @@ namespace RINGMesh {
         void clear() ;
         const vec3 point( const index_t id ) const ;
         void move_point( const index_t id, const vec3& u ) ;
-        /*!
-         * Gets the id of a point added on the cell edges
-         * @param[in] m id of the mesh where the cell is
-         * @param[in] c id of the cell on the mesh
-         * @param[in] component point number in the cell
-         * Ids are ordered by edges on the attribute vector of Geogram
-         * @return the const index of the point
-         */
         const index_t get_id_on_cell(
             const index_t m,
             const index_t c,
-            const index_t component ) const
-        {
-            test_initialize() ;
-            ringmesh_debug_assert( m < mm_.nb_meshes() ) ;
-            ringmesh_debug_assert( c < mm_.cells.nb_cells( m ) ) ;
-            ringmesh_debug_assert( component < max_new_points_on_cell_ ) ;
-            return new_ids_on_cells_[m][max_new_points_on_cell_ * c + component] ;
-        }
-        /*!
-         * Gets the id of an added point on a facet
-         * @param[in] s id of the surface
-         * @param[in] f id of the facet on the surface
-         * @param[in] component point number in the cell
-         * Ids are ordered by edges on the attribute vector of Geogram
-         * @return the const index of the point
-         */
+            const index_t component ) const ;
         const index_t get_id_on_facet(
             const index_t s,
             const index_t f,
-            const index_t component ) const
-        {
-            test_initialize() ;
-            ringmesh_debug_assert( s < mm_.model().nb_surfaces() ) ;
-            ringmesh_debug_assert( f < mm_.facets.nb_facets( s ) ) ;
-            ringmesh_debug_assert( component < max_new_points_on_cell_ ) ;
-            return new_ids_on_cells_[s][max_new_points_on_facet_ * f + component] ;
-        }
-    private:
+            const index_t component ) const ;
         void initialize() ;
         /*!
          * Tests if the MacroMeshOrder needs to be initialized and initialize it
