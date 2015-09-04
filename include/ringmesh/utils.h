@@ -1065,9 +1065,11 @@ namespace RINGMesh {
         /*!
          * Allocate one attribute on all the components of the vector
          */
-        void allocate_attribute()
+        void allocate_attributes()
         {
             for( index_t m = 0; m < base_class::size(); m++ ) {
+                if( !base_class::operator[]( m ) )
+                    delete base_class::operator[]( m ) ;
                 base_class::operator[]( m ) = new GEO::Attribute< T >() ;
             }
         }
@@ -1076,11 +1078,13 @@ namespace RINGMesh {
          * @param[in] name name of the attribute
          * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
          */
-        void allocate_attribute(
+        void allocate_attributes(
             const std::string& name,
             GEO::AttributesManager& am )
         {
             for( index_t m = 0; m < base_class::size(); m++ ) {
+                if( !base_class::operator[]( m ) )
+                    delete base_class::operator[]( m ) ;
                 base_class::operator[]( m ) = new GEO::Attribute< T >( am, name ) ;
             }
         }
@@ -1097,6 +1101,8 @@ namespace RINGMesh {
             index_t size )
         {
             for( index_t m = 0; m < base_class::size(); m++ ) {
+                if( !base_class::operator[]( m ) )
+                    delete base_class::operator[]( m ) ;
                 base_class::operator[]( m ) = new GEO::Attribute< T >() ;
                 base_class::operator[]( m )->create_vector_attribute( am, name,
                     size ) ;
