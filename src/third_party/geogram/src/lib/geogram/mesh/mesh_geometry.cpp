@@ -253,7 +253,7 @@ namespace GEO {
                     pts.push_back(M.vertices.point_ptr(v)[1]);
                     pts.push_back(M.vertices.point_ptr(v)[2]);
                 }
-                LocalFeatureSize LFS(M.vertices.nb(), &pts[0]);
+                LocalFeatureSize LFS(M.vertices.nb(), pts.data());
                 compute_sizing_field_lfs(M, LFS, gradation);
             }
         }

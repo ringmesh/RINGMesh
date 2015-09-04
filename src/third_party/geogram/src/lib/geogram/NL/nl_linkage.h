@@ -45,13 +45,13 @@
 #ifndef __LIBNL_LINKAGE__
 #define __LIBNL_LINKAGE__
 
-/*
+/**
  * \file geogram/NL/nl_linkage.h
- * \brief Specify linkage for OpenNL integrated into
- * Geogram.
+ * \brief Specify linkage for OpenNL integrated into Geogram
  * \details (uses Geogram defines to select the
- *   right linkage modes for OpenNL symbols).
+ *   right linkage modes for OpenNL symbols)
  */
+
 #ifdef GEO_DYNAMIC_LIBS
 #define NL_SHARED_LIBS
 #ifdef geogram_EXPORTS

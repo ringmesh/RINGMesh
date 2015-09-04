@@ -716,11 +716,9 @@ namespace GEOGen {
          * \details This releases all allocated chunks.
          */
         ~PointAllocator() {
-            GEO::Memory::lock();
             for(index_t c = 0; c < chunks_.size(); c++) {
                 GEO::Memory::aligned_free(chunks_[c]);
             }
-            GEO::Memory::unlock();
         }
 
         /**
@@ -745,7 +743,6 @@ namespace GEOGen {
          * \brief Allocates a new chunk of memory.
          */
         void grow() {
-            GEO::Memory::lock();
             chunks_.push_back(
                 reinterpret_cast<double*>(
                     GEO::Memory::aligned_malloc(
@@ -754,7 +751,6 @@ namespace GEOGen {
                 )
             );
             capacity_ += CHUNK_SIZE;
-            GEO::Memory::unlock();
         }
 
         /**

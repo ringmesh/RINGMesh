@@ -53,7 +53,8 @@ extern "C" {
 
 /**
  * \file geogram/NL/nl_cnc_gpu_cuda.h
- * \brief Internal OpenNL functions that implements the Concurrent Number Cruncher.
+ * \brief Internal OpenNL functions that implements 
+ *  the Concurrent Number Cruncher.
  */
     
 /**
