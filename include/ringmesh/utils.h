@@ -1043,20 +1043,65 @@ namespace RINGMesh {
         std::vector< T2 >& output_ ;
     } ;
 
+    /*!
+     *  Handle GEO::Attribute. Create a std::vector of attributes, the size
+     *  of this vector can be classicly the number of meshes in the MacroMesh,
+     *  the number of surfaces...
+     */
     template< class T >
     class AttributeVector: public std::vector< GEO::Attribute< T >* > {
     public:
         typedef std::vector< GEO::Attribute< T >* > base_class ;
-        AttributeVector() : base_class(){
+        AttributeVector()
+            : base_class()
+        {
         }
         AttributeVector( index_t size )
             : base_class( size, nil )
         {
         }
 
-        ~AttributeVector() {
-            for(index_t i = 0 ; i < base_class::size() ; i++) {
-                if(base_class::operator[]( i )) delete base_class::operator[]( i ) ;
+        void allocate_attribute(
+            const std::string& name,
+            GEO::AttributesManager& am )
+        {
+            for( index_t m = 0; m < base_class::size(); m++ ) {
+                base_class::operator[]( m ) = new GEO::Attribute< T >( am, name ) ;
+            }
+        }
+
+        void allocate_attributes(
+            const std::string& name,
+            GEO::AttributesManager& am,
+            index_t size )
+        {
+            for( index_t m = 0; m < base_class::size(); m++ ) {
+                base_class::operator[]( m ) = new GEO::Attribute< T >() ;
+                base_class::operator[]( m )->create_vector_attribute( am, name,
+                    size ) ;
+            }
+        }
+
+        GEO::Attribute< T >& operator[]( index_t i )
+        {
+            return *base_class::operator[]( i ) ;
+        }
+
+        const GEO::Attribute< T >& operator[]( index_t i ) const
+        {
+            return *base_class::operator[]( i ) ;
+        }
+
+        AttributeVector& operator=( const AttributeVector& av )
+        {
+            return *base_class::operator=( av ) ;
+        }
+
+        ~AttributeVector()
+        {
+            for( index_t i = 0; i < base_class::size(); i++ ) {
+                if( base_class::operator[]( i ) )
+                    delete base_class::operator[]( i ) ;
             }
         }
     } ;
