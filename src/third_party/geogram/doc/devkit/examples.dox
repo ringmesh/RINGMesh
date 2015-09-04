@@ -104,7 +104,7 @@ if not specified) contains the tetrahedra. The result can be displayed using vor
 
 Additional parameters:
 - algo:delaunay=(BDEL|PDEL|tetgen) specify the implementation of the Delaunay triangulation. It can be one of
-  BDEL:Geogram's default, PDEL:Geogram parallel (Linux only for now) or tetgen (if compiled with tetgen support).
+  PDEL:Geogram parallel (default), BDEL:Geogram sequential or tetgen (if compiled with tetgen support).
 - dbg:delaunay_benchmark=true to enable more statistics/timings
 - sys:stats=true to display statistics (including predicates and symbolic perturbation)
 

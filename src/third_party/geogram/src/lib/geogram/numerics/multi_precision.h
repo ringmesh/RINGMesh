@@ -193,7 +193,10 @@ namespace GEO {
      *  an expansion can be exactly computed. expansion
      *  is useful to implement exact geometric predicates.
      *  Some of Jonathan Shewchuk's expansion manipulation functions
-     *  are used. 
+     *  are used.
+     *    A higher-level (but less efficient) interface is available
+     *  through the \ref expansion_nt class (expansion number type, that
+     *  overloads operators). 
      */
     class expansion {
     public:

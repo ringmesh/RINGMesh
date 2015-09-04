@@ -1154,7 +1154,23 @@ namespace GEO {
             }
             return true;
         }
-  
+
+
+        /**
+         * \brief Gets the lifted coordinate of a point by its 3d coordinates.
+         * \param[in] p a pointer to the coordinates of one of the vertices
+         *  of the triangulation.
+         * \return the lifted coordinate of \p p
+         */
+        double lifted_coordinate(const double* p) const {
+            // Compute the index of the point from its address
+            index_t pindex = index_t(
+                (p - vertex_ptr(0)) / int(vertex_stride_)
+            );
+            return heights_[pindex];
+        }
+        
+        
         /**
          * \brief Tests whether a given tetrahedron is in conflict with
          *  a given 3d point.
@@ -1212,15 +1228,26 @@ namespace GEO {
                     }
                     
                     //  If t2 was not already visited, then we need to
-                    // switch to the in_circum_circle_3d() predicate
-                    // TODO: for power diagrams, it needs to be adapted.
+                    // switch to the in_circum_circle_3d() predicate.
 
+                    const double* q0 = pv[(lf+1)%4];
+                    const double* q1 = pv[(lf+2)%4];
+                    const double* q2 = pv[(lf+3)%4];
+                    
                     if(weighted_) {
-                        geo_assert_not_reached;
+                        return (
+                            PCK::in_circle_3dlifted_SOS(
+                                q0, q1, q2, p,
+                                lifted_coordinate(q0),
+                                lifted_coordinate(q1),
+                                lifted_coordinate(q2),
+                                lifted_coordinate(p)
+                            ) > 0
+                        );
                     } else {
                         return (
                             PCK::in_circle_3d_SOS(
-                                pv[(lf+1)%4], pv[(lf+2)%4], pv[(lf+3)%4], p
+                                q0,q1,q2,p
                             ) > 0
                         );
                     }
@@ -1236,11 +1263,8 @@ namespace GEO {
                 double h1 = heights_[finite_tet_vertex(t, 1)];
                 double h2 = heights_[finite_tet_vertex(t, 2)];
                 double h3 = heights_[finite_tet_vertex(t, 3)];
-                index_t pindex = index_t(
-                    (p - vertex_ptr(0)) / int(vertex_stride_)
-                );
-                double h = heights_[pindex];
-                return (PCK::orient_4d_SOS(
+                double h = lifted_coordinate(p);
+                return (PCK::orient_3dlifted_SOS(
                             pv[0],pv[1],pv[2],pv[3],p,h0,h1,h2,h3,h
                        ) > 0) ;
             }
@@ -2748,7 +2772,8 @@ namespace GEO {
 
         set_arrays(
             nb_tets,
-            &cell_to_v_store_[0], &cell_to_cell_store_[0]
+            cell_to_v_store_.data(),
+            cell_to_cell_store_.data()
         );
     }
     

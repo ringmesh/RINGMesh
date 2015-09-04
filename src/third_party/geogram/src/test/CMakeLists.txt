@@ -6,9 +6,11 @@ add_subdirectory(bench_load)
 add_subdirectory(test_locks)
 add_subdirectory(compute_OTM)
 add_subdirectory(compute_delaunay)
-
+add_subdirectory(test_expansion_nt)
 
 if(GEOGRAM_WITH_VORPALINE)
    add_subdirectory(test_volumetric_CVT)
    add_subdirectory(test_api)    
 endif()
+
+add_subdirectory(test_RVC)

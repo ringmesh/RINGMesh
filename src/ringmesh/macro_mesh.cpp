@@ -74,7 +74,6 @@ namespace RINGMesh {
             nb_non_unique_vertices += mm_.mesh( i ).vertices.nb() ;
         }
         /// @todo Review : vertex2mesh_[mm_.nb_meshes()] is left at 0 [JP]
-        
 
         /// 2. Get all the vertices of all the meshes               
         std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
@@ -88,11 +87,11 @@ namespace RINGMesh {
 
         /// 3. Compute the colocated vertices
         /* @todo Review : Above comment is useless. We want to know that
-        * the vertices_ vector is filled with non-colocated vertices 
-        * and that the global_vertex_indices_ now stores the mapping from 
-        * all_vertices to vertices_ 
-        * �a �a int�resse vachement plus le lecteur, enfin moi [JP]
-        */
+         * the vertices_ vector is filled with non-colocated vertices
+         * and that the global_vertex_indices_ now stores the mapping from
+         * all_vertices to vertices_
+         * �a �a int�resse vachement plus le lecteur, enfin moi [JP]
+         */
         MakeUnique mu( all_vertices ) ;
         mu.unique() ;
         mu.unique_points( vertices_ ) ;
@@ -110,7 +109,7 @@ namespace RINGMesh {
         if( vertices_.empty() ) {
             initialize() ;
         }
-        
+
         /// 1. Compute the mesh_cell_corner_ptr_ vector
         /// @todo Review : You fill the vector with incremental sum of 
         /// the number of cell corners of the MM region meshes [JP]
@@ -194,7 +193,7 @@ namespace RINGMesh {
                     // Propagate on the cells around the corresponding vertex.
                     // The propagation process cannot cross any surface.
                     index_t vertex_id = mesh.cells.vertex( c, v ) ;
-                    
+
                     // all the cell corners resulting of the propagation
                     std::vector< index_t > corner_used ;
 
@@ -204,14 +203,14 @@ namespace RINGMesh {
                      * I think it would be faster [JP]
                      */
                     std::vector< index_t > cell_added ;
-                    
+
                     // all the surfaces encountered during the propagation
                     // and which side stopped the propagation
                     /* @todo These surfaces should be the boundaries of the Region, right ?
                      * Maybe check that we have all of them at the end ? [JP] 
                      */
                     std::set< surface_side > surfaces ;
-                    
+
                     // stack of the front of cells
                     std::stack< index_t > S ;
                     S.push( c ) ;
@@ -224,8 +223,7 @@ namespace RINGMesh {
                          * index_t find_corner( const Mesh&, index_t cell, index_t vertex_id) [JP]
                          */
                         for( index_t cur_v = 0;
-                            cur_v < mesh.cells.nb_vertices( cur_c ); cur_v++ 
-                        ) {
+                            cur_v < mesh.cells.nb_vertices( cur_c ); cur_v++ ) {
                             if( mesh.cells.vertex( cur_c, cur_v ) == vertex_id ) {
                                 index_t cur_co = mesh_cell_corner_ptr_[m]
                                     + mesh.cells.corners_begin( cur_c ) + cur_v ;
@@ -246,12 +244,10 @@ namespace RINGMesh {
                          * cells.... [JP] 
                          */
                         for( index_t cur_f = 0;
-                            cur_f < mesh.cells.nb_facets( cur_c ); cur_f++
-                        ) {
+                            cur_f < mesh.cells.nb_facets( cur_c ); cur_f++ ) {
                             for( index_t cur_v = 0;
                                 cur_v < mesh.cells.facet_nb_vertices( cur_c, cur_f );
-                                cur_v++ 
-                            ) {
+                                cur_v++ ) {
                                 if( mesh.cells.facet_vertex( cur_c, cur_f, cur_v )
                                     != vertex_id ) continue ;
                                 // Find if the facet is on a surface or inside the domain
@@ -263,9 +259,8 @@ namespace RINGMesh {
                                  */
                                 std::vector< index_t > result ;
                                 if( ann.get_colocated(
-                                        Geom::mesh_cell_facet_center( mesh, cur_c,
-                                            cur_f ), result ) 
-                                ) {
+                                    Geom::mesh_cell_facet_center( mesh, cur_c,
+                                        cur_f ), result ) ) {
                                     index_t surface_id = attribute[result[0]] ;
                                     // Compute on which side of the surface the cell facet is
                                     /* @todo Review : write a function [ JP ]
@@ -284,7 +279,8 @@ namespace RINGMesh {
                                     // The cell facet is not on a surface.
                                     // Add the adjacent cell to the stack if it exists 
                                     // and has not already been processed or added into the stack
-                                    index_t cur_adj = mesh.cells.adjacent( cur_c, cur_f ) ;
+                                    index_t cur_adj = mesh.cells.adjacent( cur_c,
+                                        cur_f ) ;
                                     if( cur_adj != GEO::NO_CELL
                                         && !RINGMesh::Utils::contains( cell_added,
                                             cur_adj ) ) {
@@ -301,14 +297,14 @@ namespace RINGMesh {
                     // we need to duplicate only one side of the surface
                     if( duplicate_corner( surfaces, surface_actions ) ) {
                         // Add a new duplicated vertex and its associated vertex
-                        
+
                         /* @todo Review : Use the total_nb_vertices function [JP] 
                          * why mm_.vertices.nb_vertices() and not nb_vertices() ?
                          * Please help the reader !! same thing 2 lines below [JP]
                          */
                         index_t duplicated_vertex_id = mm_.vertices.nb_vertices()
                             + duplicated_vertex_indices_.size() ;
-                        
+
                         index_t global_vertex_id = mm_.vertices.vertex_id( m,
                             vertex_id ) ;
 
@@ -316,8 +312,7 @@ namespace RINGMesh {
                         // Update all the cell corners on this side of the surface
                         // to the new duplicated vertex index
                         for( index_t cur_co = 0; cur_co < corner_used.size();
-                            cur_co++
-                        ) {
+                            cur_co++ ) {
                             cell_corners_[corner_used[cur_co]] =
                                 duplicated_vertex_id ;
                         }
@@ -345,10 +340,9 @@ namespace RINGMesh {
          */
         std::vector< SurfaceAction > temp_info( info.size(), TO_PROCESS ) ;
         for( std::set< surface_side >::const_iterator it( surfaces.begin() );
-            it != surfaces.end(); ++it 
-        ) {
+            it != surfaces.end(); ++it ) {
             index_t surface_id = it->first ;
-            if( info[ surface_id ] == SKIP || temp_info[ surface_id ] == SKIP ) {
+            if( info[surface_id] == SKIP || temp_info[surface_id] == SKIP ) {
                 continue ;
             }
             if( temp_info[surface_id] == TO_PROCESS ) {
@@ -362,7 +356,7 @@ namespace RINGMesh {
         }
 
         for( index_t s = 0; s < info.size(); s++ ) {
-            if( temp_info[ s ] < 0 ) {
+            if( temp_info[s] < 0 ) {
                 continue ;
             }
             ringmesh_debug_assert( info[s] != SKIP ) ;
@@ -394,11 +388,11 @@ namespace RINGMesh {
             surface_id ).geological_feature() ;
         if( mm_.duplicate_mode() == MacroMesh::ALL
             && !mm_.model().surface( surface_id ).is_on_voi() ) return true ;
-        if( mm_.duplicate_mode() == MacroMesh::FAULT && BME::is_fault( feature ) ) return true ;
+        if( mm_.duplicate_mode() == MacroMesh::FAULT && BME::is_fault( feature ) )
+            return true ;
 
         return false ;
     }
-
 
     /*!
      * Tests if the MacroMeshVertices needs to be initialized and initialize it
@@ -514,8 +508,8 @@ namespace RINGMesh {
         test_initialize_duplication() ;
         index_t corner_value = cell_corners_[mesh_cell_corner_ptr_[mesh]
             + cell_corner] ;
-        
-        if( corner_value < mm_.vertices.nb_vertices() ) { 
+
+        if( corner_value < mm_.vertices.nb_vertices() ) {
             vertex_id = mm_.vertices.vertex_id( mesh, corner_value ) ;
             return true ;
         } else {
@@ -562,9 +556,7 @@ namespace RINGMesh {
         duplicated_vertex_indices_.clear() ;
     }
 
-
     /*******************************************************************************/
-
 
     /*!
      * Initialize the facet database of the MacroMesh
@@ -573,8 +565,8 @@ namespace RINGMesh {
     {
         index_t facet_access[5] = { -1, -1, -1, 0, 1 } ;
         surface2mesh_.resize( mm_.model().nb_surfaces(), Surface::NO_ID ) ;
-        surface_facet_ptr_.resize( MacroMesh::NB_FACET_TYPES * mm_.model().nb_surfaces() + 1,
-            0 ) ;
+        surface_facet_ptr_.resize(
+            MacroMesh::NB_FACET_TYPES * mm_.model().nb_surfaces() + 1, 0 ) ;
 
         /*!
          * 1. Associate each surface to a Mesh
@@ -616,8 +608,8 @@ namespace RINGMesh {
                 index_t surface_id = attribute[f] ;
                 if( surface2mesh_[surface_id] != m ) continue ;
                 index_t type_access = facet_access[cur_mesh.facets.nb_vertices( f )] ;
-                surface_facets_[surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * surface_id
-                    + type_access]
+                surface_facets_[surface_facet_ptr_[MacroMesh::NB_FACET_TYPES
+                    * surface_id + type_access]
                     + offset_facet_index_type[MacroMesh::NB_FACET_TYPES * surface_id
                         + type_access]++ ] = f ;
             }
@@ -766,7 +758,6 @@ namespace RINGMesh {
         return surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * ( s + 1 )] ;
     }
 
-
     index_t MacroMeshCells::mesh_begin( index_t mesh ) const
     {
         return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh] ;
@@ -791,8 +782,8 @@ namespace RINGMesh {
             const GEO::Mesh& mesh = mm_.mesh( m ) ;
             nb_cells_ += mesh.cells.nb() ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m + cell_access[mesh.cells.type( c )]
-                    + 1]++ ;
+                mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m
+                    + cell_access[mesh.cells.type( c )] + 1]++ ;
                 mesh_cell_adjacent_ptr_[m + 1] += mesh.cells.nb_facets( c ) ;
             }
         }
@@ -808,8 +799,8 @@ namespace RINGMesh {
         cell_adjacents_.resize( mesh_cell_adjacent_ptr_.back() ) ;
         index_t nb_vertices = mm_.vertices.nb_vertices() ;
         std::vector< std::vector< index_t > > cells_around_vertex( nb_vertices ) ;
-        std::vector< index_t > offset_cell_index_type( MacroMesh::NB_CELL_TYPES * mm_.nb_meshes(),
-            0 ) ;
+        std::vector< index_t > offset_cell_index_type(
+            MacroMesh::NB_CELL_TYPES * mm_.nb_meshes(), 0 ) ;
         std::vector< index_t > offset_cell_adj( mm_.nb_meshes(), 0 ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_.mesh( m ) ;
@@ -817,7 +808,8 @@ namespace RINGMesh {
                 index_t type_access = cell_access[mesh.cells.type( c )] ;
                 // Basically it's coping and sorting by type each cell index
                 cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m + type_access]
-                    + offset_cell_index_type[MacroMesh::NB_CELL_TYPES * m + type_access]++ ] = c ;
+                    + offset_cell_index_type[MacroMesh::NB_CELL_TYPES * m
+                        + type_access]++ ] = c ;
 
                 for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                     index_t adj = mesh.cells.adjacent( c, f ) ;
@@ -832,8 +824,8 @@ namespace RINGMesh {
                                 mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m] + c ) ;
                         }
                     }
-                    cell_adjacents_[mesh_cell_adjacent_ptr_[m]
-                        + offset_cell_adj[m]++ ] = adj ;
+                    cell_adjacents_[mesh_cell_adjacent_ptr_[m] + offset_cell_adj[m]++ ] =
+                        adj ;
                 }
             }
         }
@@ -876,8 +868,8 @@ namespace RINGMesh {
                         if( intersection.size() == 2 ) {
                             index_t new_adj =
                                 intersection[0]
-                                    == mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m] + c ?
-                                    intersection[1] : intersection[0] ;
+                                    == mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m]
+                                        + c ? intersection[1] : intersection[0] ;
                             cell_adjacents_[mesh_cell_adjacent_ptr_[m]
                                 + mesh.cells.facets_begin( c ) + f] = new_adj ;
                         }
@@ -922,7 +914,8 @@ namespace RINGMesh {
         test_initialize() ;
         mesh_id = 0 ;
         for( ; mesh_id < mm_.nb_meshes(); mesh_id++ ) {
-            if( global_index < mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh_id + 1] ) break ;
+            if( global_index
+                < mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh_id + 1] ) break ;
         }
         ringmesh_debug_assert( mesh_id < mm_.nb_meshes() ) ;
         return global_index - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh_id] ;
@@ -1185,9 +1178,16 @@ namespace RINGMesh {
     }
 
     MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
-        : mm_( mm ), nb_vertices_( 0 ), points_( 0 )
-    {
+        :
+            mm_( mm ),
+            nb_vertices_( 0 ),
+            points_( 0 ),
+            new_ids_on_cells_( mm.nb_meshes() ),
+            new_ids_on_facets_( mm.model().nb_surfaces() ),
+            max_new_points_on_cell_( 0 ),
+            max_new_points_on_facet_( 0 )
 
+    {
     }
 
     MacroMeshOrder::~MacroMeshOrder()
@@ -1195,9 +1195,9 @@ namespace RINGMesh {
 
     }
 
-    /*
+    /*!
      * Initialize the database by computing the new vertices of the mesh.
-     * \param order -1 vertices are added per edges, the edges are divided
+     * @param[in] order -1 vertices are added per edges, the edges are divided
      * in equal parts by these vertices.
      * @param[in] order the mesh elements order
      */
@@ -1209,8 +1209,21 @@ namespace RINGMesh {
         if( order != 1 ) {
 
             index_t nb_total_edges = 0 ;
+
+            if( mm_.cells.nb_cells() == mm_.cells.nb_tet() ) {
+                max_new_points_on_cell_ = 6 * ( order - 1 ) ;
+                max_new_points_on_facet_ = 3 * ( order - 1 ) ;
+            } else {
+                max_new_points_on_cell_ = 12 * ( order - 1 ) ;
+                max_new_points_on_facet_ = 4 * ( order - 1 ) ;
+
+            }
+
+            /// First loop to find a maximum number of new points
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
+                new_ids_on_cells_.allocate_attributes( order_att_name,
+                    cur_mesh.cells.attributes(), max_new_points_on_cell_ ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
                     for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
                         nb_total_edges++ ;
@@ -1219,13 +1232,11 @@ namespace RINGMesh {
             }
 
             std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
+
+            /// Adding new ids on cells edges
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
-                GEO::Attribute< std::vector< index_t > > order_vertices(
-                    cur_mesh.cells.attributes(), "order_vertices" ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
-                    std::vector< index_t > cur_order_vertices(
-                        cur_mesh.cells.nb_edges( c ) * ( order - 1 ) ) ;
                     for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
                         std::vector< vec3 > new_points_in_edge ;
                         vec3 node0 = GEO::Geom::mesh_vertex( cur_mesh,
@@ -1237,10 +1248,10 @@ namespace RINGMesh {
 
                         for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
                             new_points[offset] = new_points_in_edge[v] ;
-                            cur_order_vertices[e + v] = offset ;
+                            new_ids_on_cells_[r][c * max_new_points_on_cell_ + e + v] =
+                                offset ;
                             offset++ ;
                         }
-                        order_vertices[c] = cur_order_vertices ;
                     }
                 }
             }
@@ -1250,29 +1261,32 @@ namespace RINGMesh {
             std::vector< vec3 > uniq_points ;
             uniq.unique_points( uniq_points ) ;
             std::vector< index_t > map = uniq.indices() ;
+            ColocaterANN ann( uniq_points, false ) ;
 
-            ColocaterANN ann( uniq_points ) ;
+            /// Rewriting the right new ids on the cell attribute
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
-                GEO::Attribute< std::vector< index_t > > order_vertices(
-                    cur_mesh.cells.attributes(), "order_vertices" ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
-                    for( index_t v = 0; v < order_vertices[c].size(); v++ ) {
-                        order_vertices[c][v] = map[order_vertices[c][v]]
-                            + nb_vertices_ ;
+                    for( index_t v = 0;
+                        v < cur_mesh.cells.nb_edges( c ) * ( order - 1 ); v++ ) {
+                        new_ids_on_cells_[r][c * max_new_points_on_cell_ + v] =
+                            map[new_ids_on_cells_[r][c * max_new_points_on_cell_ + v]]
+                                + nb_vertices_ ;
                     }
                 }
             }
 
+            /// Writing new ids on an attribute for the facet
             for( index_t s = 0; s < mm_.model().nb_surfaces(); s++ ) {
                 index_t cur_mesh_id = mm_.facets.mesh( s ) ;
                 const GEO::Mesh& cur_mesh = mm_.mesh( cur_mesh_id ) ;
-                GEO::Attribute< std::vector< index_t > > order_vertices(
-                    cur_mesh.facets.attributes(), "order_vertices" ) ;
+//                new_ids_on_facets_[s] = new GEO::Attribute< index_t > ;
+                new_ids_on_facets_.allocate_attributes( order_att_name,
+                    cur_mesh.facets.attributes(), max_new_points_on_facet_ ) ;
                 for( index_t f = 0; f < mm_.facets.nb_facets( s ); f++ ) {
                     index_t cur_facet = mm_.facets.facet( s, f ) ;
-                    std::vector< index_t > cur_order_vertices(
-                        cur_mesh.facets.nb_vertices( f ) * ( order - 1 ) ) ;
+                    index_t cur_order_vertices[cur_mesh.facets.nb_vertices( f )
+                        * ( order - 1 )] ;
                     for( index_t e = 0; e < cur_mesh.facets.nb_vertices( cur_facet );
                         e++ ) {
                         vec3 node0 ;
@@ -1296,11 +1310,13 @@ namespace RINGMesh {
                             index_t real_vertex_id = ann.get_colocated(
                                 new_points_in_edge[v], colocated_vertices ) ;
                             ringmesh_debug_assert( colocated_vertices.size() == 1 ) ;
-                            cur_order_vertices[e + v] = colocated_vertices[0]
-                                + nb_vertices_ ;
+
+                            new_ids_on_facets_[s][cur_facet
+                                * max_new_points_on_facet_ + e + v] =
+                                colocated_vertices[0] + nb_vertices_ ;
+
                         }
                     }
-                    order_vertices[cur_facet] = cur_order_vertices ;
                 }
             }
             nb_vertices_ += uniq_points.size() ;
@@ -1347,7 +1363,8 @@ namespace RINGMesh {
         return nb_vertices_ - mm_.vertices.nb_total_vertices() ;
     }
 
-    /*
+
+    /*!
      * Gets the vec3 of a added point
      * @param[in] id an id of the new created point for order > 2
      * @return the vec3 matching with the id
