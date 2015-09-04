@@ -475,6 +475,9 @@ namespace RINGMesh {
             const index_t s,
             const index_t f,
             const index_t component ) const ;
+        const index_t nb_high_order_vertices_per_cell(const index_t m, const index_t c) const;
+        const index_t nb_high_order_vertices_per_facet(const index_t s, const index_t f) const;
+
         void initialize() ;
         /*!
          * Tests if the MacroMeshOrder needs to be initialized and initialize it
@@ -489,22 +492,26 @@ namespace RINGMesh {
     private:
         /// Attached MacroMesh
         const MacroMesh& mm_ ;
-        /// Total number of vertices + new nodes on cell edges
+        /// Total number of vertices + new order vertices on cell edges
         index_t nb_vertices_ ;
         /// New points
         std::vector< vec3 > points_ ;
-        /// Store the new vertices id on cells.
+        /// Store the order vertices id on cells.
         /// [AttributeOnMesh0, AttributeOnMesh1...]
         /// AttributeOnMeshI = [ [FirstNewPointIndexOnEdge0, SecondNewPointIndexOnEdge0], ...]
         AttributeHandler< index_t > new_ids_on_cells_ ;
-        /// Store the new vertices id on facets.
+        /// Store the order vertices id on facets.
         /// [AttributeOnSurface0, AttributeOnSurface1...]
         /// AttributeOnSurfaceI = [ [FirstNewPointIndexOnEdge0, SecondNewPointIndexOnEdge0], ...]
         AttributeHandler< index_t > new_ids_on_facets_ ;
-        /// The max number of new vertices a cell could have
+        /// The max number of order vertices a cell could have
         index_t max_new_points_on_cell_ ;
-        /// The max number of new vertices a facet could have
+        /// The max number of order vertices a facet could have
         index_t max_new_points_on_facet_ ;
+        /// Number of order vertices function of the cell type
+        index_t nb_high_order_points_per_cell_type_[4] ;
+        /// Number of order vertices function of the facet type
+        index_t nb_high_order_points_per_facet_type_[2] ;
 
     } ;
 
