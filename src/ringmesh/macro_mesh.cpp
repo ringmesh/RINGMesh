@@ -1182,8 +1182,6 @@ namespace RINGMesh {
             mm_( mm ),
             nb_vertices_( 0 ),
             points_( 0 ),
-            new_ids_on_cells_( mm.nb_meshes() ),
-            new_ids_on_facets_( mm.model().nb_surfaces() ),
             max_new_points_on_cell_( 0 ),
             max_new_points_on_facet_( 0 )
 
@@ -1203,6 +1201,9 @@ namespace RINGMesh {
      */
     void MacroMeshOrder::initialize()
     {
+        new_ids_on_cells_.resize( mm_.nb_meshes(), nil ) ;
+        new_ids_on_facets_.resize( mm_.model().nb_surfaces(), nil ) ;
+
         index_t offset = 0 ;
         nb_vertices_ = mm_.vertices.nb_total_vertices() ;
         index_t order = mm_.get_order() ;
