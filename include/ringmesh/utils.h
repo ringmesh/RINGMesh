@@ -1074,7 +1074,7 @@ namespace RINGMesh {
             GEO::AttributesManager& am )
         {
             ringmesh_debug_assert( m < base_class::size() ) ;
-            ringmesh_debug_assert( base_class::operator[]( m ) ) ;
+            ringmesh_debug_assert( !base_class::operator[]( m ) ) ;
             base_class::operator[]( m ) = new GEO::Attribute< T >( am, name ) ;
         }
 
@@ -1092,7 +1092,7 @@ namespace RINGMesh {
             index_t size )
         {
             ringmesh_debug_assert( m < base_class::size() ) ;
-            ringmesh_debug_assert( base_class::operator[]( m ) ) ;
+            ringmesh_debug_assert( !base_class::operator[]( m ) ) ;
             base_class::operator[]( m ) = new GEO::Attribute< T >() ;
             base_class::operator[]( m )->create_vector_attribute( am, name, size ) ;
         }
