@@ -1296,8 +1296,6 @@ namespace RINGMesh {
                     cur_mesh.facets.attributes(), max_new_points_on_facet_ ) ;
                 for( index_t f = 0; f < mm_.facets.nb_facets( s ); f++ ) {
                     index_t cur_facet = mm_.facets.facet( s, f ) ;
-                    index_t cur_order_vertices[cur_mesh.facets.nb_vertices( f )
-                        * ( order - 1 )] ;
                     for( index_t e = 0; e < cur_mesh.facets.nb_vertices( cur_facet );
                         e++ ) {
                         vec3 node0 ;
@@ -1450,8 +1448,6 @@ namespace RINGMesh {
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
-                    std::vector< index_t > cur_order_vertices(
-                        cur_mesh.cells.nb_edges( c ) * ( order - 1 ) ) ;
                     for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
                         std::vector< vec3 > new_points_in_edge ;
                         vec3 node0 = GEO::Geom::mesh_vertex( cur_mesh,
