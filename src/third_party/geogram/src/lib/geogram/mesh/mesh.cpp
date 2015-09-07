@@ -1589,7 +1589,13 @@ namespace GEO {
                     matches.size() != 0 &&
                     !create_connector(c1,lf1,matches)
                 ) {
-                    ++weird;
+                    std::cout << "WEIRD " << weird << std::endl ;
+                    for( index_t toto = 0; toto < facet_nb_vertices( c1, lf1 );
+                        toto++ ) {
+                        std::cout << vertices_.point( facet_vertex( c1, lf1, toto ) )
+                            << std::endl ;
+                    }
+                    ++weird ;
                 }
             }
         }
