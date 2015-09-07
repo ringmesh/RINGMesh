@@ -1070,8 +1070,8 @@ namespace RINGMesh {
          */
         void allocate_attribute(
             const index_t m,
-            const std::string& name,
-            GEO::AttributesManager& am )
+            GEO::AttributesManager& am,
+            const std::string& name )
         {
             ringmesh_debug_assert( m < base_class::size() ) ;
             ringmesh_debug_assert( !base_class::operator[]( m ) ) ;
@@ -1087,8 +1087,8 @@ namespace RINGMesh {
          */
         void allocate_attribute(
             const index_t m,
-            const std::string& name,
             GEO::AttributesManager& am,
+            const std::string& name,
             index_t size )
         {
             ringmesh_debug_assert( m < base_class::size() ) ;
