@@ -1223,7 +1223,7 @@ namespace RINGMesh {
             /// First loop to find a maximum number of new points
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
-                new_ids_on_cells_.allocate_attributes( order_att_name,
+                new_ids_on_cells_.allocate_attribute(r, order_att_name,
                     cur_mesh.cells.attributes(), max_new_points_on_cell_ ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
                     for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
@@ -1292,7 +1292,7 @@ namespace RINGMesh {
                 index_t cur_mesh_id = mm_.facets.mesh( s ) ;
                 const GEO::Mesh& cur_mesh = mm_.mesh( cur_mesh_id ) ;
 //                new_ids_on_facets_[s] = new GEO::Attribute< index_t > ;
-                new_ids_on_facets_.allocate_attributes( order_att_name,
+                new_ids_on_facets_.allocate_attribute(cur_mesh_id, order_att_name,
                     cur_mesh.facets.attributes(), max_new_points_on_facet_ ) ;
                 for( index_t f = 0; f < mm_.facets.nb_facets( s ); f++ ) {
                     index_t cur_facet = mm_.facets.facet( s, f ) ;
