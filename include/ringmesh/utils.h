@@ -1063,50 +1063,38 @@ namespace RINGMesh {
         }
 
         /*!
-         * Allocate one attribute on all the components of the vector
-         */
-        void allocate_attributes()
-        {
-            for( index_t m = 0; m < base_class::size(); m++ ) {
-                if( !base_class::operator[]( m ) )
-                    delete base_class::operator[]( m ) ;
-                base_class::operator[]( m ) = new GEO::Attribute< T >() ;
-            }
-        }
-        /*!
-         * Allocate one attribute on all the components of the vector
+         * Allocate one attribute on one component of the vector
+         * @param[in] m id of the GEO::Mesh
          * @param[in] name name of the attribute
          * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
          */
-        void allocate_attributes(
+        void allocate_attribute(
+            const index_t m,
             const std::string& name,
             GEO::AttributesManager& am )
         {
-            for( index_t m = 0; m < base_class::size(); m++ ) {
-                if( !base_class::operator[]( m ) )
-                    delete base_class::operator[]( m ) ;
-                base_class::operator[]( m ) = new GEO::Attribute< T >( am, name ) ;
-            }
+            ringmesh_debug_assert( m < base_class::size() ) ;
+            ringmesh_debug_assert( base_class::operator[]( m ) ) ;
+            base_class::operator[]( m ) = new GEO::Attribute< T >( am, name ) ;
         }
 
         /*!
-         * Allocate one vector of attributes on all the components of the vector
+         * Allocate one vector of attributes on one component of the vector
+         * @param[in] m id of the GEO::Mesh
          * @param[in] name name of the attribute
          * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
          * @param[in] size size of the vector of attributes
          */
-        void allocate_attributes(
+        void allocate_attribute(
+            const index_t m,
             const std::string& name,
             GEO::AttributesManager& am,
             index_t size )
         {
-            for( index_t m = 0; m < base_class::size(); m++ ) {
-                if( !base_class::operator[]( m ) )
-                    delete base_class::operator[]( m ) ;
-                base_class::operator[]( m ) = new GEO::Attribute< T >() ;
-                base_class::operator[]( m )->create_vector_attribute( am, name,
-                    size ) ;
-            }
+            ringmesh_debug_assert( m < base_class::size() ) ;
+            ringmesh_debug_assert( base_class::operator[]( m ) ) ;
+            base_class::operator[]( m ) = new GEO::Attribute< T >() ;
+            base_class::operator[]( m )->create_vector_attribute( am, name, size ) ;
         }
 
         GEO::Attribute< T >& operator[]( index_t i )
