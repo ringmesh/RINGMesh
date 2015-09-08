@@ -765,7 +765,7 @@ namespace RINGMesh {
 
     index_t MacroMeshCells::mesh_end( index_t mesh ) const
     {
-        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh] ;
+        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * ( mesh + 1 )] ;
     }
 
     /*!
@@ -1182,12 +1182,17 @@ namespace RINGMesh {
             mm_( mm ),
             nb_vertices_( 0 ),
             points_( 0 ),
-            new_ids_on_cells_( mm.nb_meshes() ),
-            new_ids_on_facets_( mm.model().nb_surfaces() ),
             max_new_points_on_cell_( 0 ),
             max_new_points_on_facet_( 0 )
 
     {
+        for(index_t i = 0 ; i < 4 ; i++) {
+            nb_high_order_points_per_cell_type_[i] = 0 ;
+        }
+
+        for(index_t i = 0 ; i < 2 ; i++) {
+            nb_high_order_points_per_facet_type_[i] = 0 ;
+        }
     }
 
     MacroMeshOrder::~MacroMeshOrder()
@@ -1203,6 +1208,9 @@ namespace RINGMesh {
      */
     void MacroMeshOrder::initialize()
     {
+        new_ids_on_cells_.resize( mm_.nb_meshes(), nil ) ;
+        new_ids_on_facets_.resize( mm_.model().nb_surfaces(), nil ) ;
+
         index_t offset = 0 ;
         nb_vertices_ = mm_.vertices.nb_total_vertices() ;
         index_t order = mm_.get_order() ;
@@ -1222,8 +1230,8 @@ namespace RINGMesh {
             /// First loop to find a maximum number of new points
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
-                new_ids_on_cells_.allocate_attributes( order_att_name,
-                    cur_mesh.cells.attributes(), max_new_points_on_cell_ ) ;
+                new_ids_on_cells_.allocate_attribute( r, cur_mesh.cells.attributes(),
+                    order_att_name, max_new_points_on_cell_ ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
                     for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
                         nb_total_edges++ ;
@@ -1291,12 +1299,11 @@ namespace RINGMesh {
                 index_t cur_mesh_id = mm_.facets.mesh( s ) ;
                 const GEO::Mesh& cur_mesh = mm_.mesh( cur_mesh_id ) ;
 //                new_ids_on_facets_[s] = new GEO::Attribute< index_t > ;
-                new_ids_on_facets_.allocate_attributes( order_att_name,
-                    cur_mesh.facets.attributes(), max_new_points_on_facet_ ) ;
+                new_ids_on_facets_.allocate_attribute( cur_mesh_id,
+                    cur_mesh.facets.attributes(), order_att_name,
+                    max_new_points_on_facet_ ) ;
                 for( index_t f = 0; f < mm_.facets.nb_facets( s ); f++ ) {
                     index_t cur_facet = mm_.facets.facet( s, f ) ;
-                    index_t cur_order_vertices[cur_mesh.facets.nb_vertices( f )
-                        * ( order - 1 )] ;
                     for( index_t e = 0; e < cur_mesh.facets.nb_vertices( cur_facet );
                         e++ ) {
                         vec3 node0 ;
@@ -1449,8 +1456,6 @@ namespace RINGMesh {
             for( index_t r = 0; r < mm_.nb_meshes(); r++ ) {
                 const GEO::Mesh& cur_mesh = mm_.mesh( r ) ;
                 for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
-                    std::vector< index_t > cur_order_vertices(
-                        cur_mesh.cells.nb_edges( c ) * ( order - 1 ) ) ;
                     for( index_t e = 0; e < cur_mesh.cells.nb_edges( c ); e++ ) {
                         std::vector< vec3 > new_points_in_edge ;
                         vec3 node0 = GEO::Geom::mesh_vertex( cur_mesh,
@@ -1483,8 +1488,8 @@ namespace RINGMesh {
     const index_t MacroMeshOrder::nb_high_order_vertices_per_facet(const index_t s, const index_t f) const {
         test_initialize() ;
         ringmesh_debug_assert( s < mm_.model().nb_surfaces() ) ;
-        ringmesh_debug_assert( f < mm_.facets.nb_facets( s ) ) ;
         index_t m = mm_.facets.mesh(s) ;
+        ringmesh_debug_assert( f < mm_.mesh(m).facets.nb() ) ;
         return nb_high_order_points_per_facet_type_[mm_.mesh(m).facets.nb_vertices(f) -3] ;
     }
 
@@ -1498,7 +1503,7 @@ namespace RINGMesh {
         test_initialize() ;
         ringmesh_debug_assert( m < mm_.nb_meshes() ) ;
         ringmesh_debug_assert( c < mm_.cells.nb_cells( m ) ) ;
-        return nb_high_order_points_per_facet_type_[mm_.mesh(m).cells.type(c)] ;
+        return nb_high_order_points_per_cell_type_[mm_.mesh(m).cells.type(c)] ;
     }
     /*!
      * Initialize the cell database of the MacroMesh
@@ -1596,7 +1601,6 @@ namespace RINGMesh {
      */
     void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes )
     {
-        set_model( rhs.model() ) ;
         order_ = rhs.get_order() ;
         mode_ = rhs.duplicate_mode() ;
         wells_ = rhs.wells() ;

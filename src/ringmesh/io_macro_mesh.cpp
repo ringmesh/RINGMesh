@@ -847,45 +847,40 @@ namespace RINGMesh {
             index_t nb_vertices ;
             index_t vertices[8] ;
             index_t nb_facets ;
-            index_t nb_vertices_in_facet[6] ;
             index_t facet[6] ;
-            index_t vertices_in_facet[6][4] ;
         } ;
 
-        static RINGMesh2CSMP tet_descriptor = { 4,                  // type
+        static RINGMesh2CSMP tet_descriptor = {
+            4,                  // type
             4,                  // nb vertices
-            { 0, 1, 2, 3 },     // vertices
+            { 1, 0, 2, 3 },     // vertices
             4,                  // nb facets
-            { 3, 3, 3, 3 },     // nb vertices in facet
-            { 0, 1, 2, 3 },     // facets
-            { { 1, 3, 2 }, { 0, 2, 3 }, { 3, 1, 0 }, { 0, 1, 2 } } } ;
+            { 0, 1, 2, 3 }      // facets
+            } ;
 
-        static RINGMesh2CSMP hex_descriptor = { 6,                         // type
+        static RINGMesh2CSMP hex_descriptor = {
+            6,                         // type
             8,                              // nb vertices
-            { 0, 1, 3, 2, 4, 5, 7, 6 },     // vertices
+            { 4, 0, 1, 5, 6, 2, 3, 7 },     // vertices
             6,                              // nb facets
-            { 4, 4, 4, 4, 4, 4 },           // nb vertices in facet
-            { 4, 2, 1, 3, 0, 5 },           // facets
-            { { 0, 3, 7, 4 }, { 2, 1, 5, 6 }, { 1, 0, 4, 5 }, { 3, 2, 6, 7 }, {
-                1, 2, 3, 0 }, { 4, 7, 6, 5 } } } ;
+            { 2, 0, 5, 1, 4, 3 }            // facets
+            } ;
 
-        static RINGMesh2CSMP prism_descriptor = { 12,                     // type
+        static RINGMesh2CSMP prism_descriptor = {
+            12,                     // type
             6,                      // nb vertices
-            { 0, 1, 2, 3, 4, 5 },   // vertices
+            { 3, 4, 5, 0, 1, 2 },   // vertices
             5,                      // nb facets
-            { 3, 4, 4, 4, 3 },      // nb vertices in facet
-            { 0, 2, 4, 3, 1 },      // facets
-            {
-                { 0, 1, 2 }, { 3, 5, 4 }, { 0, 3, 4, 1 }, { 0, 2, 5, 3 }, {
-                    1, 4, 5, 2 } } } ;
+            { 0, 2, 4, 3, 1 }       // facets
+            } ;
 
-        static RINGMesh2CSMP pyramid_descriptor = { 18,                 // type
+        static RINGMesh2CSMP pyramid_descriptor = {
+            18,                 // type
             5,                  // nb vertices
-            { 0, 1, 2, 3, 4 },  // vertices
+            { 1, 0, 3, 2, 4 },  // vertices
             5,                  // nb facets
-            { 3, 3, 3, 3, 4 },  // nb vertices in facet
-            { 1, 3, 4, 2, 0 },  // facets
-            { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
+            { 1, 4, 3, 2, 0 }   // facets
+            } ;
 
         class CSMPIOHandler: public MacroMeshIOHandler {
         public:
