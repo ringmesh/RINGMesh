@@ -121,7 +121,8 @@ namespace GEO {
         ) {
             return create(
                 delaunay, mesh,
-                mesh->vertices.point_ptr(0), mesh->vertices.dimension()
+                (mesh->vertices.nb() > 0) ? mesh->vertices.point_ptr(0) : nil,
+                mesh->vertices.dimension()
             );
         }
 
@@ -544,6 +545,35 @@ namespace GEO {
             bool integration_simplices = false
         ) = 0;
 
+
+        /**
+         * \brief Computes a restricted Voronoi cell.
+         * \details A restricted Voronoi cell is the intersection
+         *  between a Voronoi cell and a mesh.
+         * \param[in] i the index of the Voronoi cell
+         * \param[in] M the mesh the Voronoi cell will be restricted to.
+         *   All its vertices should be of degree 3 (i.e., incident to 
+         *   exactly three facets). 
+         *   In volumetric mode, the surfacic part of the mesh corresponds
+         *   to the boundary of a volume. In surfacic mode, the mesh is
+         *   a set of polygonal facets.
+         * \param[out] result on exit, contains the intersection of the Voronoi
+         *   cell \p i and the mesh \p M
+         * \param[in] copy_symbolic_info if true, symbolic
+         *   information is copied. An attribute "id" is attached
+         *   to the facets. The value of id[f] is either 1 + the index of
+         *   the Voronoi vertex that generated with \p i the bisector that
+         *   created the facet, or -1-g if the facet was an original facet
+         *   of mesh \p M, where g is the index of the original facet in \p M.
+         * \note For now, only volumetric mode is implemented.
+         */
+        virtual void compute_RVC(
+            index_t i,
+            Mesh& M,
+            Mesh& result,
+            bool copy_symbolic_info=false
+        ) = 0;
+        
         /**
          * \brief Specifies whether the "radius of security"
          *  criterion should be enforced.

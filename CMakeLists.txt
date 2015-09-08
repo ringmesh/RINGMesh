@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-
-message("CMAKE_BUILD_TYPE is equal to " ${CMAKE_BUILD_TYPE})
-# debug suffix for libraries
-
-set(RINGMESH_PROJECT RINGMesh)
-project(${RINGMESH_PROJECT})
+project(RINGMesh)
 
 
 ##############################################################################
@@ -44,9 +39,9 @@ IF(WIN32)
 	ADD_DEFINITIONS(-DGEO_DYNAMIC_LIBS)
     link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
 
-    link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}/lib)
+    link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${PLATFORM}/lib)
 ELSE(WIN32)
-    link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
+    link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
 ENDIF(WIN32)
 
 ##############################################################################
@@ -133,34 +128,24 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
-add_library(${RINGMESH_PROJECT} SHARED ${SOURCES})
-target_link_libraries(${RINGMESH_PROJECT} geogram)
+add_library(RINGMesh SHARED ${SOURCES})
+target_link_libraries(RINGMesh geogram)
 
 ##############################################################################
 # Additional optional link libraries
 IF(${USE_MG_TETRA})
-  target_link_libraries(${RINGMESH_PROJECT} meshgems mg-tetra)
+  target_link_libraries(RINGMesh meshgems mg-tetra)
 ENDIF(${USE_MG_TETRA})
 IF(${USE_HDF5})
   target_link_libraries(${RINGMESH_PROJECT} hdf5 hdf5_cpp hdf5_hl hdf5_hl_cpp)
 ENDIF(${USE_HDF5})
 if(${RINGMESH_WITH_GRAPHICS})
-  TARGET_LINK_LIBRARIES(${RINGMESH_PROJECT} geogram_gfx)
+  TARGET_LINK_LIBRARIES(RINGMesh geogram_gfx)
 endif()
 IF(WIN32)
-    target_link_libraries(${RINGMESH_PROJECT} psapi)
+    target_link_libraries(RINGMesh psapi)
 ENDIF(WIN32)
 
-
-if(UNIX) 
-	install(DIRECTORY include/ringmesh DESTINATION include)
-	install(DIRECTORY include/geogram DESTINATION include)
-		
-	install(TARGETS ${RINGMESH_PROJECT}
-		LIBRARY DESTINATION lib
-		RUNTIME DESTINATION lib 
-		CONFIGURATIONS All)	
-endif(UNIX)
 
 # Output binary
 if(${RINGMESH_WITH_GRAPHICS})

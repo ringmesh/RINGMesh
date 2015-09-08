@@ -48,6 +48,35 @@
 #include <cmath>
 #include <stack>
 
+namespace {
+    using namespace RINGMesh ;
+
+    /*!
+    * @brief Returns the index of the region of the model neighboring the surface.
+    * @param[in] model to consider
+    * @param[in] surface_part_id Index of the Surface
+    * @param[in] side Side of the Surface
+    * @return The region index or NO_ID if none found.
+    */
+    index_t find_region( const BoundaryModel& BM, index_t surface_part_id, bool side )
+    {
+        ringmesh_debug_assert( surface_part_id < BM.nb_surfaces() ) ;
+        BME::bme_t cur_surface( BME::SURFACE, surface_part_id ) ;
+        /// @todo It would be better to directly check the region
+        /// adjacent to the Surface.
+        for( index_t r = 0; r < BM.nb_regions(); r++ ) {
+            const BME& cur_region = BM.region( r ) ;
+            for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
+                if( cur_region.side( s ) == side
+                    && cur_region.boundary_id( s ) == cur_surface ) {
+                    return r ;
+                }
+            }
+        }
+        return BME::NO_ID ;
+    }
+}
+
 namespace RINGMesh {
 
     WellMesh::WellMesh( const Well* well )
@@ -445,8 +474,8 @@ namespace RINGMesh {
                             model_->surface( intersections[index].surface_id_ ).facet_normal(
                                 intersections[index].trgl_id_ ) ) > 0 ;
                     last_sign = sign ;
-                    index_t region = model_->find_region(
-                        intersections[index].surface_id_, sign ) ;
+                    index_t region = find_region(
+                        *model_, intersections[index].surface_id_, sign ) ;
                     if( region != NO_ID ) {
                         index_t new_well_part_id = new_well.create_part( region ) ;
                         WellPart& well_part = new_well.part( new_well_part_id ) ;
@@ -490,7 +519,62 @@ namespace RINGMesh {
             }
             well_points.push_back( v_to ) ;
         }
-        index_t region = model_->find_region( start.surface_id_, !last_sign ) ;
+        index_t region = NO_ID ;
+        if( start.surface_id_ != NO_ID )
+            region = find_region( *model_, start.surface_id_, !last_sign ) ;
+        else {
+            Box3d box ;
+            for( index_t s = 0; s < model()->nb_surfaces(); s++ ) {
+                const Surface& surface = model()->surface( s ) ;
+                for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+                    box.add_point( surface.vertex( v ) ) ;
+                }
+            }
+            vec3 diag_box = box.max() - box.min() ;
+            vec3 v_from =  well_points.back() ;
+            vec3 v_to = well_points.back() + diag_box ;
+
+            Box3d edge_box ;
+            edge_box.add_point( v_from ) ;
+            edge_box.add_point( v_to ) ;
+            std::vector< index_t > potential_surfaces ;
+            for( index_t s = 0; s < model()->nb_surfaces(); s++ ) {
+                if( edge_box.bboxes_overlap( boxes[s] ) ) {
+                    potential_surfaces.push_back( s ) ;
+                }
+            }
+            std::vector< LineInstersection > intersections ;
+            for( index_t s = 0; s < potential_surfaces.size(); s++ ) {
+                index_t s_id = potential_surfaces[s] ;
+                const Surface& surface = model_->surface( s_id ) ;
+                EdgeConformerAction action( surface, v_from, v_to, intersections ) ;
+                surface.tools.aabb().compute_bbox_facet_bbox_intersections( box,
+                    action ) ;
+            }
+            if( !intersections.empty() ) {
+                std::vector< index_t > indices( intersections.size() ) ;
+                std::vector< double > distances( intersections.size() ) ;
+                if( intersections.size() == 1 ) {
+                    indices[0] = 0 ;
+                } else {
+                    for( index_t i = 0; i < intersections.size(); i++ ) {
+                        indices[i] = i ;
+                        distances[i] = length(
+                            v_from - intersections[i].intersection_ ) ;
+                    }
+                    IndirectSort< double, index_t > sort( distances, indices ) ;
+                    sort.sort() ;
+                }
+                index_t index = indices[0] ;
+                vec3 direction = v_from - intersections[index].intersection_ ;
+                bool sign = dot( direction,
+                    model_->surface( intersections[index].surface_id_ ).facet_normal(
+                        intersections[index].trgl_id_ ) ) > 0 ;
+                last_sign = sign ;
+                region = find_region( *model_, intersections[index].surface_id_,
+                    sign ) ;
+            }
+        }
         if( region != NO_ID ) {
 //            WellPart well_part ;
 //            well_part.set_well( &new_well ) ;

@@ -16,6 +16,7 @@
 #include <ringmesh/boundary_model.h>
 #include <ringmesh/boundary_model_element.h>
 
+#include <geogram/basic/logger.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
@@ -27,7 +28,103 @@
 #include <algorithm>
 #include <cstring>
 
+#include <geogram/basic/line_stream.h> // to move 
+#include <geogram/mesh/mesh_repair.h>
+
 namespace RINGMesh {
+
+    // Copied from boundary_model_builder.cpp. Still needed ?? check Geogram
+    double read_double( GEO::LineInput& in, index_t field )
+    {
+        double result ;
+        std::istringstream iss( in.field( field ) ) ;
+        iss >> result >> std::ws ;
+        return result ;
+    }
+    /// TO MOVE
+    // we assume there is only one TSURF saved in the file
+    bool load_ts_file( GEO::Mesh& M, const std::string& file_name )
+    {
+        // Count the number of triangles and vertices
+        index_t nb_points = 0 ;
+        index_t nb_triangles = 0 ;
+        int z_sign = 1 ;
+        {
+            GEO::LineInput in( file_name ) ;
+            if( !in.OK() ) {
+                return false ;
+            }
+            while( !in.eof() && in.get_line() ) {
+                in.get_fields() ;
+                if( in.nb_fields() > 0 ) {
+                    if( in.field_matches( 0, "ZPOSITIVE" ) ) {
+                        if( in.field_matches( 1, "Elevation" ) ) {
+                            z_sign = 1 ;
+                        } else if( in.field_matches( 1, "Depth" ) ) {
+                            z_sign = -1 ;
+                        } else {
+                            ringmesh_assert_not_reached;
+                        }
+                    }
+                    /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
+                    else if( in.field_matches( 0,
+                            "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
+                        nb_points++ ;
+                    } else if( in.field_matches( 0,
+                            "PATOM" ) | in.field_matches( 0, "ATOM" ) ) {
+                        nb_points++ ;
+                    } else if( in.field_matches( 0, "TRGL" ) ) {
+                        nb_triangles++ ;
+                    }
+                }
+            }
+        }
+        index_t dim = 3 ;
+        GEO::vector< double > vertices( dim * nb_points ) ;
+        GEO::vector< index_t > triangles( 3 * nb_triangles ) ;
+        {
+            GEO::LineInput in( file_name ) ;
+            if( !in.OK() ) {
+                return false ;
+            }
+            index_t v = 0 ;
+            index_t t = 0 ;
+            while( !in.eof() && in.get_line() ) {
+                in.get_fields() ;
+                if( in.nb_fields() > 0 ) {
+                    /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
+                    if( in.field_matches( 0, "VRTX" )
+                        || in.field_matches( 0, "PVRTX" ) ) {
+                        vertices[dim * v] = read_double( in, 2 ) ;
+                        vertices[dim * v + 1] = read_double( in, 3 ) ;
+                        vertices[dim * v + 2] = z_sign * read_double( in, 4 ) ;
+                        ++v ;
+                    } else if( in.field_matches( 0, "PATOM" )
+                        || in.field_matches( 0, "ATOM" ) ) {
+                        index_t v0 = in.field_as_uint( 2 ) - 1 ;
+                        vertices[dim * v] = vertices[dim * v0] ;
+                        vertices[dim * v + 1] = vertices[dim * v0 + 1] ;
+                        vertices[dim * v + 2] = vertices[dim * v0 + 2] ;
+                        ++v ;
+                    } else if( in.field_matches( 0, "TRGL" ) ) {
+                        triangles[3 * t] = static_cast< index_t >( in.field_as_uint(
+                            1 ) - 1 ) ;
+                        triangles[3 * t + 1] =
+                            static_cast< index_t >( in.field_as_uint( 2 ) - 1 ) ;
+                        triangles[3 * t + 2] =
+                            static_cast< index_t >( in.field_as_uint( 3 ) - 1 ) ;
+                        t++ ;
+                    }
+                }
+            }
+        }
+
+        M.facets.assign_triangle_mesh( dim, vertices, triangles, true ) ;
+
+        GEO::MeshRepairMode mode = static_cast< GEO::MeshRepairMode >( 2 ) ;
+        GEO::mesh_repair( M, mode ) ;
+        return true ;
+    }
 
     /*!
      * Computes the volume of a Mesh cell
@@ -344,6 +441,45 @@ namespace RINGMesh {
             }
         }
         return true ;
+    }
+
+    void Utils::mesh_facet_connect( GEO::Mesh& mesh )
+    {
+        std::vector< index_t > temp ;
+        temp.reserve( 7 ) ;
+        std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            for( index_t c = mesh.facets.corners_begin( f );
+                c < mesh.facets.corners_end( f ); c++ ) {
+                stars[mesh.facet_corners.vertex( c )].push_back( f ) ;
+            }
+        }
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            for( index_t c = mesh.facets.corners_begin( f );
+                c < mesh.facets.corners_end( f ); c++ ) {
+                index_t f_adj = mesh.facet_corners.adjacent_facet( c ) ;
+                if( f_adj != GEO::NO_FACET ) continue ;
+                const std::vector< index_t >& star0 =
+                    stars[mesh.facet_corners.vertex( c )] ;
+                const std::vector< index_t >& star1 =
+                    stars[mesh.facet_corners.vertex(
+                        mesh.facets.next_corner_around_facet( f, c ) )] ;
+                std::vector< index_t > intersect(
+                    std::min( star0.size(), star1.size() ) ) ;
+                intersect.erase(
+                    std::set_intersection( star0.begin(), star0.end(), star1.begin(),
+                        star1.end(), intersect.begin() ), intersect.end() ) ;
+                if( intersect.size() > 1 ) {
+                    for( index_t i = 0; i < intersect.size(); i++ ) {
+                        index_t cur_f = intersect[i] ;
+                        if( cur_f != f ) {
+                            f_adj = cur_f ;
+                        }
+                    }
+                    mesh.facet_corners.set_adjacent_facet( c, f_adj ) ;
+                }
+            }
+        }
     }
 
     /*!
@@ -1018,7 +1154,7 @@ namespace RINGMesh {
         GEO::Matrix< float64, 4 >& rot_mat )
     {
         // Note: Rotation is impossible about an axis with null length.
-        ringmesh_debug_assert( axis == vec3() ) ;
+        ringmesh_debug_assert( axis != vec3() ) ;
 
         if( degrees ) {
             float64 pi = 3.141592653589793 ;
@@ -1093,23 +1229,31 @@ namespace RINGMesh {
         ringmesh_debug_assert( inv_T( 3, 2 ) == computed_inv_T( 3, 2 ) ) ;
         ringmesh_debug_assert( inv_T( 3, 3 ) == computed_inv_T( 3, 3 ) ) ;
 
+        // Note: If d = 0, so rotation is along x axis. So Rx = inv_Rx = Id
         GEO::Matrix< float64, 4 > Rx ;
         Rx( 0, 0 ) = 1. ;
         Rx( 0, 1 ) = 0. ;
         Rx( 0, 2 ) = 0. ;
         Rx( 0, 3 ) = 0. ;
         Rx( 1, 0 ) = 0. ;
-        Rx( 1, 1 ) = c / d ;
-        Rx( 1, 2 ) = -b / d ;
         Rx( 1, 3 ) = 0. ;
         Rx( 2, 0 ) = 0. ;
-        Rx( 2, 1 ) = b / d ;
-        Rx( 2, 2 ) = c / d ;
         Rx( 2, 3 ) = 0. ;
         Rx( 3, 0 ) = 0. ;
         Rx( 3, 1 ) = 0. ;
         Rx( 3, 2 ) = 0. ;
         Rx( 3, 3 ) = 1. ;
+        if( d == 0. ) {
+            Rx( 1, 1 ) = 1. ;
+            Rx( 1, 2 ) = 0. ;
+            Rx( 2, 1 ) = 0. ;
+            Rx( 2, 2 ) = 1. ;
+        } else {
+            Rx( 1, 1 ) = c / d ;
+            Rx( 1, 2 ) = -b / d ;
+            Rx( 2, 1 ) = b / d ;
+            Rx( 2, 2 ) = c / d ;
+        }
 
         GEO::Matrix< float64, 4 > inv_Rx ;
         inv_Rx( 0, 0 ) = 1. ;
@@ -1117,17 +1261,24 @@ namespace RINGMesh {
         inv_Rx( 0, 2 ) = 0. ;
         inv_Rx( 0, 3 ) = 0. ;
         inv_Rx( 1, 0 ) = 0. ;
-        inv_Rx( 1, 1 ) = c / d ;
-        inv_Rx( 1, 2 ) = b / d ;
         inv_Rx( 1, 3 ) = 0. ;
         inv_Rx( 2, 0 ) = 0. ;
-        inv_Rx( 2, 1 ) = -b / d ;
-        inv_Rx( 2, 2 ) = c / d ;
         inv_Rx( 2, 3 ) = 0. ;
         inv_Rx( 3, 0 ) = 0. ;
         inv_Rx( 3, 1 ) = 0. ;
         inv_Rx( 3, 2 ) = 0. ;
         inv_Rx( 3, 3 ) = 1. ;
+        if( d == 0. ) {
+            inv_Rx( 1, 1 ) = 1. ;
+            inv_Rx( 1, 2 ) = 0. ;
+            inv_Rx( 2, 1 ) = 0. ;
+            inv_Rx( 2, 2 ) = 1. ;
+        } else {
+            inv_Rx( 1, 1 ) = c / d ;
+            inv_Rx( 1, 2 ) = b / d ;
+            inv_Rx( 2, 1 ) = -b / d ;
+            inv_Rx( 2, 2 ) = c / d ;
+        }
 
 #ifdef RINGMESH_DEBUG
         GEO::Matrix< float64, 4 > computed_inv_Rx = Rx.inverse() ;
@@ -1789,67 +1940,25 @@ namespace RINGMesh {
     {
     }
 
-    ColocaterANN::ColocaterANN( const Surface& mesh, const MeshLocation& location )
+    ColocaterANN::ColocaterANN(
+        const GEO::Mesh& mesh,
+        const MeshLocation& location,
+        bool copy )
     {
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {
             case VERTICES: {
-                index_t nb_vertices = mesh.nb_vertices() ;
-                ann_points_ = new double[nb_vertices * 3] ;
-                for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
-                    index_t index_in_ann = 3 * i ;
-                    ann_points_[index_in_ann] = mesh.vertex( i ).x ;
-                    ann_points_[index_in_ann + 1] = mesh.vertex( i ).y ;
-                    ann_points_[index_in_ann + 2] = mesh.vertex( i ).z ;
+                if( !copy ) {
+                ann_points_ = nil ;
+                ann_tree_->set_points( mesh.vertices.nb(),
+                    mesh.vertices.point_ptr( 0 ) ) ;
+                } else {
+                    index_t nb_vertices = mesh.vertices.nb() ;
+                    ann_points_ = new double[nb_vertices * 3] ;
+                    GEO::Memory::copy( ann_points_, mesh.vertices.point_ptr( 0 ),
+                        nb_vertices * 3 * sizeof(double) ) ;
+                    ann_tree_->set_points( nb_vertices, ann_points_ ) ;
                 }
-                ann_tree_->set_points( nb_vertices, ann_points_ ) ;
-                break ;
-            }
-            case FACETS: {
-                index_t nb_vertices = mesh.nb_cells() ;
-                ann_points_ = new double[nb_vertices * 3] ;
-                for( index_t i = 0; i < mesh.nb_cells(); i++ ) {
-                    vec3 center = mesh.facet_barycenter( i ) ;
-                    index_t index_in_ann = 3 * i ;
-                    ann_points_[index_in_ann] = center.x ;
-                    ann_points_[index_in_ann + 1] = center.y ;
-                    ann_points_[index_in_ann + 2] = center.z ;
-                }
-                ann_tree_->set_points( nb_vertices, ann_points_ ) ;
-                break ;
-            }
-        }
-
-    }
-
-    ColocaterANN::ColocaterANN( const Line& mesh )
-    {
-        index_t nb_vertices = mesh.nb_vertices() ;
-        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices * 3] ;
-        for( index_t i = 0; i < mesh.nb_vertices(); i++ ) {
-            index_t index_in_ann = 3 * i ;
-            ann_points_[index_in_ann] = mesh.vertex( i ).x ;
-            ann_points_[index_in_ann + 1] = mesh.vertex( i ).y ;
-            ann_points_[index_in_ann + 2] = mesh.vertex( i ).z ;
-        }
-        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
-    }
-
-    ColocaterANN::ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location )
-    {
-        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        switch( location ) {
-            case VERTICES: {
-                index_t nb_vertices = mesh.vertices.nb() ;
-                ann_points_ = new double[nb_vertices * 3] ;
-                for( index_t i = 0; i < mesh.vertices.nb(); i++ ) {
-                    index_t index_in_ann = 3 * i ;
-                    ann_points_[index_in_ann] = mesh.vertices.point_ptr( i )[0] ;
-                    ann_points_[index_in_ann + 1] = mesh.vertices.point_ptr( i )[1] ;
-                    ann_points_[index_in_ann + 2] = mesh.vertices.point_ptr( i )[2] ;
-                }
-                ann_tree_->set_points( nb_vertices, ann_points_ ) ;
                 break ;
             }
             case FACETS: {
@@ -1881,44 +1990,23 @@ namespace RINGMesh {
         }
     }
 
-    ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices )
+    ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices, bool copy )
     {
         index_t nb_vertices = vertices.size() ;
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices * 3] ;
-        for( index_t i = 0; i < nb_vertices; i++ ) {
-            index_t index_in_ann = 3 * i ;
-            ann_points_[index_in_ann] = vertices[i].x ;
-            ann_points_[index_in_ann + 1] = vertices[i].y ;
-            ann_points_[index_in_ann + 2] = vertices[i].z ;
+        if( copy ) {
+            ann_points_ = new double[nb_vertices * 3] ;
+            for( index_t i = 0; i < nb_vertices; i++ ) {
+                index_t index_in_ann = 3 * i ;
+                ann_points_[index_in_ann] = vertices[i].x ;
+                ann_points_[index_in_ann + 1] = vertices[i].y ;
+                ann_points_[index_in_ann + 2] = vertices[i].z ;
+            }
+            ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+        } else {
+            ann_points_ = nil ;
+            ann_tree_->set_points( nb_vertices, vertices.data()->data() ) ;
         }
-        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
-    }
-
-    ColocaterANN::ColocaterANN( float64* vertices, index_t nb_vertices )
-    {
-        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices * 3] ;
-        for( index_t i = 0; i < nb_vertices * 3; i++ ) {
-            ann_points_[i] = vertices[i] ;
-
-        }
-        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
-    }
-
-    ColocaterANN::ColocaterANN( const std::vector< Edge >& edges )
-    {
-        index_t nb_vertices = edges.size() ;
-        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[nb_vertices * 3] ;
-        for( index_t i = 0; i < nb_vertices; i++ ) {
-            vec3 barycenter( ( edges[i].value( 0 ) + edges[i].value( 1 ) ) / 2.0 ) ;
-            index_t index_in_ann = 3 * i ;
-            ann_points_[index_in_ann] = barycenter.x ;
-            ann_points_[index_in_ann + 1] = barycenter.y ;
-            ann_points_[index_in_ann + 2] = barycenter.z ;
-        }
-        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
     void ColocaterANN::set_points( const std::vector< vec3 >& vertices )
@@ -1972,7 +2060,7 @@ namespace RINGMesh {
      * @param[in] v the point to test
      * @param[in] nb_neighbors the number of neighbors to return
      * @param[out] result the neighboring points
-     * @param[out] dist the distance between each neigbhor and the point \p v
+     * @param[out] dist the square distance between each neigbhor and the point \p v
      * @return the number of neighbors returned (can be less than \p nb_neighbors
      * if there is not enough points)
      */

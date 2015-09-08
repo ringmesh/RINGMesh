@@ -134,7 +134,10 @@
 #    include <X11/Xlib.h>
 #    include <X11/Xatom.h>
 #    include <X11/keysym.h>
-//#    include <X11/extensions/XInput.h>
+/* [BL] commented out (called XI.h under
+ * some Linux releases, and not needed anyway...)
+ * #    include <X11/extensions/XInput.h> 
+ */ 
 #    ifdef HAVE_X11_EXTENSIONS_XF86VMODE_H
 #        include <X11/extensions/xf86vmode.h>
 #    endif

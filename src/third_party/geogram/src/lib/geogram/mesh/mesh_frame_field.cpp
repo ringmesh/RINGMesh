@@ -695,7 +695,7 @@ namespace GEO {
                               << " frames" << std::endl;
         Logger::out("Frames") << "Creating NN search" << std::endl;
         NN_ = NearestNeighborSearch::create(3, "default");
-        NN_->set_points(centers_.size()/3, &centers_[0]);
+        NN_->set_points(centers_.size()/3, centers_.data());
         return true;
     }
 
@@ -794,7 +794,7 @@ namespace GEO {
         }
 
         NN_ = NearestNeighborSearch::create(3, "default");
-        NN_->set_points(centers_.size()/3, &centers_[0]);
+        NN_->set_points(centers_.size()/3, centers_.data());
 
         // Step 4: In volumetric mode, for each tet we find the nearest
         // facet and lookup the frame field from it.
@@ -810,7 +810,7 @@ namespace GEO {
             }
             frames_.swap(new_frames);
             centers_.swap(new_centers);
-            NN_->set_points(centers_.size()/3, &centers_[0]);
+            NN_->set_points(centers_.size()/3, centers_.data());
         }
     }
 

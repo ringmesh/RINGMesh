@@ -44,6 +44,7 @@
  */
 
 #include <geogram/voronoi/generic_RVD_cell.h>
+#include <geogram/mesh/mesh_halfedges.h>
 #include <geogram/numerics/predicates.h>
 
 namespace GEOGen {
@@ -284,5 +285,110 @@ namespace GEOGen {
             triangle_dual(3).sym().add_boundary_facet(f2);
         }
     }
+
+    void ConvexCell::initialize_from_surface_mesh(
+        Mesh* mesh, bool symbolic
+    ) {
+        clear();
+        
+        for(index_t f = 0; f < mesh->facets.nb(); ++f) {
+            index_t v = create_vertex();
+            set_vertex_id(v,-1-signed_index_t(f));
+        }
+        GEO::vector<GEO::MeshHalfedges::Halfedge> v2h(mesh->vertices.nb());
+
+        GEO::MeshHalfedges MH(*mesh);
+        for(index_t f = 0; f < mesh->facets.nb(); ++f) {
+            for(index_t c = mesh->facets.corners_begin(f);
+                c < mesh->facets.corners_end(f); ++c
+            ) {
+                index_t v = mesh->facet_corners.vertex(c);
+                v2h[v] = GEO::MeshHalfedges::Halfedge(f, c);
+            }
+        }
+
+        for(index_t v = 0; v < mesh->vertices.nb(); ++v) {
+            index_t fi[3];
+            index_t va[3];
+            index_t cur = 0;
+            GEO::MeshHalfedges::Halfedge H = v2h[v];
+            do {
+                //   All the vertices of the input mesh should be
+                // incident to three facets exactly (this is because
+                // the ConvexCell is represented in dual form).
+                geo_assert(cur < 3);
+                fi[cur] = H.facet;
+                index_t ca = mesh->facets.next_corner_around_facet(
+                    H.facet, H.corner
+                );
+                va[cur] = mesh->facet_corners.vertex(ca);
+                bool ok = MH.move_to_prev_around_vertex(H);
+                geo_assert(ok);
+                ++cur;
+            } while(H != v2h[v]);
+            
+            // Note: va[] order is different, because of
+            //   Mesh numbering -> Triangulation numering
+            // conversion !
+            create_triangle(
+                mesh->vertices.point_ptr(v), 1.0,
+                fi[0], fi[1], fi[2], va[2], va[0], va[1]
+            );
+            if(symbolic) {
+                triangle_dual(v).sym().add_boundary_facet(fi[0]);
+                triangle_dual(v).sym().add_boundary_facet(fi[1]);
+                triangle_dual(v).sym().add_boundary_facet(fi[2]);
+                triangle_dual(v).sym().set_boundary_vertex(v);
+            }
+        }
+        if(symbolic) {
+            set_symbolic_is_surface(true);
+        }
+    }
+
+
+    void ConvexCell::convert_to_mesh(Mesh* mesh, bool copy_symbolic_info) {
+        GEO::vector<index_t> tri_to_v(max_t());
+        mesh->clear();
+        mesh->vertices.set_dimension(3);
+
+        index_t cur_v = 0;
+        for(index_t t = 0; t < max_t(); ++t) {
+            if(triangle_is_valid(t)) {
+                mesh->vertices.create_vertex(triangle_dual(t).point());
+                tri_to_v[t] = cur_v;
+                ++cur_v;
+            }
+        }
+        GEO::Attribute<signed_index_t> facet_id;
+        if(copy_symbolic_info) {
+            facet_id.bind(mesh->facets.attributes(), "id");
+        }
+        GEO::vector<index_t> facet_vertices;
+        for(index_t v = 0; v < max_v(); v++) {
+            facet_vertices.resize(0);
+            signed_index_t t = vertex_triangle(v);
+            if(t != -1) {
+                Corner first_c(
+                    index_t(t), find_triangle_vertex(index_t(t), v)
+                );
+                Corner c = first_c;
+                do {
+                    facet_vertices.push_back(tri_to_v[c.t]);
+                    move_to_next_around_vertex(c);
+                } while(c != first_c);
+
+                index_t f = mesh->facets.create_polygon(facet_vertices.size());
+                for(index_t lv=0; lv<facet_vertices.size(); ++lv) {
+                    mesh->facets.set_vertex(f,lv,facet_vertices[lv]);
+                }
+                if(facet_id.is_bound()) {
+                    facet_id[f] = vertex_id(v);
+                }
+            }
+        }
+        mesh->facets.connect();
+    }
+    
 }
 

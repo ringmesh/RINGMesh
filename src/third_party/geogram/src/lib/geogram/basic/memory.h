@@ -82,43 +82,6 @@ namespace GEO {
      * \brief Utilities for memory management.
      */
     namespace Memory {
-
-        /**
-         * \brief Global memory lock
-         * \details This lock is used to make memory allocation thread safe in
-         * environments where malloc/free are not thread safe (such as
-         * Android).
-         */
-        extern GEOGRAM_API GEO::Numeric::uint32 global_memory_lock_;
-
-        /**
-         * \brief Acquires a global lock for memory allocation
-         * \note
-         * On Android, a global mutex is used to protect
-         * memory accesses. It is needed because it seems
-         * that the NDK is not thread-safe on SMP processors.
-         * On other platforms, does nothing.
-         */
-        inline void lock() {
-#ifdef GEO_OS_ANDROID
-//           lock_mutex_arm(&global_memory_lock_);
-#endif
-        }
-
-        /**
-         * \brief Releases the global lock for memory allocation
-         * \note
-         * On Android, a global mutex is used to protect
-         * memory accesses. It is needed because it seems
-         * that the NDK is not thread-safe on SPM processors.
-         * On other platforms, does nothing.
-         */
-        inline void unlock() {
-#ifdef GEO_OS_ANDROID
-//           unlock_mutex_arm(&global_memory_lock_);
-#endif
-        }
-
         /** \brief Unsigned byte type */
         typedef unsigned char byte;
 
@@ -490,11 +453,9 @@ namespace GEO {
                 size_type n, ::std::allocator<void>::const_pointer hint = 0
             ) {
                 geo_argused(hint);
-                Memory::lock();
                 pointer result = static_cast<pointer>(
                     aligned_malloc(sizeof(T) * n, ALIGN)
                 );
-                Memory::unlock();
                 return result;
             }
 
@@ -511,9 +472,7 @@ namespace GEO {
              */
             void deallocate(pointer p, size_type n) {
                 geo_argused(n);
-                Memory::lock();
                 aligned_free(p);
-                Memory::unlock();
             }
 
             /**
@@ -616,7 +575,8 @@ namespace GEO {
 
         /**
          * \brief Creates a pre-allocated vector
-         * \details Constructs a container with \p size elements. Each element is default-constructed.
+         * \details Constructs a container with \p size elements. 
+         *  Each element is default-constructed.
          * \param[in] size Number of elements to allocate
          */
         explicit vector(index_t size) :
@@ -625,7 +585,8 @@ namespace GEO {
 
         /**
          * \brief Creates a pre-initialized vector
-         * \details Constructs a container with \p size elements. Each element is a copy of \p val.
+         * \details Constructs a container with \p size elements. 
+         *  Each element is a copy of \p val.
          * \param[in] size Number of elements to allocate
          * \param[in] val Initial value of the elements
          */
@@ -692,7 +653,7 @@ namespace GEO {
          * \return a pointer to the first element of the vector
          */
         T* data() {
-            return &(*this)[0];
+            return size() == 0 ? nil : &(*this)[0];
         }
 
         /**
@@ -700,7 +661,7 @@ namespace GEO {
          * \return a const pointer to the first element of the vector
          */
         const T* data() const {
-            return &(*this)[0];
+            return size() == 0 ? nil : &(*this)[0];
         }
 
     };

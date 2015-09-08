@@ -55,9 +55,15 @@ namespace RINGMesh {
     class Edge ;
     class Surface ;
     class Line ;
+
 }
 
 namespace RINGMesh {
+    /*!
+     * \brief To load a Gocad TSurf surface .ts
+     * \todo Create the appropriate Mesh handler
+     */
+    bool RINGMESH_API load_ts_file( GEO::Mesh& M, const std::string& file_name ) ;
 
     /*! @brief A safer narrow casting function of type S to type T
      *  \return static_cast< T >( in ) 
@@ -328,6 +334,7 @@ namespace RINGMesh {
             index_t c11,
             index_t f2 ) ;
 
+        static void mesh_facet_connect( GEO::Mesh& mesh ) ;
         static void check_and_repair_mesh_consistency(
             const BoundaryModelElement& region,
             GEO::Mesh& mesh,
@@ -383,21 +390,35 @@ namespace RINGMesh {
             return intersect ;
         }
 
-        template< class T >
-        static bool contains( const std::vector< T >& v, const T& t )
+        template< typename T, typename container >
+        static bool contains( const container& v, const T& t, bool sorted = false )
         {
-            return find( v, t ) != -1 ;
+            if( sorted )
+                return find_sorted( v, t ) != NO_ID ;
+            else
+                return find( v, t ) != NO_ID ;
         }
 
-        template< class T >
-        static signed_index_t find( const std::vector< T >& v, const T& t )
+        template< typename T, typename container >
+        static index_t find( const container& v, const T& t )
         {
-            for( index_t i = 0; i < v.size(); i++ ) {
-                if( v[i] == t ) {
-                    return i ;
-                }
-            }
-            return -1 ;
+            typename container::const_iterator it = std::find( v.begin(), v.end(),
+                t ) ;
+            if( it == v.end() )
+                return NO_ID ;
+            else
+                return static_cast< index_t >( it - v.begin() ) ;
+        }
+
+        template< typename T, typename container >
+        static index_t find_sorted( const container& v, const T& t )
+        {
+            typename container::const_iterator low = std::lower_bound( v.begin(),
+                v.end(), t ) ;
+            if( low == v.end() || t < *low )
+                return NO_ID ;
+            else
+                return static_cast< index_t >( low - v.begin() ) ;
         }
 
         template< class T1, class T2 >
@@ -863,17 +884,14 @@ namespace RINGMesh {
         } ;
         ColocaterANN() ;
         ColocaterANN(
-            const Surface& mesh,
-            const MeshLocation& location = VERTICES ) ;
-        ColocaterANN( const Line& mesh ) ;
-        ColocaterANN( const GEO::Mesh& mesh, const MeshLocation& location ) ;
-        ColocaterANN( const std::vector< vec3 >& vertices ) ;
-        ColocaterANN( float64* vertices, index_t nb_vertices ) ;
-        ColocaterANN( const std::vector< Edge >& edges ) ;
+            const GEO::Mesh& mesh,
+            const MeshLocation& location = VERTICES,
+            bool copy = false ) ;
+        ColocaterANN( const std::vector< vec3 >& vertices, bool copy = true ) ;
 
         ~ColocaterANN()
         {
-            delete[] ann_points_ ;
+            if( ann_points_ ) delete[] ann_points_ ;
         }
 
         void set_points( const std::vector< vec3 >& vertices ) ;
@@ -883,7 +901,7 @@ namespace RINGMesh {
         /*!
          * Gets the closest neighbor point
          * @param[in] v the point to test
-         * @param[out] dist the distance to the closest point
+         * @param[out] dist the square distance to the closest point
          * return returns the index of the closest point
          */
         index_t get_closest_neighbor(
@@ -901,20 +919,10 @@ namespace RINGMesh {
             std::vector< index_t >& result,
             double* dist = nil ) const ;
 
-        /*!
-         * Gets the point corresponding to the given index
-         * @param[in] i the point index
-         * return the corresponding point
-         */
-        vec3 point( index_t i ) const
-        {
-            return vec3( ann_tree_->point_ptr( i ) ) ;
-        }
-
     private:
         /// KdTree to compute the nearest neighbor search
         GEO::NearestNeighborSearch_var ann_tree_ ;
-        /// Array of the points (size of 3xnumber of points)
+        /// Array of the points (size of 3xnumber of points), possibly nil
         double* ann_points_ ;
     } ;
 
@@ -1014,10 +1022,10 @@ namespace RINGMesh {
             if( input_.size() < 2 ) return ;
             for( index_t it1 = 0; it1 < input_.size() - 1; it1++ ) {
                 index_t ref_index = it1 ;
-                T1& ref_value = input_[it1] ;
+                T1 ref_value = input_[it1] ;
                 for( index_t it2 = it1 + 1; it2 < input_.size(); it2++ ) {
                     index_t new_index = it2 ;
-                    T1& new_value = input_[it2] ;
+                    T1 new_value = input_[it2] ;
                     if( ref_value > new_value ) {
                         ref_value = new_value ;
                         ref_index = new_index ;
@@ -1033,6 +1041,91 @@ namespace RINGMesh {
     private:
         std::vector< T1 >& input_ ;
         std::vector< T2 >& output_ ;
+    } ;
+
+    /*!
+     * \brief Convenient class to manipulate vectors of geogram attributes.
+     * \details Used to ease the storage of a common attribute on several
+     * meshes grouped in the same object, for example those stored by a MacroMesh.
+     */
+    template< class T >
+    class AttributeHandler: public std::vector< GEO::Attribute< T >* > {
+    ringmesh_disable_copy(AttributeHandler) ;
+    public:
+        typedef std::vector< GEO::Attribute< T >* > base_class ;
+        AttributeHandler()
+            : base_class()
+        {
+        }
+        AttributeHandler( index_t size )
+            : base_class( size, nil )
+        {
+        }
+
+        /*!
+         * Allocate one attribute on all the components of the vector
+         */
+        void allocate_attributes()
+        {
+            for( index_t m = 0; m < base_class::size(); m++ ) {
+                if( !base_class::operator[]( m ) )
+                    delete base_class::operator[]( m ) ;
+                base_class::operator[]( m ) = new GEO::Attribute< T >() ;
+            }
+        }
+        /*!
+         * Allocate one attribute on all the components of the vector
+         * @param[in] name name of the attribute
+         * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
+         */
+        void allocate_attributes(
+            const std::string& name,
+            GEO::AttributesManager& am )
+        {
+            for( index_t m = 0; m < base_class::size(); m++ ) {
+                if( !base_class::operator[]( m ) )
+                    delete base_class::operator[]( m ) ;
+                base_class::operator[]( m ) = new GEO::Attribute< T >( am, name ) ;
+            }
+        }
+
+        /*!
+         * Allocate one vector of attributes on all the components of the vector
+         * @param[in] name name of the attribute
+         * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
+         * @param[in] size size of the vector of attributes
+         */
+        void allocate_attributes(
+            const std::string& name,
+            GEO::AttributesManager& am,
+            index_t size )
+        {
+            for( index_t m = 0; m < base_class::size(); m++ ) {
+                if( !base_class::operator[]( m ) )
+                    delete base_class::operator[]( m ) ;
+                base_class::operator[]( m ) = new GEO::Attribute< T >() ;
+                base_class::operator[]( m )->create_vector_attribute( am, name,
+                    size ) ;
+            }
+        }
+
+        GEO::Attribute< T >& operator[]( index_t i )
+        {
+            return *base_class::operator[]( i ) ;
+        }
+
+        const GEO::Attribute< T >& operator[]( index_t i ) const
+        {
+            return *base_class::operator[]( i ) ;
+        }
+
+        ~AttributeHandler()
+        {
+            for( index_t i = 0; i < base_class::size(); i++ ) {
+                if( base_class::operator[]( i ) )
+                    delete base_class::operator[]( i ) ;
+            }
+        }
     } ;
 
 /******************************************************************/

@@ -747,19 +747,94 @@ namespace GEO {
             );
         }
 
+        /**
+         * \brief Draws all the triangles of the mesh using 
+         *   glDrawElements()
+         * \details If polygon mode is GL_FILL and if a shader
+         *   for triangles was declared (PRG_TRI), then it 
+         *   glUses the shader.
+         * \pre All the facets of the mesh need to be triangles
+         */
         void draw_triangles();
+
+        /**
+         * \brief Draws all the triangles and quads of the 
+         *   mesh using glDrawElements()
+         * \details If polygon mode is GL_FILL and if a shader
+         *   for triangles (resp. quads) was declared (PRG_TRI, resp. PRG_QUAD),
+         *   then it glUses the shader.
+         */
         void draw_triangles_and_quads();
-        void draw_polygons();        
+
+        /**
+         * \brief Draws all the polygons of the mesh
+         *   using glDrawElements()
+         */
+        void draw_polygons();
+
+        /**
+         * \brief Draws all the triangles of the mesh
+         *   and interpolates vertices locations between
+         *   initial (coordinates 0..2) and final (coordinates 3..5)
+         *   locations.
+         */
         void draw_triangles_animation();
+
+        /**
+         * \brief Draws all the tetrahedra of the mesh
+         *   as GL_LINES_ADJACENCY using glDrawElements()
+         * \details The shader for tetrahedra (PRG_TET) is
+         *   glUsed
+         * \pre All the cells of the mesh are tetrahedra.
+         */
         void draw_tets_as_lines_adjacency();
+
+        /**
+         * \brief Draws all the tetrahedra of the mesh
+         *   as GL_LINES_ADJACENCY and interpolates vertices 
+         *   locations between initial (coordinates 0..2) and 
+         *   final (coordinates 3..5) locations.
+         * \details The shader for tetrahedra (PRG_TET) is
+         *   glUsed
+         * \pre All the cells of the mesh are tetrahedra.
+         */
         void draw_tets_animation_as_lines_adjacency();
+
+        /**
+         * \brief Draws mesh cells using glDrawElements()
+         * \details Cells of the same type are grouped in a
+         *  single glDrawElements() call. Sequences of cells of
+         *  the same type are cached.
+         * \param cell_type the mesh cell type to be drawn
+         * \param mode the OpenGL primitive used by glDrawElements()
+         */
         void draw_mesh_cells_as_opengl_elements(
             MeshCellType cell_type, GLenum mode
         );
+
+        /**
+         * \brief Draws mesh cells as OpenGL points
+         * \details The first vertex of the cell is sent as the point
+         *  geometry. The other vertices are sent as point attributes.
+         *  This function is needed to draw hexahedra and pyramids, 
+         *  because there is no standard OpenGL primitive with 8 or 5
+         *  vertices. 
+         * \param cell_type the mesh cell type to be drawn
+         * \param mode the OpenGL primitive used by glDrawElements()
+         * \note If the graphic board supports tesselation shaders,
+         *  then one can more efficiently use instead 
+         *  draw_mesh_cells_as_opengl_elements() with
+         *  GL_PATCHES (GL_PATCHES has a configurable number of vertices).
+         */
         void draw_mesh_cells_as_opengl_points(
             MeshCellType cell_type
         );
 
+        /**
+         * \brief Clears the draw cell cache used 
+         *   by draw_mesh_cells_as_opengl_elements()
+         * \see draw_mesh_cells_as_opengl_elements()
+         */
         void clear_cell_draw_cache();
         
     protected:
@@ -839,7 +914,7 @@ namespace GEO {
         vector<void*>   cell_draw_start_index_[GEO::MESH_NB_CELL_TYPES];
     };
 
-    /************************************************************************************/
+    /**************************************************************************/
 
     /**
      * \brief Internal implementation of MeshGfx that
@@ -865,7 +940,7 @@ namespace GEO {
         virtual void draw_volume();
     };
     
-    /************************************************************************************/    
+    /**************************************************************************/
 
     /**
      * \brief Internal implementation of MeshGfx that
@@ -895,7 +970,7 @@ namespace GEO {
         virtual void begin_shader(ShaderName name);        
     };
     
-    /************************************************************************************/    
+    /**************************************************************************/
 
     /**
      * \brief Internal implementation of MeshGfx that
@@ -925,7 +1000,7 @@ namespace GEO {
         virtual void begin_shader(ShaderName name);        
     };
 
-    /************************************************************************************/        
+    /**************************************************************************/
 }
 
 #endif

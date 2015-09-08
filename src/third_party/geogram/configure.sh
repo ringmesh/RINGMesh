@@ -10,10 +10,11 @@ echo ============= Checking for CMake ============
 echo
 
 if (cmake --version); then
-   echo "Found CMake"
+    echo "Found CMake"
+    echo
 else
-   echo "Error: CMake not found, please install it (see http://www.cmake.org/)"
-   exit 1
+    echo "Error: CMake not found, please install it (see http://www.cmake.org/)"
+    exit 1
 fi
 
 # Parse command line arguments
@@ -37,7 +38,19 @@ while [ -n "$1" ]; do
             cmake_options="$cmake_options $cmake_option"
             shift
             ;;
-
+        
+        --help-platforms)
+            echo "Supported platforms:"
+            for i in `find cmake/platforms/* -type d`
+            do
+                if [ $i != "xxxcmake/platforms" ]
+                then
+                    echo "*" `basename $i`
+                fi
+            done
+            exit
+            ;;
+            
         --help)
             cat <<END
 NAME
@@ -80,8 +93,7 @@ OPTIONS
         the specified directory: ddt-root-dir
 
 PLATFORM
-    Build platform supported by Vorpaline. See cmake/platforms for supported
-    platforms.
+    Build platforms supported by Geogram/Vorpaline: use configure.sh --help-platforms
 END
             exit
             ;;
@@ -119,6 +131,12 @@ if [ -z "$os" ]; then
 fi
 
 #  Import plaform specific environment
+
+if [ ! -f cmake/platforms/$os/setvars.sh ]
+then
+    echo $os: no such platform
+    exit 1
+fi
 
 . cmake/platforms/$os/setvars.sh || exit 1
 

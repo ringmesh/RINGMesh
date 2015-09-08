@@ -42,6 +42,8 @@
 #include <ringmesh/boundary_model_builder.h>
 #include <ringmesh/io.h>
 #include <geogram/mesh/mesh_io.h>
+#include <geogram/basic/logger.h>
+
 
 int main( int argc, char** argv )
 {

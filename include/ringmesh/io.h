@@ -54,6 +54,10 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
+    /*
+     * @todo Review : Do we really need another namespace for this ? 
+     *       I do not see what is the point. [JP]
+     */
     namespace RINGMeshIO {
         //    ___                   _               __  __         _     _
         //   | _ ) ___ _  _ _ _  __| |__ _ _ _ _  _|  \/  |___  __| |___| |
@@ -96,6 +100,8 @@ namespace RINGMesh {
 
         class RINGMESH_API BoundaryModelIOHandler: public GEO::Counted {
         public:
+            static void initialize() ;
+
             static BoundaryModelIOHandler* create( const std::string& format ) ;
 
             static BoundaryModelIOHandler* get_handler(
@@ -121,11 +127,17 @@ namespace RINGMesh {
 
         typedef GEO::SmartPointer< BoundaryModelIOHandler > BoundaryModelIOHandler_var ;
         typedef GEO::Factory0< BoundaryModelIOHandler > BoundaryModelIOHandlerFactory ;
+
 #define ringmesh_register_BoundaryModelIOHandler_creator( type, name ) \
     geo_register_creator( BoundaryModelIOHandlerFactory, type, name )
 
+
+        /***************************************************************************/
+
         class RINGMESH_API MacroMeshIOHandler: public GEO::Counted {
         public:
+            static void initialize() ;
+
             static MacroMeshIOHandler* create( const std::string& format ) ;
 
             static MacroMeshIOHandler* get_handler( const std::string& filename ) ;
@@ -148,11 +160,18 @@ namespace RINGMesh {
 
         typedef GEO::SmartPointer< MacroMeshIOHandler > MacroMeshIOHandler_var ;
         typedef GEO::Factory0< MacroMeshIOHandler > MacroMeshIOHandlerFactory ;
+
 #define ringmesh_register_MacroMeshIOHandler_creator( type, name ) \
     geo_register_creator( MacroMeshIOHandlerFactory, type, name )
 
+
+        /***************************************************************************/
+
+
         class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
         public:
+            static void initialize() ;
+
             static WellGroupIOHandler* create( const std::string& format ) ;
 
             static WellGroupIOHandler* get_handler( const std::string& filename ) ;
@@ -175,9 +194,12 @@ namespace RINGMesh {
 
         typedef GEO::SmartPointer< WellGroupIOHandler > WellGroupIOHandler_var ;
         typedef GEO::Factory0< WellGroupIOHandler > WellGroupIOHandlerFactory ;
+
 #define ringmesh_register_WellGroupIOHandler_creator( type, name ) \
     geo_register_creator( WellGroupIOHandlerFactory, type, name )
 
+
+        /***************************************************************************/
 
         void RINGMESH_API initialize() ;
 

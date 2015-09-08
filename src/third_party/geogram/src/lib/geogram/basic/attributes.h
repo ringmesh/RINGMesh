@@ -1014,6 +1014,121 @@ namespace GEO {
     } ;
  
     /*********************************************************************/
+
+    /**
+     * \brief Base class to forbid some instanciations
+     *  of Attribute
+     */
+    class NotImplementedAttribute {
+    public:
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \details Throws an assertion failure
+         */
+        NotImplementedAttribute() {
+            geo_assert_not_reached;
+        }
+
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \param[in] manager the AttributesManager
+         * \param[in] name the name of the attribute
+         * \details Throws an assertion failure
+         */
+        NotImplementedAttribute(
+            AttributesManager& manager, const std::string& name
+        ) {
+            geo_argused(manager);
+            geo_argused(name);
+            geo_assert_not_reached;
+        }
+    };
+
+    /**
+     * \brief Forbids creation of Attribute of vectors.
+     * \details Attributes internal management uses
+     *   memcpy(), and cannot support types that do 
+     *   complicated memory management.
+     * \note We could use C++11's std::is_pod() instead.
+     */
+    template <class T> class Attribute< vector<T> > :
+        public NotImplementedAttribute {
+    public:
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \details Throws an assertion failure
+         */
+        Attribute() : NotImplementedAttribute() {
+        }
+
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \param[in] manager the AttributesManager
+         * \param[in] name the name of the attribute
+         * \details Throws an assertion failure
+         */
+        Attribute(AttributesManager& manager, const std::string& name) :
+            NotImplementedAttribute(manager,name) {
+        }
+    };
+
+    /**
+     * \brief Forbids creation of Attribute of vectors.
+     * \details Attributes internal management uses
+     *   memcpy(), and cannot support types that do 
+     *   complicated memory management.
+     * \note We could use C++11's std::is_pod() instead.
+     */
+    template <class T> class Attribute< std::vector<T> > :
+        public NotImplementedAttribute {
+    public:
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \details Throws an assertion failure
+         */
+        Attribute() : NotImplementedAttribute() {
+        }
+
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \param[in] manager the AttributesManager
+         * \param[in] name the name of the attribute
+         * \details Throws an assertion failure
+         */
+        Attribute(AttributesManager& manager, const std::string& name) :
+            NotImplementedAttribute(manager,name) {
+        }
+    };
+
+    /**
+     * \brief Forbids creation of Attribute of vectors.
+     * \details Attributes internal management uses
+     *   memcpy(), and cannot support types that do 
+     *   complicated memory management.
+     * \note We could use C++11's std::is_pod() instead.
+     */
+    template <> class Attribute< std::string > :
+        public NotImplementedAttribute {
+    public:
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \details Throws an assertion failure
+         */
+        Attribute() : NotImplementedAttribute() {
+        }
+
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \param[in] manager the AttributesManager
+         * \param[in] name the name of the attribute
+         * \details Throws an assertion failure
+         */
+        Attribute(AttributesManager& manager, const std::string& name) :
+            NotImplementedAttribute(manager,name) {
+        }
+    };
+    
+    
 }
 
 #endif

@@ -70,7 +70,6 @@
 #include <stack>
 #include <iterator>
 
-//#define GEOGRAM_WITH_VORPALINE
 #ifdef GEOGRAM_WITH_VORPALINE
 #include <vorpalib/voronoi/LpCVT.h>
 #define CentroidalVoronoiTesselation LpCentroidalVoronoiTesselation
@@ -1170,7 +1169,7 @@ namespace {
                     }
                     
                     vec3 g = s1*p1+s2*p2+s3*p3+s4*p4;
-                    if(AABB.containing_tet(g) == -1) {
+                    if(AABB.containing_tet(g) == MeshCellsAABB::NO_TET) {
                         return false;
                     }
                 }
