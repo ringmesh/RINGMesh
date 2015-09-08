@@ -765,7 +765,7 @@ namespace RINGMesh {
 
     index_t MacroMeshCells::mesh_end( index_t mesh ) const
     {
-        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh] ;
+        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * ( mesh + 1 )] ;
     }
 
     /*!
@@ -1186,6 +1186,13 @@ namespace RINGMesh {
             max_new_points_on_facet_( 0 )
 
     {
+        for(index_t i = 0 ; i < 4 ; i++) {
+            nb_high_order_points_per_cell_type_[i] = 0 ;
+        }
+
+        for(index_t i = 0 ; i < 2 ; i++) {
+            nb_high_order_points_per_facet_type_[i] = 0 ;
+        }
     }
 
     MacroMeshOrder::~MacroMeshOrder()
@@ -1480,8 +1487,8 @@ namespace RINGMesh {
     const index_t MacroMeshOrder::nb_high_order_vertices_per_facet(const index_t s, const index_t f) const {
         test_initialize() ;
         ringmesh_debug_assert( s < mm_.model().nb_surfaces() ) ;
-        ringmesh_debug_assert( f < mm_.facets.nb_facets( s ) ) ;
         index_t m = mm_.facets.mesh(s) ;
+        ringmesh_debug_assert( f < mm_.mesh(m).facets.nb() ) ;
         return nb_high_order_points_per_facet_type_[mm_.mesh(m).facets.nb_vertices(f) -3] ;
     }
 
@@ -1495,7 +1502,7 @@ namespace RINGMesh {
         test_initialize() ;
         ringmesh_debug_assert( m < mm_.nb_meshes() ) ;
         ringmesh_debug_assert( c < mm_.cells.nb_cells( m ) ) ;
-        return nb_high_order_points_per_facet_type_[mm_.mesh(m).cells.type(c)] ;
+        return nb_high_order_points_per_cell_type_[mm_.mesh(m).cells.type(c)] ;
     }
     /*!
      * Initialize the cell database of the MacroMesh
@@ -1593,7 +1600,6 @@ namespace RINGMesh {
      */
     void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes )
     {
-        set_model( rhs.model() ) ;
         order_ = rhs.get_order() ;
         mode_ = rhs.duplicate_mode() ;
         wells_ = rhs.wells() ;
