@@ -1,0 +1,120 @@
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.gocad.org
+ *
+ *     GOCAD Project
+ *     Ecole Nationale Superieure de Geologie - Georessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
+
+
+/**
+
+\page ringmesh_compiling Instructions for compiling RINGMesh
+
+RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
+You will need CMake (version >= 2.8.11). There is no other dependancy (everything
+ you need is shipped with RINGMesh). Follow the Linux or Windows instructions below.
+
+Linux
+=====
+
+Configuring RINGMesh
+------------------
+
+Go to RINGMesh directory and then copy the file CMakeOptions.txt.sample into
+CMakeOptions.txt: <b>cp CMakeOptions.txt.sample CMakeOptions.txt</b>.
+
+If you need to use the <b>graphic</b> part of RINGMesh (visualization of RINGMesh::BoundaryModel
+and RINGMesh::MacroMesh) set the variable <b>RINGMESH_WITH_GRAPHICS to TRUE</b> (uncomment the line).
+
+Then to configure: <b>./configure.sh</b>. This will first configure and compile Geogram 
+and then it will generate dynamic libraries.
+
+Compiling RINGMesh
+------------------
+
+- cd build/ringmesh/Linux64-gcc-Release
+- make [-j8]
+
+To build in debug, go to build/ringmesh/Linux64-gcc-Debug instead.
+
+Eclipse-cdt project is provided (.project and .cproject). You can import RINGMesh into
+Eclipse: File>Import...>General>Existing Projects into Workspace. Click on next, then
+select the root directory (RINGMesh directory) then click on Finish. There are two
+build configurations: release and debug. There is a target to clean and compile. There are
+also targets to build/rebuild geogram.
+
+Compiling the documentation
+---------------------------
+
+The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
+- cd doc
+- doxygen Doxyfile
+
+Then you can open the doc/html/index.html file in your web browser. If you have qhelpgenerator
+in your path, a .qch file is generated (ringmesh.qch). It can be imported in Qt Assisant: Edit>Preferences>
+Documentation>add and select the .qch file.
+
+Windows
+=======
+
+Configuring RINGMesh
+------------------
+
+Go to RINGMesh directory, open and save the CMakeOptions.txt.sample file as CMakeOptions.txt.
+To use the <b>graphic</b> components of RINGMesh (visualization of RINGMesh::BoundaryModel
+and RINGMesh::MacroMesh) set the variable <b>RINGMESH_WITH_GRAPHICS to TRUE</b> (uncomment the line).
+
+To configure RINGMesh launch the configure.bat or by command line: <b>call ./configure.bat</b>.
+By default, the project will be configured for Visual Studio 2010 in 64bits.
+You can specify a different platform by adding it as an argument when executing
+the configuration script in command line.
+The supported platforms are :
+- Visual Studio 10 2010 Win64
+- Visual Studio 11 2012 Win64
+- Visual Studio 12 2013 Win64
+
+
+Compiling RINGMesh
+------------------
+
+You can either launch building in VisualStudio or calling cmake in command line
+in the build directory created at the configuration step.
+\code
+    cmake --build . --config Release
+\endcode
+
+*/
+
