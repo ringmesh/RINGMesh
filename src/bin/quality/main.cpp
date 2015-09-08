@@ -629,7 +629,7 @@ index_t compute_slivers( RINGMesh::MacroMesh& mesh_in, double sliver_angle){
 	GEO::ProgressTask progress("Compute", mesh_in.nb_meshes());
 	for(index_t m=0; m<mesh_in.nb_meshes(); ++m){
 		GEO::Mesh& mesh=mesh_in.mesh(m);
-		GEO::Attribute< bool > slivers(mesh.cells.nb(), "slivers");
+		GEO::Attribute< bool > slivers(mesh.cells.attributes(), "slivers");
 		for(index_t c=0; c<mesh.cells.nb(); ++c){
 			if(mesh.cells.type(c) != GEO::MESH_TET) continue;
 			slivers[c] = slivers_detect(mesh, c, sliver_angle);
