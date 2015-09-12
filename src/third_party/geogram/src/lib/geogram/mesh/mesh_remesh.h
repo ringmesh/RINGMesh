@@ -43,37 +43,58 @@
  *
  */
 
-#include <geogram_gfx/third_party/glew/glew.h>
-#include <geogram_gfx/glut_viewer/glut_viewer.h>
-#include <geogram/mesh/new_mesh.h>
-#include <geogram/mesh/new_mesh_io.h>
-#include <geogram/basic/logger.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
-#include <geogram/basic/file_system.h>
+#ifndef __GEOGRAM_MESH_MESH_REMESH__
+#define __GEOGRAM_MESH_MESH_REMESH__
 
-#include <stdarg.h>
+#include <geogram/basic/common.h>
+#include <geogram/basic/numeric.h>
 
-int main(int argc, char** argv) {
+/**
+ * \file geogram/mesh/mesh_remesh.h
+ * \brief Functions for remeshing
+ */
 
-    GEO::initialize();
-    GEO::Logger::instance()->set_quiet(false);
-    GEO::CmdLine::import_arg_group("standard");
-    GEO::CmdLine::import_arg_group("algo");
-    GEO::CmdLine::declare_arg("full_screen",false,"full screen mode");
+namespace GEO {
 
+    class Mesh;
 
-    std::vector<std::string> filenames;
-    if(!GEO::CmdLine::parse(argc, argv, filenames, "<filename>")) {
-        return 1;
-    }
-    
-    if(filenames.size() != 1) {
-        return 1;
-    }
-
-    GEO::NewMesh M;
-    GEO::mesh_load(filenames[0], M);
-    
-    return 0;
+    /**
+     * \brief Remeshes a 'smooth' shape (i.e. without management
+     *  of sharp features).
+     * \param[in] M_in input mesh
+     * \param[out] M_out result
+     * \param[in] nb_points desired number of points (note: may
+     *  generate more points to solve problematic configurations)
+     * \param[in] dim dimension in which to do the remesh. Use dim=6
+     *  and set_anisotropy(M_in,s) for anisotropic remesh,
+     *  dim=3 for isotropic remesh, dim=0 uses M_in.dimension().
+     * \param[in] nb_Lloyd_iter number of Lloyd relaxation iterations
+     *  (used to initialize Newton iterations with a more homogeneous
+     *  distribution)
+     * \param[in] nb_Newton_iter number of Newton iterations
+     * \param[in] Newton_m number of evaluations used for
+     *  Hessian approximation..
+     *
+     * Example 1 - isotropic remesh:
+     * \code
+     * remesh_smooth(M_in, M_out, 30000, 3) ;
+     * \endcode
+     *
+     * Example 2 - anisotropic remesh:
+     * \code
+     * set_anisotropy(M_in, 0.04) ;
+     * remesh_smooth(M_in, M_out, 30000, 6) ;
+     * \endcode
+     */
+    void GEOGRAM_API remesh_smooth(
+        Mesh& M_in, Mesh& M_out,
+        index_t nb_points,
+        coord_index_t dim = 0,
+        index_t nb_Lloyd_iter = 5,
+        index_t nb_Newton_iter = 30,
+        index_t Newton_m = 7
+    );
 }
+
+#endif
+

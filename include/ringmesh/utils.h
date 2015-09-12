@@ -55,6 +55,7 @@ namespace RINGMesh {
     class Edge ;
     class Surface ;
     class Line ;
+
 }
 
 namespace RINGMesh {
@@ -63,7 +64,6 @@ namespace RINGMesh {
      * \todo Create the appropriate Mesh handler
      */
     bool RINGMESH_API load_ts_file( GEO::Mesh& M, const std::string& file_name ) ;
-
 
     /*! @brief A safer narrow casting function of type S to type T
      *  \return static_cast< T >( in ) 
@@ -402,23 +402,23 @@ namespace RINGMesh {
         template< typename T, typename container >
         static index_t find( const container& v, const T& t )
         {
-            typename container::const_iterator it = std::find(
-                v.begin(), v.end(), t ) ;
+            typename container::const_iterator it = std::find( v.begin(), v.end(),
+                t ) ;
             if( it == v.end() )
                 return NO_ID ;
             else
-                return static_cast<index_t>( it - v.begin() ) ;
+                return static_cast< index_t >( it - v.begin() ) ;
         }
 
         template< typename T, typename container >
         static index_t find_sorted( const container& v, const T& t )
         {
-            typename container::const_iterator low = std::lower_bound(
-                v.begin(), v.end(), t ) ;
+            typename container::const_iterator low = std::lower_bound( v.begin(),
+                v.end(), t ) ;
             if( low == v.end() || t < *low )
                 return NO_ID ;
             else
-                return static_cast<index_t>( low - v.begin() );
+                return static_cast< index_t >( low - v.begin() ) ;
         }
 
         template< class T1, class T2 >
@@ -1041,6 +1041,79 @@ namespace RINGMesh {
     private:
         std::vector< T1 >& input_ ;
         std::vector< T2 >& output_ ;
+    } ;
+
+    /*!
+     * \brief Convenient class to manipulate vectors of geogram attributes.
+     * \details Used to ease the storage of a common attribute on several
+     * meshes grouped in the same object, for example those stored by a MacroMesh.
+     */
+    template< class T >
+    class AttributeHandler: public std::vector< GEO::Attribute< T >* > {
+    ringmesh_disable_copy(AttributeHandler) ;
+    public:
+        typedef std::vector< GEO::Attribute< T >* > base_class ;
+        AttributeHandler()
+            : base_class()
+        {
+        }
+        AttributeHandler( index_t size )
+            : base_class( size, nil )
+        {
+        }
+
+        /*!
+         * Allocate one attribute on one component of the vector
+         * @param[in] m id of the GEO::Mesh
+         * @param[in] name name of the attribute
+         * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
+         */
+        void allocate_attribute(
+            const index_t m,
+            GEO::AttributesManager& am,
+            const std::string& name )
+        {
+            ringmesh_debug_assert( m < base_class::size() ) ;
+            ringmesh_debug_assert( !base_class::operator[]( m ) ) ;
+            base_class::operator[]( m ) = new GEO::Attribute< T >( am, name ) ;
+        }
+
+        /*!
+         * Allocate one vector of attributes on one component of the vector
+         * @param[in] m id of the GEO::Mesh
+         * @param[in] name name of the attribute
+         * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
+         * @param[in] size size of the vector of attributes
+         */
+        void allocate_attribute(
+            const index_t m,
+            GEO::AttributesManager& am,
+            const std::string& name,
+            index_t size )
+        {
+            ringmesh_debug_assert( m < base_class::size() ) ;
+            ringmesh_debug_assert( !base_class::operator[]( m ) ) ;
+            base_class::operator[]( m ) = new GEO::Attribute< T >() ;
+            base_class::operator[]( m )->create_vector_attribute( am, name, size ) ;
+        }
+
+        GEO::Attribute< T >& operator[]( index_t i )
+        {
+            return *base_class::operator[]( i ) ;
+        }
+
+        const GEO::Attribute< T >& operator[]( index_t i ) const
+        {
+            return *base_class::operator[]( i ) ;
+        }
+
+        ~AttributeHandler()
+        {
+            for( index_t i = 0; i < base_class::size(); i++ ) {
+                if( base_class::operator[]( i ) )
+                    delete base_class::operator[]( i ) ;
+            }
+        }
     } ;
 
 /******************************************************************/

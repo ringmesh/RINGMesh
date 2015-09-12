@@ -43,12 +43,57 @@
  *
  */
 
-#include <geogram/basic/memory.h>
-#include <geogram/basic/process.h>
+#include <geogram/numerics/expansion_nt.h>
+#include <iostream>
 
-namespace GEO {
-    namespace Memory {
-        GEO::Numeric::uint32 global_memory_lock_ = 0;
+/**
+ * \brief Outputs an expansion_nt to a stream
+ * \param out a reference to the output stream
+ * \param x a const reference to the expansion_nt to be output
+ * \return the modified output stream
+ */
+std::ostream& operator<<(std::ostream& out, const GEO::expansion_nt& x) {
+    out << "expansion_nt(estimate="
+        << x.estimate();
+    out << ", components=[";
+    for(GEO::index_t i=0; i<x.length(); ++i) {
+        out << x.component(i);
+        if(i != x.length()-1) {
+            out << " ";
+        }
     }
+    out << "]";
+    out << ")";
+    return out;
 }
 
+/**
+ * \brief performs a simple computation designed to
+ *  give an errouenous result when using doubles.
+ * \param zzz an ignored parameter, just there to 
+ *  specify the type to be used for computations, i.e.
+ *  use a double to test with doubles, and an expansion_nt 
+ *  to test with expansion_nt.
+ */
+template <class T> inline void compute(const T& zzz) {
+    GEO::geo_argused(zzz);
+
+    T r = T(1e-30)+T(5.0)+T(1e30)+T(2e-30)-T(1e30);
+    std::cout << "   sign(1e-30 + 5.0 + 1e30 + 2e-30 - 1e30) = "
+              << GEO::geo_sgn(r) << std::endl;
+    std::cout << "   result = " << r << std::endl;
+}
+
+int main() {
+    //   This function needs to be called before
+    // using expansion_nt.
+    GEO::expansion::initialize();
+
+    std::cout << "Using double:" << std::endl;
+    compute(double());
+    
+    std::cout << "Using expansion_nt:" << std::endl;    
+    compute(GEO::expansion_nt());
+    
+    return 0;
+}

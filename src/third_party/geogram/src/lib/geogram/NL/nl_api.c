@@ -535,7 +535,9 @@ void nlEndMatrix() {
         nlCurrentContext->solver != NL_SYMMETRIC_SUPERLU_EXT 
        
     ) {
-        nlSparseMatrixCompress(&nlCurrentContext->M);
+        if(getenv("NL_LOW_MEM") == NULL) {
+            nlSparseMatrixCompress(&nlCurrentContext->M);
+        }
     }
 }
 

@@ -69,7 +69,7 @@ in \link geogram_examples example programs \endlink).
 - \link geogram_license License and bundled third-party software \endlink
 - \link geogram_design Design principles \endlink
 - \link geogram_programmer Programmer's quick links to main Geogram classes \endlink
-
+- \link geogram_PSM Pluggable Software Modules (PSMs) \endlink
 */
 
 }

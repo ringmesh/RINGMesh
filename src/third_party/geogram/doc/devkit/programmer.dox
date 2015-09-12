@@ -72,7 +72,7 @@ Quick links to main Geogram functions and classes
   - GEO::CentroidalVoronoiTesselation
   - GEO::RestrictedVoronoiDiagram
   - GEO::NearestNeighborSearch, GEO::KdTree
-  - GEO::MeshFacetsAABB, GEO::MeshTetsAABB
+  - GEO::MeshFacetsAABB, GEO::MeshCellsAABB
 
 Quick links to main geogram internal classes
 ============================================

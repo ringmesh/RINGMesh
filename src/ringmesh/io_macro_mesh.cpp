@@ -847,45 +847,40 @@ namespace RINGMesh {
             index_t nb_vertices ;
             index_t vertices[8] ;
             index_t nb_facets ;
-            index_t nb_vertices_in_facet[6] ;
             index_t facet[6] ;
-            index_t vertices_in_facet[6][4] ;
         } ;
 
-        static RINGMesh2CSMP tet_descriptor = { 4,                  // type
+        static RINGMesh2CSMP tet_descriptor = {
+            4,                  // type
             4,                  // nb vertices
             { 0, 1, 2, 3 },     // vertices
             4,                  // nb facets
-            { 3, 3, 3, 3 },     // nb vertices in facet
-            { 0, 1, 2, 3 },     // facets
-            { { 1, 3, 2 }, { 0, 2, 3 }, { 3, 1, 0 }, { 0, 1, 2 } } } ;
+            { 0, 1, 2, 3 }      // facets
+            } ;
 
-        static RINGMesh2CSMP hex_descriptor = { 6,                         // type
+        static RINGMesh2CSMP hex_descriptor = {
+            6,                         // type
             8,                              // nb vertices
-            { 0, 1, 3, 2, 4, 5, 7, 6 },     // vertices
+            { 0, 4, 5, 1, 2, 6, 7, 3 },     // vertices
             6,                              // nb facets
-            { 4, 4, 4, 4, 4, 4 },           // nb vertices in facet
-            { 4, 2, 1, 3, 0, 5 },           // facets
-            { { 0, 3, 7, 4 }, { 2, 1, 5, 6 }, { 1, 0, 4, 5 }, { 3, 2, 6, 7 }, {
-                1, 2, 3, 0 }, { 4, 7, 6, 5 } } } ;
+            { 2, 0, 5, 1, 4, 3 }            // facets
+            } ;
 
-        static RINGMesh2CSMP prism_descriptor = { 12,                     // type
+        static RINGMesh2CSMP prism_descriptor = {
+            12,                     // type
             6,                      // nb vertices
             { 0, 1, 2, 3, 4, 5 },   // vertices
             5,                      // nb facets
-            { 3, 4, 4, 4, 3 },      // nb vertices in facet
-            { 0, 2, 4, 3, 1 },      // facets
-            {
-                { 0, 1, 2 }, { 3, 5, 4 }, { 0, 3, 4, 1 }, { 0, 2, 5, 3 }, {
-                    1, 4, 5, 2 } } } ;
+            { 0, 2, 4, 3, 1 }       // facets
+            } ;
 
-        static RINGMesh2CSMP pyramid_descriptor = { 18,                 // type
+        static RINGMesh2CSMP pyramid_descriptor = {
+            18,                 // type
             5,                  // nb vertices
             { 0, 1, 2, 3, 4 },  // vertices
             5,                  // nb facets
-            { 3, 3, 3, 3, 4 },  // nb vertices in facet
-            { 1, 3, 4, 2, 0 },  // facets
-            { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
+            { 1, 4, 3, 2, 0 }   // facets
+            } ;
 
         class CSMPIOHandler: public MacroMeshIOHandler {
         public:
@@ -2187,8 +2182,6 @@ namespace RINGMesh {
                 index_t cur_cell = 1 ;
                 for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
                     const GEO::Mesh& mesh = mm.mesh( m ) ;
-                    GEO::Attribute< std::vector< index_t > > order_vertices(
-                        mesh.cells.attributes(), "order_vertices" ) ;
                     GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
                         surface_att_name ) ;
                     const BoundaryModelElement& region = model.region( m ) ;
@@ -2217,17 +2210,17 @@ namespace RINGMesh {
                         }
                         if(mm.get_order()==2) {
                             out << SPACE ;
-                            out << order_vertices[c][3] + 1 ;
+                            out << mm.order.get_id_on_cell(m,c,3) + 1 ;
                             out << SPACE ;
-                            out << order_vertices[c][0] + 1 ;
+                            out <<  mm.order.get_id_on_cell(m,c,0) + 1 ;
                             out << SPACE ;
-                            out << order_vertices[c][4] + 1 ;
+                            out <<  mm.order.get_id_on_cell(m,c,4) + 1 ;
                             out << SPACE ;
-                            out << order_vertices[c][5] + 1 ;
+                            out << mm.order.get_id_on_cell(m,c,5) + 1 ;
                             out << SPACE ;
-                            out << order_vertices[c][1] + 1 ;
+                            out <<  mm.order.get_id_on_cell(m,c,1) + 1 ;
                             out << SPACE ;
-                            out << order_vertices[c][2] + 1 ;
+                            out <<  mm.order.get_id_on_cell(m,c,2) + 1 ;
                         }
                         out << std::endl ;
 
@@ -2288,8 +2281,6 @@ namespace RINGMesh {
                         if( mm.vertices.is_surface_to_duplicate( s_id ) ) continue ;
                         index_t mesh_id = mm.facets.mesh( s_id ) ;
                         const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                        GEO::Attribute< std::vector< index_t > > order_vertices(
-                            mesh.facets.attributes(), "order_vertices" ) ;
                         for( index_t t = 0; t < mm.facets.nb_facets( s_id ); t++ ) {
                             index_t facet_id = mm.facets.facet( s_id, t ) ;
                             out << cur_cell++ << SPACE
@@ -2302,10 +2293,10 @@ namespace RINGMesh {
                                 out << SPACE
                                     << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
                             }
-                            for( index_t v = 0; v < order_vertices[facet_id].size();
+                            for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id) * ( mm.get_order() - 1 );
                                 v++ ) {
                                 out << SPACE ;
-                                out << order_vertices[facet_id][v] + 1 ;
+                                out <<mm.order.get_id_on_facet(s,facet_id,v) + 1 ;
                             }
                             out << std::endl ;
                         }
