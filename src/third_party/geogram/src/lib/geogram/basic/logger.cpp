@@ -317,6 +317,7 @@ namespace GEO {
     }
 
     void Logger::unregister_client(LoggerClient* c) {
+        geo_debug_assert(clients_.find(c) != clients_.end());
         clients_.erase(c);
     }
 

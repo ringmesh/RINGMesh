@@ -1589,7 +1589,7 @@ namespace GEO {
                     matches.size() != 0 &&
                     !create_connector(c1,lf1,matches)
                 ) {
-                    ++weird ;
+                    ++weird;
                 }
             }
         }

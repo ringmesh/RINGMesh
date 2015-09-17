@@ -743,7 +743,6 @@ namespace GEO {
         }
         begin_draw(MESH_VERTICES);
         
-        glDisable(GL_LIGHTING);
         glPointSize(points_size_ * 5.0f);
 
         glEnable(GL_POINT_SMOOTH);
@@ -1410,6 +1409,8 @@ namespace GEO {
         if(mesh_->vertices.nb() == 0) {
             return;
         }
+
+        glDisable(GL_LIGHTING);
         
         begin_draw(MESH_VERTICES);
         glPointSize(points_size_ * 5.0f);
@@ -1713,7 +1714,7 @@ namespace GEO {
         if(mesh_->vertices.nb() == 0) {
             return;
         }
-        
+        glDisable(GL_LIGHTING);
         begin_draw(MESH_VERTICES);
         glPointSize(points_size_ * 5.0f);
         glEnable(GL_POINT_SPRITE);

@@ -63,6 +63,7 @@
 #include <geogram/mesh/mesh_tetrahedralize.h>
 #include <geogram/mesh/mesh_remesh.h>
 #include <geogram/delaunay/LFS.h>
+#include <geogram/points/co3ne.h>
 #include <typeinfo>
 
 namespace {
@@ -92,6 +93,29 @@ namespace {
     }
 
     /**
+     * \brief Reconstructs a mesh from a point set.
+     * \param[in,out] M_in the input point set and the reconstructed mesh
+     */
+    void reconstruct(Mesh& M_in) {
+        Logger::div("reconstruction");
+
+        Logger::out("Co3Ne") << "Preparing data" << std::endl;
+        // Remove all facets
+        M_in.facets.clear();
+        double bbox_diag = bbox_diagonal(M_in);
+        double epsilon = CmdLine::get_arg_percent(
+            "pre:epsilon", bbox_diag
+        );
+        mesh_repair(M_in, MESH_REPAIR_COLOCATE, epsilon);
+        index_t nb_neigh = CmdLine::get_arg_uint("co3ne:nb_neighbors");
+        index_t Psmooth_iter = CmdLine::get_arg_uint("co3ne:Psmooth_iter");
+        double radius = CmdLine::get_arg_percent(
+            "co3ne:radius", bbox_diag
+        );
+        Co3Ne_smooth_and_reconstruct(M_in, nb_neigh, Psmooth_iter, radius);
+    }
+    
+    /**
      * \brief Applies pre-processing to a mesh.
      * \details Pre-processing operations and their parameters are
      *  obtained from the command line.
@@ -107,6 +131,33 @@ namespace {
         double radius = bbox_diagonal(M_in);
         double area = Geom::mesh_area(M_in, 3);
 
+        int nb_kills = CmdLine::get_arg_int("pre:brutal_kill_borders");
+        for(int k=0; k<nb_kills; ++k) {
+            vector<index_t> to_kill(M_in.facets.nb(), 0);
+            for(index_t f=0; f<M_in.facets.nb(); ++f) {
+                for(index_t c=M_in.facets.corners_begin(f); c<M_in.facets.corners_end(f); ++c) {
+                    if(M_in.facet_corners.adjacent_facet(c) == NO_FACET) {
+                        to_kill[f] = 1;
+                    }
+                }
+            }
+            index_t nb_facet_kill=0;
+            for(index_t i=0; i<to_kill.size(); ++i) {
+                if(to_kill[i] != 0) {
+                    ++nb_facet_kill;
+                }
+            }
+            if(nb_facet_kill != 0) {
+                Logger::out("Pre") << "Killed " << nb_facet_kill << " facet(s) on border"
+                                   << std::endl;
+                M_in.facets.delete_elements(to_kill);
+                mesh_repair(M_in);
+            } else {
+                Logger::out("Pre") << "No facet on border (good)" << std::endl;
+                break;
+            }
+        }
+        
         index_t nb_bins = CmdLine::get_arg_uint("pre:vcluster_bins");
         if(pre && nb_bins != 0) {
             Logger::err("Remesh")
@@ -291,6 +342,7 @@ int main(int argc, char** argv) {
         CmdLine::import_arg_group("algo");
         CmdLine::import_arg_group("post");
         CmdLine::import_arg_group("opt");
+        CmdLine::import_arg_group("co3ne");        
         CmdLine::import_arg_group("tet");
         
         std::vector<std::string> filenames;
@@ -329,6 +381,10 @@ int main(int argc, char** argv) {
             }
         }
 
+        if(CmdLine::get_arg_bool("co3ne")) {
+            reconstruct(M_in);
+        }
+        
         if(!preprocess(M_in)) {
             return 1;
         }
