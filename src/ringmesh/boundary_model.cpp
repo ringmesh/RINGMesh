@@ -825,9 +825,15 @@ namespace {
                     << std::endl ;
                 valid = false ;
             }
-            if( GEO::mesh_nb_borders( mesh ) != 0 ) {
+            GEO::signed_index_t nb_borders = GEO::mesh_nb_borders( mesh ) ;
+            if( nb_borders > 0 ) {
                 GEO::Logger::err( "BoundaryModel" ) << " Surface boundary of "
-                    << print_bme_id( region ) << " has borders " << std::endl ;
+                    << print_bme_id( region ) << " has "<< nb_borders << " borders " << std::endl ;
+                valid = false ;
+            }
+            else if( nb_borders == -1 ) {
+                GEO::Logger::err( "BoundaryModel" ) << " Surface boundary of "
+                    << print_bme_id( region ) << " is non manifold " << std::endl ;
                 valid = false ;
             }
 
@@ -1636,7 +1642,7 @@ namespace RINGMesh {
      * @brief Check the validity of all individual elements 
      * @details Check that the elements belong to this model, 
      *          call the check validity for each element
-     *          For regions, check that their boundary is a one connected component
+     *          For regions, check that their boundary is a unique connected component
      *          manifold closed surface.
      *
      */

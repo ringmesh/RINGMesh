@@ -551,7 +551,15 @@ namespace RINGMesh {
 
     } ;
 
+    /*! \todo Review: C'est de la pollution du namespace 
+         On va droit a la definition multiple [JP] 
+     */
     static std::vector< std::vector< vec3 > > empty_vertices ;
+    
+    
+    /*! \todo Review: Et alors elle fait quoi cette classe ? 
+     * Quel est son role ? Pourquoi elle existe ? [JP]
+     */
     class RINGMESH_API MacroMesh {
     ringmesh_disable_copy( MacroMesh ) ;
     public:
