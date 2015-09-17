@@ -222,6 +222,9 @@ namespace GEO {
     }
 
     void unset_anisotropy(Mesh& M) {
+        if(M.vertices.dimension() < 6) {
+            return;
+        }
         for(index_t i = 0; i < M.vertices.nb(); i++) {
             Geom::mesh_vertex_normal_ref(M, i) = normalize(
                 Geom::mesh_vertex_normal(M, i)

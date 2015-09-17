@@ -548,6 +548,66 @@ namespace GEO {
 
         double a, b, c, d;
     };
+
+
+    /**
+     * \brief Axis-aligned bounding box.
+     */
+    class Box {
+    public:
+        double xyz_min[3];
+        double xyz_max[3];
+
+        /**
+         * \brief Tests whether a box contains a point.
+         * \param[in] b the point
+         * \return true if this box contains \p b, false otherwise
+         */
+        bool contains(const vec3& b) const {
+            for(coord_index_t c = 0; c < 3; ++c) {
+                if(b[c] < xyz_min[c]) {
+                    return false;
+                }
+                if(b[c] > xyz_max[c]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    };
+
+    /**
+     * \brief Tests whether two Boxes have a non-empty intersection.
+     * \param[in] B1 first box
+     * \param[in] B2 second box
+     * \return true if \p B1 and \p B2 have a non-empty intersection,
+     *  false otherwise.
+     */
+    inline bool bboxes_overlap(const Box& B1, const Box& B2) {
+        for(coord_index_t c = 0; c < 3; ++c) {
+            if(B1.xyz_max[c] < B2.xyz_min[c]) {
+                return false;
+            }
+            if(B1.xyz_min[c] > B2.xyz_max[c]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * \brief Computes the smallest Box that encloses two Boxes.
+     * \param[out] target the smallest axis-aligned box
+     *  that encloses \p B1 and \p B2
+     * \param[in] B1 first box
+     * \param[in] B2 second box
+     */
+    inline void bbox_union(Box& target, const Box& B1, const Box& B2) {
+        for(coord_index_t c = 0; c < 3; ++c) {
+            target.xyz_min[c] = geo_min(B1.xyz_min[c], B2.xyz_min[c]);
+            target.xyz_max[c] = geo_max(B1.xyz_max[c], B2.xyz_max[c]);
+        }
+    }
 }
 
 #endif
