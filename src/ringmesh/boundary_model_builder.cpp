@@ -717,6 +717,11 @@ namespace {
                 // The line may be empty now - remove it from the model
                 if( BM.line( i ).nb_cells() == 0 ) {
                     to_remove.insert( BM.line( i ).bme_id() ) ;
+#ifdef RINGMESH_DEBUG
+                    GEO::Logger::out( "BoundaryModel" ) 
+                        << "Removed empty LINE " << i << std::endl ;
+#endif
+
                 }
             }
         }
@@ -728,7 +733,10 @@ namespace {
             if( nb > 0 ) {
                 // If there are some degenerated facets 
                 // We need to repair the model 
-#ifndef RINGMESH_DEBUG
+#ifdef RINGMESH_DEBUG
+                GEO::Logger::out( "BoundaryModel" ) << nb
+                    << " degenerated facets to remove in SURFACE " << i << std::endl ;
+#else
                 GEO::Logger::instance()->set_quiet( true ) ;
 #endif
                 // Using repair function of geogram
@@ -738,7 +746,7 @@ namespace {
                     // Colocated vertices must be processed before
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
-                        static_cast< GEO::MeshRepairMode >( 2 ) ;
+                        static_cast< GEO::MeshRepairMode >( 1 && 2 && 8) ;
                     GEO::mesh_repair( M, mode ) ;
 
                     // This might create some small components - remove them
@@ -750,11 +758,18 @@ namespace {
                         GEO::mesh_repair( M, mode ) ;
                     }
                 }
-#ifndef RINGMESH_DEBUG
+#ifdef RINGMESH_DEBUG
+                GEO::Logger::out( "BoundaryModel" )  << std::endl ;
+#else
                 GEO::Logger::instance()->set_quiet( false ) ;
-#endif 
+#endif
+
                 if( M.vertices.nb() == 0 || M.facets.nb() == 0 ) {
                     to_remove.insert( BM.surface( i ).bme_id() ) ;
+#ifdef RINGMESH_DEBUG
+                    GEO::Logger::out( "BoundaryModel" )
+                        << " Removed empty SURFACE " << i << std::endl ;
+#endif
                 } else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
@@ -775,6 +790,11 @@ namespace {
                         // I do not understand exactly what is happening [JP]
                         BM.vertices.clear() ;
                         S.cut_by_line( BM.line( *it ) ) ;
+#ifdef RINGMESH_DEBUG
+                        GEO::Logger::out( "BoundaryModel" )
+                            << " Mesh repair post processing cut SURFACE " << i 
+                            << " by LINE " << *it << std::endl ;
+#endif
                     }
                 }
             }
@@ -829,6 +849,13 @@ namespace {
         }
     }
 
+    /*  \todo We have a problem
+     *  Some inside Lines might be SHIT (degenerate or too short).
+     *  Check the number of edges ?
+     *  And we do not detect the vertices as colocated, bad.
+     *  If there is a nasty degenerate facet in the area -> we have all 
+     *  chances that this Interior Line is a fake [JP]
+     */
     void remove_colocated_element_vertices(
         BoundaryModel& BM,
         std::set< bme_t >& to_remove )
@@ -884,7 +911,7 @@ namespace {
                         // For all the vertices of this element
                         // we need to update the vertex ids in the bme_vertices_
                         // of the corresponding global vertex
-                        for( index_t v = 0; v < to_delete.size(); ++v ) {
+                       /* for( index_t v = 0; v < to_delete.size(); ++v ) {
                             index_t model_id = E.model_vertex_id( v ) ;
                             const std::vector< VBME >& cur =
                                 BM.vertices.bme_vertices( model_id ) ;
@@ -896,7 +923,10 @@ namespace {
                                 }
                             }
                         }
-                        BM.vertices.erase_invalid_vertices() ;
+                        BM.vertices.erase_invalid_vertices() ; */
+
+                        // Let's take extreme measures [JP]
+                        BM.vertices.clear() ;
                     }
 
                     for( index_t c = 0; c < M.facet_corners.nb(); c++ ) {
@@ -1219,7 +1249,7 @@ namespace RINGMesh {
             }
         }
         model_.vertices.erase_invalid_vertices() ;
-        model_.vertices.clear() ;
+        model_.vertices.clear() ; // why this line ? what is the point of updating them before ?[JP]
 
         /// 4. Update all possible indices in remaining elements
         for( index_t i = 0; i < to_erase.size(); ++i ) {
@@ -1638,7 +1668,7 @@ namespace RINGMesh {
      * otherwise returns true.
      *
      */
-    bool BoundaryModelBuilder::end_model()
+    bool BoundaryModelBuilder::end_model( bool fix_model )
     {
         // The name should exist
         if( model_.name() == "" ) {
@@ -1663,24 +1693,26 @@ namespace RINGMesh {
             }
         }
 
-        // Remove colocated vertices in each element
-        std::set< bme_t > empty_elements ;
-        remove_colocated_element_vertices( model_, empty_elements ) ;
-        if( !empty_elements.empty() ) {
-            get_dependent_elements( empty_elements ) ;
-            remove_elements( empty_elements ) ;
-        }
+        if( fix_model ) {
+            // Remove colocated vertices in each element
+            std::set< bme_t > empty_elements ;
+            remove_colocated_element_vertices( model_, empty_elements ) ;
+            if( !empty_elements.empty() ) {
+                get_dependent_elements( empty_elements ) ;
+                remove_elements( empty_elements ) ;
+            }
 
-        // Basic mesh repair for surfaces and lines
-        remove_degenerate_facet_and_edges( model_, empty_elements ) ;
-        if( !empty_elements.empty() ) {
-            get_dependent_elements( empty_elements ) ;
-            remove_elements( empty_elements ) ;
-        }
+            // Basic mesh repair for surfaces and lines
+            remove_degenerate_facet_and_edges( model_, empty_elements ) ;
+            if( !empty_elements.empty() ) {
+                get_dependent_elements( empty_elements ) ;
+                remove_elements( empty_elements ) ;
+            }
 
-        // This is basic requirement ! no_colocated model vertices !
-        // So remove them if there are any 
-        model_.vertices.remove_colocated() ;
+            // This is basic requirement ! no_colocated model vertices !
+            // So remove them if there are any 
+            model_.vertices.remove_colocated() ;
+        }
 
         if( model_.check_model_validity() ) {
             GEO::Logger::out( "BoundaryModel" ) << std::endl << "Model "
@@ -2067,6 +2099,11 @@ namespace RINGMesh {
                 }
             }
         }
+
+        // Deliberate clear of the model vertices 
+        // to force their recomputation when checking model validity
+        model_.vertices.clear() ;
+
 
         /// 5. Fill missing information and check model validity
         bool valid_model = end_model() ;
@@ -2672,10 +2709,12 @@ namespace RINGMesh {
                 }
             }
         }
-        if( !end_model() ) {
-            std::cout << "Invalid BoundaryModel loaded" << std::endl ;
-        }
-        return true ;
+
+        // Deliberate clear of the model vertices 
+        // to force their recomputation when checking model validity
+        model_.vertices.clear() ;
+
+        return end_model() ;            
     }
 
     BoundaryModelElement::TYPE BoundaryModelBuilderBM::match_nb_elements(
