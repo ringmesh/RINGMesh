@@ -173,6 +173,23 @@ namespace GEO {
         }
 
         /**
+         * \brief Tests whether a matrix is the identity matrix.
+         * \retval true if the matrix is the identity matrix
+         * \retval false otherwise
+         */
+        inline bool is_identity() const {
+            for(index_t i = 0; i < DIM; i++) {
+                for(index_t j = 0; j < DIM; j++) {
+                    FT rhs = ((i == j) ? FT(1) : FT(0));
+                    if(coeff_[i][j] != rhs) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        
+        /**
          * \brief Gets a modifiable element
          * \details Gets element at row \p i and column \p j in the matrix. If
          * indices are out of range, the function calls abort().

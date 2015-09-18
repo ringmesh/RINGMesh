@@ -57,6 +57,7 @@
 #include <sstream>
 #include <pthread.h>
 #include <unistd.h>
+#include <limits.h>
 #include <fenv.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -357,7 +358,7 @@ namespace GEO {
         }
 
         void os_brute_force_kill() {
-            exit(-1);
+            kill(getpid(), SIGKILL);
         }
 
         index_t os_number_of_cores() {
@@ -403,17 +404,17 @@ namespace GEO {
         }
 
         bool os_enable_FPE(bool flag) {
+            int excepts = 0
+                // | FE_INEXACT   // inexact result
+                   | FE_DIVBYZERO   // division by zero
+                   | FE_UNDERFLOW // result not representable due to underflow
+                   | FE_OVERFLOW    // result not representable due to overflow
+                   | FE_INVALID     // invalid operation
+                   ;
             if(flag) {
-                int excepts = 0
-                    // | FE_INEXACT   // inexact result
-                    | FE_DIVBYZERO   // division by zero
-                    | FE_UNDERFLOW // result not representable due to underflow
-                    | FE_OVERFLOW    // result not representable due to overflow
-                    | FE_INVALID     // invalid operation
-                ;
                 feenableexcept(excepts);
             } else {
-                feenableexcept(0);
+                fedisableexcept(excepts);
             }
             return true;
         }
@@ -457,6 +458,21 @@ namespace GEO {
             // Install memory allocation handler
             std::set_new_handler(memory_exhausted_handler);
         }
+
+
+        /**
+         * \brief Gets the full path to the current executable.
+         */
+        std::string os_executable_filename() {
+            char buff[PATH_MAX];
+            ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
+            if (len != -1) {
+                buff[len] = '\0';
+                return std::string(buff);
+            }
+            return std::string("");
+        }        
+        
     }
 }
 

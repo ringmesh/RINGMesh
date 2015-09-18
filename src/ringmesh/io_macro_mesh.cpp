@@ -853,7 +853,7 @@ namespace RINGMesh {
         static RINGMesh2CSMP tet_descriptor = {
             4,                  // type
             4,                  // nb vertices
-            { 1, 0, 2, 3 },     // vertices
+            { 0, 1, 2, 3 },     // vertices
             4,                  // nb facets
             { 0, 1, 2, 3 }      // facets
             } ;
@@ -861,7 +861,7 @@ namespace RINGMesh {
         static RINGMesh2CSMP hex_descriptor = {
             6,                         // type
             8,                              // nb vertices
-            { 4, 0, 1, 5, 6, 2, 3, 7 },     // vertices
+            { 0, 4, 5, 1, 2, 6, 7, 3 },     // vertices
             6,                              // nb facets
             { 2, 0, 5, 1, 4, 3 }            // facets
             } ;
@@ -869,7 +869,7 @@ namespace RINGMesh {
         static RINGMesh2CSMP prism_descriptor = {
             12,                     // type
             6,                      // nb vertices
-            { 3, 4, 5, 0, 1, 2 },   // vertices
+            { 0, 1, 2, 3, 4, 5 },   // vertices
             5,                      // nb facets
             { 0, 2, 4, 3, 1 }       // facets
             } ;
@@ -877,7 +877,7 @@ namespace RINGMesh {
         static RINGMesh2CSMP pyramid_descriptor = {
             18,                 // type
             5,                  // nb vertices
-            { 1, 0, 3, 2, 4 },  // vertices
+            { 0, 1, 2, 3, 4 },  // vertices
             5,                  // nb facets
             { 1, 4, 3, 2, 0 }   // facets
             } ;
