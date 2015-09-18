@@ -3408,6 +3408,79 @@ namespace RINGMesh {
             }
         } ;
 
+        class FACETIOHandler: public BoundaryModelIOHandler {
+        public:
+            virtual bool load( const std::string& filename, BoundaryModel& model )
+            {
+                GEO::Logger::err( "I/O" )
+                    << "Loading of a Boundary Model from Facet file not implemented yet"
+                    << std::endl ;
+                return false ;
+            }
+
+            virtual bool save( BoundaryModel& model, const std::string& filename )
+            {
+                std::string path = GEO::FileSystem::dir_name( filename ) ;
+                std::string directory = GEO::FileSystem::base_name( filename ) ;
+                if( path == "." ) {
+                    path = GEO::FileSystem::get_current_working_directory() ;
+                }
+                std::ostringstream oss_dir ;
+                oss_dir << path << "/" << directory ;
+                std::string full_path = oss_dir.str() ;
+                GEO::FileSystem::create_directory( full_path ) ;
+
+                GEO::index_t t_count = 0;
+                for(GEO::index_t r=0; r<model.nb_regions(); ++r){
+                	std::ostringstream oss_file ;
+                    oss_file << oss_dir.str() << "/region" << r << ".fac";
+
+                    const BoundaryModelElement& region = model.region(r);
+
+                    GEO::index_t nb_vertices_reg = 0;
+                    GEO::index_t nb_facets_reg = 0;
+
+                    for(GEO::index_t b = 0; b<region.nb_boundaries(); ++b){
+                    	GEO::index_t surf_id = region.boundary_id( b ).index;
+
+                        nb_vertices_reg += model.surface(surf_id).nb_vertices();
+                        nb_facets_reg += model.surface(surf_id).nb_cells();
+                    }
+
+                    std::ofstream out(oss_file.str().c_str());
+                    out.precision(16);
+                    out << nb_vertices_reg << " "
+                    		<< nb_facets_reg << std::endl;
+
+                    GEO::index_t f_count = 0;
+
+                    for(GEO::index_t b=0; b<region.nb_boundaries(); ++b){
+                    	GEO::index_t surf_id = region.boundary_id( b ).index;
+                        const Surface& bound = model.surface( surf_id );
+                        for(GEO::index_t v=0; v<bound.nb_vertices(); ++v){
+                        	out << bound.model_vertex_id(v) << " "
+                        			<< bound.vertex(v)<<std::endl;
+                        }
+                    }
+                    for(GEO::index_t b=0; b<region.nb_boundaries(); ++b){
+                    	GEO::index_t surf_id = region.boundary_id( b ).index;
+                    	const Surface& bound = model.surface( surf_id );
+                    	for(GEO::index_t f=0; f<bound.nb_cells(); ++f){
+                        	out << ++f_count;
+                        	for(GEO::index_t v=0;
+                        			v<bound.nb_vertices_in_facet(f); ++v){
+                            	out << " "
+                            			<< bound.model_vertex_id( f, v );
+                            }
+                        	out << std::endl;
+                    	}
+                    }
+
+                    out.close();
+                }
+                return true;
+            }
+        } ;
 
         /************************************************************************/
 
@@ -3488,6 +3561,7 @@ namespace RINGMesh {
             ringmesh_register_BoundaryModelIOHandler_creator( UCDIOHandler, "inp" );
             ringmesh_register_BoundaryModelIOHandler_creator( WebGLIOHandler, "html" );
             ringmesh_register_BoundaryModelIOHandler_creator( ParaviewIOHandler, "paraview" );
+            ringmesh_register_BoundaryModelIOHandler_creator( FACETIOHandler, "fac" );
         }
 
     }
