@@ -91,7 +91,13 @@ inline void declare_additional_parameters()
 		"Gives the possibility to redefine the angle used to test slivers");
 }
 
-//general computations functions
+// ********************
+// GENERAL COMPUTATIONS
+// ********************
+
+/*
+ * computes the determinant of a 3x3 matrix
+ */
 inline double mat3_determinant(mat3& mtx){
 	return GEO::det3x3(
 			mtx(0,0), mtx(1,0), mtx(2,0),
@@ -99,6 +105,9 @@ inline double mat3_determinant(mat3& mtx){
 			mtx(0,2), mtx(1,2), mtx(2,2));
 }
 
+/*
+ * computes the squared Frobenius norm of a 3x3 matrix
+ */
 inline double frobenius_norm_sqr(mat3& mtx){
 	double norm=0;
 	for(index_t i=0; i<mtx.dimension(); ++i){
@@ -109,10 +118,18 @@ inline double frobenius_norm_sqr(mat3& mtx){
 	return norm;
 }
 
+/*
+ * computes the Frobenius norm of a 3x3 matrix
+ */
 inline double frobenius_norm(mat3& mtx){
 	return sqrt(frobenius_norm_sqr(mtx));
 }
 
+/*
+ * set the parameters of the jacobian matrix of the ideal tetrahedra
+ * with an edge-length of 1
+ * @param[out] W matrix to set the coefficient
+ */
 inline void define_trans_matrix(mat3& W){
 	W(0,0) = 1;
 	W(0,1) = 0.5;
@@ -125,6 +142,12 @@ inline void define_trans_matrix(mat3& W){
 	W(2,2) = sqrt(2)/sqrt(3);
 }
 
+/*
+ * set the jacobian matrix of a tetrahedron by reference to a specific corner
+ * @param[in] pi ith corner of the tetrahedron
+ * @param[out] jacobian output for the jacobian matrix
+ * @param[in] i index of the corner from which to define the jacobian.
+ */
 inline void set_jacobian(
 		vec3 p0, vec3 p1, vec3 p2, vec3 p3, mat3& jacobian, index_t i=0){
 	jacobian(0,0) = (p1.x - p0.x) * pow(-1, i);
@@ -140,6 +163,11 @@ inline void set_jacobian(
 	jacobian(2,2) = (p3.z - p0.z) * pow(-1, i);
 }
 
+/*
+ * set the weighted jacobian matrix of a tetrahedron by reference to a specific corner
+ * @param[in] pi ith corner of the tetrahedron
+ * @param[out] S output for the weighted jacobian matrix
+ */
 inline void set_weighted_jacobian(
 		vec3& p0, vec3& p1, vec3& p2, vec3& p3, mat3& S){
 	mat3 W;
@@ -151,6 +179,11 @@ inline void set_weighted_jacobian(
 	S = jacobian*inv_W;
 }
 
+/*
+ * computes the determinant of the jacobian matrix of a tetrahedron
+ * @param[in] pi ith corner of the tetrahedron
+ * @param[in] i index of the corner from which to define the jacobian.
+ */
 inline double jacobian_determinant(vec3& p0, vec3& p1, vec3& p2, vec3& p3,
 		index_t i=0){
 	return GEO::det3x3(
@@ -159,6 +192,10 @@ inline double jacobian_determinant(vec3& p0, vec3& p1, vec3& p2, vec3& p3,
 			(p3.x-p0.x), (p3.y-p0.y), (p3.z-p0.z));
 }
 
+/*
+ * computes the determinant of the weighted jacobian matrix of a tetrahedron
+ * @param[in] pi ith corner of the tetrahedron
+ */
 inline double weighted_jacobian_determinant(vec3& p0, vec3& p1, vec3& p2, vec3& p3)
 {
 	mat3 S;
@@ -167,6 +204,11 @@ inline double weighted_jacobian_determinant(vec3& p0, vec3& p1, vec3& p2, vec3& 
 	return mat3_determinant(S);
 }
 
+/*
+ * Sets the coefficients of the metric tensor of a tetrahedron
+ * transpose(S)*S, S being the weighted jacobian matrix
+ * @param[in] pi ith corner of the tetrahedron
+ */
 inline mat3 set_metric_tensors(vec3& p0, vec3& p1, vec3& p2, vec3& p3){
 	mat3 S;
 	set_weighted_jacobian(p0, p1, p2, p3, S);
@@ -174,7 +216,14 @@ inline mat3 set_metric_tensors(vec3& p0, vec3& p1, vec3& p2, vec3& p3){
 	return transpS*S;
 }
 
-//manages the data sructures
+// **************************
+// DATA STRUCTURES MANAGEMENT
+// **************************
+
+/*
+ * Checks if all the metric names are correct
+ * @param[in] metrics vector containing the metric names
+ */
 bool assert_metrics(std::vector< std::string >& metrics){
 	for(index_t i=0; i<metrics.size(); ++i){
 		if(metrics[i] == "aspect_beta") continue;
@@ -189,6 +238,11 @@ bool assert_metrics(std::vector< std::string >& metrics){
 	return true;
 }
 
+/*
+ * find a specific metric name inside the metrics vector
+ * @param[in] vector vector of the metric names
+ * @param[in] element name of the metric
+ */
 bool find_metric (std::vector< std::string >& vector, std::string element){
 	for(index_t i=0; i<vector.size(); ++i){
 		if(vector[i] == element) return true;
@@ -196,6 +250,12 @@ bool find_metric (std::vector< std::string >& vector, std::string element){
 	return false;
 }
 
+/*
+ * find a specific metric name inside the metrics vector, and returns its ID
+ * This function is outdated, and shouldn't be used
+ * @param[in] vector vector of the metric names
+ * @param[in] element name of the metric
+ */
 index_t find_metric_id(std::vector< std::string >& vector, std::string element){
 	for(index_t i=0; i<vector.size(); ++i){
 		if(vector[i] == element) return i;
@@ -203,6 +263,10 @@ index_t find_metric_id(std::vector< std::string >& vector, std::string element){
 	return NO_ID;
 }
 
+/*
+ * Fills the metrics vector with all the available metrics
+ * @param[in] all_metrics output vector for the metric names
+ */
 void define_all_metrics(std::vector< std::string >& all_metrics){
 	all_metrics.clear();
 	all_metrics.push_back("aspect_beta");
@@ -214,6 +278,11 @@ void define_all_metrics(std::vector< std::string >& all_metrics){
 	all_metrics.push_back("shape_size");
 }
 
+/*
+ * Builds the vector containing the range for each metric computed
+ * @param[in] metrics vector containing the metric names
+ * @param[out] clips vector of the clipping values for each metric
+ */
 void build_clips(std::vector< std::pair< double, double > >& clips,
 		std::vector< std::string > metrics){
 	for(index_t i=0; i<metrics.size(); ++i){
@@ -235,6 +304,11 @@ void build_clips(std::vector< std::pair< double, double > >& clips,
 	}
 }
 
+/*
+ * Checks if some tetrahedras have unconventional node ordering, leading to negative determinant
+ * This function doesn't seem to work correctly (no problems are ever found)
+ * @param[in] mesh_in entry mesh to test
+ */
 index_t assert_ordering(RINGMesh::MacroMesh& mesh_in){
 	GEO::ProgressTask progress("NodeOrder", mesh_in.nb_meshes());
 	index_t nb_bad_order=0;
@@ -275,6 +349,10 @@ index_t assert_ordering(RINGMesh::MacroMesh& mesh_in){
 	return nb_bad_order;
 }
 
+/*
+ * Computes the radius of the inscribed sphere
+ * @param[in] pi ith corner of the tetrahedron
+ */
 double in_radius(vec3& p0, vec3& p1, vec3& p2, vec3& p3){
 	double cell_vol = jacobian_determinant(p0, p1, p2, p3, 0)/6;
 	double cell_surf = GEO::Geom::triangle_area(p0, p1, p2) +
@@ -284,12 +362,20 @@ double in_radius(vec3& p0, vec3& p1, vec3& p2, vec3& p3){
 	return 3*cell_vol/cell_surf;
 }
 
+/*
+ * Computes the radius of the circumsphere
+ * @param[in] pi ith corner of the tetrahedron
+ */
 double circum_radius(vec3& p0, vec3& p1, vec3& p2, vec3& p3){
 	vec3 center = GEO::Geom::tetra_circum_center(p0, p1, p2, p3);
 
 	return GEO::Geom::distance(center, p0);
 }
 
+/*
+ * Computes the mean edge length of the tetrahedron
+ * @param[in] pi ith corner of the tetrahedron
+ */
 double mean_edge_length(vec3& p0, vec3& p1, vec3& p2, vec3& p3){
 	double sum_length = GEO::distance2(p0, p1) + GEO::distance2(p0, p2) +
 			GEO::distance2(p0, p3) + GEO::distance2(p1, p2) +
@@ -299,7 +385,10 @@ double mean_edge_length(vec3& p0, vec3& p1, vec3& p2, vec3& p3){
 
 }
 
-//to compute the norm of the jacobian matrix relatively to node p0
+// **************************
+// Computes the norm of the jacobian matrix of a tetrahedron
+// **************************
+
 double jacobian_norm_sqr(vec3& p0, vec3& p1, vec3& p2, vec3& p3, index_t v){
 	mat3 J;
 	set_jacobian(p0, p1, p2, p3, J, v);
@@ -326,7 +415,10 @@ inline double invjacobian_norm(
 	return sqrt(invjacobian_norm_sqr(p0, p1, p2, p3, v));
 }
 
-//to compute the norm of the weighted jacobian matrix relatively to node p0
+// **************************
+// Computes the norm of the weighted jacobian matrix of a tetrahedron
+// **************************
+
 double weighted_jacobian_norm_sqr(
 		vec3& p0, vec3& p1, vec3& p2, vec3& p3){
 	mat3 S;
@@ -353,7 +445,16 @@ inline double invweighted_jacobian_norm(
 	return sqrt(invweighted_jacobian_norm_sqr(p0, p1, p2, p3));
 }
 
-//quality metrics
+// **************************
+// Functions to compute the metrics on a specific cell
+// **************************
+
+/*
+ * Computes the Condition Number of a tetrahedron, based on the weighted jacobian matrix
+ * @param[in] mesh GEO::Mesh containing the current cell
+ * @param[in] c id of the tetrahedron
+ * @param[out] metric attribute of the GEO::MeshCells for the Condition Number
+ */
 bool condnumber( GEO::Mesh& mesh, index_t c,
 		GEO::Attribute< double >& metric ){
 	if(mesh.cells.type(c) != GEO::MESH_TET ) return false;
@@ -383,6 +484,13 @@ bool condnumber( GEO::Mesh& mesh, index_t c,
 	return true;
 }
 
+/*
+ * Computes the Aspect Ration Beta of a tetrahedron, based on the weighted jacobian matrix
+ * this metric compares the inradius and circumradius of the tetrahedron
+ * @param[in] mesh GEO::Mesh containing the current cell
+ * @param[in] c id of the tetrahedron
+ * @param[out] metric attribute of the GEO::MeshCells for the Aspect Ratio Beta
+ */
 bool aspect_ratio_beta( GEO::Mesh& mesh, index_t c, GEO::Attribute< double >& metric ){
 
 	vec3 p0 = mesh.vertices.point(mesh.cells.vertex(c,0));
@@ -402,6 +510,12 @@ bool aspect_ratio_beta( GEO::Mesh& mesh, index_t c, GEO::Attribute< double >& me
 	return true;
 }
 
+/*
+ * Computes the Aspect Ration Gamma of a tetrahedron, based on the weighted jacobian matrix
+ * @param[in] mesh GEO::Mesh containing the current cell
+ * @param[in] c id of the tetrahedron
+ * @param[out] metric attribute of the GEO::MeshCells for the Aspect Ratio Beta
+ */
 bool aspect_ratio_gamma( GEO::Mesh& mesh, index_t c, GEO::Attribute< double >& metric ){
 
 	vec3 p0 = mesh.vertices.point(mesh.cells.vertex(c,0));
@@ -422,16 +536,27 @@ bool aspect_ratio_gamma( GEO::Mesh& mesh, index_t c, GEO::Attribute< double >& m
 	return true;
 }
 
+/*
+ * Computes the dihedral angle between the face (p0,p1,p2) and (p0,p1,p3), in radian
+ * @param[in] pi ith corner of the tetrahedron
+ */
 inline double compute_rad_dihedral(
 		vec3& p0, vec3& p1, vec3& p2, vec3& p3 ){
 	vec3 n2 = GEO::normalize(GEO::Geom::triangle_normal(p0, p1, p2));
 	vec3 n3 = GEO::normalize(GEO::Geom::triangle_normal(p1, p0, p3));
 	double scal = GEO::dot(n2, n3);
+
+	//these conditions make sure that scal is not out of the interval [-1;1]
+	// for the acos(), due to numerical errors
 	if(scal>1) scal=1;
 	if(scal<-1) scal=-1;
 	return (std::acos(-scal));
 }
 
+/*
+ * Returns the minimum dihedral angle of the tetrahedron, in degrees
+ * @param[in] pi ith corner of the tetrahedron
+ */
 double tet_min_dihedral(
 		vec3& p0, vec3& p1, vec3& p2, vec3& p3 ){
 
@@ -445,6 +570,12 @@ double tet_min_dihedral(
 	return (min_dihedral*180)/M_PI;
 }
 
+/*
+ * Checks if a tetrahedron is or isn't a sliver
+ * @param[in] mesh GEO::Mesh containing the current tetrahedron
+ * @param[in] c id of the current tetrahedron
+ * @param[in] sliver_angle minimal angle before a cell is considered a sliver
+ */
 bool slivers_detect( GEO::Mesh& mesh, index_t c, double sliver_angle ){
 	vec3 p0 = mesh.vertices.point(mesh.cells.vertex(c, 0));
 	vec3 p1 = mesh.vertices.point(mesh.cells.vertex(c, 1));
@@ -458,6 +589,13 @@ bool slivers_detect( GEO::Mesh& mesh, index_t c, double sliver_angle ){
 	}
 }
 
+/*
+ * Computes the Relative Size of a tetrahedron. The target volume is the volume
+ * of the ideal tetrahedron with the mean edge length of the real tetrahedron
+ * @param[in] mesh GEO::Mesh containing the current cell
+ * @param[in] c id of the tetrahedron
+ * @param[out] metric attribute of the GEO::MeshCells for the Relative Size
+ */
 bool relative_size(GEO::Mesh& mesh, index_t c, GEO::Attribute< double >& metric){
 	vec3 p0 = mesh.vertices.point(mesh.cells.vertex(c, 0));
 	vec3 p1 = mesh.vertices.point(mesh.cells.vertex(c, 1));
@@ -471,6 +609,12 @@ bool relative_size(GEO::Mesh& mesh, index_t c, GEO::Attribute< double >& metric)
 	return true;
 }
 
+/*
+ * Computes the Shape ratio of a tetrahedron.
+ * @param[in] mesh GEO::Mesh containing the current cell
+ * @param[in] c id of the tetrahedron
+ * @param[out] metric attribute of the GEO::MeshCells for the Relative Size
+ */
 bool shape( GEO::Mesh& mesh, index_t c, GEO::Attribute< double >& metric){
 	vec3 p0 = mesh.vertices.point(mesh.cells.vertex(c, 0));
 	vec3 p1 = mesh.vertices.point(mesh.cells.vertex(c, 1));
@@ -497,7 +641,10 @@ bool shape( GEO::Mesh& mesh, index_t c, GEO::Attribute< double >& metric){
 	return true;
 }
 
-//general functions for computing the metrics
+// **************************
+// Functions to compute the metrics on an entire GEO::Mesh
+// **************************
+
 bool compute_volume( GEO::Mesh& mesh, std::string metric_name){
 	GEO::Attribute< bool > order(mesh.cells.attributes(), "order");
 	GEO::Attribute< double > metric(mesh.cells.attributes(), metric_name);
@@ -557,6 +704,11 @@ bool compute_aspect_gamma( GEO::Mesh& mesh, std::string metric_name){
 	return true;
 }
 
+/*
+ * Fills the boolean attribute for the slivers: if a cell is a sliver,
+ * its attribute is true, and false otherwise.
+ * Returns the number of slivers found.
+ */
 index_t compute_slivers( RINGMesh::MacroMesh& mesh_in, double sliver_angle){
 	index_t slivers_count = 0;
 	GEO::ProgressTask progress("Slivers", mesh_in.nb_meshes());
@@ -566,10 +718,6 @@ index_t compute_slivers( RINGMesh::MacroMesh& mesh_in, double sliver_angle){
 		GEO::Attribute< bool > slivers(mesh.cells.attributes(), "slivers");
 		for(index_t c=0; c<mesh.cells.nb(); ++c){
 			if(mesh.cells.type(c) != GEO::MESH_TET) continue;
-//			if(order[c] == false){
-//				slivers[c] = false;
-//				continue;
-//			}
 			slivers[c] = slivers_detect(mesh, c, sliver_angle);
 			if(slivers[c]) ++slivers_count;
 		}
@@ -609,6 +757,10 @@ bool compute_shape( GEO::Mesh& mesh, std::string metric_name){
 	return true;
 }
 
+/*
+ * Computes the Shape & Size ratio, corresponding to the product of the Relative Size
+ * and the Shape ratio.
+ */
 bool compute_shape_size( GEO::Mesh& mesh, std::string metric_name){
 	GEO::Attribute< bool > order(mesh.cells.attributes(), "order");
 	GEO::Attribute< double > shape(mesh.cells.attributes(), "shape");
@@ -627,9 +779,12 @@ bool compute_shape_size( GEO::Mesh& mesh, std::string metric_name){
 	return true;
 }
 
+/*
+ * General function to computes all the metrics on the entire MacroMesh.
+ */
 bool compute_metrics( RINGMesh::MacroMesh& mesh_in,
-		std::vector< std::string > metrics, index_t& slivers_count){
-	GEO::ProgressTask progress("Metrics", mesh_in.nb_meshes());
+		std::vector< std::string > metrics){
+	GEO::ProgressTask progress("Metrics", mesh_in.nb_meshes(), false);
 	for(index_t m=0; m<mesh_in.nb_meshes(); ++m){
 		GEO::Mesh& mesh = mesh_in.mesh(m);
 		for(index_t met_id=0; met_id<metrics.size(); ++met_id){
@@ -675,8 +830,18 @@ bool compute_metrics( RINGMesh::MacroMesh& mesh_in,
 	return true;
 }
 
-//functions for metrics summary
-// returns the number of cells taken into account to compute these metrics
+// **************************
+// Functions to compute the summary (mean and standard deviation)
+// **************************
+
+/* Computes the mean of the metric per region
+ * @param[in] mesh mesh of the current region
+ * @param[in] metric_name name of the current metric
+ * @param[out] local_mean structure to store the means per region
+ * @param[in] exclude if true, the slivers are ignored in the summary.
+ * @param[in] low_clip minimum value of the acceptable range for the metric
+ * @param[in] high_clip maximum value of the acceptable range for the metric
+ */
 bool local_mean( GEO::Mesh& mesh, std::string metric_name,
 		std::pair< double, double >& local_mean, bool exclude,
 		double low_clip, double high_clip){
@@ -699,8 +864,17 @@ bool local_mean( GEO::Mesh& mesh, std::string metric_name,
 	return true;
 }
 
+/* Computes the standard deviation of the metric per region
+ * @param[in] mesh mesh of the current region
+ * @param[in] metric_name name of the current metric
+ * @param[out] local_mean structure to store the deviation per region, and access the local_mean
+ * @param[in] exclude if true, the slivers are ignored in the summary.
+ * @param[in] low_clip minimum value of the acceptable range for the metric
+ * @param[in] high_clip maximum value of the acceptable range for the metric
+ */
 bool local_dev( GEO::Mesh& mesh, std::string metric_name,
-		std::pair< double, double >& local_mean, bool exclude, double low_clip, double high_clip){
+		std::pair< double, double >& local_mean, bool exclude,
+		double low_clip, double high_clip){
 	index_t nb_cells;
 	double sum = 0;
 	GEO::Attribute< double > metric(mesh.cells.attributes(), metric_name);
@@ -717,13 +891,18 @@ bool local_dev( GEO::Mesh& mesh, std::string metric_name,
 			}
 		}
 	}
-//	GEO::Logger::warn("Local dev") << nb_pbs_size << " problems with size" << std::endl;
-//	GEO::Logger::warn("Local dev") << nb_pbs_size2 << " problems with size2" << std::endl;
 	sum/=nb_cells;
 	local_mean.second = std::sqrt(sum);
 	return true;
 }
 
+/* Computes the summary of all metrics on all regions
+ * @param[in] mesh_in entry mesh
+ * @param[out] local_means structure to store the means and deviation per region
+ * @param[in] metrics vector of the metric names
+ * @param[in] exclude if true, the slivers are ignored in the summary.
+ * @param[in] clips structure storing the clipping values for all the metrics
+ */
 void compute_local_means(RINGMesh::MacroMesh& mesh_in,
 		std::vector < std::pair< double, double > >* local_means,
 		std::vector< std::string >& metrics, bool exclude,
@@ -754,6 +933,14 @@ void compute_local_means(RINGMesh::MacroMesh& mesh_in,
 	}
 }
 
+/* Computes the mean of the metric on the entire model
+ * @param[in] mesh_in entry mesh
+ * @param[in] metric_name name of the current metric
+ * @param[out] global_mean structure to store the global means
+ * @param[in] exclude if true, the slivers are ignored in the summary.
+ * @param[in] low_clip minimum value of the acceptable range for the metric
+ * @param[in] high_clip maximum value of the acceptable range for the metric
+ */
 bool global_mean( RINGMesh::MacroMesh& mesh_in, std::string metric_name,
 		std::pair< double, double >& global_mean, bool exclude,
 		double low_clip, double high_clip){
@@ -774,14 +961,21 @@ bool global_mean( RINGMesh::MacroMesh& mesh_in, std::string metric_name,
 			}
 		}
 	}
-//	GEO::Logger::warn("Global Means") << nb_pbs_size << " problems with size" << std::endl;
-//	GEO::Logger::warn("Global Means") << nb_pbs_size2 << " problems with size2" << std::endl;
 	global_mean.first/=nb_cells;
 	return true;
 }
 
+/* Computes the standard deviation of the entire model
+ * @param[in] mesh_in entry mesh
+ * @param[in] metric_name name of the current metric
+ * @param[out] global_mean structure to store the deviation per region, and access the local_mean
+ * @param[in] exclude if true, the slivers are ignored in the summary.
+ * @param[in] low_clip minimum value of the acceptable range for the metric
+ * @param[in] high_clip maximum value of the acceptable range for the metric
+ */
 bool global_dev( RINGMesh::MacroMesh& mesh_in, std::string metric_name,
-		std::pair< double, double >& global_mean, bool exclude, double low_clip, double high_clip){
+		std::pair< double, double >& global_mean, bool exclude,
+		double low_clip, double high_clip){
 	index_t nb_cells;
 	double sum=0;
 	for(index_t m=0; m<mesh_in.nb_meshes(); ++m){
@@ -805,6 +999,13 @@ bool global_dev( RINGMesh::MacroMesh& mesh_in, std::string metric_name,
 	return true;
 }
 
+/* Computes the summary of all metrics on the entire model
+ * @param[in] mesh_in entry mesh
+ * @param[out] global_means structure to store the means and deviation
+ * @param[in] exclude if true, the slivers are ignored in the summary.
+ * @param[in] metrics vector of the metric names
+ * @param[in] clips structure storing the clipping values for all the metrics
+ */
 void compute_global_means(RINGMesh::MacroMesh& mesh_in,
 		std::vector < std::pair< double, double > >& global_means,
 		std::vector< std::string >& metrics, bool exclude,
@@ -923,8 +1124,14 @@ void compute_global_means(RINGMesh::MacroMesh& mesh_in,
 //	}
 //}
 
-//output functions
-//return the power of 10 of any integer
+// **************************
+// Functions to compute the summary (mean and standard deviation)
+// **************************
+
+/*
+ * Returns the order of an integer
+ * @param[in] num integer to test
+ */
 index_t find_order(index_t num){
 	index_t n=0;
 	while(num >= pow(10, n+1)){
@@ -933,11 +1140,22 @@ index_t find_order(index_t num){
 	return n;
 }
 
+/*
+ * Gets the number of characters of a cell in the table
+ * (17, except for the volume in which it is 23)
+ * @param[in] metric name of the current metric
+ */
 index_t get_stream_size(std::string& metric){
 	if(metric == "volume") return 23;
 	else return 17;
 }
 
+/*
+ * Writes the first line of the output file (name of the columns)
+ * @param[in] in_mesh entry mesh
+ * @param[in] out ofstream for the output
+ * @param[in] metrics list of all the metrics
+ */
 void write_headers(RINGMesh::MacroMesh& in_mesh,
 		std::ofstream& out, std::vector< std::string > metrics){
 	index_t size;
@@ -971,6 +1189,13 @@ void write_headers(RINGMesh::MacroMesh& in_mesh,
 	out << std::endl;
 }
 
+/*
+ * Writes the first elements of a line of the summary
+ * ID of the GEO::Mesh and number of cells
+ * @param[in] in_mesh entry mesh
+ * @param[in] m ID of the mesh (NO_ID if this is the gloal means and deviations)
+ * @param[in] nb_cells Number of cells in the mesh
+ */
 void start_line(std::ofstream& out, RINGMesh::MacroMesh& in_mesh,
 		index_t m, index_t nb_cells = 0){
 	index_t tot_size;
@@ -1021,6 +1246,12 @@ void start_line(std::ofstream& out, RINGMesh::MacroMesh& in_mesh,
 	}
 }
 
+/*
+ * Writes the mean and deviation of a specific metric for a specific GEO::Mesh
+ * @param[in] out ofstream for the output
+ * @param[in] metric name of the current metric
+ * @param[in] data mean and deviation for this metric on the current mesh
+ */
 void write_data(std::ofstream& out,
 		std::string metric, std::pair< double, double >& data){
 	std::ostringstream mean_oss;
@@ -1043,6 +1274,14 @@ void write_data(std::ofstream& out,
 	out << data_str << " | ";
 }
 
+/*
+ * Writes the summary of the quality metrics
+ * @param[in] out_summary Name of the output file in which to save the summary
+ * @param[in] in_mesh entry mesh
+ * @param[in] metrics list of all the metrics
+ * @param[in] local_means structure containing all the means and deviations per region
+ * @param[in] structure containing the means and deviations in the entire model
+ */
 void write_means(std::string& out_summary, RINGMesh::MacroMesh& in_mesh,
 		bool exclude, std::vector< std::string >& metrics,
 		std::vector< std::pair< double, double > >* local_means,
@@ -1072,6 +1311,12 @@ void write_means(std::string& out_summary, RINGMesh::MacroMesh& in_mesh,
 	out.close();
 }
 
+/*
+ * Writes the entire quality metrics for each node of a GEO::Mesh
+ * @param[in] out_name name of the output file for this mesh
+ * @param[in] mesh current mesh
+ * @param[in] metrics list of all the metrics
+ */
 void write_local_outputs(std::string out_name, GEO::Mesh& mesh,
 		std::vector< std::string >& metrics){
 	std::ofstream out(out_name.c_str());
@@ -1090,6 +1335,13 @@ void write_local_outputs(std::string out_name, GEO::Mesh& mesh,
 	out.close();
 }
 
+/*
+ * Writes the entire quality metrics
+ * @param[in] out_name name/base_name of the output file
+ * @param[in] mesh_in entry mesh
+ * @param[in] metrics list of all the metrics
+ * @param[in] split if true, creates one file per region
+ */
 void write_outputs(std::string& out_name, RINGMesh::MacroMesh& mesh_in,
 		bool split, std::vector< std::string > metrics){
 	GEO::Logger::out("I/O") << "saving the quality metrics" << std::endl;
@@ -1128,6 +1380,11 @@ void write_outputs(std::string& out_name, RINGMesh::MacroMesh& mesh_in,
 	return;
 }
 
+/*
+ * Writes the coordinates of all the slivers found, as well as the mesh containing each one
+ * @param[in] out_slivers Name of the output file
+ * @param[in] mesh_in entry mesh
+ */
 void write_slivers(std::string& out_slivers, RINGMesh::MacroMesh& mesh_in){
 	std::ofstream out(out_slivers.c_str());
 	out.precision(8);
@@ -1152,7 +1409,9 @@ void write_slivers(std::string& out_slivers, RINGMesh::MacroMesh& mesh_in){
 	out.close();
 }
 
-//main function
+// **************************
+// Main Function
+// **************************
 
 int main( int argc, char** argv )
 {
