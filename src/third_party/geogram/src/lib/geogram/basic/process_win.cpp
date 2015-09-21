@@ -713,6 +713,15 @@ namespace GEO {
             _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
             _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
         }
+
+        /**
+         * \brief Gets the full path to the current executable.
+         */
+        std::string os_executable_filename() {
+            TCHAR result[MAX_PATH];
+            GetModuleFileName( NULL, result, MAX_PATH);
+            return std::string(result);
+        }
     }
 }
 

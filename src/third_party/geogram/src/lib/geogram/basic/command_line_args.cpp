@@ -111,6 +111,10 @@ namespace {
             "pre:vcluster_bins", 0,
             "Number of bins for vertex clustering"
         );
+        declare_arg(
+            "pre:brutal_kill_borders", 0,
+            "Brutally kill facets incident to border (nb iter)"
+        );
     }
 
     /**

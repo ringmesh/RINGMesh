@@ -370,10 +370,11 @@ namespace RINGMesh {
         const std::vector< index_t >& unique_indices = uniqueID.indices() ;
         std::vector< vec3 > unique_points ;
         uniqueID.unique_points( unique_points ) ;
-        tetmesh_.vertices.create_vertices( unique_points.size() ) ;
-        for( index_t p = 0; p < unique_points.size(); p++ ) {
-            tetmesh_.vertices.point( p ) = unique_points[p] ;
-        }
+        index_t starting_index = tetmesh_.vertices.create_vertices(
+            unique_points.size() ) ;
+        GEO::Memory::copy( tetmesh_.vertices.point_ptr( starting_index ),
+            unique_points.data()->data(),
+            3 * sizeof(double) * unique_points.size() ) ;
 
         if( !well_edges.empty() ) {
             index_t nb_well_edges = 0 ;
@@ -396,24 +397,26 @@ namespace RINGMesh {
             }
         }
 
-        index_t offset = 0 ;
-        index_t cur_facet = 0 ;
+        index_t offset_vertices = 0 ;
+        index_t offset_facets = 0 ;
         tetmesh_.facets.create_triangles( nb_facets ) ;
         GEO::Attribute< index_t > surface_region( tetmesh_.facets.attributes(),
             surface_att_name ) ;
         for( index_t s = 0; s < unique_surfaces.size(); s++ ) {
             const Surface& surface =
                 dynamic_cast< const Surface& >( *unique_surfaces[s] ) ;
+            RINGMESH_PARALLEL_LOOP
             for( index_t t = 0; t < surface.nb_cells(); t++ ) {
                 ringmesh_debug_assert( surface.is_triangle( t ) ) ;
                 for( index_t v = 0; v < 3; v++ ) {
-                    tetmesh_.facets.set_vertex( cur_facet, v,
-                        unique_indices[offset + surface.surf_vertex_id( t, v )] ) ;
+                    tetmesh_.facets.set_vertex( offset_facets + t, v,
+                        unique_indices[offset_vertices + surface.surf_vertex_id( t, v )] ) ;
                 }
-                surface_region[cur_facet++ ] = surface.bme_id().index ;
+                surface_region[offset_facets + t] = surface.bme_id().index ;
 
             }
-            offset += surface.nb_vertices() ;
+            offset_vertices += surface.nb_vertices() ;
+            offset_facets += surface.nb_cells() ;
         }
         tetmesh_.facets.connect() ;
     }
