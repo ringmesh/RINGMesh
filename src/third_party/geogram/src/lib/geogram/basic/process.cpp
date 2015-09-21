@@ -327,7 +327,8 @@ namespace GEO {
         index_t os_number_of_cores();
         size_t os_used_memory();
         size_t os_max_used_memory();
-
+        std::string os_executable_filename();
+        
         void initialize() {
 
             Environment* env = Environment::instance();
@@ -423,6 +424,10 @@ namespace GEO {
             return os_max_used_memory();
         }
 
+        std::string executable_filename() {
+            return os_executable_filename();
+        }
+        
         void set_thread_manager(ThreadManager* thread_manager) {
             thread_manager_ = thread_manager;
         }

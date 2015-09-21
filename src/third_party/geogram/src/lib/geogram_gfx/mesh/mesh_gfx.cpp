@@ -217,11 +217,11 @@ namespace GEO {
         // First time, we try to "upgrade" implementation
         // to higher GLSL version if supported
         if(!initialized_) {
-	    double GLSL_version = supported_GLSL_version();
-	   Logger::out("GLSL") << "Selecting among NoShader,GLSL150,GLSL440..." << std::endl;
+            double GLSL_version = supported_GLSL_version();
+            Logger::out("GLSL") << "Selecting among NoShader,GLSL150,GLSL440..." << std::endl;
             if(GLSL_version < 1.5) {
                 Logger::out("GLSL") << "Using MeshGfxImplNoShader" << std::endl;
-	        // We keep the already bound default implementation (plain OpenGL)
+                // We keep the already bound default implementation (plain OpenGL)
             } else if(GLSL_version < 4.4) {
                 Logger::out("GLSL") << "Using MeshGfxImplGLSL150" << std::endl;
                 replace_implementation(new MeshGfxImplGLSL150);            
@@ -275,7 +275,7 @@ namespace GEO {
             GLSL_version = forced_version;
             Logger::out("GLSL") << "forced to version "
                                 << GLSL_version 
-	                        << " (gfx:GLSL_version)" << std::endl;
+                                << " (gfx:GLSL_version)" << std::endl;
         }
         return GLSL_version;
     }

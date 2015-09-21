@@ -957,10 +957,9 @@ namespace RINGMesh {
         if( clear ) {
             mesh_.clear( true, true ) ;
         }
-        mesh_.vertices.create_vertices( points.size() ) ;
-        for( index_t v = 0; v < points.size(); v++ ) {
-            set_vertex( v, points[ v ], false ) ;
-        }
+        index_t start = mesh_.vertices.create_vertices( points.size() ) ;
+        GEO::Memory::copy( mesh_.vertices.point_ptr( start ), points.data()->data(),
+            3 * sizeof(double) * points.size() ) ;
     }
 
     /*!
