@@ -957,9 +957,11 @@ namespace RINGMesh {
         if( clear ) {
             mesh_.clear( true, true ) ;
         }
-        index_t start = mesh_.vertices.create_vertices( points.size() ) ;
-        GEO::Memory::copy( mesh_.vertices.point_ptr( start ), points.data()->data(),
-            3 * sizeof(double) * points.size() ) ;
+        if( !points.empty() ) {
+            index_t start = mesh_.vertices.create_vertices( points.size() ) ;
+            GEO::Memory::copy( mesh_.vertices.point_ptr( start ),
+                points.data()->data(), 3 * sizeof(double) * points.size() ) ;
+        }
     }
 
     /*!
@@ -1167,8 +1169,8 @@ namespace RINGMesh {
         bool clear_mesh )
     {
         BoundaryModelMeshElement::set_vertices( points, clear_mesh ) ;
-        for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
-            mesh_.edges.create_edge( e, e + 1 ) ;
+        for( index_t e = 1; e < nb_vertices(); e++ ) {
+            mesh_.edges.create_edge( e - 1, e ) ;
         }
     }
 
