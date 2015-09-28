@@ -2360,6 +2360,14 @@ namespace RINGMesh {
 
             GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
                 << std::endl ;
+            std::vector< std::string > names ;
+            MacroMeshIOHandlerFactory::list_creators( names ) ;
+            GEO::Logger::out( "I/O" ) << "Currently supported file formats:"  ;
+            for( index_t i = 0; i < names.size(); i++ ) {
+                GEO::Logger::out( "I/O" ) << " " << names[i] ;
+            }
+            GEO::Logger::out( "I/O" ) <<std::endl ;
+
             return nil ;
         }
 
