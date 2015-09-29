@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -51,7 +51,7 @@ namespace GEO {
 }
 
 namespace RINGMesh {
-    class GeoModelElement ;
+    class BoundaryModelElement ;
     class Edge ;
     class Surface ;
     class Line ;
@@ -336,7 +336,7 @@ namespace RINGMesh {
 
         static void mesh_facet_connect( GEO::Mesh& mesh ) ;
         static void check_and_repair_mesh_consistency(
-            const GeoModelElement& region,
+            const BoundaryModelElement& region,
             GEO::Mesh& mesh,
             bool check_duplicated_facet = false ) ;
         static float64 triangle_area(

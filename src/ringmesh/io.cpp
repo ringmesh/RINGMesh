@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -44,7 +44,7 @@ namespace RINGMesh {
     namespace RINGMeshIO {
         void initialize()
         {
-            GeoModelIOHandler::initialize() ;
+            BoundaryModelIOHandler::initialize() ;
             MacroMeshIOHandler::initialize() ;
             WellGroupIOHandler::initialize() ;
         }

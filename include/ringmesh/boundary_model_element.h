@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -55,7 +55,7 @@ namespace GEO {
 }
 
 namespace RINGMesh {
-    class GeoModel ;
+    class BoundaryModel ;
     class Surface ;
     class ColocaterANN ;
 }
@@ -63,13 +63,13 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     /*!
-     * @brief Generic class describing one element of a GeoModel
+     * @brief Generic class describing one element of a BoundaryModel
      */
-    class RINGMESH_API GeoModelElement {
-    ringmesh_disable_copy( GeoModelElement ) ;
+    class RINGMESH_API BoundaryModelElement {
+    ringmesh_disable_copy( BoundaryModelElement ) ;
     public:
         /*!
-         * @brief Geological feature types for GeoModelElement
+         * @brief Geological feature types for BoundaryModelElement
          * @todo Read all possible geological features set by Gocad or 
          * another software.
          */
@@ -93,7 +93,7 @@ namespace RINGMesh {
         } ;
 
         /*!
-         * @brief Type of the GeoModelElement
+         * @brief Type of the BoundaryModelElement
          * @details When no type is defined NO_TYPE should be used
          * There are two categories of elements
          *   - low-level elements (CORNER, LINE, SURFACE, REGION) which have a 
@@ -128,8 +128,8 @@ namespace RINGMesh {
         } ;
 
         /*! 
-         * @brief Unique identification of a GeoModelElement in a GeoModel
-         * @details Stores the TYPE of the element and its index in the GeoModel.
+         * @brief Unique identification of a BoundaryModelElement in a BoundaryModel
+         * @details Stores the TYPE of the element and its index in the BoundaryModel.
          *          Default values are NO_TYPE and NO_ID
          */
         struct bme_t {
@@ -168,7 +168,7 @@ namespace RINGMesh {
             }
             friend std::ostream& operator<<( std::ostream& os, const bme_t& in )
             {
-                os << GeoModelElement::type_name( in.type ) << " " << in.index ;
+                os << BoundaryModelElement::type_name( in.type ) << " " << in.index ;
                 return os ;
             }
 
@@ -176,9 +176,9 @@ namespace RINGMesh {
             {
                 return type != NO_TYPE && type != ALL_TYPES && index != NO_ID ;
             }
-            /// TYPE of the GeoModelElement
+            /// TYPE of the BoundaryModelElement
             TYPE type ;
-            ///  Index of the element in the GeoModel
+            ///  Index of the element in the BoundaryModel
             index_t index ;
         } ;
        
@@ -231,13 +231,13 @@ namespace RINGMesh {
          */
 
         /*!
-         * @brief Constructs a GeoModelElement
+         * @brief Constructs a BoundaryModelElement
          *
          * @param[in] model Pointer to the parent model.
          * @param[in] element_type Type of the element to create
          * @param[in] id Index of the element in the corresponding vector in the model
          */
-        GeoModelElement( GeoModel* model = NULL, TYPE element_type =
+        BoundaryModelElement( BoundaryModel* model = NULL, TYPE element_type =
             NO_TYPE, index_t id = NO_ID )
             :
                 model_( model ),
@@ -247,7 +247,7 @@ namespace RINGMesh {
         {
         }
 
-        virtual ~GeoModelElement()
+        virtual ~BoundaryModelElement()
         {
         }
 
@@ -256,7 +256,7 @@ namespace RINGMesh {
          * @warning Connectivity information must match exactly with
          *          elements in the exact same order
          */
-        bool operator==( const GeoModelElement& rhs ) const ;
+        bool operator==( const BoundaryModelElement& rhs ) const ;
 
         /*!@}
          * \name Validity checks
@@ -284,7 +284,7 @@ namespace RINGMesh {
         bool has_name() const { 
             return name() != "" ;
         }
-        const GeoModel& model() const {
+        const BoundaryModel& model() const {
             return *model_ ;
         }
         bool has_model() const
@@ -321,7 +321,7 @@ namespace RINGMesh {
         {
             return boundaries_[x] ;
         }
-        const GeoModelElement& boundary( index_t x ) const ;
+        const BoundaryModelElement& boundary( index_t x ) const ;
 
         bool side( index_t i ) const
         {
@@ -336,9 +336,9 @@ namespace RINGMesh {
         {
             return in_boundary_[x] ;
         }
-        const GeoModelElement& in_boundary( index_t x ) const ;
+        const BoundaryModelElement& in_boundary( index_t x ) const ;
 
-        bool is_inside_border( const GeoModelElement& e ) const ;
+        bool is_inside_border( const BoundaryModelElement& e ) const ;
         bool has_inside_border() const ;
 
         /*!@}
@@ -352,7 +352,7 @@ namespace RINGMesh {
         {
             return parent_ ;
         }
-        const GeoModelElement& parent() const ;
+        const BoundaryModelElement& parent() const ;
 
         index_t nb_children() const
         {
@@ -362,7 +362,7 @@ namespace RINGMesh {
         {
             return children_[x] ;
         }
-        const GeoModelElement& child( index_t x ) const ;
+        const BoundaryModelElement& child( index_t x ) const ;
 
         /*!@}
          * \name DEPRECATED. Accessors to geometry . 
@@ -415,10 +415,10 @@ namespace RINGMesh {
          * @{
          */
         void copy_macro_topology(
-            const GeoModelElement& rhs,
-            GeoModel& model ) ;
+            const BoundaryModelElement& rhs,
+            BoundaryModel& model ) ;
 
-        void set_model( GeoModel* m ) {model_ = m ;}
+        void set_model( BoundaryModel* m ) {model_ = m ;}
         void set_element_type( TYPE t ) {id_.type = t ;}
         void set_id( index_t id ) {id_.index = id ;}
         void set_name( const std::string& name ) {name_ = name ;}
@@ -523,10 +523,10 @@ namespace RINGMesh {
          */
 
     protected:
-        /// Pointer to the GeoModel owning this element
-        GeoModel* model_ ;
+        /// Pointer to the BoundaryModel owning this element
+        BoundaryModel* model_ ;
 
-        /// Unique identifier of the GeoModelElement in the model
+        /// Unique identifier of the BoundaryModelElement in the model
         bme_t id_ ;
 
         /// Name of the element - default is an empty string
@@ -554,33 +554,33 @@ namespace RINGMesh {
 
     /// @todo This is probably not the best place to do this.
     // Anybody can include a header says Mr Stroustrup (Jeanne).
-    typedef GeoModelElement BME ;
+    typedef BoundaryModelElement BME ;
 
     /*!
      * @brief Name of the attribute storing the index of a vertex in the model
      *
-     * @note It should be in GeoModelMeshElement class
+     * @note It should be in BoundaryModelMeshElement class
     *       but then there are linking errors in code that depends on it ?? (JP)
      */
     const static std::string model_vertex_id_att_name = std::string(
         "model_vertex_id" ) ;
 
     /*!
-     * @brief Abstract base class for GeoModelElement 
+     * @brief Abstract base class for BoundaryModelElement 
      *        which have a geometrical representation
      * @details This representation is stored as a GEO::Mesh
      */
-    class RINGMESH_API GeoModelMeshElement: public GeoModelElement {
-    ringmesh_disable_copy( GeoModelMeshElement ) ;
+    class RINGMESH_API BoundaryModelMeshElement: public BoundaryModelElement {
+    ringmesh_disable_copy( BoundaryModelMeshElement ) ;
     public:
-        GeoModelMeshElement( GeoModel* model = NULL, TYPE element_type =
+        BoundaryModelMeshElement( BoundaryModel* model = NULL, TYPE element_type =
             NO_TYPE, index_t id = NO_ID )
-            : GeoModelElement( model, element_type, id )
+            : BoundaryModelElement( model, element_type, id )
         {
             model_vertex_id_.bind( mesh_.vertices.attributes(),
                 model_vertex_id_att_name ) ;
         }
-        virtual ~GeoModelMeshElement() ;
+        virtual ~BoundaryModelMeshElement() ;
 
         /*!
          * @brief Global validity of the element
@@ -681,25 +681,25 @@ namespace RINGMesh {
         /// Mesh of the element
         GEO::Mesh mesh_ ;
         /*! Attribute on the Mesh vertices storing the index of
-         *  the vertex in the the GeoModel owning this element 
+         *  the vertex in the the BoundaryModel owning this element 
          */
         GEO::Attribute< index_t > model_vertex_id_ ;
     } ;
 
     /// @todo This is probably not the best place to do this.
     // Anybody can include a header says Mr Stroustrup (Jeanne).
-    typedef GeoModelMeshElement BMME ;
+    typedef BoundaryModelMeshElement BMME ;
 
     /*!
-     * @brief A GeoModelElement of type CORNER
+     * @brief A BoundaryModelElement of type CORNER
      *
      * @details It is a unique point.
      */
-    class RINGMESH_API Corner: public GeoModelMeshElement {
+    class RINGMESH_API Corner: public BoundaryModelMeshElement {
     public:
-        Corner( GeoModel* model = nil, index_t id = NO_ID, const vec3& vertex =
+        Corner( BoundaryModel* model = nil, index_t id = NO_ID, const vec3& vertex =
             vec3() )
-            : GeoModelMeshElement( model, CORNER, id )
+            : BoundaryModelMeshElement( model, CORNER, id )
         {
             mesh_.vertices.create_vertex( vertex.data() ) ;
         }
@@ -710,17 +710,17 @@ namespace RINGMesh {
 
         void set_vertex( const vec3& point, bool update_model )
         {
-            GeoModelMeshElement::set_vertex( 0, point, update_model ) ;
+            BoundaryModelMeshElement::set_vertex( 0, point, update_model ) ;
         }
 
         void set_vertex( index_t model_point_id )
         {
-            GeoModelMeshElement::set_vertex( 0, model_point_id ) ;
+            BoundaryModelMeshElement::set_vertex( 0, model_point_id ) ;
         }
 
         void set_model_vertex_id( index_t model_id )
         {
-            GeoModelMeshElement::set_model_vertex_id( 0, model_id ) ;
+            BoundaryModelMeshElement::set_model_vertex_id( 0, model_id ) ;
         }
 
     protected:
@@ -728,14 +728,14 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief A GeoModelElement of type LINE
+     * @brief A BoundaryModelElement of type LINE
      *
      * @details One connected component of a 1-manifold.
      *         
      */
-    class RINGMESH_API Line: public GeoModelMeshElement {
+    class RINGMESH_API Line: public BoundaryModelMeshElement {
     public:
-        Line( GeoModel* model = nil, index_t id = NO_ID ) ;
+        Line( BoundaryModel* model = nil, index_t id = NO_ID ) ;
 
         ~Line()
         {
@@ -785,16 +785,16 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief A GeoModelElement of type SURFACE
+     * @brief A BoundaryModelElement of type SURFACE
      *
      * @details One 2-manifold connected component .
      */
-    class RINGMESH_API Surface: public GeoModelMeshElement {
+    class RINGMESH_API Surface: public BoundaryModelMeshElement {
     public:
         const static index_t NO_ADJACENT = index_t( -1 ) ;
 
-        Surface( GeoModel* model = nil, index_t id = NO_ID )
-            : GeoModelMeshElement( model, SURFACE, id ), tools( *this )
+        Surface( BoundaryModel* model = nil, index_t id = NO_ID )
+            : BoundaryModelMeshElement( model, SURFACE, id ), tools( *this )
         {
         }
 
@@ -817,12 +817,12 @@ namespace RINGMesh {
         // There is probably a nicer solution (Jeanne)
         const vec3& vertex( index_t v ) const
         {
-            return GeoModelMeshElement::vertex( v ) ;
+            return BoundaryModelMeshElement::vertex( v ) ;
         }
 
         index_t model_vertex_id( index_t v ) const
         {
-            return GeoModelMeshElement::model_vertex_id( v ) ;
+            return BoundaryModelMeshElement::model_vertex_id( v ) ;
         }
 
         /*!
@@ -873,7 +873,7 @@ namespace RINGMesh {
         }
         index_t model_vertex_id_at_corner( index_t corner ) const
         {
-            return GeoModelMeshElement::model_vertex_id(
+            return BoundaryModelMeshElement::model_vertex_id(
                 mesh_.facet_corners.vertex( corner ) ) ;
         }
 
@@ -887,12 +887,12 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Returns the index of vertex \param v in facet \param f in the parent GeoModel
+         * @brief Returns the index of vertex \param v in facet \param f in the parent BoundaryModel
          */
         index_t model_vertex_id( index_t f, index_t v ) const
         {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-            return GeoModelMeshElement::model_vertex_id(
+            return BoundaryModelMeshElement::model_vertex_id(
                 surf_vertex_id( f, v ) ) ;
         }
 
@@ -1038,24 +1038,24 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Class to answer geometrical requests on a GeoModelElement
+     * @brief Class to answer geometrical requests on a BoundaryModelElement
      */
-    class RINGMESH_API GeoModelElementMeasure {
+    class RINGMESH_API BoundaryModelElementMeasure {
     public:
-        static double size( const GeoModelElement* E ) ;
+        static double size( const BoundaryModelElement* E ) ;
 
-        static double cell_size( const GeoModelElement* E, index_t cell ) ;
+        static double cell_size( const BoundaryModelElement* E, index_t cell ) ;
 
-        static double distance( const GeoModelElement* from, const vec3& p ) ;
+        static double distance( const BoundaryModelElement* from, const vec3& p ) ;
 
         static double distance(
-            const GeoModelElement* from,
-            const GeoModelElement* to ) ;
+            const BoundaryModelElement* from,
+            const BoundaryModelElement* to ) ;
 
-        static vec3 barycenter( const GeoModelElement* E ) ;
+        static vec3 barycenter( const BoundaryModelElement* E ) ;
 
         static vec3 barycenter(
-            const GeoModelElement* E,
+            const BoundaryModelElement* E,
             const std::vector< index_t >& cells ) ;
     } ;
 } // namespace

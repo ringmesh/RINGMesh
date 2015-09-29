@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Sup�rieure de G�ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY

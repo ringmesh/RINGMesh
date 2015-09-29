@@ -29,23 +29,23 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Sup�rieure de G�ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
-#include <ringmesh/geo_model.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/boundary_model_builder.h>
 #include <ringmesh/io.h>
 #include <ringmesh/utils.h>
 #include <geogram/basic/logger.h>
-#include <ringmesh/geo_model_builder.h>
 
 
-// The function find_element in geo_model does not exist anymore
+// The function find_element in boundary_model does not exist anymore
 // You need to reimplement it here in your file. JP
 
 
@@ -53,7 +53,7 @@ namespace {
     using namespace RINGMesh ;
 
     bool check_with_expected_result(
-        const GeoModelBuilder& builder,
+        const BoundaryModelBuilder& builder,
         std::set< BME::bme_t >& initial_elts,
         const std::set< BME::bme_t >& result )
     {
@@ -82,15 +82,15 @@ int main( int argc, char** argv )
 
   /*  GEO::Logger::out( "TEST" ) << "Test get_dependent_elements" << std::endl ;
 
-    GeoModel in ;
+    BoundaryModel in ;
     if( !RINGMeshIO::load( "../data/model1.ml", in ) ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
         return 1 ;
     }
-    GeoModelBuilder builder( in ) ;
+    BoundaryModelBuilder builder( in ) ;
 
     // First test
-    index_t reg_id = in.find_element( GeoModelElement::REGION, "Region_3" ) ;
+    index_t reg_id = in.find_element( BoundaryModelElement::REGION, "Region_3" ) ;
     if( reg_id == NO_ID ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
         return 1 ;
@@ -99,29 +99,29 @@ int main( int argc, char** argv )
     elt_set.insert( in.region( reg_id ).bme_id() ) ;
 
     std::set< BME::bme_t > result ;
-    result.insert( BME::bme_t( GeoModelElement::REGION, 1 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 12 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 13 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 18 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 19 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 12 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 13 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 14 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 25 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 26 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 27 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 34 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 35 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 3 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 8 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 12 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 16 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 20 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 14 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 20 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 22 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 23 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::INTERFACE, 8 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::REGION, 1 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CORNER, 12 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CORNER, 13 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CORNER, 18 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CORNER, 19 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 12 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 13 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 14 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 25 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 26 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 27 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 34 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 35 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 3 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 8 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 12 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 16 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 20 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CONTACT, 14 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CONTACT, 20 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CONTACT, 22 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CONTACT, 23 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::INTERFACE, 8 ) ) ;
 
     if( !check_with_expected_result( builder, elt_set, result ) ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
@@ -131,36 +131,36 @@ int main( int argc, char** argv )
     elt_set.clear() ;
     result.clear() ;
     // Second test
-    reg_id = in.find_element( GeoModelElement::REGION, "h1_model1_1" ) ;
+    reg_id = in.find_element( BoundaryModelElement::REGION, "h1_model1_1" ) ;
     if( reg_id == NO_ID ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
         return 1 ;
     }
     elt_set.insert( in.region( reg_id ).bme_id() ) ;
 
-    result.insert( BME::bme_t( GeoModelElement::REGION, 3 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 14 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 15 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 16 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 17 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 19 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 20 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 21 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 22 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 23 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 24 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 32 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 33 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 6 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 7 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 11 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 15 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 19 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 15 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 16 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 17 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 18 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::INTERFACE, 4 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::REGION, 3 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CORNER, 14 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CORNER, 15 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CORNER, 16 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CORNER, 17 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 19 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 20 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 21 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 22 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 23 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 24 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 32 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 33 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 6 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 7 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 11 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 15 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 19 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CONTACT, 15 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CONTACT, 16 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CONTACT, 17 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::CONTACT, 18 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::INTERFACE, 4 ) ) ;
 
     if( !check_with_expected_result( builder, elt_set, result ) ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
@@ -170,22 +170,22 @@ int main( int argc, char** argv )
     elt_set.clear() ;
     result.clear() ;
     // Third test
-    reg_id = in.find_element( GeoModelElement::REGION, "Region_1" ) ;
+    reg_id = in.find_element( BoundaryModelElement::REGION, "Region_1" ) ;
     if( reg_id == NO_ID ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
         return 1 ;
     }
     elt_set.insert( in.region( reg_id ).bme_id() ) ;
 
-    result.insert( BME::bme_t( GeoModelElement::REGION, 2 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 17 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 18 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 30 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 31 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 5 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 10 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 14 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 18 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::REGION, 2 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 17 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 18 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 30 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::LINE, 31 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 5 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 10 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 14 ) ) ;
+    result.insert( BME::bme_t( BoundaryModelElement::SURFACE, 18 ) ) ;
 
     if( !check_with_expected_result( builder, elt_set, result ) ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;

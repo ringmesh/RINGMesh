@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -48,7 +48,7 @@
 
 
 namespace RINGMesh {
-    class GeoModel ;
+    class BoundaryModel ;
     class MacroMesh ;
     class WellGroup ;
 }
@@ -67,10 +67,10 @@ namespace RINGMesh {
 
         bool RINGMESH_API load(
             const std::string& filename,
-            GeoModel& model ) ;
+            BoundaryModel& model ) ;
 
         bool RINGMESH_API save(
-            GeoModel& model,
+            BoundaryModel& model,
             const std::string& filename ) ;
 
         //    __  __                 __  __        _
@@ -98,38 +98,38 @@ namespace RINGMesh {
             WellGroup& wells ) ;
 
 
-        class RINGMESH_API GeoModelIOHandler: public GEO::Counted {
+        class RINGMESH_API BoundaryModelIOHandler: public GEO::Counted {
         public:
             static void initialize() ;
 
-            static GeoModelIOHandler* create( const std::string& format ) ;
+            static BoundaryModelIOHandler* create( const std::string& format ) ;
 
-            static GeoModelIOHandler* get_handler(
+            static BoundaryModelIOHandler* get_handler(
                 const std::string& filename ) ;
 
             virtual bool load(
                 const std::string& filename,
-                GeoModel& model ) = 0 ;
+                BoundaryModel& model ) = 0 ;
 
             virtual bool save(
-                GeoModel& model,
+                BoundaryModel& model,
                 const std::string& filename ) = 0 ;
 
         protected:
-            GeoModelIOHandler()
+            BoundaryModelIOHandler()
             {
             }
 
-            virtual ~GeoModelIOHandler()
+            virtual ~BoundaryModelIOHandler()
             {
             }
         } ;
 
-        typedef GEO::SmartPointer< GeoModelIOHandler > GeoModelIOHandler_var ;
-        typedef GEO::Factory0< GeoModelIOHandler > GeoModelIOHandlerFactory ;
+        typedef GEO::SmartPointer< BoundaryModelIOHandler > BoundaryModelIOHandler_var ;
+        typedef GEO::Factory0< BoundaryModelIOHandler > BoundaryModelIOHandlerFactory ;
 
-#define ringmesh_register_GeoModelIOHandler_creator( type, name ) \
-    geo_register_creator( GeoModelIOHandlerFactory, type, name )
+#define ringmesh_register_BoundaryModelIOHandler_creator( type, name ) \
+    geo_register_creator( BoundaryModelIOHandlerFactory, type, name )
 
 
         /***************************************************************************/
