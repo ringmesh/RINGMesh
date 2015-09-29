@@ -797,6 +797,7 @@ namespace {
      * @brief Checks that boundary surfaces of @param region define
      *        a one connected component closed manifold surface
      * @details Builds a GEO::Mesh from the surface meshes, repairs it and analyses it.
+     * @todo Put this function in Region class
      */
     bool is_region_valid( const GeoModelElement& region )
     {
@@ -1162,6 +1163,9 @@ namespace RINGMesh {
 
     typedef GME::gme_t gme_t ;
 
+    /*!
+     * \todo Modify loops to account for Regions
+     */
     void GeoModelVertices::initialize()
     {
         mesh_.clear() ;

@@ -110,7 +110,7 @@ namespace RINGMesh {
         */
         void save_region(
             index_t count,
-            const GeoModelElement& region,
+            const Region& region,
             std::ostream& out )
         {
             out << "REGION " << count << "  " << region.name() << " " << std::endl ;
@@ -448,7 +448,7 @@ namespace RINGMesh {
             }
             // Regions
             for( index_t i = 0; i < M.nb_regions(); ++i ) {
-                const GME& E = M.region( i ) ;
+                const Region& E = M.region( i ) ;
                 // Save ID - NAME 
                 out << E.gme_id() << " " ;
                 if( E.has_name() ) {
@@ -726,7 +726,7 @@ namespace RINGMesh {
                 }
 
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const GeoModelElement& region = model.region( r ) ;
+                    const Region& region = model.region( r ) ;
                     cmd << "region/" << region.name() << "/" ;
                     std::string sep = "" ;
                     for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
@@ -3346,7 +3346,8 @@ namespace RINGMesh {
                         << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">"
                         << std::endl ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        const GeoModelElement& surface = interf.child( s ) ;
+                        const GeoModelMeshElement& surface = dynamic_cast< 
+                            const GeoModelMeshElement& >( interf.child( s ) ) ;
                         for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                             out << surface.vertex( v ) << " " ;
                         }

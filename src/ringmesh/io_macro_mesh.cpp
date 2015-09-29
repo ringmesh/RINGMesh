@@ -705,7 +705,7 @@ namespace RINGMesh {
                     mm.vertices.nb_duplicated_vertices(), NO_ID ) ;
                 index_t nb_vertices_exported = 1 ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const RINGMesh::GeoModelElement& region = model.region(
+                    const RINGMesh::Region& region = model.region(
                         r ) ;
                     out << "TVOLUME " << region.name() << std::endl ;
 
@@ -829,7 +829,7 @@ namespace RINGMesh {
                 }
 
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const RINGMesh::GeoModelElement& region = model.region(
+                    const RINGMesh::Region& region = model.region(
                         r ) ;
                     out << "MODEL_REGION " << region.name() << " " ;
                     region.side( 0 ) ? out << "+" : out << "-" ;

@@ -1146,13 +1146,15 @@ namespace RINGMesh {
 
         remove_elements( elements ) ;
 
+
         // Update Universe
+        std::vector< std::pair< index_t, bool > > oriented_surfaces ;
+
         for( std::vector< GME::gme_t >::const_iterator itr =
             to_add_in_universe.begin(); itr != to_add_in_universe.end(); ++itr ) {
-            // TODO Instead of a dirty const_cast, use GeoModelBuilder::set_universe BC
-            const_cast< GeoModelElement& >( model_.universe() ).add_boundary(
-                *itr, true ) ;
+            oriented_surfaces.push_back( std::pair< index_t, bool >( itr->index, true ) ) ;
         }
+        set_universe( oriented_surfaces ) ;
 
         ringmesh_debug_assert( model_.check_model_validity() ) ;
     }
@@ -1278,11 +1280,12 @@ namespace RINGMesh {
 
         // Do not forget the universe
         /// @todo Put the universe in the list of regions - so annoying to think of it each time
+        /// @todo BUG ? sides are lost for the universe ? not sure ... [JP]
         {
-            for( index_t i = 0; i < model_.universe().nb_boundaries(); ++i ) {
-                model_.universe_.set_boundary( i,
-                    gme_t( GME::SURFACE,
-                        to_erase[GME::SURFACE][model_.universe().boundary_id( i ).index] ) ) ;
+            Region& U = model_.universe_ ;
+            for( index_t i = 0; i < U.nb_boundaries(); ++i ) {
+                U.GeoModelElement::set_boundary( 
+                    i, gme_t( GME::SURFACE, to_erase[ GME::SURFACE ][ U.boundary_id( i ).index ] ) )  ;
             }
             model_.universe_.erase_invalid_element_references() ;
         }
@@ -1309,13 +1312,14 @@ namespace RINGMesh {
     void GeoModelBuilder::set_universe(
         const std::vector< std::pair< index_t, bool > >& boundaries )
     {
-        model_.universe_.set_name( "Universe" ) ;
-        model_.universe_.set_element_type( GME::REGION ) ;
-        model_.universe_.set_model( &model_ ) ;
+        Region& U = model_.universe_ ;
+        U.set_name( "Universe" ) ;
+        U.set_element_type( GME::REGION ) ;
+        U.set_model( &model_ ) ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
             ringmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
-            model_.universe_.add_boundary(
+            U.add_boundary(
                 gme_t( GME::SURFACE, boundaries[i].first ), boundaries[i].second ) ;
         }
     }
@@ -2058,7 +2062,8 @@ namespace RINGMesh {
         for( index_t i = 0; i < change_key_facet.size(); i++ ) {
             const Surface& S = model_.surface( change_key_facet[i] ) ;
             for( index_t j = 0; j < S.nb_in_boundary(); ++j ) {
-                GeoModelElement& R = element( S.in_boundary_id( j ) ) ;
+                Region& R = dynamic_cast< Region& >( 
+                    element( S.in_boundary_id( j ) ) ) ;
                 for( index_t b = 0; b < R.nb_boundaries(); ++b ) {
                     if( R.boundary_id( b ).index == change_key_facet[i] ) {
                         bool old_side = R.side( b ) ;
@@ -3242,7 +3247,7 @@ namespace RINGMesh {
                     }
                 }
 
-                const GeoModelElement& cur_region = model_.region(
+                const Region& cur_region = model_.region(
                     universe_id ) ;
                 std::vector< std::pair< index_t, bool > > univ_boundaries(
                     cur_region.nb_boundaries() ) ;

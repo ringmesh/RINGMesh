@@ -65,7 +65,7 @@ namespace {
         /// @todo It would be better to directly check the region
         /// adjacent to the Surface.
         for( index_t r = 0; r < BM.nb_regions(); r++ ) {
-            const GME& cur_region = BM.region( r ) ;
+            const Region& cur_region = BM.region( r ) ;
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
                     && cur_region.boundary_id( s ) == cur_surface ) {

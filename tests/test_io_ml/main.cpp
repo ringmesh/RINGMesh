@@ -48,7 +48,7 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
+    //GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
 
     GeoModel in ;
     if( !RINGMeshIO::load( "../data/model1.ml", in ) )

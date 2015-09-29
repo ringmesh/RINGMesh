@@ -205,8 +205,11 @@ namespace RINGMesh {
             bool side = false )
         {
             if( t.type == GME::REGION ) {
-                element( t ).add_boundary( boundary, side ) ;
-            } else {element( t ).add_boundary( boundary ) ;}
+                dynamic_cast< Region& >(
+                    element( t ) ).add_boundary( boundary, side ) ;
+            } else {
+                element( t ).add_boundary( boundary ) ;
+            }
         }
 
         void add_element_in_boundary(

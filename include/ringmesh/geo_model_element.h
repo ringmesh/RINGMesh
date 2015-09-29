@@ -113,7 +113,8 @@ namespace RINGMesh {
             LINE,
             /// One 2-manifold connected component
             SURFACE,
-            /// One volumetric region defined by its boundary SURFACE
+            /// One volumetric region defined by its boundary SURFACE and
+            /// is optionally meshed
             REGION,
             /// A group of LINE, intersection of at least 2 INTERFACE
             CONTACT,
@@ -321,12 +322,7 @@ namespace RINGMesh {
         {
             return boundaries_[x] ;
         }
-        const GeoModelElement& boundary( index_t x ) const ;
-
-        bool side( index_t i ) const
-        {
-            return sides_[i] ;
-        }
+        const GeoModelElement& boundary( index_t x ) const ;       
 
         index_t nb_in_boundary() const
         {
@@ -362,59 +358,18 @@ namespace RINGMesh {
         {
             return children_[x] ;
         }
-        const GeoModelElement& child( index_t x ) const ;
-
-        /*!@}
-         * \name DEPRECATED. Accessors to geometry . 
-         * @{
-         */
-        /// \todo Remove acccessors to geometry at BME level. 
-        /*!
-        * @brief To remove
-        */
-        virtual index_t nb_cells() const
-        {
-            return 0 ;
-        }
-        /*!
-        * @brief To remove
-        */
-        virtual index_t nb_vertices() const
-        {
-            return 0 ;
-        }
-        /*!
-        * @brief To remove
-        */
-        virtual index_t model_vertex_id( index_t p = 0 ) const
-        {
-            ringmesh_assert_not_reached;
-            return NO_ID ;
-        }
-        /*!
-        * @brief To remove
-        */
-        virtual const vec3& vertex( index_t p = 0 ) const
-        {
-            ringmesh_assert_not_reached ;
-            return dummy_vec3 ;
-        }
-        /*!
-        * @brief To remove
-        */
-        virtual void set_vertex(
-            index_t index,
-            const vec3& point,
-            bool update = true )
-        {
-            ringmesh_assert_not_reached ;
-        }
+        const GeoModelElement& child( index_t x ) const ;     
         
         /*!@}
          * \name Modification of the element
          * @{
          */
-        void copy_macro_topology(
+        /*! \todo We need one copy function per class I think [JP] 
+         * I do not see why Region side should be managed at the GeoModelElement
+         * level. Too annoying. 
+         * Let's implement real copy functions, we need virtual functions.
+         */
+        virtual void copy_macro_topology(
             const GeoModelElement& rhs,
             GeoModel& model ) ;
 
@@ -438,45 +393,8 @@ namespace RINGMesh {
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             ringmesh_debug_assert( id < nb_boundaries() ) ;
             boundaries_[ id ] = b ;
-        }
-
-        void add_boundary( const gme_t& b, bool side )
-        {
-            ringmesh_debug_assert( b.is_defined() ) ;
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            boundaries_.push_back( b ) ;
-            sides_.push_back( side ) ;
-        }
-
-        void delete_boundary_with_side(const gme_t& b) {
-            index_t j = NO_ID ;
-            std::cout << "b.index    "<< b.index <<std::endl ;
-            std::cout << "b.type    "<< b.type <<std::endl ;
-            // TODO use utils function
-            for(index_t i = 0 ;i<boundaries_.size() ;++i) {
-                std::cout << "boundaries_[i].index    "<< boundaries_[i].index <<std::endl ;
-                std::cout << "boundaries_[i].type    "<< boundaries_[i].type <<std::endl ;
-                if(boundaries_[i]==b) {
-                    j=i ;
-//                    break ;
-                }
-            }
-            std::cout << "j   " << j <<std::endl;
-            ringmesh_debug_assert(j!=NO_ID) ;
-            boundaries_.erase(boundaries_.begin()+j) ;
-            sides_.erase(sides_.begin()+j) ;
-        }
-
-        void set_boundary( index_t id, const gme_t& b, bool side )
-        {
-            /// No check on the validity of the index of the element b
-            /// NO_ID is used to flag elements to delete 
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            ringmesh_debug_assert( id < nb_boundaries() ) ;
-            boundaries_[ id ] = b ;
-            sides_[ id ] = side ;
-        }
-
+        }  
+ 
         void add_in_boundary( const gme_t& in_b )
         {
             ringmesh_debug_assert( in_b.is_defined() ) ;
@@ -536,11 +454,7 @@ namespace RINGMesh {
         GEOL_FEATURE geol_feature_ ;
 
         /// Elements on the boundary of this element - see boundary_type( TYPE )
-        std::vector< gme_t > boundaries_ ;
-
-        /// Additional information for oriented boundaries (filled for REGION)
-        /// Side: + (true) or - (false)
-        std::vector< bool > sides_ ;
+        std::vector< gme_t > boundaries_ ;    
 
         /// Elements in which boundary this element is - see in_boundary_type( TYPE )
         std::vector< gme_t > in_boundary_ ;
@@ -762,6 +676,7 @@ namespace RINGMesh {
 
         bool equal( const std::vector< vec3 >& rhs_vertices ) const ;
 
+        /// \todo Move these in a API. Why is that here ?
         vec3 segment_barycenter( index_t e ) const ;
         double segment_length( index_t e ) const ;
         double total_length() const ;
@@ -1036,6 +951,119 @@ namespace RINGMesh {
 
     protected:
         bool is_mesh_valid() const ;
+    } ;
+
+    /*!
+    * @brief A GeoModelElement of type REGION
+    *
+    * @details The Region can be defined only defined by its boundary
+    * Surfaces. Its volumetric mesh is optional.
+    */
+    class RINGMESH_API Region : public GeoModelMeshElement {
+    public:
+        Region( GeoModel* model = nil, index_t id = NO_ID )
+                : GeoModelMeshElement( model, REGION, id )
+        {            
+        }
+
+        ~Region()
+        {
+        } ;
+
+        bool is_meshed() const 
+        {
+            return mesh().cells.nb() > 0 ;
+        }
+      
+        void add_boundary( const gme_t& b, bool side )
+        {
+            ringmesh_debug_assert( b.is_defined() ) ;
+            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
+            boundaries_.push_back( b ) ;
+            sides_.push_back( side ) ;
+        }
+        
+        void delete_boundary_with_side( const gme_t& b )
+        {
+            index_t j = NO_ID ;
+            std::cout << "b.index    "<< b.index <<std::endl ;
+            std::cout << "b.type    "<< b.type <<std::endl ;
+            // TODO use utils function
+            for( index_t i = 0 ; i<boundaries_.size() ; ++i ) {
+                std::cout << "boundaries_[i].index    "<< boundaries_[ i ].index <<std::endl ;
+                std::cout << "boundaries_[i].type    "<< boundaries_[ i ].type <<std::endl ;
+                if( boundaries_[ i ]==b ) {
+                    j = i ;
+                    //                    break ;
+                }
+            }
+            std::cout << "j   " << j <<std::endl;
+            ringmesh_debug_assert( j!=NO_ID ) ;
+            boundaries_.erase( boundaries_.begin()+j ) ;
+            sides_.erase( sides_.begin()+j ) ;
+        }
+
+        void set_boundary( index_t id, const gme_t& b, bool side )
+        {
+            /// No check on the validity of the index of the element b
+            /// NO_ID is used to flag elements to delete 
+            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
+            ringmesh_debug_assert( id < nb_boundaries() ) ;
+            boundaries_[ id ] = b ;
+            sides_[ id ] = side ;
+        }
+
+        bool side( index_t i ) const
+        {
+            return sides_[ i ] ;
+        }
+
+        void set_side( index_t i, bool value )
+        {
+            sides_[ i ] = value ;
+        }
+
+        /*! I do not like it, but I need this access in the nasty
+         * erase_invalid_element_references function.
+         * To remove when that function is properly rewritten [JP]
+         */
+        std::vector< bool >& sides()
+        {
+            return sides_ ;
+        }
+
+        /*!
+         * \todo Is connectivity valid should be virtual and we should 
+         * reimplement here to check 
+         *     if( nb_boundaries() != sides_.size() ) {
+         *       GEO::Logger::err( "GeoModelElement" )
+         *       << gme_id() << " boundary sides are invalid "
+         *       << std::endl ;
+         *       return false ;
+         *     }
+         */
+   
+        /*!
+         * \todo Copy function. We need to copy the SIDES
+         * with the boundaries.
+         */
+        virtual void copy_macro_topology(
+            const GeoModelElement& rhs,
+            GeoModel& model )
+        {
+            GeoModelElement::copy_macro_topology( rhs, model ) ;
+            sides_ = dynamic_cast< const Region& >(rhs).sides_ ;
+        }
+
+    protected:
+        bool is_mesh_valid() const ;
+
+    private:
+        /*! Additional information to store oriented boundary Surfaces
+         * Side: + (true) or - (false)
+         * The size of this vector must be the same than boundary_
+         */
+        std::vector< bool > sides_ ;
     } ;
 
     /*!

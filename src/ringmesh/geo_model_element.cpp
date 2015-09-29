@@ -334,7 +334,7 @@ namespace RINGMesh {
     */
     bool GeoModelElement::has_mesh( GME::TYPE t )
     {
-        return t < REGION ;
+        return t <= REGION ;
     }
 
 
@@ -359,11 +359,7 @@ namespace RINGMesh {
         if( !std::equal( boundaries_.begin(), boundaries_.end(),
             rhs.boundaries_.begin() ) ) {
             return false ;
-        }
-        if( !std::equal( sides_.begin(), sides_.end(),
-            rhs.sides_.begin() ) ) {
-            return false ;
-        }
+        }    
         if( nb_in_boundary() != rhs.nb_in_boundary() ) {
             return false ;
         }
@@ -447,12 +443,6 @@ namespace RINGMesh {
                 if( nb_boundaries() == 0 ) {
                     GEO::Logger::err( "GeoModelElement" )
                         << gme_id() << " has no boundaries "
-                        << std::endl ;
-                    valid = false ;
-                }
-                if( nb_boundaries() != sides_.size() ) {
-                    GEO::Logger::err( "GeoModelElement" )
-                        << gme_id() << " boundary sides are invalid "
                         << std::endl ;
                     valid = false ;
                 }
@@ -636,7 +626,6 @@ namespace RINGMesh {
         name_ = rhs.name_ ;
         geol_feature_ = rhs.geol_feature_ ;
         boundaries_ = rhs.boundaries_ ;
-        sides_ = rhs.sides_ ;
         in_boundary_ = rhs.in_boundary_ ;
         parent_ = rhs.parent_ ;
         children_ = rhs.children_ ;
@@ -740,27 +729,33 @@ namespace RINGMesh {
         if( nb_boundaries() > 0 ) {
             gme_t invalid_boundary( boundary_type( T ), NO_ID ) ;
 
-            if( !sides_.empty() ) {
+            // I do not like this test so much, bu I have no 
+            // great idea to rewrite properly this code right now [JP]
+            Region* R = dynamic_cast<Region*>( this )  ;
+            if( R != nil ) {
                 // Change side values if necessary
                 index_t offset = 0 ;
                 for( index_t i = 0; i+offset < nb_boundaries(); ++i ) {
                     if( boundaries_[ i ] == invalid_boundary ) {
                         offset++ ;
                     } else {
-                        sides_[ i ] = sides_[ i+offset ] ;
+                        R->set_side( i, R->side( i+offset ) ) ;
                     }
                 }
             }
+            
             index_t end = static_cast< index_t >(
                 std::remove( boundaries_.begin(), boundaries_.end(), invalid_boundary )
                 - boundaries_.begin() ) ;
             if( end == 0 ) {
                 boundaries_.clear() ;
-                sides_.clear() ;
+                if( R != nil ) {
+                    R->sides().clear() ;
+                }
             } else {
                 boundaries_.erase( boundaries_.begin()+end, boundaries_.end() );
-                if( !sides_.empty() ) {
-                    sides_.erase( sides_.begin() + end, sides_.end() ) ;
+                if( R != nil ) {
+                    R->sides().erase( R->sides().begin() + end, R->sides().end() ) ;
                 }
             }            
         }
@@ -2222,6 +2217,23 @@ namespace RINGMesh {
 
 
 
+    /********************************************************************/
+
+    bool Region::is_mesh_valid() const
+    {
+        if( !is_meshed() ) {
+            return true ;
+        }
+        else {
+            GEO::Logger::err( "GeoModel" )
+                << "TO DO : Mesh validity function on Regions is to implement "
+                << std::endl ;
+            return true ;
+        }
+    }
+
+    
+    /********************************************************************/
 
     SurfaceTools::SurfaceTools( const Surface& surface )
         : surface_( surface ), aabb_( nil ), ann_( nil )
@@ -2327,10 +2339,11 @@ namespace RINGMesh {
 
         // If this is a region
         if( E->gme_id().type == GeoModelElement::REGION ) {
+            const Region* R = dynamic_cast< const Region* >( E ) ;
             // Compute the volume if this is a region
-            for( index_t i = 0; i < E->nb_boundaries(); i++ ) {
+            for( index_t i = 0; i < R->nb_boundaries(); i++ ) {
                 const Surface& surface =
-                    dynamic_cast< const Surface& >( E->boundary( i ) ) ;
+                    dynamic_cast< const Surface& >( R->boundary( i ) ) ;
 
                 for( index_t t = 0; t < surface.nb_cells(); t++ ) {
                     const vec3& p0 = surface.vertex( t, 0 ) ;
@@ -2343,7 +2356,7 @@ namespace RINGMesh {
                                                           v ),
                                                       surface.vertex( t, v + 1 ) ) ) )
                                             / static_cast< double >( 6 ) ;
-                        E->side( i ) ? result -= cur_volume : result += cur_volume ;
+                        R->side( i ) ? result -= cur_volume : result += cur_volume ;
                     }
                 }
             }

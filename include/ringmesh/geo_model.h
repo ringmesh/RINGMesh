@@ -57,6 +57,8 @@ namespace RINGMesh {
      * @details Each instance is unique, unlike vertices in 
      *          the model Corner, Line, and Surface meshes.
      *          Attributes may be defined on the vertices.
+     *
+     * @todo Take also the Regions vertices
      */
     class RINGMESH_API GeoModelVertices {
     ringmesh_disable_copy( GeoModelVertices ) ;
@@ -64,6 +66,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Identification of a vertex in a GeoModelElement
+         * @todo Je changerai bien ce nom moche au refactoring [JP]
          */
         struct VertexInBME {
             VertexInBME( GME::gme_t t, index_t vertex_id_in )
@@ -269,8 +272,8 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief The class to describe a volumetric model represented 
-     * by its boundary surfaces
+     * @brief The class to describe a geological model represented 
+     * by its boundary surfaces and whose regions can be optionally meshed
      */
     class RINGMESH_API GeoModel {
     ringmesh_disable_copy( GeoModel ) ;
@@ -301,6 +304,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Get the directory for debug information
+         * @todo To move [JP]
          */
         const std::string& debug_directory() const
         {
@@ -311,7 +315,8 @@ namespace RINGMesh {
          * @brief Set the directory where debugging information shall be stored
          * @details Test that this directory exists, if not
          *          keep the previous value.
-         *          The default directory is the executable directory .
+         *          The default directory is the executable directory.
+         * @todo To move [JP]
          */
         void set_debug_directory( const std::string& directory ) ;
 
@@ -339,7 +344,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns a const reference the identified GeoModelElement
-         * @details The default value is the universe
+         * @details The default value is the universe Region
          * @param[in] type Type of the element
          * @param[in] index Index of the element
          *
@@ -412,9 +417,9 @@ namespace RINGMesh {
             return dynamic_cast< const Surface& >( *surfaces_.at( index ) ) ;
         }
 
-        const GeoModelElement& region( index_t index ) const
+        const Region& region( index_t index ) const
         {
-            return element( GME::gme_t( GME::REGION, index ) ) ;
+            return dynamic_cast<const Region&>( *regions_.at( index ) ) ;
         }
 
         const GeoModelElement& contact( index_t index ) const
@@ -432,16 +437,16 @@ namespace RINGMesh {
             return element( GME::gme_t( GME::LAYER, index ) ) ;
         }
 
-        const GeoModelElement& universe() const
+        const Region& universe() const
         {
-            return universe_ ;
+            return dynamic_cast<const Region&> ( universe_ ) ;
         }
 
         /*!
          * @}
          */
 
-        /* @todo Rewrite translate and rotate functions  and move them somewhere else
+        /* @todo Move into an API
          * It is a very very bad idea to modify the coordinates of vertices the BME 
          * without the BM knowing !!! [JP]
          */
@@ -464,7 +469,7 @@ namespace RINGMesh {
         /*! 
          * @brief Convert a global BME index into a typed index
          * @details Relies on the nb_elements_per_type_ vector that 
-         *          must be updated
+         *          must be up to date at all times 
          *          See the GeoModelBuilder::end_model() function
          * @param[in] global A BME id of TYPE - ALL_TYPES
          * @return A BME id of an element of the model, or a invalid one if nothing found
@@ -538,7 +543,8 @@ namespace RINGMesh {
         std::vector< GeoModelElement* > regions_ ;
 
         /// The region including all the other regions
-        GeoModelElement universe_ ;
+        /// \todo Put it as the last item in regions_ and do not forget to create it in the Builder
+        Region universe_ ;
 
         /*!
          * @brief Contacts between Intefaces
@@ -561,7 +567,7 @@ namespace RINGMesh {
         std::vector< index_t > nb_elements_per_type_ ;
 
         /// Name of the debug directory in which to save stuff 
-        /// @note Maybe move this in another class
+        /// @note Move this in another class
         std::string debug_directory_ ;
     } ;
 
