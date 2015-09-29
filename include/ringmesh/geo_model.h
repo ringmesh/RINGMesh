@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
+ *     RING Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -44,7 +44,7 @@
 #define __RINGMESH_BOUNDARY_MODEL__
 
 #include <ringmesh/common.h>
-#include <ringmesh/boundary_model_element.h>
+#include <ringmesh/geo_model_element.h>
 
 #include <geogram/points/kd_tree.h>
 
@@ -53,17 +53,17 @@
 namespace RINGMesh {
 
     /*!
-     * @brief Unique storage of the vertices of a BoundaryModel
+     * @brief Unique storage of the vertices of a GeoModel
      * @details Each instance is unique, unlike vertices in 
      *          the model Corner, Line, and Surface meshes.
      *          Attributes may be defined on the vertices.
      */
-    class RINGMESH_API BoundaryModelVertices {
-    ringmesh_disable_copy( BoundaryModelVertices ) ;
+    class RINGMESH_API GeoModelVertices {
+    ringmesh_disable_copy( GeoModelVertices ) ;
     public:
 
         /*!
-         * @brief Identification of a vertex in a BoundaryModelElement
+         * @brief Identification of a vertex in a GeoModelElement
          */
         struct VertexInBME {
             VertexInBME( BME::bme_t t, index_t vertex_id_in )
@@ -90,21 +90,21 @@ namespace RINGMesh {
             {
                 return bme_id.is_defined() && v_id != NO_ID ;
             }
-            /// Unique identifier of the associated BoundaryModelElement
+            /// Unique identifier of the associated GeoModelElement
             BME::bme_t bme_id ;
             /// Index of the vertex in the BME
             index_t v_id ;
         } ;
 
         /*!
-         * @brief Constructor from an existing BoundaryModel
+         * @brief Constructor from an existing GeoModel
          */
-        BoundaryModelVertices( const BoundaryModel& bm )
+        GeoModelVertices( const GeoModel& bm )
             : bm_( bm ), kdtree_( nil ), lock_( 0 ), kdtree_to_update_( true )
         {
         }
 
-        ~BoundaryModelVertices()
+        ~GeoModelVertices()
         {
         }
 
@@ -122,7 +122,7 @@ namespace RINGMesh {
         index_t nb() const ;
 
         /*!
-         * @brief Coordinates of a vertex of the BoundaryModel
+         * @brief Coordinates of a vertex of the GeoModel
          * @pre v < nb()
          * @todo Review : Change the name of this function [JP]
          */
@@ -149,7 +149,7 @@ namespace RINGMesh {
         index_t add_unique_vertex( const vec3& point ) ;
 
         /*!
-         * @brief Add a vertex in a BoundaryModelElement 
+         * @brief Add a vertex in a GeoModelElement 
          *        corresponding to an existing vertex of the model
          */
         void add_unique_to_bme( index_t v, const VertexInBME& v_bme ) ;
@@ -192,14 +192,14 @@ namespace RINGMesh {
 
         /*! 
          * @brief Remove all invalid VertexInBME and delete the vertices 
-         * that are not anymore in any BoundaryModelElement
+         * that are not anymore in any GeoModelElement
          */
         void erase_invalid_vertices() ;
 
         /*! 
          * @brief Delete vertices for which to_delete[i] != i 
          * @detail The global vertices are deleted, bme_vertices_
-         * is updated and the model_vertx_id in the BoundaryModelMeshElement
+         * is updated and the model_vertx_id in the GeoModelMeshElement
          * of the BoudnaryModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a 
@@ -212,7 +212,7 @@ namespace RINGMesh {
     private:
         /*!
          * @brief Initialize the vertices from the vertices 
-         *        of the BoundaryModel Corners, Lines, and Surfaces
+         *        of the GeoModel Corners, Lines, and Surfaces
          * @details Fills the mesh_.vertices, bme_vertices_ and 
          *         delete colocated vertices
          */
@@ -244,8 +244,8 @@ namespace RINGMesh {
         void initialize_kdtree() const ;
 
     private:
-        /// Attached BoundaryModel owning the vertices
-        const BoundaryModel& bm_ ;
+        /// Attached GeoModel owning the vertices
+        const GeoModel& bm_ ;
 
         /*! 
          * @brief Mesh storing the coordinates of the vertices that are not colocated
@@ -255,7 +255,7 @@ namespace RINGMesh {
         GEO::Mesh mesh_ ;
 
         /*! 
-         * Vertices in BoundaryModelElements corresponding to each vertex
+         * Vertices in GeoModelElements corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
          */
         std::vector< std::vector< VertexInBME > > bme_vertices_ ;
@@ -272,24 +272,24 @@ namespace RINGMesh {
      * @brief The class to describe a volumetric model represented 
      * by its boundary surfaces
      */
-    class RINGMESH_API BoundaryModel {
-    ringmesh_disable_copy( BoundaryModel ) ;
-        friend class BoundaryModelBuilder ;
+    class RINGMESH_API GeoModel {
+    ringmesh_disable_copy( GeoModel ) ;
+        friend class GeoModelBuilder ;
 
     public:
         const static index_t NO_ID = index_t( -1 ) ;
 
         /*!
-         * @brief Constructs an empty BoundaryModel
+         * @brief Constructs an empty GeoModel
          */
-        BoundaryModel() ;
+        GeoModel() ;
 
         /*!
-         * @brief Delete all BoundaryModelElements stored and owned by the BoundaryModel
+         * @brief Delete all GeoModelElements stored and owned by the GeoModel
          */
-        virtual ~BoundaryModel() ;
+        virtual ~GeoModel() ;
 
-        void copy( const BoundaryModel& from ) ;
+        void copy( const GeoModel& from ) ;
 
         /*!
          * @brief Name of the model
@@ -316,7 +316,7 @@ namespace RINGMesh {
         void set_debug_directory( const std::string& directory ) ;
 
         /*!
-         * \name Generic BoundaryModelElement accessors
+         * \name Generic GeoModelElement accessors
          * @{
          */
 
@@ -338,13 +338,13 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Returns a const reference the identified BoundaryModelElement
+         * @brief Returns a const reference the identified GeoModelElement
          * @details The default value is the universe
          * @param[in] type Type of the element
          * @param[in] index Index of the element
          *
          */
-        const BoundaryModelElement& element( BME::bme_t id ) const
+        const GeoModelElement& element( BME::bme_t id ) const
         {
             ringmesh_assert( id.index < nb_elements( id.type ) ) ;
             if( id.type < BME::NO_TYPE ) {
@@ -356,10 +356,10 @@ namespace RINGMesh {
             }
         }
 
-        const BoundaryModelMeshElement& mesh_element( BME::bme_t id ) const
+        const GeoModelMeshElement& mesh_element( BME::bme_t id ) const
         {
             ringmesh_assert( BME::has_mesh( id.type ) ) ;
-            return dynamic_cast< const BoundaryModelMeshElement& >( element( id ) ) ;
+            return dynamic_cast< const GeoModelMeshElement& >( element( id ) ) ;
         }
 
         /*! @}
@@ -412,27 +412,27 @@ namespace RINGMesh {
             return dynamic_cast< const Surface& >( *surfaces_.at( index ) ) ;
         }
 
-        const BoundaryModelElement& region( index_t index ) const
+        const GeoModelElement& region( index_t index ) const
         {
             return element( BME::bme_t( BME::REGION, index ) ) ;
         }
 
-        const BoundaryModelElement& contact( index_t index ) const
+        const GeoModelElement& contact( index_t index ) const
         {
             return element( BME::bme_t( BME::CONTACT, index ) ) ;
         }
 
-        const BoundaryModelElement& one_interface( index_t index ) const
+        const GeoModelElement& one_interface( index_t index ) const
         {
             return element( BME::bme_t( BME::INTERFACE, index ) ) ;
         }
 
-        const BoundaryModelElement& layer( index_t index ) const
+        const GeoModelElement& layer( index_t index ) const
         {
             return element( BME::bme_t( BME::LAYER, index ) ) ;
         }
 
-        const BoundaryModelElement& universe() const
+        const GeoModelElement& universe() const
         {
             return universe_ ;
         }
@@ -458,14 +458,14 @@ namespace RINGMesh {
         bool check_elements_validity() const ;
         bool check_geology_validity() const ;        
 
-        void copy_macro_topology( const BoundaryModel& from ) ;
-        void copy_meshes( const BoundaryModel& from ) ;
+        void copy_macro_topology( const GeoModel& from ) ;
+        void copy_meshes( const GeoModel& from ) ;
 
         /*! 
          * @brief Convert a global BME index into a typed index
          * @details Relies on the nb_elements_per_type_ vector that 
          *          must be updated
-         *          See the BoundaryModelBuilder::end_model() function
+         *          See the GeoModelBuilder::end_model() function
          * @param[in] global A BME id of TYPE - ALL_TYPES
          * @return A BME id of an element of the model, or a invalid one if nothing found
          */
@@ -525,37 +525,37 @@ namespace RINGMesh {
         }
 
     public:
-        BoundaryModelVertices vertices ;
+        GeoModelVertices vertices ;
 
     private:
         // Name of the model
         std::string name_ ;
 
         // Base manifold elements of a model
-        std::vector< BoundaryModelElement* > corners_ ;
-        std::vector< BoundaryModelElement* > lines_ ;
-        std::vector< BoundaryModelElement* > surfaces_ ;
-        std::vector< BoundaryModelElement* > regions_ ;
+        std::vector< GeoModelElement* > corners_ ;
+        std::vector< GeoModelElement* > lines_ ;
+        std::vector< GeoModelElement* > surfaces_ ;
+        std::vector< GeoModelElement* > regions_ ;
 
         /// The region including all the other regions
-        BoundaryModelElement universe_ ;
+        GeoModelElement universe_ ;
 
         /*!
          * @brief Contacts between Intefaces
          * Parent of a set of Line
          */
-        std::vector< BoundaryModelElement* > contacts_ ;
+        std::vector< GeoModelElement* > contacts_ ;
         /*!
          * @brief Interfaces between layers
          * Parent of a set of Surface
          */
-        std::vector< BoundaryModelElement* > interfaces_ ;
+        std::vector< GeoModelElement* > interfaces_ ;
 
         /*!
          * @brief Rock layers
          * Parent of a set of Region
          */
-        std::vector< BoundaryModelElement* > layers_ ;
+        std::vector< GeoModelElement* > layers_ ;
 
         /// Allow global access to BME. It MUST be updated if one element is added.
         std::vector< index_t > nb_elements_per_type_ ;

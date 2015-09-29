@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
+ *     RING Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -52,7 +52,7 @@ namespace GEO {
 }
 
 namespace RINGMesh {
-    class BoundaryModel ;
+    class GeoModel ;
     class MacroMesh ;
     class WellGroup ;
 }
@@ -570,7 +570,7 @@ namespace RINGMesh {
 
         const static index_t ALL_REGIONS = index_t( -1 ) ;
 
-        MacroMesh( const BoundaryModel& model ) ;
+        MacroMesh( const GeoModel& model ) ;
         virtual ~MacroMesh() ;
         void copy( const MacroMesh& mm, bool copy_attributes = true ) ;
 
@@ -606,15 +606,15 @@ namespace RINGMesh {
         }
 
         /*!
-         * Access to the BoundaryModel attached to the MacroMesh
-         * @return a const reference to the corresponding BoundaryModel
+         * Access to the GeoModel attached to the MacroMesh
+         * @return a const reference to the corresponding GeoModel
          */
-        const BoundaryModel& model() const
+        const GeoModel& model() const
         {
             ringmesh_debug_assert( model_ ) ;
             return *model_ ;
         }
-        void set_model( const BoundaryModel& model ) ;
+        void set_model( const GeoModel& model ) ;
 
         /*!
          * Access the DuplicateMode
@@ -670,11 +670,11 @@ namespace RINGMesh {
             bool degrees = false ) ;
 
     protected:
-        /// BoundaryModel representing the structural information of the mesh
-        /// @todo Review : Can a MacroMesh exist without a BoundaryModel ? If not,
+        /// GeoModel representing the structural information of the mesh
+        /// @todo Review : Can a MacroMesh exist without a GeoModel ? If not,
         /// use a const reference [JP]
-        const BoundaryModel* model_ ;
-        /// Vector of meshes, one by region of the BoundaryModel
+        const GeoModel* model_ ;
+        /// Vector of meshes, one by region of the GeoModel
         std::vector< GEO::Mesh* > meshes_ ;
         /// Optional duplication mode to compute the duplication of vertices on surfaces
         DuplicateMode mode_ ;
@@ -702,7 +702,7 @@ namespace RINGMesh {
 
     private:
         /*!
-         * Forbids to create a MacroMesh without its associated BoundaryModel
+         * Forbids to create a MacroMesh without its associated GeoModel
          */
         MacroMesh() ;
 

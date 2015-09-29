@@ -74,16 +74,16 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
+ *     RING Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/macro_mesh.h>
 #include <ringmesh/gfx.h>
 #include <ringmesh/io.h>
@@ -99,8 +99,8 @@
 
 namespace {
 
-    RINGMesh::BoundaryModel BM ;
-    RINGMesh::BoundaryModelGfx BM_gfx ;
+    RINGMesh::GeoModel BM ;
+    RINGMesh::GeoModelGfx BM_gfx ;
 
     RINGMesh::MacroMesh* MM = nil ;
     RINGMesh::MacroMeshGfx MM_gfx ;
@@ -253,8 +253,8 @@ namespace {
     void display()
     {
 
-        if( BM_gfx.boundary_model() != &BM ) {
-            BM_gfx.set_boundary_model( BM ) ;
+        if( BM_gfx.geo_model() != &BM ) {
+            BM_gfx.set_geo_model( BM ) ;
         }
 
         if( MM_gfx.macro_mesh() != MM ) {
@@ -310,7 +310,7 @@ namespace {
      * \param[out] xyzmax a pointer to the three maximum coordinates
      * \param[in] animate true if displaying a mesh animation
      */
-    void get_bbox( const RINGMesh::BoundaryModel& BM, double* xyzmin, double* xyzmax, bool animate )
+    void get_bbox( const RINGMesh::GeoModel& BM, double* xyzmin, double* xyzmax, bool animate )
     {
         for( GEO::index_t s = 0; s < BM.nb_surfaces(); s++ ) {
             GEO::Mesh& M = BM.surface( s ).mesh() ;
