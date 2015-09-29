@@ -41,11 +41,12 @@
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
 #include <ringmesh/geo_model_mesh.h>
-
+#include <ringmesh/geo_model.h>
 
 namespace RINGMesh {
     
-    GeoModelMesh::GeoModelMesh()
+    GeoModelMesh::GeoModelMesh() :
+       cells(*this)
     {
     }
     

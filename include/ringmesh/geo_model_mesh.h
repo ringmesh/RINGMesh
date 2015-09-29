@@ -50,25 +50,34 @@
 #include <vector>
 
 namespace RINGMesh {
+    class GeoModel ;
+    class GeoModelMesh ;
+}
 
+namespace RINGMesh {
 
     class RINGMESH_API GeoModelMeshVertices {
-
 
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
 
-
     } ;
 
     class RINGMESH_API GeoModelMeshCells {
+    public:
+        GeoModelMeshCells( const GeoModelMesh& gmm )
+            : gmm_( gmm )
+        {
 
+        }
+
+    private:
+        const GeoModelMesh& gmm_ ;
 
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
-
 
     } ;
 
@@ -76,7 +85,8 @@ namespace RINGMesh {
     public:
         GeoModelMesh() ;
 
-        const GEO::Mesh& mesh() const {
+        const GEO::Mesh& mesh() const
+        {
             return mesh_ ;
         }
 
@@ -90,8 +100,6 @@ namespace RINGMesh {
         GeoModelMeshOrder order ;
 
     } ;
-
-
 
 }
 
