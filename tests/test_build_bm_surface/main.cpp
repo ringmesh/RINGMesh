@@ -38,24 +38,24 @@
  *     FRANCE
  */
 
-#include <ringmesh/boundary_model.h>
-#include <ringmesh/boundary_model_builder.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/basic/logger.h>
+#include <ringmesh/geo_model_builder.h>
 
 
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::out("TEST") << "Test BoundaryModel building from Surface" << std::endl ;
+    GEO::Logger::out("TEST") << "Test GeoModel building from Surface" << std::endl ;
 
 	GEO::Mesh in ; 
     GEO::mesh_load(  "../data/modelA6.mesh", in ) ;
-    RINGMesh::BoundaryModel model ;
+    RINGMesh::GeoModel model ;
 	
-	RINGMesh::BoundaryModelBuilderSurface BB( model ) ;
+	RINGMesh::GeoModelBuilderSurface BB( model ) ;
 	BB.set_surfaces( in ) ;
     if( !BB.build_model() ) {
 		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	

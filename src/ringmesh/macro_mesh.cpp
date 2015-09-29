@@ -39,7 +39,7 @@
  */
 
 #include <ringmesh/macro_mesh.h>
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/tetra_gen.h>
 #include <ringmesh/well.h>
 
@@ -147,7 +147,7 @@ namespace RINGMesh {
         }
 
         /// 4. Tag all corners to duplicate (vertices on a surface to duplicate)
-        const BoundaryModel& model = mm_.model() ;
+        const GeoModel& model = mm_.model() ;
         std::vector< SurfaceAction > surface_actions( model.nb_surfaces(), SKIP ) ;
         std::vector< bool > is_corner_to_duplicate( corner_vertices.size(), false ) ;
         {
@@ -384,7 +384,7 @@ namespace RINGMesh {
      */
     bool MacroMeshVertices::is_surface_to_duplicate( index_t surface_id ) const
     {
-        BoundaryModelElement::GEOL_FEATURE feature = mm_.model().surface(
+        GeoModelElement::GEOL_FEATURE feature = mm_.model().surface(
             surface_id ).geological_feature() ;
         if( mm_.duplicate_mode() == MacroMesh::ALL
             && !mm_.model().surface( surface_id ).is_on_voi() ) return true ;
@@ -1577,7 +1577,7 @@ namespace RINGMesh {
         return edges_[well_ptr_[w] + 2 * e + v] ;
     }
 
-    MacroMesh::MacroMesh( const BoundaryModel& model )
+    MacroMesh::MacroMesh( const GeoModel& model )
         :
             mode_( NONE ),
             wells_( nil ),
@@ -1667,7 +1667,7 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
-    void MacroMesh::set_model( const BoundaryModel& model )
+    void MacroMesh::set_model( const GeoModel& model )
     {
         model_ = &model ;
         ringmesh_debug_assert( meshes_.empty() ) ;
@@ -1720,7 +1720,7 @@ namespace RINGMesh {
      * @param degrees true is \p theta is in degrees, false
      * if in radians.
      *
-     * @todo Reviw : This does not rotate the BoundaryModel. DANGER ! [JP]
+     * @todo Reviw : This does not rotate the GeoModel. DANGER ! [JP]
      */
     void MacroMesh::rotate(
         const vec3& origin,

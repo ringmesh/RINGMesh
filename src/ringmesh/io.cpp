@@ -44,7 +44,7 @@ namespace RINGMesh {
     namespace RINGMeshIO {
         void initialize()
         {
-            BoundaryModelIOHandler::initialize() ;
+            GeoModelIOHandler::initialize() ;
             MacroMeshIOHandler::initialize() ;
             WellGroupIOHandler::initialize() ;
         }

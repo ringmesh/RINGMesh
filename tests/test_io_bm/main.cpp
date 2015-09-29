@@ -38,7 +38,7 @@
  *     FRANCE
  */
 
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
 #include <ringmesh/utils.h>
 
@@ -49,15 +49,15 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::out("TEST") << "Test IO for a BoundaryModel in .bm" << std::endl ;
+    GEO::Logger::out("TEST") << "Test IO for a GeoModel in .bm" << std::endl ;
 
-    BoundaryModel in ;
+    GeoModel in ;
    if( !RINGMeshIO::load( "../data/model1.ml", in ) )
         return 1 ;
     if( !RINGMeshIO::save( in, "out.bm" ) )
         return 1 ;
 
-    BoundaryModel in2 ;
+    GeoModel in2 ;
     if( !RINGMeshIO::load( "out.bm", in2 ) )
         return 1 ;
     if( !RINGMeshIO::save( in2, "out2.bm" ) )
