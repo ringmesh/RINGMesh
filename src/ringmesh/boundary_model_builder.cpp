@@ -730,6 +730,7 @@ namespace {
             GEO::Mesh& M = BM.surface( i ).mesh() ;
             index_t nb = detect_degenerate_facets( M ) ;
             /// @todo Check if that cannot be simplified 
+            // PROBLEME IL FAUT AUSSI TESTER LES FACETTES DUPLIQUEES !!
             if( nb > 0 ) {
                 // If there are some degenerated facets 
                 // We need to repair the model 
@@ -746,7 +747,7 @@ namespace {
                     // Colocated vertices must be processed before
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
-                        static_cast< GEO::MeshRepairMode >( 1 && 2 && 8) ;
+                        static_cast< GEO::MeshRepairMode >( 2 ) ;
                     GEO::mesh_repair( M, mode ) ;
 
                     // This might create some small components - remove them
@@ -773,6 +774,8 @@ namespace {
                 } else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
+                    // \todo Check that these boundaries are not stupid degenerated,
+                    // and should be removed
                     Surface& S = const_cast< Surface& >( BM.surface( i ) ) ;
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
@@ -2106,7 +2109,7 @@ namespace RINGMesh {
 
 
         /// 5. Fill missing information and check model validity
-        bool valid_model = end_model() ;
+        bool valid_model = end_model( true ) ;
 
         time( &end_load ) ;
         // Output of loading time only in debug mode has no meaning [JP]
