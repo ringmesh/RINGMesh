@@ -98,7 +98,7 @@ namespace RINGMesh {
             return model_ ;
         }
 
-        bool end_model() ;
+        bool end_model( bool fix_model = true ) ;
         bool complete_element_connectivity() ;
 
         /*! @}
