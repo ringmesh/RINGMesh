@@ -51,12 +51,44 @@
 
 namespace RINGMesh {
 
+
+    class RINGMESH_API GeoModelMeshVertices {
+
+
+    } ;
+
+    class RINGMESH_API GeoModelMeshFacets {
+
+
+    } ;
+
+    class RINGMESH_API GeoModelMeshCells {
+
+
+    } ;
+
+    class RINGMESH_API GeoModelMeshOrder {
+
+
+    } ;
+
     class RINGMESH_API GeoModelMesh {
     public:
         GeoModelMesh() ;
 
+        const GEO::Mesh& mesh() const {
+            return mesh_ ;
+        }
+
     private:
         GEO::Mesh mesh_ ;
+
+    public:
+        GeoModelMeshVertices vertices ;
+        GeoModelMeshFacets facets ;
+        GeoModelMeshCells cells ;
+        GeoModelMeshOrder order ;
+
     } ;
 
 
