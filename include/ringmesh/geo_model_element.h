@@ -132,20 +132,20 @@ namespace RINGMesh {
          * @details Stores the TYPE of the element and its index in the GeoModel.
          *          Default values are NO_TYPE and NO_ID
          */
-        struct bme_t {
-            bme_t()
+        struct gme_t {
+            gme_t()
                 : type( NO_TYPE ), index( NO_ID )
             {
             }
-            bme_t( TYPE t, index_t id )
+            gme_t( TYPE t, index_t id )
                 : type( t ), index( id )
             {
             }
-            bool operator!=( const bme_t& rhs ) const
+            bool operator!=( const gme_t& rhs ) const
             {
                 return type != rhs.type || index != rhs.index ;
             }
-            bool operator==( const bme_t& rhs ) const
+            bool operator==( const gme_t& rhs ) const
             {
                 return type == rhs.type && index == rhs.index ;
             }
@@ -153,10 +153,10 @@ namespace RINGMesh {
              * @brief Sort BME identifiers
              * @details Compare first types, then compare indices, 
              *          beginning with NO_ID indices. 
-             * @note In a sorted vector v of bme_t one can find the first surface with
-             *       std::lower_bound( v.begin(), v.end(), bme_t( SURFACE, NO_ID ) ) ;
+             * @note In a sorted vector v of gme_t one can find the first surface with
+             *       std::lower_bound( v.begin(), v.end(), gme_t( SURFACE, NO_ID ) ) ;
              */
-            bool operator<( const bme_t& rhs ) const
+            bool operator<( const gme_t& rhs ) const
             {
                 if( type != rhs.type ) {
                     return type < rhs.type ;
@@ -166,7 +166,7 @@ namespace RINGMesh {
                     return index < rhs.index ;
                 }
             }
-            friend std::ostream& operator<<( std::ostream& os, const bme_t& in )
+            friend std::ostream& operator<<( std::ostream& os, const gme_t& in )
             {
                 os << GeoModelElement::type_name( in.type ) << " " << in.index ;
                 return os ;
@@ -295,7 +295,7 @@ namespace RINGMesh {
         {
             return name_ ;
         }
-        const bme_t& bme_id() const
+        const gme_t& gme_id() const
         {
             return id_ ;
         }
@@ -317,7 +317,7 @@ namespace RINGMesh {
         {
             return boundaries_.size() ;
         }
-        const bme_t& boundary_id( index_t x ) const
+        const gme_t& boundary_id( index_t x ) const
         {
             return boundaries_[x] ;
         }
@@ -332,7 +332,7 @@ namespace RINGMesh {
         {
             return in_boundary_.size() ;
         }
-        const bme_t& in_boundary_id( index_t x ) const
+        const gme_t& in_boundary_id( index_t x ) const
         {
             return in_boundary_[x] ;
         }
@@ -348,7 +348,7 @@ namespace RINGMesh {
         bool has_parent() const { 
             return parent_id().is_defined() ;
         }
-        const bme_t& parent_id() const
+        const gme_t& parent_id() const
         {
             return parent_ ;
         }
@@ -358,7 +358,7 @@ namespace RINGMesh {
         {
             return children_.size() ;
         }
-        const bme_t& child_id( index_t x ) const
+        const gme_t& child_id( index_t x ) const
         {
             return children_[x] ;
         }
@@ -424,14 +424,14 @@ namespace RINGMesh {
         void set_name( const std::string& name ) {name_ = name ;}
         void set_geological_feature( GEOL_FEATURE type ) {geol_feature_ = type ;}
 
-        void add_boundary( const bme_t& b )
+        void add_boundary( const gme_t& b )
         {
             ringmesh_debug_assert( b.is_defined() ) ;
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             boundaries_.push_back( b ) ;
         }
 
-        void set_boundary( index_t id, const bme_t& b )
+        void set_boundary( index_t id, const gme_t& b )
         {
             /// No check on the validity of the index of the element b
             /// NO_ID is used to flag elements to delete            
@@ -440,7 +440,7 @@ namespace RINGMesh {
             boundaries_[ id ] = b ;
         }
 
-        void add_boundary( const bme_t& b, bool side )
+        void add_boundary( const gme_t& b, bool side )
         {
             ringmesh_debug_assert( b.is_defined() ) ;
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
@@ -448,7 +448,7 @@ namespace RINGMesh {
             sides_.push_back( side ) ;
         }
 
-        void delete_boundary_with_side(const bme_t& b) {
+        void delete_boundary_with_side(const gme_t& b) {
             index_t j = NO_ID ;
             std::cout << "b.index    "<< b.index <<std::endl ;
             std::cout << "b.type    "<< b.type <<std::endl ;
@@ -467,7 +467,7 @@ namespace RINGMesh {
             sides_.erase(sides_.begin()+j) ;
         }
 
-        void set_boundary( index_t id, const bme_t& b, bool side )
+        void set_boundary( index_t id, const gme_t& b, bool side )
         {
             /// No check on the validity of the index of the element b
             /// NO_ID is used to flag elements to delete 
@@ -477,14 +477,14 @@ namespace RINGMesh {
             sides_[ id ] = side ;
         }
 
-        void add_in_boundary( const bme_t& in_b )
+        void add_in_boundary( const gme_t& in_b )
         {
             ringmesh_debug_assert( in_b.is_defined() ) ;
             ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
             in_boundary_.push_back( in_b ) ;
         }
 
-        void set_in_boundary( index_t id, const bme_t& in_b )
+        void set_in_boundary( index_t id, const gme_t& in_b )
         {
             /// No check on the validity of the index of the element in_b
             /// NO_ID is used to flag elements to delete 
@@ -493,7 +493,7 @@ namespace RINGMesh {
             in_boundary_[ id ] = in_b ;
         }
 
-        void set_parent( const bme_t& p )
+        void set_parent( const gme_t& p )
         {
             /// No check on the validity of the index of the element p
             /// NO_ID is used to flag elements to delete 
@@ -501,14 +501,14 @@ namespace RINGMesh {
             parent_ = p ;
         }
 
-        void add_child( const bme_t& c )
+        void add_child( const gme_t& c )
         {
             ringmesh_debug_assert( c.is_defined() ) ;
             ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
             children_.push_back( c ) ;
         }
 
-        void set_child( index_t id, const bme_t& c )
+        void set_child( index_t id, const gme_t& c )
         {
             /// No check on the validity of the index of the element c
             /// NO_ID is used to flag elements to delete 
@@ -527,7 +527,7 @@ namespace RINGMesh {
         GeoModel* model_ ;
 
         /// Unique identifier of the GeoModelElement in the model
-        bme_t id_ ;
+        gme_t id_ ;
 
         /// Name of the element - default is an empty string
         std::string name_ ;
@@ -536,20 +536,20 @@ namespace RINGMesh {
         GEOL_FEATURE geol_feature_ ;
 
         /// Elements on the boundary of this element - see boundary_type( TYPE )
-        std::vector< bme_t > boundaries_ ;
+        std::vector< gme_t > boundaries_ ;
 
         /// Additional information for oriented boundaries (filled for REGION)
         /// Side: + (true) or - (false)
         std::vector< bool > sides_ ;
 
         /// Elements in which boundary this element is - see in_boundary_type( TYPE )
-        std::vector< bme_t > in_boundary_ ;
+        std::vector< gme_t > in_boundary_ ;
 
         /// Parent identification - see parent_type( TYPE )
-        bme_t parent_ ;
+        gme_t parent_ ;
 
         /// Elements constituting this one - see child_type( TYPE )
-        std::vector< bme_t > children_ ;
+        std::vector< gme_t > children_ ;
     } ;
 
     /// @todo This is probably not the best place to do this.
@@ -599,7 +599,7 @@ namespace RINGMesh {
          */
         index_t nb_cells() const
         {
-            switch( bme_id().type ) {
+            switch( gme_id().type ) {
                 case LINE:
                     return mesh_.edges.nb() ;
                 case SURFACE:

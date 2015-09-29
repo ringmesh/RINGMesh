@@ -123,7 +123,7 @@ namespace RINGMesh {
                 } else {
                     out << "-" ;
                 }
-                out << region.boundary( i ).bme_id().index + 1 ;
+                out << region.boundary( i ).gme_id().index + 1 ;
                 it++ ;
                 if( it == 5 ) {
                     out << std::endl ;
@@ -396,7 +396,7 @@ namespace RINGMesh {
         void save_high_level_bme( std::ofstream& out, const GeoModelElement& E )
         {
             /// First line:  TYPE - ID - NAME - GEOL
-            out << E.bme_id() << " " ;
+            out << E.gme_id() << " " ;
             if( E.has_name() ) {
                 out << E.name() << " " ;
             } else {
@@ -443,14 +443,14 @@ namespace RINGMesh {
                 GME::TYPE type = static_cast< GME::TYPE >( i ) ;
                 index_t nb = M.nb_elements( type ) ;
                 for( index_t j = 0; j < nb; ++j ) {
-                    save_high_level_bme( out, M.element( GME::bme_t( type, j ) ) ) ;
+                    save_high_level_bme( out, M.element( GME::gme_t( type, j ) ) ) ;
                 }
             }
             // Regions
             for( index_t i = 0; i < M.nb_regions(); ++i ) {
                 const GME& E = M.region( i ) ;
                 // Save ID - NAME 
-                out << E.bme_id() << " " ;
+                out << E.gme_id() << " " ;
                 if( E.has_name() ) {
                     out << E.name() ;
                 } else {
@@ -494,13 +494,13 @@ namespace RINGMesh {
 
             // Corners
             for( index_t i = 0; i < M.nb_corners(); ++i ) {
-                out << M.corner( i ).bme_id() << " " 
+                out << M.corner( i ).gme_id() << " " 
                     << M.corner( i ).vertex() << std::endl ;
             }
             // Lines
             for( index_t i = 0; i < M.nb_lines(); ++i ) {
                 const Line& L = M.line( i ) ;
-                out << L.bme_id() << std::endl ;
+                out << L.gme_id() << std::endl ;
                 out << "LINE_VERTICES " << L.nb_vertices() << std::endl ;
                 for( index_t j = 0; j < L.nb_vertices(); ++j ) {
                     out << L.vertex( j ) << std::endl ;
@@ -535,7 +535,7 @@ namespace RINGMesh {
             // Surfaces
             for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
                 const Surface& S = M.surface( i ) ;
-                out << S.bme_id() << std::endl ;
+                out << S.gme_id() << std::endl ;
                 out << "SURFACE_VERTICES " << S.nb_vertices() << std::endl ;
                 for( index_t j = 0; j < S.nb_vertices(); ++j ) {
                     out << S.vertex( j ) << std::endl ;

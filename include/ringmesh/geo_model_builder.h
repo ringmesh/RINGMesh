@@ -106,7 +106,7 @@ namespace RINGMesh {
          * @{
          */
 
-        GME::bme_t create_element( GME::TYPE e_type ) ;
+        GME::gme_t create_element( GME::TYPE e_type ) ;
 
         /*!
          * @brief Set an element of the model.
@@ -116,7 +116,7 @@ namespace RINGMesh {
          *           is given up by the GeoModel.
          * @param E Element to set. The ownership is transferred to the GeoModel.
          */
-        void set_element( const GME::bme_t& id, GeoModelElement* E ) const
+        void set_element( const GME::gme_t& id, GeoModelElement* E ) const
         {
             if( id.type < GME::NO_TYPE ) {
                 model_.modifiable_elements( id.type )[id.index] = E ;
@@ -130,7 +130,7 @@ namespace RINGMesh {
          * @pre The id must refer to a valid element of the model
          */
         GeoModelElement& element(
-            const GME::bme_t& id ) const
+            const GME::gme_t& id ) const
         {
             return *element_ptr(id) ;
         }
@@ -141,7 +141,7 @@ namespace RINGMesh {
          *      The id must refer to a valid element.
          */
         GeoModelMeshElement& mesh_element(
-            const GME::bme_t& id ) const
+            const GME::gme_t& id ) const
         {
             ringmesh_debug_assert( GME::has_mesh( id.type ) ) ;
             return dynamic_cast<GeoModelMeshElement&>( element( id ) ) ;
@@ -150,7 +150,7 @@ namespace RINGMesh {
         /*!
          * @brief Modifiable pointer to an element of the model
          */
-        GeoModelElement* element_ptr( const GME::bme_t& id ) const
+        GeoModelElement* element_ptr( const GME::gme_t& id ) const
         {
             if( id.type < GME::NO_TYPE ) {
                 return model_.elements( id.type )[ id.index ] ;
@@ -162,10 +162,10 @@ namespace RINGMesh {
             }
         }
 
-        void remove_elements( const std::set< GME::bme_t >& elements ) ;
-        bool get_dependent_elements( std::set< GME::bme_t >& elements ) const ;
+        void remove_elements( const std::set< GME::gme_t >& elements ) ;
+        bool get_dependent_elements( std::set< GME::gme_t >& elements ) const ;
         void remove_elements_and_dependencies( 
-            const std::set< GME::bme_t >& elements_to_remove ) ;
+            const std::set< GME::gme_t >& elements_to_remove ) ;
 
 
         /*! @}
@@ -173,35 +173,35 @@ namespace RINGMesh {
          * @{
          */
         void set_model(
-            const GME::bme_t& t,
+            const GME::gme_t& t,
             GeoModel* m )
         {
             element( t ).set_model( m ) ;
         }
 
         void set_element_index(
-            const GME::bme_t& t )
+            const GME::gme_t& t )
         {
             element( t ).set_id( t.index ) ;
         }
 
         void set_element_name(
-            const GME::bme_t& t,
+            const GME::gme_t& t,
             const std::string& name )
         {
             element( t ).set_name( name ) ;
         }
 
         void set_element_geol_feature(
-            const GME::bme_t& t,
+            const GME::gme_t& t,
             GME::GEOL_FEATURE geol )
         {
             element( t ).set_geological_feature( geol ) ;
         }
 
         void add_element_boundary(
-            const GME::bme_t& t,
-            const GME::bme_t& boundary,
+            const GME::gme_t& t,
+            const GME::gme_t& boundary,
             bool side = false )
         {
             if( t.type == GME::REGION ) {
@@ -210,22 +210,22 @@ namespace RINGMesh {
         }
 
         void add_element_in_boundary(
-            const GME::bme_t& t,
-            const GME::bme_t& in_boundary )
+            const GME::gme_t& t,
+            const GME::gme_t& in_boundary )
         {
             element( t ).add_in_boundary( in_boundary ) ;
         }
 
         void set_parent(
-            const GME::bme_t& t,
-            const GME::bme_t& parent_index )
+            const GME::gme_t& t,
+            const GME::gme_t& parent_index )
         {
             element( t ).set_parent( parent_index ) ;
         }
 
         void add_child(
-            const GME::bme_t& t,
-            const GME::bme_t& child_index )
+            const GME::gme_t& t,
+            const GME::gme_t& child_index )
         {
             element( t ).add_child( child_index ) ;
         }
@@ -239,7 +239,7 @@ namespace RINGMesh {
          * @{
          */
         void set_element_vertex(
-            GME::bme_t t,
+            GME::gme_t t,
             index_t v,
             const vec3& point )
         {
@@ -247,15 +247,15 @@ namespace RINGMesh {
         }
 
         void set_corner(
-            const GME::bme_t& corner_id,
+            const GME::gme_t& corner_id,
             const vec3& point ) ;
 
         void set_line(
-            const GME::bme_t& id,
+            const GME::gme_t& id,
             const std::vector< vec3 >& vertices ) ;
 
         void set_surface_geometry(
-            const GME::bme_t& surface_id,
+            const GME::gme_t& surface_id,
             const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr ) ;
@@ -267,25 +267,25 @@ namespace RINGMesh {
         index_t add_unique_vertex( const vec3& p ) ;
 
         void set_corner(
-            const GME::bme_t& corner_id,
+            const GME::gme_t& corner_id,
             index_t unique_vertex ) ;
 
         void set_line(
-            const GME::bme_t& id,
+            const GME::gme_t& id,
             const std::vector< index_t >& unique_vertices ) ;
 
         void set_surface_geometry(
-            const GME::bme_t& surface_id,
+            const GME::gme_t& surface_id,
             const std::vector< index_t >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr ) ;
 
         void set_surface_geometry(
-            const GME::bme_t& surface_id,
+            const GME::gme_t& surface_id,
             const std::vector< index_t >& corners,
             const std::vector< index_t >& facet_ptr ) ;
 
-        void set_surface_adjacencies( const GME::bme_t& surface_id ) ;
+        void set_surface_adjacencies( const GME::gme_t& surface_id ) ;
 
         /*!
          * @}
@@ -317,13 +317,13 @@ namespace RINGMesh {
         bool load_ml_file( const std::string& ml_file_name ) ;
 
     protected:
-        GME::bme_t determine_line_vertices(
+        GME::gme_t determine_line_vertices(
             const Surface& S,
             index_t id0,
             index_t id1,
             std::vector< index_t >& border_vertex_model_ids ) const ;
 
-        GME::bme_t determine_line_vertices(
+        GME::gme_t determine_line_vertices(
             const Surface& S,
             index_t first_vertex,
             index_t second_vertex,

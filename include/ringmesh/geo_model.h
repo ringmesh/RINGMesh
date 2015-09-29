@@ -66,32 +66,32 @@ namespace RINGMesh {
          * @brief Identification of a vertex in a GeoModelElement
          */
         struct VertexInBME {
-            VertexInBME( GME::bme_t t, index_t vertex_id_in )
-                : bme_id( t ), v_id( vertex_id_in )
+            VertexInBME( GME::gme_t t, index_t vertex_id_in )
+                : gme_id( t ), v_id( vertex_id_in )
             {
             }
             VertexInBME()
-                : bme_id(), v_id( NO_ID )
+                : gme_id(), v_id( NO_ID )
             {
             }
             bool operator<( const VertexInBME& rhs ) const
             {
-                if( bme_id != rhs.bme_id ) {
-                    return bme_id < rhs.bme_id ;
+                if( gme_id != rhs.gme_id ) {
+                    return gme_id < rhs.gme_id ;
                 } else {
                     return v_id < rhs.v_id ;
                 }
             }
             bool operator==( const VertexInBME& rhs ) const
             {
-                return bme_id == rhs.bme_id && v_id == rhs.v_id ;
+                return gme_id == rhs.gme_id && v_id == rhs.v_id ;
             }
             bool is_defined() const
             {
-                return bme_id.is_defined() && v_id != NO_ID ;
+                return gme_id.is_defined() && v_id != NO_ID ;
             }
             /// Unique identifier of the associated GeoModelElement
-            GME::bme_t bme_id ;
+            GME::gme_t gme_id ;
             /// Index of the vertex in the BME
             index_t v_id ;
         } ;
@@ -344,7 +344,7 @@ namespace RINGMesh {
          * @param[in] index Index of the element
          *
          */
-        const GeoModelElement& element( GME::bme_t id ) const
+        const GeoModelElement& element( GME::gme_t id ) const
         {
             ringmesh_assert( id.index < nb_elements( id.type ) ) ;
             if( id.type < GME::NO_TYPE ) {
@@ -356,7 +356,7 @@ namespace RINGMesh {
             }
         }
 
-        const GeoModelMeshElement& mesh_element( GME::bme_t id ) const
+        const GeoModelMeshElement& mesh_element( GME::gme_t id ) const
         {
             ringmesh_assert( GME::has_mesh( id.type ) ) ;
             return dynamic_cast< const GeoModelMeshElement& >( element( id ) ) ;
@@ -414,22 +414,22 @@ namespace RINGMesh {
 
         const GeoModelElement& region( index_t index ) const
         {
-            return element( GME::bme_t( GME::REGION, index ) ) ;
+            return element( GME::gme_t( GME::REGION, index ) ) ;
         }
 
         const GeoModelElement& contact( index_t index ) const
         {
-            return element( GME::bme_t( GME::CONTACT, index ) ) ;
+            return element( GME::gme_t( GME::CONTACT, index ) ) ;
         }
 
         const GeoModelElement& one_interface( index_t index ) const
         {
-            return element( GME::bme_t( GME::INTERFACE, index ) ) ;
+            return element( GME::gme_t( GME::INTERFACE, index ) ) ;
         }
 
         const GeoModelElement& layer( index_t index ) const
         {
-            return element( GME::bme_t( GME::LAYER, index ) ) ;
+            return element( GME::gme_t( GME::LAYER, index ) ) ;
         }
 
         const GeoModelElement& universe() const
@@ -469,7 +469,7 @@ namespace RINGMesh {
          * @param[in] global A BME id of TYPE - ALL_TYPES
          * @return A BME id of an element of the model, or a invalid one if nothing found
          */
-        inline GME::bme_t global_to_typed_id( const GME::bme_t& global ) const
+        inline GME::gme_t global_to_typed_id( const GME::gme_t& global ) const
         {
             index_t t = NO_ID ;
             for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
@@ -482,9 +482,9 @@ namespace RINGMesh {
             if( static_cast< GME::TYPE >( t ) < GME::NO_TYPE ) {
                 GME::TYPE T = static_cast< GME::TYPE >( t ) ;
                 index_t i = global.index - nb_elements_per_type_[t] ;
-                return GME::bme_t( T, i ) ;
+                return GME::gme_t( T, i ) ;
             } else {
-                return GME::bme_t() ;
+                return GME::gme_t() ;
             }
         }
 
