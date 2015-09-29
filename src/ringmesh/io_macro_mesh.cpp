@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
+ *     RING Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -40,7 +40,7 @@
 
 #include <ringmesh/io.h>
 #include <ringmesh/macro_mesh.h>
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/well.h>
 #include <ringmesh/utils.h>
 
@@ -195,7 +195,7 @@ namespace RINGMesh {
             }
             virtual bool save( const MacroMesh& mm, const std::string& filename )
             {
-                const BoundaryModel& model = mm.model() ;
+                const GeoModel& model = mm.model() ;
                 std::vector< index_t > vertex_exported_id( mm.vertices.nb_vertices(),
                     NO_ID ) ;
                 std::vector< index_t > atom_exported_id(
@@ -271,7 +271,7 @@ namespace RINGMesh {
 
                 out << "TRIA3" << std::endl ;
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const RINGMesh::BoundaryModelElement& interf =
+                    const RINGMesh::GeoModelElement& interf =
                         model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         index_t surface_id = interf.child_id( s ).index ;
@@ -294,7 +294,7 @@ namespace RINGMesh {
                 out << "FINSF" << std::endl ;
 
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const RINGMesh::BoundaryModelElement& interf =
+                    const RINGMesh::GeoModelElement& interf =
                         model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         index_t surface_id = interf.child_id( s ).index ;
@@ -682,7 +682,7 @@ namespace RINGMesh {
                 std::ofstream out( filename.c_str() ) ;
                 out.precision( 16 ) ;
 
-                const BoundaryModel& model = mm.model() ;
+                const GeoModel& model = mm.model() ;
                 // Print Model3d headers
                 out << "GOCAD TSolid 1" << std::endl << "HEADER {" << std::endl
                     << "name:" << model.name() << std::endl << "}" << std::endl ;
@@ -705,7 +705,7 @@ namespace RINGMesh {
                     mm.vertices.nb_duplicated_vertices(), NO_ID ) ;
                 index_t nb_vertices_exported = 1 ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const RINGMesh::BoundaryModelElement& region = model.region(
+                    const RINGMesh::Region& region = model.region(
                         r ) ;
                     out << "TVOLUME " << region.name() << std::endl ;
 
@@ -796,7 +796,7 @@ namespace RINGMesh {
                 out << "MODEL" << std::endl ;
                 int tface_count = 1 ;
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const RINGMesh::BoundaryModelElement& interf =
+                    const RINGMesh::GeoModelElement& interf =
                         model.one_interface( i ) ;
                     out << "SURFACE " << interf.name() << std::endl ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
@@ -829,7 +829,7 @@ namespace RINGMesh {
                 }
 
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const RINGMesh::BoundaryModelElement& region = model.region(
+                    const RINGMesh::Region& region = model.region(
                         r ) ;
                     out << "MODEL_REGION " << region.name() << " " ;
                     region.side( 0 ) ? out << "+" : out << "-" ;
@@ -910,7 +910,7 @@ namespace RINGMesh {
                 std::ofstream ascii( oss_ascii.str().c_str() ) ;
                 ascii.precision( 16 ) ;
 
-                const BoundaryModel& model = mm.model() ;
+                const GeoModel& model = mm.model() ;
                 ascii << model.name() << std::endl ;
                 ascii << "Model generated from RINGMesh" << std::endl ;
 
@@ -957,7 +957,7 @@ namespace RINGMesh {
                 std::vector< index_t > nb_quad_interface( model.nb_interfaces(),
                     0 ) ;
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const BoundaryModelElement& interf = model.one_interface( i ) ;
+                    const GeoModelElement& interf = model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         index_t s_id = interf.child_id( s ).index ;
                         nb_triangle_interface[i] += mm.facets.nb_triangle( s_id ) ;
@@ -978,7 +978,7 @@ namespace RINGMesh {
                 ascii << "# Object name" << TAB << "Element type" << TAB
                     << "Material-ID" << TAB << "Number of elements" << std::endl ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const RINGMesh::BoundaryModelElement& region = model.region(
+                    const RINGMesh::GeoModelElement& region = model.region(
                         r ) ;
                     regions << region.name() << std::endl ;
                     if( mm.cells.nb_tet( r ) > 0 ) {
@@ -1124,7 +1124,7 @@ namespace RINGMesh {
                     << std::endl ;
                 index_t cur_cell = 0 ;
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const RINGMesh::BoundaryModelElement& region = model.region(
+                    const RINGMesh::GeoModelElement& region = model.region(
                         r ) ;
                     if( mm.cells.nb_tet( r ) > 0 ) {
                         ascii << region.name() << " " << "TETRA_4" << " "
@@ -1310,7 +1310,7 @@ namespace RINGMesh {
                     }
                 }
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const BoundaryModelElement& interf = model.one_interface( i ) ;
+                    const GeoModelElement& interf = model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         index_t s_id = interf.child_id( s ).index ;
                         index_t mesh_id = mm.facets.mesh( s_id ) ;
@@ -1444,7 +1444,7 @@ namespace RINGMesh {
                     }
                 }
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const BoundaryModelElement& interf = model.one_interface( i ) ;
+                    const GeoModelElement& interf = model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         index_t s_id = interf.child_id( s ).index ;
                         index_t mesh_id = mm.facets.mesh( s_id ) ;
@@ -1572,7 +1572,7 @@ namespace RINGMesh {
             {
                 clear() ;
 
-                const BoundaryModel& model = mm.model() ;
+                const GeoModel& model = mm.model() ;
                 std::string cmsp_filename = GEO::CmdLine::get_arg( "out:csmp" ) ;
                 box_model_ = cmsp_filename != "" ;
                 if( box_model_ ) {
@@ -1860,7 +1860,7 @@ namespace RINGMesh {
                 std::ofstream out_xyz( oss_xyz.str().c_str() ) ;
                 out_xyz.precision( 16 ) ;
 
-                const BoundaryModel& model = mm.model() ;
+                const GeoModel& model = mm.model() ;
                 std::vector< index_t > region_offsets( mm.nb_meshes(), 0 ) ;
                 std::vector< index_t > surface_offsets( model.nb_surfaces(), 0 ) ;
                 for( index_t r = 0; r < mm.nb_meshes() - 1; r++ ) {
@@ -1883,7 +1883,7 @@ namespace RINGMesh {
                 std::deque< Pipe > pipes ;
                 for( index_t r = 0; r < mm.nb_meshes(); r++ ) {
                     const GEO::Mesh& mesh = mm.mesh( r ) ;
-                    const BoundaryModelElement& region = model.region( r ) ;
+                    const GeoModelElement& region = model.region( r ) ;
                     std::vector< index_t > boundary_ids( region.nb_boundaries() ) ;
                     for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
                         boundary_ids[s] = region.boundary_id( s ).index ;
@@ -2164,7 +2164,7 @@ namespace RINGMesh {
                         << " for the gmsh export. The export will take order 1 elements"
                         << std::endl ;
                 }
-                const BoundaryModel& model = mm.model() ;
+                const GeoModel& model = mm.model() ;
                 index_t offset_region = mm.nb_meshes() ;
                 index_t offset_interface = model.nb_interfaces() * 2 ; // one for each side
                 index_t nb_facets = 0 ;
@@ -2184,7 +2184,7 @@ namespace RINGMesh {
                     const GEO::Mesh& mesh = mm.mesh( m ) ;
                     GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
                         surface_att_name ) ;
-                    const BoundaryModelElement& region = model.region( m ) ;
+                    const GeoModelElement& region = model.region( m ) ;
                     std::vector< index_t > surfaces ;
                     surfaces.reserve( region.nb_boundaries() ) ;
                     for( index_t b = 0; b < region.nb_boundaries(); b++ ) {
@@ -2275,7 +2275,7 @@ namespace RINGMesh {
                 }
 
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const BoundaryModelElement& interf = model.one_interface( i ) ;
+                    const GeoModelElement& interf = model.one_interface( i ) ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
                         index_t s_id = interf.child_id( s ).index ;
                         if( mm.vertices.is_surface_to_duplicate( s_id ) ) continue ;
@@ -2311,16 +2311,16 @@ namespace RINGMesh {
                     oss_kine << directory << "/" << file << ".gmsh_info" ;
                     std::ofstream kine3d( oss_kine.str().c_str() ) ;
                     for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                        const BoundaryModelElement& interf = model.one_interface(
+                        const GeoModelElement& interf = model.one_interface(
                             i ) ;
                         index_t s_id = interf.child_id( 0 ).index ;
                         kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
                             << ",1," ;
-                        const RINGMesh::BoundaryModelElement& E =
+                        const RINGMesh::GeoModelElement& E =
                             model.one_interface( i ) ;
-                        if( RINGMesh::BoundaryModelElement::is_fault( E.geological_feature() ) ) {
+                        if( RINGMesh::GeoModelElement::is_fault( E.geological_feature() ) ) {
                             kine3d << "FaultFeatureClass" ;
-                        } else if( RINGMesh::BoundaryModelElement::is_stratigraphic_limit(
+                        } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
                                     E.geological_feature() ) ) {
                             kine3d << "HorizonFeatureClass" ;
                         } else if( E.is_on_voi() ) {
@@ -2330,11 +2330,11 @@ namespace RINGMesh {
                         if( mm.vertices.is_surface_to_duplicate( s_id ) ) {
                             kine3d << offset_region + 2 * i + 1 << ":"
                                 << interf.name() << ",0," ;
-                            const RINGMesh::BoundaryModelElement& E =
+                            const RINGMesh::GeoModelElement& E =
                                 model.one_interface( i ) ;
-                            if( RINGMesh::BoundaryModelElement::is_fault( E.geological_feature() ) ) {
+                            if( RINGMesh::GeoModelElement::is_fault( E.geological_feature() ) ) {
                                 kine3d << "FaultFeatureClass" ;
-                            } else if( RINGMesh::BoundaryModelElement::is_stratigraphic_limit(
+                            } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
                                 E.geological_feature() ) ) {
                                 kine3d << "HorizonFeatureClass" ;
                             } else if( E.is_on_voi() ) {
@@ -2360,14 +2360,6 @@ namespace RINGMesh {
 
             GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
                 << std::endl ;
-            std::vector< std::string > names ;
-            MacroMeshIOHandlerFactory::list_creators( names ) ;
-            GEO::Logger::out( "I/O" ) << "Currently supported file formats:"  ;
-            for( index_t i = 0; i < names.size(); i++ ) {
-                GEO::Logger::out( "I/O" ) << " " << names[i] ;
-            }
-            GEO::Logger::out( "I/O" ) <<std::endl ;
-
             return nil ;
         }
 

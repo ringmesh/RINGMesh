@@ -388,7 +388,7 @@ namespace RINGMesh {
             surface_id ).geological_feature() ;
         if( mm_.duplicate_mode() == MacroMesh::ALL
             && !mm_.model().surface( surface_id ).is_on_voi() ) return true ;
-        if( mm_.duplicate_mode() == MacroMesh::FAULT && BME::is_fault( feature ) )
+        if( mm_.duplicate_mode() == MacroMesh::FAULT && GME::is_fault( feature ) )
             return true ;
 
         return false ;

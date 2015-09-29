@@ -18,4 +18,5 @@
 	add_test(test_rotation)
 	add_test(test_get_dependent_elements)
 	add_test(test_tetrahedralize)
+	add_test(test_wells)
 #ENDIF()

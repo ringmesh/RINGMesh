@@ -32,45 +32,35 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/io.h>
-#include <ringmesh/utils.h>
+/*! \author Jeanne Pellerin and Arnaud Botella */
 
-#include <geogram/basic/logger.h>
+#ifndef __RINGMESH_BOUNDARY_MODEL_MESH__
+#define __RINGMESH_BOUNDARY_MODEL_MESH__
 
-int main( int argc, char** argv )
-{
-    using namespace RINGMesh ;
+#include <ringmesh/common.h>
 
-    //GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
+#include <geogram/mesh/mesh.h>
 
-    GeoModel in ;
-    if( !RINGMeshIO::load( "../data/model1.ml", in ) )
-        return 1 ;
-    if( !RINGMeshIO::save( in, "out.ml" ) )
-        return 1 ;
+#include <vector>
 
-    GeoModel in2 ;
-    if( !RINGMeshIO::load( "out.ml", in2 ) )
-        return 1 ;
-    if( !RINGMeshIO::save( in2, "out2.ml" ) )
-        return 1 ;
-	
-	// Test a bad fixable input annot
-	GeoModel in3 ;
-	if( !RINGMeshIO::load( "../data/annot.ml", in3 ) )
-        return 1 ;
-		
-    bool res = Utils::compare_file( "out.ml", "out2.ml" ) ;
-    if( res )
-        GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
-    else
-        GEO::Logger::out("TEST") << "FAILED" << std::endl ;
-    return !res ;
+namespace RINGMesh {
+
+    class RINGMESH_API GeoModelMesh {
+    public:
+        GeoModelMesh() ;
+
+    private:
+        GEO::Mesh mesh_ ;
+    } ;
+
+
+
 }
+
+#endif

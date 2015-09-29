@@ -32,45 +32,21 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Supérieure de Géologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/io.h>
-#include <ringmesh/utils.h>
+/*! \author Jeanne Pellerin and Arnaud Botella */
 
-#include <geogram/basic/logger.h>
+#include <ringmesh/geo_model_mesh.h>
 
-int main( int argc, char** argv )
-{
-    using namespace RINGMesh ;
 
-    //GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
-
-    GeoModel in ;
-    if( !RINGMeshIO::load( "../data/model1.ml", in ) )
-        return 1 ;
-    if( !RINGMeshIO::save( in, "out.ml" ) )
-        return 1 ;
-
-    GeoModel in2 ;
-    if( !RINGMeshIO::load( "out.ml", in2 ) )
-        return 1 ;
-    if( !RINGMeshIO::save( in2, "out2.ml" ) )
-        return 1 ;
-	
-	// Test a bad fixable input annot
-	GeoModel in3 ;
-	if( !RINGMeshIO::load( "../data/annot.ml", in3 ) )
-        return 1 ;
-		
-    bool res = Utils::compare_file( "out.ml", "out2.ml" ) ;
-    if( res )
-        GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
-    else
-        GEO::Logger::out("TEST") << "FAILED" << std::endl ;
-    return !res ;
+namespace RINGMesh {
+    
+    GeoModelMesh::GeoModelMesh()
+    {
+    }
+    
 }
