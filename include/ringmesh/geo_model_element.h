@@ -982,26 +982,6 @@ namespace RINGMesh {
             boundaries_.push_back( b ) ;
             sides_.push_back( side ) ;
         }
-        
-        void delete_boundary_with_side( const gme_t& b )
-        {
-            index_t j = NO_ID ;
-            std::cout << "b.index    "<< b.index <<std::endl ;
-            std::cout << "b.type    "<< b.type <<std::endl ;
-            // TODO use utils function
-            for( index_t i = 0 ; i<boundaries_.size() ; ++i ) {
-                std::cout << "boundaries_[i].index    "<< boundaries_[ i ].index <<std::endl ;
-                std::cout << "boundaries_[i].type    "<< boundaries_[ i ].type <<std::endl ;
-                if( boundaries_[ i ]==b ) {
-                    j = i ;
-                    //                    break ;
-                }
-            }
-            std::cout << "j   " << j <<std::endl;
-            ringmesh_debug_assert( j!=NO_ID ) ;
-            boundaries_.erase( boundaries_.begin()+j ) ;
-            sides_.erase( sides_.begin()+j ) ;
-        }
 
         void set_boundary( index_t id, const gme_t& b, bool side )
         {
