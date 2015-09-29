@@ -29,16 +29,16 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
+ *     RING Project
  *     Ecole Nationale Sup�rieure de G�ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
 #include <ringmesh/utils.h>
 
@@ -48,22 +48,22 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::out("TEST") << "Test IO for a BoundaryModel in .ml" << std::endl ;
+    GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
 
-    BoundaryModel in ;
+    GeoModel in ;
     if( !RINGMeshIO::load( "../data/model1.ml", in ) )
         return 1 ;
     if( !RINGMeshIO::save( in, "out.ml" ) )
         return 1 ;
 
-    BoundaryModel in2 ;
+    GeoModel in2 ;
     if( !RINGMeshIO::load( "out.ml", in2 ) )
         return 1 ;
     if( !RINGMeshIO::save( in2, "out2.ml" ) )
         return 1 ;
 	
 	// Test a bad fixable input annot
-	BoundaryModel in3 ;
+	GeoModel in3 ;
 	if( !RINGMeshIO::load( "../data/annot.ml", in3 ) )
         return 1 ;
 		

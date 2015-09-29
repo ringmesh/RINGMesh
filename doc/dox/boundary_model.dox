@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
+ *     RING Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -41,36 +41,36 @@
 
 /**
 
-\page ringmesh_boundary_model Description of the BoundaryModel
+\page ringmesh_geo_model Description of the GeoModel
 
 Constitutive elements
 ------------------------
 
-The class RINGMesh::BoundaryModel represents a surface structural model, 
-it owns and manages 7 vector storing pointers to its constitutive RINGMesh::BoundaryModelElement.
+The class RINGMesh::GeoModel represents a surface structural model, 
+it owns and manages 7 vector storing pointers to its constitutive RINGMesh::GeoModelElement.
 
 A model is defined by:
 - A set of RINGMesh::Surface, simply connected manifold surfaces with or without boundaries. 
 - Groupings of surfaces into geological interfaces representing the domain boundaries
 	(volume of interest VOI), stratigraphic interfaces (horizons), and faults.
-	Implemented by RINGMesh::BoundaryModelElement.
+	Implemented by RINGMesh::GeoModelElement.
 -  A set of RINGMesh::Line, simply connected manifold piecewise lines with boundaries.
 	Each line is constituted of edges shared by the same set of surfaces.
 -  Groupings of lines common to a set of interfaces into Contacts. 
-   Implemented by RINGMesh::BoundaryModelElement.
+   Implemented by RINGMesh::GeoModelElement.
 -  A set volumetric regions defined by their bounding surfaces. 
-   Implemented by RINGMesh::BoundaryModelElement.
+   Implemented by RINGMesh::GeoModelElement.
 -  Grouping of regions into layers.
-   Implemented by RINGMesh::BoundaryModelElement.
+   Implemented by RINGMesh::GeoModelElement.
 -  A set of RINGMesh::Corner, the points at the extremities of the lines.
 
 \image html bme_doc.png 
 
-BoundaryModelElement and derived classes
+GeoModelElement and derived classes
 ---------------------------------
 
-The class RINGMesh::BoundaryModelElement is the base class implementing an element of 
-the RINGMesh::BoundaryModel.
+The class RINGMesh::GeoModelElement is the base class implementing an element of 
+the RINGMesh::GeoModel.
 It stores all basic required information to describe an element of the model: 
 the model owning the element, the index and type of the element, a name, a geological feature,
 as well as connectivity information with the other model elements 
@@ -79,26 +79,26 @@ This base class implements the model regions, contacts, interfaces and layers.
 Depending on the type of the elements, some of the attributes should not and are not filled.
 
 
-A RINGMesh::BoundaryModelMeshElement is an abstract class 
-for the RINGMesh::BoundaryModelElement storing a GEO::Mesh.
+A RINGMesh::GeoModelMeshElement is an abstract class 
+for the RINGMesh::GeoModelElement storing a GEO::Mesh.
 From it derive RINGMesh::Surface, RINGMesh::Line, and RINGMesh::Corner
 that implement methods to operate on meshes of different dimensions.
 Meshes of the different element are independent one from another so
  shared vertices and edges are duplicated.
- At the model level RINGMesh::BoundaryModelVertices manage a 
+ At the model level RINGMesh::GeoModelVertices manage a 
  global indexing of the vertices of the different meshes.
  
   
- Building a BoundaryModel
+ Building a GeoModel
 -------------------------------
  
- The class RINGMesh::BoundaryModelBuilder implements the functions to 
- build and set the elements of a RINGMesh::BoundaryModel.
+ The class RINGMesh::GeoModelBuilder implements the functions to 
+ build and set the elements of a RINGMesh::GeoModel.
  Any new builder should derive from this class.
  Three builders are implemented:
-- RINGMesh::BoundaryModelBuilderGocad to load a SKUA-GOCAD structural model saved in a .ml file.
-- RINGMesh::BoundaryModelBuilderML to load a model saved in the native RINGMesh .bm file format.
-- RINGMesh::BoundaryModelBuilderSurface to build a structural model from a generic surface mesh.
+- RINGMesh::GeoModelBuilderGocad to load a SKUA-GOCAD structural model saved in a .ml file.
+- RINGMesh::GeoModelBuilderML to load a model saved in the native RINGMesh .bm file format.
+- RINGMesh::GeoModelBuilderSurface to build a structural model from a generic surface mesh.
 
 */
 
