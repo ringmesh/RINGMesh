@@ -38,10 +38,9 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
 
-#ifndef __RINGMESH_BOUNDARY_MODEL_MESH__
-#define __RINGMESH_BOUNDARY_MODEL_MESH__
+#ifndef __RINGMESH_GEO_MODEL_MESH__
+#define __RINGMESH_GEO_MODEL_MESH__
 
 #include <ringmesh/common.h>
 
@@ -53,7 +52,12 @@ namespace RINGMesh {
 
 
     class RINGMESH_API GeoModelMeshVertices {
+    public:
+        GeoModelMeshVertices( const GeoModel& gm ) ;
 
+    private:
+        /// Attached GeoModel owning the vertices
+        const GeoModel& gm_ ;
 
     } ;
 

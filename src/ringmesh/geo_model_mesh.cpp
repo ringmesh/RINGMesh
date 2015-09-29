@@ -38,12 +38,18 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
 
 #include <ringmesh/geo_model_mesh.h>
 
 
 namespace RINGMesh {
+
+    GeoModelMeshVertices::GeoModelMeshVertices( const GeoModel& gm )
+        : gm_( gm )
+    {
+    }
+
+
     
     GeoModelMesh::GeoModelMesh()
     {
