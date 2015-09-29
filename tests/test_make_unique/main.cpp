@@ -29,16 +29,16 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
+ *     RING Project
  *     Ecole Nationale Sup�rieure de G�ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
 
 #include <geogram/points/colocate.h>
@@ -50,7 +50,7 @@ int main( int argc, char** argv )
 
     GEO::Logger::out("TEST") << "Test MakeUnique" << std::endl ;
 
-    BoundaryModel in ;
+    GeoModel in ;
     if( !RINGMeshIO::load( "../data/model3.ml", in ) )
         return 1 ;
 
