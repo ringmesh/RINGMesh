@@ -61,7 +61,7 @@ namespace {
     index_t find_region( const GeoModel& BM, index_t surface_part_id, bool side )
     {
         ringmesh_debug_assert( surface_part_id < BM.nb_surfaces() ) ;
-        GME::bme_t cur_surface( GME::SURFACE, surface_part_id ) ;
+        GME::gme_t cur_surface( GME::SURFACE, surface_part_id ) ;
         /// @todo It would be better to directly check the region
         /// adjacent to the Surface.
         for( index_t r = 0; r < BM.nb_regions(); r++ ) {
@@ -380,7 +380,7 @@ namespace RINGMesh {
                 surface_.vertex( trgl, 0 ), surface_.vertex( trgl, 1 ),
                 surface_.vertex( trgl, 2 ), result ) ) {
                 intersections_.push_back(
-                    LineInstersection( result, surface_.bme_id().index, trgl ) ) ;
+                    LineInstersection( result, surface_.gme_id().index, trgl ) ) ;
             }
         }
 

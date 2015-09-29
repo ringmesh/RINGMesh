@@ -60,7 +60,7 @@
 namespace {
     using namespace RINGMesh ;
 
-    typedef GeoModelElement::bme_t bme_t ;
+    typedef GeoModelElement::gme_t gme_t ;
     typedef GeoModelMeshElement BMME ;
     typedef GeoModelVertices::VertexInBME VBME ;
 
@@ -198,14 +198,14 @@ namespace {
      * @param[in] name Name of the Interface
      * @return Index of the interface in the model, NO_ID if not found.
      */
-    bme_t find_interface( const GeoModel& BM, const std::string& name )
+    gme_t find_interface( const GeoModel& BM, const std::string& name )
     {
         for( index_t i = 0; i < BM.nb_interfaces(); ++i ) {
             if( BM.one_interface( i ).name() == name ) {
-                return BM.one_interface( i ).bme_id() ;
+                return BM.one_interface( i ).gme_id() ;
             }
         }
-        return bme_t() ;
+        return gme_t() ;
     }
 
     /*!
@@ -541,14 +541,14 @@ namespace {
      * @param[in] point Geometric location to look for
      * @return NO_ID or the index of the Corner
      */
-    bme_t find_corner( const GeoModel& BM, const vec3& point )
+    gme_t find_corner( const GeoModel& BM, const vec3& point )
     {
         for( index_t i = 0; i < BM.nb_corners(); ++i ) {
             if( BM.corner( i ).vertex() == point ) {
-                return bme_t( GME::CORNER, i ) ;
+                return gme_t( GME::CORNER, i ) ;
             }
         }
-        return bme_t() ;
+        return gme_t() ;
     }
 
     /*!
@@ -556,14 +556,14 @@ namespace {
      * @param[in] model_point_id Index of the point in the BoudaryModel
      * @return NO_ID or the index of the Corner
      */
-    bme_t find_corner( const GeoModel& BM, index_t model_point_id )
+    gme_t find_corner( const GeoModel& BM, index_t model_point_id )
     {
         for( index_t i = 0; i < BM.nb_corners(); ++i ) {
             if( BM.corner( i ).model_vertex_id() == model_point_id ) {
-                return bme_t( GME::CORNER, i ) ;
+                return gme_t( GME::CORNER, i ) ;
             }
         }
-        return bme_t() ;
+        return gme_t() ;
     }
 
     /*!
@@ -572,9 +572,9 @@ namespace {
      * @param[in] point Geometric location of the Corner
      * @return Index of the Corner
      */
-    bme_t find_or_create_corner( GeoModelBuilder& BMB, const vec3& point )
+    gme_t find_or_create_corner( GeoModelBuilder& BMB, const vec3& point )
     {
-        bme_t result = find_corner( BMB.model(), point ) ;
+        gme_t result = find_corner( BMB.model(), point ) ;
         if( !result.is_defined() ) {
             result = BMB.create_element( GME::CORNER ) ;
             BMB.set_corner( result, point ) ;
@@ -589,14 +589,14 @@ namespace {
      * @param[in] vertices Coordinates of the vertices of the line
      * @return Index of the Line
      */
-    bme_t find_or_create_line(
+    gme_t find_or_create_line(
         GeoModelBuilder& BMB,
         const std::vector< vec3 >& vertices )
     {
-        bme_t result ;
+        gme_t result ;
         for( index_t i = 0; i < BMB.model().nb_lines(); ++i ) {
             if( BMB.model().line( i ).equal( vertices ) ) {
-                result = BMB.model().line( i ).bme_id() ;
+                result = BMB.model().line( i ).gme_id() ;
             }
         }
         if( !result.is_defined() ) {
@@ -628,10 +628,10 @@ namespace {
         GME::TYPE b_type = GME::boundary_type( type ) ;
         if( b_type != GME::NO_TYPE ) {
             for( index_t i = 0; i < B.model().nb_elements( b_type ); ++i ) {
-                const GME& b = B.model().element( bme_t( b_type, i ) ) ;
+                const GME& b = B.model().element( gme_t( b_type, i ) ) ;
                 for( index_t j = 0; j < b.nb_in_boundary(); ++j ) {
                     B.add_element_boundary( b.in_boundary_id( j ),
-                        bme_t( b_type, i ) ) ;
+                        gme_t( b_type, i ) ) ;
                 }
             }
         }
@@ -648,10 +648,10 @@ namespace {
         GME::TYPE in_b_type = GME::in_boundary_type( type ) ;
         if( in_b_type != GME::NO_TYPE ) {
             for( index_t i = 0; i < B.model().nb_elements( in_b_type ); ++i ) {
-                const GME& in_b = B.element( bme_t( in_b_type, i ) ) ;
+                const GME& in_b = B.element( gme_t( in_b_type, i ) ) ;
                 for( index_t j = 0; j < in_b.nb_boundaries(); ++j ) {
                     B.add_element_in_boundary( in_b.boundary_id( j ),
-                        bme_t( in_b_type, i ) ) ;
+                        gme_t( in_b_type, i ) ) ;
                 }
             }
         }
@@ -668,9 +668,9 @@ namespace {
         GME::TYPE p_type = GME::parent_type( type ) ;
         if( p_type != GME::NO_TYPE ) {
             for( index_t i = 0; i < B.model().nb_elements( p_type ); ++i ) {
-                const GME& p = B.model().element( bme_t( p_type, i ) ) ;
+                const GME& p = B.model().element( gme_t( p_type, i ) ) ;
                 for( index_t j = 0; j < p.nb_children(); ++j ) {
-                    B.set_parent( p.child_id( j ), bme_t( p_type, i ) ) ;
+                    B.set_parent( p.child_id( j ), gme_t( p_type, i ) ) ;
                 }
             }
         }
@@ -687,8 +687,8 @@ namespace {
         GME::TYPE c_type = GME::child_type( type ) ;
         if( c_type != GME::NO_TYPE ) {
             for( index_t i = 0; i < B.model().nb_elements( c_type ); ++i ) {
-                bme_t cur_child = bme_t( c_type, i ) ;
-                const bme_t& parent = B.model().element( cur_child ).parent_id() ;
+                gme_t cur_child = gme_t( c_type, i ) ;
+                const gme_t& parent = B.model().element( cur_child ).parent_id() ;
                 if( parent.is_defined() ) {
                     B.add_child( parent, cur_child ) ;
                 }
@@ -703,7 +703,7 @@ namespace {
      */
     void remove_degenerate_facet_and_edges(
         GeoModel& BM,
-        std::set< bme_t >& to_remove )
+        std::set< gme_t >& to_remove )
     {
         to_remove.clear() ;
         for( index_t i = 0; i < BM.nb_lines(); ++i ) {
@@ -716,7 +716,7 @@ namespace {
 
                 // The line may be empty now - remove it from the model
                 if( BM.line( i ).nb_cells() == 0 ) {
-                    to_remove.insert( BM.line( i ).bme_id() ) ;
+                    to_remove.insert( BM.line( i ).gme_id() ) ;
                 }
             }
         }
@@ -754,7 +754,7 @@ namespace {
                 GEO::Logger::instance()->set_quiet( false ) ;
 #endif 
                 if( M.vertices.nb() == 0 || M.facets.nb() == 0 ) {
-                    to_remove.insert( BM.surface( i ).bme_id() ) ;
+                    to_remove.insert( BM.surface( i ).gme_id() ) ;
                 } else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
@@ -762,10 +762,10 @@ namespace {
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                         const Line& L = BM.line( S.boundary_id( l ).index ) ;
-                        if( to_remove.count( L.bme_id() ) == 0 && 
+                        if( to_remove.count( L.gme_id() ) == 0 && 
                             L.is_inside_border( S ) 
                         ) {
-                            cutting_lines.insert( L.bme_id().index ) ;
+                            cutting_lines.insert( L.gme_id().index ) ;
                         }
                     }
                     for( std::set< index_t >::iterator it = cutting_lines.begin();
@@ -791,10 +791,10 @@ namespace {
         std::set< index_t >& vertices )
     {
         vertices.clear() ;
-        if( E.bme_id().type == GME::CORNER ) {
+        if( E.gme_id().type == GME::CORNER ) {
             return ;
         }
-        if( E.bme_id().type == GME::LINE ) {
+        if( E.gme_id().type == GME::LINE ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
                 vertices.insert( E.nb_vertices() - 1 ) ;
             }
@@ -831,7 +831,7 @@ namespace {
 
     void remove_colocated_element_vertices(
         GeoModel& BM,
-        std::set< bme_t >& to_remove )
+        std::set< gme_t >& to_remove )
     {
         to_remove.clear() ;
         // For all Lines and Surfaces
@@ -840,7 +840,7 @@ namespace {
 
             for( index_t e = 0; e < BM.nb_elements( T ); ++e ) {
                 const BMME& E = dynamic_cast< const BMME& >( BM.element(
-                    bme_t( T, e ) ) ) ;
+                    gme_t( T, e ) ) ) ;
 
                 GEO::Mesh& M = E.mesh() ;
                 GEO::vector< index_t > colocated ;
@@ -874,7 +874,7 @@ namespace {
                     continue ;
                 } else if( nb_todelete == E.nb_vertices() ) {
                     // The complete element should be removed
-                    to_remove.insert( E.bme_id() ) ;
+                    to_remove.insert( E.gme_id() ) ;
                     continue ;
                 } else {
                     // We need to update the VertexInBME at the model level
@@ -889,10 +889,10 @@ namespace {
                             const std::vector< VBME >& cur =
                                 BM.vertices.bme_vertices( model_id ) ;
                             for( index_t i = 0; i < cur.size(); ++i ) {
-                                if( cur[i] == VBME( E.bme_id(), v ) ) {
+                                if( cur[i] == VBME( E.gme_id(), v ) ) {
                                     index_t new_id = old2new[v] ;
                                     BM.vertices.set_bme( model_id, i,
-                                        VBME( E.bme_id(), new_id ) ) ;
+                                        VBME( E.gme_id(), new_id ) ) ;
                                 }
                             }
                         }
@@ -912,7 +912,7 @@ namespace {
                     M.vertices.delete_elements( to_delete, false ) ;
 #ifdef RINGMESH_DEBUG
                     GEO::Logger::out( "GeoModel" ) << nb_todelete
-                        << " colocated vertices deleted in " << E.bme_id()
+                        << " colocated vertices deleted in " << E.gme_id()
                         << std::endl ;
 #endif
                 }
@@ -931,17 +931,17 @@ namespace RINGMesh {
      * @param[in] type Type of the element to create
      * @return The index of the created element
      */
-    bme_t GeoModelBuilder::create_element( GME::TYPE type )
+    gme_t GeoModelBuilder::create_element( GME::TYPE type )
     {
         index_t id = model_.nb_elements( type ) ;
         ringmesh_assert( id != NO_ID ) ;
         if( type >= GME::CORNER && type < GME::NO_TYPE ) {
             model_.modifiable_elements( type ).push_back(
                 new_element( type, &model_, id ) ) ;
-            return bme_t( type, id ) ;
+            return gme_t( type, id ) ;
         } else {
             ringmesh_assert_not_reached;
-            return bme_t() ;
+            return gme_t() ;
         }
     }
 
@@ -953,12 +953,12 @@ namespace RINGMesh {
      *          
      * @return True if at least one element was added, otherwise false.
      */
-    bool GeoModelBuilder::get_dependent_elements( std::set< bme_t >& in ) const
+    bool GeoModelBuilder::get_dependent_elements( std::set< gme_t >& in ) const
     {
         index_t input_size = in.size() ;
 
-        for( std::set< bme_t >::iterator it( in.begin() ); it != in.end(); ++it ) {
-            bme_t cur = *it ;
+        for( std::set< gme_t >::iterator it( in.begin() ); it != in.end(); ++it ) {
+            gme_t cur = *it ;
             /// If an element has children elements - add them 
             if( GME::child_allowed( cur.type ) ) {
                 const GME& E = model_.element( cur ) ;
@@ -973,7 +973,7 @@ namespace RINGMesh {
             GME::TYPE P = (GME::TYPE) p ;
             for( index_t j = 0; j < model_.nb_elements( P ); ++j ) {
                 bool no_child = true ;
-                const GME& E = model_.element( GME::bme_t( P, j ) ) ;
+                const GME& E = model_.element( GME::gme_t( P, j ) ) ;
                 for( index_t k = 0; k < E.nb_children(); ++k ) {
                     if( in.count( E.child_id( k ) ) == 0 ) {
                         no_child = false ;
@@ -981,7 +981,7 @@ namespace RINGMesh {
                     }
                 }
                 if( no_child ) {
-                    in.insert( E.bme_id() ) ;
+                    in.insert( E.gme_id() ) ;
                 }
             }
         }
@@ -991,7 +991,7 @@ namespace RINGMesh {
             GME::TYPE T = (GME::TYPE) t ;
             for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
                 bool no_incident = true ;
-                const GME& E = model_.element( GME::bme_t( T, j ) ) ;
+                const GME& E = model_.element( GME::gme_t( T, j ) ) ;
                 for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
                     if( in.count( E.in_boundary_id( k ) ) == 0 ) {
                         no_incident = false ;
@@ -999,7 +999,7 @@ namespace RINGMesh {
                     }
                 }
                 if( no_incident ) {
-                    in.insert( E.bme_id() ) ;
+                    in.insert( E.gme_id() ) ;
                 }
             }
         }
@@ -1024,7 +1024,7 @@ namespace RINGMesh {
      * 
      * @todo TEST IT
      */
-    void GeoModelBuilder::remove_elements( const std::set< bme_t >& elements )
+    void GeoModelBuilder::remove_elements( const std::set< gme_t >& elements )
     {
         if( elements.size() == 0 ) {
             return ;
@@ -1042,9 +1042,9 @@ namespace RINGMesh {
                     model_.nb_elements( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
         }
         // Flag the elements to erase
-        for( std::set< bme_t >::const_iterator it = elements.begin();
+        for( std::set< gme_t >::const_iterator it = elements.begin();
             it != elements.end(); ++it ) {
-            bme_t cur = *it ;
+            gme_t cur = *it ;
             if( cur.type < GME::NO_TYPE ) {
                 ringmesh_debug_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
                 to_erase_by_type[cur.type][cur.index] = NO_ID ;
@@ -1073,7 +1073,7 @@ namespace RINGMesh {
      * @todo Review : Error in the comments [JP]
      */
     void GeoModelBuilder::remove_elements_and_dependencies(
-        const std::set< GME::bme_t >& elements_to_remove )
+        const std::set< GME::gme_t >& elements_to_remove )
     {
         // Asserts to remove when implementation is completed
         ringmesh_assert( elements_to_remove.size() == 1 &&
@@ -1082,7 +1082,7 @@ namespace RINGMesh {
 
         // Copy because it is not logical to have in output the removed elements. BC
         /// @todo Review : youpiii what did the comment on the function just said ? [JP]
-        std::set< GME::bme_t > elements = elements_to_remove;
+        std::set< GME::gme_t > elements = elements_to_remove;
         // TODO Handle the case of several objects in elements
     
         const GeoModelElement& reg = element( *( elements.begin() ) ) ;
@@ -1101,9 +1101,9 @@ namespace RINGMesh {
                     model_.nb_elements( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
         }
         // Flag the elements to erase
-        for( std::set< bme_t >::const_iterator it = elements.begin();
+        for( std::set< gme_t >::const_iterator it = elements.begin();
             it != elements.end(); ++it ) {
-            bme_t cur = *it ;
+            gme_t cur = *it ;
             if( cur.type < GME::NO_TYPE ) {
                 ringmesh_debug_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
                 to_erase_by_type[cur.type][cur.index] = NO_ID ;
@@ -1126,19 +1126,19 @@ namespace RINGMesh {
         }
         // TODO Dirty duplication of code--------------------------
 
-        std::vector< GME::bme_t > to_add_in_universe ;
+        std::vector< GME::gme_t > to_add_in_universe ;
 
-        if( reg.bme_id().type == GME::REGION ) {
+        if( reg.gme_id().type == GME::REGION ) {
             index_t nb_added = 0 ;
             for( index_t b_i = 0; b_i < reg.nb_boundaries(); ++b_i ) {
                 if( !reg.boundary( b_i ).is_on_voi() ) {
-                    to_add_in_universe.push_back( reg.boundary( b_i ).bme_id() ) ;
+                    to_add_in_universe.push_back( reg.boundary( b_i ).gme_id() ) ;
                     ringmesh_debug_assert(
-                        to_erase_by_type[reg.boundary( b_i ).bme_id().type][reg.boundary(
-                            b_i ).bme_id().index] != NO_ID ) ;
+                        to_erase_by_type[reg.boundary( b_i ).gme_id().type][reg.boundary(
+                            b_i ).gme_id().index] != NO_ID ) ;
                     to_add_in_universe[nb_added].index =
-                        to_erase_by_type[reg.boundary( b_i ).bme_id().type][reg.boundary(
-                            b_i ).bme_id().index] ;
+                        to_erase_by_type[reg.boundary( b_i ).gme_id().type][reg.boundary(
+                            b_i ).gme_id().index] ;
                     ++nb_added ;
                 }
             }
@@ -1147,7 +1147,7 @@ namespace RINGMesh {
         remove_elements( elements ) ;
 
         // Update Universe
-        for( std::vector< GME::bme_t >::const_iterator itr =
+        for( std::vector< GME::gme_t >::const_iterator itr =
             to_add_in_universe.begin(); itr != to_add_in_universe.end(); ++itr ) {
             // TODO Instead of a dirty const_cast, use GeoModelBuilder::set_universe BC
             const_cast< GeoModelElement& >( model_.universe() ).add_boundary(
@@ -1190,7 +1190,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < to_erase.size(); ++i ) {
             for( index_t j = 0; j < to_erase[i].size(); ++j ) {
                 if( to_erase[i][j] == NO_ID ) {
-                    GME::bme_t cur( static_cast< GME::TYPE >( i ), j ) ;
+                    GME::gme_t cur( static_cast< GME::TYPE >( i ), j ) ;
                     delete element_ptr( cur ) ;
                     set_element( cur, nil ) ;
                 }
@@ -1212,8 +1212,8 @@ namespace RINGMesh {
                 model_.vertices.bme_vertices( v ) ;
 
             for( index_t i = 0; i < cur.size(); ++i ) {
-                bme_t id = cur[i].bme_id ;
-                bme_t new_id( id.type, to_erase[id.type][id.index] ) ;
+                gme_t id = cur[i].gme_id ;
+                gme_t new_id( id.type, to_erase[id.type][id.index] ) ;
                 model_.vertices.set_bme( v, i,
                     GeoModelVertices::VertexInBME( new_id, cur[i].v_id ) ) ;
             }
@@ -1229,10 +1229,10 @@ namespace RINGMesh {
             ringmesh_debug_assert(
                 model_.nb_elements( T ) == to_erase[i].size() - nb_removed[i] ) ;
             for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
-                GeoModelElement& E = element( bme_t( T, j ) ) ;
+                GeoModelElement& E = element( gme_t( T, j ) ) ;
 
                 // Not the same than j - since we have erased some elements
-                index_t old_id = E.bme_id().index ;
+                index_t old_id = E.gme_id().index ;
                 ringmesh_debug_assert( to_erase[i][old_id] != NO_ID ) ;
 
                 // id_ 
@@ -1243,7 +1243,7 @@ namespace RINGMesh {
                     ringmesh_debug_assert( B < GME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_boundaries(); ++k ) {
                         E.set_boundary( k,
-                            bme_t( B, to_erase[B][E.boundary_id( k ).index] ) ) ;
+                            gme_t( B, to_erase[B][E.boundary_id( k ).index] ) ) ;
                     }
                 }
                 // in_boundary
@@ -1252,7 +1252,7 @@ namespace RINGMesh {
                     ringmesh_debug_assert( IB < GME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
                         E.set_in_boundary( k,
-                            bme_t( IB,
+                            gme_t( IB,
                                 to_erase[IB][E.in_boundary_id( k ).index] ) ) ;
                     }
                 }
@@ -1260,7 +1260,7 @@ namespace RINGMesh {
                 if( E.has_parent() ) {
                     GME::TYPE P = GME::parent_type( T ) ;
                     ringmesh_debug_assert( P < GME::NO_TYPE ) ;
-                    E.set_parent( bme_t( P, to_erase[P][E.parent_id().index] ) ) ;
+                    E.set_parent( gme_t( P, to_erase[P][E.parent_id().index] ) ) ;
                 }
                 // children_ 
                 if( E.nb_children() > 0 ) {
@@ -1268,7 +1268,7 @@ namespace RINGMesh {
                     ringmesh_debug_assert( C < GME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_children(); ++k ) {
                         E.set_child( k,
-                            bme_t( C, to_erase[C][E.child_id( k ).index] ) ) ;
+                            gme_t( C, to_erase[C][E.child_id( k ).index] ) ) ;
                     }
                 }
                 // Clean the vectors in the element
@@ -1281,7 +1281,7 @@ namespace RINGMesh {
         {
             for( index_t i = 0; i < model_.universe().nb_boundaries(); ++i ) {
                 model_.universe_.set_boundary( i,
-                    bme_t( GME::SURFACE,
+                    gme_t( GME::SURFACE,
                         to_erase[GME::SURFACE][model_.universe().boundary_id( i ).index] ) ) ;
             }
             model_.universe_.erase_invalid_element_references() ;
@@ -1316,7 +1316,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < boundaries.size(); ++i ) {
             ringmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
             model_.universe_.add_boundary(
-                bme_t( GME::SURFACE, boundaries[i].first ), boundaries[i].second ) ;
+                gme_t( GME::SURFACE, boundaries[i].first ), boundaries[i].second ) ;
         }
     }
 
@@ -1327,7 +1327,7 @@ namespace RINGMesh {
      * @param[in] point Coordinates of the vertex
      */
     void GeoModelBuilder::set_corner(
-        const bme_t& corner_id,
+        const gme_t& corner_id,
         const vec3& point )
     {
         ringmesh_assert( corner_id.index < model_.nb_corners() ) ;
@@ -1342,7 +1342,7 @@ namespace RINGMesh {
      * @param[in] vertices Coordinates of the vertices on the line
      */
     void GeoModelBuilder::set_line(
-        const bme_t& id,
+        const gme_t& id,
         const std::vector< vec3 >& vertices )
     {
         ringmesh_assert( id.index < model_.nb_lines() ) ;
@@ -1359,7 +1359,7 @@ namespace RINGMesh {
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
      */
     void GeoModelBuilder::set_surface_geometry(
-        const bme_t& surface_id,
+        const gme_t& surface_id,
         const std::vector< vec3 >& points,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
@@ -1390,7 +1390,7 @@ namespace RINGMesh {
      * @param[in] unique_vertex Index of the vertex in the model
      */
     void GeoModelBuilder::set_corner(
-        const bme_t& corner_id,
+        const gme_t& corner_id,
         index_t unique_vertex )
     {
         ringmesh_assert( corner_id.index < model_.nb_corners() ) ;
@@ -1405,7 +1405,7 @@ namespace RINGMesh {
      * @param[in] unique_vertices Indices in the model of the unique vertices with which to build the Line
      */
     void GeoModelBuilder::set_line(
-        const bme_t& id,
+        const gme_t& id,
         const std::vector< index_t >& unique_vertices )
     {
         ringmesh_assert( id.index < model_.nb_lines() ) ;
@@ -1423,7 +1423,7 @@ namespace RINGMesh {
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets
      */
     void GeoModelBuilder::set_surface_geometry(
-        const bme_t& surface_id,
+        const gme_t& surface_id,
         const std::vector< index_t >& model_vertex_ids,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
@@ -1445,7 +1445,7 @@ namespace RINGMesh {
      * @param[in] facet_ptr Pointer to the beginning of a facet in facets     
      */
     void GeoModelBuilder::set_surface_geometry(
-        const bme_t& surface_id,
+        const gme_t& surface_id,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {
@@ -1488,7 +1488,7 @@ namespace RINGMesh {
      *
      * @param[in] surface_id Index of the surface
      */
-    void GeoModelBuilder::set_surface_adjacencies( const bme_t& surface_id )
+    void GeoModelBuilder::set_surface_adjacencies( const gme_t& surface_id )
     {
         Surface& S = dynamic_cast< Surface& >( *model_.surfaces_[surface_id.index] ) ;
         ringmesh_assert( S.nb_cells() > 0 ) ;
@@ -1657,14 +1657,14 @@ namespace RINGMesh {
 
         // Fill geological feature if missing
         for( index_t i = 0; i < model_.nb_elements( GME::ALL_TYPES ); ++i ) {
-            GME& E = element( bme_t( GME::ALL_TYPES, i ) ) ;
+            GME& E = element( gme_t( GME::ALL_TYPES, i ) ) ;
             if( !E.has_geological_feature() ) {
                 fill_element_geological_feature( E ) ;
             }
         }
 
         // Remove colocated vertices in each element
-        std::set< bme_t > empty_elements ;
+        std::set< gme_t > empty_elements ;
         remove_colocated_element_vertices( model_, empty_elements ) ;
         if( !empty_elements.empty() ) {
             get_dependent_elements( empty_elements ) ;
@@ -1845,11 +1845,11 @@ namespace RINGMesh {
                             set_universe( region_boundaries ) ;
                         } else {
                             // Create the regions and set its boundaries 
-                            bme_t region_id = create_element( GME::REGION ) ;
+                            gme_t region_id = create_element( GME::REGION ) ;
                             set_element_name( region_id, name ) ;
                             for( index_t i = 0; i < region_boundaries.size(); ++i ) {
                                 add_element_boundary( region_id,
-                                    bme_t( GME::SURFACE,
+                                    gme_t( GME::SURFACE,
                                         region_boundaries[i].first ),
                                     region_boundaries[i].second ) ;
                             }
@@ -1857,7 +1857,7 @@ namespace RINGMesh {
                     } else if( in.field_matches( 0, "LAYER" ) ) {
                         /// 1.4 Build the volumetric layers from their name and
                         /// the ids of the regions they contain
-                        bme_t layer_id = create_element( GME::LAYER ) ;
+                        gme_t layer_id = create_element( GME::LAYER ) ;
                         set_element_name( layer_id, in.field( 1 ) ) ;
                         bool end_layer = false ;
                         while( !end_layer ) {
@@ -1872,7 +1872,7 @@ namespace RINGMesh {
                                     region_id -= nb_tface + 1 ; // Remove Universe region
                                     // Correction because ids begin at 1 in the file
                                     add_child( layer_id,
-                                        bme_t( GME::REGION, region_id - 1 ) ) ;
+                                        gme_t( GME::REGION, region_id - 1 ) ) ;
                                 }
                             }
                         }
@@ -1899,7 +1899,7 @@ namespace RINGMesh {
                         if( tsurf_count > 0 ) {
                             // End the last TFace - Surface of this TSurf
                             set_surface_geometry(
-                                bme_t( GME::SURFACE, tface_count - 1 ),
+                                gme_t( GME::SURFACE, tface_count - 1 ),
                                 std::vector< vec3 >(
                                     tsurf_vertices.begin() +
                                     tface_vertex_start.back(),
@@ -1925,7 +1925,7 @@ namespace RINGMesh {
                         if( tface_vertex_start.size() > 0 ) {
                             // End the previous TFace - Surface  (copy from line 1180)
                             set_surface_geometry(
-                                bme_t( GME::SURFACE, tface_count - 1),
+                                gme_t( GME::SURFACE, tface_count - 1),
                                 std::vector< vec3 >(
                                     tsurf_vertices.begin() +
                                     tface_vertex_start.back(),
@@ -1988,7 +1988,7 @@ namespace RINGMesh {
                         index_t p2 = in.field_as_uint( 3 ) - 1 ;
 
                         // Get the global corner id
-                        bme_t corner_id =
+                        gme_t corner_id =
                         find_corner(model_, tsurf_vertices[ p1 ] ) ;
                         ringmesh_assert( corner_id.is_defined() ) ;
 
@@ -2038,15 +2038,15 @@ namespace RINGMesh {
                 // of vertices on the border
                 const Surface& S = model_.surface( b.part_id_ ) ;
 
-                bme_t end_corner_id = determine_line_vertices( S, b.p0_, b.p1_,
+                gme_t end_corner_id = determine_line_vertices( S, b.p0_, b.p1_,
                     line_vertices ) ;
 
                 // 2 - Check if this border already exists
-                bme_t line_id = find_or_create_line( *this, line_vertices ) ;
+                gme_t line_id = find_or_create_line( *this, line_vertices ) ;
 
                 // Add the surface in which this line is
                 add_element_in_boundary( line_id,
-                    bme_t( GME::SURFACE, b.part_id_ ) ) ;
+                    gme_t( GME::SURFACE, b.part_id_ ) ) ;
             }
         }
 
@@ -2179,7 +2179,7 @@ namespace RINGMesh {
      * @param[out] border_vertex_model_vertices Coordinates of the vertices on the Line (emptied and filled again)
      * @return Index of the Corner at which the Line ends
      */
-    bme_t GeoModelBuilderGocad::determine_line_vertices(
+    gme_t GeoModelBuilderGocad::determine_line_vertices(
         const Surface& S,
         index_t id0,
         index_t id1,
@@ -2199,7 +2199,7 @@ namespace RINGMesh {
         border_vertex_model_vertices.push_back( p0 ) ;
         border_vertex_model_vertices.push_back( p1 ) ;
 
-        bme_t p1_corner = find_corner( model(), p1 ) ;
+        gme_t p1_corner = find_corner( model(), p1 ) ;
         while( !p1_corner.is_defined() ) {
             index_t next_f = NO_ID ;
             index_t id1_in_next = NO_ID ;
@@ -2240,7 +2240,7 @@ namespace RINGMesh {
      * @param[out] border_vertex_model_ids Indices of vertices on the Line (resized at 0 at the beginning)
      * @return Index of the Corner at which the Line ends
      */
-    bme_t GeoModelBuilderGocad::determine_line_vertices(
+    gme_t GeoModelBuilderGocad::determine_line_vertices(
         const Surface& S,
         index_t id0,
         index_t id1,
@@ -2261,7 +2261,7 @@ namespace RINGMesh {
         border_vertex_model_ids.push_back( p0 ) ;
         border_vertex_model_ids.push_back( p1 ) ;
 
-        bme_t p1_corner = find_corner( model(), p1 ) ;
+        gme_t p1_corner = find_corner( model(), p1 ) ;
         while( !p1_corner.is_defined() ) {
             index_t next_f = NO_ID ;
             index_t id1_in_next = NO_ID ;
@@ -2297,20 +2297,20 @@ namespace RINGMesh {
      */
     void GeoModelBuilderGocad::build_contacts()
     {
-        std::vector< std::set< bme_t > > interfaces ;
+        std::vector< std::set< gme_t > > interfaces ;
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
             const Line& L = model_.line( i ) ;
-            std::set< bme_t > cur_interfaces ;
+            std::set< gme_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 cur_interfaces.insert(
-                    model_.element( L.in_boundary_id( j ) ).parent().bme_id() ) ;
+                    model_.element( L.in_boundary_id( j ) ).parent().gme_id() ) ;
             }
-            bme_t contact_id ;
+            gme_t contact_id ;
             for( index_t j = 0; j < interfaces.size(); ++j ) {
                 if( cur_interfaces.size() == interfaces[j].size()
                     && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
                         interfaces[j].begin() ) ) {
-                    contact_id = bme_t( GME::CONTACT, j ) ;
+                    contact_id = gme_t( GME::CONTACT, j ) ;
                     break ;
                 }
             }
@@ -2320,14 +2320,14 @@ namespace RINGMesh {
                 interfaces.push_back( cur_interfaces ) ;
                 // Create a name for this contact
                 std::string name = "contact_" ;
-                for( std::set< bme_t >::const_iterator it( cur_interfaces.begin() );
+                for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
                     it != cur_interfaces.end(); ++it ) {
                     name += model_.element( *it ).name() ;
                     name += "_" ;
                 }
                 set_element_name( contact_id, name ) ;
             }
-            add_child( contact_id, bme_t( GME::LINE, i ) ) ;
+            add_child( contact_id, gme_t( GME::LINE, i ) ) ;
         }
     }
 
@@ -2347,12 +2347,12 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2 )
     {
-        bme_t parent = find_interface( model_, interface_name ) ;
+        gme_t parent = find_interface( model_, interface_name ) ;
         if( interface_name != "" ) {
             ringmesh_assert( parent.is_defined() ) ;
         }
 
-        bme_t id = create_element( GME::SURFACE ) ;
+        gme_t id = create_element( GME::SURFACE ) ;
         set_parent( id, parent ) ;
         set_element_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
@@ -2395,7 +2395,7 @@ namespace RINGMesh {
                     }
                     GME::TYPE t = match_type( in.field( 0 ) ) ;
                     index_t id = in.field_as_uint( 1 ) ;
-                    bme_t element( t, id ) ;
+                    gme_t element( t, id ) ;
                     set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
                     set_element_geol_feature( element,
@@ -2405,7 +2405,7 @@ namespace RINGMesh {
                     in.get_fields() ;
                     for( index_t c = 0; c < in.nb_fields(); c++ ) {
                         add_child( element,
-                            bme_t( GME::child_type( t ), in.field_as_uint( c ) ) ) ;
+                            gme_t( GME::child_type( t ), in.field_as_uint( c ) ) ) ;
                     }
                 }
                 // Regions
@@ -2419,7 +2419,7 @@ namespace RINGMesh {
                         return false ;
                     }
                     index_t id = in.field_as_uint( 1 ) ;
-                    bme_t element( GME::REGION, id ) ;
+                    gme_t element( GME::REGION, id ) ;
                     set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
                     // Second line : signed indices of boundaries
@@ -2433,7 +2433,7 @@ namespace RINGMesh {
                         index_t s ;
                         GEO::String::from_string( &in.field( c )[1], s ) ;
 
-                        add_element_boundary( element, bme_t( GME::SURFACE, s ),
+                        add_element_boundary( element, gme_t( GME::SURFACE, s ),
                             side ) ;
                     }
                 }
@@ -2496,7 +2496,7 @@ namespace RINGMesh {
                         return false ;
                     }
                     index_t id = in.field_as_uint( 1 ) ;
-                    bme_t element( GME::CORNER, id ) ;
+                    gme_t element( GME::CORNER, id ) ;
                     set_element_index( element ) ;
                     vec3 point( read_double( in, 2 ), read_double( in, 3 ),
                         read_double( in, 4 ) ) ;
@@ -2506,7 +2506,7 @@ namespace RINGMesh {
                 // Lines
                 else if( match_type( in.field( 0 ) ) == GME::LINE ) {
                     index_t id = in.field_as_uint( 1 ) ;
-                    bme_t cur_element( GME::LINE, id ) ;
+                    gme_t cur_element( GME::LINE, id ) ;
                     Line& L = dynamic_cast< Line& >( element( cur_element ) ) ;
                     L.set_id( id ) ;
 
@@ -2580,14 +2580,14 @@ namespace RINGMesh {
                     ringmesh_assert( in.field_matches( 0, "IN_BOUNDARY" ) ) ;
                     for( index_t b = 1; b < in.nb_fields(); b++ ) {
                         L.add_in_boundary(
-                            bme_t( GME::SURFACE, in.field_as_uint( b ) ) ) ;
+                            gme_t( GME::SURFACE, in.field_as_uint( b ) ) ) ;
                     }
                 }
 
                 // Surfaces
                 else if( match_type( in.field( 0 ) ) == GME::SURFACE ) {
                     index_t id = in.field_as_uint( 1 ) ;
-                    bme_t cur_element( GME::SURFACE, id ) ;
+                    gme_t cur_element( GME::SURFACE, id ) ;
                     Surface& S = dynamic_cast< Surface& >( element( cur_element ) ) ;
                     S.set_id( id ) ;
 
@@ -3096,21 +3096,21 @@ namespace RINGMesh {
                 ringmesh_assert( vertices.size() > 1 ) ;
 
                 // At last create the Line
-                bme_t l_id = create_element( GME::LINE ) ;
+                gme_t l_id = create_element( GME::LINE ) ;
                 set_line( l_id, vertices ) ;
                 for( index_t j = 0; j < adjacent.size(); ++j ) {
                     add_element_in_boundary( l_id,
-                        bme_t( GME::SURFACE, adjacent[j] ) ) ;
+                        gme_t( GME::SURFACE, adjacent[j] ) ) ;
                 }
 
                 // Find or create the corners at line extremities
-                bme_t c0 = find_corner( model(), vertices.front() ) ;
+                gme_t c0 = find_corner( model(), vertices.front() ) ;
                 if( !c0.is_defined() ) {
                     c0 = create_element( GME::CORNER ) ;
                     set_corner( c0, vertices.front() ) ;
                 }
                 add_element_boundary( l_id, c0 ) ;
-                bme_t c1 = find_corner( model(), vertices.back() ) ;
+                gme_t c1 = find_corner( model(), vertices.back() ) ;
                 if( !c1.is_defined() ) {
                     c1 = create_element( GME::CORNER ) ;
                     set_corner( c1, vertices.back() ) ;
@@ -3142,8 +3142,8 @@ namespace RINGMesh {
                     /// the + side. No check done
                     bool inside = true ;
                     // Create the region - set the surface on its boundaries
-                    bme_t cur_region_id = create_element( GME::REGION ) ;
-                    add_element_boundary( cur_region_id, bme_t( GME::SURFACE, 0 ),
+                    gme_t cur_region_id = create_element( GME::REGION ) ;
+                    add_element_boundary( cur_region_id, gme_t( GME::SURFACE, 0 ),
                         inside ) ;
 
                     // Create the universe region
@@ -3173,7 +3173,7 @@ namespace RINGMesh {
                     }
 
                     // Create a new region
-                    bme_t cur_region_id = create_element( GME::REGION ) ;
+                    gme_t cur_region_id = create_element( GME::REGION ) ;
 
                     std::stack< std::pair< index_t, bool > > SR ;
                     SR.push( cur ) ;
@@ -3190,7 +3190,7 @@ namespace RINGMesh {
 
                         // Add the surface to the current region
                         add_element_boundary( cur_region_id,
-                            bme_t( GME::SURFACE, s.first ), s.second ) ;
+                            gme_t( GME::SURFACE, s.first ), s.second ) ;
                         surf_2_region[s_id] = cur_region_id.index ;
 
                         // Check the other side of the surface and push it in S
@@ -3248,14 +3248,14 @@ namespace RINGMesh {
                     cur_region.nb_boundaries() ) ;
                 for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
                     univ_boundaries[i].first =
-                        cur_region.boundary( i ).bme_id().index ;
+                        cur_region.boundary( i ).gme_id().index ;
                     univ_boundaries[i].second = cur_region.side( i ) ;
                 }
                 set_universe( univ_boundaries ) ;
 
                 // Erase that region
-                std::set< bme_t > to_erase ;
-                to_erase.insert( bme_t( GME::REGION, universe_id ) ) ;
+                std::set< gme_t > to_erase ;
+                to_erase.insert( gme_t( GME::REGION, universe_id ) ) ;
                 remove_elements( to_erase ) ;
             }
         }
