@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -48,12 +48,12 @@ What it can do!
 
 Data structures
 ---------------
- - RINGMesh::GeoModel: Cellular representation to store 3D structural models
+ - RINGMesh::BoundaryModel: Cellular representation to store 3D structural models
  - RINGMesh::MacroMesh: Volumetric mesh of the structural model
 
 Import
 ------
- - RINGMesh::GeoModel
+ - RINGMesh::BoundaryModel
   - .bm: homemade format
   - .ml: Model3D format from Gocad/Skua
  - RINGMesh::MacroMesh
@@ -61,7 +61,7 @@ Import
   
 Export
 ------
- - RINGMesh::GeoModel
+ - RINGMesh::BoundaryModel
   - .bm: homemade format
   - .ml: Model3D format for Gocad/Skua
   - .obj: surface mesh format

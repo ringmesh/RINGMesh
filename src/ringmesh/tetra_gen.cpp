@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr 
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
@@ -39,7 +39,7 @@
  */
 
 #include <ringmesh/tetra_gen.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/boundary_model_element.h>
 #include <ringmesh/well.h>
 
 #include <geogram/basic/logger.h>
@@ -337,12 +337,12 @@ namespace RINGMesh {
      * @param[in] wells the wells to be conformal to
      */
     void TetraGen::set_boundaries(
-        const GeoModelElement* region,
+        const BoundaryModelElement* region,
         const WellGroup* wells )
     {
         region_ = region ;
         index_t nb_surfaces = region_->nb_boundaries() ;
-        std::vector< const GeoModelMeshElement* > unique_surfaces ;
+        std::vector< const BoundaryModelMeshElement* > unique_surfaces ;
         unique_surfaces.reserve( nb_surfaces ) ;
         std::vector< index_t > surface_id ;
         surface_id.reserve( nb_surfaces ) ;

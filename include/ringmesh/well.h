@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -46,7 +46,7 @@
 #include <geogram/mesh/mesh.h>
 
 namespace RINGMesh {
-    class GeoModel ;
+    class BoundaryModel ;
     class Edge ;
     class Well ;
 }
@@ -285,13 +285,13 @@ namespace RINGMesh {
             std::vector< std::vector< Edge > >& edges ) const ;
 
         /*!
-         * Gets the associated GeoModel
+         * Gets the associated BoundaryModel
          */
-        const GeoModel* model() const { return model_ ;}
+        const BoundaryModel* model() const { return model_ ;}
         /*!
-         * Sets the associated GeoModel
+         * Sets the associated BoundaryModel
          */
-        void set_model( RINGMesh::GeoModel* model ) { model_ = model ;}
+        void set_model( RINGMesh::BoundaryModel* model ) { model_ = model ;}
         index_t find_well( const std::string& name ) const ;
 
         void create_wells( index_t nb_wells ) ;
@@ -311,8 +311,8 @@ namespace RINGMesh {
     protected:
         /// Vector of the wells
         std::vector< Well* > wells_ ;
-        /// Associated GeoModel
-        GeoModel* model_ ;
+        /// Associated BoundaryModel
+        BoundaryModel* model_ ;
     } ;
 }
 #endif
