@@ -598,6 +598,200 @@ namespace {
         Mesh& non_manifold_ ;
     } ;
 
+    /**   \note COPIED from Geogram as there is no function to detect duplicated facets
+    * \brief Comparator class for sorting facets.
+    */
+    class CompareFacets {
+    public:
+        /**
+        * \brief Constructs a new CompareFacets.
+        * \param[in] M the mesh
+        */
+        explicit CompareFacets( const Mesh& M ) :
+            mesh_( M )
+        {}
+
+        /**
+        * \brief Tests the lexicographic order of two facets by their indices.
+        * \param[in] f1 index of the first facet
+        * \param[in] f2 index of the second facet
+        * \return true if facet \p f1 is before facet \p f2 according to
+        *  the lexicographic order of its vertices, false otherwise.
+        */
+        bool is_before( index_t f1, index_t f2 ) const
+        {
+            index_t c1 = mesh_.facets.corners_begin( f1 );
+            index_t c2 = mesh_.facets.corners_begin( f2 );
+            while(
+                c1 != mesh_.facets.corners_end( f1 ) &&
+                c2 != mesh_.facets.corners_end( f2 )
+                ) {
+                index_t v1 = mesh_.facet_corners.vertex( c1 );
+                index_t v2 = mesh_.facet_corners.vertex( c2 );
+                if( v1 > v2 ) {
+                    return false;
+                }
+                if( v1 < v2 ) {
+                    return true;
+                }
+                c1++;
+                c2++;
+            }
+            return (
+                c1 == mesh_.facets.corners_end( f1 ) &&
+                c2 != mesh_.facets.corners_end( f2 )
+                ) ;
+        }
+
+        /**
+        * \brief Tests whether two facets are identical.
+        * \param[in] f1 index of the first facet
+        * \param[in] f2 index of the second facet
+        * \return true if facets \p f1 and \p f2 have the same
+        *  vertices, false otherwise
+        */
+        bool is_same( index_t f1, index_t f2 ) const
+        {
+            if( mesh_.facets.nb_vertices( f1 ) != mesh_.facets.nb_vertices( f2 ) ) {
+                return false;
+            }
+            index_t c1 = mesh_.facets.corners_begin( f1 );
+            index_t c2 = mesh_.facets.corners_begin( f2 );
+            while( c1 != mesh_.facets.corners_end( f1 ) ) {
+                geo_debug_assert( c2 != mesh_.facets.corners_end( f2 ) );
+                index_t v1 = mesh_.facet_corners.vertex( c1 );
+                index_t v2 = mesh_.facet_corners.vertex( c2 );
+                if( v1 != v2 ) {
+                    return false;
+                }
+                c1++;
+                c2++;
+            }
+            return true;
+        }
+
+        /**
+        * \brief Tests the lexicographic order of two facets by their indices.
+        * \param[in] f1 index of the first facet
+        * \param[in] f2 index of the second facet
+        * \return true if facet \p f1 is before facet \p f2 according to
+        *  the lexicographic order of its vertices, false otherwise.
+        */
+        bool operator() ( index_t f1, index_t f2 ) const
+        {
+            return is_before( f1, f2 );
+        }
+
+    private:
+        const Mesh& mesh_;
+    };
+
+    /**  \note COPIED from Geogram as there is no function to detect duplicated facets
+    *
+    *    \warning THIS BREAKS THE ADJACENCIES, THE ATTRIBUTES, EVERYTHING !
+    *     we need another one ! 
+    *
+    * \brief Generates a unique ordering of the vertices of
+    *  a facet.
+    * \details Shifts and inverts the order of f's vertices in
+    * such a way that f's first vertex has the smallest index
+    * and it's predecessor->successor have increasing vertex
+    * indices. This ensures that the same facet has a unique
+    * representation (used to detect duplicated facets).
+    * \param[in] M the mesh that the facet belongs to
+    * \param[in] f the index of the facet in \p M
+    */
+    void normalize_facet_vertices_order( Mesh& M, index_t f )
+    {
+        index_t d = M.facets.nb_vertices( f );
+        index_t c_min = M.facets.corners_begin( f );
+        for(
+            index_t c = M.facets.corners_begin( f ) + 1;
+            c < M.facets.corners_end( f ); ++c
+            ) {
+            if( M.facet_corners.vertex( c ) < M.facet_corners.vertex( c_min ) ) {
+                c_min = c;
+            }
+        }
+        index_t c_prev = M.facets.prev_corner_around_facet( f, c_min );
+        index_t c_next = M.facets.next_corner_around_facet( f, c_min );
+        bool direct = (
+            M.facet_corners.vertex( c_next ) >= M.facet_corners.vertex( c_prev )
+            );
+        index_t* f_vertex = (index_t*)alloca( sizeof( GEO::signed_index_t ) * d );
+        {
+            index_t c = c_min;
+            for( index_t i = 0; i < d; i++ ) {
+                f_vertex[ i ] = M.facet_corners.vertex( c );
+                c = direct ? M.facets.next_corner_around_facet( f, c )
+                    : M.facets.prev_corner_around_facet( f, c );
+            }
+        }
+        for( index_t i = 0; i < d; i++ ) {
+            index_t c = M.facets.corners_begin( f );
+            M.facet_corners.set_vertex( c + i, f_vertex[ i ] );
+        }
+    }
+
+
+    /** \note COPIED and modified from Geogram as there is no function to detect duplicated facets
+    *
+    * \brief Detects duplicated facets in a mesh.
+    * \param[in] M the mesh
+    * \param[out] remove_f indicates for each facet whether it should be
+    *  removed. If remove_f[f] != 0 if f should be removed, else f
+    *  should be kept. If remove_f.size() == 0, then there is
+    *  no facet to remove, else remove_f.size() == M.facets.nb().
+    */
+    index_t detect_duplicate_facets(
+        Mesh& M, vector<index_t>& remove_f
+        )
+    {
+        index_t nb_duplicates = 0;
+        // Reorder vertices around each facet to make
+        // it easier to compare two facets.
+        for( index_t f = 0; f < M.facets.nb(); f++ ) {
+            normalize_facet_vertices_order( M, f );
+        }
+        // Indirect-sort the facets in lexicographic
+        // order. 
+        vector<index_t> f_sort( M.facets.nb() );
+        for( index_t f = 0; f < M.facets.nb(); f++ ) {
+            f_sort[ f ] = f;
+        }
+        CompareFacets compare_facets( M );
+        GEO::sort( f_sort.begin(), f_sort.end(), compare_facets );
+        // Now f_sort[0] ... fsort[nb_facets-1] contains the indices
+        // of the sorted facets. This ensures that the indices of the
+        // facets with the same vertices (i.e. duplicated facets)
+        // appear at contiguous sequences in fsort.
+
+        // Traverse in fsort the sequences of duplicate facets. 
+        // The algorithm detects the sequence of indices 
+        // f_sort[if1] ... f_sort[if2-1] that contain facets 
+        // with the same indices.
+        index_t if1 = 0;
+        while( if1 < M.facets.nb() ) {
+            index_t if2 = if1 + 1;
+            while(
+                if2 < M.facets.nb() &&
+                compare_facets.is_same( f_sort[ if1 ], f_sort[ if2 ] )
+                ) {
+                nb_duplicates++;
+                // Tag all facets in f_sort[if1+1] ... f_sort[if2-1] as
+                // 'to be removed' (because they all have the same vertices
+                // as f_sort[if1]).
+                if( remove_f.size() == 0 ) {
+                    remove_f.resize( M.facets.nb(), 0 );
+                }
+                remove_f[ f_sort[ if2 ] ] = 1;
+                if2++;
+            }
+            if1 = if2;
+        }
+        return nb_duplicates ;
+    }
+
     /*----------------------------------------------------------------------------*/
 
     /*!

@@ -169,6 +169,7 @@ namespace {
             out << std::endl ;
         }
     }
+     
 }
 
 
@@ -1281,6 +1282,7 @@ namespace RINGMesh {
      *  - non-manifold points
      *  - surface orientability
      *  - planarity of polygonal facets 
+     *  - duplicated facets
      *
      * @todo Check that there is no duplicated facet 
      */
@@ -1368,6 +1370,18 @@ namespace RINGMesh {
 
 #endif  
         }        
+
+        // Not sure this is nessecary - test [JP]
+        GEO::signed_index_t nb_borders = GEO::mesh_nb_borders( mesh_ ) ;
+        if( nb_borders > 1 ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                <<  bme_id() << " mesh has "
+                << nb_borders << " borders " << "and could be invalid " << std::endl ;
+        } else if( nb_borders == -1 ) {
+            GEO::Logger::err( "BoundaryModelElement" )
+                <<  bme_id() << " is non manifold and could be invalid " << std::endl ;
+        }
+
         return valid ; 
     }
 
