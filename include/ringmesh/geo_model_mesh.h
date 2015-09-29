@@ -76,6 +76,10 @@ namespace RINGMesh {
     public:
         GeoModelMesh() ;
 
+        const GEO::Mesh& mesh() const {
+            return mesh_ ;
+        }
+
     private:
         GEO::Mesh mesh_ ;
 
