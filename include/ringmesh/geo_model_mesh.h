@@ -60,6 +60,15 @@ namespace RINGMesh {
     } ;
 
 
+    class RINGMESH_API GeoModelCells {
+    public:
+        GeoModelCells() ;
+
+    private:
+        GEO::Mesh mesh_ ;
+    } ;
+
+
 
 }
 
