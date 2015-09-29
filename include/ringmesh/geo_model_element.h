@@ -554,7 +554,8 @@ namespace RINGMesh {
 
     /// @todo This is probably not the best place to do this.
     // Anybody can include a header says Mr Stroustrup (Jeanne).
-    typedef GeoModelElement BME ;
+    // For me this is the best place ! So anybody can use RINGMesh::BME!
+    typedef GeoModelElement GME ;
 
     /*!
      * @brief Name of the attribute storing the index of a vertex in the model
@@ -688,7 +689,7 @@ namespace RINGMesh {
 
     /// @todo This is probably not the best place to do this.
     // Anybody can include a header says Mr Stroustrup (Jeanne).
-    typedef GeoModelMeshElement BMME ;
+    typedef GeoModelMeshElement GMME ;
 
     /*!
      * @brief A GeoModelElement of type CORNER

@@ -243,7 +243,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
                 const Surface& s = M.surface( i ) ;
                 out << "TFACE " << count << "  " ;
-                out << BME::geol_name( s.geological_feature() ) ;
+                out << GME::geol_name( s.geological_feature() ) ;
                 out << " " << s.parent().name() << std::endl ;
 
                 // Print the key facet points, which are simply the first three
@@ -270,7 +270,7 @@ namespace RINGMesh {
 
             // Save the geometry of the Surfaces (TFace), Interface (TSurf) by Interface
             for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
-                const BME& tsurf = M.one_interface( i ) ;
+                const GME& tsurf = M.one_interface( i ) ;
 
                 // Header
                 out << "GOCAD TSurf 1" << std::endl << "HEADER {" << std::endl << "name:"
@@ -280,7 +280,7 @@ namespace RINGMesh {
 
                 out << "GEOLOGICAL_FEATURE " << tsurf.name() << std::endl
                     << "GEOLOGICAL_TYPE " ;
-                out << BME::geol_name( tsurf.geological_feature() ) ;
+                out << GME::geol_name( tsurf.geological_feature() ) ;
                 out << std::endl ;
 
                 out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" << std::endl
@@ -433,22 +433,22 @@ namespace RINGMesh {
             out << "NAME " << M.name() << std::endl ;
 
             // Numbers of the different types of elements
-            for( index_t i = BME::CORNER; i < BME::NO_TYPE; i++ ) {
-                BME::TYPE type = static_cast< BME::TYPE >( i ) ;
-                out << "NB_" << BME::type_name( type ) << " " << M.nb_elements( type )
+            for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
+                GME::TYPE type = static_cast< GME::TYPE >( i ) ;
+                out << "NB_" << GME::type_name( type ) << " " << M.nb_elements( type )
                     << std::endl ;
             }
             // Write high-level elements
-            for( index_t i = BME::CONTACT; i < BME::NO_TYPE; i++ ) {
-                BME::TYPE type = static_cast< BME::TYPE >( i ) ;
+            for( index_t i = GME::CONTACT; i < GME::NO_TYPE; i++ ) {
+                GME::TYPE type = static_cast< GME::TYPE >( i ) ;
                 index_t nb = M.nb_elements( type ) ;
                 for( index_t j = 0; j < nb; ++j ) {
-                    save_high_level_bme( out, M.element( BME::bme_t( type, j ) ) ) ;
+                    save_high_level_bme( out, M.element( GME::bme_t( type, j ) ) ) ;
                 }
             }
             // Regions
             for( index_t i = 0; i < M.nb_regions(); ++i ) {
-                const BME& E = M.region( i ) ;
+                const GME& E = M.region( i ) ;
                 // Save ID - NAME 
                 out << E.bme_id() << " " ;
                 if( E.has_name() ) {

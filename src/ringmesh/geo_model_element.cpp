@@ -206,7 +206,7 @@ namespace RINGMesh {
     }
 
 
-    std::string GeoModelElement::type_name( BME::TYPE t )
+    std::string GeoModelElement::type_name( GME::TYPE t )
     {
         switch( t ) {
             case CORNER: return "CORNER" ;
@@ -222,7 +222,7 @@ namespace RINGMesh {
 
 
     std::string GeoModelElement::geol_name(
-        BME::GEOL_FEATURE t )
+        GME::GEOL_FEATURE t )
     {
         switch( t ) {
             case STRATI: return "top" ;
@@ -244,7 +244,7 @@ namespace RINGMesh {
      * @details The elements that can have a parent are LINE, SURFACE, and REGION
      */
     GeoModelElement::TYPE GeoModelElement::parent_type(
-        BME::TYPE t )
+        GME::TYPE t )
     {
         switch( t ) {
             case LINE: return CONTACT ;
@@ -263,7 +263,7 @@ namespace RINGMesh {
      * @details The elements that can have a parent are CONTACT, INTERFACE, and LAYER
      */
     GeoModelElement::TYPE GeoModelElement::child_type(
-        BME::TYPE t )
+        GME::TYPE t )
     {
         switch( t ) {
             case CONTACT: return LINE  ;
@@ -314,7 +314,7 @@ namespace RINGMesh {
     /*!
      * @brief Dimension 0, 1, 2, or 3 of an element of type @param t
      */
-    index_t GeoModelElement::dimension( BME::TYPE t )
+    index_t GeoModelElement::dimension( GME::TYPE t )
     {
         switch( t ) {
             case CORNER: return 0 ;
@@ -332,7 +332,7 @@ namespace RINGMesh {
     /*!
      * @brief Return true if this is a CORNER, LINE or SURFACEs
     */
-    bool GeoModelElement::has_mesh( BME::TYPE t )
+    bool GeoModelElement::has_mesh( GME::TYPE t )
     {
         return t < REGION ;
     }
@@ -469,7 +469,7 @@ namespace RINGMesh {
             // All elements in the boundary must have this in their
             // in_boundary vector
             for( index_t i = 0; i < nb_boundaries(); ++i ) {
-                const BME& E = boundary( i ) ;
+                const GME& E = boundary( i ) ;
                 bool found = false ;
                 index_t j = 0 ;
                 while( !found && j < E.nb_in_boundary() ) {
@@ -502,7 +502,7 @@ namespace RINGMesh {
             // All elements in the in_boundary must have this in their
             // boundary vector
             for( index_t i = 0; i < nb_in_boundary(); ++i ) {
-                const BME& E = in_boundary( i ) ;
+                const GME& E = in_boundary( i ) ;
                 bool found = false ;
                 index_t j = 0 ;
                 while( !found && j < E.nb_boundaries() ) {
@@ -533,7 +533,7 @@ namespace RINGMesh {
                 }
 
                 // The parent must have this element in its children
-                const BME& E = parent() ;
+                const GME& E = parent() ;
                 bool found = false ;
                 index_t j = 0 ;
                 while( !found && j < E.nb_children() ) {

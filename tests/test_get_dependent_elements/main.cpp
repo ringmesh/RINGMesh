@@ -54,17 +54,17 @@ namespace {
 
     bool check_with_expected_result(
         const GeoModelBuilder& builder,
-        std::set< BME::bme_t >& initial_elts,
-        const std::set< BME::bme_t >& result )
+        std::set< GME::bme_t >& initial_elts,
+        const std::set< GME::bme_t >& result )
     {
         builder.get_dependent_elements( initial_elts ) ;
         if( initial_elts.size() != result.size() ) {
             return false ;
         }
 
-        for( std::set< BME::bme_t >::const_iterator bme_itr = result.begin();
+        for( std::set< GME::bme_t >::const_iterator bme_itr = result.begin();
             bme_itr != result.end(); ++bme_itr ) {
-            const BME::bme_t& cur_bme_t = *bme_itr ;
+            const GME::bme_t& cur_bme_t = *bme_itr ;
             if( initial_elts.find( cur_bme_t ) == initial_elts.end() ) {
                 return false ;
             }

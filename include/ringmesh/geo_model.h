@@ -66,7 +66,7 @@ namespace RINGMesh {
          * @brief Identification of a vertex in a GeoModelElement
          */
         struct VertexInBME {
-            VertexInBME( BME::bme_t t, index_t vertex_id_in )
+            VertexInBME( GME::bme_t t, index_t vertex_id_in )
                 : bme_id( t ), v_id( vertex_id_in )
             {
             }
@@ -91,7 +91,7 @@ namespace RINGMesh {
                 return bme_id.is_defined() && v_id != NO_ID ;
             }
             /// Unique identifier of the associated GeoModelElement
-            BME::bme_t bme_id ;
+            GME::bme_t bme_id ;
             /// Index of the vertex in the BME
             index_t v_id ;
         } ;
@@ -325,11 +325,11 @@ namespace RINGMesh {
          * @details Default value is 0.
          * @param[in] type the element type
          */
-        index_t nb_elements( BME::TYPE type ) const
+        index_t nb_elements( GME::TYPE type ) const
         {
-            if( type < BME::NO_TYPE ) {
+            if( type < GME::NO_TYPE ) {
                 return elements( type ).size() ;
-            } else if( type == BME::ALL_TYPES ) {
+            } else if( type == GME::ALL_TYPES ) {
                 ringmesh_assert( !nb_elements_per_type_.empty() ) ;
                 return nb_elements_per_type_.back() ;
             } else {
@@ -344,21 +344,21 @@ namespace RINGMesh {
          * @param[in] index Index of the element
          *
          */
-        const GeoModelElement& element( BME::bme_t id ) const
+        const GeoModelElement& element( GME::bme_t id ) const
         {
             ringmesh_assert( id.index < nb_elements( id.type ) ) ;
-            if( id.type < BME::NO_TYPE ) {
+            if( id.type < GME::NO_TYPE ) {
                 return *elements( id.type )[id.index] ;
-            } else if( id.type == BME::ALL_TYPES ) {
+            } else if( id.type == GME::ALL_TYPES ) {
                 return element( global_to_typed_id( id ) ) ;
             } else {
                 return universe_ ;
             }
         }
 
-        const GeoModelMeshElement& mesh_element( BME::bme_t id ) const
+        const GeoModelMeshElement& mesh_element( GME::bme_t id ) const
         {
-            ringmesh_assert( BME::has_mesh( id.type ) ) ;
+            ringmesh_assert( GME::has_mesh( id.type ) ) ;
             return dynamic_cast< const GeoModelMeshElement& >( element( id ) ) ;
         }
 
@@ -368,31 +368,31 @@ namespace RINGMesh {
          */
         index_t nb_corners() const
         {
-            return nb_elements( BME::CORNER ) ;
+            return nb_elements( GME::CORNER ) ;
         }
         index_t nb_lines() const
         {
-            return nb_elements( BME::LINE ) ;
+            return nb_elements( GME::LINE ) ;
         }
         index_t nb_surfaces() const
         {
-            return nb_elements( BME::SURFACE ) ;
+            return nb_elements( GME::SURFACE ) ;
         }
         index_t nb_regions() const
         {
-            return nb_elements( BME::REGION ) ;
+            return nb_elements( GME::REGION ) ;
         }
         index_t nb_contacts() const
         {
-            return nb_elements( BME::CONTACT ) ;
+            return nb_elements( GME::CONTACT ) ;
         }
         index_t nb_interfaces() const
         {
-            return nb_elements( BME::INTERFACE ) ;
+            return nb_elements( GME::INTERFACE ) ;
         }
         index_t nb_layers() const
         {
-            return nb_elements( BME::LAYER ) ;
+            return nb_elements( GME::LAYER ) ;
         }
 
         const Corner& corner( index_t index ) const
@@ -414,22 +414,22 @@ namespace RINGMesh {
 
         const GeoModelElement& region( index_t index ) const
         {
-            return element( BME::bme_t( BME::REGION, index ) ) ;
+            return element( GME::bme_t( GME::REGION, index ) ) ;
         }
 
         const GeoModelElement& contact( index_t index ) const
         {
-            return element( BME::bme_t( BME::CONTACT, index ) ) ;
+            return element( GME::bme_t( GME::CONTACT, index ) ) ;
         }
 
         const GeoModelElement& one_interface( index_t index ) const
         {
-            return element( BME::bme_t( BME::INTERFACE, index ) ) ;
+            return element( GME::bme_t( GME::INTERFACE, index ) ) ;
         }
 
         const GeoModelElement& layer( index_t index ) const
         {
-            return element( BME::bme_t( BME::LAYER, index ) ) ;
+            return element( GME::bme_t( GME::LAYER, index ) ) ;
         }
 
         const GeoModelElement& universe() const
@@ -469,7 +469,7 @@ namespace RINGMesh {
          * @param[in] global A BME id of TYPE - ALL_TYPES
          * @return A BME id of an element of the model, or a invalid one if nothing found
          */
-        inline BME::bme_t global_to_typed_id( const BME::bme_t& global ) const
+        inline GME::bme_t global_to_typed_id( const GME::bme_t& global ) const
         {
             index_t t = NO_ID ;
             for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
@@ -479,12 +479,12 @@ namespace RINGMesh {
                     break ;
                 }
             }
-            if( static_cast< BME::TYPE >( t ) < BME::NO_TYPE ) {
-                BME::TYPE T = static_cast< BME::TYPE >( t ) ;
+            if( static_cast< GME::TYPE >( t ) < GME::NO_TYPE ) {
+                GME::TYPE T = static_cast< GME::TYPE >( t ) ;
                 index_t i = global.index - nb_elements_per_type_[t] ;
-                return BME::bme_t( T, i ) ;
+                return GME::bme_t( T, i ) ;
             } else {
-                return BME::bme_t() ;
+                return GME::bme_t() ;
             }
         }
 
@@ -492,31 +492,31 @@ namespace RINGMesh {
          * @brief Generic accessor to the storage of elements of the given type
          * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
          */
-        std::vector< BME* >& modifiable_elements( BME::TYPE type )
+        std::vector< GME* >& modifiable_elements( GME::TYPE type )
         {
-            return const_cast< std::vector< BME* >& >( elements( type ) ) ;
+            return const_cast< std::vector< GME* >& >( elements( type ) ) ;
         }
 
         /*!
          * @brief Generic accessor to the storage of elements of the given type
          * @pre The type must be valid. NO_TYPE or ALL_TYPES will throw an assertion
          */
-        const std::vector< BME* >& elements( BME::TYPE type ) const
+        const std::vector< GME* >& elements( GME::TYPE type ) const
         {
             switch( type ) {
-                case BME::CORNER:
+                case GME::CORNER:
                     return corners_ ;
-                case BME::LINE:
+                case GME::LINE:
                     return lines_ ;
-                case BME::SURFACE:
+                case GME::SURFACE:
                     return surfaces_ ;
-                case BME::REGION:
+                case GME::REGION:
                     return regions_ ;
-                case BME::CONTACT:
+                case GME::CONTACT:
                     return contacts_ ;
-                case BME::INTERFACE:
+                case GME::INTERFACE:
                     return interfaces_ ;
-                case BME::LAYER:
+                case GME::LAYER:
                     return layers_ ;
                 default:
                     ringmesh_assert_not_reached;
