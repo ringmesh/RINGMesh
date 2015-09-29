@@ -40,7 +40,7 @@
 
 #include <ringmesh/well.h>
 #include <ringmesh/utils.h>
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -58,7 +58,7 @@ namespace {
     * @param[in] side Side of the Surface
     * @return The region index or NO_ID if none found.
     */
-    index_t find_region( const BoundaryModel& BM, index_t surface_part_id, bool side )
+    index_t find_region( const GeoModel& BM, index_t surface_part_id, bool side )
     {
         ringmesh_debug_assert( surface_part_id < BM.nb_surfaces() ) ;
         BME::bme_t cur_surface( BME::SURFACE, surface_part_id ) ;

@@ -48,7 +48,7 @@
 #include <geogram_gfx/mesh/mesh_gfx.h>
 
 namespace RINGMesh {
-    class BoundaryModel ;
+    class GeoModel ;
     class MacroMesh ;
     class CornerGfx ;
     class LineGfx ;
@@ -58,14 +58,14 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    class RINGMESH_API BoundaryModelGfx {
-    ringmesh_disable_copy( BoundaryModelGfx ) ;
+    class RINGMESH_API GeoModelGfx {
+    ringmesh_disable_copy( GeoModelGfx ) ;
     public:
-        BoundaryModelGfx() ;
-        ~BoundaryModelGfx() ;
+        GeoModelGfx() ;
+        ~GeoModelGfx() ;
 
-        void set_boundary_model( const BoundaryModel& model ) ;
-        const BoundaryModel* boundary_model() ;
+        void set_geo_model( const GeoModel& model ) ;
+        const GeoModel* geo_model() ;
         void initialize() ;
 
         void draw_corners() ;
@@ -115,8 +115,8 @@ namespace RINGMesh {
         void set_vertex_surface_size( index_t c, index_t s ) ;
 
     private:
-        /// The BoundaryModel associated to the graphics
-        const BoundaryModel* model_ ;
+        /// The GeoModel associated to the graphics
+        const GeoModel* model_ ;
 
         /// The graphics associated to each Corner
         std::vector< CornerGfx* > corners_ ;

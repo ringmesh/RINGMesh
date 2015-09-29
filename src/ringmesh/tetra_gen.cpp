@@ -39,7 +39,7 @@
  */
 
 #include <ringmesh/tetra_gen.h>
-#include <ringmesh/boundary_model_element.h>
+#include <ringmesh/geo_model_element.h>
 #include <ringmesh/well.h>
 
 #include <geogram/basic/logger.h>
@@ -337,12 +337,12 @@ namespace RINGMesh {
      * @param[in] wells the wells to be conformal to
      */
     void TetraGen::set_boundaries(
-        const BoundaryModelElement* region,
+        const GeoModelElement* region,
         const WellGroup* wells )
     {
         region_ = region ;
         index_t nb_surfaces = region_->nb_boundaries() ;
-        std::vector< const BoundaryModelMeshElement* > unique_surfaces ;
+        std::vector< const GeoModelMeshElement* > unique_surfaces ;
         unique_surfaces.reserve( nb_surfaces ) ;
         std::vector< index_t > surface_id ;
         surface_id.reserve( nb_surfaces ) ;

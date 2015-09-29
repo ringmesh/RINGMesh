@@ -39,7 +39,7 @@
  */
 
 #include <ringmesh/command_line.h>
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/macro_mesh.h>
 #include <ringmesh/io.h>
 
@@ -78,7 +78,7 @@ int main( int argc, char** argv )
             << std::endl ;
         return 1 ;
     }
-    BoundaryModel model_in ;
+    GeoModel model_in ;
     if( !RINGMeshIO::load( model_in_name, model_in ) )
         return 1 ;
 

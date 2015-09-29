@@ -56,7 +56,7 @@ Configuring RINGMesh
 Go to RINGMesh directory and then copy the file CMakeOptions.txt.sample into
 CMakeOptions.txt: <b>cp CMakeOptions.txt.sample CMakeOptions.txt</b>.
 
-If you need to use the <b>graphic</b> part of RINGMesh (visualization of RINGMesh::BoundaryModel
+If you need to use the <b>graphic</b> part of RINGMesh (visualization of RINGMesh::GeoModel
 and RINGMesh::MacroMesh) set the variable <b>RINGMESH_WITH_GRAPHICS to TRUE</b> (uncomment the line).
 
 Then to configure: <b>./configure.sh</b>. This will first configure and compile Geogram 
@@ -94,7 +94,7 @@ Configuring RINGMesh
 ------------------
 
 Go to RINGMesh directory, open and save the CMakeOptions.txt.sample file as CMakeOptions.txt.
-To use the <b>graphic</b> components of RINGMesh (visualization of RINGMesh::BoundaryModel
+To use the <b>graphic</b> components of RINGMesh (visualization of RINGMesh::GeoModel
 and RINGMesh::MacroMesh) set the variable <b>RINGMESH_WITH_GRAPHICS to TRUE</b> (uncomment the line).
 
 To configure RINGMesh launch the configure.bat or by command line: <b>call ./configure.bat</b>.

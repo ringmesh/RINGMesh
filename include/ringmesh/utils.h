@@ -51,7 +51,7 @@ namespace GEO {
 }
 
 namespace RINGMesh {
-    class BoundaryModelElement ;
+    class GeoModelElement ;
     class Edge ;
     class Surface ;
     class Line ;
@@ -336,7 +336,7 @@ namespace RINGMesh {
 
         static void mesh_facet_connect( GEO::Mesh& mesh ) ;
         static void check_and_repair_mesh_consistency(
-            const BoundaryModelElement& region,
+            const GeoModelElement& region,
             GEO::Mesh& mesh,
             bool check_duplicated_facet = false ) ;
         static float64 triangle_area(

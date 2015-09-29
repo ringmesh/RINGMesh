@@ -38,7 +38,7 @@
  *     FRANCE
  */
 
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/macro_mesh.h>
 #include <ringmesh/io.h>
 
@@ -50,7 +50,7 @@ int main( int argc, char** argv )
 
     GEO::Logger::out("TEST") << "Test tetrahedralize for corbi.ml" << std::endl ;
 
-    BoundaryModel in ;
+    GeoModel in ;
     if( !RINGMeshIO::load( "../data/corbi_out.bm", in ) )
         return 1 ;
 

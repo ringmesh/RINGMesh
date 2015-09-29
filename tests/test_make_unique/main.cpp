@@ -38,7 +38,7 @@
  *     FRANCE
  */
 
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
 
 #include <geogram/points/colocate.h>
@@ -50,7 +50,7 @@ int main( int argc, char** argv )
 
     GEO::Logger::out("TEST") << "Test MakeUnique" << std::endl ;
 
-    BoundaryModel in ;
+    GeoModel in ;
     if( !RINGMeshIO::load( "../data/model3.ml", in ) )
         return 1 ;
 

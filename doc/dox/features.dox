@@ -48,12 +48,12 @@ What it can do!
 
 Data structures
 ---------------
- - RINGMesh::BoundaryModel: Cellular representation to store 3D structural models
+ - RINGMesh::GeoModel: Cellular representation to store 3D structural models
  - RINGMesh::MacroMesh: Volumetric mesh of the structural model
 
 Import
 ------
- - RINGMesh::BoundaryModel
+ - RINGMesh::GeoModel
   - .bm: homemade format
   - .ml: Model3D format from Gocad/Skua
  - RINGMesh::MacroMesh
@@ -61,7 +61,7 @@ Import
   
 Export
 ------
- - RINGMesh::BoundaryModel
+ - RINGMesh::GeoModel
   - .bm: homemade format
   - .ml: Model3D format for Gocad/Skua
   - .obj: surface mesh format
