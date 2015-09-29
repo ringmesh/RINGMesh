@@ -499,7 +499,9 @@ namespace {
             return new Line( M, id ) ;
         } else if( T == GME::SURFACE ) {
             return new Surface( M, id ) ;
-        } else if( T > GME::SURFACE && T < GME::NO_TYPE ) {
+        } else if( T == GME::REGION ) {
+            return new Region( M, id ) ;
+        } else if( T > GME::REGION && T < GME::NO_TYPE ) {
             return new GeoModelElement( M, T, id ) ;
         } else {
             return nil ;
@@ -2678,7 +2680,7 @@ namespace RINGMesh {
             }
         }
         if( !end_model() ) {
-            std::cout << "Invalid GeoModel loaded" << std::endl ;
+            GEO::Logger::err( "GeoModel" ) << "Invalid GeoModel loaded" << std::endl ;
         }
         return true ;
     }
