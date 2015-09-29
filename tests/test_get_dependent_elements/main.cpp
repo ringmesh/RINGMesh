@@ -54,18 +54,18 @@ namespace {
 
     bool check_with_expected_result(
         const GeoModelBuilder& builder,
-        std::set< BME::bme_t >& initial_elts,
-        const std::set< BME::bme_t >& result )
+        std::set< GME::gme_t >& initial_elts,
+        const std::set< GME::gme_t >& result )
     {
         builder.get_dependent_elements( initial_elts ) ;
         if( initial_elts.size() != result.size() ) {
             return false ;
         }
 
-        for( std::set< BME::bme_t >::const_iterator bme_itr = result.begin();
+        for( std::set< GME::gme_t >::const_iterator bme_itr = result.begin();
             bme_itr != result.end(); ++bme_itr ) {
-            const BME::bme_t& cur_bme_t = *bme_itr ;
-            if( initial_elts.find( cur_bme_t ) == initial_elts.end() ) {
+            const GME::gme_t& cur_gme_t = *bme_itr ;
+            if( initial_elts.find( cur_gme_t ) == initial_elts.end() ) {
                 return false ;
             }
         }
@@ -95,33 +95,33 @@ int main( int argc, char** argv )
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
         return 1 ;
     }
-    std::set< BME::bme_t > elt_set ;
-    elt_set.insert( in.region( reg_id ).bme_id() ) ;
+    std::set< BME::gme_t > elt_set ;
+    elt_set.insert( in.region( reg_id ).gme_id() ) ;
 
-    std::set< BME::bme_t > result ;
-    result.insert( BME::bme_t( GeoModelElement::REGION, 1 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 12 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 13 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 18 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 19 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 12 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 13 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 14 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 25 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 26 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 27 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 34 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 35 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 3 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 8 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 12 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 16 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 20 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 14 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 20 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 22 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 23 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::INTERFACE, 8 ) ) ;
+    std::set< BME::gme_t > result ;
+    result.insert( BME::gme_t( GeoModelElement::REGION, 1 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CORNER, 12 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CORNER, 13 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CORNER, 18 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CORNER, 19 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 12 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 13 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 14 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 25 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 26 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 27 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 34 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 35 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 3 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 8 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 12 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 16 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 20 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CONTACT, 14 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CONTACT, 20 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CONTACT, 22 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CONTACT, 23 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::INTERFACE, 8 ) ) ;
 
     if( !check_with_expected_result( builder, elt_set, result ) ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
@@ -136,31 +136,31 @@ int main( int argc, char** argv )
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
         return 1 ;
     }
-    elt_set.insert( in.region( reg_id ).bme_id() ) ;
+    elt_set.insert( in.region( reg_id ).gme_id() ) ;
 
-    result.insert( BME::bme_t( GeoModelElement::REGION, 3 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 14 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 15 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 16 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CORNER, 17 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 19 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 20 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 21 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 22 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 23 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 24 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 32 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 33 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 6 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 7 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 11 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 15 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 19 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 15 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 16 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 17 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::CONTACT, 18 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::INTERFACE, 4 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::REGION, 3 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CORNER, 14 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CORNER, 15 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CORNER, 16 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CORNER, 17 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 19 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 20 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 21 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 22 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 23 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 24 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 32 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 33 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 6 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 7 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 11 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 15 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 19 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CONTACT, 15 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CONTACT, 16 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CONTACT, 17 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::CONTACT, 18 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::INTERFACE, 4 ) ) ;
 
     if( !check_with_expected_result( builder, elt_set, result ) ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
@@ -175,17 +175,17 @@ int main( int argc, char** argv )
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
         return 1 ;
     }
-    elt_set.insert( in.region( reg_id ).bme_id() ) ;
+    elt_set.insert( in.region( reg_id ).gme_id() ) ;
 
-    result.insert( BME::bme_t( GeoModelElement::REGION, 2 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 17 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 18 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 30 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::LINE, 31 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 5 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 10 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 14 ) ) ;
-    result.insert( BME::bme_t( GeoModelElement::SURFACE, 18 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::REGION, 2 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 17 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 18 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 30 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::LINE, 31 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 5 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 10 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 14 ) ) ;
+    result.insert( BME::gme_t( GeoModelElement::SURFACE, 18 ) ) ;
 
     if( !check_with_expected_result( builder, elt_set, result ) ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;

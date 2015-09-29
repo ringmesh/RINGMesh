@@ -618,12 +618,12 @@ namespace RINGMesh {
             vec3 nearest_point ;
             float64 distance ;
             index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
-            ringmesh_debug_assert( surface.bme_id().index == attribute[f] ) ;
+            ringmesh_debug_assert( surface.gme_id().index == attribute[f] ) ;
 
             vec3 ori_normal = surface.facet_normal( 0 ) ;
             vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
             if( dot( ori_normal, test_normal ) < 0 ) {
-                flip_surface[surface.bme_id().index] = true ;
+                flip_surface[surface.gme_id().index] = true ;
                 flip_sthg = true ;
             }
         }
