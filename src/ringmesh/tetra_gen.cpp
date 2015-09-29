@@ -350,18 +350,18 @@ namespace RINGMesh {
         for( index_t s = 0; s < nb_surfaces; s++ ) {
             const Surface& surface = 
                 dynamic_cast< const Surface& >( region_->boundary( s ) ) ;
-            if( Utils::contains( surface_id, surface.bme_id().index ) ) continue ;
+            if( Utils::contains( surface_id, surface.gme_id().index ) ) continue ;
             nb_surface_points += surface.nb_vertices() ;
             nb_facets += surface.nb_cells() ;
 
-            surface_id.push_back( surface.bme_id().index ) ;
+            surface_id.push_back( surface.gme_id().index ) ;
             unique_surfaces.push_back( &surface ) ;
         }
 
         MakeUnique uniqueID( unique_surfaces, true ) ;
         std::vector< std::vector< Edge > > well_edges ;
         if( wells ) {
-            wells->get_region_edges( region->bme_id().index, well_edges ) ;
+            wells->get_region_edges( region->gme_id().index, well_edges ) ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 uniqueID.add_edges( well_edges[w] ) ;
             }
@@ -412,7 +412,7 @@ namespace RINGMesh {
                     tetmesh_.facets.set_vertex( offset_facets + t, v,
                         unique_indices[offset_vertices + surface.surf_vertex_id( t, v )] ) ;
                 }
-                surface_region[offset_facets + t] = surface.bme_id().index ;
+                surface_region[offset_facets + t] = surface.gme_id().index ;
 
             }
             offset_vertices += surface.nb_vertices() ;
