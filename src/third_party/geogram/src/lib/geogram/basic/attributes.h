@@ -303,7 +303,7 @@ namespace GEO {
          * \param[in] size the new size
          * \param[in] dim the new dimension
          */
-        void notify(Memory::pointer base_addr, index_t size, index_t dim);
+        virtual void notify(Memory::pointer base_addr, index_t size, index_t dim);
 
         /**
          * \brief Registers an observer.
@@ -388,7 +388,7 @@ namespace GEO {
             store_.swap(new_store);
             notify(
                 store_.empty() ? nil : Memory::pointer(store_.data()),
-                store_.size(),
+                size(),
                 dim
             );
         }
@@ -403,6 +403,12 @@ namespace GEO {
             result->resize(size());
             result->store_ = store_;
             return result;
+        }
+
+    protected:
+        virtual void notify(Memory::pointer base_addr, index_t size, index_t dim) {
+            AttributeStore::notify(base_addr, size, dim);
+            geo_assert(size*dim <= store_.size());
         }
         
     private:

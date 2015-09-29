@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
+ *     RING Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -44,7 +44,7 @@
 #define __RINGMESH_BOUNDARY_MODEL_BUILDER__
 
 #include <ringmesh/common.h>
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 
 #include <vector>
 #include <string>
@@ -56,21 +56,21 @@ namespace GEO {
 
 namespace RINGMesh {
     /*!
-     * @brief Base class for all classes building a BoundaryModel.
-     * @details Derive from this class to build or modify a BoundaryModel
+     * @brief Base class for all classes building a GeoModel.
+     * @details Derive from this class to build or modify a GeoModel
      */
-    class RINGMESH_API BoundaryModelBuilder {
+    class RINGMESH_API GeoModelBuilder {
     public:
-        BoundaryModelBuilder( BoundaryModel& model )
+        GeoModelBuilder( GeoModel& model )
             : model_( model )
         {
         }
-        virtual ~BoundaryModelBuilder()
+        virtual ~GeoModelBuilder()
         {
         }
 
         /*! @}
-         * \name Access - Modification of the BoundaryModel
+         * \name Access - Modification of the GeoModel
          * @{
          */
 
@@ -85,7 +85,7 @@ namespace RINGMesh {
         /*! 
          *@brief Copy elements and element connectivity of model @param from 
          */
-        void copy_macro_topology( const BoundaryModel& from )
+        void copy_macro_topology( const GeoModel& from )
         {
             model_.copy_macro_topology( from ) ;
         }
@@ -93,7 +93,7 @@ namespace RINGMesh {
         /*!
          *@brief The model under construction
          */
-        const BoundaryModel& model() const
+        const GeoModel& model() const
         {
             return model_ ;
         }
@@ -102,7 +102,7 @@ namespace RINGMesh {
         bool complete_element_connectivity() ;
 
         /*! @}
-         * \name Creation - Deletion - Access to BoundaryModelElements.
+         * \name Creation - Deletion - Access to GeoModelElements.
          * @{
          */
 
@@ -113,10 +113,10 @@ namespace RINGMesh {
          * @details It is on purpose that element validity is not checked.
          *          This way nil pointers can be set for a further element removal.
          * @param id Id card of the element to modify. The ownership of the previous element
-         *           is given up by the BoundaryModel.
-         * @param E Element to set. The ownership is transferred to the BoundaryModel.
+         *           is given up by the GeoModel.
+         * @param E Element to set. The ownership is transferred to the GeoModel.
          */
-        void set_element( const BME::bme_t& id, BoundaryModelElement* E ) const
+        void set_element( const BME::bme_t& id, GeoModelElement* E ) const
         {
             if( id.type < BME::NO_TYPE ) {
                 model_.modifiable_elements( id.type )[id.index] = E ;
@@ -129,7 +129,7 @@ namespace RINGMesh {
          * @brief Reference to a modifiable element of the model
          * @pre The id must refer to a valid element of the model
          */
-        BoundaryModelElement& element(
+        GeoModelElement& element(
             const BME::bme_t& id ) const
         {
             return *element_ptr(id) ;
@@ -140,17 +140,17 @@ namespace RINGMesh {
          * @pre Assert in debug model that the given id refers to a meshed element.
          *      The id must refer to a valid element.
          */
-        BoundaryModelMeshElement& mesh_element(
+        GeoModelMeshElement& mesh_element(
             const BME::bme_t& id ) const
         {
             ringmesh_debug_assert( BME::has_mesh( id.type ) ) ;
-            return dynamic_cast<BoundaryModelMeshElement&>( element( id ) ) ;
+            return dynamic_cast<GeoModelMeshElement&>( element( id ) ) ;
         }
 
         /*!
          * @brief Modifiable pointer to an element of the model
          */
-        BoundaryModelElement* element_ptr( const BME::bme_t& id ) const
+        GeoModelElement* element_ptr( const BME::bme_t& id ) const
         {
             if( id.type < BME::NO_TYPE ) {
                 return model_.elements( id.type )[ id.index ] ;
@@ -169,12 +169,12 @@ namespace RINGMesh {
 
 
         /*! @}
-         * \name Filling BoundaryModelElement attributes.
+         * \name Filling GeoModelElement attributes.
          * @{
          */
         void set_model(
             const BME::bme_t& t,
-            BoundaryModel* m )
+            GeoModel* m )
         {
             element( t ).set_model( m ) ;
         }
@@ -261,7 +261,7 @@ namespace RINGMesh {
             const std::vector< index_t >& surface_facet_ptr ) ;
 
         /*! @}
-         * \name Set element geometry using BoundaryModel vertices
+         * \name Set element geometry using GeoModel vertices
          * @{
          */
         index_t add_unique_vertex( const vec3& p ) ;
@@ -297,20 +297,20 @@ namespace RINGMesh {
         void resize_elements( BME::TYPE type, index_t nb ) ;
 
     protected:
-        BoundaryModel& model_ ;
+        GeoModel& model_ ;
 
     } ;
 
     /*!
-     * @brief Build a BoundaryModel from a Gocad Model3D (file_model.ml)
+     * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
      */
-    class RINGMESH_API BoundaryModelBuilderGocad: public BoundaryModelBuilder {
+    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilder {
     public:
-        BoundaryModelBuilderGocad( BoundaryModel& model )
-            : BoundaryModelBuilder( model )
+        GeoModelBuilderGocad( GeoModel& model )
+            : GeoModelBuilder( model )
         {
         }
-        virtual ~BoundaryModelBuilderGocad()
+        virtual ~GeoModelBuilderGocad()
         {
         }
 
@@ -372,15 +372,15 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Build a BoundaryModel from a file_model.bm
+     * @brief Build a GeoModel from a file_model.bm
      */
-    class RINGMESH_API BoundaryModelBuilderBM: public BoundaryModelBuilder {
+    class RINGMESH_API GeoModelBuilderBM: public GeoModelBuilder {
     public:
-        BoundaryModelBuilderBM( BoundaryModel& model )
-            : BoundaryModelBuilder( model )
+        GeoModelBuilderBM( GeoModel& model )
+            : GeoModelBuilder( model )
         {
         }
-        virtual ~BoundaryModelBuilderBM()
+        virtual ~GeoModelBuilderBM()
         {
         }
 
@@ -398,16 +398,16 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Builder of a BoundaryModel from a surface mesh
+     * @brief Builder of a GeoModel from a surface mesh
      *        in which the manifold surface connected components are disjoints
      */
-    class RINGMESH_API BoundaryModelBuilderSurface: public BoundaryModelBuilder {
+    class RINGMESH_API GeoModelBuilderSurface: public GeoModelBuilder {
     public:
-        BoundaryModelBuilderSurface( BoundaryModel& model )
-            : BoundaryModelBuilder( model )
+        GeoModelBuilderSurface( GeoModel& model )
+            : GeoModelBuilder( model )
         {
         }
-        virtual ~BoundaryModelBuilderSurface()
+        virtual ~GeoModelBuilderSurface()
         {
         }
 

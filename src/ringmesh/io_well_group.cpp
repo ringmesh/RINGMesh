@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
+ *     RING Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -151,6 +151,14 @@ namespace RINGMesh {
 
             GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
                 << std::endl ;
+            std::vector< std::string > names ;
+            WellGroupIOHandlerFactory::list_creators( names ) ;
+            GEO::Logger::out( "I/O" ) << "Currently supported file formats:"  ;
+            for( index_t i = 0; i < names.size(); i++ ) {
+                GEO::Logger::out( "I/O" ) << " " << names[i] ;
+            }
+            GEO::Logger::out( "I/O" ) <<std::endl ;
+
             return nil ;
         }
 

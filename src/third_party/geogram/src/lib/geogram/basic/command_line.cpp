@@ -478,6 +478,13 @@ namespace GEO {
                 const std::string& arg = additional_args[i];
                 if(arg[0] == '<' && arg[arg.length() - 1] == '>') {
                     ++max_unparsed;
+                } else if(
+                    arg[0] == '<' &&
+                    arg[arg.length() - 2] == '>' &&
+                    arg[arg.length() - 1] == '*'
+                ) {
+                    min_unparsed=0;
+                    max_unparsed=100000;
                 } else {
                     ++max_unparsed;
                     ++min_unparsed;

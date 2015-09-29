@@ -364,7 +364,7 @@ namespace GEO {
          * creator in this Factory
          * \retval a null pointer otherwise.
          */
-        static Type* create_object(const std::string& name, Param1 param1) {
+        static Type* create_object(const std::string& name, const Param1& param1) {
             typename BaseClass::CreatorType creator =
                 BaseClass::find_creator(name);
             return creator == nil ? nil : (* creator)(param1);

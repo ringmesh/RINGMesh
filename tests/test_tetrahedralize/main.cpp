@@ -32,66 +32,33 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *     Ecole Nationale Sup�rieure de G�ologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
-#ifndef __RINGMESH_COMMON__
-#define __RINGMESH_COMMON__
+#include <ringmesh/geo_model.h>
+#include <ringmesh/macro_mesh.h>
+#include <ringmesh/io.h>
 
-#if defined( _WIN32 )
-  #    ifndef WIN32
-    #        define WIN32
-  #    endif
-#endif
+#include <geogram/basic/logger.h>
 
-#ifdef WIN32
-  #   ifdef RINGMESH_EXPORTS
-    #        define RINGMESH_API __declspec( dllexport )
-  #    else
-    #        define RINGMESH_API __declspec( dllimport )
-  #    endif
-#else
-  #   define RINGMESH_API
-#endif
-
-#ifndef NDEBUG
-  #   define RINGMESH_DEBUG
-#else
-  #   undef RINGMESH_DEBUG
-#endif
-
-#ifdef WIN32
-  #   pragma warning( disable: 4267 )
-  #   pragma warning( disable: 4251 )
-#endif
-
-#ifdef RINGMESH_USE_OPENMP
-#   ifdef WIN32
-#       define RINGMESH_PARALLEL_LOOP __pragma("omp parallel for")
-#       define RINGMESH_PARALLEL_LOOP_DYNAMIC __pragma( "omp parallel for schedule(dynamic)" )
-#   else
-#       define RINGMESH_PARALLEL_LOOP _Pragma("omp parallel for")
-#       define RINGMESH_PARALLEL_LOOP_DYNAMIC _Pragma( "omp parallel for schedule(dynamic)" )
-#   endif
-#else
-#   define RINGMESH_PARALLEL_LOOP
-#   define RINGMESH_PARALLEL_LOOP_DYNAMIC
-#endif
-
-
-#define ringmesh_disable_copy( Class ) \
-    private: \
-    Class( const Class & ) ; \
-    Class& operator=( const Class& )
-
-template< class T > inline void ringmesh_unused( T const& )
+int main( int argc, char** argv )
 {
+    using namespace RINGMesh ;
+
+    GEO::Logger::out("TEST") << "Test tetrahedralize for corbi.ml" << std::endl ;
+
+    GeoModel in ;
+    if( !RINGMeshIO::load( "../data/corbi_out.bm", in ) )
+        return 1 ;
+
+    MacroMesh mm(in) ;
+    mm.compute_tetmesh("TetGen") ;
+
+    if (!RINGMeshIO::save(mm,"../data/out_corbi_mesh.mm") )
+        return 1 ;
+
+    return 0 ;
 }
-
-#include <ringmesh/types.h>
-#include <ringmesh/ringmesh_assert.h>
-
-#endif
