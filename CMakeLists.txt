@@ -121,6 +121,7 @@ target_link_libraries(RINGMesh geogram)
 IF(${USE_MG_TETRA})
   target_link_libraries(RINGMesh meshgems mg-tetra)
 ENDIF(${USE_MG_TETRA})
+
 if(${RINGMESH_WITH_GRAPHICS})
   TARGET_LINK_LIBRARIES(RINGMesh geogram_gfx)
 endif()
@@ -129,9 +130,16 @@ IF(WIN32)
 ENDIF(WIN32)
 
 
-# Output binary
+# Optional binaries 
 if(${RINGMESH_WITH_GRAPHICS})
     add_subdirectory(src/bin/ringmeshview)
 endif()
-add_subdirectory(src/bin/ringmeshconvert)
-include(tests/tests.cmake)
+
+if(${RINGMESH_WITH_UTILITIES})
+    add_subdirectory(src/bin/ringmeshconvert)
+endif()
+
+if(${RINGMESH_WITH_TESTS})
+    add_subdirectory(tests)
+endif()
+
