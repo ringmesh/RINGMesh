@@ -71,6 +71,7 @@ namespace RINGMesh {
         void draw_corners() ;
         void draw_lines() ;
         void draw_surfaces() ;
+        void draw_regions() ;
 
         void set_corners_color( float r, float g, float b ) ;
         void set_corner_color( index_t c, float r, float g, float b ) ;
@@ -124,6 +125,8 @@ namespace RINGMesh {
         std::vector< LineGfx* > lines_ ;
         /// The graphics associated to each Surface
         std::vector< SurfaceGfx* > surfaces_ ;
+        /// The graphics associated to each Region
+        std::vector< RegionGfx* > regions_ ;
 
     } ;
 
