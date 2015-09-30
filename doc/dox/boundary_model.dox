@@ -85,7 +85,7 @@ From it derive RINGMesh::Surface, RINGMesh::Line, and RINGMesh::Corner
 that implement methods to operate on meshes of different dimensions.
 Meshes of the different element are independent one from another so
  shared vertices and edges are duplicated.
- At the model level RINGMesh::GeoModelVertices manage a 
+ At the model level RINGMesh::GeoModelMeshVertices manage a 
  global indexing of the vertices of the different meshes.
  
   
