@@ -102,10 +102,14 @@ namespace RINGMesh {
          * Test if the mesh vertices are initialized
          */
         bool is_initialized() const ;
+        /*!
+         * Test if the mesh vertices need to be initialized,
+         * if so initialize them.
+         */
+        void test_and_initialize() const ;
 
         /*!
          * @brief Number of vertices stored.
-         * @details Calls initialize() if vertices are not filled yet
          */
         index_t nb() const ;
 
@@ -165,11 +169,6 @@ namespace RINGMesh {
         void clear() ;
 
     private:
-        /*!
-         * Test if the mesh vertices need to be initialized,
-         * if so initialize them.
-         */
-        void test_and_initialize() const ;
         /*!
          * @brief Initialize the vertices from the vertices
          *        of the GeoModel Corners, Lines, and Surfaces
@@ -237,7 +236,82 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelMeshFacets {
         ringmesh_disable_copy( GeoModelMeshFacets ) ;
+        friend class GeoModelMesh ;
+    public:
+        enum FacetType {
+            TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
+        };
 
+    public:
+        GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        ~GeoModelMeshFacets() ;
+
+        /*!
+         * Test if the mesh facets are initialized
+         */
+        bool is_initialized() const ;
+        void test_and_initialize() const ;
+
+        /*!
+         * @brief Number of facets stored.
+         */
+        index_t nb() const ;
+
+        index_t vertex( index_t f, index_t v ) const ;
+        index_t adjacent( index_t f, index_t v ) const ;
+        index_t surface( index_t f ) const ;
+        index_t facet_in_surface( index_t f ) const ;
+        FacetType facet_type( index_t f, index_t& index ) const ;
+
+        index_t nb_facets( FacetType type = ALL ) const ;
+        index_t nb_facets( index_t s, FacetType type = ALL ) const ;
+        index_t facet( index_t s, index_t f, FacetType type = ALL ) const ;
+
+        index_t nb_triangle() const ;
+        index_t nb_triangle( index_t s ) const ;
+        index_t triangle( index_t s, index_t t ) const ;
+
+        index_t nb_quad() const ;
+        index_t nb_quad( index_t s ) const ;
+        index_t quad( index_t s, index_t q ) const ;
+
+        index_t nb_polygon() const ;
+        index_t nb_polygon( index_t s ) const ;
+        index_t polygon( index_t s, index_t p ) const ;
+
+        void clear() ;
+
+    private:
+        void initialize() ;
+
+        void bind_attribute() ;
+        void unbind_attribute() ;
+
+    private:
+        /// Attached GeoModelMesh owning the vertices
+        GeoModelMesh& gmm_ ;
+        /// Attached GeoModel
+        const GeoModel& gm_ ;
+        /// Attached Mesh
+        GEO::Mesh& mesh_ ;
+
+        /// Attribute storing the surface index per facet
+        GEO::Attribute< index_t > surface_id_ ;
+        /*!
+         * Vector storing the index of the starting facet index
+         * for a given surface and a given facet type.
+         * For example:
+         *    the 2nd quad index of the surface index S will be found here:
+         *    surface_facet_ptr_[ALL*S + QUAD] + 2
+         */
+        std::vector< index_t > surface_facet_ptr_ ;
+
+        /// Number of triangles in the GeoModelMesh
+        index_t nb_triangle_ ;
+        /// Number of quads in the GeoModelMesh
+        index_t nb_quad_ ;
+        /// Number of polygons in the GeoModelMesh
+        index_t nb_polygon_ ;
 
     } ;
 
@@ -312,8 +386,8 @@ namespace RINGMesh {
     public:
         GeoModelMeshVertices vertices ;
         GeoModelMeshFacets facets ;
-        GeoModelMeshCells cells ;
-        GeoModelMeshOrder order ;
+//        GeoModelMeshCells cells ;
+//        GeoModelMeshOrder order ;
 
     } ;
 
