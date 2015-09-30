@@ -444,7 +444,6 @@ namespace RINGMesh {
             nb_cells_by_type[i] = 0 ;
         }
         //
-        std::vector< index_t > cells_vertices_id ;
 
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             nb += gm_.region( r ).nb_cells() ;
@@ -452,13 +451,11 @@ namespace RINGMesh {
 
         std::vector< GEO::MeshCellType > cells_vertices_type( nb ) ;
 
-        index_t index = 0 ;
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const GEO::Mesh& cur_region_mesh = gm_.region( r ).mesh() ;
             for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
                 GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
                 nb_cells_by_type[cur_cell_type]++ ;
-                cells_vertices_id[index] = cur_cell_type ;
             }
         }
 
