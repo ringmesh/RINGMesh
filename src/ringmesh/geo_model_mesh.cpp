@@ -38,7 +38,6 @@
  *     FRANCE
  */
 
-
 #include <ringmesh/geo_model_mesh.h>
 #include <ringmesh/geo_model.h>
 
@@ -62,7 +61,8 @@ namespace RINGMesh {
     {
     }
 
-    bool GeoModelMeshVertices::is_initialized() const {
+    bool GeoModelMeshVertices::is_initialized() const
+    {
         return gmm_.mesh().vertices.nb() > 0 ;
     }
 
@@ -118,13 +118,13 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-
     GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh )
         : gmm_( gmm ), gm_( gmm.model() ), mesh_( mesh )
     {
     }
 
-    bool GeoModelMeshCells::is_initialized() const {
+    bool GeoModelMeshCells::is_initialized() const
+    {
         return gmm_.mesh().cells.nb() > 0 ;
     }
 
@@ -135,10 +135,138 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelMeshCells::initialize()
+    {
+
+        gmm_.vertices.test_and_initialize() ;
+
+        // Total number of  cells
+        index_t nb = 0 ;
+        // Table with the number of tet, hex, prism, pyramid and connector
+        index_t nb_cells_by_type[GEO::MESH_NB_CELL_TYPES] ;
+        for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
+            nb_cells_by_type[i] = 0 ;
+        }
+        //
+        std::vector< index_t > cells_vertices_id ;
+
+        for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
+            nb += gm_.region( r ).nb_cells() ;
+        }
+
+        std::vector< GEO::MeshCellType > cells_vertices_type( nb ) ;
+
+        index_t index = 0 ;
+        for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
+            const GEO::Mesh& cur_region_mesh = gm_.region( r ).mesh() ;
+            for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
+                GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
+                nb_cells_by_type[cur_cell_type]++ ;
+                cells_vertices_id[index] = cur_cell_type ;
+            }
+        }
+
+        // Get out if no cells
+        if( nb == 0 ) {
+            return ;
+        }
+
+        // Fill the cells
+        for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
+            mesh_.cells.create_cells( nb_cells_by_type[i], GEO::MeshCellType( i ) ) ;
+        }
+
+        for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
+            const Region& cur_region = gm_.region( r ) ;
+            const GEO::Mesh& cur_region_mesh = cur_region.mesh() ;
+            for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
+                GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
+                if( cur_cell_type == GEO::MESH_TET ) {
+                    mesh_.cells.create_tet(
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 0 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 1 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 2 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 3 ) ) ) ;
+                }
+                if( cur_cell_type == GEO::MESH_HEX ) {
+                    mesh_.cells.create_hex(
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 0 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 1 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 2 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 3 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 4 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 5 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 6 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 7 ) ) ) ;
+                }
+                else if( cur_cell_type == GEO::MESH_PRISM ) {
+                    mesh_.cells.create_prism(
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 0 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 1 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 2 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 3 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 4 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 5 ) ) ) ;
+                }
+                else if( cur_cell_type == GEO::MESH_PYRAMID ) {
+                    mesh_.cells.create_pyramid(
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 0 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 1 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 2 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 3 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 4 ) ) ) ;
+                }
+                else if( cur_cell_type == GEO::MESH_CONNECTOR ) {
+                    mesh_.cells.create_connector(
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 0 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 1 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 2 ) ),
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, 3 ) ) ) ;
+                }
+
+                else {
+                    ringmesh_assert_not_reached ;
+                }
+
+                // Retrieve the adjacencies
+                mesh_.cells.connect() ;
+
+            }
+        }
+
+    }
+
     /*******************************************************************************/
 
     GeoModelMesh::GeoModelMesh( const GeoModel& gm )
-        : gm_( gm ), mesh_( new GEO::Mesh ), vertices( *this, *mesh_ )
+        : gm_( gm ), mesh_( new GEO::Mesh ), vertices( *this, *mesh_ ), cells(*this, *mesh_)
     {
     }
 
