@@ -421,7 +421,7 @@ namespace RINGMesh {
 
     bool GeoModelMeshCells::is_initialized() const
     {
-        return gmm_.mesh().cells.nb() > 0 ;
+        return mesh_.cells.nb() > 0 ;
     }
 
     void GeoModelMeshCells::test_and_initialize() const
@@ -434,7 +434,7 @@ namespace RINGMesh {
     void GeoModelMeshCells::initialize()
     {
 
-        gmm_.vertices.test_and_initialize() ;
+//        gmm_.vertices.test_and_initialize() ;
 
         // Total number of  cells
         index_t nb = 0 ;

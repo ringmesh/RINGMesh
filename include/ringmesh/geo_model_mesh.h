@@ -240,17 +240,24 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshCells {
+        friend class GeoModelMesh ;
     public:
         GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
-
+        /*!
+         * Test if the mesh cells are initialized
+         */
         bool is_initialized() const ;
-        void test_and_initialize() const ;
 
     private:
         /*!
-         * @brief Initialize the cells from the cells
-         *        of the GeoModel Cells
-         * @details Fills the mesh_.cells_, cells_
+         * Test if the mesh vertices need to be initialized,
+         * if so initialize them.
+         */
+        void test_and_initialize() const ;
+        /*!
+         * @brief Initialize the  cells from the cells
+         *        of the GeoModel Region cells
+         * @details Fills the mesh_.cells
          */
         void initialize() ;
 
