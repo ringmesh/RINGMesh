@@ -1148,7 +1148,7 @@ namespace {
         }
     }
 
-    inline GeoModelMeshElement& cast_bmm_element(
+    inline GeoModelMeshElement& cast_gmm_element(
         const GeoModel& M,
         GME::TYPE T,
         index_t i )
@@ -1192,7 +1192,7 @@ namespace RINGMesh {
         for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
-                GeoModelMeshElement& E = cast_bmm_element( bm_, T, e ) ;
+                GeoModelMeshElement& E = cast_gmm_element( bm_, T, e ) ;
                 /*!
                  * @todo Review: could you use memcpy to copy all the vertices at once
                  * and then save the indices inside E and  bme_vertices_[index]. [AB]
@@ -1357,7 +1357,7 @@ namespace RINGMesh {
             /// @todo Review: could be parallelized RINGMESH_PARALLEL_LOOP
             /// I do not know if it will be usefull [AB]
             for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
-                GeoModelMeshElement& E = cast_bmm_element( bm_, T, e ) ;
+                GeoModelMeshElement& E = cast_gmm_element( bm_, T, e ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     E.set_model_vertex_id( v, NO_ID ) ;
                 }
@@ -1450,7 +1450,7 @@ namespace RINGMesh {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
             for( index_t e = 0; e < bm_.nb_elements( T ); ++e ) {
-                GeoModelMeshElement& E = cast_bmm_element( bm_, T, e ) ;
+                GeoModelMeshElement& E = cast_gmm_element( bm_, T, e ) ;
 
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     index_t old_id = E.model_vertex_id( v ) ;

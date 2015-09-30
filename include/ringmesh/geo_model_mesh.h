@@ -38,16 +38,14 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
 
-#ifndef __RINGMESH_BOUNDARY_MODEL_MESH__
-#define __RINGMESH_BOUNDARY_MODEL_MESH__
+#ifndef __RINGMESH_GEO_MODEL_MESH__
+#define __RINGMESH_GEO_MODEL_MESH__
 
 #include <ringmesh/common.h>
+#include <ringmesh/geo_model_element.h>
 
 #include <geogram/mesh/mesh.h>
-
-#include <vector>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -56,43 +54,113 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+
     class RINGMESH_API GeoModelMeshVertices {
+    public:
+        /*!
+         * @brief Identification of a vertex in a GeoModelElement
+         * @todo Je changerai bien ce nom moche au refactoring [JP]
+         */
+        struct VertexInGME {
+            VertexInGME( GME::gme_t t, index_t vertex_id_in )
+                : gme_id( t ), v_id( vertex_id_in )
+            {
+            }
+            VertexInGME()
+                : gme_id(), v_id( NO_ID )
+            {
+            }
+            bool operator<( const VertexInGME& rhs ) const
+            {
+                if( gme_id != rhs.gme_id ) {
+                    return gme_id < rhs.gme_id ;
+                } else {
+                    return v_id < rhs.v_id ;
+                }
+            }
+            bool operator==( const VertexInGME& rhs ) const
+            {
+                return gme_id == rhs.gme_id && v_id == rhs.v_id ;
+            }
+            bool is_defined() const
+            {
+                return gme_id.is_defined() && v_id != NO_ID ;
+            }
+            /// Unique identifier of the associated GeoModelElement
+            GME::gme_t gme_id ;
+            /// Index of the vertex in the BME
+            index_t v_id ;
+        } ;
+
+    public:
+        GeoModelMeshVertices( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+
+        bool is_initialized() const ;
+        void test_and_initialize() const ;
+
+    private:
+        /*!
+         * @brief Initialize the vertices from the vertices
+         *        of the GeoModel Corners, Lines, and Surfaces
+         * @details Fills the mesh_.vertices, bme_vertices_ and
+         *         delete colocated vertices
+         */
+        void initialize() ;
+
+    private:
+        /// Attached GeoModelMesh owning the vertices
+        GeoModelMesh& gmm_ ;
+        /// Attached GeoModel
+        const GeoModel& gm_ ;
+        /// Attached Mesh
+        GEO::Mesh& mesh_ ;
+
+
+        /*!
+         * Vertices in GeoModelElements corresponding to each vertex
+         * @todo Change this extremely expensive storage !!!
+         */
+        std::vector< std::vector< VertexInGME > > gme_vertices_ ;
 
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
 
+
     } ;
 
     class RINGMESH_API GeoModelMeshCells {
-    public:
-        GeoModelMeshCells( const GeoModelMesh& gmm )
-            : gmm_( gmm )
-        {
 
-        }
-
-    private:
-        const GeoModelMesh& gmm_ ;
 
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
 
+
     } ;
 
     class RINGMESH_API GeoModelMesh {
     public:
-        friend class GeoModelMeshCells ;
-        GeoModelMesh() ;
+        GeoModelMesh( const GeoModel& gm ) ;
+        ~GeoModelMesh() ;
 
-        const GEO::Mesh& mesh() const
-        {
-            return mesh_ ;
+        const GEO::Mesh& mesh() const {
+            return *mesh_ ;
+        }
+        const GeoModel& model() const {
+            return gm_ ;
         }
 
     private:
-        GEO::Mesh mesh_ ;
+        /// Attached GeoMode
+        const GeoModel& gm_ ;
+        /*!
+         * @brief Mesh storing the vertices, facets and cells that
+         * are not colocated/duplicated
+         * @details Each mesh element is unique.
+         * On these elements, attributes can be defined
+         */
+        GEO::Mesh* mesh_ ;
 
     public:
         GeoModelMeshVertices vertices ;
@@ -101,6 +169,8 @@ namespace RINGMesh {
         GeoModelMeshOrder order ;
 
     } ;
+
+
 
 }
 

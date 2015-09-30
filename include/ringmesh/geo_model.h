@@ -40,8 +40,8 @@
 
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
-#ifndef __RINGMESH_BOUNDARY_MODEL__
-#define __RINGMESH_BOUNDARY_MODEL__
+#ifndef __RINGMESH_GEO_MODEL__
+#define __RINGMESH_GEO_MODEL__
 
 #include <ringmesh/common.h>
 #include <ringmesh/geo_model_element.h>
