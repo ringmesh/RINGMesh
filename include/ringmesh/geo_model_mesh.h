@@ -83,6 +83,7 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelMesh {
     public:
+        friend class GeoModelMeshCells ;
         GeoModelMesh() ;
 
         const GEO::Mesh& mesh() const
