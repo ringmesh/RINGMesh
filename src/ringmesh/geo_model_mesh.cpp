@@ -118,6 +118,25 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
+
+    GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh )
+        : gmm_( gmm ), gm_( gmm.model() ), mesh_( mesh )
+    {
+    }
+
+    bool GeoModelMeshCells::is_initialized() const {
+        return gmm_.mesh().cells.nb() > 0 ;
+    }
+
+    void GeoModelMeshCells::test_and_initialize() const
+    {
+        if( !is_initialized() ) {
+            const_cast< GeoModelMeshCells* >( this )->initialize() ;
+        }
+    }
+
+    /*******************************************************************************/
+
     GeoModelMesh::GeoModelMesh( const GeoModel& gm )
         : gm_( gm ), mesh_( new GEO::Mesh ), vertices( *this, *mesh_ )
     {
