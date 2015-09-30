@@ -257,34 +257,153 @@ namespace RINGMesh {
          */
         index_t nb() const ;
 
+        /*!
+         * Get the vertex index of a vertex in a facet
+         * in the GeoModelMesh
+         * @param[in] f the facet index
+         * @param[in] v the local vertex index [0, nb_vertices_in_facet[
+         * @return the vertex index
+         */
         index_t vertex( index_t f, index_t v ) const ;
-        index_t adjacent( index_t f, index_t v ) const ;
+        /*!
+         * Get the adjacent facet index in the GeoModelMesh
+         * @param[in] f the facet index
+         * @param[in] e the edge index
+         * @return the adjacent facet index
+         */
+        index_t adjacent( index_t f, index_t e ) const ;
+        /*!
+         * Get the surface index in the GeoModel according the facet
+         * index in the GeoModelMesh
+         * @param[in] f the facet index
+         * @return the surface index
+         */
         index_t surface( index_t f ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh restricted to
+         * the surface owing the facet
+         * @param[in] f the facet index
+         * @return the facet index varying from 0 to nb_facets
+         * in the surface owing \p f
+         */
         index_t facet_in_surface( index_t f ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh restricted to
+         * the surface owing the facet and its type
+         * @param[in] f the facet index
+         * @param[out] index the facet index varying from 0 to nb_facets
+         * of the corresponding type of \p f in the owing surface
+         * @return the type of the facet \p f
+         */
         FacetType facet_type( index_t f, index_t& index ) const ;
 
+        /*!
+         * Get the number of facets of the corresponding type
+         * @param[in] type the corresponding type
+         * @return the number of facets
+         */
         index_t nb_facets( FacetType type = ALL ) const ;
+        /*!
+         * Get the number of facets of the corresponding type
+         * in the given surface of the GeoModel
+         * @param[in] s the surface index
+         * @param[in] type the corresponding type
+         * @return the number of facets
+         */
         index_t nb_facets( index_t s, FacetType type = ALL ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh
+         * @param[in] s the surface index owing the facet
+         * @param[in] f the facet index varying from 0 to nb_facets in the surface
+         * @param[in] type it can specify the facet type used. For example, if type = QUAD
+         * then \p f represents the fth quad in the surface \p s and \p f can vary from 0
+         * to nb_quads( s ).
+         * @return the facet index
+         */
         index_t facet( index_t s, index_t f, FacetType type = ALL ) const ;
 
+        /*!
+         * Get the number of triangles in the GeoModelMesh
+         * @return the number of triangles
+         */
         index_t nb_triangle() const ;
+        /*!
+         * Get the number of triangles in the given surface
+         * @param[in] s the surface index
+         * @return the number of triangles
+         */
         index_t nb_triangle( index_t s ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh corresponding
+         * to the asked triangle in the surface
+         * @param[in] s the surface index
+         * @param[in] t the tth triangle index varying from 0 to nb_triangles( s )
+         * @return the facet index
+         */
         index_t triangle( index_t s, index_t t ) const ;
 
+        /*!
+         * Get the number of quads in the GeoModelMesh
+         * @return the number of quads
+         */
         index_t nb_quad() const ;
+        /*!
+         * Get the number of quads in the given surface
+         * @param[in] s the surface index
+         * @return the number of quads
+         */
         index_t nb_quad( index_t s ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh corresponding
+         * to the asked quad in the surface
+         * @param[in] s the surface index
+         * @param[in] q the qth quad index varying from 0 to nb_quads( s )
+         * @return the facet index
+         */
         index_t quad( index_t s, index_t q ) const ;
 
+        /*!
+         * Get the number of polygons in the GeoModelMesh
+         * @return the number of polygons
+         */
         index_t nb_polygon() const ;
+        /*!
+         * Get the number of polygons in the given surface
+         * @param[in] s the surface index
+         * @return the number of polygons
+         */
         index_t nb_polygon( index_t s ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh corresponding
+         * to the asked polygon in the surface
+         * @param[in] s the surface index
+         * @param[in] p the pth polygon index varying from 0 to nb_polygons( s )
+         * @return the facet index
+         */
         index_t polygon( index_t s, index_t p ) const ;
 
+        /*!
+         * Clear the facets of the GeoModelMesh
+         */
         void clear() ;
 
     private:
+        /*!
+         * Initialize the facets of the GeoModelMesh
+         * and sort them per surface and facet type
+         * Example for a mesh with two surfaces and only triangles and quads
+         * [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
+         * |          surface 0           |             surface 1           |
+         */
         void initialize() ;
 
+        /*!
+         * Bind attribute to the facets attribute manager
+         */
         void bind_attribute() ;
+        /*!
+         * Unbind attribute to the facets attribute manager
+         */
         void unbind_attribute() ;
 
     private:
