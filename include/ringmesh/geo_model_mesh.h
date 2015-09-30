@@ -56,6 +56,7 @@ namespace RINGMesh {
 
 
     class RINGMESH_API GeoModelMeshVertices {
+        ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
     public:
         /*!
@@ -235,21 +236,25 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
+        ringmesh_disable_copy( GeoModelMeshFacets ) ;
 
 
     } ;
 
     class RINGMESH_API GeoModelMeshCells {
+        ringmesh_disable_copy( GeoModelMeshCells ) ;
 
 
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
+        ringmesh_disable_copy( GeoModelMeshOrder ) ;
 
 
     } ;
 
     class RINGMESH_API GeoModelMesh {
+        ringmesh_disable_copy( GeoModelMesh ) ;
     public:
         GeoModelMesh( const GeoModel& gm ) ;
         ~GeoModelMesh() ;
