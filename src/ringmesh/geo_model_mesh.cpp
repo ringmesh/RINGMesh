@@ -40,19 +40,92 @@
 
 
 #include <ringmesh/geo_model_mesh.h>
+#include <ringmesh/geo_model.h>
 
+namespace {
+    using namespace RINGMesh ;
+
+    inline GeoModelMeshElement& cast_gmm_element(
+        const GeoModel& M,
+        GME::TYPE T,
+        index_t i )
+    {
+        return dynamic_cast< GeoModelMeshElement& >( const_cast< GME& >( M.element(
+            GME::gme_t( T, i ) ) ) ) ;
+    }
+}
 
 namespace RINGMesh {
 
-    GeoModelMeshVertices::GeoModelMeshVertices( const GeoModel& gm )
-        : gm_( gm )
+    GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GEO::Mesh& mesh )
+        : gmm_( gmm ), gm_( gmm.model() ), mesh_( mesh )
     {
     }
 
+    bool GeoModelMeshVertices::is_initialized() const {
+        return gmm_.mesh().vertices.nb() > 0 ;
+    }
 
-    
-    GeoModelMesh::GeoModelMesh()
+    void GeoModelMeshVertices::test_and_initialize() const
+    {
+        if( !is_initialized() ) {
+            const_cast< GeoModelMeshVertices* >( this )->initialize() ;
+        }
+    }
+
+    void GeoModelMeshVertices::initialize()
+    {
+        mesh_.clear() ;
+
+        // Total number of vertices in the
+        // Corners, Lines, and Surfaces of the GeoModel
+        index_t nb = 0 ;
+        for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
+            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
+            for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
+                nb += gm_.mesh_element( GME::gme_t( T, e ) ).nb_vertices() ;
+            }
+        }
+        // Get out if no vertices
+        if( nb == 0 ) {
+            return ;
+        }
+
+        // Fill the vertices
+        mesh_.vertices.create_vertices( nb ) ;
+        gme_vertices_.resize( nb ) ;
+
+        index_t index = 0 ;
+        for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
+            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
+            for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
+                GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
+                GEO::Memory::copy( mesh_.vertices.point_ptr( index ),
+                    E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
+                for( index_t v = 0; v < E.nb_vertices(); v++ ) {
+                    // Global index stored at BME level
+                    E.set_model_vertex_id( v, index ) ;
+                    // Index in the BME stored at global level
+                    gme_vertices_[index].push_back( VertexInGME( E.gme_id(), v ) ) ;
+                    // Global vertex index increment
+                    index++ ;
+                }
+            }
+        }
+        // Remove colocated vertices
+//        remove_colocated() ;
+    }
+
+    /*******************************************************************************/
+
+    GeoModelMesh::GeoModelMesh( const GeoModel& gm )
+        : gm_( gm ), mesh_( new GEO::Mesh ), vertices( *this, *mesh_ )
     {
     }
-    
+
+    GeoModelMesh::~GeoModelMesh()
+    {
+        delete mesh_ ;
+    }
+
 }
