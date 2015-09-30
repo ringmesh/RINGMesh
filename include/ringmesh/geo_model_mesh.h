@@ -250,7 +250,7 @@ namespace RINGMesh {
 
     private:
         /*!
-         * Test if the mesh vertices need to be initialized,
+         * Test if the mesh cells need to be initialized,
          * if so initialize them.
          */
         void test_and_initialize() const ;
