@@ -462,12 +462,12 @@ namespace RINGMesh {
         return mesh_.facets.vertex( f, v ) ;
     }
 
-    index_t GeoModelMeshFacets::adjacent( index_t f, index_t v ) const
+    index_t GeoModelMeshFacets::adjacent( index_t f, index_t e ) const
     {
         test_and_initialize() ;
         ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
-        ringmesh_debug_assert( v < mesh_.facets.nb_vertices( f ) ) ;
-        return mesh_.facets.adjacent( f, v ) ;
+        ringmesh_debug_assert( e < mesh_.facets.nb_vertices( f ) ) ;
+        return mesh_.facets.adjacent( f, e ) ;
     }
 
     index_t GeoModelMeshFacets::surface( index_t f ) const
@@ -737,11 +737,11 @@ namespace RINGMesh {
             }
         }
 
-        // Compute adjacencies
+        // Compute facet adjacencies
         mesh_.facets.connect() ;
 
         // Permute facets to sort them per surface and per type
-        // Example for a mesh with two surfaces adn only triangles and quads
+        // Example for a mesh with two surfaces and only triangles and quads
         // [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
         // |          surface 0           |             surface 1           |
         GEO::vector< index_t > sorted_indices( mesh_.vertices.nb() ) ;
