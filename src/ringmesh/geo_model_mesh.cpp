@@ -43,6 +43,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/utils.h>
 
+#include <geogram/basic/algorithm.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/points/colocate.h>
 
@@ -639,6 +640,28 @@ namespace RINGMesh {
         }
     }
 
+    class GeoModelMeshFacetsSort {
+    public:
+        GeoModelMeshFacetsSort(
+            const GEO::Mesh& mesh,
+            const GEO::Attribute< index_t >& surface_id )
+            : mesh_( mesh ), surface_id_( surface_id )
+        {
+        }
+
+        bool operator()( index_t i, index_t j ) const
+        {
+            if( surface_id_[i] != surface_id_[j] ) {
+                return surface_id_[i] < surface_id_[j] ;
+            } else {
+                return mesh_.facets.nb_vertices( i ) < mesh_.facets.nb_vertices( j ) ;
+            }
+        }
+    private:
+        const GEO::Mesh& mesh_ ;
+        const GEO::Attribute< index_t >& surface_id_ ;
+    } ;
+
     void GeoModelMeshFacets::initialize()
     {
         gmm_.vertices.test_and_initialize() ;
@@ -721,6 +744,13 @@ namespace RINGMesh {
         // Example for a mesh with two surfaces adn only triangles and quads
         // [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
         // |          surface 0           |             surface 1           |
+        GEO::vector< index_t > sorted_indices( mesh_.vertices.nb() ) ;
+        for( index_t i = 0; i < mesh_.vertices.nb(); i++ ) {
+            sorted_indices[i] = i ;
+        }
+        GeoModelMeshFacetsSort action( mesh_, surface_id_ ) ;
+        GEO::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
+        mesh_.facets.permute_elements( sorted_indices ) ;
     }
 
 
