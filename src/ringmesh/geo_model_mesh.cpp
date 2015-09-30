@@ -70,7 +70,8 @@ namespace RINGMesh {
         clear_kdtree() ;
     }
 
-    bool GeoModelMeshVertices::is_initialized() const {
+    bool GeoModelMeshVertices::is_initialized() const
+    {
         return mesh_.vertices.nb() > 0 ;
     }
 
@@ -166,7 +167,7 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize_kdtree()
     {
-        kdtree_ = new ColocaterANN( mesh_ );
+        kdtree_ = new ColocaterANN( mesh_ ) ;
 #ifdef RINGMESH_DEBUG
         // Paranoia
         GEO::vector< index_t > old2new ;
@@ -218,9 +219,7 @@ namespace RINGMesh {
         return mesh_.vertices.create_vertex( point.data() ) ;
     }
 
-    void GeoModelMeshVertices::add_to_bme(
-        index_t v,
-        const VertexInGME& v_gme )
+    void GeoModelMeshVertices::add_to_bme( index_t v, const VertexInGME& v_gme )
     {
         test_and_initialize() ;
         ringmesh_debug_assert( v < nb() ) ;
@@ -243,7 +242,6 @@ namespace RINGMesh {
         ringmesh_debug_assert( k < gme_vertices( unique_id ).size() ) ;
         gme_vertices_[unique_id][k] = v ;
     }
-
 
     void GeoModelMeshVertices::update_point( index_t v, const vec3& point )
     {
@@ -316,7 +314,6 @@ namespace RINGMesh {
             erase_vertices( to_delete ) ;
         }
     }
-
 
     void GeoModelMeshVertices::erase_vertices( std::vector< index_t >& to_delete )
     {
@@ -444,6 +441,7 @@ namespace RINGMesh {
             nb_cells_by_type[i] = 0 ;
         }
         //
+        std::vector< index_t > cells_vertices_id ;
 
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             nb += gm_.region( r ).nb_cells() ;
@@ -451,11 +449,14 @@ namespace RINGMesh {
 
         std::vector< GEO::MeshCellType > cells_vertices_type( nb ) ;
 
+        index_t index = 0 ;
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const GEO::Mesh& cur_region_mesh = gm_.region( r ).mesh() ;
             for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
                 GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
                 nb_cells_by_type[cur_cell_type]++ ;
+                cells_vertices_id[index] = cur_cell_type ;
+                index++ ;
             }
         }
 
@@ -464,124 +465,60 @@ namespace RINGMesh {
             return ;
         }
 
-        // Fill the cells
+        // Create "empty tet, hex, pyr and prism
         for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
             mesh_.cells.create_cells( nb_cells_by_type[i], GEO::MeshCellType( i ) ) ;
         }
 
+        // Fill the cells with vertices
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
             const GEO::Mesh& cur_region_mesh = cur_region.mesh() ;
             for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
-                GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
-                if( cur_cell_type == GEO::MESH_TET ) {
-                    mesh_.cells.create_tet(
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 0 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 1 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 2 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 3 ) ) ) ;
+                index_t v = 0 ;
+                for( index_t co = mesh_.cells.corners_begin( c );
+                    co < mesh_.cells.corners_end( c ); ++co ) {
+                    mesh_.cell_corners.set_vertex( co,
+                        cur_region_mesh.cells.vertex( c, v ) ) ;
+                    v++ ;
                 }
-                if( cur_cell_type == GEO::MESH_HEX ) {
-                    mesh_.cells.create_hex(
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 0 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 1 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 2 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 3 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 4 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 5 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 6 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 7 ) ) ) ;
-                }
-                else if( cur_cell_type == GEO::MESH_PRISM ) {
-                    mesh_.cells.create_prism(
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 0 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 1 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 2 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 3 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 4 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 5 ) ) ) ;
-                }
-                else if( cur_cell_type == GEO::MESH_PYRAMID ) {
-                    mesh_.cells.create_pyramid(
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 0 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 1 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 2 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 3 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 4 ) ) ) ;
-                }
-                else if( cur_cell_type == GEO::MESH_CONNECTOR ) {
-                    mesh_.cells.create_connector(
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 0 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 1 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 2 ) ),
-                        cur_region.model_vertex_id(
-                            cur_region_mesh.cells.vertex( c, 3 ) ) ) ;
-                }
-
-                else {
-                    ringmesh_assert_not_reached ;
-                }
-
-                // Retrieve the adjacencies
-                mesh_.cells.connect() ;
-
             }
         }
+        // Retrieve the adjacencies
+        mesh_.cells.connect() ;
 
     }
 
-    /*******************************************************************************/
 
-    GeoModelMesh::GeoModelMesh( const GeoModel& gm )
-        : gm_( gm ), mesh_( new GEO::Mesh ), vertices( *this, *mesh_ ), cells(*this, *mesh_)
-    {
-    }
+/*******************************************************************************/
 
-    GeoModelMesh::~GeoModelMesh()
-    {
-        delete mesh_ ;
-    }
+GeoModelMesh::GeoModelMesh( const GeoModel& gm )
+    :
+        gm_( gm ),
+        mesh_( new GEO::Mesh ),
+        vertices( *this, *mesh_ ),
+        cells( *this, *mesh_ )
+{
+}
 
-    void GeoModelMesh::remove_colocated_vertices()
-    {
-        vertices.remove_colocated() ;
-    }
+GeoModelMesh::~GeoModelMesh()
+{
+    delete mesh_ ;
+}
 
-    void GeoModelMesh::erase_vertices( std::vector< index_t >& to_delete )
-    {
-        vertices.erase_vertices( to_delete ) ;
-    }
+void GeoModelMesh::remove_colocated_vertices()
+{
+    vertices.remove_colocated() ;
+}
 
+void GeoModelMesh::erase_vertices( std::vector< index_t >& to_delete )
+{
+    vertices.erase_vertices( to_delete ) ;
+}
 
-    void GeoModelMesh::erase_invalid_vertices()
-    {
-        vertices.erase_invalid_vertices() ;
-    }
+void GeoModelMesh::erase_invalid_vertices()
+{
+    vertices.erase_invalid_vertices() ;
+}
 
 }
