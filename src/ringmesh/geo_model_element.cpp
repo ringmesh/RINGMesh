@@ -66,7 +66,7 @@ namespace {
     typedef GeoModelElement BME ;
     typedef GeoModelElement::gme_t gme_t;
     typedef GeoModelMeshElement BMME ;
-    typedef GeoModelVertices::VertexInBME VBME ;
+    typedef GeoModelMeshVertices::VertexInGME VBME ;
 
 
     /*!
@@ -78,7 +78,7 @@ namespace {
         /// Check that the stored model vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
             if( E.model_vertex_id( i ) == NO_ID
-                && E.model_vertex_id( i ) >= E.model().vertices.nb() ) {
+                && E.model_vertex_id( i ) >= E.model().mesh.vertices.nb() ) {
                 GEO::Logger::err( "GeoModelElement" )
                     << "Invalid model vertex index in " << E.gme_id() << std::endl ;
                 return false ;
@@ -787,20 +787,20 @@ namespace RINGMesh {
 
     /*!
      * @brief Returns the index of the first point corresponding to the input model index
-     * @details Uses the attribute on the GeoModelVertices that stores the
+     * @details Uses the attribute on the GeoModelMeshVertices that stores the
      *  corresponding points in BME. Returns NO_ID if no matching point is found.
      *
-     * @param model_vertex_id Index of a vertex in GeoModelVertices
+     * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
      */
     index_t GeoModelMeshElement::local_id(
         index_t model_vertex_id ) const
     {
-        typedef GeoModelVertices BMV ;
-        const std::vector< BMV::VertexInBME >& bme_vertices =
-            model_->vertices.bme_vertices( model_vertex_id ) ;
+        typedef GeoModelMeshVertices BMV ;
+        const std::vector< BMV::VertexInGME >& gme_vertices =
+            model_->mesh.vertices.gme_vertices( model_vertex_id ) ;
 
-        for( index_t i = 0; i < bme_vertices.size(); i++ ) {
-            const BMV::VertexInBME& info = bme_vertices[ i ] ;
+        for( index_t i = 0; i < gme_vertices.size(); i++ ) {
+            const BMV::VertexInGME& info = gme_vertices[ i ] ;
             if( info.gme_id == gme_id() ) {
                 return info.v_id ;
             }
@@ -832,10 +832,10 @@ namespace RINGMesh {
         for( index_t v = 0; v < nb_vertices(); ++v ) {
             index_t model_v = model_vertex_id( v ) ;
             
-            const std::vector< GeoModelVertices::VertexInBME >&
-                backward = model_->vertices.bme_vertices( model_v ) ;
+            const std::vector< GeoModelMeshVertices::VertexInGME >&
+                backward = model_->mesh.vertices.gme_vertices( model_v ) ;
 
-            GeoModelVertices::VertexInBME cur_v( gme_id(), v ) ;
+            GeoModelMeshVertices::VertexInGME cur_v( gme_id(), v ) ;
             index_t count_v = static_cast< index_t >( 
                 std::count( backward.begin(), backward.end(), cur_v ) ) ;
 
@@ -858,7 +858,7 @@ namespace RINGMesh {
      * @brief Sets the index of the matching point in the GeoModel
      *
      * @param[in] v Vertex index
-     * @param[in] model_id Model vertex index in GeoModelVertices
+     * @param[in] model_id Model vertex index in GeoModelMeshVertices
      */
     void GeoModelMeshElement::set_model_vertex_id(
         index_t vertex_id,
@@ -887,7 +887,7 @@ namespace RINGMesh {
     {
         ringmesh_debug_assert( index < nb_vertices() ) ;
         if( update ) {
-            model_->vertices.update_point(
+            model_->mesh.vertices.update_point(
                 model_vertex_id( index ) , point ) ;
         }
         else {
@@ -920,20 +920,20 @@ namespace RINGMesh {
 
     /*!
      * @brief Set the geometrical position of a vertex from a model vertex
-     * @details Set also both mapping from (GeoModelVertices::unique2bme)
+     * @details Set also both mapping from (GeoModelMeshVertices::unique2bme)
      *          and to (model_vertex_id_) the model vertex.
      *
      * @param index Index of the vertex to modify
-     * @param model_vertex Index in GeoModelVertices of the vertex giving
+     * @param model_vertex Index in GeoModelMeshVertices of the vertex giving
      *                     the new position
      */
     void GeoModelMeshElement::set_vertex(
         index_t v, index_t model_vertex )
     {
-        set_vertex( v, model_->vertices.unique_vertex( model_vertex ), false ) ;
+        set_vertex( v, model_->mesh.vertices.vertex( model_vertex ), false ) ;
         set_model_vertex_id( v, model_vertex ) ;
-        model_->vertices.add_unique_to_bme( 
-            model_vertex, GeoModelVertices::VertexInBME( gme_id(), v ) ) ;
+        model_->mesh.vertices.add_to_bme(
+            model_vertex, GeoModelMeshVertices::VertexInGME( gme_id(), v ) ) ;
     }
 
 
@@ -1983,7 +1983,7 @@ namespace RINGMesh {
         GeoModel& M = const_cast< GeoModel& >(S.model() ) ;
 
         const std::vector< VBME >& vbme = 
-            M.vertices.bme_vertices( model_vertex_id ) ;
+            M.mesh.vertices.gme_vertices( model_vertex_id ) ;
         index_t duplicate = NO_ID ;
         for( index_t i = 0; i < vbme.size(); ++i ) {
             if( vbme[ i ].gme_id == S.gme_id() ) {
@@ -1995,13 +1995,13 @@ namespace RINGMesh {
         if( duplicate == NO_ID ) {
             // Duplicate the vertex in the surface
             duplicate = S.mesh().vertices.create_vertex(
-                M.vertices.unique_vertex( model_vertex_id).data() ) ;
+                M.mesh.vertices.vertex( model_vertex_id).data() ) ;
             
             // Set its model vertex index
             S.set_model_vertex_id( duplicate, model_vertex_id ) ;
 
             // Add the mapping from in the model vertices. Should we do this one ?
-            M.vertices.add_unique_to_bme(
+            M.mesh.vertices.add_to_bme(
                 model_vertex_id, VBME( S.gme_id(), duplicate ) ) ;
         }
         return duplicate ;
@@ -2026,8 +2026,8 @@ namespace RINGMesh {
         index_t& f,
         index_t& e )
     {
-        const vec3& v0 = surface.model().vertices.unique_vertex( model_v0 ) ;
-        const vec3& v1 = surface.model().vertices.unique_vertex( model_v1 ) ;
+        const vec3& v0 = surface.model().mesh.vertices.vertex( model_v0 ) ;
+        const vec3& v1 = surface.model().mesh.vertices.vertex( model_v1 ) ;
         vec3 v_bary = 0.5 * ( v0 + v1 ) ;
 
         index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_cells() ) ;
@@ -2080,13 +2080,13 @@ namespace RINGMesh {
         // They are needed to get the points shared by the Surface
         // and the Line
 
-        bool init = model().vertices.is_initialized() ;
+        bool init = model().mesh.vertices.is_initialized() ;
         if( !init ) {
             /// @todo Replace the use the model vertices by only a colocater
             /// of the surface vertice and the line vertices
 
             // This permit initialization
-            model().vertices.nb() ;
+            model().mesh.vertices.nb() ;
         }
 
         ColocaterANN ann( mesh(), ColocaterANN::FACETS ) ;
@@ -2210,7 +2210,7 @@ namespace RINGMesh {
         }
 
         if( !init ) {
-            const_cast< GeoModel&>( model() ).vertices.clear() ;
+            const_cast< GeoModel&>( model() ).mesh.vertices.clear() ;
         }
     }
 
@@ -2270,17 +2270,17 @@ namespace RINGMesh {
             // to update the model vertices.
 
             GeoModel& M = const_cast<GeoModel&>( surface_.model() ) ;
-            if( M.vertices.is_initialized() ) {
-                typedef GeoModelVertices::VertexInBME VBME ;
+            if( M.mesh.vertices.is_initialized() ) {
+                typedef GeoModelMeshVertices::VertexInGME VBME ;
                 
                 bool annoying = surface_.has_inside_border() ;
                 std::vector< index_t > visited ;
                 if( annoying ) {
-                    visited.resize( M.vertices.nb(), 0 ) ;
+                    visited.resize( M.mesh.vertices.nb(), 0 ) ;
                 }
                 for( index_t sv = 0; sv < surface_.nb_vertices(); ++sv ) {
                     index_t v = surface_.model_vertex_id( sv ) ;
-                    const std::vector< VBME >& to_update = M.vertices.bme_vertices( v ) ;
+                    const std::vector< VBME >& to_update = M.mesh.vertices.gme_vertices( v ) ;
 
                     index_t count_skipped = 0 ;
                     for( index_t i = 0; i < to_update.size(); ++i ) {
@@ -2293,7 +2293,7 @@ namespace RINGMesh {
                                 continue ;
                             }
                             else {
-                                M.vertices.set_bme( v, i, VBME( surface_.gme_id(), sv ) ) ;
+                                M.mesh.vertices.set_gme( v, i, VBME( surface_.gme_id(), sv ) ) ;
                                 if( annoying ) {
                                     ++visited[ v ] ;
                                 }

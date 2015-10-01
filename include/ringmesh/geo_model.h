@@ -40,236 +40,20 @@
 
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
-#ifndef __RINGMESH_BOUNDARY_MODEL__
-#define __RINGMESH_BOUNDARY_MODEL__
+#ifndef __RINGMESH_GEO_MODEL__
+#define __RINGMESH_GEO_MODEL__
 
 #include <ringmesh/common.h>
 #include <ringmesh/geo_model_element.h>
-
-#include <geogram/points/kd_tree.h>
+#include <ringmesh/geo_model_mesh.h>
 
 #include <vector>
 
 namespace RINGMesh {
+    class WellGroup ;
+}
 
-    /*!
-     * @brief Unique storage of the vertices of a GeoModel
-     * @details Each instance is unique, unlike vertices in 
-     *          the model Corner, Line, and Surface meshes.
-     *          Attributes may be defined on the vertices.
-     *
-     * @todo Take also the Regions vertices
-     */
-    class RINGMESH_API GeoModelVertices {
-    ringmesh_disable_copy( GeoModelVertices ) ;
-    public:
-
-        /*!
-         * @brief Identification of a vertex in a GeoModelElement
-         * @todo Je changerai bien ce nom moche au refactoring [JP]
-         */
-        struct VertexInBME {
-            VertexInBME( GME::gme_t t, index_t vertex_id_in )
-                : gme_id( t ), v_id( vertex_id_in )
-            {
-            }
-            VertexInBME()
-                : gme_id(), v_id( NO_ID )
-            {
-            }
-            bool operator<( const VertexInBME& rhs ) const
-            {
-                if( gme_id != rhs.gme_id ) {
-                    return gme_id < rhs.gme_id ;
-                } else {
-                    return v_id < rhs.v_id ;
-                }
-            }
-            bool operator==( const VertexInBME& rhs ) const
-            {
-                return gme_id == rhs.gme_id && v_id == rhs.v_id ;
-            }
-            bool is_defined() const
-            {
-                return gme_id.is_defined() && v_id != NO_ID ;
-            }
-            /// Unique identifier of the associated GeoModelElement
-            GME::gme_t gme_id ;
-            /// Index of the vertex in the BME
-            index_t v_id ;
-        } ;
-
-        /*!
-         * @brief Constructor from an existing GeoModel
-         */
-        GeoModelVertices( const GeoModel& bm )
-            : bm_( bm ), kdtree_( nil ), lock_( 0 ), kdtree_to_update_( true )
-        {
-        }
-
-        ~GeoModelVertices()
-        {
-        }
-
-        /// Maybe this is not the best test, maybe we should store a bool
-        /// to store this
-        bool is_initialized() const
-        {
-            return mesh_.vertices.nb() > 0 ;
-        }
-
-        /*!
-         * @brief Number of vertices stored.
-         * @details Calls initialize() if vertices are not filled yet
-         */
-        index_t nb() const ;
-
-        /*!
-         * @brief Coordinates of a vertex of the GeoModel
-         * @pre v < nb()
-         * @todo Review : Change the name of this function [JP]
-         */
-        const vec3& unique_vertex( index_t v ) const ;
-
-        /*!
-         * @brief Returns the index of the given vertex in the model
-         * @param[in] p input point coordinates
-         * @return index of the vertex in the model if found 
-         * (distance < epsilon), otherwise NO_ID
-         */
-        index_t vertex_index( const vec3& p ) const ;
-
-        /*!
-         * @brief Get the vertices in BME corresponding to the given unique vertex
-         */
-        const std::vector< VertexInBME >& bme_vertices( index_t v ) const ;
-
-        /*!
-         * @brief To use when building the model by first adding its vertices
-         * @warning The client is responsible for setting the mapping between the points
-         * of the BME and the unique vertex 
-         */
-        index_t add_unique_vertex( const vec3& point ) ;
-
-        /*!
-         * @brief Add a vertex in a GeoModelElement 
-         *        corresponding to an existing vertex of the model
-         */
-        void add_unique_to_bme( index_t v, const VertexInBME& v_bme ) ;
-
-        /*! 
-         * @brief Change one of the BME vertex associated to a vertex
-         * @param v Index of the vertex
-         * @param i Index of the BME vertex
-         * @param v_bme Id of BME and of the vertex in that BME
-         */
-        void set_bme( index_t v, index_t i, const VertexInBME& v_bme ) ;
-
-        /*!
-         * @brief Set the point coordinates of all the vertices that 
-         *        share this unique vertex, including the unique vertex itself.
-         * @param[in] v Index of the vertex
-         * @param[in] point New coordinates
-         */
-        void update_point( index_t v, const vec3& point ) ;
-
-        /*!
-         * @brief Clear the vertices - clear the bme_vertices_ - 
-         *        clear global vertex information in the all BMME
-         * @warning Not stable - crashes if atributes are still bound
-         */
-        void clear() ;
-
-        /*!
-         * @brief Returns the Geogram attribute manager on the global vertices
-         */
-        GEO::AttributesManager& attribute_manager() const
-        {
-            return mesh_.vertices.attributes() ;
-        }
-
-        /*!
-         * @brief Remove colocated vertices
-         */
-        void remove_colocated() ;
-
-        /*! 
-         * @brief Remove all invalid VertexInBME and delete the vertices 
-         * that are not anymore in any GeoModelElement
-         */
-        void erase_invalid_vertices() ;
-
-        /*! 
-         * @brief Delete vertices for which to_delete[i] != i 
-         * @detail The global vertices are deleted, bme_vertices_
-         * is updated and the model_vertx_id in the GeoModelMeshElement
-         * of the BoudnaryModel are updated too.
-         *
-         * @param[in,out] to_delete can be NO_ID or give the index of a 
-         *  kept vertex with wich information should be merged.
-         *  It is recyled to give the mapping between old and new vertex indices        
-         * @pre to_delete[ v ] is either NO_ID, or is equal or inferior to v
-         */
-        void erase_vertices( std::vector< index_t >& to_delete ) ;
-
-    private:
-        /*!
-         * @brief Initialize the vertices from the vertices 
-         *        of the GeoModel Corners, Lines, and Surfaces
-         * @details Fills the mesh_.vertices, bme_vertices_ and 
-         *         delete colocated vertices
-         */
-        void initialize() ;
-
-        /*!
-         * @brief Set a vertex as invalid
-         * @details Sets all the ids of the corresponding VertexInBME to NO_ID
-         */
-        void set_invalid_vertex( index_t v ) ;
-
-        /*!
-         * @brief True if the vertex is not valid
-         * @details A vertex is invalid if all corresponding VertexInBME 
-         * have a NO_ID value.
-         */
-        bool is_invalid_vertex( index_t v ) const ;
-
-        /*!
-         * @brief Delete the KdTree and set the pointer to nil.         
-         */
-        void set_to_update() ;
-
-        /*!
-         * @brief Build the KdTree of the vertices 
-         * @note The function is const to be called when accessing a point index
-         *  from coordinated without an ugly const-cast.
-         */
-        void initialize_kdtree() const ;
-
-    private:
-        /// Attached GeoModel owning the vertices
-        const GeoModel& bm_ ;
-
-        /*! 
-         * @brief Mesh storing the coordinates of the vertices that are not colocated
-         * @details Each vertex is unique. 
-         * On these vertices attributes can be defined
-         */
-        GEO::Mesh mesh_ ;
-
-        /*! 
-         * Vertices in GeoModelElements corresponding to each vertex
-         * @todo Change this extremely expensive storage !!!
-         */
-        std::vector< std::vector< VertexInBME > > bme_vertices_ ;
-
-        /// Kd-tree of the model vertices
-        mutable GEO::NearestNeighborSearch_var kdtree_ ;
-        mutable bool kdtree_to_update_ ;
-
-        /// Lock to protect from multi-threading during clear()
-        GEO::Process::spinlock lock_ ;
-    } ;
+namespace RINGMesh {
 
     /*!
      * @brief The class to describe a geological model represented 
@@ -459,6 +243,12 @@ namespace RINGMesh {
 
         bool check_model_validity( bool check_surface_intersections = true ) const ;           
 
+        void set_wells( const WellGroup* wells ) ;
+        const WellGroup* wells() const
+        {
+            return wells_ ;
+        }
+
     private:
         bool check_elements_validity() const ;
         bool check_geology_validity() const ;        
@@ -530,7 +320,7 @@ namespace RINGMesh {
         }
 
     public:
-        GeoModelVertices vertices ;
+        GeoModelMesh mesh ;
 
     private:
         // Name of the model
@@ -569,6 +359,9 @@ namespace RINGMesh {
         /// Name of the debug directory in which to save stuff 
         /// @note Move this in another class
         std::string debug_directory_ ;
+
+        /// Optional WellGroup associated with the model
+        const WellGroup* wells_ ;
     } ;
 
 }

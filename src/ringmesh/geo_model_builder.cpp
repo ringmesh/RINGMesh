@@ -62,7 +62,7 @@ namespace {
 
     typedef GeoModelElement::gme_t gme_t ;
     typedef GeoModelMeshElement BMME ;
-    typedef GeoModelVertices::VertexInBME VBME ;
+    typedef GeoModelMeshVertices::VertexInGME VBME ;
 
     double read_double( GEO::LineInput& in, index_t field )
     {
@@ -523,7 +523,7 @@ namespace {
     void print_model( const GeoModel& model )
     {
         GEO::Logger::out( "GeoModel" ) << "Model " << model.name() << " has "
-            << std::endl << std::setw( 10 ) << std::left << model.vertices.nb()
+            << std::endl << std::setw( 10 ) << std::left << model.mesh.vertices.nb()
             << " vertices " << std::endl << std::setw( 10 ) << std::left
             << nb_facets( model ) << " facets " << std::endl << std::endl
             << std::setw( 10 ) << std::left << model.nb_regions() << " regions "
@@ -775,7 +775,7 @@ namespace {
                      ) {
                         // Force the recomputing of the model vertices
                         // I do not understand exactly what is happening [JP]
-                        BM.vertices.clear() ;
+                        BM.mesh.vertices.clear() ;
                         S.cut_by_line( BM.line( *it ) ) ;
                     }
                 }
@@ -879,26 +879,26 @@ namespace {
                     to_remove.insert( E.gme_id() ) ;
                     continue ;
                 } else {
-                    // We need to update the VertexInBME at the model level
+                    // We need to update the VertexInGME at the model level
                     // if they exist. If not let's avoid this costly operation
                     // @todo This is bugged ?? I am not sure. JP
-                    if( BM.vertices.is_initialized() ) {
+                    if( BM.mesh.vertices.is_initialized() ) {
                         // For all the vertices of this element
-                        // we need to update the vertex ids in the bme_vertices_
+                        // we need to update the vertex ids in the gme_vertices_
                         // of the corresponding global vertex
                         for( index_t v = 0; v < to_delete.size(); ++v ) {
                             index_t model_id = E.model_vertex_id( v ) ;
                             const std::vector< VBME >& cur =
-                                BM.vertices.bme_vertices( model_id ) ;
+                                BM.mesh.vertices.gme_vertices( model_id ) ;
                             for( index_t i = 0; i < cur.size(); ++i ) {
                                 if( cur[i] == VBME( E.gme_id(), v ) ) {
                                     index_t new_id = old2new[v] ;
-                                    BM.vertices.set_bme( model_id, i,
+                                    BM.mesh.vertices.set_gme( model_id, i,
                                         VBME( E.gme_id(), new_id ) ) ;
                                 }
                             }
                         }
-                        BM.vertices.erase_invalid_vertices() ;
+                        BM.mesh.erase_invalid_vertices() ;
                     }
 
                     for( index_t c = 0; c < M.facet_corners.nb(); c++ ) {
@@ -1211,19 +1211,19 @@ namespace RINGMesh {
         // (because we need the old ids to get the new ones)
         // but after deleting the elements otherwise 
         // we are putting back the vertices of the BMMEs to delete
-        for( index_t v = 0; v < model_.vertices.nb(); ++v ) {
-            const std::vector< GeoModelVertices::VertexInBME >& cur =
-                model_.vertices.bme_vertices( v ) ;
+        for( index_t v = 0; v < model_.mesh.vertices.nb(); ++v ) {
+            const std::vector< GeoModelMeshVertices::VertexInGME >& cur =
+                model_.mesh.vertices.gme_vertices( v ) ;
 
             for( index_t i = 0; i < cur.size(); ++i ) {
                 gme_t id = cur[i].gme_id ;
                 gme_t new_id( id.type, to_erase[id.type][id.index] ) ;
-                model_.vertices.set_bme( v, i,
-                    GeoModelVertices::VertexInBME( new_id, cur[i].v_id ) ) ;
+                model_.mesh.vertices.set_gme( v, i,
+                    GeoModelMeshVertices::VertexInGME( new_id, cur[i].v_id ) ) ;
             }
         }
-        model_.vertices.erase_invalid_vertices() ;
-        model_.vertices.clear() ;
+        model_.mesh.erase_invalid_vertices() ;
+        model_.mesh.vertices.clear() ;
 
         /// 4. Update all possible indices in remaining elements
         for( index_t i = 0; i < to_erase.size(); ++i ) {
@@ -1386,7 +1386,7 @@ namespace RINGMesh {
      */
     index_t GeoModelBuilder::add_unique_vertex( const vec3& p )
     {
-        return model_.vertices.add_unique_vertex( p ) ;
+        return model_.mesh.vertices.add_vertex( p ) ;
     }
 
     /*!
@@ -1686,7 +1686,7 @@ namespace RINGMesh {
 
         // This is basic requirement ! no_colocated model vertices !
         // So remove them if there are any 
-        model_.vertices.remove_colocated() ;
+        model_.mesh.remove_colocated_vertices() ;
 
         if( model_.check_model_validity() ) {
             GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
@@ -2031,7 +2031,7 @@ namespace RINGMesh {
             }
         }
 
-        // I agree that we do not need to compute the GeoModelVertices here
+        // I agree that we do not need to compute the GeoModelMeshVertices here
         // But perhaps the computation of Lines would be faster and safer [JP]
 
         /// 3. Build the Lines
@@ -2967,8 +2967,8 @@ namespace RINGMesh {
         }
 
         /// 1. Initialize model_ global vertices and backward information
-        model_.vertices.nb() ;
-        model_.vertices.bme_vertices( 0 ) ;
+        model_.mesh.vertices.nb() ;
+        model_.mesh.vertices.gme_vertices( 0 ) ;
 
         /// 2.1 Get for all Surface, the triangles that have an edge
         /// on the boundary.
@@ -3013,9 +3013,9 @@ namespace RINGMesh {
                 while( j < border_triangles.size()
                     && border_triangles[i].same_edge( border_triangles[j] ) ) {
                     regions_info.back().add_triangle( border_triangles[j].s_,
-                        model_.vertices.unique_vertex( border_triangles[j].v0_ ),
-                        model_.vertices.unique_vertex( border_triangles[j].v1_ ),
-                        model_.vertices.unique_vertex( border_triangles[j].v2_ ) ) ;
+                        model_.mesh.vertices.vertex( border_triangles[j].v0_ ),
+                        model_.mesh.vertices.vertex( border_triangles[j].v1_ ),
+                        model_.mesh.vertices.vertex( border_triangles[j].v2_ ) ) ;
                     j++ ;
                 }
 
@@ -3269,7 +3269,7 @@ namespace RINGMesh {
 
         // Deliberate clear of the model vertices 
         // to force their recomputation when checking model validity
-        model_.vertices.clear() ;
+        model_.mesh.vertices.clear() ;
 
         // Finish up the model and check its validity
         return end_model() ;
