@@ -586,10 +586,10 @@ namespace RINGMesh {
             /// 1. Write the unique vertices
             out << "# Node list" << std::endl ;
             out << "# node count, 3 dim, no attribute, no boundary marker" << std::endl ;
-            out << M.vertices.nb() << " 3 0 0" << std::endl ;
+            out << M.mesh.vertices.nb() << " 3 0 0" << std::endl ;
             out << "# node index, node coordinates " << std::endl ;
-            for( index_t p = 0; p < M.vertices.nb(); p++ ) {
-                const vec3& V = M.vertices.unique_vertex( p ) ;
+            for( index_t p = 0; p < M.mesh.vertices.nb(); p++ ) {
+                const vec3& V = M.mesh.vertices.vertex( p ) ;
                 out << p << " " << " " << V.x << " " << V.y << " " << V.z << std::endl ;
             }
 
