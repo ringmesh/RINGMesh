@@ -483,7 +483,10 @@ namespace RINGMesh {
         /*!
          * Tests if the mesh edges needs to be initialized and initialize it
          */
-        void test_initialize() const ;
+        void test_and_initialize() const ;
+        /*!
+         * Initialize the mesh edges
+         */
         void initialize() ;
 
     private:
@@ -534,7 +537,6 @@ namespace RINGMesh {
             return mesh_->cells.attributes() ;
         }
 
-
         /*!
          * @brief Remove colocated vertices
          */
@@ -563,8 +565,8 @@ namespace RINGMesh {
         /// Attached GeoMode
         const GeoModel& gm_ ;
         /*!
-         * @brief Mesh storing the vertices, facets and cells that
-         * are not colocated/duplicated
+         * @brief Mesh storing the vertices, edges, facets and cells
+         * that are not colocated/duplicated
          * @details Each mesh element is unique.
          * On these elements, attributes can be defined
          */
