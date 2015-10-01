@@ -42,8 +42,10 @@
 #include <ringmesh/geo_model_mesh.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/utils.h>
+#include <ringmesh/well.h>
 
 #include <geogram/basic/algorithm.h>
+#include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/points/colocate.h>
 
@@ -673,24 +675,30 @@ namespace RINGMesh {
     void GeoModelMeshFacets::initialize()
     {
         gmm_.vertices.test_and_initialize() ;
+        clear() ;
+        surface_facet_ptr_.resize( gm_.nb_surfaces() * ALL + 1, 0 ) ;
 
-        // Compute the total number of facets per type
+        // Compute the total number of facets per type and per surface
         std::vector< index_t > nb_facet_per_type( ALL+1, 0 ) ;
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
             if( surface.is_triangulated() ) {
                 nb_facet_per_type[TRIANGLE+1] += surface.nb_cells() ;
+                surface_facet_ptr_[ALL * s + TRIANGLE+1] += surface.nb_cells() ;
             } else {
                 for( index_t f = 0; f < surface.nb_cells(); f++ ) {
                     switch( surface.nb_vertices_in_facet( f ) ) {
                         case 3:
                             nb_facet_per_type[TRIANGLE+1]++ ;
+                            surface_facet_ptr_[ALL * s + TRIANGLE+1]++ ;
                             break ;
                         case 4:
                             nb_facet_per_type[QUAD+1]++ ;
+                            surface_facet_ptr_[ALL * s + QUAD+1]++ ;
                             break ;
                         default:
                             nb_facet_per_type[POLYGON+1]++ ;
+                            surface_facet_ptr_[ALL * s + POLYGON+1]++ ;
                             break ;
                     }
                 }
@@ -708,6 +716,9 @@ namespace RINGMesh {
         // Compute the facet offset
         for( index_t t = TRIANGLE+1; t < ALL; t++ ) {
             nb_facet_per_type[t+1] += nb_facet_per_type[t] ;
+        }
+        for( index_t i = 1; i < surface_facet_ptr_.size() - 1; i++ ) {
+            surface_facet_ptr_[i+1] += surface_facet_ptr_[i] ;
         }
 
         // Fill the triangles and quads created above
@@ -754,12 +765,110 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
+    GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh )
+        : gmm_( gmm ), gm_( gmm.model() ), mesh_( mesh )
+    {
+    }
+
+    GeoModelMeshEdges::~GeoModelMeshEdges()
+    {
+    }
+
+    index_t GeoModelMeshEdges::nb_wells() const
+    {
+        test_initialize() ;
+        return gm_.wells() ? gm_.wells()->nb_wells() : 0 ;
+    }
+
+    index_t GeoModelMeshEdges::nb_edges() const
+    {
+        test_initialize() ;
+        return mesh_.edges.nb() ;
+    }
+
+    index_t GeoModelMeshEdges::nb_edges( index_t w ) const
+    {
+        test_initialize() ;
+        return well_ptr_[w + 1] - well_ptr_[w] ;
+    }
+
+    index_t GeoModelMeshEdges::vertex( index_t w, index_t e, index_t v ) const
+    {
+        test_initialize() ;
+        return mesh_.edges.vertex(well_ptr_[w] + e, v ) ;
+    }
+
+    void GeoModelMeshEdges::clear()
+    {
+        mesh_.edges.clear() ;
+        well_ptr_.clear() ;
+    }
+
+    bool GeoModelMeshEdges::is_initialized() const
+    {
+        return mesh_.edges.nb() > 0 ;
+    }
+
+    void GeoModelMeshEdges::test_initialize() const
+    {
+        if( !is_initialized() ) {
+            const_cast< GeoModelMeshEdges* >( this )->initialize() ;
+        }
+    }
+
+    void GeoModelMeshEdges::initialize()
+    {
+        if( !gm_.wells() ) return ;
+        gmm_.vertices.test_and_initialize() ;
+        clear() ;
+
+        // Compute the total number of edge per well
+        const WellGroup& wells = *gm_.wells() ;
+        well_ptr_.resize( wells.nb_wells() + 1, 0 ) ;
+        index_t nb_edges = 0 ;
+        for( index_t w = 0; w < wells.nb_wells(); w++ ) {
+            nb_edges += wells.well( w ).nb_edges() ;
+            well_ptr_[w + 1] = nb_edges ;
+        }
+
+        // Compute the edge offset
+        for( index_t i = 1; i < well_ptr_.size() - 1; i++ ) {
+            well_ptr_[i + 1] += well_ptr_[i] ;
+        }
+
+        // Create edges
+        mesh_.edges.create_edges( well_ptr_.back() ) ;
+
+        // Fill edges
+        index_t cur_edge = 0 ;
+        for( index_t w = 0; w < wells.nb_wells(); w++ ) {
+            const Well& well = wells.well( w ) ;
+            for( index_t p = 0; p < well.nb_parts(); p++ ) {
+                const GEO::Mesh& part = well.part( p ).mesh() ;
+                for( index_t e = 0; e < part.edges.nb(); e++ ) {
+                    const vec3& e0 = GEO::Geom::mesh_vertex( part,
+                        part.edges.vertex( e, 0 ) ) ;
+                    mesh_.edges.set_vertex( cur_edge, 0,
+                        gmm_.vertices.index( e0 ) ) ;
+                    const vec3& e1 = GEO::Geom::mesh_vertex( part,
+                        part.edges.vertex( e, 1 ) ) ;
+                    mesh_.edges.set_vertex( cur_edge, 1,
+                        gmm_.vertices.index( e1 ) ) ;
+                    cur_edge++ ;
+                }
+            }
+        }
+    }
+
+    /*******************************************************************************/
+
 
     GeoModelMesh::GeoModelMesh( const GeoModel& gm )
         :
             gm_( gm ),
             mesh_( new GEO::Mesh ),
             vertices( *this, *mesh_ ),
+            edges( *this, *mesh_ ),
             facets( *this, *mesh_ )
     {
     }

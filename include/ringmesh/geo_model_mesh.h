@@ -440,6 +440,68 @@ namespace RINGMesh {
 
     } ;
 
+    class RINGMESH_API GeoModelMeshEdges {
+        ringmesh_disable_copy( GeoModelMeshEdges ) ;
+    public:
+        GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        ~GeoModelMeshEdges() ;
+
+        /*!
+         * Test if the mesh edges are initialized
+         */
+        bool is_initialized() const ;
+        /*!
+         * Gets the number of wells
+         * @return the corresponding number
+         */
+        index_t nb_wells() const ;
+        /*!
+         * Gets the number of edges in the MacroMesh
+         * @return the corresponding number
+         */
+        index_t nb_edges() const ;
+        /*!
+         * Gets the number of edges of a Well
+         * @param[in] w the well index
+         * @return the corresponding number
+         */
+        index_t nb_edges( index_t w ) const ;
+        /*!
+         * Gets the vertex index of the GeoModelMesh
+         * @param[in] w the well index
+         * @param[in] e the edge index in the well (from 0 to nb_edges in the well)
+         * @param[in] v the vertex index of the edge (0 or 1 )
+         * @return the global vertex index
+         */
+        index_t vertex( index_t w, index_t e, index_t v ) const ;
+        /*!
+         * Clear the mesh edges
+         */
+        void clear() ;
+
+    private:
+        /*!
+         * Tests if the mesh edges needs to be initialized and initialize it
+         */
+        void test_initialize() const ;
+        void initialize() ;
+
+    private:
+        /// Attached GeoModelMesh owning the vertices
+        GeoModelMesh& gmm_ ;
+        /// Attached GeoModel
+        const GeoModel& gm_ ;
+        /// Attached Mesh
+        GEO::Mesh& mesh_ ;
+
+        /*!
+         * Vector storing the index of the starting edge index
+         * for a given well
+         */
+        std::vector< index_t > well_ptr_ ;
+
+    } ;
+
     class RINGMESH_API GeoModelMeshCells {
         ringmesh_disable_copy( GeoModelMeshCells ) ;
 
@@ -510,6 +572,7 @@ namespace RINGMesh {
 
     public:
         GeoModelMeshVertices vertices ;
+        GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
 //        GeoModelMeshCells cells ;
 //        GeoModelMeshOrder order ;
