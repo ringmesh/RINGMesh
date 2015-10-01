@@ -418,7 +418,15 @@ namespace RINGMesh {
     /*******************************************************************************/
 
     GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh )
-        : gmm_( gmm ), gm_( gmm.model() ), mesh_( mesh )
+        :
+            gmm_( gmm ),
+            gm_( gmm.model() ),
+            mesh_( mesh ),
+            nb_tet_( 0 ),
+            nb_hex_( 0 ),
+            nb_prism_( 0 ),
+            nb_pyramid_( 0 ),
+            nb_connector_( 0 )
     {
     }
 
@@ -433,6 +441,29 @@ namespace RINGMesh {
             const_cast< GeoModelMeshCells* >( this )->initialize() ;
         }
     }
+
+    class GeoModelMeshCellsSort {
+    public:
+        GeoModelMeshCellsSort(
+            const GEO::Mesh& mesh,
+            const GEO::Attribute< index_t >& region_id )
+            : mesh_( mesh ), region_id_( region_id )
+        {
+        }
+
+        bool operator()( index_t i, index_t j ) const
+        {
+            if( region_id_[i] != region_id_[j] ) {
+                return region_id_[i] < region_id_[j] ;
+            } else {
+                return mesh_.cells.type( i ) < mesh_.cells.type( j ) ;
+            }
+        }
+    private:
+        const GEO::Mesh& mesh_ ;
+        const GEO::Attribute< index_t >& region_id_ ;
+    } ;
+
 
     void GeoModelMeshCells::initialize()
     {
@@ -511,6 +542,7 @@ namespace RINGMesh {
         }
 
         // Fill the cells with vertices
+        bind_attribute() ;
         std::vector< index_t > cur_cell_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
@@ -524,15 +556,283 @@ namespace RINGMesh {
                         cur_region.model_vertex_id(
                             cur_region_mesh.cells.vertex( c, v ) ) ) ;
                 }
+                region_id_[cur_cell] = r ;
             }
         }
 
         // Retrieve the adjacencies
         mesh_.cells.connect() ;
 
+        // Permute cells to sort them per region and per type
+        GEO::vector< index_t > sorted_indices( mesh_.cells.nb() ) ;
+        for( index_t i = 0; i < mesh_.cells.nb(); i++ ) {
+            sorted_indices[i] = i ;
+        }
+        GeoModelMeshCellsSort action( mesh_, region_id_ ) ;
+        GEO::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
+        mesh_.cells.permute_elements( sorted_indices ) ;
+
+        // Cache some values
+        nb_tet_ = nb_cells_per_type[GEO::MESH_TET] ;
+        nb_hex_ = nb_cells_per_type[GEO::MESH_HEX] ;
+        nb_prism_ = nb_cells_per_type[GEO::MESH_PRISM] ;
+        nb_pyramid_ = nb_cells_per_type[GEO::MESH_PYRAMID] ;
+        nb_connector_ = nb_cells_per_type[GEO::MESH_CONNECTOR] ;
     }
 
-/*******************************************************************************/
+    void GeoModelMeshCells::bind_attribute()
+    {
+        if( !region_id_.is_bound() ) {
+            region_id_.bind( gmm_.cell_attribute_manager(), region_att_name ) ;
+        }
+    }
+
+    void GeoModelMeshCells::unbind_attribute()
+    {
+        if( region_id_.is_bound() ) {
+            region_id_.unbind() ;
+        }
+    }
+
+    index_t GeoModelMeshCells::nb() const
+    {
+        test_and_initialize() ;
+        return mesh_.cells.nb() ;
+    }
+
+    index_t GeoModelMeshCells::nb_vertices( index_t c ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        return mesh_.cells.nb_vertices( c ) ;
+    }
+
+    index_t GeoModelMeshCells::vertex( index_t c, index_t v ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_debug_assert( v < mesh_.cells.nb_vertices( c ) ) ;
+        return mesh_.cells.vertex( c, v ) ;
+    }
+
+    index_t GeoModelMeshCells::adjacent( index_t c, index_t f ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_debug_assert( f < mesh_.cells.nb_facets( c ) ) ;
+        return mesh_.cells.adjacent( c, f ) ;
+    }
+
+    index_t GeoModelMeshCells::region( index_t c ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        return region_id_[c] ;
+    }
+
+    index_t GeoModelMeshCells::cell_in_region( index_t c ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        return c - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES*region( c )] ;
+    }
+
+    GEO::MeshCellType GeoModelMeshCells::cell_type( index_t c, index_t& index ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        index_t cell = cell_in_region( c ) ;
+        index_t r = region( c ) ;
+        for( index_t t = GEO::MESH_TET; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
+            GEO::MeshCellType T = static_cast< GEO::MeshCellType >( t ) ;
+            if( cell < nb_cells( r, T ) ) {
+                index = cell ;
+                return T ;
+            }
+            cell -= nb_cells( r, T ) ;
+        }
+        index = NO_ID ;
+        ringmesh_assert_not_reached ;
+        return GEO::MESH_NB_CELL_TYPES ;
+    }
+
+    index_t GeoModelMeshCells::nb_cells( GEO::MeshCellType type ) const
+    {
+        test_and_initialize() ;
+        switch( type ) {
+            case GEO::MESH_TET:
+                return nb_tet() ;
+            case GEO::MESH_HEX:
+                return nb_hex() ;
+            case GEO::MESH_PRISM:
+                return nb_prism() ;
+            case GEO::MESH_PYRAMID:
+                return nb_pyramid() ;
+            case GEO::MESH_CONNECTOR:
+                return nb_connector() ;
+            case GEO::MESH_NB_CELL_TYPES:
+                return nb() ;
+            default:
+                ringmesh_assert_not_reached ;
+                return 0 ;
+        }
+    }
+
+    index_t GeoModelMeshCells::nb_cells( index_t r, GEO::MeshCellType type ) const
+    {
+        test_and_initialize() ;
+        switch( type ) {
+            case GEO::MESH_TET:
+                return nb_tet( r ) ;
+            case GEO::MESH_HEX:
+                return nb_hex( r ) ;
+            case GEO::MESH_PRISM:
+                return nb_prism( r ) ;
+            case GEO::MESH_PYRAMID:
+                return nb_pyramid( r ) ;
+            case GEO::MESH_CONNECTOR:
+                return nb_connector( r ) ;
+            case GEO::MESH_NB_CELL_TYPES:
+                return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
+                    - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] ;
+            default:
+                ringmesh_assert_not_reached ;
+                return 0 ;
+        }
+        }
+    index_t GeoModelMeshCells::cell(
+        index_t r,
+        index_t c,
+        GEO::MeshCellType type ) const
+    {
+        test_and_initialize() ;
+        switch( type ) {
+            case GEO::MESH_TET:
+                return tet( r, c ) ;
+            case GEO::MESH_HEX:
+                return hex( r, c ) ;
+            case GEO::MESH_PRISM:
+                return prism( r, c ) ;
+            case GEO::MESH_PYRAMID:
+                return pyramid( r, c ) ;
+            case GEO::MESH_CONNECTOR:
+                return connector( r, c ) ;
+            case GEO::MESH_NB_CELL_TYPES:
+                return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
+                    - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] ;
+            default:
+                ringmesh_assert_not_reached ;
+                return 0 ;
+        }
+    }
+
+    index_t GeoModelMeshCells::nb_tet() const
+    {
+        test_and_initialize() ;
+        return nb_tet_ ;
+    }
+
+    index_t GeoModelMeshCells::nb_tet( index_t r ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_TET + 1 )]
+            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET] ;
+    }
+
+    index_t GeoModelMeshCells::tet( index_t r, index_t t ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET] + t ;
+    }
+
+    index_t GeoModelMeshCells::nb_hex() const
+    {
+        test_and_initialize() ;
+        return nb_hex_ ;
+    }
+
+    index_t GeoModelMeshCells::nb_hex( index_t r ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_HEX + 1 )]
+            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX] ;
+    }
+
+    index_t GeoModelMeshCells::hex( index_t r, index_t h ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX] + h ;
+    }
+
+    index_t GeoModelMeshCells::nb_prism() const
+    {
+        test_and_initialize() ;
+        return nb_prism_ ;
+    }
+
+    index_t GeoModelMeshCells::nb_prism( index_t r ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_PRISM + 1 )]
+            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PRISM] ;
+    }
+
+    index_t GeoModelMeshCells::prism( index_t r, index_t p ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PRISM] + p ;
+    }
+
+    index_t GeoModelMeshCells::nb_pyramid() const
+    {
+        test_and_initialize() ;
+        return nb_pyramid_ ;
+    }
+
+    index_t GeoModelMeshCells::nb_pyramid( index_t r ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_PYRAMID + 1 )]
+            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PYRAMID] ;
+    }
+
+    index_t GeoModelMeshCells::pyramid( index_t r, index_t p ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PYRAMID] + p ;
+    }
+
+    index_t GeoModelMeshCells::nb_connector() const
+    {
+        test_and_initialize() ;
+        return nb_connector_ ;
+    }
+
+    index_t GeoModelMeshCells::nb_connector( index_t r ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_CONNECTOR + 1 )]
+            - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_CONNECTOR] ;
+    }
+
+    index_t GeoModelMeshCells::connector( index_t r, index_t c ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_CONNECTOR] + c ;
+    }
+
+
+    /*******************************************************************************/
 
     GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh )
         :
@@ -843,6 +1143,7 @@ namespace RINGMesh {
 
         // Fill the triangles and quads created above
         // Create and fill polygons
+        bind_attribute() ;
         std::vector< index_t > cur_facet_per_type( ALL, 0 ) ;
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
@@ -881,6 +1182,12 @@ namespace RINGMesh {
         GeoModelMeshFacetsSort action( mesh_, surface_id_ ) ;
         GEO::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
         mesh_.facets.permute_elements( sorted_indices ) ;
+
+
+        // Cache some values
+        nb_triangle_ = nb_facet_per_type[TRIANGLE] ;
+        nb_quad_ = nb_facet_per_type[QUAD] ;
+        nb_polygon_ = nb_facet_per_type[POLYGON] ;
     }
 
     /*******************************************************************************/
