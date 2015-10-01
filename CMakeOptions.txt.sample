@@ -17,3 +17,8 @@
 
 # To disable OpenMP
 #SET(USE_OPENMP FALSE)
+
+# To copy RINGMesh dll in another directory - Necessary on Windows
+# to launch a application dependent on RINGMesh when it is not in the path
+# TODO: Give several paths
+#SET(DEPENDENCY_PATH D:/Programming/Geomesh2/build/Win64-vs2013/bin)

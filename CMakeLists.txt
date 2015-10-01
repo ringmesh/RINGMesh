@@ -143,3 +143,15 @@ if(${RINGMESH_WITH_TESTS})
     add_subdirectory(tests)
 endif()
 
+
+############################################################################
+# On Windows we need to copy Geogram.dll in the RINGMesh bin directories
+# to launch RINGMesh executables
+
+# Optional copy of RINGMesh dll in a dependency 
+add_custom_command(TARGET RINGMesh POST_BUILD 
+  COMMAND  "${CMAKE_COMMAND}" -E copy 
+     "$<TARGET_FILE:RINGMesh>"
+     "${DEPENDENCY_PATH}/$<CONFIGURATION>/$<TARGET_FILE_NAME:RINGMesh>" 
+  COMMENT "Copying to output directory")
+
