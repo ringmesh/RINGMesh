@@ -506,8 +506,43 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshCells {
-        ringmesh_disable_copy( GeoModelMeshCells ) ;
+        friend class GeoModelMesh ;
+    public:
+        GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        /*!
+         * Test if the mesh cells are initialized
+         */
+        bool is_initialized() const ;
 
+    private:
+        /*!
+         * Test if the mesh cells need to be initialized,
+         * if so initialize them.
+         */
+        void test_and_initialize() const ;
+        /*!
+         * @brief Initialize the  cells from the cells
+         *        of the GeoModel Region cells
+         * @details Fills the mesh_.cells
+         */
+        void initialize() ;
+
+    private:
+        /// Attached GeoModelMesh owning the vertices
+        GeoModelMesh& gmm_ ;
+        /// Attached GeoModel
+        const GeoModel& gm_ ;
+        /// Attached Mesh
+        GEO::Mesh& mesh_ ;
+
+        /*!
+         * Vector storing the index of the starting cell index
+         * for a given region and a given cell type.
+         * For example:
+         *    the 2nd hex index of the surface index S will be found here:
+         *    surface_facet_ptr_[ALL*S + HEX] + 2
+         */
+        std::vector< index_t > region_cell_ptr_ ;
 
     } ;
 
@@ -536,6 +571,7 @@ namespace RINGMesh {
         GEO::AttributesManager& cell_attribute_manager() const {
             return mesh_->cells.attributes() ;
         }
+
 
         /*!
          * @brief Remove colocated vertices
@@ -576,7 +612,7 @@ namespace RINGMesh {
         GeoModelMeshVertices vertices ;
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
-//        GeoModelMeshCells cells ;
+        GeoModelMeshCells cells ;
 //        GeoModelMeshOrder order ;
 
     } ;
