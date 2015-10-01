@@ -420,7 +420,8 @@ namespace RINGMesh {
             gm_( gmm.model() ),
             mesh_( mesh ),
             nb_triangle_( 0 ),
-            nb_quad_( 0 )
+            nb_quad_( 0 ),
+            nb_polygon_( 0 )
     {
     }
 
@@ -666,7 +667,7 @@ namespace RINGMesh {
     {
         gmm_.vertices.test_and_initialize() ;
 
-        // Compute the total number of facet per type
+        // Compute the total number of facets per type
         std::vector< index_t > nb_facet_per_type( ALL+1, 0 ) ;
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
@@ -696,7 +697,6 @@ namespace RINGMesh {
         if( nb_facet_per_type[QUAD+1] ) {
             mesh_.facets.create_quads( nb_facet_per_type[QUAD+1] ) ;
         }
-        index_t nb_polygons = nb_facet_per_type[POLYGON+1] ;
 
         // Compute the facet offset
         for( index_t t = TRIANGLE+1; t < ALL; t++ ) {
@@ -704,36 +704,28 @@ namespace RINGMesh {
         }
 
         // Fill the triangles and quads created above
+        // Create and fill polygons
         std::vector< index_t > cur_facet_per_type( ALL, 0 ) ;
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
             for( index_t f = 0; f < surface.nb_cells(); f++ ) {
                 index_t nb_vertices = surface.nb_vertices_in_facet( f ) ;
-                if( nb_vertices > 4 ) continue ;
-                FacetType T = static_cast< FacetType >( nb_vertices - 3 ) ;
-                index_t cur_facet = nb_facet_per_type[T] + cur_facet_per_type[T]++ ;
-                for( index_t v = 0; v < nb_vertices; v++ ) {
-                    mesh_.facets.set_vertex( cur_facet, v,
-                        surface.model_vertex_id( f, v ) ) ;
-                }
-                surface_id_[cur_facet] = s ;
-            }
-        }
-
-        // Create and fill polygons
-        if( nb_polygons ) {
-            for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
-                const Surface& surface = gm_.surface( s ) ;
-                for( index_t f = 0; f < surface.nb_cells(); f++ ) {
-                    index_t nb_vertices = surface.nb_vertices_in_facet( f ) ;
-                    if( nb_vertices < 5 ) continue ;
+                index_t cur_facet = NO_ID ;
+                if( nb_vertices < 5 ) {
+                    FacetType T = static_cast< FacetType >( nb_vertices - 3 ) ;
+                    cur_facet = nb_facet_per_type[T] + cur_facet_per_type[T]++ ;
+                    for( index_t v = 0; v < nb_vertices; v++ ) {
+                        mesh_.facets.set_vertex( cur_facet, v,
+                            surface.model_vertex_id( f, v ) ) ;
+                    }
+                } else {
                     GEO::vector< index_t > vertices( nb_vertices ) ;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         vertices[v] = surface.model_vertex_id( f, v ) ;
                     }
-                    index_t cur_facet = mesh_.facets.create_polygon( vertices ) ;
-                    surface_id_[cur_facet] = s ;
+                    cur_facet = mesh_.facets.create_polygon( vertices ) ;
                 }
+                surface_id_[cur_facet] = s ;
             }
         }
 
