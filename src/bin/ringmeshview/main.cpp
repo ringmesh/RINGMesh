@@ -375,7 +375,7 @@ namespace {
      */
     void load_mesh()
     {
-        if( !RINGMesh::RINGMeshIO::load( GEO::CmdLine::get_arg( "model" ), BM ) ) {
+        if( !RINGMesh::model_load( GEO::CmdLine::get_arg( "model" ), BM ) ) {
             return ;
         }
 
@@ -390,7 +390,7 @@ namespace {
 
         if( GEO::CmdLine::get_arg( "mesh" ) != "" ) {
             MM = new RINGMesh::MacroMesh( BM ) ;
-            if( !RINGMesh::RINGMeshIO::load( GEO::CmdLine::get_arg( "mesh" ), *MM ) ) {
+            if( !RINGMesh::mesh_load( GEO::CmdLine::get_arg( "mesh" ), *MM ) ) {
                 return ;
             }
             get_bbox( *MM, xyzmin, xyzmax, false ) ;
