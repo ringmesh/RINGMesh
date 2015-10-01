@@ -432,93 +432,128 @@ namespace RINGMesh {
     {
 
 //        gmm_.vertices.test_and_initialize() ;
+        region_cell_ptr_.resize( gm_.nb_surfaces() * GEO::MESH_NB_CELL_TYPES + 1,
+            0 ) ;
 
+        std::vector< index_t > nb_cells_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         // Total number of  cells
         index_t nb = 0 ;
-        // Table with the number of tet, hex, prism, pyramid and connector
-        index_t nb_cells_by_type[GEO::MESH_NB_CELL_TYPES] ;
-        for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
-            nb_cells_by_type[i] = 0 ;
-        }
-        //
-        std::vector< index_t > cells_vertices_id ;
 
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             nb += gm_.region( r ).nb_cells() ;
-        }
-
-        std::vector< GEO::MeshCellType > cells_vertices_type( nb ) ;
-
-        index_t index = 0 ;
-        for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
-            const GEO::Mesh& cur_region_mesh = gm_.region( r ).mesh() ;
-            for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
-                GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
-                nb_cells_by_type[cur_cell_type]++ ;
-                cells_vertices_id[index] = cur_cell_type ;
-                index++ ;
-            }
         }
 
         // Get out if no cells
         if( nb == 0 ) {
             return ;
         }
+        std::vector< GEO::MeshCellType > cells_vertices_type( nb ) ;
 
-        // Create "empty tet, hex, pyr and prism
-        for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
-            mesh_.cells.create_cells( nb_cells_by_type[i], GEO::MeshCellType( i ) ) ;
-        }
-
-        // Fill the cells with vertices
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
             const GEO::Mesh& cur_region_mesh = cur_region.mesh() ;
             for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
-                index_t v = 0 ;
-                for( index_t co = mesh_.cells.corners_begin( c );
-                    co < mesh_.cells.corners_end( c ); ++co ) {
-                    mesh_.cell_corners.set_vertex( co,
-                        cur_region_mesh.cells.vertex( c, v ) ) ;
-                    v++ ;
+                GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
+                switch( cur_cell_type ) {
+                    case GEO::MESH_TET:
+                        nb_cells_per_type[GEO::MESH_TET]++ ;
+                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET
+                            + 1]++ ;
+                        break ;
+                    case GEO::MESH_HEX:
+                        nb_cells_per_type[GEO::MESH_HEX]++ ;
+                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX
+                            + 1]++ ;
+                        break ;
+                    case GEO::MESH_PRISM:
+                        nb_cells_per_type[GEO::MESH_PRISM]++ ;
+                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
+                            + GEO::MESH_PRISM + 1]++ ;
+                        break ;
+                    case GEO::MESH_PYRAMID:
+                        nb_cells_per_type[GEO::MESH_PYRAMID]++ ;
+                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
+                            + GEO::MESH_PYRAMID + 1]++ ;
+                        break ;
+                    case GEO::MESH_CONNECTOR:
+                        nb_cells_per_type[GEO::MESH_CONNECTOR]++ ;
+                        region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
+                            + GEO::MESH_CONNECTOR + 1]++ ;
+                        break ;
+                    default:
+                        ringmesh_assert_not_reached;
+                        break ;
+                    }
+                }
+            }
+
+        std::vector< index_t > cells_offset_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
+        // Compute the cell offsets
+        for( index_t t = GEO::MESH_TET + 1; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
+            cells_offset_per_type[t] += cells_offset_per_type[t - 1] ;
+            cells_offset_per_type[t] += nb_cells_per_type[t] ;
+        }
+        for( index_t i = 1; i < region_cell_ptr_.size() - 1; i++ ) {
+            region_cell_ptr_[i + 1] += region_cell_ptr_[i] ;
+        }
+
+        // Create "empty tet, hex, pyr and prism
+        for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
+            mesh_.cells.create_cells( nb_cells_per_type[i],
+                GEO::MeshCellType( i ) ) ;
+        }
+
+        // Fill the cells with vertices
+        std::vector< index_t > cur_cell_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
+        for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
+            const Region& cur_region = gm_.region( r ) ;
+            const GEO::Mesh& cur_region_mesh = cur_region.mesh() ;
+            for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
+                GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
+                index_t cur_cell = cells_offset_per_type[cur_cell_type]
+                    + cur_cell_per_type[cur_cell_type]++ ;
+                for( index_t v = 0; v < mesh_.cells.nb_vertices( cur_cell ); v++ ) {
+                    mesh_.cells.set_vertex( cur_cell, v,
+                        cur_region.model_vertex_id(
+                            cur_region_mesh.cells.vertex( c, v ) ) ) ;
                 }
             }
         }
+
         // Retrieve the adjacencies
         mesh_.cells.connect() ;
 
     }
 
+    /*******************************************************************************/
 
-/*******************************************************************************/
+    GeoModelMesh::GeoModelMesh( const GeoModel& gm )
+        :
+            gm_( gm ),
+            mesh_( new GEO::Mesh ),
+            vertices( *this, *mesh_ ),
+            cells( *this, *mesh_ )
+    {
+    }
 
-GeoModelMesh::GeoModelMesh( const GeoModel& gm )
-    :
-        gm_( gm ),
-        mesh_( new GEO::Mesh ),
-        vertices( *this, *mesh_ ),
-        cells( *this, *mesh_ )
-{
-}
+    GeoModelMesh::~GeoModelMesh()
+    {
+        delete mesh_ ;
+    }
 
-GeoModelMesh::~GeoModelMesh()
-{
-    delete mesh_ ;
-}
+    void GeoModelMesh::remove_colocated_vertices()
+    {
+        vertices.remove_colocated() ;
+    }
 
-void GeoModelMesh::remove_colocated_vertices()
-{
-    vertices.remove_colocated() ;
-}
+    void GeoModelMesh::erase_vertices( std::vector< index_t >& to_delete )
+    {
+        vertices.erase_vertices( to_delete ) ;
+    }
 
-void GeoModelMesh::erase_vertices( std::vector< index_t >& to_delete )
-{
-    vertices.erase_vertices( to_delete ) ;
-}
-
-void GeoModelMesh::erase_invalid_vertices()
-{
-    vertices.erase_invalid_vertices() ;
-}
+    void GeoModelMesh::erase_invalid_vertices()
+    {
+        vertices.erase_invalid_vertices() ;
+    }
 
 }
