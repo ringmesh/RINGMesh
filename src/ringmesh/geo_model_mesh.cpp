@@ -38,10 +38,14 @@
  *     FRANCE
  */
 
+
 #include <ringmesh/geo_model_mesh.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/utils.h>
+#include <ringmesh/well.h>
 
+#include <geogram/basic/algorithm.h>
+#include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/points/colocate.h>
 
@@ -219,7 +223,9 @@ namespace RINGMesh {
         return mesh_.vertices.create_vertex( point.data() ) ;
     }
 
-    void GeoModelMeshVertices::add_to_bme( index_t v, const VertexInGME& v_gme )
+    void GeoModelMeshVertices::add_to_bme(
+        index_t v,
+        const VertexInGME& v_gme )
     {
         test_and_initialize() ;
         ringmesh_debug_assert( v < nb() ) ;
@@ -525,6 +531,454 @@ namespace RINGMesh {
 
     }
 
+/*******************************************************************************/
+
+    GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh )
+        :
+            gmm_( gmm ),
+            gm_( gmm.model() ),
+            mesh_( mesh ),
+            nb_triangle_( 0 ),
+            nb_quad_( 0 ),
+            nb_polygon_( 0 )
+    {
+    }
+
+    GeoModelMeshFacets::~GeoModelMeshFacets()
+    {
+        unbind_attribute() ;
+    }
+
+    void GeoModelMeshFacets::bind_attribute()
+    {
+        if( !surface_id_.is_bound() ) {
+            surface_id_.bind( gmm_.facet_attribute_manager(), surface_att_name ) ;
+        }
+    }
+
+    void GeoModelMeshFacets::unbind_attribute()
+    {
+        if( surface_id_.is_bound() ) {
+            surface_id_.unbind() ;
+        }
+    }
+
+    bool GeoModelMeshFacets::is_initialized() const
+    {
+        return mesh_.facets.nb() > 0 ;
+    }
+
+    index_t GeoModelMeshFacets::nb() const
+    {
+        test_and_initialize() ;
+        return mesh_.facets.nb() ;
+    }
+
+    index_t GeoModelMeshFacets::nb_vertices( index_t f ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        return mesh_.facets.nb_vertices( f ) ;
+    }
+
+    index_t GeoModelMeshFacets::vertex( index_t f, index_t v ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        ringmesh_debug_assert( v < mesh_.facets.nb_vertices( f ) ) ;
+        return mesh_.facets.vertex( f, v ) ;
+    }
+
+    index_t GeoModelMeshFacets::adjacent( index_t f, index_t e ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        ringmesh_debug_assert( e < mesh_.facets.nb_vertices( f ) ) ;
+        return mesh_.facets.adjacent( f, e ) ;
+    }
+
+    index_t GeoModelMeshFacets::surface( index_t f ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        return surface_id_[f] ;
+    }
+
+    index_t GeoModelMeshFacets::facet_in_surface( index_t f ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        return f - surface_facet_ptr_[ALL*surface( f )] ;
+    }
+
+    GeoModelMeshFacets::FacetType GeoModelMeshFacets::facet_type(
+        index_t f,
+        index_t& index ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        index_t facet = facet_in_surface( f ) ;
+        index_t s = surface( f ) ;
+        for( index_t t = TRIANGLE; t < ALL; t++ ) {
+            FacetType T = static_cast< FacetType >( t ) ;
+            if( facet < nb_facets( s, T ) ) {
+                index = facet ;
+                return T ;
+            }
+            facet -= nb_facets( s, T ) ;
+        }
+        index = NO_ID ;
+        ringmesh_assert_not_reached ;
+        return NO_FACET ;
+    }
+
+    index_t GeoModelMeshFacets::nb_facets( FacetType type ) const
+    {
+        test_and_initialize() ;
+        switch( type ) {
+            case TRIANGLE:
+                return nb_triangle() ;
+            case QUAD:
+                return nb_quad() ;
+            case POLYGON:
+                return nb_polygon() ;
+            case ALL:
+                return nb() ;
+            default:
+                ringmesh_assert_not_reached ;
+                return 0 ;
+        }
+    }
+
+    index_t GeoModelMeshFacets::nb_facets( index_t s, FacetType type ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        switch( type ) {
+            case TRIANGLE:
+                return nb_triangle( s ) ;
+            case QUAD:
+                return nb_quad( s ) ;
+            case POLYGON:
+                return nb_polygon( s ) ;
+            case ALL:
+                return surface_facet_ptr_[ALL * ( s + 1 )]
+                    - surface_facet_ptr_[ALL * s] ;
+            default:
+                ringmesh_assert_not_reached ;
+                return 0 ;
+        }
+    }
+
+    index_t GeoModelMeshFacets::facet( index_t s, index_t f, FacetType type ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        switch( type ) {
+            case TRIANGLE:
+                return triangle( s, f ) ;
+            case QUAD:
+                return quad( s, f ) ;
+            case POLYGON:
+                return polygon( s, f ) ;
+            case ALL:
+                return surface_facet_ptr_[ALL * s] + f ;
+            default:
+                ringmesh_assert_not_reached ;
+                return 0 ;
+        }
+    }
+
+    index_t GeoModelMeshFacets::nb_triangle() const
+    {
+        test_and_initialize() ;
+        return nb_triangle_ ;
+    }
+
+    index_t GeoModelMeshFacets::nb_triangle( index_t s ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        return surface_facet_ptr_[ALL * s + (TRIANGLE+1)]
+            - surface_facet_ptr_[ALL * s + TRIANGLE] ;
+    }
+
+    index_t GeoModelMeshFacets::triangle( index_t s, index_t t ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        return surface_facet_ptr_[ALL * s + TRIANGLE] + t ;
+    }
+
+    index_t GeoModelMeshFacets::nb_quad() const
+    {
+        test_and_initialize() ;
+        return nb_quad_ ;
+    }
+
+    index_t GeoModelMeshFacets::nb_quad( index_t s ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        return surface_facet_ptr_[ALL * s + (QUAD+1)]
+            - surface_facet_ptr_[ALL * s + QUAD] ;
+    }
+
+    index_t GeoModelMeshFacets::quad( index_t s, index_t q ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        return surface_facet_ptr_[ALL * s + QUAD] + q ;
+    }
+
+    index_t GeoModelMeshFacets::nb_polygon() const
+    {
+        test_and_initialize() ;
+        return nb_polygon_ ;
+    }
+
+    index_t GeoModelMeshFacets::nb_polygon( index_t s ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        return surface_facet_ptr_[ALL * s + (POLYGON+1)]
+            - surface_facet_ptr_[ALL * s + POLYGON] ;
+    }
+
+    index_t GeoModelMeshFacets::polygon( index_t s, index_t p ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        return surface_facet_ptr_[ALL * s + POLYGON] + p ;
+    }
+
+    void GeoModelMeshFacets::clear()
+    {
+        surface_facet_ptr_.clear() ;
+        nb_triangle_ = 0 ;
+        nb_quad_ = 0 ;
+        mesh_.facets.clear() ;
+    }
+
+    void GeoModelMeshFacets::test_and_initialize() const
+    {
+        if( !is_initialized() ) {
+            const_cast< GeoModelMeshFacets* >( this )->initialize() ;
+        }
+    }
+
+    class GeoModelMeshFacetsSort {
+    public:
+        GeoModelMeshFacetsSort(
+            const GEO::Mesh& mesh,
+            const GEO::Attribute< index_t >& surface_id )
+            : mesh_( mesh ), surface_id_( surface_id )
+        {
+        }
+
+        bool operator()( index_t i, index_t j ) const
+        {
+            if( surface_id_[i] != surface_id_[j] ) {
+                return surface_id_[i] < surface_id_[j] ;
+            } else {
+                return mesh_.facets.nb_vertices( i ) < mesh_.facets.nb_vertices( j ) ;
+            }
+        }
+    private:
+        const GEO::Mesh& mesh_ ;
+        const GEO::Attribute< index_t >& surface_id_ ;
+    } ;
+
+    void GeoModelMeshFacets::initialize()
+    {
+        gmm_.vertices.test_and_initialize() ;
+        clear() ;
+        surface_facet_ptr_.resize( gm_.nb_surfaces() * ALL + 1, 0 ) ;
+
+        // Compute the total number of facets per type and per surface
+        std::vector< index_t > nb_facet_per_type( ALL, 0 ) ;
+        for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
+            const Surface& surface = gm_.surface( s ) ;
+            if( surface.is_triangulated() ) {
+                nb_facet_per_type[TRIANGLE] += surface.nb_cells() ;
+                surface_facet_ptr_[ALL * s + TRIANGLE+1] += surface.nb_cells() ;
+            } else {
+                for( index_t f = 0; f < surface.nb_cells(); f++ ) {
+                    switch( surface.nb_vertices_in_facet( f ) ) {
+                        case 3:
+                            nb_facet_per_type[TRIANGLE]++ ;
+                            surface_facet_ptr_[ALL * s + TRIANGLE+1]++ ;
+                            break ;
+                        case 4:
+                            nb_facet_per_type[QUAD]++ ;
+                            surface_facet_ptr_[ALL * s + QUAD+1]++ ;
+                            break ;
+                        default:
+                            nb_facet_per_type[POLYGON]++ ;
+                            surface_facet_ptr_[ALL * s + POLYGON+1]++ ;
+                            break ;
+                    }
+                }
+            }
+        }
+
+        // Create triangles and quads, the polygons will be handle later
+        if( nb_facet_per_type[TRIANGLE] ) {
+            mesh_.facets.create_triangles( nb_facet_per_type[TRIANGLE] ) ;
+        }
+        if( nb_facet_per_type[QUAD] ) {
+            mesh_.facets.create_quads( nb_facet_per_type[QUAD] ) ;
+        }
+
+        // Compute the facet offset
+        std::vector< index_t > facet_offset_per_type( ALL, 0 ) ;
+        for( index_t t = TRIANGLE+1; t < ALL; t++ ) {
+            facet_offset_per_type[t] +=  facet_offset_per_type[t-1] ;
+            facet_offset_per_type[t] += nb_facet_per_type[t] ;
+        }
+        for( index_t i = 1; i < surface_facet_ptr_.size() - 1; i++ ) {
+            surface_facet_ptr_[i+1] += surface_facet_ptr_[i] ;
+        }
+
+        // Fill the triangles and quads created above
+        // Create and fill polygons
+        std::vector< index_t > cur_facet_per_type( ALL, 0 ) ;
+        for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
+            const Surface& surface = gm_.surface( s ) ;
+            for( index_t f = 0; f < surface.nb_cells(); f++ ) {
+                index_t nb_vertices = surface.nb_vertices_in_facet( f ) ;
+                index_t cur_facet = NO_ID ;
+                if( nb_vertices < 5 ) {
+                    FacetType T = static_cast< FacetType >( nb_vertices - 3 ) ;
+                    cur_facet = facet_offset_per_type[T] + cur_facet_per_type[T]++ ;
+                    for( index_t v = 0; v < nb_vertices; v++ ) {
+                        mesh_.facets.set_vertex( cur_facet, v,
+                            surface.model_vertex_id( f, v ) ) ;
+                    }
+                } else {
+                    GEO::vector< index_t > vertices( nb_vertices ) ;
+                    for( index_t v = 0; v < nb_vertices; v++ ) {
+                        vertices[v] = surface.model_vertex_id( f, v ) ;
+                    }
+                    cur_facet = mesh_.facets.create_polygon( vertices ) ;
+                }
+                surface_id_[cur_facet] = s ;
+            }
+        }
+
+        // Compute facet adjacencies
+        mesh_.facets.connect() ;
+
+        // Permute facets to sort them per surface and per type
+        // Example for a mesh with two surfaces and only triangles and quads
+        // [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
+        // |          surface 0           |             surface 1           |
+        GEO::vector< index_t > sorted_indices( mesh_.facets.nb() ) ;
+        for( index_t i = 0; i < mesh_.facets.nb(); i++ ) {
+            sorted_indices[i] = i ;
+        }
+        GeoModelMeshFacetsSort action( mesh_, surface_id_ ) ;
+        GEO::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
+        mesh_.facets.permute_elements( sorted_indices ) ;
+    }
+
+    /*******************************************************************************/
+
+    GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh )
+        : gmm_( gmm ), gm_( gmm.model() ), mesh_( mesh )
+    {
+    }
+
+    GeoModelMeshEdges::~GeoModelMeshEdges()
+    {
+    }
+
+    index_t GeoModelMeshEdges::nb_wells() const
+    {
+        test_and_initialize() ;
+        return gm_.wells() ? gm_.wells()->nb_wells() : 0 ;
+    }
+
+    index_t GeoModelMeshEdges::nb_edges() const
+    {
+        test_and_initialize() ;
+        return mesh_.edges.nb() ;
+    }
+
+    index_t GeoModelMeshEdges::nb_edges( index_t w ) const
+    {
+        test_and_initialize() ;
+        return well_ptr_[w + 1] - well_ptr_[w] ;
+    }
+
+    index_t GeoModelMeshEdges::vertex( index_t w, index_t e, index_t v ) const
+    {
+        test_and_initialize() ;
+        return mesh_.edges.vertex(well_ptr_[w] + e, v ) ;
+    }
+
+    void GeoModelMeshEdges::clear()
+    {
+        mesh_.edges.clear() ;
+        well_ptr_.clear() ;
+    }
+
+    bool GeoModelMeshEdges::is_initialized() const
+    {
+        return mesh_.edges.nb() > 0 ;
+    }
+
+    void GeoModelMeshEdges::test_and_initialize() const
+    {
+        if( !is_initialized() ) {
+            const_cast< GeoModelMeshEdges* >( this )->initialize() ;
+        }
+    }
+
+    void GeoModelMeshEdges::initialize()
+    {
+        if( !gm_.wells() ) return ;
+        gmm_.vertices.test_and_initialize() ;
+        clear() ;
+
+        // Compute the total number of edge per well
+        const WellGroup& wells = *gm_.wells() ;
+        well_ptr_.resize( wells.nb_wells() + 1, 0 ) ;
+        index_t nb_edges = 0 ;
+        for( index_t w = 0; w < wells.nb_wells(); w++ ) {
+            nb_edges += wells.well( w ).nb_edges() ;
+            well_ptr_[w + 1] = nb_edges ;
+        }
+
+        // Compute the edge offset
+        for( index_t i = 1; i < well_ptr_.size() - 1; i++ ) {
+            well_ptr_[i + 1] += well_ptr_[i] ;
+        }
+
+        // Create edges
+        mesh_.edges.create_edges( well_ptr_.back() ) ;
+
+        // Fill edges
+        index_t cur_edge = 0 ;
+        for( index_t w = 0; w < wells.nb_wells(); w++ ) {
+            const Well& well = wells.well( w ) ;
+            for( index_t p = 0; p < well.nb_parts(); p++ ) {
+                const GEO::Mesh& part = well.part( p ).mesh() ;
+                for( index_t e = 0; e < part.edges.nb(); e++ ) {
+                    const vec3& e0 = GEO::Geom::mesh_vertex( part,
+                        part.edges.vertex( e, 0 ) ) ;
+                    mesh_.edges.set_vertex( cur_edge, 0,
+                        gmm_.vertices.index( e0 ) ) ;
+                    const vec3& e1 = GEO::Geom::mesh_vertex( part,
+                        part.edges.vertex( e, 1 ) ) ;
+                    mesh_.edges.set_vertex( cur_edge, 1,
+                        gmm_.vertices.index( e1 ) ) ;
+                    cur_edge++ ;
+                }
+            }
+        }
+    }
+    
     /*******************************************************************************/
 
     GeoModelMesh::GeoModelMesh( const GeoModel& gm )
@@ -532,12 +986,15 @@ namespace RINGMesh {
             gm_( gm ),
             mesh_( new GEO::Mesh ),
             vertices( *this, *mesh_ ),
-            cells( *this, *mesh_ )
+            facets( *this, *mesh_ ),
+            cells( *this, *mesh_ ),
+            edges(*this, *mesh_)
     {
     }
 
     GeoModelMesh::~GeoModelMesh()
     {
+        facets.unbind_attribute() ;
         delete mesh_ ;
     }
 
