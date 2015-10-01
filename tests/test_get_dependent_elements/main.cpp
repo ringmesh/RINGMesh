@@ -83,7 +83,7 @@ int main( int argc, char** argv )
   /*  GEO::Logger::out( "TEST" ) << "Test get_dependent_elements" << std::endl ;
 
     GeoModel in ;
-    if( !RINGMeshIO::load( "../data/model1.ml", in ) ) {
+    if( !load( "../data/model1.ml", in ) ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
         return 1 ;
     }

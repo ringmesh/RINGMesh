@@ -79,12 +79,12 @@ int main( int argc, char** argv )
         return 1 ;
     }
     GeoModel model_in ;
-    if( !RINGMeshIO::load( model_in_name, model_in ) )
+    if( !model_load( model_in_name, model_in ) )
         return 1 ;
 
     std::string model_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
     if( model_out_name != "" ) {
-        if( !RINGMeshIO::save( model_in, model_out_name ) )
+        if( !model_save( model_in, model_out_name ) )
             return 1 ;
     }
 
@@ -94,12 +94,12 @@ int main( int argc, char** argv )
         return 0 ;
     }
     MacroMesh mesh_in( model_in ) ;
-    if( !RINGMeshIO::load( mesh_in_name, mesh_in ) )
+    if( !mesh_load( mesh_in_name, mesh_in ) )
         return 1 ;
 
     std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
     if( mesh_out_name != "" ) {
-        if( !RINGMeshIO::save( mesh_in, mesh_out_name ) )
+        if( !mesh_save( mesh_in, mesh_out_name ) )
             return 1 ;
     }
 
