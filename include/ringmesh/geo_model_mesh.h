@@ -269,6 +269,15 @@ namespace RINGMesh {
         /// Attached Mesh
         GEO::Mesh& mesh_ ;
 
+        /*!
+         * Vector storing the index of the starting cell index
+         * for a given region and a given cell type.
+         * For example:
+         *    the 2nd hex index of the surface index S will be found here:
+         *    surface_facet_ptr_[ALL*S + HEX] + 2
+         */
+        std::vector< index_t > region_cell_ptr_ ;
+
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
