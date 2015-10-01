@@ -34,7 +34,7 @@
 namespace RINGMesh {
 
     // Copied from geo_model_builder.cpp. Still needed ?? check Geogram
-    double read_double( GEO::LineInput& in, index_t field )
+    static double read_double( GEO::LineInput& in, index_t field )
     {
         double result ;
         std::istringstream iss( in.field( field ) ) ;
@@ -1476,6 +1476,78 @@ namespace RINGMesh {
         return s1 == s2 && s2 == s3 && s3 == s4 ;
     }
 
+
+    GEO::CellDescriptor tetra_descriptor = {
+        4,         // nb_vertices
+        4,         // nb_facets
+        {3,3,3,3}, // nb_vertices in facet
+        {          // facets
+            {1,3,2},
+            {0,2,3},
+            {3,1,0},
+            {0,1,2}
+        },
+        6,         // nb_edges
+        {          // edges
+            {1,2}, {2,3}, {3,1}, {0,1}, {0,2}, {0,3}
+        }
+    };
+
+
+    GEO::CellDescriptor hex_descriptor = {
+        8,             // nb_vertices
+        6,             // nb_facets
+        {4,4,4,4,4,4}, // nb_vertices in facet
+        {              // facets
+            {0,2,6,4},
+            {3,1,5,7},
+            {1,0,4,5},
+            {2,3,7,6},
+            {1,3,2,0},
+            {4,6,7,5}
+        },
+        12,            // nb_edges
+        {              // edges
+            {0,1},{1,3},{3,2},{2,0},{4,5},{5,7},
+            {7,6},{6,4},{0,4},{1,5},{3,7},{2,6}
+        }
+    };
+
+    GEO::CellDescriptor prism_descriptor = {
+        6,             // nb_vertices
+        5,             // nb_facets
+        {3,3,4,4,4},   // nb_vertices in facet
+        {              // facets
+            {0,1,2},
+            {3,5,4},
+            {0,3,4,1},
+            {0,2,5,3},
+            {1,4,5,2}
+        },
+        9,             // nb_edges
+        {              // edges
+            {0,1},{1,2},{2,3},{3,4},{4,5},{5,3},{0,3},{1,4},{2,5}
+        }
+    };
+
+
+    GEO::CellDescriptor pyramid_descriptor = {
+        5,             // nb_vertices
+        5,             // nb_facets
+        {4,3,3,3,3},   // nb_vertices in facet
+        {              // facets
+            {0,1,2,3},
+            {0,4,1},
+            {0,3,4},
+            {2,4,3},
+            {2,1,4}
+        },
+        8,             // nb_edges
+        {              // edges
+            {0,1},{1,2},{2,3},{3,0},{0,4},{1,4},{2,4},{3,4}
+        }
+    };
+
     /*!
      * Computes the distance between a point and a tetrahedron
      * @param[in] p the point
@@ -1503,9 +1575,9 @@ namespace RINGMesh {
         for( uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             float64 distance = point_triangle_distance( p,
-                vertices[tetra_descriptor.facet[f][0]],
-                vertices[tetra_descriptor.facet[f][1]],
-                vertices[tetra_descriptor.facet[f][2]], cur_p ) ;
+                vertices[tetra_descriptor.facet_vertex[f][0]],
+                vertices[tetra_descriptor.facet_vertex[f][1]],
+                vertices[tetra_descriptor.facet_vertex[f][2]], cur_p ) ;
             if( distance < dist ) {
                 dist = distance ;
                 nearest_p = cur_p ;
@@ -1547,15 +1619,15 @@ namespace RINGMesh {
             uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
                 distance = point_triangle_distance( p,
-                    vertices[pyramid_descriptor.facet[f][0]],
-                    vertices[pyramid_descriptor.facet[f][1]],
-                    vertices[pyramid_descriptor.facet[f][2]], cur_p ) ;
+                    vertices[pyramid_descriptor.facet_vertex[f][0]],
+                    vertices[pyramid_descriptor.facet_vertex[f][1]],
+                    vertices[pyramid_descriptor.facet_vertex[f][2]], cur_p ) ;
             } else if( nb_vertices == 4 ) {
                 distance = point_quad_distance( p,
-                    vertices[pyramid_descriptor.facet[f][0]],
-                    vertices[pyramid_descriptor.facet[f][1]],
-                    vertices[pyramid_descriptor.facet[f][2]],
-                    vertices[pyramid_descriptor.facet[f][3]], cur_p ) ;
+                    vertices[pyramid_descriptor.facet_vertex[f][0]],
+                    vertices[pyramid_descriptor.facet_vertex[f][1]],
+                    vertices[pyramid_descriptor.facet_vertex[f][2]],
+                    vertices[pyramid_descriptor.facet_vertex[f][3]], cur_p ) ;
             } else {
                 ringmesh_assert_not_reached;
             }
@@ -1603,15 +1675,15 @@ namespace RINGMesh {
             uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
                 distance = point_triangle_distance( p,
-                    vertices[prism_descriptor.facet[f][0]],
-                    vertices[prism_descriptor.facet[f][1]],
-                    vertices[prism_descriptor.facet[f][2]], cur_p ) ;
+                    vertices[prism_descriptor.facet_vertex[f][0]],
+                    vertices[prism_descriptor.facet_vertex[f][1]],
+                    vertices[prism_descriptor.facet_vertex[f][2]], cur_p ) ;
             } else if( nb_vertices == 4 ) {
                 distance = point_quad_distance( p,
-                    vertices[prism_descriptor.facet[f][0]],
-                    vertices[prism_descriptor.facet[f][1]],
-                    vertices[prism_descriptor.facet[f][2]],
-                    vertices[prism_descriptor.facet[f][3]], cur_p ) ;
+                    vertices[prism_descriptor.facet_vertex[f][0]],
+                    vertices[prism_descriptor.facet_vertex[f][1]],
+                    vertices[prism_descriptor.facet_vertex[f][2]],
+                    vertices[prism_descriptor.facet_vertex[f][3]], cur_p ) ;
             } else {
                 ringmesh_assert_not_reached;
             }
@@ -1658,13 +1730,13 @@ namespace RINGMesh {
         vertices[6] = p6 ;
         vertices[7] = p7 ;
         float64 dist = big_float64 ;
-        for( uint8 f = 0; f < hexa_descriptor.nb_facets; f++ ) {
+        for( uint8 f = 0; f < hex_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             float64 distance = point_quad_distance( p,
-                vertices[hexa_descriptor.facet[f][0]],
-                vertices[hexa_descriptor.facet[f][1]],
-                vertices[hexa_descriptor.facet[f][2]],
-                vertices[hexa_descriptor.facet[f][3]], cur_p ) ;
+                vertices[hex_descriptor.facet_vertex[f][0]],
+                vertices[hex_descriptor.facet_vertex[f][1]],
+                vertices[hex_descriptor.facet_vertex[f][2]],
+                vertices[hex_descriptor.facet_vertex[f][3]], cur_p ) ;
             if( distance < dist ) {
                 dist = distance ;
                 nearest_p = cur_p ;
@@ -1696,14 +1768,14 @@ namespace RINGMesh {
         vertices[3] = p3 ;
         for( uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[tetra_descriptor.facet[f][1]]
-                    - vertices[tetra_descriptor.facet[f][0]],
-                vertices[tetra_descriptor.facet[f][2]]
-                    - vertices[tetra_descriptor.facet[f][0]] ) ;
+                vertices[tetra_descriptor.facet_vertex[f][1]]
+                    - vertices[tetra_descriptor.facet_vertex[f][0]],
+                vertices[tetra_descriptor.facet_vertex[f][2]]
+                    - vertices[tetra_descriptor.facet_vertex[f][0]] ) ;
             vec3 n = p
-                - ( ( vertices[tetra_descriptor.facet[f][0]]
-                    + vertices[tetra_descriptor.facet[f][1]]
-                    + vertices[tetra_descriptor.facet[f][2]] ) / 3. ) ;
+                - ( ( vertices[tetra_descriptor.facet_vertex[f][0]]
+                    + vertices[tetra_descriptor.facet_vertex[f][1]]
+                    + vertices[tetra_descriptor.facet_vertex[f][2]] ) / 3. ) ;
             if( dot( N, n ) > 0 ) return false ;
         }
         return true ;
@@ -1735,21 +1807,21 @@ namespace RINGMesh {
         vertices[4] = p4 ;
         for( uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[pyramid_descriptor.facet[f][1]]
-                    - vertices[pyramid_descriptor.facet[f][0]],
-                vertices[pyramid_descriptor.facet[f][2]]
-                    - vertices[pyramid_descriptor.facet[f][0]] ) ;
+                vertices[pyramid_descriptor.facet_vertex[f][1]]
+                    - vertices[pyramid_descriptor.facet_vertex[f][0]],
+                vertices[pyramid_descriptor.facet_vertex[f][2]]
+                    - vertices[pyramid_descriptor.facet_vertex[f][0]] ) ;
             uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[f] ;
             vec3 barycenter ;
             if( nb_vertices == 3 )
-                barycenter = ( ( vertices[pyramid_descriptor.facet[f][0]]
-                    + vertices[pyramid_descriptor.facet[f][1]]
-                    + vertices[pyramid_descriptor.facet[f][2]] ) / 3. ) ;
+                barycenter = ( ( vertices[pyramid_descriptor.facet_vertex[f][0]]
+                    + vertices[pyramid_descriptor.facet_vertex[f][1]]
+                    + vertices[pyramid_descriptor.facet_vertex[f][2]] ) / 3. ) ;
             else if( nb_vertices == 4 )
-                barycenter = ( ( vertices[pyramid_descriptor.facet[f][0]]
-                    + vertices[pyramid_descriptor.facet[f][1]]
-                    + vertices[pyramid_descriptor.facet[f][2]]
-                    + vertices[pyramid_descriptor.facet[f][3]] ) / 4. ) ;
+                barycenter = ( ( vertices[pyramid_descriptor.facet_vertex[f][0]]
+                    + vertices[pyramid_descriptor.facet_vertex[f][1]]
+                    + vertices[pyramid_descriptor.facet_vertex[f][2]]
+                    + vertices[pyramid_descriptor.facet_vertex[f][3]] ) / 4. ) ;
             else
                 ringmesh_assert_not_reached;
             vec3 n = p - barycenter ;
@@ -1787,21 +1859,21 @@ namespace RINGMesh {
         vertices[5] = p5 ;
         for( uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[prism_descriptor.facet[f][1]]
-                    - vertices[prism_descriptor.facet[f][0]],
-                vertices[prism_descriptor.facet[f][2]]
-                    - vertices[prism_descriptor.facet[f][0]] ) ;
+                vertices[prism_descriptor.facet_vertex[f][1]]
+                    - vertices[prism_descriptor.facet_vertex[f][0]],
+                vertices[prism_descriptor.facet_vertex[f][2]]
+                    - vertices[prism_descriptor.facet_vertex[f][0]] ) ;
             uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[f] ;
             vec3 barycenter ;
             if( nb_vertices == 3 )
-                barycenter = ( ( vertices[prism_descriptor.facet[f][0]]
-                    + vertices[prism_descriptor.facet[f][1]]
-                    + vertices[prism_descriptor.facet[f][2]] ) / 3. ) ;
+                barycenter = ( ( vertices[prism_descriptor.facet_vertex[f][0]]
+                    + vertices[prism_descriptor.facet_vertex[f][1]]
+                    + vertices[prism_descriptor.facet_vertex[f][2]] ) / 3. ) ;
             else if( nb_vertices == 4 )
-                barycenter = ( ( vertices[prism_descriptor.facet[f][0]]
-                    + vertices[prism_descriptor.facet[f][1]]
-                    + vertices[prism_descriptor.facet[f][2]]
-                    + vertices[prism_descriptor.facet[f][3]] ) / 4. ) ;
+                barycenter = ( ( vertices[prism_descriptor.facet_vertex[f][0]]
+                    + vertices[prism_descriptor.facet_vertex[f][1]]
+                    + vertices[prism_descriptor.facet_vertex[f][2]]
+                    + vertices[prism_descriptor.facet_vertex[f][3]] ) / 4. ) ;
             else
                 ringmesh_assert_not_reached;
             vec3 n = p - barycenter ;
@@ -1842,16 +1914,16 @@ namespace RINGMesh {
         vertices[5] = p5 ;
         vertices[6] = p6 ;
         vertices[7] = p7 ;
-        for( uint8 f = 0; f < hexa_descriptor.nb_facets; f++ ) {
+        for( uint8 f = 0; f < hex_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[hexa_descriptor.facet[f][1]]
-                    - vertices[hexa_descriptor.facet[f][0]],
-                vertices[hexa_descriptor.facet[f][2]]
-                    - vertices[hexa_descriptor.facet[f][0]] ) ;
-            vec3 barycenter = ( ( vertices[hexa_descriptor.facet[f][0]]
-                + vertices[hexa_descriptor.facet[f][1]]
-                + vertices[hexa_descriptor.facet[f][2]]
-                + vertices[hexa_descriptor.facet[f][3]] ) / 4. ) ;
+                vertices[hex_descriptor.facet_vertex[f][1]]
+                    - vertices[hex_descriptor.facet_vertex[f][0]],
+                vertices[hex_descriptor.facet_vertex[f][2]]
+                    - vertices[hex_descriptor.facet_vertex[f][0]] ) ;
+            vec3 barycenter = ( ( vertices[hex_descriptor.facet_vertex[f][0]]
+                + vertices[hex_descriptor.facet_vertex[f][1]]
+                + vertices[hex_descriptor.facet_vertex[f][2]]
+                + vertices[hex_descriptor.facet_vertex[f][3]] ) / 4. ) ;
             vec3 n = p - barycenter ;
             if( dot( N, n ) > 0 ) return false ;
         }
