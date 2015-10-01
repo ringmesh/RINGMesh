@@ -679,25 +679,25 @@ namespace RINGMesh {
         surface_facet_ptr_.resize( gm_.nb_surfaces() * ALL + 1, 0 ) ;
 
         // Compute the total number of facets per type and per surface
-        std::vector< index_t > nb_facet_per_type( ALL+1, 0 ) ;
+        std::vector< index_t > nb_facet_per_type( ALL, 0 ) ;
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
             if( surface.is_triangulated() ) {
-                nb_facet_per_type[TRIANGLE+1] += surface.nb_cells() ;
+                nb_facet_per_type[TRIANGLE] += surface.nb_cells() ;
                 surface_facet_ptr_[ALL * s + TRIANGLE+1] += surface.nb_cells() ;
             } else {
                 for( index_t f = 0; f < surface.nb_cells(); f++ ) {
                     switch( surface.nb_vertices_in_facet( f ) ) {
                         case 3:
-                            nb_facet_per_type[TRIANGLE+1]++ ;
+                            nb_facet_per_type[TRIANGLE]++ ;
                             surface_facet_ptr_[ALL * s + TRIANGLE+1]++ ;
                             break ;
                         case 4:
-                            nb_facet_per_type[QUAD+1]++ ;
+                            nb_facet_per_type[QUAD]++ ;
                             surface_facet_ptr_[ALL * s + QUAD+1]++ ;
                             break ;
                         default:
-                            nb_facet_per_type[POLYGON+1]++ ;
+                            nb_facet_per_type[POLYGON]++ ;
                             surface_facet_ptr_[ALL * s + POLYGON+1]++ ;
                             break ;
                     }
@@ -706,16 +706,18 @@ namespace RINGMesh {
         }
 
         // Create triangles and quads, the polygons will be handle later
-        if( nb_facet_per_type[TRIANGLE+1] ) {
-            mesh_.facets.create_triangles( nb_facet_per_type[TRIANGLE+1] ) ;
+        if( nb_facet_per_type[TRIANGLE] ) {
+            mesh_.facets.create_triangles( nb_facet_per_type[TRIANGLE] ) ;
         }
-        if( nb_facet_per_type[QUAD+1] ) {
-            mesh_.facets.create_quads( nb_facet_per_type[QUAD+1] ) ;
+        if( nb_facet_per_type[QUAD] ) {
+            mesh_.facets.create_quads( nb_facet_per_type[QUAD] ) ;
         }
 
         // Compute the facet offset
+        std::vector< index_t > facet_offset_per_type( ALL, 0 ) ;
         for( index_t t = TRIANGLE+1; t < ALL; t++ ) {
-            nb_facet_per_type[t+1] += nb_facet_per_type[t] ;
+            facet_offset_per_type[t] +=  facet_offset_per_type[t-1] ;
+            facet_offset_per_type[t] += nb_facet_per_type[t] ;
         }
         for( index_t i = 1; i < surface_facet_ptr_.size() - 1; i++ ) {
             surface_facet_ptr_[i+1] += surface_facet_ptr_[i] ;
@@ -731,7 +733,7 @@ namespace RINGMesh {
                 index_t cur_facet = NO_ID ;
                 if( nb_vertices < 5 ) {
                     FacetType T = static_cast< FacetType >( nb_vertices - 3 ) ;
-                    cur_facet = nb_facet_per_type[T] + cur_facet_per_type[T]++ ;
+                    cur_facet = facet_offset_per_type[T] + cur_facet_per_type[T]++ ;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         mesh_.facets.set_vertex( cur_facet, v,
                             surface.model_vertex_id( f, v ) ) ;
@@ -776,25 +778,25 @@ namespace RINGMesh {
 
     index_t GeoModelMeshEdges::nb_wells() const
     {
-        test_initialize() ;
+        test_and_initialize() ;
         return gm_.wells() ? gm_.wells()->nb_wells() : 0 ;
     }
 
     index_t GeoModelMeshEdges::nb_edges() const
     {
-        test_initialize() ;
+        test_and_initialize() ;
         return mesh_.edges.nb() ;
     }
 
     index_t GeoModelMeshEdges::nb_edges( index_t w ) const
     {
-        test_initialize() ;
+        test_and_initialize() ;
         return well_ptr_[w + 1] - well_ptr_[w] ;
     }
 
     index_t GeoModelMeshEdges::vertex( index_t w, index_t e, index_t v ) const
     {
-        test_initialize() ;
+        test_and_initialize() ;
         return mesh_.edges.vertex(well_ptr_[w] + e, v ) ;
     }
 
@@ -809,7 +811,7 @@ namespace RINGMesh {
         return mesh_.edges.nb() > 0 ;
     }
 
-    void GeoModelMeshEdges::test_initialize() const
+    void GeoModelMeshEdges::test_and_initialize() const
     {
         if( !is_initialized() ) {
             const_cast< GeoModelMeshEdges* >( this )->initialize() ;
