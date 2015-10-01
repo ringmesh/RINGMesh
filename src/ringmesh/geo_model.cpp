@@ -1166,7 +1166,8 @@ namespace RINGMesh {
     GeoModel::GeoModel()
         :
             mesh( *this ),
-            debug_directory_( GEO::FileSystem::get_current_working_directory() )
+            debug_directory_( GEO::FileSystem::get_current_working_directory() ),
+            wells_( nil )
     {
     }
 
@@ -1532,4 +1533,12 @@ namespace RINGMesh {
         }        
     }
 
+    /*!
+     * Associates a WellGroup to the GeoModel
+     * @param[in] wells the WellGroup
+     */
+    void GeoModel::set_wells( const WellGroup* wells )
+    {
+        wells_ = wells ;
+    }
 } // namespace

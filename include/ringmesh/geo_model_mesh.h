@@ -56,6 +56,7 @@ namespace RINGMesh {
 
 
     class RINGMESH_API GeoModelMeshVertices {
+        ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
     public:
         /*!
@@ -101,10 +102,14 @@ namespace RINGMesh {
          * Test if the mesh vertices are initialized
          */
         bool is_initialized() const ;
+        /*!
+         * Test if the mesh vertices need to be initialized,
+         * if so initialize them.
+         */
+        void test_and_initialize() const ;
 
         /*!
          * @brief Number of vertices stored.
-         * @details Calls initialize() if vertices are not filled yet
          */
         index_t nb() const ;
 
@@ -164,11 +169,6 @@ namespace RINGMesh {
         void clear() ;
 
     private:
-        /*!
-         * Test if the mesh vertices need to be initialized,
-         * if so initialize them.
-         */
-        void test_and_initialize() const ;
         /*!
          * @brief Initialize the vertices from the vertices
          *        of the GeoModel Corners, Lines, and Surfaces
@@ -235,21 +235,287 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
+        ringmesh_disable_copy( GeoModelMeshFacets ) ;
+        friend class GeoModelMesh ;
+    public:
+        enum FacetType {
+            TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
+        };
 
+    public:
+        GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        ~GeoModelMeshFacets() ;
+
+        /*!
+         * Test if the mesh facets are initialized
+         */
+        bool is_initialized() const ;
+        void test_and_initialize() const ;
+
+        /*!
+         * @brief Number of facets stored.
+         */
+        index_t nb() const ;
+
+        /*!
+         * Get the number of vertices in the facet
+         * @param[in] f the facet index
+         * @return the number of vertices
+         */
+        index_t nb_vertices( index_t f ) const ;
+        /*!
+         * Get the vertex index of a vertex in a facet
+         * in the GeoModelMesh
+         * @param[in] f the facet index
+         * @param[in] v the local vertex index [0, nb_vertices_in_facet[
+         * @return the vertex index
+         */
+        index_t vertex( index_t f, index_t v ) const ;
+        /*!
+         * Get the adjacent facet index in the GeoModelMesh
+         * @param[in] f the facet index
+         * @param[in] e the edge index
+         * @return the adjacent facet index
+         */
+        index_t adjacent( index_t f, index_t e ) const ;
+        /*!
+         * Get the surface index in the GeoModel according the facet
+         * index in the GeoModelMesh
+         * @param[in] f the facet index
+         * @return the surface index
+         */
+        index_t surface( index_t f ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh restricted to
+         * the surface owing the facet
+         * @param[in] f the facet index
+         * @return the facet index varying from 0 to nb_facets
+         * in the surface owing \p f
+         */
+        index_t facet_in_surface( index_t f ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh restricted to
+         * the surface owing the facet and its type
+         * @param[in] f the facet index
+         * @param[out] index the facet index varying from 0 to nb_facets
+         * of the corresponding type of \p f in the owing surface
+         * @return the type of the facet \p f
+         */
+        FacetType facet_type( index_t f, index_t& index ) const ;
+
+        /*!
+         * Get the number of facets of the corresponding type
+         * @param[in] type the corresponding type
+         * @return the number of facets
+         */
+        index_t nb_facets( FacetType type = ALL ) const ;
+        /*!
+         * Get the number of facets of the corresponding type
+         * in the given surface of the GeoModel
+         * @param[in] s the surface index
+         * @param[in] type the corresponding type
+         * @return the number of facets
+         */
+        index_t nb_facets( index_t s, FacetType type = ALL ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh
+         * @param[in] s the surface index owing the facet
+         * @param[in] f the facet index varying from 0 to nb_facets in the surface
+         * @param[in] type it can specify the facet type used. For example, if type = QUAD
+         * then \p f represents the fth quad in the surface \p s and \p f can vary from 0
+         * to nb_quads( s ).
+         * @return the facet index
+         */
+        index_t facet( index_t s, index_t f, FacetType type = ALL ) const ;
+
+        /*!
+         * Get the number of triangles in the GeoModelMesh
+         * @return the number of triangles
+         */
+        index_t nb_triangle() const ;
+        /*!
+         * Get the number of triangles in the given surface
+         * @param[in] s the surface index
+         * @return the number of triangles
+         */
+        index_t nb_triangle( index_t s ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh corresponding
+         * to the asked triangle in the surface
+         * @param[in] s the surface index
+         * @param[in] t the tth triangle index varying from 0 to nb_triangles( s )
+         * @return the facet index
+         */
+        index_t triangle( index_t s, index_t t ) const ;
+
+        /*!
+         * Get the number of quads in the GeoModelMesh
+         * @return the number of quads
+         */
+        index_t nb_quad() const ;
+        /*!
+         * Get the number of quads in the given surface
+         * @param[in] s the surface index
+         * @return the number of quads
+         */
+        index_t nb_quad( index_t s ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh corresponding
+         * to the asked quad in the surface
+         * @param[in] s the surface index
+         * @param[in] q the qth quad index varying from 0 to nb_quads( s )
+         * @return the facet index
+         */
+        index_t quad( index_t s, index_t q ) const ;
+
+        /*!
+         * Get the number of polygons in the GeoModelMesh
+         * @return the number of polygons
+         */
+        index_t nb_polygon() const ;
+        /*!
+         * Get the number of polygons in the given surface
+         * @param[in] s the surface index
+         * @return the number of polygons
+         */
+        index_t nb_polygon( index_t s ) const ;
+        /*!
+         * Get the facet index in the GeoModelMesh corresponding
+         * to the asked polygon in the surface
+         * @param[in] s the surface index
+         * @param[in] p the pth polygon index varying from 0 to nb_polygons( s )
+         * @return the facet index
+         */
+        index_t polygon( index_t s, index_t p ) const ;
+
+        /*!
+         * Clear the facets of the GeoModelMesh
+         */
+        void clear() ;
+
+    private:
+        /*!
+         * Initialize the facets of the GeoModelMesh
+         * and sort them per surface and facet type
+         * Example for a mesh with two surfaces and only triangles and quads
+         * [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
+         * |          surface 0           |             surface 1           |
+         */
+        void initialize() ;
+
+        /*!
+         * Bind attribute to the facets attribute manager
+         */
+        void bind_attribute() ;
+        /*!
+         * Unbind attribute to the facets attribute manager
+         */
+        void unbind_attribute() ;
+
+    private:
+        /// Attached GeoModelMesh owning the vertices
+        GeoModelMesh& gmm_ ;
+        /// Attached GeoModel
+        const GeoModel& gm_ ;
+        /// Attached Mesh
+        GEO::Mesh& mesh_ ;
+
+        /// Attribute storing the surface index per facet
+        GEO::Attribute< index_t > surface_id_ ;
+        /*!
+         * Vector storing the index of the starting facet index
+         * for a given surface and a given facet type.
+         * For example:
+         *    the 2nd quad index of the surface index S will be found here:
+         *    surface_facet_ptr_[ALL*S + QUAD] + 2
+         */
+        std::vector< index_t > surface_facet_ptr_ ;
+
+        /// Number of triangles in the GeoModelMesh
+        index_t nb_triangle_ ;
+        /// Number of quads in the GeoModelMesh
+        index_t nb_quad_ ;
+        /// Number of polygons in the GeoModelMesh
+        index_t nb_polygon_ ;
+
+    } ;
+
+    class RINGMESH_API GeoModelMeshEdges {
+        ringmesh_disable_copy( GeoModelMeshEdges ) ;
+    public:
+        GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        ~GeoModelMeshEdges() ;
+
+        /*!
+         * Test if the mesh edges are initialized
+         */
+        bool is_initialized() const ;
+        /*!
+         * Gets the number of wells
+         * @return the corresponding number
+         */
+        index_t nb_wells() const ;
+        /*!
+         * Gets the number of edges in the MacroMesh
+         * @return the corresponding number
+         */
+        index_t nb_edges() const ;
+        /*!
+         * Gets the number of edges of a Well
+         * @param[in] w the well index
+         * @return the corresponding number
+         */
+        index_t nb_edges( index_t w ) const ;
+        /*!
+         * Gets the vertex index of the GeoModelMesh
+         * @param[in] w the well index
+         * @param[in] e the edge index in the well (from 0 to nb_edges in the well)
+         * @param[in] v the vertex index of the edge (0 or 1 )
+         * @return the global vertex index
+         */
+        index_t vertex( index_t w, index_t e, index_t v ) const ;
+        /*!
+         * Clear the mesh edges
+         */
+        void clear() ;
+
+    private:
+        /*!
+         * Tests if the mesh edges needs to be initialized and initialize it
+         */
+        void test_initialize() const ;
+        void initialize() ;
+
+    private:
+        /// Attached GeoModelMesh owning the vertices
+        GeoModelMesh& gmm_ ;
+        /// Attached GeoModel
+        const GeoModel& gm_ ;
+        /// Attached Mesh
+        GEO::Mesh& mesh_ ;
+
+        /*!
+         * Vector storing the index of the starting edge index
+         * for a given well
+         */
+        std::vector< index_t > well_ptr_ ;
 
     } ;
 
     class RINGMESH_API GeoModelMeshCells {
+        ringmesh_disable_copy( GeoModelMeshCells ) ;
 
 
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
+        ringmesh_disable_copy( GeoModelMeshOrder ) ;
 
 
     } ;
 
     class RINGMESH_API GeoModelMesh {
+        ringmesh_disable_copy( GeoModelMesh ) ;
     public:
         GeoModelMesh( const GeoModel& gm ) ;
         ~GeoModelMesh() ;
@@ -306,9 +572,10 @@ namespace RINGMesh {
 
     public:
         GeoModelMeshVertices vertices ;
+        GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
-        GeoModelMeshCells cells ;
-        GeoModelMeshOrder order ;
+//        GeoModelMeshCells cells ;
+//        GeoModelMeshOrder order ;
 
     } ;
 
