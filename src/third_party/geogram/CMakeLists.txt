@@ -50,8 +50,9 @@ set(VORPALINE_VERSION_PATCH 0)
 set(VORPALINE_VERSION ${VORPALINE_VERSION_MAJOR}.${VORPALINE_VERSION_MINOR}.${VORPALINE_VERSION_PATCH})
 
 # Optional modules
-set(GEOGRAM_WITH_MEDIT TRUE)
-set(GEOGRAM_WITH_GRAPHICS TRUE)
+# So why are they set to TRUE ??? [JP]
+# set(GEOGRAM_WITH_MEDIT TRUE)
+# set(GEOGRAM_WITH_GRAPHICS TRUE)
 
 # Determine the current Build-OS (Build-platform without the compiler info)
 string(REGEX REPLACE "-[^-]+$" "" VORPALINE_OS ${VORPALINE_PLATFORM})
