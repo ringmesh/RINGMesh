@@ -38,6 +38,7 @@
  *     FRANCE
  */
 
+
 #ifndef __RINGMESH_GEO_MODEL_MESH__
 #define __RINGMESH_GEO_MODEL_MESH__
 
@@ -53,8 +54,9 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+
     class RINGMESH_API GeoModelMeshVertices {
-    ringmesh_disable_copy( GeoModelMeshVertices ) ;
+        ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
     public:
         /*!
@@ -221,6 +223,7 @@ namespace RINGMesh {
         /// Attached Mesh
         GEO::Mesh& mesh_ ;
 
+
         /*!
          * Vertices in GeoModelElements corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
@@ -232,12 +235,12 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
-    ringmesh_disable_copy( GeoModelMeshFacets ) ;
+        ringmesh_disable_copy( GeoModelMeshFacets ) ;
         friend class GeoModelMesh ;
     public:
         enum FacetType {
             TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
-        } ;
+        };
 
     public:
         GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
@@ -289,7 +292,7 @@ namespace RINGMesh {
          * @return the facet index varying from 0 to nb_facets
          * in the surface owing \p f
          */
-        index_t index_in_surface( index_t f ) const ;
+        index_t facet_in_surface( index_t f ) const ;
         /*!
          * Get the facet index in the GeoModelMesh restricted to
          * the surface owing the facet and its type
@@ -438,7 +441,7 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshEdges {
-    ringmesh_disable_copy( GeoModelMeshEdges ) ;
+        ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
         GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
         ~GeoModelMeshEdges() ;
@@ -715,6 +718,32 @@ namespace RINGMesh {
          * Unbind attribute to the cells attribute manager
          */
         void unbind_attribute() ;
+      /// enum to characterize the action to do concerning a surface
+        /// Action concerns the vertices of a Surface and not the Surface
+        enum ActionOnSurface {
+            /// do nothing
+            SKIP = -2,
+            /// need to be duplicated (don't know which side yet)
+            TO_PROCESS = -1,
+            /// need to duplicate the side opposite to the facet normal
+            NEG_SIDE = 0,
+            /// need to duplicate the side following the facet normal
+            POS_SIDE = 1
+        } ;
+
+        /// Action to do according a surface index
+        typedef std::pair< index_t, ActionOnSurface > action_on_surface ;
+
+        /*!
+         * Test if the mesh cell are duplicated according
+         * the duplication mode, if not duplicate them.
+         */
+        void test_initialize_duplication() const ;
+        /*!
+         * Duplicate the mesh cell along some surfaces defined
+         * by the duplication mode
+         */
+        void initialize_duplication() ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -750,12 +779,25 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
-    ringmesh_disable_copy( GeoModelMeshOrder ) ;
+        ringmesh_disable_copy( GeoModelMeshOrder ) ;
+
 
     } ;
 
     class RINGMESH_API GeoModelMesh {
-    ringmesh_disable_copy( GeoModelMesh ) ;
+        ringmesh_disable_copy( GeoModelMesh ) ;
+    public:
+        /*!
+         * Several modes for vertex duplication algorithm:
+         *  - NONE = no duplication
+         *  - FAULT = duplication along faults
+         *  - HORIZON = duplication along horizons
+         *  - ALL = duplication along faults and horizons
+         */
+        enum DuplicateMode {
+            NONE, FAULT, HORIZON, ALL
+        } ;
+
     public:
         GeoModelMesh( const GeoModel& gm ) ;
         ~GeoModelMesh() ;
@@ -776,6 +818,29 @@ namespace RINGMesh {
         GEO::AttributesManager& cell_attribute_manager() const
         {
             return mesh_->cells.attributes() ;
+        }
+
+        /*!
+         * Access the DuplicateMode
+         * @return the current DuplicateMode
+         */
+        DuplicateMode duplicate_mode() const
+        {
+            return mode_ ;
+        }
+        /*!
+         * Set a new DuplicateMode
+         * @param[in] mode the new DuplicateMode for the GeoModelMesh
+         */
+        void set_duplicate_mode( const DuplicateMode& mode ) const
+        {
+            MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
+            not_const->mode_ = mode ;
+            /* @todo Review : Implement and use a MacroMeshVertices::clean_duplicates function [JP]
+             */
+            not_const->vertices.cell_corners_.clear() ;
+            not_const->vertices.duplicated_vertex_indices_.clear() ;
+            not_const->vertices.mesh_cell_corner_ptr_.clear() ;
         }
 
         /*!
@@ -821,6 +886,8 @@ namespace RINGMesh {
 //        GeoModelMeshOrder order ;
 
     } ;
+
+
 
 }
 
