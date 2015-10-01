@@ -289,7 +289,7 @@ namespace RINGMesh {
          * @return the facet index varying from 0 to nb_facets
          * in the surface owing \p f
          */
-        index_t facet_in_surface( index_t f ) const ;
+        index_t index_in_surface( index_t f ) const ;
         /*!
          * Get the facet index in the GeoModelMesh restricted to
          * the surface owing the facet and its type
@@ -552,7 +552,7 @@ namespace RINGMesh {
          * @return the cell index varying from 0 to nb_cells
          * in the region owing \p f
          */
-        index_t cell_in_region( index_t c ) const ;
+        index_t index_in_region( index_t c ) const ;
         /*!
          * Get the cell index in the GeoModelMesh restricted to
          * the region owing the cell and its type

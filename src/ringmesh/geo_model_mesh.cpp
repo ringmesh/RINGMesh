@@ -630,7 +630,7 @@ namespace RINGMesh {
         return region_id_[c] ;
     }
 
-    index_t GeoModelMeshCells::cell_in_region( index_t c ) const
+    index_t GeoModelMeshCells::index_in_region( index_t c ) const
     {
         test_and_initialize() ;
         ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
@@ -641,7 +641,7 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
-        index_t cell = cell_in_region( c ) ;
+        index_t cell = index_in_region( c ) ;
         index_t r = region( c ) ;
         for( index_t t = GEO::MESH_TET; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
             GEO::MeshCellType T = static_cast< GEO::MeshCellType >( t ) ;
@@ -905,7 +905,7 @@ namespace RINGMesh {
         return surface_id_[f] ;
     }
 
-    index_t GeoModelMeshFacets::facet_in_surface( index_t f ) const
+    index_t GeoModelMeshFacets::index_in_surface( index_t f ) const
     {
         test_and_initialize() ;
         ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
@@ -918,7 +918,7 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
-        index_t facet = facet_in_surface( f ) ;
+        index_t facet = index_in_surface( f ) ;
         index_t s = surface( f ) ;
         for( index_t t = TRIANGLE; t < ALL; t++ ) {
             FacetType T = static_cast< FacetType >( t ) ;
