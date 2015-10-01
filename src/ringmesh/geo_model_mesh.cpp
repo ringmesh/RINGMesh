@@ -437,12 +437,12 @@ namespace RINGMesh {
     void GeoModelMeshCells::initialize()
     {
 
-//        gmm_.vertices.test_and_initialize() ;
-        region_cell_ptr_.resize( gm_.nb_surfaces() * GEO::MESH_NB_CELL_TYPES + 1,
+        gmm_.vertices.test_and_initialize() ;
+        region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1,
             0 ) ;
 
-        std::vector< index_t > nb_cells_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         // Total number of  cells
+        std::vector< index_t > nb_cells_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         index_t nb = 0 ;
 
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
@@ -453,8 +453,9 @@ namespace RINGMesh {
         if( nb == 0 ) {
             return ;
         }
-        std::vector< GEO::MeshCellType > cells_vertices_type( nb ) ;
 
+        // Compute the number of cell per type and per region
+        std::vector< GEO::MeshCellType > cells_vertices_type( nb ) ;
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
             const GEO::Mesh& cur_region_mesh = cur_region.mesh() ;
@@ -489,12 +490,12 @@ namespace RINGMesh {
                     default:
                         ringmesh_assert_not_reached;
                         break ;
-                    }
                 }
             }
+        }
 
-        std::vector< index_t > cells_offset_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         // Compute the cell offsets
+        std::vector< index_t > cells_offset_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         for( index_t t = GEO::MESH_TET + 1; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
             cells_offset_per_type[t] += cells_offset_per_type[t - 1] ;
             cells_offset_per_type[t] += nb_cells_per_type[t] ;
@@ -503,7 +504,7 @@ namespace RINGMesh {
             region_cell_ptr_[i + 1] += region_cell_ptr_[i] ;
         }
 
-        // Create "empty tet, hex, pyr and prism
+        // Create "empty" tet, hex, pyr and prism
         for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
             mesh_.cells.create_cells( nb_cells_per_type[i],
                 GEO::MeshCellType( i ) ) ;
