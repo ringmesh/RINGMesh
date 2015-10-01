@@ -736,15 +736,14 @@ namespace RINGMesh {
         // Example for a mesh with two surfaces and only triangles and quads
         // [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
         // |          surface 0           |             surface 1           |
-        GEO::vector< index_t > sorted_indices( mesh_.vertices.nb() ) ;
-        for( index_t i = 0; i < mesh_.vertices.nb(); i++ ) {
+        GEO::vector< index_t > sorted_indices( mesh_.facets.nb() ) ;
+        for( index_t i = 0; i < mesh_.facets.nb(); i++ ) {
             sorted_indices[i] = i ;
         }
         GeoModelMeshFacetsSort action( mesh_, surface_id_ ) ;
         GEO::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
         mesh_.facets.permute_elements( sorted_indices ) ;
     }
-
 
     /*******************************************************************************/
 
@@ -773,7 +772,6 @@ namespace RINGMesh {
     {
         vertices.erase_vertices( to_delete ) ;
     }
-
 
     void GeoModelMesh::erase_invalid_vertices()
     {
