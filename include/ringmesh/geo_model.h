@@ -50,6 +50,10 @@
 #include <vector>
 
 namespace RINGMesh {
+    class WellGroup ;
+}
+
+namespace RINGMesh {
 
     /*!
      * @brief The class to describe a geological model represented 
@@ -239,6 +243,12 @@ namespace RINGMesh {
 
         bool check_model_validity( bool check_surface_intersections = true ) const ;           
 
+        void set_wells( const WellGroup* wells ) ;
+        const WellGroup* wells() const
+        {
+            return wells_ ;
+        }
+
     private:
         bool check_elements_validity() const ;
         bool check_geology_validity() const ;        
@@ -349,6 +359,9 @@ namespace RINGMesh {
         /// Name of the debug directory in which to save stuff 
         /// @note Move this in another class
         std::string debug_directory_ ;
+
+        /// Optional WellGroup associated with the model
+        const WellGroup* wells_ ;
     } ;
 
 }
