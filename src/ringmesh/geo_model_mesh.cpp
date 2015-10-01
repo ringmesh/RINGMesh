@@ -455,6 +455,13 @@ namespace RINGMesh {
         return mesh_.facets.nb() ;
     }
 
+    index_t GeoModelMeshFacets::nb_vertices( index_t f ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        return mesh_.facets.nb_vertices( f ) ;
+    }
+
     index_t GeoModelMeshFacets::vertex( index_t f, index_t v ) const
     {
         test_and_initialize() ;

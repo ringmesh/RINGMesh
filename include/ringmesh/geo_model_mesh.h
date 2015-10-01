@@ -258,6 +258,12 @@ namespace RINGMesh {
         index_t nb() const ;
 
         /*!
+         * Get the number of vertices in the facet
+         * @param[in] f the facet index
+         * @return the number of vertices
+         */
+        index_t nb_vertices( index_t f ) const ;
+        /*!
          * Get the vertex index of a vertex in a facet
          * in the GeoModelMesh
          * @param[in] f the facet index
