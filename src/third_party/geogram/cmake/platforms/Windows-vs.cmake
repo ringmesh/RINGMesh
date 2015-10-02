@@ -2,7 +2,7 @@
 # Flags common to all Windows based platforms with Visual Studio
 #-------------------------------------------------------------------
 
-include(${CMAKE_SOURCE_DIR}/cmake/platforms/Windows.cmake)
+include(${GEOGRAM_SOURCE_DIR}/cmake/platforms/Windows.cmake)
 
 # Suppresses the display of the copyright banner
 add_definitions(/nologo)
