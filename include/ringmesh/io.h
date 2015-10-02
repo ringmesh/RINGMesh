@@ -53,7 +53,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    bool compare_files( const std::string& f1, const std::string& f2 ) ;
+    bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
 
     bool RINGMESH_API model_load( const std::string& filename, GeoModel& model ) ;
 

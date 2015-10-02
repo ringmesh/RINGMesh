@@ -49,33 +49,20 @@
 
 namespace RINGMesh {
 
-    bool operator==( const vec3& u, const vec3& v )
+    static bool operator==( const vec3& u, const vec3& v )
     {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
     }
 
-    bool operator<( const vec3& u, const vec3& v )
+    static bool operator<( const vec3& u, const vec3& v )
     {
         return u.x < v.x && u.y < v.y && u.z < v.z ;
     }
 
-    bool operator!=( const vec3& u, const vec3& v )
+    static bool operator!=( const vec3& u, const vec3& v )
     {
         return u.x != v.x || u.y != v.y || u.z != v.z ;
     }
-
-
-    /* @todo I would be surprised if this is not defined in Geogram [JP]
-     */
-    float64 triangle_area(
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3 )
-    {
-        return 0.5 * length( cross( p2 - p1, p3 - p1 ) ) ;
-    }
-
-
 
     // See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
     template< class VEC >
@@ -390,7 +377,7 @@ namespace RINGMesh {
         const vec3& trgl2,
         vec3& result ) ;
 
-    void rotation_matrix_about_arbitrary_axis(
+    void RINGMESH_API rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
         float64 theta,
