@@ -64,7 +64,9 @@ namespace RINGMesh {
         return u.x != v.x || u.y != v.y || u.z != v.z ;
     }
 
-    // See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
+    /*!
+     * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
+     */
     template< class VEC >
     float64 point_triangle_distance(
         const VEC& point,
@@ -243,7 +245,7 @@ namespace RINGMesh {
         return sqrt( sqrDistance ) ;
     }
 
-    float64 point_quad_distance(
+    float64 RINGMESH_API point_quad_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -251,7 +253,7 @@ namespace RINGMesh {
         const vec3& p3,
         vec3& nearest_p ) ;
 
-    float64 point_tetra_distance(
+    float64 RINGMESH_API point_tetra_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -259,7 +261,7 @@ namespace RINGMesh {
         const vec3& p3,
         vec3& nearest_p ) ;
 
-    float64 point_pyramid_distance(
+    float64 RINGMESH_API point_pyramid_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -268,7 +270,7 @@ namespace RINGMesh {
         const vec3& p4,
         vec3& nearest_p ) ;
 
-    float64 point_prism_distance(
+    float64 RINGMESH_API point_prism_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -278,7 +280,7 @@ namespace RINGMesh {
         const vec3& p5,
         vec3& nearest_p ) ;
 
-    float64 point_hexa_distance(
+    float64 RINGMESH_API point_hexa_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -290,7 +292,7 @@ namespace RINGMesh {
         const vec3& p7,
         vec3& nearest_p ) ;
 
-    bool circle_plane_intersection(
+    bool RINGMESH_API circle_plane_intersection(
         const vec3& O_plane,
         const vec3& N_plane,
         const vec3& O_circle,
@@ -298,7 +300,7 @@ namespace RINGMesh {
         float64 r,
         std::vector< vec3 >& result ) ;
 
-    bool circle_triangle_intersection(
+    bool RINGMESH_API circle_triangle_intersection(
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
@@ -307,7 +309,7 @@ namespace RINGMesh {
         float64 r,
         std::vector< vec3 >& result ) ;
 
-    bool plan_plane_intersection(
+    bool RINGMESH_API plane_plane_intersection(
         const vec3& O_P0,
         const vec3& N_P0,
         const vec3& O_P1,
@@ -315,27 +317,27 @@ namespace RINGMesh {
         vec3& O_inter,
         vec3& N_inter ) ;
 
-    bool point_inside_triangle(
+    bool RINGMESH_API point_inside_triangle(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2 ) ;
 
-    bool point_inside_quad(
+    bool RINGMESH_API point_inside_quad(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
         const vec3& p3 ) ;
 
-    bool point_inside_tetra(
+    bool RINGMESH_API point_inside_tetra(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
         const vec3& p3 ) ;
 
-    bool point_inside_pyramid(
+    bool RINGMESH_API point_inside_pyramid(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -343,7 +345,7 @@ namespace RINGMesh {
         const vec3& p3,
         const vec3& p4 ) ;
 
-    bool point_inside_prism(
+    bool RINGMESH_API point_inside_prism(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -352,7 +354,7 @@ namespace RINGMesh {
         const vec3& p4,
         const vec3& p5 ) ;
 
-    bool point_inside_hexa(
+    bool RINGMESH_API point_inside_hexa(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -363,13 +365,13 @@ namespace RINGMesh {
         const vec3& p6,
         const vec3& p7 ) ;
 
-    bool point_segment_projection(
+    bool RINGMESH_API point_segment_projection(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         vec3& new_p ) ;
 
-    bool segment_triangle_intersection(
+    bool RINGMESH_API segment_triangle_intersection(
         const vec3& seg0,
         const vec3& seg1,
         const vec3& trgl0,
@@ -400,9 +402,6 @@ namespace RINGMesh {
         float64 l3 = 1.0 - l1 - l2 ;
         return l1 * p1 + l2 * p2 + l3 * p3 ;
     }
-
-
-
 
     /*!
     * Given an array of vec3, this class computes the colocated points
