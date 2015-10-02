@@ -51,7 +51,7 @@ int main( int argc, char** argv )
     GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
 
     GeoModel in ;
-    if( !RINGMeshIO::load( "../data/model1.ml", in ) )
+    if( !RINGMeshIO::load( "../../../../../tests/data/model1.ml", in ) )
         return 1 ;
     if( !RINGMeshIO::save( in, "out.ml" ) )
         return 1 ;
