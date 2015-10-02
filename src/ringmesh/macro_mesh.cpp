@@ -53,7 +53,7 @@
 namespace RINGMesh {
 
     /*!
-     * Initializes the database of the MacroMesh vertices
+     * Initializes the database of the GeoModel vertices
      * @todo Review : Give details. Database ? to do what ? answer which requests ? 
      *                How this function works ?
      *                What does it fill ?
@@ -99,7 +99,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * Initializes the database of the duplicated MacroMesh vertices
+     * Initializes the database of the duplicated GeoModel vertices
      *
      * @todo Review : This database stays a mystery.... [JP]
      */
@@ -129,7 +129,7 @@ namespace RINGMesh {
                 mesh.cell_corners.nb() * sizeof(index_t) ) ;
         }
 
-        if( mm_.duplicate_mode() == MacroMesh::NONE ) {
+        if( mm_.duplicate_mode() == GeoModel::NONE ) {
             return ;
         }
 
@@ -169,9 +169,9 @@ namespace RINGMesh {
         corner_vertices.clear() ;
 
         /// 5. Duplicate the corners (only one side of the duplicated surfaces)
-        /* @todo Review : Add comment. The goal is to visit the corners of the MacroMesh
+        /* @todo Review : Add comment. The goal is to visit the corners of the GeoModel
          * that are on one side of a given Surface. We propagate through the cells staying ... 
-         * All the corners of the MacroMesh are visited and duplicated if needed ...
+         * All the corners of the GeoModel are visited and duplicated if needed ...
          * [JP]
          */
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
@@ -378,7 +378,7 @@ namespace RINGMesh {
 
     /*!
      * Tests is the surface should be duplicate according the DuplicateMode
-     * in the MacroMesh
+     * in the GeoModel
      * @param[in] surface_id id of the surface to test
      * @return Returns true if the surface should be duplicated
      */
@@ -386,9 +386,9 @@ namespace RINGMesh {
     {
         GeoModelElement::GEOL_FEATURE feature = mm_.model().surface(
             surface_id ).geological_feature() ;
-        if( mm_.duplicate_mode() == MacroMesh::ALL
+        if( mm_.duplicate_mode() == GeoModel::ALL
             && !mm_.model().surface( surface_id ).is_on_voi() ) return true ;
-        if( mm_.duplicate_mode() == MacroMesh::FAULT && GME::is_fault( feature ) )
+        if( mm_.duplicate_mode() == GeoModel::FAULT && GME::is_fault( feature ) )
             return true ;
 
         return false ;
@@ -434,13 +434,13 @@ namespace RINGMesh {
     }
 
     /*!
-     * Gets the vertex id in the MacroMesh corresponding to a GEO::Mesh vertex id
+     * Gets the vertex id in the GeoModel corresponding to a GEO::Mesh vertex id
      * @param[in] mesh id of the mesh/region
      * @param[in] v vertex id of the GEO::Mesh vertex
-     * @return the id of \p v in the MacroMesh
+     * @return the id of \p v in the GeoModel
      *
      * @todo Review : Comment is misleading. I understood this return an 
-     * index in the MacroMesh [JP] 
+     * index in the GeoModel [JP] 
      * Perhaps rename the function mm_vertex_id
      * I'd also rename the parameter mesh, this is not a mesh this a region_id.
      */
@@ -452,8 +452,8 @@ namespace RINGMesh {
     }
 
     /*!
-     * Gets the MacroMesh vertex coordinates
-     * @param[in] global_v vertex id in the MacroMesh
+     * Gets the GeoModel vertex coordinates
+     * @param[in] global_v vertex id in the GeoModel
      * @return the vertex coordinates
      *
      * @todo Review : misleading comment, global_v is an index in MMVertices,
@@ -467,8 +467,8 @@ namespace RINGMesh {
     }
 
     /*!
-     * Gets the MacroMesh vertex coordinates
-     * @param[in] mesh vertex id in the MacroMesh
+     * Gets the GeoModel vertex coordinates
+     * @param[in] mesh vertex id in the GeoModel
      * @param[in] v vertex id of the GEO::Mesh vertex
      * @return the vertex coordinates
      *
@@ -490,11 +490,11 @@ namespace RINGMesh {
     }
 
     /*!
-     * Given a cell_corner id in a given mesh, return the vertex id in the MacroMesh
+     * Given a cell_corner id in a given mesh, return the vertex id in the GeoModel
      * and the corresponding duplicated vertex id if the vertex is duplicated
      * @param[in] mesh id of the mesh
      * @param[in] cell_corner id of the cell corner
-     * @param[out] vertex_id vertex id in the MacroMesh of the corresponding point
+     * @param[out] vertex_id vertex id in the GeoModel of the corresponding point
      * @param[out] duplicated_vertex_id duplicated vertex id if the vertex is duplicated
      * @return returns false if the vertex is duplicated (\p duplicated_vertex_id is filled),
      * true otherwise
@@ -559,14 +559,14 @@ namespace RINGMesh {
     /*******************************************************************************/
 
     /*!
-     * Initialize the facet database of the MacroMesh
+     * Initialize the facet database of the GeoModel
      */
     void MacroMeshFacets::initialize()
     {
         index_t facet_access[5] = { -1, -1, -1, 0, 1 } ;
         surface2mesh_.resize( mm_.model().nb_surfaces(), Surface::NO_ID ) ;
         surface_facet_ptr_.resize(
-            MacroMesh::NB_FACET_TYPES * mm_.model().nb_surfaces() + 1, 0 ) ;
+            GeoModel::NB_FACET_TYPES * mm_.model().nb_surfaces() + 1, 0 ) ;
 
         /*!
          * 1. Associate each surface to a Mesh
@@ -583,7 +583,7 @@ namespace RINGMesh {
                 if( !RINGMesh::Utils::contains( surface_proccessed, surface_id ) ) {
                     surface_proccessed.push_back( surface_id ) ;
                 }
-                surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * surface_id
+                surface_facet_ptr_[GeoModel::NB_FACET_TYPES * surface_id
                     + facet_access[cur_mesh.facets.nb_vertices( f )] + 1]++ ;
             }
             // Mark the surfaces processed
@@ -599,7 +599,7 @@ namespace RINGMesh {
         /// 2. Fill the facet indices vector directly at the right position
         surface_facets_.resize( surface_facet_ptr_.back() ) ;
         std::vector< index_t > offset_facet_index_type(
-            MacroMesh::NB_FACET_TYPES * mm_.model().nb_surfaces(), 0 ) ;
+            GeoModel::NB_FACET_TYPES * mm_.model().nb_surfaces(), 0 ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& cur_mesh = mm_.mesh( m ) ;
             GEO::Attribute< index_t > attribute( cur_mesh.facets.attributes(),
@@ -608,9 +608,9 @@ namespace RINGMesh {
                 index_t surface_id = attribute[f] ;
                 if( surface2mesh_[surface_id] != m ) continue ;
                 index_t type_access = facet_access[cur_mesh.facets.nb_vertices( f )] ;
-                surface_facets_[surface_facet_ptr_[MacroMesh::NB_FACET_TYPES
+                surface_facets_[surface_facet_ptr_[GeoModel::NB_FACET_TYPES
                     * surface_id + type_access]
-                    + offset_facet_index_type[MacroMesh::NB_FACET_TYPES * surface_id
+                    + offset_facet_index_type[GeoModel::NB_FACET_TYPES * surface_id
                         + type_access]++ ] = f ;
             }
         }
@@ -624,7 +624,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * Gets the total number of triangles in the MacroMesh
+     * Gets the total number of triangles in the GeoModel
      * @return the corresponding number
      */
     index_t MacroMeshFacets::nb_facets() const
@@ -634,7 +634,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * Gets the total number of triangles in the MacroMesh
+     * Gets the total number of triangles in the GeoModel
      * @return the corresponding number
      */
     index_t MacroMeshFacets::nb_triangle() const
@@ -651,12 +651,12 @@ namespace RINGMesh {
     index_t MacroMeshFacets::nb_triangle( index_t s ) const
     {
         test_initialize() ;
-        return surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s + 1]
-            - surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s] ;
+        return surface_facet_ptr_[GeoModel::NB_FACET_TYPES * s + 1]
+            - surface_facet_ptr_[GeoModel::NB_FACET_TYPES * s] ;
     }
 
     /*!
-     * Gets the triangle id in the MacroMesh
+     * Gets the triangle id in the GeoModel
      * @param[in] s id of the surface
      * @param[in] t id of the triangle
      * @return the corresponding facet id
@@ -664,11 +664,11 @@ namespace RINGMesh {
     index_t MacroMeshFacets::triangle_id( index_t s, index_t t ) const
     {
         test_initialize() ;
-        return facet( surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s] + t ) ;
+        return facet( surface_facet_ptr_[GeoModel::NB_FACET_TYPES * s] + t ) ;
     }
 
     /*!
-     * Gets the total number of quad in the MacroMesh
+     * Gets the total number of quad in the GeoModel
      * @return the corresponding number
      */
     index_t MacroMeshFacets::nb_quad() const
@@ -685,12 +685,12 @@ namespace RINGMesh {
     index_t MacroMeshFacets::nb_quad( index_t s ) const
     {
         test_initialize() ;
-        return surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s + 2]
-            - surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s + 1] ;
+        return surface_facet_ptr_[GeoModel::NB_FACET_TYPES * s + 2]
+            - surface_facet_ptr_[GeoModel::NB_FACET_TYPES * s + 1] ;
     }
 
     /*!
-     * Gets the quad id in the MacroMesh
+     * Gets the quad id in the GeoModel
      * @param[in] s id of the surface
      * @param[in] q id of the quad
      * @return the corresponding facet id
@@ -698,7 +698,7 @@ namespace RINGMesh {
     index_t MacroMeshFacets::quad_id( index_t s, index_t q ) const
     {
         test_initialize() ;
-        return facet( surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s + 1] + q ) ;
+        return facet( surface_facet_ptr_[GeoModel::NB_FACET_TYPES * s + 1] + q ) ;
     }
 
     /*!
@@ -750,31 +750,31 @@ namespace RINGMesh {
 
     index_t MacroMeshFacets::surface_begin( index_t s ) const
     {
-        return surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * s] ;
+        return surface_facet_ptr_[GeoModel::NB_FACET_TYPES * s] ;
     }
 
     index_t MacroMeshFacets::surface_end( index_t s ) const
     {
-        return surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * ( s + 1 )] ;
+        return surface_facet_ptr_[GeoModel::NB_FACET_TYPES * ( s + 1 )] ;
     }
 
     index_t MacroMeshCells::mesh_begin( index_t mesh ) const
     {
-        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh] ;
+        return mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * mesh] ;
     }
 
     index_t MacroMeshCells::mesh_end( index_t mesh ) const
     {
-        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * ( mesh + 1 )] ;
+        return mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * ( mesh + 1 )] ;
     }
 
     /*!
-     * Initialize the cell database of the MacroMesh
+     * Initialize the cell database of the GeoModel
      */
     void MacroMeshCells::initialize()
     {
         /// 1. Compute the number of cells and adjacent cells
-        mesh_cell_ptr_.resize( MacroMesh::NB_CELL_TYPES * mm_.nb_meshes() + 1, 0 ) ;
+        mesh_cell_ptr_.resize( GeoModel::NB_CELL_TYPES * mm_.nb_meshes() + 1, 0 ) ;
         mesh_cell_adjacent_ptr_.resize( mm_.nb_meshes() + 1, 0 ) ;
         // fast access to storage order by type using the GEO::MeshCellType
         index_t cell_access[4] = { 0, 3, 2, 1 } ;
@@ -782,7 +782,7 @@ namespace RINGMesh {
             const GEO::Mesh& mesh = mm_.mesh( m ) ;
             nb_cells_ += mesh.cells.nb() ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m
+                mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * m
                     + cell_access[mesh.cells.type( c )] + 1]++ ;
                 mesh_cell_adjacent_ptr_[m + 1] += mesh.cells.nb_facets( c ) ;
             }
@@ -800,28 +800,28 @@ namespace RINGMesh {
         index_t nb_vertices = mm_.vertices.nb_vertices() ;
         std::vector< std::vector< index_t > > cells_around_vertex( nb_vertices ) ;
         std::vector< index_t > offset_cell_index_type(
-            MacroMesh::NB_CELL_TYPES * mm_.nb_meshes(), 0 ) ;
+            GeoModel::NB_CELL_TYPES * mm_.nb_meshes(), 0 ) ;
         std::vector< index_t > offset_cell_adj( mm_.nb_meshes(), 0 ) ;
         for( index_t m = 0; m < mm_.nb_meshes(); m++ ) {
             const GEO::Mesh& mesh = mm_.mesh( m ) ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                 index_t type_access = cell_access[mesh.cells.type( c )] ;
                 // Basically it's coping and sorting by type each cell index
-                cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m + type_access]
-                    + offset_cell_index_type[MacroMesh::NB_CELL_TYPES * m
+                cells_[mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * m + type_access]
+                    + offset_cell_index_type[GeoModel::NB_CELL_TYPES * m
                         + type_access]++ ] = c ;
 
                 for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                     index_t adj = mesh.cells.adjacent( c, f ) ;
                     if( adj != GEO::NO_CELL ) {
-                        adj += mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m] ;
+                        adj += mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * m] ;
                     } else {
                         for( index_t v = 0; v < mesh.cells.facet_nb_vertices( c, f );
                             v++ ) {
                             index_t vertex_id = mm_.vertices.vertex_id( m,
                                 mesh.cells.facet_vertex( c, f, v ) ) ;
                             cells_around_vertex[vertex_id].push_back(
-                                mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m] + c ) ;
+                                mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * m] + c ) ;
                         }
                     }
                     cell_adjacents_[mesh_cell_adjacent_ptr_[m] + offset_cell_adj[m]++ ] =
@@ -868,7 +868,7 @@ namespace RINGMesh {
                         if( intersection.size() == 2 ) {
                             index_t new_adj =
                                 intersection[0]
-                                    == mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * m]
+                                    == mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * m]
                                         + c ? intersection[1] : intersection[0] ;
                             cell_adjacents_[mesh_cell_adjacent_ptr_[m]
                                 + mesh.cells.facets_begin( c ) + f] = new_adj ;
@@ -888,7 +888,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * Gets the cell adjacent id in the MacroMesh
+     * Gets the cell adjacent id in the GeoModel
      * @param[in] m id of the GEO::Mesh
      * @param[in] c id of the cell in the GEO::Mesh
      * @param[in] f id of the facet in the cell to test
@@ -902,8 +902,8 @@ namespace RINGMesh {
     }
 
     /*!
-     * Convert a MacroMesh cell id to a GEO::Mesh cell id
-     * @param[in] global_index id of the MacroMesh cell
+     * Convert a GeoModel cell id to a GEO::Mesh cell id
+     * @param[in] global_index id of the GeoModel cell
      * @param[out] mesh_id id of the GEO::Mesh containing the cell
      * @return the cell id in the GEO::Mesh whose id is \p mesh_id
      */
@@ -915,10 +915,10 @@ namespace RINGMesh {
         mesh_id = 0 ;
         for( ; mesh_id < mm_.nb_meshes(); mesh_id++ ) {
             if( global_index
-                < mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh_id + 1] ) break ;
+                < mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * mesh_id + 1] ) break ;
         }
         ringmesh_debug_assert( mesh_id < mm_.nb_meshes() ) ;
-        return global_index - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * mesh_id] ;
+        return global_index - mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * mesh_id] ;
     }
 
     /*!
@@ -960,12 +960,12 @@ namespace RINGMesh {
     index_t MacroMeshCells::nb_tet( index_t r ) const
     {
         test_initialize() ;
-        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 1]
-            - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r] ;
+        return mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r + 1]
+            - mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r] ;
     }
 
     /*!
-     * Gets the tetrahedron id in the MacroMesh
+     * Gets the tetrahedron id in the GeoModel
      * @param[in] r id of the GEO::Mesh
      * @param[in] t id of the terahedron
      * @return the corresponding id
@@ -973,7 +973,7 @@ namespace RINGMesh {
     index_t MacroMeshCells::tet_id( index_t r, index_t t ) const
     {
         test_initialize() ;
-        return cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r] + t] ;
+        return cells_[mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r] + t] ;
     }
 
     /*!
@@ -994,12 +994,12 @@ namespace RINGMesh {
     index_t MacroMeshCells::nb_pyramid( index_t r ) const
     {
         test_initialize() ;
-        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 2]
-            - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 1] ;
+        return mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r + 2]
+            - mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r + 1] ;
     }
 
     /*!
-     * Gets the pyramid id in the MacroMesh
+     * Gets the pyramid id in the GeoModel
      * @param[in] r id of the GEO::Mesh
      * @param[in] p id of the pyramid
      * @return the corresponding id
@@ -1007,7 +1007,7 @@ namespace RINGMesh {
     index_t MacroMeshCells::pyramid_id( index_t r, index_t p ) const
     {
         test_initialize() ;
-        return cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 1] + p] ;
+        return cells_[mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r + 1] + p] ;
     }
 
     /*!
@@ -1028,12 +1028,12 @@ namespace RINGMesh {
     index_t MacroMeshCells::nb_prism( index_t r ) const
     {
         test_initialize() ;
-        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 3]
-            - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 2] ;
+        return mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r + 3]
+            - mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r + 2] ;
     }
 
     /*!
-     * Gets the prism id in the MacroMesh
+     * Gets the prism id in the GeoModel
      * @param[in] r id of the GEO::Mesh
      * @param[in] p id of the prism
      * @return the corresponding id
@@ -1041,7 +1041,7 @@ namespace RINGMesh {
     index_t MacroMeshCells::prism_id( index_t r, index_t p ) const
     {
         test_initialize() ;
-        return cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 2] + p] ;
+        return cells_[mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r + 2] + p] ;
     }
 
     /*!
@@ -1062,12 +1062,12 @@ namespace RINGMesh {
     index_t MacroMeshCells::nb_hex( index_t r ) const
     {
         test_initialize() ;
-        return mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 4]
-            - mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 3] ;
+        return mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r + 4]
+            - mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r + 3] ;
     }
 
     /*!
-     * Gets the hexahedron id in the MacroMesh
+     * Gets the hexahedron id in the GeoModel
      * @param[in] r id of the GEO::Mesh
      * @param[in] h id of the hexahedron
      * @return the corresponding id
@@ -1075,7 +1075,7 @@ namespace RINGMesh {
     index_t MacroMeshCells::hex_id( index_t r, index_t h ) const
     {
         test_initialize() ;
-        return cells_[mesh_cell_ptr_[MacroMesh::NB_CELL_TYPES * r + 3] + h] ;
+        return cells_[mesh_cell_ptr_[GeoModel::NB_CELL_TYPES * r + 3] + h] ;
     }
 
     /*!
@@ -1093,7 +1093,7 @@ namespace RINGMesh {
         nb_hex_ = 0 ;
     }
 
-    MacroMeshTools::MacroMeshTools( MacroMesh& mm )
+    MacroMeshTools::MacroMeshTools( GeoModel& mm )
         : mm_( mm )
     {
     }
@@ -1177,7 +1177,7 @@ namespace RINGMesh {
         }
     }
 
-    MacroMeshOrder::MacroMeshOrder( MacroMesh& mm )
+    MacroMeshOrder::MacroMeshOrder( GeoModel& mm )
         :
             mm_( mm ),
             nb_vertices_( 0 ),
@@ -1506,7 +1506,7 @@ namespace RINGMesh {
         return nb_high_order_points_per_cell_type_[mm_.mesh(m).cells.type(c)] ;
     }
     /*!
-     * Initialize the cell database of the MacroMesh
+     * Initialize the cell database of the GeoModel
      */
     void MacroMeshEdges::initialize()
     {
@@ -1546,7 +1546,7 @@ namespace RINGMesh {
         return mm_.wells() ? mm_.wells()->nb_wells() : 0 ;
     }
     /*!
-     * Gets the number of edges in the MacroMesh
+     * Gets the number of edges in the GeoModel
      * @return the corresponding number
      */
     index_t MacroMeshEdges::nb_edges() const
@@ -1565,7 +1565,7 @@ namespace RINGMesh {
         return ( well_ptr_[w + 1] - well_ptr_[w] ) / 2 ;
     }
     /*!
-     * Gets the vertex id of the MacroMesh
+     * Gets the vertex id of the GeoModel
      * @param[in] w the well id
      * @param[in] e the edge id
      * @param[in] v the vertex id of the edge (0 or 1 )
@@ -1577,7 +1577,7 @@ namespace RINGMesh {
         return edges_[well_ptr_[w] + 2 * e + v] ;
     }
 
-    MacroMesh::MacroMesh( const GeoModel& model )
+    GeoModel::GeoModel( const GeoModel& model )
         :
             mode_( NONE ),
             wells_( nil ),
@@ -1593,13 +1593,13 @@ namespace RINGMesh {
     }
 
     /*!
-     * Copy a MacroMesh and its attributes
-     * @param[in] rhs the MacroMesh copied
+     * Copy a GeoModel and its attributes
+     * @param[in] rhs the GeoModel copied
      * @param[in] keep_order To document
      * @param[in] copy_attributes tells whether or not you want to copy attributes
      * @todo Check this function - keep_order parameter is not used
      */
-    void MacroMesh::copy( const MacroMesh& rhs, bool copy_attributes )
+    void GeoModel::copy( const GeoModel& rhs, bool copy_attributes )
     {
         order_ = rhs.get_order() ;
         mode_ = rhs.duplicate_mode() ;
@@ -1610,7 +1610,7 @@ namespace RINGMesh {
 
     }
 
-    MacroMesh::~MacroMesh()
+    GeoModel::~GeoModel()
     {
         for( index_t r = 0; r < meshes_.size(); r++ ) {
 #ifdef RINGMESH_DEBUG
@@ -1629,7 +1629,7 @@ namespace RINGMesh {
      * mesh generation. There is one vector per mesh.
      * to improve the mesh quality
      */
-    void MacroMesh::compute_tetmesh(
+    void GeoModel::compute_tetmesh(
         const std::string& method,
         index_t region_id,
         bool add_steiner_points,
@@ -1659,15 +1659,15 @@ namespace RINGMesh {
     }
 
     /*!
-     * Associates a WellGroup to the MacroMesh
+     * Associates a WellGroup to the GeoModel
      * @param[in] wells the WellGroup
      */
-    void MacroMesh::set_wells( const WellGroup* wells )
+    void GeoModel::set_wells( const WellGroup* wells )
     {
         wells_ = wells ;
     }
 
-    void MacroMesh::set_model( const GeoModel& model )
+    void GeoModel::set_model( const GeoModel& model )
     {
         model_ = &model ;
         ringmesh_debug_assert( meshes_.empty() ) ;
@@ -1684,7 +1684,7 @@ namespace RINGMesh {
      *
      * @param[in] translation_vector vector of translation.
      */
-    void MacroMesh::translate( const vec3& translation_vector )
+    void GeoModel::translate( const vec3& translation_vector )
     {
         // Note: if the translation is null, do nothing.
         if( translation_vector == vec3() ) {
@@ -1722,7 +1722,7 @@ namespace RINGMesh {
      *
      * @todo Reviw : This does not rotate the GeoModel. DANGER ! [JP]
      */
-    void MacroMesh::rotate(
+    void GeoModel::rotate(
         const vec3& origin,
         const vec3& axis,
         float64 theta,
