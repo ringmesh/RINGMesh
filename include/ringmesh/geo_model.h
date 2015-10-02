@@ -88,16 +88,7 @@ namespace RINGMesh {
         {
             return name_ ;
         }
-
-        /*!
-         * @brief Set the directory where debugging information shall be stored
-         * @details Test that this directory exists, if not
-         *          keep the previous value.
-         *          The default directory is the executable directory.
-         * @todo To move [JP]
-         */
-        void set_debug_directory( const std::string& directory ) ;
-
+     
         /*!
          * \name Generic GeoModelElement accessors
          * @{

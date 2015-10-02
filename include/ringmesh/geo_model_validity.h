@@ -56,24 +56,55 @@ namespace RINGMesh {
 namespace RINGMesh {
     
     
-    
+    /*!
+    * @brief Check model validity
+    * @details In debug mode problematic vertices, edges, elements are
+    *          saved in the debug_directory_
+    *
+    * @param check_surface_intersections Optional expensive check of the
+    *        intersections between the model surfaces
+    *
+    * @todo Check the consistency of index info for vertices -
+    * gme_vertices model_vertex_id
+    */
     bool is_geomodel_valid( 
         const GeoModel& GM, 
         bool check_surface_intersections = true 
     ) ;
     
+    /*!
+    * @brief Check the validity of all individual elements
+    * @details Check that the elements belong to this model,
+    *          call the check validity for each element
+    *          For regions, check that their boundary is a one connected component
+    *          manifold closed surface.
+    *
+    */
     bool are_geomodel_elements_valid( const GeoModel& GM ) ;
-    bool are_geomodel_elements_valid( const std::vector< GeoModelElement* >& elements ) ;
 
+
+    /*!
+    * @brief Check geological validity
+    * @details Only a fault can have a free border and
+    *          an stratigraphical interface can be on the boundary of maximum two layers
+    *          See Building and Editing a Sealed Geological Model,
+    *          Caumon et al. 2004
+    */
     bool is_geomodel_geology_valid( const GeoModel& GM ) ;
 
 
 
-    /// Do we need it to be in a class
+    /// Do we need it to be in a class ? [JP]
     static std::string validity_errors_directory =
         GEO::FileSystem::get_current_working_directory() ;
 
-    void set_debug_directory( const std::string& directory )
+    /*!
+    * @brief Set the directory where debugging information shall be stored
+    * @details Test that this directory exists, if not
+    *          keep the previous value.
+    *          The default directory is the executable directory.
+    */
+    static void set_debug_directory( const std::string& directory )
     {
         if( GEO::FileSystem::is_directory( directory ) ) {
             validity_errors_directory = directory ;

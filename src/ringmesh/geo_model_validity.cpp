@@ -1157,16 +1157,7 @@ namespace {
 
 
 namespace RINGMesh {
-
-
-    /*!
-    * @brief Check the validity of all individual elements
-    * @details Check that the elements belong to this model,
-    *          call the check validity for each element
-    *          For regions, check that their boundary is a one connected component
-    *          manifold closed surface.
-    *
-    */
+   
     bool are_geomodel_elements_valid( const GeoModel& GM )
     {
         std::vector< bool > valid( GM.nb_elements( GME::ALL_TYPES ), true ) ;
@@ -1201,14 +1192,8 @@ namespace RINGMesh {
         return nb_invalid == 0 ;
     }
 
-    /*!
-    * @brief Check geological validity
-    * @details Only a fault can have a free border and
-    *          an stratigraphical interface can be on the boundary of maximum two layers
-    *          See Building and Editing a Sealed Geological Model,
-    *          Caumon et al. 2004
-    */
-    bool check_geology_validity( const GeoModel& GM ) 
+  
+    bool is_geomodel_geology_valid( const GeoModel& GM )
     {
         bool valid = true ;
         for( index_t l = 0; l < GM.nb_lines(); ++l ) {
@@ -1247,18 +1232,8 @@ namespace RINGMesh {
         return valid ;
     }
 
-    /*!
-    * @brief Check model validity
-    * @details In debug mode problematic vertices, edges, elements are
-    *          saved in the debug_directory_
-    *
-    * @param check_surface_intersections Optional expensive check of the
-    *        intersections between the model surfaces
-    *
-    * @todo Check the consistency of index info for vertices -
-    * gme_vertices model_vertex_id
-    */
-    bool check_model_validity(
+    
+    bool is_geomodel_valid(
         const GeoModel& GM, 
         bool check_surface_intersections )
     {
