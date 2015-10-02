@@ -41,12 +41,10 @@
 #include <ringmesh/io.h>
 
 namespace RINGMesh {
-    namespace RINGMeshIO {
-        void initialize()
-        {
-            GeoModelIOHandler::initialize() ;
-            MacroMeshIOHandler::initialize() ;
-            WellGroupIOHandler::initialize() ;
-        }
+    void mesh_initialize()
+    {
+        GeoModelSurfaceIOHandler::initialize() ;
+        GeoModelMeshIOHandler::initialize() ;
+        WellGroupIOHandler::initialize() ;
     }
 }

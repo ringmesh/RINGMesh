@@ -182,7 +182,7 @@ namespace RINGMesh {
             ///  Index of the element in the GeoModel
             index_t index ;
         } ;
-       
+
         const static index_t NO_ID = index_t( -1 ) ;
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
@@ -209,7 +209,7 @@ namespace RINGMesh {
         static TYPE boundary_type( TYPE t ) ;
         static TYPE in_boundary_type( TYPE t ) ;
         static index_t dimension( TYPE t ) ;
-        static bool has_mesh        ( TYPE t ) ;
+        static bool has_mesh( TYPE t ) ;
 
         static bool parent_allowed( TYPE t )
         {
@@ -238,8 +238,10 @@ namespace RINGMesh {
          * @param[in] element_type Type of the element to create
          * @param[in] id Index of the element in the corresponding vector in the model
          */
-        GeoModelElement( GeoModel* model = NULL, TYPE element_type =
-            NO_TYPE, index_t id = NO_ID )
+        GeoModelElement(
+            GeoModel* model = NULL,
+            TYPE element_type = NO_TYPE,
+            index_t id = NO_ID )
             :
                 model_( model ),
                 id_( element_type, id ),
@@ -282,10 +284,12 @@ namespace RINGMesh {
          * \name Accessors to basic information
          * @{
          */
-        bool has_name() const { 
+        bool has_name() const
+        {
             return name() != "" ;
         }
-        const GeoModel& model() const {
+        const GeoModel& model() const
+        {
             return *model_ ;
         }
         bool has_model() const
@@ -322,7 +326,7 @@ namespace RINGMesh {
         {
             return boundaries_[x] ;
         }
-        const GeoModelElement& boundary( index_t x ) const ;       
+        const GeoModelElement& boundary( index_t x ) const ;
 
         index_t nb_in_boundary() const
         {
@@ -341,7 +345,8 @@ namespace RINGMesh {
          * \name Parent - children relationships
          * @{
          */
-        bool has_parent() const { 
+        bool has_parent() const
+        {
             return parent_id().is_defined() ;
         }
         const gme_t& parent_id() const
@@ -358,8 +363,8 @@ namespace RINGMesh {
         {
             return children_[x] ;
         }
-        const GeoModelElement& child( index_t x ) const ;     
-        
+        const GeoModelElement& child( index_t x ) const ;
+
         /*!@}
          * \name Modification of the element
          * @{
@@ -373,11 +378,26 @@ namespace RINGMesh {
             const GeoModelElement& rhs,
             GeoModel& model ) ;
 
-        void set_model( GeoModel* m ) {model_ = m ;}
-        void set_element_type( TYPE t ) {id_.type = t ;}
-        void set_id( index_t id ) {id_.index = id ;}
-        void set_name( const std::string& name ) {name_ = name ;}
-        void set_geological_feature( GEOL_FEATURE type ) {geol_feature_ = type ;}
+        void set_model( GeoModel* m )
+        {
+            model_ = m ;
+        }
+        void set_element_type( TYPE t )
+        {
+            id_.type = t ;
+        }
+        void set_id( index_t id )
+        {
+            id_.index = id ;
+        }
+        void set_name( const std::string& name )
+        {
+            name_ = name ;
+        }
+        void set_geological_feature( GEOL_FEATURE type )
+        {
+            geol_feature_ = type ;
+        }
 
         void add_boundary( const gme_t& b )
         {
@@ -392,9 +412,9 @@ namespace RINGMesh {
             /// NO_ID is used to flag elements to delete            
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             ringmesh_debug_assert( id < nb_boundaries() ) ;
-            boundaries_[ id ] = b ;
-        }  
- 
+            boundaries_[id] = b ;
+        }
+
         void add_in_boundary( const gme_t& in_b )
         {
             ringmesh_debug_assert( in_b.is_defined() ) ;
@@ -408,7 +428,7 @@ namespace RINGMesh {
             /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
             ringmesh_debug_assert( id < nb_in_boundary() ) ;
-            in_boundary_[ id ] = in_b ;
+            in_boundary_[id] = in_b ;
         }
 
         void set_parent( const gme_t& p )
@@ -432,7 +452,7 @@ namespace RINGMesh {
             /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
             ringmesh_debug_assert( id < nb_children() ) ;
-            children_[ id ] = c ;
+            children_[id] = c ;
         }
 
         void erase_invalid_element_references() ;
@@ -454,7 +474,7 @@ namespace RINGMesh {
         GEOL_FEATURE geol_feature_ ;
 
         /// Elements on the boundary of this element - see boundary_type( TYPE )
-        std::vector< gme_t > boundaries_ ;    
+        std::vector< gme_t > boundaries_ ;
 
         /// Elements in which boundary this element is - see in_boundary_type( TYPE )
         std::vector< gme_t > in_boundary_ ;
@@ -475,7 +495,7 @@ namespace RINGMesh {
      * @brief Name of the attribute storing the index of a vertex in the model
      *
      * @note It should be in GeoModelMeshElement class
-    *       but then there are linking errors in code that depends on it ?? (JP)
+     *       but then there are linking errors in code that depends on it ?? (JP)
      */
     const static std::string model_vertex_id_att_name = std::string(
         "model_vertex_id" ) ;
@@ -488,8 +508,10 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMeshElement: public GeoModelElement {
     ringmesh_disable_copy( GeoModelMeshElement ) ;
     public:
-        GeoModelMeshElement( GeoModel* model = NULL, TYPE element_type =
-            NO_TYPE, index_t id = NO_ID )
+        GeoModelMeshElement(
+            GeoModel* model = NULL,
+            TYPE element_type = NO_TYPE,
+            index_t id = NO_ID )
             : GeoModelElement( model, element_type, id )
         {
             model_vertex_id_.bind( mesh_.vertices.attributes(),
@@ -500,9 +522,9 @@ namespace RINGMesh {
         /*!
          * @brief Global validity of the element
          */
-        virtual bool is_valid() const {
-            return is_connectivity_valid() &&
-                is_mesh_valid() ;
+        virtual bool is_valid() const
+        {
+            return is_connectivity_valid() && is_mesh_valid() ;
             /// \todo Test and add the model vertex validity test            
             /// (no time right now JP)
             // are_model_vertex_indices_valid() ;
@@ -808,8 +830,7 @@ namespace RINGMesh {
         index_t model_vertex_id( index_t f, index_t v ) const
         {
             ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-            return GeoModelMeshElement::model_vertex_id(
-                surf_vertex_id( f, v ) ) ;
+            return GeoModelMeshElement::model_vertex_id( surf_vertex_id( f, v ) ) ;
         }
 
         /*!
@@ -954,27 +975,28 @@ namespace RINGMesh {
     } ;
 
     /*!
-    * @brief A GeoModelElement of type REGION
-    *
-    * @details The Region can be defined only defined by its boundary
-    * Surfaces. Its volumetric mesh is optional.
-    */
-    class RINGMESH_API Region : public GeoModelMeshElement {
+     * @brief A GeoModelElement of type REGION
+     *
+     * @details The Region can be defined only defined by its boundary
+     * Surfaces. Its volumetric mesh is optional.
+     */
+    class RINGMESH_API Region: public GeoModelMeshElement {
     public:
         Region( GeoModel* model = nil, index_t id = NO_ID )
-                : GeoModelMeshElement( model, REGION, id )
-        {            
+            : GeoModelMeshElement( model, REGION, id )
+        {
         }
 
         ~Region()
         {
-        } ;
+        }
+        ;
 
-        bool is_meshed() const 
+        bool is_meshed() const
         {
             return mesh().cells.nb() > 0 ;
         }
-      
+
         void add_boundary( const gme_t& b, bool side )
         {
             ringmesh_debug_assert( b.is_defined() ) ;
@@ -989,18 +1011,18 @@ namespace RINGMesh {
             /// NO_ID is used to flag elements to delete 
             ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
             ringmesh_debug_assert( id < nb_boundaries() ) ;
-            boundaries_[ id ] = b ;
-            sides_[ id ] = side ;
+            boundaries_[id] = b ;
+            sides_[id] = side ;
         }
 
         bool side( index_t i ) const
         {
-            return sides_[ i ] ;
+            return sides_[i] ;
         }
 
         void set_side( index_t i, bool value )
         {
-            sides_[ i ] = value ;
+            sides_[i] = value ;
         }
 
         /*! I do not like it, but I need this access in the nasty
@@ -1022,7 +1044,7 @@ namespace RINGMesh {
          *       return false ;
          *     }
          */
-   
+
         /*!
          * \todo Copy function. We need to copy the SIDES
          * with the boundaries.
@@ -1032,7 +1054,7 @@ namespace RINGMesh {
             GeoModel& model )
         {
             GeoModelElement::copy_macro_topology( rhs, model ) ;
-            sides_ = dynamic_cast< const Region& >(rhs).sides_ ;
+            sides_ = dynamic_cast< const Region& >( rhs ).sides_ ;
         }
 
     protected:

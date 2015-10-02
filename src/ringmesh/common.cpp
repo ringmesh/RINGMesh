@@ -83,7 +83,7 @@ INITIALIZER( initialize ) {
         GEO::CmdLine::import_arg_group( "gfx" ) ;
 #endif
 
-        RINGMesh::RINGMeshIO::initialize() ;
+        RINGMesh::mesh_initialize() ;
         RINGMesh::TetraGen::initialize() ;
 
     }

@@ -38,7 +38,6 @@
  *     FRANCE
  */
 
-
 #ifndef __RINGMESH_GEO_MODEL_MESH__
 #define __RINGMESH_GEO_MODEL_MESH__
 
@@ -54,9 +53,8 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-
     class RINGMESH_API GeoModelMeshVertices {
-        ringmesh_disable_copy( GeoModelMeshVertices ) ;
+    ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
     public:
         /*!
@@ -223,7 +221,6 @@ namespace RINGMesh {
         /// Attached Mesh
         GEO::Mesh& mesh_ ;
 
-
         /*!
          * Vertices in GeoModelElements corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
@@ -235,12 +232,12 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
-        ringmesh_disable_copy( GeoModelMeshFacets ) ;
+    ringmesh_disable_copy( GeoModelMeshFacets ) ;
         friend class GeoModelMesh ;
     public:
         enum FacetType {
             TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
-        };
+        } ;
 
     public:
         GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
@@ -292,7 +289,7 @@ namespace RINGMesh {
          * @return the facet index varying from 0 to nb_facets
          * in the surface owing \p f
          */
-        index_t facet_in_surface( index_t f ) const ;
+        index_t index_in_surface( index_t f ) const ;
         /*!
          * Get the facet index in the GeoModelMesh restricted to
          * the surface owing the facet and its type
@@ -441,7 +438,7 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshEdges {
-        ringmesh_disable_copy( GeoModelMeshEdges ) ;
+    ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
         GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
         ~GeoModelMeshEdges() ;
@@ -506,34 +503,278 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshCells {
-        ringmesh_disable_copy( GeoModelMeshCells ) ;
+    ringmesh_disable_copy( GeoModelMeshCells ) ;
+        friend class GeoModelMesh ;
+    public:
+        GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        /*!
+         * Test if the mesh cells are initialized
+         */
+        bool is_initialized() const ;
+
+        /*!
+         * @brief Number of cells stored.
+         */
+        index_t nb() const ;
+
+        /*!
+         * Get the number of vertices in the cell
+         * @param[in] c the cell index
+         * @return the number of vertices
+         */
+        index_t nb_vertices( index_t c ) const ;
+        /*!
+         * Get the vertex index of a vertex in a cell
+         * in the GeoModelMesh
+         * @param[in] c the cell index
+         * @param[in] v the local vertex index [0, nb_vertices_in_cell[
+         * @return the vertex index
+         */
+        index_t vertex( index_t c, index_t v ) const ;
+        /*!
+         * Get the adjacent cell index in the GeoModelMesh
+         * @param[in] c the cell index
+         * @param[in] f the edge index
+         * @return the adjacent cell index
+         */
+        index_t adjacent( index_t c, index_t f ) const ;
+        /*!
+         * Get the region index in the GeoModel according the cell
+         * index in the GeoModelMesh
+         * @param[in] c the cell index
+         * @return the region index
+         */
+        index_t region( index_t c ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh restricted to
+         * the region owing the cell
+         * @param[in] c the cell index
+         * @return the cell index varying from 0 to nb_cells
+         * in the region owing \p f
+         */
+        index_t index_in_region( index_t c ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh restricted to
+         * the region owing the cell and its type
+         * @param[in] c the cell index
+         * @param[out] index the cell index varying from 0 to nb_cells
+         * of the corresponding type of \p c in the owing region
+         * @return the type of the cell \p f
+         */
+        GEO::MeshCellType cell_type( index_t c, index_t& index ) const ;
+
+        /*!
+         * Get the number of cells of the corresponding type
+         * @param[in] type the corresponding type
+         * @return the number of cells
+         */
+        index_t nb_cells( GEO::MeshCellType type = GEO::MESH_NB_CELL_TYPES ) const ;
+        /*!
+         * Get the number of cells of the corresponding type
+         * in the given region of the GeoModel
+         * @param[in] r the region index
+         * @param[in] type the corresponding type
+         * @return the number of cells
+         */
+        index_t nb_cells(
+            index_t r,
+            GEO::MeshCellType type = GEO::MESH_NB_CELL_TYPES ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh
+         * @param[in] r the region index owing the cell
+         * @param[in] c the cell index varying from 0 to nb_cells in the region
+         * @param[in] type it can specify the cell type used. For example, if type = QUAD
+         * then \p c represents the fth quad in the region \p s and \p c can vary from 0
+         * to nb_quads( s ).
+         * @return the cell index
+         */
+        index_t cell( index_t r, index_t c, GEO::MeshCellType type =
+            GEO::MESH_NB_CELL_TYPES ) const ;
+
+        /*!
+         * Get the number of tets in the GeoModelMesh
+         * @return the number of tets
+         */
+        index_t nb_tet() const ;
+        /*!
+         * Get the number of tets in the given region
+         * @param[in] r the region index
+         * @return the number of tets
+         */
+        index_t nb_tet( index_t r ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh corresponding
+         * to the asked tet in the region
+         * @param[in] r the region index
+         * @param[in] t the tth tet index varying from 0 to nb_tet( r )
+         * @return the cell index
+         */
+        index_t tet( index_t r, index_t t ) const ;
+
+        /*!
+         * Get the number of hexs in the GeoModelMesh
+         * @return the number of hexs
+         */
+        index_t nb_hex() const ;
+        /*!
+         * Get the number of hexs in the given region
+         * @param[in] r the region index
+         * @return the number of hexs
+         */
+        index_t nb_hex( index_t r ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh corresponding
+         * to the asked hex in the region
+         * @param[in] r the region index
+         * @param[in] h the hth hex index varying from 0 to nb_hex( r )
+         * @return the cell index
+         */
+        index_t hex( index_t r, index_t h ) const ;
+
+        /*!
+         * Get the number of prisms in the GeoModelMesh
+         * @return the number of prisms
+         */
+        index_t nb_prism() const ;
+        /*!
+         * Get the number of prisms in the given region
+         * @param[in] r the region index
+         * @return the number of prisms
+         */
+        index_t nb_prism( index_t r ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh corresponding
+         * to the asked prism in the region
+         * @param[in] r the region index
+         * @param[in] p the pth prism index varying from 0 to nb_prism( r )
+         * @return the cell index
+         */
+        index_t prism( index_t r, index_t p ) const ;
+
+
+        /*!
+         * Get the number of pyramids in the GeoModelMesh
+         * @return the number of pyramids
+         */
+        index_t nb_pyramid() const ;
+        /*!
+         * Get the number of pyramids in the given region
+         * @param[in] r the region index
+         * @return the number of pyramids
+         */
+        index_t nb_pyramid( index_t r ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh corresponding
+         * to the asked pyramid in the region
+         * @param[in] r the region index
+         * @param[in] p the pth pyramid index varying from 0 to nb_pyramid( r )
+         * @return the cell index
+         */
+        index_t pyramid( index_t r, index_t p ) const ;
+
+        /*!
+         * Get the number of connectors in the GeoModelMesh
+         * @return the number of connectors
+         */
+        index_t nb_connector() const ;
+        /*!
+         * Get the number of connectors in the given region
+         * @param[in] r the region index
+         * @return the number of connectors
+         */
+        index_t nb_connector( index_t r ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh corresponding
+         * to the asked connector in the region
+         * @param[in] r the region index
+         * @param[in] c the cth connector index varying from 0 to nb_connector( r )
+         * @return the cell index
+         */
+        index_t connector( index_t r, index_t c ) const ;
+
+
+    private:
+
+        /*!
+         * Test if the mesh cells need to be initialized,
+         * if so initialize them.
+         */
+        void test_and_initialize() const ;
+        /*!
+         * @brief Initialize the  cells from the cells
+         *        of the GeoModel Region cells
+         * @details Fills the mesh_.cells
+         */
+        void initialize() ;
+
+        /*!
+         * Bind attribute to the cells attribute manager
+         */
+        void bind_attribute() ;
+        /*!
+         * Unbind attribute to the cells attribute manager
+         */
+        void unbind_attribute() ;
+
+    private:
+        /// Attached GeoModelMesh owning the vertices
+        GeoModelMesh& gmm_ ;
+        /// Attached GeoModel
+        const GeoModel& gm_ ;
+        /// Attached Mesh
+        GEO::Mesh& mesh_ ;
+
+        /// Attribute storing the region index per cell
+        GEO::Attribute< index_t > region_id_ ;
+        /*!
+         * Vector storing the index of the starting cell index
+         * for a given region and a given cell type.
+         * For example:
+         *    the 2nd hex index of the region index R will be found here:
+         *    surface_facet_ptr_[GEO::MESH_NB_CELL_TYPES*R + HEX] + 2
+         */
+        std::vector< index_t > region_cell_ptr_ ;
+
+        /// Number of tet in the GeoModelMesh
+        index_t nb_tet_ ;
+        /// Number of hex in the GeoModelMesh
+        index_t nb_hex_ ;
+        /// Number of prism in the GeoModelMesh
+        index_t nb_prism_ ;
+        /// Number of pyramid in the GeoModelMesh
+        index_t nb_pyramid_ ;
+        /// Number of connector in the GeoModelMesh
+        index_t nb_connector_ ;
 
 
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
-        ringmesh_disable_copy( GeoModelMeshOrder ) ;
-
+    ringmesh_disable_copy( GeoModelMeshOrder ) ;
 
     } ;
 
     class RINGMESH_API GeoModelMesh {
-        ringmesh_disable_copy( GeoModelMesh ) ;
+    ringmesh_disable_copy( GeoModelMesh ) ;
     public:
         GeoModelMesh( const GeoModel& gm ) ;
         ~GeoModelMesh() ;
 
-        const GeoModel& model() const {
+        const GeoModel& model() const
+        {
             return gm_ ;
         }
 
-        GEO::AttributesManager& vertex_attribute_manager() const {
+        GEO::AttributesManager& vertex_attribute_manager() const
+        {
             return mesh_->vertices.attributes() ;
         }
-        GEO::AttributesManager& facet_attribute_manager() const {
+        GEO::AttributesManager& facet_attribute_manager() const
+        {
             return mesh_->facets.attributes() ;
         }
-        GEO::AttributesManager& cell_attribute_manager() const {
+        GEO::AttributesManager& cell_attribute_manager() const
+        {
             return mesh_->cells.attributes() ;
         }
 
@@ -576,12 +817,10 @@ namespace RINGMesh {
         GeoModelMeshVertices vertices ;
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
-//        GeoModelMeshCells cells ;
+        GeoModelMeshCells cells ;
 //        GeoModelMeshOrder order ;
 
     } ;
-
-
 
 }
 
