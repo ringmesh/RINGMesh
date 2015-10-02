@@ -155,7 +155,7 @@ namespace RINGMesh {
     void check_and_repair_mesh_consistency(
         const GeoModelElement& region,
         GEO::Mesh& mesh,
-        bool check_duplicated_facet )
+        bool check_duplicated_facet = false )
     {
         if( mesh.facets.nb() == 0 ) return ;
 
@@ -605,8 +605,16 @@ namespace RINGMesh {
         std::vector< std::vector< Edge > > well_edges ;
         if( wells ) {
             wells->get_region_edges( region->gme_id().index, well_edges ) ;
+            // Copy result of porting. Stupid, I know, but because of the interface
+            // of MakeUnique. This Edge class is a pain [JP]
+            std::vector< std::pair< vec3, vec3 > > wells_copy ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
-                uniqueID.add_edges( well_edges[w] ) ;
+                wells_copy.resize( well_edges.size() ) ;
+                for( index_t i = 0; i < wells_copy.size(); ++i ) {
+                    wells_copy[ i ] = std::pair< vec3, vec3> (
+                        well_edges[ w ][ i ].value( 0 ), well_edges[ w ][ i ].value( 1 ) ) ;
+                }
+                uniqueID.add_edges( wells_copy ) ;
             }
         }
         uniqueID.unique() ;

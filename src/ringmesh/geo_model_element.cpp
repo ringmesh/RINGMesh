@@ -1854,7 +1854,7 @@ namespace RINGMesh {
     {
         double result = 0 ;
         for( index_t i = 1; i + 1 < nb_vertices_in_facet( f ); i++ ) {
-            result += triangle_area(
+            result += GEO::Geom::triangle_area(
                 vertex( f, 0 ), vertex( f, i ), vertex( f, i + 1 ) ) ;
         }
         return result ;
