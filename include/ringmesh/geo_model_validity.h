@@ -38,59 +38,51 @@
 *     FRANCE
 */
 
-#include <ringmesh/geo_model_api.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geometry.h>
+/*! \author Jeanne Pellerin */
+
+#ifndef __RINGMESH_GEO_MODEL_VALIDITY__
+#define __RINGMESH_GEO_MODEL_VALIDITY__
+
+#include <ringmesh/common.h>
+
+#include <geogram/basic/file_system.h>
 
 namespace RINGMesh {
-     
-    void translate(
-        GeoModel& M,
-        const vec3& translation_vector )
+    class GeoModel ;
+    class GeoModelElement ;
+}
+
+
+namespace RINGMesh {
+    
+    
+    
+    bool is_geomodel_valid( 
+        const GeoModel& GM, 
+        bool check_surface_intersections = true 
+    ) ;
+    
+    bool are_geomodel_elements_valid( const GeoModel& GM ) ;
+    bool are_geomodel_elements_valid( const std::vector< GeoModelElement* >& elements ) ;
+
+    bool is_geomodel_geology_valid( const GeoModel& GM ) ;
+
+
+
+    /// Do we need it to be in a class
+    static std::string validity_errors_directory =
+        GEO::FileSystem::get_current_working_directory() ;
+
+    void set_debug_directory( const std::string& directory )
     {
-        // Note: if the translation is null, do nothing.
-        if( translation_vector == vec3( 0, 0, 0 ) ) {
-            return ;
-        }
-
-        for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
-            vec3 p = M.mesh.vertices.vertex( v ) ;
-            for( index_t i = 0; i < 3; i++ ) {
-                p[ i ] += translation_vector[ i ] ;
-            }
-            M.mesh.vertices.update_point( v, p ) ;
-        }
+        if( GEO::FileSystem::is_directory( directory ) ) {
+            validity_errors_directory = directory ;
+        }         
     }
-
-
-    void rotate(
-        GeoModel& M,
-        const vec3& origin,
-        const vec3& axis,
-        float64 theta,
-        bool degrees )
-    {
-        // Note: Rotation is impossible about an axis with null length.
-        ringmesh_debug_assert( axis != vec3() ) ;
-        if( theta == 0. ) {
-            return ;
-        }
-
-        GEO::Matrix< float64, 4 > rot_mat ;
-        rotation_matrix_about_arbitrary_axis(
-            origin, axis, theta, degrees, rot_mat ) ;
-
-        for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
-            const vec3& p = M.mesh.vertices.vertex( v ) ;
-
-            float64 old[ 4 ] = { p[ 0 ], p[ 1 ], p[ 2 ], 1. } ;
-            float64 new_p[ 4 ] = { 0, 0, 0, 1. } ;
-            GEO::mult( rot_mat, old, new_p ) ;
-            ringmesh_debug_assert( new_p[ 3 ] == 1. ) ;
-
-            M.mesh.vertices.update_point( v, vec3( new_p[ 0 ], new_p[ 1 ], new_p[ 2 ] ) ) ;
-        }
-    }
-
 
 }
+
+
+
+
+#endif
