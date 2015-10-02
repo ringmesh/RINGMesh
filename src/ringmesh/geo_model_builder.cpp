@@ -40,14 +40,14 @@
 
 /*! \author Jeanne Pellerin */
 
+#include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geo_model.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/geometry.h>
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_preprocessing.h>
-#include <ringmesh/geo_model_builder.h>
 
 #include <iostream>
 #include <iomanip>

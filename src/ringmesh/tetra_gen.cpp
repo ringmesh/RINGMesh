@@ -40,13 +40,17 @@
 
 #include <ringmesh/tetra_gen.h>
 #include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/well.h>
+#include <ringmesh/algorithm.h>
+#include <ringmesh/geometry.h>
 
 #include <geogram/basic/logger.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_tetrahedralize.h>
+#include <geogram/mesh/mesh_AABB.h>
 
 #include <iomanip>
 #include <stack>
@@ -58,6 +62,245 @@
 #endif 
 
 namespace RINGMesh {
+
+
+    /*!
+    * Tests if two adjacent facets have the same orientation
+    * @param[in] mesh the mesh
+    * @param[in[ f1 the first facet index
+    * @param[in] c11 the corner index in the first facet
+    * @param[in] f2 the second facet index
+    * @return the result of the test
+    *
+    * @todo Check that this code is not a duplicate of what is used to check validity
+    *       of of Geogram functions [JP]
+    */
+    bool facets_have_same_orientation(
+        const GEO::Mesh& mesh,
+        index_t f1,
+        index_t c11,
+        index_t f2 )
+    {
+        index_t c12 = mesh.facets.next_corner_around_facet( f1, c11 ) ;
+        index_t v11 = mesh.facet_corners.vertex( c11 ) ;
+        index_t v12 = mesh.facet_corners.vertex( c12 ) ;
+        for( index_t c21 = mesh.facets.corners_begin( f2 );
+             c21 < mesh.facets.corners_end( f2 ); c21++ ) {
+            index_t c22 = mesh.facets.next_corner_around_facet( f2, c21 ) ;
+            index_t v21 = mesh.facet_corners.vertex( c21 ) ;
+            index_t v22 = mesh.facet_corners.vertex( c22 ) ;
+            if( v11 == v21 && v12 == v22 ) {
+                return false ;
+            }
+            if( v11 == v22 && v12 == v21 ) {
+                return true ;
+            }
+        }
+        return true ;
+    }
+
+    /*
+     * @todo Check that this code is not a duplicate of what is used to check validity
+     *       of of Geogram functions[ JP ]
+     */
+    void mesh_facet_connect( GEO::Mesh& mesh )
+    {
+        std::vector< index_t > temp ;
+        temp.reserve( 7 ) ;
+        std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            for( index_t c = mesh.facets.corners_begin( f );
+                 c < mesh.facets.corners_end( f ); c++ ) {
+                stars[ mesh.facet_corners.vertex( c ) ].push_back( f ) ;
+            }
+        }
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            for( index_t c = mesh.facets.corners_begin( f );
+                 c < mesh.facets.corners_end( f ); c++ ) {
+                index_t f_adj = mesh.facet_corners.adjacent_facet( c ) ;
+                if( f_adj != GEO::NO_FACET ) continue ;
+                const std::vector< index_t >& star0 =
+                    stars[ mesh.facet_corners.vertex( c ) ] ;
+                const std::vector< index_t >& star1 =
+                    stars[ mesh.facet_corners.vertex(
+                    mesh.facets.next_corner_around_facet( f, c ) ) ] ;
+                std::vector< index_t > intersect(
+                    std::min( star0.size(), star1.size() ) ) ;
+                intersect.erase(
+                    std::set_intersection( star0.begin(), star0.end(), star1.begin(),
+                    star1.end(), intersect.begin() ), intersect.end() ) ;
+                if( intersect.size() > 1 ) {
+                    for( index_t i = 0; i < intersect.size(); i++ ) {
+                        index_t cur_f = intersect[ i ] ;
+                        if( cur_f != f ) {
+                            f_adj = cur_f ;
+                        }
+                    }
+                    mesh.facet_corners.set_adjacent_facet( c, f_adj ) ;
+                }
+            }
+        }
+    }
+
+    /*!
+    * Repair the consistency between a GeoModel region
+    * and its volumetric Mesh. It repairs duplicated facets and facet orientation
+    * @param[in] region the GeoModel region
+    * @param[in] mesh the mesh to repair
+    * @param[in] check_duplicated_facet the test of duplicated facets is optional
+    *
+    * @todo Why not use mesh_repair functions of Geogram ?? Please comment. [JP]
+    *       Check that this code is not a duplicate of what is used to check validity [JP]
+    */
+    void check_and_repair_mesh_consistency(
+        const GeoModelElement& region,
+        GEO::Mesh& mesh,
+        bool check_duplicated_facet )
+    {
+        if( mesh.facets.nb() == 0 ) return ;
+
+        GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
+                                             surface_att_name ) ;
+
+        /// 0 - Remove duplicated facets (optionnal)
+        if( check_duplicated_facet ) {
+            std::vector< vec3 > barycenters( mesh.facets.nb(), vec3( 0, 0, 0 ) ) ;
+            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+                barycenters[ f ] = GEO::Geom::mesh_facet_center( mesh, f ) ;
+            }
+
+            MakeUnique unique( barycenters ) ;
+            unique.unique() ;
+            const std::vector< index_t > indices = unique.indices() ;
+            GEO::vector< index_t > facet_to_remove( mesh.facets.nb(), 0 ) ;
+            signed_index_t cur_id = 0 ;
+            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+                if( cur_id == indices[ f ] ) {
+                    cur_id++ ;
+                } else {
+                    facet_to_remove[ f ] = 1 ;
+                }
+            }
+            mesh.facets.delete_elements( facet_to_remove ) ;
+
+            if( GEO::Attribute< index_t >::is_defined( mesh.facets.attributes(),
+                surface_att_name ) ) {
+                GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
+                                                     surface_att_name ) ;
+                index_t offset = 0 ;
+                cur_id = 0 ;
+                for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+                    if( cur_id == indices[ f ] ) {
+                        cur_id++ ;
+                        attribute[ f - offset ] = attribute[ f ] ;
+                    } else {
+                        offset++ ;
+                    }
+                }
+                attribute.redim( attribute.size() - offset ) ;
+            }
+            mesh.facets.connect() ;
+        }
+
+        /// 1 - Check facet adjacencies for non-manifold surfaces
+        std::vector< index_t > temp ;
+        temp.reserve( 6 ) ;
+        std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            for( index_t c = mesh.facets.corners_begin( f );
+                 c < mesh.facets.corners_end( f ); c++ ) {
+                stars[ mesh.facet_corners.vertex( c ) ].push_back( f ) ;
+            }
+        }
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            index_t surface_id = attribute[ f ] ;
+            for( index_t c = mesh.facets.corners_begin( f );
+                 c < mesh.facets.corners_end( f ); c++ ) {
+                index_t f_adj = mesh.facet_corners.adjacent_facet( c ) ;
+                if( f_adj != GEO::NO_FACET && attribute[ f_adj ] != surface_id ) {
+                    f_adj = GEO::NO_FACET ;
+                }
+                if( f_adj == GEO::NO_FACET ) {
+                    const std::vector< index_t >& star0 =
+                        stars[ mesh.facet_corners.vertex( c ) ] ;
+                    const std::vector< index_t >& star1 =
+                        stars[ mesh.facet_corners.vertex(
+                        mesh.facets.next_corner_around_facet( f, c ) ) ] ;
+                    std::vector< index_t > intersect(
+                        std::min( star0.size(), star1.size() ) ) ;
+                    intersect.erase(
+                        std::set_intersection( star0.begin(), star0.end(),
+                        star1.begin(), star1.end(), intersect.begin() ),
+                        intersect.end() ) ;
+                    if( intersect.size() > 1 ) {
+                        for( index_t i = 0; i < intersect.size(); i++ ) {
+                            index_t cur_f = intersect[ i ] ;
+                            if( cur_f != f && attribute[ cur_f ] == surface_id ) {
+                                f_adj = cur_f ;
+                            }
+                        }
+                    }
+                }
+                mesh.facet_corners.set_adjacent_facet( c, f_adj ) ;
+            }
+        }
+
+        /// 2 - Reorient in the same direction using propagation
+        std::vector< bool > facet_visited( mesh.facets.nb(), false ) ;
+        for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+            if( facet_visited[ f ] ) continue ;
+            index_t surface_id = attribute[ f ] ;
+            std::stack< index_t > S ;
+            S.push( f ) ;
+            do {
+                index_t cur_f = S.top() ;
+                S.pop() ;
+                if( facet_visited[ cur_f ] ) continue ;
+                facet_visited[ cur_f ] = true ;
+                for( index_t c = mesh.facets.corners_begin( cur_f );
+                     c < mesh.facets.corners_end( cur_f ); c++ ) {
+                    index_t f_adj = mesh.facet_corners.adjacent_facet( c ) ;
+                    if( f_adj == GEO::NO_FACET || attribute[ f_adj ] != surface_id
+                        || facet_visited[ f_adj ] ) continue ;
+                    if( !facets_have_same_orientation( mesh, cur_f, c, f_adj ) ) {
+                        mesh.facets.flip( f_adj ) ;
+                    }
+                    S.push( f_adj ) ;
+                }
+            } while( !S.empty() ) ;
+        }
+
+        /// 3 - Check for consistent orientation with GeoModel
+        GEO::MeshFacetsAABB aabb( mesh ) ;
+        std::vector< bool > flip_surface( region.model().nb_surfaces(), false ) ;
+        bool flip_sthg = false ;
+        for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
+            const Surface& surface = dynamic_cast< const Surface& >( region.boundary(
+                s ) ) ;
+            vec3 barycenter = surface.facet_barycenter( 0 ) ;
+            vec3 nearest_point ;
+            float64 distance ;
+            index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
+            ringmesh_debug_assert( surface.gme_id().index == attribute[ f ] ) ;
+
+            vec3 ori_normal = surface.facet_normal( 0 ) ;
+            vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
+            if( dot( ori_normal, test_normal ) < 0 ) {
+                flip_surface[ surface.gme_id().index ] = true ;
+                flip_sthg = true ;
+            }
+        }
+        if( flip_sthg ) {
+            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+                index_t surface_id = attribute[ f ] ;
+                if( flip_surface[ surface_id ] ) {
+                    mesh.facets.flip( f ) ;
+                }
+            }
+        }
+    }
+
+
 
     class RINGMESH_API TetraGen_TetGen: public TetraGen {
     public:
@@ -72,7 +315,7 @@ namespace RINGMesh {
         virtual bool tetrahedralize( bool refine )
         {
             GEO::mesh_tetrahedralize( tetmesh_, false, refine, 1.0 ) ;
-            Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
+            check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
             return true ;
         }
     } ;
@@ -350,7 +593,7 @@ namespace RINGMesh {
         for( index_t s = 0; s < nb_surfaces; s++ ) {
             const Surface& surface = 
                 dynamic_cast< const Surface& >( region_->boundary( s ) ) ;
-            if( Utils::contains( surface_id, surface.gme_id().index ) ) continue ;
+            if( contains( surface_id, surface.gme_id().index ) ) continue ;
             nb_surface_points += surface.nb_vertices() ;
             nb_facets += surface.nb_cells() ;
 

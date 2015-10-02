@@ -39,11 +39,14 @@
  */
 
 #include <ringmesh/well.h>
-#include <ringmesh/utils.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/algorithm.h>
+#include <ringmesh/utils.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_AABB.h>
 
 #include <cmath>
 #include <stack>
@@ -375,7 +378,7 @@ namespace RINGMesh {
         void operator()( index_t trgl )
         {
             vec3 result ;
-            if( Math::segment_triangle_intersection(
+            if( segment_triangle_intersection(
                 v_from_, v_to_,
                 surface_.vertex( trgl, 0 ), surface_.vertex( trgl, 1 ),
                 surface_.vertex( trgl, 2 ), result ) ) {

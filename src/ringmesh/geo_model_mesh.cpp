@@ -41,7 +41,7 @@
 
 #include <ringmesh/geo_model_mesh.h>
 #include <ringmesh/geo_model.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/geometry.h>
 #include <ringmesh/well.h>
 
 #include <geogram/basic/algorithm.h>

@@ -41,13 +41,17 @@
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
 #include <ringmesh/geo_model.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geometry.h>
+
 #include <geogram/basic/logger.h>
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/basic/string.h>
 #include <geogram/basic/algorithm.h>
+
 #include <geogram/points/colocate.h>
+
 #include <geogram/mesh/triangle_intersection.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -56,7 +60,6 @@
 #include <geogram/mesh/mesh_intersection.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_io.h>
-#include <ringmesh/geo_model_builder.h>
 
 #include <iostream>
 #include <iomanip>
@@ -1518,7 +1521,7 @@ namespace RINGMesh {
         }
 
         GEO::Matrix< float64, 4 > rot_mat ;
-        Math::rotation_matrix_about_arbitrary_axis( 
+        rotation_matrix_about_arbitrary_axis( 
             origin, axis, theta, degrees,rot_mat ) ;
 
         for( index_t v = 0; v < mesh.vertices.nb(); ++v ) {
