@@ -40,14 +40,15 @@
 
 /*! \author Jeanne Pellerin */
 
+#include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geo_model.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/geo_model_validity.h>
+#include <ringmesh/geometry.h>
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_preprocessing.h>
-#include <ringmesh/geo_model_builder.h>
 
 #include <iostream>
 #include <iomanip>
@@ -1688,7 +1689,7 @@ namespace RINGMesh {
         // So remove them if there are any 
         model_.mesh.remove_colocated_vertices() ;
 
-        if( model_.check_model_validity() ) {
+        if( is_geomodel_valid( model_ ) ) {
             GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
                 << model_.name() << " is valid " << std::endl << std::endl ;
             print_model( model_ ) ;

@@ -38,7 +38,7 @@
  *     FRANCE
  */
 
-#include <ringmesh/utils.h>
+#include <ringmesh/geometry.h>
 #include <geogram/basic/logger.h>
 
 using namespace RINGMesh ;
@@ -90,10 +90,10 @@ int main( int argc, char** argv )
     // Tests rotation along x axis
     vec3 axis( 1, 0, 0 ) ;
     for( float64 angle = 0.; angle <= 360.; angle += step ) {
-        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
             rot_mat_degree ) ;
         float64 angle_rad = angle * pi / 180. ;
-        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
             rot_mat_radian ) ;
         result( 0, 0 ) = 1 ;
         result( 0, 1 ) = 0 ;
@@ -123,10 +123,10 @@ int main( int argc, char** argv )
     // Tests rotation along y axis
     axis = vec3( 0, 1, 0 ) ;
     for( float64 angle = 0.; angle <= 360.; angle += step ) {
-        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
             rot_mat_degree ) ;
         float64 angle_rad = angle * pi / 180. ;
-        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
             rot_mat_radian ) ;
         result( 0, 0 ) = std::cos( angle_rad ) ;
         result( 0, 1 ) = 0 ;
@@ -156,10 +156,10 @@ int main( int argc, char** argv )
     // Tests rotation along z axis
     axis = vec3( 0, 0, 1 ) ;
     for( float64 angle = 0.; angle <= 360.; angle += step ) {
-        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
             rot_mat_degree ) ;
         float64 angle_rad = angle * pi / 180. ;
-        Math::rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
             rot_mat_radian ) ;
         result( 0, 0 ) = std::cos( angle_rad ) ;
         result( 0, 1 ) = -std::sin( angle_rad ) ;
