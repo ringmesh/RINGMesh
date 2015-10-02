@@ -42,10 +42,12 @@
 
 #include <ringmesh/geo_model_element.h>
 #include <ringmesh/geo_model.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/algorithm.h>
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/geometry_nd.h>
+
 #include <geogram/mesh/triangle_intersection.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -57,6 +59,7 @@
 #include <set>
 #include <stack>
 #include <fstream>
+#include <algorithm>
 
 
 namespace {
@@ -1796,14 +1799,14 @@ namespace RINGMesh {
 
                     if( adj_P != NO_ADJACENT ) {
                         // The edge starting at P is not on the boundary
-                        if( !Utils::contains( visited, adj_P ) ) {
+                        if( !contains( visited, adj_P ) ) {
                             S.push( adj_P ) ;
                             visited.push_back( adj_P ) ;
                         }
                     }
                     if( adj_prev != NO_ADJACENT ) {
                         // The edge ending at P is not on the boundary
-                        if( !Utils::contains( visited, adj_prev ) ) {
+                        if( !contains( visited, adj_prev ) ) {
                             S.push( adj_prev ) ;
                             visited.push_back( adj_prev  ) ;
                         }
@@ -1851,7 +1854,7 @@ namespace RINGMesh {
     {
         double result = 0 ;
         for( index_t i = 1; i + 1 < nb_vertices_in_facet( f ); i++ ) {
-            result += Utils::triangle_area(
+            result += triangle_area(
                 vertex( f, 0 ), vertex( f, i ), vertex( f, i + 1 ) ) ;
         }
         return result ;

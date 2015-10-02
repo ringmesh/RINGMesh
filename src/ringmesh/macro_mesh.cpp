@@ -42,6 +42,8 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/tetra_gen.h>
 #include <ringmesh/well.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/algorithm.h>
 
 #include <geogram/basic/progress.h>
 #include <geogram/mesh/mesh_AABB.h>
@@ -259,7 +261,7 @@ namespace RINGMesh {
                                  */
                                 std::vector< index_t > result ;
                                 if( ann.get_colocated(
-                                    Geom::mesh_cell_facet_center( mesh, cur_c,
+                                    mesh_cell_facet_center( mesh, cur_c,
                                         cur_f ), result ) ) {
                                     index_t surface_id = attribute[result[0]] ;
                                     // Compute on which side of the surface the cell facet is
@@ -268,7 +270,7 @@ namespace RINGMesh {
                                     vec3 facet_normal = GEO::Geom::mesh_facet_normal(
                                         mesh, result[0] ) ;
                                     vec3 cell_facet_normal =
-                                        Geom::mesh_cell_facet_normal( mesh, cur_c,
+                                        mesh_cell_facet_normal( mesh, cur_c,
                                             cur_f ) ;
                                     SurfaceAction side = SurfaceAction(
                                         dot( facet_normal, cell_facet_normal )
@@ -282,7 +284,7 @@ namespace RINGMesh {
                                     index_t cur_adj = mesh.cells.adjacent( cur_c,
                                         cur_f ) ;
                                     if( cur_adj != GEO::NO_CELL
-                                        && !RINGMesh::Utils::contains( cell_added,
+                                        && !contains( cell_added,
                                             cur_adj ) ) {
                                         cell_added.push_back( cur_adj ) ;
                                         S.push( cur_adj ) ;
@@ -580,7 +582,7 @@ namespace RINGMesh {
             for( index_t f = 0; f < cur_mesh.facets.nb(); f++ ) {
                 index_t surface_id = attribute[f] ;
                 if( surface2mesh_[surface_id] != Surface::NO_ID ) continue ;
-                if( !RINGMesh::Utils::contains( surface_proccessed, surface_id ) ) {
+                if( !contains( surface_proccessed, surface_id ) ) {
                     surface_proccessed.push_back( surface_id ) ;
                 }
                 surface_facet_ptr_[MacroMesh::NB_FACET_TYPES * surface_id
@@ -1261,7 +1263,7 @@ namespace RINGMesh {
                             cur_mesh.cells.edge_vertex( c, e, 0 ) ) ;
                         vec3 node1 = GEO::Geom::mesh_vertex( cur_mesh,
                             cur_mesh.cells.edge_vertex( c, e, 1 ) ) ;
-                        Geom::divide_edge_in_parts( node0, node1, order,
+                        divide_edge_in_parts( node0, node1, order,
                             new_points_in_edge ) ;
 
                         for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
@@ -1320,7 +1322,7 @@ namespace RINGMesh {
                             node1 = GEO::Geom::mesh_vertex( cur_mesh,
                                 cur_mesh.facets.vertex( cur_facet, e + 1 ) ) ;
                         }
-                        RINGMesh::Geom::divide_edge_in_parts( node0, node1, order,
+                        divide_edge_in_parts( node0, node1, order,
                             new_points_in_edge ) ;
                         for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
                             std::vector< index_t > colocated_vertices ;
@@ -1462,7 +1464,7 @@ namespace RINGMesh {
                             cur_mesh.cells.edge_vertex( c, e, 0 ) ) ;
                         vec3 node1 = GEO::Geom::mesh_vertex( cur_mesh,
                             cur_mesh.cells.edge_vertex( c, e, 1 ) ) ;
-                        Geom::divide_edge_in_parts( node0, node1, order,
+                        divide_edge_in_parts( node0, node1, order,
                             new_points_in_edge ) ;
 
                         for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
@@ -1735,12 +1737,12 @@ namespace RINGMesh {
         }
 
         GEO::Matrix< float64, 4 > rot_mat ;
-        Math::rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
+        rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
             rot_mat ) ;
         for( index_t mesh_i = 0; mesh_i < meshes_.size(); ++mesh_i ) {
             GEO::Mesh* cur_mesh = meshes_[mesh_i] ;
             ringmesh_debug_assert( cur_mesh ) ;
-            Math::rotate_mesh( *cur_mesh, rot_mat ) ;
+            rotate_mesh( *cur_mesh, rot_mat ) ;
         }
     }
 }

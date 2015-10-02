@@ -67,7 +67,7 @@ int main( int argc, char** argv )
 	if( !model_load( "../data/annot.ml", in3 ) )
         return 1 ;
 		
-    bool res = Utils::compare_file( "out.ml", "out2.ml" ) ;
+    bool res = compare_files( "out.ml", "out2.ml" ) ;
     if( res )
         GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
     else
