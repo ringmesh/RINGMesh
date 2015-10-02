@@ -42,15 +42,43 @@
 #ifndef __RINGMESH_TYPES__
 #define __RINGMESH_TYPES__
 
+#include <ringmesh/ringmesh_assert.h>
+
 #include <geogram/basic/geometry.h>
 
 namespace RINGMesh {
 
-    //    _____
-    //   |_   _|  _ _ __  ___ ___
-    //     | || || | '_ \/ -_|_-<
-    //     |_| \_, | .__/\___/__/
-    //         |__/|_|
+    /*! @brief A safer narrow casting function of type S to type T
+    *  \return static_cast< T >( in )
+    *  \post Check that the result can be cast back to in, if not throws an assertion.
+    *  \note cf. The C++ programming language. 4th edition. p299
+    */
+    template< typename T, typename S >
+    T narrow_cast( S in )
+    {
+        T r = static_cast< T >( in ) ;
+        if( static_cast< S >( r ) != in ) {
+            ringmesh_assert_not_reached;
+        }
+        return r ;
+    }
+
+    enum Sign {
+        NEGATIVE = -1, ZERO = 0, POSITIVE = 1
+    } ;  
+
+    template< class T >
+    inline Sign sign( T x )
+    {
+        return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO ) ;
+    }
+
+
+    /**********************************************************/
+    /* @todo Why do we need to redefine those ? [JP]
+     */
+
+
     typedef unsigned char byte ;
     /*! Generic pointer type */
     typedef byte* pointer ;

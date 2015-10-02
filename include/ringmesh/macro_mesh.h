@@ -42,7 +42,7 @@
 #define __RINGMESH_MACRO_MESH__
 
 #include <ringmesh/common.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/geogram_extension.h>
 
 #include <geogram/mesh/mesh.h>
 

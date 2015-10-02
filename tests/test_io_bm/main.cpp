@@ -63,7 +63,7 @@ int main( int argc, char** argv )
     if( !model_save( in2, "out2.bm" ) )
         return 1 ;
 
-    bool res = Utils::compare_file( "out.bm", "out2.bm" ) ;
+    bool res = compare_files( "out.bm", "out2.bm" ) ;
     if( res )
         GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
     else
