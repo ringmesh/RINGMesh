@@ -39,9 +39,86 @@
 */
 
 #include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geometry.h>
 
 namespace RINGMesh {
 
+    /*!
+    * @brief Translates the boundary model by a vector.
+    *
+    * Every single mesh of the boundary model is translated:
+    * corners, lines and surfaces.
+    *
+    * @param[in] translation_vector vector of translation.
+    *
+    * @todo Review: Add documentation - Replace the return value by a gme_t [AB]
+    */
+    void translate(
+        GeoModel& M,
+        const vec3& translation_vector )
+    {
+        // Note: if the translation is null, do nothing.
+        if( translation_vector == vec3( 0, 0, 0 ) ) {
+            return ;
+        }
+
+        for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
+            vec3 p = M.mesh.vertices.vertex( v ) ;
+            for( index_t i = 0; i < 3; i++ ) {
+                p[ i ] += translation_vector[ i ] ;
+            }
+            M.mesh.vertices.update_point( v, p ) ;
+        }
+    }
+
+    /*!
+    * \brief Rotate the boundary model.
+    *
+    * Applies a rotation about the line defined by the point
+    * \p origin and the vector \p axis. The rotation angle is
+    * \p theta. If \p degrees is true the angle is in degrees,
+    * else in radians. All the vertices of the boundary model
+    * undergo the rotation (each mesh inside the boundary model:
+    * corners, lines and surfaces).
+    *
+    * @param origin point in which passes the rotation axis.
+    *
+    * @param axis vector which defines the rotation axis.
+    *
+    * @param theta rotation angle (in radians or degrees).
+    *
+    * @param degrees true is \p theta is in degrees, false
+    * if in radians.
+    */
+    void rotate(
+        GeoModel& M,
+        const vec3& origin,
+        const vec3& axis,
+        float64 theta,
+        bool degrees )
+    {
+        // Note: Rotation is impossible about an axis with null length.
+        ringmesh_debug_assert( axis != vec3() ) ;
+        if( theta == 0. ) {
+            return ;
+        }
+
+        GEO::Matrix< float64, 4 > rot_mat ;
+        rotation_matrix_about_arbitrary_axis(
+            origin, axis, theta, degrees, rot_mat ) ;
+
+        for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
+            const vec3& p = M.mesh.vertices.vertex( v ) ;
+
+            float64 old[ 4 ] = { p[ 0 ], p[ 1 ], p[ 2 ], 1. } ;
+            float64 new_p[ 4 ] = { 0, 0, 0, 1. } ;
+            GEO::mult( rot_mat, old, new_p ) ;
+            ringmesh_debug_assert( new_p[ 3 ] == 1. ) ;
+
+            M.mesh.vertices.update_point( v, vec3( new_p[ 0 ], new_p[ 1 ], new_p[ 2 ] ) ) ;
+        }
+    }
 
 
 }

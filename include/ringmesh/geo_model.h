@@ -230,17 +230,6 @@ namespace RINGMesh {
          * @}
          */
 
-        /* @todo Move into an API
-         * It is a very very bad idea to modify the coordinates of vertices the BME 
-         * without the BM knowing !!! [JP]
-         */
-        void translate( const vec3& ) ;
-        void rotate(
-            const vec3& origin,
-            const vec3& axis,
-            float64 angle,
-            bool degrees = false ) ;
-
         bool check_model_validity( bool check_surface_intersections = true ) const ;           
 
         void set_wells( const WellGroup* wells ) ;
