@@ -42,7 +42,58 @@
 #define __RINGMESH_GEO_MODEL_API__
 
 #include <ringmesh/common.h>
-#include <ringmesh/geo_model.h>
+
+namespace RINGMesh {
+    class GeoModel ;
+}
+namespace RINGMesh {
+
+
+
+    /*!
+    * @brief Translates the boundary model by a vector.
+    *
+    * Every single mesh of the boundary model is translated:
+    * corners, lines and surfaces.
+    *
+    * @param[in] translation_vector vector of translation.
+    *
+    * @todo Review: Add documentation - Replace the return value by a gme_t [AB]
+    */
+    void translate( GeoModel& M, const vec3& ) ;
+
+
+    /*!
+    * \brief Rotate the boundary model.
+    *
+    * Applies a rotation about the line defined by the point
+    * \p origin and the vector \p axis. The rotation angle is
+    * \p theta. If \p degrees is true the angle is in degrees,
+    * else in radians. All the vertices of the boundary model
+    * undergo the rotation (each mesh inside the boundary model:
+    * corners, lines and surfaces).
+    *
+    * @param origin point in which passes the rotation axis.
+    *
+    * @param axis vector which defines the rotation axis.
+    *
+    * @param theta rotation angle (in radians or degrees).
+    *
+    * @param degrees true is \p theta is in degrees, false
+    * if in radians.
+    */
+    void rotate(
+        GeoModel& M, 
+        const vec3& origin,
+        const vec3& axis,
+        float64 angle,
+        bool degrees = false ) ;
+
+
+
+
+}
+
 
 
 #endif 
