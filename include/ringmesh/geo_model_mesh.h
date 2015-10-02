@@ -301,7 +301,7 @@ namespace RINGMesh {
          * of the corresponding type of \p f in the owing surface
          * @return the type of the facet \p f
          */
-        FacetType facet_type( index_t f, index_t& index ) const ;
+        FacetType type( index_t f, index_t& index = dummy_index_t ) const ;
 
         /*!
          * Get the number of facets of the corresponding type
@@ -451,6 +451,11 @@ namespace RINGMesh {
          */
         bool is_initialized() const ;
         /*!
+         * Tests if the mesh edges needs to be initialized and initialize it
+         */
+        void test_and_initialize() const ;
+
+        /*!
          * Gets the number of wells
          * @return the corresponding number
          */
@@ -480,10 +485,6 @@ namespace RINGMesh {
         void clear() ;
 
     private:
-        /*!
-         * Tests if the mesh edges needs to be initialized and initialize it
-         */
-        void test_and_initialize() const ;
         /*!
          * Initialize the mesh edges
          */
@@ -530,6 +531,12 @@ namespace RINGMesh {
          * Test if the mesh cells are duplicated
          */
         bool is_duplication_initialized() const ;
+
+        /*!
+         * Test if the mesh cells need to be initialized,
+         * if so initialize them.
+         */
+        void test_and_initialize() const ;
 
         /*!
          * @brief Number of cells stored.
@@ -580,6 +587,11 @@ namespace RINGMesh {
          */
         index_t vertex( index_t c, index_t v ) const ;
         /*!
+         * Get the number of facets in the cell
+         * @param[in] c the cell index
+         */
+        index_t nb_facets( index_t c ) const ;
+        /*!
          * Get the adjacent cell index in the GeoModelMesh
          * @param[in] c the cell index
          * @param[in] f the edge index
@@ -609,7 +621,7 @@ namespace RINGMesh {
          * of the corresponding type of \p c in the owing region
          * @return the type of the cell \p f
          */
-        GEO::MeshCellType cell_type( index_t c, index_t& index ) const ;
+        GEO::MeshCellType type( index_t c, index_t& index = dummy_index_t ) const ;
 
         /*!
          * Get the number of cells of the corresponding type
@@ -749,13 +761,23 @@ namespace RINGMesh {
          */
         void clear_duplication() ;
 
-    private:
-
         /*!
-         * Test if the mesh cells need to be initialized,
-         * if so initialize them.
+         * Determine if a cell facet is on a surface, if so fill the \p action
+         * with the surface id and the surface side encountered
+         * @param[in] c the cell index
+         * @param[in] f the facet index
+         * @param[out] facet the facet index colocalised with the cell facet
+         * @param[out] side the side of the facet \p facet.
+         * true = side of the facet normal, false = the other side
+         * @return true is the cell facet is on a surface
          */
-        void test_and_initialize() const ;
+        bool is_cell_facet_on_surface(
+            index_t c,
+            index_t f,
+            index_t& facet = dummy_index_t,
+            bool& side = dummy_bool ) const ;
+
+    private:
         /*!
          * @brief Initialize the  cells from the cells
          *        of the GeoModel Region cells
@@ -804,21 +826,7 @@ namespace RINGMesh {
          * @param[in] s the surface index in the GeoModel
          */
         bool is_surface_to_duplicate( index_t s ) const ;
-        /*!
-         * Determine if a cell facet is on a surface, if so fill the \p action
-         * with the surface id and the surface side encountered
-         * @param[in] ann a kdtree of the mesh facets
-         * @param[in] cell the cell index
-         * @param[in] facet the facet index
-         * @param[out] action the action_on_surface filled
-         * if the cell facet rely on a surface
-         * @return true is the cell facet is on a surface
-         */
-        bool is_cell_facet_on_surface(
-            const ColocaterANN& ann,
-            index_t cell,
-            index_t facet,
-            action_on_surface& action ) const ;
+
         /*!
          * Determine the actions to do according the action_on_surfaces
          * encountered during the propagation around a vertex (initialize())
@@ -830,6 +838,15 @@ namespace RINGMesh {
         bool are_corners_to_duplicate(
             const std::vector< action_on_surface >& surfaces,
             std::vector< ActionOnSurface >& info ) ;
+        /*!
+         * Test if the mesh cell facet attribute is filled with
+         * the colocalised facet. If not fill it.
+         */
+        void test_and_initialize_cell_facet() const ;
+        /*!
+         * Initialize the mesh cell facet attribute of colocalised facet.
+         */
+        void initialize_cell_facet() ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -869,6 +886,13 @@ namespace RINGMesh {
          * vertex index in mesh.vertices.
          */
         std::vector< index_t > duplicated_vertex_indices_ ;
+
+        /*!
+         * @brief Attribute storing the colocalised facet index per cell facet
+         * @detail If a cell facet is on a surface, the attribute is equal to
+         * the index of the corresponding facet.
+         */
+        GEO::Attribute< index_t > facet_id_ ;
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
@@ -886,6 +910,15 @@ namespace RINGMesh {
         const GeoModel& model() const
         {
             return gm_ ;
+        }
+
+        /*!
+         * Copy the current GeoModelMesh into a Mesh
+         * @param[out] mesh The mesh to fill
+         */
+        void copy_mesh( GEO::Mesh& mesh ) const
+        {
+            mesh.copy( *mesh_ ) ;
         }
 
         GEO::AttributesManager& vertex_attribute_manager() const

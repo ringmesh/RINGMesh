@@ -103,6 +103,8 @@ namespace RINGMesh {
     typedef double float64 ;
     static float64 dummy_float64 ;
 
+    static bool dummy_bool ;
+
     const float32 big_float32 = 1e10f ;
     const float32 small_float32 = 1e-10f ;
     const float64 big_float64 = 1e20 ;

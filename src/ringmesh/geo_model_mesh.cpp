@@ -640,6 +640,9 @@ namespace RINGMesh {
         if( region_id_.is_bound() ) {
             region_id_.unbind() ;
         }
+        if( facet_id_.is_bound() ) {
+            facet_id_.unbind() ;
+        }
     }
 
     index_t GeoModelMeshCells::nb() const
@@ -661,6 +664,13 @@ namespace RINGMesh {
         ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
         ringmesh_debug_assert( v < mesh_.cells.nb_vertices( c ) ) ;
         return mesh_.cells.vertex( c, v ) ;
+    }
+
+    index_t GeoModelMeshCells::nb_facets( index_t c ) const
+    {
+        test_and_initialize() ;
+        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        return mesh_.cells.nb_facets( c ) ;
     }
 
     index_t GeoModelMeshCells::adjacent( index_t c, index_t f ) const
@@ -685,7 +695,7 @@ namespace RINGMesh {
         return c - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * region( c )] ;
     }
 
-    GEO::MeshCellType GeoModelMeshCells::cell_type( index_t c, index_t& index ) const
+    GEO::MeshCellType GeoModelMeshCells::type( index_t c, index_t& index ) const
     {
         test_and_initialize() ;
         ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
@@ -767,8 +777,7 @@ namespace RINGMesh {
             case GEO::MESH_CONNECTOR:
                 return connector( r, c ) ;
             case GEO::MESH_NB_CELL_TYPES:
-                return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
-                    - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] ;
+                return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] + c ;
             default:
                 ringmesh_assert_not_reached;
                 return 0 ;
@@ -938,7 +947,6 @@ namespace RINGMesh {
          * are duplicated if needed.
          */
         gmm_.facets.test_and_initialize() ;
-        ColocaterANN ann( mesh_, ColocaterANN::FACETS ) ;
         for( index_t c = 0; c < mesh_.cells.nb(); c++ ) {
             for( index_t v = 0; v < mesh_.cells.nb_vertices( c ); v++ ) {
                 // get the index of the corner inside cell_corners_
@@ -980,9 +988,13 @@ namespace RINGMesh {
                     cell_facets_around_vertex( mesh_, cur_c, vertex_id, facets ) ;
                     for( index_t cur_f = 0; cur_f < facets.size(); cur_f++ ) {
                         // Find if the facet is on a surface or inside the domain
-                        action_on_surface action ;
-                        if( is_cell_facet_on_surface( ann, cur_c, cur_f, action ) ) {
-                            surfaces.push_back( action ) ;
+                        index_t facet = NO_ID ;
+                        bool side ;
+                        if( is_cell_facet_on_surface( cur_c, cur_f, facet, side ) ) {
+                            index_t surface_id = gmm_.facets.surface( facet ) ;
+                            surfaces.push_back(
+                                action_on_surface( surface_id,
+                                    ActionOnSurface( side ) ) ) ;
                         } else {
                             // The cell facet is not on a surface.
                             // Add the adjacent cell to the stack if it exists
@@ -1028,24 +1040,19 @@ namespace RINGMesh {
     }
 
     bool GeoModelMeshCells::is_cell_facet_on_surface(
-        const ColocaterANN& ann,
-        index_t cell,
-        index_t facet,
-        action_on_surface& action ) const
+        index_t c,
+        index_t f,
+        index_t& facet,
+        bool& side ) const
     {
-        std::vector< index_t > result ;
-        if( ann.get_colocated( Geom::mesh_cell_facet_center( mesh_, cell, facet ),
-            result ) ) {
-            index_t surface_id = gmm_.facets.surface( result[0] ) ;
-            // Compute on which side of the surface the cell facet is
-            vec3 facet_normal = GEO::Geom::mesh_facet_normal( mesh_, result[0] ) ;
-            vec3 cell_facet_normal = Geom::mesh_cell_facet_normal( mesh_, cell,
-                cell ) ;
-            action.second = ActionOnSurface(
-                dot( facet_normal, cell_facet_normal ) > 0 ) ;
-            action.first = surface_id ;
+        test_and_initialize_cell_facet() ;
+        facet = facet_id_[mesh_.cells.facet( c, f )] ;
+        if( facet != NO_ID ) {
+            vec3 facet_normal = GEO::Geom::mesh_facet_normal( mesh_, facet ) ;
+            vec3 cell_facet_normal = Geom::mesh_cell_facet_normal( mesh_, c, f ) ;
+            side = dot( facet_normal, cell_facet_normal ) > 0 ;
         }
-        return !result.empty() ;
+        return facet != NO_ID  ;
     }
 
     bool GeoModelMeshCells::are_corners_to_duplicate(
@@ -1170,6 +1177,32 @@ namespace RINGMesh {
         duplicated_vertex_indices_.clear() ;
     }
 
+    void GeoModelMeshCells::test_and_initialize_cell_facet() const
+    {
+        if( !facet_id_.is_bound() ) {
+            const_cast< GeoModelMeshCells* >( this )->initialize_cell_facet() ;
+        }
+    }
+
+    void GeoModelMeshCells::initialize_cell_facet()
+    {
+        gmm_.facets.test_and_initialize() ;
+
+        facet_id_.bind( mesh_.cell_facets.attributes(), "facet_id" ) ;
+        facet_id_.fill( NO_ID ) ;
+        ColocaterANN ann( mesh_, ColocaterANN::FACETS ) ;
+        for( index_t c = 0; c < mesh_.cells.nb(); c++ ) {
+            for( index_t f = 0; f < mesh_.cells.nb_facets( c ); f++ ) {
+                std::vector< index_t > result ;
+                if( ann.get_colocated(
+                    Geom::mesh_cell_facet_center( mesh_, c, f ), result ) ) {
+                    facet_id_[mesh_.cells.facet( c, f )] = result[0] ;
+                }
+            }
+        }
+
+    }
+
     /*******************************************************************************/
 
     GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh )
@@ -1250,7 +1283,7 @@ namespace RINGMesh {
         return f - surface_facet_ptr_[ALL * surface( f )] ;
     }
 
-    GeoModelMeshFacets::FacetType GeoModelMeshFacets::facet_type(
+    GeoModelMeshFacets::FacetType GeoModelMeshFacets::type(
         index_t f,
         index_t& index ) const
     {
@@ -1619,6 +1652,7 @@ namespace RINGMesh {
     GeoModelMesh::~GeoModelMesh()
     {
         facets.unbind_attribute() ;
+        cells.unbind_attribute() ;
         delete mesh_ ;
     }
 
