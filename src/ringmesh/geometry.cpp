@@ -525,7 +525,7 @@ namespace RINGMesh {
         std::vector< vec3 >& result )
     {
         vec3 O_inter, D_inter ;
-        if( !plan_plane_intersection( O_plane, N_plane, O_circle, N_circle, O_inter,
+        if( !plane_plane_intersection( O_plane, N_plane, O_circle, N_circle, O_inter,
             D_inter ) ) {
             return false ;
         }
@@ -566,7 +566,7 @@ namespace RINGMesh {
     * @param[out] D_inter the direction of the intersected line
     * @return true is there is an intersection between the planes
     */
-    bool plan_plane_intersection(
+    bool plane_plane_intersection(
         const vec3& O_P0,
         const vec3& N_P0,
         const vec3& O_P1,

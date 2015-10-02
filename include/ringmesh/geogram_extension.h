@@ -54,11 +54,11 @@ namespace RINGMesh {
 
     /*!
     * \brief To load a Gocad TSurf surface .ts
-    * \todo Create the appropriate Mesh handler
+    * \todo Create the appropriate Mesh handler. Where should we put it ? [JP]
     */
     bool RINGMESH_API load_ts_file( GEO::Mesh& M, const std::string& file_name ) ;
 
-
+    
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
 
@@ -89,14 +89,14 @@ namespace RINGMesh {
         index_t p1,
         index_t& edge ) ;
 
-    index_t next_arround_edge(
+    index_t next_around_edge(
         const GEO::Mesh& mesh,
         index_t t,
         index_t prev,
         index_t p0,
         index_t p1 ) ;
 
-    void edges_arround_edge(
+    void edges_around_edge(
         const GEO::Mesh& mesh,
         index_t t,
         index_t p0,

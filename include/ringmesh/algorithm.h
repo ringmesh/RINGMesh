@@ -47,8 +47,11 @@
 
 namespace RINGMesh {
 
+    /*!
+     * @todo Comment
+     */
     template< class T >
-    static std::vector< T > intersect(
+    std::vector< T > intersect(
         const std::vector< T >& v1,
         const std::vector< T >& v2 )
     {
@@ -60,8 +63,11 @@ namespace RINGMesh {
         return intersect ;
     }
 
+    /*!
+     * @todo Comment
+     */
     template< typename T, typename container >
-    static bool contains( const container& v, const T& t, bool sorted = false )
+    bool contains( const container& v, const T& t, bool sorted = false )
     {
         if( sorted )
             return find_sorted( v, t ) != NO_ID ;
@@ -69,8 +75,11 @@ namespace RINGMesh {
             return find( v, t ) != NO_ID ;
     }
 
+    /*!
+    * @todo Comment
+    */
     template< typename T, typename container >
-    static index_t find( const container& v, const T& t )
+    index_t find( const container& v, const T& t )
     {
         typename container::const_iterator it = std::find( v.begin(), v.end(),
                                                            t ) ;
@@ -80,8 +89,11 @@ namespace RINGMesh {
             return static_cast< index_t >( it - v.begin() ) ;
     }
 
+    /*!
+    * @todo Comment
+    */
     template< typename T, typename container >
-    static index_t find_sorted( const container& v, const T& t )
+    index_t find_sorted( const container& v, const T& t )
     {
         typename container::const_iterator low = std::lower_bound( v.begin(),
                                                                    v.end(), t ) ;
@@ -91,8 +103,11 @@ namespace RINGMesh {
             return static_cast< index_t >( low - v.begin() ) ;
     }
 
+    /*!
+    * @todo Comment
+    */
     template< class T1, class T2 >
-    static bool inexact_equal( const T1& v1, const T2& v2 )
+    bool inexact_equal( const T1& v1, const T2& v2 )
     {
         for( index_t i = 0; i < 3; i++ ) {
             float64 diff( v1[ i ] - v2[ i ] ) ;
@@ -102,9 +117,12 @@ namespace RINGMesh {
         }
         return true ;
     }
-
+    
+    /*!
+    * @todo Comment
+    */
     template< class T1, class T2 >
-    static bool triple_equal(
+    bool triple_equal(
         const T1& rhs1,
         const T1& rhs2,
         const T1& rhs3,
@@ -136,7 +154,8 @@ namespace RINGMesh {
 
 
     /*!
-    * Class to sort two vectors using indirect sorting
+    * \brief Indirect sorting of two templated vectors.
+    * @todo Comment what is indirect sorting.
     */
     template< class T1, class T2 >
     class IndirectSort {
@@ -144,12 +163,12 @@ namespace RINGMesh {
         IndirectSort( std::vector< T1 >& input, std::vector< T2 >& output )
             : input_( input ), output_( output )
         {
-
         }
+
         void sort()
         {
             if( input_.size() < 2 ) return ;
-            for( index_t it1 = 0; it1 < input_.size() - 1; it1++ ) {
+            for( index_t it1 = 0; it1+1 < input_.size(); it1++ ) {
                 index_t ref_index = it1 ;
                 T1 ref_value = input_[ it1 ] ;
                 for( index_t it2 = it1 + 1; it2 < input_.size(); it2++ ) {
@@ -163,7 +182,6 @@ namespace RINGMesh {
                 std::iter_swap( input_.begin() + it1, input_.begin() + ref_index ) ;
                 std::iter_swap( output_.begin() + it1,
                                 output_.begin() + ref_index ) ;
-
             }
         }
 

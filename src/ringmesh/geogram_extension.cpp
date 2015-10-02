@@ -306,13 +306,13 @@ namespace RINGMesh {
     * @param[in] mesh the mesh
     * @param[in] t Starting tetrahedron index to test, should contain the edge
     * @param[in] prev Previous tetrahedron index
-    * (if propagation arround the edge, prevent to go back were we came from)
+    * (if propagation around the edge, prevent to go back were we came from)
     * @param[in] p0 First vertex index of the edge
     * @param[in] p1 Second vertex index of the edge
     * @return The edge index
     * \pre the mesh needs to be tetrahedralized
     */
-    index_t next_arround_edge(
+    index_t next_around_edge(
         const GEO::Mesh& mesh,
         index_t t,
         index_t prev,
@@ -332,14 +332,14 @@ namespace RINGMesh {
     }
 
     /*!
-    * Gets all the edge indices arround one edge
+    * Gets all the edge indices around one edge
     * @param[in] mesh the mesh
     * @param[in] t First tetrahedron index to test, should include the edge
     * @param[in] p0 First vertex index of the edge
     * @param[in] p1 Second vertex index of the edge
     * @param[out] result Output list of edge indices
     */
-    void edges_arround_edge(
+    void edges_around_edge(
         const GEO::Mesh& mesh,
         index_t t,
         index_t p0,
@@ -349,7 +349,7 @@ namespace RINGMesh {
         index_t prev = t ;
         int cur = t ;
         do {
-            index_t info = next_arround_edge( mesh, cur, prev, p0, p1 ) ;
+            index_t info = next_around_edge( mesh, cur, prev, p0, p1 ) ;
             if( info == GEO::NO_CELL ) return ;
             result.push_back( info ) ;
             prev = cur ;
