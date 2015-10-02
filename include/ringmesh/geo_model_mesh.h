@@ -292,7 +292,7 @@ namespace RINGMesh {
          * @return the facet index varying from 0 to nb_facets
          * in the surface owing \p f
          */
-        index_t facet_in_surface( index_t f ) const ;
+        index_t index_in_surface( index_t f ) const ;
         /*!
          * Get the facet index in the GeoModelMesh restricted to
          * the surface owing the facet and its type
@@ -509,16 +509,61 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelMeshCells ) ;
         friend class GeoModelMesh ;
     public:
+        /*!
+         * Several modes for vertex duplication algorithm:
+         *  - NONE = no duplication
+         *  - FAULT = duplication along faults
+         *  - HORIZON = duplication along horizons
+         *  - ALL = duplication along faults and horizons
+         */
+        enum DuplicateMode {
+            NONE, FAULT, HORIZON, ALL
+        } ;
+
+    public:
         GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
         /*!
          * Test if the mesh cells are initialized
          */
         bool is_initialized() const ;
+        /*!
+         * Test if the mesh cells are duplicated
+         */
+        bool is_duplication_initialized() const ;
 
         /*!
          * @brief Number of cells stored.
          */
         index_t nb() const ;
+        /*!
+         * Gets the number of duplicated points by the DuplicateMode algorithm
+         * @return the corresponding number of duplications
+         */
+        index_t nb_duplicated_vertices() const ;
+        /*!
+         * Gets the total number of vertices (mesh.vertices.nb() + nb_duplicated_vertices())
+         * @return the corresponding number of vertices
+         */
+        index_t nb_total_vertices() const ;
+        /*!
+         * Check if the corner in a cell is duplicated,
+         * if so give the duplicated vertex index
+         * @param[in] c the cell index in the GeoModelMesh
+         * @param[in] v the local vertex index in the cell \p c (0 to nb_vertices( c ))
+         * @param[out] duplicate_vertex_index the duplicated vertex index (0 to nb_duplicated_vertices())
+         * @return true if the corner is duplicated
+         */
+        bool is_corner_duplicated(
+            index_t c,
+            index_t v,
+            index_t& duplicate_vertex_index ) const ;
+        /*!
+         * Get the vertex index in the GeoModelMesh corresponding
+         * to the given duplicated vertex index
+         * @param[in] duplicate_vertex_index the duplicated vertex index
+         * @return the vertex index
+         */
+        index_t duplicated_vertex( index_t duplicate_vertex_index ) const ;
 
         /*!
          * Get the number of vertices in the cell
@@ -695,6 +740,14 @@ namespace RINGMesh {
          */
         index_t connector( index_t r, index_t c ) const ;
 
+        /*!
+         * Clear the mesh cells
+         */
+        void clear() ;
+        /*!
+         * Remove the duplication of the mesh cell facets
+         */
+        void clear_duplication() ;
 
     private:
 
@@ -718,7 +771,8 @@ namespace RINGMesh {
          * Unbind attribute to the cells attribute manager
          */
         void unbind_attribute() ;
-      /// enum to characterize the action to do concerning a surface
+
+        /// enum to characterize the action to do concerning a surface
         /// Action concerns the vertices of a Surface and not the Surface
         enum ActionOnSurface {
             /// do nothing
@@ -738,12 +792,44 @@ namespace RINGMesh {
          * Test if the mesh cell are duplicated according
          * the duplication mode, if not duplicate them.
          */
-        void test_initialize_duplication() const ;
+        void test_and_initialize_duplication() const ;
         /*!
          * Duplicate the mesh cell along some surfaces defined
          * by the duplication mode
          */
         void initialize_duplication() ;
+        /*!
+         * Test if we need to duplicate mesh cell along the given
+         * surface according the duplicate mode
+         * @param[in] s the surface index in the GeoModel
+         */
+        bool is_surface_to_duplicate( index_t s ) const ;
+        /*!
+         * Determine if a cell facet is on a surface, if so fill the \p action
+         * with the surface id and the surface side encountered
+         * @param[in] ann a kdtree of the mesh facets
+         * @param[in] cell the cell index
+         * @param[in] facet the facet index
+         * @param[out] action the action_on_surface filled
+         * if the cell facet rely on a surface
+         * @return true is the cell facet is on a surface
+         */
+        bool is_cell_facet_on_surface(
+            const ColocaterANN& ann,
+            index_t cell,
+            index_t facet,
+            action_on_surface& action ) const ;
+        /*!
+         * Determine the actions to do according the action_on_surfaces
+         * encountered during the propagation around a vertex (initialize())
+         * @param[in] surfaces the action_on_surfaces encountered
+         * @param[in,out] info the global information on what to do for each surface.
+         * This information is updated in this function according the encountered action_on_surfaces
+         * @return true if the corners should be duplicated
+         */
+        bool are_corners_to_duplicate(
+            const std::vector< action_on_surface >& surfaces,
+            std::vector< ActionOnSurface >& info ) ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -775,7 +861,14 @@ namespace RINGMesh {
         /// Number of connector in the GeoModelMesh
         index_t nb_connector_ ;
 
-
+        /// Current duplicate mode applied on the mesh
+        DuplicateMode mode_ ;
+        /*!
+         * @brief Vector of duplicated vertices
+         * @details Each value is a duplicated vertex, the index corresponds to
+         * vertex index in mesh.vertices.
+         */
+        std::vector< index_t > duplicated_vertex_indices_ ;
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
@@ -786,18 +879,6 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelMesh {
         ringmesh_disable_copy( GeoModelMesh ) ;
-    public:
-        /*!
-         * Several modes for vertex duplication algorithm:
-         *  - NONE = no duplication
-         *  - FAULT = duplication along faults
-         *  - HORIZON = duplication along horizons
-         *  - ALL = duplication along faults and horizons
-         */
-        enum DuplicateMode {
-            NONE, FAULT, HORIZON, ALL
-        } ;
-
     public:
         GeoModelMesh( const GeoModel& gm ) ;
         ~GeoModelMesh() ;
@@ -824,7 +905,7 @@ namespace RINGMesh {
          * Access the DuplicateMode
          * @return the current DuplicateMode
          */
-        DuplicateMode duplicate_mode() const
+        GeoModelMeshCells::DuplicateMode duplicate_mode() const
         {
             return mode_ ;
         }
@@ -832,15 +913,11 @@ namespace RINGMesh {
          * Set a new DuplicateMode
          * @param[in] mode the new DuplicateMode for the GeoModelMesh
          */
-        void set_duplicate_mode( const DuplicateMode& mode ) const
+        void set_duplicate_mode( const GeoModelMeshCells::DuplicateMode& mode ) const
         {
-            MacroMesh* not_const = const_cast< MacroMesh* >( this ) ;
-            not_const->mode_ = mode ;
-            /* @todo Review : Implement and use a MacroMeshVertices::clean_duplicates function [JP]
-             */
-            not_const->vertices.cell_corners_.clear() ;
-            not_const->vertices.duplicated_vertex_indices_.clear() ;
-            not_const->vertices.mesh_cell_corner_ptr_.clear() ;
+            if( mode_ == mode ) return ;
+            mode_ = mode ;
+            const_cast< GeoModelMesh* >( this )->cells.clear_duplication() ;
         }
 
         /*!
@@ -877,6 +954,8 @@ namespace RINGMesh {
          * On these elements, attributes can be defined
          */
         GEO::Mesh* mesh_ ;
+        /// Optional duplication mode to compute the duplication of cells on surfaces
+        mutable GeoModelMeshCells::DuplicateMode mode_ ;
 
     public:
         GeoModelMeshVertices vertices ;
