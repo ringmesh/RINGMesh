@@ -76,6 +76,9 @@ namespace RINGMesh {
          */
         virtual ~GeoModel() ;
 
+        /*
+         * @todo Implement a real copy_constructor and operator= [JP]
+         */
         void copy( const GeoModel& from ) ;
 
         /*!
@@ -84,15 +87,6 @@ namespace RINGMesh {
         const std::string& name() const
         {
             return name_ ;
-        }
-
-        /*!
-         * @brief Get the directory for debug information
-         * @todo To move [JP]
-         */
-        const std::string& debug_directory() const
-        {
-            return debug_directory_ ;
         }
 
         /*!
@@ -229,9 +223,6 @@ namespace RINGMesh {
         /*!
          * @}
          */
-
-        bool check_model_validity( bool check_surface_intersections = true ) const ;           
-
         void set_wells( const WellGroup* wells ) ;
         const WellGroup* wells() const
         {
@@ -239,9 +230,7 @@ namespace RINGMesh {
         }
 
     private:
-        bool check_elements_validity() const ;
-        bool check_geology_validity() const ;        
-
+     
         void copy_macro_topology( const GeoModel& from ) ;
         void copy_meshes( const GeoModel& from ) ;
 
@@ -315,6 +304,13 @@ namespace RINGMesh {
         // Name of the model
         std::string name_ ;
 
+        /*
+         * @todo Change storage to have 2 vectors 
+         * std::vector< GeoModelElement* > elements_ 
+         * std::vector< index_t > element_type_ptr  
+         * Not so nice to build, but so nice to store [JP]
+         */
+
         // Base manifold elements of a model
         std::vector< GeoModelElement* > corners_ ;
         std::vector< GeoModelElement* > lines_ ;
@@ -342,12 +338,11 @@ namespace RINGMesh {
          */
         std::vector< GeoModelElement* > layers_ ;
 
-        /// Allow global access to BME. It MUST be updated if one element is added.
+        /* 
+         * @brief Global access to BME. It MUST be updated if one element is added.
+         * @warning It must be up to date at all times
+         */
         std::vector< index_t > nb_elements_per_type_ ;
-
-        /// Name of the debug directory in which to save stuff 
-        /// @note Move this in another class
-        std::string debug_directory_ ;
 
         /// Optional WellGroup associated with the model
         const WellGroup* wells_ ;

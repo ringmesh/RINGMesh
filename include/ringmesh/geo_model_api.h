@@ -46,6 +46,7 @@
 namespace RINGMesh {
     class GeoModel ;
 }
+
 namespace RINGMesh {
 
 
