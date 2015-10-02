@@ -83,7 +83,7 @@ namespace GEO {
      *  The core algorithm used in both this code, CGAL and tetgen was
      *  independently and simultaneously discovered by Bowyer and Watson:
      *  - Adrian Bowyer, "Computing Dirichlet tessellations", 
-     *   Comput. J., vol. 24, no 2,‎ 1981, p. 162-166 
+     *   Comput. J., vol. 24, no 2, 1981, p. 162-166 
      *  - David F. Watson, "Computing the n-dimensional Delaunay tessellation 
      *   with application to Voronoi polytopes", Comput. J., vol. 24, 
      *   no 2, 1981, p. 167-172

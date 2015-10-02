@@ -48,7 +48,7 @@
 
 #include <geogram/basic/common.h>
 #include <geogram_gfx/api/defs.h>
-#include <geogram_gfx/third_party/glew/glew.h>
+#include <geogram_gfx/basic/GL.h>
 
 /**
  * \file geogram_gfx/basic/common.h
@@ -58,6 +58,7 @@
 
 namespace GEO {
 
+    
     namespace Graphics {
 
         /**

@@ -229,19 +229,16 @@ namespace GEO {
 
     void MeshGfxImpl::setup_VBOs() {
 
-        if(!VBO_dirty_) {
-            return;
-        }
-        
         if(mesh_->vertices.nb() != 0) {
             if(mesh_->vertices.single_precision()) {
                 
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(float);
 
-                update_buffer_object(
+                update_or_check_buffer_object(
                     vertices_VBO_, GL_ARRAY_BUFFER,
-                    size, mesh_->vertices.single_precision_point_ptr(0)
+                    size, mesh_->vertices.single_precision_point_ptr(0),
+                    VBO_dirty_
                 );
                 
             } else {
@@ -249,34 +246,38 @@ namespace GEO {
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(double);
 
-                update_buffer_object(
+                update_or_check_buffer_object(
                     vertices_VBO_, GL_ARRAY_BUFFER,
-                    size, mesh_->vertices.point_ptr(0)
+                    size, mesh_->vertices.point_ptr(0),
+                    VBO_dirty_
                 );
             }
         }
 
         if(mesh_->edges.nb() != 0) {
-            update_buffer_object(
+            update_or_check_buffer_object(
                 edge_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                 mesh_->edges.nb() * 2 * sizeof(int),
-                mesh_->edges.vertex_index_ptr(0)
+                mesh_->edges.vertex_index_ptr(0),
+                VBO_dirty_
             );
         }
         
         if(mesh_->facets.nb() != 0) {
-            update_buffer_object(
+            update_or_check_buffer_object(
                 facet_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                 mesh_->facet_corners.nb() * sizeof(int),
-                mesh_->facet_corners.vertex_index_ptr(0)
+                mesh_->facet_corners.vertex_index_ptr(0),
+                VBO_dirty_
             );
         }
         
         if(mesh_->cells.nb() != 0) {
-            update_buffer_object(
+            update_or_check_buffer_object(
                 cell_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                 mesh_->cell_corners.nb() * sizeof(int),
-                mesh_->cell_corners.vertex_index_ptr(0)                
+                mesh_->cell_corners.vertex_index_ptr(0),
+                VBO_dirty_
             );
         }
 
@@ -302,69 +303,6 @@ namespace GEO {
         }
     }
     
-
-    void MeshGfxImpl::update_buffer_object(
-        GLuint& buffer_id, GLenum target, size_t new_size, const void* data
-    ) {
-        static bool init = false;
-        static bool use_glGetBufferParameteri64v = true;
-
-        // Note: there is a version of glGetBufferParameteriv that uses
-        // 64 bit parameters. Since array data larger than 4Gb will be
-        // common place, it is this version that should be used. However,
-        // it is not supported by the Intel driver (therefore we fallback
-        // to the standard 32 bits version if such a driver is detected).
-        
-        if(!init) {
-            init = true;
-            const char* vendor = (const char*)glGetString(
-                GL_VENDOR
-            );
-            use_glGetBufferParameteri64v = (
-                strlen(vendor) < 5 || strncmp(vendor, "Intel", 5) != 0
-            );
-            if(!use_glGetBufferParameteri64v) {
-                Logger::warn("GLSL")
-                    << "Buggy Intel driver detected (working around...)"
-                    << std::endl;
-            }
-        }
-
-        if(new_size == 0) {
-            if(buffer_id != 0) {
-                glDeleteBuffers(1, &buffer_id);
-                buffer_id = 0;
-            }
-            return;
-        }
-
-        GLint64 size = 0;        
-        if(buffer_id == 0) {
-            glGenBuffers(1, &buffer_id);
-            glBindBuffer(target, buffer_id);            
-        } else {
-            glBindBuffer(target, buffer_id);
-            
-            // See comment at the beginning of the function.
-            if(use_glGetBufferParameteri64v) {
-                glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
-            } else {
-                GLint size32=0;
-                glGetBufferParameteriv(target,GL_BUFFER_SIZE,&size32);
-                size = GLint64(size32);
-            }
-        }
-        
-        if(new_size == size_t(size)) {
-            glBufferSubData(target, 0, GLsizeiptr(size), data);
-        } else {
-            glBufferData(
-                target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
-            );
-        }
-    }
-
-
     void MeshGfxImpl::glMeshFacetNormal(index_t f) {
         if(mesh_->vertices.single_precision()) {
             float N[3];
@@ -803,7 +741,7 @@ namespace GEO {
         if(mesh_->facets.nb() == 0) {
             return;
         }
-        
+
         glLineWidth(GLfloat(mesh_border_width_));
         set_colors(PRG_LINES);        
         glDisable(GL_LIGHTING);
@@ -1473,7 +1411,8 @@ namespace GEO {
         if(mesh_->facets.nb() == 0) {
             return;
         }
-        
+
+        glDisable(GL_LIGHTING);
         glLineWidth(GLfloat(mesh_border_width_));
         set_colors(PRG_LINES);                
         glBegin(GL_LINES);
@@ -1777,7 +1716,8 @@ namespace GEO {
         if(mesh_->facets.nb() == 0) {
             return;
         }
-        
+
+        glDisable(GL_LIGHTING);
         glLineWidth(GLfloat(mesh_border_width_));
         set_colors(PRG_LINES);                
         glBegin(GL_LINES);
