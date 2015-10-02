@@ -61,6 +61,7 @@ namespace RINGMesh {
      * @details Derive from this class to build or modify a GeoModel
      * 
      * NON Geometry related function have been moved in the GeoModelEditor
+     * 
      */
     class RINGMESH_API GeoModelBuilder : public GeoModelEditor {
     public:
@@ -71,20 +72,7 @@ namespace RINGMesh {
         virtual ~GeoModelBuilder()
         {
         }
-
-        /*! @}
-         * \name Access - Modification of the GeoModel
-         * @{
-         */       
-
-        /*! 
-         *@brief Copy elements and element connectivity of model @param from 
-         *
-        void copy_macro_topology( const GeoModel& from )
-        {
-            model_.copy_macro_topology( from ) ;
-        }*/        
-
+      
         bool end_model() ;
 
         bool complete_element_connectivity() ;
