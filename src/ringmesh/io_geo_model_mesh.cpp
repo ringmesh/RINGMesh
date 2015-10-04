@@ -41,7 +41,8 @@
 #include <ringmesh/io.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/well.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/geogram_extension.h>
 
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/command_line.h>
@@ -1497,7 +1498,7 @@ namespace RINGMesh {
                                 Pipe( c + cell_offset, adj + cell_offset ) ) ;
                             S.push( adj ) ;
                         } else {
-                            vec3 query = Geom::mesh_cell_facet_center( mesh, c, f ) ;
+                            vec3 query = mesh_cell_facet_center( mesh, c, f ) ;
                             for( index_t s = 0; s < boundary_ids.size(); s++ ) {
                                 index_t s_id = boundary_ids[s] ;
                                 index_t surface_offset = surface_offsets[s_id] ;
@@ -1593,8 +1594,8 @@ namespace RINGMesh {
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 const GEO::Mesh& mesh = gm.mesh( r ) ;
                 for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    out_xyz << Geom::mesh_cell_center( mesh, c ) << std::endl ;
-                    out_vol << Geom::mesh_cell_volume( mesh, c ) << std::endl ;
+                    out_xyz << mesh_cell_center( mesh, c ) << std::endl ;
+                    out_vol << mesh_cell_volume( mesh, c ) << std::endl ;
                 }
             }
             for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
@@ -1813,9 +1814,9 @@ namespace RINGMesh {
                     out << std::endl ;
 
                     for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
-                        vec3 facet_bary = Geom::mesh_cell_facet_center( mesh, c,
+                        vec3 facet_bary = mesh_cell_facet_center( mesh, c,
                             f ) ;
-                        vec3 cell_facet_normal = Geom::mesh_cell_facet_normal( mesh,
+                        vec3 cell_facet_normal = mesh_cell_facet_normal( mesh,
                             c, f ) ;
                         for( index_t s = 0; s < surfaces.size(); s++ ) {
                             index_t surface_id = surfaces[s] ;

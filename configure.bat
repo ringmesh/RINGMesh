@@ -83,10 +83,10 @@ echo.
 echo ============= GeoGram ============
 echo.
 
-
+rem We have a problem - No options to control these parameters
 echo set(GEOGRAM_WITH_TETGEN TRUE) > src/third_party/geogram/CMakeOptions.txt
 echo set(GEOGRAM_WITH_MEDIT FALSE) >> src/third_party/geogram/CMakeOptions.txt
-echo set(GEOGRAM_WITH_GRAPHICS TRUE) >> src/third_party/geogram/CMakeOptions.txt
+echo set(GEOGRAM_WITH_GRAPHICS FALSE) >> src/third_party/geogram/CMakeOptions.txt
 
 
 echo.

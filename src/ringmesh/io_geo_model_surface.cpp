@@ -172,7 +172,7 @@ namespace RINGMesh {
     /*!
      * @brief Check if the model can be saved in a skua-gocad .ml file
      * @details It assumes that the model is valid and verifies that:
-     *   - all Interface have a name and geological feature
+     *   - all Interfaces have a name and geological feature
      *   - all Surfaces are in an Interface
      *   - all Surfaces are triangulated
      *   - all Regions have a name
@@ -214,7 +214,7 @@ namespace RINGMesh {
      */
     bool save_gocad_model3d( const GeoModel& M, std::ostream& out )
     {
-        if( !M.check_model_validity() || !check_gocad_validity( M ) ) {
+        if( !check_gocad_validity( M ) ) {
             GEO::Logger::err( "" ) << " The GeoModel " << M.name()
                 << " cannot be saved in .ml format " << std::endl ;
             return false ;
