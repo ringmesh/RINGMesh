@@ -47,6 +47,7 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
+#include <geogram/basic/factory.h>
 
 #include <vector>
 
