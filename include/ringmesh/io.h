@@ -47,7 +47,7 @@
 
 namespace RINGMesh {
     class GeoModel ;
-    class MacroMesh ;
+    class GeoModel ;
     class WellGroup ;
 }
 
@@ -59,9 +59,9 @@ namespace RINGMesh {
 
     bool RINGMESH_API model_save( GeoModel& model, const std::string& filename ) ;
 
-    bool RINGMESH_API mesh_load( const std::string& mesh_file, MacroMesh& mm ) ;
+    bool RINGMESH_API mesh_load( const std::string& mesh_file, GeoModel& mm ) ;
 
-    bool RINGMESH_API mesh_save( const MacroMesh& mm, const std::string& filename ) ;
+    bool RINGMESH_API mesh_save( const GeoModel& mm, const std::string& filename ) ;
 
     bool RINGMESH_API well_load( const std::string& mesh_file, WellGroup& wells ) ;
 
@@ -103,9 +103,9 @@ namespace RINGMesh {
 
         static GeoModelMeshIOHandler* get_handler( const std::string& filename ) ;
 
-        virtual bool load( const std::string& filename, MacroMesh& mesh ) = 0 ;
+        virtual bool load( const std::string& filename, GeoModel& mesh ) = 0 ;
 
-        virtual bool save( const MacroMesh& mesh, const std::string& filename ) = 0 ;
+        virtual bool save( const GeoModel& mesh, const std::string& filename ) = 0 ;
 
     protected:
         GeoModelMeshIOHandler()

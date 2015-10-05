@@ -44,6 +44,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geometry.h>
+#include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/line_stream.h>
