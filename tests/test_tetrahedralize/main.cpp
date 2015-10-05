@@ -39,7 +39,6 @@
  */
 
 #include <ringmesh/geo_model.h>
-#include <ringmesh/macro_mesh.h>
 #include <ringmesh/io.h>
 
 #include <geogram/basic/logger.h>
@@ -51,14 +50,16 @@ int main( int argc, char** argv )
     GEO::Logger::out("TEST") << "Test tetrahedralize for corbi.ml" << std::endl ;
 
     GeoModel in ;
-    if( !RINGMeshIO::load( "../data/corbi_out.bm", in ) )
+    if( !model_load( "../data/corbi_out.bm", in ) )
         return 1 ;
 
-    MacroMesh mm(in) ;
-    mm.compute_tetmesh("TetGen") ;
+    ringmesh_assert_not_reached ;
 
-    if (!RINGMeshIO::save(mm,"../data/out_corbi_mesh.mm") )
-        return 1 ;
+//    MacroMesh mm(in) ;
+//    mm.compute_tetmesh("TetGen") ;
+//
+//    if (!mesh_save(mm,"../data/out_corbi_mesh.mm") )
+//        return 1 ;
 
     return 0 ;
 }

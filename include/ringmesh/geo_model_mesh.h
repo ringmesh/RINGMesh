@@ -292,7 +292,7 @@ namespace RINGMesh {
          * @return the facet index varying from 0 to nb_facets
          * in the surface owing \p f
          */
-        index_t facet_in_surface( index_t f ) const ;
+        index_t index_in_surface( index_t f ) const ;
         /*!
          * Get the facet index in the GeoModelMesh restricted to
          * the surface owing the facet and its type
@@ -301,7 +301,7 @@ namespace RINGMesh {
          * of the corresponding type of \p f in the owing surface
          * @return the type of the facet \p f
          */
-        FacetType facet_type( index_t f, index_t& index ) const ;
+        FacetType type( index_t f, index_t& index = dummy_index_t ) const ;
 
         /*!
          * Get the number of facets of the corresponding type
@@ -393,6 +393,17 @@ namespace RINGMesh {
          */
         void clear() ;
 
+        /*!
+         * Get the center of the given facet
+         * @param[in] f the facet index
+         */
+        vec3 center( index_t f ) const ;
+        /*!
+         * Get the area of the facet
+         * @param[in] f the facet index
+         */
+        double area( index_t f ) const ;
+
     private:
         /*!
          * Initialize the facets of the GeoModelMesh
@@ -451,6 +462,11 @@ namespace RINGMesh {
          */
         bool is_initialized() const ;
         /*!
+         * Tests if the mesh edges needs to be initialized and initialize it
+         */
+        void test_and_initialize() const ;
+
+        /*!
          * Gets the number of wells
          * @return the corresponding number
          */
@@ -481,10 +497,6 @@ namespace RINGMesh {
 
     private:
         /*!
-         * Tests if the mesh edges needs to be initialized and initialize it
-         */
-        void test_and_initialize() const ;
-        /*!
          * Initialize the mesh edges
          */
         void initialize() ;
@@ -506,26 +518,357 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshCells {
+    ringmesh_disable_copy( GeoModelMeshCells ) ;
         friend class GeoModelMesh ;
+    public:
+        /*!
+         * Several modes for vertex duplication algorithm:
+         *  - NONE = no duplication
+         *  - FAULT = duplication along faults
+         *  - HORIZON = duplication along horizons
+         *  - ALL = duplication along faults and horizons
+         */
+        enum DuplicateMode {
+            NONE, FAULT, HORIZON, ALL
+        } ;
+
     public:
         GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
         /*!
          * Test if the mesh cells are initialized
          */
         bool is_initialized() const ;
+        /*!
+         * Test if the mesh cells are duplicated
+         */
+        bool is_duplication_initialized() const ;
 
-    private:
         /*!
          * Test if the mesh cells need to be initialized,
          * if so initialize them.
          */
         void test_and_initialize() const ;
+
+        /*!
+         * @brief Number of cells stored.
+         */
+        index_t nb() const ;
+        /*!
+         * Gets the number of duplicated points by the DuplicateMode algorithm
+         * @return the corresponding number of duplications
+         */
+        index_t nb_duplicated_vertices() const ;
+        /*!
+         * Gets the total number of vertices (mesh.vertices.nb() + nb_duplicated_vertices())
+         * @return the corresponding number of vertices
+         */
+        index_t nb_total_vertices() const ;
+        /*!
+         * Check if the corner in a cell is duplicated,
+         * if so give the duplicated vertex index
+         * @param[in] c the cell index in the GeoModelMesh
+         * @param[in] v the local vertex index in the cell \p c (0 to nb_vertices( c ))
+         * @param[out] duplicate_vertex_index the duplicated vertex index (0 to nb_duplicated_vertices())
+         * @return true if the corner is duplicated
+         */
+        bool is_corner_duplicated(
+            index_t c,
+            index_t v,
+            index_t& duplicate_vertex_index ) const ;
+        /*!
+         * Get the vertex index in the GeoModelMesh corresponding
+         * to the given duplicated vertex index
+         * @param[in] duplicate_vertex_index the duplicated vertex index
+         * @return the vertex index
+         */
+        index_t duplicated_vertex( index_t duplicate_vertex_index ) const ;
+
+        /*!
+         * Get the number of vertices in the cell
+         * @param[in] c the cell index
+         * @return the number of vertices
+         */
+        index_t nb_vertices( index_t c ) const ;
+        /*!
+         * Get the vertex index of a vertex in a cell
+         * in the GeoModelMesh
+         * @param[in] c the cell index
+         * @param[in] v the local vertex index [0, nb_vertices_in_cell[
+         * @return the vertex index
+         */
+        index_t vertex( index_t c, index_t v ) const ;
+        /*!
+         * Get the number of facets in the cell
+         * @param[in] c the cell index
+         */
+        index_t nb_facets( index_t c ) const ;
+        /*!
+         * Get the adjacent cell index in the GeoModelMesh
+         * @param[in] c the cell index
+         * @param[in] f the edge index
+         * @return the adjacent cell index
+         */
+        index_t adjacent( index_t c, index_t f ) const ;
+        /*!
+         * Get the region index in the GeoModel according the cell
+         * index in the GeoModelMesh
+         * @param[in] c the cell index
+         * @return the region index
+         */
+        index_t region( index_t c ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh restricted to
+         * the region owing the cell
+         * @param[in] c the cell index
+         * @return the cell index varying from 0 to nb_cells
+         * in the region owing \p f
+         */
+        index_t index_in_region( index_t c ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh restricted to
+         * the region owing the cell and its type
+         * @param[in] c the cell index
+         * @param[out] index the cell index varying from 0 to nb_cells
+         * of the corresponding type of \p c in the owing region
+         * @return the type of the cell \p f
+         */
+        GEO::MeshCellType type( index_t c, index_t& index = dummy_index_t ) const ;
+
+        /*!
+         * Get the number of cells of the corresponding type
+         * @param[in] type the corresponding type
+         * @return the number of cells
+         */
+        index_t nb_cells( GEO::MeshCellType type = GEO::MESH_NB_CELL_TYPES ) const ;
+        /*!
+         * Get the number of cells of the corresponding type
+         * in the given region of the GeoModel
+         * @param[in] r the region index
+         * @param[in] type the corresponding type
+         * @return the number of cells
+         */
+        index_t nb_cells(
+            index_t r,
+            GEO::MeshCellType type = GEO::MESH_NB_CELL_TYPES ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh
+         * @param[in] r the region index owing the cell
+         * @param[in] c the cell index varying from 0 to nb_cells in the region
+         * @param[in] type it can specify the cell type used. For example, if type = QUAD
+         * then \p c represents the fth quad in the region \p s and \p c can vary from 0
+         * to nb_quads( s ).
+         * @return the cell index
+         */
+        index_t cell( index_t r, index_t c, GEO::MeshCellType type =
+            GEO::MESH_NB_CELL_TYPES ) const ;
+
+        /*!
+         * Get the number of tets in the GeoModelMesh
+         * @return the number of tets
+         */
+        index_t nb_tet() const ;
+        /*!
+         * Get the number of tets in the given region
+         * @param[in] r the region index
+         * @return the number of tets
+         */
+        index_t nb_tet( index_t r ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh corresponding
+         * to the asked tet in the region
+         * @param[in] r the region index
+         * @param[in] t the tth tet index varying from 0 to nb_tet( r )
+         * @return the cell index
+         */
+        index_t tet( index_t r, index_t t ) const ;
+
+        /*!
+         * Get the number of hexs in the GeoModelMesh
+         * @return the number of hexs
+         */
+        index_t nb_hex() const ;
+        /*!
+         * Get the number of hexs in the given region
+         * @param[in] r the region index
+         * @return the number of hexs
+         */
+        index_t nb_hex( index_t r ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh corresponding
+         * to the asked hex in the region
+         * @param[in] r the region index
+         * @param[in] h the hth hex index varying from 0 to nb_hex( r )
+         * @return the cell index
+         */
+        index_t hex( index_t r, index_t h ) const ;
+
+        /*!
+         * Get the number of prisms in the GeoModelMesh
+         * @return the number of prisms
+         */
+        index_t nb_prism() const ;
+        /*!
+         * Get the number of prisms in the given region
+         * @param[in] r the region index
+         * @return the number of prisms
+         */
+        index_t nb_prism( index_t r ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh corresponding
+         * to the asked prism in the region
+         * @param[in] r the region index
+         * @param[in] p the pth prism index varying from 0 to nb_prism( r )
+         * @return the cell index
+         */
+        index_t prism( index_t r, index_t p ) const ;
+
+
+        /*!
+         * Get the number of pyramids in the GeoModelMesh
+         * @return the number of pyramids
+         */
+        index_t nb_pyramid() const ;
+        /*!
+         * Get the number of pyramids in the given region
+         * @param[in] r the region index
+         * @return the number of pyramids
+         */
+        index_t nb_pyramid( index_t r ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh corresponding
+         * to the asked pyramid in the region
+         * @param[in] r the region index
+         * @param[in] p the pth pyramid index varying from 0 to nb_pyramid( r )
+         * @return the cell index
+         */
+        index_t pyramid( index_t r, index_t p ) const ;
+
+        /*!
+         * Get the number of connectors in the GeoModelMesh
+         * @return the number of connectors
+         */
+        index_t nb_connector() const ;
+        /*!
+         * Get the number of connectors in the given region
+         * @param[in] r the region index
+         * @return the number of connectors
+         */
+        index_t nb_connector( index_t r ) const ;
+        /*!
+         * Get the cell index in the GeoModelMesh corresponding
+         * to the asked connector in the region
+         * @param[in] r the region index
+         * @param[in] c the cth connector index varying from 0 to nb_connector( r )
+         * @return the cell index
+         */
+        index_t connector( index_t r, index_t c ) const ;
+
+        /*!
+         * Clear the mesh cells
+         */
+        void clear() ;
+        /*!
+         * Remove the duplication of the mesh cell facets
+         */
+        void clear_duplication() ;
+
+        /*!
+         * Determine if a cell facet is on a surface, if so fill the \p action
+         * with the surface id and the surface side encountered
+         * @param[in] c the cell index
+         * @param[in] f the facet index
+         * @param[out] facet the facet index colocalised with the cell facet
+         * @param[out] side the side of the facet \p facet.
+         * true = side of the facet normal, false = the other side
+         * @return true is the cell facet is on a surface
+         */
+        bool is_cell_facet_on_surface(
+            index_t c,
+            index_t f,
+            index_t& facet = dummy_index_t,
+            bool& side = dummy_bool ) const ;
+
+        /*!
+         * Get the center of the given cell
+         * @param[in] c the cell index
+         */
+        vec3 center( index_t c ) const ;
+        /*!
+         * Get the volume of the cell
+         * @param[in] c the cell index
+         */
+        double volume( index_t c ) const ;
+
+    private:
         /*!
          * @brief Initialize the  cells from the cells
          *        of the GeoModel Region cells
          * @details Fills the mesh_.cells
          */
         void initialize() ;
+
+        /*!
+         * Bind attribute to the cells attribute manager
+         */
+        void bind_attribute() ;
+        /*!
+         * Unbind attribute to the cells attribute manager
+         */
+        void unbind_attribute() ;
+
+        /// enum to characterize the action to do concerning a surface
+        /// Action concerns the vertices of a Surface and not the Surface
+        enum ActionOnSurface {
+            /// do nothing
+            SKIP = -2,
+            /// need to be duplicated (don't know which side yet)
+            TO_PROCESS = -1,
+            /// need to duplicate the side opposite to the facet normal
+            NEG_SIDE = 0,
+            /// need to duplicate the side following the facet normal
+            POS_SIDE = 1
+        } ;
+
+        /// Action to do according a surface index
+        typedef std::pair< index_t, ActionOnSurface > action_on_surface ;
+
+        /*!
+         * Test if the mesh cell are duplicated according
+         * the duplication mode, if not duplicate them.
+         */
+        void test_and_initialize_duplication() const ;
+        /*!
+         * Duplicate the mesh cell along some surfaces defined
+         * by the duplication mode
+         */
+        void initialize_duplication() ;
+        /*!
+         * Test if we need to duplicate mesh cell along the given
+         * surface according the duplicate mode
+         * @param[in] s the surface index in the GeoModel
+         */
+        bool is_surface_to_duplicate( index_t s ) const ;
+
+        /*!
+         * Determine the actions to do according the action_on_surfaces
+         * encountered during the propagation around a vertex (initialize())
+         * @param[in] surfaces the action_on_surfaces encountered
+         * @param[in,out] info the global information on what to do for each surface.
+         * This information is updated in this function according the encountered action_on_surfaces
+         * @return true if the corners should be duplicated
+         */
+        bool are_corners_to_duplicate(
+            const std::vector< action_on_surface >& surfaces,
+            std::vector< ActionOnSurface >& info ) ;
+        /*!
+         * Test if the mesh cell facet attribute is filled with
+         * the colocalised facet. If not fill it.
+         */
+        void test_and_initialize_cell_facet() const ;
+        /*!
+         * Initialize the mesh cell facet attribute of colocalised facet.
+         */
+        void initialize_cell_facet() ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -535,15 +878,43 @@ namespace RINGMesh {
         /// Attached Mesh
         GEO::Mesh& mesh_ ;
 
+        /// Attribute storing the region index per cell
+        GEO::Attribute< index_t > region_id_ ;
         /*!
          * Vector storing the index of the starting cell index
          * for a given region and a given cell type.
          * For example:
-         *    the 2nd hex index of the surface index S will be found here:
-         *    surface_facet_ptr_[ALL*S + HEX] + 2
+         *    the 2nd hex index of the region index R will be found here:
+         *    surface_facet_ptr_[GEO::MESH_NB_CELL_TYPES*R + HEX] + 2
          */
         std::vector< index_t > region_cell_ptr_ ;
 
+        /// Number of tet in the GeoModelMesh
+        index_t nb_tet_ ;
+        /// Number of hex in the GeoModelMesh
+        index_t nb_hex_ ;
+        /// Number of prism in the GeoModelMesh
+        index_t nb_prism_ ;
+        /// Number of pyramid in the GeoModelMesh
+        index_t nb_pyramid_ ;
+        /// Number of connector in the GeoModelMesh
+        index_t nb_connector_ ;
+
+        /// Current duplicate mode applied on the mesh
+        DuplicateMode mode_ ;
+        /*!
+         * @brief Vector of duplicated vertices
+         * @details Each value is a duplicated vertex, the index corresponds to
+         * vertex index in mesh.vertices.
+         */
+        std::vector< index_t > duplicated_vertex_indices_ ;
+
+        /*!
+         * @brief Attribute storing the colocalised facet index per cell facet
+         * @detail If a cell facet is on a surface, the attribute is equal to
+         * the index of the corresponding facet.
+         */
+        GEO::Attribute< index_t > facet_id_ ;
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
@@ -558,20 +929,51 @@ namespace RINGMesh {
         GeoModelMesh( const GeoModel& gm ) ;
         ~GeoModelMesh() ;
 
-        const GeoModel& model() const {
+        const GeoModel& model() const
+        {
             return gm_ ;
         }
 
-        GEO::AttributesManager& vertex_attribute_manager() const {
+        /*!
+         * Copy the current GeoModelMesh into a Mesh
+         * @param[out] mesh The mesh to fill
+         */
+        void copy_mesh( GEO::Mesh& mesh ) const
+        {
+            mesh.copy( *mesh_ ) ;
+        }
+
+        GEO::AttributesManager& vertex_attribute_manager() const
+        {
             return mesh_->vertices.attributes() ;
         }
-        GEO::AttributesManager& facet_attribute_manager() const {
+        GEO::AttributesManager& facet_attribute_manager() const
+        {
             return mesh_->facets.attributes() ;
         }
-        GEO::AttributesManager& cell_attribute_manager() const {
+        GEO::AttributesManager& cell_attribute_manager() const
+        {
             return mesh_->cells.attributes() ;
         }
 
+        /*!
+         * Access the DuplicateMode
+         * @return the current DuplicateMode
+         */
+        GeoModelMeshCells::DuplicateMode duplicate_mode() const
+        {
+            return mode_ ;
+        }
+        /*!
+         * Set a new DuplicateMode
+         * @param[in] mode the new DuplicateMode for the GeoModelMesh
+         */
+        void set_duplicate_mode( const GeoModelMeshCells::DuplicateMode& mode ) const
+        {
+            if( mode_ == mode ) return ;
+            mode_ = mode ;
+            const_cast< GeoModelMesh* >( this )->cells.clear_duplication() ;
+        }
 
         /*!
          * @brief Remove colocated vertices
@@ -607,6 +1009,8 @@ namespace RINGMesh {
          * On these elements, attributes can be defined
          */
         GEO::Mesh* mesh_ ;
+        /// Optional duplication mode to compute the duplication of cells on surfaces
+        mutable GeoModelMeshCells::DuplicateMode mode_ ;
 
     public:
         GeoModelMeshVertices vertices ;
