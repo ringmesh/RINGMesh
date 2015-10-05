@@ -1045,10 +1045,6 @@ namespace RINGMesh {
          *     }
          */
 
-        /*!
-         * \todo Copy function. We need to copy the SIDES
-         * with the boundaries.
-         */
         virtual void copy_macro_topology(
             const GeoModelElement& rhs,
             GeoModel& model )
@@ -1068,27 +1064,6 @@ namespace RINGMesh {
         std::vector< bool > sides_ ;
     } ;
 
-    /*!
-     * @brief Class to answer geometrical requests on a GeoModelElement
-     */
-    class RINGMESH_API GeoModelElementMeasure {
-    public:
-        static double size( const GeoModelElement* E ) ;
-
-        static double cell_size( const GeoModelElement* E, index_t cell ) ;
-
-        static double distance( const GeoModelElement* from, const vec3& p ) ;
-
-        static double distance(
-            const GeoModelElement* from,
-            const GeoModelElement* to ) ;
-
-        static vec3 barycenter( const GeoModelElement* E ) ;
-
-        static vec3 barycenter(
-            const GeoModelElement* E,
-            const std::vector< index_t >& cells ) ;
-    } ;
 } // namespace
 
 #endif
