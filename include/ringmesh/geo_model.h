@@ -62,6 +62,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModel {
     ringmesh_disable_copy( GeoModel ) ;
         friend class GeoModelBuilder ;
+        friend class GeoModelEditor ;
 
     public:
         const static index_t NO_ID = index_t( -1 ) ;
@@ -256,7 +257,7 @@ namespace RINGMesh {
          * @brief Generic accessor to the storage of elements of the given type
          * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
          */
-        std::vector< GME* >& modifiable_elements( GME::TYPE type )
+        inline std::vector< GME* >& modifiable_elements( GME::TYPE type )
         {
             return const_cast< std::vector< GME* >& >( elements( type ) ) ;
         }
@@ -285,6 +286,60 @@ namespace RINGMesh {
                 default:
                     ringmesh_assert_not_reached;
                 return surfaces_ ;
+            }
+        }
+
+        /*!
+        * @brief Modifiable pointer to an element of the model
+        */
+        GeoModelElement* element_ptr( const GME::gme_t& id ) const
+        {
+            if( id.type < GME::NO_TYPE ) {
+                return elements( id.type )[ id.index ] ;
+            } else if( id.type == GME::ALL_TYPES ) {
+                return element_ptr( global_to_typed_id( id ) ) ;
+            } else {
+                ringmesh_assert_not_reached ;
+                return const_cast< Region*> ( &universe_ ) ;
+            }
+        }
+
+        /*!
+        * @brief Reference to a modifiable element of the model
+        * @pre The id must refer to a valid element of the model
+        */
+        GeoModelElement& modifiable_element(
+            const GME::gme_t& id ) const
+        {
+            return *element_ptr( id ) ;
+        }
+
+        /*!
+        * @brief Reference to a modifiable meshed element of the model
+        * @pre Assert in debug model that the given id refers to a meshed element.
+        *      The id must refer to a valid element.
+        */
+        inline GeoModelMeshElement& modifiable_mesh_element(
+            const GME::gme_t& id ) const
+        {
+            ringmesh_debug_assert( GME::has_mesh( id.type ) ) ;
+            return dynamic_cast<GeoModelMeshElement&>(
+                modifiable_element( id ) ) ;
+        }
+
+        /*!
+        * @brief Clears and fills the model nb_elements_per_type_ vector
+        * @details See global element access with GeoModel::element( BME::TYPE, index_t )
+        */
+        void init_global_model_element_access()
+        {
+            nb_elements_per_type_.clear() ;
+
+            index_t count = 0 ;
+            nb_elements_per_type_.push_back( count ) ;
+            for( index_t type = GME::CORNER; type < GME::NO_TYPE; type++ ) {
+                count += nb_elements( ( GME::TYPE ) type ) ;
+                nb_elements_per_type_.push_back( count ) ;
             }
         }
 
