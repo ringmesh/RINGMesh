@@ -74,7 +74,7 @@ namespace RINGMesh {
         static TetraGen* create( GEO::Mesh& tetmesh, const std::string& algo_name ) ;
         static void initialize() ;
 
-        void set_boundaries( const GeoModelElement* region, const WellGroup* wells = nil ) ;
+        void set_boundaries( const GeoModelElement& region, const WellGroup* wells = nil ) ;
         void set_internal_points( const std::vector< vec3 >& points ) ;
 
         virtual bool tetrahedralize( bool refine = true ) = 0 ;
