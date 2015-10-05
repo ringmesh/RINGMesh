@@ -73,6 +73,7 @@ namespace RINGMesh {
         void draw_surfaces() ;
         void draw_regions() ;
 
+        // Settings for the corners
         void set_corners_color( float r, float g, float b ) ;
         void set_corner_color( index_t c, float r, float g, float b ) ;
         void set_corners_visibility( bool b ) ;
@@ -80,6 +81,7 @@ namespace RINGMesh {
         void set_corners_size( index_t s ) ;
         void set_corner_size( index_t c, index_t s ) ;
 
+        // Settings for the lines
         void set_edge_lines_color( float r, float g, float b ) ;
         void set_edge_line_color( index_t c, float r, float g, float b ) ;
         void set_edge_lines_visibility( bool b ) ;
@@ -94,6 +96,7 @@ namespace RINGMesh {
         void set_vertex_lines_size( index_t s ) ;
         void set_vertex_line_size( index_t c, index_t s ) ;
 
+        // Settings for the surfaces
         void set_surfaces_color( float r, float g, float b ) ;
         void set_surface_color( index_t c, float r, float g, float b ) ;
         void set_backface_surfaces_color( float r, float g, float b ) ;
@@ -115,35 +118,7 @@ namespace RINGMesh {
         void set_vertex_surfaces_size( index_t s ) ;
         void set_vertex_surface_size( index_t c, index_t s ) ;
 
-    private:
-        /// The GeoModel associated to the graphics
-        const GeoModel* model_ ;
-
-        /// The graphics associated to each Corner
-        std::vector< CornerGfx* > corners_ ;
-        /// The graphics associated to each Line
-        std::vector< LineGfx* > lines_ ;
-        /// The graphics associated to each Surface
-        std::vector< SurfaceGfx* > surfaces_ ;
-        /// The graphics associated to each Region
-        std::vector< RegionGfx* > regions_ ;
-
-    } ;
-
-    class RINGMESH_API MacroMeshGfx {
-    ringmesh_disable_copy( MacroMeshGfx ) ;
-    public:
-        MacroMeshGfx() ;
-        ~MacroMeshGfx() ;
-
-        const MacroMesh* macro_mesh() const {
-            return mm_ ;
-        }
-        void set_macro_mesh( const MacroMesh& model ) ;
-        void initialize() ;
-
-        void draw() ;
-
+        // Settings for the regions
         void set_vertex_regions_color( float m, float g, float b ) ;
         void set_vertex_region_color( index_t m, float r, float g, float b ) ;
         void set_vertex_regions_visibility( bool b ) ;
@@ -161,17 +136,21 @@ namespace RINGMesh {
         void set_surface_regions_color( float r, float g, float b ) ;
         void set_surface_region_color( index_t m, float r, float g, float b ) ;
         void set_backface_surface_regions_color( float r, float g, float b ) ;
-        void set_backface_surface_region_color( index_t m, float r, float g, float b ) ;
+        void set_backface_surface_region_color(
+            index_t m,
+            float r,
+            float g,
+            float b ) ;
         void set_surface_regions_visibility( bool b ) ;
-        void set_surface_region_visibility( index_t m, bool b ) ;
+        void set_surface_region_visibility( index_t r, bool b ) ;
         void set_mesh_surface_regions_color( float r, float g, float b ) ;
-        void set_mesh_surface_region_color( index_t m, float r, float g, float b ) ;
+        void set_mesh_surface_region_color( index_t reg, float r, float g, float b ) ;
         void set_mesh_surface_regions_visibility( bool b ) ;
-        void set_mesh_surface_region_visibility( index_t m, bool b ) ;
+        void set_mesh_surface_region_visibility( index_t r, bool b ) ;
         void set_mesh_surface_regions_size( index_t s ) ;
-        void set_mesh_surface_region_size( index_t m, index_t s ) ;
+        void set_mesh_surface_region_size( index_t r, index_t s ) ;
 
-        void set_cell_mesh_regions_color( float m, float g, float b ) ;
+        void set_cell_mesh_regions_color( float r, float g, float b ) ;
         void set_cell_mesh_region_color( index_t m, float r, float g, float b ) ;
         void set_cell_mesh_regions_visibility( bool b ) ;
         void set_cell_mesh_region_visibility( index_t m, bool b ) ;
@@ -193,14 +172,19 @@ namespace RINGMesh {
         void set_cell_region_shrink( index_t m, double s ) ;
 
     private:
-        /// The MacroMesh associated to the graphics
-        const MacroMesh* mm_ ;
+        /// The GeoModel associated to the graphics
+        const GeoModel* model_ ;
 
-        /// The graphics associated to each Mesh
-        std::vector< RegionGfx* > meshes_ ;
+        /// The graphics associated to each Corner
+        std::vector< CornerGfx* > corners_ ;
+        /// The graphics associated to each Line
+        std::vector< LineGfx* > lines_ ;
+        /// The graphics associated to each Surface
         std::vector< SurfaceGfx* > surfaces_ ;
-        std::vector< LineGfx* > edges_ ;
+        /// The graphics associated to each Region
+        std::vector< RegionGfx* > regions_ ;
     } ;
+
 }
 
 #endif
