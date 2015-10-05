@@ -39,7 +39,6 @@
  */
 
 #include <ringmesh/io.h>
-#include <ringmesh/macro_mesh.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/well.h>
 #include <ringmesh/geometry.h>
@@ -132,19 +131,13 @@ namespace RINGMesh {
         return true ;
     }
 
-    //    __  __                 __  __        _
-    //   |  \/  |__ _ __ _ _ ___|  \/  |___ __| |_
-    //   | |\/| / _` / _| '_/ _ \ |\/| / -_|_-< ' \
-        //   |_|  |_\__,_\__|_| \___/_|  |_\___/__/_||_|
-    //
-
     /*!
-     * Loads a MacroMesh from a file
+     * Loads a GeoModel from a file
      * @param[in] filename the file to load
      * @param][out] model the mesh to fill
      * @return returns the success of the operation
      */
-    bool mesh_load( const std::string& filename, MacroMesh& model )
+    bool mesh_load( const std::string& filename, GeoModel& model )
     {
         GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
@@ -161,12 +154,12 @@ namespace RINGMesh {
     }
 
     /*!
-     * Saves a MacroMesh in a file
+     * Saves a GeoModel in a file
      * @param[in] model the mesh to save
      * @param[in] filename the file where to save
      * @return returns the success of the operation
      */
-    bool mesh_save( const MacroMesh& model, const std::string& filename )
+    bool mesh_save( const GeoModel& model, const std::string& filename )
     {
         GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
             << std::endl ;
@@ -186,100 +179,99 @@ namespace RINGMesh {
 
     class AsterIOHandler: public GeoModelMeshIOHandler {
     public:
-        virtual bool load( const std::string& filename, MacroMesh& mesh )
+        virtual bool load( const std::string& filename, GeoModel& mesh )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from Code_Aster mesh not implemented yet"
+                << "Loading of a GeoModel from Code_Aster mesh not implemented yet"
                 << std::endl ;
             return false ;
         }
-        virtual bool save( const MacroMesh& mm, const std::string& filename )
+        virtual bool save( const GeoModel& gm, const std::string& filename )
         {
-            const GeoModel& model = mm.model() ;
-            std::vector< index_t > vertex_exported_id( mm.vertices.nb_vertices(),
+            std::vector< index_t > vertex_exported_id( gm.mesh.vertices.nb(),
                 NO_ID ) ;
             std::vector< index_t > atom_exported_id(
-                mm.vertices.nb_duplicated_vertices(), NO_ID ) ;
+                gm.mesh.cells.nb_duplicated_vertices(), NO_ID ) ;
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
-            std::vector< bool > vertex_exported( mm.vertices.nb_vertices(), false ) ;
-            std::vector< bool > atom_exported( mm.vertices.nb_duplicated_vertices(),
+            std::vector< bool > vertex_exported( gm.mesh.vertices.nb(), false ) ;
+            std::vector< bool > atom_exported( gm.mesh.cells.nb_duplicated_vertices(),
                 false ) ;
-
-            std::cout << "nb vertices " << mm.vertices.nb_vertices() << std::endl ;
-            std::cout << "nb total vertices " << mm.vertices.nb_total_vertices()
-                << std::endl ;
 
             index_t nb_vertices_exported = 0 ;
             index_t cur_cell = 0 ;
             index_t cur_facet = 0 ;
 
+            const GeoModelMesh& mesh = gm.mesh ;
             /// 1. Write the vertices coordinates (with the duplicate ones)
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                const GEO::Mesh& mesh = mm.mesh( r ) ;
-                out << "COOR_3D" << std::endl ;
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    for( index_t co = mesh.cells.corners_begin( c );
-                        co < mesh.cells.corners_end( c ); co++ ) {
-                        index_t vertex_id, atom_id ;
-                        if( mm.vertices.vertex_id( r, co, vertex_id, atom_id ) ) {
-                            if( vertex_exported[vertex_id] ) continue ;
-                            vertex_exported[vertex_id] = true ;
-                            vertex_exported_id[vertex_id] = nb_vertices_exported ;
-                            out << "V" << nb_vertices_exported++ << " "
-                                << mm.vertices.vertex( vertex_id ) << std::endl ;
-                        }
+            out << "COOR_3D" << std::endl ;
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    index_t vertex_id, atom_id ;
+                    if( mesh.cells.is_corner_duplicated( c, v, atom_id ) ) {
+                        vertex_id = mesh.cells.duplicated_vertex( atom_id ) ;
+                        if( atom_exported[atom_id] ) continue ;
+                        atom_exported[atom_id] = true ;
+                        atom_exported_id[atom_id] = nb_vertices_exported ;
+                    } else {
+                        vertex_id = mesh.cells.vertex( c, v ) ;
+                        if( vertex_exported[vertex_id] ) continue ;
+                        vertex_exported[vertex_id] = true ;
+                        vertex_exported_id[vertex_id] = nb_vertices_exported ;
                     }
+                    out << "V" << nb_vertices_exported++ << " "
+                        << mesh.vertices.vertex( vertex_id ) << std::endl ;
                 }
-                out << "FINSF" << std::endl ;
+            }
+            out << "FINSF" << std::endl ;
 
-                out << "TETRA4" << std::endl ;
-
-                for( index_t c = 0; c < mm.cells.nb_tet( r ); c++ ) {
-                    index_t cur_tet = mm.cells.tet_id( r, c ) ;
+            /// 2. Write tetrahedra
+            /// @todo Review: what about other elements ? [AB]
+            out << "TETRA4" << std::endl ;
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                for( index_t c = 0; c < mesh.cells.nb_tet( r ); c++ ) {
+                    index_t cur_tet = mesh.cells.tet( r, c ) ;
                     out << "C" << cur_cell++ << " " ;
-
-                    for( index_t co = mesh.cells.corners_begin( cur_tet );
-                        co < mesh.cells.corners_end( cur_tet ); co++ ) {
-                        index_t vertex_id, atom_id ;
-                        if( mm.vertices.vertex_id( r, co, vertex_id, atom_id ) ) {
-                            out << "V" << vertex_exported_id[vertex_id] << " " ;
-                        } else {
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                        index_t atom_id ;
+                        if( mesh.cells.is_corner_duplicated( c, v, atom_id ) ) {
                             out << "V" << atom_exported_id[atom_id] << " " ;
+                        } else {
+                            index_t vertex_id = mesh.cells.vertex( c, v ) ;
+                            out << "V" << vertex_exported_id[vertex_id] << " " ;
                         }
                     }
                     out << std::endl ;
-
                 }
-                out << "FINSF" << std::endl ;
             }
+            out << "FINSF" << std::endl ;
 
+            /// 3. Associate tetrahedra to each region
             cur_cell = 0 ;
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 out << "GROUP_MA" << std::endl ;
-                out << model.region( r ).name() << std::endl ;
-                for( index_t c = 0; c < mm.mesh( r ).cells.nb(); c++ ) {
+                out << gm.region( r ).name() << std::endl ;
+                for( index_t c = 0; c < mesh.cells.nb_tet( r ); c++ ) {
                     out << "C" << cur_cell++ << std::endl ;
                 }
             }
             out << "FINSF" << std::endl ;
 
+            /// 4. Write triangles
             out << "TRIA3" << std::endl ;
-            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                const RINGMesh::GeoModelElement& interf = model.one_interface( i ) ;
+            for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
+                const RINGMesh::GeoModelElement& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t surface_id = interf.child_id( s ).index ;
-                    index_t mesh_id = mm.facets.mesh( surface_id ) ;
-                    const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                    for( index_t f = 0; f < mm.facets.nb_facets( surface_id );
+                    for( index_t f = 0; f < mesh.facets.nb_triangle( surface_id );
                         f++ ) {
-                        index_t facet_id = mm.facets.facet( surface_id, f ) ;
+                        index_t facet_id = mesh.facets.triangle( surface_id, f ) ;
                         out << "F" << facet_id ;
-                        for( index_t v = mesh.facets.corners_begin( facet_id );
-                            v < mesh.facets.corners_end( facet_id ); v++ ) {
+                        for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id );
+                            v++ ) {
                             out << " V"
-                                << vertex_exported_id[mm.vertices.vertex_id( mesh_id,
-                                    mesh.facet_corners.vertex( v ) )] ;
+                                << vertex_exported_id[mesh.facets.vertex( facet_id,
+                                    v )] ;
                         }
                         out << std::endl ;
                     }
@@ -287,17 +279,16 @@ namespace RINGMesh {
             }
             out << "FINSF" << std::endl ;
 
-            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                const RINGMesh::GeoModelElement& interf = model.one_interface( i ) ;
+            /// 5. Associate triangles to each surface
+            for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
+                const RINGMesh::GeoModelElement& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t surface_id = interf.child_id( s ).index ;
                     out << "GROUP_MA" << std::endl ;
                     out << interf.name() << std::endl ;
-
-                    index_t mesh_id = mm.facets.mesh( surface_id ) ;
-                    for( index_t f = 0; f < mm.facets.nb_facets( surface_id );
+                    for( index_t f = 0; f < mesh.facets.nb_triangle( surface_id );
                         f++ ) {
-                        index_t facet_id = mm.facets.facet( surface_id, f ) ;
+                        index_t facet_id = mesh.facets.triangle( surface_id, f ) ;
                         out << "F" << facet_id ;
                         out << std::endl ;
                     }
@@ -318,7 +309,7 @@ namespace RINGMesh {
 
     class MMIOHandler: public GeoModelMeshIOHandler {
     public:
-        virtual bool load( const std::string& filename, MacroMesh& mm )
+        virtual bool load( const std::string& filename, GeoModel& gm )
         {
             unzFile uz = unzOpen( filename.c_str() ) ;
             unz_global_info global_info ;
@@ -327,7 +318,7 @@ namespace RINGMesh {
                 unzClose( uz ) ;
                 return false ;
             }
-            for( index_t r = 0; r < mm.model().nb_regions(); r++ ) {
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 char filename[MAX_FILENAME] ;
                 unzip_file( uz, filename ) ;
                 GEO::MeshIOFlags flags ;
@@ -335,7 +326,7 @@ namespace RINGMesh {
                 flags.set_element( GEO::MESH_CELLS ) ;
                 flags.set_element( GEO::MESH_EDGES ) ;
                 flags.set_attribute( GEO::MESH_FACET_REGION ) ;
-                GEO::Mesh& m = mm.mesh( r ) ;
+                GEO::Mesh& m = gm.region( r ).mesh() ;
                 std::string ext = GEO::FileSystem::extension( filename ) ;
                 if( ext == "meshb" ) {
                     GEO::Logger::instance()->set_minimal( true ) ;
@@ -358,22 +349,22 @@ namespace RINGMesh {
             return true ;
         }
 
-        /// Save a \param[in] mm macro mesh in a .zip file which contains all the mesh file. Type of the export is
+        /// Save a \param[in] gm macro mesh in a .zip file which contains all the mesh file. Type of the export is
         /// determined by the extension given in \param[in] filename
-        virtual bool save( const MacroMesh& mm, const std::string& filename )
+        virtual bool save( const GeoModel& gm, const std::string& filename )
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
-            for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
                 GEO::MeshIOFlags flags ;
                 flags.set_element( GEO::MESH_FACETS ) ;
                 flags.set_element( GEO::MESH_CELLS ) ;
                 flags.set_element( GEO::MESH_EDGES ) ;
                 flags.set_attribute( GEO::MESH_FACET_REGION ) ;
 
-                const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
+                const GEO::Mesh& cur_mesh = gm.region( m ).mesh() ;
                 std::string name_mesh_file = "region_" + GEO::String::to_string( m )
                     + ".meshb" ;
 
@@ -397,90 +388,21 @@ namespace RINGMesh {
 
     class LMIOHandler: public GeoModelMeshIOHandler {
     public:
-        virtual bool load( const std::string& filename, MacroMesh& mesh )
+        virtual bool load( const std::string& filename, GeoModel& mesh )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from a mesh not implemented yet"
+                << "Loading of a GeoModel from a mesh not implemented yet"
                 << std::endl ;
             return false ;
         }
-        virtual bool save( const MacroMesh& mm, const std::string& filename )
+        virtual bool save( const GeoModel& gm, const std::string& filename )
         {
+            gm.mesh.edges.test_and_initialize() ;
+            gm.mesh.facets.test_and_initialize() ;
+            gm.mesh.cells.test_and_initialize() ;
+
             GEO::Mesh mesh( 3 ) ;
-            mesh.vertices.create_vertices( mm.vertices.nb_vertices() ) ;
-            for( index_t p = 0; p < mm.vertices.nb_vertices(); p++ ) {
-                mesh.vertices.point( p ) = mm.vertices.vertex( p ) ;
-            }
-
-            GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
-                surface_att_name ) ;
-            index_t cell_offset = 0 ;
-            for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
-                const GEO::Mesh& cur_mesh = mm.mesh( m ) ;
-                GEO::Attribute< index_t > cur_attribute(
-                    cur_mesh.facets.attributes(), surface_att_name ) ;
-                for( index_t f = 0; f < cur_mesh.facets.nb(); f++ ) {
-                    GEO::vector< index_t > vertices ;
-                    vertices.reserve( cur_mesh.facets.nb_vertices( f ) ) ;
-                    for( index_t v = cur_mesh.facets.corners_begin( f );
-                        v < cur_mesh.facets.corners_end( f ); v++ ) {
-                        vertices.push_back(
-                            mm.vertices.vertex_id( m,
-                                cur_mesh.facet_corners.vertex( v ) ) ) ;
-                    }
-                    index_t f_id = mesh.facets.create_polygon( vertices ) ;
-                    attribute[f_id] = cur_attribute[f] ;
-                }
-
-                for( index_t c = 0; c < cur_mesh.cells.nb(); c++ ) {
-                    std::vector< index_t > vertex_indices ;
-                    vertex_indices.reserve( 8 ) ;
-                    for( index_t v = 0; v < cur_mesh.cells.nb_vertices( c ); v++ ) {
-                        vertex_indices.push_back(
-                            mm.vertices.vertex_id( m,
-                                cur_mesh.cells.vertex( c, v ) ) ) ;
-                    }
-                    std::vector< index_t > adj_indices ;
-                    adj_indices.reserve( 6 ) ;
-                    for( index_t f = 0; f < cur_mesh.cells.nb_facets( c ); f++ ) {
-                        index_t adj = cur_mesh.cells.adjacent( c, f ) ;
-                        adj_indices.push_back(
-                            adj == GEO::NO_CELL ? adj : cell_offset + adj ) ;
-                    }
-                    if( cur_mesh.cells.type( c ) == GEO::MESH_TET ) {
-                        mesh.cells.create_tet( vertex_indices[0], vertex_indices[1],
-                            vertex_indices[2], vertex_indices[3], adj_indices[0],
-                            adj_indices[1], adj_indices[2], adj_indices[3] ) ;
-                    } else if( cur_mesh.cells.type( c ) == GEO::MESH_PRISM ) {
-                        mesh.cells.create_prism( vertex_indices[0],
-                            vertex_indices[1], vertex_indices[2], vertex_indices[3],
-                            vertex_indices[4], vertex_indices[5], adj_indices[0],
-                            adj_indices[1], adj_indices[2], adj_indices[3],
-                            adj_indices[4] ) ;
-                    } else if( cur_mesh.cells.type( c ) == GEO::MESH_PYRAMID ) {
-                        mesh.cells.create_pyramid( vertex_indices[0],
-                            vertex_indices[1], vertex_indices[2], vertex_indices[3],
-                            vertex_indices[4], adj_indices[0], adj_indices[1],
-                            adj_indices[2], adj_indices[3], adj_indices[4] ) ;
-                    } else if( cur_mesh.cells.type( c ) == GEO::MESH_HEX ) {
-                        mesh.cells.create_hex( vertex_indices[0], vertex_indices[1],
-                            vertex_indices[2], vertex_indices[3], vertex_indices[4],
-                            vertex_indices[5], vertex_indices[6], vertex_indices[7],
-                            adj_indices[0], adj_indices[1], adj_indices[2],
-                            adj_indices[3], adj_indices[4], adj_indices[5] ) ;
-                    } else {
-                        ringmesh_debug_assert(
-                            cur_mesh.cells.type( c ) == GEO::MESH_CONNECTOR ) ;
-                        mesh.cells.create_connector( vertex_indices[0],
-                            vertex_indices[1], vertex_indices[2], vertex_indices[3],
-                            adj_indices[0], adj_indices[1], adj_indices[2] ) ;
-                    }
-                }
-                cell_offset += cur_mesh.cells.nb() ;
-            }
-
-            mesh.facets.connect() ;
-            mesh.cells.connect() ;
+            gm.mesh.copy_mesh( mesh ) ;
 
             GEO::MeshIOFlags flags ;
             flags.set_element( GEO::MESH_FACETS ) ;
@@ -497,14 +419,14 @@ namespace RINGMesh {
     /************************************************************************/
     class TetGenIOHandler: public GeoModelMeshIOHandler {
     public:
-        virtual bool load( const std::string& filename, MacroMesh& mesh )
+        virtual bool load( const std::string& filename, GeoModel& mesh )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from TetGen not implemented yet"
+                << "Loading of a GeoModel from TetGen not implemented yet"
                 << std::endl ;
             return false ;
         }
-        virtual bool save( const MacroMesh& mm, const std::string& filename )
+        virtual bool save( const GeoModel& gm, const std::string& filename )
         {
             std::string directory = GEO::FileSystem::dir_name( filename ) ;
             std::string file = GEO::FileSystem::base_name( filename ) ;
@@ -513,11 +435,11 @@ namespace RINGMesh {
             oss_node << directory << "/" << file << ".node" ;
             std::ofstream node( oss_node.str().c_str() ) ;
             node.precision( 16 ) ;
-            node << mm.vertices.nb_vertices() << " 3 0 0" << std::endl ;
-            for( index_t v = 0; v < mm.vertices.nb_vertices(); v++ ) {
-                const vec3& point = mm.vertices.vertex( v ) ;
-                node << v << SPACE << point.x << SPACE << point.y << SPACE << point.z
-                    << std::endl ;
+
+            const GeoModelMesh& mesh = gm.mesh ;
+            node << mesh.vertices.nb() << " 3 0 0" << std::endl ;
+            for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
+                node << v << SPACE << mesh.vertices.vertex( v ) << std::endl ;
             }
 
             std::ostringstream oss_ele ;
@@ -527,25 +449,21 @@ namespace RINGMesh {
             oss_neigh << directory << "/" << file << ".neigh" ;
             std::ofstream neigh( oss_neigh.str().c_str() ) ;
 
-            ele << mm.cells.nb_cells() << " 4 1" << std::endl ;
-            neigh << mm.cells.nb_cells() << " 4" << std::endl ;
+            ele << mesh.cells.nb() << " 4 1" << std::endl ;
+            neigh << mesh.cells.nb() << " 4" << std::endl ;
             index_t nb_tet_exported = 0 ;
-            for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
-                const GEO::Mesh& mesh = mm.mesh( m ) ;
-                for( index_t tet = 0; tet < mesh.cells.nb(); tet++ ) {
-                    ele << nb_tet_exported << SPACE
-                        << mm.vertices.vertex_id( m, mesh.cells.vertex( tet, 0 ) )
-                        << SPACE
-                        << mm.vertices.vertex_id( m, mesh.cells.vertex( tet, 1 ) )
-                        << SPACE
-                        << mm.vertices.vertex_id( m, mesh.cells.vertex( tet, 2 ) )
-                        << SPACE
-                        << mm.vertices.vertex_id( m, mesh.cells.vertex( tet, 3 ) )
-                        << SPACE << m + 1 << std::endl ;
+            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
+                for( index_t tet = 0; tet < mesh.cells.nb_tet( m ); tet++ ) {
+                    index_t cell = mesh.cells.tet( m, tet ) ;
+                    ele << nb_tet_exported << SPACE << mesh.cells.vertex( cell, 0 )
+                        << SPACE << mesh.cells.vertex( cell, 1 ) << SPACE
+                        << mesh.cells.vertex( cell, 2 ) << SPACE
+                        << mesh.cells.vertex( cell, 3 ) << SPACE << m + 1
+                        << std::endl ;
                     neigh << nb_tet_exported ;
                     for( index_t f = 0; f < mesh.cells.nb_facets( tet ); f++ ) {
                         neigh << SPACE ;
-                        index_t adj = mm.cells.cell_adjacent( m, tet, f ) ;
+                        index_t adj = mesh.cells.adjacent( cell, f ) ;
                         if( adj == GEO::NO_CELL ) {
                             neigh << -1 ;
                         } else {
@@ -564,14 +482,14 @@ namespace RINGMesh {
 
     class VTKIOHandler: public GeoModelMeshIOHandler {
     public:
-        virtual bool load( const std::string& filename, MacroMesh& mesh )
+        virtual bool load( const std::string& filename, GeoModel& mesh )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from VTK not implemented yet"
+                << "Loading of a GeoModel from VTK not implemented yet"
                 << std::endl ;
             return false ;
         }
-        virtual bool save( const MacroMesh& mm, const std::string& filename )
+        virtual bool save( const GeoModel& gm, const std::string& filename )
         {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
@@ -581,46 +499,44 @@ namespace RINGMesh {
             out << "ASCII" << std::endl ;
             out << "DATASET UNSTRUCTURED_GRID" << std::endl ;
 
-            out << "POINTS " << mm.vertices.nb_vertices() << " double" << std::endl ;
-            for( index_t v = 0; v < mm.vertices.nb_vertices(); v++ ) {
-                const vec3& point = mm.vertices.vertex( v ) ;
-                out << point.x << SPACE << point.y << SPACE << point.z << std::endl ;
+            const GeoModelMesh& mesh = gm.mesh ;
+            out << "POINTS " << mesh.vertices.nb() << " double" << std::endl ;
+            for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
+                out << mesh.vertices.vertex( v ) << std::endl ;
             }
             out << std::endl ;
 
-            index_t total_corners = ( 4 + 1 ) * mm.cells.nb_tet()
-                + ( 5 + 1 ) * mm.cells.nb_pyramid() + ( 6 + 1 ) * mm.cells.nb_prism()
-                + ( 8 + 1 ) * mm.cells.nb_hex() ;
-            out << "CELLS " << mm.cells.nb_cells() << SPACE << total_corners
+            index_t total_corners = ( 4 + 1 ) * mesh.cells.nb_tet()
+                + ( 5 + 1 ) * mesh.cells.nb_pyramid()
+                + ( 6 + 1 ) * mesh.cells.nb_prism()
+                + ( 8 + 1 ) * mesh.cells.nb_hex() ;
+            out << "CELLS " << mesh.cells.nb_cells() << SPACE << total_corners
                 << std::endl ;
-            for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
-                const GEO::Mesh& mesh = mm.mesh( m ) ;
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    out << mesh.cells.nb_vertices( c ) ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
-                        out << SPACE
-                            << mm.vertices.vertex_id( m,
-                                mesh.cells.vertex( c, v ) ) ;
+            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
+                for( index_t c = 0; c < mesh.cells.nb_cells( m ); c++ ) {
+                    index_t cell = mesh.cells.cell( m, c ) ;
+                    out << mesh.cells.nb_vertices( cell ) ;
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
+                        out << SPACE << mesh.cells.vertex( m, cell ) ;
                     }
                     out << std::endl ;
                 }
             }
 
-            out << "CELL_TYPES " << mm.cells.nb_cells() << std::endl ;
-            for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
-                const GEO::Mesh& mesh = mm.mesh( m ) ;
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    out << cell_type( mesh.cells.type( c ) ) << std::endl ;
+            out << "CELL_TYPES " << mesh.cells.nb() << std::endl ;
+            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
+                for( index_t c = 0; c < mesh.cells.nb_cells( m ); c++ ) {
+                    index_t cell = mesh.cells.cell( m, c ) ;
+                    out << cell_type( mesh.cells.type( cell ) ) << std::endl ;
                 }
             }
             out << std::endl ;
 
-            out << "CELL_DATA " << mm.cells.nb_cells() << std::endl ;
+            out << "CELL_DATA " << mesh.cells.nb() << std::endl ;
             out << "SCALARS region int 1" << std::endl ;
             out << "LOOKUP_TABLE default" << std::endl ;
-            for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
-                const GEO::Mesh& mesh = mm.mesh( m ) ;
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
+                for( index_t c = 0; c < mesh.cells.nb_cells( m ); c++ ) {
                     out << m << std::endl ;
                 }
             }
@@ -651,19 +567,19 @@ namespace RINGMesh {
 
     class TSolidIOHandler: public GeoModelMeshIOHandler {
     public:
-        virtual bool load( const std::string& filename, MacroMesh& mesh )
+        virtual bool load( const std::string& filename, GeoModel& mesh )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from TSolid not implemented yet"
+                << "Loading of a GeoModel from TSolid not implemented yet"
                 << std::endl ;
             return false ;
         }
-        virtual bool save( const MacroMesh& mm, const std::string& filename )
+        virtual bool save( const GeoModel& gm, const std::string& filename )
         {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
 
-            const GeoModel& model = mm.model() ;
+            const GeoModel& model = gm ;
             // Print Model3d headers
             out << "GOCAD TSolid 1" << std::endl << "HEADER {" << std::endl
                 << "name:" << model.name() << std::endl << "}" << std::endl ;
@@ -674,91 +590,85 @@ namespace RINGMesh {
                 << "ZPOSITIVE Elevation" << std::endl
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
 
-            mm.set_duplicate_mode( MacroMesh::ALL ) ;
+            const GeoModelMesh& mesh = gm.mesh ;
+            mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
-            std::vector< bool > vertex_exported( mm.vertices.nb_vertices(), false ) ;
-            std::vector< bool > atom_exported( mm.vertices.nb_duplicated_vertices(),
+            std::vector< bool > vertex_exported( mesh.vertices.nb(), false ) ;
+            std::vector< bool > atom_exported( mesh.cells.nb_duplicated_vertices(),
                 false ) ;
-            std::vector< index_t > vertex_exported_id( mm.vertices.nb_vertices(),
-                NO_ID ) ;
+            std::vector< index_t > vertex_exported_id( mesh.vertices.nb(), NO_ID ) ;
             std::vector< index_t > atom_exported_id(
-                mm.vertices.nb_duplicated_vertices(), NO_ID ) ;
+                mesh.cells.nb_duplicated_vertices(), NO_ID ) ;
             index_t nb_vertices_exported = 1 ;
             for( index_t r = 0; r < model.nb_regions(); r++ ) {
                 const RINGMesh::Region& region = model.region( r ) ;
                 out << "TVOLUME " << region.name() << std::endl ;
 
-                const GEO::Mesh& mesh = mm.mesh( r ) ;
+                // Export not duplicated vertices
                 for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    for( index_t co = mesh.cells.corners_begin( c );
-                        co < mesh.cells.corners_end( c ); co++ ) {
-                        index_t vertex_id, atom_id ;
-                        if( mm.vertices.vertex_id( r, co, vertex_id, atom_id ) ) {
+                    index_t cell = mesh.cells.cell( r, c ) ;
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                        index_t atom_id ;
+                        if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
+                            index_t vertex_id = mesh.cells.vertex( cell, v ) ;
                             if( vertex_exported[vertex_id] ) continue ;
                             vertex_exported[vertex_id] = true ;
                             vertex_exported_id[vertex_id] = nb_vertices_exported ;
                             out << "VRTX " << nb_vertices_exported++ << " "
-                                << mm.vertices.vertex( vertex_id ) << std::endl ;
+                                << mesh.vertices.vertex( vertex_id ) << std::endl ;
                         }
                     }
                 }
 
+                // Export duplicated vertices
                 for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    for( index_t co = mesh.cells.corners_begin( c );
-                        co < mesh.cells.corners_end( c ); co++ ) {
-                        index_t vertex_id, atom_id ;
-                        if( !mm.vertices.vertex_id( r, co, vertex_id, atom_id ) ) {
+                    index_t cell = mesh.cells.cell( r, c ) ;
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                        index_t atom_id ;
+                        if( mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
                             if( atom_exported[atom_id] ) continue ;
                             atom_exported[atom_id] = true ;
                             atom_exported_id[atom_id] = nb_vertices_exported ;
+                            index_t vertex_id = mesh.cells.vertex( cell, v ) ;
                             out << "ATOM " << nb_vertices_exported++ << " "
                                 << vertex_exported_id[vertex_id] << std::endl ;
                         }
                     }
                 }
 
+                // Mark if a boundary is ending in the region
                 std::map< index_t, index_t > sides ;
                 for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
                     if( sides.count( region.boundary_id( s ).index ) > 0 )
+                        // a surface is encountered twice, it is ending in the region
                         sides[region.boundary_id( s ).index] = 2 ;
                     else
                         sides[region.boundary_id( s ).index] = region.side( s ) ;
                 }
 
-                GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
+                GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
                     surface_att_name ) ;
-                ColocaterANN ann( mesh, ColocaterANN::FACETS ) ;
                 for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                     out << "TETRA" ;
-                    for( index_t co = mesh.cells.corners_begin( c );
-                        co < mesh.cells.corners_end( c ); co++ ) {
-                        index_t vertex_id, atom_id ;
-                        if( mm.vertices.vertex_id( r, co, vertex_id, atom_id ) )
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                        index_t atom_id ;
+                        if( !mesh.cells.is_corner_duplicated( c, v, atom_id ) ) {
+                            index_t vertex_id = mesh.cells.vertex( c, v ) ;
                             out << " " << vertex_exported_id[vertex_id] ;
-                        else
+                        } else {
                             out << " " << atom_exported_id[atom_id] ;
+                        }
                     }
                     out << std::endl ;
                     out << "# CTETRA " << region.name() ;
                     for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                         out << " " ;
-                        vec3 facet_center = mesh_cell_facet_center( mesh, c,
-                            f ) ;
-                        std::vector< index_t > result ;
-                        if( ann.get_colocated( facet_center, result ) ) {
-                            ringmesh_debug_assert( result.size() == 1 ) ;
-                            index_t surface_id = attribute[result[0]] ;
-                            index_t side = sides[surface_id] ;
-                            if( side < 2 )
-                                side ? out << "+" : out << "-" ;
-                            else {
-                                vec3 cell_facet_normal =
-                                    mesh_cell_facet_normal( mesh, c, f ) ;
-                                vec3 facet_normal = GEO::Geom::mesh_facet_normal(
-                                    mesh, result[0] ) ;
-                                double d = dot( cell_facet_normal, facet_normal ) ;
-                                d > 0 ? out << "+" : out << "-" ;
-                            }
+                        index_t facet = NO_ID ;
+                        bool side ;
+                        if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
+                            side ) ) {
+                            index_t surface_id = mesh.facets.surface( facet ) ;
+                            side ? out << "+" : out << "-" ;
                             out << model.surface( surface_id ).parent().name() ;
                         } else {
                             out << "none" ;
@@ -776,26 +686,24 @@ namespace RINGMesh {
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     out << "TFACE " << tface_count++ << std::endl ;
                     index_t surface_id = interf.child_id( s ).index ;
-                    index_t mesh_id = mm.facets.mesh( surface_id ) ;
-                    const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
                     out << "KEYVERTICES" ;
-                    index_t key_facet_id = mm.facets.facet( surface_id, 0 ) ;
-                    for( index_t v = mesh.facets.corners_begin( key_facet_id );
-                        v < mesh.facets.corners_end( key_facet_id ); v++ ) {
+                    index_t key_facet_id = mesh.facets.facet( surface_id, 0 ) ;
+                    for( index_t v = 0; v < mesh.facets.nb_vertices( key_facet_id );
+                        v++ ) {
                         out << " "
-                            << vertex_exported_id[mm.vertices.vertex_id( mesh_id,
-                                mesh.facet_corners.vertex( v ) )] ;
+                            << vertex_exported_id[mesh.facets.vertex( key_facet_id,
+                                v )] ;
                     }
                     out << std::endl ;
-                    for( index_t f = 0; f < mm.facets.nb_facets( surface_id );
+                    for( index_t f = 0; f < mesh.facets.nb_facets( surface_id );
                         f++ ) {
-                        index_t facet_id = mm.facets.facet( surface_id, f ) ;
+                        index_t facet_id = mesh.facets.facet( surface_id, f ) ;
                         out << "TRGL" ;
-                        for( index_t v = mesh.facets.corners_begin( facet_id );
-                            v < mesh.facets.corners_end( facet_id ); v++ ) {
+                        for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id );
+                            v++ ) {
                             out << " "
-                                << vertex_exported_id[mm.vertices.vertex_id( mesh_id,
-                                    mesh.facet_corners.vertex( v ) )] ;
+                                << vertex_exported_id[mesh.facets.vertex( facet_id,
+                                    v )] ;
                         }
                         out << std::endl ;
                     }
@@ -815,6 +723,7 @@ namespace RINGMesh {
     } ;
 
     /************************************************************************/
+
     struct RINGMesh2CSMP {
         index_t element_type ;
         index_t nb_vertices ;
@@ -851,6 +760,9 @@ namespace RINGMesh {
         { 1, 4, 3, 2, 0 }   // facets
     } ;
 
+    static RINGMesh2CSMP* cell_type_to_cell_descriptor[4] = {
+        &tet_descriptor, &hex_descriptor, &prism_descriptor, &pyramid_descriptor } ;
+
     class CSMPIOHandler: public GeoModelMeshIOHandler {
     public:
         CSMPIOHandler()
@@ -858,16 +770,16 @@ namespace RINGMesh {
             clear() ;
         }
 
-        virtual bool load( const std::string& filename, MacroMesh& mesh )
+        virtual bool load( const std::string& filename, GeoModel& mesh )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from CSMP not implemented yet"
+                << "Loading of a GeoModel from CSMP not implemented yet"
                 << std::endl ;
             return false ;
         }
-        virtual bool save( const MacroMesh& mm, const std::string& filename )
+        virtual bool save( const GeoModel& gm, const std::string& filename )
         {
-            if( !initialize( mm ) ) {
+            if( !initialize( gm ) ) {
                 return false ;
             }
 
@@ -879,8 +791,7 @@ namespace RINGMesh {
             std::ofstream ascii( oss_ascii.str().c_str() ) ;
             ascii.precision( 16 ) ;
 
-            const GeoModel& model = mm.model() ;
-            ascii << model.name() << std::endl ;
+            ascii << gm.name() << std::endl ;
             ascii << "Model generated from RINGMesh" << std::endl ;
 
             std::ostringstream oss_data ;
@@ -894,91 +805,75 @@ namespace RINGMesh {
             regions << "'" << oss_regions.str() << std::endl ;
             regions << "no properties" << std::endl ;
 
+            const GeoModelMesh& mesh = gm.mesh ;
             index_t count = 0 ;
             // Conversion from (X,Y,Z) to (X,Z,-Y)
             signed_index_t conversion_sign[3] = { 1, 1, -1 } ;
             index_t conversion_axis[3] = { 0, 2, 1 } ;
-            data << mm.vertices.nb_vertices() << " # PX, PY, PZ" << std::endl ;
+            data << mesh.vertices.nb() << " # PX, PY, PZ" << std::endl ;
             for( index_t dim = 0; dim < 3; dim++ ) {
-                for( index_t v = 0; v < mm.vertices.nb_vertices(); v++ ) {
+                for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
                     data << " "
                         << conversion_sign[dim]
-                            * mm.vertices.vertex( v )[conversion_axis[dim]] ;
-                    count++ ;
-                    if( count == 5 ) {
-                        count = 0 ;
-                        data << std::endl ;
-                    }
+                            * mesh.vertices.vertex( v )[conversion_axis[dim]] ;
+                    new_line( count, 5, data ) ;
                 }
-                if( count != 0 ) {
-                    count = 0 ;
-                    data << std::endl ;
-                }
+                reset_line( count, data ) ;
             }
-            if( count != 0 ) {
-                count = 0 ;
-                data << std::endl ;
-            }
+            reset_line( count, data ) ;
 
             index_t nb_families = 0 ;
-            std::vector< index_t > nb_triangle_interface( model.nb_interfaces(),
+            std::vector< index_t > nb_triangle_interface( gm.nb_interfaces(),
                 0 ) ;
-            std::vector< index_t > nb_quad_interface( model.nb_interfaces(), 0 ) ;
-            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                const GeoModelElement& interf = model.one_interface( i ) ;
+            std::vector< index_t > nb_quad_interface( gm.nb_interfaces(), 0 ) ;
+            for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
+                const GeoModelElement& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_id( s ).index ;
-                    nb_triangle_interface[i] += mm.facets.nb_triangle( s_id ) ;
-                    nb_quad_interface[i] += mm.facets.nb_quad( s_id ) ;
+                    nb_triangle_interface[i] += mesh.facets.nb_triangle( s_id ) ;
+                    nb_quad_interface[i] += mesh.facets.nb_quad( s_id ) ;
                 }
                 if( nb_triangle_interface[i] > 0 ) nb_families++ ;
                 if( nb_quad_interface[i] > 0 ) nb_families++ ;
             }
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                if( mm.cells.nb_tet( r ) > 0 ) nb_families++ ;
-                if( mm.cells.nb_pyramid( r ) > 0 ) nb_families++ ;
-                if( mm.cells.nb_prism( r ) > 0 ) nb_families++ ;
-                if( mm.cells.nb_hex( r ) > 0 ) nb_families++ ;
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                if( mesh.cells.nb_tet( r ) > 0 ) nb_families++ ;
+                if( mesh.cells.nb_pyramid( r ) > 0 ) nb_families++ ;
+                if( mesh.cells.nb_prism( r ) > 0 ) nb_families++ ;
+                if( mesh.cells.nb_hex( r ) > 0 ) nb_families++ ;
             }
-            if( mm.wells() ) nb_families += mm.wells()->nb_wells() ;
+            if( gm.wells() ) nb_families += gm.wells()->nb_wells() ;
 
             ascii << nb_families << " # Number of families" << std::endl ;
             ascii << "# Object name" << TAB << "Element type" << TAB << "Material-ID"
                 << TAB << "Number of elements" << std::endl ;
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                const RINGMesh::GeoModelElement& region = model.region( r ) ;
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                const RINGMesh::GeoModelElement& region = gm.region( r ) ;
                 regions << region.name() << std::endl ;
-                if( mm.cells.nb_tet( r ) > 0 ) {
-                    ascii << region.name() << TAB << "TETRA_4" << TAB << 0 << TAB
-                        << mm.cells.nb_tet( r ) << std::endl ;
-                }
-                if( mm.cells.nb_pyramid( r ) > 0 ) {
-                    ascii << region.name() << TAB << "PYRA_5" << TAB << 0 << TAB
-                        << mm.cells.nb_pyramid( r ) << std::endl ;
-                }
-                if( mm.cells.nb_prism( r ) > 0 ) {
-                    ascii << region.name() << TAB << "PENTA_6" << TAB << 0 << TAB
-                        << mm.cells.nb_prism( r ) << std::endl ;
-                }
-                if( mm.cells.nb_hex( r ) > 0 ) {
-                    ascii << region.name() << TAB << "HEXA_8" << TAB << 0 << TAB
-                        << mm.cells.nb_hex( r ) << std::endl ;
+                std::string element_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6", "PYRA_5" } ;
+                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
+                    type++ ) {
+                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
+                    if( mesh.cells.nb_cells( r, T ) > 0 ) {
+                        ascii << region.name() << TAB << element_type[type] << TAB
+                            << 0 << TAB << mesh.cells.nb_cells( r, T ) << std::endl ;
+                    }
                 }
             }
-            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                regions << interface_name( i, mm ) << std::endl ;
+            for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
+                regions << interface_name( i, gm ) << std::endl ;
                 if( nb_triangle_interface[i] > 0 ) {
-                    ascii << interface_name( i, mm ) << TAB << "TRI_3" << TAB << 0
+                    ascii << interface_name( i, gm ) << TAB << "TRI_3" << TAB << 0
                         << TAB << nb_triangle_interface[i] << std::endl ;
                 }
                 if( nb_quad_interface[i] > 0 ) {
-                    ascii << interface_name( i, mm ) << TAB << "QUAD_4" << TAB << 0
+                    ascii << interface_name( i, gm ) << TAB << "QUAD_4" << TAB << 0
                         << TAB << nb_quad_interface[i] << std::endl ;
                 }
             }
-            if( mm.wells() ) {
-                for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
-                    const Well& well = mm.wells()->well( w ) ;
+            if( gm.wells() ) {
+                for( index_t w = 0; w < gm.wells()->nb_wells(); w++ ) {
+                    const Well& well = gm.wells()->well( w ) ;
                     regions << well.name() << std::endl ;
                     ascii << well.name() << TAB << "BAR_2" << TAB << 0 << TAB
                         << well.nb_edges() << std::endl ;
@@ -986,532 +881,277 @@ namespace RINGMesh {
             }
 
             data << "# PBFLAGS" << std::endl ;
-            for( index_t p = 0; p < mm.vertices.nb_vertices(); p++ ) {
+            for( index_t p = 0; p < mesh.vertices.nb(); p++ ) {
                 data << " " << std::setw( 3 ) << point_boundary( p ) ;
-                count++ ;
-                if( count == 20 ) {
-                    data << std::endl ;
-                    count = 0 ;
-                }
+                new_line( count, 20, data ) ;
             }
-            if( count != 0 ) {
-                count = 0 ;
-                data << std::endl ;
-            }
+            reset_line( count, data ) ;
 
             data << "# PBVALS" << std::endl ;
-            for( index_t p = 0; p < mm.vertices.nb_vertices(); p++ ) {
+            for( index_t p = 0; p < mesh.vertices.nb(); p++ ) {
                 data << " " << std::setw( 3 ) << 0 ;
-                count++ ;
-                if( count == 20 ) {
-                    data << std::endl ;
-                    count = 0 ;
-                }
+                new_line( count, 20, data ) ;
             }
-            if( count != 0 ) {
-                count = 0 ;
-                data << std::endl ;
-            }
+            reset_line( count, data ) ;
 
-            index_t nb_total_elements = mm.cells.nb_cells() + mm.facets.nb_facets()
-                + mm.edges.nb_edges() ;
+            index_t nb_total_elements = mesh.cells.nb_cells() + mesh.facets.nb_facets()
+                + mesh.edges.nb_edges() ;
             data << nb_total_elements << " # PELEMENT" << std::endl ;
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                for( index_t el = 0; el < mm.cells.nb_tet( r ); el++ ) {
-                    data << " " << std::setw( 3 ) << 4 ;
-                    count++ ;
-                    if( count == 20 ) {
-                        data << std::endl ;
-                        count = 0 ;
-                    }
-                }
-                for( index_t el = 0; el < mm.cells.nb_pyramid( r ); el++ ) {
-                    data << " " << std::setw( 3 ) << 18 ;
-                    count++ ;
-                    if( count == 20 ) {
-                        data << std::endl ;
-                        count = 0 ;
-                    }
-                }
-                for( index_t el = 0; el < mm.cells.nb_prism( r ); el++ ) {
-                    data << " " << std::setw( 3 ) << 12 ;
-                    count++ ;
-                    if( count == 20 ) {
-                        data << std::endl ;
-                        count = 0 ;
-                    }
-                }
-                for( index_t el = 0; el < mm.cells.nb_hex( r ); el++ ) {
-                    data << " " << std::setw( 3 ) << 6 ;
-                    count++ ;
-                    if( count == 20 ) {
-                        data << std::endl ;
-                        count = 0 ;
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                index_t element_type[4] = { 4, 6, 12, 18 } ;
+                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR; type++ ) {
+                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
+                    for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
+                        data << " " << std::setw( 3 ) << element_type[type] ;
+                        new_line( count, 20, data ) ;
                     }
                 }
             }
-            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+            for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
                 for( index_t el = 0; el < nb_triangle_interface[i]; el++ ) {
                     data << " " << std::setw( 3 ) << 8 ;
-                    count++ ;
-                    if( count == 20 ) {
-                        data << std::endl ;
-                        count = 0 ;
-                    }
+                    new_line( count, 20, data ) ;
                 }
                 for( index_t el = 0; el < nb_quad_interface[i]; el++ ) {
                     data << " " << std::setw( 3 ) << 14 ;
-                    count++ ;
-                    if( count == 20 ) {
-                        data << std::endl ;
-                        count = 0 ;
-                    }
+                    new_line( count, 20, data ) ;
                 }
             }
-            if( mm.wells() ) {
-                for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
-                    const Well& well = mm.wells()->well( w ) ;
+            if( gm.wells() ) {
+                for( index_t w = 0; w < gm.wells()->nb_wells(); w++ ) {
+                    const Well& well = gm.wells()->well( w ) ;
                     for( index_t e = 0; e < well.nb_edges(); e++ ) {
                         data << " " << std::setw( 3 ) << 2 ;
-                        count++ ;
-                        if( count == 20 ) {
-                            data << std::endl ;
-                            count = 0 ;
-                        }
+                        new_line( count, 20, data ) ;
                     }
                 }
             }
-            if( count != 0 ) {
-                count = 0 ;
-                data << std::endl ;
-            }
+            reset_line( count, data ) ;
 
             ascii
                 << "# now the elements which make up each object are listed in sequence"
                 << std::endl ;
             index_t cur_cell = 0 ;
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                const RINGMesh::GeoModelElement& region = model.region( r ) ;
-                if( mm.cells.nb_tet( r ) > 0 ) {
-                    ascii << region.name() << " " << "TETRA_4" << " "
-                        << mm.cells.nb_tet( r ) << std::endl ;
-                    for( index_t el = 0; el < mm.cells.nb_tet( r ); el++ ) {
-                        ascii << cur_cell++ << " " ;
-                        count++ ;
-                        if( count == 10 ) {
-                            ascii << std::endl ;
-                            count = 0 ;
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                const RINGMesh::GeoModelElement& region = gm.region( r ) ;
+                std::string element_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6", "PYRA_5" } ;
+                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
+                    type++ ) {
+                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
+                    if( mesh.cells.nb_cells( r, T ) > 0 ) {
+                        ascii << region.name() << " " << element_type[type] << " "
+                            << mesh.cells.nb_cells( r, T ) << std::endl ;
+                        for( index_t el = 0; el < mesh.cells.nb_cells( r, T );
+                            el++ ) {
+                            ascii << cur_cell++ << " " ;
+                            new_line( count, 10, ascii ) ;
                         }
-                    }
-                    if( count != 0 ) {
-                        count = 0 ;
-                        ascii << std::endl ;
-                    }
-                }
-                if( mm.cells.nb_pyramid( r ) > 0 ) {
-                    ascii << region.name() << " " << "PYRA_5" << " "
-                        << mm.cells.nb_pyramid( r ) << std::endl ;
-                    for( index_t el = 0; el < mm.cells.nb_pyramid( r ); el++ ) {
-                        ascii << cur_cell++ << " " ;
-                        count++ ;
-                        if( count == 10 ) {
-                            ascii << std::endl ;
-                            count = 0 ;
-                        }
-                    }
-                    if( count != 0 ) {
-                        count = 0 ;
-                        ascii << std::endl ;
-                    }
-                }
-                if( mm.cells.nb_prism( r ) > 0 ) {
-                    ascii << region.name() << " " << "PENTA_6" << " "
-                        << mm.cells.nb_prism( r ) << std::endl ;
-                    for( index_t el = 0; el < mm.cells.nb_prism( r ); el++ ) {
-                        ascii << cur_cell++ << " " ;
-                        count++ ;
-                        if( count == 10 ) {
-                            ascii << std::endl ;
-                            count = 0 ;
-                        }
-                    }
-                    if( count != 0 ) {
-                        count = 0 ;
-                        ascii << std::endl ;
-                    }
-                }
-                if( mm.cells.nb_hex( r ) > 0 ) {
-                    ascii << region.name() << " " << "HEXA_8" << " "
-                        << mm.cells.nb_hex( r ) << std::endl ;
-                    for( index_t el = 0; el < mm.cells.nb_hex( r ); el++ ) {
-                        ascii << cur_cell++ << " " ;
-                        count++ ;
-                        if( count == 10 ) {
-                            ascii << std::endl ;
-                            count = 0 ;
-                        }
-                    }
-                    if( count != 0 ) {
-                        count = 0 ;
-                        ascii << std::endl ;
+                        reset_line( count, ascii ) ;
                     }
                 }
             }
-            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+            for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
                 if( nb_triangle_interface[i] > 0 ) {
-                    ascii << interface_name( i, mm ) << " " << "TRI_3" << " "
+                    ascii << interface_name( i, gm ) << " " << "TRI_3" << " "
                         << nb_triangle_interface[i] << std::endl ;
                     for( index_t el = 0; el < nb_triangle_interface[i]; el++ ) {
                         ascii << cur_cell++ << " " ;
-                        count++ ;
-                        if( count == 10 ) {
-                            ascii << std::endl ;
-                            count = 0 ;
-                        }
+                        new_line( count, 10, ascii ) ;
                     }
-                    if( count != 0 ) {
-                        count = 0 ;
-                        ascii << std::endl ;
-                    }
+                    reset_line( count, ascii ) ;
                 }
                 if( nb_quad_interface[i] > 0 ) {
-                    ascii << interface_name( i, mm ) << " " << "QUAD_4" << " "
+                    ascii << interface_name( i, gm ) << " " << "QUAD_4" << " "
                         << nb_quad_interface[i] << std::endl ;
                     for( index_t el = 0; el < nb_quad_interface[i]; el++ ) {
                         ascii << cur_cell++ << " " ;
-                        count++ ;
-                        if( count == 10 ) {
-                            ascii << std::endl ;
-                            count = 0 ;
-                        }
+                        new_line( count, 10, ascii ) ;
                     }
-                    if( count != 0 ) {
-                        count = 0 ;
-                        ascii << std::endl ;
-                    }
+                    reset_line( count, ascii ) ;
                 }
             }
-            if( mm.wells() ) {
-                for( index_t w = 0; w < mm.wells()->nb_wells(); w++ ) {
-                    const Well& well = mm.wells()->well( w ) ;
+            if( gm.wells() ) {
+                for( index_t w = 0; w < gm.wells()->nb_wells(); w++ ) {
+                    const Well& well = gm.wells()->well( w ) ;
                     ascii << well.name() << " " << "BAR_2" << " " << well.nb_edges()
                         << std::endl ;
                     for( index_t e = 0; e < well.nb_edges(); e++ ) {
                         ascii << cur_cell++ << " " ;
-                        count++ ;
-                        if( count == 10 ) {
-                            ascii << std::endl ;
-                            count = 0 ;
-                        }
+                        new_line( count, 10, ascii ) ;
                     }
-                    if( count != 0 ) {
-                        count = 0 ;
-                        ascii << std::endl ;
-                    }
+                    reset_line( count, ascii ) ;
                 }
             }
 
-            index_t nb_plist = 3 * mm.facets.nb_triangle() + 4 * mm.facets.nb_quad()
-                + 4 * mm.cells.nb_tet() + 5 * mm.cells.nb_pyramid()
-                + 6 * mm.cells.nb_prism() + 8 * mm.cells.nb_hex()
-                + 2 * mm.edges.nb_edges() ;
+            index_t nb_plist = 3 * mesh.facets.nb_triangle() + 4 * mesh.facets.nb_quad()
+                + 4 * mesh.cells.nb_tet() + 5 * mesh.cells.nb_pyramid()
+                + 6 * mesh.cells.nb_prism() + 8 * mesh.cells.nb_hex()
+                + 2 * mesh.edges.nb_edges() ;
             data << nb_plist << " # PLIST" << std::endl ;
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                const GEO::Mesh& mesh = mm.mesh( r ) ;
-                for( index_t el = 0; el < mm.cells.nb_tet( r ); el++ ) {
-                    index_t tet = mm.cells.tet_id( r, el ) ;
-                    for( index_t p = 0; p < 4; p++ ) {
-                        index_t csmp_p = tet_descriptor.vertices[p] ;
-                        index_t vertex_id = mm.vertices.vertex_id( r,
-                            mesh.cells.vertex( tet, csmp_p ) ) ;
-                        data << " " << std::setw( 7 ) << vertex_id ;
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
-                        }
-                    }
-                }
-                for( index_t el = 0; el < mm.cells.nb_pyramid( r ); el++ ) {
-                    index_t py = mm.cells.pyramid_id( r, el ) ;
-                    for( index_t p = 0; p < 5; p++ ) {
-                        index_t csmp_p = pyramid_descriptor.vertices[p] ;
-                        index_t vertex_id = mm.vertices.vertex_id( r,
-                            mesh.cells.vertex( py, csmp_p ) ) ;
-                        data << " " << std::setw( 7 ) << vertex_id ;
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
-                        }
-                    }
-                }
-                for( index_t el = 0; el < mm.cells.nb_prism( r ); el++ ) {
-                    index_t prism = mm.cells.prism_id( r, el ) ;
-                    for( index_t p = 0; p < 6; p++ ) {
-                        index_t csmp_p = prism_descriptor.vertices[p] ;
-                        index_t vertex_id = mm.vertices.vertex_id( r,
-                            mesh.cells.vertex( prism, csmp_p ) ) ;
-                        data << " " << std::setw( 7 ) << vertex_id ;
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
-                        }
-                    }
-                }
-                for( index_t el = 0; el < mm.cells.nb_hex( r ); el++ ) {
-                    index_t hex = mm.cells.prism_id( r, el ) ;
-                    for( index_t p = 0; p < 8; p++ ) {
-                        index_t csmp_p = hex_descriptor.vertices[p] ;
-                        index_t vertex_id = mm.vertices.vertex_id( r,
-                            mesh.cells.vertex( hex, csmp_p ) ) ;
-                        data << " " << std::setw( 7 ) << vertex_id ;
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
+                    type++ ) {
+                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
+                    RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T] ;
+                    for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
+                        index_t cell = mesh.cells.cell( r, el, T ) ;
+                        for( index_t p = 0; p < descriptor.nb_vertices; p++ ) {
+                            index_t csmp_p = descriptor.vertices[p] ;
+                            index_t vertex_id = mesh.cells.vertex( cell, csmp_p ) ;
+                            data << " " << std::setw( 7 ) << vertex_id ;
+                            new_line( count, 10, data ) ;
                         }
                     }
                 }
             }
-            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                const GeoModelElement& interf = model.one_interface( i ) ;
+            for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
+                const GeoModelElement& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_id( s ).index ;
-                    index_t mesh_id = mm.facets.mesh( s_id ) ;
-                    const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                    for( index_t el = 0; el < mm.facets.nb_triangle( s_id ); el++ ) {
-                        index_t tri = mm.facets.triangle_id( s_id, el ) ;
-                        for( index_t p = mesh.facets.corners_begin( tri );
-                            p < mesh.facets.corners_end( tri ); p++ ) {
-                            index_t vertex_id = mm.vertices.vertex_id( mesh_id,
-                                mesh.facet_corners.vertex( p ) ) ;
+                    for( index_t el = 0; el < mesh.facets.nb_triangle( s_id ); el++ ) {
+                        index_t tri = mesh.facets.triangle( s_id, el ) ;
+                        for( index_t p = 0; p < mesh.facets.nb_vertices( tri );
+                            p++ ) {
+                            index_t vertex_id = mesh.facets.vertex( tri, p ) ;
                             data << " " << std::setw( 7 ) << vertex_id ;
-                            count++ ;
-                            if( count == 10 ) {
-                                data << std::endl ;
-                                count = 0 ;
-                            }
+                            new_line( count, 10, data ) ;
                         }
                     }
-                    for( index_t el = 0; el < mm.facets.nb_quad( s_id ); el++ ) {
-                        index_t quad = mm.facets.quad_id( s_id, el ) ;
-                        for( index_t p = mesh.facets.corners_begin( quad );
-                            p < mesh.facets.corners_end( quad ); p++ ) {
-                            index_t vertex_id = mm.vertices.vertex_id( mesh_id,
-                                mesh.facet_corners.vertex( p ) ) ;
+                    for( index_t el = 0; el < mesh.facets.nb_quad( s_id ); el++ ) {
+                        index_t quad = mesh.facets.quad( s_id, el ) ;
+                        for( index_t p = 0; p < mesh.facets.nb_vertices( quad );
+                            p++ ) {
+                            index_t vertex_id = mesh.facets.vertex( quad, p ) ;
                             data << " " << std::setw( 7 ) << vertex_id ;
-                            count++ ;
-                            if( count == 10 ) {
-                                data << std::endl ;
-                                count = 0 ;
-                            }
+                            new_line( count, 10, data ) ;
                         }
                     }
                 }
             }
-            for( index_t w = 0; w < mm.edges.nb_wells(); w++ ) {
-                for( index_t e = 0; e < mm.edges.nb_edges( w ); e++ ) {
+            for( index_t w = 0; w < mesh.edges.nb_wells(); w++ ) {
+                for( index_t e = 0; e < mesh.edges.nb_edges( w ); e++ ) {
                     for( index_t v = 0; v < 2; v++ ) {
-                        index_t vertex_id = mm.edges.vertex_id( w, e, v ) ;
+                        index_t vertex_id = mesh.edges.vertex( w, e, v ) ;
                         data << " " << std::setw( 7 ) << vertex_id ;
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
-                        }
+                            new_line( count, 10, data ) ;
                     }
                 }
             }
-            if( count != 0 ) {
-                count = 0 ;
-                data << std::endl ;
-            }
+            reset_line( count, data ) ;
 
-            index_t nb_facets = 3 * mm.facets.nb_triangle() + 4 * mm.facets.nb_quad()
-                + 4 * mm.cells.nb_tet() + 5 * mm.cells.nb_pyramid()
-                + 5 * mm.cells.nb_prism() + 6 * mm.cells.nb_hex()
-                + 2 * mm.edges.nb_edges() ;
+            index_t nb_facets = 3 * mesh.facets.nb_triangle() + 4 * mesh.facets.nb_quad()
+                + 4 * mesh.cells.nb_tet() + 5 * mesh.cells.nb_pyramid()
+                + 5 * mesh.cells.nb_prism() + 6 * mesh.cells.nb_hex()
+                + 2 * mesh.edges.nb_edges() ;
             data << nb_facets << " # PFVERTS" << std::endl ;
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                for( index_t el = 0; el < mm.cells.nb_tet( r ); el++ ) {
-                    index_t tet = mm.cells.tet_id( r, el ) ;
-                    for( index_t f = 0; f < 4; f++ ) {
-                        index_t csmp_f = tet_descriptor.facet[f] ;
-                        index_t adj = mm.cells.cell_adjacent( r, tet, csmp_f ) ;
-                        if( adj == GEO::NO_CELL ) {
-                            data << " " << std::setw( 7 ) << -28 ;
-                        } else {
-                            data << " " << std::setw( 7 ) << adj ;
-                        }
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
-                        }
-                    }
-                }
-                for( index_t el = 0; el < mm.cells.nb_pyramid( r ); el++ ) {
-                    index_t py = mm.cells.pyramid_id( r, el ) ;
-                    for( index_t f = 0; f < 5; f++ ) {
-                        index_t csmp_f = pyramid_descriptor.facet[f] ;
-                        index_t adj = mm.cells.cell_adjacent( r, py, csmp_f ) ;
-                        if( adj == GEO::NO_CELL ) {
-                            data << " " << std::setw( 7 ) << -28 ;
-                        } else {
-                            data << " " << std::setw( 7 ) << adj ;
-                        }
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
-                        }
-                    }
-                }
-                for( index_t el = 0; el < mm.cells.nb_prism( r ); el++ ) {
-                    index_t prism = mm.cells.prism_id( r, el ) ;
-                    for( index_t f = 0; f < 5; f++ ) {
-                        index_t csmp_f = prism_descriptor.facet[f] ;
-                        index_t adj = mm.cells.cell_adjacent( r, prism, csmp_f ) ;
-                        if( adj == GEO::NO_CELL ) {
-                            data << " " << std::setw( 7 ) << -28 ;
-                        } else {
-                            data << " " << std::setw( 7 ) << adj ;
-                        }
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
-                        }
-                    }
-                }
-                for( index_t el = 0; el < mm.cells.nb_hex( r ); el++ ) {
-                    index_t hex = mm.cells.hex_id( r, el ) ;
-                    for( index_t f = 0; f < 6; f++ ) {
-                        index_t csmp_f = hex_descriptor.facet[f] ;
-                        index_t adj = mm.cells.cell_adjacent( r, hex, csmp_f ) ;
-                        if( adj == GEO::NO_CELL ) {
-                            data << " " << std::setw( 7 ) << -28 ;
-                        } else {
-                            data << " " << std::setw( 7 ) << adj ;
-                        }
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
+                    type++ ) {
+                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
+                    RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T] ;
+                    for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
+                        index_t cell = mesh.cells.cell( r, el ) ;
+                        for( index_t f = 0; f < descriptor.nb_facets; f++ ) {
+                            index_t csmp_f = descriptor.facet[f] ;
+                            index_t adj = mesh.cells.adjacent( cell, csmp_f ) ;
+                            if( adj == GEO::NO_CELL ) {
+                                data << " " << std::setw( 7 ) << -28 ;
+                            } else {
+                                data << " " << std::setw( 7 ) << adj ;
+                            }
+                            new_line( count, 10, data ) ;
                         }
                     }
                 }
             }
-            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                const GeoModelElement& interf = model.one_interface( i ) ;
+            for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
+                const GeoModelElement& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_id( s ).index ;
-                    index_t mesh_id = mm.facets.mesh( s_id ) ;
-                    const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                    for( index_t el = 0; el < mm.facets.nb_triangle( s_id ); el++ ) {
-                        index_t tri = mm.facets.triangle_id( s_id, el ) ;
-                        for( index_t f = mesh.facets.corners_begin( tri );
-                            f < mesh.facets.corners_end( tri ); f++ ) {
-                            index_t adj = mesh.facet_corners.adjacent_facet( f ) ;
+                    for( index_t el = 0; el < mesh.facets.nb_triangle( s_id ); el++ ) {
+                        index_t tri = mesh.facets.triangle( s_id, el ) ;
+                        for( index_t e = 0;
+                            e < mesh.facets.nb_vertices( tri );
+                            e++ ) {
+                            index_t adj = mesh.facets.adjacent( tri, e ) ;
                             if( adj == GEO::NO_FACET ) {
                                 data << " " << std::setw( 7 ) << -28 ;
                             } else {
                                 data << " " << std::setw( 7 ) << adj ;
                             }
-                            count++ ;
-                            if( count == 10 ) {
-                                data << std::endl ;
-                                count = 0 ;
-                            }
+                            new_line( count, 10, data ) ;
                         }
                     }
-                    for( index_t el = 0; el < mm.facets.nb_quad( s_id ); el++ ) {
-                        index_t quad = mm.facets.quad_id( s_id, el ) ;
-                        for( index_t f = mesh.facets.corners_begin( quad );
-                            f < mesh.facets.corners_end( quad ); f++ ) {
-                            index_t adj = mesh.facet_corners.adjacent_facet( f ) ;
+                    for( index_t el = 0; el < mesh.facets.nb_quad( s_id ); el++ ) {
+                        index_t quad = mesh.facets.quad( s_id, el ) ;
+                        for( index_t e = 0; e < mesh.facets.nb_vertices( quad );
+                            e++ ) {
+                            index_t adj = mesh.facets.adjacent( quad, e ) ;
                             if( adj == GEO::NO_FACET ) {
                                 data << " " << std::setw( 7 ) << -28 ;
                             } else {
                                 data << " " << std::setw( 7 ) << adj ;
                             }
-                            count++ ;
-                            if( count == 10 ) {
-                                data << std::endl ;
-                                count = 0 ;
-                            }
+                            new_line( count, 10, data ) ;
                         }
                     }
                 }
             }
-            index_t edge_offset = mm.facets.nb_facets() + mm.cells.nb_cells() ;
+            index_t edge_offset = mesh.facets.nb() + mesh.cells.nb() ;
             index_t cur_edge = 0 ;
-            for( index_t w = 0; w < mm.edges.nb_wells(); w++ ) {
+            for( index_t w = 0; w < mesh.edges.nb_wells(); w++ ) {
                 data << " " << std::setw( 7 ) << -28 ;
-                count++ ;
-                if( count == 10 ) {
-                    data << std::endl ;
-                    count = 0 ;
-                }
-                if( mm.edges.nb_edges( w ) > 1 ) {
+                new_line( count, 10, data ) ;
+                if( mesh.edges.nb_edges( w ) > 1 ) {
                     data << " " << std::setw( 7 ) << edge_offset + cur_edge + 1 ;
                     cur_edge++ ;
-                    count++ ;
-                    if( count == 10 ) {
-                        data << std::endl ;
-                        count = 0 ;
-                    }
-                    for( index_t e = 1; e < mm.edges.nb_edges( w ) - 1;
+                    new_line( count, 10, data ) ;
+                    for( index_t e = 1; e < mesh.edges.nb_edges( w ) - 1;
                         e++, cur_edge++ ) {
                         data << " " << std::setw( 7 ) << edge_offset + cur_edge - 1 ;
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
-                        }
+                        new_line( count, 10, data ) ;
                         data << " " << std::setw( 7 ) << edge_offset + cur_edge + 1 ;
-                        count++ ;
-                        if( count == 10 ) {
-                            data << std::endl ;
-                            count = 0 ;
-                        }
+                        new_line( count, 10, data ) ;
                     }
                     data << " " << std::setw( 7 ) << edge_offset + cur_edge - 1 ;
-                    count++ ;
-                    if( count == 10 ) {
-                        data << std::endl ;
-                        count = 0 ;
-                    }
+                    new_line( count, 10, data ) ;
                 }
                 data << " " << std::setw( 7 ) << -28 ;
                 cur_edge++ ;
-                count++ ;
-                if( count == 10 ) {
-                    data << std::endl ;
-                    count = 0 ;
-                }
+                new_line( count, 10, data ) ;
             }
-            if( count != 0 ) {
-                data << std::endl ;
-                count = 0 ;
-            }
+            reset_line( count, data ) ;
 
             data << nb_total_elements << " # PMATERIAL" << std::endl ;
             for( index_t i = 0; i < nb_total_elements; i++ ) {
                 data << " " << std::setw( 3 ) << 0 ;
-                count++ ;
-                if( count == 20 ) {
-                    data << std::endl ;
-                    count = 0 ;
-                }
+                new_line( count, 20, data ) ;
             }
 
             return true ;
         }
 
     private:
+        void new_line(
+            index_t& count,
+            index_t number_of_counts,
+            std::ofstream& out ) const
+        {
+            count++ ;
+            if( count == number_of_counts ) {
+                count = 0 ;
+                out << std::endl ;
+            }
+        }
+        void reset_line(
+            index_t& count,
+            std::ofstream& out ) const
+        {
+            if( count != 0 ) {
+                count = 0 ;
+                out << std::endl ;
+            }
+        }
         void clear()
         {
             point_boundaries_.clear() ;
@@ -1526,11 +1166,11 @@ namespace RINGMesh {
             edge_boundary_flags_.clear() ;
             surface_boundary_flags_.clear() ;
         }
-        bool initialize( const MacroMesh& mm )
+        bool initialize( const GeoModel& gm )
         {
             clear() ;
 
-            const GeoModel& model = mm.model() ;
+            const GeoModel& model = gm ;
             std::string cmsp_filename = GEO::CmdLine::get_arg( "out:csmp" ) ;
             box_model_ = cmsp_filename != "" ;
             if( box_model_ ) {
@@ -1690,17 +1330,13 @@ namespace RINGMesh {
                 corner_boundary_flags_[front_bottom_right] = -11 ;
             }
 
-            point_boundaries_.resize( mm.vertices.nb_vertices() ) ;
+            point_boundaries_.resize( gm.mesh.vertices.nb() ) ;
             for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
                 index_t interface_id = model.surface( s ).parent_id().index ;
-                index_t mesh_id = mm.facets.mesh( s ) ;
-                const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                for( index_t f = 0; f < mm.facets.nb_facets( s ); f++ ) {
-                    index_t f_id = mm.facets.facet( s, f ) ;
-                    for( index_t c = mesh.facets.corners_begin( f_id );
-                        c < mesh.facets.corners_end( f_id ); c++ ) {
-                        index_t vertex_id = mm.vertices.vertex_id( mesh_id,
-                            mesh.facet_corners.vertex( c ) ) ;
+                for( index_t f = 0; f < gm.mesh.facets.nb_facets( s ); f++ ) {
+                    index_t f_id = gm.mesh.facets.facet( s, f ) ;
+                    for( index_t v = 0; v < gm.mesh.facets.nb_vertices( f_id ); v++ ) {
+                        index_t vertex_id = gm.mesh.facets.vertex( f_id, v ) ;
                         point_boundaries_[vertex_id].insert( interface_id ) ;
                     }
                 }
@@ -1708,7 +1344,7 @@ namespace RINGMesh {
 
             return true ;
         }
-        std::string interface_name( index_t i, const MacroMesh& mm )
+        std::string interface_name( index_t i, const GeoModel& gm )
         {
             if( box_model_ ) {
                 if( i == back_ ) {
@@ -1725,7 +1361,7 @@ namespace RINGMesh {
                     return "RIGHT" ;
                 }
             }
-            return mm.model().one_interface( i ).name() ;
+            return gm.one_interface( i ).name() ;
         }
         signed_index_t point_boundary( index_t p )
         {
@@ -1785,14 +1421,14 @@ namespace RINGMesh {
             index_t v0 ;
             index_t v1 ;
         } ;
-        virtual bool load( const std::string& filename, MacroMesh& mesh )
+        virtual bool load( const std::string& filename, GeoModel& mesh )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from GPRS not implemented yet"
+                << "Loading of a GeoModel from GPRS not implemented yet"
                 << std::endl ;
             return false ;
         }
-        virtual bool save( const MacroMesh& mm, const std::string& filename )
+        virtual bool save( const GeoModel& gm, const std::string& filename )
         {
             std::string path = GEO::FileSystem::dir_name( filename ) ;
             std::string directory = GEO::FileSystem::base_name( filename ) ;
@@ -1818,119 +1454,63 @@ namespace RINGMesh {
             std::ofstream out_xyz( oss_xyz.str().c_str() ) ;
             out_xyz.precision( 16 ) ;
 
-            const GeoModel& model = mm.model() ;
-            std::vector< index_t > region_offsets( mm.nb_meshes(), 0 ) ;
-            std::vector< index_t > surface_offsets( model.nb_surfaces(), 0 ) ;
-            for( index_t r = 0; r < mm.nb_meshes() - 1; r++ ) {
-                region_offsets[r + 1] += region_offsets[r]
-                    + mm.mesh( r ).cells.nb() ;
-            }
-            index_t last_region = mm.nb_meshes() - 1 ;
-            surface_offsets[0] += region_offsets[last_region]
-                + mm.mesh( last_region ).cells.nb() ;
-            for( index_t s = 0; s < model.nb_surfaces() - 1; s++ ) {
-                surface_offsets[s + 1] += surface_offsets[s]
-                    + model.surface( s ).nb_cells() ;
-            }
-
-            std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                anns[s] = new ColocaterANN( model.surface( s ).mesh(),
-                    ColocaterANN::FACETS ) ;
-            }
+            const GeoModelMesh& mesh = gm.mesh ;
             std::deque< Pipe > pipes ;
-            for( index_t r = 0; r < mm.nb_meshes(); r++ ) {
-                const GEO::Mesh& mesh = mm.mesh( r ) ;
-                const GeoModelElement& region = model.region( r ) ;
-                std::vector< index_t > boundary_ids( region.nb_boundaries() ) ;
-                for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
-                    boundary_ids[s] = region.boundary_id( s ).index ;
-                }
-                index_t cell_offset = region_offsets[r] ;
-                std::stack< index_t > S ;
-                std::vector< bool > visited( mesh.cells.nb(), false ) ;
-                S.push( 0 ) ;
-                do {
-                    index_t c = S.top() ;
-                    S.pop() ;
-                    if( visited[c] ) continue ;
-                    visited[c] = true ;
-                    for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+            index_t cell_offset = mesh.cells.nb() ;
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+                    index_t facet = NO_ID ;
+                    if( mesh.cells.is_cell_facet_on_surface( c, f, facet ) ) {
+                        pipes.push_back(
+                            Pipe( c, facet + cell_offset ) ) ;
+                    } else {
                         index_t adj = mesh.cells.adjacent( c, f ) ;
-                        if( adj != GEO::NO_CELL ) {
-                            pipes.push_back(
-                                Pipe( c + cell_offset, adj + cell_offset ) ) ;
-                            S.push( adj ) ;
-                        } else {
-                            vec3 query = mesh_cell_facet_center( mesh, c, f ) ;
-                            for( index_t s = 0; s < boundary_ids.size(); s++ ) {
-                                index_t s_id = boundary_ids[s] ;
-                                index_t surface_offset = surface_offsets[s_id] ;
-                                std::vector< index_t > results ;
-                                if( anns[s_id]->get_colocated( query, results ) ) {
-                                    pipes.push_back(
-                                        Pipe( c + cell_offset,
-                                            results[0] + surface_offset ) ) ;
-                                    break ;
-                                }
-                            }
+                        if( adj != GEO::NO_CELL && adj < c ) {
+                            pipes.push_back( Pipe( c, adj ) ) ;
                         }
                     }
-                } while( !S.empty() ) ;
+                }
             }
 
             index_t nb_edges = 0 ;
-            for( index_t l = 0; l < model.nb_lines(); l++ ) {
-                nb_edges += model.line( l ).nb_cells() ;
+            for( index_t l = 0; l < gm.nb_lines(); l++ ) {
+                nb_edges += gm.line( l ).nb_cells() ;
             }
             std::vector< index_t > temp ;
             temp.reserve( 3 ) ;
             std::vector< std::vector< index_t > > edges( nb_edges, temp ) ;
             std::vector< vec3 > edge_vertices( nb_edges ) ;
             index_t count_edge = 0 ;
-            for( index_t l = 0; l < model.nb_lines(); l++ ) {
-                const Line& line = model.line( l ) ;
+            for( index_t l = 0; l < gm.nb_lines(); l++ ) {
+                const Line& line = gm.line( l ) ;
                 for( index_t e = 0; e < line.nb_cells(); e++ ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) ) ;
                 }
             }
-            ColocaterANN ann( edge_vertices ) ;
+            ColocaterANN ann( edge_vertices, false ) ;
 
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                const Surface& surface = model.surface( s ) ;
-                index_t surface_offset = surface_offsets[s] ;
-                std::stack< index_t > S ;
-                std::vector< bool > visited( surface.nb_cells(), false ) ;
-                S.push( 0 ) ;
-                do {
-                    index_t f = S.top() ;
-                    S.pop() ;
-                    if( visited[f] ) continue ;
-                    visited[f] = true ;
-                    for( index_t e = 0; e < surface.nb_vertices_in_facet( f );
-                        e++ ) {
-                        index_t adj = surface.adjacent( f, e ) ;
-                        if( adj != GEO::NO_CELL ) {
-                            if( visited[adj] ) continue ;
-                            pipes.push_back(
-                                Pipe( f + surface_offset, adj + surface_offset ) ) ;
-                            S.push( adj ) ;
+            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+                for( index_t e = 0; e < mesh.facets.nb_vertices( f ); e++ ) {
+                    index_t adj = mesh.facets.adjacent( f, e ) ;
+                    if( adj != GEO::NO_CELL && adj < f ) {
+                        pipes.push_back(
+                            Pipe( f + cell_offset, adj + cell_offset ) ) ;
+                    } else {
+                        const vec3& e0 = mesh.vertices.vertex(
+                            mesh.facets.vertex( f, e ) ) ;
+                        const vec3& e1 = mesh.vertices.vertex(
+                            mesh.facets.vertex( f,
+                                ( e + 1 ) % mesh.facets.nb_vertices( f ) ) ) ;
+                        vec3 query = 0.5 * ( e0 + e1 ) ;
+                        std::vector< index_t > results ;
+                        if( ann.get_colocated( query, results ) ) {
+                            edges[results[0]].push_back( cell_offset + f ) ;
                         } else {
-                            vec3 query = 0.5
-                                * ( surface.vertex( f, e )
-                                    + surface.vertex( f,
-                                        surface.next_in_facet( f, e ) ) ) ;
-
-                            std::vector< index_t > results ;
-                            if( ann.get_colocated( query, results ) ) {
-                                edges[results[0]].push_back( surface_offset + f ) ;
-                            } else {
-                                ringmesh_assert_not_reached;
-                            }
+                            ringmesh_assert_not_reached;
                         }
                     }
-                }while( !S.empty() ) ;
+                }
             }
 
             index_t nb_pipes = pipes.size() ;
@@ -1955,23 +1535,13 @@ namespace RINGMesh {
             out_xyz
                 << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
                 << std::endl ;
-            for( index_t r = 0; r < mm.nb_meshes(); r++ ) {
-                const GEO::Mesh& mesh = mm.mesh( r ) ;
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    out_xyz << mesh_cell_center( mesh, c ) << std::endl ;                   
-                    out_vol << RINGMesh::mesh_cell_volume( mesh, c ) << std::endl ;
-                }
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                out_xyz << mesh.cells.center( c ) << std::endl ;
+                out_vol << mesh.cells.volume( c ) << std::endl ;
             }
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                const Surface& surface = model.surface( s ) ;
-                for( index_t f = 0; f < surface.nb_cells(); f++ ) {
-                    out_xyz << surface.facet_barycenter( f ) << std::endl ;
-                    out_vol << surface.facet_area( f ) << std::endl ;
-                }
-            }
-
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                delete anns[s] ;
+            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+                out_xyz << mesh.facets.center( f ) << std::endl ;
+                out_vol << mesh.facets.area( f ) << std::endl ;
             }
 
             return true ;
@@ -2055,16 +1625,18 @@ namespace RINGMesh {
 //                   { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
     class MSHIOHandler: public GeoModelMeshIOHandler {
     public:
-        virtual bool load( const std::string& filename, MacroMesh& mesh )
+        virtual bool load( const std::string& filename, GeoModel& mesh )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from GMSH not implemented yet"
+                << "Loading of a GeoModel from GMSH not implemented yet"
                 << std::endl ;
             return false ;
         }
-        virtual bool save( const MacroMesh& mm, const std::string& filename )
+        virtual bool save( const GeoModel& gm, const std::string& filename )
         {
-//                mm.set_duplicate_mode( FAULT ) ;
+            /// @todo after implementing GMMOrder
+            ringmesh_assert_not_reached ;
+//                gm.set_duplicate_mode( FAULT ) ;
 
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
@@ -2073,231 +1645,232 @@ namespace RINGMesh {
             out << "2.2 0 8" << std::endl ;
             out << "$EndMeshFormat" << std::endl ;
 
+            const GeoModelMesh&  mesh = gm.mesh ;
             out << "$Nodes" << std::endl ;
-            out << mm.order.nb_total_vertices() << std::endl ;
-            for( index_t p = 0; p < mm.vertices.nb_vertices(); p++ ) {
-
-                const vec3& point = mm.vertices.vertex( p ) ;
-                if( p == 0 ) {
-                    std::cout << "io val " << point.x << std::endl ;
-
-                }
-                out << p + 1 << SPACE << point.x << SPACE << point.y << SPACE
-                    << point.z << std::endl ;
-            }
-            index_t vertex_offset = mm.vertices.nb_vertices() ;
-            for( index_t p = 0; p < mm.vertices.nb_duplicated_vertices(); p++ ) {
-                const vec3& point = mm.vertices.duplicated_vertex( p ) ;
-                out << vertex_offset + p + 1 << SPACE << point.x << SPACE << point.y
-                    << SPACE << point.z << std::endl ;
-            }
-            vertex_offset += mm.vertices.nb_duplicated_vertices() ;
-            index_t nb_order_vertices = mm.order.nb_vertices() ;
-            for( index_t p = 0; p < nb_order_vertices; p++ ) {
-                out << vertex_offset + p + 1 << SPACE << mm.order.point( p ).x
-                    << SPACE << mm.order.point( p ).y << SPACE
-                    << mm.order.point( p ).z << std::endl ;
-            }
-            out << "$EndNodes" << std::endl ;
-
-            index_t cell_type[4] = { 4, 5, 6, 7 } ;
-            index_t facet_type[5] = { -1, -1, -1, 2, 3 } ;
-            if( mm.get_order() == 2 ) {
-                cell_type[0] = 11 ;
-                cell_type[1] = 17 ;
-                cell_type[2] = 18 ;
-                cell_type[3] = 19 ;
-                facet_type[0] = -1 ;
-                facet_type[1] = -1 ;
-                facet_type[2] = -1 ;
-                facet_type[3] = 9 ;
-                facet_type[4] = 16 ;
-            } else if( mm.get_order() > 2 ) {
-                GEO::Logger::err( "" ) << "The order " << mm.get_order() << " "
-                    << "is not supported"
-                    << " for the gmsh export. The export will take order 1 elements"
-                    << std::endl ;
-            }
-            const GeoModel& model = mm.model() ;
-            index_t offset_region = mm.nb_meshes() ;
-            index_t offset_interface = model.nb_interfaces() * 2 ; // one for each side
-            index_t nb_facets = 0 ;
-            std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                if( mm.vertices.is_surface_to_duplicate( s ) )
-                    nb_facets += 2 * mm.facets.nb_facets( s ) ;
-                else
-                    nb_facets += mm.facets.nb_facets( s ) ;
-                anns[s] = new ColocaterANN( model.surface( s ).mesh(),
-                    ColocaterANN::FACETS ) ;
-            }
-            out << "$Elements" << std::endl ;
-            out << mm.cells.nb_cells() + nb_facets << std::endl ;
-            index_t cur_cell = 1 ;
-            for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
-                const GEO::Mesh& mesh = mm.mesh( m ) ;
-                GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
-                    surface_att_name ) ;
-                const GeoModelElement& region = model.region( m ) ;
-                std::vector< index_t > surfaces ;
-                surfaces.reserve( region.nb_boundaries() ) ;
-                for( index_t b = 0; b < region.nb_boundaries(); b++ ) {
-                    index_t cur_s_id = region.boundary_id( b ).index ;
-                    if( !mm.vertices.is_surface_to_duplicate( cur_s_id ) ) continue ;
-                    surfaces.push_back( cur_s_id ) ;
-                }
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    out << cur_cell++ << " " << cell_type[mesh.cells.type( c )]
-                        << " 2 " << m + 1 << SPACE << m ;
-                    for( index_t v = mesh.cells.corners_begin( c );
-                        v < mesh.cells.corners_end( c ); v++ ) {
-                        index_t vertex_id ;
-                        index_t duplicated_vertex_id ;
-                        out << SPACE ;
-                        if( mm.vertices.vertex_id( m, v, vertex_id,
-                            duplicated_vertex_id ) ) {
-                            out << vertex_id + 1 ;
-                        } else {
-                            out << vertex_offset + duplicated_vertex_id + 1 ;
-                        }
-                    }
-                    if( mm.get_order() == 2 ) {
-                        out << SPACE ;
-                        out << mm.order.get_id_on_cell( m, c, 3 ) + 1 ;
-                        out << SPACE ;
-                        out << mm.order.get_id_on_cell( m, c, 0 ) + 1 ;
-                        out << SPACE ;
-                        out << mm.order.get_id_on_cell( m, c, 4 ) + 1 ;
-                        out << SPACE ;
-                        out << mm.order.get_id_on_cell( m, c, 5 ) + 1 ;
-                        out << SPACE ;
-                        out << mm.order.get_id_on_cell( m, c, 1 ) + 1 ;
-                        out << SPACE ;
-                        out << mm.order.get_id_on_cell( m, c, 2 ) + 1 ;
-                    }
-                    out << std::endl ;
-
-                    for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
-                        vec3 facet_bary = mesh_cell_facet_center( mesh, c,
-                            f ) ;
-                        vec3 cell_facet_normal = mesh_cell_facet_normal( mesh,
-                            c, f ) ;
-                        for( index_t s = 0; s < surfaces.size(); s++ ) {
-                            index_t surface_id = surfaces[s] ;
-                            std::vector< index_t > result ;
-                            if( anns[surface_id]->get_colocated( facet_bary,
-                                result ) ) {
-                                vec3 facet_normal =
-                                    model.surface( surface_id ).facet_normal(
-                                        result[0] ) ;
-                                bool side = dot( facet_normal, cell_facet_normal )
-                                    > 0 ;
-                                out << cur_cell++ << " "
-                                    << facet_type[mesh.cells.facet_nb_vertices( c,
-                                        f )] << " 2 "
-                                    << offset_region
-                                        + 2
-                                            * model.surface( surface_id ).parent_id().index
-                                        + side + 1 << SPACE
-                                    << offset_region + offset_interface
-                                        + 2 * surface_id + side ;
-                                for( index_t v = 0;
-                                    v < mesh.cells.facet_nb_vertices( c, f ); v++ ) {
-                                    index_t corner_id =
-                                        mesh.cells.corner( c,
-                                            mesh.cells.descriptor( c ).facet_vertex[f][v] ) ;
-                                    index_t vertex_id ;
-                                    index_t duplicated_vertex_id ;
-                                    out << SPACE ;
-                                    if( mm.vertices.vertex_id( m, corner_id,
-                                        vertex_id, duplicated_vertex_id ) ) {
-                                        out << vertex_id + 1 ;
-                                    } else {
-                                        out
-                                            << vertex_offset + duplicated_vertex_id
-                                                + 1 ;
-                                    }
-                                }
-                                out << std::endl ;
-                                break ;
-                            }
-                        }
-                    }
-                }
-            }
-
-            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                const GeoModelElement& interf = model.one_interface( i ) ;
-                for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_id( s ).index ;
-                    if( mm.vertices.is_surface_to_duplicate( s_id ) ) continue ;
-                    index_t mesh_id = mm.facets.mesh( s_id ) ;
-                    const GEO::Mesh& mesh = mm.mesh( mesh_id ) ;
-                    for( index_t t = 0; t < mm.facets.nb_facets( s_id ); t++ ) {
-                        index_t facet_id = mm.facets.facet( s_id, t ) ;
-                        out << cur_cell++ << SPACE
-                            << facet_type[mesh.facets.nb_vertices( facet_id )]
-                            << " 2 " << offset_region + 2 * i + 1 << SPACE
-                            << offset_region + offset_interface + 2 * s_id ;
-                        for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id );
-                            v++ ) {
-                            index_t v_id = mesh.facets.vertex( facet_id, v ) ;
-                            out << SPACE
-                                << mm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
-                        }
-                        for( index_t v = 0;
-                            v
-                                < mesh.facets.nb_vertices( facet_id )
-                                    * ( mm.get_order() - 1 ); v++ ) {
-                            out << SPACE ;
-                            out << mm.order.get_id_on_facet( s, facet_id, v ) + 1 ;
-                        }
-                        out << std::endl ;
-                    }
-                }
-            }
-            out << "$EndElements" << std::endl ;
-
-            if( GEO::CmdLine::get_arg_bool( "out:kine3d" ) ) {
-                std::string directory = GEO::FileSystem::dir_name( filename ) ;
-                std::string file = GEO::FileSystem::base_name( filename ) ;
-                std::ostringstream oss_kine ;
-                oss_kine << directory << "/" << file << ".gmsh_info" ;
-                std::ofstream kine3d( oss_kine.str().c_str() ) ;
-                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const GeoModelElement& interf = model.one_interface( i ) ;
-                    index_t s_id = interf.child_id( 0 ).index ;
-                    kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
-                        << ",1," ;
-                    const RINGMesh::GeoModelElement& E = model.one_interface( i ) ;
-                    if( RINGMesh::GeoModelElement::is_fault(
-                        E.geological_feature() ) ) {
-                        kine3d << "FaultFeatureClass" ;
-                    } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
-                        E.geological_feature() ) ) {
-                        kine3d << "HorizonFeatureClass" ;
-                    } else if( E.is_on_voi() ) {
-                        kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
-                    }
-                    kine3d << std::endl ;
-                    if( mm.vertices.is_surface_to_duplicate( s_id ) ) {
-                        kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
-                            << ",0," ;
-                        const RINGMesh::GeoModelElement& E = model.one_interface(
-                            i ) ;
-                        if( RINGMesh::GeoModelElement::is_fault(
-                            E.geological_feature() ) ) {
-                            kine3d << "FaultFeatureClass" ;
-                        } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
-                            E.geological_feature() ) ) {
-                            kine3d << "HorizonFeatureClass" ;
-                        } else if( E.is_on_voi() ) {
-                            kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
-                        }
-                        kine3d << std::endl ;
-                    }
-                }
-            }
+//            out << gm.order.nb_total_vertices() << std::endl ;
+//            for( index_t p = 0; p < gm.vertices.nb(); p++ ) {
+//
+//                const vec3& point = gm.vertices.vertex( p ) ;
+//                if( p == 0 ) {
+//                    std::cout << "io val " << point.x << std::endl ;
+//
+//                }
+//                out << p + 1 << SPACE << point.x << SPACE << point.y << SPACE
+//                    << point.z << std::endl ;
+//            }
+//            index_t vertex_offset = gm.vertices.nb() ;
+//            for( index_t p = 0; p < gm.vertices.nb_duplicated_vertices(); p++ ) {
+//                const vec3& point = gm.vertices.duplicated_vertex( p ) ;
+//                out << vertex_offset + p + 1 << SPACE << point.x << SPACE << point.y
+//                    << SPACE << point.z << std::endl ;
+//            }
+//            vertex_offset += gm.vertices.nb_duplicated_vertices() ;
+//            index_t nb_order_vertices = gm.order.nb() ;
+//            for( index_t p = 0; p < nb_order_vertices; p++ ) {
+//                out << vertex_offset + p + 1 << SPACE << gm.order.point( p ).x
+//                    << SPACE << gm.order.point( p ).y << SPACE
+//                    << gm.order.point( p ).z << std::endl ;
+//            }
+//            out << "$EndNodes" << std::endl ;
+//
+//            index_t cell_type[4] = { 4, 5, 6, 7 } ;
+//            index_t facet_type[5] = { -1, -1, -1, 2, 3 } ;
+//            if( gm.get_order() == 2 ) {
+//                cell_type[0] = 11 ;
+//                cell_type[1] = 17 ;
+//                cell_type[2] = 18 ;
+//                cell_type[3] = 19 ;
+//                facet_type[0] = -1 ;
+//                facet_type[1] = -1 ;
+//                facet_type[2] = -1 ;
+//                facet_type[3] = 9 ;
+//                facet_type[4] = 16 ;
+//            } else if( gm.get_order() > 2 ) {
+//                GEO::Logger::err( "" ) << "The order " << gm.get_order() << " "
+//                    << "is not supported"
+//                    << " for the gmsh export. The export will take order 1 elements"
+//                    << std::endl ;
+//            }
+//            const GeoModel& model = gm ;
+//            index_t offset_region = gm.nb_regions() ;
+//            index_t offset_interface = model.nb_interfaces() * 2 ; // one for each side
+//            index_t nb_facets = 0 ;
+//            std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
+//            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+//                if( gm.vertices.is_surface_to_duplicate( s ) )
+//                    nb_facets += 2 * gm.facets.nb_facets( s ) ;
+//                else
+//                    nb_facets += gm.facets.nb_facets( s ) ;
+//                anns[s] = new ColocaterANN( model.surface( s ).mesh(),
+//                    ColocaterANN::FACETS ) ;
+//            }
+//            out << "$Elements" << std::endl ;
+//            out << gm.cells.nb_cells() + nb_facets << std::endl ;
+//            index_t cur_cell = 1 ;
+//            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
+//                const GEO::Mesh& mesh = gm.mesh( m ) ;
+//                GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
+//                    surface_att_name ) ;
+//                const GeoModelElement& region = model.region( m ) ;
+//                std::vector< index_t > surfaces ;
+//                surfaces.reserve( region.nb_boundaries() ) ;
+//                for( index_t b = 0; b < region.nb_boundaries(); b++ ) {
+//                    index_t cur_s_id = region.boundary_id( b ).index ;
+//                    if( !gm.vertices.is_surface_to_duplicate( cur_s_id ) ) continue ;
+//                    surfaces.push_back( cur_s_id ) ;
+//                }
+//                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+//                    out << cur_cell++ << " " << cell_type[mesh.cells.type( c )]
+//                        << " 2 " << m + 1 << SPACE << m ;
+//                    for( index_t v = mesh.cells.corners_begin( c );
+//                        v < mesh.cells.corners_end( c ); v++ ) {
+//                        index_t vertex_id ;
+//                        index_t duplicated_vertex_id ;
+//                        out << SPACE ;
+//                        if( gm.vertices.vertex_id( m, v, vertex_id,
+//                            duplicated_vertex_id ) ) {
+//                            out << vertex_id + 1 ;
+//                        } else {
+//                            out << vertex_offset + duplicated_vertex_id + 1 ;
+//                        }
+//                    }
+//                    if( gm.get_order() == 2 ) {
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 3 ) + 1 ;
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 0 ) + 1 ;
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 4 ) + 1 ;
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 5 ) + 1 ;
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 1 ) + 1 ;
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 2 ) + 1 ;
+//                    }
+//                    out << std::endl ;
+//
+//                    for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+//                        vec3 facet_bary = mesh_cell_facet_center( mesh, c,
+//                            f ) ;
+//                        vec3 cell_facet_normal = mesh_cell_facet_normal( mesh,
+//                            c, f ) ;
+//                        for( index_t s = 0; s < surfaces.size(); s++ ) {
+//                            index_t surface_id = surfaces[s] ;
+//                            std::vector< index_t > result ;
+//                            if( anns[surface_id]->get_colocated( facet_bary,
+//                                result ) ) {
+//                                vec3 facet_normal =
+//                                    model.surface( surface_id ).facet_normal(
+//                                        result[0] ) ;
+//                                bool side = dot( facet_normal, cell_facet_normal )
+//                                    > 0 ;
+//                                out << cur_cell++ << " "
+//                                    << facet_type[mesh.cells.facet_nb_vertices( c,
+//                                        f )] << " 2 "
+//                                    << offset_region
+//                                        + 2
+//                                            * model.surface( surface_id ).parent_id().index
+//                                        + side + 1 << SPACE
+//                                    << offset_region + offset_interface
+//                                        + 2 * surface_id + side ;
+//                                for( index_t v = 0;
+//                                    v < mesh.cells.facet_nb_vertices( c, f ); v++ ) {
+//                                    index_t corner_id =
+//                                        mesh.cells.corner( c,
+//                                            mesh.cells.descriptor( c ).facet_vertex[f][v] ) ;
+//                                    index_t vertex_id ;
+//                                    index_t duplicated_vertex_id ;
+//                                    out << SPACE ;
+//                                    if( gm.vertices.vertex_id( m, corner_id,
+//                                        vertex_id, duplicated_vertex_id ) ) {
+//                                        out << vertex_id + 1 ;
+//                                    } else {
+//                                        out
+//                                            << vertex_offset + duplicated_vertex_id
+//                                                + 1 ;
+//                                    }
+//                                }
+//                                out << std::endl ;
+//                                break ;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+//                const GeoModelElement& interf = model.one_interface( i ) ;
+//                for( index_t s = 0; s < interf.nb_children(); s++ ) {
+//                    index_t s_id = interf.child_id( s ).index ;
+//                    if( gm.vertices.is_surface_to_duplicate( s_id ) ) continue ;
+//                    index_t mesh_id = gm.facets.mesh( s_id ) ;
+//                    const GEO::Mesh& mesh = gm.mesh( mesh_id ) ;
+//                    for( index_t t = 0; t < gm.facets.nb_facets( s_id ); t++ ) {
+//                        index_t facet_id = gm.facets.facet( s_id, t ) ;
+//                        out << cur_cell++ << SPACE
+//                            << facet_type[mesh.facets.nb_vertices( facet_id )]
+//                            << " 2 " << offset_region + 2 * i + 1 << SPACE
+//                            << offset_region + offset_interface + 2 * s_id ;
+//                        for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id );
+//                            v++ ) {
+//                            index_t v_id = mesh.facets.vertex( facet_id, v ) ;
+//                            out << SPACE
+//                                << gm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
+//                        }
+//                        for( index_t v = 0;
+//                            v
+//                                < mesh.facets.nb_vertices( facet_id )
+//                                    * ( gm.get_order() - 1 ); v++ ) {
+//                            out << SPACE ;
+//                            out << gm.order.get_id_on_facet( s, facet_id, v ) + 1 ;
+//                        }
+//                        out << std::endl ;
+//                    }
+//                }
+//            }
+//            out << "$EndElements" << std::endl ;
+//
+//            if( GEO::CmdLine::get_arg_bool( "out:kine3d" ) ) {
+//                std::string directory = GEO::FileSystem::dir_name( filename ) ;
+//                std::string file = GEO::FileSystem::base_name( filename ) ;
+//                std::ostringstream oss_kine ;
+//                oss_kine << directory << "/" << file << ".gmsh_info" ;
+//                std::ofstream kine3d( oss_kine.str().c_str() ) ;
+//                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+//                    const GeoModelElement& interf = model.one_interface( i ) ;
+//                    index_t s_id = interf.child_id( 0 ).index ;
+//                    kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
+//                        << ",1," ;
+//                    const RINGMesh::GeoModelElement& E = model.one_interface( i ) ;
+//                    if( RINGMesh::GeoModelElement::is_fault(
+//                        E.geological_feature() ) ) {
+//                        kine3d << "FaultFeatureClass" ;
+//                    } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
+//                        E.geological_feature() ) ) {
+//                        kine3d << "HorizonFeatureClass" ;
+//                    } else if( E.is_on_voi() ) {
+//                        kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
+//                    }
+//                    kine3d << std::endl ;
+//                    if( gm.vertices.is_surface_to_duplicate( s_id ) ) {
+//                        kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
+//                            << ",0," ;
+//                        const RINGMesh::GeoModelElement& E = model.one_interface(
+//                            i ) ;
+//                        if( RINGMesh::GeoModelElement::is_fault(
+//                            E.geological_feature() ) ) {
+//                            kine3d << "FaultFeatureClass" ;
+//                        } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
+//                            E.geological_feature() ) ) {
+//                            kine3d << "HorizonFeatureClass" ;
+//                        } else if( E.is_on_voi() ) {
+//                            kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
+//                        }
+//                        kine3d << std::endl ;
+//                    }
+//                }
+//            }
             return true ;
         }
     } ;
@@ -2329,15 +1902,15 @@ namespace RINGMesh {
      */
     void GeoModelMeshIOHandler::initialize()
     {
-        ringmesh_register_GeoModelMeshIOHandler_creator( MMIOHandler, "mm" );
-    ringmesh_register_GeoModelMeshIOHandler_creator( LMIOHandler, "meshb" ) ;
-    ringmesh_register_GeoModelMeshIOHandler_creator( LMIOHandler, "mesh" ) ;
-    ringmesh_register_GeoModelMeshIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-    ringmesh_register_GeoModelMeshIOHandler_creator( TSolidIOHandler, "so" ) ;
-    ringmesh_register_GeoModelMeshIOHandler_creator( CSMPIOHandler, "csmp" ) ;
-    ringmesh_register_GeoModelMeshIOHandler_creator( AsterIOHandler, "mail" ) ;
-    ringmesh_register_GeoModelMeshIOHandler_creator( VTKIOHandler, "vtk" ) ;
-    ringmesh_register_GeoModelMeshIOHandler_creator( GPRSIOHandler, "gprs" ) ;
-    ringmesh_register_GeoModelMeshIOHandler_creator( MSHIOHandler, "msh" ) ;
-}
+        ringmesh_register_GeoModelMeshIOHandler_creator( MMIOHandler, "gm" ) ;
+        ringmesh_register_GeoModelMeshIOHandler_creator( LMIOHandler, "meshb" );
+        ringmesh_register_GeoModelMeshIOHandler_creator( LMIOHandler, "mesh" );
+        ringmesh_register_GeoModelMeshIOHandler_creator( TetGenIOHandler, "tetgen" );
+        ringmesh_register_GeoModelMeshIOHandler_creator( TSolidIOHandler, "so" );
+        ringmesh_register_GeoModelMeshIOHandler_creator( CSMPIOHandler, "csmp" );
+        ringmesh_register_GeoModelMeshIOHandler_creator( AsterIOHandler, "mail" );
+        ringmesh_register_GeoModelMeshIOHandler_creator( VTKIOHandler, "vtk" );
+        ringmesh_register_GeoModelMeshIOHandler_creator( GPRSIOHandler, "gprs" );
+        ringmesh_register_GeoModelMeshIOHandler_creator( MSHIOHandler, "msh" );
+    }
 }
