@@ -1454,119 +1454,63 @@ namespace RINGMesh {
             std::ofstream out_xyz( oss_xyz.str().c_str() ) ;
             out_xyz.precision( 16 ) ;
 
-            const GeoModel& model = gm ;
-            std::vector< index_t > region_offsets( gm.nb_regions(), 0 ) ;
-            std::vector< index_t > surface_offsets( model.nb_surfaces(), 0 ) ;
-            for( index_t r = 0; r < gm.nb_regions() - 1; r++ ) {
-                region_offsets[r + 1] += region_offsets[r]
-                    + gm.mesh( r ).cells.nb() ;
-            }
-            index_t last_region = gm.nb_regions() - 1 ;
-            surface_offsets[0] += region_offsets[last_region]
-                + gm.mesh( last_region ).cells.nb() ;
-            for( index_t s = 0; s < model.nb_surfaces() - 1; s++ ) {
-                surface_offsets[s + 1] += surface_offsets[s]
-                    + model.surface( s ).nb_cells() ;
-            }
-
-            std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                anns[s] = new ColocaterANN( model.surface( s ).mesh(),
-                    ColocaterANN::FACETS ) ;
-            }
+            const GeoModelMesh& mesh = gm.mesh ;
             std::deque< Pipe > pipes ;
-            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                const GEO::Mesh& mesh = gm.mesh( r ) ;
-                const GeoModelElement& region = model.region( r ) ;
-                std::vector< index_t > boundary_ids( region.nb_boundaries() ) ;
-                for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
-                    boundary_ids[s] = region.boundary_id( s ).index ;
-                }
-                index_t cell_offset = region_offsets[r] ;
-                std::stack< index_t > S ;
-                std::vector< bool > visited( mesh.cells.nb(), false ) ;
-                S.push( 0 ) ;
-                do {
-                    index_t c = S.top() ;
-                    S.pop() ;
-                    if( visited[c] ) continue ;
-                    visited[c] = true ;
-                    for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+            index_t cell_offset = mesh.cells.nb() ;
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+                    index_t facet = NO_ID ;
+                    if( mesh.cells.is_cell_facet_on_surface( c, f, facet ) ) {
+                        pipes.push_back(
+                            Pipe( c, facet + cell_offset ) ) ;
+                    } else {
                         index_t adj = mesh.cells.adjacent( c, f ) ;
-                        if( adj != GEO::NO_CELL ) {
-                            pipes.push_back(
-                                Pipe( c + cell_offset, adj + cell_offset ) ) ;
-                            S.push( adj ) ;
-                        } else {
-                            vec3 query = mesh_cell_facet_center( mesh, c, f ) ;
-                            for( index_t s = 0; s < boundary_ids.size(); s++ ) {
-                                index_t s_id = boundary_ids[s] ;
-                                index_t surface_offset = surface_offsets[s_id] ;
-                                std::vector< index_t > results ;
-                                if( anns[s_id]->get_colocated( query, results ) ) {
-                                    pipes.push_back(
-                                        Pipe( c + cell_offset,
-                                            results[0] + surface_offset ) ) ;
-                                    break ;
-                                }
-                            }
+                        if( adj != GEO::NO_CELL && adj < c ) {
+                            pipes.push_back( Pipe( c, adj ) ) ;
                         }
                     }
-                } while( !S.empty() ) ;
+                }
             }
 
             index_t nb_edges = 0 ;
-            for( index_t l = 0; l < model.nb_lines(); l++ ) {
-                nb_edges += model.line( l ).nb_cells() ;
+            for( index_t l = 0; l < gm.nb_lines(); l++ ) {
+                nb_edges += gm.line( l ).nb_cells() ;
             }
             std::vector< index_t > temp ;
             temp.reserve( 3 ) ;
             std::vector< std::vector< index_t > > edges( nb_edges, temp ) ;
             std::vector< vec3 > edge_vertices( nb_edges ) ;
             index_t count_edge = 0 ;
-            for( index_t l = 0; l < model.nb_lines(); l++ ) {
-                const Line& line = model.line( l ) ;
+            for( index_t l = 0; l < gm.nb_lines(); l++ ) {
+                const Line& line = gm.line( l ) ;
                 for( index_t e = 0; e < line.nb_cells(); e++ ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) ) ;
                 }
             }
-            ColocaterANN ann( edge_vertices ) ;
+            ColocaterANN ann( edge_vertices, false ) ;
 
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                const Surface& surface = model.surface( s ) ;
-                index_t surface_offset = surface_offsets[s] ;
-                std::stack< index_t > S ;
-                std::vector< bool > visited( surface.nb_cells(), false ) ;
-                S.push( 0 ) ;
-                do {
-                    index_t f = S.top() ;
-                    S.pop() ;
-                    if( visited[f] ) continue ;
-                    visited[f] = true ;
-                    for( index_t e = 0; e < surface.nb_vertices_in_facet( f );
-                        e++ ) {
-                        index_t adj = surface.adjacent( f, e ) ;
-                        if( adj != GEO::NO_CELL ) {
-                            if( visited[adj] ) continue ;
-                            pipes.push_back(
-                                Pipe( f + surface_offset, adj + surface_offset ) ) ;
-                            S.push( adj ) ;
+            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+                for( index_t e = 0; e < mesh.facets.nb_vertices( f ); e++ ) {
+                    index_t adj = mesh.facets.adjacent( f, e ) ;
+                    if( adj != GEO::NO_CELL && adj < f ) {
+                        pipes.push_back(
+                            Pipe( f + cell_offset, adj + cell_offset ) ) ;
+                    } else {
+                        const vec3& e0 = mesh.vertices.vertex(
+                            mesh.facets.vertex( f, e ) ) ;
+                        const vec3& e1 = mesh.vertices.vertex(
+                            mesh.facets.vertex( f,
+                                ( e + 1 ) % mesh.facets.nb_vertices( f ) ) ) ;
+                        vec3 query = 0.5 * ( e0 + e1 ) ;
+                        std::vector< index_t > results ;
+                        if( ann.get_colocated( query, results ) ) {
+                            edges[results[0]].push_back( cell_offset + f ) ;
                         } else {
-                            vec3 query = 0.5
-                                * ( surface.vertex( f, e )
-                                    + surface.vertex( f,
-                                        surface.next_in_facet( f, e ) ) ) ;
-
-                            std::vector< index_t > results ;
-                            if( ann.get_colocated( query, results ) ) {
-                                edges[results[0]].push_back( surface_offset + f ) ;
-                            } else {
-                                ringmesh_assert_not_reached;
-                            }
+                            ringmesh_assert_not_reached;
                         }
                     }
-                }while( !S.empty() ) ;
+                }
             }
 
             index_t nb_pipes = pipes.size() ;
@@ -1591,23 +1535,13 @@ namespace RINGMesh {
             out_xyz
                 << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
                 << std::endl ;
-            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                const GEO::Mesh& mesh = gm.mesh( r ) ;
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    out_xyz << mesh_cell_center( mesh, c ) << std::endl ;
-                    out_vol << mesh_cell_volume( mesh, c ) << std::endl ;
-                }
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                out_xyz << mesh.cells.center( c ) << std::endl ;
+                out_vol << mesh.cells.volume( c ) << std::endl ;
             }
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                const Surface& surface = model.surface( s ) ;
-                for( index_t f = 0; f < surface.nb_cells(); f++ ) {
-                    out_xyz << surface.facet_barycenter( f ) << std::endl ;
-                    out_vol << surface.facet_area( f ) << std::endl ;
-                }
-            }
-
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                delete anns[s] ;
+            for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
+                out_xyz << mesh.facets.center( f ) << std::endl ;
+                out_vol << mesh.facets.area( f ) << std::endl ;
             }
 
             return true ;
@@ -1700,6 +1634,8 @@ namespace RINGMesh {
         }
         virtual bool save( const GeoModel& gm, const std::string& filename )
         {
+            /// @todo after implementing GMMOrder
+            ringmesh_assert_not_reached ;
 //                gm.set_duplicate_mode( FAULT ) ;
 
             std::ofstream out( filename.c_str() ) ;
@@ -1709,231 +1645,232 @@ namespace RINGMesh {
             out << "2.2 0 8" << std::endl ;
             out << "$EndMeshFormat" << std::endl ;
 
+            const GeoModelMesh&  mesh = gm.mesh ;
             out << "$Nodes" << std::endl ;
-            out << gm.order.nb_total_vertices() << std::endl ;
-            for( index_t p = 0; p < gm.vertices.nb(); p++ ) {
-
-                const vec3& point = gm.vertices.vertex( p ) ;
-                if( p == 0 ) {
-                    std::cout << "io val " << point.x << std::endl ;
-
-                }
-                out << p + 1 << SPACE << point.x << SPACE << point.y << SPACE
-                    << point.z << std::endl ;
-            }
-            index_t vertex_offset = gm.vertices.nb() ;
-            for( index_t p = 0; p < gm.vertices.nb_duplicated_vertices(); p++ ) {
-                const vec3& point = gm.vertices.duplicated_vertex( p ) ;
-                out << vertex_offset + p + 1 << SPACE << point.x << SPACE << point.y
-                    << SPACE << point.z << std::endl ;
-            }
-            vertex_offset += gm.vertices.nb_duplicated_vertices() ;
-            index_t nb_order_vertices = gm.order.nb() ;
-            for( index_t p = 0; p < nb_order_vertices; p++ ) {
-                out << vertex_offset + p + 1 << SPACE << gm.order.point( p ).x
-                    << SPACE << gm.order.point( p ).y << SPACE
-                    << gm.order.point( p ).z << std::endl ;
-            }
-            out << "$EndNodes" << std::endl ;
-
-            index_t cell_type[4] = { 4, 5, 6, 7 } ;
-            index_t facet_type[5] = { -1, -1, -1, 2, 3 } ;
-            if( gm.get_order() == 2 ) {
-                cell_type[0] = 11 ;
-                cell_type[1] = 17 ;
-                cell_type[2] = 18 ;
-                cell_type[3] = 19 ;
-                facet_type[0] = -1 ;
-                facet_type[1] = -1 ;
-                facet_type[2] = -1 ;
-                facet_type[3] = 9 ;
-                facet_type[4] = 16 ;
-            } else if( gm.get_order() > 2 ) {
-                GEO::Logger::err( "" ) << "The order " << gm.get_order() << " "
-                    << "is not supported"
-                    << " for the gmsh export. The export will take order 1 elements"
-                    << std::endl ;
-            }
-            const GeoModel& model = gm ;
-            index_t offset_region = gm.nb_regions() ;
-            index_t offset_interface = model.nb_interfaces() * 2 ; // one for each side
-            index_t nb_facets = 0 ;
-            std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                if( gm.vertices.is_surface_to_duplicate( s ) )
-                    nb_facets += 2 * gm.facets.nb_facets( s ) ;
-                else
-                    nb_facets += gm.facets.nb_facets( s ) ;
-                anns[s] = new ColocaterANN( model.surface( s ).mesh(),
-                    ColocaterANN::FACETS ) ;
-            }
-            out << "$Elements" << std::endl ;
-            out << gm.cells.nb_cells() + nb_facets << std::endl ;
-            index_t cur_cell = 1 ;
-            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
-                const GEO::Mesh& mesh = gm.mesh( m ) ;
-                GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
-                    surface_att_name ) ;
-                const GeoModelElement& region = model.region( m ) ;
-                std::vector< index_t > surfaces ;
-                surfaces.reserve( region.nb_boundaries() ) ;
-                for( index_t b = 0; b < region.nb_boundaries(); b++ ) {
-                    index_t cur_s_id = region.boundary_id( b ).index ;
-                    if( !gm.vertices.is_surface_to_duplicate( cur_s_id ) ) continue ;
-                    surfaces.push_back( cur_s_id ) ;
-                }
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    out << cur_cell++ << " " << cell_type[mesh.cells.type( c )]
-                        << " 2 " << m + 1 << SPACE << m ;
-                    for( index_t v = mesh.cells.corners_begin( c );
-                        v < mesh.cells.corners_end( c ); v++ ) {
-                        index_t vertex_id ;
-                        index_t duplicated_vertex_id ;
-                        out << SPACE ;
-                        if( gm.vertices.vertex_id( m, v, vertex_id,
-                            duplicated_vertex_id ) ) {
-                            out << vertex_id + 1 ;
-                        } else {
-                            out << vertex_offset + duplicated_vertex_id + 1 ;
-                        }
-                    }
-                    if( gm.get_order() == 2 ) {
-                        out << SPACE ;
-                        out << gm.order.get_id_on_cell( m, c, 3 ) + 1 ;
-                        out << SPACE ;
-                        out << gm.order.get_id_on_cell( m, c, 0 ) + 1 ;
-                        out << SPACE ;
-                        out << gm.order.get_id_on_cell( m, c, 4 ) + 1 ;
-                        out << SPACE ;
-                        out << gm.order.get_id_on_cell( m, c, 5 ) + 1 ;
-                        out << SPACE ;
-                        out << gm.order.get_id_on_cell( m, c, 1 ) + 1 ;
-                        out << SPACE ;
-                        out << gm.order.get_id_on_cell( m, c, 2 ) + 1 ;
-                    }
-                    out << std::endl ;
-
-                    for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
-                        vec3 facet_bary = mesh_cell_facet_center( mesh, c,
-                            f ) ;
-                        vec3 cell_facet_normal = mesh_cell_facet_normal( mesh,
-                            c, f ) ;
-                        for( index_t s = 0; s < surfaces.size(); s++ ) {
-                            index_t surface_id = surfaces[s] ;
-                            std::vector< index_t > result ;
-                            if( anns[surface_id]->get_colocated( facet_bary,
-                                result ) ) {
-                                vec3 facet_normal =
-                                    model.surface( surface_id ).facet_normal(
-                                        result[0] ) ;
-                                bool side = dot( facet_normal, cell_facet_normal )
-                                    > 0 ;
-                                out << cur_cell++ << " "
-                                    << facet_type[mesh.cells.facet_nb_vertices( c,
-                                        f )] << " 2 "
-                                    << offset_region
-                                        + 2
-                                            * model.surface( surface_id ).parent_id().index
-                                        + side + 1 << SPACE
-                                    << offset_region + offset_interface
-                                        + 2 * surface_id + side ;
-                                for( index_t v = 0;
-                                    v < mesh.cells.facet_nb_vertices( c, f ); v++ ) {
-                                    index_t corner_id =
-                                        mesh.cells.corner( c,
-                                            mesh.cells.descriptor( c ).facet_vertex[f][v] ) ;
-                                    index_t vertex_id ;
-                                    index_t duplicated_vertex_id ;
-                                    out << SPACE ;
-                                    if( gm.vertices.vertex_id( m, corner_id,
-                                        vertex_id, duplicated_vertex_id ) ) {
-                                        out << vertex_id + 1 ;
-                                    } else {
-                                        out
-                                            << vertex_offset + duplicated_vertex_id
-                                                + 1 ;
-                                    }
-                                }
-                                out << std::endl ;
-                                break ;
-                            }
-                        }
-                    }
-                }
-            }
-
-            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                const GeoModelElement& interf = model.one_interface( i ) ;
-                for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_id( s ).index ;
-                    if( gm.vertices.is_surface_to_duplicate( s_id ) ) continue ;
-                    index_t mesh_id = gm.facets.mesh( s_id ) ;
-                    const GEO::Mesh& mesh = gm.mesh( mesh_id ) ;
-                    for( index_t t = 0; t < gm.facets.nb_facets( s_id ); t++ ) {
-                        index_t facet_id = gm.facets.facet( s_id, t ) ;
-                        out << cur_cell++ << SPACE
-                            << facet_type[mesh.facets.nb_vertices( facet_id )]
-                            << " 2 " << offset_region + 2 * i + 1 << SPACE
-                            << offset_region + offset_interface + 2 * s_id ;
-                        for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id );
-                            v++ ) {
-                            index_t v_id = mesh.facets.vertex( facet_id, v ) ;
-                            out << SPACE
-                                << gm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
-                        }
-                        for( index_t v = 0;
-                            v
-                                < mesh.facets.nb_vertices( facet_id )
-                                    * ( gm.get_order() - 1 ); v++ ) {
-                            out << SPACE ;
-                            out << gm.order.get_id_on_facet( s, facet_id, v ) + 1 ;
-                        }
-                        out << std::endl ;
-                    }
-                }
-            }
-            out << "$EndElements" << std::endl ;
-
-            if( GEO::CmdLine::get_arg_bool( "out:kine3d" ) ) {
-                std::string directory = GEO::FileSystem::dir_name( filename ) ;
-                std::string file = GEO::FileSystem::base_name( filename ) ;
-                std::ostringstream oss_kine ;
-                oss_kine << directory << "/" << file << ".gmsh_info" ;
-                std::ofstream kine3d( oss_kine.str().c_str() ) ;
-                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const GeoModelElement& interf = model.one_interface( i ) ;
-                    index_t s_id = interf.child_id( 0 ).index ;
-                    kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
-                        << ",1," ;
-                    const RINGMesh::GeoModelElement& E = model.one_interface( i ) ;
-                    if( RINGMesh::GeoModelElement::is_fault(
-                        E.geological_feature() ) ) {
-                        kine3d << "FaultFeatureClass" ;
-                    } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
-                        E.geological_feature() ) ) {
-                        kine3d << "HorizonFeatureClass" ;
-                    } else if( E.is_on_voi() ) {
-                        kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
-                    }
-                    kine3d << std::endl ;
-                    if( gm.vertices.is_surface_to_duplicate( s_id ) ) {
-                        kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
-                            << ",0," ;
-                        const RINGMesh::GeoModelElement& E = model.one_interface(
-                            i ) ;
-                        if( RINGMesh::GeoModelElement::is_fault(
-                            E.geological_feature() ) ) {
-                            kine3d << "FaultFeatureClass" ;
-                        } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
-                            E.geological_feature() ) ) {
-                            kine3d << "HorizonFeatureClass" ;
-                        } else if( E.is_on_voi() ) {
-                            kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
-                        }
-                        kine3d << std::endl ;
-                    }
-                }
-            }
+//            out << gm.order.nb_total_vertices() << std::endl ;
+//            for( index_t p = 0; p < gm.vertices.nb(); p++ ) {
+//
+//                const vec3& point = gm.vertices.vertex( p ) ;
+//                if( p == 0 ) {
+//                    std::cout << "io val " << point.x << std::endl ;
+//
+//                }
+//                out << p + 1 << SPACE << point.x << SPACE << point.y << SPACE
+//                    << point.z << std::endl ;
+//            }
+//            index_t vertex_offset = gm.vertices.nb() ;
+//            for( index_t p = 0; p < gm.vertices.nb_duplicated_vertices(); p++ ) {
+//                const vec3& point = gm.vertices.duplicated_vertex( p ) ;
+//                out << vertex_offset + p + 1 << SPACE << point.x << SPACE << point.y
+//                    << SPACE << point.z << std::endl ;
+//            }
+//            vertex_offset += gm.vertices.nb_duplicated_vertices() ;
+//            index_t nb_order_vertices = gm.order.nb() ;
+//            for( index_t p = 0; p < nb_order_vertices; p++ ) {
+//                out << vertex_offset + p + 1 << SPACE << gm.order.point( p ).x
+//                    << SPACE << gm.order.point( p ).y << SPACE
+//                    << gm.order.point( p ).z << std::endl ;
+//            }
+//            out << "$EndNodes" << std::endl ;
+//
+//            index_t cell_type[4] = { 4, 5, 6, 7 } ;
+//            index_t facet_type[5] = { -1, -1, -1, 2, 3 } ;
+//            if( gm.get_order() == 2 ) {
+//                cell_type[0] = 11 ;
+//                cell_type[1] = 17 ;
+//                cell_type[2] = 18 ;
+//                cell_type[3] = 19 ;
+//                facet_type[0] = -1 ;
+//                facet_type[1] = -1 ;
+//                facet_type[2] = -1 ;
+//                facet_type[3] = 9 ;
+//                facet_type[4] = 16 ;
+//            } else if( gm.get_order() > 2 ) {
+//                GEO::Logger::err( "" ) << "The order " << gm.get_order() << " "
+//                    << "is not supported"
+//                    << " for the gmsh export. The export will take order 1 elements"
+//                    << std::endl ;
+//            }
+//            const GeoModel& model = gm ;
+//            index_t offset_region = gm.nb_regions() ;
+//            index_t offset_interface = model.nb_interfaces() * 2 ; // one for each side
+//            index_t nb_facets = 0 ;
+//            std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
+//            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+//                if( gm.vertices.is_surface_to_duplicate( s ) )
+//                    nb_facets += 2 * gm.facets.nb_facets( s ) ;
+//                else
+//                    nb_facets += gm.facets.nb_facets( s ) ;
+//                anns[s] = new ColocaterANN( model.surface( s ).mesh(),
+//                    ColocaterANN::FACETS ) ;
+//            }
+//            out << "$Elements" << std::endl ;
+//            out << gm.cells.nb_cells() + nb_facets << std::endl ;
+//            index_t cur_cell = 1 ;
+//            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
+//                const GEO::Mesh& mesh = gm.mesh( m ) ;
+//                GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
+//                    surface_att_name ) ;
+//                const GeoModelElement& region = model.region( m ) ;
+//                std::vector< index_t > surfaces ;
+//                surfaces.reserve( region.nb_boundaries() ) ;
+//                for( index_t b = 0; b < region.nb_boundaries(); b++ ) {
+//                    index_t cur_s_id = region.boundary_id( b ).index ;
+//                    if( !gm.vertices.is_surface_to_duplicate( cur_s_id ) ) continue ;
+//                    surfaces.push_back( cur_s_id ) ;
+//                }
+//                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+//                    out << cur_cell++ << " " << cell_type[mesh.cells.type( c )]
+//                        << " 2 " << m + 1 << SPACE << m ;
+//                    for( index_t v = mesh.cells.corners_begin( c );
+//                        v < mesh.cells.corners_end( c ); v++ ) {
+//                        index_t vertex_id ;
+//                        index_t duplicated_vertex_id ;
+//                        out << SPACE ;
+//                        if( gm.vertices.vertex_id( m, v, vertex_id,
+//                            duplicated_vertex_id ) ) {
+//                            out << vertex_id + 1 ;
+//                        } else {
+//                            out << vertex_offset + duplicated_vertex_id + 1 ;
+//                        }
+//                    }
+//                    if( gm.get_order() == 2 ) {
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 3 ) + 1 ;
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 0 ) + 1 ;
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 4 ) + 1 ;
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 5 ) + 1 ;
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 1 ) + 1 ;
+//                        out << SPACE ;
+//                        out << gm.order.get_id_on_cell( m, c, 2 ) + 1 ;
+//                    }
+//                    out << std::endl ;
+//
+//                    for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+//                        vec3 facet_bary = mesh_cell_facet_center( mesh, c,
+//                            f ) ;
+//                        vec3 cell_facet_normal = mesh_cell_facet_normal( mesh,
+//                            c, f ) ;
+//                        for( index_t s = 0; s < surfaces.size(); s++ ) {
+//                            index_t surface_id = surfaces[s] ;
+//                            std::vector< index_t > result ;
+//                            if( anns[surface_id]->get_colocated( facet_bary,
+//                                result ) ) {
+//                                vec3 facet_normal =
+//                                    model.surface( surface_id ).facet_normal(
+//                                        result[0] ) ;
+//                                bool side = dot( facet_normal, cell_facet_normal )
+//                                    > 0 ;
+//                                out << cur_cell++ << " "
+//                                    << facet_type[mesh.cells.facet_nb_vertices( c,
+//                                        f )] << " 2 "
+//                                    << offset_region
+//                                        + 2
+//                                            * model.surface( surface_id ).parent_id().index
+//                                        + side + 1 << SPACE
+//                                    << offset_region + offset_interface
+//                                        + 2 * surface_id + side ;
+//                                for( index_t v = 0;
+//                                    v < mesh.cells.facet_nb_vertices( c, f ); v++ ) {
+//                                    index_t corner_id =
+//                                        mesh.cells.corner( c,
+//                                            mesh.cells.descriptor( c ).facet_vertex[f][v] ) ;
+//                                    index_t vertex_id ;
+//                                    index_t duplicated_vertex_id ;
+//                                    out << SPACE ;
+//                                    if( gm.vertices.vertex_id( m, corner_id,
+//                                        vertex_id, duplicated_vertex_id ) ) {
+//                                        out << vertex_id + 1 ;
+//                                    } else {
+//                                        out
+//                                            << vertex_offset + duplicated_vertex_id
+//                                                + 1 ;
+//                                    }
+//                                }
+//                                out << std::endl ;
+//                                break ;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+//                const GeoModelElement& interf = model.one_interface( i ) ;
+//                for( index_t s = 0; s < interf.nb_children(); s++ ) {
+//                    index_t s_id = interf.child_id( s ).index ;
+//                    if( gm.vertices.is_surface_to_duplicate( s_id ) ) continue ;
+//                    index_t mesh_id = gm.facets.mesh( s_id ) ;
+//                    const GEO::Mesh& mesh = gm.mesh( mesh_id ) ;
+//                    for( index_t t = 0; t < gm.facets.nb_facets( s_id ); t++ ) {
+//                        index_t facet_id = gm.facets.facet( s_id, t ) ;
+//                        out << cur_cell++ << SPACE
+//                            << facet_type[mesh.facets.nb_vertices( facet_id )]
+//                            << " 2 " << offset_region + 2 * i + 1 << SPACE
+//                            << offset_region + offset_interface + 2 * s_id ;
+//                        for( index_t v = 0; v < mesh.facets.nb_vertices( facet_id );
+//                            v++ ) {
+//                            index_t v_id = mesh.facets.vertex( facet_id, v ) ;
+//                            out << SPACE
+//                                << gm.vertices.vertex_id( mesh_id, v_id ) + 1 ;
+//                        }
+//                        for( index_t v = 0;
+//                            v
+//                                < mesh.facets.nb_vertices( facet_id )
+//                                    * ( gm.get_order() - 1 ); v++ ) {
+//                            out << SPACE ;
+//                            out << gm.order.get_id_on_facet( s, facet_id, v ) + 1 ;
+//                        }
+//                        out << std::endl ;
+//                    }
+//                }
+//            }
+//            out << "$EndElements" << std::endl ;
+//
+//            if( GEO::CmdLine::get_arg_bool( "out:kine3d" ) ) {
+//                std::string directory = GEO::FileSystem::dir_name( filename ) ;
+//                std::string file = GEO::FileSystem::base_name( filename ) ;
+//                std::ostringstream oss_kine ;
+//                oss_kine << directory << "/" << file << ".gmsh_info" ;
+//                std::ofstream kine3d( oss_kine.str().c_str() ) ;
+//                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
+//                    const GeoModelElement& interf = model.one_interface( i ) ;
+//                    index_t s_id = interf.child_id( 0 ).index ;
+//                    kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
+//                        << ",1," ;
+//                    const RINGMesh::GeoModelElement& E = model.one_interface( i ) ;
+//                    if( RINGMesh::GeoModelElement::is_fault(
+//                        E.geological_feature() ) ) {
+//                        kine3d << "FaultFeatureClass" ;
+//                    } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
+//                        E.geological_feature() ) ) {
+//                        kine3d << "HorizonFeatureClass" ;
+//                    } else if( E.is_on_voi() ) {
+//                        kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
+//                    }
+//                    kine3d << std::endl ;
+//                    if( gm.vertices.is_surface_to_duplicate( s_id ) ) {
+//                        kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
+//                            << ",0," ;
+//                        const RINGMesh::GeoModelElement& E = model.one_interface(
+//                            i ) ;
+//                        if( RINGMesh::GeoModelElement::is_fault(
+//                            E.geological_feature() ) ) {
+//                            kine3d << "FaultFeatureClass" ;
+//                        } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
+//                            E.geological_feature() ) ) {
+//                            kine3d << "HorizonFeatureClass" ;
+//                        } else if( E.is_on_voi() ) {
+//                            kine3d << "ModelRINGMesh::BoundaryFeatureClass" ;
+//                        }
+//                        kine3d << std::endl ;
+//                    }
+//                }
+//            }
             return true ;
         }
     } ;

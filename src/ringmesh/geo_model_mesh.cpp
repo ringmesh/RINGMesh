@@ -42,6 +42,8 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/well.h>
+#include <ringmesh/algorithm.h>
+#include <ringmesh/geogram_extension.h>
 
 #include <geogram/basic/algorithm.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -1001,7 +1003,7 @@ namespace RINGMesh {
                             // and has not already been processed or added into the stack
                             index_t cur_adj = mesh_.cells.adjacent( cur_c, cur_f ) ;
                             if( cur_adj != GEO::NO_CELL
-                                && !RINGMesh::Utils::contains( cell_added,
+                                && !contains( cell_added,
                                     cur_adj ) ) {
                                 cell_added.push_back( cur_adj ) ;
                                 S.push( cur_adj ) ;
@@ -1049,7 +1051,7 @@ namespace RINGMesh {
         facet = facet_id_[mesh_.cells.facet( c, f )] ;
         if( facet != NO_ID ) {
             vec3 facet_normal = GEO::Geom::mesh_facet_normal( mesh_, facet ) ;
-            vec3 cell_facet_normal = Geom::mesh_cell_facet_normal( mesh_, c, f ) ;
+            vec3 cell_facet_normal = mesh_cell_facet_normal( mesh_, c, f ) ;
             side = dot( facet_normal, cell_facet_normal ) > 0 ;
         }
         return facet != NO_ID  ;
@@ -1195,12 +1197,24 @@ namespace RINGMesh {
             for( index_t f = 0; f < mesh_.cells.nb_facets( c ); f++ ) {
                 std::vector< index_t > result ;
                 if( ann.get_colocated(
-                    Geom::mesh_cell_facet_center( mesh_, c, f ), result ) ) {
+                    mesh_cell_facet_center( mesh_, c, f ), result ) ) {
                     facet_id_[mesh_.cells.facet( c, f )] = result[0] ;
                 }
             }
         }
 
+    }
+
+    vec3 GeoModelMeshCells::center( index_t c ) const
+    {
+        test_and_initialize() ;
+        return mesh_cell_center( mesh_, c ) ;
+    }
+
+    double GeoModelMeshCells::volume( index_t c ) const
+    {
+        test_and_initialize() ;
+        return RINGMesh::mesh_cell_volume( mesh_, c ) ;
     }
 
     /*******************************************************************************/
@@ -1538,6 +1552,17 @@ namespace RINGMesh {
         nb_polygon_ = nb_facet_per_type[POLYGON] ;
     }
 
+    vec3 GeoModelMeshFacets::center( index_t f ) const
+    {
+        test_and_initialize() ;
+        return GEO::Geom::mesh_facet_center( mesh_, f ) ;
+    }
+
+    double GeoModelMeshFacets::area( index_t f ) const
+    {
+        test_and_initialize() ;
+        return GEO::Geom::mesh_facet_area( mesh_, f ) ;
+    }
     /*******************************************************************************/
 
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh )
