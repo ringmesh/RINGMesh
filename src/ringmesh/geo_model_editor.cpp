@@ -32,13 +32,14 @@
 *     http://www.ring-team.org
 *
 *     RING Project
-*     Ecole Nationale Supérieure de Géologie - Georessources
+*     Ecole Nationale Supï¿½rieure de Gï¿½ologie - Georessources
 *     2 Rue du Doyen Marcel Roubault - TSA 70605
 *     54518 VANDOEUVRE-LES-NANCY
 *     FRANCE
 */
 
 #include <ringmesh/geo_model_editor.h>
+#include <ringmesh/geo_model_validity.h>
 
 #include <algorithm>
 namespace RINGMesh {
@@ -333,7 +334,7 @@ namespace RINGMesh {
         }
         set_universe( oriented_surfaces ) ;
 
-        ringmesh_debug_assert( model_.check_model_validity() ) ;
+        ringmesh_debug_assert( is_geomodel_valid(model_) ) ;
     }
 
     /*!
