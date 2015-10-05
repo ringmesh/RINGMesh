@@ -47,7 +47,6 @@
 
 namespace RINGMesh {
     class GeoModel ;
-    class Edge ;
     class Well ;
 }
 
@@ -153,6 +152,65 @@ namespace RINGMesh {
         index_t id_ ;
         /// id in the corners_ vector the the well
         index_t corners_[2] ;
+    } ;
+
+// --------------------------------------------------------------------------
+
+    /*!
+     * @todo Get rid of this class [JP]
+     * We do not really need it in RINGMesh, or do we ? 
+     */
+    template< class T, index_t n >
+    class Array {
+    public:
+        void assign( const std::vector< T >& values )
+        {
+            ringmesh_debug_assert( values.size() < n + 1 ) ;
+            for( index_t i = 0; i < values.size(); i++ ) {
+                values_[ i ] = values[ i ] ;
+            }
+        }
+
+        T value( signed_index_t i ) const
+        {
+            return values_[ i ] ;
+        }
+
+        T& value( signed_index_t i )
+        {
+            return values_[ i ] ;
+        }
+
+        float64 normalized_value(
+            signed_index_t i,
+            float64 max,
+            float64 min,
+            float64 scale ) const
+        {
+            float64 s = values_[ i ] ;
+            s = ( s - min ) / ( max - min ) ;
+            s = std::min( s, 1.0 ) ;
+            s = std::max( s, 0.0 ) ;
+            s *= scale ;
+            return s ;
+        }
+
+    protected:
+        T values_[ n ] ;
+    } ;
+
+    class Edge : public Array< vec3, 2 > {
+    public:
+        Edge( const vec3& v0, const vec3& v1 )
+        {
+            values_[ 0 ] = v0 ;
+            values_[ 1 ] = v1 ;
+        }
+
+        vec3 barycenter() const
+        {
+            return ( values_[ 0 ] + values_[ 1 ] ) / static_cast< float64 >( 2 ) ;
+        }
     } ;
 
 // --------------------------------------------------------------------------
@@ -270,6 +328,12 @@ namespace RINGMesh {
 
 // --------------------------------------------------------------------------
 
+    /*! 
+     * @todo Implement something more generic than WellGroups
+     * We wnat to dela with Lines of Points that might not be Well [JP]
+     *
+     * @todo Comment
+     */
     class RINGMESH_API WellGroup {
         ringmesh_disable_copy( WellGroup ) ;
     public:

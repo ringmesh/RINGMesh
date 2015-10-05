@@ -52,18 +52,18 @@ int main( int argc, char** argv )
     GEO::Logger::out("TEST") << "Test IO for a GeoModel in .bm" << std::endl ;
 
     GeoModel in ;
-   if( !RINGMeshIO::load( "../data/model1.ml", in ) )
+   if( !model_load( "../data/model1.ml", in ) )
         return 1 ;
-    if( !RINGMeshIO::save( in, "out.bm" ) )
+    if( !model_save( in, "out.bm" ) )
         return 1 ;
 
     GeoModel in2 ;
-    if( !RINGMeshIO::load( "out.bm", in2 ) )
+    if( !model_load( "out.bm", in2 ) )
         return 1 ;
-    if( !RINGMeshIO::save( in2, "out2.bm" ) )
+    if( !model_save( in2, "out2.bm" ) )
         return 1 ;
 
-    bool res = Utils::compare_file( "out.bm", "out2.bm" ) ;
+    bool res = compare_files( "out.bm", "out2.bm" ) ;
     if( res )
         GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
     else

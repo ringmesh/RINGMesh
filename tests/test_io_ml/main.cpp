@@ -48,26 +48,26 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    //GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
+    GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
 
     GeoModel in ;
-    if( !RINGMeshIO::load( "../data/model1.ml", in ) )
+    if( !model_load( "../../../../../tests/data/model1.ml", in ) )
         return 1 ;
-    if( !RINGMeshIO::save( in, "out.ml" ) )
+    if( !model_save( in, "out.ml" ) )
         return 1 ;
 
     GeoModel in2 ;
-    if( !RINGMeshIO::load( "out.ml", in2 ) )
+    if( !model_load( "out.ml", in2 ) )
         return 1 ;
-    if( !RINGMeshIO::save( in2, "out2.ml" ) )
+    if( !model_save( in2, "out2.ml" ) )
         return 1 ;
 	
 	// Test a bad fixable input annot
 	GeoModel in3 ;
-	if( !RINGMeshIO::load( "../data/annot.ml", in3 ) )
+	if( !model_load( "../data/annot.ml", in3 ) )
         return 1 ;
 		
-    bool res = Utils::compare_file( "out.ml", "out2.ml" ) ;
+    bool res = compare_files( "out.ml", "out2.ml" ) ;
     if( res )
         GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
     else

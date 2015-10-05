@@ -38,11 +38,13 @@
  *     FRANCE
  */
 
+#include <ringmesh/geo_model_repair.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_editor.h>
+
 #include <ringmesh/io.h>
 #include <ringmesh/utils.h>
 #include <geogram/basic/logger.h>
-#include <ringmesh/geo_model_builder.h>
 
 
 // The function find_element in geo_model does not exist anymore
@@ -53,7 +55,7 @@ namespace {
     using namespace RINGMesh ;
 
     bool check_with_expected_result(
-        const GeoModelBuilder& builder,
+        const GeoModelEditor& builder,
         std::set< GME::gme_t >& initial_elts,
         const std::set< GME::gme_t >& result )
     {
@@ -83,7 +85,7 @@ int main( int argc, char** argv )
   /*  GEO::Logger::out( "TEST" ) << "Test get_dependent_elements" << std::endl ;
 
     GeoModel in ;
-    if( !RINGMeshIO::load( "../data/model1.ml", in ) ) {
+    if( !load( "../data/model1.ml", in ) ) {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
         return 1 ;
     }
