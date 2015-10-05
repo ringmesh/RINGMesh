@@ -395,7 +395,7 @@ namespace {
                 mesh.facets.create_polygon( vertices ) ;
             }
             std::ostringstream file ;
-            file << model.debug_directory() << "/intersected_facets.mesh" ;
+            file << validity_errors_directory << "/intersected_facets.mesh" ;
             GEO::mesh_save( mesh, file.str() ) ;
         }
 
@@ -837,7 +837,7 @@ namespace {
 #ifdef RINGMESH_DEBUG
             if( !valid ) {
                 std::ostringstream file ;
-                file << region.model().debug_directory() << "/boundary_surface_"
+                file << validity_errors_directory << "/boundary_surface_"
                     << print_gme_id( region ) << ".mesh" ;
                 GEO::mesh_save( mesh, file.str() ) ;
             }
@@ -1070,7 +1070,7 @@ namespace {
 #ifdef RINGMESH_DEBUG
         if( nb_invalid > 0 ) {
             std::ostringstream file ;
-            file << M.debug_directory() << "/invalid_global_vertices.pts" ;
+            file << validity_errors_directory << "/invalid_global_vertices.pts" ;
 
             std::ofstream out ;
             out.open( file.str().c_str() ) ;
@@ -1135,7 +1135,7 @@ namespace {
 #ifdef RINGMESH_DEBUG
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
-            file << S.model().debug_directory() << "/invalid_boundary_"
+            file << validity_errors_directory << "/invalid_boundary_"
                 << print_gme_id( S ) << ".lin" ;
             save_edges( file.str(), S.model(), invalid_corners ) ;
         }
@@ -1296,7 +1296,7 @@ namespace RINGMesh {
             valid = false ;
 #ifdef RINGMESH_DEBUG
             std::ostringstream file ;
-            file << debug_directory() << "/non_manifold_edges" << ".mesh" ;
+            file << validity_errors_directory << "/non_manifold_edges" << ".mesh" ;
             /// @todo Save a GEO::Mesh in an adapted format
             /// if the Mesh has only edges or vertices (.pts ? .lin ? ) 
             GEO::mesh_save( non_manifold_edges, file.str() ) ;
