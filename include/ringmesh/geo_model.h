@@ -355,6 +355,8 @@ namespace RINGMesh {
          * std::vector< GeoModelElement* > elements_ 
          * std::vector< index_t > element_type_ptr  
          * Not so nice to build, but so nice to store [JP]
+         * I don't think this is a good idea if we want to move
+         * to editable model [AB]
          */
 
         // Base manifold elements of a model

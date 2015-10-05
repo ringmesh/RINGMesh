@@ -580,10 +580,10 @@ namespace RINGMesh {
      * @param[in] wells the wells to be conformal to
      */
     void TetraGen::set_boundaries(
-        const GeoModelElement* region,
+        const GeoModelElement& region,
         const WellGroup* wells )
     {
-        region_ = region ;
+        region_ = &region ;
         index_t nb_surfaces = region_->nb_boundaries() ;
         std::vector< const GeoModelMeshElement* > unique_surfaces ;
         unique_surfaces.reserve( nb_surfaces ) ;
@@ -604,7 +604,7 @@ namespace RINGMesh {
         MakeUnique uniqueID( unique_surfaces, true ) ;
         std::vector< std::vector< Edge > > well_edges ;
         if( wells ) {
-            wells->get_region_edges( region->gme_id().index, well_edges ) ;
+            wells->get_region_edges( region.gme_id().index, well_edges ) ;
             // Copy result of porting. Stupid, I know, but because of the interface
             // of MakeUnique. This Edge class is a pain [JP]
             std::vector< std::pair< vec3, vec3 > > wells_copy ;

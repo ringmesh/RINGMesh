@@ -45,11 +45,25 @@
 
 namespace RINGMesh {
     class GeoModel ;
+    class GeoModelElement ;
 }
 
 namespace RINGMesh {
 
+    /*!
+     * @brief Compute the size (volume, area, length) of an Element
+     *
+     * @param[in] E Element to evaluate
+     */
+    double size( const GeoModelElement& E ) ;
 
+    /*!
+     * @brief Compute the barycenter of a GeoModelElement
+     *
+     * @param[in] E Pointer to the element
+     * @return The coordinates of the barycenter
+     */
+    vec3 barycenter( const GeoModelElement& E ) ;
 
     /*!
     * @brief Translates the boundary model by a vector.
@@ -57,12 +71,12 @@ namespace RINGMesh {
     * Every single mesh of the boundary model is translated:
     * corners, lines and surfaces.
     *
+    * @param[in] M GeoModel on which compute the translation
     * @param[in] translation_vector vector of translation.
     *
     * @todo Review: Add documentation - Replace the return value by a gme_t [AB]
     */
     void translate( GeoModel& M, const vec3& ) ;
-
 
     /*!
     * \brief Rotate the boundary model.
@@ -74,13 +88,11 @@ namespace RINGMesh {
     * undergo the rotation (each mesh inside the boundary model:
     * corners, lines and surfaces).
     *
-    * @param origin point in which passes the rotation axis.
-    *
-    * @param axis vector which defines the rotation axis.
-    *
-    * @param theta rotation angle (in radians or degrees).
-    *
-    * @param degrees true is \p theta is in degrees, false
+    * @param[in] M GeoModel on which compute the rotation
+    * @param[in] origin point in which passes the rotation axis.
+    * @param[in] axis vector which defines the rotation axis.
+    * @param[in] theta rotation angle (in radians or degrees).
+    * @param[in] degrees true is \p theta is in degrees, false
     * if in radians.
     */
     void rotate(
@@ -90,7 +102,24 @@ namespace RINGMesh {
         float64 angle,
         bool degrees = false ) ;
 
-
+    const static index_t ALL_REGIONS = index_t( -1 ) ;
+    static std::vector< std::vector< vec3 > > empty_vertices ;
+    /*!
+     * Compute the tetrahedral mesh of the input structural model
+     * @param[in] M GeoModel to tetrahedralize
+     * @param[in] method Mesher used
+     * @param[in] region_id Region to mesh, ALL_REGIONS for all
+     * @param[in] add_steiner_points if true, the mesher will add some points inside the region
+     * @param[in] internal_vertices points inside the domain to constrain during the
+     * mesh generation. There is one vector per mesh.
+     * to improve the mesh quality
+     */
+    void tetrahedralize(
+        GeoModel& M,
+        const std::string& method = "TetGen",
+        index_t region_id = ALL_REGIONS,
+        bool add_steiner_points = true,
+        std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
 
 
 }
