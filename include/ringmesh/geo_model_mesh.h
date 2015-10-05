@@ -393,6 +393,17 @@ namespace RINGMesh {
          */
         void clear() ;
 
+        /*!
+         * Get the center of the given facet
+         * @param[in] f the facet index
+         */
+        vec3 center( index_t f ) const ;
+        /*!
+         * Get the area of the facet
+         * @param[in] f the facet index
+         */
+        double area( index_t f ) const ;
+
     private:
         /*!
          * Initialize the facets of the GeoModelMesh
@@ -776,6 +787,17 @@ namespace RINGMesh {
             index_t f,
             index_t& facet = dummy_index_t,
             bool& side = dummy_bool ) const ;
+
+        /*!
+         * Get the center of the given cell
+         * @param[in] c the cell index
+         */
+        vec3 center( index_t c ) const ;
+        /*!
+         * Get the volume of the cell
+         * @param[in] c the cell index
+         */
+        double volume( index_t c ) const ;
 
     private:
         /*!
