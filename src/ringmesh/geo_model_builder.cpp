@@ -42,6 +42,7 @@
 
 #include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/utils.h>
@@ -2181,7 +2182,7 @@ namespace RINGMesh {
     /*!
      * @brief From a GeoModel in which only Surface are defined, create
      * corners, contacts and regions.
-     * @param build_region If set to false the region of the GeoModel are not
+     * @param build_regions If set to false the region of the GeoModel are not
      *        computed. Used to have a GeoModel instance corresponding to a
      *        set of surface that do not define volumetric regions (invalid model).
      *        Default value is true.
@@ -2472,8 +2473,7 @@ namespace RINGMesh {
                 double max_volume = -1. ;
                 index_t universe_id = NO_ID ;
                 for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-                    double cur_volume = GeoModelElementMeasure::size(
-                        &model_.region( i ) ) ;
+                    double cur_volume = size( model_.region( i ) ) ;
                     if( cur_volume > max_volume ) {
                         max_volume = cur_volume ;
                         universe_id = i ;
