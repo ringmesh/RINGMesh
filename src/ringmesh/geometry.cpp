@@ -1272,32 +1272,14 @@ namespace RINGMesh {
         index_t nb_vertices = vertices.size() ;
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         if( copy ) {
-            ann_points_ = new double[ nb_vertices * 3 ] ;
-            for( index_t i = 0; i < nb_vertices; i++ ) {
-                index_t index_in_ann = 3 * i ;
-                ann_points_[ index_in_ann ] = vertices[ i ].x ;
-                ann_points_[ index_in_ann + 1 ] = vertices[ i ].y ;
-                ann_points_[ index_in_ann + 2 ] = vertices[ i ].z ;
-            }
+            ann_points_ = new double[nb_vertices * 3] ;
+            GEO::Memory::copy( ann_points_, vertices.data()->data(),
+                3 * nb_vertices * sizeof(double) ) ;
             ann_tree_->set_points( nb_vertices, ann_points_ ) ;
         } else {
             ann_points_ = nil ;
             ann_tree_->set_points( nb_vertices, vertices.data()->data() ) ;
         }
-    }
-
-    void ColocaterANN::set_points( const std::vector< vec3 >& vertices )
-    {
-        index_t nb_vertices = vertices.size() ;
-        ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
-        ann_points_ = new double[ nb_vertices * 3 ] ;
-        for( index_t i = 0; i < nb_vertices; i++ ) {
-            index_t index_in_ann = 3 * i ;
-            ann_points_[ index_in_ann ] = vertices[ i ].x ;
-            ann_points_[ index_in_ann + 1 ] = vertices[ i ].y ;
-            ann_points_[ index_in_ann + 2 ] = vertices[ i ].z ;
-        }
-        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
     /*!

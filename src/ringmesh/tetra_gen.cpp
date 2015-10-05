@@ -476,7 +476,7 @@ namespace RINGMesh {
                 set_point( p, point ) ;
             }
             tetmesh_.cells.connect() ;
-            Utils::check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
+            check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
 
             stop_redirect( pos, stdout, fd ) ;
             stop_redirect( pos_err, stderr, fd_err ) ;

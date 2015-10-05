@@ -493,9 +493,6 @@ namespace RINGMesh {
     } ;
 
 
-    /*
-     * @todo Do we really need this class ? [JP]
-     */
     class RINGMESH_API ColocaterANN {
         ringmesh_disable_copy( ColocaterANN ) ;
     public:
@@ -513,8 +510,6 @@ namespace RINGMesh {
         {
             if( ann_points_ ) delete[] ann_points_ ;
         }
-
-        void set_points( const std::vector< vec3 >& vertices ) ;
 
         bool get_colocated( const vec3& v, std::vector< index_t >& result ) const ;
 
