@@ -1,16 +1,48 @@
 # CMakeLists for tests 
 
-IF(WIN32)
-    link_directories(${CMAKE_SOURCE_DIR}/build/ringmesh/${GEOGRAM_PLATFORM}/lib/${CMAKE_BUILD_TYPE})
-ELSE()
-    link_directories(${CMAKE_SOURCE_DIR}/build/ringmesh/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
-ENDIF()
+link_directories(${PROJECT_BINARY_DIR}/lib)
 
-# One subdirectory per test. 
-add_subdirectory(test_io_ml)
-add_subdirectory(test_io_bm)
-add_subdirectory(test_make_unique)
-add_subdirectory(test_build_bm_surface)
-add_subdirectory(test_rotation)
-add_subdirectory(test_get_dependent_elements)
-add_subdirectory(test_tetrahedralize)
+# Look at the test with cmake
+# DO A LOOP here on a list of test name at least !!
+
+set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests)
+
+# If necessary, use the RELATIVE flag, otherwise each source file may be listed 
+# with full pathname. RELATIVE may makes it easier to extract an executable name
+# automatically.
+# file( GLOB APP_SOURCES RELATIVE app/*.cxx )
+
+# file(GLOB TESTS RELATIVE ${TEST_DIRECTORY} *.cpp)
+
+
+# foreach(testsourcefile ${TESTS} )
+    # I used a simple string replace, to cut off .cpp.
+    # string( REPLACE ".cpp" "" testname ${testsourcefile} )
+    # add_executable( ${testname} ${testsourcefile} )
+    # Make sure YourLib is linked to each app
+    # target_link_libraries( ${testname} YourLib )
+# endforeach( testsourcefile ${APP_SOURCES} )
+
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${GEOGRAM_PATH}/src/lib)
+add_executable(test_io_bm ${TEST_DIRECTORY}/test_io_bm/main.cpp)
+target_link_libraries(test_io_bm RINGMesh geogram)
+
+# add_executable(test_io_ml ${PROJECT_SOURCE_DIR}/main.cpp)
+# target_link_libraries(test_io_ml RINGMesh geogram)
+
+# add_executable(test_make_unique ${PROJECT_SOURCE_DIR}/main.cpp)
+# target_link_libraries(test_make_unique RINGMesh geogram)
+
+# add_executable(test_rotation ${PROJECT_SOURCE_DIR}/main.cpp)
+# target_link_libraries(test_rotation RINGMesh geogram)
+
+# add_executable(test_tetrahedralize ${PROJECT_SOURCE_DIR}/main.cpp)
+# target_link_libraries(test_tetrahedralize RINGMesh geogram)
+
+# add_executable(test_build_bm_surface ${PROJECT_SOURCE_DIR}/main.cpp)
+# target_link_libraries(test_build_bm_surface RINGMesh geogram)
+
+# add_executable(test_get_dependent_elements ${TEST_DIRECTORY}//main.cpp)
+# target_link_libraries(test_get_dependent_elements RINGMesh geogram)
+

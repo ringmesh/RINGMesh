@@ -40,10 +40,12 @@ option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 option(USE_OPENMP "Use Open MP" OFF)
  
 if(WIN32)
+#to put in the config.h.in file 
     add_definitions(-DRINGMESH_EXPORTS -DGEO_DYNAMIC_LIBS)
 endif(WIN32)
 
 # todo changer ça
+#platform dependant
 set(geoplatform Win-vs-dynamic-generic)
 
 # Configure a header file to pass some of the CMake settings
@@ -63,10 +65,14 @@ include_directories(${PROJECT_BINARY_DIR})
    # INCLUDE(${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
 # endif(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
 
+# A mon avis on en a pas bsoin
+# suffit de savoir lance cmake avec les bonnes options
+# depuis l'interface ou en ligne de commande 
+
 
 ##############################################################################
 # Let's define properly that Geogram is another project we rely on
-# A FINIR  PAS FINI
+
 set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
 set(GEOGRAM_PATH_BIN ${PROJECT_SOURCE_DIR}/build/geogram)
 
@@ -90,17 +96,18 @@ ExternalProject_Add(geogram_ext
   BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN}
 
   # Install step - None
-  INSTALL_COMMAND ""
+  INSTALL_COMMAND "" 
+  # peut être on peut faire la copie là mais je n'y arrive pas
+  # ${CMAKE_COMMAND} -E copy_if_different  "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/$<TARGET_FILE_NAME:geogram>" 
+  # "${PROJECT_BINARY_DIR}/bin/$<CONFIGURATION>/$<TARGET_FILE_NAME:geogram>"
 )
 
-
+# add_library(geogram SHARED IMPORTED)
+# set_property(TARGET geogram PROPERTY IMPORTED_LOCATION
+                # ${GEOGRAM_PATH_BIN}/lib)
 
 # Je voudrai copier la lib de geogram là ou je veux
 # ou alors step INSTALL ? ça doit marcher ....
-ExternalProject_Add_Step(geogram_ext Copying
-  COMMAND  ${CMAKE_COMMAND} -E copy_if_different  "$<TARGET_FILE:geogram>" 
-  "${PROJECT_BINARY_DIR}/$<CONFIGURATION>/$<TARGET_FILE_NAME:geogram>"
-)
 
 # besoin de ça ?
 # add_library(geogram SHARED IMPORTED)
@@ -113,11 +120,8 @@ include_directories(${GEOGRAM_PATH}/src/lib)
 set (EXTRA_LIBS ${EXTRA_LIBS} geogram)
 
 # on devrait les avoir automatiquement si on fait ça correctement
-# if(WIN32)
-    # link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${PLATFORM}/lib)
-# ELSE(WIN32)
-    # link_directories(${CMAKE_SOURCE_DIR}/build/geogram/${PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
-# ENDIF(WIN32)
+# Sous linux ? on est ou ? on peut pas faire autrement ? 
+link_directories(${GEOGRAM_PATH_BIN}/lib)
 
 
 if(USE_MG_TETRA)
@@ -210,9 +214,10 @@ endif(WIN32)
 ##############################################################################
 # Build configuration
 
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-# set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+# Je me demande bien à quoi ça sert ça
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
