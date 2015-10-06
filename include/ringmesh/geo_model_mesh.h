@@ -145,9 +145,9 @@ namespace RINGMesh {
 
         /*!
          * @brief Change one of the GME vertex associated to a vertex
-         * @param v Index of the vertex
-         * @param i Index of the GME vertex
-         * @param v_gme Id of GME and of the vertex in that GME
+         * @param[in] v Index of the vertex
+         * @param[in] i Index of the GME vertex
+         * @param[in] v_gme index of GME and of the vertex in that GME
          */
         void set_gme( index_t v, index_t i, const VertexInGME& v_gme ) ;
 
@@ -784,7 +784,7 @@ namespace RINGMesh {
 
         /*!
          * Determine if a cell facet is on a surface, if so fill the \p action
-         * with the surface id and the surface side encountered
+         * with the surface index and the surface side encountered
          * @param[in] c the cell index
          * @param[in] f the facet index
          * @param[out] facet the facet index colocalised with the cell facet
@@ -941,7 +941,7 @@ namespace RINGMesh {
          */
         bool is_initialized() const ;
         /*!
-         * Test if the order need to be initialized,
+         * Test if the order needs to be initialized,
          * if so initialize them.
          */
         void test_and_initialize() const ;
@@ -956,31 +956,29 @@ namespace RINGMesh {
          */
         const index_t nb_total_vertices() const ;
         /*!
-         * Gets the number of  high order mesh vertices.
+         * Gets the number of high order mesh vertices.
          * @return the const number of high order vertices
          */
         const index_t nb_vertices() ;
         /*!
          * Gets the point of a high order vertex
-         * @param[in] id an id of the new created point for order > 2
+         * @param[in] id an iindex of the new created point for order > 2
          * @return the vec3 matching with the id
          */
         const vec3& vertex( const index_t id ) const ;
         /*!
-         * Gets the id of a high order vertex on the cell edges
-         * @param[in] c global id of the cell on the GeoModelMesh
-         * @param[in] component point number in the cell
-         * Ids are ordered by edges on the attribute vector of Geogram
+         * Gets the index of a high order vertex on the cell edges
+         * @param[in] c global index of the cell on the GeoModelMesh
+         * @param[in] component local high order vertex index in the cell
          * @return the const index of the point
          */
         const index_t indice_on_cell(
             const index_t c,
             const index_t component ) const ;
         /*!
-         * Gets the indice of a high order vertex on a facet
-         * @param[in] f global indice of the facet on the GeoModelMesh
-         * @param[in] component point number in the cell
-         * indices are ordered by edges on the attribute vector of Geogram
+         * Gets the index of a high order vertex on a facet
+         * @param[in] f global index of the facet on the GeoModelMesh
+         * @param[in] component local high order vertex index in the cell
          * @return the const index of the point
          */
         const index_t indice_on_facet(
@@ -988,19 +986,19 @@ namespace RINGMesh {
             const index_t component ) const ;
         /*!
          * Move an added point
-         * @param[in] indice the indice of the high order vertex
+         * @param[in] index the index of the high order vertex
          * @param[in] u the displacement applied on this point
          */
-        void move_point( const index_t indice, const vec3& u ) ;
+        void move_point( const index_t index, const vec3& u ) ;
         /*!
          * Gets the number of high order vertices on a facet
-         * @param[in] f global indice of the facet on the GeoModelMesh
+         * @param[in] f global index of the facet on the GeoModelMesh
          * @return the const number of high order vertices
          */
         const index_t nb_high_order_vertices_per_facet( const index_t f ) const ;
         /*!
          * Gets the number of high order vertices on a cell
-         * @param[in] c indice of the cell on the GeoModelMesh
+         * @param[in] c index of the cell on the GeoModelMesh
          * @return the const number of high order vertices
          */
         const index_t nb_high_order_vertices_per_cell( const index_t c ) const ;
@@ -1008,13 +1006,10 @@ namespace RINGMesh {
     private:
         /*!
          * Initialize the database by computing the new vertices of the mesh.
-         * @param[in] order -1 vertices are added per edges, the edges are divided
-         * in equal parts by these vertices.
-         * @param[in] order the mesh elements order
          */
         void initialize() ;
         /*!
-         * Test wether the vec3 high_order_vertices_ list is initialize. If not, the point
+         * Test whether the vec3 high_order_vertices_ list is initialize. If not, the point
          * list is initialize
          */
         void test_point_list_initialize() ;
