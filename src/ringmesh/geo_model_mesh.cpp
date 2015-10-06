@@ -1834,7 +1834,7 @@ namespace RINGMesh {
         nb_vertices_ = 0 ;
     }
 
-    const index_t GeoModelMeshOrder::nb_total_vertices() const
+    index_t GeoModelMeshOrder::nb_total_vertices() const
     {
         test_and_initialize() ;
         return nb_vertices_ ;
@@ -1842,13 +1842,11 @@ namespace RINGMesh {
 
     const vec3& GeoModelMeshOrder::vertex( const index_t index ) const
     {
-        const_cast< GeoModelMeshOrder* >( this )->test_point_list_initialize() ;
+        const_cast< GeoModelMeshOrder* >( this )->test_point_list_initialized() ;
         return high_order_vertices_[index] ;
     }
 
-    const index_t GeoModelMeshOrder::indice_on_cell(
-        const index_t c,
-        const index_t component ) const
+    index_t GeoModelMeshOrder::indice_on_cell( index_t c, index_t component ) const
     {
         test_and_initialize() ;
         ringmesh_debug_assert( c < gmm_.cells.nb() ) ;
@@ -1858,9 +1856,7 @@ namespace RINGMesh {
         return order_vertices_cell[max_new_points_on_cell_ * c + component] ;
     }
 
-    const index_t GeoModelMeshOrder::indice_on_facet(
-        const index_t f,
-        const index_t component ) const
+    index_t GeoModelMeshOrder::indice_on_facet( index_t f, index_t component ) const
     {
         test_and_initialize() ;
         ringmesh_debug_assert( f < gmm_.facets.nb_facets() ) ;
@@ -1872,14 +1868,14 @@ namespace RINGMesh {
 
     void GeoModelMeshOrder::move_point( const index_t index, const vec3& u )
     {
-        test_point_list_initialize() ;
+        test_point_list_initialized() ;
         for( index_t i = 0; i < 3; i++ ) {
             high_order_vertices_[index][i] += u[i] ;
 
         }
     }
 
-    void GeoModelMeshOrder::test_point_list_initialize()
+    void GeoModelMeshOrder::test_point_list_initialized()
     {
         index_t order = gmm_.get_order() ;
 
@@ -1915,16 +1911,14 @@ namespace RINGMesh {
         }
     }
 
-    const index_t GeoModelMeshOrder::nb_high_order_vertices_per_facet(
-        const index_t f ) const
+    index_t GeoModelMeshOrder::nb_high_order_vertices_per_facet( index_t f ) const
     {
         test_and_initialize() ;
         ringmesh_debug_assert( f < gmm_.facets.nb() ) ;
         return nb_high_order_points_per_facet_type_[gmm_.facets.nb_vertices( f ) - 3] ;
     }
 
-    const index_t GeoModelMeshOrder::nb_high_order_vertices_per_cell(
-        const index_t c ) const
+    index_t GeoModelMeshOrder::nb_high_order_vertices_per_cell( index_t c ) const
     {
         test_and_initialize() ;
         ringmesh_debug_assert( c < gmm_.cells.nb() ) ;
