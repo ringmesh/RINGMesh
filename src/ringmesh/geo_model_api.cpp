@@ -41,22 +41,24 @@
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geometry.h>
+#include <ringmesh/geogram_extension.h>
 #include <ringmesh/tetra_gen.h>
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/progress.h>
 #include <geogram/basic/geometry_nd.h>
+#include <geogram/mesh/mesh_geometry.h>
 
 namespace RINGMesh {
 
-    double size( const GeoModelElement& E )
+    double model_element_size( const GeoModelElement& E )
     {
         double result = 0. ;
 
-        if( !E.has_parent() ) {
+        if( E.nb_children() ) {
             /// If this element has children sum up their sizes
             for( index_t i = 0; i < E.nb_children(); ++i ) {
-                result += size( E.child( i ) ) ;
+                result += model_element_size( E.child( i ) ) ;
             }
             return result ;
         } else {
@@ -90,8 +92,9 @@ namespace RINGMesh {
                 }
                 case GeoModelElement::SURFACE: {
                     const Surface& S = dynamic_cast< const Surface& >( E ) ;
+                    const GEO::Mesh& mesh = S.mesh() ;
                     for( index_t i = 0; i < S.nb_cells(); i++ ) {
-                        result += S.facet_area( i ) ;
+                        result += GEO::Geom::mesh_facet_area( mesh, i ) ;
                     }
                     return result ;
                 }
@@ -112,17 +115,43 @@ namespace RINGMesh {
         }
     }
 
-    vec3 barycenter( const GeoModelElement& E )
+    double model_element_cell_size( const GeoModelElement& E, index_t c )
+    {
+        double result = 0. ;
+
+        switch( E.gme_id().type ) {
+            case GeoModelElement::REGION: {
+                const Region& R = dynamic_cast< const Region& >( E ) ;
+                const GEO::Mesh& mesh = R.mesh() ;
+                return RINGMesh::mesh_cell_volume( mesh, c ) ;
+            }
+            case GeoModelElement::SURFACE: {
+                const Surface& S = dynamic_cast< const Surface& >( E ) ;
+                const GEO::Mesh& mesh = S.mesh() ;
+                return GEO::Geom::mesh_facet_area( mesh, c ) ;
+            }
+            case GeoModelElement::LINE: {
+                const Line& L = dynamic_cast< const Line& >( E ) ;
+                const GEO::Mesh& mesh = L.mesh() ;
+                index_t v0 = mesh.edges.vertex( c, 0 ) ;
+                index_t v1 = mesh.edges.vertex( c, 1 ) ;
+                return GEO::Geom::distance( L.vertex( v0 ), L.vertex( v1 ) ) ;
+            }
+        }
+        return result ;
+    }
+
+    vec3 model_element_center( const GeoModelElement& E )
     {
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = 0 ;
 
-        if( !E.has_parent() ) {
+        if( E.nb_children() ) {
             for( index_t i = 0; i < E.nb_children(); ++i ) {
                 const GeoModelMeshElement& F =
                     dynamic_cast< const GeoModelMeshElement& >( E.child( i ) ) ;
                 nb_vertices += F.nb_vertices() ;
-                result += barycenter( F ) * F.nb_vertices() ;
+                result += model_element_center( F ) * F.nb_vertices() ;
             }
             return result / static_cast< double >( nb_vertices ) ;
         } else {
@@ -133,6 +162,39 @@ namespace RINGMesh {
             }
             return result / static_cast< double >( F.nb_vertices() ) ;
         }
+    }
+
+
+    vec3 model_element_cell_center( const GeoModelElement& E, index_t c )
+    {
+        vec3 result( 0., 0., 0. ) ;
+        index_t nb_vertices = 0 ;
+
+        switch( E.gme_id().type ) {
+            case GeoModelElement::REGION: {
+                const Region& R = dynamic_cast< const Region& >( E ) ;
+                const GEO::Mesh& mesh = R.mesh() ;
+                return RINGMesh::mesh_cell_center( mesh, c ) ;
+            }
+            case GeoModelElement::SURFACE: {
+                const Surface& S = dynamic_cast< const Surface& >( E ) ;
+                const GEO::Mesh& mesh = S.mesh() ;
+                return GEO::Geom::mesh_facet_center( mesh, c ) ;
+            }
+            case GeoModelElement::LINE: {
+                const Line& L = dynamic_cast< const Line& >( E ) ;
+                const GEO::Mesh& mesh = L.mesh() ;
+                index_t v0 = mesh.edges.vertex( c, 0 ) ;
+                index_t v1 = mesh.edges.vertex( c, 1 ) ;
+                return 0.5 * ( L.vertex( v0 ), L.vertex( v1 ) ) ;
+            }
+            case GeoModelElement::CORNER: {
+                const Corner& C = dynamic_cast< const Corner& >( E ) ;
+                return C.vertex() ;
+            }
+        }
+
+        return result ;
     }
 
     void translate( GeoModel& M, const vec3& translation_vector )

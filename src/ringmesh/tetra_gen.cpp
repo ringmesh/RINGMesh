@@ -40,6 +40,7 @@
 
 #include <ringmesh/tetra_gen.h>
 #include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/well.h>
 #include <ringmesh/algorithm.h>
@@ -277,13 +278,13 @@ namespace RINGMesh {
         for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
             const Surface& surface = dynamic_cast< const Surface& >( region.boundary(
                 s ) ) ;
-            vec3 barycenter = surface.facet_barycenter( 0 ) ;
+            vec3 barycenter = model_element_cell_center( surface, 0 ) ;
             vec3 nearest_point ;
             float64 distance ;
             index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
             ringmesh_debug_assert( surface.gme_id().index == attribute[ f ] ) ;
 
-            vec3 ori_normal = surface.facet_normal( 0 ) ;
+            vec3 ori_normal = surface.normal( 0 ) ;
             vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
             if( dot( ori_normal, test_normal ) < 0 ) {
                 flip_surface[ surface.gme_id().index ] = true ;

@@ -55,15 +55,31 @@ namespace RINGMesh {
      *
      * @param[in] E Element to evaluate
      */
-    double size( const GeoModelElement& E ) ;
+    double model_element_size( const GeoModelElement& E ) ;
+    /*!
+     * Compute the size (volume, area, length) of an Element cell (cell, facet, edge)
+     * @param[in] E Element to evaluate
+     * @param[in] c the cell index
+     */
+    double model_element_cell_size( const GeoModelElement& E, index_t c ) ;
 
     /*!
-     * @brief Compute the barycenter of a GeoModelElement
+     * @brief Compute the center of a GeoModelElement
      *
-     * @param[in] E Pointer to the element
-     * @return The coordinates of the barycenter
+     * @param[in] E Element to evaluate
+     * @return The coordinates of the center
      */
-    vec3 barycenter( const GeoModelElement& E ) ;
+    vec3 model_element_center( const GeoModelElement& E ) ;
+    /*!
+     * @brief Compute the center of a GeoModelElement cell (cell, facet, edge)
+     *
+     * @param[in] E Element to evaluate
+     * @param[in] c the cell index
+     * @return The coordinates of the center
+     */
+    vec3 model_element_cell_center( const GeoModelElement& E, index_t c  ) ;
+
+
 
     /*!
     * @brief Translates the boundary model by a vector.
@@ -91,7 +107,7 @@ namespace RINGMesh {
     * @param[in] M GeoModel on which compute the rotation
     * @param[in] origin point in which passes the rotation axis.
     * @param[in] axis vector which defines the rotation axis.
-    * @param[in] theta rotation angle (in radians or degrees).
+    * @param[in] angle rotation angle (in radians or degrees).
     * @param[in] degrees true is \p theta is in degrees, false
     * if in radians.
     */

@@ -712,6 +712,9 @@ namespace RINGMesh {
 
     /*********************************************************************/
 
+    const std::string GeoModelMeshElement::model_vertex_id_att_name = std::string(
+        "model_vertex_id" ) ;
+
     GeoModelMeshElement::~GeoModelMeshElement()
     {
         unbind_attributes() ;
@@ -1073,7 +1076,10 @@ namespace RINGMesh {
         // No zero edge length
         index_t nb_degenerated = 0 ;
         for( index_t e = 0; e < nb_cells(); ++e ) {
-            if( segment_length( e ) < epsilon ) {
+            double l = length(
+                vertex( mesh_.edges.vertex( e, 1 ) )
+                    - vertex( mesh_.edges.vertex( e, 0 ) ) ) ;
+            if( l < epsilon ) {
                 nb_degenerated++ ;
             }
         }
@@ -1120,77 +1126,6 @@ namespace RINGMesh {
             mesh_.edges.create_edge( e, e + 1 ) ;
         }
     }   
-
-    /*!
-     *
-     * @param[in] s Segment index
-     * @return The coordinates of the barycenter of the segment
-     */
-    vec3 Line::segment_barycenter( index_t e ) const
-    {
-        return 0.5*( vertex( mesh_.edges.vertex( e, 0 ) ) +
-                     vertex( mesh_.edges.vertex( e, 1 ) ) ) ;
-    }
-
-
-    /*!
-     *
-     * @param[in] s Segment index
-     * @return The length of the segment
-     */
-    double Line::segment_length( index_t e ) const
-    {
-        return length( vertex( mesh_.edges.vertex( e, 1 ) ) -
-                       vertex( mesh_.edges.vertex( e, 0 ) ) ) ;
-    }
-
-
-    /*!
-     *
-     * @return The length of the Line
-     */
-    double Line::total_length() const
-    {
-        double result = 0 ;
-        for( index_t s = 0; s < nb_cells(); s++ ) {
-            result += segment_length( s ) ;
-        }
-        return result ;
-    }
-
-
-    /*!
-     * @brief Returns true if the Line has exactly the given vertices
-     *
-     * @param[in] rhs_vertices Vertices to compare to
-     */
-    bool Line::equal( const std::vector< vec3 >& rhs_vertices ) const
-    {
-        if( nb_vertices() != rhs_vertices.size() ) {
-            return false ;
-        }
-
-        bool equal = true ;
-        for( index_t i = 0; i < nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != mesh_.vertices.point( i ) ) {
-                equal = false ;
-                break ;
-            }
-        }
-        if( equal ) return true ;
-
-        equal = true ;
-        for( index_t i = 0; i < nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != mesh_.vertices.point( nb_vertices()-i-1 ) ) {
-                equal = false ;
-                break ;
-            }
-        }
-        if( equal ) return true ;
-
-        return false ;
-    }
-
 
     /********************************************************************/
     
@@ -1762,75 +1697,17 @@ namespace RINGMesh {
     }
 
 
-    /*!
-     * @brief Compute the barycenter of a facet
-     * @param[in] f Facet index in the surface
-     * @return The coordinates of the facet barycenter
-     */
-    vec3 Surface::facet_barycenter( index_t f ) const
-    {
-        vec3 barycenter( 0., 0., 0. ) ;
-        for( index_t i = 0; i < nb_vertices_in_facet( f ); i++ ) {
-            barycenter += vertex( f, i ) ;
-        }
-        return barycenter / nb_vertices_in_facet( f ) ;
-    }
+
 
 
     /*!
-     * @brief Compute the area of a facet
-     * @param[in] f Facet index in the surface
-     * @return The area of the facet
-     */
-    double Surface::facet_area( index_t f ) const
-    {
-        double result = 0 ;
-        for( index_t i = 1; i + 1 < nb_vertices_in_facet( f ); i++ ) {
-            result += GEO::Geom::triangle_area(
-                vertex( f, 0 ), vertex( f, i ), vertex( f, i + 1 ) ) ;
-        }
-        return result ;
-    }
-
-
-    /*!
-     *
+     * Get the facet normal
      * @param[in] f Facet index
-     * @return Normal to the triangle made by the first 3 vertices
-     * of the facet
-     *
-     * @warning If the facet is not planar calling this has no meaning
+     * @return Normal to the facet
      */
-    vec3 Surface::facet_normal( index_t f ) const
+    vec3 Surface::normal( index_t f ) const
     {
-        const vec3& p0 = vertex( f, 0 )  ;
-        const vec3& p1 = vertex( f, 1 )  ;
-        const vec3& p2 = vertex( f, 2 )  ;
-        vec3 c0 = cross( p0 - p2, p1 - p2 ) ;
-        return normalize( c0 ) ;
-    }
-
-
-    /*!
-     * @brief Compute the normal to the surface vertices
-     * @details The normal at a point is computed as the mean of the normal
-     * to its adjacent facets.
-     *
-     * @param[out] normals Coordinates of the normal vectors to the vertices
-     */
-    void Surface::vertex_normals( std::vector< vec3 >& normals ) const
-    {
-        normals.resize( nb_vertices() ) ;
-        for( index_t f = 0; f < nb_cells(); f++ ) {
-            vec3 normal = facet_normal( f ) ;
-            for( index_t p = 0; p < nb_vertices_in_facet( f ); p++ ) {
-                index_t id = surf_vertex_id( f, p ) ;
-                normals[ id ] += normal ;
-            }
-        }
-        for( index_t p = 0; p < nb_vertices(); p++ ) {
-            normals[ p ] = normalize( normals[ p ] ) ;
-        }
+        return normalize( GEO::Geom::mesh_facet_normal( mesh_, f ) ) ;
     }
 
 
@@ -1855,27 +1732,6 @@ namespace RINGMesh {
         }
         return result ;
     }
-
-
-    vec3 Surface::edge_barycenter( index_t c ) const
-    {
-        vec3 result( 0, 0, 0 ) ;
-
-        // Get the facet index
-        index_t f = NO_ID ;
-        for( ; f < mesh_.facets.nb(); f++ ) {
-            if( mesh_.facets.corners_begin(f ) < c  ) {
-                break ;
-            }
-        }
-        ringmesh_debug_assert( f != NO_ID ) ;
-        index_t v = c - facet_begin( f ) ;
-        result += vertex( f, v ) ;
-        result += vertex( f, next_in_facet( f, v ) ) ;
-        return .5 * result ;
-    }
-
-
     
     bool is_corner_to_duplicate( const GeoModel& BM, index_t corner_id )
     {
@@ -1907,40 +1763,38 @@ namespace RINGMesh {
 
 
     /*!
-     * Find duplicate vertex or create it
-     */
-    index_t find_or_create_duplicate_vertex(
-        Surface& S,
-        index_t model_vertex_id,
-        index_t surface_vertex_id
-        )
-    {
-        GeoModel& M = const_cast< GeoModel& >(S.model() ) ;
+      * Find duplicate vertex or create it
+      */
+     index_t Surface::find_or_create_duplicate_vertex(
+         index_t model_vertex_id,
+         index_t surface_vertex_id )
+     {
+         GeoModel& M = const_cast< GeoModel& >( model() ) ;
 
-        const std::vector< VBME >& vbme = 
-            M.mesh.vertices.gme_vertices( model_vertex_id ) ;
-        index_t duplicate = NO_ID ;
-        for( index_t i = 0; i < vbme.size(); ++i ) {
-            if( vbme[ i ].gme_id == S.gme_id() ) {
-                if( vbme[ i ].v_id != surface_vertex_id ) {
-                    duplicate = vbme[ i ].v_id ;
-                }
-            }
-        }
-        if( duplicate == NO_ID ) {
-            // Duplicate the vertex in the surface
-            duplicate = S.mesh().vertices.create_vertex(
-                M.mesh.vertices.vertex( model_vertex_id).data() ) ;
-            
-            // Set its model vertex index
-            S.set_model_vertex_id( duplicate, model_vertex_id ) ;
+         const std::vector< VBME >& vbme = M.mesh.vertices.gme_vertices(
+             model_vertex_id ) ;
+         index_t duplicate = NO_ID ;
+         for( index_t i = 0; i < vbme.size(); ++i ) {
+             if( vbme[i].gme_id == gme_id() ) {
+                 if( vbme[i].v_id != surface_vertex_id ) {
+                     duplicate = vbme[i].v_id ;
+                 }
+             }
+         }
+         if( duplicate == NO_ID ) {
+             // Duplicate the vertex in the surface
+             duplicate = mesh().vertices.create_vertex(
+                 M.mesh.vertices.vertex( model_vertex_id ).data() ) ;
 
-            // Add the mapping from in the model vertices. Should we do this one ?
-            M.mesh.vertices.add_to_bme(
-                model_vertex_id, VBME( S.gme_id(), duplicate ) ) ;
-        }
-        return duplicate ;
-    }
+             // Set its model vertex index
+             set_model_vertex_id( duplicate, model_vertex_id ) ;
+
+             // Add the mapping from in the model vertices. Should we do this one ?
+             M.mesh.vertices.add_to_bme( model_vertex_id,
+                 VBME( gme_id(), duplicate ) ) ;
+         }
+         return duplicate ;
+     }
 
     /*!
      * Find a facet and its edge index that are colocalised with an edge
@@ -2052,8 +1906,8 @@ namespace RINGMesh {
             ringmesh_debug_assert( v2 != Surface::NO_ID ) ;
 
             // Virtual cut - set adjacencies to NO_ADJACENT
-            set_adjacent( f, v, Surface::NO_ADJACENT ) ;
-            set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
+            mesh_.facets.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
+            mesh_.facets.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
         }
 
 
@@ -2097,7 +1951,7 @@ namespace RINGMesh {
         index_t s_new_corner = NO_ID ;
         // Create this new point in the surface and set mapping with point in the BM
         if( m_corner != NO_ID ) {
-            s_new_corner = find_or_create_duplicate_vertex( *this, m_corner, s_corner ) ;            
+            s_new_corner = find_or_create_duplicate_vertex( m_corner, s_corner ) ;
         }
 
         while( model_vertex_id( id1 ) != model().corner(c1).model_vertex_id() ) {
@@ -2124,7 +1978,7 @@ namespace RINGMesh {
             facets_around_vertex( id1, facets_around_id1, false, f ) ;
 
             index_t new_id1 = find_or_create_duplicate_vertex(
-                *this, model_vertex_id( id1 ), id1 ) ;
+                model_vertex_id( id1 ), id1 ) ;
             
             // Update vertex index in facets 
             update_facet_corner( *this, facets_around_id1, id1, new_id1 ) ;
@@ -2148,8 +2002,6 @@ namespace RINGMesh {
             const_cast< GeoModel&>( model() ).mesh.vertices.clear() ;
         }
     }
-
-
 
 
     /********************************************************************/
