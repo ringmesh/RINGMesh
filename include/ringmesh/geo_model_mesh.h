@@ -598,7 +598,21 @@ namespace RINGMesh {
          * Get the number of facets in the cell
          * @param[in] c the cell index
          */
+        index_t nb_edges( index_t c ) const ;
+        /*!
+         * Get the number of edges in the cell
+         * @param[in] c the cell index
+         */
         index_t nb_facets( index_t c ) const ;
+        /*!
+         * \brief Gets a cell vertex by local edge index and local
+         *  vertex index in the edge
+         * \param[in] c the cell, in 0..nb()-1
+         * \param[in] le the local edge index, in 0..nb_edges(c)-1
+         * \param[in] lv the local index in the edge, one of 0,1
+         * \return vertex \p lv of edge \p le in cell \p c
+         */
+        index_t edge_vertex(index_t c, index_t le, index_t lv) const ;
         /*!
          * Get the adjacent cell index in the GeoModelMesh
          * @param[in] c the cell index
@@ -910,6 +924,11 @@ namespace RINGMesh {
         GEO::Attribute< index_t > facet_id_ ;
     } ;
 
+    /*!
+     * Optional storage of new vertices when using meshes with order > 1
+     * This is especially useful for simulations based on the MacroMesh (e.g. FEM)
+     * It is possible to introduce new points on the cell edges.
+     */
     class RINGMESH_API GeoModelMeshOrder {
     ringmesh_disable_copy( GeoModelMeshOrder ) ;
         friend class GeoModelMesh ;
@@ -917,6 +936,10 @@ namespace RINGMesh {
     public:
         GeoModelMeshOrder( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
 
+        /*!
+         * Test if the mesh high orders are initialized
+         */
+        bool is_initialized() const ;
         /*!
          * Test if the order need to be initialized,
          * if so initialize them.
@@ -942,29 +965,25 @@ namespace RINGMesh {
          * @param[in] id an id of the new created point for order > 2
          * @return the vec3 matching with the id
          */
-        const vec3 point( const index_t id ) const ;
+        const vec3 vertex( const index_t id ) const ;
         /*!
          * Gets the id of a high order vertex on the cell edges
-         * @param[in] m id of the mesh where the cell is
-         * @param[in] c id of the cell on the mesh
+         * @param[in] c globa; id of the cell on the GeoModelMesh
          * @param[in] component point number in the cell
          * Ids are ordered by edges on the attribute vector of Geogram
          * @return the const index of the point
          */
         const index_t get_id_on_cell(
-            const index_t m,
             const index_t c,
             const index_t component ) const ;
         /*!
          * Gets the id of a high order vertex on a facet
-         * @param[in] s id of the surface
-         * @param[in] f id of the facet on the surface
+         * @param[in] f global id of the facet
          * @param[in] component point number in the cell
          * Ids are ordered by edges on the attribute vector of Geogram
          * @return the const index of the point
          */
         const index_t get_id_on_facet(
-            const index_t s,
             const index_t f,
             const index_t component ) const ;
         /*!
@@ -975,21 +994,17 @@ namespace RINGMesh {
         void move_point( const index_t id, const vec3& u ) ;
         /*!
          * Gets the number of high order vertices on a facet
-         * @param[in] s id of the surface
-         * @param[in] f id of the facet on the surface
+         * @param[in] f global id of the facet
          * @return the const number of high order vertices
          */
         const index_t nb_high_order_vertices_per_facet(
-            const index_t s,
             const index_t f ) const ;
         /*!
          * Gets the number of high order vertices on a cell
-         * @param[in] m id of the mesh
-         * @param[in] c id of the cell on the mesh
+         * @param[in] c id of the cell on the GeoModelMesh
          * @return the const number of high order vertices
          */
         const index_t nb_high_order_vertices_per_cell(
-            const index_t m,
             const index_t c ) const ;
 
     private:
@@ -1000,6 +1015,31 @@ namespace RINGMesh {
          * @param[in] order the mesh elements order
          */
         void initialize() ;
+        /*!
+         * Test wether the vec3 high_order_vertices_ list is initialize. If not, the point
+         * list is initialize
+         */
+        void test_point_list_initialize() ;
+
+    private:
+        /// Attached GeoModelMesh owning the vertices
+        GeoModelMesh& gmm_ ;
+        /// Attached GeoModel
+        const GeoModel& gm_ ;
+        /// Attached Mesh
+        GEO::Mesh& mesh_ ;
+        /// Total number of vertices + new high order vertices on cell edges
+        index_t nb_vertices_ ;
+        /// New vertices
+        std::vector< vec3 > high_order_vertices_ ;
+        /// The max number of high order vertices a cell could have
+        index_t max_new_points_on_cell_ ;
+        /// The max number of high order vertices a facet could have
+        index_t max_new_points_on_facet_ ;
+        /// Number of high order vertices function of the cell type
+        index_t nb_high_order_points_per_cell_type_[4] ;
+        /// Number of high order vertices function of the facet type
+        index_t nb_high_order_points_per_facet_type_[2] ;
 
     } ;
 
@@ -1078,9 +1118,30 @@ namespace RINGMesh {
          * that are not anymore in any GeoModelElement
          */
         void erase_invalid_vertices() ;
+        /*!
+         * Gets the mesh elements order
+         * @return the const order
+         */
+        const index_t get_order() const
+        {
+            return order_ ;
+        }
+        /*!
+         * Change the order of the GeoModelMesh
+         * @param[in] order the new GeoModelMesh order
+         *
+         */
+        void set_order( const index_t order ) const
+        {
+            GeoModelMesh* not_const = const_cast< GeoModelMesh* >( this ) ;
+            if( order != order_ ) {
+                not_const->order.clear() ;
+            }
+            not_const->order_ = order ;
+        }
 
     private:
-        /// Attached GeoMode
+        /// Attached GeoModel
         const GeoModel& gm_ ;
         /*!
          * @brief Mesh storing the vertices, edges, facets and cells
@@ -1091,13 +1152,15 @@ namespace RINGMesh {
         GEO::Mesh* mesh_ ;
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
+        /// Order of the GeoModelMesh
+        index_t order_ ;
 
     public:
         GeoModelMeshVertices vertices ;
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
         GeoModelMeshCells cells ;
-//        GeoModelMeshOrder order ;
+        GeoModelMeshOrder order ;
 
     } ;
 
