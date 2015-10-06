@@ -79,8 +79,6 @@ namespace RINGMesh {
      */
     vec3 model_element_cell_center( const GeoModelElement& E, index_t c  ) ;
 
-
-
     /*!
     * @brief Translates the boundary model by a vector.
     *
@@ -89,8 +87,6 @@ namespace RINGMesh {
     *
     * @param[in] M GeoModel on which compute the translation
     * @param[in] translation_vector vector of translation.
-    *
-    * @todo Review: Add documentation - Replace the return value by a gme_t [AB]
     */
     void translate( GeoModel& M, const vec3& ) ;
 
@@ -99,7 +95,7 @@ namespace RINGMesh {
     *
     * Applies a rotation about the line defined by the point
     * \p origin and the vector \p axis. The rotation angle is
-    * \p theta. If \p degrees is true the angle is in degrees,
+    * \p angle. If \p degrees is true the angle is in degrees,
     * else in radians. All the vertices of the boundary model
     * undergo the rotation (each mesh inside the boundary model:
     * corners, lines and surfaces).
@@ -128,7 +124,6 @@ namespace RINGMesh {
      * @param[in] add_steiner_points if true, the mesher will add some points inside the region
      * @param[in] internal_vertices points inside the domain to constrain during the
      * mesh generation. There is one vector per mesh.
-     * to improve the mesh quality
      */
     void tetrahedralize(
         GeoModel& M,
@@ -136,7 +131,6 @@ namespace RINGMesh {
         index_t region_id = ALL_REGIONS,
         bool add_steiner_points = true,
         std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
-
 
 }
 
