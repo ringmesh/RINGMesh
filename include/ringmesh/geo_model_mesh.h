@@ -978,7 +978,7 @@ namespace RINGMesh {
             const index_t component ) const ;
         /*!
          * Gets the id of a high order vertex on a facet
-         * @param[in] f global id of the facet
+         * @param[in] f global id of the facet on the GeoModelMesh
          * @param[in] component point number in the cell
          * Ids are ordered by edges on the attribute vector of Geogram
          * @return the const index of the point
@@ -994,7 +994,7 @@ namespace RINGMesh {
         void move_point( const index_t id, const vec3& u ) ;
         /*!
          * Gets the number of high order vertices on a facet
-         * @param[in] f global id of the facet
+         * @param[in] f global id of the facet on the GeoModelMesh
          * @return the const number of high order vertices
          */
         const index_t nb_high_order_vertices_per_facet(
