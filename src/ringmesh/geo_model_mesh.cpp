@@ -203,9 +203,11 @@ namespace RINGMesh {
                 if( E.nb_vertices() == 0 ) continue ;
                 GEO::Memory::copy( mesh_.vertices.point_ptr( index ),
                     E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
+                GEO::Attribute< index_t > att( gmm_.vertex_attribute_manager(),
+                    GeoModelMeshElement::model_vertex_id_att_name ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     // Global index stored at BME level
-                    E.set_model_vertex_id( v, index ) ;
+                    att[v] = index ;
                     // Index in the BME stored at global level
                     gme_vertices_[index].push_back( VertexInGME( E.gme_id(), v ) ) ;
                     // Global vertex index increment
@@ -232,9 +234,9 @@ namespace RINGMesh {
             RINGMESH_PARALLEL_LOOP_DYNAMIC
             for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
                 GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
-                for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                    E.set_model_vertex_id( v, NO_ID ) ;
-                }
+                GEO::Attribute< index_t > att( gmm_.vertex_attribute_manager(),
+                    GeoModelMeshElement::model_vertex_id_att_name ) ;
+                att.fill( NO_ID ) ;
             }
         }
 //        GEO::Process::release_spinlock( lock_ ) ;
@@ -463,6 +465,8 @@ namespace RINGMesh {
 
             for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
                 GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
+                GEO::Attribute< index_t > att( gmm_.vertex_attribute_manager(),
+                    GeoModelMeshElement::model_vertex_id_att_name ) ;
 
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     index_t old_id = E.model_vertex_id( v ) ;
@@ -470,7 +474,7 @@ namespace RINGMesh {
                     // If new_id is NO_ID the vertex should be removed afterwards
                     // from the BMME
                     ringmesh_debug_assert( new_id != NO_ID ) ;
-                    E.set_model_vertex_id( v, new_id ) ;
+                    att[v] = new_id ;
 
                     /*!
                      * @todo Review: I don't understand this for and what it does...

@@ -450,6 +450,39 @@ namespace {
     }
 
     /*!
+     * @brief Returns true if the Line has exactly the given vertices
+     *
+     * @param[in] L the line to compare to
+     * @param[in] rhs_vertices Vertices to compare to
+     */
+    bool line_equal( const Line& L, const std::vector< vec3 >& rhs_vertices )
+    {
+        if( L.nb_vertices() != rhs_vertices.size() ) {
+            return false ;
+        }
+
+        bool equal = true ;
+        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+            if( rhs_vertices[i] != L.vertex( i ) ) {
+                equal = false ;
+                break ;
+            }
+        }
+        if( equal ) return true ;
+
+        equal = true ;
+        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+            if( rhs_vertices[i] != L.vertex( L.nb_vertices()-i-1 ) ) {
+                equal = false ;
+                break ;
+            }
+        }
+        if( equal ) return true ;
+
+        return false ;
+    }
+
+    /*!
      * @brief Find or create a line
      *
      * @param[in] BM model to consider
@@ -462,7 +495,7 @@ namespace {
     {
         gme_t result ;
         for( index_t i = 0; i < BMB.model().nb_lines(); ++i ) {
-            if( BMB.model().line( i ).equal( vertices ) ) {
+            if( line_equal( BMB.model().line( i ), vertices ) ) {
                 result = BMB.model().line( i ).gme_id() ;
             }
         }
@@ -1747,8 +1780,7 @@ namespace RINGMesh {
                     }
 
                     // Set the line points
-                    Line& L = dynamic_cast< Line& >( element( cur_element ) ) ;
-                    L.set_vertices( vertices ) ;
+                    set_line( cur_element, vertices ) ;
 
                     // Attributes on line vertices
 //                    in.get_line() ;
@@ -1889,8 +1921,7 @@ namespace RINGMesh {
 //                        serialize_read_attributes( in, nb_v + 1, f, facet_attribs ) ;
                     }
 
-                    Surface& S = dynamic_cast< Surface& >( element( cur_element ) ) ;
-                    S.set_geometry( vertices, corners, facet_ptr ) ;
+                    set_surface_geometry( cur_element, vertices, corners, facet_ptr ) ;
                     set_surface_adjacencies( cur_element ) ;
                 }
             }
@@ -2457,7 +2488,7 @@ namespace RINGMesh {
                 double max_volume = -1. ;
                 index_t universe_id = NO_ID ;
                 for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-                    double cur_volume = size( model_.region( i ) ) ;
+                    double cur_volume = model_element_size( model_.region( i ) ) ;
                     if( cur_volume > max_volume ) {
                         max_volume = cur_volume ;
                         universe_id = i ;

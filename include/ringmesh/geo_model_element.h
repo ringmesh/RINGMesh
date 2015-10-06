@@ -488,14 +488,6 @@ namespace RINGMesh {
     // For me this is the best place ! So anybody can use RINGMesh::BME!
     typedef GeoModelElement GME ;
 
-    /*!
-     * @brief Name of the attribute storing the index of a vertex in the model
-     *
-     * @note It should be in GeoModelMeshElement class
-     *       but then there are linking errors in code that depends on it ?? (JP)
-     */
-    const static std::string model_vertex_id_att_name = std::string(
-        "model_vertex_id" ) ;
 
     /*!
      * @brief Abstract base class for GeoModelElement 
@@ -507,6 +499,12 @@ namespace RINGMesh {
     friend class GeoModelEditor ;
     friend class GeoModelBuilder ;
     public:
+
+        /*!
+         * @brief Name of the attribute storing the index of a vertex in the model
+         */
+        const static std::string model_vertex_id_att_name ;
+
         GeoModelMeshElement(
             GeoModel* model = NULL,
             TYPE element_type = NO_TYPE,
@@ -553,7 +551,6 @@ namespace RINGMesh {
         }
 
         index_t model_vertex_id( index_t v = 0 ) const ;
-        void set_model_vertex_id( index_t v, index_t model_id ) ;
         index_t local_id( index_t model_vertex_id ) const ;
 
         const vec3& vertex( index_t v = 0 ) const ;
@@ -563,12 +560,15 @@ namespace RINGMesh {
          * \name Attribute management
          * @{
          */
-        virtual GEO::AttributesManager& vertex_attribute_manager() const
+        GEO::AttributesManager& vertex_attribute_manager() const
         {
             return mesh_.vertices.attributes() ;
         }
-
-        virtual GEO::AttributesManager& cell_attribute_manager() const
+        GEO::AttributesManager& facet_attribute_manager() const
+        {
+            return mesh_.facets.attributes() ;
+        }
+        GEO::AttributesManager& cell_attribute_manager() const
         {
             return mesh_.facets.attributes() ;
         }
@@ -580,7 +580,7 @@ namespace RINGMesh {
 
         /*!  
          * @brief Open-bar access to the mesh of the element
-         * @detail ONLY for internal use. 
+         * @details ONLY for internal use.
          * @warning DO NOT directly call this function to modify the facets, edges,
          * or vertices of the element.
          */
@@ -613,6 +613,8 @@ namespace RINGMesh {
             const std::vector< index_t >& model_vertices,
             bool clear_mesh = false ) ;
 
+        void set_model_vertex_id( index_t v, index_t model_id ) ;
+
     protected:
         /// Mesh of the element
         GEO::Mesh mesh_ ;
@@ -633,6 +635,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Corner: public GeoModelMeshElement {
         friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
     public:
         Corner( GeoModel* model = nil, index_t id = NO_ID, const vec3& vertex =
             vec3() )
@@ -645,6 +648,9 @@ namespace RINGMesh {
         {
         }
 
+    protected:
+        virtual bool is_mesh_valid() const ;
+
         void set_vertex( const vec3& point, bool update_model )
         {
             GeoModelMeshElement::set_vertex( 0, point, update_model ) ;
@@ -654,14 +660,6 @@ namespace RINGMesh {
         {
             GeoModelMeshElement::set_vertex( 0, model_point_id ) ;
         }
-
-        void set_model_vertex_id( index_t model_id )
-        {
-            GeoModelMeshElement::set_model_vertex_id( 0, model_id ) ;
-        }
-
-    protected:
-        bool is_mesh_valid() const ;
     } ;
 
     /*!
@@ -672,20 +670,13 @@ namespace RINGMesh {
      */
     class RINGMESH_API Line: public GeoModelMeshElement {
         friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
     public:
         Line( GeoModel* model = nil, index_t id = NO_ID ) ;
 
         ~Line()
         {
         }
-
-        void set_vertices(
-            const std::vector< vec3 >& points,
-            bool clear_mesh = false ) ;
-
-        void set_vertices(
-            const std::vector< index_t >& model_vertices,
-            bool clear_mesh = false ) ;
 
         /*!
          * @brief A Line is closed if its two extremities are identitical 
@@ -697,15 +688,17 @@ namespace RINGMesh {
                 && ( boundaries_[0] == boundaries_[1] ) ;
         }
 
-        bool equal( const std::vector< vec3 >& rhs_vertices ) const ;
+    private:
+        virtual bool is_mesh_valid() const ;
 
-        /// \todo Move these in a API. Why is that here ?
-        vec3 segment_barycenter( index_t e ) const ;
-        double segment_length( index_t e ) const ;
-        double total_length() const ;
+        virtual void set_vertices(
+            const std::vector< vec3 >& points,
+            bool clear_mesh = false ) ;
 
-    protected:
-        bool is_mesh_valid() const ;
+        virtual void set_vertices(
+            const std::vector< index_t >& model_vertices,
+            bool clear_mesh = false ) ;
+
     } ;
 
     class RINGMESH_API SurfaceTools {
@@ -730,6 +723,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Surface: public GeoModelMeshElement {
         friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
     public:
         const static index_t NO_ADJACENT = index_t( -1 ) ;
 
@@ -877,12 +871,8 @@ namespace RINGMesh {
          * \name Geometrical request on facets
          * @{
          */
-        vec3 facet_barycenter( index_t f ) const ;
-        double facet_area( index_t f ) const ;
-        vec3 facet_normal( index_t f ) const ;
-        void vertex_normals( std::vector< vec3 >& normals ) const ;
+        vec3 normal( index_t f ) const ;
         index_t closest_vertex_in_facet( index_t f, const vec3& vertex ) const ;
-        vec3 edge_barycenter( index_t c ) const ;
 
         /*! @}
          * \name Adjacencies request
@@ -934,14 +924,17 @@ namespace RINGMesh {
             index_t& next_f,
             index_t& next_e ) const ;
 
-        /*! @}
-         * \name Modifiers
-         * @{
-         */
-        void set_adjacent( index_t f, index_t e, index_t adjacent )
-        {
-            mesh_.facets.set_adjacent( f, e, adjacent ) ;
-        }
+    public:
+        SurfaceTools tools ;
+
+    private:
+        virtual bool is_mesh_valid() const ;
+        
+	    void cut_by_line( const Line& L ) ;
+  
+        index_t find_or_create_duplicate_vertex(
+            index_t model_vertex_id,
+            index_t surface_vertex_id ) ;
 
         void set_geometry(
             const std::vector< vec3 >& vertices,
@@ -965,15 +958,6 @@ namespace RINGMesh {
             }
         }
 
-        void cut_by_line( const Line& L ) ;
-
-        /*! @}
-         */
-    public:
-        SurfaceTools tools ;
-
-    protected:
-        bool is_mesh_valid() const ;
     } ;
 
     /*!
@@ -984,6 +968,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Region: public GeoModelMeshElement {
         friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
     public:
         Region( GeoModel* model = nil, index_t id = NO_ID )
             : GeoModelMeshElement( model, REGION, id )
@@ -1015,7 +1000,7 @@ namespace RINGMesh {
          *     }
          */
 
-    protected:
+    private:
         virtual void copy_macro_topology(
             const GeoModelElement& rhs,
             GeoModel& model )
@@ -1024,7 +1009,7 @@ namespace RINGMesh {
             sides_ = dynamic_cast< const Region& >( rhs ).sides_ ;
         }
 
-        bool is_mesh_valid() const ;
+        virtual bool is_mesh_valid() const ;
 
         void set_side( index_t i, bool value )
         {
