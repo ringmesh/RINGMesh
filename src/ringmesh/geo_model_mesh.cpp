@@ -221,7 +221,7 @@ namespace RINGMesh {
         gme_vertices_.clear() ;
         clear_kdtree() ;
 
-        // Clear the model vertex id information
+        // Clear the model vertex index information
         // for the Corner - Line - Surface - REGION
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
@@ -1751,7 +1751,6 @@ namespace RINGMesh {
 
             /// Adding new indices on cells edges
             for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-
                 for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
                     std::vector< vec3 > new_points_in_edge ;
                     vec3 node0 = gmm_.vertices.vertex(
@@ -1841,10 +1840,10 @@ namespace RINGMesh {
         return nb_vertices_ ;
     }
 
-    const vec3& GeoModelMeshOrder::vertex( const index_t indice ) const
+    const vec3& GeoModelMeshOrder::vertex( const index_t index ) const
     {
         const_cast< GeoModelMeshOrder* >( this )->test_point_list_initialize() ;
-        return high_order_vertices_[indice] ;
+        return high_order_vertices_[index] ;
     }
 
     const index_t GeoModelMeshOrder::indice_on_cell(
@@ -1871,11 +1870,11 @@ namespace RINGMesh {
         return order_vertices_facet[max_new_points_on_cell_ * f + component] ;
     }
 
-    void GeoModelMeshOrder::move_point( const index_t indice, const vec3& u )
+    void GeoModelMeshOrder::move_point( const index_t index, const vec3& u )
     {
         test_point_list_initialize() ;
         for( index_t i = 0; i < 3; i++ ) {
-            high_order_vertices_[indice][i] += u[i] ;
+            high_order_vertices_[index][i] += u[i] ;
 
         }
     }
