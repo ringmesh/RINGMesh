@@ -38,7 +38,6 @@
  *     FRANCE
  */
 
-
 #ifndef __RINGMESH_GEO_MODEL_MESH__
 #define __RINGMESH_GEO_MODEL_MESH__
 
@@ -54,9 +53,8 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-
     class RINGMESH_API GeoModelMeshVertices {
-        ringmesh_disable_copy( GeoModelMeshVertices ) ;
+    ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
     public:
         /*!
@@ -223,7 +221,6 @@ namespace RINGMesh {
         /// Attached Mesh
         GEO::Mesh& mesh_ ;
 
-
         /*!
          * Vertices in GeoModelElements corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
@@ -235,12 +232,12 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
-        ringmesh_disable_copy( GeoModelMeshFacets ) ;
+    ringmesh_disable_copy( GeoModelMeshFacets ) ;
         friend class GeoModelMesh ;
     public:
         enum FacetType {
             TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
-        };
+        } ;
 
     public:
         GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
@@ -452,7 +449,7 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshEdges {
-        ringmesh_disable_copy( GeoModelMeshEdges ) ;
+    ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
         GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
         ~GeoModelMeshEdges() ;
@@ -722,7 +719,6 @@ namespace RINGMesh {
          */
         index_t prism( index_t r, index_t p ) const ;
 
-
         /*!
          * Get the number of pyramids in the GeoModelMesh
          * @return the number of pyramids
@@ -782,11 +778,8 @@ namespace RINGMesh {
          * true = side of the facet normal, false = the other side
          * @return true is the cell facet is on a surface
          */
-        bool is_cell_facet_on_surface(
-            index_t c,
-            index_t f,
-            index_t& facet = dummy_index_t,
-            bool& side = dummy_bool ) const ;
+        bool is_cell_facet_on_surface( index_t c, index_t f, index_t& facet =
+            dummy_index_t, bool& side = dummy_bool ) const ;
 
         /*!
          * Get the center of the given cell
@@ -918,13 +911,100 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
-        ringmesh_disable_copy( GeoModelMeshOrder ) ;
+    ringmesh_disable_copy( GeoModelMeshOrder ) ;
+        friend class GeoModelMesh ;
 
+    public:
+        GeoModelMeshOrder( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+
+        /*!
+         * Test if the order need to be initialized,
+         * if so initialize them.
+         */
+        void test_and_initialize() const ;
+        /*!
+         * Clear the MacroMeshOrder database
+         */
+        void clear() ;
+        /*!
+         * Gets the mesh total number of vertices. It is the number of unique nodes
+         * on the mesh plus the high order vertices on the elements edges
+         * @return the const number of vertices
+         */
+        const index_t nb_total_vertices() const ;
+        /*!
+         * Gets the mesh number of  high order vertices.
+         * @return the const number of high order vertices
+         */
+        const index_t nb_vertices() ;
+        /*!
+         * Gets the vec3 of a high order vertex
+         * @param[in] id an id of the new created point for order > 2
+         * @return the vec3 matching with the id
+         */
+        const vec3 point( const index_t id ) const ;
+        /*!
+         * Gets the id of a high order vertex on the cell edges
+         * @param[in] m id of the mesh where the cell is
+         * @param[in] c id of the cell on the mesh
+         * @param[in] component point number in the cell
+         * Ids are ordered by edges on the attribute vector of Geogram
+         * @return the const index of the point
+         */
+        const index_t get_id_on_cell(
+            const index_t m,
+            const index_t c,
+            const index_t component ) const ;
+        /*!
+         * Gets the id of a high order vertex on a facet
+         * @param[in] s id of the surface
+         * @param[in] f id of the facet on the surface
+         * @param[in] component point number in the cell
+         * Ids are ordered by edges on the attribute vector of Geogram
+         * @return the const index of the point
+         */
+        const index_t get_id_on_facet(
+            const index_t s,
+            const index_t f,
+            const index_t component ) const ;
+        /*!
+         * Move a added point
+         * @param[in] id the id of the high order vertex
+         * @param[in] u the displacement applied on this point
+         */
+        void move_point( const index_t id, const vec3& u ) ;
+        /*!
+         * Gets the number of high order vertices on a facet
+         * @param[in] s id of the surface
+         * @param[in] f id of the facet on the surface
+         * @return the const number of high order vertices
+         */
+        const index_t nb_high_order_vertices_per_facet(
+            const index_t s,
+            const index_t f ) const ;
+        /*!
+         * Gets the number of high order vertices on a cell
+         * @param[in] m id of the mesh
+         * @param[in] c id of the cell on the mesh
+         * @return the const number of high order vertices
+         */
+        const index_t nb_high_order_vertices_per_cell(
+            const index_t m,
+            const index_t c ) const ;
+
+    private:
+        /*!
+         * Initialize the database by computing the new vertices of the mesh.
+         * @param[in] order -1 vertices are added per edges, the edges are divided
+         * in equal parts by these vertices.
+         * @param[in] order the mesh elements order
+         */
+        void initialize() ;
 
     } ;
 
     class RINGMESH_API GeoModelMesh {
-        ringmesh_disable_copy( GeoModelMesh ) ;
+    ringmesh_disable_copy( GeoModelMesh ) ;
     public:
         GeoModelMesh( const GeoModel& gm ) ;
         ~GeoModelMesh() ;
@@ -1020,8 +1100,6 @@ namespace RINGMesh {
 //        GeoModelMeshOrder order ;
 
     } ;
-
-
 
 }
 
