@@ -76,34 +76,6 @@ namespace RINGMesh {
         editor.copy_meshes( from ) ;
     }
 
-
-    /*!
-     * @brief Copy macro information from a model
-     * @details Copy the all the model elements and their relationship ignoring their geometry
-     *
-     * @param[in] from Model to copy the information from
-     */
-    void GeoModel::copy_macro_topology( const GeoModel& from )
-    {
-        GeoModelEditor editor( *this ) ;
-        editor.copy_macro_topology( from ) ;
-    }
-
-    /*!
-     * @brief Copy meshes from a model
-     * @details Copy the all the element meshes
-     *
-     * @param[in] from Model to copy the meshes from
-     *
-     * @pre The two models must have the same number of elements
-     */
-    void GeoModel::copy_meshes( const GeoModel& from )
-    {
-        GeoModelEditor editor( *this ) ;
-        editor.copy_meshes( from ) ;
-    }  
-
-  
     /*!
      * Associates a WellGroup to the GeoModel
      * @param[in] wells the WellGroup

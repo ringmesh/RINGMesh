@@ -222,9 +222,6 @@ namespace RINGMesh {
         }
 
     private:
-     
-        void copy_macro_topology( const GeoModel& from ) ;
-        void copy_meshes( const GeoModel& from ) ;
 
         /*! 
          * @brief Convert a global BME index into a typed index
