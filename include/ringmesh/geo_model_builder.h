@@ -76,7 +76,6 @@ namespace RINGMesh {
         bool end_model() ;
 
         bool complete_element_connectivity() ;
-
     
         /*! @}
          * \name Set element geometry from geometrical positions   

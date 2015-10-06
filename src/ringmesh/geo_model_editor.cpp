@@ -87,8 +87,6 @@ namespace RINGMesh {
         }
     }
 
-
-
     void GeoModelEditor::resize_elements( GME::TYPE type, index_t nb )
     {
         if( type >= GME::NO_TYPE ) {
@@ -453,7 +451,7 @@ namespace RINGMesh {
                     }
                 }
                 // Clean the vectors in the element
-                E.erase_invalid_element_references() ;
+                erase_invalid_element_references( E ) ;
             }
         }
 
@@ -466,7 +464,144 @@ namespace RINGMesh {
                 U.GeoModelElement::set_boundary(
                     i, gme_t( GME::SURFACE, to_erase[ GME::SURFACE ][ U.boundary_id( i ).index ] ) )  ;
             }
-            model_.universe_.erase_invalid_element_references() ;
+            erase_invalid_element_references( model_.universe_ ) ;
+        }
+    }
+
+    /*!
+     * @brief Copy macro information from a model
+     * @details Copy the all the model elements and their relationship ignoring their geometry
+     *
+     * @param[in] from Model to copy the information from
+     */
+    void GeoModelEditor::copy_macro_topology( const GeoModel& from )
+    {
+        model_.name_ = from.name_ ;
+        for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
+            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
+            std::vector< GME* >& store = model_.modifiable_elements( T ) ;
+            store.resize( from.nb_elements( T ), nil ) ;
+
+            for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
+                store[e] = new_element( T, &model_, e ) ;
+                ringmesh_debug_assert( store[ e ] != nil ) ;
+            }
+            RINGMESH_PARALLEL_LOOP
+            for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
+                store[e]->copy_macro_topology( from.element( gme_t( T, e ) ),
+                    model_ ) ;
+            }
+        }
+        model_.universe_.copy_macro_topology( from.universe_, model_) ;
+
+        model_.nb_elements_per_type_ = from.nb_elements_per_type_ ;
+    }
+
+    /*!
+     * @brief Copy meshes from a model
+     * @details Copy the all the element meshes
+     *
+     * @param[in] from Model to copy the meshes from
+     *
+     * @pre The two models must have the same number of elements
+     */
+    void GeoModelEditor::copy_meshes( const GeoModel& from )
+    {
+        for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
+            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
+            RINGMESH_PARALLEL_LOOP
+            for( index_t e = 0; e < model_.elements( T ).size(); ++e ) {
+                GeoModelMeshElement* E =
+                    dynamic_cast< GeoModelMeshElement* >( model_.elements( T )[e] ) ;
+                ringmesh_debug_assert( E != nil ) ;
+                const GeoModelMeshElement& E_from =
+                    dynamic_cast< const GeoModelMeshElement& >( from.element(
+                        GME::gme_t( T, e ) ) ) ;
+
+                E->unbind_attributes() ;
+                E->mesh().copy( E_from.mesh() ) ;
+                E->bind_attributes() ;
+            }
+        }
+    }
+
+    /*!
+     * Copies a GeoModel in another one
+     * @param[in] from GeoModel to copy
+     */
+    void GeoModelEditor::copy( const GeoModel& from )
+    {
+        copy_macro_topology( from ) ;
+        copy_meshes( from ) ;
+    }
+
+
+    /*!
+     * @brief Remove invalid reference to elements
+     *       boundary, in_boundary and children vectors
+     *       Invalid elements have a NO_ID index
+     *
+     * @param[in] E the element to process
+     */
+    void GeoModelEditor::erase_invalid_element_references( GeoModelElement& E )
+    {
+        GME::TYPE T = E.gme_id().type ;
+        if( E.nb_children() > 0 ) {
+            gme_t invalid_child( E.child_type( T ), NO_ID ) ;
+            if( std::count( E.children_.begin(), E.children_.end(), invalid_child )
+                == E.children_.size()
+              ) {
+                // Calling erase on all elements -> undefined behavior
+                E.children_.clear() ;
+            } else {
+                E.children_.erase( std::remove(
+                    E.children_.begin(), E.children_.end(), invalid_child ),
+                    E.children_.end() );
+            }
+        }
+        if( E.nb_boundaries() > 0 ) {
+            gme_t invalid_boundary( E.boundary_type( T ), NO_ID ) ;
+            if( E.gme_id().type == GME::REGION ) {
+                Region& R = dynamic_cast< Region& >( E ) ;
+                // Change side values if necessary
+                index_t offset = 0 ;
+                for( index_t i = 0; i+offset < E.nb_boundaries(); ++i ) {
+                    if( E.boundaries_[ i ] == invalid_boundary ) {
+                        offset++ ;
+                    } else {
+                        R.set_side( i, R.side( i+offset ) ) ;
+                    }
+                }
+            }
+
+            index_t end = static_cast< index_t >(
+                std::remove( E.boundaries_.begin(), E.boundaries_.end(), invalid_boundary )
+                - E.boundaries_.begin() ) ;
+            if( end == 0 ) {
+                E.boundaries_.clear() ;
+                if( E.gme_id().type == GME::REGION ) {
+                    Region& R = dynamic_cast< Region& >( E ) ;
+                    R.sides_.clear() ;
+                }
+            } else {
+                E.boundaries_.erase( E.boundaries_.begin()+end, E.boundaries_.end() );
+                if( E.gme_id().type == GME::REGION ) {
+                    Region& R = dynamic_cast< Region& >( E ) ;
+                    R.sides_.erase( R.sides_.begin() + end, R.sides_.end() ) ;
+                }
+            }
+        }
+        if( E.nb_in_boundary() > 0 ) {
+            gme_t invalid_in_boundary( E.in_boundary_type( T ), NO_ID ) ;
+            if( std::count( E.in_boundary_.begin(), E.in_boundary_.end(), invalid_in_boundary )
+                == E.in_boundary_.size()
+              ) {
+                E.in_boundary_.clear() ;
+            } else {
+                E.in_boundary_.erase( std::remove(
+                    E.in_boundary_.begin(), E.in_boundary_.end(), invalid_in_boundary ),
+                    E.in_boundary_.end() );
+            }
         }
     }
 }

@@ -73,27 +73,6 @@ namespace {
         return result ;
     }
 
-    /*!
-     * @brief Fill the geological info from parent or children
-     *
-     * @details Set the geological feature of a BME to the one of its parent
-     * if it has a parent that has a geol. feature,
-     * or to the one of its first child if it has one with a geol. feature.
-     *
-     * @note The geol feature of \b E whatever its initial value
-     */
-    void fill_element_geological_feature( GeoModelElement& E )
-    {
-        if( E.has_parent() && E.parent().has_geological_feature() ) {
-            E.set_geological_feature( E.parent().geological_feature() ) ;
-        } else if( E.nb_children() > 0 && E.child( 0 ).has_geological_feature() ) {
-            E.set_geological_feature( E.child( 0 ).geological_feature() ) ;
-        }
-
-        /// @todo Paranoia : we should verify that all children
-        /// have the same geological feature
-    }
-
     /*************************************************************************/
     /*!
      * @brief Get the index of an Interface from its name
@@ -914,7 +893,11 @@ namespace RINGMesh {
         for( index_t i = 0; i < model_.nb_elements( GME::ALL_TYPES ); ++i ) {
             GME& E = element( gme_t( GME::ALL_TYPES, i ) ) ;
             if( !E.has_geological_feature() ) {
-                fill_element_geological_feature( E ) ;
+                if( E.has_parent() && E.parent().has_geological_feature() ) {
+                    set_element_geol_feature( E.gme_id(), E.parent().geological_feature() ) ;
+                } else if( E.nb_children() > 0 && E.child( 0 ).has_geological_feature() ) {
+                    set_element_geol_feature( E.gme_id(),E.child( 0 ).geological_feature() ) ;
+                }
             }
         }
 
@@ -1301,7 +1284,8 @@ namespace RINGMesh {
                 for( index_t b = 0; b < R.nb_boundaries(); ++b ) {
                     if( R.boundary_id( b ).index == change_key_facet[i] ) {
                         bool old_side = R.side( b ) ;
-                        R.set_boundary( b, R.boundary_id( b ), !old_side ) ;
+                        set_element_boundary( R.gme_id(), b, R.boundary_id( b ),
+                            !old_side ) ;
                     }
                 }
             }
@@ -1746,8 +1730,7 @@ namespace RINGMesh {
                 else if( match_type( in.field( 0 ) ) == GME::LINE ) {
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t cur_element( GME::LINE, id ) ;
-                    Line& L = dynamic_cast< Line& >( element( cur_element ) ) ;
-                    L.set_id( id ) ;
+                    set_element_index( cur_element ) ;
 
                     // Following information: vertices of the line
                     in.get_line() ;
@@ -1764,6 +1747,7 @@ namespace RINGMesh {
                     }
 
                     // Set the line points
+                    Line& L = dynamic_cast< Line& >( element( cur_element ) ) ;
                     L.set_vertices( vertices ) ;
 
                     // Attributes on line vertices
@@ -1818,7 +1802,7 @@ namespace RINGMesh {
                     in.get_fields() ;
                     ringmesh_assert( in.field_matches( 0, "IN_BOUNDARY" ) ) ;
                     for( index_t b = 1; b < in.nb_fields(); b++ ) {
-                        L.add_in_boundary(
+                        add_element_in_boundary( cur_element,
                             gme_t( GME::SURFACE, in.field_as_uint( b ) ) ) ;
                     }
                 }
@@ -1827,8 +1811,7 @@ namespace RINGMesh {
                 else if( match_type( in.field( 0 ) ) == GME::SURFACE ) {
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t cur_element( GME::SURFACE, id ) ;
-                    Surface& S = dynamic_cast< Surface& >( element( cur_element ) ) ;
-                    S.set_id( id ) ;
+                    set_element_index( cur_element ) ;
 
                     // Read the surface vertices and their attributes
                     in.get_line() ;
@@ -1906,6 +1889,7 @@ namespace RINGMesh {
 //                        serialize_read_attributes( in, nb_v + 1, f, facet_attribs ) ;
                     }
 
+                    Surface& S = dynamic_cast< Surface& >( element( cur_element ) ) ;
                     S.set_geometry( vertices, corners, facet_ptr ) ;
                     set_surface_adjacencies( cur_element ) ;
                 }

@@ -40,6 +40,7 @@
 
 #include <ringmesh/geo_model_mesh.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/well.h>
 #include <ringmesh/algorithm.h>
@@ -139,8 +140,11 @@ namespace {
 
 namespace RINGMesh {
 
-    GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GEO::Mesh& mesh )
-        : gmm_( gmm ), gm_( gmm.model() ), mesh_( mesh ), kdtree_( nil )
+    GeoModelMeshVertices::GeoModelMeshVertices(
+        GeoModelMesh& gmm,
+        GeoModel& gm,
+        GEO::Mesh& mesh )
+        : gmm_( gmm ), gm_( gm ), mesh_( mesh ), kdtree_( nil )
     {
     }
 
@@ -330,11 +334,11 @@ namespace RINGMesh {
         mesh_.vertices.point( v ) = point ;
         clear_kdtree() ;
 
+        GeoModelBuilder builder( gm_ ) ;
         const std::vector< VertexInGME >& gme_v = gme_vertices( v ) ;
         for( index_t i = 0; i < gme_v.size(); i++ ) {
             const VertexInGME& info = gme_v[i] ;
-            const_cast< GMME& >( gm_.mesh_element( GME::gme_t( info.gme_id ) ) ).set_vertex(
-                info.v_id, point, false ) ;
+            builder.set_element_vertex( info.gme_id, info.v_id, point ) ;
         }
     }
 
@@ -1662,12 +1666,12 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMesh::GeoModelMesh( const GeoModel& gm )
+    GeoModelMesh::GeoModelMesh( GeoModel& gm )
         :
             gm_( gm ),
             mesh_( new GEO::Mesh ),
             mode_( GeoModelMeshCells::NONE ),
-            vertices( *this, *mesh_ ),
+            vertices( *this, gm, *mesh_ ),
             facets( *this, *mesh_ ),
             cells( *this, *mesh_ ),
             edges( *this, *mesh_ )
