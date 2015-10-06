@@ -1,15 +1,19 @@
 cmake_minimum_required(VERSION 2.8)
 
+# To configure only Debug and Release modes
+set(CMAKE_CONFIGURATION_TYPES 
+      Debug Release CACHE TYPE  
+      INTERNAL FORCE )
+
 project(RINGMesh)
-# include some cmake modules
+
+# Needed cmake modules
 include(ExternalProject)
 
-
-set(CMAKE_CONFIGURATION_TYPES Debug Release)
-
-# define version number 
+# Define version number 
 set (RINGMesh_VERSION_MAJOR 1)
 set (RINGMesh_VERSION_MINOR 0)
+
 
 # To check that a given function exists we can use 
 #include (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
@@ -35,17 +39,21 @@ option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 # To disable OpenMP
 option(USE_OPENMP "Use Open MP" OFF)
  
-# if(WIN32)
-    # add_definitions(-DRINGMESH_EXPORTS -DGEO_DYNAMIC_LIBS)
-# endif(WIN32)
+if(WIN32)
+    add_definitions(-DRINGMESH_EXPORTS -DGEO_DYNAMIC_LIBS)
+endif(WIN32)
+
+# todo changer ça
+set(geoplatform Win-vs-dynamic-generic)
 
 # Configure a header file to pass some of the CMake settings
 # to the source code
-configure_file (
+configure_file(
   "${PROJECT_SOURCE_DIR}/include/ringmesh/ringmesh_config.h.in"
-  "${PROJECT_BINARY_DIR}/ringmesh_config.h"
+  "${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h"
 )
-  
+# We want to be able to include this file
+include_directories(${PROJECT_BINARY_DIR})
   
 ##############################################################################
 # Read a file for the global setting of the options ??
@@ -57,36 +65,47 @@ configure_file (
 
 
 ##############################################################################
-
 # Let's define properly that Geogram is another project we rely on
 # A FINIR  PAS FINI
+set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
+set(GEOGRAM_PATH_BIN ${PROJECT_SOURCE_DIR}/build/geogram)
+
 ExternalProject_Add(geogram_ext
-  PREFIX ${PROJECT_SOURCE_DIR}/src/third_party/geogram
+  PREFIX ${GEOGRAM_PATH}
+  
   DOWNLOAD_COMMAND ""
   UPDATE_COMMAND ""
+
+   # Configuration step
+  SOURCE_DIR ${GEOGRAM_PATH}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
+        -G ${CMAKE_GENERATOR} -DVORPALINE_PLATFORM:STRING=${geoplatform}
+        -DGEOGRAM_WITH_TETGEN:BOOL=ON
+        -DGEOGRAM_WITH_MEDIT:BOOL=ON 
+        -DGEOGRAM_WITH_GRAPHICS=${RINGMESH_WITH_GRAPHICS}
+  # filer aussi les autres options de compil 
   
-  SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/third_party/geogram/src/lib  
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} . -DVORPALINE_PLATFORM:STRING=Win-vs-dynamic-generic
-  
-  BINARY_DIR ${PROJECT_SOURCE_DIR}/build/geogram
-  
-  BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} 
-  
-  INSTALL ""
+  # Build step
+  BINARY_DIR ${GEOGRAM_PATH_BIN}  
+  BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN}
+
+  # Install step - None
+  INSTALL_COMMAND ""
 )
+
+
 
 # Je voudrai copier la lib de geogram là ou je veux
 # ou alors step INSTALL ? ça doit marcher ....
-# ExternalProject_Add_Step(geogram_ext Copying
-  # COMMAND  "${CMAKE_COMMAND}" -E copy_if_different  $<TARGET_FILE:geogram_ext>
-  # ${PROJECT_BINARY_DIR}/$<CONFIGURATION>/$<TARGET_FILE_NAME:geogram_ext>
-# )
+ExternalProject_Add_Step(geogram_ext Copying
+  COMMAND  ${CMAKE_COMMAND} -E copy_if_different  "$<TARGET_FILE:geogram>" 
+  "${PROJECT_BINARY_DIR}/$<CONFIGURATION>/$<TARGET_FILE_NAME:geogram>"
+)
 
 # besoin de ça ?
 # add_library(geogram SHARED IMPORTED)
 
-ExternalProject_Get_Property(geogram_ext SOURCE_DIR)
-include_directories(${SOURCE_DIR})
+include_directories(${GEOGRAM_PATH}/src/lib)
 
 
 # Add Geogram to the libs with which RINGMesh 
@@ -213,10 +232,7 @@ add_dependencies(RINGMesh geogram_ext)
 # Add all libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
-
-
-# Check how it is possible to launch Doxygen documentation generation
-# It seems to be possible
+# Check how it is possible to launch Doxygen documentation generation because it is
 
 ############################################################################
 # On Windows we need to copy Geogram.dll in the RINGMesh bin directories
