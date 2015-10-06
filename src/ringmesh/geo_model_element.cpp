@@ -44,6 +44,8 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/algorithm.h>
+#include <ringmesh/geogram_extension.h>
+#include <ringmesh/geo_model_validity.h>
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/geometry_nd.h>
@@ -784,7 +786,7 @@ namespace RINGMesh {
     {
         unbind_attributes() ;
 #ifdef RINGMESH_DEBUG
-        Utils::print_bounded_attributes( mesh_ ) ;
+        print_bounded_attributes( mesh_ ) ;
 #endif
     }
 
@@ -1359,7 +1361,7 @@ namespace RINGMesh {
             valid = false ;
 #ifdef RINGMESH_DEBUG
             std::ostringstream file ;
-            file << model().debug_directory()
+            file << validity_errors_directory
                 << "/"
                 << "invalid_surf_"
                 << gme_id().index << ".obj"  ;
