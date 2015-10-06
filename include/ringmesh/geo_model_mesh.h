@@ -612,7 +612,7 @@ namespace RINGMesh {
          * \param[in] lv the local index in the edge, one of 0,1
          * \return vertex \p lv of edge \p le in cell \p c
          */
-        index_t edge_vertex(index_t c, index_t le, index_t lv) const ;
+        index_t edge_vertex( index_t c, index_t le, index_t lv ) const ;
         /*!
          * Get the adjacent cell index in the GeoModelMesh
          * @param[in] c the cell index
@@ -997,15 +997,13 @@ namespace RINGMesh {
          * @param[in] f global id of the facet on the GeoModelMesh
          * @return the const number of high order vertices
          */
-        const index_t nb_high_order_vertices_per_facet(
-            const index_t f ) const ;
+        const index_t nb_high_order_vertices_per_facet( const index_t f ) const ;
         /*!
          * Gets the number of high order vertices on a cell
          * @param[in] c id of the cell on the GeoModelMesh
          * @return the const number of high order vertices
          */
-        const index_t nb_high_order_vertices_per_cell(
-            const index_t c ) const ;
+        const index_t nb_high_order_vertices_per_cell( const index_t c ) const ;
 
     private:
         /*!

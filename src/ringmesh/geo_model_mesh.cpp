@@ -1887,27 +1887,26 @@ namespace RINGMesh {
         if( high_order_vertices_.size() == 0 && order > 1 ) {
             index_t offset = 0 ;
             index_t nb_total_edges = 0 ;
-                for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-                    for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
-                        nb_total_edges++ ;
-                    }
+            for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
+                for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
+                    nb_total_edges++ ;
+                }
             }
 
             std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
-                for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-                    for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
-                        std::vector< vec3 > new_points_in_edge ;
-                        vec3 node0 = gmm_.vertices.vertex(
-                            gmm_.cells.edge_vertex( c, e, 0 ) ) ;
-                        vec3 node1 = gmm_.vertices.vertex(
-                            gmm_.cells.edge_vertex( c, e, 1 ) ) ;
-                        divide_edge_in_parts( node0, node1, order,
-                            new_points_in_edge ) ;
+            for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
+                for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
+                    std::vector< vec3 > new_points_in_edge ;
+                    vec3 node0 = gmm_.vertices.vertex(
+                        gmm_.cells.edge_vertex( c, e, 0 ) ) ;
+                    vec3 node1 = gmm_.vertices.vertex(
+                        gmm_.cells.edge_vertex( c, e, 1 ) ) ;
+                    divide_edge_in_parts( node0, node1, order, new_points_in_edge ) ;
 
-                        for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
-                            new_points[offset] = new_points_in_edge[v] ;
-                            offset++ ;
-                        }
+                    for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
+                        new_points[offset] = new_points_in_edge[v] ;
+                        offset++ ;
+                    }
                 }
             }
 
@@ -1917,16 +1916,20 @@ namespace RINGMesh {
         }
     }
 
-    const index_t GeoModelMeshOrder::nb_high_order_vertices_per_facet( const index_t f) const {
+    const index_t GeoModelMeshOrder::nb_high_order_vertices_per_facet(
+        const index_t f ) const
+    {
         test_and_initialize() ;
         ringmesh_debug_assert( f < gmm_.facets.nb() ) ;
-        return nb_high_order_points_per_facet_type_[gmm_.facets.nb_vertices(f) -3] ;
+        return nb_high_order_points_per_facet_type_[gmm_.facets.nb_vertices( f ) - 3] ;
     }
 
-    const index_t GeoModelMeshOrder::nb_high_order_vertices_per_cell( const index_t c) const {
+    const index_t GeoModelMeshOrder::nb_high_order_vertices_per_cell(
+        const index_t c ) const
+    {
         test_and_initialize() ;
         ringmesh_debug_assert( c < gmm_.cells.nb() ) ;
-        return nb_high_order_points_per_cell_type_[gmm_.cells.type(c)] ;
+        return nb_high_order_points_per_cell_type_[gmm_.cells.type( c )] ;
     }
 
     /*******************************************************************************/
