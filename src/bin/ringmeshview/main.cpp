@@ -114,7 +114,7 @@ namespace {
 
     double shrink = 0.0 ;
     bool mesh_visible = true ;
-    bool meshed_regions = false;
+    bool meshed_regions = false ;
 
     /**
      * \brief Toggles the well display
@@ -298,12 +298,12 @@ namespace {
      * \details In animated mode, the mesh animation is stored as a mesh with
      *  6d coordinates, that correspond to the geometric location
      *  at the vertices at time 0 and at time 1.
-     * \param[in] M the mesh
+     * \param[in] GM the GeoModel mesh.
      * \param[out] xyzmin a pointer to the three minimum coordinates
      * \param[out] xyzmax a pointer to the three maximum coordinates
      * \param[in] animate true if displaying a mesh animation
      */
-    void get_bbox( const RINGMesh::GeoModel& GM, double* xyzmin, double* xyzmax, bool animate )
+    void get_bbox( const RINGMesh::GeoModel& GM, double* xyzmin, double* xyzmax )
     {
         for( GEO::index_t s = 0; s < GM.nb_surfaces(); s++ ) {
             GEO::Mesh& M = GM.surface( s ).mesh() ;
@@ -312,42 +312,10 @@ namespace {
                 for( GEO::coord_index_t c = 0; c < 3; ++c ) {
                     xyzmin[c] = GEO::geo_min( xyzmin[c], p[c] ) ;
                     xyzmax[c] = GEO::geo_max( xyzmax[c], p[c] ) ;
-                    if( animate ) {
-                        xyzmin[c] = GEO::geo_min( xyzmin[c], p[c + 3] ) ;
-                        xyzmax[c] = GEO::geo_max( xyzmax[c], p[c + 3] ) ;
-                    }
                 }
             }
         }
     }
-
-    /**
-     * \brief Gets the bounding box of a mesh animation.
-     * \details In animated mode, the mesh animation is stored as a mesh with
-     *  6d coordinates, that correspond to the geometric location
-     *  at the vertices at time 0 and at time 1.
-     * \param[in] M the mesh
-     * \param[out] xyzmin a pointer to the three minimum coordinates
-     * \param[out] xyzmax a pointer to the three maximum coordinates
-     * \param[in] animate true if displaying a mesh animation
-     */
-    /*void get_bbox( const RINGMesh::GeoModel& GM, double* xyzmin, double* xyzmax, bool animate )
-    {
-        for( GEO::index_t m = 0; m < GM.nb_m; m++ ) {
-            GEO::Mesh& M = GM.mesh( m ) ;
-            for( GEO::index_t v = 0; v < M.vertices.nb(); ++v ) {
-                const double* p = M.vertices.point_ptr( v ) ;
-                for( GEO::coord_index_t c = 0; c < 3; ++c ) {
-                    xyzmin[c] = GEO::geo_min( xyzmin[c], p[c] ) ;
-                    xyzmax[c] = GEO::geo_max( xyzmax[c], p[c] ) ;
-                    if( animate ) {
-                        xyzmin[c] = GEO::geo_min( xyzmin[c], p[c + 3] ) ;
-                        xyzmax[c] = GEO::geo_max( xyzmax[c], p[c + 3] ) ;
-                    }
-                }
-            }
-        }
-    }*/
 
     /**
      * \brief Inverts the normals of a mesh.
@@ -383,9 +351,9 @@ namespace {
             if( !RINGMesh::mesh_load( GEO::CmdLine::get_arg( "mesh" ), GM ) ) {
                 return ;
             }
-            meshed_regions = true;
+            meshed_regions = true ;
         }
-        get_bbox( GM, xyzmin, xyzmax, false ) ;
+        get_bbox( GM, xyzmin, xyzmax ) ;
 
         glut_viewer_set_region_of_interest( float( xyzmin[0] ), float( xyzmin[1] ),
             float( xyzmin[2] ), float( xyzmax[0] ), float( xyzmax[1] ),
@@ -432,7 +400,6 @@ int main( int argc, char** argv )
     GEO::Logger::out( "" ) << "Antoine Mazuyer <antoine.mazuyer@univ-lorraine.fr> "
         << std::endl ;
 
-
     GEO::CmdLine::declare_arg( "model", "", "filename of the structural model" ) ;
     GEO::CmdLine::declare_arg( "mesh", "", "filename of the volumetric mesh" ) ;
 
@@ -452,14 +419,14 @@ int main( int argc, char** argv )
         toggle_volume() ;
     }
 
-    glut_viewer_set_window_title(
-        (char*) "RINGMeshView" ) ;
+    glut_viewer_set_window_title( (char*) "RINGMeshView" ) ;
     glut_viewer_set_init_func( init ) ;
     glut_viewer_set_display_func( display ) ;
     glut_viewer_add_toggle( 'c', &show_corners, "corners" ) ;
     glut_viewer_add_toggle( 'e', &show_lines, "lines" ) ;
     glut_viewer_add_toggle( 's', &show_surface, "surface" ) ;
-    glut_viewer_add_key_func( 'r', &toggle_colored_regions, "toggle colored regions" ) ;
+    glut_viewer_add_key_func( 'r', &toggle_colored_regions,
+        "toggle colored regions" ) ;
     glut_viewer_add_key_func( 'v', &toggle_volume, "toggle volume" ) ;
     glut_viewer_add_key_func( 'w', &toggle_wells, "toggle wells" ) ;
     glut_viewer_add_key_func( 'V', toggle_voi, "toggle VOI" ) ;
@@ -477,11 +444,11 @@ int main( int argc, char** argv )
 
     glut_viewer_main_loop( argc, argv ) ;
 
-     // Note: when 'q' is pressed, exit() is called
-     // because there is no simple way of exiting from
-     // glut's event loop, therefore this line is not
-     // reached and memory is not properly freed on exit.
-     // TODO: add a function in freeglut to exit event loop.
+    // Note: when 'q' is pressed, exit() is called
+    // because there is no simple way of exiting from
+    // glut's event loop, therefore this line is not
+    // reached and memory is not properly freed on exit.
+    // TODO: add a function in freeglut to exit event loop.
 
     return 0 ;
 }
