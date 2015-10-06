@@ -67,6 +67,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelElement {
     ringmesh_disable_copy( GeoModelElement ) ;
+        friend class GeoModelEditor ;
     public:
         /*!
          * @brief Geological feature types for GeoModelElement
@@ -365,19 +366,16 @@ namespace RINGMesh {
         }
         const GeoModelElement& child( index_t x ) const ;
 
-        /*!@}
-         * \name Modification of the element
-         * @{
-         */
-        /*! \todo We need one copy function per class I think [JP] 
-         * I do not see why Region side should be managed at the GeoModelElement
-         * level. Too annoying. 
-         * Let's implement real copy functions, we need virtual functions.
-         */
+    protected:
         virtual void copy_macro_topology(
             const GeoModelElement& rhs,
             GeoModel& model ) ;
 
+    private:
+        /*!@}
+         * \name Modification of the element
+         * @{
+         */
         void set_model( GeoModel* m )
         {
             model_ = m ;
@@ -455,7 +453,6 @@ namespace RINGMesh {
             children_[id] = c ;
         }
 
-        void erase_invalid_element_references() ;
         /*!
          * @}
          */
@@ -507,6 +504,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelMeshElement: public GeoModelElement {
     ringmesh_disable_copy( GeoModelMeshElement ) ;
+    friend class GeoModelEditor ;
+    friend class GeoModelBuilder ;
     public:
         GeoModelMeshElement(
             GeoModel* model = NULL,
@@ -559,18 +558,6 @@ namespace RINGMesh {
 
         const vec3& vertex( index_t v = 0 ) const ;
 
-        virtual void set_vertex( index_t index, const vec3& point, bool update ) ;
-
-        virtual void set_vertex( index_t v, index_t model_vertex ) ;
-
-        virtual void set_vertices(
-            const std::vector< vec3 >& points,
-            bool clear_mesh = false ) ;
-
-        virtual void set_vertices(
-            const std::vector< index_t >& model_vertices,
-            bool clear_mesh = false ) ;
-
         /*!
          * @}
          * \name Attribute management
@@ -614,6 +601,18 @@ namespace RINGMesh {
          */
         bool are_model_vertex_indices_valid() const ;
 
+        virtual void set_vertex( index_t index, const vec3& point, bool update ) ;
+
+        virtual void set_vertex( index_t v, index_t model_vertex ) ;
+
+        virtual void set_vertices(
+            const std::vector< vec3 >& points,
+            bool clear_mesh = false ) ;
+
+        virtual void set_vertices(
+            const std::vector< index_t >& model_vertices,
+            bool clear_mesh = false ) ;
+
     protected:
         /// Mesh of the element
         GEO::Mesh mesh_ ;
@@ -633,6 +632,7 @@ namespace RINGMesh {
      * @details It is a unique point.
      */
     class RINGMESH_API Corner: public GeoModelMeshElement {
+        friend class GeoModelEditor ;
     public:
         Corner( GeoModel* model = nil, index_t id = NO_ID, const vec3& vertex =
             vec3() )
@@ -671,6 +671,7 @@ namespace RINGMesh {
      *         
      */
     class RINGMESH_API Line: public GeoModelMeshElement {
+        friend class GeoModelEditor ;
     public:
         Line( GeoModel* model = nil, index_t id = NO_ID ) ;
 
@@ -728,6 +729,7 @@ namespace RINGMesh {
      * @details One 2-manifold connected component .
      */
     class RINGMESH_API Surface: public GeoModelMeshElement {
+        friend class GeoModelEditor ;
     public:
         const static index_t NO_ADJACENT = index_t( -1 ) ;
 
@@ -981,6 +983,7 @@ namespace RINGMesh {
      * Surfaces. Its volumetric mesh is optional.
      */
     class RINGMESH_API Region: public GeoModelMeshElement {
+        friend class GeoModelEditor ;
     public:
         Region( GeoModel* model = nil, index_t id = NO_ID )
             : GeoModelMeshElement( model, REGION, id )
@@ -990,48 +993,15 @@ namespace RINGMesh {
         ~Region()
         {
         }
-        ;
 
         bool is_meshed() const
         {
             return mesh().cells.nb() > 0 ;
         }
 
-        void add_boundary( const gme_t& b, bool side )
-        {
-            ringmesh_debug_assert( b.is_defined() ) ;
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            boundaries_.push_back( b ) ;
-            sides_.push_back( side ) ;
-        }
-
-        void set_boundary( index_t id, const gme_t& b, bool side )
-        {
-            /// No check on the validity of the index of the element b
-            /// NO_ID is used to flag elements to delete 
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            ringmesh_debug_assert( id < nb_boundaries() ) ;
-            boundaries_[id] = b ;
-            sides_[id] = side ;
-        }
-
         bool side( index_t i ) const
         {
             return sides_[i] ;
-        }
-
-        void set_side( index_t i, bool value )
-        {
-            sides_[i] = value ;
-        }
-
-        /*! I do not like it, but I need this access in the nasty
-         * erase_invalid_element_references function.
-         * To remove when that function is properly rewritten [JP]
-         */
-        std::vector< bool >& sides()
-        {
-            return sides_ ;
         }
 
         /*!
@@ -1045,6 +1015,7 @@ namespace RINGMesh {
          *     }
          */
 
+    protected:
         virtual void copy_macro_topology(
             const GeoModelElement& rhs,
             GeoModel& model )
@@ -1053,8 +1024,30 @@ namespace RINGMesh {
             sides_ = dynamic_cast< const Region& >( rhs ).sides_ ;
         }
 
-    protected:
         bool is_mesh_valid() const ;
+
+        void set_side( index_t i, bool value )
+        {
+            sides_[i] = value ;
+        }
+
+        void add_boundary( const gme_t& b, bool side )
+        {
+            ringmesh_debug_assert( b.is_defined() ) ;
+            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
+            boundaries_.push_back( b ) ;
+            sides_.push_back( side ) ;
+        }
+
+        void set_boundary( index_t id, const gme_t& b, bool side )
+        {
+            /// No check on the validity of the index of the element b
+            /// NO_ID is used to flag elements to delete
+            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
+            ringmesh_debug_assert( id < nb_boundaries() ) ;
+            boundaries_[id] = b ;
+            sides_[id] = side ;
+        }
 
     private:
         /*! Additional information to store oriented boundary Surfaces

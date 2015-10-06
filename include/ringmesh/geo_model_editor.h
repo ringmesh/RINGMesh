@@ -64,6 +64,10 @@ namespace RINGMesh {
         ~GeoModelEditor()
         {}
 
+        void copy( const GeoModel& from ) ;
+        void copy_macro_topology( const GeoModel& from ) ;
+        void copy_meshes( const GeoModel& from ) ;
+
         /*!
         *@brief The model under construction
         */
@@ -155,6 +159,20 @@ namespace RINGMesh {
             }
         }
 
+        void set_element_boundary(
+            const GME::gme_t& t,
+            index_t id,
+            const GME::gme_t& boundary,
+            bool side = false )
+        {
+            if( t.type == GME::REGION ) {
+                dynamic_cast< Region& >(
+                    element( t ) ).set_boundary( id, boundary, side ) ;
+            } else {
+                element( t ).set_boundary( id, boundary ) ;
+            }
+        }
+
         void add_element_in_boundary(
             const GME::gme_t& t,
             const GME::gme_t& in_boundary )
@@ -213,6 +231,7 @@ namespace RINGMesh {
 
         void resize_elements( GME::TYPE type, index_t nb ) ;
 
+        void erase_invalid_element_references( GeoModelElement& E ) ;
 
     protected:
         GeoModel& model_ ;
