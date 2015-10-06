@@ -1749,7 +1749,7 @@ namespace RINGMesh {
 
             std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
 
-            /// Adding new ids on cells edges
+            /// Adding new indices on cells edges
             for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
 
                 for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
@@ -1776,7 +1776,7 @@ namespace RINGMesh {
             std::vector< index_t > map = uniq.indices() ;
             ColocaterANN ann( uniq_points, false ) ;
 
-            /// Rewriting the right new ids on the cell attribute
+            /// Rewriting the right new indices on the cell attribute
             for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
                 for( index_t v = 0; v < gmm_.cells.nb_edges( c ) * ( order - 1 );
                     v++ ) {
@@ -1786,7 +1786,7 @@ namespace RINGMesh {
                 }
             }
 
-            /// Writing new ids on an attribute for the facet
+            /// Writing new indices on an attribute for the facet
             for( index_t f = 0; f < gmm_.facets.nb(); f++ ) {
                 for( index_t e = 0; e < gmm_.facets.nb_vertices( f ); e++ ) {
                     vec3 node0 ;
@@ -1803,7 +1803,7 @@ namespace RINGMesh {
                     divide_edge_in_parts( node0, node1, order, new_points_in_edge ) ;
                     for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
                         std::vector< index_t > colocated_vertices ;
-                        index_t real_vertex_id = ann.get_colocated(
+                        index_t real_vertex_indice = ann.get_colocated(
                             new_points_in_edge[v], colocated_vertices ) ;
                         ringmesh_debug_assert( colocated_vertices.size() == 1 ) ;
 
@@ -1841,13 +1841,13 @@ namespace RINGMesh {
         return nb_vertices_ ;
     }
 
-    const vec3 GeoModelMeshOrder::vertex( const index_t id ) const
+    const vec3& GeoModelMeshOrder::vertex( const index_t indice ) const
     {
         const_cast< GeoModelMeshOrder* >( this )->test_point_list_initialize() ;
-        return high_order_vertices_[id] ;
+        return high_order_vertices_[indice] ;
     }
 
-    const index_t GeoModelMeshOrder::get_id_on_cell(
+    const index_t GeoModelMeshOrder::indice_on_cell(
         const index_t c,
         const index_t component ) const
     {
@@ -1859,7 +1859,7 @@ namespace RINGMesh {
         return order_vertices_cell[max_new_points_on_cell_ * c + component] ;
     }
 
-    const index_t GeoModelMeshOrder::get_id_on_facet(
+    const index_t GeoModelMeshOrder::indice_on_facet(
         const index_t f,
         const index_t component ) const
     {
@@ -1871,11 +1871,11 @@ namespace RINGMesh {
         return order_vertices_facet[max_new_points_on_cell_ * f + component] ;
     }
 
-    void GeoModelMeshOrder::move_point( const index_t id, const vec3& u )
+    void GeoModelMeshOrder::move_point( const index_t indice, const vec3& u )
     {
         test_point_list_initialize() ;
         for( index_t i = 0; i < 3; i++ ) {
-            high_order_vertices_[id][i] += u[i] ;
+            high_order_vertices_[indice][i] += u[i] ;
 
         }
     }

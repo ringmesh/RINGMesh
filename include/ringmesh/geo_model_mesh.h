@@ -595,12 +595,12 @@ namespace RINGMesh {
          */
         index_t vertex( index_t c, index_t v ) const ;
         /*!
-         * Get the number of facets in the cell
+         * Get the number of edges in the cell
          * @param[in] c the cell index
          */
         index_t nb_edges( index_t c ) const ;
         /*!
-         * Get the number of edges in the cell
+         * Get the number of facets in the cell
          * @param[in] c the cell index
          */
         index_t nb_facets( index_t c ) const ;
@@ -950,57 +950,57 @@ namespace RINGMesh {
          */
         void clear() ;
         /*!
-         * Gets the mesh total number of vertices. It is the number of unique nodes
+         * Gets the total number of mesh vertices. It is the number of unique nodes
          * on the mesh plus the high order vertices on the elements edges
          * @return the const number of vertices
          */
         const index_t nb_total_vertices() const ;
         /*!
-         * Gets the mesh number of  high order vertices.
+         * Gets the number of  high order mesh vertices.
          * @return the const number of high order vertices
          */
         const index_t nb_vertices() ;
         /*!
-         * Gets the vec3 of a high order vertex
+         * Gets the point of a high order vertex
          * @param[in] id an id of the new created point for order > 2
          * @return the vec3 matching with the id
          */
-        const vec3 vertex( const index_t id ) const ;
+        const vec3& vertex( const index_t id ) const ;
         /*!
          * Gets the id of a high order vertex on the cell edges
-         * @param[in] c globa; id of the cell on the GeoModelMesh
+         * @param[in] c global id of the cell on the GeoModelMesh
          * @param[in] component point number in the cell
          * Ids are ordered by edges on the attribute vector of Geogram
          * @return the const index of the point
          */
-        const index_t get_id_on_cell(
+        const index_t indice_on_cell(
             const index_t c,
             const index_t component ) const ;
         /*!
-         * Gets the id of a high order vertex on a facet
-         * @param[in] f global id of the facet on the GeoModelMesh
+         * Gets the indice of a high order vertex on a facet
+         * @param[in] f global indice of the facet on the GeoModelMesh
          * @param[in] component point number in the cell
-         * Ids are ordered by edges on the attribute vector of Geogram
+         * indices are ordered by edges on the attribute vector of Geogram
          * @return the const index of the point
          */
-        const index_t get_id_on_facet(
+        const index_t indice_on_facet(
             const index_t f,
             const index_t component ) const ;
         /*!
-         * Move a added point
-         * @param[in] id the id of the high order vertex
+         * Move an added point
+         * @param[in] indice the indice of the high order vertex
          * @param[in] u the displacement applied on this point
          */
-        void move_point( const index_t id, const vec3& u ) ;
+        void move_point( const index_t indice, const vec3& u ) ;
         /*!
          * Gets the number of high order vertices on a facet
-         * @param[in] f global id of the facet on the GeoModelMesh
+         * @param[in] f global indice of the facet on the GeoModelMesh
          * @return the const number of high order vertices
          */
         const index_t nb_high_order_vertices_per_facet( const index_t f ) const ;
         /*!
          * Gets the number of high order vertices on a cell
-         * @param[in] c id of the cell on the GeoModelMesh
+         * @param[in] c indice of the cell on the GeoModelMesh
          * @return the const number of high order vertices
          */
         const index_t nb_high_order_vertices_per_cell( const index_t c ) const ;
