@@ -954,54 +954,50 @@ namespace RINGMesh {
          * on the mesh plus the high order vertices on the elements edges
          * @return the const number of vertices
          */
-        const index_t nb_total_vertices() const ;
+        index_t nb_total_vertices() const ;
         /*!
          * Gets the number of high order mesh vertices.
          * @return the const number of high order vertices
          */
-        const index_t nb_vertices() ;
+        index_t nb_vertices() ;
         /*!
          * Gets the point of a high order vertex
-         * @param[in] id an iindex of the new created point for order > 2
+         * @param[in] id an index of the new created point for order > 2
          * @return the vec3 matching with the id
          */
-        const vec3& vertex( const index_t id ) const ;
+        const vec3& vertex( index_t id ) const ;
         /*!
          * Gets the index of a high order vertex on the cell edges
          * @param[in] c global index of the cell on the GeoModelMesh
          * @param[in] component local high order vertex index in the cell
          * @return the const index of the point
          */
-        const index_t indice_on_cell(
-            const index_t c,
-            const index_t component ) const ;
+        index_t indice_on_cell( index_t c, index_t component ) const ;
         /*!
          * Gets the index of a high order vertex on a facet
          * @param[in] f global index of the facet on the GeoModelMesh
          * @param[in] component local high order vertex index in the cell
          * @return the const index of the point
          */
-        const index_t indice_on_facet(
-            const index_t f,
-            const index_t component ) const ;
+        index_t indice_on_facet( index_t f, index_t component ) const ;
         /*!
          * Move an added point
          * @param[in] index the index of the high order vertex
          * @param[in] u the displacement applied on this point
          */
-        void move_point( const index_t index, const vec3& u ) ;
+        void move_point( index_t index, const vec3& u ) ;
         /*!
          * Gets the number of high order vertices on a facet
          * @param[in] f global index of the facet on the GeoModelMesh
          * @return the const number of high order vertices
          */
-        const index_t nb_high_order_vertices_per_facet( const index_t f ) const ;
+        index_t nb_high_order_vertices_per_facet( index_t f ) const ;
         /*!
          * Gets the number of high order vertices on a cell
          * @param[in] c index of the cell on the GeoModelMesh
          * @return the const number of high order vertices
          */
-        const index_t nb_high_order_vertices_per_cell( const index_t c ) const ;
+        index_t nb_high_order_vertices_per_cell( index_t c ) const ;
 
     private:
         /*!
@@ -1009,10 +1005,10 @@ namespace RINGMesh {
          */
         void initialize() ;
         /*!
-         * Test whether the vec3 high_order_vertices_ list is initialize. If not, the point
+         * Test whether the  high_order_vertices_ list is initialize. If not, the point
          * list is initialize
          */
-        void test_point_list_initialize() ;
+        void test_point_list_initialized() ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -1124,13 +1120,12 @@ namespace RINGMesh {
          * @param[in] order the new GeoModelMesh order
          *
          */
-        void set_order( const index_t order ) const
+        void set_order( index_t new_order )
         {
-            GeoModelMesh* not_const = const_cast< GeoModelMesh* >( this ) ;
-            if( order != order_ ) {
-                not_const->order.clear() ;
+            if( new_order != order_ ) {
+                order.clear() ;
             }
-            not_const->order_ = order ;
+            order_ = new_order ;
         }
 
     private:
