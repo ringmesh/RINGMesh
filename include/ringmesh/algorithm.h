@@ -63,17 +63,6 @@ namespace RINGMesh {
         return intersect ;
     }
 
-    /*!
-     * @todo Comment
-     */
-    template< typename T, typename container >
-    bool contains( const container& v, const T& t, bool sorted = false )
-    {
-        if( sorted )
-            return find_sorted( v, t ) != NO_ID ;
-        else
-            return find( v, t ) != NO_ID ;
-    }
 
     /*!
     * @todo Comment
@@ -101,6 +90,18 @@ namespace RINGMesh {
             return NO_ID ;
         else
             return static_cast< index_t >( low - v.begin() ) ;
+    }
+
+    /*!
+     * @todo Comment
+     */
+    template< typename T, typename container >
+    bool contains( const container& v, const T& t, bool sorted = false )
+    {
+        if( sorted )
+            return find_sorted( v, t ) != NO_ID ;
+        else
+            return find( v, t ) != NO_ID ;
     }
 
     /*!
