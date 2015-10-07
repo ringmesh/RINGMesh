@@ -2,28 +2,20 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8 FATAL_ERROR)
 PROJECT(MULTICONFIG C)
 # -->
 
-option(TOTO "Compile viewer" OFF)
-set(CMAKE_CONFIGURATION_TYPES 
-      Debug Release CACHE CMAKE_CONFIGURATION_TYPES INTERNAL)
-IF(CMAKE_CONFIGURATION_TYPES)
-    FOREACH(i IN LISTS CMAKE_CONFIGURATION_TYPES)
-        message( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})
-        if( TOTO )
-        message( CMAKE_BUILD_TYPE2 ${CMAKE_BUILD_TYPE})
-        FILE(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/${i})
-        execute_process(
+if(UNIX)
+    if(NOT TOTO)
+        foreach(i IN LISTS CMAKE_CONFIGURATION_TYPES)
+            message( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+            set(project_binary_dir_config ${PROJECT_BINARY_DIR}/${i})
+            file(MAKE_DIRECTORY project_binary_dir_config)
+            execute_process(
                     COMMAND ${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}
-                -DCMAKE_BUILD_TYPE=${i}
-                -DCACHE_DIR=${PROJECT_BINARY_DIR}
-                -DTOTO:BOOL=ON
-                WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/${i})
-        endif()
-    ENDFOREACH()
-
-ENDIF()
-IF(DEFINED CACHE_DIR)
-    LOAD_CACHE(${CACHE_DIR}
-        EXCLUDE CMAKE_BUILD_TYPE CMAKE_CONFIGURATION_TYPES)
-ENDIF()
-# <--
-ADD_EXECUTABLE(main main.c)
+                        -DCMAKE_BUILD_TYPE=${i}
+                        #-DCACHE_DIR=${PROJECT_BINARY_DIR}
+                        -DTOTO:BOOL=ON
+                        -DPROJECT_BINARY_DIR:STRING= project_binary_dir_config
+                    WORKING_DIRECTORY project_binary_dir_config)
+            endif()
+        ENDFOREACH()
+    endif(NOT TOTO)
+endif(UNIX)
