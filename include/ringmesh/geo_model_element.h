@@ -52,11 +52,13 @@
 
 namespace GEO {
     class MeshFacetsAABB ;
+    class MeshCellsAABB ;
 }
 
 namespace RINGMesh {
     class GeoModel ;
     class Surface ;
+    class Region ;
     class ColocaterANN ;
 }
 
@@ -681,8 +683,8 @@ namespace RINGMesh {
     private:
         const Surface& surface_ ;
 
-        GEO::MeshFacetsAABB* aabb_ ;
-        ColocaterANN* ann_ ;
+        mutable GEO::MeshFacetsAABB* aabb_ ;
+        mutable ColocaterANN* ann_ ;
     } ;
 
     /*!
@@ -913,6 +915,23 @@ namespace RINGMesh {
 
     } ;
 
+
+    class RINGMESH_API RegionTools {
+    public:
+        RegionTools( const Region& region ) ;
+        ~RegionTools() ;
+
+        const GEO::MeshCellsAABB& aabb() const ;
+        const ColocaterANN& ann() const ;
+
+    private:
+        const Region& region_ ;
+
+        mutable GEO::MeshCellsAABB* aabb_ ;
+        mutable ColocaterANN* ann_ ;
+    } ;
+
+
     /*!
      * @brief A GeoModelElement of type REGION
      *
@@ -924,7 +943,7 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
     public:
         Region( GeoModel* model = nil, index_t id = NO_ID )
-            : GeoModelMeshElement( model, REGION, id )
+            : GeoModelMeshElement( model, REGION, id ), tools( *this )
         {
         }
 
@@ -1001,6 +1020,9 @@ namespace RINGMesh {
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_ ;
+
+    public:
+        RegionTools tools ;
     } ;
 
 } // namespace

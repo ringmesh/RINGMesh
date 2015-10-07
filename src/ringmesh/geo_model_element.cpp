@@ -1868,12 +1868,9 @@ namespace RINGMesh {
             // Parce que le mesh est triangulé dans notre dos
             ringmesh_assert( surface_.mesh().facets.are_simplices() ) ;
 
-            SurfaceTools* this_not_const = const_cast< SurfaceTools* >( this ) ;
-            this_not_const->aabb_ = new GEO::MeshFacetsAABB( surface_.mesh() ) ;
+            aabb_ = new GEO::MeshFacetsAABB( surface_.mesh() ) ;
             /// @todo Et pourquoi créer AABB me fait vider les sommets ?
             /// @todo Il faut un mécanisme update de ces SurfaceTools correct.
-            /// Je crois que j'ai compris MAIS IL FAUT ABSOLUMENT COMMENTER !!! 
-            // surface_.model_->vertices.clear() ;
             // if( ann_ ) {
             //     delete ann_ ;
             //     this_not_const->ann_ = nil ;
@@ -1923,12 +1920,69 @@ namespace RINGMesh {
 
     const ColocaterANN& SurfaceTools::ann() const
     {
-        /// @todo Using geogram NearestNeighbor would avoid a copy of all pointss
         if( ann_ == nil ) {
-            const_cast< SurfaceTools* >( this )->ann_ = new ColocaterANN(
-                surface_.mesh(), ColocaterANN::VERTICES ) ;
+            ann_ = new ColocaterANN( surface_.mesh(), ColocaterANN::VERTICES ) ;
         }
-        ringmesh_debug_assert( ann_ != nil );
+        return *ann_ ;
+    }
+
+    /********************************************************************/
+
+    RegionTools::RegionTools( const Region& region )
+        : region_( region ), aabb_( nil ), ann_( nil )
+    {
+    }
+
+
+    RegionTools::~RegionTools()
+    {
+        if( aabb_ ) delete aabb_ ;
+        if( ann_ ) delete ann_ ;
+    }
+
+    const GEO::MeshCellsAABB& RegionTools::aabb() const
+    {
+        if( aabb_ == nil ) {
+            aabb_ = new GEO::MeshCellsAABB( region_.mesh() ) ;
+            /// @todo Et pourquoi créer AABB me fait vider les sommets ?
+            /// @todo Il faut un mécanisme update de ces RegionTools correct.
+            // if( ann_ ) {
+            //     delete ann_ ;
+            //     this_not_const->ann_ = nil ;
+            // }
+
+            // Building an AABB reorders the mesh vertices and facets
+            // Very annoying if model_vertex_ids are set because we need
+            // to update the model vertices.
+
+            GeoModel& M = const_cast< GeoModel& >( region_.model() ) ;
+            if( M.mesh.vertices.is_initialized() ) {
+                typedef GeoModelMeshVertices::VertexInGME VBME ;
+
+                for( index_t sv = 0; sv < region_.nb_vertices(); ++sv ) {
+                    index_t v = region_.model_vertex_id( sv ) ;
+                    const std::vector< VBME >& to_update =
+                        M.mesh.vertices.gme_vertices( v ) ;
+
+                    index_t count_skipped = 0 ;
+                    for( index_t i = 0; i < to_update.size(); ++i ) {
+                        if( to_update[i].gme_id == region_.gme_id() ) {
+                            M.mesh.vertices.set_gme( v, i,
+                                VBME( region_.gme_id(), sv ) ) ;
+                            break ;
+                        }
+                    }
+                }
+            }
+        }
+        return *aabb_ ;
+    }
+
+    const ColocaterANN& RegionTools::ann() const
+    {
+        if( ann_ == nil ) {
+            ann_ = new ColocaterANN( region_.mesh(), ColocaterANN::VERTICES ) ;
+        }
         return *ann_ ;
     }
 
