@@ -197,10 +197,7 @@ source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 source_group("Source Files" FILES ${ringmesh_src})
 source_group("Header Files" FILES ${ringmesh_include})
 
-# tiens on peut faire des dossiers de vcproj
-# il nous en faut un pour les tests, ce sera plus joli
-# Creates folder "libraries" and adds target project (math.vcproj)
-# set_property(TARGET math PROPERTY FOLDER "libraries")
+
 
 
 if(UNIX)
@@ -222,27 +219,28 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+# Configure the RINGMesh target as a shared library
 add_library(RINGMesh SHARED
     ${ringmesh_include} 
     ${ringmesh_src} 
     ${zlib_src}
-    ${zlib_include}
-  )
+    ${zlib_include})
 
 
 #RINGMesh depends on Geogram. Modification of Geogram -> modification of RINGMesh
+#This does not happen ? snif snif...
 add_dependencies(RINGMesh geogram_ext)
-
 
 # Add all libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
-# Check how it is possible to launch Doxygen documentation generation because it is
+# Check how it is possible to launch Doxygen documentation generation, because it is
+
 
 ############################################################################
 # On Windows we need to copy Geogram.dll in the RINGMesh bin directories
 # to launch RINGMesh executables
+# How the hell can we do that without modifying geogram cmakelist file
 
-# Optional copy of RINGMesh dll in a dependency 
 
 
