@@ -119,12 +119,6 @@ namespace RINGMesh {
         * \name Filling GeoModelElement attributes.
         * @{
         */
-        void set_model(
-            const GME::gme_t& t,
-            GeoModel* m )
-        {
-            element( t ).set_model( m ) ;
-        }
 
         void set_element_index(
             const GME::gme_t& t )
@@ -232,6 +226,12 @@ namespace RINGMesh {
         void resize_elements( GME::TYPE type, index_t nb ) ;
 
         void erase_invalid_element_references( GeoModelElement& E ) ;
+
+    private:
+        void copy_macro_topology(
+            GeoModelElement& lhs,
+            const GeoModelElement& rhs,
+            const GeoModel& model ) ;
 
     protected:
         GeoModel& model_ ;

@@ -50,6 +50,7 @@ namespace RINGMesh {
     GeoModel::GeoModel()
         :
             mesh( *this ),            
+            universe_( *this, NO_ID ),
             wells_( nil )
     {
     }
