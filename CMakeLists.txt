@@ -19,22 +19,6 @@ include(ExternalProject)
 # Define the project RINGMesh      
 project(RINGMesh)
 
-if(UNIX)    
-    if( CMAKE_BUILD_TYPE STREQUAL "")   
-      foreach(i IN LISTS CMAKE_CONFIGURATION_TYPES)
-          set(project_binary_dir_config  ${CMAKE_SOURCE_DIR}/build/ringmesh/${i})
-          file(MAKE_DIRECTORY ${project_binary_dir_config})
-          execute_process(
-             COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
-                -DSKIP:BOOL=ON
-                -DCMAKE_BUILD_TYPE=${i}
-                -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
-                WORKING_DIRECTORY ${project_binary_dir_config})
-      endforeach()
-      return()
-    endif()
-endif(UNIX)
-
 # Define version number 
 # It is then exported to the configuration file
 set (RINGMesh_VERSION_MAJOR 1)
@@ -49,12 +33,10 @@ set (RINGMesh_VERSION_MINOR 0)
 # Options can be set with the CMakeOptions file, but also in Cmake GUI
 # or in command line cmake -D <var>:<type>=<value> MyProjectFolder
 
-# Optional computation with MG_TETRA
-option(USE_MG_TETRA "Compile with mesher MG-Tetra" OFF)
 # Path to MG_TETRA is asked for to the user in the interface
 set(MG_TETRA "" CACHE FILEPATH "Path to MG-Tetra")
 
-option(USE_OPENMP "Use Open MP" OFF)
+option(USE_OPENMP "Use Open MP" ON)
 
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
@@ -63,6 +45,29 @@ option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
+
+
+if(UNIX)    
+    if(CMAKE_BUILD_TYPE STREQUAL "")   
+      foreach(i IN LISTS CMAKE_CONFIGURATION_TYPES)
+          set(project_binary_dir_config  ${CMAKE_SOURCE_DIR}/build/ringmesh/${i})
+          file(MAKE_DIRECTORY ${project_binary_dir_config})
+          execute_process(
+             COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
+                -DSKIP:BOOL=ON
+                -DCMAKE_BUILD_TYPE=${i}
+                -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
+                -DMG_TETRA:STRING=${MG_TETRA}
+                -DUSE_OPENMP:BOOL=${USE_OPENMP}
+                -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+                -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
+                -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
+                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
+                WORKING_DIRECTORY ${project_binary_dir_config})
+      endforeach()
+      return()
+    endif()
+endif(UNIX)
 
 # Platform dependent settings
 if(WIN32)
@@ -155,34 +160,26 @@ link_directories(${GEOGRAM_PATH_BIN}/lib)
 #------------------------------------------------------------------------------------------------    
 
  # I do not use it, so please clean this section yourself [JP]
-if(USE_MG_TETRA)
-  if(${MG_TETRA} MATCHES .+)
-    message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
-    set(MG_TETRA_DIR  ${MG_TETRA})
-  elseif( $ENV{MG_TETRA} MATCHES .+)
-    message(STATUS "Using MG-Tetra directory =  $ENV{MG_TETRA}")
-    set(MG_TETRA_DIR  $ENV{MG_TETRA})
-  else(${MG_TETRA} MATCHES .+)
-    message(STATUS "No MG-Tetra directory found")
-  endif(${MG_TETRA} MATCHES .+)
-  include_directories(${MG_TETRA_DIR}/include)
+if(not ${MG_TETRA} STREQUAL "")   
+  message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
+  include_directories(${MG_TETRA}/include)
  
-  if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PLATFORM _64)
-  else(CMAKE_SIZEOF_VOID_P EQUAL 8 )
+  else(CMAKE_SIZEOF_VOID_P EQUAL 8)
     SET(PLATFORM)
-  endif(CMAKE_SIZEOF_VOID_P EQUAL 8 )
+  endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
   
   # Is there not a nice way to import this library [JP]
   if(WIN32)
-    link_directories(${MG_TETRA_DIR}/lib/WIN7${PLATFORM}_VC10)
+    link_directories(${MG_TETRA}/lib/WIN7${PLATFORM}_VC10)
   else(WIN32)
-    link_directories(${MG_TETRA_DIR}/lib/Linux${PLATFORM})
+    link_directories(${MG_TETRA}/lib/Linux${PLATFORM})
   endif(WIN32)
   
   # Additional libraries with which RINGMesh should link
   set (EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
-endif(USE_MG_TETRA)
+endif()
 
 #------------------------------------------------------------------------------------------------
 
