@@ -54,7 +54,6 @@ if(UNIX)
           file(MAKE_DIRECTORY ${project_binary_dir_config})
           execute_process(
              COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
-                -DSKIP:BOOL=ON
                 -DCMAKE_BUILD_TYPE=${i}
                 -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
                 -DMG_TETRA:STRING=${MG_TETRA}
