@@ -1,11 +1,11 @@
-# CMakeLists for tests 
+# CMakeLists for RINGMesh tests
 
 link_directories(${PROJECT_BINARY_DIR}/lib)
 
 # Look at the test with cmake
 # DO A LOOP here on a list of test name at least !!
 
-set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests)
+set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests/src)
 
 # If necessary, use the RELATIVE flag, otherwise each source file may be listed 
 # with full pathname. RELATIVE may makes it easier to extract an executable name
@@ -13,7 +13,12 @@ set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests)
 # file( GLOB APP_SOURCES RELATIVE app/*.cxx )
 
 # file(GLOB TESTS RELATIVE ${TEST_DIRECTORY} *.cpp)
+# tiens on peut faire des dossiers de vcproj
+# il nous en faut un pour les tests, ce sera plus joli
+# Creates folder "libraries" and adds target project (math.vcproj)
 
+# Create folder of projects
+# set_property(TARGET math PROPERTY FOLDER "libraries")
 
 # foreach(testsourcefile ${TESTS} )
     # I used a simple string replace, to cut off .cpp.
