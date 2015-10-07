@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_CONFIGURATION_TYPES 
       Debug Release CACHE CMAKE_CONFIGURATION_TYPES INTERNAL)
 
+
 # Turn on the ability to create folders to organize projects and files
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
@@ -18,6 +19,23 @@ include(ExternalProject)
 # Define the project RINGMesh      
 project(RINGMesh)
 
+if(UNIX)
+    if( not ${SKIP} )
+    foreach(i IN LISTS CMAKE_CONFIGURATION_TYPES)
+        set(project_binary_dir_config  ${CMAKE_SOURCE_DIR}/build/ringmesh/${i})
+        file(MAKE_DIRECTORY ${project_binary_dir_config})
+        message( avant execute )
+        execute_process(
+           COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
+              -DSKIP:BOOL=ON
+              -DCMAKE_BUILD_TYPE=${i}
+              -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
+              WORKING_DIRECTORY ${project_binary_dir_config})
+      message( apres execute )
+    endforeach()
+    return()
+    endif()
+endif(UNIX)
 # Define version number 
 # It is then exported to the configuration file
 set (RINGMesh_VERSION_MAJOR 1)
@@ -81,7 +99,11 @@ include_directories(${PROJECT_BINARY_DIR})
 
 set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
 # Maybe change it for Linux [JP]
-set(GEOGRAM_PATH_BIN ${PROJECT_SOURCE_DIR}/build/geogram)
+if(WIN32)
+    set(GEOGRAM_PATH_BIN ${PROJECT_SOURCE_DIR}/build/geogram)
+else(WIN32)
+    set(GEOGRAM_PATH_BIN ${PROJECT_SOURCE_DIR}/build/geogram/${CMAKE_BUILD_TYPE})
+endif(WIN32)
 
 ExternalProject_Add(geogram_ext
   PREFIX ${GEOGRAM_PATH}
@@ -99,6 +121,7 @@ ExternalProject_Add(geogram_ext
         -DGEOGRAM_WITH_TETGEN:BOOL=ON
         -DGEOGRAM_WITH_MEDIT:BOOL=ON 
         -DGEOGRAM_WITH_GRAPHICS=${RINGMESH_WITH_GRAPHICS}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   # maybe missing options for linux [JP]
   
   #--Build step-----------------
