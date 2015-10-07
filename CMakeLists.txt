@@ -32,12 +32,13 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 option(USE_MG_TETRA "Compile with mesher MG-Tetra" OFF)
 option(MG_TETRA "Path to MG-Tetra" "")
 
+option(USE_OPENMP "Use Open MP" OFF)
+
+# Optional components of RINGMesh
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 
-# To disable OpenMP
-option(USE_OPENMP "Use Open MP" OFF)
  
 if(WIN32)
 #to put in the config.h.in file 
@@ -50,9 +51,10 @@ set(geoplatform Win-vs-dynamic-generic)
 
 # Configure a header file to pass some of the CMake settings
 # to the source code
+set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
 configure_file(
   "${PROJECT_SOURCE_DIR}/include/ringmesh/ringmesh_config.h.in"
-  "${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h"
+   ${generated_configure_file}
 )
 # We want to be able to include this file
 include_directories(${PROJECT_BINARY_DIR})
@@ -152,22 +154,6 @@ if(USE_MG_TETRA)
   set (EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
 endif(USE_MG_TETRA)
 
-
-if(RINGMESH_WITH_GRAPHICS)
-    # faire pareil qu'avec geogram - definir le projet ? recuperer la target ?
-    add_subdirectory(src/bin/ringmeshview)
-    set (EXTRA_LIBS ${EXTRA_LIBS} geogram_gfx)
-endif(RINGMESH_WITH_GRAPHICS)
-
-if(RINGMESH_WITH_UTILITIES)
-    add_subdirectory(src/bin/ringmeshconvert)
-endif(RINGMESH_WITH_UTILITIES)
-
-if(RINGMESH_WITH_TESTS)
-    add_subdirectory(tests)
-endif(RINGMESH_WITH_TESTS)
-
-
 if(USE_OPENMP)
 # Vérifier ça ?? vraiment utile ?
     if(WIN32) 
@@ -190,14 +176,14 @@ file(GLOB ringmesh_include "${PROJECT_SOURCE_DIR}/include/ringmesh/*.h")
 file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/src/third_party/zlib/*.c")
 file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")
 
+# Add the generated configure file to ringmesh includes
+set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 
 # Group files of a project in directories
 # For this to work all the files should be added to the sources of the project
 source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 source_group("Source Files" FILES ${ringmesh_src})
 source_group("Header Files" FILES ${ringmesh_include})
-
-
 
 
 if(UNIX)
@@ -211,21 +197,20 @@ endif(WIN32)
 ##############################################################################
 # Build configuration
 
-# Je me demande bien à quoi ça sert ça
+# Organize cmake outputs in a Linux way
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
-
+# Include directories of RINGMesh
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-# Configure the RINGMesh target as a shared library
+# Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED
     ${ringmesh_include} 
     ${ringmesh_src} 
     ${zlib_src}
     ${zlib_include})
-
 
 #RINGMesh depends on Geogram. Modification of Geogram -> modification of RINGMesh
 #This does not happen ? snif snif...
@@ -235,6 +220,22 @@ add_dependencies(RINGMesh geogram_ext)
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
 # Check how it is possible to launch Doxygen documentation generation, because it is
+
+
+# Optional modules configuration
+if(RINGMESH_WITH_GRAPHICS)
+    add_subdirectory(src/bin/ringmeshview)
+endif(RINGMESH_WITH_GRAPHICS)
+
+if(RINGMESH_WITH_UTILITIES)
+    add_subdirectory(src/bin/ringmeshconvert)
+endif(RINGMESH_WITH_UTILITIES)
+
+if(RINGMESH_WITH_TESTS)
+    add_subdirectory(tests)
+endif(RINGMESH_WITH_TESTS)
+
+
 
 
 ############################################################################
