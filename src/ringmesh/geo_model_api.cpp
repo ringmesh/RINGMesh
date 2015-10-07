@@ -138,6 +138,7 @@ namespace RINGMesh {
                 return GEO::Geom::distance( L.vertex( v0 ), L.vertex( v1 ) ) ;
             }
         }
+        ringmesh_assert_not_reached ;
         return result ;
     }
 
@@ -193,6 +194,7 @@ namespace RINGMesh {
             }
         }
 
+        ringmesh_assert_not_reached ;
         return result ;
     }
 
