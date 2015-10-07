@@ -218,7 +218,6 @@ namespace RINGMesh {
         void set_universe( const std::vector<
                            std::pair< index_t, bool > >& boundaries ) ;
 
-
         /*!
         * @brief Set an element of the model.
         * @details It is on purpose that element validity is not checked.
@@ -254,7 +253,7 @@ namespace RINGMesh {
         void erase_invalid_element_references( GeoModelElement& E ) ;
 
     private:
-        void copy_macro_topology(
+        void copy_element_topology(
             GeoModelElement& lhs,
             const GeoModelElement& rhs,
             const GeoModel& model ) ;
