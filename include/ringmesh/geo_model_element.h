@@ -527,20 +527,7 @@ namespace RINGMesh {
             // are_model_vertex_indices_valid() ;
         }
 
-        /*!
-         * @brief Returns the number of edges or facets of the mesh
-         */
-        index_t nb_cells() const
-        {
-            switch( gme_id().type ) {
-                case LINE:
-                    return mesh_.edges.nb() ;
-                case SURFACE:
-                    return mesh_.facets.nb() ;
-                default:
-                    return 0 ;
-            }
-        }
+        virtual index_t nb_cells() const = 0 ;
 
         /*!
          * @brief Returns the number of vertices of the mesh
@@ -601,20 +588,6 @@ namespace RINGMesh {
          */
         bool are_model_vertex_indices_valid() const ;
 
-        virtual void set_vertex( index_t index, const vec3& point, bool update ) ;
-
-        virtual void set_vertex( index_t v, index_t model_vertex ) ;
-
-        virtual void set_vertices(
-            const std::vector< vec3 >& points,
-            bool clear_mesh = false ) ;
-
-        virtual void set_vertices(
-            const std::vector< index_t >& model_vertices,
-            bool clear_mesh = false ) ;
-
-        void set_model_vertex_id( index_t v, index_t model_id ) ;
-
     protected:
         /// Mesh of the element
         GEO::Mesh mesh_ ;
@@ -648,18 +621,14 @@ namespace RINGMesh {
         {
         }
 
+        virtual index_t nb_cells() const
+        {
+            return 0 ;
+        }
+
     protected:
         virtual bool is_mesh_valid() const ;
 
-        void set_vertex( const vec3& point, bool update_model )
-        {
-            GeoModelMeshElement::set_vertex( 0, point, update_model ) ;
-        }
-
-        void set_vertex( index_t model_point_id )
-        {
-            GeoModelMeshElement::set_vertex( 0, model_point_id ) ;
-        }
     } ;
 
     /*!
@@ -679,6 +648,14 @@ namespace RINGMesh {
         }
 
         /*!
+         * Get the number of edges
+         */
+        virtual index_t nb_cells() const
+        {
+            return mesh_.edges.nb() ;
+        }
+
+        /*!
          * @brief A Line is closed if its two extremities are identitical 
          */
         bool is_closed() const
@@ -690,14 +667,6 @@ namespace RINGMesh {
 
     private:
         virtual bool is_mesh_valid() const ;
-
-        virtual void set_vertices(
-            const std::vector< vec3 >& points,
-            bool clear_mesh = false ) ;
-
-        virtual void set_vertices(
-            const std::vector< index_t >& model_vertices,
-            bool clear_mesh = false ) ;
 
     } ;
 
@@ -735,8 +704,14 @@ namespace RINGMesh {
         ~Surface()
         {
         }
-        ;
 
+        /*!
+         * Get the number of facets
+         */
+        virtual index_t nb_cells() const
+        {
+            return mesh_.facets.nb() ;
+        }
         bool is_triangulated() const
         {
             return mesh_.facets.are_simplices() ;
@@ -936,28 +911,6 @@ namespace RINGMesh {
             index_t model_vertex_id,
             index_t surface_vertex_id ) ;
 
-        void set_geometry(
-            const std::vector< vec3 >& vertices,
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr ) ;
-
-        void set_geometry(
-            const std::vector< index_t >& model_vertex_ids,
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr ) ;
-
-        void set_geometry(
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr ) ;
-
-        void set_adjacent( const std::vector< index_t >& adjacent )
-        {
-            ringmesh_assert( adjacent.size() == mesh_.facet_corners.nb() ) ;
-            for( index_t i = 0; i < adjacent.size(); i++ ) {
-                mesh_.facet_corners.set_adjacent_facet( i, adjacent[i] ) ;
-            }
-        }
-
     } ;
 
     /*!
@@ -977,6 +930,14 @@ namespace RINGMesh {
 
         ~Region()
         {
+        }
+
+        /*!
+         * Get the number of cells
+         */
+        virtual index_t nb_cells() const
+        {
+            return mesh_.cells.nb() ;
         }
 
         bool is_meshed() const

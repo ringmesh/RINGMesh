@@ -89,7 +89,6 @@ namespace RINGMesh {
     * @param[in] translation_vector vector of translation.
     */
     void translate( GeoModel& M, const vec3& ) ;
-
     /*!
     * \brief Rotate the boundary model.
     *
@@ -104,7 +103,7 @@ namespace RINGMesh {
     * @param[in] origin point in which passes the rotation axis.
     * @param[in] axis vector which defines the rotation axis.
     * @param[in] angle rotation angle (in radians or degrees).
-    * @param[in] degrees true is \p theta is in degrees, false
+    * @param[in] degrees true is \p angle is in degrees, false
     * if in radians.
     */
     void rotate(

@@ -1021,8 +1021,6 @@ namespace RINGMesh {
 
     } ;
 
-
-
 }
 
 #endif

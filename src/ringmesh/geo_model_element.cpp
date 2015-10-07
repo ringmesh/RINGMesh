@@ -791,48 +791,6 @@ namespace RINGMesh {
     }
 
 
-
-    /*!
-     * @brief Sets the index of the matching point in the GeoModel
-     *
-     * @param[in] v Vertex index
-     * @param[in] model_id Model vertex index in GeoModelMeshVertices
-     */
-    void GeoModelMeshElement::set_model_vertex_id(
-        index_t vertex_id,
-        index_t model_vertex_id )
-    {
-        ringmesh_assert( vertex_id < nb_vertices() ) ;
-        model_vertex_id_[ vertex_id ] = model_vertex_id ;
-    }
-
-    /*!
-     * @brief Sets the geometrical position of a vertex
-     *
-     * @param index Index of the vertex to modify
-     * @param point New coordinates
-     * @param update If true, all the vertices sharing the same geometrical position
-     *               in the GeoModel have their position updated, if false they
-     *               are not.
-     *
-     * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
-     *          I removed on purpose the default value parameter (JP).
-     */
-    void GeoModelMeshElement::set_vertex(
-        index_t index,
-        const vec3& point,
-        bool update )
-    {
-        ringmesh_debug_assert( index < nb_vertices() ) ;
-        if( update ) {
-            model_->mesh.vertices.update_point(
-                model_vertex_id( index ) , point ) ;
-        }
-        else {
-            mesh_.vertices.point( index ) = point ;
-        }
-    }
-
     /*!
      * @brief Vertex index in model from local index
      * @param[in] p Vertex index
@@ -855,69 +813,6 @@ namespace RINGMesh {
         ringmesh_assert( v < nb_vertices() ) ;
         return mesh_.vertices.point( v ) ;
     }
-
-    /*!
-     * @brief Set the geometrical position of a vertex from a model vertex
-     * @details Set also both mapping from (GeoModelMeshVertices::unique2bme)
-     *          and to (model_vertex_id_) the model vertex.
-     *
-     * @param index Index of the vertex to modify
-     * @param model_vertex Index in GeoModelMeshVertices of the vertex giving
-     *                     the new position
-     */
-    void GeoModelMeshElement::set_vertex(
-        index_t v, index_t model_vertex )
-    {
-        set_vertex( v, model_->mesh.vertices.vertex( model_vertex ), false ) ;
-        set_model_vertex_id( v, model_vertex ) ;
-        model_->mesh.vertices.add_to_bme(
-            model_vertex, GeoModelMeshVertices::VertexInGME( gme_id(), v ) ) ;
-    }
-
-
-    /*!
-     * @brief Adds vertices to the mesh
-     * @details No update of the model vertices is done
-     *
-     * @param points Geometric positions of the vertices to add
-     * @param clear If true the mesh if cleared, keeping its attributes
-     */
-    void GeoModelMeshElement::set_vertices(
-        const std::vector< vec3 >& points,
-        bool clear )
-    {
-        // Clear the mesh, but keep the attributes and the space
-        if( clear ) {
-            mesh_.clear( true, true ) ;
-        }
-        if( !points.empty() ) {
-            index_t start = mesh_.vertices.create_vertices( points.size() ) ;
-            GEO::Memory::copy( mesh_.vertices.point_ptr( start ),
-                points.data()->data(), 3 * sizeof(double) * points.size() ) ;
-        }
-    }
-
-    /*!
-     * @brief Add vertices to the mesh
-     * @details No update of the model vertices is done
-     *
-     * @param model_vertices Geometric positions of the vertices to add
-     * @param clear If true the mesh if cleared, keeping its attributes
-     */
-    void GeoModelMeshElement::set_vertices(
-        const std::vector< index_t >& model_vertices,
-        bool clear )
-    {
-        // Clear the mesh, but keep the attributes and the space
-        if( clear ) {
-            mesh_.clear( true, true ) ;
-        }
-        mesh_.vertices.create_vertices( model_vertices.size() ) ;
-        for( index_t v = 0; v < model_vertices.size(); v++ ) {
-            set_vertex( v, model_vertices[ v ] ) ;
-        }
-    }
-
 
     /**************************************************************/
 
@@ -1093,39 +988,6 @@ namespace RINGMesh {
     }
 
 
-    /*!
-     * @brief Adds vertices to the mesh and builds the edges
-     * @details No update of the model vertices is done
-     *
-     * @param points Geometric positions of the vertices to add
-     * @param clear_mesh If true the mesh is cleared keeping its attributes
-     */
-    void Line::set_vertices(
-        const std::vector< vec3 >& points,
-        bool clear_mesh )
-    {
-        GeoModelMeshElement::set_vertices( points, clear_mesh ) ;
-        for( index_t e = 1; e < nb_vertices(); e++ ) {
-            mesh_.edges.create_edge( e - 1, e ) ;
-        }
-    }
-
-    /*!
-     * @brief Adds vertices to the mesh and builds the edges
-     * @details See set_vertex(index_t, index_t)
-     *
-     * @param model_vertices Indices in the model of the points to add
-     * @param clear_mesh If true the mesh is cleared keeping its attributes
-     */
-    void Line::set_vertices(
-        const std::vector< index_t >& model_vertices,
-        bool clear_mesh )
-    {
-        GeoModelMeshElement::set_vertices( model_vertices, clear_mesh ) ;
-        for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
-            mesh_.edges.create_edge( e, e + 1 ) ;
-        }
-    }   
 
     /********************************************************************/
     
@@ -1256,43 +1118,6 @@ namespace RINGMesh {
     {
         return local_id( model_vertex_id ) ;
     }
-
-
-    void Surface::set_geometry(
-        const std::vector< vec3 >& vertices,
-        const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr )
-    {
-        set_vertices( vertices ) ;
-        set_geometry( facets, facet_ptr ) ;
-    }
-
-
-    void Surface::set_geometry(
-        const std::vector< index_t >& model_vertex_ids,
-        const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr )
-    {
-        set_vertices( model_vertex_ids ) ;
-        set_geometry( facets, facet_ptr ) ;
-    }
-
-
-    void Surface::set_geometry(
-        const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr )
-    {
-        for( index_t f = 0; f < facet_ptr.size()-1; f++ ) {
-            index_t size = facet_ptr[f+1] - facet_ptr[f] ;
-            GEO::vector< index_t > facet_vertices( size ) ;
-            index_t start = facet_ptr[f] ;
-            for( index_t lv = 0; lv < size; lv++ ) {
-                facet_vertices[lv] = facets[start++] ;
-            }
-            mesh_.facets.create_polygon( facet_vertices ) ;
-        }
-    }
-    
     
     /*!
      * @brief Traversal of a surface border
@@ -1769,31 +1594,31 @@ namespace RINGMesh {
          index_t model_vertex_id,
          index_t surface_vertex_id )
      {
-         GeoModel& M = const_cast< GeoModel& >( model() ) ;
-
-         const std::vector< VBME >& vbme = M.mesh.vertices.gme_vertices(
-             model_vertex_id ) ;
-         index_t duplicate = NO_ID ;
-         for( index_t i = 0; i < vbme.size(); ++i ) {
-             if( vbme[i].gme_id == gme_id() ) {
-                 if( vbme[i].v_id != surface_vertex_id ) {
-                     duplicate = vbme[i].v_id ;
-                 }
-             }
-         }
-         if( duplicate == NO_ID ) {
-             // Duplicate the vertex in the surface
-             duplicate = mesh().vertices.create_vertex(
-                 M.mesh.vertices.vertex( model_vertex_id ).data() ) ;
-
-             // Set its model vertex index
-             set_model_vertex_id( duplicate, model_vertex_id ) ;
-
-             // Add the mapping from in the model vertices. Should we do this one ?
-             M.mesh.vertices.add_to_bme( model_vertex_id,
-                 VBME( gme_id(), duplicate ) ) ;
-         }
-         return duplicate ;
+//         GeoModel& M = const_cast< GeoModel& >( model() ) ;
+//
+//         const std::vector< VBME >& vbme = M.mesh.vertices.gme_vertices(
+//             model_vertex_id ) ;
+//         index_t duplicate = NO_ID ;
+//         for( index_t i = 0; i < vbme.size(); ++i ) {
+//             if( vbme[i].gme_id == gme_id() ) {
+//                 if( vbme[i].v_id != surface_vertex_id ) {
+//                     duplicate = vbme[i].v_id ;
+//                 }
+//             }
+//         }
+//         if( duplicate == NO_ID ) {
+//             // Duplicate the vertex in the surface
+//             duplicate = mesh().vertices.create_vertex(
+//                 M.mesh.vertices.vertex( model_vertex_id ).data() ) ;
+//
+//             // Set its model vertex index
+//             set_model_vertex_id( duplicate, model_vertex_id ) ;
+//
+//             // Add the mapping from in the model vertices. Should we do this one ?
+//             M.mesh.vertices.add_to_bme( model_vertex_id,
+//                 VBME( gme_id(), duplicate ) ) ;
+//         }
+//         return duplicate ;
      }
 
     /*!
@@ -1865,6 +1690,7 @@ namespace RINGMesh {
      */
     void Surface::cut_by_line( const Line& L )
     {
+        /*
         // Initialize the GeoModel vertices if they are not
         // They are needed to get the points shared by the Surface
         // and the Line
@@ -2001,6 +1827,7 @@ namespace RINGMesh {
         if( !init ) {
             const_cast< GeoModel&>( model() ).mesh.vertices.clear() ;
         }
+        */
     }
 
 

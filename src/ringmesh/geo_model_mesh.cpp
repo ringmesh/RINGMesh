@@ -340,7 +340,7 @@ namespace RINGMesh {
         const std::vector< VertexInGME >& gme_v = gme_vertices( v ) ;
         for( index_t i = 0; i < gme_v.size(); i++ ) {
             const VertexInGME& info = gme_v[i] ;
-            builder.set_element_vertex( info.gme_id, info.v_id, point ) ;
+            builder.set_element_vertex( info.gme_id, info.v_id, point, false ) ;
         }
     }
 
