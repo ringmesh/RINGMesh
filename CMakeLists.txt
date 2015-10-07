@@ -213,6 +213,15 @@ add_library(RINGMesh SHARED
 #This does not happen ? snif snif...
 add_dependencies(RINGMesh geogram_ext)
 
+if(WIN32)
+    # Optional copy of RINGMesh dll in a dependency 
+    add_custom_command(TARGET RINGMesh PRE_BUILD 
+     COMMAND  "${CMAKE_COMMAND}" -E copy_if_different 
+         "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/geogram.dll"
+         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>/geogram.dll" 
+     COMMENT "Copying to output directory")
+endif()
+
 # Add all libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
@@ -238,17 +247,21 @@ if(BUILD_DOCUMENTATION)
     if(NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
     endif()
-
-    # set(doxyfile_in ${PROJECT_SOURCE_DIR}/Doxyfile.in)
+    
     set(doxyfile ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
 
-    # configure_file(${doxyfile_in} ${doxyfile} @ONLY)
-
+    # To set properly project version and paths
+    # use an input file and use configure_file to populate the doxyfile
+    # set(doxyfile_in ${PROJECT_SOURCE_DIR}/Doxyfile.in)
+    # configure_file(${doxyfile_in} ${doxyfile} @ONLY)  
+    
+    # Create a target that can be build from the IDE 
     add_custom_target(doc
         COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
 
-    # install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
+    # We should think about installation steps fo the whole project [JP]
+    # install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/html DESTINATION share/doc)
 endif()
