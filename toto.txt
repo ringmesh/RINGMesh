@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8 FATAL_ERROR)
 PROJECT(MULTICONFIG C)
 # -->
 
+
 set(CMAKE_CONFIGURATION_TYPES 
       Debug Release CACHE CMAKE_CONFIGURATION_TYPES INTERNAL)
 
@@ -10,7 +11,7 @@ option(TOTO "Use Open MP" OFF)
 if(UNIX)
     if(NOT TOTO)
         foreach(i IN LISTS CMAKE_CONFIGURATION_TYPES)
-            message( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+            message( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} -- ${i})
             set(project_binary_dir_config ${PROJECT_BINARY_DIR}/${i})
             file(MAKE_DIRECTORY ${project_binary_dir_config})
             execute_process(
@@ -21,7 +22,29 @@ if(UNIX)
                         -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
                     WORKING_DIRECTORY ${project_binary_dir_config})
         ENDFOREACH()
+        #return()
+        message( MERDE )
     endif(NOT TOTO)
 endif(UNIX)
 
-ADD_EXECUTABLE(main main.c)
+        message( MERDE2 )
+        ADD_EXECUTABLE(main main.c)
+
+
+    if(NOT TOTO)
+set(cmake_generated ${PROJECT_BINARY_DIR}/CMakeCache.txt
+                    ${PROJECT_BINARY_DIR}/cmake_install.cmake  
+                    ${PROJECT_BINARY_DIR}/Makefile
+                    ${PROJECT_BINARY_DIR}/CMakeFiles
+)
+
+message( cmake_generated  ${cmake_generated})
+
+    # file(REMOVE_RECURSE ${cmake_generated})
+foreach(file ${cmake_generated})
+message( f ${file})
+     file(REMOVE_RECURSE ${file})
+
+endforeach(file)
+    endif(NOT TOTO)
+
