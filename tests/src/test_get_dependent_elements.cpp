@@ -32,11 +32,13 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
+
+#include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geo_model_repair.h>
 #include <ringmesh/geo_model.h>
@@ -47,8 +49,12 @@
 #include <geogram/basic/logger.h>
 
 
-// The function find_element in geo_model does not exist anymore
-// You need to reimplement it here in your file. JP
+/*  Sorry
+    The function find_element in geo_model does not exist anymore
+    You need to reimplement it here in your file. JP
+    @todo Change the paths to data to absolute paths
+    using ringmesh_test_data_path
+*/
 
 
 namespace {

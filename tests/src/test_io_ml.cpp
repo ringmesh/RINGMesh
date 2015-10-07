@@ -32,11 +32,13 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
+
+#include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
@@ -48,29 +50,51 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
+    /*! @todo Comment this tests 
+     *  What is the goal and whatsoever [JP]
+     */
     GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
 
     GeoModel in ;
-    if( !model_load( "../../../../../tests/data/model1.ml", in ) )
+    std::string input_model_file_name( ringmesh_test_data_path ) ;
+    input_model_file_name += "model1.ml" ;
+
+    if( !model_load( input_model_file_name, in ) ) {
         return 1 ;
-    if( !model_save( in, "out.ml" ) )
+    }
+
+    std::string output_model_file_name( ringmesh_test_output_path ) ;
+    output_model_file_name += "model1_saved_out.ml" ;
+    if( !model_save( in, output_model_file_name ) ) {
         return 1 ;
+    }
 
     GeoModel in2 ;
-    if( !model_load( "out.ml", in2 ) )
+    if( !model_load( output_model_file_name, in2 ) ) {
         return 1 ;
-    if( !model_save( in2, "out2.ml" ) )
+    }
+    std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
+    output_model_file_name_bis += "model1_saved_out_bis.ml" ;
+    if( !model_save( in2, output_model_file_name_bis ) ) {
         return 1 ;
-	
+    }
+
 	// Test a bad fixable input annot
 	GeoModel in3 ;
-	if( !model_load( "../data/annot.ml", in3 ) )
+    std::string annot_file( ringmesh_test_data_path ) ;
+    annot_file += "annot.ml" ;
+
+    if( !model_load( annot_file, in3 ) ) {
         return 1 ;
-		
-    bool res = compare_files( "out.ml", "out2.ml" ) ;
-    if( res )
-        GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
-    else
-        GEO::Logger::out("TEST") << "FAILED" << std::endl ;
+    }
+
+    bool res = compare_files(
+        output_model_file_name, output_model_file_name_bis ) ;
+    if( res ) {
+        GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    } else {
+        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+    }
+
     return !res ;
 }
