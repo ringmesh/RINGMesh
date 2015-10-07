@@ -32,7 +32,7 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -474,7 +474,7 @@ namespace RINGMesh {
                     vec3 direction = v_prev - intersections[index].intersection_ ;
                     bool sign =
                         dot( direction,
-                            model_->surface( intersections[index].surface_id_ ).facet_normal(
+                            model_->surface( intersections[index].surface_id_ ).normal(
                                 intersections[index].trgl_id_ ) ) > 0 ;
                     last_sign = sign ;
                     index_t region = find_region(
@@ -571,7 +571,7 @@ namespace RINGMesh {
                 index_t index = indices[0] ;
                 vec3 direction = v_from - intersections[index].intersection_ ;
                 bool sign = dot( direction,
-                    model_->surface( intersections[index].surface_id_ ).facet_normal(
+                    model_->surface( intersections[index].surface_id_ ).normal(
                         intersections[index].trgl_id_ ) ) > 0 ;
                 last_sign = sign ;
                 region = find_region( *model_, intersections[index].surface_id_,
