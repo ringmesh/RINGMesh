@@ -109,11 +109,11 @@ namespace RINGMesh {
         const std::vector< std::pair< index_t, bool > >& boundaries )
     {
         Region& U = model_.universe_ ;
-        U.set_name( "Universe" ) ;
+        set_element_name( U.gme_id() ,"Universe" ) ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
             ringmesh_assert( boundaries[ i ].first < model_.nb_surfaces() ) ;
-            U.add_boundary(
+            add_element_boundary( U.gme_id() ,
                 gme_t( GME::SURFACE, boundaries[ i ].first ), boundaries[ i ].second ) ;
         }
     }
@@ -233,7 +233,7 @@ namespace RINGMesh {
     /*!
     * @brief ONGOING WORK. Removes properly some elements of the Boundary Model.
     *
-    * @param[in] elements: in input the elements the client wants to
+    * @param[in] elements_to_remove: in input the elements the client wants to
     * remove, in output all the removed elements (dependencies of ).
     *
     * Calls get_dependent_elements on each elements of \p elements_to_remove.
@@ -335,7 +335,6 @@ namespace RINGMesh {
     /*!
     * @brief Delete elements and remove all references to them in the model
     *
-    * @param[in] T Type of the elements
     * @param[in,out] to_erase For each type of element T,
     *        store a vector of the size of model_.nb_elements(T) in which
     *        elements are flagged with NO_ID.
@@ -413,14 +412,14 @@ namespace RINGMesh {
                 ringmesh_debug_assert( to_erase[ i ][ old_id ] != NO_ID ) ;
 
                 // id_ 
-                E.set_id( to_erase[ i ][ old_id ] ) ;
+                E.id_.index = to_erase[ i ][ old_id ] ;
                 // boundary_
                 if( E.nb_boundaries() > 0 ) {
                     GME::TYPE B = GME::boundary_type( T ) ;
                     ringmesh_debug_assert( B < GME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_boundaries(); ++k ) {
-                        E.set_boundary( k,
-                                        gme_t( B, to_erase[ B ][ E.boundary_id( k ).index ] ) ) ;
+                        set_element_boundary( E.gme_id(), k,
+                            gme_t( B, to_erase[B][E.boundary_id( k ).index] ) ) ;
                     }
                 }
                 // in_boundary
@@ -428,24 +427,24 @@ namespace RINGMesh {
                     GME::TYPE IB = GME::in_boundary_type( T ) ;
                     ringmesh_debug_assert( IB < GME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
-                        E.set_in_boundary( k,
-                                           gme_t( IB,
-                                           to_erase[ IB ][ E.in_boundary_id( k ).index ] ) ) ;
+                        set_element_in_boundary( E.gme_id(), k,
+                            gme_t( IB,
+                                to_erase[IB][E.in_boundary_id( k ).index] ) ) ;
                     }
                 }
                 // parent_
                 if( E.has_parent() ) {
                     GME::TYPE P = GME::parent_type( T ) ;
                     ringmesh_debug_assert( P < GME::NO_TYPE ) ;
-                    E.set_parent( gme_t( P, to_erase[ P ][ E.parent_id().index ] ) ) ;
+                    set_element_parent( E.gme_id(), gme_t( P, to_erase[ P ][ E.parent_id().index ] ) ) ;
                 }
                 // children_ 
                 if( E.nb_children() > 0 ) {
                     GME::TYPE C = GME::child_type( T ) ;
                     ringmesh_debug_assert( C < GME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_children(); ++k ) {
-                        E.set_child( k,
-                                     gme_t( C, to_erase[ C ][ E.child_id( k ).index ] ) ) ;
+                        set_element_child( E.gme_id(), k,
+                            gme_t( C, to_erase[C][E.child_id( k ).index] ) ) ;
                     }
                 }
                 // Clean the vectors in the element
@@ -459,8 +458,9 @@ namespace RINGMesh {
         {
             Region& U = model_.universe_ ;
             for( index_t i = 0; i < U.nb_boundaries(); ++i ) {
-                U.GeoModelElement::set_boundary(
-                    i, gme_t( GME::SURFACE, to_erase[ GME::SURFACE ][ U.boundary_id( i ).index ] ) )  ;
+                set_element_boundary( U.gme_id(), i,
+                    gme_t( GME::SURFACE,
+                        to_erase[GME::SURFACE][U.boundary_id( i ).index] ) ) ;
             }
             erase_invalid_element_references( model_.universe_ ) ;
         }
@@ -500,7 +500,6 @@ namespace RINGMesh {
         const GeoModelElement& rhs,
         const GeoModel& model )
     {
-        lhs.id_ = rhs.id_ ;
         lhs.name_ = rhs.name_ ;
         lhs.geol_feature_ = rhs.geol_feature_ ;
         lhs.boundaries_ = rhs.boundaries_ ;
@@ -587,7 +586,7 @@ namespace RINGMesh {
                     if( E.boundaries_[ i ] == invalid_boundary ) {
                         offset++ ;
                     } else {
-                        R.set_side( i, R.side( i+offset ) ) ;
+                        R.sides_[i] = R.side( i+offset ) ;
                     }
                 }
             }

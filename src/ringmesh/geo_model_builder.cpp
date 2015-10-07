@@ -570,7 +570,7 @@ namespace {
             for( index_t i = 0; i < B.model().nb_elements( p_type ); ++i ) {
                 const GME& p = B.model().element( gme_t( p_type, i ) ) ;
                 for( index_t j = 0; j < p.nb_children(); ++j ) {
-                    B.set_parent( p.child_id( j ), gme_t( p_type, i ) ) ;
+                    B.set_element_parent( p.child_id( j ), gme_t( p_type, i ) ) ;
                 }
             }
         }
@@ -590,7 +590,7 @@ namespace {
                 gme_t cur_child = gme_t( c_type, i ) ;
                 const gme_t& parent = B.model().element( cur_child ).parent_id() ;
                 if( parent.is_defined() ) {
-                    B.add_child( parent, cur_child ) ;
+                    B.add_element_child( parent, cur_child ) ;
                 }
             }
         }
@@ -1256,7 +1256,7 @@ namespace RINGMesh {
                                 } else {
                                     region_id -= nb_tface + 1 ; // Remove Universe region
                                     // Correction because ids begin at 1 in the file
-                                    add_child( layer_id,
+                                    add_element_child( layer_id,
                                         gme_t( GME::REGION, region_id - 1 ) ) ;
                                 }
                             }
@@ -1714,7 +1714,7 @@ namespace RINGMesh {
                 }
                 set_element_name( contact_id, name ) ;
             }
-            add_child( contact_id, gme_t( GME::LINE, i ) ) ;
+            add_element_child( contact_id, gme_t( GME::LINE, i ) ) ;
         }
     }
 
@@ -1740,7 +1740,7 @@ namespace RINGMesh {
         }
 
         gme_t id = create_element( GME::SURFACE ) ;
-        set_parent( id, parent ) ;
+        set_element_parent( id, parent ) ;
         set_element_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
@@ -1783,7 +1783,6 @@ namespace RINGMesh {
                     GME::TYPE t = match_type( in.field( 0 ) ) ;
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t element( t, id ) ;
-                    set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
                     set_element_geol_feature( element,
                         GME::determine_geological_type( in.field( 3 ) ) ) ;
@@ -1791,7 +1790,7 @@ namespace RINGMesh {
                     in.get_line() ;
                     in.get_fields() ;
                     for( index_t c = 0; c < in.nb_fields(); c++ ) {
-                        add_child( element,
+                        add_element_child( element,
                             gme_t( GME::child_type( t ), in.field_as_uint( c ) ) ) ;
                     }
                 }
@@ -1807,7 +1806,6 @@ namespace RINGMesh {
                     }
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t element( GME::REGION, id ) ;
-                    set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
                     // Second line : signed indices of boundaries
                     in.get_line() ;
@@ -1884,7 +1882,6 @@ namespace RINGMesh {
                     }
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t element( GME::CORNER, id ) ;
-                    set_element_index( element ) ;
                     vec3 point( read_double( in, 2 ), read_double( in, 3 ),
                         read_double( in, 4 ) ) ;
                     set_element_vertex( element, 0, point, false ) ;
@@ -1894,7 +1891,6 @@ namespace RINGMesh {
                 else if( match_type( in.field( 0 ) ) == GME::LINE ) {
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t cur_element( GME::LINE, id ) ;
-                    set_element_index( cur_element ) ;
 
                     // Following information: vertices of the line
                     in.get_line() ;
@@ -1974,7 +1970,6 @@ namespace RINGMesh {
                 else if( match_type( in.field( 0 ) ) == GME::SURFACE ) {
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t cur_element( GME::SURFACE, id ) ;
-                    set_element_index( cur_element ) ;
 
                     // Read the surface vertices and their attributes
                     in.get_line() ;

@@ -287,13 +287,14 @@ namespace RINGMesh {
          * \name Accessors to basic information
          * @{
          */
-        bool has_name() const
-        {
-            return name() != "" ;
-        }
+
         const GeoModel& model() const
         {
             return model_ ;
+        }
+        bool has_name() const
+        {
+            return name() != "" ;
         }
         const std::string& name() const
         {
@@ -363,84 +364,6 @@ namespace RINGMesh {
             return children_[x] ;
         }
         const GeoModelElement& child( index_t x ) const ;
-
-    private:
-        /*!@}
-         * \name Modification of the element
-         * @{
-         */
-        void set_id( index_t id )
-        {
-            id_.index = id ;
-        }
-        void set_name( const std::string& name )
-        {
-            name_ = name ;
-        }
-        void set_geological_feature( GEOL_FEATURE type )
-        {
-            geol_feature_ = type ;
-        }
-
-        void add_boundary( const gme_t& b )
-        {
-            ringmesh_debug_assert( b.is_defined() ) ;
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            boundaries_.push_back( b ) ;
-        }
-
-        void set_boundary( index_t id, const gme_t& b )
-        {
-            /// No check on the validity of the index of the element b
-            /// NO_ID is used to flag elements to delete            
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            ringmesh_debug_assert( id < nb_boundaries() ) ;
-            boundaries_[id] = b ;
-        }
-
-        void add_in_boundary( const gme_t& in_b )
-        {
-            ringmesh_debug_assert( in_b.is_defined() ) ;
-            ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
-            in_boundary_.push_back( in_b ) ;
-        }
-
-        void set_in_boundary( index_t id, const gme_t& in_b )
-        {
-            /// No check on the validity of the index of the element in_b
-            /// NO_ID is used to flag elements to delete 
-            ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
-            ringmesh_debug_assert( id < nb_in_boundary() ) ;
-            in_boundary_[id] = in_b ;
-        }
-
-        void set_parent( const gme_t& p )
-        {
-            /// No check on the validity of the index of the element p
-            /// NO_ID is used to flag elements to delete 
-            ringmesh_debug_assert( parent_type( id_.type ) == p.type ) ;
-            parent_ = p ;
-        }
-
-        void add_child( const gme_t& c )
-        {
-            ringmesh_debug_assert( c.is_defined() ) ;
-            ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
-            children_.push_back( c ) ;
-        }
-
-        void set_child( index_t id, const gme_t& c )
-        {
-            /// No check on the validity of the index of the element c
-            /// NO_ID is used to flag elements to delete 
-            ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
-            ringmesh_debug_assert( id < nb_children() ) ;
-            children_[id] = c ;
-        }
-
-        /*!
-         * @}
-         */
 
     protected:
         /// Reference to the GeoModel owning this element
@@ -964,29 +887,6 @@ namespace RINGMesh {
     private:
 
         virtual bool is_mesh_valid() const ;
-
-        void set_side( index_t i, bool value )
-        {
-            sides_[i] = value ;
-        }
-
-        void add_boundary( const gme_t& b, bool side )
-        {
-            ringmesh_debug_assert( b.is_defined() ) ;
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            boundaries_.push_back( b ) ;
-            sides_.push_back( side ) ;
-        }
-
-        void set_boundary( index_t id, const gme_t& b, bool side )
-        {
-            /// No check on the validity of the index of the element b
-            /// NO_ID is used to flag elements to delete
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            ringmesh_debug_assert( id < nb_boundaries() ) ;
-            boundaries_[id] = b ;
-            sides_[id] = side ;
-        }
 
     private:
         /*! Additional information to store oriented boundary Surfaces
