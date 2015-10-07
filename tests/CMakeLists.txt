@@ -1,53 +1,40 @@
 # CMakeLists for RINGMesh tests
-
-link_directories(${PROJECT_BINARY_DIR}/lib)
-
-# Look at the test with cmake
-# DO A LOOP here on a list of test name at least !!
+# This file is included by the root cmake list of the project 
 
 set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests/src)
 
-# If necessary, use the RELATIVE flag, otherwise each source file may be listed 
-# with full pathname. RELATIVE may makes it easier to extract an executable name
-# automatically.
-# file( GLOB APP_SOURCES RELATIVE app/*.cxx )
+# Where are the binaries
+link_directories(${PROJECT_BINARY_DIR}/lib)
 
-# file(GLOB TESTS RELATIVE ${TEST_DIRECTORY} *.cpp)
-# tiens on peut faire des dossiers de vcproj
-# il nous en faut un pour les tests, ce sera plus joli
-# Creates folder "libraries" and adds target project (math.vcproj)
+# The libraries with which the test are supposed to link
+set(RINGMESH_LIBS geogram ringmesh)
 
-# Create folder of projects
-# set_property(TARGET math PROPERTY FOLDER "libraries")
+# Get the name of the test files 
+file(GLOB TESTS RELATIVE ${TEST_DIRECTORY} "${TEST_DIRECTORY}/*.cpp")
 
-# foreach(testsourcefile ${TESTS} )
-    # I used a simple string replace, to cut off .cpp.
-    # string( REPLACE ".cpp" "" testname ${testsourcefile} )
-    # add_executable( ${testname} ${testsourcefile} )
-    # Make sure YourLib is linked to each app
-    # target_link_libraries( ${testname} YourLib )
-# endforeach( testsourcefile ${APP_SOURCES} )
-
-include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${GEOGRAM_PATH}/src/lib)
-add_executable(test_io_bm ${TEST_DIRECTORY}/test_io_bm/main.cpp)
-target_link_libraries(test_io_bm RINGMesh geogram)
-
-# add_executable(test_io_ml ${PROJECT_SOURCE_DIR}/main.cpp)
-# target_link_libraries(test_io_ml RINGMesh geogram)
-
-# add_executable(test_make_unique ${PROJECT_SOURCE_DIR}/main.cpp)
-# target_link_libraries(test_make_unique RINGMesh geogram)
-
-# add_executable(test_rotation ${PROJECT_SOURCE_DIR}/main.cpp)
-# target_link_libraries(test_rotation RINGMesh geogram)
-
-# add_executable(test_tetrahedralize ${PROJECT_SOURCE_DIR}/main.cpp)
-# target_link_libraries(test_tetrahedralize RINGMesh geogram)
-
-# add_executable(test_build_bm_surface ${PROJECT_SOURCE_DIR}/main.cpp)
-# target_link_libraries(test_build_bm_surface RINGMesh geogram)
-
-# add_executable(test_get_dependent_elements ${TEST_DIRECTORY}//main.cpp)
-# target_link_libraries(test_get_dependent_elements RINGMesh geogram)
-
+# For all the test files found
+foreach(testsourcefile ${TESTS})
+    # Get the name of the file without extension
+    get_filename_component(testname ${testsourcefile} NAME_WE)
+    
+    # Set the include directories 
+    include_directories(${PROJECT_SOURCE_DIR}/include)
+    include_directories(${GEOGRAM_PATH}/src/lib)
+    
+    # Add the target for that file
+    add_executable(${testname} ${TEST_DIRECTORY}/${testsourcefile})
+    
+    # Link RINGMesh Make sure YourLib is linked to each app
+    target_link_libraries(${testname} geogram RINGMesh)
+    
+    add_dependencies(${testname} RINGMesh)
+    
+    # Set the same output directories than for RINGMesh
+    # So that the tests can be run smoothly on Windows
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+    
+    # Add the project to a folder of projects for the tests 
+    set_property(TARGET ${testname} PROPERTY FOLDER "Tests")
+endforeach(testsourcefile ${TESTS})
