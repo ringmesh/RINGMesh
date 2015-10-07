@@ -346,7 +346,7 @@ namespace RINGMesh {
     bool GeoModelElement::operator==(
         const GeoModelElement& rhs ) const
     {
-        if( model_ != rhs.model_ ) {
+        if( &model_ != &rhs.model_ ) {
             return false ;
         }
         if( id_ != rhs.id_ ) {
@@ -390,14 +390,7 @@ namespace RINGMesh {
     {
         bool valid = true ;
 
-        /// 1. Check the model
-        if( !has_model() ) {
-            GEO::Logger::err( "GeoModelElement" )
-                << " Element associated to no model " << std::endl ;
-            valid = false ; 
-        }
-
-        /// 2. Check the validity of identification information
+        /// 1. Check the validity of identification information
         ///    in the model - Universe has no index, but a TYPE
         if( gme_id() == gme_t() ) {
             GEO::Logger::err( "GeoModelElement" )
@@ -437,7 +430,7 @@ namespace RINGMesh {
             return valid ;
         }
 
-        /// 3. Check that required information for the TYPE is defined
+        /// 2. Check that required information for the TYPE is defined
         ///    and that reverse information is stored by the corresponding
         ///    elements
         TYPE T = gme_id().type ;
@@ -577,7 +570,7 @@ namespace RINGMesh {
     const GeoModelElement& GeoModelElement::parent() const
     {
         ringmesh_assert( parent_id().is_defined() ) ;
-        return model_->element( parent_id() ) ;
+        return model().element( parent_id() ) ;
     }
 
 
@@ -589,7 +582,7 @@ namespace RINGMesh {
     const GeoModelElement& GeoModelElement::boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_boundaries() ) ;
-        return model_->element( boundary_id( x ) ) ;
+        return model().element( boundary_id( x ) ) ;
     }
 
 
@@ -601,7 +594,7 @@ namespace RINGMesh {
     const GeoModelElement& GeoModelElement::in_boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_in_boundary() ) ;
-        return model_->element( in_boundary_id( x ) ) ;
+        return model().element( in_boundary_id( x ) ) ;
     }
 
 
@@ -613,29 +606,8 @@ namespace RINGMesh {
     const GeoModelElement& GeoModelElement::child( index_t x ) const
     {
         ringmesh_assert( x < nb_children() ) ;
-        return model_->element( child_id( x ) ) ;
+        return model().element( child_id( x ) ) ;
     }
-
-
-    /*!
-     * @brief Copy all attributes except model_ from @param rhs to this element
-     * @param[in] rhs To copy from
-     * @param[in] model Model to associate to this element
-     */
-    void GeoModelElement::copy_macro_topology(
-        const GeoModelElement& rhs,
-        GeoModel& model )
-    {
-        model_ = &model ;
-        id_ = rhs.id_ ;
-        name_ = rhs.name_ ;
-        geol_feature_ = rhs.geol_feature_ ;
-        boundaries_ = rhs.boundaries_ ;
-        in_boundary_ = rhs.in_boundary_ ;
-        parent_ = rhs.parent_ ;
-        children_ = rhs.children_ ;
-    }
-
 
     /*!
      * @brief Checks if this element define the model external boundary
@@ -735,7 +707,7 @@ namespace RINGMesh {
     {
         typedef GeoModelMeshVertices BMV ;
         const std::vector< BMV::VertexInGME >& gme_vertices =
-            model_->mesh.vertices.gme_vertices( model_vertex_id ) ;
+            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
 
         for( index_t i = 0; i < gme_vertices.size(); i++ ) {
             const BMV::VertexInGME& info = gme_vertices[ i ] ;
@@ -771,7 +743,7 @@ namespace RINGMesh {
             index_t model_v = model_vertex_id( v ) ;
             
             const std::vector< GeoModelMeshVertices::VertexInGME >&
-                backward = model_->mesh.vertices.gme_vertices( model_v ) ;
+                backward = model().mesh.vertices.gme_vertices( model_v ) ;
 
             GeoModelMeshVertices::VertexInGME cur_v( gme_id(), v ) ;
             index_t count_v = static_cast< index_t >( 
@@ -870,10 +842,8 @@ namespace RINGMesh {
      * @param[in] model The parent model
      * @param[in] id The index of the line in the lines_ vector of the parent model
      */
-    Line::Line(
-        GeoModel* model,
-        index_t id ) :
-        GeoModelMeshElement( model, LINE, id )
+    Line::Line( const GeoModel& model, index_t id )
+        : GeoModelMeshElement( model, LINE, id )
     {
     }
 

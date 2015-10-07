@@ -242,9 +242,9 @@ namespace RINGMesh {
          * @param[in] id Index of the element in the corresponding vector in the model
          */
         GeoModelElement(
-            GeoModel* model = NULL,
-            TYPE element_type = NO_TYPE,
-            index_t id = NO_ID )
+            const GeoModel& model,
+            TYPE element_type,
+            index_t id )
             :
                 model_( model ),
                 id_( element_type, id ),
@@ -293,11 +293,7 @@ namespace RINGMesh {
         }
         const GeoModel& model() const
         {
-            return *model_ ;
-        }
-        bool has_model() const
-        {
-            return model_ != NULL ;
+            return model_ ;
         }
         const std::string& name() const
         {
@@ -368,24 +364,11 @@ namespace RINGMesh {
         }
         const GeoModelElement& child( index_t x ) const ;
 
-    protected:
-        virtual void copy_macro_topology(
-            const GeoModelElement& rhs,
-            GeoModel& model ) ;
-
     private:
         /*!@}
          * \name Modification of the element
          * @{
          */
-        void set_model( GeoModel* m )
-        {
-            model_ = m ;
-        }
-        void set_element_type( TYPE t )
-        {
-            id_.type = t ;
-        }
         void set_id( index_t id )
         {
             id_.index = id ;
@@ -460,8 +443,8 @@ namespace RINGMesh {
          */
 
     protected:
-        /// Pointer to the GeoModel owning this element
-        GeoModel* model_ ;
+        /// Reference to the GeoModel owning this element
+        const GeoModel& model_ ;
 
         /// Unique identifier of the GeoModelElement in the model
         gme_t id_ ;
@@ -508,9 +491,9 @@ namespace RINGMesh {
         const static std::string model_vertex_id_att_name ;
 
         GeoModelMeshElement(
-            GeoModel* model = NULL,
-            TYPE element_type = NO_TYPE,
-            index_t id = NO_ID )
+            const GeoModel& model,
+            TYPE element_type,
+            index_t id )
             : GeoModelElement( model, element_type, id )
         {
             model_vertex_id_.bind( mesh_.vertices.attributes(),
@@ -612,11 +595,9 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
-        Corner( GeoModel* model = nil, index_t id = NO_ID, const vec3& vertex =
-            vec3() )
+        Corner( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, CORNER, id )
         {
-            mesh_.vertices.create_vertex( vertex.data() ) ;
         }
 
         ~Corner()
@@ -643,7 +624,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
-        Line( GeoModel* model = nil, index_t id = NO_ID ) ;
+        Line( const GeoModel& model, index_t id ) ;
 
         ~Line()
         {
@@ -698,7 +679,7 @@ namespace RINGMesh {
     public:
         const static index_t NO_ADJACENT = index_t( -1 ) ;
 
-        Surface( GeoModel* model = nil, index_t id = NO_ID )
+        Surface( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, SURFACE, id ), tools( *this )
         {
         }
@@ -942,7 +923,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
-        Region( GeoModel* model = nil, index_t id = NO_ID )
+        Region( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, REGION, id ), tools( *this )
         {
         }
@@ -981,13 +962,6 @@ namespace RINGMesh {
          */
 
     private:
-        virtual void copy_macro_topology(
-            const GeoModelElement& rhs,
-            GeoModel& model )
-        {
-            GeoModelElement::copy_macro_topology( rhs, model ) ;
-            sides_ = dynamic_cast< const Region& >( rhs ).sides_ ;
-        }
 
         virtual bool is_mesh_valid() const ;
 

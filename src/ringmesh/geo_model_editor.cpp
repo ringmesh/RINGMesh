@@ -48,7 +48,7 @@ namespace RINGMesh {
     /*!
     * @brief Mini-factory. Create an empty element of the right type
     */
-    GME* new_element( GME::TYPE T, GeoModel* M, index_t id )
+    GME* new_element( GME::TYPE T, const GeoModel& M, index_t id )
     {
 
         if( T == GME::CORNER ) {
@@ -79,7 +79,7 @@ namespace RINGMesh {
         ringmesh_assert( id != NO_ID ) ;
         if( type >= GME::CORNER && type < GME::NO_TYPE ) {
             model_.modifiable_elements( type ).push_back(
-                new_element( type, &model_, id ) ) ;
+                new_element( type, model_, id ) ) ;
             return gme_t( type, id ) ;
         } else {
             ringmesh_assert_not_reached;
@@ -95,7 +95,7 @@ namespace RINGMesh {
         std::vector< GME* >& store = model_.modifiable_elements( type ) ;
         store.resize( nb, nil ) ;
         for( index_t i = 0; i < nb; i++ ) {
-            store[ i ] = new_element( type, &model_, i ) ;
+            store[ i ] = new_element( type, model_, i ) ;
         }
     }
 
@@ -110,8 +110,6 @@ namespace RINGMesh {
     {
         Region& U = model_.universe_ ;
         U.set_name( "Universe" ) ;
-        U.set_element_type( GME::REGION ) ;
-        U.set_model( &model_ ) ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
             ringmesh_assert( boundaries[ i ].first < model_.nb_surfaces() ) ;
@@ -483,18 +481,38 @@ namespace RINGMesh {
             store.resize( from.nb_elements( T ), nil ) ;
 
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
-                store[e] = new_element( T, &model_, e ) ;
+                store[e] = new_element( T, model_, e ) ;
                 ringmesh_debug_assert( store[ e ] != nil ) ;
             }
             RINGMESH_PARALLEL_LOOP
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
-                store[e]->copy_macro_topology( from.element( gme_t( T, e ) ),
+                copy_macro_topology( *store[e], from.element( gme_t( T, e ) ),
                     model_ ) ;
             }
         }
-        model_.universe_.copy_macro_topology( from.universe_, model_) ;
+        copy_macro_topology( model_.universe_, from.universe_, model_) ;
 
         model_.nb_elements_per_type_ = from.nb_elements_per_type_ ;
+    }
+
+    void GeoModelEditor::copy_macro_topology(
+        GeoModelElement& lhs,
+        const GeoModelElement& rhs,
+        const GeoModel& model )
+    {
+        lhs.id_ = rhs.id_ ;
+        lhs.name_ = rhs.name_ ;
+        lhs.geol_feature_ = rhs.geol_feature_ ;
+        lhs.boundaries_ = rhs.boundaries_ ;
+        lhs.in_boundary_ = rhs.in_boundary_ ;
+        lhs.parent_ = rhs.parent_ ;
+        lhs.children_ = rhs.children_ ;
+
+        if( lhs.gme_id().type == GME::REGION ) {
+            Region& R_lhs = dynamic_cast< Region& >( lhs ) ;
+            const Region& R_rhs = dynamic_cast< const Region& >( rhs ) ;
+            R_lhs.sides_ = R_rhs.sides_ ;
+        }
     }
 
     /*!
