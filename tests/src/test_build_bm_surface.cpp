@@ -32,11 +32,13 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
+
+#include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
@@ -52,7 +54,10 @@ int main( int argc, char** argv )
     GEO::Logger::out("TEST") << "Test GeoModel building from Surface" << std::endl ;
 
 	GEO::Mesh in ; 
-    GEO::mesh_load(  "../data/modelA6.mesh", in ) ;
+    std::string file_name = ringmesh_test_data_path ;
+    file_name += "modelA6.mesh" ;
+
+    GEO::mesh_load( file_name, in ) ;
     RINGMesh::GeoModel model ;
 	
 	RINGMesh::GeoModelBuilderSurface BB( model ) ;

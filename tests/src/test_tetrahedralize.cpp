@@ -32,11 +32,13 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
+
+#include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
@@ -46,15 +48,21 @@
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
-
+    /*! @ todo Rewrite this ! 
+     * Data are not here, so ... [JP]
+     */
+    /*
     GEO::Logger::out("TEST") << "Test tetrahedralize for corbi.ml" << std::endl ;
+    
+    std::string model_file_name = ringmesh_test_data_path ;
+    model_file_name += "corbi_out.ml" ;
 
     GeoModel in ;
-    if( !model_load( "../data/corbi_out.bm", in ) )
+    if( !model_load( model_file_name, in ) )
         return 1 ;
 
     ringmesh_assert_not_reached ;
-
+    */
 //    MacroMesh mm(in) ;
 //    mm.compute_tetmesh("TetGen") ;
 //

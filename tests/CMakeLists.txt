@@ -3,8 +3,17 @@
 
 set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests/src)
 
-# Where are the binaries
-link_directories(${PROJECT_BINARY_DIR}/lib)
+# Create the directory for the outputs of the tests
+set(test_output_directory ${PROJECT_BINARY_DIR}/tests/output)
+file(MAKE_DIRECTORY ${test_output_directory}) 
+
+# Configure a header file to pass some of the CMake settings
+# to the source code
+set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
+configure_file(
+  "${TEST_DIRECTORY}/ringmesh_tests_config.h.in"
+   ${test_config_file}
+)
 
 # The libraries with which the test are supposed to link
 set(RINGMESH_LIBS geogram ringmesh)
@@ -20,7 +29,8 @@ foreach(testsourcefile ${TESTS})
     # Set the include directories 
     include_directories(${PROJECT_SOURCE_DIR}/include)
     include_directories(${GEOGRAM_PATH}/src/lib)
-    
+    include_directories(${PROJECT_BINARY_DIR})
+        
     # Add the target for that file
     add_executable(${testname} ${TEST_DIRECTORY}/${testsourcefile})
     

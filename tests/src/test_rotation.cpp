@@ -32,11 +32,13 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
+
+#include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geometry.h>
 #include <geogram/basic/logger.h>
