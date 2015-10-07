@@ -1,9 +1,11 @@
-IF(WIN32)
-    link_directories(${CMAKE_SOURCE_DIR}/build/ringmesh/${GEOGRAM_PLATFORM}/lib/${CMAKE_BUILD_TYPE})
-ELSE(WIN32)
-    link_directories(${CMAKE_SOURCE_DIR}/build/ringmesh/${GEOGRAM_PLATFORM}-${CMAKE_BUILD_TYPE}/lib)
-ENDIF(WIN32)
-aux_source_directories(SRC "" .)
-add_executable(ringmeshconvert ${SRC})
+# CMakeList for RINGMesh file format converter subproject
+
+# Set the target as an executable 
+add_executable(ringmeshconvert main.cpp)
+   
 target_link_libraries(ringmeshconvert RINGMesh geogram)
+
+# Add the project to a folder of projects for the tests 
+set_property(TARGET ringmeshconvert PROPERTY FOLDER "Utilities")
+
 

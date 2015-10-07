@@ -38,6 +38,8 @@
  *     FRANCE
  */
 
+#include <ringmesh/common.h>
+
 #include <ringmesh/command_line.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>

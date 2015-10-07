@@ -40,9 +40,10 @@
 
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
+#include <ringmesh/gfx.h>
+
 #ifdef RINGMESH_WITH_GRAPHICS
 
-#include <ringmesh/gfx.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_element.h>
 
