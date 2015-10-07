@@ -164,7 +164,6 @@ namespace RINGMesh {
         }
     }
 
-
     vec3 model_element_cell_center( const GeoModelElement& E, index_t c )
     {
         vec3 result( 0., 0., 0. ) ;
