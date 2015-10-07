@@ -2,20 +2,26 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8 FATAL_ERROR)
 PROJECT(MULTICONFIG C)
 # -->
 
+set(CMAKE_CONFIGURATION_TYPES 
+      Debug Release CACHE CMAKE_CONFIGURATION_TYPES INTERNAL)
+
+option(TOTO "Use Open MP" OFF)
+
 if(UNIX)
     if(NOT TOTO)
         foreach(i IN LISTS CMAKE_CONFIGURATION_TYPES)
             message( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})
             set(project_binary_dir_config ${PROJECT_BINARY_DIR}/${i})
-            file(MAKE_DIRECTORY project_binary_dir_config)
+            file(MAKE_DIRECTORY ${project_binary_dir_config})
             execute_process(
                     COMMAND ${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}
                         -DCMAKE_BUILD_TYPE=${i}
                         #-DCACHE_DIR=${PROJECT_BINARY_DIR}
                         -DTOTO:BOOL=ON
-                        -DPROJECT_BINARY_DIR:STRING= project_binary_dir_config
-                    WORKING_DIRECTORY project_binary_dir_config)
-            endif()
+                        -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
+                    WORKING_DIRECTORY ${project_binary_dir_config})
         ENDFOREACH()
     endif(NOT TOTO)
 endif(UNIX)
+
+ADD_EXECUTABLE(main main.c)
