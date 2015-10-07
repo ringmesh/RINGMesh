@@ -19,23 +19,22 @@ include(ExternalProject)
 # Define the project RINGMesh      
 project(RINGMesh)
 
-if(UNIX)
-    if( not ${SKIP} )
-    foreach(i IN LISTS CMAKE_CONFIGURATION_TYPES)
-        set(project_binary_dir_config  ${CMAKE_SOURCE_DIR}/build/ringmesh/${i})
-        file(MAKE_DIRECTORY ${project_binary_dir_config})
-        message( avant execute )
-        execute_process(
-           COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
-              -DSKIP:BOOL=ON
-              -DCMAKE_BUILD_TYPE=${i}
-              -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
-              WORKING_DIRECTORY ${project_binary_dir_config})
-      message( apres execute )
-    endforeach()
-    return()
+if(UNIX)    
+    if( CMAKE_BUILD_TYPE STREQUAL "")   
+      foreach(i IN LISTS CMAKE_CONFIGURATION_TYPES)
+          set(project_binary_dir_config  ${CMAKE_SOURCE_DIR}/build/ringmesh/${i})
+          file(MAKE_DIRECTORY ${project_binary_dir_config})
+          execute_process(
+             COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
+                -DSKIP:BOOL=ON
+                -DCMAKE_BUILD_TYPE=${i}
+                -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
+                WORKING_DIRECTORY ${project_binary_dir_config})
+      endforeach()
+      return()
     endif()
 endif(UNIX)
+
 # Define version number 
 # It is then exported to the configuration file
 set (RINGMesh_VERSION_MAJOR 1)
