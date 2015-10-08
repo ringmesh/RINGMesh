@@ -103,7 +103,7 @@ elseif(UNIX)
 else(WIN32)
     # Nothing else really supported
     message(Your platform is not supported. Please modify the cmakelist file.)
-endif(UNIX)
+endif(WIN32)
 
 #------------------------------------------------------------------------------------------------
 # Configure a header file to pass on some of the CMake settings
