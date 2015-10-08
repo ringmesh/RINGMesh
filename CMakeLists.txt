@@ -64,7 +64,7 @@ if(UNIX)
           # and pass on all the options
           execute_process(
              COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
-                -DCMAKE_BUILD_TYPE=${config}
+                -DCMAKE_BUILD_TYPE:STRING=${config}
                 -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
                 -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
                 -DMG_TETRA:STRING=${MG_TETRA}
@@ -146,11 +146,12 @@ ExternalProject_Add(geogram_ext
   #--Configure step-------------
   SOURCE_DIR ${GEOGRAM_PATH}
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
-        -G ${CMAKE_GENERATOR} -DVORPALINE_PLATFORM:STRING=${geoplatform}
+        -G ${CMAKE_GENERATOR} 
+        -DVORPALINE_PLATFORM:STRING=${geoplatform}
         -DGEOGRAM_WITH_TETGEN:BOOL=ON
         -DGEOGRAM_WITH_MEDIT:BOOL=ON 
-        -DGEOGRAM_WITH_GRAPHICS=${RINGMESH_WITH_GRAPHICS}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}  
+        -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}  
   
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}  
