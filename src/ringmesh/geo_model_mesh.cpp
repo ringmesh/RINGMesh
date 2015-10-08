@@ -198,7 +198,6 @@ namespace RINGMesh {
         index_t index = 0 ;
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            std::cout << t << "   -  " << gm_.nb_elements( T ) << std::endl ;
             for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
                 GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
                 if( E.nb_vertices() == 0 ) continue ;
