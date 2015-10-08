@@ -266,11 +266,11 @@ endif()
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
 if(RINGMESH_WITH_GRAPHICS)
-    add_subdirectory(src/bin/ringmeshview)
+    add_subdirectory(src/ringmeshview)
 endif(RINGMESH_WITH_GRAPHICS)
 
 if(RINGMESH_WITH_UTILITIES)
-    add_subdirectory(src/bin/ringmeshconvert)
+    add_subdirectory(src/ringmeshconvert)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)
