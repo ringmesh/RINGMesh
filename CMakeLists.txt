@@ -285,7 +285,7 @@ if(RINGMESH_WITH_UTILITIES)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)
-    message(STATUS "Configuring RINGMesh with tests")
+    message(STATUS "Configuring RIGNGMesh with tests")
     add_subdirectory(tests)
 endif(RINGMESH_WITH_TESTS)
 
