@@ -30,7 +30,7 @@ set (RINGMesh_VERSION_MINOR 0)
 # or in command line cmake -D<var>:<type>=<value> MyProjectFolder
 
 # Path to MG_TETRA is asked for to the user in the interface
-set(MG_TETRA "" CACHE FILEPATH "Path to MG-Tetra")
+set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
 
 option(USE_OPENMP "Use Open MP" ON)
 
@@ -84,8 +84,8 @@ else(UNIX)
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
 endif(UNIX)
 
-message(Project binary directory is:  "${PROJECT_BINARY_DIR}") 
-message(Project source directory is: "${PROJECT_SOURCE_DIR}") 
+message(STATUS "Project binary directory is: ${PROJECT_BINARY_DIR}") 
+message(STATUS "Project source directory is: ${PROJECT_SOURCE_DIR}") 
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
@@ -108,7 +108,7 @@ elseif(UNIX)
     set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 else(WIN32)
     # Nothing else really supported
-    message(Your platform is not supported. Please modify the cmakelist file.)
+    message(WARNING "Your platform is not supported. Please modify the cmakelist file.")
 endif(WIN32)
 
 #------------------------------------------------------------------------------------------------
@@ -273,18 +273,22 @@ endif()
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
 if(RINGMESH_WITH_GRAPHICS)
+    message(STATUS "Configuring RIGNGMesh with graphics")
     add_subdirectory(src/ringmeshview)
 endif(RINGMESH_WITH_GRAPHICS)
 
 if(RINGMESH_WITH_UTILITIES)
+    message(STATUS "Configuring RIGNGMesh with utilities")
     add_subdirectory(src/ringmeshconvert)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)
+    message(STATUS "Configuring RIGNGMesh with tests)"
     add_subdirectory(tests)
 endif(RINGMESH_WITH_TESTS)
 
 if(BUILD_DOCUMENTATION)
+    message(STATUS "Configuring RIGNGMesh with doxygen")
     find_package(Doxygen)
     if(NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
