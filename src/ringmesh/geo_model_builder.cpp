@@ -42,6 +42,7 @@
 
 #include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/utils.h>
@@ -70,27 +71,6 @@ namespace {
         std::istringstream iss( in.field( field ) ) ;
         iss >> result >> std::ws ;
         return result ;
-    }
-
-    /*!
-     * @brief Fill the geological info from parent or children
-     *
-     * @details Set the geological feature of a BME to the one of its parent
-     * if it has a parent that has a geol. feature,
-     * or to the one of its first child if it has one with a geol. feature.
-     *
-     * @note The geol feature of \b E whatever its initial value
-     */
-    void fill_element_geological_feature( GeoModelElement& E )
-    {
-        if( E.has_parent() && E.parent().has_geological_feature() ) {
-            E.set_geological_feature( E.parent().geological_feature() ) ;
-        } else if( E.nb_children() > 0 && E.child( 0 ).has_geological_feature() ) {
-            E.set_geological_feature( E.child( 0 ).geological_feature() ) ;
-        }
-
-        /// @todo Paranoia : we should verify that all children
-        /// have the same geological feature
     }
 
     /*************************************************************************/
@@ -168,22 +148,22 @@ namespace {
                     angle_( -99999 ),
                     side_( false )
             {
-                ringmesh_assert( p0 != p1 ) ;
-                ringmesh_assert( p0 != p2 ) ;
-                ringmesh_assert( p1 != p2 ) ;
+                ringmesh_debug_assert( p0 != p1 ) ;
+                ringmesh_debug_assert( p0 != p2 ) ;
+                ringmesh_debug_assert( p1 != p2 ) ;
 
                 vec3 e1 = normalize( p1 - p0 ) ;
                 vec3 e2 = normalize( p2 - p0 ) ;
 
                 N_ = normalize( cross( e1, e2 ) ) ;
-                ringmesh_assert( dot( N_, e1 ) < epsilon ) ;
+                ringmesh_debug_assert( dot( N_, e1 ) < epsilon ) ;
 
                 vec3 B = 0.5 * p1 + 0.5 * p0 ;
                 vec3 p2B = p2 - B ;
                 B_A_ = normalize( p2B - dot( p2B, e1 ) * e1 ) ;
 
-                ringmesh_assert( dot( B_A_, e1 ) < epsilon ) ;
-                ringmesh_assert( B_A_.length() > epsilon ) ;
+                ringmesh_debug_assert( dot( B_A_, e1 ) < epsilon ) ;
+                ringmesh_debug_assert( B_A_.length() > epsilon ) ;
             }
             ;
 
@@ -274,7 +254,7 @@ namespace {
 
         void sort()
         {
-            ringmesh_assert( triangles_.size() > 0 ) ;
+            ringmesh_debug_assert( triangles_.size() > 0 ) ;
 
             std::pair< index_t, bool > default_pair( index_t( -1 ), false ) ;
             sorted_triangles_.resize( 2 * triangles_.size(), default_pair ) ;
@@ -331,7 +311,7 @@ namespace {
             for( index_t i = 0; i < triangles_.size(); ++i ) {
                 TriangleToSort& cur = triangles_[i] ;
                 if( triangles_[i].index_ == 0 ) { // The last to add
-                    ringmesh_assert( i == triangles_.size() - 1 ) ;
+                    ringmesh_debug_assert( i == triangles_.size() - 1 ) ;
                     sorted_triangles_[it].first = cur.surface_index_ ;
                     sorted_triangles_[it].second = cur.side_ ;
                 } else {
@@ -343,7 +323,7 @@ namespace {
                 }
             }
             // All the surfaces must have been sorted
-            ringmesh_assert(
+            ringmesh_debug_assert(
                 std::count( sorted_triangles_.begin(), sorted_triangles_.end(),
                     default_pair ) == 0 ) ;
         }
@@ -369,7 +349,7 @@ namespace {
                             return sorted_triangles_[i + 1] ;
                         }
                     } else {
-                        ringmesh_assert(
+                        ringmesh_debug_assert(
                             sorted_triangles_[i - 1].first
                                 == sorted_triangles_[i].first ) ;
                         if( sorted_triangles_[i - 1].second
@@ -470,6 +450,39 @@ namespace {
     }
 
     /*!
+     * @brief Returns true if the Line has exactly the given vertices
+     *
+     * @param[in] L the line to compare to
+     * @param[in] rhs_vertices Vertices to compare to
+     */
+    bool line_equal( const Line& L, const std::vector< vec3 >& rhs_vertices )
+    {
+        if( L.nb_vertices() != rhs_vertices.size() ) {
+            return false ;
+        }
+
+        bool equal = true ;
+        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+            if( rhs_vertices[i] != L.vertex( i ) ) {
+                equal = false ;
+                break ;
+            }
+        }
+        if( equal ) return true ;
+
+        equal = true ;
+        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+            if( rhs_vertices[i] != L.vertex( L.nb_vertices()-i-1 ) ) {
+                equal = false ;
+                break ;
+            }
+        }
+        if( equal ) return true ;
+
+        return false ;
+    }
+
+    /*!
      * @brief Find or create a line
      *
      * @param[in] BM model to consider
@@ -482,7 +495,7 @@ namespace {
     {
         gme_t result ;
         for( index_t i = 0; i < BMB.model().nb_lines(); ++i ) {
-            if( BMB.model().line( i ).equal( vertices ) ) {
+            if( line_equal( BMB.model().line( i ), vertices ) ) {
                 result = BMB.model().line( i ).gme_id() ;
             }
         }
@@ -557,7 +570,7 @@ namespace {
             for( index_t i = 0; i < B.model().nb_elements( p_type ); ++i ) {
                 const GME& p = B.model().element( gme_t( p_type, i ) ) ;
                 for( index_t j = 0; j < p.nb_children(); ++j ) {
-                    B.set_parent( p.child_id( j ), gme_t( p_type, i ) ) ;
+                    B.set_element_parent( p.child_id( j ), gme_t( p_type, i ) ) ;
                 }
             }
         }
@@ -577,17 +590,204 @@ namespace {
                 gme_t cur_child = gme_t( c_type, i ) ;
                 const gme_t& parent = B.model().element( cur_child ).parent_id() ;
                 if( parent.is_defined() ) {
-                    B.add_child( parent, cur_child ) ;
+                    B.add_element_child( parent, cur_child ) ;
                 }
             }
         }
     }
 
+    /*!
+    * Find a facet and its edge index that are colocalised with an edge
+    * defined by its two model vertex indices
+    * @param[in] ann a ColocatorANN of the Surface \p surface using the keyword FACETS
+    * @param[in] surface the surface where to find the facet
+    * @param[in] model_v0 the first model vertex index of the edge
+    * @param[in] model_v1 the second model vertex index of the edge
+    * @param[out] f the found facet index
+    * @param[out] e the found edge index
+    * @return True if the facet and the edge indices are found
+    */
+    bool find_facet_and_edge(
+        const ColocaterANN& ann,
+        const Surface& surface,
+        index_t model_v0,
+        index_t model_v1,
+        index_t& f,
+        index_t& e )
+    {
+        const vec3& v0 = surface.model().mesh.vertices.vertex( model_v0 ) ;
+        const vec3& v1 = surface.model().mesh.vertices.vertex( model_v1 ) ;
+        vec3 v_bary = 0.5 * ( v0 + v1 ) ;
+
+        index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_cells() ) ;
+        std::vector< index_t > neighbors ;
+        index_t cur_neighbor = 0 ;
+        index_t prev_neighbor = 0 ;
+        do {
+            prev_neighbor = cur_neighbor ;
+            cur_neighbor += nb_neighbors ;
+            cur_neighbor = std::min( cur_neighbor, surface.nb_cells() ) ;
+            neighbors.resize( cur_neighbor ) ;
+            double* dist = (double*)alloca( sizeof( double ) * cur_neighbor ) ;
+            nb_neighbors = ann.get_neighbors( v_bary, cur_neighbor, neighbors,
+                                              dist ) ;
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                f = neighbors[ i ] ;
+                for( index_t j = 0; j < surface.nb_vertices_in_facet( f ); j++ ) {
+                    if( surface.model_vertex_id( f, j ) == model_v0 ) {
+                        index_t j_next = surface.next_in_facet( f, j ) ;
+                        if( surface.model_vertex_id( f, j_next ) == model_v1 ) {
+                            e = j ;
+                            return true ;
+                        }
+                    }
+                }
+            }
+        } while( surface.nb_cells() != cur_neighbor ) ;
+
+        f = Surface::NO_ID ;
+        e = Surface::NO_ID ;
+        return false ;
+    }
+
+
+    bool is_corner_to_duplicate( const GeoModel& BM, index_t corner_id )
+    {
+        if( BM.corner( corner_id ).nb_in_boundary() > 3 ) {
+            return true ;
+        } else {
+            return false ;
+        }
+    }
+
+    void update_facet_corner(
+        Surface& S,
+        const std::vector< index_t >& facets,
+        index_t old,
+        index_t neu )
+    {
+        for( index_t i = 0; i < facets.size(); ++i ) {
+            index_t cur_f = facets[ i ] ;
+            for( index_t cur_v = 0;
+                 cur_v < S.nb_vertices_in_facet( cur_f );
+                 cur_v++ ) {
+                if( S.surf_vertex_id( cur_f, cur_v ) == old ) {
+                    S.mesh().facets.set_vertex( cur_f, cur_v, neu ) ;
+                }
+            }
+        }
+    }
+
+
+
   
 
 }
 
-namespace RINGMesh { 
+namespace RINGMesh {
+
+    /*!
+     * @brief Sets the geometrical position of a vertex
+     *
+     * @param[in] corner_id Index of the corner
+     * @param[in] index Index of the vertex to modify
+     * @param[in] point New coordinates
+     * @param[in] update If true, all the vertices sharing the same geometrical position
+     *               in the GeoModel have their position updated, if false they
+     *               are not.
+     *
+     * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
+     */
+    void GeoModelBuilder::set_element_vertex(
+        GME::gme_t t,
+        index_t v,
+        const vec3& point,
+        bool update )
+    {
+        GeoModelMeshElement& E = mesh_element( t ) ;
+        ringmesh_debug_assert( v < E.nb_vertices() ) ;
+        if( update ) {
+            model_.mesh.vertices.update_point(
+                E.model_vertex_id( v ), point ) ;
+        }
+        else {
+            E.mesh_.vertices.point( v ) = point ;
+        }
+    }
+
+    /*!
+     * @brief Set the geometrical position of a vertex from a model vertex
+     * @details Set also both mapping from (GeoModelMeshVertices::unique2bme)
+     *          and to (model_vertex_id_) the model vertex.
+     *
+     * @param[in] id Element index
+     * @param[in] index Index of the vertex to modify
+     * @param[in] model_vertex Index in GeoModelMeshVertices of the vertex giving
+     *                     the new position
+     */
+    void GeoModelBuilder::set_element_vertex(
+        const gme_t& id,
+        index_t v,
+        index_t model_vertex )
+    {
+        set_element_vertex( id, v, model_.mesh.vertices.vertex( model_vertex ),
+            false ) ;
+
+        GeoModelMeshElement& E = mesh_element( id ) ;
+        ringmesh_debug_assert( v < E.nb_vertices() ) ;
+        E.model_vertex_id_[ v ] = model_vertex ;
+        model_.mesh.vertices.add_to_bme( model_vertex,
+            GeoModelMeshVertices::VertexInGME( id, v ) ) ;
+    }
+
+    /*!
+     * @brief Adds vertices to the mesh
+     * @details No update of the model vertices is done
+     *
+     * @param[in] id Element index
+     * @param[in] points Geometric positions of the vertices to add
+     * @param[in] clear If true the mesh if cleared, keeping its attributes
+     */
+    void GeoModelBuilder::set_element_vertices(
+        const gme_t& id,
+        const std::vector< vec3 >& points,
+        bool clear )
+    {
+        GeoModelMeshElement& E = mesh_element( id ) ;
+        // Clear the mesh, but keep the attributes and the space
+        if( clear ) {
+            E.mesh_.clear( true, true ) ;
+        }
+        if( !points.empty() ) {
+            index_t start = E.mesh_.vertices.create_vertices( points.size() ) ;
+            GEO::Memory::copy( E.mesh_.vertices.point_ptr( start ),
+                points.data()->data(), 3 * sizeof(double) * points.size() ) ;
+        }
+    }
+
+    /*!
+     * @brief Add vertices to the mesh
+     * @details No update of the model vertices is done
+     *
+     * @param[in] id Element index
+     * @param[in] model_vertices Geometric positions of the vertices to add
+     * @param[in] clear If true the mesh if cleared, keeping its attributes
+     */
+    void GeoModelBuilder::set_element_vertices(
+        const gme_t& id,
+        const std::vector< index_t >& model_vertices,
+        bool clear )
+    {
+        GeoModelMeshElement& E = mesh_element( id ) ;
+        // Clear the mesh, but keep the attributes and the space
+        if( clear ) {
+            E.mesh_.clear( true, true ) ;
+        }
+        index_t start = E.mesh_.vertices.create_vertices( model_vertices.size() ) ;
+        for( index_t v = 0; v < model_vertices.size(); v++ ) {
+            set_element_vertex( id, start + v, model_vertices[ v ] ) ;
+        }
+    }
 
     /*!
      * @brief Set the geometric location of a Corner
@@ -599,9 +799,12 @@ namespace RINGMesh {
         const gme_t& corner_id,
         const vec3& point )
     {
-        ringmesh_assert( corner_id.index < model_.nb_corners() ) ;
-        dynamic_cast< Corner* >( model_.corners_[corner_id.index] )->set_vertex(
-            point, false ) ;
+        ringmesh_debug_assert( corner_id.index < model_.nb_corners() ) ;
+        GeoModelMeshElement& mesh = mesh_element( corner_id ) ;
+        if( mesh.nb_vertices() == 0 ) {
+            mesh.mesh_.vertices.create_vertex() ;
+        }
+        set_element_vertex( corner_id, 0, point, false ) ;
     }
 
     /*!
@@ -614,8 +817,13 @@ namespace RINGMesh {
         const gme_t& id,
         const std::vector< vec3 >& vertices )
     {
-        ringmesh_assert( id.index < model_.nb_lines() ) ;
-        dynamic_cast< Line* >( model_.lines_[id.index] )->set_vertices( vertices ) ;
+        ringmesh_debug_assert( id.index < model_.nb_lines() ) ;
+        set_element_vertices( id, vertices, false ) ;
+
+        GeoModelMeshElement& E = mesh_element( id ) ;
+        for( index_t e = 1; e < E.nb_vertices(); e++ ) {
+            E.mesh_.edges.create_edge( e - 1, e ) ;
+        }
     }
 
     /*!
@@ -637,10 +845,9 @@ namespace RINGMesh {
             return ;
         }
 
-        dynamic_cast< Surface* >( model_.surfaces_[surface_id.index] )->set_geometry(
-            points, facets, facet_ptr ) ;
-
-        set_surface_adjacencies( surface_id ) ;
+        set_element_vertices( surface_id, points, false ) ;
+        create_surface_geometry( surface_id, facets, facet_ptr ) ;
+        compute_surface_adjacencies( surface_id ) ;
     }
 
     /*!
@@ -662,9 +869,12 @@ namespace RINGMesh {
         const gme_t& corner_id,
         index_t unique_vertex )
     {
-        ringmesh_assert( corner_id.index < model_.nb_corners() ) ;
-        dynamic_cast< Corner* >( model_.corners_[corner_id.index] )->set_vertex(
-            unique_vertex ) ;
+        ringmesh_debug_assert( corner_id.index < model_.nb_corners() ) ;
+        GeoModelMeshElement& mesh = mesh_element( corner_id ) ;
+        if( mesh.nb_vertices() == 0 ) {
+            mesh.mesh_.vertices.create_vertex() ;
+        }
+        set_element_vertex( corner_id, 0, unique_vertex ) ;
     }
 
     /*!
@@ -677,9 +887,13 @@ namespace RINGMesh {
         const gme_t& id,
         const std::vector< index_t >& unique_vertices )
     {
-        ringmesh_assert( id.index < model_.nb_lines() ) ;
-        dynamic_cast< Line* >( model_.lines_[id.index] )->set_vertices(
-            unique_vertices ) ;
+        ringmesh_debug_assert( id.index < model_.nb_lines() ) ;
+        set_element_vertices( id, unique_vertices, false ) ;
+
+        GeoModelMeshElement& E = mesh_element( id ) ;
+        for( index_t e = 1; e < E.nb_vertices(); e++ ) {
+            E.mesh_.edges.create_edge( e - 1, e ) ;
+        }
     }
 
     /*!
@@ -700,10 +914,10 @@ namespace RINGMesh {
         if( facets.size() == 0 ) {
             return ;
         }
-        dynamic_cast< Surface* >( model_.surfaces_[surface_id.index] )->set_geometry(
-            model_vertex_ids, facets, facet_ptr ) ;
 
-        set_surface_adjacencies( surface_id ) ;
+        set_element_vertices( surface_id, model_vertex_ids, false ) ;
+        create_surface_geometry( surface_id, facets, facet_ptr ) ;
+        compute_surface_adjacencies( surface_id ) ;;
     }
 
     /*!
@@ -749,6 +963,24 @@ namespace RINGMesh {
         set_surface_geometry( surface_id, vertices, facets_local, facet_ptr ) ;
     }
 
+
+    void GeoModelBuilder::create_surface_geometry(
+        const gme_t& surface_id,
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        GeoModelMeshElement& E = mesh_element( surface_id ) ;
+        for( index_t f = 0; f < facet_ptr.size()-1; f++ ) {
+            index_t size = facet_ptr[f+1] - facet_ptr[f] ;
+            GEO::vector< index_t > facet_vertices( size ) ;
+            index_t start = facet_ptr[f] ;
+            for( index_t lv = 0; lv < size; lv++ ) {
+                facet_vertices[lv] = facets[start++] ;
+            }
+            E.mesh_.facets.create_polygon( facet_vertices ) ;
+        }
+    }
+
     /*!
      * @brief Compute and set the adjacencies between the facets
      * @details The adjacent facet is given for each vertex of each facet for the edge
@@ -757,10 +989,10 @@ namespace RINGMesh {
      *
      * @param[in] surface_id Index of the surface
      */
-    void GeoModelBuilder::set_surface_adjacencies( const gme_t& surface_id )
+    void GeoModelBuilder::compute_surface_adjacencies( const gme_t& surface_id )
     {
         Surface& S = dynamic_cast< Surface& >( *model_.surfaces_[surface_id.index] ) ;
-        ringmesh_assert( S.nb_cells() > 0 ) ;
+        ringmesh_debug_assert( S.nb_cells() > 0 ) ;
 
         std::vector< index_t > adjacent ;
         adjacent.resize( S.facet_end( S.nb_cells() - 1 ), Surface::NO_ADJACENT ) ;
@@ -806,7 +1038,11 @@ namespace RINGMesh {
                 }
             }
         }
-        S.set_adjacent( adjacent ) ;
+
+        ringmesh_assert( adjacent.size() == S.mesh_.facet_corners.nb() ) ;
+        for( index_t i = 0; i < adjacent.size(); i++ ) {
+            S.mesh_.facet_corners.set_adjacent_facet( i, adjacent[i] ) ;
+        }
     }
 
     /*!
@@ -913,11 +1149,15 @@ namespace RINGMesh {
         for( index_t i = 0; i < model_.nb_elements( GME::ALL_TYPES ); ++i ) {
             GME& E = element( gme_t( GME::ALL_TYPES, i ) ) ;
             if( !E.has_geological_feature() ) {
-                fill_element_geological_feature( E ) ;
+                if( E.has_parent() && E.parent().has_geological_feature() ) {
+                    set_element_geol_feature( E.gme_id(), E.parent().geological_feature() ) ;
+                } else if( E.nb_children() > 0 && E.child( 0 ).has_geological_feature() ) {
+                    set_element_geol_feature( E.gme_id(),E.child( 0 ).geological_feature() ) ;
+                }
             }
         }
 
-        // Here, optional model repair
+        /// @todo Add optional model repair
 
         if( is_geomodel_valid( model_ ) ) {
             GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
@@ -931,6 +1171,200 @@ namespace RINGMesh {
             return false ;
         }
     }
+
+    /*!
+    * Find duplicate vertex or create it
+    */
+    index_t GeoModelBuilder::find_or_create_duplicate_vertex(
+        GeoModelMeshElement& E,
+        index_t model_vertex_id,
+        index_t surface_vertex_id )
+    {
+        GeoModel& M = const_cast< GeoModel& >( E.model() ) ;
+        
+        const std::vector< VBME >& vbme = M.mesh.vertices.gme_vertices(
+            model_vertex_id ) ;
+        index_t duplicate = NO_ID ;
+        for( index_t i = 0; i < vbme.size(); ++i ) {
+            if( vbme[i].gme_id == E.gme_id() ) {
+                if( vbme[i].v_id != surface_vertex_id ) {
+                    duplicate = vbme[i].v_id ;
+                }
+            }
+        }
+        if( duplicate == NO_ID ) {
+            // Duplicate the vertex in the surface
+            duplicate = E.mesh_.vertices.create_vertex(
+                M.mesh.vertices.vertex( model_vertex_id ).data() ) ;
+        
+            // Set its model vertex index
+            ringmesh_assert( duplicate < E.nb_vertices() ) ;
+            E.model_vertex_id_[ duplicate ] = model_vertex_id ;
+        
+            // Add the mapping from in the model vertices. Should we do this one ?
+            M.mesh.vertices.add_to_bme( model_vertex_id,
+                VBME( E.gme_id(), duplicate ) ) ;
+        }
+
+        return duplicate ;
+    }
+
+
+
+    /*!
+    * @brief Cut a Surface along a Line assuming that the edges of the Line are edges of the Surface
+    *
+    * @details First modify to NO_ADJACENT the neighbors along Line edges
+    * and then duplicate the points along this new boundary.
+    * Duplicate the corner that should be if any.
+    *
+    * @pre The Line must not cut the Surface into 2 connected components
+    *
+    * @todo Rewrite this function
+    *
+    * @param[in] L The Line
+    */
+    void GeoModelBuilder::cut_surface_by_line( Surface& S, const Line& L )
+    {
+        // Initialize the GeoModel vertices if they are not
+        // They are needed to get the points shared by the Surface
+        // and the Line
+        bool init = model().mesh.vertices.is_initialized() ;
+        if( !init ) {
+            /// @todo Replace the use the model vertices by only a colocater
+            /// of the surface vertice and the line vertices
+
+            // This permit initialization
+            model().mesh.vertices.nb() ;
+        }
+
+        ColocaterANN ann( S.mesh(), ColocaterANN::FACETS ) ;
+        for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
+            index_t p0 = L.model_vertex_id( i ) ;
+            index_t p1 = L.model_vertex_id( i+1 ) ;
+            ringmesh_debug_assert( p0 != p1 ) ;
+
+            index_t f = Surface::NO_ID ;
+            index_t v = Surface::NO_ID ;
+            bool found = find_facet_and_edge( ann, S, p0, p1, f, v ) ;
+            ringmesh_debug_assert( found && f != NO_ID && v != NO_ID ) ;
+
+            index_t f2 = S.adjacent( f, v ) ;
+            index_t v2 = Surface::NO_ID ;
+            ringmesh_assert( f2 != Surface::NO_ADJACENT ) ;
+            for( index_t j = 0; j < S.nb_vertices_in_facet( f2 ); j++ ) {
+                if( S.model_vertex_id( f2, j ) == p0 ) {
+                    index_t j_next = S.next_in_facet( f, j ) ;
+                    if( S.model_vertex_id( f, j_next ) == p1 ) {
+                        v2 = j ;
+                    } else {
+                        v2 = S.prev_in_facet( f2, j ) ;
+                    }
+                    break ;
+                }
+            }
+            ringmesh_debug_assert( v2 != Surface::NO_ID ) ;
+
+            // Virtual cut - set adjacencies to NO_ADJACENT
+            S.mesh_.facets.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
+            S.mesh_.facets.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
+        }
+
+
+        // Now travel on one side of the "faked" boundary and actually duplicate
+        // the vertices in the surface
+        // Get started in the surface - find (again) one of the edge that contains
+        // the first two vertices of the line
+        index_t p0 = L.model_vertex_id( 0 ) ;
+        index_t p1 = L.model_vertex_id( 1 ) ;
+
+        index_t f = Surface::NO_ID ;
+        index_t v = Surface::NO_ID ;
+        bool found = find_facet_and_edge( ann, S, p0, p1, f, v ) ;
+        ringmesh_debug_assert( found ) ;
+
+        ringmesh_assert( f != Surface::NO_ID && v != Surface::NO_ID ) ;
+
+        index_t id0 = S.surf_vertex_id( f, v ) ;
+        index_t id1 = S.surf_vertex_id( f, S.next_in_facet( f, v ) ) ;
+
+        // Stopping criterion
+        index_t c0 = L.boundary_id( 0 ).index ;
+        index_t c1 = L.boundary_id( 1 ).index ;
+
+        // Wee need to check if we have to duplicate the Corner or not
+        // the 2 corners are
+        bool duplicate_c0 = is_corner_to_duplicate( model(), c0 ) ;
+        bool duplicate_c1 = is_corner_to_duplicate( model(), c1 ) ;
+        // If both shall be duplicated - the line cut completely the surface
+        // and this function is not supposed to deal with that situation
+        ringmesh_assert( !duplicate_c0 || !duplicate_c1 ) ;
+
+        // Index of the model vertex if one corner is to duplicate
+        index_t m_corner = duplicate_c0 ? model().corner( c0 ).model_vertex_id() :
+            ( duplicate_c1 ? model().corner( c1 ).model_vertex_id() : NO_ID ) ;
+
+        // Index of the surface vertex if one corner is to duplicate
+        index_t s_corner = duplicate_c0 ? id0 : ( duplicate_c1 ? id1 : NO_ID ) ;
+
+        // Index of the new vertex for the corner in the surface
+        index_t s_new_corner = NO_ID ;
+        // Create this new point in the surface and set mapping with point in the BM
+        if( m_corner != NO_ID ) {
+            s_new_corner = find_or_create_duplicate_vertex( S, m_corner, s_corner ) ;
+        }
+
+        while( S.model_vertex_id( id1 ) != model().corner( c1 ).model_vertex_id() ) {
+            // Get the next vertex on the border
+            // Same algorithm than in determine_line_vertices function
+            index_t next_f = Surface::NO_ID ;
+            index_t id1_in_next = Surface::NO_ID ;
+            index_t next_id1_in_next = Surface::NO_ID ;
+
+            // Get the next facet and next triangle on this boundary
+            S.next_on_border( f,
+                            S.facet_vertex_id( f, id0 ), S.facet_vertex_id( f, id1 ),
+                            next_f, id1_in_next, next_id1_in_next ) ;
+            ringmesh_assert(
+                next_f != Surface::NO_ID && id1_in_next != Surface::NO_ID
+                && next_id1_in_next != Surface::NO_ID ) ;
+
+            index_t next_id1 = S.surf_vertex_id( next_f, next_id1_in_next ) ;
+
+            // Duplicate the vertex at id1
+            // After having determined the next 1 we can probably get both at the same time
+            // but I am lazy, and we must be careful not to break next_on_border function (Jeanne)
+            std::vector< index_t > facets_around_id1 ;
+            S.facets_around_vertex( id1, facets_around_id1, false, f ) ;
+
+            index_t new_id1 = find_or_create_duplicate_vertex(
+                S, S.model_vertex_id( id1 ), id1 ) ;
+
+            // Update vertex index in facets
+            update_facet_corner( S, facets_around_id1, id1, new_id1 ) ;
+
+            // Update
+            f = next_f ;
+            id0 = new_id1 ;
+            id1 = next_id1 ;
+        }
+        if( m_corner != NO_ID ) {
+            if( duplicate_c1 ) {
+                s_corner = id1 ;
+            }
+            ringmesh_assert( s_corner != NO_ID && s_new_corner != NO_ID ) ;
+            std::vector< index_t > facets_around_c ;
+            S.facets_around_vertex( s_corner, facets_around_c, false ) ;
+            update_facet_corner( S, facets_around_c, s_corner, s_new_corner ) ;
+        }
+
+        if( !init ) {
+            const_cast<GeoModel&>( model() ).mesh.vertices.clear() ;
+        }
+    }
+
+
+
 
     /*************************************************************************/
 
@@ -1108,7 +1542,7 @@ namespace RINGMesh {
                                 } else {
                                     region_id -= nb_tface + 1 ; // Remove Universe region
                                     // Correction because ids begin at 1 in the file
-                                    add_child( layer_id,
+                                    add_element_child( layer_id,
                                         gme_t( GME::REGION, region_id - 1 ) ) ;
                                 }
                             }
@@ -1227,13 +1661,13 @@ namespace RINGMesh {
                         // Get the global corner id
                         gme_t corner_id =
                         find_corner(model_, tsurf_vertices[ p1 ] ) ;
-                        ringmesh_assert( corner_id.is_defined() ) ;
+                        ringmesh_debug_assert( corner_id.is_defined() ) ;
 
                         // Get the surface
                         index_t part_id = NO_ID ;
                         for( index_t i = 0 ; i < tface_vertex_start.size() ; ++i ) {
                             if( p1 < tface_vertex_start[ i ] ) {
-                                ringmesh_assert( p2 < tface_vertex_start[ i ] ) ;
+                                ringmesh_debug_assert( p2 < tface_vertex_start[ i ] ) ;
 
                                 // Get vertices ids in the surface
                                 p1 = p1 - tface_vertex_start[ i - 1 ] ;
@@ -1300,7 +1734,8 @@ namespace RINGMesh {
                 for( index_t b = 0; b < R.nb_boundaries(); ++b ) {
                     if( R.boundary_id( b ).index == change_key_facet[i] ) {
                         bool old_side = R.side( b ) ;
-                        R.set_boundary( b, R.boundary_id( b ), !old_side ) ;
+                        set_element_boundary( R.gme_id(), b, R.boundary_id( b ),
+                            !old_side ) ;
                     }
                 }
             }
@@ -1404,7 +1839,7 @@ namespace RINGMesh {
             // It is because of the sign of Z that is not the same
             t = find_key_facet( surface_id, p00, p10, p20, same_sign ) ;
         }
-        ringmesh_assert( t != NO_ID ) ;
+        ringmesh_debug_assert( t != NO_ID ) ;
         return same_sign ;
     }
 
@@ -1429,7 +1864,7 @@ namespace RINGMesh {
 
         // Starting facet that contains the two given vertices
         index_t f = S.facet_from_surface_vertex_ids( id0, id1 ) ;
-        ringmesh_assert( f != Surface::NO_ID ) ;
+        ringmesh_debug_assert( f != Surface::NO_ID ) ;
 
         vec3 p0 = S.vertex( id0 ) ;
         vec3 p1 = S.vertex( id1 ) ;
@@ -1449,7 +1884,7 @@ namespace RINGMesh {
                 S.facet_vertex_id( f, id1 ), next_f, id1_in_next,
                 next_id1_in_next ) ;
 
-            ringmesh_assert(
+            ringmesh_debug_assert(
                 next_f != NO_ID && id1_in_next != NO_ID
                     && next_id1_in_next != NO_ID ) ;
 
@@ -1490,7 +1925,7 @@ namespace RINGMesh {
 
         // Starting facet that contains the two given vertices
         index_t f = S.facet_from_surface_vertex_ids( id0, id1 ) ;
-        ringmesh_assert( f != Surface::NO_ID ) ;
+        ringmesh_debug_assert( f != Surface::NO_ID ) ;
 
         // Global ids at the model level
         index_t p0 = S.model_vertex_id( id0 ) ;
@@ -1511,7 +1946,7 @@ namespace RINGMesh {
                 S.facet_vertex_id( f, id1 ), next_f, id1_in_next,
                 next_id1_in_next ) ;
 
-            ringmesh_assert(
+            ringmesh_debug_assert(
                 next_f != NO_ID && id1_in_next != NO_ID
                     && next_id1_in_next != NO_ID ) ;
 
@@ -1565,7 +2000,7 @@ namespace RINGMesh {
                 }
                 set_element_name( contact_id, name ) ;
             }
-            add_child( contact_id, gme_t( GME::LINE, i ) ) ;
+            add_element_child( contact_id, gme_t( GME::LINE, i ) ) ;
         }
     }
 
@@ -1587,11 +2022,11 @@ namespace RINGMesh {
     {
         gme_t parent = find_interface( model_, interface_name ) ;
         if( interface_name != "" ) {
-            ringmesh_assert( parent.is_defined() ) ;
+            ringmesh_debug_assert( parent.is_defined() ) ;
         }
 
         gme_t id = create_element( GME::SURFACE ) ;
-        set_parent( id, parent ) ;
+        set_element_parent( id, parent ) ;
         set_element_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
@@ -1634,7 +2069,6 @@ namespace RINGMesh {
                     GME::TYPE t = match_type( in.field( 0 ) ) ;
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t element( t, id ) ;
-                    set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
                     set_element_geol_feature( element,
                         GME::determine_geological_type( in.field( 3 ) ) ) ;
@@ -1642,7 +2076,7 @@ namespace RINGMesh {
                     in.get_line() ;
                     in.get_fields() ;
                     for( index_t c = 0; c < in.nb_fields(); c++ ) {
-                        add_child( element,
+                        add_element_child( element,
                             gme_t( GME::child_type( t ), in.field_as_uint( c ) ) ) ;
                     }
                 }
@@ -1658,7 +2092,6 @@ namespace RINGMesh {
                     }
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t element( GME::REGION, id ) ;
-                    set_element_index( element ) ;
                     set_element_name( element, in.field( 2 ) ) ;
                     // Second line : signed indices of boundaries
                     in.get_line() ;
@@ -1703,7 +2136,7 @@ namespace RINGMesh {
 //                    // Attributes
 //                    in.get_line() ;
 //                    in.get_fields() ;
-//                    ringmesh_assert( in.field_matches( 0, "MODEL_VERTEX_ATTRIBUTES" ) ) ;
+//                    ringmesh_debug_assert( in.field_matches( 0, "MODEL_VERTEX_ATTRIBUTES" ) ) ;
 //                    index_t nb_attribs = ( in.nb_fields() - 1 ) / 2 ;
 //                    std::vector< SerializedAttribute< GeoModel::VERTEX > >
 //                    vertex_attribs( nb_attribs ) ;
@@ -1735,23 +2168,20 @@ namespace RINGMesh {
                     }
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t element( GME::CORNER, id ) ;
-                    set_element_index( element ) ;
                     vec3 point( read_double( in, 2 ), read_double( in, 3 ),
                         read_double( in, 4 ) ) ;
-                    set_element_vertex( element, 0, point ) ;
+                    set_corner( element, point ) ;
                 }
 
                 // Lines
                 else if( match_type( in.field( 0 ) ) == GME::LINE ) {
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t cur_element( GME::LINE, id ) ;
-                    Line& L = dynamic_cast< Line& >( element( cur_element ) ) ;
-                    L.set_id( id ) ;
 
                     // Following information: vertices of the line
                     in.get_line() ;
                     in.get_fields() ;
-                    ringmesh_assert( in.field_matches( 0, "LINE_VERTICES" ) ) ;
+                    ringmesh_debug_assert( in.field_matches( 0, "LINE_VERTICES" ) ) ;
                     index_t nb_vertices = in.field_as_uint( 1 ) ;
                     std::vector< vec3 > vertices( nb_vertices ) ;
                     for( index_t i = 0; i < nb_vertices; i++ ) {
@@ -1763,12 +2193,12 @@ namespace RINGMesh {
                     }
 
                     // Set the line points
-                    L.set_vertices( vertices ) ;
+                    set_line( cur_element, vertices ) ;
 
                     // Attributes on line vertices
 //                    in.get_line() ;
 //                    in.get_fields() ;
-//                    ringmesh_assert( in.field_matches( 0, "LINE_VERTEX_ATTRIBUTES" ) ) ;
+//                    ringmesh_debug_assert( in.field_matches( 0, "LINE_VERTEX_ATTRIBUTES" ) ) ;
 //                    index_t nb_attribs = ( in.nb_fields() - 1 ) / 2 ;
 //                    std::vector< SerializedAttribute > vertex_attribs(
 //                        nb_attribs ) ;
@@ -1788,7 +2218,7 @@ namespace RINGMesh {
                     // Read attributes on line segments
 //                    in.get_line() ;
 //                    in.get_fields() ;
-//                   ringmesh_assert( in.field_matches( 0, "LINE_SEGMENT_ATTRIBUTES" ) ) ;
+//                   ringmesh_debug_assert( in.field_matches( 0, "LINE_SEGMENT_ATTRIBUTES" ) ) ;
 //                    index_t nb_segment_attribs = ( in.nb_fields() - 1 ) / 2 ;
 //                    if( nb_segment_attribs > 0 ) {
 //                        std::vector< SerializedAttribute< BME::FACET > >
@@ -1815,9 +2245,9 @@ namespace RINGMesh {
                     // Finally we have the in_boundary information
                     in.get_line() ;
                     in.get_fields() ;
-                    ringmesh_assert( in.field_matches( 0, "IN_BOUNDARY" ) ) ;
+                    ringmesh_debug_assert( in.field_matches( 0, "IN_BOUNDARY" ) ) ;
                     for( index_t b = 1; b < in.nb_fields(); b++ ) {
-                        L.add_in_boundary(
+                        add_element_in_boundary( cur_element,
                             gme_t( GME::SURFACE, in.field_as_uint( b ) ) ) ;
                     }
                 }
@@ -1826,13 +2256,11 @@ namespace RINGMesh {
                 else if( match_type( in.field( 0 ) ) == GME::SURFACE ) {
                     index_t id = in.field_as_uint( 1 ) ;
                     gme_t cur_element( GME::SURFACE, id ) ;
-                    Surface& S = dynamic_cast< Surface& >( element( cur_element ) ) ;
-                    S.set_id( id ) ;
 
                     // Read the surface vertices and their attributes
                     in.get_line() ;
                     in.get_fields() ;
-                    ringmesh_assert( in.field_matches( 0, "SURFACE_VERTICES" ) ) ;
+                    ringmesh_debug_assert( in.field_matches( 0, "SURFACE_VERTICES" ) ) ;
                     index_t nb_vertices = in.field_as_uint( 1 ) ;
                     std::vector< vec3 > vertices( nb_vertices ) ;
                     for( index_t i = 0; i < nb_vertices; i++ ) {
@@ -1845,7 +2273,7 @@ namespace RINGMesh {
 
 //                    in.get_line() ;
 //                    in.get_fields() ;
-//                    ringmesh_assert( in.field_matches( 0,
+//                    ringmesh_debug_assert( in.field_matches( 0,
 //                            "SURFACE_VERTEX_ATTRIBUTES" ) ) ;
 //                    index_t nb_vertex_attribs = ( in.nb_fields() - 1 ) / 2 ;
 //
@@ -1868,17 +2296,17 @@ namespace RINGMesh {
                     // Read the surface facets
                     in.get_line() ;
                     in.get_fields() ;
-                    ringmesh_assert( in.field_matches( 0, "SURFACE_CORNERS" ) ) ;
+                    ringmesh_debug_assert( in.field_matches( 0, "SURFACE_CORNERS" ) ) ;
                     index_t nb_corners = in.field_as_uint( 1 ) ;
 
                     in.get_line() ;
                     in.get_fields() ;
-                    ringmesh_assert( in.field_matches( 0, "SURFACE_FACETS" ) ) ;
+                    ringmesh_debug_assert( in.field_matches( 0, "SURFACE_FACETS" ) ) ;
                     index_t nb_facets = in.field_as_uint( 1 ) ;
 
 //                    in.get_line() ;
 //                    in.get_fields() ;
-//                    ringmesh_assert( in.field_matches( 0, "SURFACE_FACET_ATTRIBUTES" ) ) ;
+//                    ringmesh_debug_assert( in.field_matches( 0, "SURFACE_FACET_ATTRIBUTES" ) ) ;
 //                    index_t nb_facet_attribs = ( in.nb_fields() - 1 ) / 2 ;
 
                     // Bind the facet attributes
@@ -1905,8 +2333,8 @@ namespace RINGMesh {
 //                        serialize_read_attributes( in, nb_v + 1, f, facet_attribs ) ;
                     }
 
-                    S.set_geometry( vertices, corners, facet_ptr ) ;
-                    set_surface_adjacencies( cur_element ) ;
+                    set_surface_geometry( cur_element, vertices, corners, facet_ptr ) ;
+                    compute_surface_adjacencies( cur_element ) ;
                 }
             }
         }
@@ -2015,7 +2443,7 @@ namespace RINGMesh {
         index_t f = in.f_ ;
         index_t f_v0 = S.facet_id_from_model( f, in.v0_ ) ;
         index_t f_v1 = S.facet_id_from_model( f, in.v1_ ) ;
-        ringmesh_assert( f_v0 != NO_ID && f_v1 != NO_ID ) ;
+        ringmesh_debug_assert( f_v0 != NO_ID && f_v1 != NO_ID ) ;
 
         index_t next_f = NO_ID ;
         index_t next_f_v0 = NO_ID ;
@@ -2038,7 +2466,7 @@ namespace RINGMesh {
         index_t result = narrow_cast< index_t >(
             std::lower_bound( BT.begin(), BT.end(), bait ) - BT.begin() ) ;
 
-        ringmesh_assert( result < BT.size() ) ;
+        ringmesh_debug_assert( result < BT.size() ) ;
         return result ;
     }
 
@@ -2181,7 +2609,7 @@ namespace RINGMesh {
     /*!
      * @brief From a GeoModel in which only Surface are defined, create
      * corners, contacts and regions.
-     * @param build_region If set to false the region of the GeoModel are not
+     * @param build_regions If set to false the region of the GeoModel are not
      *        computed. Used to have a GeoModel instance corresponding to a
      *        set of surface that do not define volumetric regions (invalid model).
      *        Default value is true.
@@ -2261,7 +2689,7 @@ namespace RINGMesh {
                 index_t next_i = get_next_border_triangle( model_, border_triangles,
                     i ) ;
                 do {
-                    ringmesh_assert( next_i != NO_ID ) ;
+                    ringmesh_debug_assert( next_i != NO_ID ) ;
                     if( !visited[next_i] ) {
                         std::vector< index_t > adjacent_next ;
                         get_adjacent_surfaces( border_triangles, next_i,
@@ -2277,7 +2705,7 @@ namespace RINGMesh {
                             if( border_triangles[next_i].v0_ == vertices.back() ) {
                                 vertices.push_back( border_triangles[next_i].v1_ ) ;
                             } else {
-                                ringmesh_assert(
+                                ringmesh_debug_assert(
                                     border_triangles[next_i].v1_ == vertices.back() ) ;
                                 vertices.push_back( border_triangles[next_i].v0_ ) ;
                             }
@@ -2297,7 +2725,7 @@ namespace RINGMesh {
                     index_t prev_i = get_next_border_triangle( model_,
                         border_triangles, i, true ) ;
                     do {
-                        ringmesh_assert( prev_i != NO_ID && prev_i != i ) ;
+                        ringmesh_debug_assert( prev_i != NO_ID && prev_i != i ) ;
                         if( !visited[prev_i] ) {
                             std::vector< index_t > adjacent_prev ;
                             get_adjacent_surfaces( border_triangles, prev_i,
@@ -2315,7 +2743,7 @@ namespace RINGMesh {
                                     vertices.insert( vertices.begin(),
                                         border_triangles[prev_i].v1_ ) ;
                                 } else {
-                                    ringmesh_assert(
+                                    ringmesh_debug_assert(
                                         border_triangles[prev_i].v1_
                                             == vertices.front() ) ;
                                     vertices.insert( vertices.begin(),
@@ -2331,7 +2759,7 @@ namespace RINGMesh {
                             prev_i, true ) ;
                     } while( same_surfaces ) ;
                 }
-                ringmesh_assert( vertices.size() > 1 ) ;
+                ringmesh_debug_assert( vertices.size() > 1 ) ;
 
                 // At last create the Line
                 gme_t l_id = create_element( GME::LINE ) ;
@@ -2472,8 +2900,7 @@ namespace RINGMesh {
                 double max_volume = -1. ;
                 index_t universe_id = NO_ID ;
                 for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-                    double cur_volume = GeoModelElementMeasure::size(
-                        &model_.region( i ) ) ;
+                    double cur_volume = model_element_size( model_.region( i ) ) ;
                     if( cur_volume > max_volume ) {
                         max_volume = cur_volume ;
                         universe_id = i ;

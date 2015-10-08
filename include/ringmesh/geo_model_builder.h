@@ -77,18 +77,23 @@ namespace RINGMesh {
 
         bool complete_element_connectivity() ;
 
+        void compute_surface_adjacencies( const GME::gme_t& surface_id ) ;
     
         /*! @}
          * \name Set element geometry from geometrical positions   
          * @{
          */
+
         void set_element_vertex(
             GME::gme_t t,
             index_t v,
-            const vec3& point )
-        {
-            mesh_element( t ).set_vertex( v, point, false ) ;
-        }
+            const vec3& point,
+            bool update ) ;
+
+        void set_element_vertices(
+            const GME::gme_t& id,
+            const std::vector< vec3 >& points,
+            bool clear ) ;
 
         void set_corner(
             const GME::gme_t& corner_id,
@@ -108,6 +113,14 @@ namespace RINGMesh {
          * \name Set element geometry using GeoModel vertices
          * @{
          */
+
+        void set_element_vertex( const GME::gme_t& id, index_t v, index_t model_vertex ) ;
+
+        void set_element_vertices(
+            const GME::gme_t& id,
+            const std::vector< index_t >& model_vertices,
+            bool clear ) ;
+
         index_t add_unique_vertex( const vec3& p ) ;
 
         void set_corner(
@@ -129,11 +142,22 @@ namespace RINGMesh {
             const std::vector< index_t >& corners,
             const std::vector< index_t >& facet_ptr ) ;
 
-        void set_surface_adjacencies( const GME::gme_t& surface_id ) ;
-
         /*!
          * @}
-         */       
+         */   
+
+        index_t find_or_create_duplicate_vertex(
+            GeoModelMeshElement& S,
+            index_t model_vertex_id,
+            index_t surface_vertex_id ) ;
+
+        void cut_surface_by_line( Surface& S, const Line& L ) ;
+
+    private:
+        void create_surface_geometry(
+            const GME::gme_t& surface_id,
+            const std::vector< index_t >& facets,
+            const std::vector< index_t >& facet_ptr ) ;
     } ;
 
     /*!

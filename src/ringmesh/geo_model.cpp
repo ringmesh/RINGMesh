@@ -41,6 +41,7 @@
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_editor.h>
 
 namespace RINGMesh {
 
@@ -49,6 +50,7 @@ namespace RINGMesh {
     GeoModel::GeoModel()
         :
             mesh( *this ),            
+            universe_( *this, NO_ID ),
             wells_( nil )
     {
     }
@@ -70,87 +72,11 @@ namespace RINGMesh {
      */
     void GeoModel::copy( const GeoModel& from )
     {
-        copy_macro_topology( from ) ;
-        copy_meshes( from ) ;
+        GeoModelEditor editor( *this ) ;
+        editor.copy_macro_topology( from ) ;
+        editor.copy_meshes( from ) ;
     }
 
-    /*!
-     * @brief Mini-factory. Create an empty element of the right type 
-     */
-    GME* create_element( GME::TYPE T )
-    {
-
-        if( T == GME::CORNER ) {
-            return new Corner ;
-        } else if( T == GME::LINE ) {
-            return new Line ;
-        } else if( T == GME::SURFACE ) {
-            return new Surface ;
-        } else if( T > GME::SURFACE && T < GME::NO_TYPE ) {
-            return new GeoModelElement ;
-        } else {
-            return nil ;
-        }
-    }
-
-    /*!
-     * @brief Copy macro information from a model
-     * @details Copy the all the model elements and their relationship ignoring their geometry
-     *
-     * @param[in] from Model to copy the information from
-     */
-    void GeoModel::copy_macro_topology( const GeoModel& from )
-    {
-        name_ = from.name_ ;
-        for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            std::vector< GME* >& store = modifiable_elements( T ) ;
-            store.resize( from.nb_elements( T ), nil ) ;
-
-            for( index_t e = 0; e < nb_elements( T ); ++e ) {
-                store[e] = create_element( T ) ;
-                ringmesh_debug_assert( store[ e ] != nil ) ;
-            }
-            RINGMESH_PARALLEL_LOOP
-            for( index_t e = 0; e < nb_elements( T ); ++e ) {
-                store[e]->copy_macro_topology( from.element( gme_t( T, e ) ),
-                    *this ) ;
-            }
-        }
-        universe_.copy_macro_topology( from.universe_, *this ) ;
-
-        nb_elements_per_type_ = from.nb_elements_per_type_ ;
-    }
-
-    /*!
-     * @brief Copy meshes from a model
-     * @details Copy the all the element meshes
-     *
-     * @param[in] from Model to copy the meshes from
-     *
-     * @pre The two models must have the same number of elements
-     */
-    void GeoModel::copy_meshes( const GeoModel& from )
-    {
-        for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            RINGMESH_PARALLEL_LOOP
-            for( index_t e = 0; e < elements( T ).size(); ++e ) {
-                GeoModelMeshElement* E =
-                    dynamic_cast< GeoModelMeshElement* >( elements( T )[e] ) ;
-                ringmesh_debug_assert( E != nil ) ;
-                const GeoModelMeshElement& E_from =
-                    dynamic_cast< const GeoModelMeshElement& >( from.element(
-                        GME::gme_t( T, e ) ) ) ;
-
-                E->unbind_attributes() ;
-                E->mesh().copy( E_from.mesh() ) ;
-                E->bind_attributes() ;
-            }
-        }
-    }  
-
-  
     /*!
      * Associates a WellGroup to the GeoModel
      * @param[in] wells the WellGroup

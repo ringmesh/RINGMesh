@@ -42,6 +42,7 @@
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_editor.h>
+#include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geo_model_element.h>
 #include <ringmesh/geometry.h>
 
@@ -181,6 +182,9 @@ namespace {
             }
         }
 
+        // The builder might be needed
+        GeoModelBuilder builder( BM ) ;
+
         for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
             GEO::Mesh& M = BM.surface( i ).mesh() ;
             index_t nb = detect_degenerate_facets( M ) ;
@@ -233,8 +237,8 @@ namespace {
                          ) {
                         // Force the recomputing of the model vertices
                         // I do not understand exactly what is happening [JP]
-                        BM.mesh.vertices.clear() ;
-                        S.cut_by_line( BM.line( *it ) ) ;
+                        BM.mesh.vertices.clear() ;                        
+                        builder.cut_surface_by_line( S, BM.line( *it ) ) ;
                     }
                 }
             }
