@@ -52,11 +52,13 @@
 
 namespace GEO {
     class MeshFacetsAABB ;
+    class MeshCellsAABB ;
 }
 
 namespace RINGMesh {
     class GeoModel ;
     class Surface ;
+    class Region ;
     class ColocaterANN ;
 }
 
@@ -67,6 +69,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelElement {
     ringmesh_disable_copy( GeoModelElement ) ;
+        friend class GeoModelEditor ;
     public:
         /*!
          * @brief Geological feature types for GeoModelElement
@@ -239,9 +242,9 @@ namespace RINGMesh {
          * @param[in] id Index of the element in the corresponding vector in the model
          */
         GeoModelElement(
-            GeoModel* model = NULL,
-            TYPE element_type = NO_TYPE,
-            index_t id = NO_ID )
+            const GeoModel& model,
+            TYPE element_type,
+            index_t id )
             :
                 model_( model ),
                 id_( element_type, id ),
@@ -284,17 +287,14 @@ namespace RINGMesh {
          * \name Accessors to basic information
          * @{
          */
+
+        const GeoModel& model() const
+        {
+            return model_ ;
+        }
         bool has_name() const
         {
             return name() != "" ;
-        }
-        const GeoModel& model() const
-        {
-            return *model_ ;
-        }
-        bool has_model() const
-        {
-            return model_ != NULL ;
         }
         const std::string& name() const
         {
@@ -365,104 +365,9 @@ namespace RINGMesh {
         }
         const GeoModelElement& child( index_t x ) const ;
 
-        /*!@}
-         * \name Modification of the element
-         * @{
-         */
-        /*! \todo We need one copy function per class I think [JP] 
-         * I do not see why Region side should be managed at the GeoModelElement
-         * level. Too annoying. 
-         * Let's implement real copy functions, we need virtual functions.
-         */
-        virtual void copy_macro_topology(
-            const GeoModelElement& rhs,
-            GeoModel& model ) ;
-
-        void set_model( GeoModel* m )
-        {
-            model_ = m ;
-        }
-        void set_element_type( TYPE t )
-        {
-            id_.type = t ;
-        }
-        void set_id( index_t id )
-        {
-            id_.index = id ;
-        }
-        void set_name( const std::string& name )
-        {
-            name_ = name ;
-        }
-        void set_geological_feature( GEOL_FEATURE type )
-        {
-            geol_feature_ = type ;
-        }
-
-        void add_boundary( const gme_t& b )
-        {
-            ringmesh_debug_assert( b.is_defined() ) ;
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            boundaries_.push_back( b ) ;
-        }
-
-        void set_boundary( index_t id, const gme_t& b )
-        {
-            /// No check on the validity of the index of the element b
-            /// NO_ID is used to flag elements to delete            
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            ringmesh_debug_assert( id < nb_boundaries() ) ;
-            boundaries_[id] = b ;
-        }
-
-        void add_in_boundary( const gme_t& in_b )
-        {
-            ringmesh_debug_assert( in_b.is_defined() ) ;
-            ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
-            in_boundary_.push_back( in_b ) ;
-        }
-
-        void set_in_boundary( index_t id, const gme_t& in_b )
-        {
-            /// No check on the validity of the index of the element in_b
-            /// NO_ID is used to flag elements to delete 
-            ringmesh_debug_assert( in_boundary_type( id_.type ) == in_b.type ) ;
-            ringmesh_debug_assert( id < nb_in_boundary() ) ;
-            in_boundary_[id] = in_b ;
-        }
-
-        void set_parent( const gme_t& p )
-        {
-            /// No check on the validity of the index of the element p
-            /// NO_ID is used to flag elements to delete 
-            ringmesh_debug_assert( parent_type( id_.type ) == p.type ) ;
-            parent_ = p ;
-        }
-
-        void add_child( const gme_t& c )
-        {
-            ringmesh_debug_assert( c.is_defined() ) ;
-            ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
-            children_.push_back( c ) ;
-        }
-
-        void set_child( index_t id, const gme_t& c )
-        {
-            /// No check on the validity of the index of the element c
-            /// NO_ID is used to flag elements to delete 
-            ringmesh_debug_assert( child_type( id_.type ) == c.type ) ;
-            ringmesh_debug_assert( id < nb_children() ) ;
-            children_[id] = c ;
-        }
-
-        void erase_invalid_element_references() ;
-        /*!
-         * @}
-         */
-
     protected:
-        /// Pointer to the GeoModel owning this element
-        GeoModel* model_ ;
+        /// Reference to the GeoModel owning this element
+        const GeoModel& model_ ;
 
         /// Unique identifier of the GeoModelElement in the model
         gme_t id_ ;
@@ -491,14 +396,6 @@ namespace RINGMesh {
     // For me this is the best place ! So anybody can use RINGMesh::BME!
     typedef GeoModelElement GME ;
 
-    /*!
-     * @brief Name of the attribute storing the index of a vertex in the model
-     *
-     * @note It should be in GeoModelMeshElement class
-     *       but then there are linking errors in code that depends on it ?? (JP)
-     */
-    const static std::string model_vertex_id_att_name = std::string(
-        "model_vertex_id" ) ;
 
     /*!
      * @brief Abstract base class for GeoModelElement 
@@ -507,15 +404,23 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelMeshElement: public GeoModelElement {
     ringmesh_disable_copy( GeoModelMeshElement ) ;
+    friend class GeoModelEditor ;
+    friend class GeoModelBuilder ;
     public:
+
+        /*!
+         * @brief Name of the attribute storing the index of a vertex in the model
+         */
+        static const std::string model_vertex_id_att_name() ;
+
         GeoModelMeshElement(
-            GeoModel* model = NULL,
-            TYPE element_type = NO_TYPE,
-            index_t id = NO_ID )
+            const GeoModel& model,
+            TYPE element_type,
+            index_t id )
             : GeoModelElement( model, element_type, id )
         {
             model_vertex_id_.bind( mesh_.vertices.attributes(),
-                model_vertex_id_att_name ) ;
+                model_vertex_id_att_name() ) ;
         }
         virtual ~GeoModelMeshElement() ;
 
@@ -530,20 +435,7 @@ namespace RINGMesh {
             // are_model_vertex_indices_valid() ;
         }
 
-        /*!
-         * @brief Returns the number of edges or facets of the mesh
-         */
-        index_t nb_cells() const
-        {
-            switch( gme_id().type ) {
-                case LINE:
-                    return mesh_.edges.nb() ;
-                case SURFACE:
-                    return mesh_.facets.nb() ;
-                default:
-                    return 0 ;
-            }
-        }
+        virtual index_t nb_cells() const = 0 ;
 
         /*!
          * @brief Returns the number of vertices of the mesh
@@ -554,34 +446,24 @@ namespace RINGMesh {
         }
 
         index_t model_vertex_id( index_t v = 0 ) const ;
-        void set_model_vertex_id( index_t v, index_t model_id ) ;
         index_t local_id( index_t model_vertex_id ) const ;
 
         const vec3& vertex( index_t v = 0 ) const ;
-
-        virtual void set_vertex( index_t index, const vec3& point, bool update ) ;
-
-        virtual void set_vertex( index_t v, index_t model_vertex ) ;
-
-        virtual void set_vertices(
-            const std::vector< vec3 >& points,
-            bool clear_mesh = false ) ;
-
-        virtual void set_vertices(
-            const std::vector< index_t >& model_vertices,
-            bool clear_mesh = false ) ;
 
         /*!
          * @}
          * \name Attribute management
          * @{
          */
-        virtual GEO::AttributesManager& vertex_attribute_manager() const
+        GEO::AttributesManager& vertex_attribute_manager() const
         {
             return mesh_.vertices.attributes() ;
         }
-
-        virtual GEO::AttributesManager& cell_attribute_manager() const
+        GEO::AttributesManager& facet_attribute_manager() const
+        {
+            return mesh_.facets.attributes() ;
+        }
+        GEO::AttributesManager& cell_attribute_manager() const
         {
             return mesh_.facets.attributes() ;
         }
@@ -593,7 +475,7 @@ namespace RINGMesh {
 
         /*!  
          * @brief Open-bar access to the mesh of the element
-         * @detail ONLY for internal use. 
+         * @details ONLY for internal use.
          * @warning DO NOT directly call this function to modify the facets, edges,
          * or vertices of the element.
          */
@@ -633,35 +515,26 @@ namespace RINGMesh {
      * @details It is a unique point.
      */
     class RINGMESH_API Corner: public GeoModelMeshElement {
+        friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
     public:
-        Corner( GeoModel* model = nil, index_t id = NO_ID, const vec3& vertex =
-            vec3() )
+        Corner( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, CORNER, id )
         {
-            mesh_.vertices.create_vertex( vertex.data() ) ;
         }
 
         ~Corner()
         {
         }
 
-        void set_vertex( const vec3& point, bool update_model )
+        virtual index_t nb_cells() const
         {
-            GeoModelMeshElement::set_vertex( 0, point, update_model ) ;
-        }
-
-        void set_vertex( index_t model_point_id )
-        {
-            GeoModelMeshElement::set_vertex( 0, model_point_id ) ;
-        }
-
-        void set_model_vertex_id( index_t model_id )
-        {
-            GeoModelMeshElement::set_model_vertex_id( 0, model_id ) ;
+            return 0 ;
         }
 
     protected:
-        bool is_mesh_valid() const ;
+        virtual bool is_mesh_valid() const ;
+
     } ;
 
     /*!
@@ -671,20 +544,22 @@ namespace RINGMesh {
      *         
      */
     class RINGMESH_API Line: public GeoModelMeshElement {
+        friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
     public:
-        Line( GeoModel* model = nil, index_t id = NO_ID ) ;
+        Line( const GeoModel& model, index_t id ) ;
 
         ~Line()
         {
         }
 
-        void set_vertices(
-            const std::vector< vec3 >& points,
-            bool clear_mesh = false ) ;
-
-        void set_vertices(
-            const std::vector< index_t >& model_vertices,
-            bool clear_mesh = false ) ;
+        /*!
+         * Get the number of edges
+         */
+        virtual index_t nb_cells() const
+        {
+            return mesh_.edges.nb() ;
+        }
 
         /*!
          * @brief A Line is closed if its two extremities are identitical 
@@ -696,15 +571,9 @@ namespace RINGMesh {
                 && ( boundaries_[0] == boundaries_[1] ) ;
         }
 
-        bool equal( const std::vector< vec3 >& rhs_vertices ) const ;
+    private:
+        virtual bool is_mesh_valid() const ;
 
-        /// \todo Move these in a API. Why is that here ?
-        vec3 segment_barycenter( index_t e ) const ;
-        double segment_length( index_t e ) const ;
-        double total_length() const ;
-
-    protected:
-        bool is_mesh_valid() const ;
     } ;
 
     class RINGMESH_API SurfaceTools {
@@ -718,8 +587,8 @@ namespace RINGMesh {
     private:
         const Surface& surface_ ;
 
-        GEO::MeshFacetsAABB* aabb_ ;
-        ColocaterANN* ann_ ;
+        mutable GEO::MeshFacetsAABB* aabb_ ;
+        mutable ColocaterANN* ann_ ;
     } ;
 
     /*!
@@ -728,10 +597,12 @@ namespace RINGMesh {
      * @details One 2-manifold connected component .
      */
     class RINGMESH_API Surface: public GeoModelMeshElement {
+        friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
     public:
         const static index_t NO_ADJACENT = index_t( -1 ) ;
 
-        Surface( GeoModel* model = nil, index_t id = NO_ID )
+        Surface( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, SURFACE, id ), tools( *this )
         {
         }
@@ -739,8 +610,14 @@ namespace RINGMesh {
         ~Surface()
         {
         }
-        ;
 
+        /*!
+         * Get the number of facets
+         */
+        virtual index_t nb_cells() const
+        {
+            return mesh_.facets.nb() ;
+        }
         bool is_triangulated() const
         {
             return mesh_.facets.are_simplices() ;
@@ -875,12 +752,8 @@ namespace RINGMesh {
          * \name Geometrical request on facets
          * @{
          */
-        vec3 facet_barycenter( index_t f ) const ;
-        double facet_area( index_t f ) const ;
-        vec3 facet_normal( index_t f ) const ;
-        void vertex_normals( std::vector< vec3 >& normals ) const ;
+        vec3 normal( index_t f ) const ;
         index_t closest_vertex_in_facet( index_t f, const vec3& vertex ) const ;
-        vec3 edge_barycenter( index_t c ) const ;
 
         /*! @}
          * \name Adjacencies request
@@ -932,47 +805,30 @@ namespace RINGMesh {
             index_t& next_f,
             index_t& next_e ) const ;
 
-        /*! @}
-         * \name Modifiers
-         * @{
-         */
-        void set_adjacent( index_t f, index_t e, index_t adjacent )
-        {
-            mesh_.facets.set_adjacent( f, e, adjacent ) ;
-        }
-
-        void set_geometry(
-            const std::vector< vec3 >& vertices,
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr ) ;
-
-        void set_geometry(
-            const std::vector< index_t >& model_vertex_ids,
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr ) ;
-
-        void set_geometry(
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr ) ;
-
-        void set_adjacent( const std::vector< index_t >& adjacent )
-        {
-            ringmesh_assert( adjacent.size() == mesh_.facet_corners.nb() ) ;
-            for( index_t i = 0; i < adjacent.size(); i++ ) {
-                mesh_.facet_corners.set_adjacent_facet( i, adjacent[i] ) ;
-            }
-        }
-
-        void cut_by_line( const Line& L ) ;
-
-        /*! @}
-         */
     public:
         SurfaceTools tools ;
 
-    protected:
-        bool is_mesh_valid() const ;
+    private:
+        virtual bool is_mesh_valid() const ;
+        	    
     } ;
+
+
+    class RINGMESH_API RegionTools {
+    public:
+        RegionTools( const Region& region ) ;
+        ~RegionTools() ;
+
+        const GEO::MeshCellsAABB& aabb() const ;
+        const ColocaterANN& ann() const ;
+
+    private:
+        const Region& region_ ;
+
+        mutable GEO::MeshCellsAABB* aabb_ ;
+        mutable ColocaterANN* ann_ ;
+    } ;
+
 
     /*!
      * @brief A GeoModelElement of type REGION
@@ -981,57 +837,34 @@ namespace RINGMesh {
      * Surfaces. Its volumetric mesh is optional.
      */
     class RINGMESH_API Region: public GeoModelMeshElement {
+        friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
     public:
-        Region( GeoModel* model = nil, index_t id = NO_ID )
-            : GeoModelMeshElement( model, REGION, id )
+        Region( const GeoModel& model, index_t id )
+            : GeoModelMeshElement( model, REGION, id ), tools( *this )
         {
         }
 
         ~Region()
         {
         }
-        ;
+
+        /*!
+         * Get the number of cells
+         */
+        virtual index_t nb_cells() const
+        {
+            return mesh_.cells.nb() ;
+        }
 
         bool is_meshed() const
         {
             return mesh().cells.nb() > 0 ;
         }
 
-        void add_boundary( const gme_t& b, bool side )
-        {
-            ringmesh_debug_assert( b.is_defined() ) ;
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            boundaries_.push_back( b ) ;
-            sides_.push_back( side ) ;
-        }
-
-        void set_boundary( index_t id, const gme_t& b, bool side )
-        {
-            /// No check on the validity of the index of the element b
-            /// NO_ID is used to flag elements to delete 
-            ringmesh_debug_assert( boundary_type( id_.type ) == b.type ) ;
-            ringmesh_debug_assert( id < nb_boundaries() ) ;
-            boundaries_[id] = b ;
-            sides_[id] = side ;
-        }
-
         bool side( index_t i ) const
         {
             return sides_[i] ;
-        }
-
-        void set_side( index_t i, bool value )
-        {
-            sides_[i] = value ;
-        }
-
-        /*! I do not like it, but I need this access in the nasty
-         * erase_invalid_element_references function.
-         * To remove when that function is properly rewritten [JP]
-         */
-        std::vector< bool >& sides()
-        {
-            return sides_ ;
         }
 
         /*!
@@ -1045,20 +878,9 @@ namespace RINGMesh {
          *     }
          */
 
-        /*!
-         * \todo Copy function. We need to copy the SIDES
-         * with the boundaries.
-         */
-        virtual void copy_macro_topology(
-            const GeoModelElement& rhs,
-            GeoModel& model )
-        {
-            GeoModelElement::copy_macro_topology( rhs, model ) ;
-            sides_ = dynamic_cast< const Region& >( rhs ).sides_ ;
-        }
+    private:
 
-    protected:
-        bool is_mesh_valid() const ;
+        virtual bool is_mesh_valid() const ;
 
     private:
         /*! Additional information to store oriented boundary Surfaces
@@ -1066,29 +888,11 @@ namespace RINGMesh {
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_ ;
-    } ;
 
-    /*!
-     * @brief Class to answer geometrical requests on a GeoModelElement
-     */
-    class RINGMESH_API GeoModelElementMeasure {
     public:
-        static double size( const GeoModelElement* E ) ;
-
-        static double cell_size( const GeoModelElement* E, index_t cell ) ;
-
-        static double distance( const GeoModelElement* from, const vec3& p ) ;
-
-        static double distance(
-            const GeoModelElement* from,
-            const GeoModelElement* to ) ;
-
-        static vec3 barycenter( const GeoModelElement* E ) ;
-
-        static vec3 barycenter(
-            const GeoModelElement* E,
-            const std::vector< index_t >& cells ) ;
+        RegionTools tools ;
     } ;
+
 } // namespace
 
 #endif
