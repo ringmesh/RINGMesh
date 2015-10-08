@@ -144,7 +144,15 @@ namespace RINGMesh {
 
         /*!
          * @}
-         */       
+         */   
+
+        index_t find_or_create_duplicate_vertex(
+            GeoModelMeshElement& S,
+            index_t model_vertex_id,
+            index_t surface_vertex_id ) ;
+
+        void cut_surface_by_line( Surface& S, const Line& L ) ;
+
     private:
         void create_surface_geometry(
             const GME::gme_t& surface_id,

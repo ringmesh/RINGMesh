@@ -204,7 +204,7 @@ namespace RINGMesh {
                 GEO::Memory::copy( mesh_.vertices.point_ptr( index ),
                     E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
                 GEO::Attribute< index_t > att( gmm_.vertex_attribute_manager(),
-                    GeoModelMeshElement::model_vertex_id_att_name ) ;
+                    GeoModelMeshElement::model_vertex_id_att_name() ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     // Global index stored at BME level
                     att[v] = index ;
@@ -235,7 +235,7 @@ namespace RINGMesh {
             for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
                 GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
                 GEO::Attribute< index_t > att( gmm_.vertex_attribute_manager(),
-                    GeoModelMeshElement::model_vertex_id_att_name ) ;
+                    GeoModelMeshElement::model_vertex_id_att_name() ) ;
                 att.fill( NO_ID ) ;
             }
         }
@@ -466,7 +466,7 @@ namespace RINGMesh {
             for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
                 GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
                 GEO::Attribute< index_t > att( gmm_.vertex_attribute_manager(),
-                    GeoModelMeshElement::model_vertex_id_att_name ) ;
+                    GeoModelMeshElement::model_vertex_id_att_name() ) ;
 
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     index_t old_id = E.model_vertex_id( v ) ;
