@@ -46,9 +46,6 @@ option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires 
 # Generating configuration directories for single-configuration generators (Make)
 # and running cmake configuration in each one of them
 
-message( PROJEC_BIN  ${PROJECT_BINARY_DIR}) 
-message( PROJEC_BSRC  ${PROJECT_SOURCE_DIR}) 
-
 if(UNIX)    
     # If the CMAKE_BUILD_TYPE is no defined
     # ie at first run of that file
@@ -56,7 +53,7 @@ if(UNIX)
     
       # For all configuration types of the project  
       foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
-          # The binary directory for this config
+          # The binary directory for this configuration
           set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/ringmesh/${config})
     
           # Create the directory
@@ -80,13 +77,15 @@ if(UNIX)
       endforeach()
       
       # Get out when all configurations have been running
-      # We do not wnat to execute the rest of the file in that case
+      # We do not want to execute the rest of the file in that case
       return()
     endif()
 else(UNIX)
-    set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR})
-    set(PROJECT_BINARY_DIR ${PROJECT_BINARY_DIR}/ringmesh)
+    set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
 endif(UNIX)
+
+message(Project binary directory is:  "${PROJECT_BINARY_DIR}") 
+message(Project source directory is: "${PROJECT_SOURCE_DIR}") 
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
@@ -115,7 +114,7 @@ endif(WIN32)
 #------------------------------------------------------------------------------------------------
 # Configure a header file to pass on some of the CMake settings
 # to the source code
-set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh_config.h)
+set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
 configure_file(
   "${PROJECT_SOURCE_DIR}/include/ringmesh/ringmesh_config.h.in"
    ${generated_configure_file}
@@ -179,7 +178,7 @@ link_directories(${GEOGRAM_PATH_BIN}/lib)
 
 
 #------------------------------------------------------------------------------------------------    
- # I do not use it, so please comment and clean this section [JP]
+ # Get MG-Tetra if a path is given
 if(not ${MG_TETRA} STREQUAL "")   
   message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
   include_directories(${MG_TETRA}/include)
@@ -266,7 +265,7 @@ if(WIN32)
      COMMAND  "${CMAKE_COMMAND}" -E copy_if_different 
          "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/geogram.pdb"
          "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>/geogram.pdb" 
-     COMMENT "Copy geogram debu information")
+     COMMENT "Copy geogram debug information")
 endif()
 
 
@@ -304,6 +303,6 @@ if(BUILD_DOCUMENTATION)
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
 
-    # We should think about installation steps fo the whole project [JP]
+    # We should think about installation steps for the whole project [JP]
     # install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/html DESTINATION share/doc)
 endif()
