@@ -346,6 +346,7 @@ namespace RINGMesh {
                 }
             }
             unzClose( uz ) ;
+            gm.mesh.vertices.clear() ;
             return true ;
         }
 

@@ -224,7 +224,7 @@ namespace RINGMesh {
     {
 //        GEO::Process::acquire_spinlock( lock_ ) ;
 
-        mesh_.clear( true, true ) ;
+        mesh_.vertices.clear( true, true ) ;
         gme_vertices_.clear() ;
         clear_kdtree() ;
 
