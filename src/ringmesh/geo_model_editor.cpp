@@ -1,44 +1,45 @@
 /*
-* Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of the <organization> nor the
-*       names of its contributors may be used to endorse or promote products
-*       derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*  Contacts:
-*     Arnaud.Botella@univ-lorraine.fr
-*     Antoine.Mazuyer@univ-lorraine.fr
-*     Jeanne.Pellerin@wias-berlin.de
-*
-*     http://www.ring-team.org
-*
-*     RING Project
-*     Ecole Nationale Superieure de Geologie - Georessources
-*     2 Rue du Doyen Marcel Roubault - TSA 70605
-*     54518 VANDOEUVRE-LES-NANCY
-*     FRANCE
-*/
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - Georessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
 
 #include <ringmesh/geo_model_editor.h>
+#include <ringmesh/geo_model_validity.h>
 
 #include <algorithm>
 namespace RINGMesh {
@@ -46,8 +47,8 @@ namespace RINGMesh {
     typedef GeoModelElement::gme_t gme_t ;
 
     /*!
-    * @brief Mini-factory. Create an empty element of the right type
-    */
+     * @brief Mini-factory. Create an empty element of the right type
+     */
     GME* new_element( GME::TYPE T, const GeoModel& M, index_t id )
     {
 
@@ -67,12 +68,12 @@ namespace RINGMesh {
     }
 
     /*!
-    * @brief Creates a element of the given type and add it to the correct vector
-    * The GeoModelElement is created from its type and its index
-    *
-    * @param[in] type Type of the element to create
-    * @return The index of the created element
-    */
+     * @brief Creates a element of the given type and add it to the correct vector
+     * The GeoModelElement is created from its type and its index
+     *
+     * @param[in] type Type of the element to create
+     * @return The index of the created element
+     */
     gme_t GeoModelEditor::create_element( GME::TYPE type )
     {
         index_t id = model_.nb_elements( type ) ;
@@ -95,37 +96,37 @@ namespace RINGMesh {
         std::vector< GME* >& store = model_.modifiable_elements( type ) ;
         store.resize( nb, nil ) ;
         for( index_t i = 0; i < nb; i++ ) {
-            store[ i ] = new_element( type, model_, i ) ;
+            store[i] = new_element( type, model_, i ) ;
         }
     }
 
     /*!
-    * @brief Fill the model universe_
-    *
-    * @param[in] boundaries Indices of the surfaces on the model boundary
-    * plus indication on which side of the surface is universe_ ( outside of the model )
-    */
+     * @brief Fill the model universe_
+     *
+     * @param[in] boundaries Indices of the surfaces on the model boundary
+     * plus indication on which side of the surface is universe_ ( outside of the model )
+     */
     void GeoModelEditor::set_universe(
         const std::vector< std::pair< index_t, bool > >& boundaries )
     {
         Region& U = model_.universe_ ;
-        set_element_name( U.gme_id() ,"Universe" ) ;
+        set_element_name( U.gme_id(), "Universe" ) ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
-            ringmesh_assert( boundaries[ i ].first < model_.nb_surfaces() ) ;
-            add_element_boundary( U.gme_id() ,
-                gme_t( GME::SURFACE, boundaries[ i ].first ), boundaries[ i ].second ) ;
+            ringmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
+            add_element_boundary( U.gme_id(),
+                gme_t( GME::SURFACE, boundaries[i].first ), boundaries[i].second ) ;
         }
     }
 
     /*!
-    * @brief Add to the vector the elements which cannot exist if
-    *        an element in the set does not exist.
-    * @details These elements are added to the set.
-    *          Recursive call till nothing is added.
-    *
-    * @return True if at least one element was added, otherwise false.
-    */
+     * @brief Add to the vector the elements which cannot exist if
+     *        an element in the set does not exist.
+     * @details These elements are added to the set.
+     *          Recursive call till nothing is added.
+     *
+     * @return True if at least one element was added, otherwise false.
+     */
     bool GeoModelEditor::get_dependent_elements( std::set< gme_t >& in ) const
     {
         index_t input_size = in.size() ;
@@ -143,7 +144,7 @@ namespace RINGMesh {
 
         /// If a parent has no children anymore - add it 
         for( index_t p = GME::CONTACT; p < GME::NO_TYPE; ++p ) {
-            GME::TYPE P = ( GME::TYPE ) p ;
+            GME::TYPE P = (GME::TYPE) p ;
             for( index_t j = 0; j < model_.nb_elements( P ); ++j ) {
                 bool no_child = true ;
                 const GME& E = model_.element( GME::gme_t( P, j ) ) ;
@@ -161,7 +162,7 @@ namespace RINGMesh {
 
         /// If an element is in the boundary of nothing - add it
         for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
-            GME::TYPE T = ( GME::TYPE ) t ;
+            GME::TYPE T = (GME::TYPE) t ;
             for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
                 bool no_incident = true ;
                 const GME& E = model_.element( GME::gme_t( T, j ) ) ;
@@ -185,18 +186,18 @@ namespace RINGMesh {
     }
 
     /*!
-    * @brief Remove a list of elements of the model
-    * @details No check is done on the consistency of this removal
-    *          The elements and all references to them are removed.
-    *          All dependent elements should be in the set of elements to remove,
-    *          with a prior call to get_dependent_elements function.
-    *
-    * @warning NOT TESTED.
-    *          The client is responsible to set the proper connectivity
-    *          information between the remaining model elements.
-    *
-    * @todo TEST IT
-    */
+     * @brief Remove a list of elements of the model
+     * @details No check is done on the consistency of this removal
+     *          The elements and all references to them are removed.
+     *          All dependent elements should be in the set of elements to remove,
+     *          with a prior call to get_dependent_elements function.
+     *
+     * @warning NOT TESTED.
+     *          The client is responsible to set the proper connectivity
+     *          information between the remaining model elements.
+     *
+     * @todo TEST IT
+     */
     void GeoModelEditor::remove_elements( const std::set< gme_t >& elements )
     {
         if( elements.size() == 0 ) {
@@ -212,15 +213,15 @@ namespace RINGMesh {
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; ++i ) {
             to_erase_by_type.push_back(
                 std::vector< index_t >(
-                model_.nb_elements( static_cast<GME::TYPE>( i ) ), 0 ) ) ;
+                    model_.nb_elements( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
         }
         // Flag the elements to erase
         for( std::set< gme_t >::const_iterator it = elements.begin();
-             it != elements.end(); ++it ) {
+            it != elements.end(); ++it ) {
             gme_t cur = *it ;
             if( cur.type < GME::NO_TYPE ) {
                 ringmesh_debug_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
-                to_erase_by_type[ cur.type ][ cur.index ] = NO_ID ;
+                to_erase_by_type[cur.type][cur.index] = NO_ID ;
             }
         }
 
@@ -231,31 +232,31 @@ namespace RINGMesh {
     }
 
     /*!
-    * @brief ONGOING WORK. Removes properly some elements of the Boundary Model.
-    *
-    * @param[in] elements_to_remove: in input the elements the client wants to
-    * remove, in output all the removed elements (dependencies of ).
-    *
-    * Calls get_dependent_elements on each elements of \p elements_to_remove.
-    * Then do remove these elements and updates the universe.
-    *
-    * @pre Assert that the element to remove is one region that has only one neighbor
-    *
-    * @todo Finish to implement it for any kind of BME. BC must continue this work.
-    *
-    * @todo Review : Error in the comments [JP]
-    */
+     * @brief ONGOING WORK. Removes properly some elements of the Boundary Model.
+     *
+     * @param[in] elements_to_remove: in input the elements the client wants to
+     * remove, in output all the removed elements (dependencies of ).
+     *
+     * Calls get_dependent_elements on each elements of \p elements_to_remove.
+     * Then do remove these elements and updates the universe.
+     *
+     * @pre Assert that the element to remove is one region that has only one neighbor
+     *
+     * @todo Finish to implement it for any kind of BME. BC must continue this work.
+     *
+     * @todo Review : Error in the comments [JP]
+     */
     void GeoModelEditor::remove_elements_and_dependencies(
         const std::set< GME::gme_t >& elements_to_remove )
     {
         // Asserts to remove when implementation is completed
-        ringmesh_assert( elements_to_remove.size() == 1 &&
-                         elements_to_remove.begin()->type == GME::REGION ) ;
-
+        ringmesh_assert(
+            elements_to_remove.size() == 1
+                && elements_to_remove.begin()->type == GME::REGION ) ;
 
         // Copy because it is not logical to have in output the removed elements. BC
         /// @todo Review : youpiii what did the comment on the function just said ? [JP]
-        std::set< GME::gme_t > elements = elements_to_remove;
+        std::set< GME::gme_t > elements = elements_to_remove ;
         // TODO Handle the case of several objects in elements
 
         const GeoModelElement& reg = model_.element( *( elements.begin() ) ) ;
@@ -271,15 +272,15 @@ namespace RINGMesh {
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; ++i ) {
             to_erase_by_type.push_back(
                 std::vector< index_t >(
-                model_.nb_elements( static_cast<GME::TYPE>( i ) ), 0 ) ) ;
+                    model_.nb_elements( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
         }
         // Flag the elements to erase
         for( std::set< gme_t >::const_iterator it = elements.begin();
-             it != elements.end(); ++it ) {
+            it != elements.end(); ++it ) {
             gme_t cur = *it ;
             if( cur.type < GME::NO_TYPE ) {
                 ringmesh_debug_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
-                to_erase_by_type[ cur.type ][ cur.index ] = NO_ID ;
+                to_erase_by_type[cur.type][cur.index] = NO_ID ;
             }
         }
 
@@ -289,11 +290,11 @@ namespace RINGMesh {
         /// 1. Get the mapping between old indices of the elements
         ///    and new ones (when elements to remove will actually be removed)
         for( index_t i = 0; i < to_erase_by_type.size(); ++i ) {
-            for( index_t j = 0; j < to_erase_by_type[ i ].size(); ++j ) {
-                if( to_erase_by_type[ i ][ j ] == NO_ID ) {
-                    nb_removed[ i ]++ ;
+            for( index_t j = 0; j < to_erase_by_type[i].size(); ++j ) {
+                if( to_erase_by_type[i][j] == NO_ID ) {
+                    nb_removed[i]++ ;
                 } else {
-                    to_erase_by_type[ i ][ j ] = j - nb_removed[ i ] ;
+                    to_erase_by_type[i][j] = j - nb_removed[i] ;
                 }
             }
         }
@@ -307,11 +308,11 @@ namespace RINGMesh {
                 if( !reg.boundary( b_i ).is_on_voi() ) {
                     to_add_in_universe.push_back( reg.boundary( b_i ).gme_id() ) ;
                     ringmesh_debug_assert(
-                        to_erase_by_type[ reg.boundary( b_i ).gme_id().type ][ reg.boundary(
-                        b_i ).gme_id().index ] != NO_ID ) ;
-                    to_add_in_universe[ nb_added ].index =
-                        to_erase_by_type[ reg.boundary( b_i ).gme_id().type ][ reg.boundary(
-                        b_i ).gme_id().index ] ;
+                        to_erase_by_type[reg.boundary( b_i ).gme_id().type][reg.boundary(
+                            b_i ).gme_id().index] != NO_ID ) ;
+                    to_add_in_universe[nb_added].index =
+                        to_erase_by_type[reg.boundary( b_i ).gme_id().type][reg.boundary(
+                            b_i ).gme_id().index] ;
                     ++nb_added ;
                 }
             }
@@ -319,29 +320,29 @@ namespace RINGMesh {
 
         remove_elements( elements ) ;
 
-
         // Update Universe
         std::vector< std::pair< index_t, bool > > oriented_surfaces ;
 
         for( std::vector< GME::gme_t >::const_iterator itr =
-             to_add_in_universe.begin(); itr != to_add_in_universe.end(); ++itr ) {
-            oriented_surfaces.push_back( std::pair< index_t, bool >( itr->index, true ) ) ;
+            to_add_in_universe.begin(); itr != to_add_in_universe.end(); ++itr ) {
+            oriented_surfaces.push_back(
+                std::pair< index_t, bool >( itr->index, true ) ) ;
         }
         set_universe( oriented_surfaces ) ;
 
-        ringmesh_debug_assert( model_.check_model_validity() ) ;
+        ringmesh_debug_assert( is_geomodel_valid( model_ ) ) ;
     }
 
     /*!
-    * @brief Delete elements and remove all references to them in the model
-    *
-    * @param[in,out] to_erase For each type of element T,
-    *        store a vector of the size of model_.nb_elements(T) in which
-    *        elements are flagged with NO_ID.
-    *        In output it stores the mapping table between old and new indices
-    *        for the elements.
-    * @todo TEST IT
-    */
+     * @brief Delete elements and remove all references to them in the model
+     *
+     * @param[in,out] to_erase For each type of element T,
+     *        store a vector of the size of model_.nb_elements(T) in which
+     *        elements are flagged with NO_ID.
+     *        In output it stores the mapping table between old and new indices
+     *        for the elements.
+     * @todo TEST IT
+     */
     void GeoModelEditor::delete_elements(
         std::vector< std::vector< index_t > >& to_erase )
     {
@@ -351,30 +352,30 @@ namespace RINGMesh {
         /// 1. Get the mapping between old indices of the elements
         ///    and new ones (when elements to remove will actually be removed)
         for( index_t i = 0; i < to_erase.size(); ++i ) {
-            for( index_t j = 0; j < to_erase[ i ].size(); ++j ) {
-                if( to_erase[ i ][ j ] == NO_ID ) {
-                    nb_removed[ i ]++ ;
+            for( index_t j = 0; j < to_erase[i].size(); ++j ) {
+                if( to_erase[i][j] == NO_ID ) {
+                    nb_removed[i]++ ;
                 } else {
-                    to_erase[ i ][ j ] = j - nb_removed[ i ] ;
+                    to_erase[i][j] = j - nb_removed[i] ;
                 }
             }
         }
 
         /// 2. Effectively delete the elements 
         for( index_t i = 0; i < to_erase.size(); ++i ) {
-            for( index_t j = 0; j < to_erase[ i ].size(); ++j ) {
-                if( to_erase[ i ][ j ] == NO_ID ) {
-                    GME::gme_t cur( static_cast<GME::TYPE>( i ), j ) ;
+            for( index_t j = 0; j < to_erase[i].size(); ++j ) {
+                if( to_erase[i][j] == NO_ID ) {
+                    GME::gme_t cur( static_cast< GME::TYPE >( i ), j ) ;
                     delete model_.element_ptr( cur ) ;
                     // Set the current element to nil
-                    model_.modifiable_elements( cur.type )[ cur.index ] = nil ;
+                    model_.modifiable_elements( cur.type )[cur.index] = nil ;
                 }
             }
             std::vector< GME* >& store = model_.modifiable_elements(
-                static_cast<GME::TYPE>( i ) ) ;
+                static_cast< GME::TYPE >( i ) ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                static_cast<GME*>( nil ) ), store.end() ) ;
+                    static_cast< GME* >( nil ) ), store.end() ) ;
         }
 
         /// 3. Deal with the model vertices
@@ -387,11 +388,10 @@ namespace RINGMesh {
                 model_.mesh.vertices.gme_vertices( v ) ;
 
             for( index_t i = 0; i < cur.size(); ++i ) {
-                gme_t id = cur[ i ].gme_id ;
-                gme_t new_id( id.type, to_erase[ id.type ][ id.index ] ) ;
-                model_.mesh.vertices.set_gme(
-                    v, i,
-                    GeoModelMeshVertices::VertexInGME( new_id, cur[ i ].v_id ) ) ;
+                gme_t id = cur[i].gme_id ;
+                gme_t new_id( id.type, to_erase[id.type][id.index] ) ;
+                model_.mesh.vertices.set_gme( v, i,
+                    GeoModelMeshVertices::VertexInGME( new_id, cur[i].v_id ) ) ;
             }
         }
         model_.mesh.erase_invalid_vertices() ;
@@ -399,20 +399,20 @@ namespace RINGMesh {
 
         /// 4. Update all possible indices in remaining elements
         for( index_t i = 0; i < to_erase.size(); ++i ) {
-            GME::TYPE T = static_cast<GME::TYPE>( i ) ;
+            GME::TYPE T = static_cast< GME::TYPE >( i ) ;
 
             // Update all indices stored by the BME of that type 
             ringmesh_debug_assert(
-                model_.nb_elements( T ) == to_erase[ i ].size() - nb_removed[ i ] ) ;
+                model_.nb_elements( T ) == to_erase[i].size() - nb_removed[i] ) ;
             for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
                 GeoModelElement& E = model_.modifiable_element( gme_t( T, j ) ) ;
 
                 // Not the same than j - since we have erased some elements
                 index_t old_id = E.gme_id().index ;
-                ringmesh_debug_assert( to_erase[ i ][ old_id ] != NO_ID ) ;
+                ringmesh_debug_assert( to_erase[i][old_id] != NO_ID ) ;
 
                 // id_ 
-                E.id_.index = to_erase[ i ][ old_id ] ;
+                E.id_.index = to_erase[i][old_id] ;
                 // boundary_
                 if( E.nb_boundaries() > 0 ) {
                     GME::TYPE B = GME::boundary_type( T ) ;
@@ -436,7 +436,8 @@ namespace RINGMesh {
                 if( E.has_parent() ) {
                     GME::TYPE P = GME::parent_type( T ) ;
                     ringmesh_debug_assert( P < GME::NO_TYPE ) ;
-                    set_element_parent( E.gme_id(), gme_t( P, to_erase[ P ][ E.parent_id().index ] ) ) ;
+                    set_element_parent( E.gme_id(),
+                        gme_t( P, to_erase[P][E.parent_id().index] ) ) ;
                 }
                 // children_ 
                 if( E.nb_children() > 0 ) {
@@ -490,7 +491,7 @@ namespace RINGMesh {
                     model_ ) ;
             }
         }
-        copy_element_topology( model_.universe_, from.universe_, model_) ;
+        copy_element_topology( model_.universe_, from.universe_, model_ ) ;
 
         model_.nb_elements_per_type_ = from.nb_elements_per_type_ ;
     }
@@ -552,7 +553,6 @@ namespace RINGMesh {
         copy_meshes( from ) ;
     }
 
-
     /*!
      * @brief Remove invalid reference to elements
      *       boundary, in_boundary and children vectors
@@ -566,14 +566,13 @@ namespace RINGMesh {
         if( E.nb_children() > 0 ) {
             gme_t invalid_child( E.child_type( T ), NO_ID ) ;
             if( std::count( E.children_.begin(), E.children_.end(), invalid_child )
-                == E.children_.size()
-              ) {
+                == E.children_.size() ) {
                 // Calling erase on all elements -> undefined behavior
                 E.children_.clear() ;
             } else {
-                E.children_.erase( std::remove(
-                    E.children_.begin(), E.children_.end(), invalid_child ),
-                    E.children_.end() );
+                E.children_.erase(
+                    std::remove( E.children_.begin(), E.children_.end(),
+                        invalid_child ), E.children_.end() ) ;
             }
         }
         if( E.nb_boundaries() > 0 ) {
@@ -582,18 +581,17 @@ namespace RINGMesh {
                 Region& R = dynamic_cast< Region& >( E ) ;
                 // Change side values if necessary
                 index_t offset = 0 ;
-                for( index_t i = 0; i+offset < E.nb_boundaries(); ++i ) {
-                    if( E.boundaries_[ i ] == invalid_boundary ) {
+                for( index_t i = 0; i + offset < E.nb_boundaries(); ++i ) {
+                    if( E.boundaries_[i] == invalid_boundary ) {
                         offset++ ;
                     } else {
-                        R.sides_[i] = R.side( i+offset ) ;
+                        R.sides_[i] = R.side( i + offset ) ;
                     }
                 }
             }
 
-            index_t end = static_cast< index_t >(
-                std::remove( E.boundaries_.begin(), E.boundaries_.end(), invalid_boundary )
-                - E.boundaries_.begin() ) ;
+            index_t end = static_cast< index_t >( std::remove( E.boundaries_.begin(),
+                E.boundaries_.end(), invalid_boundary ) - E.boundaries_.begin() ) ;
             if( end == 0 ) {
                 E.boundaries_.clear() ;
                 if( E.gme_id().type == GME::REGION ) {
@@ -601,7 +599,8 @@ namespace RINGMesh {
                     R.sides_.clear() ;
                 }
             } else {
-                E.boundaries_.erase( E.boundaries_.begin()+end, E.boundaries_.end() );
+                E.boundaries_.erase( E.boundaries_.begin() + end,
+                    E.boundaries_.end() ) ;
                 if( E.gme_id().type == GME::REGION ) {
                     Region& R = dynamic_cast< Region& >( E ) ;
                     R.sides_.erase( R.sides_.begin() + end, R.sides_.end() ) ;
@@ -610,14 +609,13 @@ namespace RINGMesh {
         }
         if( E.nb_in_boundary() > 0 ) {
             gme_t invalid_in_boundary( E.in_boundary_type( T ), NO_ID ) ;
-            if( std::count( E.in_boundary_.begin(), E.in_boundary_.end(), invalid_in_boundary )
-                == E.in_boundary_.size()
-              ) {
+            if( std::count( E.in_boundary_.begin(), E.in_boundary_.end(),
+                invalid_in_boundary ) == E.in_boundary_.size() ) {
                 E.in_boundary_.clear() ;
             } else {
-                E.in_boundary_.erase( std::remove(
-                    E.in_boundary_.begin(), E.in_boundary_.end(), invalid_in_boundary ),
-                    E.in_boundary_.end() );
+                E.in_boundary_.erase(
+                    std::remove( E.in_boundary_.begin(), E.in_boundary_.end(),
+                        invalid_in_boundary ), E.in_boundary_.end() ) ;
             }
         }
     }
