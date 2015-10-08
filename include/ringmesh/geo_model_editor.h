@@ -32,7 +32,7 @@
 *     http://www.ring-team.org
 *
 *     RING Project
-*     Ecole Nationale Supérieure de Géologie - Georessources
+*     Ecole Nationale Superieure de Geologie - Georessources
 *     2 Rue du Doyen Marcel Roubault - TSA 70605
 *     54518 VANDOEUVRE-LES-NANCY
 *     FRANCE
@@ -63,6 +63,10 @@ namespace RINGMesh {
 
         ~GeoModelEditor()
         {}
+
+        void copy( const GeoModel& from ) ;
+        void copy_macro_topology( const GeoModel& from ) ;
+        void copy_meshes( const GeoModel& from ) ;
 
         /*!
         *@brief The model under construction
@@ -115,31 +119,19 @@ namespace RINGMesh {
         * \name Filling GeoModelElement attributes.
         * @{
         */
-        void set_model(
-            const GME::gme_t& t,
-            GeoModel* m )
-        {
-            element( t ).set_model( m ) ;
-        }
-
-        void set_element_index(
-            const GME::gme_t& t )
-        {
-            element( t ).set_id( t.index ) ;
-        }
 
         void set_element_name(
             const GME::gme_t& t,
             const std::string& name )
         {
-            element( t ).set_name( name ) ;
+            element( t ).name_ = name ;
         }
 
         void set_element_geol_feature(
             const GME::gme_t& t,
             GME::GEOL_FEATURE geol )
         {
-            element( t ).set_geological_feature( geol ) ;
+            element( t ).geol_feature_ = geol ;
         }
 
         void add_element_boundary(
@@ -147,11 +139,29 @@ namespace RINGMesh {
             const GME::gme_t& boundary,
             bool side = false )
         {
+            ringmesh_debug_assert( boundary.is_defined() ) ;
+            ringmesh_debug_assert( GME::boundary_type( t.type ) == boundary.type ) ;
+            element( t ).boundaries_.push_back( boundary ) ;
+
             if( t.type == GME::REGION ) {
-                dynamic_cast< Region& >(
-                    element( t ) ).add_boundary( boundary, side ) ;
-            } else {
-                element( t ).add_boundary( boundary ) ;
+                dynamic_cast< Region& >( element( t ) ).sides_.push_back( side ) ;
+            }
+        }
+
+        void set_element_boundary(
+            const GME::gme_t& t,
+            index_t id,
+            const GME::gme_t& boundary,
+            bool side = false )
+        {
+            /// No check on the validity of the index of the element boundary
+            /// NO_ID is used to flag elements to delete
+            ringmesh_debug_assert( GME::boundary_type( t.type ) == boundary.type ) ;
+            ringmesh_debug_assert( id < element( t ).nb_boundaries() ) ;
+            element( t ).boundaries_[id] = boundary ;
+
+            if( t.type == GME::REGION ) {
+                dynamic_cast< Region& >( element( t ) ).sides_[id] = side ;
             }
         }
 
@@ -159,27 +169,54 @@ namespace RINGMesh {
             const GME::gme_t& t,
             const GME::gme_t& in_boundary )
         {
-            element( t ).add_in_boundary( in_boundary ) ;
+            ringmesh_debug_assert( in_boundary.is_defined() ) ;
+            ringmesh_debug_assert( GME::in_boundary_type( t.type ) == in_boundary.type ) ;
+            element( t ).in_boundary_.push_back( in_boundary ) ;
         }
 
-        void set_parent(
+        void set_element_in_boundary(
+            const GME::gme_t& t,
+            index_t id,
+            const GME::gme_t& in_boundary )
+        {
+            /// No check on the validity of the index of the element in_boundary
+            /// NO_ID is used to flag elements to delete
+            ringmesh_debug_assert( GME::in_boundary_type( t.type ) == in_boundary.type ) ;
+            ringmesh_debug_assert( id < element( t ).nb_in_boundary() ) ;
+            element( t ).in_boundary_[id] = in_boundary ;
+        }
+
+        void set_element_parent(
             const GME::gme_t& t,
             const GME::gme_t& parent_index )
         {
-            element( t ).set_parent( parent_index ) ;
+            ringmesh_debug_assert( GME::parent_type( t.type ) == parent_index.type ) ;
+            element( t ).parent_ = parent_index ;
         }
 
-        void add_child(
+        void add_element_child(
             const GME::gme_t& t,
             const GME::gme_t& child_index )
         {
-            element( t ).add_child( child_index ) ;
+            ringmesh_debug_assert( child_index.is_defined() ) ;
+            ringmesh_debug_assert( GME::child_type( t.type ) == child_index.type ) ;
+            element( t ).children_.push_back( child_index ) ;
+        }
+
+        void set_element_child(
+            const GME::gme_t& t,
+            index_t id,
+            const GME::gme_t& child_index )
+        {
+            /// No check on the validity of the index of the element child_index
+            /// NO_ID is used to flag elements to delete
+            ringmesh_debug_assert( GME::child_type( t.type ) == child_index.type ) ;
+            element( t ).children_[id] = child_index ;
         }
 
         // Universe
         void set_universe( const std::vector<
                            std::pair< index_t, bool > >& boundaries ) ;
-
 
         /*!
         * @brief Set an element of the model.
@@ -213,6 +250,13 @@ namespace RINGMesh {
 
         void resize_elements( GME::TYPE type, index_t nb ) ;
 
+        void erase_invalid_element_references( GeoModelElement& E ) ;
+
+    private:
+        void copy_element_topology(
+            GeoModelElement& lhs,
+            const GeoModelElement& rhs,
+            const GeoModel& model ) ;
 
     protected:
         GeoModel& model_ ;

@@ -38,6 +38,7 @@
  *     FRANCE
  */
 
+
 #ifndef __RINGMESH_GEO_MODEL_MESH__
 #define __RINGMESH_GEO_MODEL_MESH__
 
@@ -52,6 +53,7 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
+
 
     class RINGMESH_API GeoModelMeshVertices {
     ringmesh_disable_copy( GeoModelMeshVertices ) ;
@@ -93,7 +95,7 @@ namespace RINGMesh {
         } ;
 
     public:
-        GeoModelMeshVertices( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, GEO::Mesh& mesh ) ;
         ~GeoModelMeshVertices() ;
 
         /*!
@@ -217,9 +219,10 @@ namespace RINGMesh {
         /// Attached GeoModelMesh owning the vertices
         GeoModelMesh& gmm_ ;
         /// Attached GeoModel
-        const GeoModel& gm_ ;
+        GeoModel& gm_ ;
         /// Attached Mesh
         GEO::Mesh& mesh_ ;
+
 
         /*!
          * Vertices in GeoModelElements corresponding to each vertex
@@ -792,8 +795,11 @@ namespace RINGMesh {
          * true = side of the facet normal, false = the other side
          * @return true is the cell facet is on a surface
          */
-        bool is_cell_facet_on_surface( index_t c, index_t f, index_t& facet =
-            dummy_index_t, bool& side = dummy_bool ) const ;
+        bool is_cell_facet_on_surface(
+            index_t c,
+            index_t f,
+            index_t& facet = dummy_index_t,
+            bool& side = dummy_bool ) const ;
 
         /*!
          * Get the center of the given cell
@@ -1035,7 +1041,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMesh {
     ringmesh_disable_copy( GeoModelMesh ) ;
     public:
-        GeoModelMesh( const GeoModel& gm ) ;
+        GeoModelMesh( GeoModel& gm ) ;
         ~GeoModelMesh() ;
 
         const GeoModel& model() const
@@ -1130,7 +1136,7 @@ namespace RINGMesh {
 
     private:
         /// Attached GeoModel
-        const GeoModel& gm_ ;
+        GeoModel& gm_ ;
         /*!
          * @brief Mesh storing the vertices, edges, facets and cells
          * that are not colocated/duplicated
