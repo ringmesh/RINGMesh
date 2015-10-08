@@ -346,7 +346,7 @@ namespace RINGMesh {
     bool GeoModelElement::operator==(
         const GeoModelElement& rhs ) const
     {
-        if( model_ != rhs.model_ ) {
+        if( &model_ != &rhs.model_ ) {
             return false ;
         }
         if( id_ != rhs.id_ ) {
@@ -390,14 +390,7 @@ namespace RINGMesh {
     {
         bool valid = true ;
 
-        /// 1. Check the model
-        if( !has_model() ) {
-            GEO::Logger::err( "GeoModelElement" )
-                << " Element associated to no model " << std::endl ;
-            valid = false ; 
-        }
-
-        /// 2. Check the validity of identification information
+        /// 1. Check the validity of identification information
         ///    in the model - Universe has no index, but a TYPE
         if( gme_id() == gme_t() ) {
             GEO::Logger::err( "GeoModelElement" )
@@ -437,7 +430,7 @@ namespace RINGMesh {
             return valid ;
         }
 
-        /// 3. Check that required information for the TYPE is defined
+        /// 2. Check that required information for the TYPE is defined
         ///    and that reverse information is stored by the corresponding
         ///    elements
         TYPE T = gme_id().type ;
@@ -577,7 +570,7 @@ namespace RINGMesh {
     const GeoModelElement& GeoModelElement::parent() const
     {
         ringmesh_assert( parent_id().is_defined() ) ;
-        return model_->element( parent_id() ) ;
+        return model().element( parent_id() ) ;
     }
 
 
@@ -589,7 +582,7 @@ namespace RINGMesh {
     const GeoModelElement& GeoModelElement::boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_boundaries() ) ;
-        return model_->element( boundary_id( x ) ) ;
+        return model().element( boundary_id( x ) ) ;
     }
 
 
@@ -601,7 +594,7 @@ namespace RINGMesh {
     const GeoModelElement& GeoModelElement::in_boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_in_boundary() ) ;
-        return model_->element( in_boundary_id( x ) ) ;
+        return model().element( in_boundary_id( x ) ) ;
     }
 
 
@@ -613,29 +606,8 @@ namespace RINGMesh {
     const GeoModelElement& GeoModelElement::child( index_t x ) const
     {
         ringmesh_assert( x < nb_children() ) ;
-        return model_->element( child_id( x ) ) ;
+        return model().element( child_id( x ) ) ;
     }
-
-
-    /*!
-     * @brief Copy all attributes except model_ from @param rhs to this element
-     * @param[in] rhs To copy from
-     * @param[in] model Model to associate to this element
-     */
-    void GeoModelElement::copy_macro_topology(
-        const GeoModelElement& rhs,
-        GeoModel& model )
-    {
-        model_ = &model ;
-        id_ = rhs.id_ ;
-        name_ = rhs.name_ ;
-        geol_feature_ = rhs.geol_feature_ ;
-        boundaries_ = rhs.boundaries_ ;
-        in_boundary_ = rhs.in_boundary_ ;
-        parent_ = rhs.parent_ ;
-        children_ = rhs.children_ ;
-    }
-
 
     /*!
      * @brief Checks if this element define the model external boundary
@@ -710,77 +682,10 @@ namespace RINGMesh {
         return false ;
     }
 
-    /*! 
-     * @brief Remove invalid reference to elements 
-     *       boundary, in_boundary and children vectors
-     *       Invalid elements have a NO_ID index
-     */
-    void GeoModelElement::erase_invalid_element_references()
-    {
-        TYPE T = gme_id().type ;
-        if( nb_children() > 0 ) {
-            gme_t invalid_child( child_type( T ), NO_ID ) ;
-            if( std::count( children_.begin(), children_.end(), invalid_child ) 
-                == children_.size() 
-              ) {
-                // Calling erase on all elements -> undefined behavior 
-                children_.clear() ;              
-            } else {            
-                children_.erase( std::remove(
-                    children_.begin(), children_.end(), invalid_child ),
-                    children_.end() );
-            }
-        }
-        if( nb_boundaries() > 0 ) {
-            gme_t invalid_boundary( boundary_type( T ), NO_ID ) ;
-
-            // I do not like this test so much, bu I have no 
-            // great idea to rewrite properly this code right now [JP]
-            Region* R = dynamic_cast<Region*>( this )  ;
-            if( R != nil ) {
-                // Change side values if necessary
-                index_t offset = 0 ;
-                for( index_t i = 0; i+offset < nb_boundaries(); ++i ) {
-                    if( boundaries_[ i ] == invalid_boundary ) {
-                        offset++ ;
-                    } else {
-                        R->set_side( i, R->side( i+offset ) ) ;
-                    }
-                }
-            }
-            
-            index_t end = static_cast< index_t >(
-                std::remove( boundaries_.begin(), boundaries_.end(), invalid_boundary )
-                - boundaries_.begin() ) ;
-            if( end == 0 ) {
-                boundaries_.clear() ;
-                if( R != nil ) {
-                    R->sides().clear() ;
-                }
-            } else {
-                boundaries_.erase( boundaries_.begin()+end, boundaries_.end() );
-                if( R != nil ) {
-                    R->sides().erase( R->sides().begin() + end, R->sides().end() ) ;
-                }
-            }            
-        }
-        if( nb_in_boundary() > 0 ) {
-            gme_t invalid_in_boundary( in_boundary_type( T ), NO_ID ) ;
-            if( std::count( in_boundary_.begin(), in_boundary_.end(), invalid_in_boundary )
-                == in_boundary_.size()
-              ) {
-                in_boundary_.clear() ;
-            } else {
-                in_boundary_.erase( std::remove(
-                    in_boundary_.begin(), in_boundary_.end(), invalid_in_boundary ),
-                    in_boundary_.end() );
-            }
-        }
-    }
-
-
-
     /*********************************************************************/
+
+    const std::string GeoModelMeshElement::model_vertex_id_att_name = std::string(
+        "model_vertex_id" ) ;
 
     GeoModelMeshElement::~GeoModelMeshElement()
     {
@@ -802,7 +707,7 @@ namespace RINGMesh {
     {
         typedef GeoModelMeshVertices BMV ;
         const std::vector< BMV::VertexInGME >& gme_vertices =
-            model_->mesh.vertices.gme_vertices( model_vertex_id ) ;
+            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
 
         for( index_t i = 0; i < gme_vertices.size(); i++ ) {
             const BMV::VertexInGME& info = gme_vertices[ i ] ;
@@ -838,7 +743,7 @@ namespace RINGMesh {
             index_t model_v = model_vertex_id( v ) ;
             
             const std::vector< GeoModelMeshVertices::VertexInGME >&
-                backward = model_->mesh.vertices.gme_vertices( model_v ) ;
+                backward = model().mesh.vertices.gme_vertices( model_v ) ;
 
             GeoModelMeshVertices::VertexInGME cur_v( gme_id(), v ) ;
             index_t count_v = static_cast< index_t >( 
@@ -857,48 +762,6 @@ namespace RINGMesh {
         return valid ;
     }
 
-
-
-    /*!
-     * @brief Sets the index of the matching point in the GeoModel
-     *
-     * @param[in] v Vertex index
-     * @param[in] model_id Model vertex index in GeoModelMeshVertices
-     */
-    void GeoModelMeshElement::set_model_vertex_id(
-        index_t vertex_id,
-        index_t model_vertex_id )
-    {
-        ringmesh_assert( vertex_id < nb_vertices() ) ;
-        model_vertex_id_[ vertex_id ] = model_vertex_id ;
-    }
-
-    /*!
-     * @brief Sets the geometrical position of a vertex
-     *
-     * @param index Index of the vertex to modify
-     * @param point New coordinates
-     * @param update If true, all the vertices sharing the same geometrical position
-     *               in the GeoModel have their position updated, if false they
-     *               are not.
-     *
-     * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
-     *          I removed on purpose the default value parameter (JP).
-     */
-    void GeoModelMeshElement::set_vertex(
-        index_t index,
-        const vec3& point,
-        bool update )
-    {
-        ringmesh_debug_assert( index < nb_vertices() ) ;
-        if( update ) {
-            model_->mesh.vertices.update_point(
-                model_vertex_id( index ) , point ) ;
-        }
-        else {
-            mesh_.vertices.point( index ) = point ;
-        }
-    }
 
     /*!
      * @brief Vertex index in model from local index
@@ -922,69 +785,6 @@ namespace RINGMesh {
         ringmesh_assert( v < nb_vertices() ) ;
         return mesh_.vertices.point( v ) ;
     }
-
-    /*!
-     * @brief Set the geometrical position of a vertex from a model vertex
-     * @details Set also both mapping from (GeoModelMeshVertices::unique2bme)
-     *          and to (model_vertex_id_) the model vertex.
-     *
-     * @param index Index of the vertex to modify
-     * @param model_vertex Index in GeoModelMeshVertices of the vertex giving
-     *                     the new position
-     */
-    void GeoModelMeshElement::set_vertex(
-        index_t v, index_t model_vertex )
-    {
-        set_vertex( v, model_->mesh.vertices.vertex( model_vertex ), false ) ;
-        set_model_vertex_id( v, model_vertex ) ;
-        model_->mesh.vertices.add_to_bme(
-            model_vertex, GeoModelMeshVertices::VertexInGME( gme_id(), v ) ) ;
-    }
-
-
-    /*!
-     * @brief Adds vertices to the mesh
-     * @details No update of the model vertices is done
-     *
-     * @param points Geometric positions of the vertices to add
-     * @param clear If true the mesh if cleared, keeping its attributes
-     */
-    void GeoModelMeshElement::set_vertices(
-        const std::vector< vec3 >& points,
-        bool clear )
-    {
-        // Clear the mesh, but keep the attributes and the space
-        if( clear ) {
-            mesh_.clear( true, true ) ;
-        }
-        if( !points.empty() ) {
-            index_t start = mesh_.vertices.create_vertices( points.size() ) ;
-            GEO::Memory::copy( mesh_.vertices.point_ptr( start ),
-                points.data()->data(), 3 * sizeof(double) * points.size() ) ;
-        }
-    }
-
-    /*!
-     * @brief Add vertices to the mesh
-     * @details No update of the model vertices is done
-     *
-     * @param model_vertices Geometric positions of the vertices to add
-     * @param clear If true the mesh if cleared, keeping its attributes
-     */
-    void GeoModelMeshElement::set_vertices(
-        const std::vector< index_t >& model_vertices,
-        bool clear )
-    {
-        // Clear the mesh, but keep the attributes and the space
-        if( clear ) {
-            mesh_.clear( true, true ) ;
-        }
-        mesh_.vertices.create_vertices( model_vertices.size() ) ;
-        for( index_t v = 0; v < model_vertices.size(); v++ ) {
-            set_vertex( v, model_vertices[ v ] ) ;
-        }
-    }
-
 
     /**************************************************************/
 
@@ -1042,10 +842,8 @@ namespace RINGMesh {
      * @param[in] model The parent model
      * @param[in] id The index of the line in the lines_ vector of the parent model
      */
-    Line::Line(
-        GeoModel* model,
-        index_t id ) :
-        GeoModelMeshElement( model, LINE, id )
+    Line::Line( const GeoModel& model, index_t id )
+        : GeoModelMeshElement( model, LINE, id )
     {
     }
 
@@ -1143,7 +941,10 @@ namespace RINGMesh {
         // No zero edge length
         index_t nb_degenerated = 0 ;
         for( index_t e = 0; e < nb_cells(); ++e ) {
-            if( segment_length( e ) < epsilon ) {
+            double l = length(
+                vertex( mesh_.edges.vertex( e, 1 ) )
+                    - vertex( mesh_.edges.vertex( e, 0 ) ) ) ;
+            if( l < epsilon ) {
                 nb_degenerated++ ;
             }
         }
@@ -1156,110 +957,6 @@ namespace RINGMesh {
         return valid ; 
     }
 
-
-    /*!
-     * @brief Adds vertices to the mesh and builds the edges
-     * @details No update of the model vertices is done
-     *
-     * @param points Geometric positions of the vertices to add
-     * @param clear_mesh If true the mesh is cleared keeping its attributes
-     */
-    void Line::set_vertices(
-        const std::vector< vec3 >& points,
-        bool clear_mesh )
-    {
-        GeoModelMeshElement::set_vertices( points, clear_mesh ) ;
-        for( index_t e = 1; e < nb_vertices(); e++ ) {
-            mesh_.edges.create_edge( e - 1, e ) ;
-        }
-    }
-
-    /*!
-     * @brief Adds vertices to the mesh and builds the edges
-     * @details See set_vertex(index_t, index_t)
-     *
-     * @param model_vertices Indices in the model of the points to add
-     * @param clear_mesh If true the mesh is cleared keeping its attributes
-     */
-    void Line::set_vertices(
-        const std::vector< index_t >& model_vertices,
-        bool clear_mesh )
-    {
-        GeoModelMeshElement::set_vertices( model_vertices, clear_mesh ) ;
-        for( index_t e = 0; e < nb_vertices() - 1; e++ ) {
-            mesh_.edges.create_edge( e, e + 1 ) ;
-        }
-    }   
-
-    /*!
-     *
-     * @param[in] s Segment index
-     * @return The coordinates of the barycenter of the segment
-     */
-    vec3 Line::segment_barycenter( index_t e ) const
-    {
-        return 0.5*( vertex( mesh_.edges.vertex( e, 0 ) ) +
-                     vertex( mesh_.edges.vertex( e, 1 ) ) ) ;
-    }
-
-
-    /*!
-     *
-     * @param[in] s Segment index
-     * @return The length of the segment
-     */
-    double Line::segment_length( index_t e ) const
-    {
-        return length( vertex( mesh_.edges.vertex( e, 1 ) ) -
-                       vertex( mesh_.edges.vertex( e, 0 ) ) ) ;
-    }
-
-
-    /*!
-     *
-     * @return The length of the Line
-     */
-    double Line::total_length() const
-    {
-        double result = 0 ;
-        for( index_t s = 0; s < nb_cells(); s++ ) {
-            result += segment_length( s ) ;
-        }
-        return result ;
-    }
-
-
-    /*!
-     * @brief Returns true if the Line has exactly the given vertices
-     *
-     * @param[in] rhs_vertices Vertices to compare to
-     */
-    bool Line::equal( const std::vector< vec3 >& rhs_vertices ) const
-    {
-        if( nb_vertices() != rhs_vertices.size() ) {
-            return false ;
-        }
-
-        bool equal = true ;
-        for( index_t i = 0; i < nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != mesh_.vertices.point( i ) ) {
-                equal = false ;
-                break ;
-            }
-        }
-        if( equal ) return true ;
-
-        equal = true ;
-        for( index_t i = 0; i < nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != mesh_.vertices.point( nb_vertices()-i-1 ) ) {
-                equal = false ;
-                break ;
-            }
-        }
-        if( equal ) return true ;
-
-        return false ;
-    }
 
 
     /********************************************************************/
@@ -1391,43 +1088,6 @@ namespace RINGMesh {
     {
         return local_id( model_vertex_id ) ;
     }
-
-
-    void Surface::set_geometry(
-        const std::vector< vec3 >& vertices,
-        const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr )
-    {
-        set_vertices( vertices ) ;
-        set_geometry( facets, facet_ptr ) ;
-    }
-
-
-    void Surface::set_geometry(
-        const std::vector< index_t >& model_vertex_ids,
-        const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr )
-    {
-        set_vertices( model_vertex_ids ) ;
-        set_geometry( facets, facet_ptr ) ;
-    }
-
-
-    void Surface::set_geometry(
-        const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr )
-    {
-        for( index_t f = 0; f < facet_ptr.size()-1; f++ ) {
-            index_t size = facet_ptr[f+1] - facet_ptr[f] ;
-            GEO::vector< index_t > facet_vertices( size ) ;
-            index_t start = facet_ptr[f] ;
-            for( index_t lv = 0; lv < size; lv++ ) {
-                facet_vertices[lv] = facets[start++] ;
-            }
-            mesh_.facets.create_polygon( facet_vertices ) ;
-        }
-    }
-    
     
     /*!
      * @brief Traversal of a surface border
@@ -1832,75 +1492,17 @@ namespace RINGMesh {
     }
 
 
-    /*!
-     * @brief Compute the barycenter of a facet
-     * @param[in] f Facet index in the surface
-     * @return The coordinates of the facet barycenter
-     */
-    vec3 Surface::facet_barycenter( index_t f ) const
-    {
-        vec3 barycenter( 0., 0., 0. ) ;
-        for( index_t i = 0; i < nb_vertices_in_facet( f ); i++ ) {
-            barycenter += vertex( f, i ) ;
-        }
-        return barycenter / nb_vertices_in_facet( f ) ;
-    }
+
 
 
     /*!
-     * @brief Compute the area of a facet
-     * @param[in] f Facet index in the surface
-     * @return The area of the facet
-     */
-    double Surface::facet_area( index_t f ) const
-    {
-        double result = 0 ;
-        for( index_t i = 1; i + 1 < nb_vertices_in_facet( f ); i++ ) {
-            result += GEO::Geom::triangle_area(
-                vertex( f, 0 ), vertex( f, i ), vertex( f, i + 1 ) ) ;
-        }
-        return result ;
-    }
-
-
-    /*!
-     *
+     * Get the facet normal
      * @param[in] f Facet index
-     * @return Normal to the triangle made by the first 3 vertices
-     * of the facet
-     *
-     * @warning If the facet is not planar calling this has no meaning
+     * @return Normal to the facet
      */
-    vec3 Surface::facet_normal( index_t f ) const
+    vec3 Surface::normal( index_t f ) const
     {
-        const vec3& p0 = vertex( f, 0 )  ;
-        const vec3& p1 = vertex( f, 1 )  ;
-        const vec3& p2 = vertex( f, 2 )  ;
-        vec3 c0 = cross( p0 - p2, p1 - p2 ) ;
-        return normalize( c0 ) ;
-    }
-
-
-    /*!
-     * @brief Compute the normal to the surface vertices
-     * @details The normal at a point is computed as the mean of the normal
-     * to its adjacent facets.
-     *
-     * @param[out] normals Coordinates of the normal vectors to the vertices
-     */
-    void Surface::vertex_normals( std::vector< vec3 >& normals ) const
-    {
-        normals.resize( nb_vertices() ) ;
-        for( index_t f = 0; f < nb_cells(); f++ ) {
-            vec3 normal = facet_normal( f ) ;
-            for( index_t p = 0; p < nb_vertices_in_facet( f ); p++ ) {
-                index_t id = surf_vertex_id( f, p ) ;
-                normals[ id ] += normal ;
-            }
-        }
-        for( index_t p = 0; p < nb_vertices(); p++ ) {
-            normals[ p ] = normalize( normals[ p ] ) ;
-        }
+        return normalize( GEO::Geom::mesh_facet_normal( mesh_, f ) ) ;
     }
 
 
@@ -1925,27 +1527,6 @@ namespace RINGMesh {
         }
         return result ;
     }
-
-
-    vec3 Surface::edge_barycenter( index_t c ) const
-    {
-        vec3 result( 0, 0, 0 ) ;
-
-        // Get the facet index
-        index_t f = NO_ID ;
-        for( ; f < mesh_.facets.nb(); f++ ) {
-            if( mesh_.facets.corners_begin(f ) < c  ) {
-                break ;
-            }
-        }
-        ringmesh_debug_assert( f != NO_ID ) ;
-        index_t v = c - facet_begin( f ) ;
-        result += vertex( f, v ) ;
-        result += vertex( f, next_in_facet( f, v ) ) ;
-        return .5 * result ;
-    }
-
-
     
     bool is_corner_to_duplicate( const GeoModel& BM, index_t corner_id )
     {
@@ -1977,40 +1558,38 @@ namespace RINGMesh {
 
 
     /*!
-     * Find duplicate vertex or create it
-     */
-    index_t find_or_create_duplicate_vertex(
-        Surface& S,
-        index_t model_vertex_id,
-        index_t surface_vertex_id
-        )
-    {
-        GeoModel& M = const_cast< GeoModel& >(S.model() ) ;
-
-        const std::vector< VBME >& vbme = 
-            M.mesh.vertices.gme_vertices( model_vertex_id ) ;
-        index_t duplicate = NO_ID ;
-        for( index_t i = 0; i < vbme.size(); ++i ) {
-            if( vbme[ i ].gme_id == S.gme_id() ) {
-                if( vbme[ i ].v_id != surface_vertex_id ) {
-                    duplicate = vbme[ i ].v_id ;
-                }
-            }
-        }
-        if( duplicate == NO_ID ) {
-            // Duplicate the vertex in the surface
-            duplicate = S.mesh().vertices.create_vertex(
-                M.mesh.vertices.vertex( model_vertex_id).data() ) ;
-            
-            // Set its model vertex index
-            S.set_model_vertex_id( duplicate, model_vertex_id ) ;
-
-            // Add the mapping from in the model vertices. Should we do this one ?
-            M.mesh.vertices.add_to_bme(
-                model_vertex_id, VBME( S.gme_id(), duplicate ) ) ;
-        }
-        return duplicate ;
-    }
+      * Find duplicate vertex or create it
+      */
+     index_t Surface::find_or_create_duplicate_vertex(
+         index_t model_vertex_id,
+         index_t surface_vertex_id )
+     {
+//         GeoModel& M = const_cast< GeoModel& >( model() ) ;
+//
+//         const std::vector< VBME >& vbme = M.mesh.vertices.gme_vertices(
+//             model_vertex_id ) ;
+//         index_t duplicate = NO_ID ;
+//         for( index_t i = 0; i < vbme.size(); ++i ) {
+//             if( vbme[i].gme_id == gme_id() ) {
+//                 if( vbme[i].v_id != surface_vertex_id ) {
+//                     duplicate = vbme[i].v_id ;
+//                 }
+//             }
+//         }
+//         if( duplicate == NO_ID ) {
+//             // Duplicate the vertex in the surface
+//             duplicate = mesh().vertices.create_vertex(
+//                 M.mesh.vertices.vertex( model_vertex_id ).data() ) ;
+//
+//             // Set its model vertex index
+//             set_model_vertex_id( duplicate, model_vertex_id ) ;
+//
+//             // Add the mapping from in the model vertices. Should we do this one ?
+//             M.mesh.vertices.add_to_bme( model_vertex_id,
+//                 VBME( gme_id(), duplicate ) ) ;
+//         }
+//         return duplicate ;
+     }
 
     /*!
      * Find a facet and its edge index that are colocalised with an edge
@@ -2081,6 +1660,7 @@ namespace RINGMesh {
      */
     void Surface::cut_by_line( const Line& L )
     {
+        /*
         // Initialize the GeoModel vertices if they are not
         // They are needed to get the points shared by the Surface
         // and the Line
@@ -2122,8 +1702,8 @@ namespace RINGMesh {
             ringmesh_debug_assert( v2 != Surface::NO_ID ) ;
 
             // Virtual cut - set adjacencies to NO_ADJACENT
-            set_adjacent( f, v, Surface::NO_ADJACENT ) ;
-            set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
+            mesh_.facets.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
+            mesh_.facets.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
         }
 
 
@@ -2167,7 +1747,7 @@ namespace RINGMesh {
         index_t s_new_corner = NO_ID ;
         // Create this new point in the surface and set mapping with point in the BM
         if( m_corner != NO_ID ) {
-            s_new_corner = find_or_create_duplicate_vertex( *this, m_corner, s_corner ) ;            
+            s_new_corner = find_or_create_duplicate_vertex( m_corner, s_corner ) ;
         }
 
         while( model_vertex_id( id1 ) != model().corner(c1).model_vertex_id() ) {
@@ -2194,7 +1774,7 @@ namespace RINGMesh {
             facets_around_vertex( id1, facets_around_id1, false, f ) ;
 
             index_t new_id1 = find_or_create_duplicate_vertex(
-                *this, model_vertex_id( id1 ), id1 ) ;
+                model_vertex_id( id1 ), id1 ) ;
             
             // Update vertex index in facets 
             update_facet_corner( *this, facets_around_id1, id1, new_id1 ) ;
@@ -2217,9 +1797,8 @@ namespace RINGMesh {
         if( !init ) {
             const_cast< GeoModel&>( model() ).mesh.vertices.clear() ;
         }
+        */
     }
-
-
 
 
     /********************************************************************/
@@ -2259,12 +1838,9 @@ namespace RINGMesh {
             // Parce que le mesh est triangulé dans notre dos
             ringmesh_assert( surface_.mesh().facets.are_simplices() ) ;
 
-            SurfaceTools* this_not_const = const_cast< SurfaceTools* >( this ) ;
-            this_not_const->aabb_ = new GEO::MeshFacetsAABB( surface_.mesh() ) ;
+            aabb_ = new GEO::MeshFacetsAABB( surface_.mesh() ) ;
             /// @todo Et pourquoi créer AABB me fait vider les sommets ?
             /// @todo Il faut un mécanisme update de ces SurfaceTools correct.
-            /// Je crois que j'ai compris MAIS IL FAUT ABSOLUMENT COMMENTER !!! 
-            // surface_.model_->vertices.clear() ;
             // if( ann_ ) {
             //     delete ann_ ;
             //     this_not_const->ann_ = nil ;
@@ -2314,189 +1890,70 @@ namespace RINGMesh {
 
     const ColocaterANN& SurfaceTools::ann() const
     {
-        /// @todo Using geogram NearestNeighbor would avoid a copy of all pointss
         if( ann_ == nil ) {
-            const_cast< SurfaceTools* >( this )->ann_ = new ColocaterANN(
-                surface_.mesh(), ColocaterANN::VERTICES ) ;
+            ann_ = new ColocaterANN( surface_.mesh(), ColocaterANN::VERTICES ) ;
         }
-        ringmesh_debug_assert( ann_ != nil );
         return *ann_ ;
     }
 
+    /********************************************************************/
 
-
-    /*!
-     * @brief Compute the size (volume, area, length) of an Element
-     *
-     * @param[in] E Element to evaluate
-     */
-    double GeoModelElementMeasure::size( const GeoModelElement* E )
+    RegionTools::RegionTools( const Region& region )
+        : region_( region ), aabb_( nil ), ann_( nil )
     {
-        double result = 0. ;
+    }
 
-        /// If this element has children sum up their sizes
-        for( index_t i = 0; i < E->nb_children(); ++i ) {
-            result += GeoModelElementMeasure::size( &E->child( i ) )  ;
-        }
-        if( result != 0 ) {return result ;}
 
-        /// Else it is a base element and its size is computed
+    RegionTools::~RegionTools()
+    {
+        if( aabb_ ) delete aabb_ ;
+        if( ann_ ) delete ann_ ;
+    }
 
-        // If this is a region
-        if( E->gme_id().type == GeoModelElement::REGION ) {
-            const Region* R = dynamic_cast< const Region* >( E ) ;
-            // Compute the volume if this is a region
-            for( index_t i = 0; i < R->nb_boundaries(); i++ ) {
-                const Surface& surface =
-                    dynamic_cast< const Surface& >( R->boundary( i ) ) ;
+    const GEO::MeshCellsAABB& RegionTools::aabb() const
+    {
+        if( aabb_ == nil ) {
+            aabb_ = new GEO::MeshCellsAABB( region_.mesh() ) ;
+            /// @todo Et pourquoi créer AABB me fait vider les sommets ?
+            /// @todo Il faut un mécanisme update de ces RegionTools correct.
+            // if( ann_ ) {
+            //     delete ann_ ;
+            //     this_not_const->ann_ = nil ;
+            // }
 
-                for( index_t t = 0; t < surface.nb_cells(); t++ ) {
-                    const vec3& p0 = surface.vertex( t, 0 ) ;
-                    for( index_t v = 1;
-                         v + 1 < surface.nb_vertices_in_facet( t );
-                         ++v )
-                    {
-                        double cur_volume = ( dot( p0,
-                                                  cross( surface.vertex( t,
-                                                          v ),
-                                                      surface.vertex( t, v + 1 ) ) ) )
-                                            / static_cast< double >( 6 ) ;
-                        R->side( i ) ? result -= cur_volume : result += cur_volume ;
+            // Building an AABB reorders the mesh vertices and facets
+            // Very annoying if model_vertex_ids are set because we need
+            // to update the model vertices.
+
+            GeoModel& M = const_cast< GeoModel& >( region_.model() ) ;
+            if( M.mesh.vertices.is_initialized() ) {
+                typedef GeoModelMeshVertices::VertexInGME VBME ;
+
+                for( index_t sv = 0; sv < region_.nb_vertices(); ++sv ) {
+                    index_t v = region_.model_vertex_id( sv ) ;
+                    const std::vector< VBME >& to_update =
+                        M.mesh.vertices.gme_vertices( v ) ;
+
+                    index_t count_skipped = 0 ;
+                    for( index_t i = 0; i < to_update.size(); ++i ) {
+                        if( to_update[i].gme_id == region_.gme_id() ) {
+                            M.mesh.vertices.set_gme( v, i,
+                                VBME( region_.gme_id(), sv ) ) ;
+                            break ;
+                        }
                     }
                 }
             }
-            return fabs( result ) ;
-        } else if( E->gme_id().type == GeoModelElement::CORNER ) {
-            return 0 ;
-        } else if( E->gme_id().type == GeoModelElement::LINE ) {
-            const Line* L = dynamic_cast< const Line* >( E ) ;
-            ringmesh_assert( L != nil ) ;
-            for( index_t i = 1; i < L->nb_vertices(); ++i ) {
-                result += GEO::Geom::distance( L->vertex( i ), L->vertex( i - 1 ) ) ;
-            }
-            return result ;
-        } else if( E->gme_id().type == GeoModelElement::SURFACE ) {
-            const Surface* S = dynamic_cast< const Surface* >( E ) ;
-            ringmesh_assert( S != nil ) ;
-
-            for( index_t i = 0; i < S->nb_cells(); i++ ) {
-                result += S->facet_area( i ) ;
-            }
-            return result ;
         }
-        ringmesh_assert_not_reached ;
-        return result ;
+        return *aabb_ ;
     }
 
-
-    /*!
-     * @brief Compute the barycenter of a part of a GeoModelElement
-     * Only implemented for Surface and Line
-     *
-     * @param[in] E Pointer to the element
-     * @param[in] cells Indices of the segments/facets to consider
-     * @return The coordinates of the barycenter of the @param cells
-     */
-    vec3 GeoModelElementMeasure::barycenter(
-        const GeoModelElement* E,
-        const std::vector< index_t >& cells )
+    const ColocaterANN& RegionTools::ann() const
     {
-        vec3 result( 0., 0., 0. ) ;
-        double size = 0 ;
-
-        const Line* L = dynamic_cast< const Line* >( E ) ;
-        if( L != nil ) {
-            for( index_t i = 0; i < cells.size(); ++i ) {
-                result += L->segment_length( cells[ i ] ) * L->segment_barycenter(
-                    cells[ i ] ) ;
-                size   += L->segment_length( cells[ i ] ) ;
-            }
-            return size > epsilon ? result / size : result ;
+        if( ann_ == nil ) {
+            ann_ = new ColocaterANN( region_.mesh(), ColocaterANN::VERTICES ) ;
         }
-        const Surface* S = dynamic_cast< const Surface* >( E ) ;
-        if( S != nil ) {
-            for( index_t i = 0; i < cells.size(); ++i ) {
-                result += S->facet_area( cells[ i ] ) *
-                          S->facet_barycenter( cells[ i ] ) ;
-                size   += S->facet_area( cells[ i ] ) ;
-            }
-            return size > epsilon ? result / size : result ;
-        }
-        ringmesh_assert_not_reached ;
-        return result ;
+        return *ann_ ;
     }
 
-
-    /*!
-     * @brief Measures the minimal distance between an element and a point
-     * Implement only for Surface, Line and Corner
-     *
-     * @param[in] E Pointer to the element
-     * @param[in] p Coordinates of the point to which distance is measured
-     */
-    double GeoModelElementMeasure::distance(
-        const GeoModelElement* E,
-        const vec3& p )
-    {
-        double result = FLT_MAX ;
-        const Line* L = dynamic_cast< const Line* >( E ) ;
-        if( L != nil ) {
-            for( index_t i = 1; i < L->nb_vertices(); ++i ) {
-                // Distance between a vertex and a segment
-                const vec3& p0 = L->vertex( i - 1 ) ;
-                const vec3& p1 = L->vertex( i ) ;
-
-                double distance_pt_2_segment  = FLT_MAX ;
-                vec3 c = ( p1 - p0 ) / 2 ;
-                double half = GEO::distance( p1, c ) ;
-                double cp_dot_p0p1 = dot( p - c, p1 - p0 ) ;
-
-                if( cp_dot_p0p1 < - half ) {
-                    distance_pt_2_segment =  GEO::distance(
-                        p0,
-                        p ) ;
-                } else if( cp_dot_p0p1 >
-                           half )
-                {
-                    distance_pt_2_segment = GEO::distance( p1, p ) ;
-                } else {
-                    vec3 projection = c + cp_dot_p0p1 * ( p1 - p0 ) ;
-                    distance_pt_2_segment = GEO::distance( projection, p ) ;
-                }
-                result = distance_pt_2_segment <
-                         result ? distance_pt_2_segment : result ;
-            }
-            return result ;
-        }
-        const Surface* S = dynamic_cast< const Surface* >( E ) ;
-        if( S != nil ) {
-            for( index_t i = 0; i < S->nb_cells(); i++ ) {
-                for( index_t j = 1; j + 1 < S->nb_vertices_in_facet( i ); ++j ) {
-                    double cur = GEO::Geom::point_triangle_squared_distance(
-                        p, S->vertex( i, 0 ), S->vertex( i, j ), S->vertex( i, j + 1 ) ) ;
-                    if( cur < result ) {result = cur ;}
-                }
-            }
-            if( result != FLT_MAX ) {result = sqrt( result ) ;}
-            return result ;
-        }
-
-        const Corner* C = dynamic_cast < const Corner* >( E ) ;
-        if( C != nil ) {
-            return GEO::distance( C->vertex(), p ) ;
-        }
-
-        // If it is not one of the basic types - compute it for the children
-        // if any
-        if( E->nb_children() == 0 ) {
-            ringmesh_assert_not_reached ;
-            return result ;
-        } else {
-            for( index_t i = 0; i < E->nb_children(); ++i ) {
-                double dist = distance( &E->child( i ), p ) ;
-                result = ( dist < result ) ? dist : result ;
-            }
-            return result ;
-        }
-    }
 }
