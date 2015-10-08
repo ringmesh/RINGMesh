@@ -95,7 +95,7 @@ namespace RINGMesh {
         } ;
 
     public:
-        GeoModelMeshVertices( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, GEO::Mesh& mesh ) ;
         ~GeoModelMeshVertices() ;
 
         /*!
@@ -219,7 +219,7 @@ namespace RINGMesh {
         /// Attached GeoModelMesh owning the vertices
         GeoModelMesh& gmm_ ;
         /// Attached GeoModel
-        const GeoModel& gm_ ;
+        GeoModel& gm_ ;
         /// Attached Mesh
         GEO::Mesh& mesh_ ;
 
@@ -926,7 +926,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMesh {
         ringmesh_disable_copy( GeoModelMesh ) ;
     public:
-        GeoModelMesh( const GeoModel& gm ) ;
+        GeoModelMesh( GeoModel& gm ) ;
         ~GeoModelMesh() ;
 
         const GeoModel& model() const
@@ -1001,7 +1001,7 @@ namespace RINGMesh {
 
     private:
         /// Attached GeoMode
-        const GeoModel& gm_ ;
+        GeoModel& gm_ ;
         /*!
          * @brief Mesh storing the vertices, edges, facets and cells
          * that are not colocated/duplicated
@@ -1019,11 +1019,7 @@ namespace RINGMesh {
         GeoModelMeshCells cells ;
 //        GeoModelMeshOrder order ;
 
-        friend class RegionGfx;
-        friend class GeoModelGfx;
     } ;
-
-
 
 }
 
