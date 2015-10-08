@@ -110,12 +110,12 @@ namespace RINGMesh {
         const std::vector< std::pair< index_t, bool > >& boundaries )
     {
         Region& U = model_.universe_ ;
-        set_element_name( U.gme_id(), "Universe" ) ;
+        U.name_ = "Universe" ;
 
         for( index_t i = 0; i < boundaries.size(); ++i ) {
             ringmesh_assert( boundaries[i].first < model_.nb_surfaces() ) ;
-            add_element_boundary( U.gme_id(),
-                gme_t( GME::SURFACE, boundaries[i].first ), boundaries[i].second ) ;
+            U.boundaries_.push_back( gme_t( GME::SURFACE, boundaries[i].first ) ) ;
+            U.sides_.push_back( boundaries[i].second ) ;
         }
     }
 
