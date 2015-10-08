@@ -1871,43 +1871,45 @@ namespace RINGMesh {
         test_point_list_initialized() ;
         for( index_t i = 0; i < 3; i++ ) {
             high_order_vertices_[index][i] += u[i] ;
-
         }
     }
 
     void GeoModelMeshOrder::test_point_list_initialized()
     {
-        index_t order = gmm_.get_order() ;
+        if( high_order_vertices_.size() == 0 ) {
+            index_t order = gmm_.get_order() ;
 
-        if( high_order_vertices_.size() == 0 && order > 1 ) {
-            index_t offset = 0 ;
-            index_t nb_total_edges = 0 ;
-            for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-                for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
-                    nb_total_edges++ ;
-                }
-            }
-
-            std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
-            for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-                for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
-                    std::vector< vec3 > new_points_in_edge ;
-                    vec3 node0 = gmm_.vertices.vertex(
-                        gmm_.cells.edge_vertex( c, e, 0 ) ) ;
-                    vec3 node1 = gmm_.vertices.vertex(
-                        gmm_.cells.edge_vertex( c, e, 1 ) ) ;
-                    divide_edge_in_parts( node0, node1, order, new_points_in_edge ) ;
-
-                    for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
-                        new_points[offset] = new_points_in_edge[v] ;
-                        offset++ ;
+            if( high_order_vertices_.size() == 0 && order > 1 ) {
+                index_t offset = 0 ;
+                index_t nb_total_edges = 0 ;
+                for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
+                    for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
+                        nb_total_edges++ ;
                     }
                 }
-            }
 
-            MakeUnique uniq( new_points ) ;
-            uniq.unique() ;
-            uniq.unique_points( high_order_vertices_ ) ;
+                std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
+                for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
+                    for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
+                        std::vector< vec3 > new_points_in_edge ;
+                        vec3 node0 = gmm_.vertices.vertex(
+                            gmm_.cells.edge_vertex( c, e, 0 ) ) ;
+                        vec3 node1 = gmm_.vertices.vertex(
+                            gmm_.cells.edge_vertex( c, e, 1 ) ) ;
+                        divide_edge_in_parts( node0, node1, order,
+                            new_points_in_edge ) ;
+
+                        for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
+                            new_points[offset] = new_points_in_edge[v] ;
+                            offset++ ;
+                        }
+                    }
+                }
+
+                MakeUnique uniq( new_points ) ;
+                uniq.unique() ;
+                uniq.unique_points( high_order_vertices_ ) ;
+            }
         }
     }
 
