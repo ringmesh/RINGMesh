@@ -46,6 +46,9 @@ option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires 
 # Generating configuration directories for single-configuration generators (Make)
 # and running cmake configuration in each one of them
 
+message( PROJEC_BIN  ${PROJECT_BINARY_DIR}) 
+message( PROJEC_BSRC  ${PROJECT_SOURCE_DIR}) 
+
 if(UNIX)    
     # If the CMAKE_BUILD_TYPE is no defined
     # ie at first run of that file
@@ -54,7 +57,7 @@ if(UNIX)
       # For all configuration types of the project  
       foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
           # The binary directory for this config
-          set(project_binary_dir_config  ${CMAKE_SOURCE_DIR}/build/ringmesh/${config})
+          set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/ringmesh/${config})
     
           # Create the directory
           file(MAKE_DIRECTORY ${project_binary_dir_config})
@@ -66,6 +69,7 @@ if(UNIX)
              COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
                 -DCMAKE_BUILD_TYPE=${config}
                 -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
+                -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
                 -DMG_TETRA:STRING=${MG_TETRA}
                 -DUSE_OPENMP:BOOL=${USE_OPENMP}
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
@@ -79,6 +83,9 @@ if(UNIX)
       # We do not wnat to execute the rest of the file in that case
       return()
     endif()
+else(UNIX)
+    set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR})
+    set(PROJECT_BINARY_DIR ${PROJECT_BINARY_DIR}/ringmesh)
 endif(UNIX)
 
 #------------------------------------------------------------------------------------------------
@@ -103,12 +110,12 @@ elseif(UNIX)
 else(WIN32)
     # Nothing else really supported
     message(Your platform is not supported. Please modify the cmakelist file.)
-endif(UNIX)
+endif(WIN32)
 
 #------------------------------------------------------------------------------------------------
 # Configure a header file to pass on some of the CMake settings
 # to the source code
-set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
+set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh_config.h)
 configure_file(
   "${PROJECT_SOURCE_DIR}/include/ringmesh/ringmesh_config.h.in"
    ${generated_configure_file}
@@ -123,9 +130,9 @@ include_directories(${PROJECT_BINARY_DIR})
 set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
 
 if(WIN32)
-    set(GEOGRAM_PATH_BIN ${PROJECT_SOURCE_DIR}/build/geogram)
+    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram)
 else(WIN32)
-    set(GEOGRAM_PATH_BIN ${PROJECT_SOURCE_DIR}/build/geogram/${CMAKE_BUILD_TYPE})
+    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
 endif(WIN32)
 
 ExternalProject_Add(geogram_ext
