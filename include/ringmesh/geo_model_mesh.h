@@ -38,7 +38,6 @@
  *     FRANCE
  */
 
-
 #ifndef __RINGMESH_GEO_MODEL_MESH__
 #define __RINGMESH_GEO_MODEL_MESH__
 
@@ -54,9 +53,8 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-
     class RINGMESH_API GeoModelMeshVertices {
-        ringmesh_disable_copy( GeoModelMeshVertices ) ;
+    ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
     public:
         /*!
@@ -223,7 +221,6 @@ namespace RINGMesh {
         /// Attached Mesh
         GEO::Mesh& mesh_ ;
 
-
         /*!
          * Vertices in GeoModelElements corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
@@ -235,12 +232,12 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
-        ringmesh_disable_copy( GeoModelMeshFacets ) ;
+    ringmesh_disable_copy( GeoModelMeshFacets ) ;
         friend class GeoModelMesh ;
     public:
         enum FacetType {
             TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
-        };
+        } ;
 
     public:
         GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
@@ -452,7 +449,7 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshEdges {
-        ringmesh_disable_copy( GeoModelMeshEdges ) ;
+    ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
         GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
         ~GeoModelMeshEdges() ;
@@ -722,7 +719,6 @@ namespace RINGMesh {
          */
         index_t prism( index_t r, index_t p ) const ;
 
-
         /*!
          * Get the number of pyramids in the GeoModelMesh
          * @return the number of pyramids
@@ -782,11 +778,8 @@ namespace RINGMesh {
          * true = side of the facet normal, false = the other side
          * @return true is the cell facet is on a surface
          */
-        bool is_cell_facet_on_surface(
-            index_t c,
-            index_t f,
-            index_t& facet = dummy_index_t,
-            bool& side = dummy_bool ) const ;
+        bool is_cell_facet_on_surface( index_t c, index_t f, index_t& facet =
+            dummy_index_t, bool& side = dummy_bool ) const ;
 
         /*!
          * Get the center of the given cell
@@ -918,13 +911,12 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshOrder {
-        ringmesh_disable_copy( GeoModelMeshOrder ) ;
-
+    ringmesh_disable_copy( GeoModelMeshOrder ) ;
 
     } ;
 
     class RINGMESH_API GeoModelMesh {
-        ringmesh_disable_copy( GeoModelMesh ) ;
+    ringmesh_disable_copy( GeoModelMesh ) ;
     public:
         GeoModelMesh( GeoModel& gm ) ;
         ~GeoModelMesh() ;
@@ -1019,6 +1011,8 @@ namespace RINGMesh {
         GeoModelMeshCells cells ;
 //        GeoModelMeshOrder order ;
 
+        friend class RegionGfx ;
+        friend class GeoModelGfx ;
     } ;
 
 }
