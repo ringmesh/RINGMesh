@@ -716,10 +716,6 @@ namespace RINGMesh {
         const vec3& point )
     {
         ringmesh_debug_assert( corner_id.index < model_.nb_corners() ) ;
-        GeoModelMeshElement& mesh = mesh_element( corner_id ) ;
-        if( mesh.nb_vertices() == 0 ) {
-            mesh.mesh_.vertices.create_vertex() ;
-        }
         set_element_vertex( corner_id, 0, point, false ) ;
     }
 
@@ -786,10 +782,6 @@ namespace RINGMesh {
         index_t unique_vertex )
     {
         ringmesh_debug_assert( corner_id.index < model_.nb_corners() ) ;
-        GeoModelMeshElement& mesh = mesh_element( corner_id ) ;
-        if( mesh.nb_vertices() == 0 ) {
-            mesh.mesh_.vertices.create_vertex() ;
-        }
         set_element_vertex( corner_id, 0, unique_vertex ) ;
     }
 
@@ -1889,10 +1881,9 @@ namespace RINGMesh {
                         return false ;
                     }
                     index_t id = in.field_as_uint( 1 ) ;
-                    gme_t element( GME::CORNER, id ) ;
                     vec3 point( read_double( in, 2 ), read_double( in, 3 ),
                         read_double( in, 4 ) ) ;
-                    set_corner( element, point ) ;
+                    set_corner( gme_t( GME::CORNER, id ), point ) ;
                 }
 
                 // Lines
