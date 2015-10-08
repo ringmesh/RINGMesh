@@ -106,6 +106,8 @@ elseif(UNIX)
     # Maybe rather test the compiler than the system
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+    set(COMPILATION_OPTION -- -j4)
 else(WIN32)
     # Nothing else really supported
     message(WARNING "Your platform is not supported. Please modify the cmakelist file.")
@@ -156,7 +158,7 @@ ExternalProject_Add(geogram_ext
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}  
   # Build all configurations if I understood well [JP]
-  BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN}
+  BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN} ${COMPILATION_OPTION}
 
   #--Install step---------------
   INSTALL_COMMAND "" 
@@ -273,22 +275,22 @@ endif()
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
 if(RINGMESH_WITH_GRAPHICS)
-    message(STATUS "Configuring RIGNGMesh with graphics")
+    message(STATUS "Configuring RINGMesh with graphics")
     add_subdirectory(src/ringmeshview)
 endif(RINGMESH_WITH_GRAPHICS)
 
 if(RINGMESH_WITH_UTILITIES)
-    message(STATUS "Configuring RIGNGMesh with utilities")
+    message(STATUS "Configuring RINGMesh with utilities")
     add_subdirectory(src/ringmeshconvert)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)
-    message(STATUS "Configuring RIGNGMesh with tests)"
+    message(STATUS "Configuring RINGMesh with tests")
     add_subdirectory(tests)
 endif(RINGMESH_WITH_TESTS)
 
 if(BUILD_DOCUMENTATION)
-    message(STATUS "Configuring RIGNGMesh with doxygen")
+    message(STATUS "Configuring RINGMesh with doxygen")
     find_package(Doxygen)
     if(NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
