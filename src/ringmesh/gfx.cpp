@@ -162,6 +162,14 @@ namespace RINGMesh {
                 edges_visible_( false )
         {
         }
+        RegionGfx( const GeoModelMesh& gmm )
+            :
+                MeshElementGfx( *gmm.mesh_, false ),
+                region_visible_( true ),
+                surface_visible_( false ),
+                edges_visible_( false )
+        {
+        }
         void set_edges_visible( bool b )
         {
             edges_visible_ = b ;
@@ -193,7 +201,13 @@ namespace RINGMesh {
     } ;
 
     GeoModelGfx::GeoModelGfx()
-        : model_( nil ), corners_(), lines_(), surfaces_(), regions_()
+        :
+            model_( nil ),
+            corners_(),
+            lines_(),
+            surfaces_(),
+            regions_(),
+            global_mesh_( nil )
     {
     }
 
@@ -210,6 +224,10 @@ namespace RINGMesh {
         }
         for( index_t r = 0; r < regions_.size(); r++ ) {
             delete regions_[r] ;
+        }
+
+        if( global_mesh_ != nil ) {
+            delete global_mesh_ ;
         }
     }
 
@@ -239,7 +257,7 @@ namespace RINGMesh {
     {
         ringmesh_debug_assert( model_ ) ;
         if( corners_.empty() && lines_.empty() && surfaces_.empty()
-            && regions_.empty() ) {
+            && regions_.empty() && global_mesh_ == nil ) {
             corners_.resize( model_->nb_corners(), nil ) ;
             lines_.resize( model_->nb_lines(), nil ) ;
             surfaces_.resize( model_->nb_surfaces(), nil ) ;
@@ -264,6 +282,14 @@ namespace RINGMesh {
                     regions_.push_back( new RegionGfx( model_->region( r ) ) ) ;
                 }
             }
+
+            // Initialization of the global mesh
+            model_->mesh.vertices.test_and_initialize() ;
+            model_->mesh.edges.test_and_initialize() ;
+            model_->mesh.facets.test_and_initialize() ;
+            model_->mesh.cells.test_and_initialize() ;
+            model_->mesh.mesh_->show_stats() ;
+            global_mesh_ = new RegionGfx( model_->mesh ) ;
         }
     }
 
@@ -685,16 +711,35 @@ namespace RINGMesh {
     }
 
     /*!
-     * Draws the MacroMesh
+     * Draws the regions of the GeoModel
      */
     void GeoModelGfx::draw_regions()
     {
-        // WARNING: regions_.size() is not always equal to model_->nb_regions()
-        for( index_t m = 0; m < regions_.size(); m++ ) {
-            if( regions_[m]->get_vertices_visible() ) regions_[m]->draw_vertices() ;
-            if( regions_[m]->get_edges_visible() ) regions_[m]->draw_edges() ;
-            if( regions_[m]->get_surface_visible() ) regions_[m]->draw_surface() ;
-            if( regions_[m]->get_region_visible() ) regions_[m]->draw_volume() ;
+        if( all_visible_and_same_color() ) {
+            if( global_mesh_->get_vertices_visible() ) {
+                global_mesh_->gfx().set_points_color(0,1,0);
+                global_mesh_->draw_vertices() ;
+            }
+            if( global_mesh_->get_edges_visible() ) {
+                global_mesh_->draw_edges() ;
+            }
+            if( global_mesh_->get_surface_visible() ) {
+                global_mesh_->draw_surface() ;
+            }
+            if( global_mesh_->get_region_visible() ) {
+                global_mesh_->gfx().set_cells_color(1,0,0);
+                global_mesh_->draw_volume() ;
+            }
+        } else {
+            // WARNING: regions_.size() is not always equal to model_->nb_regions()
+            for( index_t m = 0; m < regions_.size(); m++ ) {
+                if( regions_[m]->get_vertices_visible() )
+                    regions_[m]->draw_vertices() ;
+                if( regions_[m]->get_edges_visible() ) regions_[m]->draw_edges() ;
+                if( regions_[m]->get_surface_visible() )
+                    regions_[m]->draw_surface() ;
+                if( regions_[m]->get_region_visible() ) regions_[m]->draw_volume() ;
+            }
         }
     }
 
@@ -1156,7 +1201,31 @@ namespace RINGMesh {
         regions_[m]->gfx().set_shrink( s ) ;
     }
 
+    bool GeoModelGfx::all_visible_and_same_color() const
+    {
+        ringmesh_debug_assert( regions_.size() != 0 ) ;
+        if( regions_.size() == 1 ) {
+            return true ;
+        }
+
+        ringmesh_debug_assert( regions_.size() > 1 ) ;
+        bool first_visibility = regions_[0]->get_region_visible() ;
+        float r, g, b ;
+        regions_[0]->gfx().get_cells_color( r, g, b ) ;
+        for( index_t m = 1; m < regions_.size(); m++ ) {
+            if( regions_[m]->get_region_visible() != first_visibility ) {
+                return false ;
+            }
+            float cur_r, cur_g, cur_b ;
+            regions_[m]->gfx().get_cells_color( cur_r, cur_g, cur_b ) ;
+            if( r != cur_r || g != cur_g || b != cur_b ) {
+                return false ;
+            }
+        }
+        return true ;
+    }
+
 }
- // namespace
+// namespace
 
 #endif

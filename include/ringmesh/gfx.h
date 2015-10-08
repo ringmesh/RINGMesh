@@ -172,6 +172,9 @@ namespace RINGMesh {
         void set_cell_region_shrink( index_t m, double s ) ;
 
     private:
+        bool all_visible_and_same_color() const;
+
+    private:
         /// The GeoModel associated to the graphics
         const GeoModel* model_ ;
 
@@ -183,6 +186,8 @@ namespace RINGMesh {
         std::vector< SurfaceGfx* > surfaces_ ;
         /// The graphics associated to each Region
         std::vector< RegionGfx* > regions_ ;
+        /// The graphics associated to the global mesh
+        RegionGfx* global_mesh_;
     } ;
 
 }

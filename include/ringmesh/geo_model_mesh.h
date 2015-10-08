@@ -1019,6 +1019,8 @@ namespace RINGMesh {
         GeoModelMeshCells cells ;
 //        GeoModelMeshOrder order ;
 
+        friend class RegionGfx;
+        friend class GeoModelGfx;
     } ;
 
 
