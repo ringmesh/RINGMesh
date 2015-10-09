@@ -63,71 +63,71 @@ namespace RINGMesh {
     /* Operations on a GEO::Mesh                                      */
 
     
-    void rotate_mesh(
+    void RINGMESH_API rotate_mesh(
         GEO::Mesh& mesh,
         const GEO::Matrix< float64, 4 >& rot_mat ) ;
 
   
-    double mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
+    double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
 
-    vec3 mesh_cell_facet_normal(
+    vec3 RINGMESH_API mesh_cell_facet_normal(
         const GEO::Mesh& M,
         index_t c,
         index_t f ) ;
 
-    vec3 mesh_cell_facet_center(
+    vec3 RINGMESH_API mesh_cell_facet_center(
         const GEO::Mesh& M,
         index_t cell,
         index_t f ) ;
 
-    vec3 mesh_cell_center( const GEO::Mesh& M, index_t cell ) ;
+    vec3 RINGMESH_API mesh_cell_center( const GEO::Mesh& M, index_t cell ) ;
 
-    bool has_edge(
+    bool RINGMESH_API has_edge(
         const GEO::Mesh& mesh,
         index_t t,
         index_t p0,
         index_t p1,
         index_t& edge ) ;
 
-    index_t next_around_edge(
+    index_t RINGMESH_API next_around_edge(
         const GEO::Mesh& mesh,
         index_t t,
         index_t prev,
         index_t p0,
         index_t p1 ) ;
 
-    void edges_around_edge(
+    void RINGMESH_API edges_around_edge(
         const GEO::Mesh& mesh,
         index_t t,
         index_t p0,
         index_t p1,
         std::vector< index_t >& result ) ;
 
-    void divide_edge_in_parts(
+    void RINGMESH_API divide_edge_in_parts(
         const GEO::Mesh& mesh,
         index_t edge,
         index_t nb_parts,
         std::vector< vec3 >& points ) ;
 
-    void divide_edge_in_parts(
+    void RINGMESH_API divide_edge_in_parts(
         vec3& node0,
         vec3& node1,
         index_t nb_parts,
         std::vector< vec3 >& points ) ;
 
 
-    index_t get_nearest_vertex_index(
+    index_t RINGMESH_API get_nearest_vertex_index(
         const GEO::Mesh& mesh,
         const vec3& p,
         index_t t ) ;
 
-    bool facets_have_same_orientation(
+    bool RINGMESH_API facets_have_same_orientation(
         const GEO::Mesh& mesh,
         index_t f1,
         index_t c11,
         index_t f2 ) ;
 
-    void mesh_facet_connect( GEO::Mesh& mesh ) ;
+    void RINGMESH_API mesh_facet_connect( GEO::Mesh& mesh ) ;
   
 
 
@@ -203,7 +203,7 @@ namespace RINGMesh {
     } ;
 
 
-    void print_bounded_attributes( const GEO::Mesh& M ) ;
+    void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M ) ;
 
 }
 

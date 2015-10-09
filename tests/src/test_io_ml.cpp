@@ -77,16 +77,7 @@ int main( int argc, char** argv )
     output_model_file_name_bis += "model1_saved_out_bis.ml" ;
     if( !model_save( in2, output_model_file_name_bis ) ) {
         return 1 ;
-    }
-
-	// Test a bad fixable input annot
-	GeoModel in3 ;
-    std::string annot_file( ringmesh_test_data_path ) ;
-    annot_file += "annot.ml" ;
-
-    if( !model_load( annot_file, in3 ) ) {
-        return 1 ;
-    }
+    }	
 
     bool res = compare_files(
         output_model_file_name, output_model_file_name_bis ) ;
