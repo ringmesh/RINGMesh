@@ -38,65 +38,36 @@
  *     FRANCE
  */
 
-#include <ringmesh/command_line.h>
+#include <ringmesh/ringmesh_tests_config.h>
+
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
 
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/stopwatch.h>
-
+#include <geogram/basic/logger.h>
 
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
+    /*! @todo Rewrite this ! 
+     * Data are not here, so ... [JP]
+     */
+    /*
+    GEO::Logger::out("TEST") << "Test tetrahedralize for corbi.ml" << std::endl ;
+    
+    std::string model_file_name = ringmesh_test_data_path ;
+    model_file_name += "corbi_out.ml" ;
 
-    GEO::Logger::div( "RINGMeshConvert" ) ;
-    GEO::Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
-    GEO::Logger::out( "" ) << "People working on the project in RING" << std::endl ;
-    GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-        << std::endl ;
-
-    CmdLine::import_arg_group( "in" ) ;
-    CmdLine::import_arg_group( "out" ) ;
-
-    if( argc == 1 ) {
-        GEO::CmdLine::show_usage() ;
-        return 0 ;
-    }
-
-    std::vector< std::string > filenames ;
-    if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-        return 1 ;
-    }
-
-    GEO::Stopwatch total( "Total time" ) ;
-
-    std::string model_in_name = GEO::CmdLine::get_arg( "in:model" ) ;
-    if( model_in_name == "" ) {
-        GEO::Logger::err( "I/O" ) << "Give at least a filename in in:model"
-            << std::endl ;
-        return 1 ;
-    }
-    GeoModel model_in ;
-    if( !model_load( model_in_name, model_in ) )
+    GeoModel in ;
+    if( !model_load( model_file_name, in ) )
         return 1 ;
 
-    std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
-    if( mesh_in_name != "" ) {
-        if( !mesh_load( mesh_in_name, model_in ) ) return 1 ;
-    }
-
-    std::string model_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
-    if( model_out_name != "" ) {
-        if( !model_save( model_in, model_out_name ) )
-            return 1 ;
-    }
-
-    std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
-    if( mesh_out_name != "" ) {
-        if( !mesh_save( model_in, mesh_out_name ) )
-            return 1 ;
-    }
+    ringmesh_assert_not_reached ;
+    */
+//    MacroMesh mm(in) ;
+//    mm.compute_tetmesh("TetGen") ;
+//
+//    if (!mesh_save(mm,"../data/out_corbi_mesh.mm") )
+//        return 1 ;
 
     return 0 ;
 }

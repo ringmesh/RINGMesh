@@ -32,7 +32,7 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -40,9 +40,10 @@
 
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
+#include <ringmesh/gfx.h>
+
 #ifdef RINGMESH_WITH_GRAPHICS
 
-#include <ringmesh/gfx.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_element.h>
 

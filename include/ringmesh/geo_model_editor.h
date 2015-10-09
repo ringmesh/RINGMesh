@@ -214,10 +214,7 @@ namespace RINGMesh {
             element( t ).children_[id] = child_index ;
         }
 
-        // Universe
-        void set_universe( const std::vector<
-                           std::pair< index_t, bool > >& boundaries ) ;
-
+  
         /*!
         * @brief Set an element of the model.
         * @details It is on purpose that element validity is not checked.

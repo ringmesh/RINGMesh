@@ -41,9 +41,9 @@
 #ifndef __RINGMESH_GFX__
 #define __RINGMESH_GFX__
 
-#ifdef RINGMESH_WITH_GRAPHICS
-
 #include <ringmesh/common.h>
+
+#ifdef RINGMESH_WITH_GRAPHICS
 
 #include <geogram_gfx/mesh/mesh_gfx.h>
 

@@ -98,26 +98,7 @@ namespace RINGMesh {
             store[ i ] = new_element( type, model_, i ) ;
         }
     }
-
-    /*!
-    * @brief Fill the model universe_
-    *
-    * @param[in] boundaries Indices of the surfaces on the model boundary
-    * plus indication on which side of the surface is universe_ ( outside of the model )
-    */
-    void GeoModelEditor::set_universe(
-        const std::vector< std::pair< index_t, bool > >& boundaries )
-    {
-        Region& U = model_.universe_ ;
-        set_element_name( U.gme_id() ,"Universe" ) ;
-
-        for( index_t i = 0; i < boundaries.size(); ++i ) {
-            ringmesh_assert( boundaries[ i ].first < model_.nb_surfaces() ) ;
-            add_element_boundary( U.gme_id() ,
-                gme_t( GME::SURFACE, boundaries[ i ].first ), boundaries[ i ].second ) ;
-        }
-    }
-
+ 
     /*!
     * @brief Add to the vector the elements which cannot exist if
     *        an element in the set does not exist.
@@ -321,15 +302,16 @@ namespace RINGMesh {
 
 
         // Update Universe
-        std::vector< std::pair< index_t, bool > > oriented_surfaces ;
-
+        /// @todo You first need to clean the existing universe [JP]
         for( std::vector< GME::gme_t >::const_iterator itr =
-             to_add_in_universe.begin(); itr != to_add_in_universe.end(); ++itr ) {
-            oriented_surfaces.push_back( std::pair< index_t, bool >( itr->index, true ) ) ;
+             to_add_in_universe.begin(); itr != to_add_in_universe.end(); ++itr 
+           ) {
+            add_element_boundary( gme_t(GME::REGION, NO_ID), 
+                                  gme_t(GME::SURFACE, itr->index),
+                                  true ) ;
         }
-        set_universe( oriented_surfaces ) ;
 
-        ringmesh_debug_assert( model_.check_model_validity() ) ;
+        //ringmesh_debug_assert( model_.check_model_validity() ) ;
     }
 
     /*!
@@ -456,13 +438,14 @@ namespace RINGMesh {
         /// @todo Put the universe in the list of regions - so annoying to think of it each time
         /// @todo BUG ? sides are lost for the universe ? not sure ... [JP]
         {
-            Region& U = model_.universe_ ;
+            Region& U = dynamic_cast< Region& > (
+                model_.modifiable_element( GME::gme_t( GME::REGION, NO_ID ) ) ) ;
             for( index_t i = 0; i < U.nb_boundaries(); ++i ) {
                 set_element_boundary( U.gme_id(), i,
                     gme_t( GME::SURFACE,
                         to_erase[GME::SURFACE][U.boundary_id( i ).index] ) ) ;
             }
-            erase_invalid_element_references( model_.universe_ ) ;
+            erase_invalid_element_references( U ) ;
         }
     }
 
