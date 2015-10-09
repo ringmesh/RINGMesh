@@ -49,7 +49,7 @@ namespace RINGMesh {
 
 namespace RINGMesh { 
 
-    void geo_model_mesh_repair( GeoModel& GM ) ;
+    void RINGMESH_API geo_model_mesh_repair( GeoModel& GM ) ;
 
 
 }

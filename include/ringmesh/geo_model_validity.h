@@ -67,7 +67,7 @@ namespace RINGMesh {
     * @todo Check the consistency of index info for vertices -
     * gme_vertices model_vertex_id
     */
-    bool is_geomodel_valid( 
+    bool RINGMESH_API is_geomodel_valid(
         const GeoModel& GM, 
         bool check_surface_intersections = true 
     ) ;
@@ -80,7 +80,7 @@ namespace RINGMesh {
     *          manifold closed surface.
     *
     */
-    bool are_geomodel_elements_valid( const GeoModel& GM ) ;
+    bool RINGMESH_API are_geomodel_elements_valid( const GeoModel& GM ) ;
 
 
     /*!
@@ -90,7 +90,7 @@ namespace RINGMesh {
     *          See Building and Editing a Sealed Geological Model,
     *          Caumon et al. 2004
     */
-    bool is_geomodel_geology_valid( const GeoModel& GM ) ;
+    bool RINGMESH_API is_geomodel_geology_valid( const GeoModel& GM ) ;
 
 
 
@@ -112,7 +112,10 @@ namespace RINGMesh {
     }
 
 
-
+    /*! @brief Print in the console the model statistics 
+     *  Output number of facets, vertices, and of the different element types.
+     */
+    void RINGMESH_API print_model( const GeoModel& model ) ;
 
 }
 

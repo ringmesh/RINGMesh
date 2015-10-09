@@ -55,13 +55,13 @@ namespace RINGMesh {
      *
      * @param[in] E Element to evaluate
      */
-    double model_element_size( const GeoModelElement& E ) ;
+    double RINGMESH_API model_element_size( const GeoModelElement& E ) ;
     /*!
      * Compute the size (volume, area, length) of an Element cell (cell, facet, edge)
      * @param[in] E Element to evaluate
      * @param[in] c the cell index
      */
-    double model_element_cell_size( const GeoModelElement& E, index_t c ) ;
+    double RINGMESH_API model_element_cell_size( const GeoModelElement& E, index_t c ) ;
 
     /*!
      * @brief Compute the center of a GeoModelElement
@@ -69,7 +69,8 @@ namespace RINGMesh {
      * @param[in] E Element to evaluate
      * @return The coordinates of the center
      */
-    vec3 model_element_center( const GeoModelElement& E ) ;
+    vec3 RINGMESH_API model_element_center( const GeoModelElement& E ) ;
+
     /*!
      * @brief Compute the center of a GeoModelElement cell (cell, facet, edge)
      *
@@ -77,7 +78,7 @@ namespace RINGMesh {
      * @param[in] c the cell index
      * @return The coordinates of the center
      */
-    vec3 model_element_cell_center( const GeoModelElement& E, index_t c  ) ;
+    vec3 RINGMESH_API model_element_cell_center( const GeoModelElement& E, index_t c ) ;
 
     /*!
     * @brief Translates the boundary model by a vector.
@@ -88,7 +89,8 @@ namespace RINGMesh {
     * @param[in] M GeoModel on which compute the translation
     * @param[in] translation_vector vector of translation.
     */
-    void translate( GeoModel& M, const vec3& ) ;
+    void RINGMESH_API translate( GeoModel& M, const vec3& ) ;
+
     /*!
     * \brief Rotate the boundary model.
     *
@@ -106,30 +108,30 @@ namespace RINGMesh {
     * @param[in] degrees true is \p angle is in degrees, false
     * if in radians.
     */
-    void rotate(
+    void RINGMESH_API rotate(
         GeoModel& M, 
         const vec3& origin,
         const vec3& axis,
         float64 angle,
         bool degrees = false ) ;
 
-    const static index_t ALL_REGIONS = index_t( -1 ) ;
-    static std::vector< std::vector< vec3 > > empty_vertices ;
+
     /*!
      * Compute the tetrahedral mesh of the input structural model
      * @param[in] M GeoModel to tetrahedralize
      * @param[in] method Mesher used
-     * @param[in] region_id Region to mesh, ALL_REGIONS for all
-     * @param[in] add_steiner_points if true, the mesher will add some points inside the region
-     * @param[in] internal_vertices points inside the domain to constrain during the
-     * mesh generation. There is one vector per mesh.
+     * @param[in] region_id Region to mesh. By default it set to NO_ID and all regions are meshed.
+     * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
+     * @param[in] internal_vertices points inside the domain to constrain mesh generation.
+     * There is one vector per region. By default this vector is empty.
      */
-    void tetrahedralize(
+    void RINGMESH_API tetrahedralize(
         GeoModel& M,
         const std::string& method = "TetGen",
-        index_t region_id = ALL_REGIONS,
+        index_t region_id = NO_ID,
         bool add_steiner_points = true,
-        std::vector< std::vector< vec3 > >& internal_vertices = empty_vertices ) ;
+        std::vector< std::vector< vec3 > >& internal_vertices =
+            std::vector< std::vector< vec3 > >() ) ;
 
 }
 
