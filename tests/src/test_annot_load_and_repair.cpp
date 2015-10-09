@@ -53,7 +53,7 @@
 int main( int argc, char** argv ) {
     using namespace RINGMesh ;
 
-    GEO::Logger::out( "RINGMesh Test" ) << "Test IO for a GeoModel in .ml" << std::endl ;
+    GEO::Logger::out( "RINGMesh Test" ) << "Loading and fixing annot model" << std::endl ;
     
     GeoModel M ;
     std::string file_name( ringmesh_test_data_path ) ;
@@ -83,6 +83,9 @@ int main( int argc, char** argv ) {
         }
     }
     else {
+        GEO::Logger::out( "RINGMesh Test" ) << "The geological model "
+            << M.name() << " is valid " << std::endl ;
+        print_model( M ) ;
         return 0 ;
     }      
 
