@@ -521,6 +521,7 @@ namespace RINGMesh {
         Corner( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, CORNER, id )
         {
+            mesh_.vertices.create_vertex() ;
         }
 
         ~Corner()
