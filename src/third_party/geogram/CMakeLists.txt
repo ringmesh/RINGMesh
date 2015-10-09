@@ -142,9 +142,10 @@ if(GEOGRAM_WITH_GRAPHICS)
 
 endif()
 
-add_subdirectory(src/test)
+# Please put an option !! Not everybody want to compile and generate the tests [JP]
+# add_subdirectory(src/test)
+# add_subdirectory(tests)
 add_subdirectory(doc)
-add_subdirectory(tests)
 
 ##############################################################################
 # Cleanup from previous builds
