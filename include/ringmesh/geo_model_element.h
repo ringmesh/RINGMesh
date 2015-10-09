@@ -237,19 +237,24 @@ namespace RINGMesh {
         /*!
          * @brief Constructs a GeoModelElement
          *
-         * @param[in] model Pointer to the parent model.
+         * @param[in] model Constant reference to the model owning the element.
          * @param[in] element_type Type of the element to create
          * @param[in] id Index of the element in the corresponding vector in the model
+         * @param[in] name Name of the element, empty by default.
+         * @param[in] geological_feature Feature of the element, none by default.
          */
         GeoModelElement(
             const GeoModel& model,
             TYPE element_type,
-            index_t id )
+            index_t id,
+            const std::string& name = "",
+            GEOL_FEATURE geological_feature = NO_GEOL
+            )
             :
                 model_( model ),
                 id_( element_type, id ),
-                name_( "" ),
-                geol_feature_( NO_GEOL )
+                name_( name ),
+                geol_feature_( geological_feature )
         {
         }
 
@@ -416,12 +421,15 @@ namespace RINGMesh {
         GeoModelMeshElement(
             const GeoModel& model,
             TYPE element_type,
-            index_t id )
-            : GeoModelElement( model, element_type, id )
+            index_t id,
+            const std::string& name = "",
+            GEOL_FEATURE geological_feature = NO_GEOL )
+            : GeoModelElement( model, element_type, id, name, geological_feature )
         {
             model_vertex_id_.bind( mesh_.vertices.attributes(),
                 model_vertex_id_att_name() ) ;
         }
+
         virtual ~GeoModelMeshElement() ;
 
         /*!
@@ -518,6 +526,8 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
+        /*! \brief Creates a Corner. A point is added to its Mesh.
+         */
         Corner( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, CORNER, id )
         {
@@ -846,6 +856,18 @@ namespace RINGMesh {
         {
         }
 
+        Region( 
+            const GeoModel& model, 
+            index_t id,
+            const std::string& name,
+            GEOL_FEATURE geological_feature
+            )
+            :
+            GeoModelMeshElement( model, REGION, id, name, geological_feature ),
+            tools( *this )
+        {
+        }
+
         ~Region()
         {
         }
@@ -877,6 +899,7 @@ namespace RINGMesh {
          *       << std::endl ;
          *       return false ;
          *     }
+
          */
 
     private:

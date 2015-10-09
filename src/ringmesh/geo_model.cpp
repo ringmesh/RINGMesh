@@ -50,9 +50,10 @@ namespace RINGMesh {
     GeoModel::GeoModel()
         :
             mesh( *this ),            
-            universe_( *this, NO_ID ),
+            universe_( *this, NO_ID, "Universe", GME::NO_GEOL ),
             wells_( nil )
-    {
+    {        
+        /// @todo Review: This usage of this pointer in initialization list is a time bomb [JP]
     }
 
     GeoModel::~GeoModel()
@@ -80,6 +81,8 @@ namespace RINGMesh {
     /*!
      * Associates a WellGroup to the GeoModel
      * @param[in] wells the WellGroup
+     * @todo Review : What is this for ?
+     * @todo Extend to other object types.
      */
     void GeoModel::set_wells( const WellGroup* wells )
     {

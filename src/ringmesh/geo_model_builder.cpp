@@ -1503,20 +1503,20 @@ namespace RINGMesh {
                             }
                         }
 
-                        // The Universe is not a regular region
-                        if( name == "Universe" ) {
-                            set_universe( region_boundaries ) ;
-                        } else {
-                            // Create the regions and set its boundaries 
-                            gme_t region_id = create_element( GME::REGION ) ;
-                            set_element_name( region_id, name ) ;
-                            for( index_t i = 0; i < region_boundaries.size(); ++i ) {
-                                add_element_boundary( region_id,
-                                    gme_t( GME::SURFACE,
-                                        region_boundaries[i].first ),
-                                    region_boundaries[i].second ) ;
-                            }
+                        // By default the region id is the universe id
+                        gme_t region_id( GME::REGION, NO_ID ) ;
+                        // Create the element if it is not the universe
+                        if( name != "Universe" ) {
+                            region_id = create_element( GME::REGION ) ;
                         }
+                        // Set the region name and boundaries
+                        set_element_name( region_id, name ) ;
+                        for( index_t i = 0; i < region_boundaries.size(); ++i ) {
+                            add_element_boundary( region_id,
+                                gme_t( GME::SURFACE,
+                                    region_boundaries[i].first ),
+                                region_boundaries[i].second ) ;
+                        }                        
                     } else if( in.field_matches( 0, "LAYER" ) ) {
                         /// 1.4 Build the volumetric layers from their name and
                         /// the ids of the regions they contain
@@ -2103,7 +2103,6 @@ namespace RINGMesh {
 
                 // Universe
                 else if( in.field_matches( 0, "UNIVERSE" ) ) {
-                    std::vector< std::pair< index_t, bool > > b_universe ;
                     // Second line: signed indices of boundaries
                     in.get_line() ;
                     in.get_fields() ;
@@ -2115,10 +2114,9 @@ namespace RINGMesh {
                         index_t s ;
                         GEO::String::from_string( &in.field( c )[1], s ) ;
 
-                        b_universe.push_back(
-                            std::pair< index_t, bool >( s, side ) ) ;
+                        add_element_boundary( gme_t( GME::REGION, NO_ID ), gme_t( GME::SURFACE, s ),
+                                              side ) ;               
                     }
-                    set_universe( b_universe ) ;
                 }
 
                 // Model vertices
@@ -2804,10 +2802,9 @@ namespace RINGMesh {
                         inside ) ;
 
                     // Create the universe region
-                    std::vector< std::pair< index_t, bool > > univ_boundaries ;
-                    univ_boundaries.push_back(
-                        std::pair< index_t, bool >( 0, !inside ) ) ;
-                    set_universe( univ_boundaries ) ;
+                    gme_t universe_id( GME::REGION, NO_ID ) ;
+                    add_element_boundary( cur_region_id, gme_t( GME::SURFACE, 0 ),
+                                          !inside ) ; 
                 }
             } else {
                 // Each side of each Surface is in one Region( +side is first )
@@ -2900,18 +2897,19 @@ namespace RINGMesh {
 
                 const Region& cur_region = model_.region(
                     universe_id ) ;
-                std::vector< std::pair< index_t, bool > > univ_boundaries(
-                    cur_region.nb_boundaries() ) ;
-                for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
-                    univ_boundaries[i].first =
-                        cur_region.boundary( i ).gme_id().index ;
-                    univ_boundaries[i].second = cur_region.side( i ) ;
-                }
-                set_universe( univ_boundaries ) ;
 
+                for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
+                    // Fill the Universe region boundaries
+                    // They are supposed to be empty
+                    add_element_boundary( 
+                        gme_t( GME::REGION, NO_ID ), 
+                        cur_region.boundary( i ).gme_id(),
+                        cur_region.side( i ) ) ;
+                }
+                
                 // Erase that region
                 std::set< gme_t > to_erase ;
-                to_erase.insert( gme_t( GME::REGION, universe_id ) ) ;
+                to_erase.insert( cur_region.gme_id() ) ;
                 remove_elements( to_erase ) ;
             }
         }
