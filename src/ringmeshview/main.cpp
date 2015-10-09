@@ -82,6 +82,9 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
+#include <ringmesh/common.h>
+
+#ifdef RINGMESH_WITH_GRAPHICS
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/gfx.h>
@@ -94,7 +97,7 @@
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/logger.h>
 
-#ifdef RINGMESH_WITH_GRAPHICS
+#include <algorithm>
 
 namespace {
 
@@ -454,8 +457,12 @@ int main( int argc, char** argv )
 }
 
 #else
+#include <geogram/basic/logger.h>
 int main() {
-    std::cout << "You need to compile RINGMesh with the flag RINGMESH_WITH_GRAPHICS" << std::endl ;
+    GEO::Logger::out("RINGMeshView") 
+        << "To compile RINGMesh viewer you need to configure " 
+        << "the project with the RINGMESH_WITH_GRAPHICS option ON"
+        << std::endl ;
     return 0 ;
 }
 #endif

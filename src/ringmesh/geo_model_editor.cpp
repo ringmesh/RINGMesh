@@ -329,7 +329,7 @@ namespace RINGMesh {
         }
         set_universe( oriented_surfaces ) ;
 
-        ringmesh_debug_assert( model_.check_model_validity() ) ;
+        //ringmesh_debug_assert( model_.check_model_validity() ) ;
     }
 
     /*!

@@ -38,6 +38,8 @@
  *     FRANCE
  */
 
+#include <ringmesh/ringmesh_tests_config.h>
+
 #include <ringmesh/geometry.h>
 #include <geogram/basic/logger.h>
 

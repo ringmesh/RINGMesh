@@ -38,30 +38,51 @@
  *     FRANCE
  */
 
+#include <ringmesh/ringmesh_tests_config.h>
+
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
-#include <geogram/mesh/mesh_io.h>
+#include <ringmesh/utils.h>
+
 #include <geogram/basic/logger.h>
-#include <ringmesh/geo_model_builder.h>
 
 
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::out("TEST") << "Test GeoModel building from Surface" << std::endl ;
+    GEO::Logger::out( "TEST" ) << "Test IO for a GeoModel in .bm" << std::endl ;
 
-	GEO::Mesh in ; 
-    GEO::mesh_load(  "../data/modelA6.mesh", in ) ;
-    RINGMesh::GeoModel model ;
-	
-	RINGMesh::GeoModelBuilderSurface BB( model ) ;
-	BB.set_surfaces( in ) ;
-    if( !BB.build_model() ) {
-		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	
-		return 1 ;
-	}
-	GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
-	return 0 ;
-   
- }
+    GeoModel in ;
+    std::string input_model_file_name( ringmesh_test_data_path ) ;
+    input_model_file_name += "model1.ml" ;
+
+    if( !model_load( input_model_file_name, in ) ) {
+        return 1 ;
+    }
+
+    std::string output_model_file_name( ringmesh_test_output_path ) ;
+    output_model_file_name += "model1_saved_out.bm" ;
+    if( !model_save( in, output_model_file_name ) ) {
+        return 1 ;
+    }
+    GeoModel in2 ;
+    if( !model_load( output_model_file_name, in2 ) ) {
+        return 1 ;
+    }
+    std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
+    output_model_file_name_bis += "model1_saved_out_bis.bm" ;
+
+    if( !model_save( in2, output_model_file_name_bis ) ) {
+        return 1 ;
+    }
+
+    bool res = compare_files( output_model_file_name, output_model_file_name_bis ) ;
+    if( res ) {
+        GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    } else {
+        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+    }
+
+    return !res ;
+}
