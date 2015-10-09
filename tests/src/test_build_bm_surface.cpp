@@ -38,63 +38,35 @@
  *     FRANCE
  */
 
+#include <ringmesh/ringmesh_tests_config.h>
+
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
-
-#include <geogram/points/colocate.h>
+#include <geogram/mesh/mesh_io.h>
 #include <geogram/basic/logger.h>
+#include <ringmesh/geo_model_builder.h>
+
 
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::out("TEST") << "Test MakeUnique" << std::endl ;
+    GEO::Logger::out("TEST") << "Test GeoModel building from Surface" << std::endl ;
 
-    GeoModel in ;
-    if( !model_load( "../data/model3.ml", in ) )
-        return 1 ;
+	GEO::Mesh in ; 
+    std::string file_name = ringmesh_test_data_path ;
+    file_name += "modelA6.mesh" ;
 
-    index_t nb_non_unique_vertices = in.nb_corners() ;
-
-    for( index_t l = 0; l < in.nb_lines(); l++ ) {
-        nb_non_unique_vertices += in.line( l ).nb_vertices() ;
-    }
-    for( index_t s = 0; s < in.nb_surfaces(); s++ ) {
-        nb_non_unique_vertices += in.surface( s ).nb_vertices() ;
-    }
-
-    std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
-    index_t index = 0 ;
-    for( index_t c = 0; c < in.nb_corners(); c++ ) {
-        all_vertices[index++] = in.corner( c ).vertex() ;
-    }
-    for( index_t l = 0; l < in.nb_lines(); l++ ) {
-        const Line& line = in.line( l ) ;
-        for( index_t v = 0; v < line.nb_vertices(); v++ ) {
-            all_vertices[index++] = line.vertex( v ) ;
-        }
-    }
-    for( index_t s = 0; s < in.nb_surfaces(); s++ ) {
-        const Surface& surface = in.surface( s ) ;
-        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-            all_vertices[index++] = surface.vertex( v ) ;
-        }
-    }
-
-    GEO::vector< index_t > old2new ;
-    index_t geo_nb = GEO::Geom::colocate( all_vertices[0].data(), 3, nb_non_unique_vertices, old2new,
-        epsilon ) ;
-
-    index_t ringmesh_nb = in.mesh.vertices.nb() ;
-
-    bool res = ringmesh_nb == geo_nb ;
-    if( res )
-        GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
-    else {
-        GEO::Logger::out( "TEST" ) << "FAILED:" << std::endl ;
-        GEO::Logger::out( "TEST" ) << "initial_nb=" << nb_non_unique_vertices << std::endl ;
-        GEO::Logger::out( "TEST" ) << "geo_nb=" << geo_nb << std::endl ;
-        GEO::Logger::out( "TEST" ) << "ringmesh_nb=" << ringmesh_nb << std::endl ;
-    }
-    return !res ;
-}
+    GEO::mesh_load( file_name, in ) ;
+    RINGMesh::GeoModel model ;
+	
+	RINGMesh::GeoModelBuilderSurface BB( model ) ;
+	BB.set_surfaces( in ) ;
+    if( !BB.build_model() ) {
+		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	
+		return 1 ;
+	}
+	GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
+	return 0 ;
+   
+ }

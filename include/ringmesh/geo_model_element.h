@@ -411,7 +411,7 @@ namespace RINGMesh {
         /*!
          * @brief Name of the attribute storing the index of a vertex in the model
          */
-        const static std::string model_vertex_id_att_name ;
+        static const std::string model_vertex_id_att_name() ;
 
         GeoModelMeshElement(
             const GeoModel& model,
@@ -420,7 +420,7 @@ namespace RINGMesh {
             : GeoModelElement( model, element_type, id )
         {
             model_vertex_id_.bind( mesh_.vertices.attributes(),
-                model_vertex_id_att_name ) ;
+                model_vertex_id_att_name() ) ;
         }
         virtual ~GeoModelMeshElement() ;
 
@@ -810,13 +810,7 @@ namespace RINGMesh {
 
     private:
         virtual bool is_mesh_valid() const ;
-        
-	    void cut_by_line( const Line& L ) ;
-  
-        index_t find_or_create_duplicate_vertex(
-            index_t model_vertex_id,
-            index_t surface_vertex_id ) ;
-
+        	    
     } ;
 
 

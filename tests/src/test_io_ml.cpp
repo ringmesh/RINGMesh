@@ -38,65 +38,63 @@
  *     FRANCE
  */
 
-#include <ringmesh/command_line.h>
+#include <ringmesh/ringmesh_tests_config.h>
+
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
+#include <ringmesh/utils.h>
 
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/stopwatch.h>
-
+#include <geogram/basic/logger.h>
 
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::div( "RINGMeshConvert" ) ;
-    GEO::Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
-    GEO::Logger::out( "" ) << "People working on the project in RING" << std::endl ;
-    GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-        << std::endl ;
+    /*! @todo Comment this tests 
+     *  What is the goal and whatsoever [JP]
+     */
+    GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
 
-    CmdLine::import_arg_group( "in" ) ;
-    CmdLine::import_arg_group( "out" ) ;
+    GeoModel in ;
+    std::string input_model_file_name( ringmesh_test_data_path ) ;
+    input_model_file_name += "model1.ml" ;
 
-    if( argc == 1 ) {
-        GEO::CmdLine::show_usage() ;
-        return 0 ;
-    }
-
-    std::vector< std::string > filenames ;
-    if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
+    if( !model_load( input_model_file_name, in ) ) {
         return 1 ;
     }
 
-    GEO::Stopwatch total( "Total time" ) ;
-
-    std::string model_in_name = GEO::CmdLine::get_arg( "in:model" ) ;
-    if( model_in_name == "" ) {
-        GEO::Logger::err( "I/O" ) << "Give at least a filename in in:model"
-            << std::endl ;
+    std::string output_model_file_name( ringmesh_test_output_path ) ;
+    output_model_file_name += "model1_saved_out.ml" ;
+    if( !model_save( in, output_model_file_name ) ) {
         return 1 ;
     }
-    GeoModel model_in ;
-    if( !model_load( model_in_name, model_in ) )
+
+    GeoModel in2 ;
+    if( !model_load( output_model_file_name, in2 ) ) {
         return 1 ;
-
-    std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
-    if( mesh_in_name != "" ) {
-        if( !mesh_load( mesh_in_name, model_in ) ) return 1 ;
+    }
+    std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
+    output_model_file_name_bis += "model1_saved_out_bis.ml" ;
+    if( !model_save( in2, output_model_file_name_bis ) ) {
+        return 1 ;
     }
 
-    std::string model_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
-    if( model_out_name != "" ) {
-        if( !model_save( model_in, model_out_name ) )
-            return 1 ;
+	// Test a bad fixable input annot
+	GeoModel in3 ;
+    std::string annot_file( ringmesh_test_data_path ) ;
+    annot_file += "annot.ml" ;
+
+    if( !model_load( annot_file, in3 ) ) {
+        return 1 ;
     }
 
-    std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
-    if( mesh_out_name != "" ) {
-        if( !mesh_save( model_in, mesh_out_name ) )
-            return 1 ;
+    bool res = compare_files(
+        output_model_file_name, output_model_file_name_bis ) ;
+    if( res ) {
+        GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    } else {
+        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
     }
 
-    return 0 ;
+    return !res ;
 }
