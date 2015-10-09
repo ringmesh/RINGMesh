@@ -42,32 +42,42 @@
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
+#include <ringmesh/geo_model_validity.h>
+#include <ringmesh/geo_model_api.h>
 
 #include <geogram/basic/logger.h>
 
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
-    /*! @todo Rewrite this ! 
-     * Data are not here, so ... [JP]
-     */
-    /*
-    GEO::Logger::out("TEST") << "Test tetrahedralize for corbi.ml" << std::endl ;
-    
-    std::string model_file_name = ringmesh_test_data_path ;
-    model_file_name += "corbi_out.ml" ;
 
-    GeoModel in ;
-    if( !model_load( model_file_name, in ) )
+    GEO::Logger::out( "RINGMesh Test" ) << "Tetrahedralization of the Corbieres model" << std::endl ;
+
+    GeoModel M ;
+    std::string file_name( ringmesh_test_data_path ) ;
+
+    /*! @todo Make this executable generic by setting
+    *   the file name as an argument of the command */
+    file_name += "modelA1.ml" ;
+
+    // Set the debug directory for the validity checks 
+    set_debug_directory( ringmesh_test_output_path ) ;
+
+
+    /* Load and check the validity of the model */
+    if( model_load( file_name, M ) ) {
+        // Mesh the model with Tetgen 
+        tetrahedralize( M, "TetGen " ) ;
+
+        // Output the mesh 
+        std::string output_file_name( ringmesh_test_output_path ) ;
+        output_file_name += "corbieres.meshb" ;
+        mesh_save( M, output_file_name ) ;
+        return 0 ;
+    } else {
+        GEO::Logger::out( "RINGMesh Test" ) << "The geological model "
+            << M.name() << " is invalid " << std::endl ;
+        print_model( M ) ;
         return 1 ;
-
-    ringmesh_assert_not_reached ;
-    */
-//    MacroMesh mm(in) ;
-//    mm.compute_tetmesh("TetGen") ;
-//
-//    if (!mesh_save(mm,"../data/out_corbi_mesh.mm") )
-//        return 1 ;
-
-    return 0 ;
+    }
 }
