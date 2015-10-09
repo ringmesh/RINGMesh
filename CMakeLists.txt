@@ -1,18 +1,34 @@
 # Root CMakeList of RINGMesh project
 cmake_minimum_required(VERSION 2.8)
 
-# To configure only Debug and Release modes only
-# Otherwise 2 additional configs on Windows
-set(CMAKE_CONFIGURATION_TYPES 
-      Debug Release CACHE CMAKE_CONFIGURATION_TYPES INTERNAL)
+ #------------------------------------------------------------------------------------------------
+# Options of the RINGMesh project 
+# They can be set using CMake GUI, or in command line: cmake -D<var>:<type>=<value> MyProjectFolder
 
+# Configuration modes - Debug and Release by default 
+set(CMAKE_CONFIGURATION_TYPES 
+      Debug Release CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
+
+# If a path is specified RINGMesh will be compiled to work with - empty by default
+set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
+
+# By default RINGMesh will be compiled with OpenMP flags
+option(USE_OPENMP "Use Open MP" ON)
+
+# Optional components of RINGMesh - creation of specific targets
+option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
+option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
+option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
+
+# Optional custom steps 
+option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
 
 # Turn on the ability to create folders to organize projects and files
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-
+#------------------------------------------------------------------------------------------------
 # Additional cmake modules
 include(ExternalProject)
 
@@ -25,33 +41,17 @@ project(RINGMesh)
 set (RINGMesh_VERSION_MAJOR 1)
 set (RINGMesh_VERSION_MINOR 0)
 
-#------------------------------------------------------------------------------------------------
-# Options can be set with the CMakeOptions file, but also in Cmake GUI
-# or in command line cmake -D<var>:<type>=<value> MyProjectFolder
-
-# Path to MG_TETRA is asked for to the user in the interface
-set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
-
-option(USE_OPENMP "Use Open MP" ON)
-
-# Optional components of RINGMesh - creation of specific targets
-option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
-option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
-option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
-
-# Optional custom steps 
-option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
 
 #------------------------------------------------------------------------------------------------
-# Generating configuration directories for single-configuration generators (Make)
-# and running cmake configuration in each one of them
+# Generate configuration directories for single-configuration generators (Make)
+# and run cmake configuration command in each one of them
 
 if(UNIX)    
     # If the CMAKE_BUILD_TYPE is no defined
-    # ie at first run of that file
+    # i.e. at first run of that file
     if(CMAKE_BUILD_TYPE STREQUAL "")   
     
-      # For all configuration types of the project  
+      # For all configuration types  
       foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
           # The binary directory for this configuration
           set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/ringmesh/${config})
@@ -76,7 +76,7 @@ if(UNIX)
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
-      # Get out when all configurations have been running
+      # Get out when all configurations have been run
       # We do not want to execute the rest of the file in that case
       return()
     endif()
@@ -89,6 +89,7 @@ message(STATUS "Project source directory is: ${PROJECT_SOURCE_DIR}")
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
+
 if(WIN32)
     set(RINGMESH_EXPORTS ON)
     set(GEO_DYNAMIC_LIBS ON)
@@ -97,7 +98,8 @@ if(WIN32)
     set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
     
     # Needed by geogram
-    set(geoplatform Win-vs-dynamic-generic)    
+    set(geoplatform Win-vs-dynamic-generic)  
+    
 elseif(UNIX)
     # Needed by geogram
     set(geoplatform Linux64-gcc-dynamic)
@@ -107,10 +109,13 @@ elseif(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
+    # Enable parallel computation
     set(COMPILATION_OPTION -- -j4)
+    
 else(WIN32)
     # Nothing else really supported
     message(WARNING "Your platform is not supported. Please modify the cmakelist file.")
+    
 endif(WIN32)
 
 #------------------------------------------------------------------------------------------------
@@ -125,17 +130,20 @@ configure_file(
 include_directories(${PROJECT_BINARY_DIR})
  
 #------------------------------------------------------------------------------------------------
-# Define Geogram as an external project that we know how to
-# configure and compile
+# GEOGRAM 
 
+# Set the path to Geogram code
 set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
 
+# Se tthe path to where we are going to build Geogram
 if(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram)
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
 endif(WIN32)
 
+# Define Geogram as an external project that we know how to
+# configure and compile
 ExternalProject_Add(geogram_ext
   PREFIX ${GEOGRAM_PATH}
   
@@ -258,7 +266,7 @@ target_link_libraries(RINGMesh ${EXTRA_LIBS})
 if(WIN32)
     # On windows without proper installation steps we need to 
     # copy of Geogram dll and pdb information to RINGMesh
-    # to be able to launch RINGMesh or the tests
+    # to be able to launch RINGMesh utilities or the tests
     add_custom_command(TARGET RINGMesh POST_BUILD 
      COMMAND  "${CMAKE_COMMAND}" -E copy_if_different 
          "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/geogram.dll"
@@ -268,8 +276,18 @@ if(WIN32)
      COMMAND  "${CMAKE_COMMAND}" -E copy_if_different 
          "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/geogram.pdb"
          "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>/geogram.pdb" 
-     COMMENT "Copy geogram debug information")
-endif()
+     COMMENT "Copy geogram debug information"
+     
+     COMMAND  "${CMAKE_COMMAND}" -E copy_if_different 
+         "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/geogram_gfx.dll"
+         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>/geogram_gfx.dll" 
+     COMMENT "Copy geogram_gfx dll"
+     
+     COMMAND  "${CMAKE_COMMAND}" -E copy_if_different 
+         "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/geogram_gfx.pdb"
+         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>/geogram_gfx.pdb" 
+     COMMENT "Copy geogram_gfx debug information")     
+endif(WIN32)
 
 
 #------------------------------------------------------------------------------------------------
@@ -285,7 +303,7 @@ if(RINGMESH_WITH_UTILITIES)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)
-    message(STATUS "Configuring RIGNGMesh with tests")
+    message(STATUS "Configuring RINGMesh with tests")
     add_subdirectory(tests)
 endif(RINGMESH_WITH_TESTS)
 
@@ -299,7 +317,7 @@ if(BUILD_DOCUMENTATION)
     set(doxyfile ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
 
     # To set properly project version and paths
-    # use an input file and use configure_file to populate the doxyfile
+    # we should use an input file and use configure_file to populate the doxyfile [JP]
     # set(doxyfile_in ${PROJECT_SOURCE_DIR}/Doxyfile.in)
     # configure_file(${doxyfile_in} ${doxyfile} @ONLY)  
     
