@@ -1,6 +1,6 @@
 GOCAD Model3d 1 
 HEADER {
-name: model1
+name: modelA1
 *box_model_1*color: 1.0 0. 0. 1.
 *layers*visible: on
 *box_model_1*visible: off
