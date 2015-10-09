@@ -48,7 +48,7 @@
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
-    /*! @ todo Rewrite this ! 
+    /*! @todo Rewrite this ! 
      * Data are not here, so ... [JP]
      */
     /*
