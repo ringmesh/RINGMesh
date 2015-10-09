@@ -222,7 +222,7 @@ namespace RINGMesh {
         out.precision( 16 ) ;
 
         // Print Gocad Model3d headers
-        out << "GOCAD Model3d 1" << std::endl << "HEADER {" << std::endl << "name:"
+        out << "GOCAD Model3d 1" << std::endl << "HEADER {" << std::endl << "name: "
             << M.name() << std::endl << "}" << std::endl ;
 
         save_coordinate_system( out ) ;
@@ -5640,9 +5640,9 @@ namespace RINGMesh {
     void GeoModelSurfaceIOHandler::initialize()
     {
         ringmesh_register_GeoModelSurfaceIOHandler_creator( MLIOHandler, "ml" );
-    ringmesh_register_GeoModelSurfaceIOHandler_creator( BMIOHandler, "bm" ) ;
-    ringmesh_register_GeoModelSurfaceIOHandler_creator( UCDIOHandler, "inp" ) ;
-    ringmesh_register_GeoModelSurfaceIOHandler_creator( WebGLIOHandler, "html" ) ;
-    ringmesh_register_GeoModelSurfaceIOHandler_creator( ParaviewIOHandler, "paraview" ) ;
-}
+        ringmesh_register_GeoModelSurfaceIOHandler_creator( BMIOHandler, "bm" ) ;
+        ringmesh_register_GeoModelSurfaceIOHandler_creator( UCDIOHandler, "inp" ) ;
+        ringmesh_register_GeoModelSurfaceIOHandler_creator( WebGLIOHandler, "html" ) ;
+        ringmesh_register_GeoModelSurfaceIOHandler_creator( ParaviewIOHandler, "paraview" ) ;
+    }
 }

@@ -1342,7 +1342,7 @@ namespace RINGMesh {
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast<GME::TYPE>( t ) ;
             GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-                << model.nb_elements( T ) << " " << GME::type_name
+                << model.nb_elements(T) << " " << GME::type_name( T )
                 << std::endl ;
         }
     }
