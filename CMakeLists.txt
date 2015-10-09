@@ -84,8 +84,8 @@ else(UNIX)
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
 endif(UNIX)
 
-message(STATUS "Project binary directory is: ${PROJECT_BINARY_DIR}") 
-message(STATUS "Project source directory is: ${PROJECT_SOURCE_DIR}") 
+message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}") 
+message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}") 
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
@@ -264,29 +264,14 @@ target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
 
 if(WIN32)
-    # On windows without proper installation steps we need to 
+    # On windows, without proper installation steps, we need to 
     # copy of Geogram dll and pdb information to RINGMesh
-    # to be able to launch RINGMesh utilities or the tests
+    # to be able to launch RINGMesh utilities and  tests
     add_custom_command(TARGET RINGMesh POST_BUILD 
-     COMMAND  "${CMAKE_COMMAND}" -E copy_if_different 
-         "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/geogram.dll"
-         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>/geogram.dll" 
-     COMMENT "Copy geogram dll"
-     
-     COMMAND  "${CMAKE_COMMAND}" -E copy_if_different 
-         "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/geogram.pdb"
-         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>/geogram.pdb" 
-     COMMENT "Copy geogram debug information"
-     
-     COMMAND  "${CMAKE_COMMAND}" -E copy_if_different 
-         "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/geogram_gfx.dll"
-         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>/geogram_gfx.dll" 
-     COMMENT "Copy geogram_gfx dll"
-     
-     COMMAND  "${CMAKE_COMMAND}" -E copy_if_different 
-         "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>/geogram_gfx.pdb"
-         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>/geogram_gfx.pdb" 
-     COMMENT "Copy geogram_gfx debug information")     
+       COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+           "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
+           "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+       COMMENT "Copy geogram binaries")
 endif(WIN32)
 
 
