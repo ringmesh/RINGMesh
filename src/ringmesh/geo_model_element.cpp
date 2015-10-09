@@ -32,7 +32,7 @@
  *     http://www.ring-team.org
  *
  *     RING Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -1564,12 +1564,12 @@ namespace RINGMesh {
     {
         if( aabb_ == nil ) {
             // Sinon on va droit dans le mur
-            // Parce que le mesh est triangulé dans notre dos
+            // Parce que le mesh est triangule dans notre dos
             ringmesh_assert( surface_.mesh().facets.are_simplices() ) ;
 
             aabb_ = new GEO::MeshFacetsAABB( surface_.mesh() ) ;
-            /// @todo Et pourquoi créer AABB me fait vider les sommets ?
-            /// @todo Il faut un mécanisme update de ces SurfaceTools correct.
+            /// @todo Et pourquoi creer AABB me fait vider les sommets ?
+            /// @todo Il faut un mecanisme update de ces SurfaceTools correct.
             // if( ann_ ) {
             //     delete ann_ ;
             //     this_not_const->ann_ = nil ;
@@ -1643,8 +1643,8 @@ namespace RINGMesh {
     {
         if( aabb_ == nil ) {
             aabb_ = new GEO::MeshCellsAABB( region_.mesh() ) ;
-            /// @todo Et pourquoi créer AABB me fait vider les sommets ?
-            /// @todo Il faut un mécanisme update de ces RegionTools correct.
+            /// @todo Et pourquoi creer AABB me fait vider les sommets ?
+            /// @todo Il faut un mecanisme update de ces RegionTools correct.
             // if( ann_ ) {
             //     delete ann_ ;
             //     this_not_const->ann_ = nil ;
