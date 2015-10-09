@@ -98,7 +98,8 @@ template< class T > inline void ringmesh_unused( T const& )
 {
 }
 
+#include <ringmesh/types.h>
+#include <ringmesh/ringmesh_assert.h> 
+
 #endif
 
-#include <ringmesh/types.h>
-#include <ringmesh/ringmesh_assert.h>
