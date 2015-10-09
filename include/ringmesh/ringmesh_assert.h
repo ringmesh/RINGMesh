@@ -71,8 +71,10 @@ namespace RINGMesh {
 
 #ifdef RINGMESH_DEBUG
   #define ringmesh_debug_assert( x ) ringmesh_assert( x )
+  #define ringmesh_debug_assert_not_reached ringmesh_assert_not_reached
 #else
   #define ringmesh_debug_assert( x )
+  #define ringmesh_debug_assert_not_reached
 #endif
 
 #endif
