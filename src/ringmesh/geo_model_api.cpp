@@ -259,7 +259,7 @@ namespace RINGMesh {
                     method ) ;
                 tetragen->set_boundaries( M.region( i ), M.wells() ) ;
                 tetragen->set_internal_points( internal_vertices[i] ) ;
-                GEO::Logger::instance()->set_quiet( true ) ;
+//                GEO::Logger::instance()->set_quiet( true ) ;
                 tetragen->tetrahedralize( add_steiner_points ) ;
                 GEO::Logger::instance()->set_quiet( false ) ;
                 progress.next() ;

@@ -162,6 +162,7 @@ namespace RINGMesh {
 
         GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
                                              surface_att_name ) ;
+        std::cout << "test1" << std::endl ;
 
         /// 0 - Remove duplicated facets (optionnal)
         if( check_duplicated_facet ) {
@@ -203,16 +204,20 @@ namespace RINGMesh {
             mesh.facets.connect() ;
         }
 
+        std::cout << "test2" << std::endl ;
+
         /// 1 - Check facet adjacencies for non-manifold surfaces
         std::vector< index_t > temp ;
         temp.reserve( 6 ) ;
         std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-            for( index_t c = mesh.facets.corners_begin( f );
-                 c < mesh.facets.corners_end( f ); c++ ) {
-                stars[ mesh.facet_corners.vertex( c ) ].push_back( f ) ;
+            for( index_t v = 0; v < mesh.facets.nb_vertices( f ); v++ ) {
+                std::cout << mesh.vertices.nb() << "  =  " << mesh.facets.vertex( f, v ) << std::endl ;
+                stars[ mesh.facets.vertex( f, v ) ].push_back( f ) ;
             }
         }
+        std::cout << "test22" << std::endl ;
+
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
             index_t surface_id = attribute[ f ] ;
             for( index_t c = mesh.facets.corners_begin( f );
@@ -246,6 +251,8 @@ namespace RINGMesh {
             }
         }
 
+        std::cout << "test3" << std::endl ;
+
         /// 2 - Reorient in the same direction using propagation
         std::vector< bool > facet_visited( mesh.facets.nb(), false ) ;
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
@@ -270,6 +277,8 @@ namespace RINGMesh {
                 }
             } while( !S.empty() ) ;
         }
+
+        std::cout << "test4" << std::endl ;
 
         /// 3 - Check for consistent orientation with GeoModel
         GEO::MeshFacetsAABB aabb( mesh ) ;
@@ -315,8 +324,11 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize( bool refine )
         {
+            GEO::mesh_save( tetmesh_, "toto.meshb" ) ;
             GEO::mesh_tetrahedralize( tetmesh_, false, refine, 1.0 ) ;
+            GEO::mesh_save( tetmesh_, "toto2.meshb" ) ;
             check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
+            std::cout << "FIN" << std::endl ;
             return true ;
         }
     } ;
@@ -641,9 +653,9 @@ namespace RINGMesh {
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 for( index_t e = 0; e < well_edges[w].size(); e++ ) {
                     tetmesh_.edges.set_vertex( cur_edge, 0,
-                        unique_indices[cur_vertex_id++ ] ) ;
+                        starting_index + unique_indices[cur_vertex_id++ ] ) ;
                     tetmesh_.edges.set_vertex( cur_edge, 1,
-                        unique_indices[cur_vertex_id++ ] ) ;
+                        starting_index + unique_indices[cur_vertex_id++ ] ) ;
                     edge_region[cur_edge++ ] = w ;
                 }
             }
@@ -662,7 +674,9 @@ namespace RINGMesh {
                 ringmesh_debug_assert( surface.is_triangle( t ) ) ;
                 for( index_t v = 0; v < 3; v++ ) {
                     tetmesh_.facets.set_vertex( offset_facets + t, v,
-                        unique_indices[offset_vertices + surface.surf_vertex_id( t, v )] ) ;
+                        starting_index
+                            + unique_indices[offset_vertices
+                                + surface.surf_vertex_id( t, v )] ) ;
                 }
                 surface_region[offset_facets + t] = surface.gme_id().index ;
 
