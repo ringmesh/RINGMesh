@@ -1,6 +1,6 @@
 GOCAD Model3d 1 
 HEADER {
-name:model3
+name:modelA2
 last_selected_folder:Graphic
 *Region_10*visible:false
 *Region_11*visible:false

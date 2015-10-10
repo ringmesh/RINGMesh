@@ -374,36 +374,6 @@ namespace {
 
 
     /*!
-     * @brief Total number of facets in the model Surfaces
-     */
-    index_t nb_facets( const GeoModel& BM )
-    {
-        index_t result = 0 ;
-        for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
-            result += BM.surface( i ).nb_cells() ;
-        }
-        return result ;
-    }
-
-    void print_model( const GeoModel& model )
-    {
-        GEO::Logger::out( "GeoModel" ) << "Model " << model.name() << " has "
-            << std::endl << std::setw( 10 ) << std::left << model.mesh.vertices.nb()
-            << " vertices " << std::endl << std::setw( 10 ) << std::left
-            << nb_facets( model ) << " facets " << std::endl << std::endl
-            << std::setw( 10 ) << std::left << model.nb_regions() << " regions "
-            << std::endl << std::setw( 10 ) << std::left << model.nb_surfaces()
-            << " surfaces " << std::endl << std::setw( 10 ) << std::left
-            << model.nb_lines() << " lines " << std::endl << std::setw( 10 )
-            << std::left << model.nb_corners() << " corners " << std::endl
-            << std::endl << std::setw( 10 ) << std::left << model.nb_contacts()
-            << " contacts " << std::endl << std::setw( 10 ) << std::left
-            << model.nb_interfaces() << " interfaces " << std::endl
-            << std::setw( 10 ) << std::left << model.nb_layers() << " layers "
-            << std::endl << std::endl ;
-    }
-
-    /*!
      * @brief Get the index of the Corner for a given point
      * @param[in] point Geometric location to look for
      * @return NO_ID or the index of the Corner
@@ -1149,8 +1119,6 @@ namespace RINGMesh {
             }
         }
 
-        /// @todo Add optional model repair
-
         if( is_geomodel_valid( model_ ) ) {
             GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
                 << model_.name() << " is valid " << std::endl << std::endl ;
@@ -1434,7 +1402,7 @@ namespace RINGMesh {
             if( in.nb_fields() > 0 ) {
                 if( read_model ) {
                     if( strncmp( in.field( 0 ), "name:", 5 ) == 0 ) {
-                        set_model_name( &in.field( 0 )[5] ) ;
+                        set_model_name( in.field( 1 ) ) ;
                     } else if( in.field_matches( 0, "TSURF" ) ) {
                         /// 1.1 Create Interface from its name
                         index_t f = 1 ;
