@@ -252,7 +252,7 @@ namespace RINGMesh {
     {
         if( internal_vertices.empty() ) internal_vertices.resize( M.nb_regions() ) ;
         GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
-        if( region_id == ALL_REGIONS ) {
+        if( region_id == NO_ID ) {
             GEO::ProgressTask progress( "Compute", M.nb_regions() ) ;
             for( index_t i = 0; i < M.nb_regions(); i++ ) {
                 TetraGen_var tetragen = TetraGen::create( M.region( i ).mesh(),

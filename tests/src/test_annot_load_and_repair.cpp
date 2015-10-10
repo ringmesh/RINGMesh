@@ -38,21 +38,55 @@
 *     FRANCE
 */
 
-#ifndef __RINGMESH_GEO_MODEL_REPAIR__
-#define __RINGMESH_GEO_MODEL_REPAIR__
+#include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/common.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/io.h>
+#include <ringmesh/geo_model_repair.h>
+#include <ringmesh/geo_model_validity.h>
 
-namespace RINGMesh {
-    class GeoModel ;
+#include <geogram/basic/logger.h>
+
+
+/*! Load and fix a given structural model file 
+ */
+int main( int argc, char** argv ) {
+    using namespace RINGMesh ;
+
+    GEO::Logger::out( "RINGMesh Test" ) << "Loading and fixing annot model" << std::endl ;
+    
+    GeoModel M ;
+    std::string file_name( ringmesh_test_data_path ) ;
+
+    /*! @todo Make this executable generic by setting 
+     *   the file name as an argument of the command */
+    file_name += "annot.ml" ;
+
+    // Set the debug directory for the validity checks 
+    set_debug_directory( ringmesh_test_output_path ) ;
+
+    // Load the model
+    if( !model_load( file_name, M ) ) {
+        // Try to repair the model if it is not valid
+        geo_model_mesh_repair( M ) ;
+
+        // Test the validity again
+        if( is_geomodel_valid( M ) ) {
+            GEO::Logger::out( "RINGMesh Test" ) << "Invalid geological model "
+                << M.name() << " has been successfully fixed " << std::endl ;
+            print_model( M ) ;
+            return 0 ;
+        } else {
+            GEO::Logger::out( "RINGMesh Test" ) << "Fixing the invalid geological model "
+                << M.name() << " failed. " << std::endl ;
+            return 1 ;
+        }
+    }
+    else {
+        GEO::Logger::out( "RINGMesh Test" ) << "The geological model "
+            << M.name() << " is valid " << std::endl ;
+        print_model( M ) ;
+        return 0 ;
+    }      
+
 }
-
-namespace RINGMesh { 
-
-    void RINGMESH_API geo_model_mesh_repair( GeoModel& GM ) ;
-
-
-}
-
-
-#endif 

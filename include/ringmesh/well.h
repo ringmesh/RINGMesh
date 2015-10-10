@@ -156,7 +156,7 @@ namespace RINGMesh {
 
 // --------------------------------------------------------------------------
 
-    class Edge {
+    class RINGMESH_API Edge {
     public:
         Edge( const vec3& v0, const vec3& v1 )
         {

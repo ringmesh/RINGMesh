@@ -67,7 +67,7 @@ namespace RINGMesh {
     /*!
      * @todo Move this in our geometry file ? [JP]
      */
-    class Box3d: public GEO::Box {
+    class RINGMESH_API Box3d : public GEO::Box {
     public:
         Box3d()
             : initialized_( false )
