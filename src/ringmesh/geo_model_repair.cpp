@@ -170,10 +170,10 @@ namespace {
         for( index_t i = 0; i < BM.nb_lines(); ++i ) {
             index_t nb = repair_line_mesh( BM.line( i ).mesh() ) ;
             if( nb > 0 ) {
-#ifdef RINGMESH_DEBUG
+
                 GEO::Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
-#endif
+
 
                 // The line may be empty now - remove it from the model
                 if( BM.line( i ).nb_cells() == 0 ) {
@@ -192,9 +192,9 @@ namespace {
             if( nb > 0 ) {
                 // If there are some degenerated facets 
                 // We need to repair the model 
-#ifndef RINGMESH_DEBUG
-                GEO::Logger::instance()->set_quiet( true ) ;
-#endif
+//#ifndef RINGMESH_DEBUG
+                //GEO::Logger::instance()->set_quiet( true ) ;
+//#endif
                 // Using repair function of geogram
                 // Warning - This triangulates the mesh
 
@@ -214,9 +214,9 @@ namespace {
                         GEO::mesh_repair( M, mode ) ;
                     }
                 }
-#ifndef RINGMESH_DEBUG
-                GEO::Logger::instance()->set_quiet( false ) ;
-#endif 
+//#ifndef RINGMESH_DEBUG
+                //GEO::Logger::instance()->set_quiet( false ) ;
+//#endif 
                 if( M.vertices.nb() == 0 || M.facets.nb() == 0 ) {
                     to_remove.insert( BM.surface( i ).gme_id() ) ;
                 } else {
@@ -374,11 +374,11 @@ namespace {
                                             colocated[ M.edges.vertex( e, 1 ) ] ) ;
                     }
                     M.vertices.delete_elements( to_delete, false ) ;
-#ifdef RINGMESH_DEBUG
+
                     GEO::Logger::out( "GeoModel" ) << nb_todelete
                         << " colocated vertices deleted in " << E.gme_id()
                         << std::endl ;
-#endif
+
                 }
             }
         }

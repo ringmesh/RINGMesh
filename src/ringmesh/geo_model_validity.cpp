@@ -380,7 +380,6 @@ namespace {
         index_t nb_intersections = static_cast< index_t>( std::count( has_intersection.begin(),
             has_intersection.end(), 1 ) ) ;
 
-#ifdef RINGMESH_DEBUG
         if( nb_intersections > 0 ) {
             GEO::Mesh mesh ;
             for( index_t f = 0; f < has_intersection.size(); f++ ) {
@@ -398,8 +397,6 @@ namespace {
             file << validity_errors_directory << "/intersected_facets.mesh" ;
             GEO::mesh_save( mesh, file.str() ) ;
         }
-
-#endif
 
         return nb_intersections ;
     }
@@ -608,6 +605,8 @@ namespace {
     * @details Adjacencies are not set. Client should call
     *  mesh repair functions afterwards.
     *
+    * @todo Give access to that mesh (constant access) from GeoModelMesh
+    * because we do have it [JP]
     */
     void mesh_from_geo_model( const GeoModel& model, Mesh& M )
     {
@@ -834,14 +833,12 @@ namespace {
                 valid = false ;
             }
 
-#ifdef RINGMESH_DEBUG
             if( !valid ) {
                 std::ostringstream file ;
                 file << validity_errors_directory << "/boundary_surface_"
                     << print_gme_id( region ) << ".mesh" ;
                 GEO::mesh_save( mesh, file.str() ) ;
             }
-#endif
         }
         return valid ;
     }
@@ -1067,7 +1064,6 @@ namespace {
         index_t nb_invalid = static_cast< index_t >(
             std::count( valid.begin(), valid.end(), false ) ) ;
 
-#ifdef RINGMESH_DEBUG
         if( nb_invalid > 0 ) {
             std::ostringstream file ;
             file << validity_errors_directory << "/invalid_global_vertices.pts" ;
@@ -1088,7 +1084,6 @@ namespace {
                 }
             }
         }
-#endif
 
         return nb_invalid == 0 ;
     }
@@ -1132,14 +1127,14 @@ namespace {
             }
         }
 
-#ifdef RINGMESH_DEBUG
+
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
             file << validity_errors_directory << "/invalid_boundary_"
                 << print_gme_id( S ) << ".lin" ;
             save_edges( file.str(), S.model(), invalid_corners ) ;
         }
-#endif  
+
         if( invalid_corners.empty() ) {
             return true ;
         } else {
@@ -1305,13 +1300,13 @@ namespace RINGMesh {
                 << non_manifold_edges.edges.nb() << "non manifold edges "
                 << std::endl ;
             valid = false ;
-#ifdef RINGMESH_DEBUG
+
             std::ostringstream file ;
             file << validity_errors_directory << "/non_manifold_edges" << ".mesh" ;
             /// @todo Save a GEO::Mesh in an adapted format
             /// if the Mesh has only edges or vertices (.pts ? .lin ? ) 
             GEO::mesh_save( non_manifold_edges, file.str() ) ;
-#endif
+
         }
 
         /// 6. Check there is no surface-surface intersection
