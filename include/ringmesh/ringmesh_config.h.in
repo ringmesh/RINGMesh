@@ -1,0 +1,17 @@
+/* This file is generated at project configuration by CMake
+ * Do not modify it directly but modify the include/ringmesh_config.h.in file 
+ * and re-run the project configuration
+ */
+ 
+#define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR@
+#define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR@
+
+/* Optional components with which RINGMesh can be compiled */
+#cmakedefine USE_MG_TETRA
+#cmakedefine USE_OPENMP
+#cmakedefine USE_MG_TETRA
+
+/* Optional components of RINGMesh */
+#cmakedefine RINGMESH_WITH_GRAPHICS
+#cmakedefine RINGMESH_WITH_UTILITIES
+#cmakedefine RINGMESH_WITH_TESTS
