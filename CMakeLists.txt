@@ -91,8 +91,8 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 # Platform dependent settings
 
 if(WIN32)
-    set(RINGMESH_EXPORTS ON)
-    set(GEO_DYNAMIC_LIBS ON)
+    add_compile_options(-DRINGMESH_EXPORTS) 
+    add_compile_options(-DGEO_DYNAMIC_LIBS) 
     
     # Extra library needed with geogram I think [JP]
     set (EXTRA_LIBS ${EXTRA_LIBS} psapi)

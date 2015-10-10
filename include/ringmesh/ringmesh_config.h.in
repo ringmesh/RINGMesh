@@ -6,10 +6,6 @@
 #define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR@
 #define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR@
 
-/* Platform dependent settings */
-#cmakedefine RINGMESH_EXPORTS
-#cmakedefine GEO_DYNAMIC_LIBS
-
 /* Optional components with which RINGMesh can be compiled */
 #cmakedefine USE_MG_TETRA
 #cmakedefine USE_OPENMP
