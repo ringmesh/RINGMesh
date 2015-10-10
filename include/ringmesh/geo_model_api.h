@@ -77,6 +77,8 @@ namespace RINGMesh {
      * @param[in] E Element to evaluate
      * @param[in] c the cell index
      * @return The coordinates of the center
+     * 
+     * @todo Review: Reimplement this. Terribly long and inefficient [JP]
      */
     vec3 RINGMESH_API model_element_cell_center( const GeoModelElement& E, index_t c ) ;
 
