@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
+ *     RING Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -39,7 +39,7 @@
  */
 
 #include <ringmesh/well.h>
-#include <ringmesh/boundary_model.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/algorithm.h>
 #include <ringmesh/utils.h>
@@ -61,7 +61,7 @@ namespace {
     * @param[in] side Side of the Surface
     * @return The region index or NO_ID if none found.
     */
-    index_t find_region( const BoundaryModel& BM, index_t surface_part_id, bool side )
+    index_t find_region( const GeoModel& BM, index_t surface_part_id, bool side )
     {
         ringmesh_debug_assert( surface_part_id < BM.nb_surfaces() ) ;
         GME::gme_t cur_surface( GME::SURFACE, surface_part_id ) ;
