@@ -93,8 +93,9 @@ namespace RINGMesh {
     bool RINGMESH_API is_geomodel_geology_valid( const GeoModel& GM ) ;
 
 
-
-    /// Do we need it to be in a class ? [JP]
+    /*! The validity error directory where model error information 
+     *  will be stored is by default set to be the current working directory
+     */
     static std::string validity_errors_directory =
         GEO::FileSystem::get_current_working_directory() ;
 
