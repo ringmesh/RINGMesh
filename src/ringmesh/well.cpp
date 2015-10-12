@@ -32,18 +32,21 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Sup�rieure de G�ologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
 
 #include <ringmesh/well.h>
-#include <ringmesh/utils.h>
 #include <ringmesh/boundary_model.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/algorithm.h>
+#include <ringmesh/utils.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_AABB.h>
 
 #include <cmath>
 #include <stack>
@@ -61,11 +64,11 @@ namespace {
     index_t find_region( const BoundaryModel& BM, index_t surface_part_id, bool side )
     {
         ringmesh_debug_assert( surface_part_id < BM.nb_surfaces() ) ;
-        BME::bme_t cur_surface( BME::SURFACE, surface_part_id ) ;
+        GME::gme_t cur_surface( GME::SURFACE, surface_part_id ) ;
         /// @todo It would be better to directly check the region
         /// adjacent to the Surface.
         for( index_t r = 0; r < BM.nb_regions(); r++ ) {
-            const BME& cur_region = BM.region( r ) ;
+            const Region& cur_region = BM.region( r ) ;
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
                     && cur_region.boundary_id( s ) == cur_surface ) {
@@ -73,7 +76,7 @@ namespace {
                 }
             }
         }
-        return BME::NO_ID ;
+        return GME::NO_ID ;
     }
 }
 
@@ -375,12 +378,12 @@ namespace RINGMesh {
         void operator()( index_t trgl )
         {
             vec3 result ;
-            if( Math::segment_triangle_intersection(
+            if( segment_triangle_intersection(
                 v_from_, v_to_,
                 surface_.vertex( trgl, 0 ), surface_.vertex( trgl, 1 ),
                 surface_.vertex( trgl, 2 ), result ) ) {
                 intersections_.push_back(
-                    LineInstersection( result, surface_.bme_id().index, trgl ) ) ;
+                    LineInstersection( result, surface_.gme_id().index, trgl ) ) ;
             }
         }
 
@@ -471,7 +474,7 @@ namespace RINGMesh {
                     vec3 direction = v_prev - intersections[index].intersection_ ;
                     bool sign =
                         dot( direction,
-                            model_->surface( intersections[index].surface_id_ ).facet_normal(
+                            model_->surface( intersections[index].surface_id_ ).normal(
                                 intersections[index].trgl_id_ ) ) > 0 ;
                     last_sign = sign ;
                     index_t region = find_region(
@@ -568,7 +571,7 @@ namespace RINGMesh {
                 index_t index = indices[0] ;
                 vec3 direction = v_from - intersections[index].intersection_ ;
                 bool sign = dot( direction,
-                    model_->surface( intersections[index].surface_id_ ).facet_normal(
+                    model_->surface( intersections[index].surface_id_ ).normal(
                         intersections[index].trgl_id_ ) ) > 0 ;
                 last_sign = sign ;
                 region = find_region( *model_, intersections[index].surface_id_,

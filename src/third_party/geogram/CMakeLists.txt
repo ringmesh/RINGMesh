@@ -25,8 +25,9 @@ set(VORPALINE_VERSION_PATCH 0)
 set(VORPALINE_VERSION ${VORPALINE_VERSION_MAJOR}.${VORPALINE_VERSION_MINOR}.${VORPALINE_VERSION_PATCH})
 
 # Optional modules
-set(GEOGRAM_WITH_MEDIT TRUE)
-set(GEOGRAM_WITH_GRAPHICS TRUE)
+# So why are they set to TRUE ??? [JP]
+# set(GEOGRAM_WITH_MEDIT TRUE)
+# set(GEOGRAM_WITH_GRAPHICS TRUE)
 
 # Determine the current Build-OS (Build-platform without the compiler info)
 string(REGEX REPLACE "-[^-]+$" "" VORPALINE_OS ${VORPALINE_PLATFORM})
@@ -82,9 +83,10 @@ if(GEOGRAM_WITH_GRAPHICS)
 
 endif()
 
-add_subdirectory(src/test)
+# Please put an option !! Not everybody want to compile and generate the tests [JP]
+# add_subdirectory(src/test)
+# add_subdirectory(tests)
 add_subdirectory(doc)
-add_subdirectory(tests)
 
 ##############################################################################
 # Cleanup from previous builds

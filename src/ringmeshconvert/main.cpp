@@ -38,43 +38,67 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_ASSERT__
-#define __RINGMESH_ASSERT__
-
 #include <ringmesh/common.h>
-#include <string>
 
-namespace RINGMesh {
-    void RINGMESH_API ringmesh_abort() ;
+#include <ringmesh/command_line.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/io.h>
 
-    void RINGMESH_API ringmesh_assertion_failed(
-        const std::string& condition_string,
-        const std::string& file,
-        int line ) ;
+#include <geogram/basic/command_line.h>
+#include <geogram/basic/stopwatch.h>
 
-    void RINGMESH_API ringmesh_should_not_have_reached(
-        const std::string& file,
-        int line ) ;
+
+int main( int argc, char** argv )
+{
+    using namespace RINGMesh ;
+
+    GEO::Logger::div( "RINGMeshConvert" ) ;
+    GEO::Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
+    GEO::Logger::out( "" ) << "People working on the project in RING" << std::endl ;
+    GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
+        << std::endl ;
+
+    CmdLine::import_arg_group( "in" ) ;
+    CmdLine::import_arg_group( "out" ) ;
+
+    if( argc == 1 ) {
+        GEO::CmdLine::show_usage() ;
+        return 0 ;
+    }
+
+    std::vector< std::string > filenames ;
+    if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
+        return 1 ;
+    }
+
+    GEO::Stopwatch total( "Total time" ) ;
+
+    std::string model_in_name = GEO::CmdLine::get_arg( "in:model" ) ;
+    if( model_in_name == "" ) {
+        GEO::Logger::err( "I/O" ) << "Give at least a filename in in:model"
+            << std::endl ;
+        return 1 ;
+    }
+    BoundaryModel model_in ;
+    if( !model_load( model_in_name, model_in ) )
+        return 1 ;
+
+    std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
+    if( mesh_in_name != "" ) {
+        if( !mesh_load( mesh_in_name, model_in ) ) return 1 ;
+    }
+
+    std::string model_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
+    if( model_out_name != "" ) {
+        if( !model_save( model_in, model_out_name ) )
+            return 1 ;
+    }
+
+    std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
+    if( mesh_out_name != "" ) {
+        if( !mesh_save( model_in, mesh_out_name ) )
+            return 1 ;
+    }
+
+    return 0 ;
 }
-
-#define ringmesh_assert( x ) \
-    {                                        \
-        if( !( x ) ) {                                                 \
-            ::RINGMesh::ringmesh_assertion_failed( # x, __FILE__, __LINE__ ) ;   \
-        }                                                          \
-    }
-
-#define ringmesh_assert_not_reached \
-    {                               \
-        ::RINGMesh::ringmesh_should_not_have_reached( __FILE__, __LINE__ ) ;   \
-    }
-
-#ifdef RINGMESH_DEBUG
-  #define ringmesh_debug_assert( x ) ringmesh_assert( x )
-  #define ringmesh_debug_assert_not_reached ringmesh_assert_not_reached
-#else
-  #define ringmesh_debug_assert( x )
-  #define ringmesh_debug_assert_not_reached
-#endif
-
-#endif
