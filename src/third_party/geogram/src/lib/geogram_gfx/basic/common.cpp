@@ -48,6 +48,7 @@
 
 namespace GEO {
 
+    
     namespace Graphics {
 
         void initialize() {

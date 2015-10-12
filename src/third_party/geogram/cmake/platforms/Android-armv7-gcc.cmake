@@ -2,7 +2,7 @@
 # Flags for compiling with Android NDK
 #-------------------------------------------------------------------
 
-include(${CMAKE_SOURCE_DIR}/cmake/platforms/Linux.cmake)
+include(${GEOGRAM_SOURCE_DIR}/cmake/platforms/Linux.cmake)
 
 # Set the Android compilers
 set(CMAKE_CXX_COMPILER arm-linux-androideabi-g++)

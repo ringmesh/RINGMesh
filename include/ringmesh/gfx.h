@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -48,7 +48,7 @@
 #include <geogram_gfx/mesh/mesh_gfx.h>
 
 namespace RINGMesh {
-    class GeoModel ;
+    class BoundaryModel ;
     class MacroMesh ;
     class CornerGfx ;
     class LineGfx ;
@@ -58,14 +58,14 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelGfx {
-    ringmesh_disable_copy( GeoModelGfx ) ;
+    class RINGMESH_API BoundaryModelGfx {
+    ringmesh_disable_copy( BoundaryModelGfx ) ;
     public:
-        GeoModelGfx() ;
-        ~GeoModelGfx() ;
+        BoundaryModelGfx() ;
+        ~BoundaryModelGfx() ;
 
-        void set_geo_model( const GeoModel& model ) ;
-        const GeoModel* geo_model() ;
+        void set_boundary_model( const BoundaryModel& model ) ;
+        const BoundaryModel* boundary_model() ;
         void initialize() ;
 
         void draw_corners() ;
@@ -115,8 +115,8 @@ namespace RINGMesh {
         void set_vertex_surface_size( index_t c, index_t s ) ;
 
     private:
-        /// The GeoModel associated to the graphics
-        const GeoModel* model_ ;
+        /// The BoundaryModel associated to the graphics
+        const BoundaryModel* model_ ;
 
         /// The graphics associated to each Corner
         std::vector< CornerGfx* > corners_ ;

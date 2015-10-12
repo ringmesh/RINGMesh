@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -39,7 +39,7 @@
  */
 
 #include <ringmesh/command_line.h>
-#include <ringmesh/geo_model.h>
+#include <ringmesh/boundary_model.h>
 #include <ringmesh/macro_mesh.h>
 #include <ringmesh/io.h>
 
@@ -78,7 +78,7 @@ int main( int argc, char** argv )
             << std::endl ;
         return 1 ;
     }
-    GeoModel model_in ;
+    BoundaryModel model_in ;
     if( !RINGMeshIO::load( model_in_name, model_in ) )
         return 1 ;
 

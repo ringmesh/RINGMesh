@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -39,12 +39,13 @@
  */
 
 #include <ringmesh/io.h>
-#include <ringmesh/geo_model.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/boundary_model_builder.h>
+
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/algorithm.h>
-#include <ringmesh/geo_model_builder.h>
 /*
 * @todo Review : The most part of what is in this file should be in an anonymous
 *       namespace as it is not supposed to go out of this file [JP]
@@ -91,7 +92,7 @@ namespace RINGMesh {
         /*!
         * @brief Total number of facets in the Surfaces of a BM
         */
-        inline index_t nb_facets( const GeoModel& BM )
+        inline index_t nb_facets( const BoundaryModel& BM )
         {
             index_t result = 0 ;
             for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
@@ -110,7 +111,7 @@ namespace RINGMesh {
         */
         void save_region(
             index_t count,
-            const GeoModelElement& region,
+            const BoundaryModelElement& region,
             std::ostream& out )
         {
             out << "REGION " << count << "  " << region.name() << " " << std::endl ;
@@ -145,7 +146,7 @@ namespace RINGMesh {
         void save_layer(
             index_t count,
             index_t offset,
-            const GeoModelElement& layer,
+            const BoundaryModelElement& layer,
             std::ostream& out )
         {
             out << "LAYER " << layer.name() << " " << std::endl ;
@@ -182,7 +183,7 @@ namespace RINGMesh {
         *   - all Surfaces are triangulated
         *   - all Regions have a name
         */
-        bool check_gocad_validity( const GeoModel& M )
+        bool check_gocad_validity( const BoundaryModel& M )
         {
             if( M.nb_interfaces() == 0 ) {
                 return false ;
@@ -217,10 +218,10 @@ namespace RINGMesh {
         * @param[in,out] out Output file stream
         * @return false if the model is not compatible with a Gocad model
         */
-        bool save_gocad_model3d( const GeoModel& M, std::ostream& out )
+        bool save_gocad_model3d( const BoundaryModel& M, std::ostream& out )
         {
             if( !M.check_model_validity() || !check_gocad_validity( M ) ) {
-                GEO::Logger::err( "" ) << " The GeoModel " << M.name() 
+                GEO::Logger::err( "" ) << " The BoundaryModel " << M.name() 
                     << " cannot be saved in .ml format " << std::endl ;
                 return false ;
             }
@@ -393,7 +394,7 @@ namespace RINGMesh {
         /*!
         * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
         */
-        void save_high_level_bme( std::ofstream& out, const GeoModelElement& E )
+        void save_high_level_bme( std::ofstream& out, const BoundaryModelElement& E )
         {
             /// First line:  TYPE - ID - NAME - GEOL
             out << E.bme_id() << " " ;
@@ -402,7 +403,7 @@ namespace RINGMesh {
             } else {
                 out << "no_name " ;
             }
-            out << GeoModelElement::geol_name( E.geological_feature() )
+            out << BoundaryModelElement::geol_name( E.geological_feature() )
                 << std::endl ;
 
             /// Second line:  IDS of children
@@ -413,12 +414,12 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Save the GeoModel into a dedicated format bm
+        * @brief Save the BoundaryModel into a dedicated format bm
         * @todo Write the description of the BM format
         * @todo We need a generic read/write for the attibutes !!
         */
         void save_bm_file( 
-            const GeoModel& M,
+            const BoundaryModel& M,
             const std::string& file_name )
         {
             std::ofstream out( file_name.c_str() ) ;
@@ -573,7 +574,7 @@ namespace RINGMesh {
         * @details No attributes and no boundary marker are transferred
         * @todo Test this function - Create the appropriate handler
         */
-        void save_smesh_file( const GeoModel& M, const std::string& file_name )
+        void save_smesh_file( const BoundaryModel& M, const std::string& file_name )
         {
             std::ofstream out( file_name.c_str() ) ;
             if( out.bad() ) {
@@ -616,9 +617,9 @@ namespace RINGMesh {
        
         /************************************************************************/
 
-        class MLIOHandler: public GeoModelIOHandler {
+        class MLIOHandler: public BoundaryModelIOHandler {
         public:
-            virtual bool load( const std::string& filename, GeoModel& model )
+            virtual bool load( const std::string& filename, BoundaryModel& model )
             {
                 if( filename.empty() ) {
                     GEO::Logger::err( "I/O" )
@@ -634,20 +635,20 @@ namespace RINGMesh {
                     return false ;
                 }
 
-                GeoModelBuilderGocad builder( model ) ;
+                BoundaryModelBuilderGocad builder( model ) ;
                 return builder.load_ml_file( filename ) ;
             }
 
-            virtual bool save( GeoModel& model, const std::string& filename )
+            virtual bool save( BoundaryModel& model, const std::string& filename )
             {
                 std::ofstream out( filename.c_str() ) ;
                 return save_gocad_model3d( model, out ) ;
             }
         } ;
 
-        class BMIOHandler: public GeoModelIOHandler {
+        class BMIOHandler: public BoundaryModelIOHandler {
         public:
-            virtual bool load( const std::string& filename, GeoModel& model )
+            virtual bool load( const std::string& filename, BoundaryModel& model )
             {
                 if( filename.empty() ) {
                     GEO::Logger::err( "I/O" )
@@ -663,20 +664,20 @@ namespace RINGMesh {
                     return false ;
                 }
 
-                GeoModelBuilderBM builder( model ) ;
+                BoundaryModelBuilderBM builder( model ) ;
                 return builder.load_file( filename ) ;
             }
 
-            virtual bool save( GeoModel& model, const std::string& filename )
+            virtual bool save( BoundaryModel& model, const std::string& filename )
             {
                 save_bm_file( model, filename ) ;
                 return true ;
             }
         } ;
 
-        class UCDIOHandler: public GeoModelIOHandler {
+        class UCDIOHandler: public BoundaryModelIOHandler {
         public:
-            virtual bool load( const std::string& filename, GeoModel& model )
+            virtual bool load( const std::string& filename, BoundaryModel& model )
             {
                 GEO::Logger::err( "I/O" )
                     << "Loading of a MacroMesh from UCD mesh not implemented yet"
@@ -684,7 +685,7 @@ namespace RINGMesh {
                 return false ;
             }
 
-            virtual bool save( GeoModel& model, const std::string& filename )
+            virtual bool save( BoundaryModel& model, const std::string& filename )
             {
                 std::string full_path ;
                 create_directory_from_filename( filename, full_path ) ;
@@ -726,7 +727,7 @@ namespace RINGMesh {
                 }
 
                 for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                    const GeoModelElement& region = model.region( r ) ;
+                    const BoundaryModelElement& region = model.region( r ) ;
                     cmd << "region/" << region.name() << "/" ;
                     std::string sep = "" ;
                     for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
@@ -747,7 +748,7 @@ namespace RINGMesh {
             }
         } ;
 
-        class WebGLIOHandler: public GeoModelIOHandler {   
+        class WebGLIOHandler: public BoundaryModelIOHandler {   
         public:
             void print_KeyboardState( std::ofstream& out ) {
                 out << "/**" << std::endl ;
@@ -3164,7 +3165,7 @@ namespace RINGMesh {
                 out << "THREE.TrackballControls.prototype.constructor = THREE.TrackballControls;" << std::endl ;
             }
 
-            virtual bool load( const std::string& filename, GeoModel& model )
+            virtual bool load( const std::string& filename, BoundaryModel& model )
             {
                 GEO::Logger::err( "I/O" )
                     << "Loading of a MacroMesh from WebGL mesh not implemented yet"
@@ -3172,7 +3173,7 @@ namespace RINGMesh {
                 return false ;
             }
 
-            virtual bool save( GeoModel& model, const std::string& filename )
+            virtual bool save( BoundaryModel& model, const std::string& filename )
             {
                 std::string sep = ", " ;
                 std::ofstream out( filename.c_str() ) ;
@@ -3214,7 +3215,7 @@ namespace RINGMesh {
                 out << "var meshes=[];" << std::endl ;
 
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const GeoModelElement& interf = model.one_interface( i ) ;
+                    const BoundaryModelElement& interf = model.one_interface( i ) ;
                     if( interf.is_on_voi() ) {
                         continue ;
                     }
@@ -3259,7 +3260,7 @@ namespace RINGMesh {
                 out << "var i = 0;" << std::endl ;
 
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const GeoModelElement& interf = model.one_interface( i ) ;
+                    const BoundaryModelElement& interf = model.one_interface( i ) ;
                     if( interf.is_on_voi() ) {
                         continue ;
                     } else {
@@ -3281,9 +3282,9 @@ namespace RINGMesh {
             }
         } ;
 
-        class ParaviewIOHandler: public GeoModelIOHandler {
+        class ParaviewIOHandler: public BoundaryModelIOHandler {
         public:
-            virtual bool load( const std::string& filename, GeoModel& model )
+            virtual bool load( const std::string& filename, BoundaryModel& model )
             {
                 GEO::Logger::err( "I/O" )
                     << "Loading of a MacroMesh from UCD mesh not implemented yet"
@@ -3291,7 +3292,7 @@ namespace RINGMesh {
                 return false ;
             }
 
-            virtual bool save( GeoModel& model, const std::string& filename )
+            virtual bool save( BoundaryModel& model, const std::string& filename )
             {
                 // Create a new directory to outputs the files
                 std::string full_path ;
@@ -3310,7 +3311,7 @@ namespace RINGMesh {
                 pvd << "<Collection>" << std::endl ;
 
                 for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                    const GeoModelElement& interf = model.one_interface( i ) ;
+                    const BoundaryModelElement& interf = model.one_interface( i ) ;
                     const std::string& name = interf.name() ;
 
                     // Create the current *.vtp file
@@ -3346,7 +3347,7 @@ namespace RINGMesh {
                         << "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">"
                         << std::endl ;
                     for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                        const GeoModelElement& surface = interf.child( s ) ;
+                        const BoundaryModelElement& surface = interf.child( s ) ;
                         for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                             out << surface.vertex( v ) << " " ;
                         }
@@ -3411,17 +3412,17 @@ namespace RINGMesh {
         /************************************************************************/
 
         /*!
-        * Loads a GeoModel from a file
+        * Loads a BoundaryModel from a file
         * @param[in] filename the file to load
         * @param[out] model the model to fill
         * @return returns the success of the operation
         */
-        bool load( const std::string& filename, GeoModel& model )
+        bool load( const std::string& filename, BoundaryModel& model )
         {
             GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
                 << std::endl ;
 
-            GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler(
+            BoundaryModelIOHandler_var handler = BoundaryModelIOHandler::get_handler(
                 filename ) ;
             if( handler && handler->load( filename, model ) ) {
                 return true ;
@@ -3433,17 +3434,17 @@ namespace RINGMesh {
         }
 
         /*!
-        * Saves a GeoModel in a file
+        * Saves a BoundaryModel in a file
         * @param[in] model the model to save
         * @param[in] filename the filename where to save it
         * @return returns the success of the operation
         */
-        bool save( GeoModel& model, const std::string& filename )
+        bool save( BoundaryModel& model, const std::string& filename )
         {
             GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
                 << std::endl ;
 
-            GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler(
+            BoundaryModelIOHandler_var handler = BoundaryModelIOHandler::get_handler(
                 filename ) ;
             if( handler && handler->save( model, filename ) ) {
                 return true ;
@@ -3456,11 +3457,11 @@ namespace RINGMesh {
 
         /************************************************************************/
 
-        GeoModelIOHandler* GeoModelIOHandler::create(
+        BoundaryModelIOHandler* BoundaryModelIOHandler::create(
             const std::string& format )
         {
-            GeoModelIOHandler* handler =
-                GeoModelIOHandlerFactory::create_object( format ) ;
+            BoundaryModelIOHandler* handler =
+                BoundaryModelIOHandlerFactory::create_object( format ) ;
             if( handler ) {
                 return handler ;
             }
@@ -3478,7 +3479,7 @@ namespace RINGMesh {
             return nil ;
         }
 
-        GeoModelIOHandler* GeoModelIOHandler::get_handler(
+        BoundaryModelIOHandler* BoundaryModelIOHandler::get_handler(
             const std::string& filename )
         {
             std::string ext = GEO::FileSystem::extension( filename ) ;
@@ -3486,15 +3487,15 @@ namespace RINGMesh {
         }
 
         /*
-         * Initializes the possible handlers for IO GeoModel files
+         * Initializes the possible handlers for IO BoundaryModel files
          */
-        void GeoModelIOHandler::initialize()
+        void BoundaryModelIOHandler::initialize()
         {
-            ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
-            ringmesh_register_GeoModelIOHandler_creator( BMIOHandler, "bm" );
-            ringmesh_register_GeoModelIOHandler_creator( UCDIOHandler, "inp" );
-            ringmesh_register_GeoModelIOHandler_creator( WebGLIOHandler, "html" );
-            ringmesh_register_GeoModelIOHandler_creator( ParaviewIOHandler, "paraview" );
+            ringmesh_register_BoundaryModelIOHandler_creator( MLIOHandler, "ml" ) ;
+            ringmesh_register_BoundaryModelIOHandler_creator( BMIOHandler, "bm" );
+            ringmesh_register_BoundaryModelIOHandler_creator( UCDIOHandler, "inp" );
+            ringmesh_register_BoundaryModelIOHandler_creator( WebGLIOHandler, "html" );
+            ringmesh_register_BoundaryModelIOHandler_creator( ParaviewIOHandler, "paraview" );
         }
 
     }

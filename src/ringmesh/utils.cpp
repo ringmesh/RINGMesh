@@ -13,8 +13,8 @@
  ]*/
 
 #include <ringmesh/utils.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/boundary_model_element.h>
 
 #include <geogram/basic/logger.h>
 #include <geogram/mesh/mesh.h>
@@ -33,7 +33,7 @@
 
 namespace RINGMesh {
 
-    // Copied from geo_model_builder.cpp. Still needed ?? check Geogram
+    // Copied from boundary_model_builder.cpp. Still needed ?? check Geogram
     double read_double( GEO::LineInput& in, index_t field )
     {
         double result ;
@@ -483,14 +483,14 @@ namespace RINGMesh {
     }
 
     /*!
-     * Repair the consistency between a GeoModel region
+     * Repair the consistency between a BoundaryModel region
      * and its volumetric Mesh. It repairs duplicated facets and facet orientation
-     * @param[in] region the GeoModel region
+     * @param[in] region the BoundaryModel region
      * @param[in] mesh the mesh to repair
      * @param[in] check_duplicated_facet the test of duplicated facets is optional
      */
     void Utils::check_and_repair_mesh_consistency(
-        const GeoModelElement& region,
+        const BoundaryModelElement& region,
         GEO::Mesh& mesh,
         bool check_duplicated_facet )
     {
@@ -607,7 +607,7 @@ namespace RINGMesh {
             } while( !S.empty() ) ;
         }
 
-        /// 3 - Check for consistent orientation with GeoModel
+        /// 3 - Check for consistent orientation with BoundaryModel
         GEO::MeshFacetsAABB aabb( mesh ) ;
         std::vector< bool > flip_surface( region.model().nb_surfaces(), false ) ;
         bool flip_sthg = false ;
