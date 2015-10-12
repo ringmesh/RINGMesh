@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
  *     * Neither the name of the <organization> nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr 
- *     Antoine.Mazuyer@univ-lorraine.fr 
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
  *     http://www.ring-team.org
@@ -34,68 +34,58 @@
  *     RING Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
- *     54518 VANDOEUVRE-LES-NANCY 
+ *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
-*/
+ */
 
-#ifndef __RINGMESH_TETRA_GEN__
-#define __RINGMESH_TETRA_GEN__
+#include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/common.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/io.h>
 #include <ringmesh/utils.h>
 
-#include <geogram/mesh/mesh.h>
-#include <geogram/basic/counted.h>
-#include <geogram/basic/smart_pointer.h>
-#include <geogram/basic/factory.h>
+#include <geogram/basic/logger.h>
 
-#include <vector>
+int main( int argc, char** argv )
+{
+    using namespace RINGMesh ;
 
-#ifdef USE_MG_TETRA
-    extern "C" {
-        #include <meshgems/meshgems.h>
-        #include <meshgems/tetra.h>
+    /*! @todo Comment this tests 
+     *  What is the goal and whatsoever [JP]
+     */
+    GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
+
+    GeoModel in ;
+    std::string input_model_file_name( ringmesh_test_data_path ) ;
+    input_model_file_name += "modelA1.ml" ;
+
+    if( !model_load( input_model_file_name, in ) ) {
+        return 1 ;
     }
-#endif
 
-namespace RINGMesh {
-    class GeoModelElement ;
-    class TetraGen ;
-    class WellGroup ;
+    std::string output_model_file_name( ringmesh_test_output_path ) ;
+    output_model_file_name += "modelA1_saved_out.ml" ;
+    if( !model_save( in, output_model_file_name ) ) {
+        return 1 ;
+    }
+
+    GeoModel in2 ;
+    if( !model_load( output_model_file_name, in2 ) ) {
+        return 1 ;
+    }
+    std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
+    output_model_file_name_bis += "modelA1_saved_out_bis.ml" ;
+    if( !model_save( in2, output_model_file_name_bis ) ) {
+        return 1 ;
+    }	
+
+    bool res = compare_files(
+        output_model_file_name, output_model_file_name_bis ) ;
+    if( res ) {
+        GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    } else {
+        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+    }
+
+    return !res ;
 }
-
-namespace RINGMesh {
-
-    static const std::vector< vec3 > vector_vec3 ;
-    class RINGMESH_API TetraGen: public GEO::Counted {
-        ringmesh_disable_copy( TetraGen ) ;
-    public:
-        virtual ~TetraGen() ;
-        static TetraGen* create( GEO::Mesh& tetmesh, const std::string& algo_name ) ;
-        static void initialize() ;
-
-        void set_boundaries( const GeoModelElement& region, const WellGroup* wells = nil ) ;
-        void set_internal_points( const std::vector< vec3 >& points ) ;
-
-        virtual bool tetrahedralize( bool refine = true ) = 0 ;
-
-    protected:
-        TetraGen( GEO::Mesh& tetmesh ) ;
-
-        void initialize_storage( index_t nb_points, index_t nb_tets ) ;
-        void set_point( index_t index, const double* point ) ;
-        void set_tetra( index_t index, int* tet, index_t nb_lines, index_t nb_triangles ) ;
-
-    protected:
-        GEO::Mesh& tetmesh_ ;
-        const GeoModelElement* region_ ;
-        const WellGroup* wells_ ;
-    } ;
-
-    typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
-    typedef GEO::Factory1< TetraGen, GEO::Mesh& > TetraGenFactory;
-#define ringmesh_register_tetragen(type, name) \
-    geo_register_creator(TetraGenFactory, type, name)
-}
-
-#endif

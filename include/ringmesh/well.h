@@ -47,7 +47,6 @@
 
 namespace RINGMesh {
     class BoundaryModel ;
-    class Edge ;
     class Well ;
 }
 
@@ -153,6 +152,29 @@ namespace RINGMesh {
         index_t id_ ;
         /// id in the corners_ vector the the well
         index_t corners_[2] ;
+    } ;
+
+// --------------------------------------------------------------------------
+
+    class RINGMESH_API Edge {
+    public:
+        Edge( const vec3& v0, const vec3& v1 )
+        {
+            values_[ 0 ] = v0 ;
+            values_[ 1 ] = v1 ;
+        }
+
+        const vec3& value( index_t i ) const
+        {
+            return values_[ i ] ;
+        }
+
+        vec3 barycenter() const
+        {
+            return ( values_[ 0 ] + values_[ 1 ] ) * 0.5 ;
+        }
+    private:
+        vec3 values_[2] ;
     } ;
 
 // --------------------------------------------------------------------------
@@ -270,6 +292,12 @@ namespace RINGMesh {
 
 // --------------------------------------------------------------------------
 
+    /*! 
+     * @todo Implement something more generic than WellGroups
+     * We wnat to dela with Lines of Points that might not be Well [JP]
+     *
+     * @todo Comment
+     */
     class RINGMESH_API WellGroup {
         ringmesh_disable_copy( WellGroup ) ;
     public:
