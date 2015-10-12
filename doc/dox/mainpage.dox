@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -43,15 +43,15 @@
 \mainpage
 
 RINGMesh is a programming library for geological model meshes. It includes two efficient data structures to represent
-geological meshes: the \link ringmesh_geo_model GeoModel\endlink, a data structure for a cellular representation 
+geological meshes: the \link ringmesh_boundary_model BoundaryModel\endlink, a data structure for a cellular representation 
 and the \link ringmesh_macro_mesh MacroMesh\endlink, a volumetric 
-representation of the GeoModel. 
+representation of the BoundaryModel. 
 
-- [Download](http://ring.ring-team.org/index.php/softwares/downloads/ringmesh)
+- [Download](http://ring.gocad.org/index.php/softwares/downloads/ringmesh)
 - \link ringmesh_compiling How to compile RINGMesh \endlink
 - \link ringmesh_license License and bundled third-party software \endlink
 - \link ringmesh_features RINGMesh features \endlink
-- \link ringmesh_geo_model Description of the GeoModel \endlink
+- \link ringmesh_boundary_model Description of the BoundaryModel \endlink
 - \link ringmesh_macro_mesh Description of the MacroMesh \endlink
 
 \image html ringmesh.png

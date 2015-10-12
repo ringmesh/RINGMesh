@@ -29,9 +29,9 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.ring-team.org
+ *     http://www.gocad.org
  *
- *     RING Project
+ *     GOCAD Project
  *     Ecole Nationale Supérieure de Géologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
@@ -43,8 +43,8 @@
 #ifdef RINGMESH_WITH_GRAPHICS
 
 #include <ringmesh/gfx.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/boundary_model.h>
+#include <ringmesh/boundary_model_element.h>
 #include <ringmesh/macro_mesh.h>
 
 #include <geogram/basic/logger.h>
@@ -195,12 +195,12 @@ namespace RINGMesh {
 
     } ;
 
-    GeoModelGfx::GeoModelGfx()
+    BoundaryModelGfx::BoundaryModelGfx()
         : model_( nil ), corners_(), lines_(), surfaces_()
     {
     }
 
-    GeoModelGfx::~GeoModelGfx()
+    BoundaryModelGfx::~BoundaryModelGfx()
     {
         for( index_t c = 0; c < corners_.size(); c++ ) {
             delete corners_[c] ;
@@ -214,28 +214,28 @@ namespace RINGMesh {
     }
 
     /*!
-     * Sets the GeoModel associated to the graphics
-     * @param[in] model the GeoModel
+     * Sets the BoundaryModel associated to the graphics
+     * @param[in] model the BoundaryModel
      */
-    void GeoModelGfx::set_geo_model( const GeoModel& model )
+    void BoundaryModelGfx::set_boundary_model( const BoundaryModel& model )
     {
         model_ = &model ;
         initialize() ;
     }
 
     /*!
-     * Gets the GeoModel associated to the graphics
-     * @return the GeoModel
+     * Gets the BoundaryModel associated to the graphics
+     * @return the BoundaryModel
      */
-    const GeoModel* GeoModelGfx::geo_model()
+    const BoundaryModel* BoundaryModelGfx::boundary_model()
     {
         return model_ ;
     }
 
     /*!
-     * Initializes the database according the GeoModel dimensions
+     * Initializes the database according the BoundaryModel dimensions
      */
-    void GeoModelGfx::initialize()
+    void BoundaryModelGfx::initialize()
     {
         ringmesh_debug_assert( model_ ) ;
         if( corners_.empty() && lines_.empty() && surfaces_.empty() ) {
@@ -258,7 +258,7 @@ namespace RINGMesh {
     /*!
      * Draws the corners
      */
-    void GeoModelGfx::draw_corners()
+    void BoundaryModelGfx::draw_corners()
     {
         GEO::Logger::instance()->set_quiet( true ) ;
         for( index_t c = 0; c < corners_.size(); c++ ) {
@@ -273,7 +273,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_corners_color( float r, float g, float b )
+    void BoundaryModelGfx::set_corners_color( float r, float g, float b )
     {
         for( index_t c = 0; c < corners_.size(); c++ ) {
             set_corner_color( c, r, g, b ) ;
@@ -286,7 +286,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_corner_color( index_t c, float r, float g, float b )
+    void BoundaryModelGfx::set_corner_color( index_t c, float r, float g, float b )
     {
         corners_[c]->gfx().set_points_color( r, g, b ) ;
     }
@@ -294,7 +294,7 @@ namespace RINGMesh {
      * Sets the corner visibility to all the corners
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_corners_visibility( bool b )
+    void BoundaryModelGfx::set_corners_visibility( bool b )
     {
         for( index_t c = 0; c < corners_.size(); c++ ) {
             set_corner_visibility( c, b ) ;
@@ -305,7 +305,7 @@ namespace RINGMesh {
      * @param[in] c the corner index
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_corner_visibility( index_t c, bool b )
+    void BoundaryModelGfx::set_corner_visibility( index_t c, bool b )
     {
         corners_[c]->set_vertices_visible( b ) ;
     }
@@ -313,7 +313,7 @@ namespace RINGMesh {
      * Sets the corner size to all the corners
      * @param[in] s the size
      */
-    void GeoModelGfx::set_corners_size( index_t s )
+    void BoundaryModelGfx::set_corners_size( index_t s )
     {
         for( index_t c = 0; c < corners_.size(); c++ ) {
             set_corner_size( c, s ) ;
@@ -324,7 +324,7 @@ namespace RINGMesh {
      * @param[in] c the corner index
      * @param[in] s the size
      */
-    void GeoModelGfx::set_corner_size( index_t c, index_t s )
+    void BoundaryModelGfx::set_corner_size( index_t c, index_t s )
     {
         corners_[c]->gfx().set_points_size( s ) ;
     }
@@ -332,7 +332,7 @@ namespace RINGMesh {
     /*!
      * Draws the lines
      */
-    void GeoModelGfx::draw_lines()
+    void BoundaryModelGfx::draw_lines()
     {
         GEO::Logger::instance()->set_quiet( true ) ;
         for( index_t l = 0; l < lines_.size(); l++ ) {
@@ -348,7 +348,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_edge_lines_color( float r, float g, float b )
+    void BoundaryModelGfx::set_edge_lines_color( float r, float g, float b )
     {
         for( index_t k = 0; k < lines_.size(); k++ ) {
             set_edge_line_color( k, r, g, b ) ;
@@ -361,7 +361,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_edge_line_color(
+    void BoundaryModelGfx::set_edge_line_color(
         index_t l,
         float r,
         float g,
@@ -373,7 +373,7 @@ namespace RINGMesh {
      * Sets the line visibility to all the lines
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_edge_lines_visibility( bool b )
+    void BoundaryModelGfx::set_edge_lines_visibility( bool b )
     {
         for( index_t l = 0; l < lines_.size(); l++ ) {
             set_edge_line_visibility( l, b ) ;
@@ -384,7 +384,7 @@ namespace RINGMesh {
      * @param[in] l the line index
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_edge_line_visibility( index_t l, bool b )
+    void BoundaryModelGfx::set_edge_line_visibility( index_t l, bool b )
     {
         lines_[l]->set_edges_visible( b ) ;
     }
@@ -392,7 +392,7 @@ namespace RINGMesh {
      * Sets the edge line size to all the lines
      * @param[in] s the size
      */
-    void GeoModelGfx::set_edge_lines_size( index_t s )
+    void BoundaryModelGfx::set_edge_lines_size( index_t s )
     {
         for( index_t l = 0; l < lines_.size(); l++ ) {
             set_edge_line_size( l, s ) ;
@@ -403,7 +403,7 @@ namespace RINGMesh {
      * @param[in] l the line index
      * @param[in] s the size
      */
-    void GeoModelGfx::set_edge_line_size( index_t l, index_t s )
+    void BoundaryModelGfx::set_edge_line_size( index_t l, index_t s )
     {
         lines_[l]->gfx().set_mesh_width( s ) ;
     }
@@ -413,7 +413,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_vertex_lines_color( float r, float g, float b )
+    void BoundaryModelGfx::set_vertex_lines_color( float r, float g, float b )
     {
         for( index_t k = 0; k < lines_.size(); k++ ) {
             set_vertex_line_color( k, r, g, b ) ;
@@ -426,7 +426,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_vertex_line_color(
+    void BoundaryModelGfx::set_vertex_line_color(
         index_t l,
         float r,
         float g,
@@ -438,7 +438,7 @@ namespace RINGMesh {
      * Sets the vertex line visibility to all the lines
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_vertex_lines_visibility( bool b )
+    void BoundaryModelGfx::set_vertex_lines_visibility( bool b )
     {
         for( index_t l = 0; l < lines_.size(); l++ ) {
             set_vertex_line_visibility( l, b ) ;
@@ -449,7 +449,7 @@ namespace RINGMesh {
      * @param[in] l the line index
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_vertex_line_visibility( index_t l, bool b )
+    void BoundaryModelGfx::set_vertex_line_visibility( index_t l, bool b )
     {
         lines_[l]->set_vertices_visible( b ) ;
     }
@@ -457,7 +457,7 @@ namespace RINGMesh {
      * Sets the vertex line size to all the lines
      * @param[in] s the size
      */
-    void GeoModelGfx::set_vertex_lines_size( index_t s )
+    void BoundaryModelGfx::set_vertex_lines_size( index_t s )
     {
         for( index_t l = 0; l < lines_.size(); l++ ) {
             set_vertex_line_size( l, s ) ;
@@ -468,7 +468,7 @@ namespace RINGMesh {
      * @param[in] l the line index
      * @param[in] s the size
      */
-    void GeoModelGfx::set_vertex_line_size( index_t l, index_t s )
+    void BoundaryModelGfx::set_vertex_line_size( index_t l, index_t s )
     {
         lines_[l]->gfx().set_points_size( s ) ;
     }
@@ -476,7 +476,7 @@ namespace RINGMesh {
     /*!
      * Draws the surfaces
      */
-    void GeoModelGfx::draw_surfaces()
+    void BoundaryModelGfx::draw_surfaces()
     {
         GEO::Logger::instance()->set_quiet( true ) ;
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
@@ -493,7 +493,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_surfaces_color( float r, float g, float b )
+    void BoundaryModelGfx::set_surfaces_color( float r, float g, float b )
     {
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             set_surface_color( s, r, g, b ) ;
@@ -506,7 +506,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_surface_color( index_t s, float r, float g, float b )
+    void BoundaryModelGfx::set_surface_color( index_t s, float r, float g, float b )
     {
         surfaces_[s]->gfx().set_surface_color( r, g, b ) ;
     }
@@ -516,7 +516,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_backface_surfaces_color( float r, float g, float b )
+    void BoundaryModelGfx::set_backface_surfaces_color( float r, float g, float b )
     {
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             set_backface_surface_color( s, r, g, b ) ;
@@ -529,7 +529,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_backface_surface_color(
+    void BoundaryModelGfx::set_backface_surface_color(
         index_t s,
         float r,
         float g,
@@ -541,7 +541,7 @@ namespace RINGMesh {
      * Sets the surface visibility to all the surfaces
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_surfaces_visibility( bool b )
+    void BoundaryModelGfx::set_surfaces_visibility( bool b )
     {
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             set_surface_visibility( s, b ) ;
@@ -552,7 +552,7 @@ namespace RINGMesh {
      * @param[in] s the surface index
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_surface_visibility( index_t s, bool b )
+    void BoundaryModelGfx::set_surface_visibility( index_t s, bool b )
     {
         surfaces_[s]->set_surface_visible( b ) ;
     }
@@ -562,7 +562,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_mesh_surfaces_color( float r, float g, float b )
+    void BoundaryModelGfx::set_mesh_surfaces_color( float r, float g, float b )
     {
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             set_mesh_surface_color( s, r, g, b ) ;
@@ -575,7 +575,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_mesh_surface_color(
+    void BoundaryModelGfx::set_mesh_surface_color(
         index_t s,
         float r,
         float g,
@@ -587,7 +587,7 @@ namespace RINGMesh {
      * Sets the mesh surface visibility to all the surfaces
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_mesh_surfaces_visibility( bool b )
+    void BoundaryModelGfx::set_mesh_surfaces_visibility( bool b )
     {
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             set_mesh_surface_visibility( s, b ) ;
@@ -598,7 +598,7 @@ namespace RINGMesh {
      * @param[in] s the surface index
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_mesh_surface_visibility( index_t s, bool b )
+    void BoundaryModelGfx::set_mesh_surface_visibility( index_t s, bool b )
     {
         surfaces_[s]->gfx().set_show_mesh( b ) ;
     }
@@ -606,7 +606,7 @@ namespace RINGMesh {
      * Sets the mesh surface size to all the surfaces
      * @param[in] size the size
      */
-    void GeoModelGfx::set_mesh_surfaces_size( index_t size )
+    void BoundaryModelGfx::set_mesh_surfaces_size( index_t size )
     {
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             set_mesh_surface_size( s, size ) ;
@@ -617,7 +617,7 @@ namespace RINGMesh {
      * @param[in] s the surface index
      * @param[in] size the size
      */
-    void GeoModelGfx::set_mesh_surface_size( index_t s, index_t size )
+    void BoundaryModelGfx::set_mesh_surface_size( index_t s, index_t size )
     {
         surfaces_[s]->gfx().set_mesh_width( size ) ;
     }
@@ -627,7 +627,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_vertex_surfaces_color( float r, float g, float b )
+    void BoundaryModelGfx::set_vertex_surfaces_color( float r, float g, float b )
     {
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             set_vertex_surface_color( s, r, g, b ) ;
@@ -640,7 +640,7 @@ namespace RINGMesh {
      * @param[in] g the green component of the color in [0.0, 1.0]
      * @param[in] b the blue component of the color in [0.0, 1.0]
      */
-    void GeoModelGfx::set_vertex_surface_color(
+    void BoundaryModelGfx::set_vertex_surface_color(
         index_t s,
         float r,
         float g,
@@ -652,7 +652,7 @@ namespace RINGMesh {
      * Sets the vertex surface visibility to all the surfaces
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_vertex_surfaces_visibility( bool b )
+    void BoundaryModelGfx::set_vertex_surfaces_visibility( bool b )
     {
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             set_vertex_surface_visibility( s, b ) ;
@@ -663,7 +663,7 @@ namespace RINGMesh {
      * @param[in] s the surface index
      * @param[in] b the visibility
      */
-    void GeoModelGfx::set_vertex_surface_visibility( index_t s, bool b )
+    void BoundaryModelGfx::set_vertex_surface_visibility( index_t s, bool b )
     {
         surfaces_[s]->set_vertices_visible( b ) ;
     }
@@ -671,7 +671,7 @@ namespace RINGMesh {
      * Sets the vertex surface size to all the surfaces
      * @param[in] size the size
      */
-    void GeoModelGfx::set_vertex_surfaces_size( index_t size )
+    void BoundaryModelGfx::set_vertex_surfaces_size( index_t size )
     {
         for( index_t s = 0; s < surfaces_.size(); s++ ) {
             set_vertex_surface_size( s, size ) ;
@@ -682,7 +682,7 @@ namespace RINGMesh {
      * @param[in] s the surface index
      * @param[in] size the size
      */
-    void GeoModelGfx::set_vertex_surface_size( index_t s, index_t size )
+    void BoundaryModelGfx::set_vertex_surface_size( index_t s, index_t size )
     {
         surfaces_[s]->gfx().set_points_size( size ) ;
     }
