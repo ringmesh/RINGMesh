@@ -208,11 +208,11 @@ namespace RINGMesh {
         temp.reserve( 6 ) ;
         std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-            for( index_t c = mesh.facets.corners_begin( f );
-                 c < mesh.facets.corners_end( f ); c++ ) {
-                stars[ mesh.facet_corners.vertex( c ) ].push_back( f ) ;
+            for( index_t v = 0; v < mesh.facets.nb_vertices( f ); v++ ) {
+                stars[ mesh.facets.vertex( f, v ) ].push_back( f ) ;
             }
         }
+
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
             index_t surface_id = attribute[ f ] ;
             for( index_t c = mesh.facets.corners_begin( f );
@@ -433,20 +433,20 @@ namespace RINGMesh {
 
             status_t ret = tetra_mesh_boundary( tms_ ) ;
             if( ret != STATUS_OK ) {
-                std::cout << "Encountered a problem while meshing boundary..."
+                GEO::Logger::err( "TetraGen" ) << "Encountered a problem while meshing boundary..."
                     << std::endl ;
                 return false ;
             }
             if( refine ) {
                 ret = tetra_insert_volume_vertices( tms_ ) ;
                 if( ret != STATUS_OK ) {
-                    std::cout << "Encountered a problem while meshing inside..."
+                    GEO::Logger::err( "TetraGen" ) << "Encountered a problem while meshing inside..."
                         << std::endl ;
                     return false ;
                 }
                 ret = tetra_optimise_volume_regular( tms_ ) ;
                 if( ret != STATUS_OK ) {
-                    std::cout << "Encountered a problem while meshing inside..."
+                    GEO::Logger::err( "TetraGen" ) << "Encountered a problem while meshing inside..."
                         << std::endl ;
                     return false ;
                 }
@@ -641,9 +641,9 @@ namespace RINGMesh {
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 for( index_t e = 0; e < well_edges[w].size(); e++ ) {
                     tetmesh_.edges.set_vertex( cur_edge, 0,
-                        unique_indices[cur_vertex_id++ ] ) ;
+                        starting_index + unique_indices[cur_vertex_id++ ] ) ;
                     tetmesh_.edges.set_vertex( cur_edge, 1,
-                        unique_indices[cur_vertex_id++ ] ) ;
+                        starting_index + unique_indices[cur_vertex_id++ ] ) ;
                     edge_region[cur_edge++ ] = w ;
                 }
             }
@@ -662,7 +662,9 @@ namespace RINGMesh {
                 ringmesh_debug_assert( surface.is_triangle( t ) ) ;
                 for( index_t v = 0; v < 3; v++ ) {
                     tetmesh_.facets.set_vertex( offset_facets + t, v,
-                        unique_indices[offset_vertices + surface.surf_vertex_id( t, v )] ) ;
+                        starting_index
+                            + unique_indices[offset_vertices
+                                + surface.surf_vertex_id( t, v )] ) ;
                 }
                 surface_region[offset_facets + t] = surface.gme_id().index ;
 
