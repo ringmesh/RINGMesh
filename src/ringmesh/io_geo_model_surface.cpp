@@ -163,7 +163,7 @@ namespace RINGMesh {
      */
     void save_coordinate_system( std::ostream& out )
     {
-        out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
+        out << "RING_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
             << std::endl << "AXIS_NAME \"X\" \"Y\" \"Z\"" << std::endl
             << "AXIS_UNIT \"m\" \"m\" \"m\"" << std::endl << "ZPOSITIVE Elevation"
             << std::endl << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
@@ -222,7 +222,7 @@ namespace RINGMesh {
         out.precision( 16 ) ;
 
         // Print Gocad Model3d headers
-        out << "GOCAD Model3d 1" << std::endl << "HEADER {" << std::endl << "name: "
+        out << "RING Model3d 1" << std::endl << "HEADER {" << std::endl << "name: "
             << M.name() << std::endl << "}" << std::endl ;
 
         save_coordinate_system( out ) ;
@@ -268,7 +268,7 @@ namespace RINGMesh {
             const GME& tsurf = M.one_interface( i ) ;
 
             // Header
-            out << "GOCAD TSurf 1" << std::endl << "HEADER {" << std::endl << "name:"
+            out << "RING TSurf 1" << std::endl << "HEADER {" << std::endl << "name:"
                 << tsurf.name() << std::endl << "name_in_model_list:" << tsurf.name()
                 << std::endl << "}" << std::endl ;
             save_coordinate_system( out ) ;

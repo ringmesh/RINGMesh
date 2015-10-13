@@ -6,7 +6,7 @@
  * - reproduced, published, or disclosed to other,
  * - distributed or displayed,
  * - used for purposes or on Sites other than described
- *   in the GOCAD Advancement Agreement,
+ *   in the RING Advancement Agreement,
  * without the prior written authorization of the ASGA. Licencee
  * agrees to attach or embed this Notice on all copies of the program,
  * including partial copies or modified versions thereof.
