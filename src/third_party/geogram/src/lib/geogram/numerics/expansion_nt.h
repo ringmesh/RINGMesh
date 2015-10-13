@@ -76,10 +76,9 @@ namespace GEO {
          * \param[in] x the value to initialize this expansion.
          */
         expansion_nt(double x = 0.0) {
-            rep_ = expansion::new_expansion_on_heap(2);
+            rep_ = expansion::new_expansion_on_heap(1);
             expansion::ref_expansion(rep_);
             rep()[0] = x;
-            rep()[1] = 0.0;
             rep().set_length(1);
         }
 
@@ -93,6 +92,21 @@ namespace GEO {
             expansion::ref_expansion(rep_);
         }
 
+#if __cplusplus > 199711L
+
+        /**
+         * \brief Move-constructor.
+         * \details If c++0x11 is supported, the 'move constructor'
+         *  optimizes function returns. It 'steals' the contents
+         *  of \p rhs.
+         * \param[in] rhs the expansion to be moved to this one
+         */
+        expansion_nt(expansion_nt&& rhs) : rep_(rhs.rep_) {
+            rhs.rep_ = nil;
+        }
+
+#endif
+        
         /**
          * \brief Assignment operator.
          * \details The stored expansion is shared with \p rhs.
@@ -336,12 +350,13 @@ namespace GEO {
             return rep()[i];
         }
         
-    protected:
         /**
          * \brief Constructs a new expansion_nt from an expansion.
          * \details Used internally
          * \param[in] rep should be a reference-counted expansion, created
          *  by new_expansion_on_heap(). Its reference counter is incremented.
+         * \note most client code will not need to use this
+         *  (advanced use only).
          */
         expansion_nt(expansion* rep) :
             rep_(rep) {
@@ -353,6 +368,8 @@ namespace GEO {
          *  expansion_nt.
          * \return a reference to the expansion that represents
          *  this expansion_nt
+         * \note most client code will not need to use this
+         *  (advanced use only).
          */
         expansion& rep() {
             return *rep_;
@@ -363,6 +380,8 @@ namespace GEO {
          *  this expansion_nt.
          * \return a const reference to the expansion that represents
          *  this expansion_nt
+         * \note most client code will not need to use this
+         *  (advanced use only).
          */
         const expansion& rep() const {
             return *rep_;
@@ -373,6 +392,8 @@ namespace GEO {
          *  shared by other instances of expansion_nt.
          * \return true if other expansion_nt%s share the same representation as
          *  this expansion_nt, false otherwise.
+         * \note most client code will not need to use this
+         *  (advanced use only).
          */
         bool is_shared() const {
             return expansion::expansion_refcount(rep_) > 1;

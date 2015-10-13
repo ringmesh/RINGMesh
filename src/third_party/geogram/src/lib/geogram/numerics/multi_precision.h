@@ -198,7 +198,7 @@ namespace GEO {
      *  through the \ref expansion_nt class (expansion number type, that
      *  overloads operators). 
      */
-    class expansion {
+    class GEOGRAM_API expansion {
     public:
         /**
          * \brief Gets the length of this expansion.

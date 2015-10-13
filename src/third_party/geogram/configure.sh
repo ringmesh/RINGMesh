@@ -57,7 +57,7 @@ NAME
     configure.sh
 
 SYNOPSIS
-    Prepares the build environment for Vorpaline.
+    Prepares the build environment for Geogram/Vorpaline.
     
     - For Unix builds, the script creates 2 build trees for Debug and Release
     build in a 'build' sub directory under the project root.
@@ -115,13 +115,13 @@ if [ -z "$os" ]; then
     os=`uname -a`
     case "$os" in
         Linux*x86_64*)
-            os=Linux64-gcc
+            os=Linux64-gcc-dynamic
             ;;
         Linux*amd64*)
-            os=Linux64-gcc
+            os=Linux64-gcc-dynamic
             ;;
         Linux*i586*|Linux*i686*)
-            os=Linux32-gcc
+            os=Linux32-gcc-dynamic
             ;;
         *)
             echo "Error: OS not supported: $os"
@@ -154,11 +154,11 @@ for config in Release Debug; do
 done
 
 echo
-echo ============== Vorpaline build configured ==================
+echo ============== Geogram build configured ==================
 echo
 
 cat << EOF
-To build vorpaline:
+To build geogram:
   - go to build/$os-Release or build/$os-Debug
   - run 'make' or 'cmake --build .'
 

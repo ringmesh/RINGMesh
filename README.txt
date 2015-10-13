@@ -1,7 +1,7 @@
 Instructions for compiling RINGMesh
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
-You will need CMake (version >= 2.8.11). There is no other dependancy (everything
+You will need CMake (version >= 2.8.11). There is no other dependency (everything
  you need is shipped with RINGMesh). Follow the Linux or Windows instructions below.
 
 Linux
@@ -10,22 +10,16 @@ Linux
 Configuring RINGMesh
 ------------------
 
-Go to RINGMesh directory and then copy the file CMakeOptions.txt.sample into
-CMakeOptions.txt: cp CMakeOptions.txt.sample CMakeOptions.txt.
+Execute cmake command in a RINGMesh/build directory.
 
-If you need to use the graphic part of RINGMesh (visualization of RINGMesh::BoundaryModel
-and RINGMesh::MacroMesh) set the variable RINGMESH_WITH_GRAPHICS to TRUE (uncomment the line).
-
-Then to configure: ./configure.sh. This will first configure and compile Geogram 
-and then it will generate dynamic libraries.
 
 Compiling RINGMesh
 ------------------
 
-- cd build/ringmesh/Linux64-gcc-Release
+- cd build/ringmesh/Release
 - make [-j4]
 
-To build in debug, go to build/ringmesh/Linux64-gcc-Debug instead.
+To build in debug, go to build/ringmesh/Debug instead.
 
 Eclipse-cdt project is provided (.project and .cproject). You can import RINGMesh into
 Eclipse: File>Import...>General>Existing Projects into Workspace. Click on next, then
@@ -50,15 +44,11 @@ Windows
 Configuring RINGMesh
 ------------------
 
-Go to RINGMesh directory, open and save the CMakeOptions.txt.sample file as CMakeOptions.txt.
-To use the graphic components of RINGMesh (visualization of RINGMesh::BoundaryModel
-and RINGMesh::MacroMesh) set the variable RINGMESH_WITH_GRAPHICS to TRUE (uncomment the line).
+Launch CMake GUI, indicate where is the source code as the path to RINGMesh root and 
+where to put the binaries as this_root/build/ringmesh.
+Configuration options can be set in using the interface.
 
-To configure RINGMesh launch the configure.bat or by command line: call ./configure.bat.
-By default, the project will be configured for Visual Studio 2010 in 64bits.
-You can specify a different platform by adding it as an argument when executing
-the configuration script in command line.
-The supported platforms are :
+RINGMesh has previously been compiled with:
 - Visual Studio 10 2010 Win64
 - Visual Studio 11 2012 Win64
 - Visual Studio 12 2013 Win64
