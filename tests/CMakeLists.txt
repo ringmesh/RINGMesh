@@ -36,29 +36,32 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
+
 # CMakeLists for RINGMesh tests
 # This file is included by the root CMakeList of the RINGMesh project 
 
-set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests/src)
+# Custom configuration of data directories
+# TODO Test that they are correctly passed on on UNIX
+set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
+set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output" CACHE PATH "Output data location")
 
+if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
+	message(WARNING Defined data directory for tests does not exists, using default tests/data)
+	SET(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" FORCE)
+endif()	
+		
 # Create the directory for the outputs of the tests
 # It is output in the configuration file as well as the test input data directory 
-set(test_output_directory ${PROJECT_BINARY_DIR}/tests/output)
-file(MAKE_DIRECTORY ${test_output_directory}) 
+file(MAKE_DIRECTORY ${TEST_DATA_OUTPUT_DIRECTORY}) 
 
 # Configure a header file to pass some of the CMake settings
 # to the source code
+set(test_config_file_in ${TEST_SOURCE_DIRECTORY}/ringmesh_tests_config.h.in)
 set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
-configure_file(
-  "${TEST_DIRECTORY}/ringmesh_tests_config.h.in"
-   ${test_config_file}
-)
-
-# The libraries with which the test are supposed to link
-set(RINGMESH_LIBS geogram ringmesh)
+configure_file(${test_config_file_in} ${test_config_file})
 
 # Get the name of the test files 
-file(GLOB TESTS RELATIVE ${TEST_DIRECTORY} "${TEST_DIRECTORY}/*.cpp")
+file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
 
 # For all the test files found
 foreach(testsourcefile ${TESTS})
@@ -66,7 +69,7 @@ foreach(testsourcefile ${TESTS})
     get_filename_component(testname ${testsourcefile} NAME_WE)
     
     # Add the target for that file
-    add_executable(${testname} ${TEST_DIRECTORY}/${testsourcefile})
+    add_executable(${testname} ${testsourcefile} ${test_config_file} ${test_config_file_in})
     
     # Link RINGMesh Make sure YourLib is linked to each app
     target_link_libraries(${testname} geogram RINGMesh)
