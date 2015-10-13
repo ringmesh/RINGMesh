@@ -48,18 +48,17 @@
 #include <geogram/basic/logger.h>
 
 
-/*! Load and fix a given structural model file 
+/*! 
+ * Load and fix a given structural model file.
+ * @todo Make this executable generic by setting
+ * the file name as an argument of the command
  */
 int main( int argc, char** argv ) {
     using namespace RINGMesh ;
-
     GEO::Logger::out( "RINGMesh Test" ) << "Loading and fixing annot model" << std::endl ;
     
     GeoModel M ;
-    std::string file_name( ringmesh_test_data_path ) ;
-
-    /*! @todo Make this executable generic by setting 
-     *   the file name as an argument of the command */
+    std::string file_name( ringmesh_test_data_path ) ;  
     file_name += "annot.ml" ;
 
     // Set the debug directory for the validity checks 
@@ -75,6 +74,9 @@ int main( int argc, char** argv ) {
             GEO::Logger::out( "RINGMesh Test" ) << "Invalid geological model "
                 << M.name() << " has been successfully fixed " << std::endl ;
             print_model( M ) ;
+            std::string fixed_file_name( ringmesh_test_output_path ) ;
+            fixed_file_name += "annot_repaired.ml" ;
+            model_save( M, fixed_file_name ) ;
             return 0 ;
         } else {
             GEO::Logger::out( "RINGMesh Test" ) << "Fixing the invalid geological model "
@@ -88,5 +90,4 @@ int main( int argc, char** argv ) {
         print_model( M ) ;
         return 0 ;
     }      
-
 }

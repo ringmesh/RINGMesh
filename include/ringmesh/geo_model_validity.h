@@ -107,8 +107,14 @@ namespace RINGMesh {
     */
     static void set_debug_directory( const std::string& directory )
     {
-        if( GEO::FileSystem::is_directory( directory ) ) {
-            validity_errors_directory = directory ;
+        // If trailing / or \ is not removed, tests fails on Windows
+        std::string copy( directory ) ;
+        if( copy.back() == '/' ||
+            copy.back() == '\\' ) {
+            copy.pop_back() ;
+        } 
+        if( GEO::FileSystem::is_directory( copy ) ) {
+            validity_errors_directory = copy + '/' ;
         }         
     }
 
