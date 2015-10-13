@@ -40,7 +40,7 @@
 # Root CMakeList of RINGMesh project
 cmake_minimum_required(VERSION 2.8)
 
- #------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------
 # Options of the RINGMesh project 
 # They can be set using CMake GUI, or in command line: cmake -D<var>:<type>=<value> MyProjectFolder
 
@@ -174,7 +174,7 @@ include_directories(${PROJECT_BINARY_DIR})
 # Set the path to Geogram code
 set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
 
-# Se tthe path to where we are going to build Geogram
+# Set the path to where we are going to build Geogram
 if(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram)
 else(WIN32)
@@ -229,7 +229,8 @@ link_directories(${GEOGRAM_PATH_BIN}/lib)
 
 #------------------------------------------------------------------------------------------------    
  # Get MG-Tetra if a path is given
-if(not ${MG_TETRA} STREQUAL "")   
+if(MG_TETRA)   
+  set(USE_MG_TETRA ON)
   message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
   include_directories(${MG_TETRA}/include)
  
