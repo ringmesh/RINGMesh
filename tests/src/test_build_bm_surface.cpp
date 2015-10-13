@@ -47,6 +47,11 @@
 #include <ringmesh/geo_model_builder.h>
 
 
+/*! 
+ * Test the creation of a GeoModel from a conformal surface mesh 
+ * @todo Test on other datasets: nested spheres.
+ */
+
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
