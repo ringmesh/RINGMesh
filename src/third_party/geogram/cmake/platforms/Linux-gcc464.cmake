@@ -15,5 +15,5 @@
 set(CMAKE_CXX_COMPILER /opt/gcc464/bin/g++464)
 set(CMAKE_C_COMPILER /opt/gcc464/bin/gcc464)
 
-include(${CMAKE_SOURCE_DIR}/cmake/platforms/Linux-gcc.cmake)
+include(${GEOGRAM_SOURCE_DIR}/cmake/platforms/Linux-gcc.cmake)
 

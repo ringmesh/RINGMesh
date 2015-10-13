@@ -2600,7 +2600,7 @@ namespace GEO {
         const MeshIOFlags& ioflags
     ) {
         Logger::out("I/O")
-            << "Loading input file " << filename << "..."
+            << "Loading file " << filename << "..."
             << std::endl;
 
         M.clear();

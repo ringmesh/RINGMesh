@@ -32,7 +32,7 @@
  *     http://www.gocad.org
  *
  *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *     Ecole Nationale Superieure de Geologie - Georessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -71,8 +71,10 @@ namespace RINGMesh {
 
 #ifdef RINGMESH_DEBUG
   #define ringmesh_debug_assert( x ) ringmesh_assert( x )
+  #define ringmesh_debug_assert_not_reached ringmesh_assert_not_reached
 #else
   #define ringmesh_debug_assert( x )
+  #define ringmesh_debug_assert_not_reached
 #endif
 
 #endif

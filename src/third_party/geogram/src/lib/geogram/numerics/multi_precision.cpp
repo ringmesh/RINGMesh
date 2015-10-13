@@ -50,9 +50,8 @@ namespace {
 
     using namespace GEO;
 
-    // TODO: a faster implementation with a memory pool
-    // -> Seeing the stats, it does not seem to be worth it.
-
+    /************************************************************************/
+    
     bool expansion_length_stat_ = false;
     std::vector<index_t> expansion_length_histo_;
 
@@ -80,6 +79,115 @@ namespace {
 
     /************************************************************************/
 
+    /**
+     * \brief An optimized memory allocator for objects of 
+     *  small size.
+     * \details It is used by the high-level class expansion_nt
+     *  that allocates expansion objects on the heap. PCK predicates
+     *  do not use it (they use the more efficient low-level API 
+     *  that allocates expansion objects on the stack).
+     */
+    class Pools {
+    public:
+
+        /**
+         * \brief Creates a new Pools object
+         */
+        Pools() : pools_(1024,static_cast<void*>(0)) {
+            chunks_.reserve(1024);
+        }
+
+        /**
+         * \brief Pools destructor.
+         */
+        ~Pools() {
+            for(index_t i=0; i<chunks_.size(); ++i) {
+                delete[] chunks_[i];
+            }
+        }
+
+        /**
+         * \brief Allocates an element.
+         * \param[in] size size in bytes of the element to be allocated
+         * \return a pointer to the allocated element
+         * \note elements allocated with fast_malloc() should be deallocated
+         *  with fast_free()
+         */
+        void* malloc(size_t size) {
+            if(size >= pools_.size()) {
+                return ::malloc(size);
+            }
+            if(pools_[size] == nil) {
+                new_chunk(size);
+            }
+            void* result = pools_[size];
+            pools_[size] = *static_cast<void**>(pools_[size]);
+            return result;
+        }
+
+        /**
+         * \brief Deallocates an element.
+         * \param[in] ptr a pointer to the element to be deallocated
+         * \param[in] size number of bytes of the element, as specified
+         *   in the call to fast_malloc() that allocated it
+         */
+        void free(void* ptr, size_t size) {
+            if(size >= pools_.size()) {
+                ::free(ptr);
+                return;
+            }
+            *static_cast<void**>(ptr) = pools_[size];
+            pools_[size] = ptr;
+        }
+
+        
+    protected:
+        /**
+         * \brief Number of elements in each individual chunk
+         *  allocation.
+         */
+        static const index_t POOL_CHUNK_SIZE = 512;
+        
+        /**
+         * \brief Allocates a new chunk of elements and prepends
+         *  it to the free list for allocations of the specified 
+         *  size.
+         * \param[in] size_in size of the elements to be allocated.
+         */
+        void new_chunk(size_t size_in) {
+            size_t size = (size_in / 8 + 1)*8; // Align memory.
+            Memory::pointer chunk = new Memory::byte[size * POOL_CHUNK_SIZE];
+            for(index_t i=0; i<POOL_CHUNK_SIZE-1; ++i) {
+                Memory::pointer cur = chunk + size * i;
+                Memory::pointer next = cur + size;
+                *reinterpret_cast<void**>(cur) = next;
+            }
+            *reinterpret_cast<void**>(chunk + (size-1)*POOL_CHUNK_SIZE) = pools_[size_in];
+            pools_[size_in] = chunk;
+            chunks_.push_back(chunk);
+        }
+
+        
+    private:
+        /**
+         * \brief The free lists of the pools. Index corresponds
+         *  to element size in bytes.
+         */
+        std::vector<void*> pools_;
+        
+        /**
+         * \brief Pointers to all the allocated chunks.
+         * \details Used by the destructor to release all the
+         *   allocated memory on exit.
+         */
+        std::vector<Memory::pointer> chunks_;
+
+    };
+
+    static Pools pools_;
+    
+    /************************************************************************/
+    
     /**
      * \brief Computes the sum of two doubles into a length 2 expansion.
      * \details By Jonathan Shewchuk.
@@ -639,7 +747,7 @@ namespace GEO {
             Process::release_spinlock(lock);
         }
         Memory::pointer addr = Memory::pointer(
-            malloc(expansion::bytes(capa) + sizeof(index_t))
+            pools_.malloc(expansion::bytes(capa) + sizeof(index_t))
         );
         expansion* result = new(addr + sizeof(index_t))expansion(capa);
         expansion_refcount(result) = 0;
@@ -647,7 +755,9 @@ namespace GEO {
     }
 
     void expansion::delete_expansion_on_heap(expansion* e) {
-        free(expansion_baddr(e));
+        // e->capacity()-1 because we added a "sentry" in expansion's constructor.
+        size_t size_in_bytes = expansion::bytes(e->capacity()-1) + sizeof(index_t);        
+        pools_.free(expansion_baddr(e), size_in_bytes);
     }
 
     // ====== Initialization from expansion and double ===============
@@ -751,8 +861,6 @@ namespace GEO {
             two_two_product(a.data(), b.data(), x_);
             set_length(8);
         } else {
-            // TODO: should we split the shortest or the longest
-            // expansion ? 
             // Recursive distillation: the shortest expansion
             // is split into two parts.
             if(a.length() < b.length()) {

@@ -619,24 +619,6 @@ namespace GEO {
          */
         virtual void delete_VBOs();
 
-
-        /**
-         * \brief Updates the content of an OpenGL buffer object, 
-         *   and resizes it if need be.
-         * \param[in,out] buffer_id OpenGL opaque id of the buffer object. 
-         *   0 means uninitialized.
-         *   may be changed on exit if the buffer needed to be resized.
-         * \param[in] target buffer object target 
-         *   (GL_ARRAY_BUFFER, GL_INDEX_BUFFER ...)
-         * \param[in] new size of the buffer data, in bytes
-         * \param[in] data pointer to the data to be copied into the buffer, 
-         *  of length new_size
-         */
-        static void update_buffer_object(
-            GLuint& buffer_id, GLenum target, size_t new_size, const void* data
-        );
-
-
         /**
          * \brief Tests whether current OpenGL polygon mode is filled.
          * \retval true if OpenGL polygon mode is filled
