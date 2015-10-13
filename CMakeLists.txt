@@ -217,7 +217,8 @@ link_directories(${GEOGRAM_PATH_BIN}/lib)
 
 #------------------------------------------------------------------------------------------------    
 # Get MG-Tetra if a path is given
-if(not ${MG_TETRA} STREQUAL "")   
+if(MG_TETRA)   
+  set(USE_MG_TETRA ON)
   message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
   include_directories(${MG_TETRA}/include)
  

@@ -48,20 +48,19 @@
 #ifndef __RINGMESH_CONFIG__
 #define __RINGMESH_CONFIG__
  
- namespace RINGMesh {
+namespace RINGMesh {
  
     #define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR@
     #define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR@
 
-    /* Optional components with which RINGMesh can be compiled */
-    #cmakedefine USE_MG_TETRA
-    #cmakedefine USE_OPENMP
-    #cmakedefine USE_MG_TETRA
+	/* Optional components with which RINGMesh can be compiled */
+	#cmakedefine USE_MG_TETRA
+	#cmakedefine USE_OPENMP
 
-    /* Optional components of RINGMesh */
-    #cmakedefine RINGMESH_WITH_GRAPHICS
-    #cmakedefine RINGMESH_WITH_UTILITIES
-    #cmakedefine RINGMESH_WITH_TESTS
+	/* Optional components of RINGMesh */
+	#cmakedefine RINGMESH_WITH_GRAPHICS
+	#cmakedefine RINGMESH_WITH_UTILITIES
+	#cmakedefine RINGMESH_WITH_TESTS
 
 }
 #endif
