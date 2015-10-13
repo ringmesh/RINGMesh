@@ -162,7 +162,6 @@ namespace RINGMesh {
 
         GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
                                              surface_att_name ) ;
-        std::cout << "test1" << std::endl ;
 
         /// 0 - Remove duplicated facets (optionnal)
         if( check_duplicated_facet ) {
@@ -204,19 +203,15 @@ namespace RINGMesh {
             mesh.facets.connect() ;
         }
 
-        std::cout << "test2" << std::endl ;
-
         /// 1 - Check facet adjacencies for non-manifold surfaces
         std::vector< index_t > temp ;
         temp.reserve( 6 ) ;
         std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
             for( index_t v = 0; v < mesh.facets.nb_vertices( f ); v++ ) {
-                std::cout << mesh.vertices.nb() << "  =  " << mesh.facets.vertex( f, v ) << std::endl ;
                 stars[ mesh.facets.vertex( f, v ) ].push_back( f ) ;
             }
         }
-        std::cout << "test22" << std::endl ;
 
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
             index_t surface_id = attribute[ f ] ;
@@ -251,8 +246,6 @@ namespace RINGMesh {
             }
         }
 
-        std::cout << "test3" << std::endl ;
-
         /// 2 - Reorient in the same direction using propagation
         std::vector< bool > facet_visited( mesh.facets.nb(), false ) ;
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
@@ -277,8 +270,6 @@ namespace RINGMesh {
                 }
             } while( !S.empty() ) ;
         }
-
-        std::cout << "test4" << std::endl ;
 
         /// 3 - Check for consistent orientation with GeoModel
         GEO::MeshFacetsAABB aabb( mesh ) ;
@@ -324,11 +315,8 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize( bool refine )
         {
-            GEO::mesh_save( tetmesh_, "toto.meshb" ) ;
             GEO::mesh_tetrahedralize( tetmesh_, false, refine, 1.0 ) ;
-            GEO::mesh_save( tetmesh_, "toto2.meshb" ) ;
             check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
-            std::cout << "FIN" << std::endl ;
             return true ;
         }
     } ;
@@ -445,20 +433,20 @@ namespace RINGMesh {
 
             status_t ret = tetra_mesh_boundary( tms_ ) ;
             if( ret != STATUS_OK ) {
-                std::cout << "Encountered a problem while meshing boundary..."
+                GEO::Logger::err( "TetraGen" ) << "Encountered a problem while meshing boundary..."
                     << std::endl ;
                 return false ;
             }
             if( refine ) {
                 ret = tetra_insert_volume_vertices( tms_ ) ;
                 if( ret != STATUS_OK ) {
-                    std::cout << "Encountered a problem while meshing inside..."
+                    GEO::Logger::err( "TetraGen" ) << "Encountered a problem while meshing inside..."
                         << std::endl ;
                     return false ;
                 }
                 ret = tetra_optimise_volume_regular( tms_ ) ;
                 if( ret != STATUS_OK ) {
-                    std::cout << "Encountered a problem while meshing inside..."
+                    GEO::Logger::err( "TetraGen" ) << "Encountered a problem while meshing inside..."
                         << std::endl ;
                     return false ;
                 }
