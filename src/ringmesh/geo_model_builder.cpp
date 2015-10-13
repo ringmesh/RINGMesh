@@ -1402,7 +1402,14 @@ namespace RINGMesh {
             if( in.nb_fields() > 0 ) {
                 if( read_model ) {
                     if( strncmp( in.field( 0 ), "name:", 5 ) == 0 ) {
-                        set_model_name( in.field( 1 ) ) ;
+                        // Sometimes there is a space after name:
+                        // Sometimes not
+                        if( in.nb_fields() > 1 ) {
+                            set_model_name( in.field( 1 ) ) ;
+                        }
+                        else {
+                            set_model_name( &in.field( 0 )[ 5 ] ) ;
+                        }
                     } else if( in.field_matches( 0, "TSURF" ) ) {
                         /// 1.1 Create Interface from its name
                         index_t f = 1 ;
