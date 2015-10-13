@@ -122,16 +122,28 @@ namespace RINGMesh {
      * @param[in] method Mesher used
      * @param[in] region_id Region to mesh. By default it set to NO_ID and all regions are meshed.
      * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
-     * @param[in] internal_vertices points inside the domain to constrain mesh generation.
-     * There is one vector per region. By default this vector is empty.
      */
     void RINGMESH_API tetrahedralize(
         GeoModel& M,
         const std::string& method = "TetGen",
         index_t region_id = NO_ID,
-        bool add_steiner_points = true,
-        std::vector< std::vector< vec3 > >& internal_vertices =
-            std::vector< std::vector< vec3 > >() ) ;
+        bool add_steiner_points = true ) ;
+
+    /*!
+     * Compute the tetrahedral mesh of the input structural model
+     * @param[in] M GeoModel to tetrahedralize
+     * @param[in] method Mesher used
+     * @param[in] region_id Region to mesh. If set to NO_ID and all regions are meshed.
+     * @param[in] add_steiner_points if true, the mesher will add some points inside the region.
+     * @param[in] internal_vertices points inside the domain to constrain mesh generation.
+     * There is one vector per region.
+     */
+    void RINGMESH_API tetrahedralize(
+        GeoModel& M,
+        const std::string& method,
+        index_t region_id,
+        bool add_steiner_points,
+        const std::vector< std::vector< vec3 > >& internal_vertices ) ;
 
 }
 

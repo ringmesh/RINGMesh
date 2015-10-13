@@ -247,10 +247,20 @@ namespace RINGMesh {
         GeoModel& M,
         const std::string& method,
         index_t region_id,
-        bool add_steiner_points,
-        std::vector< std::vector< vec3 > >& internal_vertices )
+        bool add_steiner_points )
     {
-        if( internal_vertices.empty() ) internal_vertices.resize( M.nb_regions() ) ;
+        std::vector< std::vector< vec3 > > internal_vertices( M.nb_regions() ) ;
+        tetrahedralize( M, method, region_id, add_steiner_points,
+            internal_vertices ) ;
+    }
+
+    void tetrahedralize(
+        GeoModel& M,
+        const std::string& method,
+        index_t region_id,
+        bool add_steiner_points,
+        const std::vector< std::vector< vec3 > >& internal_vertices )
+    {
         GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
         if( region_id == NO_ID ) {
             GEO::ProgressTask progress( "Compute", M.nb_regions() ) ;
@@ -259,7 +269,7 @@ namespace RINGMesh {
                     method ) ;
                 tetragen->set_boundaries( M.region( i ), M.wells() ) ;
                 tetragen->set_internal_points( internal_vertices[i] ) ;
-//                GEO::Logger::instance()->set_quiet( true ) ;
+                GEO::Logger::instance()->set_quiet( true ) ;
                 tetragen->tetrahedralize( add_steiner_points ) ;
                 GEO::Logger::instance()->set_quiet( false ) ;
                 progress.next() ;
