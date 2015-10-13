@@ -581,10 +581,10 @@ namespace RINGMesh {
 
             const GeoModel& model = gm ;
             // Print Model3d headers
-            out << "GOCAD TSolid 1" << std::endl << "HEADER {" << std::endl
+            out << "RING TSolid 1" << std::endl << "HEADER {" << std::endl
                 << "name:" << model.name() << std::endl << "}" << std::endl ;
 
-            out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
+            out << "RING_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
                 << std::endl << "AXIS_NAME \"X\" \"Y\" \"Z\"" << std::endl
                 << "AXIS_UNIT \"m\" \"m\" \"m\"" << std::endl
                 << "ZPOSITIVE Elevation" << std::endl
