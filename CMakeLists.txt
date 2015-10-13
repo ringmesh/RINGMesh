@@ -40,7 +40,7 @@
 # Root CMakeList of RINGMesh project
 cmake_minimum_required(VERSION 2.8)
 
- #------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------
 # Options of the RINGMesh project 
 # They can be set using CMake GUI, or in command line: cmake -D<var>:<type>=<value> MyProjectFolder
 
@@ -84,7 +84,6 @@ set (RINGMesh_VERSION_MINOR 0)
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
 # and run cmake configuration command in each one of them
-
 if(UNIX)    
     # If the CMAKE_BUILD_TYPE is no defined
     # i.e. at first run of that file
@@ -111,7 +110,9 @@ if(UNIX)
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
-                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
+			    -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
+				-DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
+			    -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}                
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
@@ -128,57 +129,47 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
-
 if(WIN32)
     add_compile_options(-DRINGMESH_EXPORTS) 
-    add_compile_options(-DGEO_DYNAMIC_LIBS) 
-    
-    # Extra library needed with geogram I think [JP]
-    set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
-    
-    # Needed by geogram
-    set(geoplatform Win-vs-dynamic-generic)  
-    
 elseif(UNIX)
-    # Needed by geogram
-    set(geoplatform Linux64-gcc-dynamic)
-
     # If you really need it, please comment [JP]
     # Maybe rather test the compiler than the system
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
     # Enable parallel computation
-    set(COMPILATION_OPTION -- -j4)
-    
+    set(COMPILATION_OPTION -- -j4)    
 else(WIN32)
     # Nothing else really supported
-    message(WARNING "Your platform is not supported. Please modify the cmakelist file.")
-    
+    message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    
 endif(WIN32)
 
 #------------------------------------------------------------------------------------------------
 # Configure a header file to pass on some of the CMake settings
 # to the source code
 set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
-configure_file(
-  "${PROJECT_SOURCE_DIR}/include/ringmesh/ringmesh_config.h.in"
-   ${generated_configure_file}
-)
+set(input_configure_file ${PROJECT_SOURCE_DIR}/include/ringmesh/ringmesh_config.h.in)
+configure_file(${input_configure_file} ${generated_configure_file})
+
 # We want to be able to include this file
 include_directories(${PROJECT_BINARY_DIR})
  
 #------------------------------------------------------------------------------------------------
 # GEOGRAM 
-
 # Set the path to Geogram code
 set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
 
-# Se tthe path to where we are going to build Geogram
+# Geogram platform dependent settings
 if(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram)
+    set(geoplatform Win-vs-dynamic-generic)  
+	# Extra lib 
+    set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
+	# TODO check that it is really necessary [JP]
+    add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
+    set(geoplatform Linux64-gcc-dynamic)
 endif(WIN32)
 
 # Define Geogram as an external project that we know how to
@@ -204,7 +195,7 @@ ExternalProject_Add(geogram_ext
   
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}  
-  # Build all configurations if I understood well [JP]
+  #-- TODO Only one configuration is built on windows. Why? [JP]
   BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN} ${COMPILATION_OPTION}
 
   #--Install step---------------
@@ -221,14 +212,11 @@ if(RINGMESH_WITH_GRAPHICS)
 endif(RINGMESH_WITH_GRAPHICS)
     
 # Add geogram bin directories to the current ones 
-# It would be preferable to set the imported library location
-# but I did not managed to do it [JP]
-# Check this on Linux [JP]
+# It would be preferable to set the imported library location [JP]
 link_directories(${GEOGRAM_PATH_BIN}/lib)
 
-
 #------------------------------------------------------------------------------------------------    
- # Get MG-Tetra if a path is given
+# Get MG-Tetra if a path is given
 if(not ${MG_TETRA} STREQUAL "")   
   message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
   include_directories(${MG_TETRA}/include)
@@ -239,14 +227,13 @@ if(not ${MG_TETRA} STREQUAL "")
     SET(PLATFORM)
   endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
   
-  # Is there not a nice way to import this library [JP]
+  # Is there not a nice way to import this library? [JP]
   if(WIN32)
     link_directories(${MG_TETRA}/lib/WIN7${PLATFORM}_VC10)
   else(WIN32)
     link_directories(${MG_TETRA}/lib/Linux${PLATFORM})
   endif(WIN32)
-  
-  # Additional libraries with which RINGMesh should link
+   
   set (EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
 endif()
 
@@ -261,7 +248,7 @@ if(USE_OPENMP)
 endif(USE_OPENMP)
 
 #------------------------------------------------------------------------------------------------
-# Collect files of the project
+# Collect the library files
 file(GLOB ringmesh_src "${PROJECT_SOURCE_DIR}/src/ringmesh/*.cpp")
 file(GLOB ringmesh_include "${PROJECT_SOURCE_DIR}/include/ringmesh/*.h")
 file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/src/third_party/zlib/*.c")
@@ -271,7 +258,7 @@ file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")
 set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 
 # Group files of a project in directories
-# For this to work all the files should be added to the sources of the project
+# For this to work, all the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
 source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 source_group("Source Files" FILES ${ringmesh_src})
@@ -279,7 +266,6 @@ source_group("Header Files" FILES ${ringmesh_include})
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
-
 # Organize outputs in a Linux way
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -295,17 +281,16 @@ add_library(RINGMesh SHARED
     ${zlib_src}
     ${zlib_include})
 
-# State that RINGMesh depends on Geogram
+# RINGMesh depends on Geogram
 add_dependencies(RINGMesh geogram_ext)
 
-# Add all libraries to which RINGMesh should link
+# Libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
-
 
 if(WIN32)
     # On windows, without proper installation steps, we need to 
     # copy of Geogram dll and pdb information to RINGMesh
-    # to be able to launch RINGMesh utilities and  tests
+    # to be able to launch RINGMesh utilities and tests from the debugger
     add_custom_command(TARGET RINGMesh POST_BUILD 
        COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
            "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
@@ -328,6 +313,8 @@ endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)
     message(STATUS "Configuring RINGMesh with tests")
+	set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests)
+	set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
     add_subdirectory(tests)
 endif(RINGMESH_WITH_TESTS)
 
