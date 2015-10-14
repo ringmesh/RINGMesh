@@ -1521,7 +1521,7 @@ namespace RINGMesh {
                         continue ;
                     }
                 } else {
-                    if( in.field_matches( 0, "RING" ) ) {
+                    if( in.field_matches( 0, "GOCAD" ) ) {
                         // This is the beginning of a new TSurf = Interface
                         tsurf_count++ ;
                     }
