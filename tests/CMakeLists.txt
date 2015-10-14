@@ -78,4 +78,9 @@ foreach(testsourcefile ${TESTS})
     
     # Add the project to a folder of projects for the tests 
     set_property(TARGET ${testname} PROPERTY FOLDER "Tests")
+    
+    # Add the test to CTest
+    add_test(NAME ${testname} COMMAND ${testname}) 
+   
 endforeach(testsourcefile ${TESTS})
+

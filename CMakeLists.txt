@@ -71,6 +71,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Additional cmake modules
 include(ExternalProject)
 
+# Enable testing with CTest
+enable_testing()
+
 #------------------------------------------------------------------------------------------------
 # Define the project RINGMesh      
 project(RINGMesh)
