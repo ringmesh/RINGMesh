@@ -257,7 +257,8 @@ namespace RINGMesh {
     }
 
     /*!
-    * Computes the Mesh cell barycenter
+    * Computes the non weighted barycenter of a volumetric 
+    * cell of a Mesh
     * @param[in] M the mesh
     * @param[in] cell the cell index
     * @return the cell center

@@ -57,8 +57,6 @@ namespace GEO {
 
 namespace RINGMesh {
     class GeoModel ;
-    class Surface ;
-    class Region ;
     class ColocaterANN ;
 }
 
@@ -443,20 +441,68 @@ namespace RINGMesh {
             // are_model_vertex_indices_valid() ;
         }
 
+        /*!
+         * @brief Number of mesh elements
+         * vertices for Corner, edges for Line,
+         * facets for Surface, cells for Region.
+         */
         virtual index_t nb_cells() const = 0 ;
 
+        /*! 
+         * @brief Correspondance of vertex index \param lv in a mesh element \param me
+         * and vertex index in the GMME
+         * @todo changer le nom
+         */
+        virtual index_t gmme_vertex_index( index_t me, index_t lv ) const = 0 ;
+        
         /*!
-         * @brief Returns the number of vertices of the mesh
+         * @brief Number of vertices of the mesh
          */
         index_t nb_vertices() const
         {
             return mesh_.vertices.nb() ;
         }
 
-        index_t model_vertex_id( index_t v = 0 ) const ;
-        index_t local_id( index_t model_vertex_id ) const ;
+        /*!
+        * @brief Global index in GeoModelMesh from the
+        * the local one
+        * @param[in] v Vertex index in the GeoModelMeshElement
+        */
+        index_t model_vertex_id( index_t v = 0 ) const
+        {
+            ringmesh_debug_assert( v < nb_vertices() ) ;
+            ringmesh_debug_assert( model_vertex_id_[ v ] != NO_ID ) ; // Why this assert ?
+            return model_vertex_id_[ v ] ;
+        }
 
-        const vec3& vertex( index_t v = 0 ) const ;
+        index_t model_vertex_id( index_t me, index_t lv ) const
+        {            
+            return model_vertex_id( gmme_vertex_index( me, lv) ) ;
+        }
+
+        /*!
+        * @brief Coordinates of a GeoModelMeshElement
+        * @param[in] v Index of the vertex in the GeoModelMeshElement
+        */
+        const vec3& vertex( index_t v = 0 ) const
+        {
+            ringmesh_debug_assert( v < nb_vertices() ) ;
+            return mesh_.vertices.point( v ) ;
+        }
+      
+        const vec3& vertex( index_t me, index_t lv ) const
+        {
+            return vertex( gmme_vertex_index( me, lv ) ) ;
+        }
+
+        /*!
+        * @brief Index of the first vertex corresponding to the input model index
+        * @details Returns NO_ID if no matching point is found.
+        *
+        * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
+        * @todo changer le nom
+        */
+        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;      
 
         /*!
          * @}
@@ -540,6 +586,13 @@ namespace RINGMesh {
 
         virtual index_t nb_cells() const
         {
+            // A Corner (dim 0) has points
+            return mesh_.vertices.nb() ;
+        }
+
+        // Only one possible local index 
+        virtual index_t gmme_vertex_index( index_t /*me*/, index_t /*lv*/ ) const 
+        {
             return 0 ;
         }
 
@@ -565,11 +618,22 @@ namespace RINGMesh {
         }
 
         /*!
-         * Get the number of edges
+         * @brief Number of edges
          */
         virtual index_t nb_cells() const
         {
             return mesh_.edges.nb() ;
+        }
+
+        /*!
+        * @brief Correspondance of vertex index \param lv in a mesh element \param me
+        * and vertex index in the GMME
+        */
+        virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
+        {
+            ringmesh_debug_assert( me < nb_cells() ) ;
+            ringmesh_debug_assert( lv < 2 ) ;
+            return mesh_.edges.vertex( me, lv ) ;
         }
 
         /*!
@@ -586,7 +650,14 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const ;
 
     } ;
+    
 
+    // Forward declaration
+    class Surface ;
+
+    /*
+    * @todo Comment
+    */
     class RINGMESH_API SurfaceTools {
     public:
         SurfaceTools( const Surface& surface ) ;
@@ -601,6 +672,7 @@ namespace RINGMesh {
         mutable GEO::MeshFacetsAABB* aabb_ ;
         mutable ColocaterANN* ann_ ;
     } ;
+
 
     /*!
      * @brief A GeoModelElement of type SURFACE
@@ -623,34 +695,31 @@ namespace RINGMesh {
         }
 
         /*!
-         * Get the number of facets
+         * @brief Number of facets
          */
         virtual index_t nb_cells() const
         {
             return mesh_.facets.nb() ;
         }
+
+        /*!
+        * @brief Correspondance of vertex index \param lv in a mesh element \param me
+        * and vertex index in the GMME
+        */
+        virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
+        {
+            ringmesh_debug_assert( me < nb_cells() ) ;
+            ringmesh_debug_assert( lv < mesh_.facets.nb_vertices( me ) ) ;
+            return mesh_.facets.vertex( me, lv ) ;
+        }
+         
+
         bool is_triangulated() const
         {
             return mesh_.facets.are_simplices() ;
         }
 
-        /*!
-         * @brief Returns the coordinates of point \param v in facet \param f
-         */
-        const vec3& vertex( index_t f, index_t v ) const ;
-
-        // If I do not put these ones, the compiler does not find them in BMME
-        // There is probably a nicer solution (Jeanne)
-        const vec3& vertex( index_t v ) const
-        {
-            return GeoModelMeshElement::vertex( v ) ;
-        }
-
-        index_t model_vertex_id( index_t v ) const
-        {
-            return GeoModelMeshElement::model_vertex_id( v ) ;
-        }
-
+      
         /*!
          * \name Accessors to facet and vertices
          * @{
@@ -693,10 +762,16 @@ namespace RINGMesh {
             }
         }
 
+        /*
+        * @todo Comment
+        */
         index_t nb_corners() const
         {
             return mesh_.facet_corners.nb() ;
         }
+        /*
+        * @todo Comment
+        */
         index_t model_vertex_id_at_corner( index_t corner ) const
         {
             return GeoModelMeshElement::model_vertex_id(
@@ -705,28 +780,22 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the surface index of vertex \param v in facet \param f
+         * @todo Remove
          */
         index_t surf_vertex_id( index_t f, index_t v ) const
         {
-            ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-            return mesh_.facets.vertex( f, v ) ;
+            return gmme_vertex_index( f, v ) ;
         }
-
-        /*!
-         * @brief Returns the index of vertex \param v in facet \param f in the parent GeoModel
-         */
-        index_t model_vertex_id( index_t f, index_t v ) const
-        {
-            ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-            return GeoModelMeshElement::model_vertex_id( surf_vertex_id( f, v ) ) ;
-        }
-
+        
         /*!
          * @brief Returns a vertex surface index from its model index \param model_vertex_id
          * @details If there are two points, returns the first one.
          *          Returns NO_ID if no point is found
          */
-        index_t surf_vertex_id( index_t model_vertex_id ) const ;
+        index_t surf_vertex_id( index_t model_vertex_id ) const
+        {
+            return gmme_vertex_index_from_model( model_vertex_id ) ;
+        }
 
         index_t facet_vertex_id( index_t t, index_t surf_vertex_id ) const ;
 
@@ -825,6 +894,12 @@ namespace RINGMesh {
     } ;
 
 
+
+    // Defined just after this class
+    class Region ;
+    /*
+     * @todo Comment 
+     */
     class RINGMESH_API RegionTools {
     public:
         RegionTools( const Region& region ) ;
@@ -839,7 +914,6 @@ namespace RINGMesh {
         mutable GEO::MeshCellsAABB* aabb_ ;
         mutable ColocaterANN* ann_ ;
     } ;
-
 
     /*!
      * @brief A GeoModelElement of type REGION
@@ -880,6 +954,13 @@ namespace RINGMesh {
             return mesh_.cells.nb() ;
         }
 
+        virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
+        {
+            ringmesh_debug_assert( me < nb_cells() ) ;
+            ringmesh_debug_assert( lv < mesh_.cells.nb() ) ;
+            return mesh_.cells.vertex( me, lv ) ;
+        }
+
         bool is_meshed() const
         {
             return mesh().cells.nb() > 0 ;
@@ -903,7 +984,6 @@ namespace RINGMesh {
          */
 
     private:
-
         virtual bool is_mesh_valid() const ;
 
     private:
@@ -916,6 +996,8 @@ namespace RINGMesh {
     public:
         RegionTools tools ;
     } ;
+
+
 
 } // namespace
 

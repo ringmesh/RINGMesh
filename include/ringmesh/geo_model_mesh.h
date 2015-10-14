@@ -54,7 +54,6 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-
     class RINGMESH_API GeoModelMeshVertices {
     ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;

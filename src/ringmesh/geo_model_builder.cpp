@@ -442,7 +442,7 @@ namespace {
 
         equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != L.vertex( L.nb_vertices()-i-1 ) ) {
+            if( rhs_vertices[ i ] != L.vertex( L.nb_vertices()-i-1 ) ) {
                 equal = false ;
                 break ;
             }
