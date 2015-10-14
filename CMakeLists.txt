@@ -31,7 +31,7 @@
 #     http://www.ring-team.org
 # 
 #     RING Project
-#     Ecole Nationale Superieure de Geologie - Georessources
+#     Ecole Nationale Superieure de Geologie - GeoRessources
 #     2 Rue du Doyen Marcel Roubault - TSA 70605
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
@@ -70,6 +70,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #------------------------------------------------------------------------------------------------
 # Additional cmake modules
 include(ExternalProject)
+
+# Enable testing with CTest
+enable_testing()
 
 #------------------------------------------------------------------------------------------------
 # Define the project RINGMesh      
