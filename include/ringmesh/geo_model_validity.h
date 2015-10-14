@@ -32,7 +32,7 @@
 *     http://www.ring-team.org
 *
 *     RING Project
-*     Ecole Nationale Superieure de Geologie - Georessources
+*     Ecole Nationale Superieure de Geologie - GeoRessources
 *     2 Rue du Doyen Marcel Roubault - TSA 70605
 *     54518 VANDOEUVRE-LES-NANCY
 *     FRANCE
@@ -109,9 +109,9 @@ namespace RINGMesh {
     {
         // If trailing / or \ is not removed, tests fails on Windows
         std::string copy( directory ) ;
-        if( copy.back() == '/' ||
-            copy.back() == '\\' ) {
-            copy.pop_back() ;
+        if( *copy.rbegin() == '/' ||
+            *copy.rbegin() == '\\' ) {
+            copy.erase( copy.end()-1 ) ;
         } 
         if( GEO::FileSystem::is_directory( copy ) ) {
             validity_errors_directory = copy + '/' ;

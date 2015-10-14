@@ -29,10 +29,10 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -47,7 +47,7 @@ geological meshes: the \link ringmesh_boundary_model BoundaryModel\endlink, a da
 and the \link ringmesh_macro_mesh MacroMesh\endlink, a volumetric 
 representation of the BoundaryModel. 
 
-- [Download](http://ring.gocad.org/index.php/softwares/downloads/ringmesh)
+- [Download](http://ring.ring-team.org/index.php/softwares/downloads/ringmesh)
 - \link ringmesh_compiling How to compile RINGMesh \endlink
 - \link ringmesh_license License and bundled third-party software \endlink
 - \link ringmesh_features RINGMesh features \endlink
