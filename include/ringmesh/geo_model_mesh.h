@@ -227,7 +227,6 @@ namespace RINGMesh {
         /// Attached Mesh
         GEO::Mesh& mesh_ ;
 
-
         /*!
          * Vertices in GeoModelElements corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
@@ -1139,13 +1138,13 @@ namespace RINGMesh {
         }
 
     private:
-        /// Attached GeoModel
+        /*! Attached GeoModel */
         GeoModel& gm_ ;
         /*!
-         * @brief Mesh storing the vertices, edges, facets and cells
-         * that are not colocated/duplicated
-         * @details Each mesh element is unique.
-         * On these elements, attributes can be defined
+         * @brief Mesh owned by the GeoModelMesh, stores unique 
+         * vertices, edges, facets and cells.
+         * @details This means no colocated vertices, no duplicated edges, 
+         * facets or cells.
          */
         GEO::Mesh* mesh_ ;
         /// Optional duplication mode to compute the duplication of cells on surfaces
@@ -1158,8 +1157,8 @@ namespace RINGMesh {
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
         GeoModelMeshCells cells ;
+        /*! @todo : Review Change the name, too similar to order_ [JP] */
         GeoModelMeshOrder order ;
-
     } ;
 
 }

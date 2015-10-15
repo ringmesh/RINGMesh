@@ -1943,13 +1943,17 @@ namespace RINGMesh {
             gm_( gm ),
             mesh_( new GEO::Mesh ),
             mode_( GeoModelMeshCells::NONE ),
+            order_( 1 ),
             vertices( *this, gm, *mesh_ ),
+            edges( *this, *mesh_ ),
             facets( *this, *mesh_ ),
             cells( *this, *mesh_ ),
-            edges( *this, *mesh_ ),
-            order( *this, *mesh_ ),
-            order_( 1 )
+            order( *this, *mesh_ )
+            /*! @todo I am no expert but this initialization list looks like
+             * a ticking bomb (like those in GEO::Mesh, btw I don not understand how these can work) 
+             * If these classes are derived one day, I don't know what will happen [JP]*/
     {
+         
     }
 
     GeoModelMesh::~GeoModelMesh()
