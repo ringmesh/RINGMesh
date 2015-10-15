@@ -1932,7 +1932,8 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         ringmesh_debug_assert( c < gmm_.cells.nb() ) ;
-        return nb_high_order_points_per_cell_type_[gmm_.cells.type( c )] ;
+        index_t not_used ;
+        return nb_high_order_points_per_cell_type_[gmm_.cells.type( c, not_used )] ;
     }
 
     /*******************************************************************************/

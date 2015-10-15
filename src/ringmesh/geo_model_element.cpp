@@ -1133,7 +1133,8 @@ namespace RINGMesh {
         index_t& next_e ) const
     {
         index_t v = next_in_facet( f, e ) ;
-        return next_on_border( f, e, v, next_f, next_e ) ;
+        index_t next_in_next( NO_ID ) ; 
+        return next_on_border( f, e, v, next_f, next_e, next_in_next ) ;
     }
 
     /*!
