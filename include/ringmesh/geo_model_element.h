@@ -877,7 +877,7 @@ namespace RINGMesh {
             index_t v,
             index_t& next_f,
             index_t& v_in_next,
-            index_t& to = dummy_index_t ) const ;
+            index_t& to ) const ;
 
         void next_on_border(
             index_t f,
