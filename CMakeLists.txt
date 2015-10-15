@@ -134,6 +134,9 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 # Platform dependent settings
 if(WIN32)
     add_compile_options(-DRINGMESH_EXPORTS) 
+	
+	# Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
+    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 elseif(UNIX)
     # If you really need it, please comment [JP]
     # Maybe rather test the compiler than the system
@@ -197,8 +200,8 @@ ExternalProject_Add(geogram_ext
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}  
   
   #--Build step-----------------
-  BINARY_DIR ${GEOGRAM_PATH_BIN}  
-  #-- TODO Only one configuration is built on windows. Why? [JP]
+  BINARY_DIR ${GEOGRAM_PATH_BIN}
+  #-- Command to build geogram
   BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN} ${COMPILATION_OPTION}
 
   #--Install step---------------
