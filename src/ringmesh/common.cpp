@@ -78,6 +78,8 @@ INITIALIZER( initialize ) {
         GEO::CmdLine::import_arg_group( "log" ) ;
         GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
 
+        GEO::set_assert_mode( GEO::ASSERT_ABORT ) ;
+
 #ifdef RINGMESH_WITH_GRAPHICS
         GEO::Graphics::initialize();
         GEO::CmdLine::import_arg_group( "gfx" ) ;

@@ -520,10 +520,11 @@ namespace RINGMesh {
             }
 
             out << "CELL_TYPES " << mesh.cells.nb() << std::endl ;
+            index_t not_used ;
             for( index_t m = 0; m < gm.nb_regions(); m++ ) {
                 for( index_t c = 0; c < mesh.cells.nb_cells( m ); c++ ) {
                     index_t cell = mesh.cells.cell( m, c ) ;
-                    out << cell_type( mesh.cells.type( cell ) ) << std::endl ;
+                    out << cell_type( mesh.cells.type( cell, not_used ) ) << std::endl ;
                 }
             }
             out << std::endl ;
@@ -1456,7 +1457,8 @@ namespace RINGMesh {
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                 for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                     index_t facet = NO_ID ;
-                    if( mesh.cells.is_cell_facet_on_surface( c, f, facet ) ) {
+                    bool not_used ;
+                    if( mesh.cells.is_cell_facet_on_surface( c, f, facet, not_used ) ) {
                         pipes.push_back(
                             Pipe( c, facet + cell_offset ) ) ;
                     } else {
