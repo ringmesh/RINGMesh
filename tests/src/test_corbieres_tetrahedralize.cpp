@@ -58,7 +58,7 @@ int main( int argc, char** argv )
 
     /*! @todo Make this executable generic by setting
     *   the file name as an argument of the command */
-    file_name += "modelA1.ml" ;
+    file_name += "corbieres.bm" ;
 
     // Set the debug directory for the validity checks 
     set_debug_directory( ringmesh_test_output_path ) ;
@@ -67,7 +67,7 @@ int main( int argc, char** argv )
     /* Load and check the validity of the model */
     if( model_load( file_name, M ) ) {
         // Mesh the model with Tetgen 
-        tetrahedralize( M, "TetGen " ) ;
+        tetrahedralize( M, "TetGen" ) ;
 
         // Output the mesh 
         std::string output_file_name( ringmesh_test_output_path ) ;

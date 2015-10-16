@@ -222,8 +222,11 @@ namespace RINGMesh {
     void GeoModelMeshVertices::clear()
     {
 //        GEO::Process::acquire_spinlock( lock_ ) ;
+        gmm_.cells.clear() ;
+        gmm_.facets.clear() ;
+        gmm_.edges.clear() ;
 
-        mesh_.clear( true, true ) ;
+        mesh_.vertices.clear() ;
         gme_vertices_.clear() ;
         clear_kdtree() ;
 
