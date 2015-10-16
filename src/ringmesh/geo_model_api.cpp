@@ -283,6 +283,10 @@ namespace RINGMesh {
             tetragen->tetrahedralize( add_steiner_points ) ;
             GEO::Logger::instance()->set_quiet( false ) ;
         }
+
+        // The GeoModelMesh should be updated, just erase everything
+        // and it will be re-computed during its next access.
+        M.mesh.vertices.clear() ;
     }
 
 }
