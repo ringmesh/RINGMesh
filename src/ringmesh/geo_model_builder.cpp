@@ -442,7 +442,7 @@ namespace {
 
         equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != L.vertex( L.nb_vertices()-i-1 ) ) {
+            if( rhs_vertices[ i ] != L.vertex( L.nb_vertices()-i-1 ) ) {
                 equal = false ;
                 break ;
             }
@@ -1079,24 +1079,14 @@ namespace RINGMesh {
     }  
 
     /*!
-     * @brief This function MUST be the last function called when building a GeoModel
-     *
-     * @details Check that the model is correct and has all required information
-     * Calls the complete_element_connectivity function
-     * Fills nb_elements_per_type_ vector
-     *
-     * @return False if the model is not valid and cannot be fixed
-     * otherwise returns true.
-     *
-     * @todo Set optional repair of the Mesh and call the appropriate function [JP]
+     * @brief Finish up model building, complete missing information 
+     * and check model correctness.
      */
     bool GeoModelBuilder::end_model()
-    {
-        // The name should exist
+    {        
         if( model_.name() == "" ) {
             set_model_name( "model_default_name" ) ;
         }
-
         // Get out if the model has no surface
         if( model_.nb_surfaces() == 0 ) {
             print_model( model_ ) ;
@@ -1104,10 +1094,9 @@ namespace RINGMesh {
         }
 
         model_.init_global_model_element_access() ;
-
         complete_element_connectivity() ;
 
-        // Fill geological feature if missing
+        // Fill geological feature if they are missing
         for( index_t i = 0; i < model_.nb_elements( GME::ALL_TYPES ); ++i ) {
             GME& E = element( gme_t( GME::ALL_TYPES, i ) ) ;
             if( !E.has_geological_feature() ) {

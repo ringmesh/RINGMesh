@@ -4,10 +4,7 @@ syntax: regexp
 syntax: regexp
 ^build$
 syntax: regexp
-^CMakeOptions\.txt$
-syntax: regexp
 ^doc/html$
-^doc/grgmesh.qch
 syntax: regexp
 ^src/third_party/geogram/CMakeOptions\.txt$
 syntax: regexp
@@ -20,15 +17,17 @@ syntax: regexp
 \.gz$
 syntax: regexp
 \.pdf$
-
 syntax: regexp
-^articles/iamg/tmp$
+\.orig$
 syntax: regexp
 ^doc/doc_online$
 syntax: regexp
-^articles/gocad_meeting/appli/tmp$
-
-syntax: regexp
 ^src/third_party/geogram/src/geogram_ext-stamp$
 syntax: regexp
+^src/third_party/geogram/CMakeFiles$
+syntax: regexp
 ^src/third_party/geogram/tmp$
+syntax: regexp
+^CMakeFiles$
+syntax: glob
+src/ringmesh/tetra_gen.cpp.orig
