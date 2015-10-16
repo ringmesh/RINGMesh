@@ -404,12 +404,8 @@ namespace RINGMesh {
             GEO::Mesh mesh( 3 ) ;
             gm.mesh.copy_mesh( mesh ) ;
 
-            GEO::MeshIOFlags flags ;
-            flags.set_element( GEO::MESH_FACETS ) ;
-            flags.set_element( GEO::MESH_CELLS ) ;
-            flags.set_attribute( GEO::MESH_FACET_REGION ) ;
             GEO::Logger::instance()->set_minimal( true ) ;
-            GEO::mesh_save( mesh, filename, flags ) ;
+            GEO::mesh_save( mesh, filename ) ;
             GEO::Logger::instance()->set_minimal( false ) ;
 
             return true ;
