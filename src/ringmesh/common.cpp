@@ -68,6 +68,8 @@
 static bool inited = false ;
 INITIALIZER( initialize ) {
     if( !inited ) {
+        // I am not convinced this is the right way to initialize 
+        // Geogram options [JP]
         inited = true ;
         GEO::initialize() ;
         GEO::CmdLine::import_arg_group( "sys" ) ;
@@ -77,8 +79,6 @@ INITIALIZER( initialize ) {
         GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
         GEO::CmdLine::import_arg_group( "log" ) ;
         GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
-
-        GEO::set_assert_mode( GEO::ASSERT_ABORT ) ;
 
 #ifdef RINGMESH_WITH_GRAPHICS
         GEO::Graphics::initialize();
