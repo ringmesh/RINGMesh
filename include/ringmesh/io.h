@@ -57,7 +57,7 @@ namespace RINGMesh {
 
     bool RINGMESH_API model_load( const std::string& filename, GeoModel& model ) ;
 
-    bool RINGMESH_API model_save( GeoModel& model, const std::string& filename ) ;
+    bool RINGMESH_API model_save( const GeoModel& model, const std::string& filename ) ;
 
     bool RINGMESH_API mesh_load( const std::string& mesh_file, GeoModel& mm ) ;
 
@@ -75,7 +75,7 @@ namespace RINGMesh {
 
         virtual bool load( const std::string& filename, GeoModel& model ) = 0 ;
 
-        virtual bool save( GeoModel& model, const std::string& filename ) = 0 ;
+        virtual bool save( const GeoModel& model, const std::string& filename ) = 0 ;
 
     protected:
         GeoModelSurfaceIOHandler()
