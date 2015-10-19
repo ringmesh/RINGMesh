@@ -1112,13 +1112,12 @@ namespace RINGMesh {
             GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
                 << model_.name() << " is valid " << std::endl << std::endl ;
             print_model( model_ ) ;
-            return true ;
         } else {
             GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
                 << model_.name() << " is invalid " << std::endl << std::endl ;
             print_model( model_ ) ;
-            return false ;
         }
+        return true ;
     }
 
     /*!
