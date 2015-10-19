@@ -307,6 +307,14 @@ namespace RINGMesh {
         {
             return id_ ;
         }
+        const index_t index() const
+        {
+            return gme_id().index ;
+        }
+        const TYPE type() const
+        {
+            return gme_id().type ;
+        }
         bool has_geological_feature() const
         {
             return geol_feature_ != NO_GEOL ;
