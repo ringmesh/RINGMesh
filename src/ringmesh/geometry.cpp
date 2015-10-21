@@ -47,6 +47,19 @@
 
 namespace RINGMesh {
 
+    // Compare the coordinates one by one, returns true
+    // if they are all epsilon close.
+    bool inexact_equal( const vec3& v1, const vec3& v2 )
+    {
+        for( index_t i = 0; i < 3; i++ ) {
+            if( abs( v1[ i ] - v2[ i ] ) < epsilon ){
+                return false ;
+            }
+        }
+        return true ;
+    }
+
+
     /*! 
      * @todo  Comment these descriptors [JP]
      */

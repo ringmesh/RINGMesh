@@ -465,8 +465,7 @@ namespace RINGMesh {
                         distances[i] = length(
                             v_from - intersections[i].intersection_ ) ;
                     }
-                    IndirectSort< double, index_t > sort( distances, indices ) ;
-                    sort.sort() ;
+                    indirect_sort( distances, indices ) ;
                 }
                 for( index_t i = 0; i < intersections.size(); i++ ) {
                     const vec3& v_prev = well_points.back() ;
@@ -565,8 +564,7 @@ namespace RINGMesh {
                         distances[i] = length(
                             v_from - intersections[i].intersection_ ) ;
                     }
-                    IndirectSort< double, index_t > sort( distances, indices ) ;
-                    sort.sort() ;
+                    indirect_sort( distances, indices ) ;
                 }
                 index_t index = indices[0] ;
                 vec3 direction = v_from - intersections[index].intersection_ ;

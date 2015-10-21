@@ -48,79 +48,70 @@
 namespace RINGMesh {
 
     /*!
-     * @todo Comment
+     * @brief Returns the elements common to two SORTED vectors
+     * @details Convenient, costly (copy) override of std::set_intersection.
+     * The two input vectors MUST be sorted.
      */
     template< class T >
     std::vector< T > intersect(
         const std::vector< T >& v1,
         const std::vector< T >& v2 )
     {
-        std::vector< T > intersect( v1.size() + v2.size() ) ;
-        std::vector< index_t >::iterator it ;
-        it = std::set_intersection( v1.begin(), v1.end(), v2.begin(), v2.end(),
-                                    intersect.begin() ) ;
+        std::vector< T > intersect( std::min( v1.size(), v2.size() ) ) ;
+        std::vector< index_t >::iterator it = std::set_intersection(
+            v1.begin(), v1.end(), v2.begin(), v2.end(), intersect.begin() ) ;
         intersect.resize( it - intersect.begin() ) ;
         return intersect ;
     }
 
-
     /*!
-    * @todo Comment
+    * @brief Returns the position of the first element matching @param t 
+    * in the vector, NO_ID if not found. 
     */
     template< typename T, typename container >
     index_t find( const container& v, const T& t )
     {
-        typename container::const_iterator it = std::find( v.begin(), v.end(),
-                                                           t ) ;
-        if( it == v.end() )
+        typename container::const_iterator it = std::find(
+            v.begin(), v.end(), t ) ;
+        if( it == v.end() ) {
             return NO_ID ;
-        else
-            return static_cast< index_t >( it - v.begin() ) ;
+        }
+        else {
+            return static_cast<index_t>( it - v.begin() ) ;
+        }
     }
 
     /*!
-    * @todo Comment
+    * @brief Returns the position of the first element matching t 
+    * in a sorted vector, NO_ID if not found. 
     */
     template< typename T, typename container >
     index_t find_sorted( const container& v, const T& t )
     {
-        typename container::const_iterator low = std::lower_bound( v.begin(),
-                                                                   v.end(), t ) ;
-        if( low == v.end() || t < *low )
+        typename container::const_iterator low = std::lower_bound( 
+            v.begin(), v.end(), t ) ;
+        if( low == v.end() || t < *low ) {
             return NO_ID ;
-        else
-            return static_cast< index_t >( low - v.begin() ) ;
+        }
+        else {
+            return static_cast<index_t>( low - v.begin() ) ;
+        }
     }
 
-    /*!
-     * @todo Comment
-     */
+    
     template< typename T, typename container >
     bool contains( const container& v, const T& t, bool sorted = false )
     {
-        if( sorted )
+        if( sorted ) {
             return find_sorted( v, t ) != NO_ID ;
-        else
+        }
+        else {
             return find( v, t ) != NO_ID ;
+        }
     }
 
     /*!
-    * @todo Comment
-    */
-    template< class T1, class T2 >
-    bool inexact_equal( const T1& v1, const T2& v2 )
-    {
-        for( index_t i = 0; i < 3; i++ ) {
-            float64 diff( v1[ i ] - v2[ i ] ) ;
-            if( diff > epsilon || diff < -epsilon ) {
-                return false ;
-            }
-        }
-        return true ;
-    }
-    
-    /*!
-    * @todo Comment
+    * @todo Not used in RINGMesh. To remove. [JP]
     */
     template< class T1, class T2 >
     bool triple_equal(
@@ -159,38 +150,24 @@ namespace RINGMesh {
     * @todo Comment what is indirect sorting.
     */
     template< class T1, class T2 >
-    class IndirectSort {
-    public:
-        IndirectSort( std::vector< T1 >& input, std::vector< T2 >& output )
-            : input_( input ), output_( output )
-        {
-        }
-
-        void sort()
-        {
-            if( input_.size() < 2 ) return ;
-            for( index_t it1 = 0; it1+1 < input_.size(); it1++ ) {
-                index_t ref_index = it1 ;
-                T1 ref_value = input_[ it1 ] ;
-                for( index_t it2 = it1 + 1; it2 < input_.size(); it2++ ) {
-                    index_t new_index = it2 ;
-                    T1 new_value = input_[ it2 ] ;
-                    if( ref_value > new_value ) {
-                        ref_value = new_value ;
-                        ref_index = new_index ;
-                    }
+    void indirect_sort( std::vector< T1 >& input, std::vector< T2 >& output )
+    {
+        if( input.size() < 2 ) return ;
+        for( index_t it1 = 0; it1+1 < input.size(); it1++ ) {
+            index_t ref_index = it1 ;
+            T1 ref_value = input[ it1 ] ;
+            for( index_t it2 = it1 + 1; it2 < input.size(); it2++ ) {
+                index_t new_index = it2 ;
+                T1 new_value = input[ it2 ] ;
+                if( ref_value > new_value ) {
+                    ref_value = new_value ;
+                    ref_index = new_index ;
                 }
-                std::iter_swap( input_.begin() + it1, input_.begin() + ref_index ) ;
-                std::iter_swap( output_.begin() + it1,
-                                output_.begin() + ref_index ) ;
             }
+            std::iter_swap( input.begin() + it1, input.begin() + ref_index ) ;
+            std::iter_swap( output.begin() + it1, output.begin() + ref_index ) ;
         }
-
-    private:
-        std::vector< T1 >& input_ ;
-        std::vector< T2 >& output_ ;
-    } ;
-
+    }
 }
 
 #endif
