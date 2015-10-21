@@ -175,26 +175,41 @@ namespace {
     bool check_gocad_validity( const GeoModel& M )
     {
         if( M.nb_interfaces() == 0 ) {
-            return false ;
+            GEO::Logger::err( "" ) << " The GeoModel " << M.name()
+                << " has no Interface" << std::endl ;
+            return false ; 
         }
         for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
-            if( !M.one_interface( i ).has_name() ) {
+            const GME& E = M.one_interface( i ) ;
+            if( !E.has_name() ) {
+                GEO::Logger::err( "" ) << E.gme_id()
+                    << " has no name" << std::endl ;
                 return false ;
             }
-            if( !M.one_interface( i ).has_geological_feature() ) {
+            if( !E.has_geological_feature() ) {
+                GEO::Logger::err( "" ) << E.gme_id()
+                    << " has no geological feature" << std::endl ;
                 return false ;
             }
         }
         for( index_t s = 0; s < M.nb_surfaces(); ++s ) {
-            if( !M.surface( s ).has_parent() ) {
+            const Surface& S = M.surface( s ) ;
+            if( !S.has_parent() ) {
+                GEO::Logger::err( "" ) << S.gme_id()
+                    << " does not belong to any Interface of the model" << std::endl ;
                 return false ;
             }
-            if( !M.surface( s ).is_triangulated() ) {
+            if( !S.is_triangulated() ) {
+                GEO::Logger::err( "" ) << S.gme_id()
+                    << " is not triangulated " << std::endl ;
                 return false ;
             }
         }
         for( index_t r = 0; r < M.nb_regions(); ++r ) {
-            if( !M.region( r ).has_name() ) {
+            const Region& R = M.region( r ) ;
+            if( !R.has_name() ) {
+                GEO::Logger::err( "" ) << R.gme_id()
+                    << " has no name" << std::endl ;
                 return false ;
             }
         }
@@ -402,7 +417,7 @@ namespace {
         for( index_t i = GME::CONTACT; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
             index_t nb = M.nb_elements( type ) ;
-            for( index_t j = 0; j < nb; ++j ) {
+            for( index_t j = 0; j < nb; ++j ) { 
                 save_high_level_bme( out, M.element( GME::gme_t( type, j ) ) ) ;
             }
         }
