@@ -72,18 +72,23 @@ namespace RINGMesh {
         virtual ~GeoModelBuilder()
         {
         }
-      
+
+        /*!
+        * @brief Finish up model building, complete missing information
+        * and check model correctness.
+        */
         bool end_model() ;
 
+        /*!
+        * @brief Complete missing information in GeoModelElements
+        * boundaries - in_boundary - parent - children
+        */
         bool complete_element_connectivity() ;
-
-        void compute_surface_adjacencies( const GME::gme_t& surface_id ) ;
     
-        /*! @}
+        /*!
          * \name Set element geometry from geometrical positions   
          * @{
          */
-
         void set_element_vertex(
             GME::gme_t t,
             index_t v,
@@ -113,7 +118,6 @@ namespace RINGMesh {
          * \name Set element geometry using GeoModel vertices
          * @{
          */
-
         void set_element_vertex( const GME::gme_t& id, index_t v, index_t model_vertex ) ;
 
         void set_element_vertices(
@@ -153,6 +157,9 @@ namespace RINGMesh {
 
         void cut_surface_by_line( Surface& S, const Line& L ) ;
 
+        void compute_surface_adjacencies( const GME::gme_t& surface_id ) ;
+
+
     private:
         void create_surface_geometry(
             const GME::gme_t& surface_id,
@@ -160,18 +167,78 @@ namespace RINGMesh {
             const std::vector< index_t >& facet_ptr ) ;
     } ;
 
+    
+    // Implementation class 
+    class RegionBuildingInformation ;
+
     /*!
-     * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
+     * @brief Builder of a GeoModel from its Surfaces without 
+     *        information on its Regions or Lines 
+     * @note Manifold surface connected components are supposed disjoints
+     *       It would be possible if needed to implement this for 
+     *       non disjoint Surfaces using non-manifold edge identification.
      */
-    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilder {
+    class RINGMESH_API GeoModelBuilderSurface: public GeoModelBuilder {
+    public:
+        GeoModelBuilderSurface( GeoModel& model, bool build_regions = true )
+            : GeoModelBuilder( model ),
+            build_regions_( build_regions )
+        {
+        }
+        virtual ~GeoModelBuilderSurface()
+        {
+            for( index_t i = 0; i < regions_info_.size(); ++i ) {
+                delete regions_info_[ i ] ;
+            }
+        }
+        /*!
+        * @brief Create the model Surfaces from the connected components
+        *       of the input surface mesh
+        * @pre The input mesh is a surface mesh. Facet adjacencies are available.
+        */
+        bool set_surfaces( const GEO::Mesh& mesh ) ;
+       
+        /*!
+        * @brief From a GeoModel in which only Surface are defined, create
+        * corners, contacts and optionally regions.   
+        * @return True if a valid model has been built, else returns false.
+        * @pre The GeoModel should have at least one Surface. Nothing is done if not.
+        */
+        bool build_model() ;
+
+    protected:
+        /*!
+        * @brief From the topology of the Surface of the GeoModel, build
+        * its Lines and Corners
+        */
+        bool build_lines() ;
+
+        /*!
+        * @brief Build the regions of the GeoModel from information collected
+        * at Line building step.
+        */
+        bool build_regions() ;
+
+    protected:
+        /*! Build or not the Regions of the GeoModel from the the Surfaces 
+         * and Lines */ 
+        bool build_regions_ ;
+        /*! Internal information filled at Line building step */
+        std::vector< RegionBuildingInformation* > regions_info_ ;
+    } ;
+
+
+
+    /*!
+    * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
+    */
+    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilder {
     public:
         GeoModelBuilderGocad( GeoModel& model )
             : GeoModelBuilder( model )
-        {
-        }
+        {}
         virtual ~GeoModelBuilderGocad()
-        {
-        }
+        {}
 
         bool load_ml_file( const std::string& ml_file_name ) ;
 
@@ -199,14 +266,13 @@ namespace RINGMesh {
             const vec3& p2 ) ;
 
         /*!
-         * @brief Triangle that set the orientation of a TFACE
-         *        in a .ml file
-         */
+        * @brief Triangle that set the orientation of a TFACE
+        *        in a .ml file
+        */
         struct KeyFacet {
             KeyFacet( const vec3& p0, const vec3& p1, const vec3& p2 )
                 : p0_( p0 ), p1_( p1 ), p2_( p2 )
-            {
-            }
+            {}
 
         public:
             vec3 p0_ ;
@@ -215,8 +281,8 @@ namespace RINGMesh {
         } ;
 
         /*!
-         * @brief Check if the surface triangle orientations match the one of the key facet
-         */
+        * @brief Check if the surface triangle orientations match the one of the key facet
+        */
         bool check_key_facet_orientation( index_t surface ) const ;
 
         index_t find_key_facet(
@@ -231,17 +297,15 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Build a GeoModel from a file_model.bm
-     */
-    class RINGMESH_API GeoModelBuilderBM: public GeoModelBuilder {
+    * @brief Build a GeoModel from a file_model.bm
+    */
+    class RINGMESH_API GeoModelBuilderBM : public GeoModelBuilder {
     public:
         GeoModelBuilderBM( GeoModel& model )
             : GeoModelBuilder( model )
-        {
-        }
+        {}
         virtual ~GeoModelBuilderBM()
-        {
-        }
+        {}
 
         bool load_file( const std::string& bm_file_name ) ;
 
@@ -255,26 +319,6 @@ namespace RINGMesh {
             return GME::child_allowed( match_type( s ) ) ;
         }
     } ;
-
-    /*!
-     * @brief Builder of a GeoModel from a surface mesh
-     *        in which the manifold surface connected components are disjoints
-     */
-    class RINGMESH_API GeoModelBuilderSurface: public GeoModelBuilder {
-    public:
-        GeoModelBuilderSurface( GeoModel& model )
-            : GeoModelBuilder( model )
-        {
-        }
-        virtual ~GeoModelBuilderSurface()
-        {
-        }
-
-        void set_surfaces( const GEO::Mesh& mesh ) ;
-
-        bool build_model( bool build_regions = true ) ;
-    } ;
-
 }
 
 #endif
