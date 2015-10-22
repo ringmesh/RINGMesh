@@ -56,12 +56,18 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::out("TEST") << "Test GeoModel building from Surface" << std::endl ;
-
-	GEO::Mesh in ; 
     std::string file_name = ringmesh_test_data_path ;
     file_name += "modelA6.mesh" ;
 
+    // Set an output log file
+    std::string log_file( ringmesh_test_output_path ) ;
+    log_file += "log.txt" ;
+    GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
+    GEO::Logger::instance()->register_client( file_logger ) ;
+
+    GEO::Logger::out( "TEST" ) << "Test GeoModel building from Surface" << std::endl ;
+
+    GEO::Mesh in ;
     GEO::mesh_load( file_name, in ) ;
     RINGMesh::GeoModel model ;
 	
