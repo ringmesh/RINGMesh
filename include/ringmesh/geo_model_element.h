@@ -478,8 +478,7 @@ namespace RINGMesh {
         */
         index_t model_vertex_id( index_t v = 0 ) const
         {
-            ringmesh_debug_assert( v < nb_vertices() ) ;
-            ringmesh_debug_assert( model_vertex_id_[ v ] != NO_ID ) ; // Why this assert ?
+            ringmesh_debug_assert( v < nb_vertices() ) ;            
             return model_vertex_id_[ v ] ;
         }
 

@@ -65,12 +65,10 @@
 #   include <geogram_gfx/basic/common.h>
 #endif
 
-static bool inited = false ;
+static bool initialized = false ;
 INITIALIZER( initialize ) {
-    if( !inited ) {
-        // I am not convinced this is the right way to initialize 
-        // Geogram options [JP]
-        inited = true ;
+    if( !initialized ) {
+        initialized = true ;
         GEO::initialize() ;
         GEO::CmdLine::import_arg_group( "sys" ) ;
         GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
@@ -79,14 +77,11 @@ INITIALIZER( initialize ) {
         GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
         GEO::CmdLine::import_arg_group( "log" ) ;
         GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
-
 #ifdef RINGMESH_WITH_GRAPHICS
         GEO::Graphics::initialize();
         GEO::CmdLine::import_arg_group( "gfx" ) ;
 #endif
-
         RINGMesh::mesh_initialize() ;
         RINGMesh::TetraGen::initialize() ;
-
     }
 }
