@@ -113,7 +113,7 @@ namespace {
             } else {
                 out << "-" ;
             }
-            out << region.boundary( i ).index() + 1 ;
+            out << region.boundary( i ).index()+1 ;
             it++ ;
             if( it == 5 ) {
                 out << std::endl ;
@@ -417,7 +417,7 @@ namespace {
         for( index_t i = GME::CONTACT; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
             index_t nb = M.nb_elements( type ) ;
-            for( index_t j = 0; j < nb; ++j ) { 
+            for( index_t j = 0; j < nb; ++j ) {
                 save_high_level_bme( out, M.element( GME::gme_t( type, j ) ) ) ;
             }
         }

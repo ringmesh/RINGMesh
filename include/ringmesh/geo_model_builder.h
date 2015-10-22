@@ -211,7 +211,7 @@ namespace RINGMesh {
         * @brief From the topology of the Surface of the GeoModel, build
         * its Lines and Corners
         */
-        bool build_lines() ;
+        bool build_lines_and_corners() ;
 
         /*!
         * @brief Build the regions of the GeoModel from information collected
@@ -228,19 +228,20 @@ namespace RINGMesh {
     } ;
 
 
-
     /*!
     * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
     */
-    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilder {
+    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilderSurface {
     public:
         GeoModelBuilderGocad( GeoModel& model )
-            : GeoModelBuilder( model )
+            : GeoModelBuilderSurface( model, false )
         {}
         virtual ~GeoModelBuilderGocad()
         {}
 
-        bool load_ml_file( const std::string& ml_file_name ) ;
+        bool load_ml_file( 
+            const std::string& ml_file_name, 
+            bool ignore_file_borders = false ) ;
 
     protected:
         GME::gme_t determine_line_vertices(
@@ -273,8 +274,6 @@ namespace RINGMesh {
             KeyFacet( const vec3& p0, const vec3& p1, const vec3& p2 )
                 : p0_( p0 ), p1_( p1 ), p2_( p2 )
             {}
-
-        public:
             vec3 p0_ ;
             vec3 p1_ ;
             vec3 p2_ ;
