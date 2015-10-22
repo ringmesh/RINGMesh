@@ -64,6 +64,18 @@ namespace RINGMesh {
         return u.x != v.x || u.y != v.y || u.z != v.z ;
     }
 
+    /* @warning Duplicate from Geogram/basic/numeric.h */
+    enum Sign {
+        NEGATIVE = -1, ZERO = 0, POSITIVE = 1
+    } ;
+    /* @warning Duplicate from Geogram/basic/numeric.h */
+    template< class T >
+    inline Sign sign( T x )
+    {
+        return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO ) ;
+    }
+
+
     /*!
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
@@ -74,9 +86,9 @@ namespace RINGMesh {
         const VEC& V1,
         const VEC& V2,
         VEC& closest_point,
-        float64& lambda0 = dummy_float64,
-        float64& lambda1 = dummy_float64,
-        float64& lambda2 = dummy_float64 )
+        float64& lambda0,
+        float64& lambda1,
+        float64& lambda2 )
     {
         VEC diff = V0 - point ;
         VEC edge0 = V1 - V0 ;
@@ -521,7 +533,7 @@ namespace RINGMesh {
         */
         index_t get_closest_neighbor(
             const vec3& v,
-            double& dist = dummy_float64 ) const
+            double& dist ) const
         {
             std::vector< index_t > result ;
             get_neighbors( v, 1, result, &dist ) ;

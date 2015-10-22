@@ -46,6 +46,7 @@
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelElement ;
+    class GeoModelMeshElement ;
 }
 
 namespace RINGMesh {
@@ -72,15 +73,16 @@ namespace RINGMesh {
     vec3 RINGMESH_API model_element_center( const GeoModelElement& E ) ;
 
     /*!
-     * @brief Compute the center of a GeoModelElement cell (cell, facet, edge)
+     * @brief Compute the centroid of a GeoModelMeshElement cell (cell, facet, edge)
      *
      * @param[in] E Element to evaluate
      * @param[in] c the cell index
      * @return The coordinates of the center
      * 
-     * @todo Review: Reimplement this. Terribly long and inefficient [JP]
+     * @pre E has a valid mesh.
      */
-    vec3 RINGMESH_API model_element_cell_center( const GeoModelElement& E, index_t c ) ;
+    vec3 RINGMESH_API model_element_cell_center( 
+        const GeoModelMeshElement& E, index_t c ) ;
 
     /*!
     * @brief Translates the boundary model by a vector.
