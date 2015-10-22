@@ -39,56 +39,51 @@
  */
 
 #include <ringmesh/io.h>
-#include <ringmesh/geo_model.h>
+
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/algorithm.h>
+
+#include <ringmesh/ringmesh_config.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_builder.h>
-/*
- * @todo Review : The most part of what is in this file should be in an anonymous
- *       namespace as it is not supposed to go out of this file [JP]
- */
-namespace RINGMesh {
-    static double read_double( GEO::LineInput& in, index_t field )
-    {
-        double result ;
-        std::istringstream iss( in.field( field ) ) ;
-        iss >> result >> std::ws ;
-        return result ;
-    }
 
-    static std::string TAB = "\t" ;
-    static std::string SPACE = " " ;
-
-    static std::string empty_string ;
+namespace {
+    using RINGMesh::index_t ;
+    using RINGMesh::GeoModel ;
+    using RINGMesh::Region ;
+    using RINGMesh::GeoModelElement ;
+    using RINGMesh::GME ;
+    using RINGMesh::Surface ;
+    using RINGMesh::Line ;
+    using RINGMesh::Corner ;
+    using RINGMesh::vec3 ;
 
     /*!
-     * From a filename example.extension, creates a new directory "example"
-     * in the current working directory.
-     * @param[in] filename the filename from wich the directory name is extracted
-     * @param[out] new_path the new path including the new directory
-     * @param[out] directory_name the name of the created directory
-     */
+    * From a given file name (MyFile.ext), create a MyFile directory 
+    * in the directory containing that file, or the current working directory.
+    * @param[in] filename the filename 
+    * @param[out] path full path to the created directory 
+    * @param[out] directory name of the created directory
+    */
     void create_directory_from_filename(
         const std::string& filename,
-        std::string& new_path,
-        std::string& directory_name = empty_string )
+        std::string& path,
+        std::string& directory)
     {
-        std::string path = GEO::FileSystem::dir_name( filename ) ;
-        std::string directory = GEO::FileSystem::base_name( filename ) ;
+        path = GEO::FileSystem::dir_name( filename ) ;
+        directory = GEO::FileSystem::base_name( filename, true ) ;
         if( path == "." ) {
             path = GEO::FileSystem::get_current_working_directory() ;
         }
-        std::ostringstream oss_dir ;
-        oss_dir << path << "/" << directory ;
-        new_path = oss_dir.str() ;
-        GEO::FileSystem::create_directory( new_path ) ;
+        path += "/" + directory ;
+        GEO::FileSystem::create_directory( path ) ;
     }
 
     /*!
-     * @brief Total number of facets in the Surfaces of a BM
-     */
+    * @brief Total number of facets in the Surfaces of a BM
+    */
     inline index_t nb_facets( const GeoModel& BM )
     {
         index_t result = 0 ;
@@ -99,13 +94,13 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Write a region information in a stream
-     * @details Used by function to save the Model in a .ml file
-     *
-     * @param[in] count Region index in the file
-     * @param[in] region The region to save
-     * @param[in,out] out The file output stream
-     */
+    * @brief Write a region information in a stream
+    * @details Used by function to save the Model in a .ml file
+    *
+    * @param[in] count Region index in the file
+    * @param[in] region The region to save
+    * @param[in,out] out The file output stream
+    */
     void save_region( index_t count, const Region& region, std::ostream& out )
     {
         out << "REGION " << count << "  " << region.name() << " " << std::endl ;
@@ -129,14 +124,14 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Write information for on layer in a stream
-     * @details Used by function to save the Model in a .ml file
-     *
-     * @param[in] count Index of the layer in the file
-     * @param[in] offset Offset of region indices in the file
-     * @param[in] layer The layer to write
-     * @param[in,out] out The output file stream
-     */
+    * @brief Write information for on layer in a stream
+    * @details Used by function to save the Model in a .ml file
+    *
+    * @param[in] count Index of the layer in the file
+    * @param[in] offset Offset of region indices in the file
+    * @param[in] layer The layer to write
+    * @param[in,out] out The output file stream
+    */
     void save_layer(
         index_t count,
         index_t offset,
@@ -158,9 +153,9 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Write basic header for Gocad coordinate system.
-     * @param[in,out] out Output .ml file stream
-     */
+    * @brief Write basic header for Gocad coordinate system.
+    * @param[in,out] out Output .ml file stream
+    */
     void save_coordinate_system( std::ostream& out )
     {
         out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
@@ -170,36 +165,51 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Check if the model can be saved in a skua-gocad .ml file
-     * @details It assumes that the model is valid and verifies that:
-     *   - all Interfaces have a name and geological feature
-     *   - all Surfaces are in an Interface
-     *   - all Surfaces are triangulated
-     *   - all Regions have a name
-     */
+    * @brief Check if the model can be saved in a skua-gocad .ml file
+    * @details It assumes that the model is valid and verifies that:
+    *   - all Interfaces have a name and geological feature
+    *   - all Surfaces are in an Interface
+    *   - all Surfaces are triangulated
+    *   - all Regions have a name
+    */
     bool check_gocad_validity( const GeoModel& M )
     {
         if( M.nb_interfaces() == 0 ) {
-            return false ;
+            GEO::Logger::err( "" ) << " The GeoModel " << M.name()
+                << " has no Interface" << std::endl ;
+            return false ; 
         }
         for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
-            if( !M.one_interface( i ).has_name() ) {
+            const GME& E = M.one_interface( i ) ;
+            if( !E.has_name() ) {
+                GEO::Logger::err( "" ) << E.gme_id()
+                    << " has no name" << std::endl ;
                 return false ;
             }
-            if( !M.one_interface( i ).has_geological_feature() ) {
+            if( !E.has_geological_feature() ) {
+                GEO::Logger::err( "" ) << E.gme_id()
+                    << " has no geological feature" << std::endl ;
                 return false ;
             }
         }
         for( index_t s = 0; s < M.nb_surfaces(); ++s ) {
-            if( !M.surface( s ).has_parent() ) {
+            const Surface& S = M.surface( s ) ;
+            if( !S.has_parent() ) {
+                GEO::Logger::err( "" ) << S.gme_id()
+                    << " does not belong to any Interface of the model" << std::endl ;
                 return false ;
             }
-            if( !M.surface( s ).is_triangulated() ) {
+            if( !S.is_triangulated() ) {
+                GEO::Logger::err( "" ) << S.gme_id()
+                    << " is not triangulated " << std::endl ;
                 return false ;
             }
         }
         for( index_t r = 0; r < M.nb_regions(); ++r ) {
-            if( !M.region( r ).has_name() ) {
+            const Region& R = M.region( r ) ;
+            if( !R.has_name() ) {
+                GEO::Logger::err( "" ) << R.gme_id()
+                    << " has no name" << std::endl ;
                 return false ;
             }
         }
@@ -207,11 +217,11 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Save the model in a .ml file if it is possible
-     * @param[in] M the model to save
-     * @param[in,out] out Output file stream
-     * @return false if the model is not compatible with a Gocad model
-     */
+    * @brief Save the model in a .ml file if it can
+    * @param[in] M the model to save
+    * @param[in,out] out Output file stream
+    * @return false if the model is not compatible with a Gocad model
+    */
     bool save_gocad_model3d( const GeoModel& M, std::ostream& out )
     {
         if( !check_gocad_validity( M ) ) {
@@ -221,27 +231,27 @@ namespace RINGMesh {
         }
         out.precision( 16 ) ;
 
-        // Print Gocad Model3d headers
+        // Gocad Model3d headers
         out << "GOCAD Model3d 1" << std::endl << "HEADER {" << std::endl << "name: "
             << M.name() << std::endl << "}" << std::endl ;
 
         save_coordinate_system( out ) ;
 
-        // Print the TSurf = Interface information
+        // Gocad::TSurf = RINGMesh::Interface 
         for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
             out << "TSURF " << M.one_interface( i ).name() << std::endl ;
         }
 
         index_t count = 1 ;
 
-        // Print the TFace = Surface information
+        // Gocad::TFace = RINGMesh::Surface 
         for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
             const Surface& s = M.surface( i ) ;
             out << "TFACE " << count << "  " ;
             out << GME::geol_name( s.geological_feature() ) ;
             out << " " << s.parent().name() << std::endl ;
 
-            // Print the key facet points, which are simply the first three
+            // Print the key facet which is the first three
             // vertices of the first facet
             out << "  " << s.vertex( 0, 0 ) << std::endl ;
             out << "  " << s.vertex( 0, 1 ) << std::endl ;
@@ -249,25 +259,26 @@ namespace RINGMesh {
 
             ++count ;
         }
-        // Print universe, region, and layer information
+        // Universe
         index_t offset_layer = count ;
         save_region( count, M.universe(), out ) ;
         ++count ;
+        // Regions
         for( index_t i = 0; i < M.nb_regions(); ++i ) {
             save_region( count, M.region( i ), out ) ;
             ++count ;
         }
+        // Layers
         for( index_t i = 0; i < M.nb_layers(); ++i ) {
             save_layer( count, offset_layer, M.layer( i ), out ) ;
             ++count ;
         }
         out << "END" << std::endl ;
 
-        // Save the geometry of the Surfaces (TFace), Interface (TSurf) by Interface
+        // Save the geometry of the Surfaces, Interface per Interface
         for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
             const GME& tsurf = M.one_interface( i ) ;
-
-            // Header
+            // TSurf beginning header 
             out << "GOCAD TSurf 1" << std::endl << "HEADER {" << std::endl << "name:"
                 << tsurf.name() << std::endl << "name_in_model_list:" << tsurf.name()
                 << std::endl << "}" << std::endl ;
@@ -277,83 +288,55 @@ namespace RINGMesh {
                 << "GEOLOGICAL_TYPE " ;
             out << GME::geol_name( tsurf.geological_feature() ) ;
             out << std::endl ;
-
             out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" << std::endl
                 << "}" << std::endl ;
-
-            // Save surfaces geometry
+            
             index_t vertex_count = 1 ;
-            /* The index of a vertex in a TFACE is the index
-             * of the vertex in the Surface + this offset (number of vertices
-             * in the previous Surfaces belonging to tyhe current Interface)
-             */
+            // TFace vertex index = Surface vertex index + offset 
             index_t offset = vertex_count ;
 
-            // For each surface we need to save
-            // The indices of the Corners (BStones) on its boundary
-            // The index of the starting and second point of each
-            // Line on the boudnary of the Surface.
-            std::vector< index_t > bstones ;
-            std::vector< index_t > next_vertex_on_border ;
-            std::vector< index_t > remaining_bstones ;
-
+            // To collect Corners(BStones) indexes 
+            // and boundary (Line) first and second vertex indexes
+            std::set< index_t > corners ;
+            std::set< std::pair<index_t, index_t> > lineindices ;
             for( index_t j = 0; j < tsurf.nb_children(); ++j ) {
                 offset = vertex_count ;
-
-                const Surface& surface = dynamic_cast< const Surface& >( tsurf.child(
-                    j ) ) ;
+                const Surface& S = dynamic_cast<
+                    const Surface& >( tsurf.child(j) ) ;
 
                 out << "TFACE" << std::endl ;
-                for( index_t k = 0; k < surface.nb_vertices(); ++k ) {
-                    out << "VRTX " << vertex_count << " " << surface.vertex( k )
+                for( index_t k = 0; k < S.nb_vertices(); ++k ) {
+                    out << "VRTX " << vertex_count << " " << S.vertex( k )
                         << std::endl ;
                     vertex_count++ ;
                 }
-
-                for( index_t k = 0; k < surface.nb_cells(); ++k ) {
-                    ringmesh_debug_assert( surface.nb_vertices_in_facet( k ) == 3 ) ;
-                    out << "TRGL " << surface.surf_vertex_id( k, 0 ) + offset << " "
-                        << surface.surf_vertex_id( k, 1 ) + offset << " "
-                        << surface.surf_vertex_id( k, 2 ) + offset << std::endl ;
+                for( index_t k = 0; k < S.nb_cells(); ++k ) {
+                    out << "TRGL " << S.surf_vertex_id( k, 0 ) + offset << " "
+                        << S.surf_vertex_id( k, 1 ) + offset << " "
+                        << S.surf_vertex_id( k, 2 ) + offset << std::endl ;
                 }
+                for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
+                    const Line& L = dynamic_cast<const Line&>( S.boundary( k ) ) ;
+                    lineindices.insert( std::pair< index_t, index_t>(
+                        S.surf_vertex_id( L.model_vertex_id( 0 ) )+offset,
+                        S.surf_vertex_id( L.model_vertex_id( 1 ) )+offset ) ) ;
 
-                for( index_t k = 0; k < surface.nb_boundaries(); ++k ) {
-                    const Line& line = dynamic_cast< const Line& >( surface.boundary(
-                        k ) ) ;
-
-                    // Global ids in the model of corners, and 2nd point on the Line
-                    index_t c0_model_id = line.model_vertex_id( 0 ) ;
-                    index_t next_model_id = line.model_vertex_id( 1 ) ;
-                    index_t c1_model_id = line.model_vertex_id(
-                        line.nb_vertices() - 1 ) ;
-
-                    index_t c0 = surface.surf_vertex_id( c0_model_id ) ;
-                    index_t next = surface.surf_vertex_id( next_model_id ) ;
-                    index_t c1 = surface.surf_vertex_id( c1_model_id ) ;
-
-                    ringmesh_debug_assert( c0 != NO_ID ) ;
-                    ringmesh_debug_assert( next != NO_ID ) ;
-                    ringmesh_debug_assert( c1 != NO_ID ) ;
-
-                    bstones.push_back( c0 + offset ) ;
-                    next_vertex_on_border.push_back( next + offset ) ;
-                    remaining_bstones.push_back( c1 + offset ) ;
+                    const Corner& c0 = dynamic_cast<const Corner&>( L.boundary( 0 ) ) ;
+                    corners.insert( S.surf_vertex_id( c0.model_vertex_id() )+offset ) ;
+                    const Corner& c1 = dynamic_cast<const Corner&>( L.boundary( 1 ) ) ;                    
+                    corners.insert( S.surf_vertex_id( c1.model_vertex_id() )+offset ) ;                  
                 }
             }
             // Add the remaining bstones that are not already in bstones
-            for( index_t j = 0; j < remaining_bstones.size(); ++j ) {
-                if( std::find( bstones.begin(), bstones.end(), remaining_bstones[j] )
-                    == bstones.end() ) {
-                    bstones.push_back( remaining_bstones[j] ) ;
-                }
+            for( std::set<index_t>::iterator it( corners.begin() ) ;
+                 it != corners.end(); ++it ){                
+                out << "BSTONE " << *it << std::endl ;
             }
-
-            for( index_t j = 0; j < bstones.size(); ++j ) {
-                out << "BSTONE " << bstones[j] << std::endl ;
-            }
-            for( index_t j = 0; j < next_vertex_on_border.size(); ++j ) {
-                out << "BORDER " << vertex_count << " " << bstones[j] << " "
-                    << next_vertex_on_border[j] << std::endl ;
+            for( std::set< std::pair<index_t, index_t> >::iterator
+                 it( lineindices.begin() ); it != lineindices.end(); ++it 
+            ) {
+                out << "BORDER " << vertex_count << " " << it->first << " "
+                    << it->second << std::endl ;
                 vertex_count++ ;
             }
             out << "END" << std::endl ;
@@ -362,12 +345,12 @@ namespace RINGMesh {
     }
 
     /*! To save the attributes in a Graphite readable file, we need to write the correct
-     * keyword for the attribute type - We restrict ourselves to the 3 types
-     * int          "integer"
-     * double       "real"
-     * float        "real"
-     * bool         "boolean"
-     */
+    * keyword for the attribute type - We restrict ourselves to the 3 types
+    * int          "integer"
+    * double       "real"
+    * float        "real"
+    * bool         "boolean"
+    */
     inline std::string alias_name( const std::string& in )
     {
         if( in == "int" ) {
@@ -386,8 +369,8 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
-     */
+    * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
+    */
     void save_high_level_bme( std::ofstream& out, const GeoModelElement& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
@@ -407,10 +390,10 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Save the GeoModel into a dedicated format bm
-     * @todo Write the description of the BM format
-     * @todo We need a generic read/write for the attibutes !!
-     */
+    * @brief Save the GeoModel into a dedicated format bm
+    * @todo Write the description of the BM format
+    * @todo We need a generic read/write for the attributes !!
+    */
     void save_bm_file( const GeoModel& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() ) ;
@@ -434,7 +417,7 @@ namespace RINGMesh {
         for( index_t i = GME::CONTACT; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
             index_t nb = M.nb_elements( type ) ;
-            for( index_t j = 0; j < nb; ++j ) {
+            for( index_t j = 0; j < nb; ++j ) { 
                 save_high_level_bme( out, M.element( GME::gme_t( type, j ) ) ) ;
             }
         }
@@ -561,10 +544,10 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Save the model in smesh format
-     * @details No attributes and no boundary marker are transferred
-     * @todo Test this function - Create the appropriate handler
-     */
+    * @brief Save the model in smesh format
+    * @details No attributes and no boundary marker are transferred
+    * @todo Test this function - Create the appropriate handler
+    */
     void save_smesh_file( const GeoModel& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() ) ;
@@ -605,31 +588,36 @@ namespace RINGMesh {
         out << std::endl << "0" << std::endl << "0" << std::endl ;
     }
 
+    static double read_double( GEO::LineInput& in, index_t field )
+    {
+        double result ;
+        std::istringstream iss( in.field( field ) ) ;
+        iss >> result >> std::ws ;
+        return result ;
+    }
+
+}
+
+namespace RINGMesh {
+
     /************************************************************************/
 
     class MLIOHandler: public GeoModelSurfaceIOHandler {
     public:
+        /*! Load a .ml (Gocad file)
+         * @pre Filename is valid
+         */
         virtual bool load( const std::string& filename, GeoModel& model )
         {
-            if( filename.empty() ) {
-                GEO::Logger::err( "I/O" )
-                    << "No filename provided for structural model, use in:model"
-                    << std::endl ;
-                return false ;
-            }
-
             std::ifstream input( filename.c_str() ) ;
             if( !input ) {
-                GEO::Logger::err( "I/O" ) << "Cannot open file : " << filename
-                    << std::endl ;
                 return false ;
             }
-
             GeoModelBuilderGocad builder( model ) ;
             return builder.load_ml_file( filename ) ;
         }
 
-        virtual bool save( GeoModel& model, const std::string& filename )
+        virtual bool save( const GeoModel& model, const std::string& filename )
         {
             std::ofstream out( filename.c_str() ) ;
             return save_gocad_model3d( model, out ) ;
@@ -639,18 +627,9 @@ namespace RINGMesh {
     class BMIOHandler: public GeoModelSurfaceIOHandler {
     public:
         virtual bool load( const std::string& filename, GeoModel& model )
-        {
-            if( filename.empty() ) {
-                GEO::Logger::err( "I/O" )
-                    << "No filename provided for structural model, use in:model"
-                    << std::endl ;
-                return false ;
-            }
-
+        {           
             std::ifstream input( filename.c_str() ) ;
             if( !input ) {
-                GEO::Logger::err( "I/O" ) << "Cannot open file : " << filename
-                    << std::endl ;
                 return false ;
             }
 
@@ -658,7 +637,7 @@ namespace RINGMesh {
             return builder.load_file( filename ) ;
         }
 
-        virtual bool save( GeoModel& model, const std::string& filename )
+        virtual bool save( const GeoModel& model, const std::string& filename )
         {
             save_bm_file( model, filename ) ;
             return true ;
@@ -670,15 +649,16 @@ namespace RINGMesh {
         virtual bool load( const std::string& filename, GeoModel& model )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from UCD mesh not implemented yet"
+                << "Geological model loading of a from UCD mesh not yet implemented"
                 << std::endl ;
             return false ;
         }
 
-        virtual bool save( GeoModel& model, const std::string& filename )
+        virtual bool save( const GeoModel& model, const std::string& filename )
         {
             std::string full_path ;
-            create_directory_from_filename( filename, full_path ) ;
+            std::string directory ;
+            create_directory_from_filename( filename, full_path, directory ) ;
 
             std::ostringstream oss_cmd ;
             oss_cmd << full_path << "/cmd.lgi" ;
@@ -5318,7 +5298,7 @@ namespace RINGMesh {
             return false ;
         }
 
-        virtual bool save( GeoModel& model, const std::string& filename )
+        virtual bool save( const GeoModel& model, const std::string& filename )
         {
             std::string sep = ", " ;
             std::ofstream out( filename.c_str() ) ;
@@ -5438,7 +5418,7 @@ namespace RINGMesh {
             return false ;
         }
 
-        virtual bool save( GeoModel& model, const std::string& filename )
+        virtual bool save( const GeoModel& model, const std::string& filename )
         {
             // Create a new directory to outputs the files
             std::string full_path ;
@@ -5565,18 +5545,35 @@ namespace RINGMesh {
      */
     bool model_load( const std::string& filename, GeoModel& model )
     {
-        GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
+        if( filename.empty() ) {
+            GEO::Logger::err( "I/O" )
+                << "No filename provided for structural model, use in:model"
+                << std::endl ;
+            return false ;
+        }
+        std::ifstream input( filename.c_str() ) ;
+        if( !input ) {
+            GEO::Logger::err( "I/O" ) << "Cannot open file: " << filename
+                << std::endl ;
+            return false ;
+        }
+
+        GEO::Logger::out( "I/O" ) << "Loading file: " << filename
             << std::endl ;
 
         GeoModelSurfaceIOHandler_var handler = GeoModelSurfaceIOHandler::get_handler(
             filename ) ;
-        if( handler && handler->load( filename, model ) ) {
-            return true ;
+        if( handler == nil ) {
+            return false ;
         }
-
-        GEO::Logger::err( "I/O" ) << "Could not load file: " << filename
-            << std::endl ;
-        return false ;
+        else {
+            bool success = handler->load( filename, model ) ;
+            if( !success ) {
+                GEO::Logger::err( "I/O" ) << "Could not load file: " << filename
+                    << std::endl ;
+            }
+            return success ;
+        }
     }
 
     /*!
@@ -5585,20 +5582,24 @@ namespace RINGMesh {
      * @param[in] filename the filename where to save it
      * @return returns the success of the operation
      */
-    bool model_save( GeoModel& model, const std::string& filename )
+    bool model_save( const GeoModel& model, const std::string& filename )
     {
-        GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
+        GEO::Logger::out( "I/O" ) << "Saving file " << filename
             << std::endl ;
 
-        GeoModelSurfaceIOHandler_var handler = GeoModelSurfaceIOHandler::get_handler(
-            filename ) ;
-        if( handler && handler->save( model, filename ) ) {
-            return true ;
+        GeoModelSurfaceIOHandler_var handler = 
+            GeoModelSurfaceIOHandler::get_handler( filename ) ;
+        if( handler == nil ) {
+            return false ;
         }
-
-        GEO::Logger::err( "I/O" ) << "Could not save file: " << filename
-            << std::endl ;
-        return false ;
+        else {
+            bool success = handler->save( model, filename ) ;
+            if( !success ) {
+                GEO::Logger::err( "I/O" ) << "Could not save file: " << filename
+                    << std::endl ;
+            }
+            return success ;
+        }        
     }
 
     /************************************************************************/
@@ -5608,30 +5609,23 @@ namespace RINGMesh {
     {
         GeoModelSurfaceIOHandler* handler =
             GeoModelSurfaceIOHandlerFactory::create_object( format ) ;
-        if( handler ) {
-            return handler ;
+        if( handler == nil ) {
+            std::vector< std::string > names ;
+            GeoModelSurfaceIOHandlerFactory::list_creators( names ) ;
+            GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
+                << "Currently supported file formats are: " ;
+            for( index_t i = 0; i < names.size(); i++ ) {
+                GEO::Logger::out( "I/O" ) << " " << names[ i ] ;
+            }
+            GEO::Logger::out( "I/O" ) << std::endl ;
         }
-
-        GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
-            << std::endl ;
-
-
-        std::vector< std::string > names ;
-        GeoModelSurfaceIOHandlerFactory::list_creators( names ) ;
-        GEO::Logger::out( "I/O" ) << "Currently supported file formats:" ;
-        for( index_t i = 0; i < names.size(); i++ ) {
-            GEO::Logger::out( "I/O" ) << " " << names[i] ;
-        }
-        GEO::Logger::out( "I/O" ) << std::endl ;
-
-        return nil ;
+        return handler ;        
     }
 
     GeoModelSurfaceIOHandler* GeoModelSurfaceIOHandler::get_handler(
         const std::string& filename )
     {
-        std::string ext = GEO::FileSystem::extension( filename ) ;
-        return create( ext ) ;
+        return create( GEO::FileSystem::extension( filename ) ) ;
     }
 
     /*

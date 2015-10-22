@@ -76,7 +76,7 @@ int main( int argc, char** argv )
     for( index_t l = 0; l < in.nb_lines(); l++ ) {
         const Line& line = in.line( l ) ;
         for( index_t v = 0; v < line.nb_vertices(); v++ ) {
-            all_vertices[index++] = line.vertex( v ) ;
+            all_vertices[ index++ ] = line.vertex( v ) ;
         }
     }
     for( index_t s = 0; s < in.nb_surfaces(); s++ ) {

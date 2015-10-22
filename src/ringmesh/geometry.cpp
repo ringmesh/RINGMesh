@@ -47,6 +47,17 @@
 
 namespace RINGMesh {
 
+    // Compare the coordinates one by one, returns true
+    // if they are all epsilon close.
+    bool inexact_equal( const vec3& v1, const vec3& v2 )
+    {
+        for( index_t i = 0; i < 3; i++ ) {
+            if( abs( v1[ i ] - v2[ i ] ) < epsilon ){
+                return false ;
+            }
+        }
+        return true ;
+    }
 
 
     /*! 
@@ -142,18 +153,17 @@ namespace RINGMesh {
         const vec3& p3,
         vec3& nearest_p )
     {
-        vec3 vertices[ 4 ] ;
-        vertices[ 0 ] = p0 ;
-        vertices[ 1 ] = p1 ;
-        vertices[ 2 ] = p2 ;
-        vertices[ 3 ] = p3 ;
-        float64 dist = big_float64 ;
-        for( uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
+        vec3 vertices[ 4 ] = { p0, p1, p2, p3 };
+        float64 not_used0, not_used1, not_used2 ;
+        float64 dist = max_float64() ;
+        for( GEO::Numeric::uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             float64 distance = point_triangle_distance( p,
-                                                        vertices[ tetra_descriptor.facet_vertex[ f ][ 0 ] ],
-                                                        vertices[ tetra_descriptor.facet_vertex[ f ][ 1 ] ],
-                                                        vertices[ tetra_descriptor.facet_vertex[ f ][ 2 ] ], cur_p ) ;
+                vertices[ tetra_descriptor.facet_vertex[ f ][ 0 ] ],
+                vertices[ tetra_descriptor.facet_vertex[ f ][ 1 ] ],
+                vertices[ tetra_descriptor.facet_vertex[ f ][ 2 ] ],
+                cur_p, not_used0, not_used1, not_used2 
+            ) ;
             if( distance < dist ) {
                 dist = distance ;
                 nearest_p = cur_p ;
@@ -182,28 +192,27 @@ namespace RINGMesh {
         const vec3& p4,
         vec3& nearest_p )
     {
-        vec3 vertices[ 5 ] ;
-        vertices[ 0 ] = p0 ;
-        vertices[ 1 ] = p1 ;
-        vertices[ 2 ] = p2 ;
-        vertices[ 3 ] = p3 ;
-        vertices[ 4 ] = p4 ;
-        float64 dist = big_float64 ;
-        for( uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
+        vec3 vertices[ 5 ] = { p0, p1, p2, p3, p4 } ;
+        float64 not_used0, not_used1, not_used2 ;
+        float64 dist = max_float64() ;
+        for( GEO::Numeric::uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             float64 distance ;
-            uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[ f ] ;
+            GEO::Numeric::uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[ f ] ;
             if( nb_vertices == 3 ) {
                 distance = point_triangle_distance( p,
-                                                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ],
-                                                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ],
-                                                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 2 ] ], cur_p ) ;
+                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ],
+                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ],
+                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 2 ] ], 
+                    cur_p, not_used0, not_used1, not_used2
+                ) ;
             } else if( nb_vertices == 4 ) {
                 distance = point_quad_distance( p,
-                                                vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ],
-                                                vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ],
-                                                vertices[ pyramid_descriptor.facet_vertex[ f ][ 2 ] ],
-                                                vertices[ pyramid_descriptor.facet_vertex[ f ][ 3 ] ], cur_p ) ;
+                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ],
+                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ],
+                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 2 ] ],
+                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 3 ] ], cur_p 
+                ) ;
             } else {
                 ringmesh_assert_not_reached;
             }
@@ -237,29 +246,29 @@ namespace RINGMesh {
         const vec3& p5,
         vec3& nearest_p )
     {
-        vec3 vertices[ 6 ] ;
-        vertices[ 0 ] = p0 ;
-        vertices[ 1 ] = p1 ;
-        vertices[ 2 ] = p2 ;
-        vertices[ 3 ] = p3 ;
-        vertices[ 4 ] = p4 ;
-        vertices[ 5 ] = p5 ;
-        float64 dist = big_float64 ;
-        for( uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
+        vec3 vertices[ 6 ] = { p0, p1, p2, p3, p4, p5 } ;
+        float64 not_used0, not_used1, not_used2 ;
+
+        float64 dist = max_float64() ;
+        for( GEO::Numeric::uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             float64 distance ;
-            uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[ f ] ;
+            GEO::Numeric::uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[ f ] ;
             if( nb_vertices == 3 ) {
                 distance = point_triangle_distance( p,
-                                                    vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ],
-                                                    vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ],
-                                                    vertices[ prism_descriptor.facet_vertex[ f ][ 2 ] ], cur_p ) ;
+                    vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ],
+                    vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ],
+                    vertices[ prism_descriptor.facet_vertex[ f ][ 2 ] ], 
+                    cur_p, not_used0, not_used1, not_used2
+                ) ;
             } else if( nb_vertices == 4 ) {
                 distance = point_quad_distance( p,
-                                                vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ],
-                                                vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ],
-                                                vertices[ prism_descriptor.facet_vertex[ f ][ 2 ] ],
-                                                vertices[ prism_descriptor.facet_vertex[ f ][ 3 ] ], cur_p ) ;
+                    vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ],
+                    vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ],
+                    vertices[ prism_descriptor.facet_vertex[ f ][ 2 ] ],
+                    vertices[ prism_descriptor.facet_vertex[ f ][ 3 ] ], 
+                    cur_p
+                ) ;
             } else {
                 ringmesh_assert_not_reached;
             }
@@ -296,23 +305,18 @@ namespace RINGMesh {
         const vec3& p7,
         vec3& nearest_p )
     {
-        vec3 vertices[ 8 ] ;
-        vertices[ 0 ] = p0 ;
-        vertices[ 1 ] = p1 ;
-        vertices[ 2 ] = p2 ;
-        vertices[ 3 ] = p3 ;
-        vertices[ 4 ] = p4 ;
-        vertices[ 5 ] = p5 ;
-        vertices[ 6 ] = p6 ;
-        vertices[ 7 ] = p7 ;
-        float64 dist = big_float64 ;
-        for( uint8 f = 0; f < hex_descriptor.nb_facets; f++ ) {
+        /// Review: Why not input an array ?
+        vec3 vertices[ 8 ] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
+        float64 dist = max_float64() ;
+        for( GEO::Numeric::uint8 f = 0; f < hex_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             float64 distance = point_quad_distance( p,
-                                                    vertices[ hex_descriptor.facet_vertex[ f ][ 0 ] ],
-                                                    vertices[ hex_descriptor.facet_vertex[ f ][ 1 ] ],
-                                                    vertices[ hex_descriptor.facet_vertex[ f ][ 2 ] ],
-                                                    vertices[ hex_descriptor.facet_vertex[ f ][ 3 ] ], cur_p ) ;
+                vertices[ hex_descriptor.facet_vertex[ f ][ 0 ] ],
+                vertices[ hex_descriptor.facet_vertex[ f ][ 1 ] ],
+                vertices[ hex_descriptor.facet_vertex[ f ][ 2 ] ],
+                vertices[ hex_descriptor.facet_vertex[ f ][ 3 ] ], 
+                cur_p 
+            ) ;
             if( distance < dist ) {
                 dist = distance ;
                 nearest_p = cur_p ;
@@ -337,12 +341,8 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& p3 )
     {
-        vec3 vertices[ 4 ] ;
-        vertices[ 0 ] = p0 ;
-        vertices[ 1 ] = p1 ;
-        vertices[ 2 ] = p2 ;
-        vertices[ 3 ] = p3 ;
-        for( uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
+        vec3 vertices[ 4 ] = { p0, p1, p2, p3 } ;
+        for( GEO::Numeric::uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
                 vertices[ tetra_descriptor.facet_vertex[ f ][ 1 ] ]
                 - vertices[ tetra_descriptor.facet_vertex[ f ][ 0 ] ],
@@ -375,20 +375,15 @@ namespace RINGMesh {
         const vec3& p3,
         const vec3& p4 )
     {
-        vec3 vertices[ 5 ] ;
-        vertices[ 0 ] = p0 ;
-        vertices[ 1 ] = p1 ;
-        vertices[ 2 ] = p2 ;
-        vertices[ 3 ] = p3 ;
-        vertices[ 4 ] = p4 ;
-        for( uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
+        vec3 vertices[ 5 ] = { p0, p1, p2, p3, p4 } ;
+        for( GEO::Numeric::uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
                 vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ]
                 - vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ],
                 vertices[ pyramid_descriptor.facet_vertex[ f ][ 2 ] ]
                 - vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ] ) ;
-            uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[ f ] ;
-            vec3 barycenter ;
+            GEO::Numeric::uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[ f ] ;
+            vec3 barycenter( 0., 0., 0. ) ;
             if( nb_vertices == 3 )
                 barycenter = ( ( vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ]
                 + vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ]
@@ -426,21 +421,15 @@ namespace RINGMesh {
         const vec3& p4,
         const vec3& p5 )
     {
-        vec3 vertices[ 6 ] ;
-        vertices[ 0 ] = p0 ;
-        vertices[ 1 ] = p1 ;
-        vertices[ 2 ] = p2 ;
-        vertices[ 3 ] = p3 ;
-        vertices[ 4 ] = p4 ;
-        vertices[ 5 ] = p5 ;
-        for( uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
+        vec3 vertices[ 6 ] = { p0, p1, p2, p3, p4, p5 } ;      
+        for( GEO::Numeric::uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
                 vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ]
                 - vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ],
                 vertices[ prism_descriptor.facet_vertex[ f ][ 2 ] ]
                 - vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ] ) ;
-            uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[ f ] ;
-            vec3 barycenter ;
+            GEO::Numeric::uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[ f ] ;
+            vec3 barycenter(0., 0., 0.) ;
             if( nb_vertices == 3 )
                 barycenter = ( ( vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ]
                 + vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ]
@@ -481,16 +470,8 @@ namespace RINGMesh {
         const vec3& p6,
         const vec3& p7 )
     {
-        vec3 vertices[ 8 ] ;
-        vertices[ 0 ] = p0 ;
-        vertices[ 1 ] = p1 ;
-        vertices[ 2 ] = p2 ;
-        vertices[ 3 ] = p3 ;
-        vertices[ 4 ] = p4 ;
-        vertices[ 5 ] = p5 ;
-        vertices[ 6 ] = p6 ;
-        vertices[ 7 ] = p7 ;
-        for( uint8 f = 0; f < hex_descriptor.nb_facets; f++ ) {
+        vec3 vertices[ 8 ] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
+        for( GEO::Numeric::uint8 f = 0; f < hex_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
                 vertices[ hex_descriptor.facet_vertex[ f ][ 1 ] ]
                 - vertices[ hex_descriptor.facet_vertex[ f ][ 0 ] ],
@@ -686,12 +667,8 @@ namespace RINGMesh {
         const vec3 center( ( p0 + p1 + p2 + p3 ) / 4. ) ;
         vec3 edge0( p1 - p0 ) ;
         vec3 edge1( p3 - p0 ) ;
-        vec3 axis[ 2 ] ;
-        axis[ 0 ] = normalize( edge0 ) ;
-        axis[ 1 ] = normalize( edge1 ) ;
-        float64 extent[ 2 ] ;
-        extent[ 0 ] = edge0.length() / 2. ;
-        extent[ 1 ] = edge1.length() / 2. ;
+        vec3 axis[ 2 ] = { normalize( edge0 ), normalize( edge1 ) };
+        float64 extent[ 2 ] = { 0.5*edge0.length(), 0.5*edge1.length() } ;
 
         vec3 diff = center - p ;
         float64 b0 = dot( diff, axis[ 0 ] ) ;
