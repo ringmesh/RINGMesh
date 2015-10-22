@@ -229,7 +229,7 @@ namespace {
                         if( to_remove.count( L.gme_id() ) == 0 &&
                             L.is_inside_border( S )
                             ) {
-                            cutting_lines.insert( L.gme_id().index ) ;
+                            cutting_lines.insert( L.index() ) ;
                         }
                     }
                     for( std::set< index_t >::iterator it = cutting_lines.begin();
@@ -255,10 +255,10 @@ namespace {
         std::set< index_t >& vertices )
     {
         vertices.clear() ;
-        if( E.gme_id().type == GME::CORNER ) {
+        if( E.type() == GME::CORNER ) {
             return ;
         }
-        if( E.gme_id().type == GME::LINE ) {
+        if( E.type() == GME::LINE ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
                 vertices.insert( E.nb_vertices() - 1 ) ;
             }

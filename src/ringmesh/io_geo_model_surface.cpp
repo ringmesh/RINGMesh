@@ -113,7 +113,7 @@ namespace {
             } else {
                 out << "-" ;
             }
-            out << region.boundary( i ).gme_id().index + 1 ;
+            out << region.boundary( i ).index() + 1 ;
             it++ ;
             if( it == 5 ) {
                 out << std::endl ;

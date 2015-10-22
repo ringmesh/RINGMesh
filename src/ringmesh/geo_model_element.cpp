@@ -408,10 +408,10 @@ namespace RINGMesh {
             return valid ;
         }
 
-        if( gme_id().index >= model().nb_elements( gme_id().type ) ) {
+        if( index() >= model().nb_elements( type() ) ) {
             GEO::Logger::err( "GeoModelElement" )
                 << " Element index "<< gme_id() << " is not valid " 
-                << " There are " << model().nb_elements( gme_id().type )
+                << " There are " << model().nb_elements( type() )
                 << " element of that type in model " << model().name()
                 << std::endl ;
             // This really should not happen
@@ -433,7 +433,7 @@ namespace RINGMesh {
         /// 2. Check that required information for the TYPE is defined
         ///    and that reverse information is stored by the corresponding
         ///    elements
-        TYPE T = gme_id().type ;
+        TYPE T = type() ;
 
         // Boundaries
         if( boundary_allowed( T ) ) {
@@ -615,7 +615,7 @@ namespace RINGMesh {
      */
     bool GeoModelElement::is_on_voi() const
     {
-        TYPE T = gme_id().type ;
+        TYPE T = type() ;
         if( T == SURFACE ) {
             for( index_t i = 0; i < model().universe().nb_boundaries(); ++i ) {
                 if( model().universe().boundary_id( i ) == gme_id() ) {
@@ -770,28 +770,28 @@ namespace RINGMesh {
         bool valid = true ;
         if( mesh_.vertices.nb() != 1 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Corner " << gme_id().index
+                << "Corner " << index()
                 << " mesh has " << mesh_.vertices.nb()
                 << " vertices " << std::endl ;
             valid = false ;
         }
         if( mesh_.edges.nb() != 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Corner " << gme_id().index
+                << "Corner " << index()
                 << " mesh has " << mesh_.edges.nb()
                 << " edges " << std::endl ;
             valid = false ;
         }
         if( mesh_.facets.nb() != 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Corner " << gme_id().index
+                << "Corner " << index()
                 << " mesh has " << mesh_.facets.nb()
                 << " facets " << std::endl ;
             valid = false ;
         }
         if( mesh_.cells.nb() != 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Corner " << gme_id().index
+                << "Corner " << index()
                 << " mesh has " << mesh_.cells.nb()
                 << " cells " << std::endl ;
             valid = false ;
@@ -800,7 +800,7 @@ namespace RINGMesh {
         // Corner at this position.
         /*if( mesh_.vertices.point( 0 ) == vec3() ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Corner " << gme_id().index
+                << "Corner " << index()
                 << " point is default " << std::endl ;
             valid = false ;
         }*/
@@ -841,28 +841,28 @@ namespace RINGMesh {
         // Check that the GEO::Mesh has the expected elements
         if( mesh_.vertices.nb() < 2 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Line " << gme_id().index
+                << "Line " << index()
                 << " has " << mesh_.vertices.nb()
                 << " vertices " << std::endl ;
             valid = false ;
         }
         if( mesh_.edges.nb() == 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Line " << gme_id().index
+                << "Line " << index()
                 << " mesh has " << mesh_.edges.nb()
                 << " edges " << std::endl ;
             valid = false ;
         }
         if( mesh_.facets.nb() != 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Line " << gme_id().index
+                << "Line " << index()
                 << " mesh has " << mesh_.facets.nb()
                 << " facets " << std::endl ;
             valid = false ;
         }
         if( mesh_.cells.nb() != 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Line " << gme_id().index
+                << "Line " << index()
                 << " mesh has " << mesh_.cells.nb()
                 << " cells " << std::endl ;
             valid = false ;
@@ -1033,7 +1033,7 @@ namespace RINGMesh {
             file << validity_errors_directory
                 << "/"
                 << "invalid_surf_"
-                << gme_id().index << ".obj"  ;
+                << index() << ".obj"  ;
             save_surface_as_obj_file( *this, file.str() ) ;
 
 #endif  

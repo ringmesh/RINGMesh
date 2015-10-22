@@ -77,20 +77,6 @@ namespace {
     using GEO::index_t ;
     using GEO::vec3 ;
 
-    std::string print_gme_id( const GeoModelElement& E )
-    {
-        std::string result( GME::type_name( E.gme_id().type ) ) ;
-        if( E.gme_id().index != NO_ID ) {
-            result += "_" ;
-            result += String::to_string( E.gme_id().index ) ;
-        }
-        if( E.has_name() ) {
-            result += "_" ;
-            result += E.name() ;
-        }
-        return result ;
-    }
-
     /*---------------------------------------------------------------------------*/
     /*----- Some pieces of the code below are copied or modified from -----------*/
     /*----- geogram\mesh\mesh_intersection.cpp-----------------------------------*/
@@ -650,7 +636,7 @@ namespace {
     {
         borders.clear() ;
 
-        GME::TYPE T = E.gme_id().type ;
+        GME::TYPE T = E.type() ;
         if( T == GME::CORNER ) {
             return ;
         }
@@ -688,7 +674,7 @@ namespace {
     {
         in_boundary.clear() ;
 
-        GME::TYPE T = E.gme_id().type ;
+        GME::TYPE T = E.type() ;
         if( T == GME::REGION || T == GME::LAYER ) {
             return ;
         }
@@ -720,7 +706,7 @@ namespace {
     {
         M.clear() ;
 
-        GME::TYPE T = E.gme_id().type ;
+        GME::TYPE T = E.type() ;
         if( T == GME::CORNER ) {
             return ;
         } else {
@@ -804,14 +790,14 @@ namespace {
     bool is_region_valid( const GeoModelElement& region )
     {
         bool valid = true ;
-        if( region.gme_id().type != GME::REGION ) {
+        if( region.type() != GME::REGION ) {
             GEO::Logger::err( "GeoModel" ) << " Incorrect element type "
-                << GME::type_name( region.gme_id().type ) << " for "
-                << print_gme_id( region ) << std::endl << std::endl ;
+                << GME::type_name( region.type() ) << " for "
+                << region.gme_id() << std::endl << std::endl ;
             valid = false ;
         }
         if( region.nb_boundaries() == 0 ) {
-            GEO::Logger::err( "GeoModel" ) << print_gme_id( region )
+            GEO::Logger::err( "GeoModel" ) << region.gme_id()
                 << " has no boundary Surface" << std::endl ;
             valid = false ;
         } else {
@@ -823,20 +809,20 @@ namespace {
 
             if( GEO::mesh_nb_connected_components( mesh ) != 1 ) {
                 GEO::Logger::err( "GeoModel" ) << " Surface boundary of "
-                    << print_gme_id( region ) << " has not 1 connected component "
+                    << region.gme_id() << " has not 1 connected component "
                     << std::endl ;
                 valid = false ;
             }
             if( GEO::mesh_nb_borders( mesh ) != 0 ) {
                 GEO::Logger::err( "GeoModel" ) << " Surface boundary of "
-                    << print_gme_id( region ) << " has borders " << std::endl ;
+                    << region.gme_id() << " has borders " << std::endl ;
                 valid = false ;
             }
 
             if( !valid ) {
                 std::ostringstream file ;
-                file << validity_errors_directory << "/boundary_surface_"
-                    << print_gme_id( region ) << ".mesh" ;
+                file << validity_errors_directory << "/boundary_surface_region_"
+                    << region.index() << ".mesh" ;
                 GEO::mesh_save( mesh, file.str() ) ;
             }
         }
@@ -952,7 +938,7 @@ namespace {
                                 GEO::Logger::err( "GeoModelVertex" )
                                     << " Vertex " << i << " appears " << nb
                                     << " times in "
-                                    << print_gme_id( M.surface( surfaces[ k ] ) )
+                                    << M.surface( surfaces[ k ] ).gme_id()
                                     << std::endl << std::endl ;
                                 valid_vertex = false ;
                             } else if( nb == 2 ) {
@@ -970,7 +956,7 @@ namespace {
                                     GEO::Logger::err( "GeoModelVertex" )
                                         << " Vertex " << i << " appears " << nb
                                         << " times in "
-                                        << print_gme_id( M.surface( surfaces[ k ] ) )
+                                        << M.surface( surfaces[ k ] ).gme_id() 
                                         << std::endl << std::endl ;
                                     valid_vertex = false ;
                                 }
@@ -986,9 +972,9 @@ namespace {
                                     GEO::Logger::err( "GeoModelVertex" )
                                         << " Inconsistent line-surface connectivity "
                                         << " vertex " << i << " shows that "
-                                        << print_gme_id( M.element( s_id ) )
+                                        << M.element( s_id ).gme_id()
                                         << " must be in the boundary of "
-                                        << print_gme_id( M.element( l_id ) )
+                                        << M.element( l_id ).gme_id()
                                         << std::endl << std::endl ;
                                     valid_vertex = false ;
                                 }
@@ -1042,9 +1028,9 @@ namespace {
                                 GEO::Logger::err( "GeoModelVertex" )
                                     << " Inconsistent line-corner connectivity "
                                     << " vertex " << i << " shows that "
-                                    << print_gme_id( M.element( l_id ) )
+                                    << M.element( l_id ).gme_id()
                                     << " must be in the boundary of "
-                                    << print_gme_id( M.element( c_id ) ) << std::endl
+                                    << M.element( c_id ).gme_id() << std::endl
                                     << std::endl ;
                                 valid_vertex = false ;
                             }
@@ -1130,8 +1116,8 @@ namespace {
 
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
-            file << validity_errors_directory << "/invalid_boundary_"
-                << print_gme_id( S ) << ".lin" ;
+            file << validity_errors_directory << "/invalid_boundary_surface_"
+                << S.index() << ".lin" ;
             save_edges( file.str(), S.model(), invalid_corners ) ;
         }
 
@@ -1140,7 +1126,7 @@ namespace {
         } else {
             GEO::Logger::err( "GeoModel" ) << " Invalid surface boundary: "
                 << invalid_corners.size() / 2 << " boundary edges of "
-                << print_gme_id( S ) << "  are in no line of the model " << std::endl
+                << S.gme_id() << "  are in no line of the model " << std::endl
                 << std::endl ;
             return false ;
         }
@@ -1172,7 +1158,7 @@ namespace RINGMesh {
             // Verify that E points actually to this GeoModel
             if( &E.model() != &GM ) {
                 GEO::Logger::err( "GeoModel" ) << "The model stored for "
-                    << GME::type_name( E.gme_id().type ) << " " << E.gme_id().index
+                    << GME::type_name( E.type() ) << " " << E.index()
                     << " is not correct " << std::endl ;
                 valid[ e ] = false ;
                 // This is a major problem
@@ -1181,7 +1167,7 @@ namespace RINGMesh {
             }
             valid[ e ] = E.is_valid() ;
 
-            if( valid[ e ] && E.gme_id().type == GME::REGION ) {
+            if( valid[ e ] && E.type() == GME::REGION ) {
                 // Check validity of region definition
                 valid[ e ] = is_region_valid( E ) ;
             }
@@ -1190,7 +1176,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < valid.size(); ++i ) {
             if( !valid[ i ] ) {
                 GEO::Logger::err( "GeoModel" ) << "Element "
-                    << print_gme_id( GM.element( GME::gme_t( GME::ALL_TYPES, i ) ) )
+                    << GM.element(GME::gme_t(GME::ALL_TYPES, i)).gme_id() 
                     << " is invalid. " << std::endl ;
                 nb_invalid++ ;
             }
@@ -1208,8 +1194,8 @@ namespace RINGMesh {
                 if( S.has_parent()
                     && !GME::is_fault( S.parent().geological_feature() ) ) {
                     GEO::Logger::err( "GeoModel" ) << " Invalid free border: "
-                        << print_gme_id( GM.line( l ) ) << " is in the boundary of "
-                        << print_gme_id( S ) << " that is not a FAULT " << std::endl
+                        << GM.line( l ).gme_id() << " is in the boundary of "
+                        << S.gme_id() << " that is not a FAULT " << std::endl
                         << std::endl ;
                     valid = false ;
                 }
@@ -1221,15 +1207,14 @@ namespace RINGMesh {
             in_boundary_bme( GM.one_interface( i ), layers ) ;
             if( layers.size() == 0 ) {
                 GEO::Logger::err( "GeoModel" ) << " Invalid interface: "
-                    << print_gme_id( GM.one_interface( i ) )
+                    << GM.one_interface(i).gme_id() 
                     << " is in the boundary of no layer " << std::endl ;
                 valid = false ;
-
             }
             if( GM.one_interface( i ).geological_feature() == GME::STRATI
                 && layers.size() > 2 ) {
                 GEO::Logger::err( "GeoModel" ) << " Invalid horizon: "
-                    << print_gme_id( GM.one_interface( i ) )
+                    << GM.one_interface(i).gme_id()
                     << " is in the boundary of " << layers.size()
                     << " different layers " << std::endl ;
                 valid = false ;

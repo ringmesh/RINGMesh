@@ -168,7 +168,7 @@ namespace RINGMesh {
         /*!
          * @brief Clear the vertices - clear the gme_vertices_ -
          *        clear global vertex information in the all BMME
-         * @warning Not stable - crashes if atributes are still bound
+         * @warning Not stable - crashes if attributes are still bound
          */
         void clear() ;
 

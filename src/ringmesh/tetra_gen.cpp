@@ -63,8 +63,6 @@
 #endif 
 
 namespace RINGMesh {
-
-
     /*!
     * Tests if two adjacent facets have the same orientation
     * @param[in] mesh the mesh
@@ -282,12 +280,12 @@ namespace RINGMesh {
             vec3 nearest_point ;
             float64 distance ;
             index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
-            ringmesh_debug_assert( surface.gme_id().index == attribute[ f ] ) ;
+            ringmesh_debug_assert( surface.index() == attribute[ f ] ) ;
 
             vec3 ori_normal = surface.normal( 0 ) ;
             vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
             if( dot( ori_normal, test_normal ) < 0 ) {
-                flip_surface[ surface.gme_id().index ] = true ;
+                flip_surface[ surface.index() ] = true ;
                 flip_sthg = true ;
             }
         }
@@ -594,18 +592,18 @@ namespace RINGMesh {
         for( index_t s = 0; s < nb_surfaces; s++ ) {
             const Surface& surface = 
                 dynamic_cast< const Surface& >( region_->boundary( s ) ) ;
-            if( contains( surface_id, surface.gme_id().index ) ) continue ;
+            if( contains( surface_id, surface.index() ) ) continue ;
             nb_surface_points += surface.nb_vertices() ;
             nb_facets += surface.nb_cells() ;
 
-            surface_id.push_back( surface.gme_id().index ) ;
+            surface_id.push_back( surface.index() ) ;
             unique_surfaces.push_back( &surface ) ;
         }
 
         MakeUnique uniqueID( unique_surfaces, true ) ;
         std::vector< std::vector< Edge > > well_edges ;
         if( wells ) {
-            wells->get_region_edges( region.gme_id().index, well_edges ) ;
+            wells->get_region_edges( region.index(), well_edges ) ;
             // Copy result of porting. Stupid, I know, but because of the interface
             // of MakeUnique. This Edge class is a pain [JP]
             std::vector< std::pair< vec3, vec3 > > wells_copy ;
@@ -666,7 +664,7 @@ namespace RINGMesh {
                             + unique_indices[offset_vertices
                                 + surface.surf_vertex_id( t, v )] ) ;
                 }
-                surface_region[offset_facets + t] = surface.gme_id().index ;
+                surface_region[offset_facets + t] = surface.index() ;
 
             }
             offset_vertices += surface.nb_vertices() ;

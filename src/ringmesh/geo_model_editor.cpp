@@ -282,17 +282,17 @@ namespace RINGMesh {
 
         std::vector< GME::gme_t > to_add_in_universe ;
 
-        if( reg.gme_id().type == GME::REGION ) {
+        if( reg.type() == GME::REGION ) {
             index_t nb_added = 0 ;
             for( index_t b_i = 0; b_i < reg.nb_boundaries(); ++b_i ) {
                 if( !reg.boundary( b_i ).is_on_voi() ) {
                     to_add_in_universe.push_back( reg.boundary( b_i ).gme_id() ) ;
                     ringmesh_debug_assert(
-                        to_erase_by_type[ reg.boundary( b_i ).gme_id().type ][ reg.boundary(
-                        b_i ).gme_id().index ] != NO_ID ) ;
+                        to_erase_by_type[ reg.boundary( b_i ).type() ][ reg.boundary(
+                        b_i ).index() ] != NO_ID ) ;
                     to_add_in_universe[ nb_added ].index =
-                        to_erase_by_type[ reg.boundary( b_i ).gme_id().type ][ reg.boundary(
-                        b_i ).gme_id().index ] ;
+                        to_erase_by_type[ reg.boundary( b_i ).type() ][ reg.boundary(
+                        b_i ).index() ] ;
                     ++nb_added ;
                 }
             }
@@ -390,7 +390,7 @@ namespace RINGMesh {
                 GeoModelElement& E = model_.modifiable_element( gme_t( T, j ) ) ;
 
                 // Not the same than j - since we have erased some elements
-                index_t old_id = E.gme_id().index ;
+                index_t old_id = E.index() ;
                 ringmesh_debug_assert( to_erase[ i ][ old_id ] != NO_ID ) ;
 
                 // id_ 
@@ -490,7 +490,7 @@ namespace RINGMesh {
         lhs.parent_ = rhs.parent_ ;
         lhs.children_ = rhs.children_ ;
 
-        if( lhs.gme_id().type == GME::REGION ) {
+        if( lhs.type() == GME::REGION ) {
             Region& R_lhs = dynamic_cast< Region& >( lhs ) ;
             const Region& R_rhs = dynamic_cast< const Region& >( rhs ) ;
             R_lhs.sides_ = R_rhs.sides_ ;
@@ -545,7 +545,7 @@ namespace RINGMesh {
      */
     void GeoModelEditor::erase_invalid_element_references( GeoModelElement& E )
     {
-        GME::TYPE T = E.gme_id().type ;
+        GME::TYPE T = E.type() ;
         if( E.nb_children() > 0 ) {
             gme_t invalid_child( E.child_type( T ), NO_ID ) ;
             if( std::count( E.children_.begin(), E.children_.end(), invalid_child )
@@ -561,7 +561,7 @@ namespace RINGMesh {
         }
         if( E.nb_boundaries() > 0 ) {
             gme_t invalid_boundary( E.boundary_type( T ), NO_ID ) ;
-            if( E.gme_id().type == GME::REGION ) {
+            if( E.type() == GME::REGION ) {
                 Region& R = dynamic_cast< Region& >( E ) ;
                 // Change side values if necessary
                 index_t offset = 0 ;
@@ -579,13 +579,13 @@ namespace RINGMesh {
                 - E.boundaries_.begin() ) ;
             if( end == 0 ) {
                 E.boundaries_.clear() ;
-                if( E.gme_id().type == GME::REGION ) {
+                if( E.type() == GME::REGION ) {
                     Region& R = dynamic_cast< Region& >( E ) ;
                     R.sides_.clear() ;
                 }
             } else {
                 E.boundaries_.erase( E.boundaries_.begin()+end, E.boundaries_.end() );
-                if( E.gme_id().type == GME::REGION ) {
+                if( E.type() == GME::REGION ) {
                     Region& R = dynamic_cast< Region& >( E ) ;
                     R.sides_.erase( R.sides_.begin() + end, R.sides_.end() ) ;
                 }

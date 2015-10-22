@@ -65,7 +65,7 @@ namespace RINGMesh {
 
             /// Else it is a base element and its size is computed
 
-            switch( E.gme_id().type ) {
+            switch( E.type() ) {
 
                 // If this is a region
                 case GeoModelElement::REGION: {
@@ -119,7 +119,7 @@ namespace RINGMesh {
     {
         double result = 0. ;
 
-        switch( E.gme_id().type ) {
+        switch( E.type() ) {
             case GeoModelElement::REGION: {
                 const Region& R = dynamic_cast< const Region& >( E ) ;
                 const GEO::Mesh& mesh = R.mesh() ;
@@ -145,7 +145,7 @@ namespace RINGMesh {
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = 0 ;
 
-        if( GeoModelElement::has_mesh( E.gme_id().type ) ) {
+        if( GeoModelElement::has_mesh( E.type() ) ) {
             // @todo Improve efficiency, overload the functions to avoid
             // casting each time
             const GeoModelMeshElement& M =
@@ -172,7 +172,7 @@ namespace RINGMesh {
     {
         vec3 result( 0., 0., 0. ) ;       
         const GEO::Mesh& mesh = E.mesh() ;
-        switch( E.gme_id().type ) {
+        switch( E.type() ) {
             case GeoModelElement::REGION: {                
                 return RINGMesh::mesh_cell_center( mesh, c ) ;
             }
