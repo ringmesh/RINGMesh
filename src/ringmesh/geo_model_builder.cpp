@@ -1320,7 +1320,9 @@ namespace RINGMesh {
      *
      * @param[in] ml_file_name Input .ml file stream
      */
-    bool GeoModelBuilderGocad::load_ml_file( const std::string& ml_file_name )
+    bool GeoModelBuilderGocad::load_ml_file( 
+        const std::string& ml_file_name,
+        bool ignore_file_borders )
     {
         GEO::LineInput in( ml_file_name ) ;
         if( !in.OK() ) {
@@ -1592,7 +1594,7 @@ namespace RINGMesh {
 
                     // 2.2 Build the corners from their position and the surface parts
                     //    containing them
-                    else if( in.field_matches( 0, "BSTONE" ) ) {
+                    else if( in.field_matches( 0, "BSTONE" ) && !ignore_file_borders ) {
                         index_t v_id = in.field_as_uint( 1 ) - 1 ;
                         if( !find_corner(model_, tsurf_vertices[v_id]).is_defined() ) {
                             // Create the corner
@@ -1601,7 +1603,7 @@ namespace RINGMesh {
                     }
 
                     /// 2.3 Read the Border information and store it
-                    else if( in.field_matches( 0, "BORDER" ) ) {
+                    else if( in.field_matches( 0, "BORDER" ) && !ignore_file_borders ) {
                         index_t p1 = in.field_as_uint( 2 ) - 1 ;
                         index_t p2 = in.field_as_uint( 3 ) - 1 ;
 
@@ -1646,28 +1648,30 @@ namespace RINGMesh {
         // I agree that we do not need to compute the GeoModelMeshVertices here
         // But perhaps the computation of Lines would be faster and safer [JP]
 
-        /// 3. Build the Lines
-        {
+        /// 3. Build the Lines        
+        if( !ignore_file_borders ) {
+            // Use info of the .ml file to fill the Lines
             std::vector< vec3 > line_vertices ;
             for( index_t i = 0; i < borders_to_build.size(); ++i ) {
-                const Border& b = borders_to_build[i] ;
-
+                const Border& b = borders_to_build[ i ] ;
                 // 1- Build the boundary : construct the vector
                 // of vertices on the border
                 const Surface& S = model_.surface( b.part_id_ ) ;
-
                 gme_t end_corner_id = determine_line_vertices( S, b.p0_, b.p1_,
-                    line_vertices ) ;
-
+                                                               line_vertices ) ;
                 // 2 - Check if this border already exists
                 gme_t line_id = find_or_create_line( *this, line_vertices ) ;
-
                 // Add the surface in which this line is
-                add_element_in_boundary( line_id,
-                    gme_t( GME::SURFACE, b.part_id_ ) ) ;
+                add_element_in_boundary( line_id, S.gme_id() ) ;
             }
         }
-
+        else {
+            // Ignore BORDER and CORNER information of the file
+            // Create them now from the topolgy of the Surfaces
+            model_.mesh.vertices.test_and_initialize() ;
+            build_lines_and_corners() ;
+        }
+        
         /// 4. Build the Contacts
         build_contacts() ;
 
@@ -2622,7 +2626,7 @@ namespace RINGMesh {
     }
 
 
-    bool GeoModelBuilderSurface::build_lines()
+    bool GeoModelBuilderSurface::build_lines_and_corners()
     {
         // Get for all Surface, the triangles that have an edge
         // on the boundary.
@@ -2851,7 +2855,7 @@ namespace RINGMesh {
         // Initialize model_ global vertices 
         model_.mesh.vertices.test_and_initialize() ;
         
-        build_lines() ;       
+        build_lines_and_corners() ;       
 
         if( build_regions_ ) {
             build_regions() ;
