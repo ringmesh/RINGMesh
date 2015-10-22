@@ -48,23 +48,6 @@
 namespace RINGMesh {
 
     /*!
-     * @brief Returns the elements common to two SORTED vectors
-     * @details Convenient, costly (copy) override of std::set_intersection.
-     * The two input vectors MUST be sorted.
-     */
-    template< class T >
-    std::vector< T > intersect(
-        const std::vector< T >& v1,
-        const std::vector< T >& v2 )
-    {
-        std::vector< T > intersect( std::min( v1.size(), v2.size() ) ) ;
-        std::vector< index_t >::iterator it = std::set_intersection(
-            v1.begin(), v1.end(), v2.begin(), v2.end(), intersect.begin() ) ;
-        intersect.resize( it - intersect.begin() ) ;
-        return intersect ;
-    }
-
-    /*!
     * @brief Returns the position of the first element matching @param t 
     * in the vector, NO_ID if not found. 
     */
