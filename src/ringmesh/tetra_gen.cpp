@@ -47,6 +47,7 @@
 #include <ringmesh/geometry.h>
 
 #include <geogram/basic/logger.h>
+#include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -303,8 +304,8 @@ namespace RINGMesh {
 
     class RINGMESH_API TetraGen_TetGen: public TetraGen {
     public:
-        TetraGen_TetGen( GEO::Mesh& tetmesh )
-            : TetraGen( tetmesh )
+        TetraGen_TetGen()
+            : TetraGen()
         {
         }
         virtual ~TetraGen_TetGen()
@@ -313,8 +314,8 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize( bool refine )
         {
-            GEO::mesh_tetrahedralize( tetmesh_, false, refine, 1.0 ) ;
-            check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
+            GEO::mesh_tetrahedralize( *tetmesh_, false, refine, 1.0 ) ;
+            check_and_repair_mesh_consistency( *region_, *tetmesh_ ) ;
             return true ;
         }
     } ;
@@ -555,22 +556,31 @@ namespace RINGMesh {
      */
     TetraGen* TetraGen::create( GEO::Mesh& tetmesh, const std::string& algo_name )
     {
-        TetraGen* mesher = TetraGenFactory::create_object( algo_name, tetmesh ) ;
-        if( mesher != nil ) {
-            return mesher ;
+        TetraGen* mesher = TetraGenFactory::create_object( algo_name ) ;
+        if( !mesher ) {
+            GEO::Logger::warn( "TetraGen" ) << "Could not create TetraGen mesher: "
+                << algo_name << std::endl ;
+            GEO::Logger::warn( "TetraGen" ) << "Falling back to TetGen mode"
+                << std::endl ;
+            mesher = new TetraGen_TetGen() ;
         }
 
-        GEO::Logger::warn( "TetraGen" ) << "Could not create TetraGen mesher: "
-            << algo_name << std::endl ;
-        GEO::Logger::warn( "TetraGen" ) << "Falling back to TetGen mode"
-            << std::endl ;
-
-        return new TetraGen_TetGen( tetmesh ) ;
+        mesher->set_mesh( tetmesh ) ;
+        return mesher ;
     }
 
-    TetraGen::TetraGen( GEO::Mesh& tetmesh )
-         : tetmesh_( tetmesh ), region_( nil ), wells_( nil )
+    TetraGen::TetraGen()
+         : tetmesh_( nil ), region_( nil ), wells_( nil )
     {
+    }
+
+    /*!
+     * Sets the output tetrahedral mesh to fill
+     * @param[out] tetmesh the mesh to tetrahedralize
+     */
+    void TetraGen::set_mesh( GEO::Mesh& tetmesh )
+    {
+        tetmesh_ = &tetmesh ;
     }
 
     /*!
@@ -620,9 +630,9 @@ namespace RINGMesh {
         const std::vector< index_t >& unique_indices = uniqueID.indices() ;
         std::vector< vec3 > unique_points ;
         uniqueID.unique_points( unique_points ) ;
-        index_t starting_index = tetmesh_.vertices.create_vertices(
+        index_t starting_index = tetmesh_->vertices.create_vertices(
             unique_points.size() ) ;
-        GEO::Memory::copy( tetmesh_.vertices.point_ptr( starting_index ),
+        GEO::Memory::copy( tetmesh_->vertices.point_ptr( starting_index ),
             unique_points.data()->data(),
             3 * sizeof(double) * unique_points.size() ) ;
 
@@ -631,16 +641,16 @@ namespace RINGMesh {
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 nb_well_edges += well_edges[w].size() ;
             }
-            tetmesh_.edges.create_edges( nb_well_edges ) ;
-            GEO::Attribute< index_t > edge_region( tetmesh_.edges.attributes(),
+            tetmesh_->edges.create_edges( nb_well_edges ) ;
+            GEO::Attribute< index_t > edge_region( tetmesh_->edges.attributes(),
                 surface_att_name ) ;
             index_t cur_vertex_id = nb_surface_points ;
             index_t cur_edge = 0 ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 for( index_t e = 0; e < well_edges[w].size(); e++ ) {
-                    tetmesh_.edges.set_vertex( cur_edge, 0,
+                    tetmesh_->edges.set_vertex( cur_edge, 0,
                         starting_index + unique_indices[cur_vertex_id++ ] ) ;
-                    tetmesh_.edges.set_vertex( cur_edge, 1,
+                    tetmesh_->edges.set_vertex( cur_edge, 1,
                         starting_index + unique_indices[cur_vertex_id++ ] ) ;
                     edge_region[cur_edge++ ] = w ;
                 }
@@ -649,8 +659,8 @@ namespace RINGMesh {
 
         index_t offset_vertices = 0 ;
         index_t offset_facets = 0 ;
-        tetmesh_.facets.create_triangles( nb_facets ) ;
-        GEO::Attribute< index_t > surface_region( tetmesh_.facets.attributes(),
+        tetmesh_->facets.create_triangles( nb_facets ) ;
+        GEO::Attribute< index_t > surface_region( tetmesh_->facets.attributes(),
             surface_att_name ) ;
         for( index_t s = 0; s < unique_surfaces.size(); s++ ) {
             const Surface& surface =
@@ -659,7 +669,7 @@ namespace RINGMesh {
             for( index_t t = 0; t < surface.nb_cells(); t++ ) {
                 ringmesh_debug_assert( surface.is_triangle( t ) ) ;
                 for( index_t v = 0; v < 3; v++ ) {
-                    tetmesh_.facets.set_vertex( offset_facets + t, v,
+                    tetmesh_->facets.set_vertex( offset_facets + t, v,
                         starting_index
                             + unique_indices[offset_vertices
                                 + surface.surf_vertex_id( t, v )] ) ;
@@ -670,7 +680,7 @@ namespace RINGMesh {
             offset_vertices += surface.nb_vertices() ;
             offset_facets += surface.nb_cells() ;
         }
-        tetmesh_.facets.connect() ;
+        tetmesh_->facets.connect() ;
     }
 
     /*!
@@ -680,8 +690,8 @@ namespace RINGMesh {
     void TetraGen::set_internal_points( const std::vector< vec3 >& points )
     {
         if( points.empty() ) return ;
-        index_t start = tetmesh_.vertices.create_vertices( points.size() ) ;
-        GEO::Memory::copy( tetmesh_.vertices.point_ptr( start ),
+        index_t start = tetmesh_->vertices.create_vertices( points.size() ) ;
+        GEO::Memory::copy( tetmesh_->vertices.point_ptr( start ),
             points.front().data(), points.size() * 3 * sizeof(double) ) ;
     }
 
@@ -691,15 +701,15 @@ namespace RINGMesh {
 
     void TetraGen::initialize_storage( index_t nb_points, index_t nb_tets )
     {
-        tetmesh_.vertices.clear( true, false ) ;
-        tetmesh_.vertices.create_vertices( nb_points ) ;
-        tetmesh_.cells.create_tets( nb_tets ) ;
+        tetmesh_->vertices.clear( true, false ) ;
+        tetmesh_->vertices.create_vertices( nb_points ) ;
+        tetmesh_->cells.create_tets( nb_tets ) ;
     }
 
     void TetraGen::set_point( index_t index, const double* point )
     {
         for( index_t i = 0; i < 3; i++ ) {
-            tetmesh_.vertices.point_ptr( index )[i] = point[i] ;
+            tetmesh_->vertices.point_ptr( index )[i] = point[i] ;
         }
     }
 
@@ -709,9 +719,9 @@ namespace RINGMesh {
         index_t nb_lines,
         index_t nb_triangles )
     {
-        index_t corner_begin = tetmesh_.cells.corners_begin( index ) ;
+        index_t corner_begin = tetmesh_->cells.corners_begin( index ) ;
         for( index_t v = 0; v < 4; v++ ) {
-            tetmesh_.cell_corners.set_vertex( corner_begin++, tet[v] - 1 ) ;
+            tetmesh_->cell_corners.set_vertex( corner_begin++, tet[v] - 1 ) ;
         }
     }
 
