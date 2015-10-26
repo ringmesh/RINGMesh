@@ -54,6 +54,10 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+    /*! @todo Move this global variables in a function */
+    const std::string surface_att_name = "region" ;
+    const std::string region_att_name = "region" ;
+    const std::string order_att_name = "order" ;
 
     class RINGMESH_API GeoModelMeshVertices {
     ringmesh_disable_copy( GeoModelMeshVertices ) ;
@@ -164,7 +168,7 @@ namespace RINGMesh {
         /*!
          * @brief Clear the vertices - clear the gme_vertices_ -
          *        clear global vertex information in the all BMME
-         * @warning Not stable - crashes if atributes are still bound
+         * @warning Not stable - crashes if attributes are still bound
          */
         void clear() ;
 
@@ -222,7 +226,6 @@ namespace RINGMesh {
         GeoModel& gm_ ;
         /// Attached Mesh
         GEO::Mesh& mesh_ ;
-
 
         /*!
          * Vertices in GeoModelElements corresponding to each vertex
@@ -301,7 +304,7 @@ namespace RINGMesh {
          * of the corresponding type of \p f in the owing surface
          * @return the type of the facet \p f
          */
-        FacetType type( index_t f, index_t& index = dummy_index_t ) const ;
+        FacetType type( index_t f, index_t& index ) const ;
 
         /*!
          * Get the number of facets of the corresponding type
@@ -646,7 +649,7 @@ namespace RINGMesh {
          * of the corresponding type of \p c in the owing region
          * @return the type of the cell \p f
          */
-        GEO::MeshCellType type( index_t c, index_t& index = dummy_index_t ) const ;
+        GEO::MeshCellType type( index_t c, index_t& index ) const ;
 
         /*!
          * Get the number of cells of the corresponding type
@@ -786,7 +789,7 @@ namespace RINGMesh {
         void clear_duplication() ;
 
         /*!
-         * Determine if a cell facet is on a surface, if so fill the \p action
+         * Determine if a cell facet is on a surface. If so, fill the \p action
          * with the surface index and the surface side encountered
          * @param[in] c the cell index
          * @param[in] f the facet index
@@ -798,8 +801,8 @@ namespace RINGMesh {
         bool is_cell_facet_on_surface(
             index_t c,
             index_t f,
-            index_t& facet = dummy_index_t,
-            bool& side = dummy_bool ) const ;
+            index_t& facet,
+            bool& side ) const ;
 
         /*!
          * Get the center of the given cell
@@ -1135,13 +1138,13 @@ namespace RINGMesh {
         }
 
     private:
-        /// Attached GeoModel
+        /*! Attached GeoModel */
         GeoModel& gm_ ;
         /*!
-         * @brief Mesh storing the vertices, edges, facets and cells
-         * that are not colocated/duplicated
-         * @details Each mesh element is unique.
-         * On these elements, attributes can be defined
+         * @brief Mesh owned by the GeoModelMesh, stores unique 
+         * vertices, edges, facets and cells.
+         * @details This means no colocated vertices, no duplicated edges, 
+         * facets or cells.
          */
         GEO::Mesh* mesh_ ;
         /// Optional duplication mode to compute the duplication of cells on surfaces
@@ -1154,8 +1157,8 @@ namespace RINGMesh {
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
         GeoModelMeshCells cells ;
+        /*! @todo : Review Change the name, too similar to order_ [JP] */
         GeoModelMeshOrder order ;
-
     } ;
 
 }

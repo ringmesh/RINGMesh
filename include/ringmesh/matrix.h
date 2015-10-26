@@ -106,7 +106,7 @@ namespace RINGMesh {
             elt.value = value ;
         }
 
-        bool find( index_t j, index_t& index = dummy_index_t ) const
+        bool find( index_t j, index_t& index ) const
         {
             for( index_t e = 0; e < nb_elements_; e++ ) {
                 if( elements_[e].index == j ) {

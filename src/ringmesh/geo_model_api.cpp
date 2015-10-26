@@ -65,7 +65,7 @@ namespace RINGMesh {
 
             /// Else it is a base element and its size is computed
 
-            switch( E.gme_id().type ) {
+            switch( E.type() ) {
 
                 // If this is a region
                 case GeoModelElement::REGION: {
@@ -102,7 +102,7 @@ namespace RINGMesh {
                     const Line& L = dynamic_cast< const Line& >( E ) ;
                     for( index_t i = 1; i < L.nb_vertices(); ++i ) {
                         result += GEO::Geom::distance( L.vertex( i ),
-                            L.vertex( i - 1 ) ) ;
+                                                       L.vertex( i - 1 ) ) ;
                     }
                     return result ;
                 }
@@ -119,7 +119,7 @@ namespace RINGMesh {
     {
         double result = 0. ;
 
-        switch( E.gme_id().type ) {
+        switch( E.type() ) {
             case GeoModelElement::REGION: {
                 const Region& R = dynamic_cast< const Region& >( E ) ;
                 const GEO::Mesh& mesh = R.mesh() ;
@@ -133,9 +133,7 @@ namespace RINGMesh {
             case GeoModelElement::LINE: {
                 const Line& L = dynamic_cast< const Line& >( E ) ;
                 const GEO::Mesh& mesh = L.mesh() ;
-                index_t v0 = mesh.edges.vertex( c, 0 ) ;
-                index_t v1 = mesh.edges.vertex( c, 1 ) ;
-                return GEO::Geom::distance( L.vertex( v0 ), L.vertex( v1 ) ) ;
+                return GEO::Geom::distance( L.vertex( c, 0 ), L.vertex( c, 1 ) ) ;
             }
         }
         ringmesh_assert_not_reached ;
@@ -147,7 +145,17 @@ namespace RINGMesh {
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = 0 ;
 
-        if( E.nb_children() ) {
+        if( GeoModelElement::has_mesh( E.type() ) ) {
+            // @todo Improve efficiency, overload the functions to avoid
+            // casting each time
+            const GeoModelMeshElement& M =
+                dynamic_cast< const GeoModelMeshElement& >( E ) ;
+            for( index_t v = 0; v < M.nb_vertices(); v++ ) {
+                result += M.vertex( v ) ;
+            }
+            return result / static_cast< double >( M.nb_vertices() ) ;
+        }
+        else if( E.nb_children() > 0 ) {
             for( index_t i = 0; i < E.nb_children(); ++i ) {
                 const GeoModelMeshElement& F =
                     dynamic_cast< const GeoModelMeshElement& >( E.child( i ) ) ;
@@ -156,44 +164,30 @@ namespace RINGMesh {
             }
             return result / static_cast< double >( nb_vertices ) ;
         } else {
-            const GeoModelMeshElement& F =
-                dynamic_cast< const GeoModelMeshElement& >( E ) ;
-            for( index_t v = 0; v < F.nb_vertices(); v++ ) {
-                result += F.vertex( v ) ;
-            }
-            return result / static_cast< double >( F.nb_vertices() ) ;
+            return result ;
         }
     }
 
-    vec3 model_element_cell_center( const GeoModelElement& E, index_t c )
+    vec3 model_element_cell_center( const GeoModelMeshElement& E, index_t c )
     {
-        vec3 result( 0., 0., 0. ) ;
-        index_t nb_vertices = 0 ;
-
-        switch( E.gme_id().type ) {
-            case GeoModelElement::REGION: {
-                const Region& R = dynamic_cast< const Region& >( E ) ;
-                const GEO::Mesh& mesh = R.mesh() ;
+        vec3 result( 0., 0., 0. ) ;       
+        const GEO::Mesh& mesh = E.mesh() ;
+        switch( E.type() ) {
+            case GeoModelElement::REGION: {                
                 return RINGMesh::mesh_cell_center( mesh, c ) ;
             }
-            case GeoModelElement::SURFACE: {
-                const Surface& S = dynamic_cast< const Surface& >( E ) ;
-                const GEO::Mesh& mesh = S.mesh() ;
+            case GeoModelElement::SURFACE: {             
                 return GEO::Geom::mesh_facet_center( mesh, c ) ;
             }
             case GeoModelElement::LINE: {
-                const Line& L = dynamic_cast< const Line& >( E ) ;
-                const GEO::Mesh& mesh = L.mesh() ;
                 index_t v0 = mesh.edges.vertex( c, 0 ) ;
                 index_t v1 = mesh.edges.vertex( c, 1 ) ;
-                return 0.5 * ( L.vertex( v0 ), L.vertex( v1 ) ) ;
+                return 0.5 * ( mesh.vertices.point( v0 ) + mesh.vertices.point( v1 ) ) ;
             }
             case GeoModelElement::CORNER: {
-                const Corner& C = dynamic_cast< const Corner& >( E ) ;
-                return C.vertex() ;
+                return mesh.vertices.point(0) ;
             }
         }
-
         ringmesh_assert_not_reached ;
         return result ;
     }

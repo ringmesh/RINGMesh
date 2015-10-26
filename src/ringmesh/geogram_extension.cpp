@@ -50,7 +50,6 @@
 
 namespace RINGMesh {
 
-    using namespace GEO ;
     using GEO::vec3 ;
         
 
@@ -257,7 +256,8 @@ namespace RINGMesh {
     }
 
     /*!
-    * Computes the Mesh cell barycenter
+    * Computes the non weighted barycenter of a volumetric 
+    * cell of a Mesh
     * @param[in] M the mesh
     * @param[in] cell the cell index
     * @return the cell center
@@ -290,6 +290,7 @@ namespace RINGMesh {
         index_t p1,
         index_t& edge )
     {
+        using GEO::Numeric::uint8 ;
         for( uint8 e = 0; e < 6; e++ ) {
             index_t v0 = mesh.cells.edge_vertex( t, e, 0 ) ;
             index_t v1 = mesh.cells.edge_vertex( t, e, 1 ) ;
@@ -457,7 +458,7 @@ namespace RINGMesh {
 
 
 
-    void print_bounded_attributes( const Mesh& M )
+    void print_bounded_attributes( const GEO::Mesh& M )
     {
         {
             GEO::vector< std::string > names ;

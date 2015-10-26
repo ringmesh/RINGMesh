@@ -408,10 +408,10 @@ namespace RINGMesh {
             return valid ;
         }
 
-        if( gme_id().index >= model().nb_elements( gme_id().type ) ) {
+        if( index() >= model().nb_elements( type() ) ) {
             GEO::Logger::err( "GeoModelElement" )
                 << " Element index "<< gme_id() << " is not valid " 
-                << " There are " << model().nb_elements( gme_id().type )
+                << " There are " << model().nb_elements( type() )
                 << " element of that type in model " << model().name()
                 << std::endl ;
             // This really should not happen
@@ -433,7 +433,7 @@ namespace RINGMesh {
         /// 2. Check that required information for the TYPE is defined
         ///    and that reverse information is stored by the corresponding
         ///    elements
-        TYPE T = gme_id().type ;
+        TYPE T = type() ;
 
         // Boundaries
         if( boundary_allowed( T ) ) {
@@ -615,7 +615,7 @@ namespace RINGMesh {
      */
     bool GeoModelElement::is_on_voi() const
     {
-        TYPE T = gme_id().type ;
+        TYPE T = type() ;
         if( T == SURFACE ) {
             for( index_t i = 0; i < model().universe().nb_boundaries(); ++i ) {
                 if( model().universe().boundary_id( i ) == gme_id() ) {
@@ -697,28 +697,6 @@ namespace RINGMesh {
 #endif
     }
 
-    /*!
-     * @brief Returns the index of the first point corresponding to the input model index
-     * @details Uses the attribute on the GeoModelMeshVertices that stores the
-     *  corresponding points in BME. Returns NO_ID if no matching point is found.
-     *
-     * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
-     */
-    index_t GeoModelMeshElement::local_id(
-        index_t model_vertex_id ) const
-    {
-        typedef GeoModelMeshVertices BMV ;
-        const std::vector< BMV::VertexInGME >& gme_vertices =
-            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
-
-        for( index_t i = 0; i < gme_vertices.size(); i++ ) {
-            const BMV::VertexInGME& info = gme_vertices[ i ] ;
-            if( info.gme_id == gme_id() ) {
-                return info.v_id ;
-            }
-        }
-        return NO_ID ;
-    }
 
     /*!
      * @brief Binds attributes stored by the BME on the Mesh
@@ -764,29 +742,23 @@ namespace RINGMesh {
         return valid ;
     }
 
-
-    /*!
-     * @brief Vertex index in model from local index
-     * @param[in] p Vertex index
-     * @return The vertex index in the model
-     */
-    index_t GeoModelMeshElement::model_vertex_id( index_t p ) const
+    index_t GeoModelMeshElement::gmme_vertex_index_from_model(
+        index_t model_vertex_id ) const
     {
-        ringmesh_assert( p < nb_vertices() ) ;
-        ringmesh_debug_assert( model_vertex_id_[ p ] != NO_ID ) ;
-        return model_vertex_id_[ p ] ;
+        typedef GeoModelMeshVertices GMMV ;
+        const std::vector< GMMV::VertexInGME >& gme_vertices =
+            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
+
+        for( index_t i = 0; i < gme_vertices.size(); i++ ) {
+            const GMMV::VertexInGME& info = gme_vertices[ i ] ;
+            if( info.gme_id == gme_id() ) {
+                return info.v_id ;
+            }
+        }
+        return NO_ID ;
     }
 
-    /*!
-     * @brief Returns the coordinates of the point at the given index in the surface
-     * @param[in] surf_vertex_id Index of the vertex in the surface
-     * @return The coordinates of the vertex
-     */
-    const vec3& GeoModelMeshElement::vertex( index_t v ) const
-    {
-        ringmesh_assert( v < nb_vertices() ) ;
-        return mesh_.vertices.point( v ) ;
-    }
+
 
     /**************************************************************/
 
@@ -798,28 +770,28 @@ namespace RINGMesh {
         bool valid = true ;
         if( mesh_.vertices.nb() != 1 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Corner " << gme_id().index
+                << "Corner " << index()
                 << " mesh has " << mesh_.vertices.nb()
                 << " vertices " << std::endl ;
             valid = false ;
         }
         if( mesh_.edges.nb() != 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Corner " << gme_id().index
+                << "Corner " << index()
                 << " mesh has " << mesh_.edges.nb()
                 << " edges " << std::endl ;
             valid = false ;
         }
         if( mesh_.facets.nb() != 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Corner " << gme_id().index
+                << "Corner " << index()
                 << " mesh has " << mesh_.facets.nb()
                 << " facets " << std::endl ;
             valid = false ;
         }
         if( mesh_.cells.nb() != 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Corner " << gme_id().index
+                << "Corner " << index()
                 << " mesh has " << mesh_.cells.nb()
                 << " cells " << std::endl ;
             valid = false ;
@@ -828,7 +800,7 @@ namespace RINGMesh {
         // Corner at this position.
         /*if( mesh_.vertices.point( 0 ) == vec3() ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Corner " << gme_id().index
+                << "Corner " << index()
                 << " point is default " << std::endl ;
             valid = false ;
         }*/
@@ -869,28 +841,28 @@ namespace RINGMesh {
         // Check that the GEO::Mesh has the expected elements
         if( mesh_.vertices.nb() < 2 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Line " << gme_id().index
+                << "Line " << index()
                 << " has " << mesh_.vertices.nb()
                 << " vertices " << std::endl ;
             valid = false ;
         }
         if( mesh_.edges.nb() == 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Line " << gme_id().index
+                << "Line " << index()
                 << " mesh has " << mesh_.edges.nb()
                 << " edges " << std::endl ;
             valid = false ;
         }
         if( mesh_.facets.nb() != 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Line " << gme_id().index
+                << "Line " << index()
                 << " mesh has " << mesh_.facets.nb()
                 << " facets " << std::endl ;
             valid = false ;
         }
         if( mesh_.cells.nb() != 0 ) {
             GEO::Logger::err( "GeoModelElement" )
-                << "Line " << gme_id().index
+                << "Line " << index()
                 << " mesh has " << mesh_.cells.nb()
                 << " cells " << std::endl ;
             valid = false ;
@@ -943,9 +915,7 @@ namespace RINGMesh {
         // No zero edge length
         index_t nb_degenerated = 0 ;
         for( index_t e = 0; e < nb_cells(); ++e ) {
-            double l = length(
-                vertex( mesh_.edges.vertex( e, 1 ) )
-                    - vertex( mesh_.edges.vertex( e, 0 ) ) ) ;
+            double l = length( vertex( e, 1 ) - vertex( e, 0 ) ) ;
             if( l < epsilon ) {
                 nb_degenerated++ ;
             }
@@ -1063,7 +1033,7 @@ namespace RINGMesh {
             file << validity_errors_directory
                 << "/"
                 << "invalid_surf_"
-                << gme_id().index << ".obj"  ;
+                << index() << ".obj"  ;
             save_surface_as_obj_file( *this, file.str() ) ;
 
 #endif  
@@ -1071,25 +1041,7 @@ namespace RINGMesh {
         return valid ; 
     }
 
-
-    /*!
-     * @param[in] f Facet index
-     * @param[in] v Vertex index in the facet
-     * @return The coordinates of the vertex
-     */
-    const vec3& Surface::vertex(
-        index_t f,
-        index_t v ) const
-    {
-        ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
-        return vertex( surf_vertex_id( f, v ) ) ;
-    }
    
-
-    index_t Surface::surf_vertex_id( index_t model_vertex_id ) const
-    {
-        return local_id( model_vertex_id ) ;
-    }
     
     /*!
      * @brief Traversal of a surface border
@@ -1181,7 +1133,8 @@ namespace RINGMesh {
         index_t& next_e ) const
     {
         index_t v = next_in_facet( f, e ) ;
-        return next_on_border( f, e, v, next_f, next_e ) ;
+        index_t next_in_next( NO_ID ) ; 
+        return next_on_border( f, e, v, next_f, next_e, next_in_next ) ;
     }
 
     /*!
