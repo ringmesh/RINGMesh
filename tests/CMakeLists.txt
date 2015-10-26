@@ -46,7 +46,7 @@ set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data lo
 set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output" CACHE PATH "Output data location")
 
 if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
-	message(WARNING Defined data directory for tests does not exists, using default tests/data)
+	message(STATUS "Defined data directory for tests does not exists, using default tests/data")
 	SET(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" FORCE)
 endif()	
 		

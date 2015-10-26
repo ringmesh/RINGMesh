@@ -43,100 +43,38 @@
 #define __RINGMESH_TYPES__
 
 #include <geogram/basic/geometry.h>
+#include <geogram/basic/numeric.h>
 
 namespace RINGMesh {
-
-    enum Sign {
-        NEGATIVE = -1, ZERO = 0, POSITIVE = 1
-    } ;  
-
-    template< class T >
-    inline Sign sign( T x )
-    {
-        return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO ) ;
-    }
-
-
-    /**********************************************************/
-    /* @todo Why do we need to redefine those ? [JP]
+    /* If you need interger of 8bits of any other one
+     * it is sufficient to write using GEO::Numeric::uint8 in your file. 
+     * 
+     * Dummy variables were removed, the pollute the namespace and 
+     * it is quite easy to do without them.
      */
 
+    // Basic types used inn RINGMesh
+    // Using definitions of Geogram/basic/numeric.h   
+    using GEO::Numeric::float32 ;
+    using GEO::Numeric::float64 ;
 
-    typedef unsigned char byte ;
-    /*! Generic pointer type */
-    typedef byte* pointer ;
+    using GEO::Numeric::max_float32 ;
+    using GEO::Numeric::min_float32 ;
+    using GEO::Numeric::max_float64 ;
+    using GEO::Numeric::min_float64 ;
 
-    /*! Null pointer type */
-    //#define nil NULL // already in Geogram
-
-    /*! Integer type with a width of 8 bits */
-    typedef char int8 ;
-    /*
-     * @todo Review : I do not understand the point of these uncommented 
-     * dummy variables. I would love to see them removed. To avoid warnings
-     * it is sufficient and clearer for the reader to use the default vec3() [JP]
-     */
-    static int8 dummy_int8 ;
-
-    /*! Integer type with a width of 16 bits */
-    typedef short int16 ;
-    static int16 dummy_int16 ;
-
-    /*! Integer type with a width of 32 bits */
-    typedef int int32 ;
-    static int32 dummy_int32 ;
-
-    /*! Integer type with a width of 64 bits */
-    typedef long int int64 ;
-    static int64 dummy_int64 ;
-
-    /*! Unsigned integer type with a width of 8 bits */
-    typedef unsigned char uint8 ;
-    static uint8 dummy_uint8 ;
-
-    /*! Unsigned integer type with a width of 16 bits */
-    typedef unsigned short uint16 ;
-    static uint16 dummy_uint16 ;
-
-    /*! Unsigned integer type with a width of 32 bits */
-    typedef unsigned int uint32 ;
-    static uint32 dummy_uint32 ;
-
-    /*! Unsigned integer type with a width of 64 bits */
-    typedef unsigned long int uint64 ;
-    static uint64 dummy_uint64 ;
-
-    /*! Floating point type with a width of 32 bits */
-    typedef float float32 ;
-    static float32 dummy_float32 ;
-
-    /*! Floating point type with a width of 64 bits */
-    typedef double float64 ;
-    static float64 dummy_float64 ;
-
-    static bool dummy_bool ;
-
-    const float32 big_float32 = 1e10f ;
-    const float32 small_float32 = 1e-10f ;
-    const float64 big_float64 = 1e20 ;
-    const float64 small_float64 = 1e-20 ;
     const float64 epsilon = 1E-8 ;
     const float64 epsilon_sq = epsilon*epsilon ;
 
-    typedef GEO::vec3 vec3 ;
-    static vec3 dummy_vec3 ;
+    // This is an array of 3 doubles
+    using GEO::vec3 ;
+    // This is an unsigned int
+    using GEO::index_t ;
+    // This is an int
+    using GEO::signed_index_t ;
 
-    typedef GEO::index_t index_t ;
-    static index_t dummy_index_t ;
-    typedef GEO::signed_index_t signed_index_t ;
-    static signed_index_t dummy_signed_index_t ;
-
-    const static index_t NO_ID = index_t( -1 ) ;
-
-    const std::string surface_att_name = "region" ;
-    const std::string region_att_name = "region" ;
-    const std::string order_att_name = "order" ;
-
+    // This is the value used in RINGMesh for a invalid index
+    const static index_t NO_ID(-1) ;
 }
 
 #endif
