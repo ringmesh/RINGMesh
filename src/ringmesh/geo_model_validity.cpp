@@ -1229,8 +1229,9 @@ namespace RINGMesh {
         bool check_surface_intersections )
     {
         GEO::Logger::out( "GeoModel" ) << "Validity checking..." << std::endl ;
+
         // Ensure that the model vertices are computed and up-to-date
-        // Without them we cannot do anything
+        // Without them we cannot do anything        
         GM.mesh.vertices.nb() ;
 
         bool valid = true ;

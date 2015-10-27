@@ -195,23 +195,23 @@ namespace RINGMesh {
         mesh_.vertices.create_vertices( nb ) ;
         gme_vertices_.resize( nb ) ;
 
-        index_t index = 0 ;
+        index_t count = 0 ;
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
                 GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
                 if( E.nb_vertices() == 0 ) continue ;
-                GEO::Memory::copy( mesh_.vertices.point_ptr( index ),
+                GEO::Memory::copy( mesh_.vertices.point_ptr( count ),
                     E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
                 GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
                     GeoModelMeshElement::model_vertex_id_att_name() ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     // Global index stored at BME level
-                    att[v] = index ;
+                    att[ v ] = count ;
                     // Index in the BME stored at global level
-                    gme_vertices_[index].push_back( VertexInGME( E.gme_id(), v ) ) ;
+                    gme_vertices_[ count ].push_back( VertexInGME( E.gme_id(), v ) ) ;
                     // Global vertex index increment
-                    index++ ;
+                    count++ ;
                 }
             }
         }
@@ -356,9 +356,10 @@ namespace RINGMesh {
         }
         // Identify and invalidate colocated vertices
         GEO::vector< index_t > old2new ;
-        if( GEO::Geom::colocate( mesh_.vertices.point_ptr( 0 ), 3,
-            mesh_.vertices.nb(), old2new, epsilon, mesh_.vertices.dimension() )
-            != mesh_.vertices.nb() ) {
+        if( GEO::Geom::colocate( mesh_.vertices.point_ptr( 0 ), 3, 
+                                 mesh_.vertices.nb(), old2new, epsilon)
+            != mesh_.vertices.nb() 
+        ) {
             std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
             erase_vertices( stupid_copy ) ;
         }
