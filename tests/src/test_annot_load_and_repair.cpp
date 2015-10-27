@@ -55,11 +55,20 @@
  */
 int main( int argc, char** argv ) {
     using namespace RINGMesh ;
-    GEO::Logger::out( "RINGMesh Test" ) << "Loading and fixing annot model" << std::endl ;
     
     GeoModel M ;
     std::string file_name( ringmesh_test_data_path ) ;  
-    file_name += "annot.ml" ;
+    file_name += "bug_BC_10_15.ml" ;
+
+    // Set an output log file
+    std::string log_file( ringmesh_test_output_path ) ;
+    log_file += "log.txt" ;
+    GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
+    GEO::Logger::instance()->register_client( file_logger ) ;
+   
+    GEO::Logger::out( "RINGMesh Test" ) 
+        << "Loading and fixing structural model:" 
+        << file_name << std::endl ;
 
     // Set the debug directory for the validity checks 
     set_debug_directory( ringmesh_test_output_path ) ;
@@ -75,7 +84,7 @@ int main( int argc, char** argv ) {
                 << M.name() << " has been successfully fixed " << std::endl ;
             print_model( M ) ;
             std::string fixed_file_name( ringmesh_test_output_path ) ;
-            fixed_file_name += "annot_repaired.ml" ;
+            fixed_file_name += M.name() + "_repaired.ml" ;
             model_save( M, fixed_file_name ) ;
             return 0 ;
         } else {

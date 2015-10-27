@@ -53,12 +53,19 @@ int main( int argc, char** argv )
     /*! @todo Comment this tests 
      *  What is the goal and whatsoever [JP]
      */
-    GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
-
-    GeoModel in ;
     std::string input_model_file_name( ringmesh_test_data_path ) ;
     input_model_file_name += "modelA1.ml" ;
 
+    // Set an output log file
+    std::string log_file( ringmesh_test_output_path ) ;
+    log_file += "log.txt" ;
+    GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
+    GEO::Logger::instance()->register_client( file_logger ) ;
+
+    GEO::Logger::out( "TEST" ) << "Test IO for a GeoModel in .ml" << std::endl ;
+
+
+    GeoModel in ;
     if( !model_load( input_model_file_name, in ) ) {
         return 1 ;
     }
