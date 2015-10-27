@@ -58,7 +58,7 @@ int main( int argc, char** argv ) {
     
     GeoModel M ;
     std::string file_name( ringmesh_test_data_path ) ;  
-    file_name += "bug_BC_10_15.ml" ;
+    file_name += "annot.ml" ;
 
     // Set an output log file
     std::string log_file( ringmesh_test_output_path ) ;

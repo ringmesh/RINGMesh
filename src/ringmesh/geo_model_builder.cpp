@@ -947,15 +947,6 @@ namespace RINGMesh {
             }
         }
 
-        if( is_geomodel_valid( model_ ) ) {
-            GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
-                << model_.name() << " is valid " << std::endl << std::endl ;
-            print_model( model_ ) ;
-        } else {
-            GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
-                << model_.name() << " is invalid " << std::endl << std::endl ;
-            print_model( model_ ) ;
-        }
         return true ;
     }
 
@@ -1527,15 +1518,20 @@ namespace RINGMesh {
             }
         }
 
-        /// 5. Fill missing information and check model validity
-        bool valid_model = end_model() ;
+        /// 5. Fill missing information
+        if( !end_model() ) {
+            return false ;
+        }
 
+        // Check validity
+        is_geomodel_valid( model_ ) ;
+     
         time( &end_load ) ;
         // Output of loading time only in debug mode has no meaning [JP]
         GEO::Logger::out( "I/O" ) << "Model loading time "
             << difftime( end_load, start_load ) << " sec" << std::endl ;
 
-        return valid_model ;
+        return true ;
     }
 
     /*!
@@ -2122,8 +2118,21 @@ namespace RINGMesh {
             }
         }
         if( !end_model() ) {
-            GEO::Logger::err( "GeoModel" ) << "Invalid GeoModel loaded" << std::endl ;
+            return false ;
         }
+
+        // Check validity and send feedback 
+        bool valid_model = is_geomodel_valid( model_ ) ;
+        if( valid_model ) {
+            GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
+                << model_.name() << " is valid " << std::endl << std::endl ;
+            print_model( model_ ) ;
+        } else {
+            GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
+                << model_.name() << " is invalid " << std::endl << std::endl ;
+            print_model( model_ ) ;
+        }
+        
         return true ;
     }
 
@@ -2700,8 +2709,15 @@ namespace RINGMesh {
         // to force their recomputation when checking model validity
         model_.mesh.vertices.clear() ;
 
-        // Finish up the model and check its validity
-        return end_model() ;
+        // Finish up the model
+        if( end_model() ) {
+            // Note: model will not be valid if regions are not built
+            // but other checks are important.
+            is_geomodel_valid( model_ ) ;
+        }
+        else {
+            return false ;
+        }
     }
 
 } // namespace

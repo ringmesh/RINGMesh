@@ -341,7 +341,7 @@ namespace {
                     to_remove.insert( E.gme_id() ) ;
                     continue ;
                 } else {
-                    // We need to update the VertexInGME at the model level
+                /*    // We need to update the VertexInGME at the model level
                     // if they exist. If not let's avoid this costly operation
                     // @todo This is bugged ?? I am not sure. JP
                     if( BM.mesh.vertices.is_initialized() ) {
@@ -361,7 +361,7 @@ namespace {
                             }
                         }
                         BM.mesh.erase_invalid_vertices() ;
-                    }
+                    } */
 
                     for( index_t c = 0; c < M.facet_corners.nb(); c++ ) {
                         M.facet_corners.set_vertex( c,
@@ -390,6 +390,9 @@ namespace RINGMesh {
 
     void geo_model_mesh_repair( GeoModel& GM ) {
         GeoModelEditor editor( GM ) ;
+
+        // Force removal of global vertices - Bugs I do not know where [JP]
+        GM.mesh.vertices.clear() ;
 
         // Remove colocated vertices in each element
         std::set< gme_t > empty_elements ;
