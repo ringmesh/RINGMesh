@@ -77,8 +77,8 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Finish up model building, complete missing information
-        * and check model correctness.
+        * @brief Finish up model building and complete missing information.
+        * @return True except if the model has no surface.
         */
         bool end_model() ;       
     

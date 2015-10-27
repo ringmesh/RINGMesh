@@ -1306,6 +1306,16 @@ namespace RINGMesh {
                 << nb_intersections << "facet intersections " << std::endl ;
             valid = false ;
         }
+
+        // Output 
+        GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
+            << GM.name() ;
+        if( valid ) {
+            GEO::Logger::out( "GeoModel" ) << " is valid "  << std::endl << std::endl ;
+        } else {
+            GEO::Logger::out( "GeoModel" ) << " is invalid " << std::endl << std::endl ;
+        }
+        print_model( GM ) ;
         return valid ;
     }
 
