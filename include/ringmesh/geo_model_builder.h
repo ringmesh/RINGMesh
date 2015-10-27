@@ -38,7 +38,6 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin */
 
 #ifndef __RINGMESH_GEO_MODEL_BUILDER__
 #define __RINGMESH_GEO_MODEL_BUILDER__

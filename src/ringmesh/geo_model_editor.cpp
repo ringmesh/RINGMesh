@@ -119,13 +119,11 @@ namespace RINGMesh {
                 fill_elements_parent( GME::LINE ) ;
             }
         }
-
         // Corners
         if( model_.nb_corners() > 0 && model_.corner( 0 ).nb_in_boundary() == 0 ) {
             // Info from line boundaries is used here and should be available
             fill_elements_in_boundaries( GME::CORNER ) ;
         }
-
         // Surfaces - There MUST be at least one
         if( model_.surface( 0 ).nb_boundaries() == 0 ) {
             fill_elements_boundaries( GME::SURFACE ) ;
@@ -136,7 +134,6 @@ namespace RINGMesh {
         if( !model_.surface( 0 ).parent_id().is_defined() ) {
             fill_elements_parent( GME::SURFACE ) ;
         }
-
         // Regions
         if( model_.nb_regions() > 0 ) {
             if( model_.region( 0 ).nb_boundaries() == 0 ) {
@@ -147,18 +144,15 @@ namespace RINGMesh {
                 fill_elements_parent( GME::REGION ) ;
             }
         }
-
         // Contacts
         if( model_.nb_contacts() > 0 && model_.contact( 0 ).nb_children() == 0 ) {
             fill_elements_children( GME::CONTACT ) ;
         }
-
         // Interfaces
         if( model_.nb_interfaces() > 0
             && model_.one_interface( 0 ).nb_children() == 0 ) {
             fill_elements_children( GME::INTERFACE ) ;
         }
-
         // Layers
         if( model_.nb_layers() > 0 && model_.layer( 0 ).nb_children() == 0 ) {
             fill_elements_children( GME::LAYER ) ;
