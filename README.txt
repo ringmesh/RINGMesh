@@ -12,6 +12,14 @@ Configuring RINGMesh
 
 Execute cmake command in a RINGMesh/build directory.
 
+- mkdir build
+- cd build
+
+To configure using default options:
+- cmake ..
+To define the options, use the cmake interface:
+- cmake-gui .. or ccmake ..
+
 
 Compiling RINGMesh
 ------------------
