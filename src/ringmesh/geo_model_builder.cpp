@@ -38,8 +38,6 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin */
-
 #include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
@@ -54,7 +52,6 @@
 #include <iomanip>
 #include <fstream>
 #include <cmath>
-#include <ctime>
 #include <set>
 #include <stack>
 
@@ -1154,10 +1151,7 @@ namespace RINGMesh {
         if( !in.OK() ) {
             return false ;
         }
-
-        time_t start_load, end_load ;
-        time( &start_load ) ;
-
+        
         // Count the number of TSurf - Interface
         index_t nb_tsurf = 0 ;
 
@@ -1519,19 +1513,7 @@ namespace RINGMesh {
         }
 
         /// 5. Fill missing information
-        if( !end_model() ) {
-            return false ;
-        }
-
-        // Check validity
-        is_geomodel_valid( model_ ) ;
-     
-        time( &end_load ) ;
-        // Output of loading time only in debug mode has no meaning [JP]
-        GEO::Logger::out( "I/O" ) << "Model loading time "
-            << difftime( end_load, start_load ) << " sec" << std::endl ;
-
-        return true ;
+        return end_model() ;       
     }
 
     /*!
@@ -2117,23 +2099,7 @@ namespace RINGMesh {
                 }
             }
         }
-        if( !end_model() ) {
-            return false ;
-        }
-
-        // Check validity and send feedback 
-        bool valid_model = is_geomodel_valid( model_ ) ;
-        if( valid_model ) {
-            GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
-                << model_.name() << " is valid " << std::endl << std::endl ;
-            print_model( model_ ) ;
-        } else {
-            GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
-                << model_.name() << " is invalid " << std::endl << std::endl ;
-            print_model( model_ ) ;
-        }
-        
-        return true ;
+        return end_model() ;            
     }
 
     GeoModelElement::TYPE GeoModelBuilderBM::match_nb_elements(
@@ -2721,15 +2687,7 @@ namespace RINGMesh {
         model_.mesh.vertices.clear() ;
 
         // Finish up the model
-        if( end_model() ) {
-            // Note: model will not be valid if regions are not built
-            // but other checks are important.
-            is_geomodel_valid( model_ ) ;
-            return true ;
-        }
-        else {
-            return false ;
-        }
+        return end_model() ;            
     }
 
 } // namespace

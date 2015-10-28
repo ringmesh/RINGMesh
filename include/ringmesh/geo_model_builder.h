@@ -195,7 +195,8 @@ namespace RINGMesh {
         /*!
         * @brief From a GeoModel in which only Surface are defined, create
         * corners, contacts and optionally regions.   
-        * @return True if a valid model has been built, else returns false.
+        * @return True if a model has been built.
+        * @note Valdity is not checked
         * @pre The GeoModel should have at least one Surface. Nothing is done if not.
         */
         bool build_model() ;
@@ -235,14 +236,13 @@ namespace RINGMesh {
 
         /*!
         * @brief Load and build a GeoModel from a Gocad .ml file
-        * @warning Pretty unstable. Crashes if the file is not exactly as expected.
-        * @details The correspondance between Gocad::Model3D elements 
+        * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
+        * @details Correspondance between Gocad::Model3D elements 
         * and GeoModel elements is :
         *  - Gocad TSurf  <-> GeoModel Interface
         *  - Gocad TFace  <-> GeoModel Surface
         *  - Gocad Region <-> GeoModel Region
         *  - Gocad Layer  <-> GeoModel Layer
-        *
         * @param[in] ml_file_name Input .ml file stream
         * @param[in] ignore_file_borders If true, BORDER and BSTONE entries in the files
         * are ignored and the Lines and Corners of the GeoModel are deduced from the 
