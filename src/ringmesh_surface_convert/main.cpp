@@ -64,10 +64,11 @@ int main( int argc, char** argv )
 	
 	// help
     if( argc == 1 ) {
+		GEO::Logger::div( "Help" ) ;
         GEO::Logger::out( "" ) << "usage: " << argv[0] << " [out_format]" << std::endl ;
         GEO::Logger::out( "" ) << "out_format: a non empty list of output format amongst: obj mesh meshb ply off stl " << std::endl ;
         GEO::Logger::out( "" ) << "This will create a directory for each selected output format in the directory one level above the current one,"
-			<< "and create a new file with the corresponding format for each .ts in the current directory." << std::endl ;
+			<< " and create a new file with the corresponding format for each .ts in the current directory." << std::endl ;
         return 0 ;
     }
 
@@ -117,17 +118,29 @@ int main( int argc, char** argv )
 	// for each .ts file save it in each appropriate format
 	for( std::vector<std::string>::iterator ts_itr = input_ts_names.begin() ; ts_itr < input_ts_names.end(); ++ts_itr ){
 							
+        GEO::Logger::out( "" ) << "Processing: " << (*ts_itr) << std::endl ;
+		GEO::FileSystem::set_current_working_directory(starting_directory) ;
+
 		// load the tsurf
 		GEO::Mesh mesh_surface_in ;
-		if( !load_ts_file( mesh_surface_in, starting_directory + (*ts_itr) ) ){
+		if( !load_ts_file( mesh_surface_in, *ts_itr ) ){
+			GEO::Logger::err( "I/O" ) << "Can't load: " << *ts_itr << std::endl ;
 			continue ;
 		}
 		// get the basename
 		std::string surface_in_basename = GEO::FileSystem::base_name( *ts_itr );
+        GEO::Logger::out( "" ) << " ... basename: " << surface_in_basename << std::endl ;
 
 		// for each format save it
 		for( std::vector<std::string>::iterator format_itr = output_formats.begin(); format_itr < output_formats.end(); ++format_itr ){
+			
+            GEO::Logger::out( "" ) << " ... going to: " << "..\\" << *format_itr << std::endl ;
+		    GEO::FileSystem::set_current_working_directory("..") ;
+		    GEO::FileSystem::set_current_working_directory(*format_itr) ;
+
+            GEO::Logger::out( "" ) << " ... saving to: " << surface_in_basename + "." + (*format_itr) << std::endl ;
 			if( !GEO::mesh_save( mesh_surface_in, surface_in_basename + "." + (*format_itr) ) ){
+				GEO::Logger::err( "I/O" ) << "Can't save to: " << *ts_itr << std::endl ;
 				continue ;
 			}
 		}
