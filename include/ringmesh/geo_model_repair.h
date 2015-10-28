@@ -43,15 +43,27 @@
 
 #include <ringmesh/common.h>
 
+/*!
+* @file ringmesh/geo_model_repair.h
+* @brief Functions to repair GeoModel. 
+* @author Jeanne Pellerin
+*/
+
 namespace RINGMesh {
     class GeoModel ;
 }
 
 namespace RINGMesh { 
 
+    /*!
+     * @brief Try repairing an supposedly invalid GeoModel
+     * @details Remove colocated vertices in all GeoModelMeshElement.
+     *          Remove degenerated edges and facets in Surfaces and Lines.
+     * @warning The Mesh of the model is deleted.
+     *          This function will by no mean fix all errors in a GeoModel
+     *          It has been tested on a very small number of models.
+     */ 
     void RINGMESH_API geo_model_mesh_repair( GeoModel& GM ) ;
-
-
 }
 
 
