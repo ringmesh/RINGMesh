@@ -51,6 +51,11 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+    /*! @brief Print in the console the model statistics
+    *  Output number of facets, vertices, and of the different element types.
+    */
+    void RINGMESH_API print_model( const GeoModel& model ) ;
+
     /*!
      * @brief Compute the size (volume, area, length) of an Element
      *

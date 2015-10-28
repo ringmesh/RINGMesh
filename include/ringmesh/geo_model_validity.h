@@ -38,34 +38,56 @@
 *     FRANCE
 */
 
-/*! \author Jeanne Pellerin */
-
 #ifndef __RINGMESH_GEO_MODEL_VALIDITY__
 #define __RINGMESH_GEO_MODEL_VALIDITY__
 
 #include <ringmesh/common.h>
-
 #include <geogram/basic/file_system.h>
+
+/*!
+* @file ringmesh/geo_model_validity.h
+* @brief Functions to check the validity of GeoModels
+* @author Jeanne Pellerin
+*/
 
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelElement ;
 }
 
+namespace RINGMesh {       
+    /*! Set the default directory to store invalid elements of 
+     *   models to be the current working directory
+     */
+    static std::string validity_errors_directory =
+        GEO::FileSystem::get_current_working_directory() ;
 
-namespace RINGMesh {
-    
-    
     /*!
-    * @brief Check model validity
+     * @brief Set the directory where debugging information on 
+     * invalid elements shall be stored
+     * @details If directory does not exist keep the previous value.
+     */
+    static void set_validity_errors_directory( const std::string& directory )
+    {
+        // If trailing / or \ is not removed, the test fails on Windows
+        std::string copy( directory ) ;
+        if( *copy.rbegin() == '/' ||
+            *copy.rbegin() == '\\' ) {
+            copy.erase( copy.end()-1 ) ;
+        }
+        if( GEO::FileSystem::is_directory( copy ) ) {
+            validity_errors_directory = copy + '/' ;
+        }
+    }
+
+    /*!
+    * @brief Check global model validity
     * @details In debug mode problematic vertices, edges, elements are
-    *          saved in the debug_directory_
-    *
+    *          saved in the validity_errors_directory
+    * @param GM GeoModel to check
     * @param check_surface_intersections Optional expensive check of the
     *        intersections between the model surfaces
-    *
-    * @todo Check the consistency of index info for vertices -
-    * gme_vertices model_vertex_id
+    * @todo Check the consistency of gme_vertices vs. model_vertex_id
     */
     bool RINGMESH_API is_geomodel_valid(
         const GeoModel& GM, 
@@ -78,52 +100,17 @@ namespace RINGMesh {
     *          call the check validity for each element
     *          For regions, check that their boundary is a one connected component
     *          manifold closed surface.
-    *
     */
     bool RINGMESH_API are_geomodel_elements_valid( const GeoModel& GM ) ;
 
-
     /*!
-    * @brief Check geological validity
+    * @brief Check geological validity of a GeoModel
     * @details Only a fault can have a free border and
     *          an stratigraphical interface can be on the boundary of maximum two layers
-    *          See Building and Editing a Sealed Geological Model,
-    *          Caumon et al. 2004
+    *          See Building and Editing a Sealed Geological Model, Caumon et al. 2004
     */
     bool RINGMESH_API is_geomodel_geology_valid( const GeoModel& GM ) ;
-
-
-    /*! The validity error directory where model error information 
-     *  will be stored is by default set to be the current working directory
-     */
-    static std::string validity_errors_directory =
-        GEO::FileSystem::get_current_working_directory() ;
-
-    /*!
-    * @brief Set the directory where debugging information shall be stored
-    * @details Test that this directory exists, if not
-    *          keep the previous value.
-    *          The default directory is the executable directory.
-    */
-    static void set_debug_directory( const std::string& directory )
-    {
-        // If trailing / or \ is not removed, tests fails on Windows
-        std::string copy( directory ) ;
-        if( *copy.rbegin() == '/' ||
-            *copy.rbegin() == '\\' ) {
-            copy.erase( copy.end()-1 ) ;
-        } 
-        if( GEO::FileSystem::is_directory( copy ) ) {
-            validity_errors_directory = copy + '/' ;
-        }         
-    }
-
-
-    /*! @brief Print in the console the model statistics 
-     *  Output number of facets, vertices, and of the different element types.
-     */
-    void RINGMESH_API print_model( const GeoModel& model ) ;
-
+  
 }
 
 

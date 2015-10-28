@@ -2391,6 +2391,15 @@ namespace RINGMesh {
         }
     }
 
+    /*! Delete all RegionBuildingInformation owned by the builder
+     */
+    GeoModelBuilderSurface::~GeoModelBuilderSurface()
+    {
+        for( index_t i = 0; i < regions_info_.size(); ++i ) {
+            delete regions_info_[ i ] ;
+        }
+    }
+
   
     /*! @details Add separately each connected component of the mesh
      *          as a Surface of the model under construction.
@@ -2467,6 +2476,7 @@ namespace RINGMesh {
                     corners, facets_ptr ) ;
             }
         }
+        return true ;
     }
 
 
@@ -2685,6 +2695,7 @@ namespace RINGMesh {
             to_erase.insert( cur_region.gme_id() ) ;
             remove_elements( to_erase ) ;
         }
+        return true ;
     }
 
 
@@ -2714,6 +2725,7 @@ namespace RINGMesh {
             // Note: model will not be valid if regions are not built
             // but other checks are important.
             is_geomodel_valid( model_ ) ;
+            return true ;
         }
         else {
             return false ;

@@ -49,7 +49,39 @@
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/mesh/mesh_geometry.h>
 
+#include <iostream>
+#include <iomanip>
+
 namespace RINGMesh {
+    /*!
+    * @brief Total number of facets in the model Surfaces
+    */
+    index_t nb_facets( const GeoModel& BM )
+    {
+        index_t result = 0 ;
+        for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
+            result += BM.surface( i ).nb_cells() ;
+        }
+        return result ;
+    }
+
+    void print_model( const GeoModel& model )
+    {
+        GEO::Logger::out( "GeoModel" ) << "Model " << model.name() << " has "
+            << std::endl
+            << std::setw( 10 ) << std::left
+            << model.mesh.vertices.nb() << " vertices "
+            << std::endl
+            << std::setw( 10 ) << std::left
+            << nb_facets( model ) << " facets "
+            << std::endl << std::endl ;
+        for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
+            GME::TYPE T = static_cast<GME::TYPE>( t ) ;
+            GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
+                << model.nb_elements( T ) << " " << GME::type_name( T )
+                << std::endl ;
+        }
+    }
 
     double model_element_size( const GeoModelElement& E )
     {
