@@ -47,6 +47,7 @@
 #include <ringmesh/io.h>
 
 #include <geogram/basic/command_line.h>
+#include <geogram/basic/file_system.h>
 #include <geogram/basic/stopwatch.h>
 #include <geogram/mesh/mesh_io.h>
 
@@ -60,38 +61,78 @@ int main( int argc, char** argv )
     GEO::Logger::out( "" ) << "People working on this project in RING" << std::endl ;
     GEO::Logger::out( "" ) << "Gautier Laurent<g.laurent.research@gmail.com> "
         << std::endl ;
-
-    CmdLine::import_arg_group( "in" ) ;
-    CmdLine::import_arg_group( "out" ) ;
-
+	
+	// help
     if( argc == 1 ) {
-        GEO::CmdLine::show_usage() ;
+        GEO::Logger::out( "" ) << "usage: " << argv[0] << " [out_format]" << std::endl ;
+        GEO::Logger::out( "" ) << "out_format: a non empty list of output format amongst: obj mesh meshb ply off stl " << std::endl ;
+        GEO::Logger::out( "" ) << "This will create a directory for each selected output format in the directory one level above the current one,"
+			<< "and create a new file with the corresponding format for each .ts in the current directory." << std::endl ;
         return 0 ;
     }
 
-    std::vector< std::string > filenames ;
-    if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
+	// parsing the output formats
+    std::vector< std::string > output_formats ;
+	GEO::CmdLine::parse( argc, argv, output_formats );
+    if( output_formats.empty() ) {
+        GEO::Logger::err( "I/O" ) << "Give at least one output format amongst: obj mesh meshb ply off stl"
+            << std::endl ;
         return 1 ;
     }
 
     GEO::Stopwatch total( "Total time" ) ;
 
-    std::string surface_in_name = GEO::CmdLine::get_arg( "in:model" ) ;
-    if( surface_in_name  == "" ) {
-        GEO::Logger::err( "I/O" ) << "Give at least a filename in in:model"
+	// get current directory .ts files
+	std::string starting_directory = GEO::FileSystem::get_current_working_directory();
+	std::vector<std::string> input_file_names;
+	GEO::FileSystem::get_files( starting_directory , input_file_names );
+	
+	std::vector<std::string> input_ts_names;
+	for( std::vector<std::string>::iterator file_itr = input_file_names.begin(); file_itr < input_file_names.end(); ++file_itr ){
+		if( GEO::FileSystem::extension( *file_itr ) == "ts" ){
+			input_ts_names.push_back( *file_itr );
+		}
+	}
+
+    if( input_ts_names.empty() ) {
+        GEO::Logger::err( "I/O" ) << "Run this command in a folder with at least on .ts file."
             << std::endl ;
         return 1 ;
     }
-    GEO::Mesh mesh_surface_in ;
-    if( !load_ts_file( mesh_surface_in, surface_in_name ) ){
+	
+	// create the output format folders
+	if( !GEO::FileSystem::set_current_working_directory("..") ){
+        GEO::Logger::err( "I/O" ) << "Can't access parent directory."
+            << std::endl ;
         return 1 ;
 	}
-	
-    std::string surface_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
-    if( surface_out_name != "" ) {
-        if( !GEO::mesh_save( mesh_surface_in, surface_out_name ) )
-            return 1 ;
-    }
-	
+	for( std::vector<std::string>::iterator format_itr = output_formats.begin(); format_itr < output_formats.end(); ++format_itr ){
+		if( !GEO::FileSystem::create_directory( *format_itr ) ){
+			GEO::Logger::err( "I/O" ) << "Can't create " << *format_itr << " directory."
+				<< std::endl ;
+			return 1 ;
+		}
+	}
+
+	// for each .ts file save it in each appropriate format
+	for( std::vector<std::string>::iterator ts_itr = input_ts_names.begin() ; ts_itr < input_ts_names.end(); ++ts_itr ){
+							
+		// load the tsurf
+		GEO::Mesh mesh_surface_in ;
+		if( !load_ts_file( mesh_surface_in, starting_directory + (*ts_itr) ) ){
+			continue ;
+		}
+		// get the basename
+		std::string surface_in_basename = GEO::FileSystem::base_name( *ts_itr );
+
+		// for each format save it
+		for( std::vector<std::string>::iterator format_itr = output_formats.begin(); format_itr < output_formats.end(); ++format_itr ){
+			if( !GEO::mesh_save( mesh_surface_in, surface_in_basename + "." + (*format_itr) ) ){
+				continue ;
+			}
+		}
+
+	}
+
     return 0 ;
 }
