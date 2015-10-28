@@ -183,12 +183,8 @@ namespace RINGMesh {
             build_regions_( build_regions )
         {
         }
-        virtual ~GeoModelBuilderSurface()
-        {
-            for( index_t i = 0; i < regions_info_.size(); ++i ) {
-                delete regions_info_[ i ] ;
-            }
-        }
+        virtual ~GeoModelBuilderSurface() ;
+
         /*!
         * @brief Create the model Surfaces from the connected components
         *       of the input surface mesh
