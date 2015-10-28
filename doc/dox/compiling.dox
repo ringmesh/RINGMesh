@@ -111,7 +111,7 @@ Compiling RINGMesh
 
 You can either launch building in VisualStudio or calling cmake in command line
 in the build directory created at the configuration step.
-- cmake --build . --config Release
+- cmake \--build . \--config Release
 
 
 */
