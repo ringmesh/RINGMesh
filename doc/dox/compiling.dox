@@ -57,6 +57,13 @@ Configuring RINGMesh
 
 Execute cmake command in a RINGMesh/build directory.
 
+- mkdir build
+- cd build
+
+To configure using default options:
+- cmake ..
+To define the options, use the cmake interface:
+- cmake-gui .. or ccmake ..
 
 Compiling RINGMesh
 ------------------
@@ -104,7 +111,7 @@ Compiling RINGMesh
 
 You can either launch building in VisualStudio or calling cmake in command line
 in the build directory created at the configuration step.
-- cmake --build . --config Release
+- cmake \--build . \--config Release
 
 
 */
