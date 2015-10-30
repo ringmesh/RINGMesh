@@ -1,0 +1,351 @@
+# Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of the <organization> nor the
+#       names of its contributors may be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# 
+#  Contacts:
+#     Arnaud.Botella@univ-lorraine.fr
+#     Antoine.Mazuyer@univ-lorraine.fr
+#     Jeanne.Pellerin@wias-berlin.de
+# 
+#     http://www.ring-team.org
+# 
+#     RING Project
+#     Ecole Nationale Superieure de Geologie - GeoRessources
+#     2 Rue du Doyen Marcel Roubault - TSA 70605
+#     54518 VANDOEUVRE-LES-NANCY
+#     FRANCE
+
+
+# Root CMakeList of RINGMesh project
+cmake_minimum_required(VERSION 2.8)
+
+#------------------------------------------------------------------------------------------------
+# Options of the RINGMesh project 
+# They can be set using CMake GUI, or in command line: cmake -D<var>:<type>=<value> MyProjectFolder
+
+# Configuration modes - Debug and Release by default 
+set(CMAKE_CONFIGURATION_TYPES 
+      Debug Release CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
+
+# If a path is specified RINGMesh will be compiled to work with - empty by default
+set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
+
+# By default RINGMesh will be compiled with OpenMP flags
+option(USE_OPENMP "Use Open MP" ON)
+
+# Optional components of RINGMesh - creation of specific targets
+option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
+option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
+option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
+
+# Optional custom steps 
+option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
+
+# Turn on the ability to create folders to organize projects and files
+# It creates "CMakePredefinedTargets" folder by default and adds CMake
+# defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+#------------------------------------------------------------------------------------------------
+# Additional cmake modules
+include(ExternalProject)
+
+# Enable testing with CTest
+enable_testing()
+
+#------------------------------------------------------------------------------------------------
+# Define the project RINGMesh      
+project(RINGMesh)
+
+# Define version number 
+# It is then exported to the configuration file
+set (RINGMesh_VERSION_MAJOR 1)
+set (RINGMesh_VERSION_MINOR 0)
+
+
+#------------------------------------------------------------------------------------------------
+# Generate configuration directories for single-configuration generators (Make)
+# and run cmake configuration command in each one of them
+if(UNIX)    
+    # If the CMAKE_BUILD_TYPE is no defined
+    # i.e. at first run of that file
+    if(CMAKE_BUILD_TYPE STREQUAL "")   
+    
+      # For all configuration types  
+      foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
+          # The binary directory for this configuration
+          set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/ringmesh/${config})
+    
+          # Create the directory
+          file(MAKE_DIRECTORY ${project_binary_dir_config})
+          
+          # Launch cmake for this configuration
+          # by specifying the CMAKE_BUILD_TYPE and the PROJECT _BINARY_DIR, 
+          # and pass on all the options
+          execute_process(
+             COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
+                -DCMAKE_BUILD_TYPE:STRING=${config}
+                -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
+                -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
+                -DMG_TETRA:STRING=${MG_TETRA}
+                -DUSE_OPENMP:BOOL=${USE_OPENMP}
+                -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+                -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
+                -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
+			    -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
+				-DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
+			    -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}                
+                WORKING_DIRECTORY ${project_binary_dir_config})                
+      endforeach()
+      
+      # Get out when all configurations have been run
+      # We do not want to execute the rest of the file in that case
+      return()
+    endif()
+else(UNIX)
+    set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
+endif(UNIX)
+
+message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}") 
+message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}") 
+
+#------------------------------------------------------------------------------------------------
+# Platform dependent settings
+if(WIN32)
+    add_compile_options(-DRINGMESH_EXPORTS) 
+	
+	# Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
+    set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
+elseif(UNIX)
+    # If you really need it, please comment [JP]
+    # Maybe rather test the compiler than the system
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+    # Enable parallel computation
+    set(COMPILATION_OPTION -- -j4)    
+else(WIN32)
+    # Nothing else really supported
+    message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    
+endif(WIN32)
+
+#------------------------------------------------------------------------------------------------
+# Configure a header file to pass on some of the CMake settings
+# to the source code
+set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
+set(input_configure_file ${PROJECT_SOURCE_DIR}/include/ringmesh/ringmesh_config.h.in)
+configure_file(${input_configure_file} ${generated_configure_file})
+
+# We want to be able to include this file
+include_directories(${PROJECT_BINARY_DIR})
+ 
+#------------------------------------------------------------------------------------------------
+# GEOGRAM 
+# Set the path to Geogram code
+set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
+
+# Geogram platform dependent settings
+if(WIN32)
+    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram)
+    set(geoplatform Win-vs-dynamic-generic)  
+	# Extra lib 
+    set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
+	# TODO check that it is really necessary [JP]
+    add_compile_options(-DGEO_DYNAMIC_LIBS) 
+else(WIN32)
+    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
+    set(geoplatform Linux64-gcc-dynamic)
+endif(WIN32)
+
+# Define Geogram as an external project that we know how to
+# configure and compile
+ExternalProject_Add(geogram_ext
+  PREFIX ${GEOGRAM_PATH}
+  
+  #--Download step--------------
+  DOWNLOAD_COMMAND ""
+  
+  #--Update/Patch step----------
+  UPDATE_COMMAND ""
+
+  #--Configure step-------------
+  SOURCE_DIR ${GEOGRAM_PATH}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
+        -G ${CMAKE_GENERATOR} 
+        -DVORPALINE_PLATFORM:STRING=${geoplatform}
+        -DGEOGRAM_WITH_TETGEN:BOOL=ON
+        -DGEOGRAM_WITH_MEDIT:BOOL=ON 
+        -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}  
+  
+  #--Build step-----------------
+  BINARY_DIR ${GEOGRAM_PATH_BIN}
+  #-- Command to build geogram
+  BUILD_COMMAND ${CMAKE_COMMAND} --build ${GEOGRAM_PATH_BIN} ${COMPILATION_OPTION}
+
+  #--Install step---------------
+  INSTALL_COMMAND "" 
+)
+
+# Add geogram include directories to the current ones
+include_directories(${GEOGRAM_PATH}/src/lib)
+
+# Add geogram project libs to the libs with which RINGMesh will link
+set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
+if(RINGMESH_WITH_GRAPHICS)
+    set(EXTRA_LIBS ${EXTRA_LIBS} geogram_gfx)
+endif(RINGMESH_WITH_GRAPHICS)
+    
+# Add geogram bin directories to the current ones 
+# It would be preferable to set the imported library location [JP]
+link_directories(${GEOGRAM_PATH_BIN}/lib)
+
+#------------------------------------------------------------------------------------------------    
+# Get MG-Tetra if a path is given
+if(MG_TETRA)   
+  set(USE_MG_TETRA ON)
+  message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
+  include_directories(${MG_TETRA}/include)
+ 
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(PLATFORM _64)
+  else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    SET(PLATFORM)
+  endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  
+  # Is there not a nice way to import this library? [JP]
+  if(WIN32)
+    link_directories(${MG_TETRA}/lib/WIN7${PLATFORM}_VC10)
+  else(WIN32)
+    link_directories(${MG_TETRA}/lib/Linux${PLATFORM})
+  endif(WIN32)
+   
+  set (EXTRA_LIBS ${EXTRA_LIBS} meshgems mg-tetra)
+endif()
+
+#------------------------------------------------------------------------------------------------
+# Add compiler options for OpenMP
+if(USE_OPENMP)
+    find_package(OpenMP)
+    if (OPENMP_FOUND)
+        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif()
+endif(USE_OPENMP)
+
+#------------------------------------------------------------------------------------------------
+# Collect the library files
+file(GLOB ringmesh_src "${PROJECT_SOURCE_DIR}/src/ringmesh/*.cpp")
+file(GLOB ringmesh_include "${PROJECT_SOURCE_DIR}/include/ringmesh/*.h")
+file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/src/third_party/zlib/*.c")
+file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")
+
+# Add configure file to ringmesh includes
+set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
+
+# Group files of a project in directories
+# For this to work, all the files should be added to the sources of the project
+# and the global property USE_FOLDERS must be ON
+source_group("Zlib" FILES ${zlib_src} ${zlib_include})
+source_group("Source Files" FILES ${ringmesh_src})
+source_group("Header Files" FILES ${ringmesh_include})
+
+#------------------------------------------------------------------------------------------------
+# Build configuration
+# Organize outputs in a Linux way
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
+# Add include directories of RINGMesh
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
+# Add the RINGMesh target as a shared library
+add_library(RINGMesh SHARED
+    ${ringmesh_include} 
+    ${ringmesh_src} 
+    ${zlib_src}
+    ${zlib_include})
+
+# RINGMesh depends on Geogram
+add_dependencies(RINGMesh geogram_ext)
+
+# Libraries to which RINGMesh should link
+target_link_libraries(RINGMesh ${EXTRA_LIBS})
+
+if(WIN32)
+    # On windows, without proper installation steps, we need to 
+    # copy of Geogram dll and pdb information to RINGMesh
+    # to be able to launch RINGMesh utilities and tests from the debugger
+    add_custom_command(TARGET RINGMesh POST_BUILD 
+       COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+           "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
+           "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+       COMMENT "Copy geogram binaries")
+endif(WIN32)
+
+
+#------------------------------------------------------------------------------------------------
+# Optional modules configuration
+if(RINGMESH_WITH_GRAPHICS)
+    message(STATUS "Configuring RINGMesh with graphics")
+    add_subdirectory(src/ringmeshview)
+endif(RINGMESH_WITH_GRAPHICS)
+
+if(RINGMESH_WITH_UTILITIES)
+    message(STATUS "Configuring RINGMesh with utilities")
+    add_subdirectory(src/ringmeshconvert)
+endif(RINGMESH_WITH_UTILITIES)
+
+if(RINGMESH_WITH_TESTS)
+    message(STATUS "Configuring RINGMesh with tests")
+	set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests)
+	set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
+    add_subdirectory(tests)
+endif(RINGMESH_WITH_TESTS)
+
+if(BUILD_DOCUMENTATION)
+    message(STATUS "Configuring RINGMesh with doxygen")
+    find_package(Doxygen)
+    if(NOT DOXYGEN_FOUND)
+        message(FATAL_ERROR "Doxygen is needed to build the documentation.")
+    endif()
+    
+    set(doxyfile ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
+
+    # To set properly project version and paths
+    # we should use an input file and use configure_file to populate the doxyfile [JP]
+    # set(doxyfile_in ${PROJECT_SOURCE_DIR}/Doxyfile.in)
+    # configure_file(${doxyfile_in} ${doxyfile} @ONLY)  
+    
+    # Create a target that can be build from the IDE 
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM)
+
+    # We should think about installation steps for the whole project [JP]
+    # install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/html DESTINATION share/doc)
+endif()
