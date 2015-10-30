@@ -14,3 +14,4 @@ if(GEOGRAM_WITH_VORPALINE)
 endif()
 
 add_subdirectory(test_RVC)
+#add_subdirectory(test_RVC2)

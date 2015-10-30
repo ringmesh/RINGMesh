@@ -99,8 +99,7 @@ namespace GEO {
          * \brief Draws the volumetric part of the mesh.
          */
         void draw_volume();
-
-
+        
         /**
          * \brief Gets the mesh visibility flag.
          * \details The mesh visibility flags specifies
@@ -377,6 +376,31 @@ namespace GEO {
          */
         const Mesh* mesh() const;
 
+        /**
+         * \brief Sets picking mode.
+         * \details If picking mode is MESH_NONE, then normal drawing
+         *  is activated, else the color is replaced with the index of
+         *  the elements.
+         * \param[in] what a bitwise or ('|') combination of 
+         *  MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS,
+         *  or MESH_NONE if picking mode should be deactivated
+         * \note Picking mode is currently only implemented with
+         *  GLSL support at least v1.5, and only works for points,
+         *  segments, pure triangle meshes and pure tetrahedral meshes
+         *  (facet picking for polygonal meshes and cell picking for 
+         *   hybrid meshes are not implemented yet).
+         */
+        void set_picking_mode(MeshElementsFlags what);
+
+        /**
+         * \brief Gets the current picking mode.
+         * \return a bitwise or ('|') combination of 
+         *  MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS,
+         *  or MESH_NONE if picking mode is deactivated
+         */
+        MeshElementsFlags get_picking_mode() const;
+        
+        
     protected:
 
         /**
@@ -394,6 +418,7 @@ namespace GEO {
          *  copied from the current implementation to the
          *  new one. On exit, ownership of new_impl is 
          *  transfered to this MeshGfx.
+         * \param[in] new_impl a pointer to the new implementation
          */
         void replace_implementation(MeshGfxImpl* new_impl);
 
@@ -406,6 +431,7 @@ namespace GEO {
         double supported_GLSL_version();
         
         MeshGfxImpl* impl_;
+        MeshGfxImpl* pick_impl_;
         bool initialized_;
         
         /**

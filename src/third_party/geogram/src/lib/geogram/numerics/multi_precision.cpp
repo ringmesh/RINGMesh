@@ -747,17 +747,14 @@ namespace GEO {
             Process::release_spinlock(lock);
         }
         Memory::pointer addr = Memory::pointer(
-            pools_.malloc(expansion::bytes(capa) + sizeof(index_t))
+            pools_.malloc(expansion::bytes(capa))
         );
-        expansion* result = new(addr + sizeof(index_t))expansion(capa);
-        expansion_refcount(result) = 0;
+        expansion* result = new(addr)expansion(capa);
         return result;
     }
 
     void expansion::delete_expansion_on_heap(expansion* e) {
-        // e->capacity()-1 because we added a "sentry" in expansion's constructor.
-        size_t size_in_bytes = expansion::bytes(e->capacity()-1) + sizeof(index_t);        
-        pools_.free(expansion_baddr(e), size_in_bytes);
+        pools_.free(e, expansion::bytes(e->capacity()));
     }
 
     // ====== Initialization from expansion and double ===============
@@ -995,6 +992,109 @@ namespace GEO {
         return *this;
     }
 
+    expansion& expansion::assign_length2(
+        const expansion& x, const expansion& y, const expansion& z
+    ) {
+        const expansion& x2 = expansion_square(x);
+        const expansion& y2 = expansion_square(y);
+        const expansion& z2 = expansion_square(z);
+        this->assign_sum(x2,y2,z2);
+        return *this;
+    }
+    
     /************************************************************************/
+
+    Sign sign_of_expansion_determinant(
+        const expansion& a00,const expansion& a01,  
+        const expansion& a10,const expansion& a11
+    ) {
+        const expansion& result = expansion_det2x2(a00, a01, a10, a11);
+        return result.sign();
+    }
+
+    Sign sign_of_expansion_determinant(
+        const expansion& a00,const expansion& a01,const expansion& a02,
+        const expansion& a10,const expansion& a11,const expansion& a12,
+        const expansion& a20,const expansion& a21,const expansion& a22
+    ) {
+        // First compute the det2x2
+        const expansion& m01 =
+            expansion_det2x2(a00, a10, a01, a11); 
+        const expansion& m02 =
+            expansion_det2x2(a00, a20, a01, a21);
+        const expansion& m12 =
+            expansion_det2x2(a10, a20, a11, a21);
+
+        // Now compute the minors of rank 3
+        const expansion& z1 = expansion_product(m01,a22);
+        const expansion& z2 = expansion_product(m02,a12).negate();
+        const expansion& z3 = expansion_product(m12,a02);
+
+        const expansion& result = expansion_sum3(z1,z2,z3);
+        return result.sign();
+    }
+    
+    Sign sign_of_expansion_determinant(
+        const expansion& a00,const expansion& a01,
+        const expansion& a02,const expansion& a03,
+        const expansion& a10,const expansion& a11,
+        const expansion& a12,const expansion& a13,
+        const expansion& a20,const expansion& a21,
+        const expansion& a22,const expansion& a23,
+        const expansion& a30,const expansion& a31,
+        const expansion& a32,const expansion& a33 
+    ) {
+
+        // First compute the det2x2        
+        const expansion& m01 =
+            expansion_det2x2(a10,a00,a11,a01);
+        const expansion& m02 =
+            expansion_det2x2(a20,a00,a21,a01);
+        const expansion& m03 =
+            expansion_det2x2(a30,a00,a31,a01);
+        const expansion& m12 =
+            expansion_det2x2(a20,a10,a21,a11);
+        const expansion& m13 =
+            expansion_det2x2(a30,a10,a31,a11);
+        const expansion& m23 =
+            expansion_det2x2(a30,a20,a31,a21);     
+        
+        // Now compute the minors of rank 3
+        const expansion& m012_1 = expansion_product(m12,a02);
+        expansion& m012_2 = expansion_product(m02,a12); m012_2.negate();
+        const expansion& m012_3 = expansion_product(m01,a22);
+        const expansion& m012 = expansion_sum3(m012_1, m012_2, m012_3);
+
+        const expansion& m013_1 = expansion_product(m13,a02);
+        expansion& m013_2 = expansion_product(m03,a12); m013_2.negate();
+        
+        const expansion& m013_3 = expansion_product(m01,a32);
+        const expansion& m013 = expansion_sum3(m013_1, m013_2, m013_3);
+        
+        const expansion& m023_1 = expansion_product(m23,a02);
+        expansion& m023_2 = expansion_product(m03,a22); m023_2.negate();
+        const expansion& m023_3 = expansion_product(m02,a32);
+        const expansion& m023 = expansion_sum3(m023_1, m023_2, m023_3);
+
+        const expansion& m123_1 = expansion_product(m23,a12);
+        expansion& m123_2 = expansion_product(m13,a22); m123_2.negate();
+        const expansion& m123_3 = expansion_product(m12,a32);
+        const expansion& m123 = expansion_sum3(m123_1, m123_2, m123_3);
+        
+        // Now compute the minors of rank 4
+        const expansion& m0123_1 = expansion_product(m123,a03);
+        const expansion& m0123_2 = expansion_product(m023,a13);
+        const expansion& m0123_3 = expansion_product(m013,a23);
+        const expansion& m0123_4 = expansion_product(m012,a33);
+
+        const expansion& z1 = expansion_sum(m0123_1, m0123_3);
+        const expansion& z2 = expansion_sum(m0123_2, m0123_4);
+
+        const expansion& result = expansion_diff(z1,z2);
+        return result.sign();
+    }
+    
+    /************************************************************************/
+    
 }
 

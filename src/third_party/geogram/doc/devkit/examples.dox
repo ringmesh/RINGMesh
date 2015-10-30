@@ -91,9 +91,61 @@ can be used to specify the average distance between
 two samples used to estimate the Hausdorff distance (expressed in absolute units or
 in percentage of the bounding box diagonal if it has a trailing '\%' sign).
 
+vorpalite
+---------
+
+vorpalite implements several reconstruction and remeshing algorithms.
+Use the following command to see all the available options:
+\code
+   vorpalite -h
+\endcode
+
+Some examples: \n
+
+Reconstruction (clean point cloud):
+\code
+   vorpalite profile=reconstruct my_points.xyz my_surface.meshb
+\endcode
+
+Reconstruction (noisy point cloud):
+\code
+   vorpalite profile=reconstruct co3ne:Psmooth_iter=2 my_points.xyz my_surface.meshb
+\endcode
+
+Remeshing (anisotropic):
+\code
+   vorpalite profile=remesh input_surface.meshb output_surface.meshb pts=30000
+\endcode
+where 30000 is the desired number of points
+
+Remeshing (isotropic):
+\code
+   vorpalite profile=remesh input_surface.meshb output_surface.meshb pts=30000 aniso=0
+\endcode
+
+Remeshing (graded):
+\code
+   vorpalite profile=remesh input_surface.meshb output_surface.meshb pts=30000 aniso=0 gradation=1
+\endcode
+
+Repair:
+\code
+   vorpaline profile=repair input_surface.meshb output_surface.meshb
+\endcode
+
+Tetrahedral meshing (through bundled TetGen, by Hang Si):
+\code
+   vorpaline profile=tet input_surface.meshb output_tetrahedral_mesh.meshb
+\endcode
+
 compute_delaunay
 ----------------
-computes the 3D delaunay triangulation of a set of points
+computes the 3D Delaunay triangulation of a set of points. Note: this is not a
+reconstruction method, the 3D Delaunay triangulation is a tetrahedral mesh that
+uses all the points as its vertices, and that has a boundary that corresponds to
+the convex hull of the pointset. It is not directly useful for applications, but some users
+may want to compute it to extract information from it, e.g. to implement their own
+reconstruction method.
 
 usage:
 \code compute_delaunay pointsfile <outputfile> \endcode
