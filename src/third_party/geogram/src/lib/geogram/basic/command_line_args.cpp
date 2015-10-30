@@ -173,7 +173,7 @@ namespace {
         declare_arg_group("algo", "Algorithms", ARG_ADVANCED);
         declare_arg(
             "algo:nn_search", "BNN",
-            "Nearest neighbors search (ANN, BNN)"
+            "Nearest neighbors search (BNN, ...)"
         );
         declare_arg(
             "algo:delaunay", "NN",
