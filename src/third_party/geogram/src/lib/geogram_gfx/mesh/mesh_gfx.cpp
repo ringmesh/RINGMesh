@@ -213,18 +213,29 @@ namespace GEO {
         return impl_->mesh();
     }
 
+    void MeshGfx::set_picking_mode(MeshElementsFlags what) {
+        impl_->set_picking_mode(what);
+    }
+
+    MeshElementsFlags MeshGfx::get_picking_mode() const {
+        return impl_->get_picking_mode();
+    }
+    
     void MeshGfx::setup() {
         // First time, we try to "upgrade" implementation
         // to higher GLSL version if supported
         if(!initialized_) {
             double GLSL_version = supported_GLSL_version();
-            Logger::out("GLSL") << "Selecting among NoShader,GLSL150,GLSL440..." << std::endl;
+            Logger::out("GLSL")
+                << "Selecting among NoShader,GLSL150,GLSL440..." << std::endl;
             if(GLSL_version < 1.5) {
-                Logger::out("GLSL") << "Using MeshGfxImplNoShader" << std::endl;
-                // We keep the already bound default implementation (plain OpenGL)
+                Logger::out("GLSL")
+                    << "Using MeshGfxImplNoShader" << std::endl;
+                // We keep the already bound default implementation
+                //  (plain OpenGL)
             } else if(GLSL_version < 4.4) {
                 Logger::out("GLSL") << "Using MeshGfxImplGLSL150" << std::endl;
-                replace_implementation(new MeshGfxImplGLSL150);            
+                replace_implementation(new MeshGfxImplGLSL150); 
             } else {
                 Logger::out("GLSL") << "Using MeshGfxImplGLSL440" << std::endl;
                 replace_implementation(new MeshGfxImplGLSL440);
@@ -244,7 +255,9 @@ namespace GEO {
         }
     }
 
-    void MeshGfx::replace_implementation(MeshGfxImpl* new_impl) {
+    void MeshGfx::replace_implementation(
+        MeshGfxImpl* new_impl
+    ) {
         new_impl->copy_drawing_attributes(*impl_);
         new_impl->set_mesh(impl_->mesh());
         delete impl_;
