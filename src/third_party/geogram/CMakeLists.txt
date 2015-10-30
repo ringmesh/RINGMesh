@@ -21,8 +21,8 @@ endif()
 
 # Optional modules
 # (can be overriden in CMakeOptions.txt)
-set(GEOGRAM_WITH_MEDIT TRUE)
-set(GEOGRAM_WITH_GRAPHICS TRUE)
+#set(GEOGRAM_WITH_MEDIT TRUE) # [Jeanne]
+#set(GEOGRAM_WITH_GRAPHICS TRUE) # [Jeanne]
 
 include(cmake/geogram.cmake)
 
@@ -86,9 +86,10 @@ if(GEOGRAM_WITH_GRAPHICS)
 
 endif()
 
-add_subdirectory(src/test)
-add_subdirectory(doc)
-add_subdirectory(tests)
+# On veut une option # [Jeanne]
+#add_subdirectory(src/test) # [Jeanne]
+#add_subdirectory(doc)# [Jeanne]
+#add_subdirectory(tests) # [Jeanne]
 
 ##############################################################################
 # Cleanup from previous builds
