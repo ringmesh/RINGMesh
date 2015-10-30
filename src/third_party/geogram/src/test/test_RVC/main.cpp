@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
     GEO::CmdLine::import_arg_group("standard");
     GEO::CmdLine::import_arg_group("algo");
     GEO::CmdLine::declare_arg_percent("size", 10.0, "elements size, in bbox diagonal percent");
-    GEO::CmdLine::declare_arg("shrink", 1.0, "cells shrink");
+    GEO::CmdLine::declare_arg("shrink", 0.9, "cells shrink");
     GEO::CmdLine::declare_arg("border_only", false, "output only RVC facets on the border");
     
     std::vector<std::string> filenames;

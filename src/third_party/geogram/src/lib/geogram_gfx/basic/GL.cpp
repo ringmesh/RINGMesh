@@ -157,13 +157,16 @@ namespace GEO {
         } else {
             glBindBuffer(target, buffer_id);
             if(new_size != size_t(get_size_of_bound_buffer_object(target))) {
-                Logger::warn("OpenGL") << "Buffer Object does not have the expected size."
-                                       << std::endl;
-                Logger::warn("OpenGL") << "An object was probably changed "
-                                       << "without notifying/updating the graphics."
-                                       << std::endl;
-                Logger::warn("OpenGL") << "Forcing Buffer Object update."
-                                       << std::endl;
+                Logger::warn("OpenGL")
+                    << "Buffer Object does not have the expected size."
+                    << std::endl;
+                Logger::warn("OpenGL")
+                    << "An object was probably changed "
+                    << "without notifying/updating the graphics."
+                    << std::endl;
+                Logger::warn("OpenGL")
+                    << "Forcing Buffer Object update."
+                    << std::endl;
                 update_buffer_object(buffer_id, target, new_size, data);
             }
         }
