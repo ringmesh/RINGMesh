@@ -50,6 +50,12 @@
 
 #include <vector>
 
+/*!
+* @file ringmesh/tetragen.h
+* @brief API class interfacing GeoModel with external tetrahedral meshers 
+* @author Arnaud Botella
+*/
+
 #ifdef USE_MG_TETRA
     extern "C" {
         #include <meshgems/meshgems.h>
