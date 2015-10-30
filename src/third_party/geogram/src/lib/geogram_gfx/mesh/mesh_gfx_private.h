@@ -457,6 +457,29 @@ namespace GEO {
         }
 
         /**
+         * \brief Sets picking mode.
+         * \details If picking mode is MESH_NONE, then normal drawing
+         *  is activated, else the color is replaced with the index of
+         *  the elements.
+         * \param[in] what a bitwise or ('|') combination of 
+         *  MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS,
+         *  or MESH_NONE if picking mode should be deactivated
+         */
+        void set_picking_mode(MeshElementsFlags what) {
+            picking_mode_ = what;
+        }
+
+        /**
+         * \brief Gets the current picking mode.
+         * \return a bitwise or ('|') combination of 
+         *  MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS,
+         *  or MESH_NONE if picking mode is deactivated
+         */
+        MeshElementsFlags get_picking_mode() const {
+            return picking_mode_;
+        }
+        
+        /**
          * \brief Creates OpenGL buffers and shaders
          *  if need be.
          * \details May throw an exception if some OpenGL functionalities
@@ -476,6 +499,18 @@ namespace GEO {
         
     protected:
 
+        /**
+         * \brief If picking mode is active, 
+         *  encodes an id as the current OpenGL color.
+         * \param[in] id the id to be encoded as the current
+         *  OpenGL color
+         */
+        void picking_id(index_t id) {
+            if(picking_mode_ != MESH_NONE) {
+                glPickingIdAsColor(id);
+            }
+        }
+        
         /**
          * \brief Defines the default color for one of the programs.
          * \param[in] index index of the program, in 0..PRG_NB - 1
@@ -834,6 +869,7 @@ namespace GEO {
         bool animate_;
         double time_;
         bool lighting_;
+        MeshElementsFlags picking_mode_;
 
         /** 
          * \brief true if the surface has only triangles and quads.
@@ -846,6 +882,13 @@ namespace GEO {
          *  be done easily with a for() loop.
          */
         GLuint programs_[PRG_NB];
+
+        /**
+         * \brief GPU programs for picking. They are the same as
+         *  the GPU programs, except that the fragment shader 
+         *  sets the primitive Id as the fragment color for picking.
+         */
+        GLuint picking_programs_[PRG_NB];
         
         /**
          * \brief Default frontfacing color to be used 

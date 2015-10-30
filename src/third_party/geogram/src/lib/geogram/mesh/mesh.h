@@ -2370,6 +2370,7 @@ namespace GEO {
      * \relates Mesh
      */
     enum MeshElementsFlags {
+        MESH_NONE = 0,
         MESH_VERTICES = 1,
         MESH_FACETS = 2,
         MESH_EDGES  = 4,
