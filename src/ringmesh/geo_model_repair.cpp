@@ -57,7 +57,7 @@ namespace {
     using namespace RINGMesh ;
 
     typedef GeoModelElement::gme_t gme_t ;
-    typedef GeoModelMeshElement BMME ;
+    typedef GeoModelMeshElement GMME ;
     typedef GeoModelMeshVertices::VertexInGME VGME ;
 
     /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
@@ -160,7 +160,10 @@ namespace {
     /*!
     * @brief Remove degenerate facets and edges from the Surface
     *        and Line of the model.
-    * @pre colocated vertices have already been removed
+    * @param[in,out] BM Model to fix
+    * @param[out] to_remove Ids of the elements of the model that are
+    *  are emtpy once degenerate elements are removed
+    * @pre Colocated vertices have already been removed
     */
     void remove_degenerate_facet_and_edges(
         GeoModel& BM,
@@ -170,18 +173,14 @@ namespace {
         for( index_t i = 0; i < BM.nb_lines(); ++i ) {
             index_t nb = repair_line_mesh( BM.line( i ).mesh() ) ;
             if( nb > 0 ) {
-
                 GEO::Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
-
-
-                // The line may be empty now - remove it from the model
+                // If the Line is set it to remove
                 if( BM.line( i ).nb_cells() == 0 ) {
                     to_remove.insert( BM.line( i ).gme_id() ) ;
                 }
             }
         }
-
         // The builder might be needed
         GeoModelBuilder builder( BM ) ;
 
@@ -191,13 +190,8 @@ namespace {
             /// @todo Check if that cannot be simplified 
             if( nb > 0 ) {
                 // If there are some degenerated facets 
-                // We need to repair the model 
-//#ifndef RINGMESH_DEBUG
-                //GEO::Logger::instance()->set_quiet( true ) ;
-//#endif
                 // Using repair function of geogram
                 // Warning - This triangulates the mesh
-
                 if( M.vertices.nb() > 0 ) {
                     // Colocated vertices must be processed before
                     // MESH_REPAIR_DUP_F 2 ;
@@ -209,14 +203,11 @@ namespace {
                     /// @todo How to choose the epsilon ? and the maximum number of facets ?
                     GEO::remove_small_connected_components( M, epsilon_sq, 3 ) ;
 
-                    // This is a bit of an overkill but I am lazy
+                    // Alright, this is a bit of an overkill [JP]
                     if( M.vertices.nb() > 0 ) {
                         GEO::mesh_repair( M, mode ) ;
                     }
                 }
-//#ifndef RINGMESH_DEBUG
-                //GEO::Logger::instance()->set_quiet( false ) ;
-//#endif 
                 if( M.vertices.nb() == 0 || M.facets.nb() == 0 ) {
                     to_remove.insert( BM.surface( i ).gme_id() ) ;
                 } else {
@@ -236,7 +227,7 @@ namespace {
                          it != cutting_lines.end(); ++it
                          ) {
                         // Force the recomputing of the model vertices
-                        // I do not understand exactly what is happening [JP]
+                        // before performing the cut. 
                         BM.mesh.vertices.clear() ;                        
                         builder.cut_surface_by_line( S, BM.line( *it ) ) ;
                     }
@@ -274,7 +265,7 @@ namespace {
         if( !inside_border.empty() ) {
             // We want to get the indices of the vertices in E
             // that are colocated with those of the inside boundary
-            // We assume that the model vertice are not yet computed
+            // We assume that the model vertices are not computed
             ColocaterANN kdtree( E.mesh(), ColocaterANN::VERTICES ) ;
 
             for( index_t i = 0; i < inside_border.size(); ++i ) {
@@ -293,8 +284,11 @@ namespace {
         }
     }
 
+    /*!
+     * @details Global GeoModel mesh is supposed to be empty
+     */
     void remove_colocated_element_vertices(
-        GeoModel& BM,
+        GeoModel& GM,
         std::set< gme_t >& to_remove )
     {
         to_remove.clear() ;
@@ -302,8 +296,8 @@ namespace {
         for( index_t t = GME::LINE; t < GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
-            for( index_t e = 0; e < BM.nb_elements( T ); ++e ) {
-                const BMME& E = dynamic_cast< const BMME& >( BM.element(
+            for( index_t e = 0; e < GM.nb_elements( T ); ++e ) {
+                const GMME& E = dynamic_cast< const GMME& >( GM.element(
                     gme_t( T, e ) ) ) ;
 
                 GEO::Mesh& M = E.mesh() ;
@@ -340,45 +334,21 @@ namespace {
                     // The complete element should be removed
                     to_remove.insert( E.gme_id() ) ;
                     continue ;
-                } else {
-                    // We need to update the VertexInGME at the model level
-                    // if they exist. If not let's avoid this costly operation
-                    // @todo This is bugged ?? I am not sure. JP
-                    if( BM.mesh.vertices.is_initialized() ) {
-                        // For all the vertices of this element
-                        // we need to update the vertex ids in the gme_vertices_
-                        // of the corresponding global vertex
-                        for( index_t v = 0; v < to_delete.size(); ++v ) {
-                            index_t model_id = E.model_vertex_id( v ) ;
-                            const std::vector< VGME >& cur =
-                                BM.mesh.vertices.gme_vertices( model_id ) ;
-                            for( index_t i = 0; i < cur.size(); ++i ) {
-                                if( cur[ i ] == VGME( E.gme_id(), v ) ) {
-                                    index_t new_id = old2new[ v ] ;
-                                    BM.mesh.vertices.set_gme( model_id, i,
-                                                              VGME( E.gme_id(), new_id ) ) ;
-                                }
-                            }
-                        }
-                        BM.mesh.erase_invalid_vertices() ;
-                    }
-
+                } else {         
                     for( index_t c = 0; c < M.facet_corners.nb(); c++ ) {
-                        M.facet_corners.set_vertex( c,
-                                                    colocated[ M.facet_corners.vertex( c ) ] ) ;
+                        M.facet_corners.set_vertex( 
+                            c, colocated[ M.facet_corners.vertex( c ) ] ) ;
                     }
                     for( index_t e = 0; e < M.edges.nb(); e++ ) {
-                        M.edges.set_vertex( e, 0,
-                                            colocated[ M.edges.vertex( e, 0 ) ] ) ;
-                        M.edges.set_vertex( e, 1,
-                                            colocated[ M.edges.vertex( e, 1 ) ] ) ;
+                        M.edges.set_vertex( 
+                            e, 0, colocated[ M.edges.vertex( e, 0 ) ] ) ;
+                        M.edges.set_vertex(
+                            e, 1, colocated[ M.edges.vertex( e, 1 ) ] ) ;
                     }
                     M.vertices.delete_elements( to_delete, false ) ;
-
-                    GEO::Logger::out( "GeoModel" ) << nb_todelete
+                    GEO::Logger::out( "Repair" ) << nb_todelete
                         << " colocated vertices deleted in " << E.gme_id()
                         << std::endl ;
-
                 }
             }
         }
@@ -390,6 +360,9 @@ namespace RINGMesh {
 
     void geo_model_mesh_repair( GeoModel& GM ) {
         GeoModelEditor editor( GM ) ;
+
+        // Force removal of global vertices - Bugs ? I do not know where [JP]
+        GM.mesh.vertices.clear() ;
 
         // Remove colocated vertices in each element
         std::set< gme_t > empty_elements ;

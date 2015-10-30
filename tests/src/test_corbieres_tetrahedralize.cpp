@@ -61,7 +61,7 @@ int main( int argc, char** argv )
     file_name += "corbieres.bm" ;
 
     // Set the debug directory for the validity checks 
-    set_debug_directory( ringmesh_test_output_path ) ;
+    set_validity_errors_directory( ringmesh_test_output_path ) ;
 
 
     /* Load and check the validity of the model */

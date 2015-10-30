@@ -47,6 +47,7 @@
 #define __GEOGRAM_BASIC_NUMERIC__
 
 #include <geogram/basic/common.h>
+#include <geogram/api/defs.h>
 #include <math.h>
 #include <float.h>
 #include <limits.h>

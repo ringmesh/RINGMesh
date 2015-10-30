@@ -49,7 +49,39 @@
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/mesh/mesh_geometry.h>
 
+#include <iostream>
+#include <iomanip>
+
 namespace RINGMesh {
+    /*!
+    * @brief Total number of facets in the model Surfaces
+    */
+    index_t nb_facets( const GeoModel& BM )
+    {
+        index_t result = 0 ;
+        for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
+            result += BM.surface( i ).nb_cells() ;
+        }
+        return result ;
+    }
+
+    void print_model( const GeoModel& model )
+    {
+        GEO::Logger::out( "GeoModel" ) << "Model " << model.name() << " has "
+            << std::endl
+            << std::setw( 10 ) << std::left
+            << model.mesh.vertices.nb() << " vertices "
+            << std::endl
+            << std::setw( 10 ) << std::left
+            << nb_facets( model ) << " facets "
+            << std::endl << std::endl ;
+        for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
+            GME::TYPE T = static_cast<GME::TYPE>( t ) ;
+            GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
+                << model.nb_elements( T ) << " " << GME::type_name( T )
+                << std::endl ;
+        }
+    }
 
     double model_element_size( const GeoModelElement& E )
     {
@@ -243,6 +275,10 @@ namespace RINGMesh {
         index_t region_id,
         bool add_steiner_points )
     {
+        /* @todo Review: Maybe rethink these functions
+         *       to have a function that can mesh a region of a model
+         *       taking only one vector of points [JP]
+         */
         std::vector< std::vector< vec3 > > internal_vertices( M.nb_regions() ) ;
         tetrahedralize( M, method, region_id, add_steiner_points,
             internal_vertices ) ;
@@ -259,14 +295,7 @@ namespace RINGMesh {
         if( region_id == NO_ID ) {
             GEO::ProgressTask progress( "Compute", M.nb_regions() ) ;
             for( index_t i = 0; i < M.nb_regions(); i++ ) {
-                TetraGen_var tetragen = TetraGen::create( M.region( i ).mesh(),
-                    method ) ;
-                tetragen->set_boundaries( M.region( i ), M.wells() ) ;
-                tetragen->set_internal_points( internal_vertices[i] ) ;
-                GEO::Logger::instance()->set_quiet( true ) ;
-                tetragen->tetrahedralize( add_steiner_points ) ;
-                GEO::Logger::instance()->set_quiet( false ) ;
-                progress.next() ;
+                tetrahedralize( M, method, i, add_steiner_points, internal_vertices ) ;                
             }
         } else {
             TetraGen_var tetragen = TetraGen::create( M.region( region_id ).mesh(),
