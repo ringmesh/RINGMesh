@@ -183,8 +183,10 @@ namespace RINGMesh {
             }
             mesh.facets.delete_elements( facet_to_remove ) ;
 
+            // I am pretty sure this Attribute resizing is done by Geogram [JP] 
             if( GEO::Attribute< index_t >::is_defined( mesh.facets.attributes(),
                 surface_att_name ) ) {
+                // Review : already defined above
                 GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
                                                      surface_att_name ) ;
                 index_t offset = 0 ;

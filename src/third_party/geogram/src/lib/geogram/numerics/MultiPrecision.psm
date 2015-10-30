@@ -16,6 +16,21 @@ expansion_nt.cpp
 "
 
 DOC="http://alice.loria.fr/software/geogram/doc/html/multi__precision_8h.html"
-
 EXAMPLE="../../../test/test_expansion_nt/main.cpp"
+COPYDIR="../../../test/test_expansion_nt/CGAL"
+
+extract_readme() {
+   cat <<EOF
+To compile example program, use:
+  g++ MultiPrecision_example.cpp MultiPrecision_psm.cpp -o MultiPrecision_example
+
+Start with:
+  ./MultiPrecision_example
+
+MultiPrecision_psm.h / MultiPrecision_psm.cpp is completely standalone and can be
+included in any project.
+
+There is an example of usage with CGAL in the CGAL subdirectory (see CGAL/README.txt)
+EOF
+}
 

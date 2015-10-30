@@ -1,3 +1,5 @@
+
+
 # extract_psm: extracts a PSM (Pluggable Software Module)
 # from geogram source tree.
 #
@@ -208,6 +210,35 @@ extract_example() {
     cat $PSM_DIR/$EXAMPLE | remove_copyright | remove_includes >> $PSM_EXAMPLE
 }
 
+
+# extract_copydir()
+#
+# Arguments: none
+# Variables: $COPYDIR: path to the subdirectory to copy, relative to $PSM_DIR
+#            $PSM_DIR: the directory that contains the .psm file
+#
+# If $COPYDIR is a non-empty string, copy the subdirectory into the PSM distrib.
+
+extract_copydir() {
+   if [ -z $COPYDIR ]
+   then
+       return;
+   fi
+   cp -r $PSM_DIR/$COPYDIR .
+}
+
+extract_readme() {
+    cat <<EOF
+This is $PSM_NAME Pluggable Software Module, extracted
+from GEOGRAM source tree. It contains a standalone .cpp/.h
+pair that can be used in any program and that does not have
+any dependency. 
+
+It may also contain an example program that can be compiled by using:
+  g++ ${PSM_NAME}_psm.cpp ${PSM_NAME}_example.cpp -o ${PSM_NAME}_example
+EOF
+}
+
 # Get directory and PSM name from PSM file name
 PSM_DIR=`dirname $1`
 PSM_NAME=`basename $1 .psm`
@@ -232,4 +263,8 @@ PSM_DOC=$DOC
 extract_header
 extract_source
 extract_example
+extract_copydir
+extract_readme > README.txt
+
+
 

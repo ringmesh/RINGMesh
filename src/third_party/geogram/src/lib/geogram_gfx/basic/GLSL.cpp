@@ -46,6 +46,75 @@
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram/basic/logger.h>
 #include <cstdarg>
+#include <cstdio>
+
+namespace {
+
+    using namespace GEO;
+    
+    /**
+     * \brief Loads the content of an ASCII file in a buffer.
+     * \details Memory ownership is transfered
+     *   to the caller. Memory should be deallocated with
+     *   delete[].
+     * \param[in] filename the name of the file
+     * \return a pointer to a buffer that contains the
+     *   contents of the file. 
+     */
+     char* load_ASCII_file(const char* filename) {
+        FILE* f = fopen(filename, "rt") ;
+        if(!f) {
+            Logger::err("GLSL")
+                << "Could not open file: \'"
+                << filename << "\'" << std::endl;
+            return nil ;
+        }
+        /* 
+         * An easy way of determining the length of a file:
+         * Go to the end of the file, and ask where we are.
+         */
+        fseek(f, 0, SEEK_END) ;
+        size_t size = size_t(ftell(f)) ;
+
+        /* Let's go back to the beginning of the file */
+        fseek(f, 0, SEEK_SET) ;
+        
+        char* result = new char[size+1] ;
+        size_t read_size = fread(result, 1, size, f);
+        if(read_size != size) {
+            Logger::warn("GLSL")
+                << "Could not read completely file \'"
+                << filename << "\'" << std::endl;
+        }
+        result[size] = '\0' ;
+        fclose(f) ;
+        return result ;
+    }
+
+    /**
+     * \brief Links a GLSL program and displays errors if any.
+     * \details If errors where encountered, program is deleted
+     *  and reset to zero.
+     * \param[in,out] program the handle to the GLSL program
+     */
+    void link_program_and_check_status(GLuint& program) {
+        glLinkProgram(program);
+        GLint link_status;
+        glGetProgramiv(program, GL_LINK_STATUS, &link_status);
+        if(!link_status) {
+            GLchar linker_message[4096];
+            glGetProgramInfoLog(
+                program, sizeof(linker_message), 0, linker_message
+                );
+            Logger::err("GLSL") << "linker status :"
+                                << link_status << std::endl;
+            Logger::err("GLSL") << "linker message:"
+                                << linker_message << std::endl;
+            glDeleteProgram(program);
+            program = 0;
+        }
+    }
+}
 
 namespace GEO {
 
@@ -111,7 +180,7 @@ namespace GEO {
             }
 
 
-            GLuint setup_program(GLuint shader, ...) {
+            GLuint create_program_from_shaders(GLuint shader, ...) {
                 GLuint program = glCreateProgram();
                 va_list args;
                 va_start(args,shader);
@@ -120,26 +189,159 @@ namespace GEO {
                     shader = va_arg(args, GLuint);
                 }
                 va_end(args);
-                glLinkProgram(program);
-                GLint link_status;
-                glGetProgramiv(program, GL_LINK_STATUS, &link_status);
-                if(!link_status) {
-                    GLchar linker_message[4096];
-                    glGetProgramInfoLog(
-                        program, sizeof(linker_message), 0, linker_message
-                    );
-                    Logger::err("GLSL") << "linker status :"
-                                        << link_status << std::endl;
-                    Logger::err("GLSL") << "linker message:"
-                                        << linker_message << std::endl;
-                    glDeleteProgram(program);
-                    program = 0;
-                }
+                link_program_and_check_status(program);
                 return program;
             }
 
             /*****************************************************************/
-            
+
+            GLuint create_program_from_string(const char* string_in, bool copy_string) {
+                GLuint program = glCreateProgram();
+
+                // string will be temporarily modified (to insert '\0' markers)
+                // but will be restored to its original state right after.
+                char* string = const_cast<char*>(string_in);
+                if(copy_string) {
+                    string = strdup(string_in);
+                }
+
+                char* src = string;
+
+                bool err_flag = false;
+                
+                for(;;) {
+                    char* begin = strstr(src, "#BEGIN(");
+                    char* end = strstr(src, "#END(");
+
+                    if(begin == nil && end == nil) {
+                        break;
+                    }
+
+                    if(begin == nil) {
+                        Logger::err("GLSL") << "missing #BEGIN() statement"
+                                            << std::endl;
+                        err_flag = true;
+                        break;
+                    }
+
+                    if(end == nil) {
+                        Logger::err("GLSL") << "missing #END() statement"
+                                            << std::endl;
+                        err_flag = true;
+                        break;
+                    }
+
+                    
+                    if(begin > end) {
+                        Logger::err("GLSL") << "#END() before #BEGIN()"
+                                            << std::endl;
+                        err_flag = true;
+                        break;
+                    }
+
+                    char* begin_opening_brace = begin + strlen("#BEGIN");
+                    char* end_opening_brace = end + strlen("#END");
+                    
+                    char* begin_closing_brace = strchr(begin_opening_brace, ')');
+                    char* end_closing_brace = strchr(end_opening_brace, ')');
+
+                    if(begin_closing_brace == nil) {
+                        Logger::err("GLSL") << "#BEGIN: missing closing brace"
+                                            << std::endl;
+                        err_flag = true;
+                        break;
+                    }
+
+                    if(end_closing_brace == nil) {
+                        Logger::err("GLSL") << "#END: missing closing brace"
+                                            << std::endl;
+                        err_flag = true;
+                        break;
+                    }
+                    
+                    std::string begin_kw(
+                        begin_opening_brace+1, size_t((begin_closing_brace - begin_opening_brace) - 1)
+                    );
+                    std::string end_kw(
+                        end_opening_brace+1, size_t((end_closing_brace - end_opening_brace) - 1)
+                    );
+                    if(end_kw != begin_kw) {
+                        Logger::err("GLSL")
+                            << "Mismatch: #BEGIN(" << begin_kw << ") / #END(" << end_kw << ")"
+                            << std::endl;
+                        err_flag = true;
+                        break;
+                    }
+
+                    // Replace '#END(...)' with string end marker
+                    *end = '\0';
+
+                    GLenum shader_type = GLenum(0);
+                    if(begin_kw == "GL_VERTEX_SHADER") {
+                        shader_type = GL_VERTEX_SHADER;
+                    } else if(begin_kw == "GL_FRAGMENT_SHADER") {
+                        shader_type = GL_FRAGMENT_SHADER;
+                    } else if(begin_kw == "GL_GEOMETRY_SHADER") {
+                        shader_type = GL_GEOMETRY_SHADER;
+                    } else if(begin_kw == "GL_TESS_CONTROL_SHADER") {
+                        shader_type = GL_TESS_CONTROL_SHADER;
+                    } else if(begin_kw == "GL_TESS_EVALUATION_SHADER") {
+                        shader_type = GL_TESS_EVALUATION_SHADER;
+                    } else {
+                        Logger::err("GLSL") << begin_kw << ": No such shader type" << std::endl;
+                        err_flag = true;
+                        break;
+                    }
+
+                    src = begin_closing_brace+1;
+                    GLuint shader = 0;
+                    try {
+                        shader = compile_shader(shader_type, src);
+                    } catch(...) {
+                        err_flag = true;
+                        break;
+                    }
+                    glAttachShader(program, shader);
+                    
+                    // Restore '#END(...)' statement ('#' was replaced with string end marker).
+                    *end = '#';
+
+                    src = end_closing_brace + 1;
+                }
+
+                if(copy_string) {
+                    free(string);
+                }
+                
+                if(err_flag) {
+                    glDeleteProgram(program);
+                    return 0;
+                }
+                
+                link_program_and_check_status(program);
+                return program;
+            }
+
+            /*****************************************************************/
+
+            GLuint create_program_from_file(const std::string& filename) {
+                char* buffer = load_ASCII_file(filename.c_str());
+                if(buffer == nil) {
+                    return 0;
+                }
+                GLuint result = 0;
+                try {
+                    // last argument to false: no need to copy the buffer, we know it
+                    // is not a string litteral.
+                    result = create_program_from_string(buffer,false);
+                } catch(...) {
+                    delete[] buffer;
+                    throw;
+                }
+                return result;
+            }
+
+            /*****************************************************************/
             
         }
 }

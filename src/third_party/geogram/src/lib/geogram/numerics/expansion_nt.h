@@ -77,7 +77,6 @@ namespace GEO {
          */
         expansion_nt(double x = 0.0) {
             rep_ = expansion::new_expansion_on_heap(1);
-            expansion::ref_expansion(rep_);
             rep()[0] = x;
             rep().set_length(1);
         }
@@ -87,9 +86,8 @@ namespace GEO {
          * \details The stored expansion is shared with \p rhs.
          * \param[in] rhs the expansion to be copied
          */
-        expansion_nt(const expansion_nt& rhs) :
-            rep_(rhs.rep_) {
-            expansion::ref_expansion(rep_);
+        expansion_nt(const expansion_nt& rhs) {
+            copy(rhs);
         }
 
 #if __cplusplus > 199711L
@@ -105,6 +103,21 @@ namespace GEO {
             rhs.rep_ = nil;
         }
 
+
+        /**
+         * \brief Move-constructor.
+         * \details If c++0x11 is supported, the 'move assignment operator'
+         *  optimizes certain manipulations. It 'steals' the contents
+         *  of \p rhs.
+         * \param[in] rhs the expansion to be moved to this one
+         */
+        expansion_nt operator=(expansion_nt&& rhs) {
+            cleanup();
+            rep_ = rhs.rep_;
+            rhs.rep_ = nil;
+        }
+        
+
 #endif
         
         /**
@@ -115,9 +128,8 @@ namespace GEO {
          */
         expansion_nt& operator= (const expansion_nt& rhs) {
             if(&rhs != this) {
-                expansion::unref_expansion(rep_);
-                rep_ = rhs.rep_;
-                expansion::ref_expansion(rep_);
+                cleanup();
+                copy(rhs);
             }
             return *this;
         }
@@ -128,8 +140,7 @@ namespace GEO {
          *  reference counting reaches 0.
          */
         ~expansion_nt() {
-            expansion::unref_expansion(rep_);
-            rep_ = nil;
+            cleanup();
         }
 
         /********************************************************************/
@@ -360,7 +371,6 @@ namespace GEO {
          */
         expansion_nt(expansion* rep) :
             rep_(rep) {
-            expansion::ref_expansion(rep_);
         }
 
         /**
@@ -387,18 +397,31 @@ namespace GEO {
             return *rep_;
         }
 
+
+    protected:
+
         /**
-         * \brief Tests whether the internal expansion of this expansion_nt is
-         *  shared by other instances of expansion_nt.
-         * \return true if other expansion_nt%s share the same representation as
-         *  this expansion_nt, false otherwise.
-         * \note most client code will not need to use this
-         *  (advanced use only).
+         * \brief Copies an expansion into this one.
+         * \details current rep_ pointer is supposed to be
+         *   uninitialized or freed before calling this function.
+         * \param[rhs] a const reference to the expansion to be copied
          */
-        bool is_shared() const {
-            return expansion::expansion_refcount(rep_) > 1;
+        void copy(const expansion_nt& rhs) {
+            rep_ = expansion::new_expansion_on_heap(rhs.rep().capacity());
+            rep_->set_length(rhs.rep().length());
+            for(index_t i=0; i<rep_->length(); ++i) {
+                (*rep_)[i] = rhs.rep()[i];
+            }
         }
 
+        /**
+         * \brief Cleanups the memory associated with this expansion_nt.
+         */
+        void cleanup() {
+            expansion::delete_expansion_on_heap(rep_);
+            rep_ = nil;
+        }
+        
     private:
         expansion* rep_;
         friend expansion_nt operator- (double a, const expansion_nt& b);
@@ -571,6 +594,134 @@ namespace GEO {
     template <> inline Sign geo_sgn(const expansion_nt& x) {
         return x.sign();
     }
+
+    /************************************************************************/
+
+    /**
+     * \brief Tests whether an expansion_nt is zero.
+     * \details Optimized using the low-level API
+     * \param[in] x a const reference to the expansion_nt to be tested
+     * \retval true if \p x is equal to zero
+     * \retval false otherwise
+     */
+    inline bool expansion_nt_is_zero(const expansion_nt& x) {
+        return (x.sign() == GEO::ZERO);
+    }
+
+    /**
+     * \brief Tests whether an expansion_nt is equal to one.
+     * \details Optimized using the low-level API
+     * \param[in] x a const reference to the expansion_nt to be tested
+     * \retval true if \p x is equal to one
+     * \retval false otherwise
+     */
+    inline bool expansion_nt_is_one(const expansion_nt& x) {
+        const GEO::expansion& diff = expansion_diff(x.rep(), 1.0);
+        return (diff.sign() == GEO::ZERO);
+    }
+
+
+    /**
+     * \brief Compares two expansion_nt
+     * \details Optimized using the low-level API
+     * \param [in] x,y the two expansion_nt to compare
+     * \retval POSITIVE if \p x is greater than \p y
+     * \retval ZERO if \p x equals \p y
+     * \retval NEGATIVE if \p x is smaller than \p y
+     */
+    inline Sign expansion_nt_compare(
+        const expansion_nt& x, const expansion_nt& y
+    ) {
+        const expansion& diff = expansion_diff(x.rep(), y.rep());
+        return diff.sign();
+    }
+
+    /**
+     * \brief Computes the square of an expansion_nt
+     * \details Optimized using the low-level API
+     * \param[in] x the expansion_nt to be squared
+     * \return \p x * \p x
+     */
+    inline expansion_nt expansion_nt_square(const expansion_nt& x) {
+        expansion_nt result(
+            expansion::new_expansion_on_heap(
+                expansion::square_capacity(x.rep()
+             ))
+        );
+        result.rep().assign_square(x.rep());
+        return result;
+    }
+
+
+    /**
+     * \brief Computes a 2x2 determinant
+     * \details Specialization using the low-evel API for expansions. 
+     *  This gains some performance as compared to using CGAL's 
+     *  determinant template with expansion_nt.
+     */
+    expansion_nt GEOGRAM_API expansion_nt_determinant(
+        const expansion_nt& a00,const expansion_nt& a01,  
+        const expansion_nt& a10,const expansion_nt& a11
+    );
+    
+    /**
+     * \brief Computes a 3x3 determinant
+     * \details Specialization using the low-evel API for expansions. 
+     *  This gains some performance as compared to using CGAL's determinant 
+     *  template with expansion_nt.
+     */
+    expansion_nt GEOGRAM_API expansion_nt_determinant(
+        const expansion_nt& a00,const expansion_nt& a01,const expansion_nt& a02,
+        const expansion_nt& a10,const expansion_nt& a11,const expansion_nt& a12,
+        const expansion_nt& a20,const expansion_nt& a21,const expansion_nt& a22
+    );
+
+    /**
+     * \brief Computes a 4x4 determinant
+     * \details Specialization using the low-evel API for expansions. 
+     *  This gains some performance as compared to using CGAL's determinant 
+     *  template with expansion_nt.
+     */
+    expansion_nt GEOGRAM_API expansion_nt_determinant(
+        const expansion_nt& a00,const expansion_nt& a01,
+        const expansion_nt& a02,const expansion_nt& a03,
+        const expansion_nt& a10,const expansion_nt& a11,
+        const expansion_nt& a12,const expansion_nt& a13,
+        const expansion_nt& a20,const expansion_nt& a21,
+        const expansion_nt& a22,const expansion_nt& a23,
+        const expansion_nt& a30,const expansion_nt& a31,
+        const expansion_nt& a32,const expansion_nt& a33 
+    );
+    
+    /************************************************************************/
+}
+
+/**
+ * \brief Displays the approximated value of an expantion_nt to a stream.
+ * \param[out] os the stream 
+ * \param[in] a the expansion_nt to be sent to the stream
+ * \return a reference to the stream
+ */
+inline std::ostream& operator<< (
+    std::ostream& os, const GEO::expansion_nt& a
+) {
+    return os << a.estimate();
+}
+
+/**
+ * \brief Reads a double precision number from a stream and converts it to
+ *  an approximation.
+ * \param[in] os the stream 
+ * \param[out] a the read expantion_nt
+ * \return a reference to the stream
+ */
+inline std::istream& operator>> ( std::istream& is, GEO::expansion_nt& a) {
+    double d;
+    is >> d;
+    if (is) {
+        a = d;
+    }
+    return is;
 }
 
 #endif
