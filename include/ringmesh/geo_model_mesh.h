@@ -44,8 +44,14 @@
 
 #include <ringmesh/common.h>
 #include <ringmesh/geo_model_element.h>
-
 #include <geogram/mesh/mesh.h>
+
+/*!
+* @file ringmesh/geo_model_mesh.h
+* @brief Classes to manage globally the indexing of mesh elements of a GeoModel
+* @author Arnaud Botella and Jeanne Pellerin
+*/
+
 
 namespace RINGMesh {
     class GeoModel ;

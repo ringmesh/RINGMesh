@@ -43,6 +43,14 @@
 
 #include <ringmesh/common.h>
 
+/*!
+* @file ringmesh/geo_model_api.h
+* @brief High level functions on GeoModel
+* @author Jeanne Pellerin and Arnaud Botella
+* @todo Encapsulate these functions in a namespace
+* and TEST them.
+*/
+
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelElement ;
@@ -58,10 +66,10 @@ namespace RINGMesh {
 
     /*!
      * @brief Compute the size (volume, area, length) of an Element
-     *
      * @param[in] E Element to evaluate
      */
     double RINGMESH_API model_element_size( const GeoModelElement& E ) ;
+
     /*!
      * Compute the size (volume, area, length) of an Element cell (cell, facet, edge)
      * @param[in] E Element to evaluate
@@ -128,7 +136,7 @@ namespace RINGMesh {
     /*!
      * Compute the tetrahedral mesh of the input structural model
      * @param[in] M GeoModel to tetrahedralize
-     * @param[in] method Mesher used
+     * @param[in] method External mesher used, Tetgen by default
      * @param[in] region_id Region to mesh. By default it set to NO_ID and all regions are meshed.
      * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
      */
@@ -141,7 +149,7 @@ namespace RINGMesh {
     /*!
      * Compute the tetrahedral mesh of the input structural model
      * @param[in] M GeoModel to tetrahedralize
-     * @param[in] method Mesher used
+     * @param[in] method External mesher used
      * @param[in] region_id Region to mesh. If set to NO_ID and all regions are meshed.
      * @param[in] add_steiner_points if true, the mesher will add some points inside the region.
      * @param[in] internal_vertices points inside the domain to constrain mesh generation.
