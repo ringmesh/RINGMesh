@@ -19,10 +19,6 @@ else()
     project(Geogram)
 endif()
 
-# Optional modules
-# (can be overriden in CMakeOptions.txt)
-set(GEOGRAM_WITH_MEDIT TRUE)
-
 include(cmake/geogram.cmake)
 
 set(VORPALINE_VERSION_MAJOR 1)
