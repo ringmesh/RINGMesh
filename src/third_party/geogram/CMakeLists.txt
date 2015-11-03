@@ -22,7 +22,6 @@ endif()
 # Optional modules
 # (can be overriden in CMakeOptions.txt)
 set(GEOGRAM_WITH_MEDIT TRUE)
-set(GEOGRAM_WITH_GRAPHICS TRUE)
 
 include(cmake/geogram.cmake)
 
