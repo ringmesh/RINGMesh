@@ -90,9 +90,10 @@ if(GEOGRAM_WITH_GRAPHICS)
 
 endif()
 
-add_subdirectory(src/test)
-add_subdirectory(doc)
-add_subdirectory(tests)
+# On veut une option # [Jeanne]
+#add_subdirectory(src/test) # [Jeanne]
+#add_subdirectory(doc)# [Jeanne]
+#add_subdirectory(tests) # [Jeanne]
 
 ##############################################################################
 # Cleanup from previous builds
