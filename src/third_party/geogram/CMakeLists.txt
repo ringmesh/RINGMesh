@@ -21,8 +21,12 @@ endif()
 
 # Optional modules
 # (can be overriden in CMakeOptions.txt)
-#set(GEOGRAM_WITH_MEDIT TRUE) # [Jeanne]
-#set(GEOGRAM_WITH_GRAPHICS TRUE) # [Jeanne]
+# RINGMesh modifications: the 2 set
+# below are commented because they overwrite
+# the options defined in the CMakeLists.txt
+# in RINGMesh.
+#set(GEOGRAM_WITH_MEDIT TRUE)
+#set(GEOGRAM_WITH_GRAPHICS TRUE)
 
 include(cmake/geogram.cmake)
 
