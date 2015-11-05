@@ -59,17 +59,15 @@ namespace RINGMesh {
 	 */
 	void RINGMESH_API initialize_geogram_extension_mesh_io_handler() ;
 
-    /** \function load_ts_file
+    /** 
     * \brief To load a Gocad TSurf surface .ts
     * \deprecated This has been moved into a MeshIOHandler. Use GEO::mesh_load instead.
     */
     bool RINGMESH_API load_ts_file( GEO::Mesh& M, const std::string& file_name ) ;
-
-    
+	    
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
-
-    
+	    
     void RINGMESH_API rotate_mesh(
         GEO::Mesh& mesh,
         const GEO::Matrix< float64, 4 >& rot_mat ) ;
