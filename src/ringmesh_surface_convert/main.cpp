@@ -65,7 +65,7 @@ int main( int argc, char** argv )
 	// help
     if( argc == 1 ) {
 		GEO::Logger::div( "Help" ) ;
-        GEO::Logger::out( "" ) << "usage: " << argv[0] << " [out_format]" << std::endl ;
+        GEO::Logger::out( "" ) << "usage: " << GEO::FileSystem::base_name(argv[0]) << " [out_format]" << std::endl ;
         GEO::Logger::out( "" ) << "out_format: a non empty list of output format amongst: obj mesh meshb ply off stl " << std::endl ;
         GEO::Logger::out( "" ) << "This will create a directory for each selected output format in the directory one level above the current one,"
 			<< " and create a new file with the corresponding format for each .ts in the current directory." << std::endl ;
@@ -123,7 +123,7 @@ int main( int argc, char** argv )
 
 		// load the tsurf
 		GEO::Mesh mesh_surface_in ;
-		if( !load_ts_file( mesh_surface_in, *ts_itr ) ){
+		if( !GEO::mesh_load( *ts_itr, mesh_surface_in ) ){
 			GEO::Logger::err( "I/O" ) << "Can't load: " << *ts_itr << std::endl ;
 			continue ;
 		}
