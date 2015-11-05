@@ -60,8 +60,7 @@ int main( int argc, char** argv )
     GEO::Logger::div( "RINGMeshConvert" ) ;
     GEO::Logger::out( "" ) << "Welcome to RINGMeshSurfaceConvert !" << std::endl ;
     GEO::Logger::out( "" ) << "People working on this project in RING" << std::endl ;
-    GEO::Logger::out( "" ) << "Gautier Laurent<g.laurent.research@gmail.com> "
-        << std::endl ;
+    GEO::Logger::out( "" ) << "Gautier Laurent<g.laurent.research@gmail.com> " << std::endl ;
 	
 	// help
     if( argc == 1 ) {
@@ -98,7 +97,7 @@ int main( int argc, char** argv )
 	}
 
     if( input_ts_names.empty() ) {
-        GEO::Logger::err( "I/O" ) << "Run this command in a folder with at least on .ts file."
+        GEO::Logger::err( "I/O" ) << "Run this command in a folder with at least one .ts file."
             << std::endl ;
         return 1 ;
     }
