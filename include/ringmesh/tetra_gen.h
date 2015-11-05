@@ -50,6 +50,12 @@
 
 #include <vector>
 
+/*!
+* @file ringmesh/tetragen.h
+* @brief API class interfacing GeoModel with external tetrahedral meshers 
+* @author Arnaud Botella
+*/
+
 #ifdef USE_MG_TETRA
     extern "C" {
         #include <meshgems/meshgems.h>
@@ -69,7 +75,6 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    static const std::vector< vec3 > vector_vec3 ;
     class RINGMESH_API TetraGen: public GEO::Counted {
         ringmesh_disable_copy( TetraGen ) ;
     public:
@@ -100,6 +105,7 @@ namespace RINGMesh {
 
     typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
     typedef GEO::Factory0< TetraGen > TetraGenFactory;
+
 #define ringmesh_register_tetragen(type, name) \
     geo_register_creator(TetraGenFactory, type, name)
 }

@@ -38,8 +38,6 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin */
-
 #include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
@@ -54,7 +52,6 @@
 #include <iomanip>
 #include <fstream>
 #include <cmath>
-#include <ctime>
 #include <set>
 #include <stack>
 
@@ -224,89 +221,6 @@ namespace {
                 find_or_create_corner( BMB, vertices.back() ) ) ;
         }
         return result ;
-    }
-
-    /*!
-     * @brief Fill the boundaries of all elements of the given type
-     *
-     * @details If the boundary elements do not have any in_boundary
-     * information, nothing is done, and model construction will eventually fail.
-     */
-    void fill_elements_boundaries( GeoModelBuilder& B, GME::TYPE type )
-    {
-        // We have a problem if this is called for regions
-        // No way yet to know the surface orientation
-        ringmesh_debug_assert( type != GME::REGION ) ;
-
-        GME::TYPE b_type = GME::boundary_type( type ) ;
-        if( b_type != GME::NO_TYPE ) {
-            for( index_t i = 0; i < B.model().nb_elements( b_type ); ++i ) {
-                const GME& b = B.model().element( gme_t( b_type, i ) ) ;
-                for( index_t j = 0; j < b.nb_in_boundary(); ++j ) {
-                    B.add_element_boundary( b.in_boundary_id( j ),
-                        gme_t( b_type, i ) ) ;
-                }
-            }
-        }
-    }
-
-    /*!
-     * @brief Fill the in_boundary vector of all elements of the given type
-     *
-     * @details If the in_boundary elements do not have any boundary
-     * information, nothing is done, and model construction will eventually fail.
-     */
-    void fill_elements_in_boundaries( GeoModelBuilder& B, GME::TYPE type )
-    {
-        GME::TYPE in_b_type = GME::in_boundary_type( type ) ;
-        if( in_b_type != GME::NO_TYPE ) {
-            for( index_t i = 0; i < B.model().nb_elements( in_b_type ); ++i ) {
-                const GME& in_b = B.element( gme_t( in_b_type, i ) ) ;
-                for( index_t j = 0; j < in_b.nb_boundaries(); ++j ) {
-                    B.add_element_in_boundary( in_b.boundary_id( j ),
-                        gme_t( in_b_type, i ) ) ;
-                }
-            }
-        }
-    }
-
-    /*!
-     * @brief Fill the parent of all elements of the given type
-     *
-     * @details If the parents do not have any child
-     *  nothing is done, and model construction will eventually fail.
-     */
-    void fill_elements_parent( GeoModelBuilder& B, GME::TYPE type )
-    {
-        GME::TYPE p_type = GME::parent_type( type ) ;
-        if( p_type != GME::NO_TYPE ) {
-            for( index_t i = 0; i < B.model().nb_elements( p_type ); ++i ) {
-                const GME& p = B.model().element( gme_t( p_type, i ) ) ;
-                for( index_t j = 0; j < p.nb_children(); ++j ) {
-                    B.set_element_parent( p.child_id( j ), gme_t( p_type, i ) ) ;
-                }
-            }
-        }
-    }
-
-    /*!
-     * @brief Fill the children of all elements of the given type
-     *
-     * @details If the children elements do not have any parent information
-     * nothing is done, and model construction will eventually fail.
-     */
-    void fill_elements_children( GeoModelBuilder& B, GME::TYPE type )
-    {
-        GME::TYPE c_type = GME::child_type( type ) ;
-        if( c_type != GME::NO_TYPE ) {
-            for( index_t i = 0; i < B.model().nb_elements( c_type ); ++i ) {
-                gme_t cur_child = gme_t( c_type, i ) ;
-                const gme_t& parent = B.model().element( cur_child ).parent_id() ;
-                if( parent.is_defined() ) {
-                    B.add_element_child( parent, cur_child ) ;
-                }
-            }
-        }
     }
 
     /*!
@@ -923,7 +837,6 @@ namespace RINGMesh {
         set_surface_geometry( surface_id, vertices, facets_local, facet_ptr ) ;
     }
 
-
     void GeoModelBuilder::create_surface_geometry(
         const gme_t& surface_id,
         const std::vector< index_t >& facets,
@@ -1005,75 +918,6 @@ namespace RINGMesh {
         }
     }
 
-
-    /*! @details For all 7 types of elements, check what information is available
-     * for the first one and fill the elements of the same type accordingly
-     * THIS MEANS that the all the elements of the same type have been initialized with
-     * the same information.
-     */
-    bool GeoModelBuilder::complete_element_connectivity()
-    {
-        // Lines
-        if( model_.nb_lines() > 0 ) {
-            if( model_.line( 0 ).nb_boundaries() == 0 ) {
-                fill_elements_boundaries( *this, GME::LINE ) ;
-            }
-            if( model_.line( 0 ).nb_in_boundary() == 0 ) {
-                fill_elements_in_boundaries( *this, GME::LINE ) ;
-            }
-            if( !model_.line( 0 ).parent_id().is_defined()
-                && model_.nb_contacts() > 0 ) {
-                fill_elements_parent( *this, GME::LINE ) ;
-            }
-        }
-
-        // Corners
-        if( model_.nb_corners() > 0 && model_.corner( 0 ).nb_in_boundary() == 0 ) {
-            // Info from line boundaries is used here and should be available
-            fill_elements_in_boundaries( *this, GME::CORNER ) ;
-        }
-
-        // Surfaces - There MUST be at least one
-        if( model_.surface( 0 ).nb_boundaries() == 0 ) {
-            fill_elements_boundaries( *this, GME::SURFACE ) ;
-        }
-        if( model_.surface( 0 ).nb_in_boundary() == 0 ) {
-            fill_elements_in_boundaries( *this, GME::SURFACE ) ;
-        }
-        if( !model_.surface( 0 ).parent_id().is_defined() ) {
-            fill_elements_parent( *this, GME::SURFACE ) ;
-        }
-
-        // Regions
-        if( model_.nb_regions() > 0 ) {
-            if( model_.region( 0 ).nb_boundaries() == 0 ) {
-                fill_elements_boundaries( *this, GME::REGION ) ;
-            }
-            if( !model_.region( 0 ).parent_id().is_defined()
-                && model_.nb_layers() > 0 ) {
-                fill_elements_parent( *this, GME::REGION ) ;
-            }
-        }
-
-        // Contacts
-        if( model_.nb_contacts() > 0 && model_.contact( 0 ).nb_children() == 0 ) {
-            fill_elements_children( *this, GME::CONTACT ) ;
-        }
-
-        // Interfaces
-        if( model_.nb_interfaces() > 0
-            && model_.one_interface( 0 ).nb_children() == 0 ) {
-            fill_elements_children( *this, GME::INTERFACE ) ;
-        }
-
-        // Layers
-        if( model_.nb_layers() > 0 && model_.layer( 0 ).nb_children() == 0 ) {
-            fill_elements_children( *this, GME::LAYER ) ;
-        }
-        return true ;
-    }  
-
- 
     bool GeoModelBuilder::end_model()
     {        
         if( model_.name() == "" ) {
@@ -1100,15 +944,6 @@ namespace RINGMesh {
             }
         }
 
-        if( is_geomodel_valid( model_ ) ) {
-            GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
-                << model_.name() << " is valid " << std::endl << std::endl ;
-            print_model( model_ ) ;
-        } else {
-            GEO::Logger::out( "GeoModel" ) << std::endl << "Model "
-                << model_.name() << " is invalid " << std::endl << std::endl ;
-            print_model( model_ ) ;
-        }
         return true ;
     }
 
@@ -1307,19 +1142,7 @@ namespace RINGMesh {
 
 
     /*************************************************************************/
-
-    /*!
-     * @brief Load and build a GeoModel from a Gocad .ml file
-     *
-     *  @details This is pretty tricky because of the annoying not well adapted file format.
-     * The correspondance between Gocad::Model3D elements and GeoModel elements is :
-     *  - Gocad TSurf  <-> GeoModel Interface
-     *  - Gocad TFace  <-> GeoModel Surface
-     *  - Gocad Region <-> GeoModel Region
-     *  - Gocad Layer  <-> GeoModel Layer
-     *
-     * @param[in] ml_file_name Input .ml file stream
-     */
+   
     bool GeoModelBuilderGocad::load_ml_file( 
         const std::string& ml_file_name,
         bool ignore_file_borders )
@@ -1328,10 +1151,7 @@ namespace RINGMesh {
         if( !in.OK() ) {
             return false ;
         }
-
-        time_t start_load, end_load ;
-        time( &start_load ) ;
-
+        
         // Count the number of TSurf - Interface
         index_t nb_tsurf = 0 ;
 
@@ -1692,15 +1512,8 @@ namespace RINGMesh {
             }
         }
 
-        /// 5. Fill missing information and check model validity
-        bool valid_model = end_model() ;
-
-        time( &end_load ) ;
-        // Output of loading time only in debug mode has no meaning [JP]
-        GEO::Logger::out( "I/O" ) << "Model loading time "
-            << difftime( end_load, start_load ) << " sec" << std::endl ;
-
-        return valid_model ;
+        /// 5. Fill missing information
+        return end_model() ;       
     }
 
     /*!
@@ -2286,10 +2099,7 @@ namespace RINGMesh {
                 }
             }
         }
-        if( !end_model() ) {
-            GEO::Logger::err( "GeoModel" ) << "Invalid GeoModel loaded" << std::endl ;
-        }
-        return true ;
+        return end_model() ;            
     }
 
     GeoModelElement::TYPE GeoModelBuilderBM::match_nb_elements(
@@ -2547,6 +2357,15 @@ namespace RINGMesh {
         }
     }
 
+    /*! Delete all RegionBuildingInformation owned by the builder
+     */
+    GeoModelBuilderSurface::~GeoModelBuilderSurface()
+    {
+        for( index_t i = 0; i < regions_info_.size(); ++i ) {
+            delete regions_info_[ i ] ;
+        }
+    }
+
   
     /*! @details Add separately each connected component of the mesh
      *          as a Surface of the model under construction.
@@ -2623,6 +2442,7 @@ namespace RINGMesh {
                     corners, facets_ptr ) ;
             }
         }
+        return true ;
     }
 
 
@@ -2724,7 +2544,7 @@ namespace RINGMesh {
 
         // Complete boundary information for surfaces
         // to compute volumetric regions
-        fill_elements_boundaries( *this, GME::SURFACE ) ;
+        fill_elements_boundaries( GME::SURFACE ) ;
 
         // Sort surfaces around the contacts
         for( index_t i = 0; i < regions_info_.size(); ++i ) {
@@ -2841,6 +2661,7 @@ namespace RINGMesh {
             to_erase.insert( cur_region.gme_id() ) ;
             remove_elements( to_erase ) ;
         }
+        return true ;
     }
 
 
@@ -2865,8 +2686,8 @@ namespace RINGMesh {
         // to force their recomputation when checking model validity
         model_.mesh.vertices.clear() ;
 
-        // Finish up the model and check its validity
-        return end_model() ;
+        // Finish up the model
+        return end_model() ;            
     }
 
 } // namespace

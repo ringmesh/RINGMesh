@@ -181,7 +181,7 @@ endif(WIN32)
 # Define Geogram as an external project that we know how to
 # configure and compile
 ExternalProject_Add(geogram_ext
-  PREFIX ${GEOGRAM_PATH}
+  PREFIX ${GEOGRAM_PATH_BIN}
   
   #--Download step--------------
   DOWNLOAD_COMMAND ""

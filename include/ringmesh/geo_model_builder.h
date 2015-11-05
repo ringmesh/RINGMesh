@@ -38,7 +38,6 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin */
 
 #ifndef __RINGMESH_GEO_MODEL_BUILDER__
 #define __RINGMESH_GEO_MODEL_BUILDER__
@@ -51,6 +50,12 @@
 #include <string>
 #include <stack>
 
+/*!
+* @file ringmesh/geo_model_builder.h
+* @brief Classes to build GeoModel from various inputs
+* @author Jeanne Pellerin
+*/
+
 namespace GEO {
     class Mesh ;
 }
@@ -58,10 +63,8 @@ namespace GEO {
 namespace RINGMesh {
     /*!
      * @brief Base class for all classes building a GeoModel.
-     * @details Derive from this class to build or modify a GeoModel
-     * 
-     * NON Geometry related function have been moved in the GeoModelEditor
-     * 
+     * @details Derive from this class to build or modify a GeoModel. 
+     * @note NON Geometry related functions are in GeoModelEditor class.
      */
     class RINGMESH_API GeoModelBuilder : public GeoModelEditor {
     public:
@@ -74,16 +77,10 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Finish up model building, complete missing information
-        * and check model correctness.
+        * @brief Finish up model building and complete missing information.
+        * @return True except if the model has no surface.
         */
-        bool end_model() ;
-
-        /*!
-        * @brief Complete missing information in GeoModelElements
-        * boundaries - in_boundary - parent - children
-        */
-        bool complete_element_connectivity() ;
+        bool end_model() ;       
     
         /*!
          * \name Set element geometry from geometrical positions   
@@ -168,7 +165,8 @@ namespace RINGMesh {
     } ;
 
     
-    // Implementation class 
+    // Forward declaration of a class used to 
+    // implement GeoModelBuilderSurface
     class RegionBuildingInformation ;
 
     /*!
@@ -185,12 +183,8 @@ namespace RINGMesh {
             build_regions_( build_regions )
         {
         }
-        virtual ~GeoModelBuilderSurface()
-        {
-            for( index_t i = 0; i < regions_info_.size(); ++i ) {
-                delete regions_info_[ i ] ;
-            }
-        }
+        virtual ~GeoModelBuilderSurface() ;
+
         /*!
         * @brief Create the model Surfaces from the connected components
         *       of the input surface mesh
@@ -201,7 +195,8 @@ namespace RINGMesh {
         /*!
         * @brief From a GeoModel in which only Surface are defined, create
         * corners, contacts and optionally regions.   
-        * @return True if a valid model has been built, else returns false.
+        * @return True if a model has been built.
+        * @note Valdity is not checked
         * @pre The GeoModel should have at least one Surface. Nothing is done if not.
         */
         bool build_model() ;
@@ -239,7 +234,21 @@ namespace RINGMesh {
         virtual ~GeoModelBuilderGocad()
         {}
 
-        bool load_ml_file( 
+        /*!
+        * @brief Load and build a GeoModel from a Gocad .ml file
+        * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
+        * @details Correspondance between Gocad::Model3D elements 
+        * and GeoModel elements is :
+        *  - Gocad TSurf  <-> GeoModel Interface
+        *  - Gocad TFace  <-> GeoModel Surface
+        *  - Gocad Region <-> GeoModel Region
+        *  - Gocad Layer  <-> GeoModel Layer
+        * @param[in] ml_file_name Input .ml file stream
+        * @param[in] ignore_file_borders If true, BORDER and BSTONE entries in the files
+        * are ignored and the Lines and Corners of the GeoModel are deduced from the 
+        * connectivity of its Surfaces. By default set to false.
+        */
+        bool load_ml_file(
             const std::string& ml_file_name, 
             bool ignore_file_borders = false ) ;
 

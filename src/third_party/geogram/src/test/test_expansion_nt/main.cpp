@@ -47,12 +47,11 @@
 #include <iostream>
 
 /**
- * \brief Outputs an expansion_nt to a stream
+ * \brief Outputs an expansion_nt to a stream.
  * \param out a reference to the output stream
- * \param x a const reference to the expansion_nt to be output
- * \return the modified output stream
+ * \param x a const reference to the expansion_nt to be printed
  */
-std::ostream& operator<<(std::ostream& out, const GEO::expansion_nt& x) {
+void print(std::ostream& out, const GEO::expansion_nt& x) {
     out << "expansion_nt(estimate="
         << x.estimate();
     out << ", components=[";
@@ -64,7 +63,17 @@ std::ostream& operator<<(std::ostream& out, const GEO::expansion_nt& x) {
     }
     out << "]";
     out << ")";
-    return out;
+}
+
+/**
+ * \brief Outputs a double precision number to a stream.
+ * \details this function is here so that the same generic code
+ *  can be used with double and with expansion to show the difference.
+ * \param out a reference to the output stream
+ * \param x the double-precision number to be printed
+ */
+void print(std::ostream& out, double x) {
+    out << x;
 }
 
 /**
@@ -81,7 +90,9 @@ template <class T> inline void compute(const T& zzz) {
     T r = T(1e-30)+T(5.0)+T(1e30)+T(2e-30)-T(1e30);
     std::cout << "   sign(1e-30 + 5.0 + 1e30 + 2e-30 - 1e30) = "
               << GEO::geo_sgn(r) << std::endl;
-    std::cout << "   result = " << r << std::endl;
+    std::cout << "   result = ";
+    print(std::cout,r);
+    std::cout << std::endl;
 }
 
 int main() {

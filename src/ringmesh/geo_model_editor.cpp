@@ -98,6 +98,128 @@ namespace RINGMesh {
             store[ i ] = new_element( type, model_, i ) ;
         }
     }
+
+    /*! @details For all 7 types of elements, check what information is available
+    * for the first one and fill the elements of the same type accordingly
+    * THIS MEANS that the all the elements of the same type have been initialized with
+    * the same information.
+    */
+    bool GeoModelEditor::complete_element_connectivity()
+    {
+        // Lines
+        if( model_.nb_lines() > 0 ) {
+            if( model_.line( 0 ).nb_boundaries() == 0 ) {
+                fill_elements_boundaries( GME::LINE ) ;
+            }
+            if( model_.line( 0 ).nb_in_boundary() == 0 ) {
+                fill_elements_in_boundaries( GME::LINE ) ;
+            }
+            if( !model_.line( 0 ).parent_id().is_defined()
+                && model_.nb_contacts() > 0 ) {
+                fill_elements_parent( GME::LINE ) ;
+            }
+        }
+        // Corners
+        if( model_.nb_corners() > 0 && model_.corner( 0 ).nb_in_boundary() == 0 ) {
+            // Info from line boundaries is used here and should be available
+            fill_elements_in_boundaries( GME::CORNER ) ;
+        }
+        // Surfaces - There MUST be at least one
+        if( model_.surface( 0 ).nb_boundaries() == 0 ) {
+            fill_elements_boundaries( GME::SURFACE ) ;
+        }
+        if( model_.surface( 0 ).nb_in_boundary() == 0 ) {
+            fill_elements_in_boundaries( GME::SURFACE ) ;
+        }
+        if( !model_.surface( 0 ).parent_id().is_defined() ) {
+            fill_elements_parent( GME::SURFACE ) ;
+        }
+        // Regions
+        if( model_.nb_regions() > 0 ) {
+            if( model_.region( 0 ).nb_boundaries() == 0 ) {
+                fill_elements_boundaries( GME::REGION ) ;
+            }
+            if( !model_.region( 0 ).parent_id().is_defined()
+                && model_.nb_layers() > 0 ) {
+                fill_elements_parent( GME::REGION ) ;
+            }
+        }
+        // Contacts
+        if( model_.nb_contacts() > 0 && model_.contact( 0 ).nb_children() == 0 ) {
+            fill_elements_children( GME::CONTACT ) ;
+        }
+        // Interfaces
+        if( model_.nb_interfaces() > 0
+            && model_.one_interface( 0 ).nb_children() == 0 ) {
+            fill_elements_children( GME::INTERFACE ) ;
+        }
+        // Layers
+        if( model_.nb_layers() > 0 && model_.layer( 0 ).nb_children() == 0 ) {
+            fill_elements_children( GME::LAYER ) ;
+        }
+        return true ;
+    }
+
+    void GeoModelEditor::fill_elements_boundaries( GME::TYPE type )
+    {
+        // We have a problem if this is called for regions
+        // No way yet to know the surface orientation
+        ringmesh_debug_assert( type != GME::REGION ) ;
+
+        GME::TYPE b_type = GME::boundary_type( type ) ;
+        if( b_type != GME::NO_TYPE ) {
+            for( index_t i = 0; i < model().nb_elements( b_type ); ++i ) {
+                const GME& b = model().element( gme_t( b_type, i ) ) ;
+                for( index_t j = 0; j < b.nb_in_boundary(); ++j ) {
+                    add_element_boundary( b.in_boundary_id( j ),
+                                            gme_t( b_type, i ) ) ;
+                }
+            }
+        }
+    }
+
+    void GeoModelEditor::fill_elements_in_boundaries( GME::TYPE type )
+    {
+        GME::TYPE in_b_type = GME::in_boundary_type( type ) ;
+        if( in_b_type != GME::NO_TYPE ) {
+            for( index_t i = 0; i < model().nb_elements( in_b_type ); ++i ) {
+                const GME& in_b = element( gme_t( in_b_type, i ) ) ;
+                for( index_t j = 0; j < in_b.nb_boundaries(); ++j ) {
+                    add_element_in_boundary( in_b.boundary_id( j ),
+                                               gme_t( in_b_type, i ) ) ;
+                }
+            }
+        }
+    }
+
+    void GeoModelEditor::fill_elements_parent( GME::TYPE type )
+    {
+        GME::TYPE p_type = GME::parent_type( type ) ;
+        if( p_type != GME::NO_TYPE ) {
+            for( index_t i = 0; i < model().nb_elements( p_type ); ++i ) {
+                const GME& p = model().element( gme_t( p_type, i ) ) ;
+                for( index_t j = 0; j < p.nb_children(); ++j ) {
+                    set_element_parent( p.child_id( j ), gme_t( p_type, i ) ) ;
+                }
+            }
+        }
+    }
+
+    void GeoModelEditor::fill_elements_children( GME::TYPE type )
+    {
+        GME::TYPE c_type = GME::child_type( type ) ;
+        if( c_type != GME::NO_TYPE ) {
+            for( index_t i = 0; i < model().nb_elements( c_type ); ++i ) {
+                gme_t cur_child = gme_t( c_type, i ) ;
+                const gme_t& parent = model().element( cur_child ).parent_id() ;
+                if( parent.is_defined() ) {
+                    add_element_child( parent, cur_child ) ;
+                }
+            }
+        }
+    }
+
+
  
     /*!
     * @brief Add to the vector the elements which cannot exist if

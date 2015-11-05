@@ -40,6 +40,8 @@
 
 #include <ringmesh/io.h>
 
+#include <ctime>
+
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
@@ -47,7 +49,9 @@
 
 #include <ringmesh/ringmesh_config.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geo_model_validity.h>
 
 namespace {
     using RINGMesh::index_t ;
@@ -59,6 +63,7 @@ namespace {
     using RINGMesh::Line ;
     using RINGMesh::Corner ;
     using RINGMesh::vec3 ;
+
 
     /*!
     * From a given file name (MyFile.ext), create a MyFile directory 
@@ -610,11 +615,29 @@ namespace RINGMesh {
         virtual bool load( const std::string& filename, GeoModel& model )
         {
             std::ifstream input( filename.c_str() ) ;
-            if( !input ) {
-                return false ;
-            }
-            GeoModelBuilderGocad builder( model ) ;
-            return builder.load_ml_file( filename ) ;
+            if( input ) {
+                GeoModelBuilderGocad builder( model ) ;
+
+                time_t start_load, end_load ;
+                time( &start_load ) ;
+
+                if( builder.load_ml_file( filename ) ) {
+                    print_model( model ) ;
+                    // Check validity
+                    RINGMesh::is_geomodel_valid( model ) ;
+
+                    time( &end_load ) ;
+                    GEO::Logger::out( "I/O" )
+                        << " Loaded model " << model.name() << " from " << std::endl 
+                        << filename << " timing: " 
+                        << difftime( end_load, start_load ) << "sec" << std::endl ;
+                    return true ;
+                }
+            }          
+            GEO::Logger::out( "I/O" )
+                << "Failed loading model from file "
+                << filename << std::endl ;
+            return false ;
         }
 
         virtual bool save( const GeoModel& model, const std::string& filename )
@@ -629,12 +652,21 @@ namespace RINGMesh {
         virtual bool load( const std::string& filename, GeoModel& model )
         {           
             std::ifstream input( filename.c_str() ) ;
-            if( !input ) {
-                return false ;
+            if( input ) {
+                GeoModelBuilderBM builder( model ) ;
+                if( builder.load_file( filename ) ) {
+                    GEO::Logger::out( "I/O" )
+                        << " Loaded model " << model.name() << " from "
+                        << filename << std::endl ;
+                    print_model( model ) ;
+                    RINGMesh::is_geomodel_valid( model ) ;                
+                    return true ;
+                }
             }
-
-            GeoModelBuilderBM builder( model ) ;
-            return builder.load_file( filename ) ;
+            GEO::Logger::out( "I/O" )
+                << "Failed loading geological model from file "
+                << filename << std::endl ;
+            return false ;
         }
 
         virtual bool save( const GeoModel& model, const std::string& filename )
