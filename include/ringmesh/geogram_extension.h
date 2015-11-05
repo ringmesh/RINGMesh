@@ -51,10 +51,17 @@ namespace GEO {
 }
 
 namespace RINGMesh {
+	
+    /***********************************************************************/
+    /* Loading and saving a GEO::Mesh                                      */
 
-    /*!
+	/** \brief complement the available MeshIOHandler
+	 */
+	void RINGMESH_API initialize_geogram_extension_mesh_io_handler() ;
+
+    /** \function load_ts_file
     * \brief To load a Gocad TSurf surface .ts
-    * \todo Create the appropriate Mesh handler. Where should we put it ? [JP]
+    * \deprecated This has been moved into a MeshIOHandler. Use GEO::mesh_load instead.
     */
     bool RINGMESH_API load_ts_file( GEO::Mesh& M, const std::string& file_name ) ;
 
