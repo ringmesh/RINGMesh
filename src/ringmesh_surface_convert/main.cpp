@@ -56,6 +56,7 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
+	// welcome
     GEO::Logger::div( "RINGMeshConvert" ) ;
     GEO::Logger::out( "" ) << "Welcome to RINGMeshSurfaceConvert !" << std::endl ;
     GEO::Logger::out( "" ) << "People working on this project in RING" << std::endl ;
@@ -83,15 +84,16 @@ int main( int argc, char** argv )
 
     GEO::Stopwatch total( "Total time" ) ;
 
-	// get current directory .ts files
-	std::string starting_directory = GEO::FileSystem::get_current_working_directory();
-	std::vector<std::string> input_file_names;
-	GEO::FileSystem::get_files( starting_directory , input_file_names );
+	// get files in current directory
+	std::string starting_directory = GEO::FileSystem::get_current_working_directory() ;
+	std::vector<std::string> input_file_names ;
+	GEO::FileSystem::get_files( starting_directory , input_file_names ) ;
 	
-	std::vector<std::string> input_ts_names;
+	// filter only the files with .ts extension
+	std::vector<std::string> input_ts_names ;
 	for( std::vector<std::string>::iterator file_itr = input_file_names.begin(); file_itr < input_file_names.end(); ++file_itr ){
 		if( GEO::FileSystem::extension( *file_itr ) == "ts" ){
-			input_ts_names.push_back( *file_itr );
+			input_ts_names.push_back( *file_itr ) ;
 		}
 	}
 
@@ -109,8 +111,7 @@ int main( int argc, char** argv )
 	}
 	for( std::vector<std::string>::iterator format_itr = output_formats.begin(); format_itr < output_formats.end(); ++format_itr ){
 		if( !GEO::FileSystem::create_directory( *format_itr ) ){
-			GEO::Logger::err( "I/O" ) << "Can't create " << *format_itr << " directory."
-				<< std::endl ;
+			GEO::Logger::err( "I/O" ) << "Can't create " << *format_itr << " directory." << std::endl ;
 			return 1 ;
 		}
 	}
@@ -127,14 +128,13 @@ int main( int argc, char** argv )
 			GEO::Logger::err( "I/O" ) << "Can't load: " << *ts_itr << std::endl ;
 			continue ;
 		}
+
 		// get the basename
 		std::string surface_in_basename = GEO::FileSystem::base_name( *ts_itr );
-        GEO::Logger::out( "" ) << " ... basename: " << surface_in_basename << std::endl ;
 
 		// for each format save it
 		for( std::vector<std::string>::iterator format_itr = output_formats.begin(); format_itr < output_formats.end(); ++format_itr ){
 			
-            GEO::Logger::out( "" ) << " ... going to: " << "..\\" << *format_itr << std::endl ;
 		    GEO::FileSystem::set_current_working_directory("..") ;
 		    GEO::FileSystem::set_current_working_directory(*format_itr) ;
 
