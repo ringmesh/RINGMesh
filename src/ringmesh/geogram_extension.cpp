@@ -41,6 +41,7 @@
 #include <ringmesh/geogram_extension.h>
 
 #include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_repair.h>
 
@@ -61,16 +62,53 @@ namespace RINGMesh {
         iss >> result >> std::ws ;
         return result ;
     }
-    /// TO MOVE
-    // we assume there is only one TSURF saved in the file
-    bool load_ts_file( GEO::Mesh& M, const std::string& file_name )
+    
+    /***********************************************************************/
+    /* Loading and saving a GEO::Mesh                                      */
+
+    /*! 
+     * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
+     */
+    class RINGMESH_API TSurfMeshIOHandler : public GEO::MeshIOHandler {
+    public:
+        /*!
+         * @brief Load a TSurf saved in .ts format
+         * @warning Assumes there is only one TSurf in the file.
+         *          Will undoubtedly crash if it is not the case.
+         * @todo Prevent crashing if the file is not as expected
+         *
+         * @param filename the name of the file to be processed.
+         * @param mesh the mesh where the surface will be created.
+         * @param flags Some flags, not used for now.
+         */
+        virtual bool load(
+            const std::string& filename,
+            GEO::Mesh& mesh,
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags()
+            ) ;
+
+        /*!
+         * @brief Save a Mesh in .ts format
+         * @todo To be implemented.
+         */
+        virtual bool save( const GEO::Mesh&, const std::string&, const GEO::MeshIOFlags& )
+        {
+            GEO::Logger::err( "I/O" )
+                << "Saving a Mesh into TSurf format not implemented yet"
+                << std::endl ;
+            return false ;
+        }
+    } ;
+
+    bool TSurfMeshIOHandler::load(
+        const std::string& filename, GEO::Mesh& mesh, const GEO::MeshIOFlags& )
     {
         // Count the number of triangles and vertices
         index_t nb_points = 0 ;
         index_t nb_triangles = 0 ;
         int z_sign = 1 ;
         {
-            GEO::LineInput in( file_name ) ;
+            GEO::LineInput in( filename ) ;
             if( !in.OK() ) {
                 return false ;
             }
@@ -103,7 +141,7 @@ namespace RINGMesh {
         GEO::vector< double > vertices( dim * nb_points ) ;
         GEO::vector< index_t > triangles( 3 * nb_triangles ) ;
         {
-            GEO::LineInput in( file_name ) ;
+            GEO::LineInput in( filename ) ;
             if( !in.OK() ) {
                 return false ;
             }
@@ -139,13 +177,20 @@ namespace RINGMesh {
             }
         }
 
-        M.facets.assign_triangle_mesh( dim, vertices, triangles, true ) ;
+        mesh.facets.assign_triangle_mesh( dim, vertices, triangles, true ) ;
 
-        GEO::MeshRepairMode mode = static_cast< GEO::MeshRepairMode >( 2 ) ;
-        GEO::mesh_repair( M, mode ) ;
+        // GEO::MESH_REPAIR_DEFAULT is not used because it would glue the 
+        // disconnected edges along internal boundaries
+        GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F ) ;
         return true ;
     }
-
+    
+    void RINGMESH_API ringmesh_mesh_io_initialize() 
+    {
+        geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" );
+    }
+    
+    /***********************************************************************/
 
     /*!
     * Computes the volume of a Mesh cell
