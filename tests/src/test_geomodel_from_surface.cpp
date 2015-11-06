@@ -71,8 +71,8 @@ int main( int argc, char** argv )
     GEO::mesh_load( file_name, in ) ;
     RINGMesh::GeoModel model ;
 	
-	RINGMesh::GeoModelBuilderSurface BB( model ) ;
-	BB.set_surfaces( in ) ;
+	RINGMesh::GeoModelBuilderMesh BB( model, in ) ;
+	BB.set_surfaces() ;
     if( !BB.build_model() ) {
 		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	
 		return 1 ;

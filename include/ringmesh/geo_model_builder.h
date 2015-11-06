@@ -61,6 +61,9 @@ namespace GEO {
 }
 
 namespace RINGMesh {
+    // Internal implementation class
+    class RegionBuildingInformation ;
+
     /*!
      * @brief Base class for all classes building a GeoModel.
      * @details Derive from this class to build or modify a GeoModel. 
@@ -72,16 +75,7 @@ namespace RINGMesh {
             : GeoModelEditor( model )
         {
         }
-        virtual ~GeoModelBuilder()
-        {
-        }
-
-        /*!
-        * @brief Finish up model building and complete missing information.
-        * @return True except if the model has no surface.
-        */
-        bool end_model() ;       
-    
+        virtual ~GeoModelBuilder() ;
         /*!
          * \name Set element geometry from geometrical positions   
          * @{
@@ -143,10 +137,6 @@ namespace RINGMesh {
             const std::vector< index_t >& corners,
             const std::vector< index_t >& facet_ptr ) ;
 
-        /*!
-         * @}
-         */   
-
         index_t find_or_create_duplicate_vertex(
             GeoModelMeshElement& S,
             index_t model_vertex_id,
@@ -156,6 +146,43 @@ namespace RINGMesh {
 
         void compute_surface_adjacencies( const GME::gme_t& surface_id ) ;
 
+        /*!
+         * @}
+         * \name Model building functions
+         */   
+
+        /*!
+        * @brief From the Surfaces of the GeoModel, build its Lines and Corners
+        */
+        bool build_lines_and_corners() ;
+
+        /*!
+        * @brief Build the regions of the GeoModel from the Surfaces 
+        * @details Call build_lines_and_corners first
+        */
+        bool build_regions() ;
+    
+        /*!
+        * @brief From a GeoModel in which only Surface are defined, create
+        * corners, contacts and optionally regions.
+        * @return True if a model has been built.
+        * @note Valdity is not checked
+        * @pre The GeoModel should have at least one Surface. Nothing is done if not.
+        */
+        bool build_model() ;
+
+        /*!
+        * @brief Finish up model building and complete missing information.
+        * @return True except if the model has no Surface.
+        */
+        bool end_model() ;
+
+    protected:
+        /*! Build or not the Regions of the GeoModel from the the Surfaces
+        * and Lines */
+        bool build_regions_ ;
+        /*! Internal information filled at Line building step */
+        std::vector< RegionBuildingInformation* > regions_info_ ;
 
     private:
         void create_surface_geometry(
@@ -165,71 +192,42 @@ namespace RINGMesh {
     } ;
 
     
-    // Forward declaration of a class used to 
-    // implement GeoModelBuilderSurface
-    class RegionBuildingInformation ;
-
+    
     /*!
-     * @brief Builder of a GeoModel from its Surfaces without 
-     *        information on its Regions or Lines 
+     * @brief Builder of a GeoModel from a Mesh 
      * @note Manifold surface connected components are supposed disjoints
      *       It would be possible if needed to implement this for 
      *       non disjoint Surfaces using non-manifold edge identification.
      */
-    class RINGMESH_API GeoModelBuilderSurface: public GeoModelBuilder {
+    class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
     public:
-        GeoModelBuilderSurface( GeoModel& model, bool build_regions = true )
+        GeoModelBuilderMesh( GeoModel& model, const GEO::Mesh& mesh )
             : GeoModelBuilder( model ),
-            build_regions_( build_regions )
-        {
-        }
-        virtual ~GeoModelBuilderSurface() ;
+            mesh_( mesh )
+        {};
+    
+        virtual ~GeoModelBuilderMesh()
+        {};
 
         /*!
         * @brief Create the model Surfaces from the connected components
         *       of the input surface mesh
         * @pre The input mesh is a surface mesh. Facet adjacencies are available.
         */
-        bool set_surfaces( const GEO::Mesh& mesh ) ;
-       
-        /*!
-        * @brief From a GeoModel in which only Surface are defined, create
-        * corners, contacts and optionally regions.   
-        * @return True if a model has been built.
-        * @note Valdity is not checked
-        * @pre The GeoModel should have at least one Surface. Nothing is done if not.
-        */
-        bool build_model() ;
+        bool set_surfaces() ;
 
     protected:
-        /*!
-        * @brief From the topology of the Surface of the GeoModel, build
-        * its Lines and Corners
-        */
-        bool build_lines_and_corners() ;
-
-        /*!
-        * @brief Build the regions of the GeoModel from information collected
-        * at Line building step.
-        */
-        bool build_regions() ;
-
-    protected:
-        /*! Build or not the Regions of the GeoModel from the the Surfaces 
-         * and Lines */ 
-        bool build_regions_ ;
-        /*! Internal information filled at Line building step */
-        std::vector< RegionBuildingInformation* > regions_info_ ;
+        const GEO::Mesh& mesh_ ;
     } ;
 
 
     /*!
     * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
     */
-    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilderSurface {
+    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilder {
     public:
-        GeoModelBuilderGocad( GeoModel& model )
-            : GeoModelBuilderSurface( model, false )
+        GeoModelBuilderGocad( GeoModel& model ): 
+            GeoModelBuilder( model )
         {}
         virtual ~GeoModelBuilderGocad()
         {}
