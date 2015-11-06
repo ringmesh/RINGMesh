@@ -67,31 +67,34 @@ namespace RINGMesh {
     /* Loading and saving a GEO::Mesh                                      */
 
 	/** 
-	 * \brief TSurfMeshIOHandler for importing .ts files into a mesh.
+	 * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
 	 */
 	class RINGMESH_API TSurfMeshIOHandler : public GEO::MeshIOHandler {
 	public:
-
-		/** \brief creates a TSurfMeshIOHandler
+		/** @brief creates a TSurfMeshIOHandler
 		 */
 		TSurfMeshIOHandler(){
 		}
 
-		/** \brief TSurfMeshIOHandler destructor
+		/** @brief TSurfMeshIOHandler destructor
 		 */
 		~TSurfMeshIOHandler(){
 		}
 
-		/** \brief for loading a TSurf saved in .ts format
-		 * \warning Assumes there is only one TSurf in the file.
-		 * \param filename the name of the file to be processed.
-		 * \param mesh the mesh where the surface will be created.
-		 * \param flags Some flags, not used for now.
+		/** @brief for loading a TSurf saved in .ts format
+		 * @warning Assumes there is only one TSurf in the file.
+		 * @param filename the name of the file to be processed.
+		 * @param mesh the mesh where the surface will be created.
+		 * @param flags Some flags, not used for now.
 		 */
-		virtual bool load( const std::string& filename, GEO::Mesh& mesh, const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) ;
+		virtual bool load( 
+                        const std::string& filename,
+                        GEO::Mesh& mesh,
+                        const GEO::MeshIOFlags& flag = GEO::MeshIOFlags()
+                        ) ;
 		
-		/** \brief for saving a Mesh in .ts format
-		 * \todo to be implemented.
+		/** @brief for saving a Mesh in .ts format
+		 * @todo to be implemented.
 		 */
         virtual bool save( const GEO::Mesh& , const std::string& , const GEO::MeshIOFlags& )
         {
@@ -101,13 +104,13 @@ namespace RINGMesh {
             return false ;
 		}
 
-	public:
-		/** \brief loads a .ts
-		 * \note we assume there is only one TSURF saved in the file
+	protected:
+		/** @brief loads a .ts
+		 * @note we assume there is only one TSURF saved in the file
 		 */
-		static bool load_ts_file( GEO::Mesh& mesh, const std::string& filename ) ;
+		bool load_ts_file( GEO::Mesh& mesh, const std::string& filename ) ;
 		
-	};
+	} ;
 
 	bool TSurfMeshIOHandler::load( const std::string& filename, GEO::Mesh& mesh, const GEO::MeshIOFlags& )
     {
@@ -192,8 +195,7 @@ namespace RINGMesh {
 
         mesh.facets.assign_triangle_mesh( dim, vertices, triangles, true ) ;
 
-        GEO::MeshRepairMode mode = static_cast< GEO::MeshRepairMode >( 2 ) ;
-        GEO::mesh_repair( mesh, mode ) ;
+        GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DEFAULT ) ;
         return true ;
     }
 	
