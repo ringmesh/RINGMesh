@@ -55,7 +55,7 @@ int main( int argc, char** argv )
     GeoModel in ;
     std::string input_model_file_name( ringmesh_test_data_path ) ;
     input_model_file_name += "modelA2.ml" ;
-    if( !model_load( input_model_file_name, in ) ) {
+    if( !geomodel_surface_load( input_model_file_name, in ) ) {
         return 1 ;
     }
 

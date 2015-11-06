@@ -47,7 +47,7 @@
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/line_stream.h>
-
+#include <geogram/third_party/tetgen/tetgen.h>
 
 namespace RINGMesh {
 
@@ -184,6 +184,153 @@ namespace RINGMesh {
         GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F ) ;
         return true ;
     }
+
+
+
+
+    bool is_mesh_tetrahedralizable( const GEO::Mesh& M ) 
+    { 
+        if( M.cells.nb() != 0 ) {
+            GEO::Logger::err( "RING" ) << "Mesh to tetrahedralize already have cells"
+                << std::endl ;
+            return false ;
+        }
+        if( M.facets.nb() == 0 ) {
+            GEO::Logger::err( "RING" ) << "Mesh to tetrahedralize has no facets "
+                << std::endl ;
+            return false ;
+        }
+        if( !M.facets.are_simplices() ) {
+            GEO::Logger::err( "RING" ) << "Mesh to tetrahedralize is not triangulated"
+                << std::endl ;
+            return false ;
+        }
+        return true ;
+    }
+
+    bool tetrahedralize_mesh_tetgen( GEO::Mesh& M ) 
+    {    
+        if( !is_mesh_tetrahedralizable( M ) ) {
+            return false ;
+        }
+        
+        // Q: quiet
+        // p: input data is surfacic
+        // q: desired quality
+        // O0: do not optimize mesh
+        // V: verbose - A LOT of information
+        // Y: prohibit steiner points on boundaries
+        // A: generate region tags for each shell.      
+        GEO_3rdParty::tetgenbehavior tetgen_args;        
+        tetgen_args.parse_commandline( ( char* )"QpYA" ) ;
+
+        // Tetgen input
+        GEO_3rdParty::tetgenio tetgen_in;
+        tetgen_in.firstnumber = 0;
+        tetgen_in.deinitialize();
+        tetgen_in.initialize();
+               
+        // Copy vertices
+        tetgen_in.numberofpoints = static_cast<int>( M.vertices.nb() ) ;
+        tetgen_in.pointlist = new double[ 3*tetgen_in.numberofpoints ];
+        if( M.vertices.nb() != 0 ) {
+            GEO::Memory::copy(
+                tetgen_in.pointlist, M.vertices.point_ptr( 0 ),
+                M.vertices.nb()*3*sizeof( double )
+            );
+        }
+        
+        // Make tetgen_in_ points to the edges of the input Mesh
+        if( M.edges.nb() != 0 ) {
+            tetgen_in.numberofedges = static_cast<int>( M.edges.nb() ) ;
+            tetgen_in.edgelist = (int*)( M.edges.vertex_index_ptr( 0 ));
+        }
+
+        // Copy facets
+        // All triangles are allocated in one go, in a contiguous array.
+        GEO_3rdParty::tetgenio::polygon* polygons =  new GEO_3rdParty::tetgenio::polygon[ M.facets.nb() ];
+        tetgen_in.numberoffacets = int( M.facets.nb() ) ;
+        tetgen_in.facetlist = new GEO_3rdParty::tetgenio::facet[ tetgen_in.numberoffacets ];
+        for( index_t f = 0; f < M.facets.nb(); ++f ) {
+            GEO_3rdParty::tetgenio::facet& F = tetgen_in.facetlist[ f ];
+            GEO_3rdParty::tetgenio::init( &F );
+            F.numberofpolygons = 1;
+            F.polygonlist = &polygons[ f ];
+            GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[ 0 ];
+            GEO_3rdParty::tetgenio::init( &P ) ;
+            P.numberofvertices = 3 ; // Input is simplicial mesh
+            P.vertexlist = reinterpret_cast<int*>(
+                M.facet_corners.vertex_index_ptr( M.facets.corners_begin( f ) )
+                );
+            F.numberofholes = 0 ;
+            F.holelist = nil ;
+        }
+
+        // Get tets
+        GEO_3rdParty::tetgenio tetgen_out;
+        tetgen_out.firstnumber = 0;
+        tetgen_out.deinitialize();
+        try {
+            GEO_3rdParty::tetrahedralize( &tetgen_args, &tetgen_in, &tetgen_out );
+        } catch( std::exception& e ) {
+            GEO::Logger::err( "Tetgen" )
+                << "Encountered a problem" << e.what() << std::endl;
+        }
+
+        // Deallocate the datastructures used by tetgen,
+        // and disconnect them from tetgen,
+        // so that tetgen does not try to deallocate them.
+
+        // Deallocate pointlist
+        tetgen_in.numberofpoints = 0;
+        delete[] tetgen_in.pointlist;
+        tetgen_in.pointlist = nil;
+
+        // Edges are shared with constraint mesh
+        tetgen_in.numberofedges = 0;
+        tetgen_in.edgelist = nil;
+
+        // Facets structures were allocated in local
+        // array, and vertices indices were shared with constraint mesh
+        delete[] tetgen_in.facetlist;
+        tetgen_in.facetlist = nil;
+        tetgen_in.numberoffacets = 0;
+        delete[] polygons;
+
+
+        // Copy the result
+        index_t nb_points( tetgen_out.numberofpoints ) ;
+        double* points_ptr = tetgen_out.pointlist ;
+        GEO::vector<double> pts( 3*nb_points );
+        for( index_t i = 0; i < 3*nb_points; ++i ) {
+            pts[ i ] = points_ptr[ i ] ;
+        }
+
+        index_t nb_tets( tetgen_out.numberoftetrahedra ) ;
+        int* tets_ptr = tetgen_out.tetrahedronlist ;
+        int one_tet_size = tetgen_out.numberofcorners ;
+        GEO::vector<index_t> tet2v( 4*nb_tets );
+        for( index_t i = 0; i < nb_tets; ++i ) {
+            tet2v[ 4*i+0 ] = index_t( tets_ptr[ one_tet_size*i+0 ] ) ;
+            tet2v[ 4*i+1 ] = index_t( tets_ptr[ one_tet_size*i+1 ] ) ;
+            tet2v[ 4*i+2 ] = index_t( tets_ptr[ one_tet_size*i+2 ] ) ;
+            tet2v[ 4*i+3 ] = index_t( tets_ptr[ one_tet_size*i+3 ] ) ;
+        }
+        
+        M.cells.assign_tet_mesh( 3, pts, tet2v, true );
+        M.cells.connect();               
+
+        double* tet_attributes = tetgen_out.tetrahedronattributelist ;
+        int one_tet_attribute_size = tetgen_out.numberoftetrahedronattributes ;
+        GEO::Attribute< int > region_id ;
+        region_id.bind( M.cells.attributes(), "region" ) ;
+        for( index_t i = 0; i < nb_tets; ++i ) {
+            // Let's suppose that the shell id is the first attribute in tetgen...
+            region_id[ i ] = int( tet_attributes[ one_tet_attribute_size*i ] ) ;
+        }
+    }
+
+
     
     void RINGMESH_API ringmesh_mesh_io_initialize() 
     {

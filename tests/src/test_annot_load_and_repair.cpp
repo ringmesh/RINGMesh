@@ -75,7 +75,7 @@ int main( int argc, char** argv ) {
     set_validity_errors_directory( ringmesh_test_output_path ) ;
 
     // Load the model
-    if( !model_load( file_name, M ) ) {
+    if( !geomodel_surface_load( file_name, M ) ) {
         return 1 ;
     }
     else {
@@ -87,7 +87,7 @@ int main( int argc, char** argv ) {
             if( is_geomodel_valid( M ) ) {               
                 std::string fixed_file_name( ringmesh_test_output_path ) ;
                 fixed_file_name += M.name() + "_repaired.ml" ;
-                model_save( M, fixed_file_name ) ;
+                geomodel_surface_save( M, fixed_file_name ) ;
                 GEO::Logger::out( "RINGMesh Test" ) << "Invalid geological model "
                     << M.name() << " has been successfully fixed and is saved under: "
                     << fixed_file_name << std::endl ;
