@@ -47,6 +47,7 @@
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
+#include <ringmesh/geogram_extension.h>
 #include <ringmesh/io.h>
 #include <ringmesh/ringmesh_tests_config.h>
 
@@ -55,43 +56,50 @@
  * @author Jeanne Pellerin
  */
 
-using GEO::Logger ;
+using GEO::Logger ;;
 using RINGMesh::index_t ;
+using RINGMesh::GeoModel ;
+using RINGMesh::Surface ;
 
-bool mesh_constrained_tetgen( GEO::Mesh& M, bool refine, double quality )
+
+/*!
+* @brief Build a Mesh from the model non-duplicated vertices
+*        and its Surface facets.
+* @details Adjacencies are not set. Client should call
+*  mesh repair functions afterwards.
+* @todo Copy of code in validity check imlpementation
+*       Transfer it in the API, create a Mesh from a whol of 
+*       some parts of a GeoModel
+*/
+void mesh_from_geo_model( const GeoModel& model, GEO::Mesh& M )
 {
-    if( !M.facets.are_simplices() ) {
-        Logger::err( "TetMeshing" )
-            << "Mesh is not triangulated"
-            << std::endl;
-        return false;
+    // Keep the attributes when clearing the mesh, otherwise we crash
+    M.clear( true ) ;
+
+    index_t nbv = model.mesh.vertices.nb() ;
+    M.vertices.create_vertices( nbv ) ;
+
+    /* We need to copy the point one after another since we do not have access
+    * to the storage of the model.vertices.
+    * I do not want to provide this access [JP]
+    */
+    for( index_t v = 0; v < nbv; ++v ) {
+        M.vertices.point( v ) = model.mesh.vertices.vertex( v ) ;
     }
 
-    GEO::Delaunay_var delaunay = GEO::Delaunay::create( 3, "tetgen" );
-    delaunay->set_refine( refine );
-    delaunay->set_quality( quality );
-    delaunay->set_constraints( &M );
-    // Compute the tetrahedrons 
-    delaunay->set_vertices( 0, nil ); 
+    // Set the facets  
+    for( index_t s = 0; s < model.nb_surfaces(); ++s ) {
+        const Surface& S = model.surface( s ) ;
+        for( index_t f = 0; f < S.nb_cells(); ++f ) {
+            index_t nbv = S.nb_vertices_in_facet( f ) ;
+            GEO::vector< index_t > ids( nbv ) ;
 
-    GEO::vector<double> pts( delaunay->nb_vertices() * 3 );
-    GEO::vector<index_t> tet2v( delaunay->nb_cells() * 4 );
-    for( index_t v = 0; v < delaunay->nb_vertices(); ++v ) {
-        pts[ 3 * v ] = delaunay->vertex_ptr( v )[ 0 ];
-        pts[ 3 * v + 1 ] = delaunay->vertex_ptr( v )[ 1 ];
-        pts[ 3 * v + 2 ] = delaunay->vertex_ptr( v )[ 2 ];
+            for( index_t v = 0; v < nbv; ++v ) {
+                ids[ v ] = S.model_vertex_id( f, v ) ;
+            }
+            M.facets.create_polygon( ids ) ;
+        }
     }
-    for( index_t t = 0; t < delaunay->nb_cells(); ++t ) {
-        tet2v[ 4 * t ] = index_t( delaunay->cell_vertex( t, 0 ) );
-        tet2v[ 4 * t + 1 ] = index_t( delaunay->cell_vertex( t, 1 ) );
-        tet2v[ 4 * t + 2 ] = index_t( delaunay->cell_vertex( t, 2 ) );
-        tet2v[ 4 * t + 3 ] = index_t( delaunay->cell_vertex( t, 3 ) );
-    }
-
-    M.cells.assign_tet_mesh( 3, pts, tet2v, true );
-    M.cells.connect();
-    M.show_stats( "TetMeshing" );
-    return true;
 }
 
 int main( int argc, char** argv )
@@ -104,31 +112,21 @@ int main( int argc, char** argv )
     GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
     GEO::Logger::instance()->register_client( file_logger ) ;
 
-
     std::string file_name( ringmesh_test_data_path ) ;
     file_name += "split_cube.ml" ;
     std::string result_file_name( ringmesh_test_output_path ) ;
     result_file_name += "geomodel_tet_mesh.mesh" ;
 
-
-    // 0. Load a Geomodel
     GeoModel geomodel ;
     geomodel_surface_load( file_name, geomodel ) ;
 
-
-    // 1. Get the global Mesh of Surfaces of the GeoModel
     GEO::Mesh geomodel_surfaces_mesh ;
-    geomodel.mesh.copy_mesh( geomodel_surfaces_mesh ) ;
-
-    // 2. Tetrahedralize this Mesh
-    mesh_constrained_tetgen( geomodel_surfaces_mesh, false, 2.0 ) ;
+    mesh_from_geo_model( geomodel, geomodel_surfaces_mesh ) ;
+    tetrahedralize_mesh_tetgen( geomodel_surfaces_mesh ) ;
 
     GEO::mesh_save( geomodel_surfaces_mesh, result_file_name ) ;
 
+    // todo - assign the generated tets to the right regions of the model
 
-    // 3. Assign pieces of the generated Mesh to the Regions 
-    // of the model
-
-    
-
+    return 0 ;
 }
