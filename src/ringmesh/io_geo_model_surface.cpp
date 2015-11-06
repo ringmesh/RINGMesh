@@ -616,12 +616,12 @@ namespace RINGMesh {
         {
             std::ifstream input( filename.c_str() ) ;
             if( input ) {
-                GeoModelBuilderGocad builder( model ) ;
+                GeoModelBuilderGocad builder( model, filename ) ;
 
                 time_t start_load, end_load ;
                 time( &start_load ) ;
 
-                if( builder.load_ml_file( filename ) ) {
+                if( builder.build_model() ) {
                     print_model( model ) ;
                     // Check validity
                     RINGMesh::is_geomodel_valid( model ) ;
@@ -653,8 +653,8 @@ namespace RINGMesh {
         {           
             std::ifstream input( filename.c_str() ) ;
             if( input ) {
-                GeoModelBuilderBM builder( model ) ;
-                if( builder.load_file( filename ) ) {
+                GeoModelBuilderBM builder( model, filename ) ;
+                if( builder.build_model() ) {
                     GEO::Logger::out( "I/O" )
                         << " Loaded model " << model.name() << " from "
                         << filename << std::endl ;

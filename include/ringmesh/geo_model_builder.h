@@ -42,13 +42,17 @@
 #ifndef __RINGMESH_GEO_MODEL_BUILDER__
 #define __RINGMESH_GEO_MODEL_BUILDER__
 
+#include <vector>
+#include <string>
+#include <stack>
+
+#include <geogram/basic/line_stream.h>
+
 #include <ringmesh/common.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_editor.h>
 
-#include <vector>
-#include <string>
-#include <stack>
+
 
 /*!
 * @file ringmesh/geo_model_builder.h
@@ -61,6 +65,18 @@ namespace GEO {
 }
 
 namespace RINGMesh {
+
+    struct GeoModelIOFlags {
+        bool compute_corners ;
+        bool compute_lines ;
+        bool compute_surfaces ;
+        bool compute_regions_brep ;
+        bool compute_regions_mesh ;
+        // Les autres elements ne sont pas obligatoires.
+        // A voir plus tard
+    };
+
+
     // Internal implementation class
     class RegionBuildingInformation ;
 
@@ -76,6 +92,14 @@ namespace RINGMesh {
         {
         }
         virtual ~GeoModelBuilder() ;
+
+        bool set_options( GeoModelIOFlags options )
+        {
+            /*! @todo Check that the options are consistent */
+            options_ = options ;
+            return true ;
+        }
+
         /*!
          * \name Set element geometry from geometrical positions   
          * @{
@@ -169,18 +193,18 @@ namespace RINGMesh {
         * @note Valdity is not checked
         * @pre The GeoModel should have at least one Surface. Nothing is done if not.
         */
-        bool build_model() ;
+        virtual bool build_model() ;
 
         /*!
         * @brief Finish up model building and complete missing information.
-        * @return True except if the model has no Surface.
+        * @return True except if the model has no Surface
         */
         bool end_model() ;
 
     protected:
-        /*! Build or not the Regions of the GeoModel from the the Surfaces
-        * and Lines */
-        bool build_regions_ ;
+        /*! Elements to compute from the available elements */
+        GeoModelIOFlags options_ ; 
+
         /*! Internal information filled at Line building step */
         std::vector< RegionBuildingInformation* > regions_info_ ;
 
@@ -221,50 +245,49 @@ namespace RINGMesh {
     } ;
 
 
+    class RINGMESH_API GeoModelBuilderFile : public GeoModelBuilder {
+    public:
+        GeoModelBuilderFile( GeoModel& model, const std::string& filename ) ;
+        
+        virtual ~GeoModelBuilderFile()
+        {
+        }
+        virtual bool load_file() = 0 ;
+        virtual bool build_model()
+        {
+            if( load_file() ) {
+                return end_model() ;
+            } else { 
+                return false ; 
+            }
+        }
+        /*! @todo Implement function to read the lines of the 
+         *        file and wrap the GEO::LineInput which is not that easy to use 
+         */
+    protected:
+        GEO::LineInput in_ ;
+    };
+
     /*!
     * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
     */
-    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilder {
+    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilderFile {
     public:
-        GeoModelBuilderGocad( GeoModel& model ): 
-            GeoModelBuilder( model )
+        GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename )
         {}
         virtual ~GeoModelBuilderGocad()
         {}
+        bool load_file() ;
 
-        /*!
-        * @brief Load and build a GeoModel from a Gocad .ml file
-        * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
-        * @details Correspondance between Gocad::Model3D elements 
-        * and GeoModel elements is :
-        *  - Gocad TSurf  <-> GeoModel Interface
-        *  - Gocad TFace  <-> GeoModel Surface
-        *  - Gocad Region <-> GeoModel Region
-        *  - Gocad Layer  <-> GeoModel Layer
-        * @param[in] ml_file_name Input .ml file stream
-        * @param[in] ignore_file_borders If true, BORDER and BSTONE entries in the files
-        * are ignored and the Lines and Corners of the GeoModel are deduced from the 
-        * connectivity of its Surfaces. By default set to false.
-        */
-        bool load_ml_file(
-            const std::string& ml_file_name, 
-            bool ignore_file_borders = false ) ;
+    private:
+        void build_contacts() ;
 
-    protected:
         GME::gme_t determine_line_vertices(
             const Surface& S,
             index_t id0,
             index_t id1,
-            std::vector< index_t >& border_vertex_model_ids ) const ;
-
-        GME::gme_t determine_line_vertices(
-            const Surface& S,
-            index_t first_vertex,
-            index_t second_vertex,
-            std::vector< vec3 >& border_vertex_model_vertices ) const ;
-
-    private:
-        void build_contacts() ;
+            std::vector< vec3 >& border_vertex_model_ids ) const ;
 
         void create_surface(
             const std::string& interface_name,
@@ -305,21 +328,19 @@ namespace RINGMesh {
     /*!
     * @brief Build a GeoModel from a file_model.bm
     */
-    class RINGMESH_API GeoModelBuilderBM : public GeoModelBuilder {
+    class RINGMESH_API GeoModelBuilderBM : public GeoModelBuilderFile {
     public:
-        GeoModelBuilderBM( GeoModel& model )
-            : GeoModelBuilder( model )
+        GeoModelBuilderBM( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename )
         {}
         virtual ~GeoModelBuilderBM()
         {}
 
-        bool load_file( const std::string& bm_file_name ) ;
+        bool load_file() ;
 
     private:
         static GME::TYPE match_nb_elements( const char* s ) ;
-
         static GME::TYPE match_type( const char* s ) ;
-
         static bool match_high_level_type( const char* s )
         {
             return GME::child_allowed( match_type( s ) ) ;
