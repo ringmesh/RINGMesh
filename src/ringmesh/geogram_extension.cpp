@@ -199,7 +199,7 @@ namespace RINGMesh {
         return true ;
     }
 	
-	void RINGMESH_API initialize_geogram_extension_mesh_io_handler() 
+	void RINGMESH_API ringmesh_mesh_io_initialize() 
 	{
 		geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" );
 	}
