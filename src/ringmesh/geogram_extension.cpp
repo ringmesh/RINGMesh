@@ -74,41 +74,34 @@ namespace RINGMesh {
         /*!
          * @brief Load a TSurf saved in .ts format
          * @warning Assumes there is only one TSurf in the file.
+         *          Will undoubtedly crash if it is not the case.
+         * @todo Prevent crashing if the file is not as expected
+         *
          * @param filename the name of the file to be processed.
          * @param mesh the mesh where the surface will be created.
          * @param flags Some flags, not used for now.
          */
-        virtual bool load( 
-                        const std::string& filename,
-                        GEO::Mesh& mesh,
-                        const GEO::MeshIOFlags& flag = GEO::MeshIOFlags()
-                        ) ;
-        
-        /*! 
+        virtual bool load(
+            const std::string& filename,
+            GEO::Mesh& mesh,
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags()
+            ) ;
+
+        /*!
          * @brief Save a Mesh in .ts format
          * @todo To be implemented.
          */
-        virtual bool save( const GEO::Mesh& , const std::string& , const GEO::MeshIOFlags& )
+        virtual bool save( const GEO::Mesh&, const std::string&, const GEO::MeshIOFlags& )
         {
             GEO::Logger::err( "I/O" )
                 << "Saving a Mesh into TSurf format not implemented yet"
                 << std::endl ;
             return false ;
         }
-
-    protected:
-        /*!
-         * @warnin Assumes there is only one TSURF saved in the file
-         */
-        bool load_ts_file( GEO::Mesh& mesh, const std::string& filename ) ;		
     } ;
 
-    bool TSurfMeshIOHandler::load( const std::string& filename, GEO::Mesh& mesh, const GEO::MeshIOFlags& )
-    {
-        return load_ts_file( mesh, filename ) ;
-    }
-
-    bool TSurfMeshIOHandler::load_ts_file( GEO::Mesh& mesh, const std::string& filename )
+    bool TSurfMeshIOHandler::load(
+        const std::string& filename, GEO::Mesh& mesh, const GEO::MeshIOFlags& )
     {
         // Count the number of triangles and vertices
         index_t nb_points = 0 ;
@@ -186,6 +179,8 @@ namespace RINGMesh {
 
         mesh.facets.assign_triangle_mesh( dim, vertices, triangles, true ) ;
 
+        // GEO::MESH_REPAIR_DEFAULT is not used because it would glue the 
+        // disconnected edges along internal boundaries
         GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F ) ;
         return true ;
     }
