@@ -56,9 +56,9 @@ namespace RINGMesh {
     /* Loading and saving a GEO::Mesh                                      */
 
     /** @brief complement the available MeshIOHandler
-	 */
-	void RINGMESH_API ringmesh_mesh_io_initialize() ;
-    	    
+     */
+    void RINGMESH_API ringmesh_mesh_io_initialize() ;
+            
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
 	    

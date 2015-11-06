@@ -27,7 +27,6 @@
 #     Arnaud.Botella@univ-lorraine.fr
 #     Antoine.Mazuyer@univ-lorraine.fr
 #     Jeanne.Pellerin@wias-berlin.de
-#     g.laurent.research@gmail.com
 # 
 #     http://www.ring-team.org
 # 
@@ -38,6 +37,7 @@
 #     FRANCE
 
 # CMakeList for RINGMesh subproject for converting surface .ts format
+# Author Gautier Laurent
 
 # Set the target as an executable 
 add_executable(ringmesh_surface_convert main.cpp)

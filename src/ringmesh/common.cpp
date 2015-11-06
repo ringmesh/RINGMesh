@@ -84,6 +84,6 @@ INITIALIZER( initialize ) {
 #endif
         RINGMesh::mesh_initialize() ;
         RINGMesh::TetraGen::initialize() ;
-		RINGMesh::ringmesh_mesh_io_initialize() ;
+        RINGMesh::ringmesh_mesh_io_initialize() ;
     }
 }
