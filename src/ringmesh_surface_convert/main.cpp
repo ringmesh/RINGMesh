@@ -90,9 +90,9 @@ int main( int argc, char** argv )
 	
 	// filter only the files with .ts extension
 	std::vector<std::string> input_ts_names ;
-	for( std::vector<std::string>::iterator file_itr = input_file_names.begin(); file_itr < input_file_names.end(); ++file_itr ){
-		if( GEO::FileSystem::extension( *file_itr ) == "ts" ){
-			input_ts_names.push_back( *file_itr ) ;
+	for( index_t file_itr = 0 ; file_itr < input_file_names.size(); ++file_itr ){
+		if( GEO::FileSystem::extension( input_file_names[file_itr] ) == "ts" ){
+			input_ts_names.push_back( input_file_names[file_itr] ) ;
 		}
 	}
 
@@ -108,38 +108,36 @@ int main( int argc, char** argv )
             << std::endl ;
         return 1 ;
 	}
-	for( std::vector<std::string>::iterator format_itr = output_formats.begin(); format_itr < output_formats.end(); ++format_itr ){
-		if( !GEO::FileSystem::create_directory( *format_itr ) ){
-			GEO::Logger::err( "I/O" ) << "Can't create " << *format_itr << " directory." << std::endl ;
+	for( index_t format_itr = 0; format_itr < output_formats.size(); ++format_itr ){
+		if( !GEO::FileSystem::create_directory( output_formats[format_itr] ) ){
+			GEO::Logger::err( "I/O" ) << "Can't create " << output_formats[format_itr] << " directory." << std::endl ;
 			return 1 ;
 		}
 	}
 
 	// for each .ts file save it in each appropriate format
-	for( std::vector<std::string>::iterator ts_itr = input_ts_names.begin() ; ts_itr < input_ts_names.end(); ++ts_itr ){
-							
-        GEO::Logger::out( "" ) << "Processing: " << (*ts_itr) << std::endl ;
+	for( index_t ts_itr = 0; ts_itr < input_ts_names.size(); ++ts_itr ){
+        GEO::Logger::out( "" ) << "Processing: " << input_ts_names[ts_itr] << std::endl ;
 		GEO::FileSystem::set_current_working_directory(starting_directory) ;
 
 		// load the tsurf
 		GEO::Mesh mesh_surface_in ;
-		if( !GEO::mesh_load( *ts_itr, mesh_surface_in ) ){
-			GEO::Logger::err( "I/O" ) << "Can't load: " << *ts_itr << std::endl ;
+		if( !GEO::mesh_load( input_ts_names[ts_itr], mesh_surface_in ) ){
+			GEO::Logger::err( "I/O" ) << "Can't load: " << input_ts_names[ts_itr] << std::endl ;
 			continue ;
 		}
 
 		// get the basename
-		std::string surface_in_basename = GEO::FileSystem::base_name( *ts_itr );
+		std::string surface_in_basename = GEO::FileSystem::base_name( input_ts_names[ts_itr] );
 
 		// for each format save it
-		for( std::vector<std::string>::iterator format_itr = output_formats.begin(); format_itr < output_formats.end(); ++format_itr ){
-			
+		for( index_t format_itr = 0; format_itr < output_formats.size(); ++format_itr ){
 		    GEO::FileSystem::set_current_working_directory("..") ;
-		    GEO::FileSystem::set_current_working_directory(*format_itr) ;
+		    GEO::FileSystem::set_current_working_directory( output_formats[format_itr] ) ;
 
-            GEO::Logger::out( "" ) << " ... saving to: " << surface_in_basename + "." + (*format_itr) << std::endl ;
-			if( !GEO::mesh_save( mesh_surface_in, surface_in_basename + "." + (*format_itr) ) ){
-				GEO::Logger::err( "I/O" ) << "Can't save to: " << *ts_itr << std::endl ;
+            std::string surface_output_name = surface_in_basename + "." + output_formats[format_itr] ;
+			if( !GEO::mesh_save( mesh_surface_in, surface_in_basename + "." + output_formats[format_itr] ) ){
+				GEO::Logger::err( "I/O" ) << "Can't save to: " << surface_output_name << std::endl ;
 				continue ;
 			}
 		}
