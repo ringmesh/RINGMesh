@@ -187,12 +187,18 @@ namespace RINGMesh {
         bool build_regions() ;
     
         /*!
-        * @brief From a GeoModel in which only Surface are defined, create
-        * corners, contacts and optionally regions.
-        * @return True if a model has been built.
-        * @note Valdity is not checked
-        * @pre The GeoModel should have at least one Surface. Nothing is done if not.
-        */
+         * A IMPLEMENTER CORRECTEMENT 
+         * pour construire les elements que l'on est censé construire en fonction 
+         * de ce qui est disponible 
+         */
+        // Là ça marche avec selon la dernière version
+        /* 
+         * @brief From a GeoModel in which only Surface are defined, create
+         * corners, contacts and optionally regions.
+         * @return True if a model has been built.
+         * @note Valdity is not checked
+         * @pre The GeoModel should have at least one Surface. Nothing is done if not.
+         */
         virtual bool build_model() ;
 
         /*!
@@ -218,10 +224,15 @@ namespace RINGMesh {
     
     
     /*!
-     * @brief Builder of a GeoModel from a Mesh 
-     * @note Manifold surface connected components are supposed disjoints
-     *       It would be possible if needed to implement this for 
-     *       non disjoint Surfaces using non-manifold edge identification.
+     * Le but de la classe est d'ajouter des éléments maillés 
+     * au modèle à partir de des maillages - soit on remplit des éléments qui existent
+     * déjà , soit on les crées et on les remplit .....
+     * Ça me plait pas ...
+     * Mais pour les régions pas le choix.... 
+     *
+     * Selon ce qu'on doit remplir, on regarde si ce type d'élement existe, si oui,
+     * on va changer les maillages 
+     * si non on les crées et ensuite on change les maillages
      */
     class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
     public:
@@ -232,13 +243,25 @@ namespace RINGMesh {
     
         virtual ~GeoModelBuilderMesh()
         {};
+        
 
         /*!
         * @brief Create the model Surfaces from the connected components
         *       of the input surface mesh
-        * @pre The input mesh is a surface mesh. Facet adjacencies are available.
+        * @pre The mesh_ is a surface mesh. Facet adjacencies are available.
         */
         bool set_surfaces() ;
+
+
+        /* The given mesh is volumetric to fill the region of the Model
+         * There is an attribute "region" that flag the tets region per region
+         * 
+         * Si les régions BREP existent déjà - > on leur fourgue le maillage
+         * Si elles n'existent pas -> on leur fourgue le maillage mais 
+         * 
+         */
+        bool set_regions_meshes() ;
+
 
     protected:
         const GEO::Mesh& mesh_ ;

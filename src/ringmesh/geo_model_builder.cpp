@@ -2099,10 +2099,8 @@ namespace RINGMesh {
                     }
                 }
             }
-        }
-
-        /// 5. Fill missing information
-        return end_model() ;       
+        }   
+        return true ;
     }
 
     /*!
@@ -2627,7 +2625,7 @@ namespace RINGMesh {
                 }
             }
         }
-        return end_model() ;            
+        return true ;
     }
 
     GeoModelElement::TYPE GeoModelBuilderBM::match_nb_elements(
