@@ -118,11 +118,11 @@ namespace RINGMesh {
         }
     } ;
 
-    typedef GEO::SmartPointer< GeoModelVolumeIOHandler > GeoModelMeshIOHandler_var ;
-    typedef GEO::Factory0< GeoModelVolumeIOHandler > GeoModelMeshIOHandlerFactory ;
+    typedef GEO::SmartPointer< GeoModelVolumeIOHandler > GeoModelVolumeIOHandler_var ;
+    typedef GEO::Factory0< GeoModelVolumeIOHandler > GeoModelVolumeIOHandlerFactory ;
 
-#define ringmesh_register_GeoModelMeshIOHandler_creator( type, name ) \
-    geo_register_creator( GeoModelMeshIOHandlerFactory, type, name )
+#define ringmesh_register_GeoModelVolumeIOHandler_creator( type, name ) \
+    geo_register_creator( GeoModelVolumeIOHandlerFactory, type, name )
 
     /***************************************************************************/
 
