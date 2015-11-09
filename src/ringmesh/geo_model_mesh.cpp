@@ -293,7 +293,7 @@ namespace RINGMesh {
         }
     }
 
-    const std::vector< GeoModelMeshVertices::GMEVertex >&
+    const std::vector< GMEVertex >&
     GeoModelMeshVertices::gme_vertices( index_t v ) const
     {
         test_and_initialize() ;

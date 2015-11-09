@@ -856,7 +856,7 @@ namespace RINGMesh {
         ringmesh_debug_assert( v < E.nb_vertices() ) ;
         E.model_vertex_id_[ v ] = model_vertex ;
         model_.mesh.vertices.add_to_bme( model_vertex,
-            GeoModelMeshVertices::GMEVertex( id, v ) ) ;
+            GMEVertex( id, v ) ) ;
     }
 
     /*!
