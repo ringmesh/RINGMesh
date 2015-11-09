@@ -65,6 +65,12 @@ namespace RINGMesh {
     const std::string region_att_name = "region" ;
     const std::string order_att_name = "order" ;
 
+    /*! 
+     * This design is a catastrophe !
+     * The vertices are used at building step, at saving steps ...
+     * Update mechanisms are BAD... very difficult to change, specially because of 
+     * the building [JP]
+     */
  
     class RINGMESH_API GeoModelMeshVertices {
         ringmesh_disable_copy( GeoModelMeshVertices ) ;
@@ -1014,7 +1020,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMesh {
     ringmesh_disable_copy( GeoModelMesh ) ;
     public:
-        GeoModelMesh( const GeoModel& gm ) ;
+        GeoModelMesh( GeoModel& gm ) ;
         ~GeoModelMesh() ;
 
         const GeoModel& model() const
