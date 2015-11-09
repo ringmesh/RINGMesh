@@ -1049,7 +1049,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMesh {
     ringmesh_disable_copy( GeoModelMesh ) ;
     public:
-        GeoModelMesh( GeoModel& gm ) ;
+        GeoModelMesh( const GeoModel& gm ) ;
         ~GeoModelMesh() ;
 
         const GeoModel& model() const
@@ -1127,7 +1127,7 @@ namespace RINGMesh {
          */
         const index_t get_order() const
         {
-            return order_ ;
+            return order_value_ ;
         }
         /*!
          * Change the order of the GeoModelMesh
@@ -1136,15 +1136,15 @@ namespace RINGMesh {
          */
         void set_order( index_t new_order )
         {
-            if( new_order != order_ ) {
+            if( new_order != order_value_ ) {
                 order.clear() ;
             }
-            order_ = new_order ;
+            order_value_ = new_order ;
         }
 
     private:
         /*! Attached GeoModel */
-        GeoModel& gm_ ;
+        const GeoModel& gm_ ;
         /*!
          * @brief Mesh owned by the GeoModelMesh, stores unique vertices, edges, 
          * facets and cells.
@@ -1155,14 +1155,13 @@ namespace RINGMesh {
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
         /// Order of the GeoModelMesh
-        index_t order_ ;
+        index_t order_value_ ;
 
     public:
         GeoModelMeshVertices vertices ;
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
         GeoModelMeshCells cells ;
-        /*! @todo : Review Change the name, too similar to order_ [JP] */
         GeoModelMeshOrder order ;
     } ;
 
