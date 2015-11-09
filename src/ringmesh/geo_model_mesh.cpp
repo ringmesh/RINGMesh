@@ -1947,7 +1947,7 @@ namespace RINGMesh {
             gm_( gm ),
             mesh_( new GEO::Mesh ),
             mode_( GeoModelMeshCells::NONE ),
-            order_( 1 ),
+            order_value_( 1 ),
             vertices( *this, gm, *mesh_ ),
             edges( *this, *mesh_ ),
             facets( *this, *mesh_ ),
