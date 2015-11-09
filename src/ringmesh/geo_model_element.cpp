@@ -71,7 +71,7 @@ namespace {
     typedef GeoModelElement BME ;
     typedef GeoModelElement::gme_t gme_t;
     typedef GeoModelMeshElement BMME ;
-    typedef GeoModelMeshVertices::VertexInGME VBME ;
+    typedef GeoModelMeshVertices::GMEVertex VBME ;
 
 
     /*!
@@ -722,10 +722,10 @@ namespace RINGMesh {
         for( index_t v = 0; v < nb_vertices(); ++v ) {
             index_t model_v = model_vertex_id( v ) ;
             
-            const std::vector< GeoModelMeshVertices::VertexInGME >&
+            const std::vector< GeoModelMeshVertices::GMEVertex >&
                 backward = model().mesh.vertices.gme_vertices( model_v ) ;
 
-            GeoModelMeshVertices::VertexInGME cur_v( gme_id(), v ) ;
+            GeoModelMeshVertices::GMEVertex cur_v( gme_id(), v ) ;
             index_t count_v = static_cast< index_t >( 
                 std::count( backward.begin(), backward.end(), cur_v ) ) ;
 
@@ -746,11 +746,11 @@ namespace RINGMesh {
         index_t model_vertex_id ) const
     {
         typedef GeoModelMeshVertices GMMV ;
-        const std::vector< GMMV::VertexInGME >& gme_vertices =
+        const std::vector< GMMV::GMEVertex >& gme_vertices =
             model().mesh.vertices.gme_vertices( model_vertex_id ) ;
 
         for( index_t i = 0; i < gme_vertices.size(); i++ ) {
-            const GMMV::VertexInGME& info = gme_vertices[ i ] ;
+            const GMMV::GMEVertex& info = gme_vertices[ i ] ;
             if( info.gme_id == gme_id() ) {
                 return info.v_id ;
             }
@@ -1534,7 +1534,7 @@ namespace RINGMesh {
 
             GeoModel& M = const_cast<GeoModel&>( surface_.model() ) ;
             if( M.mesh.vertices.is_initialized() ) {
-                typedef GeoModelMeshVertices::VertexInGME VBME ;
+                typedef GeoModelMeshVertices::GMEVertex VBME ;
                 
                 bool annoying = surface_.has_inside_border() ;
                 std::vector< index_t > visited ;
@@ -1609,7 +1609,7 @@ namespace RINGMesh {
 
             GeoModel& M = const_cast< GeoModel& >( region_.model() ) ;
             if( M.mesh.vertices.is_initialized() ) {
-                typedef GeoModelMeshVertices::VertexInGME VBME ;
+                typedef GeoModelMeshVertices::GMEVertex VBME ;
 
                 for( index_t sv = 0; sv < region_.nb_vertices(); ++sv ) {
                     index_t v = region_.model_vertex_id( sv ) ;

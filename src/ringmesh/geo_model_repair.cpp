@@ -58,7 +58,7 @@ namespace {
 
     typedef GeoModelElement::gme_t gme_t ;
     typedef GeoModelMeshElement GMME ;
-    typedef GeoModelMeshVertices::VertexInGME VGME ;
+    typedef GeoModelMeshVertices::GMEVertex VGME ;
 
     /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
     *

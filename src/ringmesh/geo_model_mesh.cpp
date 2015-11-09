@@ -209,7 +209,7 @@ namespace RINGMesh {
                     // Global index stored at BME level
                     att[ v ] = count ;
                     // Index in the BME stored at global level
-                    gme_vertices_[ count ].push_back( VertexInGME( E.gme_id(), v ) ) ;
+                    gme_vertices_[ count ].push_back( GMEVertex( E.gme_id(), v ) ) ;
                     // Global vertex index increment
                     count++ ;
                 }
@@ -293,7 +293,7 @@ namespace RINGMesh {
         }
     }
 
-    const std::vector< GeoModelMeshVertices::VertexInGME >&
+    const std::vector< GeoModelMeshVertices::GMEVertex >&
     GeoModelMeshVertices::gme_vertices( index_t v ) const
     {
         test_and_initialize() ;
@@ -303,11 +303,11 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
         clear_kdtree() ;
-        gme_vertices_.push_back( std::vector< VertexInGME >() ) ;
+        gme_vertices_.push_back( std::vector< GMEVertex >() ) ;
         return mesh_.vertices.create_vertex( point.data() ) ;
     }
 
-    void GeoModelMeshVertices::add_to_bme( index_t v, const VertexInGME& v_gme )
+    void GeoModelMeshVertices::add_to_bme( index_t v, const GMEVertex& v_gme )
     {
         test_and_initialize() ;
         ringmesh_debug_assert( v < nb() ) ;
@@ -323,7 +323,7 @@ namespace RINGMesh {
     void GeoModelMeshVertices::set_gme(
         index_t unique_id,
         index_t k,
-        const VertexInGME& v )
+        const GMEVertex& v )
     {
         test_and_initialize() ;
         ringmesh_debug_assert( unique_id < nb() ) ;
@@ -340,9 +340,9 @@ namespace RINGMesh {
         clear_kdtree() ;
 
         GeoModelBuilder builder( gm_ ) ;
-        const std::vector< VertexInGME >& gme_v = gme_vertices( v ) ;
+        const std::vector< GMEVertex >& gme_v = gme_vertices( v ) ;
         for( index_t i = 0; i < gme_v.size(); i++ ) {
-            const VertexInGME& info = gme_v[i] ;
+            const GMEVertex& info = gme_v[i] ;
             builder.set_element_vertex( info.gme_id, info.v_id, point, false ) ;
         }
     }
@@ -372,7 +372,7 @@ namespace RINGMesh {
         std::vector< index_t > to_delete( nb() ) ; // Here nb() represents the number of vertices before removal of the elements
 
         for( index_t v = 0; v < nb(); ++v ) {
-            std::vector< VertexInGME >& related = gme_vertices_[v] ;
+            std::vector< GMEVertex >& related = gme_vertices_[v] ;
             index_t nb_invalid = 0 ;
 
             // Get the invalid BMEVertices for the current global vertex
@@ -380,7 +380,7 @@ namespace RINGMesh {
 
                 if( !related[i].is_defined() ) {
                     // To ease removal of invalid BMEVertices
-                    related[i] = VertexInGME() ;
+                    related[i] = GMEVertex() ;
                     nb_invalid++ ;
                 }
             }
@@ -388,7 +388,7 @@ namespace RINGMesh {
             if( nb_invalid < related.size() ) {
                 to_delete[v] = v ;
                 related.erase(
-                    std::remove( related.begin(), related.end(), VertexInGME() ),
+                    std::remove( related.begin(), related.end(), GMEVertex() ),
                     related.end() ) ;
             } else {
                 // This vertex must be deleted
@@ -448,7 +448,7 @@ namespace RINGMesh {
 
         gme_vertices_.erase(
             std::remove( gme_vertices_.begin(), gme_vertices_.end(),
-                std::vector< VertexInGME >() ), gme_vertices_.end() ) ;
+                std::vector< GMEVertex >() ), gme_vertices_.end() ) ;
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
@@ -487,10 +487,10 @@ namespace RINGMesh {
                      */
                     // Merge gme_vertices_ information
                     if( std::find( gme_vertices_[new_id].begin(),
-                        gme_vertices_[new_id].end(), VertexInGME( E.gme_id(), v ) )
+                        gme_vertices_[new_id].end(), GMEVertex( E.gme_id(), v ) )
                         == gme_vertices_[new_id].end() ) {
                         gme_vertices_[new_id].push_back(
-                            VertexInGME( E.gme_id(), v ) ) ;
+                            GMEVertex( E.gme_id(), v ) ) ;
                     }
                 }
             }
