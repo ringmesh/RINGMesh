@@ -153,9 +153,9 @@ namespace {
     */
     GME::gme_t is_edge_on_line( const GeoModel& model, index_t v0, index_t v1 )
     {
-        const std::vector< GeoModelMeshVertices::VertexInGME >& v0_bme =
+        const std::vector< GeoModelMeshVertices::GMEVertex >& v0_bme =
             model.mesh.vertices.gme_vertices( v0 ) ;
-        const std::vector< GeoModelMeshVertices::VertexInGME >& v1_bme =
+        const std::vector< GeoModelMeshVertices::GMEVertex >& v1_bme =
             model.mesh.vertices.gme_vertices( v1 ) ;
 
         // Get the local indices of the vertices in 
@@ -898,7 +898,7 @@ namespace {
             std::vector< index_t > lines ;
             std::vector< index_t > surfaces ;
 
-            const std::vector< GeoModelMeshVertices::VertexInGME >& bmes =
+            const std::vector< GeoModelMeshVertices::GMEVertex >& bmes =
                 M.mesh.vertices.gme_vertices( i ) ;
 
             for( index_t j = 0; j < bmes.size(); ++j ) {

@@ -487,7 +487,7 @@ namespace RINGMesh {
         // but after deleting the elements otherwise 
         // we are putting back the vertices of the BMMEs to delete
         for( index_t v = 0; v < model_.mesh.vertices.nb(); ++v ) {
-            const std::vector< GeoModelMeshVertices::VertexInGME >& cur =
+            const std::vector< GeoModelMeshVertices::GMEVertex >& cur =
                 model_.mesh.vertices.gme_vertices( v ) ;
 
             for( index_t i = 0; i < cur.size(); ++i ) {
@@ -495,7 +495,7 @@ namespace RINGMesh {
                 gme_t new_id( id.type, to_erase[ id.type ][ id.index ] ) ;
                 model_.mesh.vertices.set_gme(
                     v, i,
-                    GeoModelMeshVertices::VertexInGME( new_id, cur[ i ].v_id ) ) ;
+                    GeoModelMeshVertices::GMEVertex( new_id, cur[ i ].v_id ) ) ;
             }
         }
         model_.mesh.erase_invalid_vertices() ;

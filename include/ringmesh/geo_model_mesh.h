@@ -66,23 +66,22 @@ namespace RINGMesh {
     const std::string order_att_name = "order" ;
 
     class RINGMESH_API GeoModelMeshVertices {
-    ringmesh_disable_copy( GeoModelMeshVertices ) ;
+        ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
     public:
         /*!
-         * @brief Identification of a vertex in a GeoModelElement
-         * @todo Je changerai bien ce nom moche au refactoring [JP]
+         * @brief Vertex in a GeoModelElement
          */
-        struct VertexInGME {
-            VertexInGME( GME::gme_t t, index_t vertex_id_in )
+        struct GMEVertex {
+            GMEVertex( GME::gme_t t, index_t vertex_id_in )
                 : gme_id( t ), v_id( vertex_id_in )
             {
             }
-            VertexInGME()
+            GMEVertex()
                 : gme_id(), v_id( NO_ID )
             {
             }
-            bool operator<( const VertexInGME& rhs ) const
+            bool operator<( const GMEVertex& rhs ) const
             {
                 if( gme_id != rhs.gme_id ) {
                     return gme_id < rhs.gme_id ;
@@ -90,7 +89,7 @@ namespace RINGMesh {
                     return v_id < rhs.v_id ;
                 }
             }
-            bool operator==( const VertexInGME& rhs ) const
+            bool operator==( const GMEVertex& rhs ) const
             {
                 return gme_id == rhs.gme_id && v_id == rhs.v_id ;
             }
@@ -98,9 +97,9 @@ namespace RINGMesh {
             {
                 return gme_id.is_defined() && v_id != NO_ID ;
             }
-            /// Unique identifier of the associated GeoModelElement
+            /// GeoModelElement id in its GeoModel
             GME::gme_t gme_id ;
-            /// Index of the vertex in the BME
+            /// Index of the vertex in the GeoModelElement
             index_t v_id ;
         } ;
 
@@ -140,7 +139,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the vertices in GME corresponding to the given unique vertex
          */
-        const std::vector< VertexInGME >& gme_vertices( index_t v ) const ;
+        const std::vector< GMEVertex >& gme_vertices( index_t v ) const ;
 
         /*!
          * @brief To use when building the model by first adding its vertices
@@ -153,7 +152,7 @@ namespace RINGMesh {
          * @brief Add a vertex in a GeoModelElement
          *        corresponding to an existing vertex of the model
          */
-        void add_to_bme( index_t v, const VertexInGME& v_gme ) ;
+        void add_to_bme( index_t v, const GMEVertex& v_gme ) ;
 
         /*!
          * @brief Change one of the GME vertex associated to a vertex
@@ -161,7 +160,7 @@ namespace RINGMesh {
          * @param[in] i Index of the GME vertex
          * @param[in] v_gme index of GME and of the vertex in that GME
          */
-        void set_gme( index_t v, index_t i, const VertexInGME& v_gme ) ;
+        void set_gme( index_t v, index_t i, const GMEVertex& v_gme ) ;
 
         /*!
          * @brief Set the point coordinates of all the vertices that
@@ -220,7 +219,7 @@ namespace RINGMesh {
         void erase_vertices( std::vector< index_t >& to_delete ) ;
 
         /*!
-         * @brief Remove all invalid VertexInGME and delete the vertices
+         * @brief Remove all invalid GMEVertex and delete the vertices
          * that are not anymore in any GeoModelElement
          */
         void erase_invalid_vertices() ;
@@ -237,7 +236,7 @@ namespace RINGMesh {
          * Vertices in GeoModelElements corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
          */
-        std::vector< std::vector< VertexInGME > > gme_vertices_ ;
+        std::vector< std::vector< GMEVertex > > gme_vertices_ ;
         /// Kd-tree of the model vertices
         ColocaterANN* kdtree_ ;
 
@@ -1118,7 +1117,7 @@ namespace RINGMesh {
         void erase_vertices( std::vector< index_t >& to_delete ) ;
 
         /*!
-         * @brief Remove all invalid VertexInGME and delete the vertices
+         * @brief Remove all invalid GMEVertex and delete the vertices
          * that are not anymore in any GeoModelElement
          */
         void erase_invalid_vertices() ;
@@ -1147,8 +1146,8 @@ namespace RINGMesh {
         /*! Attached GeoModel */
         GeoModel& gm_ ;
         /*!
-         * @brief Mesh owned by the GeoModelMesh, stores unique 
-         * vertices, edges, facets and cells.
+         * @brief Mesh owned by the GeoModelMesh, stores unique vertices, edges, 
+         * facets and cells.
          * @details This means no colocated vertices, no duplicated edges, 
          * facets or cells.
          */
