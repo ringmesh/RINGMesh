@@ -65,43 +65,10 @@ namespace RINGMesh {
     const std::string region_att_name = "region" ;
     const std::string order_att_name = "order" ;
 
+ 
     class RINGMESH_API GeoModelMeshVertices {
         ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
-    public:
-        /*!
-         * @brief Vertex in a GeoModelElement
-         */
-        struct GMEVertex {
-            GMEVertex( GME::gme_t t, index_t vertex_id_in )
-                : gme_id( t ), v_id( vertex_id_in )
-            {
-            }
-            GMEVertex()
-                : gme_id(), v_id( NO_ID )
-            {
-            }
-            bool operator<( const GMEVertex& rhs ) const
-            {
-                if( gme_id != rhs.gme_id ) {
-                    return gme_id < rhs.gme_id ;
-                } else {
-                    return v_id < rhs.v_id ;
-                }
-            }
-            bool operator==( const GMEVertex& rhs ) const
-            {
-                return gme_id == rhs.gme_id && v_id == rhs.v_id ;
-            }
-            bool is_defined() const
-            {
-                return gme_id.is_defined() && v_id != NO_ID ;
-            }
-            /// GeoModelElement id in its GeoModel
-            GME::gme_t gme_id ;
-            /// Index of the vertex in the GeoModelElement
-            index_t v_id ;
-        } ;
 
     public:
         GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, GEO::Mesh& mesh ) ;
@@ -456,7 +423,6 @@ namespace RINGMesh {
         index_t nb_quad_ ;
         /// Number of polygons in the GeoModelMesh
         index_t nb_polygon_ ;
-
     } ;
 
     class RINGMESH_API GeoModelMeshEdges {
@@ -1043,7 +1009,6 @@ namespace RINGMesh {
         index_t nb_high_order_points_per_cell_type_[4] ;
         /// Number of high order vertices function of the facet type
         index_t nb_high_order_points_per_facet_type_[2] ;
-
     } ;
 
     class RINGMESH_API GeoModelMesh {
@@ -1059,7 +1024,7 @@ namespace RINGMesh {
 
         /*!
          * Copy the current GeoModelMesh into a Mesh
-         * @param[out] mesh The mesh to fill
+         * @param[out] mesh The mesh to fill        
          */
         void copy_mesh( GEO::Mesh& mesh ) const
         {

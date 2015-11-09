@@ -68,17 +68,15 @@ namespace {
     /* Definition of functions that we do not want exported in the interface */
     using namespace RINGMesh ;
 
-    typedef GeoModelElement BME ;
+    typedef GeoModelElement GME ;
     typedef GeoModelElement::gme_t gme_t;
-    typedef GeoModelMeshElement BMME ;
-    typedef GeoModelMeshVertices::GMEVertex VBME ;
-
+    typedef GeoModelMeshElement GMME ;
 
     /*!
     * @brief Checks that the model vertex indices of @param E 
     *       are in a valid range
     */
-    bool check_range_model_vertex_ids( const BMME& E )
+    bool check_range_model_vertex_ids( const GMME& E )
     {
         /// Check that the stored model vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
@@ -699,14 +697,14 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Binds attributes stored by the BME on the Mesh
+     * @brief Binds attributes stored by the GME on the Mesh
      */
     void GeoModelMeshElement::bind_attributes()
     {
         model_vertex_id_.bind( mesh_.vertices.attributes(), model_vertex_id_att_name() ) ;
     }
     /*!
-     * @brief Unbinds attributes stored by the BME on the Mesh
+     * @brief Unbinds attributes stored by the GME on the Mesh
      */
     void GeoModelMeshElement::unbind_attributes()
     {
@@ -722,10 +720,10 @@ namespace RINGMesh {
         for( index_t v = 0; v < nb_vertices(); ++v ) {
             index_t model_v = model_vertex_id( v ) ;
             
-            const std::vector< GeoModelMeshVertices::GMEVertex >&
+            const std::vector< GMEVertex >&
                 backward = model().mesh.vertices.gme_vertices( model_v ) ;
 
-            GeoModelMeshVertices::GMEVertex cur_v( gme_id(), v ) ;
+            GMEVertex cur_v( gme_id(), v ) ;
             index_t count_v = static_cast< index_t >( 
                 std::count( backward.begin(), backward.end(), cur_v ) ) ;
 
@@ -745,12 +743,11 @@ namespace RINGMesh {
     index_t GeoModelMeshElement::gmme_vertex_index_from_model(
         index_t model_vertex_id ) const
     {
-        typedef GeoModelMeshVertices GMMV ;
-        const std::vector< GMMV::GMEVertex >& gme_vertices =
+         const std::vector< GMEVertex >& gme_vertices =
             model().mesh.vertices.gme_vertices( model_vertex_id ) ;
 
         for( index_t i = 0; i < gme_vertices.size(); i++ ) {
-            const GMMV::GMEVertex& info = gme_vertices[ i ] ;
+            const GMEVertex& info = gme_vertices[ i ] ;
             if( info.gme_id == gme_id() ) {
                 return info.v_id ;
             }
@@ -1515,6 +1512,13 @@ namespace RINGMesh {
 
     const GEO::MeshFacetsAABB& SurfaceTools::aabb() const
     {
+        GeoModel& M = const_cast<GeoModel&>( surface_.model() ) ;
+        if( M.mesh.vertices.is_initialized() ) {
+            GEO::Logger::warn( "AABB" )
+                << "Creation of AABB results in deletion of the GeoModelMeshVertices"
+                << std::endl ;
+            M.mesh.vertices.clear() ;
+        }
         if( aabb_ == nil ) {
             // Sinon on va droit dans le mur
             // Parce que le mesh est triangule dans notre dos
@@ -1531,10 +1535,9 @@ namespace RINGMesh {
             // Building an AABB reorders the mesh vertices and facets 
             // Very annoying if model_vertex_ids are set because we need
             // to update the model vertices.
-
+            /* TROP CHIANT A QUOI CA SERT ?????
             GeoModel& M = const_cast<GeoModel&>( surface_.model() ) ;
             if( M.mesh.vertices.is_initialized() ) {
-                typedef GeoModelMeshVertices::GMEVertex VBME ;
                 
                 bool annoying = surface_.has_inside_border() ;
                 std::vector< index_t > visited ;
@@ -1543,7 +1546,7 @@ namespace RINGMesh {
                 }
                 for( index_t sv = 0; sv < surface_.nb_vertices(); ++sv ) {
                     index_t v = surface_.model_vertex_id( sv ) ;
-                    const std::vector< VBME >& to_update = M.mesh.vertices.gme_vertices( v ) ;
+                    const std::vector< GMEVertex >& to_update = M.mesh.vertices.gme_vertices( v ) ;
 
                     index_t count_skipped = 0 ;
                     for( index_t i = 0; i < to_update.size(); ++i ) {
@@ -1556,7 +1559,7 @@ namespace RINGMesh {
                                 continue ;
                             }
                             else {
-                                M.mesh.vertices.set_gme( v, i, VBME( surface_.gme_id(), sv ) ) ;
+                                M.mesh.vertices.set_gme( v, i, GMEVertex( surface_.gme_id(), sv ) ) ;
                                 if( annoying ) {
                                     ++visited[ v ] ;
                                 }
@@ -1565,7 +1568,7 @@ namespace RINGMesh {
                         }
                     }                
                 }
-            }
+            } */ 
         }
         return *aabb_ ;
     }
@@ -1594,6 +1597,13 @@ namespace RINGMesh {
 
     const GEO::MeshCellsAABB& RegionTools::aabb() const
     {
+        GeoModel& M = const_cast<GeoModel&>( region_.model() ) ;
+        if( M.mesh.vertices.is_initialized() ) {
+            GEO::Logger::warn( "AABB" )
+                << "Creation of AABB results in deletion of the GeoModelMeshVertices"
+                << std::endl ;
+            M.mesh.vertices.clear() ;
+        }
         if( aabb_ == nil ) {
             aabb_ = new GEO::MeshCellsAABB( region_.mesh() ) ;
             /// @todo Et pourquoi creer AABB me fait vider les sommets ?
@@ -1606,26 +1616,23 @@ namespace RINGMesh {
             // Building an AABB reorders the mesh vertices and facets
             // Very annoying if model_vertex_ids are set because we need
             // to update the model vertices.
-
-            GeoModel& M = const_cast< GeoModel& >( region_.model() ) ;
+           /* GeoModel& M = const_cast< GeoModel& >( region_.model() ) ;
             if( M.mesh.vertices.is_initialized() ) {
-                typedef GeoModelMeshVertices::GMEVertex VBME ;
-
-                for( index_t sv = 0; sv < region_.nb_vertices(); ++sv ) {
+                   for( index_t sv = 0; sv < region_.nb_vertices(); ++sv ) {
                     index_t v = region_.model_vertex_id( sv ) ;
-                    const std::vector< VBME >& to_update =
+                    const std::vector< GMEVertex >& to_update =
                         M.mesh.vertices.gme_vertices( v ) ;
 
                     index_t count_skipped = 0 ;
                     for( index_t i = 0; i < to_update.size(); ++i ) {
                         if( to_update[i].gme_id == region_.gme_id() ) {
                             M.mesh.vertices.set_gme( v, i,
-                                VBME( region_.gme_id(), sv ) ) ;
+                                                     GMEVertex( region_.gme_id(), sv ) ) ;
                             break ;
                         }
                     }
                 }
-            }
+            } */
         }
         return *aabb_ ;
     }
