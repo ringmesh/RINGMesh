@@ -422,12 +422,15 @@ namespace RINGMesh {
         */
 
         /* 
-         * @brief Global access to BME. It MUST be updated if one element is added.
+         * @brief Global access to GeoModelElements.
+         * It MUST be updated if one element is added.
          * @warning It must be up to date at all times
          */
         std::vector< index_t > nb_elements_per_type_ ;
 
-        /// Optional WellGroup associated with the model
+        /*! Optional WellGroup associated with the model
+         * @todo Give a more general name - this could be anything [JP]
+         */
         const WellGroup* wells_ ;
     } ;
 

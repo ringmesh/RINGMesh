@@ -39,14 +39,6 @@
  */
 
 #include <ringmesh/geo_model_builder.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_api.h>
-#include <ringmesh/geo_model_validity.h>
-#include <ringmesh/geometry.h>
-#include <ringmesh/utils.h>
-
-#include <geogram/basic/logger.h>
-#include <geogram/basic/line_stream.h>
 
 #include <iostream>
 #include <iomanip>
@@ -55,12 +47,21 @@
 #include <set>
 #include <stack>
 
+#include <geogram/basic/logger.h>
+#include <geogram/basic/line_stream.h>
+#include <geogram/points/colocate.h>
+
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_validity.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/utils.h>
+
 namespace {
     using namespace RINGMesh ;
 
     typedef GeoModelElement::gme_t gme_t ;
-    typedef GeoModelMeshElement BMME ;
-    typedef GeoModelMeshVertices::GMEVertex VBME ;
+    typedef GeoModelMeshElement GMME ;
 
     double read_double( GEO::LineInput& in_, index_t field )
     {
@@ -226,10 +227,10 @@ namespace {
     /*!
     * Find a facet and its edge index that are colocalised with an edge
     * defined by its two model vertex indices
-    * @param[in_] ann a ColocatorANN of the Surface \p surface using the keyword FACETS
-    * @param[in_] surface the surface where to find the facet
-    * @param[in_] model_v0 the first model vertex index of the edge
-    * @param[in_] model_v1 the second model vertex index of the edge
+    * @param[in] ann a ColocatorANN of the Surface \p surface using the keyword FACETS
+    * @param[in] surface the surface where to find the facet
+    * @param[in] model_v0 the first model vertex index of the edge
+    * @param[in] model_v1 the second model vertex index of the edge
     * @param[out] f the found facet index
     * @param[out] e the found edge index
     * @return True if the facet and the edge indices are found
@@ -1164,7 +1165,7 @@ namespace RINGMesh {
     {
         GeoModel& M = const_cast< GeoModel& >( E.model() ) ;
 
-        const std::vector< VBME >& vbme = M.mesh.vertices.gme_vertices(
+        const std::vector< GMEVertex >& vbme = M.mesh.vertices.gme_vertices(
             model_vertex_id ) ;
         index_t duplicate = NO_ID ;
         for( index_t i = 0; i < vbme.size(); ++i ) {
@@ -1185,7 +1186,7 @@ namespace RINGMesh {
 
             // Add the mapping from in_ the model vertices. Should we do this one ?
             M.mesh.vertices.add_to_bme( model_vertex_id,
-                                        VBME( E.gme_id(), duplicate ) ) ;
+                                        GMEVertex( E.gme_id(), duplicate ) ) ;
         }
 
         return duplicate ;
@@ -2508,7 +2509,7 @@ namespace RINGMesh {
 //                   ringmesh_debug_assert( in_.field_matches( 0, "LINE_SEGMENT_ATTRIBUTES" ) ) ;
 //                    index_t nb_segment_attribs = ( in_.nb_fields() - 1 ) / 2 ;
 //                    if( nb_segment_attribs > 0 ) {
-//                        std::vector< SerializedAttribute< BME::FACET > >
+//                        std::vector< SerializedAttribute< GME::FACET > >
 //                        segment_attribs( nb_segment_attribs ) ;
 //                        for( index_t i = 0; i < nb_segment_attribs; i++ ) {
 //                            segment_attribs[ i ].bind(
@@ -2565,7 +2566,7 @@ namespace RINGMesh {
 //                    index_t nb_vertex_attribs = ( in_.nb_fields() - 1 ) / 2 ;
 //
                     // Bind the vertex attributes
-//                    std::vector< SerializedAttribute< BME::VERTEX > > vertex_attribs(
+//                    std::vector< SerializedAttribute< GME::VERTEX > > vertex_attribs(
 //                        nb_vertex_attribs ) ;
 //                    for( index_t i = 0; i < nb_vertex_attribs; i++ ) {
 //                        vertex_attribs[ i ].bind(
@@ -2597,7 +2598,7 @@ namespace RINGMesh {
 //                    index_t nb_facet_attribs = ( in_.nb_fields() - 1 ) / 2 ;
 
                     // Bind the facet attributes
-//                    std::vector< SerializedAttribute< BME::FACET > > facet_attribs(
+//                    std::vector< SerializedAttribute< GME::FACET > > facet_attribs(
 //                        nb_facet_attribs ) ;
 //                    for( index_t i = 0; i < nb_facet_attribs; i++ ) {
 //                        facet_attribs[ i ].bind(

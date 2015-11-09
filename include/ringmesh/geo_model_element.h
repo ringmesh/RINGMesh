@@ -61,7 +61,7 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-
+   
     /*!
      * @brief Generic class describing one element of a GeoModel
      */
@@ -406,6 +406,38 @@ namespace RINGMesh {
     // Anybody can include a header says Mr Stroustrup (Jeanne).
     // For me this is the best place ! So anybody can use RINGMesh::BME!
     typedef GeoModelElement GME ;
+
+    /*!
+    * @brief Vertex in a GeoModelElement
+    */
+    struct GMEVertex {
+        GMEVertex( GME::gme_t t, index_t vertex_id_in )
+            : gme_id( t ), v_id( vertex_id_in )
+        {}
+        GMEVertex()
+            : gme_id(), v_id( NO_ID )
+        {}
+        bool operator<( const GMEVertex& rhs ) const
+        {
+            if( gme_id != rhs.gme_id ) {
+                return gme_id < rhs.gme_id ;
+            } else {
+                return v_id < rhs.v_id ;
+            }
+        }
+        bool operator==( const GMEVertex& rhs ) const
+        {
+            return gme_id == rhs.gme_id && v_id == rhs.v_id ;
+        }
+        bool is_defined() const
+        {
+            return gme_id.is_defined() && v_id != NO_ID ;
+        }
+        /// GeoModelElement id in its GeoModel
+        GME::gme_t gme_id ;
+        /// Index of the vertex in the GeoModelElement
+        index_t v_id ;
+    } ;
 
 
     /*!

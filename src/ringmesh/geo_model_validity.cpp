@@ -153,9 +153,9 @@ namespace {
     */
     GME::gme_t is_edge_on_line( const GeoModel& model, index_t v0, index_t v1 )
     {
-        const std::vector< GeoModelMeshVertices::GMEVertex >& v0_bme =
+        const std::vector< GMEVertex >& v0_bme =
             model.mesh.vertices.gme_vertices( v0 ) ;
-        const std::vector< GeoModelMeshVertices::GMEVertex >& v1_bme =
+        const std::vector< GMEVertex >& v1_bme =
             model.mesh.vertices.gme_vertices( v1 ) ;
 
         // Get the local indices of the vertices in 
@@ -420,7 +420,7 @@ namespace {
         }
     }
 
-    /*!
+/*!
     * @brief Get the colocated vertices of a mesh, i.e. which have the same geometric location
     * @note Code modified from geogram/mesh/mesh_repair.cpp
     * @param[in] M the mesh
@@ -457,7 +457,7 @@ namespace {
                                                    M.vertices.dimension() ) ;
         }
         return nb_new_vertices != M.vertices.nb() ;
-    }
+    }    
 
     /**
     * \brief Connects the facets in a TRIANGULATED mesh.
@@ -898,7 +898,7 @@ namespace {
             std::vector< index_t > lines ;
             std::vector< index_t > surfaces ;
 
-            const std::vector< GeoModelMeshVertices::GMEVertex >& bmes =
+            const std::vector< GMEVertex >& bmes =
                 M.mesh.vertices.gme_vertices( i ) ;
 
             for( index_t j = 0; j < bmes.size(); ++j ) {
