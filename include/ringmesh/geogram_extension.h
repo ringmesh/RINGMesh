@@ -61,7 +61,16 @@ namespace RINGMesh {
             
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
-	    
+
+    
+    /*!
+     * @brief Constrained tetrahedralize of the volumes defined by a triangulated surface mesh
+     * @details Does not require this mesh to be a closed manifold
+     * as the equivalent Geogram function does.
+     */
+    bool RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M ) ;
+
+    
     void RINGMESH_API rotate_mesh(
         GEO::Mesh& mesh,
         const GEO::Matrix< float64, 4 >& rot_mat ) ;

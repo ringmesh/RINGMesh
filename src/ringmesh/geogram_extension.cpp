@@ -47,7 +47,7 @@
 
 #include <geogram/basic/logger.h>
 #include <geogram/basic/line_stream.h>
-
+#include <geogram/third_party/tetgen/tetgen.h>
 
 namespace RINGMesh {
 
@@ -70,22 +70,43 @@ namespace RINGMesh {
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
     class RINGMESH_API TSurfMeshIOHandler : public GEO::MeshIOHandler {
-    public:
+    public:   
+        TSurfMeshIOHandler() :
+            mesh_dimension_(3),
+            nb_vertices_(0), 
+            nb_triangles_(0),
+            z_sign_(1)
+        {
+        }
+        
         /*!
          * @brief Load a TSurf saved in .ts format
          * @warning Assumes there is only one TSurf in the file.
          *          Will undoubtedly crash if it is not the case.
          * @todo Prevent crashing if the file is not as expected
          *
-         * @param filename the name of the file to be processed.
-         * @param mesh the mesh where the surface will be created.
-         * @param flags Some flags, not used for now.
+         * @param filename the name of the .ts file to be processed.
+         * @param mesh to which vertices and facets will be assigned
+         * @param flags Not used for now.
          */
         virtual bool load(
             const std::string& filename,
             GEO::Mesh& mesh,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags()
-            ) ;
+            )
+        {
+            filename_ = filename ;
+            if( !is_file_valid()) {
+                return false ;
+            } else {
+                read_number_of_vertices_and_triangles() ;
+                allocate_vertices() ;
+                allocate_triangles() ;
+                read_vertices_and_triangles() ;
+                assign_and_repair_mesh( mesh ) ;
+                return true ;
+            }
+        }
 
         /*!
          * @brief Save a Mesh in .ts format
@@ -98,97 +119,250 @@ namespace RINGMesh {
                 << std::endl ;
             return false ;
         }
-    } ;
 
-    bool TSurfMeshIOHandler::load(
-        const std::string& filename, GEO::Mesh& mesh, const GEO::MeshIOFlags& )
-    {
-        // Count the number of triangles and vertices
-        index_t nb_points = 0 ;
-        index_t nb_triangles = 0 ;
-        int z_sign = 1 ;
+    private:
+        void read_number_of_vertices_and_triangles()
         {
-            GEO::LineInput in( filename ) ;
-            if( !in.OK() ) {
-                return false ;
-            }
+            GEO::LineInput in( filename_ ) ;
             while( !in.eof() && in.get_line() ) {
                 in.get_fields() ;
                 if( in.nb_fields() > 0 ) {
                     if( in.field_matches( 0, "ZPOSITIVE" ) ) {
                         if( in.field_matches( 1, "Elevation" ) ) {
-                            z_sign = 1 ;
+                            z_sign_ = 1 ;
                         } else if( in.field_matches( 1, "Depth" ) ) {
-                            z_sign = -1 ;
-                        } else {
-                            ringmesh_assert_not_reached;
+                            z_sign_ = -1 ;
                         }
                     }
-                    /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
-                    else if( in.field_matches( 0,
-                        "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
-                        nb_points++ ;
-                    } else if( in.field_matches( 0,
-                        "PATOM" ) | in.field_matches( 0, "ATOM" ) ) {
-                        nb_points++ ;
+                    else if( in.field_matches( 0, "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
+                        nb_vertices_++ ;
+                    } else if( in.field_matches( 0, "PATOM" ) || in.field_matches( 0, "ATOM" ) ) {
+                        nb_vertices_++ ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
-                        nb_triangles++ ;
+                        nb_triangles_++ ;
                     }
                 }
             }
         }
-        index_t dim = 3 ;
-        GEO::vector< double > vertices( dim * nb_points ) ;
-        GEO::vector< index_t > triangles( 3 * nb_triangles ) ;
+        
+        void read_vertices_and_triangles()
         {
-            GEO::LineInput in( filename ) ;
-            if( !in.OK() ) {
-                return false ;
-            }
+            GEO::LineInput in( filename_ ) ;
             index_t v = 0 ;
             index_t t = 0 ;
             while( !in.eof() && in.get_line() ) {
                 in.get_fields() ;
                 if( in.nb_fields() > 0 ) {
-                    /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
-                    if( in.field_matches( 0, "VRTX" )
-                        || in.field_matches( 0, "PVRTX" ) ) {
-                        vertices[ dim * v ] = read_double( in, 2 ) ;
-                        vertices[ dim * v + 1 ] = read_double( in, 3 ) ;
-                        vertices[ dim * v + 2 ] = z_sign * read_double( in, 4 ) ;
+                    if( in.field_matches( 0, "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
+                        vertices_[ mesh_dimension_*v ]     = read_double( in, 2 ) ;
+                        vertices_[ mesh_dimension_*v + 1 ] = read_double( in, 3 ) ;
+                        vertices_[ mesh_dimension_*v + 2 ] = read_double( in, 4 ) * z_sign_ ;
                         ++v ;
-                    } else if( in.field_matches( 0, "PATOM" )
-                               || in.field_matches( 0, "ATOM" ) ) {
+                    } else if( in.field_matches( 0, "PATOM" ) || in.field_matches( 0, "ATOM" ) ) {
                         index_t v0 = in.field_as_uint( 2 ) - 1 ;
-                        vertices[ dim * v ] = vertices[ dim * v0 ] ;
-                        vertices[ dim * v + 1 ] = vertices[ dim * v0 + 1 ] ;
-                        vertices[ dim * v + 2 ] = vertices[ dim * v0 + 2 ] ;
+                        vertices_[ mesh_dimension_*v ]     = vertices_[ mesh_dimension_*v0 ] ;
+                        vertices_[ mesh_dimension_*v + 1 ] = vertices_[ mesh_dimension_*v0 + 1 ] ;
+                        vertices_[ mesh_dimension_*v + 2 ] = vertices_[ mesh_dimension_*v0 + 2 ] ;
                         ++v ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
-                        triangles[ 3 * t ] = static_cast< index_t >( in.field_as_uint(
-                            1 ) - 1 ) ;
-                        triangles[ 3 * t + 1 ] =
-                            static_cast< index_t >( in.field_as_uint( 2 ) - 1 ) ;
-                        triangles[ 3 * t + 2 ] =
-                            static_cast< index_t >( in.field_as_uint( 3 ) - 1 ) ;
+                        triangles_[ 3*t ]     = index_t( in.field_as_uint(1)-1 ) ;
+                        triangles_[ 3*t + 1 ] = index_t( in.field_as_uint(2)-1 ) ;
+                        triangles_[ 3*t + 2 ] = index_t( in.field_as_uint(3)-1 ) ;
                         t++ ;
                     }
                 }
             }
         }
 
-        mesh.facets.assign_triangle_mesh( dim, vertices, triangles, true ) ;
+        void assign_and_repair_mesh( GEO::Mesh& mesh )
+        {
+            mesh.facets.assign_triangle_mesh( mesh_dimension_, vertices_, triangles_, true ) ;
+            // Do not use GEO::MESH_REPAIR_DEFAULT because it glues the 
+            // disconnected edges along internal boundaries
+            GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F ) ;
+        }
+        
+        bool is_file_valid()
+        {
+            GEO::LineInput in( filename_ ) ;
+            if( !in.OK() ) {
+                return false ;
+            } else {
+                return true ;
+            }
+        }
 
-        // GEO::MESH_REPAIR_DEFAULT is not used because it would glue the 
-        // disconnected edges along internal boundaries
-        GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F ) ;
-        return true ;
-    }
-    
-    void RINGMESH_API ringmesh_mesh_io_initialize() 
+        void allocate_vertices()
+        {
+            vertices_.resize( mesh_dimension_ * nb_vertices_ ) ;
+        }
+        
+        void allocate_triangles()
+        {
+            triangles_.resize( 3 * nb_triangles_ ) ;
+        }
+
+    private:
+        index_t mesh_dimension_ ;
+        index_t nb_vertices_ ;
+        index_t nb_triangles_ ;
+        int z_sign_ ;
+        std::string filename_ ;
+        GEO::vector< double > vertices_ ;
+        GEO::vector< index_t > triangles_ ;
+    } ;
+
+    void RINGMESH_API ringmesh_mesh_io_initialize()
     {
         geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" );
     }
+
+
+
+
+
+    bool is_mesh_tetrahedralizable( const GEO::Mesh& M ) 
+    { 
+        if( M.cells.nb() != 0 ) {
+            GEO::Logger::err( "RING" ) << "Mesh to tetrahedralize already have cells"
+                << std::endl ;
+            return false ;
+        }
+        if( M.facets.nb() == 0 ) {
+            GEO::Logger::err( "RING" ) << "Mesh to tetrahedralize has no facets "
+                << std::endl ;
+            return false ;
+        }
+        if( !M.facets.are_simplices() ) {
+            GEO::Logger::err( "RING" ) << "Mesh to tetrahedralize is not triangulated"
+                << std::endl ;
+            return false ;
+        }
+        return true ;
+    }
+
+    bool tetrahedralize_mesh_tetgen( GEO::Mesh& M ) 
+    {    
+        if( !is_mesh_tetrahedralizable( M ) ) {
+            return false ;
+        }
+        
+        // Q: quiet
+        // p: input data is surfacic
+        // q: desired quality
+        // O0: do not optimize mesh
+        // V: verbose - A LOT of information
+        // Y: prohibit steiner points on boundaries
+        // A: generate region tags for each shell.      
+        GEO_3rdParty::tetgenbehavior tetgen_args;        
+        tetgen_args.parse_commandline( ( char* )"QpYA" ) ;
+
+        // Tetgen input
+        GEO_3rdParty::tetgenio tetgen_in;
+        tetgen_in.firstnumber = 0;
+        tetgen_in.deinitialize();
+        tetgen_in.initialize();
+               
+        // Copy vertices
+        tetgen_in.numberofpoints = static_cast<int>( M.vertices.nb() ) ;
+        tetgen_in.pointlist = new double[ 3*tetgen_in.numberofpoints ];
+        if( M.vertices.nb() != 0 ) {
+            GEO::Memory::copy(
+                tetgen_in.pointlist, M.vertices.point_ptr( 0 ),
+                M.vertices.nb()*3*sizeof( double )
+            );
+        }
+        
+        // Make tetgen_in_ points to the edges of the input Mesh
+        if( M.edges.nb() != 0 ) {
+            tetgen_in.numberofedges = static_cast<int>( M.edges.nb() ) ;
+            tetgen_in.edgelist = (int*)( M.edges.vertex_index_ptr( 0 ));
+        }
+
+        // Copy facets
+        // All triangles are allocated in one go, in a contiguous array.
+        GEO_3rdParty::tetgenio::polygon* polygons =  new GEO_3rdParty::tetgenio::polygon[ M.facets.nb() ];
+        tetgen_in.numberoffacets = int( M.facets.nb() ) ;
+        tetgen_in.facetlist = new GEO_3rdParty::tetgenio::facet[ tetgen_in.numberoffacets ];
+        for( index_t f = 0; f < M.facets.nb(); ++f ) {
+            GEO_3rdParty::tetgenio::facet& F = tetgen_in.facetlist[ f ];
+            GEO_3rdParty::tetgenio::init( &F );
+            F.numberofpolygons = 1;
+            F.polygonlist = &polygons[ f ];
+            GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[ 0 ];
+            GEO_3rdParty::tetgenio::init( &P ) ;
+            P.numberofvertices = 3 ; // Input is simplicial mesh
+            P.vertexlist = reinterpret_cast<int*>(
+                M.facet_corners.vertex_index_ptr( M.facets.corners_begin( f ) )
+                );
+            F.numberofholes = 0 ;
+            F.holelist = nil ;
+        }
+
+        // Get tets
+        GEO_3rdParty::tetgenio tetgen_out;
+        tetgen_out.firstnumber = 0;
+        tetgen_out.deinitialize();
+        try {
+            GEO_3rdParty::tetrahedralize( &tetgen_args, &tetgen_in, &tetgen_out );
+        } catch( std::exception& e ) {
+            GEO::Logger::err( "Tetgen" )
+                << "Encountered a problem" << e.what() << std::endl;
+        }
+
+        // Deallocate the datastructures used by tetgen,
+        // and disconnect them from tetgen,
+        // so that tetgen does not try to deallocate them.
+
+        // Deallocate pointlist
+        tetgen_in.numberofpoints = 0;
+        delete[] tetgen_in.pointlist;
+        tetgen_in.pointlist = nil;
+
+        // Edges are shared with constraint mesh
+        tetgen_in.numberofedges = 0;
+        tetgen_in.edgelist = nil;
+
+        // Facets structures were allocated in local
+        // array, and vertices indices were shared with constraint mesh
+        delete[] tetgen_in.facetlist;
+        tetgen_in.facetlist = nil;
+        tetgen_in.numberoffacets = 0;
+        delete[] polygons;
+
+
+        // Copy the result
+        index_t nb_points( tetgen_out.numberofpoints ) ;
+        double* points_ptr = tetgen_out.pointlist ;
+        GEO::vector<double> pts( 3*nb_points );
+        for( index_t i = 0; i < 3*nb_points; ++i ) {
+            pts[ i ] = points_ptr[ i ] ;
+        }
+
+        index_t nb_tets( tetgen_out.numberoftetrahedra ) ;
+        int* tets_ptr = tetgen_out.tetrahedronlist ;
+        int one_tet_size = tetgen_out.numberofcorners ;
+        GEO::vector<index_t> tet2v( 4*nb_tets );
+        for( index_t i = 0; i < nb_tets; ++i ) {
+            tet2v[ 4*i+0 ] = index_t( tets_ptr[ one_tet_size*i+0 ] ) ;
+            tet2v[ 4*i+1 ] = index_t( tets_ptr[ one_tet_size*i+1 ] ) ;
+            tet2v[ 4*i+2 ] = index_t( tets_ptr[ one_tet_size*i+2 ] ) ;
+            tet2v[ 4*i+3 ] = index_t( tets_ptr[ one_tet_size*i+3 ] ) ;
+        }
+        
+        M.cells.assign_tet_mesh( 3, pts, tet2v, true );
+        M.cells.connect();               
+
+        double* tet_attributes = tetgen_out.tetrahedronattributelist ;
+        int one_tet_attribute_size = tetgen_out.numberoftetrahedronattributes ;
+        GEO::Attribute< int > region_id ;
+        region_id.bind( M.cells.attributes(), "region" ) ;
+        for( index_t i = 0; i < nb_tets; ++i ) {
+            // Let's suppose that the shell id is the first attribute in tetgen...
+            region_id[ i ] = int( tet_attributes[ one_tet_attribute_size*i ] ) ;
+        }
+    }
+
     
     /***********************************************************************/
 

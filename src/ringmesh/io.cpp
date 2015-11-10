@@ -80,7 +80,7 @@ namespace RINGMesh {
     void mesh_initialize()
     {
         GeoModelSurfaceIOHandler::initialize() ;
-        GeoModelMeshIOHandler::initialize() ;
+        GeoModelVolumeIOHandler::initialize() ;
         WellGroupIOHandler::initialize() ;
     }
 }
