@@ -283,11 +283,12 @@ namespace RINGMesh {
         bool add_steiner_points,
         const std::vector< std::vector< vec3 > >& internal_vertices )
     {
-        GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
         if( region_id == NO_ID ) {
+            GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
             GEO::ProgressTask progress( "Compute", M.nb_regions() ) ;
             for( index_t i = 0; i < M.nb_regions(); i++ ) {
                 tetrahedralize( M, method, i, add_steiner_points, internal_vertices ) ;                
+                progress.next() ;
             }
         } else {
             TetraGen_var tetragen = TetraGen::create( M.region( region_id ).mesh(),
