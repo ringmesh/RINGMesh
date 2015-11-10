@@ -243,6 +243,7 @@ namespace {
         index_t& f,
         index_t& e )
     {
+        // This is bad ! One level of abstraction is far far away
         const vec3& v0 = surface.model().mesh.vertices.vertex( model_v0 ) ;
         const vec3& v1 = surface.model().mesh.vertices.vertex( model_v1 ) ;
         vec3 v_bary = 0.5 * ( v0 + v1 ) ;
@@ -1373,10 +1374,12 @@ namespace RINGMesh {
             }
         }
 
+        // Deliberate clear of the model vertices used for model building
+        model_.mesh.vertices.clear() ;
         return true ;
     }
 
-    bool GeoModelBuilder::build_lines_and_corners()
+    bool GeoModelBuilder::build_lines_and_corners_from_surfaces()
     {
         // Get for all Surface, the triangles that have an edge
         // on the boundary.
@@ -1469,7 +1472,7 @@ namespace RINGMesh {
         return true ;
     }
 
-    bool GeoModelBuilder::build_regions()
+    bool GeoModelBuilder::build_brep_regions_from_surfaces()
     {
         ringmesh_debug_assert( model_.nb_lines() == regions_info_.size() ) ;
 
@@ -1596,7 +1599,7 @@ namespace RINGMesh {
     }
 
 
-    bool GeoModelBuilder::build_model()
+    bool GeoModelBuilder::build_model_from_surfaces()
     {
         if( model_.nb_surfaces() == 0 ) {
             GEO::Logger::err( "GeoModel" ) << "No surface to build the model "
@@ -1607,15 +1610,11 @@ namespace RINGMesh {
         // Initialize model_ global vertices 
         model_.mesh.vertices.test_and_initialize() ;
 
-        build_lines_and_corners() ;
+        build_lines_and_corners_from_surfaces() ;
 
         if( options_.compute_regions_brep ) {
-            build_regions() ;
+            build_brep_regions_from_surfaces() ;
         }
-
-        // Deliberate clear of the model vertices 
-        // to force their recomputation when checking model validity
-        model_.mesh.vertices.clear() ;
 
         // Finish up the model
         return end_model() ;
@@ -1623,6 +1622,14 @@ namespace RINGMesh {
 
    
     /*************************************************************************/
+
+    class GeoModelBuilderSurfaceMesh {
+        GeoModelBuilderSurfaceMesh( const GEO::Mesh& mesh ) ;
+
+
+    private: 
+        const GEO::Mesh& mesh_ ;
+    } ;
 
 
     /*! @details Add separately each connected component of the mesh
@@ -1633,7 +1640,7 @@ namespace RINGMesh {
     *          propagation (or "coloriage" algorithm) using the adjacent_facet
     *          information provided on the input GEO::Mesh.
     */
-    bool GeoModelBuilderMesh::set_surfaces()
+    bool GeoModelBuilderMesh::build_surfaces_from_connected_components()
     {
         if( mesh_.vertices.nb() < 3 ||
             mesh_.facets.nb() == 0
@@ -1646,7 +1653,8 @@ namespace RINGMesh {
         std::vector< index_t > corners ;
         std::vector< index_t > facets_ptr ;
         std::vector< vec3 > vertices ;
-        // Index of the mesh vertex in_ the current connected component
+
+        // Index of the mesh vertex in the current connected component
         std::vector< index_t > cc_vertex( mesh_.vertices.nb(), NO_ID ) ;
 
         corners.reserve( mesh_.facet_corners.nb() ) ;
@@ -1655,13 +1663,11 @@ namespace RINGMesh {
         std::vector< bool > visited( mesh_.facets.nb(), false ) ;
         for( index_t i = 0; i < mesh_.facets.nb(); i++ ) {
             if( !visited[ i ] ) {
-                // Index of the Surface to create from this facet
-                index_t cc_index = model_.nb_surfaces() ;
-
-                // Clear information for previous connected component
+                 // Clear information for previous connected components
                 corners.resize( 0 ) ;
                 facets_ptr.resize( 0 ) ;
                 vertices.resize( 0 ) ;
+
                 /// @todo Review : This should not be necessary as each vertex should
                 /// be in_ one and only one connected component. To test. [JP]
                 std::fill( cc_vertex.begin(), cc_vertex.end(), NO_ID ) ;
@@ -2077,9 +2083,9 @@ namespace RINGMesh {
         }
         else {
             // Ignore BORDER and CORNER information of the file
-            // Create them now from the topolgy of the Surfaces
+            // Create them now from the topology of the Surfaces
             model_.mesh.vertices.test_and_initialize() ;
-            build_lines_and_corners() ;
+            build_lines_and_corners_from_surfaces() ;
         }
         
         /// 4. Build the Contacts

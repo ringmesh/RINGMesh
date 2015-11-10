@@ -72,9 +72,14 @@ namespace RINGMesh {
         bool compute_surfaces ;
         bool compute_regions_brep ;
         bool compute_regions_mesh ;
-        // Les autres elements ne sont pas obligatoires.
-        // A voir plus tard
+        // What about other elements ? As they are not mandatory
+        // We will see later [JP]
     };
+
+    /*! @todo We need to keep track of the status of the GeoModel
+     *  and to know what elements are built, is their topolgy set,
+     *  are their mesh assigned?
+     */
 
 
     // Internal implementation class
@@ -178,13 +183,13 @@ namespace RINGMesh {
         /*!
         * @brief From the Surfaces of the GeoModel, build its Lines and Corners
         */
-        bool build_lines_and_corners() ;
+        bool build_lines_and_corners_from_surfaces() ;
 
         /*!
         * @brief Build the regions of the GeoModel from the Surfaces 
-        * @details Call build_lines_and_corners first
+        * @details Call build_lines_and_corners_from_surfaces first
         */
-        bool build_regions() ;
+        bool build_brep_regions_from_surfaces() ;
     
         /*!
          * A IMPLEMENTER CORRECTEMENT 
@@ -199,7 +204,8 @@ namespace RINGMesh {
          * @note Valdity is not checked
          * @pre The GeoModel should have at least one Surface. Nothing is done if not.
          */
-        virtual bool build_model() ;
+        bool build_model_from_surfaces() ;
+
 
         /*!
         * @brief Finish up model building and complete missing information.
@@ -237,12 +243,22 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
     public:
         GeoModelBuilderMesh( GeoModel& model, const GEO::Mesh& mesh )
-            : GeoModelBuilder( model ),
-            mesh_( mesh )
+            : GeoModelBuilder(model), mesh_( mesh )
         {};
     
         virtual ~GeoModelBuilderMesh()
         {};
+
+        
+        void assign_mesh_to_model_element( GME::gme_t model_element_id ) ;
+
+        // Here Arnaud I do not exactly understand what you want
+        // and I am not sure this whould be in this class
+        void assign_mesh_vertices_to_what() ;
+        void assign_mesh_edges_to_what() ;
+        void assign_mesh_facets_to_what() ;
+        void assign_mesh_corners_to_what() ;
+        void assign_mesh_cells_to_what() ;
         
 
         /*!
@@ -250,19 +266,49 @@ namespace RINGMesh {
         *       of the input surface mesh
         * @pre The mesh_ is a surface mesh. Facet adjacencies are available.
         */
-        bool set_surfaces() ;
+        bool build_surfaces_from_connected_components() ;
 
-
-        /* The given mesh is volumetric to fill the region of the Model
-         * There is an attribute "region" that flag the tets region per region
-         * 
-         * Si les régions BREP existent déjà - > on leur fourgue le maillage
-         * Si elles n'existent pas -> on leur fourgue le maillage mais 
-         * 
+        /*! 
+         * @brief Surfaces are identified from a Integer attribute on facet
          */
-        bool set_regions_meshes() ;
+        bool build_surfaces_from_attribute_value( 
+            const std::string& facet_attribute_name ) ;
+
+        
+        bool build_regions_from_connected_components() ;
+
+        bool build_regions_from_attribute_value(
+            const std::string& region_attribute_name ) ;
+
+        
+        /* The given mesh is volumetric to fill the region of the Model
+        * There is an attribute "region" that flag the tets region per region
+        */
+        bool fill_region_meshes_from_attribute_value( 
+            const std::string& region_attribute_name ) ;
 
 
+        
+        // How do we do that ? that is the question 
+        // PB: we need to have the mesh to copy attribute from
+        // when we are building the model elements, afterwards
+        // it cannot work - we do not have the correspondance 
+        template< class T > 
+        void copy_vertex_attribute_from_mesh( 
+            const std::string& attribute_name ) ;
+        
+        template< class T >
+        void copy_edge_attribute_from_mesh( 
+            const std::string& attribute_name ) ;
+        
+        template< class T >
+        void copy_facet_attribute_from_mesh( 
+            const std::string& attribute_name ) ;
+        
+        template< class T >
+        void copy_cell_attribute_from_mesh(
+            const std::string& attribute_name ) ;
+    
     protected:
         const GEO::Mesh& mesh_ ;
     } ;
