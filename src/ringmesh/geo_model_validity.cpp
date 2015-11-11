@@ -40,23 +40,6 @@
 
 #include <ringmesh/geo_model_validity.h>
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geometry.h>
-
-#include <geogram/basic/logger.h>
-#include <geogram/basic/geometry_nd.h>
-#include <geogram/basic/string.h>
-#include <geogram/basic/algorithm.h>
-#include <geogram/points/colocate.h>
-#include <geogram/mesh/triangle_intersection.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_AABB.h>
-#include <geogram/mesh/mesh_topology.h>
-#include <geogram/mesh/mesh_intersection.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/mesh/mesh_io.h>
-
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -64,6 +47,25 @@
 #include <ctime>
 #include <set>
 #include <map>
+
+#include <geogram/basic/logger.h>
+#include <geogram/basic/geometry_nd.h>
+#include <geogram/basic/string.h>
+#include <geogram/basic/algorithm.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_AABB.h>
+#include <geogram/mesh/mesh_topology.h>
+#include <geogram/mesh/mesh_intersection.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/triangle_intersection.h>
+#include <geogram/points/colocate.h>
+
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/geogram_extension.h>
+
 
 
 /*!
@@ -397,25 +399,11 @@ namespace {
 
     /*!
     * @brief Trigger an assertion if several vertices of a mesh at the same geometric location
-    * @note Code modified from geogram/mesh/mesh_repair.cpp
-    * @param[in] M the mesh
-    * @param[in] colocate_epsilon tolerance
+
     */
     void assert_no_colocate_vertices( const GEO::Mesh& M, double colocate_epsilon )
     {
-        GEO::vector< index_t > old2new ;
-
-        index_t nb_new_vertices = 0 ;
-        if( colocate_epsilon == 0.0 ) {
-            nb_new_vertices = GEO::Geom::colocate_by_lexico_sort(
-                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
-                M.vertices.dimension() ) ;
-        } else {
-            nb_new_vertices = GEO::Geom::colocate( M.vertices.point_ptr( 0 ), 3,
-                                                   M.vertices.nb(), old2new, colocate_epsilon,
-                                                   M.vertices.dimension() ) ;
-        }
-        if( nb_new_vertices != M.vertices.nb() ) {
+        if( has_mesh_colocate_vertices( M, colocate_epsilon ) ) {
             geo_assert_not_reached;
         }
     }

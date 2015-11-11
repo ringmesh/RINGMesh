@@ -86,6 +86,14 @@ namespace RINGMesh {
 
         GME::gme_t create_element( GME::TYPE e_type ) ;
 
+        void create_geomodel_elements( GME::TYPE element_type, index_t nb_elements )
+        {
+            for( index_t i = 0; i < nb_elements; ++i ) {
+                create_element( element_type ) ;
+            }
+        }
+
+
         /*! @}
         * \name Creation - Deletion - Access to GeoModelElements.
         * @{
