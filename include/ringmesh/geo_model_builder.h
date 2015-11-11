@@ -83,7 +83,7 @@ namespace RINGMesh {
 
 
     // Internal implementation class
-    class RegionBuildingInformation ;
+    class GeoModelRegionFromSurfaces ;
 
     /*!
      * @brief Base class for all classes building a GeoModel.
@@ -166,6 +166,10 @@ namespace RINGMesh {
             const std::vector< index_t >& corners,
             const std::vector< index_t >& facet_ptr ) ;
 
+        void set_surface_geometry(
+            const GME::gme_t& surface_id,
+            const std::vector< index_t >& triangle_corners ) ;
+
         index_t find_or_create_duplicate_vertex(
             GeoModelMeshElement& S,
             index_t model_vertex_id,
@@ -191,21 +195,15 @@ namespace RINGMesh {
         */
         bool build_brep_regions_from_surfaces() ;
     
-        /*!
-         * A IMPLEMENTER CORRECTEMENT 
-         * pour construire les elements que l'on est censé construire en fonction 
-         * de ce qui est disponible 
-         */
-        // Là ça marche avec selon la dernière version
         /* 
          * @brief From a GeoModel in which only Surface are defined, create
-         * corners, contacts and optionally regions.
+         * corners, contacts. If the compute_regions_brep is true, then regions
+         * too are computed.
          * @return True if a model has been built.
          * @note Valdity is not checked
          * @pre The GeoModel should have at least one Surface. Nothing is done if not.
          */
         bool build_model_from_surfaces() ;
-
 
         /*!
         * @brief Finish up model building and complete missing information.
@@ -218,89 +216,82 @@ namespace RINGMesh {
         GeoModelIOFlags options_ ; 
 
         /*! Internal information filled at Line building step */
-        std::vector< RegionBuildingInformation* > regions_info_ ;
+        std::vector< GeoModelRegionFromSurfaces* > regions_info_ ;
 
     private:
-        void create_surface_geometry(
+        void assign_surface_mesh_facets(
             const GME::gme_t& surface_id,
             const std::vector< index_t >& facets,
             const std::vector< index_t >& facet_ptr ) ;
     } ;
 
-    
+    // Implementation
+    class GeoModelSurfaceFromMesh ;
+    class GeoModelRegionFromMesh ;
     
     /*!
-     * Le but de la classe est d'ajouter des éléments maillés 
-     * au modèle à partir de des maillages - soit on remplit des éléments qui existent
-     * déjà , soit on les crées et on les remplit .....
-     * Ça me plait pas ...
-     * Mais pour les régions pas le choix.... 
-     *
-     * Selon ce qu'on doit remplir, on regarde si ce type d'élement existe, si oui,
-     * on va changer les maillages 
-     * si non on les crées et ensuite on change les maillages
+     * @brief Builder of a GeoModel from a Mesh 
+     * @details It either fills existing Regions and Surfaces
+     * or creates and fills them.
+     * @warning Volumetric version is only implemented for a tetrahedral Mesh
      */
     class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
     public:
         GeoModelBuilderMesh( GeoModel& model, const GEO::Mesh& mesh )
-            : GeoModelBuilder(model), mesh_( mesh )
+            : GeoModelBuilder(model), 
+              mesh_( mesh ),
+              surface_builder_(nil),
+              region_builder_(nil)
         {};
     
-        virtual ~GeoModelBuilderMesh()
-        {};
-
-        
-        void assign_mesh_to_model_element( GME::gme_t model_element_id ) ;
-
-        // Here Arnaud I do not exactly understand what you want
-        // and I am not sure this whould be in this class
-        void assign_mesh_vertices_to_what() ;
-        void assign_mesh_edges_to_what() ;
-        void assign_mesh_facets_to_what() ;
-        void assign_mesh_corners_to_what() ;
-        void assign_mesh_cells_to_what() ;
-        
+        virtual ~GeoModelBuilderMesh() ;
+        /*! 
+        * \name Build Surfaces from the Mesh
+        * @{
+        */
 
         /*!
-        * @brief Create the model Surfaces from the connected components
-        *       of the input surface mesh
-        * @pre The mesh_ is a surface mesh. Facet adjacencies are available.
+        * @brief Create and fill the model Surfaces 
+        * from the surface connected components of the Mesh
         */
         bool build_surfaces_from_connected_components() ;
 
         /*! 
-         * @brief Surfaces are identified from a Integer attribute on facet
+         * @brief Create and fill the Surfaces 
+         *  from a Integer attribute on the Mesh facets
          */
         bool build_surfaces_from_attribute_value( 
             const std::string& facet_attribute_name ) ;
 
-        
+        /*! 
+         * @brief Fill the Surface meshes
+         * from an Integer facet attribute giving the Surface index
+         * of each Mesh facet 
+         */
+        bool fill_surface_meshes_from_attribute_value(
+            const std::string& facet_attribute_name ) ;
+
+        /*!
+        * \name Build Regions from the Mesh
+        * @{
+        */
+
         bool build_regions_from_connected_components() ;
 
         bool build_regions_from_attribute_value(
             const std::string& region_attribute_name ) ;
-
         
-        /* The given mesh is volumetric to fill the region of the Model
+        /*! 
+        * The given mesh is volumetric to fill the region of the Model
         * There is an attribute "region" that flag the tets region per region
         */
         bool fill_region_meshes_from_attribute_value( 
             const std::string& region_attribute_name ) ;
 
-
-        
-        // How do we do that ? that is the question 
-        // PB: we need to have the mesh to copy attribute from
-        // when we are building the model elements, afterwards
-        // it cannot work - we do not have the correspondance 
-        template< class T > 
-        void copy_vertex_attribute_from_mesh( 
-            const std::string& attribute_name ) ;
-        
-        template< class T >
-        void copy_edge_attribute_from_mesh( 
-            const std::string& attribute_name ) ;
-        
+        /*! @}
+        * \name Copy attributes from the Mesh to the GeoModel
+        * @{
+        */
         template< class T >
         void copy_facet_attribute_from_mesh( 
             const std::string& attribute_name ) ;
@@ -308,9 +299,27 @@ namespace RINGMesh {
         template< class T >
         void copy_cell_attribute_from_mesh(
             const std::string& attribute_name ) ;
-    
+
+    protected:
+        /*!
+         * @brief Check that the mesh is valid to create a GeoModel
+         * @details It shall have no duplicated vertices, and no duplicated facets.
+         */
+        bool has_mesh_colocated_vertices() ;
+
+        /*!
+         * @brief All vertices of the Mesh are added to the GeoModelMeshVertices 
+         */
+        void add_mesh_vertices_to_model() ;
+
+        void initialize_surface_builder( const std::string& attribute_name ) ;
+        void initialize_region_builder( const std::string& attribute_name ) ;
+
+
     protected:
         const GEO::Mesh& mesh_ ;
+        GeoModelSurfaceFromMesh* surface_builder_ ;
+        GeoModelRegionFromMesh* region_builder_ ;
     } ;
 
 
@@ -364,20 +373,7 @@ namespace RINGMesh {
             const vec3& p0,
             const vec3& p1,
             const vec3& p2 ) ;
-
-        /*!
-        * @brief Triangle that set the orientation of a TFACE
-        *        in a .ml file
-        */
-        struct KeyFacet {
-            KeyFacet( const vec3& p0, const vec3& p1, const vec3& p2 )
-                : p0_( p0 ), p1_( p1 ), p2_( p2 )
-            {}
-            vec3 p0_ ;
-            vec3 p1_ ;
-            vec3 p2_ ;
-        } ;
-
+        
         /*!
         * @brief Check if the surface triangle orientations match the one of the key facet
         */
@@ -391,6 +387,19 @@ namespace RINGMesh {
             bool& same_orientation ) const ;
 
     private:
+        /*!
+        * @brief Triangle that set the orientation of a TFACE
+        *        in a .ml file
+        */
+        struct KeyFacet {
+            KeyFacet( const vec3& p0, const vec3& p1, const vec3& p2 )
+                : p0_( p0 ), p1_( p1 ), p2_( p2 )
+            {}
+            vec3 p0_ ;
+            vec3 p1_ ;
+            vec3 p2_ ;
+        } ;
+
         std::vector< KeyFacet > key_facets_ ;
     } ;
 

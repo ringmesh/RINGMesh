@@ -48,6 +48,7 @@
 #include <geogram/basic/logger.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/third_party/tetgen/tetgen.h>
+#include <geogram/points/colocate.h>
 
 namespace RINGMesh {
 
@@ -844,4 +845,26 @@ namespace RINGMesh {
     }
 
 
+    /*
+    * @note Code modified from geogram/mesh/mesh_repair.cpp
+    */
+    bool has_mesh_colocate_vertices( const GEO::Mesh& M, double tolerance )
+    {
+        GEO::vector< index_t > old2new ;
+        index_t nb_new_vertices = 0 ;
+        if( tolerance == 0.0 ) {
+            nb_new_vertices = GEO::Geom::colocate_by_lexico_sort(
+                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
+                M.vertices.dimension() ) ;
+        } else {
+            nb_new_vertices = GEO::Geom::colocate(
+                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
+                tolerance, M.vertices.dimension() ) ;
+        }
+        if( nb_new_vertices != M.vertices.nb() ) {
+            return true ;
+        } else {
+            return false ;
+        }
+    }
 }

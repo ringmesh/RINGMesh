@@ -44,6 +44,7 @@
 
 #include <ringmesh/common.h>
 
+#include <geogram/basic/memory.h>
 #include <geogram/basic/attributes.h>
 
 namespace GEO {
@@ -51,6 +52,35 @@ namespace GEO {
 }
 
 namespace RINGMesh {
+
+    /*!
+     * Copy the content of a standrad library vector to the
+     * memory aligned GEO::Vector. 
+     * A lot of copies, when we need to call Geogram functions. 
+     * @todo Could we set Geogram vector to be a std::vector ?? 
+     */
+    template< class T >
+    void copy_std_vector_to_geo_vector( const std::vector<T>& in, GEO::vector<T>& out )
+    {
+        out.resize( in.size() ) ;
+        for( index_t i = 0; i < in.size(); ++i) {
+            out[ i ] = in[ i ]  ; 
+        }
+    }
+
+    template< class T >
+    void copy_std_vector_to_geo_vector( 
+        const std::vector<T>& in, index_t from, index_t to, GEO::vector<T>& out )
+    {
+        ringmesh_assert( to < in.size() ) ;
+        ringmesh_assert( from < to ) ;
+        out.resize( to - from ) ;
+        index_t count = 0 ;
+        for( index_t i = from ; i != to; ++i ) {
+            out[ count ] = in[ i ]  ;
+        }
+    }
+
 	
     /***********************************************************************/
     /* Loading and saving a GEO::Mesh                                      */
@@ -138,6 +168,11 @@ namespace RINGMesh {
     void RINGMESH_API mesh_facet_connect( GEO::Mesh& mesh ) ;
   
 
+    /*!
+    * @brief Returns true if there are colocated vertices in the Mesh
+    * @details This is a wrapper around Geogram Colocate functions
+    */
+    bool RINGMESH_API has_mesh_colocate_vertices( const GEO::Mesh& M, double tolerance ) ;
 
     /*!
     * \brief Convenient class to manipulate vectors of Geogram attributes.
