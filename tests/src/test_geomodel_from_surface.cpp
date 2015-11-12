@@ -72,7 +72,7 @@ int main( int argc, char** argv )
     RINGMesh::GeoModel model ;
 	
 	RINGMesh::GeoModelBuilderMesh BB( model, in ) ;
-    BB.build_surfaces_from_connected_components() ;
+    BB.build_polygonal_surfaces_from_connected_components() ;
     if( !BB.build_model_from_surfaces() ) {
 		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	
 		return 1 ;

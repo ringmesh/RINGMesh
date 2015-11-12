@@ -1960,11 +1960,9 @@ namespace RINGMesh {
         const GEO::Mesh& mesh_ ;
         std::string gme_attribute_name_ ;
         GEO::Attribute< index_t > gme_attribute_ ;
-        std::map< index_t, index_t > nb_simplexes_per_attribute_value_ ;
-        
+        std::map< index_t, index_t > nb_simplexes_per_attribute_value_ ;        
         std::map< index_t, index_t > attribute_value_to_gme_id_ ;
         std::vector< index_t > gme_id_to_attribute_value_ ;
-
         std::vector< std::vector< index_t > > gme_simplex_vertices_ ;
         std::vector< GMESimplex > mesh_simplex_to_gme_simplex_ ;
     } ;
@@ -2029,6 +2027,8 @@ namespace RINGMesh {
     }
 
 
+
+
     /*! @details Add separately each connected component of the mesh
     *          as a Surface of the model under construction.
     *          All the facets of the input mesh are visited and added to a
@@ -2039,40 +2039,23 @@ namespace RINGMesh {
     * 
     * A REIMPLEMENTER
     */
-    bool GeoModelBuilderMesh::build_surfaces_from_connected_components()
-    {
-        if( mesh_.vertices.nb() < 3 ||
-            mesh_.facets.nb() == 0
-            ) {
-            return false ;
-        }
-
-        // Vectors storing the information to build
-        // the current connected component during propagation
-        std::vector< index_t > corners ;
-        std::vector< index_t > facets_ptr ;
-        std::vector< vec3 > vertices ;
-
-        // Index of the mesh vertex in the current connected component
-        std::vector< index_t > cc_vertex( mesh_.vertices.nb(), NO_ID ) ;
-
-        corners.reserve( mesh_.facet_corners.nb() ) ;
-        facets_ptr.reserve( mesh_.facets.nb() ) ;
+    bool GeoModelBuilderMesh::build_polygonal_surfaces_from_connected_components()
+    {        
+        std::vector< index_t > vertex_id_to_cc_id( mesh_.vertices.nb(), NO_ID ) ;
 
         std::vector< bool > visited( mesh_.facets.nb(), false ) ;
         for( index_t i = 0; i < mesh_.facets.nb(); i++ ) {
             if( !visited[ i ] ) {
-                 // Clear information for previous connected components
-                corners.resize( 0 ) ;
-                facets_ptr.resize( 0 ) ;
-                vertices.resize( 0 ) ;
+                std::vector< index_t > cc_corners ;
+                std::vector< index_t > cc_facets_ptr ;
+                std::vector< vec3 >    cc_vertices ;
 
                 /// @todo Review : This should not be necessary as each vertex should
                 /// be in_ one and only one connected component. To test. [JP]
-                std::fill( cc_vertex.begin(), cc_vertex.end(), NO_ID ) ;
+                std::fill( vertex_id_to_cc_id.begin(), vertex_id_to_cc_id.end(), NO_ID ) ;
 
                 // First facet begin at corner 0
-                facets_ptr.push_back( 0 ) ;
+                cc_facets_ptr.push_back( 0 ) ;
 
                 // Propagate from facet #i 
                 std::stack< index_t > S ;
@@ -2085,11 +2068,11 @@ namespace RINGMesh {
                     for( index_t c = mesh_.facets.corners_begin( f );
                          c < mesh_.facets.corners_end( f ); ++c ) {
                         index_t v = mesh_.facet_corners.vertex( c ) ;
-                        if( cc_vertex[ v ] == NO_ID ) {
-                            cc_vertex[ v ] = vertices.size() ;
-                            vertices.push_back( mesh_.vertices.point( v ) ) ;
+                        if( vertex_id_to_cc_id[ v ] == NO_ID ) {
+                            vertex_id_to_cc_id[ v ] = cc_vertices.size() ;
+                            cc_vertices.push_back( mesh_.vertices.point( v ) ) ;
                         }
-                        corners.push_back( cc_vertex[ v ] ) ;
+                        cc_corners.push_back( vertex_id_to_cc_id[ v ] ) ;
 
                         index_t n = mesh_.facet_corners.adjacent_facet( c ) ;
                         if( n != NO_ID && !visited[ n ] ) {
@@ -2097,16 +2080,22 @@ namespace RINGMesh {
                             S.push( n ) ;
                         }
                     }
-                    facets_ptr.push_back( corners.size() ) ;
+                    cc_facets_ptr.push_back( cc_corners.size() ) ;
                 }
 
                 // Create the surface and set its geometry
-                set_surface_geometry( create_element( GME::SURFACE ), vertices,
-                                      corners, facets_ptr ) ;
+                set_surface_geometry( create_element( GME::SURFACE ), cc_vertices,
+                                      cc_corners, cc_facets_ptr ) ;
             }
         }
         return true ;
     }
+
+    bool GeoModelBuilderMesh::build_surfaces_from_connected_components()
+    {
+        return false ;
+    }
+
 
     bool GeoModelBuilderMesh::has_mesh_colocated_vertices()
     {
@@ -2137,7 +2126,7 @@ namespace RINGMesh {
         surface_builder_->set_default_gme_id_attribute_mapping( nb_surfaces ) ;
         surface_builder_->compute_gme_simplexes() ;
         for( index_t i = 0; i != nb_surfaces; ++i ) {
-            const std::vector< index_t >& triangle_vertices = surface_builder_->gme_simplices( i ) ;
+            const std::vector<index_t>& triangle_vertices = surface_builder_->gme_simplices( i ) ;
             set_surface_geometry( gme_t( GME::SURFACE, i) , triangle_vertices ) ;
         }   
         return true ;
@@ -2465,14 +2454,13 @@ namespace RINGMesh {
                     }
 
                     /// 2.1 Read the surface vertices and facets (only triangles in_ Gocad Model3d files)
-                    else if( in_.field_matches( 0,
-                            "VRTX" ) || in_.field_matches( 0, "PVRTX" ) )
+                    else if( in_.field_matches( 0, "VRTX" ) || in_.field_matches( 0, "PVRTX" ) )
                     {
-                        const vec3 p( read_double( in_, 2 ), read_double( in_,
-                                3 ), z_sign * read_double( in_, 4 ) ) ;
+                        vec3 p( read_double( in_, 2 ), 
+                                read_double( in_, 3 ), 
+                                z_sign * read_double( in_, 4 ) ) ;
                         tsurf_vertices.push_back( p ) ;
-                    } else if( in_.field_matches( 0,
-                            "PATOM" ) || in_.field_matches( 0, "ATOM" ) 
+                    } else if( in_.field_matches( 0,"PATOM" ) || in_.field_matches( 0, "ATOM" ) 
                       ){
                         tsurf_vertices.push_back( tsurf_vertices[
                             in_.field_as_uint( 2 ) - 1 ] ) ;
