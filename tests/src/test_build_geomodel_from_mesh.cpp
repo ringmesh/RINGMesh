@@ -77,6 +77,8 @@ int main( int argc, char** argv )
     GEO::Mesh mesh ;
     GEO::MeshIOFlags mesh_io_flags ;
     mesh_io_flags.set_attribute( GEO::MESH_FACET_REGION ) ; 
+    // Warning: In an .eobj file Geogram loads only the facet integer attribute named "chart"
+    // Used to fill the attribute called "region" on the mesh.
     GEO::mesh_load( file_name, mesh, mesh_io_flags ) ;
 
     GeoModel geomodel ;
@@ -84,9 +86,7 @@ int main( int argc, char** argv )
     builder.build_surfaces_from_attribute_value( "region" ) ;
     builder.build_model_from_surfaces() ;
 
-
     geomodel_surface_save( geomodel, result_file_name ) ;
-
 
     return 0 ;
 }

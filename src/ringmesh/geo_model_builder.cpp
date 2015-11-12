@@ -1746,10 +1746,10 @@ namespace RINGMesh {
     /*************************************************************************/
 
 
-    /*
-     * @brief Abstract base implementation class to build GeoModelElements from a Mesh
-     * @details Manage the correspondance a Mesh on which the GeoModelElements
-     *          are identified and these GeoModelElements (only know by indices).
+    /*!
+     * @brief Implementation detail: abstract base class
+     * @details Manage the correspondence between a Mesh on which the GeoModelElements
+     *          are identified and these GeoModelElements (only known by indices).
      * @warning Implemented only for Surface and Region and for simplicial meshes.
      * @note Used by GeoModelBuilderMesh.
      */
@@ -1763,7 +1763,7 @@ namespace RINGMesh {
          */
         bool initialize()
         {
-            if( !is_gme_attribute_bounded() ) {
+            if( !is_gme_attribute_defined() ) {
                 GEO::Logger::err( "GMBuilder" )
                     << " Attribute " << gme_attribute_name_
                     << " is not defined on a Mesh used to build a GeoModel " ;
@@ -1794,50 +1794,51 @@ namespace RINGMesh {
             return index_t( nb_simplexes_per_attribute_value_.size() ) ;
         }
 
-        /*! 
-         * Set a mapping from the attribute values on the Mesh and 
+     
+        /*! Set a mapping from the attribute values on the Mesh and 
          * the indices of the GeoModelElements to fill
          */
         void set_gme_id_attribute_mapping(
-            const std::map< index_t, index_t >& gme_id_to_attribute_in ) 
+            const std::vector< index_t >& gme_id_to_attribute_in ) 
         {
             gme_id_to_attribute_value_ = gme_id_to_attribute_in ;
 
-            for( index_map::iterator it( gme_id_to_attribute_value_.begin() );
-                 it != gme_id_to_attribute_value_.end(); ++it 
-            ) {
-                index_t attribute_value = it->second ;
-                if( is_attribute_value( attribute_value ) ) {
-                    attribute_value_to_gme_id_[ attribute_value ] = it->first ;                  
+            for( index_t i = 0; i != nb_gme(); ++i ) {
+                index_t value = attribute_value_from_gme( i ) ;
+                if( is_attribute_value( value ) ) {
+                    attribute_value_to_gme_id_[ value ] = i ;
                 }
                 else {
                     GEO::Logger::err( "Debug" )
                         << "Invalid mapping between Mesh attribute and GeoModelElement"
                         << std::endl ;
-                    it->second = NO_ID ;
+                    gme_id_to_attribute_value_[i] = NO_ID ;
                 }
             }           
         }
 
-        /*! Default mapping: first GeoModelElement index correspond to first attribute
+        /*! Default mapping: first GeoModelElement index corresponds to first attribute
          *  value, second to second, etc.
          */
-        void set_default_gme_id_attribute_mapping()
+        void set_default_gme_id_attribute_mapping( index_t nb_geomodel_elements )
         {
-            index_map default_mapping ;            
+            std::vector< index_t > default_mapping( nb_geomodel_elements, NO_ID ) ;            
             index_t count = 0 ;
-            for( index_map::const_iterator it( nb_simplexes_per_attribute_value_.begin() );
-                 it != nb_simplexes_per_attribute_value_.end(); ++it 
-            ) {
+            index_map::const_iterator it( nb_simplexes_per_attribute_value_.begin() ) ;
+            while( it != nb_simplexes_per_attribute_value_.end() 
+                   && count < nb_geomodel_elements 
+             ){                
                 default_mapping[ count ] = it->first ;
                 ++count ;
+                ++it ;
             }
             set_gme_id_attribute_mapping( default_mapping ) ;
         }
 
         /*!
-         * @brief Fill the GeoModelElement simplex vertex indices 
-         * and a mapping to be able to copy attributes later on.
+         * Compute the simplex vertex indices for each GeoModelElement
+         * as well as the mapping from the mesh simplices to the GME mesh simplices
+         * for eventual attribute copying
          */
         void compute_gme_simplexes()
         {
@@ -1846,26 +1847,24 @@ namespace RINGMesh {
 
             index_t nb = nb_mesh_simplexes() ;
             std::vector< index_t > gme_simplex_counter_( nb_gme(), 0 ) ;
-            for( index_t i = 0; i < nb; ++i ) {
-                index_t attribute_value = gme_attribute_[ i ] ;
-
+            for( index_t mesh_simplex = 0; mesh_simplex < nb; ++mesh_simplex ) {
+                index_t attribute_value = gme_attribute_[ mesh_simplex ] ;
                 if( attribute_value_has_gme_id( attribute_value ) ) {
                     index_t gme_id = attribute_value_to_gme_id_[ attribute_value ];
                     index_t gme_simplex_id = gme_simplex_counter_[ gme_id ] ;
                 
-                    assign_one_gme_simplex_vertices( i, gme_id, gme_simplex_id ) ;
-                    assign_mesh_simplex_to_gme_simplex( i, gme_id, gme_simplex_id ) ;
+                    assign_one_gme_simplex_vertices( mesh_simplex, gme_id, gme_simplex_id ) ;
+                    assign_mesh_simplex_to_gme_simplex( mesh_simplex, gme_id, gme_simplex_id ) ;
                     ++gme_simplex_counter_[ gme_id ] ;
                 } else {
-                    assign_mesh_simplex_to_no_gme_simplex( i ) ;
+                    assign_mesh_simplex_to_no_gme_simplex( mesh_simplex ) ;
                 }               
             }
         }
 
-        /*!
-         * @brief Indices of the vertices (in the Mesh) for the givem geomodel element
+        /*! Simplex vertex indices in the Mesh for one GeoModelElement
          */
-        const std::vector<index_t>& gme_simplex_vertices( index_t gme_id ) const 
+        const std::vector<index_t>& gme_simplices( index_t gme_id ) const 
         {       
             ringmesh_debug_assert( gme_id < nb_gme() ) ;
             return gme_simplex_vertices_[gme_id ] ;
@@ -1891,53 +1890,43 @@ namespace RINGMesh {
             mesh_( M ),
             gme_attribute_name_( attribute_name )
         { 
-        }
-        /*!
-         * Number of GeoModelElements for which we want to determine the mesh
-         */ 
+        }        
+        /*! Number of GeoModelElements of the considered type */ 
         index_t nb_gme() const
         {
             return gme_id_to_attribute_value_.size() ;
         }
-
-        /*!
-        * @brief Is this a value taken by the mesh attribute
-        */
+        /*! Is the value indeed taken by the attribute on the mesh */
         bool is_attribute_value( index_t value )
         {
             return nb_simplexes_per_attribute_value_.count( value ) == 1 ;
         }
-
         bool attribute_value_has_gme_id( index_t attribute_value ) const
         {
             return attribute_value_to_gme_id_.count( attribute_value ) == 1 ;
         }
-
-        bool is_gme_attribute_bounded()
+        index_t attribute_value_from_gme( index_t gme_id ) const
+        {
+            return gme_id_to_attribute_value_[ gme_id ] ;
+        }
+        bool is_gme_attribute_defined()
         {
             GEO::AttributesManager& manager = mesh_simplex_attribute_manager() ;
             return manager.is_defined( gme_attribute_name_ ) ;
         }
-
         void bind_gme_attribute() 
         {
             GEO::AttributesManager& manager = mesh_simplex_attribute_manager() ;
             gme_attribute_.bind( manager, gme_attribute_name_ ) ;
-        }
-        
+        }        
         void allocate_gme_vertices()
         {
             gme_simplex_vertices_.resize( nb_gme() ) ;
-            index_t count = 0 ; // ça va pas du tout ça
-            // ça marche que avec le mapping default
-            for( index_map::iterator it( gme_id_to_attribute_value_.begin() );
-                 it != gme_id_to_attribute_value_.end(); ++it
-            ) {
-                index_t attribute_value = it->second ;
-                if( attribute_value != NO_ID ) {
-                    index_t nb_simplexes = nb_simplexes_per_attribute_value_[ attribute_value ] ;
-                    gme_simplex_vertices_[count].resize( nb_vertices_per_simplex()*nb_simplexes ) ;
-                    ++count ;
+            for( index_t i = 0; i < nb_gme(); ++i ) {
+                index_t value = attribute_value_from_gme( i ) ;
+                if( is_attribute_value( value ) ) {
+                    index_t nb_simplexes = nb_simplexes_per_attribute_value_[ value ] ;
+                    gme_simplex_vertices_[i].resize( nb_vertices_per_simplex()*nb_simplexes ) ;
                 }                
             }
         }
@@ -1945,16 +1934,12 @@ namespace RINGMesh {
         {
             mesh_simplex_to_gme_simplex_.resize( nb_mesh_simplexes() ) ;
         }
-
         virtual void assign_one_gme_simplex_vertices( 
             index_t mesh_simplex_id, index_t gme_id, index_t gme_simplex_id )
         {
-            index_t nb = nb_vertices_per_simplex() ;
-            index_t begin_simplex = gme_simplex_id*nb ;
-
-            for( index_t v = 0; v != nb; ++v ) {
-                 gme_simplex_vertices_[gme_id][begin_simplex + v] =
-                     mesh_vertex_index( mesh_simplex_id, v ) ;
+            index_t from = gme_simplex_id*nb_vertices_per_simplex() ;
+            for( index_t v = 0; v != nb_vertices_per_simplex(); ++v ) {
+                 gme_simplex_vertices_[gme_id][from + v] = mesh_vertex_index( mesh_simplex_id, v ) ;
             }
         }
         void assign_mesh_simplex_to_no_gme_simplex( index_t mesh_simplex_id )
@@ -1964,10 +1949,8 @@ namespace RINGMesh {
         void assign_mesh_simplex_to_gme_simplex(
             index_t mesh_simplex_id, index_t gme_id, index_t gme_simplex_id )
         {
-            mesh_simplex_to_gme_simplex_[ mesh_simplex_id ] =
-                GMESimplex( gme_id, gme_simplex_id ) ;
+            mesh_simplex_to_gme_simplex_[ mesh_simplex_id ] = GMESimplex( gme_id, gme_simplex_id ) ;
         }
-
         virtual index_t nb_mesh_simplexes() const = 0  ;
         virtual GEO::AttributesManager& mesh_simplex_attribute_manager() = 0 ;
         virtual index_t nb_vertices_per_simplex() const = 0 ; 
@@ -1979,8 +1962,8 @@ namespace RINGMesh {
         GEO::Attribute< index_t > gme_attribute_ ;
         std::map< index_t, index_t > nb_simplexes_per_attribute_value_ ;
         
-        std::map< index_t, index_t > gme_id_to_attribute_value_ ;
         std::map< index_t, index_t > attribute_value_to_gme_id_ ;
+        std::vector< index_t > gme_id_to_attribute_value_ ;
 
         std::vector< std::vector< index_t > > gme_simplex_vertices_ ;
         std::vector< GMESimplex > mesh_simplex_to_gme_simplex_ ;
@@ -2009,7 +1992,6 @@ namespace RINGMesh {
             return mesh_.facets.vertex( simplex_id, vertex ) ;
         }
     } ;
-
 
     class GeoModelRegionFromMesh : public GeoModelElementFromMesh {
     public:
@@ -2041,7 +2023,9 @@ namespace RINGMesh {
     GeoModelBuilderMesh::~GeoModelBuilderMesh()
     {
         delete surface_builder_ ;
+        surface_builder_ = nil ;
         delete region_builder_ ;
+        region_builder_ = nil ;
     }
 
 
@@ -2150,11 +2134,10 @@ namespace RINGMesh {
 
         add_mesh_vertices_to_model() ; 
 
-        surface_builder_->set_default_gme_id_attribute_mapping() ;
+        surface_builder_->set_default_gme_id_attribute_mapping( nb_surfaces ) ;
         surface_builder_->compute_gme_simplexes() ;
         for( index_t i = 0; i != nb_surfaces; ++i ) {
-            const std::vector< index_t >& triangle_vertices =
-                surface_builder_->gme_simplex_vertices( i ) ;
+            const std::vector< index_t >& triangle_vertices = surface_builder_->gme_simplices( i ) ;
             set_surface_geometry( gme_t( GME::SURFACE, i) , triangle_vertices ) ;
         }   
         return true ;
