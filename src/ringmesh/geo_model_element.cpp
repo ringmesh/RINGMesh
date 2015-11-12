@@ -1452,12 +1452,16 @@ namespace RINGMesh {
      * @param[in] f Facet index
      * @return Normal to the facet
      */
-    vec3 Surface::normal( index_t f ) const
+    vec3 Surface::facet_normal( index_t facet_index ) const
     {
-        return normalize( GEO::Geom::mesh_facet_normal( mesh_, f ) ) ;
+        return normalize( GEO::Geom::mesh_facet_normal( mesh_, facet_index ) ) ;
     }
 
-
+    vec3 Surface::facet_barycenter( index_t facet_index ) const
+    {
+        return GEO::Geom::mesh_facet_center( mesh_, facet_index ) ;
+    }
+   
     /*!
      * @brief Compute closest vertex in a facet to a point
      * @param[in] f Facet index
