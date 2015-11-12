@@ -72,12 +72,13 @@ namespace RINGMesh {
     void copy_std_vector_to_geo_vector( 
         const std::vector<T>& in, index_t from, index_t to, GEO::vector<T>& out )
     {
-        ringmesh_assert( to < in.size() ) ;
+        ringmesh_assert( to < in.size()+1 ) ;
         ringmesh_assert( from < to ) ;
-        out.resize( to - from ) ;
+        index_t nb_to_copy( to - from ) ;
+        out.resize( nb_to_copy ) ;
         index_t count = 0 ;
-        for( index_t i = from ; i != to; ++i ) {
-            out[ count ] = in[ i ]  ;
+        for( index_t i = 0; i != nb_to_copy; ++i) {
+            out[ i ] = in[ from +i ] ;
         }
     }
 
