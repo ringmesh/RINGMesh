@@ -245,12 +245,8 @@ namespace RINGMesh {
         {};
     
         virtual ~GeoModelBuilderMesh() ;
-        /*! 
-        * \name Build Surfaces from the Mesh
-        * @{
-        */
 
-        /*!
+       /*!
         * @brief Create and fill the model Surfaces 
         * from the surface connected components of the Mesh
         */
@@ -271,11 +267,7 @@ namespace RINGMesh {
         bool fill_surface_meshes_from_attribute_value(
             const std::string& facet_attribute_name ) ;
 
-        /*!
-        * \name Build Regions from the Mesh
-        * @{
-        */
-
+        
         bool build_regions_from_connected_components() ;
 
         bool build_regions_from_attribute_value(
@@ -314,7 +306,6 @@ namespace RINGMesh {
 
         void initialize_surface_builder( const std::string& attribute_name ) ;
         void initialize_region_builder( const std::string& attribute_name ) ;
-
 
     protected:
         const GEO::Mesh& mesh_ ;
