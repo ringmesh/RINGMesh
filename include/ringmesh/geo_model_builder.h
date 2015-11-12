@@ -252,9 +252,13 @@ namespace RINGMesh {
         */
         bool build_surfaces_from_connected_components() ;
 
+        /*!
+         * @brief Old version of the code that supports polygonal surfaces
+         */
+        bool build_polygonal_surfaces_from_connected_components() ;
+
         /*! 
-         * @brief Create and fill the Surfaces 
-         *  from a Integer attribute on the Mesh facets
+         * @brief Create and fill the Surfaces from a index_t attribute on the Mesh facets
          */
         bool build_surfaces_from_attribute_value( 
             const std::string& facet_attribute_name ) ;
