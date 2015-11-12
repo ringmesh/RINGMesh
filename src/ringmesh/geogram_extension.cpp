@@ -845,26 +845,92 @@ namespace RINGMesh {
     }
 
 
+    index_t detect_mesh_colocated_vertices(
+        const GEO::Mesh& M, double tolerance, GEO::vector< index_t > old2new )
+    {
+        index_t nb_unique_vertices = 0 ;
+        if( tolerance == 0.0 ) {
+            nb_unique_vertices = GEO::Geom::colocate_by_lexico_sort(
+                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
+                M.vertices.dimension() ) ;
+        } else {
+            nb_unique_vertices = GEO::Geom::colocate(
+                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
+                tolerance, M.vertices.dimension() ) ;
+        }
+        index_t nb_colocated_vertices( M.vertices.nb() - nb_unique_vertices) ;
+        return nb_colocated_vertices ;
+    }
+
+
     /*
     * @note Code modified from geogram/mesh/mesh_repair.cpp
     */
     bool has_mesh_colocate_vertices( const GEO::Mesh& M, double tolerance )
     {
         GEO::vector< index_t > old2new ;
-        index_t nb_new_vertices = 0 ;
-        if( tolerance == 0.0 ) {
-            nb_new_vertices = GEO::Geom::colocate_by_lexico_sort(
-                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
-                M.vertices.dimension() ) ;
-        } else {
-            nb_new_vertices = GEO::Geom::colocate(
-                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
-                tolerance, M.vertices.dimension() ) ;
-        }
-        if( nb_new_vertices != M.vertices.nb() ) {
+        index_t nb_colocated_vertices = detect_mesh_colocated_vertices( M, tolerance, old2new ) ;
+        if( nb_colocated_vertices == 0 ) {
             return true ;
         } else {
             return false ;
         }
+    }
+
+    void update_mesh_edges_vertices( GEO::Mesh& M, const GEO::vector<index_t>& old2new)
+    {
+        for( index_t e = 0; e < M.edges.nb(); ++e ) {
+            M.edges.set_vertex( e, 0, old2new[ M.edges.vertex( e, 0 ) ] );
+            M.edges.set_vertex( e, 1, old2new[ M.edges.vertex( e, 1 ) ] );
+        }
+    }
+    void update_mesh_facets_vertices( GEO::Mesh& M, const GEO::vector<index_t>& old2new )
+    {
+        for( index_t c = 0; c < M.facet_corners.nb(); ++c ) {
+            M.facet_corners.set_vertex( c, old2new[ M.facet_corners.vertex( c ) ] );
+        }
+    }
+
+    void update_mesh_cells_vertices( GEO::Mesh& M, const GEO::vector<index_t>& old2new )
+    {
+        for( index_t ce = 0; ce < M.cells.nb(); ++ce ) {
+            for( index_t c = M.cells.corners_begin( ce );
+                c<M.cells.corners_end( ce ); ++c
+             ) {
+                M.cell_corners.set_vertex( c, old2new[ M.cell_corners.vertex( c ) ] );
+            }
+        }
+    }
+    void delete_colocated_vertices( GEO::Mesh& M, GEO::vector< index_t >& old2new )
+    {       
+        for( index_t i = 0; i < old2new.size(); i++ ) {
+            if( old2new[ i ] == i ) {
+                old2new[ i ] = 0;
+            } else {
+                old2new[ i ] = 1;
+            }
+        }
+        M.vertices.delete_elements( old2new );
+    }
+
+   
+    void repair_colocate_vertices( GEO::Mesh& M, double colocate_epsilon )
+    {
+        GEO::vector<index_t> old2new;
+        index_t nb_colocated_vertices = detect_mesh_colocated_vertices( M, colocate_epsilon, old2new ) ;
+        if( nb_colocated_vertices == 0 ) {
+            return ;
+        }
+
+        GEO::Logger::out( "GeoModel" ) << "Removing "
+            << nb_colocated_vertices
+            << " duplicated vertices" << std::endl;
+
+        update_mesh_edges_vertices( M, old2new ) ;
+        update_mesh_facets_vertices( M, old2new ) ;
+        update_mesh_cells_vertices( M, old2new ) ;
+  
+        delete_colocated_vertices( M, old2new ) ;
+       
     }
 }
