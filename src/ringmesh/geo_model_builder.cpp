@@ -50,6 +50,7 @@
 #include <geogram/basic/logger.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/points/colocate.h>
+#include <geogram/mesh/mesh_repair.h>
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
@@ -2026,6 +2027,83 @@ namespace RINGMesh {
         region_builder_ = nil ;
     }
 
+    bool GeoModelBuilderMesh::is_mesh_valid_for_surface_building() const
+    {
+        if( !mesh_.facets.are_simplices() ) {
+            GEO::Logger::err( "GMBuilder" )
+                << "The given mesh is not triangulated " << std::endl ; 
+            return false ;
+        }
+        if( !mesh_.facets.attributes().is_defined( surface_attribute_name_ ) ) {
+            GEO::Logger::err( "GMBuilder" )
+                << "Mesh facet attribute: "<< surface_attribute_name_
+                << " given to build the GeoModel Surfaces is not defined"<< std::endl ;
+            return false ;
+        }
+        return true ;
+
+    }
+
+    bool GeoModelBuilderMesh::is_mesh_valid_for_region_building() const
+    {
+        return false ;
+    }
+
+
+
+    void create_and_fill_connected_component_attribute(
+        GEO::Mesh& mesh, const std::string& connected_component_attribute )
+    {
+        
+        GEO::Attribute< index_t > connected_component ;
+        GEO::AttributesManager& manager = mesh.facets.attributes() ;
+        connected_component.bind( manager, connected_component_attribute ) ;
+
+        index_t nb_facets = mesh.facets.nb() ;
+        std::vector< bool > visited( nb_facets, false ) ;
+
+        ///@todo This algorithm is implemented over and over again in RINGMesh
+        /// and Geogram. Couldn't we do better ?
+        index_t nb_connected_components = 0 ;
+        for( index_t f = 0; f < nb_facets; f++ ) {
+            if( !visited[ f ] ) {
+                nb_connected_components++ ;
+
+                std::stack< index_t > facet_stack ;
+                facet_stack.push( f ) ;
+
+                while( !facet_stack.empty() ) {
+                    index_t f_from_stack = facet_stack.top() ;
+                    facet_stack.pop() ;
+                    visited[ f_from_stack ] = true ;
+                    connected_component[ f_from_stack ] = nb_connected_components ;
+
+                    for( index_t v = 0; v < 3; ++v ) {
+                        index_t neighbor_facet = mesh.facets.adjacent( f_from_stack, v ) ;
+                        if( neighbor_facet != NO_ID && !visited[ neighbor_facet ] ) {
+                            visited[ neighbor_facet ] = true ;
+                            facet_stack.push( neighbor_facet ) ;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+   
+    void GeoModelBuilderMesh::prepare_mesh_for_surface_building(
+        GEO::Mesh& mesh, const std::string& connected_component_attribute )
+    {          
+        // First repair: Remove duplicate facets, triangulate, 
+        // but is also fixes facet orientation, and split non-manifold vertices
+        GEO::mesh_repair( mesh,
+                          GEO::MeshRepairMode( GEO::MESH_REPAIR_DUP_F | GEO::MESH_REPAIR_TRIANGULATE ) ) ;
+        
+        create_and_fill_connected_component_attribute( mesh, connected_component_attribute ) ;
+
+        // Remove colocated vertices
+        repair_colocate_vertices( mesh, epsilon ) ;
+    }
 
 
 
@@ -2037,11 +2115,13 @@ namespace RINGMesh {
     *          propagation (or "coloriage" algorithm) using the adjacent_facet
     *          information provided on the input GEO::Mesh.
     * 
-    * A REIMPLEMENTER
+    * @todo Old code - old building - to delimit connected components
+    * vertices are duplicated in the input mesh 
+    * 
     */
     bool GeoModelBuilderMesh::build_polygonal_surfaces_from_connected_components()
     {        
-        std::vector< index_t > vertex_id_to_cc_id( mesh_.vertices.nb(), NO_ID ) ;
+        std::vector< index_t > global_vertex_id_to_id_in_cc( mesh_.vertices.nb(), NO_ID ) ;
 
         std::vector< bool > visited( mesh_.facets.nb(), false ) ;
         for( index_t i = 0; i < mesh_.facets.nb(); i++ ) {
@@ -2052,7 +2132,7 @@ namespace RINGMesh {
 
                 /// @todo Review : This should not be necessary as each vertex should
                 /// be in_ one and only one connected component. To test. [JP]
-                std::fill( vertex_id_to_cc_id.begin(), vertex_id_to_cc_id.end(), NO_ID ) ;
+                std::fill( global_vertex_id_to_id_in_cc.begin(), global_vertex_id_to_id_in_cc.end(), NO_ID ) ;
 
                 // First facet begin at corner 0
                 cc_facets_ptr.push_back( 0 ) ;
@@ -2068,11 +2148,11 @@ namespace RINGMesh {
                     for( index_t c = mesh_.facets.corners_begin( f );
                          c < mesh_.facets.corners_end( f ); ++c ) {
                         index_t v = mesh_.facet_corners.vertex( c ) ;
-                        if( vertex_id_to_cc_id[ v ] == NO_ID ) {
-                            vertex_id_to_cc_id[ v ] = cc_vertices.size() ;
+                        if( global_vertex_id_to_id_in_cc[ v ] == NO_ID ) {
+                            global_vertex_id_to_id_in_cc[ v ] = cc_vertices.size() ;
                             cc_vertices.push_back( mesh_.vertices.point( v ) ) ;
                         }
-                        cc_corners.push_back( vertex_id_to_cc_id[ v ] ) ;
+                        cc_corners.push_back( global_vertex_id_to_id_in_cc[ v ] ) ;
 
                         index_t n = mesh_.facet_corners.adjacent_facet( c ) ;
                         if( n != NO_ID && !visited[ n ] ) {
@@ -2090,12 +2170,7 @@ namespace RINGMesh {
         }
         return true ;
     }
-
-    bool GeoModelBuilderMesh::build_surfaces_from_connected_components()
-    {
-        return false ;
-    }
-
+   
 
     bool GeoModelBuilderMesh::has_mesh_colocated_vertices()
     {
@@ -2111,12 +2186,11 @@ namespace RINGMesh {
     }
 
 
-    bool GeoModelBuilderMesh::build_surfaces_from_attribute_value(
-        const std::string& facet_attribute_name )
+    bool GeoModelBuilderMesh::build_surfaces_from_attribute_value()
     {
         ringmesh_assert( model_.nb_surfaces() == 0 ) ;
 
-        initialize_surface_builder( facet_attribute_name ) ;
+        initialize_surface_builder() ;
         
         index_t nb_surfaces = surface_builder_->count_attribute_values_and_simplexes() ;
         create_geomodel_elements( GME::SURFACE, nb_surfaces ) ;
@@ -2132,25 +2206,17 @@ namespace RINGMesh {
         return true ;
     }
 
-    bool GeoModelBuilderMesh::fill_surface_meshes_from_attribute_value(
-        const std::string& facet_attribute_name )
+    bool GeoModelBuilderMesh::fill_surface_meshes_from_attribute_value()
     {
         return false ;
     }
 
-    bool GeoModelBuilderMesh::build_regions_from_connected_components()
+    bool GeoModelBuilderMesh::build_regions_from_attribute_value()
     {
         return false ;
     }
 
-    bool GeoModelBuilderMesh::build_regions_from_attribute_value(
-        const std::string& region_attribute_name )
-    {
-        return false ;
-    }
-
-    bool GeoModelBuilderMesh::fill_region_meshes_from_attribute_value(
-        const std::string& region_attribute_name )
+    bool GeoModelBuilderMesh::fill_region_meshes_from_attribute_value()
     {
         return false ;
     }
@@ -2164,17 +2230,15 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderMesh::initialize_surface_builder( 
-        const std::string& attribute_name )
+    void GeoModelBuilderMesh::initialize_surface_builder()
     {
-        surface_builder_ = new GeoModelSurfaceFromMesh( mesh_, attribute_name ) ;
+        surface_builder_ = new GeoModelSurfaceFromMesh( mesh_, surface_attribute_name_ ) ;
         bool initialized = surface_builder_->initialize() ;
     }
     
-    void GeoModelBuilderMesh::initialize_region_builder( 
-        const std::string& attribute_name )
+    void GeoModelBuilderMesh::initialize_region_builder()
     {
-        region_builder_ = new GeoModelRegionFromMesh( mesh_, attribute_name ) ;
+        region_builder_ = new GeoModelRegionFromMesh( mesh_, region_attribute_name_ ) ;
         bool initialized = region_builder_->initialize() ;   
     }
 
