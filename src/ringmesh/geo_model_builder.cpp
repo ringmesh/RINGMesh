@@ -1089,7 +1089,6 @@ namespace RINGMesh {
         }
         return nb_unique_values ;
     }
-        
 
     /*!
      * @brief From some mesh corners referring to some global vertex indices
@@ -1105,16 +1104,18 @@ namespace RINGMesh {
         )
     {        
         std::vector<index_t> old2new ;
-
         index_t nb_vertices = unique_values<index_t>( corners, old2new ) ;
-        vertices.reserve( nb_vertices ) ;
 
+        vertices.reserve( nb_vertices ) ;
         for( index_t i = 0; i < corners.size(); ++i ) {
             if( old2new[ i ] == i ) {
-                vertices.push_back( corners[ i ] ) ;            
+                vertices.push_back( corners[ i ] ) ;
+                corners[ i ] = vertices.size()-1 ;
+            } else {
+                corners[ i ] = corners[ old2new[ i ] ] ;
             }
         }
-        corners = old2new ; // Je suis sure de ça ?
+        
 
         
         /* // Old version of the code
@@ -1171,7 +1172,7 @@ namespace RINGMesh {
         GEO::Mesh& M = E.mesh_ ;
 
         GEO::vector< index_t > copy ;
-        copy_std_vector_to_geo_vector( triangle_corners, copy ) ;        
+        copy_std_vector_to_geo_vector( new_triangle_corners, copy ) ;
         M.facets.assign_triangle_mesh( copy, true ) ;
 
         compute_surface_adjacencies( surface_id ) ;
@@ -1754,6 +1755,9 @@ namespace RINGMesh {
      */
     class GeoModelElementFromMesh {
     public:
+        typedef std::pair< index_t, index_t > index_pair ;
+        typedef std::map< index_t, index_t > index_map ;
+
         /*! Check that the attribute is defined.
          * If not, returns false otherwise bind it.
          */
@@ -1795,19 +1799,22 @@ namespace RINGMesh {
          * the indices of the GeoModelElements to fill
          */
         void set_gme_id_attribute_mapping(
-            const std::vector< index_t >& gme_id_to_attribute ) 
+            const std::map< index_t, index_t >& gme_id_to_attribute_in ) 
         {
-            for( index_t gme_id = 0; gme_id != nb_gme(); ++gme_id ) {                
-                index_t attribute_value = gme_id_to_attribute_value_[ gme_id ] ;
+            gme_id_to_attribute_value_ = gme_id_to_attribute_in ;
+
+            for( index_map::iterator it( gme_id_to_attribute_value_.begin() );
+                 it != gme_id_to_attribute_value_.end(); ++it 
+            ) {
+                index_t attribute_value = it->second ;
                 if( is_attribute_value( attribute_value ) ) {
-                    attribute_value_to_gme_id_[ attribute_value ] = gme_id ;
-                    gme_id_to_attribute_value_[ gme_id ] = attribute_value ;
+                    attribute_value_to_gme_id_[ attribute_value ] = it->first ;                  
                 }
                 else {
                     GEO::Logger::err( "Debug" )
                         << "Invalid mapping between Mesh attribute and GeoModelElement"
                         << std::endl ;
-                    gme_id_to_attribute_value_[ gme_id ] = NO_ID ;
+                    it->second = NO_ID ;
                 }
             }           
         }
@@ -1817,10 +1824,9 @@ namespace RINGMesh {
          */
         void set_default_gme_id_attribute_mapping()
         {
-            std::vector< index_t > default_mapping( nb_attribute_values() ) ;
+            index_map default_mapping ;            
             index_t count = 0 ;
-            for( std::map<index_t, index_t>::const_iterator it(
-                    nb_simplexes_per_attribute_value_.begin() );
+            for( index_map::const_iterator it( nb_simplexes_per_attribute_value_.begin() );
                  it != nb_simplexes_per_attribute_value_.end(); ++it 
             ) {
                 default_mapping[ count ] = it->first ;
@@ -1922,11 +1928,16 @@ namespace RINGMesh {
         void allocate_gme_vertices()
         {
             gme_simplex_vertices_.resize( nb_gme() ) ;
-            for( index_t i = 0; i < nb_gme(); ++i ) {
-                index_t attribute_value = gme_id_to_attribute_value_[ i ] ;
+            index_t count = 0 ; // ça va pas du tout ça
+            // ça marche que avec le mapping default
+            for( index_map::iterator it( gme_id_to_attribute_value_.begin() );
+                 it != gme_id_to_attribute_value_.end(); ++it
+            ) {
+                index_t attribute_value = it->second ;
                 if( attribute_value != NO_ID ) {
                     index_t nb_simplexes = nb_simplexes_per_attribute_value_[ attribute_value ] ;
-                    gme_simplex_vertices_.resize( nb_vertices_per_simplex()*nb_simplexes ) ;
+                    gme_simplex_vertices_[count].resize( nb_vertices_per_simplex()*nb_simplexes ) ;
+                    ++count ;
                 }                
             }
         }
@@ -1968,7 +1979,7 @@ namespace RINGMesh {
         GEO::Attribute< index_t > gme_attribute_ ;
         std::map< index_t, index_t > nb_simplexes_per_attribute_value_ ;
         
-        std::vector< index_t > gme_id_to_attribute_value_ ;
+        std::map< index_t, index_t > gme_id_to_attribute_value_ ;
         std::map< index_t, index_t > attribute_value_to_gme_id_ ;
 
         std::vector< std::vector< index_t > > gme_simplex_vertices_ ;
@@ -2136,6 +2147,8 @@ namespace RINGMesh {
         
         index_t nb_surfaces = surface_builder_->count_attribute_values_and_simplexes() ;
         create_geomodel_elements( GME::SURFACE, nb_surfaces ) ;
+
+        add_mesh_vertices_to_model() ; 
 
         surface_builder_->set_default_gme_id_attribute_mapping() ;
         surface_builder_->compute_gme_simplexes() ;
