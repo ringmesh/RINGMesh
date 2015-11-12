@@ -871,8 +871,9 @@ namespace RINGMesh {
          * \name Geometrical request on facets
          * @{
          */
-        vec3 normal( index_t f ) const ;
-        index_t closest_vertex_in_facet( index_t f, const vec3& vertex ) const ;
+        vec3 facet_normal( index_t facet_index ) const ;
+        vec3 facet_barycenter( index_t facet_index ) const ;
+        index_t closest_vertex_in_facet( index_t facet_index, const vec3& to_point ) const ;
 
         /*! @}
          * \name Adjacencies request
