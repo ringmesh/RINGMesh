@@ -40,10 +40,12 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/io.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/basic/logger.h>
+
+#include <ringmesh/io.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_builder.h>
 
 
@@ -69,14 +71,15 @@ int main( int argc, char** argv )
 
     GEO::Mesh in ;
     GEO::mesh_load( file_name, in ) ;
-    RINGMesh::GeoModel model ;
+    GeoModel model ;
 	
-	RINGMesh::GeoModelBuilderMesh BB( model, in ) ;
+	GeoModelBuilderMesh BB( model, in, "", "" ) ;
     BB.build_polygonal_surfaces_from_connected_components() ;
     if( !BB.build_model_from_surfaces() ) {
 		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	
 		return 1 ;
 	}
+    print_model( model ) ;
 	GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
 	return 0 ;
    

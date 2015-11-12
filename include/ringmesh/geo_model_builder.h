@@ -237,52 +237,55 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
     public:
-        GeoModelBuilderMesh( GeoModel& model, const GEO::Mesh& mesh )
+        GeoModelBuilderMesh( GeoModel& model,
+                             const GEO::Mesh& mesh, 
+                             const std::string& surface_attribute_name,
+                             const std::string& region_attribute_name )
             : GeoModelBuilder(model), 
               mesh_( mesh ),
               surface_builder_(nil),
-              region_builder_(nil)
+              region_builder_(nil),
+              surface_attribute_name_( surface_attribute_name ),
+              region_attribute_name_( region_attribute_name )
         {};
     
         virtual ~GeoModelBuilderMesh() ;
 
-       /*!
-        * @brief Create and fill the model Surfaces 
-        * from the surface connected components of the Mesh
-        */
-        bool build_surfaces_from_connected_components() ;
+        /*!
+         * @brief Prepare the mesh so that GeoModel surface building can go on smoothly
+         */
+        static void prepare_mesh_for_surface_building(
+            GEO::Mesh& mesh, const std::string& connected_component_attribute ) ;
+
+        bool is_mesh_valid_for_surface_building() const ;
+
+        bool is_mesh_valid_for_region_building() const ;
 
         /*!
          * @brief Old version of the code that supports polygonal surfaces
+         * @todo To move ? [JP]
          */
         bool build_polygonal_surfaces_from_connected_components() ;
 
         /*! 
          * @brief Create and fill the Surfaces from a index_t attribute on the Mesh facets
          */
-        bool build_surfaces_from_attribute_value( 
-            const std::string& facet_attribute_name ) ;
+        bool build_surfaces_from_attribute_value() ;
 
         /*! 
          * @brief Fill the Surface meshes
          * from an Integer facet attribute giving the Surface index
          * of each Mesh facet 
          */
-        bool fill_surface_meshes_from_attribute_value(
-            const std::string& facet_attribute_name ) ;
+        bool fill_surface_meshes_from_attribute_value() ;
 
-        
-        bool build_regions_from_connected_components() ;
-
-        bool build_regions_from_attribute_value(
-            const std::string& region_attribute_name ) ;
+        bool build_regions_from_attribute_value() ;
         
         /*! 
         * The given mesh is volumetric to fill the region of the Model
         * There is an attribute "region" that flag the tets region per region
         */
-        bool fill_region_meshes_from_attribute_value( 
-            const std::string& region_attribute_name ) ;
+        bool fill_region_meshes_from_attribute_value() ;
 
         /*! @}
         * \name Copy attributes from the Mesh to the GeoModel
@@ -308,13 +311,16 @@ namespace RINGMesh {
          */
         void add_mesh_vertices_to_model() ;
 
-        void initialize_surface_builder( const std::string& attribute_name ) ;
-        void initialize_region_builder( const std::string& attribute_name ) ;
+        void initialize_surface_builder() ;
+        void initialize_region_builder() ;
 
     protected:
         const GEO::Mesh& mesh_ ;
         GeoModelSurfaceFromMesh* surface_builder_ ;
         GeoModelRegionFromMesh* region_builder_ ;
+
+        std::string surface_attribute_name_ ;
+        std::string region_attribute_name_ ;
     } ;
 
 

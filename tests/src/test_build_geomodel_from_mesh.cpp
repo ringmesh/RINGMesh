@@ -82,9 +82,11 @@ int main( int argc, char** argv )
     GEO::mesh_load( file_name, mesh, mesh_io_flags ) ;
 
     GeoModel geomodel ;
-    GeoModelBuilderMesh builder( geomodel, mesh ) ;
-    builder.build_surfaces_from_attribute_value( "region" ) ;
+    GeoModelBuilderMesh builder( geomodel, mesh, "region", "" ) ;
+    builder.build_surfaces_from_attribute_value() ;
     builder.build_model_from_surfaces() ;
+
+    print_model( geomodel ) ;
 
     geomodel_surface_save( geomodel, result_file_name ) ;
 
