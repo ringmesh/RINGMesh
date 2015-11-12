@@ -84,6 +84,38 @@ namespace RINGMesh {
         }
     }
 
+    void mesh_from_geo_model( const GeoModel& model, GEO::Mesh& M ) 
+    {
+        // Keep the attributes when clearing the mesh, otherwise we crash
+        M.clear( true ) ;
+
+        index_t nbv = model.mesh.vertices.nb() ;
+        M.vertices.create_vertices( nbv ) ;
+
+        /* We need to copy the point one after another since we do not have access
+        * to the storage of the model.vertices.
+        * I do not want to provide this access [JP]
+        */
+        for( index_t v = 0; v < nbv; ++v ) {
+            M.vertices.point( v ) = model.mesh.vertices.vertex( v ) ;
+        }
+
+        // Set the facets  
+        for( index_t s = 0; s < model.nb_surfaces(); ++s ) {
+            const Surface& S = model.surface( s ) ;
+            for( index_t f = 0; f < S.nb_cells(); ++f ) {
+                index_t nbv = S.nb_vertices_in_facet( f ) ;
+                GEO::vector< index_t > ids( nbv ) ;
+
+                for( index_t v = 0; v < nbv; ++v ) {
+                    ids[ v ] = S.model_vertex_id( f, v ) ;
+                }
+                M.facets.create_polygon( ids ) ;
+            }
+        }
+    }
+
+
     double model_element_size( const GeoModelElement& E )
     {
         double result = 0. ;
