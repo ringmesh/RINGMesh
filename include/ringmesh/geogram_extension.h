@@ -175,6 +175,16 @@ namespace RINGMesh {
     */
     bool RINGMESH_API has_mesh_colocate_vertices( const GEO::Mesh& M, double tolerance ) ;
 
+
+    /*!
+    * @brief Merges the vertices of a mesh that are at the same
+    *  geometric location
+    * @note Copied from geogram/mes/mesh_repair.cpp. No choice since BL
+    * will not give access to it.
+    */
+    void RINGMESH_API repair_colocate_vertices( GEO::Mesh& M, double tolerance ) ;
+
+
     /*!
     * \brief Convenient class to manipulate vectors of Geogram attributes.
     * \details Used to ease the storage of a common attribute on several
