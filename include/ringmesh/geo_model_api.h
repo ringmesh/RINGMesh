@@ -51,6 +51,10 @@
 * and TEST them.
 */
 
+namespace GEO {
+    class Mesh ;
+}
+
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelElement ;
@@ -63,6 +67,21 @@ namespace RINGMesh {
     *  Output number of facets, vertices, and of the different element types.
     */
     void RINGMESH_API print_model( const GeoModel& model ) ;
+
+    
+
+    /*!
+    * @brief Build a Mesh from the model non-duplicated vertices
+    *        and its Surface facets.
+    * @details Adjacencies are not set. Client should call
+    *  mesh repair functions afterwards.
+    * @todo Copy of code in validity check imlpementation
+    *       Transfer it in the API, create a Mesh from a whol of
+    *       some parts of a GeoModel
+    */
+    void RINGMESH_API mesh_from_geo_model( const GeoModel& model, GEO::Mesh& M ) ;
+    
+
 
 
     /*!

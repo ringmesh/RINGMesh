@@ -62,46 +62,6 @@ using RINGMesh::GeoModel ;
 using RINGMesh::Surface ;
 
 
-/*!
-* @brief Build a Mesh from the model non-duplicated vertices
-*        and its Surface facets.
-* @details Adjacencies are not set. Client should call
-*  mesh repair functions afterwards.
-* @todo Copy of code in validity check imlpementation
-*       Transfer it in the API, create a Mesh from a whol of 
-*       some parts of a GeoModel
-*/
-void mesh_from_geo_model( const GeoModel& model, GEO::Mesh& M )
-{
-    // Keep the attributes when clearing the mesh, otherwise we crash
-    M.clear( true ) ;
-
-    index_t nbv = model.mesh.vertices.nb() ;
-    M.vertices.create_vertices( nbv ) ;
-
-    /* We need to copy the point one after another since we do not have access
-    * to the storage of the model.vertices.
-    * I do not want to provide this access [JP]
-    */
-    for( index_t v = 0; v < nbv; ++v ) {
-        M.vertices.point( v ) = model.mesh.vertices.vertex( v ) ;
-    }
-
-    // Set the facets  
-    for( index_t s = 0; s < model.nb_surfaces(); ++s ) {
-        const Surface& S = model.surface( s ) ;
-        for( index_t f = 0; f < S.nb_cells(); ++f ) {
-            index_t nbv = S.nb_vertices_in_facet( f ) ;
-            GEO::vector< index_t > ids( nbv ) ;
-
-            for( index_t v = 0; v < nbv; ++v ) {
-                ids[ v ] = S.model_vertex_id( f, v ) ;
-            }
-            M.facets.create_polygon( ids ) ;
-        }
-    }
-}
-
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;

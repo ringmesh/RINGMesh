@@ -63,6 +63,7 @@
 #include <geogram/points/colocate.h>
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_extension.h>
 
@@ -575,46 +576,6 @@ namespace {
     } ;
 
     /*----------------------------------------------------------------------------*/
-
-    /*!
-    * @brief Build a Mesh from the model non-duplicated vertices
-    *        and its Surface facets.
-    * @details Adjacencies are not set. Client should call
-    *  mesh repair functions afterwards.
-    * @todo Give access to that mesh (constant access) from GeoModelMesh
-    * because we do have it [JP]
-    */
-    void mesh_from_geo_model( const GeoModel& model, Mesh& M )
-    {
-        // Clear the Mesh keeping the attributes, otherwise we crash
-        M.clear( true ) ;
-
-        // Set the vertices 
-        index_t nbv = model.mesh.vertices.nb() ;
-        M.vertices.create_vertices( nbv ) ;
-
-        /* We need to copy the point one after another since we do not have access
-        * to the storage of the model.vertices.
-        * I do not want to provide this access [JP]
-        */
-        for( index_t v = 0; v < nbv; ++v ) {
-            M.vertices.point( v ) = model.mesh.vertices.vertex( v ) ;
-        }
-
-        // Set the facets  
-        for( index_t s = 0; s < model.nb_surfaces(); ++s ) {
-            const Surface& S = model.surface( s ) ;
-            for( index_t f = 0; f < S.nb_cells(); ++f ) {
-                index_t nbv = S.nb_vertices_in_facet( f ) ;
-                GEO::vector< index_t > ids( nbv ) ;
-
-                for( index_t v = 0; v < nbv; ++v ) {
-                    ids[ v ] = S.model_vertex_id( f, v ) ;
-                }
-                M.facets.create_polygon( ids ) ;
-            }
-        }
-    }
 
     /*!
     * @brief Get the BMME defining the boundaries of an element
