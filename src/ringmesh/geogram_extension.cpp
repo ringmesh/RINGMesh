@@ -356,11 +356,11 @@ namespace RINGMesh {
 
         double* tet_attributes = tetgen_out.tetrahedronattributelist ;
         int one_tet_attribute_size = tetgen_out.numberoftetrahedronattributes ;
-        GEO::Attribute< int > region_id ;
+        GEO::Attribute< index_t > region_id ;
         region_id.bind( M.cells.attributes(), "region" ) ;
         for( index_t i = 0; i < nb_tets; ++i ) {
             // Let's suppose that the shell id is the first attribute in tetgen...
-            region_id[ i ] = int( tet_attributes[ one_tet_attribute_size*i ] ) ;
+            region_id[ i ] = index_t( tet_attributes[ one_tet_attribute_size*i ] ) ;
         }
     }
 
@@ -845,6 +845,10 @@ namespace RINGMesh {
     }
 
 
+
+    /*
+    * @note Code modified from geogram/mesh/mesh_repair.cpp
+    */
     index_t detect_mesh_colocated_vertices(
         const GEO::Mesh& M, double tolerance, GEO::vector< index_t >& old2new )
     {
@@ -862,18 +866,14 @@ namespace RINGMesh {
         return nb_colocated_vertices ;
     }
 
-
-    /*
-    * @note Code modified from geogram/mesh/mesh_repair.cpp
-    */
     bool has_mesh_colocate_vertices( const GEO::Mesh& M, double tolerance )
     {
         GEO::vector< index_t > old2new ;
         index_t nb_colocated_vertices = detect_mesh_colocated_vertices( M, tolerance, old2new ) ;
         if( nb_colocated_vertices == 0 ) {
-            return true ;
-        } else {
             return false ;
+        } else {
+            return true ;
         }
     }
 
@@ -930,7 +930,6 @@ namespace RINGMesh {
         update_mesh_facets_vertices( M, old2new ) ;
         update_mesh_cells_vertices( M, old2new ) ;
   
-        delete_colocated_vertices( M, old2new ) ;
-       
+        delete_colocated_vertices( M, old2new ) ;       
     }
 }

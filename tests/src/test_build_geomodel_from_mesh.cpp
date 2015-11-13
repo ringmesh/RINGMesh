@@ -85,7 +85,7 @@ int main( int argc, char** argv )
 
         GeoModel geomodel ;
         GeoModelBuilderMesh builder( geomodel, mesh, "region", "" ) ;
-        builder.build_surfaces_from_attribute_value() ;
+        builder.create_and_build_surfaces() ;
         builder.build_model_from_surfaces() ;
 
         print_model( geomodel ) ;
@@ -99,11 +99,26 @@ int main( int argc, char** argv )
         GEO::mesh_load( file_name, mesh ) ;
 
         GeoModel geomodel ;
-        GeoModelBuilderMesh::prepare_mesh_for_surface_building( mesh, "region" ) ;
+        GeoModelBuilderMesh::prepare_surface_mesh_from_connected_components( mesh, "region" ) ;
         GeoModelBuilderMesh builder( geomodel, mesh, "region", "" ) ;
-        builder.build_surfaces_from_attribute_value() ;
+        builder.create_and_build_surfaces() ;
         builder.build_model_from_surfaces() ;
 
+        print_model( geomodel ) ;
+    }
+
+    {
+        // GeoModel from Region flagged by attribute
+        std::string file_name( ringmesh_test_data_path + "split_cube_tets.mesh" ) ;
+        GEO::Mesh mesh ;
+        GEO::MeshIOFlags mesh_io_flags ;
+        mesh_io_flags.set_attribute( GEO::MESH_CELL_REGION ) ;
+        GEO::mesh_load( file_name, mesh, mesh_io_flags ) ;
+
+        GeoModel geomodel ;
+        GeoModelBuilderMesh builder( geomodel, mesh, "", "region" ) ;
+        builder.create_and_build_regions() ;
+        
         print_model( geomodel ) ;
     }
     return 0 ;
