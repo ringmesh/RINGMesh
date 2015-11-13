@@ -46,10 +46,7 @@
 
 #include <geogram/basic/memory.h>
 #include <geogram/basic/attributes.h>
-
-namespace GEO {
-    class Mesh ;
-}
+#include <geogram/mesh/mesh.h>
 
 namespace RINGMesh {
 
@@ -189,6 +186,8 @@ namespace RINGMesh {
     * \brief Convenient class to manipulate vectors of Geogram attributes.
     * \details Used to ease the storage of a common attribute on several
     * meshes grouped in the same object, for example those stored by a MacroMesh.
+    *
+    * @todo Rename to AttributeVector [JP]
     */
     template< class T >
     class AttributeHandler : public std::vector< GEO::Attribute< T >* > {
@@ -255,6 +254,42 @@ namespace RINGMesh {
             }
         }
     } ;
+
+
+    /*! 
+     * @brief True if the Store stores elements of type T, false otherwise
+     */
+    template< class T > 
+    bool is_attribute_defined( GEO::AttributesManager& manager, 
+                               const std::string& attribute_name )
+    {
+        GEO::AttributeStore* store = manager.find_attribute_store( attribute_name ) ;
+        if( store == nil ) {
+            return false ;
+        } else {
+            std::string T_type_name( typeid( T ).name() );
+            return store->elements_type_matches( T_type_name ) ;
+        }
+    }
+
+    /*!
+     * @brief Type sensitive check of Attribute existence
+     */
+    template< class T >
+    bool is_facet_attribute_defined( const GEO::Mesh& mesh,
+                                     const std::string& attribute_name )
+    {
+        GEO::AttributesManager& manager = mesh.facets.attributes() ;
+        return is_attribute_defined< T >( manager, attribute_name ) ;
+    }
+
+    template< class T >
+    bool is_cell_attribute_defined( const GEO::Mesh& mesh,
+                                     const std::string& attribute_name )
+    {
+        GEO::AttributesManager& manager = mesh.cells.attributes() ;      
+        return is_attribute_defined< T >( manager, attribute_name ) ;
+    }
 
 
     void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M ) ;

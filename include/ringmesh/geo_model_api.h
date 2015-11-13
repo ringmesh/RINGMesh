@@ -43,6 +43,13 @@
 
 #include <ringmesh/common.h>
 
+#include <geogram/basic/attributes.h>
+#include <geogram/mesh/mesh.h>
+
+#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geogram_extension.h>
+
+
 /*!
 * @file ringmesh/geo_model_api.h
 * @brief High level functions on GeoModel
@@ -80,7 +87,49 @@ namespace RINGMesh {
     *       some parts of a GeoModel
     */
     void RINGMESH_API mesh_from_geo_model( const GeoModel& model, GEO::Mesh& M ) ;
-    
+   
+
+    /*! 
+     * @brief Bind named GEO::Attribute on theGeoModel elements vertices
+     * @warning It is up to the client to unbind the attribute    
+     * @pre Elements of mesh_element_type are GeoModelMeshElement
+     */
+    template< class T >
+    void create_attributes_on_geomodel_element_facets(
+        const GeoModel& geomodel,
+        GeoModelElement::TYPE geomodel_element_type,
+        const std::string& attribute_name,
+        AttributeHandler<T>& attributes )
+    {
+        index_t nb_elements = geomodel.nb_elements( geomodel_element_type ) ;
+        attributes.resize( nb_elements ) ;
+        for( index_t i = 0; i < nb_elements; ++i ) {
+            const GeoModelMeshElement& E = geomodel.mesh_element( gme_t( geomodel_element_type, i ) );
+            GEO::AttributesManager& manager = E.facet_attribute_manager() ; 
+            attributes[ i ].bind( manager, attribute_name ) ;
+        }
+    }
+
+    /*!
+    * @brief Bind named GEO::Attribute on theGeoModel elements vertices
+    * @warning It is up to the client to unbind the attribute
+    * @pre Elements of mesh_element_type are GeoModelMeshElement
+    */
+    template< class T >
+    void create_attributes_on_geomodel_element_cells(
+        const GeoModel& geomodel,
+        GeoModelElement::TYPE geomodel_element_type,
+        const std::string& attribute_name,
+        AttributeHandler<T>& attributes )
+    {
+        index_t nb_elements = geomodel.nb_elements( geomodel_element_type ) ;
+        attributes.resize( nb_elements ) ;
+        for( index_t i = 0; i < nb_elements; ++i ) {
+            const GeoModelMeshElement& E = geomodel.mesh_element( gme_t( geomodel_element_type, i ) );
+            GEO::AttributesManager& manager = E.cell_attribute_manager() ;
+            attributes[ i ].bind( manager, attribute_name ) ;
+        }
+    }
 
 
 
