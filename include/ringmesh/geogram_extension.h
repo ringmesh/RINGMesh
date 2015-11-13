@@ -183,59 +183,29 @@ namespace RINGMesh {
 
 
     /*!
-    * \brief Convenient class to manipulate vectors of Geogram attributes.
-    * \details Used to ease the storage of a common attribute on several
-    * meshes grouped in the same object, for example those stored by a MacroMesh.
-    *
-    * @todo Rename to AttributeVector [JP]
+    * @brief Vector of pointers to Geogram attributes
+    * @details Vector of Attribute object does not compile, because @#$# (no idea) [JP]
+    * @todo Seems prone to bugs. Is it worth the risk? 
     */
     template< class T >
-    class AttributeHandler : public std::vector< GEO::Attribute< T >* > {
-        ringmesh_disable_copy( AttributeHandler ) ;
+    class AttributeVector : public std::vector< GEO::Attribute< T >* > {
+        ringmesh_disable_copy( AttributeVector ) ;
     public:
         typedef std::vector< GEO::Attribute< T >* > base_class ;
-        AttributeHandler()
+        AttributeVector()
             : base_class()
         {}
-        AttributeHandler( index_t size )
+        AttributeVector( index_t size )
             : base_class( size, nil )
         {}
 
-        /*!
-        * Allocate one attribute on one component of the vector
-        * @param[in] m id of the GEO::Mesh
-        * @param[in] name name of the attribute
-        * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
-        */
-        void allocate_attribute(
-            const index_t m,
-            GEO::AttributesManager& am,
-            const std::string& name )
+        void bind_one_attribute( index_t i,
+                                 GEO::AttributesManager& manager,
+                                 const std::string& attribute_name )
         {
-            ringmesh_debug_assert( m < base_class::size() ) ;
-            ringmesh_debug_assert( !base_class::operator[]( m ) ) ;
-            base_class::operator[]( m ) = new GEO::Attribute< T >( am, name ) ;
+            base_class::operator[]( i ) = new GEO::Attribute< T >( manager, attribute_name ) ;
         }
-
-        /*!
-        * Allocate one vector of attributes on one component of the vector
-        * @param[in] m id of the GEO::Mesh
-        * @param[in] name name of the attribute
-        * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
-        * @param[in] size size of the vector of attributes
-        */
-        void allocate_attribute(
-            const index_t m,
-            GEO::AttributesManager& am,
-            const std::string& name,
-            index_t size )
-        {
-            ringmesh_debug_assert( m < base_class::size() ) ;
-            ringmesh_debug_assert( !base_class::operator[]( m ) ) ;
-            base_class::operator[]( m ) = new GEO::Attribute< T >() ;
-            base_class::operator[]( m )->create_vector_attribute( am, name, size ) ;
-        }
-
+        
         GEO::Attribute< T >& operator[]( index_t i )
         {
             return *base_class::operator[]( i ) ;
@@ -246,11 +216,14 @@ namespace RINGMesh {
             return *base_class::operator[]( i ) ;
         }
 
-        ~AttributeHandler()
+        ~AttributeVector()
         {
             for( index_t i = 0; i < base_class::size(); i++ ) {
-                if( base_class::operator[]( i ) )
+                if( base_class::operator[]( i ) ) {
+                    // I am not sure but unbind should do the deallocation [JP]
+                    operator[]( i ).unbind() ;
                     delete base_class::operator[]( i ) ;
+                }
             }
         }
     } ;

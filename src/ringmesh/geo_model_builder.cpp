@@ -1888,7 +1888,7 @@ namespace RINGMesh {
         template< class T > 
         void copy_simplex_attribute_from_mesh_to_geomodel(
             GEO::Attribute< T >& mesh_attribute,
-            AttributeHandler< T >& model_attributes )
+            AttributeVector< T >& model_attributes )
         {
             for( index_t i = 0; i < nb_mesh_simplexes(); ++i ) {
                 const GMESimplex& copy_to = mesh_simplex_to_gme_simplex_[ i ] ;
@@ -2311,7 +2311,7 @@ namespace RINGMesh {
             return ;
         }
         GEO::Attribute< index_t > attribute( mesh_.facets.attributes(), attribute_name ) ;
-        AttributeHandler< index_t > attributes ;
+        AttributeVector< index_t > attributes ;
         create_attributes_on_geomodel_element_facets< index_t >( model_, GME::SURFACE, attribute_name, attributes ) ;
         surface_builder_->copy_simplex_attribute_from_mesh_to_geomodel<index_t>( attribute, attributes ) ;
     }
@@ -2325,7 +2325,7 @@ namespace RINGMesh {
             return ;
         }
         GEO::Attribute< index_t > attribute( mesh_.cells.attributes(), attribute_name ) ;
-        AttributeHandler< index_t > attributes ;
+        AttributeVector< index_t > attributes ;
         create_attributes_on_geomodel_element_cells< index_t >( model_, GME::REGION, attribute_name, attributes ) ;
         region_builder_->copy_simplex_attribute_from_mesh_to_geomodel< index_t >( attribute, attributes ) ;
     }
