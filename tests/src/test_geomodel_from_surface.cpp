@@ -73,7 +73,7 @@ int main( int argc, char** argv )
     GEO::mesh_load( file_name, in ) ;
     GeoModel model ;
 	
-	GeoModelBuilderMesh BB( model, in, "", "" ) ;
+    GeoModelBuilderSurfaceMesh BB( model, in ) ;
     BB.build_polygonal_surfaces_from_connected_components() ;
     if( !BB.build_model_from_surfaces() ) {
 		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	
