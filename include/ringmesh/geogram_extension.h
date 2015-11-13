@@ -81,8 +81,8 @@ namespace RINGMesh {
             out[ i ] = in[ from +i ] ;
         }
     }
+  
 
-	
     /***********************************************************************/
     /* Loading and saving a GEO::Mesh                                      */
 

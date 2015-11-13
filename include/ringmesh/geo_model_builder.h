@@ -109,30 +109,20 @@ namespace RINGMesh {
          * \name Set element geometry from geometrical positions   
          * @{
          */
-        void set_element_vertex(
-            GME::gme_t t,
-            index_t v,
-            const vec3& point,
-            bool update ) ;
+        void set_element_vertex( const GME::gme_t& t, index_t v, const vec3& point, bool update ) ;
 
-        void set_element_vertices(
-            const GME::gme_t& id,
-            const std::vector< vec3 >& points,
-            bool clear ) ;
+        void set_element_vertices( const GME::gme_t& element_id, 
+                                   const std::vector< vec3 >& points,
+                                   bool clear ) ;
 
-        void set_corner(
-            const GME::gme_t& corner_id,
-            const vec3& point ) ;
+        void set_corner( index_t corner_id, const vec3& point ) ;
 
-        void set_line(
-            const GME::gme_t& id,
-            const std::vector< vec3 >& vertices ) ;
+        void set_line( index_t id, const std::vector< vec3 >& vertices ) ;
 
-        void set_surface_geometry(
-            const GME::gme_t& surface_id,
-            const std::vector< vec3 >& surface_vertices,
-            const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr ) ;
+        void set_surface_geometry( index_t surface_id,
+                                   const std::vector< vec3 >& surface_vertices,
+                                   const std::vector< index_t >& surface_facets,
+                                   const std::vector< index_t >& surface_facet_ptr ) ;
 
         /*! @}
          * \name Set element geometry using GeoModel vertices
@@ -140,44 +130,37 @@ namespace RINGMesh {
          */
         void set_element_vertex( const GME::gme_t& id, index_t v, index_t model_vertex ) ;
 
-        void set_element_vertices(
-            const GME::gme_t& id,
-            const std::vector< index_t >& model_vertices,
-            bool clear ) ;
+        void set_element_vertices( const GME::gme_t& element_id,
+                                   const std::vector< index_t >& model_vertices,
+                                   bool clear ) ;
 
         index_t add_unique_vertex( const vec3& p ) ;
 
-        void set_corner(
-            const GME::gme_t& corner_id,
-            index_t unique_vertex ) ;
+        void set_corner( index_t corner_id, index_t unique_vertex ) ;
 
-        void set_line(
-            const GME::gme_t& id,
-            const std::vector< index_t >& unique_vertices ) ;
+        void set_line( index_t id, const std::vector< index_t >& unique_vertices ) ;
 
-        void set_surface_geometry(
-            const GME::gme_t& surface_id,
-            const std::vector< index_t >& surface_vertices,
-            const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr ) ;
+        void set_surface_geometry( index_t surface_id,
+                                   const std::vector< index_t >& surface_vertices,
+                                   const std::vector< index_t >& surface_facets,
+                                   const std::vector< index_t >& surface_facet_ptr ) ;
 
-        void set_surface_geometry(
-            const GME::gme_t& surface_id,
-            const std::vector< index_t >& corners,
-            const std::vector< index_t >& facet_ptr ) ;
+        void set_surface_geometry( index_t surface_id,
+                                   const std::vector< index_t >& corners,
+                                   const std::vector< index_t >& facet_ptr ) ;
 
-        void set_surface_geometry(
-            const GME::gme_t& surface_id,
-            const std::vector< index_t >& triangle_corners ) ;
+        void set_surface_geometry( index_t surface_id, 
+                                   const std::vector< index_t >& triangle_corners ) ;
 
-        index_t find_or_create_duplicate_vertex(
-            GeoModelMeshElement& S,
-            index_t model_vertex_id,
-            index_t surface_vertex_id ) ;
+        void set_region_geometry( index_t region_id, const std::vector< index_t >& tet_corners ) ;
+
+        index_t find_or_create_duplicate_vertex( GeoModelMeshElement& S,
+                                                 index_t model_vertex_id,
+                                                 index_t surface_vertex_id ) ;
 
         void cut_surface_by_line( Surface& S, const Line& L ) ;
 
-        void compute_surface_adjacencies( const GME::gme_t& surface_id ) ;
+        void compute_surface_adjacencies( index_t surface_id ) ;
 
         /*!
          * @}
@@ -220,9 +203,17 @@ namespace RINGMesh {
 
     private:
         void assign_surface_mesh_facets(
-            const GME::gme_t& surface_id,
+            index_t surface_id,
             const std::vector< index_t >& facets,
             const std::vector< index_t >& facet_ptr ) ;
+
+        void assign_surface_triangle_mesh(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_vertices ) ;
+
+        void assign_region_tet_mesh(
+            index_t region_id,
+            const std::vector< index_t >& tet_vertices ) ;
     } ;
 
     // Implementation
@@ -234,6 +225,7 @@ namespace RINGMesh {
      * @details It either fills existing Regions and Surfaces
      * or creates and fills them.
      * @warning Volumetric version is only implemented for a tetrahedral Mesh
+     * @pre The attributes are of type index_t
      */
     class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
     public:
@@ -247,15 +239,23 @@ namespace RINGMesh {
               region_builder_(nil),
               surface_attribute_name_( surface_attribute_name ),
               region_attribute_name_( region_attribute_name )
-        {};
+        {
+            initialize_surface_builder() ;
+            initialize_region_builder() ;
+
+            add_mesh_vertices_to_model() ;
+        };
     
         virtual ~GeoModelBuilderMesh() ;
 
         /*!
-         * @brief Prepare the mesh so that GeoModel surface building can go on smoothly
+         * @brief Prepare a Mesh so that it can be used to build a GeoModel Surfaces
+         * @details Repairs the mesh, triangulates it, computes a connected component 
+         * attribute of type index_t on the mesh facets and removes colocated vertices. 
          */
-        static void prepare_mesh_for_surface_building(
-            GEO::Mesh& mesh, const std::string& connected_component_attribute ) ;
+        static void prepare_surface_mesh_from_connected_components(
+            GEO::Mesh& mesh, const std::string& created_surface_attribute ) ;
+     
 
         bool is_mesh_valid_for_surface_building() const ;
 
@@ -263,31 +263,19 @@ namespace RINGMesh {
 
         /*!
          * @brief Old version of the code that supports polygonal surfaces
-         * @todo To move ? [JP]
+         * @todo To move. [JP]
          */
         bool build_polygonal_surfaces_from_connected_components() ;
 
-        /*! 
-         * @brief Create and fill the Surfaces from a index_t attribute on the Mesh facets
-         */
-        bool build_surfaces_from_attribute_value() ;
+        bool create_and_build_surfaces() ;
 
-        /*! 
-         * @brief Fill the Surface meshes
-         * from an Integer facet attribute giving the Surface index
-         * of each Mesh facet 
-         */
-        bool fill_surface_meshes_from_attribute_value() ;
-
-        bool build_regions_from_attribute_value() ;
+        bool build_surfaces() ;
         
-        /*! 
-        * The given mesh is volumetric to fill the region of the Model
-        * There is an attribute "region" that flag the tets region per region
-        */
-        bool fill_region_meshes_from_attribute_value() ;
+        bool create_and_build_regions() ;
 
-        /*! @}
+        bool build_regions() ;
+        
+       /*! @}
         * \name Copy attributes from the Mesh to the GeoModel
         * @{
         */
@@ -301,13 +289,8 @@ namespace RINGMesh {
 
     protected:
         /*!
-         * @brief Check that the mesh is valid to create a GeoModel
-         * @details It shall have no duplicated vertices, and no duplicated facets.
-         */
-        bool has_mesh_colocated_vertices() ;
-
-        /*!
-         * @brief All vertices of the Mesh are added to the GeoModelMeshVertices 
+         * @brief Set the unique vertices used to build the GeoModel
+         * @details They will be cleared when end_model() is called
          */
         void add_mesh_vertices_to_model() ;
 
@@ -321,6 +304,9 @@ namespace RINGMesh {
 
         std::string surface_attribute_name_ ;
         std::string region_attribute_name_ ;
+
+        index_t nb_surface_attribute_values_ ;
+        index_t nb_region_attribute_values_ ;
     } ;
 
 

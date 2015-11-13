@@ -84,7 +84,10 @@ int main( int argc, char** argv )
     mesh_from_geo_model( geomodel, geomodel_surfaces_mesh ) ;
     tetrahedralize_mesh_tetgen( geomodel_surfaces_mesh ) ;
 
-    GEO::mesh_save( geomodel_surfaces_mesh, result_file_name ) ;
+    GEO::MeshIOFlags mesh_io_flags ;
+    mesh_io_flags.set_elements( GEO::MeshElementsFlags( GEO::MESH_VERTICES | GEO::MESH_CELLS ) ) ;
+    mesh_io_flags.set_attribute( GEO::MESH_CELL_REGION ) ;
+    GEO::mesh_save( geomodel_surfaces_mesh, result_file_name, mesh_io_flags ) ;
 
     // todo - assign the generated tets to the right regions of the model
 
