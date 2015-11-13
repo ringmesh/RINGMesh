@@ -846,7 +846,7 @@ namespace RINGMesh {
 
 
     index_t detect_mesh_colocated_vertices(
-        const GEO::Mesh& M, double tolerance, GEO::vector< index_t > old2new )
+        const GEO::Mesh& M, double tolerance, GEO::vector< index_t >& old2new )
     {
         index_t nb_unique_vertices = 0 ;
         if( tolerance == 0.0 ) {
