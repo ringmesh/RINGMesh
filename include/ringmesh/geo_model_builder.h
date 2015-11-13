@@ -282,13 +282,8 @@ namespace RINGMesh {
         bool create_and_build_regions() ;
         bool build_regions() ;
      
-        template< class T >
-        void copy_facet_attribute_from_mesh( 
-            const std::string& attribute_name ) ;
-        
-        template< class T >
-        void copy_cell_attribute_from_mesh(
-            const std::string& attribute_name ) ;
+        void copy_facet_attribute_from_mesh( const std::string& attribute_name ) ;        
+        void copy_cell_attribute_from_mesh( const std::string& attribute_name ) ;
 
     protected:
         /*!

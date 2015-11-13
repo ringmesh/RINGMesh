@@ -1885,6 +1885,17 @@ namespace RINGMesh {
             return gme_simplex_vertices_[gme_id ] ;
         }
 
+        template< class T > 
+        void copy_simplex_attribute_from_mesh_to_geomodel(
+            GEO::Attribute< T >& mesh_attribute,
+            AttributeHandler< T >& model_attributes )
+        {
+            for( index_t i = 0; i < nb_mesh_simplexes(); ++i ) {
+                const GMESimplex& copy_to = mesh_simplex_to_gme_simplex_[ i ] ;
+                model_attributes[ copy_to.gme_id ][ copy_to.gme_simplex_id ] = mesh_attribute[ i ] ;
+            }
+        }
+
     protected:
         // A simplex in a GeoModelElement
         struct GMESimplex {
@@ -2288,6 +2299,37 @@ namespace RINGMesh {
         nb_region_attribute_values_ =
             region_builder_->count_attribute_values_and_simplexes() ;
     }
+
+
+    
+    void GeoModelBuilderMesh::copy_facet_attribute_from_mesh( const std::string& attribute_name )
+    {       
+        if( !is_facet_attribute_defined< index_t >( mesh_, attribute_name ) ) {
+            GEO::Logger::warn( "GMBuilder" )
+                << "No INDEX_T attribute named " << attribute_name
+                << " on mesh facets to copy " << std::endl ;
+            return ;
+        }
+        GEO::Attribute< index_t > attribute( mesh_.facets.attributes(), attribute_name ) ;
+        AttributeHandler< index_t > attributes ;
+        create_attributes_on_geomodel_element_facets< index_t >( model_, GME::SURFACE, attribute_name, attributes ) ;
+        surface_builder_->copy_simplex_attribute_from_mesh_to_geomodel<index_t>( attribute, attributes ) ;
+    }
+
+    void GeoModelBuilderMesh::copy_cell_attribute_from_mesh( const std::string& attribute_name )
+    {        
+        if( !is_cell_attribute_defined< index_t >( mesh_, attribute_name ) ) {
+            GEO::Logger::warn( "GMBuilder" )
+                << "No INDEX_T attribute named " << attribute_name
+                << " on mesh cells to copy " << std::endl ;
+            return ;
+        }
+        GEO::Attribute< index_t > attribute( mesh_.cells.attributes(), attribute_name ) ;
+        AttributeHandler< index_t > attributes ;
+        create_attributes_on_geomodel_element_cells< index_t >( model_, GME::REGION, attribute_name, attributes ) ;
+        region_builder_->copy_simplex_attribute_from_mesh_to_geomodel< index_t >( attribute, attributes ) ;
+    }
+
 
 
     /*************************************************************************/
