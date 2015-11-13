@@ -43,6 +43,14 @@
 
 #include <ringmesh/common.h>
 
+/*!
+* @file ringmesh/geo_model_api.h
+* @brief High level functions on GeoModel
+* @author Jeanne Pellerin and Arnaud Botella
+* @todo Encapsulate these functions in a namespace
+* and TEST them.
+*/
+
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelElement ;
@@ -51,38 +59,41 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    /*!
-     * @brief Compute the size (volume, area, length) of an Element
-     *
-     * @param[in] E Element to evaluate
-     */
-    double RINGMESH_API model_element_size( const GeoModelElement& E ) ;
-    /*!
-     * Compute the size (volume, area, length) of an Element cell (cell, facet, edge)
-     * @param[in] E Element to evaluate
-     * @param[in] c the cell index
-     */
-    double RINGMESH_API model_element_cell_size( const GeoModelElement& E, index_t c ) ;
+    /*! @brief Print in the console the model statistics
+    *  Output number of facets, vertices, and of the different element types.
+    */
+    void RINGMESH_API print_model( const GeoModel& model ) ;
+
 
     /*!
-     * @brief Compute the center of a GeoModelElement
-     *
-     * @param[in] E Element to evaluate
-     * @return The coordinates of the center
-     */
-    vec3 RINGMESH_API model_element_center( const GeoModelElement& E ) ;
+    * Compute the tetrahedral mesh of the input structural model
+    * @param[in] M GeoModel to tetrahedralize
+    * @param[in] method External mesher used, Tetgen by default
+    * @param[in] region_id Region to mesh. By default it set to NO_ID and all regions are meshed.
+    * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
+    */
+    void RINGMESH_API tetrahedralize(
+        GeoModel& M,
+        const std::string& method = "TetGen",
+        index_t region_id = NO_ID,
+        bool add_steiner_points = true ) ;
 
     /*!
-     * @brief Compute the centroid of a GeoModelMeshElement cell (cell, facet, edge)
-     *
-     * @param[in] E Element to evaluate
-     * @param[in] c the cell index
-     * @return The coordinates of the center
-     * 
-     * @pre E has a valid mesh.
-     */
-    vec3 RINGMESH_API model_element_cell_center( 
-        const GeoModelMeshElement& E, index_t c ) ;
+    * Compute the tetrahedral mesh of the input structural model
+    * @param[in] M GeoModel to tetrahedralize
+    * @param[in] method External mesher used
+    * @param[in] region_id Region to mesh. If set to NO_ID and all regions are meshed.
+    * @param[in] add_steiner_points if true, the mesher will add some points inside the region.
+    * @param[in] internal_vertices points inside the domain to constrain mesh generation.
+    * There is one vector per region.
+    */
+    void RINGMESH_API tetrahedralize(
+        GeoModel& M,
+        const std::string& method,
+        index_t region_id,
+        bool add_steiner_points,
+        const std::vector< std::vector< vec3 > >& internal_vertices ) ;
+
 
     /*!
     * @brief Translates the boundary model by a vector.
@@ -120,34 +131,44 @@ namespace RINGMesh {
         bool degrees = false ) ;
 
 
-    /*!
-     * Compute the tetrahedral mesh of the input structural model
-     * @param[in] M GeoModel to tetrahedralize
-     * @param[in] method Mesher used
-     * @param[in] region_id Region to mesh. By default it set to NO_ID and all regions are meshed.
-     * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
-     */
-    void RINGMESH_API tetrahedralize(
-        GeoModel& M,
-        const std::string& method = "TetGen",
-        index_t region_id = NO_ID,
-        bool add_steiner_points = true ) ;
+
+    /*-----------------------------------------------------------------------*/
+
+
 
     /*!
-     * Compute the tetrahedral mesh of the input structural model
-     * @param[in] M GeoModel to tetrahedralize
-     * @param[in] method Mesher used
-     * @param[in] region_id Region to mesh. If set to NO_ID and all regions are meshed.
-     * @param[in] add_steiner_points if true, the mesher will add some points inside the region.
-     * @param[in] internal_vertices points inside the domain to constrain mesh generation.
-     * There is one vector per region.
-     */
-    void RINGMESH_API tetrahedralize(
-        GeoModel& M,
-        const std::string& method,
-        index_t region_id,
-        bool add_steiner_points,
-        const std::vector< std::vector< vec3 > >& internal_vertices ) ;
+    * @brief Compute the size (volume, area, length) of an Element
+    * @param[in] E Element to evaluate
+    */
+    double RINGMESH_API model_element_size( const GeoModelElement& E ) ;
+
+    /*!
+    * Compute the size (volume, area, length) of an Element cell (cell, facet, edge)
+    * @param[in] E Element to evaluate
+    * @param[in] c the cell index
+    */
+    double RINGMESH_API model_element_cell_size( const GeoModelElement& E, index_t c ) ;
+
+    /*!
+    * @brief Compute the center of a GeoModelElement
+    *
+    * @param[in] E Element to evaluate
+    * @return The coordinates of the center
+    */
+    vec3 RINGMESH_API model_element_center( const GeoModelElement& E ) ;
+
+    /*!
+    * @brief Compute the centroid of a GeoModelMeshElement cell (cell, facet, edge)
+    *
+    * @param[in] E Element to evaluate
+    * @param[in] c the cell index
+    * @return The coordinates of the center
+    *
+    * @pre E has a valid mesh.
+    */
+    vec3 RINGMESH_API model_element_cell_center(
+        const GeoModelMeshElement& E, index_t c ) ;
+
 
 }
 

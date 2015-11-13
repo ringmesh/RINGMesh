@@ -49,25 +49,52 @@
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/mesh/mesh_geometry.h>
 
+#include <iostream>
+#include <iomanip>
+
 namespace RINGMesh {
+    /*!
+    * @brief Total number of facets in the model Surfaces
+    */
+    index_t nb_facets( const GeoModel& BM )
+    {
+        index_t result = 0 ;
+        for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
+            result += BM.surface( i ).nb_cells() ;
+        }
+        return result ;
+    }
+
+    void print_model( const GeoModel& model )
+    {
+        GEO::Logger::out( "GeoModel" ) << "Model " << model.name() << " has "
+            << std::endl
+            << std::setw( 10 ) << std::left
+            << model.mesh.vertices.nb() << " vertices "
+            << std::endl
+            << std::setw( 10 ) << std::left
+            << nb_facets( model ) << " facets "
+            << std::endl << std::endl ;
+
+        for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
+            GME::TYPE T = static_cast<GME::TYPE>( t ) ;
+            GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
+                << model.nb_elements( T ) << " " << GME::type_name( T )
+                << std::endl ;
+        }
+    }
 
     double model_element_size( const GeoModelElement& E )
     {
         double result = 0. ;
-
         if( E.nb_children() ) {
-            /// If this element has children sum up their sizes
+            // Sum up the size of children elements
             for( index_t i = 0; i < E.nb_children(); ++i ) {
                 result += model_element_size( E.child( i ) ) ;
             }
             return result ;
         } else {
-
-            /// Else it is a base element and its size is computed
-
             switch( E.type() ) {
-
-                // If this is a region
                 case GeoModelElement::REGION: {
                     const Region& R = dynamic_cast< const Region& >( E ) ;
                     // Compute the volume if this is a region
@@ -90,6 +117,7 @@ namespace RINGMesh {
                     }
                     return fabs( result ) ;
                 }
+
                 case GeoModelElement::SURFACE: {
                     const Surface& S = dynamic_cast< const Surface& >( E ) ;
                     const GEO::Mesh& mesh = S.mesh() ;
@@ -194,12 +222,9 @@ namespace RINGMesh {
 
     void translate( GeoModel& M, const vec3& translation_vector )
     {
-        // Note: if the translation is null, do nothing.
-        if( translation_vector == vec3( 0, 0, 0 ) ) {
-            return ;
-        }
-
         for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
+            // Coordinates are not directly modified to 
+            // update the matching vertices in model entities
             vec3 p = M.mesh.vertices.vertex( v ) ;
             for( index_t i = 0; i < 3; i++ ) {
                 p[i] += translation_vector[i] ;
@@ -212,25 +237,24 @@ namespace RINGMesh {
         GeoModel& M,
         const vec3& origin,
         const vec3& axis,
-        float64 theta,
+        double theta,
         bool degrees )
     {
-        // Note: Rotation is impossible about an axis with null length.
-        ringmesh_debug_assert( axis != vec3() ) ;
-        if( theta == 0. ) {
+        if( length( axis ) < epsilon ) {
+            GEO::Logger::err( "GeoModel" )
+                << "Rotation around an epsilon length axis is impossible"
+                << std::endl ;
             return ;
         }
-
-        GEO::Matrix< float64, 4 > rot_mat ;
-        rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
-            rot_mat ) ;
+        GEO::Matrix< double, 4 > rot_mat ;
+        rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees, rot_mat ) ;
 
         for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
             const vec3& p = M.mesh.vertices.vertex( v ) ;
-
-            float64 old[4] = { p[0], p[1], p[2], 1. } ;
-            float64 new_p[4] = { 0, 0, 0, 1. } ;
+            double old[4] = { p[0], p[1], p[2], 1. } ;
+            double new_p[4] = { 0, 0, 0, 1. } ;
             GEO::mult( rot_mat, old, new_p ) ;
+            /*! @todo You need an epsilon tolerance here [JP] */
             ringmesh_debug_assert( new_p[3] == 1. ) ;
 
             M.mesh.vertices.update_point( v, vec3( new_p[0], new_p[1], new_p[2] ) ) ;
@@ -243,6 +267,10 @@ namespace RINGMesh {
         index_t region_id,
         bool add_steiner_points )
     {
+        /* @todo Review: Maybe rethink these functions
+         *       to have a function that can mesh a region of a model
+         *       taking only one vector of points [JP]
+         */
         std::vector< std::vector< vec3 > > internal_vertices( M.nb_regions() ) ;
         tetrahedralize( M, method, region_id, add_steiner_points,
             internal_vertices ) ;
@@ -255,17 +283,11 @@ namespace RINGMesh {
         bool add_steiner_points,
         const std::vector< std::vector< vec3 > >& internal_vertices )
     {
-        GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
         if( region_id == NO_ID ) {
+            GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
             GEO::ProgressTask progress( "Compute", M.nb_regions() ) ;
             for( index_t i = 0; i < M.nb_regions(); i++ ) {
-                TetraGen_var tetragen = TetraGen::create( M.region( i ).mesh(),
-                    method ) ;
-                tetragen->set_boundaries( M.region( i ), M.wells() ) ;
-                tetragen->set_internal_points( internal_vertices[i] ) ;
-                GEO::Logger::instance()->set_quiet( true ) ;
-                tetragen->tetrahedralize( add_steiner_points ) ;
-                GEO::Logger::instance()->set_quiet( false ) ;
+                tetrahedralize( M, method, i, add_steiner_points, internal_vertices ) ;                
                 progress.next() ;
             }
         } else {

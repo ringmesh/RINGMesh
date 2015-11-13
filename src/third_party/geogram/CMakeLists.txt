@@ -8,26 +8,33 @@
 # - it is the version that supports the command string(TIMESTAMP ...)
 cmake_minimum_required(VERSION 2.8.11)
 
-include(cmake/geogram_config.cmake)
+# Note: geogram.cmake defines GEOGRAM_WITH_VORPALINE
+# that we could have used instead,
+# but geogram.cmake needs to be included after the project() 
+# command, since project() resets CFLAGS and CXXFLAGS.
 
-if(GEOGRAM_WITH_VORPALINE)
-   project(Vorpaline)
+if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/src/lib/vorpalib)
+    project(Vorpaline)
 else()
-   project(Geogram)
+    project(Geogram)
 endif()
 
-include(cmake/compiler_config.cmake)
+# Optional modules
+# (can be overriden in CMakeOptions.txt)
+# RINGMesh modifications: the 2 set
+# below are commented because they overwrite
+# the options defined in the CMakeLists.txt
+# in RINGMesh.
+#set(GEOGRAM_WITH_MEDIT TRUE)
+#set(GEOGRAM_WITH_GRAPHICS TRUE)
 
+include(cmake/geogram.cmake)
 
 set(VORPALINE_VERSION_MAJOR 1)
 set(VORPALINE_VERSION_MINOR 0)
 set(VORPALINE_VERSION_PATCH 0)
 set(VORPALINE_VERSION ${VORPALINE_VERSION_MAJOR}.${VORPALINE_VERSION_MINOR}.${VORPALINE_VERSION_PATCH})
 
-# Optional modules
-# So why are they set to TRUE ??? [JP]
-# set(GEOGRAM_WITH_MEDIT TRUE)
-# set(GEOGRAM_WITH_GRAPHICS TRUE)
 
 # Determine the current Build-OS (Build-platform without the compiler info)
 string(REGEX REPLACE "-[^-]+$" "" VORPALINE_OS ${VORPALINE_PLATFORM})
@@ -83,10 +90,10 @@ if(GEOGRAM_WITH_GRAPHICS)
 
 endif()
 
-# Please put an option !! Not everybody want to compile and generate the tests [JP]
-# add_subdirectory(src/test)
-# add_subdirectory(tests)
-add_subdirectory(doc)
+# On veut une option # [Jeanne]
+#add_subdirectory(src/test) # [Jeanne]
+#add_subdirectory(doc)# [Jeanne]
+#add_subdirectory(tests) # [Jeanne]
 
 ##############################################################################
 # Cleanup from previous builds
@@ -99,9 +106,9 @@ file(REMOVE ${CMAKE_BINARY_DIR}/doc/LICENSE.txt)
 
 # Configure CPack
 
-SET(CPACK_PACKAGE_NAME ${CMAKE_PROJECT_NAME})
+set(CPACK_PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 set(CPACK_SYSTEM_NAME ${VORPALINE_OS})
-SET(CPACK_PACKAGE_VENDOR "INRIA - ALICE")
+set(CPACK_PACKAGE_VENDOR "INRIA - ALICE")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A flexible mesh generator")
 
 set(CPACK_PACKAGE_VERSION_MAJOR ${VORPALINE_VERSION_MAJOR})

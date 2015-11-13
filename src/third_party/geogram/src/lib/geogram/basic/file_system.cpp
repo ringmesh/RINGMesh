@@ -203,22 +203,26 @@ namespace GEO {
 #else
 
         bool is_file(const std::string& path) {
-            //   Using lstat instead of stat makes the system
-            // ignore symlinks (this is what we want since we
-            // do not want to use them in the source tree)
+            //   We use 'stat' and not 'lstat' since
+            // we want to be able to follow symbolic
+            // links (required for instance when testing
+            // input path in GOMGEN, there can be some
+            // symlinks in system includes)
             struct stat buff;
-            if(lstat(path.c_str(), &buff)) {
+            if(stat(path.c_str(), &buff)) {
                 return false;
             }
             return S_ISREG(buff.st_mode);
         }
 
         bool is_directory(const std::string& path) {
-            //   Using lstat instead of stat makes the system
-            // ignore symlinks (this is what we want since we
-            // do not want to use them in the source tree)
+            //   We use 'stat' and not 'lstat' since
+            // we want to be able to follow symbolic
+            // links (required for instance when testing
+            // input path in GOMGEN, there can be some
+            // symlinks in system includes)
             struct stat buff;
-            if(lstat(path.c_str(), &buff)) {
+            if(stat(path.c_str(), &buff)) {
                 return false;
             }
             return S_ISDIR(buff.st_mode);
@@ -407,6 +411,103 @@ namespace GEO {
                     s[i] = '/';
                 }
             }
+        }
+
+        bool copy_file(const std::string& from, const std::string& to) {
+            FILE* fromf = fopen(from.c_str(), "ra");
+            if(fromf == nil) {
+                Logger::err("FileSyst") << "Could not open source file:" << from << std::endl;
+                return false;
+            }
+            FILE* tof = fopen(to.c_str(),"wa");
+            if(tof == nil) {
+                Logger::err("FileSyst") << "Could not create file:" << to << std::endl;
+                fclose(fromf);
+                return false;
+            }
+
+            bool result = true;
+            const size_t buff_size = 4096;
+            char buff[buff_size];
+            size_t rdsize = 0;
+            do {
+                rdsize = fread(buff, 1, buff_size, fromf);
+                if(fwrite(buff, 1, rdsize, tof) != rdsize) {
+                    Logger::err("FileSyst") << "I/O error when writing to file:"
+                                            << to << std::endl;
+                    result = false;
+                    break;
+                }
+            } while(rdsize == 4096);
+            
+            fclose(fromf);
+            fclose(tof);
+            return result;
+        }
+
+        void set_executable_flag(const std::string& filename) {
+            geo_argused(filename);
+#ifdef GEO_OS_UNIX
+            if(::chmod(filename.c_str(), 0755) != 0) {
+                Logger::err("FileSyst")
+                    << "Could not change file permissions for:"
+                    << filename << std::endl;
+            }
+#endif            
+        }
+
+        std::string normalized_path(const std::string& path_in) {
+
+            if(path_in == "") {
+                return "";
+            }
+            
+            std::string path = path_in;
+            std::string result;
+
+#ifdef GEO_OS_UNIX
+            // If this is a relative path, prepend "./"
+            if(path[0] != '/') {
+                path = "./" + path;
+            }
+
+            char buffer[PATH_MAX];
+            char* p = realpath(path.c_str(), buffer);
+            if(p != nil) {
+                result = std::string(p);
+            } else {
+                // realpath() only works for existing paths and existing file,
+                // therefore we attempt calling it on the input path by adding
+                // one component at a time.
+                size_t pos = 1;
+                while(pos != std::string::npos) {
+                    pos = path.find('/',pos);
+                    if(pos != std::string::npos) {
+                        std::string path_part = path.substr(0,pos);
+                        p = realpath(path_part.c_str(), buffer);
+                        if(p == nil) {
+                            break;
+                        } else {
+                            result = std::string(p) +
+                                path.substr(pos, path.length()-pos);
+                        }
+                        ++pos;
+                        if(pos == path.length()) {
+                            break;
+                        }
+                    } 
+                }
+            }
+#endif
+            
+#ifdef GEO_OS_WINDOWS
+            TCHAR buffer[MAX_PATH];
+            GetFullPathName(path.c_str(), MAX_PATH, buffer, nil);
+            result = std::string(buffer);
+#endif
+            
+            flip_slashes(result);
+            return result;
         }
     }
 }

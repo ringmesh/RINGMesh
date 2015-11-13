@@ -181,7 +181,7 @@ endif(WIN32)
 # Define Geogram as an external project that we know how to
 # configure and compile
 ExternalProject_Add(geogram_ext
-  PREFIX ${GEOGRAM_PATH}
+  PREFIX ${GEOGRAM_PATH_BIN}
   
   #--Download step--------------
   DOWNLOAD_COMMAND ""
@@ -316,6 +316,7 @@ endif(RINGMESH_WITH_GRAPHICS)
 if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
     add_subdirectory(src/ringmeshconvert)
+    add_subdirectory(src/ringmesh_surface_convert)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)

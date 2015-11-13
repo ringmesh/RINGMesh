@@ -67,13 +67,13 @@ namespace RINGMesh {
     /*!
     * Tests if two adjacent facets have the same orientation
     * @param[in] mesh the mesh
-    * @param[in[ f1 the first facet index
+    * @param[in] f1 the first facet index
     * @param[in] c11 the corner index in the first facet
     * @param[in] f2 the second facet index
     * @return the result of the test
     *
     * @todo Check that this code is not a duplicate of what is used to check validity
-    *       of of Geogram functions [JP]
+    *       of Geogram functions [JP]
     */
     bool facets_have_same_orientation(
         const GEO::Mesh& mesh,
@@ -183,8 +183,10 @@ namespace RINGMesh {
             }
             mesh.facets.delete_elements( facet_to_remove ) ;
 
+            // I am pretty sure this Attribute resizing is done by Geogram [JP] 
             if( GEO::Attribute< index_t >::is_defined( mesh.facets.attributes(),
                 surface_att_name ) ) {
+                // Review : already defined above
                 GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
                                                      surface_att_name ) ;
                 index_t offset = 0 ;
@@ -585,7 +587,7 @@ namespace RINGMesh {
 
     /*!
      * Sets the boundaries of the domain
-     * @param[in] region the boundary surfaces of the domain to mesh
+     * @param[in] region The Region of the GeoModel to mesh
      * @param[in] wells the wells to be conformal to
      */
     void TetraGen::set_boundaries(
@@ -630,6 +632,7 @@ namespace RINGMesh {
         const std::vector< index_t >& unique_indices = uniqueID.indices() ;
         std::vector< vec3 > unique_points ;
         uniqueID.unique_points( unique_points ) ;
+
         index_t starting_index = tetmesh_->vertices.create_vertices(
             unique_points.size() ) ;
         GEO::Memory::copy( tetmesh_->vertices.point_ptr( starting_index ),

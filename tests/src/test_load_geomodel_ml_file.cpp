@@ -53,29 +53,36 @@ int main( int argc, char** argv )
     /*! @todo Comment this tests 
      *  What is the goal and whatsoever [JP]
      */
-    GEO::Logger::out("TEST") << "Test IO for a GeoModel in .ml" << std::endl ;
-
-    GeoModel in ;
     std::string input_model_file_name( ringmesh_test_data_path ) ;
     input_model_file_name += "modelA1.ml" ;
 
-    if( !model_load( input_model_file_name, in ) ) {
+    // Set an output log file
+    std::string log_file( ringmesh_test_output_path ) ;
+    log_file += "log.txt" ;
+    GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
+    GEO::Logger::instance()->register_client( file_logger ) ;
+
+    GEO::Logger::out( "TEST" ) << "Test IO for a GeoModel in .ml" << std::endl ;
+
+
+    GeoModel in ;
+    if( !geomodel_surface_load( input_model_file_name, in ) ) {
         return 1 ;
     }
 
     std::string output_model_file_name( ringmesh_test_output_path ) ;
     output_model_file_name += "modelA1_saved_out.ml" ;
-    if( !model_save( in, output_model_file_name ) ) {
+    if( !geomodel_surface_save( in, output_model_file_name ) ) {
         return 1 ;
     }
 
     GeoModel in2 ;
-    if( !model_load( output_model_file_name, in2 ) ) {
+    if( !geomodel_surface_load( output_model_file_name, in2 ) ) {
         return 1 ;
     }
     std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
     output_model_file_name_bis += "modelA1_saved_out_bis.ml" ;
-    if( !model_save( in2, output_model_file_name_bis ) ) {
+    if( !geomodel_surface_save( in2, output_model_file_name_bis ) ) {
         return 1 ;
     }	
 

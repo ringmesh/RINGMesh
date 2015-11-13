@@ -95,6 +95,22 @@ namespace GEO {
     }
 
     /**
+     * \brief Encodes a 32 bits integer into the 
+     *  current OpenGL color.
+     * \details This function is used by the 
+     *  picking mechanism.
+     * \param[in] id the picking id to be encoded as 
+     *  the current OpenGL color
+     */
+    inline void glPickingIdAsColor(index_t id) {
+        GLubyte r = GLubyte( id        & 255);
+        GLubyte g = GLubyte((id >> 8)  & 255);
+        GLubyte b = GLubyte((id >> 16) & 255);
+        GLubyte a = GLubyte((id >> 24) & 255);
+        glColor4ub(r,g,b,a);
+    }
+    
+    /**
      * \brief Sends a normal to OpenGL.
      * \param[in] v a const reference to the normal to be sent.
      * \note This uses the old pipeline (glBegin() / glEnd() calls).
@@ -112,7 +128,7 @@ namespace GEO {
      *  vectors and OpenGL the convention with row vectors
      *  to represent the transformed points.
      */
-    void GEOGRAM_API glMultMatrix(const mat4& m);
+    void GEOGRAM_GFX_API glMultMatrix(const mat4& m);
 
     /**
      * \brief Replaces the current OpenGL matrix
@@ -123,7 +139,7 @@ namespace GEO {
      *  vectors and OpenGL the convention with row vectors
      *  to represent the transformed points.
      */
-    void GEOGRAM_API glLoadMatrix(const mat4& m);
+    void GEOGRAM_GFX_API glLoadMatrix(const mat4& m);
 
 
     /**
@@ -134,7 +150,7 @@ namespace GEO {
      * \return the size in bytes of the buffer object bound 
      *  to \p target.
      */
-    GLint64 GEOGRAM_API get_size_of_bound_buffer_object(GLenum target);
+    GLint64 GEOGRAM_GFX_API get_size_of_bound_buffer_object(GLenum target);
 
     /**
      * \brief Updates the content of an OpenGL buffer object, 
@@ -149,7 +165,7 @@ namespace GEO {
      * \param[in] data pointer to the data to be copied into the buffer, 
      *  of length new_size
      */
-    void GEOGRAM_API update_buffer_object(
+    void GEOGRAM_GFX_API update_buffer_object(
         GLuint& buffer_id, GLenum target, size_t new_size, const void* data
     );
 
@@ -174,7 +190,7 @@ namespace GEO {
      *    message will be displayed in the logger if it does not match
      *    the specified size (and update will be forced).
      */
-    void GEOGRAM_API update_or_check_buffer_object(
+    void GEOGRAM_GFX_API update_or_check_buffer_object(
         GLuint& buffer_id, GLenum target, size_t new_size, const void* data,
         bool update
     );

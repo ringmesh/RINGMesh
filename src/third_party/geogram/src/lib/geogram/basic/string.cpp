@@ -88,6 +88,23 @@ namespace GEO {
             }
         }
 
+        bool GEOGRAM_API split_string(
+            const std::string& in,
+            char separator,
+            std::string& left,
+            std::string& right
+        ) {
+            size_t p = in.find(separator);
+            if(p == std::string::npos) {
+                left = "";
+                right = "";
+                return false;
+            }
+            left = in.substr(0,p);
+            right = in.substr(p+1,in.length()-p);
+            return true;
+        }
+        
         std::string join_strings(
             const std::vector<std::string>& in,
             char separator
