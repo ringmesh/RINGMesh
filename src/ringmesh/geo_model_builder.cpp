@@ -2053,8 +2053,7 @@ namespace RINGMesh {
 
     void create_and_fill_connected_component_attribute(
         GEO::Mesh& mesh, const std::string& connected_component_attribute )
-    {
-        
+    {        
         GEO::Attribute< index_t > connected_component ;
         GEO::AttributesManager& manager = mesh.facets.attributes() ;
         connected_component.bind( manager, connected_component_attribute ) ;
@@ -2094,8 +2093,8 @@ namespace RINGMesh {
     void GeoModelBuilderMesh::prepare_mesh_for_surface_building(
         GEO::Mesh& mesh, const std::string& connected_component_attribute )
     {          
-        // First repair: Remove duplicate facets, triangulate, 
-        // but is also fixes facet orientation, and split non-manifold vertices
+        // Remove duplicate facets, and triangulate the mesh
+        // Side effects: fixes facet orientation and split non-manifold vertices
         GEO::mesh_repair( mesh,
                           GEO::MeshRepairMode( GEO::MESH_REPAIR_DUP_F | GEO::MESH_REPAIR_TRIANGULATE ) ) ;
         

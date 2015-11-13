@@ -69,26 +69,42 @@ int main( int argc, char** argv )
     GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
     GEO::Logger::instance()->register_client( file_logger ) ;
 
-    std::string file_name( ringmesh_test_data_path ) ;
-    file_name += "split_cube.eobj" ;
-    std::string result_file_name( ringmesh_test_output_path ) ;
-    result_file_name += "split_cube_rebuilt.bm" ;
+    {
+        std::string file_name( ringmesh_test_data_path ) ;
+        file_name += "split_cube.eobj" ;
+        std::string result_file_name( ringmesh_test_output_path ) ;
+        result_file_name += "split_cube_rebuilt.bm" ;
 
-    GEO::Mesh mesh ;
-    GEO::MeshIOFlags mesh_io_flags ;
-    mesh_io_flags.set_attribute( GEO::MESH_FACET_REGION ) ; 
-    // Warning: In an .eobj file Geogram loads only the facet integer attribute named "chart"
-    // Used to fill the attribute called "region" on the mesh.
-    GEO::mesh_load( file_name, mesh, mesh_io_flags ) ;
+        // GeoModel from Surface with Attribute
+        GEO::Mesh mesh ;
+        GEO::MeshIOFlags mesh_io_flags ;
+        mesh_io_flags.set_attribute( GEO::MESH_FACET_REGION ) ;
+        // Warning: In an .eobj file Geogram loads only the facet integer attribute named "chart"
+        // Used to fill the attribute called "region" on the mesh.
+        GEO::mesh_load( file_name, mesh, mesh_io_flags ) ;
 
-    GeoModel geomodel ;
-    GeoModelBuilderMesh builder( geomodel, mesh, "region", "" ) ;
-    builder.build_surfaces_from_attribute_value() ;
-    builder.build_model_from_surfaces() ;
+        GeoModel geomodel ;
+        GeoModelBuilderMesh builder( geomodel, mesh, "region", "" ) ;
+        builder.build_surfaces_from_attribute_value() ;
+        builder.build_model_from_surfaces() ;
 
-    print_model( geomodel ) ;
+        print_model( geomodel ) ;
+        geomodel_surface_save( geomodel, result_file_name ) ;
+    }
 
-    geomodel_surface_save( geomodel, result_file_name ) ;
+    {
+        // GeoModel from Surface connected components
+        std::string file_name( ringmesh_test_data_path + "split_cube.obj" ) ;
+        GEO::Mesh mesh ;
+        GEO::mesh_load( file_name, mesh ) ;
 
+        GeoModel geomodel ;
+        GeoModelBuilderMesh::prepare_mesh_for_surface_building( mesh, "region" ) ;
+        GeoModelBuilderMesh builder( geomodel, mesh, "region", "" ) ;
+        builder.build_surfaces_from_attribute_value() ;
+        builder.build_model_from_surfaces() ;
+
+        print_model( geomodel ) ;
+    }
     return 0 ;
 }
