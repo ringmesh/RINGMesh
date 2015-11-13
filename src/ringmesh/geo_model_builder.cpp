@@ -52,6 +52,7 @@
 #include <geogram/points/colocate.h>
 #include <geogram/mesh/mesh_repair.h>
 
+#include <ringmesh/algorithm.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_validity.h>
@@ -73,68 +74,6 @@ namespace {
         return result ;
     }
 
-
-    //////////////////////
-
-    template< class T >
-    class CompareIndexFromValue {
-    public:
-        CompareIndexFromValue( const std::vector<T>& values ) :
-            values_( values )
-        {}
-        bool operator()( index_t i, index_t j )
-        {
-            if( have_same_values( i, j ) ) {
-                return i < j ;
-            } else {
-                return values_[ i ] < values_[ j ] ;
-            }
-        }
-        bool have_same_values( index_t i, index_t j )
-        {
-            return values_[ i ] == values_[ j ] ;
-        }
-    private:
-        const std::vector<T>& values_ ;
-    };
-
-    /*!
-    * From input:        1 25 0 25 1 1
-    * Get  input2unique: 0 1  2 1  0 0
-    *
-    * Tricky algorithm, used a lot in Geogram
-    */
-    template< class T >
-    index_t unique_values(
-        const std::vector< T >& input,
-        std::vector< index_t >& input2unique )
-    {
-        CompareIndexFromValue<T> comparator( input ) ;
-        std::vector< index_t > sorted( input.size() );
-        for( index_t i = 0; i < input.size(); ++i ) {
-            sorted[ i ] = i ;
-        }
-        std::sort( sorted.begin(), sorted.end(), comparator ) ;
-
-        input2unique.resize( input.size(), NO_ID ) ;
-
-        index_t nb_unique_values = 0;
-
-        index_t i = 0;
-        while( i < input.size() ) {
-            nb_unique_values++;
-            input2unique[ sorted[ i ] ] = sorted[ i ];
-            index_t j = i + 1;
-            while( j < input.size() &&
-                   comparator.have_same_values( sorted[ i ], sorted[ j ] )
-                   ) {
-                input2unique[ sorted[ j ] ] = sorted[ i ];
-                j++;
-            }
-            i = j ;
-        }
-        return nb_unique_values ;
-    }
 
     /*!
     * @brief From some mesh corners referring to some global vertex indices
@@ -166,7 +105,6 @@ namespace {
     /*************************************************************************/
     /*!
      * @brief Get the index of an Interface from its name
-     *
      * @param[in_] BM the model to consider
      * @param[in_] name Name of the Interface
      * @return Index of the interface in_ the model, NO_ID if not found.
@@ -201,10 +139,6 @@ namespace {
         index_t p0_ ;
         index_t p1_ ;
     } ;
-
-
-    /*************************************************************************/
-
 
     /*!
      * @brief Get the index of the Corner for a given point
@@ -911,14 +845,12 @@ namespace RINGMesh {
 
     /*!
      * @brief Sets the geometrical position of a vertex
-     *
      * @param[in_] corner_id Index of the corner
      * @param[in_] index Index of the vertex to modify
      * @param[in_] point New coordinates
      * @param[in_] update If true, all the vertices sharing the same geometrical position
      *               in_ the GeoModel have their position updated, if false they
      *               are not.
-     *
      * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
      */
     void GeoModelBuilder::set_element_vertex(
@@ -941,7 +873,6 @@ namespace RINGMesh {
      * @brief Set the geometrical position of a vertex from a model vertex
      * @details Set also both mapping from (GeoModelMeshVertices::unique2bme)
      *          and to (model_vertex_id_) the model vertex.
-     *
      * @param[in_] id Element index
      * @param[in_] index Index of the vertex to modify
      * @param[in_] model_vertex Index in_ GeoModelMeshVertices of the vertex giving
@@ -952,23 +883,20 @@ namespace RINGMesh {
         index_t v,
         index_t model_vertex )
     {
-        set_element_vertex( element_id, v, model_.mesh.vertices.vertex( model_vertex ),
-                            false ) ;
+        set_element_vertex( element_id, v, model_.mesh.vertices.vertex( model_vertex ), false ) ;
 
         GeoModelMeshElement& E = mesh_element( element_id ) ;
         ringmesh_debug_assert( v < E.nb_vertices() ) ;
         E.model_vertex_id_[ v ] = model_vertex ;
-        model_.mesh.vertices.add_to_bme( model_vertex,
-                                         GMEVertex( element_id, v ) ) ;
+        model_.mesh.vertices.add_to_bme( model_vertex, GMEVertex( element_id, v ) ) ;
     }
 
     /*!
      * @brief Adds vertices to the mesh
      * @details No update of the model vertices is done
-     *
-     * @param[in_] id Element index
-     * @param[in_] points Geometric positions of the vertices to add
-     * @param[in_] clear If true the mesh if cleared, keeping its attributes
+     * @param[in] id Element index
+     * @param[in] points Geometric positions of the vertices to add
+     * @param[in] clear If true the mesh is cleared, keeping its attributes
      */
     void GeoModelBuilder::set_element_vertices(
         const gme_t& id,
@@ -1304,7 +1232,6 @@ namespace RINGMesh {
             M.mesh.vertices.add_to_bme( model_vertex_id,
                                         GMEVertex( E.gme_id(), duplicate ) ) ;
         }
-
         return duplicate ;
     }
 

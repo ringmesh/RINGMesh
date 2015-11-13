@@ -151,6 +151,67 @@ namespace RINGMesh {
             std::iter_swap( output.begin() + it1, output.begin() + ref_index ) ;
         }
     }
+
+    template< class T >
+    class CompareIndexFromValue {
+    public:
+        CompareIndexFromValue( const std::vector<T>& values ) :
+            values_( values )
+        {}
+        bool operator()( index_t i, index_t j )
+        {
+            if( have_same_values( i, j ) ) {
+                return i < j ;
+            } else {
+                return values_[ i ] < values_[ j ] ;
+            }
+        }
+        bool have_same_values( index_t i, index_t j )
+        {
+            return values_[ i ] == values_[ j ] ;
+        }
+    private:
+        const std::vector<T>& values_ ;
+    };
+
+    /*!
+    * @brief Determine unique occurences of values in vector
+    * and fill a mapping to the first occurence of the unique value
+    * @note Tricky algorithm, used over and over in Geogram
+    * @param[in] input values  example: 1 4 6 0 4 1 5 6
+    * @param[out] input2unique map each index to the index of the
+    * first occurence of the value in the vector. example: 0 1 2 3 1 0 6 2
+    * @return Number of unique values in the vector
+    */
+    template< class T >
+    index_t unique_values(
+        const std::vector< T >& input,
+        std::vector< index_t >& unique_value_index )
+    {
+        CompareIndexFromValue<T> comparator( input ) ;
+        std::vector< index_t > sorted( input.size() );
+        for( index_t i = 0; i < input.size(); ++i ) {
+            sorted[ i ] = i ;
+        }
+        std::sort( sorted.begin(), sorted.end(), comparator ) ;
+
+        unique_value_index.resize( input.size(), NO_ID ) ;
+        index_t nb_unique_values = 0;
+        index_t i = 0;
+        while( i < input.size() ) {
+            nb_unique_values++;
+            unique_value_index[ sorted[ i ] ] = sorted[ i ];
+            index_t j = i + 1;
+            while( j < input.size() &&
+                   comparator.have_same_values( sorted[ i ], sorted[ j ] )
+                   ) {
+                unique_value_index[ sorted[ j ] ] = sorted[ i ];
+                j++;
+            }
+            i = j ;
+        }
+        return nb_unique_values ;
+    }
 }
 
 #endif
