@@ -216,9 +216,26 @@ namespace RINGMesh {
             const std::vector< index_t >& tet_vertices ) ;
     } ;
 
+
+
+    class RINGMESH_API GeoModelBuilderSurfaceMesh : public GeoModelBuilder {
+    public:
+        GeoModelBuilderSurfaceMesh( GeoModel& model,
+                                    const GEO::Mesh& mesh )
+            :GeoModelBuilder( model ), mesh_( mesh )
+        {}
+
+        /*!
+        * @brief Old version of the code that supports polygonal surfaces
+        * @todo To move. [JP]
+        */
+        bool build_polygonal_surfaces_from_connected_components() ;
+
+    private:
+        const GEO::Mesh& mesh_ ;
+    };
     // Implementation
-    class GeoModelSurfaceFromMesh ;
-    class GeoModelRegionFromMesh ;
+    class GeoModelElementFromMesh ;
     
     /*!
      * @brief Builder of a GeoModel from a Mesh 
@@ -258,27 +275,13 @@ namespace RINGMesh {
      
 
         bool is_mesh_valid_for_surface_building() const ;
+        bool create_and_build_surfaces() ;
+        bool build_surfaces() ;
 
         bool is_mesh_valid_for_region_building() const ;
-
-        /*!
-         * @brief Old version of the code that supports polygonal surfaces
-         * @todo To move. [JP]
-         */
-        bool build_polygonal_surfaces_from_connected_components() ;
-
-        bool create_and_build_surfaces() ;
-
-        bool build_surfaces() ;
-        
         bool create_and_build_regions() ;
-
         bool build_regions() ;
-        
-       /*! @}
-        * \name Copy attributes from the Mesh to the GeoModel
-        * @{
-        */
+     
         template< class T >
         void copy_facet_attribute_from_mesh( 
             const std::string& attribute_name ) ;
@@ -290,7 +293,7 @@ namespace RINGMesh {
     protected:
         /*!
          * @brief Set the unique vertices used to build the GeoModel
-         * @details They will be cleared when end_model() is called
+         * @details They are cleared when end_model() is called
          */
         void add_mesh_vertices_to_model() ;
 
@@ -299,8 +302,8 @@ namespace RINGMesh {
 
     protected:
         const GEO::Mesh& mesh_ ;
-        GeoModelSurfaceFromMesh* surface_builder_ ;
-        GeoModelRegionFromMesh* region_builder_ ;
+        GeoModelElementFromMesh* surface_builder_ ;
+        GeoModelElementFromMesh* region_builder_ ;
 
         std::string surface_attribute_name_ ;
         std::string region_attribute_name_ ;
@@ -348,30 +351,27 @@ namespace RINGMesh {
     private:
         void build_contacts() ;
 
-        GME::gme_t determine_line_vertices(
-            const Surface& S,
-            index_t id0,
-            index_t id1,
-            std::vector< vec3 >& border_vertex_model_ids ) const ;
+        GME::gme_t determine_line_vertices( const Surface& S,
+                                            index_t id0,
+                                            index_t id1,
+                                            std::vector< vec3 >& border_vertex_model_ids ) const ;
 
-        void create_surface(
-            const std::string& interface_name,
-            const std::string& type,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2 ) ;
+        void create_surface( const std::string& interface_name,
+                             const std::string& type,
+                             const vec3& p0,
+                             const vec3& p1,
+                             const vec3& p2 ) ;
         
         /*!
         * @brief Check if the surface triangle orientations match the one of the key facet
         */
         bool check_key_facet_orientation( index_t surface ) const ;
 
-        index_t find_key_facet(
-            index_t surface_id,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            bool& same_orientation ) const ;
+        index_t find_key_facet( index_t surface_id,
+                                const vec3& p0,
+                                const vec3& p1,
+                                const vec3& p2,
+                                bool& same_orientation ) const ;
 
     private:
         /*!

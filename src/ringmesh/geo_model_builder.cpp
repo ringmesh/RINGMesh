@@ -1161,7 +1161,6 @@ namespace RINGMesh {
 
         set_element_vertices( gme_t( GME::REGION, region_id ), vertices, false ) ;
         assign_region_tet_mesh( region_id, new_tet_corners ) ;
-
     }
 
 
@@ -1171,11 +1170,9 @@ namespace RINGMesh {
     {
         GEO::Mesh& M = mesh_element( gme_t( GME::SURFACE, surface_id ) ).mesh_ ;
         ringmesh_assert( M.vertices.nb() > 0 ) ;
-
         GEO::vector< index_t > copy ;
         copy_std_vector_to_geo_vector( triangle_vertices, copy ) ;
         M.facets.assign_triangle_mesh( copy, true ) ;
-
         compute_surface_adjacencies( surface_id ) ;
     }
 
@@ -1184,10 +1181,8 @@ namespace RINGMesh {
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {
-
         GEO::Mesh& M = mesh_element( gme_t(GME::SURFACE,surface_id) ).mesh_ ;
         ringmesh_assert( M.vertices.nb() > 0 ) ;
-
         for( index_t f = 0; f+1 < facet_ptr.size(); f++ ) {
             index_t start = facet_ptr[ f ] ;
             index_t end = facet_ptr[ f+1 ] ;
@@ -1312,7 +1307,6 @@ namespace RINGMesh {
 
         return duplicate ;
     }
-
 
 
     /*!
@@ -2172,7 +2166,7 @@ namespace RINGMesh {
     * vertices are duplicated in the input mesh 
     * 
     */
-    bool GeoModelBuilderMesh::build_polygonal_surfaces_from_connected_components()
+    bool GeoModelBuilderSurfaceMesh::build_polygonal_surfaces_from_connected_components()
     {        
         std::vector< index_t > global_vertex_id_to_id_in_cc( mesh_.vertices.nb(), NO_ID ) ;
 
