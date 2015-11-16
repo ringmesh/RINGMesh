@@ -80,11 +80,11 @@ namespace RINGMesh {
     /*!
     * @brief Build a Mesh from the model non-duplicated vertices and its Surface facets.
     * @details Adjacencies are not set. Client should call mesh repair functions afterwards.
-    * @todo Set an attribute to flag the Surface index. Implement it for meshed Regions.
+    * @todo Implement Implement it for meshed Regions.
     * Implement it for a set of GME.
     */
-    void RINGMESH_API mesh_from_geo_model( const GeoModel& model, GEO::Mesh& M ) ;
-   
+    void RINGMESH_API build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M ) ;
+
 
     /*! 
      * @brief Bind named GEO::Attribute on the GeoModel element vertices

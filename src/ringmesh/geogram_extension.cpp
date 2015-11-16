@@ -242,12 +242,9 @@ namespace RINGMesh {
         return true ;
     }
 
-    bool tetrahedralize_mesh_tetgen( GEO::Mesh& M ) 
-    {    
-        if( !is_mesh_tetrahedralizable( M ) ) {
-            return false ;
-        }
-        
+
+    void fill_tetgen_command_line(bool refine, double quality, char* command_line)
+    {
         // Q: quiet
         // p: input data is surfacic
         // q: desired quality
@@ -255,8 +252,24 @@ namespace RINGMesh {
         // V: verbose - A LOT of information
         // Y: prohibit steiner points on boundaries
         // A: generate region tags for each shell.      
+        if (refine) {
+            sprintf(command_line, "Qpq%fYA", quality);
+        }
+        else {
+            sprintf(command_line, "QpO0YA");
+        }
+    }
+
+    bool tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) 
+    {    
+        if( !is_mesh_tetrahedralizable( M ) ) {
+            return false ;
+        }
+       
         GEO_3rdParty::tetgenbehavior tetgen_args;        
-        tetgen_args.parse_commandline( ( char* )"QpYA" ) ;
+        char tetgen_command_line[500];
+        fill_tetgen_command_line(refine, quality, tetgen_command_line);
+        tetgen_args.parse_commandline( tetgen_command_line) ;
 
         // Tetgen input
         GEO_3rdParty::tetgenio tetgen_in;

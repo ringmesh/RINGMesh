@@ -726,12 +726,9 @@ namespace RINGMesh {
 
         Surface( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, SURFACE, id ), tools( *this )
-        {
-        }
+        {}
 
-        ~Surface()
-        {
-        }
+        ~Surface(){}
 
         /*!
          * @brief Number of facets
@@ -752,12 +749,10 @@ namespace RINGMesh {
             return mesh_.facets.vertex( me, lv ) ;
         }
          
-
-        bool is_triangulated() const
+        bool is_simplicial() const
         {
             return mesh_.facets.are_simplices() ;
         }
-
       
         /*!
          * \name Accessors to facet and vertices
@@ -802,16 +797,16 @@ namespace RINGMesh {
         }
 
         /*
-        * @todo Comment
+        * @todo Comment RENAME !! corners of the mesh != GeoModel Corners
         */
-        index_t nb_corners() const
+        index_t nb_facet_corners() const
         {
             return mesh_.facet_corners.nb() ;
         }
         /*
-        * @todo Comment
+        * @todo Comment RENAME !!
         */
-        index_t model_vertex_id_at_corner( index_t corner ) const
+        index_t model_vertex_id_at_facet_corner( index_t corner ) const
         {
             return GeoModelMeshElement::model_vertex_id(
                 mesh_.facet_corners.vertex( corner ) ) ;
@@ -1009,6 +1004,11 @@ namespace RINGMesh {
         bool side( index_t i ) const
         {
             return sides_[i] ;
+        }
+
+        bool is_simplicial() const
+        {
+            return mesh().cells.are_simplices() ;
         }
 
         /*!
