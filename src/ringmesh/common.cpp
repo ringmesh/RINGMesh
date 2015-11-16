@@ -29,10 +29,10 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -56,6 +56,7 @@
 
 #include <ringmesh/io.h>
 #include <ringmesh/tetra_gen.h>
+#include <ringmesh/geogram_extension.h>
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
@@ -65,10 +66,10 @@
 #   include <geogram_gfx/basic/common.h>
 #endif
 
-static bool inited = false ;
+static bool initialized = false ;
 INITIALIZER( initialize ) {
-    if( !inited ) {
-        inited = true ;
+    if( !initialized ) {
+        initialized = true ;
         GEO::initialize() ;
         GEO::CmdLine::import_arg_group( "sys" ) ;
         GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
@@ -77,14 +78,12 @@ INITIALIZER( initialize ) {
         GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
         GEO::CmdLine::import_arg_group( "log" ) ;
         GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
-
 #ifdef RINGMESH_WITH_GRAPHICS
         GEO::Graphics::initialize();
         GEO::CmdLine::import_arg_group( "gfx" ) ;
 #endif
-
-        RINGMesh::RINGMeshIO::initialize() ;
+        RINGMesh::mesh_initialize() ;
         RINGMesh::TetraGen::initialize() ;
-
+        RINGMesh::ringmesh_mesh_io_initialize() ;
     }
 }

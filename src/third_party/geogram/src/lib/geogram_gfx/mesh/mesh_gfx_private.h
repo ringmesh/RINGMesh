@@ -457,6 +457,29 @@ namespace GEO {
         }
 
         /**
+         * \brief Sets picking mode.
+         * \details If picking mode is MESH_NONE, then normal drawing
+         *  is activated, else the color is replaced with the index of
+         *  the elements.
+         * \param[in] what a bitwise or ('|') combination of 
+         *  MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS,
+         *  or MESH_NONE if picking mode should be deactivated
+         */
+        void set_picking_mode(MeshElementsFlags what) {
+            picking_mode_ = what;
+        }
+
+        /**
+         * \brief Gets the current picking mode.
+         * \return a bitwise or ('|') combination of 
+         *  MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS,
+         *  or MESH_NONE if picking mode is deactivated
+         */
+        MeshElementsFlags get_picking_mode() const {
+            return picking_mode_;
+        }
+        
+        /**
          * \brief Creates OpenGL buffers and shaders
          *  if need be.
          * \details May throw an exception if some OpenGL functionalities
@@ -476,6 +499,18 @@ namespace GEO {
         
     protected:
 
+        /**
+         * \brief If picking mode is active, 
+         *  encodes an id as the current OpenGL color.
+         * \param[in] id the id to be encoded as the current
+         *  OpenGL color
+         */
+        void picking_id(index_t id) {
+            if(picking_mode_ != MESH_NONE) {
+                glPickingIdAsColor(id);
+            }
+        }
+        
         /**
          * \brief Defines the default color for one of the programs.
          * \param[in] index index of the program, in 0..PRG_NB - 1
@@ -618,24 +653,6 @@ namespace GEO {
          * \brief Deletes all the vertex buffer objects.
          */
         virtual void delete_VBOs();
-
-
-        /**
-         * \brief Updates the content of an OpenGL buffer object, 
-         *   and resizes it if need be.
-         * \param[in,out] buffer_id OpenGL opaque id of the buffer object. 
-         *   0 means uninitialized.
-         *   may be changed on exit if the buffer needed to be resized.
-         * \param[in] target buffer object target 
-         *   (GL_ARRAY_BUFFER, GL_INDEX_BUFFER ...)
-         * \param[in] new size of the buffer data, in bytes
-         * \param[in] data pointer to the data to be copied into the buffer, 
-         *  of length new_size
-         */
-        static void update_buffer_object(
-            GLuint& buffer_id, GLenum target, size_t new_size, const void* data
-        );
-
 
         /**
          * \brief Tests whether current OpenGL polygon mode is filled.
@@ -852,6 +869,7 @@ namespace GEO {
         bool animate_;
         double time_;
         bool lighting_;
+        MeshElementsFlags picking_mode_;
 
         /** 
          * \brief true if the surface has only triangles and quads.
@@ -864,6 +882,13 @@ namespace GEO {
          *  be done easily with a for() loop.
          */
         GLuint programs_[PRG_NB];
+
+        /**
+         * \brief GPU programs for picking. They are the same as
+         *  the GPU programs, except that the fragment shader 
+         *  sets the primitive Id as the fragment color for picking.
+         */
+        GLuint picking_programs_[PRG_NB];
         
         /**
          * \brief Default frontfacing color to be used 

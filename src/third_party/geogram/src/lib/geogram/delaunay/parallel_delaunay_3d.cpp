@@ -2091,7 +2091,7 @@ namespace GEO {
          * \brief Removes a tetrahedron from the linked list it
          *  belongs to.
          * \details Tetrahedra can be linked, it is used to manage
-         *  both the free list that recycles deleted tetrahedra.
+         *  the free list that recycles deleted tetrahedra.
          * \param[in] t the index of the tetrahedron
          */
         void remove_tet_from_list(index_t t) {

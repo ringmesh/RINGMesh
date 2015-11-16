@@ -391,6 +391,79 @@ namespace GEO {
         }
 
         /**
+         * \brief Computes the point closest to a given point in a nd segment
+         * \param[in] point the query point
+         * \param[in] V0 first extremity of the segment
+         * \param[in] V1 second extremity of the segment
+         * \param[out] closest_point the point closest to \p point in the
+         *  segment [\p V0, \p V1]
+         * \param[out] lambda0 barycentric coordinate of the closest point
+         *  relative to \p V0
+         * \param[out] lambda1 barycentric coordinate of the closest point
+         *  relative to \p V1
+         * \tparam VEC the class that represents the points.
+         * \return the squared distance between the point and
+         *  the segment [\p V0, \p V1]
+         */
+        template <class VEC>
+        inline double point_segment_squared_distance(
+            const VEC& point,
+            const VEC& V0,
+            const VEC& V1,
+            VEC& closest_point,
+            double& lambda0,
+            double& lambda1
+        ) {
+            double l2 = distance2(V0,V1);
+            double t = dot(point - V0, V1 - V0);
+            if(t <= 0.0 || l2 == 0.0) {
+                closest_point = V0;
+                lambda0 = 1.0;
+                lambda1 = 0.0;
+                return distance2(point, V0);
+            } else if(t > l2) {
+                closest_point = V1;
+                lambda0 = 0.0;
+                lambda1 = 1.0;
+                return distance2(point, V1);
+            } 
+            lambda1 = t / l2;
+            lambda0 = 1.0-lambda1;
+            closest_point = lambda0 * V0 + lambda1 * V1;
+            return distance2(point, closest_point);
+        }
+        
+
+        /**
+         * \brief Computes the point closest to a given point in a nd segment
+         * \param[in] point the query point
+         * \param[in] V0 first extremity of the segment
+         * \param[in] V1 second extremity of the segment
+         * \param[out] closest_point the point closest to \p point in the
+         *  segment [\p V0, \p V1]
+         * \param[out] lambda0 barycentric coordinate of the closest point
+         *  relative to \p V0
+         * \param[out] lambda1 barycentric coordinate of the closest point
+         *  relative to \p V1
+         * \tparam VEC the class that represents the points.
+         * \return the squared distance between the point and
+         *  the segment [\p V0, \p V1]
+         */
+        template <class VEC>
+        inline double point_segment_squared_distance(
+            const VEC& point,
+            const VEC& V0,
+            const VEC& V1
+        ) {
+            VEC closest_point;
+            double lambda0;
+            double lambda1;
+            return point_segment_squared_distance(
+                point, V0, V1, closest_point, lambda0, lambda1
+            );
+        }
+        
+        /**
          * \brief Computes the point closest to a given point in a nd triangle
          * \details See
          *  http://www.geometrictools.com/LibMathematics/Distance/Distance.html

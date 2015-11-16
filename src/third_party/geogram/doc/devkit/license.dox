@@ -98,8 +98,6 @@ Bundled third-party software
 ============================
 
 Geogram uses the following softwares:
-- [ANN](http://www.cs.umd.edu/~mount/ANN/): Kd Tree (by [David Mount](https://www.cs.umd.edu/users/mount/)) -
- License: LGPL
 - [AntTweakBar](anttweakbar.sourceforge.net): Simple OpenGL GUI
   (by [Philippe Decaudin](http://phildec.users.sourceforge.net/http://phildec.users.sourceforge.net/)) -
   License: zlib/libpng 
@@ -123,6 +121,10 @@ Optionally, Geogram can be compiled with additional libraries
  (free for academic use, contact Hang Si for other uses)
 - [FPG](https://hal.inria.fr/inria-00344297/): Predicate filter generator
   (by Andreas Meyer and [Sylvain Pion](https://www.linkedin.com/in/sylvainpion))
+
+Some test programs use the following libraries to validate the algorithms:
+- [ANN](http://www.cs.umd.edu/~mount/ANN/): Kd Tree (by [David Mount](https://www.cs.umd.edu/users/mount/)) -
+ License: LGPL
 */
 
 }

@@ -6,4 +6,4 @@ set(VORPALINE_ARCH_32 true)
 message(STATUS "Configuring 32 bits build")
 endif()
 
-include(${CMAKE_SOURCE_DIR}/cmake/platforms/Windows-vs.cmake)
+include(${GEOGRAM_SOURCE_DIR}/cmake/platforms/Windows-vs.cmake)

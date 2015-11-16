@@ -29,10 +29,10 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -106,7 +106,7 @@ namespace RINGMesh {
             elt.value = value ;
         }
 
-        bool find( index_t j, index_t& index = dummy_index_t ) const
+        bool find( index_t j, index_t& index ) const
         {
             for( index_t e = 0; e < nb_elements_; e++ ) {
                 if( elements_[e].index == j ) {

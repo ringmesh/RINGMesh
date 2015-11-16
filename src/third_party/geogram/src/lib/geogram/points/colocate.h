@@ -70,7 +70,6 @@ namespace GEO {
          *  points (set to dim if unspecified).
          * \param[in] nn_algo factory name for nearest neighbor search.
          * \return the number of unique points
-         *  (i.e. max index in old2new + 1).
          */
         index_t GEOGRAM_API colocate(
             const double* points,
@@ -94,7 +93,6 @@ namespace GEO {
          * \param[in] stride number of doubles between two consecutive
          *  points (set to dim if unspecified).
          * \return the number of unique points
-         *  (i.e. max index in old2new + 1).
          */
         index_t GEOGRAM_API colocate_by_lexico_sort(
             const double* points,

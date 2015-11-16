@@ -279,6 +279,35 @@ namespace GEO {
          * \param[in,out] path the path to be converted
          */
         void GEOGRAM_API flip_slashes(std::string& path);
+
+        /**
+         * \brief Copies a file
+         * \param[in] from name of the file to be copied
+         * \param[out] to name of the copy
+         * \retval true if the copy was successful
+         * \retval false otherwise
+         */
+        bool GEOGRAM_API copy_file(
+            const std::string& from, const std::string& to
+        );
+
+        /**
+         * \brief Marks a filename as executable.
+         * \details On unix, it chmods the file, on Windows, does nothing.
+         * \param[in] filename name of the file to be made executable
+         */
+        void GEOGRAM_API set_executable_flag(const std::string& filename);
+
+
+        /**
+         * \brief Normalizes a path.
+         * \details A path is normalized if it is absolute and it does not contain
+         *  any "../" component.
+         * \param[in] path the path to be normalized. The path can have components that
+         *  do not exist.
+         * \return the normalized path
+         */
+        std::string GEOGRAM_API normalized_path(const std::string& path);
     }
 }
 

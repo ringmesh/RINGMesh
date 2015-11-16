@@ -50,9 +50,8 @@ namespace {
 
     using namespace GEO;
 
-    // TODO: a faster implementation with a memory pool
-    // -> Seeing the stats, it does not seem to be worth it.
-
+    /************************************************************************/
+    
     bool expansion_length_stat_ = false;
     std::vector<index_t> expansion_length_histo_;
 
@@ -80,6 +79,115 @@ namespace {
 
     /************************************************************************/
 
+    /**
+     * \brief An optimized memory allocator for objects of 
+     *  small size.
+     * \details It is used by the high-level class expansion_nt
+     *  that allocates expansion objects on the heap. PCK predicates
+     *  do not use it (they use the more efficient low-level API 
+     *  that allocates expansion objects on the stack).
+     */
+    class Pools {
+    public:
+
+        /**
+         * \brief Creates a new Pools object
+         */
+        Pools() : pools_(1024,static_cast<void*>(0)) {
+            chunks_.reserve(1024);
+        }
+
+        /**
+         * \brief Pools destructor.
+         */
+        ~Pools() {
+            for(index_t i=0; i<chunks_.size(); ++i) {
+                delete[] chunks_[i];
+            }
+        }
+
+        /**
+         * \brief Allocates an element.
+         * \param[in] size size in bytes of the element to be allocated
+         * \return a pointer to the allocated element
+         * \note elements allocated with fast_malloc() should be deallocated
+         *  with fast_free()
+         */
+        void* malloc(size_t size) {
+            if(size >= pools_.size()) {
+                return ::malloc(size);
+            }
+            if(pools_[size] == nil) {
+                new_chunk(size);
+            }
+            void* result = pools_[size];
+            pools_[size] = *static_cast<void**>(pools_[size]);
+            return result;
+        }
+
+        /**
+         * \brief Deallocates an element.
+         * \param[in] ptr a pointer to the element to be deallocated
+         * \param[in] size number of bytes of the element, as specified
+         *   in the call to fast_malloc() that allocated it
+         */
+        void free(void* ptr, size_t size) {
+            if(size >= pools_.size()) {
+                ::free(ptr);
+                return;
+            }
+            *static_cast<void**>(ptr) = pools_[size];
+            pools_[size] = ptr;
+        }
+
+        
+    protected:
+        /**
+         * \brief Number of elements in each individual chunk
+         *  allocation.
+         */
+        static const index_t POOL_CHUNK_SIZE = 512;
+        
+        /**
+         * \brief Allocates a new chunk of elements and prepends
+         *  it to the free list for allocations of the specified 
+         *  size.
+         * \param[in] size_in size of the elements to be allocated.
+         */
+        void new_chunk(size_t size_in) {
+            size_t size = (size_in / 8 + 1)*8; // Align memory.
+            Memory::pointer chunk = new Memory::byte[size * POOL_CHUNK_SIZE];
+            for(index_t i=0; i<POOL_CHUNK_SIZE-1; ++i) {
+                Memory::pointer cur = chunk + size * i;
+                Memory::pointer next = cur + size;
+                *reinterpret_cast<void**>(cur) = next;
+            }
+            *reinterpret_cast<void**>(chunk + (size-1)*POOL_CHUNK_SIZE) = pools_[size_in];
+            pools_[size_in] = chunk;
+            chunks_.push_back(chunk);
+        }
+
+        
+    private:
+        /**
+         * \brief The free lists of the pools. Index corresponds
+         *  to element size in bytes.
+         */
+        std::vector<void*> pools_;
+        
+        /**
+         * \brief Pointers to all the allocated chunks.
+         * \details Used by the destructor to release all the
+         *   allocated memory on exit.
+         */
+        std::vector<Memory::pointer> chunks_;
+
+    };
+
+    static Pools pools_;
+    
+    /************************************************************************/
+    
     /**
      * \brief Computes the sum of two doubles into a length 2 expansion.
      * \details By Jonathan Shewchuk.
@@ -639,15 +747,14 @@ namespace GEO {
             Process::release_spinlock(lock);
         }
         Memory::pointer addr = Memory::pointer(
-            malloc(expansion::bytes(capa) + sizeof(index_t))
+            pools_.malloc(expansion::bytes(capa))
         );
-        expansion* result = new(addr + sizeof(index_t))expansion(capa);
-        expansion_refcount(result) = 0;
+        expansion* result = new(addr)expansion(capa);
         return result;
     }
 
     void expansion::delete_expansion_on_heap(expansion* e) {
-        free(expansion_baddr(e));
+        pools_.free(e, expansion::bytes(e->capacity()));
     }
 
     // ====== Initialization from expansion and double ===============
@@ -751,8 +858,6 @@ namespace GEO {
             two_two_product(a.data(), b.data(), x_);
             set_length(8);
         } else {
-            // TODO: should we split the shortest or the longest
-            // expansion ? 
             // Recursive distillation: the shortest expansion
             // is split into two parts.
             if(a.length() < b.length()) {
@@ -887,6 +992,109 @@ namespace GEO {
         return *this;
     }
 
+    expansion& expansion::assign_length2(
+        const expansion& x, const expansion& y, const expansion& z
+    ) {
+        const expansion& x2 = expansion_square(x);
+        const expansion& y2 = expansion_square(y);
+        const expansion& z2 = expansion_square(z);
+        this->assign_sum(x2,y2,z2);
+        return *this;
+    }
+    
     /************************************************************************/
+
+    Sign sign_of_expansion_determinant(
+        const expansion& a00,const expansion& a01,  
+        const expansion& a10,const expansion& a11
+    ) {
+        const expansion& result = expansion_det2x2(a00, a01, a10, a11);
+        return result.sign();
+    }
+
+    Sign sign_of_expansion_determinant(
+        const expansion& a00,const expansion& a01,const expansion& a02,
+        const expansion& a10,const expansion& a11,const expansion& a12,
+        const expansion& a20,const expansion& a21,const expansion& a22
+    ) {
+        // First compute the det2x2
+        const expansion& m01 =
+            expansion_det2x2(a00, a10, a01, a11); 
+        const expansion& m02 =
+            expansion_det2x2(a00, a20, a01, a21);
+        const expansion& m12 =
+            expansion_det2x2(a10, a20, a11, a21);
+
+        // Now compute the minors of rank 3
+        const expansion& z1 = expansion_product(m01,a22);
+        const expansion& z2 = expansion_product(m02,a12).negate();
+        const expansion& z3 = expansion_product(m12,a02);
+
+        const expansion& result = expansion_sum3(z1,z2,z3);
+        return result.sign();
+    }
+    
+    Sign sign_of_expansion_determinant(
+        const expansion& a00,const expansion& a01,
+        const expansion& a02,const expansion& a03,
+        const expansion& a10,const expansion& a11,
+        const expansion& a12,const expansion& a13,
+        const expansion& a20,const expansion& a21,
+        const expansion& a22,const expansion& a23,
+        const expansion& a30,const expansion& a31,
+        const expansion& a32,const expansion& a33 
+    ) {
+
+        // First compute the det2x2        
+        const expansion& m01 =
+            expansion_det2x2(a10,a00,a11,a01);
+        const expansion& m02 =
+            expansion_det2x2(a20,a00,a21,a01);
+        const expansion& m03 =
+            expansion_det2x2(a30,a00,a31,a01);
+        const expansion& m12 =
+            expansion_det2x2(a20,a10,a21,a11);
+        const expansion& m13 =
+            expansion_det2x2(a30,a10,a31,a11);
+        const expansion& m23 =
+            expansion_det2x2(a30,a20,a31,a21);     
+        
+        // Now compute the minors of rank 3
+        const expansion& m012_1 = expansion_product(m12,a02);
+        expansion& m012_2 = expansion_product(m02,a12); m012_2.negate();
+        const expansion& m012_3 = expansion_product(m01,a22);
+        const expansion& m012 = expansion_sum3(m012_1, m012_2, m012_3);
+
+        const expansion& m013_1 = expansion_product(m13,a02);
+        expansion& m013_2 = expansion_product(m03,a12); m013_2.negate();
+        
+        const expansion& m013_3 = expansion_product(m01,a32);
+        const expansion& m013 = expansion_sum3(m013_1, m013_2, m013_3);
+        
+        const expansion& m023_1 = expansion_product(m23,a02);
+        expansion& m023_2 = expansion_product(m03,a22); m023_2.negate();
+        const expansion& m023_3 = expansion_product(m02,a32);
+        const expansion& m023 = expansion_sum3(m023_1, m023_2, m023_3);
+
+        const expansion& m123_1 = expansion_product(m23,a12);
+        expansion& m123_2 = expansion_product(m13,a22); m123_2.negate();
+        const expansion& m123_3 = expansion_product(m12,a32);
+        const expansion& m123 = expansion_sum3(m123_1, m123_2, m123_3);
+        
+        // Now compute the minors of rank 4
+        const expansion& m0123_1 = expansion_product(m123,a03);
+        const expansion& m0123_2 = expansion_product(m023,a13);
+        const expansion& m0123_3 = expansion_product(m013,a23);
+        const expansion& m0123_4 = expansion_product(m012,a33);
+
+        const expansion& z1 = expansion_sum(m0123_1, m0123_3);
+        const expansion& z2 = expansion_sum(m0123_2, m0123_4);
+
+        const expansion& result = expansion_diff(z1,z2);
+        return result.sign();
+    }
+    
+    /************************************************************************/
+    
 }
 

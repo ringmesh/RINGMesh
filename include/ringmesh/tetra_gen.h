@@ -29,10 +29,10 @@
  *     Antoine.Mazuyer@univ-lorraine.fr 
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
@@ -44,11 +44,17 @@
 #include <ringmesh/common.h>
 #include <ringmesh/utils.h>
 
-#include <geogram/mesh/mesh.h>
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
+#include <geogram/basic/factory.h>
 
 #include <vector>
+
+/*!
+* @file ringmesh/tetragen.h
+* @brief API class interfacing GeoModel with external tetrahedral meshers 
+* @author Arnaud Botella
+*/
 
 #ifdef USE_MG_TETRA
     extern "C" {
@@ -57,15 +63,18 @@
     }
 #endif
 
+namespace GEO {
+    class Mesh ;
+}
+
 namespace RINGMesh {
-    class BoundaryModelElement ;
+    class GeoModelElement ;
     class TetraGen ;
     class WellGroup ;
 }
 
 namespace RINGMesh {
 
-    static const std::vector< vec3 > vector_vec3 ;
     class RINGMESH_API TetraGen: public GEO::Counted {
         ringmesh_disable_copy( TetraGen ) ;
     public:
@@ -73,26 +82,30 @@ namespace RINGMesh {
         static TetraGen* create( GEO::Mesh& tetmesh, const std::string& algo_name ) ;
         static void initialize() ;
 
-        void set_boundaries( const BoundaryModelElement* region, const WellGroup* wells = nil ) ;
+        void set_boundaries( const GeoModelElement& region, const WellGroup* wells = nil ) ;
         void set_internal_points( const std::vector< vec3 >& points ) ;
 
         virtual bool tetrahedralize( bool refine = true ) = 0 ;
 
     protected:
-        TetraGen( GEO::Mesh& tetmesh ) ;
+        TetraGen() ;
 
         void initialize_storage( index_t nb_points, index_t nb_tets ) ;
         void set_point( index_t index, const double* point ) ;
         void set_tetra( index_t index, int* tet, index_t nb_lines, index_t nb_triangles ) ;
 
+    private:
+        void set_mesh( GEO::Mesh& tetmesh ) ;
+
     protected:
-        GEO::Mesh& tetmesh_ ;
-        const BoundaryModelElement* region_ ;
+        GEO::Mesh* tetmesh_ ;
+        const GeoModelElement* region_ ;
         const WellGroup* wells_ ;
     } ;
 
     typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
-    typedef GEO::Factory1< TetraGen, GEO::Mesh& > TetraGenFactory;
+    typedef GEO::Factory0< TetraGen > TetraGenFactory;
+
 #define ringmesh_register_tetragen(type, name) \
     geo_register_creator(TetraGenFactory, type, name)
 }

@@ -29,10 +29,10 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -46,8 +46,7 @@
 #include <geogram/mesh/mesh.h>
 
 namespace RINGMesh {
-    class BoundaryModel ;
-    class Edge ;
+    class GeoModel ;
     class Well ;
 }
 
@@ -153,6 +152,29 @@ namespace RINGMesh {
         index_t id_ ;
         /// id in the corners_ vector the the well
         index_t corners_[2] ;
+    } ;
+
+// --------------------------------------------------------------------------
+
+    class RINGMESH_API Edge {
+    public:
+        Edge( const vec3& v0, const vec3& v1 )
+        {
+            values_[ 0 ] = v0 ;
+            values_[ 1 ] = v1 ;
+        }
+
+        const vec3& value( index_t i ) const
+        {
+            return values_[ i ] ;
+        }
+
+        vec3 barycenter() const
+        {
+            return ( values_[ 0 ] + values_[ 1 ] ) * 0.5 ;
+        }
+    private:
+        vec3 values_[2] ;
     } ;
 
 // --------------------------------------------------------------------------
@@ -270,6 +292,12 @@ namespace RINGMesh {
 
 // --------------------------------------------------------------------------
 
+    /*! 
+     * @todo Implement something more generic than WellGroups
+     * We wnat to dela with Lines of Points that might not be Well [JP]
+     *
+     * @todo Comment
+     */
     class RINGMESH_API WellGroup {
         ringmesh_disable_copy( WellGroup ) ;
     public:
@@ -285,13 +313,13 @@ namespace RINGMesh {
             std::vector< std::vector< Edge > >& edges ) const ;
 
         /*!
-         * Gets the associated BoundaryModel
+         * Gets the associated GeoModel
          */
-        const BoundaryModel* model() const { return model_ ;}
+        const GeoModel* model() const { return model_ ;}
         /*!
-         * Sets the associated BoundaryModel
+         * Sets the associated GeoModel
          */
-        void set_model( RINGMesh::BoundaryModel* model ) { model_ = model ;}
+        void set_model( RINGMesh::GeoModel* model ) { model_ = model ;}
         index_t find_well( const std::string& name ) const ;
 
         void create_wells( index_t nb_wells ) ;
@@ -311,8 +339,8 @@ namespace RINGMesh {
     protected:
         /// Vector of the wells
         std::vector< Well* > wells_ ;
-        /// Associated BoundaryModel
-        BoundaryModel* model_ ;
+        /// Associated GeoModel
+        GeoModel* model_ ;
     } ;
 }
 #endif

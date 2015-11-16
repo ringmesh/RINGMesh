@@ -29,10 +29,10 @@
  *     Antoine.Mazuyer@univ-lorraine.fr
  *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
+ *     http://www.ring-team.org
  *
- *     GOCAD Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -41,168 +41,121 @@
 #ifndef __RINGMESH_IO__
 #define __RINGMESH_IO__
 
-
 #include <ringmesh/common.h>
 
 #include <geogram/basic/factory.h>
 
-
 namespace RINGMesh {
-    class BoundaryModel ;
-    class MacroMesh ;
+    class GeoModel ;
+    class GeoModel ;
     class WellGroup ;
 }
 
 namespace RINGMesh {
-    /*
-     * @todo Review : Do we really need another namespace for this ? 
-     *       I do not see what is the point. [JP]
-     */
-    namespace RINGMeshIO {
-        //    ___                   _               __  __         _     _
-        //   | _ ) ___ _  _ _ _  __| |__ _ _ _ _  _|  \/  |___  __| |___| |
-        //   | _ \/ _ \ || | ' \/ _` / _` | '_| || | |\/| / _ \/ _` / -_) |
-        //   |___/\___/\_,_|_||_\__,_\__,_|_|  \_, |_|  |_\___/\__,_\___|_|
-        //                                     |__/
 
-        bool RINGMESH_API load(
-            const std::string& filename,
-            BoundaryModel& model ) ;
+    bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
 
-        bool RINGMESH_API save(
-            BoundaryModel& model,
-            const std::string& filename ) ;
+    bool RINGMESH_API geomodel_surface_load( const std::string& filename, GeoModel& model ) ;
 
-        //    __  __                 __  __        _
-        //   |  \/  |__ _ __ _ _ ___|  \/  |___ __| |_
-        //   | |\/| / _` / _| '_/ _ \ |\/| / -_|_-< ' \
-        //   |_|  |_\__,_\__|_| \___/_|  |_\___/__/_||_|
-        //
+    bool RINGMESH_API geomodel_surface_save( const GeoModel& model, const std::string& filename ) ;
 
-        bool RINGMESH_API load(
-            const std::string& mesh_file,
-            MacroMesh& mm ) ;
+    bool RINGMESH_API geomodel_volume_load( const std::string& filename, GeoModel& model ) ;
 
-        bool RINGMESH_API save(
-            const MacroMesh& mm,
-            const std::string& filename ) ;
+    bool RINGMESH_API geomodel_volume_save( const GeoModel& model, const std::string& filename ) ;
 
-        //   __      __   _ _  ___
-        //   \ \    / /__| | |/ __|_ _ ___ _  _ _ __
-        //    \ \/\/ / -_) | | (_ | '_/ _ \ || | '_ \
-        //     \_/\_/\___|_|_|\___|_| \___/\_,_| .__/
-        //                                     |_|
-
-        bool RINGMESH_API load(
-            const std::string& mesh_file,
-            WellGroup& wells ) ;
+    bool RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
 
 
-        class RINGMESH_API BoundaryModelIOHandler: public GEO::Counted {
-        public:
-            static void initialize() ;
+    class RINGMESH_API GeoModelSurfaceIOHandler: public GEO::Counted {
+    public:
+        static void initialize() ;
 
-            static BoundaryModelIOHandler* create( const std::string& format ) ;
+        static GeoModelSurfaceIOHandler* create( const std::string& format ) ;
 
-            static BoundaryModelIOHandler* get_handler(
-                const std::string& filename ) ;
+        static GeoModelSurfaceIOHandler* get_handler( const std::string& filename ) ;
 
-            virtual bool load(
-                const std::string& filename,
-                BoundaryModel& model ) = 0 ;
+        virtual bool load( const std::string& filename, GeoModel& model ) = 0 ;
 
-            virtual bool save(
-                BoundaryModel& model,
-                const std::string& filename ) = 0 ;
+        virtual bool save( const GeoModel& model, const std::string& filename ) = 0 ;
 
-        protected:
-            BoundaryModelIOHandler()
-            {
-            }
+    protected:
+        GeoModelSurfaceIOHandler()
+        {
+        }
 
-            virtual ~BoundaryModelIOHandler()
-            {
-            }
-        } ;
+        virtual ~GeoModelSurfaceIOHandler()
+        {
+        }
+    } ;
 
-        typedef GEO::SmartPointer< BoundaryModelIOHandler > BoundaryModelIOHandler_var ;
-        typedef GEO::Factory0< BoundaryModelIOHandler > BoundaryModelIOHandlerFactory ;
+    typedef GEO::SmartPointer< GeoModelSurfaceIOHandler > GeoModelSurfaceIOHandler_var ;
+    typedef GEO::Factory0< GeoModelSurfaceIOHandler > GeoModelSurfaceIOHandlerFactory ;
 
-#define ringmesh_register_BoundaryModelIOHandler_creator( type, name ) \
-    geo_register_creator( BoundaryModelIOHandlerFactory, type, name )
+#define ringmesh_register_GeoModelSurfaceIOHandler_creator( type, name ) \
+    geo_register_creator( GeoModelSurfaceIOHandlerFactory, type, name )
 
+    /***************************************************************************/
 
-        /***************************************************************************/
+    class RINGMESH_API GeoModelVolumeIOHandler: public GEO::Counted {
+    public:
+        static void initialize() ;
 
-        class RINGMESH_API MacroMeshIOHandler: public GEO::Counted {
-        public:
-            static void initialize() ;
+        static GeoModelVolumeIOHandler* create( const std::string& format ) ;
 
-            static MacroMeshIOHandler* create( const std::string& format ) ;
+        static GeoModelVolumeIOHandler* get_handler( const std::string& filename ) ;
 
-            static MacroMeshIOHandler* get_handler( const std::string& filename ) ;
+        virtual bool load( const std::string& filename, GeoModel& mesh ) = 0 ;
 
-            virtual bool load( const std::string& filename, MacroMesh& mesh ) = 0 ;
+        virtual bool save( const GeoModel& mesh, const std::string& filename ) = 0 ;
 
-            virtual bool save(
-                const MacroMesh& mesh,
-                const std::string& filename ) = 0 ;
+    protected:
+        GeoModelVolumeIOHandler()
+        {
+        }
 
-        protected:
-            MacroMeshIOHandler()
-            {
-            }
+        virtual ~GeoModelVolumeIOHandler()
+        {
+        }
+    } ;
 
-            virtual ~MacroMeshIOHandler()
-            {
-            }
-        } ;
+    typedef GEO::SmartPointer< GeoModelVolumeIOHandler > GeoModelVolumeIOHandler_var ;
+    typedef GEO::Factory0< GeoModelVolumeIOHandler > GeoModelVolumeIOHandlerFactory ;
 
-        typedef GEO::SmartPointer< MacroMeshIOHandler > MacroMeshIOHandler_var ;
-        typedef GEO::Factory0< MacroMeshIOHandler > MacroMeshIOHandlerFactory ;
+#define ringmesh_register_GeoModelVolumeIOHandler_creator( type, name ) \
+    geo_register_creator( GeoModelVolumeIOHandlerFactory, type, name )
 
-#define ringmesh_register_MacroMeshIOHandler_creator( type, name ) \
-    geo_register_creator( MacroMeshIOHandlerFactory, type, name )
+    /***************************************************************************/
 
+    class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
+    public:
+        static void initialize() ;
 
-        /***************************************************************************/
+        static WellGroupIOHandler* create( const std::string& format ) ;
 
+        static WellGroupIOHandler* get_handler( const std::string& filename ) ;
 
-        class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
-        public:
-            static void initialize() ;
+        virtual bool load( const std::string& filename, WellGroup& mesh ) = 0 ;
 
-            static WellGroupIOHandler* create( const std::string& format ) ;
+        virtual bool save( const WellGroup& mesh, const std::string& filename ) = 0 ;
 
-            static WellGroupIOHandler* get_handler( const std::string& filename ) ;
+    protected:
+        WellGroupIOHandler()
+        {
+        }
 
-            virtual bool load( const std::string& filename, WellGroup& mesh ) = 0 ;
+        virtual ~WellGroupIOHandler()
+        {
+        }
+    } ;
 
-            virtual bool save(
-                const WellGroup& mesh,
-                const std::string& filename ) = 0 ;
-
-        protected:
-            WellGroupIOHandler()
-            {
-            }
-
-            virtual ~WellGroupIOHandler()
-            {
-            }
-        } ;
-
-        typedef GEO::SmartPointer< WellGroupIOHandler > WellGroupIOHandler_var ;
-        typedef GEO::Factory0< WellGroupIOHandler > WellGroupIOHandlerFactory ;
+    typedef GEO::SmartPointer< WellGroupIOHandler > WellGroupIOHandler_var ;
+    typedef GEO::Factory0< WellGroupIOHandler > WellGroupIOHandlerFactory ;
 
 #define ringmesh_register_WellGroupIOHandler_creator( type, name ) \
     geo_register_creator( WellGroupIOHandlerFactory, type, name )
 
+    /***************************************************************************/
 
-        /***************************************************************************/
-
-        void RINGMESH_API initialize() ;
-
-    }
+    void RINGMESH_API mesh_initialize() ;
 }
 #endif

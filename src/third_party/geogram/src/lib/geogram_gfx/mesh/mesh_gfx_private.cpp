@@ -71,11 +71,13 @@ namespace GEO {
         animate_ = false;
         time_ = 0.0;
         lighting_ = true;
+        picking_mode_ = MESH_NONE;
         
         triangles_and_quads_ = false;
         
         for(index_t i=0; i<PRG_NB; ++i) {
             programs_[i] = 0;
+            picking_programs_[i] = 0;            
             set_color(i, 0.9f, 0.9f, 0.9f);
             set_back_color(i, 0.9f, 0.9f, 0.9f);            
         }
@@ -154,6 +156,8 @@ namespace GEO {
         points_size_ = rhs.points_size_;
         mesh_width_ = rhs.mesh_width_;
         mesh_border_width_ = rhs.mesh_border_width_;
+
+        picking_mode_ = rhs.picking_mode_;
     }
     
     
@@ -199,8 +203,38 @@ namespace GEO {
 
     void MeshGfxImpl::begin_shader(ShaderName name) {
         geo_assert(name < PRG_NB);
-        glUseProgram(programs_[name]);
-        set_colors(name);
+        if(picking_mode_ == MESH_NONE) {
+            glUseProgram(programs_[name]);
+            set_colors(name);
+        } else {
+            glUseProgram(picking_programs_[name]);
+            bool pick = false;
+            switch(name) {
+            case PRG_POINTS:
+                pick = ((picking_mode_ & MESH_VERTICES) != 0);
+                break;
+            case PRG_LINES:
+                pick = ((picking_mode_ & MESH_EDGES) != 0);
+                break;                
+            case PRG_TRI:
+            case PRG_QUAD:
+                pick = ((picking_mode_ & MESH_FACETS) != 0);
+                break;
+            case PRG_TET:
+            case PRG_HEX:
+            case PRG_PRISM:
+            case PRG_PYRAMID:
+                pick = ((picking_mode_ & MESH_CELLS) != 0);
+                break;
+            default:
+                geo_assert_not_reached;
+                break;
+            }
+            GLint loc = glGetUniformLocation(
+                picking_programs_[name], "picking"
+            );
+            glUniform1i(loc, pick ? 1 : 0);
+        }
     }
 
     void MeshGfxImpl::end_shader() {
@@ -208,10 +242,14 @@ namespace GEO {
     }
 
     void MeshGfxImpl::set_colors(ShaderName name) {
-        geo_assert(name < PRG_NB);        
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, colors_[name]);        
-        glMaterialfv(GL_BACK, GL_DIFFUSE, back_colors_[name]);
-        glColor3f(colors_[name][0], colors_[name][1], colors_[name][2]);
+        geo_assert(name < PRG_NB);
+        if(picking_mode_ != MESH_NONE) {
+            glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        } else {
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, colors_[name]);        
+            glMaterialfv(GL_BACK, GL_DIFFUSE, back_colors_[name]);
+            glColor3f(colors_[name][0], colors_[name][1], colors_[name][2]);
+        }
     }
 
     void MeshGfxImpl::setup_shaders() {
@@ -224,24 +262,25 @@ namespace GEO {
                 glDeleteProgram(programs_[i]);
                 programs_[i] = 0;
             }
+            if(picking_programs_[i] != 0) {
+                glDeleteProgram(picking_programs_[i]);
+                picking_programs_[i] = 0;
+            }
         }
     }
 
     void MeshGfxImpl::setup_VBOs() {
 
-        if(!VBO_dirty_) {
-            return;
-        }
-        
         if(mesh_->vertices.nb() != 0) {
             if(mesh_->vertices.single_precision()) {
                 
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(float);
 
-                update_buffer_object(
+                update_or_check_buffer_object(
                     vertices_VBO_, GL_ARRAY_BUFFER,
-                    size, mesh_->vertices.single_precision_point_ptr(0)
+                    size, mesh_->vertices.single_precision_point_ptr(0),
+                    VBO_dirty_
                 );
                 
             } else {
@@ -249,34 +288,38 @@ namespace GEO {
                 size_t size = mesh_->vertices.nb() *
                     mesh_->vertices.dimension() * sizeof(double);
 
-                update_buffer_object(
+                update_or_check_buffer_object(
                     vertices_VBO_, GL_ARRAY_BUFFER,
-                    size, mesh_->vertices.point_ptr(0)
+                    size, mesh_->vertices.point_ptr(0),
+                    VBO_dirty_
                 );
             }
         }
 
         if(mesh_->edges.nb() != 0) {
-            update_buffer_object(
+            update_or_check_buffer_object(
                 edge_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                 mesh_->edges.nb() * 2 * sizeof(int),
-                mesh_->edges.vertex_index_ptr(0)
+                mesh_->edges.vertex_index_ptr(0),
+                VBO_dirty_
             );
         }
         
         if(mesh_->facets.nb() != 0) {
-            update_buffer_object(
+            update_or_check_buffer_object(
                 facet_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                 mesh_->facet_corners.nb() * sizeof(int),
-                mesh_->facet_corners.vertex_index_ptr(0)
+                mesh_->facet_corners.vertex_index_ptr(0),
+                VBO_dirty_
             );
         }
         
         if(mesh_->cells.nb() != 0) {
-            update_buffer_object(
+            update_or_check_buffer_object(
                 cell_indices_VBO_, GL_ELEMENT_ARRAY_BUFFER,
                 mesh_->cell_corners.nb() * sizeof(int),
-                mesh_->cell_corners.vertex_index_ptr(0)                
+                mesh_->cell_corners.vertex_index_ptr(0),
+                VBO_dirty_
             );
         }
 
@@ -302,69 +345,6 @@ namespace GEO {
         }
     }
     
-
-    void MeshGfxImpl::update_buffer_object(
-        GLuint& buffer_id, GLenum target, size_t new_size, const void* data
-    ) {
-        static bool init = false;
-        static bool use_glGetBufferParameteri64v = true;
-
-        // Note: there is a version of glGetBufferParameteriv that uses
-        // 64 bit parameters. Since array data larger than 4Gb will be
-        // common place, it is this version that should be used. However,
-        // it is not supported by the Intel driver (therefore we fallback
-        // to the standard 32 bits version if such a driver is detected).
-        
-        if(!init) {
-            init = true;
-            const char* vendor = (const char*)glGetString(
-                GL_VENDOR
-            );
-            use_glGetBufferParameteri64v = (
-                strlen(vendor) < 5 || strncmp(vendor, "Intel", 5) != 0
-            );
-            if(!use_glGetBufferParameteri64v) {
-                Logger::warn("GLSL")
-                    << "Buggy Intel driver detected (working around...)"
-                    << std::endl;
-            }
-        }
-
-        if(new_size == 0) {
-            if(buffer_id != 0) {
-                glDeleteBuffers(1, &buffer_id);
-                buffer_id = 0;
-            }
-            return;
-        }
-
-        GLint64 size = 0;        
-        if(buffer_id == 0) {
-            glGenBuffers(1, &buffer_id);
-            glBindBuffer(target, buffer_id);            
-        } else {
-            glBindBuffer(target, buffer_id);
-            
-            // See comment at the beginning of the function.
-            if(use_glGetBufferParameteri64v) {
-                glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&size);
-            } else {
-                GLint size32=0;
-                glGetBufferParameteriv(target,GL_BUFFER_SIZE,&size32);
-                size = GLint64(size32);
-            }
-        }
-        
-        if(new_size == size_t(size)) {
-            glBufferSubData(target, 0, GLsizeiptr(size), data);
-        } else {
-            glBufferData(
-                target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
-            );
-        }
-    }
-
-
     void MeshGfxImpl::glMeshFacetNormal(index_t f) {
         if(mesh_->vertices.single_precision()) {
             float N[3];
@@ -434,12 +414,14 @@ namespace GEO {
     }
 
     void MeshGfxImpl::draw_triangles_and_quads() {
+
         begin_draw(MESH_FACETS);
 
         // TODO: we could probably group primitives of the same type into
         // a single call... (like what we do for cells)
-        
+
         begin_shader(PRG_TRI);
+
         for(unsigned int f = 0; f < mesh_->facets.nb(); ++f) {
             unsigned int b = mesh_->facets.corners_begin(f);
             unsigned int e = mesh_->facets.corners_end(f);
@@ -451,8 +433,9 @@ namespace GEO {
             }
         }
         end_shader();
-        
+
         begin_shader(PRG_QUAD);
+
         for(unsigned int f = 0; f < mesh_->facets.nb(); f++) {
             unsigned int b = mesh_->facets.corners_begin(f);
             unsigned int e = mesh_->facets.corners_end(f);
@@ -470,26 +453,30 @@ namespace GEO {
 
     void MeshGfxImpl::draw_polygons() {
         bool filled_polygons = glFillsPolygons();
-        if(filled_polygons) {
+        bool normals = filled_polygons && (picking_mode_ == MESH_NONE);
+        if(normals) {
             glEnable(GL_LIGHTING);
             glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
             set_colors(PRG_TRI);
+        }
+        if(picking_mode_ != MESH_NONE) {
+            glDisable(GL_LIGHTING);
         }
         begin_draw(MESH_FACETS);
         for(unsigned int f = 0; f < mesh_->facets.nb(); ++f) {
             unsigned int b = mesh_->facets.corners_begin(f);
             unsigned int e = mesh_->facets.corners_end(f);
-
-            if(filled_polygons) {
+            if(normals) {
                 glMeshFacetNormal(f);
             }
+            picking_id(f);
             glDrawElements(
                 GL_POLYGON, GLsizei(e - b),
                 GL_UNSIGNED_INT, (void*) (b * sizeof(int))
             );
         }
         end_draw();
-        if(glFillsPolygons()) {
+        if(normals) {
             glDisable(GL_LIGHTING);
         }
     }
@@ -532,6 +519,7 @@ namespace GEO {
                 if(!GLSL_mode) {
                     glTriangleNormal(p[0],p[1],p[2]);
                 }
+                picking_id(t);
                 glVertex3fv(p[0]);
                 glVertex3fv(p[1]);
                 glVertex3fv(p[2]);
@@ -549,6 +537,7 @@ namespace GEO {
                 if(!GLSL_mode) {
                     glTriangleNormal(p[0],p[1],p[2]);
                 }
+                picking_id(t);                
                 glVertex3dv(p[0]);
                 glVertex3dv(p[1]);
                 glVertex3dv(p[2]);
@@ -773,7 +762,7 @@ namespace GEO {
             return;
         }
 
-        if(show_mesh_) {
+        if(show_mesh_ && (picking_mode_ == MESH_NONE)) {
             glDisable(GL_LIGHTING);
             glLineWidth(GLfloat(mesh_width_));
             set_colors(PRG_LINES);
@@ -800,10 +789,15 @@ namespace GEO {
     }
 
     void MeshGfxImplNoShader::draw_surface_borders() {
-        if(mesh_->facets.nb() == 0) {
+
+        if(picking_mode_ != MESH_NONE) {
             return;
         }
         
+        if(mesh_->facets.nb() == 0) {
+            return;
+        }
+
         glLineWidth(GLfloat(mesh_border_width_));
         set_colors(PRG_LINES);        
         glDisable(GL_LIGHTING);
@@ -868,7 +862,7 @@ namespace GEO {
                     indices[0] = mesh_->cells.facet_vertex(c,f,0);
                     indices[1] = mesh_->cells.facet_vertex(c,f,1);
                     indices[2] = mesh_->cells.facet_vertex(c,f,2);
-                    glMeshTriangleNormal(indices[0],indices[1],indices[2]);                    
+                    glMeshTriangleNormal(indices[0],indices[1],indices[2]);
                     glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,indices);
                 } break;
                 case 4: {
@@ -932,8 +926,31 @@ namespace {
         "                  mix(vec4(mesh_color,1.0),result,edge_factor()) : \n"
         "                  result ;                                         \n"
         "}                                                                  \n";
-    
 
+    /**
+     * \brief The fragment shader for picking.
+     * \details Transforms the gl_PrimitiveID into a color and outputs
+     *  it into the frame buffer.
+     */
+    // Note There is packUnorm4x8() and unpackUnorm4x8() that does what
+    // we want, but it is only supported in GLSL 4.1...
+    const char* fshader_picking_source = 
+        "#version 150 compatibility                                         \n"
+        "uniform bool picking = true ;                                      \n"
+        "uniform vec4 picking_const = vec4(1.0, 1.0, 1.0, 1.0);             \n"
+        "out vec4 frag_color ;                                              \n"
+        "vec4 encode_prim_id() {                                            \n"
+        "  return picking ? vec4(                                           \n"
+        "     float(gl_PrimitiveID         & 255)/255.0,                    \n"
+        "     float((gl_PrimitiveID >>  8) & 255)/255.0,                    \n"
+        "     float((gl_PrimitiveID >> 16) & 255)/255.0,                    \n"
+        "     float((gl_PrimitiveID >> 24) & 255)/255.0                     \n"
+        "  ) : picking_const;                                               \n"
+        "}                                                                  \n"
+        "void main() {                                                      \n"
+        "  frag_color = encode_prim_id();                                   \n"
+        "}                                                                  \n";
+        
     /**
      * \brief The fragment shader for points.
      * \details Makes the points appear as small spheres.
@@ -968,6 +985,41 @@ namespace {
         "}                                                                  \n";
 
 
+    /**
+     * \brief The fragment shader for picking points.
+     * \details Makes the points appear as small spheres.
+     *   It (approximately) updates the depth buffer in such
+     *   a way that the intersection between overlapping 
+     *   glyphs is (approximately) correct.
+     */
+
+    const char* points_fshader_picking_source =
+        "#version 150 compatibility                                         \n"
+        "#extension GL_ARB_conservative_depth : enable                      \n"
+        "layout (depth_less) out float gl_FragDepth;                        \n"
+        "uniform bool picking = true ;                                      \n"
+        "uniform vec4 picking_const = vec4(1.0, 1.0, 1.0, 1.0);             \n"
+        "out vec4 frag_color ;                                              \n"
+        "vec4 encode_prim_id() {                                            \n"
+        "  return picking ? vec4(                                           \n"
+        "     float(gl_PrimitiveID         & 255)/255.0,                    \n"
+        "     float((gl_PrimitiveID >>  8) & 255)/255.0,                    \n"
+        "     float((gl_PrimitiveID >> 16) & 255)/255.0,                    \n"
+        "     float((gl_PrimitiveID >> 24) & 255)/255.0                     \n"
+        "  ) : picking_const;                                               \n"
+        "}                                                                  \n"
+        "void main() {                                                      \n"
+        "   vec2 V = 2.0*(gl_TexCoord[0].xy - vec2(0.5, 0.5));              \n"
+        "   float one_minus_r2 = 1.0 - dot(V,V);                            \n"
+        "   if(one_minus_r2 < 0.0) {                                        \n"
+        "      discard;                                                     \n"
+        "   }                                                               \n"
+        "   vec3 W = vec3(V.x, -V.y, sqrt(one_minus_r2));                   \n"
+        "   frag_color = encode_prim_id();                                  \n"
+        "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"
+        "}                                                                  \n";
+    
+    
     /** 
      * \brief Some utility functions for the geometry shaders.
      * \details Provides functions for clipping, projection, and
@@ -1431,9 +1483,11 @@ namespace GEO {
         set_colors(PRG_LINES);
         glDisable(GL_LIGHTING);
         begin_draw(MESH_EDGES);
+        begin_shader(PRG_LINES);
         glDrawElements(
             GL_LINES, GLsizei(mesh_->edges.nb()*2), GL_UNSIGNED_INT, 0
         );
+        end_shader();
         end_draw();
     }
     
@@ -1443,6 +1497,7 @@ namespace GEO {
         }
 
         if(
+            (picking_mode_ == MESH_NONE) &&
             show_mesh_ &&
             !mesh_->facets.are_simplices() &&
             !triangles_and_quads_
@@ -1460,7 +1515,10 @@ namespace GEO {
         } else {
             if(mesh_->facets.are_simplices()) {
                 draw_triangles();
-            } else if(triangles_and_quads_) {
+            } else if(
+                triangles_and_quads_ &&
+                (picking_mode_ == MESH_NONE)
+            ) {
                 draw_triangles_and_quads();
             } else {
                 draw_polygons();
@@ -1473,7 +1531,12 @@ namespace GEO {
         if(mesh_->facets.nb() == 0) {
             return;
         }
-        
+
+        if(picking_mode_ != MESH_NONE) {
+            return;
+        }
+
+        glDisable(GL_LIGHTING);
         glLineWidth(GLfloat(mesh_border_width_));
         set_colors(PRG_LINES);                
         glBegin(GL_LINES);
@@ -1581,17 +1644,19 @@ namespace GEO {
         GLuint gshader_pyramid = GLSL::compile_shader(
             GL_GEOMETRY_SHADER, gshader_utils_source, gshader_pyramid_source
         );
-        programs_[PRG_POINTS] = GLSL::setup_program(points_fshader, 0);
-        programs_[PRG_TRI] = GLSL::setup_program(
+        programs_[PRG_POINTS] = GLSL::create_program_from_shaders(
+            points_fshader, 0
+        );
+        programs_[PRG_TRI] = GLSL::create_program_from_shaders(
             vshader_pass_through, gshader_tri, fshader, 0
         );
-        programs_[PRG_QUAD] = GLSL::setup_program(
+        programs_[PRG_QUAD] = GLSL::create_program_from_shaders(
             vshader_pass_through, gshader_quad, fshader, 0
         );
-        programs_[PRG_TET] = GLSL::setup_program(
+        programs_[PRG_TET] = GLSL::create_program_from_shaders(
             vshader_pass_through, gshader_tet, fshader, 0
         );
-        programs_[PRG_PRISM] = GLSL::setup_program(
+        programs_[PRG_PRISM] = GLSL::create_program_from_shaders(
             vshader_pass_through, gshader_prism, fshader, 0
         );
         GLuint vshader_hex = GLSL::compile_shader(
@@ -1600,11 +1665,46 @@ namespace GEO {
         GLuint vshader_pyramid = GLSL::compile_shader(
             GL_VERTEX_SHADER, vshader_pyramid_source
         );
-        programs_[PRG_HEX] = GLSL::setup_program(
+        programs_[PRG_HEX] = GLSL::create_program_from_shaders(
             vshader_hex, gshader_hex, fshader, 0
         );
-        programs_[PRG_PYRAMID] = GLSL::setup_program(
+        programs_[PRG_PYRAMID] = GLSL::create_program_from_shaders(
             vshader_pyramid, gshader_pyramid, fshader, 0
+        );            
+
+        //-------------- picking_programs
+
+        GLuint picking_fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER, fshader_picking_source
+        );
+
+        GLuint points_picking_fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER, points_fshader_picking_source
+        );
+        
+        picking_programs_[PRG_POINTS] = GLSL::create_program_from_shaders(
+            points_picking_fshader, 0
+        );
+        picking_programs_[PRG_LINES] = GLSL::create_program_from_shaders(
+            picking_fshader, 0
+        );
+        picking_programs_[PRG_TRI] = GLSL::create_program_from_shaders(
+            vshader_pass_through, gshader_tri, picking_fshader, 0
+        );
+        picking_programs_[PRG_QUAD] = GLSL::create_program_from_shaders(
+            vshader_pass_through, gshader_quad, picking_fshader, 0
+        );
+        picking_programs_[PRG_TET] = GLSL::create_program_from_shaders(
+            vshader_pass_through, gshader_tet, picking_fshader, 0
+        );
+        picking_programs_[PRG_PRISM] = GLSL::create_program_from_shaders(
+            vshader_pass_through, gshader_prism, picking_fshader, 0
+        );
+        picking_programs_[PRG_HEX] = GLSL::create_program_from_shaders(
+            vshader_hex, gshader_hex, picking_fshader, 0
+        );
+        picking_programs_[PRG_PYRAMID] = GLSL::create_program_from_shaders(
+            vshader_pyramid, gshader_pyramid, picking_fshader, 0
         );            
         
         shaders_init_ = true;
@@ -1621,19 +1721,28 @@ namespace GEO {
            case PRG_HEX:
            case PRG_PRISM:
            case PRG_PYRAMID: {
-               GLint loc = glGetUniformLocation(programs_[name], "mesh_width");
-               glUniform1f(loc, (show_mesh_ ? GLfloat(mesh_width_) : 0.0f));
-               loc = glGetUniformLocation(programs_[name], "lighting");
-               glUniform1i(loc, lighting_);
-               loc = glGetUniformLocation(programs_[name], "mesh_color");
-               glUniform3f(
-                   loc,
-                   colors_[PRG_LINES][0],
-                   colors_[PRG_LINES][1],
-                   colors_[PRG_LINES][2]
-               );
-               loc = glGetUniformLocation(programs_[name], "shrink");
-               glUniform1f(loc,float(shrink_));
+               if(picking_mode_ == MESH_NONE) {
+                   GLint loc = glGetUniformLocation(
+                       programs_[name], "mesh_width"
+                   );
+                   glUniform1f(loc, (show_mesh_ ? GLfloat(mesh_width_) : 0.0f));
+                   loc = glGetUniformLocation(programs_[name], "lighting");
+                   glUniform1i(loc, lighting_);
+                   loc = glGetUniformLocation(programs_[name], "mesh_color");
+                   glUniform3f(
+                       loc,
+                       colors_[PRG_LINES][0],
+                       colors_[PRG_LINES][1],
+                       colors_[PRG_LINES][2]
+                       );
+                   loc = glGetUniformLocation(programs_[name], "shrink");
+                   glUniform1f(loc,float(shrink_));
+               } else {
+                   GLint loc = glGetUniformLocation(
+                       picking_programs_[name], "shrink"
+                   );
+                   glUniform1f(loc,float(shrink_));
+               }
            } break;
         }
     }
@@ -1735,9 +1844,11 @@ namespace GEO {
         set_colors(PRG_LINES);
         glDisable(GL_LIGHTING);
         begin_draw(MESH_EDGES);
+        begin_shader(PRG_LINES);
         glDrawElements(
             GL_LINES, GLsizei(mesh_->edges.nb()*2), GL_UNSIGNED_INT, 0
         );
+        end_shader();
         end_draw();
     }
     
@@ -1748,6 +1859,7 @@ namespace GEO {
 
         if(
             show_mesh_ &&
+            (picking_mode_ == MESH_NONE) &&
             !mesh_->facets.are_simplices() &&
             !triangles_and_quads_
         ) {
@@ -1764,7 +1876,10 @@ namespace GEO {
         } else {
             if(mesh_->facets.are_simplices()) {
                 draw_triangles();
-            } else if(triangles_and_quads_) {
+            } else if(
+                triangles_and_quads_ &&
+                (picking_mode_ == MESH_NONE)
+            ) {
                 draw_triangles_and_quads();
             } else {
                 draw_polygons();
@@ -1777,7 +1892,12 @@ namespace GEO {
         if(mesh_->facets.nb() == 0) {
             return;
         }
-        
+
+        if(picking_mode_ != MESH_NONE) {
+            return;
+        }
+
+        glDisable(GL_LIGHTING);
         glLineWidth(GLfloat(mesh_border_width_));
         set_colors(PRG_LINES);                
         glBegin(GL_LINES);
@@ -1898,32 +2018,78 @@ namespace GEO {
         GLuint gshader_pyramid = GLSL::compile_shader(
             GL_GEOMETRY_SHADER, gshader_utils_source, gshader_pyramid_source
         );
-        programs_[PRG_POINTS] = GLSL::setup_program(points_fshader, 0);
-        programs_[PRG_TRI] = GLSL::setup_program(
+        
+        programs_[PRG_POINTS] =
+            GLSL::create_program_from_shaders(points_fshader, 0);
+        
+        programs_[PRG_TRI] = GLSL::create_program_from_shaders(
             vshader_pass_through, gshader_tri, fshader, 0
         );
-        programs_[PRG_QUAD] = GLSL::setup_program(
+        programs_[PRG_QUAD] = GLSL::create_program_from_shaders(
             vshader_pass_through, gshader_quad, fshader, 0
         );
-        programs_[PRG_TET] = GLSL::setup_program(
+        programs_[PRG_TET] = GLSL::create_program_from_shaders(
             vshader_pass_through, gshader_tet, fshader, 0
         );
-        programs_[PRG_PRISM] = GLSL::setup_program(
+        programs_[PRG_PRISM] = GLSL::create_program_from_shaders(
             vshader_pass_through, gshader_prism, fshader, 0
         );
+        
         GLuint teshader_hex = GLSL::compile_shader(
             GL_TESS_EVALUATION_SHADER, teshader_hex_source
         );
         GLuint teshader_pyramid = GLSL::compile_shader(
             GL_TESS_EVALUATION_SHADER, teshader_pyramid_source
         );
-        programs_[PRG_HEX] = GLSL::setup_program(
+        
+        programs_[PRG_HEX] = GLSL::create_program_from_shaders(
             vshader_pass_through, teshader_hex, gshader_hex, fshader, 0
         );
-        programs_[PRG_PYRAMID] = GLSL::setup_program(
+        
+        programs_[PRG_PYRAMID] = GLSL::create_program_from_shaders(
             vshader_pass_through, teshader_pyramid,
             gshader_pyramid, fshader, 0
-        );                        
+        );
+
+        //-------------- picking_programs
+
+        GLuint picking_fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER, fshader_picking_source
+        );
+
+        GLuint points_picking_fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER, points_fshader_picking_source
+        );
+        
+        picking_programs_[PRG_POINTS] =
+            GLSL::create_program_from_shaders(points_picking_fshader, 0);
+
+        picking_programs_[PRG_LINES] = GLSL::create_program_from_shaders(
+            picking_fshader, 0
+        );
+        
+        picking_programs_[PRG_TRI] = GLSL::create_program_from_shaders(
+            vshader_pass_through, gshader_tri, picking_fshader, 0
+        );
+        picking_programs_[PRG_QUAD] = GLSL::create_program_from_shaders(
+            vshader_pass_through, gshader_quad, picking_fshader, 0
+        );
+        picking_programs_[PRG_TET] = GLSL::create_program_from_shaders(
+            vshader_pass_through, gshader_tet, picking_fshader, 0
+        );
+        picking_programs_[PRG_PRISM] = GLSL::create_program_from_shaders(
+            vshader_pass_through, gshader_prism, picking_fshader, 0
+        );
+        
+        picking_programs_[PRG_HEX] = GLSL::create_program_from_shaders(
+            vshader_pass_through, teshader_hex, gshader_hex, picking_fshader, 0
+        );
+        
+        picking_programs_[PRG_PYRAMID] = GLSL::create_program_from_shaders(
+            vshader_pass_through, teshader_pyramid,
+            gshader_pyramid, picking_fshader, 0
+        );
+        
         shaders_init_ = true;
     }
 
@@ -1938,17 +2104,28 @@ namespace GEO {
            case PRG_HEX:
            case PRG_PRISM:
            case PRG_PYRAMID: {
-               GLint loc = glGetUniformLocation(programs_[name], "mesh_width");
-               glUniform1f(loc, (show_mesh_ ? GLfloat(mesh_width_) : 0.0f));
-               loc = glGetUniformLocation(programs_[name], "lighting");
-               glUniform1i(loc, lighting_);
-               loc = glGetUniformLocation(programs_[name], "mesh_color");
-               glUniform3f(
-                   loc,
-                   colors_[PRG_LINES][0], colors_[PRG_LINES][1], colors_[PRG_LINES][2]
-               );
-               loc = glGetUniformLocation(programs_[name], "shrink");
-               glUniform1f(loc,float(shrink_));
+               if(picking_mode_ == MESH_NONE) {
+                   GLint loc = glGetUniformLocation(
+                       programs_[name], "mesh_width"
+                   );
+                   glUniform1f(loc, (show_mesh_ ? GLfloat(mesh_width_) : 0.0f));
+                   loc = glGetUniformLocation(programs_[name], "lighting");
+                   glUniform1i(loc, lighting_);
+                   loc = glGetUniformLocation(programs_[name], "mesh_color");
+                   glUniform3f(
+                       loc,
+                       colors_[PRG_LINES][0],
+                       colors_[PRG_LINES][1],
+                       colors_[PRG_LINES][2]
+                   );
+                   loc = glGetUniformLocation(programs_[name], "shrink");
+                   glUniform1f(loc,float(shrink_));
+               } else {
+                   GLint loc = glGetUniformLocation(
+                       picking_programs_[name], "shrink"
+                   );
+                   glUniform1f(loc,float(shrink_));
+               }               
            } break;
         }
     }
