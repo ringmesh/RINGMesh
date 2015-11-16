@@ -475,6 +475,114 @@ namespace RINGMesh {
     } ;
 
     /************************************************************************/
+    struct RINGMesh2MFEM {
+        index_t element_type ;
+        index_t nb_vertices ;
+        index_t vertices[8] ;
+        index_t nb_facets ;
+        index_t facet[6] ;
+    } ;
+
+    static RINGMesh2MFEM mfem_tet_descriptor = { 4,                  // type
+        4,                  // nb vertices
+        { 0, 1, 2, 3 },     // vertices
+        4,                  // nb facets
+        { 0, 1, 2, 3 }      // facets WARNING THIS IS FALSE BUT NOT USED
+    } ;
+
+    static RINGMesh2MFEM mfem_hex_descriptor = { 5,                         // type
+        8,                              // nb vertices
+        { 0, 1, 3, 2, 4, 5, 7, 6},     // vertices
+        6,                              // nb facets
+        { 2, 0, 5, 1, 4, 3 }            // facets WARNING THIS IS FALSE BUT NOT USED
+    } ;
+
+    static RINGMesh2MFEM* mfem_cell_type_to_cell_descriptor[2] = {
+            &mfem_tet_descriptor, &mfem_hex_descriptor} ;
+
+    class MFEMIOHandler: public GeoModelVolumeIOHandler {
+    public:
+        virtual bool load( const std::string& filename, GeoModel& mesh )
+        {
+            GEO::Logger::err( "I/O" )
+                << "Loading of a GeoModel from mfem not implemented yet"
+                << std::endl ;
+            return false ;
+        }
+        virtual bool save( const GeoModel& gm, const std::string& filename )
+        {
+            // WARNING mfem supports only tet and hex
+            const GeoModelMesh& gmm = gm.mesh ;
+            // Count number of boundary elements
+            index_t boundary = 0;
+            index_t nb_cells = gmm.cells.nb() ;
+
+            for(index_t c = 0; c != nb_cells; ++c){
+                for(index_t lf = 0; lf !=gm.mesh.cells.nb_facets(c); ++lf){
+                    if(gmm.cells.adjacent(c,lf) == GEO::NO_CELL) boundary++;
+                }
+            }
+
+                std::ofstream out( filename.c_str() ) ;
+                out.precision( 16 ) ;
+            out << "MFEM mesh v1.0" << '\n' << '\n';
+            out << "dimension" << '\n' << "3" << '\n' << '\n';
+            out << "elements" << '\n' << nb_cells << '\n';
+
+            // Export hexahedron and tetrahedron
+
+                for(index_t c = 0; c != nb_cells; ++c){
+                    index_t not_used ;
+                    RINGMesh2MFEM& descriptor = *mfem_cell_type_to_cell_descriptor[gmm.cells.type(c,not_used)] ;
+
+                    out << gmm.cells.region(c) << " " << descriptor.element_type << " ";
+                    for(index_t lv = 0; lv != gmm.cells.nb_vertices(c); ++lv){
+                        out << gmm.cells.vertex(c,descriptor.vertices[lv]) << " " ;
+                    out << '\n';
+                }
+                }
+            out << '\n';
+
+            // Export boundary elements
+
+            // This vector stand for mapping the interfaces id to the mfem numerotation
+            // mfem consider ONLY boundaries. And the numerotation starts from 2 :D
+            std::vector<index_t> map_interfaces(gm.nb_interfaces(),NO_ID) ;
+            index_t mfem_interface_counter = 2 ;
+            out << "boundary" << '\n' << boundary << '\n';
+
+            for(index_t f = 0 ; f < gmm.facets.nb() ; f++) {
+                if (gm.surface(gmm.facets.surface(f)).geological_feature() == GeoModelElement::VOI) {
+                    index_t interface_id = gm.surface(f).parent_id().index ;
+                    if(map_interfaces[interface_id] == NO_ID) {
+                        map_interfaces[interface_id] =mfem_interface_counter;
+                        mfem_interface_counter++ ;
+                    }
+                    //Again a strange notation for mfem...
+                    index_t facet_type = gmm.facets.nb_vertices(f) -1 ;
+                    out << map_interfaces[interface_id] << " " << facet_type << " ";
+
+                    for(index_t lv = 0 ; lv < gmm.facets.nb_vertices(f); lv++) {
+                        out << gmm.facets.vertex(f,lv) << " " ;
+                    }
+                    out << '\n';
+                }
+            }
+            out << '\n';
+
+            // Export vertices
+            out << "vertices" << '\n' << gmm.vertices.nb() << '\n' << "3" << '\n';
+            for(index_t v = 0; v != gmm.vertices.nb(); ++v){
+                out << gmm.vertices.vertex(v) << '\n';
+            }
+            out.close();
+            return true ;
+        }
+
+
+    } ;
+
+    /************************************************************************/
 
     class VTKIOHandler: public GeoModelVolumeIOHandler {
     public:
@@ -729,36 +837,36 @@ namespace RINGMesh {
         index_t facet[6] ;
     } ;
 
-    static RINGMesh2CSMP tet_descriptor = { 4,                  // type
+    static RINGMesh2CSMP csmp_tet_descriptor = { 4,                  // type
         4,                  // nb vertices
         { 0, 1, 2, 3 },     // vertices
         4,                  // nb facets
         { 0, 1, 2, 3 }      // facets
     } ;
 
-    static RINGMesh2CSMP hex_descriptor = { 6,                         // type
+    static RINGMesh2CSMP csmp_hex_descriptor = { 6,                         // type
         8,                              // nb vertices
         { 0, 4, 5, 1, 2, 6, 7, 3 },     // vertices
         6,                              // nb facets
         { 2, 0, 5, 1, 4, 3 }            // facets
     } ;
 
-    static RINGMesh2CSMP prism_descriptor = { 12,                     // type
+    static RINGMesh2CSMP csmp_prism_descriptor = { 12,                     // type
         6,                      // nb vertices
         { 0, 1, 2, 3, 4, 5 },   // vertices
         5,                      // nb facets
         { 0, 2, 4, 3, 1 }       // facets
     } ;
 
-    static RINGMesh2CSMP pyramid_descriptor = { 18,                 // type
+    static RINGMesh2CSMP csmp_pyramid_descriptor = { 18,                 // type
         5,                  // nb vertices
         { 0, 1, 2, 3, 4 },  // vertices
         5,                  // nb facets
         { 1, 4, 3, 2, 0 }   // facets
     } ;
 
-    static RINGMesh2CSMP* cell_type_to_cell_descriptor[4] = {
-        &tet_descriptor, &hex_descriptor, &prism_descriptor, &pyramid_descriptor } ;
+static RINGMesh2CSMP* csmp_cell_type_to_cell_descriptor[4] = {
+        &csmp_tet_descriptor, &csmp_hex_descriptor, &csmp_prism_descriptor, &csmp_pyramid_descriptor } ;
 
     class CSMPIOHandler: public GeoModelVolumeIOHandler {
     public:
@@ -989,7 +1097,7 @@ namespace RINGMesh {
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
                     GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
-                    RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T] ;
+                    RINGMesh2CSMP& descriptor = *csmp_cell_type_to_cell_descriptor[T] ;
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
                         index_t cell = mesh.cells.cell( r, el, T ) ;
                         for( index_t p = 0; p < descriptor.nb_vertices; p++ ) {
@@ -1045,7 +1153,7 @@ namespace RINGMesh {
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
                     GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
-                    RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T] ;
+                    RINGMesh2CSMP& descriptor = *csmp_cell_type_to_cell_descriptor[T] ;
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
                         index_t cell = mesh.cells.cell( r, el ) ;
                         for( index_t f = 0; f < descriptor.nb_facets; f++ ) {
@@ -1919,5 +2027,7 @@ namespace RINGMesh {
         ringmesh_register_GeoModelVolumeIOHandler_creator( VTKIOHandler, "vtk" );
         ringmesh_register_GeoModelVolumeIOHandler_creator( GPRSIOHandler, "gprs" );
         ringmesh_register_GeoModelVolumeIOHandler_creator( MSHIOHandler, "msh" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( MFEMIOHandler, "mfem" );
+
     }
 }
