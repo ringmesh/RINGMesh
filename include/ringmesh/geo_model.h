@@ -38,8 +38,6 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
-
 #ifndef __RINGMESH_GEO_MODEL__
 #define __RINGMESH_GEO_MODEL__
 
@@ -48,6 +46,12 @@
 #include <ringmesh/geo_model_mesh.h>
 
 #include <vector>
+
+/*!
+* @file ringmesh/geo_model.h
+* @brief Class representing a geological structural model: GeoModel
+* @author Jeanne Pellerin and Arnaud Botella
+*/
 
 namespace RINGMesh {
     class WellGroup ;

@@ -54,8 +54,7 @@
 * @file ringmesh/geo_model_api.h
 * @brief High level functions on GeoModel
 * @author Jeanne Pellerin and Arnaud Botella
-* @todo Encapsulate these functions in a namespace
-* and TEST them.
+* @todo Encapsulate these functions in a namespace and TEST them.
 */
 
 namespace GEO {
@@ -70,29 +69,27 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    /*! @brief Print in the console the model statistics
-    *  Output number of facets, vertices, and of the different element types.
+    /*!
+    * @brief Print in the console the model statistics
+    * @details Output number of facets, vertices, and of the different element types.
+    * @todo Implement a comparison of GeoModels for testing.
     */
     void RINGMESH_API print_model( const GeoModel& model ) ;
 
     
-
     /*!
-    * @brief Build a Mesh from the model non-duplicated vertices
-    *        and its Surface facets.
-    * @details Adjacencies are not set. Client should call
-    *  mesh repair functions afterwards.
-    * @todo Copy of code in validity check imlpementation
-    *       Transfer it in the API, create a Mesh from a whol of
-    *       some parts of a GeoModel
+    * @brief Build a Mesh from the model non-duplicated vertices and its Surface facets.
+    * @details Adjacencies are not set. Client should call mesh repair functions afterwards.
+    * @todo Set an attribute to flag the Surface index. Implement it for meshed Regions.
+    * Implement it for a set of GME.
     */
     void RINGMESH_API mesh_from_geo_model( const GeoModel& model, GEO::Mesh& M ) ;
    
 
     /*! 
-     * @brief Bind named GEO::Attribute on theGeoModel elements vertices
+     * @brief Bind named GEO::Attribute on the GeoModel element vertices
      * @warning It is up to the client to unbind the attribute    
-     * @pre Elements of mesh_element_type are GeoModelMeshElement
+     * @pre Elements of geomodel_element_type are GeoModelMeshElement
      */
     template< class T >
     void create_attributes_on_geomodel_element_facets(
@@ -130,7 +127,6 @@ namespace RINGMesh {
             attributes.bind_one_attribute( i, manager, attribute_name ) ;
         }
     }
-
 
 
     /*!
@@ -201,8 +197,6 @@ namespace RINGMesh {
 
     /*-----------------------------------------------------------------------*/
 
-
-
     /*!
     * @brief Compute the size (volume, area, length) of an Element
     * @param[in] E Element to evaluate
@@ -235,7 +229,6 @@ namespace RINGMesh {
     */
     vec3 RINGMESH_API model_element_cell_center(
         const GeoModelMeshElement& E, index_t c ) ;
-
 
 }
 

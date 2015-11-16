@@ -1514,6 +1514,12 @@ namespace RINGMesh {
         if( ann_ ) delete ann_ ;
     }
 
+    /*! 
+     * @brief Create an AABB tree for a Surface
+     * @pre The Surface mesh must be simplicial
+     * @warning SIDE EFFECTS: The Surface mesh vertices are reordered.
+     * That is why the global Mesh vertices are deleted (This is BAD)
+     */
     const GEO::MeshFacetsAABB& SurfaceTools::aabb() const
     {
         GeoModel& M = const_cast<GeoModel&>( surface_.model() ) ;
@@ -1524,55 +1530,15 @@ namespace RINGMesh {
             M.mesh.vertices.clear() ;
         }
         if( aabb_ == nil ) {
-            // Sinon on va droit dans le mur
-            // Parce que le mesh est triangule dans notre dos
+            // Geogram triangulates the Mesh when creating the AABB tree
             ringmesh_assert( surface_.mesh().facets.are_simplices() ) ;
 
+            // Very bad side effect
+            // The root cause of the problem is the duplication of many things 
+            // in our GeoModel structure [JP]
+            M.mesh.vertices.clear() ;
+
             aabb_ = new GEO::MeshFacetsAABB( surface_.mesh() ) ;
-            /// @todo Et pourquoi creer AABB me fait vider les sommets ?
-            /// @todo Il faut un mecanisme update de ces SurfaceTools correct.
-            // if( ann_ ) {
-            //     delete ann_ ;
-            //     this_not_const->ann_ = nil ;
-            // }
-
-            // Building an AABB reorders the mesh vertices and facets 
-            // Very annoying if model_vertex_ids are set because we need
-            // to update the model vertices.
-            /* TROP CHIANT A QUOI CA SERT ?????
-            GeoModel& M = const_cast<GeoModel&>( surface_.model() ) ;
-            if( M.mesh.vertices.is_initialized() ) {
-                
-                bool annoying = surface_.has_inside_border() ;
-                std::vector< index_t > visited ;
-                if( annoying ) {
-                    visited.resize( M.mesh.vertices.nb(), 0 ) ;
-                }
-                for( index_t sv = 0; sv < surface_.nb_vertices(); ++sv ) {
-                    index_t v = surface_.model_vertex_id( sv ) ;
-                    const std::vector< GMEVertex >& to_update = M.mesh.vertices.gme_vertices( v ) ;
-
-                    index_t count_skipped = 0 ;
-                    for( index_t i = 0; i < to_update.size(); ++i ) {
-                        if( to_update[ i ].gme_id == surface_.gme_id() ) {
-                            if( annoying && visited[ v ] > count_skipped ) {
-                                // The first visited[v] occurences have been updated
-                                // Skip them to find the next one. 
-                                // There should be max 2 for a valid Surface
-                                count_skipped++ ;
-                                continue ;
-                            }
-                            else {
-                                M.mesh.vertices.set_gme( v, i, GMEVertex( surface_.gme_id(), sv ) ) ;
-                                if( annoying ) {
-                                    ++visited[ v ] ;
-                                }
-                                break ;
-                            }
-                        }
-                    }                
-                }
-            } */ 
         }
         return *aabb_ ;
     }

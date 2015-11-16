@@ -76,6 +76,7 @@ namespace RINGMesh {
 
     // This is the value used in RINGMesh for a invalid index
     const static index_t NO_ID(-1) ;
+
 }
 
 #endif
