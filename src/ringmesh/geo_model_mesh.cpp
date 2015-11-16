@@ -531,8 +531,7 @@ namespace RINGMesh {
     void GeoModelMeshCells::initialize()
     {
         gmm_.vertices.test_and_initialize() ;
-        region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1,
-            0 ) ;
+        region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1, 0 ) ;
 
         // Total number of  cells
         std::vector< index_t > nb_cells_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
@@ -1491,7 +1490,7 @@ namespace RINGMesh {
         std::vector< index_t > nb_facet_per_type( ALL, 0 ) ;
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
-            if( surface.is_triangulated() ) {
+            if( surface.is_simplicial() ) {
                 nb_facet_per_type[TRIANGLE] += surface.nb_cells() ;
                 surface_facet_ptr_[ALL * s + TRIANGLE + 1] += surface.nb_cells() ;
             } else {

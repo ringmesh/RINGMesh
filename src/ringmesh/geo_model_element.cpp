@@ -1488,13 +1488,13 @@ namespace RINGMesh {
 
     bool Region::is_mesh_valid() const
     {
+        GEO::Logger::warn( "GeoModel" )
+            << "TO DO : Mesh validity function on Regions is to implement "
+            << std::endl ;
         if( !is_meshed() ) {
             return true ;
         }
-        else {
-            GEO::Logger::warn( "GeoModel" )
-                << "TO DO : Mesh validity function on Regions is to implement "
-                << std::endl ;
+        else {          
             return true ;
         }
     }

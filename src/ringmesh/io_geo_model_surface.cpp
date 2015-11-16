@@ -204,7 +204,7 @@ namespace {
                     << " does not belong to any Interface of the model" << std::endl ;
                 return false ;
             }
-            if( !S.is_triangulated() ) {
+            if( !S.is_simplicial() ) {
                 GEO::Logger::err( "" ) << S.gme_id()
                     << " is not triangulated " << std::endl ;
                 return false ;
@@ -530,7 +530,7 @@ namespace {
             //                out << std::endl ;
             //            }
 
-            out << "SURFACE_CORNERS " << S.nb_corners() << std::endl ;
+            out << "SURFACE_CORNERS " << S.nb_facet_corners() << std::endl ;
             out << "SURFACE_FACETS " << S.nb_cells() << std::endl ;
             //            out << "SURFACE_FACET_ATTRIBUTES " ;
             //            std::vector< SerializedAttribute< BME::FACET > > surface_facet_attribs ;

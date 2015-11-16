@@ -134,16 +134,13 @@ namespace {
         ringmesh_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
         index_t c1 = M.facets.corners_begin( f1 ) ;
         const vec3& p1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 ) ) ;
-        const vec3& p2 = GEO::Geom::mesh_vertex( M,
-                                                 M.facet_corners.vertex( c1 + 1 ) ) ;
-        const vec3& p3 = GEO::Geom::mesh_vertex( M,
-                                                 M.facet_corners.vertex( c1 + 2 ) ) ;
+        const vec3& p2 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1+1 ) ) ;
+        const vec3& p3 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1+2 ) ) ;
+
         index_t c2 = M.facets.corners_begin( f2 ) ;
         const vec3& q1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 ) ) ;
-        const vec3& q2 = GEO::Geom::mesh_vertex( M,
-                                                 M.facet_corners.vertex( c2 + 1 ) ) ;
-        const vec3& q3 = GEO::Geom::mesh_vertex( M,
-                                                 M.facet_corners.vertex( c2 + 2 ) ) ;
+        const vec3& q2 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2+1 ) ) ;
+        const vec3& q3 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2+2 ) ) ;
         return triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ;
     }
 
@@ -1245,7 +1242,7 @@ namespace RINGMesh {
         /// triangulated mesh corresponding to this model.
         GEO::Mesh model_mesh ;
         GEO::Logger::instance()->set_quiet( true ) ;
-        mesh_from_geo_model( GM, model_mesh ) ;
+        build_mesh_from_geomodel( GM, model_mesh ) ;
         GEO::mesh_repair( model_mesh, MESH_REPAIR_TRIANGULATE ) ;
         GEO::Logger::instance()->set_quiet( false ) ;
 

@@ -54,65 +54,213 @@
 
 namespace RINGMesh {
     /*!
-    * @brief Total number of facets in the model Surfaces
+    * @brief Total number of facets in the geomodel Surfaces
     */
-    index_t nb_facets( const GeoModel& BM )
+    index_t nb_facets( const GeoModel& geomodel )
     {
         index_t result = 0 ;
-        for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
-            result += BM.surface( i ).nb_cells() ;
+        for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
+            result += geomodel.surface( i ).nb_cells() ;
         }
         return result ;
     }
 
-    void print_model( const GeoModel& model )
+    void print_model( const GeoModel& geomodel )
     {
-        GEO::Logger::out( "GeoModel" ) << "Model " << model.name() << " has "
+        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has "
             << std::endl
             << std::setw( 10 ) << std::left
-            << model.mesh.vertices.nb() << " vertices "
+            << geomodel.mesh.vertices.nb() << " vertices "
             << std::endl
             << std::setw( 10 ) << std::left
-            << nb_facets( model ) << " facets "
+            << nb_facets( geomodel ) << " facets "
             << std::endl << std::endl ;
 
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast<GME::TYPE>( t ) ;
             GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-                << model.nb_elements( T ) << " " << GME::type_name( T )
+                << geomodel.nb_elements( T ) << " " << GME::type_name( T )
                 << std::endl ;
         }
     }
 
-    void mesh_from_geo_model( const GeoModel& model, GEO::Mesh& M ) 
+	///@todo A class encapsulating the copy from a GeoModel to a Mesh ?
+    /// See what has been done in GeoModelMeshBuilder	
+
+    void add_geomodel_vertices_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
+    {
+        index_t nbv = geomodel.mesh.vertices.nb() ;
+        M.vertices.create_vertices( nbv ) ;
+
+        // We need to copy the point one after another since we do not have access
+        // to the storage of the geomodel.vertices
+        // I do not want to provide this access [JP]
+        for( index_t v = 0; v < nbv; ++v ) {
+            M.vertices.point( v ) = geomodel.mesh.vertices.vertex( v ) ;
+        }
+
+		GEO::Attribute<index_t> corner_attribute(M.vertices.attributes(), "region");
+		corner_attribute.fill(NO_ID);
+		for (index_t i = 0; i < geomodel.nb_corners(); ++i){
+			index_t vertex_index = geomodel.corner(i).model_vertex_id();
+			corner_attribute[vertex_index] = i;
+		}
+		corner_attribute.unbind();
+    }
+
+	void add_line_edges_to_mesh(const Line& line, GEO::Mesh& M)
+	{
+		index_t from = M.edges.create_edges(line.nb_cells());
+		for (index_t i = 0; i < line.nb_cells(); ++i){
+			index_t v0 = line.model_vertex_id(i, 0);
+			index_t v1 = line.model_vertex_id(i, 1);
+			M.edges.set_vertex(from + i, 0, v0);
+			M.edges.set_vertex(from + i, 1, v1);
+		}
+	}
+
+    void create_and_fill_line_index_attribute(const GeoModel& geomodel,
+        const std::string& attribute_name,
+        GEO::Mesh& M)
+    {
+        GEO::Attribute<index_t> line_attribute(M.edges.attributes(), "region");
+        line_attribute.fill(NO_ID);
+        index_t edge_counter = 0;
+        for (index_t i = 0; i < geomodel.nb_lines(); ++i){
+            index_t nb_line_edges = geomodel.line(i).nb_cells();
+            index_t line_edges_start = edge_counter;
+            index_t line_edges_end = edge_counter + nb_line_edges;
+
+            for (index_t e = line_edges_start; e != line_edges_end; ++e) {
+                line_attribute[e] = i;
+            }
+            edge_counter += nb_line_edges;
+        }
+        line_attribute.unbind();
+    }
+
+	void add_geomodel_line_edges_to_mesh(const GeoModel& geomodel, GEO::Mesh& M) 
+	{
+		for (index_t i = 0; i < geomodel.nb_lines(); ++i) {
+			const Line& line(geomodel.line(i)) ;
+			add_line_edges_to_mesh(line, M);
+		}
+		
+        create_and_fill_line_index_attribute(geomodel, "region", M);
+	}
+
+    void add_surface_facets_to_mesh( const Surface& surface, GEO::Mesh& M )
+    {
+        for( index_t j = 0; j < surface.nb_cells(); ++j ) {
+            index_t nbv = surface.nb_vertices_in_facet( j ) ;
+            GEO::vector< index_t > ids( nbv ) ;
+            for( index_t v = 0; v < nbv; ++v ) {
+                ids[ v ] = surface.model_vertex_id( j, v ) ;
+            }
+            M.facets.create_polygon( ids ) ;
+        }    
+    }
+
+    void add_surface_triangles_to_mesh( const Surface& surface, GEO::Mesh& M )
+    {
+        GEO::vector< index_t > triangles( 3*surface.nb_cells() ) ;
+        for( index_t j = 0; j < surface.nb_cells(); ++j ) {      
+            for( index_t v = 0; v < 3; ++v ) {
+                triangles[ 3*j+v ] = surface.model_vertex_id( j, v ) ;
+            }           
+        }    
+        M.facets.assign_triangle_mesh( triangles, true ) ;
+    }
+
+	void create_and_fill_surface_index_attribute(const GeoModel& geomodel, 
+												 const std::string& attribute_name,
+												 GEO::Mesh& M )
+	{
+		GEO::Attribute<index_t> surface_attribute(M.facets.attributes(), attribute_name);
+		surface_attribute.fill(NO_ID);
+		index_t facet_counter = 0;
+		for (index_t i = 0; i < geomodel.nb_surfaces(); ++i){
+			index_t nb_surface_facets = geomodel.surface(i).nb_cells();
+			index_t surface_facet_start = facet_counter;
+			index_t surface_facet_end = facet_counter + nb_surface_facets;
+
+			for (index_t f = surface_facet_start; f != surface_facet_end; ++f) {
+				surface_attribute[f] = i;
+			}
+            facet_counter += nb_surface_facets;
+		}
+		surface_attribute.unbind();
+	}
+
+    void add_geomodel_surface_facets_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
+    {
+        for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
+            const Surface& S = geomodel.surface( i ) ;
+            if( S.is_simplicial() ) {
+                add_surface_triangles_to_mesh( S, M ) ;
+            } else {
+                add_surface_facets_to_mesh( S, M ) ;
+            }
+        }
+        create_and_fill_surface_index_attribute(geomodel, "region", M);
+    }
+
+    void add_region_tets_to_mesh( const Region& region, GEO::Mesh& M )
+    {
+        GEO::vector< index_t > tets( region.nb_cells()*4 ) ;
+        for( index_t j = 0; j < region.nb_cells(); ++j ) {
+            for( index_t v = 0; v < 4; ++v ) {
+                tets[ 4*j+v ] = region.model_vertex_id( j, v ) ;
+            }
+        }
+        M.cells.assign_tet_mesh( tets, true ) ;
+    }
+
+    void create_and_fill_region_index_attribute(const GeoModel& geomodel,
+        const std::string& attribute_name,
+        GEO::Mesh& M)
+    {
+        GEO::Attribute<index_t> region_attribute(M.cells.attributes(), attribute_name);
+        region_attribute.fill(NO_ID);
+        index_t cell_counter = 0;
+        for (index_t i = 0; i < geomodel.nb_regions(); ++i){
+            index_t nb_region_cells = geomodel.region(i).nb_cells();
+            index_t region_cells_start = cell_counter;
+            index_t region_cells_end = cell_counter + nb_region_cells;
+
+            for (index_t j = region_cells_start; j != region_cells_end; ++j) {
+                region_attribute[j] = i;
+            }
+            cell_counter += nb_region_cells;
+        }
+        region_attribute.unbind();
+    }
+
+    /*! @todo to implement for other types of cells
+     */
+    void add_geomodel_region_tets_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
+    {
+        for( index_t i = 0; i < geomodel.nb_regions(); ++i ) {
+            const Region& region = geomodel.region( i ) ;            
+            if( region.is_simplicial() ) {
+                add_region_tets_to_mesh( region, M ) ;
+            } else {
+                ringmesh_assert( false ) ;
+            }           
+        }
+        create_and_fill_region_index_attribute(geomodel, "region", M);
+    }
+
+
+    void build_mesh_from_geomodel( const GeoModel& geomodel, GEO::Mesh& M ) 
     {
         // Keep the attributes when clearing the mesh, otherwise we crash
         M.clear( true ) ;
 
-        index_t nbv = model.mesh.vertices.nb() ;
-        M.vertices.create_vertices( nbv ) ;
-
-        /* We need to copy the point one after another since we do not have access
-        * to the storage of the model.vertices.
-        * I do not want to provide this access [JP]
-        */
-        for( index_t v = 0; v < nbv; ++v ) {
-            M.vertices.point( v ) = model.mesh.vertices.vertex( v ) ;
-        }
-
-        // Set the facets  
-        for( index_t s = 0; s < model.nb_surfaces(); ++s ) {
-            const Surface& S = model.surface( s ) ;
-            for( index_t f = 0; f < S.nb_cells(); ++f ) {
-                index_t nbv = S.nb_vertices_in_facet( f ) ;
-                GEO::vector< index_t > ids( nbv ) ;
-
-                for( index_t v = 0; v < nbv; ++v ) {
-                    ids[ v ] = S.model_vertex_id( f, v ) ;
-                }
-                M.facets.create_polygon( ids ) ;
-            }
-        }
+		add_geomodel_vertices_to_mesh(geomodel, M);
+		add_geomodel_line_edges_to_mesh(geomodel, M);
+        add_geomodel_surface_facets_to_mesh(geomodel, M);
+        add_geomodel_region_tets_to_mesh(geomodel, M);
     }
 
 
@@ -256,7 +404,7 @@ namespace RINGMesh {
     {
         for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
             // Coordinates are not directly modified to 
-            // update the matching vertices in model entities
+            // update the matching vertices in geomodel entities
             vec3 p = M.mesh.vertices.vertex( v ) ;
             for( index_t i = 0; i < 3; i++ ) {
                 p[i] += translation_vector[i] ;
@@ -265,12 +413,7 @@ namespace RINGMesh {
         }
     }
 
-    void rotate(
-        GeoModel& M,
-        const vec3& origin,
-        const vec3& axis,
-        double theta,
-        bool degrees )
+    void rotate( GeoModel& M, const vec3& origin, const vec3& axis, double theta, bool degrees )
     {
         if( length( axis ) < epsilon ) {
             GEO::Logger::err( "GeoModel" )
@@ -293,14 +436,10 @@ namespace RINGMesh {
         }
     }
 
-    void tetrahedralize(
-        GeoModel& M,
-        const std::string& method,
-        index_t region_id,
-        bool add_steiner_points )
+    void tetrahedralize( GeoModel& M, const std::string& method, index_t region_id, bool add_steiner_points )
     {
         /* @todo Review: Maybe rethink these functions
-         *       to have a function that can mesh a region of a model
+         *       to have a function that can mesh a region of a geomodel
          *       taking only one vector of points [JP]
          */
         std::vector< std::vector< vec3 > > internal_vertices( M.nb_regions() ) ;
@@ -308,12 +447,8 @@ namespace RINGMesh {
             internal_vertices ) ;
     }
 
-    void tetrahedralize(
-        GeoModel& M,
-        const std::string& method,
-        index_t region_id,
-        bool add_steiner_points,
-        const std::vector< std::vector< vec3 > >& internal_vertices )
+    void tetrahedralize( GeoModel& M, const std::string& method, index_t region_id, bool add_steiner_points,
+                         const std::vector< std::vector< vec3 > >& internal_vertices )
     {
         if( region_id == NO_ID ) {
             GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
