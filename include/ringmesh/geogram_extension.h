@@ -51,8 +51,7 @@
 namespace RINGMesh {
 
     /*!
-     * Copy the content of a standrad library vector to the
-     * memory aligned GEO::Vector. 
+     * Copy the content of a standrad library vector to the memory aligned GEO::Vector. 
      * A lot of copies, when we need to call Geogram functions. 
      * @todo Could we set Geogram vector to be a std::vector ?? 
      */
@@ -65,6 +64,11 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+    * Partial copy the content of a standrad library vector to a GEO::Vector.
+    * A lot of copies, when we need to call Geogram functions.
+    * @todo Could we set Geogram vector to be a std::vector ??
+    */
     template< class T >
     void copy_std_vector_to_geo_vector( 
         const std::vector<T>& in, index_t from, index_t to, GEO::vector<T>& out )
@@ -83,7 +87,7 @@ namespace RINGMesh {
     /***********************************************************************/
     /* Loading and saving a GEO::Mesh                                      */
 
-    /** @brief complement the available MeshIOHandler
+    /*! @brief complement the available MeshIOHandler
      */
     void RINGMESH_API ringmesh_mesh_io_initialize() ;
             
@@ -94,7 +98,7 @@ namespace RINGMesh {
     /*!
      * @brief Constrained tetrahedralize of the volumes defined by a triangulated surface mesh
      * @details Does not require this mesh to be a closed manifold
-     * as the equivalent Geogram function does.
+     * as the equivalent in Geogram function does.
      */
     bool RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M ) ;
 
@@ -168,24 +172,23 @@ namespace RINGMesh {
 
     /*!
     * @brief Returns true if there are colocated vertices in the Mesh
-    * @details This is a wrapper around Geogram Colocate functions
+    * @details This is a wrapper around Geogram colocate functions
     */
     bool RINGMESH_API has_mesh_colocate_vertices( const GEO::Mesh& M, double tolerance ) ;
 
 
     /*!
-    * @brief Merges the vertices of a mesh that are at the same
-    *  geometric location
-    * @note Copied from geogram/mes/mesh_repair.cpp. No choice since BL
-    * will not give access to it.
+    * @brief Merges the vertices of a mesh that are at the same geometric location
+    * @note Copied from geogram/mes/mesh_repair.cpp. No choice since BL will not give access to it.
     */
     void RINGMESH_API repair_colocate_vertices( GEO::Mesh& M, double tolerance ) ;
 
 
     /*!
     * @brief Vector of pointers to Geogram attributes
-    * @details Vector of Attribute object does not compile, because @#$# (no idea) [JP]
-    * @todo Seems prone to bugs. Is it worth the risk? 
+    * @note Necessary since one cannot create, vectors of Geogram attributes does 
+    * not compile, because @#$# (no idea) [JP]
+    * @todo Probably extremely prone to bugs. Is it worth the risk? 
     */
     template< class T >
     class AttributeVector : public std::vector< GEO::Attribute< T >* > {
@@ -220,7 +223,7 @@ namespace RINGMesh {
         {
             for( index_t i = 0; i < base_class::size(); i++ ) {
                 if( base_class::operator[]( i ) ) {
-                    // I am not sure but unbind should do the deallocation [JP]
+                    // I am not sure, but unbind should do the deallocation [JP]
                     operator[]( i ).unbind() ;
                     delete base_class::operator[]( i ) ;
                 }
@@ -230,7 +233,7 @@ namespace RINGMesh {
 
 
     /*! 
-     * @brief True if the Store stores elements of type T, false otherwise
+     * @brief Typed attribute existence check
      */
     template< class T > 
     bool is_attribute_defined( GEO::AttributesManager& manager, 
@@ -246,7 +249,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Type sensitive check of Attribute existence
+     * @brief Type sensitive check of Attribute existence on a Mesh facets
      */
     template< class T >
     bool is_facet_attribute_defined( const GEO::Mesh& mesh,
@@ -256,6 +259,9 @@ namespace RINGMesh {
         return is_attribute_defined< T >( manager, attribute_name ) ;
     }
 
+    /*!
+    * @brief Type sensitive check of Attribute existence on a Mesh cells
+    */
     template< class T >
     bool is_cell_attribute_defined( const GEO::Mesh& mesh,
                                      const std::string& attribute_name )

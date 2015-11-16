@@ -65,30 +65,43 @@ namespace GEO {
 }
 
 namespace RINGMesh {
+    // Implementation classes
+    class GeoModelRegionFromSurfaces ;
+    class GeoModelElementFromMesh ;
+}
 
-    struct GeoModelIOFlags {
+namespace RINGMesh {
+    /*!
+     * @brief First draft of flags to build a GeoModel
+     * @todo Implement functions to set, access the values, depending on what ?
+     * To check the consistency of the options. What doewe do about the other elements ? [JP] 
+     * @todo We need to keep track of the status of the GeoModel when building it:
+     * same flags or some others ?    
+     */
+    class GeoModelBuildingFlags {
+    public:
+        GeoModelBuildingFlags()
+        {
+            compute_corners      = false ;
+            compute_lines        = false ;
+            compute_surfaces     = false ;
+            compute_regions_brep = false ;
+            compute_regions_mesh = false ;
+        }
         bool compute_corners ;
         bool compute_lines ;
         bool compute_surfaces ;
         bool compute_regions_brep ;
         bool compute_regions_mesh ;
-        // What about other elements ? As they are not mandatory
-        // We will see later [JP]
     };
 
-    /*! @todo We need to keep track of the status of the GeoModel
-     *  and to know what elements are built, is their topolgy set,
-     *  are their mesh assigned?
-     */
-
-
-    // Internal implementation class
-    class GeoModelRegionFromSurfaces ;
 
     /*!
      * @brief Base class for all classes building a GeoModel.
      * @details Derive from this class to build or modify a GeoModel. 
-     * @note NON Geometry related functions are in GeoModelEditor class.
+     * @note NON Geometry related modifications are in GeoModelEditor class.
+     * @todo To refactor and rename. We need a GeoModelTopologyEditor 
+     * and a GeoModelGeometryEditor
      */
     class RINGMESH_API GeoModelBuilder : public GeoModelEditor {
     public:
@@ -98,9 +111,11 @@ namespace RINGMesh {
         }
         virtual ~GeoModelBuilder() ;
 
-        bool set_options( GeoModelIOFlags options )
+        /*! 
+         * @todo Retruns true if the options are consistent
+         */
+        bool set_options( const GeoModelBuildingFlags& options )
         {
-            /*! @todo Check that the options are consistent */
             options_ = options ;
             return true ;
         }
@@ -125,7 +140,7 @@ namespace RINGMesh {
                                    const std::vector< index_t >& surface_facet_ptr ) ;
 
         /*! @}
-         * \name Set element geometry using GeoModel vertices
+         * \name Set element geometry using global GeoModel vertices
          * @{
          */
         void set_element_vertex( const GME::gme_t& id, index_t v, index_t model_vertex ) ;
@@ -174,17 +189,15 @@ namespace RINGMesh {
 
         /*!
         * @brief Build the regions of the GeoModel from the Surfaces 
-        * @details Call build_lines_and_corners_from_surfaces first
+        * @pre Function build_lines_and_corners_from_surfaces must have been called before
         */
         bool build_brep_regions_from_surfaces() ;
     
         /* 
-         * @brief From a GeoModel in which only Surface are defined, create
-         * corners, contacts. If the compute_regions_brep is true, then regions
-         * too are computed.
+         * @brief From a GeoModel in which only Surface are defined, create corners, contacts
+         * and regions depending on the building flags
          * @return True if a model has been built.
          * @note Valdity is not checked
-         * @pre The GeoModel should have at least one Surface. Nothing is done if not.
          */
         bool build_model_from_surfaces() ;
 
@@ -196,9 +209,9 @@ namespace RINGMesh {
 
     protected:
         /*! Elements to compute from the available elements */
-        GeoModelIOFlags options_ ; 
+        GeoModelBuildingFlags options_ ; 
 
-        /*! Internal information filled at Line building step */
+        /*! Internal information */
         std::vector< GeoModelRegionFromSurfaces* > regions_info_ ;
 
     private:
@@ -216,33 +229,26 @@ namespace RINGMesh {
             const std::vector< index_t >& tet_vertices ) ;
     } ;
 
-
-
+    /*!
+    * @brief To build a GeoModel from a set of disconnected polygonal surfaces
+    */
     class RINGMESH_API GeoModelBuilderSurfaceMesh : public GeoModelBuilder {
     public:
         GeoModelBuilderSurfaceMesh( GeoModel& model,
                                     const GEO::Mesh& mesh )
             :GeoModelBuilder( model ), mesh_( mesh )
-        {}
-
-        /*!
-        * @brief Old version of the code that supports polygonal surfaces
-        * @todo To move. [JP]
-        */
+        {}    
         bool build_polygonal_surfaces_from_connected_components() ;
 
     private:
         const GEO::Mesh& mesh_ ;
     };
-    // Implementation
-    class GeoModelElementFromMesh ;
-    
+
+
     /*!
-     * @brief Builder of a GeoModel from a Mesh 
-     * @details It either fills existing Regions and Surfaces
-     * or creates and fills them.
-     * @warning Volumetric version is only implemented for a tetrahedral Mesh
-     * @pre The attributes are of type index_t
+     * @brief Builder of a GeoModel from a simplicial surface or volumetric Mesh 
+     * @details Regions and Surfaces are indentified with an attribute of type index_t
+     * on the mesh cells or facet 
      */
     class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
     public:
@@ -266,14 +272,13 @@ namespace RINGMesh {
         virtual ~GeoModelBuilderMesh() ;
 
         /*!
-         * @brief Prepare a Mesh so that it can be used to build a GeoModel Surfaces
+         * @brief Prepare a Mesh so that it can be used to build one GeoModel Surfaces
          * @details Repairs the mesh, triangulates it, computes a connected component 
          * attribute of type index_t on the mesh facets and removes colocated vertices. 
          */
         static void prepare_surface_mesh_from_connected_components(
             GEO::Mesh& mesh, const std::string& created_surface_attribute ) ;
      
-
         bool is_mesh_valid_for_surface_building() const ;
         bool create_and_build_surfaces() ;
         bool build_surfaces() ;
@@ -299,15 +304,15 @@ namespace RINGMesh {
         const GEO::Mesh& mesh_ ;
         GeoModelElementFromMesh* surface_builder_ ;
         GeoModelElementFromMesh* region_builder_ ;
-
         std::string surface_attribute_name_ ;
         std::string region_attribute_name_ ;
-
         index_t nb_surface_attribute_values_ ;
         index_t nb_region_attribute_values_ ;
     } ;
 
-
+    /*!
+     * @brief Abstract class to load and build GeoModels from files 
+     */
     class RINGMESH_API GeoModelBuilderFile : public GeoModelBuilder {
     public:
         GeoModelBuilderFile( GeoModel& model, const std::string& filename ) ;
@@ -381,7 +386,6 @@ namespace RINGMesh {
             vec3 p1_ ;
             vec3 p2_ ;
         } ;
-
         std::vector< KeyFacet > key_facets_ ;
     } ;
 

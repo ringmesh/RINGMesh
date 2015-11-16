@@ -2,12 +2,12 @@
  * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
- * Redistribution and use in_ source and binary forms, with or without
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in_ binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in_ the
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
  *     * Neither the name of the <organization> nor the
  *       names of its contributors may be used to endorse or promote products
@@ -60,6 +60,10 @@
 #include <ringmesh/utils.h>
 #include <ringmesh/geogram_extension.h>
 
+
+/*! @todo Split All functions of geo_model_builder.cpp into smaller functions
+  * Split this file into at least 4 files.
+ */
 namespace {
     using namespace RINGMesh ;
 
@@ -77,11 +81,12 @@ namespace {
 
     /*!
     * @brief From some mesh corners referring to some global vertex indices
-    * Get the indices used in the Corners and upate the Corners
+    * Get the indices of the vertices used in the corners and upate the corners
     * Example:
     * Input  : corners = 1 3 8 25 8 3
     * Output : corners = 0 1 2 3 2 1
     *          vertices = 1 3 8 25
+    * @todo implement a generic fcuntion to remove duplicated code.
     */
     void get_element_vertices_and_update_corners(
         std::vector< index_t >& corners,
@@ -105,15 +110,13 @@ namespace {
     /*************************************************************************/
     /*!
      * @brief Get the index of an Interface from its name
-     * @param[in_] BM the model to consider
-     * @param[in_] name Name of the Interface
-     * @return Index of the interface in_ the model, NO_ID if not found.
+     * @return Index of the interface in the model, NO_ID if not found.
      */
-    gme_t find_interface( const GeoModel& BM, const std::string& name )
+    gme_t find_interface( const GeoModel& geomodel, const std::string& interface_name )
     {
-        for( index_t i = 0; i < BM.nb_interfaces(); ++i ) {
-            if( BM.one_interface( i ).name() == name ) {
-                return BM.one_interface( i ).gme_id() ;
+        for( index_t i = 0; i < geomodel.nb_interfaces(); ++i ) {
+            if( geomodel.one_interface( i ).name() == interface_name ) {
+                return geomodel.one_interface( i ).gme_id() ;
             }
         }
         return gme_t() ;
@@ -142,13 +145,13 @@ namespace {
 
     /*!
      * @brief Get the index of the Corner for a given point
-     * @param[in_] point Geometric location to look for
+     * @param[in] point Geometric location to look for
      * @return NO_ID or the index of the Corner
      */
-    gme_t find_corner( const GeoModel& BM, const vec3& point )
+    gme_t find_corner( const GeoModel& geomodel, const vec3& point )
     {
-        for( index_t i = 0; i < BM.nb_corners(); ++i ) {
-            if( BM.corner( i ).vertex() == point ) {
+        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
+            if( geomodel.corner( i ).vertex() == point ) {
                 return gme_t( GME::CORNER, i ) ;
             }
         }
@@ -157,13 +160,13 @@ namespace {
 
     /*!
      * @brief Get the index of the Corner at a given model point
-     * @param[in_] model_point_id Index of the point in_ the BoudaryModel
+     * @param[in] model_point_id Index of the point in_ the GeoModel
      * @return NO_ID or the index of the Corner
      */
-    gme_t find_corner( const GeoModel& BM, index_t model_point_id )
+    gme_t find_corner( const GeoModel& geomodel, index_t model_point_id )
     {
-        for( index_t i = 0; i < BM.nb_corners(); ++i ) {
-            if( BM.corner( i ).model_vertex_id() == model_point_id ) {
+        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
+            if( geomodel.corner( i ).model_vertex_id() == model_point_id ) {
                 return gme_t( GME::CORNER, i ) ;
             }
         }
@@ -173,15 +176,15 @@ namespace {
     /*!
      * @brief Find or create a corner at given coordinates.
      *
-     * @param[in_] point Geometric location of the Corner
+     * @param[in] point Geometric location of the Corner
      * @return Index of the Corner
      */
-    gme_t find_or_create_corner( GeoModelBuilder& BMB, const vec3& point )
+    gme_t find_or_create_corner( GeoModelBuilder& geomodel_builder, const vec3& point )
     {
-        gme_t result = find_corner( BMB.model(), point ) ;
+        gme_t result = find_corner( geomodel_builder.model(), point ) ;
         if( !result.is_defined() ) {
-            result = BMB.create_element( GME::CORNER ) ;
-            BMB.set_corner( result.index, point ) ;
+            result = geomodel_builder.create_element( GME::CORNER ) ;
+            geomodel_builder.set_corner( result.index, point ) ;
         }
         return result ;
     }
@@ -189,8 +192,8 @@ namespace {
     /*!
      * @brief Returns true if the Line has exactly the given vertices
      *
-     * @param[in_] L the line to compare to
-     * @param[in_] rhs_vertices Vertices to compare to
+     * @param[in] L the line to compare to
+     * @param[in] rhs_vertices Vertices to compare to
      */
     bool line_equal( const Line& L, const std::vector< vec3 >& rhs_vertices )
     {
@@ -220,32 +223,31 @@ namespace {
     }
 
     /*!
-     * @brief Find or create a line
-     *
-     * @param[in_] BM model to consider
-     * @param[in_] vertices Coordinates of the vertices of the line
+     * @brief Find or create a line   
+     * @param[in] geomodel model to consider
+     * @param[in] vertices Coordinates of the vertices of the line
      * @return Index of the Line
      */
     gme_t find_or_create_line(
-        GeoModelBuilder& BMB,
+        GeoModelBuilder& geomodel_builder,
         const std::vector< vec3 >& vertices )
     {
         gme_t result ;
-        for( index_t i = 0; i < BMB.model().nb_lines(); ++i ) {
-            if( line_equal( BMB.model().line( i ), vertices ) ) {
-                result = BMB.model().line( i ).gme_id() ;
+        for( index_t i = 0; i < geomodel_builder.model().nb_lines(); ++i ) {
+            if( line_equal( geomodel_builder.model().line( i ), vertices ) ) {
+                result = geomodel_builder.model().line( i ).gme_id() ;
             }
         }
         if( !result.is_defined() ) {
-            result = BMB.create_element( GME::LINE ) ;
-            BMB.set_line( result.index, vertices ) ;
+            result = geomodel_builder.create_element( GME::LINE ) ;
+            geomodel_builder.set_line( result.index, vertices ) ;
 
             // Find the indices of the corner at both extremities
             // Both must be defined to have a valid LINE
-            BMB.add_element_boundary( result,
-                find_or_create_corner( BMB, vertices.front() ) ) ;
-            BMB.add_element_boundary( result,
-                find_or_create_corner( BMB, vertices.back() ) ) ;
+            geomodel_builder.add_element_boundary( result,
+                find_or_create_corner( geomodel_builder, vertices.front() ) ) ;
+            geomodel_builder.add_element_boundary( result,
+                find_or_create_corner( geomodel_builder, vertices.back() ) ) ;
         }
         return result ;
     }
@@ -260,6 +262,7 @@ namespace {
     * @param[out] f the found facet index
     * @param[out] e the found edge index
     * @return True if the facet and the edge indices are found
+    * @todo RENAME these parameters and split in smaller functions !! [JP]
     */
     bool find_facet_and_edge(
         const ColocaterANN& ann,
@@ -306,9 +309,9 @@ namespace {
     }
 
 
-    bool is_corner_to_duplicate( const GeoModel& BM, index_t corner_id )
+    bool is_corner_to_duplicate( const GeoModel& geomodel, index_t corner_id )
     {
-        if( BM.corner( corner_id ).nb_in_boundary() > 3 ) {
+        if( geomodel.corner( corner_id ).nb_in_boundary() > 3 ) {
             return true ;
         } else {
             return false ;
@@ -334,8 +337,8 @@ namespace {
     }
 
     /*
-    * @brief Utility structure to build a GeoModel knowing only its surface
-    * @details Store the vertices of a triangle that is on the boundary of a surface
+    * @brief Utility structure to build a GeoModel knowing only its Surfaces
+    * @details Store the vertices of a triangle which is on the boundary of a Surface
     */
     struct BorderTriangle {
         /*!
@@ -387,16 +390,16 @@ namespace {
 
     /*!
     * @brief Get the BorderTriangle corresponding to the next edge on border
-    * in_ the considered Surface
+    * in the considered Surface
     */
     index_t get_next_border_triangle(
-        const GeoModel& M,
+        const GeoModel& geomodel,
         const std::vector< BorderTriangle >& BT,
         index_t from,
         bool backward = false )
     {
         const BorderTriangle& in_ = BT[ from ] ;
-        const Surface& S = M.surface( in_.s_ ) ;
+        const Surface& S = geomodel.surface( in_.s_ ) ;
         index_t NO_ID( -1 ) ;
 
         // Get the next edge on border in_ the Surface
@@ -433,8 +436,7 @@ namespace {
     /*!
     * @brief Mark as visited all BorderTriangle which first edge is the same than
     * the first edge of i.
-    *
-    * @param[in_] border_triangles Information on triangles MUST be sorted so that
+    * @param[in] border_triangles Information on triangles MUST be sorted so that
     *            BorderTriangle having the same boundary edge are adjacent
     *
     */
@@ -458,10 +460,9 @@ namespace {
 
     /*!
     * @brief Get the indices of the Surface adjacent to the first edge of a BorderTriangle
-    *
-    * @param[in_] border_triangles Information on triangles MUST be sorted so that
+    * @param[in] border_triangles Information on triangles MUST be sorted so that
     *          BorderTriangle having the same boundary edge are adjacent
-    * @param[in_] i Index of the BorderTriangle
+    * @param[in] i Index of the BorderTriangle
     * @param[out] adjacent_surfaces Indices of the Surface stored by the BorderTriangle sharing
     *             the first edge of i
     */
@@ -497,7 +498,7 @@ namespace {
     // As long as the adjacent surfaces are the same, the vertices belong to the
     // Line under construction
     void get_one_line_vertices(
-        const GeoModel& M,
+        const GeoModel& geomodel,
         const std::vector<BorderTriangle>& border_triangles,
         index_t input_triangle,
         bool backward,
@@ -513,7 +514,7 @@ namespace {
         get_adjacent_surfaces( border_triangles, input_triangle, adjacent_surfaces ) ;
 
         index_t cur_triangle = get_next_border_triangle(
-            M, border_triangles, input_triangle, backward ) ;
+            geomodel, border_triangles, input_triangle, backward ) ;
 
         ringmesh_debug_assert( cur_triangle != input_triangle )
 
@@ -553,14 +554,12 @@ namespace {
             } else {
                 same_surfaces = false ;
             }
-            cur_triangle = get_next_border_triangle( M, border_triangles,
+            cur_triangle = get_next_border_triangle( geomodel, border_triangles,
                                                      cur_triangle, backward ) ;
         }
     }
 
-
-
-}
+} // anonymous namespace
 
 namespace RINGMesh {
     /*************************************************************************/
@@ -569,7 +568,7 @@ namespace RINGMesh {
     * @brief Utility class to sort a set of oriented triangles around a common edge
     * Used in_ GeoModelBuilderSurface.
     *
-    * This code could certainly be improved.
+    * @todo This code could certainly be improved [JP]
     */
     class GeoModelRegionFromSurfaces {
     public:
@@ -820,14 +819,14 @@ namespace RINGMesh {
         std::vector< std::pair< index_t, bool > > sorted_triangles_ ;
     } ;
 
-    bool is_surface_mesh( const GEO::Mesh& M )
+    bool is_surface_mesh( const GEO::Mesh& mesh )
     {
-        return M.facets.nb() != 0 ;
+        return mesh.facets.nb() != 0 ;
     }
 
-    bool is_volume_mesh( const GEO::Mesh& M )
+    bool is_volume_mesh( const GEO::Mesh& mesh )
     {
-        return M.cells.nb() != 0 ;
+        return mesh.cells.nb() != 0 ;
     }
 
 }
@@ -845,10 +844,10 @@ namespace RINGMesh {
 
     /*!
      * @brief Sets the geometrical position of a vertex
-     * @param[in_] corner_id Index of the corner
-     * @param[in_] index Index of the vertex to modify
-     * @param[in_] point New coordinates
-     * @param[in_] update If true, all the vertices sharing the same geometrical position
+     * @param[in] corner_id Index of the corner
+     * @param[in] index Index of the vertex to modify
+     * @param[in] point New coordinates
+     * @param[in] update If true, all the vertices sharing the same geometrical position
      *               in_ the GeoModel have their position updated, if false they
      *               are not.
      * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
@@ -873,9 +872,9 @@ namespace RINGMesh {
      * @brief Set the geometrical position of a vertex from a model vertex
      * @details Set also both mapping from (GeoModelMeshVertices::unique2bme)
      *          and to (model_vertex_id_) the model vertex.
-     * @param[in_] id Element index
-     * @param[in_] index Index of the vertex to modify
-     * @param[in_] model_vertex Index in_ GeoModelMeshVertices of the vertex giving
+     * @param[in] id Element index
+     * @param[in] index Index of the vertex to modify
+     * @param[in] model_vertex Index in GeoModelMeshVertices of the vertex giving
      *                     the new position
      */
     void GeoModelBuilder::set_element_vertex(
@@ -919,9 +918,9 @@ namespace RINGMesh {
      * @brief Add vertices to the mesh
      * @details No update of the model vertices is done
      *
-     * @param[in_] id Element index
-     * @param[in_] model_vertices Geometric positions of the vertices to add
-     * @param[in_] clear If true the mesh if cleared, keeping its attributes
+     * @param[in] id Element index
+     * @param[in] model_vertices Geometric positions of the vertices to add
+     * @param[in] clear If true the mesh if cleared, keeping its attributes
      */
     void GeoModelBuilder::set_element_vertices(
         const gme_t& element_id,
@@ -942,8 +941,8 @@ namespace RINGMesh {
     /*!
      * @brief Set the geometric location of a Corner
      *
-     * @param[in_] corner_id Index of the corner
-     * @param[in_] point Coordinates of the vertex
+     * @param[in] corner_id Index of the corner
+     * @param[in] point Coordinates of the vertex
      */
     void GeoModelBuilder::set_corner(
         index_t corner_id,
@@ -955,8 +954,8 @@ namespace RINGMesh {
     /*!
      * @brief Set one Line points
      *
-     * @param[in_] id Line index
-     * @param[in_] vertices Coordinates of the vertices on the line
+     * @param[in] id Line index
+     * @param[in] vertices Coordinates of the vertices on the line
      */
     void GeoModelBuilder::set_line(
         index_t line_id,
@@ -974,10 +973,10 @@ namespace RINGMesh {
      * @brief Set the points and facets for a surface
      * @details If facet_adjacencies are not given they are computed.
      *
-     * @param[in_] surface_id Index of the surface
-     * @param[in_] points Coordinates of the vertices
-     * @param[in_] facets Indices in_ the vertices vector to build facets
-     * @param[in_] facet_ptr Pointer to the beginning of a facet in_ facets
+     * @param[in] surface_id Index of the surface
+     * @param[in] points Coordinates of the vertices
+     * @param[in] facets Indices in the vertices vector to build facets
+     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
      */
     void GeoModelBuilder::set_surface_geometry(
         index_t surface_id,
@@ -999,10 +998,10 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the vertex for a Corner. Store the info in_ the BM vertices
+     * @brief Set the vertex for a Corner. Store the info in_ the geomodel vertices
      *
-     * @param[in_] corner_id Index of the corner
-     * @param[in_] unique_vertex Index of the vertex in_ the model
+     * @param[in] corner_id Index of the corner
+     * @param[in] unique_vertex Index of the vertex in the model
      */
     void GeoModelBuilder::set_corner(
         index_t corner_id,
@@ -1012,10 +1011,10 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set one Line vertices. Store the info in_ the BM vertices
+     * @brief Set one Line vertices. Store the info in_ the geomodel vertices
      *
-     * @param[in_] id Line index
-     * @param[in_] unique_vertices Indices in_ the model of the unique vertices with which to build the Line
+     * @param[in] id Line index
+     * @param[in] unique_vertices Indices in the model of the unique vertices with which to build the Line
      */
     void GeoModelBuilder::set_line(
         index_t line_id,
@@ -1033,10 +1032,10 @@ namespace RINGMesh {
      * @brief Set the vertices and facets for a surface
      * @details If facet_adjacencies are not given they are computed.
      *
-     * @param[in_] surface_id Index of the surface
-     * @param[in_] model_vertex_ids Indices of unique vertices in_ the GeoModel
-     * @param[in_] facets Indices in_ the vertices vector to build facets
-     * @param[in_] facet_ptr Pointer to the beginning of a facet in_ facets
+     * @param[in] surface_id Index of the surface
+     * @param[in] model_vertex_ids Indices of unique vertices in_ the GeoModel
+     * @param[in] facets Indices in the vertices vector to build facets
+     * @param[in] facet_ptr Pointer to the beginning of a facet in_ facets
      */
     void GeoModelBuilder::set_surface_geometry(
         index_t surface_id,
@@ -1053,7 +1052,7 @@ namespace RINGMesh {
     * @brief Set the facets of a surface
     * @param[in] surface_id Index of the surface
     * @param[in] facets Indices of the model vertices defining the facets
-    * @param[in] facet_ptr Pointer to the beginning of a facet in_ facets
+    * @param[in] facet_ptr Pointer to the beginning of a facet in facets
     */
     void GeoModelBuilder::set_surface_geometry(
         index_t surface_id,
@@ -1141,7 +1140,7 @@ namespace RINGMesh {
      * starting at this vertex.
      * If there is no neighbor inside the same Surface adjacent is set to NO_ADJACENT
      *
-     * @param[in_] surface_id Index of the surface
+     * @param[in] surface_id Index of the surface
      */
     void GeoModelBuilder::compute_surface_adjacencies( index_t surface_id )
     {
@@ -1220,7 +1219,7 @@ namespace RINGMesh {
             }
         }
         if( duplicate == NO_ID ) {
-            // Duplicate the vertex in_ the surface
+            // Duplicate the vertex in the surface
             duplicate = E.mesh_.vertices.create_vertex(
                 M.mesh.vertices.vertex( model_vertex_id ).data() ) ;
 
@@ -1247,7 +1246,7 @@ namespace RINGMesh {
     *
     * @todo Rewrite this function
     *
-    * @param[in_] L The Line
+    * @param[in] L The Line
     */
     void GeoModelBuilder::cut_surface_by_line( Surface& S, const Line& L )
     {
@@ -1334,7 +1333,7 @@ namespace RINGMesh {
 
         // Index of the new vertex for the corner in_ the surface
         index_t s_new_corner = NO_ID ;
-        // Create this new point in_ the surface and set mapping with point in_ the BM
+        // Create this new point in_ the surface and set mapping with point in_ the geomodel
         if( m_corner != NO_ID ) {
             s_new_corner = find_or_create_duplicate_vertex( S, m_corner, s_corner ) ;
         }
@@ -1664,29 +1663,10 @@ namespace RINGMesh {
 
     /*************************************************************************/
 
-    /*! 
-     * Maybe useful to keep this ... Let's see 
-     */
-    class IndexTComparator {
-    public:
-        bool operator()( index_t rhs, index_t lhs ) const
-        {
-            if( rhs == NO_ID ) {
-                return true ;
-            } else if( lhs == NO_ID ) {
-                return false ;
-            } else {
-                return rhs < lhs ;
-            }
-        }
-    } ;
-    /*************************************************************************/
-
-
     /*!
      * @brief Implementation detail: abstract base class
-     * @details Manage the correspondence between a Mesh on which the GeoModelElements
-     *          are identified and these GeoModelElements (only known by indices).
+     * @details Manages the correspondence between a Mesh elements and
+     *          GeoModelElements only known by indices.
      * @warning Implemented only for Surface and Region and for simplicial meshes.
      * @note Used by GeoModelBuilderMesh.
      */
@@ -1843,35 +1823,42 @@ namespace RINGMesh {
             mesh_( M ),
             gme_attribute_name_( attribute_name )
         { 
-        }        
+        }
+
         /*! Number of GeoModelElements of the considered type */ 
         index_t nb_gme() const
         {
             return gme_id_to_attribute_value_.size() ;
         }
+
         /*! Is the value indeed taken by the attribute on the mesh */
         bool is_attribute_value( index_t value )
         {
             return nb_simplexes_per_attribute_value_.count( value ) == 1 ;
         }
+
         bool attribute_value_has_gme_id( index_t attribute_value ) const
         {
             return attribute_value_to_gme_id_.count( attribute_value ) == 1 ;
         }
+
         index_t attribute_value_from_gme( index_t gme_id ) const
         {
             return gme_id_to_attribute_value_[ gme_id ] ;
         }
+
         bool is_gme_attribute_defined()
         {
             GEO::AttributesManager& manager = mesh_simplex_attribute_manager() ;
             return manager.is_defined( gme_attribute_name_ ) ;
         }
+
         void bind_gme_attribute() 
         {
             GEO::AttributesManager& manager = mesh_simplex_attribute_manager() ;
             gme_attribute_.bind( manager, gme_attribute_name_ ) ;
-        }        
+        }
+
         void allocate_gme_vertices()
         {
             gme_simplex_vertices_.resize( nb_gme() ) ;
@@ -1883,10 +1870,12 @@ namespace RINGMesh {
                 }                
             }
         }
+
         void allocate_mesh_simplex_to_gme() 
         {
             mesh_simplex_to_gme_simplex_.resize( nb_mesh_simplexes() ) ;
         }
+
         virtual void assign_one_gme_simplex_vertices( 
             index_t mesh_simplex_id, index_t gme_id, index_t gme_simplex_id )
         {
@@ -1895,15 +1884,18 @@ namespace RINGMesh {
                  gme_simplex_vertices_[gme_id][from + v] = mesh_vertex_index( mesh_simplex_id, v ) ;
             }
         }
+
         void assign_mesh_simplex_to_no_gme_simplex( index_t mesh_simplex_id )
         {
             assign_mesh_simplex_to_gme_simplex( mesh_simplex_id, NO_ID, NO_ID ) ;
         }
+
         void assign_mesh_simplex_to_gme_simplex(
             index_t mesh_simplex_id, index_t gme_id, index_t gme_simplex_id )
         {
             mesh_simplex_to_gme_simplex_[ mesh_simplex_id ] = GMESimplex( gme_id, gme_simplex_id ) ;
         }
+
         virtual index_t nb_mesh_simplexes() const = 0  ;
         virtual GEO::AttributesManager& mesh_simplex_attribute_manager() = 0 ;
         virtual index_t nb_vertices_per_simplex() const = 0 ; 
@@ -1926,18 +1918,22 @@ namespace RINGMesh {
             GeoModelElementFromMesh( M, attribute_name )
         {
         }
+
         GEO::AttributesManager& mesh_simplex_attribute_manager()
         {
             return mesh_.facets.attributes() ;
         }
+
         index_t nb_mesh_simplexes() const
         {
             return mesh_.facets.nb() ;
         }
+
         index_t nb_vertices_per_simplex() const
         {
             return 3 ;
         }
+
         index_t mesh_vertex_index( index_t simplex_id, index_t vertex ) const
         {
             return mesh_.facets.vertex( simplex_id, vertex ) ;
@@ -1949,18 +1945,22 @@ namespace RINGMesh {
         GeoModelRegionFromMesh( const GEO::Mesh& M, const std::string& attribute_name ) :
             GeoModelElementFromMesh( M, attribute_name )
         {}
+
         GEO::AttributesManager& mesh_simplex_attribute_manager()
         {
             return mesh_.cells.attributes() ;
         }
+
         index_t nb_mesh_simplexes() const
         {
             return mesh_.cells.nb() ;
         }
+
         virtual index_t nb_vertices_per_simplex() const
         {
             return 4 ;
         }
+
         index_t mesh_vertex_index( index_t simplex_id, index_t vertex ) const
         {
             return mesh_.cells.vertex( simplex_id, vertex ) ;
@@ -2660,10 +2660,10 @@ namespace RINGMesh {
     /*!
      * @brief Find the facet which first 3 vertices are given
      * 
-     * @param[in_] surface_id Index of the surface
-     * @param[in_] p0 First point coordinates
-     * @param[in_] p1 Second point coordinates
-     * @param[in_] p2 Third point coordinates
+     * @param[in] surface_id Index of the surface
+     * @param[in] p0 First point coordinates
+     * @param[in] p1 Second point coordinates
+     * @param[in] p2 Third point coordinates
      * @param[out] same_sign Is true if the found facet has the same orientation than triangle p0p1p2
      * @return Index of the found facet, NO_ID if none found
      */
@@ -2719,7 +2719,7 @@ namespace RINGMesh {
     /*!
      * @brief Verify that a surface key facet has an orientation consistent with the surface facets.
      * 
-     * @param[in_] surface_id Index of the surface
+     * @param[in] surface_id Index of the surface
      * @return False if the key_facet orientation is not the same than the surface facets, else true.
      */
     bool GeoModelBuilderGocad::check_key_facet_orientation(
@@ -2751,9 +2751,9 @@ namespace RINGMesh {
     /*!
      * @brief Get the points of a Line between two corners on a Surface
      *
-     * @param[in_] S Index of the surface
-     * @param[in_] id0 Index of the starting point( a corner ) in_ S
-     * @param[in_] id1 Index of the second point on the Line in_ S
+     * @param[in] S Index of the surface
+     * @param[in] id0 Index of the starting point( a corner ) in_ S
+     * @param[in] id1 Index of the second point on the Line in_ S
      * @param[out] border_vertex_model_vertices Coordinates of the vertices on the Line (emptied and filled again)
      * @return Index of the Corner at which the Line ends
      */
@@ -2852,11 +2852,11 @@ namespace RINGMesh {
     /*!
      * @brief Add a Surface to the model
      *
-     * @param[in_] interface_name Name of the parent. The parent MUST exist.
-     * @param[in_] type Type of the Surface
-     * @param[in_] p0 Coordinates of the 1 point of the TFace key facet 
-     * @param[in_] p1 Coordinates of the 2 point of the TFace key facet 
-     * @param[in_] p2 Coordinates of the 3 point of the TFace key facet 
+     * @param[in] interface_name Name of the parent. The parent MUST exist.
+     * @param[in] type Type of the Surface
+     * @param[in] p0 Coordinates of the 1 point of the TFace key facet 
+     * @param[in] p1 Coordinates of the 2 point of the TFace key facet 
+     * @param[in] p2 Coordinates of the 3 point of the TFace key facet 
      */
     void GeoModelBuilderGocad::create_surface(
         const std::string& interface_name,
