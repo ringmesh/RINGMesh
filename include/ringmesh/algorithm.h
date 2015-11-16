@@ -41,9 +41,14 @@
 #ifndef __RINGMESH_ALGORITHM__
 #define __RINGMESH_ALGORITHM__
 
-
 #include <vector>
 #include <algorithm>
+
+/*!
+* @file ringmesh/algorithm.h
+* @brief Template function for basic operations on vectors
+* @author Jeanne Pellerin and Arnaud Botella
+*/
 
 namespace RINGMesh {
 
@@ -93,43 +98,9 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-    * @todo Not used in RINGMesh. To remove. [JP]
-    */
-    template< class T1, class T2 >
-    bool triple_equal(
-        const T1& rhs1,
-        const T1& rhs2,
-        const T1& rhs3,
-        const T2& lhs1,
-        const T2& lhs2,
-        const T2& lhs3 )
-    {
-        if( rhs1 == lhs1 ) {
-            if( rhs2 == lhs2 && rhs3 == lhs3 ) {
-                return true ;
-            } else if( rhs2 == lhs3 && rhs3 == lhs2 ) {
-                return true ;
-            }
-        } else if( rhs1 == lhs2 ) {
-            if( rhs2 == lhs1 && rhs3 == lhs3 ) {
-                return true ;
-            } else if( rhs2 == lhs3 && rhs3 == lhs1 ) {
-                return true ;
-            }
-        } else if( rhs1 == lhs3 ) {
-            if( rhs2 == lhs1 && rhs3 == lhs2 ) {
-                return true ;
-            } else if( rhs2 == lhs2 && rhs3 == lhs1 ) {
-                return true ;
-            }
-        }
-        return false ;
-    }
-
 
     /*!
-    * \brief Indirect sorting of two templated vectors.
+    * \brief Indirect sorting of two vectors.
     * @todo Comment what is indirect sorting.
     */
     template< class T1, class T2 >
@@ -152,6 +123,9 @@ namespace RINGMesh {
         }
     }
 
+    /*! 
+     * @brief Comparator of indices relying on values token in a vector
+     */
     template< class T >
     class CompareIndexFromValue {
     public:
@@ -160,13 +134,13 @@ namespace RINGMesh {
         {}
         bool operator()( index_t i, index_t j )
         {
-            if( have_same_values( i, j ) ) {
+            if( are_values_equal( i, j ) ) {
                 return i < j ;
             } else {
                 return values_[ i ] < values_[ j ] ;
             }
         }
-        bool have_same_values( index_t i, index_t j )
+        bool are_values_equal( index_t i, index_t j )
         {
             return values_[ i ] == values_[ j ] ;
         }
@@ -175,24 +149,24 @@ namespace RINGMesh {
     };
 
     /*!
-    * @brief Determine unique occurences of values in vector
-    * and fill a mapping to the first occurence of the unique value
-    * @note Tricky algorithm, used over and over in Geogram
+    * @brief Determine unique occurences of values in input vector
+    * and fill a mapping to the first occurence of each unique value
     * @param[in] input values  example: 1 4 6 0 4 1 5 6
-    * @param[out] input2unique map each index to the index of the
-    * first occurence of the value in the vector. example: 0 1 2 3 1 0 6 2
-    * @return Number of unique values in the vector
+    * @param[out] input2unique example: 0 1 2 3 1 0 6 2
+    * Maps each index to the index of the first occurence of the value in the vector. 
+    * @return Number of unique values in input
+    * @note Tricky algorithm, used over and over in Geogram
     */
     template< class T >
     index_t unique_values(
         const std::vector< T >& input,
         std::vector< index_t >& unique_value_index )
-    {
-        CompareIndexFromValue<T> comparator( input ) ;
+    {        
         std::vector< index_t > sorted( input.size() );
         for( index_t i = 0; i < input.size(); ++i ) {
             sorted[ i ] = i ;
         }
+        CompareIndexFromValue<T> comparator( input ) ;
         std::sort( sorted.begin(), sorted.end(), comparator ) ;
 
         unique_value_index.resize( input.size(), NO_ID ) ;
@@ -203,7 +177,7 @@ namespace RINGMesh {
             unique_value_index[ sorted[ i ] ] = sorted[ i ];
             index_t j = i + 1;
             while( j < input.size() &&
-                   comparator.have_same_values( sorted[ i ], sorted[ j ] )
+                   comparator.are_values_equal( sorted[ i ], sorted[ j ] )
                    ) {
                 unique_value_index[ sorted[ j ] ] = sorted[ i ];
                 j++;
