@@ -77,6 +77,11 @@ namespace RINGMesh {
     void RINGMESH_API print_model( const GeoModel& model ) ;
 
     
+    bool RINGMESH_API are_geomodel_surface_meshes_simplicial( const GeoModel& geomodel );
+
+    bool RINGMESH_API are_geomodel_region_meshes_simplicial( const GeoModel& geomodel );
+
+
     /*!
     * @brief Build a Mesh from the model non-duplicated vertices and its Surface facets.
     * @details Adjacencies are not set. Client should call mesh repair functions afterwards.
