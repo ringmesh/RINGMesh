@@ -1,0 +1,10 @@
+# Options for compiling Geogram for Graphite
+# Rename as CMakeOptions.txt
+
+if(WIN32)
+   set(VORPALINE_PLATFORM Win-vs-dynamic-generic)
+elseif(UNIX)
+   set(VORPALINE_PLATFORM Linux64-gcc-dynamic)
+endif()
+
+
