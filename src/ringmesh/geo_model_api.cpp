@@ -65,6 +65,14 @@ namespace RINGMesh {
         return result ;
     }
 
+    index_t nb_cells(const GeoModel& geomodel) {
+        index_t nb_cells = 0;
+        for (index_t i = 0; i < geomodel.nb_regions(); ++i) {
+            nb_cells += geomodel.region(i).nb_cells();
+        }
+        return nb_cells;
+    }
+
     void print_model( const GeoModel& geomodel )
     {
         GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has "
@@ -83,6 +91,25 @@ namespace RINGMesh {
                 << std::endl ;
         }
     }
+
+    bool are_geomodel_surface_meshes_simplicial(const GeoModel& geomodel){
+        for (index_t i = 0; i != geomodel.nb_surfaces(); ++i){
+            if (!geomodel.surface(i).is_simplicial()) {
+                return false ;
+            }
+        }
+        return true;
+    }
+
+    bool are_geomodel_region_meshes_simplicial(const GeoModel& geomodel){
+        for (index_t i = 0; i != geomodel.nb_regions(); ++i){
+            if (!geomodel.region(i).is_simplicial()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
 	///@todo A class encapsulating the copy from a GeoModel to a Mesh ?
     /// See what has been done in GeoModelMeshBuilder	
@@ -161,14 +188,20 @@ namespace RINGMesh {
         }    
     }
 
-    void add_surface_triangles_to_mesh( const Surface& surface, GEO::Mesh& M )
+    void add_surfaces_triangles_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        GEO::vector< index_t > triangles( 3*surface.nb_cells() ) ;
-        for( index_t j = 0; j < surface.nb_cells(); ++j ) {      
-            for( index_t v = 0; v < 3; ++v ) {
-                triangles[ 3*j+v ] = surface.model_vertex_id( j, v ) ;
-            }           
-        }    
+        GEO::vector< index_t > triangles(3 * nb_facets( geomodel ));
+        index_t triangle_index = 0;
+        for (index_t i = 0; i < geomodel.nb_surfaces(); ++i) {
+            const Surface& S = geomodel.surface(i);
+            index_t nb_surface_triangles = S.nb_cells();            
+            for (index_t j = 0 ; j != nb_surface_triangles; ++j) {
+                triangles[3*triangle_index ] = S.model_vertex_id(j, 0);
+                triangles[3*triangle_index + 1] = S.model_vertex_id(j, 1);
+                triangles[3*triangle_index + 2] = S.model_vertex_id(j, 2);                
+                ++triangle_index ;
+            }
+        }
         M.facets.assign_triangle_mesh( triangles, true ) ;
     }
 
@@ -194,23 +227,31 @@ namespace RINGMesh {
 
     void add_geomodel_surface_facets_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
-            const Surface& S = geomodel.surface( i ) ;
-            if( S.is_simplicial() ) {
-                add_surface_triangles_to_mesh( S, M ) ;
-            } else {
+        if (are_geomodel_surface_meshes_simplicial(geomodel)){
+            add_surfaces_triangles_to_mesh(geomodel, M);
+        }
+        else {
+            for (index_t i = 0; i < geomodel.nb_surfaces(); ++i) {
+                const Surface& S = geomodel.surface(i);
                 add_surface_facets_to_mesh( S, M ) ;
             }
         }
         create_and_fill_surface_index_attribute(geomodel, "region", M);
     }
 
-    void add_region_tets_to_mesh( const Region& region, GEO::Mesh& M )
+    void add_regions_tets_to_mesh(const GeoModel& geomodel, GEO::Mesh& M)
     {
-        GEO::vector< index_t > tets( region.nb_cells()*4 ) ;
-        for( index_t j = 0; j < region.nb_cells(); ++j ) {
-            for( index_t v = 0; v < 4; ++v ) {
-                tets[ 4*j+v ] = region.model_vertex_id( j, v ) ;
+        GEO::vector< index_t > tets(4*nb_cells(geomodel));
+        index_t tet_index = 0 ;
+        for (index_t i = 0; i < geomodel.nb_regions(); ++i) {
+            const Region& region = geomodel.region(i);             
+            index_t nb_region_tets = region.nb_cells();
+            for (index_t j = 0; j < nb_region_tets; ++j) {
+                tets[4*tet_index    ] = region.model_vertex_id(j, 0);
+                tets[4*tet_index + 1] = region.model_vertex_id(j, 1);
+                tets[4*tet_index + 2] = region.model_vertex_id(j, 2);
+                tets[4*tet_index + 3] = region.model_vertex_id(j, 3);
+                ++tet_index ;
             }
         }
         M.cells.assign_tet_mesh( tets, true ) ;
@@ -236,17 +277,16 @@ namespace RINGMesh {
         region_attribute.unbind();
     }
 
-    /*! @todo to implement for other types of cells
+    /*!
+     * @pre Regions meshes are all tetrahedral !
+     * @todo to implement for other types of cells
      */
     void add_geomodel_region_tets_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        for( index_t i = 0; i < geomodel.nb_regions(); ++i ) {
-            const Region& region = geomodel.region( i ) ;            
-            if( region.is_simplicial() ) {
-                add_region_tets_to_mesh( region, M ) ;
-            } else {
-                ringmesh_assert( false ) ;
-            }           
+        if (are_geomodel_region_meshes_simplicial(geomodel)) {
+            add_regions_tets_to_mesh(geomodel, M);
+        } else {
+            ringmesh_assert( false ) ;    
         }
         create_and_fill_region_index_attribute(geomodel, "region", M);
     }

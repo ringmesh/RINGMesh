@@ -81,8 +81,8 @@ int main( int argc, char** argv )
     geomodel_surface_load( file_name, geomodel ) ;
 
     GEO::Mesh geomodel_surfaces_mesh ;
-    mesh_from_geo_model( geomodel, geomodel_surfaces_mesh ) ;
-    tetrahedralize_mesh_tetgen( geomodel_surfaces_mesh ) ;
+    build_mesh_from_geomodel( geomodel, geomodel_surfaces_mesh ) ;
+    tetrahedralize_mesh_tetgen( geomodel_surfaces_mesh, false, 1.0 ) ;
 
     GEO::MeshIOFlags mesh_io_flags ;
     mesh_io_flags.set_elements( GEO::MeshElementsFlags( GEO::MESH_VERTICES | GEO::MESH_CELLS ) ) ;
@@ -93,3 +93,4 @@ int main( int argc, char** argv )
 
     return 0 ;
 }
+

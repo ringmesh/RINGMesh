@@ -2556,7 +2556,7 @@ namespace RINGMesh {
 
                     // 2.2 Build the corners from their position and the surface parts
                     //    containing them
-                    else if( in_.field_matches( 0, "BSTONE" ) && options_.compute_corners  ) {
+                    else if( in_.field_matches( 0, "BSTONE" ) && !options_.compute_corners  ) {
                         index_t v_id = in_.field_as_uint( 1 ) - 1 ;
                         if( !find_corner(model_, tsurf_vertices[v_id]).is_defined() ) {
                             // Create the corner
@@ -2571,8 +2571,7 @@ namespace RINGMesh {
                         index_t p2 = in_.field_as_uint( 3 ) - 1 ;
 
                         // Get the global corner id
-                        gme_t corner_id =
-                        find_corner(model_, tsurf_vertices[ p1 ] ) ;
+                        gme_t corner_id = find_corner(model_, tsurf_vertices[ p1 ] ) ;
                         ringmesh_debug_assert( corner_id.is_defined() ) ;
 
                         // Get the surface
@@ -2752,8 +2751,8 @@ namespace RINGMesh {
      * @brief Get the points of a Line between two corners on a Surface
      *
      * @param[in] S Index of the surface
-     * @param[in] id0 Index of the starting point( a corner ) in_ S
-     * @param[in] id1 Index of the second point on the Line in_ S
+     * @param[in] id0 Index of the starting point( a corner ) in S
+     * @param[in] id1 Index of the second point on the Line in S
      * @param[out] border_vertex_model_vertices Coordinates of the vertices on the Line (emptied and filled again)
      * @return Index of the Corner at which the Line ends
      */

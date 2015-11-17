@@ -50,6 +50,12 @@
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
+    
+    // Set an output log file
+    std::string log_file(ringmesh_test_output_path + "log.txt");
+    GEO::FileLogger* file_logger = new GEO::FileLogger(log_file);
+    GEO::Logger::instance()->register_client(file_logger);
+
 
     GEO::Logger::out( "RINGMesh Test" ) << "Tetrahedralization of the Corbieres model" << std::endl ;
 
