@@ -755,6 +755,23 @@ namespace RINGMesh {
         return NO_ID ;
     }
 
+    std::vector<index_t> GeoModelMeshElement::gme_vertex_indices( 
+        index_t model_vertex_id ) const 
+    {    
+        const std::vector< GMEVertex >& all_vertices =
+            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
+
+        std::vector< index_t > this_gme_vertices ;
+        for( index_t i = 0; i < all_vertices.size(); i++ ) {
+            const GMEVertex& gme_vertex = all_vertices[ i ] ;
+            if( gme_vertex.gme_id == gme_id() ) {
+                this_gme_vertices.push_back( gme_vertex.v_id ) ;
+            }
+        }
+        return this_gme_vertices ;
+    }
+
+
 
 
     /**************************************************************/

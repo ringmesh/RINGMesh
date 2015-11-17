@@ -541,7 +541,9 @@ namespace RINGMesh {
         * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
         * @todo changer le nom
         */
-        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;      
+        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ; 
+
+        std::vector<index_t> gme_vertex_indices( index_t model_vertex_id ) const ;
 
         /*!
          * @}

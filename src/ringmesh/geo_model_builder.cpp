@@ -2621,10 +2621,16 @@ namespace RINGMesh {
                 const Surface& S = model_.surface( b.part_id_ ) ;
                 gme_t end_corner_id = determine_line_vertices( S, b.p0_, b.p1_,
                                                                line_vertices ) ;
-                // 2 - Check if this border already exists
-                gme_t line_id = find_or_create_line( *this, line_vertices ) ;
-                // Add the surface in_ which this line is
-                add_element_in_boundary( line_id, S.gme_id() ) ;
+                if( line_vertices.size() == 0 ) {
+                    GEO::Logger::out("I/O")
+                        << "One Line vertices determination failed in SURFACE " << S.index() 
+                        << std::endl ;                    
+                } else {
+                    // 2 - Check if this border already exists
+                    gme_t line_id = find_or_create_line(*this, line_vertices);
+                    // Add the surface in_ which this line is
+                    add_element_in_boundary(line_id, S.gme_id());
+                }
             }
         }
         else {
@@ -2768,7 +2774,11 @@ namespace RINGMesh {
 
         // Starting facet that contains the two given vertices
         index_t f = S.facet_from_surface_vertex_ids( id0, id1 ) ;
-        ringmesh_debug_assert( f != Surface::NO_ID ) ;
+//        ringmesh_debug_assert( f != Surface::NO_ID ) ;
+        if( f == NO_ID ){
+            border_vertex_model_vertices.resize(0) ;
+            return gme_t() ;
+        }
 
         vec3 p0 = S.vertex( id0 ) ;
         vec3 p1 = S.vertex( id1 ) ;
