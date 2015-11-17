@@ -46,7 +46,7 @@
 
 /*!
 * @file ringmesh/algorithm.h
-* @brief Template function for basic operations on vectors
+* @brief Template function for basic operations on vectors.
 * @author Jeanne Pellerin and Arnaud Botella
 */
 
