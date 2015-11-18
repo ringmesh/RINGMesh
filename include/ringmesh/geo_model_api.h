@@ -46,6 +46,7 @@
 #include <geogram/basic/attributes.h>
 #include <geogram/mesh/mesh.h>
 
+#include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_element.h>
 #include <ringmesh/geogram_extension.h>
 
@@ -62,13 +63,6 @@ namespace GEO {
 }
 
 namespace RINGMesh {
-    class GeoModel ;
-    class GeoModelElement ;
-    class GeoModelMeshElement ;
-}
-
-namespace RINGMesh {
-
     /*!
     * @brief Print in the console the model statistics
     * @details Output number of facets, vertices, and of the different element types.
