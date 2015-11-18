@@ -5575,7 +5575,7 @@ namespace RINGMesh {
      * @param[out] model the model to fill
      * @return returns the success of the operation
      */
-    bool model_load( const std::string& filename, GeoModel& model )
+    bool geomodel_surface_load( const std::string& filename, GeoModel& model )
     {
         if( filename.empty() ) {
             GEO::Logger::err( "I/O" )
@@ -5614,7 +5614,7 @@ namespace RINGMesh {
      * @param[in] filename the filename where to save it
      * @return returns the success of the operation
      */
-    bool model_save( const GeoModel& model, const std::string& filename )
+    bool geomodel_surface_save( const GeoModel& model, const std::string& filename )
     {
         GEO::Logger::out( "I/O" ) << "Saving file " << filename
             << std::endl ;

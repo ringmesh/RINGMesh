@@ -51,16 +51,24 @@ namespace GEO {
 }
 
 namespace RINGMesh {
+	
+    /***********************************************************************/
+    /* Loading and saving a GEO::Mesh                                      */
 
-    /*!
-    * \brief To load a Gocad TSurf surface .ts
-    * \todo Create the appropriate Mesh handler. Where should we put it ? [JP]
-    */
-    bool RINGMESH_API load_ts_file( GEO::Mesh& M, const std::string& file_name ) ;
-
-    
+    /** @brief complement the available MeshIOHandler
+     */
+    void RINGMESH_API ringmesh_mesh_io_initialize() ;
+            
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
+
+    
+    /*!
+     * @brief Constrained tetrahedralize of the volumes defined by a triangulated surface mesh
+     * @details Does not require this mesh to be a closed manifold
+     * as the equivalent Geogram function does.
+     */
+    bool RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M ) ;
 
     
     void RINGMESH_API rotate_mesh(

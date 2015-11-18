@@ -1199,6 +1199,8 @@ namespace RINGMesh {
         // because it does not match triangle orientations.
         std::vector< index_t > change_key_facet ;
 
+        ///@todo Add assert everywhere when doing substraction operations on unsigned int [JP]
+
         while( !in.eof() && in.get_line() ) {
             in.get_fields() ;
             if( in.nb_fields() > 0 ) {
