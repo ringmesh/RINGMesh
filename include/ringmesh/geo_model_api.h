@@ -100,7 +100,7 @@ namespace RINGMesh {
         index_t nb_elements = geomodel.nb_elements( geomodel_element_type ) ;
         attributes.resize( nb_elements ) ;
         for( index_t i = 0; i < nb_elements; ++i ) {
-            const GeoModelMeshElement& E = geomodel.mesh_element( gme_t( geomodel_element_type, i ) );
+            const GeoModelMeshElement& E = geomodel.mesh_element( GME::gme_t( geomodel_element_type, i ) );
             GEO::AttributesManager& manager = E.facet_attribute_manager() ; 
             attributes.bind_one_attribute( i, manager, attribute_name ) ;
         }
@@ -121,7 +121,7 @@ namespace RINGMesh {
         index_t nb_elements = geomodel.nb_elements( geomodel_element_type ) ;
         attributes.resize( nb_elements ) ;
         for( index_t i = 0; i < nb_elements; ++i ) {
-            const GeoModelMeshElement& E = geomodel.mesh_element( gme_t( geomodel_element_type, i ) );
+            const GeoModelMeshElement& E = geomodel.mesh_element( GME::gme_t( geomodel_element_type, i ) );
             GEO::AttributesManager& manager = E.cell_attribute_manager() ;
             attributes.bind_one_attribute( i, manager, attribute_name ) ;
         }
