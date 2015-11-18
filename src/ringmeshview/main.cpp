@@ -339,7 +339,7 @@ namespace {
      */
     void load_mesh()
     {
-        if( !RINGMesh::model_load( GEO::CmdLine::get_arg( "model" ), GM ) ) {
+        if( !RINGMesh::geomodel_surface_load( GEO::CmdLine::get_arg( "model" ), GM ) ) {
             return ;
         }
 
@@ -351,7 +351,7 @@ namespace {
         }
 
         if( GEO::CmdLine::get_arg( "mesh" ) != "" ) {
-            if( !RINGMesh::mesh_load( GEO::CmdLine::get_arg( "mesh" ), GM ) ) {
+            if( !RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "mesh" ), GM ) ) {
                 return ;
             }
             meshed_regions = true ;

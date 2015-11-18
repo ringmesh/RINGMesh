@@ -55,15 +55,16 @@ namespace RINGMesh {
 
     bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
 
-    bool RINGMESH_API model_load( const std::string& filename, GeoModel& model ) ;
+    bool RINGMESH_API geomodel_surface_load( const std::string& filename, GeoModel& model ) ;
 
-    bool RINGMESH_API model_save( const GeoModel& model, const std::string& filename ) ;
+    bool RINGMESH_API geomodel_surface_save( const GeoModel& model, const std::string& filename ) ;
 
-    bool RINGMESH_API mesh_load( const std::string& mesh_file, GeoModel& mm ) ;
+    bool RINGMESH_API geomodel_volume_load( const std::string& filename, GeoModel& model ) ;
 
-    bool RINGMESH_API mesh_save( const GeoModel& mm, const std::string& filename ) ;
+    bool RINGMESH_API geomodel_volume_save( const GeoModel& model, const std::string& filename ) ;
 
-    bool RINGMESH_API well_load( const std::string& mesh_file, WellGroup& wells ) ;
+    bool RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
+
 
     class RINGMESH_API GeoModelSurfaceIOHandler: public GEO::Counted {
     public:
@@ -95,33 +96,33 @@ namespace RINGMesh {
 
     /***************************************************************************/
 
-    class RINGMESH_API GeoModelMeshIOHandler: public GEO::Counted {
+    class RINGMESH_API GeoModelVolumeIOHandler: public GEO::Counted {
     public:
         static void initialize() ;
 
-        static GeoModelMeshIOHandler* create( const std::string& format ) ;
+        static GeoModelVolumeIOHandler* create( const std::string& format ) ;
 
-        static GeoModelMeshIOHandler* get_handler( const std::string& filename ) ;
+        static GeoModelVolumeIOHandler* get_handler( const std::string& filename ) ;
 
         virtual bool load( const std::string& filename, GeoModel& mesh ) = 0 ;
 
         virtual bool save( const GeoModel& mesh, const std::string& filename ) = 0 ;
 
     protected:
-        GeoModelMeshIOHandler()
+        GeoModelVolumeIOHandler()
         {
         }
 
-        virtual ~GeoModelMeshIOHandler()
+        virtual ~GeoModelVolumeIOHandler()
         {
         }
     } ;
 
-    typedef GEO::SmartPointer< GeoModelMeshIOHandler > GeoModelMeshIOHandler_var ;
-    typedef GEO::Factory0< GeoModelMeshIOHandler > GeoModelMeshIOHandlerFactory ;
+    typedef GEO::SmartPointer< GeoModelVolumeIOHandler > GeoModelVolumeIOHandler_var ;
+    typedef GEO::Factory0< GeoModelVolumeIOHandler > GeoModelVolumeIOHandlerFactory ;
 
-#define ringmesh_register_GeoModelMeshIOHandler_creator( type, name ) \
-    geo_register_creator( GeoModelMeshIOHandlerFactory, type, name )
+#define ringmesh_register_GeoModelVolumeIOHandler_creator( type, name ) \
+    geo_register_creator( GeoModelVolumeIOHandlerFactory, type, name )
 
     /***************************************************************************/
 

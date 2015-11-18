@@ -137,12 +137,12 @@ namespace RINGMesh {
      * @param][out] model the mesh to fill
      * @return returns the success of the operation
      */
-    bool mesh_load( const std::string& filename, GeoModel& model )
+    bool geomodel_volume_load( const std::string& filename, GeoModel& model )
     {
         GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
 
-        GeoModelMeshIOHandler_var handler = GeoModelMeshIOHandler::get_handler(
+        GeoModelVolumeIOHandler_var handler = GeoModelVolumeIOHandler::get_handler(
             filename ) ;
         if( handler && handler->load( filename, model ) ) {
             return true ;
@@ -159,12 +159,12 @@ namespace RINGMesh {
      * @param[in] filename the file where to save
      * @return returns the success of the operation
      */
-    bool mesh_save( const GeoModel& model, const std::string& filename )
+    bool geomodel_volume_save( const GeoModel& model, const std::string& filename )
     {
         GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
             << std::endl ;
 
-        GeoModelMeshIOHandler_var handler = GeoModelMeshIOHandler::get_handler(
+        GeoModelVolumeIOHandler_var handler = GeoModelVolumeIOHandler::get_handler(
             filename ) ;
         if( handler && handler->save( model, filename ) ) {
             return true ;
@@ -177,7 +177,7 @@ namespace RINGMesh {
 
     /************************************************************************/
 
-    class AsterIOHandler: public GeoModelMeshIOHandler {
+    class AsterIOHandler: public GeoModelVolumeIOHandler {
     public:
         virtual bool load( const std::string& filename, GeoModel& mesh )
         {
@@ -307,7 +307,7 @@ namespace RINGMesh {
 
     /************************************************************************/
 
-    class MMIOHandler: public GeoModelMeshIOHandler {
+    class MMIOHandler: public GeoModelVolumeIOHandler {
     public:
         virtual bool load( const std::string& filename, GeoModel& gm )
         {
@@ -386,7 +386,7 @@ namespace RINGMesh {
 
     /************************************************************************/
 
-    class LMIOHandler: public GeoModelMeshIOHandler {
+    class LMIOHandler: public GeoModelVolumeIOHandler {
     public:
         virtual bool load( const std::string& filename, GeoModel& mesh )
         {
@@ -413,7 +413,7 @@ namespace RINGMesh {
     } ;
 
     /************************************************************************/
-    class TetGenIOHandler: public GeoModelMeshIOHandler {
+    class TetGenIOHandler: public GeoModelVolumeIOHandler {
     public:
         virtual bool load( const std::string& filename, GeoModel& mesh )
         {
@@ -476,7 +476,7 @@ namespace RINGMesh {
 
     /************************************************************************/
 
-    class VTKIOHandler: public GeoModelMeshIOHandler {
+    class VTKIOHandler: public GeoModelVolumeIOHandler {
     public:
         virtual bool load( const std::string& filename, GeoModel& mesh )
         {
@@ -562,7 +562,7 @@ namespace RINGMesh {
 
         /************************************************************************/
 
-    class TSolidIOHandler: public GeoModelMeshIOHandler {
+    class TSolidIOHandler: public GeoModelVolumeIOHandler {
     public:
         virtual bool load( const std::string& filename, GeoModel& mesh )
         {
@@ -760,7 +760,7 @@ namespace RINGMesh {
     static RINGMesh2CSMP* cell_type_to_cell_descriptor[4] = {
         &tet_descriptor, &hex_descriptor, &prism_descriptor, &pyramid_descriptor } ;
 
-    class CSMPIOHandler: public GeoModelMeshIOHandler {
+    class CSMPIOHandler: public GeoModelVolumeIOHandler {
     public:
         CSMPIOHandler()
         {
@@ -1408,7 +1408,7 @@ namespace RINGMesh {
 
     /************************************************************************/
 
-    class GPRSIOHandler: public GeoModelMeshIOHandler {
+    class GPRSIOHandler: public GeoModelVolumeIOHandler {
     public:
         struct Pipe {
             Pipe( index_t v0_in, index_t v1_in )
@@ -1621,7 +1621,7 @@ namespace RINGMesh {
 //                   { 3, 3, 3, 3, 4 },  // nb vertices in facet
 //                   { 1, 3, 4, 2, 0 },  // facets
 //                   { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
-    class MSHIOHandler: public GeoModelMeshIOHandler {
+    class MSHIOHandler: public GeoModelVolumeIOHandler {
     public:
         virtual bool load( const std::string& filename, GeoModel& mesh )
         {
@@ -1875,9 +1875,9 @@ namespace RINGMesh {
 
     /************************************************************************/
 
-    GeoModelMeshIOHandler* GeoModelMeshIOHandler::create( const std::string& format )
+    GeoModelVolumeIOHandler* GeoModelVolumeIOHandler::create( const std::string& format )
     {
-        GeoModelMeshIOHandler* handler = GeoModelMeshIOHandlerFactory::create_object(
+        GeoModelVolumeIOHandler* handler = GeoModelVolumeIOHandlerFactory::create_object(
             format ) ;
         if( handler ) {
             return handler ;
@@ -1897,7 +1897,7 @@ namespace RINGMesh {
         return nil ;
     }
 
-    GeoModelMeshIOHandler* GeoModelMeshIOHandler::get_handler(
+    GeoModelVolumeIOHandler* GeoModelVolumeIOHandler::get_handler(
         const std::string& filename )
     {
         std::string ext = GEO::FileSystem::extension( filename ) ;
@@ -1907,17 +1907,17 @@ namespace RINGMesh {
     /*
      * Initializes the possible handler for IO files
      */
-    void GeoModelMeshIOHandler::initialize()
+    void GeoModelVolumeIOHandler::initialize()
     {
-        ringmesh_register_GeoModelMeshIOHandler_creator( MMIOHandler, "gm" ) ;
-        ringmesh_register_GeoModelMeshIOHandler_creator( LMIOHandler, "meshb" );
-        ringmesh_register_GeoModelMeshIOHandler_creator( LMIOHandler, "mesh" );
-        ringmesh_register_GeoModelMeshIOHandler_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_GeoModelMeshIOHandler_creator( TSolidIOHandler, "so" );
-        ringmesh_register_GeoModelMeshIOHandler_creator( CSMPIOHandler, "csmp" );
-        ringmesh_register_GeoModelMeshIOHandler_creator( AsterIOHandler, "mail" );
-        ringmesh_register_GeoModelMeshIOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_GeoModelMeshIOHandler_creator( GPRSIOHandler, "gprs" );
-        ringmesh_register_GeoModelMeshIOHandler_creator( MSHIOHandler, "msh" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( MMIOHandler, "gm" ) ;
+        ringmesh_register_GeoModelVolumeIOHandler_creator( LMIOHandler, "meshb" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( LMIOHandler, "mesh" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( TetGenIOHandler, "tetgen" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( TSolidIOHandler, "so" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( CSMPIOHandler, "csmp" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( AsterIOHandler, "mail" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( VTKIOHandler, "vtk" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( GPRSIOHandler, "gprs" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( MSHIOHandler, "msh" );
     }
 }

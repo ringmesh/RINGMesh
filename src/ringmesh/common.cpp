@@ -56,6 +56,7 @@
 
 #include <ringmesh/io.h>
 #include <ringmesh/tetra_gen.h>
+#include <ringmesh/geogram_extension.h>
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
@@ -83,5 +84,6 @@ INITIALIZER( initialize ) {
 #endif
         RINGMesh::mesh_initialize() ;
         RINGMesh::TetraGen::initialize() ;
+        RINGMesh::ringmesh_mesh_io_initialize() ;
     }
 }

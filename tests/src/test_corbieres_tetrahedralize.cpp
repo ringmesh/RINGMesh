@@ -65,14 +65,14 @@ int main( int argc, char** argv )
 
 
     /* Load and check the validity of the model */
-    if( model_load( file_name, M ) ) {
+    if( geomodel_surface_load( file_name, M ) ) {
         // Mesh the model with Tetgen 
         tetrahedralize( M, "TetGen" ) ;
 
         // Output the mesh 
         std::string output_file_name( ringmesh_test_output_path ) ;
         output_file_name += "corbieres.meshb" ;
-        mesh_save( M, output_file_name ) ;
+        geomodel_volume_save( M, output_file_name ) ;
         return 0 ;
     } else {
         GEO::Logger::out( "RINGMesh Test" ) << "The geological model "
