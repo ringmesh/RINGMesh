@@ -1175,7 +1175,7 @@ namespace RINGMesh {
         int z_sign = 1 ;
 
         // In the .ml file - vertices are indexed TSurf by Tsurf
-        // They can be duplicated inside one TSurf and betweeen TSurfs
+        // They can be duplicated inside one TSurf and between TSurfs
 
         // Coordinates of the vertices of the currently built TSurf in the model
         std::vector< vec3 > tsurf_vertices ;
