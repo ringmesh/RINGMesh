@@ -5325,7 +5325,7 @@ namespace RINGMesh {
         virtual bool load( const std::string& filename, GeoModel& model )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from WebGL mesh not implemented yet"
+                << "Geological model loading of a from WebGL mesh not yet implemented"
                 << std::endl ;
             return false ;
         }
@@ -5445,7 +5445,7 @@ namespace RINGMesh {
         virtual bool load( const std::string& filename, GeoModel& model )
         {
             GEO::Logger::err( "I/O" )
-                << "Loading of a MacroMesh from UCD mesh not implemented yet"
+                << "Geological model loading of a from Paraview mesh not yet implemented"
                 << std::endl ;
             return false ;
         }
