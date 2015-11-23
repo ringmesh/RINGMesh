@@ -333,7 +333,7 @@ namespace RINGMesh {
         {
             return boundaries_.size() ;
         }
-        const gme_t& boundary_id( index_t x ) const
+        const gme_t& boundary_gme( index_t x ) const
         {
             return boundaries_[x] ;
         }
@@ -343,7 +343,7 @@ namespace RINGMesh {
         {
             return in_boundary_.size() ;
         }
-        const gme_t& in_boundary_id( index_t x ) const
+        const gme_t& in_boundary_gme( index_t x ) const
         {
             return in_boundary_[x] ;
         }
@@ -870,6 +870,7 @@ namespace RINGMesh {
          */
         vec3 facet_normal( index_t facet_index ) const ;
         vec3 facet_barycenter( index_t facet_index ) const ;
+        double facet_area( index_t facet_index ) const ;
         index_t closest_vertex_in_facet( index_t facet_index, const vec3& to_point ) const ;
 
         /*! @}

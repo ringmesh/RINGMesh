@@ -40,6 +40,7 @@
 
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/tetra_gen.h>
@@ -296,7 +297,7 @@ namespace RINGMesh {
     {
         // Keep the attributes when clearing the mesh, otherwise we crash
         M.clear( true ) ;
-
+      
 		add_geomodel_vertices_to_mesh(geomodel, M);
 		add_geomodel_line_edges_to_mesh(geomodel, M);
         add_geomodel_surface_facets_to_mesh(geomodel, M);
@@ -475,6 +476,78 @@ namespace RINGMesh {
             M.mesh.vertices.update_point( v, vec3( new_p[0], new_p[1], new_p[2] ) ) ;
         }
     }
+
+
+
+    /*!
+     * Generate a point that lies strictly inside the Region which should be defined by its
+     * Surface boundaries.
+     * In most cases, generating a point that is the midpoint of barycenter of the first
+     * facet of the first surface on the region boundary and the closest poit in the other surfaces.
+     */
+    vec3 generate_point_in_region( const Region& region )
+    {
+        // To implement for bubbles
+        ringmesh_assert( region.nb_boundaries() > 1 ) ;
+        
+        const GeoModel& geomodel = region.model() ;
+
+        const Surface& first_boundary_surface = geomodel.surface( region.boundary_gme( 0 ).index ) ; 
+        double facet_area = first_boundary_surface.facet_area( 0 ) ; 
+        vec3 barycenter = first_boundary_surface.facet_barycenter(0);                
+        // What is the real condition to have a correct barycenter?
+        ringmesh_assert( facet_area > epsilon) ;
+
+        double minimum_distance = DBL_MAX ;
+        vec3 nearest_point ;        
+        for( index_t i = 1; i != region.nb_boundaries(); ++i ){
+            const Surface& S = geomodel.surface( region.boundary_gme(i).index ) ;                        
+            SurfaceTools tool_on_surface( S ) ;
+            double distance = DBL_MAX ;
+            vec3 point ; 
+            tool_on_surface.aabb().nearest_facet( barycenter, point, distance ) ;
+
+            if( distance < minimum_distance) {
+                minimum_distance = distance ;
+                nearest_point = point ;
+            }            
+        } 
+        // Otherwise we are in trouble
+        ringmesh_assert( minimum_distance > epsilon ) ;
+        return 0.5*( barycenter + nearest_point ) ;
+    }
+
+    void get_one_point_per_geomodel_regions( const GeoModel& geomodel, 
+                                             std::vector< vec3 >& one_point_one_region )
+    {
+        one_point_one_region.resize( geomodel.nb_regions() ) ;
+        for( index_t i = 0; i != geomodel.nb_regions(); ++i )
+        {
+            vec3 point = generate_point_in_region( geomodel.region(i) ) ;
+            one_point_one_region[i] = point ; 
+        }    
+    }
+
+
+    void tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel ) 
+    {
+        GEO::Mesh mesh ;
+        build_mesh_from_geomodel( geomodel, mesh ) ;
+        
+        std::vector< vec3 > points_in_regions ;
+        get_one_point_per_geomodel_regions( geomodel, points_in_regions ) ;
+       
+        TetgenMesher mesher ;
+        mesher.tetrahedralize( mesh, points_in_regions, "QpO0YA", mesh ) ; 
+        GeoModelBuilderMesh builder ( geomodel, mesh, "", "region" ) ;
+        builder.build_regions() ;
+
+        // Force recomputation of global mesh vertices - otherwise we crash sooner or later
+        // because of model_vertex_id crazy sharing
+        geomodel.mesh.vertices.clear() ;
+        geomodel.mesh.vertices.test_and_initialize() ;
+    }
+
 
     void tetrahedralize( GeoModel& M, const std::string& method, index_t region_id, bool add_steiner_points )
     {
