@@ -51,6 +51,7 @@
 #include <geogram/basic/line_stream.h>
 #include <geogram/points/colocate.h>
 #include <geogram/mesh/mesh_repair.h>
+#include <ringmesh/io.h>
 
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geo_model.h>
@@ -2471,12 +2472,7 @@ namespace RINGMesh {
                         tsurf_count++ ;
                     }
                     if( in_.field_matches( 0, "ZPOSITIVE" ) ) {
-                        if( in_.field_matches( 1, "Elevation" ) ) {
-                            z_sign = 1 ;
-                        } else if( in_.field_matches( 1, "Depth" ) ) {
-                            z_sign = -1 ;
-                        } else {
-                            ringmesh_assert_not_reached;}
+                    	z_sign = read_gocad_coordinates_system( in_.field( 1 ) ) ;
                     } else if( in_.field_matches( 0, "END" ) ) {
                         // This the END of a TSurf
                         if( tsurf_count > 0 ) {
