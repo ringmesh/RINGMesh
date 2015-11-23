@@ -133,8 +133,13 @@ namespace RINGMesh {
 
         void tetrahedralize( const GEO::Mesh& input_mesh, 
                              const std::string& command_line, 
-                             GEO::Mesh& output_mesh ) ;         
+                             GEO::Mesh& output_mesh ) ; 
         
+        void tetrahedralize( const GEO::Mesh& input_mesh, 
+                             const std::vector< vec3 >& one_point_per_region,
+                             const std::string& command_line, 
+                             GEO::Mesh& output_mesh ) ; 
+
     private:
         void initialize() ;
         void initialize_tetgen_args() ;         
@@ -145,6 +150,7 @@ namespace RINGMesh {
         void copy_vertices_to_tetgen_input( const GEO::Mesh& M ) ;       
         void copy_edges_to_tetgen_input( const GEO::Mesh& M );
         void copy_facets_to_tetgen_input( const GEO::Mesh& M );
+        void set_regions( const std::vector< vec3 >& one_point_per_region ) ;
 
         void fill_region_attribute_on_mesh_cells(GEO::Mesh& M, const std::string& attribute_name) const ;        
         void assign_result_tetmesh_to_mesh( GEO::Mesh& M ) ;

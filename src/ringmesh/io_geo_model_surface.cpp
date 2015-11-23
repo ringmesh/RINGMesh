@@ -502,7 +502,7 @@ namespace {
                 } else {
                     out << "-" ;
                 }
-                out << E.boundary_id( j ).index << " " ;
+                out << E.boundary_gme( j ).index << " " ;
             }
             out << std::endl ;
         }
@@ -514,7 +514,7 @@ namespace {
             } else {
                 out << "-" ;
             }
-            out << M.universe().boundary_id( j ).index << " " ;
+            out << M.universe().boundary_gme( j ).index << " " ;
         }
         out << std::endl ;
 
@@ -565,7 +565,7 @@ namespace {
             //            }
             out << "IN_BOUNDARY " ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                out << L.in_boundary_id( j ).index << " " ;
+                out << L.in_boundary_gme( j ).index << " " ;
             }
             out << std::endl ;
         }
@@ -797,7 +797,7 @@ namespace RINGMesh {
                         cmd << "g" ;
                     else
                         cmd << "l" ;
-                    cmd << "e surface_" << region.boundary_id( s ).index ;
+                    cmd << "e surface_" << region.boundary_gme( s ).index ;
                     sep = " and " ;
                 }
                 cmd << std::endl ;

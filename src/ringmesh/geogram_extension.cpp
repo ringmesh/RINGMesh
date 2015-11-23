@@ -263,9 +263,25 @@ namespace RINGMesh {
         initialize();
         copy_mesh_to_tetgen_input(input_mesh);
         tetrahedralize();
+        assign_result_tetmesh_to_mesh(output_mesh);        
+    }
+
+    void  TetgenMesher::tetrahedralize( const GEO::Mesh& input_mesh,
+                                        const std::vector< vec3 >& one_point_per_region,
+                                        const std::string& command_line,
+                                        GEO::Mesh& output_mesh) 
+    {
+        set_command_line(command_line);
+        initialize();
+        copy_mesh_to_tetgen_input(input_mesh);
+        set_regions(one_point_per_region ) ;
+        tetrahedralize();
         assign_result_tetmesh_to_mesh(output_mesh);
         fill_region_attribute_on_mesh_cells(output_mesh, "region");
+
     }
+
+
 
     void TetgenMesher::initialize() {
         initialize_tetgen_args();
@@ -341,8 +357,24 @@ namespace RINGMesh {
             GEO_3rdParty::tetgenio::init(&P);
             P.numberofvertices = M.facets.nb_corners(f);
             P.vertexlist = &polygon_corners_[M.facets.corners_begin(f)];
+        }    
+    }
+
+    void TetgenMesher::set_regions( const std::vector< vec3 >& one_point_in_each_region ) 
+    {
+        index_t nb_regions = one_point_in_each_region.size() ;
+        tetgen_in_.numberofregions = nb_regions ;
+        tetgen_in_.regionlist = new double[5*nb_regions] ;
+
+        for( index_t i = 0; i != nb_regions; ++i ){
+            tetgen_in_.regionlist[5*i] = one_point_in_each_region[i].x ;
+            tetgen_in_.regionlist[5*i+1] = one_point_in_each_region[i].y ;
+            tetgen_in_.regionlist[5*i+2] = one_point_in_each_region[i].z ;
+            tetgen_in_.regionlist[5*i+3] = i ;
+            tetgen_in_.regionlist[5*i+4] = DBL_MAX ; // Used only with the a switch
         }
     }
+
 
     void TetgenMesher::fill_region_attribute_on_mesh_cells(GEO::Mesh& M, const std::string& attribute_name) const
     {
@@ -398,7 +430,6 @@ namespace RINGMesh {
         }
     }
 
-
     bool tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) 
     {
         if (!is_mesh_tetrahedralizable(M)) {
@@ -406,7 +437,7 @@ namespace RINGMesh {
         }
                
         TetgenMesher mesher ;
-        mesher.tetrahedralize( M, "QpO0YA" ,M ) ;        
+        mesher.tetrahedralize( M, "QpO0YA", M ) ;        
         return true ;
     }
 

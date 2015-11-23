@@ -171,7 +171,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < model().nb_elements( b_type ); ++i ) {
                 const GME& b = model().element( gme_t( b_type, i ) ) ;
                 for( index_t j = 0; j < b.nb_in_boundary(); ++j ) {
-                    add_element_boundary( b.in_boundary_id( j ),
+                    add_element_boundary( b.in_boundary_gme( j ),
                                             gme_t( b_type, i ) ) ;
                 }
             }
@@ -185,7 +185,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < model().nb_elements( in_b_type ); ++i ) {
                 const GME& in_b = element( gme_t( in_b_type, i ) ) ;
                 for( index_t j = 0; j < in_b.nb_boundaries(); ++j ) {
-                    add_element_in_boundary( in_b.boundary_id( j ),
+                    add_element_in_boundary( in_b.boundary_gme( j ),
                                                gme_t( in_b_type, i ) ) ;
                 }
             }
@@ -269,7 +269,7 @@ namespace RINGMesh {
                 bool no_incident = true ;
                 const GME& E = model_.element( GME::gme_t( T, j ) ) ;
                 for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
-                    if( in.count( E.in_boundary_id( k ) ) == 0 ) {
+                    if( in.count( E.in_boundary_gme( k ) ) == 0 ) {
                         no_incident = false ;
                         break ;
                     }
@@ -525,7 +525,7 @@ namespace RINGMesh {
                     ringmesh_debug_assert( B < GME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_boundaries(); ++k ) {
                         set_element_boundary( E.gme_id(), k,
-                            gme_t( B, to_erase[B][E.boundary_id( k ).index] ) ) ;
+                            gme_t( B, to_erase[B][E.boundary_gme( k ).index] ) ) ;
                     }
                 }
                 // in_boundary
@@ -535,7 +535,7 @@ namespace RINGMesh {
                     for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
                         set_element_in_boundary( E.gme_id(), k,
                             gme_t( IB,
-                                to_erase[IB][E.in_boundary_id( k ).index] ) ) ;
+                                to_erase[IB][E.in_boundary_gme( k ).index] ) ) ;
                     }
                 }
                 // parent_
@@ -567,7 +567,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < U.nb_boundaries(); ++i ) {
                 set_element_boundary( U.gme_id(), i,
                     gme_t( GME::SURFACE,
-                        to_erase[GME::SURFACE][U.boundary_id( i ).index] ) ) ;
+                        to_erase[GME::SURFACE][U.boundary_gme( i ).index] ) ) ;
             }
             erase_invalid_element_references( U ) ;
         }

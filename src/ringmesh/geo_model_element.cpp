@@ -459,7 +459,7 @@ namespace RINGMesh {
                 bool found = false ;
                 index_t j = 0 ;
                 while( !found && j < E.nb_in_boundary() ) {
-                    if( E.in_boundary_id( j ) == gme_id() ) {
+                    if( E.in_boundary_gme( j ) == gme_id() ) {
                         found = true ;
                     }
                     j++ ;
@@ -492,7 +492,7 @@ namespace RINGMesh {
                 bool found = false ;
                 index_t j = 0 ;
                 while( !found && j < E.nb_boundaries() ) {
-                    if( E.boundary_id( j ) == gme_id() ) {
+                    if( E.boundary_gme( j ) == gme_id() ) {
                         found = true ;
                     }
                     j++ ;
@@ -580,7 +580,7 @@ namespace RINGMesh {
     const GeoModelElement& GeoModelElement::boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_boundaries() ) ;
-        return model().element( boundary_id( x ) ) ;
+        return model().element( boundary_gme( x ) ) ;
     }
 
 
@@ -592,7 +592,7 @@ namespace RINGMesh {
     const GeoModelElement& GeoModelElement::in_boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_in_boundary() ) ;
-        return model().element( in_boundary_id( x ) ) ;
+        return model().element( in_boundary_gme( x ) ) ;
     }
 
 
@@ -616,7 +616,7 @@ namespace RINGMesh {
         TYPE T = type() ;
         if( T == SURFACE ) {
             for( index_t i = 0; i < model().universe().nb_boundaries(); ++i ) {
-                if( model().universe().boundary_id( i ) == gme_id() ) {
+                if( model().universe().boundary_gme( i ) == gme_id() ) {
                     return true ;
                 }
             }
@@ -1478,6 +1478,12 @@ namespace RINGMesh {
     {
         return GEO::Geom::mesh_facet_center( mesh_, facet_index ) ;
     }
+
+    double Surface::facet_area( index_t facet_index ) const 
+    {
+        return GEO::Geom::mesh_facet_area( mesh_, facet_index ) ;
+    }
+
    
     /*!
      * @brief Compute closest vertex in a facet to a point

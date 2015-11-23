@@ -73,23 +73,21 @@ int main( int argc, char** argv )
     GEO::Logger::instance()->register_client( file_logger ) ;
 
     std::string file_name( ringmesh_test_data_path ) ;
-    file_name += "split_cube.ml" ;
+    file_name += "modelA6.ml" ;
     std::string result_file_name( ringmesh_test_output_path ) ;
     result_file_name += "geomodel_tet_mesh.mesh" ;
 
     GeoModel geomodel ;
     geomodel_surface_load( file_name, geomodel ) ;
-
-    GEO::Mesh geomodel_surfaces_mesh ;
-    build_mesh_from_geomodel( geomodel, geomodel_surfaces_mesh ) ;
-    tetrahedralize_mesh_tetgen( geomodel_surfaces_mesh, true, 0.7 ) ;
-
+    tetgen_tetrahedralize_geomodel_regions( geomodel ) ;
+  
+    // Save volumetric mesh with cell region attribute
+    GEO::Mesh geomodel_regions_mesh ;
+    build_mesh_from_geomodel( geomodel, geomodel_regions_mesh ) ;
     GEO::MeshIOFlags mesh_io_flags ;
     mesh_io_flags.set_elements( GEO::MeshElementsFlags( GEO::MESH_VERTICES | GEO::MESH_CELLS ) ) ;
     mesh_io_flags.set_attribute( GEO::MESH_CELL_REGION ) ;
-    GEO::mesh_save( geomodel_surfaces_mesh, result_file_name, mesh_io_flags ) ;
-
-    // todo - assign the generated tets to the right regions of the model
+    GEO::mesh_save( geomodel_regions_mesh, result_file_name, mesh_io_flags ) ;
 
     return 0 ;
 }

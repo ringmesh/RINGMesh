@@ -128,6 +128,8 @@ namespace RINGMesh {
     }
 
 
+    void RINGMESH_API tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel ) ;
+
     /*!
     * Compute the tetrahedral mesh of the input structural model
     * @param[in] M GeoModel to tetrahedralize

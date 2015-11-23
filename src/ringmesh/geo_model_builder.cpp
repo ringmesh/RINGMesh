@@ -1313,8 +1313,8 @@ namespace RINGMesh {
         index_t id1 = S.surf_vertex_id( f, S.next_in_facet( f, v ) ) ;
 
         // Stopping criterion
-        index_t c0 = L.boundary_id( 0 ).index ;
-        index_t c1 = L.boundary_id( 1 ).index ;
+        index_t c0 = L.boundary_gme( 0 ).index ;
+        index_t c1 = L.boundary_gme( 1 ).index ;
 
         // Wee need to check if we have to duplicate the Corner or not
         // the 2 corners are
@@ -1590,7 +1590,7 @@ namespace RINGMesh {
                     const GeoModelElement& surface = model_.surface( s.first ) ;
                     for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
                         const std::pair< index_t, bool >& n =
-                            regions_info_[ surface.boundary_id( i ).index ]->next( s ) ;
+                            regions_info_[ surface.boundary_gme( i ).index ]->next( s ) ;
                         index_t n_id = n.second == true ? 2*n.first : 2*n.first+1 ;
 
                         if( surf_2_region[ n_id ] == NO_ID ) {
@@ -2649,11 +2649,11 @@ namespace RINGMesh {
             const Surface& S = model_.surface( change_key_facet[i] ) ;
             for( index_t j = 0; j < S.nb_in_boundary(); ++j ) {
                 Region& R = dynamic_cast< Region& >( 
-                    element( S.in_boundary_id( j ) ) ) ;
+                    element( S.in_boundary_gme( j ) ) ) ;
                 for( index_t b = 0; b < R.nb_boundaries(); ++b ) {
-                    if( R.boundary_id( b ).index == change_key_facet[i] ) {
+                    if( R.boundary_gme( b ).index == change_key_facet[i] ) {
                         bool old_side = R.side( b ) ;
-                        set_element_boundary( R.gme_id(), b, R.boundary_id( b ),
+                        set_element_boundary( R.gme_id(), b, R.boundary_gme( b ),
                             !old_side ) ;
                     }
                 }
@@ -2830,7 +2830,7 @@ namespace RINGMesh {
             std::set< gme_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 cur_interfaces.insert(
-                    model_.element( L.in_boundary_id( j ) ).parent().gme_id() ) ;
+                    model_.element( L.in_boundary_gme( j ) ).parent().gme_id() ) ;
             }
             gme_t contact_id ;
             for( index_t j = 0; j < interfaces.size(); ++j ) {
