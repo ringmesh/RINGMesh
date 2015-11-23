@@ -82,7 +82,7 @@ int main( int argc, char** argv )
 
     GEO::Mesh geomodel_surfaces_mesh ;
     build_mesh_from_geomodel( geomodel, geomodel_surfaces_mesh ) ;
-    tetrahedralize_mesh_tetgen( geomodel_surfaces_mesh, false, 1.0 ) ;
+    tetrahedralize_mesh_tetgen( geomodel_surfaces_mesh, true, 0.7 ) ;
 
     GEO::MeshIOFlags mesh_io_flags ;
     mesh_io_flags.set_elements( GEO::MeshElementsFlags( GEO::MESH_VERTICES | GEO::MESH_CELLS ) ) ;
