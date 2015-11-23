@@ -83,4 +83,23 @@ namespace RINGMesh {
         GeoModelVolumeIOHandler::initialize() ;
         WellGroupIOHandler::initialize() ;
     }
+
+    /*!
+    * Read the coordinates system informations of files exported from Gocad.
+    * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
+    * increasing z toward top and "Depth" for increasing z toward bottom.
+    * @return Return 1 if Elevation direction, -1 if Depth direction.
+    */
+    int read_gocad_coordinates_system( const char* in )
+    {
+    	std::string str_in( in );
+		if( str_in == "Elevation" ) {
+			return 1 ;
+		} else if( str_in == "Depth" ) {
+			return -1 ;
+		} else {
+			ringmesh_assert_not_reached;
+		}
+
+    }
 }
