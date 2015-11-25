@@ -798,16 +798,11 @@ namespace RINGMesh {
             }
         }
 
-        /*
-        * @todo Comment RENAME !! corners of the mesh != GeoModel Corners
-        */
         index_t nb_facet_corners() const
         {
             return mesh_.facet_corners.nb() ;
         }
-        /*
-        * @todo Comment RENAME !!
-        */
+
         index_t model_vertex_id_at_facet_corner( index_t corner ) const
         {
             return GeoModelMeshElement::model_vertex_id(
@@ -816,7 +811,6 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the surface index of vertex \param v in facet \param f
-         * @todo Remove
          */
         index_t surf_vertex_id( index_t f, index_t v ) const
         {

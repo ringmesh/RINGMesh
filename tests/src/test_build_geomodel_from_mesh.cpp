@@ -118,7 +118,7 @@ int main( int argc, char** argv )
         GeoModel geomodel ;
         GeoModelBuilderMesh builder( geomodel, mesh, "", "region" ) ;
         builder.create_and_build_regions() ;
-        
+
         print_model( geomodel ) ;
     }
     return 0 ;

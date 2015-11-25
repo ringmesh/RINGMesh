@@ -215,7 +215,7 @@ namespace RINGMesh {
 
     void RINGMESH_API ringmesh_mesh_io_initialize()
     {
-        geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" );
+        geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" ) ;
     }
 
 
@@ -241,123 +241,127 @@ namespace RINGMesh {
     }
 
 
-    TetgenMesher::~TetgenMesher(){
+    TetgenMesher::~TetgenMesher()
+    {
         // Take over facet deletion of tetgen that does not set to 
         // nil pointers to polygonlist or holelist in facet
-        delete[] tetgen_in_.facetlist;
-        tetgen_in_.facetlist = nil;
-        tetgen_in_.numberoffacets = 0;
+        delete[] tetgen_in_.facetlist ;
+        tetgen_in_.facetlist = nil ;
+        tetgen_in_.numberoffacets = 0 ;
 
-        delete[] polygon_corners_;
-        polygon_corners_ = nil;
+        delete[] polygon_corners_ ;
+        polygon_corners_ = nil ;
 
-        delete[] polygons_;
-        polygons_ = nil;
+        delete[] polygons_ ;
+        polygons_ = nil ;
     }
 
     void TetgenMesher::tetrahedralize( const Mesh& input_mesh, 
                                        const std::string& command_line,
-                                       Mesh& output_mesh)
+                                       Mesh& output_mesh )
     {
-        set_command_line(command_line);
-        initialize();
-        copy_mesh_to_tetgen_input(input_mesh);
-        tetrahedralize();
-        assign_result_tetmesh_to_mesh(output_mesh);        
+        set_command_line( command_line ) ;
+        initialize() ;
+        copy_mesh_to_tetgen_input( input_mesh ) ;
+        tetrahedralize() ;
+        assign_result_tetmesh_to_mesh( output_mesh ) ;
     }
 
     void  TetgenMesher::tetrahedralize( const GEO::Mesh& input_mesh,
                                         const std::vector< vec3 >& one_point_per_region,
                                         const std::string& command_line,
-                                        GEO::Mesh& output_mesh) 
+                                        GEO::Mesh& output_mesh ) 
     {
-        set_command_line(command_line);
-        initialize();
-        copy_mesh_to_tetgen_input(input_mesh);
-        set_regions(one_point_per_region ) ;
-        tetrahedralize();
-        assign_result_tetmesh_to_mesh(output_mesh);
-        fill_region_attribute_on_mesh_cells(output_mesh, "region");
-
+        set_command_line( command_line ) ;
+        initialize() ;
+        copy_mesh_to_tetgen_input( input_mesh ) ;
+        set_regions( one_point_per_region ) ;
+        tetrahedralize() ;
+        assign_result_tetmesh_to_mesh( output_mesh ) ;
+        fill_region_attribute_on_mesh_cells( output_mesh, "region" ) ;
     }
 
 
 
-    void TetgenMesher::initialize() {
-        initialize_tetgen_args();
-        tetgen_in_.initialize();
-        tetgen_out_.initialize();
+    void TetgenMesher::initialize()
+    {
+        initialize_tetgen_args() ;
+        tetgen_in_.initialize() ;
+        tetgen_out_.initialize() ;
     }
 
-    void TetgenMesher::set_command_line(const std::string& command_line) {
-        tetgen_command_line_ = command_line.c_str();
+    void TetgenMesher::set_command_line( const std::string& command_line )
+    {
+        tetgen_command_line_ = command_line.c_str() ;
     }
 
-    void TetgenMesher::tetrahedralize(){
+    void TetgenMesher::tetrahedralize()
+    {
         try {
-            GEO_3rdParty::tetrahedralize(&tetgen_args_, &tetgen_in_, &tetgen_out_);
-        }
-        catch (std::exception& e) {
-            GEO::Logger::err("Tetgen")
-                << "Encountered a problem" << e.what() << std::endl;
-        }
-    }
-
-    void TetgenMesher::copy_mesh_to_tetgen_input(const GEO::Mesh& M){
-        if (M.vertices.nb() != 0) {
-            copy_vertices_to_tetgen_input(M);
-        }
-        if (M.edges.nb() != 0) {
-            copy_edges_to_tetgen_input(M);
-        }
-        if (M.facets.nb() != 0){
-            copy_facets_to_tetgen_input(M);
+            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_, &tetgen_out_ );
+        } catch( std::exception& e ) {
+            GEO::Logger::err( "Tetgen" )
+                << "Encountered a problem" << e.what() << std::endl ;
         }
     }
 
-    void TetgenMesher::copy_vertices_to_tetgen_input(const GEO::Mesh& M)
+    void TetgenMesher::copy_mesh_to_tetgen_input( const GEO::Mesh& M )
     {
-        tetgen_in_.numberofpoints = static_cast<int>(M.vertices.nb());
-        tetgen_in_.pointlist = new double[3 * tetgen_in_.numberofpoints];
-        GEO::Memory::copy(
-            tetgen_in_.pointlist, M.vertices.point_ptr(0),
-            M.vertices.nb() * 3 * sizeof(double)
-            );
+        if( M.vertices.nb() != 0 ) {
+            copy_vertices_to_tetgen_input( M ) ;
+        }
+        if( M.edges.nb() != 0 ) {
+            copy_edges_to_tetgen_input( M ) ;
+        }
+        if( M.facets.nb() != 0 ) {
+            copy_facets_to_tetgen_input( M ) ;
+        }
     }
 
-    void TetgenMesher::copy_edges_to_tetgen_input(const GEO::Mesh& M)
+    void TetgenMesher::copy_vertices_to_tetgen_input( const GEO::Mesh& M )
     {
-        tetgen_in_.numberofedges = static_cast<int>(M.edges.nb());
-        tetgen_in_.edgelist = new int[2 * tetgen_in_.numberofedges];
+        tetgen_in_.numberofpoints = static_cast<int>(M.vertices.nb()) ;
+        tetgen_in_.pointlist = new double[ 3 * tetgen_in_.numberofpoints ] ;
         GEO::Memory::copy(
-            tetgen_in_.edgelist, M.edges.vertex_index_ptr(0),
-            M.edges.nb() * 2 * sizeof(int)
-            );
+            tetgen_in_.pointlist, M.vertices.point_ptr( 0 ),
+            M.vertices.nb() * 3 * sizeof( double )
+            ) ;
     }
 
-    void TetgenMesher::copy_facets_to_tetgen_input(const GEO::Mesh& M) {
-        polygons_ = new GEO_3rdParty::tetgenio::polygon[M.facets.nb()];
-
-        tetgen_in_.numberoffacets = static_cast<int>(M.facets.nb());
-        tetgen_in_.facetlist = new GEO_3rdParty::tetgenio::facet[tetgen_in_.numberoffacets];
-
-        polygon_corners_ = new int[M.facet_corners.nb()];
+    void TetgenMesher::copy_edges_to_tetgen_input( const GEO::Mesh& M )
+    {
+        tetgen_in_.numberofedges = static_cast<int>(M.edges.nb()) ;
+        tetgen_in_.edgelist = new int[ 2 * tetgen_in_.numberofedges ] ;
         GEO::Memory::copy(
-            polygon_corners_, M.facet_corners.vertex_index_ptr(0),
-            M.facet_corners.nb()*sizeof(int)
-            );
+            tetgen_in_.edgelist, M.edges.vertex_index_ptr( 0 ),
+            M.edges.nb() * 2 * sizeof( int )
+            ) ;
+    }
 
-        for (index_t f = 0; f < M.facets.nb(); ++f) {
-            GEO_3rdParty::tetgenio::facet& F = tetgen_in_.facetlist[f];
-            GEO_3rdParty::tetgenio::init(&F);
-            F.numberofpolygons = 1;
-            F.polygonlist = &polygons_[f];
+    void TetgenMesher::copy_facets_to_tetgen_input( const GEO::Mesh& M )
+    {
+        polygons_ = new GEO_3rdParty::tetgenio::polygon[ M.facets.nb() ] ;
 
-            GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[0];
-            GEO_3rdParty::tetgenio::init(&P);
-            P.numberofvertices = M.facets.nb_corners(f);
-            P.vertexlist = &polygon_corners_[M.facets.corners_begin(f)];
-        }    
+        tetgen_in_.numberoffacets = static_cast<int>(M.facets.nb()) ;
+        tetgen_in_.facetlist = new GEO_3rdParty::tetgenio::facet[ tetgen_in_.numberoffacets ] ;
+
+        polygon_corners_ = new int[ M.facet_corners.nb() ] ;
+        GEO::Memory::copy(
+            polygon_corners_, M.facet_corners.vertex_index_ptr( 0 ),
+            M.facet_corners.nb()*sizeof( int )
+            ) ;
+
+        for( index_t f = 0; f < M.facets.nb(); ++f ) {
+            GEO_3rdParty::tetgenio::facet& F = tetgen_in_.facetlist[ f ] ;
+            GEO_3rdParty::tetgenio::init( &F ) ;
+            F.numberofpolygons = 1 ;
+            F.polygonlist = &polygons_[ f ] ;
+
+            GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[ 0 ] ;
+            GEO_3rdParty::tetgenio::init( &P ) ;
+            P.numberofvertices = M.facets.nb_corners( f ) ;
+            P.vertexlist = &polygon_corners_[ M.facets.corners_begin( f ) ] ;
+        }
     }
 
     void TetgenMesher::set_regions( const std::vector< vec3 >& one_point_in_each_region ) 
@@ -376,66 +380,69 @@ namespace RINGMesh {
     }
 
 
-    void TetgenMesher::fill_region_attribute_on_mesh_cells(GEO::Mesh& M, const std::string& attribute_name) const
+    void TetgenMesher::fill_region_attribute_on_mesh_cells( GEO::Mesh& M, const std::string& attribute_name ) const
     {
-        double* tet_attributes = tetgen_out_.tetrahedronattributelist;
-        int one_tet_attribute_size = tetgen_out_.numberoftetrahedronattributes;
-        GEO::Attribute< index_t > region_id(M.cells.attributes(), attribute_name);
-        for (index_t i = 0; i < M.cells.nb(); ++i) {
+        double* tet_attributes = tetgen_out_.tetrahedronattributelist ;
+        int one_tet_attribute_size = tetgen_out_.numberoftetrahedronattributes ;
+        GEO::Attribute< index_t > region_id( M.cells.attributes(), attribute_name ) ;
+        for( index_t i = 0; i < M.cells.nb(); ++i ) {
             // Nothing says where it is, so we hope that the shell id is the first 
             // attribute stored in tetgen [JP]
-            region_id[i] = index_t(tet_attributes[one_tet_attribute_size*i]);
+            region_id[ i ] = index_t( tet_attributes[ one_tet_attribute_size*i ] ) ;
         }
-        region_id.unbind();
+        region_id.unbind() ;
     }
 
-    void TetgenMesher::initialize_tetgen_args() {
-        char* copy = new char[tetgen_command_line_.length() + 1];
-        std::strcpy(copy, tetgen_command_line_.c_str());
-        tetgen_args_.parse_commandline(copy);
+    void TetgenMesher::initialize_tetgen_args()
+    {
+        char* copy = new char[ tetgen_command_line_.length() + 1 ] ;
+        std::strcpy( copy, tetgen_command_line_.c_str() ) ;
+        tetgen_args_.parse_commandline( copy ) ;
     }
 
-    void TetgenMesher::assign_result_tetmesh_to_mesh(GEO::Mesh& M) {
-        GEO::vector<double> points;
-        get_result_tetmesh_points(points);
+    void TetgenMesher::assign_result_tetmesh_to_mesh( GEO::Mesh& M )
+    {
+        GEO::vector<double> points ;
+        get_result_tetmesh_points( points ) ;
 
-        GEO::vector<index_t> tets;
-        get_result_tetmesh_tets(tets);
+        GEO::vector<index_t> tets ;
+        get_result_tetmesh_tets( tets ) ;
 
-        M.cells.assign_tet_mesh(3, points, tets, true);
-        M.cells.connect();
+        M.cells.assign_tet_mesh( 3, points, tets, true ) ;
+        M.cells.connect() ;
     }
 
 
-    void TetgenMesher::get_result_tetmesh_points(GEO::vector< double >& points) const {
-        index_t nb_points(tetgen_out_.numberofpoints);
-        points.resize(3 * nb_points);
-        double* points_ptr = tetgen_out_.pointlist;
-        for (index_t i = 0; i < 3 * nb_points; ++i) {
-            points[i] = points_ptr[i];
+    void TetgenMesher::get_result_tetmesh_points( GEO::vector< double >& points ) const
+    {
+        index_t nb_points( tetgen_out_.numberofpoints ) ;
+        points.resize( 3 * nb_points ) ;
+        double* points_ptr = tetgen_out_.pointlist ;
+        for( index_t i = 0; i < 3 * nb_points; ++i ) {
+            points[ i ] = points_ptr[ i ] ;
         }
     }
 
-    void TetgenMesher::get_result_tetmesh_tets(GEO::vector< index_t>& tets) const {
-        index_t nb_tets(tetgen_out_.numberoftetrahedra);
-        tets.resize(4 * nb_tets);
+    void TetgenMesher::get_result_tetmesh_tets( GEO::vector< index_t>& tets ) const
+    {
+        index_t nb_tets( tetgen_out_.numberoftetrahedra );
+        tets.resize( 4 * nb_tets );
 
-        int* tets_ptr = tetgen_out_.tetrahedronlist;
-        int one_tet_size = tetgen_out_.numberofcorners;
-        for (index_t i = 0; i < nb_tets; ++i) {
-            tets[4 * i + 0] = index_t(tets_ptr[one_tet_size*i + 0]);
-            tets[4 * i + 1] = index_t(tets_ptr[one_tet_size*i + 1]);
-            tets[4 * i + 2] = index_t(tets_ptr[one_tet_size*i + 2]);
-            tets[4 * i + 3] = index_t(tets_ptr[one_tet_size*i + 3]);
+        int* tets_ptr = tetgen_out_.tetrahedronlist ;
+        int one_tet_size = tetgen_out_.numberofcorners ;
+        for( index_t i = 0; i < nb_tets; ++i ) {
+            tets[ 4 * i + 0 ] = index_t( tets_ptr[ one_tet_size*i + 0 ] ) ;
+            tets[ 4 * i + 1 ] = index_t( tets_ptr[ one_tet_size*i + 1 ] ) ;
+            tets[ 4 * i + 2 ] = index_t( tets_ptr[ one_tet_size*i + 2 ] ) ;
+            tets[ 4 * i + 3 ] = index_t( tets_ptr[ one_tet_size*i + 3 ] ) ;
         }
     }
 
     bool tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) 
     {
         if (!is_mesh_tetrahedralizable(M)) {
-            return false;
-        }
-               
+            return false ;
+        }               
         TetgenMesher mesher ;
         mesher.tetrahedralize( M, "QpO0YA", M ) ;        
         return true ;
@@ -536,7 +543,7 @@ namespace RINGMesh {
 
     /*!
     * Computes the Mesh cell facet normal
-    * @param[in] M the mesh
+    * @pasram[in] M the mesh
     * @param[in] c the cell index
     * @param[in] f the facet index in the cell
     * @return the cell facet normal
