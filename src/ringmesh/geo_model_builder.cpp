@@ -86,7 +86,7 @@ namespace {
     * Input  : corners = 1 3 8 25 8 3
     * Output : corners = 0 1 2 3 2 1
     *          vertices = 1 3 8 25
-    * @todo implement a generic fcuntion to remove duplicated code.
+    * @todo implement a generic function to remove duplicated code.
     */
     void get_element_vertices_and_update_corners(
         std::vector< index_t >& corners,
@@ -2147,9 +2147,8 @@ namespace RINGMesh {
                     }
                     cc_facets_ptr.push_back( cc_corners.size() ) ;
                 }
-                gme_t surface_gme = create_element( GME::SURFACE ) ;
 
-                // Create the surface and set its geometry
+                gme_t surface_gme = create_element( GME::SURFACE ) ;
                 set_surface_geometry( surface_gme.index, cc_vertices,
                                       cc_corners, cc_facets_ptr ) ;
             }

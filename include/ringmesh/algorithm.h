@@ -45,68 +45,65 @@
 #include <algorithm>
 
 /*!
-* @file ringmesh/algorithm.h
-* @brief Template function for basic operations on vectors
-* @author Jeanne Pellerin and Arnaud Botella
-*/
+ * @file ringmesh/algorithm.h
+ * @brief Template function for basic operations on vectors
+ * @author Jeanne Pellerin and Arnaud Botella
+ */
 
 namespace RINGMesh {
 
     /*!
-    * @brief Returns the position of the first element matching @param t 
-    * in the vector, NO_ID if not found. 
-    */
+     * @brief Returns the position of the first element matching @param t 
+     * in the vector, NO_ID if not found. 
+     */
     template< typename T, typename container >
     index_t find( const container& v, const T& t )
     {
-        typename container::const_iterator it = std::find(
-            v.begin(), v.end(), t ) ;
+        typename container::const_iterator it = std::find( v.begin(), v.end(), t ) ;
         if( it == v.end() ) {
             return NO_ID ;
-        }
-        else {
-            return static_cast<index_t>( it - v.begin() ) ;
+        } else {
+            return static_cast<index_t>(it - v.begin()) ;
         }
     }
 
     /*!
-    * @brief Returns the position of the first element matching t 
-    * in a sorted vector, NO_ID if not found. 
-    */
+     * @brief Returns the position of the first element matching t 
+     * in a sorted vector, NO_ID if not found. 
+     */
     template< typename T, typename container >
     index_t find_sorted( const container& v, const T& t )
     {
-        typename container::const_iterator low = std::lower_bound( 
-            v.begin(), v.end(), t ) ;
+        typename container::const_iterator low = std::lower_bound( v.begin(), v.end(), t ) ;
         if( low == v.end() || t < *low ) {
             return NO_ID ;
-        }
-        else {
-            return static_cast<index_t>( low - v.begin() ) ;
+        } else {
+            return static_cast<index_t>(low - v.begin()) ;
         }
     }
 
-    
+
     template< typename T, typename container >
     bool contains( const container& v, const T& t, bool sorted = false )
     {
         if( sorted ) {
             return find_sorted( v, t ) != NO_ID ;
-        }
-        else {
+        } else {
             return find( v, t ) != NO_ID ;
         }
     }
 
 
     /*!
-    * \brief Indirect sorting of two vectors.
-    * @todo Comment what is indirect sorting.
-    */
+     * \brief Indirect sorting of two vectors.
+     * @todo Comment what is indirect sorting.
+     */
     template< class T1, class T2 >
     void indirect_sort( std::vector< T1 >& input, std::vector< T2 >& output )
     {
-        if( input.size() < 2 ) return ;
+        if( input.size() < 2 ) {
+            return ;
+        }
         for( index_t it1 = 0; it1+1 < input.size(); it1++ ) {
             index_t ref_index = it1 ;
             T1 ref_value = input[ it1 ] ;
@@ -125,13 +122,17 @@ namespace RINGMesh {
 
     /*! 
      * @brief Comparator of indices relying on values token in a vector
+     * @note To be used in unique_values function
      */
     template< class T >
-    class CompareIndexFromValue {
+    class CompareIndexFromValue
+    {
     public:
         CompareIndexFromValue( const std::vector<T>& values ) :
             values_( values )
         {}
+        /*! @brief Compare two indices based on the stored values at these indices
+         */
         bool operator()( index_t i, index_t j )
         {
             if( are_values_equal( i, j ) ) {
@@ -149,38 +150,40 @@ namespace RINGMesh {
     };
 
     /*!
-    * @brief Determine unique occurences of values in input vector
-    * and fill a mapping to the first occurence of each unique value
-    * @param[in] input values  example: 1 4 6 0 4 1 5 6
-    * @param[out] input2unique example: 0 1 2 3 1 0 6 2
-    * Maps each index to the index of the first occurence of the value in the vector. 
-    * @return Number of unique values in input
-    * @note Tricky algorithm, used over and over in Geogram
-    */
+     * @brief Determine unique occurences of values in input vector
+     * and fill a mapping to the first occurence of each unique value
+     * @param[in] input values  example: 1 4 6 0 4 1 5 6
+     * @param[out] input2unique example: 0 1 2 3 1 0 6 2
+     * Maps each index to the index of the first occurence of the value in the vector. 
+     * @return Number of unique values in input
+     * @note Tricky algorithm, used over and over in Geogram
+     */
     template< class T >
     index_t unique_values(
         const std::vector< T >& input,
         std::vector< index_t >& unique_value_index )
-    {        
-        std::vector< index_t > sorted( input.size() );
-        for( index_t i = 0; i < input.size(); ++i ) {
-            sorted[ i ] = i ;
+    {
+        index_t nb_values = input.size() ;
+        std::vector< index_t > sorted_indices( nb_values ) ;
+        for( index_t i = 0; i < nb_values; ++i ) {
+            sorted_indices[ i ] = i ;
         }
         CompareIndexFromValue<T> comparator( input ) ;
-        std::sort( sorted.begin(), sorted.end(), comparator ) ;
+        // Sort the indices according to the values token in the input vector
+        std::sort( sorted_indices.begin(), sorted_indices.end(), comparator ) ;
 
-        unique_value_index.resize( input.size(), NO_ID ) ;
-        index_t nb_unique_values = 0;
-        index_t i = 0;
-        while( i < input.size() ) {
-            nb_unique_values++;
-            unique_value_index[ sorted[ i ] ] = sorted[ i ];
-            index_t j = i + 1;
+        unique_value_index.resize( nb_values, NO_ID ) ;
+        index_t nb_unique_values = 0 ;
+        index_t i = 0 ;
+        while( i != nb_values ) {
+            nb_unique_values++ ;
+            unique_value_index[ sorted_indices[ i ] ] = sorted_indices[ i ] ;
+            index_t j = i + 1 ;
             while( j < input.size() &&
-                   comparator.are_values_equal( sorted[ i ], sorted[ j ] )
-                   ) {
-                unique_value_index[ sorted[ j ] ] = sorted[ i ];
-                j++;
+                   comparator.are_values_equal( sorted_indices[ i ], sorted_indices[ j ] )
+            ) {
+                unique_value_index[ sorted_indices[ j ] ] = sorted_indices[ i ] ;
+                j++ ;
             }
             i = j ;
         }

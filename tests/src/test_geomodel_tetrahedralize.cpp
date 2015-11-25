@@ -44,7 +44,6 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 
-
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
@@ -82,6 +81,7 @@ int main( int argc, char** argv )
     tetgen_tetrahedralize_geomodel_regions( geomodel ) ;
   
     // Save volumetric mesh with cell region attribute
+    /// @todo Implement a function to do it
     GEO::Mesh geomodel_regions_mesh ;
     build_mesh_from_geomodel( geomodel, geomodel_regions_mesh ) ;
     GEO::MeshIOFlags mesh_io_flags ;

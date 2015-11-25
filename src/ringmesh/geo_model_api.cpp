@@ -480,27 +480,27 @@ namespace RINGMesh {
 
 
     /*!
-     * Generate a point that lies strictly inside the Region which should be defined by its
-     * Surface boundaries.
-     * In most cases, generating a point that is the midpoint of barycenter of the first
-     * facet of the first surface on the region boundary and the closest poit in the other surfaces.
+     * @brief Generate a point that lies strictly a Region defined by its Surface boundaries.
+     * @details Returnsthe midpoint of barycenter of the first facet of the first surface on 
+     * the region boundary and the closest point in the other surfaces.
+     * @warning Incomplete implementation.
      */
     vec3 generate_point_in_region( const Region& region )
     {
-        // To implement for bubbles
+        /// @todo To implement for bubbles
         ringmesh_assert( region.nb_boundaries() > 1 ) ;
         
         const GeoModel& geomodel = region.model() ;
 
         const Surface& first_boundary_surface = geomodel.surface( region.boundary_gme( 0 ).index ) ; 
         double facet_area = first_boundary_surface.facet_area( 0 ) ; 
-        vec3 barycenter = first_boundary_surface.facet_barycenter(0);                
-        // What is the real condition to have a correct barycenter?
+        vec3 barycenter = first_boundary_surface.facet_barycenter( 0 ) ;                
+        /// @todo Check that this is the right condition to have a correct enough barycenter
         ringmesh_assert( facet_area > epsilon) ;
 
         double minimum_distance = DBL_MAX ;
         vec3 nearest_point ;        
-        for( index_t i = 1; i != region.nb_boundaries(); ++i ){
+        for( index_t i = 1; i != region.nb_boundaries(); ++i ) {
             const Surface& S = geomodel.surface( region.boundary_gme(i).index ) ;                        
             SurfaceTools tool_on_surface( S ) ;
             double distance = DBL_MAX ;
@@ -512,7 +512,7 @@ namespace RINGMesh {
                 nearest_point = point ;
             }            
         } 
-        // Otherwise we are in trouble
+        /// @todo Change implementation to use second triangle if that one failed, and futher surfaces
         ringmesh_assert( minimum_distance > epsilon ) ;
         return 0.5*( barycenter + nearest_point ) ;
     }
@@ -521,8 +521,7 @@ namespace RINGMesh {
                                              std::vector< vec3 >& one_point_one_region )
     {
         one_point_one_region.resize( geomodel.nb_regions() ) ;
-        for( index_t i = 0; i != geomodel.nb_regions(); ++i )
-        {
+        for( index_t i = 0; i != geomodel.nb_regions(); ++i ) {
             vec3 point = generate_point_in_region( geomodel.region(i) ) ;
             one_point_one_region[i] = point ; 
         }    
@@ -539,11 +538,12 @@ namespace RINGMesh {
        
         TetgenMesher mesher ;
         mesher.tetrahedralize( mesh, points_in_regions, "QpO0YA", mesh ) ; 
+
         GeoModelBuilderMesh builder ( geomodel, mesh, "", "region" ) ;
         builder.build_regions() ;
 
         // Force recomputation of global mesh vertices - otherwise we crash sooner or later
-        // because of model_vertex_id crazy sharing
+        // because of model_vertex_id crazy sharing [JP]
         geomodel.mesh.vertices.clear() ;
         geomodel.mesh.vertices.test_and_initialize() ;
     }
