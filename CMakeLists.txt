@@ -54,6 +54,10 @@ set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
 # By default RINGMesh will be compiled with OpenMP flags
 option(USE_OPENMP "Use Open MP" ON)
 
+# By default RINGMesh is compiled with Tetgen  
+# Check Tetgen licences to ensure you have the right to use it freely
+option(RINGMESH_WITH_TETGEN "Use Tetgen tetrahedral mesher" ON)
+
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
@@ -110,6 +114,7 @@ if(UNIX)
                 -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
                 -DMG_TETRA:STRING=${MG_TETRA}
                 -DUSE_OPENMP:BOOL=${USE_OPENMP}
+                -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
@@ -194,7 +199,7 @@ ExternalProject_Add(geogram_ext
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${GEOGRAM_PATH}
         -G ${CMAKE_GENERATOR} 
         -DVORPALINE_PLATFORM:STRING=${geoplatform}
-        -DGEOGRAM_WITH_TETGEN:BOOL=ON
+        -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
         -DGEOGRAM_WITH_MEDIT:BOOL=ON 
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}  
