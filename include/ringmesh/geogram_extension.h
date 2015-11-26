@@ -47,7 +47,10 @@
 #include <geogram/basic/memory.h>
 #include <geogram/basic/attributes.h>
 #include <geogram/mesh/mesh.h>
+
+#ifdef RINGMESH_WITH_TETGEN
 #include <geogram/third_party/tetgen/tetgen.h>
+#endif 
 
 namespace RINGMesh {
 
@@ -95,7 +98,9 @@ namespace RINGMesh {
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
 
-    
+#ifdef RINGMESH_WITH_TETGEN
+    /// @todo Move all tetgen related stuff in one or two files
+
       /*! 
      * @brief Utility class to set Tetgen switches and check their consistency
      * @details Tetgen arguments are a mess and this class helps set the basic options
@@ -176,6 +181,8 @@ namespace RINGMesh {
      * as the equivalent in Geogram function does.
      */
     bool RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) ;
+
+#endif
 
     
     void RINGMESH_API rotate_mesh( GEO::Mesh& mesh, const GEO::Matrix< float64, 4 >& rot_mat ) ;

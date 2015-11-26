@@ -64,6 +64,7 @@ using RINGMesh::Surface ;
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
+#ifdef RINGMESH_WITH_TETGEN
 
     // Set an output log file
     std::string log_file( ringmesh_test_output_path ) ;
@@ -88,7 +89,7 @@ int main( int argc, char** argv )
     mesh_io_flags.set_elements( GEO::MeshElementsFlags( GEO::MESH_VERTICES | GEO::MESH_CELLS ) ) ;
     mesh_io_flags.set_attribute( GEO::MESH_CELL_REGION ) ;
     GEO::mesh_save( geomodel_regions_mesh, result_file_name, mesh_io_flags ) ;
-
+#endif
     return 0 ;
 }
 

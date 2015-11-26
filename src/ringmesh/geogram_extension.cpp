@@ -220,6 +220,7 @@ namespace RINGMesh {
 
 
     /***********************************************************************/
+#ifdef RINGMESH_WITH_TETGEN
 
     bool is_mesh_tetrahedralizable( const GEO::Mesh& M ) 
     {         
@@ -447,7 +448,7 @@ namespace RINGMesh {
         mesher.tetrahedralize( M, "QpO0YA", M ) ;        
         return true ;
     }
-
+#endif
     
     /***********************************************************************/
 

@@ -527,6 +527,7 @@ namespace RINGMesh {
         }    
     }
 
+#ifdef RINGMESH_WITH_TETGEN
 
     void tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel ) 
     {
@@ -547,7 +548,7 @@ namespace RINGMesh {
         geomodel.mesh.vertices.clear() ;
         geomodel.mesh.vertices.test_and_initialize() ;
     }
-
+#endif
 
     void tetrahedralize( GeoModel& M, const std::string& method, index_t region_id, bool add_steiner_points )
     {
