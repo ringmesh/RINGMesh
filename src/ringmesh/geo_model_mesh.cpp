@@ -183,7 +183,7 @@ namespace RINGMesh {
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
-                nb += gm_.mesh_element( GME::gme_t( T, e ) ).nb_vertices() ;
+                nb += gm_.mesh_element( T, e ).nb_vertices() ;
             }
         }
         // Get out if no vertices

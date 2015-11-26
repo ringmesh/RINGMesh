@@ -111,8 +111,7 @@ namespace RINGMesh {
 
         /*!
         * @brief Reference to a modifiable meshed element of the model
-        * @pre Assert in debug model that the given id refers to a meshed element.
-        *      The id must refer to a valid element.
+        * @pre The id must refer to a valid element.
         * @note Stupid override of a function of GeoModel
         */
         GeoModelMeshElement& mesh_element( const GME::gme_t& id ) const
@@ -120,6 +119,16 @@ namespace RINGMesh {
             ringmesh_debug_assert( GME::has_mesh( id.type ) ) ;
             return dynamic_cast<GeoModelMeshElement&>( element( id ) ) ;
         }
+
+        /*!
+        * @brief Reference to a modifiable meshed element of the model
+        */
+        GeoModelMeshElement& mesh_element( GeoModelElement::TYPE element_type,
+                                           index_t element_index ) const
+        {
+            return mesh_element( GME::gme_t( element_type, element_index ) ) ;
+        }
+
 
         /*! @}
         * \name Filling GeoModelElement attributes.
