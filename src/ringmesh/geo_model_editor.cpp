@@ -481,26 +481,7 @@ namespace RINGMesh {
                 static_cast<GME*>( nil ) ), store.end() ) ;
         }
 
- /*       /// 3. Deal with the model vertices
-        // We need to do this before changing ids of the BMEs
-        // (because we need the old ids to get the new ones)
-        // but after deleting the elements otherwise 
-        // we are putting back the vertices of the BMMEs to delete
-        for( index_t v = 0; v < model_.mesh.vertices.nb(); ++v ) {
-            const std::vector< GMEVertex >& cur =
-                model_.mesh.vertices.gme_vertices( v ) ;
-
-            for( index_t i = 0; i < cur.size(); ++i ) {
-                gme_t id = cur[ i ].gme_id ;
-                gme_t new_id( id.type, to_erase[ id.type ][ id.index ] ) ;
-                model_.mesh.vertices.set_gme(
-                    v, i, GMEVertex( new_id, cur[ i ].v_id ) ) ;
-            }
-        }
-        model_.mesh.erase_invalid_vertices() ;*/
-
-        // WTF !!
-
+        /// 3. Deal with the model vertices
         model_.mesh.vertices.clear() ;
 
         /// 4. Update all possible indices in remaining elements
