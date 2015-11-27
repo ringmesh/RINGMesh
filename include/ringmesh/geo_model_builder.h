@@ -103,15 +103,15 @@ namespace RINGMesh {
      * @todo To refactor and rename. We need a GeoModelTopologyEditor 
      * and a GeoModelGeometryEditor
      */
-    class RINGMESH_API GeoModelBuilder : public GeoModelEditor {
+    class RINGMESH_API GeoModelBuilder : public GeoModelEditor
+    {
     public:
         GeoModelBuilder( GeoModel& model )
             : GeoModelEditor( model )
-        {
-        }
+        {}
         virtual ~GeoModelBuilder() ;
 
-        /*! 
+        /*!
          * @todo Implements sot that it returns true if the input options are consistent
          */
         bool set_options( const GeoModelBuildingFlags& options )
@@ -121,12 +121,12 @@ namespace RINGMesh {
         }
 
         /*!
-         * \name Set element geometry from geometrical positions   
+         * \name Set element geometry from geometrical positions
          * @{
          */
         void set_element_vertex( const GME::gme_t& t, index_t v, const vec3& point, bool update ) ;
 
-        void set_element_vertices( const GME::gme_t& element_id, 
+        void set_element_vertices( const GME::gme_t& element_id,
                                    const std::vector< vec3 >& points,
                                    bool clear ) ;
 
@@ -164,7 +164,7 @@ namespace RINGMesh {
                                    const std::vector< index_t >& corners,
                                    const std::vector< index_t >& facet_ptr ) ;
 
-        void set_surface_geometry( index_t surface_id, 
+        void set_surface_geometry( index_t surface_id,
                                    const std::vector< index_t >& triangle_corners ) ;
 
         void set_region_geometry( index_t region_id, const std::vector< index_t >& tet_corners ) ;
@@ -180,7 +180,7 @@ namespace RINGMesh {
         /*!
          * @}
          * \name Model building functions
-         */   
+         */
 
         /*!
         * @brief From the Surfaces of the GeoModel, build its Lines and Corners
@@ -188,12 +188,12 @@ namespace RINGMesh {
         bool build_lines_and_corners_from_surfaces() ;
 
         /*!
-        * @brief Build the regions of the GeoModel from the Surfaces 
+        * @brief Build the regions of the GeoModel from the Surfaces
         * @pre Function build_lines_and_corners_from_surfaces must have been called before
         */
         bool build_brep_regions_from_surfaces() ;
-    
-        /* 
+
+        /*
          * @brief From a GeoModel in which only Surface are defined, create corners, contacts
          * and regions depending on the building flags
          * @return True if a model has been built.
@@ -209,7 +209,7 @@ namespace RINGMesh {
 
     protected:
         /*! Elements to compute from the available elements */
-        GeoModelBuildingFlags options_ ; 
+        GeoModelBuildingFlags options_ ;
 
         /*! Internal information */
         std::vector< GeoModelRegionFromSurfaces* > regions_info_ ;
@@ -227,7 +227,10 @@ namespace RINGMesh {
         void assign_region_tet_mesh(
             index_t region_id,
             const std::vector< index_t >& tet_vertices ) ;
-    } ;
+
+        void duplicate_surface_vertices_along_line( Surface& S, const Line& L ) ;
+        void disconnect_surface_facets_along_line_edges( Surface& S, const Line& L ) ;
+    };
 
     /*!
     * @brief To build a GeoModel from a set of disconnected polygonal surfaces
