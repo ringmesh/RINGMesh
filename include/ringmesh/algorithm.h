@@ -189,6 +189,19 @@ namespace RINGMesh {
         }
         return nb_unique_values ;
     }
+
+    /**
+     * @brief Sorts a vector and suppresses all duplicated elements.
+     * @param[in,out] v the vector
+     * @param[in] cmp a comparator function
+     */
+    template< typename VECTOR, typename CMP > inline void sort_unique(
+        VECTOR& v,
+        const CMP& cmp )
+    {
+        std::sort( v.begin(), v.end(), cmp ) ;
+        v.erase( std::unique( v.begin(), v.end(), cmp ), v.end() ) ;
+    }
 }
 
 #endif
