@@ -817,105 +817,109 @@ namespace GEO {
     
     /**************************************************************************/
 
-    CellDescriptor MeshCellsStore::tet_descriptor_ = {
-        4,         // nb_vertices
-        4,         // nb_facets
-        {3,3,3,3}, // nb_vertices in facet
-        {          // facets
-            {1,3,2},
-            {0,2,3},
-            {3,1,0},
-            {0,1,2}
-        },
-        6,         // nb_edges
-        {          // edges
-            {1,2}, {2,3}, {3,1}, {0,1}, {0,2}, {0,3}
-        }         
-    };
+    void MeshCellsStore::initialize_descriptors()
+    {
+        tet_descriptor_ = {
+            4,         // nb_vertices
+            4,         // nb_facets
+            { 3, 3, 3, 3 }, // nb_vertices in facet
+            {          // facets
+                { 1, 3, 2 },
+                { 0, 2, 3 },
+                { 3, 1, 0 },
+                { 0, 1, 2 }
+            },
+            6,         // nb_edges
+            {          // edges
+                { 1, 2 }, { 2, 3 }, { 3, 1 }, { 0, 1 }, { 0, 2 }, { 0, 3 }
+            }
+        };
 
 
-    CellDescriptor MeshCellsStore::hex_descriptor_ = {
-        8,             // nb_vertices
-        6,             // nb_facets
-        {4,4,4,4,4,4}, // nb_vertices in facet
-        {              // facets
-            {0,2,6,4},
-            {3,1,5,7},
-            {1,0,4,5},
-            {2,3,7,6},
-            {1,3,2,0},
-            {4,6,7,5}
-        },
-        12,            // nb_edges
-        {              // edges
-            {0,1},{1,3},{3,2},{2,0},{4,5},{5,7},
-            {7,6},{6,4},{0,4},{1,5},{3,7},{2,6}
-        }         
-    };
+        hex_descriptor_ = {
+            8,             // nb_vertices
+            6,             // nb_facets
+            { 4, 4, 4, 4, 4, 4 }, // nb_vertices in facet
+            {              // facets
+                { 0, 2, 6, 4 },
+                { 3, 1, 5, 7 },
+                { 1, 0, 4, 5 },
+                { 2, 3, 7, 6 },
+                { 1, 3, 2, 0 },
+                { 4, 6, 7, 5 }
+            },
+            12,            // nb_edges
+            {              // edges
+                { 0, 1 }, { 1, 3 }, { 3, 2 }, { 2, 0 }, { 4, 5 }, { 5, 7 },
+                { 7, 6 }, { 6, 4 }, { 0, 4 }, { 1, 5 }, { 3, 7 }, { 2, 6 }
+            }
+        };
 
-    CellDescriptor MeshCellsStore::prism_descriptor_ = {
-        6,             // nb_vertices
-        5,             // nb_facets
-        {3,3,4,4,4},   // nb_vertices in facet
-        {              // facets
-            {0,1,2},
-            {3,5,4},
-            {0,3,4,1},
-            {0,2,5,3},
-            {1,4,5,2}
-        },
-        9,             // nb_edges
-        {              // edges
-            {0,1},{1,2},{2,3},{3,4},{4,5},{5,3},{0,3},{1,4},{2,5}
-        }         
-    };
+        prism_descriptor_ = {
+            6,             // nb_vertices
+            5,             // nb_facets
+            { 3, 3, 4, 4, 4 },   // nb_vertices in facet
+            {              // facets
+                { 0, 1, 2 },
+                { 3, 5, 4 },
+                { 0, 3, 4, 1 },
+                { 0, 2, 5, 3 },
+                { 1, 4, 5, 2 }
+            },
+            9,             // nb_edges
+            {              // edges
+                { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 5 }, { 5, 3 }, { 0, 3 }, { 1, 4 }, { 2, 5 }
+            }
+        };
 
 
-    CellDescriptor MeshCellsStore::pyramid_descriptor_ = {
-        5,             // nb_vertices
-        5,             // nb_facets
-        {4,3,3,3,3},   // nb_vertices in facet
-        {              // facets
-            {0,1,2,3},
-            {0,4,1},
-            {0,3,4},
-            {2,4,3},
-            {2,1,4}
-        },
-        8,             // nb_edges
-        {              // edges
-            {0,1},{1,2},{2,3},{3,0},{0,4},{1,4},{2,4},{3,4}
-        }         
-    };
+        pyramid_descriptor_ = {
+            5,             // nb_vertices
+            5,             // nb_facets
+            { 4, 3, 3, 3, 3 },   // nb_vertices in facet
+            {              // facets
+                { 0, 1, 2, 3 },
+                { 0, 4, 1 },
+                { 0, 3, 4 },
+                { 2, 4, 3 },
+                { 2, 1, 4 }
+            },
+            8,             // nb_edges
+            {              // edges
+                { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }, { 0, 4 }, { 1, 4 }, { 2, 4 }, { 3, 4 }
+            }
+        };
 
-    CellDescriptor MeshCellsStore::connector_descriptor_ = {
-        4,             // nb_vertices
-        3,             // nb_facets
-        {4,3,3},       // nb_vertices in facet
-        {              // facets
-            {0,1,2,3},
-            {2,1,0},
-            {3,2,0}
-        },
-        5,             // nb_edges
-        {              // edges
-            {0,1},{1,2},{2,3},{3,0},{0,2}
-        }         
-    };
+        connector_descriptor_ = {
+            4,             // nb_vertices
+            3,             // nb_facets
+            { 4, 3, 3 },       // nb_vertices in facet
+            {              // facets
+                { 0, 1, 2, 3 },
+                { 2, 1, 0 },
+                { 3, 2, 0 }
+            },
+            5,             // nb_edges
+            {              // edges
+                { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }, { 0, 2 }
+            }
+        };
 
-    CellDescriptor* MeshCellsStore::cell_type_to_cell_descriptor_[5] = { 
-        &tet_descriptor_, 
-        &hex_descriptor_, 
-        &prism_descriptor_, 
-        &pyramid_descriptor_, 
-        &connector_descriptor_
-    };
+        cell_type_to_cell_descriptor_[ 0 ] = &tet_descriptor_ ;
+        cell_type_to_cell_descriptor_[ 1 ] = &hex_descriptor_ ;
+        cell_type_to_cell_descriptor_[ 2 ] = &prism_descriptor_ ;
+        cell_type_to_cell_descriptor_[ 3 ] = &pyramid_descriptor_ ;
+        cell_type_to_cell_descriptor_[ 4 ] = &connector_descriptor_ ;
+
+    }
     
     
     MeshCellsStore::MeshCellsStore(Mesh& mesh) :
         MeshSubElementsStore(mesh),
         is_simplicial_(true) {
         cell_ptr_.push_back(0);
+
+        initialize_descriptors() ;
     }
 
     void MeshCellsStore::clear_store(

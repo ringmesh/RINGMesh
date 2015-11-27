@@ -1365,9 +1365,9 @@ namespace GEO {
          *   MESH_TET, MESH_HEX, MESH_PRISM, MESH_PYRAMID, MESH_CONNECTOR
          * \return the descriptor of cell \p c
          */
-        static const CellDescriptor& cell_type_to_cell_descriptor(
+        const CellDescriptor& cell_type_to_cell_descriptor(
             MeshCellType t
-        ) {
+        ) const {
             geo_debug_assert(t < GEO::MESH_NB_CELL_TYPES);
             return *cell_type_to_cell_descriptor_[t];
         }
@@ -1508,18 +1508,20 @@ namespace GEO {
         vector<Numeric::uint8> cell_type_;
         vector<index_t> cell_ptr_;
 
+        void initialize_descriptors() ;
+
     protected:
         /**
          * \brief Maps a cell type to the associated cell descriptor.
          */
-        static CellDescriptor*
+        CellDescriptor*
             cell_type_to_cell_descriptor_[GEO::MESH_NB_CELL_TYPES];
 
-        static CellDescriptor tet_descriptor_;
-        static CellDescriptor hex_descriptor_;
-        static CellDescriptor prism_descriptor_;
-        static CellDescriptor pyramid_descriptor_;
-        static CellDescriptor connector_descriptor_;
+        CellDescriptor tet_descriptor_;
+        CellDescriptor hex_descriptor_;
+        CellDescriptor prism_descriptor_;
+        CellDescriptor pyramid_descriptor_;
+        CellDescriptor connector_descriptor_;
         friend class Mesh;        
     };
     
@@ -2206,7 +2208,7 @@ namespace GEO {
          * \return the local vertex index (0,1,2 or 3) of the
          * \p lv%th vertex in facet \p lf
          */
-        static index_t local_tet_facet_vertex_index(index_t lf, index_t lv) {
+        index_t local_tet_facet_vertex_index(index_t lf, index_t lv) const {
             geo_debug_assert(lf < 4);
             geo_debug_assert(lv < 3);
             return tet_descriptor_.facet_vertex[lf][lv];
