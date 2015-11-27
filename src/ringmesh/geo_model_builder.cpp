@@ -1253,6 +1253,7 @@ namespace RINGMesh {
             index_t f2 = S.adjacent( f, v ) ;
             if( f2 != NO_ID ) {
                 index_t v2 = NO_ID ;
+                // Get the edge in facet f2 matching model indices p0-p1
                 S.oriented_edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
                 if( v2 == NO_ID ) {
                     S.oriented_edge_from_model_vertex_ids( p1, p0, f2, v2 ) ;
@@ -1301,7 +1302,7 @@ namespace RINGMesh {
         // Surface vertex indices of the points along the line
         index_t id0( NO_ID ) ;
         index_t id1( NO_ID ) ;
-        index_t f(NO_ID) ;
+        index_t f( NO_ID ) ;
         find_surface_vertices_adjacent_to_line_first_edge( S, L, f, id0, id1 ) ;
 
         // Backup the starting vertex in the Surface
@@ -1372,20 +1373,21 @@ namespace RINGMesh {
     /*!
     * @brief Cut a Surface along a Line assuming that the edges of the Line are edges of the Surface
     * @pre Surface is not already cut. Line L does not cut the Surface S into 2 connected components.
+    * @todo Add a test for this function.
     */
     void GeoModelBuilder::cut_surface_by_line( Surface& S, const Line& L )
     {
         /// @todo Replace the use of the model vertices by only a colocater
         /// of the surface vertices and the line vertices
-        bool init = model().mesh.vertices.is_initialized() ;
-        if( !init ) {
+        bool model_vertices_initialized = model().mesh.vertices.is_initialized() ;
+        if( !model_vertices_initialized ) {
             model().mesh.vertices.test_and_initialize() ;           
         }
 
         disconnect_surface_facets_along_line_edges( S, L ) ;
         duplicate_surface_vertices_along_line( S, L ) ;
         
-        if( !init ) {
+        if( !model_vertices_initialized ) {
             const_cast<GeoModel&>(model()).mesh.vertices.clear() ;
         }
     }
