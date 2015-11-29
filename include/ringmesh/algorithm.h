@@ -195,12 +195,12 @@ namespace RINGMesh {
      * @param[in,out] v the vector
      * @param[in] cmp a comparator function
      */
-    template< typename VECTOR, typename CMP > inline void sort_unique(
-        VECTOR& v,
+    template< typename CONTAINER, typename CMP > inline void sort_unique(
+        CONTAINER& container,
         const CMP& cmp )
     {
-        std::sort( v.begin(), v.end(), cmp ) ;
-        v.erase( std::unique( v.begin(), v.end(), cmp ), v.end() ) ;
+        std::sort( container.begin(), container.end(), cmp ) ;
+        container.erase( std::unique( container.begin(), container.end(), cmp ), container.end() ) ;
     }
 }
 
