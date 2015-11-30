@@ -873,7 +873,7 @@ namespace RINGMesh {
 									  z_sign * in.field_as_double( 4 ) ) ;
                 		regions_vertices.push_back( vertex ) ;
                     } else if( in.field_matches( 0, "ATOM" ) || in.field_matches( 0, "PATOM" ) ) {
-                		vec3 vertex ( regions_vertices.at( in.field_as_uint( 2 ) - 1 ) ) ;
+                		vec3 vertex ( regions_vertices[ in.field_as_uint( 2 ) - 1 ] ) ;
                 		regions_vertices.push_back( vertex ) ;
                     } else if( in.field_matches( 0, "TETRA" ) ) {
                     	tetras_vertices.push_back( in.field_as_uint( 1 ) ) ;
@@ -911,13 +911,9 @@ namespace RINGMesh {
                 std::vector< vec3 >::const_iterator last_vertex =
                 		regions_vertices.begin() + ptr_regions_first_vertex[ r + 1 ] ;
                 std::vector< vec3 > cur_vertices( first_vertex, last_vertex ) ;
-                std::cout << "reg before v: " << model.region(region.index).nb_vertices() << std::endl;
-                std::cout << "reg before c: " << model.nb_corners() << std::endl;
                 gmb.set_element_vertices( region, cur_vertices, false ) ;
-                std::cout << "reg after v: " << model.region(region.index).nb_vertices() << std::endl;
-                std::cout << "reg after c: " << model.nb_corners() << std::endl;
 
-                // Set tetra
+                // Set tetras into the region
                 for ( index_t i = ptr_regions_first_tetra[r] ;
                 	  i < ptr_regions_first_tetra[ r + 1 ] ;
                 	  i = i + 4 ) {
@@ -928,15 +924,15 @@ namespace RINGMesh {
                 }
             }
 
-            std::cout << "reg 0 v: " << model.region(0).nb_vertices() << std::endl;
-            std::cout << "reg 1 v: " << model.region(1).nb_vertices() << std::endl;
-            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb() << std::endl;
-            std::cout << "reg 1 t: " << model.region(1).mesh().cells.nb() << std::endl;
-            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb_facets(12) << std::endl;
-            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb_corners(12) << std::endl;
-            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb_edges(12) << std::endl;
-            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb_vertices(12) << std::endl;
-            print_model( model ) ;
+//            std::cout << "reg 0 v: " << model.region(0).nb_vertices() << std::endl;
+//            std::cout << "reg 1 v: " << model.region(1).nb_vertices() << std::endl;
+//            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb() << std::endl;
+//            std::cout << "reg 1 t: " << model.region(1).mesh().cells.nb() << std::endl;
+//            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb_facets(12) << std::endl;
+//            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb_corners(12) << std::endl;
+//            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb_edges(12) << std::endl;
+//            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb_vertices(12) << std::endl;
+//            print_model( model ) ;
 
 
         }
