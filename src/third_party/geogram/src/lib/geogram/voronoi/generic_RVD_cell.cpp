@@ -158,13 +158,13 @@ namespace GEOGen {
                     index_t t = f / 4;
                     index_t lf = f % 4;
                     index_t j0 = mesh->cells.tet_vertex(
-                        t, GEO::MeshCells::local_tet_facet_vertex_index(lf, 0)
+                        t, mesh->cells.local_tet_facet_vertex_index( lf, 0 )
                     );
                     index_t j1 = mesh->cells.tet_vertex(
-                        t, GEO::MeshCells::local_tet_facet_vertex_index(lf, 1)
+                        t, mesh->cells.local_tet_facet_vertex_index( lf, 1 )
                     );
                     index_t j2 = mesh->cells.tet_vertex(
-                        t, GEO::MeshCells::local_tet_facet_vertex_index(lf, 2)
+                        t, mesh->cells.local_tet_facet_vertex_index( lf, 2 )
                     );
                     
                     return GEO::PCK::side3_SOS(
