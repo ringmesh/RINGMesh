@@ -665,11 +665,11 @@ namespace RINGMesh {
                 // Mark if a boundary is ending in the region
                 std::map< index_t, index_t > sides ;
                 for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
-                    if( sides.count( region.boundary_id( s ).index ) > 0 )
+                    if( sides.count( region.boundary_gme( s ).index ) > 0 )
                         // a surface is encountered twice, it is ending in the region
-                        sides[region.boundary_id( s ).index] = 2 ;
+                        sides[region.boundary_gme( s ).index] = 2 ;
                     else
-                        sides[region.boundary_id( s ).index] = region.side( s ) ;
+                        sides[region.boundary_gme( s ).index] = region.side( s ) ;
                 }
 
                 GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
@@ -740,7 +740,7 @@ namespace RINGMesh {
                 const RINGMesh::Region& region = model.region( r ) ;
                 out << "MODEL_REGION " << region.name() << " " ;
                 region.side( 0 ) ? out << "+" : out << "-" ;
-                out << region.boundary_id( 0 ).index + 1 << std::endl ;
+                out << region.boundary_gme( 0 ).index + 1 << std::endl ;
             }
 
             out << "END" << std::endl ;
@@ -1932,7 +1932,7 @@ namespace RINGMesh {
 //                std::vector< index_t > surfaces ;
 //                surfaces.reserve( region.nb_boundaries() ) ;
 //                for( index_t b = 0; b < region.nb_boundaries(); b++ ) {
-//                    index_t cur_s_id = region.boundary_id( b ).index ;
+//                    index_t cur_s_id = region.boundary_gme( b ).index ;
 //                    if( !gm.vertices.is_surface_to_duplicate( cur_s_id ) ) continue ;
 //                    surfaces.push_back( cur_s_id ) ;
 //                }

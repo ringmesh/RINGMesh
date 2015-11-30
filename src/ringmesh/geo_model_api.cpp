@@ -40,6 +40,7 @@
 
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/tetra_gen.h>
@@ -65,12 +66,13 @@ namespace RINGMesh {
         return result ;
     }
 
-    index_t nb_cells(const GeoModel& geomodel) {
-        index_t nb_cells = 0;
-        for (index_t i = 0; i < geomodel.nb_regions(); ++i) {
-            nb_cells += geomodel.region(i).nb_cells();
+    index_t nb_cells( const GeoModel& geomodel )
+    {
+        index_t nb_cells = 0 ;
+        for( index_t i = 0; i < geomodel.nb_regions(); ++i ) {
+            nb_cells += geomodel.region( i ).nb_cells() ;
         }
-        return nb_cells;
+        return nb_cells ;
     }
 
     void print_model( const GeoModel& geomodel )
@@ -92,22 +94,24 @@ namespace RINGMesh {
         }
     }
 
-    bool are_geomodel_surface_meshes_simplicial(const GeoModel& geomodel){
-        for (index_t i = 0; i != geomodel.nb_surfaces(); ++i){
-            if (!geomodel.surface(i).is_simplicial()) {
+    bool are_geomodel_surface_meshes_simplicial( const GeoModel& geomodel )
+    {
+        for( index_t i = 0; i != geomodel.nb_surfaces(); ++i ) {
+            if( !geomodel.surface( i ).is_simplicial() ) {
                 return false ;
             }
         }
-        return true;
+        return true ;
     }
 
-    bool are_geomodel_region_meshes_simplicial(const GeoModel& geomodel){
-        for (index_t i = 0; i != geomodel.nb_regions(); ++i){
-            if (!geomodel.region(i).is_simplicial()) {
-                return false;
+    bool are_geomodel_region_meshes_simplicial( const GeoModel& geomodel )
+    {
+        for( index_t i = 0; i != geomodel.nb_regions(); ++i ) {
+            if( !geomodel.region( i ).is_simplicial() ) {
+                return false ;
             }
         }
-        return true;
+        return true ;
     }
 
 
@@ -126,55 +130,54 @@ namespace RINGMesh {
             M.vertices.point( v ) = geomodel.mesh.vertices.vertex( v ) ;
         }
 
-		GEO::Attribute<index_t> corner_attribute(M.vertices.attributes(), "region");
-		corner_attribute.fill(NO_ID);
-		for (index_t i = 0; i < geomodel.nb_corners(); ++i){
-			index_t vertex_index = geomodel.corner(i).model_vertex_id();
-			corner_attribute[vertex_index] = i;
-		}
-		corner_attribute.unbind();
-    }
-
-	void add_line_edges_to_mesh(const Line& line, GEO::Mesh& M)
-	{
-		index_t from = M.edges.create_edges(line.nb_cells());
-		for (index_t i = 0; i < line.nb_cells(); ++i){
-			index_t v0 = line.model_vertex_id(i, 0);
-			index_t v1 = line.model_vertex_id(i, 1);
-			M.edges.set_vertex(from + i, 0, v0);
-			M.edges.set_vertex(from + i, 1, v1);
-		}
-	}
-
-    void create_and_fill_line_index_attribute(const GeoModel& geomodel,
-        const std::string& attribute_name,
-        GEO::Mesh& M)
-    {
-        GEO::Attribute<index_t> line_attribute(M.edges.attributes(), "region");
-        line_attribute.fill(NO_ID);
-        index_t edge_counter = 0;
-        for (index_t i = 0; i < geomodel.nb_lines(); ++i){
-            index_t nb_line_edges = geomodel.line(i).nb_cells();
-            index_t line_edges_start = edge_counter;
-            index_t line_edges_end = edge_counter + nb_line_edges;
-
-            for (index_t e = line_edges_start; e != line_edges_end; ++e) {
-                line_attribute[e] = i;
-            }
-            edge_counter += nb_line_edges;
+        GEO::Attribute<index_t> corner_attribute( M.vertices.attributes(), "region" ) ;
+        corner_attribute.fill( NO_ID ) ;
+        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
+            index_t vertex_index = geomodel.corner( i ).model_vertex_id() ;
+            corner_attribute[ vertex_index ] = i ;
         }
-        line_attribute.unbind();
+        corner_attribute.unbind() ;
     }
 
-	void add_geomodel_line_edges_to_mesh(const GeoModel& geomodel, GEO::Mesh& M) 
-	{
-		for (index_t i = 0; i < geomodel.nb_lines(); ++i) {
-			const Line& line(geomodel.line(i)) ;
-			add_line_edges_to_mesh(line, M);
-		}
-		
-        create_and_fill_line_index_attribute(geomodel, "region", M);
-	}
+    void add_line_edges_to_mesh( const Line& line, GEO::Mesh& M )
+    {
+        index_t from = M.edges.create_edges( line.nb_cells() ) ;
+        for( index_t i = 0; i < line.nb_cells(); ++i ) {
+            index_t v0 = line.model_vertex_id( i, 0 ) ;
+            index_t v1 = line.model_vertex_id( i, 1 ) ;
+            M.edges.set_vertex( from + i, 0, v0 ) ;
+            M.edges.set_vertex( from + i, 1, v1  );
+        }
+    }
+
+    void create_and_fill_line_index_attribute( const GeoModel& geomodel,
+                                               const std::string& attribute_name,
+                                               GEO::Mesh& M )
+    {
+        GEO::Attribute<index_t> line_attribute( M.edges.attributes(), "region" ) ;
+        line_attribute.fill( NO_ID ) ;
+        index_t edge_counter = 0 ;
+        for( index_t i = 0; i < geomodel.nb_lines(); ++i ) {
+            index_t nb_line_edges = geomodel.line( i ).nb_cells() ;
+            index_t line_edges_start = edge_counter ;
+            index_t line_edges_end = edge_counter + nb_line_edges ;
+
+            for( index_t e = line_edges_start; e != line_edges_end; ++e ) {
+                line_attribute[ e ] = i ;
+            }
+            edge_counter += nb_line_edges ;
+        }
+        line_attribute.unbind() ;
+    }
+
+    void add_geomodel_line_edges_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
+    {
+        for( index_t i = 0; i < geomodel.nb_lines(); ++i ) {
+            const Line& line( geomodel.line( i ) ) ;
+            add_line_edges_to_mesh( line, M ) ;
+        }
+        create_and_fill_line_index_attribute( geomodel, "region", M ) ;
+    }
 
     void add_surface_facets_to_mesh( const Surface& surface, GEO::Mesh& M )
     {
@@ -185,122 +188,121 @@ namespace RINGMesh {
                 ids[ v ] = surface.model_vertex_id( j, v ) ;
             }
             M.facets.create_polygon( ids ) ;
-        }    
+        }
     }
 
     void add_surfaces_triangles_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        GEO::vector< index_t > triangles(3 * nb_facets( geomodel ));
-        index_t triangle_index = 0;
-        for (index_t i = 0; i < geomodel.nb_surfaces(); ++i) {
-            const Surface& S = geomodel.surface(i);
-            index_t nb_surface_triangles = S.nb_cells();            
-            for (index_t j = 0 ; j != nb_surface_triangles; ++j) {
-                triangles[3*triangle_index ] = S.model_vertex_id(j, 0);
-                triangles[3*triangle_index + 1] = S.model_vertex_id(j, 1);
-                triangles[3*triangle_index + 2] = S.model_vertex_id(j, 2);                
+        GEO::vector< index_t > triangles( 3 * nb_facets( geomodel ) ) ;
+        index_t triangle_index = 0 ;
+        for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
+            const Surface& S = geomodel.surface( i ) ;         
+            index_t nb_surface_triangles = S.nb_cells() ;
+            for( index_t j = 0 ; j != nb_surface_triangles; ++j ) {
+                triangles[ 3*triangle_index ] = S.model_vertex_id( j, 0 ) ;
+                triangles[ 3*triangle_index + 1 ] = S.model_vertex_id( j, 1 ) ;
+                triangles[ 3*triangle_index + 2 ] = S.model_vertex_id( j, 2 );
                 ++triangle_index ;
             }
         }
         M.facets.assign_triangle_mesh( triangles, true ) ;
     }
 
-	void create_and_fill_surface_index_attribute(const GeoModel& geomodel, 
-												 const std::string& attribute_name,
-												 GEO::Mesh& M )
-	{
-		GEO::Attribute<index_t> surface_attribute(M.facets.attributes(), attribute_name);
-		surface_attribute.fill(NO_ID);
-		index_t facet_counter = 0;
-		for (index_t i = 0; i < geomodel.nb_surfaces(); ++i){
-			index_t nb_surface_facets = geomodel.surface(i).nb_cells();
-			index_t surface_facet_start = facet_counter;
-			index_t surface_facet_end = facet_counter + nb_surface_facets;
+    void create_and_fill_surface_index_attribute( const GeoModel& geomodel,
+                                                  const std::string& attribute_name,
+                                                  GEO::Mesh& M )
+    {
+        GEO::Attribute<index_t> surface_attribute( M.facets.attributes(), attribute_name ) ;
+        surface_attribute.fill( NO_ID ) ;
+        index_t facet_counter = 0 ;
+        for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
+            index_t nb_surface_facets = geomodel.surface( i ).nb_cells() ;
+            index_t surface_facet_start = facet_counter ;
+            index_t surface_facet_end = facet_counter + nb_surface_facets ;
 
-			for (index_t f = surface_facet_start; f != surface_facet_end; ++f) {
-				surface_attribute[f] = i;
-			}
-            facet_counter += nb_surface_facets;
-		}
-		surface_attribute.unbind();
-	}
+            for( index_t f = surface_facet_start; f != surface_facet_end; ++f ) {
+                surface_attribute[ f ] = i ;
+            }
+            facet_counter += nb_surface_facets ;
+        }
+        surface_attribute.unbind() ;
+    }
 
     void add_geomodel_surface_facets_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        if (are_geomodel_surface_meshes_simplicial(geomodel)){
-            add_surfaces_triangles_to_mesh(geomodel, M);
-        }
-        else {
-            for (index_t i = 0; i < geomodel.nb_surfaces(); ++i) {
-                const Surface& S = geomodel.surface(i);
+        if( are_geomodel_surface_meshes_simplicial( geomodel ) ) {
+            add_surfaces_triangles_to_mesh( geomodel, M ) ;
+        } else {
+            for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
+                const Surface& S = geomodel.surface( i ) ; 
                 add_surface_facets_to_mesh( S, M ) ;
             }
         }
-        create_and_fill_surface_index_attribute(geomodel, "region", M);
+        create_and_fill_surface_index_attribute( geomodel, "region", M ) ;
     }
 
-    void add_regions_tets_to_mesh(const GeoModel& geomodel, GEO::Mesh& M)
+    void add_regions_tets_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        GEO::vector< index_t > tets(4*nb_cells(geomodel));
+        GEO::vector< index_t > tets( 4*nb_cells( geomodel ) ) ;
         index_t tet_index = 0 ;
-        for (index_t i = 0; i < geomodel.nb_regions(); ++i) {
-            const Region& region = geomodel.region(i);             
-            index_t nb_region_tets = region.nb_cells();
-            for (index_t j = 0; j < nb_region_tets; ++j) {
-                tets[4*tet_index    ] = region.model_vertex_id(j, 0);
-                tets[4*tet_index + 1] = region.model_vertex_id(j, 1);
-                tets[4*tet_index + 2] = region.model_vertex_id(j, 2);
-                tets[4*tet_index + 3] = region.model_vertex_id(j, 3);
+        for( index_t i = 0; i < geomodel.nb_regions(); ++i ) {
+            const Region& region = geomodel.region( i ) ;
+            index_t nb_region_tets = region.nb_cells() ;
+            for( index_t j = 0; j < nb_region_tets; ++j ) {
+                tets[ 4*tet_index ] = region.model_vertex_id( j, 0 ) ;
+                tets[ 4*tet_index + 1 ] = region.model_vertex_id( j, 1 ) ;
+                tets[ 4*tet_index + 2 ] = region.model_vertex_id( j, 2 ) ;
+                tets[ 4*tet_index + 3 ] = region.model_vertex_id( j, 3 ) ;
                 ++tet_index ;
             }
         }
         M.cells.assign_tet_mesh( tets, true ) ;
     }
 
-    void create_and_fill_region_index_attribute(const GeoModel& geomodel,
-        const std::string& attribute_name,
-        GEO::Mesh& M)
+    void create_and_fill_region_index_attribute( const GeoModel& geomodel,
+                                                 const std::string& attribute_name,
+                                                 GEO::Mesh& M )
     {
-        GEO::Attribute<index_t> region_attribute(M.cells.attributes(), attribute_name);
-        region_attribute.fill(NO_ID);
-        index_t cell_counter = 0;
-        for (index_t i = 0; i < geomodel.nb_regions(); ++i){
-            index_t nb_region_cells = geomodel.region(i).nb_cells();
-            index_t region_cells_start = cell_counter;
-            index_t region_cells_end = cell_counter + nb_region_cells;
+        GEO::Attribute<index_t> region_attribute( M.cells.attributes(), attribute_name ) ;
+        region_attribute.fill( NO_ID ) ;
+        index_t cell_counter = 0 ;
+        for( index_t i = 0; i < geomodel.nb_regions(); ++i ) {
+            index_t nb_region_cells = geomodel.region( i ).nb_cells() ;
+            index_t region_cells_start = cell_counter ;
+            index_t region_cells_end = cell_counter + nb_region_cells ;
 
-            for (index_t j = region_cells_start; j != region_cells_end; ++j) {
-                region_attribute[j] = i;
+            for( index_t j = region_cells_start; j != region_cells_end; ++j ) {
+                region_attribute[ j ] = i ;
             }
-            cell_counter += nb_region_cells;
+            cell_counter += nb_region_cells ;
         }
-        region_attribute.unbind();
+        region_attribute.unbind() ;
     }
 
     /*!
-     * @pre Regions meshes are all tetrahedral !
-     * @todo to implement for other types of cells
-     */
+    * @pre Regions meshes are all tetrahedral !
+    * @todo to implement for other types of cells
+    */
     void add_geomodel_region_tets_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        if (are_geomodel_region_meshes_simplicial(geomodel)) {
-            add_regions_tets_to_mesh(geomodel, M);
+        if( are_geomodel_region_meshes_simplicial( geomodel ) ) {
+            add_regions_tets_to_mesh( geomodel, M ) ;
         } else {
-            ringmesh_assert( false ) ;    
+            ringmesh_assert( false ) ;
         }
-        create_and_fill_region_index_attribute(geomodel, "region", M);
+        create_and_fill_region_index_attribute( geomodel, "region", M ) ;
     }
 
 
-    void build_mesh_from_geomodel( const GeoModel& geomodel, GEO::Mesh& M ) 
+    void build_mesh_from_geomodel( const GeoModel& geomodel, GEO::Mesh& M )
     {
         // Keep the attributes when clearing the mesh, otherwise we crash
         M.clear( true ) ;
 
-		add_geomodel_vertices_to_mesh(geomodel, M);
-		add_geomodel_line_edges_to_mesh(geomodel, M);
-        add_geomodel_surface_facets_to_mesh(geomodel, M);
-        add_geomodel_region_tets_to_mesh(geomodel, M);
+        add_geomodel_vertices_to_mesh( geomodel, M ) ;
+        add_geomodel_line_edges_to_mesh( geomodel, M ) ;
+        add_geomodel_surface_facets_to_mesh( geomodel, M ) ;
+        add_geomodel_region_tets_to_mesh( geomodel, M ) ;
     }
 
 
@@ -475,6 +477,79 @@ namespace RINGMesh {
             M.mesh.vertices.update_point( v, vec3( new_p[0], new_p[1], new_p[2] ) ) ;
         }
     }
+
+
+
+    /*!
+     * @brief Generate a point that lies strictly a Region defined by its Surface boundaries.
+     * @details Returnsthe midpoint of barycenter of the first facet of the first surface on 
+     * the region boundary and the closest point in the other surfaces.
+     * @warning Incomplete implementation.
+     */
+    vec3 generate_point_in_region( const Region& region )
+    {
+        /// @todo To implement for bubbles
+        ringmesh_assert( region.nb_boundaries() > 1 ) ;
+        
+        const GeoModel& geomodel = region.model() ;
+
+        const Surface& first_boundary_surface = geomodel.surface( region.boundary_gme( 0 ).index ) ; 
+        double facet_area = first_boundary_surface.facet_area( 0 ) ; 
+        vec3 barycenter = first_boundary_surface.facet_barycenter( 0 ) ;                
+        /// @todo Check that this is the right condition to have a correct enough barycenter
+        ringmesh_assert( facet_area > epsilon) ;
+
+        double minimum_distance = DBL_MAX ;
+        vec3 nearest_point ;        
+        for( index_t i = 1; i != region.nb_boundaries(); ++i ) {
+            const Surface& S = geomodel.surface( region.boundary_gme(i).index ) ;                        
+            SurfaceTools tool_on_surface( S ) ;
+            double distance = DBL_MAX ;
+            vec3 point ; 
+            tool_on_surface.aabb().nearest_facet( barycenter, point, distance ) ;
+
+            if( distance < minimum_distance) {
+                minimum_distance = distance ;
+                nearest_point = point ;
+            }            
+        } 
+        /// @todo Change implementation to use second triangle if that one failed, and futher surfaces
+        ringmesh_assert( minimum_distance > epsilon ) ;
+        return 0.5*( barycenter + nearest_point ) ;
+    }
+
+    void get_one_point_per_geomodel_regions( const GeoModel& geomodel, 
+                                             std::vector< vec3 >& one_point_one_region )
+    {
+        one_point_one_region.resize( geomodel.nb_regions() ) ;
+        for( index_t i = 0; i != geomodel.nb_regions(); ++i ) {
+            vec3 point = generate_point_in_region( geomodel.region(i) ) ;
+            one_point_one_region[i] = point ; 
+        }    
+    }
+
+#ifdef RINGMESH_WITH_TETGEN
+
+    void tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel ) 
+    {
+        GEO::Mesh mesh ;
+        build_mesh_from_geomodel( geomodel, mesh ) ;
+        
+        std::vector< vec3 > points_in_regions ;
+        get_one_point_per_geomodel_regions( geomodel, points_in_regions ) ;
+       
+        TetgenMesher mesher ;
+        mesher.tetrahedralize( mesh, points_in_regions, "QpO0YA", mesh ) ; 
+
+        GeoModelBuilderMesh builder ( geomodel, mesh, "", "region" ) ;
+        builder.build_regions() ;
+
+        // Force recomputation of global mesh vertices - otherwise we crash sooner or later
+        // because of model_vertex_id crazy sharing [JP]
+        geomodel.mesh.vertices.clear() ;
+        geomodel.mesh.vertices.test_and_initialize() ;
+    }
+#endif
 
     void tetrahedralize( GeoModel& M, const std::string& method, index_t region_id, bool add_steiner_points )
     {

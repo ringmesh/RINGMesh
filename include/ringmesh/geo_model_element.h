@@ -333,7 +333,7 @@ namespace RINGMesh {
         {
             return boundaries_.size() ;
         }
-        const gme_t& boundary_id( index_t x ) const
+        const gme_t& boundary_gme( index_t x ) const
         {
             return boundaries_[x] ;
         }
@@ -343,7 +343,7 @@ namespace RINGMesh {
         {
             return in_boundary_.size() ;
         }
-        const gme_t& in_boundary_id( index_t x ) const
+        const gme_t& in_boundary_gme( index_t x ) const
         {
             return in_boundary_[x] ;
         }
@@ -541,7 +541,9 @@ namespace RINGMesh {
         * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
         * @todo changer le nom
         */
-        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;      
+        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ; 
+
+        std::vector<index_t> gme_vertex_indices( index_t model_vertex_id ) const ;
 
         /*!
          * @}
@@ -796,16 +798,11 @@ namespace RINGMesh {
             }
         }
 
-        /*
-        * @todo Comment RENAME !! corners of the mesh != GeoModel Corners
-        */
         index_t nb_facet_corners() const
         {
             return mesh_.facet_corners.nb() ;
         }
-        /*
-        * @todo Comment RENAME !!
-        */
+
         index_t model_vertex_id_at_facet_corner( index_t corner ) const
         {
             return GeoModelMeshElement::model_vertex_id(
@@ -814,7 +811,6 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the surface index of vertex \param v in facet \param f
-         * @todo Remove
          */
         index_t surf_vertex_id( index_t f, index_t v ) const
         {
@@ -868,6 +864,7 @@ namespace RINGMesh {
          */
         vec3 facet_normal( index_t facet_index ) const ;
         vec3 facet_barycenter( index_t facet_index ) const ;
+        double facet_area( index_t facet_index ) const ;
         index_t closest_vertex_in_facet( index_t facet_index, const vec3& to_point ) const ;
 
         /*! @}

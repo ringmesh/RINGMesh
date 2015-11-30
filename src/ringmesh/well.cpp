@@ -71,7 +71,7 @@ namespace {
             const Region& cur_region = BM.region( r ) ;
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
-                    && cur_region.boundary_id( s ) == cur_surface ) {
+                    && cur_region.boundary_gme( s ) == cur_surface ) {
                     return r ;
                 }
             }

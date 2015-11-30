@@ -594,7 +594,7 @@ namespace {
                 if( with_inside_borders
                     || ( !with_inside_borders
                     && !E.boundary( i ).is_inside_border( E ) ) ) {
-                    borders.push_back( E.boundary_id( i ) ) ;
+                    borders.push_back( E.boundary_gme( i ) ) ;
                 }
             }
         } else {
@@ -604,7 +604,7 @@ namespace {
                     if( with_inside_borders
                         || ( !with_inside_borders
                         && !C.boundary( j ).is_inside_border( C ) ) ) {
-                        borders.push_back( E.child( i ).boundary_id( j ) ) ;
+                        borders.push_back( E.child( i ).boundary_gme( j ) ) ;
                     }
                 }
             }
@@ -628,7 +628,7 @@ namespace {
         if( GME::parent_allowed( T ) ) {
             // We are dealing with basic elements 
             for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
-                in_boundary.push_back( E.in_boundary_id( i ) ) ;
+                in_boundary.push_back( E.in_boundary_gme( i ) ) ;
             }
         } else {
             // We are dealing with high level elements
@@ -794,7 +794,7 @@ namespace {
     {
         const GME& E = model.element( in ) ;
         for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
-            if( E.in_boundary_id( i ) == is ) {
+            if( E.in_boundary_gme( i ) == is ) {
                 return true ;
             }
         }
