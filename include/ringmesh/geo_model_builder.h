@@ -93,7 +93,7 @@ namespace RINGMesh {
         bool compute_surfaces ;
         bool compute_regions_brep ;
         bool compute_regions_mesh ;
-    };
+    } ;
 
 
     /*!
@@ -112,7 +112,7 @@ namespace RINGMesh {
         virtual ~GeoModelBuilder() ;
 
         /*! 
-         * @todo Retruns true if the options are consistent
+         * @todo Implements sot that it returns true if the input options are consistent
          */
         bool set_options( const GeoModelBuildingFlags& options )
         {
@@ -265,9 +265,8 @@ namespace RINGMesh {
         {
             initialize_surface_builder() ;
             initialize_region_builder() ;
-
             add_mesh_vertices_to_model() ;
-        };
+        }
     
         virtual ~GeoModelBuilderMesh() ;
 
@@ -337,8 +336,8 @@ namespace RINGMesh {
     };
 
     /*!
-    * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
-    */
+     * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
+     */
     class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilderFile {
     public:
         GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
@@ -409,7 +408,7 @@ namespace RINGMesh {
         {
             return GME::child_allowed( match_type( s ) ) ;
         }
-    } ;
+    };
 }
 
 #endif

@@ -48,6 +48,10 @@
 #include <geogram/basic/attributes.h>
 #include <geogram/mesh/mesh.h>
 
+#ifdef RINGMESH_WITH_TETGEN
+#include <geogram/third_party/tetgen/tetgen.h>
+#endif 
+
 namespace RINGMesh {
 
     /*!
@@ -59,16 +63,16 @@ namespace RINGMesh {
     void copy_std_vector_to_geo_vector( const std::vector<T>& in, GEO::vector<T>& out )
     {
         out.resize( in.size() ) ;
-        for( index_t i = 0; i < in.size(); ++i) {
+        for( index_t i = 0; i < in.size(); ++i ) {
             out[ i ] = in[ i ]  ; 
         }
     }
 
     /*!
-    * Partial copy the content of a standrad library vector to a GEO::Vector.
-    * A lot of copies, when we need to call Geogram functions.
-    * @todo Could we set Geogram vector to be a std::vector ??
-    */
+     * Partial copy the content of a standrad library vector to a GEO::Vector.
+     * A lot of copies, when we need to call Geogram functions.
+     * @todo Could we set Geogram vector to be a std::vector ??
+     */
     template< class T >
     void copy_std_vector_to_geo_vector( 
         const std::vector<T>& in, index_t from, index_t to, GEO::vector<T>& out )
@@ -94,7 +98,83 @@ namespace RINGMesh {
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
 
-    
+#ifdef RINGMESH_WITH_TETGEN
+    /// @todo Move all tetgen related stuff in one or two files
+
+      /*! 
+     * @brief Utility class to set Tetgen switches and check their consistency
+     * @details Tetgen arguments are a mess and this class helps set the basic options
+     * @todo To implement!
+     *
+     * Q: quiet
+     * p: input data is surfacic
+     * q: desired quality
+     * O0: do not optimize mesh
+     * V: verbose - A LOT of information
+     * Y: prohibit steiner points on boundaries
+     * A: generate region tags for each shell.      
+     *
+     * Meshing with incomplete quality value "Qpq%fYA"
+     */
+    class TetgenCommandLine {
+    public:
+        const std::string command_line() const {
+            return command_line_ ;
+        }
+
+    private:
+        std::string command_line_ ;
+    };
+
+
+    /*!
+     * @brief Tetgen wrapper
+     * 
+     */
+    class TetgenMesher {
+        ringmesh_disable_copy( TetgenMesher ) ;
+    public:
+        TetgenMesher(){} ;
+        ~TetgenMesher() ;
+
+        void tetrahedralize( const GEO::Mesh& input_mesh, 
+                             const std::string& command_line, 
+                             GEO::Mesh& output_mesh ) ; 
+        
+        void tetrahedralize( const GEO::Mesh& input_mesh, 
+                             const std::vector< vec3 >& one_point_per_region,
+                             const std::string& command_line, 
+                             GEO::Mesh& output_mesh ) ; 
+
+    private:
+        void initialize() ;
+        void initialize_tetgen_args() ;         
+        void set_command_line( const std::string& command_line ) ;
+        void tetrahedralize() ;
+
+        void copy_mesh_to_tetgen_input( const GEO::Mesh& M ) ;
+        void copy_vertices_to_tetgen_input( const GEO::Mesh& M ) ;
+        void copy_edges_to_tetgen_input( const GEO::Mesh& M ) ;
+        void copy_facets_to_tetgen_input( const GEO::Mesh& M ) ;
+        void set_regions( const std::vector< vec3 >& one_point_per_region ) ;
+
+        void fill_region_attribute_on_mesh_cells( GEO::Mesh& M, const std::string& attribute_name ) const ;
+        void assign_result_tetmesh_to_mesh( GEO::Mesh& M ) ;
+        void get_result_tetmesh_points( GEO::vector< double >& points ) const ;
+        void get_result_tetmesh_tets( GEO::vector< index_t>& tets ) const ;
+
+    private:
+        GEO_3rdParty::tetgenio tetgen_in_ ;
+        GEO_3rdParty::tetgenio tetgen_out_ ;
+        std::string tetgen_command_line_ ;
+        GEO_3rdParty::tetgenbehavior tetgen_args_ ;
+
+        GEO_3rdParty::tetgenio::polygon* polygons_ ;
+        int* polygon_corners_ ;        
+    };
+   
+
+
     /*!
      * @brief Constrained tetrahedralize of the volumes defined by a triangulated surface mesh
      * @details Does not require this mesh to be a closed manifold
@@ -102,10 +182,10 @@ namespace RINGMesh {
      */
     bool RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) ;
 
+#endif
+
     
-    void RINGMESH_API rotate_mesh(
-        GEO::Mesh& mesh,
-        const GEO::Matrix< float64, 4 >& rot_mat ) ;
+    void RINGMESH_API rotate_mesh( GEO::Mesh& mesh, const GEO::Matrix< float64, 4 >& rot_mat ) ;
 
   
     double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
