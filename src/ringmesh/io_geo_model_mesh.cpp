@@ -582,9 +582,7 @@ namespace RINGMesh {
                 model.mesh.facets.clear() ;
 				model.mesh.cells.clear() ;
                 GeoModelBuilder gmb( model ) ;
-                read_and_assign_mesh_elements_to_regions( filename,
-                											model,
-															gmb ) ;
+                read_so_file( filename, model, gmb ) ;
 
 
 
@@ -846,7 +844,7 @@ namespace RINGMesh {
             }
         }
         //@todo comment
-        void read_and_assign_mesh_elements_to_regions(
+        void read_so_file(
         		const std::string& filename,
 				GeoModel& model,
 				GeoModelBuilder& gmb ){
@@ -857,6 +855,8 @@ namespace RINGMesh {
             std::vector< index_t > ptr_regions_first_vertex ;
             std::vector< index_t > tetras_vertices ;
             std::vector< index_t > ptr_regions_first_tetra ;
+
+            bool has_model_in_file = false ;
 
             //@todo use two sub functions : one for reading and one for assigning
             // Start reading file
@@ -882,12 +882,52 @@ namespace RINGMesh {
                     	tetras_vertices.push_back( in.field_as_uint( 4 ) ) ;
                     } else if( in.field_matches( 0, "ZPOSITIVE" ) ) {
                     	z_sign = read_gocad_coordinates_system( in.field( 1 ) ) ;
+                    } else if( in.field_matches( 0, "MODEL") ) {
+                    	has_model_in_file = true ;
+                    	// Mesh the regions with read vertices and tetras
+                        ptr_regions_first_vertex.push_back( regions_vertices.size() ) ;
+                        ptr_regions_first_tetra.push_back( tetras_vertices.size() ) ;
+                    	mesh_regions( model,
+                    				gmb,
+									regions_name,
+									regions_vertices,
+									ptr_regions_first_vertex,
+									tetras_vertices,
+									ptr_regions_first_tetra ) ;
+                    } else if( in.field_matches( 0, "SURFACE") ) {
+
+                    } else if( in.field_matches( 0, "TFACE") ) {
+
+                    } else if( in.field_matches( 0, "KEYVERTICES") ) {
+                    	// Check normals of triangles
+                    } else if( in.field_matches( 0, "MODEL_REGION") ) {
+                    	// Don't know what to do
                     }
                 }
             }
+            if ( !has_model_in_file ) {
+                ptr_regions_first_vertex.push_back( regions_vertices.size() ) ;
+                ptr_regions_first_tetra.push_back( tetras_vertices.size() ) ;
+            	mesh_regions( model,
+            				gmb,
+							regions_name,
+							regions_vertices,
+							ptr_regions_first_vertex,
+							tetras_vertices,
+							ptr_regions_first_tetra ) ;
+            	build_boundary_model ( model ) ;
+            }
+        }
+        void mesh_regions(
+        		GeoModel& model,
+				GeoModelBuilder& gmb,
+	            const std::vector< std::string >& regions_name,
+	            const std::vector< vec3 >& regions_vertices,
+	            const std::vector< index_t >& ptr_regions_first_vertex,
+	            const std::vector< index_t >& tetras_vertices,
+	            const std::vector< index_t >& ptr_regions_first_tetra ){
 
-            ptr_regions_first_vertex.push_back( regions_vertices.size() ) ;
-            ptr_regions_first_tetra.push_back( tetras_vertices.size() ) ;
+
             // end of read, start of assign
 
             for ( index_t r = 0 ; r < regions_name.size() ; ++r ) {
@@ -933,7 +973,8 @@ namespace RINGMesh {
 //            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb_edges(12) << std::endl;
 //            std::cout << "reg 0 t: " << model.region(0).mesh().cells.nb_vertices(12) << std::endl;
 //            print_model( model ) ;
-
+        }
+        void build_boundary_model( GeoModel& model ){
 
         }
     } ;
