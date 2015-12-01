@@ -50,7 +50,7 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    /*! @todo Comment this tests 
+    /*! @todo Comment this test
      *  What is the goal and whatsoever [JP]
      */
     std::string input_model_file_name( ringmesh_test_data_path ) ;

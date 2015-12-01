@@ -39,6 +39,7 @@
 */
 
 #include <ringmesh/geogram_extension.h>
+#include <ringmesh/io.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
@@ -129,11 +130,7 @@ namespace RINGMesh {
                 in.get_fields() ;
                 if( in.nb_fields() > 0 ) {
                     if( in.field_matches( 0, "ZPOSITIVE" ) ) {
-                        if( in.field_matches( 1, "Elevation" ) ) {
-                            z_sign_ = 1 ;
-                        } else if( in.field_matches( 1, "Depth" ) ) {
-                            z_sign_ = -1 ;
-                        }
+                    	read_gocad_coordinates_system( in.field( 1 ) );
                     }
                     else if( in.field_matches( 0, "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
                         nb_vertices_++ ;

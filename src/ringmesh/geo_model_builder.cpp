@@ -2320,7 +2320,7 @@ namespace RINGMesh {
         int z_sign = 1 ;
 
         // In the .ml file - vertices are indexed TSurf by Tsurf
-        // They can be duplicated inside one TSurf and betweeen TSurfs
+        // They can be duplicated inside one TSurf and between TSurfs
 
         // Coordinates of the vertices of the currently built TSurf in the model
         std::vector< vec3 > tsurf_vertices ;
@@ -2475,12 +2475,7 @@ namespace RINGMesh {
                         tsurf_count++ ;
                     }
                     if( in_.field_matches( 0, "ZPOSITIVE" ) ) {
-                        if( in_.field_matches( 1, "Elevation" ) ) {
-                            z_sign = 1 ;
-                        } else if( in_.field_matches( 1, "Depth" ) ) {
-                            z_sign = -1 ;
-                        } else {
-                            ringmesh_assert_not_reached;}
+                    	z_sign = read_gocad_coordinates_system( in_.field( 1 ) ) ;
                     } else if( in_.field_matches( 0, "END" ) ) {
                         // This the END of a TSurf
                         if( tsurf_count > 0 ) {
