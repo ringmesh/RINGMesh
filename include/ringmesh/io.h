@@ -65,6 +65,8 @@ namespace RINGMesh {
 
     bool RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
 
+    int read_gocad_coordinates_system( const char* in ) ;
+
 
     class RINGMESH_API GeoModelSurfaceIOHandler: public GEO::Counted {
     public:
