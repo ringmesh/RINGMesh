@@ -2475,7 +2475,7 @@ namespace RINGMesh {
                         tsurf_count++ ;
                     }
                     if( in_.field_matches( 0, "ZPOSITIVE" ) ) {
-                    	z_sign = read_gocad_coordinates_system( in_.field( 1 ) ) ;
+                        z_sign = read_gocad_coordinates_system( in_.field( 1 ) ) ;
                     } else if( in_.field_matches( 0, "END" ) ) {
                         // This the END of a TSurf
                         if( tsurf_count > 0 ) {
@@ -2883,6 +2883,19 @@ namespace RINGMesh {
         set_element_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
+    int GeoModelBuilderGocad::read_gocad_coordinates_system( const std::string& in )
+    {
+        if( in == "Elevation" ) {
+            return 1 ;
+        } else if( in == "Depth" ) {
+            return -1 ;
+        } else {
+            ringmesh_assert_not_reached;
+        }
+
+    }
+
+    /*************************************************************************/
 
     bool GeoModelBuilderBM::load_file()
     {

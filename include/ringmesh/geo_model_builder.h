@@ -375,6 +375,14 @@ namespace RINGMesh {
                                 const vec3& p2,
                                 bool& same_orientation ) const ;
 
+        /*!
+        * Read the coordinates system informations of files exported from Gocad.
+        * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
+        * increasing z toward top and "Depth" for increasing z toward bottom.
+        * @return Return 1 if Elevation direction, -1 if Depth direction.
+        */
+        int read_gocad_coordinates_system( const std::string& in ) ;
+
     private:
         /*!
         * @brief Triangle that set the orientation of a TFACE
