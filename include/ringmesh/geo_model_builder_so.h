@@ -52,19 +52,18 @@ namespace RINGMesh {
     public:
         GeoModelBuilderTSolid( GeoModel& model, const std::string& filename )
             : GeoModelBuilderFile( model, filename )
-        {}
+        {
+            z_sign_ = 1 ;
+        }
         virtual ~GeoModelBuilderTSolid()
         {}
         bool load_file() ;
 
     private:
         /*!
-        * Read the coordinates system informations of files exported from Gocad.
-        * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
-        * increasing z toward top and "Depth" for increasing z toward bottom.
-        * @return Return 1 if Elevation direction, -1 if Depth direction.
+        * Read the Gocad coordinates system informations.
         */
-        int read_gocad_coordinates_system( const std::string& in ) ;
+        void read_GCS() ;
 
         std::vector< std::string > read_number_of_mesh_elements(
                 const index_t nb_regions,
@@ -82,7 +81,6 @@ namespace RINGMesh {
 
         void build_boundary_model() ;
 
-
     //    private:
     //        /*!
     //        * @brief Triangle that set the orientation of a TFACE
@@ -97,6 +95,12 @@ namespace RINGMesh {
     //            vec3 p2_ ;
     //        } ;
     //        std::vector< KeyFacet > key_facets_ ;
+
+    private:
+        int z_sign_ ;
+        std::string GCS_name_ ;
+        std::vector< std::string > GCS_axis_name_ ;
+        std::vector< std::string > GCS_axis_unit_ ;
     } ;
 }
 
