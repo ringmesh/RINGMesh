@@ -49,7 +49,6 @@ namespace RINGMesh {
 
     bool GeoModelBuilderTSolid::load_file()
     {
-        int z_sign = 1 ;
         std::vector< std::string > region_names ;
         std::vector< vec3 > vertices ;
         std::vector< index_t > ptr_regions_first_vertex ;
@@ -70,7 +69,7 @@ namespace RINGMesh {
                 } else if( in_.field_matches( 0, "VRTX" ) || in_.field_matches( 0, "PVRTX" ) ) {
                     vec3 vertex ( in_.field_as_double( 2 ),
                                   in_.field_as_double( 3 ),
-                                  z_sign * in_.field_as_double( 4 ) ) ;
+                                  z_sign_ * in_.field_as_double( 4 ) ) ;
                     vertices.push_back( vertex ) ;
                 } else if( in_.field_matches( 0, "ATOM" ) || in_.field_matches( 0, "PATOM" ) ) {
                     vec3 vertex ( vertices[ in_.field_as_uint( 2 ) - 1 ] ) ;
@@ -80,8 +79,8 @@ namespace RINGMesh {
                     tetras_vertices.push_back( in_.field_as_uint( 2 ) ) ;
                     tetras_vertices.push_back( in_.field_as_uint( 3 ) ) ;
                     tetras_vertices.push_back( in_.field_as_uint( 4 ) ) ;
-                } else if( in_.field_matches( 0, "ZPOSITIVE" ) ) {
-                    z_sign = read_gocad_coordinates_system( in_.field( 1 ) ) ;
+                } else if( in_.field_matches( 0, "GOCAD_ORIGINAL_COORDINATE_SYSTEM" ) ) {
+                    read_GCS() ;
                 } else if( in_.field_matches( 0, "MODEL" ) ) {
                     has_model_in_file = true ;
                     // Mesh the regions with read vertices and tetras
@@ -94,9 +93,8 @@ namespace RINGMesh {
                                   ptr_regions_first_tetra ) ;
                 } else if( in_.field_matches( 0, "SURFACE" ) ) {
                     // Create an Interface
-
                 } else if( in_.field_matches( 0, "TFACE" ) ) {
-
+                    // Create a Surface
                 } else if( in_.field_matches( 0, "KEYVERTICES" ) ) {
                     // Check normals of triangles with propagation
                 } else if( in_.field_matches( 0, "MODEL_REGION" ) ) {
@@ -116,16 +114,36 @@ namespace RINGMesh {
         }
         return true ;
     }
-    int GeoModelBuilderTSolid::read_gocad_coordinates_system( const std::string& in )
+    void GeoModelBuilderTSolid::read_GCS()
     {
-        if( in == "Elevation" ) {
-            return 1 ;
-        } else if( in == "Depth" ) {
-            return -1 ;
-        } else {
-            ringmesh_assert_not_reached;
+        while( !in_.eof() && in_.get_line() ) {
+            in_.get_fields() ;
+            if ( in_.field_matches( 0, "END_ORIGINAL_COORDINATE_SYSTEM" ) ) {
+                return ;
+            } else if ( in_.field_matches( 0, "NAME" ) ) {
+                // Useless for the moment
+            } else if ( in_.field_matches( 0, "PROJECTION" ) ) {
+                // Useless for the moment
+            } else if ( in_.field_matches( 0, "DATUM" ) ) {
+                // Useless for the moment
+            } else if ( in_.field_matches( 0, "AXIS_NAME" ) ) {
+                GCS_axis_name_.push_back( in_.field(1) ) ;
+                GCS_axis_name_.push_back( in_.field(2) ) ;
+                GCS_axis_name_.push_back( in_.field(3) ) ;
+            } else if ( in_.field_matches( 0, "AXIS_UNIT" ) ) {
+                GCS_axis_unit_.push_back( in_.field(1) ) ;
+                GCS_axis_unit_.push_back( in_.field(2) ) ;
+                GCS_axis_unit_.push_back( in_.field(3) ) ;
+            } else if ( in_.field_matches( 0, "ZPOSITIVE" ) ) {
+                if( in_.field_matches( 1, "Elevation" ) ) {
+                    z_sign_ = 1 ;
+                } else if( in_.field_matches( 1, "Depth" ) ) {
+                    z_sign_ = -1 ;
+                } else {
+                    ringmesh_assert_not_reached;
+                }
+            }
         }
-
     }
     ///@todo comment
     std::vector< std::string > GeoModelBuilderTSolid::read_number_of_mesh_elements(
