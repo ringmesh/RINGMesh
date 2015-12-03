@@ -349,7 +349,7 @@ namespace {
         *           the edge v0 - v1 is the one on the boundary
         */
         BorderTriangle( index_t s, index_t f, index_t v0, index_t v1, index_t v2 )
-            : s_( s ), f_( f ), v0_( v0 ), v1_( v1 ), v2_( v2 )
+            : v0_( v0 ), v1_( v1 ), v2_( v2 ), s_( s ), f_( f )
         {}
 
         bool operator<( const BorderTriangle& rhs ) const
@@ -1124,7 +1124,7 @@ namespace RINGMesh {
 
     void GeoModelBuilder::assign_region_tet_mesh(
         index_t region_id,
-        const std::vector< index_t >& tet_vertices )
+        const std::vector< index_t >& tet_vertices ) const
     {
         GEO::Mesh& M = mesh_element( GME::REGION, region_id ).mesh_ ;
         ringmesh_assert( M.vertices.nb() > 0 ) ;

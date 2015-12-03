@@ -226,7 +226,7 @@ namespace RINGMesh {
 
         void assign_region_tet_mesh(
             index_t region_id,
-            const std::vector< index_t >& tet_vertices ) ;
+            const std::vector< index_t >& tet_vertices ) const ;
     } ;
 
     /*!
