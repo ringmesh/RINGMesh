@@ -1643,7 +1643,6 @@ namespace RINGMesh {
             out << "2.2 0 8" << std::endl ;
             out << "$EndMeshFormat" << std::endl ;
 
-            const GeoModelMesh&  mesh = gm.mesh ;
             out << "$Nodes" << std::endl ;
 //            out << gm.order.nb_total_vertices() << std::endl ;
 //            for( index_t p = 0; p < gm.vertices.nb(); p++ ) {
