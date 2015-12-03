@@ -600,10 +600,6 @@ namespace RINGMesh {
         GEO::Attribute< index_t > model_vertex_id_ ;
     } ;
 
-    /// @todo This is probably not the best place to do this.
-    // Anybody can include a header says Mr Stroustrup (Jeanne).
-    typedef GeoModelMeshElement GMME ;
-
     /*!
      * @brief A GeoModelElement of type CORNER
      *

@@ -82,6 +82,8 @@ namespace {
     using GEO::index_t ;
     using GEO::vec3 ;
 
+    typedef GeoModelMeshElement GMME ;
+
     /*---------------------------------------------------------------------------*/
     /*----- Some pieces of the code below are copied or modified from -----------*/
     /*----- geogram\mesh\mesh_intersection.cpp-----------------------------------*/
