@@ -53,6 +53,7 @@ namespace RINGMesh {
         GeoModelBuilderTSolid( GeoModel& model, const std::string& filename )
             : GeoModelBuilderFile( model, filename )
         {
+            filename_ = filename ;
             z_sign_ = 1 ;
         }
         virtual ~GeoModelBuilderTSolid()
@@ -64,14 +65,11 @@ namespace RINGMesh {
         * Read the Gocad coordinates system informations.
         */
         void read_GCS() ;
+        ///@todo comment
+        std::vector< index_t > read_number_of_mesh_elements() ;
 
-        std::vector< std::string > read_number_of_mesh_elements(
-                const index_t nb_regions,
-                std::vector< index_t >& nb_elements_per_region ) ;
-
-        void print_number_of_mesh_elements( const index_t nb_regions,
-                                            const std::vector< std::string >& regions_name,
-                                            const std::vector< index_t >& nb_elements) const ;
+        void print_number_of_mesh_elements(
+                const std::vector< index_t >& nb_elements_per_region) const ;
 
         void mesh_regions( const std::vector< std::string >& region_names,
                            const std::vector< vec3 >& vertices,
@@ -97,6 +95,7 @@ namespace RINGMesh {
     //        std::vector< KeyFacet > key_facets_ ;
 
     private:
+        std::string filename_ ;
         int z_sign_ ;
         std::string GCS_name_ ;
         std::vector< std::string > GCS_axis_name_ ;
