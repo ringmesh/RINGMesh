@@ -141,7 +141,7 @@ namespace RINGMesh {
                 return values_[ i ] < values_[ j ] ;
             }
         }
-        bool are_values_equal( index_t i, index_t j )
+        bool are_values_equal( index_t i, index_t j ) const
         {
             return values_[ i ] == values_[ j ] ;
         }

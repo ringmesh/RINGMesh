@@ -65,7 +65,7 @@ namespace RINGMesh {
         ~GeoModelGfx() ;
 
         void set_geo_model( const GeoModel& model ) ;
-        const GeoModel* geo_model() ;
+        const GeoModel* geo_model() const ;
         void initialize() ;
 
         void draw_corners() ;
