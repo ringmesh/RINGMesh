@@ -226,7 +226,7 @@ namespace RINGMesh {
 
         void assign_region_tet_mesh(
             index_t region_id,
-            const std::vector< index_t >& tet_vertices ) ;
+            const std::vector< index_t >& tet_vertices ) const ;
 
         void duplicate_surface_vertices_along_line( Surface& S, const Line& L ) ;
         void disconnect_surface_facets_along_line_edges( Surface& S, const Line& L ) ;

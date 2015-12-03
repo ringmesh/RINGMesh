@@ -134,7 +134,10 @@ namespace RINGMesh {
     class TetgenMesher {
         ringmesh_disable_copy( TetgenMesher ) ;
     public:
-        TetgenMesher(){} ;
+        TetgenMesher()
+            : polygons_( nil ), polygon_corners_( nil )
+        {
+        }
         ~TetgenMesher() ;
 
         void tetrahedralize( const GEO::Mesh& input_mesh, 
