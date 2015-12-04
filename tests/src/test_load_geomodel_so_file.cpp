@@ -57,11 +57,19 @@ int main( int argc, char** argv )
 
     GEO::Logger::out( "TEST" ) << "Test IO for a mesh GeoModel in .so" << std::endl ;
 
-    GeoModel in ;
-    std::string input_model_file_name( ringmesh_test_data_path ) ;
-    input_model_file_name += "cube_model_equi.so" ;
+    GeoModel in_ml ;
+    std::string input_ml_file_name( ringmesh_test_data_path ) ;
+    input_ml_file_name += "cube_model_equi.ml" ;
 
-    if( !geomodel_volume_load( input_model_file_name, in ) ) {
+    if( !geomodel_surface_load( input_ml_file_name, in_ml ) ) {
+        return 1 ;
+    }
+
+    GeoModel in_so ;
+    std::string input_so_file_name( ringmesh_test_data_path ) ;
+    input_so_file_name += "cube_model_equi.so" ;
+
+    if( !geomodel_volume_load( input_so_file_name, in_so ) ) {
         return 1 ;
     }
 
