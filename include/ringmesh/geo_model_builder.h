@@ -250,7 +250,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Builder of a GeoModel from a simplicial surface or volumetric Mesh 
-     * @details Regions and Surfaces are indentified with an attribute of type index_t
+     * @details Regions and Surfaces are identified with an attribute of type index_t
      * on the mesh cells or facet 
      */
     class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
@@ -291,6 +291,16 @@ namespace RINGMesh {
      
         void copy_facet_attribute_from_mesh( const std::string& attribute_name ) ;        
         void copy_cell_attribute_from_mesh( const std::string& attribute_name ) ;
+
+        index_t nb_surface_attribute_values()
+        {
+            return nb_surface_attribute_values_ ;
+        } ;
+
+        index_t nb_region_attribute_values()
+        {
+            return nb_region_attribute_values_ ;
+        } ;
 
     protected:
         /*!

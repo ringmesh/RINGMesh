@@ -162,7 +162,7 @@ namespace RINGMesh {
 //    }
     bool GeoModelBuilderTSolid::load_file()
         {
-            ///@todo Split this function into smaller function when it works
+            ///@todo Split this function into smaller functions when it will works
             std::vector< std::string > region_names ;
             index_t nb_read_vertices = 0 ;
             index_t last_tetra = 0 ;
@@ -231,6 +231,9 @@ namespace RINGMesh {
                     }
                 }
             }
+            ///@todo try to remove colocated vertices
+            mesh.show_stats() ;
+            repair_colocate_vertices( mesh, epsilon ) ;
             mesh.show_stats() ;
             mesh.cells.connect() ;
             mesh.show_stats() ;
@@ -241,26 +244,51 @@ namespace RINGMesh {
                 index_t v0 = mesh.facets.vertex(f,0) ;
                 index_t v1 = mesh.facets.vertex(f,1) ;
                 index_t v2 = mesh.facets.vertex(f,2) ;
-                std::cout << f << " : " << v0 << " " << v1 << " " << v2 << " " << std::endl ;
+//                std::cout << f << " : " << v0 << " " << v1 << " " << v2 << " " << std::endl ;
 //                bool find_cell_facet = false ;
                 index_t local_facet_index = GEO::NO_FACET ;
                 index_t tetra_index = 0 ;
                 while ( local_facet_index == GEO::NO_FACET ) {
                     local_facet_index = mesh.cells.find_tet_facet( tetra_index++, v0, v1, v2 ) ;
                 }
-                std::cout << "find tet,lf = " << tetra_index - 1 << "," << local_facet_index << std::endl ;
+//                std::cout << "find tet,lf = " << tetra_index - 1 << "," << local_facet_index << std::endl ;
                 attribute_facet_surf[f] = attribute_surf[mesh.cells.facet( tetra_index - 1, local_facet_index ) ] ;
 
             }
+//            for ( index_t f = 0 ; f < mesh.facets.nb() ; ++f ) {
+//                std::cout << f << " : " << attribute_facet_surf[f] << std::endl ;
+//            }
             mesh.show_stats() ;
-//            mesh.facets.
-            GeoModelBuilderMesh::prepare_surface_mesh_from_connected_components(mesh, "facet_surf") ;
+            std::cout << "====================" << std::endl ;
+            std::cout << "Step 1" << std::endl ;
+//            GeoModelBuilderMesh::prepare_surface_mesh_from_connected_components(mesh, "facet_surf") ;
+            mesh.show_stats() ;
+            print_model( model_ ) ;
+            std::cout << "====================" << std::endl ;
+            std::cout << "Step 2" << std::endl ;
             GeoModelBuilderMesh buildermesh( model_, mesh, "facet_surf", "region" ) ;
-//            GeoModelBuilderMesh buildermesh( model_, mesh, "created_surf", "region" ) ;
-//            buildermesh.create_and_build_regions() ;
+            std::cout << "GMBM nb_surf_attri_values = " << buildermesh.nb_surface_attribute_values() << std::endl ;
+            std::cout << "GMBM nb_reg_attri_values = " << buildermesh.nb_region_attribute_values() << std::endl ;
+//            GeoModelBuilderMesh buildermesh2( model_, mesh, "created_surf", "region" ) ;
+//            std::cout << "GMBM2 nb_surf_attri_values = " << buildermesh2.nb_surface_attribute_values() << std::endl ;
+            mesh.show_stats() ;
+            print_model( model_ ) ;
+            std::cout << "====================" << std::endl ;
+            std::cout << "Step 3" << std::endl ;
             buildermesh.create_and_build_surfaces() ;
-//            buildermesh.create_and_build_regions() ;
-//            print_model(model_) ;
+            mesh.show_stats() ;
+            print_model( model_ ) ;
+            std::cout << "====================" << std::endl ;
+            std::cout << "Step 4" << std::endl ;
+            mesh.show_stats() ;
+            print_model( model_ ) ;
+            buildermesh.build_model_from_surfaces() ;
+            mesh.show_stats() ;
+            print_model( model_ ) ;
+            std::cout << "====================" << std::endl ;
+            std::cout << "Step 5" << std::endl ;
+            buildermesh.create_and_build_regions() ;
+            print_model(model_) ;
             return true ;
 
         }
@@ -297,16 +325,6 @@ namespace RINGMesh {
     }
     std::vector< index_t > GeoModelBuilderTSolid::read_number_of_mesh_elements()
     {
-////        std::vector< std::string > regions_name (nb_regions) ;
-//
-//        // Check if the size of the given vector is enough
-//        // for all elements of all the regions.
-//        if ( nb_elements_per_region.size() < 2 * nb_regions ){
-//            GEO::Logger::err( "Mesh" )
-//                << "Not enough place for saving the number "
-//                        "of elements in each region" << std::endl ;
-//            return regions_name ;
-//        }
         GEO::LineInput lineInput_count ( filename_ ) ;
 
         std::vector< index_t > nb_VRTX_and_TETRA_per_region ;
