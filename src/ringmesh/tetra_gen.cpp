@@ -359,14 +359,15 @@ namespace RINGMesh {
 
     class RINGMESH_API TetraGen_MG_Tetra: public TetraGen {
     public:
-        TetraGen_MG_Tetra( GEO::Mesh& tetmesh )
+        TetraGen_MG_Tetra()
             :
-                TetraGen( tetmesh ),
+                TetraGen(),
                 context_( nil ),
                 mesh_input_( nil ),
                 mesh_output_( nil ),
                 tms_( nil )
         {
+
         }
 
         virtual ~TetraGen_MG_Tetra()
@@ -399,26 +400,26 @@ namespace RINGMesh {
             context_ = context_new() ;
             mesh_input_ = mesh_new_in_memory( context_ ) ;
 
-            mesh_set_vertex_count( mesh_input_, tetmesh_.vertices.nb() ) ;
-            for( index_t p = 0; p < tetmesh_.vertices.nb(); p++ ) {
+            mesh_set_vertex_count( mesh_input_, tetmesh_->vertices.nb() ) ;
+            for( index_t p = 0; p < tetmesh_->vertices.nb(); p++ ) {
                 mesh_set_vertex_coordinates( mesh_input_, p + 1,
-                    tetmesh_.vertices.point_ptr( p ) ) ;
+                    tetmesh_->vertices.point_ptr( p ) ) ;
             }
 
-            mesh_set_edge_count( mesh_input_, tetmesh_.edges.nb() ) ;
-            for( index_t e = 0; e < tetmesh_.edges.nb(); e++ ) {
+            mesh_set_edge_count( mesh_input_, tetmesh_->edges.nb() ) ;
+            for( index_t e = 0; e < tetmesh_->edges.nb(); e++ ) {
                 meshgems_integer edge_indices[2] ;
-                edge_indices[0] = tetmesh_.edges.vertex( e, 0 ) + 1 ;
-                edge_indices[1] = tetmesh_.edges.vertex( e, 1 ) + 1 ;
+                edge_indices[0] = tetmesh_->edges.vertex( e, 0 ) + 1 ;
+                edge_indices[1] = tetmesh_->edges.vertex( e, 1 ) + 1 ;
                 mesh_set_edge_vertices( mesh_input_, e + 1, edge_indices ) ;
             }
 
-            mesh_set_triangle_count( mesh_input_, tetmesh_.facets.nb() ) ;
-            for( index_t t = 0; t < tetmesh_.facets.nb(); t++ ) {
+            mesh_set_triangle_count( mesh_input_, tetmesh_->facets.nb() ) ;
+            for( index_t t = 0; t < tetmesh_->facets.nb(); t++ ) {
                 meshgems_integer triangle_indices[3] ;
-                triangle_indices[0] = tetmesh_.facets.vertex( t, 0 ) + 1 ;
-                triangle_indices[1] = tetmesh_.facets.vertex( t, 1 ) + 1 ;
-                triangle_indices[2] = tetmesh_.facets.vertex( t, 2 ) + 1 ;
+                triangle_indices[0] = tetmesh_->facets.vertex( t, 0 ) + 1 ;
+                triangle_indices[1] = tetmesh_->facets.vertex( t, 1 ) + 1 ;
+                triangle_indices[2] = tetmesh_->facets.vertex( t, 2 ) + 1 ;
                 mesh_set_triangle_vertices( mesh_input_, t + 1, triangle_indices ) ;
             }
 
@@ -477,8 +478,8 @@ namespace RINGMesh {
                 mesh_get_vertex_coordinates( mesh_output_, p + 1, point ) ;
                 set_point( p, point ) ;
             }
-            tetmesh_.cells.connect() ;
-            check_and_repair_mesh_consistency( *region_, tetmesh_ ) ;
+            tetmesh_->cells.connect() ;
+            check_and_repair_mesh_consistency( *region_, *tetmesh_ ) ;
 
             stop_redirect( pos, stdout, fd ) ;
             stop_redirect( pos_err, stderr, fd_err ) ;
