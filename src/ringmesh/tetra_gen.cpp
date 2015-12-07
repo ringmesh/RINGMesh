@@ -65,16 +65,16 @@
 
 namespace RINGMesh {
     /*!
-    * Tests if two adjacent facets have the same orientation
-    * @param[in] mesh the mesh
-    * @param[in] f1 the first facet index
-    * @param[in] c11 the corner index in the first facet
-    * @param[in] f2 the second facet index
-    * @return the result of the test
-    *
-    * @todo Check that this code is not a duplicate of what is used to check validity
-    *       of Geogram functions [JP]
-    */
+     * Tests if two adjacent facets have the same orientation
+     * @param[in] mesh the mesh
+     * @param[in] f1 the first facet index
+     * @param[in] c11 the corner index in the first facet
+     * @param[in] f2 the second facet index
+     * @return the result of the test
+     *
+     * @todo Check that this code is not a duplicate of what is used to check validity
+     *       of Geogram functions [JP]
+     */
     bool facets_have_same_orientation(
         const GEO::Mesh& mesh,
         index_t f1,
@@ -85,7 +85,7 @@ namespace RINGMesh {
         index_t v11 = mesh.facet_corners.vertex( c11 ) ;
         index_t v12 = mesh.facet_corners.vertex( c12 ) ;
         for( index_t c21 = mesh.facets.corners_begin( f2 );
-             c21 < mesh.facets.corners_end( f2 ); c21++ ) {
+            c21 < mesh.facets.corners_end( f2 ); c21++ ) {
             index_t c22 = mesh.facets.next_corner_around_facet( f2, c21 ) ;
             index_t v21 = mesh.facet_corners.vertex( c21 ) ;
             index_t v22 = mesh.facet_corners.vertex( c22 ) ;
@@ -110,28 +110,28 @@ namespace RINGMesh {
         std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
             for( index_t c = mesh.facets.corners_begin( f );
-                 c < mesh.facets.corners_end( f ); c++ ) {
-                stars[ mesh.facet_corners.vertex( c ) ].push_back( f ) ;
+                c < mesh.facets.corners_end( f ); c++ ) {
+                stars[mesh.facet_corners.vertex( c )].push_back( f ) ;
             }
         }
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
             for( index_t c = mesh.facets.corners_begin( f );
-                 c < mesh.facets.corners_end( f ); c++ ) {
+                c < mesh.facets.corners_end( f ); c++ ) {
                 index_t f_adj = mesh.facet_corners.adjacent_facet( c ) ;
                 if( f_adj != GEO::NO_FACET ) continue ;
                 const std::vector< index_t >& star0 =
-                    stars[ mesh.facet_corners.vertex( c ) ] ;
+                    stars[mesh.facet_corners.vertex( c )] ;
                 const std::vector< index_t >& star1 =
-                    stars[ mesh.facet_corners.vertex(
-                    mesh.facets.next_corner_around_facet( f, c ) ) ] ;
+                    stars[mesh.facet_corners.vertex(
+                        mesh.facets.next_corner_around_facet( f, c ) )] ;
                 std::vector< index_t > intersect(
                     std::min( star0.size(), star1.size() ) ) ;
                 intersect.erase(
                     std::set_intersection( star0.begin(), star0.end(), star1.begin(),
-                    star1.end(), intersect.begin() ), intersect.end() ) ;
+                        star1.end(), intersect.begin() ), intersect.end() ) ;
                 if( intersect.size() > 1 ) {
                     for( index_t i = 0; i < intersect.size(); i++ ) {
-                        index_t cur_f = intersect[ i ] ;
+                        index_t cur_f = intersect[i] ;
                         if( cur_f != f ) {
                             f_adj = cur_f ;
                         }
@@ -143,15 +143,15 @@ namespace RINGMesh {
     }
 
     /*!
-    * Repair the consistency between a GeoModel region
-    * and its volumetric Mesh. It repairs duplicated facets and facet orientation
-    * @param[in] region the GeoModel region
-    * @param[in] mesh the mesh to repair
-    * @param[in] check_duplicated_facet the test of duplicated facets is optional
-    *
-    * @todo Why not use mesh_repair functions of Geogram ?? Please comment. [JP]
-    *       Check that this code is not a duplicate of what is used to check validity [JP]
-    */
+     * Repair the consistency between a GeoModel region
+     * and its volumetric Mesh. It repairs duplicated facets and facet orientation
+     * @param[in] region the GeoModel region
+     * @param[in] mesh the mesh to repair
+     * @param[in] check_duplicated_facet the test of duplicated facets is optional
+     *
+     * @todo Why not use mesh_repair functions of Geogram ?? Please comment. [JP]
+     *       Check that this code is not a duplicate of what is used to check validity [JP]
+     */
     void check_and_repair_mesh_consistency(
         const GeoModelElement& region,
         GEO::Mesh& mesh,
@@ -160,13 +160,13 @@ namespace RINGMesh {
         if( mesh.facets.nb() == 0 ) return ;
 
         GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
-                                             surface_att_name ) ;
+            surface_att_name ) ;
 
         /// 0 - Remove duplicated facets (optionnal)
         if( check_duplicated_facet ) {
             std::vector< vec3 > barycenters( mesh.facets.nb(), vec3( 0, 0, 0 ) ) ;
             for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-                barycenters[ f ] = GEO::Geom::mesh_facet_center( mesh, f ) ;
+                barycenters[f] = GEO::Geom::mesh_facet_center( mesh, f ) ;
             }
 
             MakeUnique unique( barycenters ) ;
@@ -175,10 +175,10 @@ namespace RINGMesh {
             GEO::vector< index_t > facet_to_remove( mesh.facets.nb(), 0 ) ;
             signed_index_t cur_id = 0 ;
             for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-                if( cur_id == indices[ f ] ) {
+                if( cur_id == indices[f] ) {
                     cur_id++ ;
                 } else {
-                    facet_to_remove[ f ] = 1 ;
+                    facet_to_remove[f] = 1 ;
                 }
             }
             mesh.facets.delete_elements( facet_to_remove ) ;
@@ -188,13 +188,13 @@ namespace RINGMesh {
                 surface_att_name ) ) {
                 // Review : already defined above
                 GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
-                                                     surface_att_name ) ;
+                    surface_att_name ) ;
                 index_t offset = 0 ;
                 cur_id = 0 ;
                 for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-                    if( cur_id == indices[ f ] ) {
+                    if( cur_id == indices[f] ) {
                         cur_id++ ;
-                        attribute[ f - offset ] = attribute[ f ] ;
+                        attribute[f - offset] = attribute[f] ;
                     } else {
                         offset++ ;
                     }
@@ -210,34 +210,34 @@ namespace RINGMesh {
         std::vector< std::vector< index_t > > stars( mesh.vertices.nb(), temp ) ;
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
             for( index_t v = 0; v < mesh.facets.nb_vertices( f ); v++ ) {
-                stars[ mesh.facets.vertex( f, v ) ].push_back( f ) ;
+                stars[mesh.facets.vertex( f, v )].push_back( f ) ;
             }
         }
 
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-            index_t surface_id = attribute[ f ] ;
+            index_t surface_id = attribute[f] ;
             for( index_t c = mesh.facets.corners_begin( f );
-                 c < mesh.facets.corners_end( f ); c++ ) {
+                c < mesh.facets.corners_end( f ); c++ ) {
                 index_t f_adj = mesh.facet_corners.adjacent_facet( c ) ;
-                if( f_adj != GEO::NO_FACET && attribute[ f_adj ] != surface_id ) {
+                if( f_adj != GEO::NO_FACET && attribute[f_adj] != surface_id ) {
                     f_adj = GEO::NO_FACET ;
                 }
                 if( f_adj == GEO::NO_FACET ) {
                     const std::vector< index_t >& star0 =
-                        stars[ mesh.facet_corners.vertex( c ) ] ;
+                        stars[mesh.facet_corners.vertex( c )] ;
                     const std::vector< index_t >& star1 =
-                        stars[ mesh.facet_corners.vertex(
-                        mesh.facets.next_corner_around_facet( f, c ) ) ] ;
+                        stars[mesh.facet_corners.vertex(
+                            mesh.facets.next_corner_around_facet( f, c ) )] ;
                     std::vector< index_t > intersect(
                         std::min( star0.size(), star1.size() ) ) ;
                     intersect.erase(
                         std::set_intersection( star0.begin(), star0.end(),
-                        star1.begin(), star1.end(), intersect.begin() ),
+                            star1.begin(), star1.end(), intersect.begin() ),
                         intersect.end() ) ;
                     if( intersect.size() > 1 ) {
                         for( index_t i = 0; i < intersect.size(); i++ ) {
-                            index_t cur_f = intersect[ i ] ;
-                            if( cur_f != f && attribute[ cur_f ] == surface_id ) {
+                            index_t cur_f = intersect[i] ;
+                            if( cur_f != f && attribute[cur_f] == surface_id ) {
                                 f_adj = cur_f ;
                             }
                         }
@@ -250,20 +250,20 @@ namespace RINGMesh {
         /// 2 - Reorient in the same direction using propagation
         std::vector< bool > facet_visited( mesh.facets.nb(), false ) ;
         for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-            if( facet_visited[ f ] ) continue ;
-            index_t surface_id = attribute[ f ] ;
+            if( facet_visited[f] ) continue ;
+            index_t surface_id = attribute[f] ;
             std::stack< index_t > S ;
             S.push( f ) ;
             do {
                 index_t cur_f = S.top() ;
                 S.pop() ;
-                if( facet_visited[ cur_f ] ) continue ;
-                facet_visited[ cur_f ] = true ;
+                if( facet_visited[cur_f] ) continue ;
+                facet_visited[cur_f] = true ;
                 for( index_t c = mesh.facets.corners_begin( cur_f );
-                     c < mesh.facets.corners_end( cur_f ); c++ ) {
+                    c < mesh.facets.corners_end( cur_f ); c++ ) {
                     index_t f_adj = mesh.facet_corners.adjacent_facet( c ) ;
-                    if( f_adj == GEO::NO_FACET || attribute[ f_adj ] != surface_id
-                        || facet_visited[ f_adj ] ) continue ;
+                    if( f_adj == GEO::NO_FACET || attribute[f_adj] != surface_id
+                        || facet_visited[f_adj] ) continue ;
                     if( !facets_have_same_orientation( mesh, cur_f, c, f_adj ) ) {
                         mesh.facets.flip( f_adj ) ;
                     }
@@ -283,26 +283,24 @@ namespace RINGMesh {
             vec3 nearest_point ;
             float64 distance ;
             index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
-            ringmesh_debug_assert( surface.index() == attribute[ f ] ) ;
+            ringmesh_debug_assert( surface.index() == attribute[f] ) ;
 
             vec3 ori_normal = surface.normal( 0 ) ;
             vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
             if( dot( ori_normal, test_normal ) < 0 ) {
-                flip_surface[ surface.index() ] = true ;
+                flip_surface[surface.index()] = true ;
                 flip_sthg = true ;
             }
         }
         if( flip_sthg ) {
             for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
-                index_t surface_id = attribute[ f ] ;
-                if( flip_surface[ surface_id ] ) {
+                index_t surface_id = attribute[f] ;
+                if( flip_surface[surface_id] ) {
                     mesh.facets.flip( f ) ;
                 }
             }
         }
     }
-
-
 
     class RINGMESH_API TetraGen_TetGen: public TetraGen {
     public:
@@ -388,7 +386,6 @@ namespace RINGMesh {
             stop_redirect( pos_err, stderr, fd_err ) ;
         }
 
-
         bool tetrahedralize( bool refine )
         {
             fpos_t pos ;
@@ -398,98 +395,16 @@ namespace RINGMesh {
             int fd_err = 0 ;
             start_redirect( pos_err, stderr, fd_err ) ;
 
-            context_ = context_new() ;
-            mesh_input_ = mesh_new_in_memory( context_ ) ;
+            initialize_mgtetra_variables() ;
 
-            // 1) Set the vertices
-            mesh_set_vertex_count( mesh_input_, tetmesh_->vertices.nb() ) ;
-            for( index_t p = 0; p < tetmesh_->vertices.nb(); p++ ) {
-                mesh_set_vertex_coordinates( mesh_input_, p + 1,
-                    tetmesh_->vertices.point_ptr( p ) ) ;
-            }
+            set_mesh_in_mgtetra() ;
 
-            // 2) Set the edges
-            mesh_set_edge_count( mesh_input_, tetmesh_->edges.nb() ) ;
-            for( index_t e = 0; e < tetmesh_->edges.nb(); e++ ) {
-                meshgems_integer edge_indices[2] ;
-                edge_indices[0] = tetmesh_->edges.vertex( e, 0 ) + 1 ;
-                edge_indices[1] = tetmesh_->edges.vertex( e, 1 ) + 1 ;
-                mesh_set_edge_vertices( mesh_input_, e + 1, edge_indices ) ;
-            }
+            set_meshing_parameters() ;
 
-            // 3) Set the triangles
-            mesh_set_triangle_count( mesh_input_, tetmesh_->facets.nb() ) ;
-            for( index_t t = 0; t < tetmesh_->facets.nb(); t++ ) {
-                meshgems_integer triangle_indices[3] ;
-                triangle_indices[0] = tetmesh_->facets.vertex( t, 0 ) + 1 ;
-                triangle_indices[1] = tetmesh_->facets.vertex( t, 1 ) + 1 ;
-                triangle_indices[2] = tetmesh_->facets.vertex( t, 2 ) + 1 ;
-                mesh_set_triangle_vertices( mesh_input_, t + 1, triangle_indices ) ;
-            }
+            generate_mesh( refine ) ;
 
-            // 4) Setting the algo parameters for MGTetra
-            tms_ = tetra_session_new( context_ ) ;
-            tetra_set_surface_mesh( tms_, mesh_input_ ) ;
-            tetra_set_param( tms_, "verbose", "4" ) ;
-            tetra_set_param( tms_, "components", "all" ) ;
-            tetra_set_param( tms_, "optimisation_level", "standard" ) ;
-            tetra_set_param( tms_, "gradation", "1.1" ) ;
-            tetra_set_param( tms_, "pthreads_mode", "aggressive" ) ;
-            tetra_set_param( tms_, "max_number_of_threads", "8" ) ;
-            tetra_set_param( tms_, "max_error_count", "5" ) ;
+            set_mesh_in_ringmesh() ;
 
-            status_t ret = tetra_mesh_boundary( tms_ ) ;
-            if( ret != STATUS_OK ) {
-                GEO::Logger::err( "TetraGen" ) << "Encountered a problem while meshing boundary..."
-                    << std::endl ;
-                return false ;
-            }
-            if( refine ) {
-                ret = tetra_insert_volume_vertices( tms_ ) ;
-                if( ret != STATUS_OK ) {
-                    GEO::Logger::err( "TetraGen" ) << "Encountered a problem while meshing inside..."
-                        << std::endl ;
-                    return false ;
-                }
-                ret = tetra_optimise_volume_regular( tms_ ) ;
-                if( ret != STATUS_OK ) {
-                    GEO::Logger::err( "TetraGen" ) << "Encountered a problem while meshing inside..."
-                        << std::endl ;
-                    return false ;
-                }
-            }
-
-            // 5) Getting the new mesh generated by MGTetra
-            tetra_get_mesh( tms_, &mesh_output_ ) ;
-            signed_index_t nb_points = 0 ;
-            mesh_get_vertex_count( mesh_output_, &nb_points ) ;
-            signed_index_t nb_tets = 0 ;
-            mesh_get_tetrahedron_count( mesh_output_, &nb_tets ) ;
-            signed_index_t nb_triangles = 0 ;
-            mesh_get_triangle_count( mesh_output_, &nb_triangles ) ;
-            signed_index_t nb_lines = 0 ;
-            mesh_get_edge_count( mesh_output_, &nb_lines ) ;
-
-            initialize_storage( nb_points, nb_tets ) ;
-            // 6) Switching tets to the RINGMesh database
-            RINGMESH_PARALLEL_LOOP
-            for( index_t t = 0; t < nb_tets; t++ ) {
-                signed_index_t tet[4] ;
-                mesh_get_tetrahedron_vertices( mesh_output_, t + 1, tet ) ;
-                set_tetra( t, tet, nb_lines, nb_triangles ) ;
-            }
-
-            // 6) Switching vertices to the RINGMesh database
-            RINGMESH_PARALLEL_LOOP
-            for( index_t p = 0; p < nb_points; p++ ) {
-                double point[3] ;
-                mesh_get_vertex_coordinates( mesh_output_, p + 1, point ) ;
-                set_point( p, point ) ;
-            }
-            tetmesh_->cells.connect() ;
-
-            // 7) Checking and repairing
-            check_and_repair_mesh_consistency( *region_, *tetmesh_ ) ;
 
             stop_redirect( pos, stdout, fd ) ;
             stop_redirect( pos_err, stderr, fd_err ) ;
@@ -557,6 +472,151 @@ namespace RINGMesh {
         mesh_t* mesh_input_ ;
         mesh_t* mesh_output_ ;
         tetra_session_t* tms_ ;
+
+    private:
+
+        void initialize_mgtetra_variables() {
+            context_ = context_new() ;
+            mesh_input_ = mesh_new_in_memory( context_ ) ;
+        }
+
+        void set_mesh_in_mgtetra()
+        {
+            set_vertices() ;
+            set_edges() ;
+            set_triangles() ;
+        }
+
+        bool generate_mesh( bool refine )
+        {
+            if( !create_boundary_mesh() ) {
+                return false ;
+            }
+            if( refine ) {
+                return refine_mesh() ;
+            }
+            return true ;
+        }
+
+        void set_mesh_in_ringmesh()
+        {
+            initialize_ringmesh_storage() ;
+            write_vertices_in_ringmesh_data_structure() ;
+            write_tet_in_ringmesh_data_structure() ;
+            check_and_repair_mesh_consistency( *region_, *tetmesh_ ) ;
+        }
+
+        void set_vertices()
+        {
+            mesh_set_vertex_count( mesh_input_, tetmesh_->vertices.nb() ) ;
+            for( index_t p = 0; p < tetmesh_->vertices.nb(); p++ ) {
+                mesh_set_vertex_coordinates( mesh_input_, p + 1,
+                    tetmesh_->vertices.point_ptr( p ) ) ;
+            }
+        }
+
+        void set_edges()
+        {
+            mesh_set_edge_count( mesh_input_, tetmesh_->edges.nb() ) ;
+            for( index_t e = 0; e < tetmesh_->edges.nb(); e++ ) {
+                meshgems_integer edge_indices[2] ;
+                edge_indices[0] = tetmesh_->edges.vertex( e, 0 ) + 1 ;
+                edge_indices[1] = tetmesh_->edges.vertex( e, 1 ) + 1 ;
+                mesh_set_edge_vertices( mesh_input_, e + 1, edge_indices ) ;
+            }
+
+        }
+
+        void set_triangles()
+        {
+            mesh_set_triangle_count( mesh_input_, tetmesh_->facets.nb() ) ;
+            for( index_t t = 0; t < tetmesh_->facets.nb(); t++ ) {
+                meshgems_integer triangle_indices[3] ;
+                triangle_indices[0] = tetmesh_->facets.vertex( t, 0 ) + 1 ;
+                triangle_indices[1] = tetmesh_->facets.vertex( t, 1 ) + 1 ;
+                triangle_indices[2] = tetmesh_->facets.vertex( t, 2 ) + 1 ;
+                mesh_set_triangle_vertices( mesh_input_, t + 1, triangle_indices ) ;
+            }
+        }
+
+        void set_meshing_parameters()
+        {
+            tms_ = tetra_session_new( context_ ) ;
+            tetra_set_surface_mesh( tms_, mesh_input_ ) ;
+            tetra_set_param( tms_, "verbose", "4" ) ;
+            tetra_set_param( tms_, "components", "all" ) ;
+            tetra_set_param( tms_, "optimisation_level", "standard" ) ;
+            tetra_set_param( tms_, "gradation", "1.1" ) ;
+            tetra_set_param( tms_, "pthreads_mode", "aggressive" ) ;
+            tetra_set_param( tms_, "max_number_of_threads", "8" ) ;
+            tetra_set_param( tms_, "max_error_count", "5" ) ;
+        }
+
+        bool create_boundary_mesh()
+        {
+            status_t ret = tetra_mesh_boundary( tms_ ) ;
+            if( ret != STATUS_OK ) {
+                GEO::Logger::err( "TetraGen" )
+                    << "Encountered a problem while meshing boundary..."
+                    << std::endl ;
+                return false ;
+            }
+            return true ;
+        }
+
+        bool refine_mesh()
+        {
+            status_t ret = tetra_insert_volume_vertices( tms_ ) ;
+            if( ret != STATUS_OK ) {
+                GEO::Logger::err( "TetraGen" )
+                    << "Encountered a problem while meshing inside..." << std::endl ;
+                return false ;
+            }
+            ret = tetra_optimise_volume_regular( tms_ ) ;
+            if( ret != STATUS_OK ) {
+                GEO::Logger::err( "TetraGen" )
+                    << "Encountered a problem while meshing inside..." << std::endl ;
+                return false ;
+            }
+            return true ;
+
+        }
+
+        void initialize_ringmesh_storage()
+        {
+            tetra_get_mesh( tms_, &mesh_output_ ) ;
+            signed_index_t nb_points = 0 ;
+            mesh_get_vertex_count( mesh_output_, &nb_points ) ;
+            signed_index_t nb_tets = 0 ;
+            mesh_get_tetrahedron_count( mesh_output_, &nb_tets ) ;
+            signed_index_t nb_triangles = 0 ;
+            mesh_get_triangle_count( mesh_output_, &nb_triangles ) ;
+            signed_index_t nb_lines = 0 ;
+            mesh_get_edge_count( mesh_output_, &nb_lines ) ;
+            initialize_storage( nb_points, nb_tets ) ;
+        }
+
+        void write_vertices_in_ringmesh_data_structure()
+        {
+            RINGMESH_PARALLEL_LOOP
+            for( index_t p = 0; p < tetmesh_->vertices.nb(); p++ ) {
+                double point[3] ;
+                mesh_get_vertex_coordinates( mesh_output_, p + 1, point ) ;
+                set_point( p, point ) ;
+            }
+        }
+
+        void write_tet_in_ringmesh_data_structure()
+        {
+            RINGMESH_PARALLEL_LOOP
+            for( index_t t = 0; t < tetmesh_->cells.nb(); t++ ) {
+                signed_index_t tet[4] ;
+                mesh_get_tetrahedron_vertices( mesh_output_, t + 1, tet ) ;
+                set_tetra( t, tet, tetmesh_->edges.nb(), tetmesh_->facets.nb() ) ;
+            }
+            tetmesh_->cells.connect() ;
+        }
+
     } ;
 #endif
 
@@ -583,7 +643,7 @@ namespace RINGMesh {
     }
 
     TetraGen::TetraGen()
-         : tetmesh_( nil ), region_( nil ), wells_( nil )
+        : tetmesh_( nil ), region_( nil ), wells_( nil )
     {
     }
 
@@ -613,7 +673,7 @@ namespace RINGMesh {
         surface_id.reserve( nb_surfaces ) ;
         index_t nb_surface_points = 0, nb_facets = 0 ;
         for( index_t s = 0; s < nb_surfaces; s++ ) {
-            const Surface& surface = 
+            const Surface& surface =
                 dynamic_cast< const Surface& >( region_->boundary( s ) ) ;
             if( contains( surface_id, surface.index() ) ) continue ;
             nb_surface_points += surface.nb_vertices() ;
@@ -633,8 +693,8 @@ namespace RINGMesh {
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 wells_copy.resize( well_edges.size() ) ;
                 for( index_t i = 0; i < wells_copy.size(); ++i ) {
-                    wells_copy[ i ] = std::pair< vec3, vec3> (
-                        well_edges[ w ][ i ].value( 0 ), well_edges[ w ][ i ].value( 1 ) ) ;
+                    wells_copy[i] = std::pair< vec3, vec3 >(
+                        well_edges[w][i].value( 0 ), well_edges[w][i].value( 1 ) ) ;
                 }
                 uniqueID.add_edges( wells_copy ) ;
             }
@@ -744,7 +804,7 @@ namespace RINGMesh {
         ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
 
 #ifdef USE_MG_TETRA
-        ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
+        ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" );
 #endif
     }
 }
