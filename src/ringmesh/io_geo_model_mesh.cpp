@@ -62,7 +62,7 @@
 
 namespace {
     using namespace RINGMesh ;
-    static void write_vertices(
+    void write_vertices(
         const GeoModel& geomodel,
         std::ofstream& out,
         bool print_write_id = false,
@@ -85,7 +85,7 @@ namespace {
         out << "\n" ;
     }
 
-    static void write_duplicated_vertices(
+    void write_duplicated_vertices(
         const GeoModel& geomodel,
         std::ofstream& out,
         std::vector< index_t >& vertex_exported_id,
