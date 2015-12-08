@@ -49,6 +49,7 @@
 
 #include <ringmesh/ringmesh_config.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_element.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geo_model_validity.h>
@@ -63,6 +64,8 @@ namespace {
     using RINGMesh::Line ;
     using RINGMesh::Corner ;
     using RINGMesh::vec3 ;
+
+    index_t NO_ID(-1) ;
 
 
     /*!
@@ -204,7 +207,7 @@ namespace {
                     << " does not belong to any Interface of the model" << std::endl ;
                 return false ;
             }
-            if( !S.is_triangulated() ) {
+            if( !S.is_simplicial() ) {
                 GEO::Logger::err( "" ) << S.gme_id()
                     << " is not triangulated " << std::endl ;
                 return false ;
@@ -220,6 +223,22 @@ namespace {
         }
         return true ;
     }
+
+    /*! Brute force inefficient but I am debugging !!!! */
+    bool has_surface_edge( const Surface& S, index_t v0_in, index_t v1_in ) {
+        for( index_t i = 0; i < S.nb_cells(); ++i ) {
+            for (index_t j = 0; j < S.nb_vertices_in_facet(i); ++j){
+                index_t v0 = S.surf_vertex_id( i, j) ;
+                index_t v1 = S.surf_vertex_id(i, S.next_in_facet(i, j)) ;
+                if( v0 == v0_in && v1 == v1_in ||
+                    v0 == v1_in && v1 == v0_in ) {
+                    return true ;
+                }
+            }
+        }
+        return false ;
+    } 
+
 
     /*!
     * @brief Save the model in a .ml file if it can
@@ -320,16 +339,55 @@ namespace {
                         << S.surf_vertex_id( k, 1 ) + offset << " "
                         << S.surf_vertex_id( k, 2 ) + offset << std::endl ;
                 }
-                for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
-                    const Line& L = dynamic_cast<const Line&>( S.boundary( k ) ) ;
-                    lineindices.insert( std::pair< index_t, index_t>(
-                        S.surf_vertex_id( L.model_vertex_id( 0 ) )+offset,
-                        S.surf_vertex_id( L.model_vertex_id( 1 ) )+offset ) ) ;
+                for (index_t k = 0; k < S.nb_boundaries(); ++k) {
+                    const Line& L = dynamic_cast<const Line&>(S.boundary(k));
+                    index_t v0_model_id = L.model_vertex_id(0);
+                    index_t v1_model_id = L.model_vertex_id(1);
 
-                    const Corner& c0 = dynamic_cast<const Corner&>( L.boundary( 0 ) ) ;
-                    corners.insert( S.surf_vertex_id( c0.model_vertex_id() )+offset ) ;
+                    std::vector< index_t > v0_surface_ids = S.gme_vertex_indices(v0_model_id);
+                    std::vector< index_t > v1_surface_ids = S.gme_vertex_indices(v1_model_id);
+                    
+                    if (!S.has_inside_border()){
+                        ringmesh_assert( v0_surface_ids.size() == 1 && v1_surface_ids.size() == 1) ;
+                        index_t v0 = v0_surface_ids[0];
+                        index_t v1 = v1_surface_ids[0];
+                        v0 += offset;
+                        v1 += offset;
+
+                        lineindices.insert(std::pair< index_t, index_t>(v0, v1));
+                        corners.insert(v0);                        
+                    }
+                    else {
+                        // We need to get the right pair of v0 - v1  (not crossing the inside boundary)
+                        // corner and a border 
+                        int count = 0 ;
+                        bool to_break = false ;
+                        for (index_t iv0 = 0; iv0 < v0_surface_ids.size(); ++iv0){
+                            index_t v0 = v0_surface_ids[iv0];
+                            for (index_t iv1 = 0; iv1 < v1_surface_ids.size(); ++iv1) {
+                                index_t v1 = v1_surface_ids[iv1];
+                                if (has_surface_edge(S, v0, v1)){
+                                    lineindices.insert(std::pair< index_t, index_t>(v0+offset, v1+offset));                                    
+                                    count++ ;
+                                }
+                                if (!L.is_inside_border(S) && count == 1){
+                                    to_break = true ;
+                                    break;
+                                }
+                                else if (count == 2){
+                                    to_break = true ;
+                                    break;
+                                }
+                            }
+                            if ( to_break ){
+                                corners.insert(v0+offset);
+                                break;
+                            }                            
+                        }                                           
+                    }                            
+                    // Set a BSTONE at the line other extremity
                     const Corner& c1 = dynamic_cast<const Corner&>( L.boundary( 1 ) ) ;                    
-                    corners.insert( S.surf_vertex_id( c1.model_vertex_id() )+offset ) ;                  
+                    corners.insert( S.surf_vertex_id( c1.model_vertex_id() )+offset ) ;                                              
                 }
             }
             // Add the remaining bstones that are not already in bstones
@@ -444,7 +502,7 @@ namespace {
                 } else {
                     out << "-" ;
                 }
-                out << E.boundary_id( j ).index << " " ;
+                out << E.boundary_gme( j ).index << " " ;
             }
             out << std::endl ;
         }
@@ -456,7 +514,7 @@ namespace {
             } else {
                 out << "-" ;
             }
-            out << M.universe().boundary_id( j ).index << " " ;
+            out << M.universe().boundary_gme( j ).index << " " ;
         }
         out << std::endl ;
 
@@ -507,7 +565,7 @@ namespace {
             //            }
             out << "IN_BOUNDARY " ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                out << L.in_boundary_id( j ).index << " " ;
+                out << L.in_boundary_gme( j ).index << " " ;
             }
             out << std::endl ;
         }
@@ -530,7 +588,7 @@ namespace {
             //                out << std::endl ;
             //            }
 
-            out << "SURFACE_CORNERS " << S.nb_corners() << std::endl ;
+            out << "SURFACE_CORNERS " << S.nb_facet_corners() << std::endl ;
             out << "SURFACE_FACETS " << S.nb_cells() << std::endl ;
             //            out << "SURFACE_FACET_ATTRIBUTES " ;
             //            std::vector< SerializedAttribute< BME::FACET > > surface_facet_attribs ;
@@ -616,12 +674,12 @@ namespace RINGMesh {
         {
             std::ifstream input( filename.c_str() ) ;
             if( input ) {
-                GeoModelBuilderGocad builder( model ) ;
+                GeoModelBuilderGocad builder( model, filename ) ;
 
                 time_t start_load, end_load ;
                 time( &start_load ) ;
 
-                if( builder.load_ml_file( filename ) ) {
+                if( builder.build_model() ) {
                     print_model( model ) ;
                     // Check validity
                     RINGMesh::is_geomodel_valid( model ) ;
@@ -653,8 +711,8 @@ namespace RINGMesh {
         {           
             std::ifstream input( filename.c_str() ) ;
             if( input ) {
-                GeoModelBuilderBM builder( model ) ;
-                if( builder.load_file( filename ) ) {
+                GeoModelBuilderBM builder( model, filename ) ;
+                if( builder.build_model() ) {
                     GEO::Logger::out( "I/O" )
                         << " Loaded model " << model.name() << " from "
                         << filename << std::endl ;
@@ -739,7 +797,7 @@ namespace RINGMesh {
                         cmd << "g" ;
                     else
                         cmd << "l" ;
-                    cmd << "e surface_" << region.boundary_id( s ).index ;
+                    cmd << "e surface_" << region.boundary_gme( s ).index ;
                     sep = " and " ;
                 }
                 cmd << std::endl ;

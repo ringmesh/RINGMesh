@@ -43,28 +43,96 @@
 
 #include <ringmesh/common.h>
 
+#include <geogram/basic/attributes.h>
+#include <geogram/mesh/mesh.h>
+
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geogram_extension.h>
+
+
 /*!
 * @file ringmesh/geo_model_api.h
 * @brief High level functions on GeoModel
 * @author Jeanne Pellerin and Arnaud Botella
-* @todo Encapsulate these functions in a namespace
-* and TEST them.
+* @todo Encapsulate these functions in a namespace and TEST them.
 */
 
-namespace RINGMesh {
-    class GeoModel ;
-    class GeoModelElement ;
-    class GeoModelMeshElement ;
+namespace GEO {
+    class Mesh ;
 }
 
 namespace RINGMesh {
-
-    /*! @brief Print in the console the model statistics
-    *  Output number of facets, vertices, and of the different element types.
+    /*!
+    * @brief Print in the console the model statistics
+    * @details Output number of facets, vertices, and of the different element types
+    * @todo Implement a test are_geomodels_equals to be able to check that tests went well
     */
     void RINGMESH_API print_model( const GeoModel& model ) ;
 
+    
+    bool RINGMESH_API are_geomodel_surface_meshes_simplicial( const GeoModel& geomodel ) ;
 
+    bool RINGMESH_API are_geomodel_region_meshes_simplicial( const GeoModel& geomodel ) ;
+
+
+    /*!
+    * @brief Build a Mesh from the model non-duplicated vertices and its Surface facets.
+    * @details Adjacencies are not set. Client should call mesh repair functions afterwards.
+    * @todo Implement Implement it for meshed Regions.
+    * Implement it for a set of GME.
+    */
+    void RINGMESH_API build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M ) ;
+
+
+    /*! 
+     * @brief Bind named GEO::Attribute on the GeoModel element facets
+     * @warning It is up to the client to unbind the attribute    
+     * @pre Elements of geomodel_element_type are GeoModelMeshElement
+     */
+    template< class T >
+    void create_attributes_on_geomodel_element_facets(
+        const GeoModel& geomodel,
+        GeoModelElement::TYPE geomodel_element_type,
+        const std::string& attribute_name,
+        AttributeVector<T>& attributes )
+    {
+        index_t nb_elements = geomodel.nb_elements( geomodel_element_type ) ;
+        attributes.resize( nb_elements ) ;
+        for( index_t i = 0; i < nb_elements; ++i ) {
+            const GeoModelMeshElement& E = geomodel.mesh_element( geomodel_element_type, i );
+            GEO::AttributesManager& manager = E.facet_attribute_manager() ; 
+            attributes.bind_one_attribute( i, manager, attribute_name ) ;
+        }
+    }
+
+    /*!
+     * @brief Bind named GEO::Attribute on the GeoModel elements cells
+     * @warning It is up to the client to unbind the attribute
+     * @pre Elements of mesh_element_type are GeoModelMeshElement
+     */
+    template< class T >
+    void create_attributes_on_geomodel_element_cells(
+        const GeoModel& geomodel,
+        GeoModelElement::TYPE geomodel_element_type,
+        const std::string& attribute_name,
+        AttributeVector<T>& attributes )
+    {
+        index_t nb_elements = geomodel.nb_elements( geomodel_element_type ) ;
+        attributes.resize( nb_elements ) ;
+        for( index_t i = 0; i < nb_elements; ++i ) {
+            const GeoModelMeshElement& E = geomodel.mesh_element( geomodel_element_type, i ) ;
+            GEO::AttributesManager& manager = E.cell_attribute_manager() ;
+            attributes.bind_one_attribute( i, manager, attribute_name ) ;
+        }
+    }
+
+#ifdef RINGMESH_WITH_TETGEN
+    /*!
+     * @brief Constrained tetrahedralization of the B-Rep defined region of a GeoModel
+     */
+    void RINGMESH_API tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel ) ;
+#endif
     /*!
     * Compute the tetrahedral mesh of the input structural model
     * @param[in] M GeoModel to tetrahedralize
@@ -96,33 +164,33 @@ namespace RINGMesh {
 
 
     /*!
-    * @brief Translates the boundary model by a vector.
-    *
-    * Every single mesh of the boundary model is translated:
-    * corners, lines and surfaces.
-    *
-    * @param[in] M GeoModel on which compute the translation
-    * @param[in] translation_vector vector of translation.
-    */
+     * @brief Translates the boundary model by a vector.
+     *
+     * Every single mesh of the boundary model is translated:
+     * corners, lines and surfaces.
+     *
+     * @param[in] M GeoModel on which compute the translation
+     * @param[in] translation_vector vector of translation.
+     */
     void RINGMESH_API translate( GeoModel& M, const vec3& ) ;
 
     /*!
-    * \brief Rotate the boundary model.
-    *
-    * Applies a rotation about the line defined by the point
-    * \p origin and the vector \p axis. The rotation angle is
-    * \p angle. If \p degrees is true the angle is in degrees,
-    * else in radians. All the vertices of the boundary model
-    * undergo the rotation (each mesh inside the boundary model:
-    * corners, lines and surfaces).
-    *
-    * @param[in] M GeoModel on which compute the rotation
-    * @param[in] origin point in which passes the rotation axis.
-    * @param[in] axis vector which defines the rotation axis.
-    * @param[in] angle rotation angle (in radians or degrees).
-    * @param[in] degrees true is \p angle is in degrees, false
-    * if in radians.
-    */
+     * \brief Rotate the boundary model.
+     *
+     * Applies a rotation about the line defined by the point
+     * \p origin and the vector \p axis. The rotation angle is
+     * \p angle. If \p degrees is true the angle is in degrees,
+     * else in radians. All the vertices of the boundary model
+     * undergo the rotation (each mesh inside the boundary model:
+     * corners, lines and surfaces).
+     *
+     * @param[in] M GeoModel on which compute the rotation
+     * @param[in] origin point in which passes the rotation axis.
+     * @param[in] axis vector which defines the rotation axis.
+     * @param[in] angle rotation angle (in radians or degrees).
+     * @param[in] degrees true is \p angle is in degrees, false
+     * if in radians.
+     */
     void RINGMESH_API rotate(
         GeoModel& M, 
         const vec3& origin,
@@ -131,44 +199,36 @@ namespace RINGMesh {
         bool degrees = false ) ;
 
 
-
     /*-----------------------------------------------------------------------*/
 
-
-
     /*!
-    * @brief Compute the size (volume, area, length) of an Element
-    * @param[in] E Element to evaluate
-    */
+     * @brief Compute the size (volume, area, length) of an Element
+     * @param[in] E Element to evaluate
+     */
     double RINGMESH_API model_element_size( const GeoModelElement& E ) ;
 
     /*!
-    * Compute the size (volume, area, length) of an Element cell (cell, facet, edge)
-    * @param[in] E Element to evaluate
-    * @param[in] c the cell index
-    */
+     * Compute the size (volume, area, length) of an Element cell (cell, facet, edge)
+     * @param[in] E Element to evaluate
+     * @param[in] c the cell index
+     */
     double RINGMESH_API model_element_cell_size( const GeoModelElement& E, index_t c ) ;
 
     /*!
-    * @brief Compute the center of a GeoModelElement
-    *
-    * @param[in] E Element to evaluate
-    * @return The coordinates of the center
-    */
+     * @brief Compute the center of a GeoModelElement
+     * @param[in] E Element to evaluate
+     * @return The coordinates of the center
+     */
     vec3 RINGMESH_API model_element_center( const GeoModelElement& E ) ;
 
     /*!
-    * @brief Compute the centroid of a GeoModelMeshElement cell (cell, facet, edge)
-    *
-    * @param[in] E Element to evaluate
-    * @param[in] c the cell index
-    * @return The coordinates of the center
-    *
-    * @pre E has a valid mesh.
-    */
-    vec3 RINGMESH_API model_element_cell_center(
-        const GeoModelMeshElement& E, index_t c ) ;
-
+     * @brief Compute the centroid of a GeoModelMeshElement cell (cell, facet, edge)
+     * @param[in] E Element to evaluate
+     * @param[in] c the cell index
+     * @return The coordinates of the center
+     * @pre E has a valid mesh.
+     */
+    vec3 RINGMESH_API model_element_cell_center( const GeoModelMeshElement& E, index_t c ) ;
 
 }
 

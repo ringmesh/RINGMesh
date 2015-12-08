@@ -42,13 +42,17 @@
 #ifndef __RINGMESH_GEO_MODEL_BUILDER__
 #define __RINGMESH_GEO_MODEL_BUILDER__
 
+#include <vector>
+#include <string>
+#include <stack>
+
+#include <geogram/basic/line_stream.h>
+
 #include <ringmesh/common.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_editor.h>
 
-#include <vector>
-#include <string>
-#include <stack>
+
 
 /*!
 * @file ringmesh/geo_model_builder.h
@@ -61,220 +65,317 @@ namespace GEO {
 }
 
 namespace RINGMesh {
+    // Implementation classes
+    class GeoModelRegionFromSurfaces ;
+    class GeoModelElementFromMesh ;
+}
+
+namespace RINGMesh {
+    /*!
+     * @brief First draft of flags to build a GeoModel
+     * @todo Implement functions to set, access the values, depending on what ?
+     * To check the consistency of the options. What doewe do about the other elements ? [JP] 
+     * @todo We need to keep track of the status of the GeoModel when building it:
+     * same flags or some others ?    
+     */
+    class GeoModelBuildingFlags {
+    public:
+        GeoModelBuildingFlags()
+        {
+            compute_corners      = false ;
+            compute_lines        = false ;
+            compute_surfaces     = false ;
+            compute_regions_brep = false ;
+            compute_regions_mesh = false ;
+        }
+        bool compute_corners ;
+        bool compute_lines ;
+        bool compute_surfaces ;
+        bool compute_regions_brep ;
+        bool compute_regions_mesh ;
+    } ;
+
+
     /*!
      * @brief Base class for all classes building a GeoModel.
      * @details Derive from this class to build or modify a GeoModel. 
-     * @note NON Geometry related functions are in GeoModelEditor class.
+     * @note NON Geometry related modifications are in GeoModelEditor class.
+     * @todo To refactor and rename. We need a GeoModelTopologyEditor 
+     * and a GeoModelGeometryEditor
      */
-    class RINGMESH_API GeoModelBuilder : public GeoModelEditor {
+    class RINGMESH_API GeoModelBuilder : public GeoModelEditor
+    {
     public:
         GeoModelBuilder( GeoModel& model )
             : GeoModelEditor( model )
+        {}
+        virtual ~GeoModelBuilder() ;
+
+        /*!
+         * @todo Implements sot that it returns true if the input options are consistent
+         */
+        bool set_options( const GeoModelBuildingFlags& options )
         {
-        }
-        virtual ~GeoModelBuilder()
-        {
+            options_ = options ;
+            return true ;
         }
 
         /*!
-        * @brief Finish up model building and complete missing information.
-        * @return True except if the model has no surface.
-        */
-        bool end_model() ;       
-    
-        /*!
-         * \name Set element geometry from geometrical positions   
+         * \name Set element geometry from geometrical positions
          * @{
          */
-        void set_element_vertex(
-            GME::gme_t t,
-            index_t v,
-            const vec3& point,
-            bool update ) ;
+        void set_element_vertex( const GME::gme_t& t, index_t v, const vec3& point, bool update ) ;
 
-        void set_element_vertices(
-            const GME::gme_t& id,
-            const std::vector< vec3 >& points,
-            bool clear ) ;
+        void set_element_vertices( const GME::gme_t& element_id,
+                                   const std::vector< vec3 >& points,
+                                   bool clear ) ;
 
-        void set_corner(
-            const GME::gme_t& corner_id,
-            const vec3& point ) ;
+        void set_corner( index_t corner_id, const vec3& point ) ;
 
-        void set_line(
-            const GME::gme_t& id,
-            const std::vector< vec3 >& vertices ) ;
+        void set_line( index_t id, const std::vector< vec3 >& vertices ) ;
 
-        void set_surface_geometry(
-            const GME::gme_t& surface_id,
-            const std::vector< vec3 >& surface_vertices,
-            const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr ) ;
+        void set_surface_geometry( index_t surface_id,
+                                   const std::vector< vec3 >& surface_vertices,
+                                   const std::vector< index_t >& surface_facets,
+                                   const std::vector< index_t >& surface_facet_ptr ) ;
 
         /*! @}
-         * \name Set element geometry using GeoModel vertices
+         * \name Set element geometry using global GeoModel vertices
          * @{
          */
         void set_element_vertex( const GME::gme_t& id, index_t v, index_t model_vertex ) ;
 
-        void set_element_vertices(
-            const GME::gme_t& id,
-            const std::vector< index_t >& model_vertices,
-            bool clear ) ;
+        void set_element_vertices( const GME::gme_t& element_id,
+                                   const std::vector< index_t >& model_vertices,
+                                   bool clear ) ;
 
         index_t add_unique_vertex( const vec3& p ) ;
 
-        void set_corner(
-            const GME::gme_t& corner_id,
-            index_t unique_vertex ) ;
+        void set_corner( index_t corner_id, index_t unique_vertex ) ;
 
-        void set_line(
-            const GME::gme_t& id,
-            const std::vector< index_t >& unique_vertices ) ;
+        void set_line( index_t id, const std::vector< index_t >& unique_vertices ) ;
 
-        void set_surface_geometry(
-            const GME::gme_t& surface_id,
-            const std::vector< index_t >& surface_vertices,
-            const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr ) ;
+        void set_surface_geometry( index_t surface_id,
+                                   const std::vector< index_t >& surface_vertices,
+                                   const std::vector< index_t >& surface_facets,
+                                   const std::vector< index_t >& surface_facet_ptr ) ;
 
-        void set_surface_geometry(
-            const GME::gme_t& surface_id,
-            const std::vector< index_t >& corners,
-            const std::vector< index_t >& facet_ptr ) ;
+        void set_surface_geometry( index_t surface_id,
+                                   const std::vector< index_t >& corners,
+                                   const std::vector< index_t >& facet_ptr ) ;
 
-        /*!
-         * @}
-         */   
+        void set_surface_geometry( index_t surface_id,
+                                   const std::vector< index_t >& triangle_corners ) ;
 
-        index_t find_or_create_duplicate_vertex(
-            GeoModelMeshElement& S,
-            index_t model_vertex_id,
-            index_t surface_vertex_id ) ;
+        void set_region_geometry( index_t region_id, const std::vector< index_t >& tet_corners ) ;
+
+        index_t find_or_create_duplicate_vertex( GeoModelMeshElement& S,
+                                                 index_t model_vertex_id,
+                                                 index_t surface_vertex_id ) ;
 
         void cut_surface_by_line( Surface& S, const Line& L ) ;
 
-        void compute_surface_adjacencies( const GME::gme_t& surface_id ) ;
+        void compute_surface_adjacencies( index_t surface_id ) ;
 
+        /*!
+         * @}
+         * \name Model building functions
+         */
+
+        /*!
+        * @brief From the Surfaces of the GeoModel, build its Lines and Corners
+        */
+        bool build_lines_and_corners_from_surfaces() ;
+
+        /*!
+        * @brief Build the regions of the GeoModel from the Surfaces
+        * @pre Function build_lines_and_corners_from_surfaces must have been called before
+        */
+        bool build_brep_regions_from_surfaces() ;
+
+        /*
+         * @brief From a GeoModel in which only Surface are defined, create corners, contacts
+         * and regions depending on the building flags
+         * @return True if a model has been built.
+         * @note Valdity is not checked
+         */
+        bool build_model_from_surfaces() ;
+
+        /*!
+        * @brief Finish up model building and complete missing information.
+        * @return True except if the model has no Surface
+        */
+        bool end_model() ;
+
+    protected:
+        /*! Elements to compute from the available elements */
+        GeoModelBuildingFlags options_ ;
+
+        /*! Internal information */
+        std::vector< GeoModelRegionFromSurfaces* > regions_info_ ;
 
     private:
-        void create_surface_geometry(
-            const GME::gme_t& surface_id,
+        void assign_surface_mesh_facets(
+            index_t surface_id,
             const std::vector< index_t >& facets,
             const std::vector< index_t >& facet_ptr ) ;
-    } ;
 
-    
-    // Forward declaration of a class used to 
-    // implement GeoModelBuilderSurface
-    class RegionBuildingInformation ;
+        void assign_surface_triangle_mesh(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_vertices ) ;
+
+        void assign_region_tet_mesh(
+            index_t region_id,
+            const std::vector< index_t >& tet_vertices ) const ;
+
+        void duplicate_surface_vertices_along_line( Surface& S, const Line& L ) ;
+        void disconnect_surface_facets_along_line_edges( Surface& S, const Line& L ) ;
+    };
 
     /*!
-     * @brief Builder of a GeoModel from its Surfaces without 
-     *        information on its Regions or Lines 
-     * @note Manifold surface connected components are supposed disjoints
-     *       It would be possible if needed to implement this for 
-     *       non disjoint Surfaces using non-manifold edge identification.
-     */
-    class RINGMESH_API GeoModelBuilderSurface: public GeoModelBuilder {
+    * @brief To build a GeoModel from a set of disconnected polygonal surfaces
+    */
+    class RINGMESH_API GeoModelBuilderSurfaceMesh : public GeoModelBuilder {
     public:
-        GeoModelBuilderSurface( GeoModel& model, bool build_regions = true )
-            : GeoModelBuilder( model ),
-            build_regions_( build_regions )
+        GeoModelBuilderSurfaceMesh( GeoModel& model,
+                                    const GEO::Mesh& mesh )
+            :GeoModelBuilder( model ), mesh_( mesh )
+        {}    
+        bool build_polygonal_surfaces_from_connected_components() ;
+
+    private:
+        const GEO::Mesh& mesh_ ;
+    };
+
+
+    /*!
+     * @brief Builder of a GeoModel from a simplicial surface or volumetric Mesh 
+     * @details Regions and Surfaces are indentified with an attribute of type index_t
+     * on the mesh cells or facet 
+     */
+    class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
+    public:
+        GeoModelBuilderMesh( GeoModel& model,
+                             const GEO::Mesh& mesh, 
+                             const std::string& surface_attribute_name,
+                             const std::string& region_attribute_name )
+            : GeoModelBuilder(model), 
+              mesh_( mesh ),
+              surface_builder_(nil),
+              region_builder_(nil),
+              surface_attribute_name_( surface_attribute_name ),
+              region_attribute_name_( region_attribute_name )
+        {
+            initialize_surface_builder() ;
+            initialize_region_builder() ;
+            add_mesh_vertices_to_model() ;
+        }
+    
+        virtual ~GeoModelBuilderMesh() ;
+
+        /*!
+         * @brief Prepare a Mesh so that it can be used to build one GeoModel Surfaces
+         * @details Repairs the mesh, triangulates it, computes a connected component 
+         * attribute of type index_t on the mesh facets and removes colocated vertices. 
+         */
+        static void prepare_surface_mesh_from_connected_components(
+            GEO::Mesh& mesh, const std::string& created_surface_attribute ) ;
+     
+        bool is_mesh_valid_for_surface_building() const ;
+        bool create_and_build_surfaces() ;
+        bool build_surfaces() ;
+
+        bool is_mesh_valid_for_region_building() const ;
+        bool create_and_build_regions() ;
+        bool build_regions() ;
+     
+        void copy_facet_attribute_from_mesh( const std::string& attribute_name ) ;        
+        void copy_cell_attribute_from_mesh( const std::string& attribute_name ) ;
+
+    protected:
+        /*!
+         * @brief Set the unique vertices used to build the GeoModel
+         * @details They are cleared when end_model() is called
+         */
+        void add_mesh_vertices_to_model() ;
+
+        void initialize_surface_builder() ;
+        void initialize_region_builder() ;
+
+    protected:
+        const GEO::Mesh& mesh_ ;
+        GeoModelElementFromMesh* surface_builder_ ;
+        GeoModelElementFromMesh* region_builder_ ;
+        std::string surface_attribute_name_ ;
+        std::string region_attribute_name_ ;
+        index_t nb_surface_attribute_values_ ;
+        index_t nb_region_attribute_values_ ;
+    } ;
+
+    /*!
+     * @brief Abstract class to load and build GeoModels from files 
+     */
+    class RINGMESH_API GeoModelBuilderFile : public GeoModelBuilder {
+    public:
+        GeoModelBuilderFile( GeoModel& model, const std::string& filename ) ;
+        
+        virtual ~GeoModelBuilderFile()
         {
         }
-        virtual ~GeoModelBuilderSurface() ;
-
-        /*!
-        * @brief Create the model Surfaces from the connected components
-        *       of the input surface mesh
-        * @pre The input mesh is a surface mesh. Facet adjacencies are available.
-        */
-        bool set_surfaces( const GEO::Mesh& mesh ) ;
-       
-        /*!
-        * @brief From a GeoModel in which only Surface are defined, create
-        * corners, contacts and optionally regions.   
-        * @return True if a model has been built.
-        * @note Valdity is not checked
-        * @pre The GeoModel should have at least one Surface. Nothing is done if not.
-        */
-        bool build_model() ;
-
+        virtual bool load_file() = 0 ;
+        virtual bool build_model()
+        {
+            if( load_file() ) {
+                return end_model() ;
+            } else { 
+                return false ; 
+            }
+        }
+        /*! @todo Implement function to read the lines of the 
+         *        file and wrap the GEO::LineInput which is not that easy to use 
+         */
     protected:
-        /*!
-        * @brief From the topology of the Surface of the GeoModel, build
-        * its Lines and Corners
-        */
-        bool build_lines_and_corners() ;
-
-        /*!
-        * @brief Build the regions of the GeoModel from information collected
-        * at Line building step.
-        */
-        bool build_regions() ;
-
-    protected:
-        /*! Build or not the Regions of the GeoModel from the the Surfaces 
-         * and Lines */ 
-        bool build_regions_ ;
-        /*! Internal information filled at Line building step */
-        std::vector< RegionBuildingInformation* > regions_info_ ;
-    } ;
-
+        GEO::LineInput in_ ;
+    };
 
     /*!
-    * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
-    */
-    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilderSurface {
+     * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
+     */
+    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilderFile {
     public:
-        GeoModelBuilderGocad( GeoModel& model )
-            : GeoModelBuilderSurface( model, false )
+        GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename )
         {}
         virtual ~GeoModelBuilderGocad()
         {}
-
-        /*!
-        * @brief Load and build a GeoModel from a Gocad .ml file
-        * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
-        * @details Correspondance between Gocad::Model3D elements 
-        * and GeoModel elements is :
-        *  - Gocad TSurf  <-> GeoModel Interface
-        *  - Gocad TFace  <-> GeoModel Surface
-        *  - Gocad Region <-> GeoModel Region
-        *  - Gocad Layer  <-> GeoModel Layer
-        * @param[in] ml_file_name Input .ml file stream
-        * @param[in] ignore_file_borders If true, BORDER and BSTONE entries in the files
-        * are ignored and the Lines and Corners of the GeoModel are deduced from the 
-        * connectivity of its Surfaces. By default set to false.
-        */
-        bool load_ml_file(
-            const std::string& ml_file_name, 
-            bool ignore_file_borders = false ) ;
-
-    protected:
-        GME::gme_t determine_line_vertices(
-            const Surface& S,
-            index_t id0,
-            index_t id1,
-            std::vector< index_t >& border_vertex_model_ids ) const ;
-
-        GME::gme_t determine_line_vertices(
-            const Surface& S,
-            index_t first_vertex,
-            index_t second_vertex,
-            std::vector< vec3 >& border_vertex_model_vertices ) const ;
+        bool load_file() ;
 
     private:
         void build_contacts() ;
 
-        void create_surface(
-            const std::string& interface_name,
-            const std::string& type,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2 ) ;
+        GME::gme_t determine_line_vertices( const Surface& S,
+                                            index_t id0,
+                                            index_t id1,
+                                            std::vector< vec3 >& border_vertex_model_ids ) const ;
 
+        void create_surface( const std::string& interface_name,
+                             const std::string& type,
+                             const vec3& p0,
+                             const vec3& p1,
+                             const vec3& p2 ) ;
+        
+        /*!
+        * @brief Check if the surface triangle orientations match the one of the key facet
+        */
+        bool check_key_facet_orientation( index_t surface ) const ;
+
+        index_t find_key_facet( index_t surface_id,
+                                const vec3& p0,
+                                const vec3& p1,
+                                const vec3& p2,
+                                bool& same_orientation ) const ;
+
+    private:
         /*!
         * @brief Triangle that set the orientation of a TFACE
         *        in a .ml file
@@ -287,46 +388,30 @@ namespace RINGMesh {
             vec3 p1_ ;
             vec3 p2_ ;
         } ;
-
-        /*!
-        * @brief Check if the surface triangle orientations match the one of the key facet
-        */
-        bool check_key_facet_orientation( index_t surface ) const ;
-
-        index_t find_key_facet(
-            index_t surface_id,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            bool& same_orientation ) const ;
-
-    private:
         std::vector< KeyFacet > key_facets_ ;
     } ;
 
     /*!
     * @brief Build a GeoModel from a file_model.bm
     */
-    class RINGMESH_API GeoModelBuilderBM : public GeoModelBuilder {
+    class RINGMESH_API GeoModelBuilderBM : public GeoModelBuilderFile {
     public:
-        GeoModelBuilderBM( GeoModel& model )
-            : GeoModelBuilder( model )
+        GeoModelBuilderBM( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename )
         {}
         virtual ~GeoModelBuilderBM()
         {}
 
-        bool load_file( const std::string& bm_file_name ) ;
+        bool load_file() ;
 
     private:
         static GME::TYPE match_nb_elements( const char* s ) ;
-
         static GME::TYPE match_type( const char* s ) ;
-
         static bool match_high_level_type( const char* s )
         {
             return GME::child_allowed( match_type( s ) ) ;
         }
-    } ;
+    };
 }
 
 #endif

@@ -40,23 +40,6 @@
 
 #include <ringmesh/geo_model_validity.h>
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geometry.h>
-
-#include <geogram/basic/logger.h>
-#include <geogram/basic/geometry_nd.h>
-#include <geogram/basic/string.h>
-#include <geogram/basic/algorithm.h>
-#include <geogram/points/colocate.h>
-#include <geogram/mesh/triangle_intersection.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_AABB.h>
-#include <geogram/mesh/mesh_topology.h>
-#include <geogram/mesh/mesh_intersection.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/mesh/mesh_io.h>
-
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -64,6 +47,26 @@
 #include <ctime>
 #include <set>
 #include <map>
+
+#include <geogram/basic/logger.h>
+#include <geogram/basic/geometry_nd.h>
+#include <geogram/basic/string.h>
+#include <geogram/basic/algorithm.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_AABB.h>
+#include <geogram/mesh/mesh_topology.h>
+#include <geogram/mesh/mesh_intersection.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/triangle_intersection.h>
+#include <geogram/points/colocate.h>
+
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/geogram_extension.h>
+
 
 
 /*!
@@ -78,6 +81,8 @@ namespace {
     using namespace RINGMesh ;
     using GEO::index_t ;
     using GEO::vec3 ;
+
+    typedef GeoModelMeshElement GMME ;
 
     /*---------------------------------------------------------------------------*/
     /*----- Some pieces of the code below are copied or modified from -----------*/
@@ -131,16 +136,13 @@ namespace {
         ringmesh_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
         index_t c1 = M.facets.corners_begin( f1 ) ;
         const vec3& p1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 ) ) ;
-        const vec3& p2 = GEO::Geom::mesh_vertex( M,
-                                                 M.facet_corners.vertex( c1 + 1 ) ) ;
-        const vec3& p3 = GEO::Geom::mesh_vertex( M,
-                                                 M.facet_corners.vertex( c1 + 2 ) ) ;
+        const vec3& p2 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1+1 ) ) ;
+        const vec3& p3 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1+2 ) ) ;
+
         index_t c2 = M.facets.corners_begin( f2 ) ;
         const vec3& q1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 ) ) ;
-        const vec3& q2 = GEO::Geom::mesh_vertex( M,
-                                                 M.facet_corners.vertex( c2 + 1 ) ) ;
-        const vec3& q3 = GEO::Geom::mesh_vertex( M,
-                                                 M.facet_corners.vertex( c2 + 2 ) ) ;
+        const vec3& q2 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2+1 ) ) ;
+        const vec3& q3 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2+2 ) ) ;
         return triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ;
     }
 
@@ -153,9 +155,9 @@ namespace {
     */
     GME::gme_t is_edge_on_line( const GeoModel& model, index_t v0, index_t v1 )
     {
-        const std::vector< GeoModelMeshVertices::VertexInGME >& v0_bme =
+        const std::vector< GMEVertex >& v0_bme =
             model.mesh.vertices.gme_vertices( v0 ) ;
-        const std::vector< GeoModelMeshVertices::VertexInGME >& v1_bme =
+        const std::vector< GMEVertex >& v1_bme =
             model.mesh.vertices.gme_vertices( v1 ) ;
 
         // Get the local indices of the vertices in 
@@ -397,30 +399,16 @@ namespace {
 
     /*!
     * @brief Trigger an assertion if several vertices of a mesh at the same geometric location
-    * @note Code modified from geogram/mesh/mesh_repair.cpp
-    * @param[in] M the mesh
-    * @param[in] colocate_epsilon tolerance
+
     */
     void assert_no_colocate_vertices( const GEO::Mesh& M, double colocate_epsilon )
     {
-        GEO::vector< index_t > old2new ;
-
-        index_t nb_new_vertices = 0 ;
-        if( colocate_epsilon == 0.0 ) {
-            nb_new_vertices = GEO::Geom::colocate_by_lexico_sort(
-                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
-                M.vertices.dimension() ) ;
-        } else {
-            nb_new_vertices = GEO::Geom::colocate( M.vertices.point_ptr( 0 ), 3,
-                                                   M.vertices.nb(), old2new, colocate_epsilon,
-                                                   M.vertices.dimension() ) ;
-        }
-        if( nb_new_vertices != M.vertices.nb() ) {
+        if( has_mesh_colocate_vertices( M, colocate_epsilon ) ) {
             geo_assert_not_reached;
         }
     }
 
-    /*!
+/*!
     * @brief Get the colocated vertices of a mesh, i.e. which have the same geometric location
     * @note Code modified from geogram/mesh/mesh_repair.cpp
     * @param[in] M the mesh
@@ -457,7 +445,7 @@ namespace {
                                                    M.vertices.dimension() ) ;
         }
         return nb_new_vertices != M.vertices.nb() ;
-    }
+    }    
 
     /**
     * \brief Connects the facets in a TRIANGULATED mesh.
@@ -589,46 +577,6 @@ namespace {
     /*----------------------------------------------------------------------------*/
 
     /*!
-    * @brief Build a Mesh from the model non-duplicated vertices
-    *        and its Surface facets.
-    * @details Adjacencies are not set. Client should call
-    *  mesh repair functions afterwards.
-    * @todo Give access to that mesh (constant access) from GeoModelMesh
-    * because we do have it [JP]
-    */
-    void mesh_from_geo_model( const GeoModel& model, Mesh& M )
-    {
-        // Clear the Mesh keeping the attributes, otherwise we crash
-        M.clear( true ) ;
-
-        // Set the vertices 
-        index_t nbv = model.mesh.vertices.nb() ;
-        M.vertices.create_vertices( nbv ) ;
-
-        /* We need to copy the point one after another since we do not have access
-        * to the storage of the model.vertices.
-        * I do not want to provide this access [JP]
-        */
-        for( index_t v = 0; v < nbv; ++v ) {
-            M.vertices.point( v ) = model.mesh.vertices.vertex( v ) ;
-        }
-
-        // Set the facets  
-        for( index_t s = 0; s < model.nb_surfaces(); ++s ) {
-            const Surface& S = model.surface( s ) ;
-            for( index_t f = 0; f < S.nb_cells(); ++f ) {
-                index_t nbv = S.nb_vertices_in_facet( f ) ;
-                GEO::vector< index_t > ids( nbv ) ;
-
-                for( index_t v = 0; v < nbv; ++v ) {
-                    ids[ v ] = S.model_vertex_id( f, v ) ;
-                }
-                M.facets.create_polygon( ids ) ;
-            }
-        }
-    }
-
-    /*!
     * @brief Get the BMME defining the boundaries of an element
     */
     void boundary_bmme(
@@ -648,7 +596,7 @@ namespace {
                 if( with_inside_borders
                     || ( !with_inside_borders
                     && !E.boundary( i ).is_inside_border( E ) ) ) {
-                    borders.push_back( E.boundary_id( i ) ) ;
+                    borders.push_back( E.boundary_gme( i ) ) ;
                 }
             }
         } else {
@@ -658,7 +606,7 @@ namespace {
                     if( with_inside_borders
                         || ( !with_inside_borders
                         && !C.boundary( j ).is_inside_border( C ) ) ) {
-                        borders.push_back( E.child( i ).boundary_id( j ) ) ;
+                        borders.push_back( E.child( i ).boundary_gme( j ) ) ;
                     }
                 }
             }
@@ -682,7 +630,7 @@ namespace {
         if( GME::parent_allowed( T ) ) {
             // We are dealing with basic elements 
             for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
-                in_boundary.push_back( E.in_boundary_id( i ) ) ;
+                in_boundary.push_back( E.in_boundary_gme( i ) ) ;
             }
         } else {
             // We are dealing with high level elements
@@ -848,7 +796,7 @@ namespace {
     {
         const GME& E = model.element( in ) ;
         for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
-            if( E.in_boundary_id( i ) == is ) {
+            if( E.in_boundary_gme( i ) == is ) {
                 return true ;
             }
         }
@@ -898,7 +846,7 @@ namespace {
             std::vector< index_t > lines ;
             std::vector< index_t > surfaces ;
 
-            const std::vector< GeoModelMeshVertices::VertexInGME >& bmes =
+            const std::vector< GMEVertex >& bmes =
                 M.mesh.vertices.gme_vertices( i ) ;
 
             for( index_t j = 0; j < bmes.size(); ++j ) {
@@ -1296,7 +1244,7 @@ namespace RINGMesh {
         /// triangulated mesh corresponding to this model.
         GEO::Mesh model_mesh ;
         GEO::Logger::instance()->set_quiet( true ) ;
-        mesh_from_geo_model( GM, model_mesh ) ;
+        build_mesh_from_geomodel( GM, model_mesh ) ;
         GEO::mesh_repair( model_mesh, MESH_REPAIR_TRIANGULATE ) ;
         GEO::Logger::instance()->set_quiet( false ) ;
 

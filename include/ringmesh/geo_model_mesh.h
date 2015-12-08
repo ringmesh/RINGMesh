@@ -65,44 +65,16 @@ namespace RINGMesh {
     const std::string region_att_name = "region" ;
     const std::string order_att_name = "order" ;
 
+    /*! 
+     * This design is a catastrophe !
+     * The vertices are used at building step, at saving steps ...
+     * Update mechanisms are BAD... very difficult to change, specially because of 
+     * the building [JP]
+     */
+ 
     class RINGMESH_API GeoModelMeshVertices {
-    ringmesh_disable_copy( GeoModelMeshVertices ) ;
+        ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
-    public:
-        /*!
-         * @brief Identification of a vertex in a GeoModelElement
-         * @todo Je changerai bien ce nom moche au refactoring [JP]
-         */
-        struct VertexInGME {
-            VertexInGME( GME::gme_t t, index_t vertex_id_in )
-                : gme_id( t ), v_id( vertex_id_in )
-            {
-            }
-            VertexInGME()
-                : gme_id(), v_id( NO_ID )
-            {
-            }
-            bool operator<( const VertexInGME& rhs ) const
-            {
-                if( gme_id != rhs.gme_id ) {
-                    return gme_id < rhs.gme_id ;
-                } else {
-                    return v_id < rhs.v_id ;
-                }
-            }
-            bool operator==( const VertexInGME& rhs ) const
-            {
-                return gme_id == rhs.gme_id && v_id == rhs.v_id ;
-            }
-            bool is_defined() const
-            {
-                return gme_id.is_defined() && v_id != NO_ID ;
-            }
-            /// Unique identifier of the associated GeoModelElement
-            GME::gme_t gme_id ;
-            /// Index of the vertex in the BME
-            index_t v_id ;
-        } ;
 
     public:
         GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, GEO::Mesh& mesh ) ;
@@ -140,7 +112,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the vertices in GME corresponding to the given unique vertex
          */
-        const std::vector< VertexInGME >& gme_vertices( index_t v ) const ;
+        const std::vector< GMEVertex >& gme_vertices( index_t v ) const ;
 
         /*!
          * @brief To use when building the model by first adding its vertices
@@ -153,7 +125,7 @@ namespace RINGMesh {
          * @brief Add a vertex in a GeoModelElement
          *        corresponding to an existing vertex of the model
          */
-        void add_to_bme( index_t v, const VertexInGME& v_gme ) ;
+        void add_to_bme( index_t v, const GMEVertex& v_gme ) ;
 
         /*!
          * @brief Change one of the GME vertex associated to a vertex
@@ -161,7 +133,7 @@ namespace RINGMesh {
          * @param[in] i Index of the GME vertex
          * @param[in] v_gme index of GME and of the vertex in that GME
          */
-        void set_gme( index_t v, index_t i, const VertexInGME& v_gme ) ;
+        void set_gme( index_t v, index_t i, const GMEVertex& v_gme ) ;
 
         /*!
          * @brief Set the point coordinates of all the vertices that
@@ -220,7 +192,7 @@ namespace RINGMesh {
         void erase_vertices( std::vector< index_t >& to_delete ) ;
 
         /*!
-         * @brief Remove all invalid VertexInGME and delete the vertices
+         * @brief Remove all invalid GMEVertex and delete the vertices
          * that are not anymore in any GeoModelElement
          */
         void erase_invalid_vertices() ;
@@ -237,7 +209,7 @@ namespace RINGMesh {
          * Vertices in GeoModelElements corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
          */
-        std::vector< std::vector< VertexInGME > > gme_vertices_ ;
+        std::vector< std::vector< GMEVertex > > gme_vertices_ ;
         /// Kd-tree of the model vertices
         ColocaterANN* kdtree_ ;
 
@@ -457,7 +429,6 @@ namespace RINGMesh {
         index_t nb_quad_ ;
         /// Number of polygons in the GeoModelMesh
         index_t nb_polygon_ ;
-
     } ;
 
     class RINGMESH_API GeoModelMeshEdges {
@@ -1044,7 +1015,6 @@ namespace RINGMesh {
         index_t nb_high_order_points_per_cell_type_[4] ;
         /// Number of high order vertices function of the facet type
         index_t nb_high_order_points_per_facet_type_[2] ;
-
     } ;
 
     class RINGMESH_API GeoModelMesh {
@@ -1060,7 +1030,7 @@ namespace RINGMesh {
 
         /*!
          * Copy the current GeoModelMesh into a Mesh
-         * @param[out] mesh The mesh to fill
+         * @param[out] mesh The mesh to fill        
          */
         void copy_mesh( GEO::Mesh& mesh ) const
         {
@@ -1118,7 +1088,7 @@ namespace RINGMesh {
         void erase_vertices( std::vector< index_t >& to_delete ) ;
 
         /*!
-         * @brief Remove all invalid VertexInGME and delete the vertices
+         * @brief Remove all invalid GMEVertex and delete the vertices
          * that are not anymore in any GeoModelElement
          */
         void erase_invalid_vertices() ;
@@ -1128,7 +1098,7 @@ namespace RINGMesh {
          */
         const index_t get_order() const
         {
-            return order_ ;
+            return order_value_ ;
         }
         /*!
          * Change the order of the GeoModelMesh
@@ -1137,18 +1107,18 @@ namespace RINGMesh {
          */
         void set_order( index_t new_order )
         {
-            if( new_order != order_ ) {
+            if( new_order != order_value_ ) {
                 order.clear() ;
             }
-            order_ = new_order ;
+            order_value_ = new_order ;
         }
 
     private:
         /*! Attached GeoModel */
-        GeoModel& gm_ ;
+        const GeoModel& gm_ ;
         /*!
-         * @brief Mesh owned by the GeoModelMesh, stores unique 
-         * vertices, edges, facets and cells.
+         * @brief Mesh owned by the GeoModelMesh, stores unique vertices, edges, 
+         * facets and cells.
          * @details This means no colocated vertices, no duplicated edges, 
          * facets or cells.
          */
@@ -1156,14 +1126,13 @@ namespace RINGMesh {
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
         /// Order of the GeoModelMesh
-        index_t order_ ;
+        index_t order_value_ ;
 
     public:
         GeoModelMeshVertices vertices ;
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
         GeoModelMeshCells cells ;
-        /*! @todo : Review Change the name, too similar to order_ [JP] */
         GeoModelMeshOrder order ;
     } ;
 

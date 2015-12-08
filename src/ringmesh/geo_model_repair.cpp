@@ -58,7 +58,6 @@ namespace {
 
     typedef GeoModelElement::gme_t gme_t ;
     typedef GeoModelMeshElement GMME ;
-    typedef GeoModelMeshVertices::VertexInGME VGME ;
 
     /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
     *
@@ -216,7 +215,7 @@ namespace {
                     Surface& S = const_cast< Surface& >( BM.surface( i ) ) ;
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
-                        const Line& L = BM.line( S.boundary_id( l ).index ) ;
+                        const Line& L = BM.line( S.boundary_gme( l ).index ) ;
                         if( to_remove.count( L.gme_id() ) == 0 &&
                             L.is_inside_border( S )
                             ) {

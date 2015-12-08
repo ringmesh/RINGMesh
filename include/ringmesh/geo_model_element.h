@@ -61,7 +61,7 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-
+   
     /*!
      * @brief Generic class describing one element of a GeoModel
      */
@@ -333,7 +333,7 @@ namespace RINGMesh {
         {
             return boundaries_.size() ;
         }
-        const gme_t& boundary_id( index_t x ) const
+        const gme_t& boundary_gme( index_t x ) const
         {
             return boundaries_[x] ;
         }
@@ -343,7 +343,7 @@ namespace RINGMesh {
         {
             return in_boundary_.size() ;
         }
-        const gme_t& in_boundary_id( index_t x ) const
+        const gme_t& in_boundary_gme( index_t x ) const
         {
             return in_boundary_[x] ;
         }
@@ -406,6 +406,38 @@ namespace RINGMesh {
     // Anybody can include a header says Mr Stroustrup (Jeanne).
     // For me this is the best place ! So anybody can use RINGMesh::BME!
     typedef GeoModelElement GME ;
+
+    /*!
+    * @brief Vertex in a GeoModelElement
+    */
+    struct GMEVertex {
+        GMEVertex( GME::gme_t t, index_t vertex_id_in )
+            : gme_id( t ), v_id( vertex_id_in )
+        {}
+        GMEVertex()
+            : gme_id(), v_id( NO_ID )
+        {}
+        bool operator<( const GMEVertex& rhs ) const
+        {
+            if( gme_id != rhs.gme_id ) {
+                return gme_id < rhs.gme_id ;
+            } else {
+                return v_id < rhs.v_id ;
+            }
+        }
+        bool operator==( const GMEVertex& rhs ) const
+        {
+            return gme_id == rhs.gme_id && v_id == rhs.v_id ;
+        }
+        bool is_defined() const
+        {
+            return gme_id.is_defined() && v_id != NO_ID ;
+        }
+        /// GeoModelElement id in its GeoModel
+        GME::gme_t gme_id ;
+        /// Index of the vertex in the GeoModelElement
+        index_t v_id ;
+    } ;
 
 
     /*!
@@ -509,7 +541,9 @@ namespace RINGMesh {
         * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
         * @todo changer le nom
         */
-        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;      
+        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ; 
+
+        std::vector<index_t> gme_vertex_indices( index_t model_vertex_id ) const ;
 
         /*!
          * @}
@@ -565,10 +599,6 @@ namespace RINGMesh {
          */
         GEO::Attribute< index_t > model_vertex_id_ ;
     } ;
-
-    /// @todo This is probably not the best place to do this.
-    // Anybody can include a header says Mr Stroustrup (Jeanne).
-    typedef GeoModelMeshElement GMME ;
 
     /*!
      * @brief A GeoModelElement of type CORNER
@@ -694,12 +724,9 @@ namespace RINGMesh {
 
         Surface( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, SURFACE, id ), tools( *this )
-        {
-        }
+        {}
 
-        ~Surface()
-        {
-        }
+        ~Surface(){}
 
         /*!
          * @brief Number of facets
@@ -720,12 +747,10 @@ namespace RINGMesh {
             return mesh_.facets.vertex( me, lv ) ;
         }
          
-
-        bool is_triangulated() const
+        bool is_simplicial() const
         {
             return mesh_.facets.are_simplices() ;
         }
-
       
         /*!
          * \name Accessors to facet and vertices
@@ -769,17 +794,12 @@ namespace RINGMesh {
             }
         }
 
-        /*
-        * @todo Comment
-        */
-        index_t nb_corners() const
+        index_t nb_facet_corners() const
         {
             return mesh_.facet_corners.nb() ;
         }
-        /*
-        * @todo Comment
-        */
-        index_t model_vertex_id_at_corner( index_t corner ) const
+
+        index_t model_vertex_id_at_facet_corner( index_t corner ) const
         {
             return GeoModelMeshElement::model_vertex_id(
                 mesh_.facet_corners.vertex( corner ) ) ;
@@ -787,7 +807,6 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the surface index of vertex \param v in facet \param f
-         * @todo Remove
          */
         index_t surf_vertex_id( index_t f, index_t v ) const
         {
@@ -839,8 +858,10 @@ namespace RINGMesh {
          * \name Geometrical request on facets
          * @{
          */
-        vec3 normal( index_t f ) const ;
-        index_t closest_vertex_in_facet( index_t f, const vec3& vertex ) const ;
+        vec3 facet_normal( index_t facet_index ) const ;
+        vec3 facet_barycenter( index_t facet_index ) const ;
+        double facet_area( index_t facet_index ) const ;
+        index_t closest_vertex_in_facet( index_t facet_index, const vec3& to_point ) const ;
 
         /*! @}
          * \name Adjacencies request
@@ -976,6 +997,11 @@ namespace RINGMesh {
         bool side( index_t i ) const
         {
             return sides_[i] ;
+        }
+
+        bool is_simplicial() const
+        {
+            return mesh().cells.are_simplices() ;
         }
 
         /*!

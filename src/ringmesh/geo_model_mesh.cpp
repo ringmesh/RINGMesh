@@ -183,7 +183,7 @@ namespace RINGMesh {
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
-                nb += gm_.mesh_element( GME::gme_t( T, e ) ).nb_vertices() ;
+                nb += gm_.mesh_element( T, e ).nb_vertices() ;
             }
         }
         // Get out if no vertices
@@ -209,7 +209,7 @@ namespace RINGMesh {
                     // Global index stored at BME level
                     att[ v ] = count ;
                     // Index in the BME stored at global level
-                    gme_vertices_[ count ].push_back( VertexInGME( E.gme_id(), v ) ) ;
+                    gme_vertices_[ count ].push_back( GMEVertex( E.gme_id(), v ) ) ;
                     // Global vertex index increment
                     count++ ;
                 }
@@ -293,7 +293,7 @@ namespace RINGMesh {
         }
     }
 
-    const std::vector< GeoModelMeshVertices::VertexInGME >&
+    const std::vector< GMEVertex >&
     GeoModelMeshVertices::gme_vertices( index_t v ) const
     {
         test_and_initialize() ;
@@ -303,11 +303,11 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
         clear_kdtree() ;
-        gme_vertices_.push_back( std::vector< VertexInGME >() ) ;
+        gme_vertices_.push_back( std::vector< GMEVertex >() ) ;
         return mesh_.vertices.create_vertex( point.data() ) ;
     }
 
-    void GeoModelMeshVertices::add_to_bme( index_t v, const VertexInGME& v_gme )
+    void GeoModelMeshVertices::add_to_bme( index_t v, const GMEVertex& v_gme )
     {
         test_and_initialize() ;
         ringmesh_debug_assert( v < nb() ) ;
@@ -323,7 +323,7 @@ namespace RINGMesh {
     void GeoModelMeshVertices::set_gme(
         index_t unique_id,
         index_t k,
-        const VertexInGME& v )
+        const GMEVertex& v )
     {
         test_and_initialize() ;
         ringmesh_debug_assert( unique_id < nb() ) ;
@@ -340,9 +340,9 @@ namespace RINGMesh {
         clear_kdtree() ;
 
         GeoModelBuilder builder( gm_ ) ;
-        const std::vector< VertexInGME >& gme_v = gme_vertices( v ) ;
+        const std::vector< GMEVertex >& gme_v = gme_vertices( v ) ;
         for( index_t i = 0; i < gme_v.size(); i++ ) {
-            const VertexInGME& info = gme_v[i] ;
+            const GMEVertex& info = gme_v[i] ;
             builder.set_element_vertex( info.gme_id, info.v_id, point, false ) ;
         }
     }
@@ -372,7 +372,7 @@ namespace RINGMesh {
         std::vector< index_t > to_delete( nb() ) ; // Here nb() represents the number of vertices before removal of the elements
 
         for( index_t v = 0; v < nb(); ++v ) {
-            std::vector< VertexInGME >& related = gme_vertices_[v] ;
+            std::vector< GMEVertex >& related = gme_vertices_[v] ;
             index_t nb_invalid = 0 ;
 
             // Get the invalid BMEVertices for the current global vertex
@@ -380,7 +380,7 @@ namespace RINGMesh {
 
                 if( !related[i].is_defined() ) {
                     // To ease removal of invalid BMEVertices
-                    related[i] = VertexInGME() ;
+                    related[i] = GMEVertex() ;
                     nb_invalid++ ;
                 }
             }
@@ -388,7 +388,7 @@ namespace RINGMesh {
             if( nb_invalid < related.size() ) {
                 to_delete[v] = v ;
                 related.erase(
-                    std::remove( related.begin(), related.end(), VertexInGME() ),
+                    std::remove( related.begin(), related.end(), GMEVertex() ),
                     related.end() ) ;
             } else {
                 // This vertex must be deleted
@@ -448,7 +448,7 @@ namespace RINGMesh {
 
         gme_vertices_.erase(
             std::remove( gme_vertices_.begin(), gme_vertices_.end(),
-                std::vector< VertexInGME >() ), gme_vertices_.end() ) ;
+                std::vector< GMEVertex >() ), gme_vertices_.end() ) ;
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
@@ -487,10 +487,10 @@ namespace RINGMesh {
                      */
                     // Merge gme_vertices_ information
                     if( std::find( gme_vertices_[new_id].begin(),
-                        gme_vertices_[new_id].end(), VertexInGME( E.gme_id(), v ) )
+                        gme_vertices_[new_id].end(), GMEVertex( E.gme_id(), v ) )
                         == gme_vertices_[new_id].end() ) {
                         gme_vertices_[new_id].push_back(
-                            VertexInGME( E.gme_id(), v ) ) ;
+                            GMEVertex( E.gme_id(), v ) ) ;
                     }
                 }
             }
@@ -531,8 +531,7 @@ namespace RINGMesh {
     void GeoModelMeshCells::initialize()
     {
         gmm_.vertices.test_and_initialize() ;
-        region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1,
-            0 ) ;
+        region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1, 0 ) ;
 
         // Total number of  cells
         std::vector< index_t > nb_cells_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
@@ -548,7 +547,6 @@ namespace RINGMesh {
         }
 
         // Compute the number of cell per type and per region
-        std::vector< GEO::MeshCellType > cells_vertices_type( nb ) ;
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
             const GEO::Mesh& cur_region_mesh = cur_region.mesh() ;
@@ -1491,7 +1489,7 @@ namespace RINGMesh {
         std::vector< index_t > nb_facet_per_type( ALL, 0 ) ;
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
-            if( surface.is_triangulated() ) {
+            if( surface.is_simplicial() ) {
                 nb_facet_per_type[TRIANGLE] += surface.nb_cells() ;
                 surface_facet_ptr_[ALL * s + TRIANGLE + 1] += surface.nb_cells() ;
             } else {
@@ -1695,10 +1693,10 @@ namespace RINGMesh {
             gmm_( gmm ),
             gm_( gmm.model() ),
             mesh_( mesh ),
+            nb_vertices_( 0 ),
             high_order_vertices_( 0 ),
             max_new_points_on_cell_( 0 ),
-            max_new_points_on_facet_( 0 ),
-            nb_vertices_( 0 )
+            max_new_points_on_facet_( 0 )
     {
         for( index_t i = 0; i < 4; i++ ) {
             nb_high_order_points_per_cell_type_[i] = 0 ;
@@ -1947,7 +1945,7 @@ namespace RINGMesh {
             gm_( gm ),
             mesh_( new GEO::Mesh ),
             mode_( GeoModelMeshCells::NONE ),
-            order_( 1 ),
+            order_value_( 1 ),
             vertices( *this, gm, *mesh_ ),
             edges( *this, *mesh_ ),
             facets( *this, *mesh_ ),

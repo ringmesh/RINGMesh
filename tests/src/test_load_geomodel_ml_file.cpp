@@ -54,7 +54,7 @@ int main( int argc, char** argv )
      *  What is the goal and whatsoever [JP]
      */
     std::string input_model_file_name( ringmesh_test_data_path ) ;
-    input_model_file_name += "modelA1.ml" ;
+    input_model_file_name += "modelA6.ml" ;
 
     // Set an output log file
     std::string log_file( ringmesh_test_output_path ) ;
