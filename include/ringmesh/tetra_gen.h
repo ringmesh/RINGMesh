@@ -88,7 +88,7 @@ namespace RINGMesh {
         /*!
          * @brief Send the set of points/edges/triangles to MGTetra or TetGen
          * @details A set of points/edges/triangles are given to MGtetra or Tetgen
-         * The two mesh generators are configurated. Then check and repairs functions
+         * The two mesh generators are configurated. Then check and repair functions
          * are launched in order to control the outputs
          * @param[in] refine tells whether or not there are refined options to set (true by defaults)
          */
