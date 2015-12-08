@@ -38,8 +38,6 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
-
 #ifndef __RINGMESH_GEO_MODEL__
 #define __RINGMESH_GEO_MODEL__
 
@@ -48,6 +46,12 @@
 #include <ringmesh/geo_model_mesh.h>
 
 #include <vector>
+
+/*!
+ * @file ringmesh/geo_model.h
+ * @brief Class representing a geological structural model: GeoModel
+ * @author Jeanne Pellerin and Arnaud Botella
+ */
 
 namespace RINGMesh {
     class WellGroup ;
@@ -117,12 +121,19 @@ namespace RINGMesh {
          * @brief Returns a const reference the identified GeoModelElement
          * @param[in] id Type and index of the element. For the 
          * pair (Region, NO_ID) universe region is returned.
-         * 
          * @pre Element identification is valid.
          */
         const GeoModelElement& element( GME::gme_t id ) const
         {
             return *element_ptr( id ) ;
+        }
+
+        /*!
+         * Convenient overload of element( GME::gme_t id )
+         */
+        const GeoModelElement& element( GME::TYPE element_type, index_t element_index ) const
+        {
+            return element( GME::gme_t( element_type, element_index ) ) ;
         }
 
         /*!
@@ -134,6 +145,15 @@ namespace RINGMesh {
             ringmesh_assert( GME::has_mesh( id.type ) ) ;
             return dynamic_cast< const GeoModelMeshElement& >( element( id ) ) ;
         }
+
+        /*!
+         * Convenient overload of element( GME::gme_t id )
+         */
+        const GeoModelMeshElement& mesh_element( GME::TYPE element_type, index_t element_index ) const
+        {
+            return mesh_element( GME::gme_t( element_type, element_index ) ) ;
+        }
+
 
         /*! @}
          * \name Specialized accessors.
@@ -170,53 +190,49 @@ namespace RINGMesh {
 
         const Corner& corner( index_t index ) const
         {
-            // Yes, we could use static_cast, but I do not trust the
-            // Builder and I prefer to check [JP]  
+            // Yes, we could use static_cast, but I trust nobody and check [JP]
             return dynamic_cast< const Corner& >( *corners_.at( index ) ) ;
         }
 
         const Line& line( index_t index ) const
         {
-            return dynamic_cast< const Line& >(
-                element( GME::gme_t( GME::LINE, index ) ) ) ;
+            return dynamic_cast< const Line& >( element( GME::LINE, index ) ) ;
         }
 
         const Surface& surface( index_t index ) const
         {
-            return dynamic_cast< const Surface& >(
-                element( GME::gme_t( GME::SURFACE, index ) ) ) ;            
+            return dynamic_cast< const Surface& >( element( GME::SURFACE, index ) ) ;            
         }
 
         const Region& region( index_t index ) const
         {
-            return dynamic_cast<const Region&>(
-                element( GME::gme_t( GME::REGION, index ) ) ) ;          
+            return dynamic_cast<const Region&>( element( GME::REGION, index ) ) ;          
         }
 
         const GeoModelElement& contact( index_t index ) const
         {
-            return element( GME::gme_t( GME::CONTACT, index ) ) ;
+            return element( GME::CONTACT, index ) ;
         }
 
         const GeoModelElement& one_interface( index_t index ) const
         {
-            return element( GME::gme_t( GME::INTERFACE, index ) ) ;
+            return element( GME::INTERFACE, index ) ;
         }
 
         const GeoModelElement& layer( index_t index ) const
         {
-            return element( GME::gme_t( GME::LAYER, index ) ) ;
+            return element( GME::LAYER, index ) ;
         }
 
         const Region& universe() const
         {
-            return dynamic_cast<const Region&> (
-                element( GME::gme_t( GME::REGION, NO_ID ) ) ) ;            
+            return dynamic_cast<const Region&>( element( GME::REGION, NO_ID ) ) ;
         }
 
         /*!
          * @}
          */
+        /* @todo Wells have nothing at all to do here [JP] */
         void set_wells( const WellGroup* wells ) ;
         const WellGroup* wells() const
         {
@@ -224,7 +240,6 @@ namespace RINGMesh {
         }
 
     private:
-
         /*! 
          * @brief Convert a global BME index into a typed index
          * @details Relies on the nb_elements_per_type_ vector that 
@@ -292,12 +307,12 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Modifiable pointer to an element of the model
-        * @param[in] id Type and index of the element. For the
-        * pair (Region, NO_ID) universe region is returned.
-        * 
-        * @pre Element identification is valid.
-        */
+         * @brief Modifiable pointer to an element of the model
+         * @param[in] id Type and index of the element. For the
+         * pair (Region, NO_ID) universe region is returned.
+         * 
+         * @pre Element identification is valid.
+         */
         GeoModelElement* element_ptr( const GME::gme_t& id ) const
         {
             if( id.type == GME::REGION && id.index == NO_ID ) {
@@ -316,9 +331,9 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Reference to a modifiable element of the model
-        * @pre The id must refer to a valid element of the model
-        */
+         * @brief Reference to a modifiable element of the model
+         * @pre The id must refer to a valid element of the model
+         */
         GeoModelElement& modifiable_element(
             const GME::gme_t& id ) const
         {
@@ -326,10 +341,10 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Reference to a modifiable meshed element of the model
-        * @pre Assert in debug model that the given id refers to a meshed element.
-        *      The id must refer to a valid element.
-        */
+         * @brief Reference to a modifiable meshed element of the model
+         * @pre Assert in debug model that the given id refers to a meshed element.
+         *      The id must refer to a valid element.
+         */
         inline GeoModelMeshElement& modifiable_mesh_element(
             const GME::gme_t& id ) const
         {
@@ -360,15 +375,6 @@ namespace RINGMesh {
     private:
         // Name of the model
         std::string name_ ;
-
-        /*
-         * @todo Change storage to have 2 vectors 
-         * std::vector< GeoModelElement* > elements_ 
-         * std::vector< index_t > element_type_ptr  
-         * Not so nice to build, but so nice to store [JP]
-         * I don't think this is a good idea if we want to move
-         * to editable model [AB] Why not ? If a Mesh can work this way, we can [JP]
-         */
 
         /*!
         * \name Mandatory elements of the model
@@ -422,12 +428,15 @@ namespace RINGMesh {
         */
 
         /* 
-         * @brief Global access to BME. It MUST be updated if one element is added.
+         * @brief Global access to GeoModelElements.
+         * It MUST be updated if one element is added.
          * @warning It must be up to date at all times
          */
         std::vector< index_t > nb_elements_per_type_ ;
 
-        /// Optional WellGroup associated with the model
+        /*! Optional WellGroup associated with the model
+         * @todo Give a more general name - this could be anything [JP]
+         */
         const WellGroup* wells_ ;
     } ;
 

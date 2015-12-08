@@ -71,7 +71,7 @@ namespace {
             const Region& cur_region = BM.region( r ) ;
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
-                    && cur_region.boundary_id( s ) == cur_surface ) {
+                    && cur_region.boundary_gme( s ) == cur_surface ) {
                     return r ;
                 }
             }
@@ -473,7 +473,7 @@ namespace RINGMesh {
                     vec3 direction = v_prev - intersections[index].intersection_ ;
                     bool sign =
                         dot( direction,
-                            model_->surface( intersections[index].surface_id_ ).normal(
+                        model_->surface( intersections[ index ].surface_id_ ).facet_normal(
                                 intersections[index].trgl_id_ ) ) > 0 ;
                     last_sign = sign ;
                     index_t region = find_region(
@@ -569,9 +569,8 @@ namespace RINGMesh {
                 index_t index = indices[0] ;
                 vec3 direction = v_from - intersections[index].intersection_ ;
                 bool sign = dot( direction,
-                    model_->surface( intersections[index].surface_id_ ).normal(
+                                 model_->surface( intersections[ index ].surface_id_ ).facet_normal(
                         intersections[index].trgl_id_ ) ) > 0 ;
-                last_sign = sign ;
                 region = find_region( *model_, intersections[index].surface_id_,
                     sign ) ;
             }

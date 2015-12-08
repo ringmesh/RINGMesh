@@ -44,7 +44,6 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 
-
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
@@ -62,49 +61,10 @@ using RINGMesh::GeoModel ;
 using RINGMesh::Surface ;
 
 
-/*!
-* @brief Build a Mesh from the model non-duplicated vertices
-*        and its Surface facets.
-* @details Adjacencies are not set. Client should call
-*  mesh repair functions afterwards.
-* @todo Copy of code in validity check imlpementation
-*       Transfer it in the API, create a Mesh from a whol of 
-*       some parts of a GeoModel
-*/
-void mesh_from_geo_model( const GeoModel& model, GEO::Mesh& M )
-{
-    // Keep the attributes when clearing the mesh, otherwise we crash
-    M.clear( true ) ;
-
-    index_t nbv = model.mesh.vertices.nb() ;
-    M.vertices.create_vertices( nbv ) ;
-
-    /* We need to copy the point one after another since we do not have access
-    * to the storage of the model.vertices.
-    * I do not want to provide this access [JP]
-    */
-    for( index_t v = 0; v < nbv; ++v ) {
-        M.vertices.point( v ) = model.mesh.vertices.vertex( v ) ;
-    }
-
-    // Set the facets  
-    for( index_t s = 0; s < model.nb_surfaces(); ++s ) {
-        const Surface& S = model.surface( s ) ;
-        for( index_t f = 0; f < S.nb_cells(); ++f ) {
-            index_t nbv = S.nb_vertices_in_facet( f ) ;
-            GEO::vector< index_t > ids( nbv ) ;
-
-            for( index_t v = 0; v < nbv; ++v ) {
-                ids[ v ] = S.model_vertex_id( f, v ) ;
-            }
-            M.facets.create_polygon( ids ) ;
-        }
-    }
-}
-
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
+#ifdef RINGMESH_WITH_TETGEN
 
     // Set an output log file
     std::string log_file( ringmesh_test_output_path ) ;
@@ -113,20 +73,23 @@ int main( int argc, char** argv )
     GEO::Logger::instance()->register_client( file_logger ) ;
 
     std::string file_name( ringmesh_test_data_path ) ;
-    file_name += "split_cube.ml" ;
+    file_name += "modelA6.ml" ;
     std::string result_file_name( ringmesh_test_output_path ) ;
     result_file_name += "geomodel_tet_mesh.mesh" ;
 
     GeoModel geomodel ;
     geomodel_surface_load( file_name, geomodel ) ;
-
-    GEO::Mesh geomodel_surfaces_mesh ;
-    mesh_from_geo_model( geomodel, geomodel_surfaces_mesh ) ;
-    tetrahedralize_mesh_tetgen( geomodel_surfaces_mesh ) ;
-
-    GEO::mesh_save( geomodel_surfaces_mesh, result_file_name ) ;
-
-    // todo - assign the generated tets to the right regions of the model
-
+    tetgen_tetrahedralize_geomodel_regions( geomodel ) ;
+  
+    // Save volumetric mesh with cell region attribute
+    /// @todo Implement a function to do it
+    GEO::Mesh geomodel_regions_mesh ;
+    build_mesh_from_geomodel( geomodel, geomodel_regions_mesh ) ;
+    GEO::MeshIOFlags mesh_io_flags ;
+    mesh_io_flags.set_elements( GEO::MeshElementsFlags( GEO::MESH_VERTICES | GEO::MESH_CELLS ) ) ;
+    mesh_io_flags.set_attribute( GEO::MESH_CELL_REGION ) ;
+    GEO::mesh_save( geomodel_regions_mesh, result_file_name, mesh_io_flags ) ;
+#endif
     return 0 ;
 }
+

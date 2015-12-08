@@ -44,36 +44,151 @@
 
 #include <ringmesh/common.h>
 
+#include <geogram/basic/memory.h>
 #include <geogram/basic/attributes.h>
+#include <geogram/mesh/mesh.h>
 
-namespace GEO {
-    class Mesh ;
-}
+#ifdef RINGMESH_WITH_TETGEN
+#   include <geogram/third_party/tetgen/tetgen.h>
+#endif 
 
 namespace RINGMesh {
-	
+
+    /*!
+     * Copy the content of a standrad library vector to the memory aligned GEO::Vector. 
+     * A lot of copies, when we need to call Geogram functions. 
+     * @todo Could we set Geogram vector to be a std::vector ?? 
+     */
+    template< class T >
+    void copy_std_vector_to_geo_vector( const std::vector<T>& in, GEO::vector<T>& out )
+    {
+        out.resize( in.size() ) ;
+        for( index_t i = 0; i < in.size(); ++i ) {
+            out[ i ] = in[ i ]  ; 
+        }
+    }
+
+    /*!
+     * Partial copy the content of a standrad library vector to a GEO::Vector.
+     * A lot of copies, when we need to call Geogram functions.
+     * @todo Could we set Geogram vector to be a std::vector ??
+     */
+    template< class T >
+    void copy_std_vector_to_geo_vector( 
+        const std::vector<T>& in, index_t from, index_t to, GEO::vector<T>& out )
+    {
+        ringmesh_assert( to < in.size()+1 ) ;
+        ringmesh_assert( from < to ) ;
+        index_t nb_to_copy( to - from ) ;
+        out.resize( nb_to_copy ) ;
+        index_t count = 0 ;
+        for( index_t i = 0; i != nb_to_copy; ++i) {
+            out[ i ] = in[ from +i ] ;
+        }
+    }
+  
+
     /***********************************************************************/
     /* Loading and saving a GEO::Mesh                                      */
 
-    /** @brief complement the available MeshIOHandler
+    /*! @brief complement the available MeshIOHandler
      */
     void RINGMESH_API ringmesh_mesh_io_initialize() ;
             
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
 
-    
+#ifdef RINGMESH_WITH_TETGEN
+    /// @todo Move all tetgen related stuff in one or two files
+
+      /*! 
+     * @brief Utility class to set Tetgen switches and check their consistency
+     * @details Tetgen arguments are a mess and this class helps set the basic options
+     * @todo To implement!
+     *
+     * Q: quiet
+     * p: input data is surfacic
+     * q: desired quality
+     * O0: do not optimize mesh
+     * V: verbose - A LOT of information
+     * Y: prohibit steiner points on boundaries
+     * A: generate region tags for each shell.      
+     *
+     * Meshing with incomplete quality value "Qpq%fYA"
+     */
+    class TetgenCommandLine {
+    public:
+        const std::string command_line() const {
+            return command_line_ ;
+        }
+
+    private:
+        std::string command_line_ ;
+    };
+
+
+    /*!
+     * @brief Tetgen wrapper
+     * 
+     */
+    class TetgenMesher {
+        ringmesh_disable_copy( TetgenMesher ) ;
+    public:
+        TetgenMesher()
+            : polygons_( nil ), polygon_corners_( nil )
+        {
+        }
+        ~TetgenMesher() ;
+
+        void tetrahedralize( const GEO::Mesh& input_mesh, 
+                             const std::string& command_line, 
+                             GEO::Mesh& output_mesh ) ; 
+        
+        void tetrahedralize( const GEO::Mesh& input_mesh, 
+                             const std::vector< vec3 >& one_point_per_region,
+                             const std::string& command_line, 
+                             GEO::Mesh& output_mesh ) ; 
+
+    private:
+        void initialize() ;
+        void initialize_tetgen_args() ;         
+        void set_command_line( const std::string& command_line ) ;
+        void tetrahedralize() ;
+
+        void copy_mesh_to_tetgen_input( const GEO::Mesh& M ) ;
+        void copy_vertices_to_tetgen_input( const GEO::Mesh& M ) ;
+        void copy_edges_to_tetgen_input( const GEO::Mesh& M ) ;
+        void copy_facets_to_tetgen_input( const GEO::Mesh& M ) ;
+        void set_regions( const std::vector< vec3 >& one_point_per_region ) ;
+
+        void fill_region_attribute_on_mesh_cells( GEO::Mesh& M, const std::string& attribute_name ) const ;
+        void assign_result_tetmesh_to_mesh( GEO::Mesh& M ) ;
+        void get_result_tetmesh_points( GEO::vector< double >& points ) const ;
+        void get_result_tetmesh_tets( GEO::vector< index_t>& tets ) const ;
+
+    private:
+        GEO_3rdParty::tetgenio tetgen_in_ ;
+        GEO_3rdParty::tetgenio tetgen_out_ ;
+        std::string tetgen_command_line_ ;
+        GEO_3rdParty::tetgenbehavior tetgen_args_ ;
+
+        GEO_3rdParty::tetgenio::polygon* polygons_ ;
+        int* polygon_corners_ ;        
+    };
+   
+
+
     /*!
      * @brief Constrained tetrahedralize of the volumes defined by a triangulated surface mesh
      * @details Does not require this mesh to be a closed manifold
-     * as the equivalent Geogram function does.
+     * as the equivalent in Geogram function does.
      */
-    bool RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M ) ;
+    bool RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) ;
+
+#endif
 
     
-    void RINGMESH_API rotate_mesh(
-        GEO::Mesh& mesh,
-        const GEO::Matrix< float64, 4 >& rot_mat ) ;
+    void RINGMESH_API rotate_mesh( GEO::Mesh& mesh, const GEO::Matrix< float64, 4 >& rot_mat ) ;
 
   
     double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
@@ -138,59 +253,45 @@ namespace RINGMesh {
     void RINGMESH_API mesh_facet_connect( GEO::Mesh& mesh ) ;
   
 
+    /*!
+    * @brief Returns true if there are colocated vertices in the Mesh
+    * @details This is a wrapper around Geogram colocate functions
+    */
+    bool RINGMESH_API has_mesh_colocate_vertices( const GEO::Mesh& M, double tolerance ) ;
+
 
     /*!
-    * \brief Convenient class to manipulate vectors of Geogram attributes.
-    * \details Used to ease the storage of a common attribute on several
-    * meshes grouped in the same object, for example those stored by a MacroMesh.
+    * @brief Merges the vertices of a mesh that are at the same geometric location
+    * @note Copied from geogram/mes/mesh_repair.cpp. No choice since BL will not give access to it.
+    */
+    void RINGMESH_API repair_colocate_vertices( GEO::Mesh& M, double tolerance ) ;
+
+
+    /*!
+    * @brief Vector of pointers to Geogram attributes
+    * @note Necessary since one cannot create, vectors of Geogram attributes does 
+    * not compile, because @#$# (no idea) [JP]
+    * @todo Probably extremely prone to bugs. Is it worth the risk? 
     */
     template< class T >
-    class AttributeHandler : public std::vector< GEO::Attribute< T >* > {
-        ringmesh_disable_copy( AttributeHandler ) ;
+    class AttributeVector : public std::vector< GEO::Attribute< T >* > {
+        ringmesh_disable_copy( AttributeVector ) ;
     public:
         typedef std::vector< GEO::Attribute< T >* > base_class ;
-        AttributeHandler()
+        AttributeVector()
             : base_class()
         {}
-        AttributeHandler( index_t size )
+        AttributeVector( index_t size )
             : base_class( size, nil )
         {}
 
-        /*!
-        * Allocate one attribute on one component of the vector
-        * @param[in] m id of the GEO::Mesh
-        * @param[in] name name of the attribute
-        * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
-        */
-        void allocate_attribute(
-            const index_t m,
-            GEO::AttributesManager& am,
-            const std::string& name )
+        void bind_one_attribute( index_t i,
+                                 GEO::AttributesManager& manager,
+                                 const std::string& attribute_name )
         {
-            ringmesh_debug_assert( m < base_class::size() ) ;
-            ringmesh_debug_assert( !base_class::operator[]( m ) ) ;
-            base_class::operator[]( m ) = new GEO::Attribute< T >( am, name ) ;
+            base_class::operator[]( i ) = new GEO::Attribute< T >( manager, attribute_name ) ;
         }
-
-        /*!
-        * Allocate one vector of attributes on one component of the vector
-        * @param[in] m id of the GEO::Mesh
-        * @param[in] name name of the attribute
-        * @param[in] am attribute manager, saying where the attribute is (cells, facets...)
-        * @param[in] size size of the vector of attributes
-        */
-        void allocate_attribute(
-            const index_t m,
-            GEO::AttributesManager& am,
-            const std::string& name,
-            index_t size )
-        {
-            ringmesh_debug_assert( m < base_class::size() ) ;
-            ringmesh_debug_assert( !base_class::operator[]( m ) ) ;
-            base_class::operator[]( m ) = new GEO::Attribute< T >() ;
-            base_class::operator[]( m )->create_vector_attribute( am, name, size ) ;
-        }
-
+        
         GEO::Attribute< T >& operator[]( index_t i )
         {
             return *base_class::operator[]( i ) ;
@@ -201,14 +302,56 @@ namespace RINGMesh {
             return *base_class::operator[]( i ) ;
         }
 
-        ~AttributeHandler()
+        ~AttributeVector()
         {
             for( index_t i = 0; i < base_class::size(); i++ ) {
-                if( base_class::operator[]( i ) )
+                if( base_class::operator[]( i ) ) {
+                    // I am not sure, but unbind should do the deallocation [JP]
+                    operator[]( i ).unbind() ;
                     delete base_class::operator[]( i ) ;
+                }
             }
         }
     } ;
+
+
+    /*! 
+     * @brief Typed attribute existence check
+     */
+    template< class T > 
+    bool is_attribute_defined( GEO::AttributesManager& manager, 
+                               const std::string& attribute_name )
+    {
+        GEO::AttributeStore* store = manager.find_attribute_store( attribute_name ) ;
+        if( store == nil ) {
+            return false ;
+        } else {
+            std::string T_type_name( typeid( T ).name() );
+            return store->elements_type_matches( T_type_name ) ;
+        }
+    }
+
+    /*!
+     * @brief Type sensitive check of Attribute existence on a Mesh facets
+     */
+    template< class T >
+    bool is_facet_attribute_defined( const GEO::Mesh& mesh,
+                                     const std::string& attribute_name )
+    {
+        GEO::AttributesManager& manager = mesh.facets.attributes() ;
+        return is_attribute_defined< T >( manager, attribute_name ) ;
+    }
+
+    /*!
+    * @brief Type sensitive check of Attribute existence on a Mesh cells
+    */
+    template< class T >
+    bool is_cell_attribute_defined( const GEO::Mesh& mesh,
+                                     const std::string& attribute_name )
+    {
+        GEO::AttributesManager& manager = mesh.cells.attributes() ;      
+        return is_attribute_defined< T >( manager, attribute_name ) ;
+    }
 
 
     void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M ) ;

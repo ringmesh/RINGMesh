@@ -285,7 +285,7 @@ namespace RINGMesh {
             index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
             ringmesh_debug_assert( surface.index() == attribute[f] ) ;
 
-            vec3 ori_normal = surface.normal( 0 ) ;
+            vec3 ori_normal = surface.facet_normal( 0 ) ;
             vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
             if( dot( ori_normal, test_normal ) < 0 ) {
                 flip_surface[surface.index()] = true ;

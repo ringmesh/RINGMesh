@@ -57,10 +57,10 @@
 */
 
 #ifdef USE_MG_TETRA
-    extern "C" {
-        #include <meshgems/meshgems.h>
-        #include <meshgems/tetra.h>
-    }
+extern "C" {
+#include <meshgems/meshgems.h>
+#include <meshgems/tetra.h>
+}
 #endif
 
 namespace GEO {

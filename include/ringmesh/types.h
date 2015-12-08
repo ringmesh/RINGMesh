@@ -63,6 +63,7 @@ namespace RINGMesh {
     using GEO::Numeric::max_float64 ;
     using GEO::Numeric::min_float64 ;
 
+    /// @todo This epsilon definition is ... not great. What should be done ?[JP]
     const float64 epsilon = 1E-8 ;
     const float64 epsilon_sq = epsilon*epsilon ;
 
@@ -75,6 +76,7 @@ namespace RINGMesh {
 
     // This is the value used in RINGMesh for a invalid index
     const static index_t NO_ID(-1) ;
+
 }
 
 #endif
