@@ -47,7 +47,6 @@
 
 namespace RINGMesh {
     class GeoModel ;
-    class GeoModel ;
     class WellGroup ;
 }
 
