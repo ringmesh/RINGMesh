@@ -1,0 +1,139 @@
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  Contacts:
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
+
+
+/**
+
+\page ringmesh_macro_mesh Description of the MacroMesh
+
+A RINGMesh::MacroMesh represents the volumetric mesh associated to a RINGMesh::BoundaryModel.
+
+Structure
+=========
+
+The main member of a RINGMesh::MacroMesh is a vector< GEO::Mesh* > (meshes_). There is one GEO::Mesh (mesh from geogram)
+per volumetric region of the structural model, the RINGMesh::BoundaryModel, attached. All the methods and algorithms
+defined in geogram on these meshes can directly be applied here but region per region.
+
+Example:
+\code
+// Prints the statistics of each region mesh for the MacroMesh called mm
+for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+    mm.mesh( m ).show_stats() ;
+}
+\endcode
+
+This design permits to apply easily different algorithms to the region meshes.
+
+
+Associated objects
+==================
+
+There are two other objects that can be linked to the RINGMesh::MacroMesh:
+ - a RINGMesh::BoundaryModel representing the corresponding structural model (mandatory).
+ - a RINGMesh::WellGroup representing the wells associated (optional). There can be used during the meshing stages
+ and during the export to flow simulators.
+ 
+
+Optional useful databases
+==========================
+
+Each GEO::Mesh representing a region is independent from the other ones.
+It implies that there is no connection between the different meshes, in other words,
+each mesh stores its vertices, facets and cells.
+However, you may want/need a more general information than the one stores inside a mesh.
+
+To ease the global access, four optional databases are attached to the RINGMesh::MacroMesh:
+ - RINGMesh::MacroMeshVertices: access to a global vertex without redundancy at the mesh interfaces.
+ it also handle vertices duplication if needed. Several duplication mode can be set in the
+ RINGMesh::MacroMesh (cf. RINGMesh::DuplicateMode).
+ - RINGMesh::MacroMeshFacets: access to a global facet.
+ - RINGMesh::MacroMeshCells: access to a global cell and its adjacent cells (even at the mesh interfaces).
+ - RINGMesh::MacroMeshEdges: access to a global edge (to model wells).
+These databases are empty by default and are automatically filled as soon as they are used.
+
+Examples:
+\code
+// Iterates on the RINGMesh::MacroMesh (mm) vertices without redundancy
+for( index_t v = 0; v < mm.vertices.nb_vertices(); v++ ) {
+    const vec3& point = mm.vertices.vertex( v ) ;
+}
+
+// Iterates on the RINGMesh::MacroMesh (mm) facets without redondancy
+for( index_t s = 0; s < mm.model().nb_surfaces(); s++ ) {
+    // Each surface can be stored twice if it is at the interface of two meshes
+    // Gets one of the mesh that store the surface s
+    const GEO::Mesh& mesh = mm.facets.mesh( s ) ; 
+    for( index_t f = 0; f < mm.facets.nb_facets( s ); f++ ) { // It is also possible to iterate only on triangle or quad
+        index_t facet_id_in_the_mesh = mm.facets.facet( s, f ) ;
+        std::cout << "Nb vertices in the facets: " << mesh.facets.nb_vertices( facet_id_in_the_mesh ) << std::endl ;
+    }
+}
+
+// Iterates on the RINGMesh::MacroMesh (mm) cells and its adjacent cells
+for( index_t m = 0; m < mm.nb_meshes(); m++ ) {
+    const GEO::Mesh& mesh = mm.mesh( m ) ;
+    for( index_t c = 0; c < mm.cells.nb_cells( m ); c++ ) { // It is also possible to iterate only on one element type
+        for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+            index_t global_c_adj = mm.cells.cell_adjacent( m, c, f ) ; // Global cell adjacent index
+            if( global_c_adj == GEO::NO_CELL ) {
+                // The cell is on the border
+                ...
+            } else {
+                index_t mesh_id ; // The mesh id that contains global_c_adj
+                index_t local_c_adj = cell_index_in_mesh( global_c_adj, mesh_id ) ;
+                double volume = Utils::Geom::mesh_cell_volume( mm.mesh( mesh_id ), local_c_adj ) ;
+                std::cout << "Volume of the adjacent cell: " << volume << std::endl ;
+            }
+        } 
+    }
+}
+\endcode
+ 
+Other tools
+===========
+
+Eventually, RINGMesh::MacroMeshTools stores one GEO::MeshFacetsAABB and one GEO::MeshCellsAABB per region mesh.
+These AABB trees are only filled if they are called somewhere. This can be useful to prevent the computation
+of the AABB tree several times. However, it is stored in memory so if do not want to loose any memory for this,
+instantiate an AABB tree directly in the stack.
+
+*/
+
