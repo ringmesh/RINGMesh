@@ -64,9 +64,7 @@ namespace RINGMesh {
         ~GeoModelEditor()
         {}
 
-        void copy( const GeoModel& from ) ;
         void copy_macro_topology( const GeoModel& from ) ;
-        void copy_meshes( const GeoModel& from ) ;
 
         /*!
         *@brief The model under construction

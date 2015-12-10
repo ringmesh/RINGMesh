@@ -121,6 +121,17 @@ namespace RINGMesh {
         }
 
         /*!
+        * @brief Copy all element meshes from the input geomodel
+        * @pre The model under construction has exaclty the same number of elements
+        * than the input geomodel.
+        */
+        void copy_meshes( const GeoModel& from ) ;
+                                                                        
+        void copy_meshes( const GeoModel& from, GME::TYPE element_type ) ;
+
+        void assign_mesh_to_element( const GEO::Mesh&, GME::gme_t to ) ;
+                                                                    
+        /*!
          * \name Set element geometry from geometrical positions
          * @{
          */
@@ -176,6 +187,13 @@ namespace RINGMesh {
         void cut_surface_by_line( Surface& S, const Line& L ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
+
+        GME::gme_t find_or_create_corner( index_t model_point_id ) ;
+        GME::gme_t find_or_create_corner( const vec3& point ) ;
+        GME::gme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
+
+        GME::gme_t find_or_create_line( const std::vector< index_t>& incident_surfaces,
+                                   GME::gme_t first_corner, GME::gme_t second_corner ) ;
 
         /*!
          * @}
