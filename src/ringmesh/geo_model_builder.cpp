@@ -174,22 +174,6 @@ namespace {
     }
 
     /*!
-     * @brief Find or create a corner at given coordinates.
-     *
-     * @param[in] point Geometric location of the Corner
-     * @return Index of the Corner
-     */
-    gme_t find_or_create_corner( GeoModelBuilder& geomodel_builder, const vec3& point )
-    {
-        gme_t result = find_corner( geomodel_builder.model(), point ) ;
-        if( !result.is_defined() ) {
-            result = geomodel_builder.create_element( GME::CORNER ) ;
-            geomodel_builder.set_corner( result.index, point ) ;
-        }
-        return result ;
-    }
-
-    /*!
      * @brief Returns true if the Line has exactly the given vertices
      *
      * @param[in] L the line to compare to
@@ -220,36 +204,6 @@ namespace {
         if( equal ) return true ;
 
         return false ;
-    }
-
-    /*!
-     * @brief Find or create a line   
-     * @param[in] geomodel model to consider
-     * @param[in] vertices Coordinates of the vertices of the line
-     * @return Index of the Line
-     */
-    gme_t find_or_create_line(
-        GeoModelBuilder& geomodel_builder,
-        const std::vector< vec3 >& vertices )
-    {
-        gme_t result ;
-        for( index_t i = 0; i < geomodel_builder.model().nb_lines(); ++i ) {
-            if( line_equal( geomodel_builder.model().line( i ), vertices ) ) {
-                result = geomodel_builder.model().line( i ).gme_id() ;
-            }
-        }
-        if( !result.is_defined() ) {
-            result = geomodel_builder.create_element( GME::LINE ) ;
-            geomodel_builder.set_line( result.index, vertices ) ;
-
-            // Find the indices of the corner at both extremities
-            // Both must be defined to have a valid LINE
-            geomodel_builder.add_element_boundary( result,
-                find_or_create_corner( geomodel_builder, vertices.front() ) ) ;
-            geomodel_builder.add_element_boundary( result,
-                find_or_create_corner( geomodel_builder, vertices.back() ) ) ;
-        }
-        return result ;
     }
 
     /*!
@@ -336,10 +290,6 @@ namespace {
         }
     }
     
-
-    
-   
-
 } // anonymous namespace
 
 namespace RINGMesh {
@@ -990,6 +940,87 @@ namespace RINGMesh {
         }
     }
 
+
+    void GeoModelBuilder::copy_meshes( const GeoModel& geomodel )
+    {
+        for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
+            GME::TYPE T = static_cast< GME::TYPE >(t) ;
+            copy_meshes( geomodel, T ) ;
+        }
+    }
+
+    void GeoModelBuilder::copy_meshes( const GeoModel& from, GME::TYPE element_type )
+    {
+        // RINGMESH_PARALLEL_LOOP // on peut toujours la faire ? [JP]
+        for( index_t i = 0; i < model_.elements( element_type ).size(); ++i ) {
+            const GeoModelMeshElement& from_E = from.mesh_element( element_type, i ) ;
+            assign_mesh_to_element( from_E.mesh(), gme_t( element_type, i ) ) ;
+        }
+    }
+
+    void GeoModelBuilder::assign_mesh_to_element( const GEO::Mesh& mesh, GME::gme_t to )
+    {
+        GeoModelMeshElement& E = mesh_element( to ) ;
+        E.unbind_attributes() ;
+        E.mesh().copy( mesh ) ;
+        E.bind_attributes() ;
+        // Il n'y a pas d'autres trucs a faire ?? [JP]
+    }
+
+
+    /*!
+    * @brief Find or create a corner at given coordinates.
+    * @param[in] point Geometric location of the Corner
+    * @return Index of the Corner
+    */
+    gme_t GeoModelBuilder::find_or_create_corner( const vec3& point )
+    {
+        gme_t result = find_corner( model_, point ) ;
+        if( !result.is_defined() ) {
+            result = create_element( GME::CORNER ) ;
+            set_corner( result.index, point ) ;
+        }
+        return result ;
+    }
+
+    gme_t GeoModelBuilder::find_or_create_corner( index_t model_point_id )
+    {
+        gme_t result = find_corner( model_, model_point_id ) ;
+        if( !result.is_defined() ) {
+            result = create_element( GME::CORNER ) ;
+            set_corner( result.index, model_point_id ) ;
+        }
+        return result ;
+    }
+
+
+    /*!
+    * @brief Find or create a line
+    * @param[in] geomodel model to consider
+    * @param[in] vertices Coordinates of the vertices of the line
+    * @return Index of the Line
+    */
+    gme_t GeoModelBuilder::find_or_create_line( const std::vector< vec3 >& vertices )
+    {
+        gme_t result ;
+        for( index_t i = 0; i < model().nb_lines(); ++i ) {
+            if( line_equal( model().line( i ), vertices ) ) {
+                result = model().line( i ).gme_id() ;
+            }
+        }
+        if( !result.is_defined() ) {
+            result = create_element( GME::LINE ) ;
+            set_line( result.index, vertices ) ;
+
+            // Find the indices of the corner at both extremities
+            // Both must be defined to have a valid LINE
+            add_element_boundary( result, find_or_create_corner( vertices.front() ) ) ;
+            add_element_boundary( result, find_or_create_corner( vertices.back() ) ) ;
+        }
+        return result ;
+    }
+
+
     /*!
      * @brief Sets the geometrical position of a vertex
      * @param[in] corner_id Index of the corner
@@ -1573,46 +1604,75 @@ namespace RINGMesh {
     }
 
     bool GeoModelBuilder::build_lines_and_corners_from_surfaces()
-    {
-
+    {       
+        // Instantiate the implementation class that does the work
         LineGeometryFromGeoModelSurfaces line_computer( model_, options_.compute_regions_brep ) ;
         
-        bool new_line = true ;
-        while( new_line ) {
-            new_line = line_computer.compute_next_line_geometry();
+        bool new_line_was_built = true ;
+        while( new_line_was_built ) {
+            new_line_was_built = line_computer.compute_next_line_geometry();
 
-            const std::vector< index_t >& vertices = line_computer.vertices();
-            gme_t l_id = create_element( GME::LINE ) ;
-            set_line( l_id.index, vertices ) ;
-
-            const std::vector<index_t>& adjacent_surfaces = line_computer.adjacent_surfaces() ;
-            for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
-                GME::gme_t surface_id( GME::SURFACE, adjacent_surfaces[ j ] ) ;
-                add_element_in_boundary( l_id, surface_id ) ;
-            }
-
-            // Find or create the corners at the Line extremities
-            GME::gme_t c0 = find_corner( model(), vertices.front() ) ;
-            if( !c0.is_defined() ) {
-                c0 = create_element( GME::CORNER ) ;
-                set_corner( c0.index, vertices.front() ) ;
-            }
-            add_element_boundary( l_id, c0 ) ;
-            GME::gme_t c1 = find_corner( model(), vertices.back() ) ;
-            if( !c1.is_defined() ) {
-                c1 = create_element( GME::CORNER ) ;
-                set_corner( c1.index, vertices.back() ) ;
-            }
-            add_element_boundary( l_id, c1 ) ;
-
+            // Recover the current line
+            const std::vector< index_t >& vertices = line_computer.vertices();            
             if( options_.compute_regions_brep ) {
                 regions_info_.push_back( new GeoModelRegionFromSurfaces( line_computer.region_information() ) );
             }
 
+            const std::vector<index_t>& adjacent_surfaces = line_computer.adjacent_surfaces() ;
+            GME::gme_t c1 = find_or_create_corner( vertices.back() ) ;
+            GME::gme_t c0 = find_or_create_corner( vertices.front() ) ;
+                                              
+            gme_t line_index = create_element( GME::LINE ) ;//  find_or_create_line( adjacent_surfaces, c0, c1 ) ;
+            set_line( line_index.index, vertices ) ;
+
+            for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
+                GME::gme_t surface_id( GME::SURFACE, adjacent_surfaces[ j ] ) ;
+                add_element_in_boundary( line_index, surface_id ) ;
+            }
+            add_element_boundary( line_index, c0 ) ;            
+            add_element_boundary( line_index, c1 ) ;           
         }
         return true ;
     }
 
+    void get_sorted_incident_surfaces( const GeoModelElement& E, std::vector<index_t>& incident_surfaces )
+    {
+        index_t nb = E.nb_in_boundary() ;
+        incident_surfaces.resize( nb ) ;
+        for( index_t i = 0; i < nb; ++i ) {
+            incident_surfaces[ i ] = E.in_boundary_gme( i ).index ;
+        }
+        std::sort( incident_surfaces.begin(), incident_surfaces.end() ) ;
+    }
+
+    /*!
+     * @brief Find or create a line knowing its topological adjacencies
+     */
+    gme_t GeoModelBuilder::find_or_create_line( const std::vector< index_t>& sorted_adjacent_surfaces,
+                                                gme_t first_corner, gme_t second_corner )
+    {
+        for( index_t i = 0; i < model().nb_lines(); ++i ) {
+            const Line& L = model().line( i ) ;
+            gme_t c0 = L.boundary_gme( 0 ) ;
+            gme_t c1 = L.boundary_gme( 1 ) ;
+
+            if( (c0 == first_corner && c1 == second_corner) ||
+                (c0 == second_corner && c1 == first_corner) 
+            ) {
+                std::vector<index_t> cur_adjacent_surfaces ;
+                get_sorted_incident_surfaces( L, cur_adjacent_surfaces ) ;
+                if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size() &&
+                    std::equal( cur_adjacent_surfaces.begin(), cur_adjacent_surfaces.end(),
+                    sorted_adjacent_surfaces.begin() )
+                ) {
+                    return L.gme_id() ;
+                }
+            }
+        }
+
+        return create_element( GME::LINE ) ;
+    }
+   
     bool GeoModelBuilder::build_brep_regions_from_surfaces()
     {
         ringmesh_debug_assert( model_.nb_lines() == regions_info_.size() ) ;
@@ -2727,9 +2787,9 @@ namespace RINGMesh {
                         << std::endl ;                    
                 } else {
                     // 2 - Check if this border already exists
-                    gme_t line_id = find_or_create_line(*this, line_vertices);
+                    gme_t line_id = find_or_create_line( line_vertices );
                     // Add the surface in which this line is
-                    add_element_in_boundary(line_id, S.gme_id());
+                    add_element_in_boundary( line_id, S.gme_id() );
                 }
             }
         }
