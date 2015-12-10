@@ -240,7 +240,11 @@ namespace RINGMesh {
         GeoModelBuilderSurfaceMesh( GeoModel& model,
                                     const GEO::Mesh& mesh )
             :GeoModelBuilder( model ), mesh_( mesh )
-        {}    
+        {
+            options_.compute_lines = true ;
+            options_.compute_corners = true ;
+            options_.compute_regions_brep = true ;
+        }
         bool build_polygonal_surfaces_from_connected_components() ;
 
     private:
