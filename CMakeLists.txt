@@ -50,6 +50,11 @@ set(CMAKE_CONFIGURATION_TYPES
 
 # If a path is specified RINGMesh will be compiled to work with - empty by default
 set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
+if(MG_TETRA)
+    set(USE_MG_TETRA ON)
+    message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
+endif(MG_TETRA)
+  
 
 # By default RINGMesh will be compiled with OpenMP flags
 option(USE_OPENMP "Use Open MP" ON)
@@ -229,8 +234,6 @@ link_directories(${GEOGRAM_PATH_BIN}/lib)
 #------------------------------------------------------------------------------------------------    
 # Get MG-Tetra if a path is given
 if(MG_TETRA)   
-  set(USE_MG_TETRA ON)
-  message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
   include_directories(${MG_TETRA}/include)
  
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)

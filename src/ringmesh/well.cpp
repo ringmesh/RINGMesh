@@ -571,7 +571,6 @@ namespace RINGMesh {
                 bool sign = dot( direction,
                                  model_->surface( intersections[ index ].surface_id_ ).facet_normal(
                         intersections[index].trgl_id_ ) ) > 0 ;
-                last_sign = sign ;
                 region = find_region( *model_, intersections[index].surface_id_,
                     sign ) ;
             }
