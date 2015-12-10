@@ -68,7 +68,6 @@ namespace {
     /* Definition of functions that we do not want exported in the interface */
     using namespace RINGMesh ;
 
-    typedef GeoModelElement GME ;
     typedef GeoModelElement::gme_t gme_t;
     typedef GeoModelMeshElement GMME ;
 

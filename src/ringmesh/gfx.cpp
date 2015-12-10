@@ -228,7 +228,7 @@ namespace RINGMesh {
      * Gets the GeoModel associated to the graphics
      * @return the GeoModel
      */
-    const GeoModel* GeoModelGfx::geo_model()
+    const GeoModel* GeoModelGfx::geo_model() const
     {
         return model_ ;
     }

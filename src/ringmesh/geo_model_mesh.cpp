@@ -547,7 +547,6 @@ namespace RINGMesh {
         }
 
         // Compute the number of cell per type and per region
-        std::vector< GEO::MeshCellType > cells_vertices_type( nb ) ;
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
             const GEO::Mesh& cur_region_mesh = cur_region.mesh() ;
@@ -1694,10 +1693,10 @@ namespace RINGMesh {
             gmm_( gmm ),
             gm_( gmm.model() ),
             mesh_( mesh ),
+            nb_vertices_( 0 ),
             high_order_vertices_( 0 ),
             max_new_points_on_cell_( 0 ),
-            max_new_points_on_facet_( 0 ),
-            nb_vertices_( 0 )
+            max_new_points_on_facet_( 0 )
     {
         for( index_t i = 0; i < 4; i++ ) {
             nb_high_order_points_per_cell_type_[i] = 0 ;
