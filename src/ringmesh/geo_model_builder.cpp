@@ -1614,23 +1614,31 @@ namespace RINGMesh {
 
             // Recover the current line
             const std::vector< index_t >& vertices = line_computer.vertices();            
-            if( options_.compute_regions_brep ) {
-                regions_info_.push_back( new GeoModelRegionFromSurfaces( line_computer.region_information() ) );
-            }
-
+            
             const std::vector<index_t>& adjacent_surfaces = line_computer.adjacent_surfaces() ;
             GME::gme_t c1 = find_or_create_corner( vertices.back() ) ;
             GME::gme_t c0 = find_or_create_corner( vertices.front() ) ;
-                                              
-            gme_t line_index = create_element( GME::LINE ) ;//  find_or_create_line( adjacent_surfaces, c0, c1 ) ;
-            set_line( line_index.index, vertices ) ;
+             
+            index_t nb_lines_before = model().nb_lines() ;
 
-            for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
-                GME::gme_t surface_id( GME::SURFACE, adjacent_surfaces[ j ] ) ;
-                add_element_in_boundary( line_index, surface_id ) ;
+            gme_t line_index = find_or_create_line( adjacent_surfaces, c0, c1 ) ;
+            
+            bool line_added = model().nb_lines() != nb_lines_before ;
+            if( line_added ) {
+                set_line( line_index.index, vertices ) ;
+
+                for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
+                    GME::gme_t surface_id( GME::SURFACE, adjacent_surfaces[ j ] ) ;
+                    add_element_in_boundary( line_index, surface_id ) ;
+                }
+                add_element_boundary( line_index, c0 ) ;
+                add_element_boundary( line_index, c1 ) ;
+
+                // If the plan is to then build_regions, get the information
+                if( options_.compute_regions_brep ) {
+                    regions_info_.push_back( new GeoModelRegionFromSurfaces( line_computer.region_information() ) );
+                }
             }
-            add_element_boundary( line_index, c0 ) ;            
-            add_element_boundary( line_index, c1 ) ;           
         }
         return true ;
     }
