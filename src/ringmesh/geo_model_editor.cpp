@@ -218,8 +218,6 @@ namespace RINGMesh {
             }
         }
     }
-
-
  
     /*!
     * @brief Add to the vector the elements which cannot exist if
@@ -601,45 +599,6 @@ namespace RINGMesh {
             R_lhs.sides_ = R_rhs.sides_ ;
         }
     }
-
-    /*!
-     * @brief Copy meshes from a model
-     * @details Copy the all the element meshes
-     *
-     * @param[in] from Model to copy the meshes from
-     *
-     * @pre The two models must have the same number of elements
-     */
-    void GeoModelEditor::copy_meshes( const GeoModel& from )
-    {
-        for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            RINGMESH_PARALLEL_LOOP
-            for( index_t e = 0; e < model_.elements( T ).size(); ++e ) {
-                GeoModelMeshElement* E =
-                    dynamic_cast< GeoModelMeshElement* >( model_.elements( T )[e] ) ;
-                ringmesh_debug_assert( E != nil ) ;
-                const GeoModelMeshElement& E_from =
-                    dynamic_cast< const GeoModelMeshElement& >( from.element(
-                        GME::gme_t( T, e ) ) ) ;
-
-                E->unbind_attributes() ;
-                E->mesh().copy( E_from.mesh() ) ;
-                E->bind_attributes() ;
-            }
-        }
-    }
-
-    /*!
-     * Copies a GeoModel in another one
-     * @param[in] from GeoModel to copy
-     */
-    void GeoModelEditor::copy( const GeoModel& from )
-    {
-        copy_macro_topology( from ) ;
-        copy_meshes( from ) ;
-    }
-
 
     /*!
      * @brief Remove invalid reference to elements
