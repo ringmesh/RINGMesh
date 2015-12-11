@@ -162,7 +162,7 @@ namespace RINGMesh {
                 surface_visible_( false ),
                 edges_visible_( false )
         {
-            gfx_.set_points_color( 1, 0, 0 ) ;
+            gfx_.set_points_color( 0.0, 0.0, 0.0 ) ;
         }
         void set_edges_visible( bool b )
         {
