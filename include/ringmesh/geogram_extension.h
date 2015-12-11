@@ -101,7 +101,7 @@ namespace RINGMesh {
 #ifdef RINGMESH_WITH_TETGEN
     /// @todo Move all tetgen related stuff in one or two files
 
-      /*! 
+    /*! 
      * @brief Utility class to set Tetgen switches and check their consistency
      * @details Tetgen arguments are a mess and this class helps set the basic options
      * @todo To implement!

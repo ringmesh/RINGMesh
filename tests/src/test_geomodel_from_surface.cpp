@@ -81,7 +81,7 @@ int main( int argc, char** argv )
 		return 1 ;
 	}    
     print_model( model ) ;
-    is_geomodel_valid( model ) ;
+    is_geomodel_valid( model, false ) ;
 	GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
 	return 0 ;
    

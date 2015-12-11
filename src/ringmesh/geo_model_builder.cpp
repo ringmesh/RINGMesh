@@ -77,34 +77,15 @@ namespace {
         iss >> result >> std::ws ;
         return result ;
     }
-
-
-    /*!
-    * @brief From some mesh corners referring to some global vertex indices
-    * Get the indices of the vertices used in the corners and upate the corners
-    * Example:
-    * Input  : corners = 1 3 8 25 8 3
-    * Output : corners = 0 1 2 3 2 1
-    *          vertices = 1 3 8 25
-    * @todo implement a generic function to remove duplicated code.
-    */
+ 
     void get_element_vertices_and_update_corners(
         std::vector< index_t >& corners,
         std::vector< index_t >& vertices
         )
     {
-        std::vector<index_t> old2new ;
-        index_t nb_vertices = unique_values<index_t>( corners, old2new ) ;
-
-        vertices.reserve( nb_vertices ) ;
-        for( index_t i = 0; i < corners.size(); ++i ) {
-            if( old2new[ i ] == i ) {
-                vertices.push_back( corners[ i ] ) ;
-                corners[ i ] = vertices.size()-1 ;
-            } else {
-                corners[ i ] = corners[ old2new[ i ] ] ;
-            }
-        }
+        std::vector< index_t > corners_to_vertices ;
+        get_unique_input_values_and_mapping< index_t >( corners, vertices, corners_to_vertices ) ;
+        corners = corners_to_vertices ;
     }
 
     /*************************************************************************/
