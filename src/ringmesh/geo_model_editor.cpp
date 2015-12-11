@@ -218,8 +218,6 @@ namespace RINGMesh {
             }
         }
     }
-
-
  
     /*!
     * @brief Add to the vector the elements which cannot exist if

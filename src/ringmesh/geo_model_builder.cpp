@@ -243,7 +243,6 @@ namespace {
         return false ;
     }
 
-
     bool is_corner_to_duplicate( const GeoModel& geomodel, index_t corner_id )
     {
         if( geomodel.corner( corner_id ).nb_in_boundary() > 3 ) {
@@ -274,8 +273,6 @@ namespace {
 } // anonymous namespace
 
 namespace RINGMesh {
-    /*************************************************************************/
-
     /*!
     * @brief Utility class to sort a set of oriented triangles around a common edge
     * Used in GeoModelBuilderSurface.
@@ -534,7 +531,6 @@ namespace RINGMesh {
         // Pairs global triangle identifier (Surface index) and side reached
         std::vector< std::pair< index_t, bool > > sorted_triangles_ ;
     } ;
-
 
     /*! 
      * @brief Determines the geometry of the Lines of a GeoModel in which 
@@ -897,7 +893,6 @@ namespace RINGMesh {
         RINGMesh::GeoModelRegionFromSurfaces cur_line_region_information_ ;
     };
 
-
     bool is_surface_mesh( const GEO::Mesh& mesh )
     {
         return mesh.facets.nb() != 0 ;
@@ -907,9 +902,7 @@ namespace RINGMesh {
     {
         return mesh.cells.nb() != 0 ;
     }
-
 }
-
 
 namespace RINGMesh {
     /*! Delete all GeoModelRegionFromSurfaces owned by the builder
@@ -920,7 +913,6 @@ namespace RINGMesh {
             delete regions_info_[ i ] ;
         }
     }
-
 
     void GeoModelBuilder::copy_meshes( const GeoModel& geomodel )
     {
@@ -948,7 +940,6 @@ namespace RINGMesh {
         // Il n'y a pas d'autres trucs a faire ?? [JP]
     }
 
-
     /*!
     * @brief Find or create a corner at given coordinates.
     * @param[in] point Geometric location of the Corner
@@ -973,7 +964,6 @@ namespace RINGMesh {
         }
         return result ;
     }
-
 
     /*!
     * @brief Find or create a line
@@ -1001,6 +991,33 @@ namespace RINGMesh {
         return result ;
     }
 
+    /*!
+    * @brief Find or create a line knowing its topological adjacencies
+    */
+    gme_t GeoModelBuilder::find_or_create_line( const std::vector< index_t>& sorted_adjacent_surfaces,
+                                                gme_t first_corner, gme_t second_corner )
+    {
+        for( index_t i = 0; i < model().nb_lines(); ++i ) {
+            const Line& L = model().line( i ) ;
+            gme_t c0 = L.boundary_gme( 0 ) ;
+            gme_t c1 = L.boundary_gme( 1 ) ;
+
+            if( (c0 == first_corner && c1 == second_corner) ||
+                (c0 == second_corner && c1 == first_corner)
+                ) {
+                std::vector<index_t> cur_adjacent_surfaces ;
+                get_sorted_incident_surfaces( L, cur_adjacent_surfaces ) ;
+                if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size() &&
+                    std::equal( cur_adjacent_surfaces.begin(), cur_adjacent_surfaces.end(),
+                    sorted_adjacent_surfaces.begin() )
+                    ) {
+                    return L.gme_id() ;
+                }
+            }
+        }
+
+        return create_element( GME::LINE ) ;
+    }
 
     /*!
      * @brief Sets the geometrical position of a vertex
@@ -1281,7 +1298,6 @@ namespace RINGMesh {
         compute_surface_adjacencies( surface_id ) ;
     }
 
-
     void GeoModelBuilder::assign_region_tet_mesh(
         index_t region_id,
         const std::vector< index_t >& tet_vertices ) const
@@ -1393,7 +1409,6 @@ namespace RINGMesh {
         return duplicate ;
     }
 
-
     /*
     * @brief Reset the adjacencies for all Surface facets adjacent to the Line
     * @pre All the edges of the Line are edges of at least one facet of the Surface
@@ -1446,7 +1461,6 @@ namespace RINGMesh {
         surface_vertex_0 = S.surf_vertex_id( facet_index, v ) ;
         surface_vertex_1 = S.surf_vertex_id( facet_index, S.next_in_facet( facet_index, v ) ) ;
     }
-
 
     /*!
      * @brief Duplicate the surface vertices along the fake boundary
@@ -1529,7 +1543,6 @@ namespace RINGMesh {
         }      
     }
 
-
     /*!
     * @brief Cut a Surface along a Line assuming that the edges of the Line are edges of the Surface
     * @pre Surface is not already cut. Line L does not cut the Surface S into 2 connected components.
@@ -1551,7 +1564,6 @@ namespace RINGMesh {
             const_cast<GeoModel&>(model()).mesh.vertices.clear() ;
         }
     }
-
 
     bool GeoModelBuilder::end_model()
     {
@@ -1591,21 +1603,19 @@ namespace RINGMesh {
         
         bool new_line_was_built = true ;
         while( new_line_was_built ) {
-            new_line_was_built = line_computer.compute_next_line_geometry();
+            new_line_was_built = line_computer.compute_next_line_geometry() ;
 
-            // Recover the current line
-            const std::vector< index_t >& vertices = line_computer.vertices();            
+            // Recover the current line geometry
+            const std::vector< index_t >& vertices = line_computer.vertices() ;            
             
             const std::vector<index_t>& adjacent_surfaces = line_computer.adjacent_surfaces() ;
             GME::gme_t c1 = find_or_create_corner( vertices.back() ) ;
             GME::gme_t c0 = find_or_create_corner( vertices.front() ) ;
              
-            index_t nb_lines_before = model().nb_lines() ;
-
+            index_t backup_nb_lines = model().nb_lines() ;
             gme_t line_index = find_or_create_line( adjacent_surfaces, c0, c1 ) ;
-            
-            bool line_added = model().nb_lines() != nb_lines_before ;
-            if( line_added ) {
+
+            if( model().nb_lines() != backup_nb_lines ) {
                 set_line( line_index.index, vertices ) ;
 
                 for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
@@ -1617,7 +1627,8 @@ namespace RINGMesh {
 
                 // If the plan is to then build_regions, get the information
                 if( options_.compute_regions_brep ) {
-                    regions_info_.push_back( new GeoModelRegionFromSurfaces( line_computer.region_information() ) );
+                    regions_info_.push_back( 
+                        new GeoModelRegionFromSurfaces( line_computer.region_information() ) );
                 }
             }
         }
@@ -1632,34 +1643,6 @@ namespace RINGMesh {
             incident_surfaces[ i ] = E.in_boundary_gme( i ).index ;
         }
         std::sort( incident_surfaces.begin(), incident_surfaces.end() ) ;
-    }
-
-    /*!
-     * @brief Find or create a line knowing its topological adjacencies
-     */
-    gme_t GeoModelBuilder::find_or_create_line( const std::vector< index_t>& sorted_adjacent_surfaces,
-                                                gme_t first_corner, gme_t second_corner )
-    {
-        for( index_t i = 0; i < model().nb_lines(); ++i ) {
-            const Line& L = model().line( i ) ;
-            gme_t c0 = L.boundary_gme( 0 ) ;
-            gme_t c1 = L.boundary_gme( 1 ) ;
-
-            if( (c0 == first_corner && c1 == second_corner) ||
-                (c0 == second_corner && c1 == first_corner) 
-            ) {
-                std::vector<index_t> cur_adjacent_surfaces ;
-                get_sorted_incident_surfaces( L, cur_adjacent_surfaces ) ;
-                if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size() &&
-                    std::equal( cur_adjacent_surfaces.begin(), cur_adjacent_surfaces.end(),
-                    sorted_adjacent_surfaces.begin() )
-                ) {
-                    return L.gme_id() ;
-                }
-            }
-        }
-
-        return create_element( GME::LINE ) ;
     }
    
     bool GeoModelBuilder::build_brep_regions_from_surfaces()
@@ -1787,7 +1770,6 @@ namespace RINGMesh {
         }
         return true ;
     }
-
 
     bool GeoModelBuilder::build_model_from_surfaces()
     {
@@ -2120,7 +2102,6 @@ namespace RINGMesh {
 
     /*************************************************************************/
 
-
     GeoModelBuilderMesh::~GeoModelBuilderMesh()
     {
         delete surface_builder_ ;
@@ -2240,8 +2221,6 @@ namespace RINGMesh {
         repair_colocate_vertices( mesh, epsilon ) ;
     }
 
-
-
     /*! @details Add separately each connected component of the mesh
     *          as a Surface of the model under construction.
     *          All the facets of the input mesh are visited and added to a
@@ -2306,7 +2285,6 @@ namespace RINGMesh {
         return true ;
     }
    
-
     bool GeoModelBuilderMesh::create_and_build_surfaces()
     {
         create_geomodel_elements( GME::SURFACE, nb_surface_attribute_values_ ) ;
@@ -2350,7 +2328,6 @@ namespace RINGMesh {
         }
         return true ;
     }
-
   
     void GeoModelBuilderMesh::add_mesh_vertices_to_model()
     {
@@ -2375,8 +2352,6 @@ namespace RINGMesh {
         nb_region_attribute_values_ =
             region_builder_->count_attribute_values_and_simplexes() ;
     }
-
-
     
     void GeoModelBuilderMesh::copy_facet_attribute_from_mesh( const std::string& attribute_name )
     {       
@@ -2405,8 +2380,6 @@ namespace RINGMesh {
         create_attributes_on_geomodel_element_cells< index_t >( model_, GME::REGION, attribute_name, attributes ) ;
         region_builder_->copy_simplex_attribute_from_mesh_to_geomodel< index_t >( attribute, attributes ) ;
     }
-
-
 
     /*************************************************************************/
     GeoModelBuilderFile::GeoModelBuilderFile(
@@ -2965,8 +2938,6 @@ namespace RINGMesh {
         return p1_corner ;
     }
 
-  
-
     /*!
      * @brief Build the Contacts
      * @details One contact is a group of lines shared by the same Interfaces
@@ -3340,7 +3311,7 @@ namespace RINGMesh {
         return true ;
     }
 
-    GeoModelElement::TYPE GeoModelBuilderBM::match_nb_elements(
+    GME::TYPE GeoModelBuilderBM::match_nb_elements(
         const char* s )
     {
         // Check that the first 3 characters are NB_
@@ -3357,7 +3328,7 @@ namespace RINGMesh {
         }
     }
 
-    GeoModelElement::TYPE GeoModelBuilderBM::match_type( const char* s )
+    GME::TYPE GeoModelBuilderBM::match_type( const char* s )
     {
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = (GME::TYPE) i ;
