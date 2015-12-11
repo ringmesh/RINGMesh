@@ -180,6 +180,11 @@ namespace RINGMesh {
 
         void set_region_geometry( index_t region_id, const std::vector< index_t >& tet_corners ) ;
 
+
+        /*! @}
+        * \name Misc
+        * @{
+        */
         index_t find_or_create_duplicate_vertex( GeoModelMeshElement& S,
                                                  index_t model_vertex_id,
                                                  index_t surface_vertex_id ) ;
@@ -188,10 +193,9 @@ namespace RINGMesh {
 
         void compute_surface_adjacencies( index_t surface_id ) ;
 
-        GME::gme_t find_or_create_corner( index_t model_point_id ) ;
         GME::gme_t find_or_create_corner( const vec3& point ) ;
+        GME::gme_t find_or_create_corner( index_t model_point_id ) ;
         GME::gme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
-
         GME::gme_t find_or_create_line( const std::vector< index_t>& incident_surfaces,
                                    GME::gme_t first_corner, GME::gme_t second_corner ) ;
 
