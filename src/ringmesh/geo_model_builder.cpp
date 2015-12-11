@@ -269,6 +269,17 @@ namespace {
             }
         }
     }
+
+    void get_sorted_incident_surfaces( const GeoModelElement& E, std::vector<index_t>& incident_surfaces )
+    {
+        index_t nb = E.nb_in_boundary() ;
+        incident_surfaces.resize( nb ) ;
+        for( index_t i = 0; i < nb; ++i ) {
+            incident_surfaces[ i ] = E.in_boundary_gme( i ).index ;
+        }
+        std::sort( incident_surfaces.begin(), incident_surfaces.end() ) ;
+    }
+
     
 } // anonymous namespace
 
@@ -1634,17 +1645,7 @@ namespace RINGMesh {
         }
         return true ;
     }
-
-    void get_sorted_incident_surfaces( const GeoModelElement& E, std::vector<index_t>& incident_surfaces )
-    {
-        index_t nb = E.nb_in_boundary() ;
-        incident_surfaces.resize( nb ) ;
-        for( index_t i = 0; i < nb; ++i ) {
-            incident_surfaces[ i ] = E.in_boundary_gme( i ).index ;
-        }
-        std::sort( incident_surfaces.begin(), incident_surfaces.end() ) ;
-    }
-   
+ 
     bool GeoModelBuilder::build_brep_regions_from_surfaces()
     {
         ringmesh_debug_assert( model_.nb_lines() == regions_info_.size() ) ;
