@@ -107,7 +107,7 @@ namespace RINGMesh {
     {
     public:
         GeoModelBuilder( GeoModel& model )
-            : GeoModelEditor( model )
+            : GeoModelEditor(model), options_()
         {}
         virtual ~GeoModelBuilder() ;
 

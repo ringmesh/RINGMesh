@@ -114,10 +114,20 @@ namespace {
     bool colored_cells = false ;
     bool show_voi = true ;
     bool show_colored_regions = false ;
+    bool show_points = false ;
 
     double shrink = 0.0 ;
     bool mesh_visible = true ;
     bool meshed_regions = false ;
+
+    /**
+     * \brief Toggles the point display
+     */
+    void toggle_points()
+    {
+        show_points = !show_points ; 
+        GM_gfx.set_vertex_regions_visibility( show_points ) ;
+    }
 
     /**
      * \brief Toggles the well display
@@ -269,6 +279,8 @@ namespace {
             GM_gfx.set_mesh_surfaces_color( 0.0, 0.0, 0.0 ) ;
             GM_gfx.set_cell_mesh_regions_color( 0.0, 0.0, 0.0 ) ;
             GM_gfx.set_edge_regions_color( 0.0, 0.0, 0.0 ) ;
+
+            GM_gfx.set_vertex_regions_color( 0.0, 0.0, 0.0 ) ;
         } else {
             GM_gfx.set_surfaces_color( 0.1f, 0.1f, 0.1f ) ;
 
@@ -276,7 +288,10 @@ namespace {
             GM_gfx.set_mesh_surfaces_color( 1.0, 1.0, 1.0 ) ;
             GM_gfx.set_cell_mesh_regions_color( 1.0, 1.0, 1.0 ) ;
             GM_gfx.set_edge_regions_color( 1.0, 1.0, 1.0 ) ;
+
+            GM_gfx.set_vertex_regions_color( 1.0, 1.0, 1.0 ) ;
         }
+        GM_gfx.set_vertex_regions_size( 1 ) ;
 
         if( show_corners ) {
             GM_gfx.draw_corners() ;
@@ -430,6 +445,7 @@ int main( int argc, char** argv )
     glut_viewer_add_toggle( 's', &show_surface, "surface" ) ;
     glut_viewer_add_key_func( 'r', &toggle_colored_regions,
         "toggle colored regions" ) ;
+    glut_viewer_add_key_func( 'p', &toggle_points, "toggle points" ) ;
     glut_viewer_add_key_func( 'v', &toggle_volume, "toggle volume" ) ;
     glut_viewer_add_key_func( 'w', &toggle_wells, "toggle wells" ) ;
     glut_viewer_add_key_func( 'V', toggle_voi, "toggle VOI" ) ;

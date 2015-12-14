@@ -689,9 +689,9 @@ namespace RINGMesh {
             wells->get_region_edges( region.index(), well_edges ) ;
             // Copy result of porting. Stupid, I know, but because of the interface
             // of MakeUnique. This Edge class is a pain [JP]
-            std::vector< std::pair< vec3, vec3 > > wells_copy ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
-                wells_copy.resize( well_edges.size() ) ;
+                std::vector< std::pair< vec3, vec3 > > wells_copy(
+                    well_edges[w].size() ) ;
                 for( index_t i = 0; i < wells_copy.size(); ++i ) {
                     wells_copy[i] = std::pair< vec3, vec3 >(
                         well_edges[w][i].value( 0 ), well_edges[w][i].value( 1 ) ) ;
