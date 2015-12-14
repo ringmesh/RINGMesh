@@ -40,11 +40,6 @@
 # CMakeLists for RINGMesh tests
 # This file is included by the root CMakeList of the RINGMesh project 
 
-# Custom configuration of data directories
-# TODO Test that they are correctly passed on on UNIX
-set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
-set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output" CACHE PATH "Output data location")
-
 if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
 	message(STATUS "Defined data directory for tests does not exists, using default tests/data")
 	SET(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" FORCE)

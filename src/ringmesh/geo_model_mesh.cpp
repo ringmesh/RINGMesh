@@ -38,6 +38,13 @@
  *     FRANCE
  */
 
+#include <stack>
+
+#include <geogram/basic/algorithm.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/points/colocate.h>
+
 #include <ringmesh/geo_model_mesh.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_builder.h>
@@ -45,13 +52,6 @@
 #include <ringmesh/well.h>
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geogram_extension.h>
-
-#include <geogram/basic/algorithm.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/points/colocate.h>
-
-#include <stack>
 
 namespace {
     using namespace RINGMesh ;
