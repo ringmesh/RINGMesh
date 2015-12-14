@@ -1,13 +1,12 @@
 #!/bin/sh
 
-# if [ $# -eq 0 ]; then
-#     echo Enter a package version
-#     exit
-# else
-#     version=$1
-# fi
+if [ $# -eq 0 ]; then
+    echo Enter a package version
+    exit
+else
+    version=$1
+fi
 
-version=$1
 
 cd `dirname $0`
 RINGMesh_HOME=$(pwd)
