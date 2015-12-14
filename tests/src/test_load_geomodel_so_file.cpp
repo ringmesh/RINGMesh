@@ -38,50 +38,54 @@
  *     FRANCE
  */
 
+#include <ringmesh/ringmesh_tests_config.h>
+
+#include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
+#include <ringmesh/utils.h>
 
-#include <fstream>
-#include <cstring>
+#include <geogram/basic/logger.h>
 
-namespace RINGMesh {
+/*!
+* @file Test GeoModel building from a mesh loaded from a .so file
+* @author Pierre Anquez
+*/
 
-    /*!
-    * Compares the contains of two files
-    * @param[in] f1 the first filename
-    * @param[in] f2 the second filename
-    * @return return True if the files are identical
-    */
-    bool compare_files( const std::string& f1, const std::string& f2 )
-    {
-        const unsigned int MAX_LINE_LEN = 65535 ;
+int main( int argc, char** argv )
+{
+    using namespace RINGMesh ;
 
-        std::ifstream lFile( f1.c_str() ) ;
-        std::ifstream rFile( f2.c_str() ) ;
+    GEO::Logger::out( "TEST" ) << "Test IO for a mesh GeoModel in .so" << std::endl ;
 
-        char* lBuffer = new char[ MAX_LINE_LEN ]() ;
-        char* rBuffer = new char[ MAX_LINE_LEN ]() ;
+    GeoModel in_ml ;
+    std::string input_ml_file_name( ringmesh_test_data_path ) ;
+    input_ml_file_name += "cube_model_equi.ml" ;
 
-        do {
-            lFile.read( lBuffer, MAX_LINE_LEN ) ;
-            rFile.read( rBuffer, MAX_LINE_LEN ) ;
-            unsigned int numberOfRead = lFile.gcount() ;
-
-            if( std::memcmp( lBuffer, rBuffer, numberOfRead ) != 0 ) {
-                delete[] lBuffer ;
-                delete[] rBuffer ;
-                return false ;
-            }
-        } while( lFile.good() || rFile.good() ) ;
-        delete[] lBuffer ;
-        delete[] rBuffer ;
-        return true ;
-    }
-   
-    void mesh_initialize()
-    {
-        GeoModelSurfaceIOHandler::initialize() ;
-        GeoModelVolumeIOHandler::initialize() ;
-        WellGroupIOHandler::initialize() ;
+    if( !geomodel_surface_load( input_ml_file_name, in_ml ) ) {
+        return 1 ;
     }
 
+    GeoModel in_so ;
+    std::string input_so_file_name( ringmesh_test_data_path ) ;
+    input_so_file_name += "cube_model_equi.so" ;
+
+    if( !geomodel_volume_load( input_so_file_name, in_so ) ) {
+        return 1 ;
+    }
+
+    std::string output_so_file_name( ringmesh_test_output_path ) ;
+    output_so_file_name += "out_model.so" ;
+
+    if(!geomodel_volume_save( in_so, output_so_file_name ) ) {
+        return 1 ;
+    }
+
+    bool res = true ;
+    if( res ) {
+        GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    } else {
+        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+    }
+
+    return !res ;
 }

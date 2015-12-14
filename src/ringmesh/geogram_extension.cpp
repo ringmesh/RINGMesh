@@ -122,6 +122,7 @@ namespace RINGMesh {
         }
 
     private:
+        // This function read the z_sign too [PA]
         void read_number_of_vertices_and_triangles()
         {
             GEO::LineInput in( filename_ ) ;
@@ -133,7 +134,7 @@ namespace RINGMesh {
                             z_sign_ = 1 ;
                         } else if( in.field_matches( 1, "Depth" ) ) {
                             z_sign_ = -1 ;
-                        }
+                         }
                     }
                     else if( in.field_matches( 0, "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
                         nb_vertices_++ ;
