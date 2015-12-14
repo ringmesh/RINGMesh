@@ -52,136 +52,26 @@
 
 namespace RINGMesh {
 
-//    bool GeoModelBuilderTSolid::load_file()
-//    {
-//        std::vector< std::string > region_names ;
-//        std::vector< vec3 > vertices ;
-//        std::vector< index_t > ptr_regions_first_vertex ;
-//        std::vector< index_t > tetras_vertices ;
-//        std::vector< index_t > ptr_regions_first_tetra ;
-//
-//        bool has_model_in_file = false ;
-//
-//        // First file reading : count the number of vertex and tetras
-//        // in each region
-//        std::vector< index_t > nb_mesh_elements_per_region =
-//                read_number_of_mesh_elements() ;
-//        print_number_of_mesh_elements( nb_mesh_elements_per_region ) ;
-//
-//        ///@todo use two sub functions : one for reading and one for assigning
-//        // Reading .so file
-//        while( !in_.eof() && in_.get_line() ) {
-//            in_.get_fields() ;
-//            if( in_.nb_fields() > 0 ) {
-//                if( in_.field_matches( 0, "TVOLUME" ) ) {
-//                    region_names.push_back( in_.field( 1 ) ) ;
-//                    ptr_regions_first_vertex.push_back( vertices.size() ) ;
-//                    ptr_regions_first_tetra.push_back( tetras_vertices.size() ) ;
-//                } else if( in_.field_matches( 0, "VRTX" ) || in_.field_matches( 0, "PVRTX" ) ) {
-//                    vec3 vertex ( in_.field_as_double( 2 ),
-//                                  in_.field_as_double( 3 ),
-//                                  z_sign_ * in_.field_as_double( 4 ) ) ;
-//                    vertices.push_back( vertex ) ;
-//                } else if( in_.field_matches( 0, "ATOM" ) || in_.field_matches( 0, "PATOM" ) ) {
-//                    vec3 vertex ( vertices[ in_.field_as_uint( 2 ) - 1 ] ) ;
-//                    vertices.push_back( vertex ) ;
-//                } else if( in_.field_matches( 0, "TETRA" ) ) {
-//                    tetras_vertices.push_back( in_.field_as_uint( 1 ) ) ;
-//                    tetras_vertices.push_back( in_.field_as_uint( 2 ) ) ;
-//                    tetras_vertices.push_back( in_.field_as_uint( 3 ) ) ;
-//                    tetras_vertices.push_back( in_.field_as_uint( 4 ) ) ;
-//                } else if( in_.field_matches( 0, "name:" ) ) {
-//                    // GeoModel name is set to the TSolid name.
-//                    set_model_name( in_.field( 1 ) ) ;
-//                    std::cout << "passed here and name is : " << model_.name() << std::endl ;
-//                } else if( in_.field_matches( 0, "GOCAD_ORIGINAL_COORDINATE_SYSTEM" ) ) {
-//                    read_GCS() ;
-//                } else if( in_.field_matches( 0, "MODEL" ) ) {
-//                    has_model_in_file = true ;
-//
-//                    set_element_vertices( model_.universe().gme_id(), vertices, true ) ;
-//                    for(index_t i = 0 ; i < tetras_vertices.size() ; i = i + 4 ){
-//                        model_.universe().mesh().cells.create_tet(tetras_vertices[i],
-//                                                tetras_vertices[ i + 1 ],
-//                                                tetras_vertices[ i + 2 ],
-//                                                tetras_vertices[ i + 3 ]) ;
-//                    }
-//                    model_.universe().mesh().show_stats() ;
-//                    std::cout << "nb vert univ " << model_.universe().nb_vertices() << std::endl;
-//                    std::cout << "nb cell univ " << model_.universe().nb_cells() << std::endl;
-//                    std::cout << "create attribute " << std::endl;
-//                    GEO::Attribute<index_t> attribute_region ( model_.universe().mesh().cells.attributes(), "region1" ) ;
-//                    std::cout << "fill attribute " << std::endl;
-//                    attribute_region.fill(1) ;
-//                    std::cout << "create GMBMesh " << std::endl;
-//                    model_.universe().mesh().show_stats() ;
-//                    std::cout << "nb facet" << model_.universe().mesh().facets.nb() << std::endl ;
-//                    GeoModelBuilderMesh::prepare_surface_mesh_from_connected_components( model_.universe().mesh(), "facet_attribute" ) ;
-//                    GeoModelBuilderMesh builder( model_, model_.universe().mesh(), "", "region1" ) ;
-////                    std::cout << "remove colocate vertices " << std::endl;
-////                    repair_colocate_vertices( model_.universe().mesh(), epsilon ) ;
-//                    std::cout << "call create and build regions " << std::endl;
-//                    builder.create_and_build_regions() ;
-//
-//
-//                    // TO DECOMMENT
-////                    // Mesh the regions with read vertices and tetras
-////                    ptr_regions_first_vertex.push_back( vertices.size() ) ;
-////                    ptr_regions_first_tetra.push_back( tetras_vertices.size() ) ;
-////                    mesh_regions( region_names,
-////                                  vertices,
-////                                  ptr_regions_first_vertex,
-////                                  tetras_vertices,
-////                                  ptr_regions_first_tetra ) ;
-////                    GeoModelBuilderMesh::prepare_surface_mesh_from_connected_components(model_.region(0).mesh(), "") ;
-//                    GeoModelBuilderMesh buildermesh( model_, model_.universe().mesh(), "", "" ) ;
-////                    buildermesh.build_regions() ;
-//                    model_.universe().mesh().show_stats();
-//                    std::cout << model_.region(0).mesh().cells.attributes().nb() << std::endl ;
-//                } else if( in_.field_matches( 0, "SURFACE" ) ) {
-//                    // Create an Interface
-//                } else if( in_.field_matches( 0, "TFACE" ) ) {
-//                    // Create a Surface
-//                } else if( in_.field_matches( 0, "KEYVERTICES" ) ) {
-//                    // Check normals of triangles with propagation
-//                } else if( in_.field_matches( 0, "MODEL_REGION" ) ) {
-//                    // Don't know what to do
-//                }
-//            }
-//        }
-//        if ( !has_model_in_file ) {
-//            ptr_regions_first_vertex.push_back( vertices.size() ) ;
-//            ptr_regions_first_tetra.push_back( tetras_vertices.size() ) ;
-//            mesh_regions( region_names,
-//                          vertices,
-//                          ptr_regions_first_vertex,
-//                          tetras_vertices,
-//                          ptr_regions_first_tetra ) ;
-//            build_boundary_model() ;
-//        }
-//        return true ;
-//    }
     bool GeoModelBuilderTSolid::load_file()
         {
             ///@todo Split this function into smaller functions when it will works
-            //TODO : thinks to a good way to save surfaces/regions/facets...
             index_t last_tetra = 0 ;
-//            std::vector< std::string > surf_names ;
 
             bool has_model_in_file = false ;
 
             GME::gme_t cur_region = model_.universe().gme_id() ;
             GEO::Mesh* mesh = &(model_.universe().mesh()) ;
-            GEO::Attribute <index_t> attribute_region ( mesh->cells.attributes(), "region" ) ;
-            GEO::AttributeStore* ptr_attribute_region = nil ;
-            GEO::Attribute <index_t> attribute_interface ( mesh->facets.attributes(), "interface" ) ;
+//            GEO::Attribute <index_t> attribute_interface ( mesh->facets.attributes(), "interface" ) ;
 
             // First : count the number of vertex and tetras
             // in each region
-            ///@todo:reverse space before and THEN assign
+            ///@todo:reserve space before and THEN assign
             std::vector< index_t > nb_mesh_elements_per_region =
                     read_number_of_mesh_elements() ;
             print_number_of_mesh_elements( nb_mesh_elements_per_region ) ;
+
+            ///@todo Link these vector with the results above
+            std::vector< index_t > vertices_id_in_region ;
 
             // Then : Reading .so file
             while( !in_.eof() && in_.get_line() ) {
@@ -195,29 +85,32 @@ namespace RINGMesh {
                         cur_region = create_element( GME::REGION ) ;
                         set_element_name( cur_region, in_.field( 1 ) ) ;
                         mesh = &( model_.region(cur_region.index).mesh() ) ;
-                        std::cout << "mesh ad 1 : " << mesh << std::endl ;
-//                        GEO::Attribute <index_t> attribute_region ( mesh->cells.attributes(), "region" ) ;
-                        ptr_attribute_region = mesh->cells.attributes().find_attribute_store("region") ;
-//                        std::cout << "ptr_att 1 : " << ptr_attribute_region << std::endl ;
                     } else if( in_.field_matches( 0, "VRTX" ) || in_.field_matches( 0, "PVRTX" ) ) {
                         // Add a vertex to the mesh of the current region.
                         double coord[3] = { in_.field_as_double( 2 ),
                                             in_.field_as_double( 3 ),
                                             z_sign_ * in_.field_as_double( 4 ) } ;
-                        mesh->vertices.create_vertex( coord ) ;
+                        vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
                     } else if( in_.field_matches( 0, "ATOM" ) || in_.field_matches( 0, "PATOM" ) ) {
-                        // TODO : how to find the corresponding VRTX
-//                        double* coord = mesh->vertices.point_ptr( in_.field_as_uint( 2 ) - 1 ) ;
-//                        mesh->vertices.create_vertex( coord ) ;
+                        ///@todo : how to find the corresponding VRTX
+                        index_t referring_vertex = in_.field_as_double( 2 ) - 1 ;
+                        index_t referring_vertex_region_id = NO_ID ;
+                        index_t cum_nb_vertex = 0 ;
+                        while ( cum_nb_vertex < referring_vertex ) {
+                            ++referring_vertex_region_id ;
+                            cum_nb_vertex += model_.region( referring_vertex_region_id ).mesh().vertices.nb() ;
+                        }
+                        double* coord = model_.region( referring_vertex_region_id ).mesh().vertices.point_ptr( in_.field_as_double( 2 ) - 1 ) ;
+                          vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
                     } else if( in_.field_matches( 0, "TETRA" ) ) {
                         // Reading and create a tetra
                         std::vector< index_t > vertices (4) ;
-                        vertices[0] = in_.field_as_uint( 1 ) - 1 ;
-                        vertices[1] = in_.field_as_uint( 2 ) - 1 ;
-                        vertices[2] = in_.field_as_uint( 3 ) - 1 ;
-                        vertices[3] = in_.field_as_uint( 4 ) - 1 ;
+                        vertices[0] = vertices_id_in_region[ in_.field_as_uint( 1 ) - 1 ] ;
+                        vertices[1] = vertices_id_in_region[ in_.field_as_uint( 2 ) - 1 ] ;
+                        vertices[2] = vertices_id_in_region[ in_.field_as_uint( 3 ) - 1 ] ;
+                        vertices[3] = vertices_id_in_region[ in_.field_as_uint( 4 ) - 1 ] ;
                         last_tetra = mesh->cells.create_tet( vertices[0], vertices[1], vertices[2], vertices[3] ) ;
-                        // TODO : improve following to avoid creation of the object "attribute_region"
+                        ///@todo Improve following to avoid creation of the object "attribute_region"
                         GEO::Attribute <index_t> attribute_region ( mesh->cells.attributes(), "region" ) ;
                         attribute_region[last_tetra] = cur_region.index ;
                     } else if( in_.field_matches( 0, "#" ) && in_.field_matches( 1, "CTETRA" ) ) {
@@ -230,11 +123,9 @@ namespace RINGMesh {
                                 mesh->facets.create_triangle( mesh->cells.tet_facet_vertex(last_tetra, f, 0),
                                         mesh->cells.tet_facet_vertex(last_tetra, f, 1),
                                         mesh->cells.tet_facet_vertex(last_tetra, f, 2) ) ;
-                                mesh->show_stats() ;
                                 // 2 - Set attribute
                                 // 3 - Find or create the surface (and its parent Interface)
                                 // 4 - Add the triangle in the surface
-
 
 
 //                                index_t pair_reg_surf = 0 ;
@@ -269,6 +160,11 @@ namespace RINGMesh {
                     }
                 }
             }
+
+            const std::string filename = "mesh_reg_" + model_.region( cur_region.index ).name() + ".mesh" ; // TO DELETE
+            GEO::mesh_save( *mesh, filename) ; // TO DELETE
+
+
 //            std::cout << "######################################" << std::endl ;
 ////            create_geomodel_elements( GME::REGION, region_names.size() ) ;
 //            print_model(model_) ;
