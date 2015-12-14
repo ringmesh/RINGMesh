@@ -45,6 +45,7 @@
 
 #include <geogram/basic/logger.h>
 #include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh_repair.h>
 
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
@@ -163,64 +164,101 @@ namespace RINGMesh {
     bool GeoModelBuilderTSolid::load_file()
         {
             ///@todo Split this function into smaller functions when it will works
-            std::vector< std::string > region_names ;
-            index_t nb_read_vertices = 0 ;
+            //TODO : thinks to a good way to save surfaces/regions/facets...
             index_t last_tetra = 0 ;
-            std::vector< std::string > surf_names ;
+//            std::vector< std::string > surf_names ;
 
             bool has_model_in_file = false ;
 
-            GEO::Mesh mesh ;
-            GEO::Attribute<index_t> attribute_region ( mesh.cells.attributes(), "region" ) ;
-            GEO::Attribute<index_t> attribute_surf ( mesh.cell_facets.attributes(), "surf" ) ;
+            GME::gme_t cur_region = model_.universe().gme_id() ;
+            GEO::Mesh* mesh = &(model_.universe().mesh()) ;
+            GEO::Attribute <index_t> attribute_region ( mesh->cells.attributes(), "region" ) ;
+            GEO::AttributeStore* ptr_attribute_region = nil ;
+            GEO::Attribute <index_t> attribute_interface ( mesh->facets.attributes(), "interface" ) ;
 
-            // First file reading : count the number of vertex and tetras
+            // First : count the number of vertex and tetras
             // in each region
+            ///@todo:reverse space before and THEN assign
             std::vector< index_t > nb_mesh_elements_per_region =
                     read_number_of_mesh_elements() ;
             print_number_of_mesh_elements( nb_mesh_elements_per_region ) ;
-            ///@todo use the number of vertex and THEN assign
 
-            // Reading .so file
+            // Then : Reading .so file
             while( !in_.eof() && in_.get_line() ) {
                 in_.get_fields() ;
                 if( in_.nb_fields() > 0 ) {
                     if( in_.field_matches( 0, "TVOLUME" ) ) {
-                        region_names.push_back( in_.field( 1 ) ) ;
+                        // Create a region in the GeoModel.
+                        // Its mesh will be update while reading file.
+                        const std::string filename = "mesh_reg_" + model_.region( cur_region.index ).name() + ".mesh" ; // TO DELETE
+                        GEO::mesh_save( *mesh, filename) ; // TO DELETE
+                        cur_region = create_element( GME::REGION ) ;
+                        set_element_name( cur_region, in_.field( 1 ) ) ;
+                        mesh = &( model_.region(cur_region.index).mesh() ) ;
+                        std::cout << "mesh ad 1 : " << mesh << std::endl ;
+//                        GEO::Attribute <index_t> attribute_region ( mesh->cells.attributes(), "region" ) ;
+                        ptr_attribute_region = mesh->cells.attributes().find_attribute_store("region") ;
+//                        std::cout << "ptr_att 1 : " << ptr_attribute_region << std::endl ;
                     } else if( in_.field_matches( 0, "VRTX" ) || in_.field_matches( 0, "PVRTX" ) ) {
+                        // Add a vertex to the mesh of the current region.
                         double coord[3] = { in_.field_as_double( 2 ),
                                             in_.field_as_double( 3 ),
-                                            in_.field_as_double( 4 ) } ;
-                        mesh.vertices.create_vertex( coord ) ;
+                                            z_sign_ * in_.field_as_double( 4 ) } ;
+                        mesh->vertices.create_vertex( coord ) ;
                     } else if( in_.field_matches( 0, "ATOM" ) || in_.field_matches( 0, "PATOM" ) ) {
-                        double* coord = mesh.vertices.point_ptr( in_.field_as_uint( 2 ) - 1 ) ;
-                        mesh.vertices.create_vertex( coord ) ;
+                        // TODO : how to find the corresponding VRTX
+//                        double* coord = mesh->vertices.point_ptr( in_.field_as_uint( 2 ) - 1 ) ;
+//                        mesh->vertices.create_vertex( coord ) ;
                     } else if( in_.field_matches( 0, "TETRA" ) ) {
-                        // Reading a tetra and build the facets
-                        std::vector< index_t > vertices ;
-                        vertices.push_back( in_.field_as_uint( 1 ) - 1 ) ;
-                        vertices.push_back( in_.field_as_uint( 2 ) - 1 ) ;
-                        vertices.push_back( in_.field_as_uint( 3 ) - 1 ) ;
-                        vertices.push_back( in_.field_as_uint( 4 ) - 1 ) ;
-                        last_tetra = mesh.cells.create_tet(vertices[0],vertices[1],vertices[2],vertices[3]) ;
-                        attribute_region[last_tetra] = region_names.size() - 1 ;
+                        // Reading and create a tetra
+                        std::vector< index_t > vertices (4) ;
+                        vertices[0] = in_.field_as_uint( 1 ) - 1 ;
+                        vertices[1] = in_.field_as_uint( 2 ) - 1 ;
+                        vertices[2] = in_.field_as_uint( 3 ) - 1 ;
+                        vertices[3] = in_.field_as_uint( 4 ) - 1 ;
+                        last_tetra = mesh->cells.create_tet( vertices[0], vertices[1], vertices[2], vertices[3] ) ;
+                        // TODO : improve following to avoid creation of the object "attribute_region"
+                        GEO::Attribute <index_t> attribute_region ( mesh->cells.attributes(), "region" ) ;
+                        attribute_region[last_tetra] = cur_region.index ;
                     } else if( in_.field_matches( 0, "#" ) && in_.field_matches( 1, "CTETRA" ) ) {
-                        // Read information about tetra facets
+                        // Read information about tetra faces
                         for ( index_t f = 0 ; f < 4 ; ++f ) {
                             if ( !in_.field_matches( f + 3, "none" ) ) {
+                                // If a tetra face match with a triangle of an surface
                                 std::string read_surf = in_.field( f + 3 ) ;
-                                read_surf = read_surf.substr(1) ;
-                                index_t surf_id = 0 ;
-                                while ( surf_id < surf_names.size()
-                                        && surf_names[surf_id] != read_surf ) {
-                                    ++surf_id ;
-                                }
-                                if ( surf_id == surf_names.size() ) {
-                                    // Case: the surface is not in the vector
-                                    surf_names.push_back( read_surf ) ;
-                                }
-                                index_t cell_facet = mesh.cells.facet( last_tetra, f ) ;
-                                attribute_surf[ cell_facet ] = surf_id ;
+                                // 1 - Creation of the facet
+                                mesh->facets.create_triangle( mesh->cells.tet_facet_vertex(last_tetra, f, 0),
+                                        mesh->cells.tet_facet_vertex(last_tetra, f, 1),
+                                        mesh->cells.tet_facet_vertex(last_tetra, f, 2) ) ;
+                                mesh->show_stats() ;
+                                // 2 - Set attribute
+                                // 3 - Find or create the surface (and its parent Interface)
+                                // 4 - Add the triangle in the surface
+
+
+
+//                                index_t pair_reg_surf = 0 ;
+//                                while ( pair_reg_surf < region_boundaries.size() &&
+//                                        (region_boundaries[pair_reg_surf] != in_.field(2)
+//                                        || region_boundaries[pair_reg_surf + 1] != read_surf ) ) {
+//                                    pair_reg_surf += 2 ;
+//                                }
+//                                if ( pair_reg_surf == region_boundaries.size() ) {
+//                                    region_boundaries.push_back( in_.field(2) ) ;
+//                                    region_boundaries.push_back( read_surf ) ;
+//                                }
+//
+//                                index_t surf_id = 0 ;
+//                                while ( surf_id < surf_names.size()
+//                                        && surf_names[surf_id] != read_surf ) {
+//                                    ++surf_id ;
+//                                }
+//                                if ( surf_id == surf_names.size() ) {
+//                                    // Case: the surface is not in the vector
+//                                    surf_names.push_back( read_surf ) ;
+//                                }
+//                                index_t cell_facet = mesh->cells.facet( last_tetra, f ) ;
+//                                attribute_surf[ cell_facet ] = surf_id ;
                             }
                         }
                     } else if( in_.field_matches( 0, "name:" ) ) {
@@ -231,64 +269,146 @@ namespace RINGMesh {
                     }
                 }
             }
-            ///@todo try to remove colocated vertices
-            mesh.show_stats() ;
-            repair_colocate_vertices( mesh, epsilon ) ;
-            mesh.show_stats() ;
-            mesh.cells.connect() ;
-            mesh.show_stats() ;
-            mesh.cells.compute_borders() ;
-            mesh.show_stats() ;
-            GEO::Attribute< index_t > attribute_facet_surf (mesh.facets.attributes(), "facet_surf") ;
-            for ( index_t f = 0 ; f < mesh.facets.nb() ; ++f ) {
-                index_t v0 = mesh.facets.vertex(f,0) ;
-                index_t v1 = mesh.facets.vertex(f,1) ;
-                index_t v2 = mesh.facets.vertex(f,2) ;
-//                std::cout << f << " : " << v0 << " " << v1 << " " << v2 << " " << std::endl ;
-//                bool find_cell_facet = false ;
-                index_t local_facet_index = GEO::NO_FACET ;
-                index_t tetra_index = 0 ;
-                while ( local_facet_index == GEO::NO_FACET ) {
-                    local_facet_index = mesh.cells.find_tet_facet( tetra_index++, v0, v1, v2 ) ;
-                }
-//                std::cout << "find tet,lf = " << tetra_index - 1 << "," << local_facet_index << std::endl ;
-                attribute_facet_surf[f] = attribute_surf[mesh.cells.facet( tetra_index - 1, local_facet_index ) ] ;
+//            std::cout << "######################################" << std::endl ;
+////            create_geomodel_elements( GME::REGION, region_names.size() ) ;
+//            print_model(model_) ;
+//            model_.universe().mesh().show_stats() ;
+//            GeoModelBuilderMesh::prepare_surface_mesh_from_connected_components(*mesh, "attribute_cc") ;
+//            mesh->show_stats() ;
+//            GEO::MeshIOFlags flags ;
+//            flags.set_element( GEO::MESH_FACETS ) ;
+//////            flags.set_element( GEO::MESH_ALL_ELEMENTS ) ;
+////            flags.set_attribute( GEO::MESH_FACET_REGION ) ;
+//            GEO::mesh_save( *mesh,"mesh_out1.obj", flags ) ;
+//            std::cout << "######################################" << std::endl ;
+//            GEO::mesh_save( *mesh,"mesh_out2.mesh", flags ) ;
+//
+//            GeoModelBuilderMesh gmbuildermesh ( model_, *mesh, "attribute_cc", "region") ;
+//            std::cout << gmbuildermesh.is_mesh_valid_for_region_building() << std::endl;
+//            std::cout << gmbuildermesh.create_and_build_regions() << std::endl;
+//            std::cout << gmbuildermesh.is_mesh_valid_for_surface_building() << std::endl;
+//            std::cout << gmbuildermesh.create_and_build_surfaces() << std::endl;
+//            print_model( model_ ) ;
+//            std::cout << "######################################" << std::endl ;
+//            GeoModelMesh& gmmesh = model_.mesh ;
+//            std::cout << "vert " << gmmesh.vertices.nb() << std::endl ;
+//            std::cout << "edge " << gmmesh.edges.nb_edges() << std::endl ;
+//            std::cout << "fac " << gmmesh.facets.nb() << std::endl ;
+//            std::cout << "cell " << gmmesh.cells.nb() << std::endl ;
+//
+//            std::cout << "univ " << model_.universe().is_meshed() << std::endl ;
+//            std::cout << "r0 " << model_.region(0).is_meshed() << std::endl ;
+//            std::cout << "r1 " << model_.region(1).is_meshed() << std::endl ;
+//
+//            std::cout << "r0 vert " << model_.region(0).nb_vertices() << std::endl;
+//            std::cout << "r0 cell " << model_.region(0).nb_cells() << std::endl;
+//            std::cout << "r1 vert " << model_.region(1).nb_vertices() << std::endl;
+//            std::cout << "r1 cell " << model_.region(1).nb_cells() << std::endl;
+//
+//            GEO::mesh_save( *mesh,"mesh_out3.obj") ;
+//            GEO::mesh_save( *mesh,"mesh_out3m.mesh") ;
 
-            }
+
+
+//            //TODO: call mesh_repair (geogram) in order to delete duplicate_facets
+//            std::cout << "====================" << std::endl ;
+//            std::cout << "END READING .SO FILE" << std::endl ;
+//            mesh.show_stats() ;
+//            GEO::MeshIOFlags flag ;
+//            flag.set_element( GEO::MESH_FACETS) ;
+//            GEO::mesh_save(mesh,"toto1.obj", flag ) ;
+//            GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DEFAULT, epsilon ) ;
+//            mesh.show_stats() ;
+//            GEO::mesh_save(mesh,"toto2.obj", flag ) ;
+//            std::cout << "====================" << std::endl ;
+
+
+//            repair_colocate_vertices( mesh, epsilon ) ;
+//            mesh.show_stats() ;
+////            mesh.cells.connect() ;
+//            mesh.show_stats() ;
+            // Not use compute_borders (surface inside)
+//            mesh.cells.compute_borders() ;
+
+//            GEO::Attribute< index_t > attribute_facet_surf (mesh.facets.attributes(), "facet_surf") ;
 //            for ( index_t f = 0 ; f < mesh.facets.nb() ; ++f ) {
-//                std::cout << f << " : " << attribute_facet_surf[f] << std::endl ;
+//                index_t v0 = mesh.facets.vertex(f,0) ;
+//                index_t v1 = mesh.facets.vertex(f,1) ;
+//                index_t v2 = mesh.facets.vertex(f,2) ;
+//                index_t local_facet_index = GEO::NO_FACET ;
+//                index_t tetra_index = 0 ;
+//                while ( local_facet_index == GEO::NO_FACET ) {
+//                    local_facet_index = mesh.cells.find_tet_facet( tetra_index++, v0, v1, v2 ) ;
+//                }
+//                attribute_facet_surf[f] = attribute_surf[mesh.cells.facet( tetra_index - 1, local_facet_index ) ] ;
+//
 //            }
-            mesh.show_stats() ;
-            std::cout << "====================" << std::endl ;
-            std::cout << "Step 1" << std::endl ;
-//            GeoModelBuilderMesh::prepare_surface_mesh_from_connected_components(mesh, "facet_surf") ;
-            mesh.show_stats() ;
-            print_model( model_ ) ;
-            std::cout << "====================" << std::endl ;
-            std::cout << "Step 2" << std::endl ;
-            GeoModelBuilderMesh buildermesh( model_, mesh, "facet_surf", "region" ) ;
-            std::cout << "GMBM nb_surf_attri_values = " << buildermesh.nb_surface_attribute_values() << std::endl ;
-            std::cout << "GMBM nb_reg_attri_values = " << buildermesh.nb_region_attribute_values() << std::endl ;
-//            GeoModelBuilderMesh buildermesh2( model_, mesh, "created_surf", "region" ) ;
-//            std::cout << "GMBM2 nb_surf_attri_values = " << buildermesh2.nb_surface_attribute_values() << std::endl ;
-            mesh.show_stats() ;
-            print_model( model_ ) ;
-            std::cout << "====================" << std::endl ;
-            std::cout << "Step 3" << std::endl ;
-            buildermesh.create_and_build_surfaces() ;
-            mesh.show_stats() ;
-            print_model( model_ ) ;
-            std::cout << "====================" << std::endl ;
-            std::cout << "Step 4" << std::endl ;
-            mesh.show_stats() ;
-            print_model( model_ ) ;
-            buildermesh.build_model_from_surfaces() ;
-            mesh.show_stats() ;
-            print_model( model_ ) ;
-            std::cout << "====================" << std::endl ;
-            std::cout << "Step 5" << std::endl ;
-            buildermesh.create_and_build_regions() ;
-            print_model(model_) ;
+//            mesh.show_stats() ;
+//
+//            GEO::mesh_save(mesh,"toto.obj") ;
+//
+//
+//            std::cout << "====================" << std::endl ;
+//            std::cout << "Step 1" << std::endl ;
+////            GeoModelBuilderMesh::prepare_surface_mesh_from_connected_components(mesh, "created") ;
+//            mesh.show_stats() ;
+//            print_model( model_ ) ;
+//            std::cout << "====================" << std::endl ;
+//            std::cout << "Step 2" << std::endl ;
+//            GeoModelBuilderMesh buildermesh( model_, mesh, "facet_surf", "region" ) ;
+////            GeoModelBuilderMesh buildermesh( model_, mesh, "", "region" ) ;
+//            std::cout << "GMBM nb_surf_attri_values = " << buildermesh.nb_surface_attribute_values() << std::endl ;
+//            std::cout << "GMBM nb_reg_attri_values = " << buildermesh.nb_region_attribute_values() << std::endl ;
+////            GeoModelBuilderMesh buildermesh2( model_, mesh, "created_surf", "region" ) ;
+////            std::cout << "GMBM2 nb_surf_attri_values = " << buildermesh2.nb_surface_attribute_values() << std::endl ;
+//            mesh.show_stats() ;
+//            print_model( model_ ) ;
+//            std::cout << "====================" << std::endl ;
+//            std::cout << "Step 3" << std::endl ;
+//            buildermesh.create_and_build_surfaces() ;
+//            mesh.show_stats() ;
+//            print_model( model_ ) ;
+//            std::cout << "====================" << std::endl ;
+//            std::cout << "Step 4" << std::endl ;
+//            mesh.show_stats() ;
+//            print_model( model_ ) ;
+//            buildermesh.build_model_from_surfaces() ;
+//            mesh.show_stats() ;
+//            print_model( model_ ) ;
+//            std::cout << "====================" << std::endl ;
+//            std::cout << "Step 5" << std::endl ;
+//            mesh.show_stats() ;
+//            std::cout << "nb reg : " << model_.nb_regions() << std:: endl ;
+//            buildermesh.create_and_build_regions() ;
+//            print_model(model_) ;
+//            std::cout << "====================" << std::endl ;
+//            std::cout << "Step 6 : check if regions have surfaces in boundaries TODO" << std::endl ;
+//            mesh.show_stats() ;
+//            std::cout << "nb reg : " << model_.nb_regions() << std:: endl ;
+//            for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
+//                std::cout << "nb boundaries : " << model_.region( r ).nb_boundaries() << std::endl ;
+//                if ( model_.region( r ).nb_boundaries() == 0) {
+//                    add_element_boundary( GME::gme_t(GME::REGION, r), GME::gme_t(GME::SURFACE, 0) , true ) ;
+//                    add_element_boundary( GME::gme_t(GME::REGION, r), GME::gme_t(GME::SURFACE, 1) , true ) ;
+//                    add_element_boundary( GME::gme_t(GME::REGION, r), GME::gme_t(GME::SURFACE, 2) , true ) ;
+//                    add_element_boundary( GME::gme_t(GME::REGION, r), GME::gme_t(GME::SURFACE, 3) , true ) ;
+//                    add_element_boundary( GME::gme_t(GME::REGION, r), GME::gme_t(GME::SURFACE, 4) , true ) ;
+//                    add_element_boundary( GME::gme_t(GME::REGION, r), GME::gme_t(GME::SURFACE, 5) , true ) ;
+//                }
+//            }
+//            std::cout << "nb boundaries : " << model_.region( NO_ID ).nb_boundaries() << std::endl ;
+//            if ( model_.region( NO_ID).nb_boundaries() == 0) {
+//                add_element_boundary( GME::gme_t(GME::REGION, NO_ID), GME::gme_t(GME::SURFACE, 0) , true ) ;
+//                add_element_boundary( GME::gme_t(GME::REGION, NO_ID), GME::gme_t(GME::SURFACE, 1) , true ) ;
+//                add_element_boundary( GME::gme_t(GME::REGION, NO_ID), GME::gme_t(GME::SURFACE, 2) , true ) ;
+//                add_element_boundary( GME::gme_t(GME::REGION, NO_ID), GME::gme_t(GME::SURFACE, 3) , true ) ;
+//                add_element_boundary( GME::gme_t(GME::REGION, NO_ID), GME::gme_t(GME::SURFACE, 4) , true ) ;
+//                add_element_boundary( GME::gme_t(GME::REGION, NO_ID), GME::gme_t(GME::SURFACE, 5) , true ) ;
+//            }
+//            print_model(model_) ;
+//            std::cout << "====================" << std::endl ;
+//            std::cout << "Step 7 : add vertex" << std::endl ;
+//            mesh.show_stats() ;
             return true ;
 
         }
@@ -318,7 +438,7 @@ namespace RINGMesh {
                 } else if( in_.field_matches( 1, "Depth" ) ) {
                     z_sign_ = -1 ;
                 } else {
-                    ringmesh_assert_not_reached;
+                    ringmesh_assert_not_reached ;
                 }
             }
         }
