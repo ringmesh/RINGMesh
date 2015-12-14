@@ -73,6 +73,13 @@ int main( int argc, char** argv )
         return 1 ;
     }
 
+    std::string output_so_file_name( ringmesh_test_output_path ) ;
+    output_so_file_name += "out_model.so" ;
+
+    if(!geomodel_volume_save( in_so, output_so_file_name ) ) {
+        return 1 ;
+    }
+
     bool res = true ;
     if( res ) {
         GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;

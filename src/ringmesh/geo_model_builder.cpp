@@ -1418,14 +1418,8 @@ namespace RINGMesh {
                 }
             }
         }
-        std::cout << "subsubstep 1" << std::endl;
-        print_model(model_) ;
         // Deliberate clear of the model vertices used for model building
-        std::cout << " nb to clear " << model_.mesh.vertices.nb() << std::endl ;
         model_.mesh.vertices.clear() ;
-        std::cout << " after " << model_.mesh.vertices.nb() << std::endl ;
-        std::cout << "subsubstep 2" << std::endl;
-        print_model(model_) ;
         return true ;
     }
 

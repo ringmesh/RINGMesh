@@ -42,6 +42,7 @@
 #ifndef __RINGMESH_GEO_MODEL_BUILDER_SO__
 #define __RINGMESH_GEO_MODEL_BUILDER_SO__
 
+#include <ringmesh/common.h>
 #include <ringmesh/geo_model_builder.h>
 
 namespace RINGMesh {
