@@ -125,7 +125,7 @@ namespace {
      */
     void toggle_points()
     {
-    	show_points = !show_points ;
+        show_points = !show_points ; 
         GM_gfx.set_vertex_regions_visibility( show_points ) ;
     }
 
