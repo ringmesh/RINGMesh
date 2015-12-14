@@ -1412,7 +1412,7 @@ namespace GEO {
          */
         index_t corner(index_t c, index_t lv) const {
             geo_debug_assert(c < nb());
-            geo_debug_assert(lv < nb_corners(c));
+            //geo_debug_assert(lv < nb_corners(c));
             return corners_begin(c) + lv;
         }
 

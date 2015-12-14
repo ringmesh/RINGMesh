@@ -1,6 +1,6 @@
 GOCAD Model3d 1 
 HEADER {
-name:splitted_cube
+name:split_cube
 }
 GOCAD_ORIGINAL_COORDINATE_SYSTEM
 NAME Default
