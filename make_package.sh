@@ -7,7 +7,6 @@ else
     version=$1
 fi
 
-
 cd `dirname $0`
 RINGMesh_HOME=$(pwd)
 
