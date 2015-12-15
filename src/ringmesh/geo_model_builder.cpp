@@ -665,11 +665,11 @@ namespace RINGMesh {
 
             get_adjacent_surfaces( cur_border_triangle_, cur_line_adjacent_surfaces_ ) ;
 
-            // Propagate onward
-            get_one_line_vertices( false ) ;
-            // Propagate backward 
+            bool backward = false ;
+            get_one_line_vertices( backward ) ;
             if( cur_line_vertices_.back() != cur_border_triangle_ ) {
-                get_one_line_vertices( true ) ;
+                backward = true ;
+                get_one_line_vertices( backward ) ;
             }
 
             if( collect_region_information_ ) {
@@ -735,15 +735,21 @@ namespace RINGMesh {
             return cur_border_triangle_ < border_triangles_.size() ;
         }
 
+        bool have_border_triangles_same_boundary_edge( index_t t0, index_t t1 ) const
+        {
+            return border_triangles_[ t0 ].same_edge( border_triangles_[ t1 ] ) ;
+        }
+
         /*!
-         * @brief Collects the triangles sharing one of the edges of the line
+         * @brief Get triangles sharing the border edge of the current border triangle
+         *        and add them to current line region information 
          */
         void collect_region_information()
         {
             index_t i( cur_border_triangle_ ) ;
             index_t j = i ;
             while( j < border_triangles_.size()
-                   && border_triangles_[ i ].same_edge( border_triangles_[ j ] )
+                   && have_border_triangles_same_boundary_edge( i, j )
                    ) {
                 cur_line_region_information_.add_triangle(
                     border_triangles_[ j ].surface_,
