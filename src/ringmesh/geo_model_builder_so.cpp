@@ -49,6 +49,7 @@
 
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
+#include <ringmesh/io.h>
 
 namespace RINGMesh {
 
@@ -61,7 +62,6 @@ namespace RINGMesh {
 
             GME::gme_t cur_region = model_.universe().gme_id() ;
             GEO::Mesh* mesh = &(model_.universe().mesh()) ;
-//            GEO::Attribute <index_t> attribute_interface ( mesh->facets.attributes(), "interface" ) ;
 
             // First : count the number of vertex and tetras
             // in each region
@@ -72,6 +72,13 @@ namespace RINGMesh {
 
             ///@todo Link these vector with the results above
             std::vector< index_t > vertices_id_in_region ;
+            index_t nb_non_dupl_vrtx = 0 ;
+            std::vector< index_t > map_gocad2gmm_vertices ;
+
+            GME::gme_t current_interface ;
+            GME::gme_t current_surface ;
+            std::vector< index_t > cur_surf_facets ;
+            std::vector< index_t > cur_surf_facet_ptr (1, 0) ;
 
             // Then : Reading .so file
             while( !in_.eof() && in_.get_line() ) {
@@ -91,8 +98,9 @@ namespace RINGMesh {
                                             in_.field_as_double( 3 ),
                                             z_sign_ * in_.field_as_double( 4 ) } ;
                         vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
+                        map_gocad2gmm_vertices.push_back( nb_non_dupl_vrtx );
+                        ++nb_non_dupl_vrtx ;
                     } else if( in_.field_matches( 0, "ATOM" ) || in_.field_matches( 0, "PATOM" ) ) {
-                        ///@todo : how to find the corresponding VRTX
                         index_t referring_vertex = in_.field_as_double( 2 ) - 1 ;
                         index_t referring_vertex_region_id = NO_ID ;
                         index_t cum_nb_vertex = 0 ;
@@ -100,8 +108,9 @@ namespace RINGMesh {
                             ++referring_vertex_region_id ;
                             cum_nb_vertex += model_.region( referring_vertex_region_id ).mesh().vertices.nb() ;
                         }
-                        double* coord = model_.region( referring_vertex_region_id ).mesh().vertices.point_ptr( in_.field_as_double( 2 ) - 1 ) ;
+                        double* coord = model_.region( referring_vertex_region_id ).mesh().vertices.point_ptr( referring_vertex ) ;
                           vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
+                          map_gocad2gmm_vertices.push_back( map_gocad2gmm_vertices[referring_vertex] ) ;
                     } else if( in_.field_matches( 0, "TETRA" ) ) {
                         // Reading and create a tetra
                         std::vector< index_t > vertices (4) ;
@@ -112,57 +121,140 @@ namespace RINGMesh {
                         last_tetra = mesh->cells.create_tet( vertices[0], vertices[1], vertices[2], vertices[3] ) ;
                         ///@todo Improve following to avoid creation of the object "attribute_region"
                         GEO::Attribute <index_t> attribute_region ( mesh->cells.attributes(), "region" ) ;
-                        attribute_region[last_tetra] = cur_region.index ;
-                    } else if( in_.field_matches( 0, "#" ) && in_.field_matches( 1, "CTETRA" ) ) {
+                        attribute_region[ last_tetra ] = cur_region.index ;
+                    } else if( in_.field_matches( 0, "#" ) && in_.field_matches( 1, "CTETRA" ) ) {/*
                         // Read information about tetra faces
                         for ( index_t f = 0 ; f < 4 ; ++f ) {
                             if ( !in_.field_matches( f + 3, "none" ) ) {
                                 // If a tetra face match with a triangle of an surface
-                                std::string read_surf = in_.field( f + 3 ) ;
-                                // 1 - Creation of the facet
-                                mesh->facets.create_triangle( mesh->cells.tet_facet_vertex(last_tetra, f, 0),
+                                std::string read_interface = in_.field( f + 3 ) ;
+                                std::string interface_name = read_interface.substr(1) ;
+                                bool sign_plus = (read_interface[0] == '+') ? true : false ;
+
+                                // 1 - Find or create the interface
+                                index_t id_model_interface = NO_ID ;
+                                for ( index_t interf = 0 ; interf < model_.nb_interfaces() ; ++interf ) {
+                                    if ( model_.one_interface( interf ).name() == interface_name ) {
+                                        id_model_interface = interf ;
+                                        break ;
+                                    }
+                                }
+                                if ( id_model_interface == NO_ID ) {
+                                    GME::gme_t created_interface = create_element( GME::INTERFACE );
+                                    set_element_name( created_interface, interface_name ) ;
+                                    id_model_interface = created_interface.index ;
+                                }
+
+                                // 2 - Check if a child of the interface (a surface) is in boundary of the region.
+                                GME::gme_t model_surface ( GME::SURFACE, NO_ID ) ;
+                                if ( model_.one_interface( id_model_interface ).nb_children() == 0 ) {
+                                    // The interface has no children
+                                    model_surface = create_element( GME::SURFACE ) ;
+                                    set_element_parent( model_surface, model_.one_interface( id_model_interface ).gme_id() ) ;
+                                    add_element_child( model_.one_interface( id_model_interface ).gme_id(), model_surface ) ;
+                                    add_element_boundary( cur_region, model_surface, sign_plus ) ;
+                                } else {
+                                    // If the interface has at least one child,
+                                    // check if a child is a boundary of the current region.
+                                    for (index_t b = 0 ; b < model_.region( cur_region.index ).nb_boundaries() ; ++b ) {
+                                        if ( model_.region( cur_region.index ).boundary(b).parent()
+                                                == model_.one_interface( id_model_interface ) ) {
+                                            model_surface = model_.region( cur_region.index ).boundary(b).gme_id() ;
+                                            break ;
+                                        }
+                                    }
+                                    if ( model_surface.index == NO_ID ) {
+                                        // Interface child(ren) is/are not a boundary of the region
+                                        model_surface = create_element( GME::SURFACE ) ;
+                                        set_element_parent( model_surface, model_.one_interface( id_model_interface ).gme_id() ) ;
+                                        add_element_child( model_.one_interface( id_model_interface ).gme_id(), model_surface ) ;
+                                        add_element_boundary( cur_region, model_surface, sign_plus ) ;
+                                    }
+                                }
+
+                                // 3 - Creation of the facet
+                                index_t facet = mesh->facets.create_triangle( mesh->cells.tet_facet_vertex(last_tetra, f, 0),
                                         mesh->cells.tet_facet_vertex(last_tetra, f, 1),
                                         mesh->cells.tet_facet_vertex(last_tetra, f, 2) ) ;
-                                // 2 - Set attribute
-                                // 3 - Find or create the surface (and its parent Interface)
-                                // 4 - Add the triangle in the surface
 
+                                // 4 - Set attribute
+                                GEO::Attribute <index_t> attribute_interface ( mesh->facets.attributes(), "interface" ) ;
+                                attribute_interface[ facet ] = id_model_interface ;
 
-//                                index_t pair_reg_surf = 0 ;
-//                                while ( pair_reg_surf < region_boundaries.size() &&
-//                                        (region_boundaries[pair_reg_surf] != in_.field(2)
-//                                        || region_boundaries[pair_reg_surf + 1] != read_surf ) ) {
-//                                    pair_reg_surf += 2 ;
-//                                }
-//                                if ( pair_reg_surf == region_boundaries.size() ) {
-//                                    region_boundaries.push_back( in_.field(2) ) ;
-//                                    region_boundaries.push_back( read_surf ) ;
-//                                }
-//
-//                                index_t surf_id = 0 ;
-//                                while ( surf_id < surf_names.size()
-//                                        && surf_names[surf_id] != read_surf ) {
-//                                    ++surf_id ;
-//                                }
-//                                if ( surf_id == surf_names.size() ) {
-//                                    // Case: the surface is not in the vector
-//                                    surf_names.push_back( read_surf ) ;
-//                                }
-//                                index_t cell_facet = mesh->cells.facet( last_tetra, f ) ;
-//                                attribute_surf[ cell_facet ] = surf_id ;
+                                // 5 - Add the triangle in the surface
+                                ///@todo use set_surface_geometry... When all the facets are known
                             }
                         }
-                    } else if( in_.field_matches( 0, "name:" ) ) {
+                    */} else if( in_.field_matches( 0, "name:" ) ) {
                         // GeoModel name is set to the TSolid name.
                         set_model_name( in_.field( 1 ) ) ;
                     } else if( in_.field_matches( 0, "GOCAD_ORIGINAL_COORDINATE_SYSTEM" ) ) {
                         read_GCS() ;
+                    } else if( in_.field_matches( 0, "MODEL" ) ) {
+                        has_model_in_file = true ;
+                        model_.mesh.vertices.test_and_initialize() ;
+                    } else if( in_.field_matches( 0, "SURFACE" ) ) {
+                        current_interface = create_element( GME::INTERFACE );
+                        set_element_name( current_interface, in_.field( 1 ) ) ;
+                    } else if( in_.field_matches( 0, "TFACE" ) ) {
+                        // Compute the surface
+                        if ( cur_surf_facets.size() > 0 ) {
+                            set_surface_geometry( current_surface.index, cur_surf_facets, cur_surf_facet_ptr ) ;
+                            cur_surf_facets.clear() ;
+                            cur_surf_facet_ptr.clear() ;
+                            cur_surf_facet_ptr.push_back( 0 ) ;
+                        }
+                        // Create a new surface
+                        current_surface = create_element( GME::SURFACE ) ;
+                        set_element_parent( current_surface, current_interface ) ;
+                        add_element_child( current_interface, current_surface ) ;
+                    } else if( in_.field_matches( 0, "KEYVERTICES" ) ) {
+
+                    } else if( in_.field_matches( 0, "TRGL" ) ) {
+                        ///@todo think to reserve space before
+                        cur_surf_facets.push_back( map_gocad2gmm_vertices[ in_.field_as_uint( 1 ) - 1 ] ) ;
+                        cur_surf_facets.push_back( map_gocad2gmm_vertices[ in_.field_as_uint( 2 ) - 1 ] ) ;
+                        cur_surf_facets.push_back( map_gocad2gmm_vertices[ in_.field_as_uint( 3 ) - 1 ] ) ;
+                        cur_surf_facet_ptr.push_back( cur_surf_facets.size() ) ;
+                    } else if( in_.field_matches( 0, "MODEL_REGION" ) ) {
+                        // Compute the surface
+                          if ( cur_surf_facets.size() > 0 ) {
+                              set_surface_geometry( current_surface.index, cur_surf_facets, cur_surf_facet_ptr ) ;
+                              cur_surf_facets.clear() ;
+                              cur_surf_facet_ptr.clear() ;
+                              cur_surf_facet_ptr.push_back( 0 ) ;
+                          }
                     }
                 }
             }
 
+            print_model(model_) ;
             const std::string filename = "mesh_reg_" + model_.region( cur_region.index ).name() + ".mesh" ; // TO DELETE
             GEO::mesh_save( *mesh, filename) ; // TO DELETE
+            geomodel_surface_save(model_, "model_test.bm") ;
+
+            GeoModel output ;
+            geomodel_surface_load( "model_test.bm", output ) ;
+            std::cout << "loaded" << std::endl ;
+
+//            std::cout << "start" << std::endl ;
+//            GeoModel geomodel ;
+//            repair_colocate_vertices( *mesh, epsilon ) ;
+//            GEO::mesh_save( *mesh, "after_repair.meshb") ; // TO DELETE
+//            GeoModelBuilderMesh::prepare_surface_mesh_from_connected_components(*mesh, "cfa") ;
+//            GeoModelBuilderMesh builder( model_, *mesh, "interface", "" ) ;
+//            builder.create_and_build_surfaces() ;
+//            builder.build_model_from_surfaces() ;
+//            std::cout << "end" << std::endl ;
+//            print_model(model_) ;
+//            complete_element_connectivity() ;
+//            GEO::mesh_save( *mesh, "after_all.meshb") ; // TO DELETE
+//            GEO::mesh_save( *mesh, "after_all.obj") ; // TO DELETE
+//            geomodel_surface_save(model_, "truc.ml") ;
+//            geomodel_volume_save(model_, "truc.so") ;
+
+//            complete_element_connectivity() ;
+
 
 
 //            std::cout << "######################################" << std::endl ;

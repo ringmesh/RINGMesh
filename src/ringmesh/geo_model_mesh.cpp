@@ -178,7 +178,7 @@ namespace RINGMesh {
         mesh_.clear() ;
 
         // Total number of vertices in the
-        // Corners, Lines, and Surfaces of the GeoModel
+        // Corners, Lines, Surfaces and Regions of the GeoModel
         index_t nb = 0 ;
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
