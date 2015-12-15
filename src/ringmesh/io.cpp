@@ -83,5 +83,4 @@ namespace RINGMesh {
         GeoModelVolumeIOHandler::initialize() ;
         WellGroupIOHandler::initialize() ;
     }
-
 }
