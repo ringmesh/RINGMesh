@@ -2434,15 +2434,12 @@ namespace RINGMesh {
                         }
                         // Set the region name and boundaries
                         set_element_name( region_id, name ) ;
-                        std::cout << "nb c : " << model_.region( region_id.index).nb_boundaries() << std::endl ;
                         for( index_t i = 0; i < region_boundaries.size(); ++i ) {
                             add_element_boundary( region_id,
                                 gme_t( GME::SURFACE,
                                     region_boundaries[i].first ),
                                 region_boundaries[i].second ) ;
-                            std::cout << "during nb c : " << model_.region( region_id.index).nb_boundaries() << std::endl ;
                         }
-                        std::cout << "after nb c : " << model_.region( region_id.index).nb_boundaries() << std::endl ;
                     } else if( in_.field_matches( 0, "LAYER" ) ) {
                         /// 1.4 Build the volumetric layers from their name and
                         /// the ids of the regions they contain
