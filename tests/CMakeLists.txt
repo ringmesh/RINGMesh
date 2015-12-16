@@ -46,7 +46,7 @@ if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
 endif()	
 		
 # Create the directory for the outputs of the tests
-# It is output in the configuration file as well as the test input data directory message
+# It is output in the configuration file as well as the test input data directory 
 file(MAKE_DIRECTORY ${TEST_DATA_OUTPUT_DIRECTORY}) 
 
 # Configure a header file to pass some of the CMake settings
