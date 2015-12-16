@@ -48,6 +48,7 @@
 #include <geogram/mesh/mesh_repair.h>
 
 #include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/io.h>
 
@@ -209,7 +210,10 @@ namespace RINGMesh {
                         set_element_parent( current_surface, current_interface ) ;
                         add_element_child( current_interface, current_surface ) ;
                     } else if( in_.field_matches( 0, "KEYVERTICES" ) ) {
-
+//                        index_t vertex1 = map_gocad2gmm_vertices[ in_.field_as_uint( 1 ) - 1 ] ;
+//                        index_t vertex2 = map_gocad2gmm_vertices[ in_.field_as_uint( 2 ) - 1 ] ;
+//                        index_t vertex3 = map_gocad2gmm_vertices[ in_.field_as_uint( 3 ) - 1 ] ;
+//                        std::cout << vertex1 << " : " << vertex2 << " : " << vertex3 << std::endl ;
                     } else if( in_.field_matches( 0, "TRGL" ) ) {
                         ///@todo think to reserve space before
                         cur_surf_facets.push_back( map_gocad2gmm_vertices[ in_.field_as_uint( 1 ) - 1 ] ) ;
@@ -228,14 +232,78 @@ namespace RINGMesh {
                 }
             }
 
-            print_model(model_) ;
-            const std::string filename = "mesh_reg_" + model_.region( cur_region.index ).name() + ".mesh" ; // TO DELETE
-            GEO::mesh_save( *mesh, filename) ; // TO DELETE
-            geomodel_surface_save(model_, "model_test.bm") ;
+            std::cout << "Line/Corner" << std::endl ;
+            // Build GeoModel Lines and Corners from the surfaces
+            model_.mesh.vertices.test_and_initialize() ;
+            build_lines_and_corners_from_surfaces() ;
 
-            GeoModel output ;
-            geomodel_surface_load( "model_test.bm", output ) ;
-            std::cout << "loaded" << std::endl ;
+            std::cout << "Region" << std::endl ;
+            // Regions boundaries
+            for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
+                std::cout << "BEGIN : region " << r << " has " << model_.region(r).nb_boundaries() << " boundaries." << std::endl ;
+                index_t id_reg = model_.region(r).index() ;
+                for( index_t c = 0; c < model_.mesh.cells.nb_tet( id_reg ); ++c ) {
+                    for ( index_t f = 0; f < 4 ; ++f ) {
+                        index_t facet = NO_ID ;
+                        bool side = false ;
+                        if (model_.mesh.cells.is_cell_facet_on_surface( model_.mesh.cells.tet( id_reg, c ), f, facet, side )) {
+                            index_t surface = model_.mesh.facets.surface( facet ) ;
+                            bool surface_in_boundary = false ;
+                            index_t b = NO_ID ;
+                            while ( !surface_in_boundary && ++b < model_.region(r).nb_boundaries() ) {
+                                if ( model_.region(r).boundary(b).gme_id() == model_.surface( surface ).gme_id() ) {
+                                    surface_in_boundary = true ;
+                                }
+                            }
+                            if ( !surface_in_boundary ) {
+                                add_element_boundary(
+                                    GME::gme_t( GME::REGION, id_reg ),
+                                    GME::gme_t( GME::SURFACE, surface ),
+                                    side ) ;
+                                add_element_in_boundary(
+                                    GME::gme_t( GME::SURFACE, surface ),
+                                    GME::gme_t( GME::REGION, id_reg ) ) ;
+                            }
+                        }
+                    }
+                }
+                std::cout << "END : region " << r << " has " << model_.region(r).nb_boundaries() << " boundaries." << std::endl ;
+            }
+
+            std::cout << "Universe" << std::endl ;
+            // Universe boundaries
+            for (index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+                if ( model_.surface(s).nb_in_boundary() == 1 ) {
+                    add_element_boundary(
+                        GME::gme_t( GME::REGION, NO_ID ),
+                        GME::gme_t( GME::SURFACE, s ),
+                        true ) ;
+                }
+            }
+            std::cout << "END : universe has " << model_.universe().nb_boundaries() << " boundaries." << std::endl ;
+
+
+//            std::cout << "GeolFeature" << std::endl ;
+//            // GEOL FEATURE
+//            for (index_t s = 0 ; s < model_.universe().nb_boundaries() ; ++s ) {
+//                const GME& interface = model_.universe().boundary( s ).parent() ;
+//                if ( !interface.has_geological_feature() ) {
+//                    std::cout << "here" << std::endl ;
+//                    // Set geologicel feature
+//                } else {
+//                    std::cout << "there" << std::endl ;
+//                }
+//            }
+
+
+//            print_model(model_) ;
+//            const std::string filename = "mesh_reg_" + model_.region( cur_region.index ).name() + ".mesh" ; // TO DELETE
+//            GEO::mesh_save( *mesh, filename) ; // TO DELETE
+//            geomodel_surface_save(model_, "model_test.bm") ;
+//            geomodel_volume_save(model_, "model_test.gm") ;
+//            GeoModel output ;
+//            geomodel_surface_load( "model_test.bm", output ) ;
+//            std::cout << "loaded" << std::endl ;
 
 //            std::cout << "start" << std::endl ;
 //            GeoModel geomodel ;
@@ -550,8 +618,8 @@ namespace RINGMesh {
 
         }
     }
-    void GeoModelBuilderTSolid::build_boundary_model()
-    {
-
-    }
+//    void GeoModelBuilderTSolid::build_boundary_model()
+//    {
+//
+//    }
 }
