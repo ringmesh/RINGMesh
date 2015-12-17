@@ -870,7 +870,16 @@ namespace {
                             corner = id ;
                         }
                         break ;
+                    case GME::REGION:
+//                        GEO::Logger::warn( "GeoModel" )
+//                            << " Vertex " << i
+//                            << " is in Region "
+//                            << id
+//                            << std::endl ;
+//                        valid_vertex = false ;
+                        break ;
                     default:
+                        std::cout << j << " : OTHER " << T << std::endl ;
                         GEO::Logger::warn( "GeoModel" ) 
                             << " Vertex " << i
                             << " is in no Element of the Model" 
