@@ -1154,6 +1154,7 @@ namespace RINGMesh {
         index_t nb_vertices = S.nb_vertices() ;
 
         // Allocate some space to store the ids of facets around each vertex
+        ///@todo Rename the variable "toto" with a better name.
         std::vector< index_t > toto ;
         toto.reserve( 10 ) ;
         std::vector< std::vector< index_t > > vertex_to_facets( nb_vertices, toto ) ;

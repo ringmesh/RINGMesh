@@ -580,13 +580,17 @@ namespace RINGMesh {
                 if( builder.build_model() ) {
                     print_model( model ) ;
                     // Check validity
-                    RINGMesh::is_geomodel_valid( model ) ;
+//                    RINGMesh::is_geomodel_valid( model ) ;
 
                     time( &end_load ) ;
+
                     GEO::Logger::out( "I/O" )
                         << " Loaded model " << model.name() << " from " << std::endl
                         << filename << " timing: "
                         << difftime( end_load, start_load ) << "sec" << std::endl ;
+
+                    geomodel_surface_save(model, "imported_tsolid_surf.bm") ;
+                    geomodel_volume_save(model, "imported_tsolid_vol.gm") ;
                     return true ;
                 }
             }
