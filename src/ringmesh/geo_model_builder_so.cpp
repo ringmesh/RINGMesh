@@ -40,6 +40,7 @@
 
 #include <ringmesh/geo_model_builder_so.h>
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 
@@ -190,6 +191,8 @@ namespace RINGMesh {
                 } else if( in_.field_matches( 0, "GOCAD_ORIGINAL_COORDINATE_SYSTEM" ) ) {
                     read_GCS() ;
                 } else if( in_.field_matches( 0, "MODEL" ) ) {
+//                    std::cout << "reg 0 : " << model_.mesh_element( GME::REGION, 0 ).nb_vertices() << std::endl ;
+//                    std::cout << "reg 1 : " << model_.mesh_element( GME::REGION, 1 ).nb_vertices() << std::endl ;
                     has_model_in_file = true ;
                     model_.mesh.vertices.test_and_initialize() ;
                 } else if( in_.field_matches( 0, "SURFACE" ) ) {
@@ -214,7 +217,7 @@ namespace RINGMesh {
                     cur_surf_facets.push_back( map_gocad2gmm_vertices[ in_.field_as_uint( 3 ) - 1 ] ) ;
                     cur_surf_facet_ptr.push_back( cur_surf_facets.size() ) ;
                 } else if( in_.field_matches( 0, "MODEL_REGION" ) ) {
-                    // Compute the surface
+                    // Compute the last surface
                       if ( cur_surf_facets.size() > 0 ) {
                           set_surface_geometry( current_surface.index, cur_surf_facets, cur_surf_facet_ptr ) ;
                           cur_surf_facets.clear() ;
@@ -227,7 +230,187 @@ namespace RINGMesh {
 
         // Build GeoModel Lines and Corners from the surfaces
         model_.mesh.vertices.test_and_initialize() ;
+
+//        for ( index_t v = 0 ; v < model_.surface(0).nb_vertices() ; ++v ) {
+//            std::cout << "b vertex " << v << std::endl ;
+//            const std::vector< GMEVertex >& gmes = model_.mesh.vertices.gme_vertices(model_.surface(0).model_vertex_id(v)) ;
+//            for ( index_t g = 0 ; g < gmes.size() ; ++g ) {
+//                std::cout << "gme " << g << " type : " << gmes[g].gme_id.type << std::endl ;
+//            }
+//        }
+
+        // Determine internal borders
+        std::vector< std::vector < index_t > > vertex_surf_states( model_.mesh.vertices.nb() ) ;
+        for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+//            std::cout << "Surface : " << s << std::endl ;
+            const Surface& S = model_.surface(s) ;
+            for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
+//                std::cout << "   facet " << f << std::endl ;
+//                std::cout << S.is_on_border(f,0) << S.is_on_border(f,1) << S.is_on_border(f,2) << std::endl ;
+//                std::cout << S.adjacent(f,0) << " " << S.adjacent(f,1) << " " << S.adjacent(f,2) << std::endl ;
+                // All the cells of the surface are triangles
+                index_t v0 = S.model_vertex_id_at_facet_corner( 3 * f ) ;
+                index_t v1 = S.model_vertex_id_at_facet_corner( 3 * f + 1 ) ;
+                index_t v2 = S.model_vertex_id_at_facet_corner( 3 * f + 2 ) ;
+                if ( vertex_surf_states[v0].size() == 0 ) {
+                    std::vector < GMEVertex > gmes = model_.mesh.vertices.gme_vertices(v0) ;
+                    for ( index_t gme = 0 ; gme < gmes.size() ; ++gme ) {
+                        if ( gmes[gme].gme_id.type == GME::SURFACE ) {
+                            vertex_surf_states[v0].push_back( gmes[gme].gme_id.index ) ;
+                        }
+                    }
+                }
+                if ( vertex_surf_states[v1].size() == 0 ) {
+                    std::vector < GMEVertex > gmes = model_.mesh.vertices.gme_vertices(v1) ;
+                    for ( index_t gme = 0 ; gme < gmes.size() ; ++gme ) {
+                        if ( gmes[gme].gme_id.type == GME::SURFACE ) {
+                            vertex_surf_states[v1].push_back( gmes[gme].gme_id.index ) ;
+                        }
+                    }
+                }
+                if ( vertex_surf_states[v2].size() == 0 ) {
+                    std::vector < GMEVertex > gmes = model_.mesh.vertices.gme_vertices(v2) ;
+                    for ( index_t gme = 0 ; gme < gmes.size() ; ++gme ) {
+                        if ( gmes[gme].gme_id.type == GME::SURFACE ) {
+                            vertex_surf_states[v2].push_back( gmes[gme].gme_id.index ) ;
+                        }
+                    }
+                }
+
+//                std::cout << vertex_surf_states[v0].size() << " " << vertex_surf_states[v1].size() << " " << vertex_surf_states[v2].size() << std::endl ;
+
+                if ( !S.is_on_border(f,0) &&
+                        vertex_surf_states[v0].size() > 1 &&
+                        vertex_surf_states[v1].size() > 1 ) {
+                    bool internal_border = false ;
+                    if ( vertex_surf_states[v0].size() == vertex_surf_states[v1].size()  &&
+                            vertex_surf_states[v0] == vertex_surf_states[v1] ) {
+                        internal_border = true ;
+                    } else if ( vertex_surf_states[v0].size() < vertex_surf_states[v1].size() ) {
+                        bool match = true ;
+                        for ( index_t el = 0 ; el < vertex_surf_states[v0].size() ; ++el ) {
+                            if ( std::find( vertex_surf_states[v0].begin(),
+                                    vertex_surf_states[v0].end(),
+                                    vertex_surf_states[v1][el] )
+                                    == vertex_surf_states[v0].end() ) {
+                                match = false ;
+                                break ;
+                            }
+                        }
+                        if ( match ) {
+                            internal_border = true ;
+                        }
+                    } else {
+                        bool match = true ;
+                        for ( index_t el = 0 ; el < vertex_surf_states[v1].size() ; ++el ) {
+                            if ( std::find( vertex_surf_states[v1].begin(),
+                                    vertex_surf_states[v1].end(),
+                                    vertex_surf_states[v0][el] )
+                                    == vertex_surf_states[v1].end() ) {
+                                match = false ;
+                            }
+                        }
+                        if ( match ) {
+                            internal_border = true ;
+                        }
+                    }
+                    if ( internal_border ) {
+                        S.mesh().facets.set_adjacent( f,0, GEO::NO_FACET ) ;
+                    }
+                }
+                if ( !S.is_on_border(f,1) &&
+                        vertex_surf_states[v1].size() > 1 &&
+                        vertex_surf_states[v2].size() > 1 ) {
+                    bool internal_border = false ;
+                    if ( vertex_surf_states[v1].size() == vertex_surf_states[v2].size()  &&
+                            vertex_surf_states[v1] == vertex_surf_states[v2] ) {
+                        internal_border = true ;
+                    } else if ( vertex_surf_states[v1].size() < vertex_surf_states[v2].size() ) {
+                        bool match = true ;
+                        for ( index_t el = 0 ; el < vertex_surf_states[v1].size() ; ++el ) {
+                            if ( std::find( vertex_surf_states[v1].begin(),
+                                    vertex_surf_states[v1].end(),
+                                    vertex_surf_states[v2][el] )
+                                    == vertex_surf_states[v1].end() ) {
+                                match = false ;
+                                break ;
+                            }
+                        }
+                        if ( match ) {
+                            internal_border = true ;
+                        }
+                    } else {
+                        bool match = true ;
+                        for ( index_t el = 0 ; el < vertex_surf_states[v2].size() ; ++el ) {
+                            if ( std::find( vertex_surf_states[v2].begin(),
+                                    vertex_surf_states[v2].end(),
+                                    vertex_surf_states[v1][el] )
+                                    == vertex_surf_states[v2].end() ) {
+                                match = false ;
+                            }
+                        }
+                        if ( match ) {
+                            internal_border = true ;
+                        }
+                    }
+                    if ( internal_border ) {
+                        S.mesh().facets.set_adjacent( f,1, GEO::NO_FACET ) ;
+                    }
+                }
+                if ( !S.is_on_border(f,2) &&
+                        vertex_surf_states[v2].size() > 1 &&
+                        vertex_surf_states[v0].size() > 1 ) {
+                    bool internal_border = false ;
+                    if ( vertex_surf_states[v2].size() == vertex_surf_states[v0].size()  &&
+                            vertex_surf_states[v2] == vertex_surf_states[v0] ) {
+                        internal_border = true ;
+                    } else if ( vertex_surf_states[v2].size() < vertex_surf_states[v0].size() ) {
+                        bool match = true ;
+                        for ( index_t el = 0 ; el < vertex_surf_states[v2].size() ; ++el ) {
+                            if ( std::find( vertex_surf_states[v2].begin(),
+                                    vertex_surf_states[v2].end(),
+                                    vertex_surf_states[v0][el] )
+                                    == vertex_surf_states[v2].end() ) {
+                                match = false ;
+                                break ;
+                            }
+                        }
+                        if ( match ) {
+                            internal_border = true ;
+                        }
+                    } else {
+                        bool match = true ;
+                        for ( index_t el = 0 ; el < vertex_surf_states[v0].size() ; ++el ) {
+                            if ( std::find( vertex_surf_states[v0].begin(),
+                                    vertex_surf_states[v0].end(),
+                                    vertex_surf_states[v2][el] )
+                                    == vertex_surf_states[v0].end() ) {
+                                match = false ;
+                            }
+                        }
+                        if ( match ) {
+                            internal_border = true ;
+                        }
+                    }
+                    if ( internal_border ) {
+                        S.mesh().facets.set_adjacent( f,2, GEO::NO_FACET ) ;
+                    }
+                }
+//                for ( index_t e = S.facet_begin(f) ; e < S.facet_end(f); ++e ) {
+//                    std::cout << e << "  |  " << S.model_vertex_id_at_facet_corner(e) << "  |  " << S.vertex(f, e - f *3) << std::endl ;
+//                }
+            }
+        }
+//        std::cout << "VS After all" << std::endl ;
+//        for ( index_t vs = 0 ; vs < vertex_states.size() ; ++vs ) {
+//            std::cout << vertex_states[vs] << std::endl ;
+//        }
+//        std::cout << "in load file nb lines : " << model_.nb_lines() << std::endl ;
+//        std::cout << "in load file nb corners : " << model_.nb_corners() << std::endl ;
         build_lines_and_corners_from_surfaces() ;
+//        std::cout << "in load file nb lines : " << model_.nb_lines() << std::endl ;
+//        std::cout << "in load file nb corners : " << model_.nb_corners() << std::endl ;
+
 
         // Regions boundaries
         for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
@@ -260,14 +443,41 @@ namespace RINGMesh {
         }
 
         // Universe boundaries
+        ///@todo Universe boundaries are wrong if some surfaces die in region.
         for (index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
             if ( model_.surface(s).nb_in_boundary() == 1 ) {
+                // TODO : warning for the moment sign is always '+'
                 add_element_boundary(
                     GME::gme_t( GME::REGION, NO_ID ),
                     GME::gme_t( GME::SURFACE, s ),
                     true ) ;
             }
         }
+//        for ( index_t v = 0 ; v < model_.mesh.vertices.nb() ; ++v ) {
+//            std::cout << "b vertex " << v << std::endl ;
+//            const std::vector< GMEVertex >& gmes = model_.mesh.vertices.gme_vertices(v) ;
+//            for ( index_t g = 0 ; g < gmes.size() ; ++g ) {
+//                std::cout << "gme " << g << " type : " << gmes[g].gme_id.type << std::endl ;
+//            }
+//        }
+//        for ( index_t v = 0 ; v < model_.mesh.vertices.nb() ; ++v ) {
+//            for ( index_t g = 0 ; g < model_.mesh.vertices.gme_vertices(v).size() ; ++g ) {
+//                if (model_.mesh.vertices.gme_vertices(v)[g].gme_id.type == GME::REGION ) {
+//                    model_.mesh.vertices.gme_vertices(v).erase(model_.mesh.vertices.gme_vertices(v).begin()+g ) ;
+//                    --g ;
+//                }
+//            }
+//        }
+//        for ( index_t v = 0 ; v < model_.mesh.vertices.nb() ; ++v ) {
+//            std::cout << "a vertex " << v << std::endl ;
+//            const std::vector< GMEVertex >& gmes = model_.mesh.vertices.gme_vertices(v) ;
+//            for ( index_t g = 0 ; g < gmes.size() ; ++g ) {
+//                std::cout << "gme " << g << " type : " << gmes[g].gme_id.type << std::endl ;
+//            }
+//        }
+
+
+
         return true ;
 
     }

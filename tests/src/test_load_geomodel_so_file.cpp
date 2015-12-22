@@ -55,28 +55,23 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::out( "TEST" ) << "Test IO for a mesh GeoModel in .so" << std::endl ;
+//    GEO::Logger::out( "TEST" ) << "Test IO for a mesh GeoModel in .so" << std::endl ;
+//
+//    GeoModel in_so ;
+//    std::string input_so_file_name( ringmesh_test_data_path ) ;
+//    input_so_file_name += "cube_model_equi.so" ;
+//
+//    if( !geomodel_volume_load( input_so_file_name, in_so ) ) {
+//        return 1 ;
+//    }
 
-    GeoModel in_ml ;
-    std::string input_ml_file_name( ringmesh_test_data_path ) ;
-    input_ml_file_name += "cube_model_equi.ml" ;
+    GeoModel understand_why ;
+    geomodel_surface_load( "/home/anquez/model_surf_inside3bis.ml", understand_why ) ;
+//    geomodel_volume_load( "/home/anquez/ifiexport.gm", understand_why ) ;
 
-    if( !geomodel_surface_load( input_ml_file_name, in_ml ) ) {
-        return 1 ;
-    }
+    GeoModel in_so_stopped_surf ;
 
-    GeoModel in_so ;
-    std::string input_so_file_name( ringmesh_test_data_path ) ;
-    input_so_file_name += "cube_model_equi.so" ;
-
-    if( !geomodel_volume_load( input_so_file_name, in_so ) ) {
-        return 1 ;
-    }
-
-    std::string output_so_file_name( ringmesh_test_output_path ) ;
-    output_so_file_name += "out_model.so" ;
-
-    if(!geomodel_volume_save( in_so, output_so_file_name ) ) {
+    if( !geomodel_volume_load( "/home/anquez/solid_surf_inside.so", in_so_stopped_surf ) ) {
         return 1 ;
     }
 

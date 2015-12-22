@@ -215,6 +215,7 @@ namespace RINGMesh {
                 }
             }
         }
+
         // Remove colocated vertices
         remove_colocated() ;
     }
@@ -445,14 +446,25 @@ namespace RINGMesh {
                 gme_vertices_[v].clear() ;
             }
         }
-
+//        std::cout << "in erase_vertices before" << std::endl ;
+//        std::cout << gme_vertices_.size() << std::endl ;
+//        std::cout << mesh_.vertices.nb() << std::endl ;
         gme_vertices_.erase(
             std::remove( gme_vertices_.begin(), gme_vertices_.end(),
                 std::vector< GMEVertex >() ), gme_vertices_.end() ) ;
 
+//        std::cout << "in erase_vertices after gme erase" << std::endl ;
+//        std::cout << gme_vertices_.size() << std::endl ;
+//        std::cout << mesh_.vertices.nb() << std::endl ;
+//        std::cout << mesh_.vertices.point(0) << std::endl ;
+
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
         mesh_.vertices.delete_elements( to_delete_geo, false ) ;
+//        std::cout << "in erase_vertices after all" << std::endl ;
+//        std::cout << gme_vertices_.size() << std::endl ;
+//        std::cout << mesh_.vertices.nb() << std::endl ;
+//        std::cout << mesh_.vertices.point(0) << std::endl ;
 
 #ifdef RINGMESH_DEBUG
         // Paranoia - check that we have the same mapping than the
@@ -463,7 +475,7 @@ namespace RINGMesh {
         }
 #endif
 
-        // Update model_vertex_ids in BMME
+        // Update model_vertex_ids in GMME
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
@@ -476,7 +488,7 @@ namespace RINGMesh {
                     index_t old_id = E.model_vertex_id( v ) ;
                     index_t new_id = to_delete[old_id] ;
                     // If new_id is NO_ID the vertex should be removed afterwards
-                    // from the BMME
+                    // from the GMME
                     ringmesh_debug_assert( new_id != NO_ID ) ;
                     att[v] = new_id ;
 
