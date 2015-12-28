@@ -108,9 +108,13 @@ namespace RINGMesh {
                         ++referring_vertex_region_id ;
                         cum_nb_vertex += model_.region( referring_vertex_region_id ).mesh().vertices.nb() ;
                     }
-                    double* coord = model_.region( referring_vertex_region_id ).mesh().vertices.point_ptr( referring_vertex ) ;
-                      vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
-                      map_gocad2gmm_vertices.push_back( map_gocad2gmm_vertices[referring_vertex] ) ;
+                    if ( referring_vertex_region_id == NO_ID ) {
+                        referring_vertex_region_id = 0 ;
+                    }
+                    ringmesh_debug_assert( referring_vertex_region_id !=  NO_ID ) ;
+                    double* coord = model_.region( referring_vertex_region_id ).mesh().vertices.point_ptr( vertices_id_in_region[referring_vertex] ) ;
+                    vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
+                    map_gocad2gmm_vertices.push_back( map_gocad2gmm_vertices[referring_vertex] ) ;
                 } else if( in_.field_matches( 0, "TETRA" ) ) {
                     // Reading and create a tetra
                     std::vector< index_t > vertices (4) ;

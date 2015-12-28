@@ -55,23 +55,13 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-//    GEO::Logger::out( "TEST" ) << "Test IO for a mesh GeoModel in .so" << std::endl ;
-//
-//    GeoModel in_so ;
-//    std::string input_so_file_name( ringmesh_test_data_path ) ;
-//    input_so_file_name += "cube_model_equi.so" ;
-//
-//    if( !geomodel_volume_load( input_so_file_name, in_so ) ) {
-//        return 1 ;
-//    }
+    GEO::Logger::out( "TEST" ) << "Test IO for a mesh GeoModel in .so" << std::endl ;
 
-    GeoModel understand_why ;
-    geomodel_surface_load( "/home/anquez/model_surf_inside3bis.ml", understand_why ) ;
-//    geomodel_volume_load( "/home/anquez/ifiexport.gm", understand_why ) ;
+    std::string file_name( ringmesh_test_data_path ) ;
+    file_name += "solid_surf_inside.so" ;
 
-    GeoModel in_so_stopped_surf ;
-
-    if( !geomodel_volume_load( "/home/anquez/solid_surf_inside.so", in_so_stopped_surf ) ) {
+    GeoModel model ;
+        if( !geomodel_volume_load( file_name, model ) ) {
         return 1 ;
     }
 
