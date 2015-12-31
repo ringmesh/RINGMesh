@@ -41,10 +41,6 @@
 cmake_minimum_required(VERSION 2.8)
 
 #------------------------------------------------------------------------------------------------
-# Define the project RINGMesh      
-project(RINGMesh)
-
-#------------------------------------------------------------------------------------------------
 # Options of the RINGMesh project 
 # They can be set using CMake GUI, or in command line: cmake -D<var>:<type>=<value> MyProjectFolder
 
@@ -77,8 +73,8 @@ option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires 
 
 # Optional custom configuration of data directories
 if(RINGMESH_WITH_TESTS)
-  	set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests)
-	set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
+    set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
+    set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
     set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
 set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output" CACHE PATH "Output data location")
 endif()
@@ -95,7 +91,9 @@ include(ExternalProject)
 # Enable testing with CTest
 enable_testing()
 
-
+#------------------------------------------------------------------------------------------------
+# Define the project RINGMesh      
+project(RINGMesh)
 
 # Define version number 
 # It is then exported to the configuration file
