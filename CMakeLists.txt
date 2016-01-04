@@ -71,6 +71,14 @@ option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
 
+# Optional custom configuration of data directories
+if(RINGMESH_WITH_TESTS)
+    set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
+    set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
+    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
+set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output" CACHE PATH "Output data location")
+endif()
+
 # Turn on the ability to create folders to organize projects and files
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
@@ -92,6 +100,7 @@ project(RINGMesh)
 set (RINGMesh_VERSION_MAJOR 1)
 set (RINGMesh_VERSION_MINOR 0)
 
+
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
 # and run cmake configuration command in each one of them
@@ -107,10 +116,6 @@ if(UNIX)
     
           # Create the directory
           file(MAKE_DIRECTORY ${project_binary_dir_config})
-	
-          # Path for input and output data for tests
-          set(TEST_DATA_INPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/tests/data" CACHE PATH "Input data location")
-          set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output" CACHE PATH "Output data location")
           
           # Launch cmake for this configuration
           # by specifying the CMAKE_BUILD_TYPE and the PROJECT _BINARY_DIR, 
@@ -332,8 +337,6 @@ endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)
     message(STATUS "Configuring RINGMesh with tests")
-	set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests)
-	set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
     add_subdirectory(tests)
 endif(RINGMESH_WITH_TESTS)
 
