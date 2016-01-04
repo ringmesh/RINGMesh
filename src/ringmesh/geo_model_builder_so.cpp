@@ -400,7 +400,8 @@ namespace RINGMesh {
                         bool surface_in_boundary = false ;
                         bool surface_in_boundary_side = false ;
                         index_t b = NO_ID ;
-                        while ( !(surface_in_boundary && side == surface_in_boundary_side) && ++b < model_.region(r).nb_boundaries() ) {
+                        while ( !(surface_in_boundary && side == surface_in_boundary_side)
+                                && ++b < model_.region(r).nb_boundaries() ) {
                             if ( model_.region(r).boundary(b).gme_id() == model_.surface( surface ).gme_id() ) {
                                 surface_in_boundary = true ;
                                 surface_in_boundary_side = model_.region(r).side(b) ;
@@ -427,16 +428,35 @@ namespace RINGMesh {
         }
 
         // Universe boundaries
-        ///@todo Universe boundaries are wrong if some surfaces die in region.
-        for (index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
-            if ( model_.surface(s).nb_in_boundary() == 1 ) {
-                // TODO : warning for the moment sign is always '+'
+        std::vector< bool > surf_side_minus ( model_.nb_surfaces(), false ) ;
+        std::vector< bool > surf_side_plus ( model_.nb_surfaces(), false ) ;
+        for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
+            for ( index_t s = 0 ; s < model_.region(r).nb_boundaries() ; ++s ) {
+                if ( model_.region(r).side(s) ) {
+                    surf_side_plus[model_.region(r).boundary(s).index()] = true ;
+                } else if ( !model_.region(r).side(s) ) {
+                    surf_side_minus[model_.region(r).boundary(s).index()] = true ;
+                } else {
+                    ringmesh_assert_not_reached
+                }
+            }
+        }
+        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+            if ( surf_side_minus[s] && !surf_side_plus[s] ) {
+                add_element_boundary(
+                    GME::gme_t( GME::REGION, NO_ID ),
+                    GME::gme_t( GME::SURFACE, s ),
+                    false ) ;
+            } else if ( !surf_side_minus[s] && surf_side_plus[s] ) {
                 add_element_boundary(
                     GME::gme_t( GME::REGION, NO_ID ),
                     GME::gme_t( GME::SURFACE, s ),
                     true ) ;
             }
         }
+
+
+
 //        for ( index_t v = 0 ; v < model_.mesh.vertices.nb() ; ++v ) {
 //            std::cout << "b vertex " << v << std::endl ;
 //            const std::vector< GMEVertex >& gmes = model_.mesh.vertices.gme_vertices(v) ;

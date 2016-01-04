@@ -59,7 +59,6 @@ int main( int argc, char** argv )
 
     std::string file_name( ringmesh_test_data_path ) ;
     file_name += "modelA4.so" ;
-//    file_name += "solid_surf_inside.so" ;
 
     GeoModel model ;
         if( !geomodel_volume_load( file_name, model ) ) {
