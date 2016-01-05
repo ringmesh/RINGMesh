@@ -153,7 +153,7 @@ namespace RINGMesh {
      * @brief Determine unique occurences of values in input vector
      * and fill a mapping to the first occurence of each unique value
      * @param[in] input values  example: 1 4 6 0 4 1 5 6
-     * @param[out] input2unique example: 0 1 2 3 1 0 6 2
+     * @param[out] unique_value_indices example: 0 1 2 3 1 0 6 2
      * Maps each index to the index of the first occurence of the value in the vector. 
      * @return Number of unique values in input
      * @note Tricky algorithm, used over and over in Geogram
