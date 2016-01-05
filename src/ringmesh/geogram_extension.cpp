@@ -380,7 +380,6 @@ namespace RINGMesh {
         }
     }
 
-
     void TetgenMesher::fill_region_attribute_on_mesh_cells( GEO::Mesh& M, const std::string& attribute_name ) const
     {
         double* tet_attributes = tetgen_out_.tetrahedronattributelist ;
@@ -413,7 +412,6 @@ namespace RINGMesh {
         M.cells.connect() ;
     }
 
-
     void TetgenMesher::get_result_tetmesh_points( GEO::vector< double >& points ) const
     {
         index_t nb_points( tetgen_out_.numberofpoints ) ;
@@ -445,7 +443,7 @@ namespace RINGMesh {
             return false ;
         }               
         TetgenMesher mesher ;
-        mesher.tetrahedralize( M, "QpO0YA", M ) ;        
+        mesher.tetrahedralize( M, "QpYA", M ) ;     
         return true ;
     }
 #endif

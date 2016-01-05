@@ -109,7 +109,7 @@ namespace RINGMesh {
      * Q: quiet
      * p: input data is surfacic
      * q: desired quality
-     * O0: do not optimize mesh
+     * O0: do not optimize mesh at all -> a lot of flat tets
      * V: verbose - A LOT of information
      * Y: prohibit steiner points on boundaries
      * A: generate region tags for each shell.      
