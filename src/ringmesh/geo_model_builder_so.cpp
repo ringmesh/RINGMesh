@@ -104,14 +104,12 @@ namespace RINGMesh {
                     index_t referring_vertex = in_.field_as_double( 2 ) - 1 ;
                     index_t referring_vertex_region_id = NO_ID ;
                     index_t cum_nb_vertex = 0 ;
-                    while ( cum_nb_vertex < referring_vertex ) {
+                    do {
                         ++referring_vertex_region_id ;
                         cum_nb_vertex += model_.region( referring_vertex_region_id ).mesh().vertices.nb() ;
-                    }
-                    if ( referring_vertex_region_id == NO_ID ) {
-                        referring_vertex_region_id = 0 ;
-                    }
+                    } while (cum_nb_vertex <= referring_vertex) ;
                     ringmesh_debug_assert( referring_vertex_region_id !=  NO_ID ) ;
+                    ringmesh_debug_assert( referring_vertex_region_id < model_.nb_regions() ) ;
                     double* coord = model_.region( referring_vertex_region_id ).mesh().vertices.point_ptr( vertices_id_in_region[referring_vertex] ) ;
                     vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
                     map_gocad2gmm_vertices.push_back( map_gocad2gmm_vertices[referring_vertex] ) ;
@@ -454,34 +452,6 @@ namespace RINGMesh {
                     true ) ;
             }
         }
-
-
-
-//        for ( index_t v = 0 ; v < model_.mesh.vertices.nb() ; ++v ) {
-//            std::cout << "b vertex " << v << std::endl ;
-//            const std::vector< GMEVertex >& gmes = model_.mesh.vertices.gme_vertices(v) ;
-//            for ( index_t g = 0 ; g < gmes.size() ; ++g ) {
-//                std::cout << "gme " << g << " type : " << gmes[g].gme_id.type << std::endl ;
-//            }
-//        }
-//        for ( index_t v = 0 ; v < model_.mesh.vertices.nb() ; ++v ) {
-//            for ( index_t g = 0 ; g < model_.mesh.vertices.gme_vertices(v).size() ; ++g ) {
-//                if (model_.mesh.vertices.gme_vertices(v)[g].gme_id.type == GME::REGION ) {
-//                    model_.mesh.vertices.gme_vertices(v).erase(model_.mesh.vertices.gme_vertices(v).begin()+g ) ;
-//                    --g ;
-//                }
-//            }
-//        }
-//        for ( index_t v = 0 ; v < model_.mesh.vertices.nb() ; ++v ) {
-//            std::cout << "a vertex " << v << std::endl ;
-//            const std::vector< GMEVertex >& gmes = model_.mesh.vertices.gme_vertices(v) ;
-//            for ( index_t g = 0 ; g < gmes.size() ; ++g ) {
-//                std::cout << "gme " << g << " type : " << gmes[g].gme_id.type << std::endl ;
-//            }
-//        }
-
-
-
         return true ;
 
     }
@@ -551,10 +521,6 @@ namespace RINGMesh {
                 }
             }
         }
-//        std::cout << in_.eof() << std::endl ;
-//        std::cout << lineInput_count.eof() << std::endl ;
-//        std::cout << in_.line_number() << std::endl ;
-//        std::cout << lineInput_count.line_number() << std::endl ;
         return nb_VRTX_and_TETRA_per_region ;
     }
     void GeoModelBuilderTSolid::print_number_of_mesh_elements(
@@ -635,8 +601,4 @@ namespace RINGMesh {
 
         }
     }
-//    void GeoModelBuilderTSolid::build_boundary_model()
-//    {
-//
-//    }
 }
