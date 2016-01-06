@@ -80,21 +80,6 @@ namespace RINGMesh {
 
         void build_boundary_model() ;
 
-    //    private:
-    //        /*!
-    //        * @brief Triangle that set the orientation of a TFACE
-    //        *        in a .ml file
-    //        */
-    //        struct KeyFacet {
-    //            KeyFacet( const vec3& p0, const vec3& p1, const vec3& p2 )
-    //                : p0_( p0 ), p1_( p1 ), p2_( p2 )
-    //            {}
-    //            vec3 p0_ ;
-    //            vec3 p1_ ;
-    //            vec3 p2_ ;
-    //        } ;
-    //        std::vector< KeyFacet > key_facets_ ;
-
     private:
         std::string filename_ ;
         int z_sign_ ;
