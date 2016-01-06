@@ -92,11 +92,11 @@ int main( int argc, char** argv )
     }
 
     if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
-        print_geomodel_nb_elements( geomodel ) ;
+        print_geomodel_mesh_stats( geomodel ) ;
     }
 
     if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-        print_geomodel_volume( geomodel ) ;
+        print_geomodel_mesh_cell_volumes( geomodel ) ;
     }
 
     return 0 ;
