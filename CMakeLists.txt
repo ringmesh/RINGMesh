@@ -333,6 +333,7 @@ if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
     add_subdirectory(src/ringmeshconvert)
     add_subdirectory(src/ringmesh_surface_convert)
+    add_subdirectory(src/ringmeshstats)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)

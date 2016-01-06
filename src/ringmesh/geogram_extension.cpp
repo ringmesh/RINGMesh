@@ -518,7 +518,6 @@ namespace RINGMesh {
                 return volume ;
             }
             default:
-                ringmesh_assert_not_reached;
                 return 0 ;
         }
     }

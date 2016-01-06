@@ -79,7 +79,7 @@ int main( int argc, char** argv )
 		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	
 		return 1 ;
 	}
-    print_model( model ) ;
+    print_geomodel( model ) ;
 	GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
 	return 0 ;
    

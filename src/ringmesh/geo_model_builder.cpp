@@ -1400,7 +1400,7 @@ namespace RINGMesh {
         }
         // Get out if the model has no surface
         if( model_.nb_surfaces() == 0 ) {
-            print_model( model_ ) ;
+            print_geomodel( model_ ) ;
             return false ;
         }
 

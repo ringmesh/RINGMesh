@@ -982,6 +982,10 @@ namespace RINGMesh {
             return mesh_.cells.nb() ;
         }
 
+        index_t nb_vertices_in_cell( index_t c ) const
+        {
+            return mesh_.cells.nb_vertices( c ) ;
+        }
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
         {
             ringmesh_debug_assert( me < nb_cells() ) ;

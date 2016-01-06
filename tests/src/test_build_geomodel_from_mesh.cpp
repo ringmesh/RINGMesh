@@ -88,7 +88,7 @@ int main( int argc, char** argv )
         builder.create_and_build_surfaces() ;
         builder.build_model_from_surfaces() ;
 
-        print_model( geomodel ) ;
+        print_geomodel( geomodel ) ;
         geomodel_surface_save( geomodel, result_file_name ) ;
     }
 
@@ -104,7 +104,7 @@ int main( int argc, char** argv )
         builder.create_and_build_surfaces() ;
         builder.build_model_from_surfaces() ;
 
-        print_model( geomodel ) ;
+        print_geomodel( geomodel ) ;
     }
 
     {
@@ -119,7 +119,7 @@ int main( int argc, char** argv )
         GeoModelBuilderMesh builder( geomodel, mesh, "", "region" ) ;
         builder.create_and_build_regions() ;
 
-        print_model( geomodel ) ;
+        print_geomodel( geomodel ) ;
     }
     return 0 ;
 }
