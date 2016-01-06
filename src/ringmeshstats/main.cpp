@@ -53,7 +53,7 @@ int main( int argc, char** argv )
     using namespace RINGMesh ;
 
     GEO::Logger::div( "RINGMeshStats" ) ;
-    GEO::Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
+    GEO::Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
     GEO::Logger::out( "" ) << "People working on the project in RING" << std::endl ;
     GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
         << std::endl ;
