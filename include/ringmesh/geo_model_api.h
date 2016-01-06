@@ -70,8 +70,18 @@ namespace RINGMesh {
     */
     void RINGMESH_API print_geomodel( const GeoModel& geomodel ) ;
 
+    /*!
+     * Output the number of vertices, edges, facets and cells.
+     * Also output the number of triangles, quads and polygons if any.
+     * Also output the number of tetra, prisms, pyramids, hex and polyhedra if any.
+     * @param[in] geomodel the geomodel to compute the statistics on
+     */
     void RINGMESH_API print_geomodel_nb_elements( const GeoModel& geomodel ) ;
 
+    /*!
+     * Output the volume of the geomodel and the volume per cell type.
+     * @param[in] geomodel the geomodel to compute the statistics on
+     */
     void RINGMESH_API print_geomodel_volume( const GeoModel& geomodel ) ;
     
     bool RINGMESH_API are_geomodel_surface_meshes_simplicial( const GeoModel& geomodel ) ;

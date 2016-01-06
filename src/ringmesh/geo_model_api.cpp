@@ -191,8 +191,8 @@ namespace {
     }
 
     void print_cell_volume_stat(
-        const index_t& cell_volume,
-        const index_t& cell_volume_total,
+        const double& cell_volume,
+        const double& cell_volume_total,
         const std::string& cell_type )
     {
         GEO::Logger::out( "GeoModel" )
