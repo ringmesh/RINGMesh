@@ -45,6 +45,7 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
+#include <geogram/mesh/mesh_io.h>
 
 /*!
 * @file Test GeoModel building from a mesh loaded from a .so file
@@ -58,10 +59,16 @@ int main( int argc, char** argv )
     GEO::Logger::out( "TEST" ) << "Test IO for a mesh GeoModel in .so" << std::endl ;
 
     std::string file_name( ringmesh_test_data_path ) ;
-    file_name += "modelA4.so" ;
+//    file_name += "modelA4.so" ;
+    file_name = "/home/anquez/anquez.so" ;
 
     GeoModel model ;
-        if( !geomodel_volume_load( file_name, model ) ) {
+    if( !geomodel_volume_load( file_name, model ) ) {
+        return 1 ;
+    }
+
+    GeoModel out_model ;
+    if( !geomodel_surface_load( "imported_tsolid_surf.bm", model ) ) {
         return 1 ;
     }
 

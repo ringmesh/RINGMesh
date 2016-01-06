@@ -82,11 +82,36 @@ namespace RINGMesh {
         std::vector< index_t > cur_surf_facets ;
         std::vector< index_t > cur_surf_facet_ptr (1, 0) ;
 
+        index_t nb_vertex_properties = 0 ;
+        index_t nb_cell_properties = 0 ;
+        std::vector < std::string > vertex_property_names ;
+        std::vector < std::string > cell_property_names ;
+
+        time_t start_reading_vol, end_reading_vol, end_reading_model, end_building_model ;
+        time( &start_reading_vol ) ;
+        std::cout << "Reading volume..." << std::endl ;
+
         // Then : Reading .so file
         while( !in_.eof() && in_.get_line() ) {
             in_.get_fields() ;
             if( in_.nb_fields() > 0 ) {
-                if( in_.field_matches( 0, "TVOLUME" ) ) {
+                if( in_.field_matches( 0, "GOCAD_ORIGINAL_COORDINATE_SYSTEM" ) ) {
+                    read_GCS() ;
+                } else if ( in_.field_matches( 0, "PROPERTIES" ) ) {
+                    nb_vertex_properties = in_.nb_fields() - 1 ;
+                } else if ( in_.field_matches( 0, "PROPERTY_CLASS_HEADER" ) ) {
+                    vertex_property_names.push_back( in_.field(1) ) ;
+                    /// @todo All the property types are double.
+                    /// Change in order to have the good type for each property.
+                    GEO::Attribute< double > property( model_.mesh.vertex_attribute_manager(), in_.field(1) ) ;
+                } else if ( in_.field_matches( 0, "TETRA_PROPERTIES" ) ) {
+                    nb_cell_properties = in_.nb_fields() - 1 ;
+                } else if ( in_.field_matches( 0, "TETRA_PROPERTY_CLASS_HEADER" ) ) {
+                    cell_property_names.push_back( in_.field(1) ) ;
+                    /// @todo All the property types are double.
+                    /// Change in order to have the good type for each property.
+                    GEO::Attribute< double > property( model_.mesh.cell_attribute_manager(), in_.field(1) ) ;
+                } else if( in_.field_matches( 0, "TVOLUME" ) ) {
                     // Create a region in the GeoModel.
                     // Its mesh will be update while reading file.
                     cur_region = create_element( GME::REGION ) ;
@@ -121,9 +146,6 @@ namespace RINGMesh {
                     vertices[2] = vertices_id_in_region[ in_.field_as_uint( 3 ) - 1 ] ;
                     vertices[3] = vertices_id_in_region[ in_.field_as_uint( 4 ) - 1 ] ;
                     last_tetra = mesh->cells.create_tet( vertices[0], vertices[1], vertices[2], vertices[3] ) ;
-                    ///@todo Improve following to avoid creation of the object "attribute_region"
-                    GEO::Attribute <index_t> attribute_region ( mesh->cells.attributes(), "region" ) ;
-                    attribute_region[ last_tetra ] = cur_region.index ;
                 } else if( in_.field_matches( 0, "#" ) && in_.field_matches( 1, "CTETRA" ) ) {/*
                     // Read information about tetra faces
                     for ( index_t f = 0 ; f < 4 ; ++f ) {
@@ -190,9 +212,10 @@ namespace RINGMesh {
                 */} else if( in_.field_matches( 0, "name:" ) ) {
                     // GeoModel name is set to the TSolid name.
                     set_model_name( in_.field( 1 ) ) ;
-                } else if( in_.field_matches( 0, "GOCAD_ORIGINAL_COORDINATE_SYSTEM" ) ) {
-                    read_GCS() ;
                 } else if( in_.field_matches( 0, "MODEL" ) ) {
+                    time( &end_reading_vol ) ;
+                    std::cout << "Timing : " << difftime( end_reading_vol, start_reading_vol ) << " seconds." << std::endl ;
+                    std::cout << "Reading BRep model info..." << std::endl ;
                     has_model_in_file = true ;
                     model_.mesh.vertices.test_and_initialize() ;
                 } else if( in_.field_matches( 0, "SURFACE" ) ) {
@@ -218,23 +241,52 @@ namespace RINGMesh {
                     cur_surf_facet_ptr.push_back( cur_surf_facets.size() ) ;
                 } else if( in_.field_matches( 0, "MODEL_REGION" ) ) {
                     // Compute the last surface
-                      if ( cur_surf_facets.size() > 0 ) {
-                          set_surface_geometry( current_surface.index, cur_surf_facets, cur_surf_facet_ptr ) ;
-                          cur_surf_facets.clear() ;
-                          cur_surf_facet_ptr.clear() ;
-                          cur_surf_facet_ptr.push_back( 0 ) ;
-                      }
+                    if ( cur_surf_facets.size() > 0 ) {
+                        set_surface_geometry( current_surface.index, cur_surf_facets, cur_surf_facet_ptr ) ;
+                        cur_surf_facets.clear() ;
+                        cur_surf_facet_ptr.clear() ;
+                        cur_surf_facet_ptr.push_back( 0 ) ;
+                    }
                 }
             }
         }
 
+        time( &end_reading_model ) ;
+        std::cout << "Timing : " << difftime( end_reading_model, end_reading_vol ) << " seconds." << std::endl ;
+        std::cout << "Building Model..." << std::endl ;
+        time_t step1, step2, step3 ;
+
         // Build GeoModel Lines and Corners from the surfaces
         model_.mesh.vertices.test_and_initialize() ;
+        time( &step1 ) ;
+        std::cout << "Timing step 1 : " << difftime( step1, end_reading_model ) << " seconds." << std::endl ;
 
-        // Determine internal borders
+        // Compute internal borders (remove adjacences)
         std::vector< std::vector < index_t > > vertex_surf_states( model_.mesh.vertices.nb() ) ;
         for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
             const Surface& S = model_.surface(s) ;
+//            //TODO to delete debug
+//            if (s == 5) {
+//                std::cout << "BEFORE Surface 5 borders : " << std::endl ;
+//                for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
+//                    std::cout << S.model_vertex_id_at_facet_corner(3*f + 0) << "   :  " << model_.mesh.vertices.vertex(S.model_vertex_id_at_facet_corner(3*f + 0)) << std::endl ;
+//                    std::cout << S.model_vertex_id_at_facet_corner(3*f + 1) << "   :  " << model_.mesh.vertices.vertex(S.model_vertex_id_at_facet_corner(3*f + 1)) << std::endl ;
+//                    std::cout << S.model_vertex_id_at_facet_corner(3*f + 2) << "   :  " << model_.mesh.vertices.vertex(S.model_vertex_id_at_facet_corner(3*f + 2)) << std::endl ;
+//
+//                    if ( S.is_on_border(f,0) ) {
+//                        std::cout << f << "_0" << std::endl ;
+//                    }
+//                    if ( S.is_on_border(f,1) ) {
+//                        std::cout << f << "_1" << std::endl ;
+//                    }
+//                    if ( S.is_on_border(f,2) ) {
+//                        std::cout << f << "_2" << std::endl ;
+//                    }
+//                }
+//            }
+
+
+
             for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
                 // All the cells of the surface are triangles
                 index_t v0 = S.model_vertex_id_at_facet_corner( 3 * f ) ;
@@ -265,6 +317,46 @@ namespace RINGMesh {
                     }
                 }
 
+//                if ( !S.is_on_border(f,0) &&
+//                        vertex_surf_states[v0].size() > 1 &&
+//                        vertex_surf_states[v1].size() > 1 ) {
+//                    bool internal_border = false ;
+//                    if ( vertex_surf_states[v0].size() == vertex_surf_states[v1].size()  &&
+//                            vertex_surf_states[v0] == vertex_surf_states[v1] ) {
+//                        internal_border = true ;
+//                    } else if ( vertex_surf_states[v0].size() < vertex_surf_states[v1].size() ) {
+//                        bool match = true ;
+//                        for ( index_t el = 0 ; el < vertex_surf_states[v0].size() ; ++el ) {
+//                            if ( std::find( vertex_surf_states[v0].begin(),
+//                                    vertex_surf_states[v0].end(),
+//                                    vertex_surf_states[v1][el] )
+//                                    == vertex_surf_states[v0].end() ) {
+//                                match = false ;
+//                                break ;
+//                            }
+//                        }
+//                        if ( match ) {
+//                            internal_border = true ;
+//                        }
+//                    } else {
+//                        bool match = true ;
+//                        for ( index_t el = 0 ; el < vertex_surf_states[v1].size() ; ++el ) {
+//                            if ( std::find( vertex_surf_states[v1].begin(),
+//                                    vertex_surf_states[v1].end(),
+//                                    vertex_surf_states[v0][el] )
+//                                    == vertex_surf_states[v1].end() ) {
+//                                match = false ;
+//                            }
+//                        }
+//                        if ( match ) {
+//                            internal_border = true ;
+//                        }
+//                    }
+//                    if ( internal_border ) {
+//                        S.mesh().facets.set_adjacent( f,0, GEO::NO_FACET ) ;
+//                    }
+//                }
+
                 if ( !S.is_on_border(f,0) &&
                         vertex_surf_states[v0].size() > 1 &&
                         vertex_surf_states[v1].size() > 1 ) {
@@ -275,10 +367,10 @@ namespace RINGMesh {
                     } else if ( vertex_surf_states[v0].size() < vertex_surf_states[v1].size() ) {
                         bool match = true ;
                         for ( index_t el = 0 ; el < vertex_surf_states[v0].size() ; ++el ) {
-                            if ( std::find( vertex_surf_states[v0].begin(),
-                                    vertex_surf_states[v0].end(),
-                                    vertex_surf_states[v1][el] )
-                                    == vertex_surf_states[v0].end() ) {
+                            if ( std::find( vertex_surf_states[v1].begin(),
+                                    vertex_surf_states[v1].end(),
+                                    vertex_surf_states[v0][el] )
+                                    == vertex_surf_states[v1].end() ) {
                                 match = false ;
                                 break ;
                             }
@@ -289,10 +381,10 @@ namespace RINGMesh {
                     } else {
                         bool match = true ;
                         for ( index_t el = 0 ; el < vertex_surf_states[v1].size() ; ++el ) {
-                            if ( std::find( vertex_surf_states[v1].begin(),
-                                    vertex_surf_states[v1].end(),
-                                    vertex_surf_states[v0][el] )
-                                    == vertex_surf_states[v1].end() ) {
+                            if ( std::find( vertex_surf_states[v0].begin(),
+                                    vertex_surf_states[v0].end(),
+                                    vertex_surf_states[v1][el] )
+                                    == vertex_surf_states[v0].end() ) {
                                 match = false ;
                             }
                         }
@@ -304,6 +396,7 @@ namespace RINGMesh {
                         S.mesh().facets.set_adjacent( f,0, GEO::NO_FACET ) ;
                     }
                 }
+
                 if ( !S.is_on_border(f,1) &&
                         vertex_surf_states[v1].size() > 1 &&
                         vertex_surf_states[v2].size() > 1 ) {
@@ -314,10 +407,10 @@ namespace RINGMesh {
                     } else if ( vertex_surf_states[v1].size() < vertex_surf_states[v2].size() ) {
                         bool match = true ;
                         for ( index_t el = 0 ; el < vertex_surf_states[v1].size() ; ++el ) {
-                            if ( std::find( vertex_surf_states[v1].begin(),
-                                    vertex_surf_states[v1].end(),
-                                    vertex_surf_states[v2][el] )
-                                    == vertex_surf_states[v1].end() ) {
+                            if ( std::find( vertex_surf_states[v2].begin(),
+                                    vertex_surf_states[v2].end(),
+                                    vertex_surf_states[v1][el] )
+                                    == vertex_surf_states[v2].end() ) {
                                 match = false ;
                                 break ;
                             }
@@ -328,10 +421,10 @@ namespace RINGMesh {
                     } else {
                         bool match = true ;
                         for ( index_t el = 0 ; el < vertex_surf_states[v2].size() ; ++el ) {
-                            if ( std::find( vertex_surf_states[v2].begin(),
-                                    vertex_surf_states[v2].end(),
-                                    vertex_surf_states[v1][el] )
-                                    == vertex_surf_states[v2].end() ) {
+                            if ( std::find( vertex_surf_states[v1].begin(),
+                                    vertex_surf_states[v1].end(),
+                                    vertex_surf_states[v2][el] )
+                                    == vertex_surf_states[v1].end() ) {
                                 match = false ;
                             }
                         }
@@ -343,6 +436,7 @@ namespace RINGMesh {
                         S.mesh().facets.set_adjacent( f,1, GEO::NO_FACET ) ;
                     }
                 }
+
                 if ( !S.is_on_border(f,2) &&
                         vertex_surf_states[v2].size() > 1 &&
                         vertex_surf_states[v0].size() > 1 ) {
@@ -353,10 +447,10 @@ namespace RINGMesh {
                     } else if ( vertex_surf_states[v2].size() < vertex_surf_states[v0].size() ) {
                         bool match = true ;
                         for ( index_t el = 0 ; el < vertex_surf_states[v2].size() ; ++el ) {
-                            if ( std::find( vertex_surf_states[v2].begin(),
-                                    vertex_surf_states[v2].end(),
-                                    vertex_surf_states[v0][el] )
-                                    == vertex_surf_states[v2].end() ) {
+                            if ( std::find( vertex_surf_states[v0].begin(),
+                                    vertex_surf_states[v0].end(),
+                                    vertex_surf_states[v2][el] )
+                                    == vertex_surf_states[v0].end() ) {
                                 match = false ;
                                 break ;
                             }
@@ -367,10 +461,10 @@ namespace RINGMesh {
                     } else {
                         bool match = true ;
                         for ( index_t el = 0 ; el < vertex_surf_states[v0].size() ; ++el ) {
-                            if ( std::find( vertex_surf_states[v0].begin(),
-                                    vertex_surf_states[v0].end(),
-                                    vertex_surf_states[v2][el] )
-                                    == vertex_surf_states[v0].end() ) {
+                            if ( std::find( vertex_surf_states[v2].begin(),
+                                    vertex_surf_states[v2].end(),
+                                    vertex_surf_states[v0][el] )
+                                    == vertex_surf_states[v2].end() ) {
                                 match = false ;
                             }
                         }
@@ -383,10 +477,40 @@ namespace RINGMesh {
                     }
                 }
             }
+//            //TODO to delete debug
+//            if (s == 5) {
+//                std::cout << "\n \n \n AFTER Surface 5 borders : " << std::endl ;
+//                for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
+//                    std::cout << S.model_vertex_id_at_facet_corner(3*f + 0) << "   :  " << model_.mesh.vertices.vertex(S.model_vertex_id_at_facet_corner(3*f + 0)) << std::endl ;
+//                    std::cout << S.model_vertex_id_at_facet_corner(3*f + 1) << "   :  " << model_.mesh.vertices.vertex(S.model_vertex_id_at_facet_corner(3*f + 1)) << std::endl ;
+//                    std::cout << S.model_vertex_id_at_facet_corner(3*f + 2) << "   :  " << model_.mesh.vertices.vertex(S.model_vertex_id_at_facet_corner(3*f + 2)) << std::endl ;
+//
+//                    if ( S.is_on_border(f,0) ) {
+//                        std::cout << f << "_0" << std::endl ;
+//                    }
+//                    if ( S.is_on_border(f,1) ) {
+//                        std::cout << f << "_1" << std::endl ;
+//                    }
+//                    if ( S.is_on_border(f,2) ) {
+//                        std::cout << f << "_2" << std::endl ;
+//                    }
+//                }
+//            }
         }
+//        //TODO to delete
+//        for (index_t v = 0 ; v < vertex_surf_states.size() ; ++v){
+//            std::cout << "Surfaces auxquelles appartiennent le vertex " << v <<std::endl ;
+//            for (index_t s = 0 ; s < vertex_surf_states[v].size() ; ++s ) {
+//                std::cout << "      " << vertex_surf_states[v][s] << std::endl ;
+//            }
+//        }
         build_lines_and_corners_from_surfaces() ;
 
+        time( &step2 ) ;
+        std::cout << "Timing step 2 : " << difftime( step2, step1 ) << " seconds." << std::endl ;
+
         // Regions boundaries
+        ///@todo Find how to speed this part which take more than 80% of the time
         for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
             index_t id_reg = model_.region(r).index() ;
             for( index_t c = 0; c < model_.mesh.cells.nb_tet( id_reg ); ++c ) {
@@ -414,7 +538,7 @@ namespace RINGMesh {
                                 GME::gme_t( GME::SURFACE, surface ),
                                 GME::gme_t( GME::REGION, id_reg ) ) ;
                         } else if (surface_in_boundary && side != surface_in_boundary_side ) {
-                            // Case if both sides of the surface are in boundaries of the region.
+                            // Case in which both sides of the surface are in boundaries of the region.
                             add_element_boundary(
                                 GME::gme_t( GME::REGION, id_reg ),
                                 GME::gme_t( GME::SURFACE, surface ),
@@ -424,6 +548,9 @@ namespace RINGMesh {
                 }
             }
         }
+
+        time( &step3 ) ;
+        std::cout << "Timing step 3 : " << difftime( step3, step2 ) << " seconds." << std::endl ;
 
         // Universe boundaries
         std::vector< bool > surf_side_minus ( model_.nb_surfaces(), false ) ;
@@ -452,6 +579,10 @@ namespace RINGMesh {
                     true ) ;
             }
         }
+
+        time( &end_building_model ) ;
+        std::cout << "Timing step 4 : " << difftime( end_building_model, step3 ) << " seconds." << std::endl ;
+        std::cout << "Timing : " << difftime( end_building_model, end_reading_model ) << " seconds." << std::endl ;
         return true ;
 
     }
