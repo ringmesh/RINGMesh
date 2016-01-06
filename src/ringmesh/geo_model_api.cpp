@@ -181,6 +181,25 @@ namespace {
         return tet_volume + pyramid_volume + prism_volume + hex_volume + poly_volume ;
     }
 
+    void print_nb_cell_stat(
+        const index_t& nb_cell,
+        const index_t& nb_cell_total,
+        const std::string& cell_type )
+    {
+        GEO::Logger::out( "GeoModel" ) << "* " << nb_cell << " " << cell_type << " ("
+            << nb_cell * 100 / nb_cell_total << "%)\n" ;
+    }
+
+    void print_cell_volume_stat(
+        const index_t& cell_volume,
+        const index_t& cell_volume_total,
+        const std::string& cell_type )
+    {
+        GEO::Logger::out( "GeoModel" )
+            << "* " << cell_type << " volume " << cell_volume << " ("
+            << static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 ) << "%)\n" ;
+    }
+
 }
 
 namespace RINGMesh {
@@ -216,19 +235,13 @@ namespace RINGMesh {
         GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
             << nb_facets << " facets\n" ;
         if( nb_triangles > 0 ) {
-            GEO::Logger::out( "GeoModel" )
-                << "* " << nb_triangles << " triangles ("
-                << nb_triangles * 100 / nb_facets << "%)\n" ;
+            print_nb_cell_stat( nb_triangles, nb_facets, "triangles" ) ;
         }
         if( nb_quads > 0 ) {
-            GEO::Logger::out( "GeoModel" )
-                << "* " << nb_quads << " quads ("
-                << nb_quads * 100 / nb_facets << "%)\n" ;
+            print_nb_cell_stat( nb_quads, nb_facets, "quads" ) ;
         }
         if( nb_polygons > 0 ) {
-            GEO::Logger::out( "GeoModel" )
-                << "* " << nb_polygons << " polygons ("
-                << nb_polygons * 100 / nb_facets << "%)\n" ;
+            print_nb_cell_stat( nb_polygons, nb_facets, "polygons" ) ;
         }
 
         index_t nb_tet = 0 ;
@@ -241,29 +254,19 @@ namespace RINGMesh {
         GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
             << nb_cells << " cells\n" ;
         if( nb_tet > 0 ) {
-            GEO::Logger::out( "GeoModel" )
-                << "* " << nb_tet << " tet ("
-                << nb_tet * 100 / nb_cells << "%)\n" ;
+            print_nb_cell_stat( nb_tet, nb_cells, "tet" ) ;
         }
         if( nb_pyramids > 0 ) {
-            GEO::Logger::out( "GeoModel" )
-                << "* " << nb_pyramids << " pyramids ("
-                << nb_pyramids * 100 / nb_cells << "%)\n" ;
+            print_nb_cell_stat( nb_pyramids, nb_cells, "pyramids" ) ;
         }
         if( nb_prisms > 0 ) {
-            GEO::Logger::out( "GeoModel" )
-                << "* " << nb_prisms << " prisms ("
-                << nb_prisms * 100 / nb_cells << "%)\n" ;
+            print_nb_cell_stat( nb_prisms, nb_cells, "prisms" ) ;
         }
         if( nb_hex > 0 ) {
-            GEO::Logger::out( "GeoModel" )
-                << "* " << nb_hex << " hex ("
-                << nb_hex * 100 / nb_cells << "%)\n" ;
+            print_nb_cell_stat( nb_hex, nb_cells, "hex" ) ;
         }
         if( nb_poly > 0 ) {
-            GEO::Logger::out( "GeoModel" )
-                << "* " << nb_poly << " polygons ("
-                << nb_poly * 100 / nb_cells << "%)\n" ;
+            print_nb_cell_stat( nb_poly, nb_cells, "polyhedra" ) ;
         }
         GEO::Logger::out( "GeoModel" ) << std::endl ;
     }
@@ -280,29 +283,19 @@ namespace RINGMesh {
         GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name()
             << " has a volume of " << volume << "\n" ;
         if( tet_volume > 0 ) {
-            GEO::Logger::out( "GeoModel" ) << std::setw( 12 ) << std::left
-                << "* tet volume "<< tet_volume << " ("
-                << static_cast< index_t >( tet_volume * 100 / volume + 0.5 ) << "%)\n" ;
+            print_cell_volume_stat( tet_volume, volume, "tet" ) ;
         }
         if( pyramid_volume > 0 ) {
-            GEO::Logger::out( "GeoModel" ) << std::setw( 12 ) << std::left
-                << "* pyramid volume "<< pyramid_volume << " ("
-                << static_cast< index_t >( pyramid_volume * 100 / volume + 0.5 ) << "%)\n" ;
+            print_cell_volume_stat( pyramid_volume, volume, "pyramid" ) ;
         }
         if( prism_volume > 0 ) {
-            GEO::Logger::out( "GeoModel" ) << std::setw( 12 ) << std::left
-                << "* prism volume "<< prism_volume << " ("
-                << static_cast< index_t >( prism_volume * 100 / volume + 0.5 ) << "%)\n" ;
+            print_cell_volume_stat( prism_volume, volume, "prism" ) ;
         }
         if( hex_volume > 0 ) {
-            GEO::Logger::out( "GeoModel" ) << std::setw( 12 ) << std::left
-                << "* hex volume "<< hex_volume << " ("
-                << static_cast< index_t >( hex_volume * 100 / volume + 0.5 ) << "%)\n" ;
+            print_cell_volume_stat( hex_volume, volume, "hex" ) ;
         }
         if( poly_volume > 0 ) {
-            GEO::Logger::out( "GeoModel" ) << std::setw( 12 ) << std::left
-                << "* poly volume "<< poly_volume << " ("
-                << static_cast< index_t >( poly_volume * 100 / volume + 0.5 ) << "%)\n" ;
+            print_cell_volume_stat( poly_volume, volume, "polyhedron" ) ;
         }
         GEO::Logger::out( "GeoModel" ) << std::endl ;
     }
