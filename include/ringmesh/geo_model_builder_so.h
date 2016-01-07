@@ -70,15 +70,17 @@ namespace RINGMesh {
         std::vector< index_t > read_number_of_mesh_elements() ;
 
         void print_number_of_mesh_elements(
-                const std::vector< index_t >& nb_elements_per_region) const ;
+            const std::vector< index_t >& nb_elements_per_region) const ;
 
-        void mesh_regions( const std::vector< std::string >& region_names,
-                           const std::vector< vec3 >& vertices,
-                           const std::vector< index_t >& ptr_regions_first_vertex,
-                           const std::vector< index_t >& tetras_vertices,
-                           const std::vector< index_t >& ptr_regions_first_tetra ) ;
+        void add_new_property(
+            std::vector < std::string >& property_names,
+            GEO::AttributesManager& attribute_manager ) ;
 
-        void build_boundary_model() ;
+        GEO::Mesh* read_TVOLUME_keyword() ;
+
+        void read_VRTX_keyword(
+            GEO::Mesh* mesh,
+            std::vector< index_t >& vertices_id_in_region ) ;
 
     private:
         std::string filename_ ;
