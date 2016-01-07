@@ -59,8 +59,9 @@ int main( int argc, char** argv )
     GEO::Logger::out( "TEST" ) << "Test IO for a mesh GeoModel in .so" << std::endl ;
 
     std::string file_name( ringmesh_test_data_path ) ;
-//    file_name += "modelA4.so" ;
-    file_name = "/home/anquez/anquez.so" ;
+    file_name += "modelA4.so" ;
+//    file_name = "/home/anquez/anquez.so" ;
+//    file_name = "/home/anquez/anquez_fault_f4a.so" ;
 
     GeoModel model ;
     if( !geomodel_volume_load( file_name, model ) ) {
@@ -68,11 +69,24 @@ int main( int argc, char** argv )
     }
 
     GeoModel out_model ;
-    if( !geomodel_surface_load( "imported_tsolid_surf.bm", model ) ) {
+    if( !geomodel_surface_load( "imported_tsolid_surf.bm", out_model ) ) {
         return 1 ;
     }
 
     bool res = true ;
+    if ( model.nb_corners() != 52 ||
+         model.nb_lines() != 98 ||
+         model.nb_surfaces() != 55 ||
+         model.nb_regions() != 8 ||
+         model.nb_interfaces() != 11 ||
+         model.mesh.vertices.nb() != 6691 ||
+         model.mesh.facets.nb() != 10049 ||
+         model.mesh.cells.nb() != 34540 ||
+         out_model.mesh.vertices.nb() != 4465 ||
+         out_model.mesh.facets.nb() != 10049 ||
+         out_model.mesh.cells.nb() != 0) {
+        res = false ;
+    }
     if( res ) {
         GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     } else {

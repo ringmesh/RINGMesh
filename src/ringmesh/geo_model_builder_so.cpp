@@ -62,7 +62,6 @@ namespace RINGMesh {
 
         bool has_model_in_file = false ;
 
-        GME::gme_t cur_region = model_.universe().gme_id() ;
         GEO::Mesh* mesh = &(model_.universe().mesh()) ;
 
         // First : count the number of vertex and tetras
@@ -100,29 +99,17 @@ namespace RINGMesh {
                 } else if ( in_.field_matches( 0, "PROPERTIES" ) ) {
                     nb_vertex_properties = in_.nb_fields() - 1 ;
                 } else if ( in_.field_matches( 0, "PROPERTY_CLASS_HEADER" ) ) {
-                    vertex_property_names.push_back( in_.field(1) ) ;
-                    /// @todo All the property types are double.
-                    /// Change in order to have the good type for each property.
-                    GEO::Attribute< double > property( model_.mesh.vertex_attribute_manager(), in_.field(1) ) ;
+                    add_new_property( vertex_property_names,
+                            model_.mesh.vertex_attribute_manager() ) ;
                 } else if ( in_.field_matches( 0, "TETRA_PROPERTIES" ) ) {
                     nb_cell_properties = in_.nb_fields() - 1 ;
                 } else if ( in_.field_matches( 0, "TETRA_PROPERTY_CLASS_HEADER" ) ) {
-                    cell_property_names.push_back( in_.field(1) ) ;
-                    /// @todo All the property types are double.
-                    /// Change in order to have the good type for each property.
-                    GEO::Attribute< double > property( model_.mesh.cell_attribute_manager(), in_.field(1) ) ;
+                    add_new_property( cell_property_names,
+                            model_.mesh.cell_attribute_manager() ) ;
                 } else if( in_.field_matches( 0, "TVOLUME" ) ) {
-                    // Create a region in the GeoModel.
-                    // Its mesh will be update while reading file.
-                    cur_region = create_element( GME::REGION ) ;
-                    set_element_name( cur_region, in_.field( 1 ) ) ;
-                    mesh = &( model_.region(cur_region.index).mesh() ) ;
+                    mesh = read_TVOLUME_keyword() ;
                 } else if( in_.field_matches( 0, "VRTX" ) || in_.field_matches( 0, "PVRTX" ) ) {
-                    // Add a vertex to the mesh of the current region.
-                    double coord[3] = { in_.field_as_double( 2 ),
-                                        in_.field_as_double( 3 ),
-                                        z_sign_ * in_.field_as_double( 4 ) } ;
-                    vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
+                    read_VRTX_keyword( mesh, vertices_id_in_region ) ;
                     map_gocad2gmm_vertices.push_back( nb_non_dupl_vrtx );
                     ++nb_non_dupl_vrtx ;
                 } else if( in_.field_matches( 0, "ATOM" ) || in_.field_matches( 0, "PATOM" ) ) {
@@ -317,46 +304,8 @@ namespace RINGMesh {
                     }
                 }
 
-//                if ( !S.is_on_border(f,0) &&
-//                        vertex_surf_states[v0].size() > 1 &&
-//                        vertex_surf_states[v1].size() > 1 ) {
-//                    bool internal_border = false ;
-//                    if ( vertex_surf_states[v0].size() == vertex_surf_states[v1].size()  &&
-//                            vertex_surf_states[v0] == vertex_surf_states[v1] ) {
-//                        internal_border = true ;
-//                    } else if ( vertex_surf_states[v0].size() < vertex_surf_states[v1].size() ) {
-//                        bool match = true ;
-//                        for ( index_t el = 0 ; el < vertex_surf_states[v0].size() ; ++el ) {
-//                            if ( std::find( vertex_surf_states[v0].begin(),
-//                                    vertex_surf_states[v0].end(),
-//                                    vertex_surf_states[v1][el] )
-//                                    == vertex_surf_states[v0].end() ) {
-//                                match = false ;
-//                                break ;
-//                            }
-//                        }
-//                        if ( match ) {
-//                            internal_border = true ;
-//                        }
-//                    } else {
-//                        bool match = true ;
-//                        for ( index_t el = 0 ; el < vertex_surf_states[v1].size() ; ++el ) {
-//                            if ( std::find( vertex_surf_states[v1].begin(),
-//                                    vertex_surf_states[v1].end(),
-//                                    vertex_surf_states[v0][el] )
-//                                    == vertex_surf_states[v1].end() ) {
-//                                match = false ;
-//                            }
-//                        }
-//                        if ( match ) {
-//                            internal_border = true ;
-//                        }
-//                    }
-//                    if ( internal_border ) {
-//                        S.mesh().facets.set_adjacent( f,0, GEO::NO_FACET ) ;
-//                    }
-//                }
-
+                ///@todo : use colocater_ANN to find internal border
+                /// If (match) to change absolutely
                 if ( !S.is_on_border(f,0) &&
                         vertex_surf_states[v0].size() > 1 &&
                         vertex_surf_states[v1].size() > 1 ) {
@@ -377,6 +326,12 @@ namespace RINGMesh {
                         }
                         if ( match ) {
                             internal_border = true ;
+                            for ( index_t s = 0 ; s < vertex_surf_states[v0].size() ; ++s ) {
+                                if (model_.surface(vertex_surf_states[v0][s]).facet_from_model_vertex_ids(v0,v1) == NO_ID) {
+                                    internal_border = false ;
+                                }
+                            }
+
                         }
                     } else {
                         bool match = true ;
@@ -390,6 +345,11 @@ namespace RINGMesh {
                         }
                         if ( match ) {
                             internal_border = true ;
+                            for ( index_t s = 0 ; s < vertex_surf_states[v1].size() ; ++s ) {
+                                if (model_.surface(vertex_surf_states[v1][s]).facet_from_model_vertex_ids(v0,v1) == NO_ID) {
+                                    internal_border = false ;
+                                }
+                            }
                         }
                     }
                     if ( internal_border ) {
@@ -417,6 +377,11 @@ namespace RINGMesh {
                         }
                         if ( match ) {
                             internal_border = true ;
+                            for ( index_t s = 0 ; s < vertex_surf_states[v1].size() ; ++s ) {
+                                if (model_.surface(vertex_surf_states[v1][s]).facet_from_model_vertex_ids(v1,v2) == NO_ID) {
+                                    internal_border = false ;
+                                }
+                            }
                         }
                     } else {
                         bool match = true ;
@@ -430,6 +395,11 @@ namespace RINGMesh {
                         }
                         if ( match ) {
                             internal_border = true ;
+                            for ( index_t s = 0 ; s < vertex_surf_states[v2].size() ; ++s ) {
+                                if (model_.surface(vertex_surf_states[v2][s]).facet_from_model_vertex_ids(v1,v2) == NO_ID) {
+                                    internal_border = false ;
+                                }
+                            }
                         }
                     }
                     if ( internal_border ) {
@@ -457,6 +427,12 @@ namespace RINGMesh {
                         }
                         if ( match ) {
                             internal_border = true ;
+                            for ( index_t s = 0 ; s < vertex_surf_states[v2].size() ; ++s ) {
+                                if (model_.surface(vertex_surf_states[v2][s]).facet_from_model_vertex_ids(v0,v2) == NO_ID) {
+                                    internal_border = false ;
+                                }
+                            }
+
                         }
                     } else {
                         bool match = true ;
@@ -470,6 +446,11 @@ namespace RINGMesh {
                         }
                         if ( match ) {
                             internal_border = true ;
+                            for ( index_t s = 0 ; s < vertex_surf_states[v0].size() ; ++s ) {
+                                if (model_.surface(vertex_surf_states[v0][s]).facet_from_model_vertex_ids(v0,v2) == NO_ID) {
+                                    internal_border = false ;
+                                }
+                            }
                         }
                     }
                     if ( internal_border ) {
@@ -672,64 +653,32 @@ namespace RINGMesh {
                 << nb_elements_per_region.at( 2 * i + 1 ) << " tetras "
                 << std::endl ;
         }
-//        if ( nb_elements.size() == 2 * nb_regions + 3 ){
-//            GEO::Logger::out( "Mesh" )
-//                << "Model has" << std::endl
-//                << std::setw( 10 ) << std::left
-//                << nb_elements.at( 2 * nb_regions ) << " interfaces"
-//                << std::endl
-//                << std::setw( 10 ) << std::left
-//                << nb_elements.at( 2 * nb_regions + 1 ) << " surfaces "
-//                << std::endl
-//                << std::setw( 10 ) << std::left
-//                << nb_elements.at( 2 * nb_regions + 2 ) << " triangles "
-//                << std::endl ;
-//        } else {
-//            GEO::Logger::out( "Mesh" )
-//                << "File does not contain the model" << std::endl ;
-//        }
     }
-    ///@todo comment
-    void GeoModelBuilderTSolid::mesh_regions(
-            const std::vector< std::string >& region_names,
-            const std::vector< vec3 >& vertices,
-            const std::vector< index_t >& ptr_regions_first_vertex,
-            const std::vector< index_t >& tetras_vertices,
-            const std::vector< index_t >& ptr_regions_first_tetra )
+    void GeoModelBuilderTSolid::add_new_property(
+            std::vector < std::string >& property_names,
+            GEO::AttributesManager& attribute_manager )
     {
-
-        for ( index_t r = 0 ; r < region_names.size() ; ++r ) {
-            GME::gme_t region = create_element( GME::REGION ) ;
-            set_element_name( region, region_names[r] ) ;
-
-            GEO::Mesh& cur_region_mesh = model_.region( region.index ).mesh() ;
-
-
-            // Set vertices into the region
-            std::vector< vec3 > cur_region_vertices ( ptr_regions_first_vertex[ r + 1 ]
-                                        - ptr_regions_first_vertex[r] ) ;
-            for ( index_t v = ptr_regions_first_vertex[r] ;
-                  v < ptr_regions_first_vertex[ r + 1 ] ;
-                  ++v ) {
-                cur_region_vertices[ v - ptr_regions_first_vertex[r] ] = vertices[v] ;
-            }
-            set_element_vertices( region, cur_region_vertices, false ) ;
-
-            // Set tetras into the region
-            for ( index_t i = ptr_regions_first_tetra[r] ;
-                  i < ptr_regions_first_tetra[ r + 1 ] ;
-                  i = i + 4 ) {
-                ///@todo assert because difference on index_t
-                cur_region_mesh.cells.create_tet(tetras_vertices[i] - 1 - ptr_regions_first_vertex[r],
-                        tetras_vertices[ i + 1 ] - 1 - ptr_regions_first_vertex[r],
-                        tetras_vertices[ i + 2 ] - 1 - ptr_regions_first_vertex[r],
-                        tetras_vertices[ i + 3 ] - 1 - ptr_regions_first_vertex[r] ) ;
-
-            }
-            GEO::Attribute<index_t> attribute_region ( cur_region_mesh.cells.attributes(), "region" ) ;
-            GeoModelBuilderMesh buildermesh( model_, model_.universe().mesh(), "", "region" ) ;
-            buildermesh.create_and_build_regions() ;
-
-        }
+        property_names.push_back( in_.field(1) ) ;
+        /// @todo All the property types are double.
+        /// Change in order to have the good type for each property.
+        GEO::Attribute< double > property( attribute_manager, in_.field(1) ) ;
+    }
+    GEO::Mesh* GeoModelBuilderTSolid::read_TVOLUME_keyword()
+    {
+        // Create a region in the GeoModel.
+        // Its mesh will be update while reading file.
+        GME::gme_t cur_region = create_element( GME::REGION ) ;
+        set_element_name( cur_region, in_.field( 1 ) ) ;
+        return &( model_.region(cur_region.index).mesh() ) ;
+    }
+    void GeoModelBuilderTSolid::read_VRTX_keyword(
+            GEO::Mesh* mesh,
+            std::vector< index_t >& vertices_id_in_region )
+    {
+        // Add a vertex to the mesh of the current region.
+        double coord[3] = { in_.field_as_double( 2 ),
+                            in_.field_as_double( 3 ),
+                            z_sign_ * in_.field_as_double( 4 ) } ;
+        vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
     }
 }
