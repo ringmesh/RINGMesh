@@ -46,6 +46,17 @@
 
 #include <geogram/basic/logger.h>
 
+/*! Tests the loading and writing of a Gocad model (.ml) file.
+ * Loads a .ml file generated with Gocad, saves it, loads it again, saves it
+ * again and comares the two saved versions.
+ * \returns 0 if success or an error code if not. 
+ * Error codes are: 
+ * \li 1: loading Gocad .ml file failed
+ * \li 2: writing .ml failed
+ * \li 3: Loading written .ml file to second model failed
+ * \li 4: Writing Second model to .ml file failed
+ * \li 5: Two .ml files written by RINGMesh are dissimilar 
+ */
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
@@ -56,9 +67,6 @@ int main( int argc, char** argv )
     GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
     GEO::Logger::instance()->register_client( file_logger ) ;
 
-    /*! @todo Comment this tests 
-     *  What is the goal and whatsoever [JP]
-     */
     std::string input_model_file_name( ringmesh_test_data_path ) ;
     input_model_file_name += "modelA6.ml" ;
 
@@ -67,32 +75,32 @@ int main( int argc, char** argv )
 
     GeoModel in ;
     if( !geomodel_surface_load( input_model_file_name, in ) ) {
-        return 1 ;
+        return 1;
     }
 
     std::string output_model_file_name( ringmesh_test_output_path ) ;
     output_model_file_name += in.name() + "_saved_out.ml" ;
     if( !geomodel_surface_save( in, output_model_file_name ) ) {
-        return 1 ;
+        return 2 ;
     }
 
     GeoModel in2 ;
     if( !geomodel_surface_load( output_model_file_name, in2 ) ) {
-        return 1 ;
+        return 3 ;
     }
     std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
     output_model_file_name_bis += in.name() + "_saved_out_bis.ml" ;
     if( !geomodel_surface_save( in2, output_model_file_name_bis ) ) {
-        return 1 ;
+        return 4 ;
     }	
 
     bool res = compare_files(
         output_model_file_name, output_model_file_name_bis ) ;
     if( res ) {
         GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+	return 0;
     } else {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+	return 5
     }
-
-    return !res ;
 }
