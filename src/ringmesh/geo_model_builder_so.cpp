@@ -51,6 +51,7 @@
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geogram_extension.h>
+#include <ringmesh/geometry.h>
 #include <ringmesh/io.h>
 
 namespace RINGMesh {
@@ -248,7 +249,60 @@ namespace RINGMesh {
         time( &step1 ) ;
         std::cout << "Timing step 1 : " << difftime( step1, end_reading_model ) << " seconds." << std::endl ;
 
-        // Compute internal borders (remove adjacences)
+        std::vector< ColocaterANN* > anns ( model_.nb_surfaces(), nil ) ;
+        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+            const Surface& S = model_.surface(s) ;
+            std::vector < vec3 > facet_edge_barycenters ;
+            for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
+                for ( index_t e = 0 ; e < 3 ; ++e ) {
+//                    if (S.is_on_border(f,e)) {
+                        facet_edge_barycenters.push_back( ( S.vertex(f, e) + S.vertex(f, (e+1)%3 ) ) / 2 );
+//                    }
+                }
+            }
+            anns[s] = new ColocaterANN( facet_edge_barycenters, true ) ;
+        }
+
+        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+            const Surface& S = model_.surface(s) ;
+//            std::cout << "Surface " << s << std::endl ;
+            for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
+                for ( index_t e = 0 ; e < 3 ; ++e ) {
+                   if ( !S.is_on_border(f,e) ) {
+                       vec3 barycenter = ( S.vertex(f, e) + S.vertex(f, (e+1)%3 ) ) / 2 ;
+                       std::vector< index_t > result ;
+                       index_t ann = 0 ;
+                       while (result.empty() && ann < anns.size()) {
+                           if (ann != s) {
+                              bool found = anns[ann]->get_colocated(barycenter, result) ;
+                          }
+                           ++ann ;
+                       }
+//                       for ( index_t a = 0 ; a < anns.size() ; ++a ) {
+//                           if (a != s) {
+//                               bool found = anns[a]->get_colocated(barycenter, result) ;
+//                           }
+//                       }
+                       if ( !result.empty() ) {
+//                           std::cout << "edge : " << f << ", " << e << std::endl ;
+//                           for (index_t r = 0 ; r < result.size() ; ++r ) {
+//                               std::cout << "result " << result[r] << std::endl ;
+//                           }
+                           S.mesh().facets.set_adjacent( f,e, GEO::NO_FACET ) ;
+                       }
+                   }
+                }
+            }
+        }
+
+        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+            delete anns[s];
+        }
+
+
+
+/*
+        // Compute internal borders (remove adjacencies)
         std::vector< std::vector < index_t > > vertex_surf_states( model_.mesh.vertices.nb() ) ;
         for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
             const Surface& S = model_.surface(s) ;
@@ -484,14 +538,14 @@ namespace RINGMesh {
 //            for (index_t s = 0 ; s < vertex_surf_states[v].size() ; ++s ) {
 //                std::cout << "      " << vertex_surf_states[v][s] << std::endl ;
 //            }
-//        }
+//        } */
         build_lines_and_corners_from_surfaces() ;
 
         time( &step2 ) ;
         std::cout << "Timing step 2 : " << difftime( step2, step1 ) << " seconds." << std::endl ;
 
         // Regions boundaries
-        ///@todo Find how to speed this part which take more than 80% of the time
+        ///@todo Find how to speed this part which take more than 80% of the time (think to ColocaterANN)
         for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
             index_t id_reg = model_.region(r).index() ;
             for( index_t c = 0; c < model_.mesh.cells.nb_tet( id_reg ); ++c ) {
