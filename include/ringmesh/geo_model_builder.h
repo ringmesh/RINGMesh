@@ -214,6 +214,8 @@ namespace RINGMesh {
         /*! Internal information */
         std::vector< GeoModelRegionFromSurfaces* > regions_info_ ;
 
+        void build_contacts() ;
+
     private:
         void assign_surface_mesh_facets(
             index_t surface_id,
@@ -351,8 +353,6 @@ namespace RINGMesh {
         bool load_file() ;
 
     private:
-        void build_contacts() ;
-
         GME::gme_t determine_line_vertices( const Surface& S,
                                             index_t id0,
                                             index_t id1,

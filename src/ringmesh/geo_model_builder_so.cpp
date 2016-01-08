@@ -544,7 +544,7 @@ namespace RINGMesh {
         std::cout << "Timing step 2 : " << difftime( step2, step1 ) << " seconds." << std::endl ;
 
         // Regions boundaries
-        ///@todo Find how to speed this part which take more than 80% of the time (think to ColocaterANN)
+        ///@todo Find how to accelerate this part which take more than 80% of the time (think to ColocaterANN)
         for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
             index_t id_reg = model_.region(r).index() ;
             for( index_t c = 0; c < model_.mesh.cells.nb_tet( id_reg ); ++c ) {
@@ -556,7 +556,7 @@ namespace RINGMesh {
                         bool surface_in_boundary = false ;
                         bool surface_in_boundary_side = false ;
                         index_t b = NO_ID ;
-                        while ( !(surface_in_boundary && side == surface_in_boundary_side)
+                        while ( !(surface_in_boundary && side == surface_in_boundary_side )
                                 && ++b < model_.region(r).nb_boundaries() ) {
                             if ( model_.region(r).boundary(b).gme_id() == model_.surface( surface ).gme_id() ) {
                                 surface_in_boundary = true ;
@@ -616,6 +616,13 @@ namespace RINGMesh {
 
         time( &end_building_model ) ;
         std::cout << "Timing step 4 : " << difftime( end_building_model, step3 ) << " seconds." << std::endl ;
+
+        // Contacts building
+        build_contacts() ;
+
+
+
+
         std::cout << "Timing : " << difftime( end_building_model, end_reading_model ) << " seconds." << std::endl ;
         return true ;
 
