@@ -118,25 +118,30 @@ namespace RINGMesh {
 	///@todo A class encapsulating the copy from a GeoModel to a Mesh ?
     /// See what has been done in GeoModelMeshBuilder	
 
+    void create_and_fill_corner_index_attribute( const GeoModel& geomodel,
+                                               const std::string& attribute_name,
+                                               GEO::Mesh& M )
+    {
+        GEO::Attribute<index_t> corner_attribute( M.vertices.attributes(), attribute_name ) ;
+        corner_attribute.fill( NO_ID ) ;
+        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
+            index_t vertex_index = geomodel.corner( i ).model_vertex_id() ;
+            corner_attribute[ vertex_index ] = i ;
+        }
+        corner_attribute.unbind() ;    
+    }
+
     void add_geomodel_vertices_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
         index_t nbv = geomodel.mesh.vertices.nb() ;
         M.vertices.create_vertices( nbv ) ;
 
         // We need to copy the point one after another since we do not have access
-        // to the storage of the geomodel.vertices
-        // I do not want to provide this access [JP]
+        // to the storage of the geomodel.vertices .     I do not want to provide this access [JP]
         for( index_t v = 0; v < nbv; ++v ) {
             M.vertices.point( v ) = geomodel.mesh.vertices.vertex( v ) ;
         }
-
-        GEO::Attribute<index_t> corner_attribute( M.vertices.attributes(), "region" ) ;
-        corner_attribute.fill( NO_ID ) ;
-        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
-            index_t vertex_index = geomodel.corner( i ).model_vertex_id() ;
-            corner_attribute[ vertex_index ] = i ;
-        }
-        corner_attribute.unbind() ;
+        create_and_fill_corner_index_attribute( geomodel, "region", M );        
     }
 
     void add_line_edges_to_mesh( const Line& line, GEO::Mesh& M )
@@ -154,7 +159,7 @@ namespace RINGMesh {
                                                const std::string& attribute_name,
                                                GEO::Mesh& M )
     {
-        GEO::Attribute<index_t> line_attribute( M.edges.attributes(), "region" ) ;
+        GEO::Attribute<index_t> line_attribute( M.edges.attributes(), attribute_name ) ;
         line_attribute.fill( NO_ID ) ;
         index_t edge_counter = 0 ;
         for( index_t i = 0; i < geomodel.nb_lines(); ++i ) {
