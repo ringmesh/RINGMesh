@@ -1,11 +1,87 @@
-RINGMesh Coding Rules 
+/*
+ * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  Contacts:
+ *     Francois.Bonneau@univ-lorraine.fr
+ *     Arnaud.Botella@univ-lorraine.fr
+ *     Antoine.Mazuyer@univ-lorraine.fr
+ *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
+
+###############################################################################
+#####################    RINGMesh Programming Rules   #########################
+###############################################################################
+
+==================================================================================================================
+RINGMesh STYLE AND NAMING CONVENTIONS
+==================================================================================================================
+
+Style conventions
+-----------------
+S.0: Always use English names 
+S.1: Indentations are 4 space characters (no tabulation)
+S.2: Opening brackets are at the end of the opening block instruction (for, while, if...)
+S.3: Closing brackets are at the same level as opening block instruction
+S.4: One instruction per line 
+S.5: No space between type name and * or &
+S.6: Space after ',' 
+S.7: Space after '(', space before ')'
+
+Naming conventions
+------------------
+N.1: Abbreviations and acronyms are minimized
+N.2: Each word of Class and NameSpace names is capitalized 
+N.3: Function and local variables names are lowercase; words_are_separated_by_underscore
+N.4: Member variables names are lowercase; words_are_separated_by_underscore_and_have_trailing_underscore_
+
+Documentation
+-------------
+Doc.0: Write comments in English 
+Doc.1: Document all classes, functions and variables in doxygen-readable format, preferably in .h files
+Doc.2: Use // or ///, never /*    */ in implementation comments
+ 
+
+==================================================================================================================
+C++ GUIDELINES 
+==================================================================================================================
 
 The following rules are copied from https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md
 Which a set of rules under development for C++14.
 Very large scope :) still under development.
 
-Problem: RINGMesh is using C++98 (because of Go#$%)
-So a part of the rules are not applicable since they refer to language features we cannot use :( 
+NB: RINGMesh currently uses C++98 for compatibility with Gocad. 
+Part of the rules below are not applicable since they refer to language features we cannot use :( 
 
 If you do not understand one rule, or the reasons why it is a rule: 
 LOOK IT UP, and look up the concepts you do not know. Google is your friend.
@@ -475,6 +551,7 @@ SF.6: Use using-directives for transition, for foundation libraries (such as std
 SF.7: Don't put a using-directive in a header file
 SF.8: Use #include guards for all .h files
 SF.9: Avoid cyclic dependencies among source files
+Corrolary: minimize number of #include in .h files (use forward declarations instead)
 
 SF.20: Use namespaces to express logical structure
 SF.21: Don't use an unnamed (anonymous) namespace in a header

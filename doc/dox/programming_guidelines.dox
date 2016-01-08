@@ -38,24 +38,12 @@
  *     FRANCE
  */
 
-/*!
 
-\mainpage
+/**
 
-RINGMesh is a programming library for geological model meshes. It includes two efficient data structures to represent
-geological meshes: the \link ringmesh_geo_model GeoModel\endlink, a data structure for a cellular representation 
-and the \link ringmesh_macro_mesh MacroMesh\endlink, a volumetric 
-representation of the BoundaryModel. 
+\page ringmesh_programming_guidelines RINGMesh Programming Guidelines
 
-- [Download](http://ring.ring-team.org/index.php/softwares/downloads/ringmesh)
-- \link ringmesh_compiling How to compile RINGMesh \endlink
-- \link ringmesh_license License and bundled third-party software \endlink
-- \link ringmesh_features RINGMesh features \endlink
-- \link ringmesh_geo_model Description of the GeoModel \endlink
-- \link ringmesh_macro_mesh Description of the MacroMesh \endlink
-- \link ringmesh_programming_guidelines RINGMesh Programming Guidelines \endlink
-
-\image html ringmesh.png
-
+\include RINGMesh_programming_guidelines.txt
 
 */
+
