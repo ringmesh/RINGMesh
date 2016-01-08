@@ -578,7 +578,7 @@ namespace RINGMesh {
                 time( &start_load ) ;
 
                 if( builder.build_model() ) {
-                    print_model( model ) ;
+                    print_geomodel( model ) ;
                     // Check validity
 //                    RINGMesh::is_geomodel_valid( model ) ;
 
