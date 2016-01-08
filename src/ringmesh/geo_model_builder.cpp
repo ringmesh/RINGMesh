@@ -1154,6 +1154,7 @@ namespace RINGMesh {
         index_t nb_vertices = S.nb_vertices() ;
 
         // Allocate some space to store the ids of facets around each vertex
+        ///@todo Rename the variable "toto" with a better name.
         std::vector< index_t > toto ;
         toto.reserve( 10 ) ;
         std::vector< std::vector< index_t > > vertex_to_facets( nb_vertices, toto ) ;
@@ -1418,7 +1419,6 @@ namespace RINGMesh {
                 }
             }
         }
-
         // Deliberate clear of the model vertices used for model building
         model_.mesh.vertices.clear() ;
         return true ;
@@ -2320,7 +2320,7 @@ namespace RINGMesh {
         int z_sign = 1 ;
 
         // In the .ml file - vertices are indexed TSurf by Tsurf
-        // They can be duplicated inside one TSurf and betweeen TSurfs
+        // They can be duplicated inside one TSurf and between TSurfs
 
         // Coordinates of the vertices of the currently built TSurf in the model
         std::vector< vec3 > tsurf_vertices ;
@@ -2440,7 +2440,7 @@ namespace RINGMesh {
                                 gme_t( GME::SURFACE,
                                     region_boundaries[i].first ),
                                 region_boundaries[i].second ) ;
-                        }                        
+                        }
                     } else if( in_.field_matches( 0, "LAYER" ) ) {
                         /// 1.4 Build the volumetric layers from their name and
                         /// the ids of the regions they contain
@@ -2475,12 +2475,7 @@ namespace RINGMesh {
                         tsurf_count++ ;
                     }
                     if( in_.field_matches( 0, "ZPOSITIVE" ) ) {
-                        if( in_.field_matches( 1, "Elevation" ) ) {
-                            z_sign = 1 ;
-                        } else if( in_.field_matches( 1, "Depth" ) ) {
-                            z_sign = -1 ;
-                        } else {
-                            ringmesh_assert_not_reached;}
+                        z_sign = read_gocad_coordinates_system( in_.field( 1 ) ) ;
                     } else if( in_.field_matches( 0, "END" ) ) {
                         // This the END of a TSurf
                         if( tsurf_count > 0 ) {
@@ -2888,6 +2883,19 @@ namespace RINGMesh {
         set_element_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
+    int GeoModelBuilderGocad::read_gocad_coordinates_system( const std::string& in )
+    {
+        if( in == "Elevation" ) {
+            return 1 ;
+        } else if( in == "Depth" ) {
+            return -1 ;
+        } else {
+            ringmesh_assert_not_reached;
+        }
+
+    }
+
+    /*************************************************************************/
 
     bool GeoModelBuilderBM::load_file()
     {

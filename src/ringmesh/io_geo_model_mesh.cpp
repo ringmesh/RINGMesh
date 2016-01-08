@@ -42,6 +42,10 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/well.h>
 #include <ringmesh/geometry.h>
+#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_validity.h>
+#include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geo_model_builder_so.h>
 #include <ringmesh/geogram_extension.h>
 
 #include <geogram/basic/file_system.h>
@@ -564,11 +568,35 @@ namespace RINGMesh {
 
     class TSolidIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& mesh )
+        virtual bool load( const std::string& filename, GeoModel& model )
         {
-            GEO::Logger::err( "I/O" )
-                << "Loading of a GeoModel from TSolid not implemented yet"
-                << std::endl ;
+            std::ifstream input( filename.c_str() ) ;
+            if( input ) {
+                GeoModelBuilderTSolid builder( model, filename ) ;
+
+                time_t start_load, end_load ;
+                time( &start_load ) ;
+
+                if( builder.build_model() ) {
+                    print_model( model ) ;
+                    // Check validity
+//                    RINGMesh::is_geomodel_valid( model ) ;
+
+                    time( &end_load ) ;
+
+                    GEO::Logger::out( "I/O" )
+                        << " Loaded model " << model.name() << " from " << std::endl
+                        << filename << " timing: "
+                        << difftime( end_load, start_load ) << "sec" << std::endl ;
+
+                    geomodel_surface_save(model, "imported_tsolid_surf.bm") ;
+                    geomodel_volume_save(model, "imported_tsolid_vol.gm") ;
+                    return true ;
+                }
+            }
+            GEO::Logger::out( "I/O" )
+                << "Failed loading model from file "
+                << filename << std::endl ;
             return false ;
         }
         virtual bool save( const GeoModel& gm, const std::string& filename )
