@@ -56,7 +56,7 @@ int main( int argc, char** argv )
     GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
     GEO::Logger::instance()->register_client( file_logger ) ;
 
-    /*! @todo Comment this tests 
+    /*! @todo Comment this tests
      *  What is the goal and whatsoever [JP]
      */
     std::string input_model_file_name( ringmesh_test_data_path ) ;
@@ -84,7 +84,7 @@ int main( int argc, char** argv )
     output_model_file_name_bis += in.name() + "_saved_out_bis.ml" ;
     if( !geomodel_surface_save( in2, output_model_file_name_bis ) ) {
         return 1 ;
-    }	
+    }
 
     bool res = compare_files(
         output_model_file_name, output_model_file_name_bis ) ;

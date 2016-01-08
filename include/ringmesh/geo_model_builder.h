@@ -250,7 +250,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Builder of a GeoModel from a simplicial surface or volumetric Mesh 
-     * @details Regions and Surfaces are indentified with an attribute of type index_t
+     * @details Regions and Surfaces are identified with an attribute of type index_t
      * on the mesh cells or facet 
      */
     class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
@@ -374,6 +374,14 @@ namespace RINGMesh {
                                 const vec3& p1,
                                 const vec3& p2,
                                 bool& same_orientation ) const ;
+
+        /*!
+        * Read the coordinates system informations of files exported from Gocad.
+        * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
+        * increasing z toward top and "Depth" for increasing z toward bottom.
+        * @return Return 1 if Elevation direction, -1 if Depth direction.
+        */
+        int read_gocad_coordinates_system( const std::string& in ) ;
 
     private:
         /*!
