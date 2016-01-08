@@ -81,6 +81,7 @@ namespace RINGMesh {
     * @details Adjacencies are not set. Client should call mesh repair functions afterwards.
     * @todo Implement Implement it for meshed Regions.
     * Implement it for a set of GME.
+    * Add flags to specify which Mesh should be created, with what attributes.
     */
     void RINGMESH_API build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M ) ;
 

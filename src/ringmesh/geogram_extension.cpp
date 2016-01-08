@@ -530,14 +530,14 @@ namespace RINGMesh {
     */
     vec3 mesh_cell_facet_center( const GEO::Mesh& M, index_t cell, index_t f )
     {
-        vec3 result( 0.0, 0.0, 0.0 ) ;
-        double count = 0.0 ;
-        for( index_t v = 0; v < M.cells.facet_nb_vertices( cell, f ); ++v ) {
-            result += GEO::Geom::mesh_vertex( M,
-                                              M.cells.facet_vertex( cell, f, v ) ) ;
-            count += 1.0 ;
+        vec3 result( 0., 0., 0. ) ;
+        index_t nb_vertices = M.cells.facet_nb_vertices( cell, f ) ;        
+        for( index_t v = 0; v < nb_vertices; ++v ) {
+            result += GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( cell, f, v ) ) ;
         }
-        return ( 1.0 / count ) * result ;
+        ringmesh_assert( nb_vertices > 0 );
+
+        return result/ nb_vertices ;
     }
 
     /*!
