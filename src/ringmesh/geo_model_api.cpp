@@ -486,9 +486,9 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Generate a point that lies strictly a Region defined by its Surface boundaries.
-     * @details Returnsthe midpoint of barycenter of the first facet of the first surface on 
-     * the region boundary and the closest point in the other surfaces.
+     * @brief Generate a point that lies strictly a Region defined by its boundary Surfaces.
+     * @details Returns the midpoint of A: the barycenter of the 1st facet of the 1st Surface 
+     * and B: the closest point of a A in the other Surfaces defining the Region.
      * @warning Incomplete implementation.
      */
     vec3 generate_point_in_region( const Region& region )
@@ -497,12 +497,11 @@ namespace RINGMesh {
         ringmesh_assert( region.nb_boundaries() > 1 ) ;
         
         const GeoModel& geomodel = region.model() ;
-
         const Surface& first_boundary_surface = geomodel.surface( region.boundary_gme( 0 ).index ) ; 
         double facet_area = first_boundary_surface.facet_area( 0 ) ; 
         vec3 barycenter = first_boundary_surface.facet_barycenter( 0 ) ;                
         /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( facet_area > epsilon) ;
+        ringmesh_assert( facet_area > epsilon ) ;
 
         double minimum_distance = DBL_MAX ;
         vec3 nearest_point ;        
@@ -518,12 +517,15 @@ namespace RINGMesh {
                 nearest_point = point ;
             }            
         } 
-        /// @todo Change implementation to use second triangle if that one failed, and futher surfaces
+        /// @todo Change implementation to use second triangle if that one failed, and further surfaces
         ringmesh_assert( minimum_distance > epsilon ) ;
         return 0.5*( barycenter + nearest_point ) ;
     }
 
-    void get_one_point_per_geomodel_regions( const GeoModel& geomodel, 
+    /*! 
+     * @brief For each region of the geomodel computes a point inside that region
+     */
+    void get_one_point_per_geomodel_region( const GeoModel& geomodel, 
                                              std::vector< vec3 >& one_point_one_region )
     {
         one_point_one_region.resize( geomodel.nb_regions() ) ;
@@ -541,10 +543,10 @@ namespace RINGMesh {
         build_mesh_from_geomodel( geomodel, mesh ) ;
         
         std::vector< vec3 > points_in_regions ;
-        get_one_point_per_geomodel_regions( geomodel, points_in_regions ) ;
+        get_one_point_per_geomodel_region( geomodel, points_in_regions ) ;
        
         TetgenMesher mesher ;
-        mesher.tetrahedralize( mesh, points_in_regions, "QpO0YA", mesh ) ; 
+        mesher.tetrahedralize( mesh, points_in_regions, "QpYA", mesh ) ; 
 
         GeoModelBuilderMesh builder ( geomodel, mesh, "", "region" ) ;
         builder.build_regions() ;

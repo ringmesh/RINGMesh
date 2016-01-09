@@ -130,7 +130,7 @@ namespace RINGMesh {
 
 #ifdef RINGMESH_WITH_TETGEN
     /*!
-     * @brief Constrained tetrahedralization of the B-Rep defined region of a GeoModel
+     * @brief Tetrahedralize the B-Rep defined regions of a GeoModel
      */
     void RINGMESH_API tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel ) ;
 #endif
