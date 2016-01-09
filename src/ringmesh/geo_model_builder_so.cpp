@@ -56,14 +56,20 @@
 
 namespace RINGMesh {
 
+
+    // Sorry but you have to rewrite your code without accessing the Mesh of any of the 
+    // GeoModelElements and do not either access the GeoModelElements themselves
     bool GeoModelBuilderTSolid::load_file()
     {
         ///@todo Split this function into smaller functions when it will works
+
+        // mmmhhh You should split it now. It will be much easier to debug [Jeanne]
         index_t last_tetra = 0 ;
 
         bool has_model_in_file = false ;
 
-        GEO::Mesh* mesh = &(model_.universe().mesh()) ;
+        GEO::Mesh* mesh = &(model_.universe().mesh()) ; // WTF ?? [Jeanne]
+        // NO NO NO NO remove this mesh access. (see comments on last functions) [Jeanne]
 
         // First : count the number of vertex and tetras
         // in each region
@@ -123,6 +129,10 @@ namespace RINGMesh {
                     } while (cum_nb_vertex <= referring_vertex) ;
                     ringmesh_debug_assert( referring_vertex_region_id !=  NO_ID ) ;
                     ringmesh_debug_assert( referring_vertex_region_id < model_.nb_regions() ) ;
+                    // How may levels of abstraction on the next line are they ?  6 !!!!
+                    // Doing that is suicide, you access many things that you shouldn't
+                    // One of the goal of programming is to keep things compartmentalized 
+                    // so that if anything is changed anywhere, damages in your code are limited [Jeanne]
                     double* coord = model_.region( referring_vertex_region_id ).mesh().vertices.point_ptr( vertices_id_in_region[referring_vertex] ) ;
                     vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
                     map_gocad2gmm_vertices.push_back( map_gocad2gmm_vertices[referring_vertex] ) ;
@@ -133,6 +143,8 @@ namespace RINGMesh {
                     vertices[1] = vertices_id_in_region[ in_.field_as_uint( 2 ) - 1 ] ;
                     vertices[2] = vertices_id_in_region[ in_.field_as_uint( 3 ) - 1 ] ;
                     vertices[3] = vertices_id_in_region[ in_.field_as_uint( 4 ) - 1 ] ;
+                    // FORBIDDEN [Jeanne] Use GeoModelBuilder::set_region_geometry to set all the tets
+                    // of one region
                     last_tetra = mesh->cells.create_tet( vertices[0], vertices[1], vertices[2], vertices[3] ) ;
                 } else if( in_.field_matches( 0, "#" ) && in_.field_matches( 1, "CTETRA" ) ) {/*
                     // Read information about tetra faces
@@ -205,6 +217,8 @@ namespace RINGMesh {
                     std::cout << "Timing : " << difftime( end_reading_vol, start_reading_vol ) << " seconds." << std::endl ;
                     std::cout << "Reading BRep model info..." << std::endl ;
                     has_model_in_file = true ;
+                    // NO NO you are accessing things you should'nt, that are bug prone,
+                    // and will probably be modified
                     model_.mesh.vertices.test_and_initialize() ;
                 } else if( in_.field_matches( 0, "SURFACE" ) ) {
                     current_interface = create_element( GME::INTERFACE );
@@ -230,6 +244,7 @@ namespace RINGMesh {
                 } else if( in_.field_matches( 0, "MODEL_REGION" ) ) {
                     // Compute the last surface
                     if ( cur_surf_facets.size() > 0 ) {
+                        // Good :) [Jeanne]
                         set_surface_geometry( current_surface.index, cur_surf_facets, cur_surf_facet_ptr ) ;
                         cur_surf_facets.clear() ;
                         cur_surf_facet_ptr.clear() ;
@@ -245,6 +260,7 @@ namespace RINGMesh {
         time_t step1, step2, step3 ;
 
         // Build GeoModel Lines and Corners from the surfaces
+        // What are ou doing here? Check all the nice functions in GeoModelBuilder [Jeanne]
         model_.mesh.vertices.test_and_initialize() ;
         time( &step1 ) ;
         std::cout << "Timing step 1 : " << difftime( step1, end_reading_model ) << " seconds." << std::endl ;
@@ -263,6 +279,10 @@ namespace RINGMesh {
             anns[s] = new ColocaterANN( facet_edge_barycenters, true ) ;
         }
 
+        // What is this ??????? [Jeanne]
+        // It is not at all the job of this function to take care of tasks like this one
+        // All the functions to do that are implemented in Mesh or somewhere else
+        // 2nd remark  DO NOT EVER use geometry to compute combinatorial things [Jeanne]
         for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
             const Surface& S = model_.surface(s) ;
 //            std::cout << "Surface " << s << std::endl ;
@@ -300,6 +320,8 @@ namespace RINGMesh {
         }
 
 
+        // 1. No line of code should have more than around 100 characters [Jeanne]
+        // 2. WHAT is this compute internal borders [Jeanne]
 
 /*
         // Compute internal borders (remove adjacencies)
@@ -539,7 +561,7 @@ namespace RINGMesh {
 //                std::cout << "      " << vertex_surf_states[v][s] << std::endl ;
 //            }
 //        } */
-        build_lines_and_corners_from_surfaces() ;
+        build_lines_and_corners_from_surfaces() ;          // Pfewwwwwwww I was afraid [Jeanne]
 
         time( &step2 ) ;
         std::cout << "Timing step 2 : " << difftime( step2, step1 ) << " seconds." << std::endl ;
@@ -621,6 +643,9 @@ namespace RINGMesh {
         return true ;
 
     }
+    // No capital letters in names GCS ? I know what it is but my brain has to make an effort
+    // and prefers gocad_coordinate_system [Jeanne]
+    // You are not only reading, you are setting some stuff of the class at the same time, see comments below
     void GeoModelBuilderTSolid::read_GCS()
     {
         while( !in_.eof() && in_.get_line() ) {
@@ -652,16 +677,23 @@ namespace RINGMesh {
             }
         }
     }
+    // Returning a vector is never a great idea, except if you're sure that it size is 
+    // limited [Jeanne]
+    // In c++11 the vector is moved, but we are copying it.
     std::vector< index_t > GeoModelBuilderTSolid::read_number_of_mesh_elements()
     {
+        // Variable name is not compliant to rules
+        // NO capitals -  line_input is nice. the count is misleading
         GEO::LineInput lineInput_count ( filename_ ) ;
 
+        // Please do not use CAPITAL letters in variable and function names [Jeanne]
+        // nb_vertices_and_tets_per_region is nicer, isn't it ?
         std::vector< index_t > nb_VRTX_and_TETRA_per_region ;
 
         index_t cur_region = 0 ;
         index_t nb_vertices_in_region = 0 ;
         index_t nb_tetras_in_region = 0 ;
-        index_t nb_interfaces_in_bmodel = 0 ;
+        index_t nb_interfaces_in_bmodel = 0 ; // Remove unused variables [Jeanne]
         index_t nb_surfaces_in_bmodel = 0 ;
         index_t nb_triangles_in_bmodel = 0 ;
 
@@ -670,7 +702,7 @@ namespace RINGMesh {
             if( lineInput_count.nb_fields() > 0 ) {
                 if( lineInput_count.field_matches( 0, "TVOLUME" ) ||
                     lineInput_count.field_matches( 0, "MODEL" ) ) {
-                    if ( cur_region ){
+                    if ( cur_region ){ // What is this test on a index_T ? [Jeanne]
                         nb_VRTX_and_TETRA_per_region.push_back( nb_vertices_in_region ) ;
                         nb_VRTX_and_TETRA_per_region.push_back( nb_tetras_in_region ) ;
                         nb_vertices_in_region = 0 ;
@@ -708,6 +740,7 @@ namespace RINGMesh {
                 << std::endl ;
         }
     }
+    // Adding spaces in the files helps the reader [Jeanne]
     void GeoModelBuilderTSolid::add_new_property(
             std::vector < std::string >& property_names,
             GEO::AttributesManager& attribute_manager )
@@ -723,8 +756,28 @@ namespace RINGMesh {
         // Its mesh will be update while reading file.
         GME::gme_t cur_region = create_element( GME::REGION ) ;
         set_element_name( cur_region, in_.field( 1 ) ) ;
+
+        // This is a very bad idea! our plan is to remove the access to the Mesh
+        // from the GMElement. You should use an intermediate structure and the functions
+        // provided in the GeoModelBuilder to edit/modify the mesh of a Element [Jeanne]
+        
+        // Plus from a Clean Code point of view (you should read this great book)
+        // this function can be improved
+        // 1. The name of the function is strange: you are reading smgth but you return 
+        // an address to a Mesh and you create a region...
+        // A function should do one thing only
+        // 2. In the return statement you access 2 levels of things that are not the property
+        // of the class
+       
+        // You can have a read_tvolume_name function that fills a string
+        // The create should be left out of it
+        // The access to the mesh to [Jeanne]
         return &( model_.region(cur_region.index).mesh() ) ;
     }
+    // Change the name of your functions, all the time you spend on finding a good name
+    // is not lost
+    // This function does not read the keyword (it has already been read)
+    // It rather read the coordinates of a vertex [Jeanne]
     void GeoModelBuilderTSolid::read_VRTX_keyword(
             GEO::Mesh* mesh,
             std::vector< index_t >& vertices_id_in_region )
@@ -733,6 +786,10 @@ namespace RINGMesh {
         double coord[3] = { in_.field_as_double( 2 ),
                             in_.field_as_double( 3 ),
                             z_sign_ * in_.field_as_double( 4 ) } ;
+
+        // It is out of the question to modify the Mesh directly
+        // Doing so you are extremely dependant of the Mesh
+        // What if we decide to change the class that stores the mesh of our GME ? [Jeanne]
         vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
     }
 }
