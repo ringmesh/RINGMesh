@@ -78,8 +78,7 @@ namespace RINGMesh {
         index_t id = model_.nb_elements( type ) ;
         ringmesh_assert( id != NO_ID ) ;
         if( type >= GME::CORNER && type < GME::NO_TYPE ) {
-            model_.modifiable_elements( type ).push_back(
-                new_element( type, model_, id ) ) ;
+            model_.modifiable_elements( type ).push_back( new_element( type, model_, id ) ) ;
             return gme_t( type, id ) ;
         } else {
             ringmesh_assert_not_reached;
