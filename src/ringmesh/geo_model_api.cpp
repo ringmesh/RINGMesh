@@ -256,9 +256,9 @@ namespace RINGMesh {
         GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has\n"
             << std::setw( 10 ) << std::left
             << geomodel.mesh.vertices.nb() << " vertices\n"
-            << std::setw( 10 ) << std::left
+            << std::setw( 10 ) << std::left << std::endl 
             << count_geomodel_facets( geomodel ) << " facets\n"
-            << std::setw( 10 ) << std::left
+            << std::setw( 10 ) << std::left << std::endl
             << count_geomodel_cells( geomodel ) << " cells\n"
             << std::endl ;
 
