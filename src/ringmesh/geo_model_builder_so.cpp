@@ -69,8 +69,7 @@ namespace RINGMesh {
 
         bool has_model_in_file = false ;
 
-        GEO::Mesh* mesh = &(model_.universe().mesh()) ; // WTF ?? [Jeanne]
-        // NO NO NO NO remove this mesh access. (see comments on last functions) [Jeanne]
+        GME::gme_t cur_region ;
 
         // First : count the number of vertex and tetras
         // in each region
@@ -82,7 +81,13 @@ namespace RINGMesh {
         ///@todo Link these vector with the results above
         std::vector< index_t > vertices_id_in_region ;
         index_t nb_non_dupl_vrtx = 0 ;
-        std::vector< index_t > map_gocad2gmm_vertices ;
+        std::vector< index_t > map_gocad2gmm_vertices ; // to rename map_gocad2local_vertex_indices ;
+        std::vector< index_t > map_gocad_vertices2region_id ;
+
+        //Region vertices
+        std::vector < vec3 > region_vertices ;
+        //Region tetraedron corners
+        std::vector< index_t > tetra_corners ;
 
         GME::gme_t current_interface ;
         GME::gme_t current_surface ;
@@ -103,7 +108,7 @@ namespace RINGMesh {
             in_.get_fields() ;
             if( in_.nb_fields() > 0 ) {
                 if( in_.field_matches( 0, "GOCAD_ORIGINAL_COORDINATE_SYSTEM" ) ) {
-                    read_GCS() ;
+                    read_and_set_gocad_coordinates_system() ;
                 } else if ( in_.field_matches( 0, "PROPERTIES" ) ) {
                     nb_vertex_properties = in_.nb_fields() - 1 ;
                 } else if ( in_.field_matches( 0, "PROPERTY_CLASS_HEADER" ) ) {
@@ -115,105 +120,78 @@ namespace RINGMesh {
                     add_new_property( cell_property_names,
                             model_.mesh.cell_attribute_manager() ) ;
                 } else if( in_.field_matches( 0, "TVOLUME" ) ) {
-                    mesh = read_TVOLUME_keyword() ;
+                    if ( region_vertices.size() > 0 ) {
+                        std::cout << cur_region <<
+                            " | nb_vertices in vector : " << region_vertices.size() <<
+                            " | nb_tets in vector : " << tetra_corners.size()*0.25 << std::endl ;
+                        set_element_vertices( cur_region, region_vertices, true ) ;
+                        std::cout << cur_region <<
+                            " | nb_vertices in region : " << model_.region(cur_region.index).nb_vertices() <<
+                            " | nb_tets in region : " << model_.region(cur_region.index).nb_cells() << std::endl ;
+//                       TODO : assign_region_tet_mesh( cur_region.index, )
+                        region_vertices.clear() ;
+                        tetra_corners.clear() ;
+                    }
+                    cur_region = create_region() ;
                 } else if( in_.field_matches( 0, "VRTX" ) || in_.field_matches( 0, "PVRTX" ) ) {
-                    read_VRTX_keyword( mesh, vertices_id_in_region ) ;
-                    map_gocad2gmm_vertices.push_back( nb_non_dupl_vrtx );
-                    ++nb_non_dupl_vrtx ;
+                    map_gocad2gmm_vertices.push_back( region_vertices.size() );
+                    map_gocad_vertices2region_id.push_back( cur_region.index ) ;
+                    vec3 vertex ;
+                    vertex.x = in_.field_as_double( 2 ) ;
+                    vertex.y = in_.field_as_double( 3 ) ;
+                    vertex.z = z_sign_ * in_.field_as_double( 4 ) ;
+                    region_vertices.push_back( vertex ) ;
+//                    read_vertex_coordinates( mesh, vertices_id_in_region ) ;
                 } else if( in_.field_matches( 0, "ATOM" ) || in_.field_matches( 0, "PATOM" ) ) {
                     index_t referring_vertex = in_.field_as_double( 2 ) - 1 ;
-                    index_t referring_vertex_region_id = NO_ID ;
-                    index_t cum_nb_vertex = 0 ;
-                    do {
-                        ++referring_vertex_region_id ;
-                        cum_nb_vertex += model_.region( referring_vertex_region_id ).mesh().vertices.nb() ;
-                    } while (cum_nb_vertex <= referring_vertex) ;
-                    ringmesh_debug_assert( referring_vertex_region_id !=  NO_ID ) ;
-                    ringmesh_debug_assert( referring_vertex_region_id < model_.nb_regions() ) ;
-                    // How may levels of abstraction on the next line are they ?  6 !!!!
-                    // Doing that is suicide, you access many things that you shouldn't
-                    // One of the goal of programming is to keep things compartmentalized 
-                    // so that if anything is changed anywhere, damages in your code are limited [Jeanne]
-                    double* coord = model_.region( referring_vertex_region_id ).mesh().vertices.point_ptr( vertices_id_in_region[referring_vertex] ) ;
-                    vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
-                    map_gocad2gmm_vertices.push_back( map_gocad2gmm_vertices[referring_vertex] ) ;
+                    index_t referred_vertex_local_id =
+                            map_gocad2gmm_vertices[referring_vertex] ;
+                    index_t referred_vertex_region_id =
+                            map_gocad_vertices2region_id[referring_vertex] ;
+
+                    if ( referred_vertex_region_id < cur_region.index ) {
+                        // If the atom referred to a vertex of another region,
+                        // acting like for a vertex
+                        map_gocad2gmm_vertices.push_back( region_vertices.size() );
+                        map_gocad_vertices2region_id.push_back( cur_region.index ) ;
+                        region_vertices.push_back(
+                                model_.region( referred_vertex_region_id ).vertex(
+                                        referred_vertex_local_id ) ) ;
+                    } else {
+                        // If the atom referred to an atom of the same region
+                        map_gocad2gmm_vertices.push_back( referred_vertex_local_id ) ;
+                        map_gocad_vertices2region_id.push_back( referred_vertex_region_id ) ;
+                    }
+
+
                 } else if( in_.field_matches( 0, "TETRA" ) ) {
                     // Reading and create a tetra
-                    std::vector< index_t > vertices (4) ;
-                    vertices[0] = vertices_id_in_region[ in_.field_as_uint( 1 ) - 1 ] ;
-                    vertices[1] = vertices_id_in_region[ in_.field_as_uint( 2 ) - 1 ] ;
-                    vertices[2] = vertices_id_in_region[ in_.field_as_uint( 3 ) - 1 ] ;
-                    vertices[3] = vertices_id_in_region[ in_.field_as_uint( 4 ) - 1 ] ;
+                    std::vector< index_t > corners(4) ;
+                    corners[0] = in_.field_as_uint( 1 ) - 1 ;
+                    corners[1] = in_.field_as_uint( 2 ) - 1 ;
+                    corners[2] = in_.field_as_uint( 3 ) - 1 ;
+                    corners[3] = in_.field_as_uint( 4 ) - 1 ;
+//                    read_tetraedra( map_gocad2gmm_vertices, map_gocad_vertices2region_id, corners ) ;
                     // FORBIDDEN [Jeanne] Use GeoModelBuilder::set_region_geometry to set all the tets
                     // of one region
-                    last_tetra = mesh->cells.create_tet( vertices[0], vertices[1], vertices[2], vertices[3] ) ;
-                } else if( in_.field_matches( 0, "#" ) && in_.field_matches( 1, "CTETRA" ) ) {/*
-                    // Read information about tetra faces
-                    for ( index_t f = 0 ; f < 4 ; ++f ) {
-                        if ( !in_.field_matches( f + 3, "none" ) ) {
-                            // If a tetra face match with a triangle of an surface
-                            std::string read_interface = in_.field( f + 3 ) ;
-                            std::string interface_name = read_interface.substr(1) ;
-                            bool sign_plus = (read_interface[0] == '+') ? true : false ;
-
-                            // 1 - Find or create the interface
-                            index_t id_model_interface = NO_ID ;
-                            for ( index_t interf = 0 ; interf < model_.nb_interfaces() ; ++interf ) {
-                                if ( model_.one_interface( interf ).name() == interface_name ) {
-                                    id_model_interface = interf ;
-                                    break ;
-                                }
-                            }
-                            if ( id_model_interface == NO_ID ) {
-                                GME::gme_t created_interface = create_element( GME::INTERFACE );
-                                set_element_name( created_interface, interface_name ) ;
-                                id_model_interface = created_interface.index ;
-                            }
-
-                            // 2 - Check if a child of the interface (a surface) is in boundary of the region.
-                            GME::gme_t model_surface ( GME::SURFACE, NO_ID ) ;
-                            if ( model_.one_interface( id_model_interface ).nb_children() == 0 ) {
-                                // The interface has no children
-                                model_surface = create_element( GME::SURFACE ) ;
-                                set_element_parent( model_surface, model_.one_interface( id_model_interface ).gme_id() ) ;
-                                add_element_child( model_.one_interface( id_model_interface ).gme_id(), model_surface ) ;
-                                add_element_boundary( cur_region, model_surface, sign_plus ) ;
-                            } else {
-                                // If the interface has at least one child,
-                                // check if a child is a boundary of the current region.
-                                for (index_t b = 0 ; b < model_.region( cur_region.index ).nb_boundaries() ; ++b ) {
-                                    if ( model_.region( cur_region.index ).boundary(b).parent()
-                                            == model_.one_interface( id_model_interface ) ) {
-                                        model_surface = model_.region( cur_region.index ).boundary(b).gme_id() ;
-                                        break ;
-                                    }
-                                }
-                                if ( model_surface.index == NO_ID ) {
-                                    // Interface child(ren) is/are not a boundary of the region
-                                    model_surface = create_element( GME::SURFACE ) ;
-                                    set_element_parent( model_surface, model_.one_interface( id_model_interface ).gme_id() ) ;
-                                    add_element_child( model_.one_interface( id_model_interface ).gme_id(), model_surface ) ;
-                                    add_element_boundary( cur_region, model_surface, sign_plus ) ;
-                                }
-                            }
-
-                            // 3 - Creation of the facet
-                            index_t facet = mesh->facets.create_triangle( mesh->cells.tet_facet_vertex(last_tetra, f, 0),
-                                    mesh->cells.tet_facet_vertex(last_tetra, f, 1),
-                                    mesh->cells.tet_facet_vertex(last_tetra, f, 2) ) ;
-
-                            // 4 - Set attribute
-                            GEO::Attribute <index_t> attribute_interface ( mesh->facets.attributes(), "interface" ) ;
-                            attribute_interface[ facet ] = id_model_interface ;
-
-                            // 5 - Add the triangle in the surface
-                            ///@todo use set_surface_geometry... When all the facets are known
-                        }
-                    }
-                */} else if( in_.field_matches( 0, "name:" ) ) {
+                    tetra_corners.insert( tetra_corners.end(), corners.begin(), corners.end() ) ;
+//                    last_tetra = mesh->cells.create_tet( corners[0], corners[1], corners[2], corners[3] ) ;
+                } else if( in_.field_matches( 0, "name:" ) ) {
                     // GeoModel name is set to the TSolid name.
                     set_model_name( in_.field( 1 ) ) ;
                 } else if( in_.field_matches( 0, "MODEL" ) ) {
+                    if ( region_vertices.size() > 0 ) {
+                        std::cout << "reg : " << cur_region <<
+                            " | nb_vertices in vector : " << region_vertices.size() <<
+                            " | nb_tets in vector : " << tetra_corners.size()*0.25 << std::endl ;
+                        set_element_vertices( cur_region, region_vertices, true ) ;
+                        std::cout << "reg : " << cur_region <<
+                            " | nb_vertices in region : " << model_.region(cur_region.index).nb_vertices() <<
+                            " | nb_tets in region : " << model_.region(cur_region.index).nb_cells() << std::endl ;
+//                        assign_region_tet_mesh( cur_region.index, )
+                        region_vertices.clear() ;
+                        tetra_corners.clear() ;
+                    }
                     time( &end_reading_vol ) ;
                     std::cout << "Timing : " << difftime( end_reading_vol, start_reading_vol ) << " seconds." << std::endl ;
                     std::cout << "Reading BRep model info..." << std::endl ;
@@ -266,6 +244,7 @@ namespace RINGMesh {
         time( &step1 ) ;
         std::cout << "Timing step 1 : " << difftime( step1, end_reading_model ) << " seconds." << std::endl ;
 
+        // Compute internal borders (remove adjacencies)
         std::vector< ColocaterANN* > anns( model_.nb_surfaces(), nil ) ;
         std::vector< Box3d > boxes( model_.nb_surfaces() ) ;
         for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
@@ -323,7 +302,6 @@ namespace RINGMesh {
         // 2. WHAT is this compute internal borders [Jeanne]
 
 /*
-        // Compute internal borders (remove adjacencies)
         std::vector< std::vector < index_t > > vertex_surf_states( model_.mesh.vertices.nb() ) ;
         for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
             const Surface& S = model_.surface(s) ;
@@ -652,7 +630,7 @@ namespace RINGMesh {
     // No capital letters in names GCS ? I know what it is but my brain has to make an effort
     // and prefers gocad_coordinate_system [Jeanne]
     // You are not only reading, you are setting some stuff of the class at the same time, see comments below
-    void GeoModelBuilderTSolid::read_GCS()
+    void GeoModelBuilderTSolid::read_and_set_gocad_coordinates_system()
     {
         while( !in_.eof() && in_.get_line() ) {
             in_.get_fields() ;
@@ -665,13 +643,13 @@ namespace RINGMesh {
             } else if ( in_.field_matches( 0, "DATUM" ) ) {
                 // Useless for the moment
             } else if ( in_.field_matches( 0, "AXIS_NAME" ) ) {
-                GCS_axis_name_.push_back( in_.field(1) ) ;
-                GCS_axis_name_.push_back( in_.field(2) ) ;
-                GCS_axis_name_.push_back( in_.field(3) ) ;
+                gocad_coordinates_system_axis_name_.push_back( in_.field(1) ) ;
+                gocad_coordinates_system_axis_name_.push_back( in_.field(2) ) ;
+                gocad_coordinates_system_axis_name_.push_back( in_.field(3) ) ;
             } else if ( in_.field_matches( 0, "AXIS_UNIT" ) ) {
-                GCS_axis_unit_.push_back( in_.field(1) ) ;
-                GCS_axis_unit_.push_back( in_.field(2) ) ;
-                GCS_axis_unit_.push_back( in_.field(3) ) ;
+                gocad_coordinates_system_axis_unit_.push_back( in_.field(1) ) ;
+                gocad_coordinates_system_axis_unit_.push_back( in_.field(2) ) ;
+                gocad_coordinates_system_axis_unit_.push_back( in_.field(3) ) ;
             } else if ( in_.field_matches( 0, "ZPOSITIVE" ) ) {
                 if( in_.field_matches( 1, "Elevation" ) ) {
                     z_sign_ = 1 ;
@@ -746,6 +724,7 @@ namespace RINGMesh {
                 << std::endl ;
         }
     }
+
     // Adding spaces in the files helps the reader [Jeanne]
     void GeoModelBuilderTSolid::add_new_property(
             std::vector < std::string >& property_names,
@@ -756,7 +735,8 @@ namespace RINGMesh {
         /// Change in order to have the good type for each property.
         GEO::Attribute< double > property( attribute_manager, in_.field(1) ) ;
     }
-    GEO::Mesh* GeoModelBuilderTSolid::read_TVOLUME_keyword()
+
+    GME::gme_t GeoModelBuilderTSolid::create_region()
     {
         // Create a region in the GeoModel.
         // Its mesh will be update while reading file.
@@ -778,13 +758,14 @@ namespace RINGMesh {
         // You can have a read_tvolume_name function that fills a string
         // The create should be left out of it
         // The access to the mesh to [Jeanne]
-        return &( model_.region(cur_region.index).mesh() ) ;
+        return cur_region ;
     }
+
     // Change the name of your functions, all the time you spend on finding a good name
     // is not lost
     // This function does not read the keyword (it has already been read)
     // It rather read the coordinates of a vertex [Jeanne]
-    void GeoModelBuilderTSolid::read_VRTX_keyword(
+    void GeoModelBuilderTSolid::read_vertex_coordinates(
             GEO::Mesh* mesh,
             std::vector< index_t >& vertices_id_in_region )
     {
@@ -797,5 +778,26 @@ namespace RINGMesh {
         // Doing so you are extremely dependant of the Mesh
         // What if we decide to change the class that stores the mesh of our GME ? [Jeanne]
         vertices_id_in_region.push_back( mesh->vertices.create_vertex( coord ) ) ;
+    }
+
+//    void GeoModelBuilderTSolid::read_tetraedra(
+//            std::vector< index_t >& vertices_id_in_region,
+//            std::vector< index_t >& vertices_id )
+//    {
+//        vertices_id[0] = vertices_id_in_region[ in_.field_as_uint( 1 ) - 1 ] ;
+//        vertices_id[1] = vertices_id_in_region[ in_.field_as_uint( 2 ) - 1 ] ;
+//        vertices_id[2] = vertices_id_in_region[ in_.field_as_uint( 3 ) - 1 ] ;
+//        vertices_id[3] = vertices_id_in_region[ in_.field_as_uint( 4 ) - 1 ] ;
+//    }
+
+    void GeoModelBuilderTSolid::read_tetraedra(
+            std::vector< index_t >& map_gocad2gmm_vertices,
+            std::vector< index_t >& map_gocad_vertices2region_id,
+            std::vector< index_t >& vertices_id )
+    {
+//        vertices_id[0] = vertices_id_in_region[ in_.field_as_uint( 1 ) - 1 ] ;
+//        vertices_id[1] = vertices_id_in_region[ in_.field_as_uint( 2 ) - 1 ] ;
+//        vertices_id[2] = vertices_id_in_region[ in_.field_as_uint( 3 ) - 1 ] ;
+//        vertices_id[3] = vertices_id_in_region[ in_.field_as_uint( 4 ) - 1 ] ;
     }
 }
