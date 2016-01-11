@@ -560,7 +560,7 @@ namespace RINGMesh {
         }
         GEO::AttributesManager& cell_attribute_manager() const
         {
-            return mesh_.facets.attributes() ;
+            return mesh_.cells.attributes() ;
         }
         void bind_attributes() ;
         void unbind_attributes() ;

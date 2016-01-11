@@ -46,6 +46,7 @@
 #include <ringmesh/io.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geo_model_builder.h>
 
 
@@ -78,8 +79,9 @@ int main( int argc, char** argv )
     if( !BB.build_model_from_surfaces() ) {
 		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	
 		return 1 ;
-	}
+	}    
     print_geomodel( model ) ;
+    is_geomodel_valid( model, false ) ;
 	GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
 	return 0 ;
    
