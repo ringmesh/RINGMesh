@@ -36,46 +36,14 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
+# CMakeList for RINGMesh file format converter subproject
 
-# CMakeLists for RINGMesh tests
-# This file is included by the root CMakeList of the RINGMesh project 
-
-if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
-	message(STATUS "Defined data directory for tests does not exists, using default tests/data")
-	SET(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" FORCE)
-endif()	
-		
-# Create the directory for the outputs of the tests
-# It is output in the configuration file as well as the test input data directory 
-file(MAKE_DIRECTORY ${TEST_DATA_OUTPUT_DIRECTORY}) 
-
-# Configure a header file to pass some of the CMake settings
-# to the source code
-set(test_config_file_in ${TEST_SOURCE_DIRECTORY}/ringmesh_tests_config.h.in)
-set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
-configure_file(${test_config_file_in} ${test_config_file})
-
-# Get the name of the test files 
-file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
-
-# For all the test files found
-foreach(testsourcefile ${TESTS})
-    # Get the name of the file without extension
-    get_filename_component(testname ${testsourcefile} NAME_WE)
-    
-    # Add the target for that file
-    add_executable(${testname} ${testsourcefile} ${test_config_file} ${test_config_file_in})
-    
-    # Link RINGMesh Make sure YourLib is linked to each app
-    target_link_libraries(${testname} geogram RINGMesh)
-    
-    add_dependencies(${testname} RINGMesh)
-    
-    # Add the project to a folder of projects for the tests 
-    set_property(TARGET ${testname} PROPERTY FOLDER "Tests")
-    
-    # Add the test to CTest
-    add_test(NAME ${testname} COMMAND ${testname}) 
+# Set the target as an executable 
+add_executable(ringmeshstats main.cpp)
    
-endforeach(testsourcefile ${TESTS})
+target_link_libraries(ringmeshstats RINGMesh geogram)
+
+# Add the project to a folder of projects for the tests 
+set_property(TARGET ringmeshstats PROPERTY FOLDER "Utilities")
+
 

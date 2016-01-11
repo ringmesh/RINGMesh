@@ -71,6 +71,14 @@ option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
 
+# Optional custom configuration of data directories
+if(RINGMESH_WITH_TESTS)
+    set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
+    set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
+    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
+set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output" CACHE PATH "Output data location")
+endif()
+
 # Turn on the ability to create folders to organize projects and files
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
@@ -325,12 +333,11 @@ if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
     add_subdirectory(src/ringmeshconvert)
     add_subdirectory(src/ringmesh_surface_convert)
+    add_subdirectory(src/ringmeshstats)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)
     message(STATUS "Configuring RINGMesh with tests")
-	set(TEST_DIRECTORY ${PROJECT_SOURCE_DIR}/tests)
-	set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
     add_subdirectory(tests)
 endif(RINGMESH_WITH_TESTS)
 

@@ -53,11 +53,13 @@
 #include <iostream>
 #include <iomanip>
 
-namespace RINGMesh {
+namespace {
+    using namespace RINGMesh ;
+
     /*!
     * @brief Total number of facets in the geomodel Surfaces
     */
-    index_t nb_facets( const GeoModel& geomodel )
+    index_t count_geomodel_facets( const GeoModel& geomodel )
     {
         index_t result = 0 ;
         for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
@@ -66,7 +68,7 @@ namespace RINGMesh {
         return result ;
     }
 
-    index_t nb_cells( const GeoModel& geomodel )
+    index_t count_geomodel_cells( const GeoModel& geomodel )
     {
         index_t nb_cells = 0 ;
         for( index_t i = 0; i < geomodel.nb_regions(); ++i ) {
@@ -75,16 +77,188 @@ namespace RINGMesh {
         return nb_cells ;
     }
 
-    void print_model( const GeoModel& geomodel )
+
+    index_t count_geomodel_edges( const GeoModel& geomodel )
     {
-        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has "
-            << std::endl
+        index_t nb_edges = 0 ;
+        for( index_t i = 0; i < geomodel.nb_lines(); ++i ) {
+            nb_edges += geomodel.line( i ).nb_cells() ;
+        }
+        return nb_edges ;
+    }
+
+    void count_surface_facet_per_type(
+        const Surface& surface,
+        index_t& nb_triangles,
+        index_t& nb_quads,
+        index_t& nb_polygons )
+    {
+        for( index_t f = 0; f < surface.nb_cells(); f++ ) {
+            index_t nb_vertices = surface.nb_vertices_in_facet( f ) ;
+            switch( nb_vertices ) {
+                case 3:
+                    nb_triangles++ ;
+                    break ;
+                case 4:
+                    nb_quads++ ;
+                    break ;
+                default:
+                    nb_polygons++ ;
+                    break ;
+            }
+        }
+    }
+
+    index_t count_geomodel_facet_per_type(
+        const GeoModel& geomodel,
+        index_t& nb_triangles,
+        index_t& nb_quads,
+        index_t& nb_polygons )
+    {
+        nb_triangles = 0 ;
+        nb_quads = 0 ;
+        nb_polygons = 0 ;
+        for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
+            const Surface& surface = geomodel.surface( s ) ;
+            count_surface_facet_per_type( surface, nb_triangles, nb_quads,
+                nb_polygons ) ;
+        }
+        return nb_triangles + nb_quads + nb_polygons ;
+    }
+
+    void count_region_cell_per_type(
+        const Region& region,
+        index_t& nb_tet,
+        index_t& nb_pyramids,
+        index_t& nb_prisms,
+        index_t& nb_hex,
+        index_t& nb_poly )
+    {
+        for( index_t c = 0; c < region.nb_cells(); c++ ) {
+            index_t nb_vertices = region.nb_vertices_in_cell( c ) ;
+            switch( nb_vertices ) {
+                case 4:
+                    nb_tet++ ;
+                    break ;
+                case 5:
+                    nb_pyramids++ ;
+                    break ;
+                case 6:
+                    nb_prisms++ ;
+                    break ;
+                case 8:
+                    nb_hex++ ;
+                    break ;
+                default:
+                    nb_poly++ ;
+                    break ;
+            }
+        }
+    }
+
+    index_t count_geomodel_cell_per_type(
+        const GeoModel& geomodel,
+        index_t& nb_tet,
+        index_t& nb_pyramids,
+        index_t& nb_prisms,
+        index_t& nb_hex,
+        index_t& nb_poly )
+    {
+        nb_tet = 0 ;
+        nb_pyramids = 0 ;
+        nb_prisms = 0 ;
+        nb_hex = 0 ;
+        nb_poly = 0 ;
+        for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+            const Region& region = geomodel.region( r ) ;
+            count_region_cell_per_type( region, nb_tet, nb_pyramids, nb_prisms,
+                nb_hex, nb_poly ) ;
+        }
+        return nb_tet + nb_pyramids + nb_prisms + nb_hex + nb_poly ;
+    }
+
+    void compute_region_volumes_per_cell_type(
+        const Region& region,
+        double& tet_volume,
+        double& pyramid_volume,
+        double& prism_volume,
+        double& hex_volume,
+        double& poly_volume )
+    {
+        for( index_t c = 0; c < region.nb_cells(); c++ ) {
+            index_t nb_vertices = region.nb_vertices_in_cell( c ) ;
+            double volume = RINGMesh::mesh_cell_volume( region.mesh(), c ) ;
+            switch( nb_vertices ) {
+                case 4:
+                    tet_volume += volume ;
+                    break ;
+                case 5:
+                    pyramid_volume += volume ;
+                    break ;
+                case 6:
+                    prism_volume += volume ;
+                    break ;
+                case 8:
+                    hex_volume += volume ;
+                    break ;
+                default:
+                    poly_volume += volume ;
+                    break ;
+            }
+        }
+    }
+
+    double compute_geomodel_volumes_per_cell_type(
+        const GeoModel& geomodel,
+        double& tet_volume,
+        double& pyramid_volume,
+        double& prism_volume,
+        double& hex_volume,
+        double& poly_volume )
+    {
+        tet_volume = 0 ;
+        pyramid_volume = 0 ;
+        prism_volume = 0 ;
+        hex_volume = 0 ;
+        poly_volume = 0 ;
+        for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+            const Region& region = geomodel.region( r ) ;
+            compute_region_volumes_per_cell_type( region, tet_volume, pyramid_volume,
+                prism_volume, hex_volume, poly_volume ) ;
+        }
+        return tet_volume + pyramid_volume + prism_volume + hex_volume + poly_volume ;
+    }
+
+    void print_one_cell_stat(
+        const index_t& nb_cell,
+        const index_t& nb_cell_total,
+        const std::string& cell_type )
+    {
+        GEO::Logger::out( "GeoModel" ) << "* " << nb_cell << " " << cell_type << " ("
+            << nb_cell * 100 / nb_cell_total << "%)\n" ;
+    }
+
+    void print_one_cell_volume_stat(
+        const double& cell_volume,
+        const double& cell_volume_total,
+        const std::string& cell_type )
+    {
+        GEO::Logger::out( "GeoModel" )
+            << "* " << cell_type << " volume " << cell_volume << " ("
+            << static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 ) << "%)\n" ;
+    }
+
+}
+
+namespace RINGMesh {
+    void print_geomodel( const GeoModel& geomodel )
+    {
+        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has\n"
             << std::setw( 10 ) << std::left
-            << geomodel.mesh.vertices.nb() << " vertices "
-            << std::endl
+            << geomodel.mesh.vertices.nb() << " vertices\n"
             << std::setw( 10 ) << std::left
-            << nb_facets( geomodel ) << " facets "
-            << std::endl << std::endl ;
+            << count_geomodel_facets( geomodel ) << " facets\n"
+            << std::endl ;
 
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast<GME::TYPE>( t ) ;
@@ -92,6 +266,86 @@ namespace RINGMesh {
                 << geomodel.nb_elements( T ) << " " << GME::type_name( T )
                 << std::endl ;
         }
+    }
+
+    void print_geomodel_mesh_stats( const GeoModel& geomodel )
+    {
+        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " is made of\n"
+            << std::setw( 10 ) << std::left
+            << geomodel.mesh.vertices.nb() << " vertices\n"
+            << std::setw( 10 ) << std::left
+            << count_geomodel_edges( geomodel ) << " edges\n" ;
+
+        index_t nb_triangles = 0 ;
+        index_t nb_quads = 0 ;
+        index_t nb_polygons = 0 ;
+        index_t nb_facets =  count_geomodel_facet_per_type( geomodel, nb_triangles, nb_quads, nb_polygons ) ;
+        GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
+            << nb_facets << " facets\n" ;
+        if( nb_triangles > 0 ) {
+            print_one_cell_stat( nb_triangles, nb_facets, "triangles" ) ;
+        }
+        if( nb_quads > 0 ) {
+            print_one_cell_stat( nb_quads, nb_facets, "quads" ) ;
+        }
+        if( nb_polygons > 0 ) {
+            print_one_cell_stat( nb_polygons, nb_facets, "polygons" ) ;
+        }
+
+        index_t nb_tet = 0 ;
+        index_t nb_pyramids = 0 ;
+        index_t nb_prisms = 0 ;
+        index_t nb_hex = 0 ;
+        index_t nb_poly = 0 ;
+        index_t nb_cells = count_geomodel_cell_per_type( geomodel, nb_tet, nb_pyramids,
+            nb_prisms, nb_hex, nb_poly ) ;
+        GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
+            << nb_cells << " cells\n" ;
+        if( nb_tet > 0 ) {
+            print_one_cell_stat( nb_tet, nb_cells, "tet" ) ;
+        }
+        if( nb_pyramids > 0 ) {
+            print_one_cell_stat( nb_pyramids, nb_cells, "pyramids" ) ;
+        }
+        if( nb_prisms > 0 ) {
+            print_one_cell_stat( nb_prisms, nb_cells, "prisms" ) ;
+        }
+        if( nb_hex > 0 ) {
+            print_one_cell_stat( nb_hex, nb_cells, "hex" ) ;
+        }
+        if( nb_poly > 0 ) {
+            print_one_cell_stat( nb_poly, nb_cells, "polyhedra" ) ;
+        }
+        GEO::Logger::out( "GeoModel" ) << std::endl ;
+    }
+
+    void print_geomodel_mesh_cell_volumes( const GeoModel& geomodel )
+    {
+        double tet_volume = 0;
+        double pyramid_volume = 0;
+        double prism_volume = 0;
+        double hex_volume = 0;
+        double poly_volume = 0 ;
+        double volume = compute_geomodel_volumes_per_cell_type( geomodel, tet_volume, pyramid_volume,
+            prism_volume, hex_volume, poly_volume ) ;
+        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name()
+            << " has a volume of " << volume << "\n" ;
+        if( tet_volume > 0 ) {
+            print_one_cell_volume_stat( tet_volume, volume, "tet" ) ;
+        }
+        if( pyramid_volume > 0 ) {
+            print_one_cell_volume_stat( pyramid_volume, volume, "pyramid" ) ;
+        }
+        if( prism_volume > 0 ) {
+            print_one_cell_volume_stat( prism_volume, volume, "prism" ) ;
+        }
+        if( hex_volume > 0 ) {
+            print_one_cell_volume_stat( hex_volume, volume, "hex" ) ;
+        }
+        if( poly_volume > 0 ) {
+            print_one_cell_volume_stat( poly_volume, volume, "polyhedron" ) ;
+        }
+        GEO::Logger::out( "GeoModel" ) << std::endl ;
     }
 
     bool are_geomodel_surface_meshes_simplicial( const GeoModel& geomodel )
@@ -198,7 +452,7 @@ namespace RINGMesh {
 
     void add_surfaces_triangles_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        GEO::vector< index_t > triangles( 3 * nb_facets( geomodel ) ) ;
+        GEO::vector< index_t > triangles( 3 * count_geomodel_facets( geomodel ) ) ;
         index_t triangle_index = 0 ;
         for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
             const Surface& S = geomodel.surface( i ) ;         
@@ -248,7 +502,7 @@ namespace RINGMesh {
 
     void add_regions_tets_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        GEO::vector< index_t > tets( 4*nb_cells( geomodel ) ) ;
+        GEO::vector< index_t > tets( 4*count_geomodel_cells( geomodel ) ) ;
         index_t tet_index = 0 ;
         for( index_t i = 0; i < geomodel.nb_regions(); ++i ) {
             const Region& region = geomodel.region( i ) ;

@@ -68,8 +68,21 @@ namespace RINGMesh {
     * @details Output number of facets, vertices, and of the different element types
     * @todo Implement a test are_geomodels_equals to be able to check that tests went well
     */
-    void RINGMESH_API print_model( const GeoModel& model ) ;
+    void RINGMESH_API print_geomodel( const GeoModel& geomodel ) ;
 
+    /*!
+     * Output the number of vertices, edges, facets and cells.
+     * Also output the number of triangles, quads and polygons if any.
+     * Also output the number of tetra, prisms, pyramids, hex and polyhedra if any.
+     * @param[in] geomodel the geomodel to compute the statistics on
+     */
+    void RINGMESH_API print_geomodel_mesh_stats( const GeoModel& geomodel ) ;
+
+    /*!
+     * Output the volume of the geomodel and the volume per cell type.
+     * @param[in] geomodel the geomodel to compute the statistics on
+     */
+    void RINGMESH_API print_geomodel_mesh_cell_volumes( const GeoModel& geomodel ) ;
     
     bool RINGMESH_API are_geomodel_surface_meshes_simplicial( const GeoModel& geomodel ) ;
 

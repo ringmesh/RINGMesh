@@ -70,12 +70,25 @@ namespace RINGMesh {
                 "Saves the volumetric mesh of the structural model" ) ;
         }
 
+        void import_arg_group_stats()
+        {
+            GEO::CmdLine::declare_arg_group( "stats", "Statistics options" ) ;
+            GEO::CmdLine::declare_arg(
+                "stats:volume", false,
+                "Print statistics on the volume" ) ;
+            GEO::CmdLine::declare_arg(
+                "stats:nb", false,
+                "Print statistics on the number of elements" ) ;
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "in" ) {
                 import_arg_group_in() ;
             } else if( name == "out" ) {
                 import_arg_group_out() ;
+            } else if( name == "stats" ) {
+                import_arg_group_stats() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }

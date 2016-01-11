@@ -680,7 +680,7 @@ namespace RINGMesh {
                 time( &start_load ) ;
 
                 if( builder.build_model() ) {
-                    print_model( model ) ;
+                    print_geomodel( model ) ;
                     // Check validity
                     RINGMesh::is_geomodel_valid( model ) ;
 
@@ -716,7 +716,7 @@ namespace RINGMesh {
                     GEO::Logger::out( "I/O" )
                         << " Loaded model " << model.name() << " from "
                         << filename << std::endl ;
-                    print_model( model ) ;
+                    print_geomodel( model ) ;
                     RINGMesh::is_geomodel_valid( model ) ;                
                     return true ;
                 }
