@@ -1650,13 +1650,31 @@ namespace RINGMesh {
         while( new_line_was_built ) {
             new_line_was_built = line_computer.compute_next_line_geometry() ;
 
-            const std::vector< index_t >& vertices = line_computer.vertices() ;                        
+            // Copy - we might need to modify them - not that big it is a Line
+            std::vector< index_t > vertices = line_computer.vertices() ;                        
             const std::vector< index_t >& adjacent_surfaces = line_computer.adjacent_surfaces() ;
-            GME::gme_t c1 = find_or_create_corner( vertices.back() ) ;
-            GME::gme_t c0 = find_or_create_corner( vertices.front() ) ;
-             
+
+            // If this is a closed Line, the vertices can begin and end at any vertex
+            if( vertices.back() == vertices.front() ) {
+                for( index_t i = 0; i< vertices.size(); ++i ) {
+                    gme_t corner = find_corner( model(), vertices[ i ] );
+                    if( corner.is_defined() ) {
+                        // Shuffle the vector so that it begins and ends at this point
+                        std::vector< index_t > shuffled_vertices( vertices.size() );
+                        std::copy( vertices.begin()+i, vertices.end(), shuffled_vertices.begin() );
+                        index_t nb_after_i( vertices.end()-vertices.begin()-i );
+                        std::copy( vertices.begin()+1, vertices.begin()+i, shuffled_vertices.begin()+nb_after_i );
+
+                        vertices = shuffled_vertices ;
+                        break;
+                    }
+                }
+            }
+            GME::gme_t first_corner = find_or_create_corner( vertices.front() ) ;
+            GME::gme_t second_corner = find_or_create_corner( vertices.back() ) ;
+           
             index_t backup_nb_lines = model().nb_lines() ;
-            gme_t line_index = find_or_create_line( adjacent_surfaces, c0, c1 ) ;
+            gme_t line_index = find_or_create_line( adjacent_surfaces, first_corner, second_corner ) ;
 
             bool created_line = model().nb_lines() != backup_nb_lines ;
             if( created_line ) {
@@ -1666,8 +1684,8 @@ namespace RINGMesh {
                     GME::gme_t surface_id( GME::SURFACE, adjacent_surfaces[ j ] ) ;
                     add_element_in_boundary( line_index, surface_id ) ;
                 }
-                add_element_boundary( line_index, c0 ) ;
-                add_element_boundary( line_index, c1 ) ;
+                add_element_boundary( line_index, first_corner ) ;
+                add_element_boundary( line_index, second_corner ) ;
 
                 // If the plan is to then build_regions, get the information
                 if( options_.compute_regions_brep ) {
