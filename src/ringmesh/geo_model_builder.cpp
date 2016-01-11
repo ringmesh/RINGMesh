@@ -165,7 +165,6 @@ namespace {
         if( L.nb_vertices() != rhs_vertices.size() ) {
             return false ;
         }
-
         bool equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i] != L.vertex( i ) ) {
@@ -182,9 +181,36 @@ namespace {
                 break ;
             }
         }
+        return equal ;
+    }
+
+
+    /*!
+    * @brief Returns true if the Line has exactly the given vertices
+    * @todo Reimplement using std::iterators
+    */
+    bool line_equal( const Line& L, const std::vector< index_t >& rhs_vertices )
+    {
+        if( L.nb_vertices() != rhs_vertices.size() ) {
+            return false ;
+        }        
+        bool equal = true ;
+        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+            if( rhs_vertices[ i ] != L.model_vertex_id( i ) ) {
+                equal = false ;
+                break ;
+            }
+        }
         if( equal ) return true ;
 
-        return false ;
+        equal = true ;
+        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+            if( rhs_vertices[ i ] != L.model_vertex_id( L.nb_vertices()-i-1 ) ) {
+                equal = false ;
+                break ;
+            }
+        }
+        return equal ;
     }
 
     /*!
@@ -1019,20 +1045,19 @@ namespace RINGMesh {
             gme_t c0 = L.boundary_gme( 0 ) ;
             gme_t c1 = L.boundary_gme( 1 ) ;
 
-            if( (c0 == first_corner && c1 == second_corner) ||
-                (c0 == second_corner && c1 == first_corner)
-                ) {
+            if( (c0 == first_corner && c1 == second_corner)
+                || (c0 == second_corner && c1 == first_corner)
+            ) {
                 std::vector<index_t> cur_adjacent_surfaces ;
                 get_sorted_incident_surfaces( L, cur_adjacent_surfaces ) ;
-                if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size() &&
-                    std::equal( cur_adjacent_surfaces.begin(), cur_adjacent_surfaces.end(),
-                    sorted_adjacent_surfaces.begin() )
-                    ) {
+                if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size()
+                    && std::equal( cur_adjacent_surfaces.begin(), cur_adjacent_surfaces.end(),
+                                   sorted_adjacent_surfaces.begin() )
+                ) {
                     return L.gme_id() ;
                 }
             }
         }
-
         return create_element( GME::LINE ) ;
     }
 
@@ -1214,7 +1239,8 @@ namespace RINGMesh {
         index_t line_id,
         const std::vector< index_t >& unique_vertices )
     {
-        set_element_vertices( gme_t(GME::LINE, line_id), unique_vertices, false ) ;
+        bool clear_vertices = true ;
+        set_element_vertices( gme_t(GME::LINE, line_id), unique_vertices, clear_vertices ) ;
 
         GeoModelMeshElement& E = mesh_element( GME::LINE, line_id ) ;
         for( index_t e = 1; e < E.nb_vertices(); e++ ) {
@@ -1615,24 +1641,22 @@ namespace RINGMesh {
 
     bool GeoModelBuilder::build_lines_and_corners_from_surfaces()
     {       
-        // Instantiate the implementation class that does the work
         LineGeometryFromGeoModelSurfaces line_computer( model_, options_.compute_regions_brep ) ;
         
         bool new_line_was_built = true ;
         while( new_line_was_built ) {
             new_line_was_built = line_computer.compute_next_line_geometry() ;
 
-            // Recover the current line geometry
-            const std::vector< index_t >& vertices = line_computer.vertices() ;            
-            
-            const std::vector<index_t>& adjacent_surfaces = line_computer.adjacent_surfaces() ;
+            const std::vector< index_t >& vertices = line_computer.vertices() ;                        
+            const std::vector< index_t >& adjacent_surfaces = line_computer.adjacent_surfaces() ;
             GME::gme_t c1 = find_or_create_corner( vertices.back() ) ;
             GME::gme_t c0 = find_or_create_corner( vertices.front() ) ;
              
             index_t backup_nb_lines = model().nb_lines() ;
             gme_t line_index = find_or_create_line( adjacent_surfaces, c0, c1 ) ;
 
-            if( model().nb_lines() != backup_nb_lines ) {
+            bool created_line = model().nb_lines() != backup_nb_lines ;
+            if( created_line ) {
                 set_line( line_index.index, vertices ) ;
 
                 for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
@@ -1646,6 +1670,11 @@ namespace RINGMesh {
                 if( options_.compute_regions_brep ) {
                     regions_info_.push_back( 
                         new GeoModelRegionFromSurfaces( line_computer.region_information() ) );
+                }
+            } else {
+                bool same_geometry = line_equal( model().line( line_index.index ), vertices );
+                if( !same_geometry ) {
+                    set_line( line_index.index, vertices ) ;
                 }
             }
         }
