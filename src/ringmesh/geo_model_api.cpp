@@ -258,6 +258,8 @@ namespace RINGMesh {
             << geomodel.mesh.vertices.nb() << " vertices\n"
             << std::setw( 10 ) << std::left
             << count_geomodel_facets( geomodel ) << " facets\n"
+            << std::setw( 10 ) << std::left
+            << count_geomodel_cells( geomodel ) << " cells\n"
             << std::endl ;
 
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
