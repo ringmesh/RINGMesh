@@ -1655,8 +1655,8 @@ namespace RINGMesh {
             const std::vector< index_t >& adjacent_surfaces = line_computer.adjacent_surfaces() ;
 
             // If this is a closed Line, the vertices can begin and end at any vertex
-            if( vertices.back() == vertices.front() ) {
-                for( index_t i = 0; i< vertices.size(); ++i ) {
+            if( model().nb_corners() > 0 && vertices.back() == vertices.front() ) {
+                for( index_t i = 1; i+1< vertices.size(); ++i ) {
                     gme_t corner = find_corner( model(), vertices[ i ] );
                     if( corner.is_defined() ) {
                         // Shuffle the vector so that it begins and ends at this point
