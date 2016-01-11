@@ -1239,10 +1239,13 @@ namespace RINGMesh {
         index_t line_id,
         const std::vector< index_t >& unique_vertices )
     {
-        bool clear_vertices = true ;
+        bool clear_vertices = false ;
+        GeoModelMeshElement& E = mesh_element( GME::LINE, line_id ) ;
+        ringmesh_assert( E.nb_vertices() == 0 ) ; // If there are already some vertices
+        // we are doomed because they are not removed
+        /// @todo Do this test for all others set_something
         set_element_vertices( gme_t(GME::LINE, line_id), unique_vertices, clear_vertices ) ;
 
-        GeoModelMeshElement& E = mesh_element( GME::LINE, line_id ) ;
         for( index_t e = 1; e < E.nb_vertices(); e++ ) {
             E.mesh_.edges.create_edge( e - 1, e ) ;
         }
