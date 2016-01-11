@@ -196,6 +196,13 @@ namespace RINGMesh {
         GME::gme_t find_or_create_line( const std::vector< index_t>& incident_surfaces,
                                    GME::gme_t first_corner, GME::gme_t second_corner ) ;
 
+        void recompute_geomodel_mesh()
+        {
+            model_.mesh.vertices.clear();
+            model_.mesh.vertices.test_and_initialize();
+        }
+
+
         /*!
          * @}
          * \name Model building functions
