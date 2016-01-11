@@ -63,9 +63,10 @@ namespace RINGMesh {
 
     private:
         /*!
-        * Read the Gocad coordinates system informations.
+        * Read and set the Gocad coordinates system information
+        * from input .so file.
         */
-        void read_GCS() ;
+        void read_and_set_gocad_coordinates_system() ;
         ///@todo comment
         std::vector< index_t > read_number_of_mesh_elements() ;
 
@@ -76,18 +77,33 @@ namespace RINGMesh {
             std::vector < std::string >& property_names,
             GEO::AttributesManager& attribute_manager ) ;
 
-        GEO::Mesh* read_TVOLUME_keyword() ;
+        GME::gme_t create_region() ;
 
-        void read_VRTX_keyword(
+        void read_vertex_coordinates(
             GEO::Mesh* mesh,
             std::vector< index_t >& vertices_id_in_region ) ;
+
+        /*
+         * @brief Read the four vertices index
+         * and regions depending on the building flags
+         * @param[in] vertices_id_in_region Local indices (in region) of all the
+         * model indices
+         * @param[out] vertices Indices of the four vertices
+         */
+//        void read_tetraedra(
+//            std::vector< index_t >& vertices_id_in_region,
+//            std::vector< index_t >& vertices_id ) ;
+        void read_tetraedra(
+            std::vector< index_t >& map_gocad2gmm_vertices,
+            std::vector< index_t >& map_gocad_vertices2region_id,
+            std::vector< index_t >& vertices_id ) ;
 
     private:
         std::string filename_ ;
         int z_sign_ ;
-        std::string GCS_name_ ;
-        std::vector< std::string > GCS_axis_name_ ;
-        std::vector< std::string > GCS_axis_unit_ ;
+        std::string gocad_coordinates_system_name_ ;
+        std::vector< std::string > gocad_coordinates_system_axis_name_ ;
+        std::vector< std::string > gocad_coordinates_system_axis_unit_ ;
     } ;
 }
 
