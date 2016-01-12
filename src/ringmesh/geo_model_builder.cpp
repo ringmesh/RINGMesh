@@ -81,7 +81,7 @@ namespace {
 
     /*!
     * @brief From some mesh corners referring to some global vertex indices
-    * Get the indices of the vertices used in the corners and upate the corners
+    * Get the indices of the vertices used in the corners and update the corners
     * Example:
     * Input  : corners = 1 3 8 25 8 3
     * Output : corners = 0 1 2 3 2 1
@@ -986,6 +986,23 @@ namespace RINGMesh {
     {
         set_element_vertices( gme_t(GME::SURFACE, surface_id), points, false ) ;
         assign_surface_mesh_facets( surface_id, facets, facet_ptr ) ;
+    }
+
+    /*!
+     * @brief Set the points and tetras for a region
+     *
+     * @param[in] region_id Index of the regions
+     * @param[in] points Coordinates of the vertices
+     * @param[in] tetras Indices in the vertices vector to build tetras
+     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+     */
+    void GeoModelBuilder::set_region_geometry(
+        index_t region_id,
+        const std::vector< vec3 >& points,
+        const std::vector< index_t >& tetras )
+    {
+        set_element_vertices( gme_t(GME::REGION, region_id), points, false ) ;
+        assign_region_tet_mesh( region_id, tetras ) ;
     }
 
     /*!

@@ -139,6 +139,10 @@ namespace RINGMesh {
                                    const std::vector< index_t >& surface_facets,
                                    const std::vector< index_t >& surface_facet_ptr ) ;
 
+        void set_region_geometry( index_t region_id,
+                                  const std::vector< vec3 >& points,
+                                  const std::vector< index_t >& tetras ) ;
+
         /*! @}
          * \name Set element geometry using global GeoModel vertices
          * @{

@@ -79,24 +79,22 @@ namespace RINGMesh {
 
         GME::gme_t create_region() ;
 
-        void read_vertex_coordinates(
-            GEO::Mesh* mesh,
-            std::vector< index_t >& vertices_id_in_region ) ;
+        /* Read the coordinates of a vertex from file
+         * @param[out] vertex Vertex
+         */
+        void read_vertex_coordinates( vec3& vertex ) ;
 
         /*
          * @brief Read the four vertices index
-         * and regions depending on the building flags
-         * @param[in] vertices_id_in_region Local indices (in region) of all the
-         * model indices
-         * @param[out] vertices Indices of the four vertices
+         * @details Read gocad indices (from .so file) and transform
+         * them to vertex local (region) indices
+         * @param[in] gocad_vertices2region_vertices Map from the gocad vertex
+         * indices to vertex local indices (in region)
+         * @param[out] corners_id Indices of the four vertices
          */
-//        void read_tetraedra(
-//            std::vector< index_t >& vertices_id_in_region,
-//            std::vector< index_t >& vertices_id ) ;
         void read_tetraedra(
-            std::vector< index_t >& map_gocad2gmm_vertices,
-            std::vector< index_t >& map_gocad_vertices2region_id,
-            std::vector< index_t >& vertices_id ) ;
+            std::vector< index_t >& gocad_vertices2region_vertices,
+            std::vector< index_t >& corners_id ) ;
 
     private:
         std::string filename_ ;
