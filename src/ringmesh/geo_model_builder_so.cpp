@@ -276,83 +276,14 @@ namespace RINGMesh {
         std::cout << "Timing step 2 : " << difftime( step2, step1 ) << " seconds." << std::endl ;
 
         // Regions boundaries
-        ///@todo Find how to accelerate this part which take more than 80% of the time (think to ColocaterANN)
-        for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
-            index_t id_reg = model_.region(r).index() ;
-            for( index_t c = 0; c < model_.mesh.cells.nb_tet( id_reg ); ++c ) {
-                for ( index_t f = 0; f < 4 ; ++f ) {
-                    index_t facet = NO_ID ;
-                    bool side = false ;
-                    if (model_.mesh.cells.is_cell_facet_on_surface( model_.mesh.cells.tet( id_reg, c ), f, facet, side )) {
-                        index_t surface = model_.mesh.facets.surface( facet ) ;
-                        bool surface_in_boundary = false ;
-                        bool surface_in_boundary_side = false ;
-                        index_t b = NO_ID ;
-                        while ( !(surface_in_boundary && side == surface_in_boundary_side )
-                                && ++b < model_.region(r).nb_boundaries() ) {
-                            if ( model_.region(r).boundary(b).gme_id() == model_.surface( surface ).gme_id() ) {
-                                surface_in_boundary = true ;
-                                surface_in_boundary_side = model_.region(r).side(b) ;
-                            }
-                        }
-                        if ( !surface_in_boundary ) {
-                            add_element_boundary(
-                                GME::gme_t( GME::REGION, id_reg ),
-                                GME::gme_t( GME::SURFACE, surface ),
-                                side ) ;
-                            add_element_in_boundary(
-                                GME::gme_t( GME::SURFACE, surface ),
-                                GME::gme_t( GME::REGION, id_reg ) ) ;
-                        } else if (surface_in_boundary && side != surface_in_boundary_side ) {
-                            // Case in which both sides of the surface are in boundaries of the region.
-                            add_element_boundary(
-                                GME::gme_t( GME::REGION, id_reg ),
-                                GME::gme_t( GME::SURFACE, surface ),
-                                side ) ;
-                        }
-                    }
-                }
-            }
-        }
-
-        time( &step3 ) ;
-        std::cout << "Timing step 3 : " << difftime( step3, step2 ) << " seconds." << std::endl ;
+        compute_boundaries_of_geomodel_regions() ;
 
         // Universe boundaries
-        std::vector< bool > surf_side_minus ( model_.nb_surfaces(), false ) ;
-        std::vector< bool > surf_side_plus ( model_.nb_surfaces(), false ) ;
-        for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
-            for ( index_t s = 0 ; s < model_.region(r).nb_boundaries() ; ++s ) {
-                if ( model_.region(r).side(s) ) {
-                    surf_side_plus[model_.region(r).boundary(s).index()] = true ;
-                } else if ( !model_.region(r).side(s) ) {
-                    surf_side_minus[model_.region(r).boundary(s).index()] = true ;
-                } else {
-                    ringmesh_assert_not_reached
-                }
-            }
-        }
-        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
-            if ( surf_side_minus[s] && !surf_side_plus[s] ) {
-                add_element_boundary(
-                    GME::gme_t( GME::REGION, NO_ID ),
-                    GME::gme_t( GME::SURFACE, s ),
-                    false ) ;
-            } else if ( !surf_side_minus[s] && surf_side_plus[s] ) {
-                add_element_boundary(
-                    GME::gme_t( GME::REGION, NO_ID ),
-                    GME::gme_t( GME::SURFACE, s ),
-                    true ) ;
-            }
-        }
-
-        time( &end_building_model ) ;
-        std::cout << "Timing step 4 : " << difftime( end_building_model, step3 ) << " seconds." << std::endl ;
+        compute_universe_boundaries() ;
 
         // Contacts building
         build_contacts() ;
 
-        std::cout << "Timing : " << difftime( end_building_model, end_reading_model ) << " seconds." << std::endl ;
         return true ;
 
     }
@@ -482,5 +413,77 @@ namespace RINGMesh {
         corners_id[1] = gocad_vertices2region_vertices[ in_.field_as_uint( 2 ) - 1 ] ;
         corners_id[2] = gocad_vertices2region_vertices[ in_.field_as_uint( 3 ) - 1 ] ;
         corners_id[3] = gocad_vertices2region_vertices[ in_.field_as_uint( 4 ) - 1 ] ;
+    }
+
+    void GeoModelBuilderTSolid::compute_boundaries_of_geomodel_regions()
+    {
+        ///@todo Find how to accelerate this part which take more than 80% of the time (think to ColocaterANN)
+        for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
+            index_t id_reg = model_.region(r).index() ;
+            for( index_t c = 0; c < model_.mesh.cells.nb_tet( id_reg ); ++c ) {
+                for ( index_t f = 0; f < 4 ; ++f ) {
+                    index_t facet = NO_ID ;
+                    bool side = false ;
+                    if (model_.mesh.cells.is_cell_facet_on_surface( model_.mesh.cells.tet( id_reg, c ), f, facet, side )) {
+                        index_t surface = model_.mesh.facets.surface( facet ) ;
+                        bool surface_in_boundary = false ;
+                        bool surface_in_boundary_side = false ;
+                        index_t b = NO_ID ;
+                        while ( !(surface_in_boundary && side == surface_in_boundary_side )
+                                && ++b < model_.region(r).nb_boundaries() ) {
+                            if ( model_.region(r).boundary(b).gme_id() == model_.surface( surface ).gme_id() ) {
+                                surface_in_boundary = true ;
+                                surface_in_boundary_side = model_.region(r).side(b) ;
+                            }
+                        }
+                        if ( !surface_in_boundary ) {
+                            add_element_boundary(
+                                GME::gme_t( GME::REGION, id_reg ),
+                                GME::gme_t( GME::SURFACE, surface ),
+                                side ) ;
+                            add_element_in_boundary(
+                                GME::gme_t( GME::SURFACE, surface ),
+                                GME::gme_t( GME::REGION, id_reg ) ) ;
+                        } else if (surface_in_boundary && side != surface_in_boundary_side ) {
+                            // Case in which both sides of the surface are in boundaries of the region.
+                            add_element_boundary(
+                                GME::gme_t( GME::REGION, id_reg ),
+                                GME::gme_t( GME::SURFACE, surface ),
+                                side ) ;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void GeoModelBuilderTSolid::compute_universe_boundaries()
+    {
+        std::vector< bool > surf_side_minus ( model_.nb_surfaces(), false ) ;
+        std::vector< bool > surf_side_plus ( model_.nb_surfaces(), false ) ;
+        for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
+            for ( index_t s = 0 ; s < model_.region(r).nb_boundaries() ; ++s ) {
+                if ( model_.region(r).side(s) ) {
+                    surf_side_plus[model_.region(r).boundary(s).index()] = true ;
+                } else if ( !model_.region(r).side(s) ) {
+                    surf_side_minus[model_.region(r).boundary(s).index()] = true ;
+                } else {
+                    ringmesh_assert_not_reached
+                }
+            }
+        }
+        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+            if ( surf_side_minus[s] && !surf_side_plus[s] ) {
+                add_element_boundary(
+                    GME::gme_t( GME::REGION, NO_ID ),
+                    GME::gme_t( GME::SURFACE, s ),
+                    false ) ;
+            } else if ( !surf_side_minus[s] && surf_side_plus[s] ) {
+                add_element_boundary(
+                    GME::gme_t( GME::REGION, NO_ID ),
+                    GME::gme_t( GME::SURFACE, s ),
+                    true ) ;
+            }
+        }
     }
 }
