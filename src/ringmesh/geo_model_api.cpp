@@ -256,9 +256,9 @@ namespace RINGMesh {
         GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has\n"
             << std::setw( 10 ) << std::left
             << geomodel.mesh.vertices.nb() << " vertices\n"
-            << std::setw( 10 ) << std::left << std::endl 
+            << std::setw( 10 ) << std::left
             << count_geomodel_facets( geomodel ) << " facets\n"
-            << std::setw( 10 ) << std::left << std::endl
+            << std::setw( 10 ) << std::left
             << count_geomodel_cells( geomodel ) << " cells\n"
             << std::endl ;
 
@@ -371,7 +371,7 @@ namespace RINGMesh {
     }
 
 
-	///@todo A class encapsulating the copy from a GeoModel to a Mesh ?
+	/// @todo A class encapsulating the copy from a GeoModel to a Mesh ?
     /// See what has been done in GeoModelMeshBuilder	
 
     void create_and_fill_corner_index_attribute( const GeoModel& geomodel,
