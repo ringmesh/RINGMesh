@@ -96,6 +96,18 @@ namespace RINGMesh {
             std::vector< index_t >& gocad_vertices2region_vertices,
             std::vector< index_t >& corners_id ) ;
 
+        /*
+         * @brief Set the boundaries of the GeoModel regions
+         */
+        void compute_boundaries_of_geomodel_regions() ;
+
+        /*
+         * @brief Set the boundaries of region Universe
+         * @details A surface is set in the boundaries of region Universe if
+         * only one of its sides belongs to the boundaries of other regions.
+         */
+        void compute_universe_boundaries() ;
+
     private:
         std::string filename_ ;
         int z_sign_ ;
