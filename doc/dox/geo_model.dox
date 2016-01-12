@@ -64,7 +64,7 @@ A model is defined by:
    Implemented by RINGMesh::GeoModelElement.
 -  A set of RINGMesh::Corner, the points at the extremities of the lines.
 
-\image html bme_doc.png 
+\image html geomodel_elements.svg 
 
 GeoModelElement and derived classes
 ---------------------------------
@@ -88,7 +88,13 @@ Meshes of the different element are independent one from another so
  At the model level RINGMesh::GeoModelMeshVertices manage a 
  global indexing of the vertices of the different meshes.
  
-  
+ 
+ RINGMesh::GeoModelMesh : a global mesh representation of the GeoModel
+ ---------------------------------------------------------------------
+ The GeoModelMesh is one mesh built from copying and merging the RINGMesh::GeoModelMeshElement.
+ \link ringmesh_geo_model_mesh Description of the GeoModelMesh \endlink
+ 
+ 
  Building a GeoModel
 -------------------------------
  
