@@ -110,6 +110,8 @@ namespace {
     /*************************************************************************/
     /*!
      * @brief Get the index of an Interface from its name
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] interface_name Name of the interface to find
      * @return Index of the interface in the model, NO_ID if not found.
      */
     gme_t find_interface( const GeoModel& geomodel, const std::string& interface_name )
@@ -145,6 +147,7 @@ namespace {
 
     /*!
      * @brief Get the index of the Corner for a given point
+     * @param[in] geomodel GeoModel to consider
      * @param[in] point Geometric location to look for
      * @return NO_ID or the index of the Corner
      */
@@ -160,6 +163,7 @@ namespace {
 
     /*!
      * @brief Get the index of the Corner at a given model point
+     * @param[in] geomodel GeoModel to consider
      * @param[in] model_point_id Index of the point in the GeoModel
      * @return NO_ID or the index of the Corner
      */
@@ -175,7 +179,7 @@ namespace {
 
     /*!
      * @brief Find or create a corner at given coordinates.
-     *
+     * @param[in] geomodel_builder Builder of the GeoModel to consider
      * @param[in] point Geometric location of the Corner
      * @return Index of the Corner
      */
@@ -224,7 +228,7 @@ namespace {
 
     /*!
      * @brief Find or create a line   
-     * @param[in] geomodel model to consider
+     * @param[in] geomodel_builder Builder of the model to consider
      * @param[in] vertices Coordinates of the vertices of the line
      * @return Index of the Line
      */
