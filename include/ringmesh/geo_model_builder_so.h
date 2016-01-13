@@ -79,12 +79,13 @@ namespace RINGMesh {
 
         GME::gme_t create_region() ;
 
-        /* Read the coordinates of a vertex from file
+        /*!
+         * Read the coordinates of a vertex from file
          * @param[out] vertex Vertex
          */
         void read_vertex_coordinates( vec3& vertex ) ;
 
-        /*
+        /*!
          * @brief Read the four vertices index
          * @details Read gocad indices (from .so file) and transform
          * them to vertex local (region) indices
@@ -96,12 +97,12 @@ namespace RINGMesh {
             std::vector< index_t >& gocad_vertices2region_vertices,
             std::vector< index_t >& corners_id ) ;
 
-        /*
+        /*!
          * @brief Set the boundaries of the GeoModel regions
          */
         void compute_boundaries_of_geomodel_regions() ;
 
-        /*
+        /*!
          * @brief Set the boundaries of region Universe
          * @details A surface is set in the boundaries of region Universe if
          * only one of its sides belongs to the boundaries of other regions.
