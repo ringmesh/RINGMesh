@@ -844,8 +844,8 @@ namespace RINGMesh {
 
     /*!
      * @brief Sets the geometrical position of a vertex
-     * @param[in] corner_id Index of the corner
-     * @param[in] index Index of the vertex to modify
+     * @param[in] t Element index
+     * @param[in] v Index of the vertex to modify
      * @param[in] point New coordinates
      * @param[in] update If true, all the vertices sharing the same geometrical position
      *               in the GeoModel have their position updated, if false they
@@ -870,10 +870,10 @@ namespace RINGMesh {
 
     /*!
      * @brief Set the geometrical position of a vertex from a model vertex
-     * @details Set also both mapping from (GeoModelMeshVertices::unique2bme)
+     * @details Set also both mapping from (GeoModelMeshVertices::add_to_bme)
      *          and to (model_vertex_id_) the model vertex.
-     * @param[in] id Element index
-     * @param[in] index Index of the vertex to modify
+     * @param[in] element_id Element index
+     * @param[in] v Index of the vertex to modify
      * @param[in] model_vertex Index in GeoModelMeshVertices of the vertex giving
      *                     the new position
      */
@@ -954,7 +954,7 @@ namespace RINGMesh {
     /*!
      * @brief Set one Line points
      *
-     * @param[in] id Line index
+     * @param[in] line_id Line index
      * @param[in] vertices Coordinates of the vertices on the line
      */
     void GeoModelBuilder::set_line(
