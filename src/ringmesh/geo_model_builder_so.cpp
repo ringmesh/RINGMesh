@@ -40,19 +40,12 @@
 
 #include <ringmesh/geo_model_builder_so.h>
 
-#include <algorithm>
 #include <iostream>
 #include <iomanip>
 
 #include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_repair.h>
 
-#include <ringmesh/geo_model_api.h>
-#include <ringmesh/geo_model_validity.h>
-#include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
-#include <ringmesh/io.h>
 #include <ringmesh/utils.h>
 
 namespace RINGMesh {
