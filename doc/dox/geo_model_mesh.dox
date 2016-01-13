@@ -65,7 +65,7 @@ for( index_t v = 0; v < gmm.vertices.nb_vertices(); v++ ) {
     const vec3& point = gmm.vertices.vertex( v ) ;
 }
 
-// Iterates on the RINGMesh::GeoModelMesh (gmm) facets without redondancy
+// Iterates on the RINGMesh::GeoModelMesh (gmm) facets without redundancy
 for( index_t s = 0; s < gmm.model().nb_surfaces(); s++ ) {
     // Each surface can be stored twice if it is at the interface of two meshes
     for( index_t f = 0; f < gmm.facets.nb_facets( s ); f++ ) { // It is also possible to iterate only on triangle or quad
