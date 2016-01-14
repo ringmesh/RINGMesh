@@ -92,9 +92,7 @@ namespace RINGMesh {
     /*!
     * @brief Build a Mesh from the model non-duplicated vertices and its Surface facets.
     * @details Adjacencies are not set. Client should call mesh repair functions afterwards.
-    * @todo Implement it for meshed Regions.
-    * Implement it for a set of GME.
-    * Add flags to specify which Mesh should be created, with what attributes.
+    * @todo Add flag options to specify which Mesh should be created, with what attributes.
     */
     void RINGMESH_API build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M ) ;
 
