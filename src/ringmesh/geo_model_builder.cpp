@@ -994,7 +994,6 @@ namespace RINGMesh {
      * @param[in] region_id Index of the regions
      * @param[in] points Coordinates of the vertices
      * @param[in] tetras Indices in the vertices vector to build tetras
-     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
      */
     void GeoModelBuilder::set_region_geometry(
         index_t region_id,
