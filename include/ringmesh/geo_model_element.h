@@ -993,6 +993,16 @@ namespace RINGMesh {
             return mesh_.cells.vertex( me, lv ) ;
         }
 
+        bool is_on_border( index_t cell, index_t facet ) const
+        {
+            return adjacent_cell(cell, facet) == GEO::NO_CELL;
+        }
+
+        index_t adjacent_cell( index_t cell, index_t facet ) const
+        {
+            return mesh_.cells.adjacent( cell, facet );
+        }
+
         bool is_meshed() const
         {
             return mesh().cells.nb() > 0 ;
