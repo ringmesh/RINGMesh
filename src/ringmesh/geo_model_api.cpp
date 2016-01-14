@@ -371,8 +371,8 @@ namespace RINGMesh {
     }
 
 
-	/// @todo A class encapsulating the copy from a GeoModel to a Mesh ?
-    /// See what has been done in GeoModelMeshBuilder	
+    /// @todo A class encapsulating the copy from a GeoModel to a Mesh ?
+    /// See what has been done in GeoModelMeshBuilder
 
     void create_and_fill_corner_index_attribute( const GeoModel& geomodel,
                                                const std::string& attribute_name,
