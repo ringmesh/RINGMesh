@@ -83,7 +83,6 @@ namespace RINGMesh {
         // to the index of the region they belong to
         std::vector< index_t > gocad_vertices2region_id ;
 
-
         GME::gme_t current_interface ;
         GME::gme_t current_surface ;
         std::vector< index_t > cur_surf_facets ;
@@ -129,7 +128,6 @@ namespace RINGMesh {
                     region_vertices.push_back( vertex ) ;
                 } else if( in_.field_matches( 0, "ATOM" ) || in_.field_matches( 0, "PATOM" ) ) {
                     index_t referring_vertex = in_.field_as_double( 2 ) - 1 ;
-
                     index_t referred_vertex_local_id =
                             gocad_vertices2region_vertices[referring_vertex] ;
                     index_t referred_vertex_region_id =
@@ -172,10 +170,11 @@ namespace RINGMesh {
                 } else if( in_.field_matches( 0, "TFACE" ) ) {
                     // Compute the surface
                     if ( cur_surf_facets.size() > 0 ) {
-                        set_surface_geometry( current_surface.index, cur_surf_facets, cur_surf_facet_ptr ) ;
-                        cur_surf_facets.clear() ;
-                        cur_surf_facet_ptr.clear() ;
-                        cur_surf_facet_ptr.push_back( 0 ) ;
+                        build_surface( current_surface.index,
+                                cur_surf_facets,
+                                cur_surf_facet_ptr,
+                                gocad_vertices2region_id,
+                                gocad_vertices2region_vertices ) ;
                     }
                     // Create a new surface
                     current_surface = create_element( GME::SURFACE ) ;
@@ -183,18 +182,18 @@ namespace RINGMesh {
                     add_element_child( current_interface, current_surface ) ;
                 } else if( in_.field_matches( 0, "TRGL" ) ) {
                     ///@todo think to reserve space before
-                    cur_surf_facets.push_back( gocad_vertices2region_vertices[ in_.field_as_uint( 1 ) - 1 ] ) ;
-                    cur_surf_facets.push_back( gocad_vertices2region_vertices[ in_.field_as_uint( 2 ) - 1 ] ) ;
-                    cur_surf_facets.push_back( gocad_vertices2region_vertices[ in_.field_as_uint( 3 ) - 1 ] ) ;
+                    cur_surf_facets.push_back( in_.field_as_uint( 1 ) - 1 ) ;
+                    cur_surf_facets.push_back( in_.field_as_uint( 2 ) - 1 ) ;
+                    cur_surf_facets.push_back( in_.field_as_uint( 3 ) - 1 ) ;
                     cur_surf_facet_ptr.push_back( cur_surf_facets.size() ) ;
                 } else if( in_.field_matches( 0, "MODEL_REGION" ) ) {
                     // Compute the last surface
                     if ( cur_surf_facets.size() > 0 ) {
-                        // Good :) [Jeanne]
-                        set_surface_geometry( current_surface.index, cur_surf_facets, cur_surf_facet_ptr ) ;
-                        cur_surf_facets.clear() ;
-                        cur_surf_facet_ptr.clear() ;
-                        cur_surf_facet_ptr.push_back( 0 ) ;
+                        build_surface( current_surface.index,
+                                cur_surf_facets,
+                                cur_surf_facet_ptr,
+                                gocad_vertices2region_id,
+                                gocad_vertices2region_vertices ) ;
                     }
                 }
             }
@@ -204,9 +203,6 @@ namespace RINGMesh {
         std::cout << "Building Model..." << std::endl ;
         time_t step1, step2, step3 ;
 
-        // Build GeoModel Lines and Corners from the surfaces
-        // TODO : What are you doing here? Check all the nice functions in GeoModelBuilder [Jeanne]
-        model_.mesh.vertices.test_and_initialize() ;
         time( &step1 ) ;
         std::cout << "Timing step 1 : " << difftime( step1, end_reading_model ) << " seconds." << std::endl ;
 
@@ -229,14 +225,12 @@ namespace RINGMesh {
             anns[s] = new ColocaterANN( facet_edge_barycenters, true ) ;
         }
 
-//        index_t nb_calls = 0 ;
         // TODO : What is this ????? [Jeanne]
         // It is not at all the job of this function to take care of tasks like this one
         // All the functions to do that are implemented in Mesh or somewhere else
         // 2nd remark  DO NOT EVER use geometry to compute combinatorial things [Jeanne]
         for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
             const Surface& S = model_.surface(s) ;
-//            std::cout << "Surface " << s << std::endl ;
             for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
                 for ( index_t e = 0 ; e < 3 ; ++e ) {
                    if ( !S.is_on_border(f,e) ) {
@@ -246,7 +240,6 @@ namespace RINGMesh {
                        while ( result.empty() && tested_surf < anns.size() ) {
                            if ( boxes[tested_surf].contains( barycenter ) ) {
                                anns[tested_surf]->get_colocated(barycenter, result) ;
-//                               ++nb_calls ;
                            }
                            ++tested_surf ;
                        }
@@ -257,12 +250,12 @@ namespace RINGMesh {
                 }
             }
         }
-//        std::cout << "Number of calls of get_colocated function is " << nb_calls << std::endl ;
 
         for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
             delete anns[s];
         }
-
+        // Build GeoModel Lines and Corners from the surfaces
+        model_.mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
 
         time( &step2 ) ;
@@ -410,21 +403,25 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_boundaries_of_geomodel_regions()
     {
-        ///@todo Find how to accelerate this part which take more than 80% of the time (think to ColocaterANN)
+        ///@todo Find how to accelerate this part which take more a lot of time
         for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
             index_t id_reg = model_.region(r).index() ;
-            for( index_t c = 0; c < model_.mesh.cells.nb_tet( id_reg ); ++c ) {
+            GeoModelMeshCells& gmm_cells = model_.mesh.cells ;
+            for( index_t c = 0; c < gmm_cells.nb_tet( id_reg ); ++c ) {
                 for ( index_t f = 0; f < 4 ; ++f ) {
                     index_t facet = NO_ID ;
                     bool side = false ;
-                    if (model_.mesh.cells.is_cell_facet_on_surface( model_.mesh.cells.tet( id_reg, c ), f, facet, side )) {
+                    if ( gmm_cells.is_cell_facet_on_surface(
+                            gmm_cells.tet( id_reg, c ), f, facet, side )) {
                         index_t surface = model_.mesh.facets.surface( facet ) ;
                         bool surface_in_boundary = false ;
                         bool surface_in_boundary_side = false ;
                         index_t b = NO_ID ;
-                        while ( !(surface_in_boundary && side == surface_in_boundary_side )
+                        while ( !(surface_in_boundary &&
+                                side == surface_in_boundary_side )
                                 && ++b < model_.region(r).nb_boundaries() ) {
-                            if ( model_.region(r).boundary(b).gme_id() == model_.surface( surface ).gme_id() ) {
+                            if ( model_.region(r).boundary(b).gme_id() ==
+                                    model_.surface( surface ).gme_id() ) {
                                 surface_in_boundary = true ;
                                 surface_in_boundary_side = model_.region(r).side(b) ;
                             }
@@ -437,8 +434,10 @@ namespace RINGMesh {
                             add_element_in_boundary(
                                 GME::gme_t( GME::SURFACE, surface ),
                                 GME::gme_t( GME::REGION, id_reg ) ) ;
-                        } else if (surface_in_boundary && side != surface_in_boundary_side ) {
-                            // Case in which both sides of the surface are in boundaries of the region.
+                        } else if (surface_in_boundary &&
+                                side != surface_in_boundary_side ) {
+                            // Case in which both sides of the surface
+                            // are in the boundaries of the region.
                             add_element_boundary(
                                 GME::gme_t( GME::REGION, id_reg ),
                                 GME::gme_t( GME::SURFACE, surface ),
@@ -478,5 +477,41 @@ namespace RINGMesh {
                     true ) ;
             }
         }
+    }
+
+    void GeoModelBuilderTSolid::build_surface(
+            index_t surface_id,
+            std::vector< index_t >& facet_corners,
+            std::vector< index_t >& facet_ptr,
+            std::vector< index_t >& gocad_vertices2region_id,
+            std::vector< index_t >& gocad_vertices2region_vertices )
+    {
+        std::vector < vec3 > cur_surf_points ;
+        std::vector < index_t > cur_surf_facets ;
+        std::vector < index_t > gocad_vertices2cur_surf_points(
+                gocad_vertices2region_vertices.size(), NO_ID ) ;
+        for ( index_t co = 0 ; co < facet_corners.size() ; ++co ) {
+            index_t corner_gocad_id = facet_corners[ co ] ;
+            if ( gocad_vertices2cur_surf_points[ corner_gocad_id ] == NO_ID ) {
+                // First time this facet corner is met in facet_corners
+                index_t corner_local_id =
+                        gocad_vertices2region_vertices[ corner_gocad_id ] ;
+                index_t corner_region =
+                        gocad_vertices2region_id[ corner_gocad_id ] ;
+                vec3 point = model_.region( corner_region ).vertex( corner_local_id ) ;
+                cur_surf_facets.push_back( cur_surf_points.size() ) ;
+                gocad_vertices2cur_surf_points[ corner_gocad_id ] = cur_surf_points.size() ;
+                cur_surf_points.push_back( point ) ;
+            } else {
+                // If this facet corner have already been met in facet_corners
+                cur_surf_facets.push_back(
+                        gocad_vertices2cur_surf_points[ corner_gocad_id ] ) ;
+            }
+        }
+        set_surface_geometry( surface_id, cur_surf_points, cur_surf_facets, facet_ptr ) ;
+        cur_surf_points.clear() ;
+        facet_corners.clear() ;
+        facet_ptr.clear() ;
+        facet_ptr.push_back( 0 ) ;
     }
 }

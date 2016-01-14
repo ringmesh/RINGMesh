@@ -109,6 +109,13 @@ namespace RINGMesh {
          */
         void compute_universe_boundaries() ;
 
+        void build_surface(
+            index_t surface_id,
+            std::vector< index_t >& facet_corners,
+            std::vector< index_t >& facet_ptr,
+            std::vector< index_t >& gocad_vertices2region_id,
+            std::vector< index_t >& gocad_vertices2region_vertices ) ;
+
     private:
         std::string filename_ ;
         int z_sign_ ;
