@@ -584,7 +584,7 @@ namespace RINGMesh {
          *  from a GeoModel Surfaces are collected for each Line.
          */
         LineGeometryFromGeoModelSurfaces( const GeoModel& geomodel,
-                                             bool collect_region_info )
+                                          bool collect_region_info )
             :geomodel_( geomodel ), 
             collect_region_information_( collect_region_info ),
             cur_border_triangle_ (0)
@@ -959,7 +959,7 @@ namespace RINGMesh {
 
     void GeoModelBuilder::copy_meshes( const GeoModel& geomodel )
     {
-        for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
+        for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >(t) ;
             copy_meshes( geomodel, T ) ;
         }
@@ -967,7 +967,6 @@ namespace RINGMesh {
 
     void GeoModelBuilder::copy_meshes( const GeoModel& from, GME::TYPE element_type )
     {
-        // RINGMESH_PARALLEL_LOOP // on peut toujours la faire ? [JP]
         for( index_t i = 0; i < model_.elements( element_type ).size(); ++i ) {
             const GeoModelMeshElement& from_E = from.mesh_element( element_type, i ) ;
             assign_mesh_to_element( from_E.mesh(), gme_t( element_type, i ) ) ;
@@ -980,7 +979,7 @@ namespace RINGMesh {
         E.unbind_attributes() ;
         E.mesh().copy( mesh ) ;
         E.bind_attributes() ;
-        // Il n'y a pas d'autres trucs a faire ?? [JP]
+        // Nothing else to do ? To test [JP]
     }
 
     /*!

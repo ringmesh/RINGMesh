@@ -548,10 +548,12 @@ namespace RINGMesh {
     {
         if( are_geomodel_region_meshes_simplicial( geomodel ) ) {
             add_regions_tets_to_mesh( geomodel, M ) ;
+            create_and_fill_region_index_attribute( geomodel, "region", M ) ;
         } else {
-            ringmesh_assert( false ) ;
+            GEO::Logger::warn( "GeoModel" )
+                << "The conversion of non-simplicial Region meshes into a Mesh is not implemented"
+                << std::endl;
         }
-        create_and_fill_region_index_attribute( geomodel, "region", M ) ;
     }
 
 
@@ -742,7 +744,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Generate a point that lies strictly a Region defined by its boundary Surfaces.
+     * @brief Generates a point that lies strictly a Region defined by its boundary Surfaces.
      * @details Returns the midpoint of A: the barycenter of the 1st facet of the 1st Surface 
      * and B: the closest point of a A in the other Surfaces defining the Region.
      * @warning Incomplete implementation.
