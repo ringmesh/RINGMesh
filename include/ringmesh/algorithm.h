@@ -53,43 +53,43 @@
 namespace RINGMesh {
 
     /*!
-     * @brief Returns the position of the first element matching @param t 
-     * in the vector, NO_ID if not found. 
+     * @brief Returns the position of the first element matching @param value
+     * in the container, NO_ID if not found. 
      */
     template< typename T, typename container >
-    inline index_t find( const container& v, const T& t )
+    inline index_t find( const container& in, const T& value )
     {
-        typename container::const_iterator it = std::find( v.begin(), v.end(), t ) ;
-        if( it == v.end() ) {
+        typename container::const_iterator it = std::find( in.begin(), in.end(), value ) ;
+        if( it == in.end() ) {
             return NO_ID ;
         } else {
-            return static_cast<index_t>(it - v.begin()) ;
+            return static_cast<index_t>(it - in.begin()) ;
         }
     }
 
     /*!
-     * @brief Returns the position of the first element matching t 
-     * in a sorted vector, NO_ID if not found. 
+     * @brief Returns the position of the first element matching @param value 
+     * in a sorted container, NO_ID if not found. 
      */
     template< typename T, typename container >
-    inline index_t find_sorted( const container& v, const T& t )
+    inline index_t find_sorted( const container& in, const T& value )
     {
-        typename container::const_iterator low = std::lower_bound( v.begin(), v.end(), t ) ;
-        if( low == v.end() || t < *low ) {
+        typename container::const_iterator low = std::lower_bound( in.begin(), in.end(), value ) ;
+        if( low == in.end() || t < *low ) {
             return NO_ID ;
         } else {
-            return static_cast<index_t>(low - v.begin()) ;
+            return static_cast<index_t>(low - in.begin()) ;
         }
     }
 
 
     template< typename T, typename container >
-    inline bool contains( const container& v, const T& t, bool sorted = false )
+    inline bool contains( const container& in, const T& value, bool sorted = false )
     {
         if( sorted ) {
-            return find_sorted( v, t ) != NO_ID ;
+            return find_sorted( in, value ) != NO_ID ;
         } else {
-            return find( v, t ) != NO_ID ;
+            return find( in, value ) != NO_ID ;
         }
     }
 
@@ -133,7 +133,7 @@ namespace RINGMesh {
         {}
         /*! @brief Compare two indices based on the stored values at these indices
          */
-        inline bool operator()( index_t i, index_t j )
+        inline bool operator()( index_t i, index_t j ) const
         {
             if( equal_values( i, j ) ) {
                 return i < j ;
