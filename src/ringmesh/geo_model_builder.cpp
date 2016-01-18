@@ -81,7 +81,7 @@ namespace {
 
     /*!
     * @brief From some mesh corners referring to some global vertex indices
-    * Get the indices of the vertices used in the corners and upate the corners
+    * Get the indices of the vertices used in the corners and update the corners
     * Example:
     * Input  : corners = 1 3 8 25 8 3
     * Output : corners = 0 1 2 3 2 1
@@ -2324,7 +2324,7 @@ namespace RINGMesh {
         int z_sign = 1 ;
 
         // In the .ml file - vertices are indexed TSurf by Tsurf
-        // They can be duplicated inside one TSurf and betweeen TSurfs
+        // They can be duplicated inside one TSurf and between TSurfs
 
         // Coordinates of the vertices of the currently built TSurf in the model
         std::vector< vec3 > tsurf_vertices ;
