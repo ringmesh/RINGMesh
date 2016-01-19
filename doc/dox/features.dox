@@ -48,21 +48,21 @@ RINGMesh exe
 RINGMesh comes with several applications.
 
  - ringmesh_surface_convert.exe
- This application build a Geo::Mesh from a Gocad triangulated surface (.ts file).
+ This application builds a Geo::Mesh from a Gocad triangulated surface (.ts file).
  Then the Geo::Mesh can be exported in classical CAD format( i.e. .obj .mesh .meshb .ply .off .stl;
  \link class_g_e_o_1_1_mesh_i_o_handler Geogram in/out handler \endlink).  
  
  - ringmeshconvert.exe
- This application allow to build the \link ringmesh_geo_model GeoModel\endlink from \ref importformat "possible import format" 
+ This application allows to build the \link ringmesh_geo_model GeoModel\endlink from \ref importformat "possible import format" 
  before generating one of the \ref exportformat "possible export format".
  
  - ringmeshview.exe
- This application allow to visualize a RINGMesh::GeoModel. 
+ This application allows to visualize a RINGMesh::GeoModel. 
  It is built only if you set the compilation flag RINGMESH_WITH_GRAPHICS to TRUE.
  
 What the API can do! 
 ====================
-Using the API allow to integrate the RINGMesh::GeoModel data stucture in your own applications.
+Using the API allows to integrate the RINGMesh::GeoModel data stucture in your own applications.
 By using this data structure you can:
 
  - Test the validity of your model: (i.e. RINGMesh::is_geomodel_valid()).
