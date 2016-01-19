@@ -101,6 +101,6 @@ int main( int argc, char** argv )
 	return 0;
     } else {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
-	return 5
+	return 5;
     }
 }
