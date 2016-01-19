@@ -48,7 +48,8 @@
 
 \li Identations are 4 space characters (avoid tabulation)
 \li Opening brackets are at the end of the opening block (for, while if...) with a blank space before
-\li Closing brackets are at the same level as opening block instruction. Then, go to line for beginning a new block
+\li Closing brackets are at the same level as opening block instruction. Then, go to line for beginning a new block. Exception for the closing bracket of "else" 
+\li It is forbidden to write an instruction juste after an if, for... without '{ }'
 \li Space after '(' and before ')' 
 \li Space afer ',' and ';' 
 \li Space before ';' at the end of an instruction
@@ -59,13 +60,15 @@
 Sample code:
 
 \code
-for ( index_t i = 0; i < N; i++ ) {
+for( index_t i = 0; i < N; i++ ) {
     double a = 0 ;
 
-    if ( a < 0. ) {
+    if( a < 0. ) {
         double b = 6 ;
         my_function( a, b ) ;
         std::vector< double > c( 6 ) ;
+    } else {
+        // other intruction
     }
 }
 \endcode
@@ -134,6 +137,14 @@ void add(int a, double& b) {
 \subsubsection Return values
 
 \li Never (directly or indirectly) return a pointer to a local object
+
+
+\subsection Writing Classes 
+
+\subsubsection Philosophy
+
+\li Declare a member function that does not modify the state of its object const
+
 
 
 
