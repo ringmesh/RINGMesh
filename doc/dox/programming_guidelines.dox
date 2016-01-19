@@ -44,9 +44,8 @@
 \page ringmesh_programming_guidelines RINGMesh Programming Guidelines
 \section Programming Guidelines for RINGMesh
 
-\subsection Style Convention
+\subsection Style Conventions
 
-\li Always use English name
 \li Identations are 4 space characters (avoid tabulation)
 \li Opening brackets are at the end of the opening block (for, while if...) with a blank space before
 \li Closing brackets are at the same level as opening block instruction. Then, go to line for beginning a new block
@@ -54,18 +53,51 @@
 \li Space afer ',' and ';' 
 \li Space before ';' at the end of an instruction
 \li Space after and before mathematic operators and comparators (<, >, =, <=, ==...)
+\li Space after '<' and before '>' for templates
+\li No particular rules for blank lines. Please make your code readable.
 
 Sample code:
 
 \code
 for ( index_t i = 0; i < N; i++ ) {
-    int a = 0 ;
-    if ( a < 0 ) {
-        int b = 6 ;
+    double a = 0 ;
+
+    if ( a < 0. ) {
+        double b = 6 ;
         my_function( a, b ) ;
+        std::vector< double > c( 6 ) ;
     }
 }
 \endcode
+
+\subsection Naming Conventions
+
+\li Use english names 
+\li Abbreviations and acronyms are minimized
+\li Each word of Class and NameSpace names is capitalized 
+\li Function and local variables names are lowercase
+\li Member variables names are lowercase
+
+Sample code
+
+\code
+namespace RINGMesh {
+
+    namespace MatrixUtils {
+        
+        class DiagonalMatrix: public Matrix {
+        
+        public:
+            DiagonalMatrix() ;
+            void compute_trace() ;
+
+        private:
+            double trace_ ;
+        } ;
+    }
+}
+\endcode
+
 
 
 \include RINGMesh_programming_guidelines.txt
