@@ -102,5 +102,5 @@ int main( int argc, char** argv )
         GEO::Logger::out( "TEST" ) << "geo_nb=" << geo_nb << std::endl ;
         GEO::Logger::out( "TEST" ) << "ringmesh_nb=" << ringmesh_nb << std::endl ;
     }
-    return res ;
+    return !res ;
 }
