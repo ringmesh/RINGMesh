@@ -98,7 +98,6 @@ namespace RINGMesh {
 }
 \endcode
 
-
 \subsection Documentation
 
 \li Write comments in English 
@@ -117,5 +116,28 @@ void add(int a, double& b) {
     b += a ;
 }
 \endcode
+
+\subsection Writing Functions
+
+\subsubsection Philosophy
+
+\li A function should perform a single logical operation
+\li Keep functions short and simple
+\li Prefer pure functions i.e. functions that does not depend on anything else and have no side-effects
+
+\subsubsection Parameters
+
+\li For "in" parameters, pass cheaply copied types by value and others by reference to const
+\li For "in-out" parameters, pass by reference to non-const
+
+
+\subsubsection Return values
+
+\li Never (directly or indirectly) return a pointer to a local object
+
+
+
+
+
 */
 
