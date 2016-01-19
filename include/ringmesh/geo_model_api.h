@@ -92,8 +92,7 @@ namespace RINGMesh {
     /*!
     * @brief Build a Mesh from the model non-duplicated vertices and its Surface facets.
     * @details Adjacencies are not set. Client should call mesh repair functions afterwards.
-    * @todo Implement Implement it for meshed Regions.
-    * Implement it for a set of GME.
+    * @todo Add flag options to specify which Mesh should be created, with what attributes.
     */
     void RINGMESH_API build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M ) ;
 
@@ -142,10 +141,11 @@ namespace RINGMesh {
 
 #ifdef RINGMESH_WITH_TETGEN
     /*!
-     * @brief Constrained tetrahedralization of the B-Rep defined region of a GeoModel
+     * @brief Tetrahedralize the B-Rep defined regions of a GeoModel
      */
     void RINGMESH_API tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel ) ;
 #endif
+
     /*!
     * Compute the tetrahedral mesh of the input structural model
     * @param[in] M GeoModel to tetrahedralize

@@ -101,7 +101,7 @@ namespace RINGMesh {
 #ifdef RINGMESH_WITH_TETGEN
     /// @todo Move all tetgen related stuff in one or two files
 
-      /*! 
+    /*! 
      * @brief Utility class to set Tetgen switches and check their consistency
      * @details Tetgen arguments are a mess and this class helps set the basic options
      * @todo To implement!
@@ -109,7 +109,7 @@ namespace RINGMesh {
      * Q: quiet
      * p: input data is surfacic
      * q: desired quality
-     * O0: do not optimize mesh
+     * O0: do not optimize mesh at all -> a lot of flat tets
      * V: verbose - A LOT of information
      * Y: prohibit steiner points on boundaries
      * A: generate region tags for each shell.      

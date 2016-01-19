@@ -38,7 +38,6 @@
  *     FRANCE
  */
 
-
 #ifndef __RINGMESH_GEO_MODEL_BUILDER__
 #define __RINGMESH_GEO_MODEL_BUILDER__
 
@@ -51,8 +50,6 @@
 #include <ringmesh/common.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_editor.h>
-
-
 
 /*!
 * @file ringmesh/geo_model_builder.h
@@ -73,8 +70,8 @@ namespace RINGMesh {
 namespace RINGMesh {
     /*!
      * @brief First draft of flags to build a GeoModel
-     * @todo Implement functions to set, access the values, depending on what ?
-     * To check the consistency of the options. What doewe do about the other elements ? [JP] 
+     * @todo Implements functions to set, access the values, depending on what ?
+     * To check the consistency of the options. What do we do about the other elements ? [JP] 
      * @todo We need to keep track of the status of the GeoModel when building it:
      * same flags or some others ?    
      */
@@ -120,6 +117,17 @@ namespace RINGMesh {
             return true ;
         }
 
+        /*!
+        * @brief Copy all element meshes from the input geomodel
+        * @pre The model under construction has exaclty the same number of elements
+        * than the input geomodel.
+        */
+        void copy_meshes( const GeoModel& from ) ;
+                                                                        
+        void copy_meshes( const GeoModel& from, GME::TYPE element_type ) ;
+
+        void assign_mesh_to_element( const GEO::Mesh& mesh, GME::gme_t to ) ;
+                                                                    
         /*!
          * \name Set element geometry from geometrical positions
          * @{
@@ -169,6 +177,11 @@ namespace RINGMesh {
 
         void set_region_geometry( index_t region_id, const std::vector< index_t >& tet_corners ) ;
 
+
+        /*! @}
+        * \name Misc
+        * @{
+        */
         index_t find_or_create_duplicate_vertex( GeoModelMeshElement& S,
                                                  index_t model_vertex_id,
                                                  index_t surface_vertex_id ) ;
@@ -176,6 +189,19 @@ namespace RINGMesh {
         void cut_surface_by_line( Surface& S, const Line& L ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
+
+        GME::gme_t find_or_create_corner( const vec3& point ) ;
+        GME::gme_t find_or_create_corner( index_t model_point_id ) ;
+        GME::gme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
+        GME::gme_t find_or_create_line( const std::vector< index_t>& incident_surfaces,
+                                   GME::gme_t first_corner, GME::gme_t second_corner ) ;
+
+        void recompute_geomodel_mesh()
+        {
+            model_.mesh.vertices.clear();
+            model_.mesh.vertices.test_and_initialize();
+        }
+
 
         /*!
          * @}
@@ -240,7 +266,11 @@ namespace RINGMesh {
         GeoModelBuilderSurfaceMesh( GeoModel& model,
                                     const GEO::Mesh& mesh )
             :GeoModelBuilder( model ), mesh_( mesh )
-        {}    
+        {
+            options_.compute_lines = true ;
+            options_.compute_corners = true ;
+            options_.compute_regions_brep = true ;
+        }
         bool build_polygonal_surfaces_from_connected_components() ;
 
     private:

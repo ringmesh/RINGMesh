@@ -1212,6 +1212,8 @@ namespace RINGMesh {
         }
     }
 
+    /* @todo Review : The use of geometrical computation (barycenter) is
+    * very much bug prone. Vertex indices should be used instead. [Jeanne] */
     void GeoModelMeshCells::initialize_cell_facet()
     {
         gmm_.facets.test_and_initialize() ;
@@ -1223,8 +1225,11 @@ namespace RINGMesh {
             for( index_t f = 0; f < mesh_.cells.nb_facets( c ); f++ ) {
                 std::vector< index_t > result ;
                 if( ann.get_colocated( mesh_cell_facet_center( mesh_, c, f ),
-                    result ) ) {
+                    result ) ) {                    
                     facet_id_[mesh_.cells.facet( c, f )] = result[0] ;
+                    // If there are more than 1 matching facet, this is WRONG
+                    // and the vertex indices should be checked too [Jeanne]
+                    ringmesh_assert( result.size() == 1 );
                 }
             }
         }
