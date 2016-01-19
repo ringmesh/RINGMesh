@@ -42,6 +42,31 @@
 /**
 
 \page ringmesh_programming_guidelines RINGMesh Programming Guidelines
+\section Programming Guidelines for RINGMesh
+
+\subsection Style Convention
+
+\li Always use English name
+\li Identations are 4 space characters (avoid tabulation)
+\li Opening brackets are at the end of the opening block (for, while if...) with a blank space before
+\li Closing brackets are at the same level as opening block instruction. Then, go to line for beginning a new block
+\li Space after '(' and before ')' 
+\li Space afer ',' and ';' 
+\li Space before ';' at the end of an instruction
+\li Space after and before mathematic operators and comparators (<, >, =, <=, ==...)
+
+Sample code:
+
+\code
+for ( index_t i = 0; i < N; i++ ) {
+    int a = 0 ;
+    if ( a < 0 ) {
+        int b = 6 ;
+        my_function( a, b ) ;
+    }
+}
+\endcode
+
 
 \include RINGMesh_programming_guidelines.txt
 
