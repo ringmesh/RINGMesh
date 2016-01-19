@@ -701,9 +701,8 @@ namespace RINGMesh {
 
             bool backward = false ;
             get_one_line_vertices( backward ) ;
-            if( cur_line_vertices_.back() != cur_border_triangle_ ) {
-                backward = true ;
-                get_one_line_vertices( backward ) ;
+            backward = true ;
+            get_one_line_vertices( backward ) ;
 
             if( collect_region_information_ ) {
                 collect_region_information() ;
