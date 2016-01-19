@@ -70,8 +70,8 @@ namespace RINGMesh {
 namespace RINGMesh {
     /*!
      * @brief First draft of flags to build a GeoModel
-     * @todo Implement functions to set, access the values, depending on what ?
-     * To check the consistency of the options. What doewe do about the other elements ? [JP] 
+     * @todo Implements functions to set, access the values, depending on what ?
+     * To check the consistency of the options. What do we do about the other elements ? [JP] 
      * @todo We need to keep track of the status of the GeoModel when building it:
      * same flags or some others ?    
      */
@@ -126,7 +126,7 @@ namespace RINGMesh {
                                                                         
         void copy_meshes( const GeoModel& from, GME::TYPE element_type ) ;
 
-        void assign_mesh_to_element( const GEO::Mesh&, GME::gme_t to ) ;
+        void assign_mesh_to_element( const GEO::Mesh& mesh, GME::gme_t to ) ;
                                                                     
         /*!
          * \name Set element geometry from geometrical positions
