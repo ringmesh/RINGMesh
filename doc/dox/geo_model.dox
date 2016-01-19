@@ -58,20 +58,20 @@ A model is defined by:
 	Each line is constituted of edges shared by the same set of surfaces.
 -  Groupings of lines common to a set of interfaces into Contacts. 
    Implemented by RINGMesh::GeoModelElement.
--  A set volumetric regions defined by their bounding surfaces. 
+-  A set of volumetric regions defined by their bounding surfaces. 
    Implemented by RINGMesh::GeoModelElement.
 -  Grouping of regions into layers.
    Implemented by RINGMesh::GeoModelElement.
 -  A set of RINGMesh::Corner, the points at the extremities of the lines.
 
-\image html bme_doc.png 
+\image html geomodel_elements.svg 
 
 GeoModelElement and derived classes
 ---------------------------------
 
 The class RINGMesh::GeoModelElement is the base class implementing an element of 
 the RINGMesh::GeoModel.
-It stores all basic required information to describe an element of the model: 
+It stores the basic required information to describe an element of the model: 
 the model owning the element, the index and type of the element, a name, a geological feature,
 as well as connectivity information with the other model elements 
 (elements in the boundary, elements in which boundary this element is, the parent element, the children elements).
@@ -84,11 +84,17 @@ for the RINGMesh::GeoModelElement storing a GEO::Mesh.
 From it derive RINGMesh::Surface, RINGMesh::Line, and RINGMesh::Corner
 that implement methods to operate on meshes of different dimensions.
 Meshes of the different element are independent one from another so
- shared vertices and edges are duplicated.
- At the model level RINGMesh::GeoModelMeshVertices manage a 
- global indexing of the vertices of the different meshes.
+shared vertices and edges are duplicated.
+At the model level RINGMesh::GeoModelMeshVertices manages a 
+global indexing of the vertices of the different meshes.
  
-  
+ 
+ RINGMesh::GeoModelMesh : a global mesh representation of the GeoModel
+ ---------------------------------------------------------------------
+ The GeoModelMesh is one mesh built from copying and merging the RINGMesh::GeoModelMeshElement.
+ \link ringmesh_geo_model_mesh Description of the GeoModelMesh \endlink
+ 
+ 
  Building a GeoModel
 -------------------------------
  
