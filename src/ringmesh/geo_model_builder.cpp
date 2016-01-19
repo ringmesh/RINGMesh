@@ -61,9 +61,16 @@
 #include <ringmesh/geogram_extension.h>
 
 
+/*!
+* @file ringmesh/geo_model_builder.cpp
+* @brief Implementation of the classes to build GeoModel from various inputs
+* @author Jeanne Pellerin
+*/
+
 /*! @todo Split All functions of geo_model_builder.cpp into smaller functions
   * Split this file into at least 4 files.
  */
+
 namespace {
     using namespace RINGMesh ;
 
@@ -90,7 +97,7 @@ namespace {
 
     /*************************************************************************/
     /*!
-     * @brief Get the index of an Interface from its name
+     * @brief Gets the index of an Interface from its name
      * @return Index of the interface in the model, NO_ID if not found.
      */
     gme_t find_interface( const GeoModel& geomodel, const std::string& interface_name )
@@ -125,7 +132,7 @@ namespace {
     } ;
 
     /*!
-     * @brief Get the index of the Corner for a given point
+     * @brief Gets the index of the Corner for a given point
      * @param[in] point Geometric location to look for
      * @return NO_ID or the index of the Corner
      */
@@ -140,7 +147,7 @@ namespace {
     }
 
     /*!
-     * @brief Get the index of the Corner at a given model point
+     * @brief Gets the index of the Corner at a given model point
      * @param[in] model_point_id Index of the point in the GeoModel
      * @return NO_ID or the index of the Corner
      */
@@ -214,7 +221,7 @@ namespace {
     }
 
     /*!
-    * Find a facet and its edge index that are colocalised with an edge
+    * Finds a facet and its edge index that are colocalised with an edge
     * defined by its two model vertex indices
     * @param[in] ann a ColocatorANN of the Surface \p surface using the keyword FACETS
     * @param[in] surface the surface where to find the facet
@@ -304,9 +311,7 @@ namespace {
             incident_surfaces[ i ] = E.in_boundary_gme( i ).index ;
         }
         std::sort( incident_surfaces.begin(), incident_surfaces.end() ) ;
-    }
-
-    
+    }    
 } // anonymous namespace
 
 namespace RINGMesh {
@@ -476,7 +481,7 @@ namespace RINGMesh {
 
             for( index_t i = 1; i < triangles_.size(); ++i ) {
                 TriangleToSort& cur = triangles_[ i ] ;
-                // Compute the angle RADIANS between the reference and the current
+                // Computes the angle RADIANS between the reference and the current
                 // triangle 
                 double cos = dot( B_A_ref, cur.B_A_ ) ;
                 // Remove invalid values
@@ -495,10 +500,10 @@ namespace RINGMesh {
                 cur.side_ = dot( N_rotate, N_ref ) > 0 ? false : true ;
             }
 
-            // Sort the Surfaces according to the angle
+            // Sorts the Surfaces according to the angle
             std::sort( triangles_.begin(), triangles_.end() ) ;
 
-            // Fill the sorted surfaces adding the side
+            // Fills the sorted surfaces adding the side
             index_t it = 1 ;
             for( index_t i = 0; i < triangles_.size(); ++i ) {
                 TriangleToSort& cur = triangles_[ i ] ;
@@ -594,7 +599,7 @@ namespace RINGMesh {
         }
  
         /*!
-         * @brief Try to compute a new line and returns true if one was.
+         * @brief Tries to compute a new line and returns true if one was.
          * @details To use in a while conditional loop, since the number of lines
          * is considered unknown. 
          */
@@ -703,7 +708,7 @@ namespace RINGMesh {
             }
         }
         /*!
-        * @brief Get the geometry of a line propagating in a given direction
+        * @brief Gets the geometry of a line propagating in a given direction
         * @details As long as the adjacent surfaces are the same, the vertices are added
         * belong to the line under construction
         */
@@ -767,8 +772,8 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Get triangles sharing the border edge of the current border triangle
-         *        and add them to current line region information 
+         * @brief Gets triangles sharing the border edge of the current border triangle
+         *        and adds them to current line region information 
          */
         void collect_region_information()
         {
@@ -847,14 +852,14 @@ namespace RINGMesh {
        }
 
         /*!
-        * @brief Get the next BorderTriangle in the same surface
+        * @brief Gets the next BorderTriangle in the same surface
         */
         index_t get_next_border_triangle( index_t from, bool backward ) const
         {
             const BorderTriangle& border_triangle = border_triangles_[ from ] ;
             const Surface& S = geomodel_.surface( border_triangle.surface_ ) ;
 
-            // Get the next edge on border in the Surface
+            // Gets the next edge on border in the Surface
             index_t f = border_triangle.facet_ ;
             index_t f_v0 = S.facet_id_from_model( f, border_triangle.v0_ ) ;
             index_t f_v1 = S.facet_id_from_model( f, border_triangle.v1_ ) ;
@@ -870,7 +875,7 @@ namespace RINGMesh {
                 S.next_on_border( f, f_v1, f_v0, next_f, next_f_v0, next_f_v1 ) ;
             }
 
-            // Find the BorderTriangle that is corresponding to this
+            // Finds the BorderTriangle that is corresponding to this
             // It must exist and there is only one
             BorderTriangle bait( border_triangle.surface_, next_f, S.model_vertex_id( next_f, next_f_v0 ),
                                  S.model_vertex_id( next_f, next_f_v1 ), NO_ID ) ;
@@ -882,7 +887,7 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Mark as visited all BorderTriangles whose first edge is equal to i's first edge
+        * @brief Marks as visited all BorderTriangles whose first edge is equal to i's first edge
         */
         void visit_border_triangles_on_same_edge( index_t i )
         {           
@@ -900,7 +905,7 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Get the sorted indices of the Surfaces incident to the first edge of the i-th BorderTriangle
+        * @brief Gets the sorted indices of the Surfaces incident to the first edge of the i-th BorderTriangle
         * @note When the surface appears twice (the line is an internal border)
         * both occurrences are kept.
         */
@@ -949,7 +954,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
     /*! Delete all GeoModelRegionFromSurfaces owned by the builder
-    */
+     */
     GeoModelBuilder::~GeoModelBuilder()
     {
         for( index_t i = 0; i < regions_info_.size(); ++i ) {
@@ -983,7 +988,7 @@ namespace RINGMesh {
     }
 
     /*!
-    * @brief Find or create a corner at given coordinates.
+    * @brief Finds or creates a corner at given coordinates.
     * @param[in] point Geometric location of the Corner
     * @return Index of the Corner
     */
@@ -1008,7 +1013,7 @@ namespace RINGMesh {
     }
 
     /*!
-    * @brief Find or create a line
+    * @brief Finds or creates a line
     * @param[in] geomodel model to consider
     * @param[in] vertices Coordinates of the vertices of the line
     * @return Index of the Line
@@ -1025,7 +1030,7 @@ namespace RINGMesh {
             result = create_element( GME::LINE ) ;
             set_line( result.index, vertices ) ;
 
-            // Find the indices of the corner at both extremities
+            // Finds the indices of the corner at both extremities
             // Both must be defined to have a valid LINE
             add_element_boundary( result, find_or_create_corner( vertices.front() ) ) ;
             add_element_boundary( result, find_or_create_corner( vertices.back() ) ) ;
@@ -1034,7 +1039,7 @@ namespace RINGMesh {
     }
 
     /*!
-    * @brief Find or create a line knowing its topological adjacencies
+    * @brief Finds or creates a line knowing its topological adjacencies
     */
     gme_t GeoModelBuilder::find_or_create_line( const std::vector< index_t>& sorted_adjacent_surfaces,
                                                 gme_t first_corner, gme_t second_corner )
@@ -1087,8 +1092,8 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the geometrical position of a vertex from a model vertex
-     * @details Set also both mapping from (GeoModelMeshVertices::unique2bme)
+     * @brief Sets the geometrical position of a vertex from a model vertex
+     * @details Sets also both mapping from (GeoModelMeshVertices::unique2bme)
      *          and to (model_vertex_id_) the model vertex.
      * @param[in] id Element index
      * @param[in] index Index of the vertex to modify
@@ -1133,7 +1138,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Add vertices to the mesh
+     * @brief Adds vertices to the mesh
      * @details No update of the model vertices is done
      *
      * @param[in] id Element index
@@ -1157,7 +1162,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the geometric location of a Corner
+     * @brief Sets the geometric location of a Corner
      *
      * @param[in] corner_id Index of the corner
      * @param[in] point Coordinates of the vertex
@@ -1170,7 +1175,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set one Line points
+     * @brief Sets one Line points
      *
      * @param[in] id Line index
      * @param[in] vertices Coordinates of the vertices on the line
@@ -1188,7 +1193,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the points and facets for a surface
+     * @brief Sets the points and facets for a surface
      * @details If facet_adjacencies are not given they are computed.
      *
      * @param[in] surface_id Index of the surface
@@ -1216,7 +1221,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the vertex for a Corner. Store the info in the geomodel vertices
+     * @brief Sets the vertex for a Corner. Store the info in the geomodel vertices
      *
      * @param[in] corner_id Index of the corner
      * @param[in] unique_vertex Index of the vertex in the model
@@ -1229,7 +1234,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set one Line vertices. Store the info in the geomodel vertices
+     * @brief Sets one Line vertices. Store the info in the geomodel vertices
      *
      * @param[in] id Line index
      * @param[in] unique_vertices Indices in the model of the unique vertices with which to build the Line
@@ -1251,7 +1256,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the vertices and facets for a surface
+     * @brief Sest the vertices and facets for a surface
      * @details If facet_adjacencies are not given they are computed.
      *
      * @param[in] surface_id Index of the surface
@@ -1271,7 +1276,7 @@ namespace RINGMesh {
 
   
     /*!
-    * @brief Set the facets of a surface
+    * @brief Sets the facets of a surface
     * @param[in] surface_id Index of the surface
     * @param[in] facets Indices of the model vertices defining the facets
     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
@@ -1356,7 +1361,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Compute and set the adjacencies between the facets
+     * @brief Computes and sets the adjacencies between the facets
      * @details The adjacent facet is given for each vertex of each facet for the edge
      * starting at this vertex.
      * If there is no neighbor inside the same Surface adjacent is set to NO_ADJACENT
@@ -1420,7 +1425,7 @@ namespace RINGMesh {
     }
 
     /*!
-    * Find duplicate vertex or create it
+    * Finds duplicate vertex or creates it
     */
     index_t GeoModelBuilder::find_or_create_duplicate_vertex(
         GeoModelMeshElement& E,
@@ -1455,7 +1460,7 @@ namespace RINGMesh {
     }
 
     /*
-    * @brief Reset the adjacencies for all Surface facets adjacent to the Line
+    * @brief Resets the adjacencies for all Surface facets adjacent to the Line
     * @pre All the edges of the Line are edges of at least one facet of the Surface
     */
     void GeoModelBuilder::disconnect_surface_facets_along_line_edges( Surface& S, const Line& L )
@@ -1508,7 +1513,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Duplicate the surface vertices along the fake boundary
+     * @brief Duplicates the surface vertices along the fake boundary
      * (NO_ID adjacencies but shared vertices) and duplicate  the vertices
      * @note Bad written code - error prone
      * @todo Rewrite 
@@ -1589,7 +1594,7 @@ namespace RINGMesh {
     }
 
     /*!
-    * @brief Cut a Surface along a Line assuming that the edges of the Line are edges of the Surface
+    * @brief Cuts a Surface along a Line assuming that the edges of the Line are edges of the Surface
     * @pre Surface is not already cut. Line L does not cut the Surface S into 2 connected components.
     * @todo Add a test for this function.
     */
@@ -1901,7 +1906,7 @@ namespace RINGMesh {
         }
 
      
-        /*! Set a mapping from the attribute values on the Mesh and 
+        /*! Sets a mapping from the attribute values on the Mesh and 
          * the indices of the GeoModelElements to fill
          */
         void set_gme_id_attribute_mapping(
@@ -1942,7 +1947,7 @@ namespace RINGMesh {
         }
 
         /*!
-         * Compute the simplex vertex indices for each GeoModelElement
+         * Computes the simplex vertex indices for each GeoModelElement
          * as well as the mapping from the mesh simplices to the GME mesh simplices
          * for eventual attribute copying
          */
@@ -2277,7 +2282,7 @@ namespace RINGMesh {
         repair_colocate_vertices( mesh, epsilon ) ;
     }
 
-    /*! @details Add separately each connected component of the mesh
+    /*! @details Adds separately each connected component of the mesh
     *          as a Surface of the model under construction.
     *          All the facets of the input mesh are visited and added to a
     *          Surface of the GeoModel.
@@ -2452,7 +2457,7 @@ namespace RINGMesh {
     /*************************************************************************/
    
     /*!
-    * @brief Load and build a GeoModel from a Gocad .ml file
+    * @brief Loads and builds a GeoModel from a Gocad .ml file
     * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
     * @details Correspondance between Gocad::Model3D elements
     * and GeoModel elements is :

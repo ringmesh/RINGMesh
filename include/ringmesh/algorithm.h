@@ -150,7 +150,7 @@ namespace RINGMesh {
     };
 
     /*!
-     * @brief Determine unique occurences of values in input vector
+     * @brief Determines unique occurences of values in input vector
      * and fill a mapping to the first occurence of each unique value
      * @param[in] input values  example: 1 4 6 0 4 1 5 6
      * @param[out] unique_value_indices example: 0 1 2 3 1 0 6 2
@@ -190,7 +190,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Determine unique occurences of input values plus a mapping.
+     * @brief Determines unique occurences of input values plus a mapping.
      * Example:
      * Input  : input = 1 3 25 8 3 8
      * Output : unique_values = 1 3 25 8
