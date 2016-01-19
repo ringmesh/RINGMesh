@@ -78,7 +78,7 @@ for ( index_t i = 0; i < N; i++ ) {
 \li Function and local variables names are lowercase
 \li Member variables names are lowercase
 
-Sample code
+Sample code:
 
 \code
 namespace RINGMesh {
@@ -99,8 +99,23 @@ namespace RINGMesh {
 \endcode
 
 
+\subsection Documentation
 
-\include RINGMesh_programming_guidelines.txt
+\li Write comments in English 
+\li Document all classes, functions and variables in doxygen-readable format, preferably in .h files
+\li Use // or ///, in implementation comments
 
+\code
+/*exclamationMark
+ * @brief add a to b l
+ * @details more detailed description if needed
+ * @param[in] a the value to be added to \p b ;
+ * @param[in,out] b the value that will be modified
+ */
+void add(int a, double& b) {
+    // a commentary
+    b += a ;
+}
+\endcode
 */
 
