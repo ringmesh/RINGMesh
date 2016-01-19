@@ -220,8 +220,8 @@ namespace RINGMesh {
      }
 
     /**
-     * @brief Sorts a vector and suppresses all duplicated elements.
-     * @param[in,out] v the vector
+     * @brief Sorts a container and suppresses all duplicated elements.
+     * @param[in,out] container the container to sort
      * @param[in] cmp a comparator function
      */
     template< typename CONTAINER, typename CMP > inline void sort_unique(
