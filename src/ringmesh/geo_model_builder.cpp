@@ -208,8 +208,9 @@ namespace {
                 break ;
             }
         }
-        if( equal ) return true ;
-
+        if( equal ) {
+            return true ;
+        }
         equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[ i ] != L.model_vertex_id( L.nb_vertices()-i-1 ) ) {
@@ -1014,7 +1015,6 @@ namespace RINGMesh {
 
     /*!
     * @brief Finds or creates a line
-    * @param[in] geomodel model to consider
     * @param[in] vertices Coordinates of the vertices of the line
     * @return Index of the Line
     */
