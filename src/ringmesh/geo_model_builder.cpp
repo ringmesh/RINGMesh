@@ -81,7 +81,7 @@ namespace {
 
     /*!
     * @brief From some mesh corners referring to some global vertex indices
-    * Get the indices of the vertices used in the corners and upate the corners
+    * Get the indices of the vertices used in the corners and update the corners
     * Example:
     * Input  : corners = 1 3 8 25 8 3
     * Output : corners = 0 1 2 3 2 1
@@ -110,6 +110,8 @@ namespace {
     /*************************************************************************/
     /*!
      * @brief Get the index of an Interface from its name
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] interface_name Name of the interface to find
      * @return Index of the interface in the model, NO_ID if not found.
      */
     gme_t find_interface( const GeoModel& geomodel, const std::string& interface_name )
@@ -145,6 +147,7 @@ namespace {
 
     /*!
      * @brief Get the index of the Corner for a given point
+     * @param[in] geomodel GeoModel to consider
      * @param[in] point Geometric location to look for
      * @return NO_ID or the index of the Corner
      */
@@ -160,6 +163,7 @@ namespace {
 
     /*!
      * @brief Get the index of the Corner at a given model point
+     * @param[in] geomodel GeoModel to consider
      * @param[in] model_point_id Index of the point in the GeoModel
      * @return NO_ID or the index of the Corner
      */
@@ -175,7 +179,7 @@ namespace {
 
     /*!
      * @brief Find or create a corner at given coordinates.
-     *
+     * @param[in] geomodel_builder Builder of the GeoModel to consider
      * @param[in] point Geometric location of the Corner
      * @return Index of the Corner
      */
@@ -224,7 +228,7 @@ namespace {
 
     /*!
      * @brief Find or create a line   
-     * @param[in] geomodel model to consider
+     * @param[in] geomodel_builder Builder of the model to consider
      * @param[in] vertices Coordinates of the vertices of the line
      * @return Index of the Line
      */
@@ -844,8 +848,8 @@ namespace RINGMesh {
 
     /*!
      * @brief Sets the geometrical position of a vertex
-     * @param[in] corner_id Index of the corner
-     * @param[in] index Index of the vertex to modify
+     * @param[in] t Element index
+     * @param[in] v Index of the vertex to modify
      * @param[in] point New coordinates
      * @param[in] update If true, all the vertices sharing the same geometrical position
      *               in the GeoModel have their position updated, if false they
@@ -870,10 +874,10 @@ namespace RINGMesh {
 
     /*!
      * @brief Set the geometrical position of a vertex from a model vertex
-     * @details Set also both mapping from (GeoModelMeshVertices::unique2bme)
+     * @details Set also both mapping from (GeoModelMeshVertices::add_to_bme)
      *          and to (model_vertex_id_) the model vertex.
-     * @param[in] id Element index
-     * @param[in] index Index of the vertex to modify
+     * @param[in] element_id Element index
+     * @param[in] v Index of the vertex to modify
      * @param[in] model_vertex Index in GeoModelMeshVertices of the vertex giving
      *                     the new position
      */
@@ -954,7 +958,7 @@ namespace RINGMesh {
     /*!
      * @brief Set one Line points
      *
-     * @param[in] id Line index
+     * @param[in] line_id Line index
      * @param[in] vertices Coordinates of the vertices on the line
      */
     void GeoModelBuilder::set_line(
@@ -2320,7 +2324,7 @@ namespace RINGMesh {
         int z_sign = 1 ;
 
         // In the .ml file - vertices are indexed TSurf by Tsurf
-        // They can be duplicated inside one TSurf and betweeen TSurfs
+        // They can be duplicated inside one TSurf and between TSurfs
 
         // Coordinates of the vertices of the currently built TSurf in the model
         std::vector< vec3 > tsurf_vertices ;
