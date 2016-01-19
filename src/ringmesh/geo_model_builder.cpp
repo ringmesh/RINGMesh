@@ -692,8 +692,10 @@ namespace RINGMesh {
         void compute_line_geometry()
         {
             visit_border_triangles_on_same_edge( cur_border_triangle_ ) ;
-            cur_line_vertices_.push_back( border_triangles_[ cur_border_triangle_ ].v0_ ) ;
-            cur_line_vertices_.push_back( border_triangles_[ cur_border_triangle_ ].v1_ ) ;
+            index_t p0 = border_triangles_[ cur_border_triangle_ ].v0_;
+            index_t p1 = border_triangles_[ cur_border_triangle_ ].v1_;
+            cur_line_vertices_.push_back( p0 ) ;
+            cur_line_vertices_.push_back( p1 ) ;
 
             get_adjacent_surfaces( cur_border_triangle_, cur_line_adjacent_surfaces_ ) ;
 
@@ -702,7 +704,6 @@ namespace RINGMesh {
             if( cur_line_vertices_.back() != cur_border_triangle_ ) {
                 backward = true ;
                 get_one_line_vertices( backward ) ;
-            }
 
             if( collect_region_information_ ) {
                 collect_region_information() ;
