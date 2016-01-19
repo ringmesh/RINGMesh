@@ -830,7 +830,7 @@ namespace {
     * @details Verification is based on the information stored by the unique
     *          vertices of the model which validity must be checked beforehand
     * @todo Check that the model vertices are consistent with the model_vertex_ids
-    *       stored at by the BMME
+    *       stored at by the GMME
     */
     bool check_model_points_validity( const GeoModel& M )
     {

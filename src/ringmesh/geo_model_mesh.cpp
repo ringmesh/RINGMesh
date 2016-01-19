@@ -463,7 +463,7 @@ namespace RINGMesh {
         }
 #endif
 
-        // Update model_vertex_ids in BMME
+        // Update model_vertex_ids in GMME
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
@@ -476,7 +476,7 @@ namespace RINGMesh {
                     index_t old_id = E.model_vertex_id( v ) ;
                     index_t new_id = to_delete[old_id] ;
                     // If new_id is NO_ID the vertex should be removed afterwards
-                    // from the BMME
+                    // from the GMME
                     ringmesh_debug_assert( new_id != NO_ID ) ;
                     att[v] = new_id ;
 
