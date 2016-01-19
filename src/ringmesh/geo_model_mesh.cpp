@@ -200,7 +200,9 @@ namespace RINGMesh {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
                 GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
-                if( E.nb_vertices() == 0 ) continue ;
+                if( E.nb_vertices() == 0 ) {
+                    continue ;
+                }
                 GEO::Memory::copy( mesh_.vertices.point_ptr( count ),
                     E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
                 GEO::Attribute< index_t > att( E.vertex_attribute_manager(),

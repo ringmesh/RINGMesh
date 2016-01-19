@@ -402,9 +402,6 @@ namespace RINGMesh {
         std::vector< gme_t > children_ ;
     } ;
 
-    /// @todo This is probably not the best place to do this.
-    // Anybody can include a header says Mr Stroustrup (Jeanne).
-    // For me this is the best place ! So anybody can use RINGMesh::BME!
     typedef GeoModelElement GME ;
 
     /*!
