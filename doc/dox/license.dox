@@ -93,7 +93,7 @@ RINGMesh uses the following softwares:
 - [Zlib](http://www.zlib.net/): A Massively Spiffy Yet Delicately Unobtrusive Compression Library - License: [zlib] (https://en.wikipedia.org/wiki/Zlib_License)
 - [Tetgen] (http://wias-berlin.de/software/tetgen/): A Quality Tetrahedral Mesh Generator and a 3D Delaunay Triangulator - License: [AGPLv3] (http://www.gnu.org/licenses/agpl-3.0.en.html)
 - [MG-Tetra] (http://docs.salome-platform.org/latest/gui/GHS3DPLUGIN/index.html): meshing algorithm to the SALOME Mesh module - License: [commercial] (http://www.meshgems.com/meshgems-products.html)
-@note: functionalities protected by the license of thrird party are accessible only if you get the corresponding license 
+@note: functionalities protected by the license of third party are accessible only if you get the corresponding license 
 */
 
 
