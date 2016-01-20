@@ -25,9 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr 
- *     Antoine.Mazuyer@univ-lorraine.fr 
- *     Jeanne.Pellerin@wias-berlin.de
+ * 
+ * 
+ *
  *
  *     http://www.ring-team.org
  *
