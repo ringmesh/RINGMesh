@@ -967,7 +967,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilder::copy_meshes( const GeoModel& geomodel ) 
+    void GeoModelBuilder::copy_meshes( const GeoModel& geomodel )
     {
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >(t) ;
@@ -975,7 +975,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilder::copy_meshes( const GeoModel& from, GME::TYPE element_type ) 
+    void GeoModelBuilder::copy_meshes( const GeoModel& from, GME::TYPE element_type )
     {
         for( index_t i = 0; i < model_.elements( element_type ).size(); ++i ) {
             const GeoModelMeshElement& from_E = from.mesh_element( element_type, i ) ;
