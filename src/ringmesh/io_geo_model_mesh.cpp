@@ -335,7 +335,7 @@ namespace RINGMesh {
                 } else {
                     ringmesh_assert_not_reached;
                 }
-                GEO::FileSystem::delete_file( filename ) ;
+                GEO::FileSystem::delete_file( filename ) ;  // WHY ?? [Jeanne]
 
                 if( ( r + 1 ) < global_info.number_entry ) {
                     if( unzGoToNextFile( uz ) != UNZ_OK ) {

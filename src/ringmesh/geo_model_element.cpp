@@ -517,6 +517,8 @@ namespace RINGMesh {
                     valid = false ;
                 }
 
+                /// @todo Add a test on the parent validity
+
                 // The parent must have this element in its children
                 const GME& E = parent() ;
                 bool found = false ;
@@ -769,9 +771,6 @@ namespace RINGMesh {
         }
         return this_gme_vertices ;
     }
-
-
-
 
     /**************************************************************/
 
@@ -1459,10 +1458,6 @@ namespace RINGMesh {
         return result.size() ;
     }
 
-
-
-
-
     /*!
      * Get the facet normal
      * @param[in] f Facet index
@@ -1579,7 +1574,6 @@ namespace RINGMesh {
         : region_( region ), aabb_( nil ), ann_( nil )
     {
     }
-
 
     RegionTools::~RegionTools()
     {

@@ -1267,7 +1267,7 @@ namespace RINGMesh {
     /*!
     * Compute the colocated point(s) of a given point
     * @param[in] v the point to test
-    * @param[out] result the colocated point indices
+    * @param[out] result the colocated point indices with a precision epsilon.
     * @return return true if there is at least one intersection
     */
     bool ColocaterANN::get_colocated(

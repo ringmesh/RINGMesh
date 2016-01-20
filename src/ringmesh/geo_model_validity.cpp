@@ -831,6 +831,8 @@ namespace {
     *          vertices of the model which validity must be checked beforehand
     * @todo Check that the model vertices are consistent with the model_vertex_ids
     *       stored at by the GMME
+    * @todo Implementation for regions
+    * @todo Split in smaller functions
     */
     bool check_model_points_validity( const GeoModel& M )
     {
@@ -845,6 +847,7 @@ namespace {
             index_t corner = NO_ID ;
             std::vector< index_t > lines ;
             std::vector< index_t > surfaces ;
+            std::vector< index_t > regions ;
 
             const std::vector< GMEVertex >& bmes =
                 M.mesh.vertices.gme_vertices( i ) ;
@@ -853,6 +856,9 @@ namespace {
                 GME::TYPE T = bmes[ j ].gme_id.type ;
                 index_t id = bmes[ j ].gme_id.index ;
                 switch( T ) {
+                    case GME::REGION:
+                        regions.push_back( id ) ;
+                        break ;
                     case GME::SURFACE:
                         surfaces.push_back( id ) ;
                         break ;
@@ -862,8 +868,7 @@ namespace {
                     case GME::CORNER:
                         if( corner != NO_ID ) {
                             GEO::Logger::warn( "GeoModel" )
-                                << " Vertex " << i
-                                << " is in at least 2 Corners"
+                                << " Vertex " << i << " is in at least 2 Corners"
                                 << std::endl ;                                
                             valid_vertex = false ;
                         } else {
@@ -872,8 +877,7 @@ namespace {
                         break ;
                     default:
                         GEO::Logger::warn( "GeoModel" ) 
-                            << " Vertex " << i
-                            << " is in no Element of the Model" 
+                            << " Vertex " << i << " is in no Element of the Model" 
                             << std::endl ;
                         valid_vertex = false ;
                         break ;
@@ -881,7 +885,18 @@ namespace {
             }
 
             if( valid_vertex ) {
-                if( corner == NO_ID && lines.empty() ) {
+                if( surfaces.empty() ) {
+                    if( regions.size() != 1 ) {
+                        GEO::Logger::warn( "GeoModel" )
+                            << " Vertex " << i << " is in " << regions.size() << " Regions: " ;
+                        for( index_t j = 0; j < surfaces.size(); ++j ) {
+                            GEO::Logger::warn( "GeoModel" )
+                                << regions[ j ] << " ; " ;
+                        }
+                        GEO::Logger::warn( "GeoModel" ) << std::endl ;
+                        valid_vertex = false ;
+                    } /// @todo Implement the other conditions for Region point validity
+                } else if( corner == NO_ID && lines.empty() ) {
                     // This is a point on one SURFACE and only one
                     if( surfaces.size() != 1 ) {
                         GEO::Logger::warn( "GeoModel" ) 
@@ -890,7 +905,7 @@ namespace {
                         for( index_t j = 0; j < surfaces.size(); ++j ) {
                             GEO::Logger::warn( "GeoModel" ) 
                                 << surfaces[ j ] << " ; " ;
-                        }
+                        }    
                         GEO::Logger::warn( "GeoModel" ) << std::endl ;
                         valid_vertex = false ;
                     }
@@ -1203,7 +1218,7 @@ namespace RINGMesh {
     {
         // Ensure that the model vertices are computed and up-to-date
         // Without them we cannot do anything        
-        GM.mesh.vertices.nb() ;
+        GM.mesh.vertices.test_and_initialize() ;
 
         bool valid = true ;
 
