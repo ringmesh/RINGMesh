@@ -608,7 +608,7 @@ namespace RINGMesh {
      *
      * @pre The two models must have the same number of elements
      */
-    void GeoModelEditor::copy_meshes( const GeoModel& from )
+    void GeoModelEditor::copy_meshes( const GeoModel& from ) const
     {
         for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;

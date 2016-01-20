@@ -133,7 +133,7 @@ namespace RINGMesh {
         {}
         /*! @brief Compare two indices based on the stored values at these indices
          */
-        bool operator()( index_t i, index_t j )
+        bool operator()( index_t i, index_t j ) const
         {
             if( are_values_equal( i, j ) ) {
                 return i < j ;
