@@ -99,6 +99,8 @@ project(RINGMesh)
 # It is then exported to the configuration file
 set (RINGMesh_VERSION_MAJOR 1)
 set (RINGMesh_VERSION_MINOR 0)
+set (RINGMesh_VERSION_PATCH 0)
+set (RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RINGMesh_VERSION_PATCH})
 
 
 #------------------------------------------------------------------------------------------------
@@ -365,3 +367,24 @@ if(BUILD_DOCUMENTATION)
     # We should think about installation steps for the whole project [JP]
     # install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/html DESTINATION share/doc)
 endif()
+
+#------------------------------------------------------------------------------------------------
+# Configure CPack
+
+set(CPACK_PACKAGE_NAME ${CMAKE_PROJECT_NAME})
+SET(CPACK_PACKAGE_VERSION_MAJOR ${RINGMesh_VERSION_MAJOR})
+SET(CPACK_PACKAGE_VERSION_MINOR ${RINGMesh_VERSION_MINOR})
+SET(CPACK_PACKAGE_VERSION_PATCH ${RINGMesh_VERSION_PATCH})
+SET(CPACK_PACKAGE_VENDOR "RING-TEAM (www.ring-team.org)")
+set(CPACK_PACKAGE_DIRECTORY ${CMAKE_SOURCE_DIR})
+set(CPACK_SOURCE_GENERATOR "TGZ")
+
+#if(WIN32)
+#    set(CPACK_SOURCE_GENERATOR "ZIP")
+#else()
+#    set(CPACK_SOURCE_GENERATOR "TGZ")
+#endif()
+
+set(CPACK_SOURCE_IGNORE_FILES "/build/;/.hg/;/_CPack_Packages/")
+# This must always be last!
+include(CPack)
