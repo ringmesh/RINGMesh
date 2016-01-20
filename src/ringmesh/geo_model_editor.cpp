@@ -219,7 +219,6 @@ namespace RINGMesh {
         }
     }
 
-
  
     /*!
     * @brief Add to the vector the elements which cannot exist if
@@ -562,7 +561,6 @@ namespace RINGMesh {
      */
     void GeoModelEditor::copy_macro_topology( const GeoModel& from )
     {
-        model_.name_ = from.name_ ;
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             std::vector< GME* >& store = model_.modifiable_elements( T ) ;
