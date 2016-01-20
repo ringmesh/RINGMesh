@@ -97,8 +97,10 @@ project(RINGMesh)
 
 # Define version number 
 # It is then exported to the configuration file
-set (RINGMesh_VERSION_MAJOR 1)
+set (RINGMesh_VERSION_MAJOR 2)
 set (RINGMesh_VERSION_MINOR 0)
+set (RINGMesh_VERSION_PATCH 0)
+set (RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RINGMesh_VERSION_PATCH})
 
 
 #------------------------------------------------------------------------------------------------
@@ -341,27 +343,29 @@ if(RINGMESH_WITH_TESTS)
     add_subdirectory(tests)
 endif(RINGMESH_WITH_TESTS)
 
+
+# Documentation
 if(BUILD_DOCUMENTATION)
     message(STATUS "Configuring RINGMesh with doxygen")
-    find_package(Doxygen)
-    if(NOT DOXYGEN_FOUND)
-        message(FATAL_ERROR "Doxygen is needed to build the documentation.")
-    endif()
-    
-    set(doxyfile ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
-
-    # To set properly project version and paths
-    # we should use an input file and use configure_file to populate the doxyfile [JP]
-    # set(doxyfile_in ${PROJECT_SOURCE_DIR}/Doxyfile.in)
-    # configure_file(${doxyfile_in} ${doxyfile} @ONLY)  
-    
-    # Create a target that can be build from the IDE 
-    add_custom_target(doc
-        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc
-        COMMENT "Generating API documentation with Doxygen"
-        VERBATIM)
-
-    # We should think about installation steps for the whole project [JP]
-    # install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/html DESTINATION share/doc)
+    add_subdirectory(doc)
 endif()
+
+#------------------------------------------------------------------------------------------------
+# Configure CPack
+
+set(CPACK_PACKAGE_NAME ${CMAKE_PROJECT_NAME})
+set(CPACK_PACKAGE_VERSION_MAJOR ${RINGMesh_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${RINGMesh_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${RINGMesh_VERSION_PATCH})
+set(CPACK_PACKAGE_VENDOR "RING-TEAM (www.ring-team.org)")
+
+if(WIN32)
+    set(CPACK_SOURCE_GENERATOR "ZIP")
+else()
+    set(CPACK_SOURCE_GENERATOR "TGZ")
+endif()
+
+set(CPACK_SOURCE_IGNORE_FILES "/build/;/.hg/;/_CPack_Packages/")
+
+# This must always be last!
+include(CPack)

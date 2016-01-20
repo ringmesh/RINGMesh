@@ -43,7 +43,195 @@
 
 \page ringmesh_programming_guidelines RINGMesh Programming Guidelines
 
-\include RINGMesh_programming_guidelines.txt
+\section style Style and naming conventions
+
+\subsection stylec Style conventions
+
+\li Identations are 4 space characters (avoid tabulation)
+\li Opening brackets are at the end of the opening block (for, while if...) with a blank space before
+\li Closing brackets are at the same level as opening block instruction. Then, go to line for beginning a new block. Exception for the closing bracket of "else" 
+\li It is forbidden to write an instruction juste after an if, for... without '{ }'
+\li Space after '(' and before ')'
+\li No space after '[' and before ']'
+\li Space after '<' and before '>' for templates
+\li Space afer ',' and ';' 
+\li Space before ';' at the end of an instruction
+\li Space after and before mathematic operators and comparators (<, >, =, <=, ==, !=, * , +, -, /, ...)
+\li No particular rules for blank lines. Please make your code readable.
+\li No more than 85 characters per line. If longer, go to next line and add an indentation (4 characters)
+
+Sample code:
+
+\code
+for( index_t i = 0; i < N; i++ ) {
+    double a = 0 ;
+
+    if( a < 0. ) {
+        double b = 6 ;
+        my_function( a, b ) ;
+        std::vector< double > c( 6 ) ;
+        double& d = c[2] ; 
+    } else {
+        // other intruction
+    }
+}
+\endcode
+
+\subsection Naming Conventions
+
+\li Use english names 
+\li Abbreviations and acronyms are minimized
+\li Each word of Class and NameSpace names is capitalized 
+\li Function and local variables names are lowercase
+\li Member variables names are lowercase
+
+Sample code:
+
+\code
+namespace RINGMesh {
+
+    namespace MatrixUtils {
+        
+        class DiagonalMatrix: public Matrix {
+        
+        public:
+            DiagonalMatrix() ;
+            void compute_trace() ;
+
+        private:
+            double trace_ ;
+        } ;
+    }
+}
+\endcode
+
+\subsection doc Documentation
+
+\li Write comments in English 
+\li Document all classes, functions and variables in doxygen-readable format, preferably in .h files
+\li Use // or ///, in implementation comments
+
+\code
+/*exclamationMark
+ * @brief add a to b l
+ * @details more detailed description if needed
+ * @param[in] a the value to be added to \p b ;
+ * @param[in,out] b the value that will be modified
+ */
+void add( int a, double& b )
+{
+    // a commentary
+    b += a ;
+}
+\endcode
+
+\section functions Writing Functions
+
+\subsection philofunc Philosophy
+
+\li A function should perform a single logical operation
+\li Keep functions short and simple (less than 10 lines)
+\li Prefer pure functions i.e. functions that does not depend on anything else and have no side-effects
+\li Use the macro RINGMESH_API if you want your function to be imported in the windows library
+
+\subsection paramfunc Parameters
+
+\li For "in" parameters, pass cheaply copied types by value and others by reference to const
+\li For "in-out" parameters, pass by reference to non-const
+\li "in" parameters appear before "out" parameters
+
+\subsection funcstyle Style
+\li If all the parameters does not fit in the line, write them down in a new line
+\li The '{" is opened next line. The instructions are written next line. '}'is placed in a new line too.
+
+Sample Code
+
+\code
+
+void RINGMESH_API compute_next_border_on_surface(
+    const Surface& surface,
+    const Border& from_border,
+    Border& next_border )
+{
+    // instructions
+}
+\endcode
+
+
+\subsection returnfunc Return values
+
+\li Never (directly or indirectly) return a pointer to a local object
+
+
+\section classes Writing Classes 
+
+\subsection classphilo Philosophy
+
+\li Declare a member function that does not modify the state of its object const
+\li Define a destructor if a class needs an explicit action at object destruction
+\li Be careful, a lot of class have to forbid copy, using
+\li Use the macro RINGMESH_API if you want your class to be imported in the windows library
+
+\subsection classstyle Style
+
+\li You have to follow the order: public: protected: private: for methods and then again public: protected: private: data members
+\li Always put a "_" at the end of the data member names
+\li There are no particular rules for blank lines, it is the developper responsability to make its code clear and well readable
+
+Sample code:
+
+\code
+
+class RINGMesh_API MyClass {
+
+public:
+    MyClass() ;
+    void compute_a_thing() ;
+
+protected:
+    double compute_another_thing() ;
+
+private:
+    void compute_another_thing_just_for_me() const ;
+
+public:
+    int attribute_a_
+
+protected:
+    double attribute_b_ ;
+
+private:
+    std::vector< double > vector_of_things_ ;
+} ;
+
+\endcode
+
+
+
+\section sourcefile Source Files
+
+\li Use a .cpp suffix for code files and .h for interface files.
+\li Include first third party headers , then RINGMesh Headers
+\li Configure CMake in order to use < > instead of " "
+\li Avoid cyclic dependencies among source files
+\li Corrolary: minimize number of #include in .h files (use forward declarations instead)
+
+Sample code:
+
+\code
+// Use this
+#include <ringmesh/geo_model_mesh.h>
+
+// DO NOT use this
+#include <../../include/ringmesh/geo_model_mesh.h>
+\endcode
+
+
+
+
+
+
+
 
 */
 

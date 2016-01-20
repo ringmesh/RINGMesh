@@ -162,7 +162,7 @@ namespace RINGMesh {
         void set_regions( const std::vector< vec3 >& one_point_per_region ) ;
 
         void fill_region_attribute_on_mesh_cells( GEO::Mesh& M, const std::string& attribute_name ) const ;
-        void assign_result_tetmesh_to_mesh( GEO::Mesh& M ) ;
+        void assign_result_tetmesh_to_mesh( GEO::Mesh& M ) const;
         void get_result_tetmesh_points( GEO::vector< double >& points ) const ;
         void get_result_tetmesh_tets( GEO::vector< index_t>& tets ) const ;
 

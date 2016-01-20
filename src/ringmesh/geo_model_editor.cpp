@@ -78,7 +78,8 @@ namespace RINGMesh {
         index_t id = model_.nb_elements( type ) ;
         ringmesh_assert( id != NO_ID ) ;
         if( type >= GME::CORNER && type < GME::NO_TYPE ) {
-            model_.modifiable_elements( type ).push_back( new_element( type, model_, id ) ) ;
+            model_.modifiable_elements( type ).push_back(
+                new_element( type, model_, id ) ) ;
             return gme_t( type, id ) ;
         } else {
             ringmesh_assert_not_reached;
@@ -159,7 +160,7 @@ namespace RINGMesh {
         return true ;
     }
 
-    void GeoModelEditor::fill_elements_boundaries( GME::TYPE type )
+    void GeoModelEditor::fill_elements_boundaries( GME::TYPE type ) const
     {
         // We have a problem if this is called for regions
         // No way yet to know the surface orientation
@@ -177,7 +178,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_elements_in_boundaries( GME::TYPE type )
+    void GeoModelEditor::fill_elements_in_boundaries( GME::TYPE type ) const
     {
         GME::TYPE in_b_type = GME::in_boundary_type( type ) ;
         if( in_b_type != GME::NO_TYPE ) {
@@ -191,7 +192,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_elements_parent( GME::TYPE type )
+    void GeoModelEditor::fill_elements_parent( GME::TYPE type ) const
     {
         GME::TYPE p_type = GME::parent_type( type ) ;
         if( p_type != GME::NO_TYPE ) {
@@ -204,7 +205,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_elements_children( GME::TYPE type )
+    void GeoModelEditor::fill_elements_children( GME::TYPE type ) const
     {
         GME::TYPE c_type = GME::child_type( type ) ;
         if( c_type != GME::NO_TYPE ) {
@@ -217,6 +218,7 @@ namespace RINGMesh {
             }
         }
     }
+
  
     /*!
     * @brief Add to the vector the elements which cannot exist if
@@ -299,7 +301,7 @@ namespace RINGMesh {
     */
     void GeoModelEditor::remove_elements( const std::set< gme_t >& elements )
     {
-        if( elements.size() == 0 ) {
+        if( elements.empty() ) {
             return ;
         }
 
@@ -558,7 +560,7 @@ namespace RINGMesh {
      * @param[in] from Model to copy the information from
      */
     void GeoModelEditor::copy_macro_topology( const GeoModel& from )
-    {      
+    {
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             std::vector< GME* >& store = model_.modifiable_elements( T ) ;
@@ -570,19 +572,17 @@ namespace RINGMesh {
             }
             RINGMESH_PARALLEL_LOOP
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
-                copy_element_topology( *store[e], from.element( gme_t( T, e ) ),
-                    model_ ) ;
+                copy_element_topology( *store[e], from.element( gme_t( T, e ) ) ) ;
             }
         }
-        copy_element_topology( model_.universe_, from.universe_, model_) ;
+        copy_element_topology( model_.universe_, from.universe_ ) ;
 
         model_.nb_elements_per_type_ = from.nb_elements_per_type_ ;
     }
 
     void GeoModelEditor::copy_element_topology(
         GeoModelElement& lhs,
-        const GeoModelElement& rhs,
-        const GeoModel& model )
+        const GeoModelElement& rhs )
     {
         lhs.name_ = rhs.name_ ;
         lhs.geol_feature_ = rhs.geol_feature_ ;
@@ -597,6 +597,45 @@ namespace RINGMesh {
             R_lhs.sides_ = R_rhs.sides_ ;
         }
     }
+
+    /*!
+     * @brief Copy meshes from a model
+     * @details Copy the all the element meshes
+     *
+     * @param[in] from Model to copy the meshes from
+     *
+     * @pre The two models must have the same number of elements
+     */
+    void GeoModelEditor::copy_meshes( const GeoModel& from ) const
+    {
+        for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
+            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
+            RINGMESH_PARALLEL_LOOP
+            for( index_t e = 0; e < model_.elements( T ).size(); ++e ) {
+                GeoModelMeshElement* E =
+                    dynamic_cast< GeoModelMeshElement* >( model_.elements( T )[e] ) ;
+                ringmesh_debug_assert( E != nil ) ;
+                const GeoModelMeshElement& E_from =
+                    dynamic_cast< const GeoModelMeshElement& >( from.element(
+                        GME::gme_t( T, e ) ) ) ;
+
+                E->unbind_attributes() ;
+                E->mesh().copy( E_from.mesh() ) ;
+                E->bind_attributes() ;
+            }
+        }
+    }
+
+    /*!
+     * Copies a GeoModel in another one
+     * @param[in] from GeoModel to copy
+     */
+    void GeoModelEditor::copy( const GeoModel& from )
+    {
+        copy_macro_topology( from ) ;
+        copy_meshes( from ) ;
+    }
+
 
     /*!
      * @brief Remove invalid reference to elements
