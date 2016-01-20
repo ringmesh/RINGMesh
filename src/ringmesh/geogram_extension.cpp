@@ -401,7 +401,7 @@ namespace RINGMesh {
         tetgen_args_.parse_commandline( copy ) ;
     }
 
-    void TetgenMesher::assign_result_tetmesh_to_mesh( GEO::Mesh& M )
+    void TetgenMesher::assign_result_tetmesh_to_mesh( GEO::Mesh& M ) const
     {
         GEO::vector<double> points ;
         get_result_tetmesh_points( points ) ;
