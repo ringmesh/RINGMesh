@@ -1,0 +1,15 @@
+# Doxygen configuration file for generating
+# the standard developer kit documentation
+# This includes all the libraries header files,
+# excluding third parties and license files.
+
+
+OUTPUT_DIRECTORY       = @doc_output_dir@/devkit
+
+@INCLUDE               = @CMAKE_SOURCE_DIR@/doc/common.dox
+WARN_LOGFILE           = @doc_output_dir@/devkit.log
+
+# Input files
+
+INPUT                  = @CMAKE_SOURCE_DIR@/include/ringmesh @CMAKE_SOURCE_DIR@/src/ringmesh @CMAKE_SOURCE_DIR@/doc/dox @CMAKE_SOURCE_DIR@/src/third_party/geogram/src @CMAKE_SOURCE_DIR@/tests/src/
+

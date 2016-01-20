@@ -341,27 +341,9 @@ if(RINGMESH_WITH_TESTS)
     add_subdirectory(tests)
 endif(RINGMESH_WITH_TESTS)
 
+
+# Documentation
 if(BUILD_DOCUMENTATION)
     message(STATUS "Configuring RINGMesh with doxygen")
-    find_package(Doxygen)
-    if(NOT DOXYGEN_FOUND)
-        message(FATAL_ERROR "Doxygen is needed to build the documentation.")
-    endif()
-    
-    set(doxyfile ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
-
-    # To set properly project version and paths
-    # we should use an input file and use configure_file to populate the doxyfile [JP]
-    # set(doxyfile_in ${PROJECT_SOURCE_DIR}/Doxyfile.in)
-    # configure_file(${doxyfile_in} ${doxyfile} @ONLY)  
-    
-    # Create a target that can be build from the IDE 
-    add_custom_target(doc
-        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc
-        COMMENT "Generating API documentation with Doxygen"
-        VERBATIM)
-
-    # We should think about installation steps for the whole project [JP]
-    # install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc/html DESTINATION share/doc)
+    add_subdirectory(doc)
 endif()
