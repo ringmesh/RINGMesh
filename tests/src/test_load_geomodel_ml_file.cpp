@@ -92,15 +92,15 @@ int main( int argc, char** argv )
     output_model_file_name_bis += in.name() + "_saved_out_bis.ml" ;
     if( !geomodel_surface_save( in2, output_model_file_name_bis ) ) {
         return 4 ;
-    }	
+    }
 
     bool res = compare_files(
         output_model_file_name, output_model_file_name_bis ) ;
     if( res ) {
         GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
-	return 0;
+        return 0;
     } else {
         GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
-	return 5
+        return 5;
     }
 }

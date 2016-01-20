@@ -380,7 +380,6 @@ namespace RINGMesh {
         }
     }
 
-
     void TetgenMesher::fill_region_attribute_on_mesh_cells( GEO::Mesh& M, const std::string& attribute_name ) const
     {
         double* tet_attributes = tetgen_out_.tetrahedronattributelist ;
@@ -401,7 +400,7 @@ namespace RINGMesh {
         tetgen_args_.parse_commandline( copy ) ;
     }
 
-    void TetgenMesher::assign_result_tetmesh_to_mesh( GEO::Mesh& M )
+    void TetgenMesher::assign_result_tetmesh_to_mesh( GEO::Mesh& M ) const
     {
         GEO::vector<double> points ;
         get_result_tetmesh_points( points ) ;
@@ -412,7 +411,6 @@ namespace RINGMesh {
         M.cells.assign_tet_mesh( 3, points, tets, true ) ;
         M.cells.connect() ;
     }
-
 
     void TetgenMesher::get_result_tetmesh_points( GEO::vector< double >& points ) const
     {
@@ -445,7 +443,7 @@ namespace RINGMesh {
             return false ;
         }               
         TetgenMesher mesher ;
-        mesher.tetrahedralize( M, "QpO0YA", M ) ;        
+        mesher.tetrahedralize( M, "QpYA", M ) ;     
         return true ;
     }
 #endif
@@ -531,14 +529,14 @@ namespace RINGMesh {
     */
     vec3 mesh_cell_facet_center( const GEO::Mesh& M, index_t cell, index_t f )
     {
-        vec3 result( 0.0, 0.0, 0.0 ) ;
-        double count = 0.0 ;
-        for( index_t v = 0; v < M.cells.facet_nb_vertices( cell, f ); ++v ) {
-            result += GEO::Geom::mesh_vertex( M,
-                                              M.cells.facet_vertex( cell, f, v ) ) ;
-            count += 1.0 ;
+        vec3 result( 0., 0., 0. ) ;
+        index_t nb_vertices = M.cells.facet_nb_vertices( cell, f ) ;        
+        for( index_t v = 0; v < nb_vertices; ++v ) {
+            result += GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( cell, f, v ) ) ;
         }
-        return ( 1.0 / count ) * result ;
+        ringmesh_assert( nb_vertices > 0 );
+
+        return result/ nb_vertices ;
     }
 
     /*!

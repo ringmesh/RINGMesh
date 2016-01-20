@@ -402,9 +402,6 @@ namespace RINGMesh {
         std::vector< gme_t > children_ ;
     } ;
 
-    /// @todo This is probably not the best place to do this.
-    // Anybody can include a header says Mr Stroustrup (Jeanne).
-    // For me this is the best place ! So anybody can use RINGMesh::BME!
     typedef GeoModelElement GME ;
 
     /*!
@@ -560,7 +557,7 @@ namespace RINGMesh {
         }
         GEO::AttributesManager& cell_attribute_manager() const
         {
-            return mesh_.facets.attributes() ;
+            return mesh_.cells.attributes() ;
         }
         void bind_attributes() ;
         void unbind_attributes() ;
@@ -991,6 +988,16 @@ namespace RINGMesh {
             ringmesh_debug_assert( me < nb_cells() ) ;
             ringmesh_debug_assert( lv < mesh_.cells.nb() ) ;
             return mesh_.cells.vertex( me, lv ) ;
+        }
+
+        bool is_on_border( index_t cell, index_t facet ) const
+        {
+            return adjacent_cell(cell, facet) == GEO::NO_CELL;
+        }
+
+        index_t adjacent_cell( index_t cell, index_t facet ) const
+        {
+            return mesh_.cells.adjacent( cell, facet );
         }
 
         bool is_meshed() const
