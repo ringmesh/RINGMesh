@@ -280,7 +280,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Builder of a GeoModel from a simplicial surface or volumetric Mesh 
-     * @details Regions and Surfaces are indentified with an attribute of type index_t
+     * @details Regions and Surfaces are identified with an attribute of type index_t
      * on the mesh cells or facet 
      */
     class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
