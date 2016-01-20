@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+* Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -24,10 +24,10 @@
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
-*  Contacts:
-*     Arnaud.Botella@univ-lorraine.fr
-*     Antoine.Mazuyer@univ-lorraine.fr
-*     Jeanne.Pellerin@wias-berlin.de
+*
+*
+*
+*
 *
 *     http://www.ring-team.org
 *
@@ -1267,7 +1267,7 @@ namespace RINGMesh {
     /*!
     * Compute the colocated point(s) of a given point
     * @param[in] v the point to test
-    * @param[out] result the colocated point indices
+    * @param[out] result the colocated point indices with a precision epsilon.
     * @return return true if there is at least one intersection
     */
     bool ColocaterANN::get_colocated(
