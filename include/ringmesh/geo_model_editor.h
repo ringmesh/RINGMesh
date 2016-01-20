@@ -144,27 +144,27 @@ namespace RINGMesh {
         * @details If the boundary elements do not have any in_boundary
         * information, nothing is done.
         */
-        void fill_elements_boundaries( GME::TYPE type ) ;
+        void fill_elements_boundaries( GME::TYPE type ) const;
 
         /*!
         * @brief Fill the in_boundary vector of all elements of the given type
         * @details If the in_boundary elements do not have any boundary
         * information, nothing is done, and model construction will eventually fail.
         */
-        void fill_elements_in_boundaries( GME::TYPE type ) ;
+        void fill_elements_in_boundaries( GME::TYPE type ) const;
 
         /*!
         * @brief Fill the parent of all elements of the given type
         * @details If the parents do not have any child nothing is done.
         */
-        void fill_elements_parent( GME::TYPE type ) ;
+        void fill_elements_parent( GME::TYPE type ) const;
 
         /*!
         * @brief Fill the children of all elements of the given type
         * @details If the children elements do not have any parent information
         * nothing is done.
         */
-        void fill_elements_children( GME::TYPE type ) ;
+        void fill_elements_children( GME::TYPE type ) const;
 
 
         void set_element_name( const GME::gme_t& t, const std::string& name ) const
@@ -284,9 +284,8 @@ namespace RINGMesh {
         void erase_invalid_element_references( GeoModelElement& E ) ;
 
     private:
-        void copy_element_topology(  GeoModelElement& lhs,
-                                     const GeoModelElement& rhs,
-                                     const GeoModel& model ) ;
+        void copy_element_topology( GeoModelElement& lhs,
+            const GeoModelElement& rhs ) ;
 
     protected:
         GeoModel& model_ ;
