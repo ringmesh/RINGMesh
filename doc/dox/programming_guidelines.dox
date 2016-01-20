@@ -223,7 +223,7 @@ Sample code:
 #include <ringmesh/geo_model_mesh.h>
 
 // DO NOT use this
-#include <../../src/ringmesh/geo_model_mesh.h>
+#include <../../include/ringmesh/geo_model_mesh.h>
 \endcode
 
 
