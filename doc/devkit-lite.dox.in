@@ -1,7 +1,5 @@
 # Doxygen configuration file for generating
-# the standard developer kit documentation
-# This includes all the libraries header files,
-# excluding third parties and license files.
+# the standard developer RINGMesh documentation ecluding geogram
 
 OUTPUT_DIRECTORY       = @doc_output_dir@/devkit-lite
 
