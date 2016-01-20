@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,10 +24,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr
- *     Antoine.Mazuyer@univ-lorraine.fr
- *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *
+ *
+ *
  *
  *     http://www.ring-team.org
  *
@@ -46,6 +46,7 @@
 #include <ringmesh/io.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geo_model_builder.h>
 
 
@@ -78,8 +79,9 @@ int main( int argc, char** argv )
     if( !BB.build_model_from_surfaces() ) {
 		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	
 		return 1 ;
-	}
+	}    
     print_geomodel( model ) ;
+    is_geomodel_valid( model, false ) ;
 	GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
 	return 0 ;
    

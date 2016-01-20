@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+* Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -24,10 +24,10 @@
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
-*  Contacts:
-*     Arnaud.Botella@univ-lorraine.fr
-*     Antoine.Mazuyer@univ-lorraine.fr
-*     Jeanne.Pellerin@wias-berlin.de
+*
+*
+*
+*
 *
 *     http://www.ring-team.org
 *
@@ -160,7 +160,7 @@ namespace RINGMesh {
         return true ;
     }
 
-    void GeoModelEditor::fill_elements_boundaries( GME::TYPE type )
+    void GeoModelEditor::fill_elements_boundaries( GME::TYPE type ) const
     {
         // We have a problem if this is called for regions
         // No way yet to know the surface orientation
@@ -178,7 +178,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_elements_in_boundaries( GME::TYPE type )
+    void GeoModelEditor::fill_elements_in_boundaries( GME::TYPE type ) const
     {
         GME::TYPE in_b_type = GME::in_boundary_type( type ) ;
         if( in_b_type != GME::NO_TYPE ) {
@@ -192,7 +192,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_elements_parent( GME::TYPE type )
+    void GeoModelEditor::fill_elements_parent( GME::TYPE type ) const
     {
         GME::TYPE p_type = GME::parent_type( type ) ;
         if( p_type != GME::NO_TYPE ) {
@@ -205,7 +205,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_elements_children( GME::TYPE type )
+    void GeoModelEditor::fill_elements_children( GME::TYPE type ) const
     {
         GME::TYPE c_type = GME::child_type( type ) ;
         if( c_type != GME::NO_TYPE ) {
@@ -218,7 +218,6 @@ namespace RINGMesh {
             }
         }
     }
-
 
  
     /*!
@@ -302,7 +301,7 @@ namespace RINGMesh {
     */
     void GeoModelEditor::remove_elements( const std::set< gme_t >& elements )
     {
-        if( elements.size() == 0 ) {
+        if( elements.empty() ) {
             return ;
         }
 
@@ -562,7 +561,6 @@ namespace RINGMesh {
      */
     void GeoModelEditor::copy_macro_topology( const GeoModel& from )
     {
-        model_.name_ = from.name_ ;
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             std::vector< GME* >& store = model_.modifiable_elements( T ) ;
@@ -574,19 +572,17 @@ namespace RINGMesh {
             }
             RINGMESH_PARALLEL_LOOP
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
-                copy_element_topology( *store[e], from.element( gme_t( T, e ) ),
-                    model_ ) ;
+                copy_element_topology( *store[e], from.element( gme_t( T, e ) ) ) ;
             }
         }
-        copy_element_topology( model_.universe_, from.universe_, model_) ;
+        copy_element_topology( model_.universe_, from.universe_ ) ;
 
         model_.nb_elements_per_type_ = from.nb_elements_per_type_ ;
     }
 
     void GeoModelEditor::copy_element_topology(
         GeoModelElement& lhs,
-        const GeoModelElement& rhs,
-        const GeoModel& model )
+        const GeoModelElement& rhs )
     {
         lhs.name_ = rhs.name_ ;
         lhs.geol_feature_ = rhs.geol_feature_ ;
@@ -610,7 +606,7 @@ namespace RINGMesh {
      *
      * @pre The two models must have the same number of elements
      */
-    void GeoModelEditor::copy_meshes( const GeoModel& from )
+    void GeoModelEditor::copy_meshes( const GeoModel& from ) const
     {
         for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;

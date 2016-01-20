@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,10 +24,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr
- *     Antoine.Mazuyer@univ-lorraine.fr
- *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *
+ *
+ *
  *
  *     http://www.ring-team.org
  *
@@ -41,7 +41,7 @@
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
 #include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_editor.h>
+#include <ringmesh/geo_model_builder.h>
 
 namespace RINGMesh {
 
@@ -70,12 +70,15 @@ namespace RINGMesh {
     /*!
      * Copies a GeoModel in another one
      * @param[in] from GeoModel to copy
+     * 
+     * @todo This shouln't be a member function because it does not do nothing
+     * with what the class has.
      */
     void GeoModel::copy( const GeoModel& from )
     {
-        GeoModelEditor editor( *this ) ;
-        editor.copy_macro_topology( from ) ;
-        editor.copy_meshes( from ) ;
+        GeoModelBuilder builder( *this ) ;
+        builder.copy_macro_topology( from ) ;
+        builder.copy_meshes( from ) ;
     }
 
     /*!

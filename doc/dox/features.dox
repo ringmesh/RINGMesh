@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,10 +24,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr
- *     Antoine.Mazuyer@univ-lorraine.fr
- *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *
+ *
+ *
  *
  *     http://www.ring-team.org
  *
@@ -43,46 +43,58 @@
 
 \page ringmesh_features RINGMesh features
 
-What it can do!
-==============
+RINGMesh exe 
+============
+RINGMesh comes with several applications.
 
-Data structures
----------------
- - RINGMesh::BoundaryModel: Cellular representation to store 3D structural models
- - RINGMesh::MacroMesh: Volumetric mesh of the structural model
+ - ringmesh_surface_convert.exe
+ This application builds a Geo::Mesh from a Gocad triangulated surface (.ts file).
+ Then the Geo::Mesh can be exported in classical CAD format( i.e. .obj .mesh .meshb .ply .off .stl;
+ \link class_g_e_o_1_1_mesh_i_o_handler Geogram in/out handler \endlink).  
+ 
+ - ringmeshconvert.exe
+ This application allows to build the \link ringmesh_geo_model GeoModel\endlink from \ref importformat "possible import format" 
+ before generating one of the \ref exportformat "possible export format".
+ 
+ - ringmeshview.exe
+ This application allows to visualize a RINGMesh::GeoModel. 
+ It is built only if you set the compilation flag RINGMESH_WITH_GRAPHICS to TRUE.
+ 
+What the API can do! 
+====================
+Using the API allows to integrate the RINGMesh::GeoModel data stucture in your own applications.
+By using this data structure you can:
 
-Import
-------
- - RINGMesh::BoundaryModel
-  - .bm: homemade format
-  - .ml: Model3D format from Gocad/Skua
- - RINGMesh::MacroMesh
-  - .mm: homemade format
-  
-Export
-------
- - RINGMesh::BoundaryModel
-  - .bm: homemade format
-  - .ml: Model3D format for Gocad/Skua
-  - .obj: surface mesh format
-  - .smesh: Tetgen native surface mesh format
- - RINGMesh::MacroMesh
-  - .csmp: CSMP++ format (export 3 files: .asc, .dat, -regions.txt)
-  - .gmsh: Gmsh format (can also export additional information for Kine3D)
-  - .gprs: GPRS format
-  - .mail: ASTER format
-  - .meshb: LibMesh format
-  - .mm: homemade format
-  - .so: Tsolid format for Gocad/Skua
-  - .tetgen: TetGen format (export 3 files: .node, .ele, .neigh)
-  - .vtk: VTK format for ParaView
+ - Test the validity of your model: (i.e. RINGMesh::is_geomodel_valid()).
+ - Ease the communication between software through various possible in/out format.
+ 
+ Supported Import Format  \anchor importformat 
+ -----------------------
 
+ - .ml: Model3D format from Gocad/Skua
+
+ Supported Export Format \anchor exportformat 
+ -----------------------
+ - .obj: surface mesh format
+ - .csmp: CSMP++ format (export 3 files: .asc, .dat, -regions.txt)
+ - .gmsh: Gmsh format (can also export additional information for Kine3D)
+ - .gprs: GPRS format
+ - .mail: ASTER format 
+ - .meshb: LibMesh format
+ - .gm: homemade format
+ - .so: Tsolid format for Gocad/Skua
+ - .tetgen: TetGen format (export 3 files: .node, .ele, .neigh)
+ - .vtk: VTK format for ParaView
+	
 What is next?
 =============
 
+Import
+------
+ - .so: TSolid format for Gocad/Skua
+ 
 Export
 ------
- - RINGMesh::MacroMesh
   - .resqml: RESQML2 format
 */
 
