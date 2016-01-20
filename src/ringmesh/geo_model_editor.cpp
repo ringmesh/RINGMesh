@@ -574,19 +574,17 @@ namespace RINGMesh {
             }
             RINGMESH_PARALLEL_LOOP
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
-                copy_element_topology( *store[e], from.element( gme_t( T, e ) ),
-                    model_ ) ;
+                copy_element_topology( *store[e], from.element( gme_t( T, e ) ) ) ;
             }
         }
-        copy_element_topology( model_.universe_, from.universe_, model_) ;
+        copy_element_topology( model_.universe_, from.universe_ ) ;
 
         model_.nb_elements_per_type_ = from.nb_elements_per_type_ ;
     }
 
     void GeoModelEditor::copy_element_topology(
         GeoModelElement& lhs,
-        const GeoModelElement& rhs,
-        const GeoModel& model )
+        const GeoModelElement& rhs )
     {
         lhs.name_ = rhs.name_ ;
         lhs.geol_feature_ = rhs.geol_feature_ ;

@@ -286,9 +286,8 @@ namespace RINGMesh {
         void erase_invalid_element_references( GeoModelElement& E ) ;
 
     private:
-        void copy_element_topology(  GeoModelElement& lhs,
-                                     const GeoModelElement& rhs,
-                                     const GeoModel& model ) ;
+        void copy_element_topology( GeoModelElement& lhs,
+            const GeoModelElement& rhs ) ;
 
     protected:
         GeoModel& model_ ;
