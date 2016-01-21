@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,10 +24,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr
- *     Antoine.Mazuyer@univ-lorraine.fr
- *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *
+ *
+ *
  *
  *     http://www.ring-team.org
  *
@@ -61,9 +61,16 @@
 #include <ringmesh/geogram_extension.h>
 
 
+/*!
+* @file ringmesh/geo_model_builder.cpp
+* @brief Implementation of the classes to build GeoModel from various inputs
+* @author Jeanne Pellerin
+*/
+
 /*! @todo Split All functions of geo_model_builder.cpp into smaller functions
   * Split this file into at least 4 files.
  */
+
 namespace {
     using namespace RINGMesh ;
 
@@ -77,39 +84,22 @@ namespace {
         iss >> result >> std::ws ;
         return result ;
     }
-
-
-    /*!
-    * @brief From some mesh corners referring to some global vertex indices
-    * Get the indices of the vertices used in the corners and update the corners
-    * Example:
-    * Input  : corners = 1 3 8 25 8 3
-    * Output : corners = 0 1 2 3 2 1
-    *          vertices = 1 3 8 25
-    * @todo implement a generic function to remove duplicated code.
-    */
+ 
     void get_element_vertices_and_update_corners(
         std::vector< index_t >& corners,
         std::vector< index_t >& vertices
         )
     {
-        std::vector<index_t> old2new ;
-        index_t nb_vertices = unique_values<index_t>( corners, old2new ) ;
-
-        vertices.reserve( nb_vertices ) ;
-        for( index_t i = 0; i < corners.size(); ++i ) {
-            if( old2new[ i ] == i ) {
-                vertices.push_back( corners[ i ] ) ;
-                corners[ i ] = vertices.size()-1 ;
-            } else {
-                corners[ i ] = corners[ old2new[ i ] ] ;
-            }
-        }
+        std::vector< index_t > corners_to_vertices ;
+        get_unique_input_values_and_mapping< index_t >( corners, vertices, corners_to_vertices ) ;
+        corners = corners_to_vertices ;
     }
 
     /*************************************************************************/
     /*!
-     * @brief Get the index of an Interface from its name
+     * @brief Gets the index of an Interface from its name
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] interface_name Name of the interface to find
      * @return Index of the interface in the model, NO_ID if not found.
      */
     gme_t find_interface( const GeoModel& geomodel, const std::string& interface_name )
@@ -144,7 +134,8 @@ namespace {
     } ;
 
     /*!
-     * @brief Get the index of the Corner for a given point
+     * @brief Gets the index of the Corner for a given point
+     * @param[in] geomodel GeoModel to consider
      * @param[in] point Geometric location to look for
      * @return NO_ID or the index of the Corner
      */
@@ -159,7 +150,8 @@ namespace {
     }
 
     /*!
-     * @brief Get the index of the Corner at a given model point
+     * @brief Gets the index of the Corner at a given model point
+     * @param[in] geomodel GeoModel to consider
      * @param[in] model_point_id Index of the point in the GeoModel
      * @return NO_ID or the index of the Corner
      */
@@ -174,22 +166,6 @@ namespace {
     }
 
     /*!
-     * @brief Find or create a corner at given coordinates.
-     *
-     * @param[in] point Geometric location of the Corner
-     * @return Index of the Corner
-     */
-    gme_t find_or_create_corner( GeoModelBuilder& geomodel_builder, const vec3& point )
-    {
-        gme_t result = find_corner( geomodel_builder.model(), point ) ;
-        if( !result.is_defined() ) {
-            result = geomodel_builder.create_element( GME::CORNER ) ;
-            geomodel_builder.set_corner( result.index, point ) ;
-        }
-        return result ;
-    }
-
-    /*!
      * @brief Returns true if the Line has exactly the given vertices
      *
      * @param[in] L the line to compare to
@@ -200,7 +176,6 @@ namespace {
         if( L.nb_vertices() != rhs_vertices.size() ) {
             return false ;
         }
-
         bool equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i] != L.vertex( i ) ) {
@@ -217,43 +192,41 @@ namespace {
                 break ;
             }
         }
-        if( equal ) return true ;
-
-        return false ;
+        return equal ;
     }
 
+
     /*!
-     * @brief Find or create a line   
-     * @param[in] geomodel model to consider
-     * @param[in] vertices Coordinates of the vertices of the line
-     * @return Index of the Line
-     */
-    gme_t find_or_create_line(
-        GeoModelBuilder& geomodel_builder,
-        const std::vector< vec3 >& vertices )
+    * @brief Returns true if the Line has exactly the given vertices
+    * @todo Reimplement using std::iterators
+    */
+    bool line_equal( const Line& L, const std::vector< index_t >& rhs_vertices )
     {
-        gme_t result ;
-        for( index_t i = 0; i < geomodel_builder.model().nb_lines(); ++i ) {
-            if( line_equal( geomodel_builder.model().line( i ), vertices ) ) {
-                result = geomodel_builder.model().line( i ).gme_id() ;
+        if( L.nb_vertices() != rhs_vertices.size() ) {
+            return false ;
+        }        
+        bool equal = true ;
+        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+            if( rhs_vertices[ i ] != L.model_vertex_id( i ) ) {
+                equal = false ;
+                break ;
             }
         }
-        if( !result.is_defined() ) {
-            result = geomodel_builder.create_element( GME::LINE ) ;
-            geomodel_builder.set_line( result.index, vertices ) ;
-
-            // Find the indices of the corner at both extremities
-            // Both must be defined to have a valid LINE
-            geomodel_builder.add_element_boundary( result,
-                find_or_create_corner( geomodel_builder, vertices.front() ) ) ;
-            geomodel_builder.add_element_boundary( result,
-                find_or_create_corner( geomodel_builder, vertices.back() ) ) ;
+        if( equal ) {
+            return true ;
         }
-        return result ;
+        equal = true ;
+        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
+            if( rhs_vertices[ i ] != L.model_vertex_id( L.nb_vertices()-i-1 ) ) {
+                equal = false ;
+                break ;
+            }
+        }
+        return equal ;
     }
 
     /*!
-    * Find a facet and its edge index that are colocalised with an edge
+    * Finds a facet and its edge index that are colocalised with an edge
     * defined by its two model vertex indices
     * @param[in] ann a ColocatorANN of the Surface \p surface using the keyword FACETS
     * @param[in] surface the surface where to find the facet
@@ -308,7 +281,6 @@ namespace {
         return false ;
     }
 
-
     bool is_corner_to_duplicate( const GeoModel& geomodel, index_t corner_id )
     {
         if( geomodel.corner( corner_id ).nb_in_boundary() > 3 ) {
@@ -336,234 +308,18 @@ namespace {
         }
     }
 
-    /*
-    * @brief Utility structure to build a GeoModel knowing only its Surfaces
-    * @details Store the vertices of a triangle which is on the boundary of a Surface
-    */
-    struct BorderTriangle {
-        /*!
-        * @brief Constructor
-        * @param s Index of the surface
-        * @param f Index of the facet containing the 3 vertices
-        * @param vi Indices in the GeoModel of the vertices defining the triangle
-        *           the edge v0 - v1 is the one on the boundary
-        */
-        BorderTriangle( index_t s, index_t f, index_t v0, index_t v1, index_t v2 )
-            : v0_( v0 ), v1_( v1 ), v2_( v2 ), s_( s ), f_( f )
-        {}
-
-        bool operator<( const BorderTriangle& rhs ) const
-        {
-            if( std::min( v0_, v1_ ) != std::min( rhs.v0_, rhs.v1_ ) ) {
-                return std::min( v0_, v1_ ) < std::min( rhs.v0_, rhs.v1_ ) ;
-            }
-            if( std::max( v0_, v1_ ) != std::max( rhs.v0_, rhs.v1_ ) ) {
-                return std::max( v0_, v1_ ) < std::max( rhs.v0_, rhs.v1_ ) ;
-            }
-            if( s_ != rhs.s_ ) {
-                return s_ < rhs.s_ ;
-            }
-            if( f_ != rhs.f_ ) {
-                return f_ < rhs.f_ ;
-            }
-            return rhs.v2_ == index_t( -1 ) ? false : v2_ < rhs.v2_ ;
-        }
-
-        bool same_edge( const BorderTriangle& rhs ) const
-        {
-            return std::min( v0_, v1_ ) == std::min( rhs.v0_, rhs.v1_ )
-                && std::max( v0_, v1_ ) == std::max( rhs.v0_, rhs.v1_ ) ;
-        }
-
-        /// Indices of the points in the model. Triangle has the Surface orientation
-        /// The edge v0v1 is, in surface s_, on the border.
-        index_t v0_ ;
-        index_t v1_ ;
-        index_t v2_ ;
-
-        // Index of the model surface
-        index_t s_ ;
-
-        // Index of the facet in the surface
-        index_t f_ ;
-    } ;
-
-    /*!
-    * @brief Get the BorderTriangle corresponding to the next edge on border
-    * in the considered Surface
-    */
-    index_t get_next_border_triangle(
-        const GeoModel& geomodel,
-        const std::vector< BorderTriangle >& BT,
-        index_t from,
-        bool backward = false )
+    void get_sorted_incident_surfaces( const GeoModelElement& E, std::vector<index_t>& incident_surfaces )
     {
-        const BorderTriangle& border_triangle = BT[ from ] ;
-        const Surface& S = geomodel.surface( border_triangle.s_ ) ;
-        index_t NO_ID( -1 ) ;
-
-        // Get the next edge on border in the Surface
-        index_t f = border_triangle.f_ ;
-        index_t f_v0 = S.facet_id_from_model( f, border_triangle.v0_ ) ;
-        index_t f_v1 = S.facet_id_from_model( f, border_triangle.v1_ ) ;
-        ringmesh_debug_assert( f_v0 != NO_ID && f_v1 != NO_ID ) ;
-
-        index_t next_f = NO_ID ;
-        index_t next_f_v0 = NO_ID ;
-        index_t next_f_v1 = NO_ID ;
-
-        if( !backward ) {
-            S.next_on_border( f, f_v0, f_v1, next_f, next_f_v0, next_f_v1 ) ;
-        } else {
-            S.next_on_border( f, f_v1, f_v0, next_f, next_f_v0, next_f_v1 ) ;
+        index_t nb = E.nb_in_boundary() ;
+        incident_surfaces.resize( nb ) ;
+        for( index_t i = 0; i < nb; ++i ) {
+            incident_surfaces[ i ] = E.in_boundary_gme( i ).index ;
         }
-
-        // Find the BorderTriangle that is correspond to this
-        // It must exist and there is only one
-        BorderTriangle bait( border_triangle.s_, next_f, S.model_vertex_id( next_f, next_f_v0 ),
-                             S.model_vertex_id( next_f, next_f_v1 ), NO_ID ) ;
-
-        // lower_bound returns an iterator pointing to the first element in the range [first,last)
-        // which does not compare less than the given val.
-        // See operator< on BorderTriangle
-        index_t result = narrow_cast< index_t >(
-            std::lower_bound( BT.begin(), BT.end(), bait ) - BT.begin() ) ;
-
-        ringmesh_debug_assert( result < BT.size() ) ;
-        return result ;
-    }
-
-    /*!
-    * @brief Mark as visited all BorderTriangle which first edge is the same than
-    * the first edge of i.
-    * @param[in] border_triangles Information on triangles MUST be sorted so that
-    *            BorderTriangle having the same boundary edge are adjacent
-    *
-    */
-    void visit_border_triangle_on_same_edge(
-        const std::vector< BorderTriangle >& border_triangles,
-        index_t i,
-        std::vector< bool >& visited )
-    {
-        index_t j = i ;
-        while( j < border_triangles.size()
-               && border_triangles[ i ].same_edge( border_triangles[ j ] ) ) {
-            visited[ j ] = true ;
-            j++ ;
-        }
-        signed_index_t k = i - 1 ;
-        while( k > -1 && border_triangles[ i ].same_edge( border_triangles[ k ] ) ) {
-            visited[ k ] = true ;
-            k-- ;
-        }
-    }
-
-    /*!
-    * @brief Get the indices of the Surface adjacent to the first edge of a BorderTriangle
-    * @param[in] border_triangles Information on triangles MUST be sorted so that
-    *          BorderTriangle having the same boundary edge are adjacent
-    * @param[in] i Index of the BorderTriangle
-    * @param[out] adjacent_surfaces Indices of the Surface stored by the BorderTriangle sharing
-    *             the first edge of i
-    */
-    void get_adjacent_surfaces(
-        const std::vector< BorderTriangle >& border_triangles,
-        index_t i,
-        std::vector< index_t >& adjacent_surfaces )
-    {
-        adjacent_surfaces.resize( 0 ) ;
-
-        index_t j = i ;
-        while( j < border_triangles.size()
-               && border_triangles[ i ].same_edge( border_triangles[ j ] ) ) {
-            adjacent_surfaces.push_back( border_triangles[ j ].s_ ) ;
-            j++ ;
-        }
-
-        signed_index_t k = i - 1 ;
-        while( k > -1 && border_triangles[ i ].same_edge( border_triangles[ k ] ) ) {
-            adjacent_surfaces.push_back( border_triangles[ k ].s_ ) ;
-            k-- ;
-        }
-
-        // Sort the adjacent surfaces
-        std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() ) ;
-
-        // When the surface appear twice (the line is an internal border)
-        // we keep both occurrences, otherwise this connectivity info is lost
-    }
-
-
-    // Build the contact propagating forward on the border of the Surface
-    // As long as the adjacent surfaces are the same, the vertices belong to the
-    // Line under construction
-    void get_one_line_vertices(
-        const GeoModel& geomodel,
-        const std::vector<BorderTriangle>& border_triangles,
-        index_t input_triangle,
-        bool backward,
-        std::vector<bool>& visited_triangles,
-        std::vector<index_t>& vertices )
-    {
-        ringmesh_debug_assert( input_triangle != NO_ID ) ;
-        ringmesh_debug_assert( input_triangle < border_triangles.size() ) ;
-        ringmesh_debug_assert( visited_triangles.size() == border_triangles.size() ) ;
-
-        // Get the indices of the Surfaces around this Line
-        std::vector<index_t> adjacent_surfaces ;
-        get_adjacent_surfaces( border_triangles, input_triangle, adjacent_surfaces ) ;
-
-        index_t cur_triangle = get_next_border_triangle(
-            geomodel, border_triangles, input_triangle, backward ) ;
-
-        ringmesh_debug_assert( cur_triangle != input_triangle )
-
-            bool same_surfaces = true ;
-        while( same_surfaces && cur_triangle != input_triangle ) {
-            ringmesh_debug_assert( cur_triangle != NO_ID ) ;
-            if( !visited_triangles[ cur_triangle ] ) {
-                std::vector< index_t > cur_adjacent_surfaces ;
-                get_adjacent_surfaces( border_triangles, cur_triangle,
-                                       cur_adjacent_surfaces ) ;
-
-                if( adjacent_surfaces.size() == cur_adjacent_surfaces.size() &&
-                    std::equal( adjacent_surfaces.begin(), adjacent_surfaces.end(),
-                    cur_adjacent_surfaces.begin() )
-                    ) {
-                    visit_border_triangle_on_same_edge( border_triangles,
-                                                        cur_triangle, visited_triangles ) ;
-                    const BorderTriangle border_info = border_triangles[ cur_triangle ] ;
-                    if( !backward ) {
-                        if( border_info.v0_ == vertices.back() ) {
-                            vertices.push_back( border_info.v1_ ) ;
-                        } else {
-                            ringmesh_debug_assert( border_info.v1_ == vertices.back() ) ;
-                            vertices.push_back( border_info.v0_ ) ;
-                        }
-                    } else {
-                        if( border_info.v0_ == vertices.front() ) {
-                            vertices.insert( vertices.begin(), border_info.v1_ ) ;
-                        } else {
-                            ringmesh_debug_assert( border_info.v1_ == vertices.front() ) ;
-                            vertices.insert( vertices.begin(), border_info.v0_ ) ;
-                        }
-                    }
-                } else {
-                    same_surfaces = false ;
-                }
-            } else {
-                same_surfaces = false ;
-            }
-            cur_triangle = get_next_border_triangle( geomodel, border_triangles,
-                                                     cur_triangle, backward ) ;
-        }
-    }
-
+        std::sort( incident_surfaces.begin(), incident_surfaces.end() ) ;
+    }    
 } // anonymous namespace
 
 namespace RINGMesh {
-    /*************************************************************************/
-
     /*!
     * @brief Utility class to sort a set of oriented triangles around a common edge
     * Used in GeoModelBuilderSurface.
@@ -638,9 +394,6 @@ namespace RINGMesh {
             double angle_ ;
             bool side_ ;
         } ;
-
-        GeoModelRegionFromSurfaces()
-        {}
 
         void add_triangle(
             index_t surface_index,
@@ -733,7 +486,7 @@ namespace RINGMesh {
 
             for( index_t i = 1; i < triangles_.size(); ++i ) {
                 TriangleToSort& cur = triangles_[ i ] ;
-                // Compute the angle RADIANS between the reference and the current
+                // Computes the angle RADIANS between the reference and the current
                 // triangle 
                 double cos = dot( B_A_ref, cur.B_A_ ) ;
                 // Remove invalid values
@@ -752,10 +505,10 @@ namespace RINGMesh {
                 cur.side_ = dot( N_rotate, N_ref ) > 0 ? false : true ;
             }
 
-            // Sort the Surfaces according to the angle
+            // Sorts the Surfaces according to the angle
             std::sort( triangles_.begin(), triangles_.end() ) ;
 
-            // Fill the sorted surfaces adding the side
+            // Fills the sorted surfaces adding the side
             index_t it = 1 ;
             for( index_t i = 0; i < triangles_.size(); ++i ) {
                 TriangleToSort& cur = triangles_[ i ] ;
@@ -776,6 +529,13 @@ namespace RINGMesh {
                 std::count( sorted_triangles_.begin(), sorted_triangles_.end(),
                 default_pair ) == 0 ) ;
         }
+
+        void clear()
+        {
+            triangles_.clear() ;
+            sorted_triangles_.clear() ;
+        }
+
         /*! Returns the next pair Triangle index (surface) + side
         */
         const std::pair< index_t, bool >& next(
@@ -819,6 +579,373 @@ namespace RINGMesh {
         std::vector< std::pair< index_t, bool > > sorted_triangles_ ;
     } ;
 
+    /*! 
+     * @brief Determines the geometry of the Lines of a GeoModel in which 
+     * the geometry of the Surfaces is given
+     * @details All the triangles on the boundaries are classified as belonging to a Line
+     * Two neighboring edges on the boundary belong to the same Line if their incident Surfaces
+     * are the same.
+     */
+    class LineGeometryFromGeoModelSurfaces {
+    public:
+        /*!
+         * @param geomodel GeoModel providing the Surfaces
+         * @param collect_region_info If true, information needed to determine closed Regions
+         *  from a GeoModel Surfaces are collected for each Line.
+         */
+        LineGeometryFromGeoModelSurfaces( const GeoModel& geomodel,
+                                          bool collect_region_info )
+            :geomodel_( geomodel ), 
+            collect_region_information_( collect_region_info ),
+            cur_border_triangle_ (0)
+        {
+            initialize_border_triangles_from_model_surfaces() ;
+            visited_.resize( border_triangles_.size(), false ) ;
+        }
+ 
+        /*!
+         * @brief Tries to compute a new line and returns true if one was.
+         * @details To use in a while conditional loop, since the number of lines
+         * is considered unknown. 
+         */
+        bool compute_next_line_geometry()
+        {
+            go_to_next_non_visited_border_triangle() ;
+
+            if( is_not_the_end() ) {                
+                init_next_line_computation() ;
+                compute_line_geometry() ;
+                return true ;
+            } else {
+                return false ;
+            }
+        }
+
+        /*! 
+         * @brief Returns the vertices of the last line built 
+         */
+        const std::vector< index_t >& vertices() const
+        {
+            return cur_line_vertices_ ;
+        }
+
+        /*!
+        * @brief Returns the adjacent surfaces to the last line built
+        */
+        const std::vector< index_t >& adjacent_surfaces() const
+        {
+            return cur_line_adjacent_surfaces_ ;
+        }
+
+        /*!
+        * @brief Returns region building information for the last line built.
+        * @details Only computed if the collect_region_info was true at construction.
+        */
+        const GeoModelRegionFromSurfaces& region_information() const
+        {
+            return cur_line_region_information_ ;
+        }
+
+    private:
+        /*!
+        * @brief Stores the vertices of a triangle which is on the boundary of a Surface
+        */
+        struct BorderTriangle
+        {
+            BorderTriangle( index_t surface, index_t facet, index_t v0, index_t v1, index_t v2 )
+                : v0_( v0 ), v1_( v1 ), v2_( v2 ), surface_( surface ), facet_( facet )
+            {}
+
+            /*!
+            * @brief Compares two triangles so those sharing an edge follow one another
+            */
+            bool operator<(const BorderTriangle& rhs) const
+            {
+                if( std::min( v0_, v1_ ) != std::min( rhs.v0_, rhs.v1_ ) ) {
+                    return std::min( v0_, v1_ ) < std::min( rhs.v0_, rhs.v1_ ) ;
+                }
+                if( std::max( v0_, v1_ ) != std::max( rhs.v0_, rhs.v1_ ) ) {
+                    return std::max( v0_, v1_ ) < std::max( rhs.v0_, rhs.v1_ ) ;
+                }
+                if( surface_ != rhs.surface_ ) {
+                    return surface_ < rhs.surface_ ;
+                }
+                if( facet_ != rhs.facet_ ) {
+                    return facet_ < rhs.facet_ ;
+                }
+                return rhs.v2_ == NO_ID ? false : v2_ < rhs.v2_ ;
+            }
+
+            bool same_edge( const BorderTriangle& rhs ) const
+            {
+                return std::min( v0_, v1_ ) == std::min( rhs.v0_, rhs.v1_ )
+                    && std::max( v0_, v1_ ) == std::max( rhs.v0_, rhs.v1_ ) ;
+            }
+
+            /// Indices of the points in the model. 
+            /// The edge v0v1 is on the one on the boundary.
+            index_t v0_ ;
+            index_t v1_ ;
+            index_t v2_ ;
+            // Index of the surface containing the triangle
+            index_t surface_ ;
+            // Index of the facet in the surface
+            index_t facet_ ;
+        } ;
+
+        void compute_line_geometry()
+        {
+            visit_border_triangles_on_same_edge( cur_border_triangle_ ) ;
+            index_t p0 = border_triangles_[ cur_border_triangle_ ].v0_;
+            index_t p1 = border_triangles_[ cur_border_triangle_ ].v1_;
+            cur_line_vertices_.push_back( p0 ) ;
+            cur_line_vertices_.push_back( p1 ) ;
+
+            get_adjacent_surfaces( cur_border_triangle_, cur_line_adjacent_surfaces_ ) ;
+
+            bool backward = false ;
+            get_one_line_vertices( backward ) ;
+            backward = true ;
+            get_one_line_vertices( backward ) ;
+
+            if( collect_region_information_ ) {
+                collect_region_information() ;
+            }
+        }
+        /*!
+        * @brief Gets the geometry of a line propagating in a given direction
+        * @details As long as the adjacent surfaces are the same, the vertices are added
+        * belong to the line under construction
+        */
+        void get_one_line_vertices( bool backward )
+        {
+            ringmesh_debug_assert( is_not_the_end() ) ;
+
+            index_t start( cur_border_triangle_ ) ;
+            ringmesh_debug_assert( start != NO_ID ) ;
+
+            index_t t = get_next_border_triangle( start, backward ) ;
+            ringmesh_debug_assert( t != start );
+
+            bool same_surfaces = true ;
+            while( same_surfaces && t != start ) {
+                ringmesh_debug_assert( t != NO_ID ) ;
+                if( !is_visited( t ) ) {
+                    std::vector< index_t > cur_adjacent_surfaces ;
+                    get_adjacent_surfaces( t, cur_adjacent_surfaces ) ;
+
+                    if( equal_to_line_adjacent_surfaces( cur_adjacent_surfaces ) ) {
+                        visit_border_triangles_on_same_edge( t ) ;
+                        add_border_triangle_vertices_to_line( t, backward ) ;
+                    } else {
+                        same_surfaces = false ;
+                    }
+                } else {
+                    same_surfaces = false ;
+                }
+                t = get_next_border_triangle( t, backward ) ;
+            }
+        }
+
+        void init_next_line_computation()
+        {
+            cur_line_vertices_.resize( 0 ) ;
+            cur_line_adjacent_surfaces_.resize( 0 );
+            cur_line_region_information_.clear();
+        }
+
+        bool is_visited( index_t i ) const
+        {
+            return visited_[ i ] ;
+        }
+
+        void go_to_next_non_visited_border_triangle()
+        {
+            while( is_not_the_end() && is_visited( cur_border_triangle_ ) ) {
+                ++cur_border_triangle_ ;
+            }
+        }
+
+        bool is_not_the_end() const
+        {
+            return cur_border_triangle_ < border_triangles_.size() ;
+        }
+
+        bool have_border_triangles_same_boundary_edge( index_t t0, index_t t1 ) const
+        {
+            return border_triangles_[ t0 ].same_edge( border_triangles_[ t1 ] ) ;
+        }
+
+        /*!
+         * @brief Gets triangles sharing the border edge of the current border triangle
+         *        and adds them to current line region information 
+         */
+        void collect_region_information()
+        {
+            index_t i( cur_border_triangle_ ) ;
+            index_t j = i ;
+            while( j < border_triangles_.size()
+                   && have_border_triangles_same_boundary_edge( i, j )
+                   ) {
+                cur_line_region_information_.add_triangle(
+                    border_triangles_[ j ].surface_,
+                    geomodel_.mesh.vertices.vertex( border_triangles_[ j ].v0_ ),
+                    geomodel_.mesh.vertices.vertex( border_triangles_[ j ].v1_ ),
+                    geomodel_.mesh.vertices.vertex( border_triangles_[ j ].v2_ )
+                    ) ;
+                j++ ;
+            }
+        }
+
+        bool equal_to_line_adjacent_surfaces( const std::vector<index_t>& input ) const
+        {
+            if( input.size() != cur_line_adjacent_surfaces_.size() ) {
+                return false ;
+            } else {
+                return std::equal( input.begin(), input.end(), cur_line_adjacent_surfaces_.begin() ) ;
+            } 
+        }
+
+       void add_border_triangle_vertices_to_line( index_t triangle_index, bool backward )
+        {
+            const BorderTriangle& border_triangle = border_triangles_[ triangle_index ] ;
+            index_t v0 = border_triangle.v0_ ;
+            index_t v1 = border_triangle.v1_ ;
+
+            add_vertices_to_line( v0, v1, !backward ) ;
+        }
+
+       void add_vertices_to_line( index_t v0, index_t v1, bool at_the_end )
+       {
+           index_t to_add = v1 ;
+           if( at_the_end ) {
+               index_t end_vertex = cur_line_vertices_.back() ;
+               if( v1 == end_vertex ) {
+                   to_add = v0 ;
+               } else {
+                   ringmesh_debug_assert( v0 == end_vertex ) ;
+               }               
+               cur_line_vertices_.push_back( to_add ) ;
+           } else {
+               index_t first_vertex = cur_line_vertices_.front() ;
+               if( v1 == first_vertex ) {
+                   to_add = v0 ;
+               } else {
+                   ringmesh_debug_assert( v0 == first_vertex ) ;
+               }
+               cur_line_vertices_.insert( cur_line_vertices_.begin(), to_add ) ;
+           }
+       }
+     
+       void initialize_border_triangles_from_model_surfaces()
+       {
+           for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
+               const Surface& S = geomodel_.surface( i ) ;
+               for( index_t j = 0; j < S.nb_cells(); ++j ) {
+                   for( index_t v = 0; v < S.nb_vertices_in_facet( j ); ++v ) {
+                       if( S.is_on_border( j, v ) ) {
+                           index_t vertex = S.model_vertex_id( j, v );
+                           index_t next_vertex = S.model_vertex_id( j, S.next_in_facet( j, v ) );
+                           index_t previous_vertex = S.model_vertex_id( j, S.prev_in_facet( j, v ) );
+                           border_triangles_.push_back(
+                               BorderTriangle( i, j, vertex, next_vertex, previous_vertex ) ) ;
+                       }
+                   }
+               }
+           }
+           std::sort( border_triangles_.begin(), border_triangles_.end() ) ;
+       }
+
+        /*!
+        * @brief Gets the next BorderTriangle in the same surface
+        */
+        index_t get_next_border_triangle( index_t from, bool backward ) const
+        {
+            const BorderTriangle& border_triangle = border_triangles_[ from ] ;
+            const Surface& S = geomodel_.surface( border_triangle.surface_ ) ;
+
+            // Gets the next edge on border in the Surface
+            index_t f = border_triangle.facet_ ;
+            index_t f_v0 = S.facet_id_from_model( f, border_triangle.v0_ ) ;
+            index_t f_v1 = S.facet_id_from_model( f, border_triangle.v1_ ) ;
+            ringmesh_debug_assert( f_v0 != NO_ID && f_v1 != NO_ID ) ;
+
+            index_t next_f = NO_ID ;
+            index_t next_f_v0 = NO_ID ;
+            index_t next_f_v1 = NO_ID ;
+
+            if( !backward ) {
+                S.next_on_border( f, f_v0, f_v1, next_f, next_f_v0, next_f_v1 ) ;
+            } else {
+                S.next_on_border( f, f_v1, f_v0, next_f, next_f_v0, next_f_v1 ) ;
+            }
+
+            // Finds the BorderTriangle that is corresponding to this
+            // It must exist and there is only one
+            BorderTriangle bait( border_triangle.surface_, next_f, S.model_vertex_id( next_f, next_f_v0 ),
+                                 S.model_vertex_id( next_f, next_f_v1 ), NO_ID ) ;
+            index_t result( std::lower_bound( border_triangles_.begin(), border_triangles_.end(), bait ) 
+                            - border_triangles_.begin() ) ;
+
+            ringmesh_debug_assert( result < border_triangles_.size() ) ;
+            return result ;
+        }
+
+        /*!
+        * @brief Marks as visited all BorderTriangles whose first edge is equal to i's first edge
+        */
+        void visit_border_triangles_on_same_edge( index_t i )
+        {           
+            index_t j = i ;
+            while( j < border_triangles_.size()
+                   && border_triangles_[ i ].same_edge( border_triangles_[ j ] ) ) {
+                visited_[ j ] = true ;
+                j++ ;
+            }
+            signed_index_t k = i - 1 ;
+            while( k > -1 && border_triangles_[ i ].same_edge( border_triangles_[ k ] ) ) {
+                visited_[ k ] = true ;
+                k-- ;
+            }
+        }
+
+        /*!
+        * @brief Gets the sorted indices of the Surfaces incident to the first edge of the i-th BorderTriangle
+        * @note When the surface appears twice (the line is an internal border)
+        * both occurrences are kept.
+        */
+        void get_adjacent_surfaces( index_t i, std::vector< index_t >& adjacent_surfaces )
+        {
+            index_t j = i ;
+            while( j < border_triangles_.size()
+                   && border_triangles_[ i ].same_edge( border_triangles_[ j ] ) ) {
+                adjacent_surfaces.push_back( border_triangles_[ j ].surface_ ) ;
+                j++ ;
+            }
+
+            signed_index_t k = i - 1 ;
+            while( k > -1 && border_triangles_[ i ].same_edge( border_triangles_[ k ] ) ) {
+                adjacent_surfaces.push_back( border_triangles_[ k ].surface_ ) ;
+                k-- ;
+            }
+            std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() ) ;
+        }
+
+    private:
+        const GeoModel& geomodel_ ;
+        bool collect_region_information_ ;
+        // All the triangles on a boundary of all the Surfaces of the GeoModel
+        std::vector< BorderTriangle > border_triangles_ ;
+        // Internal use to flag the visited border_triangles when computing the Lines
+        std::vector< bool > visited_ ;
+
+        // Currently computed line information
+        index_t cur_border_triangle_ ;
+        std::vector< index_t > cur_line_vertices_ ;
+        std::vector< index_t > cur_line_adjacent_surfaces_ ;
+        RINGMesh::GeoModelRegionFromSurfaces cur_line_region_information_ ;
+    };
+
     bool is_surface_mesh( const GEO::Mesh& mesh )
     {
         return mesh.facets.nb() != 0 ;
@@ -828,13 +955,11 @@ namespace RINGMesh {
     {
         return mesh.cells.nb() != 0 ;
     }
-
 }
-
 
 namespace RINGMesh {
     /*! Delete all GeoModelRegionFromSurfaces owned by the builder
-    */
+     */
     GeoModelBuilder::~GeoModelBuilder()
     {
         for( index_t i = 0; i < regions_info_.size(); ++i ) {
@@ -842,10 +967,112 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelBuilder::copy_meshes( const GeoModel& geomodel )
+    {
+        for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
+            GME::TYPE T = static_cast< GME::TYPE >(t) ;
+            copy_meshes( geomodel, T ) ;
+        }
+    }
+
+    void GeoModelBuilder::copy_meshes( const GeoModel& from, GME::TYPE element_type )
+    {
+        for( index_t i = 0; i < model_.elements( element_type ).size(); ++i ) {
+            const GeoModelMeshElement& from_E = from.mesh_element( element_type, i ) ;
+            assign_mesh_to_element( from_E.mesh(), gme_t( element_type, i ) ) ;
+        }
+    }
+
+    void GeoModelBuilder::assign_mesh_to_element( const GEO::Mesh& mesh, GME::gme_t to )
+    {
+        GeoModelMeshElement& E = mesh_element( to ) ;
+        E.unbind_attributes() ;
+        E.mesh().copy( mesh ) ;
+        E.bind_attributes() ;
+        // Nothing else to do ? To test [JP]
+    }
+
+    /*!
+    * @brief Finds or creates a corner at given coordinates.
+    * @param[in] point Geometric location of the Corner
+    * @return Index of the Corner
+    */
+    gme_t GeoModelBuilder::find_or_create_corner( const vec3& point )
+    {
+        gme_t result = find_corner( model_, point ) ;
+        if( !result.is_defined() ) {
+            result = create_element( GME::CORNER ) ;
+            set_corner( result.index, point ) ;
+        }
+        return result ;
+    }
+
+    gme_t GeoModelBuilder::find_or_create_corner( index_t model_point_id )
+    {
+        gme_t result = find_corner( model_, model_point_id ) ;
+        if( !result.is_defined() ) {
+            result = create_element( GME::CORNER ) ;
+            set_corner( result.index, model_point_id ) ;
+        }
+        return result ;
+    }
+
+    /*!
+    * @brief Finds or creates a line
+    * @param[in] vertices Coordinates of the vertices of the line
+    * @return Index of the Line
+    */
+    gme_t GeoModelBuilder::find_or_create_line( const std::vector< vec3 >& vertices )
+    {
+        gme_t result ;
+        for( index_t i = 0; i < model().nb_lines(); ++i ) {
+            if( line_equal( model().line( i ), vertices ) ) {
+                result = model().line( i ).gme_id() ;
+            }
+        }
+        if( !result.is_defined() ) {
+            result = create_element( GME::LINE ) ;
+            set_line( result.index, vertices ) ;
+
+            // Finds the indices of the corner at both extremities
+            // Both must be defined to have a valid LINE
+            add_element_boundary( result, find_or_create_corner( vertices.front() ) ) ;
+            add_element_boundary( result, find_or_create_corner( vertices.back() ) ) ;
+        }
+        return result ;
+    }
+
+    /*!
+    * @brief Finds or creates a line knowing its topological adjacencies
+    */
+    gme_t GeoModelBuilder::find_or_create_line( const std::vector< index_t>& sorted_adjacent_surfaces,
+                                                gme_t first_corner, gme_t second_corner )
+    {
+        for( index_t i = 0; i < model().nb_lines(); ++i ) {
+            const Line& L = model().line( i ) ;
+            gme_t c0 = L.boundary_gme( 0 ) ;
+            gme_t c1 = L.boundary_gme( 1 ) ;
+
+            if( (c0 == first_corner && c1 == second_corner)
+                || (c0 == second_corner && c1 == first_corner)
+            ) {
+                std::vector<index_t> cur_adjacent_surfaces ;
+                get_sorted_incident_surfaces( L, cur_adjacent_surfaces ) ;
+                if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size()
+                    && std::equal( cur_adjacent_surfaces.begin(), cur_adjacent_surfaces.end(),
+                                   sorted_adjacent_surfaces.begin() )
+                ) {
+                    return L.gme_id() ;
+                }
+            }
+        }
+        return create_element( GME::LINE ) ;
+    }
+
     /*!
      * @brief Sets the geometrical position of a vertex
-     * @param[in] corner_id Index of the corner
-     * @param[in] index Index of the vertex to modify
+     * @param[in] t Element index
+     * @param[in] v Index of the vertex to modify
      * @param[in] point New coordinates
      * @param[in] update If true, all the vertices sharing the same geometrical position
      *               in the GeoModel have their position updated, if false they
@@ -869,11 +1096,11 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the geometrical position of a vertex from a model vertex
-     * @details Set also both mapping from (GeoModelMeshVertices::unique2bme)
+     * @brief Sets the geometrical position of a vertex from a model vertex
+     * @details Sets also both mapping from (GeoModelMeshVertices::unique2bme)
      *          and to (model_vertex_id_) the model vertex.
-     * @param[in] id Element index
-     * @param[in] index Index of the vertex to modify
+     * @param[in] element_id Element index
+     * @param[in] v Index of the vertex to modify
      * @param[in] model_vertex Index in GeoModelMeshVertices of the vertex giving
      *                     the new position
      */
@@ -915,7 +1142,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Add vertices to the mesh
+     * @brief Adds vertices to the mesh
      * @details No update of the model vertices is done
      *
      * @param[in] id Element index
@@ -939,7 +1166,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the geometric location of a Corner
+     * @brief Sets the geometric location of a Corner
      *
      * @param[in] corner_id Index of the corner
      * @param[in] point Coordinates of the vertex
@@ -952,9 +1179,9 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set one Line points
+     * @brief Sets one Line points
      *
-     * @param[in] id Line index
+     * @param[in] line_id Line index
      * @param[in] vertices Coordinates of the vertices on the line
      */
     void GeoModelBuilder::set_line(
@@ -970,7 +1197,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the points and facets for a surface
+     * @brief Sets the points and facets for a surface
      * @details If facet_adjacencies are not given they are computed.
      *
      * @param[in] surface_id Index of the surface
@@ -1014,7 +1241,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set the vertex for a Corner. Store the info in the geomodel vertices
+     * @brief Sets the vertex for a Corner. Store the info in the geomodel vertices
      *
      * @param[in] corner_id Index of the corner
      * @param[in] unique_vertex Index of the vertex in the model
@@ -1027,7 +1254,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Set one Line vertices. Store the info in the geomodel vertices
+     * @brief Sets one Line vertices. Store the info in the geomodel vertices
      *
      * @param[in] id Line index
      * @param[in] unique_vertices Indices in the model of the unique vertices with which to build the Line
@@ -1036,16 +1263,20 @@ namespace RINGMesh {
         index_t line_id,
         const std::vector< index_t >& unique_vertices )
     {
-        set_element_vertices( gme_t(GME::LINE, line_id), unique_vertices, false ) ;
-
+        bool clear_vertices = false ;
         GeoModelMeshElement& E = mesh_element( GME::LINE, line_id ) ;
+        ringmesh_assert( E.nb_vertices() == 0 ) ; // If there are already some vertices
+        // we are doomed because they are not removed
+        /// @todo Do this test for all others set_something
+        set_element_vertices( gme_t(GME::LINE, line_id), unique_vertices, clear_vertices ) ;
+
         for( index_t e = 1; e < E.nb_vertices(); e++ ) {
             E.mesh_.edges.create_edge( e - 1, e ) ;
         }
     }
 
     /*!
-     * @brief Set the vertices and facets for a surface
+     * @brief Sets the vertices and facets for a surface
      * @details If facet_adjacencies are not given they are computed.
      *
      * @param[in] surface_id Index of the surface
@@ -1065,7 +1296,7 @@ namespace RINGMesh {
 
   
     /*!
-    * @brief Set the facets of a surface
+    * @brief Sets the facets of a surface
     * @param[in] surface_id Index of the surface
     * @param[in] facets Indices of the model vertices defining the facets
     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
@@ -1137,7 +1368,6 @@ namespace RINGMesh {
         compute_surface_adjacencies( surface_id ) ;
     }
 
-
     void GeoModelBuilder::assign_region_tet_mesh(
         index_t region_id,
         const std::vector< index_t >& tet_vertices ) const
@@ -1151,7 +1381,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Compute and set the adjacencies between the facets
+     * @brief Computes and sets the adjacencies between the facets
      * @details The adjacent facet is given for each vertex of each facet for the edge
      * starting at this vertex.
      * If there is no neighbor inside the same Surface adjacent is set to NO_ADJACENT
@@ -1216,7 +1446,7 @@ namespace RINGMesh {
     }
 
     /*!
-    * Find duplicate vertex or create it
+    * Finds duplicate vertex or creates it
     */
     index_t GeoModelBuilder::find_or_create_duplicate_vertex(
         GeoModelMeshElement& E,
@@ -1250,9 +1480,8 @@ namespace RINGMesh {
         return duplicate ;
     }
 
-
     /*
-    * @brief Reset the adjacencies for all Surface facets adjacent to the Line
+    * @brief Resets the adjacencies for all Surface facets adjacent to the Line
     * @pre All the edges of the Line are edges of at least one facet of the Surface
     */
     void GeoModelBuilder::disconnect_surface_facets_along_line_edges( Surface& S, const Line& L )
@@ -1304,9 +1533,8 @@ namespace RINGMesh {
         surface_vertex_1 = S.surf_vertex_id( facet_index, S.next_in_facet( facet_index, v ) ) ;
     }
 
-
     /*!
-     * @brief Duplicate the surface vertices along the fake boundary
+     * @brief Duplicates the surface vertices along the fake boundary
      * (NO_ID adjacencies but shared vertices) and duplicate  the vertices
      * @note Bad written code - error prone
      * @todo Rewrite 
@@ -1386,9 +1614,8 @@ namespace RINGMesh {
         }      
     }
 
-
     /*!
-    * @brief Cut a Surface along a Line assuming that the edges of the Line are edges of the Surface
+    * @brief Cuts a Surface along a Line assuming that the edges of the Line are edges of the Surface
     * @pre Surface is not already cut. Line L does not cut the Surface S into 2 connected components.
     * @todo Add a test for this function.
     */
@@ -1408,7 +1635,6 @@ namespace RINGMesh {
             const_cast<GeoModel&>(model()).mesh.vertices.clear() ;
         }
     }
-
 
     bool GeoModelBuilder::end_model()
     {
@@ -1435,99 +1661,67 @@ namespace RINGMesh {
                 }
             }
         }
+
         // Deliberate clear of the model vertices used for model building
         model_.mesh.vertices.clear() ;
         return true ;
     }
 
     bool GeoModelBuilder::build_lines_and_corners_from_surfaces()
-    {
-        // Get for all Surface, the triangles that have an edge
-        // on the boundary.
-        std::vector< BorderTriangle > border_triangles ;
-        for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
-            const Surface& S = model_.surface( i ) ;
-            for( index_t j = 0; j < S.nb_cells(); ++j ) {
-                for( index_t v = 0; v < S.nb_vertices_in_facet( j ); ++v ) {
-                    if( S.is_on_border( j, v ) ) {
-                        border_triangles.push_back(
-                            BorderTriangle( i, j, S.model_vertex_id( j, v ),
-                            S.model_vertex_id( j, S.next_in_facet( j, v ) ),
-                            S.model_vertex_id( j, S.prev_in_facet( j, v ) ) ) ) ;
+    {       
+        LineGeometryFromGeoModelSurfaces line_computer( model_, options_.compute_regions_brep ) ;
+        
+        bool new_line_was_built = true ;
+        while( new_line_was_built ) {
+            new_line_was_built = line_computer.compute_next_line_geometry() ;
+
+            // Copy - we might need to modify them - not that big it is a Line
+            std::vector< index_t > vertices = line_computer.vertices() ;                        
+            const std::vector< index_t >& adjacent_surfaces = line_computer.adjacent_surfaces() ;
+
+            // If this is a closed Line, the vertices can begin and end at any vertex
+            if( model().nb_corners() > 0 && vertices.back() == vertices.front() ) {
+                for( index_t i = 1; i+1< vertices.size(); ++i ) {
+                    gme_t corner = find_corner( model(), vertices[ i ] );
+                    if( corner.is_defined() ) {
+                        // Shuffle the vector so that it begins and ends at this point
+                        std::vector< index_t > shuffled_vertices( vertices.size() );
+                        std::copy( vertices.begin()+i, vertices.end(), shuffled_vertices.begin() );
+                        index_t nb_after_i( vertices.end()-vertices.begin()-i );
+                        std::copy( vertices.begin()+1, vertices.begin()+i, shuffled_vertices.begin()+nb_after_i );
+
+                        vertices = shuffled_vertices ;
+                        break;
                     }
                 }
             }
-        }
+            GME::gme_t first_corner = find_or_create_corner( vertices.front() ) ;
+            GME::gme_t second_corner = find_or_create_corner( vertices.back() ) ;
+           
+            index_t backup_nb_lines = model().nb_lines() ;
+            gme_t line_index = find_or_create_line( adjacent_surfaces, first_corner, second_corner ) ;
 
-        // Sort these triangles so that triangles sharing an edge follow one another
-        std::sort( border_triangles.begin(), border_triangles.end() ) ;
+            bool created_line = model().nb_lines() != backup_nb_lines ;
+            if( created_line ) {
+                set_line( line_index.index, vertices ) ;
 
-        // Visit all BorderTriangle and propagate to get each Line vertices
-        std::vector< bool > visited( border_triangles.size(), false ) ;
-        for( index_t i = 0; i < border_triangles.size(); ++i ) {
-            if( !visited[ i ] ) {
-                // Mark as visited the BorderTriangle around the same first edge
-                visit_border_triangle_on_same_edge( border_triangles, i, visited ) ;
-
-                // Begin a new Line
-                std::vector< index_t > vertices ;
-                vertices.push_back( border_triangles[ i ].v0_ ) ;
-                vertices.push_back( border_triangles[ i ].v1_ ) ;
-
-                // Propagate onward on the Line
-                get_one_line_vertices( model_, border_triangles, i, false,
-                                       visited, vertices ) ;
-                // Propagate backward on the Line
-                if( vertices.back() != i ) {
-                    get_one_line_vertices( model_, border_triangles, i, true,
-                                           visited, vertices ) ;
-                }
-                ringmesh_debug_assert( vertices.size() > 1 ) ;
-
-                if( options_.compute_regions_brep ) {
-                    // Collect the triangles sharing one of the edges
-                    // of the Line
-                    GeoModelRegionFromSurfaces* cur_line_info = new GeoModelRegionFromSurfaces() ;
-                    regions_info_.push_back( cur_line_info ) ;
-
-                    index_t j = i ;
-                    while( j < border_triangles.size()
-                           && border_triangles[ i ].same_edge( border_triangles[ j ] )
-                           ) {
-                        regions_info_.back()->add_triangle(
-                            border_triangles[ j ].s_,
-                            model_.mesh.vertices.vertex( border_triangles[ j ].v0_ ),
-                            model_.mesh.vertices.vertex( border_triangles[ j ].v1_ ),
-                            model_.mesh.vertices.vertex( border_triangles[ j ].v2_ )
-                            ) ;
-                        j++ ;
-                    }
-                }
-
-                // Create the Line
-                gme_t l_id = create_element( GME::LINE ) ;
-                set_line( l_id.index, vertices ) ;
-
-                std::vector<index_t> adjacent_surfaces ;
-                get_adjacent_surfaces( border_triangles, i, adjacent_surfaces ) ;
                 for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
                     GME::gme_t surface_id( GME::SURFACE, adjacent_surfaces[ j ] ) ;
-                    add_element_in_boundary( l_id, surface_id ) ;
+                    add_element_in_boundary( line_index, surface_id ) ;
                 }
+                add_element_boundary( line_index, first_corner ) ;
+                add_element_boundary( line_index, second_corner ) ;
 
-                // Find or create the corners at the Line extremities
-                GME::gme_t c0 = find_corner( model(), vertices.front() ) ;
-                if( !c0.is_defined() ) {
-                    c0 = create_element( GME::CORNER ) ;
-                    set_corner( c0.index, vertices.front() ) ;
+                // If the plan is to then build_regions, get the information
+                if( options_.compute_regions_brep ) {
+                    regions_info_.push_back( 
+                        new GeoModelRegionFromSurfaces( line_computer.region_information() ) );
                 }
-                add_element_boundary( l_id, c0 ) ;
-                GME::gme_t c1 = find_corner( model(), vertices.back() ) ;
-                if( !c1.is_defined() ) {
-                    c1 = create_element( GME::CORNER ) ;
-                    set_corner( c1.index, vertices.back() ) ;
+            } else {
+                bool same_geometry = line_equal( model().line( line_index.index ), vertices );
+                if( !same_geometry ) {
+                    set_line( line_index.index, vertices ) ;
                 }
-                add_element_boundary( l_id, c1 ) ;
             }
         }
         return true ;
@@ -1659,7 +1853,6 @@ namespace RINGMesh {
         return true ;
     }
 
-
     bool GeoModelBuilder::build_model_from_surfaces()
     {
         if( model_.nb_surfaces() == 0 ) {
@@ -1679,47 +1872,6 @@ namespace RINGMesh {
 
         // Finish up the model
         return end_model() ;
-    }
-
-
-    /*!
-     * @brief Build the Contacts
-     * @details One contact is a group of lines shared by the same Interfaces
-     */
-    void GeoModelBuilder::build_contacts()
-    {
-        std::vector< std::set< gme_t > > interfaces ;
-        for( index_t i = 0; i < model_.nb_lines(); ++i ) {
-            const Line& L = model_.line( i ) ;
-            std::set< gme_t > cur_interfaces ;
-            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                cur_interfaces.insert(
-                    model_.element( L.in_boundary_gme( j ) ).parent().gme_id() ) ;
-            }
-            gme_t contact_id ;
-            for( index_t j = 0; j < interfaces.size(); ++j ) {
-                if( cur_interfaces.size() == interfaces[j].size()
-                    && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
-                        interfaces[j].begin() ) ) {
-                    contact_id = gme_t( GME::CONTACT, j ) ;
-                    break ;
-                }
-            }
-            if( !contact_id.is_defined() ) {
-                contact_id = create_element( GME::CONTACT ) ;
-                ringmesh_debug_assert( contact_id.index == interfaces.size() ) ;
-                interfaces.push_back( cur_interfaces ) ;
-                // Create a name for this contact
-                std::string name = "contact_" ;
-                for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
-                    it != cur_interfaces.end(); ++it ) {
-                    name += model_.element( *it ).name() ;
-                    name += "_" ;
-                }
-                set_element_name( contact_id, name ) ;
-            }
-            add_element_child( contact_id, gme_t( GME::LINE, i ) ) ;
-        }
     }
 
 
@@ -1775,7 +1927,7 @@ namespace RINGMesh {
         }
 
      
-        /*! Set a mapping from the attribute values on the Mesh and 
+        /*! Sets a mapping from the attribute values on the Mesh and 
          * the indices of the GeoModelElements to fill
          */
         void set_gme_id_attribute_mapping(
@@ -2152,9 +2304,7 @@ namespace RINGMesh {
         repair_colocate_vertices( mesh, epsilon ) ;
     }
 
-
-
-    /*! @details Add separately each connected component of the mesh
+    /*! @details Adds separately each connected component of the mesh
     *          as a Surface of the model under construction.
     *          All the facets of the input mesh are visited and added to a
     *          Surface of the GeoModel.
@@ -2218,7 +2368,6 @@ namespace RINGMesh {
         return true ;
     }
    
-
     bool GeoModelBuilderMesh::create_and_build_surfaces()
     {
         create_geomodel_elements( GME::SURFACE, nb_surface_attribute_values_ ) ;
@@ -2262,7 +2411,6 @@ namespace RINGMesh {
         }
         return true ;
     }
-
   
     void GeoModelBuilderMesh::add_mesh_vertices_to_model()
     {
@@ -2287,8 +2435,6 @@ namespace RINGMesh {
         nb_region_attribute_values_ =
             region_builder_->count_attribute_values_and_simplexes() ;
     }
-
-
     
     void GeoModelBuilderMesh::copy_facet_attribute_from_mesh( const std::string& attribute_name )
     {       
@@ -2318,8 +2464,6 @@ namespace RINGMesh {
         region_builder_->copy_simplex_attribute_from_mesh_to_geomodel< index_t >( attribute, attributes ) ;
     }
 
-
-
     /*************************************************************************/
     GeoModelBuilderFile::GeoModelBuilderFile(
         GeoModel& model, const std::string& filename
@@ -2335,7 +2479,7 @@ namespace RINGMesh {
     /*************************************************************************/
    
     /*!
-    * @brief Load and build a GeoModel from a Gocad .ml file
+    * @brief Loads and builds a GeoModel from a Gocad .ml file
     * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
     * @details Correspondance between Gocad::Model3D elements
     * and GeoModel elements is :
@@ -2683,9 +2827,9 @@ namespace RINGMesh {
                         << std::endl ;                    
                 } else {
                     // 2 - Check if this border already exists
-                    gme_t line_id = find_or_create_line(*this, line_vertices);
+                    gme_t line_id = find_or_create_line( line_vertices );
                     // Add the surface in which this line is
-                    add_element_in_boundary(line_id, S.gme_id());
+                    add_element_in_boundary( line_id, S.gme_id() );
                 }
             }
         }
@@ -2870,6 +3014,46 @@ namespace RINGMesh {
             p1_corner = find_corner( model(), p1 ) ;
         }
         return p1_corner ;
+    }
+
+    /*!
+     * @brief Build the Contacts
+     * @details One contact is a group of lines shared by the same Interfaces
+     */
+    void GeoModelBuilderGocad::build_contacts()
+    {
+        std::vector< std::set< gme_t > > interfaces ;
+        for( index_t i = 0; i < model_.nb_lines(); ++i ) {
+            const Line& L = model_.line( i ) ;
+            std::set< gme_t > cur_interfaces ;
+            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
+                cur_interfaces.insert(
+                    model_.element( L.in_boundary_gme( j ) ).parent().gme_id() ) ;
+            }
+            gme_t contact_id ;
+            for( index_t j = 0; j < interfaces.size(); ++j ) {
+                if( cur_interfaces.size() == interfaces[j].size()
+                    && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
+                        interfaces[j].begin() ) ) {
+                    contact_id = gme_t( GME::CONTACT, j ) ;
+                    break ;
+                }
+            }
+            if( !contact_id.is_defined() ) {
+                contact_id = create_element( GME::CONTACT ) ;
+                ringmesh_debug_assert( contact_id.index == interfaces.size() ) ;
+                interfaces.push_back( cur_interfaces ) ;
+                // Create a name for this contact
+                std::string name = "contact_" ;
+                for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
+                    it != cur_interfaces.end(); ++it ) {
+                    name += model_.element( *it ).name() ;
+                    name += "_" ;
+                }
+                set_element_name( contact_id, name ) ;
+            }
+            add_element_child( contact_id, gme_t( GME::LINE, i ) ) ;
+        }
     }
 
     /*!
@@ -3218,7 +3402,7 @@ namespace RINGMesh {
         return true ;
     }
 
-    GeoModelElement::TYPE GeoModelBuilderBM::match_nb_elements(
+    GME::TYPE GeoModelBuilderBM::match_nb_elements(
         const char* s )
     {
         // Check that the first 3 characters are NB_
@@ -3235,7 +3419,7 @@ namespace RINGMesh {
         }
     }
 
-    GeoModelElement::TYPE GeoModelBuilderBM::match_type( const char* s )
+    GME::TYPE GeoModelBuilderBM::match_type( const char* s )
     {
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = (GME::TYPE) i ;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,10 +24,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr
- *     Antoine.Mazuyer@univ-lorraine.fr
- *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *
+ *
+ *
  *
  *     http://www.ring-team.org
  *
@@ -38,13 +38,6 @@
  *     FRANCE
  */
 
-#include <stack>
-
-#include <geogram/basic/algorithm.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/points/colocate.h>
-
 #include <ringmesh/geo_model_mesh.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_builder.h>
@@ -52,6 +45,13 @@
 #include <ringmesh/well.h>
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geogram_extension.h>
+
+#include <geogram/basic/algorithm.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/points/colocate.h>
+
+#include <stack>
 
 namespace {
     using namespace RINGMesh ;
@@ -200,7 +200,9 @@ namespace RINGMesh {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
                 GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
-                if( E.nb_vertices() == 0 ) continue ;
+                if( E.nb_vertices() == 0 ) {
+                    continue ;
+                }
                 GEO::Memory::copy( mesh_.vertices.point_ptr( count ),
                     E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
                 GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
@@ -215,7 +217,6 @@ namespace RINGMesh {
                 }
             }
         }
-
         // Remove colocated vertices
         remove_colocated() ;
     }
@@ -446,25 +447,14 @@ namespace RINGMesh {
                 gme_vertices_[v].clear() ;
             }
         }
-//        std::cout << "in erase_vertices before" << std::endl ;
-//        std::cout << gme_vertices_.size() << std::endl ;
-//        std::cout << mesh_.vertices.nb() << std::endl ;
+
         gme_vertices_.erase(
             std::remove( gme_vertices_.begin(), gme_vertices_.end(),
                 std::vector< GMEVertex >() ), gme_vertices_.end() ) ;
 
-//        std::cout << "in erase_vertices after gme erase" << std::endl ;
-//        std::cout << gme_vertices_.size() << std::endl ;
-//        std::cout << mesh_.vertices.nb() << std::endl ;
-//        std::cout << mesh_.vertices.point(0) << std::endl ;
-
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
         mesh_.vertices.delete_elements( to_delete_geo, false ) ;
-//        std::cout << "in erase_vertices after all" << std::endl ;
-//        std::cout << gme_vertices_.size() << std::endl ;
-//        std::cout << mesh_.vertices.nb() << std::endl ;
-//        std::cout << mesh_.vertices.point(0) << std::endl ;
 
 #ifdef RINGMESH_DEBUG
         // Paranoia - check that we have the same mapping than the
@@ -1224,6 +1214,8 @@ namespace RINGMesh {
         }
     }
 
+    /* @todo Review : The use of geometrical computation (barycenter) is
+    * very much bug prone. Vertex indices should be used instead. [Jeanne] */
     void GeoModelMeshCells::initialize_cell_facet()
     {
         gmm_.facets.test_and_initialize() ;
@@ -1235,8 +1227,11 @@ namespace RINGMesh {
             for( index_t f = 0; f < mesh_.cells.nb_facets( c ); f++ ) {
                 std::vector< index_t > result ;
                 if( ann.get_colocated( mesh_cell_facet_center( mesh_, c, f ),
-                    result ) ) {
+                    result ) ) {                    
                     facet_id_[mesh_.cells.facet( c, f )] = result[0] ;
+                    // If there are more than 1 matching facet, this is WRONG
+                    // and the vertex indices should be checked too [Jeanne]
+                    ringmesh_assert( result.size() == 1 );
                 }
             }
         }
