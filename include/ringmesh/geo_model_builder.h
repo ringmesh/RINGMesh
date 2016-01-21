@@ -238,6 +238,8 @@ namespace RINGMesh {
         bool end_model() ;
 
     protected:
+        void build_contacts() ;
+
         /*! Elements to compute from the available elements */
         GeoModelBuildingFlags options_ ;
 
@@ -385,8 +387,6 @@ namespace RINGMesh {
         bool load_file() ;
 
     private:
-        void build_contacts() ;
-
         GME::gme_t determine_line_vertices( const Surface& S,
                                             index_t id0,
                                             index_t id1,
