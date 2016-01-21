@@ -736,7 +736,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Generate a point that lies strictly a Region defined by its Surface boundaries.
-     * @details Returnsthe midpoint of barycenter of the first facet of the first surface on 
+     * @details Returns the midpoint of barycenter of the first facet of the first surface on
      * the region boundary and the closest point in the other surfaces.
      * @warning Incomplete implementation.
      */

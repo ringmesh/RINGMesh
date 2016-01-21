@@ -50,36 +50,24 @@
 
 namespace RINGMesh {
 
-
-    // Sorry but you have to rewrite your code without accessing the Mesh of any of the 
-    // GeoModelElements and do not either access the GeoModelElements themselves
     bool GeoModelBuilderTSolid::load_file()
     {
-        ///@todo Split this function into smaller functions when it will works
-
-        // mmmhhh You should split it now. It will be much easier to debug [Jeanne]
-        index_t last_tetra = 0 ;
-
-        bool has_model_in_file = false ;
-
         GME::gme_t cur_region ;
 
         // First : count the number of vertex and tetras
         // in each region
-        ///@todo:reserve space before and THEN assign
-        std::vector< index_t > nb_mesh_elements_per_region =
-                read_number_of_mesh_elements() ;
-        print_number_of_mesh_elements( nb_mesh_elements_per_region ) ;
+        std::vector< index_t > nb_elements_per_region ;
+        read_number_of_mesh_elements( nb_elements_per_region ) ;
+        print_number_of_mesh_elements( nb_elements_per_region ) ;
 
-        ///@todo Link these vectors with the results above
         // Region vertices
         std::vector < vec3 > region_vertices ;
         // Region tetraedron corners
         std::vector< index_t > tetra_corners ;
-        // Vector which transforms the indices of vertices from Gocad .so file
+        // Vector which maps the indices of vertices from Gocad .so file
         // to the local (region) indices of vertices
         std::vector< index_t > gocad_vertices2region_vertices ;
-        // Vector which transforms the indices of vertices from Gocad .so file
+        // Vector which maps the indices of vertices from Gocad .so file
         // to the index of the region they belong to
         std::vector< index_t > gocad_vertices2region_id ;
 
@@ -92,10 +80,6 @@ namespace RINGMesh {
         index_t nb_cell_properties = 0 ;
         std::vector < std::string > vertex_property_names ;
         std::vector < std::string > cell_property_names ;
-
-        time_t start_reading_vol, end_reading_vol, end_reading_model, end_building_model ;
-        time( &start_reading_vol ) ;
-        std::cout << "Reading volume..." << std::endl ;
 
         // Then : Reading .so file
         while( !in_.eof() && in_.get_line() ) {
@@ -160,10 +144,6 @@ namespace RINGMesh {
                         region_vertices.clear() ;
                         tetra_corners.clear() ;
                     }
-                    time( &end_reading_vol ) ;
-                    std::cout << "Timing : " << difftime( end_reading_vol, start_reading_vol ) << " seconds." << std::endl ;
-                    std::cout << "Reading BRep model info..." << std::endl ;
-                    has_model_in_file = true ;
                 } else if( in_.field_matches( 0, "SURFACE" ) ) {
                     current_interface = create_element( GME::INTERFACE );
                     set_element_name( current_interface, in_.field( 1 ) ) ;
@@ -181,7 +161,6 @@ namespace RINGMesh {
                     set_element_parent( current_surface, current_interface ) ;
                     add_element_child( current_interface, current_surface ) ;
                 } else if( in_.field_matches( 0, "TRGL" ) ) {
-                    ///@todo think to reserve space before
                     cur_surf_facets.push_back( in_.field_as_uint( 1 ) - 1 ) ;
                     cur_surf_facets.push_back( in_.field_as_uint( 2 ) - 1 ) ;
                     cur_surf_facets.push_back( in_.field_as_uint( 3 ) - 1 ) ;
@@ -198,68 +177,32 @@ namespace RINGMesh {
                 }
             }
         }
-        time( &end_reading_model ) ;
-        std::cout << "Timing : " << difftime( end_reading_model, end_reading_vol ) << " seconds." << std::endl ;
-        std::cout << "Building Model..." << std::endl ;
-        time_t step1, step2, step3 ;
-
-        time( &step1 ) ;
-        std::cout << "Timing step 1 : " << difftime( step1, end_reading_model ) << " seconds." << std::endl ;
-
         // Compute internal borders (remove adjacencies)
-        std::vector< ColocaterANN* > anns( model_.nb_surfaces(), nil ) ;
-        std::vector< Box3d > boxes( model_.nb_surfaces() ) ;
-        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
-            const Surface& S = model_.surface(s) ;
-            for( index_t p = 0; p < S.nb_vertices(); p++ ) {
-                boxes[s].add_point( S.vertex( p ) ) ;
-            }
-            std::vector < vec3 > facet_edge_barycenters ;
-            for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
-                for ( index_t e = 0 ; e < 3 ; ++e ) {
-                    if (S.is_on_border(f,e)) {
-                        facet_edge_barycenters.push_back( ( S.vertex(f, e) + S.vertex(f, (e+1)%3 ) ) * 0.5 );
-                    }
-                }
-            }
-            anns[s] = new ColocaterANN( facet_edge_barycenters, true ) ;
-        }
+        compute_internal_borders() ;
 
-        // TODO : What is this ????? [Jeanne]
-        // It is not at all the job of this function to take care of tasks like this one
-        // All the functions to do that are implemented in Mesh or somewhere else
-        // 2nd remark  DO NOT EVER use geometry to compute combinatorial things [Jeanne]
-        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
-            const Surface& S = model_.surface(s) ;
-            for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
-                for ( index_t e = 0 ; e < 3 ; ++e ) {
-                   if ( !S.is_on_border(f,e) ) {
-                       vec3 barycenter = ( S.vertex(f, e) + S.vertex(f, (e+1)%3 ) ) * 0.5 ;
-                       std::vector< index_t > result ;
-                       index_t tested_surf = 0 ;
-                       while ( result.empty() && tested_surf < anns.size() ) {
-                           if ( boxes[tested_surf].contains( barycenter ) ) {
-                               anns[tested_surf]->get_colocated(barycenter, result) ;
-                           }
-                           ++tested_surf ;
-                       }
-                       if ( !result.empty() ) {
-                           S.mesh().facets.set_adjacent( f,e, GEO::NO_FACET ) ;
-                       }
-                   }
-                }
-            }
-        }
-
-        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
-            delete anns[s];
-        }
         // Build GeoModel Lines and Corners from the surfaces
         model_.mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
 
-        time( &step2 ) ;
-        std::cout << "Timing step 2 : " << difftime( step2, step1 ) << " seconds." << std::endl ;
+//        for (index_t l = 0 ; l < model_.nb_lines() ; ++l ) {
+////            std::ostringstream filename ;
+////            filename <<  "/home/anquez/Bureau/line_" << l  << ".obj" ;
+////            GEO::mesh_save(model_.line(l).mesh(),filename.str()) ;
+//            std::cout << model_.line(l).nb_cells() << std::endl ;
+//        }
+//        for ( index_t l = 0 ; l < model_.nb_lines() ; ++l ) {
+//            std::cout << "Line " << l << std::endl ;
+//            for (index_t s = 0 ; s < model_.line(l).nb_in_boundary() ; ++s ) {
+//                std::cout << model_.line(l).in_boundary(s).gme_id() << std::endl ;
+//            }
+//        }
+//
+//        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+//            std::cout << "Surface " << s << std::endl ;
+//            for (index_t l = 0 ; l < model_.surface(s).nb_boundaries() ; ++l ) {
+//                std::cout << model_.surface(s).boundary(l).gme_id() << std::endl ;
+//            }
+//        }
 
         // Regions boundaries
         compute_boundaries_of_geomodel_regions() ;
@@ -287,48 +230,62 @@ namespace RINGMesh {
             } else if ( in_.field_matches( 0, "DATUM" ) ) {
                 // Useless for the moment
             } else if ( in_.field_matches( 0, "AXIS_NAME" ) ) {
-                gocad_coordinates_system_axis_name_.push_back( in_.field(1) ) ;
-                gocad_coordinates_system_axis_name_.push_back( in_.field(2) ) ;
-                gocad_coordinates_system_axis_name_.push_back( in_.field(3) ) ;
+                set_gocad_coordinates_system_axis_name() ;
             } else if ( in_.field_matches( 0, "AXIS_UNIT" ) ) {
-                gocad_coordinates_system_axis_unit_.push_back( in_.field(1) ) ;
-                gocad_coordinates_system_axis_unit_.push_back( in_.field(2) ) ;
-                gocad_coordinates_system_axis_unit_.push_back( in_.field(3) ) ;
+                set_gocad_coordinates_system_axis_unit() ;
             } else if ( in_.field_matches( 0, "ZPOSITIVE" ) ) {
-                if( in_.field_matches( 1, "Elevation" ) ) {
-                    z_sign_ = 1 ;
-                } else if( in_.field_matches( 1, "Depth" ) ) {
-                    z_sign_ = -1 ;
-                } else {
-                    ringmesh_assert_not_reached ;
-                }
+                set_gocad_coordinates_system_z_sign() ;
             }
         }
     }
 
-    // TODO: Returning a vector is never a great idea, except if you're sure that it size is
-    // limited [Jeanne]
-    // In c++11 the vector is moved, but we are copying it.
-    std::vector< index_t > GeoModelBuilderTSolid::read_number_of_mesh_elements()
+    void GeoModelBuilderTSolid::set_gocad_coordinates_system_axis_name()
     {
+        gocad_coordinates_system_axis_name_.push_back( in_.field(1) ) ;
+        gocad_coordinates_system_axis_name_.push_back( in_.field(2) ) ;
+        gocad_coordinates_system_axis_name_.push_back( in_.field(3) ) ;
+    }
+
+    void GeoModelBuilderTSolid::set_gocad_coordinates_system_axis_unit()
+    {
+        gocad_coordinates_system_axis_unit_.push_back( in_.field(1) ) ;
+        gocad_coordinates_system_axis_unit_.push_back( in_.field(2) ) ;
+        gocad_coordinates_system_axis_unit_.push_back( in_.field(3) ) ;
+    }
+
+    void GeoModelBuilderTSolid::set_gocad_coordinates_system_z_sign()
+    {
+        if( in_.field_matches( 1, "Elevation" ) ) {
+            z_sign_ = 1 ;
+        } else if( in_.field_matches( 1, "Depth" ) ) {
+            z_sign_ = -1 ;
+        } else {
+            ringmesh_debug_assert_not_reached ;
+        }
+    }
+
+    void GeoModelBuilderTSolid::read_number_of_mesh_elements(
+            std::vector< index_t >& nb_elements_par_region )
+    {
+        // Define a new LineInput counting number of elements
         GEO::LineInput line_input ( filename_ ) ;
 
-        std::vector< index_t > nb_vertices_and_tets_per_region ;
-
-        index_t cur_region = 0 ;
+        // Initialize counters
+        index_t cur_region = NO_ID ;
         index_t nb_vertices_in_region = 0 ;
         index_t nb_tetras_in_region = 0 ;
         index_t nb_surfaces_in_bmodel = 0 ;
         index_t nb_triangles_in_bmodel = 0 ;
 
+        // Reading file
         while( !line_input.eof() && line_input.get_line() ) {
             line_input.get_fields() ;
             if( line_input.nb_fields() > 0 ) {
                 if( line_input.field_matches( 0, "TVOLUME" ) ||
                         line_input.field_matches( 0, "MODEL" ) ) {
-                    if ( cur_region ){ // What is this test on a index_T ? [Jeanne]
-                        nb_vertices_and_tets_per_region.push_back( nb_vertices_in_region ) ;
-                        nb_vertices_and_tets_per_region.push_back( nb_tetras_in_region ) ;
+                    if ( cur_region != NO_ID ){
+                        nb_elements_par_region.push_back( nb_vertices_in_region ) ;
+                        nb_elements_par_region.push_back( nb_tetras_in_region ) ;
                         nb_vertices_in_region = 0 ;
                         nb_tetras_in_region = 0 ;
                     }
@@ -343,25 +300,24 @@ namespace RINGMesh {
                 }
             }
         }
-        return nb_vertices_and_tets_per_region ;
     }
 
     void GeoModelBuilderTSolid::print_number_of_mesh_elements(
             const std::vector< index_t >& nb_elements_per_region ) const
     {
-        index_t nb_regions = nb_elements_per_region.size()/2 ;
+        index_t nb_regions = nb_elements_per_region.size() *0.5 ;
         GEO::Logger::out( "Mesh" )
             << "Mesh has " << nb_regions << " regions "
             << std::endl ;
-        for (int i = 0 ; i < nb_regions ; ++i) {
+        for ( index_t i = 0 ; i < nb_regions ; ++i ) {
             GEO::Logger::out( "Mesh" )
                 << "Region " << i << " has"
                 << std::endl
                 << std::setw( 10 ) << std::left
-                << nb_elements_per_region.at( 2 * i ) << " vertices "
+                << nb_elements_per_region.at( 2*i ) << " vertices "
                 << std::endl
                 << std::setw( 10 ) << std::left
-                << nb_elements_per_region.at( 2 * i + 1 ) << " tetras "
+                << nb_elements_per_region.at( 2*i + 1 ) << " tetras "
                 << std::endl ;
         }
     }
@@ -403,28 +359,30 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_boundaries_of_geomodel_regions()
     {
-        ///@todo Find how to accelerate this part which take more a lot of time
+        ///@todo Find how to accelerate this part which take a lot of time
         for ( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
             index_t id_reg = model_.region(r).index() ;
             GeoModelMeshCells& gmm_cells = model_.mesh.cells ;
-            for( index_t c = 0; c < gmm_cells.nb_tet( id_reg ); ++c ) {
-                for ( index_t f = 0; f < 4 ; ++f ) {
+            index_t nb_tet = gmm_cells.nb_tet( id_reg ) ;
+            for( index_t c = 0 ; c < nb_tet ; ++c ) {
+                for( index_t f = 0; f < 4 ; ++f ) {
                     index_t facet = NO_ID ;
                     bool side = false ;
                     if ( gmm_cells.is_cell_facet_on_surface(
-                            gmm_cells.tet( id_reg, c ), f, facet, side )) {
+                            gmm_cells.tet( id_reg, c ), f, facet, side ) ) {
                         index_t surface = model_.mesh.facets.surface( facet ) ;
                         bool surface_in_boundary = false ;
                         bool surface_in_boundary_side = false ;
-                        index_t b = NO_ID ;
-                        while ( !(surface_in_boundary &&
+                        index_t b = 0 ;
+                        while ( !( surface_in_boundary &&
                                 side == surface_in_boundary_side )
-                                && ++b < model_.region(r).nb_boundaries() ) {
+                                && b < model_.region(r).nb_boundaries() ) {
                             if ( model_.region(r).boundary(b).gme_id() ==
                                     model_.surface( surface ).gme_id() ) {
                                 surface_in_boundary = true ;
                                 surface_in_boundary_side = model_.region(r).side(b) ;
                             }
+                            ++b ;
                         }
                         if ( !surface_in_boundary ) {
                             add_element_boundary(
@@ -434,7 +392,7 @@ namespace RINGMesh {
                             add_element_in_boundary(
                                 GME::gme_t( GME::SURFACE, surface ),
                                 GME::gme_t( GME::REGION, id_reg ) ) ;
-                        } else if (surface_in_boundary &&
+                        } else if ( surface_in_boundary &&
                                 side != surface_in_boundary_side ) {
                             // Case in which both sides of the surface
                             // are in the boundaries of the region.
@@ -513,5 +471,57 @@ namespace RINGMesh {
         facet_corners.clear() ;
         facet_ptr.clear() ;
         facet_ptr.push_back( 0 ) ;
+    }
+
+    void GeoModelBuilderTSolid::compute_internal_borders()
+    {
+        std::vector< ColocaterANN* > anns( model_.nb_surfaces(), nil ) ;
+        std::vector< Box3d > boxes( model_.nb_surfaces() ) ;
+        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+            const Surface& S = model_.surface(s) ;
+            for( index_t p = 0; p < S.nb_vertices(); p++ ) {
+                boxes[s].add_point( S.vertex( p ) ) ;
+            }
+            std::vector < vec3 > facet_edge_barycenters ;
+            for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
+                for ( index_t e = 0 ; e < 3 ; ++e ) {
+                    if (S.is_on_border(f,e)) {
+                        facet_edge_barycenters.push_back( ( S.vertex(f, e) + S.vertex(f, (e+1)%3 ) ) * 0.5 );
+                    }
+                }
+            }
+            anns[s] = new ColocaterANN( facet_edge_barycenters, true ) ;
+        }
+
+        // TODO : What is this ????? [Jeanne]
+        // It is not at all the job of this function to take care of tasks like this one
+        // All the functions to do that are implemented in Mesh or somewhere else
+        // 2nd remark  DO NOT EVER use geometry to compute combinatorial things [Jeanne]
+        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+            const Surface& S = model_.surface(s) ;
+            for ( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
+                for ( index_t e = 0 ; e < 3 ; ++e ) {
+                   if ( !S.is_on_border(f,e) ) {
+                       vec3 barycenter = ( S.vertex(f, e) + S.vertex(f, (e+1)%3 ) ) * 0.5 ;
+                       std::vector< index_t > result ;
+                       index_t tested_surf = 0 ;
+                       while ( result.empty() && tested_surf < anns.size() ) {
+                           if ( boxes[tested_surf].contains( barycenter ) ) {
+                               anns[tested_surf]->get_colocated(barycenter, result) ;
+                           }
+                           ++tested_surf ;
+                       }
+                       if ( !result.empty() ) {
+                           S.mesh().facets.set_adjacent( f,e, GEO::NO_FACET ) ;
+                       }
+                   }
+                }
+            }
+        }
+
+        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+            delete anns[s];
+        }
+
     }
 }
