@@ -211,7 +211,7 @@ namespace RINGMesh {
         compute_universe_boundaries() ;
 
         // Contacts building
-        build_contacts() ;
+//        build_contacts() ;
 
         return true ;
 

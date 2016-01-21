@@ -41,6 +41,8 @@
 #include <ringmesh/io.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/well.h>
+#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_builder_so.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_extension.h>
 
