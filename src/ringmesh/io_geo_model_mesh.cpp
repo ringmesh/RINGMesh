@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,10 +24,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr
- *     Antoine.Mazuyer@univ-lorraine.fr
- *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *
+ *
+ *
  *
  *     http://www.ring-team.org
  *
@@ -42,10 +42,6 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/well.h>
 #include <ringmesh/geometry.h>
-#include <ringmesh/geo_model_api.h>
-#include <ringmesh/geo_model_validity.h>
-#include <ringmesh/geo_model_builder.h>
-#include <ringmesh/geo_model_builder_so.h>
 #include <ringmesh/geogram_extension.h>
 
 #include <geogram/basic/file_system.h>
@@ -339,7 +335,7 @@ namespace RINGMesh {
                 } else {
                     ringmesh_assert_not_reached;
                 }
-                GEO::FileSystem::delete_file( filename ) ;
+                GEO::FileSystem::delete_file( filename ) ;  // WHY ?? [Jeanne]
 
                 if( ( r + 1 ) < global_info.number_entry ) {
                     if( unzGoToNextFile( uz ) != UNZ_OK ) {

@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+# Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -23,10 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
-#  Contacts:
-#     Arnaud.Botella@univ-lorraine.fr
-#     Antoine.Mazuyer@univ-lorraine.fr
-#     Jeanne.Pellerin@wias-berlin.de
+#
+#
+#
+#
 # 
 #     http://www.ring-team.org
 # 
