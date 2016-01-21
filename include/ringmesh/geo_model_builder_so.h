@@ -47,7 +47,7 @@
 
 namespace RINGMesh {
     /*!
-     * @brief Build a meshed GeoModel from a Gocad TSolid (file.so)
+     * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
      */
     class RINGMESH_API GeoModelBuilderTSolid : public GeoModelBuilderFile {
     public:
@@ -62,16 +62,40 @@ namespace RINGMesh {
         bool load_file() ;
 
     private:
+
         /*!
-        * Read and set the Gocad coordinates system information
+         * \name Reads and sets Gocad Coordinates System information from .so file
+         * @{
+         */
+
+        /*!
+        * Reads and sets the Gocad coordinates system information
         * from input .so file.
         */
         void read_and_set_gocad_coordinates_system() ;
+
+        void set_gocad_coordinates_system_axis_name() ;
+
+        void set_gocad_coordinates_system_axis_unit() ;
+
+        void set_gocad_coordinates_system_z_sign() ;
+
+        /*! @}
+         * \name Information on the number of mesh elements from .so file
+         * @{
+         */
+
         ///@todo comment
-        std::vector< index_t > read_number_of_mesh_elements() ;
+        void read_number_of_mesh_elements(
+                std::vector< index_t >& nb_elements_per_region ) ;
 
         void print_number_of_mesh_elements(
-            const std::vector< index_t >& nb_elements_per_region) const ;
+            const std::vector< index_t >& nb_elements_per_region ) const ;
+
+        /*! @}
+         * \name Other functions
+         * @{
+         */
 
         void add_new_property(
             std::vector < std::string >& property_names,
@@ -80,14 +104,14 @@ namespace RINGMesh {
         GME::gme_t create_region() ;
 
         /*!
-         * Read the coordinates of a vertex from file
+         * Reads the coordinates of a vertex from file
          * @param[out] vertex Vertex
          */
         void read_vertex_coordinates( vec3& vertex ) ;
 
         /*!
-         * @brief Read the four vertices index
-         * @details Read gocad indices (from .so file) and transform
+         * @brief Reads the four vertices index
+         * @details Reads gocad indices (from .so file) and transforms
          * them to vertex local (region) indices
          * @param[in] gocad_vertices2region_vertices Map from the gocad vertex
          * indices to vertex local indices (in region)
@@ -98,12 +122,12 @@ namespace RINGMesh {
             std::vector< index_t >& corners_id ) ;
 
         /*!
-         * @brief Set the boundaries of the GeoModel regions
+         * @brief Sets the boundaries of the GeoModel regions
          */
         void compute_boundaries_of_geomodel_regions() ;
 
         /*!
-         * @brief Set the boundaries of region Universe
+         * @brief Sets the boundaries of region Universe
          * @details A surface is set in the boundaries of region Universe if
          * only one of its sides belongs to the boundaries of other regions.
          */
@@ -115,6 +139,11 @@ namespace RINGMesh {
             std::vector< index_t >& facet_ptr,
             std::vector< index_t >& gocad_vertices2region_id,
             std::vector< index_t >& gocad_vertices2region_vertices ) ;
+
+        void compute_internal_borders() ;
+
+        /*! @}
+         */
 
     private:
         std::string filename_ ;
