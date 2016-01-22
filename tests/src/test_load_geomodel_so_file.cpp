@@ -45,7 +45,6 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_io.h>
 
 /*!
 * @file Test GeoModel building from a mesh loaded from a .so file
@@ -60,10 +59,6 @@ int main( int argc, char** argv )
 
     std::string file_name( ringmesh_test_data_path ) ;
     file_name += "modelA4.so" ;
-//    file_name += "solid_surf_inside.so" ;
-//    file_name = "/home/anquez/anquez.so" ;
-//    file_name = "/home/anquez/anquez_fault_f4a.so" ;
-    file_name = "/home/anquez/modelA4_small.so" ;
 
     GeoModel model ;
     if( !geomodel_volume_load( file_name, model ) ) {
@@ -80,13 +75,14 @@ int main( int argc, char** argv )
          model.nb_lines() != 98 ||
          model.nb_surfaces() != 55 ||
          model.nb_regions() != 8 ||
-         model.nb_interfaces() != 11 /*||
+         model.nb_interfaces() != 11 ||
+         model.nb_contacts() != 38 ||
          model.mesh.vertices.nb() != 6691 ||
          model.mesh.facets.nb() != 10049 ||
          model.mesh.cells.nb() != 34540 ||
          out_model.mesh.vertices.nb() != 4465 ||
          out_model.mesh.facets.nb() != 10049 ||
-         out_model.mesh.cells.nb() != 0*/) {
+         out_model.mesh.cells.nb() != 0 ) {
         res = false ;
     }
     if( res ) {
