@@ -577,9 +577,9 @@ namespace {
     /*----------------------------------------------------------------------------*/
 
     /*!
-    * @brief Get the BMME defining the boundaries of an element
+    * @brief Get the GMME defining the boundaries of an element
     */
-    void boundary_bmme(
+    void boundary_gmme(
         const GME& E,
         std::vector< GME::gme_t >& borders,
         bool with_inside_borders )
@@ -616,10 +616,10 @@ namespace {
 
     /*!
     * @brief Get the elements in the boundary of which @param E is
-    * @details For BMME, get the contents of the in_boundary vector
+    * @details For GMME, get the contents of the in_boundary vector
     *          For high level elements, determine in_boundary high level elements
     */
-    void in_boundary_bme( const GME& E, std::vector< GME::gme_t >& in_boundary )
+    void in_boundary_gme( const GME& E, std::vector< GME::gme_t >& in_boundary )
     {
         in_boundary.clear() ;
 
@@ -660,7 +660,7 @@ namespace {
             return ;
         } else {
             std::vector< GME::gme_t > borders ;
-            boundary_bmme( E, borders, false ) ;
+            boundary_gmme( E, borders, false ) ;
             if( borders.size() == 0 ) {
                 return ;
             } else {
@@ -1186,7 +1186,7 @@ namespace RINGMesh {
 
         for( index_t i = 0; i < GM.nb_interfaces(); ++i ) {
             std::vector< GME::gme_t > layers ;
-            in_boundary_bme( GM.one_interface( i ), layers ) ;
+            in_boundary_gme( GM.one_interface( i ), layers ) ;
             if( layers.size() == 0 ) {
                 GEO::Logger::warn( "GeoModel" ) 
                     << " Invalid interface: "
