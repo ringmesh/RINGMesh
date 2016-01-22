@@ -177,32 +177,13 @@ namespace RINGMesh {
                 }
             }
         }
+
         // Compute internal borders (remove adjacencies)
         compute_internal_borders() ;
 
         // Build GeoModel Lines and Corners from the surfaces
         model_.mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
-
-//        for (index_t l = 0 ; l < model_.nb_lines() ; ++l ) {
-////            std::ostringstream filename ;
-////            filename <<  "/home/anquez/Bureau/line_" << l  << ".obj" ;
-////            GEO::mesh_save(model_.line(l).mesh(),filename.str()) ;
-//            std::cout << model_.line(l).nb_cells() << std::endl ;
-//        }
-//        for ( index_t l = 0 ; l < model_.nb_lines() ; ++l ) {
-//            std::cout << "Line " << l << std::endl ;
-//            for (index_t s = 0 ; s < model_.line(l).nb_in_boundary() ; ++s ) {
-//                std::cout << model_.line(l).in_boundary(s).gme_id() << std::endl ;
-//            }
-//        }
-//
-//        for ( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
-//            std::cout << "Surface " << s << std::endl ;
-//            for (index_t l = 0 ; l < model_.surface(s).nb_boundaries() ; ++l ) {
-//                std::cout << model_.surface(s).boundary(l).gme_id() << std::endl ;
-//            }
-//        }
 
         // Regions boundaries
         compute_boundaries_of_geomodel_regions() ;
@@ -211,7 +192,7 @@ namespace RINGMesh {
         compute_universe_boundaries() ;
 
         // Contacts building
-//        build_contacts() ;
+        build_contacts() ;
 
         return true ;
 
@@ -384,7 +365,8 @@ namespace RINGMesh {
                             }
                             ++b ;
                         }
-                        if ( !surface_in_boundary ) {
+                        if ( !surface_in_boundary || ( surface_in_boundary &&
+                                side != surface_in_boundary_side ) ) {
                             add_element_boundary(
                                 GME::gme_t( GME::REGION, id_reg ),
                                 GME::gme_t( GME::SURFACE, surface ),
@@ -392,14 +374,6 @@ namespace RINGMesh {
                             add_element_in_boundary(
                                 GME::gme_t( GME::SURFACE, surface ),
                                 GME::gme_t( GME::REGION, id_reg ) ) ;
-                        } else if ( surface_in_boundary &&
-                                side != surface_in_boundary_side ) {
-                            // Case in which both sides of the surface
-                            // are in the boundaries of the region.
-                            add_element_boundary(
-                                GME::gme_t( GME::REGION, id_reg ),
-                                GME::gme_t( GME::SURFACE, surface ),
-                                side ) ;
                         }
                     }
                 }

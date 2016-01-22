@@ -43,6 +43,7 @@
 #include <ringmesh/well.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_builder_so.h>
+#include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_extension.h>
 
@@ -578,7 +579,7 @@ namespace RINGMesh {
                 if( builder.build_model() ) {
                     print_geomodel( model ) ;
                     // Check validity
-//                    RINGMesh::is_geomodel_valid( model ) ;
+                    RINGMesh::is_geomodel_valid( model ) ;
 
                     time( &end_load ) ;
 
