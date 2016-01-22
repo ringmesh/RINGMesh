@@ -55,7 +55,8 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::out( "TEST" ) << "Test IO for a mesh GeoModel in .so" << std::endl ;
+    GEO::Logger::out( "TEST" ) <<
+        "Test IO for a mesh GeoModel in .so" << std::endl ;
 
     std::string file_name( ringmesh_test_data_path ) ;
     file_name += "modelA4.so" ;
@@ -71,6 +72,8 @@ int main( int argc, char** argv )
     }
 
     bool res = true ;
+    // Check number of elements in the imported GeoModel (from TSolid file) and
+    // in the re-imported GeoModel (after an export in a .bm file)
     if ( model.nb_corners() != 52 ||
          model.nb_lines() != 98 ||
          model.nb_surfaces() != 55 ||
