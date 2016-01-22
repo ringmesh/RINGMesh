@@ -3,9 +3,10 @@
 
 
 OUTPUT_DIRECTORY       = @doc_output_dir@/devkit
-
+PROJECT_NUMBER         = "Version @RINGMesh_VERSION@"
 @INCLUDE               = @CMAKE_SOURCE_DIR@/doc/common.dox
 WARN_LOGFILE           = @doc_output_dir@/devkit.log
+IMAGE_PATH             = @CMAKE_SOURCE_DIR@/doc
 
 # Input files
 
