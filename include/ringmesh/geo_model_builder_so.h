@@ -98,7 +98,7 @@ namespace RINGMesh {
          */
 
         void add_new_property(
-            std::vector < std::string >& property_names,
+            std::vector< std::string >& property_names,
             GEO::AttributesManager& attribute_manager ) ;
 
         GME::gme_t create_region() ;
@@ -118,7 +118,7 @@ namespace RINGMesh {
          * @param[out] corners_id Indices of the four vertices
          */
         void read_tetraedra(
-            std::vector< index_t >& gocad_vertices2region_vertices,
+            const std::vector< index_t >& gocad_vertices2region_vertices,
             std::vector< index_t >& corners_id ) ;
 
         /*!
@@ -137,8 +137,8 @@ namespace RINGMesh {
             index_t surface_id,
             std::vector< index_t >& facet_corners,
             std::vector< index_t >& facet_ptr,
-            std::vector< index_t >& gocad_vertices2region_id,
-            std::vector< index_t >& gocad_vertices2region_vertices ) ;
+            const std::vector< index_t >& gocad_vertices2region_id,
+            const std::vector< index_t >& gocad_vertices2region_vertices ) ;
 
         void compute_internal_borders() ;
 
