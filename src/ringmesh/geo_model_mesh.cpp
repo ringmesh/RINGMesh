@@ -1235,7 +1235,6 @@ namespace RINGMesh {
                 }
             }
         }
-
     }
 
     vec3 GeoModelMeshCells::center( index_t c ) const
