@@ -46,12 +46,15 @@
 #include <geogram/basic/logger.h>
 
 #include <ringmesh/geometry.h>
+#include <ringmesh/geogram_extension.h>
 #include <ringmesh/utils.h>
 
 namespace RINGMesh {
 
     bool GeoModelBuilderTSolid::load_file()
     {
+        time_t t1, t2, t3, t4, t5, t6, t7, t8 ;
+        time ( &t1 ) ;
         GME::gme_t cur_region ;
 
         // First : count the number of vertex and tetras
@@ -61,11 +64,11 @@ namespace RINGMesh {
         print_number_of_mesh_elements( nb_elements_per_region ) ;
 
         // Region vertices
-        std::vector < vec3 > region_vertices ;
+        std::vector< vec3 > region_vertices ;
         // Region tetraedron corners
         std::vector< index_t > tetra_corners ;
         // Vector which maps the indices of vertices from Gocad .so file
-        // to the local (region) indices of vertices
+        // to the local (in region) indices of vertices
         std::vector< index_t > gocad_vertices2region_vertices ;
         // Vector which maps the indices of vertices from Gocad .so file
         // to the index of the region they belong to
@@ -80,6 +83,9 @@ namespace RINGMesh {
         index_t nb_cell_properties = 0 ;
         std::vector< std::string > vertex_property_names ;
         std::vector< std::string > cell_property_names ;
+
+        time ( &t2 ) ;
+        std::cerr << "t2 - t1 : " << t2 - t1 << std::endl ;
 
         // Then : Reading .so file
         while( !in_.eof() && in_.get_line() ) {
@@ -190,22 +196,42 @@ namespace RINGMesh {
             }
         }
 
+        time ( &t3 ) ;
+        std::cerr << "t3 - t2 : " << t3 - t2 << std::endl ;
+
         // Compute internal borders (by removing adjacencies on
         // triangle edges common to at least two surfaces)
         compute_internal_borders() ;
+
+        time ( &t4 ) ;
+        std::cerr << "t4 - t3 : " << t4 - t3 << std::endl ;
 
         // Build GeoModel Lines and Corners from the surfaces
         model_.mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
 
+        time ( &t5 ) ;
+        std::cerr << "t5 - t4 : " << t5 - t4 << std::endl ;
+
         // Regions boundaries
         compute_boundaries_of_geomodel_regions() ;
+
+        time ( &t6 ) ;
+        std::cerr << "t6 - t5 : " << t6 - t5 << std::endl ;
 
         // Universe boundaries
         compute_universe_boundaries() ;
 
+        time ( &t7 ) ;
+        std::cerr << "t7 - t6 : " << t7 - t6 << std::endl ;
+
         // Contacts building
         build_contacts() ;
+
+        time ( &t8 ) ;
+        std::cerr << "t8 - t7 : " << t8 - t7 << std::endl ;
+
+        std::cerr << "Total : " << t8 - t1 << std::endl ;
 
         return true ;
 
@@ -261,6 +287,8 @@ namespace RINGMesh {
     void GeoModelBuilderTSolid::read_number_of_mesh_elements(
             std::vector< index_t >& nb_elements_par_region )
     {
+        nb_elements_par_region.clear() ;
+
         // Define a new LineInput counting number of elements
         GEO::LineInput line_input( filename_ ) ;
 
@@ -357,45 +385,79 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_boundaries_of_geomodel_regions()
     {
-        ///@todo Find how to accelerate this part which take a lot of time
+        std::vector< ColocaterANN* > reg_anns( model_.nb_regions(), nil ) ;
         for( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
-            const index_t id_reg = model_.region(r).index() ;
-            const GeoModelMeshCells& gmm_cells = model_.mesh.cells ;
-            const index_t nb_tet = gmm_cells.nb_tet( id_reg ) ;
-            for( index_t c = 0 ; c < nb_tet ; ++c ) {
-                for( index_t f = 0; f < 4 ; ++f ) {
-                    index_t facet = NO_ID ;
-                    bool side = false ;
-                    if( gmm_cells.is_cell_facet_on_surface(
-                            gmm_cells.tet( id_reg, c ), f, facet, side ) ) {
-                        const index_t surface = model_.mesh.facets.surface( facet ) ;
-                        bool surface_in_boundary = false ;
-                        bool surface_in_boundary_side = false ;
-                        index_t b = 0 ;
-                        while( !( surface_in_boundary &&
-                                side == surface_in_boundary_side )
-                                && b < model_.region(r).nb_boundaries() ) {
-                            if( model_.region(r).boundary(b).gme_id() ==
-                                    model_.surface( surface ).gme_id() ) {
-                                surface_in_boundary = true ;
-                                surface_in_boundary_side =
-                                    model_.region(r).side(b) ;
-                            }
-                            ++b ;
-                        }
-                        if( !surface_in_boundary || ( surface_in_boundary &&
-                                side != surface_in_boundary_side ) ) {
+            const Region& reg = model_.region( r ) ;
+            const index_t nb_cells = reg.nb_cells() ;
+            std::vector< vec3 > cell_facet_centers ;
+            cell_facet_centers.reserve( 4 * nb_cells ) ;
+            for( index_t c = 0 ; c < nb_cells ; ++c ) {
+                cell_facet_centers.push_back(
+                    mesh_cell_facet_center( reg.mesh(), c, 0 ) ) ;
+                cell_facet_centers.push_back(
+                    mesh_cell_facet_center( reg.mesh(), c, 1 ) ) ;
+                cell_facet_centers.push_back(
+                    mesh_cell_facet_center( reg.mesh(), c, 2 ) ) ;
+                cell_facet_centers.push_back(
+                    mesh_cell_facet_center( reg.mesh(), c, 3 ) ) ;
+            }
+            reg_anns[r] = new ColocaterANN( cell_facet_centers, true ) ;
+        }
+        for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+            const Surface& surf = model_.surface( s ) ;
+            vec3 first_facet_center = surf.facet_barycenter( 0 ) ;
+            vec3 first_facet_normal = surf.facet_normal( 0 ) ;
+            for( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
+                std::vector< index_t > result ;
+                reg_anns[r]->get_colocated( first_facet_center, result ) ;
+                switch( result.size() ) {
+                    case 0 :
+                        break ;
+                    case 1 :
+                        {
+                            index_t local_facet_id = result[0] % 4 ;
+                            index_t cell_id =
+                                0.25 * ( result[0] - local_facet_id ) ;
+                            vec3 cell_facet_normal =
+                                mesh_cell_facet_normal( model_.region(r).mesh(),
+                                    cell_id,
+                                    local_facet_id ) ;
+                            bool side =
+                                dot( first_facet_normal, cell_facet_normal ) > 0 ;
                             add_element_boundary(
-                                GME::gme_t( GME::REGION, id_reg ),
-                                GME::gme_t( GME::SURFACE, surface ),
+                                GME::gme_t( GME::REGION, r ),
+                                GME::gme_t( GME::SURFACE, s ),
                                 side ) ;
                             add_element_in_boundary(
-                                GME::gme_t( GME::SURFACE, surface ),
-                                GME::gme_t( GME::REGION, id_reg ) ) ;
+                                GME::gme_t( GME::SURFACE, s ),
+                                GME::gme_t( GME::REGION, r ) ) ;
+                            break ;
                         }
-                    }
+                    case 2 :
+                        {
+                            add_element_boundary(
+                                GME::gme_t( GME::REGION, r ),
+                                GME::gme_t( GME::SURFACE, s ),
+                                true ) ;
+                            add_element_in_boundary(
+                                GME::gme_t( GME::SURFACE, s ),
+                                GME::gme_t( GME::REGION, r ) ) ;
+                            add_element_boundary(
+                                GME::gme_t( GME::REGION, r ),
+                                GME::gme_t( GME::SURFACE, s ),
+                                false ) ;
+                            add_element_in_boundary(
+                                GME::gme_t( GME::SURFACE, s ),
+                                GME::gme_t( GME::REGION, r ) ) ;
+                            break ;
+                        }
+                    default :
+                        ringmesh_assert_not_reached ;
                 }
             }
+        }
+        for( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
+            delete reg_anns[r] ;
         }
     }
 
@@ -491,10 +553,6 @@ namespace RINGMesh {
             }
             anns[s] = new ColocaterANN( facet_edge_barycenters, true ) ;
         }
-        // TODO : What is this ????? [Jeanne]
-        // It is not at all the job of this function to take care of tasks like this one
-        // All the functions to do that are implemented in Mesh or somewhere else
-        // 2nd remark  DO NOT EVER use geometry to compute combinatorial things [Jeanne]
         for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
             const Surface& S = model_.surface(s) ;
             for( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
