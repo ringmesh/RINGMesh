@@ -386,78 +386,118 @@ namespace RINGMesh {
     void GeoModelBuilderTSolid::compute_boundaries_of_geomodel_regions()
     {
         std::vector< ColocaterANN* > reg_anns( model_.nb_regions(), nil ) ;
-        for( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
-            const Region& reg = model_.region( r ) ;
-            const index_t nb_cells = reg.nb_cells() ;
-            std::vector< vec3 > cell_facet_centers ;
-            cell_facet_centers.reserve( 4 * nb_cells ) ;
-            for( index_t c = 0 ; c < nb_cells ; ++c ) {
-                cell_facet_centers.push_back(
-                    mesh_cell_facet_center( reg.mesh(), c, 0 ) ) ;
-                cell_facet_centers.push_back(
-                    mesh_cell_facet_center( reg.mesh(), c, 1 ) ) ;
-                cell_facet_centers.push_back(
-                    mesh_cell_facet_center( reg.mesh(), c, 2 ) ) ;
-                cell_facet_centers.push_back(
-                    mesh_cell_facet_center( reg.mesh(), c, 3 ) ) ;
-            }
-            reg_anns[r] = new ColocaterANN( cell_facet_centers, true ) ;
-        }
+        compute_cell_facet_centers_region_anns( reg_anns ) ;
         for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
-            const Surface& surf = model_.surface( s ) ;
-            vec3 first_facet_center = surf.facet_barycenter( 0 ) ;
-            vec3 first_facet_normal = surf.facet_normal( 0 ) ;
-            for( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
-                std::vector< index_t > result ;
-                reg_anns[r]->get_colocated( first_facet_center, result ) ;
-                switch( result.size() ) {
-                    case 0 :
-                        break ;
-                    case 1 :
-                        {
-                            index_t local_facet_id = result[0] % 4 ;
-                            index_t cell_id =
-                                0.25 * ( result[0] - local_facet_id ) ;
-                            vec3 cell_facet_normal =
-                                mesh_cell_facet_normal( model_.region(r).mesh(),
-                                    cell_id,
-                                    local_facet_id ) ;
-                            bool side =
-                                dot( first_facet_normal, cell_facet_normal ) > 0 ;
-                            add_element_boundary(
-                                GME::gme_t( GME::REGION, r ),
-                                GME::gme_t( GME::SURFACE, s ),
-                                side ) ;
-                            add_element_in_boundary(
-                                GME::gme_t( GME::SURFACE, s ),
-                                GME::gme_t( GME::REGION, r ) ) ;
-                            break ;
-                        }
-                    case 2 :
-                        {
-                            add_element_boundary(
-                                GME::gme_t( GME::REGION, r ),
-                                GME::gme_t( GME::SURFACE, s ),
-                                true ) ;
-                            add_element_in_boundary(
-                                GME::gme_t( GME::SURFACE, s ),
-                                GME::gme_t( GME::REGION, r ) ) ;
-                            add_element_boundary(
-                                GME::gme_t( GME::REGION, r ),
-                                GME::gme_t( GME::SURFACE, s ),
-                                false ) ;
-                            add_element_in_boundary(
-                                GME::gme_t( GME::SURFACE, s ),
-                                GME::gme_t( GME::REGION, r ) ) ;
-                            break ;
-                        }
-                    default :
-                        ringmesh_assert_not_reached ;
-                }
-            }
+            add_surface_to_region_boundaries( s, reg_anns ) ;
         }
         for( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
             delete reg_anns[r] ;
+        }
+    }
+
+    void GeoModelBuilderTSolid::compute_cell_facet_centers_region_anns(
+        std::vector< ColocaterANN* >& region_anns )
+    {
+        for( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
+            std::vector< vec3 > cell_facet_centers ;
+            compute_region_cell_facet_centers( r, cell_facet_centers ) ;
+            region_anns[r] = new ColocaterANN( cell_facet_centers, true ) ;
+        }
+    }
+
+    void GeoModelBuilderTSolid::compute_region_cell_facet_centers(
+        const index_t region_id,
+        std::vector< vec3 >& cell_facet_centers )
+    {
+        const Region& region = model_.region( region_id ) ;
+        const index_t nb_cells = region.nb_cells() ;
+        cell_facet_centers.reserve( 4 * nb_cells ) ;
+        for( index_t c = 0 ; c < nb_cells ; ++c ) {
+            for( index_t f = 0 ; f <= 3 ; ++f ) {
+                cell_facet_centers.push_back(
+                    mesh_cell_facet_center( region.mesh(), c, f ) ) ;
+            }
+        }
+    }
+
+    void GeoModelBuilderTSolid::add_surface_to_region_boundaries(
+        const index_t surface_id,
+        const std::vector< ColocaterANN* >& region_anns )
+    {
+        index_t cur_region = 0 ;
+        index_t nb_added_surf_sides = 0 ;
+        while ( cur_region < model_.nb_regions() && nb_added_surf_sides < 2 ) {
+            std::vector< index_t > colocated_cell_facet_centers ;
+            index_t nb_surf_sides_are_boundary =
+                are_surface_sides_region_boundaries(
+                    surface_id,
+                    cur_region,
+                    *region_anns[cur_region],
+                    colocated_cell_facet_centers ) ;
+            if ( nb_surf_sides_are_boundary > 0 ) {
+                add_surface_sides_to_region_boundaries(
+                    surface_id,
+                    cur_region,
+                    colocated_cell_facet_centers ) ;
+                nb_added_surf_sides += nb_surf_sides_are_boundary ;
+            }
+            ++cur_region ;
+        }
+    }
+
+    index_t GeoModelBuilderTSolid::are_surface_sides_region_boundaries(
+        const index_t surface_id,
+        const index_t region_id,
+        const ColocaterANN& region_ann,
+        std::vector< index_t >& colocated_cell_facet_centers )
+    {
+        const Surface& surface = model_.surface( surface_id ) ;
+        vec3 first_facet_center = surface.facet_barycenter( 0 ) ;
+        region_ann.get_colocated( first_facet_center,
+            colocated_cell_facet_centers ) ;
+        return colocated_cell_facet_centers.size() ;
+    }
+
+    void GeoModelBuilderTSolid::add_surface_sides_to_region_boundaries(
+        const index_t surface_id,
+        const index_t region_id,
+        const std::vector< index_t >& colocated_cell_facet_centers )
+    {
+        switch( colocated_cell_facet_centers.size() ) {
+            case 1 :
+                {
+                    index_t local_facet_id = colocated_cell_facet_centers[0] % 4 ;
+                    index_t cell_id =
+                        0.25 * ( colocated_cell_facet_centers[0] - local_facet_id ) ;
+                    vec3 cell_facet_normal =
+                        mesh_cell_facet_normal(
+                            model_.region( region_id ).mesh(),
+                            cell_id,
+                            local_facet_id ) ;
+                    vec3 first_facet_normal =
+                        model_.surface( surface_id ).facet_normal( 0 ) ;
+                    bool side =
+                        dot( first_facet_normal, cell_facet_normal ) > 0 ;
+                    fill_region_and_surface_boundaries_links(
+                        region_id,
+                        surface_id,
+                        side ) ;
+                    break ;
+                }
+            case 2 :
+                {
+                    fill_region_and_surface_boundaries_links(
+                        region_id,
+                        surface_id,
+                        true ) ;
+                    fill_region_and_surface_boundaries_links(
+                        region_id,
+                        surface_id,
+                        false ) ;
+                    break ;
+                }
+            default :
+                ringmesh_assert_not_reached ;
         }
     }
 
@@ -579,5 +619,19 @@ namespace RINGMesh {
         for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
             delete anns[s] ;
         }
+    }
+
+    void GeoModelBuilderTSolid::fill_region_and_surface_boundaries_links(
+        const index_t region_id,
+        const index_t surface_id,
+        const bool surf_side )
+    {
+        add_element_boundary(
+            GME::gme_t( GME::REGION, region_id ),
+            GME::gme_t( GME::SURFACE, surface_id ),
+            surf_side ) ;
+        add_element_in_boundary(
+            GME::gme_t( GME::SURFACE, surface_id ),
+            GME::gme_t( GME::REGION, region_id ) ) ;
     }
 }

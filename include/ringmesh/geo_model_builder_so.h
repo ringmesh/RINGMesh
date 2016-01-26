@@ -93,7 +93,7 @@ namespace RINGMesh {
             const std::vector< index_t >& nb_elements_per_region ) const ;
 
         /*! @}
-         * \name Other functions
+         * \name Other helper functions
          * @{
          */
 
@@ -127,6 +127,67 @@ namespace RINGMesh {
         void compute_boundaries_of_geomodel_regions() ;
 
         /*!
+         * @brief Computes the colocaters of the centers of cell facets for
+         * each region
+         * @param[out] region_anns Pointers to the ColocaterANNs
+         */
+        void compute_cell_facet_centers_region_anns(
+            std::vector< ColocaterANN* >& region_anns ) ;
+
+        /*!
+         * @brief Builds a vector with the center of the cell
+         * facets of a given region
+         * @param[in] region_id Index of the region
+         * @param[out] cell_facet_centers Vector of cell facet centers
+         */
+        void compute_region_cell_facet_centers(
+            const index_t region_id,
+            std::vector< vec3 >& cell_facet_centers ) ;
+
+        /*!
+         * @brief Sets the given surface as regions boundaries
+         * @details Based on ColocaterANN, retrieves the regions bounded by the
+         * given surface. One side or the both sides of the surface
+         * could bound model regions.
+         * @param[in] surface_id Index of the surface
+         * @param[in] region_anns Vector of ColocaterANN of the model regions
+         */
+        void add_surface_to_region_boundaries(
+            const index_t surface_id,
+            const std::vector< ColocaterANN* >& region_anns ) ;
+
+        /*!
+         * @brief Tests if a @p surface is a boundary of the @p region.
+         * @details If it is the case, add the surface to the boundaries of
+         * the region and the region to the in_boundaries of the surface
+         * @param[in] surface_id Index of the surface
+         * @param[in] region_id Index of the region
+         * @param[in] region_anns Vector of ColocaterANN of the model regions
+         * @param[out] colocated_cell_facet_centers Vector of colocated cell
+         * facet centers
+         * @return The number of surface sides bounding the region
+         */
+        index_t are_surface_sides_region_boundaries(
+            const index_t surface_id,
+            const index_t region_id,
+            const ColocaterANN& region_ann,
+            std::vector< index_t >& colocated_cell_facet_centers ) ;
+
+        /*!
+         * @brief Adds the surface sides which bound the region to the
+         * boundaries of the region (and add the region to in boundaries
+         * of the surface)
+         * @param[in] surface_id Index of the surface
+         * @param[in] region_id Index of the region
+         * @param[in] colocated_cell_facet_centers Vector of colocated cell
+         * facet centers
+         */
+        void add_surface_sides_to_region_boundaries(
+            const index_t surface_id,
+            const index_t region_id,
+            const std::vector< index_t >& colocated_cell_facet_centers ) ;
+
+        /*!
          * @brief Sets the boundaries of region Universe
          * @details A surface is set in the boundaries of region Universe if
          * only one of its sides belongs to the boundaries of other regions.
@@ -141,6 +202,18 @@ namespace RINGMesh {
             const std::vector< index_t >& gocad_vertices2region_vertices ) ;
 
         void compute_internal_borders() ;
+
+        /*!
+         * @brief Both add the surface in the boundaries of a region and
+         * add the region to the in_boundaries of the surface
+         * @param[in] region_id Index of the region
+         * @param[in] surface_id Index of the surface
+         * @param[in] surf_side Side of the surface bounding the region
+         */
+        void fill_region_and_surface_boundaries_links(
+            const index_t region_id,
+            const index_t surface_id,
+            const bool surf_side ) ;
 
         /*! @}
          */
