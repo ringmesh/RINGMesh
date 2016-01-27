@@ -285,7 +285,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTSolid::read_number_of_mesh_elements(
-            std::vector< index_t >& nb_elements_par_region )
+            std::vector< index_t >& nb_elements_par_region ) const
     {
         nb_elements_par_region.clear() ;
 
@@ -361,7 +361,7 @@ namespace RINGMesh {
         return cur_region ;
     }
 
-    void GeoModelBuilderTSolid::read_vertex_coordinates( vec3& vertex )
+    void GeoModelBuilderTSolid::read_vertex_coordinates( vec3& vertex ) const
     {
         vertex.x = in_.field_as_double( 2 ) ;
         vertex.y = in_.field_as_double( 3 ) ;
@@ -370,7 +370,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::read_tetraedra(
             const std::vector< index_t >& gocad_vertices2region_vertices,
-            std::vector< index_t >& corners_id )
+            std::vector< index_t >& corners_id ) const
     {
         ringmesh_debug_assert( corners_id.size() == 4 ) ;
         corners_id[0] =
@@ -396,7 +396,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTSolid::compute_cell_facet_centers_region_anns(
-        std::vector< ColocaterANN* >& region_anns )
+        std::vector< ColocaterANN* >& region_anns ) const
     {
         for( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
             std::vector< vec3 > cell_facet_centers ;
@@ -407,7 +407,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_region_cell_facet_centers(
         const index_t region_id,
-        std::vector< vec3 >& cell_facet_centers )
+        std::vector< vec3 >& cell_facet_centers ) const
     {
         const Region& region = model_.region( region_id ) ;
         const index_t nb_cells = region.nb_cells() ;
@@ -426,6 +426,7 @@ namespace RINGMesh {
     {
         index_t cur_region = 0 ;
         index_t nb_added_surf_sides = 0 ;
+        // Maximum 2 regions could be bounded by a single surface
         while ( cur_region < model_.nb_regions() && nb_added_surf_sides < 2 ) {
             std::vector< index_t > colocated_cell_facet_centers ;
             index_t nb_surf_sides_are_boundary =
@@ -449,7 +450,7 @@ namespace RINGMesh {
         const index_t surface_id,
         const index_t region_id,
         const ColocaterANN& region_ann,
-        std::vector< index_t >& colocated_cell_facet_centers )
+        std::vector< index_t >& colocated_cell_facet_centers ) const
     {
         const Surface& surface = model_.surface( surface_id ) ;
         vec3 first_facet_center = surface.facet_barycenter( 0 ) ;
@@ -465,64 +466,111 @@ namespace RINGMesh {
     {
         switch( colocated_cell_facet_centers.size() ) {
             case 1 :
-                {
-                    index_t local_facet_id = colocated_cell_facet_centers[0] % 4 ;
-                    index_t cell_id =
-                        0.25 * ( colocated_cell_facet_centers[0] - local_facet_id ) ;
-                    vec3 cell_facet_normal =
-                        mesh_cell_facet_normal(
-                            model_.region( region_id ).mesh(),
-                            cell_id,
-                            local_facet_id ) ;
-                    vec3 first_facet_normal =
-                        model_.surface( surface_id ).facet_normal( 0 ) ;
-                    bool side =
-                        dot( first_facet_normal, cell_facet_normal ) > 0 ;
-                    fill_region_and_surface_boundaries_links(
-                        region_id,
-                        surface_id,
-                        side ) ;
-                    break ;
-                }
+                add_one_surface_side_to_region_boundaries(
+                    region_id,
+                    surface_id,
+                    colocated_cell_facet_centers[0] ) ;
+                break ;
             case 2 :
-                {
-                    fill_region_and_surface_boundaries_links(
-                        region_id,
-                        surface_id,
-                        true ) ;
-                    fill_region_and_surface_boundaries_links(
-                        region_id,
-                        surface_id,
-                        false ) ;
-                    break ;
-                }
+                add_both_surface_sides_to_region_boundaries(
+                    region_id,
+                    surface_id ) ;
+                break ;
             default :
                 ringmesh_assert_not_reached ;
         }
     }
 
+    void GeoModelBuilderTSolid::add_one_surface_side_to_region_boundaries(
+        const index_t region_id,
+        const index_t surface_id,
+        const index_t cell_facet_center_id )
+    {
+        bool side = determine_surface_side_to_add(
+            region_id,
+            surface_id,
+            cell_facet_center_id ) ;
+        fill_region_and_surface_boundaries_links(
+            region_id,
+            surface_id,
+            side ) ;
+    }
+
+    bool GeoModelBuilderTSolid::determine_surface_side_to_add(
+        const index_t region_id,
+        const index_t surface_id,
+        const index_t cell_facet_center_id ) const
+    {
+        index_t local_facet_id = cell_facet_center_id % 4 ;
+        index_t cell_id =
+            0.25 * ( cell_facet_center_id - local_facet_id ) ;
+        vec3 cell_facet_normal =
+            mesh_cell_facet_normal(
+                model_.region( region_id ).mesh(),
+                cell_id,
+                local_facet_id ) ;
+        vec3 first_facet_normal =
+            model_.surface( surface_id ).facet_normal( 0 ) ;
+        return dot( first_facet_normal, cell_facet_normal ) > 0 ;
+    }
+
+    void GeoModelBuilderTSolid::add_both_surface_sides_to_region_boundaries(
+        const index_t region_id,
+        const index_t surface_id )
+
+    {
+        fill_region_and_surface_boundaries_links(
+            region_id,
+            surface_id,
+            true ) ;
+        fill_region_and_surface_boundaries_links(
+            region_id,
+            surface_id,
+            false ) ;
+    }
+
     void GeoModelBuilderTSolid::compute_universe_boundaries()
     {
-        std::vector< bool > surf_side_minus( model_.nb_surfaces(), false ) ;
-        std::vector< bool > surf_side_plus( model_.nb_surfaces(), false ) ;
+        // The universe boundaries are the surfaces with only one side in all
+        // the boundaries of the other regions
+        std::vector< bool > surf_minus_side( model_.nb_surfaces(), false ) ;
+        std::vector< bool > surf_plus_side( model_.nb_surfaces(), false ) ;
+        determine_if_surface_sides_bound_regions(
+            surf_minus_side,
+            surf_plus_side ) ;
+        add_surfaces_to_universe_boundaries(
+            surf_minus_side,
+            surf_plus_side ) ;
+    }
+
+    void GeoModelBuilderTSolid::determine_if_surface_sides_bound_regions(
+        std::vector< bool >& surf_minus_side,
+        std::vector< bool >& surf_plus_side ) const
+    {
         for( index_t r = 0 ; r < model_.nb_regions() ; ++r ) {
             for( index_t s = 0 ; s < model_.region(r).nb_boundaries() ; ++s ) {
                 if( model_.region(r).side(s) ) {
-                    surf_side_plus[ model_.region(r).boundary(s).index() ] = true ;
+                    surf_plus_side[ model_.region(r).boundary(s).index() ] = true ;
                 } else if( !model_.region(r).side(s) ) {
-                    surf_side_minus[ model_.region(r).boundary(s).index() ] = true ;
+                    surf_minus_side[ model_.region(r).boundary(s).index() ] = true ;
                 } else {
                     ringmesh_assert_not_reached
                 }
             }
         }
+    }
+
+    void GeoModelBuilderTSolid::add_surfaces_to_universe_boundaries(
+        const std::vector< bool >& surf_minus_side,
+        const std::vector< bool >& surf_plus_side )
+    {
         for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
-            if( surf_side_minus[s] && !surf_side_plus[s] ) {
+            if( surf_minus_side[s] && !surf_plus_side[s] ) {
                 add_element_boundary(
                     GME::gme_t( GME::REGION, NO_ID ),
                     GME::gme_t( GME::SURFACE, s ),
                     false ) ;
-            } else if( !surf_side_minus[s] && surf_side_plus[s] ) {
+            } else if( !surf_minus_side[s] && surf_plus_side[s] ) {
                 add_element_boundary(
                     GME::gme_t( GME::REGION, NO_ID ),
                     GME::gme_t( GME::SURFACE, s ),
@@ -532,11 +580,11 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTSolid::build_surface(
-            index_t surface_id,
-            std::vector< index_t >& facet_corners,
-            std::vector< index_t >& facet_ptr,
-            const std::vector< index_t >& gocad_vertices2region_id,
-            const std::vector< index_t >& gocad_vertices2region_vertices )
+        index_t surface_id,
+        std::vector< index_t >& facet_corners,
+        std::vector< index_t >& facet_ptr,
+        const std::vector< index_t >& gocad_vertices2region_id,
+        const std::vector< index_t >& gocad_vertices2region_vertices )
     {
         std::vector< vec3 > cur_surf_points ;
         std::vector< index_t > cur_surf_facets ;
