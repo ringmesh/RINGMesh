@@ -47,32 +47,24 @@
 
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_extension.h>
-#include <ringmesh/utils.h>
 
 namespace RINGMesh {
 
     bool GeoModelBuilderTSolid::load_file()
     {
-        time_t t1, t2, t3, t4, t5, t6, t7, t8 ;
-        time ( &t1 ) ;
         GME::gme_t cur_region ;
 
         // First : count the number of vertex and tetras
         // in each region
         std::vector< index_t > nb_elements_per_region ;
         read_number_of_mesh_elements( nb_elements_per_region ) ;
-        print_number_of_mesh_elements( nb_elements_per_region ) ;
 
         // Region vertices
         std::vector< vec3 > region_vertices ;
-        // Region tetraedron corners
+        region_vertices.reserve( nb_elements_per_region[0] ) ;
+        // Region tetrahedron corners
         std::vector< index_t > tetra_corners ;
-//        // Vector which maps the indices of vertices from Gocad .so file
-//        // to the local (in region) indices of vertices
-//        std::vector< index_t > gocad_vertices2region_vertices ;
-//        // Vector which maps the indices of vertices from Gocad .so file
-//        // to the index of the region they belong to
-//        std::vector< index_t > gocad_vertices2region_id ;
+        tetra_corners.reserve( 4 * nb_elements_per_region[0] ) ;
 
         GME::gme_t current_interface ;
         GME::gme_t current_surface ;
@@ -83,9 +75,6 @@ namespace RINGMesh {
         index_t nb_cell_properties = 0 ;
         std::vector< std::string > vertex_property_names ;
         std::vector< std::string > cell_property_names ;
-
-        time ( &t2 ) ;
-        std::cerr << "t2 - t1 : " << t2 - t1 << std::endl ;
 
         // Then : Reading .so file
         while( !in_.eof() && in_.get_line() ) {
@@ -105,45 +94,25 @@ namespace RINGMesh {
                         model_.mesh.cell_attribute_manager() ) ;
                 } else if( in_.field_matches( 0, "TVOLUME" ) ) {
                     if( region_vertices.size() > 0 ) {
-                        set_region_geometry( cur_region.index,
+                        const index_t region_id = cur_region.index ;
+                        build_region(
+                            region_id,
+                            nb_elements_per_region[ 2*region_id ],
+                            nb_elements_per_region[ 2*region_id + 1 ],
                             region_vertices,
                             tetra_corners ) ;
-                        region_vertices.clear() ;
-                        tetra_corners.clear() ;
                     }
                     cur_region = create_region() ;
                 } else if( in_.field_matches( 0, "VRTX" ) ||
                     in_.field_matches( 0, "PVRTX" ) ) {
-                    gocad_vertices2region_vertices_.push_back(
-                        region_vertices.size() ) ;
-                    gocad_vertices2region_id_.push_back( cur_region.index ) ;
-                    vec3 vertex ;
-                    read_vertex_coordinates( vertex ) ;
-                    region_vertices.push_back( vertex ) ;
+                    read_and_add_vertex_to_region_vertices(
+                        cur_region.index,
+                        region_vertices ) ;
                 } else if( in_.field_matches( 0, "ATOM" ) ||
                     in_.field_matches( 0, "PATOM" ) ) {
-                    const index_t referring_vertex = in_.field_as_double( 2 ) - 1 ;
-                    index_t referred_vertex_local_id =
-                            gocad_vertices2region_vertices_[referring_vertex] ;
-                    index_t referred_vertex_region_id =
-                            gocad_vertices2region_id_[referring_vertex] ;
-
-                    if( referred_vertex_region_id < cur_region.index ) {
-                        // If the atom referred to a vertex of another region,
-                        // acting like for a vertex
-                        gocad_vertices2region_vertices_.push_back(
-                            region_vertices.size() );
-                        gocad_vertices2region_id_.push_back( cur_region.index ) ;
-                        region_vertices.push_back(
-                                model_.region( referred_vertex_region_id ).vertex(
-                                        referred_vertex_local_id ) ) ;
-                    } else {
-                        // If the atom referred to an atom of the same region
-                        gocad_vertices2region_vertices_.push_back(
-                            referred_vertex_local_id ) ;
-                        gocad_vertices2region_id_.push_back(
-                            referred_vertex_region_id ) ;
-                    }
+                    read_and_add_atom_to_region_vertices(
+                        cur_region.index,
+                        region_vertices ) ;
                 } else if( in_.field_matches( 0, "TETRA" ) ) {
                     // Reading and create a tetra
                     std::vector< index_t > corners(4) ;
@@ -156,11 +125,12 @@ namespace RINGMesh {
                     set_model_name( in_.field( 1 ) ) ;
                 } else if( in_.field_matches( 0, "MODEL" ) ) {
                     if( region_vertices.size() > 0 ) {
-                        set_region_geometry ( cur_region.index,
+                        build_region(
+                            cur_region.index ,
+                            0,
+                            0,
                             region_vertices,
                             tetra_corners ) ;
-                        region_vertices.clear() ;
-                        tetra_corners.clear() ;
                     }
                 } else if( in_.field_matches( 0, "SURFACE" ) ) {
                     current_interface = create_element( GME::INTERFACE ) ;
@@ -177,9 +147,7 @@ namespace RINGMesh {
                     set_element_parent( current_surface, current_interface ) ;
                     add_element_child( current_interface, current_surface ) ;
                 } else if( in_.field_matches( 0, "TRGL" ) ) {
-                    cur_surf_facets.push_back( in_.field_as_uint( 1 ) - 1 ) ;
-                    cur_surf_facets.push_back( in_.field_as_uint( 2 ) - 1 ) ;
-                    cur_surf_facets.push_back( in_.field_as_uint( 3 ) - 1 ) ;
+                    read_triangle( cur_surf_facets ) ;
                     cur_surf_facet_ptr.push_back( cur_surf_facets.size() ) ;
                 } else if( in_.field_matches( 0, "MODEL_REGION" ) ) {
                     // Compute the last surface
@@ -192,42 +160,22 @@ namespace RINGMesh {
             }
         }
 
-        time ( &t3 ) ;
-        std::cerr << "t3 - t2 : " << t3 - t2 << std::endl ;
-
         // Compute internal borders (by removing adjacencies on
         // triangle edges common to at least two surfaces)
-        compute_internal_borders() ;
-
-        time ( &t4 ) ;
-        std::cerr << "t4 - t3 : " << t4 - t3 << std::endl ;
+        compute_surfaces_internal_borders() ;
 
         // Build GeoModel Lines and Corners from the surfaces
         model_.mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
 
-        time ( &t5 ) ;
-        std::cerr << "t5 - t4 : " << t5 - t4 << std::endl ;
-
         // Regions boundaries
         compute_boundaries_of_geomodel_regions() ;
-
-        time ( &t6 ) ;
-        std::cerr << "t6 - t5 : " << t6 - t5 << std::endl ;
 
         // Universe boundaries
         compute_universe_boundaries() ;
 
-        time ( &t7 ) ;
-        std::cerr << "t7 - t6 : " << t7 - t6 << std::endl ;
-
         // Contacts building
         build_contacts() ;
-
-        time ( &t8 ) ;
-        std::cerr << "t8 - t7 : " << t8 - t7 << std::endl ;
-
-        std::cerr << "Total : " << t8 - t1 << std::endl ;
 
         return true ;
 
@@ -281,7 +229,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTSolid::read_number_of_mesh_elements(
-            std::vector< index_t >& nb_elements_par_region ) const
+        std::vector< index_t >& nb_elements_par_region )
     {
         nb_elements_par_region.clear() ;
 
@@ -295,6 +243,9 @@ namespace RINGMesh {
         index_t nb_surfaces_in_bmodel = 0 ;
         index_t nb_triangles_in_bmodel = 0 ;
 
+        // Total (for the whole model) counter
+        index_t nb_vertices_in_model = 0 ;
+
         // Reading file
         while( !line_input.eof() && line_input.get_line() ) {
             line_input.get_fields() ;
@@ -302,10 +253,13 @@ namespace RINGMesh {
                 if( line_input.field_matches( 0, "TVOLUME" ) ||
                         line_input.field_matches( 0, "MODEL" ) ) {
                     if( cur_region != NO_ID ) {
-                        nb_elements_par_region.push_back( nb_vertices_in_region ) ;
+                        nb_elements_par_region.push_back(
+                            nb_vertices_in_region ) ;
                         nb_elements_par_region.push_back( nb_tetras_in_region ) ;
+                        nb_vertices_in_model += nb_vertices_in_region ;
                         nb_vertices_in_region = 0 ;
                         nb_tetras_in_region = 0 ;
+
                     }
                     ++cur_region ;
                 } else if( line_input.field_matches( 0, "VRTX" ) ||
@@ -318,10 +272,12 @@ namespace RINGMesh {
                 }
             }
         }
+        gocad_vertices2region_id_.reserve( nb_vertices_in_model ) ;
+        gocad_vertices2region_vertices_.reserve( nb_vertices_in_model ) ;
     }
 
     void GeoModelBuilderTSolid::print_number_of_mesh_elements(
-            const std::vector< index_t >& nb_elements_per_region ) const
+        const std::vector< index_t >& nb_elements_per_region ) const
     {
         const index_t nb_regions = 0.5 * nb_elements_per_region.size() ;
         GEO::Logger::out( "Mesh" )
@@ -341,8 +297,8 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTSolid::add_new_property(
-            std::vector< std::string >& property_names,
-            GEO::AttributesManager& attribute_manager )
+        std::vector< std::string >& property_names,
+        GEO::AttributesManager& attribute_manager )
     {
         property_names.push_back( in_.field(1) ) ;
         /// @todo All the property types are double.
@@ -357,6 +313,45 @@ namespace RINGMesh {
         return cur_region ;
     }
 
+    void GeoModelBuilderTSolid::read_and_add_vertex_to_region_vertices(
+        const index_t region_id,
+        std::vector < vec3 >& region_vertices )
+    {
+        gocad_vertices2region_vertices_.push_back(
+            region_vertices.size() ) ;
+        gocad_vertices2region_id_.push_back( region_id ) ;
+        vec3 vertex ;
+        read_vertex_coordinates( vertex ) ;
+        region_vertices.push_back( vertex ) ;
+    }
+
+    void GeoModelBuilderTSolid::read_and_add_atom_to_region_vertices(
+        const index_t region_id,
+        std::vector < vec3 >& region_vertices )
+    {
+        const index_t referring_vertex = in_.field_as_double( 2 ) - 1 ;
+        const index_t referred_vertex_local_id =
+                gocad_vertices2region_vertices_[referring_vertex] ;
+        const index_t referred_vertex_region_id =
+                gocad_vertices2region_id_[referring_vertex] ;
+        if( referred_vertex_region_id < region_id ) {
+            // If the atom referred to a vertex of another region,
+            // acting like for a vertex
+            gocad_vertices2region_vertices_.push_back(
+                region_vertices.size() );
+            gocad_vertices2region_id_.push_back( region_id ) ;
+            region_vertices.push_back(
+                    model_.region( referred_vertex_region_id ).vertex(
+                            referred_vertex_local_id ) ) ;
+        } else {
+            // If the atom referred to an atom of the same region
+            gocad_vertices2region_vertices_.push_back(
+                referred_vertex_local_id ) ;
+            gocad_vertices2region_id_.push_back(
+                referred_vertex_region_id ) ;
+        }
+    }
+
     void GeoModelBuilderTSolid::read_vertex_coordinates( vec3& vertex ) const
     {
         vertex.x = in_.field_as_double( 2 ) ;
@@ -364,8 +359,24 @@ namespace RINGMesh {
         vertex.z = z_sign_ * in_.field_as_double( 4 ) ;
     }
 
+    void GeoModelBuilderTSolid::build_region(
+        const index_t region_id,
+        const index_t nb_vertices_in_next_region,
+        const index_t nb_tetras_in_next_region,
+        std::vector < vec3 >& region_vertices,
+        std::vector < index_t >& tetra_corners )
+    {
+        set_region_geometry( region_id,
+            region_vertices,
+            tetra_corners ) ;
+        region_vertices.clear() ;
+        region_vertices.reserve( nb_vertices_in_next_region ) ;
+        tetra_corners.clear() ;
+        tetra_corners.reserve( nb_tetras_in_next_region ) ;
+    }
+
     void GeoModelBuilderTSolid::read_tetraedra(
-            std::vector< index_t >& corners_id ) const
+        std::vector< index_t >& corners_id ) const
     {
         ringmesh_debug_assert( corners_id.size() == 4 ) ;
         corners_id[0] =
@@ -376,6 +387,15 @@ namespace RINGMesh {
             gocad_vertices2region_vertices_[ in_.field_as_uint( 3 ) - 1 ] ;
         corners_id[3] =
             gocad_vertices2region_vertices_[ in_.field_as_uint( 4 ) - 1 ] ;
+    }
+
+
+    void GeoModelBuilderTSolid::read_triangle(
+        std::vector< index_t >& cur_surf_facets ) const
+    {
+        cur_surf_facets.push_back( in_.field_as_uint( 1 ) - 1 ) ;
+        cur_surf_facets.push_back( in_.field_as_uint( 2 ) - 1 ) ;
+        cur_surf_facets.push_back( in_.field_as_uint( 3 ) - 1 ) ;
     }
 
     void GeoModelBuilderTSolid::compute_boundaries_of_geomodel_regions()
@@ -646,52 +666,91 @@ namespace RINGMesh {
     }
 
 
-    void GeoModelBuilderTSolid::compute_internal_borders()
+    void GeoModelBuilderTSolid::compute_surfaces_internal_borders()
     {
         std::vector< ColocaterANN* > anns( model_.nb_surfaces(), nil ) ;
         std::vector< Box3d > boxes( model_.nb_surfaces() ) ;
+        compute_facet_edge_centers_anns_and_surface_boxes( anns, boxes ) ;
         for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
-            const Surface& S = model_.surface(s) ;
-            for( index_t p = 0; p < S.nb_vertices(); p++ ) {
-                boxes[s].add_point( S.vertex( p ) ) ;
-            }
-            std::vector< vec3 > facet_edge_barycenters ;
-            for( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
-                for( index_t e = 0 ; e < 3 ; ++e ) {
-                    if(S.is_on_border(f,e)) {
-                        const vec3 barycenter =
-                            0.5 * ( S.vertex( f, e ) + S.vertex( f, ( e+1 )%3 ) ) ;
-                        facet_edge_barycenters.push_back( barycenter ) ;
-                    }
-                }
-            }
-            anns[s] = new ColocaterANN( facet_edge_barycenters, true ) ;
-        }
-        for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
-            const Surface& S = model_.surface(s) ;
-            for( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
-                for( index_t e = 0 ; e < 3 ; ++e ) {
-                   if( !S.is_on_border(f,e) ) {
-                       const vec3 barycenter =
-                           0.5 * ( S.vertex(f, e) + S.vertex(f, (e+1)%3 ) ) ;
-                       std::vector< index_t > result ;
-                       index_t tested_surf = 0 ;
-                       while( result.empty() && tested_surf < anns.size() ) {
-                           if( boxes[tested_surf].contains( barycenter ) ) {
-                               anns[tested_surf]->
-                               get_colocated( barycenter, result ) ;
-                           }
-                           ++tested_surf ;
-                       }
-                       if( !result.empty() ) {
-                           S.mesh().facets.set_adjacent( f,e, GEO::NO_FACET ) ;
-                       }
-                   }
-                }
-            }
+            compute_surface_internal_borders( s, anns, boxes ) ;
         }
         for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
             delete anns[s] ;
+        }
+    }
+
+    void GeoModelBuilderTSolid::compute_surface_internal_borders(
+        const index_t surface_id,
+        const std::vector< ColocaterANN* >& surface_anns,
+        const std::vector< Box3d >& surface_boxes )
+    {
+        const Surface& S = model_.surface( surface_id ) ;
+        for( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
+            for( index_t e = 0 ; e < 3 ; ++e ) {
+               if( !S.is_on_border(f,e) ) {
+                   bool internal_border = is_edge_in_several_surfaces(
+                       surface_id, f, e, surface_anns, surface_boxes ) ;
+                   if( internal_border ) {
+                       S.mesh().facets.set_adjacent( f, e, GEO::NO_FACET ) ;
+                   }
+               }
+            }
+        }
+    }
+
+    bool GeoModelBuilderTSolid::is_edge_in_several_surfaces(
+        const index_t surface_id,
+        const index_t facet,
+        const index_t edge,
+        const std::vector< ColocaterANN* >& surface_anns,
+        const std::vector< Box3d >& surface_boxes ) const
+    {
+        const Surface& S = model_.surface( surface_id ) ;
+        const vec3 barycenter = GEO::Geom::barycenter(
+            S.vertex( facet, edge ),
+            S.vertex( facet, ( edge+1 ) % 3 ) ) ;
+       std::vector< index_t > result ;
+       index_t tested_surf = 0 ;
+       while( result.empty() &&
+           tested_surf < surface_anns.size() ) {
+           if( surface_boxes[tested_surf].contains( barycenter ) ) {
+               surface_anns[tested_surf]->
+                   get_colocated( barycenter, result ) ;
+           }
+           ++tested_surf ;
+       }
+       return !result.empty() ;
+    }
+
+    void GeoModelBuilderTSolid::compute_facet_edge_centers_anns_and_surface_boxes(
+        std::vector< ColocaterANN* >& surface_anns,
+        std::vector< Box3d >& surface_boxes ) const
+    {
+        for( index_t s = 0 ; s < model_.nb_surfaces() ; ++s ) {
+            const Surface& S = model_.surface(s) ;
+            for( index_t p = 0; p < S.nb_vertices(); p++ ) {
+                surface_boxes[s].add_point( S.vertex( p ) ) ;
+            }
+            std::vector< vec3 > border_edge_barycenters ;
+            get_surface_border_edge_barycenters( s, border_edge_barycenters ) ;
+            surface_anns[s] = new ColocaterANN( border_edge_barycenters, true ) ;
+        }
+    }
+
+    void GeoModelBuilderTSolid::get_surface_border_edge_barycenters(
+        const index_t surface_id,
+        std::vector< vec3 >& border_edge_barycenters ) const
+    {
+        const Surface& S = model_.surface( surface_id ) ;
+        for( index_t f = 0 ; f < S.nb_cells() ; ++f ) {
+            for( index_t e = 0 ; e < 3 ; ++e ) {
+                if(S.is_on_border(f,e)) {
+                    const vec3 barycenter = GEO::Geom::barycenter(
+                        S.vertex( f, e ),
+                        S.vertex( f, ( e+1 ) % 3 ) ) ;
+                    border_edge_barycenters.push_back( barycenter ) ;
+                }
+            }
         }
     }
 

@@ -44,6 +44,7 @@
 
 #include <ringmesh/common.h>
 #include <ringmesh/geo_model_builder.h>
+#include <ringmesh/utils.h>
 
 namespace RINGMesh {
     /*!
@@ -87,7 +88,7 @@ namespace RINGMesh {
 
         ///@todo comment
         void read_number_of_mesh_elements(
-                std::vector< index_t >& nb_elements_per_region ) const ;
+                std::vector< index_t >& nb_elements_per_region ) ;
 
         void print_number_of_mesh_elements(
             const std::vector< index_t >& nb_elements_per_region ) const ;
@@ -104,20 +105,68 @@ namespace RINGMesh {
         GME::gme_t create_region() ;
 
         /*!
+         * @brief Reads vertex coordinates and adds it in the list
+         * of region vertices
+         * @param[in] region_id Index of the region
+         * @param[in,out] region_vertices Vector of the coordinates of the
+         * vertices of the region
+         */
+        void read_and_add_vertex_to_region_vertices(
+            const index_t region_id,
+            std::vector < vec3 >& region_vertices ) ;
+
+        /*!
+         * @brief Reads atom information and adds it in the list
+         * of region vertices only if it refers to a vertex of another region
+         * @param[in] region_id Index of the region
+         * @param[in,out] region_vertices Vector of the coordinates of the
+         * vertices of the region
+         */
+        void read_and_add_atom_to_region_vertices(
+            const index_t region_id,
+            std::vector < vec3 >& region_vertices ) ;
+
+        /*!
          * Reads the coordinates of a vertex from file
          * @param[out] vertex Vertex
          */
         void read_vertex_coordinates( vec3& vertex ) const ;
 
         /*!
-         * @brief Reads the four vertices index
+         * @brief Reads the four vertices index of a tetrahedron
          * @details Reads gocad indices (from .so file) and transforms
          * them to vertex local (region) indices
-         * @param[in] gocad_vertices2region_vertices Map from the gocad vertex
-         * indices to vertex local indices (in region)
          * @param[out] corners_id Indices of the four vertices
          */
         void read_tetraedra( std::vector< index_t >& corners_id ) const ;
+
+        /*!
+         * @brief Reads the three vertices index of a triangle and adds
+         * them to the facet corners of the currently built surface
+         * @details Reads gocad indices
+         * @param[out] cur_surf_facets Vector of each facet corner indices
+         * to build facets
+         */
+        void read_triangle( std::vector< index_t >& cur_surf_facets ) const ;
+
+        /*!
+         * Builds region by setting the points and tetras of the region
+         * @param[in] region_id Index of the surface to build
+         * @param[in] nb_vertices_in_next_region Number of vertices in the
+         * next region (to reverse space)
+         * @param[in] nb_tetras_in_next_region Number of tetrahedra in the
+         * next region (to reverse space)
+         * @param[in,out] region_vertices Vector of the coordinates of the
+         * vertices of the region. Re-initialized at the end of the function.
+         * @param[in,out] tetra_corners Vector of the region tetrahedra corner
+         * indices. Re-initialized at the end of the function.
+         */
+        void build_region(
+            const index_t region_id,
+            const index_t nb_vertices_in_next_region,
+            const index_t nb_tetras_in_next_region,
+            std::vector < vec3 >& region_vertices,
+            std::vector < index_t >& tetra_corners ) ;
 
         /*!
          * @brief Sets the boundaries of the GeoModel regions
@@ -127,7 +176,7 @@ namespace RINGMesh {
         /*!
          * @brief Computes the colocaters of the centers of cell facets for
          * each region
-         * @param[out] region_anns Pointers to the ColocaterANNs
+         * @param[out] region_anns Pointers to the ColocaterANNs of regions
          */
         void compute_cell_facet_centers_region_anns(
             std::vector< ColocaterANN* >& region_anns ) const ;
@@ -258,7 +307,7 @@ namespace RINGMesh {
             const std::vector< bool >& surf_plus_side ) ;
 
         /*!
-         * Builds surface by setting the points and facets of the surfaces
+         * Builds surface by setting the points and facets of the surface
          * @param[in] surface_id Index of the surface to build
          * @param[in,out] facet_corners Vector of the (gocad) indices of the
          * three corners of each facet (gocad) indices of the surface.
@@ -313,11 +362,67 @@ namespace RINGMesh {
             const index_t point_gocad_id,
             vec3& point ) const ;
 
-        void compute_internal_borders() ;
+        /*!
+         * @brief Computes internal borders of the model surfaces
+         * @details An surface facet edge is an internal border if it is shared
+         * by at least two surfaces. Adjacency of such a facet edge is set to
+         * GEO::NO_FACET.
+         */
+        void compute_surfaces_internal_borders() ;
+
+        /*!
+         * @brief Computes internal borders of a given surface
+         * @details A surface facet edge is an internal border if it is shared
+         * by at least two surfaces. Adjacency of such a facet edge is set to
+         * GEO::NO_FACET.
+         * @param[in] surface_id Index of the surface
+         * @param[in] surface_anns Pointers to the ColocaterANNs of surfaces
+         */
+        void compute_surface_internal_borders(
+            const index_t surface_id,
+            const std::vector< ColocaterANN* >& surface_anns,
+            const std::vector< Box3d >& surface_boxes ) ;
+
+        /*!
+         * @brief Finds if a surface facet edge is an internal border
+         * (i.e. shared by at least two surfaces)
+         * @param[in] surface_id Index of the surface
+         * @param[in] facet Index of the facet in the surface
+         * @param[in] edge Index of the edge in the facet
+         * @param[in] surface_anns Pointers to the ColocaterANNs of surfaces
+         * @param[in] surface_boxes Bounding Box of surfaces
+         * @return True is the edge is found in at least another surface
+         */
+        bool is_edge_in_several_surfaces(
+            const index_t surface_id,
+            const index_t facet,
+            const index_t edge,
+            const std::vector< ColocaterANN* >& surface_anns,
+            const std::vector< Box3d >& surface_boxes ) const ;
+
+        /*!
+         * @brief Computes the colocaters of the centers of facet edges for
+         * each surface and their Box3d
+         * @param[out] surface_anns Pointers to the ColocaterANNs of surfaces
+         * @param[out] surface_boxes Bounding Box of surfaces
+         */
+        void compute_facet_edge_centers_anns_and_surface_boxes(
+            std::vector< ColocaterANN* >& surface_anns,
+            std::vector< Box3d >& surface_boxes ) const ;
+
+        /*!
+         * @brief Gets the facet edge barycenters of a given surface
+         * @param[in] surface_id Index of the surface
+         * @param[out] border_edge_barycenters Vector of all the border
+         * edge barycenters of the surface
+         */
+        void get_surface_border_edge_barycenters(
+            const index_t surface_id,
+            std::vector< vec3 >& border_edge_barycenters ) const ;
 
         /*!
          * @brief Both adds the surface in the boundaries of a region and
-         * add the region to the in_boundaries of the surface
+         * adds the region to the in_boundaries of the surface
          * @param[in] region_id Index of the region
          * @param[in] surface_id Index of the surface
          * @param[in] surf_side Side of the surface bounding the region
