@@ -52,12 +52,12 @@ namespace RINGMesh {
 
     bool GeoModelBuilderTSolid::load_file()
     {
-        GME::gme_t cur_region ;
+        index_t cur_region ;
 
         // First : count the number of vertex and tetras
         // in each region
         std::vector< index_t > nb_elements_per_region ;
-        read_number_of_mesh_elements( nb_elements_per_region ) ;
+        count_nb_vertices_and_tetras_per_region( nb_elements_per_region ) ;
 
         // Region vertices
         std::vector< vec3 > region_vertices ;
@@ -81,7 +81,7 @@ namespace RINGMesh {
             in_.get_fields() ;
             if( in_.nb_fields() > 0 ) {
                 if( in_.field_matches( 0, "GOCAD_ORIGINAL_COORDINATE_SYSTEM" ) ) {
-                    read_and_set_gocad_coordinates_system() ;
+                    read_and_set_gocad_coordinate_system() ;
                 } else if( in_.field_matches( 0, "PROPERTIES" ) ) {
                     nb_vertex_properties = in_.nb_fields() - 1 ;
                 } else if( in_.field_matches( 0, "PROPERTY_CLASS_HEADER" ) ) {
@@ -94,24 +94,23 @@ namespace RINGMesh {
                         model_.mesh.cell_attribute_manager() ) ;
                 } else if( in_.field_matches( 0, "TVOLUME" ) ) {
                     if( region_vertices.size() > 0 ) {
-                        const index_t region_id = cur_region.index ;
                         build_region(
-                            region_id,
-                            nb_elements_per_region[ 2*region_id ],
-                            nb_elements_per_region[ 2*region_id + 1 ],
+                            cur_region,
+                            nb_elements_per_region[ 2*cur_region ],
+                            nb_elements_per_region[ 2*cur_region + 1 ],
                             region_vertices,
                             tetra_corners ) ;
                     }
-                    cur_region = create_region() ;
+                    cur_region = initialize_region() ;
                 } else if( in_.field_matches( 0, "VRTX" ) ||
                     in_.field_matches( 0, "PVRTX" ) ) {
                     read_and_add_vertex_to_region_vertices(
-                        cur_region.index,
+                        cur_region,
                         region_vertices ) ;
                 } else if( in_.field_matches( 0, "ATOM" ) ||
                     in_.field_matches( 0, "PATOM" ) ) {
                     read_and_add_atom_to_region_vertices(
-                        cur_region.index,
+                        cur_region,
                         region_vertices ) ;
                 } else if( in_.field_matches( 0, "TETRA" ) ) {
                     // Reading and create a tetra
@@ -126,7 +125,7 @@ namespace RINGMesh {
                 } else if( in_.field_matches( 0, "MODEL" ) ) {
                     if( region_vertices.size() > 0 ) {
                         build_region(
-                            cur_region.index ,
+                            cur_region ,
                             0,
                             0,
                             region_vertices,
@@ -181,7 +180,7 @@ namespace RINGMesh {
 
     }
 
-    void GeoModelBuilderTSolid::read_and_set_gocad_coordinates_system()
+    void GeoModelBuilderTSolid::read_and_set_gocad_coordinate_system()
     {
         while( !in_.eof() && in_.get_line() ) {
             in_.get_fields() ;
@@ -194,30 +193,30 @@ namespace RINGMesh {
             } else if( in_.field_matches( 0, "DATUM" ) ) {
                 // Useless for the moment
             } else if( in_.field_matches( 0, "AXIS_NAME" ) ) {
-                set_gocad_coordinates_system_axis_name() ;
+                set_gocad_coordinate_system_axis_name() ;
             } else if( in_.field_matches( 0, "AXIS_UNIT" ) ) {
-                set_gocad_coordinates_system_axis_unit() ;
+                set_gocad_coordinate_system_axis_unit() ;
             } else if( in_.field_matches( 0, "ZPOSITIVE" ) ) {
-                set_gocad_coordinates_system_z_sign() ;
+                set_gocad_coordinate_system_z_sign() ;
             }
         }
     }
 
-    void GeoModelBuilderTSolid::set_gocad_coordinates_system_axis_name()
+    void GeoModelBuilderTSolid::set_gocad_coordinate_system_axis_name()
     {
         gocad_coordinates_system_axis_name_.push_back( in_.field(1) ) ;
         gocad_coordinates_system_axis_name_.push_back( in_.field(2) ) ;
         gocad_coordinates_system_axis_name_.push_back( in_.field(3) ) ;
     }
 
-    void GeoModelBuilderTSolid::set_gocad_coordinates_system_axis_unit()
+    void GeoModelBuilderTSolid::set_gocad_coordinate_system_axis_unit()
     {
         gocad_coordinates_system_axis_unit_.push_back( in_.field(1) ) ;
         gocad_coordinates_system_axis_unit_.push_back( in_.field(2) ) ;
         gocad_coordinates_system_axis_unit_.push_back( in_.field(3) ) ;
     }
 
-    void GeoModelBuilderTSolid::set_gocad_coordinates_system_z_sign()
+    void GeoModelBuilderTSolid::set_gocad_coordinate_system_z_sign()
     {
         if( in_.field_matches( 1, "Elevation" ) ) {
             z_sign_ = 1 ;
@@ -228,7 +227,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderTSolid::read_number_of_mesh_elements(
+    void GeoModelBuilderTSolid::count_nb_vertices_and_tetras_per_region(
         std::vector< index_t >& nb_elements_par_region )
     {
         nb_elements_par_region.clear() ;
@@ -276,7 +275,7 @@ namespace RINGMesh {
         gocad_vertices2region_vertices_.reserve( nb_vertices_in_model ) ;
     }
 
-    void GeoModelBuilderTSolid::print_number_of_mesh_elements(
+    void GeoModelBuilderTSolid::print_nb_vertices_and_tetras_per_region(
         const std::vector< index_t >& nb_elements_per_region ) const
     {
         const index_t nb_regions = 0.5 * nb_elements_per_region.size() ;
@@ -306,11 +305,11 @@ namespace RINGMesh {
         GEO::Attribute< double > property( attribute_manager, in_.field(1) ) ;
     }
 
-    GME::gme_t GeoModelBuilderTSolid::create_region()
+    index_t GeoModelBuilderTSolid::initialize_region()
     {
         GME::gme_t cur_region = create_element( GME::REGION ) ;
         set_element_name( cur_region, in_.field( 1 ) ) ;
-        return cur_region ;
+        return cur_region.index ;
     }
 
     void GeoModelBuilderTSolid::read_and_add_vertex_to_region_vertices(
