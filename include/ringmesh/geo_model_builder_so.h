@@ -104,25 +104,25 @@ namespace RINGMesh {
          * @param[out] Vector built from number of vertices and tetras region
          * after region (i.e. [nb_v1, nb_t1, nb_v2, nb_t2, nb_v3, nb_t3, ...]
          */
-        void count_nb_vertices_and_tetras_per_region(
-                std::vector< index_t >& nb_elements_per_region ) ;
+//        void count_nb_vertices_and_tetras_per_region(
+//                std::vector< index_t >& nb_elements_per_region ) ;
 
         /*!
          * @brief Shows number of vertices and tetras in each region
          * @param[in] Vector built from number of vertices and tetras region
          * after region (i.e. [nb_v1, nb_t1, nb_v2, nb_t2, nb_v3, nb_t3, ...]
          */
-        void print_nb_vertices_and_tetras_per_region(
-            const std::vector< index_t >& nb_elements_per_region ) const ;
+//        void print_nb_vertices_and_tetras_per_region(
+//            const std::vector< index_t >& nb_elements_per_region ) const ;
 
         /*! @}
          * \name Properties import
          * @{
          */
 
-        void add_new_property(
-            std::vector< std::string >& property_names,
-            GEO::AttributesManager& attribute_manager ) ;
+//        void add_new_property(
+//            std::vector< std::string >& property_names,
+//            GEO::AttributesManager& attribute_manager ) ;
 
         /*! @}
          * \name Volume mesh import
@@ -134,7 +134,7 @@ namespace RINGMesh {
          * its name from .so file
          * @return The index of the initialized region
          */
-        index_t initialize_region() ;
+//        index_t initialize_region() ;
 
         /*!
          * @brief Reads vertex coordinates and adds it in the list
@@ -264,7 +264,7 @@ namespace RINGMesh {
          * @param[out] cur_surf_facets Vector of each facet corner indices
          * to build facets
          */
-        void read_triangle( std::vector< index_t >& cur_surf_facets ) const ;
+//        void read_triangle( std::vector< index_t >& cur_surf_facets ) const ;
 
         /*! @}
          * \name Linking surfaces and region boundaries

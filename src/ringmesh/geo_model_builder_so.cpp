@@ -48,6 +48,112 @@
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_extension.h>
 
+namespace {
+    using namespace RINGMesh ;
+
+    void count_nb_vertices_and_tetras_per_region(
+        const std::string& filename,
+        std::vector< index_t >& nb_elements_par_region,
+        std::vector< index_t >& gocad_vertices2region_vertices,
+        std::vector< index_t >& gocad_vertices2region_id )
+    {
+        nb_elements_par_region.clear() ;
+
+        // Define a new LineInput counting number of elements
+        GEO::LineInput line_input( filename ) ;
+
+        // Initialize counters
+        index_t cur_region = NO_ID ;
+        index_t nb_vertices_in_region = 0 ;
+        index_t nb_tetras_in_region = 0 ;
+        index_t nb_surfaces_in_bmodel = 0 ;
+        index_t nb_triangles_in_bmodel = 0 ;
+
+        // Total (for the whole model) counter
+        index_t nb_vertices_in_model = 0 ;
+
+        // Reading file
+        while( !line_input.eof() && line_input.get_line() ) {
+            line_input.get_fields() ;
+            if( line_input.nb_fields() > 0 ) {
+                if( line_input.field_matches( 0, "TVOLUME" ) ||
+                        line_input.field_matches( 0, "MODEL" ) ) {
+                    if( cur_region != NO_ID ) {
+                        nb_elements_par_region.push_back(
+                            nb_vertices_in_region ) ;
+                        nb_elements_par_region.push_back( nb_tetras_in_region ) ;
+                        nb_vertices_in_model += nb_vertices_in_region ;
+                        nb_vertices_in_region = 0 ;
+                        nb_tetras_in_region = 0 ;
+
+                    }
+                    ++cur_region ;
+                } else if( line_input.field_matches( 0, "VRTX" ) ||
+                           line_input.field_matches( 0, "PVRTX" ) ||
+                           line_input.field_matches( 0, "ATOM" ) ||
+                           line_input.field_matches( 0, "PATOM" ) ) {
+                    ++nb_vertices_in_region ;
+                } else if( line_input.field_matches( 0, "TETRA" ) ) {
+                    ++nb_tetras_in_region ;
+                }
+            }
+        }
+        gocad_vertices2region_id.reserve( nb_vertices_in_model ) ;
+        gocad_vertices2region_vertices.reserve( nb_vertices_in_model ) ;
+    }
+
+
+    void print_nb_vertices_and_tetras_per_region(
+        const std::vector< index_t >& nb_elements_per_region )
+    {
+        const index_t nb_regions = 0.5 * nb_elements_per_region.size() ;
+        GEO::Logger::out( "Mesh" )
+            << "Mesh has " << nb_regions << " regions "
+            << std::endl ;
+        for( index_t i = 0 ; i < nb_regions ; ++i ) {
+            GEO::Logger::out( "Mesh" )
+                << "Region " << i << " has"
+                << std::endl
+                << std::setw( 10 ) << std::left
+                << nb_elements_per_region.at( 2*i ) << " vertices "
+                << std::endl
+                << std::setw( 10 ) << std::left
+                << nb_elements_per_region.at( 2*i + 1 ) << " tetras "
+                << std::endl ;
+        }
+    }
+
+    void add_new_property(
+        std::vector< std::string >& property_names,
+        GEO::AttributesManager& attribute_manager,
+        const std::string& prop_name )
+    {
+        property_names.push_back( prop_name ) ;
+        /// @todo All the property types are double.
+        /// Change in order to have the good type for each property.
+        GEO::Attribute< double > property( attribute_manager, prop_name ) ;
+    }
+
+    index_t initialize_region(
+        GeoModelBuilderTSolid& geomodel_builder,
+        const std::string& region_name )
+    {
+        GME::gme_t cur_region = geomodel_builder.create_element( GME::REGION ) ;
+        geomodel_builder.set_element_name( cur_region, region_name ) ;
+        return cur_region.index ;
+    }
+
+    void read_triangle(
+        std::vector< index_t >& cur_surf_facets,
+        GEO::LineInput& in )
+    {
+        cur_surf_facets.push_back( in.field_as_uint( 1 ) - 1 ) ;
+        cur_surf_facets.push_back( in.field_as_uint( 2 ) - 1 ) ;
+        cur_surf_facets.push_back( in.field_as_uint( 3 ) - 1 ) ;
+    }
+
+} // anonymous namespace
+
 namespace RINGMesh {
 
     bool GeoModelBuilderTSolid::load_file()
@@ -57,7 +163,11 @@ namespace RINGMesh {
         // First : count the number of vertex and tetras
         // in each region
         std::vector< index_t > nb_elements_per_region ;
-        count_nb_vertices_and_tetras_per_region( nb_elements_per_region ) ;
+        count_nb_vertices_and_tetras_per_region(
+            filename_,
+            nb_elements_per_region,
+            gocad_vertices2region_vertices_,
+            gocad_vertices2region_id_) ;
 
         // Region vertices
         std::vector< vec3 > region_vertices ;
@@ -86,12 +196,14 @@ namespace RINGMesh {
                     nb_vertex_properties = in_.nb_fields() - 1 ;
                 } else if( in_.field_matches( 0, "PROPERTY_CLASS_HEADER" ) ) {
                     add_new_property( vertex_property_names,
-                        model_.mesh.vertex_attribute_manager() ) ;
+                        model_.mesh.vertex_attribute_manager(),
+                        in_.field( 1 ) ) ;
                 } else if( in_.field_matches( 0, "TETRA_PROPERTIES" ) ) {
                     nb_cell_properties = in_.nb_fields() - 1 ;
                 } else if( in_.field_matches( 0, "TETRA_PROPERTY_CLASS_HEADER" ) ) {
                     add_new_property( cell_property_names,
-                        model_.mesh.cell_attribute_manager() ) ;
+                        model_.mesh.cell_attribute_manager(),
+                        in_.field( 1 ) ) ;
                 } else if( in_.field_matches( 0, "TVOLUME" ) ) {
                     if( region_vertices.size() > 0 ) {
                         build_region(
@@ -101,7 +213,9 @@ namespace RINGMesh {
                             region_vertices,
                             tetra_corners ) ;
                     }
-                    cur_region = initialize_region() ;
+                    cur_region = initialize_region(
+                        *this,
+                        in_.field( 1 ) ) ;
                 } else if( in_.field_matches( 0, "VRTX" ) ||
                     in_.field_matches( 0, "PVRTX" ) ) {
                     read_and_add_vertex_to_region_vertices(
@@ -146,7 +260,7 @@ namespace RINGMesh {
                     set_element_parent( current_surface, current_interface ) ;
                     add_element_child( current_interface, current_surface ) ;
                 } else if( in_.field_matches( 0, "TRGL" ) ) {
-                    read_triangle( cur_surf_facets ) ;
+                    read_triangle( cur_surf_facets, in_ ) ;
                     cur_surf_facet_ptr.push_back( cur_surf_facets.size() ) ;
                 } else if( in_.field_matches( 0, "MODEL_REGION" ) ) {
                     // Compute the last surface
@@ -227,91 +341,6 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderTSolid::count_nb_vertices_and_tetras_per_region(
-        std::vector< index_t >& nb_elements_par_region )
-    {
-        nb_elements_par_region.clear() ;
-
-        // Define a new LineInput counting number of elements
-        GEO::LineInput line_input( filename_ ) ;
-
-        // Initialize counters
-        index_t cur_region = NO_ID ;
-        index_t nb_vertices_in_region = 0 ;
-        index_t nb_tetras_in_region = 0 ;
-        index_t nb_surfaces_in_bmodel = 0 ;
-        index_t nb_triangles_in_bmodel = 0 ;
-
-        // Total (for the whole model) counter
-        index_t nb_vertices_in_model = 0 ;
-
-        // Reading file
-        while( !line_input.eof() && line_input.get_line() ) {
-            line_input.get_fields() ;
-            if( line_input.nb_fields() > 0 ) {
-                if( line_input.field_matches( 0, "TVOLUME" ) ||
-                        line_input.field_matches( 0, "MODEL" ) ) {
-                    if( cur_region != NO_ID ) {
-                        nb_elements_par_region.push_back(
-                            nb_vertices_in_region ) ;
-                        nb_elements_par_region.push_back( nb_tetras_in_region ) ;
-                        nb_vertices_in_model += nb_vertices_in_region ;
-                        nb_vertices_in_region = 0 ;
-                        nb_tetras_in_region = 0 ;
-
-                    }
-                    ++cur_region ;
-                } else if( line_input.field_matches( 0, "VRTX" ) ||
-                           line_input.field_matches( 0, "PVRTX" ) ||
-                           line_input.field_matches( 0, "ATOM" ) ||
-                           line_input.field_matches( 0, "PATOM" ) ) {
-                    ++nb_vertices_in_region ;
-                } else if( line_input.field_matches( 0, "TETRA" ) ) {
-                    ++nb_tetras_in_region ;
-                }
-            }
-        }
-        gocad_vertices2region_id_.reserve( nb_vertices_in_model ) ;
-        gocad_vertices2region_vertices_.reserve( nb_vertices_in_model ) ;
-    }
-
-    void GeoModelBuilderTSolid::print_nb_vertices_and_tetras_per_region(
-        const std::vector< index_t >& nb_elements_per_region ) const
-    {
-        const index_t nb_regions = 0.5 * nb_elements_per_region.size() ;
-        GEO::Logger::out( "Mesh" )
-            << "Mesh has " << nb_regions << " regions "
-            << std::endl ;
-        for( index_t i = 0 ; i < nb_regions ; ++i ) {
-            GEO::Logger::out( "Mesh" )
-                << "Region " << i << " has"
-                << std::endl
-                << std::setw( 10 ) << std::left
-                << nb_elements_per_region.at( 2*i ) << " vertices "
-                << std::endl
-                << std::setw( 10 ) << std::left
-                << nb_elements_per_region.at( 2*i + 1 ) << " tetras "
-                << std::endl ;
-        }
-    }
-
-    void GeoModelBuilderTSolid::add_new_property(
-        std::vector< std::string >& property_names,
-        GEO::AttributesManager& attribute_manager )
-    {
-        property_names.push_back( in_.field(1) ) ;
-        /// @todo All the property types are double.
-        /// Change in order to have the good type for each property.
-        GEO::Attribute< double > property( attribute_manager, in_.field(1) ) ;
-    }
-
-    index_t GeoModelBuilderTSolid::initialize_region()
-    {
-        GME::gme_t cur_region = create_element( GME::REGION ) ;
-        set_element_name( cur_region, in_.field( 1 ) ) ;
-        return cur_region.index ;
-    }
-
     void GeoModelBuilderTSolid::read_and_add_vertex_to_region_vertices(
         const index_t region_id,
         std::vector < vec3 >& region_vertices )
@@ -322,6 +351,13 @@ namespace RINGMesh {
         vec3 vertex ;
         read_vertex_coordinates( vertex ) ;
         region_vertices.push_back( vertex ) ;
+    }
+
+    void GeoModelBuilderTSolid::read_vertex_coordinates( vec3& vertex ) const
+    {
+        vertex.x = in_.field_as_double( 2 ) ;
+        vertex.y = in_.field_as_double( 3 ) ;
+        vertex.z = z_sign_ * in_.field_as_double( 4 ) ;
     }
 
     void GeoModelBuilderTSolid::read_and_add_atom_to_region_vertices(
@@ -349,13 +385,6 @@ namespace RINGMesh {
             gocad_vertices2region_id_.push_back(
                 referred_vertex_region_id ) ;
         }
-    }
-
-    void GeoModelBuilderTSolid::read_vertex_coordinates( vec3& vertex ) const
-    {
-        vertex.x = in_.field_as_double( 2 ) ;
-        vertex.y = in_.field_as_double( 3 ) ;
-        vertex.z = z_sign_ * in_.field_as_double( 4 ) ;
     }
 
     void GeoModelBuilderTSolid::build_region(
@@ -386,15 +415,6 @@ namespace RINGMesh {
             gocad_vertices2region_vertices_[ in_.field_as_uint( 3 ) - 1 ] ;
         corners_id[3] =
             gocad_vertices2region_vertices_[ in_.field_as_uint( 4 ) - 1 ] ;
-    }
-
-
-    void GeoModelBuilderTSolid::read_triangle(
-        std::vector< index_t >& cur_surf_facets ) const
-    {
-        cur_surf_facets.push_back( in_.field_as_uint( 1 ) - 1 ) ;
-        cur_surf_facets.push_back( in_.field_as_uint( 2 ) - 1 ) ;
-        cur_surf_facets.push_back( in_.field_as_uint( 3 ) - 1 ) ;
     }
 
     void GeoModelBuilderTSolid::compute_boundaries_of_geomodel_regions()
@@ -766,4 +786,4 @@ namespace RINGMesh {
             GME::gme_t( GME::SURFACE, surface_id ),
             GME::gme_t( GME::REGION, region_id ) ) ;
     }
-}
+} // RINGMesh namespace
