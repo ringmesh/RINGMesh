@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,10 +24,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr
- *     Antoine.Mazuyer@univ-lorraine.fr
- *     Jeanne.Pellerin@wias-berlin.de
+ *
+ *
+ *
+ *
  *
  *     http://www.ring-team.org
  *
@@ -258,6 +258,8 @@ namespace RINGMesh {
             << geomodel.mesh.vertices.nb() << " vertices\n"
             << std::setw( 10 ) << std::left
             << count_geomodel_facets( geomodel ) << " facets\n"
+            << std::setw( 10 ) << std::left
+            << count_geomodel_cells( geomodel ) << " cells\n"
             << std::endl ;
 
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
@@ -369,8 +371,21 @@ namespace RINGMesh {
     }
 
 
-	///@todo A class encapsulating the copy from a GeoModel to a Mesh ?
-    /// See what has been done in GeoModelMeshBuilder	
+    /// @todo A class encapsulating the copy from a GeoModel to a Mesh ?
+    /// See what has been done in GeoModelMeshBuilder
+
+    void create_and_fill_corner_index_attribute( const GeoModel& geomodel,
+                                               const std::string& attribute_name,
+                                               GEO::Mesh& M )
+    {
+        GEO::Attribute<index_t> corner_attribute( M.vertices.attributes(), attribute_name ) ;
+        corner_attribute.fill( NO_ID ) ;
+        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
+            index_t vertex_index = geomodel.corner( i ).model_vertex_id() ;
+            corner_attribute[ vertex_index ] = i ;
+        }
+        corner_attribute.unbind() ;    
+    }
 
     void add_geomodel_vertices_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
@@ -378,19 +393,11 @@ namespace RINGMesh {
         M.vertices.create_vertices( nbv ) ;
 
         // We need to copy the point one after another since we do not have access
-        // to the storage of the geomodel.vertices
-        // I do not want to provide this access [JP]
+        // to the storage of the geomodel.vertices .     I do not want to provide this access [JP]
         for( index_t v = 0; v < nbv; ++v ) {
             M.vertices.point( v ) = geomodel.mesh.vertices.vertex( v ) ;
         }
-
-        GEO::Attribute<index_t> corner_attribute( M.vertices.attributes(), "region" ) ;
-        corner_attribute.fill( NO_ID ) ;
-        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
-            index_t vertex_index = geomodel.corner( i ).model_vertex_id() ;
-            corner_attribute[ vertex_index ] = i ;
-        }
-        corner_attribute.unbind() ;
+        create_and_fill_corner_index_attribute( geomodel, "region", M );        
     }
 
     void add_line_edges_to_mesh( const Line& line, GEO::Mesh& M )
@@ -408,7 +415,7 @@ namespace RINGMesh {
                                                const std::string& attribute_name,
                                                GEO::Mesh& M )
     {
-        GEO::Attribute<index_t> line_attribute( M.edges.attributes(), "region" ) ;
+        GEO::Attribute<index_t> line_attribute( M.edges.attributes(), attribute_name ) ;
         line_attribute.fill( NO_ID ) ;
         index_t edge_counter = 0 ;
         for( index_t i = 0; i < geomodel.nb_lines(); ++i ) {
@@ -541,10 +548,12 @@ namespace RINGMesh {
     {
         if( are_geomodel_region_meshes_simplicial( geomodel ) ) {
             add_regions_tets_to_mesh( geomodel, M ) ;
+            create_and_fill_region_index_attribute( geomodel, "region", M ) ;
         } else {
-            ringmesh_assert( false ) ;
+            GEO::Logger::warn( "GeoModel" )
+                << "The conversion of non-simplicial Region meshes into a Mesh is not implemented"
+                << std::endl;
         }
-        create_and_fill_region_index_attribute( geomodel, "region", M ) ;
     }
 
 
@@ -735,9 +744,9 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Generate a point that lies strictly a Region defined by its Surface boundaries.
-     * @details Returns the midpoint of barycenter of the first facet of the first surface on
-     * the region boundary and the closest point in the other surfaces.
+     * @brief Generates a point that lies strictly a Region defined by its boundary Surfaces.
+     * @details Returns the midpoint of A: the barycenter of the 1st facet of the 1st Surface 
+     * and B: the closest point of a A in the other Surfaces defining the Region.
      * @warning Incomplete implementation.
      */
     vec3 generate_point_in_region( const Region& region )
@@ -746,12 +755,11 @@ namespace RINGMesh {
         ringmesh_assert( region.nb_boundaries() > 1 ) ;
         
         const GeoModel& geomodel = region.model() ;
-
         const Surface& first_boundary_surface = geomodel.surface( region.boundary_gme( 0 ).index ) ; 
         double facet_area = first_boundary_surface.facet_area( 0 ) ; 
         vec3 barycenter = first_boundary_surface.facet_barycenter( 0 ) ;                
         /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( facet_area > epsilon) ;
+        ringmesh_assert( facet_area > epsilon ) ;
 
         double minimum_distance = DBL_MAX ;
         vec3 nearest_point ;        
@@ -767,12 +775,15 @@ namespace RINGMesh {
                 nearest_point = point ;
             }            
         } 
-        /// @todo Change implementation to use second triangle if that one failed, and futher surfaces
+        /// @todo Change implementation to use second triangle if that one failed, and further surfaces
         ringmesh_assert( minimum_distance > epsilon ) ;
         return 0.5*( barycenter + nearest_point ) ;
     }
 
-    void get_one_point_per_geomodel_regions( const GeoModel& geomodel, 
+    /*! 
+     * @brief For each region of the geomodel computes a point inside that region
+     */
+    void get_one_point_per_geomodel_region( const GeoModel& geomodel, 
                                              std::vector< vec3 >& one_point_one_region )
     {
         one_point_one_region.resize( geomodel.nb_regions() ) ;
@@ -790,10 +801,10 @@ namespace RINGMesh {
         build_mesh_from_geomodel( geomodel, mesh ) ;
         
         std::vector< vec3 > points_in_regions ;
-        get_one_point_per_geomodel_regions( geomodel, points_in_regions ) ;
+        get_one_point_per_geomodel_region( geomodel, points_in_regions ) ;
        
         TetgenMesher mesher ;
-        mesher.tetrahedralize( mesh, points_in_regions, "QpO0YA", mesh ) ; 
+        mesher.tetrahedralize( mesh, points_in_regions, "QpYA", mesh ) ; 
 
         GeoModelBuilderMesh builder ( geomodel, mesh, "", "region" ) ;
         builder.build_regions() ;
