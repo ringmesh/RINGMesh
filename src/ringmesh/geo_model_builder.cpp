@@ -2008,7 +2008,7 @@ namespace RINGMesh {
         }
 
         /*!
-         * Compute the simplex vertex indices for each GeoModelElement
+         * Computes the simplex vertex indices for each GeoModelElement
          * as well as the mapping from the mesh simplices to the GME mesh simplices
          * for eventual attribute copying
          */
@@ -2049,7 +2049,7 @@ namespace RINGMesh {
         template< class T > 
         void copy_simplex_attribute_from_mesh_to_geomodel(
             GEO::Attribute< T >& mesh_attribute,
-            AttributeVector< T >& model_attributes )
+            AttributeVector< T >& model_attributes ) const
         {
             for( index_t i = 0; i < nb_mesh_simplexes(); ++i ) {
                 const GMESimplex& copy_to = mesh_simplex_to_gme_simplex_[ i ] ;
@@ -2223,7 +2223,6 @@ namespace RINGMesh {
 
 
     /*************************************************************************/
-
 
     GeoModelBuilderMesh::~GeoModelBuilderMesh()
     {
