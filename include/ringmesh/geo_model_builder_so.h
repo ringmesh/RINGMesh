@@ -65,36 +65,58 @@ namespace RINGMesh {
     private:
 
         /*!
-         * \name Reads and sets Gocad Coordinates System information from .so file
+         * \name Reads and sets Gocad Coordinate System information from .so file
          * @{
          */
 
         /*!
-        * Reads and sets the Gocad coordinates system information
+        * @brief Reads and sets the Gocad coordinate system information
         * from input .so file.
         */
-        void read_and_set_gocad_coordinates_system() ;
+        void read_and_set_gocad_coordinate_system() ;
 
-        void set_gocad_coordinates_system_axis_name() ;
+        /*!
+         * @brief Sets the Gocad coordinate system axis name
+         */
+        void set_gocad_coordinate_system_axis_name() ;
 
-        void set_gocad_coordinates_system_axis_unit() ;
+        /*!
+         * @brief Sets the Gocad coordinate system axis units (meters, feet, ...)
+         */
+        void set_gocad_coordinate_system_axis_unit() ;
 
-        void set_gocad_coordinates_system_z_sign() ;
+        /*!
+         * @brief Sets the Gocad coordinate system Z sign
+         * @details If the Z values increase upwards, z_sign_ is positive,
+         * else (Z values increasing downwards), z_sign_ is negative.
+         */
+        void set_gocad_coordinate_system_z_sign() ;
 
         /*! @}
          * \name Information on the number of mesh elements from .so file
          * @{
          */
 
-        ///@todo comment
-        void read_number_of_mesh_elements(
+        /*!
+         * @brief Counts number of vertices and tetras in each region
+         * @details Reserve also space from the attributes which maps vertex
+         * indices between gocad and region local indices.
+         * @param[out] Vector built from number of vertices and tetras region
+         * after region (i.e. [nb_v1, nb_t1, nb_v2, nb_t2, nb_v3, nb_t3, ...]
+         */
+        void count_nb_vertices_and_tetras_per_region(
                 std::vector< index_t >& nb_elements_per_region ) ;
 
-        void print_number_of_mesh_elements(
+        /*!
+         * @brief Shows number of vertices and tetras in each region
+         * @param[in] Vector built from number of vertices and tetras region
+         * after region (i.e. [nb_v1, nb_t1, nb_v2, nb_t2, nb_v3, nb_t3, ...]
+         */
+        void print_nb_vertices_and_tetras_per_region(
             const std::vector< index_t >& nb_elements_per_region ) const ;
 
         /*! @}
-         * \name Other helper functions
+         * \name Properties import
          * @{
          */
 
@@ -102,7 +124,17 @@ namespace RINGMesh {
             std::vector< std::string >& property_names,
             GEO::AttributesManager& attribute_manager ) ;
 
-        GME::gme_t create_region() ;
+        /*! @}
+         * \name Volume mesh import
+         * @{
+         */
+
+        /*!
+         * @brief Creates an empty element of type GME::REGION and sets
+         * its name from .so file
+         * @return The index of the initialized region
+         */
+        index_t initialize_region() ;
 
         /*!
          * @brief Reads vertex coordinates and adds it in the list
@@ -127,6 +159,91 @@ namespace RINGMesh {
             std::vector < vec3 >& region_vertices ) ;
 
         /*!
+         * Builds region by setting the points and tetras of the region
+         * @param[in] region_id Index of the surface to build
+         * @param[in] nb_vertices_in_next_region Number of vertices in the
+         * next region (to reverse space)
+         * @param[in] nb_tetras_in_next_region Number of tetrahedra in the
+         * next region (to reverse space)
+         * @param[in,out] region_vertices Vector of the coordinates of the
+         * vertices of the region. Re-initialized at the end of the function.
+         * @param[in,out] tetra_corners Vector of the region tetrahedra corner
+         * indices. Re-initialized at the end of the function.
+         */
+        void build_region(
+            const index_t region_id,
+            const index_t nb_vertices_in_next_region,
+            const index_t nb_tetras_in_next_region,
+            std::vector < vec3 >& region_vertices,
+            std::vector < index_t >& tetra_corners ) ;
+
+        /*! @}
+         * \name Boundary model import
+         * @{
+         */
+
+        /*!
+         * Builds surface by setting the points and facets of the surface
+         * @param[in] surface_id Index of the surface to build
+         * @param[in,out] facet_corners Vector of the (gocad) indices of the
+         * three corners of each facet (gocad) indices of the surface.
+         * Re-initialized at the end of the function.
+         * @param[in,out] facet_ptr Pointer to the beginning of a facet in
+         * facets. Re-initialized at the end of the function.
+         */
+        void build_surface(
+            const index_t surface_id,
+            std::vector< index_t >& facet_corners,
+            std::vector< index_t >& facet_ptr ) ;
+
+        /*!
+         * @brief Gets the points and the indices in the points vector to
+         * build the facets
+         * @param[in] facet_corners Vector of the (gocad) indices of the
+         * three corners of each facet (gocad) indices
+         * @param[out] cur_surf_points Vector of unique point coordinates
+         * belonging to the surface
+         * @param[out] cur_surf_facets Vector of each facet corner indices in
+         * the cur_surf_points vector to build facets
+         */
+        void get_surface_points_and_facets_from_gocad_indices(
+            const std::vector< index_t >& facet_corners,
+            std::vector< vec3 >& cur_surf_points,
+            std::vector< index_t >& cur_surf_facets ) const ;
+
+        /*!
+         * @brief Gets the point and the index in the points vector to
+         * build the facets for one read gocad vertex
+         * @param[in] vertex_gocad_id Gocad index of the vertex
+         * @param[in] gocad_vertices2cur_surf_points Map between vertices with
+         * gocad indices and position of the corresponding point
+         * in the points vector
+         * @param[out] cur_surf_points Vector of unique point coordinates
+         * belonging to the surface
+         * @param[out] cur_surf_facets Vector of each facet corner indices in
+         * the cur_surf_points vector to build facets
+         */
+        void get_surface_point_and_facet_from_gocad_index(
+            const index_t vertex_gocad_id,
+            std::vector< index_t >& gocad_vertices2cur_surf_points,
+            std::vector< vec3 >& cur_surf_points,
+            std::vector< index_t >& cur_surf_facets ) const ;
+
+        /*!
+         * @brief Gets the coordinates of the point from gocad index
+         * @param[in] point_gocad_id Gocad index of the point to get
+         * @param[out] point Coordinates of the point
+         */
+        void get_point_from_gocad_id(
+            const index_t point_gocad_id,
+            vec3& point ) const ;
+
+        /*! @}
+         * \name Read mesh elements (points, triangles, tetrehedra)
+         * @{
+         */
+
+        /*!
          * Reads the coordinates of a vertex from file
          * @param[out] vertex Vertex
          */
@@ -149,24 +266,10 @@ namespace RINGMesh {
          */
         void read_triangle( std::vector< index_t >& cur_surf_facets ) const ;
 
-        /*!
-         * Builds region by setting the points and tetras of the region
-         * @param[in] region_id Index of the surface to build
-         * @param[in] nb_vertices_in_next_region Number of vertices in the
-         * next region (to reverse space)
-         * @param[in] nb_tetras_in_next_region Number of tetrahedra in the
-         * next region (to reverse space)
-         * @param[in,out] region_vertices Vector of the coordinates of the
-         * vertices of the region. Re-initialized at the end of the function.
-         * @param[in,out] tetra_corners Vector of the region tetrahedra corner
-         * indices. Re-initialized at the end of the function.
+        /*! @}
+         * \name Linking surfaces and region boundaries
+         * @{
          */
-        void build_region(
-            const index_t region_id,
-            const index_t nb_vertices_in_next_region,
-            const index_t nb_tetras_in_next_region,
-            std::vector < vec3 >& region_vertices,
-            std::vector < index_t >& tetra_corners ) ;
 
         /*!
          * @brief Sets the boundaries of the GeoModel regions
@@ -307,60 +410,21 @@ namespace RINGMesh {
             const std::vector< bool >& surf_plus_side ) ;
 
         /*!
-         * Builds surface by setting the points and facets of the surface
-         * @param[in] surface_id Index of the surface to build
-         * @param[in,out] facet_corners Vector of the (gocad) indices of the
-         * three corners of each facet (gocad) indices of the surface.
-         * Re-initialized at the end of the function.
-         * @param[in,out] facet_ptr Pointer to the beginning of a facet in
-         * facets. Re-initialized at the end of the function.
+         * @brief Both adds the surface in the boundaries of a region and
+         * adds the region to the in_boundaries of the surface
+         * @param[in] region_id Index of the region
+         * @param[in] surface_id Index of the surface
+         * @param[in] surf_side Side of the surface bounding the region
          */
-        void build_surface(
+        void fill_region_and_surface_boundaries_links(
+            const index_t region_id,
             const index_t surface_id,
-            std::vector< index_t >& facet_corners,
-            std::vector< index_t >& facet_ptr ) ;
+            const bool surf_side ) ;
 
-        /*!
-         * @brief Gets the points and the indices in the points vector to
-         * build the facets
-         * @param[in] facet_corners Vector of the (gocad) indices of the
-         * three corners of each facet (gocad) indices
-         * @param[out] cur_surf_points Vector of unique point coordinates
-         * belonging to the surface
-         * @param[out] cur_surf_facets Vector of each facet corner indices in
-         * the cur_surf_points vector to build facets
+        /*! @}
+         * \name Surface internal borders determination
+         * @{
          */
-        void get_surface_points_and_facets_from_gocad_indices(
-            const std::vector< index_t >& facet_corners,
-            std::vector< vec3 >& cur_surf_points,
-            std::vector< index_t >& cur_surf_facets ) const ;
-
-        /*!
-         * @brief Gets the point and the index in the points vector to
-         * build the facets for one read gocad vertex
-         * @param[in] vertex_gocad_id Gocad index of the vertex
-         * @param[in] gocad_vertices2cur_surf_points Map between vertices with
-         * gocad indices and position of the corresponding point
-         * in the points vector
-         * @param[out] cur_surf_points Vector of unique point coordinates
-         * belonging to the surface
-         * @param[out] cur_surf_facets Vector of each facet corner indices in
-         * the cur_surf_points vector to build facets
-         */
-        void get_surface_point_and_facet_from_gocad_index(
-            const index_t vertex_gocad_id,
-            std::vector< index_t >& gocad_vertices2cur_surf_points,
-            std::vector< vec3 >& cur_surf_points,
-            std::vector< index_t >& cur_surf_facets ) const ;
-
-        /*!
-         * @brief Gets the coordinates of the point from gocad index
-         * @param[in] point_gocad_id Gocad index of the point to get
-         * @param[out] point Coordinates of the point
-         */
-        void get_point_from_gocad_id(
-            const index_t point_gocad_id,
-            vec3& point ) const ;
 
         /*!
          * @brief Computes internal borders of the model surfaces
@@ -419,18 +483,6 @@ namespace RINGMesh {
         void get_surface_border_edge_barycenters(
             const index_t surface_id,
             std::vector< vec3 >& border_edge_barycenters ) const ;
-
-        /*!
-         * @brief Both adds the surface in the boundaries of a region and
-         * adds the region to the in_boundaries of the surface
-         * @param[in] region_id Index of the region
-         * @param[in] surface_id Index of the surface
-         * @param[in] surf_side Side of the surface bounding the region
-         */
-        void fill_region_and_surface_boundaries_links(
-            const index_t region_id,
-            const index_t surface_id,
-            const bool surf_side ) ;
 
         /*! @}
          */
