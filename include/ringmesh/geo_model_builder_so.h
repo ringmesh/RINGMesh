@@ -78,19 +78,19 @@ namespace RINGMesh {
         /*!
          * @brief Sets the Gocad coordinate system axis name
          */
-        void set_gocad_coordinate_system_axis_name() ;
+//        void set_gocad_coordinate_system_axis_name() ;
 
         /*!
          * @brief Sets the Gocad coordinate system axis units (meters, feet, ...)
          */
-        void set_gocad_coordinate_system_axis_unit() ;
+//        void set_gocad_coordinate_system_axis_unit() ;
 
         /*!
          * @brief Sets the Gocad coordinate system Z sign
          * @details If the Z values increase upwards, z_sign_ is positive,
          * else (Z values increasing downwards), z_sign_ is negative.
          */
-        void set_gocad_coordinate_system_z_sign() ;
+//        void set_gocad_coordinate_system_z_sign() ;
 
         /*! @}
          * \name Information on the number of mesh elements from .so file
@@ -170,12 +170,12 @@ namespace RINGMesh {
          * @param[in,out] tetra_corners Vector of the region tetrahedra corner
          * indices. Re-initialized at the end of the function.
          */
-        void build_region(
-            const index_t region_id,
-            const index_t nb_vertices_in_next_region,
-            const index_t nb_tetras_in_next_region,
-            std::vector < vec3 >& region_vertices,
-            std::vector < index_t >& tetra_corners ) ;
+//        void build_region(
+//            const index_t region_id,
+//            const index_t nb_vertices_in_next_region,
+//            const index_t nb_tetras_in_next_region,
+//            std::vector < vec3 >& region_vertices,
+//            std::vector < index_t >& tetra_corners ) ;
 
         /*! @}
          * \name Boundary model import
@@ -247,7 +247,7 @@ namespace RINGMesh {
          * Reads the coordinates of a vertex from file
          * @param[out] vertex Vertex
          */
-        void read_vertex_coordinates( vec3& vertex ) const ;
+//        void read_vertex_coordinates( vec3& vertex ) const ;
 
         /*!
          * @brief Reads the four vertices index of a tetrahedron
@@ -255,7 +255,7 @@ namespace RINGMesh {
          * them to vertex local (region) indices
          * @param[out] corners_id Indices of the four vertices
          */
-        void read_tetraedra( std::vector< index_t >& corners_id ) const ;
+//        void read_tetraedra( std::vector< index_t >& corners_id ) const ;
 
         /*!
          * @brief Reads the three vertices index of a triangle and adds
@@ -274,15 +274,15 @@ namespace RINGMesh {
         /*!
          * @brief Sets the boundaries of the GeoModel regions
          */
-        void compute_boundaries_of_geomodel_regions() ;
+//        void compute_boundaries_of_geomodel_regions() ;
 
         /*!
          * @brief Computes the colocaters of the centers of cell facets for
          * each region
          * @param[out] region_anns Pointers to the ColocaterANNs of regions
          */
-        void compute_cell_facet_centers_region_anns(
-            std::vector< ColocaterANN* >& region_anns ) const ;
+//        void compute_cell_facet_centers_region_anns(
+//            std::vector< ColocaterANN* >& region_anns ) const ;
 
         /*!
          * @brief Builds a vector with the center of the cell
@@ -290,9 +290,9 @@ namespace RINGMesh {
          * @param[in] region_id Index of the region
          * @param[out] cell_facet_centers Vector of cell facet centers
          */
-        void compute_region_cell_facet_centers(
-            const index_t region_id,
-            std::vector< vec3 >& cell_facet_centers ) const ;
+//        void compute_region_cell_facet_centers(
+//            const index_t region_id,
+//            std::vector< vec3 >& cell_facet_centers ) const ;
 
         /*!
          * @brief Sets the given surface as regions boundaries
@@ -302,9 +302,9 @@ namespace RINGMesh {
          * @param[in] surface_id Index of the surface
          * @param[in] region_anns Vector of ColocaterANN of the model regions
          */
-        void add_surface_to_region_boundaries(
-            const index_t surface_id,
-            const std::vector< ColocaterANN* >& region_anns ) ;
+//        void add_surface_to_region_boundaries(
+//            const index_t surface_id,
+//            const std::vector< ColocaterANN* >& region_anns ) ;
 
         /*!
          * @brief Tests if a surface is a boundary of the region.
@@ -317,11 +317,11 @@ namespace RINGMesh {
          * facet centers
          * @return The number of surface sides bounding the region
          */
-        index_t are_surface_sides_region_boundaries(
-            const index_t surface_id,
-            const index_t region_id,
-            const ColocaterANN& region_ann,
-            std::vector< index_t >& colocated_cell_facet_centers ) const ;
+//        index_t are_surface_sides_region_boundaries(
+//            const index_t surface_id,
+//            const index_t region_id,
+//            const ColocaterANN& region_ann,
+//            std::vector< index_t >& colocated_cell_facet_centers ) const ;
 
         /*!
          * @brief Adds the surface sides which bound the region to the
@@ -332,10 +332,10 @@ namespace RINGMesh {
          * @param[in] colocated_cell_facet_centers Vector of colocated cell
          * facet centers
          */
-        void add_surface_sides_to_region_boundaries(
-            const index_t surface_id,
-            const index_t region_id,
-            const std::vector< index_t >& colocated_cell_facet_centers ) ;
+//        void add_surface_sides_to_region_boundaries(
+//            const index_t surface_id,
+//            const index_t region_id,
+//            const std::vector< index_t >& colocated_cell_facet_centers ) ;
 
         /*!
          * @brief Adds one surface side in the boundaries of a region
@@ -347,10 +347,10 @@ namespace RINGMesh {
          * @param[in] cell_facet_center_id Index of the cell facet center
          * (i.e., cell_id * 4 + local_facet_id)
          */
-        void add_one_surface_side_to_region_boundaries(
-            const index_t region_id,
-            const index_t surface_id,
-            const index_t cell_facet_center_id ) ;
+//        void add_one_surface_side_to_region_boundaries(
+//            const index_t region_id,
+//            const index_t surface_id,
+//            const index_t cell_facet_center_id ) ;
 
         /*!
          * @brief Determines which side of the surface is to be added in the
@@ -363,10 +363,10 @@ namespace RINGMesh {
          * i.e. true for the '+' side (normal size) and false for the
          * '-' side (other side)
          */
-        bool determine_surface_side_to_add(
-            const index_t region_id,
-            const index_t surface_id,
-            const index_t cell_facet_center_id ) const ;
+//        bool determine_surface_side_to_add(
+//            const index_t region_id,
+//            const index_t surface_id,
+//            const index_t cell_facet_center_id ) const ;
 
         /*!
          * @brief Adds the both surface sides in the boundaries of a region
@@ -375,16 +375,16 @@ namespace RINGMesh {
          * @param[in] region_id Index of the region
          * @param[in] surface_id Index of the surface
          */
-        void add_both_surface_sides_to_region_boundaries(
-            const index_t region_id,
-            const index_t surface_id ) ;
+//        void add_both_surface_sides_to_region_boundaries(
+//            const index_t region_id,
+//            const index_t surface_id ) ;
 
         /*!
          * @brief Sets the boundaries of region Universe
          * @details A surface is set in the boundaries of region Universe if
          * only one of its sides belongs to the boundaries of other regions.
          */
-        void compute_universe_boundaries() ;
+//        void compute_universe_boundaries() ;
 
         /*
          * @brief Determines if each side of the surfaces are
@@ -394,9 +394,9 @@ namespace RINGMesh {
          * @param[out] surf_side_plus Vector indicating if the '+' side of
          * surfaces are in the boundaries of model regions
          */
-        void determine_if_surface_sides_bound_regions(
-            std::vector< bool >& surf_minus_side,
-            std::vector< bool >& surf_plus_side ) const ;
+//        void determine_if_surface_sides_bound_regions(
+//            std::vector< bool >& surf_minus_side,
+//            std::vector< bool >& surf_plus_side ) const ;
 
         /*
          * @brief Adds the right surface sides in universe boundaries
@@ -405,9 +405,9 @@ namespace RINGMesh {
          * @param[in] surf_side_plus Vector indicating if the '+' side of
          * surfaces are in the boundaries of model regions
          */
-        void add_surfaces_to_universe_boundaries(
-            const std::vector< bool >& surf_minus_side,
-            const std::vector< bool >& surf_plus_side ) ;
+//        void add_surfaces_to_universe_boundaries(
+//            const std::vector< bool >& surf_minus_side,
+//            const std::vector< bool >& surf_plus_side ) ;
 
         /*!
          * @brief Both adds the surface in the boundaries of a region and
@@ -416,10 +416,10 @@ namespace RINGMesh {
          * @param[in] surface_id Index of the surface
          * @param[in] surf_side Side of the surface bounding the region
          */
-        void fill_region_and_surface_boundaries_links(
-            const index_t region_id,
-            const index_t surface_id,
-            const bool surf_side ) ;
+//        void fill_region_and_surface_boundaries_links(
+//            const index_t region_id,
+//            const index_t surface_id,
+//            const bool surf_side ) ;
 
         /*! @}
          * \name Surface internal borders determination
