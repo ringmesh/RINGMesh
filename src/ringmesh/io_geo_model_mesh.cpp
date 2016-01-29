@@ -513,7 +513,7 @@ namespace RINGMesh {
                     index_t cell = mesh.cells.cell( m, c ) ;
                     out << mesh.cells.nb_vertices( cell ) ;
                     for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
-                        out << SPACE << mesh.cells.vertex( m, cell ) ;
+                        out << SPACE << mesh.cells.vertex( cell, v ) ;
                     }
                     out << std::endl ;
                 }

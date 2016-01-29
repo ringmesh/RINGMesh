@@ -716,8 +716,8 @@ namespace RINGMesh {
                     GEO::Logger::out( "I/O" )
                         << " Loaded model " << model.name() << " from "
                         << filename << std::endl ;
-                    print_geomodel( model ) ;
-                    RINGMesh::is_geomodel_valid( model ) ;                
+//                    print_geomodel( model ) ;
+//                    RINGMesh::is_geomodel_valid( model ) ;
                     return true ;
                 }
             }
