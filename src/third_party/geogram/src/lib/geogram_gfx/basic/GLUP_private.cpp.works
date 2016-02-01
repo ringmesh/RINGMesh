@@ -1,0 +1,1516 @@
+/*
+ *  Copyright (c) 2012-2016, Bruno Levy
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *  this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *  this list of conditions and the following disclaimer in the documentation
+ *  and/or other materials provided with the distribution.
+ *  * Neither the name of the ALICE Project-Team nor the names of its
+ *  contributors may be used to endorse or promote products derived from this
+ *  software without specific prior written permission.
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  If you modify this software, you should include a notice giving the
+ *  name of the person performing the modification, the date of modification,
+ *  and the reason for such modification.
+ *
+ *  Contact: Bruno Levy
+ *
+ *     Bruno.Levy@inria.fr
+ *     http://www.loria.fr/~levy
+ *
+ *     ALICE Project
+ *     LORIA, INRIA Lorraine, 
+ *     Campus Scientifique, BP 239
+ *     54506 VANDOEUVRE LES NANCY CEDEX 
+ *     FRANCE
+ *
+ */
+
+#include <geogram_gfx/basic/GLUP_private.h>
+#include <geogram_gfx/basic/GLSL.h>
+
+// TODO: je crois bien que je vais plus pouvoir utiliser glVertexAttribPointer
+// avec une adresse en memoire, il va falloir gerer soi-meme les buffers...
+
+// TODO: voir si on peut pas avoir une seule fonction
+//   pour dessiner les triangles avec et sans attributs (on ignore les
+//   attributs si il n'y en avait pas besoin...)
+//   (et idem pour les quads). Peut-etre qu'on peut aussi utiliser les
+//   types tableaux pour eviter de passer plein de trucs en argument.
+//   En tout cas, ca serait mieux de passer un 'VertexAttrib' en parametre,
+//   a savoir une 'struct' avec tout ce qu'il faut dedans (couleur et
+//   coordonnees de textures)
+
+// TODO: gestion des coordonnees de textures. Idealement au niveau du
+//   VertexShader.
+
+// TODO: Avec 19 millions de tetraedres ca rame un peu. Faudrait voir si
+// c'est pareil avec vorpaview? (essayer de generer le maillage en
+// question et le faire sauver en .mesh pour comparer...)
+
+namespace GLUP {
+    using namespace GEO;
+
+    // Used to determine maximum vertex index, that needs
+    // to be an integer multiple of the number of vertices
+    // per primitive.
+    index_t nb_vertices_per_primitive[] = {
+        1, // GLUP_POINTS     =0,
+        2, // GLUP_LINES      =1,
+        3, // GLUP_TRIANGLES  =2,
+        4, // GLUP_QUADS      =3,
+        1, // GLUP_POLYGON    =4,
+        4, // GLUP_TETRAHEDRA =5,
+        8, // GLUP_HEXAHEDRA  =6,
+        6, // GLUP_PRISMS     =7,
+        5  // GLUP_PYRAMIDS   =8
+    };
+
+    
+    static const char* GLUP_uniform_state_source = 
+        "  layout(shared)                              \n"
+        "  uniform GLUPStateBlock {                    \n"
+        
+        "     bool vertex_colors_enabled;              \n"        
+        
+        "     vec4  front_color;                       \n"
+        "     vec4  back_color;                        \n"
+        
+        "     bool draw_mesh_enabled;                  \n"
+        "     vec4  mesh_color;                        \n"
+        "     float mesh_width;                        \n"
+        
+        "     bool lighting_enabled;                   \n"
+        "     vec3 light_vector;                       \n"
+        "     vec3 light_half_vector;                  \n"
+        
+        "     bool texturing_enabled;                  \n"
+
+        "     float cells_shrink;                      \n"
+        
+        "     bool picking_enabled;                    \n"         
+        "     int   picking_mode;                      \n"
+        "     int   picking_id;                        \n" 
+        "     int   base_picking_id;                   \n" 
+
+        "     bool clipping_enabled;                   \n"
+        "     int   clipping_mode;                     \n"
+        "     vec4  clip_plane;                        \n"
+        
+        "     mat4 modelviewprojection_matrix;         \n"
+        "     mat4 modelview_matrix;                   \n"
+        "     mat3 normal_matrix;                      \n"
+        "     mat4 texture_matrix;                     \n"
+        "  } GLUP;                                     \n";
+
+    
+    /*
+    ** Invert 4x4 matrix.
+    ** Contributed by David Moore (See Mesa bug #6748)
+    */
+    GLboolean invert_matrix(const GLfloat m[16], GLfloat inv[16]) {
+        
+        inv[0] = m[5]*m[10]*m[15] - m[5]*m[11]*m[14] - m[9]*m[6]*m[15]
+            + m[9]*m[7]*m[14] + m[13]*m[6]*m[11] - m[13]*m[7]*m[10];
+        inv[4] = -m[4]*m[10]*m[15] + m[4]*m[11]*m[14] + m[8]*m[6]*m[15]
+            - m[8]*m[7]*m[14] - m[12]*m[6]*m[11] + m[12]*m[7]*m[10];
+        inv[8] = m[4]*m[9]*m[15] - m[4]*m[11]*m[13] - m[8]*m[5]*m[15]
+            + m[8]*m[7]*m[13] + m[12]*m[5]*m[11] - m[12]*m[7]*m[9];
+        inv[12] = -m[4]*m[9]*m[14] + m[4]*m[10]*m[13] + m[8]*m[5]*m[14]
+            - m[8]*m[6]*m[13] - m[12]*m[5]*m[10] + m[12]*m[6]*m[9];
+        inv[1] = -m[1]*m[10]*m[15] + m[1]*m[11]*m[14] + m[9]*m[2]*m[15]
+            - m[9]*m[3]*m[14] - m[13]*m[2]*m[11] + m[13]*m[3]*m[10];
+        inv[5] = m[0]*m[10]*m[15] - m[0]*m[11]*m[14] - m[8]*m[2]*m[15]
+            + m[8]*m[3]*m[14] + m[12]*m[2]*m[11] - m[12]*m[3]*m[10];
+        inv[9] = -m[0]*m[9]*m[15] + m[0]*m[11]*m[13] + m[8]*m[1]*m[15]
+            - m[8]*m[3]*m[13] - m[12]*m[1]*m[11] + m[12]*m[3]*m[9];
+        inv[13] = m[0]*m[9]*m[14] - m[0]*m[10]*m[13] - m[8]*m[1]*m[14]
+            + m[8]*m[2]*m[13] + m[12]*m[1]*m[10] - m[12]*m[2]*m[9];
+        inv[2] = m[1]*m[6]*m[15] - m[1]*m[7]*m[14] - m[5]*m[2]*m[15]
+            + m[5]*m[3]*m[14] + m[13]*m[2]*m[7] - m[13]*m[3]*m[6];
+        inv[6] = -m[0]*m[6]*m[15] + m[0]*m[7]*m[14] + m[4]*m[2]*m[15]
+            - m[4]*m[3]*m[14] - m[12]*m[2]*m[7] + m[12]*m[3]*m[6];
+        inv[10] = m[0]*m[5]*m[15] - m[0]*m[7]*m[13] - m[4]*m[1]*m[15]
+            + m[4]*m[3]*m[13] + m[12]*m[1]*m[7] - m[12]*m[3]*m[5];
+        inv[14] = -m[0]*m[5]*m[14] + m[0]*m[6]*m[13] + m[4]*m[1]*m[14]
+            - m[4]*m[2]*m[13] - m[12]*m[1]*m[6] + m[12]*m[2]*m[5];
+        inv[3] = -m[1]*m[6]*m[11] + m[1]*m[7]*m[10] + m[5]*m[2]*m[11]
+            - m[5]*m[3]*m[10] - m[9]*m[2]*m[7] + m[9]*m[3]*m[6];
+        inv[7] = m[0]*m[6]*m[11] - m[0]*m[7]*m[10] - m[4]*m[2]*m[11]
+            + m[4]*m[3]*m[10] + m[8]*m[2]*m[7] - m[8]*m[3]*m[6];
+        inv[11] = -m[0]*m[5]*m[11] + m[0]*m[7]*m[9] + m[4]*m[1]*m[11]
+            - m[4]*m[3]*m[9] - m[8]*m[1]*m[7] + m[8]*m[3]*m[5];
+        inv[15] = m[0]*m[5]*m[10] - m[0]*m[6]*m[9] - m[4]*m[1]*m[10]
+            + m[4]*m[2]*m[9] + m[8]*m[1]*m[6] - m[8]*m[2]*m[5];
+        
+        GLfloat det =
+            m[0]*inv[0] + m[1]*inv[4] + m[2]*inv[8] + m[3]*inv[12];
+        
+        if (det == 0.0f) {
+            return GL_FALSE;
+        }
+        
+        det = 1.0f / det;
+        
+        for (index_t i = 0; i < 16; ++i) {
+            inv[i] *= det;
+        }
+        
+        return GL_TRUE;
+    }
+    
+    void mult_matrices(
+        const GLfloat m1[16], const GLfloat m2[16], GLfloat out[16]
+    ) {
+        Memory::clear(out, sizeof(GLfloat)*16);
+        for(index_t i=0; i<4; ++i) {
+            for(index_t j=0; j<4; ++j) {
+                for(index_t k=0; k<4; ++k) {
+                    out[i*4+j] += m1[i*4+k]*m2[k*4+j];
+                }
+            }
+        }
+    }
+
+    void load_identity_matrix(GLfloat out[16]) {
+        for(index_t i=0; i<4; ++i) {
+            for(index_t j=0; j<4; ++j) {
+                out[i*4+j] = (i == j) ? 1.0f : 0.0f;
+            }
+        }
+    }
+
+    /***********************************************************/
+    
+    void StateVariableBase::initialize(
+        Context* context, const char* name
+    ) {
+        context_ = context;
+        name_ = name;
+        address_ = context_->get_state_variable_address(name);
+    }
+
+    void StateVariableBase::flag_uniform_buffer_as_dirty() {
+        context_->flag_uniform_buffer_as_dirty();
+    }
+
+    /***********************************************************/
+
+    const char* Context::uniform_state_declaration() {
+        return GLUP_uniform_state_source;
+    }
+    
+    Context::Context() {
+        matrices_dirty_=true;        
+        default_program_ = 0;
+        uniform_buffer_=0;
+        uniform_binding_point_=0;
+        uniform_buffer_size_=0;
+        uniform_buffer_data_=nil;
+        uniform_buffer_dirty_=true;
+        
+        matrix_mode_ = GLUP_MODELVIEW_MATRIX;
+        matrices_dirty_ = true;
+    }
+    
+    Context::~Context() {
+        if(default_program_ != 0) {
+            glDeleteProgram(default_program_);
+        }
+        glDeleteBuffers(1, &uniform_buffer_);
+        delete[] uniform_buffer_data_;                
+    }
+
+    void Context::setup() {
+        
+        uniform_buffer_dirty_=true;
+        matrices_dirty_=true;        
+        uniform_binding_point_=1;
+        
+        // A minimalistic GLSL program that uses the GLUP context.
+        // It is there just to use GLSL introspection API to lookup
+        // the offsets of GLUP context state variables.
+
+        static const char* shader_source_header_ =
+            "#version 150 core \n" ;
+        
+        static const char* vertex_shader_source_ =
+            "in vec3 position;                                        \n"
+            "                                                         \n"
+            "void main() {                                            \n"
+            "   gl_Position =                                         \n"
+            "     GLUP.modelviewprojection_matrix*vec4(position,1.0); \n"
+            "}                                                        \n";
+
+        static const char* fragment_shader_source_ =
+            "out vec4 colorOut;                      \n"
+            "void main() {                           \n"
+            "   colorOut = vec4(1.0, 1.0, 1.0, 1.0); \n" 
+            "}                                       \n";
+
+        // Create a GLSL program that uses the UBO
+        
+        GLuint GLUP_vertex_shader = GLSL::compile_shader(
+            GL_VERTEX_SHADER,
+            shader_source_header_,
+            GLUP_uniform_state_source,
+            vertex_shader_source_,
+            0
+        );
+
+        GLuint GLUP_fragment_shader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER,
+            shader_source_header_,
+            fragment_shader_source_,
+            0
+        );
+
+        default_program_ = GLSL::create_program_from_shaders(
+            GLUP_vertex_shader,
+            GLUP_fragment_shader,
+            0
+        );
+
+        // Get UBO size
+
+        GLuint UBO_index =
+            glGetUniformBlockIndex(default_program_, "GLUPStateBlock");
+        
+        glUniformBlockBinding(
+            default_program_, UBO_index, uniform_binding_point_
+        );
+
+        glGetActiveUniformBlockiv(
+            default_program_, UBO_index,
+            GL_UNIFORM_BLOCK_DATA_SIZE,
+            &uniform_buffer_size_
+        );
+
+        // Create UBO
+
+        uniform_buffer_data_ = new Memory::byte[uniform_buffer_size_];
+        Memory::clear(uniform_buffer_data_, size_t(uniform_buffer_size_));
+        glGenBuffers(1, &uniform_buffer_);
+        glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer_);
+        glBufferData(
+            GL_UNIFORM_BUFFER,
+            uniform_buffer_size_,
+            uniform_buffer_data_,
+            GL_DYNAMIC_DRAW
+        );
+                
+        glBindBufferBase(
+            GL_UNIFORM_BUFFER,
+            uniform_binding_point_,
+            uniform_buffer_
+        );
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        setup_state_variables();
+        setup_primitives();
+    }
+
+    void Context::setup_state_variables() {
+        uniform_state_.toggle.push_back(
+            StateVariable<GLboolean>(this,"lighting_enabled",GL_TRUE)
+        );
+        uniform_state_.toggle.push_back(
+            StateVariable<GLboolean>(this,"vertex_colors_enabled",GL_FALSE)
+        );
+        uniform_state_.toggle.push_back(
+            StateVariable<GLboolean>(this,"texturing_enabled",GL_FALSE)
+        );
+        uniform_state_.toggle.push_back(
+            StateVariable<GLboolean>(this,"draw_mesh_enabled",GL_FALSE)
+        );
+        uniform_state_.toggle.push_back(
+            StateVariable<GLboolean>(this,"picking_enabled",GL_FALSE)
+        );
+        uniform_state_.toggle.push_back(
+            StateVariable<GLboolean>(this,"clipping_enabled",GL_FALSE)
+        );
+
+        uniform_state_.color.push_back(
+            VectorStateVariable(this, "front_color", 4)
+        );
+        uniform_state_.color.push_back(
+            VectorStateVariable(this, "back_color", 4)
+        );
+        uniform_state_.color.push_back(
+            VectorStateVariable(this, "mesh_color", 4)
+        );
+        
+        uniform_state_.light_vector.initialize(this, "light_vector", 3);
+        uniform_state_.light_half_vector.initialize(
+            this, "light_half_vector", 3
+        );
+        
+        uniform_state_.mesh_width.initialize(this, "mesh_width", 1.0f);
+        uniform_state_.cells_shrink.initialize(this, "cells_shrink", 0.0f);
+
+        uniform_state_.picking_mode.initialize(
+            this, "picking_mode", GLUP_PICK_PRIMITIVE
+        );
+        uniform_state_.picking_id.initialize(this, "picking_id", 0);
+        uniform_state_.base_picking_id.initialize(this, "base_picking_id", 0);
+
+        uniform_state_.clipping_mode.initialize(
+            this, "clipping_mode", GLUP_CLIP_STANDARD
+        );
+        uniform_state_.clip_plane.initialize(this, "clip_plane", 4);
+
+        uniform_state_.modelview_matrix.initialize(this, "modelview_matrix");
+        uniform_state_.modelviewprojection_matrix.initialize(
+            this, "modelviewprojection_matrix"
+        );
+        uniform_state_.normal_matrix.initialize(this, "normal_matrix");
+        uniform_state_.texture_matrix.initialize(this, "texture_matrix");
+        
+        matrix_mode_ = GLUP_MODELVIEW_MATRIX;
+        update_matrices();
+    }
+
+    
+    Memory::pointer Context::get_state_variable_address(const char* name_in) {
+        std::string name = std::string("GLUPStateBlock.") + name_in;
+        GLuint index = GL_INVALID_INDEX;
+        const char* pname = name.c_str();
+        glGetUniformIndices(default_program_, 1, &pname, &index);
+        geo_assert(index != GL_INVALID_INDEX);
+        GLint offset;
+        glGetActiveUniformsiv(
+            default_program_, 1, &index, GL_UNIFORM_OFFSET, &offset
+        );
+        geo_assert(offset != -1);
+        return uniform_buffer_data_ + offset;
+    }
+
+    bool Context::is_legacy_GL() {
+        return false;
+    }
+
+    void Context::copy_from_GL_state(GLUPbitfield which_attributes) {
+        uniform_buffer_dirty_ = true;
+        
+        //  I observed that without these instructions,
+        // glGet() does not always
+        // returns the latest set values under Windows.
+        glFlush();
+        glFinish();
+
+        if(which_attributes & GLUP_MATRICES_ATTRIBUTES_BIT) {
+            matrices_dirty_ = true;            
+            glGetFloatv(
+                GL_PROJECTION_MATRIX,
+                matrix_stack_[GLUP_PROJECTION_MATRIX].top()
+            );
+            glGetFloatv(
+                GL_MODELVIEW_MATRIX,
+                matrix_stack_[GLUP_MODELVIEW_MATRIX].top()
+            );
+            glGetFloatv(
+                GL_TEXTURE_MATRIX,
+                matrix_stack_[GLUP_TEXTURE_MATRIX].top()
+            );
+        }
+
+        if(which_attributes & GLUP_CLIPPING_ATTRIBUTES_BIT) {
+            uniform_state_.toggle[GLUP_CLIPPING].set(
+                glIsEnabled(GL_CLIP_PLANE0)
+            );
+            GLdouble clip_plane_d[4];
+            glGetClipPlane(GL_CLIP_PLANE0, clip_plane_d);
+            copy_vector(
+                uniform_state_.clip_plane.get_pointer(), clip_plane_d, 4
+            );
+        }
+        
+        if(which_attributes & GLUP_LIGHTING_ATTRIBUTES_BIT) {
+            lighting_dirty_ = true;
+            uniform_state_.toggle[GLUP_LIGHTING].set(glIsEnabled(GL_LIGHTING));
+            GLfloat light[4];
+            glGetLightfv(GL_LIGHT0, GL_POSITION, light);
+            copy_vector(uniform_state_.light_vector.get_pointer(), light, 3);
+        }            
+
+        if(which_attributes & GLUP_COLORS_ATTRIBUTES_BIT) {
+            glGetMaterialfv(
+                GL_FRONT, GL_DIFFUSE,
+                uniform_state_.color[GLUP_FRONT_COLOR].get_pointer()
+            );
+            glGetMaterialfv(
+                GL_BACK, GL_DIFFUSE,
+                uniform_state_.color[GLUP_BACK_COLOR].get_pointer()
+            );
+        }
+    }
+
+    void Context::copy_to_GL_state(GLUPbitfield which_attributes) {
+        if(which_attributes & GLUP_MATRICES_ATTRIBUTES_BIT) {
+            GLint mode_save;
+            glGetIntegerv(GL_MATRIX_MODE, &mode_save);
+            glMatrixMode(GL_PROJECTION);
+            glLoadMatrixf(matrix_stack_[GLUP_PROJECTION_MATRIX].top());
+            glMatrixMode(GL_MODELVIEW);
+            glLoadMatrixf(matrix_stack_[GLUP_MODELVIEW_MATRIX].top());
+            glMatrixMode(GL_TEXTURE);
+            glLoadMatrixf(matrix_stack_[GLUP_TEXTURE_MATRIX].top());
+            glMatrixMode(GLenum(mode_save));
+        }
+
+        if(which_attributes & GLUP_CLIPPING_ATTRIBUTES_BIT) {
+            if(uniform_state_.toggle[GLUP_CLIPPING].get()) {
+                glEnable(GL_CLIP_PLANE0);
+            } else {
+                glDisable(GL_CLIP_PLANE0);                
+            }
+            GLdouble clip_plane_d[4];
+            glGetClipPlane(GL_CLIP_PLANE0, clip_plane_d);
+            copy_vector(
+                clip_plane_d, uniform_state_.clip_plane.get_pointer(), 4
+            );            
+            glClipPlane(GL_CLIP_PLANE0, clip_plane_d);
+        }
+
+        if(which_attributes & GLUP_LIGHTING_ATTRIBUTES_BIT) {
+            if(uniform_state_.toggle[GLUP_LIGHTING].get()) {
+                glEnable(GL_LIGHTING);
+            } else {
+                glDisable(GL_LIGHTING);
+            }
+            GLfloat light[4];
+            copy_vector(light, uniform_state_.light_vector.get_pointer(), 3);
+            light[3] = 0.0f;
+            glLightfv(GL_LIGHT0, GL_POSITION, light);
+        }
+
+        if(which_attributes & GLUP_COLORS_ATTRIBUTES_BIT) {
+            glMaterialfv(
+                GL_FRONT, GL_DIFFUSE,
+                uniform_state_.color[GLUP_FRONT_COLOR].get_pointer()
+            );
+            glMaterialfv(
+                GL_BACK, GL_DIFFUSE,
+                uniform_state_.color[GLUP_BACK_COLOR].get_pointer()
+            );
+        }
+    }
+    
+    void Context::bind_uniform_state(GLuint program) {
+        GLuint UBO_index = glGetUniformBlockIndex(
+            program, "GLUPStateBlock"
+        );
+        if(UBO_index != GL_INVALID_INDEX) {
+            glUniformBlockBinding(
+                program, UBO_index, uniform_binding_point_
+            );
+        }
+    }
+    
+    void Context::begin(GLUPprimitive primitive) {
+        update_uniform_buffer();
+        if(uniform_state_.toggle[GLUP_VERTEX_COLORS].get()) {
+            immediate_state_.buffer[GLUP_COLOR_ATTRIBUTE].enable();
+        } else {
+            immediate_state_.buffer[GLUP_COLOR_ATTRIBUTE].disable();
+        }
+        if(uniform_state_.toggle[GLUP_TEXTURING].get()) {
+            immediate_state_.buffer[GLUP_TEX_COORD_ATTRIBUTE].enable();
+        } else {
+            immediate_state_.buffer[GLUP_TEX_COORD_ATTRIBUTE].disable();
+        }
+        immediate_state_.begin(primitive);
+        
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(
+            0, 4, GL_FLOAT, GL_FALSE, 0, immediate_state_.buffer[0].data()
+        );
+
+        for(index_t i=1; i<immediate_state_.buffer.size(); ++i) {
+            if(immediate_state_.buffer[i].is_enabled()) {
+                glEnableVertexAttribArray(i);
+                glVertexAttribPointer(
+                    i,
+                    GLint(immediate_state_.buffer[i].dimension()),
+                    GL_FLOAT, GL_FALSE, 0,
+                    immediate_state_.buffer[i].data()
+                );
+            }
+        }
+        glUseProgram(primitive_info_[primitive].program);
+    }
+
+    void Context::end() {
+        flush_immediate_buffers();
+        glUseProgram(0);
+        
+        for(index_t i=0; i<immediate_state_.buffer.size(); ++i) {
+            glDisableVertexAttribArray(i);
+        }
+
+        if(
+            uniform_state_.toggle[GLUP_PICKING].get() &&
+            uniform_state_.picking_mode.get() == GLUP_PICK_PRIMITIVE
+        ) {
+            update_base_picking_id(0);
+        }
+    }
+
+    void Context::draw_arrays(
+        GLUPprimitive primitive, GLUPint first, GLUPsizei count
+    ) {
+        update_uniform_buffer();
+        glUseProgram(primitive_info_[primitive].program);        
+        glDrawArrays(primitive_info_[primitive].GL_primitive, first, count);
+        glUseProgram(0);
+    }
+
+    void Context::draw_elements(
+        GLUPprimitive primitive, GLUPsizei count,
+        GLUPenum type, const GLUPvoid* indices
+    ) {
+        update_uniform_buffer();        
+        glUseProgram(primitive_info_[primitive].program);
+        glDrawElements(
+            primitive_info_[primitive].GL_primitive, count, type, indices
+        );
+        glUseProgram(0);
+    }
+
+    void Context::update_matrices() {
+        
+        if(!matrices_dirty_) {
+            return;
+        }
+
+        GLfloat* modelview = matrix_stack_[GLUP_MODELVIEW_MATRIX].top();
+        GLfloat* projection = matrix_stack_[GLUP_PROJECTION_MATRIX].top();
+
+        copy_vector(
+            uniform_state_.modelview_matrix.get_pointer(), modelview, 16
+        );
+        mult_matrices(
+            modelview, projection,
+            uniform_state_.modelviewprojection_matrix.get_pointer()
+        );
+        GLfloat modelview_invert[16];
+        GLboolean OK = invert_matrix(modelview, modelview_invert);
+        if(!OK) {
+            Logger::warn("GLUP") << "Singular ModelView matrix"
+                                 << std::endl;
+        }
+        GLfloat* normal_matrix = uniform_state_.normal_matrix.get_pointer();
+        //   Copy the upper leftmost 3x3 part of the transpose of
+        // modelview_invert_matrix to normal_matrix
+        for(index_t i=0; i<3; ++i) {
+            for(index_t j=0; j<3; ++j) {
+                // Yes, it is i*4
+                //   (with a '4' though it is a mat3 with a '3'),
+                // mat3 rows are padded-aligned in UBOs !
+                // TODO: query padding in UBO using introspection
+                // (is it possible ? does not seem to work, so
+                //  is padding with 4 universal ??)
+                normal_matrix[i*4+j] = modelview_invert[j*4+i];
+            }
+        }
+        matrices_dirty_ = false;
+    }
+
+    void Context::update_lighting() {
+        if(!lighting_dirty_) {
+            return;
+        }
+
+        GLfloat* light_vector =
+            uniform_state_.light_vector.get_pointer();
+        
+        GLfloat* light_half_vector =
+            uniform_state_.light_half_vector.get_pointer();
+
+        // Normalize light vector
+        
+        normalize_vector(light_vector);
+
+        // Compute half vector
+        
+        copy_vector(light_half_vector, light_vector, 3);
+        light_half_vector[2] += 1.0f;
+        normalize_vector(light_half_vector);        
+        
+        lighting_dirty_ = false;
+    }
+
+    void Context::update_base_picking_id(GLint new_value) {
+        Memory::pointer address = uniform_state_.base_picking_id.address();
+        index_t offset = index_t(address - uniform_buffer_data_);
+        uniform_state_.base_picking_id.set(new_value);
+        glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer_);
+        glBufferSubData(
+            GL_UNIFORM_BUFFER,
+            offset,
+            sizeof(int),
+            address
+        );
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+    
+    void Context::update_uniform_buffer() {
+        if(!uniform_buffer_dirty_) {
+            return;
+        }
+        update_matrices();
+        update_lighting();
+        glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer_);
+        glBufferSubData(
+            GL_UNIFORM_BUFFER,
+            0,
+            uniform_buffer_size_,
+            uniform_buffer_data_
+        );
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        uniform_buffer_dirty_ = false;
+    }
+
+    void Context::flush_immediate_buffers() {
+        if(immediate_state_.nb_vertices() == 0) {
+            return;
+        }
+
+        // Particular case: a GLUP_POLYGON filled exactly the
+        // buffer and was ready for restart, but was not
+        // restarted (see below).
+        /*
+          // TODO
+        if(
+            immediate_cur_primitive_ == GLUP_POLYGON &&
+            immediate_vertex_index_ == 2
+        ) {
+            immediate_vertex_index_ = 0;
+            return;
+        }
+        */
+        
+        // For the moment we use AttribPointer and 
+        // TODO?? (elsewhere): create VBOs
+        // TODO?? copy immediate mode arrays to VBO (if not memory-mapped)
+
+        glDrawArrays(
+            primitive_info_[immediate_state_.primitive()].GL_primitive,
+            0,
+            GLsizei(immediate_state_.nb_vertices())
+        );
+
+        if(
+            uniform_state_.toggle[GLUP_PICKING].get() &&
+            uniform_state_.picking_mode.get() == GLUP_PICK_PRIMITIVE
+        ) {
+            update_base_picking_id(
+                uniform_state_.base_picking_id.get() +
+                GLint(immediate_state_.nb_primitives())
+            );
+        }
+        
+        // Particular case: for GLUP_POLYGON we draw triangle fans,
+        // therefore we need to copy the last two vertices before
+        // restarting.
+        // TODO/Note: this will not work with VBOs !!
+        /*
+          // TODO
+        if(immediate_cur_primitive_ == GLUP_POLYGON) {
+            copy_immediate_vertex(0, immediate_vertex_index_ - 2);
+            copy_immediate_vertex(1, immediate_vertex_index_ - 1);
+            immediate_vertex_index_ = 2;
+        } else {
+            immediate_vertex_index_ = 0;
+        }
+        */
+
+        immediate_state_.reset();
+    }
+    
+    /***********************************************************/
+
+    const char* GLUP150_shader_source_header =
+        "#version 150 core                                     \n"
+        "#extension GL_ARB_explicit_attrib_location : enable   \n"
+        ;
+
+    // Note There is packUnorm4x8() and unpackUnorm4x8() that does what
+    // we want, but it is only supported in GLSL 4.1...
+    const char* GLUP150_picking_utils_source = 
+        "vec4 int_to_vec4(in int x) {       \n"
+        "  return vec4(                     \n"
+        "     float(x         & 255)/255.0, \n"
+        "     float((x >>  8) & 255)/255.0, \n"
+        "     float((x >> 16) & 255)/255.0, \n"
+        "     float((x >> 24) & 255)/255.0  \n"
+        "  );                               \n"
+        "}                                  \n";
+
+    const char* GLUP150_vshader_inout_declaration =
+        "layout(location = 0) in vec4 vertex_in;                    \n"
+        "layout(location = 1) in vec4 color_in;                     \n"
+        "layout(location = 2) in vec4 tex_coord_in;                 \n"
+        "out VertexData {                                           \n"
+        "   vec4 color;                                             \n"
+        "} VertexOut;                                               \n";
+
+    const char* GLUP150_gshader_in_declaration =
+        "in VertexData {                                            \n"
+        "   vec4 color;                                             \n"
+        "} VertexIn[];                                              \n";
+
+    void Context::setup_primitives() {
+        primitive_info_.resize(GLUP_NB_PRIMITIVES);
+        setup_GLUP_POINTS();
+        setup_GLUP_LINES();
+        setup_GLUP_TRIANGLES();
+        setup_GLUP_QUADS();
+        setup_GLUP_POLYGON();
+        setup_GLUP_TETRAHEDRA();
+        setup_GLUP_HEXAHEDRA();
+        setup_GLUP_PRISMS();
+        setup_GLUP_PYRAMIDS();
+    }
+
+    // GLUP_POINTS ********************************************************
+
+    const char* GLUP150_points_and_lines_vshader_source =
+        "void main() {                                              \n"
+        "    if(GLUP.clipping_enabled) {                            \n"
+        "       gl_ClipDistance[0] = dot(                           \n"
+        "          GLUP.modelview_matrix*vertex_in,                 \n"
+        "          GLUP.clip_plane                                  \n"
+        "       );                                                  \n"
+        "   } else {                                                \n"
+        "      gl_ClipDistance[0] = 0.0;                            \n"
+        "   }                                                       \n"
+        "   if(GLUP.picking_enabled) {                              \n"
+        "      if(GLUP.picking_mode == 2) {                         \n"
+        "            VertexOut.color = int_to_vec4(                 \n"
+        "                    GLUP.picking_id                        \n"
+        "            );                                             \n"
+        "      }                                                    \n"
+        "   } else {                                                \n"
+        "      VertexOut.color = GLUP.vertex_colors_enabled ?       \n"
+        "                          color_in : GLUP.front_color ;    \n"
+        "   }                                                       \n"
+        "   gl_Position =                                           \n"
+        "     GLUP.modelviewprojection_matrix*vertex_in;            \n"
+        "}                                                          \n";
+    
+    // Note: depth update is not correct, it should be something like:
+    // (to be checked...)
+    // gl_FragDepth = gl_FragCoord.z +
+    //   (pt_size*0.0001)/3.0 * gl_ProjectionMatrix[2].z * sqrt(1.0 - r2);
+    
+    const char* GLUP150_points_fshader_source =
+        "#extension GL_ARB_conservative_depth : enable              \n"
+        "layout (depth_less) out float gl_FragDepth;                \n"
+        "in VertexData {                                            \n"
+        "   vec4 color;                                             \n"
+        "} VertexIn;                                                \n"
+        "out vec4 frag_color ;                                      \n"
+        "void main() {                                              \n"
+        "   vec2 V = 2.0*(gl_PointCoord - vec2(0.5, 0.5));          \n"
+        "   float one_minus_r2 = 1.0 - dot(V,V);                    \n"
+        "   if(one_minus_r2 < 0.0) {                                \n"
+        "      discard;                                             \n"
+        "   }                                                       \n"
+        "   vec3 W = vec3(V.x, -V.y, sqrt(one_minus_r2));           \n"
+        "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;            \n"
+        "   if(GLUP.picking_enabled && GLUP.picking_mode == 1) {    \n"
+        "       frag_color =                                        \n"
+        "       int_to_vec4(gl_PrimitiveID + GLUP.base_picking_id); \n"
+        "   } else {                                                \n"
+        "      frag_color = VertexIn.color;                         \n"
+        "   }                                                       \n"
+        "   if(GLUP.lighting_enabled && !GLUP.picking_enabled) {    \n"
+        "        float diff = dot(W,GLUP.light_vector);             \n"
+        "        float spec = dot(W,GLUP.light_half_vector);        \n"
+        "        spec = pow(spec,30.0);                             \n"
+        "        frag_color = diff*frag_color +                     \n"
+        "                        spec*vec4(1.0, 1.0, 1.0, 1.0);     \n"
+        "   }                                                       \n"
+        "}                                                          \n";
+
+    void Context::setup_GLUP_POINTS() {
+        primitive_info_[GLUP_POINTS].GL_primitive = GL_POINTS;
+        
+        glEnable(GL_POINT_SPRITE);
+        glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+        
+        GLuint vshader = GLSL::compile_shader(
+            GL_VERTEX_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,                                    
+            GLUP150_vshader_inout_declaration,
+            GLUP150_picking_utils_source,            
+            GLUP150_points_and_lines_vshader_source,
+            0
+        );
+        
+        GLuint fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,                        
+            GLUP150_picking_utils_source,
+            GLUP150_points_fshader_source,
+            0
+        );
+
+        primitive_info_[GLUP_POINTS].program =
+            GLSL::create_program_from_shaders(
+                vshader, fshader, 0 
+            );
+        
+        bind_uniform_state(primitive_info_[GLUP_POINTS].program);
+
+        glDeleteShader(vshader);
+        glDeleteShader(fshader);
+    }
+
+    // GLUP_LINES *******************************************************
+
+    const char* GLUP150_lines_fshader_source =
+        "in VertexData {                                            \n"
+        "   vec4 color;                                             \n"
+        "} VertexIn;                                                \n"
+        "out vec4 frag_color ;                                      \n"
+        "void main() {                                              \n"
+        "   if(GLUP.picking_enabled && GLUP.picking_mode == 1) {    \n"
+        "       frag_color =                                        \n"
+        "       int_to_vec4(gl_PrimitiveID + GLUP.base_picking_id); \n"
+        "   } else {                                                \n"
+        "      frag_color = VertexIn.color;                         \n"
+        "   }                                                       \n"
+        "}                                                          \n";
+    
+    void Context::setup_GLUP_LINES() {
+        primitive_info_[GLUP_LINES].GL_primitive = GL_LINES;
+
+        GLuint vshader = GLSL::compile_shader(
+            GL_VERTEX_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_vshader_inout_declaration,
+            GLUP150_picking_utils_source,
+            GLUP150_points_and_lines_vshader_source,
+            0
+        );
+        
+        GLuint fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_picking_utils_source,            
+            GLUP150_lines_fshader_source,
+            0
+        );
+
+        primitive_info_[GLUP_LINES].program =
+            GLSL::create_program_from_shaders(
+                vshader, fshader, 0 
+            );
+        
+        bind_uniform_state(primitive_info_[GLUP_LINES].program);
+
+        glDeleteShader(vshader);
+        glDeleteShader(fshader);
+    }
+
+    // GLUP_TRIANGLES *******************************************************
+
+    /**
+     * \brief The fragment shader for polygons if GLSL version is 1.50.
+     */
+    const char* GLUP150_triangle_fshader_source = 
+        "in VertexData {                                                    \n"
+        "   vec4 front_color;                                               \n"
+        "   vec4 back_color;                                                \n"
+        "   vec2 bary;                                                      \n"
+        "   flat in vec3 edge_mask;                                         \n"
+        "} VertexIn;                                                        \n"
+        "out vec4 frag_color ;                                              \n"
+        "float edge_factor(){                                               \n"
+        "    vec3 bary3 = vec3(                                             \n"
+        "       VertexIn.bary.x,                                            \n"
+        "       VertexIn.bary.y,                                            \n"
+        "       1.0-VertexIn.bary.x-VertexIn.bary.y                         \n"
+        "    ) ;                                                            \n"
+        "    vec3 d = fwidth(bary3);                                        \n"
+        "    vec3 a3 = smoothstep(                                          \n"
+        "                  vec3(0.0,0.0,0.0), d*GLUP.mesh_width, bary3      \n"
+        "    );                                                             \n"
+        "    a3 = vec3(1.0, 1.0, 1.0)                                       \n"
+        "           - VertexIn.edge_mask + VertexIn.edge_mask*a3;           \n"
+        "    return min(min(a3.x, a3.y), a3.z);                             \n"
+        "}                                                                  \n"
+        "void main() {                                                      \n"
+        "    frag_color = gl_FrontFacing ?                                  \n"
+        "                VertexIn.front_color :  VertexIn.back_color;       \n"
+        "    if(!GLUP.picking_enabled && GLUP.draw_mesh_enabled) {          \n"
+        "      frag_color = mix(GLUP.mesh_color,frag_color,edge_factor());  \n"
+        "    }                                                              \n"
+        "}                                                                  \n";
+    
+    /** 
+     * \brief Some utility functions for the geometry shaders.
+     * \details Provides functions for clipping, projection, and
+     *  for generating shaded polygons.
+     *  - flat_shaded_triangle(p1,p2,p3,pp1,pp2,pp3,do_clip) where
+     *   (p1,p2,p3) are the coordinates in world space, (pp1,pp2,pp3) the
+     *   transformed coordinates in clip space and do_clip specifies whether
+     *   the triangle should be clipped.
+     *  - flat_shaded_quad(p1,p2,p3,p4,pp1,pp2,pp3,pp4,do_clip,edges)
+     */
+    const char* GLUP150_gshader_utils_source =
+        "out VertexData {                                                   \n"
+        "   vec4 front_color;                                               \n"
+        "   vec4 back_color;                                                \n"
+        "   vec2 bary;                                                      \n"
+        "   flat vec3 edge_mask;                                            \n"
+        "} VertexOut;                                                       \n"
+        "out float gl_ClipDistance[];                                       \n"
+        "vec4 project(vec4 V) {                                             \n"
+        "   return GLUP.modelviewprojection_matrix * V;                     \n"
+        "}                                                                  \n"
+        "float clip(vec4 V, bool do_clip) {                                 \n"
+        "  return do_clip ?                                                 \n"
+        "            dot(GLUP.modelview_matrix*V,GLUP.clip_plane) :0.0;     \n"
+        "}                                                                  \n"
+        "                                                                   \n"
+        " /* L is supposed to be normalized */                              \n"
+        "float cosangle(vec3 N, vec3 L) {                                   \n"
+        "   float s = inversesqrt(dot(N,N)) ;                               \n"
+        "   return s*dot(N,L) ;                                             \n"
+        "}                                                                  \n"
+        "                                                                   \n"
+        "                                                                   \n"
+        "void lighting_diff_spec(                                           \n"
+        "      vec3 N, out float diff, out float spec, bool clamp =true     \n"
+        ") {                                                                \n"
+        "      diff = cosangle(N,GLUP.light_vector) ;                       \n"
+        "      spec = cosangle(N,GLUP.light_half_vector) ;                  \n"
+        "      spec = pow(spec,30.0);                                       \n"
+        "      if(diff < 0) { spec = 0.0; }                                 \n"
+        "      if(clamp && diff < 0.2) { diff = 0.2; }                      \n"
+        "}                                                                  \n"
+        "                                                                   \n"
+        "void lighting(vec3 N, out vec4 front_col, out vec4 back_col) {     \n"
+        "      float diff, spec;                                            \n"
+        "      lighting_diff_spec(N, diff, spec, false);                    \n"
+        "      front_col = vec4(0.1, 0.1, 0.1, 1.0);                        \n"
+        "      back_col = vec4(0.1, 0.1, 0.1, 1.0);                         \n"
+        "      if(diff > 0.0) {                                             \n"
+        "         front_col +=                                              \n"
+        "          diff * GLUP.front_color + spec*vec4(0.7,0.7,0.7,1.0);    \n"
+        "      } else {                                                     \n"
+        "         back_col -=                                               \n"
+        "          diff * GLUP.back_color;                                  \n"
+        "      }                                                            \n"
+        "}                                                                  \n"
+        "                                                                   \n"
+        "void flat_shaded_triangle(                                         \n"
+        "     vec4 p1,  vec4 p2,  vec4 p3,                                  \n"
+        "     vec4 pp1, vec4 pp2, vec4 pp3,                                 \n"
+        "     bool do_clip                                                  \n"
+        "  ) {                                                              \n"
+        "   if(GLUP.picking_enabled) {                                      \n"
+        "      if(GLUP.picking_mode == 1) {                                 \n"
+        "       VertexOut.front_color =                                     \n"
+        "         int_to_vec4(gl_PrimitiveID + GLUP.base_picking_id);       \n"
+        "      } else {                                                     \n"
+        "         VertexOut.front_color = int_to_vec4(GLUP.picking_id);     \n"
+        "      }                                                            \n"
+        "      VertexOut.back_color = VertexOut.front_color;                \n"
+        "   } else if(GLUP.lighting_enabled) {                              \n"
+        "      vec3 N = GLUP.normal_matrix *                                \n"
+        "            cross((p2-p1).xyz,(p3-p1).xyz) ;                       \n"
+        "      lighting(N, VertexOut.front_color, VertexOut.back_color);    \n"
+        "   } else {                                                        \n"
+        "       VertexOut.front_color = GLUP.front_color;                   \n"
+        "       VertexOut.back_color  = GLUP.back_color;                    \n"
+        "   }                                                               \n"
+        "   VertexOut.edge_mask = vec3(1.0,1.0,1.0);                        \n"
+        "   gl_ClipDistance[0] = clip(p1, do_clip);                         \n"
+        "   gl_Position=pp1; VertexOut.bary = vec2(1.0,0.0) ; EmitVertex(); \n"
+        "   gl_ClipDistance[0] = clip(p2, do_clip);                         \n"
+        "   gl_Position=pp2; VertexOut.bary = vec2(0.0,1.0) ; EmitVertex(); \n"
+        "   gl_ClipDistance[0] = clip(p3, do_clip);                         \n"
+        "   gl_Position=pp3; VertexOut.bary = vec2(0.0,0.0) ; EmitVertex(); \n"
+        "   EndPrimitive();                                                 \n"
+        "}                                                                  \n"
+        "                                                                   \n"
+        "void flat_shaded_triangle_with_attribs(                            \n"
+        "     vec4 p1,  vec4 p2,  vec4 p3,                                  \n"
+        "     vec4 pp1, vec4 pp2, vec4 pp3,                                 \n"
+        "     bool do_clip,                                                 \n"
+        "     vec4 c1=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 c2=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 c3=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 t1=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 t2=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 t3=vec4(0.0, 0.0, 0.0, 1.0)                              \n"
+        "  ) {                                                              \n"
+        "   if(GLUP.lighting_enabled) {                                     \n"
+        "      vec3 N = GLUP.normal_matrix *                                \n"
+        "            cross((p2-p1).xyz,(p3-p1).xyz) ;                       \n"
+        "      float diff, spec;                                            \n"
+        "      lighting_diff_spec(N, diff, spec);                           \n"
+        "      c1 = diff * c1 + spec * vec4(1.0, 1.0, 1.0, 1.0);            \n"
+        "      c2 = diff * c2 + spec * vec4(1.0, 1.0, 1.0, 1.0);            \n"
+        "      c3 = diff * c3 + spec * vec4(1.0, 1.0, 1.0, 1.0);            \n"
+        "   }                                                               \n"
+        "                                                                   \n"
+        "   VertexOut.edge_mask = vec3(1.0,1.0,1.0);                        \n"
+        "   gl_ClipDistance[0] = clip(p1, do_clip);                         \n"
+        "   VertexOut.front_color = c1; VertexOut.back_color = c1;          \n"
+        "   gl_Position=pp1; VertexOut.bary = vec2(1.0,0.0) ;               \n"
+        "   EmitVertex();                                                   \n"
+        "                                                                   \n"
+        "   gl_ClipDistance[0] = clip(p2, do_clip);                         \n"
+        "   VertexOut.front_color = c2; VertexOut.back_color = c2;          \n"
+        "   gl_Position=pp2; VertexOut.bary = vec2(0.0,1.0) ;               \n"
+        "   EmitVertex();                                                   \n"
+        "                                                                   \n" 
+        "   gl_ClipDistance[0] = clip(p3, do_clip);                         \n"
+        "   VertexOut.front_color = c3; VertexOut.back_color = c3;          \n"
+        "   gl_Position=pp3; VertexOut.bary = vec2(0.0,0.0) ;               \n"
+        "   EmitVertex();                                                   \n"
+        "                                                                   \n"
+        "   EndPrimitive();                                                 \n"
+        "}                                                                  \n"
+        "                                                                   \n"
+        "void flat_shaded_quad(                                             \n"
+        "     vec4 p1,  vec4 p2,  vec4 p3, vec4 p4,                         \n"
+        "     vec4 pp1, vec4 pp2, vec4 pp3, vec4 pp4,                       \n"
+        "     bool do_clip                                                  \n"
+        "  ) {                                                              \n"
+        "   if(GLUP.picking_enabled) {                                      \n"
+        "      if(GLUP.picking_mode == 1) {                                 \n"
+        "       VertexOut.front_color =                                     \n"
+        "         int_to_vec4(gl_PrimitiveID + GLUP.base_picking_id);       \n"
+        "      } else {                                                     \n"
+        "         VertexOut.front_color = int_to_vec4(GLUP.picking_id);     \n"
+        "      }                                                            \n"
+        "      VertexOut.back_color = VertexOut.front_color;                \n"
+        "   } else if(GLUP.lighting_enabled) {                              \n"
+        "      vec3 N = GLUP.normal_matrix * (                              \n" 
+        "           cross((p2-p1).xyz,(p4-p1).xyz) +                        \n"
+        "           cross((p4-p3).xyz,(p2-p3).xyz)                          \n"
+        "      );                                                           \n"
+        "      lighting(N, VertexOut.front_color, VertexOut.back_color);    \n"
+        "   } else {                                                        \n"
+        "       VertexOut.front_color = GLUP.front_color;                   \n"
+        "       VertexOut.back_color  = GLUP.back_color;                    \n"
+        "   }                                                               \n"
+        "   float cl1 = clip(p1,do_clip);                                   \n"
+        "   float cl2 = clip(p2,do_clip);                                   \n"
+        "   float cl3 = clip(p3,do_clip);                                   \n"
+        "   float cl4 = clip(p4,do_clip);                                   \n"
+        "   VertexOut.edge_mask = vec3(0.0, 1.0, 1.0);                      \n"
+        "   gl_ClipDistance[0]=cl1; gl_Position=pp1;                        \n"
+        "   VertexOut.bary=vec2(1.0,0.0);                                   \n"
+        "   EmitVertex();                                                   \n"
+        "   gl_ClipDistance[0]=cl2; gl_Position=pp2;                        \n"
+        "   VertexOut.bary=vec2(0.0,1.0);                                   \n"
+        "   EmitVertex();                                                   \n"
+        "   gl_ClipDistance[0]=cl4; gl_Position=pp4;                        \n"
+        "   VertexOut.bary=vec2(0.0,0.0);                                   \n"
+        "   EmitVertex();                                                   \n"
+        "   VertexOut.edge_mask = vec3(0.0, 1.0, 1.0);                      \n"
+        "   gl_ClipDistance[0]=cl3; gl_Position=pp3;                        \n"
+        "   VertexOut.bary=vec2(1.0,0.0);                                   \n"
+        "   EmitVertex();                                                   \n"
+        "   EndPrimitive();                                                 \n"
+        "}                                                                  \n"
+        "                                                                   \n"
+        "void flat_shaded_quad_with_attribs(                                \n"
+        "     vec4 p1,  vec4 p2,  vec4 p3, vec4 p4,                         \n"
+        "     vec4 pp1, vec4 pp2, vec4 pp3, vec4 pp4,                       \n"
+        "     bool do_clip,                                                 \n"
+        "     vec4 c1=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 c2=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 c3=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 c4=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 t1=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 t2=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 t3=vec4(0.0, 0.0, 0.0, 1.0),                             \n"
+        "     vec4 t4=vec4(0.0, 0.0, 0.0, 1.0)                              \n"
+        "  ) {                                                              \n"
+        "   if(GLUP.lighting_enabled) {                                     \n"
+        "      vec3 N = GLUP.normal_matrix * (                              \n" 
+        "           cross((p2-p1).xyz,(p4-p1).xyz) +                        \n"
+        "           cross((p4-p3).xyz,(p2-p3).xyz)                          \n"
+        "      );                                                           \n"
+        "      float diff, spec;                                            \n"
+        "      lighting_diff_spec(N, diff, spec);                           \n"
+        "      c1 = diff * c1 + spec * vec4(1.0, 1.0, 1.0, 1.0);            \n"
+        "      c2 = diff * c2 + spec * vec4(1.0, 1.0, 1.0, 1.0);            \n"
+        "      c3 = diff * c3 + spec * vec4(1.0, 1.0, 1.0, 1.0);            \n"
+        "      c4 = diff * c4 + spec * vec4(1.0, 1.0, 1.0, 1.0);            \n"
+        "   }                                                               \n"
+        "   float cl1 = clip(p1,do_clip);                                   \n"
+        "   float cl2 = clip(p2,do_clip);                                   \n"
+        "   float cl3 = clip(p3,do_clip);                                   \n"
+        "   float cl4 = clip(p4,do_clip);                                   \n"
+        "                                                                   \n"
+        "   VertexOut.edge_mask = vec3(0.0, 1.0, 1.0);                      \n"
+        "   gl_ClipDistance[0]=cl1; gl_Position=pp1;                        \n"
+        "   VertexOut.front_color = c1; VertexOut.back_color = c1;          \n"
+        "   VertexOut.bary=vec2(1.0,0.0);                                   \n"
+        "   EmitVertex();                                                   \n"
+        "                                                                   \n"
+        "   gl_ClipDistance[0]=cl2; gl_Position=pp2;                        \n"
+        "   VertexOut.front_color = c2; VertexOut.back_color = c2;          \n"
+        "   VertexOut.bary=vec2(0.0,1.0);                                   \n"
+        "   EmitVertex();                                                   \n"
+        "                                                                   \n"
+        "   gl_ClipDistance[0]=cl4; gl_Position=pp4;                        \n"
+        "   VertexOut.front_color = c4; VertexOut.back_color = c4;          \n"
+        "   VertexOut.bary=vec2(0.0,0.0);                                   \n"
+        "   EmitVertex();                                                   \n"
+        "                                                                   \n"
+        "   VertexOut.edge_mask = vec3(0.0, 1.0, 1.0);                      \n"
+        "   VertexOut.front_color = c3; VertexOut.back_color = c3;          \n"
+        "   gl_ClipDistance[0]=cl3; gl_Position=pp3;                        \n"
+        "   VertexOut.bary=vec2(1.0,0.0);                                   \n"
+        "   EmitVertex();                                                   \n"
+        "                                                                   \n"
+        "   EndPrimitive();                                                 \n"
+        "}                                                                  \n"
+        
+        ;
+
+    /**
+     * \brief The pass-through vertex shader.
+     * \details Used by points, quads, tets, prisms
+     */
+    const char* GLUP150_vshader_pass_through_source =
+        " void main(void) {                                                 \n"
+        "     if(GLUP.vertex_colors_enabled) {                              \n"
+        "        VertexOut.color = color_in;                                \n"
+        "     }                                                             \n"
+        "    gl_Position = vertex_in;                                       \n"
+        " }                                                                 \n";
+
+
+    /**
+     * \brief The geometry shader for triangles.
+     * \details Uses vshader_pass_through and gshader_utils.
+     */
+    const char* GLUP150_gshader_tri_source =
+        "layout(triangles) in;                                              \n"
+        "layout(triangle_strip, max_vertices = 3) out;                      \n"
+        "                                                                   \n"
+        "void main() {                                                      \n"
+        "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
+        "    if(!GLUP.picking_enabled && GLUP.vertex_colors_enabled) {      \n"
+        "       flat_shaded_triangle_with_attribs(                          \n"
+        "          gl_in[0].gl_Position,                                    \n"
+        "          gl_in[1].gl_Position,                                    \n"
+        "          gl_in[2].gl_Position,                                    \n"
+        "          project(gl_in[0].gl_Position),                           \n"
+        "          project(gl_in[1].gl_Position),                           \n"
+        "          project(gl_in[2].gl_Position),                           \n"
+        "          true,                                                    \n"
+        "          VertexIn[0].color,                                       \n"
+        "          VertexIn[1].color,                                       \n"
+        "          VertexIn[2].color                                        \n"
+        "       );                                                          \n"
+        "    } else {                                                       \n"
+        "       flat_shaded_triangle(                                       \n"
+        "          gl_in[0].gl_Position,                                    \n"
+        "          gl_in[1].gl_Position,                                    \n"
+        "          gl_in[2].gl_Position,                                    \n"
+        "          project(gl_in[0].gl_Position),                           \n"
+        "          project(gl_in[1].gl_Position),                           \n"
+        "          project(gl_in[2].gl_Position),                           \n"
+        "          true                                                     \n"
+        "       );                                                          \n"
+        "    }                                                              \n"
+        "}                                                                  \n";
+    
+    void Context::setup_GLUP_TRIANGLES() {
+        primitive_info_[GLUP_TRIANGLES].GL_primitive = GL_TRIANGLES;
+
+        GLuint vshader = GLSL::compile_shader(
+            GL_VERTEX_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_vshader_inout_declaration,
+            GLUP150_vshader_pass_through_source,
+            0
+        );
+
+        GLuint gshader = GLSL::compile_shader(
+            GL_GEOMETRY_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_gshader_in_declaration,
+            GLUP150_picking_utils_source,            
+            GLUP150_gshader_utils_source,
+            GLUP150_gshader_tri_source,
+            0
+        );
+
+        GLuint fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_triangle_fshader_source,            
+            0
+        );
+
+        primitive_info_[GLUP_TRIANGLES].program =
+            GLSL::create_program_from_shaders(
+                vshader, gshader, fshader, 0 
+            );
+        
+        bind_uniform_state(primitive_info_[GLUP_TRIANGLES].program);
+        
+        glDeleteShader(vshader);
+        glDeleteShader(gshader);
+        glDeleteShader(fshader);        
+    }
+
+    // GLUP_QUADS ***********************************************************
+
+    /**
+     * \brief The geometry shader for quads.
+     * \details Uses vshader_pass_through and gshader_utils.
+     */
+    const char* GLUP150_gshader_quad_source =
+        "layout(lines_adjacency) in;                                        \n"
+        "layout(triangle_strip, max_vertices = 4) out;                      \n"
+        "                                                                   \n"
+        "void main() {                                                      \n"
+        "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
+        "    if(!GLUP.picking_enabled && GLUP.vertex_colors_enabled) {      \n"
+        "       flat_shaded_quad_with_attribs(                              \n"
+        "          gl_in[0].gl_Position,                                    \n"
+        "          gl_in[1].gl_Position,                                    \n"
+        "          gl_in[2].gl_Position,                                    \n"
+        "          gl_in[3].gl_Position,                                    \n"
+        "          project(gl_in[0].gl_Position),                           \n"
+        "          project(gl_in[1].gl_Position),                           \n"
+        "          project(gl_in[2].gl_Position),                           \n"
+        "          project(gl_in[3].gl_Position),                           \n"
+        "          true,                                                    \n"
+        "          VertexIn[0].color,                                       \n"
+        "          VertexIn[1].color,                                       \n"
+        "          VertexIn[2].color,                                       \n"
+        "          VertexIn[3].color                                        \n"
+        "       );                                                          \n"
+        "    } else {                                                       \n"
+        "       flat_shaded_quad(                                           \n"
+        "          gl_in[0].gl_Position,                                    \n"
+        "          gl_in[1].gl_Position,                                    \n"
+        "          gl_in[2].gl_Position,                                    \n"
+        "          gl_in[3].gl_Position,                                    \n"
+        "          project(gl_in[0].gl_Position),                           \n"
+        "          project(gl_in[1].gl_Position),                           \n"
+        "          project(gl_in[2].gl_Position),                           \n"
+        "          project(gl_in[3].gl_Position),                           \n"
+        "          true                                                     \n"
+        "       );                                                          \n"
+        "    }                                                              \n"
+        "}                                                                  \n";
+    
+    void Context::setup_GLUP_QUADS() {
+        primitive_info_[GLUP_QUADS].GL_primitive = GL_LINES_ADJACENCY;
+
+        GLuint vshader = GLSL::compile_shader(
+            GL_VERTEX_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_vshader_inout_declaration,
+            GLUP150_vshader_pass_through_source,
+            0
+        );
+
+        GLuint gshader = GLSL::compile_shader(
+            GL_GEOMETRY_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_gshader_in_declaration,
+            GLUP150_picking_utils_source,            
+            GLUP150_gshader_utils_source,
+            GLUP150_gshader_quad_source,
+            0
+        );
+
+        GLuint fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_triangle_fshader_source,            
+            0
+        );
+
+        primitive_info_[GLUP_QUADS].program =
+            GLSL::create_program_from_shaders(
+                vshader, gshader, fshader, 0 
+            );
+        
+        bind_uniform_state(primitive_info_[GLUP_QUADS].program);
+        
+        glDeleteShader(vshader);
+        glDeleteShader(gshader);
+        glDeleteShader(fshader);        
+    }
+
+    // GLUP_POLYGON *********************************************************
+
+    void Context::setup_GLUP_POLYGON() {
+    }
+
+    // GLUP_TETRAHEDRA ******************************************************
+
+    /**
+     * \brief The geometry shader for tetrahedra.
+     * \details Uses v_shader_pass_through and gshader_utils.
+     */
+    const char* GLUP150_gshader_tet_source =
+        "layout(lines_adjacency) in;                                        \n"
+        "layout(triangle_strip, max_vertices = 12) out;                     \n"
+        "                                                                   \n"
+        "void draw_tet(vec4 p0, vec4 p1, vec4 p2, vec4 p3) {                \n"
+        "}                                                                  \n"
+        "                                                                   \n"
+        "void main() {                                                      \n"
+        "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
+        "    vec4 p0 = gl_in[0].gl_Position;                                \n"
+        "    vec4 p1 = gl_in[1].gl_Position;                                \n"
+        "    vec4 p2 = gl_in[2].gl_Position;                                \n"
+        "    vec4 p3 = gl_in[3].gl_Position;                                \n"
+        "    if(GLUP.clipping_enabled) {                                    \n"
+        "       int count = int(clip(p0,true) >= 0.0) +                     \n"
+        "                   int(clip(p1,true) >= 0.0) +                     \n"
+        "                   int(clip(p2,true) >= 0.0) +                     \n"
+        "                   int(clip(p3,true) >= 0.0) ;                     \n"
+        "       if(GLUP.clipping_mode == 1 && count ==0) { return ; }       \n"
+        "       if(GLUP.clipping_mode == 2 && (count ==0 || count == 4)) {  \n"
+        "           return;                                                 \n"
+        "       }                                                           \n"
+        "   }                                                               \n"
+        "   float s = GLUP.cells_shrink;                                    \n"
+        "   if(s != 0.0) {                                                  \n"
+        "      vec4 g = (1.0/4.0)*(p0+p1+p2+p3);                            \n"
+        "      p0 = s*g + (1.0-s)*p0;                                       \n"
+        "      p1 = s*g + (1.0-s)*p1;                                       \n"
+        "      p2 = s*g + (1.0-s)*p2;                                       \n"
+        "      p3 = s*g + (1.0-s)*p3;                                       \n"
+        "   }                                                               \n"
+        "   vec4 pp0 = project(p0);                                         \n"
+        "   vec4 pp1 = project(p1);                                         \n"
+        "   vec4 pp2 = project(p2);                                         \n"
+        "   vec4 pp3 = project(p3);                                         \n"
+        "   if(GLUP.vertex_colors_enabled && !GLUP.picking_enabled) {       \n"
+        "      vec4 c0 = VertexIn[0].color;                                 \n"
+        "      vec4 c1 = VertexIn[1].color;                                 \n"
+        "      vec4 c2 = VertexIn[2].color;                                 \n"
+        "      vec4 c3 = VertexIn[3].color;                                 \n"
+        "      flat_shaded_triangle_with_attribs(                           \n"
+        "          p0,p1,p2,pp0,pp1,pp2,false,                              \n"
+        "          c0,c1,c2                                                 \n"
+        "      );                                                           \n"
+        "      flat_shaded_triangle_with_attribs(                           \n"
+        "          p1,p0,p3,pp1,pp0,pp3,false,                              \n"
+        "          c1,c0,c3                                                 \n"
+        "      );                                                           \n"
+        "      flat_shaded_triangle_with_attribs(                           \n"
+        "          p0,p2,p3,pp0,pp2,pp3,false,                              \n"
+        "          c0,c2,c3                                                 \n"
+        "      );                                                           \n"
+        "      flat_shaded_triangle_with_attribs(                           \n"
+        "          p2,p1,p3,pp2,pp1,pp3,false,                              \n"
+        "          c2,c1,c3                                                 \n"
+        "      );                                                           \n"
+        "   } else {                                                        \n"
+        "      flat_shaded_triangle(p0,p1,p2,pp0,pp1,pp2,false);            \n"
+        "      flat_shaded_triangle(p1,p0,p3,pp1,pp0,pp3,false);            \n"
+        "      flat_shaded_triangle(p0,p2,p3,pp0,pp2,pp3,false);            \n"
+        "      flat_shaded_triangle(p2,p1,p3,pp2,pp1,pp3,false);            \n"
+        "   }                                                               \n"
+        "}                                                                  \n";
+    
+    
+    void Context::setup_GLUP_TETRAHEDRA() {
+        primitive_info_[GLUP_TETRAHEDRA].GL_primitive = GL_LINES_ADJACENCY;
+
+        GLuint vshader = GLSL::compile_shader(
+            GL_VERTEX_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_vshader_inout_declaration,
+            GLUP150_vshader_pass_through_source,
+            0
+        );
+
+        GLuint gshader = GLSL::compile_shader(
+            GL_GEOMETRY_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_gshader_in_declaration,
+            GLUP150_picking_utils_source,            
+            GLUP150_gshader_utils_source,
+            GLUP150_gshader_tet_source,
+            0
+        );
+
+        GLuint fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER,
+            GLUP150_shader_source_header,
+            GLUP_uniform_state_source,
+            GLUP150_triangle_fshader_source,            
+            0
+        );
+
+        primitive_info_[GLUP_TETRAHEDRA].program =
+            GLSL::create_program_from_shaders(
+                vshader, gshader, fshader, 0 
+            );
+        
+        bind_uniform_state(primitive_info_[GLUP_TETRAHEDRA].program);
+        
+        glDeleteShader(vshader);
+        glDeleteShader(gshader);
+        glDeleteShader(fshader);        
+    }
+
+    // GLUP_HEXAHEDRA *******************************************************
+    
+    void Context::setup_GLUP_HEXAHEDRA() {
+    }
+
+    // GLUP_PRISMS **********************************************************
+
+    void Context::setup_GLUP_PRISMS() {
+    }
+
+    // GLUP_PYRAMIDS ********************************************************
+    
+    void Context::setup_GLUP_PYRAMIDS() {
+    }
+    
+}
+
