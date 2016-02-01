@@ -206,8 +206,9 @@ namespace GEO {
         /**
          * \brief Gets a path directory
          * \details Extracts the directory from the path \p path, that is any
-         * character that appear before the last directory separator. If the path does
-         * not contain any directory separator, string "." is returned.
+         * character that appear before the last directory separator. 
+         *  If the path does not contain any directory separator, 
+         * string "." is returned.
          *
          * Examples
          * - dir_name("/dir/file.cpp") -> "dir"
@@ -300,14 +301,29 @@ namespace GEO {
 
 
         /**
+         * \brief Modifies the last modification time of a file.
+         * \param[in] filename name of the file.
+         */
+        void GEOGRAM_API touch(const std::string& filename);
+
+        /**
          * \brief Normalizes a path.
-         * \details A path is normalized if it is absolute and it does not contain
-         *  any "../" component.
-         * \param[in] path the path to be normalized. The path can have components that
-         *  do not exist.
+         * \details A path is normalized if it is absolute and it does not 
+         *  contain any "../" component.
+         * \param[in] path the path to be normalized. The path can have 
+         *  components that do not exist.
          * \return the normalized path
          */
         std::string GEOGRAM_API normalized_path(const std::string& path);
+
+
+        /**
+         * \brief Gets the current user's home directory.
+         * \details Under unix, it returns the content of the HOME environment
+         *  variable. Under Windows, it returns the "My Documents" directory.
+         * \return The path to the current user's home directory as a string.
+         */
+        std::string GEOGRAM_API home_directory();
     }
 }
 

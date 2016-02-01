@@ -164,6 +164,15 @@ namespace {
             "remesh:RVC_centroids", true,
             "Use centroids of restricted Voronoi cells", ARG_ADVANCED
         );
+        declare_arg(
+            "remesh:refine", false,
+            "Insert points to lower Hausdorff distance", ARG_ADVANCED
+        );
+        declare_arg(
+            "remesh:max_dist", 0.2,
+            "Max. distance to source mesh, relative to avg. edge len",
+            ARG_ADVANCED
+        );
     }
 
     /**
@@ -437,11 +446,11 @@ namespace {
             "Load frames from a file"
         );
         declare_arg(
-            "hex:prisms", true,
+            "hex:prisms", false,
             "generate prisms"
         );
         declare_arg(
-            "hex:pyramids", true,
+            "hex:pyramids", false,
             "generate pyramids"
         );
         declare_arg(
@@ -471,6 +480,9 @@ namespace {
         declare_arg_percent(
             "hex:border_max_distance", 20,
             "maximum distance to reference (in % of input average edge length)"
+        );
+        declare_arg(
+            "hex:keep_border", false, "keep initial border mesh"
         );
     }
 
@@ -509,12 +521,20 @@ namespace {
             "gfx:GLSL", true, "Use GLSL shaders (requires recent gfx board)"
         );
         declare_arg(
-            "gfx:GLSL_tesselation", false,
+            "gfx:GLSL_tesselation", true,
             "Use tesselation shaders (if supported and GLSL enabled)"
         );
         declare_arg(
             "gfx:GLSL_version", 0.0,
             "If non-zero, force GLSL version detection"
+        );
+        declare_arg(
+            "gfx:GLUP_precompile_shaders", false,
+            "Precompile all GLUP shaders at context creation"
+        );
+        declare_arg(
+            "gfx:GLUP_use_core_profile", false,
+            "Use OpenGL core profile (no compatibility profile)"
         );
     }
     

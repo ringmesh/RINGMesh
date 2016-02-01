@@ -48,7 +48,11 @@
 
 #include <geogram_gfx/basic/common.h>
 #include <geogram_gfx/api/defs.h>
+
+#ifndef GEO_NO_GLEW
 #include <geogram_gfx/third_party/glew/glew.h>
+#endif
+
 #include <geogram/basic/geometry.h>
 
 /**
@@ -143,6 +147,28 @@ namespace GEO {
 
 
     /**
+     * \brief Multiplies the current GLUP matrix
+     *   with another one.
+     * \param[in] m a const reference to the matrix.
+     * \note m is transposed before being sent to GLUP
+     *  because Geogram uses the convention with column
+     *  vectors and GLUP the convention with row vectors
+     *  to represent the transformed points.
+     */
+    void GEOGRAM_GFX_API glupMultMatrix(const mat4& m);
+
+    /**
+     * \brief Replaces the current GLUP matrix
+     *   with a user defined one.
+     * \param[in] m a const reference to the matrix.
+     * \note m is transposed before being sent to OpenGL
+     *  because Geogram uses the convention with column
+     *  vectors and GLUP the convention with row vectors
+     *  to represent the transformed points.
+     */
+    void GEOGRAM_GFX_API glupLoadMatrix(const mat4& m);    
+    
+    /**
      * \brief Gets the size (in bytes) of the OpenGL buffer 
      *  bound to a specified target.
      * \param[in] target buffer object target 
@@ -164,9 +190,12 @@ namespace GEO {
      * \param[in] new_size of the buffer data, in bytes
      * \param[in] data pointer to the data to be copied into the buffer, 
      *  of length new_size
+     * \param[in] streaming if true, update the buffer in streaming mode,
+     *  meaning that there will be many updates
      */
     void GEOGRAM_GFX_API update_buffer_object(
-        GLuint& buffer_id, GLenum target, size_t new_size, const void* data
+        GLuint& buffer_id, GLenum target, size_t new_size, const void* data,
+        bool streaming = false
     );
 
 
@@ -194,6 +223,19 @@ namespace GEO {
         GLuint& buffer_id, GLenum target, size_t new_size, const void* data,
         bool update
     );
+
+
+    /**
+     * \brief Tests for OpenGL errors and displays a message if
+     *  OpenGL errors were encountered.
+     * \param[in] file current sourcefile, as given by __FILE__
+     * \param(in] line current line, as given by __LINE__
+     */
+    void GEOGRAM_GFX_API check_gl(const char* file, int line);
+
+    #define GEO_CHECK_GL() ::GEO::check_gl(__FILE__,__LINE__)
+    // #define GEO_CHECK_GL()
+    
 }
 
 #endif

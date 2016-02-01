@@ -312,7 +312,7 @@ namespace GEO {
          */
         inline matrix_type operator* (FT val) const {
             matrix_type result = *this;
-            result /= val;
+            result *= val;
             return result;
         }
 
