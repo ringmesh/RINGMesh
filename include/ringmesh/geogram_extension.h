@@ -193,11 +193,6 @@ namespace RINGMesh {
   
     double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
 
-    vec3 RINGMESH_API mesh_cell_facet_normal(
-        const GEO::Mesh& M,
-        index_t c,
-        index_t f ) ;
-
     vec3 RINGMESH_API mesh_cell_facet_center(
         const GEO::Mesh& M,
         index_t cell,
