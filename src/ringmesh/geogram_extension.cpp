@@ -540,24 +540,6 @@ namespace RINGMesh {
     }
 
     /*!
-    * Computes the Mesh cell facet normal
-    * @pasram[in] M the mesh
-    * @param[in] c the cell index
-    * @param[in] f the facet index in the cell
-    * @return the cell facet normal
-    */
-    vec3 mesh_cell_facet_normal( const GEO::Mesh& M, index_t c, index_t f )
-    {
-        const vec3& p1 = GEO::Geom::mesh_vertex( M,
-                                                 M.cells.facet_vertex( c, f, 0 ) ) ;
-        const vec3& p2 = GEO::Geom::mesh_vertex( M,
-                                                 M.cells.facet_vertex( c, f, 1 ) ) ;
-        const vec3& p3 = GEO::Geom::mesh_vertex( M,
-                                                 M.cells.facet_vertex( c, f, 2 ) ) ;
-        return cross( p2 - p1, p3 - p1 ) ;
-    }
-
-    /*!
     * Computes the non weighted barycenter of a volumetric 
     * cell of a Mesh
     * @param[in] M the mesh
