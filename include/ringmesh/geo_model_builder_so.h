@@ -181,16 +181,6 @@ namespace RINGMesh {
         std::string gocad_coordinates_system_name_ ;
         std::vector< std::string > gocad_coordinates_system_axis_name_ ;
         std::vector< std::string > gocad_coordinates_system_axis_unit_ ;
-//        /*!
-//         * Vector which maps the indices of vertices from Gocad .so file
-//         * to the local (in region) indices of vertices
-//         */
-//        std::vector< index_t > gocad_vertices2region_vertices_ ;
-//        /*!
-//         * Vector which maps the indices of vertices from Gocad .so file
-//         * to the index of the region they belong to
-//         */
-//        std::vector< index_t > gocad_vertices2region_id_ ;
     } ;
 }
 
