@@ -101,5 +101,10 @@ template< class T > inline void ringmesh_unused( T const& )
 #include <ringmesh/types.h>
 #include <ringmesh/ringmesh_assert.h> 
 
+#include <geogram/basic/logger.h>
+
+#define DEBUG( a ) \
+    GEO::Logger::out( "Debug" ) << #a << " = " << a << std::endl
+
 #endif
 
