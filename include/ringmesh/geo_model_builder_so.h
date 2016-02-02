@@ -46,6 +46,10 @@
 #include <ringmesh/geo_model_builder.h>
 
 namespace RINGMesh {
+    class VertexMap ;
+}
+
+namespace RINGMesh {
     /*!
      * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
      */
@@ -88,7 +92,8 @@ namespace RINGMesh {
          */
         void read_and_add_vertex_to_region_vertices(
             const index_t region_id,
-            std::vector < vec3 >& region_vertices ) ;
+            std::vector < vec3 >& region_vertices,
+            VertexMap& vertex_map ) ;
 
         /*!
          * @brief Reads atom information and adds it in the list
@@ -99,7 +104,8 @@ namespace RINGMesh {
          */
         void read_and_add_atom_to_region_vertices(
             const index_t region_id,
-            std::vector < vec3 >& region_vertices ) ;
+            std::vector < vec3 >& region_vertices,
+            VertexMap& vertex_map ) ;
 
         /*! @}
          * \name Boundary model import
@@ -116,6 +122,7 @@ namespace RINGMesh {
          * facets. Re-initialized at the end of the function.
          */
         void build_surface(
+            const VertexMap& vertex_map,
             const index_t surface_id,
             std::vector< index_t >& facet_corners,
             std::vector< index_t >& facet_ptr ) ;
@@ -131,6 +138,7 @@ namespace RINGMesh {
          * the cur_surf_points vector to build facets
          */
         void get_surface_points_and_facets_from_gocad_indices(
+            const VertexMap& vertex_map,
             const std::vector< index_t >& facet_corners,
             std::vector< vec3 >& cur_surf_points,
             std::vector< index_t >& cur_surf_facets ) const ;
@@ -149,6 +157,7 @@ namespace RINGMesh {
          */
         void get_surface_point_and_facet_from_gocad_index(
             const index_t vertex_gocad_id,
+            const VertexMap& vertex_map,
             std::vector< index_t >& gocad_vertices2cur_surf_points,
             std::vector< vec3 >& cur_surf_points,
             std::vector< index_t >& cur_surf_facets ) const ;
@@ -160,6 +169,7 @@ namespace RINGMesh {
          */
         void get_point_from_gocad_id(
             const index_t point_gocad_id,
+            const VertexMap& vertex_map,
             vec3& point ) const ;
 
         /*! @}
@@ -171,16 +181,16 @@ namespace RINGMesh {
         std::string gocad_coordinates_system_name_ ;
         std::vector< std::string > gocad_coordinates_system_axis_name_ ;
         std::vector< std::string > gocad_coordinates_system_axis_unit_ ;
-        /*!
-         * Vector which maps the indices of vertices from Gocad .so file
-         * to the local (in region) indices of vertices
-         */
-        std::vector< index_t > gocad_vertices2region_vertices_ ;
-        /*!
-         * Vector which maps the indices of vertices from Gocad .so file
-         * to the index of the region they belong to
-         */
-        std::vector< index_t > gocad_vertices2region_id_ ;
+//        /*!
+//         * Vector which maps the indices of vertices from Gocad .so file
+//         * to the local (in region) indices of vertices
+//         */
+//        std::vector< index_t > gocad_vertices2region_vertices_ ;
+//        /*!
+//         * Vector which maps the indices of vertices from Gocad .so file
+//         * to the index of the region they belong to
+//         */
+//        std::vector< index_t > gocad_vertices2region_id_ ;
     } ;
 }
 
