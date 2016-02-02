@@ -344,19 +344,6 @@ namespace {
                     mesh_cell_facet_center( region.mesh(), c, f ) ) ;
             }
         }
-//        if (region_id == 7) {
-//            for (index_t c = 0 ; c < geomodel.region(7).nb_cells() ; ++c ) {
-//                std::cerr << c << " : " << geomodel.region(7).mesh().cells.vertex(c, 0)
-//                    << " " << geomodel.region(7).mesh().cells.vertex(c, 1)
-//                    << " " << geomodel.region(7).mesh().cells.vertex(c, 2)
-//                    << " " << geomodel.region(7).mesh().cells.vertex(c, 3) << std::endl ;
-//            }
-//        }
-//        if (region_id == 0) {
-//            for (index_t v = 0 ; v < geomodel.region(0).nb_cells() ; ++v ) {
-//                std::cerr << v << " : " << geomodel.region(0).mesh().vertices.point(v) << std::endl ;
-//            }
-//        }
     }
 
     /*!
@@ -372,11 +359,6 @@ namespace {
         for( index_t r = 0 ; r < geomodel.nb_regions() ; ++r ) {
             std::vector< vec3 > cell_facet_centers ;
             compute_region_cell_facet_centers( geomodel, r, cell_facet_centers ) ;
-//            if (r == 0) {
-//                for( index_t v = 0 ; v < cell_facet_centers.size() ; ++v ) {
-//                    std::cerr << cell_facet_centers[v] << std::endl ;
-//                }
-//            }
             region_anns[r] = new ColocaterANN( cell_facet_centers, true ) ;
         }
     }
