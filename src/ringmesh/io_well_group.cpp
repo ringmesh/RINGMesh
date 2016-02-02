@@ -111,6 +111,56 @@ namespace RINGMesh {
         }
     } ;
 
+    class WGIOHandler: public WellGroupIOHandler {
+    public:
+        virtual bool load( const std::string& filename, WellGroup& wells )
+        {
+            GEO::LineInput in( filename ) ;
+            if( !in.OK() ) {
+                return false ;
+            }
+
+            GEO::Mesh mesh ;
+            std::string name ;
+            double z_sign = 1.0 ;
+            double vertex_ref[3] ;
+            in.get_line() ;
+            in.get_fields() ;
+            std::vector< GEO::Attribute< double > > attribute_vector(
+                in.nb_fields() ) ;
+            for( index_t att = 4; att < in.nb_fields(); att++ ) {
+                attribute_vector[att].bind( mesh.vertices.attributes(),
+                    in.field( att ) ) ;
+
+            }
+            while( !in.eof() ) {
+                in.get_line() ;
+                in.get_fields() ;
+                std::string well_name = in.field(0) ;
+                if(well_name == in.field(0)) {
+                    double vertex[3] ;
+                    vertex[0] = in.field_as_double(1) ;
+                    vertex[1] = in.field_as_double(2) ;
+                    vertex[2] = in.field_as_double(3) ;
+                    mesh.vertices.create_vertex(vertex) ;
+                    mesh.
+                }
+
+            }
+
+            return true ;
+        }
+
+        virtual bool save( const WellGroup& wells, const std::string& filename )
+        {
+            GEO::Logger::err( "I/O" )
+                << "Saving of a WellGroup from Gocad not implemented yet"
+                << std::endl ;
+            return false ;
+        }
+
+    } ;
+
     /************************************************************************/
 
     /*!
@@ -169,6 +219,5 @@ namespace RINGMesh {
      */
     void WellGroupIOHandler::initialize()
     {
-        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" );
-    }
+        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" );}
 }
