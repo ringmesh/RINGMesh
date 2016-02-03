@@ -66,11 +66,6 @@ int main( int argc, char** argv )
         return 1 ;
     }
 
-    GeoModel out_model ;
-    if( !geomodel_surface_load( "imported_tsolid_surf.bm", out_model ) ) {
-        return 1 ;
-    }
-
     bool res = true ;
     // Check number of elements in the imported GeoModel (from TSolid file) and
     // in the re-imported GeoModel (after an export in a .bm file)
@@ -82,10 +77,7 @@ int main( int argc, char** argv )
          model.nb_contacts() != 38 ||
          model.mesh.vertices.nb() != 6691 ||
          model.mesh.facets.nb() != 10049 ||
-         model.mesh.cells.nb() != 34540 ||
-         out_model.mesh.vertices.nb() != 4465 ||
-         out_model.mesh.facets.nb() != 10049 ||
-         out_model.mesh.cells.nb() != 0 ) {
+         model.mesh.cells.nb() != 34540 ) {
         res = false ;
     }
     if( res ) {

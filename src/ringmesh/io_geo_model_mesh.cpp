@@ -576,9 +576,10 @@ namespace RINGMesh {
                 time_t start_load, end_load ;
                 time( &start_load ) ;
 
-                if( builder.build_model() ) {
+                bool model_built = builder.build_model() ;
+                if( model_built ) {
                     print_geomodel( model ) ;
-                    // Check validity
+                    // Check boundary model validity
                     RINGMesh::is_geomodel_valid( model ) ;
 
                     time( &end_load ) ;
@@ -588,15 +589,19 @@ namespace RINGMesh {
                         << filename << " timing: "
                         << difftime( end_load, start_load ) << "sec" << std::endl ;
 
-                    geomodel_surface_save(model, "imported_tsolid_surf.bm") ;
-                    geomodel_volume_save(model, "imported_tsolid_vol.gm") ;
                     return true ;
+                } else {
+                    GEO::Logger::out( "I/O" )
+                        << "Failed building model from file "
+                        << filename << std::endl ;
+                    return false ;
                 }
+            } else {
+                GEO::Logger::out( "I/O" )
+                    << "Failed loading model from file "
+                    << filename << std::endl ;
+                return false ;
             }
-            GEO::Logger::out( "I/O" )
-                << "Failed loading model from file "
-                << filename << std::endl ;
-            return false ;
         }
         virtual bool save( const GeoModel& gm, const std::string& filename )
         {
