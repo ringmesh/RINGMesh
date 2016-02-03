@@ -61,6 +61,7 @@ namespace RINGMesh {
      * This class implement the import of the well ASCII export of Gocad
      * It is a "Gocad Object", it is the file outputed by
      * File > Export > Gocad Object...
+     * Please use the .wl extension to make it work well :)
      */
     class WLIOHandler: public WellGroupIOHandler {
     public:
@@ -120,6 +121,7 @@ namespace RINGMesh {
      * This class implement the import of the well ASCII export of Gocad
      * It is NOT a "Gocad Object", it is the file outputed by
      * File > Export > Well > Well path to ASCII
+     * Please use the .wg extension to make it work well :)
      */
     class WGIOHandler: public WellGroupIOHandler {
     public:
@@ -242,5 +244,7 @@ namespace RINGMesh {
     void WellGroupIOHandler::initialize()
     {
         ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
+        ringmesh_register_WellGroupIOHandler_creator( WGIOHandler, "wg" ) ;
+
     }
 }
