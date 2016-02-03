@@ -57,6 +57,11 @@ namespace RINGMesh {
     static std::string TAB = "\t" ;
     static std::string SPACE = " " ;
 
+    /*!
+     * This class implement the import of the well ASCII export of Gocad
+     * It is a "Gocad Object", it is the file outputed by
+     * File > Export > Gocad Object...
+     */
     class WLIOHandler: public WellGroupIOHandler {
     public:
         virtual bool load( const std::string& filename, WellGroup& wells )
@@ -111,6 +116,11 @@ namespace RINGMesh {
         }
     } ;
 
+    /*!
+     * This class implement the import of the well ASCII export of Gocad
+     * It is NOT a "Gocad Object", it is the file outputed by
+     * File > Export > Well > Well path to ASCII
+     */
     class WGIOHandler: public WellGroupIOHandler {
     public:
         virtual bool load( const std::string& filename, WellGroup& wells )
@@ -119,33 +129,19 @@ namespace RINGMesh {
             if( !in.OK() ) {
                 return false ;
             }
-
             GEO::Mesh mesh ;
-            std::string name ;
-            double z_sign = 1.0 ;
-            double vertex_ref[3] ;
             in.get_line() ;
             in.get_fields() ;
-            std::vector< GEO::Attribute< double > > attribute_vector(
-                in.nb_fields() ) ;
-            for( index_t att = 4; att < in.nb_fields(); att++ ) {
-                attribute_vector[att].bind( mesh.vertices.attributes(),
-                    in.field( att ) ) ;
-
-            }
             while( !in.eof() ) {
                 in.get_line() ;
                 in.get_fields() ;
-                std::string well_name = in.field(0) ;
-                if(well_name == in.field(0)) {
-                    double vertex[3] ;
-                    vertex[0] = in.field_as_double(1) ;
-                    vertex[1] = in.field_as_double(2) ;
-                    vertex[2] = in.field_as_double(3) ;
-                    mesh.vertices.create_vertex(vertex) ;
-                    mesh.
+                std::string well_name = in.field( 0 ) ;
+                if( well_name != in.field( 0 ) ) {
+                    create_well_segments(mesh) ;
+                    wells.add_well( mesh, well_name ) ;
+                    mesh.clear() ;
                 }
-
+                add_vertex_to_well_path(mesh,in) ;
             }
 
             return true ;
@@ -157,6 +153,32 @@ namespace RINGMesh {
                 << "Saving of a WellGroup from Gocad not implemented yet"
                 << std::endl ;
             return false ;
+        }
+
+    private:
+        /*!
+         * @brief create the well segments once all the vertices are set
+         * @details this function has to be called only when
+         * all the vertices are added to the \p mesh.
+         * @param[in] mesh the mesh of the well
+         */
+        void create_well_segments(GEO::Mesh& mesh) {
+            for( index_t v = 0; v < mesh.vertices.nb() - 1; v++ ) {
+                mesh.edges.create_edge( v + 1, v ) ;
+            }
+        }
+
+        /*!
+         * @brief add a vertex to the well path for ASCII well export of Gocad
+         * @param[in] mesh the mesh of the well
+         * @param[in] in the input line matching containing the coordinate
+         */
+        void add_vertex_to_well_path(GEO::Mesh& mesh, GEO::LineInput& in) {
+            double vertex[3] ;
+            vertex[0] = read_double( in, 1 ) ;
+            vertex[1] = read_double( in, 2 ) ;
+            vertex[2] = read_double( in, 3 ) ;
+            mesh.vertices.create_vertex( vertex ) ;
         }
 
     } ;
@@ -219,5 +241,6 @@ namespace RINGMesh {
      */
     void WellGroupIOHandler::initialize()
     {
-        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" );}
+        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
+    }
 }

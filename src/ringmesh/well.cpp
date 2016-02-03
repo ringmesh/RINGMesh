@@ -408,7 +408,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * Add a well from its mesh and makes it conformal to the associated BoundarModel
+     * Add a well from its mesh and makes it conformal to the associated BoundaryModel
      * @param[in] mesh the mesh of the well
      * @param[in] name the name of the well
      * @pre the mesh should be made of continuous edges without fork or discontinuities
