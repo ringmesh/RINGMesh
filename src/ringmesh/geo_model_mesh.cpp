@@ -599,8 +599,10 @@ namespace RINGMesh {
 
         // Create "empty" tet, hex, pyr and prism
         for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
+            if( nb_cells_per_type[i] > 0) {
             mesh_.cells.create_cells( nb_cells_per_type[i],
                 GEO::MeshCellType( i ) ) ;
+            }
         }
 
         // Fill the cells with vertices
