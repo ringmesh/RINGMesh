@@ -386,6 +386,16 @@ namespace {
         abnormal_program_termination("function terminate() was called");
     }
 
+// Disable the "unreachable code" warning issued by
+// Microsoft Visual C++
+// (abnormal_program_termination() does not return,
+//  but memory_exhausted_handler() needs to return
+//  something...)    
+#ifdef GEO_COMPILER_MSVC
+#pragma warning(push)
+#pragma warning(disable: 4702)
+#endif
+    
     /**
      * Catches allocation errors
      */
@@ -394,6 +404,10 @@ namespace {
         return 0; 
     }
 
+#ifdef GEO_COMPILER_MSVC    
+#pragma warning(pop)
+#endif
+    
     /**
      * Catches invalid calls to pure virtual functions
      */
@@ -698,6 +712,15 @@ namespace GEO {
             _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
             _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
             _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+        }
+
+        /**
+         * \brief Gets the full path to the current executable.
+         */
+        std::string os_executable_filename() {
+            TCHAR result[MAX_PATH];
+            GetModuleFileName( NULL, result, MAX_PATH);
+            return std::string(result);
         }
     }
 }

@@ -139,7 +139,7 @@ namespace GEO {
     /**
      * \brief Detects colocated vertices in a mesh.
      * \details Example of function to remove duplicated
-     *  vertices in a mesh:
+     *  vertices in a pointset:
      *  \code
      *   mesh_detect_colocated_vertices(M, colocated, epsilon);
      *   for(index_t v=0; v<M.vertices.nb(); ++v) {
@@ -151,6 +151,10 @@ namespace GEO {
      *         colocated[v] = 1; 
      *      }
      *   }
+     *   // note: this code supposes that M is a pointset.
+     *   // If the mesh has facets and cells, then
+     *   // references to facet corners and cell corners
+     *   // need to be updated here...
      *   M.vertices.delete_elements(colocated);
      *  \endcode
      * \param[in] M a const reference to the mesh

@@ -91,7 +91,7 @@ namespace GEO {
         // n: output tet neighbors
         // V: verbose
         if(CmdLine::get_arg_bool("dbg:tetgen")) {
-            tetgen_args_.parse_commandline((char*) ("VVn"));
+            tetgen_args_.parse_commandline((char*) ("Vn"));
         } else {
             tetgen_args_.parse_commandline((char*) ("Qn"));            
         }
@@ -131,7 +131,7 @@ namespace GEO {
         if(nb_borders != 0) {
             Logger::warn("DelaunayTetgen") 
                 << "Constraints have " << nb_borders
-                << "edge(s) on the border" 
+                << " edge(s) on the border" 
                 << std::endl;
         }
 
@@ -153,14 +153,14 @@ namespace GEO {
         if(refine_) {
             char cmdline[500];
             if(CmdLine::get_arg_bool("dbg:tetgen")) {
-                sprintf(cmdline, "VVpnq%fYYAA", quality_);                
+                sprintf(cmdline, "Vpnq%fYYAA", quality_);                
             } else {
                 sprintf(cmdline, "Qpnq%fYYAA", quality_);
             }
             tetgen_args_.parse_commandline(cmdline);            
         } else {
             if(CmdLine::get_arg_bool("dbg:tetgen")) {            
-                tetgen_args_.parse_commandline((char*)"VVpnO0YYAA");
+                tetgen_args_.parse_commandline((char*)"VpnO0YYAA");
             } else {
                 tetgen_args_.parse_commandline((char*)"QpnO0YYAA");   
             }
@@ -180,7 +180,7 @@ namespace GEO {
         tetgen_in_.pointlist = new double[3*tetgen_in_.numberofpoints];
         if(constraints_->vertices.nb() != 0) {
             Memory::copy(
-                &tetgen_in_.pointlist[0], constraints_->vertices.point_ptr(0), 
+                tetgen_in_.pointlist, constraints_->vertices.point_ptr(0), 
                 constraints_->vertices.nb()*3*sizeof(double)
             );
         }

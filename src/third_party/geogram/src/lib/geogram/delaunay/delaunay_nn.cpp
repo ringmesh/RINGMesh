@@ -95,7 +95,7 @@ namespace GEO {
         index_t v, vector<index_t>& neighbors
     ) const {
         index_t nb = get_neighbors_internal(
-            v, neighbors.size(), &neighbors[0]
+            v, neighbors.size(), neighbors.data()
         );
         neighbors.resize(nb);
     }

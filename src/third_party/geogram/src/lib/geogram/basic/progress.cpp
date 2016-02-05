@@ -244,6 +244,22 @@ namespace GEO {
         }
     }
 
+    ProgressTask::ProgressTask(
+        const std::string& task_name, index_t max_steps
+    ) :
+        task_name_(task_name),
+        start_time_(SystemStopwatch::now()),
+        quiet_(Logger::instance()->is_quiet()),
+        max_steps_(geo_max(1u, max_steps)),
+        step_(0),
+        percent_(0)
+    {
+        if(!quiet_) {
+            begin_task(this);
+        }
+    }
+
+    
     ProgressTask::~ProgressTask() {
         if(!quiet_) {
             end_task(this);

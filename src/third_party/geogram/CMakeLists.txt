@@ -2,56 +2,39 @@
 # Geogram/Vorpaline root CMakeList
 ##############################################################################
 
-# Make sure that VORPALINE_PLATFORM is defined
-
-if(NOT DEFINED VORPALINE_PLATFORM)
-     if(WIN32) 
-        message( 
-           STATUS
-           " Using Win-vs-generic (default),\n"
-           " (if need be, use CMake variable VORPALINE_PLATFORM to override)."
-        )
-        set(VORPALINE_PLATFORM Win-vs-generic)
-     else()
-        message(FATAL_ERROR
-           " CMake variable VORPALINE_PLATFORM is not defined.\n"
-           " Please run configure.{sh,bat} to setup the build tree."
-        )
-     endif()
-endif()
-
 # CMake 2.8.11 is required for 2 reasons:
 # - it is the first version that fully supports the specification of Visual
 # Studio toolsets (v110_xp).
 # - it is the version that supports the command string(TIMESTAMP ...)
-
 cmake_minimum_required(VERSION 2.8.11)
 
-##############################################################################
+# Note: geogram.cmake defines GEOGRAM_WITH_VORPALINE
+# that we could have used instead,
+# but geogram.cmake needs to be included after the project() 
+# command, since project() resets CFLAGS and CXXFLAGS.
 
-# Determine whether Geogram is built with Vorpaline
 if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/src/lib/vorpalib)
-   message(STATUS "Configuring build for Geogram + Vorpaline")
-   set(GEOGRAM_WITH_VORPALINE TRUE)
+    project(Vorpaline)
 else()
-   message(STATUS "Configuring build for standalone Geogram (without Vorpaline)")
-   set(GEOGRAM_WITH_VORPALINE FALSE)   
+    project(Geogram)
 endif()
 
-if(GEOGRAM_WITH_VORPALINE)
-   project(Vorpaline)
-else()
-   project(Geogram)
-endif()
+# Optional modules
+# (can be overriden in CMakeOptions.txt)
+# RINGMesh modifications: the 2 set
+# below are commented because they overwrite
+# the options defined in the CMakeLists.txt
+# in RINGMesh.
+#set(GEOGRAM_WITH_MEDIT TRUE)
+#set(GEOGRAM_WITH_GRAPHICS TRUE)
+
+include(cmake/geogram.cmake)
 
 set(VORPALINE_VERSION_MAJOR 1)
 set(VORPALINE_VERSION_MINOR 0)
 set(VORPALINE_VERSION_PATCH 0)
 set(VORPALINE_VERSION ${VORPALINE_VERSION_MAJOR}.${VORPALINE_VERSION_MINOR}.${VORPALINE_VERSION_PATCH})
 
-# Optional modules
-set(GEOGRAM_WITH_MEDIT TRUE)
-set(GEOGRAM_WITH_GRAPHICS TRUE)
 
 # Determine the current Build-OS (Build-platform without the compiler info)
 string(REGEX REPLACE "-[^-]+$" "" VORPALINE_OS ${VORPALINE_PLATFORM})
@@ -80,41 +63,7 @@ if(GEOGRAM_WITH_VORPALINE)
 endif()   
 
 ##############################################################################
-# Build configuration
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-
-if(EXISTS ${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
-   message(STATUS "Using local options file: ${CMAKE_SOURCE_DIR}/CMakeOptions.txt")
-   include(${CMAKE_SOURCE_DIR}/CMakeOptions.txt)
-endif()
-
-
-include(${CMAKE_SOURCE_DIR}/cmake/utilities.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/platforms/${VORPALINE_PLATFORM}/config.cmake)
-
-# This test is there to keep CMake happy about unused variable CMAKE_BUILD_TYPE
-if(CMAKE_BUILD_TYPE STREQUAL "")
-endif()
-
-# Static versus dynamic builds
-if(VORPALINE_BUILD_DYNAMIC)
-    set(BUILD_SHARED_LIBS TRUE)
-    # Object files in OBJECT libraries are compiled in static mode, event if
-    # BUILD_SHARED_LIBS is true! We must set CMAKE_POSITION_INDEPENDENT_CODE
-    # to force compilation in dynamic mode.
-    set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-    add_definitions(-DGEO_DYNAMIC_LIBS)
-else()
-    set(BUILD_SHARED_LIBS FALSE)
-endif()
-
-##############################################################################
-# Vorpaline sources
-
-include_directories(${CMAKE_SOURCE_DIR}/src/lib)
+# Geogram/Vorpaline sources
 
 add_subdirectory(src/lib/geogram)
 add_subdirectory(src/bin/vorpastat)
@@ -127,6 +76,8 @@ endif()
 if(GEOGRAM_WITH_VORPALINE)
    add_subdirectory(src/lib/vorpalib)
    add_subdirectory(src/bin/vorpaline)
+else()
+   add_subdirectory(src/bin/vorpalite)
 endif()
 
 if(GEOGRAM_WITH_GRAPHICS)
@@ -139,9 +90,10 @@ if(GEOGRAM_WITH_GRAPHICS)
 
 endif()
 
-add_subdirectory(src/test)
-add_subdirectory(doc)
-add_subdirectory(tests)
+# On veut une option # [Jeanne]
+#add_subdirectory(src/test) # [Jeanne]
+#add_subdirectory(doc)# [Jeanne]
+#add_subdirectory(tests) # [Jeanne]
 
 ##############################################################################
 # Cleanup from previous builds
@@ -154,9 +106,9 @@ file(REMOVE ${CMAKE_BINARY_DIR}/doc/LICENSE.txt)
 
 # Configure CPack
 
-SET(CPACK_PACKAGE_NAME ${CMAKE_PROJECT_NAME})
+set(CPACK_PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 set(CPACK_SYSTEM_NAME ${VORPALINE_OS})
-SET(CPACK_PACKAGE_VENDOR "INRIA - ALICE")
+set(CPACK_PACKAGE_VENDOR "INRIA - ALICE")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A flexible mesh generator")
 
 set(CPACK_PACKAGE_VERSION_MAJOR ${VORPALINE_VERSION_MAJOR})

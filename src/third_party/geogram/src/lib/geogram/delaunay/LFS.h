@@ -64,7 +64,7 @@ namespace GEO {
      *  sampling of S, this class computes the distance to the nearest pole
      *  (a good approximation of lfs, see Amenta and Bern's paper).
      */
-    class LocalFeatureSize {
+    class GEOGRAM_API LocalFeatureSize {
     public:
         /**
          * \brief Initializes lfs computation.

@@ -276,6 +276,23 @@ namespace GEO {
          * \details Only the data is copied, observers are not copied.
          */
         virtual AttributeStore* clone() const = 0;
+
+
+        /**
+         * \brief Copies an item
+         * \param[in] to index of the destination item
+         * \param[in] from index of the source item
+         */
+        void copy_item(index_t to, index_t from) {
+            geo_debug_assert(from < cached_size_);
+            geo_debug_assert(to < cached_size_);
+            index_t item_size = element_size_ * dimension_;            
+            Memory::copy(
+                cached_base_addr_+to*item_size,
+                cached_base_addr_+from*item_size,
+                item_size
+            );
+        }
         
     protected:
         /**
@@ -286,7 +303,7 @@ namespace GEO {
          * \param[in] size the new size
          * \param[in] dim the new dimension
          */
-        void notify(Memory::pointer base_addr, index_t size, index_t dim);
+        virtual void notify(Memory::pointer base_addr, index_t size, index_t dim);
 
         /**
          * \brief Registers an observer.
@@ -371,7 +388,7 @@ namespace GEO {
             store_.swap(new_store);
             notify(
                 store_.empty() ? nil : Memory::pointer(store_.data()),
-                store_.size(),
+                size(),
                 dim
             );
         }
@@ -387,6 +404,12 @@ namespace GEO {
             result->store_ = store_;
             return result;
         }
+
+    protected:
+        virtual void notify(Memory::pointer base_addr, index_t size, index_t dim) {
+            AttributeStore::notify(base_addr, size, dim);
+            geo_assert(size*dim <= store_.size());
+        }
         
     private:
         vector<T> store_;
@@ -395,6 +418,10 @@ namespace GEO {
 
     /*********************************************************************/    
 
+    /**
+     * \brief Managers a set of attributes attached to 
+     *  an object.
+     */
     class GEOGRAM_API AttributesManager {
     public:
         /**
@@ -540,6 +567,15 @@ namespace GEO {
          * \details Previous content of this AttributesManager is erased.
          */
         void copy(const AttributesManager& rhs);
+
+
+        /**
+         * \brief Copies all the attributes of an item into another one.
+         * \param[in] to index of the destination item
+         * \param[in] from index of the source item
+         * \note This function is not efficient.
+         */
+        void copy_item(index_t to, index_t from);
         
     private:
         /**
@@ -765,6 +801,12 @@ namespace GEO {
     
     /*********************************************************************/
 
+    /**
+     * \brief Manages an attribute attached to a set of object.
+     * \tparam T type of the attributes. Needs to be a basic type
+     *  or a plain ordinary datatype (classes that do dynamic 
+     *  memory allocation are not allowed here).
+     */
     template <class T> class Attribute : public AttributeBase<T> {
     public:
         typedef AttributeBase<T> superclass;
@@ -978,6 +1020,121 @@ namespace GEO {
     } ;
  
     /*********************************************************************/
+
+    /**
+     * \brief Base class to forbid some instanciations
+     *  of Attribute
+     */
+    class NotImplementedAttribute {
+    public:
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \details Throws an assertion failure
+         */
+        NotImplementedAttribute() {
+            geo_assert_not_reached;
+        }
+
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \param[in] manager the AttributesManager
+         * \param[in] name the name of the attribute
+         * \details Throws an assertion failure
+         */
+        NotImplementedAttribute(
+            AttributesManager& manager, const std::string& name
+        ) {
+            geo_argused(manager);
+            geo_argused(name);
+            geo_assert_not_reached;
+        }
+    };
+
+    /**
+     * \brief Forbids creation of Attribute of vectors.
+     * \details Attributes internal management uses
+     *   memcpy(), and cannot support types that do 
+     *   complicated memory management.
+     * \note We could use C++11's std::is_pod() instead.
+     */
+    template <class T> class Attribute< vector<T> > :
+        public NotImplementedAttribute {
+    public:
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \details Throws an assertion failure
+         */
+        Attribute() : NotImplementedAttribute() {
+        }
+
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \param[in] manager the AttributesManager
+         * \param[in] name the name of the attribute
+         * \details Throws an assertion failure
+         */
+        Attribute(AttributesManager& manager, const std::string& name) :
+            NotImplementedAttribute(manager,name) {
+        }
+    };
+
+    /**
+     * \brief Forbids creation of Attribute of vectors.
+     * \details Attributes internal management uses
+     *   memcpy(), and cannot support types that do 
+     *   complicated memory management.
+     * \note We could use C++11's std::is_pod() instead.
+     */
+    template <class T> class Attribute< std::vector<T> > :
+        public NotImplementedAttribute {
+    public:
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \details Throws an assertion failure
+         */
+        Attribute() : NotImplementedAttribute() {
+        }
+
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \param[in] manager the AttributesManager
+         * \param[in] name the name of the attribute
+         * \details Throws an assertion failure
+         */
+        Attribute(AttributesManager& manager, const std::string& name) :
+            NotImplementedAttribute(manager,name) {
+        }
+    };
+
+    /**
+     * \brief Forbids creation of Attribute of vectors.
+     * \details Attributes internal management uses
+     *   memcpy(), and cannot support types that do 
+     *   complicated memory management.
+     * \note We could use C++11's std::is_pod() instead.
+     */
+    template <> class Attribute< std::string > :
+        public NotImplementedAttribute {
+    public:
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \details Throws an assertion failure
+         */
+        Attribute() : NotImplementedAttribute() {
+        }
+
+        /**
+         * \brief NotImplementedAttribute constructor
+         * \param[in] manager the AttributesManager
+         * \param[in] name the name of the attribute
+         * \details Throws an assertion failure
+         */
+        Attribute(AttributesManager& manager, const std::string& name) :
+            NotImplementedAttribute(manager,name) {
+        }
+    };
+    
+    
 }
 
 #endif

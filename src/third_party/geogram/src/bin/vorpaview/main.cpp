@@ -353,7 +353,7 @@ namespace {
     }
 
     void toggle_regions() {
-        M_gfx.set_show_regions(!M_gfx.get_show_regions());
+//       M_gfx.set_show_regions(!M_gfx.get_show_regions());
     }
 
     GEO::index_t cur_RVD=0;

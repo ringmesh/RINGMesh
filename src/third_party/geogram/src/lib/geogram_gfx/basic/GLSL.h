@@ -56,8 +56,10 @@ namespace GEO {
     namespace GLSL {
 
         /**
-         * \brief Exception thrown when a task is canceled
-         * \see Progress::cancel()
+         * \brief Exception thrown when a GLSL shader fails to
+         *  compiled.
+         * \details Can occur when OpenGL driver or hardware
+         *  does not support some features.
          */
         struct GEOGRAM_GFX_API GLSLCompileError : std::exception {
             /**
@@ -141,11 +143,134 @@ namespace GEO {
         );
         
         /**
-         * \brief Creates a program from a zero-terminated list of shaders
+         * \brief Creates a GLSL program from a zero-terminated list of shaders
          * \details Errors are detected and displayed to the Logger.
          * \param[in] shader the first shader of the list
          * \return the OpenGL opaque Id of the created program
          */
-        GLuint GEOGRAM_GFX_API setup_program(GLuint shader, ...);
+        GLuint GEOGRAM_GFX_API create_program_from_shaders(GLuint shader, ...);
+
+
+        /**
+         * \brief Creates a GLSL program from a string.
+         * \details The string may contain several shaders. Each shader
+         *   is delimited by begin-end statements: #begin(SHADER_TYPE) / #end(SHADER_TYPE)
+         *   where SHADER_TYPE is one of GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_GEOMETRY_SHADER,
+         *   GL_TESS_CONTROL_SHADER, GL_TESS_EVALUATION_SHADER.
+         * \param[in,out] string the combined shaders that constitute the program. 
+         * \param[in] copy_string if true, the input string is copied internally. The function
+         *   temporarily modifies the input string (and then restores it on exit). This may
+         *   be forbidden when input string is a constant char array (string litteral in source
+         *   code). In this case, the input string is copied to a temporary buffer.
+         * \return the OpenGL opaque Id of the created shader object
+         * \throw GLSLCompileError
+         */
+        GLuint GEOGRAM_GFX_API create_program_from_string(
+            const char* string, bool copy_string = true
+        );
+
+        /**
+         * \brief Creates a GLSL program from a file.
+         * \details The file contains a list of shaders, delimited by
+         *   begin-end statements (see setup_program_from_string()).
+         * \param[in] filename the name of the file
+         * \throw GLSLCompileError
+         */
+        GLuint GEOGRAM_GFX_API create_program_from_file(const std::string& filename);
+
+
+        /**
+         * \brief Sets a uniform variable in a shader by name.
+         * \param[in] shader_id the handle to the GLSL shader
+         * \param[in] name the name of the uniform variable,
+         *   as specified in the GLSL source of the shader.
+         * \param[in] val the value of the parameter
+         * \tparam T the type of the parameter. Needs to match
+         *  the type of the uniform parameter in the GLSL source.
+         */
+        template <class T> inline bool set_program_uniform_by_name(
+            GLuint shader_id, const char* name, T val
+        ) {
+            geo_argused(shader_id);
+            geo_argused(name);
+            geo_argused(val);
+            geo_assert_not_reached;
+            return false;
+        }
+
+        template<> inline bool set_program_uniform_by_name(
+            GLuint shader_id, const char* name, bool val
+        ) {
+            GLint location = glGetUniformLocation(shader_id, name) ;
+            if(location < 0) {
+                return false ;
+            }
+            glUseProgram(shader_id);
+            glUniform1i(location, val ? 1 : 0) ;
+            glUseProgram(0);
+            return true;
+        }
+
+        template<> inline bool set_program_uniform_by_name(
+            GLuint shader_id, const char* name, float val
+        ) {
+            GLint location = glGetUniformLocation(shader_id, name) ;
+            if(location < 0) {
+                return false ;
+            }
+            glUseProgram(shader_id);
+            glUniform1f(location, val) ;
+            glUseProgram(0);
+            return true;
+        }
+
+        template<> inline bool set_program_uniform_by_name(
+            GLuint shader_id, const char* name, double val
+        ) {
+            GLint location = glGetUniformLocation(shader_id, name) ;
+            if(location < 0) {
+                return false ;
+            }
+            glUseProgram(shader_id);
+            glUniform1f(location, float(val)) ;
+            glUseProgram(0);
+            return true;
+        }
+        
+        template<> inline bool set_program_uniform_by_name(
+            GLuint shader_id, const char* name, int val
+        ) {
+            GLint location = glGetUniformLocation(shader_id, name) ;
+            if(location < 0) {
+                return false ;
+            }
+            glUseProgram(shader_id);
+            glUniform1i(location, val) ;
+            glUseProgram(0);
+            return true;
+        }
+
+        /**
+         * \brief Sets an array of uniform variables in a shader by name.
+         * \param[in] shader_id the handle to the GLSL shader
+         * \param[in] name the name of the uniform variable,
+         *   as specified in the GLSL source of the shader.
+         * \param(in] count number of values
+         * \param[in] values a pointer to an array of values of size count
+         */
+        inline bool set_program_uniform_by_name(
+            GLuint shader_id, const char* name, index_t count, float* values
+        ) {
+            GLint location = glGetUniformLocation(shader_id, name) ;
+            if(location < 0) {
+                return false ;
+            }
+            glUseProgram(shader_id);
+            glUniform1fv(location, GLsizei(count), values) ;
+            glUseProgram(0);
+            return true;
+        }
+
+        
     }
 }

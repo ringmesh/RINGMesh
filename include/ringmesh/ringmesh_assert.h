@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,15 +24,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr
- *     Antoine.Mazuyer@univ-lorraine.fr
- *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
  *
- *     GOCAD Project
- *     Ecole Nationale Supérieure de Géologie - Georessources
+ *
+ *
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -42,19 +42,32 @@
 #define __RINGMESH_ASSERT__
 
 #include <ringmesh/common.h>
+
 #include <string>
 
-namespace RINGMesh {
-    void RINGMESH_API ringmesh_abort() ;
+#include <geogram/basic/assert.h>
 
-    void RINGMESH_API ringmesh_assertion_failed(
+namespace RINGMesh {
+    static void ringmesh_assertion_failed(
         const std::string& condition_string,
         const std::string& file,
-        int line ) ;
+        int line )
+    {
+#if WIN32
+        DebugBreak() ;
+#endif
+        GEO::geo_assertion_failed( condition_string, file, line ) ;
+    }
 
-    void RINGMESH_API ringmesh_should_not_have_reached(
+    static void ringmesh_should_not_have_reached(
         const std::string& file,
-        int line ) ;
+        int line )
+    {
+#if WIN32
+        DebugBreak() ;
+#endif
+        GEO::geo_should_not_have_reached( file, line ) ;
+    }
 }
 
 #define ringmesh_assert( x ) \
@@ -71,8 +84,10 @@ namespace RINGMesh {
 
 #ifdef RINGMESH_DEBUG
   #define ringmesh_debug_assert( x ) ringmesh_assert( x )
+  #define ringmesh_debug_assert_not_reached ringmesh_assert_not_reached
 #else
   #define ringmesh_debug_assert( x )
+  #define ringmesh_debug_assert_not_reached
 #endif
 
 #endif
