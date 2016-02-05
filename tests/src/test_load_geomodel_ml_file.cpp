@@ -75,7 +75,7 @@ int main( int argc, char** argv )
 
     GeoModel in ;
     if( !geomodel_surface_load( input_model_file_name, in ) ) {
-        return 1;
+        return 1 ;
     }
 
     std::string output_model_file_name( ringmesh_test_output_path ) ;
