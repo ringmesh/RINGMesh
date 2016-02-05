@@ -329,7 +329,7 @@ namespace RINGMesh {
                     break ;
                 case 5:
                     GEO::Logger::err( "Tetgen" )
-                        << "Two very clsoe input facets were detected. Program stopped.\n" ;
+                        << "Two very close input facets were detected. Program stopped.\n" ;
                     GEO::Logger::err( "Tetgen" )
                         << "Hint: use -Y option to avoid adding Steiner points in boundary." ;
                     break ;
