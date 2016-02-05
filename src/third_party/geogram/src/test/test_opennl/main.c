@@ -54,16 +54,34 @@
  *    \left[ \begin{array}{l} x \\ y \end{array} \right]
  *  = \left[ \begin{array}{l} 5 \\ 6 \end{array} \right] \f$
  */
-void test_simple_linear_solve(NLboolean use_GMRES) {
+void test_simple_linear_solve(NLint solver) {
 
     printf("\n");    
     printf("Testing linear solve\n");
     printf("====================\n");
 
-    if(use_GMRES) {
+    switch(solver) {
+    case NL_SOLVER_DEFAULT:
         printf("Using default solver (BiCGStab)\n");
-    } else {
+        break;
+    case NL_GMRES:
         printf("Using GMRES\n");        
+        break;
+    case NL_BICGSTAB:
+        printf("Using BiCGSTAB\n");                
+        break;
+    case NL_PERM_SUPERLU_EXT:
+        printf("(with permutation) ");
+    case NL_SUPERLU_EXT:
+        printf("Using SUPERLU\n");
+        if(nlInitExtension("SUPERLU")) {
+            printf("...SUPERLU extension successfully initialized\n");
+        } else {
+            printf("...failed to initialize SUPERLU extension\n");
+            printf("Needs Linux/shared librariess/-DGEO_DYNAMIC_LIBS\n");
+            return;
+        }
+        break;
     }
     
     printf("Creating linear system:\n");
@@ -73,9 +91,7 @@ void test_simple_linear_solve(NLboolean use_GMRES) {
     /* Create and initialize OpenNL context */
     nlNewContext();
     nlSolverParameteri(NL_NB_VARIABLES, 2);
-    if(use_GMRES) {
-        nlSolverParameteri(NL_SOLVER, NL_GMRES);
-    }
+    nlSolverParameteri(NL_SOLVER, solver);
     
     /* Build system */
     nlBegin(NL_SYSTEM);
@@ -100,14 +116,22 @@ void test_simple_linear_solve(NLboolean use_GMRES) {
 
     printf("Solution:   x0=%f   x1=%f\n", nlGetVariable(0), nlGetVariable(1));
     printf("Verifying:\n");
-    printf("  1.0*x0 + 2.0*x1 = %f\n", 1.0 * nlGetVariable(0) + 2.0 * nlGetVariable(1));
-    printf("  3.0*x0 + 4.0*x1 = %f\n", 3.0 * nlGetVariable(0) + 4.0 * nlGetVariable(1));
+    printf(
+        "  1.0*x0 + 2.0*x1 = %f\n",
+        1.0 * nlGetVariable(0) + 2.0 * nlGetVariable(1)
+    );
+    printf(
+        "  3.0*x0 + 4.0*x1 = %f\n",
+        3.0 * nlGetVariable(0) + 4.0 * nlGetVariable(1)
+    );
 
     /* Cleanup */
     nlDeleteContext(nlGetCurrent());
 }
 
-void test_least_squares_regression(NLboolean origin, NLboolean use_SSOR_precond) {
+void test_least_squares_regression(
+    NLboolean origin, NLboolean use_SSOR_precond
+) {
     NLint nb_pts = 7, k;
     NLdouble XY[7][2] = {
         {1.0, 3.5},
@@ -168,8 +192,12 @@ void test_least_squares_regression(NLboolean origin, NLboolean use_SSOR_precond)
 
 
 int main() {
-    test_simple_linear_solve(NL_FALSE);
-    test_simple_linear_solve(NL_TRUE);    
+    test_simple_linear_solve(NL_SOLVER_DEFAULT);
+    test_simple_linear_solve(NL_GMRES);
+    test_simple_linear_solve(NL_BICGSTAB);
+    test_simple_linear_solve(NL_SUPERLU_EXT);
+    test_simple_linear_solve(NL_PERM_SUPERLU_EXT);
+    
     test_least_squares_regression(NL_FALSE, NL_FALSE);
     test_least_squares_regression(NL_FALSE, NL_TRUE);    
     test_least_squares_regression(NL_TRUE, NL_FALSE);

@@ -53,6 +53,11 @@
 #include <vector>
 #include <typeinfo>
 
+/**
+ * \file geogram/basic/factory.h
+ * \brief Generic factory mechanism
+ */
+
 namespace GEO {
 
     /**
@@ -111,7 +116,7 @@ namespace GEO {
         static Instance* get(const std::string& name);
     };
 
-    /****************************************************************************/
+    /**************************************************************************/
 
     /**
      * \brief Factory of typed objects
@@ -158,12 +163,14 @@ namespace GEO {
         template <class ConcreteType>
         static void register_creator(const std::string& name) {
             Factory& self = instance();
-            self.registry_[name] = FactoryCreator::template create<ConcreteType>;
+            self.registry_[name] =
+                FactoryCreator::template create<ConcreteType>;
         }
 
         /**
          * \brief Finds a creator by name.
-         * \param[in] name a user-defined name identifying a creator in the Factory
+         * \param[in] name a user-defined name identifying 
+         *  a creator in the Factory
          * \retval the creator associated to \p name if \p name exists
          * \retval null pointer otherwise
          */
@@ -304,7 +311,8 @@ namespace GEO {
          * \retval a null pointer otherwise.
          */
         static Type* create_object(const std::string& name) {
-            typename BaseClass::CreatorType creator = BaseClass::find_creator(name);
+            typename BaseClass::CreatorType creator =
+                BaseClass::find_creator(name);
             return creator == nil ? nil : (* creator)();
         }
     };
@@ -356,8 +364,9 @@ namespace GEO {
          * creator in this Factory
          * \retval a null pointer otherwise.
          */
-        static Type* create_object(const std::string& name, Param1 param1) {
-            typename BaseClass::CreatorType creator = BaseClass::find_creator(name);
+        static Type* create_object(const std::string& name, const Param1& param1) {
+            typename BaseClass::CreatorType creator =
+                BaseClass::find_creator(name);
             return creator == nil ? nil : (* creator)(param1);
         }
     };

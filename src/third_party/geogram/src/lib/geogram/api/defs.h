@@ -56,13 +56,17 @@
  */
 
 #if defined(_MSC_VER) && defined(GEO_DYNAMIC_LIBS)
-#ifdef geogram_EXPORTS
-#define GEOGRAM_API __declspec(dllexport) 
+#define GEO_IMPORT __declspec(dllimport) 
+#define GEO_EXPORT __declspec(dllexport) 
 #else
-#define GEOGRAM_API __declspec(dllimport) 
+#define GEO_IMPORT
+#define GEO_EXPORT
 #endif
+
+#ifdef geogram_EXPORTS
+#define GEOGRAM_API GEO_EXPORT
 #else
-#define GEOGRAM_API
+#define GEOGRAM_API GEO_IMPORT
 #endif
 
 

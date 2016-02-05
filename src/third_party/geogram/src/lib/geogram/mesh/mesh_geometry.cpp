@@ -222,6 +222,9 @@ namespace GEO {
     }
 
     void unset_anisotropy(Mesh& M) {
+        if(M.vertices.dimension() < 6) {
+            return;
+        }
         for(index_t i = 0; i < M.vertices.nb(); i++) {
             Geom::mesh_vertex_normal_ref(M, i) = normalize(
                 Geom::mesh_vertex_normal(M, i)
@@ -253,7 +256,7 @@ namespace GEO {
                     pts.push_back(M.vertices.point_ptr(v)[1]);
                     pts.push_back(M.vertices.point_ptr(v)[2]);
                 }
-                LocalFeatureSize LFS(M.vertices.nb(), &pts[0]);
+                LocalFeatureSize LFS(M.vertices.nb(), pts.data());
                 compute_sizing_field_lfs(M, LFS, gradation);
             }
         }

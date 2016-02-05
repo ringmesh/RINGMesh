@@ -193,9 +193,12 @@ namespace GEO {
      *  an expansion can be exactly computed. expansion
      *  is useful to implement exact geometric predicates.
      *  Some of Jonathan Shewchuk's expansion manipulation functions
-     *  are used. 
+     *  are used.
+     *    A higher-level (but less efficient) interface is available
+     *  through the \ref expansion_nt class (expansion number type, that
+     *  overloads operators). 
      */
-    class expansion {
+    class GEOGRAM_API expansion {
     public:
         /**
          * \brief Gets the length of this expansion.
@@ -230,7 +233,11 @@ namespace GEO {
          *  of this expansion
          */
         const double& operator[] (index_t i) const {
-            geo_debug_assert(i < capacity_);
+            // Note: we allocate capacity+1 storage
+            // systematically, since basic functions
+            // may access one additional value (without
+            // using it)
+            geo_debug_assert(i <= capacity_);
             return x_[i];
         }
 
@@ -240,7 +247,11 @@ namespace GEO {
          *  of this expansion
          */
         double& operator[] (index_t i) {
-            geo_debug_assert(i < capacity_);
+            // Note: we allocate capacity+1 storage
+            // systematically, since basic functions
+            // may access one additional value (without
+            // using it)
+            geo_debug_assert(i <= capacity_);
             return x_[i];
         }
 
@@ -275,8 +286,7 @@ namespace GEO {
             // --> capa+1 to have an additional 'sentry' at the end
             // because fast_expansion_sum_zeroelim() may access
             // an entry past the end (without using it).
-            return sizeof(expansion) - 2 * sizeof(double) +
-                   geo_max(capa + 1, index_t(2)) * sizeof(double);
+            return sizeof(expansion) - 2 * sizeof(double) + (capa + 1) * sizeof(double);
         }
 
         /**
@@ -290,10 +300,7 @@ namespace GEO {
          */
         expansion(index_t capa) :
             length_(0),
-            capacity_(geo_max(capa + 1, index_t(2))) {
-            // --> capa+1 to have an additional 'sentry' at the end
-            // because fast_expansion_sum_zeroelim() may access
-            // an entry past the end (without using it).
+            capacity_(capa) {
         }
 
         /**
@@ -312,58 +319,6 @@ namespace GEO {
 #define new_expansion_on_stack(capa)                           \
     (new (alloca(expansion::bytes(capa)))expansion(capa))
 #endif
-        /**
-         * \brief Gets the base address of an expansion.
-         * \details Some additional space can be allocated and
-         *  associated with an expansion, for instance to store
-         *  the reference count for expansions allocated on heap.
-         *  This function returns the base address of this additional
-         *  space.
-         * \param[in] e a pointer to an expansion allocated on
-         *  the heap, previously created by new_expansion_on_heap()
-         * \return the base address of \p e
-         */
-        static void* expansion_baddr(expansion* e) {
-            return Memory::pointer(e) - sizeof(index_t);
-        }
-
-        /**
-         * \brief Gets the number of references
-         *  (from active expansion_nt objects) that point to an expansion.
-         * \details This function is used by expansion_nt, that allocates
-         *  expansions on the heap and does reference counting.
-         * \param[in] e a pointer to an expansion allocated on
-         *  the heap, previously created by new_expansion_on_heap()
-         * \return the number of active references that point to \p e
-         */
-        static index_t& expansion_refcount(expansion* e) {
-            return *reinterpret_cast<index_t*>(expansion_baddr(e));
-        }
-
-        /**
-         * \brief Increases the reference counter of an expansion.
-         * \param[in] e the expansion
-         * \pre e was allocated using new_expansion_on_heap()
-         */
-        static void ref_expansion(expansion* e) {
-            index_t& refcount = expansion_refcount(e);
-            ++refcount;
-        }
-
-        /**
-         * \brief Decreases the reference counter of an expansion and
-         *  deallocates it whenever it reaches zero.
-         * \param[in] e the expansion
-         * \pre e was allocated using new_expansion_on_heap()
-         */
-        static void unref_expansion(expansion* e) {
-            index_t& refcount = expansion_refcount(e);
-            geo_debug_assert(refcount > 0);
-            --refcount;
-            if(refcount == 0) {
-                delete_expansion_on_heap(e);
-            }
-        }
 
         /**
          * \brief Allocates an expansion on the heap.
@@ -957,6 +912,32 @@ namespace GEO {
             coord_index_t dim
         );
 
+
+        /**
+         * \brief Computes the required capacity to store the 
+         *  length of a 3d vector.
+         * \param[in] x,y,z coordinates of the vector
+         * \return the capacity required to store the squared norm
+         *   of [x,y,z]
+         */
+        static index_t length2_capacity(
+            const expansion& x, const expansion& y, const expansion& z
+        ) {
+            return square_capacity(x) + square_capacity(y) + square_capacity(z);
+        }
+
+        /**
+         * \brief Assigns the lenght of a vector to this expansion 
+         *  (should not be used by client code). Do not call this
+         *  function directy, use expansion_length2() macro instead.
+         * \param[in] x,y,z coordinates of the vector
+         * \return the new value of this expansion, with the squared
+         *  length of [x,y,z]
+         */
+        expansion& assign_length2(
+            const expansion& x, const expansion& y, const expansion& z
+        );
+        
         // =============== some general purpose functions =========
 
         /**
@@ -1289,9 +1270,9 @@ namespace GEO {
      * calling function.
      * \relates GEO::expansion
      */
-#define expansion_det3x3(a11, a12, a13, a21, a22, a23, a31, a32, a33)        \
-    new_expansion_on_stack(                                          \
-        expansion::det3x3_capacity(a11, a12, a13, a21, a22, a23, a31, a32, a33) \
+#define expansion_det3x3(a11, a12, a13, a21, a22, a23, a31, a32, a33)   \
+    new_expansion_on_stack(                                             \
+        expansion::det3x3_capacity(a11,a12,a13,a21,a22,a23,a31,a32,a33) \
     )->assign_det3x3(a11, a12, a13, a21, a22, a23, a31, a32, a33)
 
     /**
@@ -1362,8 +1343,70 @@ namespace GEO {
         expansion::dot_at_capacity(dim)       \
     )->assign_dot_at(a, b, c, dim)
 
+
+    /**
+     * \brief Computes an expansion that represents the exact
+     *  squared length of a 3d vector
+     * \param[in] x,y,z coordinates of the vector (specified as expansion)
+     * \return a reference to an expansion, allocated on the stack.
+     * \code
+     * const expansion& x = ...;
+     * const expansion& y = ...;
+     * const expansion& z = ...;
+     * expansion& l = expansion_length2(x,y,z);
+     * \endcode
+     * \warning Do not return or use the returned reference outside the
+     * calling function.
+     * \relates GEO::expansion
+     */
+#define expansion_length2(x,y,z)              \
+    new_expansion_on_stack(                   \
+       expansion::length2_capacity(x,y,z)     \
+    )->assign_length2(x,y,z)
+    
     /************************************************************************/
 
+    /**
+     * \brief Computes the sign of a 2x2 determinant
+     * \details Specialization using the low-evel API for expansions. 
+     *  This gains some performance as compared to using CGAL's 
+     *  determinant template with expansion_nt.
+     */
+    Sign GEOGRAM_API sign_of_expansion_determinant(
+        const expansion& a00,const expansion& a01,  
+        const expansion& a10,const expansion& a11
+    );
+    
+    /**
+     * \brief Computes the sign of a 3x3 determinant
+     * \details Specialization using the low-evel API for expansions. 
+     *  This gains some performance as compared to using CGAL's determinant 
+     *  template with expansion_nt.
+     */
+    Sign GEOGRAM_API sign_of_expansion_determinant(
+        const expansion& a00,const expansion& a01,const expansion& a02,
+        const expansion& a10,const expansion& a11,const expansion& a12,
+        const expansion& a20,const expansion& a21,const expansion& a22
+    );
+
+    /**
+     * \brief Computes the sign of a 4x4 determinant
+     * \details Specialization using the low-evel API for expansions. 
+     *  This gains some performance as compared to using CGAL's determinant 
+     *  template with expansion_nt.
+     */
+    Sign GEOGRAM_API sign_of_expansion_determinant(
+        const expansion& a00,const expansion& a01,
+        const expansion& a02,const expansion& a03,
+        const expansion& a10,const expansion& a11,
+        const expansion& a12,const expansion& a13,
+        const expansion& a20,const expansion& a21,
+        const expansion& a22,const expansion& a23,
+        const expansion& a30,const expansion& a31,
+        const expansion& a32,const expansion& a33 
+    );
+    
+    /************************************************************************/
 }
 
 #endif

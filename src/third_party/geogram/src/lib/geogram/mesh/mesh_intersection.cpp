@@ -208,7 +208,6 @@ namespace GEO {
     void mesh_remove_intersections(
         Mesh& M, index_t max_iter
     ) {
-
         fill_holes(M, Numeric::max_float64());
 
         const double A = Geom::mesh_area(M);

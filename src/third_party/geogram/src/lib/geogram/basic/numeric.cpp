@@ -61,13 +61,28 @@ namespace GEO {
 #endif
         }
 
+
+// Under GCC, to work for both floats and doubles, isnan() is a macro
+// that calls both isnanf() and isnan(), based on operator size (using ?:),
+// thus it generates a conversion warning (that we ignore using the following
+// pragmas).
+            
+#ifdef GEO_COMPILER_GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-conversion"       
+#endif            
+        
         bool is_nan(float64 x) {
 #ifdef GEO_OS_WINDOWS
             return (_isnan(x) != 0) || (_finite(x) == 0);
 #else
             return isnan(x) || !isfinite(x);
-#endif
+#endif            
         }
+
+#ifdef GEO_COMPILER_GCC
+#pragma GCC diagnostic pop            
+#endif            
 
         void random_reset() {
 #ifdef GEO_OS_WINDOWS

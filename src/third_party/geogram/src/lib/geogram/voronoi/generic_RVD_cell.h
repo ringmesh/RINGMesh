@@ -230,6 +230,33 @@ namespace GEOGen {
             const GEO::Attribute<double>& vertex_weight
         );
 
+
+        /**
+         * \brief Copies a Mesh into a ConvexCell
+         * \details The surface mesh in \p mesh represents the boundary
+         *  of the ConvexCell.
+         * \param[in] mesh a pointer to the input Mesh
+         * \param[in] symbolic if true, symbolic information is copied
+         */
+        void initialize_from_surface_mesh(
+            Mesh* mesh, bool symbolic
+        );
+
+
+        /**
+         * \brief Copies a ConvexCell into a Mesh
+         * \details On exit, the output mesh is a surfacic
+         *  mesh with the boundary of the convex cell.
+         * \param[out] mesh a pointer to the target mesh
+         * \param[in] copy_symbolic_info if true, symbolic
+         *   information is copied. An attribute "id" is attached
+         *   to the facets. The value of id[f] is either 1 + the index of
+         *   the Voronoi vertex that generated with \p i the bisector that
+         *   created the facet, or -1-g if the facet was an original facet
+         *   of mesh \p mesh, where g is the index of the original facet in \p mesh.
+         */
+        void convert_to_mesh(Mesh* mesh, bool copy_symbolic_info = false);
+        
         /**
          * \brief Clips this ConvexCell with a plane.
          * \details The plane is specified as a bisector
@@ -254,7 +281,7 @@ namespace GEOGen {
             bool exact, bool symbolic
         ) {
             index_t new_v = create_vertex();
-
+            set_vertex_id(index_t(new_v), signed_index_t(j)+1);
             index_t conflict_begin, conflict_end;
 
             // Phase I: Determine the conflict zone and chain the triangles

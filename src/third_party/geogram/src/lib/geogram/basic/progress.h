@@ -260,8 +260,21 @@ namespace GEO {
          * \see LoggerClient::begin()
          */
         ProgressTask(
-            const std::string& task_name = "", index_t max_steps = 100,
-            bool quiet = Logger::instance()->is_quiet()
+            const std::string& task_name, index_t max_steps,
+            bool quiet 
+        );
+
+        /**
+         * \brief Creates a logger for a task
+         * \details This creates a ProgressTask object for task \p
+         * task_name with a number of steps given by \p max_steps. The
+         * registered LoggerClient is notified to start listening to the
+         * progress of the task.
+         * \param[in] task_name the name of the task
+         * \param[in] max_steps the number of steps of the task
+         */
+        ProgressTask(
+            const std::string& task_name = "", index_t max_steps = 100
         );
 
         /**

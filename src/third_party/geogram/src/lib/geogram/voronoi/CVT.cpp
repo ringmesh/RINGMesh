@@ -110,7 +110,7 @@ namespace GEO {
     ) {
         points_.resize(dimension_ * nb_samples);
         return RVD_->compute_initial_sampling(
-            &points_[0], nb_samples
+            points_.data(), nb_samples
         );
     }
 
@@ -147,8 +147,8 @@ namespace GEO {
         for(index_t i = 0; i < nb_iter; i++) {
             mg.assign(nb_points * dimension_, 0.0);
             m.assign(nb_points, 0.0);
-            delaunay_->set_vertices(nb_points, &points_[0]);
-            RVD_->compute_centroids(&mg[0], &m[0]);
+            delaunay_->set_vertices(nb_points, points_.data());
+            RVD_->compute_centroids(mg.data(), m.data());
             index_t cur = 0;
             for(index_t j = 0; j < nb_points; j++) {
                 if(m[j] > 1e-30 && !point_is_locked(j)) {
@@ -169,7 +169,7 @@ namespace GEO {
         Mesh* mesh, bool multinerve
     ) {
         index_t nb_points = index_t(points_.size() / dimension_);
-        delaunay_->set_vertices(nb_points, &points_[0]);
+        delaunay_->set_vertices(nb_points, points_.data());
 
         vector<index_t> triangles;
         vector<double> vertices;
@@ -201,7 +201,7 @@ namespace GEO {
         index_t nb_vertices = index_t(vertices.size() / dimension_);
         vertices_R3.resize(nb_vertices * 3);
         if(is_projection_) {
-            double* cur = &(vertices[0]);
+            double* cur = vertices.data();
             for(index_t v = 0; v < nb_vertices; v++) {
                 vertices_R3[3 * v] = cur[0];
                 vertices_R3[3 * v + 1] = cur[1];
@@ -210,7 +210,7 @@ namespace GEO {
             }
         } else {
             RVD_->project_points_on_surface(
-                nb_vertices, &(vertices[0]), vertices_R3
+                nb_vertices, vertices.data(), vertices_R3
             );
         }
 
@@ -235,7 +235,7 @@ namespace GEO {
     ) {
         geo_assert(volumetric());
         index_t nb_points = index_t(points_.size() / dimension_);
-        delaunay_->set_vertices(nb_points, &points_[0]);
+        delaunay_->set_vertices(nb_points, points_.data());
 
         vector<index_t> tets;
         vector<double> vertices;
@@ -252,7 +252,7 @@ namespace GEO {
         index_t nb_vertices = index_t(vertices.size() / dimension_);
         vertices_R3.resize(nb_vertices * 3);
         if(is_projection_) {
-            double* cur = &(vertices[0]);
+            double* cur = vertices.data();
             for(index_t v = 0; v < nb_vertices; v++) {
                 vertices_R3[3 * v] = cur[0];
                 vertices_R3[3 * v + 1] = cur[1];
@@ -291,7 +291,7 @@ namespace GEO {
         optimizer->set_N(n);
         optimizer->set_M(m);
         optimizer->set_max_iter(nb_iter);
-        optimizer->optimize(&points_[0]);
+        optimizer->optimize(points_.data());
 
         simplex_func_.reset();
         progress_ = nil;
@@ -356,14 +356,14 @@ namespace GEO {
         index_t nb_points = index_t(points_.size() / dimension_);
         points_R3_.resize(nb_points);
         if(is_projection_ && !constrained_cvt_) {
-            double* cur = &(points_[0]);
+            double* cur = points_.data();
             for(index_t p = 0; p < nb_points; p++) {
                 points_R3_[p] = vec3(cur[0], cur[1], cur[2]);
                 cur += dimension_;
             }
         } else {
             RVD_->project_points_on_surface(
-                nb_points, &(points_[0]), points_R3_, constrained_cvt_
+                nb_points, points_.data(), points_R3_, constrained_cvt_
             );
         }
     }

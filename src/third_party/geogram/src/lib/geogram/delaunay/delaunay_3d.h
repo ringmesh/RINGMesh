@@ -407,7 +407,9 @@ namespace GEO {
          * \brief Removes a tetrahedron from the linked list it
          *  belongs to.
          * \details Tetrahedra can be linked, it is used to manage
-         *  both the free list that recycles deleted tetrahedra.
+         *  both the free list that recycles deleted tetrahedra and
+	 *  the list of tetrahedra in conflict with the inserted 
+	 *  point.
          * \param[in] t the index of the tetrahedron
          */
         void remove_tet_from_list(index_t t) {
@@ -534,7 +536,7 @@ namespace GEO {
         /**
          * \brief Generates a unique stamp for marking tets.
          * \details Storage is shared for list-chaining and stamp-marking 
-         * both are mutually exclusive), therefore the stamp has
+         * (both are mutually exclusive), therefore the stamp has
          * the NOT_IN_LIST_BIT set.
          * \param[in] stamp the unique stamp for marking tets
          */
@@ -908,7 +910,7 @@ namespace GEO {
                     (p - vertex_ptr(0)) / int(vertex_stride_)
                 );
                 double h = heights_[pindex];
-                return (PCK::orient_4d_SOS(
+                return (PCK::orient_3dlifted_SOS(
                             pv[0],pv[1],pv[2],pv[3],p,h0,h1,h2,h3,h
                        ) > 0) ;
             }

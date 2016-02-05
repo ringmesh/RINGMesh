@@ -59,65 +59,6 @@
 namespace GEO {
 
     /**
-     * \brief Axis-aligned bounding box.
-     */
-    class Box {
-    public:
-        double xyz_min[3];
-        double xyz_max[3];
-
-        /**
-         * \brief Tests whether a box contains a point.
-         * \param[in] b the point
-         * \return true if this box contains \p b, false otherwise
-         */
-        bool contains(const vec3& b) const {
-            for(coord_index_t c = 0; c < 3; ++c) {
-                if(b[c] < xyz_min[c]) {
-                    return false;
-                }
-                if(b[c] > xyz_max[c]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    };
-
-    /**
-     * \brief Tests whether two Boxes have a non-empty intersection.
-     * \param[in] B1 first box
-     * \param[in] B2 second box
-     * \return true if \p B1 and \p B2 have a non-empty intersection,
-     *  false otherwise.
-     */
-    inline bool bboxes_overlap(const Box& B1, const Box& B2) {
-        for(coord_index_t c = 0; c < 3; ++c) {
-            if(B1.xyz_max[c] < B2.xyz_min[c]) {
-                return false;
-            }
-            if(B1.xyz_min[c] > B2.xyz_max[c]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * \brief Computes the smallest Box that encloses two Boxes.
-     * \param[out] target the smallest axis-aligned box
-     *  that encloses \p B1 and \p B2
-     * \param[in] B1 first box
-     * \param[in] B2 second box
-     */
-    inline void bbox_union(Box& target, const Box& B1, const Box& B2) {
-        for(coord_index_t c = 0; c < 3; ++c) {
-            target.xyz_min[c] = geo_min(B1.xyz_min[c], B2.xyz_min[c]);
-            target.xyz_max[c] = geo_max(B1.xyz_max[c], B2.xyz_max[c]);
-        }
-    }
-
-    /**
      * \brief Axis Aligned Bounding Box tree of mesh facets.
      * \details Used to quickly compute facet intersection and
      *  to locate the nearest facet from 3d query points.
@@ -420,6 +361,14 @@ namespace GEO {
      */
     class GEOGRAM_API MeshCellsAABB {
     public:
+
+        /**
+         * \brief Symbolic constant for indicating that there
+         *  is no containing tetrahedron.
+         * \see containing_tet()
+         */
+        static const index_t NO_TET = index_t(-1);
+        
         /**
          * \brief Creates the Axis Aligned Bounding Boxes tree.
          * \param[in] M the input mesh. It can be modified,
@@ -435,11 +384,11 @@ namespace GEO {
          * \param[in] p a const reference to the query point
          * \param[in] exact specifies whether exact predicates should be used
          * \return the index of one of the tetrahedra that contains \p p or
-         *  -1 if \p p is outside the mesh.
+         *  NO_TET if \p p is outside the mesh.
          * \note The input mesh needs to be tetrahedralized. If the mesh has
          *   arbitrary cells, then one may use instead containing_boxes().
          */
-        signed_index_t containing_tet(const vec3& p, bool exact =true) const {
+        index_t containing_tet(const vec3& p, bool exact =true) const {
             geo_debug_assert(mesh_.cells.are_simplices());
             return containing_tet_recursive(
                 p, exact, 1, 0, mesh_.cells.nb()
@@ -550,9 +499,9 @@ namespace GEO {
          * \param[in] e one position past the index of the last tet in the
          *  subtree under node \p n
          * \return the index of one of the tetrahedra that contains \p p, or
-         *  -1 if \p p is outside the mesh.
+         *  NO_TET if \p p is outside the mesh.
          */
-        signed_index_t containing_tet_recursive(
+        index_t containing_tet_recursive(
             const vec3& p, bool exact, 
             index_t n, index_t b, index_t e
         ) const;

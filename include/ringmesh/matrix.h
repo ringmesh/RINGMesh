@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,15 +24,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Contacts:
- *     Arnaud.Botella@univ-lorraine.fr
- *     Antoine.Mazuyer@univ-lorraine.fr
- *     Jeanne.Pellerin@wias-berlin.de
  *
- *     http://www.gocad.org
  *
- *     GOCAD Project
- *     Ecole Nationale Superieure de Geologie - Georessources
+ *
+ *
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
@@ -90,18 +90,23 @@ namespace RINGMesh {
         {
             index_t index ;
             if( !find( j, index ) ) {
-                if( nb_elements_ == capacity_ ) {
-                    grow() ;
-                }
-                Element& elt = elements_[nb_elements_++ ] ;
-                elt.index = j ;
-                elt.value = value ;
+                push_element( j, value ) ;
             } else {
                 elements_[index].value = value ;
             }
         }
 
-        bool find( index_t j, index_t& index = dummy_index_t ) const
+        void push_element( index_t j, const T& value )
+        {
+            if( nb_elements_ == capacity_ ) {
+                grow() ;
+            }
+            Element& elt = elements_[nb_elements_++ ] ;
+            elt.index = j ;
+            elt.value = value ;
+        }
+
+        bool find( index_t j, index_t& index ) const
         {
             for( index_t e = 0; e < nb_elements_; e++ ) {
                 if( elements_[e].index == j ) {
@@ -334,6 +339,24 @@ namespace RINGMesh {
             this->rows_[i].set_element( j, value ) ;
             if( this->is_symmetrical_ ) {
                 this->rows_[j].set_element( i, value ) ;
+            }
+            return true ;
+        }
+
+
+        /*!
+         * set the value of element i-j in the matrix without verifying
+         * if the element i-j already exists !!! BE CAREFULL
+         * @param[in] i row index
+         * @param[in] j column index
+         * @param[in] value to store
+         * @return bool true (for instance no checks for errors...)
+         * */
+        bool push_element( index_t i, index_t j, const T& value )
+        {
+            this->rows_[i].push_element( j, value ) ;
+            if( this->is_symmetrical_ ) {
+                this->rows_[j].push_element( i, value ) ;
             }
             return true ;
         }

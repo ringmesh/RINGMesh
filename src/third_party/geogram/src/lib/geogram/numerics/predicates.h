@@ -51,7 +51,7 @@
 #include <geogram/basic/geometry.h>
 
 /**
- * \file geogram/voronoi/RVD_predicates.h
+ * \file geogram/numerics/predicates.h
  * \brief Filtered exact predicates for restricted Voronoi diagrams.
  */
 
@@ -143,6 +143,36 @@ namespace GEO {
             coord_index_t DIM
         );
 
+        /**
+         * \brief Computes the side of a point (given as the intersection
+         *  between a facet and two bisectors) relative to another bisector.
+         * \details Computes the side of
+         *  \f$ q = \Pi(p0 h0,p1 h1) \cap Pi(p0 h0,p2 h2) \cap \Delta[q0, q1, q2] \f$
+         * relative to \f$ \Pi(p0 hp0,p3 hp3) \f$.
+         * Symbolic perturbation is applied whenever equality holds.
+         * \param[in] p0 first extremity of the bisectors
+         * \param[in] p1 second extremity of the first bisector
+         *  (that defines the intersection q)
+         * \param[in] p2 second extremity of the second bisector
+         *  (that defines the intersection q)
+         * \param[in] p3 second extremity of the third bisector
+         *  (against which orientation is tested)
+         * \param h0, h1, h2, h3 lifted coordinates of \p p0, \p p1, \p p2 and \p p3
+         * \param[in] q0,q1,q2 vertices of the triangle
+         *  (that defines the intersection q)
+         * \retval POSITIVE if d(p0 hp0,q) < d(p3 hp3, q)
+         * \retval NEGATIVE if d(p0 hp0,q) > d(p3 hp3, q)
+         * \retval perturb() if d(p0 hp0,q) = d(p3 hp3, q),
+         *  where \c perturb() denotes a globally
+         *  consistent perturbation, that returns either POSITIVE or NEGATIVE
+         */
+        Sign GEOGRAM_API side3_3dlifted_SOS(
+            const double* p0, const double* p1, 
+            const double* p2, const double* p3,
+            double h0, double h1, double h2, double h3,
+            const double* q0, const double* q1, const double* q2
+        );
+        
         /**
          * \brief Computes the side of a point (given as the intersection
          *   between a tetrahedron and three bisectors) relative to
@@ -285,6 +315,31 @@ namespace GEO {
              const double* p3
          );
 
+
+        /**
+         * \brief Tests whether a lifted 3d point is inside the 
+         *  circumscribed circle of a lifted 3d triangle.
+         * \param[in] p0,p1,p2 vertices of the triangle
+         * \param[in] p3 the point to be tested
+         * \param[in) h0, h1, h2 lifted coordinate of the triangle vertices
+         * \param[in] p3 lifted coordinate of the point to be tested
+         * \retval POSITIVE whenever (\p p3, \p h3) is inside the circumscribed circle
+         *  of the triangle (\p p0,\p h0) (\p p1,\p h1), (\p p2, \p h2)
+         * \retval NEGATIVE whenever (\p p3, \p h3) is outside the circumscribed circle
+         *  of the triangle (\p p0,\p h0) (\p p1,\p h1), (\p p2, \p h2)
+         * \retval perturb() if (\p p3, \p h3) is exactly on the circumscribed circle
+         *  of the triangle (\p p0,\p h0) (\p p1,\p h1), (\p p2, \p h2)
+         *  where \c perturb() denotes a globally consistent perturbation, that returns
+         *  either POSITIVE or NEGATIVE
+         * \pre (\p p3, \p h3) belongs to the hyperplane yielded by 
+         *   (\p p0, \p h0), (\p p1, \p h1) and (\p p2, \p h2)
+         */
+        Sign GEOGRAM_API in_circle_3dlifted_SOS(
+            const double* p0, const double* p1, const double* p2,
+            const double* p3,
+            double h0, double h1, double h2, double h3
+        );
+        
         /**
          * \brief Computes the orientation predicate in 3d.
          * \details Computes the sign of the signed area of
@@ -301,6 +356,7 @@ namespace GEO {
         );
 
 
+#ifndef GEOGRAM_PSM        
         /**
          * \brief Computes the orientation predicate in 2d.
          * \details Computes the sign of the signed area of
@@ -317,8 +373,8 @@ namespace GEO {
         ) {
             return orient_2d(p0.data(),p1.data(),p2.data());
         }
-
-
+#endif
+        
         /**
          * \brief Computes the orientation predicate in 3d.
          * \details Computes the sign of the signed volume of
@@ -336,6 +392,7 @@ namespace GEO {
         );
 
 
+#ifndef GEOGRAM_PSM        
         /**
          * \brief Computes the orientation predicate in 3d.
          * \details Computes the sign of the signed volume of
@@ -353,7 +410,8 @@ namespace GEO {
         ) {
             return orient_3d(p0.data(),p1.data(),p2.data(),p3.data());
         }
-
+#endif
+        
         /**
          * \brief Computes the 4d orientation test.
          * \details Given four lifted points p0', p1', p2', and p3' in 
@@ -370,7 +428,7 @@ namespace GEO {
          * \retval NEGATIVE if p4' lies above the hyperplane
          * \retval ZERO if p4' lies exactly on the hyperplane
          */
-        Sign GEOGRAM_API orient_4d(
+        Sign GEOGRAM_API orient_3dlifted(
             const double* p0, const double* p1,
             const double* p2, const double* p3, const double* p4,
             double h0, double h1, double h2, double h3, double h4
@@ -395,7 +453,7 @@ namespace GEO {
          *  where \c perturb() denotes a globally
          *  consistent perturbation, that returns either POSITIVE or NEGATIVE
          */
-        Sign GEOGRAM_API orient_4d_SOS(
+        Sign GEOGRAM_API orient_3dlifted_SOS(
             const double* p0, const double* p1,
             const double* p2, const double* p3, const double* p4,
             double h0, double h1, double h2, double h3, double h4

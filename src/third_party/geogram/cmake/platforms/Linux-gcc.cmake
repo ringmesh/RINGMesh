@@ -2,7 +2,7 @@
 # Flags common to all Linux based platforms with GNU compiler
 #-------------------------------------------------------------------
 
-include(${CMAKE_SOURCE_DIR}/cmake/platforms/Linux.cmake)
+include(${GEOGRAM_SOURCE_DIR}/cmake/platforms/Linux.cmake)
 
 # Warning flags
 set(NORMAL_WARNINGS -Wall -Wextra)
@@ -156,6 +156,5 @@ macro(vor_add_executable)
     if(UNIX)
         target_link_libraries(${ARGV0} m pthread)
     endif()
-
 endmacro()
 

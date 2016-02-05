@@ -92,11 +92,28 @@ namespace {
             << M.vertices.nb() - nb_new_vertices
             << " duplicated vertices" << std::endl;
 
-        
-        for(index_t c = 0; c < M.facet_corners.nb(); c++) {
+
+        // Replace vertex indices for edges
+        for(index_t e = 0; e < M.edges.nb(); ++e) {
+            M.edges.set_vertex(e, 0, old2new[M.edges.vertex(e,0)]);
+            M.edges.set_vertex(e, 1, old2new[M.edges.vertex(e,1)]);            
+        }
+
+        // Replace vertex indices for facets
+        for(index_t c = 0; c < M.facet_corners.nb(); ++c) {
             M.facet_corners.set_vertex(c, old2new[M.facet_corners.vertex(c)]);
         }
 
+        // Replace vertex indices for cells
+        for(index_t ce = 0; ce < M.cells.nb(); ++ce) {
+            for(
+                index_t c=M.cells.corners_begin(ce);
+                c<M.cells.corners_end(ce); ++c
+            ) {
+                M.cell_corners.set_vertex(c, old2new[M.cell_corners.vertex(c)]);
+            }
+        } 
+        
         // Now old2new is "recycled" for marking vertices that
         // need to be removed.
         for(index_t i = 0; i < old2new.size(); i++) {
@@ -264,10 +281,69 @@ namespace {
         const Mesh& mesh_;
     };
 
-    // TODO: check also non-triangular facets
-    // that have the same vertex several times
-    // (and create a new valid one if possible).
 
+    /**
+     * \brief Finds the non-duplicated vertices of a facet
+     * \param[in] M a const reference to a mesh
+     * \param[in] f a facet index in \p M
+     * \param[out] new_polygon on exit, where to append the 
+     *              non-duplicated vertices of facet \p f
+     *              and a terminal index_t(-1)
+     * \retval true if the facet has three non-duplicated 
+     *               vertices and more
+     * \retval false otherwise
+     */
+    bool find_facet_non_duplicated_vertices(
+        const Mesh& M, index_t f, vector<index_t>& new_polygon
+    ) {
+        index_t first_corner = index_t(-1);
+        
+        // Find the first vertex that is different from
+        // its predecessor around the facet.
+        for(
+            index_t c1=M.facets.corners_begin(f);
+            c1<M.facets.corners_end(f); ++c1
+        ){
+            index_t c2 = M.facets.next_corner_around_facet(f,c1);
+            if(M.facet_corners.vertex(c1) != M.facet_corners.vertex(c2)) {
+                first_corner = c2;
+                break;
+            }
+        }
+
+        // All the vertices may be identical (if the facet
+        // is completely degenerate).
+        if(first_corner == index_t(-1)) {
+            return false;
+        }
+
+        index_t c = first_corner;
+        index_t cur_v = index_t(-1);
+        index_t nb = 0;
+        
+        do {
+            index_t v = M.facet_corners.vertex(c);
+            if(v != cur_v) {
+                new_polygon.push_back(v);
+                cur_v = v;
+                ++nb;
+            }
+            c = M.facets.next_corner_around_facet(f,c);
+        } while(c != first_corner);
+        new_polygon.push_back(index_t(-1));
+
+        //   If there were only 2 non-duplicated vertices, then
+        // the facet is degenerate and is "rolled back" (we do
+        // not want to generate facets with two vertices only).
+        if(nb == 2) {
+            new_polygon.resize(new_polygon.size()-3);
+            return false;
+        }
+
+        return true;
+    }
+    
+    
     /**
      * \brief Detects degenerate facets in a mesh.
      * \param[in] M the mesh
@@ -278,9 +354,17 @@ namespace {
      *  removed. If remove_f[f] != 0 if f should be removed, else f 
      *  should be kept. If remove_f.size() == 0, then there is
      *  no facet to remove, else remove_f.size() == M.facets.nb(). 
+     * \param[out] old_polygons if non zero, on exit contains the
+     *  indices of the polygonal facets that had duplicated vertices
+     * \param[out] new_polygons if non zero, on exit contains the
+     *  polygonal facets to be created to replace the input polygonal
+     *  facets that have duplicated vertices. Each individual facet
+     *  is terminated by index_t(-1)
      */
     void detect_bad_facets(
-        Mesh& M, bool check_duplicates, vector<index_t>& remove_f
+        Mesh& M, bool check_duplicates, vector<index_t>& remove_f,
+        vector<index_t>* old_polygons = nil,
+        vector<index_t>* new_polygons = nil
     ) {
         index_t nb_duplicates = 0;
         index_t nb_degenerate = 0;
@@ -341,6 +425,20 @@ namespace {
                     remove_f.resize(M.facets.nb(), 0);
                 }
                 remove_f[f] = 1;
+
+                // If we found a degenerate polygonal facet and
+                // we want to regenerate a valid one:
+                if(
+                    old_polygons != nil &&
+                    new_polygons != nil &&
+                    M.facets.nb_vertices(f) > 3
+                ) {
+                    if(find_facet_non_duplicated_vertices(
+                           M,f,*new_polygons
+                    )) {
+                        old_polygons->push_back(f);
+                    }
+                }
             }
         }
         if(nb_duplicates != 0 || nb_degenerate != 0) {
@@ -359,11 +457,40 @@ namespace {
      */
     void repair_remove_bad_facets(Mesh& M, bool check_duplicates) {
         vector<index_t> remove_f;
-        detect_bad_facets(M, check_duplicates, remove_f);
-        if(remove_f.size() == 0) {
-            return;
+        vector<index_t> old_polygons;
+        vector<index_t> new_polygons;
+        detect_bad_facets(
+            M, check_duplicates, remove_f, &old_polygons, &new_polygons
+        );
+        index_t current_old_polygon=0;
+        if(remove_f.size() != 0) {
+            //   Create the new facets that correspond to input polygonal
+            // facets that had duplicated vertices.
+            //   This needs to be done before deleting the bad facets,
+            // else some vertices will become isolated and will be
+            // discarded.
+            index_t b=0;
+            index_t e=0;
+            while(b < new_polygons.size()) {
+                while(new_polygons[e] != index_t(-1)) {
+                    ++e;
+                }
+                index_t new_f = M.facets.create_polygon(e-b);
+                M.facets.attributes().copy_item(
+                    new_f, old_polygons[current_old_polygon]
+                );
+                ++current_old_polygon;
+                // We created a new facet that we want to keep !!
+                remove_f.push_back(0); 
+                for(index_t lv=0; lv<e-b; ++lv) {
+                    M.facets.set_vertex(new_f,lv,new_polygons[b+lv]);
+                }
+                ++e;
+                b=e;
+            }
+            M.facets.delete_elements(remove_f);            
         }
-        M.facets.delete_elements(remove_f);
+        
     }
 
     /************************************************************************/

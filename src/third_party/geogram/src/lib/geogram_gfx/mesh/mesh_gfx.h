@@ -43,12 +43,11 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_MESH__
-#define __GEOGRAM_GFX_MESH__
+#ifndef __GEOGRAM_GFX_MESH_GFX__
+#define __GEOGRAM_GFX_MESH_GFX__
 
 #include <geogram_gfx/basic/common.h>
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
 
 /**
  * \file geogram_gfx/mesh/mesh_gfx.h
@@ -57,8 +56,8 @@
 
 namespace GEO {
 
-    class Mesh;
-
+    class MeshGfxImpl;
+    
     /**
      * \brief Draws a mesh using OpenGL.
      */
@@ -100,8 +99,7 @@ namespace GEO {
          * \brief Draws the volumetric part of the mesh.
          */
         void draw_volume();
-
-
+        
         /**
          * \brief Gets the mesh visibility flag.
          * \details The mesh visibility flags specifies
@@ -110,9 +108,7 @@ namespace GEO {
          * \retval true if mesh edges should be displayed
          * \retval false otherwise
          */
-        bool get_show_mesh() const {
-            return show_mesh_;
-        }
+        bool get_show_mesh() const;
 
         /**
          * \brief Sets the mesh visibility flag.
@@ -125,10 +121,7 @@ namespace GEO {
          *   (not implemented yet for hybrid surfacic and 
          *    volumetric meshes).
          */
-        void set_show_mesh(bool x) {
-            show_mesh_ = x;
-        }
-
+        void set_show_mesh(bool x);
 
         /**
          * \brief Gets the mesh width
@@ -138,9 +131,7 @@ namespace GEO {
          *   and cells.
          * \return the mesh width
          */
-        index_t get_mesh_width() const {
-            return mesh_width_;
-        }
+        index_t get_mesh_width() const;
 
         /**
          * \brief Sets the mesh width
@@ -150,9 +141,7 @@ namespace GEO {
          *   and cells.
          * \param[in] x the mesh width (minimum is 1)
          */
-        void set_mesh_width(index_t x) {
-            mesh_width_ = x;
-        }
+        void set_mesh_width(index_t x);
 
         /**
          * \brief Gets the mesh border width
@@ -160,9 +149,7 @@ namespace GEO {
          *   by draw_surface_borders()
          * \return the mesh border width
          */
-        index_t get_mesh_border_width() const {
-            return mesh_border_width_;
-        }
+        index_t get_mesh_border_width() const;
 
         /**
          * \brief Sets the mesh border width
@@ -170,33 +157,7 @@ namespace GEO {
          *   by draw_surface_borders()
          * \param[in] x the mesh width (minimum is 1)
          */
-        void set_mesh_border_width(index_t x) {
-            mesh_border_width_ = x;
-        }
-        
-        /**
-         * \brief Gets the region visibility flag.
-         * \return the value of the region visibility flag.
-         * \details If activated, cell and facet regions are displayed
-         *  using a colormap.
-         * \note For now, regions are only implemented for
-         *   triangulated meshes and tetrahedralized meshes
-         *   (not implemented yet for hybrid surfacic and 
-         *    volumetric meshes).
-         */
-        bool get_show_regions() const {
-            return show_regions_;
-        }
-
-        /**
-         * \brief Gets the region visibility flag.
-         * \param[in] x the new value of the region visibility flag.
-         * \details If activated, cell and facet regions are displayed
-         *  using a colormap.
-         */
-        void set_show_regions(bool x) {
-            show_regions_ = x;
-        }
+        void set_mesh_border_width(index_t x);
         
         /**
          * \brief Gets the cells shrink coefficient.
@@ -206,9 +167,7 @@ namespace GEO {
          * \return the cells shrink coefficient, betwe 0.0 (no shrink) 
          *  and 1.0 (full shrink)
          */
-        double get_shrink() const {
-            return shrink_;
-        }
+        double get_shrink() const;
 
         /**
          * \brief Sets the cells shrink coefficient.
@@ -218,10 +177,7 @@ namespace GEO {
          * \param[in] x the cells shrink coefficient, betwe 0.0 (no shrink) 
          *  and 1.0 (full shrink)
          */
-        void set_shrink(double x) {
-            shrink_ = x;
-            geo_clamp(shrink_, 0.0, 1.0);
-        }
+        void set_shrink(double x);
 
 
         /**
@@ -235,9 +191,7 @@ namespace GEO {
          * \retval false otherwise
          * \see get_time(), set_time()
          */
-        bool get_animate() const {
-            return animate_;
-        }
+        bool get_animate() const;
 
         /**
          * \brief Gets the animate flag
@@ -249,9 +203,7 @@ namespace GEO {
          * \param[in] x true if animation should be used, false otherwise
          * \see get_time(), set_time()
          */
-        void set_animate(bool x) {
-            animate_ = x;
-        }
+        void set_animate(bool x);
         
         /**
          * \brief Gets the time of the animation.
@@ -260,9 +212,7 @@ namespace GEO {
          *  and 1.0 (final)
          * \see get_animate(), set_animate()
          */
-        double get_time() const {
-            return time_;
-        }
+        double get_time() const;
 
         /**
          * \brief Gets the time of the animation.
@@ -271,10 +221,7 @@ namespace GEO {
          *  and 1.0 (final)
          * \see get_animate(), set_animate()
          */
-        void set_time(double x) {
-            time_ = x;
-            geo_clamp(time_, 0.0, 1.0);
-        }
+        void set_time(double x);
         
         /**
          * \brief Gets the cell visibility flag.
@@ -284,10 +231,7 @@ namespace GEO {
          * \retval true if the cells of \p type should be displayed
          * \retval false otherwise
          */
-        bool get_draw_cells(MeshCellType type) const {
-            geo_assert(type < MESH_NB_CELL_TYPES);
-            return draw_cells_[type];
-        }
+        bool get_draw_cells(MeshCellType type) const;
 
 
         /**
@@ -298,11 +242,7 @@ namespace GEO {
          * \param[in] x true if mesh cells of type \p type should be displayed,
          *  false otherwise.
          */
-        void set_draw_cells(MeshCellType type, bool x) {
-            geo_assert(type < MESH_NB_CELL_TYPES);
-            draw_cells_[type] = x;
-        }
-
+        void set_draw_cells(MeshCellType type, bool x);
 
         /**
          * \brief Sets the points color
@@ -311,9 +251,7 @@ namespace GEO {
          *  in (0.0 .. 1.0)
          * \see draw_points()
          */
-        void set_points_color(float r, float g, float b) {
-            set_color(PRG_POINTS, r, g, b);
-        }
+        void set_points_color(float r, float g, float b);
 
         /**
          * \brief Gets the points color
@@ -321,28 +259,21 @@ namespace GEO {
          *  in (0.0 .. 1.0)
          * \see draw_points()
          */
-        void get_points_color(float& r, float& g, float& b) const {
-            get_color(PRG_POINTS, r, g, b);
-        }
-
+        void get_points_color(float& r, float& g, float& b) const;
 
         /**
          * \brief Sets the point size
          * \param[in] x the point size (minimum 1)
          * \see draw_points()
          */
-        void set_points_size(float x) {
-            points_size_ = x;
-        }
+        void set_points_size(float x);
 
         /**
          * \brief Gets the point size
          * \return the point size
          * \see draw_points()
          */
-        float get_points_size() const {
-            return points_size_;
-        }
+        float get_points_size() const;
         
         /**
          * \brief Sets the mesh color
@@ -352,13 +283,7 @@ namespace GEO {
          *  in (0.0 .. 1.0)
          * \see set_show_mesh(), draw_surface(), draw_volume()
          */
-        void set_mesh_color(float r, float g, float b) {
-            mesh_color_[0] = r;
-            mesh_color_[1] = g;
-            mesh_color_[2] = b;
-            mesh_color_[3] = 1.0f;                        
-        }
-
+        void set_mesh_color(float r, float g, float b);
 
         /**
          * \brief Gets the mesh color
@@ -366,11 +291,7 @@ namespace GEO {
          *  in (0.0 .. 1.0)
          * \see set_show_mesh(), draw_surface(), draw_volume()
          */
-        void get_mesh_color(float& r, float& g, float& b) const {
-            r = mesh_color_[0];
-            g = mesh_color_[1];
-            b = mesh_color_[2];
-        }
+        void get_mesh_color(float& r, float& g, float& b) const;
         
         /**
          * \brief Sets the surface color
@@ -381,10 +302,7 @@ namespace GEO {
          *  in (0.0 .. 1.0)
          * \see draw_surface(), set_backface_surface_color()
          */
-        void set_surface_color(float r, float g, float b) {
-            set_color(PRG_TRI,  r, g, b);
-            set_color(PRG_QUAD, r, g, b);            
-        }
+        void set_surface_color(float r, float g, float b);
 
         /**
          * \brief Gets the surface color
@@ -392,9 +310,7 @@ namespace GEO {
          *  in (0.0 .. 1.0)
          * \see draw_surface()
          */
-        void get_surface_color(float& r, float& g, float& b) const {
-            get_color(PRG_TRI, r, g, b);
-        }
+        void get_surface_color(float& r, float& g, float& b) const;
         
         /**
          * \brief Sets the surface color for backfacing faces.
@@ -404,10 +320,7 @@ namespace GEO {
          *  in (0.0 .. 1.0)
          * \see set_show_mesh(), draw_surface(), draw_volume()
          */
-        void set_backface_surface_color(float r, float g, float b) {
-            set_back_color(PRG_TRI,  r, g, b);
-            set_back_color(PRG_QUAD, r, g, b);            
-        }
+        void set_backface_surface_color(float r, float g, float b);
 
         /**
          * \brief Sets the color used to display mesh cells.
@@ -415,12 +328,7 @@ namespace GEO {
          *  in (0.0 .. 1.0)
          * \see set_cells_colors_by_type(), draw_volume()
          */
-        void set_cells_color(float r, float g, float b) {
-            set_color(PRG_TET,     r, g, b);
-            set_color(PRG_HEX,     r, g, b);
-            set_color(PRG_PRISM,   r, g, b);
-            set_color(PRG_PYRAMID, r, g, b);
-        }
+        void set_cells_color(float r, float g, float b);
 
         /**
          * \brief Gets the cells color
@@ -428,11 +336,8 @@ namespace GEO {
          *  in (0.0 .. 1.0)
          * \see set_cells_colors_by_type(), draw_volume()
          */
-        void get_cells_color(float& r, float& g, float& b) const {
-            get_color(PRG_TET, r, g, b);
-        }
+        void get_cells_color(float& r, float& g, float& b) const;
 
-        
         /**
          * \brief Sets a different color for each mesh cell type
          * \details it uses the following colors:
@@ -442,31 +347,21 @@ namespace GEO {
          *  - pyramids: blue
          * \see set_cells_color(), draw_volume()
          */
-        void set_cells_colors_by_type() {
-            set_color(PRG_TET,     1.0f, 0.0f, 0.0f);
-            set_color(PRG_HEX,     0.9f, 0.9f, 0.9f);
-            set_color(PRG_PRISM,   0.0f, 1.0f, 0.0f);
-            set_color(PRG_PYRAMID, 0.0f, 0.0f, 1.0f);            
-        }
-
+        void set_cells_colors_by_type();
+        
         /**
          * \brief Gets the lighing flag
          * \retval true if lighting should be used
          * \retval false otherwise
          */
-        bool get_lighting() const {
-            return lighting_;
-        }
+        bool get_lighting() const;
 
         /**
          * \brief Sets the lighting flag
          * \param[in] x true if lighting should be used, false
          *  otherwise.
          */
-        void set_lighting(bool x) {
-            lighting_ = x;
-        }
-
+        void set_lighting(bool x);
 
         /**
          * \brief Sets the mesh
@@ -479,341 +374,75 @@ namespace GEO {
          * \brief Gets the mesh
          * \return a pointer to the mesh that will be displayed.
          */
-        const Mesh* mesh() const {
-            return mesh_;
-        }
+        const Mesh* mesh() const;
+
+        /**
+         * \brief Sets picking mode.
+         * \details If picking mode is MESH_NONE, then normal drawing
+         *  is activated, else the color is replaced with the index of
+         *  the elements.
+         * \param[in] what a bitwise or ('|') combination of 
+         *  MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS,
+         *  or MESH_NONE if picking mode should be deactivated
+         * \note Picking mode is currently only implemented with
+         *  GLSL support at least v1.5, and only works for points,
+         *  segments, pure triangle meshes and pure tetrahedral meshes
+         *  (facet picking for polygonal meshes and cell picking for 
+         *   hybrid meshes are not implemented yet).
+         */
+        void set_picking_mode(MeshElementsFlags what);
+
+        /**
+         * \brief Gets the current picking mode.
+         * \return a bitwise or ('|') combination of 
+         *  MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS,
+         *  or MESH_NONE if picking mode is deactivated
+         */
+        MeshElementsFlags get_picking_mode() const;
+        
         
     protected:
 
         /**
-         * \brief Draws a surfacic mesh solely composed 
-         *  of triangles
+         * \brief Creates or updates all the used OpenGL 
+         *  objects/program/textures.
+         * \details May throw an exception if OpenGL driver / hardware 
+         *  does not support the used features.
          */
-        void draw_triangles();
+        void setup();
 
         /**
-         * \brief Draws a surfacic mesh solely composed 
-         *   of triangles and quads.
+         * \brief Replaces the current implementation with
+         *  another one.
+         * \details Colors, attributes, drawing modes are
+         *  copied from the current implementation to the
+         *  new one. On exit, ownership of new_impl is 
+         *  transfered to this MeshGfx.
+         * \param[in] new_impl a pointer to the new implementation
          */
-        void draw_triangles_and_quads();
+        void replace_implementation(MeshGfxImpl* new_impl);
 
         /**
-         * \brief Draws a surfacic mesh composed of 
-         *  arbitrary polygons.
+         * \brief Gets the supported GLSL version.
+         * \details The supported GLSL version is determined
+         *  from hardware/driver capabilities and user-defined
+         *  parameters.
          */
-        void draw_polygons();
-
-
-        /**
-         * \brief Draws a surfacic mesh animation.
-         * \details The mesh is in 6d, the first three coordinates
-         *  correspond to vertex location at time t=0; and the last
-         *  three coordinates correspond to vertex location at time 
-         *  t=1. Positions are interpolated with time_.
-         *  \see set_time(), set_animate()
-         */
-        void draw_triangles_animation();
+        double supported_GLSL_version();
         
-
-        /**
-         * \brief Draws a mesh solely composed of tetrahedra.
-         */
-        void draw_tets();
-
-
-        /**
-         * \brief Draws a surfacic mesh animation.
-         * \details The mesh is in 6d, the first three coordinates
-         *  correspond to vertex location at time t=0; and the last
-         *  three coordinates correspond to vertex location at time 
-         *  t=1. Positions are interpolated with time_.
-         *  \see set_time(), set_animate()
-         */
-        void draw_tets_animation();
-
-        /**
-         * \brief Draws a mesh composed of arbitrary cells.
-         */
-        void draw_cells();
-
-        /**
-         * \brief Draws a mesh composed of arbitrary cells, 
-         *  without using any GLSL shader.
-         */
-        void draw_cells_no_shader();
-
-        /**
-         * \brief Sends all the cell of a given type to
-         *  OpenGL using glDrawElements() call.
-         * \details A cache (cell draw cache) memorizes the
-         *  first index and length of each continuous chunk
-         *  of cells with the same type. 
-         * \param[in] cell_type the type of the cells to 
-         *  be sent to OpenGL (one of MESH_TET, MESH_HEX,
-         *  MESH_PRISM, MESH_PYRAMID)
-         * \param[in] mode the OpenGL primitive to be used
-         * \see clear_cell_draw_cache()
-         */
-        void draw_mesh_cells_as_opengl_elements(
-            MeshCellType cell_type, GLenum mode
-        );
-
-
-        /**
-         * \brief Clears the cell draw cache.
-         * \details The cell draw cache memorizes the
-         *  first index and length of each continuous chunk
-         *  of cells with the same type. 
-         * \see draw_mesh_cells_as_opengl_elements()
-         */
-        void clear_cell_draw_cache();
-
-        /**
-         * \brief Sends all the cell of a given type to
-         *  OpenGL as points with attributes.
-         * \details Each cell generates an OpenGL vertex.
-         *  The vertices of the cell are generic attributes
-         *  of the generated OpenGL vertices.
-         * \param[in] cell_type the type of the cells to 
-         *  be sent to OpenGL (one of MESH_TET, MESH_HEX,
-         *  MESH_PRISM, MESH_PYRAMID)
-         */
-        void draw_mesh_cells_as_opengl_points(
-            MeshCellType cell_type
-        );
-        
+        MeshGfxImpl* impl_;
+        MeshGfxImpl* pick_impl_;
+        bool initialized_;
         
         /**
-         * \brief Creates shaders and Vertex Buffer Arrays,
-         *  and binds Vertex Buffer Objects depending on
-         *  what should be drawn after.
-         * \param[in] what specifies what should be drawn,
-         *   one of MESH_VERTICES, MESH_FACETS, MESH_CELLS
+         * \brief Forbids MeshGfx copy..
          */
-        void begin_draw(MeshElementsFlags what);
-
-        /**
-         * \brief Unbinds Vertex Buffer Objects.
-         */
-        void end_draw();
-
-
-        /**
-         * \brief Symbolic constants referring to a GPU program in the
-         *  array programs[].
-         */
-        enum ShaderName {
-            PRG_POINTS        =0,
-            PRG_TRI           =1,
-            PRG_QUAD          =2,
-            PRG_TET           =3,
-            PRG_HEX           =4,
-            PRG_PRISM         =5,
-            PRG_PYRAMID       =6,
-            PRG_NB            =7
-        } ;
-
-        /**
-         * \brief Starts using the shader of the specified
-         *  name.
-         * \details In addition, the front and back colors attached
-         *  to the shader are sent to OpenGL using set_colors()
-         * \param name one of (PRG_POINTS, PRG_TRI, PRG_QUAD,
-         *  PRG_TET, PRG_HEX, PRG_PRISM, PRG_PYRAMID)
-         */
-        void begin_shader(ShaderName name);
-
-        /**
-         * \brief Stops using the shader of the specified name
-         */
-        void end_shader();
-
-        /**
-         * \brief Sends to OpenGL the front and back colors 
-         *  attached to a given shader.
-         */
-        void set_colors(ShaderName name);
+        MeshGfx(const MeshGfx& rhs);
         
         /**
-         * \brief Creates all the shaders.
+         * \brief Forbids MeshGfx copy..
          */
-        void setup_shaders();
-
-        /**
-         * \brief Deletes all the shaders.
-         */
-        void delete_shaders();
-        
-        /**
-         * \brief Creates the vertex buffer objects.
-         */
-        void setup_VBOs();
-
-        /**
-         * \brief Deletes all the vertex buffer objects.
-         */
-        void delete_VBOs();
-
-        
-    protected:
-        const Mesh* mesh_;
-        
-        GLuint     vertices_VBO_;
-        GLuint     edge_indices_VBO_;
-        GLuint     facet_indices_VBO_;
-        GLuint     cell_indices_VBO_;
-        GLuint     facet_region_VBO_;
-        GLuint     cell_region_VBO_;
-
-        GLuint     colormap_TEX_;
-
-        bool VBO_dirty_;
-        
-        bool show_mesh_;
-        bool show_regions_;
-        double shrink_;
-        bool animate_;
-        double time_;
-        bool lighting_;
-
-        /** 
-         * \brief true if the surface has only triangles and quads.
-         */
-        bool triangles_and_quads_;
-
-        /**
-         * \brief true if shaders are used.
-         */
-        bool GLSL_mode_;
-
-        /**
-         * \brief true if tesselation shaders are used.
-         */
-        bool GLSL_tesselation_;
-
-        /**
-         * \brief GLSL version supported by the OpenGL driver.
-         */
-        double GLSL_version_;
-        
-        /**
-         * \brief true if shaders are already initialized.
-         */
-        bool shaders_init_;
-        
-        /**
-         * \brief GPU programs are grouped in an array, so that
-         *  setting the same uniform variable in all of them can
-         *  be done easily with a for() loop.
-         */
-        GLuint programs_[PRG_NB];
-        
-        /**
-         * \brief Default frontfacing color to be used 
-         *  with a given program.
-         */
-        GLfloat colors_[PRG_NB][4];
-
-        /**
-         * \brief Default backfacing color to be used 
-         *  with a given program.
-         */
-        GLfloat back_colors_[PRG_NB][4];
-        
-        /**
-         * \brief Mesh color
-         */
-        GLfloat mesh_color_[4];
-        
-        /**
-         * \brief Toggles cell drawing by type.
-         */
-        bool draw_cells_[MESH_NB_CELL_TYPES];
-        
-        /**
-         * \brief Drawing instructions for cells can be 'cached'. 
-         * \details They are cached for each cell type independantly.
-         *   This array indicates for each cell type whether the cache
-         *   is up to date.
-         */
-        bool cell_draw_cached_[MESH_NB_CELL_TYPES];
-
-        /**
-         * \brief Drawing instructions for cells can be 'cached'. 
-         * \details They are cached for each cell type independantly.
-         *   This array indicates for each drawing call of cell type 
-         *  how many vertices should be issued in the call.
-         */
-        vector<GLsizei> cell_draw_nb_vertices_[GEO::MESH_NB_CELL_TYPES];
-
-        /**
-         * \brief Drawing instructions for cells can be 'cached'. 
-         * \details They are cached for each cell type independantly.
-         *   This array indicates for each drawing call of cell type 
-         *  the first index of the call.
-         */
-        vector<void*>   cell_draw_start_index_[GEO::MESH_NB_CELL_TYPES];
-
-        float points_size_;
-        index_t mesh_width_;
-        index_t mesh_border_width_;
-        
-        /**
-         * \brief Defines the default color for one of the programs.
-         * \param[in] index index of the program, in 0..PRG_NB - 1
-         * \param[in] r the red component, in 0.0f..1.0f
-         * \param[in] g the green component, in 0.0f..1.0f
-         * \param[in] b the blue component, in 0.0f..1.0f
-         */
-        inline void set_front_color(GLuint index, float r, float g, float b) {
-            colors_[index][0] = r;
-            colors_[index][1] = g;
-            colors_[index][2] = b;
-            colors_[index][3] = 1.0f;
-        }
-
-        /**
-         * \brief Defines the backfacing default color for one 
-         *  of the programs.
-         * \param[in] index index of the program, in 0..PRG_NB - 1
-         * \param[in] r the red component, in 0.0f..1.0f
-         * \param[in] g the green component, in 0.0f..1.0f
-         * \param[in] b the blue component, in 0.0f..1.0f
-         */
-        inline void set_back_color(GLuint index, float r, float g, float b) {
-            back_colors_[index][0] = r;
-            back_colors_[index][1] = g;
-            back_colors_[index][2] = b;
-            back_colors_[index][3] = 1.0f;
-        }
-
-        /**
-         * \brief Sets both frontfacing and backfacing colors
-         *  for a given program.
-         * \param[in] index index of the program, in 0..PRG_NB - 1
-         * \param[in] r the red component, in 0.0f..1.0f
-         * \param[in] g the green component, in 0.0f..1.0f
-         * \param[in] b the blue component, in 0.0f..1.0f
-         */
-        inline void set_color(GLuint index, float r, float g, float b) {
-            set_front_color(index, r, g, b);
-            set_back_color(index, r, g, b);
-        }
-
-        /**
-         * \brief Gets the color used by a given program.
-         * \param[in] index index of the program, in 0..PRG_NB - 1
-         * \param[out] r the red component, in 0.0f..1.0f
-         * \param[out] g the green component, in 0.0f..1.0f
-         * \param[out] b the blue component, in 0.0f..1.0f
-         */
-        inline void get_color(
-            GLuint index, float& r, float& g, float& b
-        ) const {
-            r = colors_[index][0];
-            g = colors_[index][1];
-            b = colors_[index][2];
-        }
+        MeshGfx& operator=(const MeshGfx& rhs);
     };
 
 }

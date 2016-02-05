@@ -191,7 +191,6 @@ namespace GEO {
          */
         virtual void status(const std::string& str) = 0;
 
-    protected:
         /**
          * \brief LoggerClient destructor
          */

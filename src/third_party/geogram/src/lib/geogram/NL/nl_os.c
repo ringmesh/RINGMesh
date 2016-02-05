@@ -45,7 +45,7 @@
 #include "nl_private.h"
 
 
-#ifdef WIN32
+#if (defined (WIN32) || defined(_WIN64))
 #include <windows.h>
 #else
 #include <sys/types.h>

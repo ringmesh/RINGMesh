@@ -540,6 +540,13 @@ namespace GEO {
          * \return the maximum used memory in bytes
          */
         size_t GEOGRAM_API max_used_memory();
+
+
+        /**
+         * \brief Gets the full path to the currently
+         *  running program.
+         */
+        std::string GEOGRAM_API executable_filename();
     }
 
     /**
