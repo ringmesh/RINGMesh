@@ -66,6 +66,14 @@ int main( int argc, char** argv )
         return 1 ;
     }
 
+    std::string output_surf_file_name( ringmesh_test_output_path ) ;
+    output_surf_file_name += "modelA4_surf.bm" ;
+    geomodel_surface_save( model, output_surf_file_name ) ;
+
+    std::string output_vol_file_name( ringmesh_test_output_path ) ;
+    output_vol_file_name += "modelA4_vol.gm" ;
+    geomodel_volume_save( model, output_vol_file_name ) ;
+
     bool res = true ;
     // Check number of elements in the imported GeoModel (from TSolid file) and
     // in the re-imported GeoModel (after an export in a .bm file)

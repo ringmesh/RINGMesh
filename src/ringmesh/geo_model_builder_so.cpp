@@ -60,11 +60,7 @@ namespace RINGMesh {
 
     class VertexMap {
     public:
-        VertexMap(
-            std::vector< index_t > gocad_vertices2region_vertices,
-            std::vector< index_t > gocad_vertices2region_id ) :
-                gocad_vertices2region_vertices_( gocad_vertices2region_vertices ),
-                gocad_vertices2region_id_( gocad_vertices2region_id )
+        VertexMap()
         {}
 
         const index_t local_id( index_t gocad_vertex_id ) const
@@ -88,6 +84,12 @@ namespace RINGMesh {
             ringmesh_debug_assert( gocad_vertices2region_vertices_.size() ==
                 gocad_vertices2region_id_.size() )
             return gocad_vertices2region_vertices_.size() ;
+        }
+
+        void reserve( index_t capacity )
+        {
+            gocad_vertices2region_vertices_.reserve( capacity ) ;
+            gocad_vertices2region_id_.reserve( capacity ) ;
         }
 
     private:
@@ -195,6 +197,53 @@ namespace {
                 << std::endl ;
         }
     }
+};
+
+namespace RINGMesh {
+
+    struct TSolidLoadUtils {
+        TSolidLoadUtils( const std::string& filename )
+        {
+            z_sign_ = 1 ;
+            cur_region_ = NO_ID ;
+            count_nb_vertices_and_tetras_per_region(
+                filename,
+                nb_elements_per_region_,
+                nb_vertices_in_model_ ) ;
+            vertex_map_.reserve( nb_vertices_in_model_ ) ;
+            cur_interface_ = NO_ID ;
+            cur_surface_ = NO_ID ;
+            cur_surf_facet_ptr_.push_back( 0 ) ;
+        }
+
+        int z_sign_ ;
+        index_t cur_region_ ;
+
+        // Count the number of vertex and tetras
+        // in each region
+        std::vector< index_t > nb_elements_per_region_ ;
+        index_t nb_vertices_in_model_ ;
+
+        VertexMap vertex_map_ ;
+
+        // Region vertices
+        std::vector< vec3 > region_vertices_ ;
+
+        // Region tetrahedron corners
+        std::vector< index_t > tetra_corners_ ;
+
+
+        index_t cur_interface_ ;
+        index_t cur_surface_ ;
+        std::vector< index_t > cur_surf_facets_corner_gocad_id_ ;
+        std::vector< index_t > cur_surf_facet_ptr_ ;
+
+    };
+
+}
+
+namespace {
+    using namespace RINGMesh ;
 
     /*! @}
      * \name Properties import
@@ -206,36 +255,36 @@ namespace {
      * @param[in] prop_name Name of the property to add
      * @param[in] attribute_manager Attribut manager in which add the new property
      */
-    void add_new_property(
-        const std::string& prop_name,
-        GEO::AttributesManager& attribute_manager )
-    {
-        /// @todo All the property types are double.
-        /// Change in order to have the good type for each property.
-        GEO::Attribute< double > property( attribute_manager, prop_name ) ;
-    }
+//    void add_new_property(
+//        const std::string& prop_name,
+//        GEO::AttributesManager& attribute_manager )
+//    {
+//        /// @todo All the property types are double.
+//        /// Change in order to have the good type for each property.
+//        GEO::Attribute< double > property( attribute_manager, prop_name ) ;
+//    }
 
     /*! @}
      * \name Volume mesh import
      * @{
      */
 
-    /*!
-     * @brief Creates an empty element of type GME::REGION and sets
-     * its name from .so file
-     * @param[in] region_name Name of the new region
-     * @param[in] geomodel_builder Builder of the geomodel
-     * @return The index of the initialized region
-     */
-    index_t initialize_region(
-        const std::string& region_name,
-        GeoModelBuilderTSolid& geomodel_builder )
-    {
-        GME::gme_t cur_region = geomodel_builder.create_element( GME::REGION ) ;
-        geomodel_builder.set_element_name( cur_region, region_name ) ;
-        return cur_region.index ;
-    }
-
+//    /*!
+//     * @brief Creates an empty element of type GME::REGION and sets
+//     * its name from .so file
+//     * @param[in] region_name Name of the new region
+//     * @param[in] geomodel_builder Builder of the geomodel
+//     * @return The index of the initialized region
+//     */
+//    index_t initialize_region(
+//        const std::string& region_name,
+//        GeoModelBuilderTSolid& geomodel_builder )
+//    {
+//        GME::gme_t cur_region = geomodel_builder.create_element( GME::REGION ) ;
+//        geomodel_builder.set_element_name( cur_region, region_name ) ;
+//        return cur_region.index ;
+//    }
+//
     /*!
      * @brief Clears the vectors region_vertices and tetra_corners and reserves
      * enough space for the next region elements
@@ -260,25 +309,93 @@ namespace {
     }
 
     /*! @}
+     * \name Building surface
+     * @{
+     */
+    vec3 get_point_from_gocad_id(
+        const GeoModel& geomodel,
+        const VertexMap& vertex_map,
+        const index_t point_gocad_id )
+    {
+        const index_t point_local_id =
+            vertex_map.local_id( point_gocad_id ) ;
+        const index_t point_region =
+            vertex_map.region( point_gocad_id ) ;
+
+        return geomodel.region( point_region ).vertex( point_local_id ) ;
+    }
+
+    void get_surface_point_and_facet_from_gocad_index(
+        const index_t vertex_gocad_id,
+        const GeoModel& geomodel,
+        const TSolidLoadUtils& load_utils,
+        std::vector< index_t >& gocad_vertices2cur_surf_points,
+        std::vector< vec3 >& cur_surf_points,
+        std::vector< index_t >& cur_surf_facets )
+    {
+        if( gocad_vertices2cur_surf_points[ vertex_gocad_id ] == NO_ID ) {
+            // First time this facet corner is met in facet_corners
+            vec3 point = get_point_from_gocad_id(
+                    geomodel, load_utils.vertex_map_, vertex_gocad_id ) ;
+            cur_surf_facets.push_back( cur_surf_points.size() ) ;
+            gocad_vertices2cur_surf_points[ vertex_gocad_id ] =
+                cur_surf_points.size() ;
+            cur_surf_points.push_back( point ) ;
+        } else {
+            // If this facet corner has already been met in facet_corners
+            cur_surf_facets.push_back(
+                gocad_vertices2cur_surf_points[ vertex_gocad_id ] ) ;
+        }
+    }
+
+    void get_surface_points_and_facets_from_gocad_indices(
+        const GeoModel& geomodel,
+        const TSolidLoadUtils& load_utils,
+        std::vector< vec3 >& cur_surf_points,
+        std::vector< index_t >& cur_surf_facets )
+    {
+        std::vector< index_t > gocad_vertices2cur_surf_points(
+            load_utils.nb_vertices_in_model_, NO_ID ) ;
+        for( index_t co = 0 ;
+            co < load_utils.cur_surf_facets_corner_gocad_id_.size() ;
+            ++co )
+        {
+            const index_t corner_gocad_id =
+                load_utils.cur_surf_facets_corner_gocad_id_[ co ] ;
+            get_surface_point_and_facet_from_gocad_index(
+                corner_gocad_id,
+                geomodel,
+                load_utils,
+                gocad_vertices2cur_surf_points,
+                cur_surf_points,
+                cur_surf_facets ) ;
+        }
+    }
+
+    void build_surface(
+        GeoModelBuilderTSolid& builder,
+        TSolidLoadUtils& load_utils )
+    {
+        std::vector< vec3 > cur_surf_points ;
+        std::vector< index_t > cur_surf_facets ;
+        get_surface_points_and_facets_from_gocad_indices(
+            builder.model(),
+            load_utils,
+            cur_surf_points,
+            cur_surf_facets ) ;
+        builder.set_surface_geometry( load_utils.cur_surface_,
+            cur_surf_points,
+            cur_surf_facets,
+            load_utils.cur_surf_facet_ptr_ ) ;
+        load_utils.cur_surf_facets_corner_gocad_id_.clear() ;
+        load_utils.cur_surf_facet_ptr_.clear() ;
+        load_utils.cur_surf_facet_ptr_.push_back( 0 ) ;
+    }
+
+    /*! @}
      * \name Read mesh elements (points, triangles, tetrehedra)
      * @{
      */
-
-    /*!
-     * Reads the coordinates of a vertex from file
-     * @param[in] in ACSII file reader
-     * @param[in] z_sign FActor for z value in order to have z increasing upwards
-     * @param[out] vertex Vertex
-     */
-    void read_vertex_coordinates(
-        const GEO::LineInput& in,
-        const int z_sign,
-        vec3& vertex )
-    {
-        vertex.x = in.field_as_double( 2 ) ;
-        vertex.y = in.field_as_double( 3 ) ;
-        vertex.z = z_sign * in.field_as_double( 4 ) ;
-    }
 
     /*!
      * @brief Reads the three vertices index of a triangle and adds
@@ -297,26 +414,26 @@ namespace {
         cur_surf_facets.push_back( in.field_as_uint( 3 ) - 1 ) ;
     }
 
-    /*!
-     * @brief Reads the four vertices index of a tetrahedron
-     * @details Reads gocad indices (from .so file) and transforms
-     * them to vertex local (region) indices
-     * @param[in] in ACSII file reader
-     * @param[out] gocad_vertices2region_vertices Vector which maps the indices
-     * of vertices from Gocad .so file to the local (in region) indices of vertices
-     * @param[out] corners_id Indices of the four vertices
-     */
-    void read_tetraedra(
-        const GEO::LineInput& in,
-        const VertexMap& vertex_map,
-        std::vector< index_t >& corners_id )
-    {
-        ringmesh_debug_assert( corners_id.size() == 4 ) ;
-        corners_id[0] = vertex_map.local_id( in.field_as_uint( 1 ) - 1 ) ;
-        corners_id[1] = vertex_map.local_id( in.field_as_uint( 2 ) - 1 ) ;
-        corners_id[2] = vertex_map.local_id( in.field_as_uint( 3 ) - 1 ) ;
-        corners_id[3] = vertex_map.local_id( in.field_as_uint( 4 ) - 1 ) ;
-    }
+//    /*!
+//     * @brief Reads the four vertices index of a tetrahedron
+//     * @details Reads gocad indices (from .so file) and transforms
+//     * them to vertex local (region) indices
+//     * @param[in] in ACSII file reader
+//     * @param[out] gocad_vertices2region_vertices Vector which maps the indices
+//     * of vertices from Gocad .so file to the local (in region) indices of vertices
+//     * @param[out] corners_id Indices of the four vertices
+//     */
+//    void read_tetraedra(
+//        const GEO::LineInput& in,
+//        const VertexMap& vertex_map,
+//        std::vector< index_t >& corners_id )
+//    {
+//        ringmesh_debug_assert( corners_id.size() == 4 ) ;
+//        corners_id[0] = vertex_map.local_id( in.field_as_uint( 1 ) - 1 ) ;
+//        corners_id[1] = vertex_map.local_id( in.field_as_uint( 2 ) - 1 ) ;
+//        corners_id[2] = vertex_map.local_id( in.field_as_uint( 3 ) - 1 ) ;
+//        corners_id[3] = vertex_map.local_id( in.field_as_uint( 4 ) - 1 ) ;
+//    }
 
     /*! @}
      * \name Linking surfaces and region boundaries
@@ -842,17 +959,11 @@ namespace {
      * else (Z values increasing downwards), z_sign_ is negative.
      * @param[in] in ACSII file reader
      */
-    int set_gocad_coordinate_system_z_sign(
-        GEO::LineInput& in )
-    {
-        if( in.field_matches( 1, "Elevation" ) ) {
-            return 1 ;
-        } else if( in.field_matches( 1, "Depth" ) ) {
-            return -1 ;
-        } else {
-            ringmesh_assert_not_reached ;
-        }
-    }
+//    int set_gocad_coordinate_system_z_sign(
+//        GEO::LineInput& in )
+//    {
+//
+//    }
 
     /*! @}
      */
@@ -866,135 +977,7 @@ namespace RINGMesh {
         if( !in_.OK() ) {
             return false ;
         }
-
-        index_t cur_region ;
-
-        index_t nb_vertices_in_model ;
-
-        // First : count the number of vertex and tetras
-        // in each region
-        std::vector< index_t > nb_elements_per_region ;
-        count_nb_vertices_and_tetras_per_region(
-            filename_,
-            nb_elements_per_region,
-            nb_vertices_in_model ) ;
-
-        std::vector< index_t > gocad_vertices2region_vertices ;
-        gocad_vertices2region_vertices.reserve( nb_vertices_in_model ) ;
-        std::vector< index_t > gocad_vertices2region_id ;
-        gocad_vertices2region_id.reserve( nb_vertices_in_model ) ;
-
-        VertexMap vertex_map ( gocad_vertices2region_vertices,
-            gocad_vertices2region_id ) ;
-
-        // Region vertices
-        std::vector< vec3 > region_vertices ;
-        region_vertices.reserve( nb_elements_per_region[0] ) ;
-        // Region tetrahedron corners
-        std::vector< index_t > tetra_corners ;
-        tetra_corners.reserve( 4 * nb_elements_per_region[0] ) ;
-
-        GME::gme_t current_interface ;
-        GME::gme_t current_surface ;
-        std::vector< index_t > cur_surf_facets ;
-        std::vector< index_t > cur_surf_facet_ptr (1, 0) ;
-
-        index_t nb_vertex_properties = 0 ;
-        index_t nb_cell_properties = 0 ;
-
-        // Then : Reading .so file
-        while( !in_.eof() && in_.get_line() ) {
-            in_.get_fields() ;
-            if( in_.nb_fields() > 0 ) {
-                if( in_.field_matches( 0, "GOCAD_ORIGINAL_COORDINATE_SYSTEM" ) ) {
-                    read_and_set_gocad_coordinate_system() ;
-                } else if( in_.field_matches( 0, "PROPERTIES" ) ) {
-                    nb_vertex_properties = in_.nb_fields() - 1 ;
-                } else if( in_.field_matches( 0, "PROPERTY_CLASS_HEADER" ) ) {
-                    add_new_property( in_.field( 1 ),
-                        model_.mesh.vertex_attribute_manager() ) ;
-                } else if( in_.field_matches( 0, "TETRA_PROPERTIES" ) ) {
-                    nb_cell_properties = in_.nb_fields() - 1 ;
-                } else if( in_.field_matches( 0, "TETRA_PROPERTY_CLASS_HEADER" ) ) {
-                    add_new_property( in_.field( 1 ),
-                        model_.mesh.cell_attribute_manager() ) ;
-                } else if( in_.field_matches( 0, "TVOLUME" ) ) {
-                    if( region_vertices.size() > 0 ) {
-                        set_region_geometry(
-                            cur_region,
-                            region_vertices,
-                            tetra_corners ) ;
-                        reinitialize_region_vertices_and_teras(
-                            nb_elements_per_region[ 2*cur_region ],
-                            nb_elements_per_region[ 2*cur_region + 1 ],
-                            region_vertices,
-                            tetra_corners ) ;
-                    }
-                    cur_region = initialize_region( in_.field( 1 ), *this ) ;
-                } else if( in_.field_matches( 0, "VRTX" ) ||
-                    in_.field_matches( 0, "PVRTX" ) ) {
-                    read_and_add_vertex_to_region_vertices(
-                        cur_region,
-                        region_vertices,
-                        vertex_map ) ;
-                } else if( in_.field_matches( 0, "ATOM" ) ||
-                    in_.field_matches( 0, "PATOM" ) ) {
-                    read_and_add_atom_to_region_vertices(
-                        cur_region,
-                        region_vertices,
-                        vertex_map ) ;
-                } else if( in_.field_matches( 0, "TETRA" ) ) {
-                    // Reading and create a tetra
-                    std::vector< index_t > corners(4) ;
-                    read_tetraedra(
-                        in_, vertex_map, corners ) ;
-                    tetra_corners.insert( tetra_corners.end(),
-                        corners.begin(),
-                        corners.end() ) ;
-                } else if( in_.field_matches( 0, "name:" ) ) {
-                    // GeoModel name is set to the TSolid name.
-                    set_model_name( in_.field( 1 ) ) ;
-                } else if( in_.field_matches( 0, "MODEL" ) ) {
-                    if( region_vertices.size() > 0 ) {
-                        set_region_geometry(
-                            cur_region,
-                            region_vertices,
-                            tetra_corners ) ;
-                        reinitialize_region_vertices_and_teras(
-                            0,
-                            0,
-                            region_vertices,
-                            tetra_corners ) ;
-                    }
-                } else if( in_.field_matches( 0, "SURFACE" ) ) {
-                    current_interface = create_element( GME::INTERFACE ) ;
-                    set_element_name( current_interface, in_.field( 1 ) ) ;
-                } else if( in_.field_matches( 0, "TFACE" ) ) {
-                    // Compute the surface
-                    if( cur_surf_facets.size() > 0 ) {
-                        build_surface( vertex_map,
-                            current_surface.index,
-                            cur_surf_facets,
-                            cur_surf_facet_ptr ) ;
-                    }
-                    // Create a new surface
-                    current_surface = create_element( GME::SURFACE ) ;
-                    set_element_parent( current_surface, current_interface ) ;
-                    add_element_child( current_interface, current_surface ) ;
-                } else if( in_.field_matches( 0, "TRGL" ) ) {
-                    read_triangle( in_, cur_surf_facets ) ;
-                    cur_surf_facet_ptr.push_back( cur_surf_facets.size() ) ;
-                } else if( in_.field_matches( 0, "MODEL_REGION" ) ) {
-                    // Compute the last surface
-                    if( cur_surf_facets.size() > 0 ) {
-                        build_surface( vertex_map,
-                            current_surface.index,
-                            cur_surf_facets,
-                            cur_surf_facet_ptr ) ;
-                    }
-                }
-            }
-        }
+        read_file() ;
 
         // Compute internal borders (by removing adjacencies on
         // triangle edges common to at least two surfaces)
@@ -1017,137 +1000,433 @@ namespace RINGMesh {
 
     }
 
-    void GeoModelBuilderTSolid::read_and_set_gocad_coordinate_system()
+    void GeoModelBuilderTSolid::read_file()
     {
+        TSolidLoadUtils load_utils( filename_ ) ;
+
         while( !in_.eof() && in_.get_line() ) {
             in_.get_fields() ;
-            if( in_.field_matches( 0, "END_ORIGINAL_COORDINATE_SYSTEM" ) ) {
-                return ;
-            } else if( in_.field_matches( 0, "NAME" ) ) {
-                // Useless for the moment
-            } else if( in_.field_matches( 0, "PROJECTION" ) ) {
-                // Useless for the moment
-            } else if( in_.field_matches( 0, "DATUM" ) ) {
-                // Useless for the moment
-            } else if( in_.field_matches( 0, "AXIS_NAME" ) ) {
-                set_gocad_coordinate_system_axis_name(
-                    in_, gocad_coordinates_system_axis_name_ ) ;
-            } else if( in_.field_matches( 0, "AXIS_UNIT" ) ) {
-                set_gocad_coordinate_system_axis_unit(
-                    in_, gocad_coordinates_system_axis_unit_ ) ;
-            } else if( in_.field_matches( 0, "ZPOSITIVE" ) ) {
-                z_sign_ = set_gocad_coordinate_system_z_sign( in_ ) ;
+            if( in_.nb_fields() > 0 ) {
+                read_line( load_utils ) ;
             }
         }
     }
 
-    void GeoModelBuilderTSolid::read_and_add_vertex_to_region_vertices(
-        const index_t region_id,
-        std::vector < vec3 >& region_vertices,
-        VertexMap& vertex_map )
+    void GeoModelBuilderTSolid::read_line( TSolidLoadUtils& load_utils )
     {
-        vertex_map.add_vertex( region_vertices.size(), region_id ) ;
-        vec3 vertex ;
-        read_vertex_coordinates( in_, z_sign_, vertex ) ;
-        region_vertices.push_back( vertex ) ;
-    }
-
-    void GeoModelBuilderTSolid::read_and_add_atom_to_region_vertices(
-        const index_t region_id,
-        std::vector < vec3 >& region_vertices,
-        VertexMap& vertex_map )
-    {
-        const index_t referring_vertex = in_.field_as_double( 2 ) - 1 ;
-        const index_t referred_vertex_local_id =
-            vertex_map.local_id( referring_vertex ) ;
-        const index_t referred_vertex_region_id =
-            vertex_map.region( referring_vertex ) ;
-        if( referred_vertex_region_id < region_id ) {
-            // If the atom referred to a vertex of another region,
-            // acting like for a vertex
-            vertex_map.add_vertex( region_vertices.size(), region_id ) ;
-            region_vertices.push_back(
-                    model_.region( referred_vertex_region_id ).vertex(
-                            referred_vertex_local_id ) ) ;
-        } else {
-            // If the atom referred to an atom of the same region
-            vertex_map.add_vertex(
-                referred_vertex_local_id, referred_vertex_region_id ) ;
+        std::string keyword = in_.field( 0 ) ;
+        TSolidLineParser_var parser = TSolidLineParser::create( keyword, *this ) ;
+        if (parser != nil ) {
+            std::cerr << "in if " << keyword << std::endl ;
+            parser->execute( in_, load_utils ) ;
         }
     }
 
-    void GeoModelBuilderTSolid::build_surface(
-        const VertexMap& vertex_map,
-        const index_t surface_id,
-        std::vector< index_t >& facet_corners,
-        std::vector< index_t >& facet_ptr )
-    {
-        std::vector< vec3 > cur_surf_points ;
-        std::vector< index_t > cur_surf_facets ;
-        get_surface_points_and_facets_from_gocad_indices(
-            vertex_map,
-            facet_corners,
-            cur_surf_points,
-            cur_surf_facets ) ;
-        set_surface_geometry( surface_id,
-            cur_surf_points,
-            cur_surf_facets,
-            facet_ptr ) ;
-        cur_surf_points.clear() ;
-        facet_corners.clear() ;
-        facet_ptr.clear() ;
-        facet_ptr.push_back( 0 ) ;
-    }
+//    void GeoModelBuilderTSolid::read_and_set_gocad_coordinate_system()
+//    {
+//        while( !in_.eof() && in_.get_line() ) {
+//            in_.get_fields() ;
+//            if( in_.field_matches( 0, "END_ORIGINAL_COORDINATE_SYSTEM" ) ) {
+//                return ;
+//            } else if( in_.field_matches( 0, "NAME" ) ) {
+//                // Useless for the moment
+//            } else if( in_.field_matches( 0, "PROJECTION" ) ) {
+//                // Useless for the moment
+//            } else if( in_.field_matches( 0, "DATUM" ) ) {
+//                // Useless for the moment
+//            } else if( in_.field_matches( 0, "AXIS_NAME" ) ) {
+//                set_gocad_coordinate_system_axis_name(
+//                    in_, gocad_coordinates_system_axis_name_ ) ;
+//            } else if( in_.field_matches( 0, "AXIS_UNIT" ) ) {
+//                set_gocad_coordinate_system_axis_unit(
+//                    in_, gocad_coordinates_system_axis_unit_ ) ;
+//            } else if( in_.field_matches( 0, "ZPOSITIVE" ) ) {
+//                z_sign_ = set_gocad_coordinate_system_z_sign( in_ ) ;
+//            }
+//        }
+//    }
 
-    void GeoModelBuilderTSolid::get_surface_points_and_facets_from_gocad_indices(
-        const VertexMap& vertex_map,
-        const std::vector< index_t >& facet_corners,
-        std::vector< vec3 >& cur_surf_points,
-        std::vector< index_t >& cur_surf_facets ) const
-    {
-        std::vector< index_t > gocad_vertices2cur_surf_points(
-            vertex_map.nb_vertex(), NO_ID ) ;
-        for( index_t co = 0 ; co < facet_corners.size() ; ++co ) {
-            const index_t corner_gocad_id = facet_corners[ co ] ;
-            get_surface_point_and_facet_from_gocad_index(
-                corner_gocad_id,
-                vertex_map,
-                gocad_vertices2cur_surf_points,
-                cur_surf_points,
-                cur_surf_facets ) ;
+//    void GeoModelBuilderTSolid::get_surface_points_and_facets_from_gocad_indices(
+//        const VertexMap& vertex_map,
+//        const std::vector< index_t >& facet_corners,
+//        std::vector< vec3 >& cur_surf_points,
+//        std::vector< index_t >& cur_surf_facets ) const
+//    {
+//        std::vector< index_t > gocad_vertices2cur_surf_points(
+//            vertex_map.nb_vertex(), NO_ID ) ;
+//        for( index_t co = 0 ; co < facet_corners.size() ; ++co ) {
+//            const index_t corner_gocad_id = facet_corners[ co ] ;
+//            get_surface_point_and_facet_from_gocad_index(
+//                corner_gocad_id,
+//                vertex_map,
+//                gocad_vertices2cur_surf_points,
+//                cur_surf_points,
+//                cur_surf_facets ) ;
+//
+//        }
+//    }
+//    void GeoModelBuilderTSolid::get_surface_point_and_facet_from_gocad_index(
+//        const index_t vertex_gocad_id,
+//        const VertexMap& vertex_map,
+//        std::vector< index_t >& gocad_vertices2cur_surf_points,
+//        std::vector< vec3 >& cur_surf_points,
+//        std::vector< index_t >& cur_surf_facets ) const
+//    {
+//        if( gocad_vertices2cur_surf_points[ vertex_gocad_id ] == NO_ID ) {
+//            // First time this facet corner is met in facet_corners
+//            vec3 point ;
+//            get_point_from_gocad_id( vertex_gocad_id, vertex_map, point ) ;
+//            cur_surf_facets.push_back( cur_surf_points.size() ) ;
+//            gocad_vertices2cur_surf_points[ vertex_gocad_id ] =
+//                cur_surf_points.size() ;
+//            cur_surf_points.push_back( point ) ;
+//        } else {
+//            // If this facet corner has already been met in facet_corners
+//            cur_surf_facets.push_back(
+//                gocad_vertices2cur_surf_points[ vertex_gocad_id ] ) ;
+//        }
+//    }
+//
+//    void GeoModelBuilderTSolid::get_point_from_gocad_id(
+//        const index_t point_gocad_id,
+//        const VertexMap& vertex_map,
+//        vec3& point ) const
+//    {
+//        const index_t point_local_id = vertex_map.local_id( point_gocad_id ) ;
+//        const index_t point_region = vertex_map.region( point_gocad_id ) ;
+//        point =
+//            model_.region( point_region ).vertex( point_local_id ) ;
+//    }
 
-        }
-    }
-    void GeoModelBuilderTSolid::get_surface_point_and_facet_from_gocad_index(
-        const index_t vertex_gocad_id,
-        const VertexMap& vertex_map,
-        std::vector< index_t >& gocad_vertices2cur_surf_points,
-        std::vector< vec3 >& cur_surf_points,
-        std::vector< index_t >& cur_surf_facets ) const
-    {
-        if( gocad_vertices2cur_surf_points[ vertex_gocad_id ] == NO_ID ) {
-            // First time this facet corner is met in facet_corners
-            vec3 point ;
-            get_point_from_gocad_id( vertex_gocad_id, vertex_map, point ) ;
-            cur_surf_facets.push_back( cur_surf_points.size() ) ;
-            gocad_vertices2cur_surf_points[ vertex_gocad_id ] =
-                cur_surf_points.size() ;
-            cur_surf_points.push_back( point ) ;
-        } else {
-            // If this facet corner has already been met in facet_corners
-            cur_surf_facets.push_back(
-                gocad_vertices2cur_surf_points[ vertex_gocad_id ] ) ;
-        }
-    }
+    /**********************************************************/
 
-    void GeoModelBuilderTSolid::get_point_from_gocad_id(
-        const index_t point_gocad_id,
-        const VertexMap& vertex_map,
-        vec3& point ) const
-    {
-        const index_t point_local_id = vertex_map.local_id( point_gocad_id ) ;
-        const index_t point_region = vertex_map.region( point_gocad_id ) ;
-        point =
-            model_.region( point_region ).vertex( point_local_id ) ;
-    }
 } // RINGMesh namespace
+
+namespace {
+    using namespace RINGMesh ;
+
+    class LoadZSign: public TSolidLineParser {
+    public:
+        LoadZSign( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            if( line.field_matches( 1, "Elevation" ) ) {
+                load_utils.z_sign_ = 1 ;
+            } else if( line.field_matches( 1, "Depth" ) ) {
+                load_utils.z_sign_ = -1 ;
+            } else {
+                ringmesh_assert_not_reached ;
+            }
+        }
+    } ;
+
+    class LoadRegion: public TSolidLineParser {
+    public:
+        LoadRegion( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            if( load_utils.region_vertices_.size() > 0 ) {
+                builder_.set_region_geometry(
+                    load_utils.cur_region_,
+                    load_utils.region_vertices_,
+                    load_utils.tetra_corners_ ) ;
+            }
+            load_utils.cur_region_ =
+                initialize_region( line.field( 1 ), builder_ ) ;
+            reinitialize_region_vertices_and_teras(
+                load_utils.nb_elements_per_region_[ 2*load_utils.cur_region_ ],
+                load_utils.nb_elements_per_region_[ 2*load_utils.cur_region_ + 1 ],
+                load_utils.region_vertices_,
+                load_utils.tetra_corners_ ) ;
+        }
+
+        /*!
+         * @brief Creates an empty element of type GME::REGION and sets
+         * its name from .so file
+         * @param[in] region_name Name of the new region
+         * @param[in] geomodel_builder Builder of the geomodel
+         * @return The index of the initialized region
+         */
+        index_t initialize_region(
+            const std::string& region_name,
+            GeoModelBuilderTSolid& geomodel_builder )
+        {
+            GME::gme_t cur_region = geomodel_builder.create_element( GME::REGION ) ;
+            geomodel_builder.set_element_name( cur_region, region_name ) ;
+            return cur_region.index ;
+        }
+    } ;
+
+    class LoadVertex: public TSolidLineParser {
+    public:
+        LoadVertex( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            read_and_add_vertex_to_region_vertices( line, load_utils ) ;
+        }
+
+        void read_and_add_vertex_to_region_vertices(
+            const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            load_utils.vertex_map_.add_vertex(
+                load_utils.region_vertices_.size(), load_utils.cur_region_ ) ;
+            vec3 vertex ;
+            read_vertex_coordinates( line, load_utils.z_sign_, vertex ) ;
+            load_utils.region_vertices_.push_back( vertex ) ;
+        }
+
+        /*!
+         * Reads the coordinates of a vertex from file
+         * @param[in] in ACSII file reader
+         * @param[in] z_sign FActor for z value in order to have z increasing upwards
+         * @param[out] vertex Vertex
+         */
+        void read_vertex_coordinates(
+            const GEO::LineInput& in,
+            const int z_sign,
+            vec3& vertex )
+        {
+            vertex.x = in.field_as_double( 2 ) ;
+            vertex.y = in.field_as_double( 3 ) ;
+            vertex.z = z_sign * in.field_as_double( 4 ) ;
+        }
+    } ;
+
+    class LoadAtomic: public TSolidLineParser {
+    public:
+        LoadAtomic( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            read_and_add_atom_to_region_vertices(
+                line,
+                load_utils.cur_region_,
+                load_utils.region_vertices_,
+                load_utils.vertex_map_ ) ;
+        }
+
+        void read_and_add_atom_to_region_vertices(
+            const GEO::LineInput& line,
+            const index_t region_id,
+            std::vector < vec3 >& region_vertices,
+            VertexMap& vertex_map )
+        {
+            const index_t referring_vertex = line.field_as_double( 2 ) - 1 ;
+            const index_t referred_vertex_local_id =
+                vertex_map.local_id( referring_vertex ) ;
+            const index_t referred_vertex_region_id =
+                vertex_map.region( referring_vertex ) ;
+            if( referred_vertex_region_id < region_id ) {
+                // If the atom referred to a vertex of another region,
+                // acting like for a vertex
+                vertex_map.add_vertex( region_vertices.size(), region_id ) ;
+                region_vertices.push_back(
+                    builder_.model().region( referred_vertex_region_id ).vertex(
+                        referred_vertex_local_id ) ) ;
+            } else {
+                // If the atom referred to an atom of the same region
+                vertex_map.add_vertex(
+                    referred_vertex_local_id, referred_vertex_region_id ) ;
+            }
+        }
+    } ;
+
+    class LoadTetra: public TSolidLineParser {
+    public:
+        LoadTetra( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            std::vector< index_t > corners(4) ;
+            read_tetraedra(
+                line, load_utils.vertex_map_, corners ) ;
+            load_utils.tetra_corners_.insert(
+                load_utils.tetra_corners_.end(),
+                corners.begin(),
+                corners.end() ) ;
+        }
+
+        /*!
+         * @brief Reads the four vertices index of a tetrahedron
+         * @details Reads gocad indices (from .so file) and transforms
+         * them to vertex local (region) indices
+         * @param[in] in ACSII file reader
+         * @param[out] gocad_vertices2region_vertices Vector which maps the indices
+         * of vertices from Gocad .so file to the local (in region) indices of vertices
+         * @param[out] corners_id Indices of the four vertices
+         */
+        void read_tetraedra(
+            const GEO::LineInput& in,
+            const VertexMap& vertex_map,
+            std::vector< index_t >& corners_id )
+        {
+            ringmesh_debug_assert( corners_id.size() == 4 ) ;
+            corners_id[0] = vertex_map.local_id( in.field_as_uint( 1 ) - 1 ) ;
+            corners_id[1] = vertex_map.local_id( in.field_as_uint( 2 ) - 1 ) ;
+            corners_id[2] = vertex_map.local_id( in.field_as_uint( 3 ) - 1 ) ;
+            corners_id[3] = vertex_map.local_id( in.field_as_uint( 4 ) - 1 ) ;
+        }
+    } ;
+
+    class LoadName: public TSolidLineParser {
+    public:
+        LoadName( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            // GeoModel name is set to the TSolid name.
+            builder_.set_model_name( line.field( 1 ) ) ;
+        }
+    } ;
+
+    class LoadLastRegion: public TSolidLineParser {
+    public:
+        LoadLastRegion( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            if( load_utils.region_vertices_.size() > 0 ) {
+                builder_.set_region_geometry(
+                    load_utils.cur_region_,
+                    load_utils.region_vertices_,
+                    load_utils.tetra_corners_ ) ;
+                reinitialize_region_vertices_and_teras(
+                    0,
+                    0,
+                    load_utils.region_vertices_,
+                    load_utils.tetra_corners_ ) ;
+            }
+        }
+    } ;
+
+    class LoadInterface: public TSolidLineParser {
+    public:
+        LoadInterface( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            GME::gme_t interface =
+                builder_.create_element( GME::INTERFACE ) ;
+            load_utils.cur_interface_ = interface.index ;
+            builder_.set_element_name( interface, line.field( 1 ) ) ;
+        }
+    } ;
+
+    class LoadSurface: public TSolidLineParser {
+    public:
+        LoadSurface( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            // Compute the surface
+            if( load_utils.cur_surf_facets_corner_gocad_id_.size() > 0 ) {
+                build_surface( builder_, load_utils ) ;
+            }
+            // Create a new surface
+            GME::gme_t new_surface = builder_.create_element( GME::SURFACE ) ;
+             load_utils.cur_surface_ = new_surface.index ;
+            builder_.set_element_parent(
+                new_surface,
+                GME::gme_t( GME::INTERFACE, load_utils.cur_interface_ ) ) ;
+            builder_.add_element_child(
+                GME::gme_t( GME::INTERFACE, load_utils.cur_interface_ ),
+                new_surface ) ;
+        }
+    } ;
+
+    class LoadLastSurface: public TSolidLineParser {
+    public:
+        LoadLastSurface( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            // Compute the last surface
+            if( load_utils.cur_surf_facets_corner_gocad_id_.size() > 0 ) {
+                build_surface( builder_, load_utils ) ;
+            }
+        }
+    } ;
+
+    class LoadTriangle: public TSolidLineParser {
+    public:
+        LoadTriangle( GeoModelBuilderTSolid& builder )
+            : TSolidLineParser( builder )
+        {}
+    private:
+        virtual void execute( const GEO::LineInput& line,
+            TSolidLoadUtils& load_utils )
+        {
+            read_triangle( line, load_utils.cur_surf_facets_corner_gocad_id_ ) ;
+            load_utils.cur_surf_facet_ptr_.push_back(
+                load_utils.cur_surf_facets_corner_gocad_id_.size() ) ;
+        }
+    } ;
+}
+
+namespace RINGMesh {
+
+    void tsolid_import_factory_initialize()
+    {
+        ringmesh_register_TSolidLineParser_creator( LoadZSign, "ZPOSITIVE" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadRegion, "TVOLUME" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadVertex, "VRTX" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadVertex, "PVRTX" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadAtomic, "ATOM" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadAtomic, "PATOM" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadTetra, "TETRA" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadName, "name:" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadLastRegion, "MODEL" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadInterface, "SURFACE" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadSurface, "TFACE" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadTriangle, "TRGL" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadLastSurface, "END" ) ;
+    }
+
+    TSolidLineParser::TSolidLineParser( GeoModelBuilderTSolid& builder ) :
+        GEO::Counted(), builder_( builder )
+    {}
+
+    TSolidLineParser* TSolidLineParser::create(
+        const std::string& keyword,
+        GeoModelBuilderTSolid& gm_builder )
+    {
+        TSolidLineParser* parser =
+            TSolidLineParserFactory::create_object( keyword, gm_builder ) ;
+        return parser ;
+    }
+
+}
