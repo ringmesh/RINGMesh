@@ -42,7 +42,6 @@
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
-#include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
 
@@ -75,8 +74,7 @@ int main( int argc, char** argv )
     geomodel_volume_save( model, output_vol_file_name ) ;
 
     bool res = true ;
-    // Check number of elements in the imported GeoModel (from TSolid file) and
-    // in the re-imported GeoModel (after an export in a .bm file)
+    // Check number of elements in the imported GeoModel (from TSolid file)
     if ( model.nb_corners() != 52 ||
          model.nb_lines() != 98 ||
          model.nb_surfaces() != 55 ||

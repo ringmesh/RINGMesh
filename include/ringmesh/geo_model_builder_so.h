@@ -49,7 +49,7 @@
 
 namespace RINGMesh {
     class GeoModelBuilderTSolid ;
-    class VertexMap ;
+    struct VertexMap ;
     struct TSolidLoadUtils ;
 }
 
@@ -97,123 +97,24 @@ namespace RINGMesh {
 
     private:
 
+        /*!
+         * @brief Parses the file and loads the GeoModel
+         * @details The GeoModel loaded by this function is not valid because
+         * some computation are still not done (i.e., surface internal borders,
+         * lines and corners computation, boundary links between region and
+         * surface, contacts)
+         */
         void read_file() ;
 
+        /*!
+         * @brief Reads the first word of the current line (keyword)
+         * and executes the good action with the information of the line
+         * @details Uses the TsolidLineParser factory
+         */
         void read_line( TSolidLoadUtils& load_utils ) ;
-
-        /*!
-         * \name Reads and sets Gocad Coordinate System information from .so file
-         * @{
-         */
-
-        /*!
-        * @brief Reads and sets the Gocad coordinate system information
-        * from input .so file.
-        */
-//        void read_and_set_gocad_coordinate_system() ;
-
-        /*! @}
-         * \name Volume mesh import
-         * @{
-         */
-
-        /*!
-         * @brief Reads vertex coordinates and adds it in the list
-         * of region vertices
-         * @param[in] region_id Index of the region
-         * @param[in,out] region_vertices Vector of the coordinates of the
-         * vertices of the region
-         */
-//        void read_and_add_vertex_to_region_vertices(
-//            const index_t region_id,
-//            std::vector < vec3 >& region_vertices,
-//            VertexMap& vertex_map ) ;
-
-        /*!
-         * @brief Reads atom information and adds it in the list
-         * of region vertices only if it refers to a vertex of another region
-         * @param[in] region_id Index of the region
-         * @param[in,out] region_vertices Vector of the coordinates of the
-         * vertices of the region
-//         */
-//        void read_and_add_atom_to_region_vertices(
-//            const index_t region_id,
-//            std::vector < vec3 >& region_vertices,
-//            VertexMap& vertex_map ) ;
-
-        /*! @}
-         * \name Boundary model import
-         * @{
-         */
-
-        /*!
-         * Builds surface by setting the points and facets of the surface
-         * @param[in] surface_id Index of the surface to build
-         * @param[in,out] facet_corners Vector of the (gocad) indices of the
-         * three corners of each facet (gocad) indices of the surface.
-         * Re-initialized at the end of the function.
-         * @param[in,out] facet_ptr Pointer to the beginning of a facet in
-         * facets. Re-initialized at the end of the function.
-         */
-//        void build_surface(
-//            const VertexMap& vertex_map,
-//            const index_t surface_id,
-//            std::vector< index_t >& facet_corners,
-//            std::vector< index_t >& facet_ptr ) ;
-
-        /*!
-         * @brief Gets the points and the indices in the points vector to
-         * build the facets
-         * @param[in] facet_corners Vector of the (gocad) indices of the
-         * three corners of each facet (gocad) indices
-         * @param[out] cur_surf_points Vector of unique point coordinates
-         * belonging to the surface
-         * @param[out] cur_surf_facets Vector of each facet corner indices in
-         * the cur_surf_points vector to build facets
-         */
-//        void get_surface_points_and_facets_from_gocad_indices(
-//            const VertexMap& vertex_map,
-//            const std::vector< index_t >& facet_corners,
-//            std::vector< vec3 >& cur_surf_points,
-//            std::vector< index_t >& cur_surf_facets ) const ;
-
-        /*!
-         * @brief Gets the point and the index in the points vector to
-         * build the facets for one read gocad vertex
-         * @param[in] vertex_gocad_id Gocad index of the vertex
-         * @param[in] gocad_vertices2cur_surf_points Map between vertices with
-         * gocad indices and position of the corresponding point
-         * in the points vector
-         * @param[out] cur_surf_points Vector of unique point coordinates
-         * belonging to the surface
-         * @param[out] cur_surf_facets Vector of each facet corner indices in
-         * the cur_surf_points vector to build facets
-         */
-//        void get_surface_point_and_facet_from_gocad_index(
-//            const index_t vertex_gocad_id,
-//            const VertexMap& vertex_map,
-//            std::vector< index_t >& gocad_vertices2cur_surf_points,
-//            std::vector< vec3 >& cur_surf_points,
-//            std::vector< index_t >& cur_surf_facets ) const ;
-
-        /*!
-         * @brief Gets the coordinates of the point from gocad index
-         * @param[in] point_gocad_id Gocad index of the point to get
-         * @param[out] point Coordinates of the point
-         */
-//        void get_point_from_gocad_id(
-//            const index_t point_gocad_id,
-//            const VertexMap& vertex_map,
-//            vec3& point ) const ;
-
-        /*! @}
-         */
 
     private:
         std::string filename_ ;
-        std::string gocad_coordinates_system_name_ ;
-        std::vector< std::string > gocad_coordinates_system_axis_name_ ;
-        std::vector< std::string > gocad_coordinates_system_axis_unit_ ;
         friend class RINGMesh::TSolidLineParser ;
     } ;
 }
