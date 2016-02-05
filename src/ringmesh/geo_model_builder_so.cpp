@@ -56,10 +56,13 @@
 * @author Pierre Anquez
 */
 
-namespace RINGMesh {
 
-    class VertexMap {
-    public:
+namespace RINGMesh {
+    /*!
+     * @brief Structure which maps the vertex indices in Gocad::TSolid to the
+     * pair (region, index in region) in the RINGMesh::GeoModel
+     */
+    struct VertexMap {
         VertexMap()
         {}
 
@@ -120,8 +123,9 @@ namespace {
      * @details Reserve also space from the attributes which maps vertex
      * indices between gocad and region local indices.
      * @param[in] filename Path to the input .so file
-     * @param[out] Vector built from number of vertices and tetras region
-     * after region (i.e. [nb_v1, nb_t1, nb_v2, nb_t2, nb_v3, nb_t3, ...]
+     * @param[out] nb_elements_par_region Vector built from number of vertices
+     * and tetras region after region
+     * (i.e. [nb_v1, nb_t1, nb_v2, nb_t2, nb_v3, nb_t3, ...]
      * @param[out] gocad_vertices2region_vertices Vector which maps the indices
      * of vertices from Gocad .so file to the local (in region) indices of vertices
      * @param[out] gocad_vertices2region_id Vector which maps the indices of
@@ -197,10 +201,12 @@ namespace {
                 << std::endl ;
         }
     }
-};
+} // anonymous namespace
 
 namespace RINGMesh {
-
+    /*!
+     * @brief Structure used to load a GeoModel by GeoModelBuilderTSolid
+     */
     struct TSolidLoadUtils {
         TSolidLoadUtils( const std::string& filename )
         {
@@ -216,14 +222,20 @@ namespace RINGMesh {
             cur_surf_facet_ptr_.push_back( 0 ) ;
         }
 
+        // The orientation of positive Z
         int z_sign_ ;
+
+        // Current region index
         index_t cur_region_ ;
 
         // Count the number of vertex and tetras
         // in each region
         std::vector< index_t > nb_elements_per_region_ ;
+
+        // Number of points in the .so file
         index_t nb_vertices_in_model_ ;
 
+        // Map between gocad and GeoModel vertex indices
         VertexMap vertex_map_ ;
 
         // Region vertices
@@ -232,59 +244,26 @@ namespace RINGMesh {
         // Region tetrahedron corners
         std::vector< index_t > tetra_corners_ ;
 
-
+        // Current interface index
         index_t cur_interface_ ;
+
+        // Current surface index
         index_t cur_surface_ ;
+
+        // List of facet corners for the current surface (gocad indices)
         std::vector< index_t > cur_surf_facets_corner_gocad_id_ ;
+
+        // Starting indices (in cur_surf_facets_corner_gocad_id_) of each
+        // facet of the current surface
         std::vector< index_t > cur_surf_facet_ptr_ ;
 
     };
 
-}
+} // RINGMesh namespace
 
 namespace {
     using namespace RINGMesh ;
 
-    /*! @}
-     * \name Properties import
-     * @{
-     */
-
-    /*!
-     * @brief Adds a new property to the mesh
-     * @param[in] prop_name Name of the property to add
-     * @param[in] attribute_manager Attribut manager in which add the new property
-     */
-//    void add_new_property(
-//        const std::string& prop_name,
-//        GEO::AttributesManager& attribute_manager )
-//    {
-//        /// @todo All the property types are double.
-//        /// Change in order to have the good type for each property.
-//        GEO::Attribute< double > property( attribute_manager, prop_name ) ;
-//    }
-
-    /*! @}
-     * \name Volume mesh import
-     * @{
-     */
-
-//    /*!
-//     * @brief Creates an empty element of type GME::REGION and sets
-//     * its name from .so file
-//     * @param[in] region_name Name of the new region
-//     * @param[in] geomodel_builder Builder of the geomodel
-//     * @return The index of the initialized region
-//     */
-//    index_t initialize_region(
-//        const std::string& region_name,
-//        GeoModelBuilderTSolid& geomodel_builder )
-//    {
-//        GME::gme_t cur_region = geomodel_builder.create_element( GME::REGION ) ;
-//        geomodel_builder.set_element_name( cur_region, region_name ) ;
-//        return cur_region.index ;
-//    }
-//
     /*!
      * @brief Clears the vectors region_vertices and tetra_corners and reserves
      * enough space for the next region elements
@@ -312,6 +291,14 @@ namespace {
      * \name Building surface
      * @{
      */
+
+    /*!
+     * @brief Gets the coordinates of the point from gocad index
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] vertex_map Map between Gocad and GeoModel vertex indices
+     * @param[in] point_gocad_id Gocad index of the point to get
+     * @return Coordinates of the point
+     */
     vec3 get_point_from_gocad_id(
         const GeoModel& geomodel,
         const VertexMap& vertex_map,
@@ -325,6 +312,20 @@ namespace {
         return geomodel.region( point_region ).vertex( point_local_id ) ;
     }
 
+    /*!
+     * @brief Gets the point and the index in the points vector to
+     * build the facets for one read gocad vertex
+     * @param[in] vertex_gocad_id Gocad index of the vertex
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] load_utils Set of tools useful for loading a GeoModel
+     * @param[in] gocad_vertices2cur_surf_points Map between vertices with
+     * gocad indices and position of the corresponding point
+     * in the points vector
+     * @param[out] cur_surf_points Vector of unique point coordinates
+     * belonging to the surface
+     * @param[out] cur_surf_facets Vector of each facet corner indices in
+     * the cur_surf_points vector to build facets
+     */
     void get_surface_point_and_facet_from_gocad_index(
         const index_t vertex_gocad_id,
         const GeoModel& geomodel,
@@ -348,6 +349,16 @@ namespace {
         }
     }
 
+    /*!
+     * @brief Gets the points and the indices in the points vector to
+     * build the facets
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] load_utils Set of tools useful for loading a GeoModel
+     * @param[out] cur_surf_points Vector of unique point coordinates
+     * belonging to the surface
+     * @param[out] cur_surf_facets Vector of each facet corner indices in
+     * the cur_surf_points vector to build facets
+     */
     void get_surface_points_and_facets_from_gocad_indices(
         const GeoModel& geomodel,
         const TSolidLoadUtils& load_utils,
@@ -372,6 +383,11 @@ namespace {
         }
     }
 
+    /*!
+     * Builds surface by setting the points and facets of the surface
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] load_utils Set of tools useful for loading a GeoModel
+     */
     void build_surface(
         GeoModelBuilderTSolid& builder,
         TSolidLoadUtils& load_utils )
@@ -391,49 +407,6 @@ namespace {
         load_utils.cur_surf_facet_ptr_.clear() ;
         load_utils.cur_surf_facet_ptr_.push_back( 0 ) ;
     }
-
-    /*! @}
-     * \name Read mesh elements (points, triangles, tetrehedra)
-     * @{
-     */
-
-    /*!
-     * @brief Reads the three vertices index of a triangle and adds
-     * them to the facet corners of the currently built surface
-     * @details Reads gocad indices
-     * @param[in] in ACSII file reader
-     * @param[out] cur_surf_facets Vector of each facet corner indices
-     * to build facets
-     */
-    void read_triangle(
-        const GEO::LineInput& in,
-        std::vector< index_t >& cur_surf_facets )
-    {
-        cur_surf_facets.push_back( in.field_as_uint( 1 ) - 1 ) ;
-        cur_surf_facets.push_back( in.field_as_uint( 2 ) - 1 ) ;
-        cur_surf_facets.push_back( in.field_as_uint( 3 ) - 1 ) ;
-    }
-
-//    /*!
-//     * @brief Reads the four vertices index of a tetrahedron
-//     * @details Reads gocad indices (from .so file) and transforms
-//     * them to vertex local (region) indices
-//     * @param[in] in ACSII file reader
-//     * @param[out] gocad_vertices2region_vertices Vector which maps the indices
-//     * of vertices from Gocad .so file to the local (in region) indices of vertices
-//     * @param[out] corners_id Indices of the four vertices
-//     */
-//    void read_tetraedra(
-//        const GEO::LineInput& in,
-//        const VertexMap& vertex_map,
-//        std::vector< index_t >& corners_id )
-//    {
-//        ringmesh_debug_assert( corners_id.size() == 4 ) ;
-//        corners_id[0] = vertex_map.local_id( in.field_as_uint( 1 ) - 1 ) ;
-//        corners_id[1] = vertex_map.local_id( in.field_as_uint( 2 ) - 1 ) ;
-//        corners_id[2] = vertex_map.local_id( in.field_as_uint( 3 ) - 1 ) ;
-//        corners_id[3] = vertex_map.local_id( in.field_as_uint( 4 ) - 1 ) ;
-//    }
 
     /*! @}
      * \name Linking surfaces and region boundaries
@@ -466,7 +439,7 @@ namespace {
     /*!
      * @brief Computes the colocaters of the centers of cell facets for
      * each region
-     * * @param[in] geomodel GeoModel to consider
+     * @param[in] geomodel GeoModel to consider
      * @param[out] region_anns Pointers to the ColocaterANNs of regions
      */
     void compute_cell_facet_centers_region_anns(
@@ -921,53 +894,6 @@ namespace {
             delete anns[s] ;
         }
     }
-
-    /*!
-     * \name Reads and sets Gocad Coordinate System information from .so file
-     * @{
-     */
-
-    /*!
-     * @brief Sets the Gocad coordinate system axis name
-     * @param[in] in ACSII file reader
-     */
-    void set_gocad_coordinate_system_axis_name(
-        GEO::LineInput& in,
-        std::vector< std::string >& gocad_coordinates_system_axis_name )
-    {
-        gocad_coordinates_system_axis_name.push_back( in.field(1) ) ;
-        gocad_coordinates_system_axis_name.push_back( in.field(2) ) ;
-        gocad_coordinates_system_axis_name.push_back( in.field(3) ) ;
-    }
-
-    /*!
-     * @brief Sets the Gocad coordinate system axis units (meters, feet, ...)
-     * @param[in] in ACSII file reader
-     */
-    void set_gocad_coordinate_system_axis_unit(
-        GEO::LineInput& in,
-        std::vector< std::string >& gocad_coordinates_system_axis_unit )
-    {
-        gocad_coordinates_system_axis_unit.push_back( in.field(1) ) ;
-        gocad_coordinates_system_axis_unit.push_back( in.field(2) ) ;
-        gocad_coordinates_system_axis_unit.push_back( in.field(3) ) ;
-    }
-
-    /*!
-     * @brief Sets the Gocad coordinate system Z sign
-     * @details If the Z values increase upwards, z_sign_ is positive,
-     * else (Z values increasing downwards), z_sign_ is negative.
-     * @param[in] in ACSII file reader
-     */
-//    int set_gocad_coordinate_system_z_sign(
-//        GEO::LineInput& in )
-//    {
-//
-//    }
-
-    /*! @}
-     */
-
 } // anonymous namespace
 
 namespace RINGMesh {
@@ -1017,88 +943,9 @@ namespace RINGMesh {
         std::string keyword = in_.field( 0 ) ;
         TSolidLineParser_var parser = TSolidLineParser::create( keyword, *this ) ;
         if (parser != nil ) {
-            std::cerr << "in if " << keyword << std::endl ;
             parser->execute( in_, load_utils ) ;
         }
     }
-
-//    void GeoModelBuilderTSolid::read_and_set_gocad_coordinate_system()
-//    {
-//        while( !in_.eof() && in_.get_line() ) {
-//            in_.get_fields() ;
-//            if( in_.field_matches( 0, "END_ORIGINAL_COORDINATE_SYSTEM" ) ) {
-//                return ;
-//            } else if( in_.field_matches( 0, "NAME" ) ) {
-//                // Useless for the moment
-//            } else if( in_.field_matches( 0, "PROJECTION" ) ) {
-//                // Useless for the moment
-//            } else if( in_.field_matches( 0, "DATUM" ) ) {
-//                // Useless for the moment
-//            } else if( in_.field_matches( 0, "AXIS_NAME" ) ) {
-//                set_gocad_coordinate_system_axis_name(
-//                    in_, gocad_coordinates_system_axis_name_ ) ;
-//            } else if( in_.field_matches( 0, "AXIS_UNIT" ) ) {
-//                set_gocad_coordinate_system_axis_unit(
-//                    in_, gocad_coordinates_system_axis_unit_ ) ;
-//            } else if( in_.field_matches( 0, "ZPOSITIVE" ) ) {
-//                z_sign_ = set_gocad_coordinate_system_z_sign( in_ ) ;
-//            }
-//        }
-//    }
-
-//    void GeoModelBuilderTSolid::get_surface_points_and_facets_from_gocad_indices(
-//        const VertexMap& vertex_map,
-//        const std::vector< index_t >& facet_corners,
-//        std::vector< vec3 >& cur_surf_points,
-//        std::vector< index_t >& cur_surf_facets ) const
-//    {
-//        std::vector< index_t > gocad_vertices2cur_surf_points(
-//            vertex_map.nb_vertex(), NO_ID ) ;
-//        for( index_t co = 0 ; co < facet_corners.size() ; ++co ) {
-//            const index_t corner_gocad_id = facet_corners[ co ] ;
-//            get_surface_point_and_facet_from_gocad_index(
-//                corner_gocad_id,
-//                vertex_map,
-//                gocad_vertices2cur_surf_points,
-//                cur_surf_points,
-//                cur_surf_facets ) ;
-//
-//        }
-//    }
-//    void GeoModelBuilderTSolid::get_surface_point_and_facet_from_gocad_index(
-//        const index_t vertex_gocad_id,
-//        const VertexMap& vertex_map,
-//        std::vector< index_t >& gocad_vertices2cur_surf_points,
-//        std::vector< vec3 >& cur_surf_points,
-//        std::vector< index_t >& cur_surf_facets ) const
-//    {
-//        if( gocad_vertices2cur_surf_points[ vertex_gocad_id ] == NO_ID ) {
-//            // First time this facet corner is met in facet_corners
-//            vec3 point ;
-//            get_point_from_gocad_id( vertex_gocad_id, vertex_map, point ) ;
-//            cur_surf_facets.push_back( cur_surf_points.size() ) ;
-//            gocad_vertices2cur_surf_points[ vertex_gocad_id ] =
-//                cur_surf_points.size() ;
-//            cur_surf_points.push_back( point ) ;
-//        } else {
-//            // If this facet corner has already been met in facet_corners
-//            cur_surf_facets.push_back(
-//                gocad_vertices2cur_surf_points[ vertex_gocad_id ] ) ;
-//        }
-//    }
-//
-//    void GeoModelBuilderTSolid::get_point_from_gocad_id(
-//        const index_t point_gocad_id,
-//        const VertexMap& vertex_map,
-//        vec3& point ) const
-//    {
-//        const index_t point_local_id = vertex_map.local_id( point_gocad_id ) ;
-//        const index_t point_region = vertex_map.region( point_gocad_id ) ;
-//        point =
-//            model_.region( point_region ).vertex( point_local_id ) ;
-//    }
-
-    /**********************************************************/
 
 } // RINGMesh namespace
 
@@ -1177,6 +1024,12 @@ namespace {
             read_and_add_vertex_to_region_vertices( line, load_utils ) ;
         }
 
+        /*!
+         * @brief Reads vertex coordinates and adds it in the list
+         * of region vertices
+         * @param[in] line ACSII file reader
+         * @param[in,out] load_utils Set of tools useful for loading a GeoModel
+         */
         void read_and_add_vertex_to_region_vertices(
             const GEO::LineInput& line,
             TSolidLoadUtils& load_utils )
@@ -1191,7 +1044,7 @@ namespace {
         /*!
          * Reads the coordinates of a vertex from file
          * @param[in] in ACSII file reader
-         * @param[in] z_sign FActor for z value in order to have z increasing upwards
+         * @param[in] z_sign Factor for z value in order to have z increasing upwards
          * @param[out] vertex Vertex
          */
         void read_vertex_coordinates(
@@ -1221,6 +1074,15 @@ namespace {
                 load_utils.vertex_map_ ) ;
         }
 
+        /*!
+         * @brief Reads atom information and adds it in the list
+         * of region vertices only if it refers to a vertex of another region
+         * @param[in] line ACSII file reader
+         * @param[in] region_id Index of the region
+         * @param[in,out] region_vertices Vector of the coordinates of the
+         * vertices of the region
+         * @param[in] vertex_map Map between Gocad and GeoModel vertex indices
+         */
         void read_and_add_atom_to_region_vertices(
             const GEO::LineInput& line,
             const index_t region_id,
@@ -1394,8 +1256,25 @@ namespace {
             load_utils.cur_surf_facet_ptr_.push_back(
                 load_utils.cur_surf_facets_corner_gocad_id_.size() ) ;
         }
+
+        /*!
+         * @brief Reads the three vertices index of a triangle and adds
+         * them to the facet corners of the currently built surface
+         * @details Reads gocad indices
+         * @param[in] in ACSII file reader
+         * @param[out] cur_surf_facets Vector of each facet corner indices
+         * to build facets
+         */
+        void read_triangle(
+            const GEO::LineInput& in,
+            std::vector< index_t >& cur_surf_facets )
+        {
+            cur_surf_facets.push_back( in.field_as_uint( 1 ) - 1 ) ;
+            cur_surf_facets.push_back( in.field_as_uint( 2 ) - 1 ) ;
+            cur_surf_facets.push_back( in.field_as_uint( 3 ) - 1 ) ;
+        }
     } ;
-}
+} // anonymous namespace
 
 namespace RINGMesh {
 
@@ -1428,5 +1307,4 @@ namespace RINGMesh {
             TSolidLineParserFactory::create_object( keyword, gm_builder ) ;
         return parser ;
     }
-
-}
+} // RINGMesh namespace
