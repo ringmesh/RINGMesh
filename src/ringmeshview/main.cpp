@@ -365,10 +365,7 @@ namespace {
         }
 
         if( GEO::CmdLine::get_arg( "mesh" ) != "" ) {
-            if( !RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "mesh" ),
-                GM ) ) {
-                return ;
-            }
+            RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "mesh" ), GM ) ;
             meshed_regions = true ;
         }
         get_bbox( GM, xyzmin, xyzmax ) ;
