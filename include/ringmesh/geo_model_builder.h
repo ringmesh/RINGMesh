@@ -111,10 +111,9 @@ namespace RINGMesh {
         /*!
          * @todo Implements sot that it returns true if the input options are consistent
          */
-        bool set_options( const GeoModelBuildingFlags& options )
+        void set_options( const GeoModelBuildingFlags& options )
         {
             options_ = options ;
-            return true ;
         }
 
         /*!
@@ -222,16 +221,15 @@ namespace RINGMesh {
         /*
          * @brief From a GeoModel in which only Surface are defined, create corners, contacts
          * and regions depending on the building flags
-         * @return True if a model has been built.
+         * @exception RINGMeshException if there is an error during the model building
          * @note Valdity is not checked
          */
-        bool build_model_from_surfaces() ;
+        void build_model_from_surfaces() ;
 
         /*!
         * @brief Finish up model building and complete missing information.
-        * @return True except if the model has no Surface
         */
-        bool end_model() ;
+        void end_model() ;
 
     protected:
         /*! Elements to compute from the available elements */
@@ -271,7 +269,7 @@ namespace RINGMesh {
             options_.compute_corners = true ;
             options_.compute_regions_brep = true ;
         }
-        bool build_polygonal_surfaces_from_connected_components() ;
+        void build_polygonal_surfaces_from_connected_components() ;
 
     private:
         const GEO::Mesh& mesh_ ;
@@ -311,13 +309,11 @@ namespace RINGMesh {
         static void prepare_surface_mesh_from_connected_components(
             GEO::Mesh& mesh, const std::string& created_surface_attribute ) ;
      
-        bool is_mesh_valid_for_surface_building() const ;
-        bool create_and_build_surfaces() ;
-        bool build_surfaces() ;
+        void create_and_build_surfaces() ;
+        void build_surfaces() ;
 
-        bool is_mesh_valid_for_region_building() const ;
-        bool create_and_build_regions() ;
-        bool build_regions() ;
+        void create_and_build_regions() ;
+        void build_regions() ;
      
         void copy_facet_attribute_from_mesh( const std::string& attribute_name ) ;        
         void copy_cell_attribute_from_mesh( const std::string& attribute_name ) ;
@@ -331,6 +327,10 @@ namespace RINGMesh {
 
         void initialize_surface_builder() ;
         void initialize_region_builder() ;
+
+    private:
+        void check_mesh_validity_for_surface_building() const ;
+        void check_mesh_validity_for_region_building() const ;
 
     protected:
         const GEO::Mesh& mesh_ ;
@@ -352,15 +352,13 @@ namespace RINGMesh {
         virtual ~GeoModelBuilderFile()
         {
         }
-        virtual bool load_file() = 0 ;
-        virtual bool build_model()
+        void build_model()
         {
-            if( load_file() ) {
-                return end_model() ;
-            } else { 
-                return false ; 
-            }
+            load_file() ;
+            end_model() ;
         }
+    private:
+        virtual void load_file() = 0 ;
         /*! @todo Implement function to read the lines of the 
          *        file and wrap the GEO::LineInput which is not that easy to use 
          */
@@ -378,9 +376,9 @@ namespace RINGMesh {
         {}
         virtual ~GeoModelBuilderGocad()
         {}
-        bool load_file() ;
 
     private:
+        void load_file() ;
         void build_contacts() ;
 
         GME::gme_t determine_line_vertices( const Surface& S,
@@ -432,9 +430,9 @@ namespace RINGMesh {
         virtual ~GeoModelBuilderBM()
         {}
 
-        bool load_file() ;
-
     private:
+        void load_file() ;
+
         static GME::TYPE match_nb_elements( const char* s ) ;
         static GME::TYPE match_type( const char* s ) ;
         static bool match_high_level_type( const char* s )

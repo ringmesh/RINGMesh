@@ -108,6 +108,8 @@ int main( int argc, char** argv )
             print_geomodel( geomodel ) ;
         }
 
+        /*!
+         * @todo This is not working, the data are not here.... [AB]
         {
             // GeoModel from Region flagged by attribute
             std::string file_name(
@@ -124,6 +126,7 @@ int main( int argc, char** argv )
 
             print_geomodel( geomodel ) ;
         }
+        */
 
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;
