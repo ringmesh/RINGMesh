@@ -43,6 +43,10 @@
 
 #include <ringmesh/common.h>
 
+namespace GEO {
+    class Mesh ;
+}
+
 namespace RINGMesh {
     /* 
      * @brief class to encapsulate mesh structure in order to provide an API on which we base the RINGMesh algorithm 
@@ -149,7 +153,7 @@ namespace RINGMesh {
          * @parma[in] facet_id index of the facet in the cell \param cell_id
          * @return the number of vertices in the facet \param facet_id in the cell \param cell_id
          */
-        index_t nb_cell_facet_vertices( index_t cell_id, index_t facet_id ) const
+        index_t nb_cell_facet_vertices( index_t cell_id, index_t facet_id ) const ;
 
         /*
          * @brief Gets the number of cells in the GeoMesh.
