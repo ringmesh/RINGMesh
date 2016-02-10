@@ -50,12 +50,6 @@
  * Loads a .ml file generated with Gocad, saves it, loads it again, saves it
  * again and comares the two saved versions.
  * \returns 0 if success or an error code if not. 
- * Error codes are: 
- * \li 1: loading Gocad .ml file failed
- * \li 2: writing .ml failed
- * \li 3: Loading written .ml file to second model failed
- * \li 4: Writing Second model to .ml file failed
- * \li 5: Two .ml files written by RINGMesh are dissimilar 
  */
 int main( int argc, char** argv )
 {
@@ -76,25 +70,17 @@ int main( int argc, char** argv )
             << input_model_file_name << std::endl ;
 
         GeoModel in ;
-        if( !geomodel_surface_load( input_model_file_name, in ) ) {
-            return 1 ;
-        }
+        geomodel_surface_load( input_model_file_name, in ) ;
 
         std::string output_model_file_name( ringmesh_test_output_path ) ;
         output_model_file_name += in.name() + "_saved_out.ml" ;
-        if( !geomodel_surface_save( in, output_model_file_name ) ) {
-            return 2 ;
-        }
+        geomodel_surface_save( in, output_model_file_name ) ;
 
         GeoModel in2 ;
-        if( !geomodel_surface_load( output_model_file_name, in2 ) ) {
-            return 3 ;
-        }
+        geomodel_surface_load( output_model_file_name, in2 ) ;
         std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
         output_model_file_name_bis += in.name() + "_saved_out_bis.ml" ;
-        if( !geomodel_surface_save( in2, output_model_file_name_bis ) ) {
-            return 4 ;
-        }
+        geomodel_surface_save( in2, output_model_file_name_bis ) ;
 
         bool res = compare_files( output_model_file_name,
             output_model_file_name_bis ) ;
@@ -103,7 +89,7 @@ int main( int argc, char** argv )
             return 0 ;
         } else {
             GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
-            return 5 ;
+            return 1 ;
         }
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;

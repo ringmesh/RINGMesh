@@ -81,9 +81,7 @@ int main( int argc, char** argv )
             return 1 ;
         }
         GeoModel model_in ;
-        if( !geomodel_surface_load( model_in_name, model_in ) ) {
-            return 1 ;
-        }
+        geomodel_surface_load( model_in_name, model_in ) ;
 
         std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
         if( mesh_in_name != "" ) {
@@ -94,9 +92,7 @@ int main( int argc, char** argv )
 
         std::string model_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
         if( model_out_name != "" ) {
-            if( !geomodel_surface_save( model_in, model_out_name ) ) {
-                return 1 ;
-            }
+            geomodel_surface_save( model_in, model_out_name ) ;
         }
 
         std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;

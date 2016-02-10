@@ -83,9 +83,7 @@ int main( int argc, char** argv )
             return 1 ;
         }
         GeoModel geomodel ;
-        if( !geomodel_surface_load( model_name, geomodel ) ) {
-            return 1 ;
-        }
+        geomodel_surface_load( model_name, geomodel ) ;
 
         std::string mesh_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
         if( mesh_name != "" ) {
