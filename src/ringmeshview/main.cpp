@@ -355,10 +355,7 @@ namespace {
      */
     void load_mesh()
     {
-        if( !RINGMesh::geomodel_surface_load( GEO::CmdLine::get_arg( "model" ),
-            GM ) ) {
-            return ;
-        }
+        geomodel_surface_load( GEO::CmdLine::get_arg( "model" ), GM ) ;
 
         double xyzmin[3] ;
         double xyzmax[3] ;

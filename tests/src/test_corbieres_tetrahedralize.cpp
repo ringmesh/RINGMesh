@@ -72,7 +72,8 @@ int main( int argc, char** argv )
         set_validity_errors_directory( ringmesh_test_output_path ) ;
 
         /* Load and check the validity of the model */
-        if( geomodel_surface_load( file_name, M ) ) {
+        geomodel_surface_load( file_name, M ) ;
+        if( is_geomodel_valid( M ) ) {
             // Mesh the model with Tetgen
             tetrahedralize( M, "TetGen" ) ;
 

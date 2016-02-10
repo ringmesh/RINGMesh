@@ -57,9 +57,7 @@ int main( int argc, char** argv )
         GeoModel in ;
         std::string input_model_file_name( ringmesh_test_data_path ) ;
         input_model_file_name += "modelA2.ml" ;
-        if( !geomodel_surface_load( input_model_file_name, in ) ) {
-            return 1 ;
-        }
+        geomodel_surface_load( input_model_file_name, in ) ;
 
         index_t nb_non_unique_vertices = in.nb_corners() ;
 
