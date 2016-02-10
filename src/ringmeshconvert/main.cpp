@@ -85,9 +85,7 @@ int main( int argc, char** argv )
 
         std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
         if( mesh_in_name != "" ) {
-            if( !geomodel_volume_load( mesh_in_name, model_in ) ) {
-                return 1 ;
-            }
+            geomodel_volume_load( mesh_in_name, model_in ) ;
         }
 
         std::string model_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
@@ -97,9 +95,7 @@ int main( int argc, char** argv )
 
         std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
         if( mesh_out_name != "" ) {
-            if( !geomodel_volume_save( model_in, mesh_out_name ) ) {
-                return 1 ;
-            }
+            geomodel_volume_save( model_in, mesh_out_name ) ;
         }
 
     } catch( const RINGMeshException& e ) {
