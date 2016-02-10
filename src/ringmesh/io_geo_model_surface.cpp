@@ -662,26 +662,24 @@ namespace RINGMesh {
         virtual void load( const std::string& filename, GeoModel& model )
         {
             std::ifstream input( filename.c_str() ) ;
-            if( input ) {
-                GeoModelBuilderGocad builder( model, filename ) ;
-
-                time_t start_load, end_load ;
-                time( &start_load ) ;
-
-                if( builder.build_model() ) {
-                    print_geomodel( model ) ;
-                    // Check validity
-                    is_geomodel_valid( model ) ;
-
-                    time( &end_load ) ;
-                    GEO::Logger::out( "I/O" ) << " Loaded model " << model.name()
-                        << " from " << std::endl << filename << " timing: "
-                        << difftime( end_load, start_load ) << "sec" << std::endl ;
-                    return ;
-                }
+            if( !input ) {
+                throw RINGMeshException( "I/O",
+                    "Failed to open file " + filename ) ;
             }
-            throw RINGMeshException( "I/O",
-                "Failed loading model from file " + filename ) ;
+            GeoModelBuilderGocad builder( model, filename ) ;
+
+            time_t start_load, end_load ;
+            time( &start_load ) ;
+
+            builder.build_model() ;
+            print_geomodel( model ) ;
+            // Check validity
+            is_geomodel_valid( model ) ;
+
+            time( &end_load ) ;
+            GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+                << std::endl << filename << " timing: "
+                << difftime( end_load, start_load ) << "sec" << std::endl ;
         }
 
         virtual void save( const GeoModel& model, const std::string& filename )
@@ -696,18 +694,16 @@ namespace RINGMesh {
         virtual void load( const std::string& filename, GeoModel& model )
         {
             std::ifstream input( filename.c_str() ) ;
-            if( input ) {
-                GeoModelBuilderBM builder( model, filename ) ;
-                if( builder.build_model() ) {
-                    GEO::Logger::out( "I/O" ) << " Loaded model " << model.name()
-                        << " from " << filename << std::endl ;
-                    print_geomodel( model ) ;
-                    is_geomodel_valid( model ) ;
-                    return ;
-                }
+            if( !input ) {
+                throw RINGMeshException( "I/O",
+                    "Failed to open file " + filename ) ;
             }
-            throw RINGMeshException( "I/O",
-                "Failed loading geological model from file " + filename ) ;
+            GeoModelBuilderBM builder( model, filename ) ;
+            builder.build_model() ;
+            GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+                << filename << std::endl ;
+            print_geomodel( model ) ;
+            is_geomodel_valid( model ) ;
         }
 
         virtual void save( const GeoModel& model, const std::string& filename )

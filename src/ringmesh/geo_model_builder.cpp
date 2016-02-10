@@ -1619,7 +1619,7 @@ namespace RINGMesh {
         }
     }
 
-    bool GeoModelBuilder::end_model()
+    void GeoModelBuilder::end_model()
     {
         if( model_.name() == "" ) {
             set_model_name( "model_default_name" ) ;
@@ -1627,7 +1627,7 @@ namespace RINGMesh {
         // Get out if the model has no surface
         if( model_.nb_surfaces() == 0 ) {
             print_geomodel( model_ ) ;
-            return false ;
+            throw RINGMeshException( "GeoModel", "The GeoModel has no surface" ) ;
         }
 
         model_.init_global_model_element_access() ;
@@ -1647,7 +1647,6 @@ namespace RINGMesh {
 
         // Deliberate clear of the model vertices used for model building
         model_.mesh.vertices.clear() ;
-        return true ;
     }
 
     bool GeoModelBuilder::build_lines_and_corners_from_surfaces()
@@ -1836,12 +1835,10 @@ namespace RINGMesh {
         return true ;
     }
 
-    bool GeoModelBuilder::build_model_from_surfaces()
+    void GeoModelBuilder::build_model_from_surfaces()
     {
         if( model_.nb_surfaces() == 0 ) {
-            GEO::Logger::err( "GeoModel" ) << "No surface to build the model "
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "GeoModel", "No surface to build the model " ) ;
         }
 
         // Initialize model_ global vertices 
@@ -1854,7 +1851,7 @@ namespace RINGMesh {
         }
 
         // Finish up the model
-        return end_model() ;
+        end_model() ;
     }
 
 
@@ -2175,60 +2172,48 @@ namespace RINGMesh {
         region_builder_ = nil ;
     }
 
-    bool GeoModelBuilderMesh::is_mesh_valid_for_surface_building() const
+    void GeoModelBuilderMesh::check_mesh_validity_for_surface_building() const
     {
         if( !is_surface_mesh( mesh_ ) ) {
-            GEO::Logger::err( "GMBuilder" )
-                << "The given mesh is not a surface mesh " << std::endl ;
-            return false ;
+            throw RINGMeshException( "GMBuilder",
+                "The given mesh is not a surface mesh " ) ;
         }
         if( !mesh_.facets.are_simplices() ) {
-            GEO::Logger::err( "GMBuilder" )
-                << "The given mesh is not triangulated " << std::endl ; 
-            return false ;
+            throw RINGMeshException( "GMBuilder",
+                "The given mesh is not triangulated " ) ;
         }
         if( !mesh_.facets.attributes().is_defined( surface_attribute_name_ ) ) {
-            GEO::Logger::err( "GMBuilder" )
-                << "Mesh facet attribute: "<< surface_attribute_name_
-                << " given to build the GeoModel Surfaces is not defined"<< std::endl ;
-            return false ;
+            throw RINGMeshException( "GMBuilder",
+                "Mesh facet attribute: " + surface_attribute_name_
+                    + " given to build the GeoModel Surfaces is not defined" ) ;
         }
         if( RINGMesh::has_mesh_colocate_vertices( mesh_, epsilon ) ) {
-            GEO::Logger::err( "GeoModel" )
-                << " GeoModel building from a Mesh with colocated vertices is not implemented "
-                << " Repair the Mesh beforehand "
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "GMBuilder",
+                " GeoModel building from a Mesh with colocated vertices is not implemented."
+                " Repair the Mesh beforehand " ) ;
         }
-        return true ;
     }
 
-    bool GeoModelBuilderMesh::is_mesh_valid_for_region_building() const
+    void GeoModelBuilderMesh::check_mesh_validity_for_region_building() const
     {
         if( !is_volume_mesh( mesh_ ) ) {
-            GEO::Logger::err( "GMBuilder" )
-                << "The given mesh is not a volumetric mesh " << std::endl ;
-            return false ;
+            throw RINGMeshException( "GMBuilder",
+                "The given mesh is not a volumetric mesh " ) ;
         }
         if( !mesh_.cells.are_simplices() ) {
-            GEO::Logger::err( "GMBuilder" )
-                << "The given mesh is not tetrahedralized " << std::endl ;
-            return false ;
+            throw RINGMeshException( "GMBuilder",
+                "The given mesh is not tetrahedralized " ) ;
         }
         if( !mesh_.cells.attributes().is_defined( region_attribute_name_ ) ) {
-            GEO::Logger::err( "GMBuilder" )
-                << "Mesh cell attribute: "<< region_attribute_name_
-                << " given to build the GeoModel Regions is not defined"<< std::endl ;
-            return false ;
+            throw RINGMeshException( "GMBuilder",
+                "Mesh cell attribute: " + region_attribute_name_
+                    + " given to build the GeoModel Regions is not defined" ) ;
         }
         if( RINGMesh::has_mesh_colocate_vertices( mesh_, epsilon ) ) {
-            GEO::Logger::err( "GeoModel" )
-                << " GeoModel building from a Mesh with colocated vertices is not implemented "
-                << " Repair the Mesh beforehand "
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "GMBuilder",
+                " GeoModel building from a Mesh with colocated vertices is not implemented. "
+                " Repair the Mesh beforehand " ) ;
         }
-        return true ;
     }
 
 
@@ -2298,7 +2283,7 @@ namespace RINGMesh {
     * vertices are duplicated in the input mesh 
     * 
     */
-    bool GeoModelBuilderSurfaceMesh::build_polygonal_surfaces_from_connected_components()
+    void GeoModelBuilderSurfaceMesh::build_polygonal_surfaces_from_connected_components()
     {        
         std::vector< index_t > global_vertex_id_to_id_in_cc( mesh_.vertices.nb(), NO_ID ) ;
 
@@ -2347,20 +2332,18 @@ namespace RINGMesh {
                                       cc_corners, cc_facets_ptr ) ;
             }
         }
-        return true ;
     }
    
-    bool GeoModelBuilderMesh::create_and_build_surfaces()
+    void GeoModelBuilderMesh::create_and_build_surfaces()
     {
         create_geomodel_elements( GME::SURFACE, nb_surface_attribute_values_ ) ;
-        return build_surfaces() ;
+        build_surfaces() ;
     }
 
-    bool GeoModelBuilderMesh::build_surfaces()
+    void GeoModelBuilderMesh::build_surfaces()
     {
-        if( !is_mesh_valid_for_surface_building() ) {
-            return false ;
-        }        
+        check_mesh_validity_for_surface_building() ;
+
         index_t nb_surfaces = model_.nb_surfaces() ;
         // Map 1st surface with 1st lowest attribute value, 2nd with 2nd lowest, etc.
         surface_builder_->set_default_gme_id_attribute_mapping( nb_surfaces ) ;
@@ -2369,20 +2352,18 @@ namespace RINGMesh {
             const std::vector<index_t>& triangle_vertices = surface_builder_->gme_simplices( i ) ;
             set_surface_geometry( i, triangle_vertices ) ;
         }   
-        return true ;
     }   
     
-    bool GeoModelBuilderMesh::create_and_build_regions()
+    void GeoModelBuilderMesh::create_and_build_regions()
     {
         create_geomodel_elements( GME::REGION, nb_region_attribute_values_ ) ;
-        return build_regions() ;
+        build_regions() ;
     }
 
-    bool GeoModelBuilderMesh::build_regions()
+    void GeoModelBuilderMesh::build_regions()
     {
-        if( !is_mesh_valid_for_region_building() ) {
-            return false ;
-        }
+        check_mesh_validity_for_region_building() ;
+
         index_t nb_regions = model_.nb_regions() ;
         region_builder_->set_default_gme_id_attribute_mapping( nb_regions ) ;
 
@@ -2391,7 +2372,6 @@ namespace RINGMesh {
             const std::vector<index_t>& tet_vertices = region_builder_->gme_simplices( i ) ;
             set_region_geometry( i, tet_vertices ) ;
         }
-        return true ;
     }
   
     void GeoModelBuilderMesh::add_mesh_vertices_to_model()
@@ -2452,8 +2432,7 @@ namespace RINGMesh {
         ) : GeoModelBuilder( model ), in_( filename )
     {
         if( !in_.OK() ) {
-            GEO::Logger::err( "I/O" )
-                << "Failed to open file " << filename << std::endl ;
+            throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
         }
     }
    
@@ -2474,12 +2453,8 @@ namespace RINGMesh {
     * are ignored and the Lines and Corners of the GeoModel are deduced from the
     * connectivity of its Surfaces. By default set to false.
     */
-    bool GeoModelBuilderGocad::load_file()
+    void GeoModelBuilderGocad::load_file()
     {
-        if( !in_.OK() ) {
-            return false ;
-        }
-        
         // Count the number of TSurf - Interface
         index_t nb_tsurf = 0 ;
 
@@ -2846,7 +2821,6 @@ namespace RINGMesh {
                 }
             }
         }   
-        return true ;
     }
 
     /*!
@@ -3070,11 +3044,8 @@ namespace RINGMesh {
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
 
-    bool GeoModelBuilderBM::load_file()
+    void GeoModelBuilderBM::load_file()
     {
-        if( !in_.OK() ) {
-            return false ;
-        }
         while( !in_.eof() && in_.get_line() ) {
             in_.get_fields() ;
             if( in_.nb_fields() > 0 ) {
@@ -3098,11 +3069,10 @@ namespace RINGMesh {
                     // Read this element
                     // First line : type - id - name - geol_feature
                     if( in_.nb_fields() < 4 ) {
-                        GEO::Logger::err( "I/O" ) << "Invalid line: "
-                            << in_.line_number()
-                            << "4 fields are expected, the type, id, name, and geological feature"
-                            << std::endl ;
-                        return false ;
+                        throw RINGMeshException( "I/O",
+                            "Invalid line: "
+                                + GEO::String::to_string( in_.line_number() )
+                                + ", 4 fields are expected, the type, id, name, and geological feature" ) ;
                     }
                     GME::TYPE t = match_type( in_.field( 0 ) ) ;
                     index_t id = in_.field_as_uint( 1 ) ;
@@ -3122,11 +3092,10 @@ namespace RINGMesh {
                 else if( match_type( in_.field( 0 ) ) == GME::REGION ) {
                     // First line : type - id - name
                     if( in_.nb_fields() < 3 ) {
-                        GEO::Logger::err( "I/O" ) << "Invalid line: "
-                            << in_.line_number()
-                            << "3 fields are expected to describe a region: REGION, id, and name"
-                            << std::endl ;
-                        return false ;
+                        throw RINGMeshException( "I/O",
+                            "Invalid line: "
+                                + GEO::String::to_string( in_.line_number() )
+                                + ", 3 fields are expected to describe a region: REGION, id, and name" ) ;
                     }
                     index_t id = in_.field_as_uint( 1 ) ;
                     gme_t element( GME::REGION, id ) ;
@@ -3195,12 +3164,11 @@ namespace RINGMesh {
                 else if( match_type( in_.field( 0 ) ) == GME::CORNER ) {
                     // First line: CORNER - id - vertex id
                     if( in_.nb_fields() < 5 ) {
-                        GEO::Logger::err( "I/O" ) << "Invalid line: "
-                            << in_.line_number()
-                            << " 5 fields are expected to describe a corner: "
-                            << " CORNER, index, and X, Y, Z coordinates "
-                            << std::endl ;
-                        return false ;
+                        throw RINGMeshException( "I/O",
+                            "Invalid line: "
+                                + GEO::String::to_string( in_.line_number() )
+                                + ", 5 fields are expected to describe a corner: "
+                                + " CORNER, index, and X, Y, Z coordinates " ) ;
                     }
                     index_t id = in_.field_as_uint( 1 ) ;
                     vec3 point( read_double( in_, 2 ), read_double( in_, 3 ),
@@ -3373,7 +3341,6 @@ namespace RINGMesh {
                 }
             }
         }
-        return true ;
     }
 
     GME::TYPE GeoModelBuilderBM::match_nb_elements(
