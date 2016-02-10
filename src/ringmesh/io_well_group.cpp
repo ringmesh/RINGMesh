@@ -45,8 +45,10 @@
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/logger.h>
 
-namespace RINGMesh {
-    static double read_double( GEO::LineInput& in, index_t field )
+namespace {
+    using namespace RINGMesh ;
+
+    double read_double( GEO::LineInput& in, index_t field )
     {
         double result ;
         std::istringstream iss( in.field( field ) ) ;
@@ -59,11 +61,11 @@ namespace RINGMesh {
 
     class WLIOHandler: public WellGroupIOHandler {
     public:
-        virtual bool load( const std::string& filename, WellGroup& wells )
+        virtual void load( const std::string& filename, WellGroup& wells )
         {
             GEO::LineInput in( filename ) ;
             if( !in.OK() ) {
-                return false ;
+                throw RINGMeshException( "I/O", "Could not open file" ) ;
             }
 
             GEO::Mesh mesh ;
@@ -99,62 +101,49 @@ namespace RINGMesh {
                     mesh.clear() ;
                 }
             }
-
-            return true ;
         }
-        virtual bool save( const WellGroup& wells, const std::string& filename )
+        virtual void save( const WellGroup& wells, const std::string& filename )
         {
-            GEO::Logger::err( "I/O" )
-                << "Saving of a WellGroup from Gocad not implemented yet"
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "I/O",
+                "Saving of a WellGroup from Gocad not implemented yet" ) ;
         }
     } ;
 
-    /************************************************************************/
+}
 
+namespace RINGMesh {
     /*!
      * Loads a WellGroup from a file
      * @param[in] filename the file to load
      * @param][out] wells the wells to fill
-     * @return returns the success of the operation
+     * @exception RINGMeshException if the operation failed
      */
-    bool well_load( const std::string& filename, WellGroup& wells )
+    void well_load( const std::string& filename, WellGroup& wells )
     {
         GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
 
         WellGroupIOHandler_var handler = WellGroupIOHandler::get_handler(
             filename ) ;
-        if( handler && handler->load( filename, wells ) ) {
-            return true ;
-        }
-
-        GEO::Logger::err( "I/O" ) << "Could not load file: " << filename
-            << std::endl ;
-        return false ;
+        handler->load( filename, wells ) ;
     }
 
     WellGroupIOHandler* WellGroupIOHandler::create( const std::string& format )
     {
         WellGroupIOHandler* handler = WellGroupIOHandlerFactory::create_object(
             format ) ;
-        if( handler ) {
-            return handler ;
+        if( !handler ) {
+            std::vector< std::string > names ;
+            WellGroupIOHandlerFactory::list_creators( names ) ;
+            GEO::Logger::err( "I/O" ) << "Currently supported file formats are: " ;
+            for( index_t i = 0; i < names.size(); i++ ) {
+                GEO::Logger::err( "I/O" ) << " " << names[i] ;
+            }
+            GEO::Logger::err( "I/O" ) << std::endl ;
+
+            throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
         }
-
-        GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
-            << std::endl ;
-
-        std::vector< std::string > names ;
-        WellGroupIOHandlerFactory::list_creators( names ) ;
-        GEO::Logger::out( "I/O" ) << "Currently supported file formats:" ;
-        for( index_t i = 0; i < names.size(); i++ ) {
-            GEO::Logger::out( "I/O" ) << " " << names[i] ;
-        }
-        GEO::Logger::out( "I/O" ) << std::endl ;
-
-        return nil ;
+        return handler ;
     }
 
     WellGroupIOHandler* WellGroupIOHandler::get_handler(
@@ -169,6 +158,6 @@ namespace RINGMesh {
      */
     void WellGroupIOHandler::initialize()
     {
-        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" );
+        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
     }
 }
