@@ -677,6 +677,7 @@ namespace RINGMesh {
                     GEO::Logger::out( "I/O" ) << " Loaded model " << model.name()
                         << " from " << std::endl << filename << " timing: "
                         << difftime( end_load, start_load ) << "sec" << std::endl ;
+                    return ;
                 }
             }
             throw RINGMeshException( "I/O",
@@ -702,6 +703,7 @@ namespace RINGMesh {
                         << " from " << filename << std::endl ;
                     print_geomodel( model ) ;
                     is_geomodel_valid( model ) ;
+                    return ;
                 }
             }
             throw RINGMeshException( "I/O",
