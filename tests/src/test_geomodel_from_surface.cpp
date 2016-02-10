@@ -59,6 +59,8 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
+    try {
+
     std::string file_name = ringmesh_test_data_path ;
     file_name += "modelA6.mesh" ;
 
@@ -83,6 +85,14 @@ int main( int argc, char** argv )
     print_geomodel( model ) ;
     is_geomodel_valid( model, false ) ;
 	GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
+
+    } catch( const RINGMeshException& e ) {
+        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        return 1 ;
+    } catch( const std::exception& e ) {
+        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        return 1 ;
+    }
 	return 0 ;
    
  }

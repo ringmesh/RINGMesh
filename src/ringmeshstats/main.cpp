@@ -52,52 +52,62 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::div( "RINGMeshStats" ) ;
-    GEO::Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
-    GEO::Logger::out( "" ) << "People working on the project in RING" << std::endl ;
-    GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-        << std::endl ;
+    try {
 
-    CmdLine::import_arg_group( "in" ) ;
-    CmdLine::import_arg_group( "stats" ) ;
-
-    if( argc == 1 ) {
-        GEO::CmdLine::show_usage() ;
-        return 0 ;
-    }
-
-    std::vector< std::string > filenames ;
-    if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-        return 1 ;
-    }
-
-    GEO::Stopwatch total( "Total time" ) ;
-
-    std::string model_name = GEO::CmdLine::get_arg( "in:model" ) ;
-    if( model_name == "" ) {
-        GEO::Logger::err( "I/O" ) << "Give at least a filename in in:model"
+        GEO::Logger::div( "RINGMeshStats" ) ;
+        GEO::Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
+        GEO::Logger::out( "" ) << "People working on the project in RING"
             << std::endl ;
-        return 1 ;
-    }
-    GeoModel geomodel ;
-    if( !geomodel_surface_load( model_name, geomodel ) ) {
-        return 1 ;
-    }
+        GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
+            << std::endl ;
 
-    std::string mesh_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
-    if( mesh_name != "" ) {
-        if( !geomodel_volume_load( mesh_name, geomodel ) ) {
+        CmdLine::import_arg_group( "in" ) ;
+        CmdLine::import_arg_group( "stats" ) ;
+
+        if( argc == 1 ) {
+            GEO::CmdLine::show_usage() ;
+            return 0 ;
+        }
+
+        std::vector< std::string > filenames ;
+        if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
             return 1 ;
         }
-    }
 
-    if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
-        print_geomodel_mesh_stats( geomodel ) ;
-    }
+        GEO::Stopwatch total( "Total time" ) ;
 
-    if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-        print_geomodel_mesh_cell_volumes( geomodel ) ;
-    }
+        std::string model_name = GEO::CmdLine::get_arg( "in:model" ) ;
+        if( model_name == "" ) {
+            GEO::Logger::err( "I/O" ) << "Give at least a filename in in:model"
+                << std::endl ;
+            return 1 ;
+        }
+        GeoModel geomodel ;
+        if( !geomodel_surface_load( model_name, geomodel ) ) {
+            return 1 ;
+        }
 
+        std::string mesh_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
+        if( mesh_name != "" ) {
+            if( !geomodel_volume_load( mesh_name, geomodel ) ) {
+                return 1 ;
+            }
+        }
+
+        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
+            print_geomodel_mesh_stats( geomodel ) ;
+        }
+
+        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
+            print_geomodel_mesh_cell_volumes( geomodel ) ;
+        }
+
+    } catch( const RINGMeshException& e ) {
+        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        return 1 ;
+    } catch( const std::exception& e ) {
+        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        return 1 ;
+    }
     return 0 ;
 }

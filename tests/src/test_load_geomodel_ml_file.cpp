@@ -61,46 +61,56 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    // Set an output log file
-    std::string log_file( ringmesh_test_output_path ) ;
-    log_file += "log.txt" ;
-    GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-    GEO::Logger::instance()->register_client( file_logger ) ;
+    try {
 
-    std::string input_model_file_name( ringmesh_test_data_path ) ;
-    input_model_file_name += "modelA6.ml" ;
+        // Set an output log file
+        std::string log_file( ringmesh_test_output_path ) ;
+        log_file += "log.txt" ;
+        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
+        GEO::Logger::instance()->register_client( file_logger ) ;
 
-    GEO::Logger::out( "TEST" ) << "Geomodel input test. Loading file "
-        << input_model_file_name << std::endl ;
+        std::string input_model_file_name( ringmesh_test_data_path ) ;
+        input_model_file_name += "modelA6.ml" ;
 
-    GeoModel in ;
-    if( !geomodel_surface_load( input_model_file_name, in ) ) {
-        return 1;
+        GEO::Logger::out( "TEST" ) << "Geomodel input test. Loading file "
+            << input_model_file_name << std::endl ;
+
+        GeoModel in ;
+        if( !geomodel_surface_load( input_model_file_name, in ) ) {
+            return 1 ;
+        }
+
+        std::string output_model_file_name( ringmesh_test_output_path ) ;
+        output_model_file_name += in.name() + "_saved_out.ml" ;
+        if( !geomodel_surface_save( in, output_model_file_name ) ) {
+            return 2 ;
+        }
+
+        GeoModel in2 ;
+        if( !geomodel_surface_load( output_model_file_name, in2 ) ) {
+            return 3 ;
+        }
+        std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
+        output_model_file_name_bis += in.name() + "_saved_out_bis.ml" ;
+        if( !geomodel_surface_save( in2, output_model_file_name_bis ) ) {
+            return 4 ;
+        }
+
+        bool res = compare_files( output_model_file_name,
+            output_model_file_name_bis ) ;
+        if( res ) {
+            GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+            return 0 ;
+        } else {
+            GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+            return 5 ;
+        }
+    } catch( const RINGMeshException& e ) {
+        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        return 1 ;
+    } catch( const std::exception& e ) {
+        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        return 1 ;
     }
 
-    std::string output_model_file_name( ringmesh_test_output_path ) ;
-    output_model_file_name += in.name() + "_saved_out.ml" ;
-    if( !geomodel_surface_save( in, output_model_file_name ) ) {
-        return 2 ;
-    }
-
-    GeoModel in2 ;
-    if( !geomodel_surface_load( output_model_file_name, in2 ) ) {
-        return 3 ;
-    }
-    std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
-    output_model_file_name_bis += in.name() + "_saved_out_bis.ml" ;
-    if( !geomodel_surface_save( in2, output_model_file_name_bis ) ) {
-        return 4 ;
-    }
-
-    bool res = compare_files(
-        output_model_file_name, output_model_file_name_bis ) ;
-    if( res ) {
-        GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
-        return 0;
-    } else {
-        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
-        return 5;
-    }
 }
