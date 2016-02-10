@@ -42,7 +42,6 @@
 #define __RINGMESH_GEO_MESH__
 
 #include <ringmesh/common.h>
-#include <geogram/mesh/mesh.h>
 
 namespace RINGMesh {
     /* 
@@ -53,81 +52,112 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoMesh ) ;
 
     public:
-    GeoMesh(index_t dimension=3, bool single_precision=false) ;
-    ~GeoMesh() ;
+        GeoMesh() ;
+        ~GeoMesh() ;
 
-    /* 
-     * @brief Gets a point.
-     * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
-     * @return a modifiable reference to the point that corresponds to the vertex.
-     */
-    const vec3& vertex( index_t v_id ) const ;
+        /*
+         * @brief Gets a point.
+         * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
+         * @return a modifiable reference to the point that corresponds to the vertex.
+         */
+        const vec3& vertex( index_t v_id ) const ;
 
-    /* 
-     * @brief Gets the number of point in the GeoMesh.
-     */
-    index_t nb_vetices( ) const ;
+        /*
+         * @brief Gets the number of point in the GeoMesh.
+         */
+        index_t nb_vetices() const ;
 
-    /* 
-     * @brief Gets the index of an edge vertex.
-     * @param[in] edge_id index of the edge.
-     * @param[in] vertex_id local index of the vertex, in {0,1} 
-     * @return the global index of vertex \param vertex_id in edge \param edge_id.
-     */
-    index_t edge_vertex( index_t edge_id, index_t vertex_id ) const ;
+        /*
+         * @brief Gets the index of an edge vertex.
+         * @param[in] edge_id index of the edge.
+         * @param[in] vertex_id local index of the vertex, in {0,1}
+         * @return the global index of vertex \param vertex_id in edge \param edge_id.
+         */
+        index_t edge_vertex( index_t edge_id, index_t vertex_id ) const ;
 
-    /* 
-     * @return the index of the adjacent edge of the one starting at \param vertex_id
-     * @TODO: implement... for now we are doing the implicit hypothese that edges are ordered with vertex.
-     */
-    index_t edge_adjacent ( index_t vertex_id ) const { return NO_ID; }
+        /*
+         * @return the index of the adjacent edge of the one starting at \param vertex_id
+         * @TODO: implement... for now we are doing the implicit hypothese that edges are ordered with vertex.
+         */
+        index_t edge_adjacent( index_t vertex_id ) const
+        {
+            return NO_ID ;
+        }
 
-    /* 
-     * @brief Gets the number of edges in the GeoMesh.
-     */
-    index_t nb_edges() const ;
+        /*
+         * @brief Gets the number of edges in the GeoMesh.
+         */
+        index_t nb_edges() const ;
 
-    /* 
-     * @brief Gets a vertex by facet and local vertex index. 
-     * @param[in] facet_id the facet index.
-     * @param[in] vertex_id the local vertex index in \param facet_id.
-     * @return the global vertex index.
-     * @precondition vertex_id < nomber of vertices of the facet.
-     */
-    index_t facet_vertex (index_t facet_id, index_t vertex_id) const ;
+        /*
+         * @brief Gets a vertex by facet and local vertex index.
+         * @param[in] facet_id the facet index.
+         * @param[in] vertex_id the local vertex index in \param facet_id.
+         * @return the global vertex index.
+         * @precondition vertex_id < nomber of vertices of the facet.
+         */
+        index_t facet_vertex( index_t facet_id, index_t vertex_id ) const ;
 
-    /* 
-     * @return the index of the adjacent facet of \param facet_id
-     * along the edge starting at \param vertex_id
-     */
-    index_t facet_adjacent ( index_t facet_id, index_t vertex_id ) const ;
+        /*
+         * @return the index of the adjacent facet of \param facet_id
+         * along the edge starting at \param vertex_id
+         */
+        index_t facet_adjacent( index_t facet_id, index_t vertex_id ) const ;
 
-    /* 
-     * @brief Gets the number of facets in the GeoMesh.
-     */
-    index_t nb_facets () const ;
+        /*
+         * @brief Gets the number of facets in the GeoMesh.
+         */
+        index_t nb_facets() const ;
 
-    /* 
-     * @brief Gets a vertex by cell and local vertex index.
-     * @param[in] cell_id the cell index.
-     * @param[in] vertex_id the local vertex index in \param cell_id.
-     * @return the global vertex index.
-     * @precondition vertex_id<nomber of vertices of the cell.
-     */
-    index_t cell_vertex ( index_t cell_id, index_t vertex_id ) const ;
+        /*
+         * @brief Gets a vertex by cell and local vertex index.
+         * @param[in] cell_id the cell index.
+         * @param[in] vertex_id the local vertex index in \param cell_id.
+         * @return the global vertex index.
+         * @precondition vertex_id<nomber of vertices of the cell.
+         */
+        index_t cell_vertex( index_t cell_id, index_t vertex_id ) const ;
 
-    /* 
-     * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
-     */
-    index_t cell_adjacent (index_t cell_id, index_t facet_id) const ;
+        /*
+         * @brief Gets a vertex by cell facet and local vertex index.
+         * @parma[in] cell_id index of the cell
+         * @parma[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] vertex_id index of the vertex in the facet \param facet_id
+         * @return the global vertex index.
+         * @precondition vertex_id < number of vertices in the facet \param facet_id and facet_id number of facet in th cell \param cell_id
+         */
+        index_t cell_facet_vertex(
+            index_t cell_id,
+            index_t facet_id,
+            index_t vertex_id ) const ;
 
-    /* 
-     * @brief Gets the number of cells in the GeoMesh.
-     */
-    index_t nb_cells () const ;
+        /*
+         * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
+         */
+        index_t cell_adjacent( index_t cell_id, index_t facet_id ) const ;
+
+        /*
+         * @brief Gets the number of facet in a cell
+         * @param[in] cell_id index of the cell
+         * @return the number of facet of the cell \param cell_id
+         */
+        index_t nb_cell_facet( index_t cell_id ) const ;
+
+        /*
+         * @brief Gets the number of the facet in a cell
+         * @parma[in] cell_id index of the cell
+         * @parma[in] facet_id index of the facet in the cell \param cell_id
+         * @return the number of vertices in the facet \param facet_id in the cell \param cell_id
+         */
+        index_t nb_cell_facet_vertices( index_t cell_id, index_t facet_id ) const
+
+        /*
+         * @brief Gets the number of cells in the GeoMesh.
+         */
+        index_t nb_cells() const ;
 
     private:
-    GEO::Mesh* mesh_ ;
+        GEO::Mesh* mesh_ ;
 
     } ;
 

@@ -44,52 +44,84 @@
 
 namespace RINGMesh {
 
-    GeoMesh::GeoMesh(index_t dimension, bool single_precision) {
-            mesh_ = new GEO::Mesh(dimension, single_precision) ;
+    GeoMesh::GeoMesh()
+    {
+        mesh_ = new GEO::Mesh() ;
     }
 
-    GeoMesh::~GeoMesh() {
+    GeoMesh::~GeoMesh()
+    {
         delete mesh_ ;
     }
 
-    const vec3& GeoMesh::vertex( index_t v_id ) const {
-        return mesh_->vertices.point(v_id) ;
+    const vec3& GeoMesh::vertex( index_t v_id ) const
+    {
+        return mesh_->vertices.point( v_id ) ;
     }
 
-    index_t GeoMesh::nb_vetices( ) const {
+    index_t GeoMesh::nb_vetices() const
+    {
         return mesh_->vertices.nb() ;
     }
 
-    index_t GeoMesh::edge_vertex( index_t edge_id, index_t vertex_id ) const {
+    index_t GeoMesh::edge_vertex( index_t edge_id, index_t vertex_id ) const
+    {
         return mesh_->edges.vertex( edge_id, vertex_id ) ;
     }
 
-    index_t GeoMesh::nb_edges ( ) const {
+    index_t GeoMesh::nb_edges() const
+    {
         return mesh_->edges.nb() ;
     }
 
-    index_t GeoMesh::facet_vertex (index_t facet_id, index_t vertex_id) const {
+    index_t GeoMesh::facet_vertex( index_t facet_id, index_t vertex_id ) const
+    {
         return mesh_->facets.vertex( facet_id, vertex_id ) ;
     }
 
-    index_t GeoMesh::facet_adjacent (index_t facet_id, index_t vertex_id) const {
+    index_t GeoMesh::facet_adjacent( index_t facet_id, index_t vertex_id ) const
+    {
         return mesh_->facets.adjacent( facet_id, vertex_id ) ;
     }
 
-    index_t GeoMesh::nb_facets() const {
-        return mesh_->facets.nb();
+    index_t GeoMesh::nb_facets() const
+    {
+        return mesh_->facets.nb() ;
     }
-    
-    index_t GeoMesh::cell_vertex( index_t cell_id, index_t vertex_id ) const {
+
+    index_t GeoMesh::cell_vertex( index_t cell_id, index_t vertex_id ) const
+    {
         return mesh_->cells.vertex( cell_id, vertex_id ) ;
     }
 
-    index_t GeoMesh::cell_adjacent (index_t cell_id, index_t facet_id) const  {
-        return mesh_->cells.adjacent( cell_id, facet_id );
+    index_t GeoMesh::cell_facet_vertex(
+        index_t cell_id,
+        index_t facet_id,
+        index_t vertex_id ) const
+    {
+        return mesh_->cells.facet_vertex( cell_id, facet_id, vertex_id ) ;
     }
 
-    index_t GeoMesh::nb_cells () const {
-    return mesh_->cells.nb();
+    index_t GeoMesh::cell_adjacent( index_t cell_id, index_t facet_id ) const
+    {
+        return mesh_->cells.adjacent( cell_id, facet_id ) ;
+    }
+
+    index_t GeoMesh::nb_cell_facet( index_t cell_id ) const
+    {
+        return mesh_->cells.nb_facets( cell_id ) ;
+    }
+
+    index_t GeoMesh::nb_cell_facet_vertices(
+        index_t cell_id,
+        index_t facet_id ) const
+    {
+        return mesh_->cells.facet_nb_vertices( cell_id, facet_id ) ;
+    }
+
+    index_t GeoMesh::nb_cells() const
+    {
+        return mesh_->cells.nb() ;
     }
 
 } // namespace
