@@ -1869,6 +1869,10 @@ namespace RINGMesh {
         typedef std::pair< index_t, index_t > index_pair ;
         typedef std::map< index_t, index_t > index_map ;
 
+        virtual ~GeoModelElementFromMesh()
+        {
+        }
+
         /*! Check that the attribute is defined.
          * If not, returns false otherwise bind it.
          */

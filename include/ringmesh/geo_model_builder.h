@@ -221,7 +221,6 @@ namespace RINGMesh {
         /*
          * @brief From a GeoModel in which only Surface are defined, create corners, contacts
          * and regions depending on the building flags
-         * @exception RINGMeshException if there is an error during the model building
          * @note Valdity is not checked
          */
         void build_model_from_surfaces() ;

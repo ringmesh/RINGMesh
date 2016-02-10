@@ -231,7 +231,6 @@ namespace {
      * @brief Save the model in a .ml file if it can
      * @param[in] M the model to save
      * @param[in,out] out Output file stream
-     * @exception RINGMeshException if the model is not compatible with a Gocad model
      */
     void save_gocad_model3d( const GeoModel& M, std::ostream& out )
     {
@@ -5598,7 +5597,6 @@ namespace RINGMesh {
      * Loads a GeoModel from a file
      * @param[in] filename the file to load
      * @param[out] model the model to fill
-     * @exception RINGMeshException if the operation failed
      */
     void geomodel_surface_load( const std::string& filename, GeoModel& model )
     {
@@ -5622,7 +5620,6 @@ namespace RINGMesh {
      * Saves a GeoModel in a file
      * @param[in] model the model to save
      * @param[in] filename the filename where to save it
-     * @exception RINGMeshException if the operation failed
      */
     void geomodel_surface_save( const GeoModel& model, const std::string& filename )
     {
