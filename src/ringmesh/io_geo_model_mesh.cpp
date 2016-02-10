@@ -1788,7 +1788,6 @@ namespace RINGMesh {
      * Loads a GeoModel from a file
      * @param[in] filename the file to load
      * @param][out] model the mesh to fill
-     * @exception RINGMeshException if the operation failed
      */
     void geomodel_volume_load( const std::string& filename, GeoModel& model )
     {
@@ -1804,7 +1803,6 @@ namespace RINGMesh {
      * Saves a GeoModel in a file
      * @param[in] model the mesh to save
      * @param[in] filename the file where to save
-     * @exception RINGMeshException if the operation failed
      */
     void geomodel_volume_save( const GeoModel& model, const std::string& filename )
     {

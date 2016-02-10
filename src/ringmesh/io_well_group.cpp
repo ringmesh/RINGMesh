@@ -116,7 +116,6 @@ namespace RINGMesh {
      * Loads a WellGroup from a file
      * @param[in] filename the file to load
      * @param][out] wells the wells to fill
-     * @exception RINGMeshException if the operation failed
      */
     void well_load( const std::string& filename, WellGroup& wells )
     {
