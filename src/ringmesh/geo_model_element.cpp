@@ -179,8 +179,18 @@ namespace RINGMesh {
     /*!
      * @brief Map the name of a geological type with a value of GEOL_FEATURE
      *
-     * @param[in] in Name of the feature
+     * @param[in] in Name of the feature. Can be
+     * \li "reverse_fault"
+     * \li "normal_fault"
+     * \li "fault"
+     * \li "top"
+     * \li "none"
+     * \li "unconformity"
+     * \li "boundary"
+     * Other strings will end up in \p NO_GEOL
      * @return The geological feature index
+     * \todo Add other types of unconformity, see
+     * RINGMesh::GeoModelElement::TYPE. --GC
      */
     GeoModelElement::GEOL_FEATURE GeoModelElement::
         determine_geological_type( const std::string& in )
@@ -207,7 +217,9 @@ namespace RINGMesh {
         }
     }
 
-
+    /*!
+     * \return the (uppercase) string associated to a GeoModelELement::TYPE
+     */
     std::string GeoModelElement::type_name( GME::TYPE t )
     {
         switch( t ) {
@@ -222,7 +234,10 @@ namespace RINGMesh {
         }
     }
 
-
+    /*!
+     * \return the (lowercase) string associated to a
+     * GeoModelELement::GEOL_FEATURE
+     */
     std::string GeoModelElement::geol_name(
         GME::GEOL_FEATURE t )
     {
@@ -296,7 +311,7 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Define the type of an element into which boundary an element of type @param t can be
+     * @brief Defines the type of an element into which boundary an element of type @param t can be
      *        If no in_boundary is allowed returns NO_TYPE
      * @details The elements that can be in the boundary of another are CORNER, LINE, and SURFACE
      */
@@ -332,56 +347,12 @@ namespace RINGMesh {
     
 
     /*!
-     * @brief Return true if this is a CORNER, LINE or SURFACEs
+     * @brief Return true if \param type is a CORNER, LINE or SURFACE
     */
-    bool GeoModelElement::has_mesh( GME::TYPE t )
+    bool GeoModelElement::has_mesh( GME::TYPE type )
     {
-        return t <= REGION ;
+        return type <= REGION ;
     }
-
-
-    bool GeoModelElement::operator==(
-        const GeoModelElement& rhs ) const
-    {
-        if( &model_ != &rhs.model_ ) {
-            return false ;
-        }
-        if( id_ != rhs.id_ ) {
-            return false ;
-        }
-        if( name_ != rhs.name_ ) {
-            return false ;
-        }
-        if( geol_feature_ != rhs.geol_feature_ ) {
-            return false ;
-        }
-        if( nb_boundaries() != rhs.nb_boundaries() ) {
-            return false ;
-        }
-        if( !std::equal( boundaries_.begin(), boundaries_.end(),
-            rhs.boundaries_.begin() ) ) {
-            return false ;
-        }    
-        if( nb_in_boundary() != rhs.nb_in_boundary() ) {
-            return false ;
-        }
-        if( !std::equal( in_boundary_.begin(), in_boundary_.end(),
-            rhs.in_boundary_.begin() ) ) {
-            return false ;
-        }
-        if( parent_ != rhs.parent_ ) {
-            return false ;
-        }
-        if( nb_children() != rhs.nb_children() ) {
-            return false ;
-        }
-        if( !std::equal( children_.begin(), children_.end(),
-            rhs.children_.begin() ) ) {
-            return false ;
-        }
-        return true ;
-    }
-
 
     bool GeoModelElement::is_connectivity_valid() const
     {
