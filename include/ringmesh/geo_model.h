@@ -64,7 +64,7 @@ namespace RINGMesh {
      * by its boundary surfaces and whose regions can be optionally meshed
      */
     class RINGMESH_API GeoModel {
-    ringmesh_disable_copy( GeoModel ) ;
+        ringmesh_disable_copy( GeoModel ) ;
         friend class GeoModelBuilder ;
         friend class GeoModelEditor ;
 
@@ -77,7 +77,7 @@ namespace RINGMesh {
         GeoModel() ;
 
         /*!
-         * @brief Delete all the GeoModelElements of the GeoModel
+         * @brief Deletes all the GeoModelElements of the GeoModel
          */
         virtual ~GeoModel() ;
 
