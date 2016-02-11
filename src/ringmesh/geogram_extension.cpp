@@ -300,10 +300,46 @@ namespace RINGMesh {
     void TetgenMesher::tetrahedralize()
     {
         try {
-            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_, &tetgen_out_ );
-        } catch( std::exception& e ) {
-            GEO::Logger::err( "Tetgen" )
-                << "Encountered a problem" << e.what() << std::endl ;
+            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_,
+                &tetgen_out_ ) ;
+        } catch( int code ) {
+            GEO::Logger::err( "Tetgen" ) << "Encountered a problem: " ;
+            switch( code ) {
+                case 1:
+                    GEO::Logger::err( "Tetgen" ) << "Out of memory" ;
+                    break ;
+                case 2:
+                    GEO::Logger::err( "Tetgen" )
+                        << "Please report this bug to Hang.Si@wias-berlin.de. Include\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "  the message above, your input data set, and the exact\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "  command line you used to run this program, thank you" ;
+                    break ;
+                case 3:
+                    GEO::Logger::err( "Tetgen" )
+                        << "A self-intersection was detected. Program stopped\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "Hint: use -d option to detect all self-intersections" ;
+                    break ;
+                case 4:
+                    GEO::Logger::err( "Tetgen" )
+                        << "A very small input feature size was detected. Program stopped.\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "Hint: use -T option to set a smaller tolerance." ;
+                    break ;
+                case 5:
+                    GEO::Logger::err( "Tetgen" )
+                        << "Two very close input facets were detected. Program stopped.\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "Hint: use -Y option to avoid adding Steiner points in boundary." ;
+                    break ;
+                case 10:
+                    GEO::Logger::err( "Tetgen" )
+                        << "An input error was detected. Program stopped." ;
+                    break ;
+            }
+            GEO::Logger::err( "Tetgen" ) << std::endl ;
         }
     }
 
