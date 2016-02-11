@@ -147,6 +147,10 @@ namespace RINGMesh {
                                    const std::vector< index_t >& surface_facets,
                                    const std::vector< index_t >& surface_facet_ptr ) ;
 
+        void set_region_geometry( index_t region_id,
+                                  const std::vector< vec3 >& points,
+                                  const std::vector< index_t >& tetras ) ;
+
         /*! @}
          * \name Set element geometry using global GeoModel vertices
          * @{
@@ -234,6 +238,8 @@ namespace RINGMesh {
         bool end_model() ;
 
     protected:
+        void build_contacts() ;
+
         /*! Elements to compute from the available elements */
         GeoModelBuildingFlags options_ ;
 
@@ -381,8 +387,6 @@ namespace RINGMesh {
         bool load_file() ;
 
     private:
-        void build_contacts() ;
-
         GME::gme_t determine_line_vertices( const Surface& S,
                                             index_t id0,
                                             index_t id1,
@@ -404,6 +408,14 @@ namespace RINGMesh {
                                 const vec3& p1,
                                 const vec3& p2,
                                 bool& same_orientation ) const ;
+
+        /*!
+        * Read the coordinates system informations of files exported from Gocad.
+        * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
+        * increasing z toward top and "Depth" for increasing z toward bottom.
+        * @return Return 1 if Elevation direction, -1 if Depth direction.
+        */
+        int read_gocad_coordinates_system( const std::string& in ) ;
 
     private:
         /*!

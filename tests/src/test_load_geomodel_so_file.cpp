@@ -38,54 +38,59 @@
  *     FRANCE
  */
 
-#ifdef WIN32
+#include <ringmesh/ringmesh_tests_config.h>
 
-  #pragma section(".CRT$XCU",read)
-  #define INITIALIZER( f ) \
-    static void __cdecl f( void ) ; \
-    __declspec( allocate( ".CRT$XCU" ) ) void( __cdecl * f ## _ ) (void) = f ; \
-    static void __cdecl f( void )
-
-#elif defined( __GNUC__ )
-
-  #define INITIALIZER( f ) \
-    static void f( void ) __attribute__( ( constructor ) ) ; \
-    static void f( void )
-
-#endif
-
+#include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
-#include <ringmesh/tetra_gen.h>
-#include <ringmesh/geogram_extension.h>
-#include <ringmesh/geo_model_builder_so.h>
 
-#include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
+#include <geogram/basic/logger.h>
 
-#ifdef RINGMESH_WITH_GRAPHICS
-#   include <geogram_gfx/basic/common.h>
-#endif
+/*!
+* @file Test GeoModel building from a mesh loaded from a .so file
+* @author Pierre Anquez
+*/
 
-static bool initialized = false ;
-INITIALIZER( initialize ) {
-    if( !initialized ) {
-        initialized = true ;
-        GEO::initialize() ;
-        GEO::CmdLine::import_arg_group( "sys" ) ;
-        GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
-        GEO::CmdLine::set_arg( "sys:FPE", false ) ;
-        GEO::CmdLine::import_arg_group( "algo" ) ;
-        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
-        GEO::CmdLine::import_arg_group( "log" ) ;
-        GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
-#ifdef RINGMESH_WITH_GRAPHICS
-        GEO::Graphics::initialize();
-        GEO::CmdLine::import_arg_group( "gfx" ) ;
-#endif
-        RINGMesh::mesh_initialize() ;
-        RINGMesh::TetraGen::initialize() ;
-        RINGMesh::ringmesh_mesh_io_initialize() ;
-        RINGMesh::tsolid_import_factory_initialize() ;
+int main( int argc, char** argv )
+{
+    using namespace RINGMesh ;
+
+    GEO::Logger::out( "TEST" ) <<
+        "Test IO for a mesh GeoModel in .so" << std::endl ;
+
+    std::string file_name( ringmesh_test_data_path ) ;
+    file_name += "modelA4.so" ;
+
+    GeoModel model ;
+    if( !geomodel_volume_load( file_name, model ) ) {
+        return 1 ;
     }
+
+    std::string output_surf_file_name( ringmesh_test_output_path ) ;
+    output_surf_file_name += "modelA4_surf.bm" ;
+    geomodel_surface_save( model, output_surf_file_name ) ;
+
+    std::string output_vol_file_name( ringmesh_test_output_path ) ;
+    output_vol_file_name += "modelA4_vol.gm" ;
+    geomodel_volume_save( model, output_vol_file_name ) ;
+
+    bool res = true ;
+    // Check number of elements in the imported GeoModel (from TSolid file)
+    if ( model.nb_corners() != 52 ||
+         model.nb_lines() != 98 ||
+         model.nb_surfaces() != 55 ||
+         model.nb_regions() != 8 ||
+         model.nb_interfaces() != 11 ||
+         model.nb_contacts() != 38 ||
+         model.mesh.vertices.nb() != 6691 ||
+         model.mesh.facets.nb() != 10049 ||
+         model.mesh.cells.nb() != 34540 ) {
+        res = false ;
+    }
+    if( res ) {
+        GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    } else {
+        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+    }
+
+    return !res ;
 }

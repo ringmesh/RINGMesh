@@ -41,6 +41,9 @@
 #include <ringmesh/io.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/well.h>
+#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_builder_so.h>
+#include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_extension.h>
 
@@ -564,12 +567,41 @@ namespace RINGMesh {
 
     class TSolidIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& mesh )
+        virtual bool load( const std::string& filename, GeoModel& model )
         {
-            GEO::Logger::err( "I/O" )
-                << "Loading of a GeoModel from TSolid not implemented yet"
-                << std::endl ;
-            return false ;
+            std::ifstream input( filename.c_str() ) ;
+            if( input ) {
+                GeoModelBuilderTSolid builder( model, filename ) ;
+
+                time_t start_load, end_load ;
+                time( &start_load ) ;
+
+                bool model_built = builder.build_model() ;
+                if( model_built ) {
+                    print_geomodel( model ) ;
+                    // Check boundary model validity
+                    RINGMesh::is_geomodel_valid( model ) ;
+
+                    time( &end_load ) ;
+
+                    GEO::Logger::out( "I/O" )
+                        << " Loaded model " << model.name() << " from " << std::endl
+                        << filename << " timing: "
+                        << difftime( end_load, start_load ) << "sec" << std::endl ;
+
+                    return true ;
+                } else {
+                    GEO::Logger::out( "I/O" )
+                        << "Failed building model from file "
+                        << filename << std::endl ;
+                    return false ;
+                }
+            } else {
+                GEO::Logger::out( "I/O" )
+                    << "Failed loading model from file "
+                    << filename << std::endl ;
+                return false ;
+            }
         }
         virtual bool save( const GeoModel& gm, const std::string& filename )
         {
