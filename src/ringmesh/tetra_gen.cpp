@@ -63,7 +63,9 @@
 #include <io.h>
 #endif 
 
-namespace RINGMesh {
+namespace {
+    using namespace RINGMesh ;
+
     /*!
      * Tests if two adjacent facets have the same orientation
      * @param[in] mesh the mesh
@@ -302,6 +304,11 @@ namespace RINGMesh {
         }
     }
 
+}
+
+namespace RINGMesh {
+
+#ifdef RINGMESH_WITH_TETGEN
     class RINGMESH_API TetraGen_TetGen: public TetraGen {
     public:
         TetraGen_TetGen()
@@ -314,11 +321,12 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize( bool refine )
         {
-            GEO::mesh_tetrahedralize( *tetmesh_, false, refine, 1.0 ) ;
+            tetrahedralize_mesh_tetgen( *tetmesh_, refine, 1.0 ) ;
             check_and_repair_mesh_consistency( *region_, *tetmesh_ ) ;
             return true ;
         }
     } ;
+#endif
 
 #ifdef USE_MG_TETRA
 
@@ -631,11 +639,23 @@ namespace RINGMesh {
     {
         TetraGen* mesher = TetraGenFactory::create_object( algo_name ) ;
         if( !mesher ) {
+#ifdef RINGMESH_WITH_TETGEN
             GEO::Logger::warn( "TetraGen" ) << "Could not create TetraGen mesher: "
                 << algo_name << std::endl ;
             GEO::Logger::warn( "TetraGen" ) << "Falling back to TetGen mode"
                 << std::endl ;
             mesher = new TetraGen_TetGen() ;
+#else
+            std::vector< std::string > names ;
+            TetraGenFactory::list_creators( names ) ;
+            GEO::Logger::err( "I/O" ) << "Currently supported mesher are: " ;
+            for( index_t i = 0; i < names.size(); i++ ) {
+                GEO::Logger::out( "I/O" ) << " " << names[ i ] ;
+            }
+            GEO::Logger::out( "I/O" ) << std::endl ;
+            throw RINGMeshException( "TetraGen", "Could not create TetraGen mesher: "
+                + algo_name ) ;
+#endif
         }
 
         mesher->set_mesh( tetmesh ) ;
@@ -801,7 +821,9 @@ namespace RINGMesh {
 
     void TetraGen::initialize()
     {
+#ifdef RINGMESH_WITH_TETGEN
         ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
+#endif
 
 #ifdef USE_MG_TETRA
         ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" );
