@@ -90,10 +90,8 @@ int main( int argc, char** argv )
         std::vector< std::string > output_formats ;
         GEO::CmdLine::parse( argc, argv, output_formats ) ;
         if( output_formats.empty() ) {
-            GEO::Logger::err( "I/O" )
-                << "Give at least one output format amongst: obj mesh meshb ply off stl"
-                << std::endl ;
-            return 1 ;
+            throw RINGMeshException( "I/O",
+                "Give at least one output format amongst: obj mesh meshb ply off stl" ) ;
         }
 
         GEO::Stopwatch total( "Total time" ) ;
@@ -113,24 +111,19 @@ int main( int argc, char** argv )
         }
 
         if( input_ts_names.empty() ) {
-            GEO::Logger::err( "I/O" )
-                << "Run this command in a folder with at least one .ts file."
-                << std::endl ;
-            return 1 ;
+            throw RINGMeshException( "I/O",
+                "Run this command in a folder with at least one .ts file." ) ;
         }
 
         // create the output format folders
         if( !GEO::FileSystem::set_current_working_directory( ".." ) ) {
-            GEO::Logger::err( "I/O" ) << "Can't access parent directory."
-                << std::endl ;
-            return 1 ;
+            throw RINGMeshException( "I/O", "Can't access parent directory." ) ;
         }
         for( index_t format_itr = 0; format_itr < output_formats.size();
             ++format_itr ) {
             if( !GEO::FileSystem::create_directory( output_formats[format_itr] ) ) {
-                GEO::Logger::err( "I/O" ) << "Can't create "
-                    << output_formats[format_itr] << " directory." << std::endl ;
-                return 1 ;
+                throw RINGMeshException( "I/O",
+                    "Can't create " + output_formats[format_itr] + " directory." ) ;
             }
         }
 
@@ -143,9 +136,7 @@ int main( int argc, char** argv )
             // load the tsurf
             GEO::Mesh mesh_surface_in ;
             if( !GEO::mesh_load( input_ts_names[ts_itr], mesh_surface_in ) ) {
-                GEO::Logger::err( "I/O" ) << "Can't load: " << input_ts_names[ts_itr]
-                    << std::endl ;
-                continue ;
+                throw RINGMeshException( "I/O", "Can't load: " + input_ts_names[ts_itr] ) ;
             }
 
             // get the basename
@@ -162,9 +153,8 @@ int main( int argc, char** argv )
                 std::string surface_output_name = surface_in_basename + "."
                     + output_formats[format_itr] ;
                 if( !GEO::mesh_save( mesh_surface_in, surface_output_name ) ) {
-                    GEO::Logger::err( "I/O" ) << "Can't save to: "
-                        << surface_output_name << std::endl ;
-                    continue ;
+                    throw RINGMeshException( "I/O",
+                        "Can't save to: " + surface_output_name ) ;
                 }
             }
 

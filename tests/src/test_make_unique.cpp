@@ -92,18 +92,14 @@ int main( int argc, char** argv )
 
         index_t ringmesh_nb = in.mesh.vertices.nb() ;
 
-        bool res = ringmesh_nb == geo_nb ;
-        if( res ) {
-            GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
-        } else {
-            GEO::Logger::out( "TEST" ) << "FAILED:" << std::endl ;
+        if( ringmesh_nb != geo_nb ) {
             GEO::Logger::out( "TEST" ) << "initial_nb=" << nb_non_unique_vertices
                 << std::endl ;
             GEO::Logger::out( "TEST" ) << "geo_nb=" << geo_nb << std::endl ;
             GEO::Logger::out( "TEST" ) << "ringmesh_nb=" << ringmesh_nb
                 << std::endl ;
+            throw RINGMeshException( "TEST", "FAILED" ) ;
         }
-        return !res ;
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
@@ -111,4 +107,6 @@ int main( int argc, char** argv )
         GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
+    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    return 0 ;
 }

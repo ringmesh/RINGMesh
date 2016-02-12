@@ -69,15 +69,9 @@ int main( int argc, char** argv )
         output_model_file_name_bis += "modelA1_saved_out_bis.bm" ;
         geomodel_surface_save( in2, output_model_file_name_bis ) ;
 
-        bool res = compare_files( output_model_file_name,
-            output_model_file_name_bis ) ;
-        if( res ) {
-            GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
-        } else {
-            GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
+        if( !compare_files( output_model_file_name, output_model_file_name_bis ) ) {
+            throw RINGMeshException( "TEST", "FAILED" ) ;
         }
-
-        return !res ;
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
@@ -85,5 +79,6 @@ int main( int argc, char** argv )
         GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
+    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 }

@@ -81,7 +81,6 @@ int main( int argc, char** argv )
         BB.build_model_from_surfaces() ;
         print_geomodel( model ) ;
         is_geomodel_valid( model, false ) ;
-        GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
 
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;
@@ -90,6 +89,7 @@ int main( int argc, char** argv )
         GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
+    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 
 }

@@ -92,10 +92,9 @@ int main( int argc, char** argv )
                     << fixed_file_name << std::endl ;
                 return 0 ;
             } else {
-                GEO::Logger::out( "RINGMesh Test" )
-                    << "Fixing the invalid geological model " << M.name()
-                    << " failed. " << std::endl ;
-                return 1 ;
+                throw RINGMeshException( "RINGMesh Test",
+                    "Fixing the invalid geological model " + M.name()
+                        + " failed." ) ;
             }
         } else {
             GEO::Logger::out( "RINGMesh Test" ) << "The geological model "

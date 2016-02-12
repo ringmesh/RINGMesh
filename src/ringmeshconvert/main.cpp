@@ -75,10 +75,8 @@ int main( int argc, char** argv )
         GEO::Stopwatch total( "Total time" ) ;
 
         std::string model_in_name = GEO::CmdLine::get_arg( "in:model" ) ;
-        if( model_in_name == "" ) {
-            GEO::Logger::err( "I/O" ) << "Give at least a filename in in:model"
-                << std::endl ;
-            return 1 ;
+        if( model_in_name.empty() ) {
+            throw RINGMeshException( "I/O", "Give at least a filename in in:model" ) ;
         }
         GeoModel model_in ;
         geomodel_surface_load( model_in_name, model_in ) ;
