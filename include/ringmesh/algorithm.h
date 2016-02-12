@@ -41,8 +41,8 @@
 #ifndef __RINGMESH_ALGORITHM__
 #define __RINGMESH_ALGORITHM__
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 /*!
  * @file ringmesh/algorithm.h

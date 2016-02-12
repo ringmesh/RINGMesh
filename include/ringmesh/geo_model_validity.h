@@ -42,6 +42,7 @@
 #define __RINGMESH_GEO_MODEL_VALIDITY__
 
 #include <ringmesh/common.h>
+
 #include <geogram/basic/file_system.h>
 
 /*!
