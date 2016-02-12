@@ -84,7 +84,7 @@ int main( int argc, char** argv )
         geomodel_surface_load( model_name, geomodel ) ;
 
         std::string mesh_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
-        if( mesh_name != "" ) {
+        if( !mesh_name.empty() ) {
             geomodel_volume_load( mesh_name, geomodel ) ;
         }
 
