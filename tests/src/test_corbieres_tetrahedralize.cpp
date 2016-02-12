@@ -50,40 +50,49 @@
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
-    
-    // Set an output log file
-    std::string log_file(ringmesh_test_output_path + "log.txt");
-    GEO::FileLogger* file_logger = new GEO::FileLogger(log_file);
-    GEO::Logger::instance()->register_client(file_logger);
 
+    try {
 
-    GEO::Logger::out( "RINGMesh Test" ) << "Tetrahedralization of the Corbieres model" << std::endl ;
+        // Set an output log file
+        std::string log_file( ringmesh_test_output_path + "log.txt" ) ;
+        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
+        GEO::Logger::instance()->register_client( file_logger ) ;
 
-    GeoModel M ;
-    std::string file_name( ringmesh_test_data_path ) ;
+        GEO::Logger::out( "RINGMesh Test" )
+            << "Tetrahedralization of the Corbieres model" << std::endl ;
 
-    /*! @todo Make this executable generic by setting
-    *   the file name as an argument of the command */
-    file_name += "corbieres.bm" ;
+        GeoModel M ;
+        std::string file_name( ringmesh_test_data_path ) ;
 
-    // Set the debug directory for the validity checks 
-    set_validity_errors_directory( ringmesh_test_output_path ) ;
+        /*! @todo Make this executable generic by setting
+         *   the file name as an argument of the command */
+        file_name += "corbieres.bm" ;
 
+        // Set the debug directory for the validity checks
+        set_validity_errors_directory( ringmesh_test_output_path ) ;
 
-    /* Load and check the validity of the model */
-    if( geomodel_surface_load( file_name, M ) ) {
-        // Mesh the model with Tetgen 
-        tetrahedralize( M, "TetGen" ) ;
+        /* Load and check the validity of the model */
+        geomodel_surface_load( file_name, M ) ;
+        if( is_geomodel_valid( M ) ) {
+            // Mesh the model with Tetgen
+            tetrahedralize( M, "TetGen" ) ;
 
-        // Output the mesh 
-        std::string output_file_name( ringmesh_test_output_path ) ;
-        output_file_name += "corbieres.meshb" ;
-        geomodel_volume_save( M, output_file_name ) ;
-        return 0 ;
-    } else {
-        GEO::Logger::out( "RINGMesh Test" ) << "The geological model "
-            << M.name() << " is invalid " << std::endl ;
-        print_geomodel( M ) ;
+            // Output the mesh
+            std::string output_file_name( ringmesh_test_output_path ) ;
+            output_file_name += "corbieres.meshb" ;
+            geomodel_volume_save( M, output_file_name ) ;
+        } else {
+            print_geomodel( M ) ;
+            throw RINGMeshException( "RINGMesh Test",
+                "The geological model " + M.name() + " is invalid " ) ;
+        }
+
+    } catch( const RINGMeshException& e ) {
+        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        return 1 ;
+    } catch( const std::exception& e ) {
+        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
+    return 0 ;
 }
