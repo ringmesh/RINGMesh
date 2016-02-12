@@ -40,13 +40,13 @@
 
 #include <ringmesh/tetra_gen.h>
 
+#include <cstdio>
 #include <iomanip>
 #include <stack>
 #include <sstream>
-#include <cstdio>
 
 #ifdef WIN32
-#include <io.h>
+#   include <io.h>
 #endif 
 
 #include <geogram/basic/logger.h>

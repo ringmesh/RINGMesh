@@ -40,8 +40,8 @@
 
 #include <ringmesh/io.h>
 
-#include <fstream>
 #include <cstring>
+#include <fstream>
 
 namespace RINGMesh {
 
