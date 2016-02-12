@@ -1821,7 +1821,7 @@ namespace RINGMesh {
             format ) ;
         if( !handler ) {
             std::vector< std::string > names ;
-            GeoModelSurfaceIOHandlerFactory::list_creators( names ) ;
+            GeoModelVolumeIOHandlerFactory::list_creators( names ) ;
             GEO::Logger::err( "I/O" ) << "Currently supported file formats are: " ;
             for( index_t i = 0; i < names.size(); i++ ) {
                 GEO::Logger::err( "I/O" ) << " " << names[i] ;
