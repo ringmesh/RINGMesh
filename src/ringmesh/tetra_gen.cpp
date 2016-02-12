@@ -39,20 +39,6 @@
  */
 
 #include <ringmesh/tetra_gen.h>
-#include <ringmesh/geo_model_element.h>
-#include <ringmesh/geo_model_api.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/well.h>
-#include <ringmesh/algorithm.h>
-#include <ringmesh/geometry.h>
-
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_tetrahedralize.h>
-#include <geogram/mesh/mesh_AABB.h>
 
 #include <iomanip>
 #include <stack>
@@ -62,6 +48,22 @@
 #ifdef WIN32
 #include <io.h>
 #endif 
+
+#include <geogram/basic/logger.h>
+
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_AABB.h>
+#include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_tetrahedralize.h>
+
+#include <ringmesh/algorithm.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/well.h>
 
 namespace RINGMesh {
     /*!

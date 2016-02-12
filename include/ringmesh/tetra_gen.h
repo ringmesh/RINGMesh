@@ -42,13 +42,12 @@
 #define __RINGMESH_TETRA_GEN__
 
 #include <ringmesh/common.h>
-#include <ringmesh/utils.h>
+
+#include <vector>
 
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
 #include <geogram/basic/factory.h>
-
-#include <vector>
 
 /*!
 * @file ringmesh/tetragen.h
