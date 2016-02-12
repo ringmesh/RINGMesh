@@ -81,12 +81,10 @@ int main( int argc, char** argv )
             std::string output_file_name( ringmesh_test_output_path ) ;
             output_file_name += "corbieres.meshb" ;
             geomodel_volume_save( M, output_file_name ) ;
-            return 0 ;
         } else {
-            GEO::Logger::out( "RINGMesh Test" ) << "The geological model "
-                << M.name() << " is invalid " << std::endl ;
             print_geomodel( M ) ;
-            return 1 ;
+            throw RINGMeshException( "RINGMesh Test",
+                "The geological model " + M.name() + " is invalid " ) ;
         }
 
     } catch( const RINGMeshException& e ) {
@@ -96,4 +94,5 @@ int main( int argc, char** argv )
         GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
+    return 0 ;
 }
