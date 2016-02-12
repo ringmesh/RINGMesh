@@ -46,12 +46,9 @@
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geometry.h>
 
-#include <geogram/basic/logger.h>
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_tetrahedralize.h>
 #include <geogram/mesh/mesh_AABB.h>
 
 #include <iomanip>
