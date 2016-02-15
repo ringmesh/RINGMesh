@@ -370,7 +370,7 @@ namespace GEO {
          * \retval false otherwise
          */
         bool compute_inverse(matrix_type& result) const {
-            FT val, val2;
+            FT val=FT(0.0), val2=FT(0.0);
             matrix_type tmp = (*this);
 
             result.load_identity();

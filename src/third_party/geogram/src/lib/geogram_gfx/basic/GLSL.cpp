@@ -138,8 +138,8 @@ namespace GEO {
         /*************************************************************/
 
         double supported_language_version() {
-            const char* shading_language_ver_str = (const char*)glGetString(
-                GL_SHADING_LANGUAGE_VERSION
+            const char* shading_language_ver_str = (const char*)glGetStringi(
+                GL_SHADING_LANGUAGE_VERSION, 0
             );
             const char* vendor = (const char*)glGetString(
                 GL_VENDOR
@@ -147,7 +147,28 @@ namespace GEO {
             Logger::out("GLSL") << "vendor = " << vendor << std::endl;
             Logger::out("GLSL") << "version string = "
                                 << shading_language_ver_str << std::endl;
-            double GLSL_version = atof(shading_language_ver_str);
+
+            // The way the driver exposes the version of GLSL may differ,
+            // in some drivers the number comes in first position, in some
+            // others it comes in last position, therefore we take the first
+            // word that contains a valid number.
+            std::vector<std::string> shading_language_ver_words;
+            String::split_string(
+                shading_language_ver_str, ' ', shading_language_ver_words
+            );
+            double GLSL_version = 0.0;
+            for(index_t i=0; i<shading_language_ver_words.size(); ++i) {
+                GLSL_version = atof(shading_language_ver_words[i].c_str());
+                if(GLSL_version != 0.0) {
+                    break;
+                }
+            }
+            // Some drivers expose version 4.4 as 4.4 and some others
+            // as 440 !!
+            if(GLSL_version > 100.0) {
+                GLSL_version /= 100.0;
+            }
+            
             Logger::out("GLSL") << "version = " << GLSL_version
                                 << std::endl;
             if(!CmdLine::get_arg_bool("gfx:GLSL")) {
@@ -213,7 +234,12 @@ namespace GEO {
             const char* source7,
             const char* source8,
             const char* source9,
-            const char* source10
+            const char* source10,
+            const char* source11,
+            const char* source12,
+            const char* source13,
+            const char* source14,
+            const char* source15            
         ) {
             vector<const char*> sources;
             geo_assert(source1 != nil);
@@ -246,6 +272,21 @@ namespace GEO {
             }
             if(source10 != nil) {
                 sources.push_back(source10);
+            }
+            if(source11 != nil) {
+                sources.push_back(source11);
+            }
+            if(source12 != nil) {
+                sources.push_back(source12);
+            }
+            if(source13 != nil) {
+                sources.push_back(source13);
+            }
+            if(source14 != nil) {
+                sources.push_back(source14);
+            }
+            if(source15 != nil) {
+                sources.push_back(source15);
             }
             return compile_shader(target, &sources[0], sources.size());
         }

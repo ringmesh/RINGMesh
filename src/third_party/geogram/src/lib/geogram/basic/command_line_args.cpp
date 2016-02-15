@@ -515,10 +515,20 @@ namespace {
     void import_arg_group_gfx() {
         declare_arg_group("gfx", "OpenGL graphics options", ARG_ADVANCED);
         declare_arg(
-            "gfx:full_screen", false, "full screen mode"
-        );                
+            "gfx:GL_profile", "compatibility",
+            "one of core,compatibility,ES"
+        );
         declare_arg(
-            "gfx:GLSL", true, "Use GLSL shaders (requires recent gfx board)"
+            "gfx:GL_version", 0.0,
+            "If non-zero, force GL version detection"
+        );
+        declare_arg(
+            "gfx:GL_debug", false,
+            "OpenGL debugging context"
+        );
+        declare_arg(
+            "gfx:GLSL", true,
+            "Use GLSL shaders (requires a decently recent gfx board)"
         );
         declare_arg(
             "gfx:GLSL_tesselation", true,
@@ -529,12 +539,15 @@ namespace {
             "If non-zero, force GLSL version detection"
         );
         declare_arg(
+            "gfx:GLUP_profile", "auto",
+            "one of auto, GLUP150, GLUP440, VanillaGL"
+        );
+        declare_arg(
             "gfx:GLUP_precompile_shaders", false,
             "Precompile all GLUP shaders at context creation"
         );
         declare_arg(
-            "gfx:GLUP_use_core_profile", false,
-            "Use OpenGL core profile (no compatibility profile)"
+            "gfx:full_screen", false, "full screen mode"
         );
     }
     

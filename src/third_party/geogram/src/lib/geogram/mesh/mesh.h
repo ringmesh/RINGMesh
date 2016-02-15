@@ -1862,6 +1862,11 @@ namespace GEO {
          */
         index_t create_cells(index_t nb_cells, MeshCellType type) {
 
+	    if(nb_cells == 0) {
+	        return NO_CELL;
+	    }
+	   
+	   
             if(type != MESH_TET) {
                 is_not_simplicial();
             }

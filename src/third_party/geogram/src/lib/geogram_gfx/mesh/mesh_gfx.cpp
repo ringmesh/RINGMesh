@@ -95,6 +95,8 @@ namespace GEO {
         edge_indices_VBO_ = 0;
         facet_indices_VBO_ = 0;
         cell_indices_VBO_ = 0;
+
+        do_animation_ = false;
     }
 
     MeshGfx::~MeshGfx() {
@@ -147,15 +149,18 @@ namespace GEO {
         glupEnable(GLUP_LIGHTING);
         glupSetColor3fv(GLUP_FRONT_COLOR, points_color_);
         glPointSize(points_size_ * 5.0f);
-        
+
         if(vertices_selection_ == "") {
 
-            if(vertices_VAO_ != 0) {
+            if(
+                vertices_VAO_ != 0 && !do_animation_ &&
+                glupPrimitiveSupportsArrayMode(GLUP_POINTS)
+            ) {
                 glBindVertexArray(vertices_VAO_);
                 glupDrawArrays(GLUP_POINTS, 0, GLUPsizei(mesh_->vertices.nb()));
                 glBindVertexArray(0);
             } else {
-                glupBegin(GLUP_POINTS);            
+                glupBegin(GLUP_POINTS);
                 for(index_t v=0; v<mesh_->vertices.nb(); ++v) {
                     draw_vertex(v);
                 }
@@ -177,6 +182,7 @@ namespace GEO {
                 glupEnd();
             }
         }
+        
         glupDisable(GLUP_PICKING);        
     }
 
@@ -185,7 +191,7 @@ namespace GEO {
         set_GLUP_picking(MESH_EDGES);
         glupSetColor3fv(GLUP_FRONT_COLOR, mesh_color_);
         glLineWidth(GLfloat(mesh_width_));
-        if(edges_VAO_ != 0) {
+        if(glupPrimitiveSupportsArrayMode(GLUP_LINES) && edges_VAO_ != 0) {
             glBindVertexArray(edges_VAO_);
             glupDrawElements(
                 GLUP_LINES,
@@ -208,12 +214,15 @@ namespace GEO {
         set_GLUP_parameters();
         set_GLUP_picking(MESH_FACETS);
         update_buffer_objects_if_needed();
-        
+
         glupSetCellsShrink(0.0f);
         glupSetColor3fv(GLUP_FRONT_COLOR, surface_color_);
         glupSetColor3fv(GLUP_BACK_COLOR, backface_surface_color_);
-        if(mesh_->facets.are_simplices()) {
-            if(facets_VAO_ != 0) {
+        if(mesh_->facets.are_simplices() && !do_animation_) {
+            if(
+                facets_VAO_ != 0 &&
+                glupPrimitiveSupportsArrayMode(GLUP_TRIANGLES)
+            ) {
                 glBindVertexArray(facets_VAO_);
                 glupDrawElements(
                     GLUP_TRIANGLES,
@@ -332,15 +341,20 @@ namespace GEO {
     }
 
     void MeshGfx::draw_volume() {
+        if(mesh_->cells.nb() == 0) {
+            return;
+        }
         set_GLUP_parameters();
         glupSetCellsShrink(GLUPfloat(shrink_));
-        if(mesh_->cells.are_simplices()) {
+        if(mesh_->cells.are_simplices() && !do_animation_) {
             if(!draw_cells_[MESH_TET]) {
                 return;
             }
             glupSetColor3fv(GLUP_FRONT_AND_BACK_COLOR, cells_color_[MESH_TET]);
-
-            if(facets_VAO_ != 0) {
+            if(
+                facets_VAO_ != 0 &&
+                glupPrimitiveSupportsArrayMode(GLUP_TETRAHEDRA)
+            ) {
                 glBindVertexArray(cells_VAO_);
                 glupDrawElements(
                     GLUP_TETRAHEDRA,
@@ -419,7 +433,7 @@ namespace GEO {
             glupDisable(GLUP_LIGHTING);
         }
 
-        glupClipMode(GLUP_CLIP_WHOLE_CELLS);
+        glupClipMode(GLUP_CLIP_WHOLE_CELLS); // TODO: maybe remove that...
         
         do_animation_ =
             (animate_ && mesh_->vertices.dimension() >= 6);
@@ -494,6 +508,14 @@ namespace GEO {
             return;
         }
 
+        if(!buffer_objects_dirty_) {
+            return;
+        }
+
+        if(!strcmp(glupCurrentProfileName(),"VanillaGL")) {
+            return;
+        }
+        
         if(mesh_->vertices.single_precision()) {
             size_t size = mesh_->vertices.nb() *
                 mesh_->vertices.dimension() * sizeof(float);

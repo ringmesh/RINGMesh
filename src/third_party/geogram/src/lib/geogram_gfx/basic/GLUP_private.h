@@ -58,38 +58,90 @@
 namespace GLUP {
     using namespace GEO;
 
-
     /**
      * \brief Computes the inverse of a 4x4 matrix.
-     * \param[in] m pointer to the input matrix
      * \param[out] inv the computed inverse of \p m
+     * \param[in] m pointer to the input matrix
      * \retval GL_TRUE if the matrix \p m is invertible
      * \retval GL_FALSE if the matrix \p m is singular. Then
      *   \p inv receives the transpose of the comatrix of \p m
      */
-    GLboolean invert_matrix(
-        const GLfloat m[16], GLfloat inv[16]
-    );
-        
+    GLboolean invert_matrix(GLfloat inv[16], const GLfloat m[16]);
+
+    /**
+     * \brief Computes the inverse of a 4x4 matrix.
+     * \param[out] inv the computed inverse of \p m
+     * \param[in] m pointer to the input matrix
+     * \retval GL_TRUE if the matrix \p m is invertible
+     * \retval GL_FALSE if the matrix \p m is singular. Then
+     *   \p inv receives the transpose of the comatrix of \p m
+     */
+    GLboolean invert_matrix(GLdouble inv[16], const GLdouble m[16]);
+    
     /**
      * \brief Computes the product of two 4x4 matrices
-     * \param[in] m1,m2 pointers to the input matrices
      * \param[out] out the computed product \p m1 * \p m2
+     * \param[in] m1,m2 pointers to the input matrices
      */
     void mult_matrices(
-        const GLfloat m1[16], const GLfloat m2[16], GLfloat out[16]
+        GLfloat out[16], const GLfloat m1[16], const GLfloat m2[16]
     );
 
+    /**
+     * \brief Computes the product of two 4x4 matrices
+     * \param[out] out the computed product \p m1 * \p m2
+     * \param[in] m1,m2 pointers to the input matrices
+     */
+    void mult_matrices(
+        GLdouble out[16], const GLdouble m1[16], const GLdouble m2[16]
+    );
 
     /**
      * \brief Computes the product of a 4x4 matrix and a vector.
+     * \param[out] out the computed product \p m * \p v
      * \param[in] m pointer to the input matrix
      * \param[in] v pointer to the input vector
-     * \param[out] out the computed product \p m * \p v
      */
     void mult_matrix_vector(
-        const GLfloat m[16], const GLfloat v[4], GLfloat out[4]
+        GLfloat out[4], const GLfloat m[16], const GLfloat v[4]
     );
+
+
+    /**
+     * \brief Computes the product of the transpose of a 
+     *   4x4 matrix and a vector.
+     * \param[out] out the computed product \p m * \p v
+     * \param[in] m pointer to the input matrix
+     * \param[in] v pointer to the input vector
+     * \TODO: it seems that in GLSL, w = M*v uses this one !!
+     */
+    void mult_transpose_matrix_vector(
+        GLfloat out[4], const GLfloat m[16], const GLfloat v[4]
+    );
+    
+    /**
+     * \brief Computes the product of a 4x4 matrix and a vector.
+     * \param[out] out the computed product \p m * \p v
+     * \param[in] m pointer to the input matrix
+     * \param[in] v pointer to the input vector
+     */
+    void mult_matrix_vector(
+        GLdouble out[4], const GLdouble m[16], const GLdouble v[4] 
+    );
+
+    /**
+     * \brief Transposes a matrix in-place.
+     * \param[in,out] m a pointer to the 16 single-precision
+     *  floating point coefficients of the matrix to be transposed.
+     */
+    void transpose_matrix(GLfloat m[16]);
+
+    /**
+     * \brief Transposes a matrix in-place.
+     * \param[in,out] m a pointer to the 16 double-precision
+     *  floating point coefficients of the matrix to be transposed.
+     */
+    void transpose_matrix(GLdouble m[16]);
     
     /**
      * \brief For debugging, outputs a matrix to the standard error.
@@ -139,9 +191,10 @@ namespace GLUP {
     
     /**
      * \brief Normalizes a vector.
-     * \param[in,out] v the vector to be normalized.
+     * \param[in,out] v a pointer to the 3 coordinates of the 3d 
+     *  vector to be normalized.
      */
-    inline void normalize_vector(GLfloat* v) {
+    inline void normalize_vector(GLfloat v[3]) {
         GLfloat s = 1.0f / ::sqrtf(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
         v[0] *= s;
         v[1] *= s;
@@ -149,6 +202,11 @@ namespace GLUP {
     }
 
 
+    /**
+     * \brief Gives the number of vertices for each GLUP primitive.
+     * \details The array is indexed by the GLUP primitive type
+     *  (one of GLUP_POINTS, GLUP_LINES, ...)
+     */
     extern index_t nb_vertices_per_primitive[];
     
     /**********************************************************************/
@@ -442,6 +500,7 @@ namespace GLUP {
             }
         }
 
+        
         /**
          * \brief Configures the immediate state for rendering
          *  primitives of a given type.
@@ -801,7 +860,7 @@ namespace GLUP {
         FloatsArrayStateVariable           modelview_matrix;
         FloatsArrayStateVariable           modelviewprojection_matrix;
         FloatsArrayStateVariable           normal_matrix;
-        FloatsArrayStateVariable           texture_matrix;        
+        FloatsArrayStateVariable           texture_matrix;
     };
     
     /**********************************************************************/
@@ -883,6 +942,11 @@ namespace GLUP {
 
 
         /**
+         * \brief Gets the profile name associated with this context.
+         */
+        virtual const char* profile_name() const = 0; 
+        
+        /**
          * \brief Tests whether a given GLUP primitive supports array mode.
          * \details If array mode is supported, then one can use glupDrawArray()
          *  and glupDrawElements() with the specified primitive.
@@ -959,7 +1023,7 @@ namespace GLUP {
          */
         void mult_matrix(const GLfloat m[16]) {
             GLfloat product[16];
-            mult_matrices(m,matrix_stack_[matrix_mode_].top(), product);
+            mult_matrices(product,m,matrix_stack_[matrix_mode_].top());
             load_matrix(product);
         }
 
@@ -1034,13 +1098,21 @@ namespace GLUP {
          * \param[in] s,t,u,v the current texture coordinates.
          */
         void immediate_tex_coord(
-            GLfloat s, GLfloat t=0.0f, GLfloat u=0.0f, GLfloat v=0.0f
+            GLfloat s, GLfloat t=0.0f, GLfloat u=0.0f, GLfloat v=1.0f
         ) {
             immediate_state_.buffer[GLUP_TEX_COORD_ATTRIBUTE].set_current(
                 s,t,u,v
             );
         }
 
+        /**
+         * \brief Sets the user program, to be used instead of
+         *  the default GLUP programs for drawing the primitives.
+         */
+        void set_user_program(GLuint program) {
+            user_program_ = program;
+        }
+        
         /**
          * \brief Begins rendering in immediate mode.
          * \param[in] primitive the primitive to be rendered.
@@ -1142,9 +1214,17 @@ namespace GLUP {
             geo_debug_assert(matrix < 3);
             return matrix_stack_[matrix].top();
         }
-        
-        
+
     protected:
+
+        /**
+         * \brief Gets some GLSL declarations that depend on the current
+         *  profile.
+         * \return a const pointer to a string with the GLSL sources of
+         *  the profile-dependent declarations.
+         */
+        const char* profile_dependent_declarations();
+        
         /**
          * \brief This function is called before starting to
          *  render primitives. It is called by begin(), draw_arrays()
@@ -1380,12 +1460,15 @@ namespace GLUP {
         // draw a primitive of a given type).
         vector<PrimitiveInfo> primitive_info_;
 
+        GLuint user_program_;
+        
         index_t toggles_config_;
         std::string toggles_shader_source_;
 
         bool precompile_shaders_;
 
         bool use_core_profile_;
+        bool use_ES_profile_;
     };
 
     /*********************************************************************/
@@ -1401,6 +1484,11 @@ namespace GLUP {
      */
     class Context_GLSL150 : public Context {
     public:
+        /**
+         * \copydoc Context::profile_name()
+         */
+        virtual const char* profile_name() const;
+        
     protected:
         /**
          * \copydoc Context::setup_GLUP_POINTS()
@@ -1455,6 +1543,11 @@ namespace GLUP {
      */
     class Context_GLSL440 : public Context_GLSL150 {
     public:
+        /**
+         * \copydoc Context::profile_name()
+         */
+        virtual const char* profile_name() const;
+        
     protected:
         /**
          * \copydoc Context::setup_GLUP_HEXAHEDRA()
@@ -1479,12 +1572,55 @@ namespace GLUP {
     class Context_VanillaGL : public Context {
     public:
         /**
+         * \brief Context_VanillaGL constructor.
+         */
+        Context_VanillaGL();
+
+        /**
+         * \copydoc Context::profile_name()
+         */
+        virtual const char* profile_name() const;
+        
+        /**
          * \copydoc Context::primitive_supports_array_mode()
          */
         virtual bool primitive_supports_array_mode(GLUPprimitive prim) const;
+
+        /**
+         * \copydoc Context::begin()
+         */
+        virtual void begin(GLUPprimitive primitive);
+
+        /**
+         * \copydoc Context::end()
+         */
+        virtual void end();
         
     protected:
 
+        /**
+         * \brief Configures texturing-related OpenGL state
+         *  variables according to the GLUP state variables.
+         * \details This function is called by begin()
+         */
+        void configure_OpenGL_texturing();
+
+        /**
+         * \brief Configures lighting-related OpenGL state
+         *  variables according to the GLUP state variables.
+         * \details This function is called by begin()
+         */
+        void configure_OpenGL_lighting();
+
+        /**
+         * \brief Configures lighting-related OpenGL state
+         *  variables according to the GLUP state variables.
+         * \details This function is called by begin(). It needs
+         *  to be called last, since it overrides texturing and
+         *  lighting settings.
+         */
+        void configure_OpenGL_picking();        
+       
         /**
          * \copydoc Context::setup()
          */
@@ -1495,6 +1631,17 @@ namespace GLUP {
          */
         virtual void flush_immediate_buffers();
 
+
+        /**
+         * \brief Flushes the immediate buffer with the
+         *  current drawing modes. 
+         * \details This function is separated from 
+         *  flush_immediate_buffers(), since we need to
+         *  flush the buffer twice when mesh drawing is
+         *  enabled.
+         */
+        virtual void flush_immediate_buffers_once();
+        
         /**
          * \copydoc Context::setup_immediate_buffers()
          */
@@ -1512,11 +1659,170 @@ namespace GLUP {
         Memory::pointer get_state_variable_address(const char* name);
 
 
+        /**
+         * \brief Shrinks the cells in the immediate buffer.
+         * \details Applies the shrinking factor (state variable
+         *   "cells_shrink") to all the cells stored in the current
+         *   immediate buffer. Since there is no function to query
+         *   the content of the current buffer, modidying it is 
+         *   acceptable.
+         */
+        void shrink_cells_in_immediate_buffers();
+
+        /**
+         * \brief Updates v_is_visible_[] according to
+         *  current clipping plane.
+         */
+        void classify_vertices_in_immediate_buffers();
+
+        /**
+         * \brief Tests whether the cell starting at a given vertex
+         *  in the immediate buffer is clipped, according to current
+         *  clipping mode and current primitive type.
+         */
+        bool cell_is_clipped(index_t first_v);
+        
+        /**
+         * \brief Sends a vertex and its optional attributes to OpenGL.
+         * \param[in] v the index of the vertex from the immediate buffer.
+         */
+        void output_vertex(index_t v) {
+            if(immediate_state_.buffer[GLUP_COLOR_ATTRIBUTE].is_enabled()) {
+                glColor4fv(
+                    immediate_state_.buffer[GLUP_COLOR_ATTRIBUTE].element_ptr(v)
+                );
+            }
+            if(immediate_state_.buffer[GLUP_TEX_COORD_ATTRIBUTE].is_enabled()) {
+                glTexCoord4fv(
+                    immediate_state_.buffer[GLUP_TEX_COORD_ATTRIBUTE].
+                    element_ptr(v)
+                );
+            }
+            glVertex4fv(
+                immediate_state_.buffer[GLUP_VERTEX_ATTRIBUTE].element_ptr(v)
+            );
+        }
+
+        /**
+         * \brief Sends a triangle normal to OpenGL
+         * \param[in] v1,v2,v3 the indices of the three vertices from
+         *  the immediate buffer.
+         */
+        void output_normal(index_t v1, index_t v2, index_t v3);
+
+        /**
+         * \brief Sends a quad normal to OpenGL
+         * \param[in] v1,v2,v3,v4 the indices of the four vertices from
+         *  the immediate buffer.
+         */
+        void output_normal(index_t v1, index_t v2, index_t v3, index_t v4);
+
+
+        /**
+         * \brief Sends a picking id to OpenGL and encodes it as a color.
+         * \details The current base picking id is added to the id.
+         *  If picking is deactivated or constant by object, 
+         *  it does nothing.
+         */
+        void output_picking_id(index_t id) {
+            if(pick_primitives_) {
+                glPickingIdAsColor(
+                    index_t(uniform_state_.base_picking_id.get()) + id
+                );
+            }
+        }
+        
+        /**
+         * \brief Sends a flat-shaded triangle to OpenGL
+         * \param[in] v1,v2,v3 the indices of the three vertices from the
+         *  immediate buffer.
+         */
+        void flat_shaded_triangle(index_t v1, index_t v2, index_t v3) {
+            if(uniform_state_.toggle[GLUP_LIGHTING].get()) {
+                output_normal(v1,v2,v3);
+            }
+            output_vertex(v1);
+            output_vertex(v2);
+            output_vertex(v3);
+        }
+
+        /**
+         * \brief Sends a flat-shaded quad to OpenGL
+         * \param[in] v1,v2,v3,v4 the indices of the three vertices from the
+         *  immediate buffer.
+         */
+        void flat_shaded_quad(index_t v1, index_t v2, index_t v3, index_t v4) {
+            if(uniform_state_.toggle[GLUP_LIGHTING].get()) {
+                output_normal(v1,v2,v3,v4);
+            }
+            output_vertex(v1);
+            output_vertex(v2);
+            output_vertex(v4);
+            output_vertex(v3);            
+        }
+
+        /**
+         * \brief Sends the contents of the immediate buffers to 
+         *  OpenGL, as point primitives.
+         */
         void draw_immediate_buffer_GLUP_POINTS();
-        void draw_immediate_buffer_GLUP_LINES();        
+
+        /**
+         * \brief Sends the contents of the immediate buffers to 
+         *  OpenGL, as line primitives.
+         */
+        void draw_immediate_buffer_GLUP_LINES();
+
+        /**
+         * \brief Sends the contents of the immediate buffers to 
+         *  OpenGL, as triangle primitives.
+         */
+        void draw_immediate_buffer_GLUP_TRIANGLES();
+
+        /**
+         * \brief Sends the contents of the immediate buffers to 
+         *  OpenGL, as quad primitives.
+         */
+        void draw_immediate_buffer_GLUP_QUADS();
+
+        /**
+         * \brief Sends the contents of the immediate buffers to 
+         *  OpenGL, as tetrahedra primitives.
+         */
+        void draw_immediate_buffer_GLUP_TETRAHEDRA();
+
+        /**
+         * \brief Sends the contents of the immediate buffers to 
+         *  OpenGL, as hexahedra primitives.
+         */
+        void draw_immediate_buffer_GLUP_HEXAHEDRA();
+
+        /**
+         * \brief Sends the contents of the immediate buffers to 
+         *  OpenGL, as prism primitives.
+         */
+        void draw_immediate_buffer_GLUP_PRISMS();
+
+        /**
+         * \brief Sends the contents of the immediate buffers to 
+         *  OpenGL, as pyramid primitives.
+         */
+        void draw_immediate_buffer_GLUP_PYRAMIDS();
         
     private:
         std::map<std::string, GLsizei> variable_to_offset_;
+
+        /**
+         * \brief Indicates for a given vertex whether it is clipped or
+         *  is visible, according to the current clipping plane.
+         */
+        bool v_is_visible_[IMMEDIATE_BUFFER_SIZE];
+
+        /**
+         * \brief Indicates whether a picking id should be send to 
+         *  OpenGL for each primitive.
+         */
+        bool pick_primitives_;
     };
 
     /*********************************************************************/
