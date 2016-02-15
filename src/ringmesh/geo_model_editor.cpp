@@ -45,12 +45,8 @@ namespace RINGMesh {
 
     typedef GeoModelElement::gme_t gme_t ;
 
-    /*!
-    * @brief Mini-factory. Create an empty element of the right type
-    */
-    GME* new_element( GME::TYPE T, const GeoModel& M, index_t id )
+    GME* GeoModelEditor::new_element( GME::TYPE T, const GeoModel& M, index_t id )
     {
-
         if( T == GME::CORNER ) {
             return new Corner( M, id ) ;
         } else if( T == GME::LINE ) {
@@ -104,7 +100,7 @@ namespace RINGMesh {
     * THIS MEANS that the all the elements of the same type have been initialized with
     * the same information.
     */
-    bool GeoModelEditor::complete_element_connectivity()
+    void GeoModelEditor::complete_element_connectivity()
     {
         // Lines
         if( model_.nb_lines() > 0 ) {
@@ -157,7 +153,6 @@ namespace RINGMesh {
         if( model_.nb_layers() > 0 && model_.layer( 0 ).nb_children() == 0 ) {
             fill_elements_children( GME::LAYER ) ;
         }
-        return true ;
     }
 
     void GeoModelEditor::fill_elements_boundaries( GME::TYPE type ) const

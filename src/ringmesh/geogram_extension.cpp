@@ -299,10 +299,46 @@ namespace RINGMesh {
     void TetgenMesher::tetrahedralize()
     {
         try {
-            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_, &tetgen_out_ );
-        } catch( std::exception& e ) {
-            GEO::Logger::err( "Tetgen" )
-                << "Encountered a problem" << e.what() << std::endl ;
+            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_,
+                &tetgen_out_ ) ;
+        } catch( int code ) {
+            GEO::Logger::err( "Tetgen" ) << "Encountered a problem: " ;
+            switch( code ) {
+                case 1:
+                    GEO::Logger::err( "Tetgen" ) << "Out of memory" ;
+                    break ;
+                case 2:
+                    GEO::Logger::err( "Tetgen" )
+                        << "Please report this bug to Hang.Si@wias-berlin.de. Include\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "  the message above, your input data set, and the exact\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "  command line you used to run this program, thank you" ;
+                    break ;
+                case 3:
+                    GEO::Logger::err( "Tetgen" )
+                        << "A self-intersection was detected. Program stopped\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "Hint: use -d option to detect all self-intersections" ;
+                    break ;
+                case 4:
+                    GEO::Logger::err( "Tetgen" )
+                        << "A very small input feature size was detected. Program stopped.\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "Hint: use -T option to set a smaller tolerance." ;
+                    break ;
+                case 5:
+                    GEO::Logger::err( "Tetgen" )
+                        << "Two very close input facets were detected. Program stopped.\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "Hint: use -Y option to avoid adding Steiner points in boundary." ;
+                    break ;
+                case 10:
+                    GEO::Logger::err( "Tetgen" )
+                        << "An input error was detected. Program stopped." ;
+                    break ;
+            }
+            GEO::Logger::err( "Tetgen" ) << std::endl ;
         }
     }
 
@@ -417,6 +453,7 @@ namespace RINGMesh {
         index_t nb_points( tetgen_out_.numberofpoints ) ;
         points.resize( 3 * nb_points ) ;
         double* points_ptr = tetgen_out_.pointlist ;
+        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < 3 * nb_points; ++i ) {
             points[ i ] = points_ptr[ i ] ;
         }
@@ -429,6 +466,7 @@ namespace RINGMesh {
 
         int* tets_ptr = tetgen_out_.tetrahedronlist ;
         int one_tet_size = tetgen_out_.numberofcorners ;
+        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < nb_tets; ++i ) {
             tets[ 4 * i + 0 ] = index_t( tets_ptr[ one_tet_size*i + 0 ] ) ;
             tets[ 4 * i + 1 ] = index_t( tets_ptr[ one_tet_size*i + 1 ] ) ;
@@ -437,14 +475,18 @@ namespace RINGMesh {
         }
     }
 
-    bool tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) 
+    void tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality )
     {
-        if (!is_mesh_tetrahedralizable(M)) {
-            return false ;
+        if( !is_mesh_tetrahedralizable( M ) ) {
+            throw RINGMeshException( "TetGen", "Mesh cannot be tetrahedralized" ) ;
         }               
         TetgenMesher mesher ;
-        mesher.tetrahedralize( M, "QpYA", M ) ;     
-        return true ;
+        if( refine ) {
+            mesher.tetrahedralize( M, "QpYAq" + GEO::String::to_string( quality ),
+                M ) ;
+        } else {
+            mesher.tetrahedralize( M, "QpYYA", M ) ;
+        }
     }
 #endif
     
