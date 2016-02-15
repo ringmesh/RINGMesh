@@ -72,8 +72,10 @@ INITIALIZER( initialize ) {
         initialized = true ;
         GEO::initialize() ;
         GEO::CmdLine::import_arg_group( "sys" ) ;
+#ifdef RINGMESH_DEBUG
         GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
-        GEO::CmdLine::set_arg( "sys:FPE", false ) ;
+#endif
+        GEO::CmdLine::set_arg( "sys:FPE", true ) ;
         GEO::CmdLine::import_arg_group( "algo" ) ;
         GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
         GEO::CmdLine::import_arg_group( "log" ) ;

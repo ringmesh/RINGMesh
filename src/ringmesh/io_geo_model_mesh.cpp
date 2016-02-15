@@ -60,8 +60,10 @@
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
 
-namespace RINGMesh {
-    static double read_double( GEO::LineInput& in, index_t field )
+namespace {
+    using namespace RINGMesh ;
+
+    double read_double( GEO::LineInput& in, index_t field )
     {
         double result ;
         std::istringstream iss( in.field( field ) ) ;
@@ -88,39 +90,35 @@ namespace RINGMesh {
         file.close() ;
     }
 
-    bool unzip_file( unzFile uz, char filename[MAX_FILENAME] )
+    void unzip_file( unzFile uz, char filename[MAX_FILENAME] )
     {
         char read_buffer[ READ_SIZE] ;
         unz_file_info file_info ;
         if( unzGetCurrentFileInfo( uz, &file_info, filename,
         MAX_FILENAME,
         NULL, 0, NULL, 0 ) != UNZ_OK ) {
-            GEO::Logger::err( "could not read file global info" ) ;
             unzClose( uz ) ;
-            return false ;
+            throw RINGMeshException( "ZLIB", "Could not read file global info" ) ;
         }
         if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
-            GEO::Logger::err( "could not open file" ) ;
             unzClose( uz ) ;
-            return false ;
+            throw RINGMeshException( "ZLIB", "Could not open file" ) ;
         }
         FILE *out = fopen( filename, "wb" ) ;
         if( out == NULL ) {
-            GEO::Logger::err( "could not open destination file" ) ;
             unzCloseCurrentFile( uz ) ;
             unzClose( uz ) ;
-            return false ;
+            throw RINGMeshException( "ZLIB", "Could not open destination file" ) ;
         }
         int error = UNZ_OK ;
         do {
             error = unzReadCurrentFile( uz, read_buffer, READ_SIZE ) ;
             if( error < 0 ) {
-                GEO::Logger::err(
-                    "Invalid error: " + GEO::String::to_string( error ) ) ;
                 unzCloseCurrentFile( uz ) ;
                 unzClose( uz ) ;
                 fclose( out ) ;
-                return false ;
+                throw RINGMeshException( "ZLIB",
+                    "Invalid error: " + GEO::String::to_string( error ) ) ;
             }
             if( error > 0 ) {
                 fwrite( read_buffer, error, 1, out ) ;
@@ -128,65 +126,18 @@ namespace RINGMesh {
         } while( error > 0 ) ;
         fclose( out ) ;
         unzCloseCurrentFile( uz ) ;
-        return true ;
-    }
-
-    /*!
-     * Loads a GeoModel from a file
-     * @param[in] filename the file to load
-     * @param][out] model the mesh to fill
-     * @return returns the success of the operation
-     */
-    bool geomodel_volume_load( const std::string& filename, GeoModel& model )
-    {
-        GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
-            << std::endl ;
-
-        GeoModelVolumeIOHandler_var handler = GeoModelVolumeIOHandler::get_handler(
-            filename ) ;
-        if( handler && handler->load( filename, model ) ) {
-            return true ;
-        }
-
-        GEO::Logger::err( "I/O" ) << "Could not load file: " << filename
-            << std::endl ;
-        return false ;
-    }
-
-    /*!
-     * Saves a GeoModel in a file
-     * @param[in] model the mesh to save
-     * @param[in] filename the file where to save
-     * @return returns the success of the operation
-     */
-    bool geomodel_volume_save( const GeoModel& model, const std::string& filename )
-    {
-        GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
-            << std::endl ;
-
-        GeoModelVolumeIOHandler_var handler = GeoModelVolumeIOHandler::get_handler(
-            filename ) ;
-        if( handler && handler->save( model, filename ) ) {
-            return true ;
-        }
-
-        GEO::Logger::err( "I/O" ) << "Could not save file: " << filename
-            << std::endl ;
-        return false ;
     }
 
     /************************************************************************/
 
     class AsterIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& mesh )
         {
-            GEO::Logger::err( "I/O" )
-                << "Loading of a GeoModel from Code_Aster mesh not implemented yet"
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from Code_Aster mesh not implemented yet" ) ;
         }
-        virtual bool save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& gm, const std::string& filename )
         {
             std::vector< index_t > vertex_exported_id( gm.mesh.vertices.nb(),
                 NO_ID ) ;
@@ -299,9 +250,6 @@ namespace RINGMesh {
             out << "FIN" << std::endl ;
 
             out.close() ;
-
-            return true ;
-
         }
     } ;
 
@@ -309,14 +257,13 @@ namespace RINGMesh {
 
     class MMIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& gm )
+        virtual void load( const std::string& filename, GeoModel& gm )
         {
             unzFile uz = unzOpen( filename.c_str() ) ;
             unz_global_info global_info ;
             if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
-                GEO::Logger::err( "could not read file global info" ) ;
                 unzClose( uz ) ;
-                return false ;
+                throw RINGMeshException( "ZLIB", "Could not read file global info" ) ;
             }
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 char filename[MAX_FILENAME] ;
@@ -339,19 +286,17 @@ namespace RINGMesh {
 
                 if( ( r + 1 ) < global_info.number_entry ) {
                     if( unzGoToNextFile( uz ) != UNZ_OK ) {
-                        GEO::Logger::err( "Could not read next file" ) ;
                         unzClose( uz ) ;
-                        return false ;
+                        throw RINGMeshException( "ZLIB", "Could not read next file" ) ;
                     }
                 }
             }
             unzClose( uz ) ;
-            return true ;
         }
 
         /// Save a \param[in] gm macro mesh in a .zip file which contains all the mesh file. Type of the export is
         /// determined by the extension given in \param[in] filename
-        virtual bool save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& gm, const std::string& filename )
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
@@ -379,8 +324,6 @@ namespace RINGMesh {
             }
             zipClose( zf, NULL ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
-            return true ;
-
         }
     } ;
 
@@ -388,14 +331,12 @@ namespace RINGMesh {
 
     class LMIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& mesh )
         {
-            GEO::Logger::err( "I/O" )
-                << "Loading of a GeoModel from a mesh not implemented yet"
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from a mesh not implemented yet" ) ;
         }
-        virtual bool save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& gm, const std::string& filename )
         {
             gm.mesh.edges.test_and_initialize() ;
             gm.mesh.facets.test_and_initialize() ;
@@ -407,22 +348,18 @@ namespace RINGMesh {
             GEO::Logger::instance()->set_minimal( true ) ;
             GEO::mesh_save( mesh, filename ) ;
             GEO::Logger::instance()->set_minimal( false ) ;
-
-            return true ;
         }
     } ;
 
     /************************************************************************/
     class TetGenIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& mesh )
         {
-            GEO::Logger::err( "I/O" )
-                << "Loading of a GeoModel from TetGen not implemented yet"
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from TetGen not implemented yet" ) ;
         }
-        virtual bool save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& gm, const std::string& filename )
         {
             std::string directory = GEO::FileSystem::dir_name( filename ) ;
             std::string file = GEO::FileSystem::base_name( filename ) ;
@@ -470,7 +407,6 @@ namespace RINGMesh {
                     nb_tet_exported++ ;
                 }
             }
-            return true ;
         }
     } ;
 
@@ -478,14 +414,12 @@ namespace RINGMesh {
 
     class VTKIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& mesh )
         {
-            GEO::Logger::err( "I/O" )
-                << "Loading of a GeoModel from VTK not implemented yet"
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from VTK not implemented yet" ) ;
         }
-        virtual bool save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& gm, const std::string& filename )
         {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
@@ -513,7 +447,7 @@ namespace RINGMesh {
                     index_t cell = mesh.cells.cell( m, c ) ;
                     out << mesh.cells.nb_vertices( cell ) ;
                     for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
-                        out << SPACE << mesh.cells.vertex( m, cell ) ;
+                        out << SPACE << mesh.cells.vertex( cell, v ) ;
                     }
                     out << std::endl ;
                 }
@@ -538,7 +472,6 @@ namespace RINGMesh {
                 }
             }
             out << std::endl ;
-            return true ;
         }
 
     private:
@@ -564,14 +497,12 @@ namespace RINGMesh {
 
     class TSolidIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& mesh )
         {
-            GEO::Logger::err( "I/O" )
-                << "Loading of a GeoModel from TSolid not implemented yet"
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from TSolid not implemented yet" ) ;
         }
-        virtual bool save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& gm, const std::string& filename )
         {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
@@ -715,7 +646,6 @@ namespace RINGMesh {
             }
 
             out << "END" << std::endl ;
-            return true ;
         }
     } ;
 
@@ -767,18 +697,14 @@ namespace RINGMesh {
             clear() ;
         }
 
-        virtual bool load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& mesh )
         {
-            GEO::Logger::err( "I/O" )
-                << "Loading of a GeoModel from CSMP not implemented yet"
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from CSMP not implemented yet" ) ;
         }
-        virtual bool save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& gm, const std::string& filename )
         {
-            if( !initialize( gm ) ) {
-                return false ;
-            }
+            initialize( gm ) ;
 
             std::string directory = GEO::FileSystem::dir_name( filename ) ;
             std::string file = GEO::FileSystem::base_name( filename ) ;
@@ -1124,8 +1050,6 @@ namespace RINGMesh {
                 data << " " << std::setw( 3 ) << 0 ;
                 new_line( count, 20, data ) ;
             }
-
-            return true ;
         }
 
     private:
@@ -1163,7 +1087,7 @@ namespace RINGMesh {
             edge_boundary_flags_.clear() ;
             surface_boundary_flags_.clear() ;
         }
-        bool initialize( const GeoModel& gm )
+        void initialize( const GeoModel& gm )
         {
             clear() ;
 
@@ -1173,15 +1097,14 @@ namespace RINGMesh {
             if( box_model_ ) {
                 GEO::LineInput parser( cmsp_filename ) ;
                 if( !parser.OK() ) {
-                    GEO::Logger::err( "I/O" ) << "Cannot open file: "
-                        << cmsp_filename << std::endl ;
-                    return false ;
+                    throw RINGMeshException( "I/O",
+                        "Cannot open file: " + cmsp_filename ) ;
                 }
                 parser.get_line() ;
                 parser.get_fields() ;
                 while( !parser.eof() ) {
                     if( parser.nb_fields() == 0 ) continue ;
-                    if( parser.nb_fields() != 3 ) return false ;
+                    if( parser.nb_fields() != 3 ) return ;
                     std::string type = parser.field( 1 ) ;
                     index_t interface_id = NO_ID ;
                     if( type == "NAME" ) {
@@ -1195,9 +1118,7 @@ namespace RINGMesh {
                     } else if( type == "ID" ) {
                         interface_id = parser.field_as_uint( 2 ) ;
                     } else {
-                        GEO::Logger::err( "I/O" ) << "Unknown type: " << type
-                            << std::endl ;
-                        return false ;
+                        throw RINGMeshException( "I/O", "Unknown type: " + type ) ;
                     }
 
                     std::string keyword = parser.field( 0 ) ;
@@ -1214,9 +1135,7 @@ namespace RINGMesh {
                     } else if( keyword == "RIGHT" ) {
                         right_ = interface_id ;
                     } else {
-                        GEO::Logger::err( "I/O" ) << "Unknown keyword: " << keyword
-                            << std::endl ;
-                        return false ;
+                        throw RINGMeshException( "I/O", "Unknown keyword: " + keyword ) ;
                     }
                     parser.get_line() ;
                     parser.get_fields() ;
@@ -1224,9 +1143,7 @@ namespace RINGMesh {
 
                 if( back_ == NO_ID || top_ == NO_ID || front_ == NO_ID
                     || bottom_ == NO_ID || left_ == NO_ID || right_ == NO_ID ) {
-                    GEO::Logger::err( "I/O" ) << "Missing box shape information"
-                        << std::endl ;
-                    return false ;
+                    throw RINGMeshException( "I/O", "Missing box shape information" ) ;
                 }
 
                 surface_boundary_flags_[back_] = -7 ;
@@ -1338,8 +1255,6 @@ namespace RINGMesh {
                     }
                 }
             }
-
-            return true ;
         }
         std::string interface_name( index_t i, const GeoModel& gm )
         {
@@ -1418,14 +1333,12 @@ namespace RINGMesh {
             index_t v0 ;
             index_t v1 ;
         } ;
-        virtual bool load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& mesh )
         {
-            GEO::Logger::err( "I/O" )
-                << "Loading of a GeoModel from GPRS not implemented yet"
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from GPRS not implemented yet" ) ;
         }
-        virtual bool save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& gm, const std::string& filename )
         {
             std::string path = GEO::FileSystem::dir_name( filename ) ;
             std::string directory = GEO::FileSystem::base_name( filename ) ;
@@ -1541,8 +1454,6 @@ namespace RINGMesh {
                 out_xyz << mesh.facets.center( f ) << std::endl ;
                 out_vol << mesh.facets.area( f ) << std::endl ;
             }
-
-            return true ;
         }
         index_t binomial_coef( index_t n ) const
         {
@@ -1623,17 +1534,16 @@ namespace RINGMesh {
 //                   { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
     class MSHIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& mesh )
         {
-            GEO::Logger::err( "I/O" )
-                << "Loading of a GeoModel from GMSH not implemented yet"
-                << std::endl ;
-            return false ;
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from GMSH not implemented yet" ) ;
         }
-        virtual bool save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& gm, const std::string& filename )
         {
             /// @todo after implementing GMMOrder
-            ringmesh_assert_not_reached ;
+            throw RINGMeshException( "I/O",
+                "Saving of a GeoModel from GMSH not implemented yet" ) ;
 //                gm.set_duplicate_mode( FAULT ) ;
 
             std::ofstream out( filename.c_str() ) ;
@@ -1868,32 +1778,59 @@ namespace RINGMesh {
 //                    }
 //                }
 //            }
-            return true ;
         }
     } ;
+}
 
+namespace RINGMesh {
+
+    /*!
+     * Loads a GeoModel from a file
+     * @param[in] filename the file to load
+     * @param][out] model the mesh to fill
+     */
+    void geomodel_volume_load( const std::string& filename, GeoModel& model )
+    {
+        GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
+            << std::endl ;
+
+        GeoModelVolumeIOHandler_var handler = GeoModelVolumeIOHandler::get_handler(
+            filename ) ;
+        handler->load( filename, model ) ;
+    }
+
+    /*!
+     * Saves a GeoModel in a file
+     * @param[in] model the mesh to save
+     * @param[in] filename the file where to save
+     */
+    void geomodel_volume_save( const GeoModel& model, const std::string& filename )
+    {
+        GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
+            << std::endl ;
+
+        GeoModelVolumeIOHandler_var handler = GeoModelVolumeIOHandler::get_handler(
+            filename ) ;
+         handler->save( model, filename ) ;
+    }
     /************************************************************************/
 
     GeoModelVolumeIOHandler* GeoModelVolumeIOHandler::create( const std::string& format )
     {
         GeoModelVolumeIOHandler* handler = GeoModelVolumeIOHandlerFactory::create_object(
             format ) ;
-        if( handler ) {
-            return handler ;
+        if( !handler ) {
+            std::vector< std::string > names ;
+            GeoModelVolumeIOHandlerFactory::list_creators( names ) ;
+            GEO::Logger::err( "I/O" ) << "Currently supported file formats are: " ;
+            for( index_t i = 0; i < names.size(); i++ ) {
+                GEO::Logger::err( "I/O" ) << " " << names[i] ;
+            }
+            GEO::Logger::err( "I/O" ) << std::endl ;
+
+            throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
         }
-
-        GEO::Logger::err( "I/O" ) << "Unsupported file format: " << format
-            << std::endl ;
-
-        std::vector< std::string > names ;
-        GeoModelVolumeIOHandlerFactory::list_creators( names ) ;
-        GEO::Logger::out( "I/O" ) << "Currently supported file formats:" ;
-        for( index_t i = 0; i < names.size(); i++ ) {
-            GEO::Logger::out( "I/O" ) << " " << names[i] ;
-        }
-        GEO::Logger::out( "I/O" ) << std::endl ;
-
-        return nil ;
+        return handler ;
     }
 
     GeoModelVolumeIOHandler* GeoModelVolumeIOHandler::get_handler(
@@ -1909,14 +1846,14 @@ namespace RINGMesh {
     void GeoModelVolumeIOHandler::initialize()
     {
         ringmesh_register_GeoModelVolumeIOHandler_creator( MMIOHandler, "gm" ) ;
-        ringmesh_register_GeoModelVolumeIOHandler_creator( LMIOHandler, "meshb" );
-        ringmesh_register_GeoModelVolumeIOHandler_creator( LMIOHandler, "mesh" );
-        ringmesh_register_GeoModelVolumeIOHandler_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_GeoModelVolumeIOHandler_creator( TSolidIOHandler, "so" );
-        ringmesh_register_GeoModelVolumeIOHandler_creator( CSMPIOHandler, "csmp" );
-        ringmesh_register_GeoModelVolumeIOHandler_creator( AsterIOHandler, "mail" );
-        ringmesh_register_GeoModelVolumeIOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_GeoModelVolumeIOHandler_creator( GPRSIOHandler, "gprs" );
-        ringmesh_register_GeoModelVolumeIOHandler_creator( MSHIOHandler, "msh" );
+        ringmesh_register_GeoModelVolumeIOHandler_creator( LMIOHandler, "meshb" ) ;
+        ringmesh_register_GeoModelVolumeIOHandler_creator( LMIOHandler, "mesh" ) ;
+        ringmesh_register_GeoModelVolumeIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+        ringmesh_register_GeoModelVolumeIOHandler_creator( TSolidIOHandler, "so" ) ;
+        ringmesh_register_GeoModelVolumeIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+        ringmesh_register_GeoModelVolumeIOHandler_creator( AsterIOHandler, "mail" ) ;
+        ringmesh_register_GeoModelVolumeIOHandler_creator( VTKIOHandler, "vtk" ) ;
+        ringmesh_register_GeoModelVolumeIOHandler_creator( GPRSIOHandler, "gprs" ) ;
+        ringmesh_register_GeoModelVolumeIOHandler_creator( MSHIOHandler, "msh" ) ;
     }
 }
