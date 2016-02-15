@@ -50,7 +50,8 @@
 #include <geogram_gfx/api/defs.h>
 
 #ifndef GEO_NO_GLEW
-#include <geogram_gfx/third_party/glew/glew.h>
+//#include <geogram_gfx/third_party/glew/glew.h>
+#include <geogram_gfx/third_party/glad/glad.h>
 #endif
 
 #include <geogram/basic/geometry.h>
@@ -234,7 +235,6 @@ namespace GEO {
     void GEOGRAM_GFX_API check_gl(const char* file, int line);
 
     #define GEO_CHECK_GL() ::GEO::check_gl(__FILE__,__LINE__)
-    // #define GEO_CHECK_GL()
     
 }
 

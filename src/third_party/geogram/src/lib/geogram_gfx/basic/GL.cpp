@@ -46,6 +46,7 @@
 #include <geogram_gfx/basic/GL.h>
 #include <geogram_gfx/basic/GLUP.h>
 #include <geogram/basic/logger.h>
+#include <geogram/basic/command_line.h>
 
 namespace {
     using namespace GEO;
@@ -115,6 +116,10 @@ namespace GEO {
                 Logger::warn("GLSL")
                     << "Buggy Intel driver detected (working around...)"
                     << std::endl;
+            }
+            // Does not seem to be implemented under OpenGL ES
+            if(CmdLine::get_arg("gfx:GL_profile") == "ES") {
+                use_glGetBufferParameteri64v = false;
             }
         }
         GLint64 result=0;
@@ -200,7 +205,8 @@ namespace GEO {
             has_opengl_errors = true ;
             Logger::err("OpenGL")
                 << file << ":" << line << " " 
-                << (char*)(gluErrorString(error_code)) << std::endl ;
+//                << (char*)(gluErrorString(error_code)) << std::endl ;
+                << std::endl;
             error_code = glGetError() ;
         }
         geo_argused(has_opengl_errors);

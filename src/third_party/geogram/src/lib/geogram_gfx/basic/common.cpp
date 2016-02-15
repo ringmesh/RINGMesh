@@ -54,18 +54,11 @@ namespace GEO {
     namespace Graphics {
 
         void initialize() {
-            GEO_CHECK_GL();
-            // see http://stackoverflow.com/questions/20822087/why-does-this-crash-when-using-opengl-core-profile
-            // Enabling GLEW experimental mode, else it does not work with
-            // OpenGL core profile.
-            glewExperimental = GL_TRUE;
-            if (glewInit() != GLEW_OK) {           
-                Logger::err("GLEW")
-                    << "Could not initialize!" << std::endl;
-            }        
-            GEO_CHECK_GL();
+            if(!gladLoadGL()) {
+                Logger::err("GLAD") << "Could not load OpenGL"
+                                   << std::endl;
+            }
             GLSL::initialize();
-            GEO_CHECK_GL();            
             atexit(GEO::Graphics::terminate);            
         }
 

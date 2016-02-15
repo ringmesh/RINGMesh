@@ -46,6 +46,7 @@
 #include <geogram_gfx/basic/GLUP_private.h>
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram/basic/logger.h>
+#include <geogram/basic/command_line.h>
 
 /*****************************************************************************/
 
@@ -67,33 +68,52 @@ void GLUP_API glupBindUniformState(GLUPuint program) {
 
 GLUPcontext glupCreateContext() {
 
-    double GLSL_version = GEO::GLSL::supported_language_version();
-
+    std::string GLUP_profile = GEO::CmdLine::get_arg("gfx:GLUP_profile");
     GLUP::Context* result = nil;
-    
-    GEO::Logger::out("GLUP")
-        << "Selecting among VanillaGL,GLSL150,GLSL440..."
-        << std::endl;
-    if(GLSL_version < 1.5) {
-        
-        GEO::Logger::out("GLUP")
-            << "Using GLUP_VanillaGL" << std::endl;
-        result = new GLUP::Context_VanillaGL;
-        
-    } else if(GLSL_version < 4.4) {
-        
-        GEO::Logger::out("GLUP") << "Using GLUP_GLSL150"
-                            << std::endl;
-        result = new GLUP::Context_GLSL150;
-        
-    } else {
-        
-        GEO::Logger::out("GLUP") << "Using GLUP_GLSL440"
-                            << std::endl;
-        result = new GLUP::Context_GLSL440;
-        
+
+    if(GLUP_profile == "auto") {
+        double GLSL_version = GEO::GLSL::supported_language_version();
+        const GLubyte* vendor = glGetString(GL_VENDOR);
+        if(!GEO::String::string_starts_with(std::string((const char*)vendor), "NVIDIA")) {
+            GEO::Logger::out("GLUP") << "Non-NVIDIA GPU" << std::endl;
+
+            if(GEO::CmdLine::get_arg("gfx:GL_profile") == "compatibility") {
+                GEO::Logger::out("GLUP") << "Switching to VanillaGL" << std::endl;
+                GEO::Logger::out("GLUP") << "Use gfx:GLUP_profile to override"
+                                         << std::endl;
+                GLSL_version = 0.0;
+            } else {
+                GEO::Logger::warn("GLUP") << "Cannot switch to VanillaGL" << std::endl;
+                GEO::Logger::warn("GLUP") << "Needs gfx:GL_profile=compatibility" << std::endl;
+                GEO::Logger::warn("GLUP") << "(trying anyway with GLUP150/GLUP440)" << std::endl;
+            }
+        }
+        if(GLSL_version < 1.5) {
+            GLUP_profile = "VanillaGL";
+        } else if(GLSL_version < 4.4) {
+            GLUP_profile = "GLUP150";
+        } else {
+            GLUP_profile = "GLUP440";
+        }
     }
 
+    GEO::Logger::out("GLUP") << "Using " << GLUP_profile << " profile"
+                        << std::endl;
+    
+    if(GLUP_profile == "GLUP150") {
+        result = new GLUP::Context_GLSL150;        
+    } else if(GLUP_profile == "GLUP440") {
+        result = new GLUP::Context_GLSL440;
+    } else if(GLUP_profile == "VanillaGL") {
+        result = new GLUP::Context_VanillaGL;
+    } else {
+        GEO::Logger::warn("GLUP")
+            << GLUP_profile << "unknown profile, falling back to VanillaGL"
+            << std::endl;
+        result = new GLUP::Context_VanillaGL;        
+    }
+    
+    
     try {
         result->setup();
     } catch(...) {
@@ -120,6 +140,10 @@ void glupDeleteContext(GLUPcontext context_in) {
 
 GLUPcontext glupCurrentContext() {
     return GLUP::current_context_;
+}
+
+const char* glupCurrentProfileName() {
+    return GLUP::current_context_->profile_name();
 }
 
 void glupMakeCurrent(GLUPcontext context) {
@@ -343,7 +367,7 @@ void glupClipPlane(const GLUPdouble* eqn_in) {
     const GLfloat* modelview =
         GLUP::current_context_->get_matrix(GLUP_MODELVIEW_MATRIX);
     GLfloat modelview_invert[16];
-    if(!GLUP::invert_matrix(modelview, modelview_invert)) {
+    if(!GLUP::invert_matrix(modelview_invert,modelview)) {
         GEO::Logger::warn("GLUP") << "Singular ModelView matrix"
                              << std::endl;
         GLUP::show_matrix(modelview);
@@ -354,7 +378,7 @@ void glupClipPlane(const GLUPdouble* eqn_in) {
     for(GEO::index_t i=0; i<4; ++i) {
         eqn[i] = float(eqn_in[i]);
     }
-    GLUP::mult_matrix_vector(modelview_invert, eqn, state_clip_plane);
+    GLUP::mult_matrix_vector(state_clip_plane,modelview_invert, eqn);
 }
 
 void glupGetClipPlane(GLUPdouble* eqn) {
@@ -368,17 +392,6 @@ void glupGetClipPlane(GLUPdouble* eqn) {
 
 /******************* Matrices ***************************/
 
-void transpose_matrix(GLUPfloat M[16]) {
-    for(int i=0; i<4; ++i) {
-        for(int j=0; j<4; ++j) {
-            if(i < j) {
-                GLUPfloat tmp = M[4*i+j];
-                M[4*i+j] = M[4*j+i];
-                M[4*j+i] = tmp;
-            }
-        }
-    }
-}
 
 void glupMatrixMode(GLUPmatrix matrix) {
     GLUP::current_context_->set_matrix_mode(matrix);
@@ -463,7 +476,7 @@ void glupTranslatef(GLUPfloat x, GLUPfloat y, GLUPfloat z) {
     M[4*3+2] = 0.0f;
     M[4*3+3] = 1.0f;
 
-    transpose_matrix(M);
+    GLUP::transpose_matrix(M);
     
     glupMultMatrixf(M);
 }
@@ -533,7 +546,7 @@ void glupRotatef(
     M[4*3+2] = 0.0f;
     M[4*3+3] = 1.0f;
 
-    transpose_matrix(M);
+    GLUP::transpose_matrix(M);
     
     glupMultMatrixf(M);
 }
@@ -576,7 +589,7 @@ void glupOrtho(
     M[4*3+2] = 0.0f;
     M[4*3+3] = 1.0f;
     
-    transpose_matrix(M);
+    GLUP::transpose_matrix(M);
     glupMultMatrixf(M);
 }
 
@@ -618,7 +631,7 @@ void glupFrustum(
     M[4*3+2] = -1.0f;
     M[4*3+3] =  0.0f;
 
-    transpose_matrix(M);
+    GLUP::transpose_matrix(M);
     glupMultMatrixf(M);
 } 
 
@@ -650,9 +663,70 @@ void glupPerspective(
     M[4*3+2] = -1.0f;
     M[4*3+3] =  0.0f;
 
-    transpose_matrix(M);    
+    GLUP::transpose_matrix(M);    
     glupMultMatrixf(M);    
 }
+
+GLUPboolean glupUnProject(
+    GLUPdouble winx, GLUPdouble winy, GLUPdouble winz,
+    const GLUPdouble modelMatrix[16],
+    const GLUPdouble projMatrix[16],
+    const GLUPint viewport[4],
+    GLUPdouble *objx, GLUPdouble *objy, GLUPdouble *objz
+) {
+    double modelviewproject[16];
+    double modelviewproject_inv[16];
+    GLUP::mult_matrices(modelviewproject, modelMatrix, projMatrix);
+    if(!GLUP::invert_matrix(modelviewproject_inv, modelviewproject)) {
+        return GL_FALSE;
+    }
+
+    double in[4];
+    in[0] = winx;
+    in[1] = winy;
+    in[2] = winz;
+    in[3] = 1.0;
+
+    // Invert viewport transform
+    in[0] = (in[0] - double(viewport[0])) / double(viewport[2]);
+    in[1] = (in[1] - double(viewport[1])) / double(viewport[3]);
+
+    // Map to [-1, 1]
+    in[0] = in[0] * 2.0 - 1.0;
+    in[1] = in[1] * 2.0 - 1.0;
+    in[2] = in[2] * 2.0 - 1.0;
+
+    GLUP::transpose_matrix(modelviewproject_inv);
+    
+    double out[4];
+    GLUP::mult_matrix_vector(out, modelviewproject_inv, in);
+
+    if(out[3] == 0.0) {
+        return GL_FALSE;
+    }
+
+    *objx = out[0] / out[3];
+    *objy = out[1] / out[3];
+    *objz = out[2] / out[3];
+    
+    return GL_TRUE;
+}
+
+GLUPboolean glupInvertMatrixfv(
+    GLUPfloat Minvert[16],    
+    const GLUPfloat M[16]
+) {
+    return GLUP::invert_matrix(Minvert, M);
+}
+
+GLUPboolean glupInvertMatrixdv(
+    GLUPdouble Minvert[16],    
+    const GLUPdouble M[16]
+) {
+    return GLUP::invert_matrix(Minvert, M);
+}
+
+
 
 /******************* Drawing ***************************/
 
@@ -887,6 +961,10 @@ void glupTexCoord4d(GLUPdouble s, GLUPdouble t, GLUPdouble u, GLUPdouble v) {
         GLfloat(u),
         GLfloat(v)
     );        
+}
+
+void glupUseProgram(GLUPuint program) {
+    GLUP::current_context_->set_user_program(program);
 }
 
 /****************************************************************************/

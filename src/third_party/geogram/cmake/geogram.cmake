@@ -96,6 +96,7 @@ set(RELATIVE_LIB_OUTPUT_DIR ${RELATIVE_OUTPUT_DIR}/lib/)
 ##############################################################################
 
 include_directories(${GEOGRAM_SOURCE_DIR}/src/lib)
+include_directories(${GEOGRAM_SOURCE_DIR}/src/lib/geogram_gfx/third_party/)
 link_directories(${GEOGRAM_SOURCE_DIR}/${RELATIVE_LIB_DIR})
 
 ##############################################################################

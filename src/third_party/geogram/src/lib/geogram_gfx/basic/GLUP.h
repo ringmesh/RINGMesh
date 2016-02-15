@@ -125,6 +125,14 @@ extern "C" {
     GLUPcontext GLUP_API glupCurrentContext();
 
     /**
+     * \brief The name of the profile implemented by the
+     *  current context.
+     * \return a const pointer to the string with the name
+     *  of the current profile.
+     */
+    GLUP_API const char* glupCurrentProfileName();
+    
+    /**
      * \brief Makes a GLUP context the current one.
      * \param[in] context the GLUP context to be made current
      */
@@ -416,6 +424,24 @@ extern "C" {
         GLUPdouble fovy, GLUPdouble aspect,
         GLUPdouble zNear, GLUPdouble zFar
     );
+
+    GLUPboolean GLUP_API glupUnProject(
+        GLUPdouble winx, GLUPdouble winy, GLUPdouble winz,
+        const GLUPdouble modelMatrix[16],
+        const GLUPdouble projMatrix[16],
+        const GLUPint viewport[4],
+        GLUPdouble *objx, GLUPdouble *objy, GLUPdouble *objz
+    );
+
+    GLUPboolean GLUP_API glupInvertMatrixfv(
+        GLUPfloat Minvert[16],        
+        const GLUPfloat M[16]
+    );
+
+    GLUPboolean GLUP_API glupInvertMatrixdv(
+        GLUPdouble Minvert[16],        
+        const GLUPdouble M[16]
+    );
     
     /**
      * @}
@@ -524,6 +550,18 @@ extern "C" {
     void GLUP_API glupTexCoord4d(
         GLUPdouble s, GLUPdouble t, GLUPdouble u, GLUPdouble v
     );
+
+    /**
+     * \brief Specifies a GLSL program to be used for drawing the primitives.
+     * \details Can be used with both immediate mode (glupBegin()/glupEnd())
+     *  and array mode (glupDrawArrays(), glupDrawElements()). If the specified
+     *  program is non-zero, then it is used instead of the default GLUP 
+     *  program. To access the GLUP uniform state in the program, one may
+     *  append the result of glupUniformStateDeclaration() to the GLSL source
+     *  of the program.
+     * \param[in] program the id of the GLSL program to be used.
+     */
+    void GLUP_API glupUseProgram(GLUPuint program);
     
     /**
      * @}

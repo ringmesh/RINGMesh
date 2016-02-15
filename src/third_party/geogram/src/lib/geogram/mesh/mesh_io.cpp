@@ -1623,7 +1623,7 @@ namespace {
     };
     
     /************************************************************************/
-
+    
     /**
      * \brief IO handler for the OFF file format
      * \see http://www.geomview.org/docs/html/OFF.html
