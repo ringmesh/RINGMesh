@@ -141,6 +141,15 @@ namespace GEO {
             const char* shading_language_ver_str = (const char*)glGetStringi(
                 GL_SHADING_LANGUAGE_VERSION, 0
             );
+	   
+	    if(shading_language_ver_str == nil) {
+	       Logger::warn("GLSL") << "glGetString(GL_SHADING_LANGUAGE_VERSION)"
+		 << " did not answer, returning 0.0"
+		 << std::endl;
+	        return 0.0;
+	    }
+	   
+	   
             const char* vendor = (const char*)glGetString(
                 GL_VENDOR
             );
