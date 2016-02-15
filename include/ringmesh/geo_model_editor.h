@@ -137,7 +137,7 @@ namespace RINGMesh {
         * @brief Complete missing information in GeoModelElements
         * boundaries - in_boundary - parent - children
         */
-        bool complete_element_connectivity() ;
+        void complete_element_connectivity() ;
 
         /*!
         * @brief Fill the boundaries of all elements of the given type
@@ -287,6 +287,14 @@ namespace RINGMesh {
         void copy_element_topology( GeoModelElement& lhs,
             const GeoModelElement& rhs ) ;
 
+        /*!
+        * @brief Mini-factory. Creates an empty element of the right type
+        */
+        GME* new_element(
+            GME::TYPE type,
+            const GeoModel& model,
+            index_t id
+        );
     protected:
         GeoModel& model_ ;
     };

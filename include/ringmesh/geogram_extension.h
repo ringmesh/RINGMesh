@@ -181,9 +181,8 @@ namespace RINGMesh {
     /*!
      * @brief Constrained tetrahedralize of the volumes defined by a triangulated surface mesh
      * @details Does not require this mesh to be a closed manifold
-     * as the equivalent in Geogram function does.
      */
-    bool RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) ;
+    void RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) ;
 
 #endif
 

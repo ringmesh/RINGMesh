@@ -49,7 +49,6 @@
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geo_model_builder.h>
 
-
 /*! 
  * Test the creation of a GeoModel from a conformal surface mesh 
  * @todo Test on other datasets: nested spheres.
@@ -59,30 +58,38 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-    std::string file_name = ringmesh_test_data_path ;
-    file_name += "modelA6.mesh" ;
+    try {
 
-    // Set an output log file
-    std::string log_file( ringmesh_test_output_path ) ;
-    log_file += "log.txt" ;
-    GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-    GEO::Logger::instance()->register_client( file_logger ) ;
+        std::string file_name = ringmesh_test_data_path ;
+        file_name += "modelA6.mesh" ;
 
-    GEO::Logger::out( "TEST" ) << "Test GeoModel building from Surface" << std::endl ;
+        // Set an output log file
+        std::string log_file( ringmesh_test_output_path ) ;
+        log_file += "log.txt" ;
+        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
+        GEO::Logger::instance()->register_client( file_logger ) ;
 
-    GEO::Mesh in ;
-    GEO::mesh_load( file_name, in ) ;
-    GeoModel model ;
-	
-    GeoModelBuilderSurfaceMesh BB( model, in ) ;
-    BB.build_polygonal_surfaces_from_connected_components() ;
-    if( !BB.build_model_from_surfaces() ) {
-		GEO::Logger::out("TEST") << "FAILED" << std::endl ;	
-		return 1 ;
-	}    
-    print_geomodel( model ) ;
-    is_geomodel_valid( model, false ) ;
-	GEO::Logger::out("TEST") << "SUCCESS" << std::endl ;
-	return 0 ;
-   
- }
+        GEO::Logger::out( "TEST" ) << "Test GeoModel building from Surface"
+            << std::endl ;
+
+        GEO::Mesh in ;
+        GEO::mesh_load( file_name, in ) ;
+        GeoModel model ;
+
+        GeoModelBuilderSurfaceMesh BB( model, in ) ;
+        BB.build_polygonal_surfaces_from_connected_components() ;
+        BB.build_model_from_surfaces() ;
+        print_geomodel( model ) ;
+        is_geomodel_valid( model, false ) ;
+
+    } catch( const RINGMeshException& e ) {
+        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        return 1 ;
+    } catch( const std::exception& e ) {
+        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        return 1 ;
+    }
+    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    return 0 ;
+
+}

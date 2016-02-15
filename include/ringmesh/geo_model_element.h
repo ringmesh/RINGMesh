@@ -66,22 +66,25 @@ namespace RINGMesh {
      * @brief Generic class describing one element of a GeoModel
      */
     class RINGMESH_API GeoModelElement {
-    ringmesh_disable_copy( GeoModelElement ) ;
+        ringmesh_disable_copy( GeoModelElement ) ;
         friend class GeoModelEditor ;
     public:
         /*!
          * @brief Geological feature types for GeoModelElement
-         * @todo Read all possible geological features set by Gocad or 
-         * another software.
+         * @todo Read all possible geological features used in RESQML.
          */
         enum GEOL_FEATURE {
             /// All geological features 
             ALL_GEOL,
             /// Default value - No geological feature defined
             NO_GEOL,
-            /// Stratigraphical surface - an horizon
+            /// Stratigraphic surface - an horizon
             STRATI,
-            /// Unconformity
+            /*!
+             * Unconformity
+             * \todo: distinguish between as erosive, baselap or intrusive
+             * unconformities --GC
+             */
             UNCONFORMITY,
             /// A normal fault
             NORMAL_FAULT,
@@ -104,8 +107,11 @@ namespace RINGMesh {
          * TYPE is used extensively to manage elements, iterate on them, etc.
          *  
          * @warning DO NOT MODIFY THIS ENUM.
+         * OK but why ? --GC
          * 
          * @todo Add fault blocks.
+         * @todo Encapsulate in functions for testing groups or range of
+         * features (See previous comment)--GC
          */
         enum TYPE {
             /// Points at LINE extremities
@@ -178,9 +184,15 @@ namespace RINGMesh {
             {
                 return type != NO_TYPE && type != ALL_TYPES && index != NO_ID ;
             }
-            /// TYPE of the GeoModelElement
+            /*!
+             * TYPE of the GeoModelElement
+             * \todo Should be type_ to be consistent with style guidelines --GC
+             */
             TYPE type ;
-            ///  Index of the element in the GeoModel
+            /*!
+             * Index of the element in the GeoModel
+             * \todo Should be index_ to be consistent with style guidelines --GC
+             */
             index_t index ;
         } ;
 
@@ -232,40 +244,10 @@ namespace RINGMesh {
         /*!@}
          */
 
-        /*!
-         * @brief Constructs a GeoModelElement
-         *
-         * @param[in] model Constant reference to the model owning the element.
-         * @param[in] element_type Type of the element to create
-         * @param[in] id Index of the element in the corresponding vector in the model
-         * @param[in] name Name of the element, empty by default.
-         * @param[in] geological_feature Feature of the element, none by default.
-         */
-        GeoModelElement(
-            const GeoModel& model,
-            TYPE element_type,
-            index_t id,
-            const std::string& name = "",
-            GEOL_FEATURE geological_feature = NO_GEOL
-            )
-            :
-                model_( model ),
-                id_( element_type, id ),
-                name_( name ),
-                geol_feature_( geological_feature )
-        {
-        }
-
         virtual ~GeoModelElement()
         {
         }
 
-        /*! 
-         * @brief Test the strict equality of the two BME
-         * @warning Connectivity information must match exactly with
-         *          elements in the exact same order
-         */
-        bool operator==( const GeoModelElement& rhs ) const ;
 
         /*!@}
          * \name Validity checks
@@ -375,6 +357,34 @@ namespace RINGMesh {
             return children_[x] ;
         }
         const GeoModelElement& child( index_t x ) const ;
+
+    protected:
+        /*!
+         * @brief Constructs a GeoModelElement
+         * Client code should only create GeoModelElements through
+         * GeoModelEditor derived classes.
+         *
+         * @param[in] model Constant reference to the parent model of this element.
+         * @param[in] element_type Type of the element to create
+         * @param[in] id Index of the element in the corresponding vector in the model
+         * @param[in] name Name of the element, empty by default.
+         * @param[in] geological_feature Feature of the element, none by default.
+         */
+        GeoModelElement(
+            const GeoModel& model,
+            TYPE element_type,
+            index_t id,
+            const std::string& name = "",
+            GEOL_FEATURE geological_feature = NO_GEOL
+            )
+            :
+                model_( model ),
+                id_( element_type, id ),
+                name_( name ),
+                geol_feature_( geological_feature )
+        {
+        }
+
 
     protected:
         /// Reference to the GeoModel owning this element
