@@ -49,6 +49,7 @@
 #include <cstdarg>
 #include <cstdio>
 
+
 namespace {
 
     using namespace GEO;
@@ -137,64 +138,148 @@ namespace GEO {
             
         /*************************************************************/
 
-        double supported_language_version() {
-            const char* shading_language_ver_str = (const char*)glGetStringi(
-                GL_SHADING_LANGUAGE_VERSION, 0
-            );
-	   
-	    if(shading_language_ver_str == nil) {
-	       Logger::warn("GLSL") << "glGetString(GL_SHADING_LANGUAGE_VERSION)"
-		 << " did not answer, returning 0.0"
-		 << std::endl;
-	        return 0.0;
-	    }
-	   
-	   
-            const char* vendor = (const char*)glGetString(
-                GL_VENDOR
-            );
-            Logger::out("GLSL") << "vendor = " << vendor << std::endl;
-            Logger::out("GLSL") << "version string = "
-                                << shading_language_ver_str << std::endl;
+        
 
+        /**
+         * \brief Parses in a string what looks like a version number.
+         * \param[in] version_string a const reference to the string
+         * \return the parsed version number, as a double precision floating
+         *  point number.
+         */
+        static double find_version_number(const std::string& version_string) {
             // The way the driver exposes the version of GLSL may differ,
             // in some drivers the number comes in first position, in some
             // others it comes in last position, therefore we take the first
             // word that contains a valid number.
-            std::vector<std::string> shading_language_ver_words;
+            std::vector<std::string> version_words;
             String::split_string(
-                shading_language_ver_str, ' ', shading_language_ver_words
+                version_string, ' ', version_words
             );
-            double GLSL_version = 0.0;
-            for(index_t i=0; i<shading_language_ver_words.size(); ++i) {
-                GLSL_version = atof(shading_language_ver_words[i].c_str());
-                if(GLSL_version != 0.0) {
+            double version = 0.0;
+            for(index_t i=0; i<version_words.size(); ++i) {
+                version = atof(version_words[i].c_str());
+                if(version != 0.0) {
                     break;
                 }
             }
             // Some drivers expose version 4.4 as 4.4 and some others
             // as 440 !!
-            if(GLSL_version > 100.0) {
-                GLSL_version /= 100.0;
+            if(version > 100.0) {
+                version /= 100.0;
             }
+            return version;
+        }
+
+        // If some drivers do not implement glGetString(GLSL_VERSION),
+        // then we can determine the GLSL version from the OpenGL version,
+        // may be more reliable...
+        //
+        //GLSL Version      OpenGL Version
+        //1.10              2.0
+        //1.20              2.1
+        //1.30              3.0
+        //1.40              3.1
+        //1.50              3.2
+        //3.30              3.3
+        //4.00              4.0
+        //4.10              4.1
+        //4.20              4.2
+        //4.30              4.3
+        //4.40              4.4
+        //4.50              4.5
+        
+        double GLSL_version_from_OpenGL_version() {
+            const char* opengl_ver_str = (const char*)glGetString(GL_VERSION);
+            if(opengl_ver_str == NULL) {
+                Logger::warn("GLSL")
+                    << "glGetString(GL_VERSION)"
+                    << " did not answer, falling back to VanillaGL"
+                    << std::endl;
+               return 0.0;
+            }
+            double OpenGL_version = find_version_number(opengl_ver_str);
             
+            Logger::out("GLSL")
+                << "Determining GLSL version from OpenGL version"
+                << std::endl;
+            
+            Logger::out("GLSL")
+                << "OpenGL version = " << OpenGL_version
+                << std::endl;
+
+            double GLSL_version = 0.0;
+            if(OpenGL_version >= 3.3) {
+                GLSL_version = OpenGL_version;
+            } else if(OpenGL_version == 2.0) {
+                GLSL_version = 1.1;
+            } else if(OpenGL_version == 2.1) {
+                GLSL_version = 1.2;                
+            } else if(OpenGL_version == 3.0) {
+                GLSL_version = 1.3;                                
+            } else if(OpenGL_version == 3.1) {
+                GLSL_version = 1.4;
+            } else if(OpenGL_version == 3.2) {
+                GLSL_version = 1.5;                
+            }
+
+            if(GLSL_version == 0.0) {
+                Logger::warn("GLSL") << "Could not determine GLSL mversion"
+                                     << std::endl;
+            } else {
+                Logger::out("GLSL") << "GLSL version = "
+                                     << GLSL_version
+                                     << std::endl;
+            }
+            return GLSL_version;
+        }
+
+        
+        double supported_language_version() {
+
+            double GLSL_version = CmdLine::get_arg_double("gfx:GLSL_version");
+            
+            if(GLSL_version != 0.0) {
+                Logger::out("GLSL") << "forced to version "
+                                    << GLSL_version 
+                                    << " (gfx:GLSL_version)" << std::endl;
+                return GLSL_version;
+            }
+
+            // New OpenGL API: one should use glGetStringi()
+            const char* shading_language_ver_str = (const char*)glGetStringi(
+                GL_SHADING_LANGUAGE_VERSION, 0
+            );
+            if(shading_language_ver_str == nil) {
+                // Some buggy drivers do not implement glGetStringi(),
+                // so I try also glGetString() (without the "i")
+                shading_language_ver_str =
+                    (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+            }
+
+            // If the driver does not implement glGetString neither
+            // glGetStringi with GL_SHADING_LANGUAGE_VERSION, then try
+            // to deduce it from OpenGL version.
+            if(shading_language_ver_str == nil) {
+                return GLSL_version_from_OpenGL_version();
+            }
+           
+            const char* vendor = (const char*)glGetString(GL_VENDOR);
+            
+            Logger::out("GLSL") << "vendor = " << vendor << std::endl;
+            Logger::out("GLSL") << "version string = "
+                                << shading_language_ver_str << std::endl;
+
+
+            GLSL_version = find_version_number(shading_language_ver_str);
             Logger::out("GLSL") << "version = " << GLSL_version
                                 << std::endl;
+            
             if(!CmdLine::get_arg_bool("gfx:GLSL")) {
                 Logger::out("GLSL")
                     << "OpenGL shaders deactivated (gfx:GLSL=false)"
                     << std::endl;
                 
                 GLSL_version = 0.0;
-            }
-            double forced_version =
-                CmdLine::get_arg_double("gfx:GLSL_version");
-            
-            if(forced_version != 0.0) {
-                GLSL_version = forced_version;
-                Logger::out("GLSL") << "forced to version "
-                                    << GLSL_version 
-                                    << " (gfx:GLSL_version)" << std::endl;
             }
             return GLSL_version;
         }

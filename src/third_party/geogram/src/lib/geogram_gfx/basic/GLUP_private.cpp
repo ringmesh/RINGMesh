@@ -467,6 +467,62 @@ namespace GLUP {
         return primitive_info_[prim].implemented &&
             !primitive_info_[prim].vertex_gather_mode;
     }
+
+    /**
+     * \brief Creates a GLSL vertex program that uses all the variables
+     *  of the uniform state.
+     * \details Some OpenGL drivers have a compiler that optimizes-out
+     *  variables that are not used in the shader. This function creates
+     *  a dummy shader that uses all the variables, so that their offsets
+     *  can be reliably queried using GLSL program introspection
+     *  with glGetUniformIndices().
+     */
+    static std::string create_vertex_program_that_uses_all_UBO_variables() {
+        std::ostringstream output;
+
+        output << "in vec3 position;\n";
+        output << "void main() {\n";
+        output << "   mat4 M = GLUP.modelviewprojection_matrix;\n";
+        
+        // Parse uniform state declaration in order to use all variables.
+        
+        std::istringstream input(GLUP_uniform_state_source);
+        std::string line;
+        while(std::getline(input,line)) {
+            std::vector<std::string> words;
+            GEO::String::split_string(line, ' ', words);
+            if(
+                (words.size() == 2 && words[1][words[1].length()-1] == ';') ||
+                (words.size() == 3 && words[2] == ";")
+            ) {
+                std::string vartype = words[0];
+                std::string varname = words[1];
+                if(varname[varname.length()-1] == ';') {
+                    varname = varname.substr(0, varname.length()-1);
+                }
+                if(vartype == "bool") {
+                    output << "   M[0].x += float(GLUP." << varname << ");\n";
+                } else if(vartype == "int") {
+                    output << "   M[0].x += float(GLUP." << varname << ");\n";
+                } else if(vartype == "float") {
+                    output << "   M[0].x += GLUP." << varname << ";\n";                    
+                } else if(vartype == "vec3") {
+                    output << "   M[0].xyz += GLUP." << varname << ";\n";                                        
+                } else if(vartype == "vec4") {
+                    output << "   M[0] += GLUP." << varname << ";\n";                                                            
+                } else if(vartype == "mat3") {
+                    output << "   M[0].xyz += GLUP." << varname << "[0];\n";
+                } else if(vartype == "mat4") {
+                    output << "   M += GLUP." << varname << ";\n";  
+                }
+            }
+        }
+
+        output << "   gl_Position = M*vec4(position,1.0);\n";
+        output << "}\n";
+        
+        return output.str();
+    }
     
     void Context::setup() {
         
@@ -477,17 +533,16 @@ namespace GLUP {
         // A minimalistic GLSL program that uses the GLUP context.
         // It is there just to use GLSL introspection API to lookup
         // the offsets of GLUP context state variables.
+        // Note: it needs to use all the variables of the uniform state,
+        // else, depending on the OpenGL driver / library,
+        // some variables may be optimized-out and glGetUnformIndices()
+        // returns GL_INVALID_INDEX (stupid !).
+        
+        // We need to write a code that generates automatically a code
+        // that uses all the variables from the state.
 
         static const char* shader_source_header_ =
             "#version 150 core \n" ;
-        
-        static const char* vertex_shader_source_ =
-            "in vec3 position;                                        \n"
-            "                                                         \n"
-            "void main() {                                            \n"
-            "   gl_Position =                                         \n"
-            "     GLUP.modelviewprojection_matrix*vec4(position,1.0); \n"
-            "}                                                        \n";
 
         static const char* fragment_shader_source_ =
             "out vec4 colorOut;                      \n"
@@ -501,7 +556,7 @@ namespace GLUP {
             GL_VERTEX_SHADER,
             shader_source_header_,
             GLUP_uniform_state_source,
-            vertex_shader_source_,
+            create_vertex_program_that_uses_all_UBO_variables().c_str(),
             0
         );
 
@@ -680,6 +735,13 @@ namespace GLUP {
         GLuint index = GL_INVALID_INDEX;
         const char* pname = name.c_str();
         glGetUniformIndices(default_program_, 1, &pname, &index);
+        if(index == GL_INVALID_INDEX) {
+            Logger::err("GLUP")
+                << name_in 
+                << ":did not find uniform state variable"
+                << std::endl;
+            throw GLSL::GLSLCompileError();
+        }
         geo_assert(index != GL_INVALID_INDEX);
         GLint offset;
         glGetActiveUniformsiv(
