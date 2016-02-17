@@ -1819,7 +1819,6 @@ namespace RINGMesh {
 
         GeoModelVolumeIOHandler_var handler = GeoModelVolumeIOHandler::get_handler(
             filename ) ;
-        std::cout << "here in vol_load" << std::endl ;
         handler->load( filename, model ) ;
     }
 
