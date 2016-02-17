@@ -433,8 +433,8 @@ namespace GEO {
         /**
          * \brief Converts a string to a boolean value
          * \details
-         * Legal values for the true boolean value are "true", "True" and "1".
-         * Legal values for the false boolean value are "false", "False" and "0".
+         * Legal values for the true boolean value are "true","True" and "1".
+         * Legal values for the false boolean value are "false","False" and "0".
          * \param[in] s the source string
          * \param[out] value the boolean value
          * \retval true if the conversion was successful

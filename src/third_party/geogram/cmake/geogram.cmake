@@ -71,20 +71,32 @@ string(REPLACE ${CMAKE_SOURCE_DIR} "" RELATIVE_OUTPUT_DIR ${CMAKE_BINARY_DIR})
 # RELATIVE_BIN_DIR
 # RELATIVE_LIB_DIR
 #  Directories where libraries and executables are generated, relative to
-# source directory.
+# source directory. These variables are to be used as an input (e.g., link
+# path, or path to find GOMGEN executable)
+#
+# RELATIVE_BIN_OUTPUT_DIR
+# RELATIVE_LIB_OUTPUT_DIR
+#  Directory where libraries and executables are generated as specified
+# as an output (does not include configuration name under MSVC, because
+# MSVC adds it automatically, thus it would be there twice if we add it).
+# This is where plugins are supposed to copy their generated DLL's/so's.
 
 if(WIN32)
-    set(MSVC_CONFIG \$\(Configuration\))
- 	set(RELATIVE_BIN_DIR ${RELATIVE_OUTPUT_DIR}/bin/${MSVC_CONFIG}/)
-	set(RELATIVE_LIB_DIR ${RELATIVE_OUTPUT_DIR}/lib/${MSVC_CONFIG}/)
+        set(MSVC_CONFIG \$\(Configuration\))
+        set(RELATIVE_BIN_DIR ${RELATIVE_OUTPUT_DIR}/bin/${MSVC_CONFIG}/)
+        set(RELATIVE_LIB_DIR ${RELATIVE_OUTPUT_DIR}/lib/${MSVC_CONFIG}/)
 else()
-	set(RELATIVE_BIN_DIR ${RELATIVE_OUTPUT_DIR}/bin/)
-	set(RELATIVE_LIB_DIR ${RELATIVE_OUTPUT_DIR}/lib/)
+        set(RELATIVE_BIN_DIR ${RELATIVE_OUTPUT_DIR}/bin/)
+        set(RELATIVE_LIB_DIR ${RELATIVE_OUTPUT_DIR}/lib/)
 endif()
+
+set(RELATIVE_BIN_OUTPUT_DIR ${RELATIVE_OUTPUT_DIR}/bin/)
+set(RELATIVE_LIB_OUTPUT_DIR ${RELATIVE_OUTPUT_DIR}/lib/)
 
 ##############################################################################
 
 include_directories(${GEOGRAM_SOURCE_DIR}/src/lib)
+include_directories(${GEOGRAM_SOURCE_DIR}/src/lib/geogram_gfx/third_party/)
 link_directories(${GEOGRAM_SOURCE_DIR}/${RELATIVE_LIB_DIR})
 
 ##############################################################################

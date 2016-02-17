@@ -100,7 +100,7 @@ namespace RINGMesh {
     * THIS MEANS that the all the elements of the same type have been initialized with
     * the same information.
     */
-    bool GeoModelEditor::complete_element_connectivity()
+    void GeoModelEditor::complete_element_connectivity()
     {
         // Lines
         if( model_.nb_lines() > 0 ) {
@@ -153,7 +153,6 @@ namespace RINGMesh {
         if( model_.nb_layers() > 0 && model_.layer( 0 ).nb_children() == 0 ) {
             fill_elements_children( GME::LAYER ) ;
         }
-        return true ;
     }
 
     void GeoModelEditor::fill_elements_boundaries( GME::TYPE type ) const

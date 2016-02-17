@@ -43,6 +43,9 @@
  *
  */
 
+#ifndef __GEOGRAM_GFX_BASIC_GLSL__
+#define __GEOGRAM_GFX_BASIC_GLSL__
+
 #include <geogram_gfx/basic/common.h>
 #include <geogram/basic/numeric.h>
 
@@ -56,6 +59,18 @@ namespace GEO {
     namespace GLSL {
 
         /**
+         * \brief Initializes geogram_gfx functions and objects
+         * \details This function needs to be created once an 
+         *  OpenGL context is available.
+         */  
+        void GEOGRAM_GFX_API initialize();
+
+        /**
+         * \brief Terminates geogram_gfx functions and objects
+         */  
+        void GEOGRAM_GFX_API terminate();
+        
+        /**
          * \brief Exception thrown when a GLSL shader fails to
          *  compiled.
          * \details Can occur when OpenGL driver or hardware
@@ -68,6 +83,14 @@ namespace GEO {
             virtual const char* what() const throw();
         };
 
+
+        /**
+         * \brief Gets the supported GLSL language version.
+         * \details The supported GLSL version is determined
+         *  from hardware/driver capabilities and user-defined
+         *  parameters.
+         */
+        double GEOGRAM_GFX_API supported_language_version();
         
         /**
          * \brief Compiles a shader for a specific target.
@@ -91,20 +114,6 @@ namespace GEO {
 
         /**
          * \brief Compiles a shader for a specific target.
-         * \param[in] target the OpenGL shader target ()
-         * \param[in] source the source of the shader as an ASCII string
-         * \return the OpenGL opaque Id of the created shader object
-         * \throw GLSLCompileError
-         */
-        inline GLuint GEOGRAM_GFX_API compile_shader(
-            GLenum target, const char* source
-        ) {
-            return compile_shader(target, &source, 1);
-        }
-
-
-        /**
-         * \brief Compiles a shader for a specific target.
          * \details One can split the source of the shader into
          *  different strings, one of them being used for library
          *  functions common to different shaders.
@@ -113,34 +122,34 @@ namespace GEO {
          *  to do so (and it did not seem to work). Errors are detected and 
          *  displayed to std::err.
          * \param[in] target the OpenGL shader target ()
-         * \param[in] source1, source2 ASCII strings that will be 
-         *  concatened to form the source of the shader.
+         * \param[in] source1, source2, ... ASCII strings that will be 
+         *  concatened to form the source of the shader. It needs to be
+         *  terminated by 0.
          * \return the OpenGL opaque Id of the created shader object
          * \throw GLSLCompileError
-         */
-        GLuint GEOGRAM_GFX_API compile_shader(
-            GLenum target, const char* source1, const char* source2
-        );
-
-        /**
-         * \brief Compiles a shader for a specific target.
-         * \details One can split the source of the shader into
-         *  different strings, one of them being used for library
-         *  functions common to different shaders.
-         *  It may seem more natural to generate a shader object with library 
-         *  functions, but OpenGL documentation does not recommend
-         *  to do so (and it did not seem to work). Errors are detected and 
-         *  displayed to std::err.
-         * \param[in] target the OpenGL shader target ()
-         * \param[in] source1, source2, source3 ASCII strings that will be 
-         *  concatened to form the source of the shader.
-         * \return the OpenGL opaque Id of the created shader object
-         * \throw GLSLCompileError
+         * \note Could have been implemented using varargs, but I had
+         *  problems with it (crashes that I could not fix), and it is
+         *  not recommended anyway (does not have typechecking).
          */
         GLuint GEOGRAM_GFX_API compile_shader(
             GLenum target,
-            const char* source1, const char* source2, const char* source3
+            const char* source1,
+            const char* source2,
+            const char* source3 = nil,
+            const char* source4 = nil,
+            const char* source5 = nil,
+            const char* source6 = nil,
+            const char* source7 = nil,
+            const char* source8 = nil,
+            const char* source9 = nil,
+            const char* source10 = nil,
+            const char* source11 = nil,
+            const char* source12 = nil,
+            const char* source13 = nil,
+            const char* source14 = nil,
+            const char* source15 = nil            
         );
+
         
         /**
          * \brief Creates a GLSL program from a zero-terminated list of shaders
@@ -154,14 +163,19 @@ namespace GEO {
         /**
          * \brief Creates a GLSL program from a string.
          * \details The string may contain several shaders. Each shader
-         *   is delimited by begin-end statements: #begin(SHADER_TYPE) / #end(SHADER_TYPE)
-         *   where SHADER_TYPE is one of GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, GL_GEOMETRY_SHADER,
-         *   GL_TESS_CONTROL_SHADER, GL_TESS_EVALUATION_SHADER.
-         * \param[in,out] string the combined shaders that constitute the program. 
-         * \param[in] copy_string if true, the input string is copied internally. The function
-         *   temporarily modifies the input string (and then restores it on exit). This may
-         *   be forbidden when input string is a constant char array (string litteral in source
-         *   code). In this case, the input string is copied to a temporary buffer.
+         *   is delimited by begin-end statements: 
+         *   #begin(SHADER_TYPE) / #end(SHADER_TYPE)
+         *   where SHADER_TYPE is one of GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, 
+         *   GL_GEOMETRY_SHADER, GL_TESS_CONTROL_SHADER, 
+         *   GL_TESS_EVALUATION_SHADER.
+         * \param[in,out] string the combined shaders that constitute the 
+         *  program. 
+         * \param[in] copy_string if true, the input string is copied 
+         *   internally. The function temporarily modifies the input string 
+         *   (and then restores it on exit). This may
+         *   be forbidden when input string is a constant char array 
+         *   (string litteral in source code). In this case, the input 
+         *   string is copied to a temporary buffer.
          * \return the OpenGL opaque Id of the created shader object
          * \throw GLSLCompileError
          */
@@ -176,7 +190,9 @@ namespace GEO {
          * \param[in] filename the name of the file
          * \throw GLSLCompileError
          */
-        GLuint GEOGRAM_GFX_API create_program_from_file(const std::string& filename);
+        GLuint GEOGRAM_GFX_API create_program_from_file(
+            const std::string& filename
+        );
 
 
         /**
@@ -270,7 +286,7 @@ namespace GEO {
             glUseProgram(0);
             return true;
         }
-
-        
     }
 }
+
+#endif

@@ -2,7 +2,7 @@
 # the standard developer kit documentation
 
 PROJECT_NAME           = "RINGMesh"
-PROJECT_NUMBER         = "Version @RINGMesh_VERSION@"
+
 PROJECT_BRIEF          = "A programming library for geological model meshes"
 FILE_PATTERNS          = *.cpp *.h *.hpp *.dox
 
@@ -15,6 +15,7 @@ FULL_PATH_NAMES        = YES
 
 
 
+
 # Symbols to extract
 
 INTERNAL_DOCS          = NO
@@ -24,6 +25,7 @@ EXTRACT_PRIVATE        = YES
 EXTRACT_STATIC         = NO
 EXTRACT_LOCAL_CLASSES  = YES
 EXTRACT_ANON_NSPACES   = NO
+
 
 # Generation options
 
@@ -40,7 +42,7 @@ CALL_GRAPH             = YES
 CALLER_GRAPH           = YES
 INCLUDE_GRAPH          = YES
 INCLUDED_BY_GRAPH      = YES
-INTERACTIVE_SVG        = NO
+INTERACTIVE_SVG        = YES
 DOT_MULTI_TARGETS      = NO
 QUIET                  = NO
 WARNINGS               = YES

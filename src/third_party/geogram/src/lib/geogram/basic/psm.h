@@ -54,6 +54,7 @@
 
 #include <assert.h>
 #include <iostream>
+#include <string>
 
 #define GEOGRAM_PSM
 

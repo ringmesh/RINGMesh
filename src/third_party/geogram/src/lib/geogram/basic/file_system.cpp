@@ -55,9 +55,11 @@
 #ifdef GEO_OS_WINDOWS
 #include <windows.h>
 #include <io.h>
+#include <shlobj.h>
 #else
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -414,12 +416,12 @@ namespace GEO {
         }
 
         bool copy_file(const std::string& from, const std::string& to) {
-            FILE* fromf = fopen(from.c_str(), "ra");
+            FILE* fromf = fopen(from.c_str(), "r");
             if(fromf == nil) {
                 Logger::err("FileSyst") << "Could not open source file:" << from << std::endl;
                 return false;
             }
-            FILE* tof = fopen(to.c_str(),"wa");
+            FILE* tof = fopen(to.c_str(),"w");
             if(tof == nil) {
                 Logger::err("FileSyst") << "Could not create file:" << to << std::endl;
                 fclose(fromf);
@@ -456,6 +458,49 @@ namespace GEO {
 #endif            
         }
 
+        void GEOGRAM_API touch(const std::string& filename) {
+#ifdef GEO_OS_UNIX
+            {
+                int rc = utimensat(
+                    AT_FDCWD,
+                    filename.c_str(),
+                    nil,
+                    0
+                );
+                if(rc != 0) {
+                    Logger::err("FileSystem")
+                        << "Could not touch file:"
+                        << filename
+                        << std::endl;
+                }
+            }
+#elif defined GEO_OS_WINDOWS
+            {
+                HANDLE hfile = CreateFile(
+                    filename.c_str(),
+                    GENERIC_READ | GENERIC_WRITE,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE,
+                    nil,
+                    OPEN_EXISTING,
+                    FILE_ATTRIBUTE_NORMAL,
+                    nil
+                );
+                if(hfile == INVALID_HANDLE_VALUE) {
+                    Logger::err("FileSystem")
+                        << "Could not touch file:"
+                        << filename
+                        << std::endl;
+                }
+                SYSTEMTIME now_system;
+                FILETIME now_file;
+                GetSystemTime(&now_system);
+                SystemTimeToFileTime(&now_system, &now_file);
+                SetFileTime(hfile,nil,&now_file,&now_file);
+                CloseHandle(hfile);
+            }
+#endif            
+        }
+        
         std::string normalized_path(const std::string& path_in) {
 
             if(path_in == "") {
@@ -509,6 +554,29 @@ namespace GEO {
             flip_slashes(result);
             return result;
         }
+
+
+        std::string home_directory() {
+#if defined GEO_OS_WINDOWS
+            wchar_t folder[MAX_PATH+1];
+            HRESULT hr = SHGetFolderPathW(0, CSIDL_MYDOCUMENTS, 0, 0, folder);
+            if (SUCCEEDED(hr)) {
+                char result[MAX_PATH+1];
+                wcstombs(result, folder, MAX_PATH);
+                return std::string(result);
+            }
+#else   
+            char* result = getenv("HOME");
+            if(result != nil) {
+                return std::string(result);
+            }
+#endif
+            return std::string("");
+        }
+
+        
     }
+
+    
 }
 

@@ -246,6 +246,16 @@ namespace GEO {
         }
 
         /**
+         * \brief Tests whether mesh refinement is selected.
+         * \retval true if mesh refinement is selected
+         * \retval false otherwise
+         * \see set_refine()
+         */
+        bool get_refine() const {
+            return refine_;
+        }
+
+        /**
          * \brief Specifies the desired quality for mesh elements
          *  when refinement is enabled (\see set_refine).
          * \details

@@ -523,8 +523,8 @@ namespace GEO {
         /**
          * \brief Sets the minimal mode
          * \details When the Logger is in minimal mode, only warning and error
-         * messages sent to it are dispatched to the registered clients. The minimal
-         * mode can also be set by setting the value of the property
+         * messages sent to it are dispatched to the registered clients. 
+         * The minimal mode can also be set by setting the value of the property
          * "log:minimal" with set_value().
          * \param[in] flag set to true/false to turn the minimal mode on/off
          * \note The minimal mode is off by default
@@ -715,6 +715,7 @@ namespace GEO {
     };
 
     /************************************************************************/
+
 }
 
 extern "C" {

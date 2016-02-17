@@ -223,6 +223,15 @@ namespace GEO {
         }
 
         /**
+         * \brief Replaces a Halfedge with the previous one around the facet.
+         * \param[in,out] H the Halfedge
+         */
+        void move_to_prev_around_facet(Halfedge& H) const {
+            geo_debug_assert(halfedge_is_valid(H));
+            H.corner = mesh_.facets.prev_corner_around_facet(H.facet, H.corner);
+        }
+        
+        /**
          * \brief Replaces a Halfedge with the next one around the vertex.
          * \param[in,out] H the Halfedge
          * \return true if the move was successful, false otherwise. On borders,
@@ -247,6 +256,15 @@ namespace GEO {
          */
         void move_to_next_around_border(Halfedge& H) const;
 
+        /**
+         * \brief Replaces a Halfedge with the previous one around the border.
+         * \details If set_use_facet_region() is set, then
+         *  Halfedges incident to two different facet regions are
+         *  considered as borders.
+         * \param[in,out] H the Halfedge
+         */
+        void move_to_prev_around_border(Halfedge& H) const;
+        
         /**
          * \brief Replaces a Halfedge with the opposite one in the
          *  adjacent facet.

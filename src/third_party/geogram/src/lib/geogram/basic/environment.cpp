@@ -98,13 +98,16 @@ namespace GEO {
     VariableObserver::VariableObserver(
         const std::string& var_name
     ) :
-        observed_variable_(var_name)
+        observed_variable_(var_name),
+        environment_(nil)
     {
-        Environment::instance()->add_observer(var_name, this);
+        environment_ = Environment::instance()->find_environment(var_name);
+        geo_assert(environment_ != nil);
+        environment_->add_observer(var_name, this);
     }
 
     VariableObserver::~VariableObserver() {
-        Environment::instance()->remove_observer(observed_variable_, this);
+        environment_->remove_observer(observed_variable_, this);
     }
 
     /************************************************************************/
@@ -220,6 +223,20 @@ namespace GEO {
         return value;
     }
 
+    Environment* Environment::find_environment(const std::string& name) {
+        std::string value;
+        if(get_local_value(name, value)) {
+            return this;
+        }
+        for(index_t i=0; i<environments_.size(); ++i) {
+            Environment* result = environments_[i]->find_environment(name);
+            if(result != nil) {
+                return result;
+            }
+        }
+        return nil;
+    }
+    
     bool Environment::add_observer(
         const std::string& name, VariableObserver* observer
     ) {

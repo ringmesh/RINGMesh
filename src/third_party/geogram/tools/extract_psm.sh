@@ -100,7 +100,7 @@ remove_doxygen() {
     }'
 }
 
-# extract_copyright()
+# extract_file()
 #
 # Arguments: $1: path to a sourcefile relative
 #   to $PSM_DIR
