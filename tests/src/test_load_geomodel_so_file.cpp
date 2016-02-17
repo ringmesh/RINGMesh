@@ -55,15 +55,13 @@ int main( int argc, char** argv )
     using namespace RINGMesh ;
 
     GEO::Logger::out( "TEST" ) <<
-        "Test IO for a mesh GeoModel in .so" << std::endl ;
+        "Import a meshed GeoModel from .so" << std::endl ;
 
     std::string file_name( ringmesh_test_data_path ) ;
     file_name += "modelA4.so" ;
 
     GeoModel model ;
-    if( !geomodel_volume_load( file_name, model ) ) {
-        return 1 ;
-    }
+    geomodel_volume_load( file_name, model ) ;
 
     std::string output_surf_file_name( ringmesh_test_output_path ) ;
     output_surf_file_name += "modelA4_surf.bm" ;

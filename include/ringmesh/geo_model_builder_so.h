@@ -74,7 +74,7 @@ namespace RINGMesh {
     } ;
 
     typedef GEO::SmartPointer< TSolidLineParser > TSolidLineParser_var ;
-    typedef GEO::Factory1< TSolidLineParser, GeoModelBuilderTSolid > TSolidLineParserFactory ;
+    typedef GEO::Factory1< TSolidLineParser, GeoModelBuilderTSolid& > TSolidLineParserFactory ;
 #define ringmesh_register_TSolidLineParser_creator(type, name) \
                         geo_register_creator(TSolidLineParserFactory, type, name)
 
@@ -93,7 +93,7 @@ namespace RINGMesh {
         }
         virtual ~GeoModelBuilderTSolid()
         {}
-        bool load_file() ;
+        void load_file() ;
 
     private:
 

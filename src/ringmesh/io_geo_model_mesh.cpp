@@ -500,10 +500,30 @@ namespace {
 
     class TSolidIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& model )
         {
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from TSolid not implemented yet" ) ;
+            std::ifstream input( filename.c_str() ) ;
+            if( input ) {
+                GeoModelBuilderTSolid builder( model, filename ) ;
+
+                time_t start_load, end_load ;
+                time( &start_load ) ;
+
+                builder.build_model() ;
+                print_geomodel( model ) ;
+                // Check boundary model validity
+                RINGMesh::is_geomodel_valid( model ) ;
+
+                time( &end_load ) ;
+
+                GEO::Logger::out( "I/O" )
+                    << " Loaded model " << model.name() << " from " << std::endl
+                    << filename << " timing: "
+                    << difftime( end_load, start_load ) << "sec" << std::endl ;
+            } else {
+                throw RINGMeshException( "I/O",
+                    "Failed loading model from file " + filename ) ;
+            }
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
@@ -1799,6 +1819,7 @@ namespace RINGMesh {
 
         GeoModelVolumeIOHandler_var handler = GeoModelVolumeIOHandler::get_handler(
             filename ) ;
+        std::cout << "here in vol_load" << std::endl ;
         handler->load( filename, model ) ;
     }
 
