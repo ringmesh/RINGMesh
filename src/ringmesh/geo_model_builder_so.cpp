@@ -901,13 +901,12 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::load_file()
     {
-        std::cout << "here" << std::endl ;
         read_file() ;
-        std::cout << "here2" << std::endl ;
+
         // Compute internal borders (by removing adjacencies on
         // triangle edges common to at least two surfaces)
         compute_surfaces_internal_borders( (*this).model() ) ;
-        std::cout << "here3" << std::endl ;
+
         // Build GeoModel Lines and Corners from the surfaces
         model_.mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
@@ -920,9 +919,6 @@ namespace RINGMesh {
 
         // Contacts building
         build_contacts() ;
-
-        std::cout << "/here" << std::endl ;
-
     }
 
     void GeoModelBuilderTSolid::read_file()
@@ -932,7 +928,6 @@ namespace RINGMesh {
         while( !in_.eof() && in_.get_line() ) {
             in_.get_fields() ;
             if( in_.nb_fields() > 0 ) {
-                std::cout << "Read line " << in_.line_number() << " : " << in_.field(0) << std::endl ;
                 read_line( load_utils ) ;
             }
         }
@@ -942,7 +937,7 @@ namespace RINGMesh {
     {
         std::string keyword = in_.field( 0 ) ;
         TSolidLineParser_var parser = TSolidLineParser::create( keyword, *this ) ;
-        if (parser != nil ) {
+        if( parser ) {
             parser->execute( in_, load_utils ) ;
         }
     }
@@ -954,8 +949,7 @@ namespace {
 
     class LoadZSign: public TSolidLineParser {
     public:
-        LoadZSign( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadZSign() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
@@ -973,21 +967,20 @@ namespace {
 
     class LoadRegion: public TSolidLineParser {
     public:
-        LoadRegion( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadRegion() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
             TSolidLoadUtils& load_utils )
         {
             if( load_utils.region_vertices_.size() > 0 ) {
-                builder_.set_region_geometry(
+                builder().set_region_geometry(
                     load_utils.cur_region_,
                     load_utils.region_vertices_,
                     load_utils.tetra_corners_ ) ;
             }
             load_utils.cur_region_ =
-                initialize_region( line.field( 1 ), builder_ ) ;
+                initialize_region( line.field( 1 ), builder() ) ;
             reinitialize_region_vertices_and_teras(
                 load_utils.nb_elements_per_region_[ 2*load_utils.cur_region_ ],
                 load_utils.nb_elements_per_region_[ 2*load_utils.cur_region_ + 1 ],
@@ -1014,8 +1007,7 @@ namespace {
 
     class LoadVertex: public TSolidLineParser {
     public:
-        LoadVertex( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadVertex() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
@@ -1060,8 +1052,7 @@ namespace {
 
     class LoadAtomic: public TSolidLineParser {
     public:
-        LoadAtomic( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadAtomic() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
@@ -1099,7 +1090,7 @@ namespace {
                 // acting like for a vertex
                 vertex_map.add_vertex( region_vertices.size(), region_id ) ;
                 region_vertices.push_back(
-                    builder_.model().region( referred_vertex_region_id ).vertex(
+                    builder().model().region( referred_vertex_region_id ).vertex(
                         referred_vertex_local_id ) ) ;
             } else {
                 // If the atom referred to an atom of the same region
@@ -1111,8 +1102,7 @@ namespace {
 
     class LoadTetra: public TSolidLineParser {
     public:
-        LoadTetra( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadTetra() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
@@ -1151,29 +1141,27 @@ namespace {
 
     class LoadName: public TSolidLineParser {
     public:
-        LoadName( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadName() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
             TSolidLoadUtils& load_utils )
         {
             // GeoModel name is set to the TSolid name.
-            builder_.set_model_name( line.field( 1 ) ) ;
+            builder().set_model_name( line.field( 1 ) ) ;
         }
     } ;
 
     class LoadLastRegion: public TSolidLineParser {
     public:
-        LoadLastRegion( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadLastRegion() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
             TSolidLoadUtils& load_utils )
         {
             if( load_utils.region_vertices_.size() > 0 ) {
-                builder_.set_region_geometry(
+                builder().set_region_geometry(
                     load_utils.cur_region_,
                     load_utils.region_vertices_,
                     load_utils.tetra_corners_ ) ;
@@ -1188,24 +1176,22 @@ namespace {
 
     class LoadInterface: public TSolidLineParser {
     public:
-        LoadInterface( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadInterface() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
             TSolidLoadUtils& load_utils )
         {
             GME::gme_t interface =
-                builder_.create_element( GME::INTERFACE ) ;
+                builder().create_element( GME::INTERFACE ) ;
             load_utils.cur_interface_ = interface.index ;
-            builder_.set_element_name( interface, line.field( 1 ) ) ;
+            builder().set_element_name( interface, line.field( 1 ) ) ;
         }
     } ;
 
     class LoadSurface: public TSolidLineParser {
     public:
-        LoadSurface( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadSurface() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
@@ -1213,15 +1199,15 @@ namespace {
         {
             // Compute the surface
             if( load_utils.cur_surf_facets_corner_gocad_id_.size() > 0 ) {
-                build_surface( builder_, load_utils ) ;
+                build_surface( builder(), load_utils ) ;
             }
             // Create a new surface
-            GME::gme_t new_surface = builder_.create_element( GME::SURFACE ) ;
+            GME::gme_t new_surface = builder().create_element( GME::SURFACE ) ;
              load_utils.cur_surface_ = new_surface.index ;
-            builder_.set_element_parent(
+            builder().set_element_parent(
                 new_surface,
                 GME::gme_t( GME::INTERFACE, load_utils.cur_interface_ ) ) ;
-            builder_.add_element_child(
+            builder().add_element_child(
                 GME::gme_t( GME::INTERFACE, load_utils.cur_interface_ ),
                 new_surface ) ;
         }
@@ -1229,8 +1215,7 @@ namespace {
 
     class LoadLastSurface: public TSolidLineParser {
     public:
-        LoadLastSurface( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadLastSurface() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
@@ -1238,15 +1223,14 @@ namespace {
         {
             // Compute the last surface
             if( load_utils.cur_surf_facets_corner_gocad_id_.size() > 0 ) {
-                build_surface( builder_, load_utils ) ;
+                build_surface( builder(), load_utils ) ;
             }
         }
     } ;
 
     class LoadTriangle: public TSolidLineParser {
     public:
-        LoadTriangle( GeoModelBuilderTSolid& builder )
-            : TSolidLineParser( builder )
+        LoadTriangle() : TSolidLineParser()
         {}
     private:
         virtual void execute( const GEO::LineInput& line,
@@ -1295,16 +1279,15 @@ namespace RINGMesh {
         ringmesh_register_TSolidLineParser_creator( LoadLastSurface, "END" ) ;
     }
 
-    TSolidLineParser::TSolidLineParser( GeoModelBuilderTSolid& builder ) :
-        GEO::Counted(), builder_( builder )
-    {}
-
     TSolidLineParser* TSolidLineParser::create(
         const std::string& keyword,
         GeoModelBuilderTSolid& gm_builder )
     {
         TSolidLineParser* parser =
-            TSolidLineParserFactory::create_object( keyword, gm_builder ) ;
+            TSolidLineParserFactory::create_object( keyword ) ;
+        if( parser ){
+            parser->set_builder( gm_builder ) ;
+        }
         return parser ;
     }
 } // RINGMesh namespace

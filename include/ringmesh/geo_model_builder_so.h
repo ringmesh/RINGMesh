@@ -67,14 +67,36 @@ namespace RINGMesh {
             TSolidLoadUtils& load_utils ) = 0 ;
 
     protected:
-        TSolidLineParser( GeoModelBuilderTSolid& builder ) ;
-        virtual ~TSolidLineParser() {}
-    protected:
-        GeoModelBuilderTSolid& builder_ ;
+        TSolidLineParser() : Counted(), builder_( nil )
+        {
+        }
+        virtual ~TSolidLineParser()
+        {
+        }
+
+        GeoModelBuilderTSolid& builder()
+        {
+            ringmesh_debug_assert( builder_ ) ;
+            return *builder_ ;
+        }
+
+        const GeoModelBuilderTSolid& builder() const
+        {
+            ringmesh_debug_assert( builder_ ) ;
+            return *builder_ ;
+        }
+
+        virtual void set_builder( GeoModelBuilderTSolid& builder )
+        {
+            builder_ = &builder ;
+        }
+
+    private:
+        GeoModelBuilderTSolid* builder_ ;
     } ;
 
     typedef GEO::SmartPointer< TSolidLineParser > TSolidLineParser_var ;
-    typedef GEO::Factory1< TSolidLineParser, GeoModelBuilderTSolid& > TSolidLineParserFactory ;
+    typedef GEO::Factory0< TSolidLineParser > TSolidLineParserFactory ;
 #define ringmesh_register_TSolidLineParser_creator(type, name) \
                         geo_register_creator(TSolidLineParserFactory, type, name)
 
