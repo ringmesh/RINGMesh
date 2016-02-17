@@ -737,3 +737,14 @@ NLboolean nlSolve() {
     return result ;
 }
 
+void nlUpdateRightHandSide(NLdouble* values) {
+    /*
+     * If we are in the solved state, get back to the
+     * constructed state.
+     */
+    if(nlCurrentContext->state == NL_STATE_SOLVED) {
+        nlTransition(NL_STATE_SOLVED, NL_STATE_SYSTEM_CONSTRUCTED);
+    }
+    nlCheckState(NL_STATE_SYSTEM_CONSTRUCTED);
+    memcpy(nlCurrentContext->x, values, nlCurrentContext->n * sizeof(double));
+}

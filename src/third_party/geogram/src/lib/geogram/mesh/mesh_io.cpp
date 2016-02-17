@@ -167,7 +167,10 @@ namespace {
                         }
                         index_t v = M.vertices.create_vertex();
                         set_mesh_point(M, v, P.data(), dimension_);
-                    } else if(ioflags.has_element(MESH_FACETS) && in.field_matches(0, "f")) {
+                    } else if(
+                        ioflags.has_element(MESH_FACETS) &&
+                        in.field_matches(0, "f")
+                    ) {
                         if(in.nb_fields() < 3) {
                             Logger::err("I/O")
                                 << "Line " << in.line_number()
@@ -485,7 +488,9 @@ namespace {
                             return false;
                         }
                         for(index_t lv=0; lv<2; ++lv) {
-                            M.edges.set_vertex(first_edge+e, lv, index_t(v[lv]-1));
+                            M.edges.set_vertex(
+                                first_edge+e, lv, index_t(v[lv]-1)
+                            );
                         }
                     }                    
                 }
@@ -1089,10 +1094,12 @@ namespace {
                 long ntstrips = 0;
                 if(flags_.has_element(MESH_FACETS)) {
                     nfaces += ply_set_read_cb(
-                        ply, "face", "vertex_indices", PlyLoader::face_cb, this, 0
+                        ply, "face", "vertex_indices",
+                        PlyLoader::face_cb, this, 0
                     );
                     nfaces += ply_set_read_cb(
-                        ply, "face", "vertex_index", PlyLoader::face_cb, this, 0
+                        ply, "face", "vertex_index",
+                        PlyLoader::face_cb, this, 0
                     );
                     ntstrips += ply_set_read_cb(
                         ply, "tristrips", "vertex_indices",
@@ -1572,7 +1579,8 @@ namespace {
                 e_ply_type facet_idx_type = PLY_INT;
                 ply_add_element(oply, "face", long(M.facets.nb()));
                 ply_add_property(
-                    oply, "vertex_indices", PLY_LIST, facet_len_type, facet_idx_type
+                    oply, "vertex_indices",
+                    PLY_LIST, facet_len_type, facet_idx_type
                 );
             }
 
@@ -1615,7 +1623,7 @@ namespace {
     };
     
     /************************************************************************/
-
+    
     /**
      * \brief IO handler for the OFF file format
      * \see http://www.geomview.org/docs/html/OFF.html

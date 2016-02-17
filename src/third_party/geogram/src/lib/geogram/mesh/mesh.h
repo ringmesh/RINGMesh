@@ -326,6 +326,15 @@ namespace GEO {
          * \return the index of the created vertex
          */
         index_t create_vertex(const double* coords) {
+            // Sanity check:
+            // It is not correct to call create_vertex(point_ptr(v)) since
+            // create_vertex may realloc the points coordinates vector, thus
+            // invalidate point_ptr(v).
+            geo_debug_assert(
+                nb() == 0 ||
+                coords < point_ptr(0) ||
+                coords >= point_ptr(0) + nb() * dimension()
+            );
             index_t result = create_vertex();
             for(index_t c=0; c<dimension(); ++c) {
                 point_ptr(result)[c] = coords[c];
@@ -1309,9 +1318,34 @@ namespace GEO {
          * Cell vertex index by (edge index, edge vertex index).
          */
         index_t edge_vertex[12][2];
-        friend class Mesh;        
+
+        /**
+         * Cell facet index by (edge index, adjacent facet index).
+         */
+        index_t edge_adjacent_facet[12][2];
     };
 
+    
+    /**
+     * \brief Gathers declarations of global cell descriptors.
+     * \details Cannot be declared as static variables in 
+     *  MeshCellsStore, since visual C++ does not allows
+     *  exporting class static variables from a DLL.
+     */
+    namespace MeshCellDescriptors {
+        /**
+         * \brief Maps a cell type to the associated cell descriptor.
+         */
+        GEOGRAM_API extern CellDescriptor*
+             cell_type_to_cell_descriptor[GEO::MESH_NB_CELL_TYPES];
+
+        GEOGRAM_API extern CellDescriptor tet_descriptor;
+        GEOGRAM_API extern CellDescriptor hex_descriptor;
+        GEOGRAM_API extern CellDescriptor prism_descriptor;
+        GEOGRAM_API extern CellDescriptor pyramid_descriptor;
+        GEOGRAM_API extern CellDescriptor connector_descriptor;
+    }
+    
     /**
      * \brief Stores the cells of a mesh (low-level store)
      * \relates MeshCells
@@ -1352,8 +1386,12 @@ namespace GEO {
          */
         const CellDescriptor& descriptor(index_t c) const {
             geo_debug_assert(c < nb());            
-            return is_simplicial_ ? tet_descriptor_ :
-                *cell_type_to_cell_descriptor_[cell_type_[c]] ;
+            return is_simplicial_ ? MeshCellDescriptors::tet_descriptor :
+                *(
+                    MeshCellDescriptors::cell_type_to_cell_descriptor[
+                        cell_type_[c]
+                    ]
+                );
         }
 
         /**
@@ -1369,7 +1407,7 @@ namespace GEO {
             MeshCellType t
         ) {
             geo_debug_assert(t < GEO::MESH_NB_CELL_TYPES);
-            return *cell_type_to_cell_descriptor_[t];
+            return *(MeshCellDescriptors::cell_type_to_cell_descriptor[t]);
         }
 
         /**
@@ -1412,7 +1450,11 @@ namespace GEO {
          */
         index_t corner(index_t c, index_t lv) const {
             geo_debug_assert(c < nb());
-            //geo_debug_assert(lv < nb_corners(c));
+            // There seems to be a linkage problem under MSVC for the
+            // following assertion check...
+#ifndef GEO_OS_WINDOWS            
+            geo_debug_assert(lv < nb_corners(c));
+#endif            
             return corners_begin(c) + lv;
         }
 
@@ -1509,17 +1551,6 @@ namespace GEO {
         vector<index_t> cell_ptr_;
 
     protected:
-        /**
-         * \brief Maps a cell type to the associated cell descriptor.
-         */
-        static CellDescriptor*
-            cell_type_to_cell_descriptor_[GEO::MESH_NB_CELL_TYPES];
-
-        static CellDescriptor tet_descriptor_;
-        static CellDescriptor hex_descriptor_;
-        static CellDescriptor prism_descriptor_;
-        static CellDescriptor pyramid_descriptor_;
-        static CellDescriptor connector_descriptor_;
         friend class Mesh;        
     };
     
@@ -1793,6 +1824,23 @@ namespace GEO {
             );
         }
 
+        /**
+         * \brief Gets a cell local facet index by local edge index and local
+         *  facet index in the edge
+         * \param[in] c the cell, in 0..nb()-1
+         * \param[in] le the local edge index, in 0..nb_edges(c)-1
+         * \param[in] lf the local index in the edge, one of 0,1
+         * \return the local facet index of the facet adjacent to the edge.
+         *  - If \p lf=0, it gets the facet on the left of the oriented edge.
+         *  - If \p lf=1, it gets the facet on the right of the oriented edge.
+         */
+        index_t edge_adjacent_facet(index_t c, index_t le, index_t lf) const {
+            geo_debug_assert(le < nb_edges(c));
+            geo_debug_assert(lf < 2);
+            return descriptor(c).edge_adjacent_facet[le][lf];
+        }
+
+        
         virtual void clear(
             bool keep_attributes=true, bool keep_memory=false
         ) ;
@@ -1814,6 +1862,11 @@ namespace GEO {
          */
         index_t create_cells(index_t nb_cells, MeshCellType type) {
 
+	    if(nb_cells == 0) {
+	        return NO_CELL;
+	    }
+	   
+	   
             if(type != MESH_TET) {
                 is_not_simplicial();
             }
@@ -2209,7 +2262,7 @@ namespace GEO {
         static index_t local_tet_facet_vertex_index(index_t lf, index_t lv) {
             geo_debug_assert(lf < 4);
             geo_debug_assert(lv < 3);
-            return tet_descriptor_.facet_vertex[lf][lv];
+            return MeshCellDescriptors::tet_descriptor.facet_vertex[lf][lv];
         }
 
     protected:

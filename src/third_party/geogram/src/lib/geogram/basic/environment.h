@@ -62,6 +62,8 @@
 
 namespace GEO {
 
+    class Environment;
+    
     /************************************************************************/
 
     /**
@@ -120,6 +122,7 @@ namespace GEO {
 
     private:
         std::string observed_variable_;
+        Environment* environment_;
     };
 
     /************************************************************************/
@@ -290,6 +293,15 @@ namespace GEO {
             const std::string& name, const std::string& value
         );
 
+        /**
+         * \brief Finds the environment that declares a variable as
+         *  a local name.
+         * \param[in] name the name of the variable
+         * \return a pointer to the Environment that has \p name as a 
+         *  local variable, or nil if no such environment exists
+         */
+        virtual Environment* find_environment(const std::string& name);
+        
         /**
          * \brief Attaches an observer to a variable
          * \details Adds observer \p observer to the list of observers

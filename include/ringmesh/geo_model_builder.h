@@ -111,7 +111,7 @@ namespace RINGMesh {
         /*!
          * @todo Implements sot that it returns true if the input options are consistent
          */
-        bool set_options( const GeoModelBuildingFlags& options )
+        void set_options( const GeoModelBuildingFlags& options )
         {
             options_ = options ;
             return true ;

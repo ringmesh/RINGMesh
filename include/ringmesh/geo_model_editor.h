@@ -137,7 +137,7 @@ namespace RINGMesh {
         * @brief Complete missing information in GeoModelElements
         * boundaries - in_boundary - parent - children
         */
-        bool complete_element_connectivity() ;
+        void complete_element_connectivity() ;
 
         /*!
         * @brief Fill the boundaries of all elements of the given type
