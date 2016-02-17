@@ -44,6 +44,7 @@
 #include <iomanip>
 
 #include <geogram/basic/logger.h>
+#include <geogram/mesh/mesh_geometry.h>
 
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_extension.h>
@@ -496,7 +497,7 @@ namespace {
         index_t cell_id =
             0.25 * ( cell_facet_center_id - local_facet_id ) ;
         vec3 cell_facet_normal =
-            mesh_cell_facet_normal(
+            GEO::mesh_cell_facet_normal(
                 geomodel.region( region_id ).mesh(),
                 cell_id,
                 local_facet_id ) ;
@@ -898,17 +899,15 @@ namespace {
 
 namespace RINGMesh {
 
-    bool GeoModelBuilderTSolid::load_file()
+    void GeoModelBuilderTSolid::load_file()
     {
-        if( !in_.OK() ) {
-            return false ;
-        }
+        std::cout << "here" << std::endl ;
         read_file() ;
-
+        std::cout << "here2" << std::endl ;
         // Compute internal borders (by removing adjacencies on
         // triangle edges common to at least two surfaces)
         compute_surfaces_internal_borders( (*this).model() ) ;
-
+        std::cout << "here3" << std::endl ;
         // Build GeoModel Lines and Corners from the surfaces
         model_.mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
@@ -922,7 +921,7 @@ namespace RINGMesh {
         // Contacts building
         build_contacts() ;
 
-        return true ;
+        std::cout << "/here" << std::endl ;
 
     }
 
@@ -933,6 +932,7 @@ namespace RINGMesh {
         while( !in_.eof() && in_.get_line() ) {
             in_.get_fields() ;
             if( in_.nb_fields() > 0 ) {
+                std::cout << "Read line " << in_.line_number() << " : " << in_.field(0) << std::endl ;
                 read_line( load_utils ) ;
             }
         }
