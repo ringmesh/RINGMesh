@@ -188,7 +188,7 @@ namespace RINGMesh {
      * @details Does not require this mesh to be a closed manifold
      * as the equivalent in Geogram function does.
      */
-    bool RINGMESH_API tetrahedralize_mesh_tetgen(
+    void RINGMESH_API tetrahedralize_mesh_tetgen(
         GEO::Mesh& M,
         bool refine,
         double quality ) ;
