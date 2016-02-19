@@ -1076,7 +1076,7 @@ namespace RINGMesh {
         facet = facet_id_[mesh_.cells.facet( c, f )] ;
         if( facet != NO_ID ) {
             vec3 facet_normal = GEO::Geom::mesh_facet_normal( mesh_, facet ) ;
-            vec3 cell_facet_normal = mesh_cell_facet_normal( mesh_, c, f ) ;
+            vec3 cell_facet_normal = GEO::mesh_cell_facet_normal( mesh_, c, f ) ;
             side = dot( facet_normal, cell_facet_normal ) > 0 ;
         }
         return facet != NO_ID ;
