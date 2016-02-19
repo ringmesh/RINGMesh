@@ -172,6 +172,7 @@ namespace GEO {
          * \param[in] f the facet index in \p M
          * \return the normal to facet \p f
          * \pre dimension >= 3
+         * \note the computed vector is not normalized.
          */
         inline vec3 mesh_facet_normal(const Mesh& M, index_t f) {
             index_t v1 = M.facet_corners.vertex(M.facets.corners_begin(f));
@@ -349,6 +350,7 @@ namespace GEO {
      * \param[in] M a const reference to the mesh
      * \param[in] c the index of the cell
      * \return the volume of the cell 
+     * \pre c < M.cells.nb()
      */
     double GEOGRAM_API mesh_cell_volume(
         const Mesh& M, index_t c
@@ -360,6 +362,29 @@ namespace GEO {
      * \return the volume of the cells of the mesh
      */
     double GEOGRAM_API mesh_cells_volume(const Mesh& M);
+
+
+    /**
+     * \brief Computes the normal of a cell facet.
+     * \param[in] M a const reference to the mesh
+     * \param[in] c the index of the cell
+     * \param[in] lf the local index of the facet within cell \p c
+     * \return the vector normal to facet \p lf in cell \p c
+     * \pre c < M.cells.nb() && lf < M.cells
+     * \note the computed vector is not normalized
+     */
+    vec3 GEOGRAM_API mesh_cell_facet_normal(
+        const Mesh& M, index_t c, index_t lf
+    );
+    
+    /**
+     * \brief Computes the average edge lengh in a surface.
+     * \param[in] M a const reference to a surface mesh
+     * \return the average edge length
+     */
+    double GEOGRAM_API surface_average_edge_length(
+        const Mesh& M
+    );
 }
 
 #endif

@@ -50,6 +50,13 @@
  *  works with both SuperLU 3.x and SuperLU 4.x.
  */
 
+#if defined(__APPLE__) && defined(__MACH__)
+#define unix
+#define SUPERLU_LIB_NAME "libsuperlu_4.dylib"
+#else
+#define SUPERLU_LIB_NAME "libsuperlu.so"
+#endif
+
 #ifdef GEO_DYNAMIC_LIBS
 #  ifdef unix
 #include <dlfcn.h>
@@ -609,7 +616,7 @@ NLboolean nlInitExtension_SUPERLU() {
         return SuperLU_is_initialized();
     }
 
-    SuperLU()->DLL_handle = dlopen("libsuperlu.so", RTLD_NOW);
+    SuperLU()->DLL_handle = dlopen(SUPERLU_LIB_NAME, RTLD_NOW);
     if(SuperLU()->DLL_handle == NULL) {
         nlError("nlInitExtension_SUPERLU/dlopen",dlerror());
         return NL_FALSE;

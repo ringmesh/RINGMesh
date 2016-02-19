@@ -454,6 +454,7 @@ namespace RINGMesh {
         index_t nb_points( tetgen_out_.numberofpoints ) ;
         points.resize( 3 * nb_points ) ;
         double* points_ptr = tetgen_out_.pointlist ;
+        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < 3 * nb_points; ++i ) {
             points[ i ] = points_ptr[ i ] ;
         }
@@ -466,6 +467,7 @@ namespace RINGMesh {
 
         int* tets_ptr = tetgen_out_.tetrahedronlist ;
         int one_tet_size = tetgen_out_.numberofcorners ;
+        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < nb_tets; ++i ) {
             tets[ 4 * i + 0 ] = index_t( tets_ptr[ one_tet_size*i + 0 ] ) ;
             tets[ 4 * i + 1 ] = index_t( tets_ptr[ one_tet_size*i + 1 ] ) ;
@@ -474,14 +476,18 @@ namespace RINGMesh {
         }
     }
 
-    bool tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) 
+    void tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality )
     {
-        if (!is_mesh_tetrahedralizable(M)) {
-            return false ;
+        if( !is_mesh_tetrahedralizable( M ) ) {
+            throw RINGMeshException( "TetGen", "Mesh cannot be tetrahedralized" ) ;
         }               
         TetgenMesher mesher ;
-        mesher.tetrahedralize( M, "QpYA", M ) ;     
-        return true ;
+        if( refine ) {
+            mesher.tetrahedralize( M, "QpYAq" + GEO::String::to_string( quality ),
+                M ) ;
+        } else {
+            mesher.tetrahedralize( M, "QpYYA", M ) ;
+        }
     }
 #endif
     
@@ -574,24 +580,6 @@ namespace RINGMesh {
         ringmesh_assert( nb_vertices > 0 );
 
         return result/ nb_vertices ;
-    }
-
-    /*!
-    * Computes the Mesh cell facet normal
-    * @pasram[in] M the mesh
-    * @param[in] c the cell index
-    * @param[in] f the facet index in the cell
-    * @return the cell facet normal
-    */
-    vec3 mesh_cell_facet_normal( const GEO::Mesh& M, index_t c, index_t f )
-    {
-        const vec3& p1 = GEO::Geom::mesh_vertex( M,
-                                                 M.cells.facet_vertex( c, f, 0 ) ) ;
-        const vec3& p2 = GEO::Geom::mesh_vertex( M,
-                                                 M.cells.facet_vertex( c, f, 1 ) ) ;
-        const vec3& p3 = GEO::Geom::mesh_vertex( M,
-                                                 M.cells.facet_vertex( c, f, 2 ) ) ;
-        return cross( p2 - p1, p3 - p1 ) ;
     }
 
     /*!

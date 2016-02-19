@@ -355,7 +355,7 @@ namespace GEO {
                 edges_old2new[e] = new_nb_edges;
                 if(new_nb_edges != e) {
                     edge_vertex_[2*new_nb_edges]   = edge_vertex_[2*e];
-                    edge_vertex_[2*new_nb_edges+1] = edge_vertex_[2*e+1];                    
+                    edge_vertex_[2*new_nb_edges+1] = edge_vertex_[2*e+1];
                 }
                 ++new_nb_edges;
             }
@@ -572,7 +572,9 @@ namespace GEO {
 
             for(index_t new_f=0; new_f<nb(); ++new_f) {
                 index_t old_f = permutation[new_f];
-                for(index_t old_c=corners_begin(old_f); old_c<corners_end(old_f); ++old_c) {
+                for(
+                    index_t old_c=corners_begin(old_f);
+                    old_c<corners_end(old_f); ++old_c) {
                     facet_corners_permutation.push_back(old_c);
                 }
             }
@@ -620,11 +622,21 @@ namespace GEO {
                 new_facet_ptr.push_back(0);
                 for(index_t new_f=0; new_f<nb(); ++new_f) {
                     index_t old_f = permutation[new_f];
-                    for(index_t old_c = corners_begin(old_f); old_c < corners_end(old_f); ++old_c) {
-                        new_corner_vertex.push_back(mesh_.facet_corners.vertex(old_c));
-                        new_corner_adjacent_facet.push_back(mesh_.facet_corners.adjacent_facet(old_c));
+                    for(
+                        index_t old_c = corners_begin(old_f);
+                        old_c < corners_end(old_f); ++old_c
+                    ) {
+                        new_corner_vertex.push_back(
+                            mesh_.facet_corners.vertex(old_c)
+                        );
+                        new_corner_adjacent_facet.push_back(
+                            mesh_.facet_corners.adjacent_facet(old_c)
+                        );
                     }
-                    new_facet_ptr.push_back(new_facet_ptr[new_facet_ptr.size()-1] + nb_vertices(old_f));
+                    new_facet_ptr.push_back(
+                        new_facet_ptr[new_facet_ptr.size()-1] +
+                        nb_vertices(old_f)
+                    );
                 }
 
                 corner_vertex.swap(new_corner_vertex);
@@ -817,100 +829,121 @@ namespace GEO {
     
     /**************************************************************************/
 
-    CellDescriptor MeshCellsStore::tet_descriptor_ = {
-        4,         // nb_vertices
-        4,         // nb_facets
-        {3,3,3,3}, // nb_vertices in facet
-        {          // facets
-            {1,3,2},
-            {0,2,3},
-            {3,1,0},
-            {0,1,2}
-        },
-        6,         // nb_edges
-        {          // edges
-            {1,2}, {2,3}, {3,1}, {0,1}, {0,2}, {0,3}
-        }         
-    };
+    namespace MeshCellDescriptors {
+
+        CellDescriptor tet_descriptor = {
+            4,         // nb_vertices
+            4,         // nb_facets
+            {3,3,3,3}, // nb_vertices in facet
+            {          // facets
+                {1,3,2},
+                {0,2,3},
+                {3,1,0},
+                {0,1,2}
+            },
+            6,         // nb_edges
+            {          // edges
+                {1,2}, {2,3}, {3,1}, {0,1}, {0,2}, {0,3}
+            },
+            {          // edges adjacent facets
+                {0,3}, {0,1}, {0,2}, {2,3}, {3,1}, {1,2}
+            }
+        };
+        
+
+        CellDescriptor hex_descriptor = {
+            8,             // nb_vertices
+            6,             // nb_facets
+            {4,4,4,4,4,4}, // nb_vertices in facet
+            {              // facets
+                {0,2,6,4},
+                {3,1,5,7},
+                {1,0,4,5},
+                {2,3,7,6},
+                {1,3,2,0},
+                {4,6,7,5}
+            },
+            12,            // nb_edges
+            {              // edges
+                {0,1},{1,3},{3,2},{2,0},{4,5},{5,7},
+                {7,6},{6,4},{0,4},{1,5},{3,7},{2,6}
+            },
+            {              // edges adjacent facets
+                {4,2},{4,1},{4,3},{4,0},{2,5},{1,5},
+                {3,5},{0,5},{2,0},{1,2},{3,1},{0,3}
+            }
+        };
+
+        CellDescriptor prism_descriptor = {
+            6,             // nb_vertices
+            5,             // nb_facets
+            {3,3,4,4,4},   // nb_vertices in facet
+            {              // facets
+                {0,1,2},
+                {3,5,4},
+                {0,3,4,1},
+                {0,2,5,3},
+                {1,4,5,2}
+            },
+            9,             // nb_edges
+            {              // edges
+                {0,1},{1,2},{2,0},{3,4},{4,5},{5,3},{0,3},{1,4},{2,5}
+            },
+            {              // edges adjacent facets
+                {2,0},{4,0},{3,0},{1,2},{1,4},{1,3},{3,2},{2,4},{4,3}
+            }
+        };
 
 
-    CellDescriptor MeshCellsStore::hex_descriptor_ = {
-        8,             // nb_vertices
-        6,             // nb_facets
-        {4,4,4,4,4,4}, // nb_vertices in facet
-        {              // facets
-            {0,2,6,4},
-            {3,1,5,7},
-            {1,0,4,5},
-            {2,3,7,6},
-            {1,3,2,0},
-            {4,6,7,5}
-        },
-        12,            // nb_edges
-        {              // edges
-            {0,1},{1,3},{3,2},{2,0},{4,5},{5,7},
-            {7,6},{6,4},{0,4},{1,5},{3,7},{2,6}
-        }         
-    };
+        CellDescriptor pyramid_descriptor = {
+            5,             // nb_vertices
+            5,             // nb_facets
+            {4,3,3,3,3},   // nb_vertices in facet
+            {              // facets
+                {0,1,2,3},
+                {0,4,1},
+                {0,3,4},
+                {2,4,3},
+                {2,1,4}
+            },
+            8,             // nb_edges
+            {              // edges
+                {0,1},{1,2},{2,3},{3,0},{0,4},{1,4},{2,4},{3,4}
+            },
+            {              // edges adjacent facets
+                {1,0},{4,0},{3,0},{2,0},{2,1},{1,4},{4,3},{3,2}
+            }
+        };
 
-    CellDescriptor MeshCellsStore::prism_descriptor_ = {
-        6,             // nb_vertices
-        5,             // nb_facets
-        {3,3,4,4,4},   // nb_vertices in facet
-        {              // facets
-            {0,1,2},
-            {3,5,4},
-            {0,3,4,1},
-            {0,2,5,3},
-            {1,4,5,2}
-        },
-        9,             // nb_edges
-        {              // edges
-            {0,1},{1,2},{2,3},{3,4},{4,5},{5,3},{0,3},{1,4},{2,5}
-        }         
-    };
+        CellDescriptor connector_descriptor = {
+            4,             // nb_vertices
+            3,             // nb_facets
+            {4,3,3},       // nb_vertices in facet
+            {              // facets
+                {0,1,2,3},
+                {2,1,0},
+                {3,2,0}
+            },
+            5,             // nb_edges
+            {              // edges
+                {0,1},{1,2},{2,3},{3,0},{0,2}
+            },
+            {              // edges adjacent facets
+                {1,0},{1,0},{2,0},{2,0},{2,1}
+            }         
+        };
 
+        CellDescriptor* cell_type_to_cell_descriptor[5] = { 
+            &tet_descriptor, 
+            &hex_descriptor, 
+            &prism_descriptor, 
+            &pyramid_descriptor, 
+            &connector_descriptor
+        };
 
-    CellDescriptor MeshCellsStore::pyramid_descriptor_ = {
-        5,             // nb_vertices
-        5,             // nb_facets
-        {4,3,3,3,3},   // nb_vertices in facet
-        {              // facets
-            {0,1,2,3},
-            {0,4,1},
-            {0,3,4},
-            {2,4,3},
-            {2,1,4}
-        },
-        8,             // nb_edges
-        {              // edges
-            {0,1},{1,2},{2,3},{3,0},{0,4},{1,4},{2,4},{3,4}
-        }         
-    };
-
-    CellDescriptor MeshCellsStore::connector_descriptor_ = {
-        4,             // nb_vertices
-        3,             // nb_facets
-        {4,3,3},       // nb_vertices in facet
-        {              // facets
-            {0,1,2,3},
-            {2,1,0},
-            {3,2,0}
-        },
-        5,             // nb_edges
-        {              // edges
-            {0,1},{1,2},{2,3},{3,0},{0,2}
-        }         
-    };
-
-    CellDescriptor* MeshCellsStore::cell_type_to_cell_descriptor_[5] = { 
-        &tet_descriptor_, 
-        &hex_descriptor_, 
-        &prism_descriptor_, 
-        &pyramid_descriptor_, 
-        &connector_descriptor_
-    };
+    }
     
+    /********************************************************************/
     
     MeshCellsStore::MeshCellsStore(Mesh& mesh) :
         MeshSubElementsStore(mesh),
@@ -1408,6 +1441,12 @@ namespace GEO {
                 << "Found more than two triangular facets adjacent to a quad"
                 << " (" << nb_found << ")"
                 << std::endl;
+            Attribute<bool> weird(attributes(),"weird");
+            weird[c1] = true;
+            for(index_t i=0; i<matches.size(); ++i) {
+                weird[matches[i].first] = true;
+            }
+            
             return false;
         }
 

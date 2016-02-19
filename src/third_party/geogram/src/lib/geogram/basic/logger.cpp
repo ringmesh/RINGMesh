@@ -47,6 +47,7 @@
 #include <geogram/basic/assert.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/argused.h>
+#include <geogram/basic/file_system.h>
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -522,41 +523,129 @@ namespace GEO {
     }
 
     /************************************************************************/
+    
 }
 
 extern "C" {
 
     void geogram_printf(const char* format, ...) {
+
+        static std::string last_string;
+
         va_list args;
-        char buffer[4096];
+
+        // Get the number of characters to be printed.        
         va_start(args, format);
-        vsprintf(buffer, format, args);
+        int nb = vsnprintf(nil, 0, format, args)+1; // +1, I don't know why...
         va_end(args);
-        for(char* ptr = buffer; *ptr; ptr++) {
+
+        // Generate the output string
+        GEO::vector<char> buffer(GEO::index_t(nb+1));
+        va_start(args, format);
+        vsnprintf(buffer.data(),buffer.size()-1, format, args);
+        va_end(args);
+
+        // Find the lines in the generated string
+        GEO::vector<char*> lines;
+        lines.push_back(buffer.data());
+        char last_char = '\n';
+        for(char* ptr = buffer.data(); *ptr; ptr++) {
+            if(*ptr != '\0') {
+                last_char = *ptr;
+            }
             if(*ptr == '\n') {
-                *ptr = ' ';
+                *ptr = '\0';
+                ptr++;
+                if(*ptr != '\0') {
+                    lines.push_back(ptr);
+                }
             }
         }
-        GEO::Logger::out("") << buffer << std::endl;
+
+        // If last character is not a carriage return,
+        // memorize the last line for later.
+        if(last_char != '\n') {
+            last_string += *lines.rbegin();
+            lines.pop_back();
+        }
+
+        // Output all the lines.
+        // Prepend the optionally memorized previous strings to the
+        // first one.
+        for(GEO::index_t i=0; i<lines.size(); ++i) {
+            if(i == 0) {
+                GEO::Logger::out("") << last_string << lines[i] << std::endl;
+                last_string.clear();
+            } else {
+                GEO::Logger::out("") << lines[i] << std::endl;                
+            }
+        }
     }
 
     void geogram_fprintf(FILE* out, const char* format, ...) {
+
+
+        static std::string last_string;
+
         va_list args;
-        char buffer[4096];
+
+        // Get the number of characters to be printed.        
         va_start(args, format);
-        vsprintf(buffer, format, args);
+        int nb = vsnprintf(nil, 0, format, args)+1; // +1, I don't know why...
         va_end(args);
-        for(char* ptr = buffer; *ptr; ptr++) {
+
+        // Generate the output string
+        GEO::vector<char> buffer(GEO::index_t(nb+1));
+        va_start(args, format);
+        vsnprintf(buffer.data(),buffer.size()-1, format, args);
+        va_end(args);
+
+        // Find the lines in the generated string
+        GEO::vector<char*> lines;
+        lines.push_back(buffer.data());
+        char last_char = '\n';
+        for(char* ptr = buffer.data(); *ptr; ptr++) {
+            if(*ptr != '\0') {
+                last_char = *ptr;
+            }
             if(*ptr == '\n') {
-                *ptr = ' ';
+                *ptr = '\0';
+                ptr++;
+                if(*ptr != '\0') {
+                    lines.push_back(ptr);
+                }
             }
         }
-        if(out == stdout) {
-            GEO::Logger::out("") << buffer << std::endl;
-        } else if(out == stderr) {
-            GEO::Logger::err("") << buffer << std::endl;
-        } else {
-            fprintf(out, "%s", buffer);
+
+        // If last character is not a carriage return,
+        // memorize the last line for later.
+        if(last_char != '\n') {
+            last_string += *lines.rbegin();
+            lines.pop_back();
+        }
+
+        // Output all the lines.
+        // Prepend the optionally memorized previous strings to the
+        // first one.
+        for(GEO::index_t i=0; i<lines.size(); ++i) {
+            if(i == 0) {
+                if(out == stdout) {
+                    GEO::Logger::out("") << last_string << lines[i] << std::endl;
+                } else if(out == stderr) {
+                    GEO::Logger::err("") << last_string << lines[i] << std::endl;                    
+                } else {
+                    fprintf(out, "%s%s", last_string.c_str(), lines[i]);                    
+                }
+                last_string.clear();
+            } else {
+                if(out == stdout) {
+                    GEO::Logger::out("") << lines[i] << std::endl;
+                } else if(out == stderr) {
+                    GEO::Logger::err("") << lines[i] << std::endl;                    
+                } else {
+                    fprintf(out, "%s", lines[i]);                    
+                }
+            }
         }
     }
 }
