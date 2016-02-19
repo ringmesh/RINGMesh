@@ -3,6 +3,7 @@ set(GEOGRAM_WITH_TETGEN TRUE)
 
 add_subdirectory(third_party)
 
+
 aux_source_directories(SOURCES "Source Files"            .)
 aux_source_directories(SOURCES "Source Files\\basic"     basic)
 aux_source_directories(SOURCES "Source Files\\numerics"  numerics)
@@ -29,6 +30,39 @@ set_source_files_properties(version.h PROPERTIES GENERATED true)
 include_directories(${CMAKE_BINARY_DIR}/src/lib)
 
 add_library(geogram ${SOURCES} $<TARGET_OBJECTS:geogram_third_party>)
+
+#################################### CUDA
+
+IF(USE_CNC)
+    message(INFO "Using CNC")
+    ADD_DEFINITIONS(-DNL_USE_CNC)
+    
+    IF(CUDA_BUILD_EMULATION)
+        ADD_DEFINITIONS(-D__DEVICE_EMULATION__)
+    ENDIF(CUDA_BUILD_EMULATION)
+
+
+    IF(WIN32)
+        ADD_DEFINITIONS(-DOS_WIN)
+    ELSE(WIN32)
+        ADD_DEFINITIONS(-DOS_LINUX)
+    ENDIF(WIN32)
+
+find_package(CUDA REQUIRED)
+    
+    IF (CMAKE_BUILD_TYPE MATCHES Debug)
+        SET(CUDA_COMPILE_TIME_EXTRA_FLAGS -G)
+    ENDIF (CMAKE_BUILD_TYPE MATCHES Debug)
+
+set(CUDA_HOST_COMPILER g++)
+
+CUDA_ADD_LIBRARY(cuda_obj STATIC ${PROJECT_SOURCE_DIR}/src/lib/geogram/NL/cnc/cnc_cuda_blas.cu) 
+
+target_link_libraries(geogram ${CUDA_LIBRARIES} cuda_obj)
+
+    
+ENDIF(USE_CNC)
+
 
 if(UNIX AND VORPALINE_BUILD_DYNAMIC)
     target_link_libraries(geogram pthread dl)

@@ -59,6 +59,7 @@ NLboolean nlSolverIsCNC(NLint solver){
 
 /************************************************************************/
 /* CNC wrapper */
+#define NL_USE_CNC
 #ifdef NL_USE_CNC
 
 NLuint nlSolve_CNC() {
