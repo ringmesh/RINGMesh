@@ -1752,10 +1752,12 @@ namespace GEO {
         bool copy_attributes,
         MeshElementsFlags what
     ) {
+        std::cout << "before if : " << rhs.vertices.nb() << std::endl ;
         if((what & MESH_VERTICES) == 0) {
             clear(false,false);
             return;
         }
+        std::cout << "after if : " << rhs.vertices.nb() << std::endl ;
         vertices.copy(rhs.vertices, copy_attributes);
         if((what & MESH_EDGES) != 0) {
             edges.copy(rhs.edges, copy_attributes);

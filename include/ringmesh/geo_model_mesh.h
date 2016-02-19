@@ -1034,6 +1034,8 @@ namespace RINGMesh {
          */
         void copy_mesh( GEO::Mesh& mesh ) const
         {
+            std::cout << "before copy : " << mesh_->vertices.nb() << std::endl ;
+
             mesh.copy( *mesh_ ) ;
         }
 
