@@ -39,23 +39,25 @@
  */
 
 #include <ringmesh/io.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/well.h>
-#include <ringmesh/geometry.h>
-#include <ringmesh/geogram_extension.h>
-
-#include <geogram/basic/file_system.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_geometry.h>
-
-#include <third_party/zlib/zip.h>
-#include <third_party/zlib/unzip.h>
 
 #include <iomanip>
 #include <stack>
+
+#include <third_party/zlib/unzip.h>
+#include <third_party/zlib/zip.h>
+
+#include <geogram/basic/command_line.h>
+#include <geogram/basic/file_system.h>
+#include <geogram/basic/line_stream.h>
+#include <geogram/basic/logger.h>
+
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_io.h>
+
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geogram_extension.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/well.h>
 
 #define MAX_FILENAME 512
 #define READ_SIZE 8192

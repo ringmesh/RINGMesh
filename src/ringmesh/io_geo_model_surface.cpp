@@ -42,17 +42,17 @@
 
 #include <ctime>
 
+#include <geogram/basic/algorithm.h>
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
-#include <geogram/basic/algorithm.h>
 
-#include <ringmesh/ringmesh_config.h>
 #include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_element.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geo_model_element.h>
 #include <ringmesh/geo_model_validity.h>
+#include <ringmesh/ringmesh_config.h>
 
 namespace {
     using namespace RINGMesh ;

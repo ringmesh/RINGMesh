@@ -93,7 +93,7 @@
     Class( const Class & ) ; \
     Class& operator=( const Class& )
 
-template< class T > inline void ringmesh_unused( T const& )
+template< typename T > inline void ringmesh_unused( T const& )
 {
 }
 

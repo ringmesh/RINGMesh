@@ -38,20 +38,20 @@
  *     FRANCE
  */
 
-
 #ifndef __RINGMESH_GEO_MODEL_MESH__
 #define __RINGMESH_GEO_MODEL_MESH__
 
 #include <ringmesh/common.h>
-#include <ringmesh/geo_model_element.h>
+
 #include <geogram/mesh/mesh.h>
 
-/*!
-* @file ringmesh/geo_model_mesh.h
-* @brief Classes to manage globally the indexing of mesh elements of a GeoModel
-* @author Arnaud Botella and Jeanne Pellerin
-*/
+#include <ringmesh/geo_model_element.h>
 
+/*!
+ * @file ringmesh/geo_model_mesh.h
+ * @brief Classes to manage globally the indexing of mesh elements of a GeoModel
+ * @author Arnaud Botella and Jeanne Pellerin
+ */
 
 namespace RINGMesh {
     class GeoModel ;
@@ -71,9 +71,9 @@ namespace RINGMesh {
      * Update mechanisms are BAD... very difficult to change, specially because of 
      * the building [JP]
      */
- 
+
     class RINGMESH_API GeoModelMeshVertices {
-        ringmesh_disable_copy( GeoModelMeshVertices ) ;
+    ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
 
     public:

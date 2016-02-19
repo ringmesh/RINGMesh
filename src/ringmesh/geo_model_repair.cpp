@@ -40,17 +40,18 @@
 
 #include <ringmesh/geo_model_repair.h>
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_editor.h>
-#include <ringmesh/geo_model_builder.h>
-#include <ringmesh/geo_model_element.h>
-#include <ringmesh/geometry.h>
+#include <algorithm>
 
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/mesh/mesh_preprocessing.h>
 #include <geogram/basic/logger.h>
 
-#include <algorithm>
+#include <geogram/mesh/mesh_preprocessing.h>
+#include <geogram/mesh/mesh_repair.h>
+
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geo_model_editor.h>
+#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geometry.h>
 
 namespace {
 

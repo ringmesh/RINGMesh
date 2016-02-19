@@ -45,7 +45,10 @@
 #include <ringmesh/common.h>
 
 #include <geogram/points/kd_tree.h>
-#include <geogram/mesh/mesh_AABB.h>
+
+namespace GEO {
+    class Mesh ;
+}
 
 namespace RINGMesh {
 
@@ -69,7 +72,7 @@ namespace RINGMesh {
         NEGATIVE = -1, ZERO = 0, POSITIVE = 1
     } ;
     /* @warning Duplicate from Geogram/basic/numeric.h */
-    template< class T >
+    template< typename T >
     inline Sign sign( T x )
     {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO ) ;
@@ -79,7 +82,7 @@ namespace RINGMesh {
     /*!
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
-    template< class VEC >
+    template< typename VEC >
     float64 point_triangle_distance(
         const VEC& point,
         const VEC& V0,
@@ -399,7 +402,7 @@ namespace RINGMesh {
         GEO::Matrix< float64, 4 >& rot_mat ) ;
         
 
-    template< class VEC >
+    template< typename VEC >
     VEC random_point_in_triangle(
         const VEC& p1,
         const VEC& p2,
@@ -427,7 +430,7 @@ namespace RINGMesh {
         ringmesh_disable_copy( MakeUnique ) ;
     public:
         MakeUnique( const std::vector< vec3 >& data ) ;
-        template< class T > MakeUnique( const std::vector< T >& data )
+        template< typename T > MakeUnique( const std::vector< T >& data )
         {
             signed_index_t nb_points = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
@@ -444,7 +447,7 @@ namespace RINGMesh {
             }
         }
 
-        template< class T > MakeUnique(
+        template< typename T > MakeUnique(
             const std::vector< T >& data,
             bool T_is_a_pointer )
         {
