@@ -61,13 +61,14 @@ namespace RINGMesh {
     public:
         static TSolidLineParser* create(
             const std::string& keyword,
-            GeoModelBuilderTSolid& gm_builder ) ;
+            GeoModelBuilderTSolid& gm_builder,
+            GeoModel& geomodel ) ;
         virtual void execute(
             const GEO::LineInput& line,
             TSolidLoadUtils& load_utils ) = 0 ;
 
     protected:
-        TSolidLineParser() : Counted(), builder_( nil )
+        TSolidLineParser() : Counted(), builder_( nil ), geomodel_( nil )
         {
         }
         virtual ~TSolidLineParser()
@@ -86,13 +87,31 @@ namespace RINGMesh {
             return *builder_ ;
         }
 
+        GeoModel& geomodel()
+        {
+            ringmesh_debug_assert( geomodel_ ) ;
+            return *geomodel_ ;
+        }
+
+        const GeoModel& geomodel() const
+        {
+            ringmesh_debug_assert( geomodel_ ) ;
+            return *geomodel_ ;
+        }
+
         virtual void set_builder( GeoModelBuilderTSolid& builder )
         {
             builder_ = &builder ;
         }
 
+        virtual void set_geomodel( GeoModel& geomodel )
+        {
+            geomodel_ = &geomodel ;
+        }
+
     private:
         GeoModelBuilderTSolid* builder_ ;
+        GeoModel* geomodel_ ;
     } ;
 
     typedef GEO::SmartPointer< TSolidLineParser > TSolidLineParser_var ;
@@ -114,10 +133,12 @@ namespace RINGMesh {
             filename_ = filename ;
         }
         virtual ~GeoModelBuilderTSolid()
-        {}
-        void load_file() ;
+        {
+
+        }
 
     private:
+        virtual void load_file() ;
 
         /*!
          * @brief Parses the file and loads the GeoModel

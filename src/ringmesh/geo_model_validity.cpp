@@ -1151,7 +1151,7 @@ namespace RINGMesh {
 
         for( index_t i = 0; i < GM.nb_interfaces(); ++i ) {
             std::vector< GME::gme_t > layers ;
-            in_boundary_bme( GM.one_interface( i ), layers ) ;
+            in_boundary_gme( GM.one_interface( i ), layers ) ;
             if( layers.size() == 0 ) {
                 GEO::Logger::warn( "GeoModel" ) << " Invalid interface: "
                     << GM.one_interface( i ).gme_id()

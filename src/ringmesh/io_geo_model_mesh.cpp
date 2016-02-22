@@ -50,6 +50,9 @@
 #include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_builder_so.h>
+#include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/well.h>

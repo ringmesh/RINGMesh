@@ -276,9 +276,9 @@ namespace {
      * @param[out] tetra_corners Vector of the region tetrahedra corner
      * indices to re-initialized.
      */
-    void reinitialize_region_vertices_and_teras(
-        const index_t nb_vertices_in_next_region,
-        const index_t nb_tetras_in_next_region,
+    void initialize_region_vertices_and_tetras(
+        index_t nb_vertices_in_next_region,
+        index_t nb_tetras_in_next_region,
         std::vector < vec3 >& region_vertices,
         std::vector < index_t >& tetra_corners )
     {
@@ -303,7 +303,7 @@ namespace {
     vec3 get_point_from_gocad_id(
         const GeoModel& geomodel,
         const VertexMap& vertex_map,
-        const index_t point_gocad_id )
+        index_t point_gocad_id )
     {
         const index_t point_local_id =
             vertex_map.local_id( point_gocad_id ) ;
@@ -328,7 +328,7 @@ namespace {
      * the cur_surf_points vector to build facets
      */
     void get_surface_point_and_facet_from_gocad_index(
-        const index_t vertex_gocad_id,
+        index_t vertex_gocad_id,
         const GeoModel& geomodel,
         const TSolidLoadUtils& load_utils,
         std::vector< index_t >& gocad_vertices2cur_surf_points,
@@ -391,12 +391,13 @@ namespace {
      */
     void build_surface(
         GeoModelBuilderTSolid& builder,
+        GeoModel& geomodel,
         TSolidLoadUtils& load_utils )
     {
         std::vector< vec3 > cur_surf_points ;
         std::vector< index_t > cur_surf_facets ;
         get_surface_points_and_facets_from_gocad_indices(
-            builder.model(),
+            geomodel,
             load_utils,
             cur_surf_points,
             cur_surf_facets ) ;
@@ -423,7 +424,7 @@ namespace {
      */
     void compute_region_cell_facet_centers(
         const GeoModel& geomodel,
-        const index_t region_id,
+        index_t region_id,
         std::vector< vec3 >& cell_facet_centers )
     {
         const Region& region = geomodel.region( region_id ) ;
@@ -489,9 +490,9 @@ namespace {
      */
     bool determine_surface_side_to_add(
         const GeoModel& geomodel,
-        const index_t region_id,
-        const index_t surface_id,
-        const index_t cell_facet_center_id )
+        index_t region_id,
+        index_t surface_id,
+        index_t cell_facet_center_id )
     {
         index_t local_facet_id = cell_facet_center_id % 4 ;
         index_t cell_id =
@@ -515,9 +516,9 @@ namespace {
      * @param[in] geomodel_builder Builder of the GeoModel to consider
      */
     void fill_region_and_surface_boundaries_links(
-        const index_t region_id,
-        const index_t surface_id,
-        const bool surf_side,
+        index_t region_id,
+        index_t surface_id,
+        bool surf_side,
         GeoModelBuilderTSolid& geomodel_builder )
     {
         geomodel_builder.add_element_boundary(
@@ -538,8 +539,8 @@ namespace {
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void add_both_surface_sides_to_region_boundaries(
-        const index_t region_id,
-        const index_t surface_id,
+        index_t region_id,
+        index_t surface_id,
         GeoModelBuilderTSolid& geomodel_builder )
 
     {
@@ -567,13 +568,14 @@ namespace {
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void add_one_surface_side_to_region_boundaries(
-        const index_t region_id,
-        const index_t surface_id,
-        const index_t cell_facet_center_id,
-        GeoModelBuilderTSolid& geomodel_builder )
+        index_t region_id,
+        index_t surface_id,
+        index_t cell_facet_center_id,
+        GeoModelBuilderTSolid& geomodel_builder,
+        const GeoModel& geomodel )
     {
         bool side = determine_surface_side_to_add(
-            geomodel_builder.model(),
+            geomodel,
             region_id,
             surface_id,
             cell_facet_center_id ) ;
@@ -595,9 +597,10 @@ namespace {
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void add_surface_sides_to_region_boundaries(
-        const index_t surface_id,
-        const index_t region_id,
+        index_t surface_id,
+        index_t region_id,
         const std::vector< index_t >& colocated_cell_facet_centers,
+        const GeoModel& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
     {
         switch( colocated_cell_facet_centers.size() ) {
@@ -606,7 +609,8 @@ namespace {
                     region_id,
                     surface_id,
                     colocated_cell_facet_centers[0],
-                    geomodel_builder ) ;
+                    geomodel_builder,
+                    geomodel ) ;
                 break ;
             case 2 :
                 add_both_surface_sides_to_region_boundaries(
@@ -629,19 +633,19 @@ namespace {
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void add_surface_to_region_boundaries(
-        const index_t surface_id,
+        index_t surface_id,
         const std::vector< ColocaterANN* >& region_anns,
+        const GeoModel& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
     {
-        const GeoModel& model = geomodel_builder.model() ;
         index_t cur_region = 0 ;
         index_t nb_added_surf_sides = 0 ;
         // Maximum 2 regions could be bounded by a single surface
-        while ( cur_region < model.nb_regions() && nb_added_surf_sides < 2 ) {
+        while ( cur_region < geomodel.nb_regions() && nb_added_surf_sides < 2 ) {
             std::vector< index_t > colocated_cell_facet_centers ;
             index_t nb_surf_sides_are_boundary =
                 are_surface_sides_region_boundaries(
-                    model.surface( surface_id ),
+                    geomodel.surface( surface_id ),
                     *region_anns[cur_region],
                     colocated_cell_facet_centers ) ;
             if ( nb_surf_sides_are_boundary > 0 ) {
@@ -649,6 +653,7 @@ namespace {
                     surface_id,
                     cur_region,
                     colocated_cell_facet_centers,
+                    geomodel,
                     geomodel_builder ) ;
                 nb_added_surf_sides += nb_surf_sides_are_boundary ;
             }
@@ -664,15 +669,16 @@ namespace {
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void compute_boundaries_of_geomodel_regions(
-        GeoModelBuilderTSolid& geomodel_builder )
+        GeoModelBuilderTSolid& geomodel_builder,
+        const GeoModel& geomodel )
     {
-        const GeoModel& model = geomodel_builder.model() ;
-        std::vector< ColocaterANN* > reg_anns( model.nb_regions(), nil ) ;
-        compute_cell_facet_centers_region_anns( model, reg_anns ) ;
-        for( index_t s = 0 ; s < model.nb_surfaces() ; ++s ) {
-            add_surface_to_region_boundaries( s, reg_anns, geomodel_builder ) ;
+        std::vector< ColocaterANN* > reg_anns( geomodel.nb_regions(), nil ) ;
+        compute_cell_facet_centers_region_anns( geomodel, reg_anns ) ;
+        for( index_t s = 0 ; s < geomodel.nb_surfaces() ; ++s ) {
+            add_surface_to_region_boundaries(
+                s, reg_anns, geomodel, geomodel_builder ) ;
         }
-        for( index_t r = 0 ; r < model.nb_regions() ; ++r ) {
+        for( index_t r = 0 ; r < geomodel.nb_regions() ; ++r ) {
             delete reg_anns[r] ;
         }
     }
@@ -686,18 +692,17 @@ namespace {
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void add_surfaces_to_universe_boundaries(
-        const std::vector< bool >& surf_minus_side,
-        const std::vector< bool >& surf_plus_side,
+        const std::vector< bool >& surface_sides,
+        index_t nb_surfaces,
         GeoModelBuilderTSolid& geomodel_builder )
     {
-        const GeoModel& model = geomodel_builder.model() ;
-        for( index_t s = 0 ; s < model.nb_surfaces() ; ++s ) {
-            if( surf_minus_side[s] && !surf_plus_side[s] ) {
+        for( index_t s = 0 ; s < nb_surfaces ; ++s ) {
+            if( surface_sides[2 * s] && !surface_sides[2 * s + 1] ) {
                 geomodel_builder.add_element_boundary(
                     GME::gme_t( GME::REGION, NO_ID ),
                     GME::gme_t( GME::SURFACE, s ),
                     false ) ;
-            } else if( !surf_minus_side[s] && surf_plus_side[s] ) {
+            } else if( !surface_sides[2 * s] && surface_sides[2 * s + 1] ) {
                 geomodel_builder.add_element_boundary(
                     GME::gme_t( GME::REGION, NO_ID ),
                     GME::gme_t( GME::SURFACE, s ),
@@ -717,15 +722,16 @@ namespace {
      */
     void determine_if_surface_sides_bound_regions(
         const GeoModel& geomodel,
-        std::vector< bool >& surf_minus_side,
-        std::vector< bool >& surf_plus_side )
+        std::vector< bool >& surface_sides )
     {
         for( index_t r = 0 ; r < geomodel.nb_regions() ; ++r ) {
             for( index_t s = 0 ; s < geomodel.region(r).nb_boundaries() ; ++s ) {
                 if( geomodel.region(r).side(s) ) {
-                    surf_plus_side[ geomodel.region(r).boundary(s).index() ] = true ;
+                    surface_sides[2 * geomodel.region(r).boundary(s).index() + 1]
+                        = true ;
                 } else if( !geomodel.region(r).side(s) ) {
-                    surf_minus_side[ geomodel.region(r).boundary(s).index() ] = true ;
+                    surface_sides[2 * geomodel.region(r).boundary(s).index()]
+                        = true ;
                 } else {
                     ringmesh_assert_not_reached
                 }
@@ -739,20 +745,19 @@ namespace {
      * only one of its sides belongs to the boundaries of other regions.
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
-    void compute_universe_boundaries( GeoModelBuilderTSolid& geomodel_builder )
+    void compute_universe_boundaries(
+        const GeoModel& geomodel,
+        GeoModelBuilderTSolid& geomodel_builder )
     {
-        const GeoModel& model = geomodel_builder.model() ;
         // The universe boundaries are the surfaces with only one side in all
         // the boundaries of the other regions
-        std::vector< bool > surf_minus_side( model.nb_surfaces(), false ) ;
-        std::vector< bool > surf_plus_side( model.nb_surfaces(), false ) ;
+        std::vector< bool > surface_sides( 2 * geomodel.nb_surfaces(), false ) ;
         determine_if_surface_sides_bound_regions(
-            model,
-            surf_minus_side,
-            surf_plus_side ) ;
+            geomodel,
+            surface_sides ) ;
         add_surfaces_to_universe_boundaries(
-            surf_minus_side,
-            surf_plus_side,
+            surface_sides,
+            geomodel.nb_surfaces(),
             geomodel_builder ) ;
     }
 
@@ -774,9 +779,9 @@ namespace {
      */
     bool is_edge_in_several_surfaces(
         const GeoModel& geomodel,
-        const index_t surface_id,
-        const index_t facet,
-        const index_t edge,
+        index_t surface_id,
+        index_t facet,
+        index_t edge,
         const std::vector< ColocaterANN* >& surface_anns,
         const std::vector< Box3d >& surface_boxes )
     {
@@ -808,7 +813,7 @@ namespace {
      */
     void compute_surface_internal_borders(
         const GeoModel& geomodel,
-        const index_t surface_id,
+        index_t surface_id,
         const std::vector< ColocaterANN* >& surface_anns,
         const std::vector< Box3d >& surface_boxes )
     {
@@ -835,7 +840,7 @@ namespace {
      */
     void get_surface_border_edge_barycenters(
         const GeoModel& geomodel,
-        const index_t surface_id,
+        index_t surface_id,
         std::vector< vec3 >& border_edge_barycenters )
     {
         const Surface& S = geomodel.surface( surface_id ) ;
@@ -912,10 +917,10 @@ namespace RINGMesh {
         build_lines_and_corners_from_surfaces() ;
 
         // Regions boundaries
-        compute_boundaries_of_geomodel_regions( *this ) ;
+        compute_boundaries_of_geomodel_regions( *this, (*this).model() ) ;
 
         // Universe boundaries
-        compute_universe_boundaries( *this ) ;
+        compute_universe_boundaries( (*this).model(), *this ) ;
 
         // Contacts building
         build_contacts() ;
@@ -925,9 +930,9 @@ namespace RINGMesh {
     {
         TSolidLoadUtils load_utils( filename_ ) ;
 
-        while( !in_.eof() && in_.get_line() ) {
-            in_.get_fields() ;
-            if( in_.nb_fields() > 0 ) {
+        while( !file_.eof() && file_.get_line() ) {
+            file_.get_fields() ;
+            if( file_.nb_fields() > 0 ) {
                 read_line( load_utils ) ;
             }
         }
@@ -935,10 +940,11 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::read_line( TSolidLoadUtils& load_utils )
     {
-        std::string keyword = in_.field( 0 ) ;
-        TSolidLineParser_var parser = TSolidLineParser::create( keyword, *this ) ;
+        std::string keyword = file_.field( 0 ) ;
+        TSolidLineParser_var parser =
+            TSolidLineParser::create( keyword, *this, model_ ) ;
         if( parser ) {
-            parser->execute( in_, load_utils ) ;
+            parser->execute( file_, load_utils ) ;
         }
     }
 
@@ -973,7 +979,7 @@ namespace {
         virtual void execute( const GEO::LineInput& line,
             TSolidLoadUtils& load_utils )
         {
-            if( load_utils.region_vertices_.size() > 0 ) {
+            if( !load_utils.region_vertices_.empty() ) {
                 builder().set_region_geometry(
                     load_utils.cur_region_,
                     load_utils.region_vertices_,
@@ -981,7 +987,7 @@ namespace {
             }
             load_utils.cur_region_ =
                 initialize_region( line.field( 1 ), builder() ) ;
-            reinitialize_region_vertices_and_teras(
+            initialize_region_vertices_and_tetras(
                 load_utils.nb_elements_per_region_[ 2*load_utils.cur_region_ ],
                 load_utils.nb_elements_per_region_[ 2*load_utils.cur_region_ + 1 ],
                 load_utils.region_vertices_,
@@ -1028,8 +1034,7 @@ namespace {
         {
             load_utils.vertex_map_.add_vertex(
                 load_utils.region_vertices_.size(), load_utils.cur_region_ ) ;
-            vec3 vertex ;
-            read_vertex_coordinates( line, load_utils.z_sign_, vertex ) ;
+            vec3 vertex = read_vertex_coordinates( line, load_utils.z_sign_ ) ;
             load_utils.region_vertices_.push_back( vertex ) ;
         }
 
@@ -1038,15 +1043,17 @@ namespace {
          * @param[in] in ACSII file reader
          * @param[in] z_sign Factor for z value in order to have z increasing upwards
          * @param[out] vertex Vertex
+         * @return Coordinates of the vertex
          */
-        void read_vertex_coordinates(
+        vec3 read_vertex_coordinates(
             const GEO::LineInput& in,
-            const int z_sign,
-            vec3& vertex )
+            int z_sign )
         {
+            vec3 vertex ;
             vertex.x = in.field_as_double( 2 ) ;
             vertex.y = in.field_as_double( 3 ) ;
             vertex.z = z_sign * in.field_as_double( 4 ) ;
+            return vertex ;
         }
     } ;
 
@@ -1059,6 +1066,7 @@ namespace {
             TSolidLoadUtils& load_utils )
         {
             read_and_add_atom_to_region_vertices(
+                geomodel(),
                 line,
                 load_utils.cur_region_,
                 load_utils.region_vertices_,
@@ -1075,8 +1083,9 @@ namespace {
          * @param[in] vertex_map Map between Gocad and GeoModel vertex indices
          */
         void read_and_add_atom_to_region_vertices(
+            const GeoModel& geomodel,
             const GEO::LineInput& line,
-            const index_t region_id,
+            index_t region_id,
             std::vector < vec3 >& region_vertices,
             VertexMap& vertex_map )
         {
@@ -1090,7 +1099,7 @@ namespace {
                 // acting like for a vertex
                 vertex_map.add_vertex( region_vertices.size(), region_id ) ;
                 region_vertices.push_back(
-                    builder().model().region( referred_vertex_region_id ).vertex(
+                    geomodel.region( referred_vertex_region_id ).vertex(
                         referred_vertex_local_id ) ) ;
             } else {
                 // If the atom referred to an atom of the same region
@@ -1160,12 +1169,12 @@ namespace {
         virtual void execute( const GEO::LineInput& line,
             TSolidLoadUtils& load_utils )
         {
-            if( load_utils.region_vertices_.size() > 0 ) {
+            if( !load_utils.region_vertices_.empty() ) {
                 builder().set_region_geometry(
                     load_utils.cur_region_,
                     load_utils.region_vertices_,
                     load_utils.tetra_corners_ ) ;
-                reinitialize_region_vertices_and_teras(
+                initialize_region_vertices_and_tetras(
                     0,
                     0,
                     load_utils.region_vertices_,
@@ -1198,12 +1207,12 @@ namespace {
             TSolidLoadUtils& load_utils )
         {
             // Compute the surface
-            if( load_utils.cur_surf_facets_corner_gocad_id_.size() > 0 ) {
-                build_surface( builder(), load_utils ) ;
+            if( !load_utils.cur_surf_facets_corner_gocad_id_.empty() ) {
+                build_surface( builder(), geomodel() , load_utils ) ;
             }
             // Create a new surface
             GME::gme_t new_surface = builder().create_element( GME::SURFACE ) ;
-             load_utils.cur_surface_ = new_surface.index ;
+            load_utils.cur_surface_ = new_surface.index ;
             builder().set_element_parent(
                 new_surface,
                 GME::gme_t( GME::INTERFACE, load_utils.cur_interface_ ) ) ;
@@ -1222,8 +1231,8 @@ namespace {
             TSolidLoadUtils& load_utils )
         {
             // Compute the last surface
-            if( load_utils.cur_surf_facets_corner_gocad_id_.size() > 0 ) {
-                build_surface( builder(), load_utils ) ;
+            if( !load_utils.cur_surf_facets_corner_gocad_id_.empty() ) {
+                build_surface( builder(), geomodel(), load_utils ) ;
             }
         }
     } ;
@@ -1281,12 +1290,14 @@ namespace RINGMesh {
 
     TSolidLineParser* TSolidLineParser::create(
         const std::string& keyword,
-        GeoModelBuilderTSolid& gm_builder )
+        GeoModelBuilderTSolid& gm_builder,
+        GeoModel& geomodel )
     {
         TSolidLineParser* parser =
             TSolidLineParserFactory::create_object( keyword ) ;
         if( parser ){
             parser->set_builder( gm_builder ) ;
+            parser->set_geomodel( geomodel ) ;
         }
         return parser ;
     }
