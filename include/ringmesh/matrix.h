@@ -55,7 +55,7 @@ namespace RINGMesh {
     /*!
      * @brief Basic container for the sparse matrix, i.e. the "elements".
      * */
-    template< class T >
+    template< typename T >
     struct ElementImpl {
         const static index_t NOT_USED = index_t( -1 ) ;
         ElementImpl()
@@ -70,7 +70,7 @@ namespace RINGMesh {
     /*!
      * @brief Basic "Row" of the matrix, this stores the elements of the matrix in a line-oriented way
      * */
-    template< class T >
+    template< typename T >
     class RowImpl {
     public:
         typedef ElementImpl< T > Element ;
@@ -186,7 +186,7 @@ namespace RINGMesh {
      *  @brief This is the parent class for sparse matrices, the main difference between light and heavy type matrices
      * depend on the contents of rows elements: Light will contain type T objects, while heavy an index to access a std::deque.
      * */
-    template< class T, typename RowType >
+    template< typename T, typename RowType >
     class SparseMatrixImpl {
     public:
         typedef RowImpl< RowType > Row ;
@@ -309,7 +309,7 @@ namespace RINGMesh {
     /*!
      * declaration of a template class SparseMatrix, it will be specialazed for the different MatrixType
      * */
-    template< class T, MatrixType Light = MatrixType(
+    template< typename T, MatrixType Light = MatrixType(
         2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
     class SparseMatrix: public SparseMatrixImpl< T, T > {
     ringmesh_disable_copy( SparseMatrix ) ;
@@ -318,7 +318,7 @@ namespace RINGMesh {
     /*!
      * specialization of SparseMatrix for MatrixType "light"
      * */
-    template< class T >
+    template< typename T >
     class SparseMatrix< T, light > : public SparseMatrixImpl< T, T > {
     public:
         typedef SparseMatrix< T, light > thisclass ;
@@ -396,7 +396,7 @@ namespace RINGMesh {
      * The data are stored in a std::deque and the rows contains the
      * ids of the values within the deque.
      * */
-    template< class T >
+    template< typename T >
     class SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t > {
     public:
         typedef SparseMatrix< T, heavy > thisclass ;
@@ -479,7 +479,7 @@ namespace RINGMesh {
 
     // Note: without light or heavy, it does not compile on Windows.
     // Error C2770. BC
-    template< class T >
+    template< typename T >
     void product_matrix_by_vector(
         const SparseMatrix< T, light >& mat1,
         const std::vector< T >& mat2,
