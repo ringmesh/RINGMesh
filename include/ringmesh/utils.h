@@ -45,14 +45,13 @@
 
 #include <geogram/basic/geometry.h>
 
-namespace RINGMesh {     
-
+namespace RINGMesh {
 
     /*! @brief A safer narrow casting function of type S to type T
-    *  \return static_cast< T >( in )
-    *  \post Check that the result can be cast back to in, if not throws an assertion.
-    *  \note cf. The C++ programming language. 4th edition. p299
-    */
+     *  \return static_cast< T >( in )
+     *  \post Check that the result can be cast back to in, if not throws an assertion.
+     *  \note cf. The C++ programming language. 4th edition. p299
+     */
     template< typename T, typename S >
     T narrow_cast( S in )
     {
@@ -63,11 +62,10 @@ namespace RINGMesh {
         return r ;
     }
 
-
     /*!
      * @todo Move this in our geometry file ? [JP]
      */
-    class RINGMESH_API Box3d : public GEO::Box {
+    class RINGMESH_API Box3d: public GEO::Box {
     public:
         Box3d()
             : initialized_( false )
@@ -174,7 +172,7 @@ namespace RINGMesh {
 
     private:
         bool initialized_ ;
-    } ;  
+    } ;
 
 }
 

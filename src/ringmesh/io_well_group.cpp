@@ -39,11 +39,12 @@
  */
 
 #include <ringmesh/io.h>
-#include <ringmesh/well.h>
 
-#include <geogram/basic/line_stream.h>
 #include <geogram/basic/file_system.h>
+#include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
+
+#include <ringmesh/well.h>
 
 namespace {
     using namespace RINGMesh ;

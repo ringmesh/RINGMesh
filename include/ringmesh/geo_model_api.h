@@ -102,7 +102,7 @@ namespace RINGMesh {
      * @warning It is up to the client to unbind the attribute    
      * @pre Elements of geomodel_element_type are GeoModelMeshElement
      */
-    template< class T >
+    template< typename T >
     void create_attributes_on_geomodel_element_facets(
         const GeoModel& geomodel,
         GeoModelElement::TYPE geomodel_element_type,
@@ -123,7 +123,7 @@ namespace RINGMesh {
      * @warning It is up to the client to unbind the attribute
      * @pre Elements of mesh_element_type are GeoModelMeshElement
      */
-    template< class T >
+    template< typename T >
     void create_attributes_on_geomodel_element_cells(
         const GeoModel& geomodel,
         GeoModelElement::TYPE geomodel_element_type,

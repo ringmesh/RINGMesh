@@ -40,13 +40,14 @@
 
 #include <ringmesh/geogram_extension.h>
 
+#include <geogram/basic/line_stream.h>
+#include <geogram/basic/logger.h>
+
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_repair.h>
 
-#include <geogram/basic/logger.h>
-#include <geogram/basic/line_stream.h>
 #include <geogram/points/colocate.h>
 
 namespace RINGMesh {

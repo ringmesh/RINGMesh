@@ -44,7 +44,7 @@
 
 namespace RINGMesh {
 
-    template< class T >
+    template< typename T >
     inline T sqr( T x )
     {
         return x * x ;

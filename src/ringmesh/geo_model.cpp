@@ -41,6 +41,7 @@
 /*! \author Jeanne Pellerin and Arnaud Botella */
 
 #include <ringmesh/geo_model.h>
+
 #include <ringmesh/geo_model_builder.h>
 
 namespace RINGMesh {
@@ -49,10 +50,10 @@ namespace RINGMesh {
 
     GeoModel::GeoModel()
         :
-            mesh( *this ),            
+            mesh( *this ),
             universe_( *this, NO_ID, "Universe", GME::NO_GEOL ),
             wells_( nil )
-    {        
+    {
         /// @todo Review: This usage of this pointer in initialization list is a time bomb [JP]
     }
 
@@ -65,7 +66,6 @@ namespace RINGMesh {
             }
         }
     }
-   
 
     /*!
      * Copies a GeoModel in another one

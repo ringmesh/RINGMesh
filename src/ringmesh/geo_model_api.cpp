@@ -39,19 +39,22 @@
  */
 
 #include <ringmesh/geo_model_api.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_builder.h>
-#include <ringmesh/geometry.h>
-#include <ringmesh/geogram_extension.h>
-#include <ringmesh/tetra_gen.h>
 
+#include <iomanip>
+#include <iostream>
+
+#include <geogram/basic/geometry_nd.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/progress.h>
-#include <geogram/basic/geometry_nd.h>
+
+#include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
 
-#include <iostream>
-#include <iomanip>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geogram_extension.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/tetra_gen.h>
 
 namespace {
     using namespace RINGMesh ;
