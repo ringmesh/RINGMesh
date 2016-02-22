@@ -44,7 +44,7 @@
 
 /*!
  * @file Classes for GeoModel visualization
- * @author Who
+ * @author Benjamin Chauvin and Arnaud Botella
  */
 
 namespace RINGMesh {

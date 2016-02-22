@@ -35,7 +35,7 @@
 
 /*! 
  * @file Implementation of visualization of GeoModelElements
- * @author ?
+ * @author Benjamin Chaunvin and Arnaud Botella
  */
 
 #include <ringmesh/gfx.h>

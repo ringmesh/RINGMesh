@@ -44,7 +44,7 @@
 
 
 /*!
- * @file Tehtrahedralize the Corbiere model with Tetgen
+ * @file Tetrahedralize the Corbiere model with Tetgen
  * @author Jeanne Pellerin
  */
  

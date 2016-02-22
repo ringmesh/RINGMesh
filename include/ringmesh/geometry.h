@@ -43,7 +43,7 @@
 
 /*!
  * @file What
- * @author Who
+ * @author Arnaud Botella
  */
 
 namespace GEO {

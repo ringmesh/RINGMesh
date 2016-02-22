@@ -45,8 +45,9 @@
 
 /*!
  * @file Basic geometrical requests 
+ * @author Arnaud Botella
+ *
  * @todo Comment on the robustness of the tests
- * @author ?
  */
  
 namespace {

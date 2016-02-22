@@ -39,9 +39,9 @@
 #include <fstream>
 
 /*!
- * @file ?
- * @author ?
- * @todo Rename the file. Is this file really necessary ? 
+ * @file Please add a file description
+ * @author Arnaud Botella
+ * @todo Rename the file. Could'nt the 2 functions be moved somewhere else ? 
  */
 
 namespace RINGMesh {

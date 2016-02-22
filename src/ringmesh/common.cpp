@@ -35,7 +35,7 @@
  
  /*!
  * @file Please enter a description
- * @author ?
+ * @author Arnaud Botella
  */
 
 #ifdef WIN32
