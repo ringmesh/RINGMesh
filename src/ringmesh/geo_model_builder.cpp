@@ -1421,7 +1421,7 @@ namespace RINGMesh {
         index_t nb_vertices = S.nb_vertices() ;
 
         // Allocate some space to store the ids of facets around each vertex
-        std::vector< index_t > empty_vector
+        std::vector< index_t > empty_vector ;
         empty_vector.reserve( 10 ) ;
         std::vector< std::vector< index_t > > vertex_to_facets( nb_vertices, empty_vector ) ;
 
