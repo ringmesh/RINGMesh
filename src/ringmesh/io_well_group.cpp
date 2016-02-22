@@ -42,7 +42,7 @@
 #include <ringmesh/well.h>
 
 /*!
- * @file 
+ * @file Implements the input - output of WellGroup
  * @author Arnaud Botella
  */
 

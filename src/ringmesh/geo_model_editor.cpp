@@ -668,15 +668,15 @@ namespace RINGMesh {
     GME* GeoModelEditor::new_element( GME::TYPE T, index_t id )
     {
         if( T == GME::CORNER ) {
-            return new Corner( model_, id ) ;
+            return new Corner( model(), id ) ;
         } else if( T == GME::LINE ) {
-            return new Line( model_, id ) ;
+            return new Line( model(), id ) ;
         } else if( T == GME::SURFACE ) {
-            return new Surface( model_, id ) ;
+            return new Surface( model(), id ) ;
         } else if( T == GME::REGION ) {
-            return new Region( model_, id ) ;
+            return new Region( model(), id ) ;
         } else if( T > GME::REGION && T < GME::NO_TYPE ) {
-            return new GeoModelElement( model_, T, id ) ;
+            return new GeoModelElement( model(), T, id ) ;
         } else {
             return nil ;
         }
