@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -46,6 +41,11 @@
 #ifdef RINGMESH_WITH_GRAPHICS
 
 #include <geogram_gfx/mesh/mesh_gfx.h>
+
+/*!
+ * @file Classes for GeoModel visualization
+ * @author Who
+ */
 
 namespace RINGMesh {
     class GeoModel ;

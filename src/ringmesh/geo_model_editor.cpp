@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -43,6 +38,11 @@
 #include <algorithm>
 
 #include <ringmesh/geo_model.h>
+
+/*!
+ * @file Implementation of the GeoModelEditor
+ * @author Jeanne Pellerin
+ */
 
 namespace RINGMesh {
 

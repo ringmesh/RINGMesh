@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -38,7 +33,10 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
+/*! 
+ * @file Implementation of visualization of GeoModelElements
+ * @author ?
+ */
 
 #include <ringmesh/gfx.h>
 

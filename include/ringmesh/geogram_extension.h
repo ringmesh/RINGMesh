@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -46,6 +41,11 @@
 #include <geogram/basic/memory.h>
 #include <geogram/basic/attributes.h>
 #include <geogram/mesh/mesh.h>
+
+/*!
+ * @file Helper functions on classes defined in Geogram
+ * @author Various
+ */
 
 #ifdef RINGMESH_WITH_TETGEN
 #   include <geogram/third_party/tetgen/tetgen.h>
@@ -107,7 +107,7 @@ namespace RINGMesh {
     /*! 
      * @brief Utility class to set Tetgen switches and check their consistency
      * @details Tetgen arguments are a mess and this class helps set the basic options
-     * @todo To implement!
+     * @todo To implement!    
      *
      * Q: quiet
      * p: input data is surfacic
@@ -132,7 +132,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Tetgen wrapper
-     * 
+     * @author  Jeanne Pellerin
      */
     class TetgenMesher {
     ringmesh_disable_copy( TetgenMesher ) ;

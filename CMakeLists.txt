@@ -23,11 +23,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
-#
-#
-#
-#
-# 
 #     http://www.ring-team.org
 # 
 #     RING Project
@@ -38,6 +33,7 @@
 
 
 # Root CMakeList of RINGMesh project
+# Author Jeanne Pellerin
 cmake_minimum_required(VERSION 2.8)
 
 #------------------------------------------------------------------------------------------------

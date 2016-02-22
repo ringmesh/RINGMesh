@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -50,8 +45,8 @@
 
 /*! 
  * Load and fix a given structural model file.
- * @todo Make this executable generic by setting
- * the file name as an argument of the command
+ * @todo Make this executable generic by setting the file name as an argument of the command
+ * @author Jeanne Pellerin
  */
 int main( int argc, char** argv )
 {

@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -45,6 +40,11 @@
 #include <ringmesh/utils.h>
 
 #include <geogram/basic/logger.h>
+
+/*!
+ * @file Compare loading of surface geomodel ml (Gocad) and bm(RINGMesh own format) files
+ * @author Arnaud Botella
+ */
 
 int main( int argc, char** argv )
 {

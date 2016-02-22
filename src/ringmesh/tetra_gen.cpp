@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- * 
- * 
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -61,6 +56,11 @@
 #include <ringmesh/geo_model_element.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/well.h>
+
+/*!
+ * @file Implementation of tetrahedral meshing region per region of a GeoModel
+ * @author Arnaud Botella
+ */
 
 namespace {
     using namespace RINGMesh ;
