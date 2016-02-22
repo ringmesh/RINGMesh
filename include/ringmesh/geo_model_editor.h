@@ -66,15 +66,7 @@ namespace RINGMesh {
         {
         }
 
-        void copy_macro_topology( const GeoModel& from ) ;
-
-        /*!
-         *@brief The model under construction
-         */
-        const GeoModel& model() const
-        {
-            return model_ ;
-        }
+        void copy_macro_topology( const GeoModel& from ) ;    
 
         /*!
          *@brief Set the name of the model
@@ -276,6 +268,14 @@ namespace RINGMesh {
             const std::set< GME::gme_t >& elements_to_remove ) ;
 
     protected:
+        /*!
+        * @ brief The model under construction
+        */
+        const GeoModel& model() const
+        {
+            return model_ ;
+        }
+
         void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
 
         void resize_elements( GME::TYPE type, index_t nb ) ;
