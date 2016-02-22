@@ -282,22 +282,22 @@ namespace RINGMesh {
         {
             switch( type ) {
                 case GME::CORNER:
-                return corners_ ;
+                    return corners_ ;
                 case GME::LINE:
-                return lines_ ;
+                    return lines_ ;
                 case GME::SURFACE:
-                return surfaces_ ;
+                    return surfaces_ ;
                 case GME::REGION:
-                return regions_ ;
+                    return regions_ ;
                 case GME::CONTACT:
-                return contacts_ ;
+                    return contacts_ ;
                 case GME::INTERFACE:
-                return interfaces_ ;
+                    return interfaces_ ;
                 case GME::LAYER:
-                return layers_ ;
+                    return layers_ ;
                 default:
-                ringmesh_assert_not_reached ;
-                return surfaces_ ;
+                    ringmesh_assert_not_reached ;
+                    return surfaces_ ;
             }
         }
 
@@ -344,8 +344,7 @@ namespace RINGMesh {
             const GME::gme_t& id ) const
         {
             ringmesh_debug_assert( GME::has_mesh( id.type ) ) ;
-            return dynamic_cast<GeoModelMeshElement&>(
-                modifiable_element( id ) ) ;
+            return dynamic_cast<GeoModelMeshElement&>( modifiable_element( id ) ) ;
         }
 
         /*!
