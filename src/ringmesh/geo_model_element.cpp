@@ -182,8 +182,7 @@ namespace RINGMesh {
      * \li "boundary"
      * Other strings will end up in \p NO_GEOL
      * @return The geological feature index
-     * \todo Add other types of unconformity, see
-     * RINGMesh::GeoModelElement::TYPE. --GC
+     * @todo Add other types of unconformity, see RINGMesh::GeoModelElement::TYPE. --GC
      */
     GeoModelElement::GEOL_FEATURE GeoModelElement::determine_geological_type(
         const std::string& in )
@@ -488,30 +487,29 @@ namespace RINGMesh {
 
         // Parent - High level elements are not mandatory
         // But if the model has elements of the parent type, the element must have a parent
-        if( parent_allowed( T ) ) {
-            if( model().nb_elements( parent_type( T ) ) > 0 ) {
-                if( parent_id() == gme_t() ) {
+        if( parent_allowed( T ) ) {                   
+            bool model_has_parent_elements( model().nb_elements( parent_type( T ) ) > 0 ) ;
+            if( model_has_parent_elements ) {
+                if( has_parent() ) {
+                    const GME& E = parent() ;
+                    // The parent must have this element in its children
+                    bool found = false ;
+                    index_t j = 0 ;
+                    while( !found && j < E.nb_children() ) {
+                        if( E.child_id( j ) == gme_id() ) {
+                            found = true ;
+                        }
+                        j++ ;
+                    }
+                    if( !found ) {
+                        GEO::Logger::warn( "GeoModelElement" )
+                            << "Inconsistency parent-child between " << gme_id()
+                            << " and " << E.gme_id() << std::endl ;
+                        valid = false ;
+                    }
+                } else {
                     GEO::Logger::warn( "GeoModelElement" ) << gme_id()
                         << " has no geological parent element " << std::endl ;
-                    valid = false ;
-                }
-
-                /// @todo Add a test on the parent validity
-
-                // The parent must have this element in its children
-                const GME& E = parent() ;
-                bool found = false ;
-                index_t j = 0 ;
-                while( !found && j < E.nb_children() ) {
-                    if( E.child_id( j ) == gme_id() ) {
-                        found = true ;
-                    }
-                    j++ ;
-                }
-                if( !found ) {
-                    GEO::Logger::warn( "GeoModelElement" )
-                        << "Inconsistency parent-child between " << gme_id()
-                        << " and " << E.gme_id() << std::endl ;
                     valid = false ;
                 }
             }
