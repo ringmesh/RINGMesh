@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -46,6 +41,11 @@
 #include <string>
 
 #include <geogram/basic/assert.h>
+
+/*!
+ * @file Custom assertions
+ * @todo Do we really need them ? [JP]
+ */
 
 namespace RINGMesh {
     static void ringmesh_assertion_failed(

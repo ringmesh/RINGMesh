@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -49,7 +44,8 @@
 /*! Tests the loading and writing of a Gocad model (.ml) file.
  * Loads a .ml file generated with Gocad, saves it, loads it again, saves it
  * again and comares the two saved versions.
- * \returns 0 if success or an error code if not. 
+ * @returns 0 if success or an error code if not. 
+ * @author Arnaud Botella
  */
 int main( int argc, char** argv )
 {

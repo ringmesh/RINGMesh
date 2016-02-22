@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -38,6 +33,10 @@
  *     FRANCE
  */
  
+ /*!
+ * @file Defintion of command line functions 
+ * @author Arnaud Botella
+ */
 
 #include <ringmesh/command_line.h>
 

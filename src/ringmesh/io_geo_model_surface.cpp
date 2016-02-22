@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -53,6 +48,11 @@
 #include <ringmesh/geo_model_element.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/ringmesh_config.h>
+
+/*!
+ * @file Implementation of classes to load and save surface GeoModels meshes
+ * @author various
+ */
 
 namespace {
     using namespace RINGMesh ;

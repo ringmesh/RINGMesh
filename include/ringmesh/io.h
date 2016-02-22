@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -44,6 +39,11 @@
 #include <ringmesh/common.h>
 
 #include <geogram/basic/factory.h>
+
+/*!
+ * @file Global input - ouput functions of RINGMesh
+ * @author Various
+ */
 
 namespace RINGMesh {
     class GeoModel ;

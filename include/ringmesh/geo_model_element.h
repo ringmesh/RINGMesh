@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -38,7 +33,10 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
+ /*!
+ * @file Declaration of GeoModelElement and all its children classes
+ * @author Jeanne Pellerin  and Arnaud Botella 
+ */
 
 #ifndef __RINGMESH_GEO_MODEL_ELEMENT__
 #define __RINGMESH_GEO_MODEL_ELEMENT__

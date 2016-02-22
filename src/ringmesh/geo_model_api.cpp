@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -55,6 +50,12 @@
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/tetra_gen.h>
+
+/*!
+ * @file Bunch of functions that shouldn't be there
+ * @todo This is not really an API. It is more a set of helper function that should be next to the class
+ *            they are written for.
+ */
 
 namespace {
     using namespace RINGMesh ;

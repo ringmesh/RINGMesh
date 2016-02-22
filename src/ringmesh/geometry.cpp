@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -47,6 +42,13 @@
 
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geogram_extension.h>
+
+/*!
+ * @file Basic geometrical requests 
+ * @todo Comment on the robustness of the tests
+ * @author ?
+ */
+ 
 namespace {
 
     using namespace RINGMesh ;

@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -37,8 +32,11 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
-
-/*! \author Jeanne Pellerin and Arnaud Botella */
+ 
+/*!
+ * @file Implementation of THE GeoModel
+ * @author Jeanne Pellerin and Arnaud Botella 
+ */
 
 #include <ringmesh/geo_model.h>
 

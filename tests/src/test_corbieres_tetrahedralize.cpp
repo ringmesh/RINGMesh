@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -47,6 +42,12 @@
 
 #include <geogram/basic/logger.h>
 
+
+/*!
+ * @file Tehtrahedralize the Corbiere model with Tetgen
+ * @author Jeanne Pellerin
+ */
+ 
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;

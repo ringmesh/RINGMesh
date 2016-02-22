@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- * 
- * 
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -44,6 +39,10 @@
 
 #include <geogram/basic/geometry.h>
 #include <geogram/basic/numeric.h>
+
+/*!
+ * @file Re-defintions of basic types similar to those of Geogram
+ */
 
 namespace RINGMesh {
     /* If you need interger of 8bits of any other one

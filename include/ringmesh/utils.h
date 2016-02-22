@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -45,12 +40,18 @@
 
 #include <geogram/basic/geometry.h>
 
+/*!
+ * @file Box3D class declaration
+ * @author Arnaud Botella
+ */
+
 namespace RINGMesh {
 
     /*! @brief A safer narrow casting function of type S to type T
-     *  \return static_cast< T >( in )
-     *  \post Check that the result can be cast back to in, if not throws an assertion.
-     *  \note cf. The C++ programming language. 4th edition. p299
+     *  @return static_cast< T >( in )
+     *  @post Check that the result can be cast back to in, if not throws an assertion.
+     *  @note cf. The C++ programming language. 4th edition. p299
+     *  @todo Move or remove. [JP]
      */
     template< typename T, typename S >
     T narrow_cast( S in )

@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -61,6 +56,11 @@
 
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
+
+/*!
+ * @file Implementation of classes loading volumetric GeoModels
+ * @author Arnaud Botella and Antoine Mazuyer
+ */
 
 namespace {
     using namespace RINGMesh ;
