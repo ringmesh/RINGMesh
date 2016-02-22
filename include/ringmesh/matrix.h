@@ -40,8 +40,8 @@
 #include <deque>
 
 /*!
- * @file What 
- * @author Who
+ * @file Template matix declarations and definitions 
+ * @author Arnaud Botella and Andre Borghi
  */
 
 namespace RINGMesh {
