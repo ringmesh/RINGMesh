@@ -109,331 +109,331 @@ namespace RINGMesh {
                 return nb_elements_per_type_.back() ;
             } else {
                 ringmesh_debug_assert_not_reached;
-            return 0 ;
-        }
-    }
-
-    /*!
-     * @brief Returns a const reference the identified GeoModelElement
-     * @param[in] id Type and index of the element. For the
-     * pair (Region, NO_ID) universe region is returned.
-     * @pre Element identification is valid.
-     */
-    const GeoModelElement& element( GME::gme_t id ) const
-    {
-        return *element_ptr( id ) ;
-    }
-
-    /*!
-     * Convenient overload of element( GME::gme_t id )
-     */
-    const GeoModelElement& element( GME::TYPE element_type, index_t element_index ) const
-    {
-        return element( GME::gme_t( element_type, element_index ) ) ;
-    }
-
-    /*!
-     * @brief Generic access to a meshed element
-     * @pre Type of the element is CORNER, LINE, SURFACE, or REGION
-     */
-    const GeoModelMeshElement& mesh_element( GME::gme_t id ) const
-    {
-        ringmesh_assert( GME::has_mesh( id.type ) ) ;
-        return dynamic_cast< const GeoModelMeshElement& >( element( id ) ) ;
-    }
-
-    /*!
-     * Convenient overload of element( GME::gme_t id )
-     */
-    const GeoModelMeshElement& mesh_element( GME::TYPE element_type, index_t element_index ) const
-    {
-        return mesh_element( GME::gme_t( element_type, element_index ) ) ;
-    }
-
-    /*! @}
-     * \name Specialized accessors.
-     * @{
-     */
-    index_t nb_corners() const
-    {
-        return nb_elements( GME::CORNER ) ;
-    }
-    index_t nb_lines() const
-    {
-        return nb_elements( GME::LINE ) ;
-    }
-    index_t nb_surfaces() const
-    {
-        return nb_elements( GME::SURFACE ) ;
-    }
-    index_t nb_regions() const
-    {
-        return nb_elements( GME::REGION ) ;
-    }
-    index_t nb_contacts() const
-    {
-        return nb_elements( GME::CONTACT ) ;
-    }
-    index_t nb_interfaces() const
-    {
-        return nb_elements( GME::INTERFACE ) ;
-    }
-    index_t nb_layers() const
-    {
-        return nb_elements( GME::LAYER ) ;
-    }
-
-    const Corner& corner( index_t index ) const
-    {
-        // Yes, we could use static_cast, but I trust nobody and check [JP]
-        return dynamic_cast< const Corner& >( *corners_.at( index ) ) ;
-    }
-
-    const Line& line( index_t index ) const
-    {
-        return dynamic_cast< const Line& >( element( GME::LINE, index ) ) ;
-    }
-
-    const Surface& surface( index_t index ) const
-    {
-        return dynamic_cast< const Surface& >( element( GME::SURFACE, index ) ) ;
-    }
-
-    const Region& region( index_t index ) const
-    {
-        return dynamic_cast<const Region&>( element( GME::REGION, index ) ) ;
-    }
-
-    const GeoModelElement& contact( index_t index ) const
-    {
-        return element( GME::CONTACT, index ) ;
-    }
-
-    const GeoModelElement& one_interface( index_t index ) const
-    {
-        return element( GME::INTERFACE, index ) ;
-    }
-
-    const GeoModelElement& layer( index_t index ) const
-    {
-        return element( GME::LAYER, index ) ;
-    }
-
-    const Region& universe() const
-    {
-        return dynamic_cast<const Region&>( element( GME::REGION, NO_ID ) ) ;
-    }
-
-    /*!
-     * @}
-     */
-    /* @todo Wells have nothing at all to do here [JP] */
-    void set_wells( const WellGroup* wells ) ;
-    const WellGroup* wells() const
-    {
-        return wells_ ;
-    }
-
-private:
-    /*!
-     * @brief Convert a global BME index into a typed index
-     * @details Relies on the nb_elements_per_type_ vector that
-     *          must be up to date at all times
-     *          See the GeoModelBuilder::end_model() function
-     * @param[in] global A BME id of TYPE - ALL_TYPES
-     * @return A BME id of an element of the model, or a invalid one if nothing found
-     */
-    inline GME::gme_t global_to_typed_id( const GME::gme_t& global ) const
-    {
-        ringmesh_debug_assert( global.type == GME::ALL_TYPES ) ;
-
-        index_t t = NO_ID ;
-        for( index_t i = 1 ; i < nb_elements_per_type_.size() ; i++ ) {
-            if( global.index >= nb_elements_per_type_[i - 1]
-                && global.index < nb_elements_per_type_[i] ) {
-                t = i - 1 ;
-                break ;
+                return 0 ;
             }
         }
-        GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-        if( T < GME::NO_TYPE ) {
-            index_t i = global.index - nb_elements_per_type_[t] ;
-            return GME::gme_t( T, i ) ;
-        } else {
-            ringmesh_debug_assert_not_reached ;
-            return GME::gme_t() ;
+
+        /*!
+         * @brief Returns a const reference the identified GeoModelElement
+         * @param[in] id Type and index of the element. For the
+         * pair (Region, NO_ID) universe region is returned.
+         * @pre Element identification is valid.
+         */
+        const GeoModelElement& element( GME::gme_t id ) const
+        {
+            return *element_ptr( id ) ;
         }
-    }
 
-    /*!
-     * @brief Generic accessor to the storage of elements of the given type
-     * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
-     */
-    inline std::vector< GME* >& modifiable_elements( GME::TYPE type )
-    {
-        return const_cast< std::vector< GME* >& >( elements( type ) ) ;
-    }
-
-    /*!
-     * @brief Generic accessor to the storage of elements of the given type
-     * @pre The type must be valid. NO_TYPE or ALL_TYPES will throw an assertion
-     */
-    const std::vector< GME* >& elements( GME::TYPE type ) const
-    {
-        switch( type ) {
-            case GME::CORNER:
-            return corners_ ;
-            case GME::LINE:
-            return lines_ ;
-            case GME::SURFACE:
-            return surfaces_ ;
-            case GME::REGION:
-            return regions_ ;
-            case GME::CONTACT:
-            return contacts_ ;
-            case GME::INTERFACE:
-            return interfaces_ ;
-            case GME::LAYER:
-            return layers_ ;
-            default:
-            ringmesh_assert_not_reached ;
-            return surfaces_ ;
+        /*!
+         * Convenient overload of element( GME::gme_t id )
+         */
+        const GeoModelElement& element( GME::TYPE element_type, index_t element_index ) const
+        {
+            return element( GME::gme_t( element_type, element_index ) ) ;
         }
-    }
 
-    /*!
-     * @brief Modifiable pointer to an element of the model
-     * @param[in] id Type and index of the element. For the
-     * pair (Region, NO_ID) universe region is returned.
-     *
-     * @pre Element identification is valid.
-     */
-    GeoModelElement* element_ptr( const GME::gme_t& id ) const
-    {
-        if( id.type == GME::REGION && id.index == NO_ID ) {
-            return const_cast< Region*> ( &universe_ ) ;
-        } else {
-            if( id.type < GME::NO_TYPE ) {
-                ringmesh_assert( id.index < nb_elements( id.type ) ) ;
-                return elements( id.type )[ id.index ] ;
-            } else if( id.type == GME::ALL_TYPES ) {
-                return element_ptr( global_to_typed_id( id ) ) ;
+        /*!
+         * @brief Generic access to a meshed element
+         * @pre Type of the element is CORNER, LINE, SURFACE, or REGION
+         */
+        const GeoModelMeshElement& mesh_element( GME::gme_t id ) const
+        {
+            ringmesh_assert( GME::has_mesh( id.type ) ) ;
+            return dynamic_cast< const GeoModelMeshElement& >( element( id ) ) ;
+        }
+
+        /*!
+         * Convenient overload of element( GME::gme_t id )
+         */
+        const GeoModelMeshElement& mesh_element( GME::TYPE element_type, index_t element_index ) const
+        {
+            return mesh_element( GME::gme_t( element_type, element_index ) ) ;
+        }
+
+        /*! @}
+         * \name Specialized accessors.
+         * @{
+         */
+        index_t nb_corners() const
+        {
+            return nb_elements( GME::CORNER ) ;
+        }
+        index_t nb_lines() const
+        {
+            return nb_elements( GME::LINE ) ;
+        }
+        index_t nb_surfaces() const
+        {
+            return nb_elements( GME::SURFACE ) ;
+        }
+        index_t nb_regions() const
+        {
+            return nb_elements( GME::REGION ) ;
+        }
+        index_t nb_contacts() const
+        {
+            return nb_elements( GME::CONTACT ) ;
+        }
+        index_t nb_interfaces() const
+        {
+            return nb_elements( GME::INTERFACE ) ;
+        }
+        index_t nb_layers() const
+        {
+            return nb_elements( GME::LAYER ) ;
+        }
+
+        const Corner& corner( index_t index ) const
+        {
+            // Yes, we could use static_cast, but I trust nobody and check [JP]
+            return dynamic_cast< const Corner& >( *corners_.at( index ) ) ;
+        }
+
+        const Line& line( index_t index ) const
+        {
+            return dynamic_cast< const Line& >( element( GME::LINE, index ) ) ;
+        }
+
+        const Surface& surface( index_t index ) const
+        {
+            return dynamic_cast< const Surface& >( element( GME::SURFACE, index ) ) ;
+        }
+
+        const Region& region( index_t index ) const
+        {
+            return dynamic_cast<const Region&>( element( GME::REGION, index ) ) ;
+        }
+
+        const GeoModelElement& contact( index_t index ) const
+        {
+            return element( GME::CONTACT, index ) ;
+        }
+
+        const GeoModelElement& one_interface( index_t index ) const
+        {
+            return element( GME::INTERFACE, index ) ;
+        }
+
+        const GeoModelElement& layer( index_t index ) const
+        {
+            return element( GME::LAYER, index ) ;
+        }
+
+        const Region& universe() const
+        {
+            return dynamic_cast<const Region&>( element( GME::REGION, NO_ID ) ) ;
+        }
+
+        /*!
+         * @}
+         */
+        /* @todo Wells have nothing at all to do here [JP] */
+        void set_wells( const WellGroup* wells ) ;
+        const WellGroup* wells() const
+        {
+            return wells_ ;
+        }
+
+    private:
+        /*!
+         * @brief Convert a global BME index into a typed index
+         * @details Relies on the nb_elements_per_type_ vector that
+         *          must be up to date at all times
+         *          See the GeoModelBuilder::end_model() function
+         * @param[in] global A BME id of TYPE - ALL_TYPES
+         * @return A BME id of an element of the model, or a invalid one if nothing found
+         */
+        inline GME::gme_t global_to_typed_id( const GME::gme_t& global ) const
+        {
+            ringmesh_debug_assert( global.type == GME::ALL_TYPES ) ;
+
+            index_t t = NO_ID ;
+            for( index_t i = 1 ; i < nb_elements_per_type_.size() ; i++ ) {
+                if( global.index >= nb_elements_per_type_[i - 1]
+                    && global.index < nb_elements_per_type_[i] ) {
+                    t = i - 1 ;
+                    break ;
+                }
+            }
+            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
+            if( T < GME::NO_TYPE ) {
+                index_t i = global.index - nb_elements_per_type_[t] ;
+                return GME::gme_t( T, i ) ;
             } else {
-                ringmesh_assert_not_reached ;
-                return const_cast< Region*> ( &universe_ ) ;
+                ringmesh_debug_assert_not_reached ;
+                return GME::gme_t() ;
             }
         }
-    }
 
-    /*!
-     * @brief Reference to a modifiable element of the model
-     * @pre The id must refer to a valid element of the model
-     */
-    GeoModelElement& modifiable_element(
-        const GME::gme_t& id ) const
-    {
-        return *element_ptr( id ) ;
-    }
-
-    /*!
-     * @brief Reference to a modifiable meshed element of the model
-     * @pre Assert in debug model that the given id refers to a meshed element.
-     *      The id must refer to a valid element.
-     */
-    inline GeoModelMeshElement& modifiable_mesh_element(
-        const GME::gme_t& id ) const
-    {
-        ringmesh_debug_assert( GME::has_mesh( id.type ) ) ;
-        return dynamic_cast<GeoModelMeshElement&>(
-            modifiable_element( id ) ) ;
-    }
-
-    /*!
-     * @brief Clears and fills the model nb_elements_per_type_ vector
-     * @details See global element access with GeoModel::element( BME::TYPE, index_t )
-     */
-    void init_global_model_element_access()
-    {
-        nb_elements_per_type_.clear() ;
-
-        index_t count = 0 ;
-        nb_elements_per_type_.push_back( count ) ;
-        for( index_t type = GME::CORNER ; type < GME::NO_TYPE ; type++ ) {
-            count += nb_elements( ( GME::TYPE ) type ) ;
-            nb_elements_per_type_.push_back( count ) ;
+        /*!
+         * @brief Generic accessor to the storage of elements of the given type
+         * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
+         */
+        inline std::vector< GME* >& modifiable_elements( GME::TYPE type )
+        {
+            return const_cast< std::vector< GME* >& >( elements( type ) ) ;
         }
-    }
 
-public:
-    GeoModelMesh mesh ;
+        /*!
+         * @brief Generic accessor to the storage of elements of the given type
+         * @pre The type must be valid. NO_TYPE or ALL_TYPES will throw an assertion
+         */
+        const std::vector< GME* >& elements( GME::TYPE type ) const
+        {
+            switch( type ) {
+                case GME::CORNER:
+                return corners_ ;
+                case GME::LINE:
+                return lines_ ;
+                case GME::SURFACE:
+                return surfaces_ ;
+                case GME::REGION:
+                return regions_ ;
+                case GME::CONTACT:
+                return contacts_ ;
+                case GME::INTERFACE:
+                return interfaces_ ;
+                case GME::LAYER:
+                return layers_ ;
+                default:
+                ringmesh_assert_not_reached ;
+                return surfaces_ ;
+            }
+        }
 
-private:
-    // Name of the model
-    std::string name_ ;
+        /*!
+         * @brief Modifiable pointer to an element of the model
+         * @param[in] id Type and index of the element. For the
+         * pair (Region, NO_ID) universe region is returned.
+         *
+         * @pre Element identification is valid.
+         */
+        GeoModelElement* element_ptr( const GME::gme_t& id ) const
+        {
+            if( id.type == GME::REGION && id.index == NO_ID ) {
+                return const_cast< Region*> ( &universe_ ) ;
+            } else {
+                if( id.type < GME::NO_TYPE ) {
+                    ringmesh_assert( id.index < nb_elements( id.type ) ) ;
+                    return elements( id.type )[ id.index ] ;
+                } else if( id.type == GME::ALL_TYPES ) {
+                    return element_ptr( global_to_typed_id( id ) ) ;
+                } else {
+                    ringmesh_assert_not_reached ;
+                    return const_cast< Region*> ( &universe_ ) ;
+                }
+            }
+        }
 
-    /*!
-     * \name Mandatory elements of the model
-     * @{
-     */
+        /*!
+         * @brief Reference to a modifiable element of the model
+         * @pre The id must refer to a valid element of the model
+         */
+        GeoModelElement& modifiable_element(
+            const GME::gme_t& id ) const
+        {
+            return *element_ptr( id ) ;
+        }
 
-    /*!
-     * @brief Elements that are Corner
-     */
-    std::vector< GeoModelElement* > corners_ ;
-    /*!
-     * @brief Elements that are Line
-     */
-    std::vector< GeoModelElement* > lines_ ;
-    /*!
-     * @brief Elements that are Surface
-     */
-    std::vector< GeoModelElement* > surfaces_ ;
-    /*!
-     * @brief Elements that are Region
-     */
-    std::vector< GeoModelElement* > regions_ ;
+        /*!
+         * @brief Reference to a modifiable meshed element of the model
+         * @pre Assert in debug model that the given id refers to a meshed element.
+         *      The id must refer to a valid element.
+         */
+        inline GeoModelMeshElement& modifiable_mesh_element(
+            const GME::gme_t& id ) const
+        {
+            ringmesh_debug_assert( GME::has_mesh( id.type ) ) ;
+            return dynamic_cast<GeoModelMeshElement&>(
+                modifiable_element( id ) ) ;
+        }
 
-    /*!
-     * The Region defining the model extension
-     * @todo Put it as the last item in regions_ and do not forget to create it in the Builder
-     */
-    Region universe_ ;
+        /*!
+         * @brief Clears and fills the model nb_elements_per_type_ vector
+         * @details See global element access with GeoModel::element( BME::TYPE, index_t )
+         */
+        void init_global_model_element_access()
+        {
+            nb_elements_per_type_.clear() ;
 
-    /*! @}
-     * \name Optional geological elements
-     * @{
-     */
+            index_t count = 0 ;
+            nb_elements_per_type_.push_back( count ) ;
+            for( index_t type = GME::CORNER ; type < GME::NO_TYPE ; type++ ) {
+                count += nb_elements( ( GME::TYPE ) type ) ;
+                nb_elements_per_type_.push_back( count ) ;
+            }
+        }
 
-    /*!
-     * @brief Elements of type CONTACT
-     */
-    std::vector< GeoModelElement* > contacts_ ;
-    /*!
-     * @brief Elements of type INTERFACE
-     */
-    std::vector< GeoModelElement* > interfaces_ ;
+    public:
+        GeoModelMesh mesh ;
 
-    /*!
-     * @brief Elements of type LAYER
-     */
-    std::vector< GeoModelElement* > layers_ ;
+    private:
+        // Name of the model
+        std::string name_ ;
 
-    /*!
-     * @}
-     */
+        /*!
+         * \name Mandatory elements of the model
+         * @{
+         */
 
-    /*
-     * @brief Global access to GeoModelElements.
-     * It MUST be updated if one element is added.
-     * @warning It must be up to date at all times
-     */
-    std::vector< index_t > nb_elements_per_type_ ;
+        /*!
+         * @brief Elements that are Corner
+         */
+        std::vector< GeoModelElement* > corners_ ;
+        /*!
+         * @brief Elements that are Line
+         */
+        std::vector< GeoModelElement* > lines_ ;
+        /*!
+         * @brief Elements that are Surface
+         */
+        std::vector< GeoModelElement* > surfaces_ ;
+        /*!
+         * @brief Elements that are Region
+         */
+        std::vector< GeoModelElement* > regions_ ;
 
-    /*! Optional WellGroup associated with the model
-     * @todo Give a more general name - this could be anything [JP]
-     */
-    const WellGroup* wells_ ;
-} ;
+        /*!
+         * The Region defining the model extension
+         * @todo Put it as the last item in regions_ and do not forget to create it in the Builder
+         */
+        Region universe_ ;
+
+        /*! @}
+         * \name Optional geological elements
+         * @{
+         */
+
+        /*!
+         * @brief Elements of type CONTACT
+         */
+        std::vector< GeoModelElement* > contacts_ ;
+        /*!
+         * @brief Elements of type INTERFACE
+         */
+        std::vector< GeoModelElement* > interfaces_ ;
+
+        /*!
+         * @brief Elements of type LAYER
+         */
+        std::vector< GeoModelElement* > layers_ ;
+
+        /*!
+         * @}
+         */
+
+        /*
+         * @brief Global access to GeoModelElements.
+         * It MUST be updated if one element is added.
+         * @warning It must be up to date at all times
+         */
+        std::vector< index_t > nb_elements_per_type_ ;
+
+        /*! Optional WellGroup associated with the model
+         * @todo Give a more general name - this could be anything [JP]
+         */
+        const WellGroup* wells_ ;
+    } ;
 
 }
 
