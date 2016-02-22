@@ -34,7 +34,7 @@
  */
  
  /*!
- * @file Please enter a description
+ * @file Initialization of the RINGMesh and geogram library on loading
  * @author Arnaud Botella
  */
 
