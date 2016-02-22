@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -38,7 +33,10 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
+/*!
+ * @file Implementation of all GeoModelElements classes
+ * @author Jeanne Pellerin and Arnaud Botella 
+ */
 
 #include <ringmesh/geo_model_element.h>
 
@@ -184,8 +182,7 @@ namespace RINGMesh {
      * \li "boundary"
      * Other strings will end up in \p NO_GEOL
      * @return The geological feature index
-     * \todo Add other types of unconformity, see
-     * RINGMesh::GeoModelElement::TYPE. --GC
+     * @todo Add other types of unconformity, see RINGMesh::GeoModelElement::TYPE. --GC
      */
     GeoModelElement::GEOL_FEATURE GeoModelElement::determine_geological_type(
         const std::string& in )
@@ -490,30 +487,29 @@ namespace RINGMesh {
 
         // Parent - High level elements are not mandatory
         // But if the model has elements of the parent type, the element must have a parent
-        if( parent_allowed( T ) ) {
-            if( model().nb_elements( parent_type( T ) ) > 0 ) {
-                if( parent_id() == gme_t() ) {
+        if( parent_allowed( T ) ) {                   
+            bool model_has_parent_elements( model().nb_elements( parent_type( T ) ) > 0 ) ;
+            if( model_has_parent_elements ) {
+                if( has_parent() ) {
+                    const GME& E = parent() ;
+                    // The parent must have this element in its children
+                    bool found = false ;
+                    index_t j = 0 ;
+                    while( !found && j < E.nb_children() ) {
+                        if( E.child_id( j ) == gme_id() ) {
+                            found = true ;
+                        }
+                        j++ ;
+                    }
+                    if( !found ) {
+                        GEO::Logger::warn( "GeoModelElement" )
+                            << "Inconsistency parent-child between " << gme_id()
+                            << " and " << E.gme_id() << std::endl ;
+                        valid = false ;
+                    }
+                } else {
                     GEO::Logger::warn( "GeoModelElement" ) << gme_id()
                         << " has no geological parent element " << std::endl ;
-                    valid = false ;
-                }
-
-                /// @todo Add a test on the parent validity
-
-                // The parent must have this element in its children
-                const GME& E = parent() ;
-                bool found = false ;
-                index_t j = 0 ;
-                while( !found && j < E.nb_children() ) {
-                    if( E.child_id( j ) == gme_id() ) {
-                        found = true ;
-                    }
-                    j++ ;
-                }
-                if( !found ) {
-                    GEO::Logger::warn( "GeoModelElement" )
-                        << "Inconsistency parent-child between " << gme_id()
-                        << " and " << E.gme_id() << std::endl ;
                     valid = false ;
                 }
             }
