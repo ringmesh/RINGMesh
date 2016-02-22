@@ -41,7 +41,7 @@
 #include <set>
 
 #include <ringmesh/geo_model_element.h> 
-//#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model.h>
 
 /*!
  * @file Declaration of GeoModelEditor class.
@@ -288,9 +288,11 @@ namespace RINGMesh {
             const GeoModelElement& rhs ) ;
 
         /*!
-         * @brief Mini-factory. Creates an empty element of the right type
+         * @brief Creates an empty element of the right type in the GeoModel
          */
-        GME* new_element( GME::TYPE type, const GeoModel& model, index_t id ) ;
+        GME* new_element( GME::TYPE type, index_t id ) ;
+        GME* new_element( GME::TYPE type ) ;
+
     protected:
         GeoModel& model_ ;
     } ;

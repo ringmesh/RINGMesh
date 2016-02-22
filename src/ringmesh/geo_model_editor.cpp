@@ -48,22 +48,6 @@ namespace RINGMesh {
 
     typedef GeoModelElement::gme_t gme_t ;
 
-    GME* GeoModelEditor::new_element( GME::TYPE T, const GeoModel& M, index_t id )
-    {
-        if( T == GME::CORNER ) {
-            return new Corner( M, id ) ;
-        } else if( T == GME::LINE ) {
-            return new Line( M, id ) ;
-        } else if( T == GME::SURFACE ) {
-            return new Surface( M, id ) ;
-        } else if( T == GME::REGION ) {
-            return new Region( M, id ) ;
-        } else if( T > GME::REGION && T < GME::NO_TYPE ) {
-            return new GeoModelElement( M, T, id ) ;
-        } else {
-            return nil ;
-        }
-    }
 
     GeoModelElement& GeoModelEditor::element( const GME::gme_t& id ) const
     {
@@ -83,13 +67,13 @@ namespace RINGMesh {
      * @return The index of the created element
      */
     gme_t GeoModelEditor::create_element( GME::TYPE type )
-    {
-        index_t id = model_.nb_elements( type ) ;
-        ringmesh_assert( id != NO_ID ) ;
+    {        
         if( type >= GME::CORNER && type < GME::NO_TYPE ) {
-            model_.modifiable_elements( type ).push_back(
-                new_element( type, model_, id ) ) ;
-            return gme_t( type, id ) ;
+            GME* E = new_element( type ) ;
+            ringmesh_assert( E != nil ) ;
+
+            model_.modifiable_elements( type ).push_back( E ) ;                
+            return E->gme_id();
         } else {
             ringmesh_assert_not_reached;
             return gme_t() ;
@@ -104,7 +88,7 @@ namespace RINGMesh {
         std::vector< GME* >& store = model_.modifiable_elements( type ) ;
         store.resize( nb, nil ) ;
         for( index_t i = 0; i < nb; i++ ) {
-            store[i] = new_element( type, model_, i ) ;
+            store[i] = new_element( type, i ) ;
         }
     }
 
@@ -583,7 +567,7 @@ namespace RINGMesh {
             store.resize( from.nb_elements( T ), nil ) ;
 
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
-                store[e] = new_element( T, model_, e ) ;
+                store[e] = new_element( T, e ) ;
                 ringmesh_debug_assert( store[ e ] != nil ) ;
             }
             RINGMESH_PARALLEL_LOOP
@@ -680,4 +664,29 @@ namespace RINGMesh {
             }
         }
     }
+
+    GME* GeoModelEditor::new_element( GME::TYPE T, index_t id )
+    {
+        if( T == GME::CORNER ) {
+            return new Corner( model_, id ) ;
+        } else if( T == GME::LINE ) {
+            return new Line( model_, id ) ;
+        } else if( T == GME::SURFACE ) {
+            return new Surface( model_, id ) ;
+        } else if( T == GME::REGION ) {
+            return new Region( model_, id ) ;
+        } else if( T > GME::REGION && T < GME::NO_TYPE ) {
+            return new GeoModelElement( model_, T, id ) ;
+        } else {
+            return nil ;
+        }
+    }
+    
+    GME* GeoModelEditor::new_element( GME::TYPE T )
+    {
+        index_t id = model_.nb_elements( T ) ;
+        return new_element( T, id ) ;
+    }
+
+
 }
