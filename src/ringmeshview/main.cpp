@@ -303,10 +303,6 @@ namespace {
     void display()
     {
 
-        if( GM_gfx.geo_model() != &GM ) {
-            GM_gfx.set_geo_model( GM ) ;
-        }
-
         GLfloat shininess = 20.0f ;
         glMaterialfv( GL_FRONT_AND_BACK, GL_SHININESS, &shininess ) ;
         static float spec[4] = { 0.6f, 0.6f, 0.6f, 1.0f } ;
@@ -446,7 +442,18 @@ namespace {
         if( !GEO::CmdLine::get_arg( "mesh" ).empty() ) {
             RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "mesh" ), GM ) ;
             meshed_regions = true ;
+            for( index_t r = 0; r < GM.nb_regions(); r++ ) {
+                const Region& region = GM.region( r ) ;
+                GEO::Attribute< double > attr( region.vertex_attribute_manager(), "toto" ) ;
+                for( index_t v = 0; v < region.nb_vertices(); v++ ) {
+                    attr[v] = region.vertex( v ).x ;
+                }
+            }
+            DEBUG( "ON BIND?" ) ;
         }
+            GM_gfx.set_geo_model( GM ) ;
+            GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
+
         get_bbox( GM, xyzmin, xyzmax ) ;
 
         glut_viewer_set_region_of_interest( float( xyzmin[0] ), float( xyzmin[1] ),
