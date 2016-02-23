@@ -50,6 +50,7 @@
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/tetra_gen.h>
+#include <ringmesh/tetgen_mesher.h>
 
 /*!
  * @file Bunch of functions that shouldn't be there
