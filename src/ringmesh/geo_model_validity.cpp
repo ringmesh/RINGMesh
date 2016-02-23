@@ -63,6 +63,7 @@
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
+#include <ringmesh/geogram_mesh_repair.h>
 
 /*!
  * @file ringmesh/geo_model_validity.cpp
@@ -446,106 +447,7 @@ namespace {
         return nb_new_vertices != M.vertices.nb() ;
     }
 
-    /**
-     * \brief Connects the facets in a TRIANGULATED mesh.
-     * \details Reconstructs the corners.adjacent_facet links.
-     *          Orientation is not checked
-     * \note Modified from geogram to take into account a predicate to disconnect facets
-     *       along identified edges [JP]
-     *       The predicate should implement
-     *       bool operator() (index_t v1, index_t v2) const ;
-     */
-    template< typename P >
-    void repair_connect_facets( Mesh& M, P is_border )
-    {
-        const index_t NO_FACET = index_t( -1 ) ;
-        const index_t NO_CORNER = index_t( -1 ) ;
-        const index_t NON_MANIFOLD = index_t( -2 ) ;
-
-        // Reset all facet-facet adjacencies.
-        for( index_t c = 0; c < M.facet_corners.nb(); ++c ) {
-            M.facet_corners.set_adjacent_facet( c, NO_FACET ) ;
-        }
-
-        // For each vertex v, v2c[v] gives the index of a 
-        // corner incident to vertex v.
-        vector< index_t > v2c( M.vertices.nb(), NO_CORNER ) ;
-
-        // For each corner c, next_c_around_v[c] is the 
-        // linked list of all the corners incident to 
-        // vertex v.
-        vector< index_t > next_c_around_v( M.facet_corners.nb(), NO_CORNER ) ;
-
-        // Compute v2c and next_c_around_v
-        for( index_t c = 0; c < M.facet_corners.nb(); ++c ) {
-            index_t v = M.facet_corners.vertex( c ) ;
-            next_c_around_v[c] = v2c[v] ;
-            v2c[v] = c ;
-        }
-
-        for( index_t f1 = 0; f1 < M.facets.nb(); ++f1 ) {
-            for( index_t c1 = M.facets.corners_begin( f1 );
-                c1 < M.facets.corners_end( f1 ); ++c1 ) {
-
-                if( M.facet_corners.adjacent_facet( c1 ) == NO_FACET ) {
-                    index_t adj_corner = NO_CORNER ;
-                    index_t v1 = M.facet_corners.vertex( c1 ) ;
-                    index_t v2 = M.facet_corners.vertex(
-                        M.facets.next_corner_around_facet( f1, c1 ) ) ;
-
-                    index_t c2 = v2c[v1] ;
-
-                    // Lookup candidate adjacent edges from incident
-                    // edges list.
-                    while( c2 != NO_CORNER ) {
-                        if( c2 != c1 ) {
-                            index_t f2 = c2 / 3 ;
-                            index_t c3 = M.facets.prev_corner_around_facet( f2,
-                                c2 ) ;
-                            index_t v3 = M.facet_corners.vertex( c3 ) ;
-                            // Check with standard orientation.
-                            if( v3 == v2 ) {
-                                if( !is_border( M.vertices.point( v1 ),
-                                    M.vertices.point( v2 ) ) ) {
-                                    if( adj_corner == NO_CORNER ) {
-                                        adj_corner = c3 ;
-                                    } else {
-                                        // Non-manifold edge
-                                        is_border.debug( M.vertices.point( v1 ),
-                                            M.vertices.point( v2 ) ) ;
-                                        adj_corner = NON_MANIFOLD ;
-                                    }
-                                }
-                            } else {
-                                // Check with the other ("wrong") orientation
-                                c3 = M.facets.next_corner_around_facet( f2, c2 ) ;
-                                v3 = M.facet_corners.vertex( c3 ) ;
-                                if( v3 == v2 ) {
-                                    if( !is_border( M.vertices.point( v1 ),
-                                        M.vertices.point( v2 ) ) ) {
-                                        if( adj_corner == NO_CORNER ) {
-                                            adj_corner = c2 ;
-                                        } else {
-                                            // Non-manifold edge
-                                            is_border.debug( M.vertices.point( v1 ),
-                                                M.vertices.point( v2 ) ) ;
-                                            adj_corner = NON_MANIFOLD ;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        c2 = next_c_around_v[c2] ;
-                    }
-                    if( adj_corner != NO_CORNER && adj_corner != NON_MANIFOLD ) {
-                        M.facet_corners.set_adjacent_facet( adj_corner, f1 ) ;
-                        index_t f2 = adj_corner / 3 ;
-                        M.facet_corners.set_adjacent_facet( c1, f2 ) ;
-                    }
-                }
-            }
-        }
-    }
+ 
 
     /**
      * \brief Predicate to be used by the function setting facet adjacencies in the GEO::Mesh
@@ -554,23 +456,29 @@ namespace {
      */
     class EdgeOnLine {
     public:
-        EdgeOnLine( const GeoModel& model, Mesh& non_manifold )
-            : M_( model ), non_manifold_( non_manifold )
+        EdgeOnLine( const Mesh& input_mesh, const GeoModel& geomodel, Mesh& non_manifold )
+            : input_mesh_( input_mesh ), geomodel_( geomodel ), non_manifold_( non_manifold )
+        {}
+       
+        bool operator()( index_t v0, index_t v1 ) const
         {
+            const vec3& p0 = input_mesh_.vertices.point( v0 );
+            const vec3& p1 = input_mesh_.vertices.point( v1 );
+            /// @todo This is quite unclear, plus probably very slow... [JP]
+            return is_edge_on_line( geomodel_, p0, p1 ).is_defined() ;
         }
-        ;
-        bool operator()( const vec3& p0, const vec3& p1 ) const
+        void debug( index_t v0, index_t v1 )
         {
-            return is_edge_on_line( M_, p0, p1 ).is_defined() ;
-        }
-        void debug( const vec3& p0, const vec3& p1 )
-        {
-            index_t v0 = non_manifold_.vertices.create_vertex( p0.data() ) ;
-            index_t v1 = non_manifold_.vertices.create_vertex( p0.data() ) ;
-            non_manifold_.edges.create_edge( v0, v1 ) ;
+            const vec3& p0 = input_mesh_.vertices.point( v0 );
+            const vec3& p1 = input_mesh_.vertices.point( v1 );
+
+            index_t new_v0 = non_manifold_.vertices.create_vertex( p0.data() ) ;
+            index_t new_v1 = non_manifold_.vertices.create_vertex( p1.data() ) ;
+            non_manifold_.edges.create_edge( new_v0, new_v1 ) ;
         }
     private:
-        const GeoModel& M_ ;
+        const Mesh& input_mesh_ ;
+        const GeoModel& geomodel_ ;
         Mesh& non_manifold_ ;
     } ;
 
@@ -1224,7 +1132,7 @@ namespace RINGMesh {
         GEO::Logger::instance()->set_quiet( false ) ;
 
         GEO::Mesh non_manifold_edges ;
-        EdgeOnLine P( GM, non_manifold_edges ) ;
+        EdgeOnLine P( model_mesh, GM, non_manifold_edges ) ;
         repair_connect_facets( model_mesh, P ) ;
 
         if( non_manifold_edges.vertices.nb() > 0 ) {
