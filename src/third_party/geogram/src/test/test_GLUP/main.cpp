@@ -515,7 +515,7 @@ namespace {
         glupColor3f(
             float(i)/float(n),
             float(j)/float(n),
-            float(k)/float(n)                        
+            float(k)/float(n)
         );
         glupTexCoord3f(
             float(i)/float(n),

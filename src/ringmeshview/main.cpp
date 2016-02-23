@@ -93,6 +93,8 @@
 
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram_gfx/glut_viewer/glut_viewer.h>
+#include <geogram_gfx/third_party/freeglut/glut.h>
+#include <geogram_gfx/third_party/freeglut/freeglut_ext.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
 #include <geogram/basic/file_system.h>
@@ -261,7 +263,7 @@ namespace {
 
         /////////// Test texture
         glupMakeCurrent( glupCreateContext() ) ;
-        glupEnable( GLUP_VERTEX_COLORS ) ;
+        glupEnable( GLUP_TEXTURING ) ;
         glupEnable( GLUP_DRAW_MESH ) ;
 
         glMatrixMode( GL_TEXTURE ) ;
@@ -270,12 +272,25 @@ namespace {
         GLuint texture ;
         glGenTextures( 1, &texture ) ;
         glActiveTexture( GL_TEXTURE0 ) ;
-        glBindTexture( GL_TEXTURE_2D, texture ) ;
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST ) ;
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST ) ;
-        glTexImage2DXPM( uv ) ;
+        glBindTexture( GL_TEXTURE_1D, texture ) ;
+        glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST ) ;
+        glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST ) ;
+//        glTexImage2DXPM( uv ) ;
+        static unsigned char test[24] =
+        { 0x3f, 0x00, 0x3f, /* Dark Violet (for 8 colors�) */
+        0x7f, 0x00, 0x7f, /* Violet */
+        0xbf, 0x00, 0xbf, /* Indigo */
+        0x00, 0x00, 0xff, /* Blue */
+        0x00, 0xff, 0x00, /* Green */
+        0xff, 0xff, 0x00, /* Yellow */
+        0xff, 0x7f, 0x00, /* Orange */
+        0xff, 0x00, 0x00 } ;
 
-        glupTextureType( GLUP_TEXTURE_2D ) ;
+        gluBuild1DMipmaps( GL_TEXTURE_1D, GL_RGB, 8, GL_RGB, GL_UNSIGNED_BYTE,
+            test ) ;
+
+
+        glupTextureType( GLUP_TEXTURE_1D ) ;
         glupTextureMode( GLUP_TEXTURE_REPLACE ) ;
         glupClipMode( GLUP_CLIP_WHOLE_CELLS ) ;
         /////////// Test texture
@@ -363,12 +378,11 @@ namespace {
                 float j = cur_point.y ;
                 float k = cur_point.z ;
 
-                glupColor3f( float( i - box.min().x ) / float( nx ),
-                    float( j - box.min().y ) / float( ny ),
-                    float( k - box.min().z ) / float( nz ) ) ;
-                glupTexCoord3f( float( i - box.min().x ) / float( nx ),
-                    float( j - box.min().y ) / float( ny ),
-                    float( k - box.min().z ) / float( nz ) ) ;
+//                glupColor3d( float( i - box.min().x ) / float( nx ),
+//                    float( j - box.min().y ) / float( ny ),
+//                    float( k - box.min().z ) / float( nz ) ) ;
+//                glupTexCoord2d( float( i - box.min().x ), float( i - box.min().x ) ) ;
+                glupTexCoord1d( float( i - box.min().x ) / float( nx ) ) ; // ,float( i - box.min().x ) ,float( i - box.min().x ) ) ;
                 glupVertex3f( i, j, k ) ;
             }
         }
