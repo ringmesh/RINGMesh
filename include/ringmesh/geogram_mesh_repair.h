@@ -55,18 +55,21 @@
 *     54518 VANDOEUVRE-LES-NANCY
 *     FRANCE
 */
+#ifndef __RINGMESH_GEOGRAM_MESH_REPAIR__
+#define __RINGMESH_GEOGRAM_MESH_REPAIR__
+
+#include <algorithm>
 
 #include <geogram/basic/memory.h>
 #include <geogram/mesh/mesh.h>
 
+#include <ringmesh/common.h>
 
 
 /* 
  * @file High level repair operations on GEO::Mesh modified from geogram/mesh/mesh_repair.cpp
  * @author Jeanne Pellerin
  */
-
-
 
 namespace RINGMesh {
 
@@ -108,10 +111,12 @@ namespace RINGMesh {
     *       The predicate should implement
     *            bool operator() (index_t v1, index_t v2) const ;
     *            void debug(index_t v1, index_t v2) ;
+    *
+    * @note It is template and inline on purpose - Theorem from Bruno Levy.
     * 
     * @warning DIFFICULT NOT CLEAN CODE
     */
-    template< typename P >
+    template< typename P > inline
     void repair_connect_facets( GEO::Mesh& M, P is_border )
     {
         using GEO::index_t ;
@@ -201,15 +206,30 @@ namespace RINGMesh {
     }
 
 
-    void connect_mesh_facets( GEO::Mesh& mesh,
-                              std::set<std::pair<index_t, index_t> > border_edges )
+    /*!
+     * @brief Connects the facets of a Mesh except along edges flagged so.
+     * @note inline otherwise linking trouble on Windows. No idea why [JP]
+     */
+    inline void connect_mesh_facets( GEO::Mesh& mesh,
+        const std::set<std::pair<index_t, index_t> >& border_edges )
     {
         MeshEdgesOnBorder edges_to_keep_disconnected( border_edges ) ;
         return repair_connect_facets< MeshEdgesOnBorder >( mesh, edges_to_keep_disconnected ) ;
     }
    
 
+    /*!
+    * @brief Returns true if there are colocated vertices in the Mesh
+    * @details This is a wrapper around Geogram colocate functions
+    */
+    bool RINGMESH_API has_mesh_colocate_vertices( const GEO::Mesh& M, double tolerance ) ;
 
-
+    /*!
+    * @brief Merges the vertices of a mesh that are at the same geometric location
+    * @note Copied from geogram/mes/mesh_repair.cpp. No choice since BL will not give access to it.
+    */
+    void RINGMESH_API repair_colocate_vertices( GEO::Mesh& M, double tolerance ) ;
 
 }
+
+#endif

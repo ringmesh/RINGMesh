@@ -55,6 +55,7 @@
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_element.h>
 #include <ringmesh/geometry.h>
+#include <ringmesh/tetgen_mesher.h>
 #include <ringmesh/well.h>
 
 /*!
