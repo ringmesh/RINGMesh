@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -44,6 +39,11 @@
 #include <ringmesh/common.h>
 #include <deque>
 
+/*!
+ * @file Template matix declarations and definitions 
+ * @author Arnaud Botella and Andre Borghi
+ */
+
 namespace RINGMesh {
     /*!
      * @brief enum of MatrixType, This is useful to further specialize the template in the future
@@ -55,7 +55,7 @@ namespace RINGMesh {
     /*!
      * @brief Basic container for the sparse matrix, i.e. the "elements".
      * */
-    template< class T >
+    template< typename T >
     struct ElementImpl {
         const static index_t NOT_USED = index_t( -1 ) ;
         ElementImpl()
@@ -70,7 +70,7 @@ namespace RINGMesh {
     /*!
      * @brief Basic "Row" of the matrix, this stores the elements of the matrix in a line-oriented way
      * */
-    template< class T >
+    template< typename T >
     class RowImpl {
     public:
         typedef ElementImpl< T > Element ;
@@ -186,7 +186,7 @@ namespace RINGMesh {
      *  @brief This is the parent class for sparse matrices, the main difference between light and heavy type matrices
      * depend on the contents of rows elements: Light will contain type T objects, while heavy an index to access a std::deque.
      * */
-    template< class T, typename RowType >
+    template< typename T, typename RowType >
     class SparseMatrixImpl {
     public:
         typedef RowImpl< RowType > Row ;
@@ -309,7 +309,7 @@ namespace RINGMesh {
     /*!
      * declaration of a template class SparseMatrix, it will be specialazed for the different MatrixType
      * */
-    template< class T, MatrixType Light = MatrixType(
+    template< typename T, MatrixType Light = MatrixType(
         2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
     class SparseMatrix: public SparseMatrixImpl< T, T > {
     ringmesh_disable_copy( SparseMatrix ) ;
@@ -318,7 +318,7 @@ namespace RINGMesh {
     /*!
      * specialization of SparseMatrix for MatrixType "light"
      * */
-    template< class T >
+    template< typename T >
     class SparseMatrix< T, light > : public SparseMatrixImpl< T, T > {
     public:
         typedef SparseMatrix< T, light > thisclass ;
@@ -396,7 +396,7 @@ namespace RINGMesh {
      * The data are stored in a std::deque and the rows contains the
      * ids of the values within the deque.
      * */
-    template< class T >
+    template< typename T >
     class SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t > {
     public:
         typedef SparseMatrix< T, heavy > thisclass ;
@@ -479,7 +479,7 @@ namespace RINGMesh {
 
     // Note: without light or heavy, it does not compile on Windows.
     // Error C2770. BC
-    template< class T >
+    template< typename T >
     void product_matrix_by_vector(
         const SparseMatrix< T, light >& mat1,
         const std::vector< T >& mat2,
