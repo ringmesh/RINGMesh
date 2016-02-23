@@ -89,6 +89,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/gfx.h>
 #include <ringmesh/io.h>
+#include <ringmesh/utils.h>
 
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram_gfx/glut_viewer/glut_viewer.h>
@@ -315,7 +316,7 @@ namespace {
 
             GM_gfx.set_vertex_regions_color( 1.0, 1.0, 1.0 ) ;
         }
-        GM_gfx.set_vertex_regions_size( 1 ) ;
+//        GM_gfx.set_vertex_surfaces_visibility( true ) ;
 
         ////////////// Test texture
         glupCopyFromGLState( GLUP_ALL_ATTRIBUTES ) ;
@@ -332,7 +333,7 @@ namespace {
         }
 
         if( show_surface ) {
-            GM_gfx.draw_surfaces() ;
+//            GM_gfx.draw_surfaces() ;
         }
 
         if( show_volume || show_wells ) {
@@ -340,52 +341,32 @@ namespace {
         }
 
         ////////////// Test texture
+        ///
+        glPointSize(GLfloat(8));
         glupBegin( GLUP_POINTS ) ;
-        float min_x = max_float32() ;
-        float min_y = max_float32() ;
-        float min_z = max_float32() ;
-        float max_x = min_float32() ;
-        float max_y = min_float32() ;
-        float max_z = min_float32() ;
+        Box3d box ;
         for( index_t v_i = 0; v_i < GM.mesh.vertices.nb(); ++v_i ) {
-            const vec3& cur_point = GM.mesh.vertices.vertex( v_i ) ;
-            if( min_x > cur_point.x ) {
-                min_x = cur_point.x ;
-            }
-            if( min_y > cur_point.y ) {
-                min_y = cur_point.y ;
-            }
-            if( min_z > cur_point.z ) {
-                min_z = cur_point.z ;
-            }
-            if( max_x < cur_point.x ) {
-                max_x = cur_point.x ;
-            }
-            if( max_y < cur_point.y ) {
-                max_y = cur_point.y ;
-            }
-            if( max_z < cur_point.z ) {
-                max_z = cur_point.z ;
-            }
+            box.add_point( GM.mesh.vertices.vertex( v_i ) ) ;
         }
 
         for( index_t v_i = 0; v_i < GM.mesh.vertices.nb(); ++v_i ) {
 
 //            index_t n = GM.mesh.vertices.nb() ;
-            float nx = max_x - min_x ;
-            float ny = max_y - min_y ;
-            float nz = max_z - min_z ;
+            float nx = box.width() ;
+            float ny = box.height() ;
+            float nz = box.depth() ;
             const vec3& cur_point = GM.mesh.vertices.vertex( v_i ) ;
             float i = cur_point.x ;
             float j = cur_point.y ;
             float k = cur_point.z ;
 
-            glupColor3f( float( i - min_x ) / float( nx ), float( j - min_y ) / float( ny ),
-                float( k - min_z ) / float( nz ) ) ;
-            glupTexCoord3f( float( i - min_x ) / float( nx ), float( j - min_y ) / float( ny ),
-                float( k - min_z ) / float( nz ) ) ;
-            glupVertex3f( float( i - min_x ) / float( nx ), float( j - min_y ) / float( ny ),
-                float( k - min_z ) / float( nz ) ) ;
+            glupColor3f( float( i - box.min().x ) / float( nx ),
+                float( j - box.min().y ) / float( ny ),
+                float( k - box.min().z  ) / float( nz ) ) ;
+            glupTexCoord3f( float( i - box.min().x ) / float( nx ),
+                float( j - box.min().y  ) / float( ny ),
+                float( k - box.min().z  ) / float( nz ) ) ;
+            glupVertex3f( i, j, k ) ;
         }
         glupEnd() ;
         ////////////// Test texture
