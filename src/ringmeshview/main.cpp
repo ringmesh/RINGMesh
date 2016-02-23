@@ -99,6 +99,8 @@
 
 #include <algorithm>
 
+#include "uv.xpm"
+
 namespace {
     using namespace RINGMesh ;
 
@@ -255,6 +257,27 @@ namespace {
         glut_viewer_disable( GLUT_VIEWER_TWEAKBARS ) ;
         glut_viewer_disable( GLUT_VIEWER_BACKGROUND ) ;
         glut_viewer_add_key_func( 'm', toggle_mesh, "mesh" ) ;
+
+        /////////// Test texture
+        glupMakeCurrent( glupCreateContext() ) ;
+        glupEnable( GLUP_VERTEX_COLORS ) ;
+        glupEnable( GLUP_DRAW_MESH ) ;
+
+        glMatrixMode( GL_TEXTURE ) ;
+        glLoadIdentity() ;
+
+        GLuint texture ;
+        glGenTextures( 1, &texture ) ;
+        glActiveTexture( GL_TEXTURE0 ) ;
+        glBindTexture( GL_TEXTURE_2D, texture ) ;
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST ) ;
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST ) ;
+        glTexImage2DXPM( uv ) ;
+
+        glupTextureType( GLUP_TEXTURE_2D ) ;
+        glupTextureMode( GLUP_TEXTURE_REPLACE ) ;
+        glupClipMode( GLUP_CLIP_WHOLE_CELLS ) ;
+        /////////// Test texture
     }
 
     /**
@@ -294,6 +317,12 @@ namespace {
         }
         GM_gfx.set_vertex_regions_size( 1 ) ;
 
+        ////////////// Test texture
+        glupCopyFromGLState( GLUP_ALL_ATTRIBUTES ) ;
+        glupMatrixMode( GLUP_TEXTURE_MATRIX ) ;
+        glupLoadMatrixf( glut_viewer_get_light_matrix() ) ;
+        ////////////// Test texture
+
         if( show_corners ) {
             GM_gfx.draw_corners() ;
         }
@@ -308,6 +337,23 @@ namespace {
 
         if( show_volume || show_wells ) {
             GM_gfx.draw_regions() ;
+        }
+
+        for( index_t v_i = 0; v_i < GM.mesh.vertices.nb(); ++v_i ) {
+
+//            index_t n = GM.mesh.vertices.nb() ;
+            index_t n = 30 ;
+            const vec3& cur_point = GM.mesh.vertices.vertex( v_i ) ;
+            index_t i = cur_point.x ;
+            index_t j = cur_point.y ;
+            index_t k = cur_point.z ;
+
+            glupColor3f( float( i ) / float( n ), float( j ) / float( n ),
+                float( k ) / float( n ) ) ;
+            glupTexCoord3f( float( i ) / float( n ), float( j ) / float( n ),
+                float( k ) / float( n ) ) ;
+            glupVertex3f( float( i ) / float( n ), float( j ) / float( n ),
+                float( k ) / float( n ) ) ;
         }
 
     }
