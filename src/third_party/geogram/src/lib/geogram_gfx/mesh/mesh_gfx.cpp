@@ -189,6 +189,7 @@ namespace GEO {
     void MeshGfx::draw_edges() {
         set_GLUP_parameters();
         set_GLUP_picking(MESH_EDGES);
+        update_buffer_objects_if_needed();
         glupSetColor3fv(GLUP_FRONT_COLOR, mesh_color_);
         glLineWidth(GLfloat(mesh_width_));
         if(glupPrimitiveSupportsArrayMode(GLUP_LINES) && edges_VAO_ != 0) {
