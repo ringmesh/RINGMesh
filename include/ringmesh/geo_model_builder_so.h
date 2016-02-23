@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -50,12 +45,15 @@
 namespace RINGMesh {
     class GeoModelBuilderTSolid ;
     struct VertexMap ;
-    struct TSolidLoadUtils ;
+    struct TSolidLoadingStorage ;
 }
 
 namespace RINGMesh {
     void tsolid_import_factory_initialize() ;
 
+    /*!
+     * @brief Build a GeoModel (with meshed regions) from a Gocad TSolid (file.so)
+     */
     class TSolidLineParser: public GEO::Counted {
     ringmesh_disable_copy(TSolidLineParser) ;
     public:
@@ -65,7 +63,7 @@ namespace RINGMesh {
             GeoModel& geomodel ) ;
         virtual void execute(
             const GEO::LineInput& line,
-            TSolidLoadUtils& load_utils ) = 0 ;
+            TSolidLoadingStorage& load_storage ) = 0 ;
 
     protected:
         TSolidLineParser() : Counted(), builder_( nil ), geomodel_( nil )
@@ -77,25 +75,25 @@ namespace RINGMesh {
 
         GeoModelBuilderTSolid& builder()
         {
-            ringmesh_debug_assert( builder_ ) ;
+            ringmesh_debug_assert( builder_ != nil ) ;
             return *builder_ ;
         }
 
         const GeoModelBuilderTSolid& builder() const
         {
-            ringmesh_debug_assert( builder_ ) ;
+            ringmesh_debug_assert( builder_ != nil ) ;
             return *builder_ ;
         }
 
         GeoModel& geomodel()
         {
-            ringmesh_debug_assert( geomodel_ ) ;
+            ringmesh_debug_assert( geomodel_ != nil ) ;
             return *geomodel_ ;
         }
 
         const GeoModel& geomodel() const
         {
-            ringmesh_debug_assert( geomodel_ ) ;
+            ringmesh_debug_assert( geomodel_ != nil ) ;
             return *geomodel_ ;
         }
 
@@ -134,7 +132,6 @@ namespace RINGMesh {
         }
         virtual ~GeoModelBuilderTSolid()
         {
-
         }
 
     private:
@@ -154,7 +151,7 @@ namespace RINGMesh {
          * and executes the good action with the information of the line
          * @details Uses the TsolidLineParser factory
          */
-        void read_line( TSolidLoadUtils& load_utils ) ;
+        void read_line( TSolidLoadingStorage& load_utils ) ;
 
     private:
         std::string filename_ ;
