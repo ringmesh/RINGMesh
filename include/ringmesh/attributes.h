@@ -58,12 +58,19 @@ namespace RINGMesh {
     public:
         void bind( GEO::AttributesManager& manager, const std::string& name )
         {
-            GEO::AttributeStore* vertex_store = manager.find_attribute_store(
+            store2_ = manager.find_attribute_store(
                 name ) ;
-            if( vertex_store != nil ) {
-                register_me( vertex_store ) ;
+            if( store2_ != nil ) {
+                DEBUG( "BIND " ) ;
+                register_me( store2_ ) ;
             }
+                DEBUG( "NOT BIND " ) ;
         }
+        bool is_bound() const {
+            return (store2_ != nil);
+        }
+    private:
+        GEO::AttributeStore* store2_ ;
 
     } ;
 

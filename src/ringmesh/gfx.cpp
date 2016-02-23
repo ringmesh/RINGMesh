@@ -103,11 +103,11 @@ namespace RINGMesh {
         }
 
     protected:
-        inline void draw_vertex( index_t v )
+        inline void draw_attribute_vertex( index_t v )
         {
-            glupTexCoord1d(
-                ( vertex_attr_[v] - gfx_.cell_vertex_min_attr_ )
-                    / gfx_.cell_vertex_max_attr_ ) ;
+            double d = ( vertex_attr_[v] - gfx_.cell_vertex_min_attr_ )
+                        / (gfx_.cell_vertex_max_attr_ - gfx_.cell_vertex_min_attr_ ) ;
+            glupTexCoord1d (d) ;
             if( mesh_->vertices.single_precision() ) {
                 glupVertex3fv( mesh_->vertices.single_precision_point_ptr( v ) ) ;
             } else {
@@ -216,10 +216,10 @@ namespace RINGMesh {
                     {
                         glupBegin( GLUP_TETRAHEDRA ) ;
                         for( index_t t = 0; t < mesh()->cells.nb(); ++t ) {
-                            draw_vertex( mesh()->cells.vertex( t, 0 ) ) ;
-                            draw_vertex( mesh()->cells.vertex( t, 1 ) ) ;
-                            draw_vertex( mesh()->cells.vertex( t, 2 ) ) ;
-                            draw_vertex( mesh()->cells.vertex( t, 3 ) ) ;
+                            draw_attribute_vertex( mesh()->cells.vertex( t, 0 ) ) ;
+                            draw_attribute_vertex( mesh()->cells.vertex( t, 1 ) ) ;
+                            draw_attribute_vertex( mesh()->cells.vertex( t, 2 ) ) ;
+                            draw_attribute_vertex( mesh()->cells.vertex( t, 3 ) ) ;
                         }
                         glupEnd() ;
                     }
@@ -370,6 +370,7 @@ namespace RINGMesh {
         for( index_t r = 0; r < regions_.size(); r++ ) {
             regions_[r]->bind_vertex_attribute( name ) ;
         }
+        compute_cell_vertex_attribute_range() ;
     }
 
     /*!
