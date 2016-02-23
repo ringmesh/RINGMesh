@@ -84,8 +84,8 @@ namespace RINGMesh {
         * @param[in] mesh_edges_on_border Pair of mesh vertex indices on a boundary.
         *            In each pair first < second.
         */
-        MeshEdgesOnBorder( const std::set<Edge>& mesh_edges_on_border )
-            : edges_on_border_( mesh_edges_on_border )
+        MeshEdgesOnBorder( const std::vector<Edge>& mesh_edges_on_border )
+            : edges_on_border_( mesh_edges_on_border.begin(), mesh_edges_on_border.end() )
         {}
 
         bool operator()( index_t v0, index_t v1 ) const
@@ -98,7 +98,7 @@ namespace RINGMesh {
             ringmesh_assert_not_reached ;
         }
     private:
-        const std::set< Edge >& edges_on_border_ ;
+        const std::set< Edge > edges_on_border_ ;
     } ;
 
 
@@ -211,10 +211,25 @@ namespace RINGMesh {
      * @note inline otherwise linking trouble on Windows. No idea why [JP]
      */
     inline void connect_mesh_facets( GEO::Mesh& mesh,
-        const std::set<std::pair<index_t, index_t> >& border_edges )
+        const std::vector<std::pair<index_t, index_t> >& border_edges )
     {
         MeshEdgesOnBorder edges_to_keep_disconnected( border_edges ) ;
         return repair_connect_facets< MeshEdgesOnBorder >( mesh, edges_to_keep_disconnected ) ;
+    }
+
+    inline void connect_mesh_facets_except_on_mesh_edges( GEO::Mesh& mesh )
+    {
+        index_t nb_edges = mesh.edges.nb() ;
+        std::vector< std::pair<index_t, index_t > > edges( nb_edges ) ;
+        for( index_t i = 0; i< nb_edges; ++i ) {
+            index_t v0 = mesh.edges.vertex( i, 0 );
+            index_t v1 = mesh.edges.vertex( i, 1 );
+            if( v1 < v0 ) {
+                std::swap( v0, v1 ) ;
+            }
+            edges[ i ] = std::pair<index_t, index_t>( v0, v1 ) ;
+        }
+        connect_mesh_facets( mesh, edges ) ;
     }
    
 
