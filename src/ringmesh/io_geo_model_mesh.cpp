@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -39,26 +34,33 @@
  */
 
 #include <ringmesh/io.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/well.h>
-#include <ringmesh/geometry.h>
-#include <ringmesh/geogram_extension.h>
-
-#include <geogram/basic/file_system.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_geometry.h>
-
-#include <third_party/zlib/zip.h>
-#include <third_party/zlib/unzip.h>
 
 #include <iomanip>
 #include <stack>
 
+#include <third_party/zlib/unzip.h>
+#include <third_party/zlib/zip.h>
+
+#include <geogram/basic/command_line.h>
+#include <geogram/basic/file_system.h>
+#include <geogram/basic/line_stream.h>
+#include <geogram/basic/logger.h>
+
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_io.h>
+
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geogram_extension.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/well.h>
+
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
+
+/*!
+ * @file Implementation of classes loading volumetric GeoModels
+ * @author Arnaud Botella and Antoine Mazuyer
+ */
 
 namespace {
     using namespace RINGMesh ;
