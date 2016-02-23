@@ -339,22 +339,56 @@ namespace {
             GM_gfx.draw_regions() ;
         }
 
+        ////////////// Test texture
+        glupBegin( GLUP_POINTS ) ;
+        float min_x = max_float32() ;
+        float min_y = max_float32() ;
+        float min_z = max_float32() ;
+        float max_x = min_float32() ;
+        float max_y = min_float32() ;
+        float max_z = min_float32() ;
+        for( index_t v_i = 0; v_i < GM.mesh.vertices.nb(); ++v_i ) {
+            const vec3& cur_point = GM.mesh.vertices.vertex( v_i ) ;
+            if( min_x > cur_point.x ) {
+                min_x = cur_point.x ;
+            }
+            if( min_y > cur_point.y ) {
+                min_y = cur_point.y ;
+            }
+            if( min_z > cur_point.z ) {
+                min_z = cur_point.z ;
+            }
+            if( max_x < cur_point.x ) {
+                max_x = cur_point.x ;
+            }
+            if( max_y < cur_point.y ) {
+                max_y = cur_point.y ;
+            }
+            if( max_z < cur_point.z ) {
+                max_z = cur_point.z ;
+            }
+        }
+
         for( index_t v_i = 0; v_i < GM.mesh.vertices.nb(); ++v_i ) {
 
 //            index_t n = GM.mesh.vertices.nb() ;
-            index_t n = 30 ;
+            float nx = max_x - min_x ;
+            float ny = max_y - min_y ;
+            float nz = max_z - min_z ;
             const vec3& cur_point = GM.mesh.vertices.vertex( v_i ) ;
-            index_t i = cur_point.x ;
-            index_t j = cur_point.y ;
-            index_t k = cur_point.z ;
+            float i = cur_point.x ;
+            float j = cur_point.y ;
+            float k = cur_point.z ;
 
-            glupColor3f( float( i ) / float( n ), float( j ) / float( n ),
-                float( k ) / float( n ) ) ;
-            glupTexCoord3f( float( i ) / float( n ), float( j ) / float( n ),
-                float( k ) / float( n ) ) ;
-            glupVertex3f( float( i ) / float( n ), float( j ) / float( n ),
-                float( k ) / float( n ) ) ;
+            glupColor3f( float( i - min_x ) / float( nx ), float( j - min_y ) / float( ny ),
+                float( k - min_z ) / float( nz ) ) ;
+            glupTexCoord3f( float( i - min_x ) / float( nx ), float( j - min_y ) / float( ny ),
+                float( k - min_z ) / float( nz ) ) ;
+            glupVertex3f( float( i - min_x ) / float( nx ), float( j - min_y ) / float( ny ),
+                float( k - min_z ) / float( nz ) ) ;
         }
+        glupEnd() ;
+        ////////////// Test texture
 
     }
 
