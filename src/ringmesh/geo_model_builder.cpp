@@ -3154,7 +3154,6 @@ namespace RINGMesh {
         } else {
             ringmesh_assert_not_reached;
         }
-
     }
 
     /*************************************************************************/

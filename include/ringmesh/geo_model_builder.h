@@ -145,9 +145,10 @@ namespace RINGMesh {
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr ) ;
 
-        void set_region_geometry( index_t region_id,
-                                  const std::vector< vec3 >& points,
-                                  const std::vector< index_t >& tetras ) ;
+        void set_region_geometry(
+            index_t region_id,
+            const std::vector< vec3 >& points,
+            const std::vector< index_t >& tetras ) ;
 
 
         /*! @}
@@ -423,7 +424,7 @@ namespace RINGMesh {
             bool& same_orientation ) const ;
 
         /*!
-        * Read the coordinates system informations of files exported from Gocad.
+        * Read the coordinates system information of files exported from Gocad.
         * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
         * increasing z toward top and "Depth" for increasing z toward bottom.
         * @return Return 1 if Elevation direction, -1 if Depth direction.
