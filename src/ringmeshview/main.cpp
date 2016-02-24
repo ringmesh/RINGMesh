@@ -263,7 +263,6 @@ namespace {
 
         /////////// Test texture
         glupMakeCurrent( glupCreateContext() ) ;
-//        glupEnable( GLUP_VERTEX_COLORS ) ;
         glupEnable( GLUP_TEXTURING ) ;
         glupEnable( GLUP_DRAW_MESH ) ;
 
@@ -276,27 +275,26 @@ namespace {
         glBindTexture( GL_TEXTURE_1D, texture ) ;
         glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ) ;
         glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ) ;
-//        glTexImage2DXPM( uv ) ;
-        static unsigned char test[24] =
-        { 0x3f, 0x00, 0x3f, /* Dark Violet (for 8 colors�) */
-        0x7f, 0x00, 0x7f, /* Violet */
-        0xbf, 0x00, 0xbf, /* Indigo */
-        0x00, 0x00, 0xff, /* Blue */
-        0x00, 0xff, 0x00, /* Green */
-        0xff, 0xff, 0x00, /* Yellow */
-        0xff, 0x7f, 0x00, /* Orange */
-        0xff, 0x00, 0x00 } ;
+        static unsigned char test[24] = {
+            0x3f, 0x00, 0x3f, /* Dark Violet (for 8 colors�) */
+            0x7f, 0x00, 0x7f, /* Violet */
+            0xbf, 0x00, 0xbf, /* Indigo */
+            0x00, 0x00, 0xff, /* Blue */
+            0x00, 0xff, 0x00, /* Green */
+            0xff, 0xff, 0x00, /* Yellow */
+            0xff, 0x7f, 0x00, /* Orange */
+            0xff, 0x00, 0x00
+        } ;
 
         gluBuild1DMipmaps( GL_TEXTURE_1D, GL_RGB, 8, GL_RGB, GL_UNSIGNED_BYTE,
             test ) ;
-
 
         glupTextureType( GLUP_TEXTURE_1D ) ;
         glupTextureMode( GLUP_TEXTURE_REPLACE ) ;
         glupClipMode( GLUP_CLIP_WHOLE_CELLS ) ;
         /////////// Test texture
-            GM_gfx.set_geo_model( GM ) ;
-            GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
+        GM_gfx.set_geo_model( GM ) ;
+        GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
     }
 
     /**
@@ -330,9 +328,8 @@ namespace {
 
             GM_gfx.set_vertex_regions_color( 1.0, 1.0, 1.0 ) ;
         }
-//        GM_gfx.set_vertex_surfaces_visibility( true ) ;
 
-////////////// Test texture
+        ////////////// Test texture
         glupCopyFromGLState( GLUP_ALL_ATTRIBUTES ) ;
         glupMatrixMode( GLUP_TEXTURE_MATRIX ) ;
         glupLoadMatrixf( glut_viewer_get_light_matrix() ) ;
@@ -347,47 +344,12 @@ namespace {
         }
 
         if( show_surface ) {
-//            GM_gfx.draw_surfaces() ;
+            GM_gfx.draw_surfaces() ;
         }
 
         if( show_volume || show_wells ) {
             GM_gfx.draw_regions() ;
         }
-
-        ////////////// Test texture
-        ///
-        glPointSize( GLfloat( 4 ) ) ;
-
-        glupBegin( GLUP_TRIANGLES ) ;
-        Box3d box ;
-        for( index_t v_i = 0; v_i < GM.mesh.vertices.nb(); ++v_i ) {
-            box.add_point( GM.mesh.vertices.vertex( v_i ) ) ;
-        }
-
-        for( index_t f_i = 0; f_i < GM.mesh.facets.nb(); ++f_i ) {
-
-//            index_t n = GM.mesh.vertices.nb() ;
-            for( index_t v_i = 0; v_i < GM.mesh.facets.nb_vertices( f_i ); v_i++ ) {
-                float nx = box.width() ;
-                float ny = box.height() ;
-                float nz = box.depth() ;
-                const vec3& cur_point = GM.mesh.vertices.vertex(
-                    GM.mesh.facets.vertex( f_i, v_i ) ) ;
-                float i = cur_point.x ;
-                float j = cur_point.y ;
-                float k = cur_point.z ;
-
-//                glupColor3d( float( i - box.min().x ) / float( nx ),
-//                    float( j - box.min().y ) / float( ny ),
-//                    float( k - box.min().z ) / float( nz ) ) ;
-//                glupTexCoord2d( float( i - box.min().x ), float( i - box.min().x ) ) ;
-                glupTexCoord1d( float( i - box.min().x ) / float( nx ) ) ; // ,float( i - box.min().x ) ,float( i - box.min().x ) ) ;
-                glupVertex3f( i, j, k ) ;
-            }
-        }
-        glupEnd() ;
-        ////////////// Test texture
-
     }
 
     /**
