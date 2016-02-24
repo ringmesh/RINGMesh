@@ -273,8 +273,8 @@ namespace {
         glGenTextures( 1, &texture ) ;
         glActiveTexture( GL_TEXTURE0 ) ;
         glBindTexture( GL_TEXTURE_1D, texture ) ;
-        glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST ) ;
-        glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST ) ;
+        glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ) ;
+        glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ) ;
 //        glTexImage2DXPM( uv ) ;
         static unsigned char test[24] =
         { 0x3f, 0x00, 0x3f, /* Dark Violet (for 8 colors�) */
