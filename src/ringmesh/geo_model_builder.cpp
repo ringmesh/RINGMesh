@@ -1330,6 +1330,21 @@ namespace RINGMesh {
         assign_surface_triangle_mesh( surface_id, new_triangle_corners ) ;
     }
 
+    void GeoModelBuilder::set_surface_geometry_with_adjacencies(
+        index_t surface_id,
+        const std::vector< index_t >& triangle_corners,
+        const std::vector< index_t >& adjacent_triangles )
+    {
+        /// @todo Reorganize to remove duplicated code in the class
+        std::vector< index_t > vertices ;
+        std::vector< index_t > new_triangle_corners( triangle_corners ) ;
+        get_element_vertices_and_update_corners( new_triangle_corners, vertices ) ;
+
+        set_element_vertices( gme_t( GME::SURFACE, surface_id ), vertices, false ) ;
+
+        assign_surface_triangle_mesh( surface_id, new_triangle_corners ) ;
+    }
+
     void GeoModelBuilder::set_region_geometry(
         index_t region_id,
         const std::vector< index_t >& tet_corners )
@@ -1352,6 +1367,24 @@ namespace RINGMesh {
         copy_std_vector_to_geo_vector( triangle_vertices, copy ) ;
         M.facets.assign_triangle_mesh( copy, true ) ;
         compute_surface_adjacencies( surface_id ) ;
+    }
+
+    void GeoModelBuilder::assign_surface_triangle_mesh(
+        index_t surface_id,
+        const std::vector< index_t >& triangle_vertices,
+        const std::vector< index_t >& adjacent_triangles )
+    {
+        // COPY !! REMOVE !! // Access Mesh.... 
+        GEO::Mesh& M = mesh_element( GME::SURFACE, surface_id ).mesh_ ;
+        ringmesh_assert( M.vertices.nb() > 0 ) ;
+        GEO::vector< index_t > copy ;
+        copy_std_vector_to_geo_vector( triangle_vertices, copy ) ;
+        M.facets.assign_triangle_mesh( copy, true ) ;
+        
+        ringmesh_assert( adjacent_triangles.size() == M.facet_corners.nb() ) ;
+        for( index_t i = 0; i < adjacent_triangles.size(); i++ ) {
+            M.facet_corners.set_adjacent_facet( i, adjacent_triangles[ i ] ) ;
+        }
     }
 
     void GeoModelBuilder::assign_surface_mesh_facets(
@@ -2012,7 +2045,6 @@ namespace RINGMesh {
             if( !is_valid() ) {
                 return ;
             }
-
             allocate_mesh_simplex_to_gme() ;
             allocate_gme_vertices() ;
 
@@ -2024,13 +2056,40 @@ namespace RINGMesh {
                     index_t gme_id = attribute_value_to_gme_id_[attribute_value] ;
                     index_t gme_simplex_id = gme_simplex_counter_[gme_id] ;
 
-                    assign_one_gme_simplex_vertices( mesh_simplex, gme_id,
-                        gme_simplex_id ) ;
-                    assign_mesh_simplex_to_gme_simplex( mesh_simplex, gme_id,
-                        gme_simplex_id ) ;
+                    assign_one_gme_simplex_vertices( mesh_simplex, gme_id, gme_simplex_id ) ;                    
+                    assign_mesh_simplex_to_gme_simplex( mesh_simplex, gme_id, gme_simplex_id ) ;
                     ++gme_simplex_counter_[gme_id] ;
                 } else {
                     assign_mesh_simplex_to_no_gme_simplex( mesh_simplex ) ;
+                }
+            }
+            // On refait un tour pour chopper les adjacences Ca doit marcher nan ???
+
+            allocate_gme_corner_adjacent_gme_simplex() ;
+
+            for( index_t mesh_simplex = 0; mesh_simplex < nb; ++mesh_simplex ) {
+                GMESimplex gme = mesh_simplex_to_gme_simplex_[ mesh_simplex ];                
+                index_t gme_id = gme.gme_id ;
+                index_t gme_simplex = gme.gme_simplex_id ;
+
+                if( gme_id == NO_ID || gme_simplex == NO_ID ) {
+                    continue ;
+                }
+                
+                for( index_t v = 0; v < nb_vertices_per_simplex(); ++v ) {
+                    index_t gme_vertex = nb_vertices_per_simplex()*gme_simplex + v ;
+                    index_t mesh_vertex = nb_vertices_per_simplex()*mesh_simplex + v ;
+                    // Number of vertices = number of edges / number of facets
+                    index_t adjacent_simplex = adjacent_simplex_index( mesh_vertex ) ;
+
+                    GMESimplex adjacent_gme_simplex ;
+                    if( adjacent_simplex != NO_ID ) {
+                        adjacent_gme_simplex = mesh_simplex_to_gme_simplex_[adjacent_simplex] ;
+                    }
+                    if( adjacent_gme_simplex.gme_id == gme_id ) {
+                        gme_corner_adjacent_gme_simplex_[ gme_id ][ gme_simplex ] =
+                            adjacent_gme_simplex.gme_simplex_id ;
+                    }
                 }
             }
         }
@@ -2039,8 +2098,14 @@ namespace RINGMesh {
          */
         const std::vector< index_t >& gme_simplices( index_t gme_id ) const
         {
-            ringmesh_debug_assert( gme_id < nb_gme() ) ;
+            ringmesh_assert( gme_id < nb_gme() ) ;
             return gme_simplex_vertices_[gme_id] ;
+        }
+
+        const std::vector< index_t >& adjacent_gme_simplices( index_t gme_id ) const
+        {
+            ringmesh_assert( gme_id < nb_gme() ) ;
+            return gme_corner_adjacent_gme_simplex_[gme_id] ;
         }
 
         template< typename T >
@@ -2125,6 +2190,15 @@ namespace RINGMesh {
             }
         }
 
+        void allocate_gme_corner_adjacent_gme_simplex()
+        {
+            gme_corner_adjacent_gme_simplex_.resize( nb_gme() ) ;
+            for( index_t i = 0; i < nb_gme(); ++i ) {
+                gme_corner_adjacent_gme_simplex_[ i ].resize( 
+                    gme_simplex_vertices_[ i ].size(), NO_ID ) ;                
+            }
+        }
+
         void allocate_mesh_simplex_to_gme()
         {
             mesh_simplex_to_gme_simplex_.resize( nb_mesh_simplexes() ) ;
@@ -2159,9 +2233,8 @@ namespace RINGMesh {
         virtual index_t nb_mesh_simplexes() const = 0 ;
         virtual GEO::AttributesManager& mesh_simplex_attribute_manager() = 0 ;
         virtual index_t nb_vertices_per_simplex() const = 0 ;
-        virtual index_t mesh_vertex_index(
-            index_t simplex_id,
-            index_t lv ) const = 0 ;
+        virtual index_t mesh_vertex_index( index_t simplex_id, index_t lv ) const = 0 ;
+        virtual index_t adjacent_simplex_index( index_t facet_or_edge_id ) const = 0 ;
 
     protected:
         const GEO::Mesh& mesh_ ;
@@ -2171,6 +2244,9 @@ namespace RINGMesh {
         std::map< index_t, index_t > attribute_value_to_gme_id_ ;
         std::vector< index_t > gme_id_to_attribute_value_ ;
         std::vector< std::vector< index_t > > gme_simplex_vertices_ ;
+        /// Chopper les adjacences ??? possible ??
+        std::vector< std::vector < index_t > > gme_corner_adjacent_gme_simplex_ ;
+
         std::vector< GMESimplex > mesh_simplex_to_gme_simplex_ ;
     } ;
 
@@ -2202,6 +2278,10 @@ namespace RINGMesh {
         {
             return mesh_.facets.vertex( simplex_id, vertex ) ;
         }
+        index_t adjacent_simplex_index( index_t corner_id ) const
+        {
+            return mesh_.facet_corners.adjacent_facet( corner_id ) ;
+        }
     } ;
 
     class GeoModelRegionFromMesh: public GeoModelElementFromMesh {
@@ -2232,6 +2312,11 @@ namespace RINGMesh {
         {
             return mesh_.cells.vertex( simplex_id, vertex ) ;
         }
+
+        index_t adjacent_simplex_index( index_t facet_id ) const
+        {
+            return mesh_.cell_facets.adjacent_cell( facet_id ) ;
+        }
     } ;
 
     /*************************************************************************/
@@ -2244,7 +2329,7 @@ namespace RINGMesh {
         region_builder_ = nil ;
     }
 
-    void GeoModelBuilderMesh::check_mesh_validity_for_surface_building() const
+    void GeoModelBuilderMesh::assert_mesh_validity_for_surface_building() const
     {
         if( !is_surface_mesh( mesh_ ) ) {
             throw RINGMeshException( "GMBuilder",
@@ -2266,7 +2351,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderMesh::check_mesh_validity_for_region_building() const
+    void GeoModelBuilderMesh::assert_mesh_validity_for_region_building() const
     {
         if( !is_volume_mesh( mesh_ ) ) {
             throw RINGMeshException( "GMBuilder",
@@ -2419,7 +2504,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderMesh::build_surfaces()
     {
-        check_mesh_validity_for_surface_building() ;
+        assert_mesh_validity_for_surface_building() ;
 
         index_t nb_surfaces = model_.nb_surfaces() ;
         // Map 1st surface with 1st lowest attribute value, 2nd with 2nd lowest, etc.
@@ -2427,8 +2512,10 @@ namespace RINGMesh {
         surface_builder_->compute_gme_simplexes() ;
         for( index_t i = 0; i != nb_surfaces; ++i ) {
             const std::vector< index_t >& triangle_vertices =
-                surface_builder_->gme_simplices( i ) ;
-            set_surface_geometry( i, triangle_vertices ) ;
+                surface_builder_->gme_simplices(i) ;
+            const std::vector< index_t >& adjacent_triangles = 
+                surface_builder_->adjacent_gme_simplices(i) ;
+            set_surface_geometry_with_adjacencies( i, triangle_vertices, adjacent_triangles ) ;
         }
     }
 
@@ -2440,7 +2527,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderMesh::build_regions()
     {
-        check_mesh_validity_for_region_building() ;
+        assert_mesh_validity_for_region_building() ;
 
         index_t nb_regions = model_.nb_regions() ;
         region_builder_->set_default_gme_id_attribute_mapping( nb_regions ) ;

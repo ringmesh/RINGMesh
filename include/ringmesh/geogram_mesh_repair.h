@@ -98,7 +98,7 @@ namespace RINGMesh {
             ringmesh_assert_not_reached ;
         }
     private:
-        const std::set< Edge > edges_on_border_ ;
+        std::set< Edge > edges_on_border_ ;
     } ;
 
 
