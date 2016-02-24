@@ -106,16 +106,17 @@ namespace RINGMesh {
         void compute_vertex_attribute_buffer()
         {
             if( mesh()->cells.are_simplices() ) {
-                double* data = new double[mesh()->cells.nb() * 3] ;
+                size_t size = mesh()->vertices.nb() ;
+                double* data = new double[size] ;
                 for( index_t v = 0; v < mesh()->vertices.nb(); v++ ) {
-                    data[v] = ( vertex_attr_[v] - gfx_.cell_vertex_min_attr_ )
-                    / ( gfx_.cell_vertex_max_attr_ - gfx_.cell_vertex_min_attr_ ) ;
+                    data[v] =
+                        ( vertex_attr_[v] - gfx_.cell_vertex_min_attr_ )
+                            / ( gfx_.cell_vertex_max_attr_
+                                - gfx_.cell_vertex_min_attr_ ) ;
                 }
-                size_t size = mesh()->cells.nb() * 3 * sizeof(double) ;
-                GEO::update_buffer_object( cells_VAO_, GL_ARRAY_BUFFER, size,
-                    data ) ;
-                GEO::update_buffer_object( tex_coord_VB_, GL_ARRAY_BUFFER, size,
-                    data ) ;
+                GEO::update_buffer_object( tex_coord_VB_, GL_ARRAY_BUFFER,
+                    size * sizeof(double), data ) ;
+                delete[] data ;
             }
         }
 
@@ -223,17 +224,18 @@ namespace RINGMesh {
                     if( !draw_cells_[GEO::MESH_TET] ) {
                         return ;
                     }
-                    /*if( cells_VAO_ != 0
+                    if( cells_VAO_ != 0
                         && glupPrimitiveSupportsArrayMode( GLUP_TETRAHEDRA ) ) {
                         glBindVertexArray( cells_VAO_ ) ;
-                        glBindBuffer(GL_ARRAY_BUFFER, tex_coord_VB_);
-                        glEnableVertexAttribArray(0);
-                        glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, 0);
+                        glBindBuffer( GL_ARRAY_BUFFER, tex_coord_VB_ ) ;
+                        glEnableVertexAttribArray( 2 ) ;
+                        glVertexAttribPointer( 2, 1, GL_DOUBLE, GL_FALSE, 0, 0 ) ;
                         glupDrawElements( GLUP_TETRAHEDRA,
                             GLUPsizei( mesh()->cells.nb() * 4 ), GL_UNSIGNED_INT,
                             0 ) ;
+                        glDisableVertexAttribArray( 2 ) ;
                         glBindVertexArray( 0 ) ;
-                    } else*/ {
+                    } else {
                         glupBegin( GLUP_TETRAHEDRA ) ;
                         for( index_t t = 0; t < mesh()->cells.nb(); ++t ) {
                             draw_attribute_vertex( mesh()->cells.vertex( t, 0 ) ) ;
@@ -384,7 +386,7 @@ namespace RINGMesh {
                 cell_vertex_max_attr_ ) ;
         }
         for( index_t r = 0; r < regions_.size(); r++ ) {
-//            regions_[r]->compute_vertex_attribute_buffer() ;
+            regions_[r]->compute_vertex_attribute_buffer() ;
         }
     }
 
