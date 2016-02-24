@@ -1342,7 +1342,7 @@ namespace RINGMesh {
 
         set_element_vertices( gme_t( GME::SURFACE, surface_id ), vertices, false ) ;
 
-        assign_surface_triangle_mesh( surface_id, new_triangle_corners ) ;
+        assign_surface_triangle_mesh( surface_id, new_triangle_corners, adjacent_triangles ) ;
     }
 
     void GeoModelBuilder::set_region_geometry(
@@ -2550,8 +2550,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderMesh::initialize_surface_builder()
     {
-        surface_builder_ = new GeoModelSurfaceFromMesh( mesh_,
-            surface_attribute_name_ ) ;
+        surface_builder_ = new GeoModelSurfaceFromMesh( mesh_, surface_attribute_name_ ) ;
         surface_builder_->initialize() ;
         nb_surface_attribute_values_ =
             surface_builder_->count_attribute_values_and_simplexes() ;
