@@ -75,6 +75,8 @@ namespace RINGMesh {
 
     /**
     * \brief Predicate to disable connection of facets in repair_connect_facet
+    * 
+    * @todo Encapsulate in a namespace, this is pollution
     */
     class MeshEdgesOnBorder
     {
@@ -232,6 +234,25 @@ namespace RINGMesh {
         connect_mesh_facets( mesh, edges ) ;
     }
    
+    class DoNothing {
+    public:
+        bool operator()( index_t v0, index_t v1 ) const
+        {
+            return false ;
+        }
+        void debug( index_t v0, index_t v1 ) const
+        {}
+    };
+
+    /*! 
+     * @brief Connect facets resistent to non-manifold edges unlike mesh.facets.connect()
+     *        which fails big time in that case.     
+     */
+    inline void RINGMESH_API connect_facets( GEO::Mesh& mesh )
+    {
+        DoNothing predicate ;
+        return repair_connect_facets( mesh, predicate ) ;
+    }
 
     /*!
     * @brief Returns true if there are colocated vertices in the Mesh
