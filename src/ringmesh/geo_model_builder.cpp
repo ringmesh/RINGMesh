@@ -1752,9 +1752,9 @@ namespace RINGMesh {
                         std::vector< index_t > shuffled_vertices( vertices.size() ) ;
                         std::copy( vertices.begin() + i, vertices.end(),
                             shuffled_vertices.begin() ) ;
-                        index_t nb_after_i( vertices.end() - vertices.begin() - i ) ;
-                        std::copy( vertices.begin() + 1, vertices.begin() + i,
-                            shuffled_vertices.begin() + nb_after_i ) ;
+                        index_t nb_copied( vertices.end() - vertices.begin() - i ) ;
+                        std::copy( vertices.begin()+1, vertices.begin()+i+1,
+                                   shuffled_vertices.begin() + nb_copied ) ;
 
                         vertices = shuffled_vertices ;
                         break ;
