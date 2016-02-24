@@ -105,18 +105,18 @@
 
 #include "uv.xpm"
 
-#define def_color( name, r, g, b )\
+#define define_color( name, r, g, b )\
     class name: public GetColor {\
     public:\
         virtual Color get_color() {\
             return Color( r, g, b ) ;\
         }\
-    }
+    }; \
+    ringmesh_register_color_creator( name, #name ) \
 
 namespace {
 
     using namespace RINGMesh ;
-
 
     struct Color {
         Color( unsigned char r_, unsigned char g_, unsigned char b_ )
@@ -126,39 +126,34 @@ namespace {
         unsigned char r ;
         unsigned char g ;
         unsigned char b ;
-    };
+    } ;
 
     class GetColor {
     public:
-        virtual ~GetColor() {}
+        virtual ~GetColor()
+        {
+        }
         virtual Color get_color() = 0 ;
-    };
+    } ;
     typedef GEO::Factory0< GetColor > ColorFactory ;
 #define ringmesh_register_color_creator( type, name ) \
     geo_register_creator( ColorFactory, type, name )
 
-    def_color( Yellow,  0xff, 0xff, 0x00 ) ;
-    ringmesh_register_color_creator( Yellow, "yellow" ) ;
-    def_color( Violet,  0x7f, 0x00, 0x7f ) ;
-    ringmesh_register_color_creator( Violet, "violet" ) ;
-    def_color( Indigo,  0xbf, 0x00, 0xbf ) ;
-    ringmesh_register_color_creator( Indigo, "indigo" ) ;
-    def_color( Blue,  0x00, 0x00, 0xff ) ;
-    ringmesh_register_color_creator( Blue, "blue" ) ;
-    def_color( Black,  0x00, 0x00, 0x00 ) ;
-    ringmesh_register_color_creator( Black, "black" ) ;
-    def_color( Orange,  0xff, 0x7f, 0x00 ) ;
-    ringmesh_register_color_creator( Orange, "orange" ) ;
-    def_color( White,  0xff, 0xff, 0xff ) ;
-    ringmesh_register_color_creator( White, "white" ) ;
-    def_color( Red,  0xff, 0x00, 0x00 ) ;
-    ringmesh_register_color_creator( Red, "red" ) ;
+    define_color( yellow, 0xff, 0xff, 0x00 ) ;
+    define_color( violet, 0x7f, 0x00, 0x7f ) ;
+    define_color( indigo, 0xbf, 0x00, 0xbf ) ;
+    define_color( blue, 0x00, 0x00, 0xff ) ;
+    define_color( black, 0x00, 0x00, 0x00 ) ;
+    define_color( orange, 0xff, 0x7f, 0x00 ) ;
+    define_color( white, 0xff, 0xff, 0xff ) ;
+    define_color( red, 0xff, 0x00, 0x00 ) ;
+    define_color( green, 0x00, 0xff, 0x00 ) ;
+    define_color( brown, 0x66, 0x33, 0x00 ) ;
 
-    void compute_colormap(
-        std::vector< Color >& colormap )
+    void compute_colormap( std::vector< Color >& colormap )
     {
         std::string command = GEO::CmdLine::get_arg( "attr:colormap" ) ;
-        std::vector<std::string> colors ;
+        std::vector< std::string > colors ;
         GEO::String::split_string( command, '/', colors ) ;
 
         colormap.reserve( colors.size() ) ;
@@ -168,6 +163,15 @@ namespace {
                 colormap.push_back( color_handler->get_color() ) ;
                 delete color_handler ;
             } else {
+                std::vector< std::string > names ;
+                ColorFactory::list_creators( names ) ;
+                GEO::Logger::err( "GetColor" )
+                    << "Currently supported colors are: " ;
+                for( index_t i = 0; i < names.size(); i++ ) {
+                    GEO::Logger::err( "GetColor" ) << " " << names[i] ;
+                }
+                GEO::Logger::err( "GetColor" ) << std::endl ;
+
                 throw RINGMeshException( "GetColor",
                     "Cannot find color " + colors[c] ) ;
             }
@@ -346,8 +350,8 @@ namespace {
 
         std::vector< Color > colormap ;
         compute_colormap( colormap ) ;
-        gluBuild1DMipmaps( GL_TEXTURE_1D, GL_RGB, colormap.size(), GL_RGB, GL_UNSIGNED_BYTE,
-            colormap.data() ) ;
+        gluBuild1DMipmaps( GL_TEXTURE_1D, GL_RGB, colormap.size(), GL_RGB,
+            GL_UNSIGNED_BYTE, colormap.data() ) ;
 
         glupTextureType( GLUP_TEXTURE_1D ) ;
         glupTextureMode( GLUP_TEXTURE_REPLACE ) ;
@@ -469,7 +473,8 @@ namespace {
             meshed_regions = true ;
             for( index_t r = 0; r < GM.nb_regions(); r++ ) {
                 const Region& region = GM.region( r ) ;
-                GEO::Attribute< double > attr( region.vertex_attribute_manager(), "toto" ) ;
+                GEO::Attribute< double > attr( region.vertex_attribute_manager(),
+                    "toto" ) ;
                 for( index_t v = 0; v < region.nb_vertices(); v++ ) {
                     attr[v] = region.vertex( v ).x ;
                 }
