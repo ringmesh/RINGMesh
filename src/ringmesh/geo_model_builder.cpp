@@ -2087,7 +2087,7 @@ namespace RINGMesh {
                         adjacent_gme_simplex = mesh_simplex_to_gme_simplex_[adjacent_simplex] ;
                     }
                     if( adjacent_gme_simplex.gme_id == gme_id ) {
-                        gme_corner_adjacent_gme_simplex_[ gme_id ][ gme_simplex ] =
+                        gme_corner_adjacent_gme_simplex_[ gme_id ][ gme_vertex ] =
                             adjacent_gme_simplex.gme_simplex_id ;
                     }
                 }
