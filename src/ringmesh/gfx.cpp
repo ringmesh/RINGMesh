@@ -44,7 +44,6 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
-#include <ringmesh/attributes.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_element.h>
 
