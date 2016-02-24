@@ -65,6 +65,9 @@ namespace RINGMesh {
         }
         virtual ~MeshElementGfx()
         {
+            if( vertex_attr_.is_bound() ) {
+                vertex_attr_.unbind() ;
+            }
         }
 
         void draw_vertices()
@@ -106,8 +109,8 @@ namespace RINGMesh {
         inline void draw_attribute_vertex( index_t v )
         {
             double d = ( vertex_attr_[v] - gfx_.cell_vertex_min_attr_ )
-                        / (gfx_.cell_vertex_max_attr_ - gfx_.cell_vertex_min_attr_ ) ;
-            glupTexCoord1d (d) ;
+                / ( gfx_.cell_vertex_max_attr_ - gfx_.cell_vertex_min_attr_ ) ;
+            glupTexCoord1d( d ) ;
             if( mesh_->vertices.single_precision() ) {
                 glupVertex3fv( mesh_->vertices.single_precision_point_ptr( v ) ) ;
             } else {
@@ -118,7 +121,7 @@ namespace RINGMesh {
     protected:
         bool vertices_visible_ ;
 
-        RINGMeshAttribute vertex_attr_ ;
+        GEO::Attribute< double > vertex_attr_ ;
 
         const GeoModelGfx& gfx_ ;
 
@@ -200,19 +203,21 @@ namespace RINGMesh {
                     return ;
                 }
                 set_GLUP_parameters() ;
+                update_buffer_objects_if_needed() ;
                 glupSetCellsShrink( GLUPfloat( shrink_ ) ) ;
                 if( mesh()->cells.are_simplices() ) {
                     if( !draw_cells_[GEO::MESH_TET] ) {
                         return ;
                     }
-//                    if( facets_VAO_ != 0
-//                        && glupPrimitiveSupportsArrayMode( GLUP_TETRAHEDRA ) ) {
-//                        glBindVertexArray( cells_VAO_ ) ;
-//                        glupDrawElements( GLUP_TETRAHEDRA,
-//                            GLUPsizei( mesh()->cells.nb() * 4 ), GL_UNSIGNED_INT,
-//                            0 ) ;
-//                        glBindVertexArray( 0 ) ;
-//                    } else
+                    /*
+                    if( cells_VAO_ != 0
+                        && glupPrimitiveSupportsArrayMode( GLUP_TETRAHEDRA ) ) {
+                        glBindVertexArray( cells_VAO_ ) ;
+                        glupDrawElements( GLUP_TETRAHEDRA,
+                            GLUPsizei( mesh()->cells.nb() * 4 ), GL_UNSIGNED_INT,
+                            0 ) ;
+                        glBindVertexArray( 0 ) ;
+                    } else*/
                     {
                         glupBegin( GLUP_TETRAHEDRA ) ;
                         for( index_t t = 0; t < mesh()->cells.nb(); ++t ) {
@@ -232,8 +237,6 @@ namespace RINGMesh {
                         if( !draw_cells_[type] ) {
                             continue ;
                         }
-                        glupSetColor3fv( GLUP_FRONT_AND_BACK_COLOR,
-                            cells_color_[type] ) ;
                         glupBegin( geogram_to_glup[type] ) ;
                         for( index_t cell = 0; cell < mesh()->cells.nb(); ++cell ) {
                             if( index_t( mesh()->cells.type( cell ) ) != type ) {
@@ -241,7 +244,8 @@ namespace RINGMesh {
                             }
                             for( index_t lv = 0;
                                 lv < mesh()->cells.nb_vertices( cell ); ++lv ) {
-                                draw_vertex( mesh()->cells.vertex( cell, lv ) ) ;
+                                draw_attribute_vertex(
+                                    mesh()->cells.vertex( cell, lv ) ) ;
                             }
                         }
                         glupEnd() ;
@@ -349,7 +353,8 @@ namespace RINGMesh {
             regions_.reserve( max_nb_meshed_regions ) ;
             for( index_t r = 0; r < max_nb_meshed_regions; r++ ) {
                 if( model_->region( r ).is_meshed() ) {
-                    regions_.push_back( new RegionGfx( *this, model_->region( r ) ) ) ;
+                    regions_.push_back(
+                        new RegionGfx( *this, model_->region( r ) ) ) ;
                 }
             }
         }
