@@ -263,6 +263,7 @@ namespace {
 
         /////////// Test texture
         glupMakeCurrent( glupCreateContext() ) ;
+//        glupEnable( GLUP_VERTEX_COLORS ) ;
         glupEnable( GLUP_TEXTURING ) ;
         glupEnable( GLUP_DRAW_MESH ) ;
 
@@ -294,6 +295,8 @@ namespace {
         glupTextureMode( GLUP_TEXTURE_REPLACE ) ;
         glupClipMode( GLUP_CLIP_WHOLE_CELLS ) ;
         /////////// Test texture
+            GM_gfx.set_geo_model( GM ) ;
+            GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
     }
 
     /**
@@ -450,8 +453,6 @@ namespace {
                 }
             }
         }
-            GM_gfx.set_geo_model( GM ) ;
-            GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
 
         get_bbox( GM, xyzmin, xyzmax ) ;
 
