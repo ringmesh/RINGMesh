@@ -97,6 +97,7 @@
 #include <geogram_gfx/third_party/freeglut/freeglut_ext.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
+#include <geogram/basic/factory.h>
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/logger.h>
 
@@ -104,8 +105,74 @@
 
 #include "uv.xpm"
 
+#define def_color( name, r, g, b )\
+    class name: public GetColor {\
+    public:\
+        virtual Color get_color() {\
+            return Color( r, g, b ) ;\
+        }\
+    }
+
 namespace {
+
     using namespace RINGMesh ;
+
+
+    struct Color {
+        Color( unsigned char r_, unsigned char g_, unsigned char b_ )
+            : r( r_ ), g( g_ ), b( b_ )
+        {
+        }
+        unsigned char r ;
+        unsigned char g ;
+        unsigned char b ;
+    };
+
+    class GetColor {
+    public:
+        virtual ~GetColor() {}
+        virtual Color get_color() = 0 ;
+    };
+    typedef GEO::Factory0< GetColor > ColorFactory ;
+#define ringmesh_register_color_creator( type, name ) \
+    geo_register_creator( ColorFactory, type, name )
+
+    def_color( Yellow,  0xff, 0xff, 0x00 ) ;
+    ringmesh_register_color_creator( Yellow, "yellow" ) ;
+    def_color( Violet,  0x7f, 0x00, 0x7f ) ;
+    ringmesh_register_color_creator( Violet, "violet" ) ;
+    def_color( Indigo,  0xbf, 0x00, 0xbf ) ;
+    ringmesh_register_color_creator( Indigo, "indigo" ) ;
+    def_color( Blue,  0x00, 0x00, 0xff ) ;
+    ringmesh_register_color_creator( Blue, "blue" ) ;
+    def_color( Black,  0x00, 0x00, 0x00 ) ;
+    ringmesh_register_color_creator( Black, "black" ) ;
+    def_color( Orange,  0xff, 0x7f, 0x00 ) ;
+    ringmesh_register_color_creator( Orange, "orange" ) ;
+    def_color( White,  0xff, 0xff, 0xff ) ;
+    ringmesh_register_color_creator( White, "white" ) ;
+    def_color( Red,  0xff, 0x00, 0x00 ) ;
+    ringmesh_register_color_creator( Red, "red" ) ;
+
+    void compute_colormap(
+        std::vector< Color >& colormap )
+    {
+        std::string command = GEO::CmdLine::get_arg( "attr:colormap" ) ;
+        std::vector<std::string> colors ;
+        GEO::String::split_string( command, '/', colors ) ;
+
+        colormap.reserve( colors.size() ) ;
+        for( index_t c = 0; c < colors.size(); c++ ) {
+            GetColor* color_handler = ColorFactory::create_object( colors[c] ) ;
+            if( color_handler ) {
+                colormap.push_back( color_handler->get_color() ) ;
+                delete color_handler ;
+            } else {
+                throw RINGMeshException( "GetColor",
+                    "Cannot find color " + colors[c] ) ;
+            }
+        }
+    }
 
     GeoModel GM ;
     GeoModelGfx GM_gfx ;
@@ -273,21 +340,14 @@ namespace {
         glGenTextures( 1, &texture ) ;
         glActiveTexture( GL_TEXTURE0 ) ;
         glBindTexture( GL_TEXTURE_1D, texture ) ;
+        glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP ) ;
         glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ) ;
         glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ) ;
-        static unsigned char test[24] = {
-            0x3f, 0x00, 0x3f, /* Dark Violet (for 8 colors�) */
-            0x7f, 0x00, 0x7f, /* Violet */
-            0xbf, 0x00, 0xbf, /* Indigo */
-            0x00, 0x00, 0xff, /* Blue */
-            0x00, 0xff, 0x00, /* Green */
-            0xff, 0xff, 0x00, /* Yellow */
-            0xff, 0x7f, 0x00, /* Orange */
-            0xff, 0x00, 0x00
-        } ;
 
-        gluBuild1DMipmaps( GL_TEXTURE_1D, GL_RGB, 8, GL_RGB, GL_UNSIGNED_BYTE,
-            test ) ;
+        std::vector< Color > colormap ;
+        compute_colormap( colormap ) ;
+        gluBuild1DMipmaps( GL_TEXTURE_1D, GL_RGB, colormap.size(), GL_RGB, GL_UNSIGNED_BYTE,
+            colormap.data() ) ;
 
         glupTextureType( GLUP_TEXTURE_1D ) ;
         glupTextureMode( GLUP_TEXTURE_REPLACE ) ;
@@ -471,6 +531,10 @@ int main( int argc, char** argv )
         GEO::CmdLine::declare_arg( "model", "",
             "filename of the structural model" ) ;
         GEO::CmdLine::declare_arg( "mesh", "", "filename of the volumetric mesh" ) ;
+
+        GEO::CmdLine::declare_arg_group( "attr", "Attribute handler" ) ;
+        GEO::CmdLine::declare_arg( "attr:colormap", "blue/white/red",
+            "Colormap with colors separeted with /" ) ;
 
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
