@@ -449,7 +449,6 @@ namespace {
                     attr[v] = region.vertex( v ).x ;
                 }
             }
-            DEBUG( "ON BIND?" ) ;
         }
             GM_gfx.set_geo_model( GM ) ;
             GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
