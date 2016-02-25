@@ -49,7 +49,6 @@
 
 namespace RINGMesh {
     class GeoModel ;
-    class MacroMesh ;
     class CornerGfx ;
     class LineGfx ;
     class SurfaceGfx ;
@@ -71,9 +70,7 @@ namespace RINGMesh {
         const GeoModel* geo_model() const ;
         void initialize() ;
 
-        void compute_cell_vertex_attribute_range() ;
         void bind_cell_vertex_attribute( const std::string& name ) ;
-        void compute_cell_attribute_range() ;
         void bind_cell_attribute( const std::string& name ) ;
 
         void draw_corners() ;
@@ -178,6 +175,10 @@ namespace RINGMesh {
             bool b ) ;
         void set_cell_regions_shrink( double s ) ;
         void set_cell_region_shrink( index_t m, double s ) ;
+
+    private:
+        void compute_cell_vertex_attribute_range() ;
+        void compute_cell_attribute_range() ;
 
     private:
         /// The GeoModel associated to the graphics

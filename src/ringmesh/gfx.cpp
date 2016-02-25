@@ -97,7 +97,16 @@ namespace RINGMesh {
 
         void bind_vertex_attribute( const std::string& name )
         {
-            vertex_attr_.bind( mesh()->vertices.attributes(), name ) ;
+            if( !vertex_attr_.is_bound() || vertex_attr_name_ != name ) {
+                vertex_attr_name_ = name ;
+                if( vertex_attr_.is_bound() ) {
+                    vertex_attr_.unbind() ;
+                }
+                if( GEO::Attribute< double >::is_defined(
+                    mesh()->vertices.attributes(), name ) ) {
+                    vertex_attr_.bind( mesh()->vertices.attributes(), name ) ;
+                }
+            }
         }
         void compute_vertex_attribute_range( double& min, double& max )
         {
@@ -110,7 +119,8 @@ namespace RINGMesh {
         }
         void compute_vertex_attribute_buffer()
         {
-            if( mesh()->vertices.nb() > 0 ) {
+            if( strcmp( glupCurrentProfileName(), "VanillaGL" )
+                && mesh()->vertices.nb() > 0 && vertex_attr_.is_bound() ) {
                 size_t size = mesh()->vertices.nb() ;
                 double* data = new double[size] ;
                 for( index_t v = 0; v < mesh()->vertices.nb(); v++ ) {
@@ -121,8 +131,14 @@ namespace RINGMesh {
                 }
                 GEO::update_buffer_object( tex_vertex_coord_VB_, GL_ARRAY_BUFFER,
                     size * sizeof(double), data ) ;
-
                 delete[] data ;
+
+                update_buffer_objects_if_needed() ;
+                glBindVertexArray( cells_VAO_ ) ;
+                glBindBuffer( GL_ARRAY_BUFFER, tex_vertex_coord_VB_ ) ;
+                glEnableVertexAttribArray( 2 ) ;
+                glVertexAttribPointer( 2, 1, GL_DOUBLE, GL_FALSE, 0, 0 ) ;
+                glBindVertexArray( 0 ) ;
             }
         }
 
@@ -139,6 +155,7 @@ namespace RINGMesh {
         bool vertices_visible_ ;
         GLuint tex_vertex_coord_VB_ ;
         GEO::Attribute< double > vertex_attr_ ;
+        std::string vertex_attr_name_ ;
 
         const GeoModelGfx& gfx_ ;
 
@@ -231,9 +248,6 @@ namespace RINGMesh {
                     if( cells_VAO_ != 0
                         && glupPrimitiveSupportsArrayMode( GLUP_TETRAHEDRA ) ) {
                         glBindVertexArray( cells_VAO_ ) ;
-                        glBindBuffer( GL_ARRAY_BUFFER, tex_vertex_coord_VB_ ) ;
-                        glEnableVertexAttribArray( 2 ) ;
-                        glVertexAttribPointer( 2, 1, GL_DOUBLE, GL_FALSE, 0, 0 ) ;
                         glupDrawElements( GLUP_TETRAHEDRA,
                             GLUPsizei( mesh()->cells.nb() * 4 ), GL_UNSIGNED_INT,
                             0 ) ;
@@ -273,7 +287,6 @@ namespace RINGMesh {
                 }
             } else if( cell_attr_.is_bound() ) {
                 set_GLUP_parameters() ;
-                update_buffer_objects_if_needed() ;
                 glupSetCellsShrink( GLUPfloat( shrink_ ) ) ;
                 if( mesh()->cells.are_simplices() ) {
                     if( !draw_cells_[GEO::MESH_TET] ) {
@@ -318,8 +331,7 @@ namespace RINGMesh {
                             glupTexCoord1d( d ) ;
                             for( index_t lv = 0;
                                 lv < mesh()->cells.nb_vertices( cell ); ++lv ) {
-                                draw_vertex(
-                                    mesh()->cells.vertex( cell, lv ) ) ;
+                                draw_vertex( mesh()->cells.vertex( cell, lv ) ) ;
                             }
                         }
                         glupEnd() ;
@@ -357,16 +369,12 @@ namespace RINGMesh {
 
         void compute_cell_attribute_buffer()
         {
-            if( mesh()->cells.nb() > 0 && mesh()->cells.are_simplices() ) {
+            if( strcmp( glupCurrentProfileName(), "VanillaGL" )
+                && mesh()->cells.nb() > 0 && mesh()->cells.are_simplices()
+                && cell_attr_.is_bound() ) {
                 size_t size = mesh()->cell_corners.nb() ;
                 double* vertices = new double[size * 3] ;
                 double* data = new double[size] ;
-//                for( index_t v = 0; v < mesh()->vertices.nb(); v++ ) {
-//                    const vec3& vertex = GEO::Geom::mesh_vertex( *mesh(), v ) ;
-//                    vertices[3 * v] = vertex.x ;
-//                    vertices[3 * v + 1] = vertex.y ;
-//                    vertices[3 * v + 2] = vertex.z ;
-//                }
                 index_t* indices = new index_t[size] ;
                 for( index_t c = 0; c < mesh()->cell_corners.nb(); c++ ) {
                     const vec3& vertex = GEO::Geom::mesh_vertex( *mesh(),
@@ -374,27 +382,26 @@ namespace RINGMesh {
                     vertices[3 * c] = vertex.x ;
                     vertices[3 * c + 1] = vertex.y ;
                     vertices[3 * c + 2] = vertex.z ;
-//                    indices[c] = mesh()->cell_corners.vertex( c ) ;
                     indices[c] = c ;
-                    data[c] =
-                        ( cell_attr_[c/4] - gfx_.cell_min_attr_ )
-                            / ( gfx_.cell_max_attr_
-                                - gfx_.cell_min_attr_ ) ;
+                    data[c] = ( cell_attr_[c / 4] - gfx_.cell_min_attr_ )
+                        / ( gfx_.cell_max_attr_ - gfx_.cell_min_attr_ ) ;
                 }
 
-                glGenVertexArrays(1, &c_VAO_);
-                glBindVertexArray(c_VAO_);
+                if( c_VAO_ == 0 ) {
+                    glGenVertexArrays( 1, &c_VAO_ ) ;
+                }
+                glBindVertexArray( c_VAO_ ) ;
                 GEO::update_buffer_object( cell_vertices_VB_, GL_ARRAY_BUFFER,
                     size * 3 * sizeof(double), vertices ) ;
 
-                glBindBuffer(GL_ARRAY_BUFFER, cell_vertices_VB_);
+                glBindBuffer( GL_ARRAY_BUFFER, cell_vertices_VB_ ) ;
                 glEnableVertexAttribArray( 0 ) ;
-                glVertexAttribPointer( 0, 3, GL_DOUBLE, GL_FALSE, 3*sizeof(double), 0 ) ;
+                glVertexAttribPointer( 0, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(double),
+                    0 ) ;
                 GEO::update_buffer_object( cell_indices_VB_, GL_ELEMENT_ARRAY_BUFFER,
                     size * sizeof(index_t), indices ) ;
 
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cell_indices_VB_);
-
+                glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cell_indices_VB_ ) ;
 
                 GEO::update_buffer_object( tex_cell_coord_VB_, GL_ARRAY_BUFFER,
                     size * sizeof(double), data ) ;
@@ -411,7 +418,16 @@ namespace RINGMesh {
 
         void bind_cell_attribute( const std::string& name )
         {
-            cell_attr_.bind( mesh()->cells.attributes(), name ) ;
+            if( !cell_attr_.is_bound() || cell_attr_name_ != name ) {
+                vertex_attr_name_ = name ;
+                if( cell_attr_.is_bound() ) {
+                    cell_attr_.unbind() ;
+                }
+                if( GEO::Attribute< double >::is_defined( mesh()->cells.attributes(),
+                    name ) ) {
+                    cell_attr_.bind( mesh()->cells.attributes(), name ) ;
+                }
+            }
         }
         void compute_cell_attribute_range( double& min, double& max )
         {
@@ -429,6 +445,7 @@ namespace RINGMesh {
         bool edges_visible_ ;
 
         GEO::Attribute< double > cell_attr_ ;
+        std::string cell_attr_name_ ;
 
         GLuint c_VAO_ ;
 
