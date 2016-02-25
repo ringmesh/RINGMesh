@@ -62,6 +62,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelGfx {
     ringmesh_disable_copy( GeoModelGfx ) ;
     friend class MeshElementGfx ;
+    friend class RegionGfx ;
     public:
         GeoModelGfx() ;
         ~GeoModelGfx() ;
@@ -72,6 +73,8 @@ namespace RINGMesh {
 
         void compute_cell_vertex_attribute_range() ;
         void bind_cell_vertex_attribute( const std::string& name ) ;
+        void compute_cell_attribute_range() ;
+        void bind_cell_attribute( const std::string& name ) ;
 
         void draw_corners() ;
         void draw_lines() ;
@@ -190,6 +193,8 @@ namespace RINGMesh {
         std::vector< RegionGfx* > regions_ ;
         double cell_vertex_min_attr_ ;
         double cell_vertex_max_attr_ ;
+        double cell_min_attr_ ;
+        double cell_max_attr_ ;
     } ;
 
 }

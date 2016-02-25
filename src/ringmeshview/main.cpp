@@ -87,6 +87,7 @@
 #ifdef RINGMESH_WITH_GRAPHICS
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geogram_extension.h>
 #include <ringmesh/gfx.h>
 #include <ringmesh/io.h>
 #include <ringmesh/utils.h>
@@ -358,7 +359,8 @@ namespace {
         glupClipMode( GLUP_CLIP_WHOLE_CELLS ) ;
         /////////// Test texture
         GM_gfx.set_geo_model( GM ) ;
-        GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
+//        GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
+        GM_gfx.bind_cell_attribute( "toto2" ) ;
     }
 
     /**
@@ -477,6 +479,11 @@ namespace {
                     "toto" ) ;
                 for( index_t v = 0; v < region.nb_vertices(); v++ ) {
                     attr[v] = region.vertex( v ).x ;
+                }
+                GEO::Attribute< double > attr2( region.cell_attribute_manager(),
+                    "toto2" ) ;
+                for( index_t c = 0; c < region.nb_cells(); c++ ) {
+                    attr2[c] = mesh_cell_center( region.mesh(), c ).x ;
                 }
             }
         }
