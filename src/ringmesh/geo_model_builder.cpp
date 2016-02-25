@@ -624,7 +624,7 @@ namespace RINGMesh {
          * @brief Returns the vertices of the last line built 
          */
         const std::vector< index_t >& vertices() const
-        {
+        {                         
             return cur_line_vertices_ ;
         }
 
@@ -1729,6 +1729,29 @@ namespace RINGMesh {
         model_.mesh.vertices.test_and_initialize() ;
     }
 
+
+    void reorder_line_vertices_to_start_at_corner( 
+        const GeoModel& geomodel, std::vector< index_t >& line_vertices )
+    {
+        if( geomodel.nb_corners() ==  0 ) {
+            // Maybe should throw an assertion, but I am not sure [JP]
+            return ;
+        }
+        for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
+            gme_t corner = find_corner( geomodel, line_vertices[ i ] ) ;
+            if( corner.is_defined() ) {                
+                std::vector< index_t > shuffled_vertices( line_vertices.size() ) ;
+                std::copy( line_vertices.begin()+i, line_vertices.end(),
+                           shuffled_vertices.begin() ) ;
+                index_t nb_copied( line_vertices.end()-line_vertices.begin()-i ) ;
+                std::copy( line_vertices.begin()+1, line_vertices.begin()+i+1,
+                           shuffled_vertices.begin() + nb_copied ) ;
+                line_vertices = shuffled_vertices ;
+                break ;
+            }
+        }
+    }   
+
     bool GeoModelBuilder::build_lines_and_corners_from_surfaces()
     {
         LineGeometryFromGeoModelSurfaces line_computer( model_,
@@ -1738,31 +1761,17 @@ namespace RINGMesh {
         while( new_line_was_built ) {
             new_line_was_built = line_computer.compute_next_line_geometry() ;
 
-            // Copy - we might need to modify them - not that big it is a Line
-            std::vector< index_t > vertices = line_computer.vertices() ;
-            const std::vector< index_t >& adjacent_surfaces =
-                line_computer.adjacent_surfaces() ;
-
-            // If this is a closed Line, the vertices can begin and end at any vertex
-            if( model().nb_corners() > 0 && vertices.back() == vertices.front() ) {
-                for( index_t i = 1; i + 1 < vertices.size(); ++i ) {
-                    gme_t corner = find_corner( model(), vertices[i] ) ;
-                    if( corner.is_defined() ) {
-                        // Shuffle the vector so that it begins and ends at this point
-                        std::vector< index_t > shuffled_vertices( vertices.size() ) ;
-                        std::copy( vertices.begin() + i, vertices.end(),
-                            shuffled_vertices.begin() ) ;
-                        index_t nb_copied( vertices.end() - vertices.begin() - i ) ;
-                        std::copy( vertices.begin()+1, vertices.begin()+i+1,
-                                   shuffled_vertices.begin() + nb_copied ) ;
-
-                        vertices = shuffled_vertices ;
-                        break ;
-                    }
-                }
+            // I know this is a copy - but should'nt be too big [JP]
+            std::vector< index_t > vertices = line_computer.vertices() ;            
+            bool is_line_closed = vertices.front()==vertices.back() ;
+            if( is_line_closed ) {
+                // Vertices can begin and end at any vertex
+                reorder_line_vertices_to_start_at_corner( model_, vertices ) ;
             }
+            
             GME::gme_t first_corner = find_or_create_corner( vertices.front() ) ;
             GME::gme_t second_corner = find_or_create_corner( vertices.back() ) ;
+            const std::vector< index_t >& adjacent_surfaces = line_computer.adjacent_surfaces() ;
 
             index_t backup_nb_lines = model().nb_lines() ;
             gme_t line_index = find_or_create_line( adjacent_surfaces, first_corner,
@@ -2535,8 +2544,11 @@ namespace RINGMesh {
                 surface_builder_->gme_simplices(i) ;
             const std::vector< index_t >& adjacent_triangles = 
                 surface_builder_->adjacent_gme_simplices(i) ;
+            // Set the Surface facets
+            // Set the adjacencies so that internal boundaries are not lost 
+            // when connecting the surface facets.
             set_surface_geometry_with_adjacencies( i, triangle_vertices, adjacent_triangles ) ;
-        }
+        } 
     }
 
     void GeoModelBuilderMesh::create_and_build_regions()
