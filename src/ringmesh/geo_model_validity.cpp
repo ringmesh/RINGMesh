@@ -448,40 +448,6 @@ namespace {
     }
 
  
-
-    /**
-     * \brief Predicate to be used by the function setting facet adjacencies in the GEO::Mesh
-     *  to disconnect of facets on a Line edge and detect non-manifold edges
-     *  that in no Line of the GeoModel
-     */
-    class EdgeOnLine {
-    public:
-        EdgeOnLine( const Mesh& input_mesh, const GeoModel& geomodel, Mesh& non_manifold )
-            : input_mesh_( input_mesh ), geomodel_( geomodel ), non_manifold_( non_manifold )
-        {}
-       
-        bool operator()( index_t v0, index_t v1 ) const
-        {
-            const vec3& p0 = input_mesh_.vertices.point( v0 );
-            const vec3& p1 = input_mesh_.vertices.point( v1 );
-            /// @todo This is quite unclear, plus probably very slow... [JP]
-            return is_edge_on_line( geomodel_, p0, p1 ).is_defined() ;
-        }
-        void debug( index_t v0, index_t v1 )
-        {
-            const vec3& p0 = input_mesh_.vertices.point( v0 );
-            const vec3& p1 = input_mesh_.vertices.point( v1 );
-
-            index_t new_v0 = non_manifold_.vertices.create_vertex( p0.data() ) ;
-            index_t new_v1 = non_manifold_.vertices.create_vertex( p1.data() ) ;
-            non_manifold_.edges.create_edge( new_v0, new_v1 ) ;
-        }
-    private:
-        const Mesh& input_mesh_ ;
-        const GeoModel& geomodel_ ;
-        Mesh& non_manifold_ ;
-    } ;
-
     /*----------------------------------------------------------------------------*/
 
     /*!
