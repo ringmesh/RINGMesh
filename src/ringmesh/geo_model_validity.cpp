@@ -1217,7 +1217,8 @@ namespace RINGMesh {
         * @note This is a quite expensive test.
         */
         void test_non_manifold_edges()
-        {            
+        {   
+            create_model_mesh() ;
             std::vector< index_t > non_manifold_edges ;
             connect_mesh_facets_except_on_mesh_edges( 
                 triangulated_global_model_mesh_, non_manifold_edges ) ;
