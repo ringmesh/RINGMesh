@@ -1943,10 +1943,12 @@ namespace RINGMesh {
     /*************************************************************************/
 
     /*!
-     * @brief Implementation detail: abstract base class
+     * @brief Implementation detail: abstract base class to create a GeoModelElements 
+     *        from SIMPLICIAL meshes
      * @details Manages the correspondence between a Mesh elements and
      *          GeoModelElements only known by indices.
-     * @warning Implemented only for Surface and Region and for simplicial meshes.
+     *
+     * @warning Implemented only for TRIANGULATED Surface and TETRAHEDRALIZED Region.
      * @note Used by GeoModelBuilderMesh.
      */
     class GeoModelElementFromMesh {
@@ -2062,20 +2064,30 @@ namespace RINGMesh {
                 } else {
                     assign_mesh_simplex_to_no_gme_simplex( mesh_simplex ) ;
                 }
-            }
-            // On refait un tour pour chopper les adjacences Ca doit marcher nan ???
+            }           
+        }
 
+        /*!
+         * Computes adjacencies between simplices for each GeoModelElement
+         * compute_gme_simplexes SHOULD have been called before, nothing done if it wasn't
+         */
+        void compute_gme_adjacencies()
+        {
+            if( gme_simplex_vertices_.empty() ) {
+                return ;
+            }            
             allocate_gme_corner_adjacent_gme_simplex() ;
 
+            index_t nb = nb_mesh_simplexes() ;
             for( index_t mesh_simplex = 0; mesh_simplex < nb; ++mesh_simplex ) {
-                GMESimplex gme = mesh_simplex_to_gme_simplex_[ mesh_simplex ];                
+                GMESimplex gme = mesh_simplex_to_gme_simplex_[ mesh_simplex ];
                 index_t gme_id = gme.gme_id ;
                 index_t gme_simplex = gme.gme_simplex_id ;
 
                 if( gme_id == NO_ID || gme_simplex == NO_ID ) {
                     continue ;
                 }
-                
+
                 for( index_t v = 0; v < nb_vertices_per_simplex(); ++v ) {
                     index_t gme_vertex = nb_vertices_per_simplex()*gme_simplex + v ;
                     index_t mesh_vertex = nb_vertices_per_simplex()*mesh_simplex + v ;
@@ -2084,7 +2096,7 @@ namespace RINGMesh {
 
                     GMESimplex adjacent_gme_simplex ;
                     if( adjacent_simplex != NO_ID ) {
-                        adjacent_gme_simplex = mesh_simplex_to_gme_simplex_[adjacent_simplex] ;
+                        adjacent_gme_simplex = mesh_simplex_to_gme_simplex_[ adjacent_simplex ] ;
                     }
                     if( adjacent_gme_simplex.gme_id == gme_id ) {
                         gme_corner_adjacent_gme_simplex_[ gme_id ][ gme_vertex ] =
@@ -2237,18 +2249,26 @@ namespace RINGMesh {
         virtual index_t adjacent_simplex_index( index_t facet_or_edge_id ) const = 0 ;
 
     protected:
+        // THE Mesh
         const GEO::Mesh& mesh_ ;
+        // Name of the attribute on the Mesh simplices identifying the GMEs
         std::string gme_attribute_name_ ;
+        // Attribute giving the GeoModelElement index on Mesh simplices
         GEO::Attribute< index_t > gme_attribute_ ;
+        // Number of simplices of the Mesh with a given attribute value
         std::map< index_t, index_t > nb_simplexes_per_attribute_value_ ;
+        // Mapping from the attribute value on the Mesh to a GME index in a GeoModel
         std::map< index_t, index_t > attribute_value_to_gme_id_ ;
+        // Mapping from a GME index in a GeoModel to the attribute value on the Mesh  
         std::vector< index_t > gme_id_to_attribute_value_ ;
-        std::vector< std::vector< index_t > > gme_simplex_vertices_ ;
-        /// Chopper les adjacences ??? possible ??
-        std::vector< std::vector < index_t > > gme_corner_adjacent_gme_simplex_ ;
-
+        // Vertex indices (in the Mesh) of the corners of the simplices per GME
+        std::vector< std::vector< index_t > > gme_simplex_vertices_ ;        
+        // Mapping from a mesh simplex index to a simplex index in a GME
         std::vector< GMESimplex > mesh_simplex_to_gme_simplex_ ;
+        // For each GME, store the adjacent simplex (in the GME) for each simplex corner
+        std::vector< std::vector < index_t > > gme_corner_adjacent_gme_simplex_ ;
     } ;
+
 
     class GeoModelSurfaceFromMesh: public GeoModelElementFromMesh {
     public:
@@ -2507,9 +2527,9 @@ namespace RINGMesh {
         assert_mesh_validity_for_surface_building() ;
 
         index_t nb_surfaces = model_.nb_surfaces() ;
-        // Map 1st surface with 1st lowest attribute value, 2nd with 2nd lowest, etc.
         surface_builder_->set_default_gme_id_attribute_mapping( nb_surfaces ) ;
         surface_builder_->compute_gme_simplexes() ;
+        surface_builder_->compute_gme_adjacencies() ;
         for( index_t i = 0; i != nb_surfaces; ++i ) {
             const std::vector< index_t >& triangle_vertices =
                 surface_builder_->gme_simplices(i) ;
