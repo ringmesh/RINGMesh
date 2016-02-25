@@ -104,8 +104,6 @@
 
 #include <algorithm>
 
-#include "uv.xpm"
-
 #define define_color( name, r, g, b )\
     class name: public GetColor {\
     public:\
@@ -359,8 +357,8 @@ namespace {
         glupClipMode( GLUP_CLIP_WHOLE_CELLS ) ;
         /////////// Test texture
         GM_gfx.set_geo_model( GM ) ;
-//        GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
-        GM_gfx.bind_cell_attribute( "toto2" ) ;
+        GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
+//        GM_gfx.bind_cell_attribute( "toto2" ) ;
     }
 
     /**
