@@ -572,17 +572,19 @@ namespace RINGMesh {
         add_geomodel_line_edges_to_mesh( geomodel, M ) ;
         add_geomodel_surface_facets_to_mesh( geomodel, M ) ;
         add_geomodel_region_tets_to_mesh( geomodel, M ) ;
-
-        // Connect facets 
-        connect_mesh_facets_except_on_mesh_edges( M ) ;
-
-        /// @todo Connect cells 
     }
 
-    /*******************************************************************************/
-    /*******************************************************************************/
+    void build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M, bool connect_facets )
+    {
+        build_mesh_from_geomodel( model, M ) ;        
+        if( connect_facets ) {
+            connect_mesh_facets_except_on_mesh_edges( M ) ;
+        }
+    }
 
 
+    /*******************************************************************************/
+    /*******************************************************************************/
 
     double model_element_size( const GeoModelElement& E )
     {
