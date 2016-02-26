@@ -60,7 +60,11 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
+
     try {
+
+        initialize_geogram() ;
+        initialize_ringmesh() ;
 
         // welcome
         GEO::Logger::div( "RINGMeshConvert" ) ;

@@ -527,6 +527,8 @@ int main( int argc, char** argv )
 
     try {
 
+        initialize_geogram() ;
+        initialize_ringmesh() ;
         GEO::Logger::div( "RINGMeshView" ) ;
         GEO::Logger::out( "" ) << "Welcome to RINGMeshView !" << std::endl ;
         GEO::Logger::out( "" ) << "People working on the project in RING"
@@ -608,6 +610,9 @@ int main( int argc, char** argv )
 #else
 #include <geogram/basic/logger.h>
 int main() {
+
+    initialize_geogram() ;
+    initialize_ringmesh() ;
     GEO::Logger::out("RINGMeshView")
     << "To compile RINGMesh viewer you need to configure "
     << "the project with the RINGMESH_WITH_GRAPHICS option ON"

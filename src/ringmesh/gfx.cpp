@@ -538,9 +538,6 @@ namespace RINGMesh {
             regions_[r]->compute_vertex_attribute_range( cell_vertex_min_attr_,
                 cell_vertex_max_attr_ ) ;
         }
-        for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_vertex_attribute_buffer() ;
-        }
     }
 
     void GeoModelGfx::compute_cell_attribute_range()
@@ -551,9 +548,6 @@ namespace RINGMesh {
             regions_[r]->compute_cell_attribute_range( cell_min_attr_,
                 cell_max_attr_ ) ;
         }
-        for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_cell_attribute_buffer() ;
-        }
     }
 
     void GeoModelGfx::bind_cell_vertex_attribute( const std::string& name )
@@ -562,6 +556,9 @@ namespace RINGMesh {
             regions_[r]->bind_vertex_attribute( name ) ;
         }
         compute_cell_vertex_attribute_range() ;
+        for( index_t r = 0; r < regions_.size(); r++ ) {
+            regions_[r]->compute_vertex_attribute_buffer() ;
+        }
     }
 
     void GeoModelGfx::bind_cell_attribute( const std::string& name )
@@ -570,6 +567,9 @@ namespace RINGMesh {
             regions_[r]->bind_cell_attribute( name ) ;
         }
         compute_cell_attribute_range() ;
+        for( index_t r = 0; r < regions_.size(); r++ ) {
+            regions_[r]->compute_cell_attribute_buffer() ;
+        }
     }
 
     /*!

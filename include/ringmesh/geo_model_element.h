@@ -196,7 +196,7 @@ namespace RINGMesh {
             index_t index ;
         } ;
 
-        const static index_t NO_ID = index_t( -1 ) ;
+        static const index_t NO_ID = index_t( -1 ) ;
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
         static GEOL_FEATURE determine_type(
@@ -289,11 +289,11 @@ namespace RINGMesh {
         {
             return id_ ;
         }
-        const index_t index() const
+        index_t index() const
         {
             return gme_id().index ;
         }
-        const TYPE type() const
+        TYPE type() const
         {
             return gme_id().type ;
         }
@@ -727,7 +727,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
-        const static index_t NO_ADJACENT = index_t( -1 ) ;
+        static const index_t NO_ADJACENT = index_t( -1 ) ;
 
         Surface( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, SURFACE, id ), tools( *this )

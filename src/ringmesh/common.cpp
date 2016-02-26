@@ -38,25 +38,7 @@
  *     FRANCE
  */
 
-#ifdef WIN32
-
-  #pragma section(".CRT$XCU",read)
-  #define INITIALIZER( f ) \
-    static void __cdecl f( void ) ; \
-    __declspec( allocate( ".CRT$XCU" ) ) void( __cdecl * f ## _ ) (void) = f ; \
-    static void __cdecl f( void )
-
-#elif defined( __GNUC__ )
-
-  #define INITIALIZER( f ) \
-    static void f( void ) __attribute__( ( constructor ) ) ; \
-    static void f( void )
-
-#endif
-
-#include <ringmesh/io.h>
-#include <ringmesh/tetra_gen.h>
-#include <ringmesh/geogram_extension.h>
+#include <ringmesh/common.h>
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/command_line.h>
@@ -66,11 +48,15 @@
 #   include <geogram_gfx/basic/common.h>
 #endif
 
-static bool initialized = false ;
-INITIALIZER( initialize ) {
-    if( !initialized ) {
-        initialized = true ;
-        GEO::initialize() ;
+#include <ringmesh/io.h>
+#include <ringmesh/geogram_extension.h>
+#include <ringmesh/tetra_gen.h>
+
+namespace RINGMesh {
+
+
+    void initialize_geogram()
+    {
         GEO::CmdLine::import_arg_group( "sys" ) ;
 #ifdef RINGMESH_DEBUG
         GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
@@ -83,6 +69,10 @@ INITIALIZER( initialize ) {
 #ifdef RINGMESH_WITH_GRAPHICS
         GEO::CmdLine::import_arg_group( "gfx" ) ;
 #endif
+    }
+
+    void initialize_ringmesh()
+    {
         RINGMesh::mesh_initialize() ;
         RINGMesh::TetraGen::initialize() ;
         RINGMesh::ringmesh_mesh_io_initialize() ;
