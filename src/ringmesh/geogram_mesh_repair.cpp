@@ -66,11 +66,11 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/points/colocate.h>
 
-
 /*!
 * @file Implementation of high level repairing functions on GEO::Mesh 
-* @note Code modified from geogram/mesh/mesh_repair.cpp
-* @author Jeanne Pellerin
+* @note Most of the code comes from geogram/mesh/mesh_repair.cpp 
+*       and is more or less modified.
+* @author Bruno Levy and Jeanne Pellerin
 */
 
 namespace {
@@ -83,6 +83,8 @@ namespace {
 
     index_t NO_FACET( NO_ID ) ;
 
+    /* Internal Edge structure used to match pairs of indices
+     */
     struct Edge {
         Edge( index_t v0, index_t v1 ) :
             vertices_( std::min( v0, v1 ), std::max( v0, v1 ) )
@@ -111,30 +113,26 @@ namespace {
        
     private:
         std::pair<index_t, index_t> vertices_ ;
-    };
+    };    
 
     /*!
-    * @brief
+    * @brief Internal - Functional to be used by repair_connect_facets
+    * @details Stores a set of Edges and anwers a request on the occurence of
+    *    an Edge in that set. Can also collect Edges send by the caller.
     */
     class MeshEdgesOnBorder {
     public:
-        /*!
-        * @param[in] mesh_edges_on_border Pair of mesh vertex indices on a boundary.
-        *            In each pair first < second.
-        */
         MeshEdgesOnBorder( const std::vector< index_t >& mesh_edges_on_border )
         {            
             for( index_t i = 0; i+1 < mesh_edges_on_border.size(); i+=2 ) {
-                index_t v0 = mesh_edges_on_border[ i ];
-                index_t v1 = mesh_edges_on_border[ i+1 ];
+                index_t v0 = mesh_edges_on_border[i] ;
+                index_t v1 = mesh_edges_on_border[ i+1 ] ;
                 edges_on_border_.insert( Edge( v0, v1 ) );
             }
         }
-
         bool operator()( index_t v0, index_t v1 ) const
         {
-            Edge edge( v0, v1 ) ;
-            return edges_on_border_.find( edge ) != edges_on_border_.end() ;
+            return edges_on_border_.count( Edge( v0, v1) ) == 1 ;
         }
         void non_manifold( index_t v0, index_t v1 ) 
         {
@@ -142,26 +140,37 @@ namespace {
         }
         bool non_manifold_edges( std::vector< index_t >& edges ) const
         {
-            edges.clear() ;
             if( !non_manifold_edges_.empty() ) {
-                edges.resize( 2*non_manifold_edges_.size() ) ;
-                index_t count = 0 ;
-                for( std::set<Edge>::const_iterator itr( non_manifold_edges_.begin() );
-                     itr!= non_manifold_edges_.end(); ++itr ) {
-                    edges[ count ] = itr->v0() ;
-                    edges[ count+1 ] = itr->v1();
-                    count += 2 ;
-                }
+                convert_edges_to_index_vector( non_manifold_edges_, edges ) ;
                 return true ;
             } else {
                 return false ;
             }
         }
+
+    private:
+        static void convert_edges_to_index_vector( const std::set< Edge >& edges,
+            std::vector< index_t >& edge_indices )
+        {
+            edge_indices.resize( 2*edges.size(), NO_ID ) ;
+            index_t count = 0 ;
+            for( std::set<Edge>::const_iterator itr( edges.begin() );
+                 itr!= edges.end(); ++itr
+                 ) {
+                edge_indices[ count ] = itr->v0() ;
+                edge_indices[ count+1 ] = itr->v1();
+                count += 2 ;
+            }
+        }
+
     private:
         std::set< Edge > edges_on_border_ ;
         std::set< Edge > non_manifold_edges_ ;
     } ;
    
+    /*!  
+     * @brief Internal - Functional that does nothing
+     */
     class DoNothing {
     public:
         bool operator()( index_t v0, index_t v1 ) const
@@ -170,10 +179,10 @@ namespace {
         }
         void non_manifold( index_t v0, index_t v1 ) const
         {}
-    } ;
+    };
 
     /*!
-    * @brief Connects the facets in a TRIANGULATED GEO::Mesh.
+    * @brief Connects the facets in a GEO::Mesh.
     * @details Reconstructs the corners.adjacent_facet links.
     *          Orientation is not checked
     * @note Modified from geogram to take into account a predicate to disconnect facets
@@ -181,13 +190,9 @@ namespace {
     *       The predicate should implement
     *            bool operator() (index_t v1, index_t v2) const ;
     *            void non_manifold(index_t v1, index_t v2) ;
-    *
-    * @note It is template and inline on purpose - Theorem from Bruno Levy.
-    *
-    * @warning DIFFICULT NOT CLEAN CODE
     */
     template< typename P > inline
-        void repair_connect_facets( GEO::Mesh& M, P is_border )
+        void repair_connect_facets( GEO::Mesh& M, P is_edge_border )
     {
         using GEO::index_t ;
 
@@ -216,6 +221,21 @@ namespace {
             v2c[ v ] = c ;
         }
 
+        // For each corner c, c2f[c] is the index of
+        // the facet incident to c (or use c/3 if
+        // M is triangulated).
+        vector<index_t> c2f;
+        if( !M.facets.are_simplices() ) {
+            c2f.assign( M.facet_corners.nb(), NO_FACET );
+            for( index_t f = 0; f<M.facets.nb(); ++f ) {
+                for( index_t c = M.facets.corners_begin( f );
+                    c<M.facets.corners_end( f ); ++c
+                ) {
+                    c2f[ c ] = f;
+                }
+            }
+        }
+
         for( index_t f1 = 0; f1 < M.facets.nb(); ++f1 ) {
             for( index_t c1 = M.facets.corners_begin( f1 );
                  c1 < M.facets.corners_end( f1 ); ++c1 ) {
@@ -232,17 +252,17 @@ namespace {
                     // edges list.
                     while( c2 != NO_CORNER ) {
                         if( c2 != c1 ) {
-                            index_t f2 = c2 / 3 ;
+                            index_t f2 = M.facets.are_simplices() ? c2/3 : c2f[ c2 ];
                             index_t c3 = M.facets.prev_corner_around_facet( f2, c2 ) ;
                             index_t v3 = M.facet_corners.vertex( c3 ) ;
                             // Check with standard orientation.
                             if( v3 == v2 ) {
-                                if( !is_border( v1, v2 ) ) {
+                                if( !is_edge_border( v1, v2 ) ) {
                                     if( adj_corner == NO_CORNER ) {
                                         adj_corner = c3 ;
                                     } else {
                                         // Unexpected non-manifold edge store it
-                                        is_border.non_manifold( v1, v2 ) ;
+                                        is_edge_border.non_manifold( v1, v2 ) ;
                                         adj_corner = NON_MANIFOLD ;
                                     }
                                 }
@@ -251,12 +271,12 @@ namespace {
                                 c3 = M.facets.next_corner_around_facet( f2, c2 ) ;
                                 v3 = M.facet_corners.vertex( c3 ) ;
                                 if( v3 == v2 ) {
-                                    if( !is_border( v1, v2 ) ) {
+                                    if( !is_edge_border( v1, v2 ) ) {
                                         if( adj_corner == NO_CORNER ) {
                                             adj_corner = c2 ;
                                         } else {
                                             // Unexpected non-manifold edge store it
-                                            is_border.non_manifold( v1, v2 ) ;
+                                            is_edge_border.non_manifold( v1, v2 ) ;
                                             adj_corner = NON_MANIFOLD ;
                                         }
                                     }
@@ -267,7 +287,7 @@ namespace {
                     }
                     if( adj_corner != NO_CORNER && adj_corner != NON_MANIFOLD ) {
                         M.facet_corners.set_adjacent_facet( adj_corner, f1 ) ;
-                        index_t f2 = adj_corner / 3 ;
+                        index_t f2 = M.facets.are_simplices() ? adj_corner/3 : c2f[ adj_corner ] ;
                         M.facet_corners.set_adjacent_facet( c1, f2 ) ;
                     }
                 }
@@ -275,6 +295,9 @@ namespace {
         }
     }
 
+    /*!
+     * @brief Fill the edges vector with vertex indices of the Mesh.edges vertices
+     */
     void get_mesh_edges( const GEO::Mesh& mesh, std::vector< index_t >& edges )
     {
         index_t nb_edges = mesh.edges.nb() ;
@@ -1033,10 +1056,6 @@ namespace {
                 << std::endl;
         }
     }
-
-    /************************************************************************/
-
-
 } // anonymous namespace
 
 namespace RINGMesh {
@@ -1071,9 +1090,6 @@ namespace RINGMesh {
         DoNothing predicate ;
         return repair_connect_facets( mesh, predicate ) ;
     }
-
-
-    /*******************************************************************************/
 
     index_t detect_mesh_colocated_vertices(
         const GEO::Mesh& M, double tolerance, GEO::vector< index_t >& old2new )
@@ -1149,8 +1165,6 @@ namespace RINGMesh {
         repair_reorient_facets_anti_moebius( mesh );
     }
 
-
-
     void delete_colocated_vertices( GEO::Mesh& M, GEO::vector< index_t >& old2new )
     {
         for( index_t i = 0; i < old2new.size(); i++ ) {
@@ -1162,7 +1176,6 @@ namespace RINGMesh {
         }
         M.vertices.delete_elements( old2new );
     }
-
 
     void repair_colocate_vertices( GEO::Mesh& M, double colocate_epsilon )
     {
