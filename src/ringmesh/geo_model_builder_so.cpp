@@ -1132,9 +1132,10 @@ namespace RINGMesh {
             const GEO::LineInput& line,
             TSolidLoadingStorage& load_storage )
         {
-            GME::gme_t interface = builder().create_element( GME::INTERFACE ) ;
-            load_storage.cur_interface_ = interface.index ;
-            builder().set_element_name( interface, line.field( 1 ) ) ;
+            GME::gme_t created_interface = builder().create_element(
+                GME::INTERFACE ) ;
+            load_storage.cur_interface_ = created_interface.index ;
+            builder().set_element_name( created_interface, line.field( 1 ) ) ;
         }
     } ;
 
