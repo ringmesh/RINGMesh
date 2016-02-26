@@ -108,6 +108,10 @@ template< class T > inline void ringmesh_unused( T const& )
 #include <stdexcept>
 
 namespace RINGMesh {
+
+    void RINGMESH_API initialize_geogram() ;
+    void RINGMESH_API initialize_ringmesh() ;
+
     /*!
      * RINGMesh exception class.
      * Example:

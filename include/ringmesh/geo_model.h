@@ -69,7 +69,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
 
     public:
-        const static index_t NO_ID = index_t( -1 ) ;
+        static const index_t NO_ID = index_t( -1 ) ;
 
         /*!
          * @brief Constructs an empty GeoModel

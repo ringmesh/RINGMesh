@@ -64,8 +64,8 @@ namespace RINGMesh {
     using GEO::Numeric::min_float64 ;
 
     /// @todo This epsilon definition is ... not great. What should be done ?[JP]
-    const float64 epsilon = 1E-8 ;
-    const float64 epsilon_sq = epsilon*epsilon ;
+    static const float64 epsilon = 1E-8 ;
+    static const float64 epsilon_sq = epsilon*epsilon ;
 
     // This is an array of 3 doubles
     using GEO::vec3 ;
@@ -75,7 +75,7 @@ namespace RINGMesh {
     using GEO::signed_index_t ;
 
     // This is the value used in RINGMesh for a invalid index
-    const static index_t NO_ID(-1) ;
+    static const index_t NO_ID = index_t(-1) ;
 
 }
 

@@ -59,6 +59,9 @@ int main( int argc, char** argv )
 
     try {
 
+        initialize_geogram() ;
+        initialize_ringmesh() ;
+
         GeoModel M ;
         std::string file_name( ringmesh_test_data_path ) ;
         file_name += "annot.ml" ;

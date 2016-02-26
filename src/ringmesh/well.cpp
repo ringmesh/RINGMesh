@@ -76,7 +76,7 @@ namespace {
                 }
             }
         }
-        return GME::NO_ID ;
+        return NO_ID ;
     }
 }
 

@@ -54,6 +54,9 @@ int main( int argc, char** argv )
 
     try {
 
+        initialize_geogram() ;
+        initialize_ringmesh() ;
+
         GEO::Logger::div( "RINGMeshStats" ) ;
         GEO::Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
         GEO::Logger::out( "" ) << "People working on the project in RING"
