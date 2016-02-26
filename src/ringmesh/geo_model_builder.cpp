@@ -1420,10 +1420,13 @@ namespace RINGMesh {
         index_t nb_facets = S.nb_cells() ;
         index_t nb_vertices = S.nb_vertices() ;
 
+        ///@todo Change representation of vertex_to_facets (without vector of vectors)
+
         // Allocate some space to store the ids of facets around each vertex
         std::vector< index_t > empty_vector ;
         empty_vector.reserve( 10 ) ;
-        std::vector< std::vector< index_t > > vertex_to_facets( nb_vertices, empty_vector ) ;
+        std::vector< std::vector< index_t > > vertex_to_facets( nb_vertices,
+            empty_vector ) ;
 
         for( index_t f = 0; f < nb_facets; ++f ) {
             for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
