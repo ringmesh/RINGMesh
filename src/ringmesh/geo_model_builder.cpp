@@ -1239,6 +1239,22 @@ namespace RINGMesh {
     }
 
     /*!
+     * @brief Set the points and tetras for a region
+     *
+     * @param[in] region_id Index of the regions
+     * @param[in] points Coordinates of the vertices
+     * @param[in] tetras Indices in the vertices vector to build tetras
+     */
+    void GeoModelBuilder::set_region_geometry(
+        index_t region_id,
+        const std::vector< vec3 >& points,
+        const std::vector< index_t >& tetras )
+    {
+        set_element_vertices( gme_t(GME::REGION, region_id), points, false ) ;
+        assign_region_tet_mesh( region_id, tetras ) ;
+    }
+
+    /*!
      * @brief Add a point to the GeoModel and not to one of its elements
      * @details To use when adding the points to the model before building its elements
      */
@@ -1436,10 +1452,13 @@ namespace RINGMesh {
         index_t nb_facets = S.nb_cells() ;
         index_t nb_vertices = S.nb_vertices() ;
 
+        ///@todo Change representation of vertex_to_facets (without vector of vectors)
+
         // Allocate some space to store the ids of facets around each vertex
-        std::vector< index_t > toto ;
-        toto.reserve( 10 ) ;
-        std::vector< std::vector< index_t > > vertex_to_facets( nb_vertices, toto ) ;
+        std::vector< index_t > empty_vector ;
+        empty_vector.reserve( 10 ) ;
+        std::vector< std::vector< index_t > > vertex_to_facets( nb_vertices,
+            empty_vector ) ;
 
         for( index_t f = 0; f < nb_facets; ++f ) {
             for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
@@ -1948,6 +1967,47 @@ namespace RINGMesh {
         // Finish up the model
         end_model() ;
     }
+
+    /*!
+     * @brief Build the Contacts
+     * @details One contact is a group of lines shared by the same Interfaces
+     */
+    void GeoModelBuilder::build_contacts()
+    {
+        std::vector< std::set< gme_t > > interfaces ;
+        for( index_t i = 0; i < model_.nb_lines(); ++i ) {
+            const Line& L = model_.line( i ) ;
+            std::set< gme_t > cur_interfaces ;
+            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
+                cur_interfaces.insert(
+                    model_.element( L.in_boundary_gme( j ) ).parent().gme_id() ) ;
+            }
+            gme_t contact_id ;
+            for( index_t j = 0; j < interfaces.size(); ++j ) {
+                if( cur_interfaces.size() == interfaces[j].size()
+                    && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
+                        interfaces[j].begin() ) ) {
+                    contact_id = gme_t( GME::CONTACT, j ) ;
+                    break ;
+                }
+            }
+            if( !contact_id.is_defined() ) {
+                contact_id = create_element( GME::CONTACT ) ;
+                ringmesh_debug_assert( contact_id.index == interfaces.size() ) ;
+                interfaces.push_back( cur_interfaces ) ;
+                // Create a name for this contact
+                std::string name = "contact_" ;
+                for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
+                    it != cur_interfaces.end(); ++it ) {
+                    name += model_.element( *it ).name() ;
+                    name += "_" ;
+                }
+                set_element_name( contact_id, name ) ;
+            }
+            add_element_child( contact_id, gme_t( GME::LINE, i ) ) ;
+        }
+    }
+
 
     /*************************************************************************/
 
@@ -3180,46 +3240,6 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Build the Contacts
-     * @details One contact is a group of lines shared by the same Interfaces
-     */
-    void GeoModelBuilderGocad::build_contacts()
-    {
-        std::vector< std::set< gme_t > > interfaces ;
-        for( index_t i = 0; i < model_.nb_lines(); ++i ) {
-            const Line& L = model_.line( i ) ;
-            std::set< gme_t > cur_interfaces ;
-            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                cur_interfaces.insert(
-                    model_.element( L.in_boundary_gme( j ) ).parent().gme_id() ) ;
-            }
-            gme_t contact_id ;
-            for( index_t j = 0; j < interfaces.size(); ++j ) {
-                if( cur_interfaces.size() == interfaces[j].size()
-                    && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
-                        interfaces[j].begin() ) ) {
-                    contact_id = gme_t( GME::CONTACT, j ) ;
-                    break ;
-                }
-            }
-            if( !contact_id.is_defined() ) {
-                contact_id = create_element( GME::CONTACT ) ;
-                ringmesh_debug_assert( contact_id.index == interfaces.size() ) ;
-                interfaces.push_back( cur_interfaces ) ;
-                // Create a name for this contact
-                std::string name = "contact_" ;
-                for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
-                    it != cur_interfaces.end(); ++it ) {
-                    name += model_.element( *it ).name() ;
-                    name += "_" ;
-                }
-                set_element_name( contact_id, name ) ;
-            }
-            add_element_child( contact_id, gme_t( GME::LINE, i ) ) ;
-        }
-    }
-
-    /*!
      * @brief Add a Surface to the model
      *
      * @param[in] interface_name Name of the parent. The parent MUST exist.
@@ -3245,6 +3265,18 @@ namespace RINGMesh {
         set_element_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
+    int GeoModelBuilderGocad::read_gocad_coordinates_system( const std::string& in )
+    {
+        if( in == "Elevation" ) {
+            return 1 ;
+        } else if( in == "Depth" ) {
+            return -1 ;
+        } else {
+            ringmesh_assert_not_reached;
+        }
+    }
+
+    /*************************************************************************/
 
     void GeoModelBuilderBM::load_file()
     {
