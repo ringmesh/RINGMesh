@@ -121,6 +121,7 @@ namespace RINGMesh {
         }
 
     private:
+        // This function read the z_sign too [PA]
         void read_number_of_vertices_and_triangles()
         {
             GEO::LineInput in( filename_ ) ;
