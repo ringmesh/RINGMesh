@@ -48,6 +48,13 @@ namespace RINGMesh {
 
     namespace CmdLine {
 
+        void import_arg_group_attr()
+        {
+            GEO::CmdLine::declare_arg_group( "attr", "Attribute handler" ) ;
+            GEO::CmdLine::declare_arg( "attr:colormap", "blue/white/red",
+                "Colormap with colors separeted with /" ) ;
+        }
+
         void import_arg_group_in()
         {
             GEO::CmdLine::declare_arg_group( "in", "Input data" ) ;
@@ -89,6 +96,8 @@ namespace RINGMesh {
                 import_arg_group_out() ;
             } else if( name == "stats" ) {
                 import_arg_group_stats() ;
+            } else if( name == "attr" ) {
+                import_arg_group_attr() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }
