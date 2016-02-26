@@ -991,8 +991,6 @@ namespace RINGMesh {
         save_edges( file_name, geomodel, edge_vertices ) ;
     }
 
-
-
     bool are_geomodel_elements_valid( const GeoModel& GM )
     {
         std::vector< bool > valid( GM.nb_elements( GME::ALL_TYPES ), true ) ;
@@ -1219,7 +1217,6 @@ namespace RINGMesh {
         {
             valid_ = false ;
         }
-
 
     private:
         const GeoModel& geomodel_ ;
