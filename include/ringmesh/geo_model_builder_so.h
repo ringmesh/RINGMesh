@@ -79,19 +79,7 @@ namespace RINGMesh {
             return *builder_ ;
         }
 
-        const GeoModelBuilderTSolid& builder() const
-        {
-            ringmesh_debug_assert( builder_ != nil ) ;
-            return *builder_ ;
-        }
-
         GeoModel& geomodel()
-        {
-            ringmesh_debug_assert( geomodel_ != nil ) ;
-            return *geomodel_ ;
-        }
-
-        const GeoModel& geomodel() const
         {
             ringmesh_debug_assert( geomodel_ != nil ) ;
             return *geomodel_ ;

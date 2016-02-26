@@ -479,7 +479,7 @@ namespace {
         index_t cell_facet_center_id )
     {
         index_t local_facet_id = cell_facet_center_id % 4 ;
-        index_t cell_id = 0.25 * ( cell_facet_center_id - local_facet_id ) ;
+        index_t cell_id = ( cell_facet_center_id - local_facet_id ) / 4 ;
         vec3 cell_facet_normal = GEO::mesh_cell_facet_normal(
             geomodel.region( region_id ).mesh(), cell_id, local_facet_id ) ;
         vec3 first_facet_normal = geomodel.surface( surface_id ).facet_normal( 0 ) ;
@@ -582,15 +582,15 @@ namespace {
             }
         }
 
-        /*!
-         * @brief Sets the given surface as regions boundaries
-         * @details Based on ColocaterANN, retrieves the regions bounded by the
-         * given surface. One side or the both sides of the surface
-         * could bound model regions.
-         * @param[in] surface_id Index of the surface
-         * @param[in] region_anns Vector of ColocaterANN of the model regions
-         * @param[in,out] geomodel_builder Builder of the GeoModel to consider
-         */
+    /*!
+     * @brief Sets the given surface as regions boundaries
+     * @details Based on ColocaterANN, retrieves the regions bounded by the
+     * given surface. One side or the both sides of the surface
+     * could bound model regions.
+     * @param[in] surface_id Index of the surface
+     * @param[in] region_anns Vector of ColocaterANN of the model regions
+     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
+     */
     void add_surface_to_region_boundaries(
         index_t surface_id,
         const std::vector< ColocaterANN* >& region_anns,
@@ -689,12 +689,12 @@ namespace {
                 }
             }
 
-            /*!
-             * @brief Sets the boundaries of region Universe
-             * @details A surface is set in the boundaries of region Universe if
-             * only one of its sides belongs to the boundaries of other regions.
-             * @param[in,out] geomodel_builder Builder of the GeoModel to consider
-             */
+    /*!
+     * @brief Sets the boundaries of region Universe
+     * @details A surface is set in the boundaries of region Universe if
+     * only one of its sides belongs to the boundaries of other regions.
+     * @param[in,out] geomodel_builder Builder of the GeoModel to consider
+     */
     void compute_universe_boundaries(
         const GeoModel& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
@@ -731,6 +731,7 @@ namespace {
         const std::vector< ColocaterANN* >& surface_anns,
         const std::vector< Box3d >& surface_boxes )
     {
+        /// @todo Replace "S.vertex( facet, ( edge + 1 ) % 3 )" [PA]
         const Surface& S = geomodel.surface( surface_id ) ;
         const vec3 barycenter = GEO::Geom::barycenter( S.vertex( facet, edge ),
             S.vertex( facet, ( edge + 1 ) % 3 ) ) ;
