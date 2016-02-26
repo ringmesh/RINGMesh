@@ -86,11 +86,7 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geogram_extension.h>
-#include <ringmesh/gfx.h>
-#include <ringmesh/io.h>
-#include <ringmesh/utils.h>
+#include <algorithm>
 
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram_gfx/glut_viewer/glut_viewer.h>
@@ -101,7 +97,12 @@
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/logger.h>
 
-#include <algorithm>
+#include <ringmesh/command_line.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geogram_extension.h>
+#include <ringmesh/gfx.h>
+#include <ringmesh/io.h>
+#include <ringmesh/utils.h>
 
 namespace {
 
@@ -470,10 +471,7 @@ int main( int argc, char** argv )
         GEO::CmdLine::declare_arg( "model", "",
             "filename of the structural model" ) ;
         GEO::CmdLine::declare_arg( "mesh", "", "filename of the volumetric mesh" ) ;
-
-        GEO::CmdLine::declare_arg_group( "attr", "Attribute handler" ) ;
-        GEO::CmdLine::declare_arg( "attr:colormap", "blue/white/red",
-            "Colormap with colors separeted with /" ) ;
+        CmdLine::import_arg_group( "attr" ) ;
 
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
