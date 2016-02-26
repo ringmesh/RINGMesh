@@ -41,7 +41,7 @@
 #include <vector>
 
 /* 
- * @file Access to high level repair operations on GEO::Mesh
+ * @file Access to repair operations on GEO::Mesh not provided in Geogram
  * @author Jeanne Pellerin
  */
 
@@ -50,40 +50,62 @@ namespace GEO {
 }
 
 namespace RINGMesh {
-    
     /*!
-     * @brief Connects the facets of a Mesh except along edges flagged so.
-     * @details Resistent to non-manifold edges AND resistent to badly oriented facets
+    * @brief Connects the facets of a Mesh with non-manifold edges
+    * @details Resistant to badly oriented facets
+    * @note For a Mesh with non-manifold edges (not the normal state of a Mesh)
+    *       mesh.facets.connect() fails big time without any warning.
+    */
+    void RINGMESH_API connect_facets( GEO::Mesh& mesh ) ;
+
+    /*!
+    * @brief Connects the facets of a Mesh except along the mesh edges.
+    * @details Resistent to non-manifold edges AND facet orientation
+    */
+    void RINGMESH_API connect_mesh_facets_except_on_mesh_edges( GEO::Mesh& mesh ) ;
+
+    /*!
+    * @brief Connects the facets of a Mesh except along the mesh edges.   
+    * @details Resistant to non-manifold edges AND bad facet orientation
+    * @param[out] non_manifold_edges Collect edges in neighboring more than 2 triangles 
+    *    For each edge are stored its two vert
+    */
+    void RINGMESH_API connect_mesh_facets_except_on_mesh_edges( 
+        GEO::Mesh& mesh, std::vector<index_t>& non_manifold_edges ) ;
+
+    /*!
+     * @brief Connects the facets of a Mesh except along given edges.
+     * @details Resistant to non-manifold edges AND bad facet orientation
      */
     void RINGMESH_API connect_mesh_facets( GEO::Mesh& mesh,
         const std::vector<index_t>& border_edges ) ;
     
     /*!
-    * @brief Connects the facets of a Mesh except along the mesh edges.
-    * @details Resistent to non-manifold edges AND resistent to badly oriented facets
-    */
-    void RINGMESH_API connect_mesh_facets_except_on_mesh_edges( GEO::Mesh& mesh ) ;
-
-    void RINGMESH_API connect_mesh_facets_except_on_mesh_edges( GEO::Mesh& mesh,
-        std::vector<index_t>& non_manifold_edges ) ;
-
-    /*!     
-     * @brief Connects the facets of a Mesh with non-manifold edges 
-     * @details Resistent to badly oriented facets     
-     * @note For a Mesh with non-manifold edges (not the normal state of a Mesh) 
-     *       mesh.facets.connect() fails big time without any warning.     
+     * @brief Remove the degenerate facets of a GEO::Mesh
+     * @details A facet is degenerate if it is incident twice to the same
+     *   vertex. Degenerate triangular facets are deleted, degenerate polygonal facets
+     *   with at least 3 different vertices are repaired.
      */
-    void RINGMESH_API connect_facets( GEO::Mesh& mesh ) ;
-
     void RINGMESH_API remove_degenerate_facets( GEO::Mesh& mesh ) ;
 
+    /*!
+     * @brief Remove facet duplicatas in a Mesh
+     * @details Two facets are duplicatas is they are incident to the same 
+     *    vertices whatever the orientation.
+     */
     void RINGMESH_API remove_facet_duplicates( GEO::Mesh& mesh ) ;
     
+    /*!
+     * @brief Remove facet duplicatas and degenerate facets.
+     */
     void RINGMESH_API remove_degenerate_and_duplicate_facets( GEO::Mesh& mesh ) ;
 
+    /*!
+     * @brief Reorient consistently the facets of a Mesh after facet connection.
+     * @warning Facet adjacencies must be available.
+     */
     void RINGMESH_API repair_mesh_facet_orientation( GEO::Mesh& mesh ) ;
    
-
     /*!
     * @brief Returns true if there are colocated vertices in the Mesh
     * @details This is a wrapper around Geogram colocate functions.
