@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -42,6 +37,7 @@
 #define __RINGMESH_GEO_MODEL__
 
 #include <ringmesh/common.h>
+
 #include <ringmesh/geo_model_element.h>
 #include <ringmesh/geo_model_mesh.h>
 
@@ -64,7 +60,7 @@ namespace RINGMesh {
      * by its boundary surfaces and whose regions can be optionally meshed
      */
     class RINGMESH_API GeoModel {
-        ringmesh_disable_copy( GeoModel ) ;
+    ringmesh_disable_copy( GeoModel ) ;
         friend class GeoModelBuilder ;
         friend class GeoModelEditor ;
 
@@ -93,7 +89,7 @@ namespace RINGMesh {
         {
             return name_ ;
         }
-     
+
         /*!
          * \name Generic GeoModelElement accessors
          * @{
@@ -112,14 +108,14 @@ namespace RINGMesh {
                 ringmesh_assert( !nb_elements_per_type_.empty() ) ;
                 return nb_elements_per_type_.back() ;
             } else {
-                ringmesh_debug_assert_not_reached ;
+                ringmesh_debug_assert_not_reached;
                 return 0 ;
             }
         }
 
         /*!
          * @brief Returns a const reference the identified GeoModelElement
-         * @param[in] id Type and index of the element. For the 
+         * @param[in] id Type and index of the element. For the
          * pair (Region, NO_ID) universe region is returned.
          * @pre Element identification is valid.
          */
@@ -153,7 +149,6 @@ namespace RINGMesh {
         {
             return mesh_element( GME::gme_t( element_type, element_index ) ) ;
         }
-
 
         /*! @}
          * \name Specialized accessors.
@@ -201,12 +196,12 @@ namespace RINGMesh {
 
         const Surface& surface( index_t index ) const
         {
-            return dynamic_cast< const Surface& >( element( GME::SURFACE, index ) ) ;            
+            return dynamic_cast< const Surface& >( element( GME::SURFACE, index ) ) ;
         }
 
         const Region& region( index_t index ) const
         {
-            return dynamic_cast<const Region&>( element( GME::REGION, index ) ) ;          
+            return dynamic_cast<const Region&>( element( GME::REGION, index ) ) ;
         }
 
         const GeoModelElement& contact( index_t index ) const
@@ -240,10 +235,10 @@ namespace RINGMesh {
         }
 
     private:
-        /*! 
+        /*!
          * @brief Convert a global BME index into a typed index
-         * @details Relies on the nb_elements_per_type_ vector that 
-         *          must be up to date at all times 
+         * @details Relies on the nb_elements_per_type_ vector that
+         *          must be up to date at all times
          *          See the GeoModelBuilder::end_model() function
          * @param[in] global A BME id of TYPE - ALL_TYPES
          * @return A BME id of an element of the model, or a invalid one if nothing found
@@ -253,7 +248,7 @@ namespace RINGMesh {
             ringmesh_debug_assert( global.type == GME::ALL_TYPES ) ;
 
             index_t t = NO_ID ;
-            for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
+            for( index_t i = 1 ; i < nb_elements_per_type_.size() ; i++ ) {
                 if( global.index >= nb_elements_per_type_[i - 1]
                     && global.index < nb_elements_per_type_[i] ) {
                     t = i - 1 ;
@@ -301,7 +296,7 @@ namespace RINGMesh {
                 case GME::LAYER:
                     return layers_ ;
                 default:
-                    ringmesh_assert_not_reached;
+                    ringmesh_assert_not_reached ;
                     return surfaces_ ;
             }
         }
@@ -310,7 +305,7 @@ namespace RINGMesh {
          * @brief Modifiable pointer to an element of the model
          * @param[in] id Type and index of the element. For the
          * pair (Region, NO_ID) universe region is returned.
-         * 
+         *
          * @pre Element identification is valid.
          */
         GeoModelElement* element_ptr( const GME::gme_t& id ) const
@@ -349,21 +344,20 @@ namespace RINGMesh {
             const GME::gme_t& id ) const
         {
             ringmesh_debug_assert( GME::has_mesh( id.type ) ) ;
-            return dynamic_cast<GeoModelMeshElement&>(
-                modifiable_element( id ) ) ;
+            return dynamic_cast<GeoModelMeshElement&>( modifiable_element( id ) ) ;
         }
 
         /*!
-        * @brief Clears and fills the model nb_elements_per_type_ vector
-        * @details See global element access with GeoModel::element( BME::TYPE, index_t )
-        */
+         * @brief Clears and fills the model nb_elements_per_type_ vector
+         * @details See global element access with GeoModel::element( BME::TYPE, index_t )
+         */
         void init_global_model_element_access()
         {
             nb_elements_per_type_.clear() ;
 
             index_t count = 0 ;
             nb_elements_per_type_.push_back( count ) ;
-            for( index_t type = GME::CORNER; type < GME::NO_TYPE; type++ ) {
+            for( index_t type = GME::CORNER ; type < GME::NO_TYPE ; type++ ) {
                 count += nb_elements( ( GME::TYPE ) type ) ;
                 nb_elements_per_type_.push_back( count ) ;
             }
@@ -377,9 +371,9 @@ namespace RINGMesh {
         std::string name_ ;
 
         /*!
-        * \name Mandatory elements of the model
-        * @{
-        */
+         * \name Mandatory elements of the model
+         * @{
+         */
 
         /*!
          * @brief Elements that are Corner
@@ -405,9 +399,9 @@ namespace RINGMesh {
         Region universe_ ;
 
         /*! @}
-        * \name Optional geological elements
-        * @{
-        */
+         * \name Optional geological elements
+         * @{
+         */
 
         /*!
          * @brief Elements of type CONTACT
@@ -424,10 +418,10 @@ namespace RINGMesh {
         std::vector< GeoModelElement* > layers_ ;
 
         /*!
-        * @}
-        */
+         * @}
+         */
 
-        /* 
+        /*
          * @brief Global access to GeoModelElements.
          * It MUST be updated if one element is added.
          * @warning It must be up to date at all times

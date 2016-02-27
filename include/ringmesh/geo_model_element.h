@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -38,17 +33,20 @@
  *     FRANCE
  */
 
-/*! \author Jeanne Pellerin and Arnaud Botella */
+ /*!
+ * @file Declaration of GeoModelElement and all its children classes
+ * @author Jeanne Pellerin  and Arnaud Botella 
+ */
 
 #ifndef __RINGMESH_GEO_MODEL_ELEMENT__
 #define __RINGMESH_GEO_MODEL_ELEMENT__
 
 #include <ringmesh/common.h>
 
-#include <geogram/mesh/mesh.h>
-
 #include <vector>
 #include <string>
+
+#include <geogram/mesh/mesh.h>
 
 namespace GEO {
     class MeshFacetsAABB ;
@@ -61,12 +59,12 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-   
+
     /*!
      * @brief Generic class describing one element of a GeoModel
      */
     class RINGMESH_API GeoModelElement {
-        ringmesh_disable_copy( GeoModelElement ) ;
+    ringmesh_disable_copy( GeoModelElement ) ;
         friend class GeoModelEditor ;
     public:
         /*!
@@ -248,7 +246,6 @@ namespace RINGMesh {
         {
         }
 
-
         /*!@}
          * \name Validity checks
          * @{
@@ -375,8 +372,7 @@ namespace RINGMesh {
             TYPE element_type,
             index_t id,
             const std::string& name = "",
-            GEOL_FEATURE geological_feature = NO_GEOL
-            )
+            GEOL_FEATURE geological_feature = NO_GEOL )
             :
                 model_( model ),
                 id_( element_type, id ),
@@ -384,7 +380,6 @@ namespace RINGMesh {
                 geol_feature_( geological_feature )
         {
         }
-
 
     protected:
         /// Reference to the GeoModel owning this element
@@ -415,15 +410,17 @@ namespace RINGMesh {
     typedef GeoModelElement GME ;
 
     /*!
-    * @brief Vertex in a GeoModelElement
-    */
+     * @brief Vertex in a GeoModelElement
+     */
     struct GMEVertex {
         GMEVertex( GME::gme_t t, index_t vertex_id_in )
             : gme_id( t ), v_id( vertex_id_in )
-        {}
+        {
+        }
         GMEVertex()
             : gme_id(), v_id( NO_ID )
-        {}
+        {
+        }
         bool operator<( const GMEVertex& rhs ) const
         {
             if( gme_id != rhs.gme_id ) {
@@ -446,7 +443,6 @@ namespace RINGMesh {
         index_t v_id ;
     } ;
 
-
     /*!
      * @brief Abstract base class for GeoModelElement 
      *        which have a geometrical representation
@@ -454,8 +450,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelMeshElement: public GeoModelElement {
     ringmesh_disable_copy( GeoModelMeshElement ) ;
-    friend class GeoModelEditor ;
-    friend class GeoModelBuilder ;
+        friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
     public:
 
         /*!
@@ -501,7 +497,7 @@ namespace RINGMesh {
          * @todo changer le nom
          */
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const = 0 ;
-        
+
         /*!
          * @brief Number of vertices of the mesh
          */
@@ -511,46 +507,46 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Global index in GeoModelMesh from the
-        * the local one
-        * @param[in] v Vertex index in the GeoModelMeshElement
-        */
+         * @brief Global index in GeoModelMesh from the
+         * the local one
+         * @param[in] v Vertex index in the GeoModelMeshElement
+         */
         index_t model_vertex_id( index_t v = 0 ) const
         {
-            ringmesh_debug_assert( v < nb_vertices() ) ;            
-            return model_vertex_id_[ v ] ;
+            ringmesh_debug_assert( v < nb_vertices() ) ;
+            return model_vertex_id_[v] ;
         }
 
         index_t model_vertex_id( index_t me, index_t lv ) const
-        {            
-            return model_vertex_id( gmme_vertex_index( me, lv) ) ;
+        {
+            return model_vertex_id( gmme_vertex_index( me, lv ) ) ;
         }
 
         /*!
-        * @brief Coordinates of a GeoModelMeshElement
-        * @param[in] v Index of the vertex in the GeoModelMeshElement
-        */
+         * @brief Coordinates of a GeoModelMeshElement
+         * @param[in] v Index of the vertex in the GeoModelMeshElement
+         */
         const vec3& vertex( index_t v = 0 ) const
         {
             ringmesh_debug_assert( v < nb_vertices() ) ;
             return mesh_.vertices.point( v ) ;
         }
-      
+
         const vec3& vertex( index_t me, index_t lv ) const
         {
             return vertex( gmme_vertex_index( me, lv ) ) ;
         }
 
         /*!
-        * @brief Index of the first vertex corresponding to the input model index
-        * @details Returns NO_ID if no matching point is found.
-        *
-        * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
-        * @todo changer le nom
-        */
-        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ; 
+         * @brief Index of the first vertex corresponding to the input model index
+         * @details Returns NO_ID if no matching point is found.
+         *
+         * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
+         * @todo changer le nom
+         */
+        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;
 
-        std::vector<index_t> gme_vertex_indices( index_t model_vertex_id ) const ;
+        std::vector< index_t > gme_vertex_indices( index_t model_vertex_id ) const ;
 
         /*!
          * @}
@@ -635,7 +631,7 @@ namespace RINGMesh {
         }
 
         // Only one possible local index 
-        virtual index_t gmme_vertex_index( index_t /*me*/, index_t /*lv*/ ) const 
+        virtual index_t gmme_vertex_index( index_t /*me*/, index_t /*lv*/) const
         {
             return 0 ;
         }
@@ -670,9 +666,9 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Correspondance of vertex index \param lv in a mesh element \param me
-        * and vertex index in the GMME
-        */
+         * @brief Correspondance of vertex index \param lv in a mesh element \param me
+         * and vertex index in the GMME
+         */
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
         {
             ringmesh_debug_assert( me < nb_cells() ) ;
@@ -694,14 +690,13 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const ;
 
     } ;
-    
 
     // Forward declaration
     class Surface ;
 
     /*
-    * @todo Comment
-    */
+     * @todo Comment
+     */
     class RINGMESH_API SurfaceTools {
     public:
         SurfaceTools( const Surface& surface ) ;
@@ -717,7 +712,6 @@ namespace RINGMesh {
         mutable ColocaterANN* ann_ ;
     } ;
 
-
     /*!
      * @brief A GeoModelElement of type SURFACE
      *
@@ -731,9 +725,12 @@ namespace RINGMesh {
 
         Surface( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, SURFACE, id ), tools( *this )
-        {}
+        {
+        }
 
-        ~Surface(){}
+        ~Surface()
+        {
+        }
 
         /*!
          * @brief Number of facets
@@ -744,21 +741,21 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Correspondance of vertex index \param lv in a mesh element \param me
-        * and vertex index in the GMME
-        */
+         * @brief Correspondance of vertex index \param lv in a mesh element \param me
+         * and vertex index in the GMME
+         */
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
         {
             ringmesh_debug_assert( me < nb_cells() ) ;
             ringmesh_debug_assert( lv < mesh_.facets.nb_vertices( me ) ) ;
             return mesh_.facets.vertex( me, lv ) ;
         }
-         
+
         bool is_simplicial() const
         {
             return mesh_.facets.are_simplices() ;
         }
-      
+
         /*!
          * \name Accessors to facet and vertices
          * @{
@@ -819,7 +816,7 @@ namespace RINGMesh {
         {
             return gmme_vertex_index( f, v ) ;
         }
-        
+
         /*!
          * @brief Returns a vertex surface index from its model index \param model_vertex_id
          * @details If there are two points, returns the first one.
@@ -868,7 +865,9 @@ namespace RINGMesh {
         vec3 facet_normal( index_t facet_index ) const ;
         vec3 facet_barycenter( index_t facet_index ) const ;
         double facet_area( index_t facet_index ) const ;
-        index_t closest_vertex_in_facet( index_t facet_index, const vec3& to_point ) const ;
+        index_t closest_vertex_in_facet(
+            index_t facet_index,
+            const vec3& to_point ) const ;
 
         /*! @}
          * \name Adjacencies request
@@ -925,10 +924,8 @@ namespace RINGMesh {
 
     private:
         virtual bool is_mesh_valid() const ;
-        	    
+
     } ;
-
-
 
     // Defined just after this class
     class Region ;
@@ -965,15 +962,14 @@ namespace RINGMesh {
         {
         }
 
-        Region( 
-            const GeoModel& model, 
+        Region(
+            const GeoModel& model,
             index_t id,
             const std::string& name,
-            GEOL_FEATURE geological_feature
-            )
+            GEOL_FEATURE geological_feature )
             :
-            GeoModelMeshElement( model, REGION, id, name, geological_feature ),
-            tools( *this )
+                GeoModelMeshElement( model, REGION, id, name, geological_feature ),
+                tools( *this )
         {
         }
 
@@ -1002,12 +998,12 @@ namespace RINGMesh {
 
         bool is_on_border( index_t cell, index_t facet ) const
         {
-            return adjacent_cell(cell, facet) == GEO::NO_CELL;
+            return adjacent_cell( cell, facet ) == GEO::NO_CELL ;
         }
 
         index_t adjacent_cell( index_t cell, index_t facet ) const
         {
-            return mesh_.cells.adjacent( cell, facet );
+            return mesh_.cells.adjacent( cell, facet ) ;
         }
 
         bool is_meshed() const
@@ -1050,8 +1046,6 @@ namespace RINGMesh {
     public:
         RegionTools tools ;
     } ;
-
-
 
 } // namespace
 

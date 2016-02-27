@@ -32,51 +32,58 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
- 
- /*!
- * @file Initialization of the RINGMesh and geogram library on loading
- * @author Arnaud Botella
- */
 
-#include <ringmesh/common.h>
+#include <ringmesh/ringmesh_tests_config.h>
 
-#include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
-
-#ifdef RINGMESH_WITH_GRAPHICS
-#   include <geogram_gfx/basic/common.h>
-#endif
-
+#include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
-#include <ringmesh/geogram_extension.h>
-#include <ringmesh/geo_model_builder_so.h>
-#include <ringmesh/tetra_gen.h>
 
-namespace RINGMesh {
+#include <geogram/basic/logger.h>
 
+/*!
+* @file Test GeoModel building from a mesh loaded from a .so file
+* @author Pierre Anquez
+*/
 
-    void initialize_geogram()
-    {
-        GEO::CmdLine::import_arg_group( "sys" ) ;
-#ifdef RINGMESH_DEBUG
-        GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
-#endif
-        GEO::CmdLine::set_arg( "sys:FPE", true ) ;
-        GEO::CmdLine::import_arg_group( "algo" ) ;
-        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
-        GEO::CmdLine::import_arg_group( "log" ) ;
-        GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
-#ifdef RINGMESH_WITH_GRAPHICS
-        GEO::CmdLine::import_arg_group( "gfx" ) ;
-#endif
+int main( int argc, char** argv )
+{
+    using namespace RINGMesh ;
+
+    GEO::Logger::out( "TEST" ) <<
+        "Import a meshed GeoModel from .so" << std::endl ;
+
+    std::string file_name( ringmesh_test_data_path ) ;
+    file_name += "modelA4.so" ;
+
+    GeoModel model ;
+    geomodel_volume_load( file_name, model ) ;
+
+    std::string output_surf_file_name( ringmesh_test_output_path ) ;
+    output_surf_file_name += "modelA4_surf.bm" ;
+    geomodel_surface_save( model, output_surf_file_name ) ;
+
+    std::string output_vol_file_name( ringmesh_test_output_path ) ;
+    output_vol_file_name += "modelA4_vol.gm" ;
+    geomodel_volume_save( model, output_vol_file_name ) ;
+
+    bool res = true ;
+    // Check number of elements in the imported GeoModel (from TSolid file)
+    if ( model.nb_corners() != 52 ||
+         model.nb_lines() != 98 ||
+         model.nb_surfaces() != 55 ||
+         model.nb_regions() != 8 ||
+         model.nb_interfaces() != 11 ||
+         model.nb_contacts() != 38 ||
+         model.mesh.vertices.nb() != 6691 ||
+         model.mesh.facets.nb() != 10049 ||
+         model.mesh.cells.nb() != 34540 ) {
+        res = false ;
+    }
+    if( res ) {
+        GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    } else {
+        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
     }
 
-    void initialize_ringmesh()
-    {
-        RINGMesh::mesh_initialize() ;
-        RINGMesh::TetraGen::initialize() ;
-        RINGMesh::ringmesh_mesh_io_initialize() ;
-        RINGMesh::tsolid_import_factory_initialize() ;
-    }
+    return !res ;
 }
