@@ -125,6 +125,10 @@ namespace RINGMesh {
                 vertex_attr_name_ = name ;
                 if( vertex_attr_.is_bound() ) {
                     vertex_attr_.unbind() ;
+
+                    glBindVertexArray( cells_VAO_ ) ;
+                    glDisableVertexAttribArray( 2 ) ;
+                    glBindVertexArray( 0 ) ;
                 }
                 if( GEO::Attribute< double >::is_defined(
                     mesh()->vertices.attributes(), name ) ) {
