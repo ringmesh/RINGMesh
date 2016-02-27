@@ -524,11 +524,11 @@ namespace RINGMesh {
     void GeoModelGfx::initialize()
     {
         ringmesh_debug_assert( model_ ) ;
-        if( corners_.empty() && lines_.empty() && surfaces_.empty()
-            && regions_.empty() ) {
+        if( corners_.empty() && lines_.empty() && surfaces_.empty() ) {
             corners_.resize( model_->nb_corners(), nil ) ;
             lines_.resize( model_->nb_lines(), nil ) ;
             surfaces_.resize( model_->nb_surfaces(), nil ) ;
+            regions_.resize( model_->nb_regions(), nil ) ;
 
             for( index_t c = 0; c < corners_.size(); c++ ) {
                 corners_[c] = new CornerGfx( *this, model_->corner( c ) ) ;
@@ -539,17 +539,8 @@ namespace RINGMesh {
             for( index_t s = 0; s < surfaces_.size(); s++ ) {
                 surfaces_[s] = new SurfaceGfx( *this, model_->surface( s ) ) ;
             }
-
-            // NOTE: A region can be defined but not necessary meshed.
-            // Only the meshed regions are visualized.
-            // reserve is used since there are nb_regions or less meshed regions.
-            size_t max_nb_meshed_regions = model_->nb_regions() ;
-            regions_.reserve( max_nb_meshed_regions ) ;
-            for( index_t r = 0; r < max_nb_meshed_regions; r++ ) {
-                if( model_->region( r ).is_meshed() ) {
-                    regions_.push_back(
-                        new RegionGfx( *this, model_->region( r ) ) ) ;
-                }
+            for( index_t r = 0; r < model_->nb_regions(); r++ ) {
+                regions_[r] = new RegionGfx( *this, model_->region( r ) ) ;
             }
         }
     }
@@ -1044,7 +1035,6 @@ namespace RINGMesh {
      */
     void GeoModelGfx::draw_regions()
     {
-        // WARNING: regions_.size() is not always equal to model_->nb_regions()
         for( index_t m = 0; m < regions_.size(); m++ ) {
             if( regions_[m]->get_vertices_visible() ) regions_[m]->draw_vertices() ;
             if( regions_[m]->get_edges_visible() ) regions_[m]->draw_edges() ;
