@@ -262,31 +262,7 @@ namespace {
         glut_viewer_disable( GLUT_VIEWER_BACKGROUND ) ;
         glut_viewer_add_key_func( 'm', toggle_mesh, "mesh" ) ;
 
-        /////////// Test texture
-        glupMakeCurrent( glupCreateContext() ) ;
-        glupEnable( GLUP_TEXTURING ) ;
-        glupEnable( GLUP_DRAW_MESH ) ;
-
-        glMatrixMode( GL_TEXTURE ) ;
-        glLoadIdentity() ;
-
-        GLuint texture ;
-        glGenTextures( 1, &texture ) ;
-        glActiveTexture( GL_TEXTURE0 ) ;
-        glBindTexture( GL_TEXTURE_1D, texture ) ;
-        glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP ) ;
-        glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ) ;
-        glTexParameteri( GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ) ;
-
-        glupTextureType( GLUP_TEXTURE_1D ) ;
-        glupTextureMode( GLUP_TEXTURE_REPLACE ) ;
-        glupClipMode( GLUP_CLIP_WHOLE_CELLS ) ;
-
-        GM_gfx.compute_colormap() ;
-        /////////// Test texture
         GM_gfx.set_geo_model( GM ) ;
-//        GM_gfx.bind_cell_vertex_attribute( "toto" ) ;
-        GM_gfx.bind_cell_attribute( "toto2" ) ;
     }
 
     /**
@@ -320,12 +296,6 @@ namespace {
 
             GM_gfx.set_vertex_regions_color( 1.0, 1.0, 1.0 ) ;
         }
-
-        ////////////// Test texture
-        glupCopyFromGLState( GLUP_ALL_ATTRIBUTES ) ;
-        glupMatrixMode( GLUP_TEXTURE_MATRIX ) ;
-        glupLoadMatrixf( glut_viewer_get_light_matrix() ) ;
-        ////////////// Test texture
 
         if( show_corners ) {
             GM_gfx.draw_corners() ;
@@ -399,19 +369,6 @@ namespace {
         if( !GEO::CmdLine::get_arg( "mesh" ).empty() ) {
             RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "mesh" ), GM ) ;
             meshed_regions = true ;
-            for( index_t r = 0; r < GM.nb_regions(); r++ ) {
-                const Region& region = GM.region( r ) ;
-                GEO::Attribute< double > attr( region.vertex_attribute_manager(),
-                    "toto" ) ;
-                for( index_t v = 0; v < region.nb_vertices(); v++ ) {
-                    attr[v] = region.vertex( v ).x ;
-                }
-                GEO::Attribute< double > attr2( region.cell_attribute_manager(),
-                    "toto2" ) ;
-                for( index_t c = 0; c < region.nb_cells(); c++ ) {
-                    attr2[c] = mesh_cell_center( region.mesh(), c ).x ;
-                }
-            }
         }
 
         get_bbox( GM, xyzmin, xyzmax ) ;
