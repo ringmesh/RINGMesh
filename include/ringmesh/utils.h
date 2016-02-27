@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -45,14 +40,19 @@
 
 #include <geogram/basic/geometry.h>
 
-namespace RINGMesh {     
+/*!
+ * @file Box3D class declaration
+ * @author Arnaud Botella
+ */
 
+namespace RINGMesh {
 
     /*! @brief A safer narrow casting function of type S to type T
-    *  \return static_cast< T >( in )
-    *  \post Check that the result can be cast back to in, if not throws an assertion.
-    *  \note cf. The C++ programming language. 4th edition. p299
-    */
+     *  @return static_cast< T >( in )
+     *  @post Check that the result can be cast back to in, if not throws an assertion.
+     *  @note cf. The C++ programming language. 4th edition. p299
+     *  @todo Move or remove. [JP]
+     */
     template< typename T, typename S >
     T narrow_cast( S in )
     {
@@ -63,11 +63,10 @@ namespace RINGMesh {
         return r ;
     }
 
-
     /*!
      * @todo Move this in our geometry file ? [JP]
      */
-    class RINGMESH_API Box3d : public GEO::Box {
+    class RINGMESH_API Box3d: public GEO::Box {
     public:
         Box3d()
             : initialized_( false )
@@ -174,7 +173,7 @@ namespace RINGMesh {
 
     private:
         bool initialized_ ;
-    } ;  
+    } ;
 
 }
 

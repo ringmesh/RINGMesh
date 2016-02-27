@@ -1,50 +1,55 @@
 /*
-* Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of the <organization> nor the
-*       names of its contributors may be used to endorse or promote products
-*       derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*
-*
-*
-*
-*
-*     http://www.ring-team.org
-*
-*     RING Project
-*     Ecole Nationale Superieure de Geologie - GeoRessources
-*     2 Rue du Doyen Marcel Roubault - TSA 70605
-*     54518 VANDOEUVRE-LES-NANCY
-*     FRANCE
-*/
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of ASGA nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
 
 #include <ringmesh/geometry.h>
+
+#include <geogram/mesh/mesh_AABB.h>
+#include <geogram/mesh/mesh_geometry.h>
+
+#include <geogram/numerics/predicates.h>
+
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geogram_extension.h>
 
-#include <geogram/numerics/predicates.h>
-#include <geogram/mesh/mesh_geometry.h>
-
+/*!
+ * @file Basic geometrical requests 
+ * @author Arnaud Botella
+ *
+ * @todo Comment on the robustness of the tests
+ */
+ 
 namespace {
 
     using namespace RINGMesh ;
@@ -68,88 +73,54 @@ namespace RINGMesh {
     /*! 
      * @todo  Comment these descriptors [JP]
      */
-    GEO::CellDescriptor tetra_descriptor = {
-        4,         // nb_vertices
+    GEO::CellDescriptor tetra_descriptor = { 4,         // nb_vertices
         4,         // nb_facets
         { 3, 3, 3, 3 }, // nb_vertices in facet
         {          // facets
-            { 1, 3, 2 },
-            { 0, 2, 3 },
-            { 3, 1, 0 },
-            { 0, 1, 2 }
-        },
-        6,         // nb_edges
+        { 1, 3, 2 }, { 0, 2, 3 }, { 3, 1, 0 }, { 0, 1, 2 } }, 6,         // nb_edges
         {          // edges
-            { 1, 2 }, { 2, 3 }, { 3, 1 }, { 0, 1 }, { 0, 2 }, { 0, 3 }
-        }
-    };
+        { 1, 2 }, { 2, 3 }, { 3, 1 }, { 0, 1 }, { 0, 2 }, { 0, 3 } } } ;
 
-
-    GEO::CellDescriptor hex_descriptor = {
-        8,             // nb_vertices
+    GEO::CellDescriptor hex_descriptor = { 8,             // nb_vertices
         6,             // nb_facets
         { 4, 4, 4, 4, 4, 4 }, // nb_vertices in facet
         {              // facets
-            { 0, 2, 6, 4 },
-            { 3, 1, 5, 7 },
-            { 1, 0, 4, 5 },
-            { 2, 3, 7, 6 },
-            { 1, 3, 2, 0 },
-            { 4, 6, 7, 5 }
-        },
-        12,            // nb_edges
+            { 0, 2, 6, 4 }, { 3, 1, 5, 7 }, { 1, 0, 4, 5 }, { 2, 3, 7, 6 }, {
+                1, 3, 2, 0 }, { 4, 6, 7, 5 } }, 12,            // nb_edges
         {              // edges
-            { 0, 1 }, { 1, 3 }, { 3, 2 }, { 2, 0 }, { 4, 5 }, { 5, 7 },
-            { 7, 6 }, { 6, 4 }, { 0, 4 }, { 1, 5 }, { 3, 7 }, { 2, 6 }
-        }
-    };
+            { 0, 1 }, { 1, 3 }, { 3, 2 }, { 2, 0 }, { 4, 5 }, { 5, 7 }, { 7, 6 }, {
+                6, 4 }, { 0, 4 }, { 1, 5 }, { 3, 7 }, { 2, 6 } } } ;
 
     GEO::CellDescriptor prism_descriptor = {
         6,             // nb_vertices
         5,             // nb_facets
         { 3, 3, 4, 4, 4 },   // nb_vertices in facet
         {              // facets
-            { 0, 1, 2 },
-            { 3, 5, 4 },
-            { 0, 3, 4, 1 },
-            { 0, 2, 5, 3 },
-            { 1, 4, 5, 2 }
-        },
+        { 0, 1, 2 }, { 3, 5, 4 }, { 0, 3, 4, 1 }, { 0, 2, 5, 3 }, { 1, 4, 5, 2 } },
         9,             // nb_edges
         {              // edges
-            { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 5 }, { 5, 3 }, { 0, 3 }, { 1, 4 }, { 2, 5 }
-        }
-    };
+            { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 5 }, { 5, 3 }, { 0, 3 }, {
+                1, 4 }, { 2, 5 } } } ;
 
-
-    GEO::CellDescriptor pyramid_descriptor = {
-        5,             // nb_vertices
+    GEO::CellDescriptor pyramid_descriptor = { 5,             // nb_vertices
         5,             // nb_facets
         { 4, 3, 3, 3, 3 },   // nb_vertices in facet
         {              // facets
-            { 0, 1, 2, 3 },
-            { 0, 4, 1 },
-            { 0, 3, 4 },
-            { 2, 4, 3 },
-            { 2, 1, 4 }
-        },
-        8,             // nb_edges
+        { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } }, 8, // nb_edges
         {              // edges
-            { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }, { 0, 4 }, { 1, 4 }, { 2, 4 }, { 3, 4 }
-        }
-    };
-
+            { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }, { 0, 4 }, { 1, 4 }, { 2, 4 }, {
+                3, 4 } } } ;
 
     /*!
-    * Computes the distance between a point and a tetrahedron
-    * @param[in] p the point
-    * @param[in] p0 the first vertex of the tetrahedron
-    * @param[in] p1 the second vertex of the tetrahedron
-    * @param[in] p2 the third vertex of the tetrahedron
-    * @param[in] p3 the fourth vertex of the tetrahedron
-    * @param[out] nearest_p the nearest point on the tetrahedron
-    * @return the distance between the point and the tetrahedron facets
-    */
+     * Computes the distance between a point and a tetrahedron
+     * @param[in] p the point
+     * @param[in] p0 the first vertex of the tetrahedron
+     * @param[in] p1 the second vertex of the tetrahedron
+     * @param[in] p2 the third vertex of the tetrahedron
+     * @param[in] p3 the fourth vertex of the tetrahedron
+     * @param[out] nearest_p the nearest point on the tetrahedron
+     * @return the distance between the point and the tetrahedron facets
+     */
     float64 point_tetra_distance(
         const vec3& p,
         const vec3& p0,
@@ -158,17 +129,16 @@ namespace RINGMesh {
         const vec3& p3,
         vec3& nearest_p )
     {
-        vec3 vertices[ 4 ] = { p0, p1, p2, p3 };
+        vec3 vertices[4] = { p0, p1, p2, p3 } ;
         float64 not_used0, not_used1, not_used2 ;
         float64 dist = max_float64() ;
         for( GEO::Numeric::uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             float64 distance = point_triangle_distance( p,
-                vertices[ tetra_descriptor.facet_vertex[ f ][ 0 ] ],
-                vertices[ tetra_descriptor.facet_vertex[ f ][ 1 ] ],
-                vertices[ tetra_descriptor.facet_vertex[ f ][ 2 ] ],
-                cur_p, not_used0, not_used1, not_used2 
-            ) ;
+                vertices[tetra_descriptor.facet_vertex[f][0]],
+                vertices[tetra_descriptor.facet_vertex[f][1]],
+                vertices[tetra_descriptor.facet_vertex[f][2]], cur_p, not_used0,
+                not_used1, not_used2 ) ;
             if( distance < dist ) {
                 dist = distance ;
                 nearest_p = cur_p ;
@@ -178,16 +148,16 @@ namespace RINGMesh {
     }
 
     /*!
-    * Computes the distance between a point and a pyramid
-    * @param[in] p the point
-    * @param[in] p0 the first vertex of the pyramid
-    * @param[in] p1 the second vertex of the pyramid
-    * @param[in] p2 the third vertex of the pyramid
-    * @param[in] p3 the fourth vertex of the pyramid
-    * @param[in] p4 the fifth vertex of the pyramid
-    * @param[out] nearest_p the nearest point on the pyramid
-    * @return the distance between the point and the pyramid facets
-    */
+     * Computes the distance between a point and a pyramid
+     * @param[in] p the point
+     * @param[in] p0 the first vertex of the pyramid
+     * @param[in] p1 the second vertex of the pyramid
+     * @param[in] p2 the third vertex of the pyramid
+     * @param[in] p3 the fourth vertex of the pyramid
+     * @param[in] p4 the fifth vertex of the pyramid
+     * @param[out] nearest_p the nearest point on the pyramid
+     * @return the distance between the point and the pyramid facets
+     */
     float64 point_pyramid_distance(
         const vec3& p,
         const vec3& p0,
@@ -197,27 +167,26 @@ namespace RINGMesh {
         const vec3& p4,
         vec3& nearest_p )
     {
-        vec3 vertices[ 5 ] = { p0, p1, p2, p3, p4 } ;
+        vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
         float64 not_used0, not_used1, not_used2 ;
         float64 dist = max_float64() ;
         for( GEO::Numeric::uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             float64 distance ;
-            GEO::Numeric::uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[ f ] ;
+            GEO::Numeric::uint8 nb_vertices =
+                pyramid_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
                 distance = point_triangle_distance( p,
-                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ],
-                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ],
-                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 2 ] ], 
-                    cur_p, not_used0, not_used1, not_used2
-                ) ;
+                    vertices[pyramid_descriptor.facet_vertex[f][0]],
+                    vertices[pyramid_descriptor.facet_vertex[f][1]],
+                    vertices[pyramid_descriptor.facet_vertex[f][2]], cur_p,
+                    not_used0, not_used1, not_used2 ) ;
             } else if( nb_vertices == 4 ) {
                 distance = point_quad_distance( p,
-                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ],
-                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ],
-                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 2 ] ],
-                    vertices[ pyramid_descriptor.facet_vertex[ f ][ 3 ] ], cur_p 
-                ) ;
+                    vertices[pyramid_descriptor.facet_vertex[f][0]],
+                    vertices[pyramid_descriptor.facet_vertex[f][1]],
+                    vertices[pyramid_descriptor.facet_vertex[f][2]],
+                    vertices[pyramid_descriptor.facet_vertex[f][3]], cur_p ) ;
             } else {
                 ringmesh_assert_not_reached;
             }
@@ -230,17 +199,17 @@ namespace RINGMesh {
     }
 
     /*!
-    * Computes the distance between a point and a prism
-    * @param[in] p the point
-    * @param[in] p0 the first vertex of the prism
-    * @param[in] p1 the second vertex of the prism
-    * @param[in] p2 the third vertex of the prism
-    * @param[in] p3 the fourth vertex of the prism
-    * @param[in] p4 the fifth vertex of the prism
-    * @param[in] p5 the sixth vertex of the prism
-    * @param[out] nearest_p the nearest point on the prism
-    * @return the distance between the point and the prism facets
-    */
+     * Computes the distance between a point and a prism
+     * @param[in] p the point
+     * @param[in] p0 the first vertex of the prism
+     * @param[in] p1 the second vertex of the prism
+     * @param[in] p2 the third vertex of the prism
+     * @param[in] p3 the fourth vertex of the prism
+     * @param[in] p4 the fifth vertex of the prism
+     * @param[in] p5 the sixth vertex of the prism
+     * @param[out] nearest_p the nearest point on the prism
+     * @return the distance between the point and the prism facets
+     */
     float64 point_prism_distance(
         const vec3& p,
         const vec3& p0,
@@ -251,29 +220,27 @@ namespace RINGMesh {
         const vec3& p5,
         vec3& nearest_p )
     {
-        vec3 vertices[ 6 ] = { p0, p1, p2, p3, p4, p5 } ;
+        vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
         float64 not_used0, not_used1, not_used2 ;
 
         float64 dist = max_float64() ;
         for( GEO::Numeric::uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             float64 distance ;
-            GEO::Numeric::uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[ f ] ;
+            GEO::Numeric::uint8 nb_vertices =
+                prism_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
                 distance = point_triangle_distance( p,
-                    vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ],
-                    vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ],
-                    vertices[ prism_descriptor.facet_vertex[ f ][ 2 ] ], 
-                    cur_p, not_used0, not_used1, not_used2
-                ) ;
+                    vertices[prism_descriptor.facet_vertex[f][0]],
+                    vertices[prism_descriptor.facet_vertex[f][1]],
+                    vertices[prism_descriptor.facet_vertex[f][2]], cur_p, not_used0,
+                    not_used1, not_used2 ) ;
             } else if( nb_vertices == 4 ) {
                 distance = point_quad_distance( p,
-                    vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ],
-                    vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ],
-                    vertices[ prism_descriptor.facet_vertex[ f ][ 2 ] ],
-                    vertices[ prism_descriptor.facet_vertex[ f ][ 3 ] ], 
-                    cur_p
-                ) ;
+                    vertices[prism_descriptor.facet_vertex[f][0]],
+                    vertices[prism_descriptor.facet_vertex[f][1]],
+                    vertices[prism_descriptor.facet_vertex[f][2]],
+                    vertices[prism_descriptor.facet_vertex[f][3]], cur_p ) ;
             } else {
                 ringmesh_assert_not_reached;
             }
@@ -285,19 +252,19 @@ namespace RINGMesh {
         return dist ;
     }
     /*!
-    * Computes the distance between a point and a hexahedron
-    * @param[in] p the point
-    * @param[in] p0 the first vertex of the hexahedron
-    * @param[in] p1 the second vertex of the hexahedron
-    * @param[in] p2 the third vertex of the hexahedron
-    * @param[in] p3 the fourth vertex of the hexahedron
-    * @param[in] p4 the fifth vertex of the hexahedron
-    * @param[in] p5 the sixth vertex of the hexahedron
-    * @param[in] p6 the seventh vertex of the hexahedron
-    * @param[in] p7 the heith vertex of the hexahedron
-    * @param[out] nearest_p the nearest point on the hexahedron
-    * @return the distance between the point and the hexahedron facets
-    */
+     * Computes the distance between a point and a hexahedron
+     * @param[in] p the point
+     * @param[in] p0 the first vertex of the hexahedron
+     * @param[in] p1 the second vertex of the hexahedron
+     * @param[in] p2 the third vertex of the hexahedron
+     * @param[in] p3 the fourth vertex of the hexahedron
+     * @param[in] p4 the fifth vertex of the hexahedron
+     * @param[in] p5 the sixth vertex of the hexahedron
+     * @param[in] p6 the seventh vertex of the hexahedron
+     * @param[in] p7 the heith vertex of the hexahedron
+     * @param[out] nearest_p the nearest point on the hexahedron
+     * @return the distance between the point and the hexahedron facets
+     */
     float64 point_hexa_distance(
         const vec3& p,
         const vec3& p0,
@@ -311,17 +278,15 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         /// Review: Why not input an array ?
-        vec3 vertices[ 8 ] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
+        vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
         float64 dist = max_float64() ;
         for( GEO::Numeric::uint8 f = 0; f < hex_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             float64 distance = point_quad_distance( p,
-                vertices[ hex_descriptor.facet_vertex[ f ][ 0 ] ],
-                vertices[ hex_descriptor.facet_vertex[ f ][ 1 ] ],
-                vertices[ hex_descriptor.facet_vertex[ f ][ 2 ] ],
-                vertices[ hex_descriptor.facet_vertex[ f ][ 3 ] ], 
-                cur_p 
-            ) ;
+                vertices[hex_descriptor.facet_vertex[f][0]],
+                vertices[hex_descriptor.facet_vertex[f][1]],
+                vertices[hex_descriptor.facet_vertex[f][2]],
+                vertices[hex_descriptor.facet_vertex[f][3]], cur_p ) ;
             if( distance < dist ) {
                 dist = distance ;
                 nearest_p = cur_p ;
@@ -331,14 +296,14 @@ namespace RINGMesh {
     }
 
     /*!
-    * Tests if a point is inside a tetrahedron
-    * @param[in] p the point to test
-    * @param[in] p0 the first vertex of the tetrahedron
-    * @param[in] p1 the second vertex of the tetrahedron
-    * @param[in] p2 the third vertex of the tetrahedron
-    * @param[in] p3 the fourth vertex of the tetrahedron
-    * @return returns true if the point is inside the tetrahedron
-    */
+     * Tests if a point is inside a tetrahedron
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the tetrahedron
+     * @param[in] p1 the second vertex of the tetrahedron
+     * @param[in] p2 the third vertex of the tetrahedron
+     * @param[in] p3 the fourth vertex of the tetrahedron
+     * @return returns true if the point is inside the tetrahedron
+     */
     bool point_inside_tetra(
         const vec3& p,
         const vec3& p0,
@@ -346,32 +311,32 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& p3 )
     {
-        vec3 vertices[ 4 ] = { p0, p1, p2, p3 } ;
+        vec3 vertices[4] = { p0, p1, p2, p3 } ;
         for( GEO::Numeric::uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[ tetra_descriptor.facet_vertex[ f ][ 1 ] ]
-                - vertices[ tetra_descriptor.facet_vertex[ f ][ 0 ] ],
-                vertices[ tetra_descriptor.facet_vertex[ f ][ 2 ] ]
-                - vertices[ tetra_descriptor.facet_vertex[ f ][ 0 ] ] ) ;
+                vertices[tetra_descriptor.facet_vertex[f][1]]
+                    - vertices[tetra_descriptor.facet_vertex[f][0]],
+                vertices[tetra_descriptor.facet_vertex[f][2]]
+                    - vertices[tetra_descriptor.facet_vertex[f][0]] ) ;
             vec3 n = p
-                - ( ( vertices[ tetra_descriptor.facet_vertex[ f ][ 0 ] ]
-                + vertices[ tetra_descriptor.facet_vertex[ f ][ 1 ] ]
-                + vertices[ tetra_descriptor.facet_vertex[ f ][ 2 ] ] ) / 3. ) ;
+                - ( ( vertices[tetra_descriptor.facet_vertex[f][0]]
+                    + vertices[tetra_descriptor.facet_vertex[f][1]]
+                    + vertices[tetra_descriptor.facet_vertex[f][2]] ) / 3. ) ;
             if( dot( N, n ) > 0 ) return false ;
         }
         return true ;
     }
 
     /*!
-    * Tests if a point is inside a pyramid
-    * @param[in] p the point to test
-    * @param[in] p0 the first vertex of the pyramid
-    * @param[in] p1 the second vertex of the pyramid
-    * @param[in] p2 the third vertex of the pyramid
-    * @param[in] p3 the fourth vertex of the pyramid
-    * @param[in] p4 the fifth vertex of the pyramid
-    * @return returns true if the point is inside the pyramid
-    */
+     * Tests if a point is inside a pyramid
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the pyramid
+     * @param[in] p1 the second vertex of the pyramid
+     * @param[in] p2 the third vertex of the pyramid
+     * @param[in] p3 the fourth vertex of the pyramid
+     * @param[in] p4 the fifth vertex of the pyramid
+     * @return returns true if the point is inside the pyramid
+     */
     bool point_inside_pyramid(
         const vec3& p,
         const vec3& p0,
@@ -380,24 +345,25 @@ namespace RINGMesh {
         const vec3& p3,
         const vec3& p4 )
     {
-        vec3 vertices[ 5 ] = { p0, p1, p2, p3, p4 } ;
+        vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
         for( GEO::Numeric::uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ]
-                - vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ],
-                vertices[ pyramid_descriptor.facet_vertex[ f ][ 2 ] ]
-                - vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ] ) ;
-            GEO::Numeric::uint8 nb_vertices = pyramid_descriptor.nb_vertices_in_facet[ f ] ;
+                vertices[pyramid_descriptor.facet_vertex[f][1]]
+                    - vertices[pyramid_descriptor.facet_vertex[f][0]],
+                vertices[pyramid_descriptor.facet_vertex[f][2]]
+                    - vertices[pyramid_descriptor.facet_vertex[f][0]] ) ;
+            GEO::Numeric::uint8 nb_vertices =
+                pyramid_descriptor.nb_vertices_in_facet[f] ;
             vec3 barycenter( 0., 0., 0. ) ;
             if( nb_vertices == 3 )
-                barycenter = ( ( vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ]
-                + vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ]
-                + vertices[ pyramid_descriptor.facet_vertex[ f ][ 2 ] ] ) / 3. ) ;
+                barycenter = ( ( vertices[pyramid_descriptor.facet_vertex[f][0]]
+                    + vertices[pyramid_descriptor.facet_vertex[f][1]]
+                    + vertices[pyramid_descriptor.facet_vertex[f][2]] ) / 3. ) ;
             else if( nb_vertices == 4 )
-                barycenter = ( ( vertices[ pyramid_descriptor.facet_vertex[ f ][ 0 ] ]
-                + vertices[ pyramid_descriptor.facet_vertex[ f ][ 1 ] ]
-                + vertices[ pyramid_descriptor.facet_vertex[ f ][ 2 ] ]
-                + vertices[ pyramid_descriptor.facet_vertex[ f ][ 3 ] ] ) / 4. ) ;
+                barycenter = ( ( vertices[pyramid_descriptor.facet_vertex[f][0]]
+                    + vertices[pyramid_descriptor.facet_vertex[f][1]]
+                    + vertices[pyramid_descriptor.facet_vertex[f][2]]
+                    + vertices[pyramid_descriptor.facet_vertex[f][3]] ) / 4. ) ;
             else
                 ringmesh_assert_not_reached;
             vec3 n = p - barycenter ;
@@ -407,16 +373,16 @@ namespace RINGMesh {
     }
 
     /*!
-    * Tests if a point is inside a prism
-    * @param[in] p the point to test
-    * @param[in] p0 the first vertex of the prism
-    * @param[in] p1 the second vertex of the prism
-    * @param[in] p2 the third vertex of the prism
-    * @param[in] p3 the fourth vertex of the prism
-    * @param[in] p4 the fifth vertex of the prism
-    * @param[in] p5 the sixth vertex of the prism
-    * @return returns true if the point is inside the prism
-    */
+     * Tests if a point is inside a prism
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the prism
+     * @param[in] p1 the second vertex of the prism
+     * @param[in] p2 the third vertex of the prism
+     * @param[in] p3 the fourth vertex of the prism
+     * @param[in] p4 the fifth vertex of the prism
+     * @param[in] p5 the sixth vertex of the prism
+     * @return returns true if the point is inside the prism
+     */
     bool point_inside_prism(
         const vec3& p,
         const vec3& p0,
@@ -426,24 +392,25 @@ namespace RINGMesh {
         const vec3& p4,
         const vec3& p5 )
     {
-        vec3 vertices[ 6 ] = { p0, p1, p2, p3, p4, p5 } ;      
+        vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
         for( GEO::Numeric::uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ]
-                - vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ],
-                vertices[ prism_descriptor.facet_vertex[ f ][ 2 ] ]
-                - vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ] ) ;
-            GEO::Numeric::uint8 nb_vertices = prism_descriptor.nb_vertices_in_facet[ f ] ;
-            vec3 barycenter(0., 0., 0.) ;
+                vertices[prism_descriptor.facet_vertex[f][1]]
+                    - vertices[prism_descriptor.facet_vertex[f][0]],
+                vertices[prism_descriptor.facet_vertex[f][2]]
+                    - vertices[prism_descriptor.facet_vertex[f][0]] ) ;
+            GEO::Numeric::uint8 nb_vertices =
+                prism_descriptor.nb_vertices_in_facet[f] ;
+            vec3 barycenter( 0., 0., 0. ) ;
             if( nb_vertices == 3 )
-                barycenter = ( ( vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ]
-                + vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ]
-                + vertices[ prism_descriptor.facet_vertex[ f ][ 2 ] ] ) / 3. ) ;
+                barycenter = ( ( vertices[prism_descriptor.facet_vertex[f][0]]
+                    + vertices[prism_descriptor.facet_vertex[f][1]]
+                    + vertices[prism_descriptor.facet_vertex[f][2]] ) / 3. ) ;
             else if( nb_vertices == 4 )
-                barycenter = ( ( vertices[ prism_descriptor.facet_vertex[ f ][ 0 ] ]
-                + vertices[ prism_descriptor.facet_vertex[ f ][ 1 ] ]
-                + vertices[ prism_descriptor.facet_vertex[ f ][ 2 ] ]
-                + vertices[ prism_descriptor.facet_vertex[ f ][ 3 ] ] ) / 4. ) ;
+                barycenter = ( ( vertices[prism_descriptor.facet_vertex[f][0]]
+                    + vertices[prism_descriptor.facet_vertex[f][1]]
+                    + vertices[prism_descriptor.facet_vertex[f][2]]
+                    + vertices[prism_descriptor.facet_vertex[f][3]] ) / 4. ) ;
             else
                 ringmesh_assert_not_reached;
             vec3 n = p - barycenter ;
@@ -452,18 +419,18 @@ namespace RINGMesh {
         return true ;
     }
     /*!
-    * Tests if a point is inside a hexahedron
-    * @param[in] p the point to test
-    * @param[in] p0 the first vertex of the hexahedron
-    * @param[in] p1 the second vertex of the hexahedron
-    * @param[in] p2 the third vertex of the hexahedron
-    * @param[in] p3 the fourth vertex of the hexahedron
-    * @param[in] p4 the fifth vertex of the hexahedron
-    * @param[in] p5 the sixth vertex of the hexahedron
-    * @param[in] p6 the seventh vertex of the hexahedron
-    * @param[in] p7 the heigth vertex of the hexahedron
-    * @return returns true if the point is inside the hexahedron
-    */
+     * Tests if a point is inside a hexahedron
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the hexahedron
+     * @param[in] p1 the second vertex of the hexahedron
+     * @param[in] p2 the third vertex of the hexahedron
+     * @param[in] p3 the fourth vertex of the hexahedron
+     * @param[in] p4 the fifth vertex of the hexahedron
+     * @param[in] p5 the sixth vertex of the hexahedron
+     * @param[in] p6 the seventh vertex of the hexahedron
+     * @param[in] p7 the heigth vertex of the hexahedron
+     * @return returns true if the point is inside the hexahedron
+     */
     bool point_inside_hexa(
         const vec3& p,
         const vec3& p0,
@@ -475,17 +442,17 @@ namespace RINGMesh {
         const vec3& p6,
         const vec3& p7 )
     {
-        vec3 vertices[ 8 ] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
+        vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
         for( GEO::Numeric::uint8 f = 0; f < hex_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[ hex_descriptor.facet_vertex[ f ][ 1 ] ]
-                - vertices[ hex_descriptor.facet_vertex[ f ][ 0 ] ],
-                vertices[ hex_descriptor.facet_vertex[ f ][ 2 ] ]
-                - vertices[ hex_descriptor.facet_vertex[ f ][ 0 ] ] ) ;
-            vec3 barycenter = ( ( vertices[ hex_descriptor.facet_vertex[ f ][ 0 ] ]
-                + vertices[ hex_descriptor.facet_vertex[ f ][ 1 ] ]
-                + vertices[ hex_descriptor.facet_vertex[ f ][ 2 ] ]
-                + vertices[ hex_descriptor.facet_vertex[ f ][ 3 ] ] ) / 4. ) ;
+                vertices[hex_descriptor.facet_vertex[f][1]]
+                    - vertices[hex_descriptor.facet_vertex[f][0]],
+                vertices[hex_descriptor.facet_vertex[f][2]]
+                    - vertices[hex_descriptor.facet_vertex[f][0]] ) ;
+            vec3 barycenter = ( ( vertices[hex_descriptor.facet_vertex[f][0]]
+                + vertices[hex_descriptor.facet_vertex[f][1]]
+                + vertices[hex_descriptor.facet_vertex[f][2]]
+                + vertices[hex_descriptor.facet_vertex[f][3]] ) / 4. ) ;
             vec3 n = p - barycenter ;
             if( dot( N, n ) > 0 ) return false ;
         }
@@ -493,15 +460,15 @@ namespace RINGMesh {
     }
 
     /*!
-    * Computes the intersection(s) between a circle and a plane
-    * @param[in] O_plane a point on the plane
-    * @param[in] N_plane the normal of the plane
-    * @param[in] O_circle the center of the circle
-    * @param[in] N_circle the normal of the plane supporting the circle
-    * @param[in] r the radius of the circle
-    * @param[out] result the intersected points
-    * @return returns true if there is at least one intersection
-    */
+     * Computes the intersection(s) between a circle and a plane
+     * @param[in] O_plane a point on the plane
+     * @param[in] N_plane the normal of the plane
+     * @param[in] O_circle the center of the circle
+     * @param[in] N_circle the normal of the plane supporting the circle
+     * @param[in] r the radius of the circle
+     * @param[out] result the intersected points
+     * @return returns true if there is at least one intersection
+     */
     bool circle_plane_intersection(
         const vec3& O_plane,
         const vec3& N_plane,
@@ -541,17 +508,16 @@ namespace RINGMesh {
         return true ;
     }
 
-
     /*!
-    * Computes the intersection between two planes
-    * @param[in] O_P0 a point on the first plane
-    * @param[in] N_P0 the normal of the frst plane
-    * @param[in] O_P1 a point on the second plane
-    * @param[in] N_P1 the normal of the second plane
-    * @param[out] O_inter a point on the intersected line
-    * @param[out] D_inter the direction of the intersected line
-    * @return true is there is an intersection between the planes
-    */
+     * Computes the intersection between two planes
+     * @param[in] O_P0 a point on the first plane
+     * @param[in] N_P0 the normal of the frst plane
+     * @param[in] O_P1 a point on the second plane
+     * @param[in] N_P1 the normal of the second plane
+     * @param[out] O_inter a point on the intersected line
+     * @param[out] D_inter the direction of the intersected line
+     * @return true is there is an intersection between the planes
+     */
     bool plane_plane_intersection(
         const vec3& O_P0,
         const vec3& N_P0,
@@ -589,16 +555,16 @@ namespace RINGMesh {
     }
 
     /*!
-    * Computes the intersection(s) between a circle and a triangle
-    * @param[in] p0 the first vertex of the triangle
-    * @param[in] p1 the second vertex of the triangle
-    * @param[in] p2 the third vertex of the triangle
-    * @param[in] O_circle the center of the circle
-    * @param[in] N_circle the normal of the plane supporting the circle
-    * @param[in] r the radius of the circle
-    * @param[out] result the intersected points
-    * @return returns true if there is at least one intersection
-    */
+     * Computes the intersection(s) between a circle and a triangle
+     * @param[in] p0 the first vertex of the triangle
+     * @param[in] p1 the second vertex of the triangle
+     * @param[in] p2 the third vertex of the triangle
+     * @param[in] O_circle the center of the circle
+     * @param[in] N_circle the normal of the plane supporting the circle
+     * @param[in] r the radius of the circle
+     * @param[out] result the intersected points
+     * @return returns true if there is at least one intersection
+     */
     bool circle_triangle_intersection(
         const vec3& p0,
         const vec3& p1,
@@ -614,7 +580,7 @@ namespace RINGMesh {
         if( circle_plane_intersection( barycenter, N_triangle, O_circle, N_circle, r,
             inter_circle_plane ) ) {
             for( index_t i = 0; i < inter_circle_plane.size(); i++ ) {
-                const vec3& p = inter_circle_plane[ i ] ;
+                const vec3& p = inter_circle_plane[i] ;
                 if( point_inside_triangle( p, p0, p1, p2 ) ) {
                     result.push_back( p ) ;
                 }
@@ -624,13 +590,13 @@ namespace RINGMesh {
     }
 
     /*!
-    * Computes the orthogonal projection of a point on a segment
-    * @param[in] p the point to project
-    * @param[in] p0 the first vertex of the segment
-    * @param[in] p1 the second vertex of the segment
-    * @param[out] new_p the projected point
-    * @return returns true if the projection is possible
-    */
+     * Computes the orthogonal projection of a point on a segment
+     * @param[in] p the point to project
+     * @param[in] p0 the first vertex of the segment
+     * @param[in] p1 the second vertex of the segment
+     * @param[out] new_p the projected point
+     * @return returns true if the projection is possible
+     */
     bool point_segment_projection(
         const vec3& p,
         const vec3& p0,
@@ -652,15 +618,15 @@ namespace RINGMesh {
     }
 
     /*!
-    * Computes the smallest distance between a point and a quad
-    * @param[in] p the point to test
-    * @param[in] p0 the first vertex of the quad
-    * @param[in] p1 the second vertex of the quad
-    * @param[in] p2 the third vertex of the quad
-    * @param[in] p3 the fourth vertex of the quad
-    * @param[out] nearest_p the closest point on the quad
-    * @return the smallest distance
-    */
+     * Computes the smallest distance between a point and a quad
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the quad
+     * @param[in] p1 the second vertex of the quad
+     * @param[in] p2 the third vertex of the quad
+     * @param[in] p3 the fourth vertex of the quad
+     * @param[out] nearest_p the closest point on the quad
+     * @return the smallest distance
+     */
     float64 point_quad_distance(
         const vec3& p,
         const vec3& p0,
@@ -672,27 +638,27 @@ namespace RINGMesh {
         const vec3 center( ( p0 + p1 + p2 + p3 ) / 4. ) ;
         vec3 edge0( p1 - p0 ) ;
         vec3 edge1( p3 - p0 ) ;
-        vec3 axis[ 2 ] = { normalize( edge0 ), normalize( edge1 ) };
-        float64 extent[ 2 ] = { 0.5*edge0.length(), 0.5*edge1.length() } ;
+        vec3 axis[2] = { normalize( edge0 ), normalize( edge1 ) } ;
+        float64 extent[2] = { 0.5 * edge0.length(), 0.5 * edge1.length() } ;
 
         vec3 diff = center - p ;
-        float64 b0 = dot( diff, axis[ 0 ] ) ;
-        float64 b1 = dot( diff, axis[ 1 ] ) ;
+        float64 b0 = dot( diff, axis[0] ) ;
+        float64 b1 = dot( diff, axis[1] ) ;
         float64 s0 = -b0 ;
         float64 s1 = -b1 ;
         float64 sqrDistance = dot( diff, diff ) ;
 
-        if( s0 < -extent[ 0 ] ) {
-            s0 = -extent[ 0 ] ;
-        } else if( s0 > extent[ 0 ] ) {
-            s0 = extent[ 0 ] ;
+        if( s0 < -extent[0] ) {
+            s0 = -extent[0] ;
+        } else if( s0 > extent[0] ) {
+            s0 = extent[0] ;
         }
         sqrDistance += s0 * ( s0 + 2. * b0 ) ;
 
-        if( s1 < -extent[ 1 ] ) {
-            s1 = -extent[ 1 ] ;
-        } else if( s1 > extent[ 1 ] ) {
-            s1 = extent[ 1 ] ;
+        if( s1 < -extent[1] ) {
+            s1 = -extent[1] ;
+        } else if( s1 > extent[1] ) {
+            s1 = extent[1] ;
         }
         sqrDistance += s1 * ( s1 + 2. * b1 ) ;
 
@@ -703,22 +669,22 @@ namespace RINGMesh {
 
         float64 distance = sqrt( sqrDistance ) ;
         nearest_p = center ;
-        nearest_p += s0 * axis[ 0 ] ;
-        nearest_p += s1 * axis[ 1 ] ;
+        nearest_p += s0 * axis[0] ;
+        nearest_p += s1 * axis[1] ;
 
         return distance ;
     }
 
     /*!
-    * Computes the intersection of a segment and a triangle
-    * @param[in] seg0 the first vertex of the segment
-    * @param[in] seg1 the second vertex of the segment
-    * @param[in] trgl0 the first vertex of the triangle
-    * @param[in] trgl1 the second vertex of the triangle
-    * @param[in] trgl2 the third vertex of the triangle
-    * @param[out] result the intersected point
-    * @return true is there is an intersection
-    */
+     * Computes the intersection of a segment and a triangle
+     * @param[in] seg0 the first vertex of the segment
+     * @param[in] seg1 the second vertex of the segment
+     * @param[in] trgl0 the first vertex of the triangle
+     * @param[in] trgl1 the second vertex of the triangle
+     * @param[in] trgl2 the third vertex of the triangle
+     * @param[out] result the intersected point
+     * @return true is there is an intersection
+     */
     bool segment_triangle_intersection(
         const vec3& seg0,
         const vec3& seg1,
@@ -780,27 +746,26 @@ namespace RINGMesh {
         return false ;
     }
 
-
     /*!
-    * @brief Builds a rotational matrix about an arbitrary axis.
-    *
-    * Mathematical development: http://paulbourke.net/geometry/rotate/.
-    *
-    * @param[in] origin point in which passes the rotation axis.
-    *
-    * @param[in] axis vector which defines the rotation axis.
-    *
-    * @param[in] theta rotation angle (in radians or degrees).
-    *
-    * @param[in] degrees true is \p theta is in degrees, false
-    * if in radians.
-    *
-    * @param[out] rot_mat the matrix which defines the rotation
-    * of a point around the axis defined by point \p origin
-    * and vector \p axis by an angle \p theta.
-    * New coordinates of a point (x,y,z) are:
-    * (x',y',z') = rot_mat*(x,y,z)
-    */
+     * @brief Builds a rotational matrix about an arbitrary axis.
+     *
+     * Mathematical development: http://paulbourke.net/geometry/rotate/.
+     *
+     * @param[in] origin point in which passes the rotation axis.
+     *
+     * @param[in] axis vector which defines the rotation axis.
+     *
+     * @param[in] theta rotation angle (in radians or degrees).
+     *
+     * @param[in] degrees true is \p theta is in degrees, false
+     * if in radians.
+     *
+     * @param[out] rot_mat the matrix which defines the rotation
+     * of a point around the axis defined by point \p origin
+     * and vector \p axis by an angle \p theta.
+     * New coordinates of a point (x,y,z) are:
+     * (x',y',z') = rot_mat*(x,y,z)
+     */
     void rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
@@ -818,12 +783,12 @@ namespace RINGMesh {
 
         float64 axis_length = axis.length() ;
         ringmesh_debug_assert( axis_length > 0. ) ;
-        float64 x1 = origin[ 0 ] ;
-        float64 y1 = origin[ 1 ] ;
-        float64 z1 = origin[ 2 ] ;
-        float64 a = axis[ 0 ] / axis_length ;
-        float64 b = axis[ 1 ] / axis_length ;
-        float64 c = axis[ 2 ] / axis_length ;
+        float64 x1 = origin[0] ;
+        float64 y1 = origin[1] ;
+        float64 z1 = origin[2] ;
+        float64 a = axis[0] / axis_length ;
+        float64 b = axis[1] / axis_length ;
+        float64 c = axis[2] / axis_length ;
         float64 d = std::sqrt( b * b + c * c ) ;
         float64 cos_angle = std::cos( theta ) ;
         float64 sin_angle = std::sin( theta ) ;
@@ -1032,17 +997,15 @@ namespace RINGMesh {
         rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx * T ;
     }
 
-
-
     /*!
-    * Tests if a point is inside a triangle, more precisely if it is inside
-    * a prism based on the triangle and its normal
-    * @param[in] p the point to test
-    * @param[in] p0 the first vertex of the triangle
-    * @param[in] p1 the second vertex of the triangle
-    * @param[in] p2 the third vertex of the triangle
-    * @return returns true if the point is inside
-    */
+     * Tests if a point is inside a triangle, more precisely if it is inside
+     * a prism based on the triangle and its normal
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the triangle
+     * @param[in] p1 the second vertex of the triangle
+     * @param[in] p2 the third vertex of the triangle
+     * @return returns true if the point is inside
+     */
     bool point_inside_triangle(
         const vec3& p,
         const vec3& p0,
@@ -1066,15 +1029,15 @@ namespace RINGMesh {
     }
 
     /*!
-    * Tests if a point is inside a quad, more precisely if it is inside the box
-    * based on the quad and its normal
-    * @param[in] p the point to test
-    * @param[in] p0 the first vertex of the quad
-    * @param[in] p1 the second vertex of the quad
-    * @param[in] p2 the third vertex of the quad
-    * @param[in] p3 the fourth vertex of the quad
-    * @return returns true if the point is inside
-    */
+     * Tests if a point is inside a quad, more precisely if it is inside the box
+     * based on the quad and its normal
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the quad
+     * @param[in] p1 the second vertex of the quad
+     * @param[in] p2 the third vertex of the quad
+     * @param[in] p3 the fourth vertex of the quad
+     * @return returns true if the point is inside
+     */
     bool point_inside_quad(
         const vec3& p,
         const vec3& p0,
@@ -1105,31 +1068,28 @@ namespace RINGMesh {
         return s1 == s2 && s2 == s3 && s3 == s4 ;
     }
 
-
     MakeUnique::MakeUnique( const std::vector< vec3 >& points )
         : points_( points )
     {
         index_t nb_points = points_.size() ;
         indices_.resize( nb_points ) ;
         for( index_t i = 0; i < nb_points; i++ ) {
-            indices_[ i ] = i ;
+            indices_[i] = i ;
         }
     }
 
-
-
     /*!
-    * Gets a vector of unique points (initial vector - colocated points)
-    * @param[out] results the vector to fill
-    */
+     * Gets a vector of unique points (initial vector - colocated points)
+     * @param[out] results the vector to fill
+     */
     void MakeUnique::unique_points( std::vector< vec3 >& results ) const
     {
         results.reserve( indices_.size() ) ;
         signed_index_t offset = 0, cur_id = 0 ;
         for( index_t p = 0; p < indices_.size(); p++ ) {
-            if( cur_id == indices_[ p ] ) {
+            if( cur_id == indices_[p] ) {
                 cur_id++ ;
-                results.push_back( points_[ indices_[ p ] + offset ] ) ;
+                results.push_back( points_[indices_[p] + offset] ) ;
             } else {
                 offset++ ;
             }
@@ -1137,67 +1097,69 @@ namespace RINGMesh {
     }
 
     /*!
-    * Computes the unique database
-    */
+     * Computes the unique database
+     */
     void MakeUnique::unique()
     {
         ColocaterANN ann( points_ ) ;
         for( index_t i = 0; i < indices_.size(); i++ ) {
-            if( indices_[ i ] != i ) continue ;
+            if( indices_[i] != i ) continue ;
             std::vector< index_t > results ;
-            ann.get_colocated( points_[ i ], results ) ;
+            ann.get_colocated( points_[i], results ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             for( index_t j = 0; j < results.size(); j++ ) {
-                if( id == results[ j ] ) continue ;
-                indices_[ results[ j ] ] = id ;
+                if( id == results[j] ) continue ;
+                indices_[results[j]] = id ;
             }
         }
         index_t offset = 0 ;
         for( index_t i = 0; i < indices_.size(); i++ ) {
-            if( indices_[ i ] != i ) {
-                indices_[ i ] = indices_[ indices_[ i ] ] ;
+            if( indices_[i] != i ) {
+                indices_[i] = indices_[indices_[i]] ;
                 offset++ ;
             } else {
-                indices_[ i ] -= offset ;
+                indices_[i] -= offset ;
             }
         }
     }
     /*!
-    * Add edges to the initial vector
-    * @param[in] points the edges to add
-    */
-    void MakeUnique::add_edges( const std::vector< std::pair< vec3, vec3 > >& points )
+     * Add edges to the initial vector
+     * @param[in] points the edges to add
+     */
+    void MakeUnique::add_edges(
+        const std::vector< std::pair< vec3, vec3 > >& points )
     {
         signed_index_t offset = points_.size() ;
         points_.resize( offset + ( points.size() * 2 ) ) ;
         indices_.resize( offset + ( points.size() * 2 ) ) ;
         for( index_t p = 0; p < points.size(); p++ ) {
-            points_[ offset ] = points[ p ].first ;
-            indices_[ offset ] = offset ;
+            points_[offset] = points[p].first ;
+            indices_[offset] = offset ;
             offset++ ;
-            points_[ offset ] = points[ p ].second ;
-            indices_[ offset ] = offset ;
+            points_[offset] = points[p].second ;
+            indices_[offset] = offset ;
             offset++ ;
         }
     }
     /*!
-    * Add points to the initial vector
-    * @param[in] points the points to add
-    */
+     * Add points to the initial vector
+     * @param[in] points the points to add
+     */
     void MakeUnique::add_points( const std::vector< vec3 >& points )
     {
         signed_index_t offset = points_.size() ;
         points_.resize( offset + points.size() ) ;
         indices_.resize( offset + points.size() ) ;
         for( index_t p = 0; p < points.size(); p++, offset++ ) {
-            points_[ offset ] = points[ p ] ;
-            indices_[ offset ] = offset ;
+            points_[offset] = points[p] ;
+            indices_[offset] = offset ;
         }
     }
 
     ColocaterANN::ColocaterANN()
         : ann_points_( nil )
-    {}
+    {
+    }
 
     ColocaterANN::ColocaterANN(
         const GEO::Mesh& mesh,
@@ -1210,38 +1172,38 @@ namespace RINGMesh {
                 if( !copy ) {
                     ann_points_ = nil ;
                     ann_tree_->set_points( mesh.vertices.nb(),
-                                           mesh.vertices.point_ptr( 0 ) ) ;
+                        mesh.vertices.point_ptr( 0 ) ) ;
                 } else {
                     index_t nb_vertices = mesh.vertices.nb() ;
-                    ann_points_ = new double[ nb_vertices * 3 ] ;
+                    ann_points_ = new double[nb_vertices * 3] ;
                     GEO::Memory::copy( ann_points_, mesh.vertices.point_ptr( 0 ),
-                                       nb_vertices * 3 * sizeof( double ) ) ;
+                        nb_vertices * 3 * sizeof(double) ) ;
                     ann_tree_->set_points( nb_vertices, ann_points_ ) ;
                 }
                 break ;
             }
             case FACETS: {
                 index_t nb_vertices = mesh.facets.nb() ;
-                ann_points_ = new double[ nb_vertices * 3 ] ;
+                ann_points_ = new double[nb_vertices * 3] ;
                 for( index_t i = 0; i < mesh.facets.nb(); i++ ) {
                     vec3 center = GEO::Geom::mesh_facet_center( mesh, i ) ;
                     index_t index_in_ann = 3 * i ;
-                    ann_points_[ index_in_ann ] = center.x ;
-                    ann_points_[ index_in_ann + 1 ] = center.y ;
-                    ann_points_[ index_in_ann + 2 ] = center.z ;
+                    ann_points_[index_in_ann] = center.x ;
+                    ann_points_[index_in_ann + 1] = center.y ;
+                    ann_points_[index_in_ann + 2] = center.z ;
                 }
                 ann_tree_->set_points( nb_vertices, ann_points_ ) ;
                 break ;
             }
             case CELLS: {
                 index_t nb_vertices = mesh.cells.nb() ;
-                ann_points_ = new double[ nb_vertices * 3 ] ;
+                ann_points_ = new double[nb_vertices * 3] ;
                 for( index_t i = 0; i < mesh.cells.nb(); i++ ) {
                     vec3 center = mesh_cell_center( mesh, i ) ;
                     index_t index_in_ann = 3 * i ;
-                    ann_points_[ index_in_ann ] = center.x ;
-                    ann_points_[ index_in_ann + 1 ] = center.y ;
-                    ann_points_[ index_in_ann + 2 ] = center.z ;
+                    ann_points_[index_in_ann] = center.x ;
+                    ann_points_[index_in_ann + 1] = center.y ;
+                    ann_points_[index_in_ann + 2] = center.z ;
                 }
                 ann_tree_->set_points( nb_vertices, ann_points_ ) ;
                 break ;
@@ -1265,11 +1227,11 @@ namespace RINGMesh {
     }
 
     /*!
-    * Compute the colocated point(s) of a given point
-    * @param[in] v the point to test
-    * @param[out] result the colocated point indices with a precision epsilon.
-    * @return return true if there is at least one intersection
-    */
+     * Compute the colocated point(s) of a given point
+     * @param[in] v the point to test
+     * @param[out] result the colocated point indices with a precision epsilon.
+     * @return return true if there is at least one intersection
+     */
     bool ColocaterANN::get_colocated(
         const vec3& v,
         std::vector< index_t >& result ) const
@@ -1283,13 +1245,13 @@ namespace RINGMesh {
             prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
             neighbors.resize( cur_neighbor ) ;
-            double* dist = (double*)alloca( sizeof( double ) * cur_neighbor ) ;
+            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
             nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                if( dist[ i ] > epsilon_sq ) {
+                if( dist[i] > epsilon_sq ) {
                     break ;
                 }
-                result.push_back( neighbors[ i ] ) ;
+                result.push_back( neighbors[i] ) ;
             }
         } while( result.size() == cur_neighbor ) ;
 
@@ -1297,14 +1259,14 @@ namespace RINGMesh {
     }
 
     /*!
-    * Gets the neighboring points of a given one sorted by increasing distance
-    * @param[in] v the point to test
-    * @param[in] nb_neighbors the number of neighbors to return
-    * @param[out] result the neighboring points
-    * @param[out] dist the square distance between each neigbhor and the point \p v
-    * @return the number of neighbors returned (can be less than \p nb_neighbors
-    * if there is not enough points)
-    */
+     * Gets the neighboring points of a given one sorted by increasing distance
+     * @param[in] v the point to test
+     * @param[in] nb_neighbors the number of neighbors to return
+     * @param[out] result the neighboring points
+     * @param[out] dist the square distance between each neigbhor and the point \p v
+     * @return the number of neighbors returned (can be less than \p nb_neighbors
+     * if there is not enough points)
+     */
     index_t ColocaterANN::get_neighbors(
         const vec3& v,
         index_t nb_neighbors,
@@ -1313,12 +1275,12 @@ namespace RINGMesh {
     {
         if( ann_tree_->nb_points() == 0 ) return 0 ;
         if( !dist ) {
-            dist = (double*)alloca( sizeof( double ) * nb_neighbors ) ;
+            dist = (double*) alloca( sizeof(double) * nb_neighbors ) ;
         }
         nb_neighbors = std::min( nb_neighbors, ann_tree_->nb_points() ) ;
         result.resize( nb_neighbors ) ;
-        ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[ 0 ],
-                                          dist ) ;
+        ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
+            dist ) ;
         return nb_neighbors ;
     }
 }

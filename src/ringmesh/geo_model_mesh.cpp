@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -39,19 +34,26 @@
  */
 
 #include <ringmesh/geo_model_mesh.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_builder.h>
-#include <ringmesh/geometry.h>
-#include <ringmesh/well.h>
-#include <ringmesh/algorithm.h>
-#include <ringmesh/geogram_extension.h>
-
-#include <geogram/basic/algorithm.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/points/colocate.h>
 
 #include <stack>
+
+#include <geogram/basic/algorithm.h>
+
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_repair.h>
+
+#include <geogram/points/colocate.h>
+
+#include <ringmesh/algorithm.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geogram_extension.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/well.h>
+
+/*!
+ * @author Arnaud Botella - Jeanne Pellerin - Antoine Mazuyer
+ */
 
 namespace {
     using namespace RINGMesh ;
@@ -178,7 +180,7 @@ namespace RINGMesh {
         mesh_.clear() ;
 
         // Total number of vertices in the
-        // Corners, Lines, and Surfaces of the GeoModel
+        // Corners, Lines, Surfaces and Regions of the GeoModel
         index_t nb = 0 ;
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
@@ -209,9 +211,9 @@ namespace RINGMesh {
                     GeoModelMeshElement::model_vertex_id_att_name() ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     // Global index stored at BME level
-                    att[ v ] = count ;
+                    att[v] = count ;
                     // Index in the BME stored at global level
-                    gme_vertices_[ count ].push_back( GMEVertex( E.gme_id(), v ) ) ;
+                    gme_vertices_[count].push_back( GMEVertex( E.gme_id(), v ) ) ;
                     // Global vertex index increment
                     count++ ;
                 }
@@ -358,10 +360,8 @@ namespace RINGMesh {
         }
         // Identify and invalidate colocated vertices
         GEO::vector< index_t > old2new ;
-        if( GEO::Geom::colocate( mesh_.vertices.point_ptr( 0 ), 3, 
-                                 mesh_.vertices.nb(), old2new, epsilon)
-            != mesh_.vertices.nb() 
-        ) {
+        if( GEO::Geom::colocate( mesh_.vertices.point_ptr( 0 ), 3,
+            mesh_.vertices.nb(), old2new, epsilon ) != mesh_.vertices.nb() ) {
             std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
             erase_vertices( stupid_copy ) ;
         }
@@ -465,7 +465,7 @@ namespace RINGMesh {
         }
 #endif
 
-        // Update model_vertex_ids in BMME
+        // Update model_vertex_ids in GMME
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
@@ -478,7 +478,7 @@ namespace RINGMesh {
                     index_t old_id = E.model_vertex_id( v ) ;
                     index_t new_id = to_delete[old_id] ;
                     // If new_id is NO_ID the vertex should be removed afterwards
-                    // from the BMME
+                    // from the GMME
                     ringmesh_debug_assert( new_id != NO_ID ) ;
                     att[v] = new_id ;
 
@@ -533,7 +533,8 @@ namespace RINGMesh {
     void GeoModelMeshCells::initialize()
     {
         gmm_.vertices.test_and_initialize() ;
-        region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1, 0 ) ;
+        region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1,
+            0 ) ;
 
         // Total number of  cells
         std::vector< index_t > nb_cells_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
@@ -1076,7 +1077,7 @@ namespace RINGMesh {
         facet = facet_id_[mesh_.cells.facet( c, f )] ;
         if( facet != NO_ID ) {
             vec3 facet_normal = GEO::Geom::mesh_facet_normal( mesh_, facet ) ;
-            vec3 cell_facet_normal = mesh_cell_facet_normal( mesh_, c, f ) ;
+            vec3 cell_facet_normal = GEO::mesh_cell_facet_normal( mesh_, c, f ) ;
             side = dot( facet_normal, cell_facet_normal ) > 0 ;
         }
         return facet != NO_ID ;
@@ -1215,7 +1216,7 @@ namespace RINGMesh {
     }
 
     /* @todo Review : The use of geometrical computation (barycenter) is
-    * very much bug prone. Vertex indices should be used instead. [Jeanne] */
+     * very much bug prone. Vertex indices should be used instead. [Jeanne] */
     void GeoModelMeshCells::initialize_cell_facet()
     {
         gmm_.facets.test_and_initialize() ;
@@ -1227,15 +1228,14 @@ namespace RINGMesh {
             for( index_t f = 0; f < mesh_.cells.nb_facets( c ); f++ ) {
                 std::vector< index_t > result ;
                 if( ann.get_colocated( mesh_cell_facet_center( mesh_, c, f ),
-                    result ) ) {                    
+                    result ) ) {
                     facet_id_[mesh_.cells.facet( c, f )] = result[0] ;
                     // If there are more than 1 matching facet, this is WRONG
                     // and the vertex indices should be checked too [Jeanne]
-                    ringmesh_assert( result.size() == 1 );
+                    ringmesh_assert( result.size() == 1 ) ;
                 }
             }
         }
-
     }
 
     vec3 GeoModelMeshCells::center( index_t c ) const
@@ -1958,11 +1958,11 @@ namespace RINGMesh {
             facets( *this, *mesh_ ),
             cells( *this, *mesh_ ),
             order( *this, *mesh_ )
-            /*! @todo I am no expert but this initialization list looks like
-             * a ticking bomb (like those in GEO::Mesh, btw I don not understand how these can work) 
-             * If these classes are derived one day, I don't know what will happen [JP]*/
+    /*! @todo I am no expert but this initialization list looks like
+     * a ticking bomb (like those in GEO::Mesh, btw I don not understand how these can work)
+     * If these classes are derived one day, I don't know what will happen [JP]*/
     {
-         
+
     }
 
     GeoModelMesh::~GeoModelMesh()

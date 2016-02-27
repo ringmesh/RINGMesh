@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -38,20 +33,20 @@
  *     FRANCE
  */
 
-
 #ifndef __RINGMESH_GEO_MODEL_MESH__
 #define __RINGMESH_GEO_MODEL_MESH__
 
 #include <ringmesh/common.h>
-#include <ringmesh/geo_model_element.h>
+
 #include <geogram/mesh/mesh.h>
 
-/*!
-* @file ringmesh/geo_model_mesh.h
-* @brief Classes to manage globally the indexing of mesh elements of a GeoModel
-* @author Arnaud Botella and Jeanne Pellerin
-*/
+#include <ringmesh/geo_model_element.h>
 
+/*!
+ * @file ringmesh/geo_model_mesh.h
+ * @brief Classes to manage globally the indexing of mesh elements of a GeoModel
+ * @author Arnaud Botella and Jeanne Pellerin
+ */
 
 namespace RINGMesh {
     class GeoModel ;
@@ -71,9 +66,9 @@ namespace RINGMesh {
      * Update mechanisms are BAD... very difficult to change, specially because of 
      * the building [JP]
      */
- 
+
     class RINGMESH_API GeoModelMeshVertices {
-        ringmesh_disable_copy( GeoModelMeshVertices ) ;
+    ringmesh_disable_copy( GeoModelMeshVertices ) ;
         friend class GeoModelMesh ;
 
     public:

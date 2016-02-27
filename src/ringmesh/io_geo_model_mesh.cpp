@@ -24,11 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
  *     http://www.ring-team.org
  *
  *     RING Project
@@ -39,26 +34,36 @@
  */
 
 #include <ringmesh/io.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/well.h>
-#include <ringmesh/geometry.h>
-#include <ringmesh/geogram_extension.h>
-
-#include <geogram/basic/file_system.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_geometry.h>
-
-#include <third_party/zlib/zip.h>
-#include <third_party/zlib/unzip.h>
 
 #include <iomanip>
 #include <stack>
 
+#include <third_party/zlib/unzip.h>
+#include <third_party/zlib/zip.h>
+
+#include <geogram/basic/command_line.h>
+#include <geogram/basic/file_system.h>
+#include <geogram/basic/line_stream.h>
+#include <geogram/basic/logger.h>
+
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_io.h>
+
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_builder_so.h>
+#include <ringmesh/geo_model_validity.h>
+#include <ringmesh/geogram_extension.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/well.h>
+
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
+
+/*!
+ * @file Implementation of classes loading volumetric GeoModels
+ * @author Arnaud Botella and Antoine Mazuyer
+ */
 
 namespace {
     using namespace RINGMesh ;
@@ -497,10 +502,30 @@ namespace {
 
     class TSolidIOHandler: public GeoModelVolumeIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& model )
         {
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from TSolid not implemented yet" ) ;
+            std::ifstream input( filename.c_str() ) ;
+            if( input ) {
+                GeoModelBuilderTSolid builder( model, filename ) ;
+
+                time_t start_load, end_load ;
+                time( &start_load ) ;
+
+                builder.build_model() ;
+                print_geomodel( model ) ;
+                // Check boundary model validity
+                RINGMesh::is_geomodel_valid( model ) ;
+
+                time( &end_load ) ;
+
+                GEO::Logger::out( "I/O" )
+                    << " Loaded model " << model.name() << " from " << std::endl
+                    << filename << " timing: "
+                    << difftime( end_load, start_load ) << "sec" << std::endl ;
+            } else {
+                throw RINGMeshException( "I/O",
+                    "Failed loading model from file " + filename ) ;
+            }
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
