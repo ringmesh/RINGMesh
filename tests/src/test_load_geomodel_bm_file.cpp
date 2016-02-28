@@ -52,8 +52,9 @@ int main( int argc, char** argv )
 
     try {
 
-        initialize_geogram() ;
-        initialize_ringmesh() ;
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
 
         GEO::Logger::out( "TEST" ) << "Test IO for a GeoModel in .bm" << std::endl ;
 

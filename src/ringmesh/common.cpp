@@ -56,7 +56,7 @@
 namespace RINGMesh {
 
 
-    void initialize_geogram()
+    void configure_geogram()
     {
         GEO::CmdLine::import_arg_group( "sys" ) ;
 #ifdef RINGMESH_DEBUG
@@ -72,7 +72,7 @@ namespace RINGMesh {
 #endif
     }
 
-    void initialize_ringmesh()
+    void configure_ringmesh()
     {
         RINGMesh::mesh_initialize() ;
         RINGMesh::TetraGen::initialize() ;
