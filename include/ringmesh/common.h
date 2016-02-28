@@ -104,8 +104,8 @@ template< typename T > inline void ringmesh_unused( T const& )
 
 namespace RINGMesh {
 
-    void RINGMESH_API initialize_geogram() ;
-    void RINGMESH_API initialize_ringmesh() ;
+    void RINGMESH_API configure_geogram() ;
+    void RINGMESH_API configure_ringmesh() ;
 
     /*!
      * RINGMesh exception class.

@@ -54,8 +54,9 @@ int main( int argc, char** argv )
 
     try {
 
-        initialize_geogram() ;
-        initialize_ringmesh() ;
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
 
         GeoModel M ;
         std::string file_name( ringmesh_test_data_path ) ;
