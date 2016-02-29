@@ -168,7 +168,7 @@ namespace RINGMesh {
 
         const index_t nb_vertex() const
         {
-            ringmesh_debug_assert(
+            ringmesh_assert(
                 gocad_vertices2region_vertices_.size()
                     == gocad_vertices2region_id_.size() )
             return gocad_vertices2region_vertices_.size() ;
@@ -1078,7 +1078,7 @@ namespace RINGMesh {
             const VertexMap& vertex_map,
             std::vector< index_t >& corners_id )
         {
-            ringmesh_debug_assert( corners_id.size() == 4 ) ;
+            ringmesh_assert( corners_id.size() == 4 ) ;
             corners_id[0] = vertex_map.local_id( in.field_as_uint( 1 ) - 1 ) ;
             corners_id[1] = vertex_map.local_id( in.field_as_uint( 2 ) - 1 ) ;
             corners_id[2] = vertex_map.local_id( in.field_as_uint( 3 ) - 1 ) ;

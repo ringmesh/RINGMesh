@@ -122,14 +122,14 @@ namespace {
             corners_global[v] = S.model_vertex_id( f, v ) ;
             v++ ;
         }
-        ringmesh_debug_assert(
+        ringmesh_assert(
             std::count( corners.begin(), corners.end(), NO_ID ) == 0 ) ;
-        ringmesh_debug_assert(
+        ringmesh_assert(
             std::count( corners_global.begin(), corners_global.end(), NO_ID ) == 0 ) ;
         // 0 is the default value of the model_vertex_id
         // If we have only 0 either this is a degenerate facets, but most certainly
         // model vertex ids are not good 
-        ringmesh_debug_assert(
+        ringmesh_assert(
             std::count( corners_global.begin(), corners_global.end(), 0 )
                 != corners_global.size() ) ;
 
@@ -388,7 +388,7 @@ namespace RINGMesh {
             // If previous information are not valid
             // No further checks are possible 
             // This really should not happen 
-            ringmesh_debug_assert( valid ) ;
+            ringmesh_assert( valid ) ;
             return valid ;
         }
 
@@ -398,7 +398,7 @@ namespace RINGMesh {
                 << " element of that type in model " << model().name() << std::endl ;
             // This really should not happen
             valid = false ;
-            ringmesh_debug_assert( valid ) ;
+            ringmesh_assert( valid ) ;
             return valid ;
         }
         if( &( model().element( gme_id() ) ) != this ) {
@@ -406,7 +406,7 @@ namespace RINGMesh {
                 << " in model " << model().name() << " does not match this element"
                 << std::endl ;
             // This really should not happen
-            ringmesh_debug_assert( valid ) ;
+            ringmesh_assert( valid ) ;
             valid = false ;
             return valid ;
         }
@@ -616,7 +616,7 @@ namespace RINGMesh {
                 return false ;
             }
         } else {
-            ringmesh_debug_assert( false ) ;
+            ringmesh_assert( false ) ;
             return false ;
         }
     }
@@ -1032,7 +1032,7 @@ namespace RINGMesh {
             if( next_f == f ) {
                 next_f = facets[1] ;
             }
-            ringmesh_debug_assert( next_f != NO_ID ) ;
+            ringmesh_assert( next_f != NO_ID ) ;
 
             // Now get the other vertex that is on the boundary opposite to p1
             v_in_next = facet_vertex_id( next_f, V ) ;
@@ -1059,10 +1059,10 @@ namespace RINGMesh {
             // Get the id in the facet of the vertex neighbor of v1 that is not v0
             v_in_next = v ;
             if( prev_in_facet( f, v ) == from ) {
-                ringmesh_debug_assert( is_on_border( f, v ) ) ;
+                ringmesh_assert( is_on_border( f, v ) ) ;
                 next_in_next = next_in_facet( f, v ) ;
             } else {
-                ringmesh_debug_assert( is_on_border( f, prev_in_facet( f, v ) ) ) ;
+                ringmesh_assert( is_on_border( f, prev_in_facet( f, v ) ) ) ;
                 next_in_next = prev_in_facet( f, v ) ;
             }
         }
@@ -1095,7 +1095,7 @@ namespace RINGMesh {
      */
     index_t Surface::facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const
     {
-        ringmesh_debug_assert(
+        ringmesh_assert(
             in0 < mesh_.vertices.nb() && in1 < mesh_.vertices.nb() ) ;
 
         // Another possible, probably faster, algorithm is to check if the 2 indices
