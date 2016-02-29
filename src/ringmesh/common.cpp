@@ -55,7 +55,10 @@
 
 namespace RINGMesh {
 
-
+    /*!
+     * This function configures geogram by setting some geogram options.
+     * \pre This function should be call after GEO::initialize().
+     */
     void configure_geogram()
     {
         GEO::CmdLine::import_arg_group( "sys" ) ;
@@ -72,6 +75,9 @@ namespace RINGMesh {
 #endif
     }
 
+    /*!
+     * This function configures RINGMesh by initializing its factories.
+     */
     void configure_ringmesh()
     {
         RINGMesh::mesh_initialize() ;
