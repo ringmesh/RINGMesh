@@ -283,7 +283,7 @@ namespace RINGMesh {
                             return 0 ;
                     }
                 }
-                ringmesh_debug_assert( volume > 0 ) ;
+                ringmesh_assert( volume > 0 ) ;
                 return volume ;
             }
             default:
@@ -507,7 +507,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < 3; i++ ) {
                 mesh.vertices.point_ptr( v )[ i ] = new_coords[ i ] ;
             }
-            ringmesh_debug_assert( new_coords[ 3 ] == 1. ) ;
+            ringmesh_assert( new_coords[ 3 ] == 1. ) ;
         }
     }
 

@@ -351,22 +351,22 @@ namespace RINGMesh {
                     angle_( -99999 ),
                     side_( false )
             {
-                ringmesh_debug_assert( p0 != p1 ) ;
-                ringmesh_debug_assert( p0 != p2 ) ;
-                ringmesh_debug_assert( p1 != p2 ) ;
+                ringmesh_assert( p0 != p1 ) ;
+                ringmesh_assert( p0 != p2 ) ;
+                ringmesh_assert( p1 != p2 ) ;
 
                 vec3 e1 = normalize( p1 - p0 ) ;
                 vec3 e2 = normalize( p2 - p0 ) ;
 
                 N_ = normalize( cross( e1, e2 ) ) ;
-                ringmesh_debug_assert( dot( N_, e1 ) < epsilon ) ;
+                ringmesh_assert( dot( N_, e1 ) < epsilon ) ;
 
                 vec3 B = 0.5 * p1 + 0.5 * p0 ;
                 vec3 p2B = p2 - B ;
                 B_A_ = normalize( p2B - dot( p2B, e1 ) * e1 ) ;
 
-                ringmesh_debug_assert( dot( B_A_, e1 ) < epsilon ) ;
-                ringmesh_debug_assert( B_A_.length() > epsilon ) ;
+                ringmesh_assert( dot( B_A_, e1 ) < epsilon ) ;
+                ringmesh_assert( B_A_.length() > epsilon ) ;
             }
             ;
 
@@ -453,7 +453,7 @@ namespace RINGMesh {
 
         void sort()
         {
-            ringmesh_debug_assert( triangles_.size() > 0 ) ;
+            ringmesh_assert( triangles_.size() > 0 ) ;
 
             std::pair< index_t, bool > default_pair( index_t( -1 ), false ) ;
             sorted_triangles_.resize( 2 * triangles_.size(), default_pair ) ;
@@ -510,7 +510,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < triangles_.size(); ++i ) {
                 TriangleToSort& cur = triangles_[i] ;
                 if( triangles_[i].index_ == 0 ) { // The last to add
-                    ringmesh_debug_assert( i == triangles_.size() - 1 ) ;
+                    ringmesh_assert( i == triangles_.size() - 1 ) ;
                     sorted_triangles_[it].first = cur.surface_index_ ;
                     sorted_triangles_[it].second = cur.side_ ;
                 } else {
@@ -522,7 +522,7 @@ namespace RINGMesh {
                 }
             }
             // All the surfaces must have been sorted
-            ringmesh_debug_assert(
+            ringmesh_assert(
                 std::count( sorted_triangles_.begin(), sorted_triangles_.end(),
                     default_pair ) == 0 ) ;
         }
@@ -555,7 +555,7 @@ namespace RINGMesh {
                             return sorted_triangles_[i + 1] ;
                         }
                     } else {
-                        ringmesh_debug_assert(
+                        ringmesh_assert(
                             sorted_triangles_[i - 1].first
                                 == sorted_triangles_[i].first ) ;
                         if( sorted_triangles_[i - 1].second
@@ -729,17 +729,17 @@ namespace RINGMesh {
          */
         void get_one_line_vertices( bool backward )
         {
-            ringmesh_debug_assert( is_not_the_end() ) ;
+            ringmesh_assert( is_not_the_end() ) ;
 
             index_t start( cur_border_triangle_ ) ;
-            ringmesh_debug_assert( start != NO_ID ) ;
+            ringmesh_assert( start != NO_ID ) ;
 
             index_t t = get_next_border_triangle( start, backward ) ;
-            ringmesh_debug_assert( t != start ) ;
+            ringmesh_assert( t != start ) ;
 
             bool same_surfaces = true ;
             while( same_surfaces && t != start ) {
-                ringmesh_debug_assert( t != NO_ID ) ;
+                ringmesh_assert( t != NO_ID ) ;
                 if( !is_visited( t ) ) {
                     std::vector< index_t > cur_adjacent_surfaces ;
                     get_adjacent_surfaces( t, cur_adjacent_surfaces ) ;
@@ -835,7 +835,7 @@ namespace RINGMesh {
                 if( v1 == end_vertex ) {
                     to_add = v0 ;
                 } else {
-                    ringmesh_debug_assert( v0 == end_vertex ) ;
+                    ringmesh_assert( v0 == end_vertex ) ;
                 }
                 cur_line_vertices_.push_back( to_add ) ;
             } else {
@@ -843,7 +843,7 @@ namespace RINGMesh {
                 if( v1 == first_vertex ) {
                     to_add = v0 ;
                 } else {
-                    ringmesh_debug_assert( v0 == first_vertex ) ;
+                    ringmesh_assert( v0 == first_vertex ) ;
                 }
                 cur_line_vertices_.insert( cur_line_vertices_.begin(), to_add ) ;
             }
@@ -883,7 +883,7 @@ namespace RINGMesh {
             index_t f = border_triangle.facet_ ;
             index_t f_v0 = S.facet_id_from_model( f, border_triangle.v0_ ) ;
             index_t f_v1 = S.facet_id_from_model( f, border_triangle.v1_ ) ;
-            ringmesh_debug_assert( f_v0 != NO_ID && f_v1 != NO_ID ) ;
+            ringmesh_assert( f_v0 != NO_ID && f_v1 != NO_ID ) ;
 
             index_t next_f = NO_ID ;
             index_t next_f_v0 = NO_ID ;
@@ -904,7 +904,7 @@ namespace RINGMesh {
                 std::lower_bound( border_triangles_.begin(), border_triangles_.end(),
                     bait ) - border_triangles_.begin() ) ;
 
-            ringmesh_debug_assert( result < border_triangles_.size() ) ;
+            ringmesh_assert( result < border_triangles_.size() ) ;
             return result ;
         }
 
@@ -1111,7 +1111,7 @@ namespace RINGMesh {
         bool update )
     {
         GeoModelMeshElement& E = mesh_element( t ) ;
-        ringmesh_debug_assert( v < E.nb_vertices() ) ;
+        ringmesh_assert( v < E.nb_vertices() ) ;
         if( update ) {
             model_.mesh.vertices.update_point( E.model_vertex_id( v ), point ) ;
         } else {
@@ -1137,7 +1137,7 @@ namespace RINGMesh {
             model_.mesh.vertices.vertex( model_vertex ), false ) ;
 
         GeoModelMeshElement& E = mesh_element( element_id ) ;
-        ringmesh_debug_assert( v < E.nb_vertices() ) ;
+        ringmesh_assert( v < E.nb_vertices() ) ;
         E.model_vertex_id_[v] = model_vertex ;
         model_.mesh.vertices.add_to_bme( model_vertex, GMEVertex( element_id, v ) ) ;
     }
@@ -1444,7 +1444,7 @@ namespace RINGMesh {
     void GeoModelBuilder::compute_surface_adjacencies( index_t surface_id )
     {
         Surface& S = dynamic_cast< Surface& >( *model_.surfaces_[surface_id] ) ;
-        ringmesh_debug_assert( S.nb_cells() > 0 ) ;
+        ringmesh_assert( S.nb_cells() > 0 ) ;
 
         std::vector< index_t > adjacent ;
         adjacent.resize( S.facet_end( S.nb_cells() - 1 ), Surface::NO_ADJACENT ) ;
@@ -1489,7 +1489,7 @@ namespace RINGMesh {
                     index_t f2 = inter[0] == f ? inter[1] : inter[0] ;
                     adjacent[S.facet_begin( f ) + S.prev_in_facet( f, v )] = f2 ;
                 } else {
-                    ringmesh_debug_assert( end == 1 ) ;
+                    ringmesh_assert( end == 1 ) ;
                 }
             }
         }
@@ -1552,7 +1552,7 @@ namespace RINGMesh {
             index_t f = NO_ID ;
             index_t v = NO_ID ;
             bool found = find_facet_and_edge( ann, S, p0, p1, f, v ) ;
-            ringmesh_debug_assert( found && f != NO_ID && v != NO_ID ) ;
+            ringmesh_assert( found && f != NO_ID && v != NO_ID ) ;
 
             index_t f2 = S.adjacent( f, v ) ;
             if( f2 != NO_ID ) {
@@ -1561,7 +1561,7 @@ namespace RINGMesh {
                 S.oriented_edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
                 if( v2 == NO_ID ) {
                     S.oriented_edge_from_model_vertex_ids( p1, p0, f2, v2 ) ;
-                    ringmesh_debug_assert( v2 != NO_ID ) ;
+                    ringmesh_assert( v2 != NO_ID ) ;
                 }
                 S.mesh_.facets.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
                 S.mesh_.facets.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
@@ -1588,7 +1588,7 @@ namespace RINGMesh {
 
         index_t v( NO_ID ) ;
         bool found = find_facet_and_edge( ann, S, p0, p1, facet_index, v ) ;
-        ringmesh_debug_assert( found && facet_index != NO_ID && v != NO_ID ) ;
+        ringmesh_assert( found && facet_index != NO_ID && v != NO_ID ) ;
 
         surface_vertex_0 = S.surf_vertex_id( facet_index, v ) ;
         surface_vertex_1 = S.surf_vertex_id( facet_index,
@@ -1826,7 +1826,7 @@ namespace RINGMesh {
 
     bool GeoModelBuilder::build_brep_regions_from_surfaces()
     {
-        ringmesh_debug_assert( model_.nb_lines() == regions_info_.size() ) ;
+        ringmesh_assert( model_.nb_lines() == regions_info_.size() ) ;
 
         // Complete boundary information for surfaces
         // to compute volumetric regions
@@ -1921,7 +1921,7 @@ namespace RINGMesh {
                     << "Small bubble regions were skipped at model building "
                     << std::endl ;
                 // Or, most probably, we have a problem before
-                ringmesh_debug_assert( false ) ;
+                ringmesh_assert( false ) ;
             }
 
             // We need to remove from the regions_ the one corresponding
@@ -1993,7 +1993,7 @@ namespace RINGMesh {
             }
             if( !contact_id.is_defined() ) {
                 contact_id = create_element( GME::CONTACT ) ;
-                ringmesh_debug_assert( contact_id.index == interfaces.size() ) ;
+                ringmesh_assert( contact_id.index == interfaces.size() ) ;
                 interfaces.push_back( cur_interfaces ) ;
                 // Create a name for this contact
                 std::string name = "contact_" ;
@@ -2997,13 +2997,13 @@ namespace RINGMesh {
 
                         // Get the global corner id
                         gme_t corner_id = find_corner(model_, tsurf_vertices[ p1 ] ) ;
-                        ringmesh_debug_assert( corner_id.is_defined() ) ;
+                        ringmesh_assert( corner_id.is_defined() ) ;
 
                         // Get the surface
                         index_t part_id = NO_ID ;
                         for( index_t i = 0 ; i < tface_vertex_start.size() ; ++i ) {
                             if( p1 < tface_vertex_start[ i ] ) {
-                                ringmesh_debug_assert( p2 < tface_vertex_start[ i ] ) ;
+                                ringmesh_assert( p2 < tface_vertex_start[ i ] ) ;
 
                                 // Get vertices ids in the surface
                                 p1 = p1 - tface_vertex_start[ i - 1 ] ;
@@ -3172,7 +3172,7 @@ namespace RINGMesh {
             // It is because of the sign of Z that is not the same
             t = find_key_facet( surface_id, p00, p10, p20, same_sign ) ;
         }
-        ringmesh_debug_assert( t != NO_ID ) ;
+        ringmesh_assert( t != NO_ID ) ;
         return same_sign ;
     }
 
@@ -3191,13 +3191,13 @@ namespace RINGMesh {
         index_t id1,
         std::vector< vec3 >& border_vertex_model_vertices ) const
     {
-        ringmesh_debug_assert( id0 < S.nb_vertices() && id1 < S.nb_vertices() ) ;
+        ringmesh_assert( id0 < S.nb_vertices() && id1 < S.nb_vertices() ) ;
 
         border_vertex_model_vertices.resize( 0 ) ;
 
         // Starting facet that contains the two given vertices
         index_t f = S.facet_from_surface_vertex_ids( id0, id1 ) ;
-//        ringmesh_debug_assert( f != Surface::NO_ID ) ;
+//        ringmesh_assert( f != Surface::NO_ID ) ;
         if( f == NO_ID ) {
             border_vertex_model_vertices.resize( 0 ) ;
             return gme_t() ;
@@ -3221,7 +3221,7 @@ namespace RINGMesh {
                 S.facet_vertex_id( f, id1 ), next_f, id1_in_next,
                 next_id1_in_next ) ;
 
-            ringmesh_debug_assert(
+            ringmesh_assert(
                 next_f != NO_ID && id1_in_next != NO_ID
                     && next_id1_in_next != NO_ID ) ;
 
@@ -3257,7 +3257,7 @@ namespace RINGMesh {
     {
         gme_t parent = find_interface( model_, interface_name ) ;
         if( interface_name != "" ) {
-            ringmesh_debug_assert( parent.is_defined() ) ;
+            ringmesh_assert( parent.is_defined() ) ;
         }
 
         gme_t id = create_element( GME::SURFACE ) ;
@@ -3376,7 +3376,7 @@ namespace RINGMesh {
 //                    // Attributes
 //                    in_.get_line() ;
 //                    in_.get_fields() ;
-//                    ringmesh_debug_assert( in_.field_matches( 0, "MODEL_VERTEX_ATTRIBUTES" ) ) ;
+//                    ringmesh_assert( in_.field_matches( 0, "MODEL_VERTEX_ATTRIBUTES" ) ) ;
 //                    index_t nb_attribs = ( in_.nb_fields() - 1 ) / 2 ;
 //                    std::vector< SerializedAttribute< GeoModel::VERTEX > >
 //                    vertex_attribs( nb_attribs ) ;
@@ -3419,7 +3419,7 @@ namespace RINGMesh {
                     // Following information: vertices of the line
                     file_.get_line() ;
                     file_.get_fields() ;
-                    ringmesh_debug_assert(
+                    ringmesh_assert(
                         file_.field_matches( 0, "LINE_VERTICES" ) ) ;
                     index_t nb_vertices = file_.field_as_uint( 1 ) ;
                     std::vector< vec3 > vertices( nb_vertices ) ;
@@ -3437,7 +3437,7 @@ namespace RINGMesh {
                     // Attributes on line vertices
 //                    in_.get_line() ;
 //                    in_.get_fields() ;
-//                    ringmesh_debug_assert( in_.field_matches( 0, "LINE_VERTEX_ATTRIBUTES" ) ) ;
+//                    ringmesh_assert( in_.field_matches( 0, "LINE_VERTEX_ATTRIBUTES" ) ) ;
 //                    index_t nb_attribs = ( in_.nb_fields() - 1 ) / 2 ;
 //                    std::vector< SerializedAttribute > vertex_attribs(
 //                        nb_attribs ) ;
@@ -3457,7 +3457,7 @@ namespace RINGMesh {
                     // Read attributes on line segments
 //                    in_.get_line() ;
 //                    in_.get_fields() ;
-//                   ringmesh_debug_assert( in_.field_matches( 0, "LINE_SEGMENT_ATTRIBUTES" ) ) ;
+//                   ringmesh_assert( in_.field_matches( 0, "LINE_SEGMENT_ATTRIBUTES" ) ) ;
 //                    index_t nb_segment_attribs = ( in_.nb_fields() - 1 ) / 2 ;
 //                    if( nb_segment_attribs > 0 ) {
 //                        std::vector< SerializedAttribute< GME::FACET > >
@@ -3484,7 +3484,7 @@ namespace RINGMesh {
                     // Finally we have the in_boundary information
                     file_.get_line() ;
                     file_.get_fields() ;
-                    ringmesh_debug_assert( file_.field_matches( 0, "IN_BOUNDARY" ) ) ;
+                    ringmesh_assert( file_.field_matches( 0, "IN_BOUNDARY" ) ) ;
                     for( index_t b = 1; b < file_.nb_fields(); b++ ) {
                         add_element_in_boundary( cur_element,
                             gme_t( GME::SURFACE, file_.field_as_uint( b ) ) ) ;
@@ -3499,7 +3499,7 @@ namespace RINGMesh {
                     // Read the surface vertices and their attributes
                     file_.get_line() ;
                     file_.get_fields() ;
-                    ringmesh_debug_assert(
+                    ringmesh_assert(
                         file_.field_matches( 0, "SURFACE_VERTICES" ) ) ;
                     index_t nb_vertices = file_.field_as_uint( 1 ) ;
                     std::vector< vec3 > vertices( nb_vertices ) ;
@@ -3513,7 +3513,7 @@ namespace RINGMesh {
 
 //                    in_.get_line() ;
 //                    in_.get_fields() ;
-//                    ringmesh_debug_assert( in_.field_matches( 0,
+//                    ringmesh_assert( in_.field_matches( 0,
 //                            "SURFACE_VERTEX_ATTRIBUTES" ) ) ;
 //                    index_t nb_vertex_attribs = ( in_.nb_fields() - 1 ) / 2 ;
 //
@@ -3536,19 +3536,19 @@ namespace RINGMesh {
                     // Read the surface facets
                     file_.get_line() ;
                     file_.get_fields() ;
-                    ringmesh_debug_assert(
+                    ringmesh_assert(
                         file_.field_matches( 0, "SURFACE_CORNERS" ) ) ;
                     index_t nb_corners = file_.field_as_uint( 1 ) ;
 
                     file_.get_line() ;
                     file_.get_fields() ;
-                    ringmesh_debug_assert(
+                    ringmesh_assert(
                         file_.field_matches( 0, "SURFACE_FACETS" ) ) ;
                     index_t nb_facets = file_.field_as_uint( 1 ) ;
 
 //                    in_.get_line() ;
 //                    in_.get_fields() ;
-//                    ringmesh_debug_assert( in_.field_matches( 0, "SURFACE_FACET_ATTRIBUTES" ) ) ;
+//                    ringmesh_assert( in_.field_matches( 0, "SURFACE_FACET_ATTRIBUTES" ) ) ;
 //                    index_t nb_facet_attribs = ( in_.nb_fields() - 1 ) / 2 ;
 
                     // Bind the facet attributes

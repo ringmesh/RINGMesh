@@ -108,7 +108,7 @@ namespace RINGMesh {
                 ringmesh_assert( !nb_elements_per_type_.empty() ) ;
                 return nb_elements_per_type_.back() ;
             } else {
-                ringmesh_debug_assert_not_reached;
+                ringmesh_assert_not_reached;
                 return 0 ;
             }
         }
@@ -245,7 +245,7 @@ namespace RINGMesh {
          */
         inline GME::gme_t global_to_typed_id( const GME::gme_t& global ) const
         {
-            ringmesh_debug_assert( global.type == GME::ALL_TYPES ) ;
+            ringmesh_assert( global.type == GME::ALL_TYPES ) ;
 
             index_t t = NO_ID ;
             for( index_t i = 1 ; i < nb_elements_per_type_.size() ; i++ ) {
@@ -260,7 +260,7 @@ namespace RINGMesh {
                 index_t i = global.index - nb_elements_per_type_[t] ;
                 return GME::gme_t( T, i ) ;
             } else {
-                ringmesh_debug_assert_not_reached ;
+                ringmesh_assert_not_reached ;
                 return GME::gme_t() ;
             }
         }
@@ -343,7 +343,7 @@ namespace RINGMesh {
         inline GeoModelMeshElement& modifiable_mesh_element(
             const GME::gme_t& id ) const
         {
-            ringmesh_debug_assert( GME::has_mesh( id.type ) ) ;
+            ringmesh_assert( GME::has_mesh( id.type ) ) ;
             return dynamic_cast<GeoModelMeshElement&>( modifiable_element( id ) ) ;
         }
 

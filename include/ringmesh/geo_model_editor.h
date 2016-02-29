@@ -110,7 +110,7 @@ namespace RINGMesh {
          */
         GeoModelMeshElement& mesh_element( const GME::gme_t& id ) const
         {
-            ringmesh_debug_assert( GME::has_mesh( id.type ) ) ;
+            ringmesh_assert( GME::has_mesh( id.type ) ) ;
             return dynamic_cast< GeoModelMeshElement& >( element( id ) ) ;
         }
 
@@ -179,8 +179,8 @@ namespace RINGMesh {
             const GME::gme_t& boundary,
             bool side = false ) const
         {
-            ringmesh_debug_assert( boundary.is_defined() ) ;
-            ringmesh_debug_assert( GME::boundary_type( t.type ) == boundary.type ) ;
+            ringmesh_assert( boundary.is_defined() ) ;
+            ringmesh_assert( GME::boundary_type( t.type ) == boundary.type ) ;
             element( t ).boundaries_.push_back( boundary ) ;
 
             if( t.type == GME::REGION ) {
@@ -196,8 +196,8 @@ namespace RINGMesh {
         {
             /// No check on the validity of the index of the element boundary
             /// NO_ID is used to flag elements to delete
-            ringmesh_debug_assert( GME::boundary_type( t.type ) == boundary.type ) ;
-            ringmesh_debug_assert( id < element( t ).nb_boundaries() ) ;
+            ringmesh_assert( GME::boundary_type( t.type ) == boundary.type ) ;
+            ringmesh_assert( id < element( t ).nb_boundaries() ) ;
             element( t ).boundaries_[id] = boundary ;
 
             if( t.type == GME::REGION ) {
@@ -209,8 +209,8 @@ namespace RINGMesh {
             const GME::gme_t& t,
             const GME::gme_t& in_boundary ) const
         {
-            ringmesh_debug_assert( in_boundary.is_defined() ) ;
-            ringmesh_debug_assert(
+            ringmesh_assert( in_boundary.is_defined() ) ;
+            ringmesh_assert(
                 GME::in_boundary_type( t.type ) == in_boundary.type ) ;
             element( t ).in_boundary_.push_back( in_boundary ) ;
         }
@@ -222,9 +222,9 @@ namespace RINGMesh {
         {
             /// No check on the validity of the index of the element in_boundary
             /// NO_ID is used to flag elements to delete
-            ringmesh_debug_assert(
+            ringmesh_assert(
                 GME::in_boundary_type( t.type ) == in_boundary.type ) ;
-            ringmesh_debug_assert( id < element( t ).nb_in_boundary() ) ;
+            ringmesh_assert( id < element( t ).nb_in_boundary() ) ;
             element( t ).in_boundary_[id] = in_boundary ;
         }
 
@@ -232,7 +232,7 @@ namespace RINGMesh {
             const GME::gme_t& t,
             const GME::gme_t& parent_index ) const
         {
-            ringmesh_debug_assert( GME::parent_type( t.type ) == parent_index.type ) ;
+            ringmesh_assert( GME::parent_type( t.type ) == parent_index.type ) ;
             element( t ).parent_ = parent_index ;
         }
 
@@ -240,8 +240,8 @@ namespace RINGMesh {
             const GME::gme_t& t,
             const GME::gme_t& child_index ) const
         {
-            ringmesh_debug_assert( child_index.is_defined() ) ;
-            ringmesh_debug_assert( GME::child_type( t.type ) == child_index.type ) ;
+            ringmesh_assert( child_index.is_defined() ) ;
+            ringmesh_assert( GME::child_type( t.type ) == child_index.type ) ;
             element( t ).children_.push_back( child_index ) ;
         }
 
@@ -252,7 +252,7 @@ namespace RINGMesh {
         {
             /// No check on the validity of the index of the element child_index
             /// NO_ID is used to flag elements to delete
-            ringmesh_debug_assert( GME::child_type( t.type ) == child_index.type ) ;
+            ringmesh_assert( GME::child_type( t.type ) == child_index.type ) ;
             element( t ).children_[id] = child_index ;
         }
 

@@ -128,8 +128,8 @@ namespace {
         index_t f2,
         vector< TriangleIsect >& sym )
     {
-        ringmesh_debug_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
-        ringmesh_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
+        ringmesh_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
+        ringmesh_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
         index_t c1 = M.facets.corners_begin( f1 ) ;
         const vec3& p1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 ) ) ;
         const vec3& p2 = GEO::Geom::mesh_vertex( M,
@@ -226,7 +226,7 @@ namespace {
         // Get the ids in the model of these 2 points
         index_t v0 = model.mesh.vertices.index( p0 ) ;
         index_t v1 = model.mesh.vertices.index( p1 ) ;
-        ringmesh_debug_assert( v0 != NO_ID && v1 != NO_ID ) ;
+        ringmesh_assert( v0 != NO_ID && v1 != NO_ID ) ;
 
         return is_edge_on_line( model, v0, v1 ) ;
     }
@@ -244,8 +244,8 @@ namespace {
         index_t f1,
         index_t f2 )
     {
-        ringmesh_debug_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
-        ringmesh_debug_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
+        ringmesh_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
+        ringmesh_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
 
         // I only want to test the edges that are on boundary 
         for( index_t i = 0; i < 3; ++i ) {
@@ -264,7 +264,7 @@ namespace {
 
                         index_t v10 = BM.mesh.vertices.index( p10 ) ;
                         index_t v11 = BM.mesh.vertices.index( p11 ) ;
-                        ringmesh_debug_assert( v10 != NO_ID && v11 != NO_ID ) ;
+                        ringmesh_assert( v10 != NO_ID && v11 != NO_ID ) ;
 
                         index_t v20 = BM.mesh.vertices.index( p20 ) ;
                         index_t v21 = BM.mesh.vertices.index( p21 ) ;
@@ -431,7 +431,7 @@ namespace {
 
         if( M.edges.nb() > 0 || M.facets.nb() > 0 || M.cells.nb() > 0 ) {
             // This function is not sufficient to update the complete mesh.
-            ringmesh_debug_assert( false ) ;
+            ringmesh_assert( false ) ;
         }
 
         index_t nb_new_vertices = 0 ;
@@ -569,7 +569,7 @@ namespace {
                     if( T == GME::SURFACE || T == GME::INTERFACE ) {
                         // Build edges
                         for( index_t i = 0; i < borders.size(); ++i ) {
-                            ringmesh_debug_assert( borders[i].type == GME::LINE ) ;
+                            ringmesh_assert( borders[i].type == GME::LINE ) ;
                             const Line& L = model.line( borders[i].index ) ;
                             index_t off = M.edges.create_edges(
                                 L.mesh().edges.nb() ) ;
@@ -586,7 +586,7 @@ namespace {
                     } else if( T == GME::REGION ) {
                         // Build facets              
                         for( index_t i = 0; i < borders.size(); ++i ) {
-                            ringmesh_debug_assert( borders[i].type == GME::SURFACE ) ;
+                            ringmesh_assert( borders[i].type == GME::SURFACE ) ;
                             const Surface& S = model.surface( borders[i].index ) ;
                             for( index_t f = 0; f < S.nb_cells(); ++f ) {
                                 index_t nbv = S.nb_vertices_in_facet( f ) ;
@@ -1003,7 +1003,7 @@ namespace RINGMesh {
                     << " is not correct " << std::endl ;
                 valid[ e ] = false ;
                 // This is a major problem
-                ringmesh_debug_assert( false ) ;
+                ringmesh_assert( false ) ;
                 break ;
             }
             valid[ e ] = E.is_valid() ;

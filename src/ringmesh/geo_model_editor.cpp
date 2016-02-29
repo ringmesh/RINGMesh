@@ -158,7 +158,7 @@ namespace RINGMesh {
     {
         // We have a problem if this is called for regions
         // No way yet to know the surface orientation
-        ringmesh_debug_assert( type != GME::REGION ) ;
+        ringmesh_assert( type != GME::REGION ) ;
 
         GME::TYPE b_type = GME::boundary_type( type ) ;
         if( b_type != GME::NO_TYPE ) {
@@ -325,7 +325,7 @@ namespace RINGMesh {
             it != elements.end(); ++it ) {
             gme_t cur = *it ;
             if( cur.type < GME::NO_TYPE ) {
-                ringmesh_debug_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
+                ringmesh_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
                 to_erase_by_type[cur.type][cur.index] = NO_ID ;
             }
         }
@@ -384,7 +384,7 @@ namespace RINGMesh {
             it != elements.end(); ++it ) {
             gme_t cur = *it ;
             if( cur.type < GME::NO_TYPE ) {
-                ringmesh_debug_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
+                ringmesh_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
                 to_erase_by_type[cur.type][cur.index] = NO_ID ;
             }
         }
@@ -412,7 +412,7 @@ namespace RINGMesh {
             for( index_t b_i = 0; b_i < reg.nb_boundaries(); ++b_i ) {
                 if( !reg.boundary( b_i ).is_on_voi() ) {
                     to_add_in_universe.push_back( reg.boundary( b_i ).gme_id() ) ;
-                    ringmesh_debug_assert(
+                    ringmesh_assert(
                         to_erase_by_type[reg.boundary( b_i ).type()][reg.boundary(
                             b_i ).index()] != NO_ID ) ;
                     to_add_in_universe[nb_added].index =
@@ -433,7 +433,7 @@ namespace RINGMesh {
                 gme_t( GME::SURFACE, itr->index ), true ) ;
         }
 
-        //ringmesh_debug_assert( model_.check_model_validity() ) ;
+        //ringmesh_assert( model_.check_model_validity() ) ;
     }
 
     /*!
@@ -489,21 +489,21 @@ namespace RINGMesh {
             GME::TYPE T = static_cast< GME::TYPE >( i ) ;
 
             // Update all indices stored by the BME of that type 
-            ringmesh_debug_assert(
+            ringmesh_assert(
                 model_.nb_elements( T ) == to_erase[i].size() - nb_removed[i] ) ;
             for( index_t j = 0; j < model_.nb_elements( T ); ++j ) {
                 GeoModelElement& E = model_.modifiable_element( gme_t( T, j ) ) ;
 
                 // Not the same than j - since we have erased some elements
                 index_t old_id = E.index() ;
-                ringmesh_debug_assert( to_erase[i][old_id] != NO_ID ) ;
+                ringmesh_assert( to_erase[i][old_id] != NO_ID ) ;
 
                 // id_ 
                 E.id_.index = to_erase[i][old_id] ;
                 // boundary_
                 if( E.nb_boundaries() > 0 ) {
                     GME::TYPE B = GME::boundary_type( T ) ;
-                    ringmesh_debug_assert( B < GME::NO_TYPE ) ;
+                    ringmesh_assert( B < GME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_boundaries(); ++k ) {
                         set_element_boundary( E.gme_id(), k,
                             gme_t( B, to_erase[B][E.boundary_gme( k ).index] ) ) ;
@@ -512,7 +512,7 @@ namespace RINGMesh {
                 // in_boundary
                 if( E.nb_in_boundary() > 0 ) {
                     GME::TYPE IB = GME::in_boundary_type( T ) ;
-                    ringmesh_debug_assert( IB < GME::NO_TYPE ) ;
+                    ringmesh_assert( IB < GME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
                         set_element_in_boundary( E.gme_id(), k,
                             gme_t( IB,
@@ -522,14 +522,14 @@ namespace RINGMesh {
                 // parent_
                 if( E.has_parent() ) {
                     GME::TYPE P = GME::parent_type( T ) ;
-                    ringmesh_debug_assert( P < GME::NO_TYPE ) ;
+                    ringmesh_assert( P < GME::NO_TYPE ) ;
                     set_element_parent( E.gme_id(),
                         gme_t( P, to_erase[P][E.parent_id().index] ) ) ;
                 }
                 // children_ 
                 if( E.nb_children() > 0 ) {
                     GME::TYPE C = GME::child_type( T ) ;
-                    ringmesh_debug_assert( C < GME::NO_TYPE ) ;
+                    ringmesh_assert( C < GME::NO_TYPE ) ;
                     for( index_t k = 0; k < E.nb_children(); ++k ) {
                         set_element_child( E.gme_id(), k,
                             gme_t( C, to_erase[C][E.child_id( k ).index] ) ) ;
@@ -571,7 +571,7 @@ namespace RINGMesh {
 
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
                 store[e] = new_element( T, e ) ;
-                ringmesh_debug_assert( store[ e ] != nil ) ;
+                ringmesh_assert( store[ e ] != nil ) ;
             }
             RINGMESH_PARALLEL_LOOP
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
