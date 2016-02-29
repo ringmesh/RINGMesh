@@ -430,6 +430,7 @@ namespace RINGMesh {
 
         /*! Optional WellGroup associated with the model
          * @todo Give a more general name - this could be anything [JP]
+         * @todo Does it really have to be an attribute of GeoModel ? [JP]
          */
         const WellGroup* wells_ ;
     } ;

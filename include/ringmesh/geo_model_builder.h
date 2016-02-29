@@ -186,6 +186,11 @@ namespace RINGMesh {
             index_t surface_id,
             const std::vector< index_t >& triangle_corners ) ;
 
+        void set_surface_geometry_with_adjacencies(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_corners,
+            const std::vector< index_t >& adjacent_triangles ) ;
+
         void set_region_geometry(
             index_t region_id,
             const std::vector< index_t >& tet_corners ) ;
@@ -260,6 +265,11 @@ namespace RINGMesh {
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices ) ;
+
+        void assign_surface_triangle_mesh(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_vertices,
+            const std::vector< index_t >& adjacent_triangles ) ;
 
         void assign_region_tet_mesh(
             index_t region_id,
@@ -345,8 +355,8 @@ namespace RINGMesh {
         void initialize_region_builder() ;
 
     private:
-        void check_mesh_validity_for_surface_building() const ;
-        void check_mesh_validity_for_region_building() const ;
+        void assert_mesh_validity_for_surface_building() const ;
+        void assert_mesh_validity_for_region_building() const ;
 
     protected:
         const GEO::Mesh& mesh_ ;

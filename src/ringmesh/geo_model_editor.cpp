@@ -67,7 +67,8 @@ namespace RINGMesh {
      * @return The index of the created element
      */
     gme_t GeoModelEditor::create_element( GME::TYPE type )
-    {        
+    {   
+        assert_element_creation_allowed() ;
         if( type >= GME::CORNER && type < GME::NO_TYPE ) {
             GME* E = new_element( type ) ;
             ringmesh_assert( E != nil ) ;
@@ -82,6 +83,7 @@ namespace RINGMesh {
 
     void GeoModelEditor::resize_elements( GME::TYPE type, index_t nb )
     {
+        assert_element_creation_allowed() ;
         if( type >= GME::NO_TYPE ) {
             return ;
         }
@@ -561,6 +563,7 @@ namespace RINGMesh {
      */
     void GeoModelEditor::copy_macro_topology( const GeoModel& from )
     {
+        assert_element_creation_allowed() ;
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             std::vector< GME* >& store = model_.modifiable_elements( T ) ;
@@ -667,6 +670,7 @@ namespace RINGMesh {
 
     GME* GeoModelEditor::new_element( GME::TYPE T, index_t id )
     {
+        assert_element_creation_allowed() ;
         if( T == GME::CORNER ) {
             return new Corner( model(), id ) ;
         } else if( T == GME::LINE ) {
