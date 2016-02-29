@@ -41,6 +41,9 @@
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
+#include <geogram/mesh/mesh_io.h>
+#include <geogram/basic/attributes.h>
+#include <geogram/basic/memory.h>
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
@@ -246,14 +249,14 @@ namespace {
 
         save_coordinate_system( out ) ;
 
-        // Gocad::TSurf = RINGMesh::Interface 
+        // Gocad::TSurf = RINGMesh::Interface
         for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
             out << "TSURF " << M.one_interface( i ).name() << std::endl ;
         }
 
         index_t count = 1 ;
 
-        // Gocad::TFace = RINGMesh::Surface 
+        // Gocad::TFace = RINGMesh::Surface
         for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
             const Surface& s = M.surface( i ) ;
             out << "TFACE " << count << "  " ;
@@ -287,7 +290,7 @@ namespace {
         // Save the geometry of the Surfaces, Interface per Interface
         for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
             const GME& tsurf = M.one_interface( i ) ;
-            // TSurf beginning header 
+            // TSurf beginning header
             out << "GOCAD TSurf 1" << std::endl << "HEADER {" << std::endl << "name:"
                 << tsurf.name() << std::endl << "name_in_model_list:" << tsurf.name()
                 << std::endl << "}" << std::endl ;
@@ -301,10 +304,10 @@ namespace {
                 << "}" << std::endl ;
 
             index_t vertex_count = 1 ;
-            // TFace vertex index = Surface vertex index + offset 
+            // TFace vertex index = Surface vertex index + offset
             index_t offset = vertex_count ;
 
-            // To collect Corners(BStones) indexes 
+            // To collect Corners(BStones) indexes
             // and boundary (Line) first and second vertex indexes
             std::set< index_t > corners ;
             std::set< std::pair< index_t, index_t > > lineindices ;
@@ -347,7 +350,7 @@ namespace {
                         corners.insert( v0 ) ;
                     } else {
                         // We need to get the right pair of v0 - v1  (not crossing the inside boundary)
-                        // corner and a border 
+                        // corner and a border
                         int count = 0 ;
                         bool to_break = false ;
                         for( index_t iv0 = 0; iv0 < v0_surface_ids.size(); ++iv0 ) {
@@ -442,18 +445,14 @@ namespace {
         out << std::endl ;
     }
 
-    /*!
-     * @brief Save the GeoModel into a dedicated format bm
-     * @todo Write the description of the BM format
-     * @todo We need a generic read/write for the attributes !!
-     */
-    void save_bm_file( const GeoModel& M, const std::string& file_name )
+    void save_topology( const GeoModel& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() ) ;
-        if( out.bad() ) {
-            throw RINGMeshException( "I/O", "Error when opening the file: " + file_name ) ;
-        }
         out.precision( 16 ) ;
+        if( out.bad() ) {
+            throw RINGMeshException( "I/O",
+                "Error when opening the file: " + file_name ) ;
+        }
 
         out << "RINGMESH BOUNDARY MODEL" << std::endl ;
         out << "NAME " << M.name() << std::endl ;
@@ -494,6 +493,20 @@ namespace {
             }
             out << std::endl ;
         }
+
+    }
+    /*!
+     * @brief Save the GeoModel into a dedicated format bm
+     * @todo Write the description of the BM format
+     * @todo We need a generic read/write for the attributes !!
+     */
+    void save_bm_file( const GeoModel& M, const std::string& file_name )
+    {
+        save_topology( M, file_name ) ;
+        std::ofstream out( file_name.c_str(), std::ios::out | std::ios::app ) ;
+
+        out.precision( 16 ) ;
+
         // Universe
         out << "UNIVERSE " << std::endl ;
         for( index_t j = 0; j < M.universe().nb_boundaries(); ++j ) {
@@ -653,7 +666,7 @@ namespace RINGMesh {
 
     /************************************************************************/
 
-    class MLIOHandler: public GeoModelSurfaceIOHandler {
+    class MLIOHandler: public IOHandler {
     public:
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
@@ -662,8 +675,7 @@ namespace RINGMesh {
         {
             std::ifstream input( filename.c_str() ) ;
             if( !input ) {
-                throw RINGMeshException( "I/O",
-                    "Failed to open file " + filename ) ;
+                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
             }
             GeoModelBuilderGocad builder( model, filename ) ;
 
@@ -688,14 +700,13 @@ namespace RINGMesh {
         }
     } ;
 
-    class BMIOHandler: public GeoModelSurfaceIOHandler {
+    class BMIOHandler: public IOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& model )
         {
             std::ifstream input( filename.c_str() ) ;
             if( !input ) {
-                throw RINGMeshException( "I/O",
-                    "Failed to open file " + filename ) ;
+                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
             }
             GeoModelBuilderBM builder( model, filename ) ;
             builder.build_model() ;
@@ -711,7 +722,7 @@ namespace RINGMesh {
         }
     } ;
 
-    class UCDIOHandler: public GeoModelSurfaceIOHandler {
+    class UCDIOHandler: public IOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& model )
         {
@@ -783,7 +794,127 @@ namespace RINGMesh {
         }
     } ;
 
-    class WebGLIOHandler: public GeoModelSurfaceIOHandler {
+    void save_mesh_element_attributes(
+        const std::string& filename,
+        const GEO::MeshSubElementsStore& mesh_element )
+    {
+        std::ofstream out( filename.c_str() ) ;
+        out.precision( 16 ) ;
+
+        GEO::vector< std::string > attribute_names ;
+        mesh_element.attributes().list_attribute_names( attribute_names ) ;
+        for( index_t att = 0; att < mesh_element.attributes().nb(); att++ ) {
+
+            //TODO: this is temps ! Waiting for clean attribute type manager
+            //by Bruno, for the moment we only deal with double
+            if( !mesh_element.attributes().find_attribute_store(
+                attribute_names[att] )->elements_type_matches( "double" ) ) {
+                GEO::Logger::warn( "IO attribute" ) << "The attribute "
+                    << attribute_names[att] << " is not a double attribute ! "
+                    << std::endl ;
+                break ;
+            }
+
+            GEO::Attribute< double > cur_att( mesh_element.attributes(),
+                attribute_names[att] ) ;
+            index_t attribute_dim = cur_att.dimension() ;
+            out << "# " << attribute_names[att] << " double " << attribute_dim
+                << std::endl ;
+
+            for( index_t el = 0; el < mesh_element.nb(); el++ ) {
+                for( index_t dim = 0; attribute_dim; dim++ ) {
+                    out << cur_att[el * attribute_dim + dim] << std::endl ;
+                }
+            }
+
+        }
+
+    }
+
+    void save_geo_mesh_attributes(
+        const std::string& root_name,
+        const GEO::Mesh& mesh,
+        zipFile zf )
+    {
+        std::string vertices_attributes_file_name = root_name
+            + "_vertices_attributes.txt" ;
+        std::string edges_attributes_file_name = root_name
+            + "_edges_attributes.txt" ;
+        std::string facets_attributes_file_name = root_name
+            + "_facets_attributes.txt" ;
+        std::string cells_attributes_file_name = root_name
+            + "_cells_attributes.txt" ;
+
+        save_mesh_element_attributes( vertices_attributes_file_name,
+            mesh.vertices ) ;
+        zip_file( zf, vertices_attributes_file_name ) ;
+        GEO::FileSystem::delete_file( vertices_attributes_file_name ) ;
+
+        save_mesh_element_attributes( edges_attributes_file_name, mesh.edges ) ;
+        zip_file( zf, edges_attributes_file_name ) ;
+        GEO::FileSystem::delete_file( edges_attributes_file_name ) ;
+
+        save_mesh_element_attributes( facets_attributes_file_name, mesh.facets ) ;
+        zip_file( zf, facets_attributes_file_name ) ;
+        GEO::FileSystem::delete_file( facets_attributes_file_name ) ;
+
+        save_mesh_element_attributes( cells_attributes_file_name, mesh.cells ) ;
+        zip_file( zf, cells_attributes_file_name ) ;
+        GEO::FileSystem::delete_file( cells_attributes_file_name ) ;
+
+    }
+
+    void save_geo_model_element(
+        const GeoModelMeshElement& geo_model_element_mesh,
+        zipFile zf )
+    {
+
+        GME::TYPE type = geo_model_element_mesh.type() ;
+        std::string type_str = geo_model_element_mesh.type_name( type ) ;
+        std::string index_str = GEO::String::to_string(
+            geo_model_element_mesh.index() ) ;
+        std::string root_name = type_str + "_" + index_str ;
+        std::string mesh_handler = ".meshb" ;
+
+        GEO::mesh_save( geo_model_element_mesh.mesh(), root_name + mesh_handler ) ;
+        zip_file( zf, root_name + mesh_handler ) ;
+        save_geo_mesh_attributes( root_name, geo_model_element_mesh.mesh(), zf ) ;
+    }
+
+    class GeoModelHandler: public IOHandler {
+        virtual void load( const std::string& filename, GeoModel& model ) {
+
+        }
+        virtual void save( const GeoModel& model, const std::string& filename )
+        {
+            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
+            GEO::FileSystem::set_current_working_directory(
+                GEO::FileSystem::dir_name( filename ) ) ;
+
+            zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
+
+            save_topology( model, "topology.txt" ) ;
+            zip_file( zf, "topology.txt" ) ;
+
+            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+                save_geo_model_element( model.mesh_element( GME::SURFACE, s ), zf ) ;
+            }
+
+            for( index_t line = 0; line < model.nb_lines(); line++ ) {
+                save_geo_model_element( model.mesh_element( GME::LINE, line ), zf ) ;
+            }
+
+            for( index_t co = 0; co < model.nb_corners(); co++ ) {
+                save_geo_model_element( model.mesh_element( GME::CORNER, co ), zf ) ;
+            }
+            zipClose( zf, NULL ) ;
+            GEO::FileSystem::set_current_working_directory( pwd ) ;
+
+        }
+
+    } ;
+
+    class WebGLIOHandler: public IOHandler {
     public:
         void print_KeyboardState( std::ofstream& out )
         {
@@ -5468,7 +5599,7 @@ namespace RINGMesh {
         }
     } ;
 
-    class ParaviewIOHandler: public GeoModelSurfaceIOHandler {
+    class ParaviewIOHandler: public IOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& model )
         {
@@ -5611,8 +5742,7 @@ namespace RINGMesh {
 
         GEO::Logger::out( "I/O" ) << "Loading file: " << filename << std::endl ;
 
-        GeoModelSurfaceIOHandler_var handler = GeoModelSurfaceIOHandler::get_handler(
-            filename ) ;
+        IOHandler_var handler = IOHandler::get_handler( filename ) ;
         handler->load( filename, model ) ;
     }
 
@@ -5625,47 +5755,20 @@ namespace RINGMesh {
     {
         GEO::Logger::out( "I/O" ) << "Saving file " << filename << std::endl ;
 
-        GeoModelSurfaceIOHandler_var handler = GeoModelSurfaceIOHandler::get_handler(
-            filename ) ;
+        IOHandler_var handler = IOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
     }
 
     /************************************************************************/
 
-    GeoModelSurfaceIOHandler* GeoModelSurfaceIOHandler::create(
-        const std::string& format )
-    {
-        GeoModelSurfaceIOHandler* handler =
-            GeoModelSurfaceIOHandlerFactory::create_object( format ) ;
-        if( handler == nil ) {
-            std::vector< std::string > names ;
-            GeoModelSurfaceIOHandlerFactory::list_creators( names ) ;
-            GEO::Logger::err( "I/O" ) << "Currently supported file formats are: " ;
-            for( index_t i = 0; i < names.size(); i++ ) {
-                GEO::Logger::err( "I/O" ) << " " << names[i] ;
-            }
-            GEO::Logger::err( "I/O" ) << std::endl ;
-
-            throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
-        }
-        return handler ;
-    }
-
-    GeoModelSurfaceIOHandler* GeoModelSurfaceIOHandler::get_handler(
-        const std::string& filename )
-    {
-        return create( GEO::FileSystem::extension( filename ) ) ;
-    }
-
     /*
      * Initializes the possible handlers for IO GeoModel files
      */
-    void GeoModelSurfaceIOHandler::initialize()
+    void IOHandler::initialize_boundary_model_output()
     {
-        ringmesh_register_GeoModelSurfaceIOHandler_creator( MLIOHandler, "ml" ) ;
-        ringmesh_register_GeoModelSurfaceIOHandler_creator( BMIOHandler, "bm" ) ;
-        ringmesh_register_GeoModelSurfaceIOHandler_creator( UCDIOHandler, "inp" ) ;
-        ringmesh_register_GeoModelSurfaceIOHandler_creator( WebGLIOHandler, "html" ) ;
-        ringmesh_register_GeoModelSurfaceIOHandler_creator( ParaviewIOHandler, "paraview" ) ;
+        ringmesh_register_IOHandler_creator( MLIOHandler, "ml" );
+    ringmesh_register_IOHandler_creator( BMIOHandler, "bm" ) ;
+    ringmesh_register_IOHandler_creator( UCDIOHandler, "inp" ) ;
+    ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" ) ;
     }
 }
