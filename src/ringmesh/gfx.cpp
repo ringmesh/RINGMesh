@@ -73,6 +73,8 @@ namespace RINGMesh {
     define_color( red, 0xff, 0x00, 0x00 ) ;
     define_color( green, 0x00, 0xff, 0x00 ) ;
     define_color( brown, 0x66, 0x33, 0x00 ) ;
+    define_color( purple, 0xa0, 0x20, 0xf0 ) ;
+    define_color( pink, 0xff, 0x69, 0xb4 ) ;
 
 
     class MeshElementGfx: public GEO::MeshGfx {
