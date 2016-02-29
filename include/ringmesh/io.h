@@ -37,8 +37,13 @@
 #define __RINGMESH_IO__
 
 #include <ringmesh/common.h>
+#include <third_party/zlib/unzip.h>
+#include <third_party/zlib/zip.h>
 
 #include <geogram/basic/factory.h>
+#define MAX_FILENAME 512
+#define READ_SIZE 8192
+
 
 /*!
  * @file Global input - ouput functions of RINGMesh
@@ -48,6 +53,10 @@
 namespace RINGMesh {
     class GeoModel ;
     class WellGroup ;
+}
+
+namespace GEO {
+    class MeshSubElementsStore ;
 }
 
 namespace RINGMesh {
@@ -65,63 +74,38 @@ namespace RINGMesh {
     void RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
 
 
-    class RINGMESH_API GeoModelSurfaceIOHandler: public GEO::Counted {
+
+    class RINGMESH_API IOHandler: public GEO::Counted {
     public:
-        static void initialize() ;
+        static void initialize_volumetric_mesh_output() ;
 
-        static GeoModelSurfaceIOHandler* create( const std::string& format ) ;
+        static void initialize_boundary_model_output() ;
 
-        static GeoModelSurfaceIOHandler* get_handler( const std::string& filename ) ;
+
+        static IOHandler* create( const std::string& format ) ;
+
+        static IOHandler* get_handler( const std::string& filename ) ;
 
         virtual void load( const std::string& filename, GeoModel& model ) = 0 ;
 
         virtual void save( const GeoModel& model, const std::string& filename ) = 0 ;
 
     protected:
-        GeoModelSurfaceIOHandler()
+        IOHandler()
         {
         }
 
-        virtual ~GeoModelSurfaceIOHandler()
-        {
-        }
-    } ;
-
-    typedef GEO::SmartPointer< GeoModelSurfaceIOHandler > GeoModelSurfaceIOHandler_var ;
-    typedef GEO::Factory0< GeoModelSurfaceIOHandler > GeoModelSurfaceIOHandlerFactory ;
-
-#define ringmesh_register_GeoModelSurfaceIOHandler_creator( type, name ) \
-    geo_register_creator( GeoModelSurfaceIOHandlerFactory, type, name )
-
-    /***************************************************************************/
-
-    class RINGMESH_API GeoModelVolumeIOHandler: public GEO::Counted {
-    public:
-        static void initialize() ;
-
-        static GeoModelVolumeIOHandler* create( const std::string& format ) ;
-
-        static GeoModelVolumeIOHandler* get_handler( const std::string& filename ) ;
-
-        virtual void load( const std::string& filename, GeoModel& mesh ) = 0 ;
-
-        virtual void save( const GeoModel& mesh, const std::string& filename ) = 0 ;
-
-    protected:
-        GeoModelVolumeIOHandler()
-        {
-        }
-
-        virtual ~GeoModelVolumeIOHandler()
+        virtual ~IOHandler()
         {
         }
     } ;
 
-    typedef GEO::SmartPointer< GeoModelVolumeIOHandler > GeoModelVolumeIOHandler_var ;
-    typedef GEO::Factory0< GeoModelVolumeIOHandler > GeoModelVolumeIOHandlerFactory ;
+    typedef GEO::SmartPointer< IOHandler > IOHandler_var ;
+    typedef GEO::Factory0< IOHandler > IOHandlerFactory ;
 
-#define ringmesh_register_GeoModelVolumeIOHandler_creator( type, name ) \
-    geo_register_creator( GeoModelVolumeIOHandlerFactory, type, name )
+#define ringmesh_register_IOHandler_creator( type, name ) \
+    geo_register_creator( IOHandlerFactory, type, name )
+
 
     /***************************************************************************/
 
@@ -156,5 +140,11 @@ namespace RINGMesh {
     /***************************************************************************/
 
     void RINGMESH_API mesh_initialize() ;
+
+    void zip_file( zipFile zf, const std::string& name ) ;
+
+
+    void unzip_file( unzFile uz, char filename[MAX_FILENAME] ) ;
+
 }
 #endif
