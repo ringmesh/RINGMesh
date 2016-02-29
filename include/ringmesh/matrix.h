@@ -139,19 +139,19 @@ namespace RINGMesh {
 
         void element( index_t e, T& value ) const
         {
-            ringmesh_debug_assert( e < nb_elements_ ) ;
+            ringmesh_assert( e < nb_elements_ ) ;
             value = elements_[e].value ;
         }
 
         index_t index( index_t e ) const
         {
-            ringmesh_debug_assert( e < nb_elements_ ) ;
+            ringmesh_assert( e < nb_elements_ ) ;
             return elements_[e].index ;
         }
 
         T& operator[]( index_t i ) const
         {
-            ringmesh_debug_assert( i < nb_elements_ ) ;
+            ringmesh_assert( i < nb_elements_ ) ;
             return elements_[i].value ;
         }
 
@@ -171,7 +171,7 @@ namespace RINGMesh {
 
         void grow()
         {
-            ringmesh_debug_assert( capacity_ != 0 ) ;
+            ringmesh_assert( capacity_ != 0 ) ;
             capacity_ = capacity_ * 2 ;
             reallocate( capacity_ ) ;
         }
@@ -210,7 +210,7 @@ namespace RINGMesh {
          */
         bool exist( index_t i, index_t j ) const
         { // test existence of the i-j element
-            ringmesh_debug_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
+            ringmesh_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
             return rows_[i].exist( j ) ;
         }
 
@@ -221,7 +221,7 @@ namespace RINGMesh {
          */
         index_t get_nb_elements_in_line( index_t i ) const
         {
-            ringmesh_debug_assert( i < ni_ ) ;
+            ringmesh_assert( i < ni_ ) ;
             return rows_[i].nb_elements() ;
         }
 
@@ -245,7 +245,7 @@ namespace RINGMesh {
          */
         bool get_index_in_line( index_t i, index_t j, index_t& index ) const
         {
-            ringmesh_debug_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
+            ringmesh_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
             return rows_[i].find( j, index ) ;
         }
 
@@ -485,11 +485,11 @@ namespace RINGMesh {
         const std::vector< T >& mat2,
         std::vector< T >& result )
     {
-        ringmesh_debug_assert( mat1.nj() == mat2.size() ) ;
+        ringmesh_assert( mat1.nj() == mat2.size() ) ;
 
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < mat1.ni(); ++i ) {
-            ringmesh_debug_assert( i >= 0 && i < result.size() ) ;
+            ringmesh_assert( i >= 0 && i < result.size() ) ;
             result[i] = 0. ;
             for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
                 index_t j = mat1.get_column_in_line( i, e ) ;

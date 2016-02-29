@@ -284,7 +284,7 @@ namespace {
             vec3 nearest_point ;
             float64 distance ;
             index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
-            ringmesh_debug_assert( surface.index() == attribute[f] ) ;
+            ringmesh_assert( surface.index() == attribute[f] ) ;
 
             vec3 ori_normal = surface.facet_normal( 0 ) ;
             vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
@@ -760,7 +760,7 @@ namespace RINGMesh {
                 dynamic_cast< const Surface& >( *unique_surfaces[s] ) ;
             RINGMESH_PARALLEL_LOOP
             for( index_t t = 0; t < surface.nb_cells(); t++ ) {
-                ringmesh_debug_assert( surface.is_triangle( t ) ) ;
+                ringmesh_assert( surface.is_triangle( t ) ) ;
                 for( index_t v = 0; v < 3; v++ ) {
                     tetmesh_->facets.set_vertex( offset_facets + t, v,
                         starting_index
