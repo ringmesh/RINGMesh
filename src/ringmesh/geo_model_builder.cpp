@@ -965,6 +965,28 @@ namespace RINGMesh {
         std::vector< index_t > cur_line_adjacent_surfaces_ ;
         RINGMesh::GeoModelRegionFromSurfaces cur_line_region_information_ ;
     } ;
+    
+    void reorder_line_vertices_to_start_at_corner( 
+        const GeoModel& geomodel, std::vector< index_t >& line_vertices )
+    {
+        if( geomodel.nb_corners() ==  0 ) {
+            // Maybe should throw an assertion, but I am not sure [JP]
+            return ;
+        }
+        for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
+            gme_t corner = find_corner( geomodel, line_vertices[ i ] ) ;
+            if( corner.is_defined() ) {                
+                std::vector< index_t > shuffled_vertices( line_vertices.size() ) ;
+                std::copy( line_vertices.begin()+i, line_vertices.end(),
+                           shuffled_vertices.begin() ) ;
+                index_t nb_copied( line_vertices.end()-line_vertices.begin()-i ) ;
+                std::copy( line_vertices.begin()+1, line_vertices.begin()+i+1,
+                           shuffled_vertices.begin() + nb_copied ) ;
+                line_vertices = shuffled_vertices ;
+                break ;
+            }
+        }
+    }   
 
     bool is_surface_mesh( const GEO::Mesh& mesh )
     {
@@ -1749,29 +1771,6 @@ namespace RINGMesh {
         model_.mesh.vertices.test_and_initialize() ;
     }
 
-
-    void reorder_line_vertices_to_start_at_corner( 
-        const GeoModel& geomodel, std::vector< index_t >& line_vertices )
-    {
-        if( geomodel.nb_corners() ==  0 ) {
-            // Maybe should throw an assertion, but I am not sure [JP]
-            return ;
-        }
-        for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
-            gme_t corner = find_corner( geomodel, line_vertices[ i ] ) ;
-            if( corner.is_defined() ) {                
-                std::vector< index_t > shuffled_vertices( line_vertices.size() ) ;
-                std::copy( line_vertices.begin()+i, line_vertices.end(),
-                           shuffled_vertices.begin() ) ;
-                index_t nb_copied( line_vertices.end()-line_vertices.begin()-i ) ;
-                std::copy( line_vertices.begin()+1, line_vertices.begin()+i+1,
-                           shuffled_vertices.begin() + nb_copied ) ;
-                line_vertices = shuffled_vertices ;
-                break ;
-            }
-        }
-    }   
-
     bool GeoModelBuilder::build_lines_and_corners_from_surfaces()
     {
         LineGeometryFromGeoModelSurfaces line_computer( model_,
@@ -2419,7 +2418,6 @@ namespace RINGMesh {
         region_builder_ = nil ;
     }
 
-    // These should be caught soon enough
     bool GeoModelBuilderMesh::is_mesh_valid_for_surface_building() const
     {
         bool valid = true ;
@@ -3275,6 +3273,7 @@ namespace RINGMesh {
         set_element_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
+
     int GeoModelBuilderGocad::read_gocad_coordinates_system( const std::string& in )
     {
         if( in == "Elevation" ) {
