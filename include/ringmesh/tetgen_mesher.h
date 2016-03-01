@@ -42,8 +42,6 @@
 #include <vector>
 
 #include <geogram/basic/memory.h>
-#include <geogram/mesh/mesh.h>
-
 
 #ifdef RINGMESH_WITH_TETGEN
 
@@ -53,12 +51,16 @@
  * @file Interface GEO::Mesh with Tetgen 
  * @author Jeanne Pellerin
  */
+namespace GEO {
+    class Mesh ;
+}
 
 namespace RINGMesh {
+
     /*!
     * @brief Utility class to set Tetgen switches and check their consistency
     * @details Tetgen arguments are a mess and this class helps set the basic options
-    * @todo To implement!
+    * @todo To implement! There are much more options than that.
     *
     * Q: quiet
     * p: input data is surfacic
@@ -83,26 +85,28 @@ namespace RINGMesh {
 
     /*!
     * @brief Tetgen wrapper
-    * @author  Jeanne Pellerin
+    * @author Jeanne Pellerin
     */
     class TetgenMesher {
         ringmesh_disable_copy( TetgenMesher ) ;
     public:
+        typedef GEO::Mesh Mesh ;
+
         TetgenMesher()
             : polygons_( nil ), polygon_corners_( nil )
         {}
         ~TetgenMesher() ;
 
         void tetrahedralize(
-            const GEO::Mesh& input_mesh,
+            const Mesh& input_mesh,
             const std::string& command_line,
-            GEO::Mesh& output_mesh ) ;
+            Mesh& output_mesh ) ;
 
         void tetrahedralize(
-            const GEO::Mesh& input_mesh,
+            const Mesh& input_mesh,
             const std::vector< vec3 >& one_point_per_region,
             const std::string& command_line,
-            GEO::Mesh& output_mesh ) ;
+            Mesh& output_mesh ) ;
 
     private:
         void initialize() ;
@@ -110,16 +114,16 @@ namespace RINGMesh {
         void set_command_line( const std::string& command_line ) ;
         void tetrahedralize() ;
 
-        void copy_mesh_to_tetgen_input( const GEO::Mesh& M ) ;
-        void copy_vertices_to_tetgen_input( const GEO::Mesh& M ) ;
-        void copy_edges_to_tetgen_input( const GEO::Mesh& M ) ;
-        void copy_facets_to_tetgen_input( const GEO::Mesh& M ) ;
+        void copy_mesh_to_tetgen_input( const Mesh& M ) ;
+        void copy_vertices_to_tetgen_input( const Mesh& M ) ;
+        void copy_edges_to_tetgen_input( const Mesh& M ) ;
+        void copy_facets_to_tetgen_input( const Mesh& M ) ;
         void set_regions( const std::vector< vec3 >& one_point_per_region ) ;
 
         void fill_region_attribute_on_mesh_cells(
-            GEO::Mesh& M,
+            Mesh& M,
             const std::string& attribute_name ) const ;
-        void assign_result_tetmesh_to_mesh( GEO::Mesh& M ) const ;
+        void assign_result_tetmesh_to_mesh( Mesh& M ) const ;
         void get_result_tetmesh_points( GEO::vector< double >& points ) const ;
         void get_result_tetmesh_tets( GEO::vector< index_t >& tets ) const ;
 
@@ -138,10 +142,7 @@ namespace RINGMesh {
     * @details Does not require this mesh to be a closed manifold
     * as the equivalent in Geogram function does.
     */
-    void RINGMESH_API tetrahedralize_mesh_tetgen(
-        GEO::Mesh& M,
-        bool refine,
-        double quality ) ;
+    void RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) ;
 
 }
 #endif
