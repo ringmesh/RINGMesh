@@ -51,6 +51,7 @@
 #include <ringmesh/geo_model_element.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/ringmesh_config.h>
+#include <ringmesh/utils.h>
 
 /*!
  * @file Implementation of classes to load and save surface GeoModels meshes
@@ -806,11 +807,8 @@ namespace RINGMesh {
             DEBUG(attribute_names[att]) ;
             //TODO: this is temps ! Waiting for clean attribute type manager
             //by Bruno, for the moment we only deal with double
-            if( !mesh_element.attributes().find_attribute_store(
-                attribute_names[att] )->elements_type_matches( "double" ) ) {
-                GEO::Logger::warn( "IO attribute" ) << "The attribute "
-                    << attribute_names[att] << " is not a double attribute ! "
-                    << std::endl ;
+            if( !is_attribute_a_double( mesh_element.attributes(),
+                attribute_names[att] ) ) {
                 break ;
             }
             std::ofstream out( filename.c_str() ) ;
@@ -822,9 +820,10 @@ namespace RINGMesh {
                 << std::endl ;
 
             for( index_t el = 0; el < mesh_element.nb(); el++ ) {
-                for( index_t dim = 0; attribute_dim; dim++ ) {
-                    out << cur_att[el * attribute_dim + dim] << std::endl ;
+                for( index_t dim = 0; dim < attribute_dim; dim++ ) {
+                    out << cur_att[el * attribute_dim + dim] << " " ;
                 }
+                out << std::endl ;
             }
 
         }
@@ -853,18 +852,18 @@ namespace RINGMesh {
         }
 
         save_mesh_element_attributes( edges_attributes_file_name, mesh.edges ) ;
-        if( GEO::FileSystem::is_file( vertices_attributes_file_name ) ) {
+        if( GEO::FileSystem::is_file( edges_attributes_file_name ) ) {
             zip_file( zf, edges_attributes_file_name ) ;
             GEO::FileSystem::delete_file( edges_attributes_file_name ) ;
         }
 
         save_mesh_element_attributes( facets_attributes_file_name, mesh.facets ) ;
-        if( GEO::FileSystem::is_file( vertices_attributes_file_name ) ) {
+        if( GEO::FileSystem::is_file( facets_attributes_file_name ) ) {
             zip_file( zf, facets_attributes_file_name ) ;
             GEO::FileSystem::delete_file( facets_attributes_file_name ) ;
         }
         save_mesh_element_attributes( cells_attributes_file_name, mesh.cells ) ;
-        if( GEO::FileSystem::is_file( vertices_attributes_file_name ) ) {
+        if( GEO::FileSystem::is_file( cells_attributes_file_name ) ) {
             zip_file( zf, cells_attributes_file_name ) ;
             GEO::FileSystem::delete_file( cells_attributes_file_name ) ;
         }
@@ -874,7 +873,6 @@ namespace RINGMesh {
         const GeoModelMeshElement& geo_model_element_mesh,
         zipFile zf )
     {
-
         GME::TYPE type = geo_model_element_mesh.type() ;
         std::string type_str = geo_model_element_mesh.type_name( type ) ;
         std::string index_str = GEO::String::to_string(
@@ -906,21 +904,24 @@ namespace RINGMesh {
             zip_file( zf, "topology.txt" ) ;
             GEO::FileSystem::delete_file( "topology.txt" ) ;
 
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                save_geo_model_element( model.mesh_element( GME::SURFACE, s ), zf ) ;
+            for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
+                GME::TYPE type = static_cast< GME::TYPE >( t ) ;
+                for( index_t e = 0; e < model.nb_elements( type ); e++ ) {
+                    save_geo_model_element( model.mesh_element( type, e ), zf ) ;
+                }
             }
 
-            for( index_t line = 0; line < model.nb_lines(); line++ ) {
-                save_geo_model_element( model.mesh_element( GME::LINE, line ), zf ) ;
-            }
-
-            for( index_t co = 0; co < model.nb_corners(); co++ ) {
-                save_geo_model_element( model.mesh_element( GME::CORNER, co ), zf ) ;
-            }
-
-            for( index_t reg = 0; reg < model.nb_regions(); reg++ ) {
-                save_geo_model_element( model.mesh_element( GME::REGION, reg ), zf ) ;
-            }
+//            for( index_t line = 0; line < model.nb_lines(); line++ ) {
+//                save_geo_model_element( model.mesh_element( GME::LINE, line ), zf ) ;
+//            }
+//
+//            for( index_t co = 0; co < model.nb_corners(); co++ ) {
+//                save_geo_model_element( model.mesh_element( GME::CORNER, co ), zf ) ;
+//            }
+//
+//            for( index_t reg = 0; reg < model.nb_regions(); reg++ ) {
+//                save_geo_model_element( model.mesh_element( GME::REGION, reg ), zf ) ;
+//            }
             zipClose( zf, NULL ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
 
@@ -5780,8 +5781,9 @@ namespace RINGMesh {
      */
     void IOHandler::initialize_boundary_model_output()
     {
-        ringmesh_register_IOHandler_creator( MLIOHandler, "ml" ) ;
-        ringmesh_register_IOHandler_creator( BMIOHandler, "bm" );
-        ringmesh_register_IOHandler_creator( UCDIOHandler, "inp" );
-        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
+        ringmesh_register_IOHandler_creator( MLIOHandler, "ml" );
+    ringmesh_register_IOHandler_creator( BMIOHandler, "bm" ) ;
+//        ringmesh_register_IOHandler_creator( UCDIOHandler, "inp" );
+    ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" ) ;
+}
 }
