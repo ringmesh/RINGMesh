@@ -68,7 +68,6 @@ namespace RINGMesh {
         return true ;
     }
 
-
     TetgenMesher::~TetgenMesher()
     {
         // Take over facet deletion of tetgen that does not set to 
@@ -108,8 +107,6 @@ namespace RINGMesh {
         assign_result_tetmesh_to_mesh( output_mesh ) ;
         fill_region_attribute_on_mesh_cells( output_mesh, "region" ) ;
     }
-
-
 
     void TetgenMesher::initialize()
     {
@@ -311,7 +308,7 @@ namespace RINGMesh {
         if( refine ) {
             mesher.tetrahedralize( M, "QpYAq"+GEO::String::to_string( quality ), M ) ;
         } else {
-            mesher.tetrahedralize( M, "QpYYA", M ) ;
+            mesher.tetrahedralize( M, "QpYA", M ) ;
         }
     }
 }
