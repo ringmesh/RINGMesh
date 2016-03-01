@@ -1020,7 +1020,7 @@ namespace RINGMesh {
 
         const GeoModel& model() const
         {
-            return gm_ ;
+            return geo_model_ ;
         }
 
         /*!
@@ -1044,6 +1044,24 @@ namespace RINGMesh {
         {
             return mesh_->cells.attributes() ;
         }
+
+        /*!
+         * @brief Transfer attributes from the GeoModelMesh to the
+         * GeoModel
+         */
+        void transfert_attributes() const ;
+
+        /*!
+         * @brief Transfer attributes from the GeoModelMeshCell to the
+         * GeoModel
+         */
+        void transfert_cell_attributes() const ;
+        /*!
+         * @brief Transfer attributes from the GeoModelMeshVertices to the
+         * GeoModel
+         */
+        void transfert_vertex_attributes() const ;
+
 
         /*!
          * Access the DuplicateMode
@@ -1110,7 +1128,7 @@ namespace RINGMesh {
 
     private:
         /*! Attached GeoModel */
-        const GeoModel& gm_ ;
+        const GeoModel& geo_model_ ;
         /*!
          * @brief Mesh owned by the GeoModelMesh, stores unique vertices, edges, 
          * facets and cells.

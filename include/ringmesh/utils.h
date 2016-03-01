@@ -39,6 +39,7 @@
 #include <ringmesh/common.h>
 
 #include <geogram/basic/geometry.h>
+#include <geogram/basic/attributes.h>
 
 /*!
  * @file Box3D class declaration
@@ -175,6 +176,12 @@ namespace RINGMesh {
         bool initialized_ ;
     } ;
 
+    /*!
+     * TODO This is temps
+     */
+    bool is_attribute_a_double(
+        GEO::AttributesManager& att_manager,
+        const std::string& att_name ) ;
 }
 
 #endif
