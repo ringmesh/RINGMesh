@@ -68,6 +68,7 @@
 
 namespace {
     using namespace RINGMesh ;
+    using GEO::Logger ;
 
     typedef GeoModelElement::gme_t gme_t ;
     typedef GeoModelMeshElement GMME ;
@@ -2418,48 +2419,53 @@ namespace RINGMesh {
         region_builder_ = nil ;
     }
 
-    void GeoModelBuilderMesh::assert_mesh_validity_for_surface_building() const
+    // These should be caught soon enough
+    bool GeoModelBuilderMesh::is_mesh_valid_for_surface_building() const
     {
+        bool valid = true ;
         if( !is_surface_mesh( mesh_ ) ) {
-            throw RINGMeshException( "GMBuilder",
-                "The given mesh is not a surface mesh " ) ;
+            Logger::warn("GMBuilder") << "The given mesh is not a surface mesh " << std::endl ;
+            valid = false ;
         }
         if( !mesh_.facets.are_simplices() ) {
-            throw RINGMeshException( "GMBuilder",
-                "The given mesh is not triangulated " ) ;
+            Logger::warn("GMBuilder") << "The given mesh is not triangulated" << std::endl ;
+            valid = false ;
         }
         if( !mesh_.facets.attributes().is_defined( surface_attribute_name_ ) ) {
-            throw RINGMeshException( "GMBuilder",
-                "Mesh facet attribute: " + surface_attribute_name_
-                    + " given to build the GeoModel Surfaces is not defined" ) ;
+            Logger::warn("GMBuilder") << "The attribute " <<  surface_attribute_name_
+                << " is not defined on the Mesh facets"  << std::endl ;
+            valid = false ;
         }
         if( RINGMesh::has_mesh_colocate_vertices( mesh_, epsilon ) ) {
-            throw RINGMeshException( "GMBuilder",
-                " GeoModel building from a Mesh with colocated vertices is not implemented."
-                    " Repair the Mesh beforehand " ) ;
+            Logger::warn("GMBuilder")
+                << " The Mesh has colocated vertices. Repair it beforehand " << std::endl ;
+            valid = false ;
         }
+        return valid ;  
     }
 
-    void GeoModelBuilderMesh::assert_mesh_validity_for_region_building() const
+    bool GeoModelBuilderMesh::is_mesh_valid_for_region_building() const
     {
+        bool valid = true ;
         if( !is_volume_mesh( mesh_ ) ) {
-            throw RINGMeshException( "GMBuilder",
-                "The given mesh is not a volumetric mesh " ) ;
+            Logger::warn("GMBuilder") << "The given mesh is not a volumetric mesh " << std::endl ;
+            valid = false ;
         }
         if( !mesh_.cells.are_simplices() ) {
-            throw RINGMeshException( "GMBuilder",
-                "The given mesh is not tetrahedralized " ) ;
+            Logger::warn("GMBuilder") << "The given mesh is not tetrahedralized" << std::endl ;
+            valid = false ;
         }
         if( !mesh_.cells.attributes().is_defined( region_attribute_name_ ) ) {
-            throw RINGMeshException( "GMBuilder",
-                "Mesh cell attribute: " + region_attribute_name_
-                    + " given to build the GeoModel Regions is not defined" ) ;
+            Logger::warn("GMBuilder") << "The attribute " <<  region_attribute_name_
+                << " is not defined on the Mesh cells " << std::endl ;
+            valid = false ;
         }
         if( RINGMesh::has_mesh_colocate_vertices( mesh_, epsilon ) ) {
-            throw RINGMeshException( "GMBuilder",
-                " GeoModel building from a Mesh with colocated vertices is not implemented. "
-                    " Repair the Mesh beforehand " ) ;
+            Logger::warn("GMBuilder")
+                << " The Mesh has colocated vertices. Repair it beforehand. " << std::endl ;
+            valid = false ;
         }
+        return valid ;  
     }
 
     void create_and_fill_connected_component_attribute(
@@ -2593,7 +2599,9 @@ namespace RINGMesh {
 
     void GeoModelBuilderMesh::build_surfaces()
     {
-        assert_mesh_validity_for_surface_building() ;
+        if( !is_mesh_valid_for_surface_building() ) {
+            return ;
+        }
 
         index_t nb_surfaces = model_.nb_surfaces() ;
         surface_builder_->set_default_gme_id_attribute_mapping( nb_surfaces ) ;
@@ -2619,7 +2627,9 @@ namespace RINGMesh {
 
     void GeoModelBuilderMesh::build_regions()
     {
-        assert_mesh_validity_for_region_building() ;
+        if( !is_mesh_valid_for_region_building() ) {
+            return ;
+        }
 
         index_t nb_regions = model_.nb_regions() ;
         region_builder_->set_default_gme_id_attribute_mapping( nb_regions ) ;
