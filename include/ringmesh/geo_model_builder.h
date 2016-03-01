@@ -355,8 +355,8 @@ namespace RINGMesh {
         void initialize_region_builder() ;
 
     private:
-        void assert_mesh_validity_for_surface_building() const ;
-        void assert_mesh_validity_for_region_building() const ;
+        bool is_mesh_valid_for_surface_building() const ;
+        bool is_mesh_valid_for_region_building() const ;
 
     protected:
         const GEO::Mesh& mesh_ ;
