@@ -310,7 +310,7 @@ namespace {
 
     /************************************************************************/
 
-    /**
+    /**   @note Copied from Geogram 
     * \brief Tests whether a facet is degenerate.
     * \param[in] M the mesh that the facet belongs to
     * \param[in] f the index of the facet in \p M
@@ -339,7 +339,7 @@ namespace {
         return v1 == v2 || v2 == v3 || v3 == v1;
     }
 
-    /**
+    /**  @note Copied from Geogram
     * \brief Generates a unique ordering of the vertices of
     *  a facet.
     * \details Shifts and inverts the order of f's vertices in
@@ -382,7 +382,7 @@ namespace {
         }
     }
 
-    /**
+    /** @note Copied from Geogram
     * \brief Comparator class for sorting facets.
     */
     class CompareFacets {
@@ -395,7 +395,7 @@ namespace {
             mesh_( M )
         {}
 
-        /**
+        /** @note Copied from Geogram
         * \brief Tests the lexicographic order of two facets by their indices.
         * \param[in] f1 index of the first facet
         * \param[in] f2 index of the second facet
@@ -427,7 +427,7 @@ namespace {
                 ) ;
         }
 
-        /**
+        /**  @note Copied from Geogram
         * \brief Tests whether two facets are identical.
         * \param[in] f1 index of the first facet
         * \param[in] f2 index of the second facet
@@ -454,7 +454,7 @@ namespace {
             return true;
         }
 
-        /**
+        /**  @note Copied from Geogram
         * \brief Tests the lexicographic order of two facets by their indices.
         * \param[in] f1 index of the first facet
         * \param[in] f2 index of the second facet
@@ -471,7 +471,7 @@ namespace {
     };
 
 
-    /**
+    /**  @note Copied from Geogram
     * \brief Finds the non-duplicated vertices of a facet
     * \param[in] M a const reference to a mesh
     * \param[in] f a facet index in \p M
@@ -569,7 +569,7 @@ namespace {
         return nb_degenerate ;
     }
 
-
+    /// @note Copied from Geogram
     index_t detect_duplicate_facets( Mesh& M, vector<index_t>& remove_f )
     {
         index_t nb_duplicates = 0;
@@ -619,7 +619,7 @@ namespace {
     }
 
 
-    /**
+    /** @note Copied from Geogram
     * \brief Detects degenerate facets in a mesh.
     * \param[in] M the mesh
     * \param[in] check_duplicates if true, duplicated facets are
@@ -662,7 +662,7 @@ namespace {
         }              
     }
 
-    /**
+    /**  @note Copied from Geogram
     * \brief Detects and removes the degenerate facets in a mesh.
     * \param[in] M the mesh
     * \param[in] check_duplicates if true, duplicated facets are
@@ -709,7 +709,7 @@ namespace {
 
     /************************************************************************/
 
-    /**
+    /** @note Copied from Geogram
     * \brief Tests the relative orientation of two adjacent facets
     * \param[in] M the mesh
     * \param[in] f1 index of the first facet
@@ -742,7 +742,7 @@ namespace {
         return 0;
     }
 
-    /**
+    /** @note Copied from Geogram
     * \brief Removes an adjacency connections between two facets in a mesh
     * \param[in] M the mesh
     * \param[in] f1 index of the first facet
@@ -770,7 +770,7 @@ namespace {
         }
     }
 
-    /**
+    /** @note Copied from Geogram
     * \brief Greedily propagates facet reorientation in a mesh
     * \details Whenever a Moebius loop is encountered, the involved
     *  facets are disconnected from their neighbors.
@@ -863,7 +863,7 @@ namespace {
         }
     }
 
-    /**
+    /**  @note Copied from Geogram
     * \brief Tests whether a facet of a mesh is on the border.
     * \param[in] M the mesh
     * \param[in] f index of the facet
@@ -889,7 +889,7 @@ namespace {
     */
     typedef GEO::Numeric::uint8 facet_distance_t;
 
-    /**
+    /**  @note Copied from Geogram
     * \brief Computes for each facet its facet-graph distance to
     *  the border of the mesh, clamped to max_iter.
     * \param[in] M the mesh
@@ -926,7 +926,7 @@ namespace {
         }
     }
 
-    /**
+    /**  @note Copied from Geogram
     * \brief A priority queue specialized to
     *  the specific case where priorities can
     *  take a small number of distinct values.
@@ -998,7 +998,7 @@ namespace {
         const vector<facet_distance_t>& D_;
     };
 
-    /**
+    /** @note Copied from Geogram
     * \brief Reorients the facets with a heuristic that reduces
     *  the impact of Moebius loops.
     * \param[in,out] M the mesh to repair
