@@ -2038,23 +2038,24 @@ namespace RINGMesh {
 
     void GeoModelMesh::transfert_cell_attributes() const
     {
-        if( cells.nb() != cells.nb_tet() ) {
-            GEO::Logger::warn( "" )
-                << " Mesh is not simplicial, attribute will be not transfered"
-                << std::endl ;
-            return ;
-        }
+
         GEO::vector< std::string > att_c_names ;
         std::vector< std::string > att_c_double_names ;
         cell_attribute_manager().list_attribute_names( att_c_names ) ;
-        index_t offset = 0 ;
+
+        ColocaterANN ann( *mesh_, ColocaterANN::CELLS ) ;
+
         for( index_t att_c = 0; att_c < cell_attribute_manager().nb(); att_c++ ) {
+            DEBUG(att_c_names[att_c]) ;
             if( !is_attribute_a_double( cell_attribute_manager(),
                 att_c_names[att_c] ) ) {
                 break ;
             }
-            for( index_t reg = 0; reg < geo_model_.nb_regions(); reg++ ) {
+            GEO::Attribute< double > cur_att_on_geo_model_mesh(
+                cell_attribute_manager(), att_c_names[att_c] ) ;
+            index_t att_dim = cur_att_on_geo_model_mesh.dimension() ;
 
+            for( index_t reg = 0; reg < geo_model_.nb_regions(); reg++ ) {
                 if( geo_model_.region( reg ).mesh().cells.attributes().is_defined(
                     att_c_names[att_c] ) ) {
                     GEO::Logger::warn( "Transfer attribute" ) << "The attribute "
@@ -2062,26 +2063,24 @@ namespace RINGMesh {
                         << reg << std::endl ;
                     break ;
                 }
-
                 GEO::Attribute< double > cur_att_on_geo_model_mesh_element ;
-                GEO::Attribute< double > cur_att_on_geo_model_mesh(
-                    cell_attribute_manager(), att_c_names[att_c] ) ;
-
-                index_t att_dim = cur_att_on_geo_model_mesh.dimension() ;
                 cur_att_on_geo_model_mesh_element.create_vector_attribute(
                     geo_model_.region( reg ).mesh().cells.attributes(),
                     att_c_names[att_c], att_dim ) ;
-
-                for( index_t c = 0; c < cells.nb_tet( reg ); c++ ) {
+                for( index_t c = 0; c < geo_model_.region( reg ).nb_cells(); c++ ) {
+                    vec3 center = mesh_cell_center( geo_model_.region( reg ).mesh(),
+                        c ) ;
+                    std::vector< index_t > c_in_geom_model_mesh ;
+                    ann.get_colocated( center, c_in_geom_model_mesh ) ;
+                    ringmesh_assert( c_in_geom_model_mesh.size() == 1 ) ;
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
-                        cur_att_on_geo_model_mesh_element[c] =
-                            cur_att_on_geo_model_mesh[offset + att_dim * c + att_e] ;
+                        cur_att_on_geo_model_mesh_element[c * att_dim + att_e] =
+                            cur_att_on_geo_model_mesh[c_in_geom_model_mesh[0] * att_dim
+                                + att_e] ;
                     }
                 }
-                offset+= cells.nb_tet( reg ) * att_dim ;
             }
         }
-
     }
     GeoModelMesh::~GeoModelMesh()
     {
