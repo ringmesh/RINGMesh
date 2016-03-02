@@ -36,13 +36,13 @@
 /*! \author Francois Bonneau */
 
 #include <ringmesh/mesh.h>
-#include <geogram/mesh/mesh.h>
+//#include <geogram/mesh/mesh.h>
 
 namespace RINGMesh {
 
-    Mesh::Mesh()
+    Mesh::Mesh( index_t dimension, bool single_precision )
     {
-        mesh_ = new GEO::Mesh ;
+        mesh_ = new GEO::Mesh( dimension, single_precision ) ;
     }
 
     Mesh::~Mesh()
@@ -108,9 +108,7 @@ namespace RINGMesh {
         return mesh_->cells.nb_facets( cell_id ) ;
     }
 
-    index_t Mesh::nb_cell_facet_vertices(
-        index_t cell_id,
-        index_t facet_id ) const
+    index_t Mesh::nb_cell_facet_vertices( index_t cell_id, index_t facet_id ) const
     {
         return mesh_->cells.facet_nb_vertices( cell_id, facet_id ) ;
     }
